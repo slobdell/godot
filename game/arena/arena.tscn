@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://game/arena/arena.gd" id="0_arena"]
 [ext_resource type="Shader" path="res://game/arena/ground_grid.gdshader" id="1_grid"]
 [ext_resource type="PackedScene" path="res://game/arena/crate.tscn" id="2_crate"]
 [ext_resource type="PackedScene" path="res://game/arena/wall.tscn" id="3_wall"]
@@ -20,7 +21,19 @@ ambient_light_sky_contribution = 0.6
 ambient_light_energy = 0.7
 tonemap_mode = 3
 
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundary_ground"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(160, 1, 160)
+
+[sub_resource type="NavigationMesh" id="NavMesh_arena"]
+geometry_parsed_geometry_type = 1
+geometry_collision_mask = 1
+geometry_source_geometry_mode = 1
+geometry_source_group_name = &"navigation_source"
+cell_size = 0.5
+cell_height = 0.25
+agent_height = 1.75
+agent_radius = 2.0
+agent_max_climb = 0.25
 
 [sub_resource type="ShaderMaterial" id="Mat_ground"]
 shader = ExtResource("1_grid")
@@ -48,6 +61,7 @@ material = SubResource("Mat_perimeter")
 size = Vector3(2, 3, 124)
 
 [node name="Arena" type="Node3D"]
+script = ExtResource("0_arena")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env_main")
@@ -57,15 +71,19 @@ transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.6
 light_energy = 1.2
 shadow_enabled = true
 
-[node name="Ground" type="StaticBody3D" parent="."]
+[node name="Navigation" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavMesh_arena")
+
+[node name="Ground" type="StaticBody3D" parent="." groups=["navigation_source"]]
 
 [node name="Collision" type="CollisionShape3D" parent="Ground"]
-shape = SubResource("WorldBoundary_ground")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_ground")
 
 [node name="Mesh" type="MeshInstance3D" parent="Ground"]
 mesh = SubResource("PlaneMesh_ground")
 
-[node name="Perimeter" type="StaticBody3D" parent="."]
+[node name="Perimeter" type="StaticBody3D" parent="." groups=["navigation_source"]]
 
 [node name="North" type="CollisionShape3D" parent="Perimeter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -61)
@@ -99,7 +117,7 @@ shape = SubResource("BoxShape3D_perimeter_ew")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -61, 1.5, 0)
 mesh = SubResource("BoxMesh_perimeter_ew")
 
-[node name="Obstacles" type="Node3D" parent="."]
+[node name="Obstacles" type="Node3D" parent="." groups=["navigation_source"]]
 
 [node name="CenterCrate" parent="Obstacles" instance=ExtResource("2_crate")]
 

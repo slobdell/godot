@@ -133,6 +133,35 @@ table at the bottom of this doc.
 If E3 fails (b), the equipment/directive trade-offs need rebalancing before any
 LLM or Android work. That's the cheapest possible place to find out.
 
+## Fairness: measure it, don't assume it
+
+Every experiment above compares win rates, so **any systematic bias in the
+map or engine silently corrupts every result.** The first match-runner series
+(2026-09-13) found one:
+
+| Series (2v2 bots, first to 5) | Green | Rust | Takeaway |
+|---|---|---|---|
+| Normal bases, 40 matches | 28 | 12 | Suspicious (p ≈ 0.02) |
+| Rust spawned first (processing order flipped), 40 | 25 | 15 | Not processing order |
+| Navigation off, 40 | 21 | 15 (4 draws) | Weaker; navigation amplifies it |
+| **Bases swapped** (Green north), 60 | 21 | **37** | **The SOUTH base wins, whoever is there** |
+| Swapped + navigation off, 60 | 26 | 33 (1 draw) | Mostly gone without navigation |
+| **After fix**, normal bases, 60 | 31 | 29 | Fair |
+| **After fix**, swapped bases, 60 | 30 | 30 | Fair |
+
+**Root cause:** the arena is point-symmetric, but a normal navmesh bake is not.
+The baker's polygonization depends on traversal order: 62 of 150 vertices had
+no 180° twin, and mirrored trips differed by up to 4.4 m. (A first guess, that
+wall edges landed on voxel centers, was tested and was wrong.) **Fix:** bake
+only the southern half and add the same mesh rotated 180° as a second region
+(`game/arena/arena.gd`). The navmesh is symmetric by construction, guarded by
+`test_navigation_is_point_symmetric`.
+
+**Rules for future experiments:**
+- Before trusting any win rate, run the **swap-bases control** (`--swap-bases`). A result that follows the base rather than the doctrine is a map artifact.
+- Report sample sizes. 60 matches can't resolve less than roughly a 10-point win-rate difference; E2/E3 need hundreds.
+- Anything asymmetric added to the map (new obstacles, navigation links, spawn logic) must keep the symmetry test green.
+
 ## Consequences for the roadmap
 
 - **M3 (combat) must include what AI considerations will read:** line of sight, armor facing (front/side/rear), and cover, not just hit points. Playing M3 by hand is how we learn which considerations matter.
@@ -143,4 +172,7 @@ LLM or Android work. That's the cheapest possible place to find out.
 
 | Date | Experiment | Result | Decision |
 |---|---|---|---|
+| 2026-09-13 | E0 fairness: 2v2 bot series with base swaps (320 matches) | South base won 64% because the navmesh bake was asymmetric; after the mirrored half-bake, 51% | Swap-bases control is mandatory for every experiment (see Fairness) |
+| 2026-09-13 | Bot-vs-bot hit facing | Before navigation: 96% front hits; after: 82% front, 17% side | Bots face their targets, so positional play is thin. Utility AI needs flanking/cover considerations to create it |
+| 2026-09-13 | Informal: playtest #2 (navmesh + reflexes) | Bot 4 : 1. Retreat reflex exposed the rear armor; the navmesh route beat a static ambush | Retreats back away by default; "slow and armored vs fast and exposed" is a doctrine knob |
 | 2026-09-12 | Informal: Claude (commander via agent bridge) vs 1 BotController, 1v1 | Bot 4 : 2 Claude. Slow commanders die between decisions; chargers always show front armor; first shot wins even duels; straight-line bots deadlock on walls | Keep phases/conditional orders (layer 4) in the design; navmesh + perception memory are M4 requirements; judge positional skill in squads, not 1v1. Details: [agent_bridge.md](agent_bridge.md) play report #1 |

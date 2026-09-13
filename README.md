@@ -42,6 +42,13 @@ make agent-client      # terminal 2; then ask Claude to play via tools/agent.py
 - How the code is organized and why: [`_agents/architecture.md`](_agents/architecture.md)
 - How tanks will think, and where player skill comes from: [`_agents/squad_ai_design.md`](_agents/squad_ai_design.md)
 - How Claude plays, and what it learned: [`_agents/agent_bridge.md`](_agents/agent_bridge.md)
+
+Robot-vs-robot matches, faster than real time (for balance and AI experiments):
+
+```bash
+make match GREEN=2 RUST=2               # one match, JSON result
+make matches N=40 JOBS=6 GREEN=2 RUST=2 # a seeded series with win rates
+```
 - How online game servers work, and our plan: [`_agents/server_management.md`](_agents/server_management.md)
 - What's done and what's next: [`_agents/roadmap.md`](_agents/roadmap.md)
 - Working with Claude on this repo: [`CLAUDE.md`](CLAUDE.md) → [`HANDOFF.md`](HANDOFF.md)

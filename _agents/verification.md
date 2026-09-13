@@ -15,9 +15,12 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 | 5 | Server boot | `make export-server && build/server/tank_squad_server.x86_64 --headless --quit-after 120` | nothing | The stripped release server binary starts in SERVER role (prints `TANK_SQUAD_LISTENING` and `TANK_SQUAD_READY role=SERVER`) | anything touching startup, exports, server |
 | 6 | Network | `make net-smoke` | nothing | A headless server + **2 headless bot clients** over real WebSockets: each gets a tank, sees both tanks, and its tank moves by ≥ 3 m *as replicated from the server*. Server log must contain no `ERROR` | anything touching main.gd, tanks, controllers, networking |
 | 6b | Combat over network | `make combat-smoke` | nothing | A headless server with a bot + a stationary bot client: the client's replicated health must drop (the server bot aimed, fired, and hit; damage replicated). Also prints any kills from the server log | anything touching combat, shells, bots, Match |
+| 6c | Match runner | `make match-smoke` | nothing | A seeded 2v2 bot match finishes via its limit, prints `MATCH_RESULT`, has shots, runs > 2× real time, logs no errors | anything touching Match, bots, orders, navigation, main.gd roles |
 | 7 | Browser multiplayer | `make web-net-smoke` → **Read `build/screenshots/web-net.png`** | Chrome + node | A browser client connects (`TANK_SQUAD_SPAWNED`) to a server with one bot; ~8 s later the screenshot should show the *remote* bot tank near "YOU", team colors, nameplates, and usually shells/damage | anything touching client rendering, spawning, combat visuals, the web export |
 
-**Bundles:** `make check` = rows 1, 2, 6, 6b (all headless, ~1 min). `make check-all` = `check` + rows 3, 4, 5, 7 and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
+**Bundles:** `make check` = rows 1, 2, 6, 6b, 6c (all headless, ~1 min). `make check-all` = `check` + rows 3, 4, 5, 7 and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
+
+**Experiments** (`make matches …`) are not pass/fail checks, but any change to the map, spawning, navigation, or combat rules should re-run the fairness control: `python3 tools/match_series.py --godot <godot> --runs 60 --green 2 --rust 2` and again with `--extra=--swap-bases`. Win rates should stay near 50/50 ([squad_ai_design.md](squad_ai_design.md) "Fairness").
 
 **Playtesting with the agent bridge** is the last rung: not automated, but it finds design problems no assertion will ([agent_bridge.md](agent_bridge.md)).
 

@@ -46,6 +46,11 @@ fire={
 "events": [Object(InputEventMouseButton,"button_index":1), Object(InputEventKey,"physical_keycode":32)]
 }
 
+[navigation]
+
+; Must match the arena NavigationMesh cell size, or baked meshes won't line up with the map.
+3d/default_cell_size=0.5
+
 [rendering]
 
 ; Compatibility = OpenGL 3 / WebGL 2. The ONLY renderer that exports to the web,

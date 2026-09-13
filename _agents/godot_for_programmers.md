@@ -18,6 +18,9 @@ the facts this repo relies on. Examples point at real files here.
 | Ray query | `get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from, to, mask, exclude))` → `{}` or `{position, collider, …}`. Use during physics processing | `Shell`, `Perception` |
 | `Label3D` | Text in 3D space; `billboard` faces the camera | tank nameplates |
 | `Logger` | (4.5+) Subclass and `OS.add_logger()` to receive every engine error | `tests/run_tests.gd` fails tests on errors |
+| `NavigationRegion3D` + `NavigationMesh` | A walkable-area mesh baked from geometry; `NavigationServer3D.map_get_path()` finds routes on it | `Arena/Navigation` (+ its mirror); `Pathing` |
+| `static var` | Class-level variable shared by all instances (Godot 4.1+) | `Pathing.enabled`, `Match.swap_bases` experiment switches |
+| `--fixed-fps N` (CLI) | Every frame advances exactly 1/N s of game time, without waiting for the real clock | `make match`: simulations faster than real time |
 | **Autoload** | A singleton node that lives above the current scene | None yet. M2 kept networking in `main.gd` because it only needs one scene; a menu/lobby scene would justify an autoload |
 | **Groups** | Tags on nodes: `add_to_group("tanks")`, `get_tree().get_nodes_in_group("tanks")` | None yet |
 | `@export var` | A field that shows up in the editor Inspector and is saved into the scene | `max_forward_speed` in `tank.gd` |

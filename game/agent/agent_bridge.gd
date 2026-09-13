@@ -8,7 +8,7 @@ extends Node
 ##
 ##   GET  /state       observation JSON (me, other tanks, score, orders)
 ##   GET  /map         arena bounds + obstacle boxes
-##   POST /orders      {"move": {...}, "weapon": {...}}  (either may be omitted)
+##   POST /orders      {"move": {...}, "weapon": {...}, "reflexes": [...]}  (any may be omitted)
 ##   POST /screenshot  save the current frame (windowed clients only), returns its path
 
 const DEFAULT_PORT := 8765
@@ -90,10 +90,11 @@ func _handle(request: Dictionary) -> Array:
 			var body: Variant = JSON.parse_string(request["body"])
 			if typeof(body) != TYPE_DICTIONARY:
 				return [400, {"error": "body must be a JSON object"}]
-			var error := orders.set_orders(body.get("move"), body.get("weapon"))
+			var error := orders.set_orders(body.get("move"), body.get("weapon"), body.get("reflexes"))
 			if error != "":
 				return [400, {"error": error}]
-			return [200, {"ok": true, "move": orders.move_order, "weapon": orders.weapon_order}]
+			return [200, {"ok": true, "move": orders.move_order, "weapon": orders.weapon_order,
+					"reflexes": orders.reflexes}]
 		["POST", "/screenshot"]:
 			return _screenshot()
 	return [404, {"error": "unknown endpoint %s %s" % [request["method"], request["path"]]}]
@@ -106,7 +107,8 @@ func observe() -> Dictionary:
 	var observation := {
 		"time": snappedf(Time.get_ticks_msec() / 1000.0, 0.1),
 		"score": {"green": game_match.score_green, "rust": game_match.score_rust},
-		"orders": {"move": orders.move_order, "weapon": orders.weapon_order},
+		"orders": {"move": orders.move_order, "weapon": orders.weapon_order, "reflexes": orders.reflexes},
+		"events": orders.events,
 		"engaged": orders.engaged_target,
 		"me": null,
 		"tanks": [],
@@ -161,6 +163,8 @@ func describe_map() -> Dictionary:
 				var xform: Transform3D = shape_node.global_transform
 				# World-space axis-aligned footprint: unambiguous even for rotated walls.
 				var bounds := xform * AABB(-box.size / 2.0, box.size)
+				if bounds.end.y <= 0.05:
+					continue  # the ground slab: under the floor, not an obstacle
 				obstacles.append({"name": String(body.name),
 						"x": [snappedf(bounds.position.x, 0.1), snappedf(bounds.end.x, 0.1)],
 						"z": [snappedf(bounds.position.z, 0.1), snappedf(bounds.end.z, 0.1)],

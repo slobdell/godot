@@ -71,3 +71,16 @@ func test_steering_turns_in_place_for_a_goal_behind() -> void:
 func test_steering_stops_on_arrival() -> void:
 	assert_eq(Steering.drive_toward(Vector3.ZERO, NORTH, Vector3(1, 0, -1), 3.0), Vector2.ZERO,
 			"inside the arrive radius the tank stops")
+
+
+func test_reverse_steering_backs_toward_a_goal_behind() -> void:
+	var drive := Steering.reverse_toward(Vector3.ZERO, NORTH, Vector3(0, 0, 30), 3.0)
+	assert_near(drive.x, -1.0, 1e-4, "a goal directly behind: full reverse")
+	assert_near(drive.y, 0.0, 1e-4, "no turning: the front keeps facing away from the goal")
+
+
+func test_reverse_steering_turns_the_back_toward_the_goal() -> void:
+	# Facing north, goal to the south-east: the BACK must swing east, i.e. the hull turns left (turn < 0).
+	var drive := Steering.reverse_toward(Vector3.ZERO, NORTH, Vector3(20, 0, 20), 3.0)
+	assert_true(drive.y < -0.9, "swing the rear toward the goal (turn %.2f)" % drive.y)
+	assert_true(drive.x < 0.0, "while backing up")

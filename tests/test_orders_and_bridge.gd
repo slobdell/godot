@@ -52,3 +52,18 @@ func test_bridge_refuses_browser_and_foreign_host_requests() -> void:
 			"DNS rebinding is refused (foreign Host header)")
 	bridge.orders.free()
 	bridge.free()
+
+
+func test_reflex_validation() -> void:
+	var orders := OrderController.new()
+	assert_eq(orders.set_orders(null, null, [{"type": "retreat_below_hp", "hp": 40, "x": 0, "z": 50},
+			{"type": "halt_on_contact"}]), "", "well-formed reflexes are accepted")
+	assert_eq(orders.reflexes.size(), 2, "both reflexes stored")
+	assert_true(orders.set_orders(null, null, [{"type": "retreat_below_hp", "hp": 40}]) != "",
+			"retreat without a destination is rejected")
+	assert_true(orders.set_orders(null, null, "retreat") != "", "reflexes must be a list")
+	assert_true(orders.set_orders(null, null, [{"type": "halt_on_contact"}, {"type": "halt_on_contact"},
+			{"type": "halt_on_contact"}, {"type": "halt_on_contact"}, {"type": "halt_on_contact"}]) != "",
+			"at most MAX_REFLEXES")
+	assert_eq(orders.reflexes.size(), 2, "rejected requests change nothing")
+	orders.free()

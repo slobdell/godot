@@ -108,6 +108,9 @@ Main (main.gd: roles, flags, HUD)
 - **Damage = 34 × armor multiplier**, where `Armor.facing()` compares the hull's forward to the shell's travel direction: front (within 45° of head-on) ×0.5, side ×1.0, rear ×1.5. Friendly fire is off; teammates still stop shells.
 - **Firing is a held trigger** sampled each tick (`TankCommand.fire`), gated by a 2 s reload. A dropped unreliable packet costs at most one tick of a held trigger. This replaced the earlier plan of a reliable fire event: simpler, and good enough for a slow-firing gun.
 - **Teams:** a new tank joins the smaller team (ties go to Green). Green's base is south (z = +42) facing north; Rust's is north. Slots spread along x.
+- **Navigation (M4):** `Arena` bakes a navmesh from collision shapes at startup on every peer (the server export has no meshes). It bakes the south half and mirrors it for fairness (see squad_ai_design.md "Fairness"). `OrderController.move_to` follows `Pathing.find_path` waypoints, repaths every second or when the goal moves, and slows only for the path's end. `"reverse": true` backs along the path.
+- **Reflexes (M4):** conditional standing orders checked every tick before orders execute (`retreat_below_hp`, `halt_on_contact`); each fires once and re-arms when its condition clears. They're the seed of doctrine *phases*.
+- **Match runner (M4):** role MATCH (`--match`): bots only, ends at a score/time limit, prints `MATCH_RESULT {json}` with shot/hit/face/kill stats. Run under Godot's `--fixed-fps 60` with no `max_fps` cap, so it simulates ~8–70× real time. `tools/match_series.py` runs seeded series in parallel. `--swap-bases`, `--rust-first`, and `--no-navigation` exist as experiment controls.
 - **Pure helpers** shared by bots, the bridge, and future AI: `Armor`, `Ballistics` (intercept lead, aim error), `Steering` (goal → throttle/turn), `Perception` (line of sight on the world layer at 1.3 m, enemy queries).
 
 ## Physics tick ordering
@@ -134,4 +137,7 @@ matters for fairness.
 | 2026-09-12 | Projectile shells with swept raycasts, not hitscan | Travel time makes leading, dodging, and range matter; sweeping avoids tunneling |
 | 2026-09-12 | Fire = held trigger in the unreliable command stream (not a reliable event) | Loss costs ≤ 1 tick while held; avoids a second channel |
 | 2026-09-12 | Bots and the agent share `OrderController` | The action layer is built once and exercised by both a dumb policy and a thinking commander |
+| 2026-09-13 | Navmesh baked from colliders, south half + 180° mirror | Server export has no meshes; a plain bake was measurably unfair (64% south wins) |
+| 2026-09-13 | Match runner uses `--fixed-fps` in-process, not `Engine.time_scale` | Exact 1/60 s steps regardless of speed; physics stays identical to real-time play |
+| 2026-09-13 | Retreats back away (reverse) by default | Playtest #2: turning to run exposes rear armor |
 | 2026-09-12 | Squad AI direction: utility AI with player-tuned directives and phases (accepted by the lead) | Matches the lead's "weighted tree" intuition; weights are a natural LLM output. Validate with experiments E1–E4 in squad_ai_design.md |

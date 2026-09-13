@@ -5,13 +5,16 @@ Built for an LLM at a terminal: every command prints compact text.
 
   agent.py state                      what I can see right now
   agent.py map                        arena bounds + obstacles (plan once)
-  agent.py move X Z                   standing order: drive to (X, Z)
+  agent.py move X Z [reverse]         standing order: drive to (X, Z); reverse = back up, front armor forward
   agent.py stop
   agent.py drive THROTTLE TURN SECS   raw driving for a few seconds
   agent.py target NAME                engage one tank whenever it's visible
   agent.py fire-at-will               engage the nearest visible enemy
   agent.py hold-fire
   agent.py aim X Z
+  agent.py reflex retreat HP X Z [fast]  when my health < HP, back away to (X, Z); fast = turn and run (rear exposed)
+  agent.py reflex halt-on-contact     stop a move_to when an enemy comes into sight
+  agent.py clear-reflexes
   agent.py watch SECONDS              wait, printing one line per second + events
   agent.py screenshot                 save the current frame (windowed client only)
 
@@ -70,6 +73,10 @@ def print_state(s):
         print("ME " + fmt_tank(s["me"], is_me=True))
     orders = s["orders"]
     print(f"orders: move={fmt_order(orders['move'])} weapon={fmt_order(orders['weapon'])} engaged={s['engaged'] or '-'}")
+    if orders.get("reflexes"):
+        print("reflexes: " + "; ".join(fmt_order(r) for r in orders["reflexes"]))
+    for event in s.get("events", [])[-3:]:
+        print(f"event: {event}")
     for t in s["tanks"]:
         print("  " + fmt_tank(t))
 
@@ -95,6 +102,9 @@ def watch(port, seconds):
                 events.append(f"{t['name']} took {old['health'] - t['health']} damage")
             if old and old["alive"] and not t["alive"]:
                 events.append(f"{t['name']} DESTROYED")
+        for event in s.get("events", []):
+            if event not in previous.get("events", []):
+                events.append(event)
         me = s["me"]
         summary = f"t={s['time']:.0f}s"
         if me:
@@ -117,7 +127,8 @@ def main(argv):
         result = call(port, "POST", "/orders", body)
         if "error" in result:
             sys.exit(f"rejected: {result['error']}")
-        print(f"ok: move={fmt_order(result['move'])} weapon={fmt_order(result['weapon'])}")
+        reflexes = "; ".join(fmt_order(r) for r in result.get("reflexes", [])) or "-"
+        print(f"ok: move={fmt_order(result['move'])} weapon={fmt_order(result['weapon'])} reflexes={reflexes}")
 
     if command == "state":
         print_state(call(port, "GET", "/state"))
@@ -128,8 +139,8 @@ def main(argv):
         print("obstacles (world-space footprints):")
         for o in m["obstacles"]:
             print(f"  {o['name']}: x {o['x'][0]:.1f}..{o['x'][1]:.1f}  z {o['z'][0]:.1f}..{o['z'][1]:.1f}  h {o['height']:.1f}")
-    elif command == "move" and len(args) == 2:
-        post({"move": {"type": "move_to", "x": float(args[0]), "z": float(args[1])}})
+    elif command == "move" and len(args) in (2, 3) and args[2:] in ([], ["reverse"]):
+        post({"move": {"type": "move_to", "x": float(args[0]), "z": float(args[1]), "reverse": args[2:] == ["reverse"]}})
     elif command == "stop":
         post({"move": {"type": "stop"}})
     elif command == "drive" and len(args) == 3:
@@ -142,6 +153,15 @@ def main(argv):
         post({"weapon": {"type": "hold_fire"}})
     elif command == "aim" and len(args) == 2:
         post({"weapon": {"type": "aim", "x": float(args[0]), "z": float(args[1])}})
+    elif command == "reflex" and args[:1] == ["retreat"] and len(args) in (4, 5) and args[4:] in ([], ["fast"]):
+        current = call(port, "GET", "/state")["orders"]["reflexes"]
+        post({"reflexes": current + [{"type": "retreat_below_hp", "hp": int(args[1]), "x": float(args[2]),
+                                      "z": float(args[3]), "reverse": args[4:] != ["fast"]}]})
+    elif command == "reflex" and args == ["halt-on-contact"]:
+        current = call(port, "GET", "/state")["orders"]["reflexes"]
+        post({"reflexes": current + [{"type": "halt_on_contact"}]})
+    elif command == "clear-reflexes":
+        post({"reflexes": []})
     elif command == "watch" and len(args) == 1:
         watch(port, float(args[0]))
     elif command == "screenshot":

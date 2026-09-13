@@ -1,6 +1,6 @@
 # Agent Bridge: Claude Plays a Tank
 
-> **Status: implemented (2026-09-12)**, with one playtest so far (report below).
+> **Status: implemented (2026-09-12)**, with two playtests (reports below).
 > It started from the project lead's idea: *"make it so that you yourself have
 > programmatic control of the input for one of the players… smoke test by
 > playing against each other."*
@@ -51,13 +51,14 @@ E4's command budget.
 
 | Method | Path | Result |
 |---|---|---|
-| GET | `/state` | `me` (pos, heading, turret, health, alive, reload), other `tanks` (…plus distance, bearing, relative_bearing, `visible`, `exposed_face` = which armor a shot from here hits, `aiming_at_me`), `score`, current `orders`, `engaged` target |
+| GET | `/state` | `me` (pos, heading, turret, health, alive, reload), other `tanks` (…plus distance, bearing, relative_bearing, `visible`, `exposed_face` = which armor a shot from here hits, `aiming_at_me`), `score`, current `orders` (incl. reflexes), recent `events`, `engaged` target |
 | GET | `/map` | bounds, bases, shell speed and range, armor multipliers, obstacles as **world-space footprints** (`x: [min,max]`, `z: [min,max]`, height) |
 | POST | `/orders` | `{"move": {...}, "weapon": {...}}`, either may be omitted; 400 with a reason if invalid (nothing changes) |
 | POST | `/screenshot` | windowed clients only; saves `build/screenshots/agent_<ms>.png` |
 
-Move orders: `{"type":"move_to","x":10,"z":-20}` · `{"type":"stop"}` · `{"type":"drive","throttle":1,"turn":0.3,"seconds":2}`
-Weapon orders: `{"type":"fire_at_will"}` · `{"type":"target","name":"Bot_1"}` · `{"type":"aim","x":0,"z":0}` · `{"type":"hold_fire"}`
+Move orders: `{"type":"move_to","x":10,"z":-20}` (add `"reverse":true` to back up with the front armor forward; follows the navmesh) · `{"type":"stop"}` · `{"type":"drive","throttle":1,"turn":0.3,"seconds":2}`
+Weapon orders: `{"type":"fire_at_will"}` · `{"type":"target","name":"Bot_1"}` · `{"type":"aim","x":0,"z":0}` (points only, **never fires**) · `{"type":"hold_fire"}`
+Reflexes (`"reflexes": [...]`, ≤ 4, replace the list): `{"type":"retreat_below_hp","hp":40,"x":0,"z":-50}` (backs away by default; `"reverse":false` turns and runs) · `{"type":"halt_on_contact"}`. Fired reflexes appear in `/state` `events`, and `agent.py watch` prints them.
 
 Coordinates: world meters, **x grows east, z grows south**. Compass headings: 0 = north (−Z), 90 = east (+X).
 
@@ -92,3 +93,12 @@ Final score: Bot 4, Claude 2. Findings, most important first:
 4. **Bots deadlock on walls.** Straight-line steering plus "reverse and turn" doesn't get around a 12 m wall; the bot pinned itself against the wall trying to reach Claude behind it. **M4's navmesh is necessary**, not polish.
 5. **The bot is omniscient** (knows hidden positions). Fine for a baseline; unfair for ambush play. Perception memory / fog of war belong in M4–M5.
 6. Bridge fixes made during play: obstacle footprints instead of center + size + rotation (rotated walls were ambiguous); `aiming_at_me`.
+
+## Play report #2 (2026-09-13): Claude vs one BotController, after navmesh + reflexes
+
+Final score: Bot 4, Claude 1. Worse than #1, and more instructive:
+
+1. **Navigation made the bot less predictable.** Claude pre-aimed at the east end of a wall to ambush the bot as it came around; the navmesh routed it around the *west* end, which was shorter. An ambush needs a guess about the route, and a slow commander can't adjust mid-approach. Suggests a later observation field (the bot's current path, if visible to a scout?) or area-denial orders.
+2. **`aim` never fires, which is easy to forget.** Claude lost a life with an ambush set to `aim` while the bot shot it. Kept as is (pre-aiming without revealing yourself is a legit tactic), but documented loudly above.
+3. **The retreat reflex worked as programmed and killed Claude twice.** It turned the tank around and drove away, which shows the enemy your *rear* armor (×1.5 damage). **Design insight:** with armor facing, a naive retreat is suicide. Real tanks back away still facing the threat. Added `reverse` to `move_to` (reverse speed is 4 m/s vs 9 forward), and retreats now back away by default. That creates a real doctrine trade-off: *slow and armored vs fast and exposed*. Still to be validated by playtest #3.
+4. Reflex events made the post-mortem easy: the log showed exactly when and why each retreat started. Keep observability ahead of complexity.

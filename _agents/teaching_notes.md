@@ -63,3 +63,13 @@ Format: **Concept**, then the one-line version, why it matters, and a way to
 - **One line:** Claude plays through standing orders ("drive there, shoot whatever you see") because it thinks in seconds, not milliseconds.
 - **Why it matters:** It's the whole squad-game idea in miniature: you don't steer, you decide what your units should do and when. Claude lost 4–2 to a dumb bot mostly because it couldn't say "and retreat if you get hurt."
 - **Show it:** `make server BOTS=1`, open the browser client, and ask Claude to join with `make agent-client`. Play against it, and afterwards ask each other what order you wished you could have given.
+
+### 2026-09-13: Is the game fair? Don't guess, measure
+- **One line:** The map is a perfect mirror, yet the south team won 64% of 140 robot-vs-robot games. Swapping who starts where proved it was the *spot*, not the team.
+- **Why it matters:** It's the scientific method on a game: a control experiment (swap the bases) separates "this strategy is better" from "this map is broken". Every future "is strategy A better?" question depends on it.
+- **Show it:** `make matches N=40 JOBS=6 GREEN=2 RUST=2` (about a minute). Then ask: if Green wins 28 of 40, is that luck? Flip a coin 40 times together and see how far from 20 it wanders. Then read the table in `squad_ai_design.md` "Fairness".
+
+### 2026-09-13: Running away can be the worst move
+- **One line:** Retreating by turning around shows the enemy your weakest armor, so backing up slowly while facing them can be safer.
+- **Why it matters:** Rules create tactics nobody designed on purpose. The designer's job is to notice them, which is what playtests are for.
+- **Show it:** `make run`, let the bot damage you, then try both escapes: turn and drive (fast), or hold S to reverse (slow). Which one survives more often?

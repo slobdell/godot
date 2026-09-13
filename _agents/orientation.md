@@ -30,7 +30,8 @@ regain full situational awareness from `HANDOFF.md` in under 5 minutes.
 A Godot 4.7 (GDScript) tank game that exports to **WebAssembly for browsers**
 and to a **headless Linux server binary** from one codebase, with real-time
 server-authoritative multiplayer over WebSockets (M2), team combat with
-server bots (M3), and an HTTP bridge that lets Claude command a tank (M3.5). The destination is
+server bots (M3), an HTTP bridge that lets Claude command a tank (M3.5), and
+M4 infrastructure: navmesh pathing, reflexes, and a faster-than-real-time match runner. The destination is
 a squad-strategy game where players author *doctrine* for 5 tanks, eventually
 via an on-device LLM on Android, rather than driving tanks by hand
 ([vision.md](vision.md)).
@@ -62,14 +63,14 @@ game/
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
   combat/                Shell (projectile), Armor (facing → damage), Ballistics (lead), Impact (visual)
-  ai/                    OrderController (standing orders → command), BotController, Steering, Perception
+  ai/                    OrderController (orders + reflexes → command), BotController, Steering, Perception, Pathing
   agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
   network/               NetworkInput: client→server command relay + server-side validation
   camera/                FollowCamera
-  arena/                 ground (grid shader), crates, sky/light
+  arena/                 ground, walls, crates, sky; arena.gd bakes the (mirrored, fair) navmesh
 tests/                   headless runner + TestCase base + test_*.gd; net/bot_client_check.gd
-tools/                   serve_web.py, web_smoke/ (headless Chrome check), agent.py (Claude's CLI for the bridge)
+tools/                   serve_web.py, web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
 _agents/                 you are here
 .tools/  (gitignored)    pinned Godot + export templates, from `make bootstrap`
 build/   (gitignored)    exports and screenshots
@@ -81,6 +82,7 @@ build/   (gitignored)    exports and screenshots
 |---|---|
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
+| Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2` |
 | Let Claude play | `make server BOTS=1` + `make agent-client`, then `tools/agent.py …` ([agent_bridge.md](agent_bridge.md)) |
 | Open the editor | `make editor` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
@@ -115,3 +117,8 @@ build/   (gitignored)    exports and screenshots
 18. **Put `MultiplayerSpawner`s before the containers they spawn into.** With Tanks listed first, the *release* server export logged "Attempt to disconnect a nonexistent connection … tree_exiting" for each bot at shutdown (debug builds and the editor were clean). Reordering fixed it; `make check-all` guards it.
 19. **Never `pkill -f PATTERN` from a shell whose command line contains PATTERN.** It matches and kills itself (exit 144). Save PIDs instead.
 20. **Godot's default font lacks block glyphs** (■ █ render as empty boxes). Keep HUD text ASCII.
+21. **A symmetric map does not give a symmetric navmesh.** The baker's output depends on traversal order; the south base won 64% of matches until the navmesh was built from one half plus its 180° mirror. Run the swap-bases control after any map change.
+22. **The navigation map isn't ready right after baking, and "map iteration id > 0" doesn't mean ready.** The first sync can be of an empty map. `Pathing.is_ready()` also checks that a polygon owns a point. `OrderController` falls back to straight-line steering until then.
+23. **NavigationMesh `agent_height` must be a multiple of `cell_height`**, and the map's cell size must match the mesh's (`navigation/3d/default_cell_size=0.5` in project.godot). The error-capturing test runner caught the first as an engine error.
+24. **Faster than real time = `--fixed-fps 60` and no `Engine.max_fps` cap.** `main.gd` skips the headless cap only in `--match` mode.
+25. **`aim` orders never fire.** Twice it cost Claude a life in playtests; use `fire_at_will`/`target` to shoot.

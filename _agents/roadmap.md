@@ -47,10 +47,14 @@ keep "Acceptance" honest: it's what `verification.md` checks are run against.
 - **Known gaps:** no conditional orders yet (the playtest's #1 finding; belongs with phases in M4/M5); no human-vs-Claude session yet (needs the lead at the keyboard)
 
 ## M4: One smart tank + the match runner
-- [ ] **Headless match runner** (`make match …`): runs a match to completion faster than real time, prints a JSON result. Pulled forward from M5 because every AI experiment needs it
-- [ ] Navmesh (`NavigationRegion3D`): **required, as the playtest showed straight-line bots deadlocking on walls**. `OrderController.move_to` should follow a path
+Infrastructure landed 2026-09-13 (before squad AI, per the lead's request):
+- [x] **Headless match runner**: `make match`, `make matches N=… JOBS=…` (`tools/match_series.py`), `make match-smoke` (in `make check`); ~8–70× real time; JSON stats
+- [x] **Fairness control (E0):** found and fixed a south-base advantage caused by an asymmetric navmesh bake (64% → 51%); symmetry regression test; `--swap-bases` / `--rust-first` / `--no-navigation` controls
+- [x] **Navmesh pathing** for `move_to` (baked from colliders; south half + mirror); the playtest's wall deadlock is now a passing test
+- [x] **Reflexes** (`retreat_below_hp`, `halt_on_contact`), bridge + CLI support, events log; `move_to` `reverse` (retreats back away by default, after playtest #2)
+- [x] Playtest #2 logged ([agent_bridge.md](agent_bridge.md))
+Still to do. **Pause here for the lead's smoke test before starting the AI items:**
 - [ ] Perception memory (last-known positions, detection radius) so AI stops being omniscient; blackboard
-- [ ] Conditional standing orders (e.g. `retreat_below_hp`), a small step toward phases, driven by playtest finding #1
 - [ ] `UtilityController`: actions `advance_to`, `engage`, `take_cover`, `retreat_to`, `hold`; directive weights; commitment bonus
 - [ ] In-game score overlay (top 3 actions per tank)
 - **Acceptance:** experiment **E1** passes ([squad_ai_design.md](squad_ai_design.md))

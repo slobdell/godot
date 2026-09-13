@@ -7,6 +7,8 @@ extends Node
 ## tanks and shells are built identically everywhere (node paths must match).
 
 signal local_tank_spawned(tank: Tank)
+## Emitted once when a score or time limit is reached (see start_limits).
+signal finished(result: Dictionary)
 
 enum Team { GREEN, RUST }
 
@@ -18,6 +20,9 @@ const BASE_DAMAGE := 34.0
 ## Bases sit this far north/south of center; slots spread along x.
 const BASE_Z := 42.0
 const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -6.0, 6.0, -18.0, 18.0]
+
+## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
+static var swap_bases := false
 
 @export var respawn_seconds := 4.0
 
@@ -31,6 +36,19 @@ var simulate := true
 var networked := false
 ## False on a dedicated server (nobody sits at this machine).
 var has_local_player := true
+## Meters of random offset applied to spawn points (0 = exact slots). Used by the
+## match runner so repeated seeded matches don't replay identically.
+var spawn_jitter := 0.0
+
+## Counters for match results and experiments, indexed by team where it's a pair.
+var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "kills": [0, 0],
+		"hits_by_face": {"front": 0, "side": 0, "rear": 0}}
+var sim_seconds := 0.0
+
+var _rng := RandomNumberGenerator.new()
+var _score_limit := 0
+var _time_limit := 0.0
+var _finished := false
 
 var _next_shell_id := 0
 var _next_bot_id := 1
@@ -49,6 +67,42 @@ func _ready() -> void:
 	shell_spawner.spawn_function = _build_shell
 
 
+func _physics_process(delta: float) -> void:
+	if not simulate:
+		return
+	sim_seconds += delta
+	if _finished or (_score_limit <= 0 and _time_limit <= 0.0):
+		return
+	var reason := ""
+	if _score_limit > 0 and maxi(score_green, score_rust) >= _score_limit:
+		reason = "score_limit"
+	elif _time_limit > 0.0 and sim_seconds >= _time_limit:
+		reason = "time_limit"
+	if reason != "":
+		_finished = true
+		finished.emit(result(reason))
+
+
+## End the match (emit `finished`) at `score_limit` kills or `time_limit` simulated seconds (0 = none).
+func start_limits(score_limit: int, time_limit: float) -> void:
+	_score_limit = score_limit
+	_time_limit = time_limit
+
+
+func seed_spawns(seed_value: int, jitter: float) -> void:
+	_rng.seed = seed_value
+	spawn_jitter = jitter
+
+
+func result(reason: String) -> Dictionary:
+	var winner := "draw"
+	if score_green != score_rust:
+		winner = TEAM_NAMES[Team.GREEN] if score_green > score_rust else TEAM_NAMES[Team.RUST]
+	return {"winner": winner, "reason": reason, "score": {"green": score_green, "rust": score_rust},
+			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
+			"rust": team_tanks(Team.RUST).size()}, "stats": stats.duplicate(true)}
+
+
 # ---- Joining and leaving (simulating peer only) ---------------------------------------
 
 func add_player(peer_id: int) -> Tank:
@@ -61,9 +115,9 @@ func remove_player(peer_id: int) -> void:
 		tank.queue_free()  # the spawner removes it on every client too
 
 
-## A server-controlled tank with a BotController brain.
-func add_bot() -> Tank:
-	var tank := spawn_tank("Bot_%d" % _next_bot_id, 0)
+## A server-controlled tank with a BotController brain (team -1 = the smaller team).
+func add_bot(team: int = -1) -> Tank:
+	var tank := spawn_tank("Bot_%d" % _next_bot_id, 0, team)
 	_next_bot_id += 1
 	var brain := BotController.new()
 	brain.name = "Brain_" + tank.name
@@ -79,18 +133,26 @@ func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1) -> Tank:
 		team = _smaller_team()
 	var slot := _free_slot(team)
 	return tank_spawner.spawn({"name": tank_name, "owner": owner_peer_id, "team": team,
-			"slot": slot, "position": spawn_position(team, slot), "yaw": spawn_yaw(team)})
+			"slot": slot, "position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team)})
+
+
+func _jittered(point: Vector3) -> Vector3:
+	if spawn_jitter <= 0.0:
+		return point
+	# Less jitter along z keeps tanks inside their base area, clear of the cover walls.
+	return point + Vector3(_rng.randf_range(-spawn_jitter, spawn_jitter), 0.0,
+			_rng.randf_range(-spawn_jitter, spawn_jitter) * 0.4)
 
 
 static func spawn_position(team: int, slot: int) -> Vector3:
-	var z := BASE_Z if team == Team.GREEN else -BASE_Z
+	var south := (team == Team.GREEN) != swap_bases
 	var x: float = SLOT_X[slot % SLOT_X.size()]
-	return Vector3(x if team == Team.GREEN else -x, 0.0, z)
+	return Vector3(x if south else -x, 0.0, BASE_Z if south else -BASE_Z)
 
 
 ## Green starts in the south facing north (−Z); Rust in the north facing south.
 static func spawn_yaw(team: int) -> float:
-	return 0.0 if team == Team.GREEN else PI
+	return 0.0 if (team == Team.GREEN) != swap_bases else PI
 
 
 func team_tanks(team: int) -> Array[Tank]:
@@ -167,6 +229,7 @@ func _build_shell(data: Dictionary) -> Node:
 # ---- Rules (simulating peer only) ----------------------------------------------------
 
 func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
+	stats["shots"][tank.team] += 1
 	shell_spawner.spawn({"id": _next_shell_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
 			"direction": direction, "team": tank.team, "shooter": String(tank.name)})
 	_next_shell_id += 1
@@ -176,9 +239,14 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
 	if victim != null and victim.is_alive() and victim.team != shell.team:
+		var facing := Armor.facing(-victim.global_basis.z, shell.direction)
 		var damage := Armor.damage(BASE_DAMAGE, -victim.global_basis.z, shell.direction)
+		stats["hits"][shell.team] += 1
+		stats["damage"][shell.team] += mini(damage, victim.health)
+		stats["hits_by_face"][Armor.FACING_NAMES[facing]] += 1
 		killed = victim.apply_damage(damage)
 		if killed:
+			stats["kills"][shell.team] += 1
 			if shell.team == Team.GREEN:
 				score_green += 1
 			else:
@@ -192,7 +260,7 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 func _on_tank_died(tank: Tank) -> void:
 	await get_tree().create_timer(respawn_seconds).timeout
 	if is_instance_valid(tank) and not tank.is_queued_for_deletion():
-		tank.respawn(spawn_position(tank.team, tank.slot), spawn_yaw(tank.team))
+		tank.respawn(_jittered(spawn_position(tank.team, tank.slot)), spawn_yaw(tank.team))
 
 
 # ---- Effects (every peer with a screen) ----------------------------------------------

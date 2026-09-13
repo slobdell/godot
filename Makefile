@@ -46,6 +46,13 @@ SMOKE_NET_PORT ?= 9181
 NET_SMOKE_EXPECT ?= 2
 BOTS           ?= 0
 AGENT_PORT     ?= 8765
+GREEN          ?= 1
+RUST           ?= 1
+SCORE          ?= 5
+TIME           ?= 300
+SEED           ?= 1
+N              ?= 10
+JOBS           ?= 4
 PYTHON         ?= python3
 NODE           ?= node
 NPM            ?= npm
@@ -54,7 +61,7 @@ WEB_SMOKE_DIR  := tools/web_smoke
 WEB_SMOKE_DEPS := $(WEB_SMOKE_DIR)/node_modules/.package-lock.json
 
 .PHONY: help bootstrap doctor import check check-all editor run demo test screenshot \
-        server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
+        match matches match-smoke server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
         export-web serve-web web-smoke web-net-smoke export-server clean distclean
 
 help: ## Show this help
@@ -105,7 +112,7 @@ import: $(GODOT)
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
 
-check: test net-smoke combat-smoke ## Everything headless: tests + network + combat smoke (no display/browser)
+check: test net-smoke combat-smoke match-smoke ## Everything headless: tests + network + combat + match runner (no display/browser)
 
 check-all: check screenshot web-smoke web-net-smoke export-server ## check + desktop render + browser checks + server export
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --bots=2 2>&1 \
@@ -176,6 +183,26 @@ combat-smoke: import ## Headless server with a bot + a stationary bot client tha
 	status=$$?; grep -E 'destroyed' $(BUILD_DIR)/combat-smoke-server.log || true; \
 	grep -E 'ERROR' $(BUILD_DIR)/combat-smoke-server.log && status=1; \
 	exit $$status
+
+# ---- Match runner (headless bots vs bots, faster than real time) ----------------
+# --fixed-fps 60 makes every frame advance exactly 1/60 s of game time without
+# waiting for the wall clock, so matches run as fast as the CPU allows.
+
+match: import ## One headless match: GREEN=1 RUST=1 SCORE=5 TIME=300 SEED=1; prints MATCH_RESULT JSON
+	$(GODOT) --headless --fixed-fps 60 --path . -- --match --green=$(GREEN) --rust=$(RUST) \
+		--score-limit=$(SCORE) --time-limit=$(TIME) --seed=$(SEED) | grep MATCH_RESULT
+
+matches: import ## N seeded matches in parallel with a win-rate summary (N=10 JOBS=4, same knobs as match)
+	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(N) --jobs $(JOBS) --green $(GREEN) \
+		--rust $(RUST) --score-limit $(SCORE) --time-limit $(TIME) --json $(BUILD_DIR)/matches.json
+
+match-smoke: import ## A short 2v2 match must finish with a result, faster than real time
+	mkdir -p $(BUILD_DIR)
+	$(GODOT) --headless --fixed-fps 60 --path . -- --match --green=2 --rust=2 --score-limit=3 --time-limit=120 --seed=7 \
+		2>&1 | tee $(BUILD_DIR)/match-smoke.log | grep MATCH_RESULT
+	! grep -E 'ERROR' $(BUILD_DIR)/match-smoke.log
+	$(PYTHON) -c "import json,sys; r=json.loads(open('$(BUILD_DIR)/match-smoke.log').read().split('MATCH_RESULT ')[1].splitlines()[0]); \
+		assert r['speedup'] > 2, r; assert sum(r['stats']['shots']) > 0, r; print('match-smoke passed:', r['winner'], r['score'], f\"{r['speedup']}x\")"
 
 # ---- Exports ------------------------------------------------------------------
 
