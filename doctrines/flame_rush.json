@@ -1,0 +1,10 @@
+{
+  "name": "Flame Rush",
+  "note": "Three flamethrowers escorted by two cannons. Must close distance to be useful.",
+  "squads": [
+    {"name": "Burners", "directive": {"role": "assault", "aggression": 0.9, "target_priority": "nearest"},
+     "tanks": [{"weapon": "flamethrower"}, {"weapon": "flamethrower"}, {"weapon": "flamethrower"}]},
+    {"name": "Escort", "directive": {"role": "support", "cohesion": 0.9},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}]}
+  ]
+}

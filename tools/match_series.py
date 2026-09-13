@@ -63,13 +63,19 @@ def main():
         hits += sum(r["stats"]["hits"])
     n = max(len(results), 1)
     total_faces = max(sum(faces.values()), 1)
-    print(f"{len(results)} matches ({args.green}v{args.rust}, first to {args.score_limit} or {args.time_limit}s), "
+    lineup = args.extra.strip() or f"{args.green}v{args.rust} bots"
+    print(f"{len(results)} matches ({lineup}, first to {args.score_limit} or {args.time_limit}s), "
           f"{time.time() - started:.1f}s wall, {args.jobs} jobs")
     print(f"  wins: Green {wins['Green']}  Rust {wins['Rust']}  draw {wins['draw']}")
     print(f"  avg sim length {sum(r['sim_seconds'] for r in results) / n:.1f}s, "
           f"avg speedup {sum(r['speedup'] for r in results) / n:.1f}x real time")
     print(f"  accuracy {hits / max(shots, 1):.0%} ({hits}/{shots}); hits by face: "
           + ", ".join(f"{k} {v / total_faces:.0%}" for k, v in faces.items()))
+    ready = [sum(r["stats"].get("gun_ready_samples", [0, 0])[t] for r in results) for t in (0, 1)]
+    idle = [sum(r["stats"].get("gun_idle_samples", [0, 0])[t] for r in results) for t in (0, 1)]
+    if sum(ready):
+        # A loaded gun with an enemy in the tank's own sight, not firing. Found the T2 target-lock bug.
+        print(f"  idle guns: Green {idle[0] / max(ready[0], 1):.0%}  Rust {idle[1] / max(ready[1], 1):.0%}")
     for failure in failures:
         print("  FAILED: " + failure)
     if args.json:

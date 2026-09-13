@@ -24,6 +24,11 @@ const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -6.0, 6.0, -18.0, 18.0]
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false
 
+## Shared team vision: refreshed this often, out to this range, remembered this long.
+const INTEL_EVERY_TICKS := 6
+const SENSOR_RANGE := 90.0
+const CONTACT_MEMORY_TICKS := 60 * 12
+
 @export var respawn_seconds := 4.0
 
 ## Replicated by ScoreSync.
@@ -41,9 +46,22 @@ var has_local_player := true
 var spawn_jitter := 0.0
 
 ## Counters for match results and experiments, indexed by team where it's a pair.
-var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "kills": [0, 0],
-		"hits_by_face": {"front": 0, "side": 0, "rear": 0}}
+var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "kills": [0, 0],
+		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
+		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
+		"gun_ready_samples": [0, 0],
+		# ...and of those, how often it was NOT firing (turret still turning, or holding fire).
+		"gun_idle_samples": [0, 0]}
 var sim_seconds := 0.0
+## Physics ticks since the match began: THE clock for deterministic decisions.
+var tick := 0
+## Per team: what that team knows about enemy tanks (TEAM VISION: if one tank
+## sees an enemy, every teammate knows). {enemy name: {position, velocity, forward,
+## turret_forward, health, weapon, visible, seen_tick}}. Simulating peer only.
+var intel: Array[Dictionary] = [{}, {}]
+## Tank name → squad name, for brain tanks.
+var _squad_by_tank := {}
+var _next_brain_index := 0
 
 var _rng := RandomNumberGenerator.new()
 var _score_limit := 0
@@ -71,6 +89,9 @@ func _physics_process(delta: float) -> void:
 	if not simulate:
 		return
 	sim_seconds += delta
+	tick += 1
+	if tick % INTEL_EVERY_TICKS == 0:
+		_update_intel()
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0):
 		return
 	var reason := ""
@@ -128,12 +149,13 @@ func add_bot(team: int = -1) -> Tank:
 
 
 ## Spawn a tank on `team` (-1 = whichever team is smaller) at its team's next free slot.
-func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1) -> Tank:
+func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1,
+		weapon_id: String = Weapons.DEFAULT) -> Tank:
 	if team < 0:
 		team = _smaller_team()
 	var slot := _free_slot(team)
-	return tank_spawner.spawn({"name": tank_name, "owner": owner_peer_id, "team": team,
-			"slot": slot, "position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team)})
+	return tank_spawner.spawn({"name": tank_name, "owner": owner_peer_id, "team": team, "slot": slot,
+			"position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team), "weapon": weapon_id})
 
 
 func _jittered(point: Vector3) -> Vector3:
@@ -142,6 +164,12 @@ func _jittered(point: Vector3) -> Vector3:
 	# Less jitter along z keeps tanks inside their base area, clear of the cover walls.
 	return point + Vector3(_rng.randf_range(-spawn_jitter, spawn_jitter), 0.0,
 			_rng.randf_range(-spawn_jitter, spawn_jitter) * 0.4)
+
+
+## World-space axes for team-relative coordinates: forward points at the enemy base.
+static func team_frame(team: int) -> Dictionary:
+	var south := (team == Team.GREEN) != swap_bases
+	return {"right": Vector3.RIGHT if south else Vector3.LEFT, "forward": Vector3.FORWARD if south else Vector3.BACK}
 
 
 static func spawn_position(team: int, slot: int) -> Vector3:
@@ -153,6 +181,84 @@ static func spawn_position(team: int, slot: int) -> Vector3:
 ## Green starts in the south facing north (−Z); Rust in the north facing south.
 static func spawn_yaw(team: int) -> float:
 	return 0.0 if (team == Team.GREEN) != swap_bases else PI
+
+
+## A doctrine-driven team: every tank gets a TankBrain with resolved directives.
+## Returns "" or an error.
+func load_doctrine(team: int, doctrine: Dictionary) -> String:
+	for squad in doctrine["squads"]:
+		var index := 1
+		for entry in squad["tanks"]:
+			var tank_name := "%s_%s_%d" % [TEAM_NAMES[team], squad["name"], index]
+			index += 1
+			add_brain_tank(team, String(squad["name"]), entry.get("weapon", Weapons.DEFAULT),
+					[squad.get("directive", {}), entry.get("directive", {})], tank_name)
+	return ""
+
+
+func add_brain_tank(team: int, squad_name: String, weapon_id: String, directive_layers: Array,
+		tank_name: String) -> Tank:
+	var tank := spawn_tank(tank_name, 0, team, weapon_id)
+	_squad_by_tank[tank_name] = squad_name
+	var brain := TankBrain.new()
+	brain.name = "Brain_" + tank_name
+	brain.tank = tank
+	brain.tanks_root = tanks
+	brain.game_match = self
+	brain.squad_name = squad_name
+	brain.directives = Directives.resolve(directive_layers)
+	brain.think_offset = _next_brain_index
+	_next_brain_index += 1
+	brains.add_child(brain)
+	return tank
+
+
+func squad_of(tank: Tank) -> String:
+	return _squad_by_tank.get(String(tank.name), "")
+
+
+func sorted_team_tanks(team: int) -> Array[Tank]:
+	var result: Array[Tank] = []
+	for tank in _sorted_tanks():
+		if tank.team == team:
+			result.append(tank)
+	return result
+
+
+func _update_intel() -> void:
+	for team in 2:
+		var known: Dictionary = intel[team]
+		for contact in known.values():
+			contact["visible"] = false
+		var viewers := sorted_team_tanks(team)
+		for viewer in viewers:
+			if not viewer.is_alive() or viewer.reload_fraction() < 1.0:
+				continue
+			for enemy in sorted_team_tanks(1 - team):
+				if enemy.is_alive() and viewer.global_position.distance_to(enemy.global_position) <= float(viewer.weapon["range"]) \
+						and Perception.has_line_of_sight(viewer, enemy):
+					stats["gun_ready_samples"][team] += 1
+					if not viewer.command.fire:
+						stats["gun_idle_samples"][team] += 1
+					break
+		for enemy in sorted_team_tanks(1 - team):
+			if not enemy.is_alive():
+				known.erase(String(enemy.name))
+				continue
+			for viewer in viewers:
+				if not viewer.is_alive():
+					continue
+				if viewer.global_position.distance_to(enemy.global_position) > SENSOR_RANGE:
+					continue
+				if not Perception.has_line_of_sight(viewer, enemy):
+					continue
+				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
+						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
+						"health": enemy.health, "weapon": enemy.weapon_id, "visible": true, "seen_tick": tick}
+				break
+		for contact_name in known.keys():
+			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
+				known.erase(contact_name)
 
 
 func team_tanks(team: int) -> Array[Tank]:
@@ -188,6 +294,7 @@ func _build_tank(data: Dictionary) -> Node:
 	tank.owner_peer_id = data["owner"]
 	tank.position = data["position"]
 	tank.rotation.y = data["yaw"]
+	tank.weapon_id = data.get("weapon", Weapons.DEFAULT)
 	tank.simulate = simulate
 	var is_local: bool = has_local_player and tank.owner_peer_id != 0 \
 			and tank.owner_peer_id == multiplayer.get_unique_id()
@@ -196,6 +303,7 @@ func _build_tank(data: Dictionary) -> Node:
 		tank.set_paint.call_deferred(RUST_PAINT)  # needs its child meshes ready
 	if simulate:
 		tank.fired.connect(_on_tank_fired.bind(tank))
+		tank.sprayed.connect(_on_tank_sprayed.bind(tank))
 		tank.died.connect(_on_tank_died.bind(tank))
 	if networked and tank.owner_peer_id != 0:
 		var input := NetworkInput.new()
@@ -235,24 +343,64 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	_next_shell_id += 1
 
 
+## Cone weapons: every enemy inside the cone with line of sight burns this tick.
+func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> void:
+	var weapon := tank.weapon
+	for victim in _sorted_tanks():
+		if not victim.is_alive() or victim.team == tank.team:
+			continue
+		if not Weapons.in_cone(origin, direction, victim.global_position, weapon["range"], weapon["cone_deg"]):
+			continue
+		if not Perception.has_line_of_sight(tank, victim):
+			continue
+		var attack := Vector3(victim.global_position.x - tank.global_position.x, 0.0,
+				victim.global_position.z - tank.global_position.z)
+		victim.damage_accumulator += weapon["damage_per_second"] * delta \
+				* Armor.weapon_multiplier(weapon, -victim.global_basis.z, attack)
+		var whole := int(victim.damage_accumulator)
+		if whole <= 0:
+			continue
+		victim.damage_accumulator -= whole
+		stats["flame_damage"][tank.team] += mini(whole, victim.health)
+		stats["damage"][tank.team] += mini(whole, victim.health)
+		if victim.apply_damage(whole):
+			_score_kill(tank.team, String(tank.name), victim)
+
+
+## Tanks in a stable order (by name): anything that affects decisions or damage
+## must iterate deterministically.
+func _sorted_tanks() -> Array[Tank]:
+	var result: Array[Tank] = []
+	for node in tanks.get_children():
+		if node is Tank and not node.is_queued_for_deletion():
+			result.append(node)
+	result.sort_custom(func(a: Tank, b: Tank) -> bool: return String(a.name) < String(b.name))
+	return result
+
+
+func _score_kill(team: int, killer: String, victim: Tank) -> void:
+	stats["kills"][team] += 1
+	if team == Team.GREEN:
+		score_green += 1
+	else:
+		score_rust += 1
+	print("%s destroyed %s (score Green %d : %d Rust)" % [killer, victim.name, score_green, score_rust])
+
+
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
 	if victim != null and victim.is_alive() and victim.team != shell.team:
 		var facing := Armor.facing(-victim.global_basis.z, shell.direction)
-		var damage := Armor.damage(BASE_DAMAGE, -victim.global_basis.z, shell.direction)
+		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
+		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
+		var damage := roundi(weapon["damage"] * Armor.weapon_multiplier(weapon, -victim.global_basis.z, shell.direction))
 		stats["hits"][shell.team] += 1
 		stats["damage"][shell.team] += mini(damage, victim.health)
 		stats["hits_by_face"][Armor.FACING_NAMES[facing]] += 1
 		killed = victim.apply_damage(damage)
 		if killed:
-			stats["kills"][shell.team] += 1
-			if shell.team == Team.GREEN:
-				score_green += 1
-			else:
-				score_rust += 1
-			print("%s destroyed %s (score Green %d : %d Rust)" % [shell.shooter_name, victim.name,
-					score_green, score_rust])
+			_score_kill(shell.team, shell.shooter_name, victim)
 	show_impact.rpc(point, killed)
 	shell.queue_free()
 

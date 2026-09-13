@@ -159,6 +159,7 @@ only the southern half and add the same mesh rotated 180° as a second region
 
 **Rules for future experiments:**
 - Before trusting any win rate, run the **swap-bases control** (`--swap-bases`). A result that follows the base rather than the doctrine is a map artifact.
+- Also **counterbalance team identity**: play the doctrine as Green *and* as Rust. A brain mirror match showed Rust winning 58% from both bases (possible ordering effect; tank_brain.md T0b).
 - Report sample sizes. 60 matches can't resolve less than roughly a 10-point win-rate difference; E2/E3 need hundreds.
 - Anything asymmetric added to the map (new obstacles, navigation links, spawn logic) must keep the symmetry test green.
 
@@ -172,6 +173,10 @@ only the southern half and add the same mesh rotated 180° as a second region
 
 | Date | Experiment | Result | Decision |
 |---|---|---|---|
+| 2026-09-13 | **T1: coordinated doctrine vs the same tanks uncoordinated** (240 matches incl. controls) | Anvil & Hammer won 62.5% from both bases | **The lead's thesis holds in simulation: the commander's coordination beats autonomous individuals.** See tank_brain.md Results |
+| 2026-09-13 | T2: brains vs BotController | 35% (target-lock bug, found via the idle-gun metric) → 70% after the fix | Instrument mechanisms, not just outcomes |
+| 2026-09-13 | T3/T3b: flamethrower doctrines | Flame Rush 6%, Anvil & Burners 0% (counterbalanced) | The flamethrower is dominated: weapons need real trade-offs before they create strategy (lead to choose; tank_brain.md) |
+| 2026-09-13 | T0b: brain mirror match | Rust 58% from both bases (p ≈ 0.07) | Counterbalance team identity too, not just bases |
 | 2026-09-13 | E0 fairness: 2v2 bot series with base swaps (320 matches) | South base won 64% because the navmesh bake was asymmetric; after the mirrored half-bake, 51% | Swap-bases control is mandatory for every experiment (see Fairness) |
 | 2026-09-13 | Bot-vs-bot hit facing | Before navigation: 96% front hits; after: 82% front, 17% side | Bots face their targets, so positional play is thin. Utility AI needs flanking/cover considerations to create it |
 | 2026-09-13 | Informal: playtest #2 (navmesh + reflexes) | Bot 4 : 1. Retreat reflex exposed the rear armor; the navmesh route beat a static ambush | Retreats back away by default; "slow and armored vs fast and exposed" is a doctrine knob |

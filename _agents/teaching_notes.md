@@ -73,3 +73,8 @@ Format: **Concept**, then the one-line version, why it matters, and a way to
 - **One line:** Retreating by turning around shows the enemy your weakest armor, so backing up slowly while facing them can be safer.
 - **Why it matters:** Rules create tactics nobody designed on purpose. The designer's job is to notice them, which is what playtests are for.
 - **Show it:** `make run`, let the bot damage you, then try both escapes: turn and drive (fast), or hold S to reverse (slow). Which one survives more often?
+
+### 2026-09-13: "Weights in a tree": how a tank decides
+- **One line:** Ten times a second each tank gives every possible action a score, like "attack Rust_2: 0.62, take cover: 0.31, retreat: 0.0", and does the highest one. The player's directives change the weights.
+- **Why it matters:** It's how most game AI worked long before LLMs: simple math that is predictable, tunable, and explainable. "Why did it retreat?" has an exact answer.
+- **Show it:** `make watch-match` and read the nameplates. Then open `doctrines/anvil_hammer.json`, change the Hammer squad's `"flanking"` to 0.0, and watch again. Do they still swing wide?

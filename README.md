@@ -48,7 +48,9 @@ Robot-vs-robot matches, faster than real time (for balance and AI experiments):
 ```bash
 make match GREEN=2 RUST=2               # one match, JSON result
 make matches N=40 JOBS=6 GREEN=2 RUST=2 # a seeded series with win rates
+make watch-match GREEN_DOCTRINE=anvil_hammer RUST_DOCTRINE=flame_rush   # watch two AI squads fight
 ```
+Team plans (squads, weapons, directives) live in `doctrines/*.json`.
 - How online game servers work, and our plan: [`_agents/server_management.md`](_agents/server_management.md)
 - What's done and what's next: [`_agents/roadmap.md`](_agents/roadmap.md)
 - Working with Claude on this repo: [`CLAUDE.md`](CLAUDE.md) → [`HANDOFF.md`](HANDOFF.md)

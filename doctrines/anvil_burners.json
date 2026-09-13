@@ -1,0 +1,11 @@
+{
+  "name": "Anvil and Burners",
+  "note": "Experiment T3b: the same weapon mix idea as Flame Rush, used deliberately. Three cannons hold the center and draw every enemy's attention; two flamethrowers swing wide and come in on the flank while enemies face the anvil.",
+  "squads": [
+    {"name": "Anvil", "directive": {"role": "anchor", "objective": {"right": 0, "forward": -12, "radius": 10}},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}]},
+    {"name": "Burners", "directive": {"role": "flanker", "objective": {"right": 45, "forward": 10, "radius": 8},
+                                       "caution": 0.3, "target_priority": "threatening_allies", "cohesion": 0.8},
+     "tanks": [{"weapon": "flamethrower"}, {"weapon": "flamethrower"}]}
+  ]
+}

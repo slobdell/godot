@@ -53,10 +53,15 @@ Infrastructure landed 2026-09-13 (before squad AI, per the lead's request):
 - [x] **Navmesh pathing** for `move_to` (baked from colliders; south half + mirror); the playtest's wall deadlock is now a passing test
 - [x] **Reflexes** (`retreat_below_hp`, `halt_on_contact`), bridge + CLI support, events log; `move_to` `reverse` (retreats back away by default, after playtest #2)
 - [x] Playtest #2 logged ([agent_bridge.md](agent_bridge.md))
-Still to do. **Pause here for the lead's smoke test before starting the AI items:**
-- [ ] Perception memory (last-known positions, detection radius) so AI stops being omniscient; blackboard
-- [ ] `UtilityController`: actions `advance_to`, `engage`, `take_cover`, `retreat_to`, `hold`; directive weights; commitment bonus
-- [ ] In-game score overlay (top 3 actions per tank)
+AI v1 landed 2026-09-13, after the lead's direction ("tank heuristics that respond to structured directives; squads; weapon types; a deterministic CPU middle layer"):
+- [x] **TankBrain** (utility scoring: RETREAT, TAKE_COVER, ENGAGE, FLANK, INVESTIGATE, REGROUP, ADVANCE, HOLD) with commitment; intents on nameplates ([tank_brain.md](tank_brain.md))
+- [x] **Directives** (roles + weights + objective/leash + target priority) and **doctrines** (squads of up to 5 tanks) as validated JSON
+- [x] **Shared team vision** with memory (non-omniscient AI); **weapons as data** incl. a **flamethrower**
+- [x] Determinism: golden `decide()` tests, `make determinism` in `make check`; `make lint`; `make watch-match`
+- [x] Experiments T1–T3 run with swap-bases controls (results in tank_brain.md)
+- [ ] Squad command UI prototype (options in tank_brain.md; **needs the lead's choice**)
+- [ ] Brains for `make run` / server bots (after T2 confirms they beat BotController)
+- [ ] In-game score overlay (top 3 options per tank); intents already show on nameplates
 - **Acceptance:** experiment **E1** passes ([squad_ai_design.md](squad_ai_design.md))
 
 ## M5: Squads, doctrine as data, and "does skill exist?"

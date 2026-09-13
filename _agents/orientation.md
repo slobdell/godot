@@ -62,14 +62,16 @@ game/
   main.tscn / main.gd    entry point: picks role OFFLINE/SERVER/CLIENT from flags; HUD; local controller
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
-  combat/                Shell (projectile), Armor (facing → damage), Ballistics (lead), Impact (visual)
-  ai/                    OrderController (orders + reflexes → command), BotController, Steering, Perception, Pathing
+  combat/                Weapons (data: cannon, flamethrower), Shell, Armor, Ballistics, Impact
+  ai/                    TankBrain (utility AI) + Directives + Doctrine; OrderController (orders + reflexes → command),
+                         BotController (legacy baseline), Steering, Perception, Pathing
   agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
   network/               NetworkInput: client→server command relay + server-side validation
   camera/                FollowCamera
   arena/                 ground, walls, crates, sky; arena.gd bakes the (mirrored, fair) navmesh
 tests/                   headless runner + TestCase base + test_*.gd; net/bot_client_check.gd
+doctrines/               team plans as JSON (squads, weapons, directives) for the match runner
 tools/                   serve_web.py, web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
 _agents/                 you are here
 .tools/  (gitignored)    pinned Godot + export templates, from `make bootstrap`
@@ -82,7 +84,9 @@ build/   (gitignored)    exports and screenshots
 |---|---|
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
-| Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2` |
+| Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2`; doctrine series: `tools/match_series.py --extra="--green-doctrine=res://doctrines/X.json --rust-doctrine=…"` |
+| Watch two doctrines fight | `make watch-match GREEN_DOCTRINE=anvil_hammer RUST_DOCTRINE=flame_rush` (nameplates show each brain's intent) |
+| Find a GDScript compile error fast | `make lint` |
 | Let Claude play | `make server BOTS=1` + `make agent-client`, then `tools/agent.py …` ([agent_bridge.md](agent_bridge.md)) |
 | Open the editor | `make editor` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
@@ -121,5 +125,7 @@ build/   (gitignored)    exports and screenshots
 22. **The navigation map isn't ready right after baking, and "map iteration id > 0" doesn't mean ready.** The first sync can be of an empty map. `Pathing.is_ready()` also checks that a polygon owns a point. `OrderController` falls back to straight-line steering until then.
 23. **NavigationMesh `agent_height` must be a multiple of `cell_height`**, and the map's cell size must match the mesh's (`navigation/3d/default_cell_size=0.5` in project.godot). The error-capturing test runner caught the first as an engine error.
 24. **Faster than real time = `--fixed-fps 60` and no `Engine.max_fps` cap.** `main.gd` skips the headless cap only in `--match` mode.
-26. **Never point a browser at the game server's port (9080).** It only speaks WebSocket and logs `Missing or invalid header 'upgrade'` for plain HTTP (the lead hit this on first try). The page lives on 8060, and its `/ws` path is proxied to the game server (`tools/serve_web.py`), so `make play` + `http://localhost:8060/?connect` is the only URL anyone needs.
 25. **`aim` orders never fire.** Twice it cost Claude a life in playtests; use `fire_at_will`/`target` to shoot.
+26. **Never point a browser at the game server's port (9080).** It only speaks WebSocket and logs `Missing or invalid header 'upgrade'` for plain HTTP (the lead hit this on first try). The page lives on 8060, and its `/ws` path is proxied to the game server (`tools/serve_web.py`), so `make play` + `http://localhost:8060/?connect` is the only URL anyone needs.
+27. **`var x := dict["key"] <= 3` doesn't compile** ("Cannot infer the type"). Dictionary lookups are `Variant`, so `:=` can't infer the type. Write `var x: bool = …` or cast with `float(dict["key"])`. A compile error makes *every* dependent script fail with the misleading "Nonexistent function 'new' in base 'GDScript'". Run `make lint` to see the real message.
+28. **Decisions must never read the wall clock.** Brains think on `Match.tick`; iterate tanks sorted by name. `make determinism` (same seed twice → identical result) is in `make check` and fails loudly if someone slips `Time.get_ticks_msec()` into a decision.

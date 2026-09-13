@@ -28,3 +28,8 @@ static func facing(hull_forward: Vector3, shell_direction: Vector3) -> Facing:
 
 static func damage(base_damage: float, hull_forward: Vector3, shell_direction: Vector3) -> int:
 	return roundi(base_damage * MULTIPLIER[facing(hull_forward, shell_direction)])
+
+
+## Multiplier for a weapon profile's own armor table (see Weapons.PROFILES).
+static func weapon_multiplier(weapon: Dictionary, hull_forward: Vector3, attack_direction: Vector3) -> float:
+	return weapon["armor"][FACING_NAMES[facing(hull_forward, attack_direction)]]

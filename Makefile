@@ -51,6 +51,8 @@ RUST           ?= 1
 SCORE          ?= 5
 TIME           ?= 300
 SEED           ?= 1
+GREEN_DOCTRINE ?= anvil_hammer
+RUST_DOCTRINE  ?= individuals
 N              ?= 10
 JOBS           ?= 4
 PYTHON         ?= python3
@@ -60,8 +62,8 @@ CHROME         ?= /usr/bin/google-chrome
 WEB_SMOKE_DIR  := tools/web_smoke
 WEB_SMOKE_DEPS := $(WEB_SMOKE_DIR)/node_modules/.package-lock.json
 
-.PHONY: help bootstrap doctor import check check-all editor run demo test screenshot \
-        match matches match-smoke server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
+.PHONY: help bootstrap doctor import lint check check-all editor run demo test screenshot \
+        match matches match-smoke determinism watch-match server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
         export-web serve-web play web-smoke web-net-smoke export-server clean distclean
 
 help: ## Show this help
@@ -112,10 +114,10 @@ import: $(GODOT)
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
 
-check: test net-smoke combat-smoke match-smoke ## Everything headless: tests + network + combat + match runner (no display/browser)
+check: lint test net-smoke combat-smoke match-smoke determinism ## Everything headless: tests + network + combat + match runner (no display/browser)
 
 check-all: check screenshot web-smoke web-net-smoke export-server ## check + desktop render + browser checks + server export
-	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --bots=2 2>&1 \
+	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \
 		| tee $(BUILD_DIR)/export-server-check.log | grep -E 'LISTENING|READY'
 	! grep -E 'ERROR' $(BUILD_DIR)/export-server-check.log
 	@echo "check-all passed. Now LOOK at build/screenshots/*.png"
@@ -130,6 +132,13 @@ run: import ## Play offline vs BOTS server bots (default 1): WASD/arrows drive, 
 
 demo: import ## Play with a scripted driver instead of the keyboard
 	$(GODOT) --path . -- --demo
+
+lint: import ## Parse-check every GDScript file; prints only errors (fast way to find compile errors)
+	@status=0; for f in $$(git ls-files -co --exclude-standard '*.gd'); do \
+		out=$$($(GODOT) --headless --path . --check-only --script "res://$$f" 2>&1 | grep -E 'Parse Error|SCRIPT ERROR' | grep -v 'depended scripts' || true); \
+		if [ -n "$$out" ]; then echo "$$f: $$out"; status=1; fi; \
+	done; \
+	if [ $$status -eq 0 ]; then echo "lint: all scripts parse"; fi; exit $$status
 
 test: import ## Run the headless test suite (FILTER=substring to run a subset)
 	$(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=$(FILTER)
@@ -196,6 +205,21 @@ match: import ## One headless match: GREEN=1 RUST=1 SCORE=5 TIME=300 SEED=1; pri
 matches: import ## N seeded matches in parallel with a win-rate summary (N=10 JOBS=4, same knobs as match)
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(N) --jobs $(JOBS) --green $(GREEN) \
 		--rust $(RUST) --score-limit $(SCORE) --time-limit $(TIME) --json $(BUILD_DIR)/matches.json
+
+determinism: import ## Same seed + same doctrines twice → byte-identical match results (experiment T0)
+	mkdir -p $(BUILD_DIR)
+	for run in 1 2; do \
+		$(GODOT) --headless --fixed-fps 60 --path . -- --match --green-doctrine=res://doctrines/anvil_hammer.json \
+			--rust-doctrine=res://doctrines/flame_rush.json --score-limit=8 --time-limit=150 --seed=11 2>/dev/null \
+			| grep MATCH_RESULT | $(PYTHON) -c "import json,sys; r=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); [r.pop(k) for k in ('real_seconds','speedup')]; print(json.dumps(r, sort_keys=True))" \
+			> $(BUILD_DIR)/determinism_$$run.json; \
+	done
+	cmp $(BUILD_DIR)/determinism_1.json $(BUILD_DIR)/determinism_2.json
+	@echo "determinism passed: $$(cat $(BUILD_DIR)/determinism_1.json | cut -c1-120)..."
+
+watch-match: import ## Watch a doctrine match from above in a window (GREEN_DOCTRINE, RUST_DOCTRINE, SEED)
+	$(GODOT) --path . -- --match --green-doctrine=res://doctrines/$(GREEN_DOCTRINE).json \
+		--rust-doctrine=res://doctrines/$(RUST_DOCTRINE).json --score-limit=$(SCORE) --time-limit=$(TIME) --seed=$(SEED)
 
 match-smoke: import ## A short 2v2 match must finish with a result, faster than real time
 	mkdir -p $(BUILD_DIR)

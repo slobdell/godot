@@ -16,7 +16,9 @@ extends Node3D
 ##   --match                    MATCH RUNNER: bots only, no network; ends at a limit and prints
 ##                              MATCH_RESULT <json>. Run with Godot's --fixed-fps 60 to simulate
 ##                              faster than real time (`make match`). Options:
-##                              --green=N --rust=N --score-limit=K --time-limit=SECONDS --seed=S
+##                              --green=N --rust=N (BotControllers) or --green-doctrine=PATH
+##                              --rust-doctrine=PATH (TankBrains from doctrines/*.json),
+##                              --score-limit=K --time-limit=SECONDS --seed=S
 ##   --screenshot=<abs path>    save a PNG after a few seconds, then quit (desktop)
 ##   --screenshot-delay=SECONDS how long to wait before that screenshot (default 3)
 ## An exported server binary (feature tag "server") is a SERVER unless told otherwise.
@@ -101,8 +103,17 @@ func _start_match() -> void:
 	# --rust-first flips spawn (and therefore per-tick processing) order: a fairness probe.
 	var order := [Match.Team.RUST, Match.Team.GREEN] if _flags.has("rust-first") else [Match.Team.GREEN, Match.Team.RUST]
 	for team in order:
-		for i in _int_flag("green" if team == Match.Team.GREEN else "rust", 1):
-			game_match.add_bot(team)
+		var key := "green" if team == Match.Team.GREEN else "rust"
+		if _flags.has(key + "-doctrine"):
+			var loaded := Doctrine.load_file(_flags[key + "-doctrine"])
+			if loaded.has("error"):
+				push_error(loaded["error"])
+				get_tree().quit(2)
+				return
+			game_match.load_doctrine(team, loaded["doctrine"])
+		else:
+			for i in _int_flag(key, 1):
+				game_match.add_bot(team)
 	game_match.start_limits(_int_flag("score-limit", 5), float(_int_flag("time-limit", 300)))
 	var started_msec := Time.get_ticks_msec()
 	game_match.finished.connect(func(result: Dictionary) -> void:
@@ -113,6 +124,10 @@ func _start_match() -> void:
 		print("MATCH_RESULT " + JSON.stringify(result))
 		get_tree().quit())
 	_set_status("Match runner")
+	# With a window (make watch-match), look down on the whole arena.
+	camera.offset = Vector3(0.0, 105.0, 62.0)
+	camera.global_position = camera.offset
+	camera.look_at(Vector3.ZERO)
 
 
 func _start_server(port: int) -> void:

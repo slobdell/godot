@@ -1,43 +1,34 @@
 # HANDOFF
 
 > **Read [`_agents/orientation.md`](_agents/orientation.md) first.** It has the
-> mental model, the context-handoff workflow, and the trip-ups (now 25 of them).
+> mental model, the context-handoff workflow, and the trip-ups (now 28 of them).
 > Then come back here.
 
-_Last updated: 2026-09-13. M4 infrastructure committed. **Paused for the project lead's smoke test before any AI work.**_
+_Last updated: 2026-09-13. Tank Brain v1 (the deterministic CPU middle layer) committed and measured._
 
 ## Current state
 
-**M0–M3.5 and the M4 infrastructure are done, verified, and committed.**
-`make check-all` passes from a clean build: 48 tests, net-smoke, combat-smoke,
-match-smoke (~68× real time), desktop and browser screenshots (inspected), and
-a clean exported-server shutdown with bots.
+- `make check` passes (lint, 70 tests, net/combat/match smoke, **determinism**); web-net-smoke and the exported server (with bots) are clean.
+- **One URL for browser play:** `make play BOTS=1` → `http://localhost:8060/?connect`. The lead's first attempt opened the game server's WebSocket port in a browser; `/ws` is now proxied (trip-up #26).
+- **AI v1** ([tank_brain.md](_agents/tank_brain.md)): autonomous `TankBrain`s (utility scoring over directive weights), directives + doctrines as JSON (`doctrines/`), shared team vision with memory, weapons as data (cannon + flamethrower), `make watch-match`, `make lint`, `make determinism`.
 
-What you can do right now:
-- `make run` (or `make run BOTS=3`): play offline vs bots. WASD/arrows drive, mouse aims, click/space fires.
-- `make play BOTS=1` → `http://localhost:8060/?connect`: browser multiplayer with bots (one command, one URL).
-- `make server` + browser + ask Claude to run `make agent-client`: **play against Claude** ([agent_bridge.md](_agents/agent_bridge.md)).
-- `make matches N=40 JOBS=6 GREEN=2 RUST=2`: robot series with win rates.
+## What the experiments say (details and method in tank_brain.md § Results)
 
-## What happened in this session (M4 infrastructure)
+| | Result |
+|---|---|
+| **Coordination vs the same tanks uncoordinated (T1)** | **62.5%** from both bases: the lead's thesis holds in simulation |
+| Brains vs the old BotController (T2) | 35% → **70%** after fixing a target-lock bug found with the new idle-gun metric |
+| Flamethrower doctrines (T3/T3b) | 6% and **0%**: the flamethrower is a dominated weapon and needs a real trade-off |
+| Brain mirror match (T0b) | Rust 58% from both bases (p ≈ 0.07): possible ordering bias; counterbalance team identity |
 
-1. **Navmesh pathing**: bots and orders route around walls (the playtest #1 deadlock is now a passing test).
-2. **Reflexes** (conditional standing orders: `retreat_below_hp`, `halt_on_contact`) with an event log, the smallest version of doctrine phases; `reverse` moves.
-3. **Match runner** (`--match`, `make match/matches/match-smoke`) with shot/hit/armor-face/kill stats.
-4. **Fairness bug found by the match runner and fixed:** the south base won 64% of 140 matches because the navmesh bake was asymmetric. The navmesh is now half-baked + mirrored, and it's 51% over 120 matches. Full method in [squad_ai_design.md § Fairness](_agents/squad_ai_design.md#fairness-measure-it-dont-assume-it), guarded by a symmetry test.
-5. **Playtest #2** (Claude lost 4–1): the retreat reflex exposed the rear armor, so retreats now back away by default. Details in [agent_bridge.md](_agents/agent_bridge.md).
+## Next tasks (in order)
 
-## Next task: WAIT for the lead's smoke test, then M4 AI
+1. **Wait for the lead's decisions:** (a) the squad-command UI direction (3 options in tank_brain.md), (b) the flamethrower trade-off (speed/HP/smoke/map cover), (c) combat feel from their smoke test.
+2. Investigate T0b (`--rust-first`, larger N) before any close experiment.
+3. Switch `make run` / server bots from BotController to TankBrain (T2 justifies it).
+4. Tuning candidates from the data: rear hits ~0% (flank standoff/approach), idle guns ~72% for everyone (turret speed/aim tolerance).
 
-Don't start these until the lead has played and given feedback:
-1. Perception memory (last-known positions, detection radius): bots stop being omniscient.
-2. `UtilityController` (actions × directive weights, commitment bonus) + a score overlay → experiment **E1**.
-3. Playtest #3 to validate reverse retreats.
+## Notes for whoever picks this up
 
-If the lead's feedback changes combat feel (speed, reload, damage, camera), do that first and re-run the fairness control afterwards.
-
-## Open decisions for the project lead
-
-1. **Smoke test:** does combat feel right (speed, reload, damage, camera distance)? Anything confusing?
-2. **Play against Claude** once, while it's fresh (runbook in agent_bridge.md).
-3. Still open: your son's Godot version and OS; the working title.
+- The lead may still have an old `make server` running on port 9080 (it blocks `make play` there). Ask before killing it.
+- Never edit game scripts while a `match_series.py` run is in progress: every match process loads scripts at start, so mid-run edits contaminate results.

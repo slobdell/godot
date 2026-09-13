@@ -20,7 +20,7 @@ them change the contract:
 | M2 ✅ | Owning client's controller writes `tank.command`; `NetworkInput` sends it by RPC; the server-side `NetworkInput` validates it and applies it | client → server |
 | M3 ✅ | `OrderController` (standing orders → command) and `BotController` (a tiny policy choosing orders) | server (bots) |
 | M3 ✅ | `AgentBridge` drives an `OrderController` from an external process: Claude ([agent_bridge.md](agent_bridge.md)) | client or offline |
-| M4 | `UtilityController`: scores actions with directive weights and chooses orders ([squad_ai_design.md](squad_ai_design.md)) | server |
+| M4 ✅ | `TankBrain extends OrderController`: senses team intel, scores options with directives, commits, emits orders ([tank_brain.md](tank_brain.md)) | server / match runner |
 | M5 | Skills are chosen and configured by **doctrine data** | server |
 | M7–8 | Doctrine is *authored* by an LLM from natural language | client (authoring time only) |
 
@@ -116,6 +116,8 @@ Main (main.gd: roles, flags, HUD)
 - **Navigation (M4):** `Arena` bakes a navmesh from collision shapes at startup on every peer (the server export has no meshes). It bakes the south half and mirrors it for fairness (see squad_ai_design.md "Fairness"). `OrderController.move_to` follows `Pathing.find_path` waypoints, repaths every second or when the goal moves, and slows only for the path's end. `"reverse": true` backs along the path.
 - **Reflexes (M4):** conditional standing orders checked every tick before orders execute (`retreat_below_hp`, `halt_on_contact`); each fires once and re-arms when its condition clears. They're the seed of doctrine *phases*.
 - **Match runner (M4):** role MATCH (`--match`): bots only, ends at a score/time limit, prints `MATCH_RESULT {json}` with shot/hit/face/kill stats. Run under Godot's `--fixed-fps 60` with no `max_fps` cap, so it simulates ~8–70× real time. `tools/match_series.py` runs seeded series in parallel. `--swap-bases`, `--rust-first`, and `--no-navigation` exist as experiment controls.
+- **Tank brains (M4 AI v1):** see [tank_brain.md](tank_brain.md). `Match.intel[team]` is shared team vision with memory (refreshed every 6 ticks, 90 m sensor, 12 s memory), so brains are not omniscient (BotController still is). `Match.load_doctrine()` builds squads of `TankBrain`s from `doctrines/*.json`; directives resolve defaults → squad → tank. Brains think every 6 ticks, staggered, and `decide()` is pure.
+- **Weapons are data** (`Weapons.PROFILES`): the cannon (projectile) and the flamethrower (30° cone, 20 m, 45 dps, weaker armor effect) fire through `Tank.fired` / `Tank.sprayed`; `Match` applies damage using each profile's armor table.
 - **Pure helpers** shared by bots, the bridge, and future AI: `Armor`, `Ballistics` (intercept lead, aim error), `Steering` (goal → throttle/turn), `Perception` (line of sight on the world layer at 1.3 m, enemy queries).
 
 ## Physics tick ordering
@@ -142,6 +144,10 @@ matters for fairness.
 | 2026-09-12 | Projectile shells with swept raycasts, not hitscan | Travel time makes leading, dodging, and range matter; sweeping avoids tunneling |
 | 2026-09-12 | Fire = held trigger in the unreliable command stream (not a reliable event) | Loss costs ≤ 1 tick while held; avoids a second channel |
 | 2026-09-12 | Bots and the agent share `OrderController` | The action layer is built once and exercised by both a dumb policy and a thinking commander |
+| 2026-09-13 | Tank AI = utility scoring over a fixed option set, driven by directive data; pure `decide()` | The lead's "weights in a tree" + "deterministic CPU middle layer"; golden-testable without physics |
+| 2026-09-13 | Shared team vision (intel) instead of per-tank perception | Makes scouting and spotting teamwork mechanics; cheap (≤ 25 rays per team per 0.1 s) |
+| 2026-09-13 | Doctrine coordinates are team-relative (right, forward) | One doctrine plays identically for either side, keeping experiments fair |
+| 2026-09-13 | Browser client connects to same-origin `/ws` (proxied) | The lead's first try opened the WebSocket port in a browser; one URL now, same shape as production |
 | 2026-09-13 | Navmesh baked from colliders, south half + 180° mirror | Server export has no meshes; a plain bake was measurably unfair (64% south wins) |
 | 2026-09-13 | Match runner uses `--fixed-fps` in-process, not `Engine.time_scale` | Exact 1/60 s steps regardless of speed; physics stays identical to real-time play |
 | 2026-09-13 | Retreats back away (reverse) by default | Playtest #2: turning to run exposes rear armor |

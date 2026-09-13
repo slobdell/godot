@@ -12,11 +12,14 @@ extends Node
 ##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional)}
 ##       reverse = back up to the point, front armor kept toward where you came from
 ##   {"type": "drive", "throttle": float, "turn": float, "seconds": float}
+##   {"type": "face", "x": float, "z": float}   turn in place to point the hull (front armor) at a spot
 ## Weapon orders (one at a time):
 ##   {"type": "hold_fire"}                      keep the turret where it is
 ##   {"type": "aim", "x": float, "z": float}    point the turret, don't fire
 ##   {"type": "fire_at_will"}                   engage the nearest visible enemy
-##   {"type": "target", "name": String}         engage one specific tank when visible
+##   {"type": "target", "name": String, "fallback": bool (optional)}
+##       engage one specific tank when visible; with fallback, shoot the nearest visible
+##       enemy meanwhile (brains use this: team intel can pick a target this tank can't see)
 ## Reflexes (up to MAX_REFLEXES, checked every tick BEFORE orders execute). Each
 ## fires once, then re-arms when its condition clears. They let a slow commander
 ## pre-decide "if X happens, do Y" (playtest #1), and they're the smallest version
@@ -37,7 +40,7 @@ const AIM_TOLERANCE_DEG := 2.5
 const STUCK_SPEED := 0.8
 const STUCK_SECONDS := 1.0
 const UNSTICK_SECONDS := 0.9
-const MOVE_TYPES := ["stop", "move_to", "drive"]
+const MOVE_TYPES := ["stop", "move_to", "drive", "face"]
 const WEAPON_TYPES := ["hold_fire", "aim", "fire_at_will", "target"]
 const REFLEX_TYPES := ["retreat_below_hp", "halt_on_contact"]
 const MAX_REFLEXES := 4
@@ -183,6 +186,10 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 					ARRIVE_RADIUS if waypoint == goal else 0.5, _remaining_path_distance(goal))
 			cmd.throttle = drive.x
 			cmd.turn = drive.y
+		"face":
+			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
+			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
+			cmd.turn = turn_only.y if absf(turn_only.y) > 0.08 else 0.0
 		"drive":
 			_drive_elapsed += delta
 			if _drive_elapsed <= float(move_order["seconds"]):
@@ -250,23 +257,27 @@ func _apply_weapon(cmd: TankCommand) -> void:
 			return
 		"fire_at_will":
 			if tanks_root != null:
-				target = Perception.nearest_enemy(tank, tanks_root, true, Shell.MAX_RANGE)
+				target = Perception.nearest_enemy(tank, tanks_root, true, tank.weapon["range"])
 		"target":
 			if tanks_root != null:
 				var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
 				if named != null and named.is_alive() and named.team != tank.team \
 						and visible_enemy_names.has(named.name):
 					target = named
+				elif weapon_order.get("fallback", false):
+					target = Perception.nearest_enemy(tank, tanks_root, true, tank.weapon["range"])
 	if target == null:
 		return
 
 	engaged_target = target.name
+	var weapon := tank.weapon
 	var muzzle := tank.turret.global_position
-	var lead := Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity,
-			Shell.SPEED)
-	cmd.aim_point = lead
-	var in_range := muzzle.distance_to(lead) <= Shell.MAX_RANGE
-	var aimed := Ballistics.aim_error(muzzle, tank.turret_forward(), lead) <= deg_to_rad(AIM_TOLERANCE_DEG)
+	var aim := target.global_position
+	if weapon["kind"] == Weapons.Kind.PROJECTILE:
+		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity, Shell.SPEED)
+	cmd.aim_point = aim
+	var in_range: bool = muzzle.distance_to(aim) <= float(weapon["range"])
+	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
 	cmd.fire = in_range and aimed and tank.reload_fraction() >= 1.0
 
 
@@ -276,7 +287,7 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 	var type: Variant = order.get("type")
 	if not allowed_types.has(type):
 		return "type must be one of %s" % [allowed_types]
-	var numeric := {"move_to": ["x", "z"], "aim": ["x", "z"], "drive": ["throttle", "turn", "seconds"],
+	var numeric := {"move_to": ["x", "z"], "face": ["x", "z"], "aim": ["x", "z"], "drive": ["throttle", "turn", "seconds"],
 			"retreat_below_hp": ["hp", "x", "z"]}
 	for key in numeric.get(type, []):
 		var value: Variant = order.get(key)
@@ -286,4 +297,6 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'target' needs a string 'name'"
 	if order.has("reverse") and typeof(order["reverse"]) != TYPE_BOOL:
 		return "'reverse' must be true or false"
+	if order.has("fallback") and typeof(order["fallback"]) != TYPE_BOOL:
+		return "'fallback' must be true or false"
 	return ""

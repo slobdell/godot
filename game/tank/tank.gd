@@ -13,6 +13,8 @@ extends CharacterBody3D
 ##   simulate = false  networked client: never simulate; display replicated sync_*
 
 signal fired(muzzle: Vector3, direction: Vector3)
+## Cone weapons (flamethrower) emit this every physics tick the trigger is held.
+signal sprayed(origin: Vector3, direction: Vector3, delta: float)
 signal died
 
 @export var max_forward_speed := 9.0
@@ -34,6 +36,12 @@ var team := 0
 var slot := 0
 var owner_peer_id := 0
 var display_name := ""
+var weapon_id := Weapons.DEFAULT
+var weapon: Dictionary = Weapons.profile(Weapons.DEFAULT)
+## Fractional cone damage not yet applied as whole hit points.
+var damage_accumulator := 0.0
+## What the tank's brain is doing ("ENGAGE Rust_2"); set by the simulating peer, shown on nameplates.
+var intent := ""
 
 var health := 100
 var alive := true
@@ -48,6 +56,8 @@ var sync_health := 100
 var sync_alive := true
 ## 0 = just fired, 1 = ready.
 var sync_reload := 1.0
+var sync_firing := false
+var sync_intent := ""
 
 var _speed := 0.0
 var _reload_left := 0.0
@@ -57,12 +67,22 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var turret: Node3D = $Turret
 @onready var nameplate: Label3D = $Nameplate
 @onready var _collision: CollisionShape3D = $Collision
+var _flame: MeshInstance3D
 
 
 func _ready() -> void:
 	health = max_health
+	set_weapon(weapon_id)
 	_publish_state()
 	_previous_sync_position = sync_position
+
+
+func set_weapon(id: String) -> void:
+	weapon_id = id
+	weapon = Weapons.profile(id)
+	reload_seconds = weapon["reload"]
+	if weapon["kind"] == Weapons.Kind.CONE and _flame == null and is_inside_tree():
+		_build_flame_visual()
 
 
 func _physics_process(delta: float) -> void:
@@ -95,10 +115,16 @@ func _physics_process(delta: float) -> void:
 	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, TankMotion.yaw_toward(local_aim),
 			turret_turn_rate, delta)
 
-	_reload_left = maxf(0.0, _reload_left - delta)
-	if cmd.fire and _reload_left <= 0.0:
-		_reload_left = reload_seconds
-		fired.emit(muzzle_position(), turret_forward())
+	sync_firing = false
+	if weapon["kind"] == Weapons.Kind.CONE:
+		if cmd.fire:
+			sync_firing = true
+			sprayed.emit(muzzle_position(), turret_forward(), delta)
+	else:
+		_reload_left = maxf(0.0, _reload_left - delta)
+		if cmd.fire and _reload_left <= 0.0:
+			_reload_left = reload_seconds
+			fired.emit(muzzle_position(), turret_forward())
 	_publish_state()
 
 
@@ -114,6 +140,10 @@ func _process(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, sync_yaw, weight)
 		turret.rotation.y = lerp_angle(turret.rotation.y, sync_turret_yaw, weight)
 	nameplate.text = "%s  %d" % [display_name, sync_health]
+	if sync_intent != "":
+		nameplate.text += "\n" + sync_intent
+	if _flame != null:
+		_flame.visible = sync_firing and alive
 
 
 # ---- Rules hooks (called by Match on the simulating peer) --------------------------
@@ -180,6 +210,31 @@ func set_paint(hull_color: Color) -> void:
 		mesh_instance.material_override = material
 
 
+func _build_flame_visual() -> void:
+	# A translucent cone along the turret's forward axis, sized to the weapon's reach.
+	var length: float = weapon["range"]
+	var cone := CylinderMesh.new()
+	cone.top_radius = 0.2
+	cone.bottom_radius = tan(deg_to_rad(weapon["cone_deg"] / 2.0)) * length
+	cone.height = length
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(1.0, 0.45, 0.1, 0.35)
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	cone.material = material
+	_flame = MeshInstance3D.new()
+	_flame.name = "Flame"
+	_flame.mesh = cone
+	_flame.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Cylinder axis is +Y; rotate it to point along -Z (forward), narrow end at the muzzle.
+	_flame.transform = Transform3D(Basis(Vector3.RIGHT, -PI / 2.0), Vector3(0.0, 0.05, -1.2 - length / 2.0))
+	_flame.visible = false
+	turret.add_child(_flame)
+	# A stubby, fat barrel reads as "not a cannon" from above.
+	$Turret/Barrel.scale = Vector3(2.2, 0.45, 2.2)
+
+
 func _set_alive(value: bool) -> void:
 	alive = value
 	visible = value
@@ -194,3 +249,4 @@ func _publish_state() -> void:
 	sync_health = health
 	sync_alive = alive
 	sync_reload = 1.0 - (_reload_left / reload_seconds) if reload_seconds > 0.0 else 1.0
+	sync_intent = intent

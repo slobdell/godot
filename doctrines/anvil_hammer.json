@@ -1,0 +1,10 @@
+{
+  "name": "Anvil and Hammer",
+  "note": "Same five cannons as Individuals, coordinated: the anvil holds the center and draws fire (enemies turn to face it); the hammer swings wide to hit their sides.",
+  "squads": [
+    {"name": "Anvil", "directive": {"role": "anchor", "objective": {"right": 0, "forward": -12, "radius": 10}, "target_priority": "nearest"},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}]},
+    {"name": "Hammer", "directive": {"role": "flanker", "objective": {"right": 40, "forward": 5, "radius": 10}, "target_priority": "threatening_allies", "cohesion": 0.7},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}]}
+  ]
+}
