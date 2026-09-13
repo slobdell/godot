@@ -1,0 +1,10 @@
+{
+  "name": "Player Default",
+  "note": "The player's squads in skirmish mode (make skirmish). They start formed up and holding, waiting for tactical-map orders.",
+  "squads": [
+    {"name": "Alpha", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}]},
+    {"name": "Bravo", "formation": "line", "verb": "hold", "directive": {"role": "assault"},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}]}
+  ]
+}

@@ -61,6 +61,8 @@ var tick := 0
 var intel: Array[Dictionary] = [{}, {}]
 ## Tank name → squad name, for brain tanks.
 var _squad_by_tank := {}
+## "team/squad name" → Squad (runtime squad state; tactical map commands land here).
+var squads := {}
 var _next_brain_index := 0
 
 var _rng := RandomNumberGenerator.new()
@@ -92,6 +94,7 @@ func _physics_process(delta: float) -> void:
 	tick += 1
 	if tick % INTEL_EVERY_TICKS == 0:
 		_update_intel()
+		_update_squads()
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0):
 		return
 	var reason := ""
@@ -188,12 +191,73 @@ static func spawn_yaw(team: int) -> float:
 func load_doctrine(team: int, doctrine: Dictionary) -> String:
 	for squad in doctrine["squads"]:
 		var index := 1
+		var roster: PackedStringArray = []
 		for entry in squad["tanks"]:
 			var tank_name := "%s_%s_%d" % [TEAM_NAMES[team], squad["name"], index]
 			index += 1
+			roster.append(tank_name)
 			add_brain_tank(team, String(squad["name"]), entry.get("weapon", Weapons.DEFAULT),
 					[squad.get("directive", {}), entry.get("directive", {})], tank_name)
+		var runtime := Squad.new(String(squad["name"]), team, roster)
+		runtime.spacing = float(squad.get("spacing", Formations.DEFAULT_SPACING))
+		squads[_squad_key(team, runtime.squad_name)] = runtime
+		# A doctrine may start a squad in a formation/drill (e.g. the player's squads wait in formation).
+		if squad.has("formation") or squad.has("verb"):
+			var command := {"squad": runtime.squad_name}
+			for key in ["formation", "verb"]:
+				if squad.has(key):
+					command[key] = squad[key]
+			var error := runtime.apply_command(command, tanks_by_name(), spawn_position(team, 0))
+			if error != "":
+				return "squad %s: %s" % [runtime.squad_name, error]
 	return ""
+
+
+## Apply a SquadCommand (see squad.gd) from the tactical map, a CPU commander, or a test.
+func command_squad(team: int, command: Variant) -> String:
+	var error := Squad.validate_command(command)
+	if error != "":
+		return error
+	var squad := squads.get(_squad_key(team, command["squad"])) as Squad
+	if squad == null:
+		return "no squad %s on %s" % [command["squad"], TEAM_NAMES[team]]
+	return squad.apply_command(command, tanks_by_name(), spawn_position(team, 0))
+
+
+func team_squads(team: int) -> Array[Squad]:
+	var result: Array[Squad] = []
+	var keys := squads.keys()
+	keys.sort()
+	for key in keys:
+		if (squads[key] as Squad).team == team:
+			result.append(squads[key])
+	return result
+
+
+func squad_context(tank: Tank) -> Dictionary:
+	var squad := squads.get(_squad_key(tank.team, squad_of(tank))) as Squad
+	if squad == null:
+		return {}
+	return squad.context_for(String(tank.name), tanks_by_name())
+
+
+func tanks_by_name() -> Dictionary:
+	var result := {}
+	for tank in _sorted_tanks():
+		result[String(tank.name)] = tank
+	return result
+
+
+static func _squad_key(team: int, squad_name: String) -> String:
+	return "%d/%s" % [team, squad_name]
+
+
+func _update_squads() -> void:
+	var by_name := tanks_by_name()
+	var keys := squads.keys()
+	keys.sort()
+	for key in keys:
+		(squads[key] as Squad).update(by_name)
 
 
 func add_brain_tank(team: int, squad_name: String, weapon_id: String, directive_layers: Array,

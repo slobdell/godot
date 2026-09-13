@@ -9,7 +9,7 @@ extends Node
 ##
 ## Move orders (one at a time):
 ##   {"type": "stop"}
-##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional)}
+##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional), "speed": 0.2..1 (optional)}
 ##       reverse = back up to the point, front armor kept toward where you came from
 ##   {"type": "drive", "throttle": float, "turn": float, "seconds": float}
 ##   {"type": "face", "x": float, "z": float}   turn in place to point the hull (front armor) at a spot
@@ -184,7 +184,7 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
 			var drive: Vector2 = steer.call(tank.global_position, -tank.global_basis.z, waypoint,
 					ARRIVE_RADIUS if waypoint == goal else 0.5, _remaining_path_distance(goal))
-			cmd.throttle = drive.x
+			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
@@ -299,4 +299,6 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'reverse' must be true or false"
 	if order.has("fallback") and typeof(order["fallback"]) != TYPE_BOOL:
 		return "'fallback' must be true or false"
+	if order.has("speed") and not (typeof(order["speed"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["speed"]))):
+		return "'speed' must be a number"
 	return ""

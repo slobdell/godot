@@ -63,9 +63,11 @@ game/
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
   combat/                Weapons (data: cannon, flamethrower), Shell, Armor, Ballistics, Impact
-  ai/                    TankBrain (utility AI) + Directives + Doctrine; OrderController (orders + reflexes → command),
+  ai/                    Squad + Formations (commander, drills, slots); TankBrain (utility AI) + Directives + Doctrine;
+                         OrderController (orders + reflexes → command),
                          BotController (legacy baseline), Steering, Perception, Pathing
   agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
+  ui/                    TacticalMap: squad command overlay (skirmish mode)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
   network/               NetworkInput: client→server command relay + server-side validation
   camera/                FollowCamera
@@ -82,6 +84,7 @@ build/   (gitignored)    exports and screenshots
 
 | I want to… | Do |
 |---|---|
+| **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): click = who, right-drag = where/facing, Q-T drills, Z-N formations, Tab 3D view |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
 | Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2`; doctrine series: `tools/match_series.py --extra="--green-doctrine=res://doctrines/X.json --rust-doctrine=…"` |
@@ -129,3 +132,5 @@ build/   (gitignored)    exports and screenshots
 26. **Never point a browser at the game server's port (9080).** It only speaks WebSocket and logs `Missing or invalid header 'upgrade'` for plain HTTP (the lead hit this on first try). The page lives on 8060, and its `/ws` path is proxied to the game server (`tools/serve_web.py`), so `make play` + `http://localhost:8060/?connect` is the only URL anyone needs.
 27. **`var x := dict["key"] <= 3` doesn't compile** ("Cannot infer the type"). Dictionary lookups are `Variant`, so `:=` can't infer the type. Write `var x: bool = …` or cast with `float(dict["key"])`. A compile error makes *every* dependent script fail with the misleading "Nonexistent function 'new' in base 'GDScript'". Run `make lint` to see the real message.
 28. **Decisions must never read the wall clock.** Brains think on `Match.tick`; iterate tanks sorted by name. `make determinism` (same seed twice → identical result) is in `make check` and fails loudly if someone slips `Time.get_ticks_msec()` into a decision.
+29. **A `Control` added under a `CanvasLayer` is 0×0 unless you set offsets too.** `set_anchors_preset(FULL_RECT)` alone left the tactical map sized 0×0: no panels and no mouse input. Use `set_anchors_and_offsets_preset()`.
+30. **Doctrine JSON must be listed in `include_filter` in `export_presets.cfg`.** Non-resource files aren't exported by default, so skirmish would fail in the browser and server builds without it.

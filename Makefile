@@ -51,6 +51,7 @@ RUST           ?= 1
 SCORE          ?= 5
 TIME           ?= 300
 SEED           ?= 1
+ENEMY          ?= individuals
 GREEN_DOCTRINE ?= anvil_hammer
 RUST_DOCTRINE  ?= individuals
 N              ?= 10
@@ -62,7 +63,7 @@ CHROME         ?= /usr/bin/google-chrome
 WEB_SMOKE_DIR  := tools/web_smoke
 WEB_SMOKE_DEPS := $(WEB_SMOKE_DIR)/node_modules/.package-lock.json
 
-.PHONY: help bootstrap doctor import lint check check-all editor run demo test screenshot \
+.PHONY: help bootstrap doctor import lint check check-all editor run skirmish demo test screenshot \
         match matches match-smoke determinism watch-match server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
         export-web serve-web play web-smoke web-net-smoke export-server clean distclean
 
@@ -129,6 +130,9 @@ editor: $(GODOT) ## Open the Godot editor on this project
 
 run: import ## Play offline vs BOTS server bots (default 1): WASD/arrows drive, mouse aims, click fires
 	$(GODOT) --path . -- --bots=$(or $(filter-out 0,$(BOTS)),1)
+
+skirmish: import ## Command your squads on the tactical map vs a CPU doctrine (ENEMY=individuals|anvil_hammer|flame_rush)
+	$(GODOT) --path . -- --skirmish --enemy=$(ENEMY)
 
 demo: import ## Play with a scripted driver instead of the keyboard
 	$(GODOT) --path . -- --demo

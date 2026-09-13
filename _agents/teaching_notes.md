@@ -78,3 +78,8 @@ Format: **Concept**, then the one-line version, why it matters, and a way to
 - **One line:** Ten times a second each tank gives every possible action a score, like "attack Rust_2: 0.62, take cover: 0.31, retreat: 0.0", and does the highest one. The player's directives change the weights.
 - **Why it matters:** It's how most game AI worked long before LLMs: simple math that is predictable, tunable, and explainable. "Why did it retreat?" has an exact answer.
 - **Show it:** `make watch-match` and read the nameplates. Then open `doctrines/anvil_hammer.json`, change the Hammer squad's `"flanking"` to 0.0, and watch again. Do they still swing wide?
+
+### 2026-09-13: Formations are just arithmetic relative to the leader
+- **One line:** A wedge is "leader here; wingman 12 m back-left; the other 12 m back-right", recomputed every moment as the leader moves and turns. Pick a new leader and the whole shape re-centers on it.
+- **Why it matters:** Big behaviors from tiny data: a formation is a list of offsets, and a drill is a few weight changes. The player gets lots of power from one drag, because the math does the rest.
+- **Show it:** `make skirmish`. Select Alpha (1), press X (wedge) then V (line), and watch them re-form. Click a wingman twice to make it commander and watch the shape re-center. Open `game/ai/formations.gd`: each formation is one line.

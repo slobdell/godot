@@ -12,6 +12,8 @@ extends RefCounted
 ##     ...
 ##   ]
 ## }
+## Optional per squad: "formation" (see Formations.NAMES) and "verb": "hold", which starts the
+## squad formed up and waiting for tactical-map orders; "spacing" in meters.
 
 const MAX_SQUADS := 3
 const MAX_TANKS := 5
@@ -50,6 +52,10 @@ static func parse(data: Variant) -> Dictionary:
 			var error := Directives.validate(squad["directive"])
 			if error != "":
 				return {"error": "squad %s: %s" % [squad["name"], error]}
+		if squad.has("formation") and not Formations.NAMES.has(squad["formation"]):
+			return {"error": "squad %s: formation must be one of %s" % [squad["name"], Formations.NAMES]}
+		if squad.has("verb") and not ["hold"].has(squad["verb"]):
+			return {"error": "squad %s: a doctrine may only start a squad with verb 'hold' (others need a destination)" % squad["name"]}
 		var tanks: Variant = squad.get("tanks")
 		if typeof(tanks) != TYPE_ARRAY or tanks.is_empty():
 			return {"error": "squad %s needs at least one tank" % squad["name"]}

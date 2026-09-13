@@ -59,7 +59,8 @@ AI v1 landed 2026-09-13, after the lead's direction ("tank heuristics that respo
 - [x] **Shared team vision** with memory (non-omniscient AI); **weapons as data** incl. a **flamethrower**
 - [x] Determinism: golden `decide()` tests, `make determinism` in `make check`; `make lint`; `make watch-match`
 - [x] Experiments T1–T3 run with swap-bases controls (results in tank_brain.md)
-- [ ] Squad command UI prototype (options in tank_brain.md; **needs the lead's choice**)
+- [x] **Tactical map** (the lead chose it): skirmish mode, commander election + succession, 7 formations, 5 drills incl. bounding overwatch, fog-of-war map ([tactical_map.md](tactical_map.md))
+- [ ] Networked squad command; Claude as the opposing commander (`/squad` on the agent bridge); touch controls
 - [ ] Brains for `make run` / server bots (after T2 confirms they beat BotController)
 - [ ] In-game score overlay (top 3 options per tank); intents already show on nameplates
 - **Acceptance:** experiment **E1** passes ([squad_ai_design.md](squad_ai_design.md))

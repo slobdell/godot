@@ -9,6 +9,7 @@ plain language. See [`_agents/vision.md`](_agents/vision.md).
 
 ```bash
 make bootstrap     # one time: pinned Godot 4.7.2 + export templates into ./.tools
+make skirmish      # command two tank squads on the tactical map vs a CPU team
 make run           # play vs a bot: WASD/arrows drive, mouse aims, click/space fires (BOTS=3 for more)
 make check         # verify everything headless (tests + network + combat)
 make editor        # open the Godot editor on this project

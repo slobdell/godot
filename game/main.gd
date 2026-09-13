@@ -19,6 +19,9 @@ extends Node3D
 ##                              --green=N --rust=N (BotControllers) or --green-doctrine=PATH
 ##                              --rust-doctrine=PATH (TankBrains from doctrines/*.json),
 ##                              --score-limit=K --time-limit=SECONDS --seed=S
+##   --skirmish                 SKIRMISH: command your squads (doctrines/player_default.json) on the
+##                              tactical map against a CPU doctrine (--enemy=NAME, default individuals).
+##                              No server needed; works in the browser (?skirmish).
 ##   --screenshot=<abs path>    save a PNG after a few seconds, then quit (desktop)
 ##   --screenshot-delay=SECONDS how long to wait before that screenshot (default 3)
 ## An exported server binary (feature tag "server") is a SERVER unless told otherwise.
@@ -26,7 +29,7 @@ extends Node3D
 ## Console markers. Smoke tests wait for these exact prefixes; rename with care:
 ##   TANK_SQUAD_READY  TANK_SQUAD_LISTENING  TANK_SQUAD_CONNECTED  TANK_SQUAD_SPAWNED
 
-enum Role { OFFLINE, SERVER, CLIENT, MATCH }
+enum Role { OFFLINE, SERVER, CLIENT, MATCH, SKIRMISH }
 
 const DEFAULT_PORT := 9080
 const DEFAULT_OFFLINE_BOTS := 1
@@ -57,6 +60,8 @@ func _ready() -> void:
 
 	if _flags.has("match"):
 		_start_match()
+	elif _flags.has("skirmish"):
+		_start_skirmish()
 	elif _flags.has("server") or (OS.has_feature("server") and not _flags.has("connect")):
 		_start_server(_int_flag("server", DEFAULT_PORT))
 	elif _flags.has("connect"):
@@ -78,6 +83,7 @@ func _process(_delta: float) -> void:
 		line += "      HP %d      Reload [%s]" % [_local_tank.sync_health,
 				"#".repeat(bars) + "-".repeat(10 - bars)]
 		banner.visible = not _local_tank.is_alive()
+		banner.text = "Destroyed — respawning…"
 	scoreboard.text = line
 
 
@@ -128,6 +134,31 @@ func _start_match() -> void:
 	camera.offset = Vector3(0.0, 105.0, 62.0)
 	camera.global_position = camera.offset
 	camera.look_at(Vector3.ZERO)
+
+
+func _start_skirmish() -> void:
+	role = Role.SKIRMISH
+	game_match.has_local_player = false
+	var lineups := {Match.Team.GREEN: _flags.get("player", "player_default"), Match.Team.RUST: _flags.get("enemy", "individuals")}
+	for team in lineups:
+		var loaded := Doctrine.load_file("res://doctrines/%s.json" % lineups[team])
+		var error: String = loaded.get("error", "")
+		if error == "":
+			error = game_match.load_doctrine(team, loaded["doctrine"])
+		if error != "":
+			push_error(error)
+			_set_status("Can't start skirmish: " + error)
+			return
+	game_match.start_limits(10, 0.0)
+	game_match.finished.connect(func(result: Dictionary) -> void:
+		banner.text = "VICTORY" if result["winner"] == "Green" else ("DEFEAT" if result["winner"] == "Rust" else "DRAW")
+		banner.visible = true)
+	var tactical := TacticalMap.new()
+	tactical.name = "TacticalMap"
+	tactical.game_match = game_match
+	tactical.camera = camera
+	$HUD.add_child(tactical)
+	_set_status("Skirmish vs %s" % lineups[Match.Team.RUST])
 
 
 func _start_server(port: int) -> void:

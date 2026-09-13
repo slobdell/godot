@@ -22,7 +22,9 @@ const CONTACT_FRESH_TICKS := 120
 const COVER_RING_RADIUS := 10.0
 const COVER_SAMPLES := 8
 const ARENA_LIMIT := 56.0
-const OPTIONS := ["RETREAT", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "HOLD"]
+const OPTIONS := ["RETREAT", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+## Within this distance of its formation slot a tank counts as "in position".
+const SLOT_TOLERANCE := 4.0
 
 var game_match: Match
 ## Fully resolved directives (Directives.resolve).
@@ -73,6 +75,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var objective: Variant = s["objective"]
 	var leash := float(d["leash"])
 	var my_position: Vector3 = me["position"]
+	## Squad orders (tactical map): null when this tank's squad has no drill.
+	var squad: Variant = s.get("squad")
+	var commanded: bool = squad != null and squad["slot"] != null
 
 	var visible_threats := 0
 	var threats_on_me := 0
@@ -133,9 +138,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	for pair in investigates:
 		add.call("INVESTIGATE", pair[0], pair[1])
 
-	# REGROUP: drifted away from the squad, weighted by cohesion.
+	# REGROUP: drifted away from the squad, weighted by cohesion (formations do this job when commanded).
 	var regroup := 0.0
-	if s["squad_center"] != null:
+	if s["squad_center"] != null and not commanded:
 		var gap := my_position.distance_to(s["squad_center"])
 		regroup = float(d["cohesion"]) * clampf((gap - 15.0) / 30.0, 0.0, 1.0) * 0.8
 	add.call("REGROUP", "", regroup)
@@ -152,12 +157,38 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			advance = 0.45 if visible_threats == 0 else 0.25
 	elif visible_threats == 0:
 		advance = 0.3
+	if commanded:
+		advance = 0.0  # the squad's destination replaces free advancing
 	add.call("ADVANCE", "", advance)
+
+	# KEEP_SLOT: be where the squad's formation and drill want me. Scores sit just below RETREAT,
+	# so a badly hurt tank still saves itself, and above a normal ENGAGE while moving, so
+	# "Move" means return fire on the move rather than stopping for every fight.
+	var keep_slot := 0.0
+	var in_position := false
+	if commanded:
+		var gap := my_position.distance_to(squad["slot"])
+		in_position = gap <= SLOT_TOLERANCE and not squad["moving"]
+		match String(squad["verb"]):
+			"move":
+				keep_slot = 0.0 if in_position else 0.78
+			"bound":
+				keep_slot = 0.8 if squad["moving"] and gap > 3.0 else 0.0
+				in_position = not squad["moving"]
+			"hold":
+				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.8
+			"assault":
+				keep_slot = 0.0 if in_position else (0.5 if visible_threats == 0 else 0.15)
+			"break_contact":
+				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.92
+	add.call("KEEP_SLOT", "", keep_slot)
 
 	# HOLD: the fallback, and the anchor's job once at its objective.
 	var hold := 0.1
 	if at_objective:
 		hold = 0.3 + 0.35 * (1.0 - float(d["aggression"]))
+	if in_position:
+		hold = maxf(hold, 0.72)  # in formation and halted: fight from here
 	add.call("HOLD", "", hold)
 
 	# Commitment: favor the current choice; keep it through MIN_COMMIT_TICKS unless beaten decisively.
@@ -258,11 +289,17 @@ func build_situation() -> Dictionary:
 		if c["visible"]:
 			threat_positions.append(c["position"])
 
+	var squad_context: Dictionary = game_match.squad_context(tank)
+	var effective_directives := directives
+	if squad_context.get("slot") != null:
+		effective_directives = Squad.drill_directives(directives, squad_context)
+
 	return {
 		"tick": game_match.tick,
 		"self": {"name": String(tank.name), "team": team, "position": my_position, "forward": -tank.global_basis.z,
 				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon},
-		"directives": directives,
+		"directives": effective_directives,
+		"squad": squad_context if squad_context.get("slot") != null else null,
 		"contacts": contacts,
 		"allies": allies,
 		"objective": objective,
@@ -351,6 +388,10 @@ func _act(s: Dictionary) -> void:
 		"ADVANCE":
 			_order_move(_move_to(s["objective"] if s["objective"] != null else s["enemy_base"]))
 			_order_weapon({"type": "fire_at_will"})
+		"KEEP_SLOT":
+			var squad: Dictionary = s["squad"]
+			_order_move(_move_to(squad["slot"], squad["reverse"], squad["pace"]))
+			_order_weapon({"type": "fire_at_will"})
 		"HOLD":
 			var nearest_visible: Variant = null
 			for c in s["contacts"]:
@@ -359,6 +400,9 @@ func _act(s: Dictionary) -> void:
 					nearest_visible = c["position"]
 			if nearest_visible != null:
 				_order_move({"type": "face", "x": nearest_visible.x, "z": nearest_visible.z})
+			elif s.get("squad") != null:
+				var look: Vector3 = my_position + (s["squad"]["facing"] as Vector3) * 20.0
+				_order_move({"type": "face", "x": look.x, "z": look.z})
 			else:
 				_order_move({"type": "stop"})
 			_order_weapon({"type": "fire_at_will"})
@@ -371,14 +415,15 @@ func _contact(s: Dictionary, contact_name: String) -> Dictionary:
 	return {}
 
 
-static func _move_to(point: Vector3, reverse := false) -> Dictionary:
+static func _move_to(point: Vector3, reverse := false, speed := 1.0) -> Dictionary:
 	return {"type": "move_to", "x": clampf(point.x, -ARENA_LIMIT, ARENA_LIMIT),
-			"z": clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT), "reverse": reverse}
+			"z": clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT), "reverse": reverse, "speed": snappedf(speed, 0.05)}
 
 
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
 func _order_move(order: Dictionary) -> void:
-	if order["type"] == move_order.get("type") and order.get("reverse", false) == move_order.get("reverse", false):
+	if order["type"] == move_order.get("type") and order.get("reverse", false) == move_order.get("reverse", false) \
+			and absf(float(order.get("speed", 1.0)) - float(move_order.get("speed", 1.0))) < 0.1:
 		if not order.has("x"):
 			return
 		if Vector2(float(order["x"]) - float(move_order["x"]), float(order["z"]) - float(move_order["z"])).length() < 2.0:

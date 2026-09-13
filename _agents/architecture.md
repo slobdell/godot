@@ -21,6 +21,7 @@ them change the contract:
 | M3 ✅ | `OrderController` (standing orders → command) and `BotController` (a tiny policy choosing orders) | server (bots) |
 | M3 ✅ | `AgentBridge` drives an `OrderController` from an external process: Claude ([agent_bridge.md](agent_bridge.md)) | client or offline |
 | M4 ✅ | `TankBrain extends OrderController`: senses team intel, scores options with directives, commits, emits orders ([tank_brain.md](tank_brain.md)) | server / match runner |
+| M4 ✅ | `Squad` (commander, formation, drill) feeds each brain a slot + drill-weighted directives; the **TacticalMap** emits SquadCommands ([tactical_map.md](tactical_map.md)) | simulating peer |
 | M5 | Skills are chosen and configured by **doctrine data** | server |
 | M7–8 | Doctrine is *authored* by an LLM from natural language | client (authoring time only) |
 
@@ -144,6 +145,7 @@ matters for fairness.
 | 2026-09-12 | Projectile shells with swept raycasts, not hitscan | Travel time makes leading, dodging, and range matter; sweeping avoids tunneling |
 | 2026-09-12 | Fire = held trigger in the unreliable command stream (not a reliable event) | Loss costs ≤ 1 tick while held; avoids a second channel |
 | 2026-09-12 | Bots and the agent share `OrderController` | The action layer is built once and exercised by both a dumb policy and a thinking commander |
+| 2026-09-13 | Player commands squads via a tactical map; formations are relative to an elected commander; drills tilt brain weights instead of scripting tanks | The lead's brief: lots of hidden power, few inputs; brains stay autonomous |
 | 2026-09-13 | Tank AI = utility scoring over a fixed option set, driven by directive data; pure `decide()` | The lead's "weights in a tree" + "deterministic CPU middle layer"; golden-testable without physics |
 | 2026-09-13 | Shared team vision (intel) instead of per-tank perception | Makes scouting and spotting teamwork mechanics; cheap (≤ 25 rays per team per 0.1 s) |
 | 2026-09-13 | Doctrine coordinates are team-relative (right, forward) | One doctrine plays identically for either side, keeping experiments fair |
