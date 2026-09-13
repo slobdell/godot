@@ -15,7 +15,7 @@ a clean exported-server shutdown with bots.
 
 What you can do right now:
 - `make run` (or `make run BOTS=3`): play offline vs bots. WASD/arrows drive, mouse aims, click/space fires.
-- `make server BOTS=1` + `make serve-web` → `http://localhost:8060/?connect`: browser multiplayer with bots.
+- `make play BOTS=1` → `http://localhost:8060/?connect`: browser multiplayer with bots (one command, one URL).
 - `make server` + browser + ask Claude to run `make agent-client`: **play against Claude** ([agent_bridge.md](_agents/agent_bridge.md)).
 - `make matches N=40 JOBS=6 GREEN=2 RUST=2`: robot series with win rates.
 

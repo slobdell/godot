@@ -6,7 +6,9 @@ extends Node3D
 ## the URL query string in the browser (index.html?connect&demo):
 ##   (no role flag)             OFFLINE: your tank vs --bots (default 1), no networking
 ##   --server[=port]            SERVER: no local tank; one tank per connecting client
-##   --connect[=ws://host:port] CLIENT: join a server (default ws://<page host>:9080)
+##   --connect[=ws://host:port] CLIENT: join a server. Default in the browser: /ws on the
+##                              page's own address (tools/serve_web.py or the reverse proxy
+##                              forwards it); on desktop: ws://127.0.0.1:9080
 ##   --bots=N                   server/offline: add N server-controlled BotController tanks
 ##   --demo                     scripted driver instead of keyboard/mouse
 ##   --agent-port=PORT          let an external agent (Claude) command your tank over
@@ -136,6 +138,7 @@ func _start_server(port: int) -> void:
 		game_match.add_bot()
 	_set_status("Server on port %d" % port)
 	print("TANK_SQUAD_LISTENING port=%d" % port)
+	print("  (WebSocket only. Browsers: `make play`, or `make serve-web` and open http://localhost:8060/?connect)")
 
 
 func _start_client(url: String) -> void:
@@ -223,10 +226,11 @@ func _connect_url() -> String:
 	var url: String = _flags.get("connect", "")
 	if not url.is_empty():
 		return url
-	var host := "127.0.0.1"
 	if OS.has_feature("web"):
-		host = str(JavaScriptBridge.eval("window.location.hostname", true))
-	return "ws://%s:%d" % [host, DEFAULT_PORT]
+		# Same origin as the page: works on any host/port, and becomes wss:// under https.
+		var secure := str(JavaScriptBridge.eval("window.location.protocol", true)) == "https:"
+		return "%s://%s/ws" % ["wss" if secure else "ws", str(JavaScriptBridge.eval("window.location.host", true))]
+	return "ws://127.0.0.1:%d" % DEFAULT_PORT
 
 
 func _set_status(text: String) -> void:

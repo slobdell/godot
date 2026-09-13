@@ -88,8 +88,8 @@ build/   (gitignored)    exports and screenshots
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
 | See it in a browser | `make serve-web` → http://localhost:8060 (add `?demo`) |
 | Prove the web build boots | `make web-smoke` → `build/screenshots/web.png` |
-| Play multiplayer locally | `make server`, then `make serve-web` and open several tabs at http://localhost:8060/?connect (or `make client`) |
-| Play with someone on the LAN | `make server` + `make serve-web WEB_HOST=0.0.0.0`; they open `http://<your-ip>:8060/?connect` |
+| Play multiplayer locally | `make play BOTS=1`, then open several tabs at http://localhost:8060/?connect (or `make client`) |
+| Play with someone on the LAN | `make play WEB_HOST=0.0.0.0`; they open `http://<your-ip>:8060/?connect` |
 | Prove networking works | `make net-smoke` (headless) and `make web-net-smoke` (browser) |
 | Add a tunable to a node | `@export var` in the script; it appears in the editor Inspector |
 | Add an input | Add it to `[input]` in `project.godot` (or the editor's Input Map) |
@@ -121,4 +121,5 @@ build/   (gitignored)    exports and screenshots
 22. **The navigation map isn't ready right after baking, and "map iteration id > 0" doesn't mean ready.** The first sync can be of an empty map. `Pathing.is_ready()` also checks that a polygon owns a point. `OrderController` falls back to straight-line steering until then.
 23. **NavigationMesh `agent_height` must be a multiple of `cell_height`**, and the map's cell size must match the mesh's (`navigation/3d/default_cell_size=0.5` in project.godot). The error-capturing test runner caught the first as an engine error.
 24. **Faster than real time = `--fixed-fps 60` and no `Engine.max_fps` cap.** `main.gd` skips the headless cap only in `--match` mode.
+26. **Never point a browser at the game server's port (9080).** It only speaks WebSocket and logs `Missing or invalid header 'upgrade'` for plain HTTP (the lead hit this on first try). The page lives on 8060, and its `/ws` path is proxied to the game server (`tools/serve_web.py`), so `make play` + `http://localhost:8060/?connect` is the only URL anyone needs.
 25. **`aim` orders never fire.** Twice it cost Claude a life in playtests; use `fire_at_will`/`target` to shoot.

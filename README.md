@@ -24,10 +24,10 @@ make serve-web     # then open http://localhost:8060  (or /?demo to watch it dri
 Multiplayer (server-authoritative, over WebSockets):
 
 ```bash
-make server        # terminal 1: headless game server on port 9080
-make serve-web     # terminal 2: then open http://localhost:8060/?connect in 2+ tabs
+make play BOTS=1   # game server + web page; open http://localhost:8060/?connect in 2+ tabs
 make net-smoke     # or: prove it works with two headless bot clients
 ```
+(Don't open port 9080 in a browser: that's the game server's WebSocket, and the page proxies to it.)
 
 Let Claude play (it commands a tank through a localhost bridge):
 

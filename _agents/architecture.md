@@ -55,6 +55,11 @@ Rules that fall out of this:
 | Web client | `make export-web` → `build/web/` | everything; WebGL 2 |
 | Dedicated server | `make export-server` → `build/server/*.x86_64` | `dedicated_server=true` strips visual resources; feature tag `server` |
 
+**One origin in the browser:** the web client connects to `/ws` on the page's own
+host (`wss://` under https). Locally `tools/serve_web.py` proxies `/ws` to the game
+server; in production the reverse proxy (Caddy) will do the same. Nobody types a
+second port.
+
 The same `main.tscn` boots in all three. Mode selection happens in `game/main.gd`
 from flags (`--demo`, later `--server`/`--connect=`) or URL query params on the
 web. Code can also check `OS.has_feature("server")` / `OS.has_feature("web")`.

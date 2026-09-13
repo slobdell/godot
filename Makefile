@@ -62,7 +62,7 @@ WEB_SMOKE_DEPS := $(WEB_SMOKE_DIR)/node_modules/.package-lock.json
 
 .PHONY: help bootstrap doctor import check check-all editor run demo test screenshot \
         match matches match-smoke server client net-smoke combat-smoke agent-client agent-client-windowed agent-offline \
-        export-web serve-web web-smoke web-net-smoke export-server clean distclean
+        export-web serve-web play web-smoke web-net-smoke export-server clean distclean
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -139,9 +139,10 @@ screenshot: import ## Render the demo and save build/screenshots/demo.png (needs
 	$(GODOT) --path . -- --demo --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/demo.png
 
 # ---- Multiplayer --------------------------------------------------------------
-# Browser clients: `make server` in one terminal, `make serve-web` in another, then
-# open http://localhost:8060/?connect in as many tabs as you like. To play across
-# the LAN: `make serve-web WEB_HOST=0.0.0.0` and open http://<this-ip>:8060/?connect
+# Browser clients: `make play` (or `make server` + `make serve-web`), then open
+# http://localhost:8060/?connect in as many tabs as you like. The page's /ws path is
+# proxied to the game server, so only ONE port is involved. Across the LAN:
+# `make play WEB_HOST=0.0.0.0` and open http://<this-ip>:8060/?connect
 
 server: import ## Run a headless game server on ws://0.0.0.0:9080 (NET_PORT=..., BOTS=N adds server bots)
 	$(GODOT) --headless --path . -- --server=$(NET_PORT) --bots=$(BOTS)
@@ -210,26 +211,33 @@ export-web: import $(TEMPLATES_OK) ## Export the WebAssembly build to build/web
 	mkdir -p $(BUILD_DIR)/web
 	$(GODOT) --headless --path . --export-release "Web" $(BUILD_DIR)/web/index.html
 
-serve-web: export-web ## Export, then serve build/web at http://localhost:8060 (add ?connect or ?demo)
-	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST)
+serve-web: export-web ## Serve the web build at http://localhost:8060 (?connect joins the local server via /ws; ?demo)
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST) $(NET_PORT)
+
+play: export-web ## One command: game server (BOTS=N) + web page. Open http://localhost:8060/?connect
+	$(GODOT) --headless --path . -- --server=$(NET_PORT) --bots=$(BOTS) > $(BUILD_DIR)/play-server.log 2>&1 & server=$$!; \
+	trap 'kill $$server 2>/dev/null' EXIT; \
+	echo "game server log: $(BUILD_DIR)/play-server.log"; \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST) $(NET_PORT)
 
 web-smoke: export-web $(WEB_SMOKE_DEPS) ## Boot the web export in headless Chrome, screenshot it, fail on errors
 	mkdir -p $(BUILD_DIR)/screenshots
-	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) >/dev/null 2>&1 & server=$$!; \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
 	trap 'kill $$server' EXIT; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?demo" $(BUILD_DIR)/screenshots/web.png
 
 # The browser client stands still; a server bot drives over from the far base and
 # attacks it, so the screenshot shows a REMOTE tank, shells, and damage rendered in
 # the browser. Settle time is tuned so the bot has arrived (~8 s).
-web-net-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser client vs a server bot over WebSockets; screenshot mid-fight
+web-net-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser client (via the /ws proxy) vs a server bot; screenshot mid-fight
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(GODOT) --headless --path . -- --server=$(SMOKE_NET_PORT) --bots=1 > $(BUILD_DIR)/web-net-smoke-server.log 2>&1 & server=$$!; \
-	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) >/dev/null 2>&1 & web=$$!; \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 $(SMOKE_NET_PORT) >/dev/null 2>&1 & web=$$!; \
 	trap 'kill $$server $$web 2>/dev/null' EXIT; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
-		"http://127.0.0.1:$(SMOKE_PORT)/?connect=ws://127.0.0.1:$(SMOKE_NET_PORT)" \
-		$(BUILD_DIR)/screenshots/web-net.png 8 TANK_SQUAD_SPAWNED
+		"http://127.0.0.1:$(SMOKE_PORT)/?connect" \
+		$(BUILD_DIR)/screenshots/web-net.png 8 TANK_SQUAD_SPAWNED; \
+	! grep -E 'ERROR' $(BUILD_DIR)/web-net-smoke-server.log
 
 $(WEB_SMOKE_DEPS): $(WEB_SMOKE_DIR)/package.json
 	cd $(WEB_SMOKE_DIR) && $(NPM) install --no-audit --no-fund

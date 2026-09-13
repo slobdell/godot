@@ -1,15 +1,26 @@
 #!/usr/bin/env python3
-"""Serve a Godot web export for local testing: `make serve-web`.
+"""Serve a Godot web export for local play: `make serve-web` / `make play`.
 
-Usage: serve_web.py <dir> [port] [host]
+Usage: serve_web.py <dir> [port] [host] [game_port]
 
-Sets the .wasm MIME type and the COOP/COEP headers. Those headers are only
+One URL for everything, like production will be:
+  http://HOST:PORT/            the web export (index.html, .wasm, .pck)
+  ws://HOST:PORT/ws            proxied to the game server's WebSocket on 127.0.0.1:game_port
+
+The browser client connects to /ws on whatever address served the page, so
+there's no second port to remember or open. (Opening the game server's port
+directly in a browser logs "Missing or invalid header 'upgrade'" on the server:
+it only speaks WebSocket.)
+
+Also sets the .wasm MIME type and COOP/COEP headers. Those headers are only
 *required* for thread-enabled exports (we export without threads), but sending
 them keeps local testing identical if we ever flip that switch.
 """
 import functools
 import http.server
+import socket
 import sys
+import threading
 
 
 class GodotWebHandler(http.server.SimpleHTTPRequestHandler):
@@ -19,20 +30,71 @@ class GodotWebHandler(http.server.SimpleHTTPRequestHandler):
         ".pck": "application/octet-stream",
     }
 
+    def __init__(self, *args, game_port=9080, **kwargs):
+        self.game_port = game_port
+        super().__init__(*args, **kwargs)
+
     def end_headers(self):
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
+    def do_GET(self):
+        if self.path.split("?")[0] == "/ws":
+            if self.headers.get("Upgrade", "").lower() != "websocket":
+                self.send_error(426, "Upgrade Required: /ws is the game's WebSocket endpoint")
+                return
+            self._proxy_websocket()
+            return
+        super().do_GET()
+
+    def _proxy_websocket(self):
+        """Replay the handshake to the game server, then shovel bytes both ways."""
+        try:
+            upstream = socket.create_connection(("127.0.0.1", self.game_port), timeout=5)
+        except OSError:
+            self.send_error(502, f"game server not running on port {self.game_port} (make server)")
+            return
+        upstream.settimeout(None)
+        head = f"GET / HTTP/1.1\r\n" + "".join(f"{k}: {v}\r\n" for k, v in self.headers.items()) + "\r\n"
+        upstream.sendall(head.encode("latin-1"))
+        self.close_connection = True
+
+        def pump(source, destination):
+            try:
+                while data := source.recv(65536):
+                    destination.sendall(data)
+            except OSError:
+                pass
+            finally:
+                for sock in (source, destination):
+                    try:
+                        sock.shutdown(socket.SHUT_RDWR)
+                    except OSError:
+                        pass
+
+        downstream = threading.Thread(target=pump, args=(upstream, self.connection), daemon=True)
+        downstream.start()
+        pump(self.connection, upstream)
+        downstream.join()
+        upstream.close()
+
+    def log_message(self, fmt, *args):
+        if self.path.startswith("/ws"):
+            sys.stderr.write(f"[ws proxy] {self.address_string()} {fmt % args}\n")
+
 
 def main() -> None:
     directory = sys.argv[1] if len(sys.argv) > 1 else "build/web"
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 8060
     host = sys.argv[3] if len(sys.argv) > 3 else "127.0.0.1"
-    handler = functools.partial(GodotWebHandler, directory=directory)
+    game_port = int(sys.argv[4]) if len(sys.argv) > 4 else 9080
+    handler = functools.partial(GodotWebHandler, directory=directory, game_port=game_port)
     with http.server.ThreadingHTTPServer((host, port), handler) as server:
-        print(f"Serving {directory} at http://{host}:{port}  (Ctrl+C to stop)")
+        shown_host = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+        print(f"Serving {directory}; game WebSocket proxied from /ws to 127.0.0.1:{game_port}", flush=True)
+        print(f"  Play:  http://{shown_host}:{port}/?connect      (Ctrl+C to stop)", flush=True)
         server.serve_forever()
 
 
