@@ -10,13 +10,18 @@ extends Camera3D
 
 
 func _ready() -> void:
-	if target != null:
-		global_position = target.global_position + offset
+	global_position = (target.global_position if target != null else Vector3.ZERO) + offset
 	look_at(global_position - offset)
 
 
 func _process(delta: float) -> void:
-	if target == null:
+	if target == null or not is_instance_valid(target):
 		return
 	var desired := target.global_position + offset
 	global_position = global_position.lerp(desired, 1.0 - exp(-smoothing * delta))
+
+
+## Start following a new target, jumping straight to it.
+func follow(new_target: Node3D) -> void:
+	target = new_target
+	global_position = target.global_position + offset

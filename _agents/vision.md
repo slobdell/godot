@@ -102,4 +102,4 @@ These were believed true in 2026-09 but move fast. **Verify before building the 
 2. **Determinism.** Godot physics isn't bit-deterministic across platforms. We keep the server authoritative and record *state snapshots* for replays rather than relying on lockstep re-simulation. Revisit only if replays get too big.
 3. **Direct control's future.** Keep it as a tutorial or "possess a tank" mode, or remove it once squads exist?
 4. **Doctrine format.** JSON (portable, LLM-friendly, schema-validatable) is the default assumption. A Godot `Resource` is nicer in the editor but awkward for an LLM to produce.
-5. **Behavior engine.** Behavior trees (explicit, debuggable) or utility AI (emergent, tunable), or a hybrid?
+5. **Behavior engine.** Leaning: **utility AI with player-tuned directives, switched by phase conditions** (a hybrid). Where player skill comes from, and the experiments that decide it: [squad_ai_design.md](squad_ai_design.md).

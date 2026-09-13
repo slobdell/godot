@@ -33,3 +33,18 @@ Format: **Concept**, then the one-line version, why it matters, and a way to
 ### 2026-09-12: Tests for a game?
 - **One line:** You can test games like any code: pure math directly, and scenes by running real physics for a second and checking where things ended up (`tests/test_tank_drive.gd`).
 - **Why it matters:** When Claude writes game code, tests and screenshots are how it (and you) know it works without playing it every time.
+
+### 2026-09-12: The server is the referee
+- **One line:** In online games, players' computers only *ask* ("I'm pressing forward"); the server decides what actually happens and tells everyone.
+- **Why it matters:** Otherwise anyone could edit their game to say "I have infinite health". It also explains lag: you see what the server said a moment ago.
+- **Show it:** `make server`, open two browser tabs at `localhost:8060/?connect`. Drive in one tab and watch the tank move in the other. Then stop the server (Ctrl+C) and both tabs freeze: the server was running the game all along.
+
+### 2026-09-12: Two ways to talk over the network
+- **One line:** An **RPC** is "call this function on that computer" (our input). A **synchronizer** is "keep this variable the same everywhere" (tank positions).
+- **Why it matters:** Choosing between "send an event" and "sync a value" is the core networking design decision.
+- **Show it:** In `tank.tscn`, select `StateSync` and open the Replication panel at the bottom of the editor: three synced properties. Then read `submit_command` in `network_input.gd`, which is just a function with `@rpc` on it.
+
+### 2026-09-12: Same tanks, different players, where's the skill?
+- **One line:** Chess pieces are identical too. Skill is making better decisions: what to bring, how units work together, reading the opponent, and timing.
+- **Why it matters:** It's the central design question of the squad game (see `squad_ai_design.md`), and a great conversation to have about any game he likes: "what do good players do that bad players don't?"
+- **Show it:** Play a round of Gladiabots or any auto-battler together and ask, after each loss, what decision lost it.

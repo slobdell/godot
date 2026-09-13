@@ -15,55 +15,62 @@ keep "Acceptance" honest: it's what `verification.md` checks are run against.
 - [x] `TankCommand` seam; `PlayerController` + `ScriptedController`
 - [x] Arena with grid ground, crates, sky, shadows; follow camera
 - [x] Tests: motion math, command sanitizing, real-physics drive/turn/turret
-- Not done (deliberately): firing, which is M3
 
-## M2: Networked direct control (real-time stack, stage S0)
-**Pre-read:** [server_management.md](server_management.md) §1–2, 5.
-- [ ] `--server` flag / feature tag starts a `WebSocketMultiplayerPeer` server on a port; `--connect=ws://host:port` (or `?connect=` on web) joins
-- [ ] Server spawns a tank per peer (`MultiplayerSpawner`); clients send `TankCommand` each tick; server applies via `NetworkInputController` (sanitized, rate-limited)
-- [ ] State replicated with `MultiplayerSynchronizer`; clients interpolate
-- [ ] `make server` target; disconnect removes the tank
-- [ ] Tests: a headless **bot client** connects to a headless server, drives, and sees its tank move (no browser needed)
-- **Acceptance:** `make server` + two `make serve-web` tabs → two tanks, each controlled by its own tab, smooth on localhost
+## ✅ M2: Networked direct control, stage S0 (2026-09-12)
+- [x] `--server[=port]` hosts a `WebSocketMultiplayerPeer` (exported server binary defaults to it); `--connect[=url]` / `?connect` joins
+- [x] Server spawns a tank per peer via `MultiplayerSpawner` + spawn function; despawns on disconnect
+- [x] Clients send `TankCommand` by RPC; server-side `NetworkInput` checks the sender, rejects non-finite values, clamps, rate-limits, and stops stale input
+- [x] State replicated by `MultiplayerSynchronizer` at 30 Hz; clients smooth toward it; other players' tanks painted rust
+- [x] `server_relay` off (clients can't message each other); headless processes capped to 60 fps
+- [x] `make server`, `make client`, `make net-smoke` (headless server + 2 bot clients over real sockets), `make web-net-smoke` (browser client + bot)
+- [x] Tests: 6 server-validation unit tests; net-smoke proves spawn, replication of others, and server-simulated movement
+- **Known gaps, deliberately deferred:**
+  - Clients *smooth* toward the latest snapshot (exponential), which isn't true buffered snapshot interpolation. Fine on LAN; revisit if remote play looks jittery.
+  - No client-side prediction: your own tank responds ~1–2 snapshots late. Acceptable for tanks; direct control is not the end game.
+  - No join authentication (anyone who can reach the port can join), no teams, no reconnect.
+  - Browsers on an `https://` page require `wss://`, which is solved at M6 by the reverse proxy.
 
-## M3: Combat
-- [ ] Fire → server spawns shell (projectile, not hitscan), collision, damage, death, respawn
-- [ ] Armor facing (front/side/rear) so positioning matters; this is the seed of the equipment trade-offs
-- [ ] Minimal HUD: health, reload
-- **Acceptance:** two networked players can destroy each other; a client can't deal damage by lying
+## M3: Combat (built to be read by AI later)
+**Pre-read:** [squad_ai_design.md](squad_ai_design.md), "Consequences for the roadmap".
+- [ ] Fire → server spawns a shell (projectile, not hitscan), collision, damage, death, respawn. Firing is a *reliable* event, not the unreliable per-tick command stream
+- [ ] **Armor facing** (front/side/rear multipliers) so positioning matters
+- [ ] **Line-of-sight query** and taller cover obstacles, the first "sense" primitives AI will reuse
+- [ ] Two teams with colors; minimal HUD: health, reload
+- **Acceptance:** two networked players can destroy each other; flanking visibly beats frontal fire; a client can't deal damage by lying
 
-## M4: A squad that plays itself (single-player first)
-**Pre-read:** [vision.md](vision.md) design space.
-- [ ] 5 tanks per side; navmesh (`NavigationRegion3D`); perception (line of sight, detection radius)
-- [ ] `SkillController` + first 3 skills: `hold_sector`, `guard_perimeter`, `bait`; squad blackboard
-- [ ] Click-to-assign skills in a debug UI
-- **Acceptance:** two AI squads with hand-assigned skills fight a full match with no human input, headless
+## M4: One smart tank + the match runner
+- [ ] **Headless match runner** (`make match …`): runs a match to completion faster than real time, prints a JSON result. Pulled forward from M5 because every AI experiment needs it
+- [ ] Navmesh (`NavigationRegion3D`), perception (LOS + detection radius), blackboard
+- [ ] `UtilityController`: actions `advance_to`, `engage`, `take_cover`, `retreat_to`, `hold`; directive weights; commitment bonus
+- [ ] In-game score overlay (top 3 actions per tank)
+- **Acceptance:** experiment **E1** passes ([squad_ai_design.md](squad_ai_design.md))
 
-## M5: Doctrine as data
-- [ ] Doctrine JSON schema: loadout (with a points budget), role, skills + params, triggers
-- [ ] Equipment trade-offs implemented (armor/speed/gun types)
-- [ ] Server-side validation; form-based doctrine editor
-- [ ] `make match A=doctrines/x.json B=doctrines/y.json`: headless, faster than real time, prints the result, which enables batch balance testing
-- **Acceptance:** doctrine files alone determine a match; invalid doctrine is rejected with a clear reason
+## M5: Squads, doctrine as data, and "does skill exist?"
+- [ ] 5 tanks per side; squad blackboard; phases (conditions that swap directive sets)
+- [ ] Doctrine JSON schema: loadout (points budget), per-tank directives + phases; server-side validation
+- [ ] Equipment trade-offs (armor / speed / gun types)
+- [ ] Experiments **E2** (knob sensitivity) and **E3** (skill existence) run and logged
+- **Acceptance:** E3 passes, i.e. authored doctrines beat random and no doctrine dominates
 
 ## M6: Deploy (stage S1)
 - [ ] VPS + Caddy (HTTPS + `wss://` reverse proxy) + systemd unit for the server; `make deploy`
 - **Acceptance:** the project lead and their son play at a public URL
 
-## M7: LLM doctrine compiler (prototype)
-- [ ] Natural language → doctrine JSON, constrained to the schema; an eval set of example orders with expected doctrines
-- [ ] Provider interface: cloud model first (fast iteration), on-device later
-- **Acceptance:** ≥ N of the eval prompts compile to valid doctrine that behaves as described
+## M7: Live commanding + LLM doctrine compiler (prototype)
+- [ ] Command-point system (experiment **E4**)
+- [ ] Natural language → doctrine JSON, constrained to the schema; eval set of example orders
+- [ ] Provider interface: cloud model first, on-device later
+- **Acceptance:** E4 passes; ≥ N eval prompts compile to valid doctrine that behaves as described
 
 ## M8: Android + Gemini Nano
 **Pre-read:** [vision.md](vision.md) "Platform facts to re-verify". Extend [bootstrap.md](bootstrap.md) with the Android toolchain.
 - [ ] Android export (Makefile: `bootstrap-android`, `export-android`)
 - [ ] Godot Android plugin bridging to on-device Gemini Nano; capability detection + fallback
-- **Acceptance:** on a supported phone, spoken/typed orders compile to doctrine on-device
+- **Acceptance:** on a supported phone, typed orders compile to doctrine on-device
 
 ## M9: Players persist (stage S3)
-- [ ] Accounts, saved doctrines, match history, matchmaking; evaluate Nakama first
+- [ ] Accounts, saved doctrines, match history, matchmaking or asynchronous ladder; evaluate Nakama first
 
 ## Open ordering decisions
-- **M2 before M4?** Current plan: yes. Retrofitting server authority onto finished AI is painful, and the lead explicitly wants to understand hosting. Counter-argument: M4 is the heart of the vision and doesn't need networking. Revisit after M3.
-- **Async vs live matches** ([vision.md](vision.md) Q1) decides how much of S2+ we ever build.
+- ~~M2 before M4?~~ Decided 2026-09-12: yes; M2 done.
+- **Async vs live matches** ([vision.md](vision.md) Q1) decides how much of S2+ we ever build. E3/E4 results should inform it.

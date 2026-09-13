@@ -14,7 +14,7 @@ the facts this repo relies on. Examples point at real files here.
 | **Resource** (`.tres`, meshes, materials) | Serializable, shareable, reference-counted data objects | The `BoxMesh`/`StandardMaterial3D` sub-resources inside `tank.tscn` |
 | `RefCounted` | A plain object freed when unreferenced (nodes are *not* ref-counted, so you `free()`/`queue_free()` them) | `TankCommand`, `TankMotion` |
 | **Signal** | The observer pattern, built in. `signal died`, `died.emit()`, `tank.died.connect(fn)` | None yet; coming in M3 (death, hits) |
-| **Autoload** | A singleton node that lives above the current scene | None yet; likely `NetworkManager` in M2 |
+| **Autoload** | A singleton node that lives above the current scene | None yet. M2 kept networking in `main.gd` because it only needs one scene; a menu/lobby scene would justify an autoload |
 | **Groups** | Tags on nodes: `add_to_group("tanks")`, `get_tree().get_nodes_in_group("tanks")` | None yet |
 | `@export var` | A field that shows up in the editor Inspector and is saved into the scene | `max_forward_speed` in `tank.gd` |
 | `@onready var x = $Child` | Assigned right before `_ready()`, once children exist. `$Child` is shorthand for `get_node("Child")` | `turret` in `tank.gd` |
@@ -25,6 +25,12 @@ the facts this repo relies on. Examples point at real files here.
 | `res://` / `user://` | Project-relative read-only path / per-user writable data dir | `res://game/main.tscn` |
 | Feature tags | Build-time flags: `OS.has_feature("web")`, `"server"`, `"debug"` | `main.gd` (web), export preset (`server`) |
 | **Project Settings** | `project.godot`: global config, input map, main scene | renderer, input actions |
+| `MultiplayerPeer` | The transport (sockets). Assign one to `multiplayer.multiplayer_peer` and the high-level API works over it | `WebSocketMultiplayerPeer` in `main.gd` |
+| Peer id | Every connection gets an int; **1 is always the server** | `Tank_<peer_id>` names |
+| `@rpc(...)` | Marks a method as remotely callable: `method.rpc_id(peer, args…)`. Options pick who may call it (`"authority"`/`"any_peer"`) and delivery (`"reliable"`/`"unreliable_ordered"`) | `NetworkInput.submit_command` |
+| Multiplayer authority | Which peer "owns" a node (default: server). `is_multiplayer_authority()` | all tanks: server |
+| `MultiplayerSpawner` | Replicates node creation/removal from the authority to everyone | `Main/TankSpawner` |
+| `MultiplayerSynchronizer` | Replicates chosen properties on an interval (a `SceneReplicationConfig`) | `Tank/StateSync` |
 
 ## Physics bodies: which one?
 

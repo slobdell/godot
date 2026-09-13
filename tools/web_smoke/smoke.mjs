@@ -1,6 +1,6 @@
 // Web export smoke test: `make web-smoke`.
 //
-// Usage: node smoke.mjs <url> <screenshot.png> [seconds-after-ready]
+// Usage: node smoke.mjs <url> <screenshot.png> [seconds-after-ready] [ready-marker]
 //
 // Passes when the page logs the game's READY marker (printed by game/main.gd)
 // with no uncaught exceptions or console errors. Always writes the screenshot
@@ -9,9 +9,9 @@
 // without a GPU, so this works on a headless server too.
 import puppeteer from "puppeteer-core";
 
-const [url, screenshotPath, settleArg] = process.argv.slice(2);
+const [url, screenshotPath, settleArg, markerArg] = process.argv.slice(2);
 const settleMs = Number(settleArg ?? 3) * 1000;
-const READY_MARKER = "TANK_SQUAD_READY";
+const READY_MARKER = markerArg ?? "TANK_SQUAD_READY";
 const BOOT_TIMEOUT_MS = 60_000;
 
 const browser = await puppeteer.launch({

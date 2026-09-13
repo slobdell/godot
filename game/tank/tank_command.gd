@@ -25,7 +25,17 @@ func _init(p_throttle := 0.0, p_turn := 0.0, p_aim_point := Vector3.ZERO, p_fire
 	fire = p_fire
 
 
-## Controllers may produce out-of-range values (e.g. two keys at once, noisy AI
-## output); the simulation only ever consumes a clamped copy.
+## Controllers may produce out-of-range values (two keys at once, noisy AI output,
+## a hostile network client sending NaN). The simulation only ever consumes a
+## clamped, finite copy.
 func sanitized() -> TankCommand:
-	return TankCommand.new(clampf(throttle, -1.0, 1.0), clampf(turn, -1.0, 1.0), aim_point, fire)
+	return TankCommand.new(_finite_unit(throttle), _finite_unit(turn),
+			aim_point if aim_point.is_finite() else Vector3.ZERO, fire)
+
+
+func is_finite_command() -> bool:
+	return is_finite(throttle) and is_finite(turn) and aim_point.is_finite()
+
+
+static func _finite_unit(value: float) -> float:
+	return clampf(value, -1.0, 1.0) if is_finite(value) else 0.0

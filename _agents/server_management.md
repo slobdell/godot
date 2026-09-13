@@ -92,7 +92,7 @@ real-time stack, and the authoritative-server habit is costly to retrofit.
 
 | Stage | What | Complexity we accept | Milestone |
 |---|---|---|---|
-| **S0: Local** | `make server` in one terminal, 2+ browser tabs connect to `ws://localhost` | none; learn the MultiplayerAPI | M2 |
+| **S0: Local** ✅ | `make server` in one terminal, 2+ browser tabs connect to `ws://localhost` | none; learn the MultiplayerAPI | M2 (done 2026-09-12) |
 | **S1: One box** | One small VPS: Caddy serves `build/web` over HTTPS and reverse-proxies `wss://…/game` to **one long-running** headless match server under systemd; `make deploy` | TLS, systemd, a firewall | M6 |
 | **S2: Many matches** | A tiny allocator service on the same box spawns one server process per match on its own port/path, and reaps finished ones | process lifecycle, join tokens | after M6 |
 | **S3: Players persist** | Accounts, saved doctrines, match history. Evaluate Nakama vs a small API + Postgres | a database, auth | M9 |

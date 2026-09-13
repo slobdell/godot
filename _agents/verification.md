@@ -12,10 +12,11 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 | 2 | Integration tests | `make test` (same runner) | nothing | Real scenes + real physics frames: commands actually move tanks | always |
 | 3 | Desktop render | `make screenshot` → **Read `build/screenshots/demo.png`** | a display | The scene renders: lighting, meshes, camera framing, turret direction | any visual/scene change |
 | 4 | Web boot | `make web-smoke` → **Read `build/screenshots/web.png`** | Chrome + node | The WebAssembly build loads in a real browser, logs `TANK_SQUAD_READY`, no console errors, renders | any change, before a task is "done" |
-| 5 | Server boot | `make export-server && build/server/tank_squad_server.x86_64 --headless --quit-after 120` | nothing | The stripped release server binary starts and runs `main.gd` (prints `TANK_SQUAD_READY`) | anything touching startup, exports, server |
+| 5 | Server boot | `make export-server && build/server/tank_squad_server.x86_64 --headless --quit-after 120` | nothing | The stripped release server binary starts in SERVER role (prints `TANK_SQUAD_LISTENING` and `TANK_SQUAD_READY role=SERVER`) | anything touching startup, exports, server |
+| 6 | Network | `make net-smoke` | nothing | A headless server + **2 headless bot clients** over real WebSockets: each gets a tank, sees both tanks, and its tank moves by ≥ 3 m *as replicated from the server*. Server log must contain no `ERROR` | anything touching main.gd, tanks, controllers, networking |
+| 7 | Browser multiplayer | `make web-net-smoke` → **Read `build/screenshots/web-net.png`** | Chrome + node | A browser client connects (`TANK_SQUAD_SPAWNED`), and a remote bot's tank renders (rust-colored) at its replicated position | anything touching client rendering, spawning, the web export |
 
-Coming with M2: **bot-client network test** (a headless client connects to a
-headless server and asserts replicated state). With M5: **match runner** reports.
+Coming with M4: **match runner** results (JSON) for AI experiments.
 
 ## Writing tests
 
@@ -30,9 +31,12 @@ headless server and asserts replicated state). With M5: **match runner** reports
 - `tests/run_tests.gd` is a `SceneTree` script run with `--headless --script`. It discovers tests, awaits each (so tests can wait on physics frames), and calls `quit(1)` on failure, so `make test` fails CI-style.
 - `--screenshot=<abs path>` is handled in `game/main.gd`: wait 3 s, `await RenderingServer.frame_post_draw`, save the viewport image, quit. It requires a real renderer, so not `--headless`.
 - `tools/web_smoke/smoke.mjs` (puppeteer-core + system Chrome with SwiftShader WebGL): serves `build/web`, opens `/?demo`, waits for the `TANK_SQUAD_READY` console line, screenshots, and fails on page exceptions or `console.error`.
-- `TANK_SQUAD_READY` is printed by `main.gd` after wiring. **If you rename it, update `smoke.mjs`.**
+- Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
+- `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
 ## Known limits
 
 - The desktop screenshot uses the local Intel GPU (OpenGL 3.3+); the web one uses SwiftShader. Colors and shadows can differ slightly. Neither is a performance measurement.
+- `web-net-smoke` holds both tanks still (to keep them in frame), so it doesn't show movement on a browser client; `net-smoke` covers movement headlessly.
+- Nothing measures latency or jitter yet; everything runs on localhost.
 - No input-injection tests yet (keyboard/mouse → `PlayerController`). `ScriptedController` covers the command path; the input map mapping itself is untested.
