@@ -1,0 +1,54 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Tank Squad"
+config/description="Squad-of-tanks strategy game. Milestone 1: one tank, direct control."
+run/main_scene="res://game/main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+; Release builds buffer print() by default and may lose it on exit. The dedicated
+; server's logs must stream (systemd/docker), so always flush.
+run/flush_stdout_on_print=true
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[input]
+
+move_forward={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":87), Object(InputEventKey,"physical_keycode":4194320)]
+}
+move_back={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":83), Object(InputEventKey,"physical_keycode":4194322)]
+}
+turn_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":65), Object(InputEventKey,"physical_keycode":4194319)]
+}
+turn_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":68), Object(InputEventKey,"physical_keycode":4194321)]
+}
+fire={
+"deadzone": 0.2,
+"events": [Object(InputEventMouseButton,"button_index":1), Object(InputEventKey,"physical_keycode":32)]
+}
+
+[rendering]
+
+; Compatibility = OpenGL 3 / WebGL 2. The ONLY renderer that exports to the web,
+; so we use it everywhere to avoid "looks different in the browser" surprises.
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,9 @@
+{
+  "name": "tank-squad-web-smoke",
+  "private": true,
+  "description": "Loads the web export in headless Chrome, waits for the game to boot, screenshots it, fails on console errors. Run via `make web-smoke`.",
+  "type": "module",
+  "dependencies": {
+    "puppeteer-core": "25.10.0"
+  }
+}
