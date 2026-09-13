@@ -18,7 +18,9 @@ them change the contract:
 |---|---|---|
 | M1 ✅ | `PlayerController`, `ScriptedController` | local |
 | M2 ✅ | Owning client's controller writes `tank.command`; `NetworkInput` sends it by RPC; the server-side `NetworkInput` validates it and applies it | client → server |
-| M4 | `UtilityController`: scores actions with directive weights and emits commands ([squad_ai_design.md](squad_ai_design.md)) | server |
+| M3 ✅ | `OrderController` (standing orders → command) and `BotController` (a tiny policy choosing orders) | server (bots) |
+| M3 ✅ | `AgentBridge` drives an `OrderController` from an external process: Claude ([agent_bridge.md](agent_bridge.md)) | client or offline |
+| M4 | `UtilityController`: scores actions with directive weights and chooses orders ([squad_ai_design.md](squad_ai_design.md)) | server |
 | M5 | Skills are chosen and configured by **doctrine data** | server |
 | M7–8 | Doctrine is *authored* by an LLM from natural language | client (authoring time only) |
 
@@ -87,6 +89,27 @@ How the pieces fit:
 - **Offline mode reuses the spawner.** The offline peer is its own server, but gets no `NetworkInput` (it would override the local controller with "stale input: stop").
 - **Security baseline.** `SceneMultiplayer.server_relay = false` on the server; sender check, finite check, clamp, 120 msg/s limit, 500 ms stale-stop in `NetworkInput.accept()`/`current_command()`. All of it is unit-tested without sockets.
 
+## Combat and rules (M3)
+
+```
+Main (main.gd: roles, flags, HUD)
+├─ Arena                  static world, collision layer 1 (point-symmetric layout: fair for both teams)
+└─ Match (match.gd: THE RULES)
+   ├─ TankSpawner / ShellSpawner   spawn functions run on every peer (listed BEFORE the containers; see trip-ups)
+   ├─ Tanks/Tank_<peer>, Bot_<n>   collision layer 2
+   ├─ Shells/Shell_<id>
+   ├─ Effects                      client-only impact visuals (show_impact RPC)
+   ├─ Brains/Brain_Bot_<n>         server-only BotControllers (not replicated)
+   └─ ScoreSync                    score_green / score_rust, on change
+```
+
+- **Tanks report, Match decides.** `Tank` emits `fired(muzzle, direction)` and `died`; it never spawns shells or respawns itself. `Match` (simulating peer only) spawns the shell, resolves hits, scores, and schedules respawn. This keeps the Tank reusable and the rules in one place.
+- **Shells are projectiles** (70 m/s, 110 m range) that sweep a ray each tick (world + tanks masks, shooter excluded). The first sweep starts at the turret center so a wall touching the barrel still blocks. Clients fly the same straight line visually; the server's despawn removes them.
+- **Damage = 34 × armor multiplier**, where `Armor.facing()` compares the hull's forward to the shell's travel direction: front (within 45° of head-on) ×0.5, side ×1.0, rear ×1.5. Friendly fire is off; teammates still stop shells.
+- **Firing is a held trigger** sampled each tick (`TankCommand.fire`), gated by a 2 s reload. A dropped unreliable packet costs at most one tick of a held trigger. This replaced the earlier plan of a reliable fire event: simpler, and good enough for a slow-firing gun.
+- **Teams:** a new tank joins the smaller team (ties go to Green). Green's base is south (z = +42) facing north; Rust's is north. Slots spread along x.
+- **Pure helpers** shared by bots, the bridge, and future AI: `Armor`, `Ballistics` (intercept lead, aim error), `Steering` (goal → throttle/turn), `Perception` (line of sight on the world layer at 1.3 m, enemy queries).
+
 ## Physics tick ordering
 
 Godot runs `_physics_process` for all nodes each tick (60 Hz by default), in
@@ -107,4 +130,8 @@ matters for fairness.
 | 2026-09-12 | Input up by explicit RPC; state down by `MultiplayerSynchronizer` | RPC makes the server's validation visible and testable; the synchronizer is Godot's idiomatic replication. Both are worth learning |
 | 2026-09-12 | Replicate `sync_*` properties, not `position` directly | Clients can smooth toward them without fighting the replication writes |
 | 2026-09-12 | No client-side prediction | Tanks are slow and squads won't be directly controlled; see server_management.md §2 |
-| 2026-09-12 | Squad AI direction: utility AI with player-tuned directives and phases (exploration) | Matches the lead's "weighted tree" intuition; weights are a natural LLM output. Validate with experiments E1–E4 in squad_ai_design.md |
+| 2026-09-12 | Rules live in `Match`; `Tank` only emits `fired`/`died` | One place for rules; Tank stays reusable by tests, bots, AI |
+| 2026-09-12 | Projectile shells with swept raycasts, not hitscan | Travel time makes leading, dodging, and range matter; sweeping avoids tunneling |
+| 2026-09-12 | Fire = held trigger in the unreliable command stream (not a reliable event) | Loss costs ≤ 1 tick while held; avoids a second channel |
+| 2026-09-12 | Bots and the agent share `OrderController` | The action layer is built once and exercised by both a dumb policy and a thinking commander |
+| 2026-09-12 | Squad AI direction: utility AI with player-tuned directives and phases (accepted by the lead) | Matches the lead's "weighted tree" intuition; weights are a natural LLM output. Validate with experiments E1–E4 in squad_ai_design.md |

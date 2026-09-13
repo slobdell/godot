@@ -14,7 +14,12 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 | 4 | Web boot | `make web-smoke` → **Read `build/screenshots/web.png`** | Chrome + node | The WebAssembly build loads in a real browser, logs `TANK_SQUAD_READY`, no console errors, renders | any change, before a task is "done" |
 | 5 | Server boot | `make export-server && build/server/tank_squad_server.x86_64 --headless --quit-after 120` | nothing | The stripped release server binary starts in SERVER role (prints `TANK_SQUAD_LISTENING` and `TANK_SQUAD_READY role=SERVER`) | anything touching startup, exports, server |
 | 6 | Network | `make net-smoke` | nothing | A headless server + **2 headless bot clients** over real WebSockets: each gets a tank, sees both tanks, and its tank moves by ≥ 3 m *as replicated from the server*. Server log must contain no `ERROR` | anything touching main.gd, tanks, controllers, networking |
-| 7 | Browser multiplayer | `make web-net-smoke` → **Read `build/screenshots/web-net.png`** | Chrome + node | A browser client connects (`TANK_SQUAD_SPAWNED`), and a remote bot's tank renders (rust-colored) at its replicated position | anything touching client rendering, spawning, the web export |
+| 6b | Combat over network | `make combat-smoke` | nothing | A headless server with a bot + a stationary bot client: the client's replicated health must drop (the server bot aimed, fired, and hit; damage replicated). Also prints any kills from the server log | anything touching combat, shells, bots, Match |
+| 7 | Browser multiplayer | `make web-net-smoke` → **Read `build/screenshots/web-net.png`** | Chrome + node | A browser client connects (`TANK_SQUAD_SPAWNED`) to a server with one bot; ~8 s later the screenshot should show the *remote* bot tank near "YOU", team colors, nameplates, and usually shells/damage | anything touching client rendering, spawning, combat visuals, the web export |
+
+**Bundles:** `make check` = rows 1, 2, 6, 6b (all headless, ~1 min). `make check-all` = `check` + rows 3, 4, 5, 7 and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
+
+**Playtesting with the agent bridge** is the last rung: not automated, but it finds design problems no assertion will ([agent_bridge.md](agent_bridge.md)).
 
 Coming with M4: **match runner** results (JSON) for AI experiments.
 
@@ -23,12 +28,15 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Put a file `tests/test_<topic>.gd` that `extends TestCase`; every `test_*` method runs on a fresh instance.
 - Assertions: `assert_true`, `assert_eq`, `assert_near`. They record and continue, so one run shows all failures. **Write the message as the physical meaning** ("turret swings to face a target on the right"), not the mechanics ("rotation.y == -1.57").
 - Scene tests: `add_to_tree(SCENE.instantiate())` (freed automatically), then `await wait_physics_frames(n)`.
+- **Assert on the lowest/highest value seen, not the value at the end, when the thing can recover.** `test_bot_engages_a_visible_enemy` once "failed" because the bot killed the target and it respawned at full health before the check. The bot worked; the test was wrong. It was diagnosed by printing state on failure, not by re-running (see trip-ups).
+- **Confirm a new combat/physics test can fail.** The first armor tests "passed" friendly-fire and wall-blocking checks only because *every* shell was flying over the tanks' collision boxes.
 - Prefer extracting math into a pure class (like `TankMotion`) over testing through nodes.
 - A test that can't fail is worse than none. When adding one, briefly break the code to confirm it goes red.
 
 ## How the checks work (so you can extend them)
 
-- `tests/run_tests.gd` is a `SceneTree` script run with `--headless --script`. It discovers tests, awaits each (so tests can wait on physics frames), and calls `quit(1)` on failure, so `make test` fails CI-style.
+- `tests/run_tests.gd` is a `SceneTree` script run with `--headless --script`. It discovers tests, awaits each (so tests can wait on physics frames), and calls `quit(1)` on failure, so `make test` fails CI-style. `make test FILTER=combat` runs tests whose `file::method` contains the text.
+- **Any engine or script error during a test fails that test.** The runner registers a `Logger` (`OS.add_logger`, Godot 4.5+) that collects errors. Without it, a script error aborted a test function silently and the test printed PASS.
 - `--screenshot=<abs path>` is handled in `game/main.gd`: wait 3 s, `await RenderingServer.frame_post_draw`, save the viewport image, quit. It requires a real renderer, so not `--headless`.
 - `tools/web_smoke/smoke.mjs` (puppeteer-core + system Chrome with SwiftShader WebGL): serves `build/web`, opens `/?demo`, waits for the `TANK_SQUAD_READY` console line, screenshots, and fails on page exceptions or `console.error`.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
@@ -37,6 +45,6 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 ## Known limits
 
 - The desktop screenshot uses the local Intel GPU (OpenGL 3.3+); the web one uses SwiftShader. Colors and shadows can differ slightly. Neither is a performance measurement.
-- `web-net-smoke` holds both tanks still (to keep them in frame), so it doesn't show movement on a browser client; `net-smoke` covers movement headlessly.
+- `web-net-smoke`'s screenshot timing depends on the bot's drive time; if the bot isn't in frame, the check still passes (it only asserts boot + spawn). Look at the picture.
 - Nothing measures latency or jitter yet; everything runs on localhost.
 - No input-injection tests yet (keyboard/mouse → `PlayerController`). `ScriptedController` covers the command path; the input map mapping itself is untested.

@@ -1,6 +1,8 @@
 # Squad AI and Player Skill: Design Exploration
 
-> **Status: exploration, not decisions** (opened 2026-09-12). This captures the
+> **Status: direction accepted by the project lead (2026-09-12); details still hypotheses**
+> until experiments E1–E4 run. The lead will smoke test the game personally
+> before squad AI (M5) begins. This captures the
 > project lead's two open questions and a proposed way to answer them *with
 > experiments* rather than guesses. Promote conclusions into
 > [architecture.md](architecture.md) / [vision.md](vision.md) as they're validated.
@@ -141,4 +143,4 @@ LLM or Android work. That's the cheapest possible place to find out.
 
 | Date | Experiment | Result | Decision |
 |---|---|---|---|
-| (none yet) | | | |
+| 2026-09-12 | Informal: Claude (commander via agent bridge) vs 1 BotController, 1v1 | Bot 4 : 2 Claude. Slow commanders die between decisions; chargers always show front armor; first shot wins even duels; straight-line bots deadlock on walls | Keep phases/conditional orders (layer 4) in the design; navmesh + perception memory are M4 requirements; judge positional skill in squads, not 1v1. Details: [agent_bridge.md](agent_bridge.md) play report #1 |

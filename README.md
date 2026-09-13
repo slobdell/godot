@@ -9,7 +9,8 @@ plain language. See [`_agents/vision.md`](_agents/vision.md).
 
 ```bash
 make bootstrap     # one time: pinned Godot 4.7.2 + export templates into ./.tools
-make run           # play: WASD/arrows drive, mouse aims the turret
+make run           # play vs a bot: WASD/arrows drive, mouse aims, click/space fires (BOTS=3 for more)
+make check         # verify everything headless (tests + network + combat)
 make editor        # open the Godot editor on this project
 make help          # everything else
 ```
@@ -28,11 +29,19 @@ make serve-web     # terminal 2: then open http://localhost:8060/?connect in 2+ 
 make net-smoke     # or: prove it works with two headless bot clients
 ```
 
+Let Claude play (it commands a tank through a localhost bridge):
+
+```bash
+make server BOTS=1     # terminal 1
+make agent-client      # terminal 2; then ask Claude to play via tools/agent.py
+```
+
 ## Where to read next
 
 - New to Godot? [`_agents/godot_for_programmers.md`](_agents/godot_for_programmers.md)
 - How the code is organized and why: [`_agents/architecture.md`](_agents/architecture.md)
 - How tanks will think, and where player skill comes from: [`_agents/squad_ai_design.md`](_agents/squad_ai_design.md)
+- How Claude plays, and what it learned: [`_agents/agent_bridge.md`](_agents/agent_bridge.md)
 - How online game servers work, and our plan: [`_agents/server_management.md`](_agents/server_management.md)
 - What's done and what's next: [`_agents/roadmap.md`](_agents/roadmap.md)
 - Working with Claude on this repo: [`CLAUDE.md`](CLAUDE.md) → [`HANDOFF.md`](HANDOFF.md)

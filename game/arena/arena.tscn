@@ -2,6 +2,7 @@
 
 [ext_resource type="Shader" path="res://game/arena/ground_grid.gdshader" id="1_grid"]
 [ext_resource type="PackedScene" path="res://game/arena/crate.tscn" id="2_crate"]
+[ext_resource type="PackedScene" path="res://game/arena/wall.tscn" id="3_wall"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.38, 0.55, 0.78, 1)
@@ -28,6 +29,24 @@ shader = ExtResource("1_grid")
 material = SubResource("Mat_ground")
 size = Vector2(160, 160)
 
+[sub_resource type="StandardMaterial3D" id="Mat_perimeter"]
+albedo_color = Color(0.45, 0.45, 0.43, 1)
+roughness = 1.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_perimeter_ns"]
+size = Vector3(124, 3, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_perimeter_ns"]
+material = SubResource("Mat_perimeter")
+size = Vector3(124, 3, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_perimeter_ew"]
+size = Vector3(2, 3, 124)
+
+[sub_resource type="BoxMesh" id="BoxMesh_perimeter_ew"]
+material = SubResource("Mat_perimeter")
+size = Vector3(2, 3, 124)
+
 [node name="Arena" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -46,19 +65,76 @@ shape = SubResource("WorldBoundary_ground")
 [node name="Mesh" type="MeshInstance3D" parent="Ground"]
 mesh = SubResource("PlaneMesh_ground")
 
+[node name="Perimeter" type="StaticBody3D" parent="."]
+
+[node name="North" type="CollisionShape3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -61)
+shape = SubResource("BoxShape3D_perimeter_ns")
+
+[node name="NorthMesh" type="MeshInstance3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -61)
+mesh = SubResource("BoxMesh_perimeter_ns")
+
+[node name="South" type="CollisionShape3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 61)
+shape = SubResource("BoxShape3D_perimeter_ns")
+
+[node name="SouthMesh" type="MeshInstance3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 61)
+mesh = SubResource("BoxMesh_perimeter_ns")
+
+[node name="East" type="CollisionShape3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, 1.5, 0)
+shape = SubResource("BoxShape3D_perimeter_ew")
+
+[node name="EastMesh" type="MeshInstance3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, 1.5, 0)
+mesh = SubResource("BoxMesh_perimeter_ew")
+
+[node name="West" type="CollisionShape3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -61, 1.5, 0)
+shape = SubResource("BoxShape3D_perimeter_ew")
+
+[node name="WestMesh" type="MeshInstance3D" parent="Perimeter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -61, 1.5, 0)
+mesh = SubResource("BoxMesh_perimeter_ew")
+
 [node name="Obstacles" type="Node3D" parent="."]
+
+[node name="CenterCrate" parent="Obstacles" instance=ExtResource("2_crate")]
+
+[node name="WallWestA" parent="Obstacles" instance=ExtResource("3_wall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 0, -10)
+
+[node name="WallEastA" parent="Obstacles" instance=ExtResource("3_wall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 10)
+
+[node name="WallWestB" parent="Obstacles" instance=ExtResource("3_wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -36, 0, 12)
+
+[node name="WallEastB" parent="Obstacles" instance=ExtResource("3_wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 36, 0, -12)
+
+[node name="CoverSouth" parent="Obstacles" instance=ExtResource("3_wall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 30)
+
+[node name="CoverNorth" parent="Obstacles" instance=ExtResource("3_wall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, -30)
 
 [node name="Crate1" parent="Obstacles" instance=ExtResource("2_crate")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -6)
 
+[node name="Crate1Mirror" parent="Obstacles" instance=ExtResource("2_crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 6)
+
 [node name="Crate2" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, -14, 0, 4)
+transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, -30, 0, -26)
+
+[node name="Crate2Mirror" parent="Obstacles" instance=ExtResource("2_crate")]
+transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, 30, 0, 26)
 
 [node name="Crate3" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -28)
 
-[node name="Crate4" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, -20, 0, -22)
-
-[node name="Crate5" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 20)
+[node name="Crate3Mirror" parent="Obstacles" instance=ExtResource("2_crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 28)

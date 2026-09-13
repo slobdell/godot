@@ -30,17 +30,27 @@ keep "Acceptance" honest: it's what `verification.md` checks are run against.
   - No join authentication (anyone who can reach the port can join), no teams, no reconnect.
   - Browsers on an `https://` page require `wss://`, which is solved at M6 by the reverse proxy.
 
-## M3: Combat (built to be read by AI later)
-**Pre-read:** [squad_ai_design.md](squad_ai_design.md), "Consequences for the roadmap".
-- [ ] Fire → server spawns a shell (projectile, not hitscan), collision, damage, death, respawn. Firing is a *reliable* event, not the unreliable per-tick command stream
-- [ ] **Armor facing** (front/side/rear multipliers) so positioning matters
-- [ ] **Line-of-sight query** and taller cover obstacles, the first "sense" primitives AI will reuse
-- [ ] Two teams with colors; minimal HUD: health, reload
-- **Acceptance:** two networked players can destroy each other; flanking visibly beats frontal fire; a client can't deal damage by lying
+## ✅ M3: Combat, built to be read by AI later (2026-09-12)
+- [x] Fire → server spawns a projectile shell (swept raycast), damage, death, respawn (4 s). Fire is a held trigger + 2 s reload (decision changed from "reliable event"; see architecture.md)
+- [x] **Armor facing**: front ×0.5 / side ×1.0 / rear ×1.5 of 34 base damage
+- [x] **Line of sight** (`Perception`) + a point-symmetric arena with perimeter, walls, crates
+- [x] Two teams (Green/Rust), nameplates with health, HUD score/HP/reload, "destroyed" banner, impact effects
+- [x] Server bots (`--bots=N`, `BotController` on the shared `OrderController` action layer); offline `make run` includes 1 bot
+- [x] Tests: armor/lead/steering math, 7 real-physics combat scenarios, order validation; `make combat-smoke` proves damage over real sockets
+- [x] The test runner now fails a test on any engine/script error (a crashing test used to print PASS)
+- **Acceptance met:** networked damage verified (combat-smoke); flank vs front is 2× damage (tests); clients only send `TankCommand`, and the server computes all damage
+
+## ✅ M3.5: Agent bridge, Claude plays (2026-09-12)
+- [x] `--agent-port` → localhost HTTP bridge → `OrderController`; `tools/agent.py`; `make agent-client` / `agent-client-windowed` / `agent-offline`
+- [x] Origin/Host checks against browser-based attacks; order validation
+- [x] First playtest vs a bot, with findings logged ([agent_bridge.md](agent_bridge.md) play report #1)
+- **Known gaps:** no conditional orders yet (the playtest's #1 finding; belongs with phases in M4/M5); no human-vs-Claude session yet (needs the lead at the keyboard)
 
 ## M4: One smart tank + the match runner
 - [ ] **Headless match runner** (`make match …`): runs a match to completion faster than real time, prints a JSON result. Pulled forward from M5 because every AI experiment needs it
-- [ ] Navmesh (`NavigationRegion3D`), perception (LOS + detection radius), blackboard
+- [ ] Navmesh (`NavigationRegion3D`): **required, as the playtest showed straight-line bots deadlocking on walls**. `OrderController.move_to` should follow a path
+- [ ] Perception memory (last-known positions, detection radius) so AI stops being omniscient; blackboard
+- [ ] Conditional standing orders (e.g. `retreat_below_hp`), a small step toward phases, driven by playtest finding #1
 - [ ] `UtilityController`: actions `advance_to`, `engage`, `take_cover`, `retreat_to`, `hold`; directive weights; commitment bonus
 - [ ] In-game score overlay (top 3 actions per tank)
 - **Acceptance:** experiment **E1** passes ([squad_ai_design.md](squad_ai_design.md))

@@ -48,3 +48,18 @@ Format: **Concept**, then the one-line version, why it matters, and a way to
 - **One line:** Chess pieces are identical too. Skill is making better decisions: what to bring, how units work together, reading the opponent, and timing.
 - **Why it matters:** It's the central design question of the squad game (see `squad_ai_design.md`), and a great conversation to have about any game he likes: "what do good players do that bad players don't?"
 - **Show it:** Play a round of Gladiabots or any auto-battler together and ask, after each loss, what decision lost it.
+
+### 2026-09-12: Why flanking works (armor facing)
+- **One line:** Tanks have thick front armor and thin sides and back; a hit in the side does twice the damage of a hit in the front, and the rear three times.
+- **Why it matters:** It turns "who shoots faster" into "who gets a better angle", which is the start of tactics.
+- **Show it:** `make run BOTS=1`. Let the bot drive at you and count shots to kill it head-on (6). Then get beside it (3), or behind (2). Read `game/combat/armor.gd`: the whole rule is about 10 lines.
+
+### 2026-09-12: A test that passes for the wrong reason
+- **One line:** A "no friendly fire" test passed, but only because shells were missing *every* tank, friend or enemy.
+- **Why it matters:** Green tests aren't proof. Break the code on purpose and check the test goes red.
+- **Show it:** In `tank.tscn`, shrink the Collision box height back to 1.0 and run `make test FILTER=combat`. Watch which tests fail, and which *keep passing* when they shouldn't.
+
+### 2026-09-12: Commanders vs pilots
+- **One line:** Claude plays through standing orders ("drive there, shoot whatever you see") because it thinks in seconds, not milliseconds.
+- **Why it matters:** It's the whole squad-game idea in miniature: you don't steer, you decide what your units should do and when. Claude lost 4–2 to a dumb bot mostly because it couldn't say "and retreat if you get hurt."
+- **Show it:** `make server BOTS=1`, open the browser client, and ask Claude to join with `make agent-client`. Play against it, and afterwards ask each other what order you wished you could have given.

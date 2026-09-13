@@ -29,7 +29,8 @@ regain full situational awareness from `HANDOFF.md` in under 5 minutes.
 
 A Godot 4.7 (GDScript) tank game that exports to **WebAssembly for browsers**
 and to a **headless Linux server binary** from one codebase, with real-time
-server-authoritative multiplayer over WebSockets (M2). The destination is
+server-authoritative multiplayer over WebSockets (M2), team combat with
+server bots (M3), and an HTTP bridge that lets Claude command a tank (M3.5). The destination is
 a squad-strategy game where players author *doctrine* for 5 tanks, eventually
 via an on-device LLM on Android, rather than driving tanks by hand
 ([vision.md](vision.md)).
@@ -57,14 +58,18 @@ Makefile                 every workflow: `make help`
 project.godot            engine config: renderer, input map, main scene
 export_presets.cfg       "Web" and "Linux Server" export presets
 game/
-  main.tscn / main.gd    entry point: picks role OFFLINE/SERVER/CLIENT from flags; spawns tanks
-  tank/                  Tank (CharacterBody3D + StateSync), TankCommand (the seam), TankMotion (pure math)
+  main.tscn / main.gd    entry point: picks role OFFLINE/SERVER/CLIENT from flags; HUD; local controller
+  match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
+  tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
+  combat/                Shell (projectile), Armor (facing → damage), Ballistics (lead), Impact (visual)
+  ai/                    OrderController (standing orders → command), BotController, Steering, Perception
+  agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
   network/               NetworkInput: client→server command relay + server-side validation
   camera/                FollowCamera
   arena/                 ground (grid shader), crates, sky/light
 tests/                   headless runner + TestCase base + test_*.gd; net/bot_client_check.gd
-tools/                   serve_web.py (local static host), web_smoke/ (headless Chrome check)
+tools/                   serve_web.py, web_smoke/ (headless Chrome check), agent.py (Claude's CLI for the bridge)
 _agents/                 you are here
 .tools/  (gitignored)    pinned Godot + export templates, from `make bootstrap`
 build/   (gitignored)    exports and screenshots
@@ -74,7 +79,9 @@ build/   (gitignored)    exports and screenshots
 
 | I want to… | Do |
 |---|---|
-| Play it | `make run` (WASD/arrows, mouse aims) or `make demo` |
+| Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
+| Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
+| Let Claude play | `make server BOTS=1` + `make agent-client`, then `tools/agent.py …` ([agent_bridge.md](agent_bridge.md)) |
 | Open the editor | `make editor` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
 | See it in a browser | `make serve-web` → http://localhost:8060 (add `?demo`) |
@@ -101,4 +108,10 @@ build/   (gitignored)    exports and screenshots
 11. **A headless process has no vsync, so it spins a CPU core.** `main.gd` caps `Engine.max_fps` when `DisplayServer.get_name() == "headless"`. A future faster-than-real-time *match runner* must deliberately skip that cap.
 12. **The offline peer is a server too.** `multiplayer.is_server()` is `true` with no network. Code that means "am I the dedicated server?" should check `role`, not `is_server()`.
 13. **Scene sub-resources (materials) are shared by every instance.** Change one tank's material and all tanks change. `Tank.set_paint()` duplicates before editing.
-14. **`cmd | grep &` in a Makefile hides the exit code unless `pipefail` is on.** The Makefile sets `-o pipefail`, and `net-smoke` relies on it to fail when a bot client fails.
+14. **`cmd | grep &` in a Makefile hides the exit code unless `pipefail` is on.** The Makefile sets `-o pipefail`, and `net-smoke` relies on it to fail when a bot client fails. The flip side is that the shell also runs with `-e`, so an *informational* `grep` that finds nothing aborts the recipe. Append `|| true`.
+15. **Collision shapes must cover everything that should be hittable.** Shells fly at barrel height (1.26 m). The hull box originally stopped at 1.05 m, so every shell flew over every tank, and two tests (friendly fire, wall blocks) passed for the wrong reason. The box is now 1.6 m tall.
+16. **A script error inside a test function used to print PASS.** The error aborts the coroutine with no assertion failure recorded. The runner now captures engine errors with a `Logger` and fails the test.
+17. **"Flaky" is not a diagnosis.** The bot test "failed after the kill test" and looked like cross-test leakage. It was a lethal bot plus a fast respawn restoring full health before the assertion. Print state on failure first.
+18. **Put `MultiplayerSpawner`s before the containers they spawn into.** With Tanks listed first, the *release* server export logged "Attempt to disconnect a nonexistent connection … tree_exiting" for each bot at shutdown (debug builds and the editor were clean). Reordering fixed it; `make check-all` guards it.
+19. **Never `pkill -f PATTERN` from a shell whose command line contains PATTERN.** It matches and kills itself (exit 144). Save PIDs instead.
+20. **Godot's default font lacks block glyphs** (■ █ render as empty boxes). Keep HUD text ASCII.

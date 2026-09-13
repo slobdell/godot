@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://game/tank/tank.gd" id="1_tank"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hull"]
-size = Vector3(2.4, 1.0, 3.6)
+size = Vector3(2.4, 1.6, 3.6)
 
 [sub_resource type="StandardMaterial3D" id="Mat_hull"]
 albedo_color = Color(0.33, 0.4, 0.22, 1)
@@ -45,12 +45,23 @@ properties/1/replication_mode = 1
 properties/2/path = NodePath(".:sync_turret_yaw")
 properties/2/spawn = true
 properties/2/replication_mode = 1
+properties/3/path = NodePath(".:sync_health")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+properties/4/path = NodePath(".:sync_alive")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:sync_reload")
+properties/5/spawn = true
+properties/5/replication_mode = 1
 
 [node name="Tank" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 3
 script = ExtResource("1_tank")
 
 [node name="Collision" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 shape = SubResource("BoxShape3D_hull")
 
 [node name="Hull" type="MeshInstance3D" parent="."]
@@ -78,3 +89,12 @@ mesh = SubResource("CylinderMesh_barrel")
 [node name="StateSync" type="MultiplayerSynchronizer" parent="."]
 replication_interval = 0.033
 replication_config = SubResource("ReplicationConfig_state")
+
+[node name="Nameplate" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0)
+billboard = 1
+no_depth_test = true
+pixel_size = 0.03
+font_size = 44
+outline_size = 12
+text = "100"

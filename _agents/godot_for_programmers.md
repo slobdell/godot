@@ -13,7 +13,11 @@ the facts this repo relies on. Examples point at real files here.
 | `class_name Foo` | Registers a global type name, usable in type hints and `Foo.new()` | `class_name TankCommand` |
 | **Resource** (`.tres`, meshes, materials) | Serializable, shareable, reference-counted data objects | The `BoxMesh`/`StandardMaterial3D` sub-resources inside `tank.tscn` |
 | `RefCounted` | A plain object freed when unreferenced (nodes are *not* ref-counted, so you `free()`/`queue_free()` them) | `TankCommand`, `TankMotion` |
-| **Signal** | The observer pattern, built in. `signal died`, `died.emit()`, `tank.died.connect(fn)` | None yet; coming in M3 (death, hits) |
+| **Signal** | The observer pattern, built in. `signal died`, `died.emit()`, `tank.died.connect(fn)` | `Tank.fired` / `Tank.died` → `Match`; `Shell.hit` → `Match` |
+| Collision layers / masks | A body *is on* layers and *scans* masks (bitfields). Ray queries take a mask | world = layer 1, tanks = layer 2; shells scan 1+2; line of sight scans 1 |
+| Ray query | `get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from, to, mask, exclude))` → `{}` or `{position, collider, …}`. Use during physics processing | `Shell`, `Perception` |
+| `Label3D` | Text in 3D space; `billboard` faces the camera | tank nameplates |
+| `Logger` | (4.5+) Subclass and `OS.add_logger()` to receive every engine error | `tests/run_tests.gd` fails tests on errors |
 | **Autoload** | A singleton node that lives above the current scene | None yet. M2 kept networking in `main.gd` because it only needs one scene; a menu/lobby scene would justify an autoload |
 | **Groups** | Tags on nodes: `add_to_group("tanks")`, `get_tree().get_nodes_in_group("tanks")` | None yet |
 | `@export var` | A field that shows up in the editor Inspector and is saved into the scene | `max_forward_speed` in `tank.gd` |

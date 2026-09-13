@@ -7,12 +7,14 @@ extends SceneTree
 ##   1. the server spawned a tank for us,
 ##   2. we can see --expect-tanks tanks in total (other players replicate to us),
 ##   3. our tank's replicated position moves: our commands reached the server,
-##      the server simulated them, and the new state came back.
+##      the server simulated them, and the new state came back (--min-travel=M, default 3),
+##   4. with --expect-damage: our tank's replicated health drops (someone shot us and
+##      the server's damage reached us), e.g. against a server bot (--bots=1).
 ## Exits 0 on success, 1 on failure, printing NET_CHECK PASS/FAIL.
 
 const TIMEOUT_SEC := 25.0
 const PORT_WAIT_SEC := 15.0
-const MIN_TRAVEL_M := 3.0
+const DEFAULT_MIN_TRAVEL_M := 3.0
 
 
 func _initialize() -> void:
@@ -26,6 +28,8 @@ func _run() -> void:
 		flags[parts[0]] = parts[1] if parts.size() > 1 else ""
 	var url: String = flags.get("connect", "")
 	var expect_tanks := int(flags.get("expect-tanks", "1"))
+	var min_travel := float(flags.get("min-travel", str(DEFAULT_MIN_TRAVEL_M)))
+	var expect_damage := flags.has("expect-damage")
 	if not url.begins_with("ws://"):
 		_finish(false, "pass --connect=ws://host:port")
 		return
@@ -39,8 +43,10 @@ func _run() -> void:
 	var main: Node = load("res://game/main.tscn").instantiate()
 	root.add_child(main)
 
-	var tanks: Node = main.get_node("Tanks")
-	var deadline := Time.get_ticks_msec() + int(TIMEOUT_SEC * 1000)
+	var tanks: Node = main.get_node("Match/Tanks")
+	var timeout_sec := float(flags.get("timeout", str(TIMEOUT_SEC)))
+	var deadline := Time.get_ticks_msec() + int(timeout_sec * 1000)
+	var lowest_health := 1_000_000
 	var start: Variant = null
 	var travel := 0.0
 	var seen := 0
@@ -53,13 +59,18 @@ func _run() -> void:
 		if start == null:
 			start = mine.sync_position
 		travel = maxf(travel, mine.sync_position.distance_to(start))
-		if seen >= expect_tanks and travel >= MIN_TRAVEL_M:
+		lowest_health = mini(lowest_health, mine.sync_health)
+		var damaged := lowest_health < mine.max_health
+		if seen >= expect_tanks and travel >= min_travel and (damaged or not expect_damage):
 			break
 
 	var peer_id := root.multiplayer.get_unique_id()
-	var summary := "peer=%d got_tank=%s tanks_seen=%d/%d travel=%.1fm/%.1fm" % [
-			peer_id, start != null, seen, expect_tanks, travel, MIN_TRAVEL_M]
-	_finish(start != null and seen >= expect_tanks and travel >= MIN_TRAVEL_M, summary)
+	var damaged := lowest_health < 100
+	var summary := "peer=%d got_tank=%s tanks_seen=%d/%d travel=%.1fm/%.1fm lowest_health=%s%s" % [
+			peer_id, start != null, seen, expect_tanks, travel, min_travel,
+			lowest_health if start != null else "-", " (damage expected)" if expect_damage else ""]
+	_finish(start != null and seen >= expect_tanks and travel >= min_travel
+			and (damaged or not expect_damage), summary)
 
 
 func _wait_for_port(host: String, port: int) -> bool:

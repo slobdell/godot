@@ -1,46 +1,43 @@
 # HANDOFF
 
 > **Read [`_agents/orientation.md`](_agents/orientation.md) first.** It has the
-> mental model, the context-handoff workflow, and the trip-ups (now 14 of them).
+> mental model, the context-handoff workflow, and the trip-ups (now 20 of them).
 > Then come back here.
 
-_Last updated: 2026-09-12, end of the M2 session._
+_Last updated: 2026-09-12, M3 + M3.5 committed; M4 infrastructure next._
 
 ## Current state
 
-**M0, M1, and M2 (networked direct control) are done and verified.** The M0/M1
-baseline is committed (`fad14f4`). **M2 is not committed yet**; the lead hasn't
-been asked.
+**M0–M3 and M3.5 are done, verified, and committed.** `make check-all` passes
+from a clean build (tests 40/40, net-smoke, combat-smoke, desktop screenshot,
+web-smoke, web-net-smoke, exported server shuts down cleanly with bots). The
+screenshots were inspected.
 
-- `make server` + browser tabs at `localhost:8060/?connect` = real-time multiplayer. The server simulates every tank; clients send `TankCommand`s by RPC and display replicated state.
-- `make test`: **18/18** (added 6 server-side validation tests + a NaN-sanitizing test).
-- `make net-smoke`: headless server + 2 bot clients over real WebSockets, PASS. Also verified that it **fails** when expectations aren't met (`NET_SMOKE_EXPECT=3`).
-- `make web-net-smoke`: a browser client connects, and a remote tank renders rust-colored at its replicated position (screenshot inspected).
-- `make web-smoke` (offline), `make screenshot`: still pass and look right.
-- Exported release server binary: starts in SERVER role with no flags; a bot client connected and drove through it.
+What you can do right now:
+- `make run`: play offline vs a bot (click/space fires). `make run BOTS=3` for a brawl.
+- `make server BOTS=1` + `make serve-web` → `http://localhost:8060/?connect`: multiplayer with bots in the browser.
+- `make server BOTS=1` + `make agent-client` → Claude plays via `tools/agent.py` ([agent_bridge.md](_agents/agent_bridge.md)).
 
-## What happened this session
+## What happened in the M3 session
 
-1. Built M2 as designed in [architecture.md § Networking](_agents/architecture.md#networking-m2): roles in `main.gd`, `MultiplayerSpawner` with a spawn function, a `StateSync` synchronizer in `tank.tscn`, and `game/network/network_input.gd` (the relay plus server-side gate).
-2. New trip-ups recorded (#9–14): node paths must match across peers, `server_relay` defaults on, headless spins a CPU core, the offline peer is a server, shared materials, and pipefail in Makefile pipelines.
-3. The lead asked two design questions: can each tank run its own control loop over a weighted tree of tunable directives, and where does player skill come from if the AI opponent has identical capabilities? Answered in **[`_agents/squad_ai_design.md`](_agents/squad_ai_design.md)**: utility AI with directives + phases, five sources of skill, and experiments **E1–E4** to validate before committing. The lead is new to game dev and explicitly unsure how squad AI would work, so treat that doc as a hypothesis to test, not a spec.
-4. The roadmap was restructured around those experiments: M3 combat must include LOS, armor facing, and cover; the **headless match runner moved up to M4**; M4 acceptance = E1, M5 acceptance = E3.
+1. **Combat** ([architecture.md § Combat](_agents/architecture.md#combat-and-rules-m3)): projectile shells, armor facing (front ×0.5 / side ×1 / rear ×1.5), health/death/respawn, teams, score, symmetric arena, HUD, impacts. `Match` holds the rules; `Tank` only emits `fired`/`died`.
+2. **Action layer:** `OrderController` (standing orders → `TankCommand`) with pure helpers `Steering`, `Ballistics`, `Perception`. `BotController` is a tiny policy on top.
+3. **Agent bridge (the lead's idea):** localhost HTTP → `OrderController`; Claude played a bot and **lost 4–2**. Findings are in [agent_bridge.md play report #1](_agents/agent_bridge.md#play-report-1-2026-09-12-claude-vs-one-botcontroller-1v1-2-minutes) and logged in [squad_ai_design.md](_agents/squad_ai_design.md): conditional orders are needed, bots deadlock on walls without a navmesh, 1v1 has little positional skill, and first shot wins even duels.
+4. **Verification got stricter:** the test runner fails tests on any engine error (a crashing test used to PASS); `make check` / `make check-all` bundles; `FILTER=`.
+5. **Real bugs caught by looking, not asserting:** shells flew over every tank (collision box too short, and two tests passed vacuously); a release-only shutdown error from spawner ordering; missing HUD glyphs; the camera couldn't see enemies at engagement range; Rust players' camera faced their own wall.
 
-## Next task: M3, combat (built to be read by AI later)
+## Next task: M4 infrastructure (still BEFORE squad AI)
 
-**Pre-read:** [`_agents/squad_ai_design.md`](_agents/squad_ai_design.md) ("Consequences for the roadmap") and the M3 section of [`_agents/roadmap.md`](_agents/roadmap.md).
+The lead asked to pause for a personal smoke test before squad AI begins. The
+M4 items below are infrastructure the playtest showed we need; `UtilityController`
+(the first real AI) should wait for that smoke test.
 
-Sketch:
-1. Firing: client sets `fire` → server spawns a shell (spawner or synchronized projectile) with reload time. Make firing a **reliable** one-shot event, not just a flag in the unreliable per-tick stream, so a dropped packet can't eat a shot.
-2. Damage model with armor facing: the angle between the shell's travel direction and the hull's forward decides front/side/rear multipliers. Pure math → `TankMotion`-style pure class + unit tests.
-3. Line-of-sight helper (physics ray query) + a few taller walls to hide behind.
-4. Health, death, respawn after a delay; two teams with colors (replace the "rust = other player" placeholder).
-5. HUD: health + reload. Extend `net-smoke` (e.g. a bot that aims and fires at the other) to prove damage over the network.
+1. **Navmesh pathing** for `move_to` (`NavigationRegion3D` baked from the arena; `NavigationAgent3D` or `NavigationServer3D.map_get_path`). Acceptance: the bot no longer pins itself against `CoverNorth` chasing a target behind it (reproduce with the agent bridge: park behind the wall).
+2. **Conditional standing orders** (e.g. `retreat_below_hp`, `hold_until_visible`) in `OrderController` + the bridge + `agent.py`. A second playtest should show Claude surviving its think gaps.
+3. **Headless match runner:** `--match` mode that runs bots-vs-bots to a score/time limit **faster than real time** (`--fixed-fps`, and skip the headless `max_fps` cap, trip-up #11) and prints JSON. `make match`.
 
 ## Open decisions for the project lead
 
-1. **Commit M2?** Say the word.
-2. **Which Godot version does your son use?** Still pinned to 4.7.2.
-3. **Your son's OS:** the Makefile assumes Linux (see bootstrap.md "Platform scope").
-4. **Squad AI experiments:** do E1–E4 in [squad_ai_design.md](_agents/squad_ai_design.md) match what you'd want proven before investing in the LLM/Android layers?
-5. **Working title** "Tank Squad" is still a placeholder.
+1. **Smoke test M3 yourself** (`make run`, and the browser multiplayer). Does combat feel right: reload, damage, speed, camera?
+2. **Play against Claude?** Start `make server BOTS=0` + browser, and ask Claude to join with `make agent-client`.
+3. Still open: your son's Godot version and OS; the working title.

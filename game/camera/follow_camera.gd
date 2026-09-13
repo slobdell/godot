@@ -21,7 +21,11 @@ func _process(delta: float) -> void:
 	global_position = global_position.lerp(desired, 1.0 - exp(-smoothing * delta))
 
 
-## Start following a new target, jumping straight to it.
-func follow(new_target: Node3D) -> void:
+## Start following a new target, jumping straight to it. With `flip`, view the
+## arena from the opposite side (so each team sees the enemy base at the top).
+func follow(new_target: Node3D, flip := false) -> void:
 	target = new_target
+	if flip:
+		offset = Vector3(-offset.x, offset.y, -offset.z)
 	global_position = target.global_position + offset
+	look_at(global_position - offset)
