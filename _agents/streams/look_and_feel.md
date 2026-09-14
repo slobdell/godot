@@ -133,6 +133,18 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   light/mesh approach hitches to 33 ms. Probe: instance uniforms work, `Decal` and `ReflectionProbe`
   don't help in Compatibility, GPUParticles3D works natively. Browser/phone numbers pending.
 
+- **L1 HUD widgets** (`game/ui/widgets/`): `CyberFrame` (chamfer fill + glowing corner brackets,
+  animatable about its center), `CyberBanner` (beam → open → glitch → snap choreography, typewriter
+  with █ cursor at 30 fps, blink, history newest-first with caps, dedup, 5 s auto-dismiss; a manual
+  timeline so it animates during the tactical pause and tests step it exactly), `CyberMessages`
+  (top = warnings/errors, bottom = info; **wired into `hud.tscn`, listening to `Hud.message_posted`**,
+  so `hud.post_message(text, Hud.WARNING)` just works), `Conductors` (breathing traces; glow baked
+  once into two tiny textures, per-frame alpha only; `add_bus` builds nested 45° elbows),
+  `CyberStyle` (palette, easing curves, 1080p scale × a 1.5 touch boost on phones, font). Font:
+  Share Tech Mono + a 14 KB JetBrains Mono subset as fallback for █ ▲ ─ (`assets/fonts/`, OFL, README).
+  `make hud-gallery` → `build/screenshots/hud-gallery.png` / `-phone.png`. 10 tests in
+  `tests/test_hud_widgets.gd` (mutation-checked: breaking the dismiss timer or the font fallback fails them).
+
 #### Frame budget per quality tier (from L0; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows |
 |---|---|---|---|---|---|---|---|---|
@@ -145,6 +157,8 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - **FX systems live under the scene root, created on first use** (`FxWorld.get_instance()`), and return null on headless peers: servers, tests, and `sim-baseline` never build effects.
 - **The muzzle-flash event is "a tracer appeared"**: the `fx.shell` slot has no firing hook, and this needs no contract change.
 - **Tracers take the team's neon** (`GameTheme.team_glow`, new): cyan vs magenta shots keep the two teams readable in the dark. The shell's team is read from the Shell node (read-only duck typing).
+- **HUD text grows 1.5× on touch devices** (`CyberStyle.touch_boost`, preview with `--ui-touch`): the spec's 25 px at 1080p is ~1.5 mm tall on a phone. Banners keep ≥ 2.2 lines of height so the boosted text fits.
+- **Banner timestamps use the wall clock (`HH:MM:SS`) like the reference**; `clock` is swappable (match time would be a one-line change).
 - **The FX lab uses visual-only tanks and shells** (slot visuals, not the simulation), so it never touches gameplay code and is deterministic without physics.
 
 #### Shared-file edits (for the merge notes)
@@ -165,7 +179,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- L1 HUD widgets (in progress).
+- L2 cyberpunk arena (in progress).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
