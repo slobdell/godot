@@ -86,6 +86,8 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 
 - **Reproducible themes:** `make assets-kitbash` = `tools/assets/build_kitbash.sh`, the checked-in recipe (fetch CC0 sources + every normalize command with its reasons); `make assets-procedural` rebuilds `neon_kit`. Both are **deterministic**: a second rebuild leaves git clean. Unchanged GLBs aren't rewritten, because Godot wouldn't re-import them and their extracted textures would vanish; a regression test covers this. Re-run both after any pipeline change.
 
+- **`--palette` draw-call merge:** flat, untextured, non-emissive materials that aren't tint/neon/heat targets merge into one `vertex_palette` material, with albedo moved into sRGB vertex colors. glTF drops the vertex-color flags, so the wrapper restores them in `_ready`. Kitbash went from 16 → 11 draw calls per set (match: props 38 → 19, tanks 70 → 50); colors unchanged in the gallery. Test covers the merge, the kept materials, and the round trip through the wrapper. The rebuild exposed that decimation left unused vertices behind: the in-memory check saw the old bounds while the imported GLB floated 8 cm up. Now vertices are compacted after decimation and the anchor is re-applied to the final geometry; the committed-theme test caught it.
+
 **Decisions**
 - Pipeline GDScript lives in `assets/pipeline/`, not `tools/assets/`: `tools/` has a `.gdignore`, so Godot never registers `class_name` scripts there. `tools/assets/` keeps non-Godot tooling (Python provider clients, mock server).
 - Slot contracts are data (`assets/pipeline/asset_contracts.gd`). Where the brief's table was loose I picked what matches today's placeholder art, so swapping art never moves gameplay: turret **bottom at y = −0.275** relative to its pivot (sits on the default hull deck at 0.945 m); cannon/laser barrel from z = −0.7 to the muzzle at **z = −3.2**, axis at y = 0.05; props **stretch** to their exact collision box (warning past 2× distortion); vehicles scale uniformly (**contain**); turret max 1.8 × 0.9 × 2.1.
@@ -113,7 +115,7 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 
 **Next steps** (assets stream, in order)
 1. Once the lead buys a key: generate a hero hull/turret/cannon with `asset_prompts.md`, normalize into a `generated` theme, record results in its Results log.
-2. Palette atlas in the normalizer (flat-colored, non-emissive materials → one palette texture) to cut draw calls on CC0/procedural props (asset_budget.md).
+2. Neon kit draw calls: share one grime texture across its textured materials so `--palette`-style merging applies (asset_budget.md).
 3. Unit classes (gameplay G-set 2: scout/artillery): slot variants per class once the catalog defines hardpoints; the Quaternius pack has 4 tank variants ready to normalize.
 4. After look & feel picks a direction: move chosen pieces into `game/theme/cyberpunk/` (their call), then drop unused test themes from the export (asset_budget.md proposal 2).
 

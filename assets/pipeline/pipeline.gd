@@ -6,6 +6,8 @@ extends SceneTree
 ##   inspect   --in=<glb> [--slot=<slot>]      measure a model; with a slot, check it against the contract
 ##   normalize --in=<glb> --slot=<slot> --theme=<theme>
 ##             [--forward=+z] [--up=+y] [--include=glob,..] [--exclude=glob,..] [--scale=<f>]
+##             [--palette]  merge flat-colored materials into one vertex-color material (fewer draw calls);
+##                          --tint/--team-emissive/--heat/--emissive materials are kept separate
 ##             [--repeat=5x1x2]  tile the selection along x/y/z (after the axis remap) before fitting
 ##             [--scale-from=<slot>]  reuse the uniform scale another slot got from the same source
 ##             [--emissive=glob:energy,..] [--emission-map=<png>[:material glob]] (e.g. Meshy's emission map)
@@ -68,6 +70,9 @@ func _normalize(args: Dictionary) -> int:
 		"include": _list(args.get("include", "")), "exclude": _list(args.get("exclude", "")),
 		"scale": float(args.get("scale", "0")), "emissive": {},
 	}
+	if args.has("palette"):
+		options["palette"] = true
+		options["keep"] = _list(args.get("tint", "")) + _list(args.get("team-emissive", "")) + _list(args.get("heat", ""))
 	if args.has("repeat"):
 		var counts := String(args["repeat"]).split("x")
 		options["repeat"] = Vector3i(int(counts[0]), int(counts[1]) if counts.size() > 1 else 1, int(counts[2]) if counts.size() > 2 else 1)

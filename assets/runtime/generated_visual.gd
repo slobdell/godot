@@ -17,8 +17,20 @@ extends Node3D
 @export_range(0.0, 1.0) var tint_strength := 1.0
 @export var heat_energy := 4.0
 
+## Materials merged by the pipeline's --palette carry their colors in vertex colors; glTF can't store
+## the flags that say so, so they are restored here (on the shared material, once).
+const PALETTE_MATERIAL := "vertex_palette"
+
 var weapon := {}
 var _copies := {}  # [MeshInstance3D, surface] key → per-instance material copy
+
+
+func _ready() -> void:
+	for target in _surfaces(PackedStringArray([PALETTE_MATERIAL])):
+		var material := (target[0] as MeshInstance3D).mesh.surface_get_material(target[1]) as BaseMaterial3D
+		if material != null:
+			material.vertex_color_use_as_albedo = true
+			material.vertex_color_is_srgb = true
 
 
 func set_team_color(color: Color) -> void:

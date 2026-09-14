@@ -61,12 +61,15 @@ MultiMesh tracers anyway). A `radial_segments = 6, rings = 1` capsule would be a
 | kitbash | 31,368 | 38 | 65,440 | 70 |
 | neon_kit props + kitbash tanks | 5,708 | 76 | 65,440 | 70 |
 
+**After `--palette`** (implemented later in the night; kitbash recipe uses it): hull 4 → 2 draw calls, crate and wall 2 → 1,
+billboard 3 → 2. A kitbash match goes from 38 → **19** prop draw calls and 70 → **50** tank draw calls. It costs ~20 KB of vertex
+colors in the pack (hull 115 → 137 KB).
+
 Guideline to verify with `fx-bench` and a phone, not a measurement: a mid-range phone on WebGL 2 holds 60 fps
 at around **100–150k visible triangles and 150–250 draw calls** with cheap materials. Both themes fit, but
 **draw calls, not triangles, are the first limit.** The neon kit is triangle-cheap and draw-call-heavy
-(3–5 materials per prop), so the next pipeline step is a **palette atlas**: bake flat-colored, non-emissive materials
-into one small palette texture per model, keeping only the named `paint*` / `neon*` materials separate. That
-takes a prop to 2 draw calls. Identical props can also be drawn as a MultiMesh; the arena places them, so that's gameplay/look & feel's call.
+(3–5 materials per prop). `--palette` (flat materials → one vertex-color material) doesn't help it, because its grime maps are
+textures; sharing one grime texture across its metal/concrete materials would be the next step there. Identical props can also be drawn as a MultiMesh; the arena places them, so that's gameplay/look & feel's call.
 
 ## Mesh LOD on the Compatibility renderer (measured)
 

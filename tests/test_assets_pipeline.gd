@@ -125,6 +125,12 @@ func test_dense_models_are_decimated_to_the_budget() -> void:
 	var result := AssetNormalizer.normalize(root, "prop.crate")
 	var after := AssetInspector.inspect(_free_later(result["scene"]))
 	assert_true(after["tris"] <= 2000 and after["tris"] > 200, "decimated under the 2000 budget without collapsing (%d tris)" % after["tris"])
+	var arrays: Array = (result["scene"] as Node3D).get_node("Mesh").mesh.surface_get_arrays(0)
+	var used := {}
+	for index in arrays[Mesh.ARRAY_INDEX]:
+		used[index] = true
+	assert_eq(used.size(), arrays[Mesh.ARRAY_VERTEX].size(), "vertices dropped by decimation are removed, not shipped")
+	assert_near((after["aabb"] as AABB).position.y, 0.0, 0.001, "the decimated model still sits on the ground")
 
 
 func test_decimation_spares_small_detail_surfaces() -> void:
@@ -156,6 +162,40 @@ func test_decimation_spares_small_detail_surfaces() -> void:
 	assert_eq(tris.get("sign", 0), 32, "the sign keeps all 32 triangles while the dense body is simplified")
 	assert_true(tris.get("body", 0) + tris.get("sign", 0) <= 2000, "and the model still fits the budget (%s)" % tris)
 	assert_true(tris.get("body", 0) >= 1000, "the body is reduced only as far as needed (%s)" % tris)
+
+
+func test_palette_merges_flat_colors_but_keeps_team_paint_and_neon() -> void:
+	var root: Node3D = _free_later(Node3D.new())
+	_add_box(root, "Hull", Vector3(4.5, 1.5, 4.5), Vector3(0, 0.75, 0), "Main")
+	_add_box(root, "Tracks", Vector3(4.5, 0.5, 4.5), Vector3(0, 0.25, 0), "Main_Dark")
+	_add_box(root, "Wheels", Vector3(1, 1, 1), Vector3(0, 0.5, 0), "Wheels")
+	var neon := StandardMaterial3D.new()
+	neon.resource_name = "neon_strip"
+	neon.emission_enabled = true
+	_add_box(root, "Strip", Vector3(4.5, 0.1, 0.1), Vector3(0, 3, 0), "", neon)
+	var result := AssetNormalizer.normalize(root, "prop.crate", {"palette": true, "keep": ["Main"]})
+	var scene: Node3D = _free_later(result["scene"])
+	var mesh: ArrayMesh = scene.get_node("Mesh").mesh
+	var names := []
+	for surface in mesh.get_surface_count():
+		names.append(mesh.surface_get_material(surface).resource_name)
+	names.sort()
+	assert_eq(names, ["Main", "neon_strip", "vertex_palette"], "tracks and wheels share one draw call; team paint and neon stay separate")
+	var path := "%s/palette.glb" % TMP
+	AssetIO.save_glb(scene, path)
+	var wrapper := Node3D.new()
+	wrapper.set_script(WRAPPER)
+	wrapper.add_child(AssetIO.load_glb(path))
+	add_to_tree(wrapper)  # _ready restores the vertex-color flags glTF drops
+	for entry in AssetInspector.mesh_instances(wrapper):
+		var reloaded: Mesh = (entry[0] as MeshInstance3D).mesh
+		for surface in reloaded.get_surface_count():
+			var material := reloaded.surface_get_material(surface) as BaseMaterial3D
+			if material.resource_name == "vertex_palette":
+				assert_true(material.vertex_color_use_as_albedo and material.vertex_color_is_srgb, "the wrapper re-enables vertex colors on the palette")
+				var colors: PackedColorArray = reloaded.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
+				assert_true(colors.size() > 0, "the flat colors survived the GLB round trip as vertex colors")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func test_emissive_maps_survive_normalize_export_and_reload() -> void:

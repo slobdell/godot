@@ -5,7 +5,8 @@
       "glb": "kit_billboard.glb",
       "license": "CC0 1.0 (Public Domain)",
       "notes": [
-        "decimated 1108 → 828 triangles (budget 1000)",
+        "palette: merged 2 flat materials into one (Grey, DarkGrey)",
+        "decimated 1108 → 282 triangles (budget 1000)",
         "material 'Texture_Signs' made emissive ×2.5"
       ],
       "options": {
@@ -16,17 +17,19 @@
         "fitted_scale": 1.56444716453552,
         "forward": "-z",
         "include": [],
+        "keep": [],
         "materials": {
           "heat": [],
           "team_emissive": [],
           "tint": []
         },
+        "palette": true,
         "scale": 0.0,
         "up": "+y"
       },
       "scene": "kit_billboard.tscn",
       "source": "https://poly.pizza/bundle/Cyberpunk-Game-Kit-Hkfxa8K8zF (Cyberpunk Signs, static.poly.pizza/44299e58-2793-47f6-8245-fba288fd2bfd.glb)",
-      "tris": 828
+      "tris": 282
     },
     "kit.light_pole": {
       "credit": "Quaternius, Toon Shooter Game Kit",
@@ -59,18 +62,22 @@
       "credit": "Quaternius, Toon Shooter Game Kit",
       "glb": "prop_crate.glb",
       "license": "CC0 1.0 (Public Domain)",
-      "notes": [],
+      "notes": [
+        "palette: merged 2 flat materials into one (Grey, Blue)"
+      ],
       "options": {
         "emissive": {},
         "exclude": [],
         "fitted_scale": 2.05060529708862,
         "forward": "+z",
         "include": [],
+        "keep": [],
         "materials": {
           "heat": [],
           "team_emissive": [],
           "tint": []
         },
+        "palette": true,
         "scale": 0.0,
         "up": "+y"
       },
@@ -84,6 +91,7 @@
       "license": "CC0 1.0 (Public Domain)",
       "notes": [
         "tiled the model 4 × 1 × 1",
+        "palette: merged 2 flat materials into one (Grey, Red)",
         "decimated 5344 → 2656 triangles (budget 3000)"
       ],
       "options": {
@@ -92,11 +100,13 @@
         "fitted_scale": 1.03222978115082,
         "forward": "+z",
         "include": [],
+        "keep": [],
         "materials": {
           "heat": [],
           "team_emissive": [],
           "tint": []
         },
+        "palette": true,
         "repeat": "4x1x1",
         "scale": 0.0,
         "up": "+y"
@@ -109,7 +119,9 @@
       "credit": "Quaternius, Animated Tank Pack",
       "glb": "tank_hull.glb",
       "license": "CC0 1.0 (Public Domain)",
-      "notes": [],
+      "notes": [
+        "palette: merged 3 flat materials into one (Main_Dark, Main_Details, Wheels)"
+      ],
       "options": {
         "emissive": {},
         "exclude": [
@@ -119,6 +131,9 @@
         "fitted_scale": 0.227646172046661,
         "forward": "-x",
         "include": [],
+        "keep": [
+          "Main"
+        ],
         "materials": {
           "heat": [],
           "team_emissive": [],
@@ -126,6 +141,7 @@
             "Main"
           ]
         },
+        "palette": true,
         "scale": 0.0,
         "up": "+y"
       },

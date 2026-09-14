@@ -13,6 +13,9 @@ extends RefCounted
 ## Emission settings and textures on source materials are carried through untouched.
 
 ## Source axis names → vectors. glTF's convention is +Y up, models facing +Z.
+## Name of the merged vertex-color material (assets/runtime/generated_visual.gd re-enables its vertex colors).
+const PALETTE_MATERIAL := "vertex_palette"
+
 ## Surfaces this small are decimated only if nothing else is left to reduce.
 const SMALL_SURFACE_TRIS := 64
 
@@ -28,6 +31,10 @@ const AXES := {
 ##   scale (0)       fixed uniform scale instead of the slot's fit (keep a hull and turret consistent)
 ##   emissive {}     material-name glob → energy: emission = albedo color/texture (neon from paint)
 ##   tris (0)        override the slot's triangle budget
+##   palette (false) merge flat-colored materials into one `vertex_palette` material (albedo → vertex colors):
+##                   one draw call instead of one per color. Textured, emissive, transparent materials and
+##                   names matching `keep` globs (team tint, neon, heat) stay separate.
+##   keep []         material-name globs the palette must not absorb
 ##   repeat (1,1,1)  tile the selection N×M×K times along x/y/z before fitting (a wall from barrier segments)
 ##   emission_maps {} material-name glob → Texture2D: an emission map delivered beside the GLB (Meshy PBR)
 ## Returns {scene: Node3D, notes: PackedStringArray, scale: Vector3, source: report}.
@@ -53,8 +60,11 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 	var oriented := _bounds(parts)
 	var fit := _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
 	var groups := _merge_by_material(parts, fit["transform"], notes)
+	if options.get("palette", false):
+		groups = _palette(groups, options.get("keep", []) + options.get("emissive", {}).keys(), notes)
 	var budget := int(options.get("tris", 0)) if int(options.get("tris", 0)) > 0 else int(contract["tris"])
 	var mesh := _build_mesh(groups, budget, notes)
+	_reanchor(mesh, contract)
 	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}))
 
 	var root := Node3D.new()
@@ -233,6 +243,61 @@ static func _append_optional(group: Dictionary, key: String, flag: String, sourc
 			group[key].append(fallback)
 
 
+static func _palette(groups: Array, keep: Array, notes: PackedStringArray) -> Array:
+	var eligible := []
+	var others := []
+	for group in groups:
+		(eligible if _flat(group["material"], keep) else others).append(group)
+	if eligible.size() < 2:
+		return groups
+	var largest: Dictionary = eligible[0]
+	var merged := {"vertex": PackedVector3Array(), "normal": PackedVector3Array(), "tangent": PackedFloat32Array(),
+			"color": PackedColorArray(), "uv": PackedVector2Array(), "uv2": PackedVector2Array(), "index": PackedInt32Array(),
+			"has_tangent": false, "has_color": true, "has_uv": false, "has_uv2": false}
+	for group in eligible:
+		if group["index"].size() > largest["index"].size():
+			largest = group
+		var base: int = merged["vertex"].size()
+		var tint: Color = (group["material"] as BaseMaterial3D).albedo_color
+		merged["vertex"].append_array(group["vertex"])
+		merged["normal"].append_array(group["normal"])
+		merged["tangent"].append_array(group["tangent"])
+		merged["uv"].append_array(group["uv"])
+		merged["uv2"].append_array(group["uv2"])
+		for i in group["vertex"].size():
+			merged["color"].append(tint * (group["color"][i] if group["has_color"] else Color.WHITE))
+		for index in group["index"]:
+			merged["index"].append(base + index)
+		for flag in ["has_tangent", "has_uv", "has_uv2"]:
+			merged[flag] = merged[flag] or group[flag]
+	var material := StandardMaterial3D.new()
+	var source := largest["material"] as BaseMaterial3D
+	material.resource_name = PALETTE_MATERIAL
+	material.roughness = source.roughness
+	material.metallic = source.metallic
+	material.vertex_color_use_as_albedo = true
+	material.vertex_color_is_srgb = true  # albedo colors are sRGB; glTF drops these flags, the wrapper restores them
+	merged["material"] = material
+	var names := PackedStringArray()
+	for group in eligible:
+		names.append((group["material"] as Material).resource_name)
+	notes.append("palette: merged %d flat materials into one (%s)" % [eligible.size(), ", ".join(names)])
+	return others + [merged]
+
+
+static func _flat(material: Material, keep: Array) -> bool:
+	var base := material as BaseMaterial3D
+	if base == null or base.emission_enabled or base.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED:
+		return false
+	for property in AssetInspector.TEXTURE_PROPERTIES:
+		if base.get(property) != null:
+			return false
+	for glob in keep:
+		if base.resource_name.matchn(String(glob)):
+			return false
+	return true
+
+
 static func _group_arrays(group: Dictionary) -> Array:
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
@@ -295,11 +360,76 @@ static func _build_mesh(groups: Array, budget: int, notes: PackedStringArray) ->
 	for surface in count:
 		var arrays := importer.get_surface_arrays(surface)
 		arrays[Mesh.ARRAY_INDEX] = _lod_indices(importer, surface, levels[surface])
-		_commit(mesh, importer, surface, arrays)
+		_commit(mesh, importer, surface, _compact(arrays))
 	notes.append("decimated %d → %d triangles (budget %d)" % [total, current, budget])
 	if current > budget:
 		notes.append("still over budget after the coarsest LOD")
 	return mesh
+
+
+## Drops vertices no triangle uses any more (decimation leaves them behind): they'd bloat the GLB and
+## skew bounds, and glTF importers strip them anyway, so the checked model would differ from the shipped one.
+static func _compact(arrays: Array) -> Array:
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var vertex_count: int = arrays[Mesh.ARRAY_VERTEX].size()
+	var remap := PackedInt32Array()
+	remap.resize(vertex_count)
+	remap.fill(-1)
+	var kept := PackedInt32Array()
+	for index in indices:
+		if remap[index] < 0:
+			remap[index] = kept.size()
+			kept.append(index)
+	var result := []
+	result.resize(Mesh.ARRAY_MAX)
+	for channel in [Mesh.ARRAY_VERTEX, Mesh.ARRAY_NORMAL, Mesh.ARRAY_COLOR, Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
+		var source = arrays[channel]
+		if source == null:
+			continue
+		var packed = source.duplicate()
+		packed.resize(kept.size())
+		for i in kept.size():
+			packed[i] = source[kept[i]]
+		result[channel] = packed
+	if arrays[Mesh.ARRAY_TANGENT] != null:
+		var tangents: PackedFloat32Array = arrays[Mesh.ARRAY_TANGENT]
+		var packed_tangents := PackedFloat32Array()
+		packed_tangents.resize(kept.size() * 4)
+		for i in kept.size():
+			for k in 4:
+				packed_tangents[i * 4 + k] = tangents[kept[i] * 4 + k]
+		result[Mesh.ARRAY_TANGENT] = packed_tangents
+	var new_indices := PackedInt32Array()
+	new_indices.resize(indices.size())
+	for i in indices.size():
+		new_indices[i] = remap[indices[i]]
+	result[Mesh.ARRAY_INDEX] = new_indices
+	return result
+
+
+## Decimation can remove the outermost vertices, so re-apply the slot's anchor to the final geometry
+## (a translation only; the fitted scale stays).
+static func _reanchor(mesh: ArrayMesh, contract: Dictionary) -> void:
+	var holder := MeshInstance3D.new()
+	holder.mesh = mesh
+	var bounds: AABB = AssetInspector.inspect(holder)["aabb"]
+	holder.free()
+	var offset: Vector3 = _fit_transform(bounds, contract, 1.0, PackedStringArray())["transform"].origin
+	if offset.length() < 0.001:
+		return
+	var surfaces := []
+	for surface in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(surface)
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		for i in vertices.size():
+			vertices[i] += offset
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		surfaces.append([arrays, mesh.surface_get_material(surface), mesh.surface_get_name(surface)])
+	mesh.clear_surfaces()
+	for entry in surfaces:
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, entry[0])
+		mesh.surface_set_material(mesh.get_surface_count() - 1, entry[1])
+		mesh.surface_set_name(mesh.get_surface_count() - 1, entry[2])
 
 
 static func _lod_indices(importer: ImporterMesh, surface: int, level: int) -> PackedInt32Array:
