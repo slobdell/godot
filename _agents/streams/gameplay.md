@@ -145,6 +145,29 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   VICTORY/DEFEAT. New signals: `Match.tank_destroyed(victim, killer)`, `Squad.commander_lost(fallen,
   successor)`. Tests: `tests/test_announcer.gd`. Smoke: a headless scripted skirmish prints the
   `HUD_MESSAGE` lines in order.
+- **G7 ammo, heat, laser** (6dc6ada, tuned 4794a19). Cannon: 45 shells; shells come back 1/s within
+  30 m of your base. Laser (`Kind.BEAM`): hitscan pulse, 55 m, 9 damage every 0.5 s, 12 heat per pulse,
+  no ammo, flatter armor table (0.7/1/1.3). Heat: capacity 100, −12/s; a shot past the cap is refused.
+  AI: RESUPPLY option, no long shots at ≤ 30% ammo, less appetite when empty or hot. `sync_ammo` +
+  `sync_heat` replicated; `weapon.laser` + `fx.laser_beam` placeholder slots. Map readout shows `aN`
+  shells / `hN%` heat. Balance (lasers vs cannons, Individuals doctrines, swap + team-identity
+  counterbalanced): before shields lasers won 14/60 (23%); with shields 18/30 (60%); final numbers
+  on 4794a19 below under *Balance*. Tests: `tests/test_ammo_heat.gd`.
+- **G6 shields** (d3556b5, tuned 4794a19). Hull 300 + shield 150; the shield refills 50/s after 4 s
+  without damage. Shields are directional (front 0.7 / side 1.0 / rear 1.4) and weapons scale them
+  (cannon 0.8, laser and flamethrower 1.5: energy and fire strip shields, shells break hulls). Only
+  damage the shield can't absorb meets the armor. Hulls mend only at base (6 HP/s once not hit for
+  4 s). AI: RECHARGE (shield down, gun on me, hull < 75%: duck into cover or back off 25 m, return
+  at 60% shield), worn tanks go home to mend and stay until 90%. `sync_shield`, hull slot
+  `set_shield(ratio)`, nameplate `300 +150`, "Alpha: shields down". Tests: `tests/test_shields.gd`.
+  Measured (anvil_hammer vs individuals): camping at base is gone (worn tanks go home, mend, come
+  back); loser kills ~1.0 (unchanged: still snowbally); first kill ~37 s (was ~33–41 s).
+- **G1 line of sight + fog** (3dbb214). `Tank.sight_radius` (75 m, from Units) feeds team intel and
+  sensing. `VisibilityField` (`game/match/visibility_field.gd`): 2 m grid of never / seen / visible
+  for the player's team, staggered over 30 ticks (full refresh 12.5 ms for 5 tanks); presentation
+  only. `Match.is_visible_to(team, tank)`. 3D fog of war via a new `fx.fog_of_war` slot
+  (placeholder shader). Screenshot `build/screenshots/g1_fog.png` shows lit fans, wall shadows,
+  remembered ground. Tests: `tests/test_visibility.gd`.
 
 **Decisions:**
 - G5: tanks fire only at enemies in their *own* line of sight and range; team intel only aims the turret.
@@ -156,16 +179,36 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 - Phone screenshots are taken at 1200×540 (a 2400×1080 phone at 2× UI scale): the 1920×1080 desktop
   clamps bigger windows. Real phones need `display/window/stretch/mode` (see Questions).
 
-**Questions for the lead:** none yet.
+**Questions for the lead:**
+1. **Shields broke the coordination result (T1).** Anvil & Hammer (coordinated) vs Individuals went
+   60% (after G5) → 46% (G7 ammo) → **~5–10% with G6 shields** (2/20 per series, several variants).
+   The Individuals mirror is fair (9–11 of 20). Ablations with `--tune`: no shield (hull 300) 31%;
+   no shield, hull 400: 31%. Tried and not enough: directional shields, a short RECHARGE instead of
+   retreating home, letting RECHARGE break an anchor's leash, a "Focus Fire" doctrine (2/20). My read:
+   recharging shields reward concentrated, sustained aggression (5 tanks hitting the same targets
+   before shields come back), and punish split/holding doctrines. Options: (a) keep shields and
+   retune doctrines (the CPU and player defaults) for concentration; (b) slower recharge / smaller
+   shield (the effect shrinks); (c) team-level mechanics that reward holding ground (control points,
+   stretch item). I kept shields as briefed and moved on; `--tune=tank.max_shield=…` makes (b) a
+   one-flag experiment.
+2. Real phones need content scaling (`display/window/stretch/mode="canvas_items"`, aspect `expand`)
+   in `project.godot` (shared). I haven't changed it; the phone screenshots use a 1200×540 window.
 
 **Requests to other streams:**
 - Look & feel: `Hud.post_message` is still the print-only stub, so in-game the only visible order
   feedback is the tactical map's toast. Once banners render, the map toast can go (it duplicates them).
 
-**Known issues:** none yet.
+**Known issues:**
+- T1 regression above. Fights still snowball (loser kills ~1).
+- Idle guns rose from 61–68% (G5) to 70–90% after G7/G6. Part is by design (low-ammo tanks hold
+  long shots; empty or overheated guns count as idle); not yet separated out.
+- Beams are too thin to see from the flat tactical view (fine in 3D; look & feel owns the look).
 
 **What to playtest:** `make skirmish`: order a squad back toward base (Move or Break contact) while in
-contact; guns should stay on the enemy. Orders should visibly start within a blink.
+contact; guns should stay on the enemy. Orders should visibly start within a blink. Watch the fog:
+the dark areas are what your team can't see. The squad readout shows hull+shield, shells (`a`),
+heat (`h`). `make skirmish ENEMY=individuals_laser` fights laser tanks. Pull a worn squad back to
+base (Break contact) to mend hulls and refill shells.
 `make skirmish-shots` takes scripted screenshots (desktop + phone aspect) into `build/screenshots/`.
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
