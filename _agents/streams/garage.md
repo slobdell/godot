@@ -63,6 +63,11 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   - Decision: first visit opens a ready starter army (3+2 tanks, the cheapest class) so FIGHT works immediately.
   - Decision: REMOVE moved into the EQUIP header after a test caught it scrolled off-screen at 720p.
   - Decision: army saved on FIGHT under the army's name (overwrites the same name; SAVE does the same).
+- **GA3 done.** `make garage-e2e`: `tests/garage/build_army.gd` builds a mixed army (3 squads, 2 flamethrowers,
+  roles, paint) through `Loadout`, saves it to `user://doctrines/garage_e2e.json`, then the match runner fights it
+  (`--green-doctrine=user://…` already worked, no adapter needed) vs Individuals to elimination; asserts 5 green tanks,
+  shots fired, no ERROR. Measured: elimination at 95 s sim, Rust won 5-0 (green fired 58 shots). Expected: player
+  squads are saved with `verb: hold`, so with nobody giving orders they sit at base. Not in `make check` (~20 s).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
