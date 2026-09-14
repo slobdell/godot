@@ -20,10 +20,10 @@ func _ready() -> void:
 
 func set_team_color(color: Color) -> void:
 	super.set_team_color(color)
-	shield.set_tint(color)
+	shield.set_tint(team_color)
 	var fx := FxWorld.existing()
 	if fx != null and is_inside_tree():
-		fx.underglow.add(self, color)
+		fx.underglow.add(self, team_color)
 
 
 ## Gameplay G6: shield fraction 0..1. Hits shimmer, a break crackles, recharging sweeps.

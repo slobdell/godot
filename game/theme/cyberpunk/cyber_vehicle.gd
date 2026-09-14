@@ -1,10 +1,20 @@
 extends Node3D
 ## Base for cyberpunk vehicle parts (hull, turret, weapons): the part is ONE MeshInstance3D built by
-## ColorMeshBuilder (two draw calls: lit + neon), rebuilt when the team color arrives. Team color is
-## the team's neon (GameTheme.team_colors in this theme); paint is derived from it, dark and worn.
-## Optional slot methods: set_team_color(color), set_heat(ratio) (masked parts glow hotter).
+## ColorMeshBuilder (two draw calls: lit + neon), rebuilt when colors change.
+##
+## Friend or foe is shown by ACCENT LIGHTS, never hull color (the lead, 2026-09-14: players paint the
+## whole vehicle). So there are two colors:
+##   team accents: set_team_color(team neon): trims, stripes, coils, underglow
+##   paint:        set_paint(color): the full body (default: worn gunmetal)
+## Adapter until gameplay's Tank.set_paint calls set_paint: set_team_color with a color that isn't
+## one of the theme's team colors is treated as paint (the garage paints through set_team_color today).
+## Optional slot methods: set_team_color, set_paint, setup(weapon), set_heat(ratio).
+
+const DEFAULT_PAINT := Color(0.2, 0.21, 0.24)
 
 var team_color := Color(0.75, 0.75, 0.8)
+## Alpha 0 = no paint chosen (DEFAULT_PAINT).
+var paint_color := Color(0, 0, 0, 0)
 var mesh_instance := MeshInstance3D.new()
 var heat := 0.0
 
@@ -16,9 +26,26 @@ func _ready() -> void:
 
 
 func set_team_color(color: Color) -> void:
-	team_color = color
+	if is_team_color(color):
+		team_color = color
+	else:
+		paint_color = Color(color, 1.0)
 	if is_inside_tree():
 		rebuild()
+
+
+## Full-body paint (the garage's per-tank color).
+func set_paint(color: Color) -> void:
+	paint_color = Color(color, 1.0)
+	if is_inside_tree():
+		rebuild()
+
+
+static func is_team_color(color: Color) -> bool:
+	for team_neon in GameTheme.team_colors:
+		if (team_neon as Color).is_equal_approx(color):
+			return true
+	return false
 
 
 ## The weapon profile (slot contract); parts that size themselves from it override this.
@@ -44,9 +71,9 @@ func build(_builder: ColorMeshBuilder) -> void:
 	pass
 
 
-## The part's paint: gunmetal with a hint of the team hue.
+## The part's paint: the chosen color, or worn gunmetal.
 func paint() -> Color:
-	return Color(0.2, 0.21, 0.24).lerp(team_color, 0.22)
+	return paint_color if paint_color.a > 0.0 else DEFAULT_PAINT
 
 
 func paint_dark() -> Color:

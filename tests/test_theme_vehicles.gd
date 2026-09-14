@@ -97,3 +97,29 @@ func test_beam_system_batches_and_expires_pulses() -> void:
 	assert_eq(pool.lit_count, 4, "beams borrow pooled lights instead of carrying their own")
 	beams.update(pool, BeamSystem.FADE_SECONDS + 0.01)
 	assert_eq(beams.active_count(), 0, "faded pulses stop drawing even before Match frees them")
+
+
+func test_paint_is_full_body_and_never_changes_the_team_accents() -> void:
+	var hull := _part("tank.hull")
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	hull.call("set_team_color", GameTheme.team_color(1))
+	var accents_before: PackedColorArray = (hull.get_node("Mesh") as MeshInstance3D).mesh.surface_get_arrays(1)[Mesh.ARRAY_COLOR]
+	var body_before: PackedColorArray = (hull.get_node("Mesh") as MeshInstance3D).mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	hull.call("set_team_color", Color.HOT_PINK)  # how the garage paints today (Tank.set_paint)
+	var accents_after: PackedColorArray = (hull.get_node("Mesh") as MeshInstance3D).mesh.surface_get_arrays(1)[Mesh.ARRAY_COLOR]
+	var body_after: PackedColorArray = (hull.get_node("Mesh") as MeshInstance3D).mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	GameTheme.use(previous)
+	assert_eq(accents_after, accents_before, "a paint color leaves the team accent lights alone")
+	assert_true(body_after != body_before, "and repaints the body")
+	assert_true(body_after.has(Color(Color.HOT_PINK, 1.0)), "with the chosen color")
+
+
+func test_camera_shake_falls_off_with_distance_and_scales_with_trauma() -> void:
+	assert_near(CameraShake.falloff(10.0, 25.0), 1.0, 0.001, "full strength near the camera's focus")
+	assert_near(CameraShake.falloff(100.0, 25.0), 0.0, 0.001, "nothing at 4x the radius")
+	var shake := CameraShake.new()
+	add_to_tree(shake)
+	var big := shake.offset_at(1.0, 0.37).length()
+	var small := shake.offset_at(0.3, 0.37).length()
+	assert_true(small < big * 0.2, "trauma squared: small hits barely move the view (%.3f vs %.3f)" % [small, big])

@@ -125,6 +125,10 @@ func _tank(team: int, weapon_slot: String) -> Node3D:
 	weapon.invoke("setup", [Weapons.profile(weapon_slot.trim_prefix("weapon."))])
 	for slot in [hull, body, weapon]:
 		slot.invoke("set_team_color", [GameTheme.team_color(team)])
+	# Every third tank wears player paint (full body); friend or foe still reads from the accents.
+	if tanks.size() % 3 == 2:
+		for slot in [hull, body, weapon]:
+			slot.invoke("set_paint", [[Color("#C8A030"), Color("#B03060"), Color("#3A7040")][tanks.size() % 3]])
 	return tank
 
 

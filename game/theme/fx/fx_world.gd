@@ -19,6 +19,7 @@ var bursts: BurstSystem
 var streaks: StreakSystem
 var underglow: UnderglowSystem
 var beams: BeamSystem
+var shake := CameraShake.new()
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
 ## Muzzle flashes when a projectile appears (the fx.shell slot has no firing hook, so a new
@@ -72,6 +73,8 @@ func _init() -> void:
 	for system in [lights, tracers, bursts, streaks, underglow, beams]:
 		add_child(system)
 	add_child(FxAutoQuality.new())
+	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
+	add_child(shake)
 	if LaunchFlags.from_environment().has("perf"):
 		add_child(PerfOverlay.new())
 
@@ -189,3 +192,5 @@ func explosion(position: Vector3, big := false) -> void:
 	if explosion_lights:
 		lights.flash(position + Vector3(0, 1.5, 0), Color(1.0, 0.55, 0.2), 10.0 if big else 6.0,
 				22.0 if big else 12.0, 0.8 if big else 0.4, LightPool.PRIORITY_EXPLOSION, now)
+	# Kills jolt the view; ordinary hits only register up close.
+	shake.add(0.55 if big else 0.12, position, 30.0 if big else 14.0)

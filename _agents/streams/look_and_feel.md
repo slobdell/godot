@@ -199,6 +199,18 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   `build/screenshots/vehicle-gallery.png`, `l5_shield_hit.png`, `l5_shield_break.png`, `l5_shield_recharge.png`.
   Tests: shield events show/hide, laser parts + beam follow the contract, beams batch and expire.
 
+- **Stretch: camera shake** (`CameraShake` in FxWorld): trauma model (trauma² × smooth noise, linear
+  decay), distance falloff from where the camera looks, applied through `Camera3D.h_offset/v_offset`
+  so it shakes gameplay's camera **without touching camera code** (and works in the ortho tactical
+  view). Kills jolt, ordinary hits only up close; `--no-shake` turns it off. Test: falloff + trauma².
+- **Paint vs team accents** (new lead direction via the garage stream: players paint the whole
+  vehicle; friend or foe is shown by accent lights): cyberpunk vehicles take `set_paint(color)` for
+  the full body (default worn gunmetal) and `set_team_color(team neon)` for trims, stripes, coils,
+  shields, underglow. Adapter until gameplay calls `set_paint`: a non-team color passed to
+  `set_team_color` (how the garage paints today via `Tank.set_paint`) paints the body and leaves the
+  accents alone. Test: paint never changes the accents. `GameTheme.ui` gains the garage's
+  `garage_bg`, `garage_panel`, `garage_text_dim`.
+
 #### Frame budget per quality tier (L0, re-measured in L6; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured (UHD 620, 720p) |
 |---|---|---|---|---|---|---|---|---|---|
@@ -236,6 +248,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - **Gameplay (tactical map layout):** the orders log (top-right, 430 px) and the pause label/toast (top center) sit where 3D-view warning banners go; in the top-down view banners now use the side columns, so this only matters in the 3D view (Tab). If you move the log, keep the right column below ~16% height free for warnings. The HUD's `Status`/`Scoreboard` text doesn't update while the tree is paused (hud.gd `_process` pauses), so the top-left block is hidden during PLANNING; `process_mode = ALWAYS` on the HUD would fix it (your file).
 - **Gameplay:** `test_navigation::test_path_goes_around_a_wall` is load-sensitive (see Known issues); consider waiting until the map's regions include this arena's two regions (or a few extra physics frames) before querying.
 - **Gameplay:** `fx.laser_beam` has no team: the cyberpunk beam is a team-neutral violet-white. If you want team-colored lasers, call `beam.invoke("set_team_color", [GameTheme.team_color(team)])` after `setup` (already implemented).
+- **Gameplay (contract change, please accept):** friend-or-foe lives in accent lights, so split `Tank.set_paint(color)` (full-body paint, from the garage's `paint`) from the team: call `invoke("set_team_color", [GameTheme.team_color(team)])` at spawn and `invoke("set_paint", [paint])` for paint. Until then my adapter handles today's calls. **Assets:** add optional `set_paint(Color)` to the `tank.hull`/`tank.turret`/`weapon.*` slot contracts, and keep a separate emissive accent mask in generated models so team color never recolors the body.
 - **Gameplay (merge):** `game_theme.gd` gains `weapon.laser`/`fx.laser_beam` in `CYBERPUNK_SLOTS` here and in `DEFAULT_SLOTS` on your branch: keep both when merging.
 - **Gameplay:** please call `hud.post_message()` for orders, commander down, unit lost, victory; the banners are live (`make hud-gallery`, `--hud-demo`).
 
@@ -249,7 +262,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- Stretch: camera-shake curve, SFX, title screen (in progress).
+- Stretch: procedural SFX (in progress), then an animated title screen.
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

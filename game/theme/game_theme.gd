@@ -32,6 +32,10 @@ const DEFAULT_UI := {
 	"enemy": Color(0.95, 0.35, 0.3),
 	"commander": Color(1.0, 0.85, 0.25),
 	"ghost": Color(1, 1, 1, 0.55),
+	# Requested by the garage stream (read with fallbacks there).
+	"garage_bg": Color(0.12, 0.13, 0.12),
+	"garage_panel": Color(0.2, 0.22, 0.2, 0.9),
+	"garage_text_dim": Color(0.75, 0.75, 0.72),
 }
 
 ## The night arena (look_and_feel.md): neon over rust, cyan vs magenta teams.
@@ -59,6 +63,9 @@ const CYBERPUNK_UI := {
 	"enemy": Color("#FF0099"),
 	"commander": Color("#FFD500"),
 	"ghost": Color(0.88, 0.88, 0.88, 0.55),
+	"garage_bg": Color("#050510"),
+	"garage_panel": Color(0x12 / 255.0, 0x12 / 255.0, 0x25 / 255.0, 0.86),
+	"garage_text_dim": Color(0.88, 0.88, 0.88, 0.6),
 }
 
 const THEMES := {
