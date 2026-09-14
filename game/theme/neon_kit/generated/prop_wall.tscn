@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://assets/runtime/generated_visual.gd" id="1_visual"]
+[ext_resource type="PackedScene" path="res://game/theme/neon_kit/generated/prop_wall.glb" id="2_model"]
+
+[node name="PropWall" type="Node3D"]
+script = ExtResource("1_visual")
+slot = "prop.wall"
+tint_materials = PackedStringArray("paint*")
+team_emissive_materials = PackedStringArray("neon_team*")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]

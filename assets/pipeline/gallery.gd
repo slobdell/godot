@@ -3,7 +3,8 @@ extends Node3D
 ## a translucent box showing the slot contract, so size, orientation, anchor, and team tint can
 ## be judged from one screenshot. Tanks are assembled the way tank.tscn places the slots, with a
 ## red marker where gameplay spawns shells.
-##   godot --path . res://assets/pipeline/gallery.tscn -- --theme=kitbash [--screenshot=/abs.png] [--only=kit.]
+##   godot --path . res://assets/pipeline/gallery.tscn -- --theme=kitbash [--screenshot=/abs.png] [--only=kit.] [--night]
+## --night: a dark arena (low moonlight, strong glow), the way the cyberpunk theme will show emissive neon.
 ## `make assets-gallery THEME=kitbash` wraps it.
 
 ## From game/tank/tank.tscn: where the turret pivot sits on the hull.
@@ -12,15 +13,17 @@ const MUZZLE := Vector3(0.0, 0.05, -3.2)
 const TEAM_TINT := Color(0.0, 0.85, 0.95)
 
 var _bounds := AABB()
+var _night := false
 
 
 func _ready() -> void:
 	var flags := LaunchFlags.from_environment()
 	var theme := flags.text("theme", "kitbash")
 	var only := flags.text("only", "")
+	_night = flags.has("night")
 	var manifest := AssetIO.read_manifest(theme)
 	var entries: Dictionary = manifest["slots"]
-	_add_environment()
+	_add_environment(flags.has("night"))
 
 	var row_z := 0.0
 	if entries.has("tank.hull") and (only == "" or "tank.hull".begins_with(only)):
@@ -92,6 +95,8 @@ func _place_scene(path: String, at: Vector3, tint: bool) -> Node3D:
 
 
 func _add_ghost(size: Vector3, at: Vector3, anchor: String) -> void:
+	if _night:
+		return  # the ghosts wash out the neon; judge sizes in the day gallery
 	var box := BoxMesh.new()
 	box.size = size
 	var material := StandardMaterial3D.new()
@@ -117,26 +122,30 @@ func _add_label(text: String, at: Vector3) -> void:
 	add_child(label)
 
 
-func _add_environment() -> void:
+func _add_environment(night: bool) -> void:
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color(0.09, 0.1, 0.13)
+	environment.background_color = Color(0.02, 0.02, 0.06) if night else Color(0.09, 0.1, 0.13)
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color(0.55, 0.58, 0.65)
-	environment.ambient_light_energy = 0.6
+	environment.ambient_light_color = Color(0.25, 0.28, 0.45) if night else Color(0.55, 0.58, 0.65)
+	environment.ambient_light_energy = 0.8 if night else 0.6
 	environment.glow_enabled = true
+	environment.glow_intensity = 1.2 if night else 0.8
+	environment.glow_bloom = 0.15 if night else 0.0
 	var world := WorldEnvironment.new()
 	world.environment = environment
 	add_child(world)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-50, 35, 0)
 	sun.shadow_enabled = true
+	sun.light_energy = 0.3 if night else 1.0
+	sun.light_color = Color(0.6, 0.7, 1.0) if night else Color.WHITE
 	add_child(sun)
 	var ground := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(200, 200)
 	var dark := StandardMaterial3D.new()
-	dark.albedo_color = Color(0.18, 0.19, 0.21)
+	dark.albedo_color = Color(0.07, 0.07, 0.09) if night else Color(0.18, 0.19, 0.21)
 	plane.material = dark
 	ground.mesh = plane
 	add_child(ground)
