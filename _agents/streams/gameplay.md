@@ -183,6 +183,23 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   drill, formation (popup row), squad, Pause/Resume, Overview, Follow. Tests: `tests/test_touch.gd`
   (including a real `InputEventScreenTouch` through Godot's input). Screenshot `g0_phone.png`.
 - **Laser tuning**: laser shield multiplier 1.5 → 1.25; lasers vs cannons 29/40 (72%) → **14/24 (58%)**.
+- **Directive set 2 part 1: catalog + scout** (4ca53ea). `Units` v1 drives every tank stat
+  (`Tank.apply_loadout`); doctrine tanks take `unit`, `weapon`/`weapons`, `components`, `paint`
+  (validated, with reasons); armies up to 20 units in 4 squads. **Scout**: 110 pts, 140+80, 14 m/s,
+  110 m sight, machine gun or laser; brain option SPOT keeps enemies at 85 m (outside cannon range)
+  and scouts ahead. Components: heat sink, ammo rack, shield booster, armor plating. Paint colors the
+  vehicle; team color goes to `set_team_accent` (the lead's accent-light rule). Tests:
+  `tests/test_loadouts.gd`.
+- **Directive set 2 part 2: artillery** (2caf994). 180 pts, 200+80, 6.5 m/s, 60 m sight, mortar:
+  35–160 m, 90 damage in an 8 m burst, over cover, only at team-spotted targets
+  (`OrderController.spotter`). Brain: BOMBARD from 80 m+, SHADOW behind friendlies, never brawls. A
+  lone battery mostly suppresses shields (each hit restarts their recharge); kills come with direct fire.
+  Tests: `tests/test_artillery.gd`. `doctrines/combined_arms.json`.
+- **Budgets** (d917809). `Army` (`game/units/army.gd`): budget check, seeded CPU armies from archetypes
+  (balanced, armor, recon_strike, siege, swarm) that spend leftovers on components (heat sinks on
+  lasers first). Skirmish enemy defaults to `cpu` (seed printed as `SKIRMISH_ARMY`); `--budget`,
+  `--seed`; the match runner takes `cpu:<archetype>` too. Chassis + loadout recommendation written up in
+  [`_agents/balance.md`](../balance.md). Tests: `tests/test_army.gd`.
 
 **Decisions:**
 - G5: tanks fire only at enemies in their *own* line of sight and range; team intel only aims the turret.
@@ -219,7 +236,8 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   long shots; empty or overheated guns count as idle); not yet separated out.
 - Beams are too thin to see from the flat tactical view (fine in 3D; look & feel owns the look).
 
-**What to playtest:** `make skirmish`. New camera: arrows/wheel/`,` `.`, F follows, Tab overview. The
+**What to playtest:** `make skirmish` now fights a random budgeted CPU army (`SEED=3` for a swarm of
+scouts, `ENEMY=cpu:siege` for artillery, `ENEMY=individuals` for the old five tanks). New camera: arrows/wheel/`,` `.`, F follows, Tab overview. The
 radar (bottom right): tap to look, drag to order. Try it like a phone: tap a tank, tap the ground,
 hold-then-drag, use the buttons. Order a squad back toward base (Move or Break contact) while in
 contact; guns should stay on the enemy. Orders should visibly start within a blink. Watch the fog:

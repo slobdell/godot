@@ -106,6 +106,15 @@ origin is the arena center. Green: world `(right, -forward)`. Rust: `(-right, +f
 | `ADVANCE` | Move to the objective | objective set and I'm outside its radius; no pressing threat |
 | `HOLD` | Stay (or return inside the leash); fire at anything visible | at objective; anchor role; no reachable target |
 | `INVESTIGATE contact` | Go to a contact's last known position | contact recently lost; aggression |
+| `KEEP_SLOT` (2026-09-13) | Drive to my formation slot for the squad's drill | a player order (move/bound/hold/break contact) and I'm out of position (0.95, G3) |
+| `RESUPPLY` (G7/G6) | Go to the base zone, stay to refill shells and mend the hull | out of ammo (0.9); at base and < 80% ammo or < 90% hull; badly hurt with nobody in sight |
+| `RECHARGE` (G6) | Duck into nearby cover or back off 25 m; return at 60% shield | shield down, a gun on me, hull < 75% |
+| `SPOT` (scouts) | Keep the nearest visible enemy at 85 m (outside cannon range, inside scout sight); scout ahead otherwise | unit class scout |
+| `BOMBARD target` (artillery) | Lob mortar rounds at a team-spotted enemy; back away from anyone inside 80 m | unit class artillery, a spotted enemy within ~200 m |
+| `SHADOW` (artillery) | Trail 35 m behind the nearest friendly, toward home | unit class artillery, nothing to shell |
+
+Unit classes (directive set 2) scale the fight options: scouts ENGAGE/FLANK at 60%, artillery never
+ENGAGE/FLANK/INVESTIGATE. Balance data and tuning locations: [balance.md](balance.md).
 
 Commitment: the current option gets ×1.15 and at least 45 ticks before switching.
 
