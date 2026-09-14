@@ -23,24 +23,35 @@ var rejected_count := 0
 
 var _latest := TankCommand.new()
 var _last_accepted_msec := -1_000_000
+## When this peer last read the network (commands can only arrive then). Staleness is measured
+## from here, not from the physics tick: on a slow host (a phone, a busy tab) a whole frame can pass
+## between reading a command and simulating it, and a fresh command must not look stale.
+var _last_poll_msec := 0
 var _window_start_msec := 0
 var _window_count := 0
 
 
 func _ready() -> void:
+	set_process(false)
 	if multiplayer.is_server() and owner_peer_id == multiplayer.get_unique_id():
 		set_physics_process(false)  # the host's own tank: its local controller drives it directly
 	elif multiplayer.is_server():
 		process_physics_priority = -10  # before the Tank consumes its command
+		set_process(true)
 	elif owner_peer_id == multiplayer.get_unique_id():
 		process_physics_priority = -5  # after the local controller (-10) wrote tank.command
 	else:
 		set_physics_process(false)
 
 
+func _process(_delta: float) -> void:
+	# SceneMultiplayer polls (and delivers RPCs) just before nodes process, in the same frame.
+	note_poll(Time.get_ticks_msec())
+
+
 func _physics_process(_delta: float) -> void:
 	if multiplayer.is_server():
-		tank.command = current_command(Time.get_ticks_msec())
+		tank.command = command_for_tick()
 		return
 	var peer := multiplayer.multiplayer_peer
 	if peer == null or peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
@@ -75,8 +86,17 @@ func accept(sender_id: int, now_msec: int, cmd: TankCommand) -> bool:
 	return true
 
 
-## What the server should apply this tick: the latest accepted command, or a
-## stop (keeping the aim) if the owner has gone quiet.
+func note_poll(now_msec: int) -> void:
+	_last_poll_msec = now_msec
+
+
+## The command to simulate this physics tick, judged fresh or stale as of the last network read.
+func command_for_tick() -> TankCommand:
+	return current_command(_last_poll_msec)
+
+
+## What the server should apply: the latest accepted command, or a stop (keeping the aim) if
+## the owner had gone quiet by `now_msec` (the time input was last read).
 func current_command(now_msec: int) -> TankCommand:
 	if now_msec - _last_accepted_msec > STALE_AFTER_MSEC:
 		return TankCommand.new(0.0, 0.0, _latest.aim_point, false)

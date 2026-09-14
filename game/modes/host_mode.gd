@@ -34,6 +34,7 @@ func started(peer: MultiplayerPeer) -> void:
 		main.hud.set_status("Hosting room %s: friends join with this code" % code)
 		print("TANK_SQUAD_ROOM code=%s" % code))
 	relay.relay_event.connect(_on_relay_event.bind(relay))
+	_report_stats_every(relay, flags.integer("stats-every", 5))
 	if not flags.has("no-player"):
 		main.game_match.has_local_player = true
 		main.create_local_controller()
@@ -49,6 +50,31 @@ func _on_relay_event(event: String, data: Dictionary, relay: RelayPeer) -> void:
 			main.hud.set_status("Hosting room %s" % relay.room_code)
 		"closed":
 			main.hud.set_status("Room closed: %s" % data.get("reason", ""))
+
+
+## Prints TANK_SQUAD_HOST_STATS every `seconds` (0 = never): frame rate, simulated ticks, and relay
+## traffic, for bandwidth measurements and to spot a host that can't keep up (a slow phone or tab).
+func _report_stats_every(relay: RelayPeer, seconds: int) -> void:
+	if seconds <= 0:
+		return
+	var timer := Timer.new()
+	timer.wait_time = seconds
+	timer.autostart = true
+	main.add_child(timer)
+	var last := {"msec": Time.get_ticks_msec(), "tick": main.game_match.tick, "bytes_out": 0, "bytes_in": 0}
+	timer.timeout.connect(func() -> void:
+		var now := Time.get_ticks_msec()
+		var elapsed := maxf((now - int(last["msec"])) / 1000.0, 0.001)
+		print("TANK_SQUAD_HOST_STATS " + JSON.stringify({
+				"fps": Engine.get_frames_per_second(),
+				"ticks_per_sec": snappedf((main.game_match.tick - int(last["tick"])) / elapsed, 0.1),
+				"players": main.multiplayer.get_peers().size(), "tanks": main.game_match.tanks.get_child_count(),
+				"out_bytes_per_sec": roundi((int(relay.stats["bytes_out"]) - int(last["bytes_out"])) / elapsed),
+				"in_bytes_per_sec": roundi((int(relay.stats["bytes_in"]) - int(last["bytes_in"])) / elapsed)}))
+		last["msec"] = now
+		last["tick"] = main.game_match.tick
+		last["bytes_out"] = relay.stats["bytes_out"]
+		last["bytes_in"] = relay.stats["bytes_in"])
 
 
 ## Where the broker is: --relay=URL, else the page's own host under /relay in a browser.

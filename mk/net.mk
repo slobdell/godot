@@ -125,3 +125,47 @@ relay-drop-smoke: import $(BROKER_DEPS) ## Relay: cut one client's socket for 10
 	$(call relay_client,relay-drop-smoke-dropper,--demo --expect-tanks=4 --drop-after=4 --drop-seconds=$(RELAY_DROP_SECONDS) --timeout=75); \
 	$(call relay_client,relay-drop-smoke-steady,--demo --expect-tanks=4 --min-travel=20 --timeout=40); \
 	$(call relay_verdict,relay-drop-smoke,relay-drop-smoke-dropper relay-drop-smoke-steady)
+
+# ---- Browsers through the relay ------------------------------------------------------------
+# Humans: `make play-relay`, open http://localhost:8060/?host (add &demo&bots=2 to taste), read the
+# room code off the HUD, then http://localhost:8060/?join=CODE in other tabs/devices.
+play-relay: export-web $(BROKER_DEPS) ## Broker + web page: ?host opens a room in YOUR browser, ?join=CODE joins it
+	mkdir -p $(BUILD_DIR)
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(BROKER_PORT) --host=127.0.0.1 > $(BUILD_DIR)/play-relay-broker.log 2>&1 & broker=$$!; \
+	trap 'kill $$broker 2>/dev/null' EXIT; \
+	echo "broker log: $(BUILD_DIR)/play-relay-broker.log"; \
+	echo "Host:  http://localhost:$(WEB_PORT)/?host      Join: http://localhost:$(WEB_PORT)/?join=CODE"; \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST) $(NET_PORT) $(BROKER_PORT)
+
+# A browser PLAYER joins a headless player host; the screenshot should show remote tanks.
+web-relay-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser joins a headless player host by room code via /relay; screenshot
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(call relay_host_up,,web-relay-smoke); \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 $(SMOKE_NET_PORT) $(SMOKE_BROKER_PORT) >/dev/null 2>&1 & web=$$!; \
+	trap 'kill $$host $$broker $$web 2>/dev/null' EXIT; \
+	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?join=$$code" \
+		$(BUILD_DIR)/screenshots/web-relay.png 12 TANK_SQUAD_SPAWNED; \
+	grep -E 'joined' $(BUILD_DIR)/web-relay-smoke-host.log; \
+	! grep -E 'ERROR' $(BUILD_DIR)/web-relay-smoke-host.log
+
+# A BROWSER hosts (the phone-as-host case, in wasm): a headless client joins its room and must see
+# tanks move and combat replicate from the browser's simulation.
+WEB_HOST_SMOKE_FLAGS ?= demo&bots=2
+web-host-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser HOSTS via /relay; a headless client joins and checks the wasm host's simulation
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/web-host-smoke-broker.log 2>&1 & broker=$$!; \
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 $(SMOKE_NET_PORT) $(SMOKE_BROKER_PORT) >/dev/null 2>&1 & web=$$!; \
+	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?host&$(WEB_HOST_SMOKE_FLAGS)" \
+		$(BUILD_DIR)/screenshots/web-host.png 40 TANK_SQUAD_ROOM > $(BUILD_DIR)/web-host-smoke-browser.log 2>&1 & browser=$$!; \
+	trap 'kill $$broker $$web $$browser 2>/dev/null' EXIT; \
+	code=""; for i in $$(seq 1 450); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/web-host-smoke-browser.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
+	if [ -z "$$code" ]; then echo "the browser never opened a room:"; cat $(BUILD_DIR)/web-host-smoke-browser.log; exit 1; fi; \
+	echo "browser opened room $$code"; \
+	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
+		--join=$$code --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) --demo --expect-tanks=4 --expect-any-damage --timeout=35 \
+		> $(BUILD_DIR)/web-host-smoke-client.log 2>&1; status=$$?; \
+	grep -E 'NET_CHECK|ERROR' $(BUILD_DIR)/web-host-smoke-client.log || true; \
+	grep -qE 'ERROR' $(BUILD_DIR)/web-host-smoke-client.log && status=1; \
+	wait $$browser || status=1; \
+	grep -E 'joined|SMOKE|RELAY' $(BUILD_DIR)/web-host-smoke-browser.log | tail -5; \
+	exit $$status
