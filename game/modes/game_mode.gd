@@ -13,6 +13,8 @@ var flags: LaunchFlags
 static func choose(p_flags: LaunchFlags) -> GameMode:
 	if p_flags.has("fx-bench"):
 		return FxBenchMode.new()  # look & feel's FX lab (game/theme/fx/bench/)
+	if p_flags.has("title"):
+		return TitleMode.new()  # look & feel's animated title screen (game/ui/widgets/title/)
 	if p_flags.has("match"):
 		return MatchRunnerMode.new()
 	if p_flags.has("skirmish"):

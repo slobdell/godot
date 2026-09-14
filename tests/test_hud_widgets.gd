@@ -186,3 +186,12 @@ func test_banners_move_beside_the_tactical_map_and_wrap() -> void:
 	await tree.process_frame
 	assert_true(not messages.status.column.has_area(), "in the 3D view the spec's centered strips return")
 	assert_true(messages.status.position.y + messages.status.size.y <= 720.0 - HudSkin.COMMAND_BAR_PX, "above the command bar")
+
+
+func test_title_menu_relaunches_into_the_chosen_mode() -> void:
+	var title_script: GDScript = load("res://game/ui/widgets/title/title_screen.gd")
+	var args: PackedStringArray = title_script.call("relaunch_args",
+			PackedStringArray(["--path", ".", "res://game/ui/widgets/title/title_screen.tscn", "--", "--ui-touch"]),
+			PackedStringArray(["--ui-touch"]), "skirmish")
+	assert_eq(args, PackedStringArray(["--path", ".", "--", "--skirmish"]), "keeps the project path, drops the title scene and old flags, adds the mode")
+	assert_eq(GameMode.choose(LaunchFlags.parse(PackedStringArray(["--title"]))).role_name(), "TITLE", "--title routes to the title screen")

@@ -221,6 +221,15 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   hooked to muzzle flashes, explosions, laser pulses, shield hit/break (rate-limited under flames),
   flamethrower roar while firing, banner open (blip/alert), FX button. `--mute`. Test: pool never grows.
 
+- **Stretch: animated title screen** (`make title`, browser `?title`, `make title-shot`): the night arena
+  with six tanks trading tracers, laser pulses, shield hits and explosions under a slow orbiting
+  camera; a `GlitchTitle` ("TANK SQUAD" types in with a block cursor, breathes, and glitches every few
+  seconds: cyan/magenta channel split, flicker, displaced slice); a chamfered CyberFrame menu wired to
+  the screen edges by breathing conductors; touch-sized buttons that fit between subtitle and footer
+  on 20:9. Buttons start a mode by reloading with its URL query (web) or relaunching with its flag
+  (desktop), so no shared entry code changed. Screenshots: `build/screenshots/title.png`,
+  `title-phone.png`, `web-title.png`. Test: relaunch args + `--title` routing.
+
 #### Frame budget per quality tier (L0, re-measured in L6; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured (UHD 620, 720p) |
 |---|---|---|---|---|---|---|---|---|---|
@@ -252,6 +261,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `game/modes/game_mode.gd`: 2 lines, `--fx-bench` routes to `FxBenchMode` (in `game/theme/fx/bench/`).
 
 #### Questions for the lead
+0. **Make the title screen the entry point?** Today `run/main_scene` is `main.tscn` (straight into offline play). Pointing it at the title (or making `TitleMode` the no-flag default) is a one-line shared change; I left it off because modes, the web page, and smoke tests assume today's entry. Try it with `make title`.
 1. **Phone run** when convenient: `make serve-web WEB_HOST=0.0.0.0` (it exports first), open `http://<LAN IP>:8080/?fx-bench` on the phone (this worktree serves on 8080; after merging, main serves on 8060). It runs every config once (~3 min), then the overlay shows the summary table and keeps the firefight looping. A screenshot of that overlay is all I need; `?fx-bench=all,tier_low,tier_medium` is a 30-second version. Verified in headless Chrome (SwiftShader, so its numbers are meaningless): it completes and logs `FX_BENCH_DONE`; WebGL reports no GPU timing, so use frame times.
 
 #### Requests to other streams
@@ -263,7 +273,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - **Gameplay:** please call `hud.post_message()` for orders, commander down, unit lost, victory; the banners are live (`make hud-gallery`, `--hud-demo`).
 
 #### Known issues
-- `test_navigation::test_path_goes_around_a_wall` (gameplay's test) failed in 2 of 4 full `make check` runs while the machine load average was ~8 (four agents), got a straight 2-point path; it passes alone (2/2) and in full runs at load ~3.4, and passed when a debug print slowed it. Looks like a readiness race in its `_setup` wait under load, not an art change (the arena's nav bake parses collision shapes only). Reported to gameplay below.
+- `test_navigation::test_path_goes_around_a_wall` (gameplay's test) is **a load race, reproduced without any look & feel test**: run alone (`make test FILTER=test_navigation`) under 6 busy CPU loops it failed 1 of 3 times (a straight 2-point path); at normal load it passes alone and in full runs. It failed 3 of ~9 full `make check` runs tonight while four agents shared the machine. Not an art change (the nav bake parses collision shapes only).
 - The FX lab prints two "Texture … leaked" engine errors at exit (after switching MSAA/render scale at runtime). Bench only; the game itself exits clean.
 - Bench frame times are GPU-bound on a shared laptop iGPU with four other agents running; use deltas, not absolutes.
 
@@ -272,7 +282,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- Stretch: animated title screen (in progress).
+- Backlog and stretch items are complete. Next, if the night allows: polish passes from screenshots (tank legibility in the follow camera, destroyed-tank wreck visuals, the flamethrower's range vs its visual), and a `--fx-quality` phone check once the lead's numbers arrive.
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

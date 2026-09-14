@@ -29,3 +29,11 @@ vehicle-gallery: import ## Vehicle/weapon FX gallery (team colors, heat, flame; 
 sfx: import ## Regenerate the procedural sound effects in assets/audio (CC0, see its README)
 	$(GODOT) --headless --path . --script res://game/theme/audio/make_sfx.gd
 	$(GODOT) --headless --path . --import
+
+title: import ## Animated title screen (glitch title, live arena backdrop, menu); browser: ?title
+	$(GODOT) --path . -- --title
+
+title-shot: import ## Screenshot the title screen → build/screenshots/title.png and title-phone.png
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(GODOT) --path . res://game/ui/widgets/title/title_screen.tscn -- --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/title.png --screenshot-delay=5
+	$(GODOT) --path . --resolution 1600x720 res://game/ui/widgets/title/title_screen.tscn -- --ui-touch --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/title-phone.png --screenshot-delay=5
