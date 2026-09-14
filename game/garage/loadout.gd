@@ -109,7 +109,8 @@ func remaining_budget() -> int:
 
 
 ## Every problem that stops this army from fighting, as sentences a player can act on. Empty = ready.
-func problems() -> PackedStringArray:
+## `with_loader` also runs today's Doctrine.parse (off only for catalogs richer than the game, in tests).
+func problems(with_loader := true) -> PackedStringArray:
 	var found: PackedStringArray = []
 	if String(army.get("name", "")).strip_edges() == "":
 		found.append("Give your army a name.")
@@ -128,7 +129,7 @@ func problems() -> PackedStringArray:
 		found.append("Too many units: %d of %d." % [unit_count(), catalog.max_units])
 	if total_cost() > catalog.budget:
 		found.append("Over budget by %d." % (total_cost() - catalog.budget))
-	if found.is_empty():
+	if found.is_empty() and with_loader:
 		# The final word belongs to the loader the match uses.
 		var parsed := Doctrine.parse(to_doctrine())
 		if parsed.has("error"):

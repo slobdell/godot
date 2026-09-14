@@ -3,14 +3,31 @@ extends SceneTree
 ## player would (mixed weapons, three squads, roles, paint), and saves it where the garage saves.
 ## Prints GARAGE_ARMY <path> <cost>. Not a test_* file, so `make test` doesn't run it.
 ##   -- --stem=NAME  (default garage_e2e)
+##   -- --preset=ARCHETYPE --seed=N   write a CPU army (ArmyPresets) to user://doctrines/cpu/<archetype>_<seed>.json instead
 
 
 func _initialize() -> void:
 	var stem := "garage_e2e"
+	var preset := ""
+	var seed_value := 1
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--stem="):
 			stem = arg.trim_prefix("--stem=")
+		elif arg.begins_with("--preset="):
+			preset = arg.trim_prefix("--preset=")
+		elif arg.begins_with("--seed="):
+			seed_value = arg.trim_prefix("--seed=").to_int()
 	var catalog := GarageCatalog.from_game()
+	if preset != "":
+		if not ArmyPresets.ARCHETYPES.has(preset):
+			push_error("no archetype %s (have %s)" % [preset, ArmyPresets.ids()])
+			quit(1)
+			return
+		var cpu := ArmyPresets.build(preset, catalog, seed_value)
+		var written := ArmyStore.save(cpu.to_doctrine(), "%s_%d" % [preset, seed_value], GarageMode.CPU_DIR)
+		print("GARAGE_ARMY %s %d" % [written.get("path", written.get("error")), cpu.total_cost()])
+		quit(0 if written.has("path") and cpu.is_ready() else 1)
+		return
 	var loadout := Loadout.new(catalog)
 	loadout.set_army_name("Garage E2E")
 	loadout.add_squad()

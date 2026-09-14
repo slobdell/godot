@@ -68,6 +68,15 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   (`--green-doctrine=user://…` already worked, no adapter needed) vs Individuals to elimination; asserts 5 green tanks,
   shots fired, no ERROR. Measured: elimination at 95 s sim, Rust won 5-0 (green fired 58 shots). Expected: player
   squads are saved with `verb: hold`, so with nobody giving orders they sit at base. Not in `make check` (~20 s).
+- **GA4 done.** `army_presets.gd`: archetypes as data (balanced, rush, turtle, flamers) that name *preferences*
+  (fastest/toughest/cheapest class, shortest/longest-range weapon a hardpoint accepts, components by stat keyword:
+  heat weapons → heat components, ammo weapons → ammo), rolled with a seed (formations, objectives mirrored
+  left/right, directive weights) and filled to the budget. Garage: PRESETS menu (player versions hold, no
+  objectives; each pick rolls the next seed) and enemy picker `cpu:<archetype>` (default `cpu:balanced`, a fresh seed
+  each FIGHT, `--seed=N` to pin; saved to `user://doctrines/cpu/<archetype>.json`). `make garage-cpu-army PRESET= SEED=`
+  writes one for `make skirmish ENEMY=<path>`. 8 tests in `tests/test_garage_presets.gd`, incl. a richer "future"
+  catalog (scout/brute/laser/heat sink) proving archetypes adapt. `Loadout.problems(with_loader=false)` checks garage
+  rules without today's `Doctrine.parse` (which rejects weapons the game doesn't have yet).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

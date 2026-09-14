@@ -19,14 +19,19 @@ const BASE_HEIGHT := 720.0
 const FONT_SIZE := 17
 ## Minimum tap target at BASE_HEIGHT (scaled with the screen: 48 px at 1080p).
 const TAP := 40.0
-## Enemy doctrines offered for the skirmish: [value for --enemy, label].
-const ENEMIES := [["individuals", "CPU: Individuals"], ["anvil_hammer", "CPU: Anvil & Hammer"],
-		["flame_rush", "CPU: Flame Rush"], ["anvil_burners", "CPU: Anvil & Burners"]]
+## Opponents offered for the skirmish: [value for --enemy, label]. "cpu:<archetype>" is a fresh seeded
+## ArmyPresets army each fight (GarageMode builds it); the rest are hand-written res://doctrines.
+const ENEMIES := [["cpu:balanced", "CPU army: Balanced"], ["cpu:rush", "CPU army: Rush"],
+		["cpu:turtle", "CPU army: Turtle"], ["cpu:flamers", "CPU army: Flamers"],
+		["individuals", "Doctrine: Individuals"], ["anvil_hammer", "Doctrine: Anvil & Hammer"],
+		["flame_rush", "Doctrine: Flame Rush"], ["anvil_burners", "Doctrine: Anvil & Burners"]]
 
 var loadout: Loadout
 ## Where armies are saved (tests point this elsewhere).
 var store_dir := ArmyStore.DIR
-var enemy := "individuals"
+var enemy := "cpu:balanced"
+## Seed for the next preset the player picks (each pick rolls a new variation).
+var preset_seed := 1
 var selected_squad := 0
 ## Index in the selected squad, or -1.
 var selected_unit := -1
@@ -42,6 +47,7 @@ var _turntable: GarageTurntable
 var _problems_label: Label
 var _fight_button: Button
 var _load_menu: OptionButton
+var _preset_menu: OptionButton
 var _enemy_menu: OptionButton
 var _toast: Label
 var _toast_left := 0.0
@@ -193,6 +199,23 @@ func _build_top_bar() -> Control:
 	budget.add_child(_budget_bar)
 	bar.add_child(budget)
 
+	_preset_menu = OptionButton.new()
+	_preset_menu.name = "PresetMenu"
+	_preset_menu.custom_minimum_size = Vector2(150 * ui_scale, TAP * ui_scale)
+	_preset_menu.add_item("PRESETS...")
+	_preset_menu.set_item_metadata(0, "")
+	_preset_menu.add_item("Starter")
+	_preset_menu.set_item_metadata(1, "starter")
+	for archetype in ArmyPresets.ids():
+		_preset_menu.add_item(ArmyPresets.label(archetype))
+		_preset_menu.set_item_metadata(_preset_menu.item_count - 1, archetype)
+		_preset_menu.set_item_tooltip(_preset_menu.item_count - 1, String(ArmyPresets.ARCHETYPES[archetype]["blurb"]))
+	_preset_menu.item_selected.connect(func(index: int) -> void:
+		var archetype := String(_preset_menu.get_item_metadata(index))
+		_preset_menu.select(0)
+		if archetype != "":
+			apply_preset(archetype))
+	bar.add_child(_preset_menu)
 	_load_menu = OptionButton.new()
 	_load_menu.name = "LoadMenu"
 	_load_menu.custom_minimum_size = Vector2(150 * ui_scale, TAP * ui_scale)
@@ -643,6 +666,17 @@ func set_loadout(new_loadout: Loadout) -> void:
 	_refresh()
 
 
+## Replace the army with a preset ("starter" or an ArmyPresets archetype) for the player to tweak.
+func apply_preset(archetype: String) -> void:
+	var catalog := loadout.catalog
+	if archetype == "starter":
+		set_loadout(GarageScreen.starter_loadout(catalog))
+	else:
+		set_loadout(ArmyPresets.build(archetype, catalog, preset_seed, true))
+		preset_seed += 1
+	_show_toast("Preset: %s" % loadout.army["name"], false)
+
+
 ## Saves under the army's name. Returns the path, or "" (with a toast) on failure.
 func save() -> String:
 	var saved := ArmyStore.save(loadout.to_doctrine(), ArmyStore.slug(String(loadout.army.get("name", ""))), store_dir)
@@ -703,6 +737,11 @@ func _drop_on_squad(squad_index: int, data: Dictionary) -> void:
 				selected_unit = loadout.squad(squad_index)["tanks"].size() - 1
 				_refresh()
 			_act(error)
+
+
+## For the mode and other callers: show a problem the player should know about.
+func report(error: String) -> void:
+	_act(error)
 
 
 ## Shows `error` as a toast if there is one; returns it.
