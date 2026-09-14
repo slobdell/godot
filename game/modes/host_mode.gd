@@ -35,8 +35,12 @@ func started(peer: MultiplayerPeer) -> void:
 	main.hud.set_status("Opening a room on %s…" % relay.url)
 	relay.room_ready.connect(func(code: String) -> void:
 		main.hud.set_status("Hosting room %s: friends join with this code" % code)
+		var badge := RoomBadge.new()
+		badge.name = "RoomBadge"
+		badge.code = code
+		main.hud.add_child(badge)
 		print("TANK_SQUAD_ROOM code=%s" % code))
-	relay.relay_event.connect(_on_relay_event.bind(relay))
+	relay.relay_event.connect(_on_relay_event)  # no .bind(relay): the peer holding itself is a leak
 	_report_stats_every(relay, flags.integer("stats-every", 5))
 	if not flags.has("no-player"):
 		main.game_match.has_local_player = true
@@ -44,13 +48,14 @@ func started(peer: MultiplayerPeer) -> void:
 		main.game_match.add_player(main.multiplayer.get_unique_id())
 
 
-func _on_relay_event(event: String, data: Dictionary, relay: RelayPeer) -> void:
+func _on_relay_event(event: String, data: Dictionary) -> void:
+	var relay := main.multiplayer.multiplayer_peer as RelayPeer
 	print("TANK_SQUAD_RELAY event=%s %s" % [event, data])
 	match event:
 		"away":
 			main.hud.set_status("Connection to the relay lost: reconnecting…")
 		"back":
-			main.hud.set_status("Hosting room %s" % relay.room_code)
+			main.hud.set_status("Hosting room %s" % (relay.room_code if relay != null else ""))
 		"closed":
 			main.hud.set_status("Room closed: %s" % data.get("reason", ""))
 

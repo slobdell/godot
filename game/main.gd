@@ -10,6 +10,7 @@ extends Node3D
 ##   --match                    MatchRunnerMode: headless bots vs bots → MATCH_RESULT json
 ##   --server[=port]            ServerMode: authoritative WebSocket server (--bots=N)
 ##   --connect[=ws://host:port] ClientMode: join a server (browser default: /ws on the page's host)
+##   --lobby                    LobbyMode: touch-first HOST / JOIN-by-code screen (browser ?lobby)
 ##   --host [--relay=ws://...]  HostMode: YOU host through the broker's relay (browser default: /relay)
 ##   --join=CODE [--relay=...]  ClientMode: join a player-hosted room by its code
 ##   --demo                     scripted driver instead of keyboard/mouse (offline/client)

@@ -127,14 +127,15 @@ relay-drop-smoke: import $(BROKER_DEPS) ## Relay: cut one client's socket for 10
 	$(call relay_verdict,relay-drop-smoke,relay-drop-smoke-dropper relay-drop-smoke-steady)
 
 # ---- Browsers through the relay ------------------------------------------------------------
-# Humans: `make play-relay`, open http://localhost:8060/?host (add &demo&bots=2 to taste), read the
-# room code off the HUD, then http://localhost:8060/?join=CODE in other tabs/devices.
+# Humans: `make play-relay`, open http://localhost:8060/?lobby and tap HOST A MATCH (or ?host, add
+# &demo&bots=2 to taste); others tap the code into their lobby, or open the copied invite link.
 play-relay: export-web $(BROKER_DEPS) ## Broker + web page: ?host opens a room in YOUR browser, ?join=CODE joins it
 	mkdir -p $(BUILD_DIR)
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(BROKER_PORT) --host=127.0.0.1 > $(BUILD_DIR)/play-relay-broker.log 2>&1 & broker=$$!; \
 	trap 'kill $$broker 2>/dev/null' EXIT; \
 	echo "broker log: $(BUILD_DIR)/play-relay-broker.log"; \
-	echo "Host:  http://localhost:$(WEB_PORT)/?host      Join: http://localhost:$(WEB_PORT)/?join=CODE"; \
+	echo "Lobby (tap HOST or type a code): http://localhost:$(WEB_PORT)/?lobby"; \
+	echo "Direct: http://localhost:$(WEB_PORT)/?host   http://localhost:$(WEB_PORT)/?join=CODE"; \
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(WEB_PORT) $(WEB_HOST) $(NET_PORT) $(BROKER_PORT)
 
 # A browser PLAYER joins a headless player host; the screenshot should show remote tanks.
@@ -253,3 +254,14 @@ broker-load: $(BROKER_DEPS) ## Broker CPU + memory under measured relay traffic 
 	trap 'kill $$broker 2>/dev/null' EXIT; \
 	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/broker-load.log && break; sleep 0.1; done; \
 	$(NODE) $(BROKER_DIR)/load.mjs $(SMOKE_BROKER_PORT) $$broker $(ROOMS) $(PLAYERS) $(or $(filter-out 30,$(SECONDS)),20)
+
+# The touch lobby, tapped through headless against a local broker.
+lobby-smoke: import $(BROKER_DEPS) ## --lobby: a wrong room code returns to the lobby with a message; HOST opens a room with its badge
+	mkdir -p $(BUILD_DIR)
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/lobby-smoke-broker.log 2>&1 & broker=$$!; \
+	trap 'kill $$broker 2>/dev/null' EXIT; \
+	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/lobby-smoke-broker.log && break; sleep 0.1; done; \
+	$(GODOT) --headless --path . --script res://tests/net/lobby_check.gd -- --lobby --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) --stats-every=0 \
+		> $(BUILD_DIR)/lobby-smoke.log 2>&1; status=$$?; \
+	grep -E 'LOBBY_CHECK|ERROR' $(BUILD_DIR)/lobby-smoke.log; \
+	grep -q ERROR $(BUILD_DIR)/lobby-smoke.log && status=1; exit $$status
