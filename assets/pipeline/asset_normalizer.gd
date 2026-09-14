@@ -42,6 +42,7 @@ const AXES := {
 ##   keep []         material-name globs the palette must not absorb
 ##   repeat (1,1,1)  tile the selection N×M×K times along x/y/z before fitting (a wall from barrier segments)
 ##   emission_maps {} material-name glob → Texture2D: an emission map delivered beside the GLB (Meshy PBR)
+##   strip_textures (false) export materials without their textures: the part borrows another slot's (--textures-from)
 ## Returns {scene: Node3D, notes: PackedStringArray, scale: Vector3, source: report}.
 static func normalize(source: Node, slot: String, options: Dictionary = {}) -> Dictionary:
 	var contract := AssetContracts.get_contract(slot)
@@ -76,6 +77,8 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 		_reanchor(mesh, contract)  # an attached barrel keeps the turret's placement instead
 	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}),
 			float(options.get("emission_energy", 0.0)))
+	if options.get("strip_textures", false):
+		_strip_textures(mesh, notes)
 
 	var root := Node3D.new()
 	root.name = String(contract["file"]).to_pascal_case()
@@ -546,6 +549,20 @@ static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dict
 					base.emission_energy_multiplier = float(emissive[glob])
 					notes.append("material '%s' made emissive ×%.1f" % [base.resource_name, float(emissive[glob])])
 		mesh.surface_set_material(surface, material)
+
+
+## Drops every texture from the mesh's materials (names and scalar settings stay, so the borrowed material matches).
+static func _strip_textures(mesh: ArrayMesh, notes: PackedStringArray) -> void:
+	var stripped := 0
+	for surface in mesh.get_surface_count():
+		var base := mesh.surface_get_material(surface) as BaseMaterial3D
+		if base == null:
+			continue
+		for property in AssetInspector.TEXTURE_PROPERTIES:
+			if base.get(property) != null:
+				base.set(property, null)
+				stripped += 1
+	notes.append("stripped %d texture references (textures come from another slot)" % stripped)
 
 
 static func _shrink(texture: Texture2D, max_edge: int) -> ImageTexture:

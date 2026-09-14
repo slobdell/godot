@@ -24,3 +24,8 @@
 | 2026-09-14 21:37 | text-to-image nano-banana-pro | `01a0a1da-52e9-702e-859f-4ead065507be` | 9 | meshy/scrap_a | SUCCEEDED | 847 |
 | 2026-09-14 21:38 | text-to-image nano-banana-pro | `01a0a1da-5283-7608-9abd-99bfbaa3d9e8` | 9 | meshy/barrier_a | SUCCEEDED | 847 |
 | 2026-09-14 21:40 | text-to-image nano-banana-pro | `01a0a1dc-0cd6-75a7-86e2-7b2d2a0c0a22` | 9 | meshy/arena_key_b | SUCCEEDED | 838 |
+| 2026-09-14 22:23 | image-to-3d meshy-t2 smart-topology | `01a0a203-1672-7432-85ad-156fa0e2ed98` | 15 | artillery_a | SUCCEEDED | 763 |
+| 2026-09-14 22:23 | image-to-3d meshy-t2 smart-topology | `01a0a203-166d-776f-a0a6-4bd2172edb17` | 15 | scout_b | SUCCEEDED | 763 |
+| 2026-09-14 22:24 | image-to-3d meshy-t2 smart-topology | `01a0a203-166c-76c8-8929-d42cdc7d5617` | 15 | ifv_b | SUCCEEDED | 763 |
+| 2026-09-14 22:24 | image-to-3d meshy-t2 smart-topology | `01a0a203-166c-74e0-afc5-6cce70341625` | 15 | lancer_b | SUCCEEDED | 763 |
+| 2026-09-14 22:25 | image-to-3d meshy-t2 smart-topology | `01a0a203-166a-716a-b337-a3f7aede589f` | 15 | stands_a | SUCCEEDED | 763 |

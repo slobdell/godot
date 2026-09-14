@@ -59,7 +59,7 @@ class GenerateAgainstMock(unittest.TestCase):
         self.assertTrue(Path(self.out.name, "hull.emission.png").exists(), "the emission map is kept for neon")
         posts = [body for method, path, body in self.state.requests if method == "POST"]
         self.assertEqual([p["mode"] for p in posts], ["preview", "refine"], "text-to-3D runs preview then refine")
-        self.assertEqual(posts[0]["target_polycount"], int(8000 * generate.POLY_HEADROOM),
+        self.assertEqual(posts[0]["target_polycount"], int(15000 * generate.POLY_HEADROOM),
                          "the polygon target comes from the tank.hull budget in asset_contracts.gd")
         self.assertTrue(posts[1]["enable_pbr"] and posts[1]["ai_model"] == "meshy-6",
                         "refine asks for PBR on meshy-6, the only combination with an emission map")
@@ -92,8 +92,8 @@ class GenerateAgainstMock(unittest.TestCase):
         self.assertEqual(code, 0, err)
         body = [b for m, p, b in self.state.requests if m == "POST"][0]
         self.assertEqual((body["input_task_id"], body["model_type"], body["ai_model"]), (concept_id, "smart-topology", "meshy-t2"))
-        self.assertEqual(body["target_polycount"], int((8000 + 4000 + 2000) * generate.POLY_HEADROOM),
-                         "a whole tank asks for the hull + turret + cannon budgets together")
+        self.assertEqual(body["target_polycount"], min(int((15000 + 4000 + 2000) * generate.POLY_HEADROOM), generate.SMART_TOPOLOGY_MAX),
+                         "a whole tank asks for the hull + turret + cannon budgets together, capped at Smart Topology's limit")
         self.assertEqual(Path(self.out.name, "tank.glb").read_bytes()[:4], b"glTF")
 
     def test_meshy_turnaround_from_a_chosen_concept_then_multi_image_to_3d(self):
@@ -241,8 +241,8 @@ class GenerateAgainstMock(unittest.TestCase):
         self.assertIn("unknown slot", err)
 
     def test_every_contract_slot_has_a_readable_budget(self):
-        for slot, budget in {"tank.hull": 8000, "tank.turret": 4000, "weapon.cannon": 2000, "fx.shell": 200,
-                             "prop.wall": 3000, "arena.dressing": 50000, "kit.container": 1500, "unit.tank": 14000}.items():
+        for slot, budget in {"tank.hull": 15000, "tank.turret": 4000, "weapon.cannon": 2000, "fx.shell": 200,
+                             "prop.wall": 3000, "arena.dressing": 50000, "kit.container": 1500, "unit.tank": 21000}.items():
             self.assertEqual(generate.slot_budget(slot), budget, slot)
 
 

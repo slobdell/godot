@@ -5,7 +5,6 @@
       "glb": "tank_hull.glb",
       "license": "Meshy Pro (paid plan): customer owns the generated output",
       "notes": [
-        "decimated 13694 → 7987 triangles (budget 8000)",
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
         "texture normal_texture 2048×2048 → 1024×1024",
@@ -41,7 +40,7 @@
       "roof": 1.6,
       "scene": "tank_hull.tscn",
       "source": "Meshy image-to-3D meshy-t2 task 01a09ff4-4b17-76af-8ed1-4d7f2e8d7c9d from nano-banana-pro concept 01a09fec-d5c3-700a-bce1-3cdf54384292",
-      "tris": 7703.0
+      "tris": 13410.0
     },
     "tank.turret": {
       "credit": "Generated with Meshy",
@@ -52,7 +51,8 @@
         "texture albedo_texture 2048×2048 → 1024×1024",
         "texture normal_texture 2048×2048 → 1024×1024",
         "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -78,6 +78,8 @@
         },
         "raise": 0.655,
         "scale": 3.0739586353302,
+        "strip_textures": true,
+        "textures_from": "tank.hull",
         "up": "+y"
       },
       "roof": 0.845,
@@ -95,7 +97,8 @@
         "texture albedo_texture 2048×2048 → 1024×1024",
         "texture normal_texture 2048×2048 → 1024×1024",
         "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
       ],
       "options": {
         "attach": {
@@ -126,6 +129,8 @@
           "tint": []
         },
         "scale": 0.0,
+        "strip_textures": true,
+        "textures_from": "tank.hull",
         "up": "+y"
       },
       "roof": 0.749,

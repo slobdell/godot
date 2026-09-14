@@ -34,9 +34,10 @@ const DEFAULT_DECK_Y := TURRET_PIVOT_Y - 0.275
 const ANCHOR_TOLERANCE := 0.05
 
 const SLOTS := {
+	# 15k (art X1, 2026-09-14): generated hulls keep the generator's detail; 8k flattened the dozer's treads.
 	"tank.hull": {
 		"guide": Vector3(2.4, 1.6, 3.6), "fit": "contain", "anchor": "ground_center",
-		"tris": 8000, "methods": ["set_team_color"], "elongated": "z", "file": "tank_hull",
+		"tris": 15000, "methods": ["set_team_color"], "elongated": "z", "file": "tank_hull",
 	},
 	"tank.turret": {
 		"guide": Vector3(1.4, 0.55, 1.7), "max": Vector3(1.8, 0.9, 2.1), "fit": "contain",

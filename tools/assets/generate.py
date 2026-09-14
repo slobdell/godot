@@ -377,9 +377,7 @@ def main(argv=None) -> int:
             task = provider.generate(args.prompt, image, polycount, args.image_task, args.smart_topology,
                                      args.ai_model or "meshy-6", args.texture_resolution)
         if item is not None:  # before downloading: a paid task must never be requested twice
-            manifest = review.load(manifest_path)
-            review.record_model_task(manifest, item["id"], task["id"])
-            review.save(manifest, manifest_path)
+            review.locked_update(manifest_path, lambda m: review.record_model_task(m, item["id"], task["id"]))
         downloaded = {}
         for kind, url in provider.files(task).items():
             if not url:

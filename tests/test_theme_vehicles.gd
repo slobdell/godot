@@ -23,8 +23,9 @@ func test_every_part_is_one_mesh_with_at_most_two_surfaces() -> void:
 
 
 func test_team_color_rebuilds_vertex_colors_not_materials() -> void:
-	var cyan := _part("tank.hull")
-	var magenta := _part("tank.hull")
+	# The procedural hull (vehicle gallery, fallback art); the generated dozer carries team color in its shader.
+	var cyan: Node3D = add_to_tree(preload("res://game/theme/cyberpunk/tank_hull.tscn").instantiate())
+	var magenta: Node3D = add_to_tree(preload("res://game/theme/cyberpunk/tank_hull.tscn").instantiate())
 	cyan.call("set_team_color", Color("#00F3FF"))
 	magenta.call("set_team_color", Color("#FF0099"))
 	var a := (cyan.get_node("Mesh") as MeshInstance3D).mesh
@@ -130,28 +131,34 @@ func test_camera_shake_falls_off_with_distance_and_scales_with_trauma() -> void:
 	assert_true(small < big * 0.2, "trauma squared: small hits barely move the view (%.3f vs %.3f)" % [small, big])
 
 
-func test_the_generated_dozer_wears_team_accents_paint_and_a_shield() -> void:
-	# Integration 2026-09-15: the assets stream's Meshy prison dozer fills the cyberpunk tank slots.
+func test_the_generated_dozer_wears_team_neon_paint_heat_and_a_shield() -> void:
+	# Art X1 (2026-09-14): the model's own neon is the team accent (unit_body.gdshader); no added strips.
 	var hull := _part("tank.hull")
+	var turret := _part("tank.turret")
+	var cannon := _part("weapon.cannon")
+	var other_hull := _part("tank.hull")
 	assert_true(hull.get_node_or_null("Model") != null, "tank.hull is the generated model")
 	assert_true(hull.get_node_or_null("Shield") is ShieldEffect, "with the theme's shield shell")
-	var previous := GameTheme.theme_name
-	GameTheme.use("cyberpunk")
-	hull.call("set_team_color", GameTheme.team_color(1))
-	var accent_mesh := (hull.get_node("Mesh") as MeshInstance3D).mesh
-	var accents_before: PackedColorArray = accent_mesh.surface_get_arrays(accent_mesh.get_surface_count() - 1)[Mesh.ARRAY_COLOR]
-	assert_true(accents_before.has(Color(GameTheme.team_color(1), 1.0)) or accents_before.size() > 0, "team accent strips are drawn")
+	assert_eq((hull.get_node("Mesh") as MeshInstance3D).mesh.get_surface_count(), 0, "no accent slabs are drawn over the model")
+	var skinned: Array = hull.get("skinned")
+	assert_true(skinned.size() > 0, "the model's meshes wear the unit shader")
+	var material := (skinned[0] as MeshInstance3D).get_active_material(0) as ShaderMaterial
+	assert_true(material != null and material.shader == UnitSkin.SHADER, "a ShaderMaterial with unit_body.gdshader")
+	for part in [turret, cannon, other_hull]:
+		var worn := ((part.get("skinned") as Array)[0] as MeshInstance3D).get_active_material(0)
+		assert_eq(worn, material, "%s shares the unit's one material (one texture set)" % part.name)
+	hull.call("set_team_color", Color("#FF0099"))
+	var mesh := skinned[0] as MeshInstance3D
+	assert_eq(mesh.get_instance_shader_parameter("team_color"), Color("#FF0099"), "set_team_color lights the neon in the team color")
 	hull.call("set_paint", Color.HOT_PINK)
-	GameTheme.use(previous)
-	accent_mesh = (hull.get_node("Mesh") as MeshInstance3D).mesh
-	var accents_after: PackedColorArray = accent_mesh.surface_get_arrays(accent_mesh.get_surface_count() - 1)[Mesh.ARRAY_COLOR]
-	assert_eq(accents_after, accents_before, "paint leaves the team accents alone")
-	var model := hull.get_node("Model")
-	var painted := model.find_children("*", "MeshInstance3D", true, false).any(func(m: MeshInstance3D) -> bool:
-		for surface in m.mesh.get_surface_count():
-			var material := m.get_surface_override_material(surface) as BaseMaterial3D
-			if material != null and material.albedo_color.r > material.albedo_color.g + 0.1:
-				return true
-		return false)
-	assert_true(painted, "and tints the generated body")
+	var paint: Color = mesh.get_instance_shader_parameter("paint")
+	assert_true(paint.a > 0.0 and paint.r > paint.g, "set_paint coats the body")
+	assert_eq(mesh.get_instance_shader_parameter("team_color"), Color("#FF0099"), "paint leaves the team neon alone")
+	var other_paint: Color = ((other_hull.get("skinned") as Array)[0] as MeshInstance3D).get_instance_shader_parameter("paint")
+	assert_near(other_paint.a, 0.0, 0.001, "other vehicles keep their own paint (per instance, not per material)")
+	cannon.call("set_heat", 0.9)
+	hull.call("set_heat", 0.9)
+	assert_near(float(((cannon.get("skinned") as Array)[0] as MeshInstance3D).get_instance_shader_parameter("heat")), 0.9, 0.001, "the barrel heats")
+	var hull_heat = mesh.get_instance_shader_parameter("heat")  # never set on a hull: null (the shader's 0)
+	assert_true(hull_heat == null or float(hull_heat) < 0.001, "the hull stays cold")
 

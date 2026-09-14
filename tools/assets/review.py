@@ -70,6 +70,18 @@ def save(manifest: dict, path: Path = REVIEW) -> None:
     path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
 
 
+def locked_update(path: Path, change) -> dict:
+    """Load, change, and save the manifest under an exclusive lock (parallel 3D requests record their tasks)."""
+    import fcntl
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path.with_suffix(".lock"), "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        manifest = load(path)
+        change(manifest)
+        save(manifest, path)
+        return manifest
+
+
 def find(manifest: dict, item_id: str) -> dict:
     for item in manifest["items"]:
         if item["id"] == item_id:

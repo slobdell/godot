@@ -15,6 +15,7 @@ extends SceneTree
 ##             [--emission-energy=<f>]  emission energy for emissive materials (generated maps come in dim)
 ##             [--attach-to=tank.turret]  a barrel from the same model stays where it was attached to that turret
 ##             [--scale-from=<slot>]  reuse the uniform scale another slot got from the same source
+##             [--textures-from=<slot>]  export without textures and wear that slot's materials (one texture set per unit)
 ##             [--emissive=glob:energy,..] [--emission-map=<png>[:material glob]] (e.g. Meshy's emission map)
 ##             [--tint=glob,..] [--tint-strength=0..1] [--team-emissive=glob,..] [--heat=glob,..] [--shield=glob,..]
 ##             [--source=<url or path>] [--license=<text>] [--credit=<text>]
@@ -108,6 +109,13 @@ func _normalize(args: Dictionary) -> int:
 		if options["scale"] <= 0.0:
 			printerr("--scale-from=%s: normalize that slot first" % args["scale-from"])
 			return 1
+	if args.has("textures-from"):
+		var lender: Dictionary = manifest["slots"].get(args["textures-from"], {})
+		if not lender.has("glb"):
+			printerr("--textures-from=%s: normalize that slot first" % args["textures-from"])
+			return 1
+		options["strip_textures"] = true
+		options["textures_from"] = args["textures-from"]
 	for pair in _list(args.get("emissive", "")):
 		var parts := String(pair).split(":")
 		options["emissive"][parts[0]] = float(parts[1]) if parts.size() > 1 else 2.0
@@ -141,7 +149,10 @@ func _normalize(args: Dictionary) -> int:
 		return 1
 	var materials := {"tint": _list(args.get("tint", "")), "team_emissive": _list(args.get("team-emissive", "")),
 			"heat": _list(args.get("heat", "")), "shield": _list(args.get("shield", ""))}
-	var scene_path := AssetIO.write_wrapper(theme, slot, materials, float(args.get("tint-strength", "1.0")))
+	var lender_glb := ""
+	if options.has("textures_from"):
+		lender_glb = "%s/%s" % [dir, manifest["slots"][options["textures_from"]]["glb"]]
+	var scene_path := AssetIO.write_wrapper(theme, slot, materials, float(args.get("tint-strength", "1.0")), lender_glb)
 	options.erase("emission_maps")
 	if options.has("repeat"):
 		options["repeat"] = args["repeat"]

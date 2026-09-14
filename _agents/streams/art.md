@@ -108,8 +108,12 @@ or `make art-review` → `build/review/index.html` in the art worktree (pictures
 
 Estimated 3D cost if one of each is approved: 10 × 15 = 150 credits (image-to-3D meshy-t2, textured).
 
-**Approvals** (the lead's words, recorded with `make art-decide`):
-- (none yet)
+**Decisions (the lead, 2026-09-14 21:44–21:54 UTC, on the review page: Approve/Reject taps, no comments):**
+- **Approved → 3D:** `scout_b` caged dune buggy, `ifv_b` armored garbage truck, `artillery_a` crane carrier with a
+  mortar battery, `lancer_b` transformer flatbed with a coil cannon, `stands_a`, `gate_a`, `tower_a`, `container_a`,
+  `barrier_a`, `scrap_a`. `arena_key_b` approved as the mood target (no 3D).
+- **Rejected:** `scout_a`, `scout_c`, `ifv_a`, `ifv_c`, `artillery_b`, `lancer_a`.
+- Recorded in `assets/review/review.json` (`make art-review-status`). 3D requests sent right after (meshy-t2, textured).
 
 ## Status
 
@@ -131,7 +135,24 @@ _Updated 2026-09-14 (agent)._
   `--keep-background` for scene art. 15 Python tests (the gate test is proven to fail without the gate).
 - **Concept batch 1:** 18 images (162 credits; balance 838), published as a review page with per-concept approve/reject. See *Waiting on the lead*.
 
+- **X1 vehicle readability:**
+  - The added accent slabs and the square muzzle ring are gone. The model's own cyan and magenta light bars now
+    glow in the team color (`game/theme/fx/shaders/unit_body.gdshader` + `UnitSkin`), while red and amber
+    warning lights keep their color.
+  - Paint and heat are per-instance uniforms on one shared material per unit. Heat applies to barrels only.
+  - A cool rim term lifts the dark gunmetal off the night floor.
+  - Hull budget 8k → 15k: the dozer hull is now 13,410 tris with no decimation, and the treads' road wheels are back.
+  - One texture set per unit: `--textures-from=tank.hull` ships the turret and cannon untextured, and they wear the
+    hull's materials (`generated_visual.gd` `material_source`). `game/theme/prison_dozer/generated`: 27 MB → 9.7 MB.
+  - Vehicle gallery draw calls: 136 → 108.
+  - Before and after screenshots: `build/screenshots/x1_before/`, `x1-gallery*.png`, `prison_dozer-unit-day.png`.
+  - Not changed (rules' call): the barrel still sits ~0.65 m above gameplay's muzzle height until catalog v2's
+    per-unit `muzzle_height` lands.
+
 **Decisions**
+- Team identity on generated vehicles = the model's own neon tinted per team + the underglow (no added strips):
+  at the skirmish camera the underglow and nameplates carry friend/foe; up close the tinted light bars do.
+  ACES tonemapping bleached bright cyan to white, so team neon energy is moderate (0.6 × 4).
 - Concept review images are committed as 1024 px JPEGs (`assets/review/images/`, ~150 KB each, `.gdignore`d) so
   the record survives a worktree removal; Meshy concept tasks expire ~3 days after creation, so a late approval
   sends the local image instead of the task id.
@@ -140,7 +161,7 @@ _Updated 2026-09-14 (agent)._
 - `arena_key` (first try) was superseded: background removal erased the scene. Mood art now uses `KEEP_BG=1`.
 
 **Questions for the lead**
-- The concept review above.
+- (none open; review #1 answered)
 
 **Requests to other streams**
 - (none yet)

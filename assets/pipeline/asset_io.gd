@@ -107,7 +107,9 @@ static func generated_dir(theme: String) -> String:
 
 ## Writes <dir>/<file>.tscn instancing <file>.glb under the GeneratedVisual script.
 ## `materials`: {tint: [...], team_emissive: [...], heat: [...], shield: [...]} material-name globs.
-static func write_wrapper(theme: String, slot: String, materials: Dictionary = {}, tint_strength := 1.0) -> String:
+## `material_source`: a GLB (res:// path) whose same-named materials the model wears (it was exported untextured).
+static func write_wrapper(theme: String, slot: String, materials: Dictionary = {}, tint_strength := 1.0,
+		material_source := "") -> String:
 	var contract := AssetContracts.get_contract(slot)
 	var file: String = contract["file"]
 	var dir := generated_dir(theme)
@@ -117,6 +119,10 @@ static func write_wrapper(theme: String, slot: String, materials: Dictionary = {
 		"",
 		"[ext_resource type=\"Script\" path=\"%s\" id=\"1_visual\"]" % WRAPPER_SCRIPT,
 		"[ext_resource type=\"PackedScene\" path=\"%s/%s.glb\" id=\"2_model\"]" % [dir, file],
+	])
+	if material_source != "":
+		lines.append("[ext_resource type=\"PackedScene\" path=\"%s\" id=\"3_materials\"]" % material_source)
+	lines.append_array([
 		"",
 		"[node name=\"%s\" type=\"Node3D\"]" % file.to_pascal_case(),
 		"script = ExtResource(\"1_visual\")",
@@ -132,6 +138,8 @@ static func write_wrapper(theme: String, slot: String, materials: Dictionary = {
 			lines.append("%s = PackedStringArray(%s)" % [key[1], ", ".join(quoted)])
 	if tint_strength < 1.0:
 		lines.append("tint_strength = %s" % snappedf(tint_strength, 0.01))
+	if material_source != "":
+		lines.append("material_source = ExtResource(\"3_materials\")")
 	lines.append_array(["", "[node name=\"Model\" parent=\".\" instance=ExtResource(\"2_model\")]", ""])
 	var handle := FileAccess.open(path, FileAccess.WRITE)
 	handle.store_string("\n".join(lines))
