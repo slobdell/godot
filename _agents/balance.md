@@ -90,6 +90,9 @@ Overall #2: siege 83%, balanced 69%, armor 67%, recon_strike 28%, swarm 3%. The 
 anything (the scout armies lose to tank armies, which have no artillery to hunt). Then **mortar 90 → 70**
 (probe, 16 each): siege vs armor **10 : 6**, siege vs balanced **10 : 6** (from 12 : 4). Applied (049f5d5).
 
+Near-sighted tanks probe (`--tune=tank.sight_radius=60`, below the cannon's 70 m, so spotters extend a tank's
+reach): recon_strike vs armor **0 : 16**, balanced vs armor 9 : 7 (vs 9 : 7 without). No help for scouts.
+
 Where E3 stands: siege, balanced, and armor are within reach of each other; scout-heavy armies are not
 viable (recon_strike ~28%, swarm ~3%). Scouts earn their points only next to artillery. Open design
 question for the lead in the Status.

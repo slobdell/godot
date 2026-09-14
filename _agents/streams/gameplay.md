@@ -123,7 +123,7 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 
 ### Overnight run 2026-09-14 → 15 (morning report; kept current as items land)
 
-**TL;DR.** All 13 backlog items landed, plus the stretch items. `make check` (170 tests) passes; web build,
+**TL;DR.** All 13 backlog items landed, plus the stretch items. `make check` (157 tests) passes; web build,
 server export, and screenshots checked. Directive set 1 (G0–G7) is playable in `make skirmish`: a 3D RTS
 camera, radar, fog of war, touch controls, shields, ammo/heat/lasers, and turrets that keep fighting while
 moving. Directive set 2: scouts, artillery, loadouts with components, budgets, and seeded CPU armies. Three
