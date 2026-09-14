@@ -99,6 +99,10 @@ static var ui: Dictionary = DEFAULT_UI
 
 static func _static_init() -> void:
 	var requested := LaunchFlags.from_environment().text("theme", DEFAULT_THEME)
+	# Generated candidate themes (game/theme/<name>/generated, the assets stream) are applied by the asset
+	# tools themselves (AssetIO.theme_slots); `--theme=<one of those>` isn't a mistake here.
+	if not THEMES.has(requested) and DirAccess.dir_exists_absolute("res://game/theme/%s/generated" % requested):
+		requested = DEFAULT_THEME
 	if not use(requested):
 		use(DEFAULT_THEME)
 

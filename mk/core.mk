@@ -41,6 +41,7 @@ doctor: ## Report toolchain health (versions, templates, display)
 # script runs do NOT see a newly added `class_name` until this has run, so every
 # target that runs project code depends on it. It takes a few seconds.
 import: $(GODOT)
+	@mkdir -p $(BUILD_DIR) && touch $(BUILD_DIR)/.gdignore  # screenshots and exports are never project resources
 	$(GODOT) --headless --path . --import
 
 lint: import ## Parse-check every GDScript file; prints only errors (fast way to find compile errors)

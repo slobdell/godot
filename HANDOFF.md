@@ -3,60 +3,68 @@
 > **Read [`_agents/orientation.md`](_agents/orientation.md) first.** Then, if you're a workstream
 > agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-14. **Five stream agents are set up to run overnight without the lead** (see below)._
+_Last updated: 2026-09-15. **All five overnight streams are merged into `main`** and verified together._
 
 ## Current state (main)
 
-- **Playable:** `make skirmish` (squad-vs-squad tactical map, elimination, tactical pause), `make play` (browser multiplayer), `make run` (drive a tank), `make watch-match` (two AI doctrines).
-- **Verified:** `make check` = lint, 88 tests, network/combat/match smoke tests, determinism, **sim-baseline** (art must never change gameplay). `make check-all` (desktop render, browser checks, server export) passed from a clean build.
-- **Measured facts that matter for planning:**
-  - Coordinated squads beat uncoordinated ones 60% under current rules (T1 v2, tank_brain.md).
-  - Fight pace: first shot ~8 s, first kill ~32 s, matches ~230 s (tactical_map.md Iteration 2).
-  - **Native and browser builds do not simulate identically** (streams/netcode.md), which shapes the multiplayer architecture.
+- **Play it:**
+  - `make skirmish`: squads vs a seeded budgeted CPU army, with the RTS 3D camera, radar, fog of war, touch controls, shields, ammo, heat, lasers, scouts, artillery, cyberpunk look, banners, and sound. Try `CONTROL=1` for the center control point, `ENEMY=cpu:siege`, and `SEED=3`.
+  - `make garage`: build an army on a budget, then FIGHT.
+  - `make title`: the animated title screen.
+  - `make play-relay`, then open `http://localhost:8060/?lobby`: player-hosted multiplayer through the relay broker, with room codes.
+  - Also: `make vehicle-gallery`, `make hud-gallery`, `make fx-bench`, `make assets-gallery THEME=neon_kit NIGHT=1`, and `make assets-unit THEME=prison_dozer`.
+- **Verified 2026-09-15 on merged `main`:**
+  - `make check`: 292 tests plus network, combat, relay, lobby, match, determinism, sim-baseline, and garage smoke tests.
+  - `make web-smoke`, and the assets web gallery.
+  - `make check-all`: see the Status section of this file's latest commit message, or re-run it.
+- **Sim baseline:** `e5cf33921713b657`. Navigation now syncs synchronously, so the baseline is deterministic under machine load (orientation trip-up 57).
+- **Web download:** 0.8 MB `.pck`. Candidate art themes and the asset pipeline are excluded from exports (trip-up 56).
 
-## The workstreams (the lead's plan, 2026-09-13)
+## What each stream delivered (details in each brief's Status section)
 
-| Stream | Brief | First milestone |
+| Stream | Delivered | Brief |
 |---|---|---|
-| Gameplay | [streams/gameplay.md](_agents/streams/gameplay.md) | Directive set 1: touch-first input, line-of-sight fog of war, radar, responsive commands, RTS 3D camera, turrets that fight while moving, Halo-style shields, finite ammo + lasers with heat. Next: budgeted army (scouts/tanks/artillery) |
-| Look & feel | [streams/look_and_feel.md](_agents/streams/look_and_feel.md) | L0 FX lab: prove efficient lighting tricks with `make fx-bench` (streams/references/fx_tricks.md); port the mavlink-hud cyberpunk HUD (CyberFrame, CyberBanner, Conductors) via `Hud.post_message`; then a dark `cyberpunk` theme where weapon fire, lasers, and neon obstacles light the arena |
-| Assets | [streams/assets.md](_agents/streams/assets.md) | One AI-generated tank in a test theme + `make assets-check` |
-| Netcode | [streams/netcode.md](_agents/streams/netcode.md) | Broker (lobbies + relay), then a deterministic-core spike |
-| Garage | [streams/garage.md](_agents/streams/garage.md) | Loadout schema + garage scene producing a playable doctrine |
+| Gameplay | G0–G7 plus directive set 2: touch input, fog of war + radar, responsive orders, RTS camera, turrets that fight on the move, shields, ammo/heat/lasers, the unit catalog v1 (tank/scout/artillery + components), budgets, CPU armies (`Army`), control point, CPU commander (opt-in) | [gameplay.md](_agents/streams/gameplay.md), [balance.md](_agents/balance.md) |
+| Look & feel | FX lab with measured tier budgets; cyberpunk default theme; pooled FX systems; HUD widgets (banners, frames, conductors); quality tiers; synthesized sound; title screen | [look_and_feel.md](_agents/streams/look_and_feel.md), [fx_tricks.md](_agents/streams/references/fx_tricks.md) |
+| Assets | GLB normalize/check pipeline; Meshy/Tripo clients; CC0 `kitbash` and procedural `neon_kit` themes; the first production unit, the **prison dozer** (with the lead) | [assets.md](_agents/streams/assets.md), [art_direction.md](_agents/art_direction.md) |
+| Netcode | Relay broker (Node); player-hosted matches (`RelayPeer`); touch lobby; reconnect/rejoin; replays; bandwidth + latency measured; **the lockstep spike is bit-identical native vs wasm** | [netcode.md](_agents/streams/netcode.md), [netcode_designs.md](_agents/streams/references/netcode_designs.md) |
+| Garage | Touch-first garage; loadouts saved per army; army codes; presets; comparison tables; tips; FIGHT hands over to the skirmish | [garage.md](_agents/streams/garage.md) |
 
-**Kickoff for any stream agent** (in its worktree): *"You are the `<stream>` agent. Execute, iterate,
-and smoke test toward completion without my input."* The docs carry the rest (workstreams.md →
-*Autonomous mandate*). **Art direction source of truth: [`_agents/art_direction.md`](_agents/art_direction.md)** (the "Death Race prison dozer" north star, chosen by the lead 2026-09-14). **Standing product constraints:** mobile first (taps, swipes, buttons), and a
-dark neon cyberpunk arena where lighting is part of the fun.
+## Integration notes (2026-09-15)
 
-Setup (git worktrees, shared toolchain), ownership, contracts, and merge invariants:
-[`_agents/workstreams.md`](_agents/workstreams.md).
+- **Merge order:** gameplay → look & feel (look & feel had rehearsed this merge) → netcode → assets → garage. Text conflicts were only in docs, `game_mode.gd`, the `Makefile`'s `LIGHT_GOALS`, and `mk/core.mk`'s `check`.
+- **Garage × gameplay reconciliation.** The garage was built on unit catalog v0 while gameplay shipped v1:
+  - **CPU opponents:** one generator, gameplay's `Army`. The garage's opponent picker offers `Army` archetypes; `ArmyPresets` stays for player presets.
+  - **Starter army and presets:** built on the "workhorse" (the tank), not the cheapest unit (now scouts).
+  - **Zero-valued stats:** they no longer trigger advice (the cannon's `heat_per_shot: 0`).
+- **Paint/team split** (look & feel's request, fixed during integration): `Tank.set_team_accent` → slot `set_team_color` (friend or foe); `Tank.set_paint` → slot `set_paint`, only for painted loadouts. Before this, painted tanks lost their team accent lights.
+- **Theme flag clash:** `--theme=<candidate theme>` from asset tools no longer warns in `GameTheme` (it broke the browser gallery).
+- **Streams' worktrees are now behind `main`.** Before another run, each stream must `git merge main` (or be recreated with `make worktree-remove` + `make worktree`).
 
-## Overnight run (2026-09-14): five agents, no lead input
+## Decisions and questions for the lead (collected from the streams)
 
-Each stream's brief now ends with an **Overnight backlog** (more than a night's work, ordered, with
-stretch items). Rules for unattended work are in workstreams.md → *Unattended runs*. Landed on
-main first so streams don't block each other: the machine-wide heavy-run limiter (`tools/slot.sh`),
-the `fx.shell` visual slot, the unit catalog v0 (`game/units/units.gd`), and `--player=<path>` for garage armies.
+**Gameplay**
+1. **Shields broke "coordination wins".** Coordinated squads went from 60% to ~5–10% with shields. The center control point restores 50/50. Recommendation: **make `--control` the default skirmish rule**.
+2. **Scouts are eyes, not an army.** Scout-heavy armies are non-viable (Swarm ~3%). Is that intended, or should scouts get real firepower or a lower price?
+3. **Phones need content scaling:** `display/window/stretch/mode="canvas_items"` in `project.godot` (a shared file, not changed yet).
 
-**Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude`) with this goal. It's
-the same text for all five; the agent works out its stream from its folder:
+**Netcode**
+4. **When to port the simulation to an integer core for lockstep.** Recommended: after the gameplay rules settle.
+5. **Run `?det-spike` on an Android phone.** ARM is the one platform not measured; the hash must read `ea02d9652cc08086`.
+6. **Should the web build open the lobby by default?**
 
-> /goal You are a Tank Squad workstream agent. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>` (one of gameplay, look_and_feel, assets, netcode, garage). Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. I'm asleep: you will get NO input from me until morning, so never stop to wait for an answer. Read CLAUDE.md, HANDOFF.md, `_agents/orientation.md`, `_agents/workstreams.md` (especially *Autonomous mandate* and *Unattended runs*), then `_agents/streams/<stream>.md`. Work through its **Overnight backlog** top to bottom, then its stretch items: build, test, `make check`, smoke test and look at your screenshots, and commit every green step. Done when every backlog item is complete or written up as blocked, `make check` passes on your last commit, and the brief's Status section holds the morning report.
+**Look & feel**
+7. **Run `?fx-bench` on your phone** (`make serve-web WEB_HOST=0.0.0.0`) to calibrate the quality tiers.
+8. **Make the title screen the entry point?**
+9. **Listen to the synthesized sounds.**
 
-**Morning integration** (the orchestrator session in `~/projects/godot`): read each Status report,
-merge streams one at a time in the order netcode → assets → garage → gameplay → look_and_feel
-(smallest shared surface first; gameplay and look & feel touch the most), running `make check`
-after each merge, then playtest `make skirmish` with the lead.
+**Assets**
+10. **Rotate the Meshy API key.** It was pasted in chat once.
+11. **Git LFS for generated art?** The prison dozer is ~27 MB in git.
+12. **Check Basis texture load time on a phone.**
 
-## What changed to make parallel work possible
+## How the parallel setup works
 
-- `main.gd` split into `game/modes/*` (offline, skirmish, match runner, server, client) + `LaunchFlags`.
-- **Visual slots:** all art moved out of gameplay scenes into `game/theme/default/`; `GameTheme` maps slot ids to scenes; `VisualSlot` nodes load them. The simulation hash was identical before and after (`e69acc63a64f319a`).
-- Tank replication built in code (`game/network/replication.gd`); the HUD in its own scene (`game/ui/hud.tscn`); the Makefile split into `mk/*.mk`; `tests/baselines/sim_state_hash.txt` + `make sim-baseline`.
-
-## Open decisions for the lead
-
-1. **Netcode direction** (streams/netcode.md): OK to ship casual matches player-hosted through a relay first, while a deterministic-simulation spike decides whether cheat-resistant lockstep is feasible?
-2. **Netcode:** the overnight agent assumes the recommended plan (casual relay first, deterministic spike in parallel). Confirm or redirect in the morning.
-3. Still open from before: the flamethrower trade-off (now part of the gameplay stream), your son's Godot version and OS.
+Worktrees, ports, heavy-run slots (`tools/slot.sh`), ownership, contracts, the autonomous and
+unattended rules, and merge invariants: [`_agents/workstreams.md`](_agents/workstreams.md). The overnight
+`/goal` kickoff used on 2026-09-14 is in the git history of this file (commit `ee20791`).

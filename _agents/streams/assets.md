@@ -35,6 +35,8 @@ optimized GLBs) for binaries.
 
 All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visuals must not add collision.
 
+**Paint vs team (integration, 2026-09-15):** `set_team_color(Color)` is the TEAM color (friend or foe: accent lights in the cyberpunk theme); optional `set_paint(Color)` is the garage's full-body paint, called only when a loadout has one. Keep team accents in a separate emissive mask so paint never recolors them (look & feel's request).
+
 | Slot | Anchor / origin | Size guide (matches gameplay collision) | Optional methods | Budget |
 |---|---|---|---|---|
 | `tank.hull` | ground contact, center of the hull | 2.4 wide × 3.6 long × ≤ 1.6 tall (turret ring at y ≈ 1.22, z ≈ +0.2) | `set_team_color(Color)`, `set_shield(ratio 0..1)` (every frame, gameplay G6) | ≤ 8k tris |

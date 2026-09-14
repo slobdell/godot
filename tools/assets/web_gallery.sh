@@ -15,6 +15,8 @@ touch "$root/build/.gdignore"
 rsync -a --delete --exclude .godot --exclude build --exclude .tools --exclude node_modules --exclude assets/incoming \
 	--exclude .git "$root/" "$work/"
 sed -i 's|^run/main_scene=.*|run/main_scene="res://assets/pipeline/gallery.tscn"|' "$work/project.godot"
+# The game's exports leave out the gallery and candidate themes; this build is exactly those.
+sed -i 's|^exclude_filter=.*|exclude_filter="tests/*, build/*"|' "$work/export_presets.cfg"
 (cd "$work" && "$godot" --headless --path . --import >/dev/null 2>&1 || true)
 (cd "$work" && "$godot" --headless --path . --export-release "Web" "$out/index.html" >/dev/null 2>&1)
 
