@@ -12,7 +12,7 @@
 |---|---|---|
 | Unit stats (hull, shield, speed, sight, heat, size, hardpoints, component slots, cost) | `game/units/units.gd` `PROFILES` | tank 300+150, 9 m/s, 75 m sight, 200 pts; scout 140+80, 14 m/s, 110 m, 110 pts; artillery 200+80, 6.5 m/s, 60 m, 220 pts |
 | Components | `game/units/units.gd` `COMPONENTS` | heat sink +40 cap +6/s (30); ammo rack +50% ammo (25); shield booster +60 (40); armor plating +80 hull −1 m/s (35) |
-| Weapons (damage, range, reload, spread, ammo, heat, armor table, shield multiplier, cost) | `game/combat/weapons.gd` `PROFILES` | cannon 34, 70 m, 2.5 s, 45 shells, shield ×0.8; laser 9/0.5 s, 55 m, 12 heat, shield ×1.25, +20 pts; machine gun 4/0.2 s, 45 m, shield ×0.6; mortar 90 in 8 m, 35–160 m, 4.5 s, 24 rounds; flamethrower 45/s, 20 m, shield ×1.5 |
+| Weapons (damage, range, reload, spread, ammo, heat, armor table, shield multiplier, cost) | `game/combat/weapons.gd` `PROFILES` | cannon 34, 70 m, 2.5 s, 45 shells, shield ×0.8; laser 9/0.5 s, 55 m, 12 heat, shield ×1.25, +20 pts; machine gun 4/0.2 s, 45 m, shield ×0.6; mortar 90 in 8 m, 35–160 m, 4.5 s, 24 rounds; flamethrower 20/s, 20 m, shield ×1.5 |
 | Armor facing, directional shields | `game/combat/armor.gd` | hull front 0.5 / side 1 / rear 1.5 (per weapon table); shield front 0.7 / side 1 / rear 1.4 |
 | Base service, arena, sensing | `game/match/match.gd` | resupply 1 shell/s and repair 6 HP/s within 30 m of your base; intel every 6 ticks, 12 s memory |
 | Brain weights | `game/ai/tank_brain.gd` | ORDER_WEIGHT 0.95, SCOUT_STANDOFF 85 m, SCOUT_HUNT 1.6 (floor 0.8), ARTILLERY_SAFE_DISTANCE 80 m, RECHARGED 0.6 |
@@ -81,6 +81,24 @@ spotting matter to guns). Round robin #2 results: appended below when it finishe
 
 Loser kills rose to 0.9–1.9 (from ~0.6–1.0). A reason to hold ground restores what shields took from the
 holding doctrine. Recommendation to the lead: make the control point the default skirmish mode.
+
+### Stretch: the flamethrower (T3 revisited)
+T3 in tank_brain.md (flamers 0–6%) predates the 2026-09-13 rebalance. Re-measured (flame_rush vs Individuals,
+normal + swapped bases, both team identities):
+
+| Build / tune | Flamer wins |
+|---|---|
+| Pre-overnight commit `ee20791` (as Green, 10) | 9/10: flamers have dominated since the rebalance |
+| Current, 45 dps (36) | **36/36** |
+| shield multiplier 1.0 / 0.7 (20 each) | 20/20, 18/20 |
+| 32 dps + shield 1.25 (20) | 18/20 |
+| 4 flamers vs 5 cannons (20) | 20/20 |
+| **20 dps** (20) | **10/20** ✅ applied |
+
+Mechanism: cannons fire at full rate with ~90% accuracy, but through front shields and front armor a shell
+does ~13 effective damage (≈5 dps per tank); a charge crosses the 50 m between gun range and flame range in
+~5.5 s. At 20 dps a flamer still out-damages a cannon ~4× once it arrives, so it keeps its niche (close
+fights, cover, anti-shield ×1.5) without winning every open-field rush.
 
 ### Stretch: CPU commander
 v1 (hold in even fights): Individuals + commander vs Individuals **2 : 30** (both team identities, both

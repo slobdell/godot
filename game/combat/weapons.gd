@@ -110,7 +110,10 @@ const PROFILES := {
 		"range": 20.0,
 		"preferred_min": 6.0,
 		"preferred_max": 16.0,
-		"damage_per_second": 45.0,
+		# 45 -> 20 (2026-09-15): since the 09-13 rebalance (70 m guns, 400 HP) five flamers crossed gun
+		# range almost intact and won 36/36 vs five cannons (4 flamers vs 5 cannons: 20/20). At 20: 10/20,
+		# counterbalanced. Still ~4x a cannon's damage per second once it arrives.
+		"damage_per_second": 20.0,
 		"cone_deg": 30.0,
 		"reload": 0.0,
 		"aim_tolerance_deg": 12.0,

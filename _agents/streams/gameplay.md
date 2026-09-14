@@ -287,8 +287,8 @@ base (Break contact) to mend hulls and refill shells.
 2. Finish E3 at army level: read round robin #2 in balance.md; if Siege still dominates, try mortar damage
    90 → 75 or scatter up; consider near-sighted tanks (`--tune=tank.sight_radius=60`) so scouts extend a
    tank's gun reach (direct fire already requires team visibility).
-3. Flamethrower: with shields it went from dominated (0–6%) to dominant (36/36 vs cannons); tune its
-   shield multiplier from the flame series in balance.md.
+3. Flamethrower: done for now (20 dps, 10/20 vs cannons; it had quietly dominated since the 09-13
+   rebalance). Re-check `make skirmish ENEMY=flame_rush` for feel.
 4. CPU commander v2: measure (`--rust-commander`), then decide whether skirmish uses it.
 5. Networked play for the new state: control point score and visibility aren't replicated (skirmish and
    the runner are single-process); coordinate with netcode.

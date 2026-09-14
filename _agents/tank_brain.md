@@ -202,6 +202,9 @@ any close comparison (E2/E3).
 
 ### T3: weapons don't create strategy yet, because the flamethrower has no upside
 
+> ⚠ **Stale since the 2026-09-13 rebalance** (70 m guns, 400 HP): re-measured 2026-09-15, flamers were winning
+> 9/10 before the overnight changes and 36/36 after shields. Flamethrower now 20 dps (10/20). See balance.md.
+
 Swapping T1's two flanking *cannons* for *flamethrowers* took the doctrine from 62.5% to 0%.
 The flamers averaged only ~130 flame damage per match (the naive Flame Rush managed 332), meaning they
 die crossing open ground long before reaching 20 m. A flamethrower tank today has the same
