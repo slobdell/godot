@@ -1,5 +1,7 @@
 # Squad AI and Player Skill: Design Exploration
 
+> **Round 2 note (2026-09-15):** the lead chose live squad commanding with smart autonomous units and fixed unit types ([game_design.md](game_design.md)); "authored doctrine instead of commanding" is no longer the core loop. The skill and fairness analysis here still applies.
+
 > **Status: direction accepted by the project lead (2026-09-12); details still hypotheses**
 > until experiments E1–E4 run. The lead will smoke test the game personally
 > before squad AI (M5) begins. This captures the

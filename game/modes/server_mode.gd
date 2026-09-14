@@ -1,7 +1,7 @@
 class_name ServerMode
 extends GameMode
 ## Dedicated authoritative server over WebSockets: one tank per connecting client, plus --bots.
-## Owned by the netcode workstream (_agents/streams/netcode.md). HostMode reuses it through the relay.
+## Owned by the netcode workstream (_agents/streams/archive/round1/netcode.md). HostMode reuses it through the relay.
 
 const DEFAULT_PORT := 9080
 

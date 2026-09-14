@@ -15,7 +15,7 @@ const TURN := 65536
 const HALF_TURN := 32768
 const QUARTER_TURN := 16384
 
-## atan(2^-i) in 2^32-per-turn units, i = 0..27 (computed offline, see _agents/streams/netcode.md N2).
+## atan(2^-i) in 2^32-per-turn units, i = 0..27 (computed offline, see _agents/streams/archive/round1/netcode.md N2).
 const ATAN_BAM32 := [536870912, 316933406, 167458907, 85004756, 42667331, 21354465, 10679838, 5340245,
 		2670163, 1335087, 667544, 333772, 166886, 83443, 41722, 20861, 10430, 5215, 2608, 1304, 652, 326,
 		163, 81, 41, 20, 10, 5]

@@ -1,5 +1,5 @@
 # Asset pipeline: AI-generated / imported / procedural models into visual slots
-# Owner: assets (see _agents/streams/assets.md). Included by the root Makefile.
+# Owner: assets (see _agents/streams/archive/round1/assets.md). Included by the root Makefile.
 
 .PHONY: assets-slots assets-inspect assets-normalize assets-check assets-textures
 

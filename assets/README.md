@@ -105,7 +105,7 @@ make check            # the whole game still works
   | `--emission-energy=4` | makes generated neon bright enough for the night arena |
   | `--tint-strength=0.2` | how much team color shows through the dirt (0 = none, 1 = fully painted) |
 
-  If an agent can't see your key, see *Proposed orientation trip-ups* 5 in `_agents/streams/assets.md`.
+  If an agent can't see your key, see *Proposed orientation trip-ups* 5 in `_agents/streams/archive/round1/assets.md`.
 
 ## When something looks wrong
 

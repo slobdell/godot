@@ -1,6 +1,8 @@
+> **Archived round-1 brief (2026-09-14 overnight run), kept as history.** Current plan: [../../../workstreams.md](../../../workstreams.md) and [../../../game_design.md](../../../game_design.md).
+
 # Stream: Netcode (production multiplayer without paying for compute)
 
-> Read [../workstreams.md](../workstreams.md) first. You own `game/network/`,
+> Read [../workstreams.md](../../../workstreams.md) first. You own `game/network/`,
 > `game/modes/server_mode.gd`, `client_mode.gd`, `tools/serve_web.py`, `tests/net/`, `mk/net.mk`.
 
 ## The lead's idea (2026-09-13)
@@ -77,7 +79,7 @@ Broker and relay (built 2026-09-14): `make broker-test`, `make broker-smoke`, `m
 `relay-rejoin-smoke`, `web-relay-smoke`, `web-host-smoke` (in `make check-all`).
 Determinism and replays: `make det-spike` (native vs wasm hashes), `make replay`.
 Measurements (not pass/fail): `make net-measure`, `make broker-load`. Rows 6e–8b in
-[../verification.md](../verification.md) say what each proves.
+[../verification.md](../../../verification.md) say what each proves.
 
 ## Status
 
@@ -144,7 +146,7 @@ desktop screenshot, server export); screenshots reviewed: `web.png`, `web-net.pn
    multiply-adds (FMA) and nothing here has been measured on ARM. Not yet
    run on ARM (needs a phone; see Questions). Caveat: this proves the *approach*; the real game's
    brains, intel, squads and pathing would all need porting to integers (designs, section 1).
-5. **N3 designs** in [references/netcode_designs.md](references/netcode_designs.md): lockstep
+5. **N3 designs** in [references/netcode_designs.md](../../references/netcode_designs.md): lockstep
    protocol (T+D scheduling, adaptive delay, hash exchange, desync handling with majority resync
    or server replay adjudication, autopilot for dropped seats, snapshot catch-up), host loss for N1
    (end the match; migration not worth it), mobile backgrounding (10 s drop measured; gaps listed),
@@ -180,7 +182,7 @@ desktop screenshot, server export); screenshots reviewed: `web.png`, `web-net.pn
    damage). `make replay-watch REPLAY=path` opens one in a window (screenshot reviewed).
 7. **Broker capacity** (`make broker-load`): 100 players replaying measured traffic use 22% of one
    core, 200 use 38%, ~14–20 KB per connection. Hosting costs and the anti-cheat notes are in
-   [references/netcode_designs.md](references/netcode_designs.md) §4–5.
+   [references/netcode_designs.md](../../references/netcode_designs.md) §4–5.
 8. **Touch-first lobby** (`--lobby`, browser `?lobby`): HOST A MATCH, or tap a room code on an
    on-screen keypad (no virtual keyboard on phones) and JOIN; a wrong code comes back with "No room
    XXXXX". The host gets a big room-code badge with COPY INVITE LINK (`?join=CODE`). A test checks

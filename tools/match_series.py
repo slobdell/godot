@@ -76,7 +76,7 @@ def main():
     if sum(ready):
         # A loaded gun with an enemy in the tank's own sight, not firing. Found the T2 target-lock bug.
         print(f"  idle guns: Green {idle[0] / max(ready[0], 1):.0%}  Rust {idle[1] / max(ready[1], 1):.0%}")
-    # Pace and snowballing (streams/gameplay.md "Measure"): when does the fight start, how many does the loser take down.
+    # Pace and snowballing (streams/archive/round1/gameplay.md "Measure"): when does the fight start, how many does the loser take down.
     def mean(values):
         values = [v for v in values if v is not None and v >= 0]
         return f"{sum(values) / len(values):.1f}" if values else "n/a"

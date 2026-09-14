@@ -1,85 +1,61 @@
 # Vision: Tank Squad
 
-> Working title. Status: **aspirational north star**. Today's code is Milestone 1
-> (one tank, direct control). This doc exists so early decisions don't close
-> doors the vision needs open.
+> Working title. **Where the game is going and why.** Rewritten 2026-09-15 from the lead's decisions after
+> round 1. The rules and player experience are in [game_design.md](game_design.md) (the source of truth
+> for design); the look is in [art_direction.md](art_direction.md).
 
 ## The pitch
 
-You don't drive a tank. You **command a squad of five** and win by writing a
-better *strategy* than your opponent, then watching it play out.
+A **die-hard real-time squad tactics game** set in a Death Race gladiator arena. You buy an army of
+**over-the-top converted war machines** (an armored prison bus with a dozer blade, a rally-truck scout with
+a machine gun welded to the hood), split it into squads, and out-command your opponent. Every vehicle fights
+smart on its own; your job is to put the right units in the right place at the right time.
 
-You outfit each tank with equipment that has real trade-offs. You give each one
-a role and a set of skills, in plain language:
+## Who it's for, and what we refuse to build
 
-> "Tanks 1 and 2 are bait: push up the east road, draw fire, fall back to the
-> ridge when damaged past half. Tank 3 camps the ridge sector with the long gun
-> and only fires at anything chasing the bait. Tanks 4 and 5 hold the perimeter
-> around our flag and never leave it."
+The lead, 2026-09-15: *"most modern games suck because they're optimized for getting clicks or eyeballs. True
+die-hard games seem to have died out to make them mass appeal. Many modern games make money by buying
+inventory or buying shortcuts. We don't want that, we want a die-hard gamer's game (limited of course to our
+constrained UX capabilities eventually on a phone)."*
 
-An **on-device LLM** (Gemini Nano on Android) turns that into a structured
-**doctrine**, a data file the game simulation executes. The match is the
-doctrines fighting.
+- **No pay-to-win, microtransactions, premium currency, loot boxes, ads, or energy timers.** Progression is
+  earned only by playing (credits from wins unlock units and budget tiers; [game_design.md](game_design.md)).
+- **Business model (intent):** the online/web version is **free**; the **Android app is a paid app**.
+- Depth over onboarding funnels. Respect the player's intelligence; teach through play (challenges, clear
+  counters), not through nags.
 
-The goal is to make **AI behavior design itself the gameplay**, with as much
-room for "new-world AI complexity" as players want to explore.
+## The vibe
 
-## Why this is a good learning project
+**Over-the-top eccentric vehicles** in a night-time gladiator arena with cheering crowds: Mad Max × Death Race ×
+Blade Runner. The lead: *"What made Mad Max and Death Race so good was the over-the-top eccentric vehicles. This
+makes it go from a nerdy army game to a fun game"* (in the spirit of classic Metal Gear Solid). The assets
+stream's up-armored prison-bus dozer found this vibe in round 1. Photoreal and grimy, neon-lit, never cartoon.
 
-- It layers cleanly. Each layer is a complete game on its own: drive a tank → networked tanks → squads with hand-picked orders → strategies as data → strategies from language.
-- Every layer is an industry-real concept: server authority, game AI (steering, perception, behavior trees or utility AI), data-driven design, LLM structured output, on-device ML, mobile export.
+## Platforms
 
-## The design space
+- **Web** (WebAssembly, free) and **Android** (paid), from one Godot codebase; a headless server build exists.
+- **Mobile first:** single taps, drags, and pinches; no right-click, no hover, no keyboard required.
+- Online play: players host matches through our relay broker, so our servers never simulate (built in
+  round 1, paused while the core game gets fun); lockstep for ranked play is feasible (integer-core spike).
 
-### Update 2026-09-14: the game's shape (the lead)
+## Why this is also a learning project
 
-- **Budgeted armies:** each match you spend a budget on scouts (fast, see far), tanks (workhorses), and artillery (indirect fire). Vehicles may be chassis with MechWarrior-style weapon and component loadouts.
-- **Resources that create decisions:** Halo-style rechargeable shields over lasting hull health; finite ammunition; lasers with no ammo that build heat, capped (a vehicle can't overheat) and eased by heat sinks.
-- **Mobile first:** everything playable with taps, swipes, and buttons.
-- **The look:** a dark cyberpunk gladiator arena (Mad Max × Death Race × Blade Runner), where weapon fire and neon light the scene. **Source of truth: [art_direction.md](art_direction.md)**, the "Death Race prison dozer" north star (2026-09-14): brutally converted real vehicles, riveted slab armor, grilles, chains, hazard stripes, blackened gunmetal and grime, magenta/cyan neon behind grilles; photoreal, never cartoon.
-- The details live in `streams/gameplay.md` and `streams/look_and_feel.md`. The table below is the original brainstorm.
+The lead is learning Godot ahead of their son, who learns game programming with Claude. So the repo explains
+*why* as well as *what* (`_agents/`, `teaching_notes.md`), and every layer is an industry-real concept:
+server authority, game AI (utility scoring, tactical positioning, squad tactics), data-driven design,
+asset pipelines, mobile export.
 
-### Equipment (trade-offs are the point)
+## History: how the vision moved
 
-| Slot | Options (initial brainstorm) | Trade-off axis |
-|---|---|---|
-| Hull / armor | light, medium, heavy; sloped front vs all-round | protection ↔ speed, turn rate, visibility |
-| Engine | standard, turbo, quiet | speed ↔ noise/detection radius, fuel/heat |
-| Main weapon | AP cannon, HE cannon, autocannon, guided missile (ATGM), mortar (indirect) | damage vs armor, range, reload, needs line of sight or not, min range |
-| Sensors | optics, radar, acoustic | detection range ↔ reveals you, cost |
-| Utility | smoke launcher, repair kit, decoy beacon, mine layer | one-shot vs recharge |
+- 2026-09-12: "players author doctrine for 5 tanks, compiled by an on-device LLM; no direct control."
+- 2026-09-13: the lead chose live squad commanding on a tactical map, with autonomous tank brains.
+- 2026-09-14: budgeted armies, shields, ammo, heat, MechWarrior-style loadouts; the cyberpunk look; the
+  Death Race prison dozer as the art north star.
+- **2026-09-15: fixed unit types instead of loadouts (StarCraft-style counters), up to 5 squads, credits and
+  progression, friendly fire, sophisticated unit AI, tap-only commanding, gladiator arena with crowds, no
+  pay-to-win.** The LLM is now a possible later *commander* issuing the same squad commands, not the core loop.
 
-A shared **weight/points budget** forces choices: a heavy tank with a long gun can't also be fast.
-
-### Roles and skills (the instruction set)
-
-Skills are **parameterized behaviors the simulation knows how to run**. Players
-(or the LLM) choose and configure them; they don't write code.
-
-- `hold_sector(area, facing, fire_policy)`: camp a region, choose cover, hold fire until…
-- `bait(route, retreat_to, retreat_when)`: be seen, draw fire, survive
-- `guard_perimeter(anchor, radius)`: patrol and intercept
-- `overwatch(ally, range)`: cover a teammate's approach
-- `flank(target_area, approach)`: swing wide and avoid detection
-- `scout(route)`: reveal enemies and report to the squad
-- `regroup(point, when)`
-
-Plus **triggers and conditions** (`when damaged > 50%`, `when enemy seen in sector B`,
-`after 90 s`) and **squad communication** (a shared blackboard: enemy last-known
-positions, who is engaged, who needs help).
-
-Designing this vocabulary *is* designing the game. It must be expressive enough
-for clever strategies and small enough for an on-device model to target reliably.
-
-### The simulation needs (what the skills stand on)
-
-- Navigation (Godot `NavigationServer3D` / navmesh)
-- Perception: line of sight, detection radius vs stealth, fog of war, "last known position"
-- Cover evaluation: which spots block line of sight to threats
-- Ballistics and damage: armor facing, penetration, splash
-- A decision layer per tank: behavior trees or utility AI, driven by the doctrine
-
-## Where the LLM fits, and where it must NOT
+## If an LLM joins later: where it fits, and where it must NOT
 
 **The LLM is a compiler, not a pilot.** It runs at *authoring time* and turns
 natural language into doctrine data. It never runs inside the 30–60 Hz game loop.
@@ -104,10 +80,3 @@ These were believed true in 2026-09 but move fast. **Verify before building the 
 - Chrome has shipped experimental built-in AI APIs backed by Gemini Nano on desktop. If that's stable by then, web players might get on-device doctrine compilation too, reached through `JavaScriptBridge`. Unverified; don't design around it.
 - Structured output matters: constrain the LLM to the doctrine JSON schema. Validate *everything* on the server regardless.
 
-## Open design questions (decide deliberately, record the answer here)
-
-1. **Real-time vs asynchronous matches.** If players only author doctrine, a match doesn't need both players online. The server could simulate it and let both watch or replay later. This massively simplifies networking and servers. Real-time spectating with mid-match doctrine swaps is more exciting and harder. Maybe both?
-2. **Determinism.** Godot physics isn't bit-deterministic across platforms. We keep the server authoritative and record *state snapshots* for replays rather than relying on lockstep re-simulation. Revisit only if replays get too big.
-3. **Direct control's future.** Keep it as a tutorial or "possess a tank" mode, or remove it once squads exist?
-4. **Doctrine format.** JSON (portable, LLM-friendly, schema-validatable) is the default assumption. A Godot `Resource` is nicer in the editor but awkward for an LLM to produce.
-5. **Behavior engine.** Leaning: **utility AI with player-tuned directives, switched by phase conditions** (a hybrid). Where player skill comes from, and the experiments that decide it: [squad_ai_design.md](squad_ai_design.md).

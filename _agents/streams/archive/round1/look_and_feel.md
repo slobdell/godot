@@ -1,12 +1,14 @@
+> **Archived round-1 brief (2026-09-14 overnight run), kept as history.** Current plan: [../../../workstreams.md](../../../workstreams.md) and [../../../game_design.md](../../../game_design.md).
+
 # Stream: Look & Feel (cyberpunk gladiator arena)
 
-> Read [../workstreams.md](../workstreams.md). You own `game/theme/**` (the slot registry, all
+> Read [../workstreams.md](../../../workstreams.md). You own `game/theme/**` (the slot registry, all
 > art scenes, team colors, UI palette), `game/ui/widgets/**` (new: reusable HUD components),
 > `game/ui/hud.tscn`, `game/combat/impact.gd`, and new `assets/audio`, `assets/fonts`.
 
 ## The brief
 
-> **Art direction source of truth: [../art_direction.md](../art_direction.md)** (2026-09-14). The lead picked the
+> **Art direction source of truth: [../art_direction.md](../../../art_direction.md)** (2026-09-14). The lead picked the
 > "Death Race prison dozer" concept as capturing *"the vibe of the entire game"*: repurposed real vehicles brutally
 > converted (riveted slab armor, grilles, chains, spikes, yellow-black hazard stripes, blackened gunmetal and grime)
 > with magenta/cyan neon behind grilles and red/amber warning lights. Photoreal, never cartoon. The arena follows
@@ -37,12 +39,12 @@ iterating until it looks like a game you'd want to play.
 
 | What | Where |
 |---|---|
-| **Message banner spec** (chamfered panel, glowing corner brackets, beam→open→glitch→snap choreography, typewriter text, info/warning/error themes, lifecycle) | [references/hud_message_banner.md](references/hud_message_banner.md) |
-| **Breathing conductors spec** (circuit-trace lines wiring widgets together; baked glow + per-frame alpha modulation) | [references/hud_breathing_conductors.md](references/hud_breathing_conductors.md) |
+| **Message banner spec** (chamfered panel, glowing corner brackets, beam→open→glitch→snap choreography, typewriter text, info/warning/error themes, lifecycle) | [references/hud_message_banner.md](../../references/hud_message_banner.md) |
+| **Breathing conductors spec** (circuit-trace lines wiring widgets together; baked glow + per-frame alpha modulation) | [references/hud_breathing_conductors.md](../../references/hud_breathing_conductors.md) |
 | Original Android implementation | `~/projects/led-drone-microcontrollers/mavlink-hud/android-app/app/src/main/java/com/mavlink/hud/ui/CyberHudView.java` (HUD), `MapLibreCyberMap.java` (**cyber-styled map: the model for our radar**), `RssiView.java` |
 | Drawables (bracket borders, frames) | `…/android-app/app/src/main/res/drawable/bg_bracket_border.xml`, `bg_bracket_filled.xml`, `cyberpunk_border.xml` |
 | Palette | `…/android-app/app/src/main/res/values/colors.xml` |
-| **FX tricks catalog** (efficient lighting and effects on Compatibility/WebGL 2/phones, verified limits, and the FX lab protocol) | [references/fx_tricks.md](references/fx_tricks.md) |
+| **FX tricks catalog** (efficient lighting and effects on Compatibility/WebGL 2/phones, verified limits, and the FX lab protocol) | [references/fx_tricks.md](../../references/fx_tricks.md) |
 
 Read the original code for anything the specs don't cover (tapes, map styling, fonts). The
 specs are authoritative where they're explicit; their gotcha sections record mistakes already paid for.
@@ -63,7 +65,7 @@ specs are authoritative where they're explicit; their gotcha sections record mis
 
 0. **L0: the FX lab. Figure out the tricks before building the look on them.** The lead:
    *"we need to figure out the 'tricks' to still render cool effects but do so in an efficient manner."*
-   Start from [references/fx_tricks.md](references/fx_tricks.md):
+   Start from [references/fx_tricks.md](../../references/fx_tricks.md):
    - Build `make fx-bench` (a worst-case firefight scene on a fixed camera path, per-trick toggles, `FX_BENCH` frame-time/draw-call output) plus an on-screen perf overlay.
    - Prototype the core tricks as reusable pieces in `game/theme/fx/`: a **LightPool**, **pooled MultiMesh tracers with ground light splats**, a **laser beam** shader, **flipbook explosions** (replacing the per-hit allocation in `Impact`), **emissive neon** with shader flicker, and a **chunked ground**.
    - Turn every **[verify]** in the catalog into a measured result in its Results table (support, ms cost, screenshot, verdict), and write the resulting **frame budget per quality tier** into this brief.
@@ -96,7 +98,7 @@ specs are authoritative where they're explicit; their gotcha sections record mis
 - Scale geometry by `screen_height / 1080`; keep stroke widths and glow radii fixed, per the spec.
 
 ### Lighting on the Compatibility renderer (read before designing FX)
-- Verified in Godot 4.7.2: **8 real lights per object, 32 renderable lights** by default, and today's ground is **one** mesh, so dozens of projectiles each carrying an `OmniLight3D` won't work. The full catalog of workarounds (light pool, ground light splats, MultiMesh tracers, flipbooks, shader animation, chunked ground, fake wet reflections, quality tiers) is in [references/fx_tricks.md](references/fx_tricks.md). L0 proves which ones pay off.
+- Verified in Godot 4.7.2: **8 real lights per object, 32 renderable lights** by default, and today's ground is **one** mesh, so dozens of projectiles each carrying an `OmniLight3D` won't work. The full catalog of workarounds (light pool, ground light splats, MultiMesh tracers, flipbooks, shader animation, chunked ground, fake wet reflections, quality tiers) is in [references/fx_tricks.md](../../references/fx_tricks.md). L0 proves which ones pay off.
 - **The SwiftShader-based `make web-smoke` is not a performance measurement.** Use native, a real GPU browser, and the lead's phone.
 - All of this lives in visual slots and `game/theme/fx/`, so the headless server and `make sim-baseline` never see it.
 

@@ -1,10 +1,12 @@
+> **Archived round-1 brief (2026-09-14 overnight run), kept as history.** Current plan: [../../../workstreams.md](../../../workstreams.md) and [../../../game_design.md](../../../game_design.md).
+
 # Stream: Garage (pre-match equipping and squad building)
 
-> Read [../workstreams.md](../workstreams.md), [../tank_brain.md](../tank_brain.md) (directives,
+> Read [../workstreams.md](../../../workstreams.md), [../tank_brain.md](../../../tank_brain.md) (directives,
 > doctrines), and [look_and_feel.md](look_and_feel.md). You own `game/garage/` (new) and
 > `mk/garage.mk` (new); you produce player doctrine/loadout JSON consumed by skirmish.
 
-**Art direction:** vehicles, previews, and garage visuals follow [../art_direction.md](../art_direction.md)
+**Art direction:** vehicles, previews, and garage visuals follow [../art_direction.md](../../../art_direction.md)
 (the "Death Race prison dozer" north star, 2026-09-14): each unit class is a brutally converted real vehicle.
 
 ## Goal

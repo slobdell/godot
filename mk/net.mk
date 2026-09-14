@@ -48,7 +48,7 @@ combat-smoke: import ## Headless server with a bot + a stationary bot client tha
 	grep -E 'ERROR' $(BUILD_DIR)/combat-smoke-server.log && status=1; \
 	exit $$status
 
-# ---- Broker (N0: lobbies + relay; see _agents/streams/netcode.md) ----------------------
+# ---- Broker (N0: lobbies + relay; see _agents/streams/archive/round1/netcode.md) ----------------------
 # Ports derive from the per-worktree NET ports so parallel worktrees never collide.
 BROKER_DIR        := server/broker
 BROKER_DEPS       := $(BROKER_DIR)/node_modules/.package-lock.json
@@ -171,7 +171,7 @@ web-host-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser HO
 	grep -E 'joined|SMOKE|RELAY' $(BUILD_DIR)/web-host-smoke-browser.log | tail -5; \
 	exit $$status
 
-# ---- Measurements (not pass/fail; results are recorded in _agents/streams/netcode.md) --------
+# ---- Measurements (not pass/fail; results are recorded in _agents/streams/archive/round1/netcode.md) --------
 # make net-measure TANKS=10 CLIENTS=1 LATENCY=150 JITTER=50 SECONDS=30
 # A relayed dedicated host (--no-player) with TANKS-CLIENTS bots, CLIENTS headless --demo players.
 TANKS   ?= 10

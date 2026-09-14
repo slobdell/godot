@@ -8,7 +8,7 @@
 //      grace period and resumes with its token; reliable frames sent meanwhile are retransmitted.
 // Plus abuse limits: frame size, per-connection message/byte rates, room and peer caps.
 //
-// Design notes and the full message list: _agents/streams/netcode.md ("N0 broker").
+// Design notes and the full message list: _agents/streams/archive/round1/netcode.md ("N0 broker").
 
 import crypto from "node:crypto";
 import http from "node:http";

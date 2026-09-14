@@ -1,5 +1,7 @@
 # Balance: measurements, tuning values, and the army design
 
+> **Round 2 note (2026-09-15):** the chassis + loadout recommendation below was superseded by the lead's fixed unit types ([game_design.md](game_design.md)). Measurements stay as history; the rules stream adds the unit-vs-unit matchup matrix, and the army stream adds the economy section.
+
 > Started 2026-09-15 by the gameplay stream's overnight run. Everything here was measured with
 > `tools/match_series.py` (headless, seeded, `--elimination`, 300 s limit). Small samples (10–24 per
 > row) are marked; treat anything within ±15 points of 50% as "not significantly different".
@@ -46,7 +48,7 @@ Anvil & Hammer (coordinated) vs Individuals, 20–24 matches per row:
 | Individuals mirror (fairness control) | 45–55% ✅ |
 
 Reading: recharging shields reward concentrated, sustained aggression, and the split/holding doctrine
-lost its edge. This is the top question for the lead (streams/gameplay.md Status).
+lost its edge. This is the top question for the lead (streams/archive/round1/gameplay.md Status).
 
 ### Directive set 2: army archetypes (E3 at army level)
 Five seeded CPU archetypes at 1000 points (`Army.ARCHETYPES`), every pairing 16 matches (4 each: normal and

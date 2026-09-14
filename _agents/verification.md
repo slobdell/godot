@@ -31,7 +31,7 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 
 **Measurements (not pass/fail):** `make net-measure TANKS=10 CLIENTS=2 LATENCY=150 JITTER=50` (bytes/s,
 snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/memory). Results live in
-`_agents/streams/netcode.md`.
+`_agents/streams/archive/round1/netcode.md`.
 
 **Bundles:** `make check` = rows 0, 1, 2, 6, 6b, 6c, 6d, 6e, 6f (unit tests), 6g, 6h (headless, ~5 min on a loaded machine). `make check-all` = `check` + rows 3, 4, 5, 7, 7b, 7c and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
 

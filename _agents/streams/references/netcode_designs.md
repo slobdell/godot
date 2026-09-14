@@ -1,8 +1,8 @@
 # Netcode designs (N3): lockstep, host loss, mobile backgrounding
 
 > Written 2026-09-14 by the netcode stream overnight, after N2 measured a fixed-point core
-> **bit-identical on native and WebAssembly** (streams/netcode.md, *N2 verdict*). Nothing here is
-> built yet except what's marked **(built)**. Read streams/netcode.md first.
+> **bit-identical on native and WebAssembly** (streams/archive/round1/netcode.md, *N2 verdict*). Nothing here is
+> built yet except what's marked **(built)**. Read streams/archive/round1/netcode.md first.
 
 ## 1. Lockstep protocol
 

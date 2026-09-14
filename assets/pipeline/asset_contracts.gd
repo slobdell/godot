@@ -1,6 +1,6 @@
 class_name AssetContracts
 extends RefCounted
-## The visual slot contracts (_agents/streams/assets.md § Slot contracts) as data, so the
+## The visual slot contracts (_agents/slot_contracts.md) as data, so the
 ## normalizer can fit a model to a slot and the checker can enforce it.
 ##
 ## Units are meters, forward is −Z, up is +Y. Fields:

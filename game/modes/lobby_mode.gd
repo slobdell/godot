@@ -3,7 +3,7 @@ extends GameMode
 ## Touch-first multiplayer entry (netcode): `--lobby` (browser `?lobby`). Shows LobbyPanel; HOST
 ## turns this process into HostMode, JOIN into ClientMode with --join=CODE, in place (no reload).
 ## A failed join (no such room, room full) comes back to the lobby with the reason.
-## Owned by the netcode workstream (_agents/streams/netcode.md).
+## Owned by the netcode workstream (_agents/streams/archive/round1/netcode.md).
 
 var panel: LobbyPanel
 

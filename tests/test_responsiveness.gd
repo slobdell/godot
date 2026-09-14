@@ -1,5 +1,5 @@
 extends TestCase
-## G3 (streams/gameplay.md): squads react to player orders like RTS units. Measures ticks from
+## G3 (streams/archive/round1/gameplay.md): squads react to player orders like RTS units. Measures ticks from
 ## a command to visible movement, and whether ordered tanks follow the order or wander off to
 ## fight. Each test prints a MEASURE line so before/after numbers can be recorded.
 

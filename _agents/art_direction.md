@@ -2,12 +2,18 @@
 
 > **Source of truth for the game's style and setting.** Decided by the lead on 2026-09-14. Every stream that
 > makes or places art (look & feel, assets, garage, HUD, marketing) designs toward this. It sits *on top of*
-> the established cyberpunk theme (neon palette, the mavlink-hud HUD language in `streams/look_and_feel.md`);
+> the established cyberpunk theme (neon palette, the mavlink-hud HUD language in `streams/archive/round1/look_and_feel.md`);
 > it doesn't replace it.
 
 ![North star: the Death Race prison dozer](art/north_star_prison_dozer.jpg)
 
 The lead, on seeing this concept: *"the death race prison dozer absolutely captures the vibe of the entire game!"*
+
+And after seeing it in the game (2026-09-15): *"the agent developing assets totally discovered the exact vibe we want
+for the game with the ridiculous up-armored bus. What made Mad Max and Death Race so good was the over-the-top
+eccentric vehicles. This makes it go from a nerdy army game to a fun game"* (in the spirit of classic Metal Gear
+Solid). **Over-the-top and eccentric is the point:** every unit should be a memorable character, a little
+ridiculous, and still grounded in real, filthy materials.
 
 ## The vibe in one paragraph
 
@@ -37,8 +43,10 @@ the grime), and **friend or foe is shown by accent lights** (the neon light bars
 color. The materials and wear stay the same whatever the paint.
 
 **The arena follows the same logic:** a repurposed industrial site (a prison yard, quarry, scrapyard, or rail
-depot) turned into a night-time gladiator venue: floodlights, chain-link, concrete barriers with hazard stripes,
-shipping containers, neon signage behind grilles, wet reflective ground.
+depot) turned into a night-time **gladiator venue with stands full of cheering crowds** (the lead, 2026-09-15):
+floodlights, chain-link, concrete barriers with hazard stripes, shipping containers, neon signage behind grilles,
+wet reflective ground with real texture. It must be **lit well enough to read the fight** on a phone; the neon is
+mood, not the only light.
 
 ## The prompt that produced it (reuse its structure)
 
@@ -53,17 +61,27 @@ Meshy text-to-image, `nano-banana-pro`, task `01a09fec-d5c3-700a-bce1-3cdf543842
 > isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic,
 > gritty, high detail, cinematic lighting, grounded real-world materials.
 
-For a new unit, keep everything and swap the **base vehicle** and the **weapon**. For example, scout: *a converted armored
-ambulance / rally truck*; artillery: *a converted garbage truck / crane carrier with a mortar battery*. Prompt
-library and pipeline: `streams/references/asset_prompts.md`.
+For a new unit, keep everything and swap the **base vehicle** and the **weapon**. Round-2 roster ideas
+([game_design.md](game_design.md)):
+
+| Unit | Base vehicle idea | Weapon (must read at RTS distance) |
+|---|---|---|
+| Scout | armored rally truck or dune buggy, roll cage and spotlights | a machine gun **welded to the hood**, no turret |
+| Tank | the prison-bus dozer (done) | long cannon on a squat, slow turret |
+| IFV | armored school bus or garbage truck with slat armor | a fast 30 mm autocannon turret |
+| Artillery | crane carrier or cement mixer | a mortar battery on the bed |
+| Lancer | power-utility or cherry-picker truck with coils | a laser emitter on the boom |
+
+Prompt library and pipeline: `streams/references/asset_prompts.md`. **Every new concept goes to the lead for review
+before image-to-3D** ([workstreams.md](workstreams.md) "Lead gates").
 
 ## First production unit
 
 The concept above is now in the game as theme `prison_dozer` (Meshy image-to-3D, split into hull / turret / cannon):
-`make assets-unit THEME=prison_dozer` renders it. How it was made and what to reuse: `streams/assets.md` (update
+`make assets-unit THEME=prison_dozer` renders it. How it was made and what to reuse: `streams/archive/round1/assets.md` (update
 2026-09-14) and `streams/references/asset_prompts.md`.
 
 ## Where this is referenced
 
-`HANDOFF.md`, `vision.md` (the look), `workstreams.md` (product constraint 2), `streams/look_and_feel.md`,
-`streams/assets.md`, `streams/garage.md`, `streams/references/asset_prompts.md`. Update those links if this file moves.
+`HANDOFF.md`, `vision.md` (the vibe), `game_design.md`, `workstreams.md` (product constraint 2), `streams/art.md`,
+`slot_contracts.md`, `streams/references/asset_prompts.md`. Update those links if this file moves.

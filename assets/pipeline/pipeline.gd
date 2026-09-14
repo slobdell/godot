@@ -1,5 +1,5 @@
 extends SceneTree
-## Asset pipeline CLI (headless). Driven by mk/assets.mk; see _agents/streams/assets.md.
+## Asset pipeline CLI (headless). Driven by mk/assets.mk; see _agents/streams/archive/round1/assets.md.
 ##
 ##   godot --headless --path . --script res://assets/pipeline/pipeline.gd -- <command> [--flags]
 ##

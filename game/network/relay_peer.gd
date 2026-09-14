@@ -10,7 +10,7 @@ extends MultiplayerPeerExtension
 ##   peer.room_ready.connect(func(code): show the code to friends)
 ##
 ## The host is always peer 1. Players only ever talk to the host (star topology, enforced by the
-## broker). Wire format: _agents/streams/netcode.md "N0 broker" (server/broker/src/protocol.mjs).
+## broker). Wire format: _agents/streams/archive/round1/netcode.md "N0 broker" (server/broker/src/protocol.mjs).
 ##
 ## Surviving flaky links: if the socket drops, the peer stays CONNECTED to Godot and quietly
 ## reconnects with its resume token for up to the broker's grace period. Reliable packets are kept

@@ -7,7 +7,7 @@ extends GameMode
 ##   --replay-log=PATH     run a saved log instead of generating one, and verify every hash:
 ##                         prints DET_REPLAY VERIFIED or DET_REPLAY DIVERGED (exit code 1 headless)
 ## Prints DET_SPIKE_CHECKPOINT tick=N hash=H every 300 ticks, then DET_SPIKE_RESULT {json}.
-## Owned by the netcode workstream (_agents/streams/netcode.md).
+## Owned by the netcode workstream (_agents/streams/archive/round1/netcode.md).
 
 const CHECKPOINT_EVERY := 300
 ## Ticks simulated per rendered frame, so a browser tab stays responsive.

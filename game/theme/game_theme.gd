@@ -3,8 +3,8 @@ extends RefCounted
 ## The active LOOK of the game: which scene fills each visual slot, team colors, and the UI
 ## palette. Gameplay code never references art directly; it places a VisualSlot and names a slot.
 ##
-## Owned by the look-and-feel workstream (_agents/streams/look_and_feel.md). Slot contracts
-## (orientation, size, origin, optional methods) are in _agents/streams/assets.md, so generated
+## Owned by the look-and-feel workstream (_agents/streams/archive/round1/look_and_feel.md). Slot contracts
+## (orientation, size, origin, optional methods) are in _agents/slot_contracts.md, so generated
 ## or imported models can drop in.
 ##
 ## Themes: `default` (the original placeholder boxes) and `cyberpunk` (the night arena).
@@ -17,7 +17,7 @@ const DEFAULT_SLOTS := {
 	"weapon.cannon": "res://game/theme/default/weapon_cannon.tscn",
 	"weapon.flamethrower": "res://game/theme/default/weapon_flamethrower.tscn",
 	"fx.shell": "res://game/theme/default/fx_shell.tscn",
-	# Added by gameplay G7 (2026-09-14), placeholder art: see streams/assets.md slot contracts.
+	# Added by gameplay G7 (2026-09-14), placeholder art: see _agents/slot_contracts.md.
 	"weapon.laser": "res://game/theme/default/weapon_laser.tscn",
 	"fx.laser_beam": "res://game/theme/default/fx_laser_beam.tscn",
 	# Added by gameplay (directive set 2, 2026-09-15), placeholders: the scout's machine gun.
@@ -57,7 +57,7 @@ const CYBERPUNK_SLOTS := {
 	"weapon.cannon": "res://game/theme/cyberpunk/weapon_cannon_dozer.tscn",
 	"weapon.flamethrower": "res://game/theme/cyberpunk/weapon_flamethrower.tscn",
 	"fx.shell": "res://game/theme/cyberpunk/fx_shell.tscn",
-	# Gameplay G7's slots (contracts in streams/assets.md); default placeholders live on stream/gameplay.
+	# Gameplay G7's slots (contracts in _agents/slot_contracts.md); default placeholders live on stream/gameplay.
 	"weapon.laser": "res://game/theme/cyberpunk/weapon_laser.tscn",
 	"fx.laser_beam": "res://game/theme/cyberpunk/fx_laser_beam.tscn",
 	# Gameplay G1's 3D fog of war (setup(data) contract); default placeholder on stream/gameplay.

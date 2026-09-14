@@ -1,6 +1,8 @@
+> **Archived round-1 brief (2026-09-14 overnight run), kept as history.** Current plan: [../../../workstreams.md](../../../workstreams.md) and [../../../game_design.md](../../../game_design.md).
+
 # Stream: Assets (AI-generated 3D models into the game)
 
-> Read [../workstreams.md](../workstreams.md) and [look_and_feel.md](look_and_feel.md).
+> Read [../workstreams.md](../../../workstreams.md) and [look_and_feel.md](look_and_feel.md).
 > You own `assets/`, `tools/assets/`, `mk/assets.mk` (new), and `game/theme/<theme>/generated/`.
 > Coordinate art direction (prompts, style) with look & feel; they own which scene fills a slot.
 
@@ -57,7 +59,7 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 | `arena.environment` | world origin | sky/lighting/fog only | — | — |
 | `arena.dressing` | world origin | ground 320×320 at y=0; perimeter walls at ±121 | — | ≤ 50k tris |
 
-Style for everything generated: **[../art_direction.md](../art_direction.md) is the source of truth** (the
+Style for everything generated: **[../art_direction.md](../../../art_direction.md) is the source of truth** (the
 "Death Race prison dozer" north star the lead picked on 2026-09-14): brutally converted real vehicles, riveted slab
 armor, grilles, chains, hazard stripes, blackened gunmetal and grime, magenta/cyan neon behind grilles. Concept
 art is **photoreal**, never stylized or cartoon. Neon comes through **emissive maps** (lighting is the headline
@@ -86,10 +88,10 @@ under load (cause found: async navigation sync)**, **screenshots were being ship
 and **the default `fx.shell` is 17× its triangle budget**. `make check` and `make web-smoke` pass on the last commit.
 
 **Done**
-- **A0 service research**, [references/asset_services.md](references/asset_services.md). **Meshy** first: API on Pro (~$20/mo), `target_polycount`, paid-tier outputs owned by us, and the only service that returns an **emission map** (meshy-6 + `enable_pbr`). **Tripo** second, **Rodin** later for hero hulls. Luma Genie and CSM have shut down. Open models need 6–29 GB of VRAM, and none output emissive maps.
+- **A0 service research**, [references/asset_services.md](../../references/asset_services.md). **Meshy** first: API on Pro (~$20/mo), `target_polycount`, paid-tier outputs owned by us, and the only service that returns an **emission map** (meshy-6 + `enable_pbr`). **Tripo** second, **Rodin** later for hero hulls. Luma Genie and CSM have shut down. Open models need 6–29 GB of VRAM, and none output emissive maps.
 - **A1 normalize + check pipeline** (Godot code in `assets/pipeline/`, runtime wrapper `assets/runtime/generated_visual.gd`). `make assets-inspect / assets-normalize / assets-check / assets-slots`. Normalize: select meshes by name → remap forward/up to −Z/+Y → fit (contain/stretch/length) + slot anchor → bake skins and transforms, one surface per material → decimate to budget (sparing small detail surfaces) → compact + re-anchor → textures ≤ 1024 → strip material features Compatibility lacks → optional emissive-from-albedo / emission map / `--palette` / `--repeat` tiling → GLB + wrapper `.tscn` + `manifest.json` (source, license, options). The wrapper implements `set_team_color`, `set_heat`, `set_shield`, `set_firing`, `setup` by material-name globs. Tests: synthetic wrong-scale / sideways / dense / 4096² / collision models, emissive GLB round trip, team tint, palette, shield; each new test confirmed red on broken or old code.
 - **A2 provider clients**, `tools/assets/generate.py`: Meshy text-to-3D (preview → refine with PBR) and image-to-3D, plus Tripo v3. Polygon target = 85% of the slot budget. Downloads GLB + maps + a JSON sidecar with the license note. Tested against `tools/assets/mock_provider.py` (progress, 401/402/429 retry, FAILED).
-  **To turn it on:** buy Meshy Pro, `export MESHY_API_KEY=msy_…` in your shell profile, then `make assets-generate PROVIDER=meshy SLOT=tank.hull PROMPT="…"` → `make assets-inspect` → `make assets-normalize`. Prompts: [references/asset_prompts.md](references/asset_prompts.md).
+  **To turn it on:** buy Meshy Pro, `export MESHY_API_KEY=msy_…` in your shell profile, then `make assets-generate PROVIDER=meshy SLOT=tank.hull PROMPT="…"` → `make assets-inspect` → `make assets-normalize`. Prompts: [references/asset_prompts.md](../../references/asset_prompts.md).
 - **A3 `kitbash` theme** from CC0 packs (licenses quoted in `assets/CREDITS.md`). Rebuild from its recipe with `make assets-kitbash` (`tools/assets/build_kitbash.sh`, deterministic):
   - Quaternius tank → `tank.hull` 5,974 tris / `tank.turret` 392 / `weapon.cannon` 178 (muzzle exactly at gameplay's z = −3.2)
   - Container Small → `prop.crate` 920
@@ -101,19 +103,19 @@ and **the default `fx.shell` is 17× its triangle budget**. `make check` and `ma
   - blast-barrier `prop.wall` with light bars and holo-ad panels (268 tris)
   - candidates: container, jersey barrier, light pole, billboard, scrap pile (56–360 tris each)
   - Palette: cyan/pink/purple from look_and_feel.md, plus amber hazard lights. `neon_team*` materials take team color.
-- **A5 budget report**, [references/asset_budget.md](references/asset_budget.md) (`make assets-report`):
+- **A5 budget report**, [references/asset_budget.md](../../references/asset_budget.md) (`make assets-report`):
   - per-asset tris, draw calls, texture memory, and packed bytes
   - exact web `.pck` breakdown (`tools/assets/pck_report.py`)
   - texture compression modes measured
   - **Texture policy** in the pipeline: ≤ 256 px lossy, larger → Basis Universal, enforced by `assets-check`
   - `--palette` cut kitbash match draw calls: props 38 → 19, tanks 70 → 50
   - LODs: the Compatibility renderer uses the importer's LODs, and `mesh_lod_threshold` ≈ 4 cuts ~35% of tank tris at play distance, a free quality-tier knob
-- **Stretch:** prompt library + style guide; [`assets/README.md`](../../assets/README.md) (how to bring a model into the game, written for the lead's son); LOD measurements; browser proof with `make assets-web-gallery` (Basis texture + emissive + glow render in headless Chrome/WebGL 2).
+- **Stretch:** prompt library + style guide; [`assets/README.md`](../../../../assets/README.md) (how to bring a model into the game, written for the lead's son); LOD measurements; browser proof with `make assets-web-gallery` (Basis texture + emissive + glow render in headless Chrome/WebGL 2).
 
 **Screenshots reviewed** (`build/screenshots/`): `assets-gallery-kitbash-1920x864.png`, `assets-gallery-kitbash-kit.b-1920x864.png` (neon signs), `assets-gallery-neon_kit-1920x864.png` and `-night-`, `assets-preview-kitbash-1600x900.png` (skirmish), `assets-preview-kitbash-1920x864.png` (demo, ~20:9), `assets-web-gallery-kitbash-kit.b.png` and `assets-web-gallery-neon_kit-night.png` (browser), `web.png`.
 
 **Update 2026-09-14 (with the lead, Meshy key): first production unit, the prison dozer**
-- The lead picked the **Death Race prison dozer** concept as the style north star (documented in [../art_direction.md](../art_direction.md)).
+- The lead picked the **Death Race prison dozer** concept as the style north star (documented in [../art_direction.md](../../../art_direction.md)).
 - **Production flow proven end to end** (110 credits total, including rejected and compared variants): photoreal concept (nano-banana-pro) → turnaround → image-to-3D Smart Topology → `--split=tank` → hull/turret/cannon slots → theme `prison_dozer` (`make assets-prison-dozer`, recipe `tools/assets/build_prison_dozer.sh`). Hull 7.7k tris, turret 488, cannon 434; 1024 Basis textures with Meshy's emission map (energy ×4).
 - **New pipeline pieces**, each with a regression test confirmed red on the old behavior:
   - `assets/pipeline/asset_splitter.gd`: islands → hull_/turret_/cannon_ by geometry. Turret growth stays inside its footprint and off the deck, so roof rivets aren't turret.

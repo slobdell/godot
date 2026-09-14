@@ -11,9 +11,9 @@ When a task is complete, the running agent updates `HANDOFF.md` at the project
 root before the context window is cleared. A fresh agent with no memory should
 regain full situational awareness from `HANDOFF.md` in under 5 minutes.
 
-**If you were started as a WORKSTREAM agent** (gameplay, look & feel, assets, netcode, garage), read
-[workstreams.md](workstreams.md) and your brief in `streams/` right after this file: they define what you own
-and the contracts you must not break.
+**If you were started as a WORKSTREAM agent** (round 2: rules, ai, command, art, army), read
+[game_design.md](game_design.md), [workstreams.md](workstreams.md), and your brief in `streams/` right after this file:
+they define what the game is, what you own, and the contracts you must not break.
 
 **If you were just handed the repo:**
 1. Read `HANDOFF.md` (project root): the current state and the task you're here to do.
@@ -31,30 +31,27 @@ and the contracts you must not break.
 
 ## What this is in two sentences
 
-A Godot 4.7 (GDScript) tank game that exports to **WebAssembly for browsers**
-and to a **headless Linux server binary** from one codebase, with real-time
-server-authoritative multiplayer over WebSockets (M2), team combat with
-server bots (M3), an HTTP bridge that lets Claude command a tank (M3.5), and
-M4 infrastructure: navmesh pathing, reflexes, and a faster-than-real-time match runner. The destination is
-a squad-strategy game where players author *doctrine* for 5 tanks, eventually
-via an on-device LLM on Android, rather than driving tanks by hand
-([vision.md](vision.md)).
+A Godot 4.7 (GDScript) **real-time squad tactics game**: players buy fixed unit types (over-the-top converted
+war machines like the Meshy-generated prison-bus dozer), split them into up to 5 squads, and command them with
+taps while autonomous utility-AI brains fight in a neon gladiator arena ([game_design.md](game_design.md)). One
+codebase exports to **WebAssembly** (free web version), a **headless server**, and later **Android** (paid app),
+with server-authoritative and player-hosted relay multiplayer already working ([vision.md](vision.md)).
 
 ## Mental model in one picture
 
 ```
- decides                      acts                       shows
-┌──────────────────┐   TankCommand   ┌────────────┐   ┌────────────────┐
-│ PlayerController │ ─────────────▶  │    Tank    │ ─▶│ camera / render│
-│ ScriptedController│  (per physics  │ (sim only) │   └────────────────┘
-│ NetworkInput (M2) │    tick)       └────────────┘
-│ UtilityController (M4)│
-└──────────────────┘
+ decides                          acts                        shows
+┌───────────────────────────┐  TankCommand  ┌────────────┐   ┌──────────────────────┐
+│ TacticalMap → SquadCommand│ ────────────▶ │    Tank    │ ─▶│ VisualSlots (themes) │
+│ Squad → TankBrain (utility│  (per physics │ (sim only; │   │ camera, HUD, FX      │
+│   AI) → OrderController   │     tick)     │  Match has │   └──────────────────────┘
+│ PlayerController, Network │               │  the rules)│
+│ Input, AgentBridge        │               └────────────┘
+└───────────────────────────┘
 ```
 
-A `Tank` never reads input. Something upstream fills in a `TankCommand`. Every
-future feature (networking, squad AI, LLM doctrine) is a new thing on the left
-side of that arrow, not a change to the tank. See [architecture.md](architecture.md).
+A `Tank` never reads input. Something upstream fills in a `TankCommand`; `Match` owns the rules; art only fills
+visual slots, so it can never change the simulation. See [architecture.md](architecture.md).
 
 ## Layout
 
@@ -64,7 +61,7 @@ project.godot            engine config: renderer, input map, main scene
 export_presets.cfg       "Web" and "Linux Server" export presets
 game/
   main.tscn / main.gd    entry point: parses flags, picks a GameMode, owns camera/HUD/local controller
-  modes/                 one file per way to run: offline, skirmish, match_runner, server, client (+ LaunchFlags)
+  modes/                 one file per way to run: offline, skirmish, match_runner, garage, title, fx_bench, server, client, host, lobby, det_spike (+ LaunchFlags)
   theme/                 GameTheme (slot → scene, team colors, UI palette), VisualSlot; cyberpunk/ (default look),
                          default/ (placeholder boxes), fx/ (pooled effects, FX lab), audio/ (SFX), gallery/
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
@@ -80,13 +77,16 @@ game/
   network/               NetworkInput (client→server commands + validation), Replication (what syncs),
                          RelayPeer (multiplayer through the broker), ReplayPeer, ui/ (lobby, room badge),
                          detcore/ (integer deterministic-simulation spike: Fixed, DetSim, CommandReplay)
-  camera/                FollowCamera
+  units/                 Units (the unit catalog) and Army (budgets, seeded CPU armies); round 2: fixed unit types
+  garage/                the army builder (buy units, squads, saves, army codes); round 2 adds progression
+  camera/                FollowCamera, RtsCamera (the skirmish camera: pan/zoom/rotate/follow, touch gestures)
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
 tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
-doctrines/               team plans as JSON (squads, weapons, directives) for the match runner
+doctrines/               armies as JSON (squads, units, directives) for skirmish and the match runner
 mk/                      Makefile targets split by area (core, play, net, match, web); root Makefile includes them
 tests/baselines/         recorded simulation hash (make sim-baseline)
-_agents/streams/         per-workstream briefs (gameplay, look_and_feel, assets, netcode, garage)
+_agents/streams/         per-workstream briefs (round 2: rules, ai, command, art, army); archive/round1/ has round 1
+assets/                  asset pipeline (assets/pipeline/, runtime wrapper), CREDITS, fonts, audio; raw downloads in assets/incoming/ (git-ignored)
 server/broker/           match broker (Node + ws): lobbies, relay, resume; `make broker`, `make broker-test`
 tools/                   serve_web.py (/ws + /relay proxies), web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
 _agents/                 you are here
@@ -98,8 +98,8 @@ build/   (gitignored)    exports and screenshots
 
 | I want to… | Do |
 |---|---|
-| **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): click = who, right-drag = where/facing, Q-T drills, Z-N formations, Tab 3D view |
-| **Build an army, then fight with it** | `make garage` (browser `?garage`): tap/drag units into squads, pick weapons, FIGHT → skirmish. Saved armies: `user://doctrines/` |
+| **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): tap a tank = select its squad, tap ground = go, hold-drag = go + face, buttons for drills/formations; mouse right-drag and Q-T / Z-N keys also work (round 2 makes it tap-only) |
+| **Build an army, then fight with it** | `make garage` (browser `?garage`): tap/drag units into squads, FIGHT → skirmish. Saved armies: `user://doctrines/` (round 2 removes weapon picking) |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
 | Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2`; doctrine series: `tools/match_series.py --extra="--green-doctrine=res://doctrines/X.json --rust-doctrine=…"` |
@@ -107,6 +107,7 @@ build/   (gitignored)    exports and screenshots
 | Find a GDScript compile error fast | `make lint` |
 | Let Claude play | `make server BOTS=1` + `make agent-client`, then `tools/agent.py …` ([agent_bridge.md](agent_bridge.md)) |
 | Open the editor | `make editor` |
+| Generate art (Meshy; concepts need the lead's review first) | `assets/README.md`, `make assets-generate`, `make assets-unit THEME=prison_dozer`; rules in art_direction.md |
 | See the look (cyberpunk is the default theme; `--theme=default` for the boxes) | `make title` (menu), `make vehicle-gallery`, `make hud-gallery`; any mode takes `--perf` (overlay), `--fx-quality=low\|medium\|high`, `--hud-demo`, `--mute`, `--no-shake` |
 | Measure an effect's cost | `make fx-bench` (FX lab: per-trick configs, `build/fx-bench.json`; browser `?fx-bench`); results and tier budgets in `_agents/streams/references/fx_tricks.md` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
@@ -158,8 +159,8 @@ build/   (gitignored)    exports and screenshots
 31. **Headless Godot's root viewport is 64×64.** Anything that turns screen coordinates into GUI hits (pushed mouse events, `gui_get_hovered_control`) silently misses in headless tests. Set `tree.root.size = Vector2i(1280, 720)` first.
 32. **Windowed playtest scripts open on the lead's desktop,** where a stray click becomes an in-game order (it happened once: two phantom "bound" orders). Prefer headless tests; keep windowed runs short and say when one is coming.
 33. **Balance numbers are spread across weapons.gd (damage, reload, range, spread), tank.gd (max_health), and match.gd (SENSOR_RANGE, arena size).** Re-measure pace (`first_shot_seconds`, `first_kill_seconds` in match stats) and re-run the fairness control after changing any of them. Earlier experiment results (T0–T3) predate the 2026-09-13 rebalance.
-34. **Gameplay scenes must not contain meshes.** Art goes through `VisualSlot` + `GameTheme` (streams/assets.md has the slot contracts). A mesh added straight into `tank.tscn` or `arena.tscn` will collide with the look & feel stream's work.
-35. **The browser build and the native build do not simulate identically** (measured: same seed, different state hash after 40 s). Determinism holds per build only; don't design cross-platform lockstep on the current physics (streams/netcode.md).
+34. **Gameplay scenes must not contain meshes.** Art goes through `VisualSlot` + `GameTheme` (streams/archive/round1/assets.md has the slot contracts). A mesh added straight into `tank.tscn` or `arena.tscn` will collide with the look & feel stream's work.
+35. **The browser build and the native build do not simulate identically** (measured: same seed, different state hash after 40 s). Determinism holds per build only; don't design cross-platform lockstep on the current physics (streams/archive/round1/netcode.md).
 36. **`git stash` removes uncommitted code the running experiment/test depends on.** Don't stash to "test the committed version" mid-change; use a worktree.
 37. **Heavy runs queue for a machine-wide slot.** Parallel worktree agents share one 7.6 GB machine, so the root Makefile routes every non-interactive goal through `tools/slot.sh` (2 slots). `>> waiting for a heavy-run slot` is normal, not a hang. Wrap heavy commands you run outside make yourself (`tools/slot.sh python3 tools/match_series.py …`). Runs over 90 minutes are killed.
 38. **An unseeded `RandomNumberGenerator` is seeded randomly.** `Match._fire_rng` is only deterministic after `seed_spawns()`; a test that fires spread or scatter weapons without seeding is a dice roll (the artillery test flaked this way, 2026-09-15).

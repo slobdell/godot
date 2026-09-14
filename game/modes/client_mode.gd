@@ -9,7 +9,7 @@ extends GameMode
 ##                                      and the host gives this key its old tank back.
 ##     --record=PATH                    save everything the host sends us, for --replay
 ##   --replay=PATH [--replay-speed=2]   watch a recording from the recorded player's seat
-## Owned by the netcode workstream (_agents/streams/netcode.md).
+## Owned by the netcode workstream (_agents/streams/archive/round1/netcode.md).
 
 
 func role_name() -> String:

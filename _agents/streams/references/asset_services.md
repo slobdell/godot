@@ -1,6 +1,6 @@
 # A0: AI 3D generation services and open models
 
-Desk research for the assets stream (brief: `_agents/streams/assets.md`, task A0).
+Desk research for the assets stream (brief: `_agents/streams/archive/round1/assets.md`, task A0).
 **All URLs accessed 2026-09-14.** Budgets we care about: hull ≤8k tris, turret ≤4k, props ≤2–3k,
 textures ≤1024², GLB, and **emissive** for neon strips.
 

@@ -1,7 +1,9 @@
+> **Archived round-1 brief (2026-09-14 overnight run), kept as history.** Current plan: [../../../workstreams.md](../../../workstreams.md) and [../../../game_design.md](../../../game_design.md).
+
 # Stream: Gameplay (make squad-vs-squad fun)
 
-> Read [../workstreams.md](../workstreams.md), [../tank_brain.md](../tank_brain.md),
-> [../tactical_map.md](../tactical_map.md), and [../squad_ai_design.md](../squad_ai_design.md).
+> Read [../workstreams.md](../../../workstreams.md), [../tank_brain.md](../../../tank_brain.md),
+> [../tactical_map.md](../../../tactical_map.md), and [../squad_ai_design.md](../../../squad_ai_design.md).
 > You own `game/match/`, `game/ai/`, `game/combat/` (except `impact.gd`), `game/tank/` logic,
 > `game/arena/` layout, `doctrines/`, `game/camera/`, `game/ui/tactical_map.gd` + `game/ui/radar*`
 > behavior, and the offline/skirmish/match-runner modes.
@@ -207,7 +209,7 @@ the 09-13 rebalance** (now tuned).
   (balanced, armor, recon_strike, siege, swarm) that spend leftovers on components (heat sinks on
   lasers first). Skirmish enemy defaults to `cpu` (seed printed as `SKIRMISH_ARMY`); `--budget`,
   `--seed`; the match runner takes `cpu:<archetype>` too. Chassis + loadout recommendation written up in
-  [`_agents/balance.md`](../balance.md). Tests: `tests/test_army.gd`.
+  [`_agents/balance.md`](../../../balance.md). Tests: `tests/test_army.gd`.
 
 - **Stretch: control point** (7b2e9e9, opt-in `--control`). 16 m zone at the center, flat 8 s capture (a
   bigger army doesn't capture faster: anti-snowball), 1 point/s to the holder, first to 90 wins or
@@ -224,7 +226,7 @@ the 09-13 rebalance** (now tuned).
   pts, mortar 90 → 70 (Siege vs Armor/Balanced 12:4 → 10:6). Direct fire now needs the target seen by the
   team (a fog-of-war hole).
 
-**Balance** (full tables in [`_agents/balance.md`](../balance.md)): lasers vs cannons 58%; flamers vs cannons
+**Balance** (full tables in [`_agents/balance.md`](../../../balance.md)): lasers vs cannons 58%; flamers vs cannons
 50%; T1 coordinated vs individuals ~10% (50% with `--control`); archetypes: siege/balanced/armor
 competitive after the mortar cut, recon_strike ~28%, swarm ~3%.
 

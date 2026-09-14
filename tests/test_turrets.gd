@@ -1,5 +1,5 @@
 extends TestCase
-## G5 (streams/gameplay.md): turrets track threats independently of the hull, so tanks keep
+## G5 (streams/archive/round1/gameplay.md): turrets track threats independently of the hull, so tanks keep
 ## fighting while they move, retreat, or break contact.
 
 const ARENA := preload("res://game/arena/arena.tscn")

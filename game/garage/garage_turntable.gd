@@ -5,7 +5,7 @@ extends SubViewportContainer
 ##
 ## Slot choice per unit class: "<unit>.hull" / "<unit>.turret" when the theme has them, else the
 ## tank's; the main hardpoint's weapon goes on the turret as "weapon.<id>" (slot contract in
-## _agents/streams/assets.md: turret ring at y ≈ 1.22, z ≈ +0.2).
+## _agents/slot_contracts.md: turret ring at y ≈ 1.22, z ≈ +0.2).
 
 const SPIN_DEG_PER_SEC := 20.0
 const TURRET_OFFSET := Vector3(0.0, 1.22, 0.2)

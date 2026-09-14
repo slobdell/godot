@@ -22,8 +22,8 @@ them change the contract:
 | M3 ✅ | `AgentBridge` drives an `OrderController` from an external process: Claude ([agent_bridge.md](agent_bridge.md)) | client or offline |
 | M4 ✅ | `TankBrain extends OrderController`: senses team intel, scores options with directives, commits, emits orders ([tank_brain.md](tank_brain.md)) | server / match runner |
 | M4 ✅ | `Squad` (commander, formation, drill) feeds each brain a slot + drill-weighted directives; the **TacticalMap** emits SquadCommands ([tactical_map.md](tactical_map.md)) | simulating peer |
-| M5 | Skills are chosen and configured by **doctrine data** | server |
-| M7–8 | Doctrine is *authored* by an LLM from natural language | client (authoring time only) |
+| Round 2 | Fixed unit types (catalog v2) drive `Tank`; smarter brains (cover, peeking, fire discipline) stay controllers | simulating peer |
+| Later | A commander (Claude, or an LLM) issues the same SquadCommands as the player | client or server |
 
 If you find yourself making `Tank` check `if is_ai:` or `if multiplayer.is_server():`
 for *decision-making*, stop: that logic belongs in a controller.
@@ -31,11 +31,10 @@ for *decision-making*, stop: that logic belongs in a controller.
 ## Layers (target state)
 
 ```
- AUTHORING (client, occasional)      natural language ─▶ LLM ─▶ doctrine JSON
-                                     or form-based editor ─────▶ doctrine JSON
-──────────────────────────────────────────────────────────────── (validated by server)
- DOCTRINE (data)                     loadouts, roles, skills + params, triggers
- SKILLS (server, per tick)           behaviors + squad blackboard ─▶ TankCommand
+ PLAYER / COMMANDER (client)         army builder ─▶ army JSON (units in ≤ 5 squads)
+                                     taps on map/radar ─▶ SquadCommand (a later LLM commander uses the same)
+──────────────────────────────────────────────────────────────── (validated by the simulating peer)
+ SQUADS + BRAINS (per tick)          squad orders + formations + utility AI ─▶ orders ─▶ TankCommand
  CONTROLLERS                         Player / Scripted / NetworkInput / Skill ─▶ TankCommand
  SIMULATION (server-authoritative)   Tank, projectiles, damage, perception, navigation
 ──────────────────────────────────────────────────────────────── (state snapshots)
@@ -120,7 +119,7 @@ How the pieces fit:
 unchanged: the host is peer 1 like a server. A dropped socket stays invisible to Godot (the peer
 reconnects and resumes; reliable frames are retransmitted); a seat lost for good is rejoined with a
 player key and the host restores that tank. Wire protocol and measurements:
-`_agents/streams/netcode.md`; designs (lockstep, host loss, backgrounding, costs):
+`_agents/streams/archive/round1/netcode.md`; designs (lockstep, host loss, backgrounding, costs):
 `_agents/streams/references/netcode_designs.md`.
 
 ## Combat and rules (M3)
@@ -139,7 +138,7 @@ Main (main.gd: roles, flags, HUD)
 
 - **Tanks report, Match decides.** `Tank` emits `fired(muzzle, direction)` and `died`; it never spawns shells or respawns itself. `Match` (simulating peer only) spawns the shell, resolves hits, scores, and schedules respawn. This keeps the Tank reusable and the rules in one place.
 - **Shells are projectiles** (70 m/s, 110 m range) that sweep a ray each tick (world + tanks masks, shooter excluded). The first sweep starts at the turret center so a wall touching the barrel still blocks. Clients fly the same straight line visually; the server's despawn removes them.
-- **Damage = 34 × armor multiplier**, where `Armor.facing()` compares the hull's forward to the shell's travel direction: front (within 45° of head-on) ×0.5, side ×1.0, rear ×1.5. Friendly fire is off; teammates still stop shells.
+- **Damage = weapon damage × armor multiplier**, where `Armor.facing()` compares the hull's forward to the shell's travel direction: front (within 45° of head-on), side, rear, per weapon profile; shields absorb first. Friendly fire is off today (teammates stop shells); **round 2 turns it on** (game_design.md).
 - **Firing is a held trigger** sampled each tick (`TankCommand.fire`), gated by a 2 s reload. A dropped unreliable packet costs at most one tick of a held trigger. This replaced the earlier plan of a reliable fire event: simpler, and good enough for a slow-firing gun.
 - **Teams:** a new tank joins the smaller team (ties go to Green). Green's base is south (z = +42) facing north; Rust's is north. Slots spread along x.
 - **Navigation (M4):** `Arena` bakes a navmesh from collision shapes at startup on every peer (the server export has no meshes). It bakes the south half and mirrors it for fairness (see squad_ai_design.md "Fairness"). `OrderController.move_to` follows `Pathing.find_path` waypoints, repaths every second or when the goal moves, and slows only for the path's end. `"reverse": true` backs along the path.
@@ -189,6 +188,9 @@ matters for fairness.
 | 2026-09-15 | `VisibilityField` is presentation-only; brains use intel from the same rays | Fog for UI can't change the simulation or the sim baseline |
 | 2026-09-15 | Direct fire needs the shooter's line of sight AND the target seen by the team | Closed a fog hole; makes spotting a teamwork mechanic |
 | 2026-09-15 | Indirect rounds are data in `Match` (land by tick), drawn on clients by RPC | Deterministic, no spawner changes |
-| 2026-09-15 | Chassis + loadout (few chassis, 1 hardpoint, components) instead of fixed classes or free-form mechs | Garage has decisions; balance stays a small table (balance.md) |
+| 2026-09-15 | ~~Chassis + loadout~~ **superseded the same day** by the lead: fixed unit types (StarCraft-style counters), no loadouts | Loadouts were too complicated; depth should come from matchups and command (game_design.md) |
+| 2026-09-15 | Friendly fire will be on; brains must reason about lines of fire | The lead; makes positioning and fire discipline matter |
+| 2026-09-15 | Tanks render the Meshy prison dozer through a cyberpunk wrapper (`dozer_part.gd`) | Generated art in the default theme while keeping team accents, underglow, and shields |
+| 2026-09-15 | Navigation map/region iterations synchronous | Async readiness varied with machine load and broke determinism (orientation trip-up 57) |
 | 2026-09-15 | The RTS camera is a controller node over the existing main camera | No shared-scene edits; the map works in perspective via ground raycasts |
 | 2026-09-12 | Squad AI direction: utility AI with player-tuned directives and phases (accepted by the lead) | Matches the lead's "weighted tree" intuition; weights are a natural LLM output. Validate with experiments E1–E4 in squad_ai_design.md |

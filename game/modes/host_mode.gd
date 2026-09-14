@@ -9,7 +9,7 @@ extends ServerMode
 ##   --relay-latency=MS --relay-jitter=MS   delay packets we receive (testing bad links; also on --join)
 ##   --stats-every=SECONDS          TANK_SQUAD_HOST_STATS interval (default 5, 0 = off)
 ## Prints TANK_SQUAD_ROOM code=XXXXX when the room is open (smoke tests read it).
-## Owned by the netcode workstream (_agents/streams/netcode.md).
+## Owned by the netcode workstream (_agents/streams/archive/round1/netcode.md).
 
 ## `make broker` listens here by default (NET_PORT 9080 + 5).
 const DEFAULT_BROKER_PORT := 9085

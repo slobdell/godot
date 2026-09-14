@@ -3,7 +3,7 @@ extends RefCounted
 ## The unit catalog: vehicle classes as DATA (like Weapons.PROFILES). Schema v0, written
 ## 2026-09-14 so the gameplay and garage streams share one vocabulary from the start.
 ##
-## Owned by the gameplay stream (_agents/streams/gameplay.md, directive set 2). The simulation reads
+## Owned by the gameplay stream (_agents/streams/archive/round1/gameplay.md, directive set 2). The simulation reads
 ## it (Tank.apply_loadout); the garage stream reads it to build army/loadout UI.
 ##
 ## Keep existing keys stable. Renaming or removing one is a contract change (_agents/workstreams.md).
