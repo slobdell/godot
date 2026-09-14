@@ -6,8 +6,8 @@ extends Node3D
 ## whole vehicle). So there are two colors:
 ##   team accents: set_team_color(team neon): trims, stripes, coils, underglow
 ##   paint:        set_paint(color): the full body (default: worn gunmetal)
-## Adapter until gameplay's Tank.set_paint calls set_paint: set_team_color with a color that isn't
-## one of the theme's team colors is treated as paint (the garage paints through set_team_color today).
+## Tank.set_team_accent calls set_team_color and Tank.set_paint calls set_paint (integration, 2026-09-15).
+## Still tolerated: set_team_color with a color that isn't a theme team color is treated as paint.
 ## Optional slot methods: set_team_color, set_paint, setup(weapon), set_heat(ratio).
 
 const DEFAULT_PAINT := Color(0.2, 0.21, 0.24)

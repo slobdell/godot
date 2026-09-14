@@ -40,8 +40,9 @@ func test_cannons_mention_ammo_and_flamers_mention_range() -> void:
 	loadout.set_weapon(0, 0, "main", "flamethrower")
 	assert_true(_has(GarageAdvice.tradeoffs(catalog, loadout.unit_at(0, 0)), "close range"), "a flamethrower is flagged as close range")
 	var game := GarageCatalog.from_game()
-	assert_eq(GarageAdvice.tradeoffs(game, Loadout.new(game).new_unit("tank")), PackedStringArray(),
-			"today's cannon has no ammo or heat stats, so no advice yet")
+	var game_hints := GarageAdvice.tradeoffs(game, Loadout.new(game).new_unit("tank"))
+	assert_true(_has(game_hints, "finite ammo"), "the game's cannon carries finite ammo (G7): %s" % [game_hints])
+	assert_true(not _has(game_hints, "runs hot"), "a heat_per_shot of 0 isn't 'hot': %s" % [game_hints])
 
 
 func test_comparison_tables_highlight_the_best() -> void:
@@ -114,21 +115,18 @@ func test_skirmish_tips_come_once() -> void:
 
 
 func test_painted_tanks_wear_their_paint_in_the_match() -> void:
+	# Match applies doctrine paint itself (Tank.set_paint → slot set_paint); the team stays an accent
+	# (Tank.set_team_accent → slot set_team_color), the lead's "friend or foe by accent lights" rule.
 	add_to_tree(preload("res://game/arena/arena.tscn").instantiate())
 	var game_match: Match = preload("res://game/match/match.tscn").instantiate()
 	add_to_tree(game_match)
 	var loadout := GarageScreen.starter_loadout(GarageCatalog.from_game())
-	loadout.set_paint(1, 1, "#d04a8c")
-	var doctrine := loadout.to_doctrine()
-	assert_eq(game_match.load_doctrine(Match.Team.GREEN, doctrine), "", "setup: the army loads")
-	assert_eq(GarageMode.paint_tanks(game_match, Match.Team.GREEN, doctrine), 1, "one tank was painted")
+	loadout.set_paint(1, 0, "#d04a8c")
+	assert_eq(game_match.load_doctrine(Match.Team.GREEN, loadout.to_doctrine()), "", "setup: the army loads")
 	await wait_physics_frames(3)
-	var painted := game_match.tanks.get_node("Green_Bravo_2") as Tank
-	var colors := painted.find_children("*", "MeshInstance3D", true, false).filter(func(m: MeshInstance3D) -> bool:
-		return m.material_override is StandardMaterial3D).map(func(m: MeshInstance3D) -> Color: return m.material_override.albedo_color)
-	assert_true(colors.any(func(c: Color) -> bool: return c.is_equal_approx(Color.html("#d04a8c"))) or colors.is_empty(),
-			"Bravo's second tank is pink where the theme tints (%s)" % [colors])
-	var plain := game_match.tanks.get_node("Green_Bravo_1") as Tank
-	var plain_colors := plain.find_children("*", "MeshInstance3D", true, false).filter(func(m: MeshInstance3D) -> bool:
-		return m.material_override is StandardMaterial3D).map(func(m: MeshInstance3D) -> Color: return m.material_override.albedo_color)
-	assert_true(not plain_colors.any(func(c: Color) -> bool: return c.is_equal_approx(Color.html("#d04a8c"))), "unpainted tanks keep team colors")
+	var painted: Node = (game_match.tanks.get_node("Green_Bravo_1") as Tank).get_node("HullVisual").visual
+	var plain: Node = (game_match.tanks.get_node("Green_Alpha_1") as Tank).get_node("HullVisual").visual
+	if "paint_color" in painted:  # the cyberpunk theme; `default` boxes show team colors only
+		assert_true((painted.get("paint_color") as Color).is_equal_approx(Color.html("#d04a8c")), "Bravo's first tank wears the pink paint")
+		assert_true((painted.get("team_color") as Color).is_equal_approx(GameTheme.team_color(Match.Team.GREEN)), "and keeps Green's accent lights")
+		assert_eq((plain.get("paint_color") as Color).a, 0.0, "unpainted tanks keep the theme's default body")

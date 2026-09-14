@@ -26,12 +26,14 @@ const BASE_HEIGHT := 720.0
 const FONT_SIZE := 17
 ## Minimum tap target at BASE_HEIGHT (scaled with the screen: 48 px at 1080p).
 const TAP := 40.0
-## Opponents offered for the skirmish: [value for --enemy, label]. "cpu:<archetype>" is a fresh seeded
-## ArmyPresets army each fight (GarageMode builds it); the rest are hand-written res://doctrines.
-const ENEMIES := [["cpu:balanced", "CPU army: Balanced"], ["cpu:rush", "CPU army: Rush"],
-		["cpu:turtle", "CPU army: Turtle"], ["cpu:flamers", "CPU army: Flamers"],
-		["individuals", "Doctrine: Individuals"], ["anvil_hammer", "Doctrine: Anvil & Hammer"],
-		["flame_rush", "Doctrine: Flame Rush"], ["anvil_burners", "Doctrine: Anvil & Burners"]]
+## Opponents offered for the skirmish: [value for --enemy, label]. "cpu" / "cpu:<archetype>" is a fresh
+## seeded budgeted army each fight, built by gameplay's Army (Army.ARCHETYPES; a test keeps this list in
+## sync); the rest are hand-written res://doctrines.
+const ENEMIES := [["cpu:balanced", "CPU army: Balanced"], ["cpu", "CPU army: Random"],
+		["cpu:armor", "CPU army: Armor"], ["cpu:recon_strike", "CPU army: Recon Strike"],
+		["cpu:siege", "CPU army: Siege"], ["cpu:swarm", "CPU army: Swarm"],
+		["combined_arms", "Doctrine: Combined Arms"], ["individuals", "Doctrine: Individuals"],
+		["anvil_hammer", "Doctrine: Anvil & Hammer"], ["flame_rush", "Doctrine: Flame Rush"]]
 
 var loadout: Loadout
 ## Where armies are saved (tests point this elsewhere).
@@ -88,21 +90,36 @@ func _ready() -> void:
 	_build()
 
 
-## A ready-to-fight army for a first visit: as many of the cheapest class as the budget buys, in squads
-## of 3 (more per squad when a big army needs it), alternating wedge and line.
+## Share of the budget the starter spends on workhorses; the rest buys cheap units and leaves change for
+## the player's first weapon swap (a starter spent to the last point couldn't take a flamethrower).
+const STARTER_WORKHORSE_SHARE := 0.85
+
+
+## A ready-to-fight army for a first visit: workhorses (GarageCatalog.workhorse) up to
+## STARTER_WORKHORSE_SHARE of the budget, then the cheapest unit while money and slots last; squads of 3
+## (more per squad when a big army needs it), alternating wedge and line.
 static func starter_loadout(catalog: GarageCatalog) -> Loadout:
 	var loadout := Loadout.new(catalog)
+	var workhorse := catalog.workhorse()
 	var cheapest := catalog.unit_ids()[0]
-	var probe := loadout.unit_cost(loadout.new_unit(cheapest))
-	var count := mini(catalog.max_units, catalog.budget / maxi(probe, 1))
-	var per_squad := clampi(ceili(float(count) / catalog.max_squads), 3, catalog.max_squad_size)
-	for i in count:
+	var workhorse_cost := maxi(loadout.unit_cost(loadout.new_unit(workhorse)), 1)
+	var cheapest_cost := maxi(loadout.unit_cost(loadout.new_unit(cheapest)), 1)
+	var roster: Array[String] = []
+	var spent := 0
+	while roster.size() < catalog.max_units and spent + workhorse_cost <= catalog.budget * STARTER_WORKHORSE_SHARE:
+		roster.append(workhorse)
+		spent += workhorse_cost
+	while roster.size() < catalog.max_units and spent + cheapest_cost <= catalog.budget:
+		roster.append(cheapest)
+		spent += cheapest_cost
+	var per_squad := clampi(ceili(float(roster.size()) / catalog.max_squads), 3, catalog.max_squad_size)
+	for i in roster.size():
 		var squad_index := i / per_squad
 		if squad_index >= loadout.squads().size():
 			if loadout.add_squad() != "":
 				break
 			loadout.set_formation(squad_index, "wedge" if squad_index % 2 == 0 else "line")
-		if loadout.add_unit(squad_index, cheapest) != "":
+		if loadout.add_unit(squad_index, roster[i]) != "":
 			break
 	return loadout
 

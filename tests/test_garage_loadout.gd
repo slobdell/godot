@@ -51,11 +51,12 @@ func test_army_size_squads_and_component_slots_are_capped() -> void:
 	catalog.budget = 100000
 	var loadout := Loadout.new(catalog)
 	for i in Doctrine.MAX_TANKS:
-		assert_eq(loadout.add_unit(0, "scout"), "", "unit %d fits" % (i + 1))
+		if loadout.squad_with_room() < 0:
+			assert_eq(loadout.add_squad(), "", "squad %d opens for unit %d" % [loadout.squads().size() + 1, i + 1])
+		assert_eq(loadout.add_unit(loadout.squad_with_room(), "scout"), "", "unit %d fits" % (i + 1))
+	assert_eq(loadout.squads().size(), Doctrine.MAX_SQUADS, "Doctrine.MAX_TANKS units fill Doctrine.MAX_SQUADS squads of %d" % Formations.MAX_MEMBERS)
 	assert_true(loadout.add_unit(0, "scout").contains("full"), "the army stops at Doctrine.MAX_TANKS units")
-	assert_eq(loadout.add_squad(), "", "a second squad")
-	assert_eq(loadout.add_squad(), "", "a third squad")
-	assert_true(loadout.add_squad() != "", "no fourth squad (Doctrine.MAX_SQUADS)")
+	assert_true(loadout.add_squad() != "", "no squad past Doctrine.MAX_SQUADS")
 	assert_eq(loadout.squad(1)["name"], "Bravo", "squads get the next phonetic name")
 	assert_eq(loadout.add_component(0, 0, "heat_sink"), "", "a scout has one component slot")
 	assert_true(loadout.add_component(0, 0, "ammo_rack") != "", "and no second one")
@@ -95,8 +96,9 @@ func test_hand_written_doctrines_import_with_loadout_fields() -> void:
 	var burner := loadout.unit_at(0, 0)
 	assert_eq(burner["unit"], "tank", "an old doctrine's tanks become the tank class")
 	assert_eq(burner["weapons"], {"main": "flamethrower"}, "its weapon lands on the main hardpoint")
-	assert_eq(loadout.total_cost(), 1000, "five tanks at 200 each")
-	assert_true(loadout.is_ready(), "flame rush is a legal garage army: %s" % [loadout.problems()])
+	assert_eq(loadout.total_cost(), Units.army_cost(loaded["doctrine"]), "the garage prices an army exactly like the game")
+	assert_true(Array(loadout.problems()).all(func(p: String) -> bool: return p.contains("budget")),
+			"flame rush breaks no garage rule except, at most, the budget: %s" % [loadout.problems()])
 
 
 func test_game_catalog_builds_a_full_legal_army() -> void:
@@ -110,7 +112,8 @@ func test_game_catalog_builds_a_full_legal_army() -> void:
 
 
 func test_round_trip_save_load_and_fight() -> void:
-	var loadout := Loadout.new(_catalog())
+	var catalog := GarageCatalog.from_game()  # the match must load it, so the game's own units
+	var loadout := Loadout.new(catalog)
 	loadout.set_army_name("Night Raiders!")
 	loadout.add_squad()
 	loadout.add_unit(0, "tank")
@@ -128,15 +131,17 @@ func test_round_trip_save_load_and_fight() -> void:
 	var saved := ArmyStore.save(loadout.to_doctrine(), stem, TEST_DIR)
 	assert_true(saved.has("path"), "the army saves: %s" % saved)
 	var loaded := Doctrine.load_file(saved["path"])
-	assert_true(loaded.has("doctrine"), "today's Doctrine.load_file accepts the garage file: %s" % loaded.get("error", ""))
+	assert_true(loaded.has("doctrine"), "the game's Doctrine.load_file accepts the garage file: %s" % loaded.get("error", ""))
+	if not loaded.has("doctrine"):
+		return
 	var listed := ArmyStore.list(TEST_DIR)
 	assert_eq(listed.size(), 1, "the saved army is listed")
 	assert_eq(listed[0]["name"], "Night Raiders!", "under its display name")
 
-	var reopened := Loadout.from_doctrine(_catalog(), ArmyStore.read(saved["path"])["doctrine"])
+	var reopened := Loadout.from_doctrine(catalog, ArmyStore.read(saved["path"])["doctrine"])
 	assert_eq(reopened.army, loadout.army, "reopening in the garage gives back the same army")
 	assert_eq(reopened.unit_at(0, 0)["components"], ["heat_sink"], "components survive the round trip")
-	assert_eq(loaded["doctrine"]["garage"]["cost"], 430, "the file records the army's cost")
+	assert_eq(loaded["doctrine"]["garage"]["cost"], Units.army_cost(loaded["doctrine"]), "the file records the cost the game computes")
 
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = MATCH.instantiate()

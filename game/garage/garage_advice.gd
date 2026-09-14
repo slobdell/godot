@@ -109,8 +109,19 @@ static func _is_best(profiles: Array, key: String, value: float, value_of: Calla
 	return true
 
 
+## True if a stat named like `keyword` is really there: a zero (the game's cannon has heat_per_shot 0.0)
+## doesn't count, and nested dictionaries (Units.COMPONENTS "modifiers") are searched too.
 static func _has_key(profile: Dictionary, keyword: String) -> bool:
-	return profile.keys().any(func(key: String) -> bool: return key.contains(keyword))
+	for key: String in profile:
+		var value: Variant = profile[key]
+		if typeof(value) == TYPE_DICTIONARY:
+			if _has_key(value, keyword):
+				return true
+		elif key.contains(keyword):
+			var numeric := typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
+			if not numeric or not is_zero_approx(float(value)):
+				return true
+	return false
 
 
 static func _has_component(catalog: GarageCatalog, components: Array, keyword: String) -> bool:

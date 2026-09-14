@@ -5,7 +5,7 @@
 
 GARAGE_SHOTS := $(BUILD_DIR)/screenshots
 
-garage: import ## Build an army on a budget (tap/drag), then FIGHT a skirmish with it (ENEMY=cpu:balanced|cpu:rush|cpu:turtle|cpu:flamers|<doctrine>; CATALOG=preview shows a 20-unit army)
+garage: import ## Build an army on a budget (tap/drag), then FIGHT a skirmish with it (ENEMY=cpu|cpu:<archetype from Army.ARCHETYPES>|<doctrine>; CATALOG=preview shows a 20-unit army)
 	$(GODOT) --path . -- --garage $(if $(filter command line,$(origin ENEMY)),--enemy=$(ENEMY)) $(if $(CATALOG),--garage-catalog=$(CATALOG))
 
 garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must start with the saved army and log no errors
@@ -44,7 +44,7 @@ garage-e2e: import ## GA3: build an army with the garage's Loadout API, save it 
 
 PRESET ?= balanced
 
-garage-cpu-army: import ## Write a seeded CPU army (PRESET=balanced|rush|turtle|flamers SEED=1) to user://doctrines/cpu/, e.g. for make skirmish ENEMY=<printed path>
+garage-cpu-army: import ## Write a seeded CPU army (PRESET=balanced|armor|recon_strike|siege|swarm SEED=1) to user://doctrines/cpu/, e.g. for make skirmish ENEMY=<printed path>
 	$(GODOT) --headless --path . --script res://tests/garage/build_army.gd -- --preset=$(PRESET) --seed=$(SEED) 2>&1 | grep -E 'GARAGE_ARMY|GARAGE_CODE|ERROR'
 
 .PHONY: garage-web-smoke

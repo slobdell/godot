@@ -6,6 +6,10 @@ extends TestCase
 const TEST_DIR := "user://test_garage_screen/"
 
 
+func _starter_size() -> int:
+	return GarageScreen.starter_loadout(GarageCatalog.from_game()).unit_count()
+
+
 func _open(screen_size := Vector2i(1280, 720)) -> GarageScreen:
 	# Headless Godot's root viewport is 64×64 (trip-up #31): give it a real screen.
 	tree.root.size = screen_size
@@ -62,30 +66,31 @@ func _drag(from: Control, to: Control) -> void:
 func test_opens_with_a_ready_starter_army() -> void:
 	var screen := await _open()
 	assert_true(screen.loadout.is_ready(), "a first visit can FIGHT immediately: %s" % [screen.loadout.problems()])
-	assert_eq(screen.loadout.unit_count(), Doctrine.MAX_TANKS, "the starter army fills the roster")
+	assert_eq(screen.loadout.unit_count(), _starter_size(), "the starter army is the full starter roster")
 	assert_eq(screen.selected_unit, 0, "the first unit is selected so the turntable shows something")
 	var turntable := _find(screen, "Turntable") as GarageTurntable
 	assert_true(turntable != null and turntable.is_visible_in_tree(), "the turntable is on screen")
 	assert_true(String((_find(screen, "Problems") as Label).text).begins_with("READY"), "the status line says READY")
 
 
-func test_tapping_add_on_a_full_army_explains_why() -> void:
+func test_tapping_add_without_the_money_explains_why() -> void:
 	var screen := await _open()
 	var add := _find(screen, "Add_tank")
 	assert_true(add != null, "the tank card has an ADD button")
+	var before := screen.loadout.unit_count()
 	await _tap(add)
-	assert_eq(screen.loadout.unit_count(), Doctrine.MAX_TANKS, "no sixth unit")
-	assert_true(screen.toast_text().contains("full"), "a toast says the army is full: '%s'" % screen.toast_text())
+	assert_eq(screen.loadout.unit_count(), before, "the starter's change doesn't buy another tank")
+	assert_true(screen.toast_text().contains("budget"), "a toast says why: '%s'" % screen.toast_text())
 
 
 func test_tap_remove_then_tap_add_updates_the_budget_bar() -> void:
 	var screen := await _open()
 	await _tap(_find(screen, "RemoveUnit"))
-	assert_eq(screen.loadout.unit_count(), Doctrine.MAX_TANKS - 1, "REMOVE UNIT removes the selected unit")
+	assert_eq(screen.loadout.unit_count(), _starter_size() - 1, "REMOVE UNIT removes the selected unit")
 	var bar := _find(screen, "BudgetBar") as ProgressBar
 	assert_eq(int(bar.value), screen.loadout.total_cost(), "the budget bar shows the spend after removing")
 	await _tap(_find(screen, "Add_tank"))
-	assert_eq(screen.loadout.unit_count(), Doctrine.MAX_TANKS, "+ ADD puts a unit back")
+	assert_eq(screen.loadout.unit_count(), _starter_size(), "+ ADD puts a unit back")
 	assert_eq(int((_find(screen, "BudgetBar") as ProgressBar).value), screen.loadout.total_cost(), "and the bar follows")
 
 
@@ -249,6 +254,6 @@ func test_delete_takes_two_taps_and_keeps_the_army_open() -> void:
 	assert_eq(delete.text, "CONFIRM?", "and asks for confirmation")
 	delete.pressed.emit()
 	assert_true(not FileAccess.file_exists(path), "the second tap deletes the file")
-	assert_eq(screen.loadout.unit_count(), Doctrine.MAX_TANKS, "the army stays open")
+	assert_eq(screen.loadout.unit_count(), _starter_size(), "the army stays open")
 	assert_eq(screen.save(), path, "so SAVE brings it back")
 	_clean_saves()

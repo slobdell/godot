@@ -367,15 +367,18 @@ func speed() -> float:
 
 
 ## The team's identity color as an accent (lights, trim): visuals implement set_team_accent if they can.
+## The team's color: friend or foe (accent lights in the cyberpunk theme, the whole body in `default`).
+## Slot contract: set_team_color(color).
 func set_team_accent(color: Color) -> void:
 	for slot in [_hull_visual, _turret_visual, _weapon_visual]:
-		(slot as VisualSlot).invoke("set_team_accent", [color])
+		(slot as VisualSlot).invoke("set_team_color", [color])
 
 
-## Paint this tank in a team color. What that looks like is up to the theme's visuals.
+## The garage's full-body paint. Slot contract: set_paint(color), optional; a theme without it keeps
+## showing team colors (the placeholder `default` boxes).
 func set_paint(color: Color) -> void:
 	for slot in [_hull_visual, _turret_visual, _weapon_visual]:
-		(slot as VisualSlot).invoke("set_team_color", [color])
+		(slot as VisualSlot).invoke("set_paint", [color])
 
 
 func _set_alive(value: bool) -> void:

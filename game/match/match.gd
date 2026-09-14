@@ -565,9 +565,10 @@ func _build_tank(data: Dictionary) -> Node:
 	tank.display_name = "YOU" if is_local else tank.name
 	# Needs its visuals ready. A loadout's paint colors the whole vehicle; the team shows as an accent
 	# (the lead, 2026-09-14: friend or foe by accent lights, not hull color).
-	var paint: String = data.get("paint", "")
-	tank.set_paint.call_deferred(Color.html(paint) if paint != "" else GameTheme.team_color(tank.team))
 	tank.set_team_accent.call_deferred(GameTheme.team_color(tank.team))
+	var paint: String = data.get("paint", "")
+	if paint != "":
+		tank.set_paint.call_deferred(Color.html(paint))
 	Replication.attach_tank_sync(tank)
 	if simulate:
 		tank.fired.connect(_on_tank_fired.bind(tank))

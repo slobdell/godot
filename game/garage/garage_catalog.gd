@@ -11,12 +11,11 @@ extends RefCounted
 ##              numeric stat (max_health, max_shield, max_forward_speed, hull_turn_rate_deg, sight_radius…)
 ##   weapon:    cost, range, damage / damage_per_second, reload, ammo, heat_per_shot / heat_per_second
 ##   component: display_name, cost, description, and any numeric effect
-## Units may define `COMPONENTS` (id → profile); until then the garage uses STUB_COMPONENTS, which only
-## matter for units that declare component_slots > 0 (none do in schema v0).
+## The game's components come from `Units.COMPONENTS` (schema v1); STUB_COMPONENTS only fill the preview catalog.
 
 const UNITS_SCRIPT := "res://game/units/units.gd"
 
-## The garage's guess at directive set 2 components, shown only until Units defines COMPONENTS.
+## Components for the preview catalog (the game's own are Units.COMPONENTS).
 const STUB_COMPONENTS := {
 	"heat_sink": {"display_name": "Heat sink", "cost": 30, "description": "Sheds laser heat faster",
 			"heat_capacity": 20.0, "heat_dissipation": 4.0},
@@ -48,6 +47,9 @@ var max_squads: int
 var max_squad_size: int
 ## False for catalogs the game can't field yet (the preview): FIGHT is refused and problems skip Doctrine.parse.
 var playable := true
+## True only for from_game(): the one catalog whose armies Doctrine.parse (the game's loader) can judge.
+## Hand-made test catalogs follow the garage's rules but not the game's units.
+var is_game := false
 
 
 func _init(p_units: Dictionary, p_weapons: Dictionary, p_components: Dictionary, p_budget: int,
@@ -66,8 +68,10 @@ func _init(p_units: Dictionary, p_weapons: Dictionary, p_components: Dictionary,
 static func from_game() -> GarageCatalog:
 	var constants := (load(UNITS_SCRIPT) as Script).get_script_constant_map()
 	var game_components: Dictionary = constants.get("COMPONENTS", STUB_COMPONENTS)
-	return GarageCatalog.new(Units.PROFILES, Weapons.PROFILES, game_components,
+	var catalog := GarageCatalog.new(Units.PROFILES, Weapons.PROFILES, game_components,
 			int(constants.get("DEFAULT_BUDGET", 1000)))
+	catalog.is_game = true
+	return catalog
 
 
 ## A catalog shaped like gameplay's directive set 2 plans: scout, tank, artillery, a laser with heat, heat
@@ -91,9 +95,24 @@ static func preview() -> GarageCatalog:
 	weapons["mortar"] = {"display_name": "Mortar", "range": 110.0, "damage": 60.0, "reload": 5.0, "ammo": 24}
 	weapons["cannon"]["ammo"] = 40
 	var components := STUB_COMPONENTS.duplicate(true)
-	var catalog := GarageCatalog.new(units, weapons, components, 3000, 20, 6)
+	var catalog := GarageCatalog.new(units, weapons, components, 4000, 20, 6)
 	catalog.playable = false
 	return catalog
+
+
+## The all-rounder: the unit whose hardpoints accept the most weapons (ties → cheaper). With the game's
+## catalog that's the tank, not the scout (cheapest) or the artillery (a specialist).
+func workhorse() -> String:
+	var best := ""
+	var best_options := -1
+	for unit_id in unit_ids():  # cheapest first, so ties keep the cheaper unit
+		var options := 0
+		for hardpoint: Dictionary in hardpoints(unit_id):
+			options += (hardpoint.get("accepts", []) as Array).size()
+		if options > best_options:
+			best = unit_id
+			best_options = options
+	return best
 
 
 ## Unit ids, cheapest first (ties by id), so the garage lists them in a stable, sensible order.

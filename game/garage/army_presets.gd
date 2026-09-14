@@ -1,7 +1,9 @@
 class_name ArmyPresets
 extends RefCounted
-## GA4: army archetypes as data, built into legal, budget-constrained armies with a seed, so CPU
-## opponents vary from match to match and players get sensible starting points in the garage.
+## GA4: army archetypes as data, built into legal, budget-constrained armies with a seed: the garage's
+## PRESETS menu (player armies) army codes. CPU *opponents* come from gameplay's
+## `Army` (cpu / cpu:<archetype>), the one generator skirmish and the match runner share (integration,
+## 2026-09-15).
 ##
 ## Archetypes never name unit classes or weapons. They name PREFERENCES that resolve against whatever
 ## catalog exists: "the fastest class", "the toughest", "the shortest-range weapon a hardpoint accepts",
@@ -16,7 +18,7 @@ extends RefCounted
 
 const ARCHETYPES := {
 	"balanced": {
-		"label": "Balanced", "prefer": "cheapest",
+		"label": "Balanced", "prefer": "workhorse",
 		"blurb": "An anvil holds the center while a hammer swings wide.",
 		"squads": [
 			{"share": 0.6, "formations": ["wedge", "line"], "role": "anchor", "close_share": 0.0,
@@ -47,7 +49,7 @@ const ARCHETYPES := {
 		],
 	},
 	"flamers": {
-		"label": "Flamers", "prefer": "cheapest",
+		"label": "Flamers", "prefer": "workhorse",
 		"blurb": "A gun line draws fire while burners flank in close.",
 		"squads": [
 			{"share": 0.4, "formations": ["line", "wedge"], "role": "anchor", "close_share": 0.0,
@@ -107,8 +109,13 @@ static func build(archetype: String, catalog: GarageCatalog, seed_value: int, fo
 				loadout.add_squad()
 				spec_of_squad.append(squad_spec_index)
 				_roll_squad(loadout, squad_index, squad_spec, rng, for_player)
-			loadout.add_unit(squad_index, roster[next])
+			var refused := loadout.add_unit(squad_index, roster[next])
 			next += 1
+			if refused != "":  # weapon swaps can eat the slack the roster was priced with
+				if loadout.squad(squad_index)["tanks"].is_empty():
+					loadout.remove_squad(squad_index)
+					spec_of_squad.pop_back()
+				continue
 			var unit_index: int = loadout.squad(squad_index)["tanks"].size() - 1
 			var tank := loadout.unit_at(squad_index, unit_index)
 			for hardpoint in catalog.hardpoints(tank["unit"]):
@@ -156,11 +163,14 @@ static func _roll_squad(loadout: Loadout, squad_index: int, squad_spec: Dictiona
 				"forward": float(_roll(rng, squad_spec["objective"]["forward"])), "radius": float(squad_spec["objective"]["radius"])}
 
 
-## The stat-preferred unit class ("cheapest", or the unit with the highest value of a stat; ties → cheaper).
+## The preferred unit class: "cheapest", "workhorse" (GarageCatalog.workhorse), or the unit with the highest
+## value of a stat (ties → cheaper).
 static func _preferred_unit(catalog: GarageCatalog, prefer: String) -> String:
 	var best := catalog.unit_ids()[0]
 	if prefer == "cheapest":
 		return best
+	if prefer == "workhorse":
+		return catalog.workhorse()
 	for unit_id in catalog.unit_ids():  # cheapest first, so ties keep the cheaper class
 		if float(catalog.unit(unit_id).get(prefer, 0.0)) > float(catalog.unit(best).get(prefer, 0.0)):
 			best = unit_id
@@ -219,11 +229,10 @@ static func _fit_components(loadout: Loadout, prefer: String) -> void:
 			var tank := loadout.unit_at(squad_index, unit_index)
 			var wanted: Array[String] = []
 			for weapon_id in tank["weapons"].values():
-				for key: String in catalog.weapon(weapon_id):
-					if key.contains("heat"):
-						wanted.append("heat")
-					elif key.contains("ammo"):
-						wanted.append("ammo")
+				if GarageAdvice._has_key(catalog.weapon(weapon_id), "heat"):
+					wanted.append("heat")
+				elif GarageAdvice._has_key(catalog.weapon(weapon_id), "ammo"):
+					wanted.append("ammo")
 			wanted.append("health" if prefer == "max_health" else "shield")
 			for keyword in wanted:
 				var component_id := _component_matching(catalog, keyword)
@@ -233,9 +242,8 @@ static func _fit_components(loadout: Loadout, prefer: String) -> void:
 
 static func _component_matching(catalog: GarageCatalog, keyword: String) -> String:
 	for component_id in catalog.component_ids():
-		for key: String in catalog.component(component_id):
-			if key.contains(keyword) or component_id.contains(keyword):
-				return component_id
+		if component_id.contains(keyword) or GarageAdvice._has_key(catalog.component(component_id), keyword):
+			return component_id
 	return ""
 
 
