@@ -13,6 +13,8 @@ const COMMAND_BAR_PX := 52.0
 
 var status_frame := CyberFrame.new()
 var banner_frame := CyberFrame.new()
+## Bottom-right: tap to cycle the FX quality tier (saved per device). Hidden where nothing renders.
+var fx_button := Button.new()
 
 var _hud: CanvasLayer
 var _status: Label
@@ -47,6 +49,13 @@ func _ready() -> void:
 		add_child(frame)
 	banner_frame.apply_theme({"fill": Color(CyberStyle.CARD, 0.75), "border": CyberStyle.PINK})
 	banner_frame.visible = false
+	fx_button.name = "FxButton"
+	fx_button.focus_mode = Control.FOCUS_NONE
+	fx_button.theme = CyberUiTheme.get_theme()
+	fx_button.pressed.connect(cycle_fx_quality)
+	fx_button.visible = DisplayServer.get_name() != "headless"
+	add_child(fx_button)
+	_refresh_fx_button()
 	for label in [_status, _scoreboard, _banner]:
 		if label != null:
 			label.add_theme_font_override("font", CyberStyle.font())
@@ -69,6 +78,16 @@ func _run_demo() -> void:
 		_hud.call("show_banner", "VICTORY")
 
 
+## Cycle LOW → MEDIUM → HIGH → LOW and remember it on this device.
+func cycle_fx_quality() -> void:
+	FxQuality.apply((FxQuality.tier() + 1) % 3, "player", true)
+	_refresh_fx_button()
+
+
+func _refresh_fx_button() -> void:
+	fx_button.text = "FX %s" % FxQuality.tier_name().to_upper()
+
+
 ## Window-wide styling is undone when the HUD goes away (tests build many HUDs in one process).
 func _exit_tree() -> void:
 	if get_window() != null and get_window().theme == CyberUiTheme.get_theme():
@@ -79,6 +98,8 @@ func _exit_tree() -> void:
 
 func _process(_delta: float) -> void:
 	var screen := get_viewport_rect().size
+	if fx_button.visible and not fx_button.text.ends_with(FxQuality.tier_name().to_upper()):
+		_refresh_fx_button()  # the tier changed elsewhere (auto step-down, a flag)
 	if screen != _last_screen:
 		_last_screen = screen
 		_layout(screen)
@@ -114,6 +135,11 @@ func _place_messages(screen: Vector2) -> void:
 func _layout(screen: Vector2) -> void:
 	var s := CyberStyle.ui_scale(screen)
 	var pad := 14.0 * s
+	# A ≥ 48 px (at 1080p) tap target in the bottom-right corner.
+	fx_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
+	fx_button.custom_minimum_size = Vector2(130.0 * s, 52.0 * s)
+	fx_button.size = fx_button.custom_minimum_size
+	fx_button.position = screen - fx_button.size - Vector2(10.0, 8.0) * maxf(s, 1.0)
 	var width := screen.x * BLOCK_FRACTION - pad * 2.0
 	if _status != null:
 		_status.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))

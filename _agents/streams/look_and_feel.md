@@ -199,12 +199,21 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   `build/screenshots/vehicle-gallery.png`, `l5_shield_hit.png`, `l5_shield_break.png`, `l5_shield_recharge.png`.
   Tests: shield events show/hide, laser parts + beam follow the contract, beams batch and expire.
 
-#### Frame budget per quality tier (from L0; details in references/fx_tricks.md)
-| Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows |
-|---|---|---|---|---|---|---|---|---|
-| low | web, mobile | ≤ 12 ms | ≤ 250 | 4 | on | 0.75 | off | off |
-| medium | — | ≤ 12 ms | ≤ 250 | 8 | on | 1.0 | off | off |
-| high | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon |
+#### Frame budget per quality tier (L0, re-measured in L6; details in references/fx_tricks.md)
+| Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured (UHD 620, 720p) |
+|---|---|---|---|---|---|---|---|---|---|
+| low | web, mobile | ≤ 12 ms | ≤ 250 | 4 | on | 0.75 | off | off | 5.9 ms / 240 |
+| medium | — | ≤ 12 ms | ≤ 250 | 8 | on | 1.0 | off | off | 8.6 ms / 240 |
+| high | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon (orthogonal) | 14.1 ms / 401 |
+
+- **L6 quality tiers:** `FxQuality` now drives light-pool size, splats, effect capacity, glow, moon
+  shadows, **3D render scale and MSAA on the main viewport** (`FxWorld._apply_viewport`), switchable at
+  runtime (`FxQuality.apply`) with every system and the environment updating live. Selection: flag >
+  saved player choice > platform default (web/mobile low). A touch **"FX LOW/MEDIUM/HIGH" button**
+  (bottom-right, ≥ 48 px at 1080p) cycles and saves the tier per device. `FxAutoQuality` steps down on
+  web/mobile when frames drop. `--perf` shows the perf overlay in any mode (phone tests). Re-bench with
+  lasers/shields/vehicles found the moon's 4-split shadows costing 3.3 ms and 65 draws → orthogonal
+  mode; pre-warm extended to shields/flames/beams removed a 56 ms first-laser hitch.
 
 #### Decisions (with reasons)
 - **Theme switch by flag:** `--theme=cyberpunk` / `?theme=cyberpunk` read in `GameTheme._static_init`, so no shared file changes were needed to select a theme.
@@ -221,7 +230,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `game/modes/game_mode.gd`: 2 lines, `--fx-bench` routes to `FxBenchMode` (in `game/theme/fx/bench/`).
 
 #### Questions for the lead
-1. **Phone run** when convenient: `make export-web && make serve-web WEB_HOST=0.0.0.0`, open `http://<LAN IP>:8080/?fx-bench` on the phone (this worktree serves on 8080), and read the overlay's summary at the end (or add `&fx-quality=low`).
+1. **Phone run** when convenient: `make serve-web WEB_HOST=0.0.0.0` (it exports first), open `http://<LAN IP>:8080/?fx-bench` on the phone (this worktree serves on 8080; after merging, main serves on 8060). It runs every config once (~3 min), then the overlay shows the summary table and keeps the firefight looping. A screenshot of that overlay is all I need; `?fx-bench=all,tier_low,tier_medium` is a 30-second version. Verified in headless Chrome (SwiftShader, so its numbers are meaningless): it completes and logs `FX_BENCH_DONE`; WebGL reports no GPU timing, so use frame times.
 
 #### Requests to other streams
 - **Gameplay (tactical map layout):** the orders log (top-right, 430 px) and the pause label/toast (top center) sit where 3D-view warning banners go; in the top-down view banners now use the side columns, so this only matters in the 3D view (Tab). If you move the log, keep the right column below ~16% height free for warnings. The HUD's `Status`/`Scoreboard` text doesn't update while the tree is paused (hud.gd `_process` pauses), so the top-left block is hidden during PLANNING; `process_mode = ALWAYS` on the HUD would fix it (your file).
@@ -240,7 +249,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- L6 quality tiers (in progress).
+- Stretch: camera-shake curve, SFX, title screen (in progress).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

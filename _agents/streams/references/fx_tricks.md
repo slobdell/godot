@@ -177,16 +177,40 @@ honest cost. **Browser (real GPU) and phone: pending the lead's phone run** (`?f
 | `viewport_set_measure_render_time` | yes (GPU/CPU ms reported; an occasional garbage sample, so the bench uses medians) | — | used by the bench |
 | Float data textures / uniform-array light field; LightmapGI | not tested | — | not needed yet: splats + pool are enough |
 
+### Re-measured after L3–L6 (vehicles, underglow, lasers, shields, streaks in the scene)
+
+Same bench, now with the procedural cyberpunk tanks (2 draws per part), team underglow taking
+spare pooled lights, 4 laser tanks pulsing every 0.35 s through `fx.laser_beam` (as `Match.show_beam`
+does), shield hits/recharge on every hit, and wet-floor streaks. `build/fx-bench-l6.json`.
+
+| Config | Frame avg ms | GPU ms | CPU render ms | Draw calls |
+|---|---|---|---|---|
+| `all` (tier high, moon shadows **4 PSSM splits**) | 17.55 | 16.02 | 2.75 | 466 |
+| `all` (tier high, moon shadows **orthogonal, 110 m**: shipped) | **14.23** | 13.40 | 2.40 | **401** |
+| `no_shadows` | 11.98 | 11.06 | 1.72 | 240 |
+| `no_lasers` / `no_shields` | within noise of `all` (±0.7 ms) | | | −4 / −15 |
+| `unmerged_props` | 17.60 | 17.18 | **4.52** | **647** |
+| `tier_low` / `tier_medium` / `tier_high` | **5.91** / 8.57 / 14.13 | 4.94 / 7.76 / 13.23 | 1.88 / 1.72 / 2.44 | 240 / 240 / 401 |
+
+- **Directional shadow splits are the hidden draw-call multiplier:** PSSM 4 splits re-draws casters per split; orthogonal mode saved 3.3 ms and 65 draws with no visible loss from the gameplay cameras.
+- **Pre-warm (extended to shields, flames, beams, vehicle glow):** without it the first laser pulse hitched **56 ms**; with it the worst frame after load was 16.7 ms (`FX_BENCH_HITCH` lines log any frame over 50 ms).
+- Lasers and shields cost nothing measurable: beams are one MultiMesh, shields draw only during events.
+
 ### Frame budgets per quality tier (set from these numbers)
 
 Worst case = the bench firefight. Native UHD 620 numbers are the reference; a mid-range phone GPU is
 roughly this class or slower, so phones start **low**.
 
-| Tier | Default for | Frame budget (worst case) | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured here |
+| Tier | Default for | Frame budget (worst case) | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured here (L6) |
 |---|---|---|---|---|---|---|---|---|---|
-| **low** | web, mobile | **≤ 12 ms** (leaves 4 ms of a 16.7 ms frame for game logic) | ≤ 250 | 4 | on (first to cut) | 0.75 | off | off | 5.5 ms, 190 draws |
-| **medium** | — | ≤ 12 ms | ≤ 250 | 8 | on | 1.0 | off | off | 8.0 ms, 190 draws |
-| **high** | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon | 16.0 ms, 384 draws |
+| **low** | web, mobile | **≤ 12 ms** (leaves 4 ms of a 16.7 ms frame for game logic) | ≤ 250 | 4 | on (first to cut) | 0.75 | off | off | 5.9 ms, 240 draws |
+| **medium** | — | ≤ 12 ms | ≤ 250 | 8 | on | 1.0 | off | off | 8.6 ms, 240 draws |
+| **high** | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon, orthogonal, 110 m | 14.1 ms, 401 draws |
+
+Tier selection (L6, `FxQuality`): `--fx-quality` flag > the player's saved choice (HUD "FX" button,
+`user://fx_quality.cfg`) > platform default. On web/mobile without an explicit choice, `FxAutoQuality`
+steps down one tier when 4 s average frame time exceeds 24 ms (10 s cooldown; never up, since
+browsers cap frames at the display rate).
 
 Rules for all later FX work: new effects join an existing MultiMesh or pool (no per-event nodes with
 meshes/materials/lights), static art goes through `StaticBatcher`, and any new per-frame cost gets a

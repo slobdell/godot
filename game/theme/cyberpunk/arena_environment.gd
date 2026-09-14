@@ -15,4 +15,4 @@ func _ready() -> void:
 
 func apply_quality() -> void:
 	environment.glow_enabled = FxQuality.value("glow")
-	moon.shadow_enabled = FxQuality.tier() == FxQuality.Tier.HIGH
+	moon.shadow_enabled = FxQuality.value("shadows")

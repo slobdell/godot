@@ -153,3 +153,20 @@ func test_underglow_follows_visible_vehicles_only() -> void:
 	pool.request(Vector3.ZERO, Color.WHITE, 1.0, 5.0, LightPool.PRIORITY_EXPLOSION)
 	pool.commit(Vector3.ZERO, 0.0)
 	assert_eq(pool.lit_count, 4, "vehicles only take pooled lights nobody more important needs")
+
+
+func test_auto_quality_only_steps_down_when_slow_and_nobody_chose() -> void:
+	assert_true(FxAutoQuality.should_step_down(30.0, FxQuality.Tier.HIGH, true, 0.0), "slow frames at high step down")
+	assert_true(not FxAutoQuality.should_step_down(30.0, FxQuality.Tier.LOW, true, 0.0), "never below low")
+	assert_true(not FxAutoQuality.should_step_down(30.0, FxQuality.Tier.HIGH, false, 0.0), "a player's (or flag's) choice is respected")
+	assert_true(not FxAutoQuality.should_step_down(30.0, FxQuality.Tier.HIGH, true, 3.0), "cooldown between steps")
+	assert_true(not FxAutoQuality.should_step_down(17.0, FxQuality.Tier.HIGH, true, 0.0), "a 60 Hz frame is fine")
+
+
+func test_every_tier_budget_is_complete_and_ordered() -> void:
+	var keys := ["lights", "splats", "glow", "render_scale", "msaa", "shadows", "effects"]
+	for tier in FxQuality.SETTINGS:
+		for key in keys:
+			assert_true(FxQuality.SETTINGS[tier].has(key), "tier %s sets %s" % [FxQuality.NAMES[tier], key])
+	assert_true(FxQuality.SETTINGS[FxQuality.Tier.LOW]["effects"] <= FxQuality.SETTINGS[FxQuality.Tier.HIGH]["effects"], "fewer pooled effects on low")
+	assert_true(not FxQuality.SETTINGS[FxQuality.Tier.LOW]["shadows"], "no dynamic shadows on phones (+4.9 ms in the lab)")

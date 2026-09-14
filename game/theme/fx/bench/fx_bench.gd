@@ -39,6 +39,8 @@ const CONFIGS := {
 	"no_muzzle_flash": {"muzzle": false},
 	"unmerged_props": {"merge": false},
 	"naive": {"naive": true, "lights": 0},
+	"no_lasers": {"lasers": false},
+	"no_shields": {"shields": false},
 	"tier_low": {"tier": FxQuality.Tier.LOW},
 	"tier_medium": {"tier": FxQuality.Tier.MEDIUM},
 	"tier_high": {"tier": FxQuality.Tier.HIGH},
@@ -70,9 +72,15 @@ var _tracers := 0.0
 var _frames := 0
 var _worst_warmup := 0.0
 var _config_frames := 0
+var _hitches_logged := 0
+var _reported := false
+var _summary := ""
 var _seconds := 6.0
 var _loop := false
 var _default_slots: Dictionary
+var _shield_ratio: PackedFloat32Array = []
+## Seconds between laser pulses (4 laser tanks).
+const LASER_INTERVAL := 0.35
 
 
 func _ready() -> void:
@@ -124,6 +132,17 @@ func _process(delta: float) -> void:
 	if _config.get("fire", true):
 		_fire_due()
 	_move_shells(delta)
+	if _config.get("shields", true):
+		for i in _tanks.size():
+			if _shield_ratio[i] < 1.0:
+				_shield_ratio[i] = minf(1.0, _shield_ratio[i] + delta * 0.15)
+				(_tanks[i].get_child(0) as VisualSlot).invoke("set_shield", [_shield_ratio[i]])
+	if delta > 0.05 and _config_frames > 3 and _hitches_logged < 5:
+		_hitches_logged += 1
+		var fx_now := FxWorld.existing()
+		print("FX_BENCH_HITCH %.1f ms at t=%.2f config=%s shells=%d bursts=%d beams=%d lights=%d" % [delta * 1000.0, _time, _config_name,
+				_shells.get_child_count(), fx_now.bursts.started if fx_now else -1, fx_now.beams.active_count() if fx_now else -1,
+				fx_now.lights.lit_count if fx_now else -1])
 	if _time < WARMUP_SECONDS:
 		# The first frames of a config pay for its setup (rebuilding the floor, resizing the pool);
 		# after that, a spike here is a first-shot hitch (shader or light-variant compile).
@@ -155,13 +174,13 @@ func _start_next() -> void:
 	_config = CONFIGS[_config_name]
 	_reset_timeline()
 	_apply(_config)
-	_overlay.extra = "FX LAB: %s" % _config_name
+	_overlay.extra = ("%s\nlooping: %s" % [_summary, _config_name]) if _reported else "FX LAB: %s" % _config_name
 
 
 func _apply(config: Dictionary) -> void:
 	var fx := FxWorld.get_instance()
 	var tier: int = config.get("tier", FxQuality.Tier.HIGH)
-	FxQuality.set_tier(tier)
+	FxQuality.set_tier(tier, "bench")
 	var settings := FxQuality.current()
 	if fx != null:
 		fx.apply_quality()
@@ -176,7 +195,7 @@ func _apply(config: Dictionary) -> void:
 	viewport.msaa_3d = config.get("msaa", settings["msaa"])
 	viewport.scaling_3d_scale = config.get("render_scale", settings["render_scale"])
 	for light in _arena.find_children("*", "DirectionalLight3D", true, false):
-		(light as DirectionalLight3D).shadow_enabled = config.get("shadows", tier == FxQuality.Tier.HIGH)
+		(light as DirectionalLight3D).shadow_enabled = config.get("shadows", settings["shadows"])
 	var merge: bool = config.get("merge", true)
 	if merge != StaticBatcher.enabled:
 		StaticBatcher.enabled = merge
@@ -218,18 +237,30 @@ func _finish_config() -> void:
 	if flags.has("fx-bench-shot"):
 		var image := get_viewport().get_texture().get_image()
 		image.save_png(flags.text("fx-bench-shot").path_join("fx_%s.png" % _config_name))
+	if _queue.is_empty() and not _reported:
+		_report()
 	if _loop and _queue.is_empty():
-		_queue.append("all")
+		_queue.append("all")  # keep the firefight running for the on-screen overlay (phone tests)
 	_start_next()
 
 
 func _finish_all() -> void:
 	_config_name = ""
-	var summary := "FX LAB results\n"
+	if not _reported:
+		_report()
+	if not OS.has_feature("web"):
+		get_tree().quit()
+
+
+## Print the summary, write the JSON, and log FX_BENCH_DONE once, after the first full pass.
+func _report() -> void:
+	_reported = true
+	var summary := "FX LAB results (%s)\n" % RenderingServer.get_video_adapter_name()
 	for result in results:
 		summary += "%-24s %6.2f ms  p95 %6.2f  draws %4d  lights %4.1f\n" % [result["config"], result["avg_ms"],
 				result["p95_ms"], result["draw_calls"], result["lights_lit"]]
 	print(summary)
+	_summary = summary
 	_overlay.extra = summary
 	if flags.has("fx-bench-out"):
 		var file := FileAccess.open(flags.text("fx-bench-out"), FileAccess.WRITE)
@@ -237,8 +268,6 @@ func _finish_all() -> void:
 			file.store_string(JSON.stringify({"gpu": RenderingServer.get_video_adapter_name(),
 					"renderer": RenderingServer.get_current_rendering_method(), "results": results}, "  "))
 	print("FX_BENCH_DONE")
-	if not OS.has_feature("web"):
-		get_tree().quit()
 
 
 # ---- The scripted firefight ----------------------------------------------------------------
@@ -261,7 +290,7 @@ func _build_tanks() -> void:
 			turret.name = "Turret"
 			turret.position = Vector3(0.0, 1.22, 0.2)
 			tank.add_child(turret)
-			for slot_name in ["tank.turret", "weapon.cannon"]:
+			for slot_name in ["tank.turret", "weapon.laser" if i % 5 == 2 else "weapon.cannon"]:
 				var slot := VisualSlot.new()
 				slot.slot = slot_name
 				turret.add_child(slot)
@@ -276,8 +305,10 @@ func _reset_timeline() -> void:
 	_time = 0.0
 	_rng.seed = 12345
 	_next_fire.resize(_tanks.size())
+	_shield_ratio.resize(_tanks.size())
 	for i in _tanks.size():
 		_next_fire[i] = WARMUP_SECONDS * 0.2 + float(i) / _tanks.size() * FIRE_INTERVAL
+		_shield_ratio[i] = 1.0
 	_samples.clear()
 	_gpu_samples.clear()
 	_cpu_samples.clear()
@@ -289,29 +320,56 @@ func _reset_timeline() -> void:
 	_frames = 0
 	_worst_warmup = 0.0
 	_config_frames = 0
+	_hitches_logged = 0
 
 
 func _fire_due() -> void:
 	for i in _tanks.size():
 		if _time < _next_fire[i]:
 			continue
-		_next_fire[i] += FIRE_INTERVAL
 		var tank := _tanks[i]
 		var team: int = tank.get_meta("team")
-		var target := _tanks[(1 - team) * TANKS_PER_TEAM + _rng.randi_range(0, TANKS_PER_TEAM - 1)]
 		var turret := tank.get_node("Turret") as Node3D
+		var laser := (turret.get_child(1) as VisualSlot).slot == "weapon.laser"
+		_next_fire[i] += LASER_INTERVAL if laser else FIRE_INTERVAL
+		var target_index := (1 - team) * TANKS_PER_TEAM + _rng.randi_range(0, TANKS_PER_TEAM - 1)
+		var target := _tanks[target_index]
 		var aim := target.global_position - turret.global_position
 		turret.global_rotation.y = atan2(-aim.x, -aim.z)
 		var muzzle := turret.global_transform * Vector3(0.0, 0.05, -3.2)
+		if laser:
+			if _config.get("lasers", true):
+				_pulse(turret.get_child(1) as VisualSlot, muzzle, target.global_position + Vector3(0, 1.0, 0))
+				_hit_shield(target_index, 0.08)
+			continue
 		# Some shots miss and fly on to hit the ground past the target.
 		var miss := _rng.randf() < 0.3
 		var impact_point := target.global_position + Vector3(_rng.randf_range(-1, 1), 1.0, _rng.randf_range(-1, 1))
 		if miss:
 			impact_point += Vector3(_rng.randf_range(-6, 6), -1.0, (target.global_position.z - muzzle.z) * 0.3)
-		_spawn_shell(team, muzzle, impact_point, _rng.randf() < 0.15)
+		var shell := _spawn_shell(team, muzzle, impact_point, _rng.randf() < 0.15)
+		if not miss:
+			shell.target_index = target_index
 
 
-func _spawn_shell(team: int, from: Vector3, to: Vector3, big: bool) -> void:
+## A laser pulse exactly as Match.show_beam does it: a fresh slot, setup once, freed after 0.2 s.
+func _pulse(weapon: VisualSlot, from: Vector3, to: Vector3) -> void:
+	weapon.invoke("set_firing", [true])
+	var beam := VisualSlot.new()
+	beam.slot = "fx.laser_beam"
+	_effects.add_child(beam)
+	beam.invoke("setup", [from, to])
+	get_tree().create_timer(0.2).timeout.connect(beam.queue_free)
+
+
+func _hit_shield(index: int, amount: float) -> void:
+	if not _config.get("shields", true):
+		return
+	_shield_ratio[index] = maxf(0.0, _shield_ratio[index] - amount)
+	(_tanks[index].get_child(0) as VisualSlot).invoke("set_shield", [_shield_ratio[index]])
+
+
+func _spawn_shell(team: int, from: Vector3, to: Vector3, big: bool) -> BenchShell:
 	var shell := BenchShell.new()
 	shell.team = team
 	shell.target = to
@@ -322,6 +380,7 @@ func _spawn_shell(team: int, from: Vector3, to: Vector3, big: bool) -> void:
 	shell.add_child(slot)
 	_shells.add_child(shell)
 	shell.look_at(to, Vector3.UP)
+	return shell
 
 
 func _move_shells(delta: float) -> void:
@@ -331,6 +390,8 @@ func _move_shells(delta: float) -> void:
 		if to_target.length() <= step:
 			var impact: Node3D = NaiveImpact.new() if _config.get("naive", false) else Impact.new()
 			impact.set("big", shell.big)
+			if shell.target_index >= 0:
+				_hit_shield(shell.target_index, 0.25)
 			_effects.add_child(impact)
 			impact.global_position = shell.target
 			shell.free()
@@ -372,5 +433,6 @@ static func _percentile(values: PackedFloat32Array, fraction: float) -> float:
 
 class BenchShell extends Node3D:
 	var team := 0
+	var target_index := -1
 	var target := Vector3.ZERO
 	var big := false

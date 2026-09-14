@@ -71,6 +71,13 @@ func _init() -> void:
 	tracers.splats_enabled = FxQuality.value("splats")
 	for system in [lights, tracers, bursts, streaks, underglow, beams]:
 		add_child(system)
+	add_child(FxAutoQuality.new())
+	if LaunchFlags.from_environment().has("perf"):
+		add_child(PerfOverlay.new())
+
+
+func _ready() -> void:
+	_apply_viewport()
 
 
 func _process(delta: float) -> void:
@@ -85,7 +92,8 @@ func _process(delta: float) -> void:
 	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
 
 
-## Put one of each effect (near-invisible) and every pooled light just in front of the camera.
+## Put one of each effect (near-invisible) and every pooled light just in front of the camera, so
+## every FX shader, including ones first used mid-fight (shields, flames, beams), compiles at load.
 func _prewarm(camera: Camera3D) -> void:
 	_prewarm_frames += 1
 	if _prewarm_marker == null:
@@ -93,23 +101,51 @@ func _prewarm(camera: Camera3D) -> void:
 		_prewarm_marker.name = "PrewarmTracer"
 		add_child(_prewarm_marker)
 		tracers.add(_prewarm_marker, Color(0, 0, 0))
+		var shield := ShieldEffect.new(Vector3.ONE * 0.02)
+		_prewarm_marker.add_child(shield)
+		shield.set_shield(0.5)
+		for shader in [preload("res://game/theme/fx/shaders/flame_cone.gdshader"), preload("res://game/theme/fx/shaders/ground_glow.gdshader"),
+				preload("res://game/theme/fx/shaders/vehicle_glow.gdshader")]:
+			var piece := MeshInstance3D.new()
+			var quad := QuadMesh.new()
+			quad.size = Vector2.ONE * 0.02
+			var material := ShaderMaterial.new()
+			material.shader = shader
+			quad.material = material
+			piece.mesh = quad
+			_prewarm_marker.add_child(piece)
+		beams.add(_prewarm_marker, Vector3.ZERO, Vector3(0, 0, -0.1), Color(0, 0, 0), now)
 	var spot := camera.global_transform * Vector3(0, 0, -6)
 	_prewarm_marker.global_position = spot
+	beams.add(_prewarm_marker, spot, spot + camera.global_basis.x * 0.05, Color(0, 0, 0), now)
 	for kind in [BurstSystem.Kind.FIREBALL, BurstSystem.Kind.STAR, BurstSystem.Kind.GROUND_GLOW]:
 		bursts.spawn(kind, spot, 0.01, 0.05, Color(0, 0, 0), now)
 	for i in lights.lights.size():
 		lights.request(spot, Color(0, 0, 0), 0.001, 0.5, 100.0)
 	if _prewarm_frames >= PREWARM_FRAMES:
 		tracers.remove(_prewarm_marker)
+		beams.remove(_prewarm_marker)
 		_prewarm_marker.queue_free()
 
 
-## Apply the current FxQuality tier's budgets.
+## Apply the current FxQuality tier's budgets to every system and the 3D viewport. Scenes that
+## own tier-dependent settings (the environment's glow and shadows) listen to quality_changed.
 func apply_quality() -> void:
 	lights.resize(FxQuality.value("lights"))
 	bursts.resize(FxQuality.value("effects"))
 	tracers.splats_enabled = FxQuality.value("splats")
+	_apply_viewport()
 	quality_changed.emit()
+
+
+## 3D render scale (the UI stays crisp) and MSAA on the main viewport.
+func _apply_viewport() -> void:
+	var viewport := get_viewport()
+	if viewport == null:
+		return
+	viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	viewport.scaling_3d_scale = FxQuality.value("render_scale")
+	viewport.msaa_3d = FxQuality.value("msaa")
 
 
 ## A projectile visual appeared: draw it as a tracer and flash its muzzle.
