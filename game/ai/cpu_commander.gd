@@ -9,14 +9,14 @@ extends Node
 ##   nothing known         -> MOVE in a wedge toward the objective (the center if contested, else a
 ##                            point ahead, advancing), BOUND once within BOUND_RANGE of old contacts
 ##   enemies in sight      -> compare strength (hull + shield of our living tanks vs the enemies we
-##                            know about): ASSAULT when clearly stronger, BREAK CONTACT when clearly
-##                            weaker, otherwise HOLD facing them and let them come
+##                            know about): BREAK CONTACT when clearly weaker, otherwise ASSAULT (HOLD
+##                            only on a control point we own)
 ## A command is only re-issued when the verb changes or the destination moves by REISSUE_METERS,
 ## because every new order resets the brains' commitment.
 
 const THINK_TICKS := 120
 const ASSAULT_RATIO := 1.25
-const WITHDRAW_RATIO := 0.7
+const WITHDRAW_RATIO := 0.6
 const BOUND_RANGE := 110.0
 const REISSUE_METERS := 15.0
 ## How far ahead of the squad a movement leg goes when there's nothing to go for.
@@ -93,12 +93,17 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 	if visible_count > 0:
 		var threat := visible_sum / visible_count
 		var facing := threat - lead.global_position
-		if our_strength >= enemy_strength * ASSAULT_RATIO:
-			return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(threat), "formation": "line"}
 		if our_strength <= enemy_strength * WITHDRAW_RATIO:
 			return {"squad": squad.squad_name, "verb": "break_contact", "to": _clamp_xz(home)}
-		return {"squad": squad.squad_name, "verb": "hold", "to": _clamp_xz(lead.global_position),
-				"facing": [facing.x, facing.z], "formation": "line"}
+		if our_strength >= enemy_strength * ASSAULT_RATIO:
+			return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(threat), "formation": "line"}
+		# An even fight. v1 held here and lost 30 of 32 series matches to plain brains: with recharging
+		# shields, standing still while the other side presses is how you lose. Hold only on the
+		# objective; otherwise take the fight to them.
+		if game_match.control_point and game_match.control_owner == team and Match.in_control_zone(lead.global_position):
+			return {"squad": squad.squad_name, "verb": "hold", "to": _clamp_xz(lead.global_position),
+					"facing": [facing.x, facing.z], "formation": "line"}
+		return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(threat), "formation": "line"}
 
 	var goal: Vector3
 	if game_match.control_point and game_match.control_owner != team:

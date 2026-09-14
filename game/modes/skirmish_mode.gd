@@ -5,7 +5,7 @@ extends GameMode
 ##   --player=DOCTRINE (default player_default; must fit --budget, default Units.DEFAULT_BUDGET)
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
 ##   --seed=N (the CPU army's seed; default: the clock)   --control (a control point at the center)
-##   --no-commander (the CPU army's squads fight without a CpuCommander issuing orders)
+##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
 
@@ -45,8 +45,9 @@ func start() -> void:
 	game_match.elimination = true
 	# Stretch: --control adds a control point at the center (first to 90 points, or elimination).
 	game_match.control_point = flags.has("control")
-	# Stretch: the CPU army gets a commander that issues squad orders (--no-commander turns it off).
-	if not flags.has("no-commander"):
+	# Stretch: --commander gives the CPU army a CpuCommander that issues squad orders. Opt-in: v1 made
+	# the CPU weaker (see _agents/balance.md), so it stays off until a series shows it helps.
+	if flags.has("commander"):
 		var commander := CpuCommander.new()
 		commander.name = "CpuCommander"
 		commander.game_match = game_match

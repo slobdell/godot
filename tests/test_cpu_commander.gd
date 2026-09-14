@@ -42,7 +42,7 @@ func test_plans_follow_the_strength_of_what_it_sees() -> void:
 	assert_eq(commander.plan_for(guns, by_name)["verb"], "break_contact", "against 6 tanks: pull back")
 	game_match.intel[Match.Team.RUST].clear()
 	_spot(game_match, 3, Vector3(-10, 0, 20))
-	assert_eq(commander.plan_for(guns, by_name)["verb"], "hold", "an even fight: hold and let them come")
+	assert_eq(commander.plan_for(guns, by_name)["verb"], "assault", "an even fight: take it to them (holding lost 30 of 32)")
 
 
 func test_it_commands_gun_squads_only_and_does_not_spam_orders() -> void:

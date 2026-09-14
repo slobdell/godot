@@ -281,15 +281,14 @@ func _apply_weapon(cmd: TankCommand) -> void:
 			return
 		"fire_at_will":
 			if tanks_root != null:
-				target = Perception.nearest_enemy(tank, tanks_root, true, tank.weapon["range"])
+				target = _nearest_shootable()
 		"target":
 			if tanks_root != null:
 				var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
-				if named != null and named.is_alive() and named.team != tank.team \
-						and visible_enemy_names.has(named.name):
+				if named != null and named.is_alive() and named.team != tank.team and _shootable(named):
 					target = named
 				elif weapon_order.get("fallback", false):
-					target = Perception.nearest_enemy(tank, tanks_root, true, tank.weapon["range"])
+					target = _nearest_shootable()
 	if target == null:
 		if watch_point != null:
 			_cover((watch_point as Vector3), cmd)
@@ -309,6 +308,27 @@ func _apply_weapon(cmd: TankCommand) -> void:
 		in_range = false
 	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
 	cmd.fire = in_range and aimed and tank.ready_to_fire()
+
+
+## Direct fire needs a clear line of sight from this tank AND the target being seen: by the team when a
+## spotter is set (brains: a scout's sight lets a tank use its full gun range), else by this tank.
+func _shootable(enemy: Tank) -> bool:
+	if tank.global_position.distance_to(enemy.global_position) > float(tank.weapon["range"]):
+		return false
+	var seen: bool = spotter.call(enemy) if spotter.is_valid() \
+			else tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius
+	return seen and Perception.has_line_of_sight(tank, enemy)
+
+
+func _nearest_shootable() -> Tank:
+	var best: Tank = null
+	var best_distance := INF
+	for enemy in Perception.enemies_of(tank, tanks_root):
+		var distance := tank.global_position.distance_to(enemy.global_position)
+		if distance < best_distance and _shootable(enemy):
+			best = enemy
+			best_distance = distance
+	return best
 
 
 ## ARC weapons: lob at a spotted enemy inside the [min_range, range] window, leading it by the flight time.
