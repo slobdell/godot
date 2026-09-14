@@ -36,10 +36,10 @@ const DEFAULT_UI := {
 
 ## The night arena (look_and_feel.md): neon over rust, cyan vs magenta teams.
 const CYBERPUNK_SLOTS := {
-	"tank.hull": "res://game/theme/default/tank_hull.tscn",
-	"tank.turret": "res://game/theme/default/tank_turret.tscn",
-	"weapon.cannon": "res://game/theme/default/weapon_cannon.tscn",
-	"weapon.flamethrower": "res://game/theme/default/weapon_flamethrower.tscn",
+	"tank.hull": "res://game/theme/cyberpunk/tank_hull.tscn",
+	"tank.turret": "res://game/theme/cyberpunk/tank_turret.tscn",
+	"weapon.cannon": "res://game/theme/cyberpunk/weapon_cannon.tscn",
+	"weapon.flamethrower": "res://game/theme/cyberpunk/weapon_flamethrower.tscn",
 	"fx.shell": "res://game/theme/cyberpunk/fx_shell.tscn",
 	"prop.crate": "res://game/theme/cyberpunk/prop_crate.tscn",
 	"prop.wall": "res://game/theme/cyberpunk/prop_wall.tscn",
@@ -47,7 +47,8 @@ const CYBERPUNK_SLOTS := {
 	"arena.dressing": "res://game/theme/cyberpunk/arena_dressing.tscn",
 }
 
-const CYBERPUNK_TEAM_COLORS := [Color(0.1, 0.32, 0.4), Color(0.45, 0.08, 0.3)]
+## Vehicle parts receive the team's neon and derive their dark paint from it (cyber_vehicle.gd).
+const CYBERPUNK_TEAM_COLORS := [Color("#00F3FF"), Color("#FF0099")]
 const CYBERPUNK_TEAM_GLOWS := [Color("#00F3FF"), Color("#FF0099")]
 
 const CYBERPUNK_UI := {
@@ -62,7 +63,7 @@ const THEMES := {
 	"cyberpunk": {"slots": CYBERPUNK_SLOTS, "team_colors": CYBERPUNK_TEAM_COLORS, "team_glows": CYBERPUNK_TEAM_GLOWS, "ui": CYBERPUNK_UI},
 }
 
-const DEFAULT_THEME := "default"
+const DEFAULT_THEME := "cyberpunk"
 
 static var theme_name := DEFAULT_THEME
 static var slots: Dictionary = DEFAULT_SLOTS

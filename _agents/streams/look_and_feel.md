@@ -158,6 +158,20 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   wide emissive top. Screenshots: `build/screenshots/l2_skirmish_before.png` → `l2_skirmish.png`,
   `l2_follow.png`; the default look for comparison: `l2_skirmish_default.png`.
 
+- **L3 vehicles** (cyberpunk `tank.hull`, `tank.turret`, `weapon.cannon`, `weapon.flamethrower`):
+  Death Race scrap tanks built procedurally by `ColorMeshBuilder` (vertex-colored boxes/cylinders →
+  **one mesh, two surfaces: lit + neon; every tank shares the same two materials**; team color lives
+  in vertex colors). Treads with neon seams, rust skirts, ram spikes, headlights, exhaust stacks,
+  team neon deck stripes/rear bar, turret crest stripe (heading reads from above), antenna; cannon
+  with team rings and muzzle brake whose rings glow via `set_heat` (an `instance uniform`); a
+  flamethrower with a turbulent additive flame cone, ground glow, and a pooled light while firing.
+  Team colors are now neon **cyan `#00F3FF` vs magenta `#FF0099`** (paint is derived dark), plus a
+  team **underglow** under every visible vehicle. Tracers and flipbook explosions from L0.
+  `make vehicle-gallery` → `build/screenshots/vehicle-gallery.png`; combat: `build/screenshots/fx/fx_all.png`.
+  **The cyberpunk theme is now the default** (`--theme=default` brings back the boxes); `make
+  web-smoke` boots it in the browser with every shader compiling on WebGL 2 (`build/screenshots/web.png`).
+  4 tests in `tests/test_theme_vehicles.gd`.
+
 #### Frame budget per quality tier (from L0; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows |
 |---|---|---|---|---|---|---|---|---|
@@ -193,7 +207,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- L3 vehicles (in progress), then switch the default theme.
+- L4 HUD restyle (in progress).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

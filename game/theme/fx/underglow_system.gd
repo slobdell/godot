@@ -8,7 +8,7 @@ extends Node3D
 const WORLD_AABB := AABB(Vector3(-200, -5, -200), Vector3(400, 20, 400))
 
 var size := Vector2(5.2, 6.2)
-var intensity := 0.75
+var intensity := 1.1
 var light_energy := 1.4
 var light_range := 7.0
 var lights_enabled := true
