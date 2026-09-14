@@ -107,7 +107,7 @@ static func generated_dir(theme: String) -> String:
 
 ## Writes <dir>/<file>.tscn instancing <file>.glb under the GeneratedVisual script.
 ## `materials`: {tint: [...], team_emissive: [...], heat: [...], shield: [...]} material-name globs.
-static func write_wrapper(theme: String, slot: String, materials: Dictionary = {}) -> String:
+static func write_wrapper(theme: String, slot: String, materials: Dictionary = {}, tint_strength := 1.0) -> String:
 	var contract := AssetContracts.get_contract(slot)
 	var file: String = contract["file"]
 	var dir := generated_dir(theme)
@@ -130,6 +130,8 @@ static func write_wrapper(theme: String, slot: String, materials: Dictionary = {
 			for glob in globs:
 				quoted.append("\"%s\"" % glob)
 			lines.append("%s = PackedStringArray(%s)" % [key[1], ", ".join(quoted)])
+	if tint_strength < 1.0:
+		lines.append("tint_strength = %s" % snappedf(tint_strength, 0.01))
 	lines.append_array(["", "[node name=\"Model\" parent=\".\" instance=ExtResource(\"2_model\")]", ""])
 	var handle := FileAccess.open(path, FileAccess.WRITE)
 	handle.store_string("\n".join(lines))

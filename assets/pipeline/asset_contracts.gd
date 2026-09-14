@@ -23,7 +23,13 @@ const MAX_TEXTURE := 1024
 ## A normalized model is "at the right size" when bounds sit within this fraction of the target.
 const SIZE_TOLERANCE := 0.05
 ## ...and when it fills at least this much of the guide on its tightest axis (contain fits).
-const MIN_FILL := 0.85
+const MIN_FILL := 0.8
+## From game/tank/tank.tscn: the turret pivot's height above the ground. The turret contract puts the turret's
+## bottom at this height − 0.275 (the default hull deck); taller hulls raise turret + cannon visuals by
+## (hull roof − that deck) so the turret sits on the roof (options.raise, recorded in the manifest).
+const TURRET_PIVOT_Y := 1.22
+const DEFAULT_DECK_Y := TURRET_PIVOT_Y - 0.275
+
 ## Anchor positions must match within this many meters.
 const ANCHOR_TOLERANCE := 0.05
 

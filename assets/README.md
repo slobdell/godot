@@ -89,8 +89,23 @@ make check            # the whole game still works
 
 - **Build them in code:** `assets/pipeline/procedural_kit.gd` makes neon containers, barriers, and billboards from
   boxes and cylinders. Copy one function, change the numbers, and run `make assets-procedural`.
-- **AI generation** (needs a paid account): `make assets-generate PROVIDER=meshy SLOT=tank.hull PROMPT="…"`.
-  Good prompts are in `_agents/streams/references/asset_prompts.md`.
+- **AI generation with Meshy** (paid account; key in `MESHY_API_KEY`). This is how the prison dozer was made; the full flow and
+  exact commands are in `_agents/streams/references/asset_prompts.md`, and the style rules in `_agents/art_direction.md`:
+  1. make a photoreal concept image, then look at it (`tools/assets/generate.py --concept-only --prompt "…"`);
+  2. turn the one you like into 3D (`--image-task <concept id> --smart-topology`);
+  3. split and fit it with a recipe like `tools/assets/build_prison_dozer.sh`, then look at it with `make assets-unit THEME=…`.
+
+  Extra settings for whole generated vehicles:
+
+  | setting | what it does |
+  |---|---|
+  | `--split=tank` | the generator gives one big mesh; this cuts it into hull, turret, and cannon pieces |
+  | `--deck-from=tank.hull` | lifts the turret and gun onto a tall hull's roof |
+  | `--attach-to=tank.turret` | keeps the gun exactly where it was on the turret, stretched to where shells come out |
+  | `--emission-energy=4` | makes generated neon bright enough for the night arena |
+  | `--tint-strength=0.2` | how much team color shows through the dirt (0 = none, 1 = fully painted) |
+
+  If an agent can't see your key, see *Proposed orientation trip-ups* 5 in `_agents/streams/assets.md`.
 
 ## When something looks wrong
 

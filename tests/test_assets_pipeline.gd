@@ -91,6 +91,16 @@ func test_cannon_muzzle_lands_where_gameplay_fires_from() -> void:
 	assert_eq(AssetChecker.check_report(report, "weapon.cannon")["errors"], PackedStringArray(), "the cannon meets its contract")
 
 
+func test_a_barrel_at_hull_scale_only_stretches_along_its_axis() -> void:
+	var model := _free_later(_tank_model(10.0))
+	var result := AssetNormalizer.normalize(model, "weapon.cannon", {"forward": "+x", "include": ["gun"], "scale": 0.05})
+	var report := AssetInspector.inspect(_free_later(result["scene"]))
+	var aabb: AABB = report["aabb"]
+	assert_near(aabb.size.x, 0.1, 0.01, "the barrel keeps the hull's scale across its section (0.1 m thick)")
+	assert_near(aabb.size.z, 2.5, 0.01, "and stretches along its axis to the 2.5 m barrel")
+	assert_eq(AssetChecker.check_report(report, "weapon.cannon")["errors"], PackedStringArray(), "and still meets the cannon contract")
+
+
 func test_props_stretch_to_their_collision_footprint() -> void:
 	var root: Node3D = _free_later(Node3D.new())
 	_add_box(root, "Container", Vector3(2.0, 2.6, 6.0), Vector3(5, 10, 5), "rust")
@@ -330,6 +340,84 @@ func test_wrapper_shield_fades_with_strength_and_hides_when_down() -> void:
 	assert_near(material.albedo_color.a, 0.175, 0.001, "a half shield is half as opaque")
 	wrapper.call("set_shield", 0.0)
 	assert_true(not bubble.visible, "a downed shield hides the bubble")
+
+
+## A generated tank the way Meshy's Smart Topology delivers it: ONE mesh made of disconnected islands
+## (body, two treads, turret, cupola, barrel), facing +X, 1 unit long.
+func _single_mesh_tank() -> Node3D:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var material := StandardMaterial3D.new()
+	material.resource_name = "material_0"
+	for piece in [[Vector3(0.8, 0.2, 0.5), Vector3(0, 0.1, 0)],  # body (deck at 0.2)
+			[Vector3(0.9, 0.12, 0.08), Vector3(0, 0.06, 0.3)], [Vector3(0.9, 0.12, 0.08), Vector3(0, 0.06, -0.3)],  # treads
+			[Vector3(0.3, 0.12, 0.28), Vector3(-0.05, 0.26, 0)],  # turret
+			[Vector3(0.08, 0.04, 0.08), Vector3(-0.08, 0.34, 0)],  # cupola, touching the turret
+			[Vector3(0.45, 0.04, 0.04), Vector3(0.32, 0.26, 0)],  # barrel, pointing +X from the turret
+			# a bolt on the turret's back edge, then a row of touching roof rivets running to the back of the deck
+			[Vector3(0.06, 0.02, 0.03), Vector3(-0.23, 0.21, 0.1)], [Vector3(0.06, 0.02, 0.03), Vector3(-0.28, 0.21, 0.1)],
+			[Vector3(0.06, 0.02, 0.03), Vector3(-0.33, 0.21, 0.1)], [Vector3(0.06, 0.02, 0.03), Vector3(-0.38, 0.21, 0.1)]]:
+		var box := BoxMesh.new()
+		box.size = piece[0]
+		tool.append_from(box, 0, Transform3D(Basis(), piece[1]))
+	tool.set_material(material)
+	var instance := MeshInstance3D.new()
+	instance.name = "Mesh"
+	instance.mesh = tool.commit()
+	var root := Node3D.new()
+	root.add_child(instance)
+	return root
+
+
+func test_a_whole_generated_tank_splits_into_hull_turret_and_cannon_slots() -> void:
+	var model: Node3D = _free_later(_single_mesh_tank())
+	assert_eq(AssetSplitter.split_islands(model), 10, "the single mesh separates into its ten islands")
+	var counts := AssetSplitter.label_tank(model, "+x", "+y")
+	assert_eq(counts, {"hull": 7, "turret": 2, "cannon": 1},
+			"deck-level bolts and the rivet row running along the roof stay hull; turret + cupola rotate; the barrel is the cannon")
+	var hull := AssetNormalizer.normalize(model, "tank.hull", {"forward": "+x", "exclude": ["turret_*", "cannon_*"]})
+	var hull_report := AssetInspector.inspect(_free_later(hull["scene"]))
+	assert_eq(AssetChecker.check_report(hull_report, "tank.hull")["errors"], PackedStringArray(), "the hull part meets tank.hull")
+	var turret := AssetNormalizer.normalize(model, "tank.turret", {"forward": "+x", "include": ["turret_*"], "scale": (hull["scale"] as Vector3).x})
+	var turret_report := AssetInspector.inspect(_free_later(turret["scene"]))
+	assert_eq(AssetChecker.check_report(turret_report, "tank.turret")["errors"], PackedStringArray(), "the turret part meets tank.turret")
+	var cannon := AssetNormalizer.normalize(model, "weapon.cannon", {"forward": "+x", "include": ["cannon_*"]})
+	var cannon_report := AssetInspector.inspect(_free_later(cannon["scene"]))
+	assert_eq(AssetChecker.check_report(cannon_report, "weapon.cannon")["errors"], PackedStringArray(), "the barrel meets weapon.cannon")
+
+
+func test_a_tall_hull_lifts_turret_and_cannon_onto_its_roof() -> void:
+	var model: Node3D = _free_later(_single_mesh_tank())
+	AssetSplitter.split_islands(model)
+	AssetSplitter.label_tank(model, "+x", "+y")
+	var raise := 0.6  # e.g. a prison-bus hull whose roof is 0.6 m above the default deck
+	var turret := AssetNormalizer.normalize(model, "tank.turret", {"forward": "+x", "include": ["turret_*"], "raise": raise})
+	var turret_report := AssetInspector.inspect(_free_later(turret["scene"]))
+	assert_near((turret_report["aabb"] as AABB).position.y, -0.275 + raise, 0.01, "the turret sits on the taller roof, not inside it")
+	assert_eq(AssetChecker.check_report(turret_report, "tank.turret", raise)["errors"], PackedStringArray(), "with the recorded raise the turret meets its contract")
+	assert_true(AssetChecker.check_report(turret_report, "tank.turret")["errors"].size() > 0, "without it the lifted turret is reported as misplaced")
+	var cannon := AssetNormalizer.normalize(model, "weapon.cannon", {"forward": "+x", "include": ["cannon_*"], "raise": raise})
+	var cannon_report := AssetInspector.inspect(_free_later(cannon["scene"]))
+	assert_near((cannon_report["aabb"] as AABB).get_center().y, 0.05 + raise, 0.01, "the barrel rises with the turret")
+	assert_near((cannon_report["aabb"] as AABB).position.z, -3.2, 0.01, "but the muzzle stays at the gameplay firing distance")
+
+
+func test_a_barrel_attached_to_its_turret_keeps_the_generated_placement() -> void:
+	var model: Node3D = _free_later(_single_mesh_tank())
+	AssetSplitter.split_islands(model)
+	AssetSplitter.label_tank(model, "+x", "+y")
+	var turret := AssetNormalizer.normalize(model, "tank.turret", {"forward": "+x", "include": ["turret_*"], "scale": 3.0, "raise": 0.4})
+	var turret_aabb: AABB = AssetInspector.inspect(_free_later(turret["scene"]))["aabb"]
+	var cannon := AssetNormalizer.normalize(model, "weapon.cannon", {"forward": "+x", "include": ["cannon_*"],
+			"attach": {"scale": (turret["scale"] as Vector3).x, "offset": turret["offset"]}})
+	var report := AssetInspector.inspect(_free_later(cannon["scene"]))
+	var aabb: AABB = report["aabb"]
+	# Source: the turret box spans y 0.20–0.32 with its front face at x = 0.10; the barrel's axis is at y 0.26 and its
+	# breech overlaps the turret by 0.005. At scale 3 those relationships must survive exactly.
+	assert_near(aabb.end.z, turret_aabb.position.z + 0.005 * 3.0, 0.005, "the breech stays tucked into the turret's front face")
+	assert_near(aabb.get_center().y, turret_aabb.position.y + 0.06 * 3.0, 0.005, "the barrel comes out at the height it was generated at")
+	assert_near(aabb.position.z, -3.2, 0.01, "the muzzle still reaches the gameplay firing point")
+	assert_eq(AssetChecker.check_report(report, "weapon.cannon", 0.0, true)["errors"], PackedStringArray(), "an attached barrel meets its contract")
 
 
 func test_committed_generated_themes_meet_their_contracts() -> void:

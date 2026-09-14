@@ -6,7 +6,9 @@ extends RefCounted
 
 
 ## Returns {errors: PackedStringArray, warnings: PackedStringArray}.
-static func check_report(report: Dictionary, slot: String) -> Dictionary:
+## raise: the manifest's options.raise for this slot (turret/barrel anchors lifted onto a tall hull's roof).
+## attached: a barrel placed by its turret (options.attach): only the muzzle point and cross-section are enforced.
+static func check_report(report: Dictionary, slot: String, raise := 0.0, attached := false) -> Dictionary:
 	var errors := PackedStringArray()
 	var warnings := PackedStringArray()
 	var contract := AssetContracts.get_contract(slot)
@@ -39,7 +41,13 @@ static func check_report(report: Dictionary, slot: String) -> Dictionary:
 					errors.append("size %s doesn't match the collision box %s" % [_v(size), _v(guide)])
 					break
 		"length":
-			if absf(size.z - guide.z) > guide.z * tolerance:
+			var muzzle := float(contract.get("barrel_back", 0.0)) - guide.z
+			if attached:
+				if absf(aabb.position.z - muzzle) > near * 2:
+					errors.append("muzzle is at z = %.2f; gameplay fires from %.2f" % [aabb.position.z, muzzle])
+				if aabb.end.z > 0.5 or aabb.end.z < muzzle * 0.5:
+					errors.append("breech at z = %.2f isn't near the turret pivot" % aabb.end.z)
+			elif absf(size.z - guide.z) > guide.z * tolerance:
 				errors.append("length %.2f m should be %.2f m" % [size.z, guide.z])
 			if size.x > max_size.x * (1 + tolerance) or size.y > max_size.y * (1 + tolerance):
 				errors.append("cross-section %.2f × %.2f m exceeds %.2f × %.2f m" % [size.x, size.y, max_size.x, max_size.y])
@@ -55,15 +63,19 @@ static func check_report(report: Dictionary, slot: String) -> Dictionary:
 			if center.length() > near * 2:
 				errors.append("center is at %s; it should be at the origin" % _v(center))
 		"turret":
-			if absf(aabb.position.y - float(contract["turret_bottom"])) > near:
-				errors.append("bottom is at y = %.2f; it should be at %.2f (hull deck)" % [aabb.position.y, contract["turret_bottom"]])
+			var bottom := float(contract["turret_bottom"]) + raise
+			if absf(aabb.position.y - bottom) > near:
+				errors.append("bottom is at y = %.2f; it should be at %.2f (hull deck)" % [aabb.position.y, bottom])
 			if absf(center.x) > near * 4 or absf(center.z) > near * 6:
 				errors.append("turret center is at (%.2f, %.2f); the pivot should be near its middle" % [center.x, center.z])
+		"barrel" when attached:
+			pass  # placement comes from the turret; the muzzle was checked above
 		"barrel":
 			if absf(aabb.end.z - float(contract["barrel_back"])) > near * 2:
 				errors.append("back end is at z = %.2f; it should be at %.2f" % [aabb.end.z, contract["barrel_back"]])
-			if absf(center.x) > near or absf(center.y - float(contract["barrel_y"])) > near * 2:
-				errors.append("barrel axis is at (x %.2f, y %.2f); it should be at (0, %.2f)" % [center.x, center.y, contract["barrel_y"]])
+			var axis := float(contract["barrel_y"]) + raise
+			if absf(center.x) > near or absf(center.y - axis) > near * 2:
+				errors.append("barrel axis is at (x %.2f, y %.2f); it should be at (0, %.2f)" % [center.x, center.y, axis])
 
 	match String(contract["elongated"]):
 		"z":
@@ -120,7 +132,8 @@ static func check_theme(theme: String) -> Dictionary:
 			continue
 		var report := AssetInspector.inspect(model)
 		model.free()
-		var result := check_report(report, slot)
+		var options: Dictionary = entry.get("options", {})
+		var result := check_report(report, slot, float(options.get("raise", 0.0)), options.has("attach"))
 		var aabb: AABB = report["aabb"]
 		lines.append("%s: %d tris, %.2f × %.2f × %.2f m, %d materials, %.0f KB textures%s" % [prefix, report["tris"],
 				aabb.size.x, aabb.size.y, aabb.size.z, report["materials"].size(), report["texture_bytes"] / 1024.0,

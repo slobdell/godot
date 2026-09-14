@@ -42,7 +42,7 @@ assets-mock: ## Serve the mock Meshy/Tripo API on 127.0.0.1:8799 (point generate
 	$(PYTHON) tools/assets/mock_provider.py 8799
 
 # ---- Looking at models (need a display; short windowed runs) -----------------------------------
-.PHONY: assets-gallery assets-preview assets-kitbash assets-procedural assets-report assets-web-gallery
+.PHONY: assets-gallery assets-preview assets-kitbash assets-procedural assets-report assets-web-gallery assets-unit assets-prison-dozer
 SCREEN ?= 1600x900
 
 # build/.gdignore: without it Godot imports every screenshot PNG and exports them into the web .pck.
@@ -57,6 +57,13 @@ assets-preview: import ## Screenshot the real game with THEME's generated slots 
 	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
 	timeout 120 $(GODOT) --path . --resolution $(SCREEN) res://assets/pipeline/theme_preview.tscn -- --theme=$(THEME) \
 		$(or $(FLAGS),--demo) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/assets-preview-$(THEME)-$(SCREEN).png
+
+assets-unit: import ## Close-up turnaround of THEME's assembled tank (hull + turret + cannon), day and night [SCREEN=900x600]
+	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
+	for light in day night; do \
+		timeout 120 $(GODOT) --path . --resolution 900x600 --script res://assets/pipeline/unit_view.gd -- \
+			$(THEME) $(CURDIR)/$(BUILD_DIR)/screenshots/$(THEME)-unit-$$light.png $$light | grep UNIT_VIEW; \
+	done
 
 assets-procedural: import ## A4: build the procedural neon kit (containers, barriers, poles, billboards, scrap) into THEME=neon_kit
 	$(GODOT) --headless --path . --script res://assets/pipeline/procedural_kit.gd -- --theme=$(if $(filter command line,$(origin THEME)),$(THEME),neon_kit)
@@ -74,6 +81,9 @@ assets-web-gallery: import $(TEMPLATES_OK) $(WEB_SMOKE_DEPS) ## Render a theme's
 	CHROME=$(CHROME) tools/assets/web_gallery.sh $(GODOT) $(THEME) $(SMOKE_PORT) \
 		$(BUILD_DIR)/screenshots/assets-web-gallery-$(THEME)$(if $(ONLY),-$(ONLY))$(if $(NIGHT),-night).png \
 		"$(if $(ONLY),&only=$(ONLY))$(if $(NIGHT),&night)"
+
+assets-prison-dozer: ## Rebuild the prison_dozer theme (the art-direction north star, Meshy-generated) from its recipe
+	tools/assets/build_prison_dozer.sh
 
 assets-kitbash: ## Rebuild the kitbash theme from its recipe: fetch CC0 sources, normalize every slot (tools/assets/build_kitbash.sh)
 	tools/assets/build_kitbash.sh

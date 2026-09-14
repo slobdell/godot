@@ -1,8 +1,7 @@
 # Prompt library and style guide for AI-generated models
 
-> Assets stream, 2026-09-14. Use with `make assets-generate` once a key exists
-> ([asset_services.md](asset_services.md): Meshy first). Untested against a real generator (no key
-> overnight): treat these as a starting point and record what works in the **Results log** below.
+> Assets stream, 2026-09-14. Proven against Meshy on 2026-09-14 (the lead's key): the production flow below produced
+> the `prison_dozer` unit. Record new runs in the **Results log** at the bottom.
 
 ## The look: see [../../art_direction.md](../../art_direction.md) (source of truth)
 
@@ -16,15 +15,25 @@ Game budgets (triangles, textures) are enforced by the 3D step and the normalize
 1. **Concept** (text-to-image, `nano-banana-pro`): start from the art direction prompt, swap the base vehicle and weapon.
    Generate several directions, and pick one with the lead.
 2. **Turnaround** (image-to-image with the chosen concept as reference, `--multi-view`) so the 3D step sees every side.
-3. **3D** (multi-image-to-3D `meshy-7` for detail, or image-to-3D Smart Topology for separated parts), textured with PBR.
-4. **Split + normalize** into the unit's slots, team paint + neon accents, then gallery / in-game / browser review.
+3. **3D: image-to-3D Smart Topology (`meshy-t2`) from the chosen 3/4 concept**, textured with PBR. It won the side-by-side
+   against multi-image `meshy-7` Ultra from the turnaround: T2 kept the neon bars, hazard stripes, red lights and emission map
+   and delivers the model as ~280 separate islands (so turret and gun split cleanly); meshy-7 came back as a fused mesh with a
+   flat dark texture and no emission map. Keep the turnaround for reference and for later meshy-7 experiments.
+4. **Split + fit** with `--split=tank` (islands labelled hull/turret/cannon by geometry), `--scale-from`/`--deck-from`
+   (turret on a tall hull's roof), `--attach-to=tank.turret` (the gun stays where it was generated, stretched only
+   along its axis to the gameplay muzzle point), `--emission-energy` (generated emission maps come in dim).
+   Recipe: `tools/assets/build_prison_dozer.sh`. Review with `make assets-unit THEME=<theme>` (close-up, day/night),
+   `make assets-preview`, `make assets-web-gallery`.
 
 ```bash
 tools/assets/generate.py --provider meshy --slot unit.tank --concept-only --prompt "<art direction prompt>" --name meshy/<unit>
 tools/assets/generate.py --provider meshy --slot unit.tank --concept-only --reference assets/incoming/meshy/<unit>.concept.png \
     --multi-view --prompt "The same vehicle, identical design, turnaround views" --name meshy/<unit>_turn
+tools/assets/generate.py --provider meshy --slot unit.tank --image-task <chosen concept task id> \
+    --smart-topology --polycount 15000 --name meshy/<unit>
+# (alternative, compared and not chosen for the dozer:)
 tools/assets/generate.py --provider meshy --slot unit.tank --multi-image --image-task <turnaround task id> \
-    --ai-model meshy-7 --ultra --polycount 30000 --name meshy/<unit>
+    --ai-model meshy-7 --ultra --polycount 30000 --name meshy/<unit>_m7
 ```
 
 ## Rules that make generated models pipeline-friendly
@@ -98,8 +107,13 @@ make assets-gallery THEME=<theme>                                           # lo
 Check in the gallery: does the cannon's red muzzle marker sit at the barrel tip? Does the team tint land on
 the paint and not the treads? Does anything glow?
 
-## Results log (fill in once keys exist)
+## Results log
 
-| date | provider / model | slot | prompt id | tris out | worked? | notes |
-|---|---|---|---|---:|---|---|
-| | | | | | | |
+| date | step / model | input | output | credits | verdict |
+|---|---|---|---|---:|---|
+| 2026-09-14 | text-to-image nano-banana-pro | "stylized, low-poly-friendly, plain light grey panels" tank prompt | toy-like cartoon tank (`tank_v1`) | 9 | **rejected by the lead** ("looks like a cartoon"): never put game-budget words in concept prompts |
+| 2026-09-14 | image-to-3D meshy-t2 | `tank_v1` concept | faithful 11.9k-tri model, 212 islands | 15 | faithful, but faithful to a rejected concept |
+| 2026-09-14 | text-to-image nano-banana-pro ×3 | photoreal prompts: A Mad Max scrap, **B Death Race prison dozer**, C Blade Runner raider | three strong concepts | 27 | **B picked** as the art-direction north star |
+| 2026-09-14 | image-to-image nano-banana-pro, multi-view | concept B | consistent front/back/side turnaround (needs edge-sliver trimming) | 9 | good |
+| 2026-09-14 | image-to-3D **meshy-t2**, PBR | concept B (3/4 view) | 14.6k tris, 282 islands, base/normal/roughness/metallic/**emission** 2k | 15 | **chosen**: neon, stripes, lights kept; clean split |
+| 2026-09-14 | multi-image-to-3D meshy-7 Ultra, PBR | concept B + 3 turnaround views | 30k tris fused, no emission map | ~35 | not chosen: flat dark texture, neon lost |

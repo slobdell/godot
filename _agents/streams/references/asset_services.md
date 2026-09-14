@@ -11,6 +11,19 @@ the live docs before shipping the real client (the mock server can use this file
 
 ---
 
+## Verified with a live Meshy key (2026-09-14)
+
+The lead's account (Pro) was used end to end with `tools/assets/generate.py`; the documented API matched reality.
+- `GET /openapi/v1/balance` → `{"balance": N}` works (free); the client's request/poll/download flow worked on the first real call.
+- **Text-to-image / image-to-image** (`nano-banana-pro`, 9 credits each) take `remove_background`; `generate_multi_view` returns three
+  images (front, back, side), which need their edges trimmed of neighbour slivers.
+- **Image-to-3D `meshy-t2` (Smart Topology) with `enable_pbr` returned an `emission` map**, contrary to the changelog note
+  below (meshy-6 only). It returned ~15k tris as ONE mesh of ~280 disconnected islands (the "separated parts"), plus 2048²
+  base/normal/roughness/metallic/emission maps. 15 credits.
+- **Multi-image-to-3D `meshy-7` Ultra** returned a 30k-tri fused mesh with no emission map (~35 credits).
+- Total for the first production unit, including rejected and compared variants: 110 credits. Results log:
+  [asset_prompts.md](asset_prompts.md#results-log).
+
 ## 1. Hosted services
 
 ### 1.1 Meshy (meshy.ai): recommended first

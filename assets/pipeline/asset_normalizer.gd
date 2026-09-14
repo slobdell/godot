@@ -31,6 +31,11 @@ const AXES := {
 ##   scale (0)       fixed uniform scale instead of the slot's fit (keep a hull and turret consistent)
 ##   emissive {}     material-name glob → energy: emission = albedo color/texture (neon from paint)
 ##   tris (0)        override the slot's triangle budget
+##   attach {}       barrels only: {scale, offset} of the turret normalized from the same model. The barrel keeps
+##                   exactly where the generator attached it to the turret and only stretches along its axis
+##                   until the muzzle reaches the gameplay firing point.
+##   raise (0)       lift turret/barrel anchors by this many meters (a tall hull's roof is above the default deck)
+##   emission_energy (0) set the emission energy of every emissive material (generated emission maps come in dim)
 ##   palette (false) merge flat-colored materials into one `vertex_palette` material (albedo → vertex colors):
 ##                   one draw call instead of one per color. Textured, emissive, transparent materials and
 ##                   names matching `keep` globs (team tint, neon, heat) stay separate.
@@ -40,6 +45,7 @@ const AXES := {
 ## Returns {scene: Node3D, notes: PackedStringArray, scale: Vector3, source: report}.
 static func normalize(source: Node, slot: String, options: Dictionary = {}) -> Dictionary:
 	var contract := AssetContracts.get_contract(slot)
+	contract["raise"] = float(options.get("raise", 0.0))
 	var notes := PackedStringArray()
 	if contract.is_empty():
 		notes.append("unknown slot '%s'" % slot)
@@ -58,14 +64,18 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 		parts = _tile(parts, repeat)
 		notes.append("tiled the model %d × %d × %d" % [repeat.x, repeat.y, repeat.z])
 	var oriented := _bounds(parts)
-	var fit := _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
-	var groups := _merge_by_material(parts, fit["transform"], notes)
+	var attach: Dictionary = options.get("attach", {})
+	var fit := _attached_barrel(oriented, contract, attach, notes) if not attach.is_empty() and String(contract["anchor"]) == "barrel" \
+			else _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
+	var groups := _merge_by_material(parts, fit["transform"], notes, true)
 	if options.get("palette", false):
 		groups = _palette(groups, options.get("keep", []) + options.get("emissive", {}).keys(), notes)
 	var budget := int(options.get("tris", 0)) if int(options.get("tris", 0)) > 0 else int(contract["tris"])
-	var mesh := _build_mesh(groups, budget, notes)
-	_reanchor(mesh, contract)
-	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}))
+	var mesh := _merge_surfaces_by_material(_build_mesh(groups, budget, notes))
+	if attach.is_empty():
+		_reanchor(mesh, contract)  # an attached barrel keeps the turret's placement instead
+	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}),
+			float(options.get("emission_energy", 0.0)))
 
 	var root := Node3D.new()
 	root.name = String(contract["file"]).to_pascal_case()
@@ -74,7 +84,7 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 	instance.mesh = mesh
 	root.add_child(instance)
 	instance.owner = root
-	return {"scene": root, "notes": notes, "scale": fit["scale"]}
+	return {"scene": root, "notes": notes, "scale": fit["scale"], "offset": (fit["transform"] as Transform3D).origin}
 
 
 ## Rotation taking the source's forward/up axes to Godot's −Z/+Y.
@@ -154,6 +164,12 @@ static func _fit_transform(bounds: AABB, contract: Dictionary, fixed_scale: floa
 			scale = Vector3(s, s, s)
 	if fixed_scale > 0.0:
 		scale = Vector3(fixed_scale, fixed_scale, fixed_scale)
+		if String(contract["fit"]) == "length":
+			# A barrel at its hull's scale keeps its proportions across the section and only stretches along
+			# its axis to reach the gameplay muzzle point (uniform length fits made generated guns bloated).
+			scale.z = guide.z / safe.z
+			if absf(scale.z / fixed_scale - 1.0) > 0.01:
+				notes.append("barrel stretched ×%.2f along its axis to reach the muzzle point" % (scale.z / fixed_scale))
 	var scaled := AABB(bounds.position * scale, bounds.size * scale)
 	var center := scaled.get_center()
 	var offset := Vector3.ZERO
@@ -163,16 +179,31 @@ static func _fit_transform(bounds: AABB, contract: Dictionary, fixed_scale: floa
 		"center":
 			offset = -center
 		"turret":
-			offset = Vector3(-center.x, float(contract["turret_bottom"]) - scaled.position.y, -center.z)
+			offset = Vector3(-center.x, float(contract["turret_bottom"]) + float(contract.get("raise", 0.0)) - scaled.position.y, -center.z)
 		"barrel":
-			offset = Vector3(-center.x, float(contract["barrel_y"]) - center.y,
+			offset = Vector3(-center.x, float(contract["barrel_y"]) + float(contract.get("raise", 0.0)) - center.y,
 					float(contract["barrel_back"]) - scaled.end.z)
 	return {"transform": Transform3D(Basis.from_scale(scale), offset), "scale": scale}
 
 
+static func _attached_barrel(bounds: AABB, contract: Dictionary, attach: Dictionary, notes: PackedStringArray) -> Dictionary:
+	var s := float(attach["scale"])
+	var offset: Vector3 = attach["offset"]
+	var muzzle_z := float(contract["barrel_back"]) - (contract["guide"] as Vector3).z
+	var placed_back := s * bounds.end.z + offset.z
+	var span := s * (bounds.position.z - bounds.end.z)  # negative: the muzzle is toward -Z
+	var k := (muzzle_z - placed_back) / span if absf(span) > 1e-6 else 1.0
+	notes.append("barrel kept on the turret (breech at z %.2f) and stretched ×%.2f to the muzzle point" % [placed_back, k])
+	var scale := Vector3(s, s, s * k)
+	var origin := Vector3(offset.x, offset.y, placed_back - s * k * bounds.end.z)
+	return {"transform": Transform3D(Basis.from_scale(scale), origin), "scale": scale}
+
+
 ## Bakes transforms and concatenates surfaces per material. Returns [{material, arrays}].
-static func _merge_by_material(parts: Array, fit: Transform3D, notes: PackedStringArray) -> Array:
-	var groups := {}  # material (or "none") → {material, vertex, normal, tangent, color, uv, uv2, index}
+## per_part keeps each source part (island) as its own group, so decimation can simplify big parts
+## first; _merge_surfaces_by_material() joins them per material afterwards.
+static func _merge_by_material(parts: Array, fit: Transform3D, notes: PackedStringArray, per_part := false) -> Array:
+	var groups := {}  # material (or "none") [+ part] → {material, vertex, normal, tangent, color, uv, uv2, index}
 	var order := []
 	for part in parts:
 		var instance: MeshInstance3D = part[0]
@@ -190,6 +221,8 @@ static func _merge_by_material(parts: Array, fit: Transform3D, notes: PackedStri
 			if material == null:
 				material = mesh.surface_get_material(surface)
 			var key: Variant = material if material != null else "none"
+			if per_part:
+				key = "%s#%d" % [key, parts.find(part)]
 			if not groups.has(key):
 				groups[key] = {"material": material, "vertex": PackedVector3Array(), "normal": PackedVector3Array(),
 						"tangent": PackedFloat32Array(), "color": PackedColorArray(), "uv": PackedVector2Array(),
@@ -367,6 +400,30 @@ static func _build_mesh(groups: Array, budget: int, notes: PackedStringArray) ->
 	return mesh
 
 
+## One surface per material (one draw call each), concatenating the per-part surfaces decimation worked on.
+static func _merge_surfaces_by_material(source: ArrayMesh) -> ArrayMesh:
+	var groups := {}
+	var order := []
+	for surface in source.get_surface_count():
+		var material := source.surface_get_material(surface)
+		var key: Variant = material if material != null else "none"
+		if not groups.has(key):
+			groups[key] = {"material": material, "vertex": PackedVector3Array(), "normal": PackedVector3Array(),
+					"tangent": PackedFloat32Array(), "color": PackedColorArray(), "uv": PackedVector2Array(),
+					"uv2": PackedVector2Array(), "index": PackedInt32Array(),
+					"has_tangent": false, "has_color": false, "has_uv": false, "has_uv2": false}
+			order.append(key)
+		_append_surface(groups[key], source.surface_get_arrays(surface), Transform3D.IDENTITY, Basis(), false)
+	var mesh := ArrayMesh.new()
+	for key in order:
+		var group: Dictionary = groups[key]
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, _group_arrays(group))
+		var index := mesh.get_surface_count() - 1
+		mesh.surface_set_material(index, group["material"])
+		mesh.surface_set_name(index, (group["material"] as Material).resource_name if group["material"] != null else "")
+	return mesh
+
+
 ## Drops vertices no triangle uses any more (decimation leaves them behind): they'd bloat the GLB and
 ## skew bounds, and glTF importers strip them anyway, so the checked model would differ from the shipped one.
 static func _compact(arrays: Array) -> Array:
@@ -448,7 +505,7 @@ static func _commit(mesh: ArrayMesh, importer: ImporterMesh, surface: int, array
 
 ## Copies each material, caps its textures, strips unsupported features, applies emissive rules.
 static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dictionary, notes: PackedStringArray,
-		emission_maps: Dictionary = {}) -> void:
+		emission_maps: Dictionary = {}, emission_energy := 0.0) -> void:
 	var resized := {}
 	for surface in mesh.get_surface_count():
 		var source := mesh.surface_get_material(surface)
@@ -460,6 +517,9 @@ static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dict
 		var material := source.duplicate() as Material
 		if material is BaseMaterial3D:
 			var base := material as BaseMaterial3D
+			if emission_energy > 0.0 and base.emission_enabled:
+				base.emission_energy_multiplier = emission_energy
+				notes.append("material '%s' emission energy ×%.1f" % [base.resource_name, emission_energy])
 			for glob in emission_maps:
 				if base.resource_name.matchn(String(glob)):
 					base.emission_enabled = true

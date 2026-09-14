@@ -1,0 +1,138 @@
+{
+  "slots": {
+    "tank.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "tank_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "decimated 13694 → 7987 triangles (budget 8000)",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 1024×1024",
+        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          0.003,
+          1.0086,
+          0.0
+        ],
+        "fitted_scale": 3.0739586353302,
+        "forward": "-x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "roof": 1.6,
+      "scene": "tank_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a09ff4-4b17-76af-8ed1-4d7f2e8d7c9d from nano-banana-pro concept 01a09fec-d5c3-700a-bce1-3cdf54384292",
+      "tris": 7703.0
+    },
+    "tank.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "tank_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 1024×1024",
+        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.0,
+          -0.1513,
+          -0.7234
+        ],
+        "fitted_scale": 3.0739586353302,
+        "forward": "-x",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "raise": 0.655,
+        "scale": 3.0739586353302,
+        "up": "+y"
+      },
+      "roof": 0.845,
+      "scene": "tank_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a09ff4-4b17-76af-8ed1-4d7f2e8d7c9d from nano-banana-pro concept 01a09fec-d5c3-700a-bce1-3cdf54384292",
+      "tris": 488.0
+    },
+    "weapon.cannon": {
+      "credit": "Generated with Meshy",
+      "glb": "weapon_cannon.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "barrel kept on the turret (breech at z -0.23) and stretched ×2.18 to the muzzle point",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 1024×1024",
+        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "attach": {
+          "offset": [
+            0.0,
+            -0.151299998164177,
+            -0.723399996757507
+          ],
+          "scale": 3.0739586353302
+        },
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.0,
+          -0.1513,
+          -1.3128
+        ],
+        "fitted_scale": 3.0739586353302,
+        "forward": "-x",
+        "include": [
+          "cannon_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": []
+        },
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "roof": 0.749,
+      "scene": "weapon_cannon.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a09ff4-4b17-76af-8ed1-4d7f2e8d7c9d from nano-banana-pro concept 01a09fec-d5c3-700a-bce1-3cdf54384292",
+      "tris": 434
+    }
+  },
+  "theme": "prison_dozer"
+}

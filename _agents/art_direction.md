@@ -57,6 +57,12 @@ For a new unit, keep everything and swap the **base vehicle** and the **weapon**
 ambulance / rally truck*; artillery: *a converted garbage truck / crane carrier with a mortar battery*. Prompt
 library and pipeline: `streams/references/asset_prompts.md`.
 
+## First production unit
+
+The concept above is now in the game as theme `prison_dozer` (Meshy image-to-3D, split into hull / turret / cannon):
+`make assets-unit THEME=prison_dozer` renders it. How it was made and what to reuse: `streams/assets.md` (update
+2026-09-14) and `streams/references/asset_prompts.md`.
+
 ## Where this is referenced
 
 `HANDOFF.md`, `vision.md` (the look), `workstreams.md` (product constraint 2), `streams/look_and_feel.md`,

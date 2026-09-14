@@ -53,6 +53,20 @@ MultiMesh tracers anyway). A `radial_segments = 6, rings = 1` capsule would be a
 | `kit.scrap_pile` | 360 / 1500 | 3 | 128², 128² | 171 | 43 | 18 |
 | **total** | 1622 | 26 | | 1195 | 299 | 91 |
 
+### `prison_dozer` (Meshy-generated, split from one model)
+
+| slot | tris / budget | draw calls | textures | RGBA8 KB | VRAM KB | pack KB |
+|---|---:|---:|---|---:|---:|---:|
+| `tank.hull` | 7703 / 8000 | 1 | 1024² ×4 (base, normal, ORM, emission) | 21845 | 1365 | 3776 |
+| `tank.turret` | 488 / 4000 | 1 | same set, **duplicated** | 21845 | 1365 | 3469 |
+| `weapon.cannon` | 434 / 2000 | 1 | same set, **duplicated** | 21845 | 1365 | 3466 |
+| **total** | 8625 | 3 | | 65536 | 4096 | **10710** |
+
+**Finding:** a unit split into three slot GLBs carries three identical texture sets, which is ~10.7 MB of web download
+for one tank (the whole pack was ~1 MB before). The draw calls are excellent (1 per part), and GPU memory is fine once Basis
+transcodes (~1.4 MB per set). The pack size needs one shared texture set per unit (assets.md next step 1). Normal maps
+dominate after the albedo; dropping or halving them for the turret and cannon is the next lever if needed.
+
 ### What a match costs (today's arena: 11 crates, 8 walls, from `game/arena/arena.tscn`; 10 tanks)
 
 | theme | prop tris | prop draw calls | tank tris (10×) | tank draw calls (10×) |
