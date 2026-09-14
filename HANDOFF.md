@@ -3,7 +3,7 @@
 > **Read [`_agents/orientation.md`](_agents/orientation.md) first.** Then, if you're a workstream
 > agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-13. The repo is prepared for **parallel workstreams**._
+_Last updated: 2026-09-14. The repo is prepared for **parallel workstreams**; gameplay and look & feel have concrete directives from the lead._
 
 ## Current state (main)
 
@@ -18,8 +18,8 @@ _Last updated: 2026-09-13. The repo is prepared for **parallel workstreams**._
 
 | Stream | Brief | First milestone |
 |---|---|---|
-| Gameplay | [streams/gameplay.md](_agents/streams/gameplay.md) | Playtest-driven: objectives/abilities/anti-snowball, measured with the match runner |
-| Look & feel | [streams/look_and_feel.md](_agents/streams/look_and_feel.md) | A `cyberpunk` theme filling every visual slot; HUD restyle |
+| Gameplay | [streams/gameplay.md](_agents/streams/gameplay.md) | Directive set 1: line-of-sight fog of war, radar, responsive commands, RTS 3D camera, turrets that fight while moving, Halo-style shields. Next: budgeted army (scouts/tanks/artillery) |
+| Look & feel | [streams/look_and_feel.md](_agents/streams/look_and_feel.md) | Port the mavlink-hud cyberpunk HUD (CyberFrame, CyberBanner, Conductors) via `Hud.post_message`; then a `cyberpunk` theme filling every visual slot |
 | Assets | [streams/assets.md](_agents/streams/assets.md) | One AI-generated tank in a test theme + `make assets-check` |
 | Netcode | [streams/netcode.md](_agents/streams/netcode.md) | Broker (lobbies + relay), then a deterministic-core spike |
 | Garage | [streams/garage.md](_agents/streams/garage.md) | Loadout schema + garage scene producing a playable doctrine |
@@ -36,5 +36,5 @@ Setup (git worktrees, shared toolchain), ownership, contracts, and merge invaria
 ## Open decisions for the lead
 
 1. **Netcode direction** (streams/netcode.md): OK to ship casual matches player-hosted through a relay first, while a deterministic-simulation spike decides whether cheat-resistant lockstep is feasible?
-2. **Which streams to start first,** and who merges (you, or an integrator agent)?
+2. **Starting streams:** gameplay and look & feel are ready (`make worktree STREAM=gameplay OFFSET=1`, `make worktree STREAM=look_and_feel OFFSET=2`). Who merges: you, or an integrator agent?
 3. Still open from before: the flamethrower trade-off (now part of the gameplay stream), your son's Godot version and OS.
