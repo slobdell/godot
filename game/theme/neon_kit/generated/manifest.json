@@ -1,0 +1,145 @@
+{
+  "slots": {
+    "kit.barrier": {
+      "credit": "Tank Squad assets stream",
+      "glb": "kit_barrier.glb",
+      "license": "project-owned (procedurally generated)",
+      "notes": [],
+      "options": {
+        "materials": {
+          "heat": [],
+          "team_emissive": [
+            "neon_team*"
+          ],
+          "tint": [
+            "paint*"
+          ]
+        }
+      },
+      "scene": "kit_barrier.tscn",
+      "source": "res://assets/pipeline/procedural_kit.gd (seed 20260914)",
+      "tris": 56
+    },
+    "kit.billboard": {
+      "credit": "Tank Squad assets stream",
+      "glb": "kit_billboard.glb",
+      "license": "project-owned (procedurally generated)",
+      "notes": [],
+      "options": {
+        "materials": {
+          "heat": [],
+          "team_emissive": [
+            "neon_team*"
+          ],
+          "tint": [
+            "paint*"
+          ]
+        }
+      },
+      "scene": "kit_billboard.tscn",
+      "source": "res://assets/pipeline/procedural_kit.gd (seed 20260914)",
+      "tris": 62
+    },
+    "kit.container": {
+      "credit": "Tank Squad assets stream",
+      "glb": "kit_container.glb",
+      "license": "project-owned (procedurally generated)",
+      "notes": [],
+      "options": {
+        "materials": {
+          "heat": [],
+          "team_emissive": [
+            "neon_team*"
+          ],
+          "tint": [
+            "paint*"
+          ]
+        }
+      },
+      "scene": "kit_container.tscn",
+      "source": "res://assets/pipeline/procedural_kit.gd (seed 20260914)",
+      "tris": 360
+    },
+    "kit.light_pole": {
+      "credit": "Tank Squad assets stream",
+      "glb": "kit_light_pole.glb",
+      "license": "project-owned (procedurally generated)",
+      "notes": [],
+      "options": {
+        "materials": {
+          "heat": [],
+          "team_emissive": [
+            "neon_team*"
+          ],
+          "tint": [
+            "paint*"
+          ]
+        }
+      },
+      "scene": "kit_light_pole.tscn",
+      "source": "res://assets/pipeline/procedural_kit.gd (seed 20260914)",
+      "tris": 192
+    },
+    "kit.scrap_pile": {
+      "credit": "Tank Squad assets stream",
+      "glb": "kit_scrap_pile.glb",
+      "license": "project-owned (procedurally generated)",
+      "notes": [],
+      "options": {
+        "materials": {
+          "heat": [],
+          "team_emissive": [
+            "neon_team*"
+          ],
+          "tint": [
+            "paint*"
+          ]
+        }
+      },
+      "scene": "kit_scrap_pile.tscn",
+      "source": "res://assets/pipeline/procedural_kit.gd (seed 20260914)",
+      "tris": 360
+    },
+    "prop.crate": {
+      "credit": "Tank Squad assets stream",
+      "glb": "prop_crate.glb",
+      "license": "project-owned (procedurally generated)",
+      "notes": [],
+      "options": {
+        "materials": {
+          "heat": [],
+          "team_emissive": [
+            "neon_team*"
+          ],
+          "tint": [
+            "paint*"
+          ]
+        }
+      },
+      "scene": "prop_crate.tscn",
+      "source": "res://assets/pipeline/procedural_kit.gd (seed 20260914)",
+      "tris": 324
+    },
+    "prop.wall": {
+      "credit": "Tank Squad assets stream",
+      "glb": "prop_wall.glb",
+      "license": "project-owned (procedurally generated)",
+      "notes": [],
+      "options": {
+        "materials": {
+          "heat": [],
+          "team_emissive": [
+            "neon_team*"
+          ],
+          "tint": [
+            "paint*"
+          ]
+        }
+      },
+      "scene": "prop_wall.tscn",
+      "source": "res://assets/pipeline/procedural_kit.gd (seed 20260914)",
+      "tris": 268
+    }
+  },
+  "theme": "neon_kit"
+}

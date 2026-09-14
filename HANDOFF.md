@@ -26,7 +26,7 @@ _Last updated: 2026-09-14. **Five stream agents are set up to run overnight with
 
 **Kickoff for any stream agent** (in its worktree): *"You are the `<stream>` agent. Execute, iterate,
 and smoke test toward completion without my input."* The docs carry the rest (workstreams.md →
-*Autonomous mandate*). **Standing product constraints:** mobile first (taps, swipes, buttons), and a
+*Autonomous mandate*). **Art direction source of truth: [`_agents/art_direction.md`](_agents/art_direction.md)** (the "Death Race prison dozer" north star, chosen by the lead 2026-09-14). **Standing product constraints:** mobile first (taps, swipes, buttons), and a
 dark neon cyberpunk arena where lighting is part of the fun.
 
 Setup (git worktrees, shared toolchain), ownership, contracts, and merge invariants:

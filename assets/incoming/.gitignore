@@ -1,0 +1,4 @@
+# Raw downloads and provider outputs: large, re-fetchable (make assets-kitbash / assets-generate).
+*
+!.gitignore
+!.gdignore

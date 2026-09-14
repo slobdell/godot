@@ -23,7 +23,9 @@
    (`input_devices/pointing/emulate_touch_from_mouse`) or `InputEventScreenTouch`/`ScreenDrag`
    events in tests.
 2. **The vibe:** a cyberpunk gladiator arena, *Mad Max × Death Race × Blade Runner*: a dark
-   atmosphere lit by neon and weapon fire. **Lighting is a core part of the fun**, not polish
+   atmosphere lit by neon and weapon fire. **The style source of truth is [art_direction.md](art_direction.md)**, whose
+   "Death Race prison dozer" north star the lead picked on 2026-09-14: repurposed real vehicles brutally converted
+   (slab armor, grilles, chains, spikes, hazard stripes, grime), neon behind grilles, photoreal, never cartoon. **Lighting is a core part of the fun**, not polish
    (streams/look_and_feel.md).
 3. **Web and phones:** Compatibility renderer, 60 fps on a mid-range phone, one simulation that
    runs headless on a server.
