@@ -8,7 +8,7 @@ extends RefCounted
 ## "a component whose stats mention heat". When gameplay adds scouts, lasers, or heat sinks, the same
 ## archetypes start using them.
 ##
-## Per squad: share (of the army's units), formations (one is picked), role, close_share (fraction of
+## Per squad: share (of the army's units), formations (one is picked; player presets only), role, close_share (fraction of
 ## its units that mount the shortest-range weapon instead of the longest), objective (CPU only;
 ## [min, max] ranges in team-relative meters, mirrored left/right at random when mirror is true), and
 ## directive (extra Directives keys; [min, max] ranges are rolled). Player presets drop objectives
@@ -105,7 +105,10 @@ static func build(archetype: String, catalog: GarageCatalog, seed_value: int, fo
 		loadout.set_squad_role(squad_index, squad_spec["role"])
 		var squad_data := loadout.squad(squad_index)
 		if not for_player:
+			# A doctrine formation means "form up and HOLD here" (Squad.apply_command), so a CPU squad
+			# with one never leaves its base. CPU squads rely on objectives and directives instead.
 			squad_data.erase("verb")
+			squad_data.erase("formation")
 			var directive: Dictionary = squad_data["directive"]
 			for key: String in squad_spec.get("directive", {}):
 				directive[key] = _roll(rng, squad_spec["directive"][key])
@@ -212,5 +215,6 @@ static func _component_matching(catalog: GarageCatalog, keyword: String) -> Stri
 
 static func _roll(rng: RandomNumberGenerator, value: Variant) -> Variant:
 	if typeof(value) == TYPE_ARRAY:
-		return snappedf(rng.randf_range(float(value[0]), float(value[1])), 0.05)
+		# Twentieths, computed so the double is the nearest one to its decimal (it survives JSON exactly).
+		return roundf(rng.randf_range(float(value[0]), float(value[1])) * 20.0) / 20.0
 	return value

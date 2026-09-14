@@ -42,4 +42,4 @@ garage-e2e: import ## GA3: build an army with the garage's Loadout API, save it 
 PRESET ?= balanced
 
 garage-cpu-army: import ## Write a seeded CPU army (PRESET=balanced|rush|turtle|flamers SEED=1) to user://doctrines/cpu/, e.g. for make skirmish ENEMY=<printed path>
-	$(GODOT) --headless --path . --script res://tests/garage/build_army.gd -- --preset=$(PRESET) --seed=$(SEED) 2>&1 | grep -E 'GARAGE_ARMY|ERROR'
+	$(GODOT) --headless --path . --script res://tests/garage/build_army.gd -- --preset=$(PRESET) --seed=$(SEED) 2>&1 | grep -E 'GARAGE_ARMY|GARAGE_CODE|ERROR'

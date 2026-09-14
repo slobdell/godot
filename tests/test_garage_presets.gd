@@ -89,8 +89,11 @@ func test_player_presets_hold_without_objectives() -> void:
 		for squad in ArmyPresets.build(archetype, GarageCatalog.from_game(), 1, true).squads():
 			assert_eq(squad.get("verb"), "hold", "%s preset squads wait for the player's orders" % archetype)
 			assert_true(not squad["directive"].has("objective"), "%s preset squads have no CPU objective" % archetype)
-	for squad in ArmyPresets.build("balanced", GarageCatalog.from_game(), 1).squads():
-		assert_true(not squad.has("verb"), "CPU squads don't wait for orders")
+	for archetype in ArmyPresets.ids():
+		for squad in ArmyPresets.build(archetype, GarageCatalog.from_game(), 1).squads():
+			assert_true(not squad.has("verb"), "%s CPU squads don't wait for orders" % archetype)
+			# Found by the archetype match series: a doctrine formation alone makes a squad hold at base.
+			assert_true(not squad.has("formation"), "%s CPU squads carry no formation (it would hold them at base)" % archetype)
 
 
 func test_cpu_armies_load_into_a_match() -> void:

@@ -70,6 +70,20 @@ static func from_doctrine(p_catalog: GarageCatalog, doctrine: Dictionary) -> Loa
 	return loadout
 
 
+## Make this an army the PLAYER commands: every squad starts formed up and holding for tactical-map
+## orders, with no CPU objective. The garage applies it to anything it opens (loads, presets, codes).
+func make_player_army() -> void:
+	for squad_data in squads():
+		squad_data["verb"] = "hold"
+		if not squad_data.has("formation"):
+			squad_data["formation"] = Formations.DEFAULT
+		if typeof(squad_data.get("directive")) == TYPE_DICTIONARY:
+			squad_data["directive"].erase("objective")
+		for tank in squad_data.get("tanks", []):
+			if typeof(tank.get("directive")) == TYPE_DICTIONARY:
+				tank["directive"].erase("objective")
+
+
 # ---- Reading --------------------------------------------------------------------------
 
 func squads() -> Array:

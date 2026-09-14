@@ -8,7 +8,7 @@ extends Control
 ##            Tap a unit chip to equip it; drag a chip onto another squad to move it.
 ##   EQUIP    the selected unit on a turntable (swipe to spin): a weapon per hardpoint (tap, or drag a
 ##            weapon chip onto the hardpoint), components, role, paint, remove.
-##   TOP      army name, budget bar, presets, load, save.   BOTTOM  problems, enemy, FIGHT.
+##   TOP      army name, budget bar, presets, load, save, share (army codes).   BOTTOM  problems, enemy, FIGHT.
 ##
 ## All rules live in Loadout; this file only shows them. Colors come from GameTheme.ui (look & feel
 ## owns them) with garage-specific keys falling back to placeholders here.
@@ -50,6 +50,8 @@ var _load_menu: OptionButton
 var _preset_menu: OptionButton
 var _enemy_menu: OptionButton
 var _toast: Label
+var _share_panel: PanelContainer
+var _code_edit: LineEdit
 var _toast_left := 0.0
 
 
@@ -165,6 +167,9 @@ func _build() -> void:
 	_toast.visible = false
 	add_child(_toast)
 
+	_build_share_panel()
+	move_child(_toast, get_child_count() - 1)
+
 	_turntable = GarageTurntable.new()
 	_turntable.name = "Turntable"
 	_turntable.custom_minimum_size = Vector2(0, 200 * ui_scale)
@@ -223,6 +228,9 @@ func _build_top_bar() -> Control:
 	bar.add_child(_load_menu)
 	_fill_load_menu()
 	bar.add_child(_button("SAVE", func() -> void: save()))
+	var share := _button("SHARE", func() -> void: toggle_share(true))
+	share.name = "Share"
+	bar.add_child(share)
 	return bar
 
 
@@ -301,6 +309,48 @@ func _button(text: String, on_press: Callable, toggled := false) -> Button:
 	button.button_pressed = toggled
 	button.pressed.connect(on_press)
 	return button
+
+
+## An overlay with the army's code: copy it to share, or paste a friend's code and import it.
+func _build_share_panel() -> void:
+	_share_panel = PanelContainer.new()
+	_share_panel.name = "SharePanel"
+	_share_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_share_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_share_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_share_panel.custom_minimum_size = Vector2(620 * ui_scale, 0)
+	_share_panel.add_theme_stylebox_override("panel", _panel_style(_color("commander"), 3))
+	_share_panel.visible = false
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", int(10 * ui_scale))
+	_share_panel.add_child(rows)
+	rows.add_child(_section("ARMY CODE"))
+	var hint := _label("Copy this code to share your army, or paste a friend's code and tap IMPORT.", 0.85)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rows.add_child(hint)
+	_code_edit = LineEdit.new()
+	_code_edit.name = "CodeEdit"
+	_code_edit.custom_minimum_size.y = TAP * ui_scale
+	_code_edit.select_all_on_focus = true
+	rows.add_child(_code_edit)
+	var buttons := HBoxContainer.new()
+	buttons.alignment = BoxContainer.ALIGNMENT_END
+	buttons.add_theme_constant_override("separation", int(10 * ui_scale))
+	var copy := _button("COPY", func() -> void:
+		DisplayServer.clipboard_set(_code_edit.text)
+		_show_toast("Army code copied", false))
+	copy.name = "Copy"
+	buttons.add_child(copy)
+	var import := _button("IMPORT", func() -> void:
+		if import_code(_code_edit.text) == "":
+			toggle_share(false))
+	import.name = "Import"
+	buttons.add_child(import)
+	var close := _button("CLOSE", func() -> void: toggle_share(false))
+	close.name = "Close"
+	buttons.add_child(close)
+	rows.add_child(buttons)
+	add_child(_share_panel)
 
 
 # ---- Catalog ------------------------------------------------------------------------------
@@ -658,6 +708,7 @@ func set_loadout(new_loadout: Loadout) -> void:
 	if loadout != null and loadout.changed.is_connected(_refresh):
 		loadout.changed.disconnect(_refresh)
 	loadout = new_loadout
+	loadout.make_player_army()
 	loadout.changed.connect(_refresh)
 	selected_squad = 0
 	selected_unit = 0 if not loadout.unit_at(0, 0).is_empty() else -1
@@ -675,6 +726,22 @@ func apply_preset(archetype: String) -> void:
 		set_loadout(ArmyPresets.build(archetype, catalog, preset_seed, true))
 		preset_seed += 1
 	_show_toast("Preset: %s" % loadout.army["name"], false)
+
+
+func toggle_share(open: bool) -> void:
+	_code_edit.text = ArmyCode.encode(loadout)
+	_share_panel.visible = open
+
+
+## Replace the army with the one in `code`. Returns "" or the reason (also shown as a toast).
+func import_code(code: String) -> String:
+	var decoded := ArmyCode.decode(code, loadout.catalog)
+	if decoded.has("error"):
+		return _act(String(decoded["error"]))
+	set_loadout(decoded["loadout"])
+	var problems := loadout.problems()
+	_show_toast("Imported %s" % loadout.army["name"] if problems.is_empty() else "Imported, but: " + problems[0], not problems.is_empty())
+	return ""
 
 
 ## Saves under the army's name. Returns the path, or "" (with a toast) on failure.

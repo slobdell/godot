@@ -5,6 +5,7 @@ extends GameMode
 ## spawned yet, so no scene reload is needed).
 ##   --enemy=OPPONENT      preselect the opponent: cpu:<archetype> (ArmyPresets, default cpu:balanced) or a doctrine
 ##   --seed=N              seed for a cpu:<archetype> army (default: random each fight)
+##   --army=CODE           open with a shared army code (ArmyCode; browser: ?garage&army=CODE)
 ##   --garage-autofight    tap FIGHT as soon as the garage opens (smoke tests, screenshots of the handover)
 ## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> green=<tanks> rust=<tanks>
 ## when the skirmish starts.
@@ -30,6 +31,8 @@ func start() -> void:
 	_layer.add_child(screen)
 	main.add_child(_layer)
 	screen.fight_requested.connect(fight)
+	if flags.has("army"):
+		screen.import_code(flags.text("army"))
 	if flags.has("garage-autofight"):
 		screen.fight.call_deferred()
 

@@ -1,7 +1,7 @@
 extends SceneTree
 ## GA3 helper (`make garage-e2e`): builds an army through the garage's own Loadout API, the way a
 ## player would (mixed weapons, three squads, roles, paint), and saves it where the garage saves.
-## Prints GARAGE_ARMY <path> <cost>. Not a test_* file, so `make test` doesn't run it.
+## Prints GARAGE_ARMY <path> <cost> and GARAGE_CODE <army code>. Not a test_* file, so `make test` doesn't run it.
 ##   -- --stem=NAME  (default garage_e2e)
 ##   -- --preset=ARCHETYPE --seed=N   write a CPU army (ArmyPresets) to user://doctrines/cpu/<archetype>_<seed>.json instead
 
@@ -26,6 +26,7 @@ func _initialize() -> void:
 		var cpu := ArmyPresets.build(preset, catalog, seed_value)
 		var written := ArmyStore.save(cpu.to_doctrine(), "%s_%d" % [preset, seed_value], GarageMode.CPU_DIR)
 		print("GARAGE_ARMY %s %d" % [written.get("path", written.get("error")), cpu.total_cost()])
+		print("GARAGE_CODE %s" % ArmyCode.encode(cpu))
 		quit(0 if written.has("path") and cpu.is_ready() else 1)
 		return
 	var loadout := Loadout.new(catalog)
@@ -52,6 +53,7 @@ func _initialize() -> void:
 		quit(1)
 		return
 	print("GARAGE_ARMY %s %d" % [saved["path"], loadout.total_cost()])
+	print("GARAGE_CODE %s" % ArmyCode.encode(loadout))
 	quit(0)
 
 

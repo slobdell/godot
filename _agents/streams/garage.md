@@ -77,6 +77,15 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   writes one for `make skirmish ENEMY=<path>`. 8 tests in `tests/test_garage_presets.gd`, incl. a richer "future"
   catalog (scout/brute/laser/heat sink) proving archetypes adapt. `Loadout.problems(with_loader=false)` checks garage
   rules without today's `Doctrine.parse` (which rejects weapons the game doesn't have yet).
+  - **Bug found by measuring, fixed:** the first archetype series had every CPU army lose 0-6 to Individuals and
+    every CPU-vs-CPU match end in a 0-shot draw. Cause: a doctrine squad's `formation` alone means *form up and hold
+    here* (`Squad.apply_command`), so CPU squads never left base. CPU armies now carry no formation (player presets
+    keep it); regression test added. Re-measured series below.
+- **Stretch: army codes done.** `army_code.gd`: `TS1` + 8-hex checksum + base64url(deflate(compact JSON)), ~150-200
+  chars for a 5-unit army; URL/filename-safe; checksum refuses truncated pastes before decoding; inflate capped at
+  16 KB. Garage SHARE panel (code shown, COPY to clipboard, paste + IMPORT) and `--army=CODE` (browser
+  `?garage&army=CODE`). `make garage-cpu-army` prints a `GARAGE_CODE`. Anything the garage opens (load, preset, code)
+  becomes a player army (`Loadout.make_player_army`: hold, formation, no CPU objectives). 5 tests.
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
