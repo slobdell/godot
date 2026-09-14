@@ -107,6 +107,10 @@ build/   (gitignored)    exports and screenshots
 | Play multiplayer locally | `make play BOTS=1`, then open several tabs at http://localhost:8060/?connect (or `make client`) |
 | Play with someone on the LAN | `make play WEB_HOST=0.0.0.0`; they open `http://<your-ip>:8060/?connect` |
 | Prove networking works | `make net-smoke` (headless) and `make web-net-smoke` (browser) |
+| Play a player-hosted match (relay) | `make play-relay`, open `http://localhost:8060/?lobby`: HOST, or tap a room code and JOIN (`?host`, `?join=CODE` work directly) |
+| Prove the relay works | `make relay-smoke` (in check), `relay-drop-smoke`, `relay-rejoin-smoke`, `web-host-smoke` (a browser hosts) |
+| Measure bandwidth / latency | `make net-measure TANKS=20 CLIENTS=2 LATENCY=150 JITTER=50` |
+| Watch a recorded match | `--join=CODE --record=PATH` while playing, then `make replay-watch REPLAY=PATH` |
 | Add a tunable to a node | `@export var` in the script; it appears in the editor Inspector |
 | Add an input | Add it to `[input]` in `project.godot` (or the editor's Input Map) |
 | Add a test | New `tests/test_<thing>.gd` that `extends TestCase` with `test_*` methods |
@@ -150,3 +154,8 @@ build/   (gitignored)    exports and screenshots
 35. **The browser build and the native build do not simulate identically** (measured: same seed, different state hash after 40 s). Determinism holds per build only; don't design cross-platform lockstep on the current physics (streams/netcode.md).
 36. **`git stash` removes uncommitted code the running experiment/test depends on.** Don't stash to "test the committed version" mid-change; use a worktree.
 37. **Heavy runs queue for a machine-wide slot.** Parallel worktree agents share one 7.6 GB machine, so the root Makefile routes every non-interactive goal through `tools/slot.sh` (2 slots). `>> waiting for a heavy-run slot` is normal, not a hang. Wrap heavy commands you run outside make yourself (`tools/slot.sh python3 tools/match_series.py …`). Runs over 90 minutes are killed.
+38. **Packed arrays are values in GDScript.** `for arr in [pos_x, pos_z]: arr.resize(n)` resizes *copies*; the fields stay empty. Edit each field directly (`game/network/detcore/det_sim.gd`).
+39. **A GameMode (RefCounted) with no references is freed, and its signal callbacks silently stop firing.** LobbyMode switched `main.mode` to the next mode and lost its own "join failed" handler. Keep a strong reference (`main.set_meta`).
+40. **Signal lambdas that capture a refcounted object connected to that same object leak it** (`multiplayer.x.connect(func(): multiplayer…)`, or `peer.sig.connect(f.bind(peer))`). Exit prints "N resources still in use". Connect methods and look the object up inside.
+41. **"Stale input" must be judged from when the network was last read, not the physics tick's clock.** A browser host rendering at 2 fps read commands ~500 ms before simulating them and stopped every player's tank (`NetworkInput.command_for_tick`).
+42. **Don't trust float math across builds, and especially not trig.** Same seed: `+ − × ÷ √` hashed identically native vs wasm, but `sin/cos/atan2/exp` did not (`make det-spike` FLOAT_PROBE). Lockstep code must use `Fixed` (integers).

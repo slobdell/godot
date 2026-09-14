@@ -83,3 +83,13 @@ Format: **Concept**, then the one-line version, why it matters, and a way to
 - **One line:** A wedge is "leader here; wingman 12 m back-left; the other 12 m back-right", recomputed every moment as the leader moves and turns. Pick a new leader and the whole shape re-centers on it.
 - **Why it matters:** Big behaviors from tiny data: a formation is a list of offsets, and a drill is a few weight changes. The player gets lots of power from one drag, because the math does the rest.
 - **Show it:** `make skirmish`. Select Alpha (1), press X (wedge) then V (line), and watch them re-form. Click a wingman twice to make it commander and watch the shape re-center. Open `game/ai/formations.gd`: each formation is one line.
+
+### 2026-09-14: Why can't every phone just run the game? (determinism)
+- **One line:** If everyone simulates from the same commands, they must get *exactly* the same answer, down to the last bit. A computer's `sin()` isn't the same on every device, so we rebuilt the tank math with whole numbers (1.0 m = 65536) and got identical results in a desktop app and a browser.
+- **Why it matters:** It decides the whole multiplayer design: identical math means no server has to run the game and cheaters are caught by comparing fingerprints (hashes).
+- **Show it:** `make det-spike` prints the same 16-character hash twice (native and browser) and `FLOAT_PROBE trig: DIFFERENT`. Open `game/network/detcore/fixed.gd`: sine is computed with shifts and adds (CORDIC), no `sin()`.
+
+### 2026-09-14: A phone in a tunnel (reconnects without losing anything)
+- **One line:** Every message gets a number. When the connection comes back, each side says "the last one I got was #812" and the other resends what's missing, so a 10-second dead zone doesn't break the match.
+- **Why it matters:** Mobile players lose signal all the time. The game has to treat that as normal, not as "you left".
+- **Show it:** `make relay-drop-smoke` cuts a player's connection for 10 s and prints "resumed after 10.1 s away (same peer id)". Then `make relay-rejoin-smoke`: gone longer than the grace period, the player comes back and gets their tank back where they left it.
