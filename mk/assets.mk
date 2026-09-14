@@ -87,3 +87,27 @@ assets-prison-dozer: ## Rebuild the prison_dozer theme (the art-direction north 
 
 assets-kitbash: ## Rebuild the kitbash theme from its recipe: fetch CC0 sources, normalize every slot (tools/assets/build_kitbash.sh)
 	tools/assets/build_kitbash.sh
+
+# ---- Round 2 (art stream): the lead's concept review gate and the Meshy ledger (tools/assets/review.py) ----------
+.PHONY: art-concept art-review art-review-status art-decide
+GROUP ?= concepts
+TARGET_SLOT ?= unit.tank
+EST_3D ?= 15
+
+# One photoreal concept image (≈9 credits, logged in assets/meshy_ledger.md), registered on the review sheet.
+# REFS=path.png (repeatable via space-separated list) makes it image-to-image from references.
+art-concept: ## Generate a concept image for the lead's review: NAME=scout_a TITLE="…" PROMPT="…" [GROUP= TARGET_SLOT= EST_3D= NOTES= REFS= KEEP_BG=1 for scenes]
+	@test -n "$(NAME)" -a -n "$(PROMPT)" -a -n "$(TITLE)" || { echo "need NAME=, TITLE=, PROMPT="; exit 2; }
+	$(PYTHON) tools/assets/generate.py --provider meshy --slot unit.tank --concept-only --prompt "$(PROMPT)" \
+		--name meshy/$(NAME) $(foreach r,$(REFS),--reference $(r)) $(if $(KEEP_BG),--keep-background)
+	$(PYTHON) tools/assets/review.py add --id $(NAME) --concept assets/incoming/meshy/$(NAME).concept.json \
+		--group "$(GROUP)" --target "$(TARGET_SLOT)" --title "$(TITLE)" --est-3d $(EST_3D) --notes "$(NOTES)"
+
+art-review: ## Build the lead's concept review sheet: build/review/index.html (+ images)
+	$(PYTHON) tools/assets/review.py build
+
+art-review-status: ## List review items (waiting / approved / rejected) and the credits spent
+	@$(PYTHON) tools/assets/review.py status
+
+art-decide: ## Record the lead's decision: ID=scout_a DECISION=approved|rejected|superseded WORDS="the lead's words"
+	$(PYTHON) tools/assets/review.py decide $(ID) $(DECISION) --words "$(WORDS)"

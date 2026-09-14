@@ -107,6 +107,26 @@ make check            # the whole game still works
 
   If an agent can't see your key, see *Proposed orientation trip-ups* 5 in `_agents/streams/archive/round1/assets.md`.
 
+## The lead reviews every concept before 3D (round 2)
+
+3D models cost real credits; concept images are cheap. So every new model waits at the concept stage until the
+lead has looked at it ([`_agents/workstreams.md`](../_agents/workstreams.md), *Lead gates*):
+
+```bash
+make art-concept NAME=scout_a GROUP="X4 roster" TARGET_SLOT=unit.scout TITLE="Scout A: …" PROMPT="…"  # ≈9 credits
+make art-review            # build/review/index.html: every concept, its prompt, slot, and estimated 3D credits
+make art-review-status     # the same list in the terminal, plus the credits spent
+make art-decide ID=scout_a DECISION=approved WORDS="the lead's own words"   # or rejected / superseded
+tools/assets/generate.py --provider meshy --slot unit.tank --review-item scout_a --smart-topology --name meshy/scout
+```
+
+- `assets/review/review.json` holds the items and decisions; `assets/review/images/` the pictures the lead saw.
+- `generate.py` refuses a 3D request without an approved `--review-item`, and refuses a second 3D request for the
+  same concept (unless `--retry-reason` says why). It sends the approved concept, not whatever image you name.
+- Every Meshy request, concept or 3D, is appended to [`meshy_ledger.md`](meshy_ledger.md) with the credits it
+  cost and the balance left.
+- Scenes and mood pictures (not models) need `KEEP_BG=1`: background removal erases a whole scene.
+
 ## When something looks wrong
 
 | you see | try |
