@@ -132,7 +132,7 @@ stream that owns it, or through a contract change (below).
 | `game/theme/**` (all art, the slot registry, team colors, UI palette, `game/theme/fx/` effect systems), `mk/fx.mk` (new: `fx-bench`) | look & feel |
 | `game/ui/hud.tscn` (HUD layout/styling) | look & feel (`hud.gd` text logic: gameplay) |
 | `assets/`, `tools/assets/`, `game/theme/*/generated/` | assets |
-| `game/network/`, `game/modes/{server,client}_mode.gd`, `tools/serve_web.py`, `tests/net/`, `mk/net.mk` | netcode |
+| `game/network/` (incl. `ui/` lobby + room badge, `detcore/`), `game/modes/{server,client,host,lobby,det_spike}_mode.gd`, `server/broker/`, `tools/serve_web.py`, `tests/net/`, `mk/net.mk` | netcode |
 | `game/agent/`, `tools/agent.py` | gameplay (it's a player of the game) |
 | `game/garage/` (new), `mk/garage.mk` (new) | garage |
 | `mk/<area>.mk` | the stream named in the file's header |
@@ -149,8 +149,8 @@ Changing one of these requires updating this section and telling the other strea
 | **Doctrine / loadout JSON** | `game/ai/doctrine.gd`, `game/ai/directives.gd` | gameplay, garage (produces), match runner |
 | **Simulation entry points**: `Match.command_squad()`, `Tank.command`, `Match.load_doctrine()`, `Match.finished`, `Match.state_hash()` | `game/match/match.gd` | netcode (what goes over the wire), garage, modes |
 | **Replicated tank state** (`sync_*`; gameplay adds `sync_shield` (G6), `sync_ammo`, `sync_heat` (G7)) | `game/network/replication.gd` + `tank.gd` | netcode, gameplay |
-| **Launch flags** | `game/main.gd` header, `game/modes/*` | everyone (Makefile targets, smoke tests) |
-| **Console markers** `TANK_SQUAD_*`, `MATCH_RESULT` | `game/main.gd`, `match_runner_mode.gd` | smoke tests, `tools/match_series.py` |
+| **Launch flags** (netcode added `--host`, `--join`, `--relay`, `--lobby`, `--record`, `--replay`, `--player-key`, `--det-spike`, `--relay-latency/-jitter` on 2026-09-14) | `game/main.gd` header, `game/modes/*` | everyone (Makefile targets, smoke tests) |
+| **Console markers** `TANK_SQUAD_*`, `MATCH_RESULT` (netcode: `TANK_SQUAD_ROOM`, `TANK_SQUAD_RELAY`, `TANK_SQUAD_HOST_STATS`, `NET_CHECK`, `NET_MEASURE`, `DET_SPIKE_*`, `DET_REPLAY`) | `game/main.gd`, `match_runner_mode.gd`, `game/modes/{host,client,det_spike}_mode.gd` | smoke tests, `tools/match_series.py`, `mk/net.mk` |
 | **HUD messages**: `Hud.post_message(text: String, severity: int)` with `Hud.INFO` / `WARNING` / `ERROR` | `game/ui/hud.gd` (stub: a plain label) | gameplay posts (orders, losses, results); look & feel renders (banners) |
 | **Visibility / radar data**: the team's visibility field (visible now / seen / unseen), units, contacts, destinations; radar frame styling hook | gameplay defines when building G1/G2 (streams/gameplay.md), then records the API here | gameplay's radar widget; look & feel skins it |
 | **Unit catalog** (classes, costs, stats, hardpoints, component slots, budget) | `game/units/units.gd` (schema v0: `tank` only, not yet read by the simulation); gameplay grows it in directive set 2 | garage (UI), doctrine files |

@@ -71,9 +71,13 @@ would wait for N3 (or run on authoritative servers for a small ranked pool).
 
 ## Verification you own
 
-`make net-smoke`, `make combat-smoke`, `make web-net-smoke`; add a relay smoke test (two headless
-clients through the broker) and a cross-platform hash test (native vs wasm; `tools/web_smoke/smoke.mjs`
-can capture `MATCH_RESULT` from the browser; see the measurement command in HANDOFF history).
+Dedicated server: `make net-smoke`, `make combat-smoke`, `make web-net-smoke`.
+Broker and relay (built 2026-09-14): `make broker-test`, `make broker-smoke`, `make relay-smoke` and
+`make lobby-smoke` (both in `make check`); `make relay-drop-smoke`, `relay-latency-smoke`,
+`relay-rejoin-smoke`, `web-relay-smoke`, `web-host-smoke` (in `make check-all`).
+Determinism and replays: `make det-spike` (native vs wasm hashes), `make replay`.
+Measurements (not pass/fail): `make net-measure`, `make broker-load`. Rows 6e–8b in
+[../verification.md](../verification.md) say what each proves.
 
 ## Status
 
@@ -90,12 +94,14 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
 through a relay broker (browser or native, a touch lobby, reconnects, rejoin, replays); bandwidth
 and latency are measured; the deterministic-core spike is **bit-identical native vs WebAssembly at
 1.5% of a tick budget, so lockstep is feasible**; the N3 designs are written. `make check` is green
-(115 tests).
+(115 tests) and **`make check-all` passed** (all relay stress smokes, browser boot/client/relay/host,
+desktop screenshot, server export); screenshots reviewed: `web.png`, `web-net.png`, `web-relay.png`,
+`web-host.png` (room badge), `host-badge.png`, `replay.png`, `lobby-desktop.png`, `lobby-phone.png`.
 
 **Done**
 
 1. **N0 broker** (`server/broker/`, Node 22 + `ws` 8.21.3 pinned). `make broker-bootstrap`,
-   `make broker`, `make broker-test` (30 unit tests), `make broker-smoke` (real process: host + 2
+   `make broker`, `make broker-test` (31 unit tests), `make broker-smoke` (real process: host + 2
    players, 600 frames up, 600 down, one socket cut and resumed with zero reliable-frame loss, host
    leaves → players told, `/stats` agrees). Protocol and decisions below under *N0 broker*.
 2. **N1 player-hosted through the relay.** `game/network/relay_peer.gd` (`RelayPeer`, a
@@ -113,7 +119,9 @@ and latency are measured; the deterministic-core spike is **bit-identical native
    - `make web-host-smoke` (check-all): **a browser hosts** (wasm simulation) and a headless client
      joins, drives 37 m, sees combat. The SwiftShader tab hosted at only 2 fps / 15 ticks per s
      (software rendering; `TANK_SQUAD_HOST_STATS`), which exposed the stale-input bug below.
-   - 10 GDScript unit tests (`tests/test_relay_peer.gd`) + 1 new `test_network_input` case.
+   - GDScript unit tests: 10 in `tests/test_relay_peer.gd`, 4 new `test_network_input` cases
+     (slow-host staleness, send-on-change policy); later `tests/test_det_core.gd` (7) and
+     `tests/test_lobby.gd` (3).
 3. **Bandwidth + latency measured** (`make net-measure TANKS= CLIENTS= LATENCY= JITTER=`; table
    under *Measurements* below). 10 tanks cost **14.6 KB/s down** per player, 20 tanks **27.3 KB/s**
    (~1.37 KB/s per tank, linear); the host uploads that times the player count (60 KB/s for 4
@@ -283,13 +291,13 @@ Rules: *Unattended runs* in workstreams.md. **Assumed decision (the lead hasn't 
 |---|---|---|---|
 | → | `host` | `max_peers?` | open a room; you are peer 1 |
 | ← | `hosted` | `room, peer_id, token, max_peers, heartbeat_ms, grace_ms` | 5-char code from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` |
-| → | `join` | `room, peer_id?` | proposed id is kept if free (Godot clients pick their id up front) |
+| → | `join` | `room, peer_id?, player?` | proposed id is kept if free (Godot clients pick their id up front); `player` = opaque key `[A-Za-z0-9_-]{1,64}`, forwarded only to the host (rejoin) |
 | ← | `joined` | `room, peer_id, token, host_id` | |
 | → | `resume` | `token, last_seq` | new socket for an existing seat; `last_seq` = last frame seq you received |
-| ← | `resumed` | `room, peer_id, last_seq, peers?` | `last_seq` = your last frame the broker got; retransmit reliable frames after it |
+| ← | `resumed` | `room, peer_id, last_seq, peers?, players?` | `last_seq` = your last frame the broker got; retransmit reliable frames after it |
 | → / ← | `ack` | `seq` | trims the other side's retransmit buffer (broker acks every 250 ms) |
 | → | `leave`, `kick {peer_id}` (host), `set_open {open}` (host), `ping {t}` | | |
-| ← (host) | `peer_joined`, `peer_away`, `peer_back`, `peer_left {reason}` | `peer_id` | reasons: left, kicked, timeout, rate_limited, overflow |
+| ← (host) | `peer_joined {player}`, `peer_away`, `peer_back`, `peer_left {reason}` | `peer_id` | reasons: left, kicked, timeout, rate_limited, overflow |
 | ← (players) | `host_away`, `host_back`, `host_left {reason}` | | the room closes when the host leaves or its grace ends |
 | ← | `error` | `code, message` | then a 4xxx close for fatal ones (`protocol.mjs` `CLOSE`) |
 

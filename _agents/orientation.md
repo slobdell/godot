@@ -75,15 +75,18 @@ game/
   agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
   ui/                    TacticalMap (squad command overlay), Hud (hud.tscn = layout, hud.gd = text)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
-  network/               NetworkInput (client→server commands + validation), Replication (what syncs)
+  network/               NetworkInput (client→server commands + validation), Replication (what syncs),
+                         RelayPeer (multiplayer through the broker), ReplayPeer, ui/ (lobby, room badge),
+                         detcore/ (integer deterministic-simulation spike: Fixed, DetSim, CommandReplay)
   camera/                FollowCamera
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
-tests/                   headless runner + TestCase base + test_*.gd; net/bot_client_check.gd
+tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
 doctrines/               team plans as JSON (squads, weapons, directives) for the match runner
 mk/                      Makefile targets split by area (core, play, net, match, web); root Makefile includes them
 tests/baselines/         recorded simulation hash (make sim-baseline)
 _agents/streams/         per-workstream briefs (gameplay, look_and_feel, assets, netcode, garage)
-tools/                   serve_web.py, web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
+server/broker/           match broker (Node + ws): lobbies, relay, resume; `make broker`, `make broker-test`
+tools/                   serve_web.py (/ws + /relay proxies), web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
 _agents/                 you are here
 .tools/  (gitignored)    pinned Godot + export templates, from `make bootstrap`
 build/   (gitignored)    exports and screenshots
