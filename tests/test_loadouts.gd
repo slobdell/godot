@@ -85,6 +85,10 @@ func test_scouts_spot_from_a_distance_instead_of_brawling() -> void:
 	assert_eq(choose.call([]), "SPOT", "nothing known: scout ahead")
 	assert_eq(choose.call([_contact(Vector3(0, 0, -50))]), "SPOT", "an enemy tank 50 m away: back off to spotting range, don't fight")
 	assert_eq(choose.call([_contact(Vector3(0, 0, -95))]), "SPOT", "at spotting range: keep watching")
+	var artillery := _contact(Vector3(0, 0, -60))
+	artillery["weapon"] = "mortar"
+	artillery["aiming_at_me"] = false
+	assert_eq(choose.call([artillery]), "ENGAGE Rust_A_1", "enemy artillery in sight: scouts hunt it")
 
 
 func test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range() -> void:

@@ -43,6 +43,9 @@ const SCOUT_STANDOFF := 85.0
 const ARTILLERY_SAFE_DISTANCE := 80.0
 ## With nothing to shell, artillery trails this far behind the nearest friendly gun, toward home.
 const ARTILLERY_TRAIL := 35.0
+## A scout's appetite for attacking enemy artillery, relative to a tank's normal appetite.
+const SCOUT_HUNT := 1.6
+const SCOUT_HUNT_FLOOR := 0.8
 ## A scout's appetite for a straight fight, relative to a tank's.
 const SCOUT_FIGHT := 0.6
 ## KEEP_SLOT's score under move/bound/hold orders (see decide()).
@@ -221,7 +224,13 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# Artillery never brawls: it shells what the team spots (BOMBARD) and stays behind (SHADOW).
 	var fight_scale := 0.0 if is_artillery else (SCOUT_FIGHT if is_scout else 1.0)
 	for pair in engages:
-		add.call("ENGAGE", pair[0], pair[1] * fight_scale)
+		var score: float = pair[1] * fight_scale
+		if is_scout and _is_artillery_contact(contacts, pair[0]):
+			# Scouts hunt artillery (directive set 2 counter triangle): artillery is blind up close, can't
+			# fire inside 35 m, and is fragile; a scout closing fast on it is its nightmare. Even a
+			# cautious scout goes for it.
+			score = maxf(pair[1] * SCOUT_HUNT, SCOUT_HUNT_FLOOR * confidence)
+		add.call("ENGAGE", pair[0], score)
 	for pair in flanks:
 		add.call("FLANK", pair[0], pair[1] * fight_scale)
 	if is_artillery:
@@ -244,7 +253,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	if is_scout:
 		var nearest := INF
 		for c in contacts:
-			if c["visible"]:
+			if c["visible"] and c.get("weapon", "") != "mortar":  # artillery isn't a threat up close: hunt it
 				nearest = minf(nearest, my_position.distance_to(c["position"]))
 		if nearest < SCOUT_STANDOFF - 10.0:
 			spot = 0.88
@@ -371,6 +380,13 @@ static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
 			best_score = score
 			best = predicted
 	return best
+
+
+static func _is_artillery_contact(contacts: Array, contact_name: String) -> bool:
+	for c in contacts:
+		if c["name"] == contact_name:
+			return c.get("weapon", "") == "mortar"
+	return false
 
 
 static func _priority(rule: String, contact: Dictionary, distance: float) -> float:

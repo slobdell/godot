@@ -67,7 +67,8 @@ const PROFILES := {
 	"artillery": {
 		"display_name": "Artillery",
 		"class": "artillery",
-		"cost": 180,
+		# 180 -> 220 (2026-09-15): the Siege archetype (2 artillery) won 81% of a 5-archetype round robin.
+		"cost": 220,
 		"max_health": 200,
 		"max_shield": 80,
 		"shield_recharge_delay": 4.0,

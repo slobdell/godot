@@ -34,6 +34,6 @@ func test_budget_checks_and_descriptions() -> void:
 	assert_eq(Army.check_budget(five_tanks, 1000), "", "the default player army (5 tanks) fits 1000")
 	assert_true(Army.check_budget(five_tanks, 900).contains("over"), "and not 900")
 	assert_eq(Army.describe(Doctrine.load_file("res://doctrines/combined_arms.json")["doctrine"]),
-			"3 tanks, 1 scout, 1 artillery (890 pts)", "a readable summary")
+			"3 tanks, 1 scout, 1 artillery (930 pts)", "a readable summary")
 	assert_true(Army.load_army("cpu:siege", 3).has("doctrine"), "CPU names load like doctrine files")
 	assert_true(Army.load_army("individuals", 3).has("doctrine"), "and so do doctrine names")
