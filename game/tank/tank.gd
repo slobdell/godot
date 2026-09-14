@@ -54,6 +54,8 @@ var weapon: Dictionary = Weapons.profile(Weapons.DEFAULT)
 var damage_accumulator := 0.0
 ## What the tank's brain is doing ("ENGAGE Rust_2"); set by the simulating peer, shown on nameplates.
 var intent := ""
+## Whether the nameplate shows `intent` (skirmish hides it: enemy intents would leak through the fog).
+var show_intent := true
 
 var health := 200
 var alive := true
@@ -183,7 +185,7 @@ func _process(delta: float) -> void:
 	if max_shield > 0.0:
 		nameplate.text += " +%d" % sync_shield
 	_hull_visual.invoke("set_shield", [float(sync_shield) / max_shield if max_shield > 0.0 else 0.0])
-	if sync_intent != "":
+	if sync_intent != "" and show_intent:
 		nameplate.text += "\n" + sync_intent
 	_weapon_visual.invoke("set_firing", [sync_firing and alive])
 	_weapon_visual.invoke("set_heat", [sync_heat])

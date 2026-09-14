@@ -8,7 +8,9 @@ extends Control
 ##          (a left press ON a tank selects instead; left-drag was added after the lead's first playtest)
 ##   HOW    drill:     Q move · W bound · E hold (here) · R assault · T break contact
 ##          formation: Z column · X wedge · C vee · V line · B echelon (again: flips side) · N coil
-##   VIEW   Tab toggles the top-down map and a 3D view behind the selected commander
+##   VIEW   with an RtsCamera (skirmish, G4): arrows/edge/middle-drag pan, wheel zoom, , . rotate,
+##          F follow the selected squad, Tab overview; on touch, one finger drags the view.
+##          Without one (tests): Tab toggles a flat top-down map and a view behind the commander
 ##   TIME   Space pauses/resumes (tactical pause: give orders while paused). Skirmish starts paused.
 ##
 ## Every action becomes a SquadCommand (structured data) sent to Match.command_squad().
@@ -18,6 +20,8 @@ signal command_issued(command: Dictionary, error: String)
 
 const PICK_RADIUS_PX := 18.0
 const PING_SECONDS := 0.6
+## With the RTS camera, 3D nameplates show below this zoom level.
+const NAMEPLATE_ZOOM := 0.45
 ## Drags shorter than this (meters) mean "no particular facing".
 const MIN_FACING_DRAG := 4.0
 const VERB_KEYS := {KEY_Q: "move", KEY_W: "bound", KEY_E: "hold", KEY_R: "assault", KEY_T: "break_contact"}
@@ -40,6 +44,8 @@ var game_match: Match
 var camera: Camera3D
 ## G1: what our team can see (optional; the map still works without it).
 var visibility: VisibilityField
+## G4: the RTS camera controller (optional; without it the map uses its legacy flat view).
+var rig: RtsCamera
 var team := Match.Team.GREEN
 ## Squad name, or "" for none.
 var selected_squad := ""
@@ -74,7 +80,7 @@ func _ready() -> void:
 	var squads := game_match.team_squads(team)
 	if not squads.is_empty():
 		selected_squad = squads[0].squad_name
-	set_tactical_view(true)
+	set_tactical_view(rig == null)  # legacy flat map without an RTS camera; the tilted view with one
 
 
 func _process(delta: float) -> void:
@@ -92,8 +98,16 @@ func _process(delta: float) -> void:
 func _apply_fog_of_war() -> void:
 	for tank in game_match.sorted_team_tanks(1 - team):
 		tank.visible = game_match.is_visible_to(team, tank)
-	for tank in game_match.tanks.get_children():
-		(tank as Tank).nameplate.visible = not tactical_view
+	# Nameplates help up close; from high up the map draws its own labels.
+	var show_plates := not tactical_view if rig == null else rig.zoom < NAMEPLATE_ZOOM and not rig.is_overview()
+	for node in game_match.tanks.get_children():
+		var tank := node as Tank
+		tank.nameplate.visible = show_plates
+		if rig != null:
+			# Short names, and no brain intents: an enemy's would leak its plans through the fog, and
+			# the map already prints our selected squad's.
+			tank.show_intent = false
+			tank.display_name = MatchAnnouncer.short_name(String(tank.name))
 
 
 # ---- Commands (the only way the map changes the game) -----------------------------
@@ -188,8 +202,20 @@ func set_paused(paused: bool, message := "PAUSED: give orders, Space to resume")
 		_pause_label.visible = paused
 
 
+## G4: point the camera at the selected squad's commander and ride along.
+func follow_selected() -> void:
+	var squad := _squad(selected_squad)
+	var lead := game_match.tanks.get_node_or_null(NodePath(squad.commander)) as Tank if squad != null else null
+	if rig != null and lead != null and lead.is_alive():
+		rig.follow(lead)
+
+
 func set_tactical_view(enabled: bool) -> void:
 	tactical_view = enabled
+	if rig != null:
+		if enabled != rig.is_overview():
+			rig.toggle_overview(team)
+		return
 	if camera == null:
 		return
 	if enabled:
@@ -210,7 +236,26 @@ func set_tactical_view(enabled: bool) -> void:
 
 # ---- Input --------------------------------------------------------------------------
 
+func _input(event: InputEvent) -> void:
+	# Two-finger camera gestures come straight from the touch stream; they cancel any one-finger drag.
+	if rig != null and (event is InputEventScreenTouch or event is InputEventScreenDrag):
+		if rig.handle_touch(event):
+			_drag_start = null
+			_drag_end = null
+			_drag_button = MOUSE_BUTTON_NONE
+
+
 func _gui_input(event: InputEvent) -> void:
+	if rig != null:
+		if rig.handle_mouse(event):
+			accept_event()
+			return
+		if rig.finger_count() >= 2:
+			accept_event()  # a pinch/twist is in progress: its emulated mouse events aren't orders
+			return
+		if _is_touch(event) and _touch_pan(event):
+			accept_event()
+			return
 	if event is InputEventMouseButton:
 		var button := event as InputEventMouseButton
 		if button.button_index != MOUSE_BUTTON_LEFT and button.button_index != MOUSE_BUTTON_RIGHT:
@@ -240,6 +285,37 @@ func _gui_input(event: InputEvent) -> void:
 				_drag_moved = true
 
 
+## Mouse events Godot emulates from a touchscreen (the first finger).
+static func _is_touch(event: InputEvent) -> bool:
+	return event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION
+
+
+var _touch_pan_from: Variant = null
+
+
+## Touch (G4): a one-finger drag that doesn't start on one of our tanks pans the camera.
+## Returns true when it consumed the event.
+func _touch_pan(event: InputEvent) -> bool:
+	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		var button := event as InputEventMouseButton
+		if button.pressed:
+			if _pick_tank(button.position) != null:
+				_touch_pan_from = null
+				return false  # a press on a tank selects (the normal click path)
+			_touch_pan_from = button.position
+			return true
+		if _touch_pan_from != null:
+			_touch_pan_from = null
+			return true
+		return false
+	if event is InputEventMouseMotion and _touch_pan_from != null:
+		var motion := event as InputEventMouseMotion
+		rig.pan_screen(_touch_pan_from, motion.position)
+		_touch_pan_from = motion.position
+		return true
+	return false
+
+
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.echo:
@@ -253,6 +329,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		apply_formation(FORMATION_KEYS[key.keycode])
 	elif key.keycode == KEY_TAB:
 		set_tactical_view(not tactical_view)
+	elif key.keycode == KEY_F and rig != null:
+		follow_selected()
 	elif key.keycode == KEY_SPACE:
 		set_paused(not get_tree().paused)
 	else:
@@ -371,6 +449,8 @@ func _draw_arrow(from: Vector3, to: Vector3, color: Color) -> void:
 
 
 func _screen(world: Vector3) -> Vector2:
+	if camera.is_position_behind(world):
+		return Vector2(-10000, -10000)  # off screen: perspective views can put points behind the camera
 	return camera.unproject_position(world)
 
 
@@ -402,7 +482,7 @@ func _build_panels() -> void:
 	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_hint.offset_top = -64.0
 	_hint.offset_left = 12.0
-	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-3 squads · Space: pause · Tab: 3D"
+	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-3 squads · Space: pause · Tab: overview · F: follow · arrows/wheel/, .: camera"
 	_toast = _label(Vector2.ZERO, 20)
 	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_toast.offset_left = -360.0

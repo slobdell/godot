@@ -8,6 +8,11 @@ extends GameMode
 
 
 const SCRIPT_BREAK_CONTACT_SECONDS := 30.0
+## Where the RTS camera starts (0 = close behind a tank, 1 = high over the arena).
+const START_ZOOM := 0.62
+## The camera starts looking this far ahead of the player's base (tanks sit in the lower third).
+const START_AHEAD := 25.0
+const SCRIPT_FOLLOW_ZOOM := 0.42
 
 
 func role_name() -> String:
@@ -48,6 +53,17 @@ func start() -> void:
 	tactical.game_match = game_match
 	tactical.visibility = field
 	tactical.camera = main.camera
+	# G4: an RTS camera over the player's base, looking toward the enemy.
+	var rig := RtsCamera.new()
+	rig.name = "RtsCamera"
+	rig.camera = main.camera
+	rig.edge_pan = not flags.has("scripted")
+	var frame := Match.team_frame(Match.Team.GREEN)
+	rig.yaw = 0.0 if frame["forward"] == Vector3.FORWARD else PI
+	rig.focus = Match.spawn_position(Match.Team.GREEN, 0) + (frame["forward"] as Vector3) * START_AHEAD
+	rig.zoom = START_ZOOM
+	main.add_child(rig)
+	tactical.rig = rig
 	main.hud.add_child(tactical)
 	var announcer := MatchAnnouncer.new()
 	announcer.name = "Announcer"
@@ -78,6 +94,11 @@ func _play_script(tactical: TacticalMap) -> void:
 			elapsed = float(step[0])
 		tactical.select_squad(step[1]["squad"])
 		tactical.issue(step[1])
+		if step[1]["squad"] == "Bravo" and tactical.rig != null:
+			# Ride along with Alpha, a little above, so screenshots show the fight in 3D.
+			tactical.select_squad("Alpha")
+			tactical.follow_selected()
+			tactical.rig.zoom = SCRIPT_FOLLOW_ZOOM
 
 
 static func doctrine_path(name_or_path: String) -> String:
