@@ -30,9 +30,23 @@ func start() -> void:
 	game_match.elimination = true
 	game_match.finished.connect(func(_result: Dictionary) -> void:
 		main.hud.show_banner("VICTORY" if game_match.alive_count(Match.Team.GREEN) > 0 else "DEFEAT"))
+	# G1 fog of war: what Green can see, drawn over the arena and (G2) on the radar.
+	var field := VisibilityField.new()
+	field.name = "VisibilityField"
+	field.game_match = game_match
+	field.team = Match.Team.GREEN
+	game_match.add_child(field)
+	var fog := VisualSlot.new()
+	fog.name = "FogOfWar"
+	fog.slot = "fx.fog_of_war"
+	main.add_child(fog)
+	fog.invoke("setup", [{"texture": field.texture, "origin": VisibilityField.ORIGIN,
+			"size": field.cells * VisibilityField.CELL_SIZE}])
+	field.refresh_all.call_deferred()
 	var tactical := TacticalMap.new()
 	tactical.name = "TacticalMap"
 	tactical.game_match = game_match
+	tactical.visibility = field
 	tactical.camera = main.camera
 	main.hud.add_child(tactical)
 	var announcer := MatchAnnouncer.new()

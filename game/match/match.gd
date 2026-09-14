@@ -31,9 +31,10 @@ const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -6.0, 6.0, -18.0, 18.0]
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false
 
-## Shared team vision: refreshed this often, out to this range, remembered this long.
+## Shared team vision: refreshed this often, remembered this long. How far each tank sees is its own
+## Tank.sight_radius (G1); SENSOR_RANGE is the standard tank's, kept for callers that need a default.
 const INTEL_EVERY_TICKS := 6
-const SENSOR_RANGE := 75.0
+const SENSOR_RANGE: float = Units.PROFILES["tank"]["sight_radius"]
 const CONTACT_MEMORY_TICKS := 60 * 12
 
 @export var respawn_seconds := 4.0
@@ -391,7 +392,7 @@ func _update_intel() -> void:
 			for viewer in viewers:
 				if not viewer.is_alive():
 					continue
-				if viewer.global_position.distance_to(enemy.global_position) > SENSOR_RANGE:
+				if viewer.global_position.distance_to(enemy.global_position) > viewer.sight_radius:
 					continue
 				if not Perception.has_line_of_sight(viewer, enemy):
 					continue
@@ -407,6 +408,14 @@ func _update_intel() -> void:
 ## A fingerprint of the exact simulation state (full float bits of every tank's
 ## position, heading, turret, and health). Two runs, or two machines, agree only if
 ## they simulated identically. Basis for determinism checks and future lockstep desync detection.
+## G1: whether `team` sees `tank` right now (its own tanks always; enemies only through intel).
+## Presentation code (fog of war, radar, map) must ask this instead of reading positions.
+func is_visible_to(team: int, tank: Tank) -> bool:
+	if tank.team == team:
+		return tank.is_alive()
+	return tank.is_alive() and bool(intel[team].get(String(tank.name), {}).get("visible", false))
+
+
 func state_hash() -> String:
 	var bytes := PackedByteArray()
 	bytes.append_array(var_to_bytes(tick))

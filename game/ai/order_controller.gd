@@ -153,7 +153,9 @@ func _sense() -> void:
 	if tanks_root == null:
 		return
 	for enemy in Perception.enemies_of(tank, tanks_root):
-		if Perception.has_line_of_sight(tank, enemy):
+		# G1: a tank sees within its sight radius, and only with a clear line of sight.
+		if tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius \
+				and Perception.has_line_of_sight(tank, enemy):
 			visible_enemy_names.append(enemy.name)
 
 

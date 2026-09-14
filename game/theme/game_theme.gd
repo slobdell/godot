@@ -17,6 +17,8 @@ const DEFAULT_SLOTS := {
 	# Added by gameplay G7 (2026-09-14), placeholder art: see streams/assets.md slot contracts.
 	"weapon.laser": "res://game/theme/default/weapon_laser.tscn",
 	"fx.laser_beam": "res://game/theme/default/fx_laser_beam.tscn",
+	# Added by gameplay G1 (2026-09-14), placeholder: the 3D fog-of-war sheet (setup(data) contract in assets.md).
+	"fx.fog_of_war": "res://game/theme/default/fx_fog_of_war.tscn",
 	"prop.crate": "res://game/theme/default/prop_crate.tscn",
 	"prop.wall": "res://game/theme/default/prop_wall.tscn",
 	"arena.environment": "res://game/theme/default/arena_environment.tscn",

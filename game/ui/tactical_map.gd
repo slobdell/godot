@@ -38,6 +38,8 @@ var GHOST: Color:
 
 var game_match: Match
 var camera: Camera3D
+## G1: what our team can see (optional; the map still works without it).
+var visibility: VisibilityField
 var team := Match.Team.GREEN
 ## Squad name, or "" for none.
 var selected_squad := ""
@@ -88,10 +90,8 @@ func _process(delta: float) -> void:
 ## The 3D scene would otherwise show every enemy tank: hide enemies our team can't see
 ## right now, and hide 3D nameplates on the map (the map draws its own labels).
 func _apply_fog_of_war() -> void:
-	var intel: Dictionary = game_match.intel[team]
 	for tank in game_match.sorted_team_tanks(1 - team):
-		var contact: Dictionary = intel.get(String(tank.name), {})
-		tank.visible = tank.is_alive() and contact.get("visible", false)
+		tank.visible = game_match.is_visible_to(team, tank)
 	for tank in game_match.tanks.get_children():
 		(tank as Tank).nameplate.visible = not tactical_view
 

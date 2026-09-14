@@ -30,6 +30,9 @@ signal died
 @export var shield_recharge_delay: float = Units.PROFILES["tank"]["shield_recharge_delay"]
 @export var shield_recharge_rate: float = Units.PROFILES["tank"]["shield_recharge_rate"]
 @export var reload_seconds := 2.0
+## G1: how far this tank sees (inside the radius AND an unobstructed line of sight). Team vision is
+## the union of its tanks' views (Match.intel).
+@export var sight_radius: float = Units.PROFILES["tank"]["sight_radius"]
 ## G7 heat (see Units.PROFILES "heat_capacity"/"heat_dissipation").
 @export var heat_capacity: float = Units.PROFILES["tank"]["heat_capacity"]
 @export var heat_dissipation: float = Units.PROFILES["tank"]["heat_dissipation"]
