@@ -67,6 +67,7 @@ func _run() -> void:
 	var lowest_health := 1_000_000
 	var full_health := 1_000_000
 	var any_damaged := false
+	var shield_seen := {}
 	var start: Variant = null
 	var travel := 0.0
 	var seen := 0
@@ -88,6 +89,13 @@ func _run() -> void:
 			var tank := node as Tank
 			if tank != null and tank.sync_health < tank.max_health:
 				any_damaged = true
+			# G6 shields absorb the first hits, so hull health can stay full through a short fight.
+			# Count a shield that drops from the highest value this client has seen for that tank.
+			if tank != null:
+				var best: int = shield_seen.get(tank.name, tank.sync_shield)
+				if tank.sync_shield < best:
+					any_damaged = true
+				shield_seen[tank.name] = maxi(best, tank.sync_shield)
 		my_id = root.multiplayer.get_unique_id()
 		var mine: Tank = tanks.get_node_or_null("Tank_%d" % my_id)
 		if mine == null:

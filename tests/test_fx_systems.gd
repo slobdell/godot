@@ -208,3 +208,15 @@ func test_sfx_pool_never_grows_and_loads_every_sound() -> void:
 	assert_eq(sfx.played, 41, "every request played (oldest voices stolen when busy)")
 	var flame := sfx.streams["flame_loop"] as AudioStreamWAV
 	assert_eq(flame.loop_mode, AudioStreamWAV.LOOP_FORWARD, "the flame roar loops")
+
+
+func test_sounds_before_the_tree_are_dropped_not_errors() -> void:
+	# Integration 2026-09-15: gameplay's announcer posts a banner at spawn, before FxWorld's deferred add,
+	# and every skirmish start logged "Playback can only happen when a node is inside the scene tree".
+	var sfx := SfxSystem.new()
+	sfx.muted = false
+	sfx.play_ui("ui_blip")
+	sfx.play_at("cannon_shot", Vector3.ZERO)
+	assert_eq(sfx.played, 0, "nothing plays outside the tree")
+	sfx.free()
+

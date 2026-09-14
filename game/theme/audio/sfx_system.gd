@@ -69,7 +69,8 @@ func _init() -> void:
 
 ## A world sound at `position`.
 func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
-	if muted or not streams.has(sound):
+	# Not in the tree yet (FxWorld is added deferred; the match announcer speaks at spawn): drop it.
+	if muted or not streams.has(sound) or not is_inside_tree():
 		return
 	var voice := _take_world_voice()
 	voice.stream = streams[sound]
@@ -83,7 +84,7 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 
 ## A UI sound (not positional).
 func play_ui(sound: String) -> void:
-	if muted or not streams.has(sound):
+	if muted or not streams.has(sound) or not is_inside_tree():
 		return
 	var voice := _ui[_next_ui]
 	_next_ui = (_next_ui + 1) % _ui.size()
