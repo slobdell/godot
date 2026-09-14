@@ -25,8 +25,9 @@ const PICK_RADIUS_PX := 18.0
 ## A tap within this many meters of a vehicle's center picks it, when that's more than the pixel radius.
 const PICK_BODY_M := 2.5
 const PING_SECONDS := 0.6
-## With the RTS camera, 3D nameplates show below this zoom level.
-const NAMEPLATE_ZOOM := 0.45
+## With the RTS camera, 3D nameplates show only this close (C5: squad chips, rings, and health bars carry the
+## information, so names no longer clutter the play view).
+const NAMEPLATE_ZOOM := 0.12
 ## C5: below this zoom the map leaves vehicles to their 3D models and ground rings; above it, 2D markers.
 const ICON_ZOOM := 0.5
 ## Drags shorter than this (meters) mean "no particular facing".
@@ -63,7 +64,6 @@ var tactical_view := true
 var _drag_start: Variant = null
 var _drag_end: Variant = null
 var _info: Label
-var _log: Label
 var _hint: Label
 var _buttons := {}
 var _pause_label: Label
@@ -549,18 +549,23 @@ func _draw() -> void:
 		if arc.size() > 1:
 			draw_polyline(arc, progress_color, 4.0)
 
-	# Enemies, only as our intel knows them: solid = in sight now, hollow and fading = remembered.
+	# Enemies, only as our intel knows them. Remembered contacts: a hollow triangle fading with age. Contacts
+	# in sight: their unit-type icon from far out; up close the model and its red ground ring show them.
 	var intel: Dictionary = game_match.intel[team]
+	var glyph := marker_size()
 	for contact_name in intel:
 		var contact: Dictionary = intel[contact_name]
 		var fade := 1.0 - clampf(float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS, 0.0, 0.8)
 		var at := _screen(contact["position"])
 		var color := Color(ENEMY, fade)
-		var triangle := PackedVector2Array([at + Vector2(0, -9), at + Vector2(8, 6), at + Vector2(-8, 6)])
-		if contact["visible"]:
-			draw_colored_polygon(triangle, color)
-		else:
-			triangle.append(triangle[0])
+		var enemy := by_name.get(contact_name) as Tank
+		if contact["visible"] and enemy != null:
+			if close_up:
+				_draw_health_bar(enemy, false)
+			else:
+				CommandIcons.draw_unit(self, CommandIcons.role_of(enemy), at, glyph, ENEMY, _screen_heading(enemy))
+		elif not contact["visible"]:
+			var triangle := PackedVector2Array([at + Vector2(0, -9), at + Vector2(8, 6), at + Vector2(-8, 6), at + Vector2(0, -9)])
 			draw_polyline(triangle, color, 2.0)
 
 	for squad in game_match.team_squads(team):
@@ -577,33 +582,32 @@ func _draw() -> void:
 					draw_arc(_screen(context["slot"]), 7.0, 0.0, TAU, 20, GHOST, 1.5)
 			if squad.facing_on_arrival != Vector3.ZERO:
 				_draw_arrow(squad.destination, squad.destination + squad.facing_on_arrival * 10.0, GHOST)
-		# The tanks. Up close the 3D ground rings (SelectionMarkers) mark them without painting over the
-		# models; from far out the map draws its own markers.
-		if close_up:
-			continue
+		# The vehicles. Up close the models and 3D ground rings (SelectionMarkers) show them, plus a small
+		# health bar over the selected squad; from far out, unit-type icons (the selected squad ringed).
 		for member in squad.roster:
 			var tank := by_name.get(member) as Tank
 			if tank == null or not tank.is_alive():
 				continue
-			var at := _screen(tank.global_position)
-			var forward := _screen(tank.global_position - tank.global_basis.z * 5.0)
-			draw_circle(at, 8.0, FRIENDLY.darkened(0.0 if selected else 0.35))
-			draw_line(at, forward, Color.WHITE, 2.0)
-			if member == squad.commander:
-				var diamond := PackedVector2Array([at + Vector2(0, -14), at + Vector2(14, 0), at + Vector2(0, 14),
-						at + Vector2(-14, 0), at + Vector2(0, -14)])
-				draw_polyline(diamond, COMMANDER, 2.0)
-				var tag := squad.squad_name.to_upper()
+			if close_up:
 				if selected:
-					tag = "%s · %s · %s" % [tag, VERB_LABELS.get(squad.verb, "—"), FORMATION_LABELS.get(squad.formation, "—")]
-				draw_string(font, at + Vector2(16, -10), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 13,
-						Color.WHITE if selected else Color(1, 1, 1, 0.6))
+					_draw_health_bar(tank, true)
+				continue
+			var at := _screen(tank.global_position)
 			if selected:
-				draw_arc(at, 11.0, 0.0, TAU, 24, Color.WHITE, 1.5)
+				draw_circle(at, glyph * 0.8, Color(0, 0, 0, 0.45))
+				draw_arc(at, glyph * 0.8, 0.0, TAU, 24, COMMANDER if member == squad.commander else Color.WHITE, 2.0)
+			CommandIcons.draw_unit(self, CommandIcons.role_of(tank), at, glyph,
+					FRIENDLY if selected else FRIENDLY.darkened(0.3), _screen_heading(tank))
+			if member == squad.commander:
+				draw_string(font, at + Vector2(glyph * 0.9, -glyph * 0.4), squad.squad_name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT,
+						-1, 13, Color.WHITE if selected else Color(1, 1, 1, 0.6))
 
 	if _ping_left > 0.0 and _ping_at != null:
 		var t := 1.0 - _ping_left / PING_SECONDS
 		draw_arc(_screen(_ping_at), lerpf(6.0, 34.0, t), 0.0, TAU, 32, Color(COMMANDER, 1.0 - t), 3.0)
+
+	if game_match.control_point:
+		_draw_control_meter(font)
 
 	# Live drag preview: where the formation will stand and which way it will face.
 	var squad := _squad(selected_squad)
@@ -616,6 +620,63 @@ func _draw() -> void:
 			draw_arc(_screen(Formations.to_world(_drag_start, heading, offset)), 8.0, 0.0, TAU, 20, COMMANDER, 2.0)
 		if drag.length() >= MIN_FACING_DRAG:
 			_draw_arrow(_drag_start, _drag_end, COMMANDER)
+
+
+## C6: the control point score under the squad bar: our points fill from the left, theirs from the right,
+## the label shows who holds the center.
+func _draw_control_meter(font: Font) -> void:
+	var bar_rect := _squad_bar.get_global_rect()
+	var width := clampf(bar_rect.size.x, 200.0, 420.0)
+	var at := Vector2(bar_rect.get_center().x - width / 2.0, bar_rect.end.y + 6.0)
+	var height := 6.0
+	var ours := float(game_match.control_score[team]) / Match.CONTROL_POINTS_TO_WIN
+	var theirs := float(game_match.control_score[1 - team]) / Match.CONTROL_POINTS_TO_WIN
+	draw_rect(Rect2(at, Vector2(width, height)), Color(0, 0, 0, 0.6))
+	draw_rect(Rect2(at, Vector2(width / 2.0 * ours, height)), FRIENDLY)
+	draw_rect(Rect2(at + Vector2(width - width / 2.0 * theirs, 0), Vector2(width / 2.0 * theirs, height)), ENEMY)
+	draw_line(at + Vector2(width / 2.0, -2), at + Vector2(width / 2.0, height + 2), Color.WHITE, 1.0)
+	var holder := "CENTER: neutral"
+	var color := Color(1, 1, 1, 0.8)
+	if game_match.control_owner == team:
+		holder = "CENTER: ours"
+		color = FRIENDLY
+	elif game_match.control_owner >= 0:
+		holder = "CENTER: theirs"
+		color = ENEMY
+	var text := "%s   %d : %d  of %d" % [holder, game_match.control_score[team], game_match.control_score[1 - team],
+			Match.CONTROL_POINTS_TO_WIN]
+	draw_string(font, at + Vector2(0, height + 15.0), text, HORIZONTAL_ALIGNMENT_CENTER, width, 13, color)
+
+
+## Far-out marker size in pixels (a thumb-readable icon on a phone, not a blob on a desktop).
+func marker_size() -> float:
+	return clampf(button_height() * 0.42, 16.0, 24.0)
+
+
+## A vehicle's heading on screen (radians, 0 = up the screen, clockwise positive).
+func _screen_heading(tank: Tank) -> float:
+	var at := _screen(tank.global_position)
+	var ahead := _screen(tank.global_position - tank.global_basis.z * 4.0)
+	return (ahead - at).angle() + PI / 2.0 if ahead.distance_to(at) > 0.5 else 0.0
+
+
+## C5: a small hull + shield bar floating over a vehicle (ours in the selected squad; enemies only when hurt).
+func _draw_health_bar(tank: Tank, ours: bool) -> void:
+	var health := float(tank.sync_health) / maxf(float(tank.max_health), 1.0)
+	var shield := float(tank.sync_shield) / maxf(tank.max_shield, 1.0) if tank.max_shield > 0.0 else 0.0
+	if not ours and health >= 0.999:
+		return
+	var hull: Array = Units.stat(tank.unit_id, "hull_size")
+	var top := tank.global_position + Vector3.UP * (float(hull[1]) + 3.2)
+	if camera.is_position_behind(top):
+		return
+	var at := camera.unproject_position(top)
+	var width := clampf(button_height() * 0.7, 26.0, 40.0)
+	var bar := Rect2(at - Vector2(width / 2.0, 0.0), Vector2(width, 4.0))
+	draw_rect(bar.grow(1.0), Color(0, 0, 0, 0.7))
+	draw_rect(Rect2(bar.position, Vector2(width * health, 4.0)), (FRIENDLY if ours else ENEMY) if health > 0.35 else COMMANDER)
+	if shield > 0.0:
+		draw_rect(Rect2(bar.position - Vector2(0, 3.0), Vector2(width * shield, 2.0)), Color(0.75, 0.9, 1.0, 0.9))
 
 
 ## Whether the camera is close enough that vehicles read as models (3D rings mark them, no 2D markers).
@@ -769,8 +830,6 @@ func _build_panels() -> void:
 	_pause_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_pause_label.add_theme_color_override("font_color", COMMANDER)
 	_pause_label.visible = false
-	_log = _label(Vector2.ZERO, 12)
-	_log.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_layout_panels()
 	get_viewport().size_changed.connect(_layout_panels)
 
@@ -831,15 +890,11 @@ func _layout_panels() -> void:
 	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_toast.offset_left = -360.0
 	_toast.offset_right = 360.0
-	_toast.offset_top = h * CHIP_HEIGHT + 58.0
+	_toast.offset_top = h * CHIP_HEIGHT + 78.0
 	_pause_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_pause_label.offset_left = -360.0
 	_pause_label.offset_right = 360.0
-	_pause_label.offset_top = h * CHIP_HEIGHT + 18.0
-	_log.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_log.offset_left = -430.0
-	_log.offset_right = -12.0
-	_log.offset_top = _top_row.offset_bottom + 8.0
+	_pause_label.offset_top = h * CHIP_HEIGHT + 40.0
 
 
 func toggle_formation_row() -> void:
@@ -909,14 +964,6 @@ func _refresh_panels() -> void:
 			if card.count != clampi(alive, 2, Formations.MAX_MEMBERS):
 				card.count = clampi(alive, 2, Formations.MAX_MEMBERS)
 				card.queue_redraw()
-	if game_match.control_point:
-		_info.text = "CENTER  us %d  them %d  (first to %d)\n%s" % [game_match.control_score[team],
-				game_match.control_score[1 - team], Match.CONTROL_POINTS_TO_WIN, _info.text]
-	var lines: PackedStringArray = []
-	for s in game_match.team_squads(team):
-		for event in s.events.slice(maxi(0, s.events.size() - 3)):
-			lines.append(event)
-	_log.text = "\n".join(lines.slice(maxi(0, lines.size() - 6)))
 	for id in _buttons:
 		var parts: PackedStringArray = String(id).split(":")
 		var active := false

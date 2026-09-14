@@ -109,6 +109,37 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
   `test_command_camera.gd` (framing math, off-screen order frames squad + destination after settling, one frame
   never exceeds the speed limit, visible orders leave the camera alone, manual pan/zoom and reselection end it,
   arrival ends it, Follow toggles and moves with the selection).
+- **C5 readability** (`tactical_map.gd`, `skirmish_mode.gd`): the start camera frames the army and the ground
+  ahead at zoom ≥ 0.36 (was a fixed 0.62: a tank was ~17 px tall on a phone, now ≥ 24 px, tested); 3D
+  nameplates only below zoom 0.12 (were on below 0.45 and covered the fight); close up: models + ground rings +
+  a small hull/shield bar over the selected squad and over hurt enemies in sight; far out (zoom ≥ 0.5 or the
+  overview): unit-type icons turned to each vehicle's heading (selected squad ringed, commander gold), enemies
+  in sight as red type icons, remembered contacts as fading hollow triangles. `--zoom=0..1` for tuning/shots.
+  Tests: `test_command_readability.gd`. Before/after: `build/before/skirmish_*.png` vs
+  `build/screenshots/c5_*.png` (local, not committed).
+- **C6 HUD** (`hud_messages.gd`, wired in `skirmish_mode.gd`): one filtered feed to `Hud.post_message`: losses
+  merged per squad with unit types ("Alpha lost 2 vehicles (Tank, Tank), 1 left"), "Bravo destroyed" (error),
+  friendly-fire kills called out, enemy kills merged, order acks at most every 3 s (rejections always),
+  duplicates within 4 s dropped, ≤ 3 info messages per 3 s, control point "N points from winning" warnings.
+  A center meter under the squad bar (our points from the left, theirs from the right, who holds it). The
+  debug event log (coordinates) is gone from the play view; the scoreboard says "units", not "tanks".
+  Tests: `test_command_messages.gd` (including one that runs the real announcer's wording through the filter).
+
+### Requests to other streams
+
+- **rules:** tag `MatchAnnouncer.announced` with a kind (e.g. `announced(text, severity, kind)`) so
+  `HudMessages` can filter by kind instead of by text pattern; and a `Match` signal for friendly-fire *hits*
+  (`friendly_hit(shooter, victim, damage)`) once friendly fire lands, so the HUD can warn before a kill
+  (`HudMessages` already reports friendly-fire kills from `tank_destroyed`).
+- **rules (C1 catalog v2):** `CommandIcons.role_of` reads `role`; until then it maps v1 `class` (and laser
+  tanks → lancer). Icons exist for scout, tank, ifv, artillery, lancer; a new role falls back to a generic hull.
+- **art:** (1) the team glow blob under each vehicle is wider than the new selection ring, so at play
+  distance the ring reads as a halo on a blob; a smaller or dimmer glow would let the ring and the model read.
+  (2) The ring, icon, and meter colors come from `GameTheme.ui` (`friendly`, `enemy`, `commander`); restyle
+  freely. (3) `SquadChip`/`IconButton` draw over the theme's Button style; a dedicated chip style (less
+  transparent, so crates behind don't show through) is welcome.
+- **ai:** squad verbs are unchanged; the map only reads `Squad.arrived`, `verb`, `destination`, `roster`,
+  `commander`, `formation`, `alive_members`.
 
 ### Decisions (with reasons)
 
@@ -140,3 +171,10 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
 - **C4: tracking never zooms in closer than the player had it**, eases at 3/s, and is capped at 120 m/s
   (scaled down when close) and 0.35 zoom levels/s. Any manual camera input (pan, pinch, wheel, rotate, radar
   look) ends it at once. An explicit Follow outranks order tracking and moves on with the selection.
+- **C5: nameplates are effectively off in skirmish** (only when zoomed right in). The squad bar has health,
+  the rings say whose and which squad, and floating bars cover hurt vehicles; names like "Alpha 2 300 +150"
+  were the biggest clutter in round 1's shots.
+- **C5: the icon/model switch is at zoom 0.5** (~77 m out), where a vehicle model falls under ~20 px on a phone.
+- **C6: the command stream filters messages in `game/ui/hud_messages.gd` instead of editing the announcer**
+  (rules owns `game/match/announcer.gd`). It drops the announcer's loss/kill lines by pattern and posts richer
+  ones; a test pins the announcer's wording so a format change can't silently double messages.

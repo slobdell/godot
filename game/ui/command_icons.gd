@@ -25,9 +25,9 @@ const DRILL_INFO := {
 	"assault": ["Assault", "Charge the spot. Every vehicle hunts."],
 	"break_contact": ["Break contact", "Back away toward base, front armor to the enemy."],
 }
-## Short present-tense order states for the squad bar.
-const ORDER_STATE := {"move": "Moving", "bound": "Bounding", "hold": "Holding", "assault": "Assaulting",
-		"break_contact": "Falling back", "": "No orders"}
+## Short order states for the squad bar (≤ 8 letters, so they fit a phone chip beside the name).
+const ORDER_STATE := {"move": "Moving", "bound": "Bounding", "hold": "Holding", "assault": "Charging",
+		"break_contact": "Retreat", "": "Idle"}
 
 
 ## The unit's role for icons: catalog v2's `role` (contract C1) when present; v1's `class`, with a laser

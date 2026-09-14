@@ -92,11 +92,17 @@ func _draw() -> void:
 	if hotkey != "":
 		draw_string(font, Vector2(pad, baseline), hotkey, HORIZONTAL_ALIGNMENT_LEFT, -1, small_size, Color(1, 1, 1, 0.45))
 		name_x += small_size * 0.9
-	draw_string(font, Vector2(name_x, baseline), squad.squad_name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT,
-			size.x * 0.5, name_size, ink)
+	var name_text := squad.squad_name.to_upper()
+	var name_width := minf(font.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, name_size).x, size.x * 0.6)
+	draw_string(font, Vector2(name_x, baseline), name_text, HORIZONTAL_ALIGNMENT_LEFT, size.x * 0.6, name_size, ink)
+	# The state takes what's left of the row, shrinking its font rather than overlapping the name.
+	var state := String(info["state"])
+	var room := size.x - pad - (name_x + name_width + pad * 0.6)
+	var state_size := small_size
+	while state_size > 8 and font.get_string_size(state, HORIZONTAL_ALIGNMENT_LEFT, -1, state_size).x > room:
+		state_size -= 1
 	var state_color := Color(1, 1, 1, 0.7) if not info["lost"] else Color(enemy, 0.8)
-	draw_string(font, Vector2(size.x * 0.45, baseline), String(info["state"]), HORIZONTAL_ALIGNMENT_RIGHT,
-			size.x * 0.55 - pad, small_size, state_color)
+	draw_string(font, Vector2(size.x - pad - room, baseline), state, HORIZONTAL_ALIGNMENT_RIGHT, room, state_size, state_color)
 	# Units: one pictogram each.
 	var roles: Array = info["roles"]
 	var glyph := clampf(h * 0.3, 8.0, 22.0)
