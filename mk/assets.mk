@@ -75,5 +75,5 @@ assets-web-gallery: import $(TEMPLATES_OK) $(WEB_SMOKE_DEPS) ## Render a theme's
 		$(BUILD_DIR)/screenshots/assets-web-gallery-$(THEME)$(if $(ONLY),-$(ONLY))$(if $(NIGHT),-night).png \
 		"$(if $(ONLY),&only=$(ONLY))$(if $(NIGHT),&night)"
 
-assets-kitbash: ## Re-fetch the CC0 sources behind the kitbash theme into assets/incoming/ (see assets/CREDITS.md)
-	tools/assets/fetch_kitbash.sh
+assets-kitbash: ## Rebuild the kitbash theme from its recipe: fetch CC0 sources, normalize every slot (tools/assets/build_kitbash.sh)
+	tools/assets/build_kitbash.sh

@@ -22,13 +22,21 @@ static func load_glb(path: String) -> Node3D:
 
 static func save_glb(root: Node, path: String) -> Error:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir()))
-	clear_extracted(path)
 	var document := GLTFDocument.new()
 	var state := GLTFState.new()
 	var error := document.append_from_scene(root, state)
-	if error == OK:
-		error = document.write_to_filesystem(state, ProjectSettings.globalize_path(path))
-	return error
+	if error != OK:
+		return error
+	var bytes := document.generate_buffer(state)
+	if FileAccess.file_exists(path) and FileAccess.get_file_as_bytes(path) == bytes:
+		return OK  # unchanged: Godot won't re-import it, so its extracted textures must stay
+	clear_extracted(path)
+	var handle := FileAccess.open(path, FileAccess.WRITE)
+	if handle == null:
+		return FileAccess.get_open_error()
+	handle.store_buffer(bytes)
+	handle.close()
+	return OK
 
 
 ## Godot's importer extracts a GLB's embedded images beside it as <name>_<image>.png. When the GLB

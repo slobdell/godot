@@ -200,6 +200,24 @@ func test_a_separate_emission_map_is_wired_into_matching_materials() -> void:
 	assert_true(not materials["Tracks"]["emissive"], "other materials stay dark")
 
 
+func test_rewriting_an_identical_glb_keeps_its_extracted_textures() -> void:
+	var dir := "%s/rewrite" % TMP
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var root: Node3D = _free_later(Node3D.new())
+	_add_box(root, "Box", Vector3(4.5, 3, 4.5), Vector3.ZERO, "crate")
+	var path := "%s/prop_crate.glb" % dir
+	assert_eq(AssetIO.save_glb(root, path), OK, "first write")
+	var extracted := "%s/prop_crate_crate_albedo.png" % dir  # what Godot's importer would have extracted
+	FileAccess.open(extracted, FileAccess.WRITE).store_string("png")
+	assert_eq(AssetIO.save_glb(root, path), OK, "identical rewrite")
+	assert_true(FileAccess.file_exists(extracted), "an unchanged GLB keeps its extracted textures (Godot won't re-extract them)")
+	_add_box(root, "Beacon", Vector3(0.3, 0.3, 0.3), Vector3(0, 2, 0), "beacon")
+	assert_eq(AssetIO.save_glb(root, path), OK, "changed rewrite")
+	assert_true(not FileAccess.file_exists(extracted), "a changed GLB clears textures extracted from the old version")
+	for file in DirAccess.get_files_at(dir):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path("%s/%s" % [dir, file]))
+
+
 func test_oversized_textures_are_capped_at_1024() -> void:
 	var root: Node3D = _free_later(Node3D.new())
 	var material := StandardMaterial3D.new()

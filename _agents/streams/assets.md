@@ -84,6 +84,8 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 
 - **Browser proof:** `make assets-web-gallery THEME=… [ONLY=…] [NIGHT=1]` exports a copy of the project with the gallery as main scene (release web templates refuse scene-path args) and renders it in headless Chrome. Kitbash neon signs (Basis texture + emissive + glow) and the neon kit at night both render in WebGL 2 (`build/screenshots/assets-web-gallery-*.png`). `make web-smoke` passes.
 
+- **Reproducible themes:** `make assets-kitbash` = `tools/assets/build_kitbash.sh`, the checked-in recipe (fetch CC0 sources + every normalize command with its reasons); `make assets-procedural` rebuilds `neon_kit`. Both are **deterministic**: a second rebuild leaves git clean. Unchanged GLBs aren't rewritten, because Godot wouldn't re-import them and their extracted textures would vanish; a regression test covers this. Re-run both after any pipeline change.
+
 **Decisions**
 - Pipeline GDScript lives in `assets/pipeline/`, not `tools/assets/`: `tools/` has a `.gdignore`, so Godot never registers `class_name` scripts there. `tools/assets/` keeps non-Godot tooling (Python provider clients, mock server).
 - Slot contracts are data (`assets/pipeline/asset_contracts.gd`). Where the brief's table was loose I picked what matches today's placeholder art, so swapping art never moves gameplay: turret **bottom at y = −0.275** relative to its pivot (sits on the default hull deck at 0.945 m); cannon/laser barrel from z = −0.7 to the muzzle at **z = −3.2**, axis at y = 0.05; props **stretch** to their exact collision box (warning past 2× distortion); vehicles scale uniformly (**contain**); turret max 1.8 × 0.9 × 2.1.
@@ -101,13 +103,19 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 
 **Requests to other streams**
 - **Look & feel:** `game/theme/default/fx_shell.tscn` capsule is 3,456 tris vs the 200 budget (asset_budget.md). Candidate art for L2: `make assets-gallery THEME=neon_kit NIGHT=1`, `make assets-preview THEME=neon_kit FLAGS=--skirmish`; copy what you like into `game/theme/cyberpunk/` or point slots at `game/theme/neon_kit/generated/*.tscn`.
-- **Gameplay / netcode:** `make sim-baseline` flaked once in 6 runs (hash `40503279562bab7e`) under heavy machine load; see Known issues. Worth a loop of `make sim-baseline` while `match_series` runs, because lockstep netcode would inherit this.
+- **Gameplay / netcode: `make sim-baseline` is flaky, and I found why.** It failed 2 of ~12 runs overnight, with a different hash each time (`40503279562bab7e`, `72906422db671e8b`), always while other worktrees loaded the machine. Cause: Godot 4.7 syncs navigation maps on a worker thread (`navigation/world/map_use_async_iterations=true` by default), so `Pathing.is_ready` first turns true at **physics frame 5 idle but frame 3–4 under load** (measured, 5 runs each), and brains steer straight until then. With `navigation/world/map_use_async_iterations=false` and `region_use_async_iterations=false` (tested via a local override.cfg, since reverted), readiness is **frame 2 in all 10 runs, idle or loaded**. The baseline hash changes with that setting, so it's a `project.godot` edit plus a `tests/baselines/sim_state_hash.txt` update, which is gameplay's call. `make determinism` never caught it because both of its runs see the same load. Lockstep netcode would inherit the same bug.
 - **Integrator (shared files):** (1) `mk/core.mk` import target: `mkdir -p build && touch build/.gdignore` (screenshots are shipped inside the web .pck today, ~0.9 MB measured); (2) `export_presets.cfg` `exclude_filter` += `assets/pipeline/*, game/theme/kitbash/*` (≈ 520 KB of web download) until a theme uses them; (3) later, `project.godot` `import_etc2_astc=true` for Android. Details in asset_budget.md.
 
 **Known issues**
 - The orphan check only catches files no manifest entry prefixes; a stale texture that shares a model's name prefix is removed on the next normalize (`clear_extracted`) but not flagged.
-- **Intermittent `sim-baseline` mismatch (not caused by this stream):** one `make check` at 02:40, run while other worktrees' match series were loading the machine, got `40503279562bab7e` instead of `e69acc63a64f319a`. The same tree then passed 5 times (including under 4 busy CPU loops), and `make determinism` passed in the failing run. The diff was assets-only (no simulation code), so something in the sim likely depends on timing: navigation-map readiness (trip-up #22) is the first suspect. Reported under Requests.
+- **Intermittent `sim-baseline` mismatch (not caused by this stream):** diagnosed; async navigation map sync. See Requests to other streams. Commits after 02:40 were made on runs where every other check passed and a `sim-baseline` rerun passed.
 - A 2400×1080 window is clamped to the display (1854×1011 here); use `SCREEN=1920x864` for 20:9 shots.
+
+**Next steps** (assets stream, in order)
+1. Once the lead buys a key: generate a hero hull/turret/cannon with `asset_prompts.md`, normalize into a `generated` theme, record results in its Results log.
+2. Palette atlas in the normalizer (flat-colored, non-emissive materials → one palette texture) to cut draw calls on CC0/procedural props (asset_budget.md).
+3. Unit classes (gameplay G-set 2: scout/artillery): slot variants per class once the catalog defines hardpoints; the Quaternius pack has 4 tank variants ready to normalize.
+4. After look & feel picks a direction: move chosen pieces into `game/theme/cyberpunk/` (their call), then drop unused test themes from the export (asset_budget.md proposal 2).
 
 **What to playtest**
 - `make assets-gallery THEME=kitbash` and `make assets-gallery THEME=neon_kit NIGHT=1`, then look at `build/screenshots/assets-gallery-*.png`
