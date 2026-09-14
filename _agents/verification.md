@@ -20,7 +20,19 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 | 6c | Match runner | `make match-smoke` | nothing | A seeded 2v2 bot match finishes via its limit, prints `MATCH_RESULT`, has shots, runs > 2× real time, logs no errors | anything touching Match, bots, orders, navigation, main.gd roles |
 | 7 | Browser multiplayer | `make web-net-smoke` → **Read `build/screenshots/web-net.png`** | Chrome + node | A browser client connects (`TANK_SQUAD_SPAWNED`) to a server with one bot; ~8 s later the screenshot should show the *remote* bot tank near "YOU", team colors, nameplates, and usually shells/damage | anything touching client rendering, spawning, combat visuals, the web export |
 
-**Bundles:** `make check` = rows 0, 1, 2, 6, 6b, 6c, 6d (all headless, ~2 min). `make check-all` = `check` + rows 3, 4, 5, 7 and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
+| 6e | Relay (player-hosted) | `make relay-smoke` | node | Broker + a headless player **host** (own tank + 2 bots) + 2 headless clients joined by room code: each sees 5 tanks, moves, sees damage replicate; no ERROR anywhere | anything touching networking, modes, RelayPeer, the broker |
+| 6f | Broker | `make broker-test` (+ `make broker-smoke`) | node | 31 unit tests: lobbies, star relay, limits, resume with retransmit; the smoke drives the real process | anything in `server/broker/` |
+| 6g | Lobby | `make lobby-smoke` | node | `--lobby` tapped through: a wrong code returns with a message; HOST opens a room with its badge | lobby, HostMode, ClientMode |
+| 7b | Relay under stress | `make relay-drop-smoke`, `relay-latency-smoke`, `relay-rejoin-smoke` | node | 10 s socket cut resumes the same seat; 150 ms + jitter stays playable; a seat lost past the grace period rejoins and gets its tank back | reconnect, NetworkInput, HostMode |
+| 7c | Browser relay | `make web-relay-smoke` → **Read `web-relay.png`**; `make web-host-smoke` → **Read `web-host.png`** | Chrome + node | A browser joins a native host; a browser **hosts** (wasm simulation) and a native client plays in it | anything touching the web export or relay |
+| 8 | Cross-build determinism (N2) | `make det-spike` | Chrome + node | The integer core gives identical hashes native vs wasm; prints cost per tick and the float probe | `game/network/detcore/` |
+| 8b | Replays | `make replay` | node | A command log replays with every hash verified and a 1-command tamper is caught; a recorded relay match plays back identically | replays, detcore, RelayPeer |
+
+**Measurements (not pass/fail):** `make net-measure TANKS=10 CLIENTS=2 LATENCY=150 JITTER=50` (bytes/s,
+snapshot gaps, input delay per player), `make broker-load ROOMS=50` (broker CPU/memory). Results live in
+`_agents/streams/netcode.md`.
+
+**Bundles:** `make check` = rows 0, 1, 2, 6, 6b, 6c, 6d, 6e, 6f (unit tests), 6g (headless, ~5 min on a loaded machine). `make check-all` = `check` + rows 3, 4, 5, 7, 7b, 7c and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
 
 **Skirmish screenshots:** `make skirmish-shots` runs a scripted skirmish and saves desktop and phone-aspect (1200×540 = a 2400×1080 phone at 2× UI scale) screenshots to `build/screenshots/`. Look at both after any UI, camera, or fog change.
 
@@ -57,5 +69,5 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 
 - The desktop screenshot uses the local Intel GPU (OpenGL 3.3+); the web one uses SwiftShader. Colors and shadows can differ slightly. Neither is a performance measurement.
 - `web-net-smoke`'s screenshot timing depends on the bot's drive time; if the bot isn't in frame, the check still passes (it only asserts boot + spawn). Look at the picture.
-- Nothing measures latency or jitter yet; everything runs on localhost.
+- Latency and jitter are *injected* (`--relay-latency`, `--relay-jitter`) on localhost; no real cellular link or phone has been measured yet.
 - No input-injection tests yet (keyboard/mouse → `PlayerController`). `ScriptedController` covers the command path; the input map mapping itself is untested.

@@ -30,6 +30,13 @@ make net-smoke     # or: prove it works with two headless bot clients
 ```
 (Don't open port 9080 in a browser: that's the game server's WebSocket, and the page proxies to it.)
 
+Player-hosted multiplayer (a player's browser or desktop hosts; a small broker only relays):
+
+```bash
+make play-relay    # broker + web page; open http://localhost:8060/?lobby, tap HOST, friends tap the code
+make relay-smoke   # or: prove it with a headless host and two headless clients
+```
+
 Let Claude play (it commands a tank through a localhost bridge):
 
 ```bash

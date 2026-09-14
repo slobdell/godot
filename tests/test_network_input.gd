@@ -66,3 +66,47 @@ func test_silent_owner_stops_but_keeps_aim() -> void:
 	assert_eq(cmd.turn, 0.0, "and stops turning")
 	assert_eq(cmd.aim_point, Vector3(0, 0, -9), "but the turret keeps its last aim")
 	input.free()
+
+
+func test_a_slow_host_frame_does_not_make_a_fresh_command_stale() -> void:
+	# Measured 2026-09-14: a browser host rendering at 2 fps read commands ~500 ms before simulating
+	# them, and every player's tank stood still. Staleness counts from the last network read.
+	var input := _input_for_owner()
+	input.note_poll(1000)
+	input.accept(OWNER, 1000, TankCommand.new(1.0))
+	# ...the frame renders for 700 ms, then the physics ticks run...
+	assert_eq(input.command_for_tick().throttle, 1.0, "the command read this frame still drives the tank")
+	input.note_poll(1000 + NetworkInput.STALE_AFTER_MSEC + 200)
+	assert_eq(input.command_for_tick().throttle, 0.0, "but a later read with nothing new stops it")
+	input.free()
+
+
+func test_client_sends_changes_and_keepalives_not_every_tick() -> void:
+	var input := _input_for_owner()
+	var held := TankCommand.new(1.0, 0.0, Vector3(0, 0, -20))
+	var sent := 0
+	# One second of 60 Hz ticks holding the same command.
+	for tick in 60:
+		if input.should_send(held, 1000 + tick * 16):
+			sent += 1
+	assert_true(sent >= 9 and sent <= 11, "a held command goes out ~10 times a second as a keepalive (sent %d)" % sent)
+	input.free()
+
+
+func test_client_sends_changes_promptly_but_at_most_every_other_tick() -> void:
+	var input := _input_for_owner()
+	var sent := 0
+	for tick in 60:
+		# The aim sweeps a meter every tick: always "changed".
+		if input.should_send(TankCommand.new(1.0, 0.0, Vector3(tick, 0, -20)), 1000 + tick * 16):
+			sent += 1
+	assert_true(sent >= 29 and sent <= 31, "a constantly changing command is capped near 30 per second (sent %d)" % sent)
+	input.free()
+
+
+func test_trigger_pull_is_sent_on_the_same_tick() -> void:
+	var input := _input_for_owner()
+	input.should_send(TankCommand.new(), 1000)
+	assert_true(input.should_send(TankCommand.new(0.0, 0.0, Vector3.ZERO, true), 1016),
+			"fire goes out immediately, even right after another send (a one-tick trigger pull isn't lost)")
+	input.free()

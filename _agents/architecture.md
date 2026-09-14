@@ -82,7 +82,10 @@ Every process is exactly one **role**, chosen in `game/main.gd`:
 |---|---|---|---|---|
 | OFFLINE | no flags | yes | yes | no |
 | SERVER | `--server[=port]`, or an exported server binary | no | **yes, the only simulator** | yes (applies commands) |
-| CLIENT | `--connect[=url]` / `?connect` | yes | **no, display only** | yes (sends own commands) |
+| CLIENT | `--connect[=url]` / `?connect`, or `--join=CODE` / `?join=CODE` (relay), or `--replay=PATH` | yes | **no, display only** | yes (sends own commands) |
+| HOST | `--host` / `?host` (a player hosts through the broker's relay), or via `--lobby` / `?lobby` | yes (unless `--no-player`) | **yes, the only simulator** | yes, except on the host's own tank |
+| LOBBY | `--lobby` / `?lobby` | becomes HOST or CLIENT in place | n/a | n/a |
+| DET_SPIKE | `--det-spike` / `?det-spike` | no | runs `game/network/detcore/` only (N2 experiment) | no |
 
 One tick of networked play:
 
@@ -103,6 +106,22 @@ How the pieces fit:
 - **Authority.** All tanks keep the default multiplayer authority (peer 1, the server). Clients own nothing; they only send intent.
 - **Offline mode reuses the spawner.** The offline peer is its own server, but gets no `NetworkInput` (it would override the local controller with "stale input: stop").
 - **Security baseline.** `SceneMultiplayer.server_relay = false` on the server; sender check, finite check, clamp, 120 msg/s limit, 500 ms stale-stop in `NetworkInput.accept()`/`current_command()`. All of it is unit-tested without sockets.
+
+### Player-hosted matches through the relay (netcode N1, 2026-09-14)
+
+```
+ host player (HostMode)            broker (server/broker, Node)             players (ClientMode)
+ RelayPeer ──WebSocket──▶  room K7QX2: star relay, seq numbers,  ◀──WebSocket── RelayPeer
+ (peer 1, simulates)       heartbeats, 30 s grace + resume,                    (display + commands)
+                           rate/size limits; never simulates
+```
+
+`RelayPeer` is a `MultiplayerPeerExtension`, so the spawner/synchronizer/RPC code above runs
+unchanged: the host is peer 1 like a server. A dropped socket stays invisible to Godot (the peer
+reconnects and resumes; reliable frames are retransmitted); a seat lost for good is rejoined with a
+player key and the host restores that tank. Wire protocol and measurements:
+`_agents/streams/netcode.md`; designs (lockstep, host loss, backgrounding, costs):
+`_agents/streams/references/netcode_designs.md`.
 
 ## Combat and rules (M3)
 
@@ -159,6 +178,9 @@ matters for fairness.
 | 2026-09-13 | Shared team vision (intel) instead of per-tank perception | Makes scouting and spotting teamwork mechanics; cheap (≤ 25 rays per team per 0.1 s) |
 | 2026-09-13 | Doctrine coordinates are team-relative (right, forward) | One doctrine plays identically for either side, keeping experiments fair |
 | 2026-09-13 | Browser client connects to same-origin `/ws` (proxied) | The lead's first try opened the WebSocket port in a browser; one URL now, same shape as production |
+| 2026-09-14 | Casual multiplayer = a player hosts through a WebSocket relay broker (N1); the broker never simulates | Zero game compute on our servers; browsers/phones can't accept connections; cheating accepted for casual play (assumed pending the lead) |
+| 2026-09-14 | Relay frames carry sequence numbers; reliable frames are retained until acked | A dropped phone socket must not lose a spawn/despawn, or Godot's replicated tree silently diverges |
+| 2026-09-14 | Lockstep would need an integer simulation core | N2: a Q16.16 core is bit-identical native vs wasm; basic float ops agree too, but libm trig (used by Godot physics/navigation) does not |
 | 2026-09-13 | Navmesh baked from colliders, south half + 180° mirror | Server export has no meshes; a plain bake was measurably unfair (64% south wins) |
 | 2026-09-13 | Match runner uses `--fixed-fps` in-process, not `Engine.time_scale` | Exact 1/60 s steps regardless of speed; physics stays identical to real-time play |
 | 2026-09-13 | Retreats back away (reverse) by default | Playtest #2: turning to run exposes rear armor |

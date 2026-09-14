@@ -77,15 +77,18 @@ game/
   ui/                    TacticalMap (squad command overlay), Hud (hud.tscn = layout, hud.gd = text),
                          widgets/ (CyberFrame, CyberBanner, Conductors, HudSkin, title screen)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
-  network/               NetworkInput (client→server commands + validation), Replication (what syncs)
+  network/               NetworkInput (client→server commands + validation), Replication (what syncs),
+                         RelayPeer (multiplayer through the broker), ReplayPeer, ui/ (lobby, room badge),
+                         detcore/ (integer deterministic-simulation spike: Fixed, DetSim, CommandReplay)
   camera/                FollowCamera
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
-tests/                   headless runner + TestCase base + test_*.gd; net/bot_client_check.gd
+tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
 doctrines/               team plans as JSON (squads, weapons, directives) for the match runner
 mk/                      Makefile targets split by area (core, play, net, match, web); root Makefile includes them
 tests/baselines/         recorded simulation hash (make sim-baseline)
 _agents/streams/         per-workstream briefs (gameplay, look_and_feel, assets, netcode, garage)
-tools/                   serve_web.py, web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
+server/broker/           match broker (Node + ws): lobbies, relay, resume; `make broker`, `make broker-test`
+tools/                   serve_web.py (/ws + /relay proxies), web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
 _agents/                 you are here
 .tools/  (gitignored)    pinned Godot + export templates, from `make bootstrap`
 build/   (gitignored)    exports and screenshots
@@ -111,6 +114,10 @@ build/   (gitignored)    exports and screenshots
 | Play multiplayer locally | `make play BOTS=1`, then open several tabs at http://localhost:8060/?connect (or `make client`) |
 | Play with someone on the LAN | `make play WEB_HOST=0.0.0.0`; they open `http://<your-ip>:8060/?connect` |
 | Prove networking works | `make net-smoke` (headless) and `make web-net-smoke` (browser) |
+| Play a player-hosted match (relay) | `make play-relay`, open `http://localhost:8060/?lobby`: HOST, or tap a room code and JOIN (`?host`, `?join=CODE` work directly) |
+| Prove the relay works | `make relay-smoke` (in check), `relay-drop-smoke`, `relay-rejoin-smoke`, `web-host-smoke` (a browser hosts) |
+| Measure bandwidth / latency | `make net-measure TANKS=20 CLIENTS=2 LATENCY=150 JITTER=50` |
+| Watch a recorded match | `--join=CODE --record=PATH` while playing, then `make replay-watch REPLAY=PATH` |
 | Add a tunable to a node | `@export var` in the script; it appears in the editor Inspector |
 | Add an input | Add it to `[input]` in `project.godot` (or the editor's Input Map) |
 | Add a test | New `tests/test_<thing>.gd` that `extends TestCase` with `test_*` methods |
@@ -164,3 +171,8 @@ build/   (gitignored)    exports and screenshots
 42. **The Compatibility renderer doesn't batch 3D draws.** A prop built from 23 boxes is 23 draw calls (46 with shadows). Merge static art per material (`StaticBatcher`) or build vehicles as one vertex-colored mesh (`ColorMeshBuilder`); `Decal` and `ReflectionProbe` don't help there (probed).
 43. **The tactical camera is orthographic, 200 m up, ~3 px per meter.** Art thinner than ~0.5 m vanishes, and exponential fog thick enough for the 3D view hides most of the map. Judge arena art from `--skirmish` screenshots, not only the follow camera.
 44. **Everything Godot imports under the project ships in exports, including `build/screenshots/*.png`.** The web `.pck` was 13.4 MB, almost all screenshots; `exclude_filter` now has `build/*` (0.6 MB). Keep generated files out of exports or out of the project tree.
+38. **Packed arrays are values in GDScript.** `for arr in [pos_x, pos_z]: arr.resize(n)` resizes *copies*; the fields stay empty. Edit each field directly (`game/network/detcore/det_sim.gd`).
+39. **A GameMode (RefCounted) with no references is freed, and its signal callbacks silently stop firing.** LobbyMode switched `main.mode` to the next mode and lost its own "join failed" handler. Keep a strong reference (`main.set_meta`).
+40. **Signal lambdas that capture a refcounted object connected to that same object leak it** (`multiplayer.x.connect(func(): multiplayer…)`, or `peer.sig.connect(f.bind(peer))`). Exit prints "N resources still in use". Connect methods and look the object up inside.
+41. **"Stale input" must be judged from when the network was last read, not the physics tick's clock.** A browser host rendering at 2 fps read commands ~500 ms before simulating them and stopped every player's tank (`NetworkInput.command_for_tick`).
+42. **Don't trust float math across builds, and especially not trig.** Same seed: `+ − × ÷ √` hashed identically native vs wasm, but `sin/cos/atan2/exp` did not (`make det-spike` FLOAT_PROBE). Lockstep code must use `Fixed` (integers).

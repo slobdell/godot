@@ -81,8 +81,8 @@ help: ## Show this help
 # Parallel worktree agents share one machine. Every goal except interactive/long-running ones
 # re-runs itself through tools/slot.sh, which admits TANK_SQUAD_SLOTS (default 2) at a time.
 # New targets are heavy by default; add interactive ones to LIGHT_GOALS.
-LIGHT_GOALS := help doctor bootstrap worktree worktrees worktree-remove clean distclean \
-               editor run skirmish demo play serve-web server client watch-match agent-%
+LIGHT_GOALS := help doctor bootstrap broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
+               editor run skirmish demo play play-relay replay-watch serve-web server client watch-match agent-%
 _SLOT_GOALS := $(if $(TANK_SQUAD_SLOT),,$(filter-out $(LIGHT_GOALS),$(MAKECMDGOALS)))
 
 ifneq ($(_SLOT_GOALS),)
