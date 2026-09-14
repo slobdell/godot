@@ -85,6 +85,15 @@ def main():
     print(f"  pace: first shot {mean([r['stats'].get('first_shot_seconds') for r in results])}s, "
           f"first kill {mean([r['stats'].get('first_kill_seconds') for r in results])}s; "
           f"loser kills {mean(loser_kills)}; shots/match {shots / n:.0f}")
+    options = [{}, {}]
+    for r in results:
+        for t in (0, 1):
+            for k, v in r["stats"].get("options", [{}, {}])[t].items():
+                options[t][k] = options[t].get(k, 0) + v
+    for t, name in ((0, "Green"), (1, "Rust")):
+        total = max(sum(options[t].values()), 1)
+        if options[t]:
+            print(f"  {name} doing: " + ", ".join(f"{k} {v / total:.0%}" for k, v in sorted(options[t].items(), key=lambda kv: -kv[1])))
     for failure in failures:
         print("  FAILED: " + failure)
     if args.json:

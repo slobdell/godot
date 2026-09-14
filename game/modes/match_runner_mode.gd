@@ -3,7 +3,8 @@ extends GameMode
 ## Headless bots-vs-bots, faster than real time under Godot's --fixed-fps; prints
 ## MATCH_RESULT <json> and quits. Options: --green=N --rust=N (BotControllers) or
 ## --green-doctrine=PATH --rust-doctrine=PATH, --score-limit=K --time-limit=SECONDS
-## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation.
+## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation
+## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning).
 
 
 func role_name() -> String:
@@ -19,6 +20,12 @@ func start() -> void:
 	game_match.has_local_player = false
 	Pathing.enabled = not flags.has("no-navigation")
 	Match.swap_bases = flags.has("swap-bases")
+	# Experiments: --tune=tank.max_shield=0,cannon.ammo=60 overrides catalog stats for this run.
+	var tune_error := Units.apply_tuning(flags.text("tune"))
+	if tune_error != "":
+		push_error(tune_error)
+		main.get_tree().quit(2)
+		return
 	var seed_value := flags.integer("seed", 0)
 	game_match.seed_spawns(seed_value, 6.0 if flags.has("seed") else 0.0)
 	# --rust-first flips spawn (and therefore per-tick processing) order: a fairness probe.

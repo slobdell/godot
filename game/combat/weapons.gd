@@ -30,7 +30,9 @@ const PROFILES := {
 		"shield_multiplier": 0.8,
 		# G7: finite shells. Refilled slowly inside the team's base (Match.RESUPPLY_RADIUS), so
 		# pulling back is a real decision. Weapons without an "ammo" key never run out.
-		"ammo": 30,
+		# 2026-09-15: 30 -> 45 after G6 measurements: with shields, fights take ~370 shells per 5v5
+		# match and 30-shell tanks spent a quarter of the match driving home to refill.
+		"ammo": 45,
 		"heat_per_shot": 0.0,
 	},
 	# G7: the laser never runs out, but every pulse heats the tank, and a tank can't fire past its
@@ -76,8 +78,19 @@ static func exists(weapon_id: String) -> bool:
 	return PROFILES.has(weapon_id)
 
 
+## Experiment overrides ("weapon.key" -> value); see Units.apply_tuning. Empty in normal play.
+static var tuning := {}
+
+
 static func profile(weapon_id: String) -> Dictionary:
-	return PROFILES.get(weapon_id, PROFILES[DEFAULT])
+	var id := weapon_id if PROFILES.has(weapon_id) else DEFAULT
+	if tuning.is_empty():
+		return PROFILES[id]
+	var tuned: Dictionary = PROFILES[id].duplicate(true)
+	for key: String in tuning:
+		if key.begins_with(id + "."):
+			tuned[key.trim_prefix(id + ".")] = tuning[key]
+	return tuned
 
 
 ## True if `target` lies within a cone from `origin` along `direction`

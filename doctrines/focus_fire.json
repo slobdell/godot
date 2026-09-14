@@ -1,0 +1,10 @@
+{
+  "name": "Focus Fire",
+  "note": "Coordination for the shield rules (G6, 2026-09-15): one tight group that picks the weakest target (hull + shield), so shields don't get time to recharge, and an anchor pair that holds slightly back as the anvil. Compare with anvil_hammer, whose 3 + 2 split lost 90% to Individuals once shields landed.",
+  "squads": [
+    {"name": "Fist", "directive": {"role": "assault", "cohesion": 0.9, "target_priority": "weakest", "objective": {"right": 0, "forward": 10, "radius": 12}, "leash": 40},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}]},
+    {"name": "Guard", "directive": {"role": "support", "cohesion": 0.9, "target_priority": "weakest", "objective": {"right": 0, "forward": 0, "radius": 12}, "leash": 35},
+     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}]}
+  ]
+}

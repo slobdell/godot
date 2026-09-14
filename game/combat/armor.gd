@@ -6,6 +6,9 @@ extends RefCounted
 enum Facing { FRONT, SIDE, REAR }
 
 const MULTIPLIER := {Facing.FRONT: 0.5, Facing.SIDE: 1.0, Facing.REAR: 1.5}
+## G6 directional shields: shields are strongest in front too. An even shield (the first cut) wiped out
+## the payoff for flanking, and the flanking doctrine (Anvil & Hammer) fell from ~50% to 8% vs Individuals.
+const SHIELD_FACING := {"front": 0.7, "side": 1.0, "rear": 1.4}
 const FACING_NAMES := {Facing.FRONT: "front", Facing.SIDE: "side", Facing.REAR: "rear"}
 ## A hit within this many degrees of dead-ahead counts as front (or dead-behind as rear).
 const ARC_DEG := 45.0
@@ -36,7 +39,7 @@ static func weapon_multiplier(weapon: Dictionary, hull_forward: Vector3, attack_
 
 
 ## G6 shields: how one hit of `raw` damage splits between a shield holding `shield` points and the
-## hull behind it. The shield takes raw x shield_multiplier (no facing); whatever the shield can't
+## hull behind it. The shield takes raw x shield_multiplier (the weapon's, times SHIELD_FACING); whatever the shield can't
 ## absorb continues to the hull as the matching fraction of raw, times the armor multiplier.
 ## Returns Vector2(shield damage, hull damage).
 static func split_shield(raw: float, shield: float, shield_multiplier: float, armor_multiplier: float) -> Vector2:

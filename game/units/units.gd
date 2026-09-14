@@ -41,6 +41,36 @@ const PROFILES := {
 }
 
 
+## Experiment overrides ("unit.key" -> value), set from `--tune=` by the match runner and skirmish.
+## Never set in normal play. Read through stat(); Tank reads its stats at spawn.
+static var tuning := {}
+
+
+## A unit's stat, honoring `tuning`.
+static func stat(unit_id: String, key: String) -> Variant:
+	var tuned_key := "%s.%s" % [unit_id, key]
+	if tuning.has(tuned_key):
+		return tuning[tuned_key]
+	return PROFILES[unit_id][key]
+
+
+## Parse "tank.max_shield=0,cannon.ammo=60" into Units.tuning and Weapons.tuning.
+## Returns "" or an error. Keys must exist; values become numbers.
+static func apply_tuning(spec: String) -> String:
+	for pair in spec.split(",", false):
+		var parts := pair.split("=")
+		var path := parts[0].split(".")
+		if parts.size() != 2 or path.size() != 2 or not parts[1].is_valid_float():
+			return "tune: expected owner.key=number, got '%s'" % pair
+		if PROFILES.has(path[0]) and PROFILES[path[0]].has(path[1]):
+			tuning[parts[0]] = float(parts[1])
+		elif Weapons.PROFILES.has(path[0]) and Weapons.PROFILES[path[0]].has(path[1]):
+			Weapons.tuning[parts[0]] = float(parts[1])
+		else:
+			return "tune: no stat '%s'" % parts[0]
+	return ""
+
+
 static func exists(unit_id: String) -> bool:
 	return PROFILES.has(unit_id)
 

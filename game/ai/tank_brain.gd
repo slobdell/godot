@@ -22,11 +22,15 @@ const CONTACT_FRESH_TICKS := 120
 const COVER_RING_RADIUS := 10.0
 const COVER_SAMPLES := 8
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
 const SHIELD_DOWN_BREAK_HP := 0.75
+## RECHARGE continues until the shield is back to this fraction.
+const RECHARGED := 0.6
+## How far RECHARGE backs off when there's no cover nearby.
+const RECHARGE_BACKOFF := 25.0
 ## A tank at base stays until its hull is back to this fraction (G6 repair).
 const REPAIR_TOP_UP := 0.9
 ## A tank at full heat fights with this fraction of its usual appetite (scaled in from 70% heat).
@@ -136,9 +140,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		retreat = 0.85 + 0.1 * float(d["caution"])
 	elif visible_threats >= 3 and hp < 0.6:
 		retreat = 0.45 * float(d["caution"])
-	elif shield_down and threats_on_me > 0 and hp < SHIELD_DOWN_BREAK_HP:
-		# G6: shield gone and the hull already worn: break contact, recharge, come back.
-		retreat = 0.45 + 0.35 * float(d["caution"])
+
 	add.call("RETREAT", "", retreat)
 
 	# RESUPPLY (G7): empty guns go home; tanks already at base top up; low tanks refill in quiet moments.
@@ -165,9 +167,18 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var cover := 0.0
 	if not (s["cover"] as Array).is_empty() and threats_on_me > 0:
 		cover = float(d["caution"]) * minf(1.0, threats_on_me / 2.0) * (1.0 - toughness) * 1.6
-		if shield_down:
-			cover += 0.3 + 0.3 * float(d["caution"])  # G6: duck out of sight and let the shield come back
+
 	add.call("TAKE_COVER", "", cover)
+
+	# RECHARGE (G6): shield gone, a gun on me, hull already worn: break contact for a few seconds (the
+	# nearest cover, or back off out of the line of fire) and come back when the shield is up. A short
+	# hop, not a trip home: RETREAT to base (2026-09-14 first cut) cost the fight and lost T1 22 of 24.
+	var recharge := 0.0
+	if shield_down and threats_on_me > 0 and hp < SHIELD_DOWN_BREAK_HP:
+		recharge = 0.4 + 0.3 * float(d["caution"])
+	elif max_shield > 0.0 and current.get("option", "") == "RECHARGE" and shield < max_shield * RECHARGED and visible_threats > 0:
+		recharge = 0.5  # keep ducking until the shield is mostly back
+	add.call("RECHARGE", "", recharge)
 
 	var engages: Array = []
 	var flanks: Array = []
@@ -215,7 +226,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		var to_objective := my_position.distance_to(objective)
 		at_objective = to_objective <= float(s["objective_radius"])
 		if leash > 0.0 and to_objective > leash:
-			advance = 0.95
+			# Back to the post, unless the tank is breaking contact to recharge (G6): a hard leash kept
+			# anchors from ever letting their shields come back.
+			advance = 0.95 if recharge <= 0.0 else 0.3
 		elif not at_objective:
 			advance = 0.45 if visible_threats == 0 else 0.25
 	elif visible_threats == 0 and hp >= retreat_threshold:
@@ -306,7 +319,7 @@ static func _priority(rule: String, contact: Dictionary, distance: float) -> flo
 		"weakest":
 			# Hull plus shield against a standard tank's full load (was health / 100, which rated every
 			# tank above 100 HP as equally healthy).
-			var full := float(Units.PROFILES["tank"]["max_health"]) + float(Units.PROFILES["tank"]["max_shield"])
+			var full := float(Units.stat("tank", "max_health")) + float(Units.stat("tank", "max_shield"))
 			return 1.0 - clampf((float(contact["health"]) + float(contact.get("shield", 0.0))) / full, 0.0, 1.0)
 		"most_exposed":
 			return {"rear": 1.0, "side": 0.7, "front": 0.3}[contact["exposed_face"]]
@@ -478,6 +491,20 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"RETREAT":
 			_order_move(_move_to(s["rally"], true))
+			_order_weapon({"type": "fire_at_will"})
+		"RECHARGE":
+			if not (s["cover"] as Array).is_empty():
+				var hide: Vector3 = s["cover"][0]
+				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0))
+			else:
+				var threat_center := Vector3.ZERO
+				var seen := 0
+				for c in s["contacts"]:
+					if c["visible"]:
+						threat_center += c["position"]
+						seen += 1
+				var away := (my_position - threat_center / maxf(seen, 1)).normalized() if seen > 0 else -(me["forward"] as Vector3)
+				_order_move(_move_to(my_position + away * RECHARGE_BACKOFF, true))
 			_order_weapon({"type": "fire_at_will"})
 		"RESUPPLY":
 			var depot: Vector3 = s.get("resupply", s["rally"])

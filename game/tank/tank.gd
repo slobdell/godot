@@ -24,18 +24,18 @@ signal died
 @export var turret_turn_rate := deg_to_rad(110.0)
 ## Hull. Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 400;
 ## 2026-09-14 (G6): 300 plus a recharging shield (see Units.PROFILES).
-@export var max_health: int = Units.PROFILES["tank"]["max_health"]
+@export var max_health: int = Units.stat("tank", "max_health")
 ## G6 shield: absorbs damage before the hull and recharges after a quiet spell.
-@export var max_shield: float = Units.PROFILES["tank"]["max_shield"]
-@export var shield_recharge_delay: float = Units.PROFILES["tank"]["shield_recharge_delay"]
-@export var shield_recharge_rate: float = Units.PROFILES["tank"]["shield_recharge_rate"]
+@export var max_shield: float = Units.stat("tank", "max_shield")
+@export var shield_recharge_delay: float = Units.stat("tank", "shield_recharge_delay")
+@export var shield_recharge_rate: float = Units.stat("tank", "shield_recharge_rate")
 @export var reload_seconds := 2.0
 ## G1: how far this tank sees (inside the radius AND an unobstructed line of sight). Team vision is
 ## the union of its tanks' views (Match.intel).
-@export var sight_radius: float = Units.PROFILES["tank"]["sight_radius"]
+@export var sight_radius: float = Units.stat("tank", "sight_radius")
 ## G7 heat (see Units.PROFILES "heat_capacity"/"heat_dissipation").
-@export var heat_capacity: float = Units.PROFILES["tank"]["heat_capacity"]
-@export var heat_dissipation: float = Units.PROFILES["tank"]["heat_dissipation"]
+@export var heat_capacity: float = Units.stat("tank", "heat_capacity")
+@export var heat_dissipation: float = Units.stat("tank", "heat_dissipation")
 ## Client-side display smoothing toward replicated state. Higher = snappier.
 @export var remote_smoothing := 18.0
 

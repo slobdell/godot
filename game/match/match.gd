@@ -46,11 +46,11 @@ const CONTACT_MEMORY_TICKS := 60 * 12
 const MOVING_SPREAD_FACTOR := 1.5
 ## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
 ## Tank.shield_recharge_delay. The hull is the lasting cost of a fight; mending it means going home.
-const REPAIR_HP_PER_SECOND := 4.0
+const REPAIR_HP_PER_SECOND := 6.0
 ## G7 resupply: tanks within this distance of their own base center regain one shell every
-## RESUPPLY_SECONDS_PER_SHELL. Slow on purpose: a full reload (30 shells) takes a minute at base.
+## RESUPPLY_SECONDS_PER_SHELL. A full reload (45 shells) takes 45 s at base.
 const RESUPPLY_RADIUS := 30.0
-const RESUPPLY_SECONDS_PER_SHELL := 2.0
+const RESUPPLY_SECONDS_PER_SHELL := 1.0
 ## World (layer 1) + tanks (layer 2): what beams and shells hit.
 const HIT_MASK := 3
 
@@ -77,7 +77,9 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		# Simulated seconds at the first shot fired and the first kill (pace of a fight).
 		"first_shot_seconds": -1.0, "first_kill_seconds": -1.0,
 		# ...and of those, how often it was NOT firing (turret still turning, or holding fire).
-		"gun_idle_samples": [0, 0]}
+		"gun_idle_samples": [0, 0],
+		# Sampled every INTEL_EVERY_TICKS: what living brain tanks are doing, {option: samples} per team.
+		"options": [{}, {}]}
 var sim_seconds := 0.0
 ## Physics ticks since the match began: THE clock for deterministic decisions.
 var tick := 0
@@ -124,6 +126,7 @@ func _physics_process(delta: float) -> void:
 		_update_intel()
 		_update_squads()
 		_resupply()
+		_sample_brain_options()
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination):
 		return
 	var reason := ""
@@ -369,6 +372,15 @@ static func in_resupply_zone(team: int, point: Vector3) -> bool:
 	return Vector2(point.x - center.x, point.z - center.z).length() <= RESUPPLY_RADIUS
 
 
+func _sample_brain_options() -> void:
+	for node in brains.get_children():
+		var brain := node as TankBrain
+		if brain == null or brain.tank == null or not brain.tank.is_alive() or brain.choice.is_empty():
+			continue
+		var counts: Dictionary = stats["options"][brain.tank.team]
+		counts[brain.choice["option"]] = int(counts.get(brain.choice["option"], 0)) + 1
+
+
 func _update_intel() -> void:
 	for team in 2:
 		var known: Dictionary = intel[team]
@@ -584,11 +596,12 @@ func _sorted_tanks() -> Array[Tank]:
 func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3, team: int, shooter: String,
 		weapon_stat: String, counts_as_hit: bool) -> bool:
 	var forward := -victim.global_basis.z
-	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)),
+	var face: String = Armor.FACING_NAMES[Armor.facing(forward, direction)]
+	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
 			Armor.weapon_multiplier(weapon, forward, direction))
 	if counts_as_hit:
 		stats["hits"][team] += 1
-		stats["hits_by_face"][Armor.FACING_NAMES[Armor.facing(forward, direction)]] += 1
+		stats["hits_by_face"][face] += 1
 	stats["damage"][team] += int(result["hull"])
 	stats["shield_damage"][team] += float(result["shield"])
 	if weapon_stat != "":

@@ -117,9 +117,13 @@ func test_with_its_shield_down_a_worn_tank_ducks_out_to_recharge() -> void:
 	var fresh := TankBrain.label(TankBrain.decide(_brain_situation(200, 150.0), {})["choice"])
 	assert_eq(fresh, "ENGAGE Rust_A_1", "shield up at 2/3 hull: keep fighting")
 	var broken := TankBrain.label(TankBrain.decide(_brain_situation(200, 0.0), {})["choice"])
-	assert_eq(broken, "TAKE_COVER", "same hull, shield down, a gun on it: get out of sight and recharge")
-	var no_cover := TankBrain.label(TankBrain.decide(_brain_situation(200, 0.0, {"cover": []}), {})["choice"])
-	assert_eq(no_cover, "RETREAT", "no cover nearby: back away instead")
+	assert_eq(broken, "RECHARGE", "same hull, shield down, a gun on it: break contact and let the shield come back")
+	var s := _brain_situation(200, 60.0)
+	assert_eq(TankBrain.label(TankBrain.decide(s, {"option": "RECHARGE", "target": "", "since": 990})["choice"]), "RECHARGE",
+			"a recharging tank keeps ducking until the shield is mostly back")
+	s["self"]["shield"] = 120.0
+	assert_eq(TankBrain.label(TankBrain.decide(s, {"option": "RECHARGE", "target": "", "since": 0})["choice"]), "ENGAGE Rust_A_1",
+			"then it comes back to the fight")
 
 
 func test_a_worn_tank_goes_home_to_mend_and_waits_there() -> void:
