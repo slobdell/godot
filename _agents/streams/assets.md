@@ -72,6 +72,7 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 
 - 2026-09-13: brief and slot contracts written. Nothing started.
 - 2026-09-14: overnight backlog added (no keys/GPU: research, pipeline, mock-tested providers, CC0 + procedural models). `fx.shell` slot landed.
+- **2026-09-15 integration:** the prison dozer is the default tank in the cyberpunk theme (look_and_feel.md Status). It ships in exports again, so the web `.pck` grows by its triplicated textures. That makes the next step (one shared texture set per unit) a priority. Scouts and artillery use scaled dozers until their own models exist.
 
 ### Overnight run 2026-09-14: morning report
 

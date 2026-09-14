@@ -14,11 +14,12 @@ _Last updated: 2026-09-15. **All five overnight streams are merged into `main`**
   - `make play-relay`, then open `http://localhost:8060/?lobby`: player-hosted multiplayer through the relay broker, with room codes.
   - Also: `make vehicle-gallery`, `make hud-gallery`, `make fx-bench`, `make assets-gallery THEME=neon_kit NIGHT=1`, and `make assets-unit THEME=prison_dozer`.
 - **Verified 2026-09-15 on merged `main`:**
-  - `make check`: 292 tests plus network, combat, relay, lobby, match, determinism, sim-baseline, and garage smoke tests.
+  - `make check`: 294 tests plus network, combat, relay, lobby, match, determinism, sim-baseline, and garage smoke tests.
   - `make web-smoke`, and the assets web gallery.
-  - `make check-all`: see the Status section of this file's latest commit message, or re-run it.
+  - `make check-all`: passes (after two integration fixes: shield-aware relay damage check, early sounds).
 - **Sim baseline:** `e5cf33921713b657`. Navigation now syncs synchronously, so the baseline is deterministic under machine load (orientation trip-up 57).
-- **Web download:** 0.8 MB `.pck`. Candidate art themes and the asset pipeline are excluded from exports (trip-up 56).
+- **Tanks are the Meshy prison dozer** (assets) wearing the cyberpunk team accents, underglow, and shield (`game/theme/cyberpunk/dozer_part.gd`).
+- **Web download:** 11.8 MB `.pck`. The dozer ships its textures three times (fix: one shared texture set per unit); the `kitbash`/`neon_kit` test themes and the asset pipeline are excluded from exports (trip-up 56).
 
 ## What each stream delivered (details in each brief's Status section)
 
@@ -40,6 +41,15 @@ _Last updated: 2026-09-15. **All five overnight streams are merged into `main`**
 - **Paint/team split** (look & feel's request, fixed during integration): `Tank.set_team_accent` → slot `set_team_color` (friend or foe); `Tank.set_paint` → slot `set_paint`, only for painted loadouts. Before this, painted tanks lost their team accent lights.
 - **Theme flag clash:** `--theme=<candidate theme>` from asset tools no longer warns in `GameTheme` (it broke the browser gallery).
 - **Streams' worktrees are now behind `main`.** Before another run, each stream must `git merge main` (or be recreated with `make worktree-remove` + `make worktree`).
+
+## Candidate broad strokes for the next round (proposed 2026-09-15, not yet chosen by the lead)
+
+1. **Make it fun (gameplay):** shields vs coordination (control point as default?), snowballing, scout viability, army balance.
+2. **Readability at play distance (gameplay + look & feel):** at the default tactical zoom, units are tiny and covered by markers and glow; the default zoom and unit silhouettes need work. Shells spawn at 1.22 m, below the dozer's raised barrel (per-unit muzzle height).
+3. **A roster of real vehicles (assets):** Meshy scout and artillery (today they're scaled dozers); one shared texture set per unit (web download 11.8 MB); team accent masks; git LFS.
+4. **The whole loop (garage + look & feel + netcode):** title → garage → skirmish/lobby → results → rematch; phone content scaling; the garage in the cyberpunk style.
+5. **Multiplayer for the new rules (netcode):** fog-of-war interest management, replicate control point and visibility, quantized shield/heat; the lockstep decision.
+6. **A real phone pass (everyone):** fx-bench, det-spike, touch drags, HUD size on an actual Android device.
 
 ## Decisions and questions for the lead (collected from the streams)
 

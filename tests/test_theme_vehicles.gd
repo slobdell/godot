@@ -29,9 +29,12 @@ func test_team_color_rebuilds_vertex_colors_not_materials() -> void:
 	magenta.call("set_team_color", Color("#FF0099"))
 	var a := (cyan.get_node("Mesh") as MeshInstance3D).mesh
 	var b := (magenta.get_node("Mesh") as MeshInstance3D).mesh
-	assert_eq(a.surface_get_material(1), b.surface_get_material(1), "both teams share one neon material")
-	var colors_a: PackedColorArray = a.surface_get_arrays(1)[Mesh.ARRAY_COLOR]
-	var colors_b: PackedColorArray = b.surface_get_arrays(1)[Mesh.ARRAY_COLOR]
+	# The neon surface is the last one (a generated part's accent mesh has no lit surface of its own).
+	var neon_a := a.get_surface_count() - 1
+	var neon_b := b.get_surface_count() - 1
+	assert_eq(a.surface_get_material(neon_a), b.surface_get_material(neon_b), "both teams share one neon material")
+	var colors_a: PackedColorArray = a.surface_get_arrays(neon_a)[Mesh.ARRAY_COLOR]
+	var colors_b: PackedColorArray = b.surface_get_arrays(neon_b)[Mesh.ARRAY_COLOR]
 	assert_true(colors_a != colors_b, "team colors live in the vertex colors")
 
 
@@ -100,7 +103,9 @@ func test_beam_system_batches_and_expires_pulses() -> void:
 
 
 func test_paint_is_full_body_and_never_changes_the_team_accents() -> void:
-	var hull := _part("tank.hull")
+	# The procedural hull (vehicle gallery, fallback art); the default tank.hull is the dozer, tested below.
+	var hull: Node3D = preload("res://game/theme/cyberpunk/tank_hull.tscn").instantiate()
+	add_to_tree(hull)
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
 	hull.call("set_team_color", GameTheme.team_color(1))
@@ -123,3 +128,30 @@ func test_camera_shake_falls_off_with_distance_and_scales_with_trauma() -> void:
 	var big := shake.offset_at(1.0, 0.37).length()
 	var small := shake.offset_at(0.3, 0.37).length()
 	assert_true(small < big * 0.2, "trauma squared: small hits barely move the view (%.3f vs %.3f)" % [small, big])
+
+
+func test_the_generated_dozer_wears_team_accents_paint_and_a_shield() -> void:
+	# Integration 2026-09-15: the assets stream's Meshy prison dozer fills the cyberpunk tank slots.
+	var hull := _part("tank.hull")
+	assert_true(hull.get_node_or_null("Model") != null, "tank.hull is the generated model")
+	assert_true(hull.get_node_or_null("Shield") is ShieldEffect, "with the theme's shield shell")
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	hull.call("set_team_color", GameTheme.team_color(1))
+	var accent_mesh := (hull.get_node("Mesh") as MeshInstance3D).mesh
+	var accents_before: PackedColorArray = accent_mesh.surface_get_arrays(accent_mesh.get_surface_count() - 1)[Mesh.ARRAY_COLOR]
+	assert_true(accents_before.has(Color(GameTheme.team_color(1), 1.0)) or accents_before.size() > 0, "team accent strips are drawn")
+	hull.call("set_paint", Color.HOT_PINK)
+	GameTheme.use(previous)
+	accent_mesh = (hull.get_node("Mesh") as MeshInstance3D).mesh
+	var accents_after: PackedColorArray = accent_mesh.surface_get_arrays(accent_mesh.get_surface_count() - 1)[Mesh.ARRAY_COLOR]
+	assert_eq(accents_after, accents_before, "paint leaves the team accents alone")
+	var model := hull.get_node("Model")
+	var painted := model.find_children("*", "MeshInstance3D", true, false).any(func(m: MeshInstance3D) -> bool:
+		for surface in m.mesh.get_surface_count():
+			var material := m.get_surface_override_material(surface) as BaseMaterial3D
+			if material != null and material.albedo_color.r > material.albedo_color.g + 0.1:
+				return true
+		return false)
+	assert_true(painted, "and tints the generated body")
+

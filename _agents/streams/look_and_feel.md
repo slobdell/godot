@@ -119,6 +119,7 @@ in merge notes. Compare against the reference app's look where possible.
 - 2026-09-13: brief written; `default` theme extracted into slots (placeholder boxes).
 - 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction, mobile-first constraint, FX tricks catalog + L0 FX lab added.
 - **2026-09-14 overnight run: backlog L0–L6 and all three stretch items done**, plus a verification sweep and an integration rehearsal with gameplay. Morning report below.
+- **2026-09-15 integration:** the cyberpunk `tank.hull` / `tank.turret` / `weapon.cannon` slots are now the assets stream's Meshy prison dozer, wrapped by `game/theme/cyberpunk/dozer_part.gd`. The wrapper adds the team accent strips, the underglow, and the shield shell sized from the model's bounds, and paint tints the body. The procedural parts remain for the gallery and as fallback art. Open issue: at the default tactical zoom, the model is hidden under markers and glow.
 
 ### Morning report (overnight run 2026-09-14)
 

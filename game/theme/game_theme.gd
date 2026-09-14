@@ -49,9 +49,12 @@ const DEFAULT_UI := {
 
 ## The night arena (look_and_feel.md): neon over rust, cyan vs magenta teams.
 const CYBERPUNK_SLOTS := {
-	"tank.hull": "res://game/theme/cyberpunk/tank_hull.tscn",
-	"tank.turret": "res://game/theme/cyberpunk/tank_turret.tscn",
-	"weapon.cannon": "res://game/theme/cyberpunk/weapon_cannon.tscn",
+	# The assets stream's Meshy "prison dozer" (art_direction.md north star), wearing the theme's team
+	# accents, underglow, and shield (dozer_part.gd). The procedural tank_hull/tank_turret/weapon_cannon
+	# scenes remain for the vehicle gallery and as fallback art.
+	"tank.hull": "res://game/theme/cyberpunk/tank_hull_dozer.tscn",
+	"tank.turret": "res://game/theme/cyberpunk/tank_turret_dozer.tscn",
+	"weapon.cannon": "res://game/theme/cyberpunk/weapon_cannon_dozer.tscn",
 	"weapon.flamethrower": "res://game/theme/cyberpunk/weapon_flamethrower.tscn",
 	"fx.shell": "res://game/theme/cyberpunk/fx_shell.tscn",
 	# Gameplay G7's slots (contracts in streams/assets.md); default placeholders live on stream/gameplay.

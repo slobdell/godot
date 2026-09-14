@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/cyberpunk/dozer_part.gd" id="1_part"]
+[ext_resource type="PackedScene" path="res://game/theme/prison_dozer/generated/weapon_cannon.tscn" id="2_model"]
+
+[node name="WeaponCannonDozer" type="Node3D"]
+script = ExtResource("1_part")
+model_scene = ExtResource("2_model")
+part = "cannon"
