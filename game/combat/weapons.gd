@@ -13,6 +13,8 @@ const DEFAULT := "cannon"
 const PROFILES := {
 	"cannon": {
 		"kind": Kind.PROJECTILE,
+		# Points on top of the chassis cost (Units.cost_of).
+		"cost": 0,
 		# Shorter than the 84 m between bases, so contact is something you maneuver into.
 		"range": 70.0,
 		"preferred_min": 20.0,
@@ -40,6 +42,9 @@ const PROFILES := {
 	# travel time, armor matters less; sustained fire is limited by heat, not ammo.
 	"laser": {
 		"kind": Kind.BEAM,
+		"cost": 20,
+		# Which visual slot draws each pulse (see Match.show_beam).
+		"fx": "fx.laser_beam",
 		"range": 55.0,
 		"preferred_min": 15.0,
 		"preferred_max": 40.0,
@@ -53,8 +58,27 @@ const PROFILES := {
 		# 1.25 measured 14/24 (58%), swap + team-identity counterbalanced (2026-09-15).
 		"shield_multiplier": 1.25,
 	},
+	# Directive set 2: the scout's light machine gun. Hitscan bursts: cheap, fast, and mostly
+	# ineffective against a tank's shield and front armor; fine against other scouts and exposed rears.
+	"machine_gun": {
+		"kind": Kind.BEAM,
+		"cost": 0,
+		"fx": "fx.tracer",
+		"range": 45.0,
+		"preferred_min": 12.0,
+		"preferred_max": 35.0,
+		"damage": 4.0,
+		"reload": 0.2,
+		"aim_tolerance_deg": 4.0,
+		"spread_deg": 1.5,
+		"ammo": 600,
+		"heat_per_shot": 0.0,
+		"armor": {"front": 0.3, "side": 0.7, "rear": 1.0},
+		"shield_multiplier": 0.6,
+	},
 	"flamethrower": {
 		"kind": Kind.CONE,
+		"cost": 10,
 		"range": 20.0,
 		"preferred_min": 6.0,
 		"preferred_max": 16.0,

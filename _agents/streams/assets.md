@@ -47,6 +47,9 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 | `fx.shell` | projectile center, flying along −Z | ~0.3 × 0.3 × 1 | — (tracer + light; look & feel may pool) | ≤ 200 tris |
 | `fx.laser_beam` *(gameplay G7, placeholder landed on stream/gameplay)* | created at the world origin, then `setup` places it | from the muzzle to the hit point (≤ 55 m) | `setup(from: Vector3, to: Vector3)` (world space, called once right after it enters the tree); Match frees it 0.2 s later | FX only |
 | `fx.fog_of_war` *(gameplay G1, placeholder landed on stream/gameplay)* | world origin; `setup` places it | covers the arena floor (240 × 240 m) just above y = 0 | `setup({"texture": Texture2D, "origin": Vector2, "size": float})`: L8 texture, 1 px per 2 m cell, 0 never seen / ~90 seen before / 255 visible now; updated in place ~2×/s | one draw call |
+| `weapon.machine_gun` *(gameplay directive set 2, placeholder = the cannon barrel)* | turret pivot; along −Z | slim; on the scout (a 2.0 × 1.4 × 3.0 hull, visuals scaled from the tank's) | `set_team_color`, `setup(weapon)`, `set_firing(bool)` | ≤ 1k tris |
+| `fx.tracer` *(gameplay directive set 2, placeholder)* | like `fx.laser_beam` | muzzle to hit point (≤ 45 m), 5 bursts per second | `setup(from: Vector3, to: Vector3)` | FX only |
+| (all tank visuals) | | | optional `set_team_accent(Color)`: the team's friend-or-foe accent, called once at spawn; a loadout's `paint` goes to `set_team_color` instead of the team color | |
 | `arena.environment` | world origin | sky/lighting/fog only | — | — |
 | `arena.dressing` | world origin | ground 320×320 at y=0; perimeter walls at ±121 | — | ≤ 50k tris |
 

@@ -9,14 +9,19 @@ extends RefCounted
 ##   "squads": [
 ##     {"name": "Anvil", "directive": {"role": "anchor", "objective": {"right": 0, "forward": -10, "radius": 10}},
 ##      "tanks": [{"weapon": "cannon"}, {"weapon": "cannon", "directive": {"caution": 0.8}}]},
+##   Per tank (the Loadout fields contract, directive set 2): "unit" (Units.PROFILES id, default
+##   "tank"), "weapon" (main hardpoint) or "weapons" {hardpoint: weapon}, "components" [ids],
+##   "paint" "#rrggbb". See Units.validate_loadout.
 ##     ...
 ##   ]
 ## }
 ## Optional per squad: "formation" (see Formations.NAMES) and "verb": "hold", which starts the
 ## squad formed up and waiting for tactical-map orders; "spacing" in meters.
 
-const MAX_SQUADS := 3
-const MAX_TANKS := 5
+## 2026-09-15 (directive set 2): armies grow to ~20 units once cheap vehicles exist (the lead). A squad
+## still holds at most Formations.MAX_MEMBERS (5), so 4 squads.
+const MAX_SQUADS := 4
+const MAX_TANKS := 20
 
 
 ## Returns {"doctrine": Dictionary} or {"error": String}.
@@ -59,12 +64,14 @@ static func parse(data: Variant) -> Dictionary:
 		var tanks: Variant = squad.get("tanks")
 		if typeof(tanks) != TYPE_ARRAY or tanks.is_empty():
 			return {"error": "squad %s needs at least one tank" % squad["name"]}
+		if tanks.size() > Formations.MAX_MEMBERS:
+			return {"error": "squad %s has %d tanks; a squad holds at most %d" % [squad["name"], tanks.size(), Formations.MAX_MEMBERS]}
 		for tank in tanks:
 			if typeof(tank) != TYPE_DICTIONARY:
 				return {"error": "squad %s: tanks must be objects" % squad["name"]}
-			var weapon: Variant = tank.get("weapon", Weapons.DEFAULT)
-			if typeof(weapon) != TYPE_STRING or not Weapons.exists(weapon):
-				return {"error": "squad %s: unknown weapon '%s' (have %s)" % [squad["name"], weapon, Weapons.PROFILES.keys()]}
+			var loadout_error := Units.validate_loadout(tank)
+			if loadout_error != "":
+				return {"error": "squad %s: %s" % [squad["name"], loadout_error]}
 			if tank.has("directive"):
 				var error := Directives.validate(tank["directive"])
 				if error != "":

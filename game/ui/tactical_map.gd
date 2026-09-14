@@ -3,7 +3,7 @@ extends Control
 ## The tactical map: command squads with few inputs (see _agents/tactical_map.md).
 ##
 ##   WHO    left-click a tank → select its squad; click a tank in the selected squad → make it commander;
-##          keys 1-3 select squads
+##          keys 1-4 select squads
 ##   WHERE  drag on open ground (left OR right button): press = destination, drag direction = facing
 ##          (a left press ON a tank selects instead; left-drag was added after the lead's first playtest)
 ##   HOW    drill:     Q move · W bound · E hold (here) · R assault · T break contact
@@ -378,7 +378,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if key == null or not key.pressed or key.echo:
 		return
 	var squads := game_match.team_squads(team)
-	if key.keycode >= KEY_1 and key.keycode <= KEY_3 and key.keycode - KEY_1 < squads.size():
+	if key.keycode >= KEY_1 and key.keycode <= KEY_4 and key.keycode - KEY_1 < squads.size():
 		select_squad(squads[key.keycode - KEY_1].squad_name)
 	elif VERB_KEYS.has(key.keycode):
 		apply_verb(VERB_KEYS[key.keycode])
@@ -579,7 +579,7 @@ func _build_panels() -> void:
 
 	_info = _label(Vector2.ZERO, 15)
 	_hint = _label(Vector2.ZERO, 12)
-	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-3 squads · Space: pause · Tab: overview · F: follow · arrows/wheel/, .: camera"
+	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-4 squads · Space: pause · Tab: overview · F: follow · arrows/wheel/, .: camera"
 	if _touch_first():
 		_hint.text = "Tap a tank: select (again: commander) · Tap ground: go · Hold then drag: go + face · Drag: look around · Pinch: zoom · Twist: turn"
 	_toast = _label(Vector2.ZERO, 20)

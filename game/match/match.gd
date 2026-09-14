@@ -194,13 +194,16 @@ func add_bot(team: int = -1) -> Tank:
 
 
 ## Spawn a tank on `team` (-1 = whichever team is smaller) at its team's next free slot.
+## `loadout` (optional, Units.loadout_of shape): {"unit", "weapons", "components", "paint"}.
 func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1,
-		weapon_id: String = Weapons.DEFAULT) -> Tank:
+		weapon_id: String = Weapons.DEFAULT, loadout: Dictionary = {}) -> Tank:
 	if team < 0:
 		team = _smaller_team()
 	var slot := _free_slot(team)
 	return tank_spawner.spawn({"name": tank_name, "owner": owner_peer_id, "team": team, "slot": slot,
-			"position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team), "weapon": weapon_id})
+			"position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team), "weapon": weapon_id,
+			"unit": loadout.get("unit", "tank"), "weapons": loadout.get("weapons", {}),
+			"components": loadout.get("components", []), "paint": loadout.get("paint", "")})
 
 
 func _jittered(point: Vector3) -> Vector3:
@@ -238,8 +241,9 @@ func load_doctrine(team: int, doctrine: Dictionary) -> String:
 			var tank_name := "%s_%s_%d" % [TEAM_NAMES[team], squad["name"], index]
 			index += 1
 			roster.append(tank_name)
+			var loadout := Units.loadout_of(entry)
 			add_brain_tank(team, String(squad["name"]), entry.get("weapon", Weapons.DEFAULT),
-					[squad.get("directive", {}), entry.get("directive", {})], tank_name)
+					[squad.get("directive", {}), entry.get("directive", {})], tank_name, loadout)
 		var runtime := Squad.new(String(squad["name"]), team, roster)
 		runtime.spacing = float(squad.get("spacing", Formations.DEFAULT_SPACING))
 		squads[_squad_key(team, runtime.squad_name)] = runtime
@@ -308,8 +312,8 @@ func _update_squads() -> void:
 
 
 func add_brain_tank(team: int, squad_name: String, weapon_id: String, directive_layers: Array,
-		tank_name: String) -> Tank:
-	var tank := spawn_tank(tank_name, 0, team, weapon_id)
+		tank_name: String, loadout: Dictionary = {}) -> Tank:
+	var tank := spawn_tank(tank_name, 0, team, weapon_id, loadout)
 	_squad_by_tank[tank_name] = squad_name
 	var brain := TankBrain.new()
 	brain.name = "Brain_" + tank_name
@@ -351,7 +355,7 @@ func _resupply() -> void:
 				tank.repair(hp)
 		else:
 			tank.repair_ticks = 0
-		if not tank.is_alive() or tank.ammo < 0 or tank.ammo >= Weapons.max_ammo(tank.weapon):
+		if not tank.is_alive() or tank.ammo < 0 or tank.ammo >= tank.max_ammo:
 			tank.resupply_ticks = 0
 			continue
 		if not in_resupply_zone(tank.team, tank.global_position):
@@ -491,11 +495,18 @@ func _build_tank(data: Dictionary) -> Node:
 	tank.position = data["position"]
 	tank.rotation.y = data["yaw"]
 	tank.weapon_id = data.get("weapon", Weapons.DEFAULT)
+	tank.unit_id = data.get("unit", "tank")
+	tank.weapons = data.get("weapons", {})
+	tank.components = data.get("components", [])
 	tank.simulate = simulate
 	var is_local: bool = has_local_player and tank.owner_peer_id != 0 \
 			and tank.owner_peer_id == multiplayer.get_unique_id()
 	tank.display_name = "YOU" if is_local else tank.name
-	tank.set_paint.call_deferred(GameTheme.team_color(tank.team))  # needs its visuals ready
+	# Needs its visuals ready. A loadout's paint colors the whole vehicle; the team shows as an accent
+	# (the lead, 2026-09-14: friend or foe by accent lights, not hull color).
+	var paint: String = data.get("paint", "")
+	tank.set_paint.call_deferred(Color.html(paint) if paint != "" else GameTheme.team_color(tank.team))
+	tank.set_team_accent.call_deferred(GameTheme.team_color(tank.team))
 	Replication.attach_tank_sync(tank)
 	if simulate:
 		tank.fired.connect(_on_tank_fired.bind(tank))
@@ -561,7 +572,7 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
 		var victim := hit.collider as Tank
 		if victim != null and victim.is_alive() and victim.team != tank.team:
 			_land_hit(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
-	show_beam.rpc(muzzle, end)
+	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
 
 
 ## Cone weapons: every enemy inside the cone with line of sight burns this tick.
@@ -649,11 +660,11 @@ const BEAM_VISUAL_SECONDS := 0.2
 
 
 @rpc("authority", "call_local", "unreliable")
-func show_beam(from: Vector3, to: Vector3) -> void:
-	if DisplayServer.get_name() == "headless":
+func show_beam(from: Vector3, to: Vector3, fx_slot: String) -> void:
+	if DisplayServer.get_name() == "headless" or not GameTheme.slots.has(fx_slot):
 		return
 	var beam := VisualSlot.new()
-	beam.slot = "fx.laser_beam"
+	beam.slot = fx_slot
 	effects.add_child(beam)
 	beam.invoke("setup", [from, to])
 	get_tree().create_timer(BEAM_VISUAL_SECONDS).timeout.connect(beam.queue_free)
