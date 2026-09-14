@@ -8,8 +8,6 @@ extends Control
 
 ## Width of the top-left block as a fraction of the screen: stops short of the warning banner (20%).
 const BLOCK_FRACTION := 0.19
-## The tactical map's command bar height (fixed px): the status banner sits above it.
-const COMMAND_BAR_PX := 52.0
 
 var status_frame := CyberFrame.new()
 var banner_frame := CyberFrame.new()
@@ -112,37 +110,35 @@ func _process(_delta: float) -> void:
 		_place_messages(screen)
 
 
-## Banners never cover the arena: with the top-down tactical map up, the square arena fills the
-## screen height and leaves dark columns at the sides (wider on phones), so info goes in the left
-## column under the status block and warnings in the right column under the orders log. In 3D
-## views the spec's top/bottom strips return, lifted above the command bar.
+## Banners stay out of the way of play and of the tactical map's own panels. With the tactical map
+## up (any camera) they live in side columns at mid height: info on the left under the status block,
+## warnings on the right under the orders log and above the radar, clear of the top button row and the
+## bottom command bar (gameplay's layout, 2026-09-14). On a top-down view those columns are the dark
+## margins beside the square arena. Without the map (offline driving) the spec's top/bottom strips
+## return.
 func _place_messages(screen: Vector2) -> void:
 	var tactical := _hud.get_node_or_null("TacticalMap")
 	var map_up: bool = tactical != null and tactical.visible
-	# Theme inheritance stops at the HUD's CanvasLayer, so style the map's Control directly.
-	if tactical is Control and (tactical as Control).theme == null:
-		(tactical as Control).theme = CyberUiTheme.get_theme()
-	var top_down: bool = map_up and tactical.get("tactical_view") == true
 	var s := CyberStyle.ui_scale(screen)
 	var margin := 12.0 * s
-	var column_width := (screen.x - screen.y) / 2.0 - margin * 2.0
-	if top_down and column_width >= 160.0:
-		var info_top := (status_frame.position.y + status_frame.size.y + margin) if status_frame.visible else margin
-		_messages.set_columns(Rect2(margin, info_top, column_width, screen.y * 0.5),
-				Rect2(screen.x - margin - column_width, screen.y * 0.16, column_width, screen.y * 0.5))
+	var column_width := clampf((screen.x - screen.y) / 2.0 - margin * 2.0, 220.0 * s, screen.x * 0.26)
+	if map_up and column_width < screen.x * 0.4:
+		var info_top := maxf(screen.y * 0.22, fx_button.position.y + fx_button.size.y + margin)
+		_messages.set_columns(Rect2(margin, info_top, column_width, screen.y * 0.4),
+				Rect2(screen.x - margin - column_width, screen.y * 0.25, column_width, screen.y * 0.35))
 	else:
 		_messages.set_columns(Rect2(), Rect2())
-		_messages.status.bottom_inset = COMMAND_BAR_PX if map_up else 0.0
+		_messages.status.bottom_inset = 0.0
 
 
 func _layout(screen: Vector2) -> void:
 	var s := CyberStyle.ui_scale(screen)
 	var pad := 14.0 * s
-	# A ≥ 48 px (at 1080p) tap target in the bottom-right corner.
+	# A ≥ 48 px (at 1080p) tap target top-left, under the status block (the tactical map uses the top
+	# center, top right, and both bottom corners).
 	fx_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
 	fx_button.custom_minimum_size = Vector2(130.0 * s, 52.0 * s)
 	fx_button.size = fx_button.custom_minimum_size
-	fx_button.position = screen - fx_button.size - Vector2(10.0, 8.0) * maxf(s, 1.0)
 	var width := screen.x * BLOCK_FRACTION - pad * 2.0
 	if _status != null:
 		_status.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
@@ -162,10 +158,13 @@ func _layout(screen: Vector2) -> void:
 
 
 func _fit_status_frame(screen: Vector2) -> void:
+	var s0 := CyberStyle.ui_scale(screen)
 	if _status == null or _scoreboard == null or (_status.text == "" and _scoreboard.text == ""):
 		status_frame.visible = false
+		fx_button.position = Vector2(10.0, 10.0) * maxf(s0, 1.0)
 		return
 	status_frame.visible = true
+	fx_button.position = Vector2(status_frame.position.x + 6.0 * s0, status_frame.position.y + status_frame.size.y + 8.0 * s0)
 	var s := CyberStyle.ui_scale(screen)
 	var pad := 14.0 * s
 	# Labels outside containers grow to fit their text when it changes; pin the width every frame

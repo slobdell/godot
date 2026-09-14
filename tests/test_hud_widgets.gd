@@ -173,19 +173,22 @@ func test_banners_move_beside_the_tactical_map_and_wrap() -> void:
 	await tree.process_frame
 	var messages := hud.get_node("CyberMessages") as CyberMessages
 	var arena_left := (1600.0 - 720.0) / 2.0
-	assert_true(messages.status.column.has_area(), "with the top-down map up, info moves into a side column")
-	assert_true(messages.status.column.end.x <= arena_left, "the info column stays left of the arena")
-	assert_true(messages.warning.column.position.x >= 1600.0 - arena_left, "warnings stay right of the arena")
+	assert_true(messages.status.column.has_area(), "with the tactical map up, info moves into a side column")
+	assert_true(messages.status.column.end.x <= arena_left, "the info column stays left of a top-down arena")
+	assert_true(messages.warning.column.position.x >= 1600.0 - arena_left, "warnings stay right of it")
+	assert_true(messages.status.column.position.y >= 720.0 * 0.2 and messages.warning.column.position.y >= 720.0 * 0.2,
+			"both sit below the map's top button row and orders log")
 	hud.post_message("Commander ALPHA-1 down: ALPHA-2 takes command of the squad", Hud.ERROR)
 	messages.warning.advance(2.0)
 	var tall := messages.warning.size.y
 	hud.post_message("Short", Hud.WARNING)
 	messages.warning.advance(0.1)
 	assert_true(tall > messages.warning.size.y, "a long message wraps into a taller banner (%.0f vs %.0f px)" % [tall, messages.warning.size.y])
-	fake_map.set("tactical_view", false)
+	fake_map.visible = false
 	await tree.process_frame
-	assert_true(not messages.status.column.has_area(), "in the 3D view the spec's centered strips return")
-	assert_true(messages.status.position.y + messages.status.size.y <= 720.0 - HudSkin.COMMAND_BAR_PX, "above the command bar")
+	assert_true(not messages.status.column.has_area(), "without the map (driving a tank) the spec's strips return")
+	var skin := hud.get_node("HudSkin") as HudSkin
+	assert_true(skin.fx_button.position.x < 1600.0 * 0.2 and skin.fx_button.position.y < 720.0 * 0.3, "the FX button stays top-left, away from the radar and command bar")
 
 
 func test_title_menu_relaunches_into_the_chosen_mode() -> void:
