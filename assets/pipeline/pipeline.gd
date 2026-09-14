@@ -1,0 +1,151 @@
+extends SceneTree
+## Asset pipeline CLI (headless). Driven by mk/assets.mk; see _agents/streams/assets.md.
+##
+##   godot --headless --path . --script res://assets/pipeline/pipeline.gd -- <command> [--flags]
+##
+##   inspect   --in=<glb> [--slot=<slot>]      measure a model; with a slot, check it against the contract
+##   normalize --in=<glb> --slot=<slot> --theme=<theme>
+##             [--forward=+z] [--up=+y] [--include=glob,..] [--exclude=glob,..] [--scale=<f>]
+##             [--scale-from=<slot>]  reuse the uniform scale another slot got from the same source
+##             [--emissive=glob:energy,..] [--tint=glob,..] [--team-emissive=glob,..] [--heat=glob,..]
+##             [--source=<url or path>] [--license=<text>] [--credit=<text>]
+##             → game/theme/<theme>/generated/<slot file>.glb + .tscn wrapper + manifest.json entry
+##   check     [--theme=<theme>]                enforce contracts on generated themes (exit 1 on errors)
+##   slots                                      print the contract table
+
+
+func _initialize() -> void:
+	var args := _parse(OS.get_cmdline_user_args())
+	var command: String = args.get("_command", "")
+	var status := 0
+	match command:
+		"inspect":
+			status = _inspect(args)
+		"normalize":
+			status = _normalize(args)
+		"check":
+			status = _check(args)
+		"slots":
+			for slot in AssetContracts.all_slots():
+				print("%-22s %s" % [slot, AssetContracts.get_contract(slot)])
+		_:
+			printerr("usage: pipeline.gd -- inspect|normalize|check|slots [--flags] (see the file header)")
+			status = 2
+	quit(status)
+
+
+func _inspect(args: Dictionary) -> int:
+	var model := AssetIO.load_glb(args.get("in", ""))
+	if model == null:
+		return 1
+	var report := AssetInspector.inspect(model)
+	model.free()
+	print(AssetInspector.summary(report))
+	if args.has("slot"):
+		return _print_result(AssetChecker.check_report(report, args["slot"]), args["slot"])
+	return 0
+
+
+func _normalize(args: Dictionary) -> int:
+	for required in ["in", "slot", "theme"]:
+		if not args.has(required):
+			printerr("normalize needs --%s" % required)
+			return 2
+	var slot: String = args["slot"]
+	var theme: String = args["theme"]
+	var source := AssetIO.load_glb(args["in"])
+	if source == null:
+		return 1
+	var manifest := AssetIO.read_manifest(theme)
+	var options := {
+		"forward": args.get("forward", "+z"), "up": args.get("up", "+y"),
+		"include": _list(args.get("include", "")), "exclude": _list(args.get("exclude", "")),
+		"scale": float(args.get("scale", "0")), "emissive": {},
+	}
+	if args.has("scale-from"):
+		var other: Dictionary = manifest["slots"].get(args["scale-from"], {})
+		options["scale"] = float(other.get("options", {}).get("fitted_scale", 0.0))
+		if options["scale"] <= 0.0:
+			printerr("--scale-from=%s: normalize that slot first" % args["scale-from"])
+			return 1
+	for pair in _list(args.get("emissive", "")):
+		var parts := String(pair).split(":")
+		options["emissive"][parts[0]] = float(parts[1]) if parts.size() > 1 else 2.0
+	var before := AssetInspector.inspect(source)
+	print("source %s:\n%s" % [args["in"], AssetInspector.summary(before)])
+	var result := AssetNormalizer.normalize(source, slot, options)
+	source.free()
+	for note in result["notes"]:
+		print("  note: %s" % note)
+	if result["scene"] == null:
+		return 1
+	var contract := AssetContracts.get_contract(slot)
+	var file: String = contract["file"]
+	var dir := AssetIO.generated_dir(theme)
+	var glb_path := "%s/%s.glb" % [dir, file]
+	var error := AssetIO.save_glb(result["scene"], glb_path)
+	var after := AssetInspector.inspect(result["scene"])
+	result["scene"].free()
+	if error != OK:
+		printerr("could not write %s (error %d)" % [glb_path, error])
+		return 1
+	var materials := {"tint": _list(args.get("tint", "")), "team_emissive": _list(args.get("team-emissive", "")),
+			"heat": _list(args.get("heat", ""))}
+	var scene_path := AssetIO.write_wrapper(theme, slot, materials)
+	options["fitted_scale"] = (result["scale"] as Vector3).x
+	options["materials"] = materials
+	manifest["theme"] = theme
+	manifest["slots"][slot] = {
+		"glb": glb_path.get_file(), "scene": scene_path.get_file(),
+		"source": args.get("source", args["in"]), "license": args.get("license", ""), "credit": args.get("credit", ""),
+		"options": options, "tris": after["tris"], "notes": Array(result["notes"]),
+	}
+	AssetIO.write_manifest(theme, manifest)
+	print("wrote %s and %s:\n%s" % [glb_path, scene_path, AssetInspector.summary(after)])
+	return _print_result(AssetChecker.check_report(after, slot), slot)
+
+
+func _check(args: Dictionary) -> int:
+	var themes := PackedStringArray([args["theme"]]) if args.has("theme") else AssetIO.generated_themes()
+	if themes.is_empty():
+		print("assets-check: no generated themes yet")
+		return 0
+	var failed := false
+	for theme in themes:
+		var result := AssetChecker.check_theme(theme)
+		for line in result["lines"]:
+			print(line)
+		for warning in result["warnings"]:
+			print("  warning: %s" % warning)
+		for error in result["errors"]:
+			printerr("  CONTRACT: %s" % error)
+		failed = failed or result["errors"].size() > 0
+	print("assets-check %s (%s)" % ["FAILED" if failed else "passed", ", ".join(themes)])
+	return 1 if failed else 0
+
+
+func _print_result(result: Dictionary, slot: String) -> int:
+	for warning in result["warnings"]:
+		print("  warning: %s" % warning)
+	for error in result["errors"]:
+		printerr("  CONTRACT: %s" % error)
+	print("%s contract %s" % [slot, "FAILED" if result["errors"].size() > 0 else "passed"])
+	return 1 if result["errors"].size() > 0 else 0
+
+
+static func _parse(raw: PackedStringArray) -> Dictionary:
+	var args := {}
+	for arg in raw:
+		if not arg.begins_with("--"):
+			args["_command"] = arg
+			continue
+		var parts := arg.trim_prefix("--").split("=", true, 1)
+		args[parts[0]] = parts[1] if parts.size() > 1 else ""
+	return args
+
+
+static func _list(text: String) -> Array:
+	var items := []
+	for item in text.split(",", false):
+		items.append(item.strip_edges())
+	return items

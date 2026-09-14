@@ -63,6 +63,33 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 - 2026-09-13: brief and slot contracts written. Nothing started.
 - 2026-09-14: overnight backlog added (no keys/GPU: research, pipeline, mock-tested providers, CC0 + procedural models). `fx.shell` slot landed.
 
+### Overnight run 2026-09-14: morning report (kept current as work lands)
+
+**Plan (backlog order):** A0 research → A1 normalize/check pipeline → A2 Meshy client vs mock → A3 CC0 kitbash theme → A4 procedural kit → A5 budget report → stretch (prompt library, LODs, son's guide).
+
+**Done**
+- **A0** [references/asset_services.md](references/asset_services.md): Meshy recommended first (API on Pro ~$20/mo, `target_polycount`, smart-topology 100–15k faces, paid-tier outputs owned by us; only service with an emission map: meshy-6 + `enable_pbr`), Tripo second, Rodin for later hero hulls. Luma Genie and CSM are gone. Open models all need ≥ 6–29 GB VRAM and none output emissive.
+- **A1** pipeline (Godot-side code in `assets/pipeline/`, runtime wrapper in `assets/runtime/`): `make assets-inspect IN=… [SLOT=…]`, `make assets-normalize IN=… SLOT=… THEME=… ARGS=…`, `make assets-check`, `make assets-slots`. Normalize = select meshes by name glob → rotate source forward/up to −Z/+Y → contain/stretch/length fit + slot anchor → bake transforms, merge per material (1 draw call per material) → meshoptimizer LOD decimation to budget → textures ≤ 1024 → strip Compatibility-unsupported material features → optional emissive-from-albedo → GLB + wrapper `.tscn` + `manifest.json` (source, license, options). 12 tests in `tests/test_assets_pipeline.gd` (synthetic wrong-scale / sideways / dense / 4096² / collision models; emissive GLB round trip; per-instance team tint). Verified two tests go red when orientation and decimation are broken.
+
+**Decisions**
+- Pipeline GDScript lives in `assets/pipeline/`, not `tools/assets/`: `tools/` has a `.gdignore`, so Godot never registers `class_name` scripts there. `tools/assets/` keeps non-Godot tooling (Python provider clients, mock server).
+- Slot contracts are data (`assets/pipeline/asset_contracts.gd`). Where the brief's table was loose I picked what matches today's placeholder art, so swapping art never moves gameplay: turret **bottom at y = −0.275** relative to its pivot (sits on the default hull deck at 0.945 m); cannon/laser barrel from z = −0.7 to the muzzle at **z = −3.2**, axis at y = 0.05; props **stretch** to their exact collision box (warning past 2× distortion); vehicles scale uniformly (**contain**); turret max 1.8 × 0.9 × 2.1.
+- Wrapper methods work by **material name** globs (`tint_materials`, `team_emissive_materials`, `heat_materials`), so any model joins team colors / neon / heat by naming materials; per-instance material copies.
+- Raw downloads go in `assets/incoming/` (git- and Godot-ignored).
+- Limitation: bounds can't tell forward from backward; the orientation unit test + screenshots cover the sign.
+
+**Questions for the lead**
+- (none yet)
+
+**Requests to other streams**
+- (none yet)
+
+**Known issues**
+- (none yet)
+
+**What to playtest**
+- `make assets-slots`, `make test FILTER=assets`
+
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
 Rules: *Unattended runs* in workstreams.md. **Constraints tonight:** no API keys or accounts for any 3D service, no discrete GPU (so no local generation models), ~9 GB disk shared by five agents (**≤ 500 MB of downloads**). The pipeline and everything around it can still be built and proven.
