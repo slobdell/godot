@@ -49,6 +49,7 @@ func _ready() -> void:
 		x += guide.x + 2.5
 
 	_frame_camera()
+	print("ASSET_GALLERY_READY theme=%s" % theme)
 	if flags.has("screenshot"):
 		await get_tree().create_timer(float(flags.text("screenshot-delay", "1.5"))).timeout
 		await RenderingServer.frame_post_draw

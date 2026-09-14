@@ -82,6 +82,8 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 - **Stretch done:** [references/asset_prompts.md](references/asset_prompts.md) (style guide + prompts per slot/class + post-generation checklist), [`assets/README.md`](../../assets/README.md) (step-by-step guide for the lead's son), **LODs measured** (asset_budget.md: the Compatibility renderer uses importer LODs; `mesh_lod_threshold` ≈ 4 cuts ~35% of tank triangles at play distance, a free quality-tier knob for look & feel).
 - **Decimation fix** (found while debugging the grey kitbash billboard): stepping the whole model down a LOD collapsed its 2-triangle sign quads into their frames. Decimation now lowers the LOD of the largest surface first and spares small surfaces (≤ 64 tris or ≤ 10% of the model); results land close to budget (billboard 1108 → 828 at budget 1000, instead of 516). Regression test fails on the old code. The remaining grey was orientation (the camera saw the signs' backs); with `--forward=-z`, all 13 Quaternius neon signs glow through GLB + Basis import (`build/screenshots/assets-gallery-kitbash-kit.b-1920x864.png`). A ready-made neon sign sheet for look & feel.
 
+- **Browser proof:** `make assets-web-gallery THEME=… [ONLY=…] [NIGHT=1]` exports a copy of the project with the gallery as main scene (release web templates refuse scene-path args) and renders it in headless Chrome. Kitbash neon signs (Basis texture + emissive + glow) and the neon kit at night both render in WebGL 2 (`build/screenshots/assets-web-gallery-*.png`). `make web-smoke` passes.
+
 **Decisions**
 - Pipeline GDScript lives in `assets/pipeline/`, not `tools/assets/`: `tools/` has a `.gdignore`, so Godot never registers `class_name` scripts there. `tools/assets/` keeps non-Godot tooling (Python provider clients, mock server).
 - Slot contracts are data (`assets/pipeline/asset_contracts.gd`). Where the brief's table was loose I picked what matches today's placeholder art, so swapping art never moves gameplay: turret **bottom at y = −0.275** relative to its pivot (sits on the default hull deck at 0.945 m); cannon/laser barrel from z = −0.7 to the muzzle at **z = −3.2**, axis at y = 0.05; props **stretch** to their exact collision box (warning past 2× distortion); vehicles scale uniformly (**contain**); turret max 1.8 × 0.9 × 2.1.
@@ -95,7 +97,7 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 
 **Questions for the lead**
 - A paid generator (Meshy Pro ~$20/mo) is the only step left to get AI models flowing; the client is ready. Worth it now, or keep using CC0 + procedural art until the look is settled?
-- Basis Universal textures on your phone's browser: does `/?fx-bench` (look & feel) or a kitbash preview load smoothly? SwiftShader can't verify it.
+- Basis Universal textures on your phone: they render in desktop Chrome/WebGL 2. Phone load time is unmeasured; a quick look at a web gallery build on the phone would settle it (`make assets-web-gallery` leaves the export in `build/web-gallery` if you remove the cleanup line in `tools/assets/web_gallery.sh`, then serve it with `python3 tools/serve_web.py build/web-gallery 8090 0.0.0.0`).
 
 **Requests to other streams**
 - **Look & feel:** `game/theme/default/fx_shell.tscn` capsule is 3,456 tris vs the 200 budget (asset_budget.md). Candidate art for L2: `make assets-gallery THEME=neon_kit NIGHT=1`, `make assets-preview THEME=neon_kit FLAGS=--skirmish`; copy what you like into `game/theme/cyberpunk/` or point slots at `game/theme/neon_kit/generated/*.tscn`.

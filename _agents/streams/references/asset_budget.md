@@ -113,8 +113,9 @@ grime map, each imported in every mode (`.godot/imported` file size = what the p
 **Policy (implemented in the pipeline, enforced by `make assets-check`):**
 - **≤ 256 px → Lossy.** Pack size is tiny, and uncompressed GPU memory is still under 100 KB per map.
 - **> 256 px → Basis Universal.** One file serves desktop browsers (S3TC) and phones (ETC2/ASTC) at a quarter of
-  the GPU memory, with no second format in the export. *Pending verification on a real phone browser* (SwiftShader
-  can't prove this): check that a Basis texture renders and loads in reasonable time.
+  the GPU memory, with no second format in the export. **Verified in a browser:** `make assets-web-gallery THEME=kitbash ONLY=kit.b`
+  renders the Basis-compressed 1000² neon sign atlas with emission and glow in headless Chrome/WebGL 2
+  (`build/screenshots/assets-web-gallery-kitbash-kit.b.png`). *Still pending on a real phone* (load time of the transcode).
 - The pipeline caps textures at 1024 and sets `detect_3d/compress_to=0`, so an editor session can't silently switch modes.
 
 `make assets-textures THEME=…` applies the policy (the normalize and procedural targets run it automatically).

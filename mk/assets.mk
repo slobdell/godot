@@ -42,7 +42,7 @@ assets-mock: ## Serve the mock Meshy/Tripo API on 127.0.0.1:8799 (point generate
 	$(PYTHON) tools/assets/mock_provider.py 8799
 
 # ---- Looking at models (need a display; short windowed runs) -----------------------------------
-.PHONY: assets-gallery assets-preview assets-kitbash assets-procedural assets-report
+.PHONY: assets-gallery assets-preview assets-kitbash assets-procedural assets-report assets-web-gallery
 SCREEN ?= 1600x900
 
 # build/.gdignore: without it Godot imports every screenshot PNG and exports them into the web .pck.
@@ -67,6 +67,13 @@ assets-report: import ## A5: per-asset tris/draw calls/texture memory for every 
 	touch $(BUILD_DIR)/.gdignore
 	$(MAKE) --no-print-directory export-web >/dev/null
 	$(PYTHON) tools/assets/pck_report.py $(BUILD_DIR)/web/index.pck
+
+# Release web templates refuse a scene path on the command line, so this exports a source-only copy of the
+# project whose main scene is the gallery (tools/assets/web_gallery.sh).
+assets-web-gallery: import $(TEMPLATES_OK) $(WEB_SMOKE_DEPS) ## Render a theme's gallery in headless Chrome (WebGL 2): textures/emissive work in the browser [ONLY= NIGHT=1]
+	CHROME=$(CHROME) tools/assets/web_gallery.sh $(GODOT) $(THEME) $(SMOKE_PORT) \
+		$(BUILD_DIR)/screenshots/assets-web-gallery-$(THEME)$(if $(ONLY),-$(ONLY))$(if $(NIGHT),-night).png \
+		"$(if $(ONLY),&only=$(ONLY))$(if $(NIGHT),&night)"
 
 assets-kitbash: ## Re-fetch the CC0 sources behind the kitbash theme into assets/incoming/ (see assets/CREDITS.md)
 	tools/assets/fetch_kitbash.sh
