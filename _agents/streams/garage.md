@@ -99,6 +99,9 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   Match's team paint; an adapter until Match reads `paint`). `garage_tutorial.gd`: a 3-step tip bar that advances
   as the player selects, edits, and fights (X skips), progress in `user://garage.cfg`; the first skirmish posts 3
   `Hud.post_message` tips. `--garage-panel=compare|share` for screenshots. 7 tests (paint test mutation-checked).
+- **Browser verified.** `make garage-web-smoke`: `?garage` boots (turntable renders under WebGL/SwiftShader) and
+  `?garage&garage-autofight&enemy=cpu:rush` saves to `user://` (IndexedDB) and starts the skirmish with 5 v 5.
+  `make web-smoke` passes. Screenshots reviewed.
 
 **What to playtest** (morning):
 - `make garage`: the starter army is ready, so tap FIGHT → planning pause with your army vs a fresh CPU Balanced army.

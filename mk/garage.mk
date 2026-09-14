@@ -45,3 +45,14 @@ PRESET ?= balanced
 
 garage-cpu-army: import ## Write a seeded CPU army (PRESET=balanced|rush|turtle|flamers SEED=1) to user://doctrines/cpu/, e.g. for make skirmish ENEMY=<printed path>
 	$(GODOT) --headless --path . --script res://tests/garage/build_army.gd -- --preset=$(PRESET) --seed=$(SEED) 2>&1 | grep -E 'GARAGE_ARMY|GARAGE_CODE|ERROR'
+
+.PHONY: garage-web-smoke
+garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, and FIGHT hands over to the skirmish (user:// saves work in the browser) -> build/screenshots/web-garage*.png
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
+	trap 'kill $$server' EXIT; \
+	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-settings=none" \
+		$(BUILD_DIR)/screenshots/web-garage.png 3 "TANK_SQUAD_READY role=GARAGE" && \
+	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
+		"http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-settings=none&garage-autofight&enemy=cpu:rush&seed=3" \
+		$(BUILD_DIR)/screenshots/web-garage-fight.png 3 GARAGE_FIGHT
