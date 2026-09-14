@@ -54,6 +54,11 @@ const LOW_AMMO_FRACTION := 0.3
 ## A held turret heading aims at a point this far out along it.
 const HELD_AIM_DISTANCE := 1000.0
 
+## Measurement only (make ai-perf): microseconds spent in think + compute_command while `profiling` is on.
+## Never read by decisions.
+static var profiling := false
+static var profile_usec := 0
+
 @export var tank: Tank
 ## Where to look for other tanks (Match/Tanks).
 var tanks_root: Node
@@ -93,8 +98,11 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if tank == null or not is_instance_valid(tank):
 		return
+	var started := Time.get_ticks_usec() if profiling else 0
 	think(delta)
 	tank.command = compute_command(delta)
+	if profiling:
+		profile_usec += Time.get_ticks_usec() - started
 
 
 ## Subclasses decide orders here (called every tick before orders execute).
@@ -153,7 +161,9 @@ func compute_command(delta: float) -> TankCommand:
 
 func _sense() -> void:
 	visible_enemy_names = PackedStringArray()
-	if tanks_root == null:
+	# Only halt_on_contact reads what this tank sees; skipping the sight rays otherwise was the biggest
+	# single AI cost at 50 units (_agents/unit_ai.md "Results").
+	if tanks_root == null or not reflexes.any(func(r: Dictionary) -> bool: return r["type"] == "halt_on_contact"):
 		return
 	for enemy in Perception.enemies_of(tank, tanks_root):
 		# G1: a tank sees within its sight radius, and only with a clear line of sight.
@@ -323,12 +333,20 @@ func _shootable(enemy: Tank) -> bool:
 func _nearest_shootable() -> Tank:
 	var best: Tank = null
 	var best_distance := INF
-	for enemy in Perception.enemies_of(tank, tanks_root):
+	for enemy: Tank in _enemies():
 		var distance := tank.global_position.distance_to(enemy.global_position)
 		if distance < best_distance and _shootable(enemy):
 			best = enemy
 			best_distance = distance
 	return best
+
+
+## Living enemies in scene order: shared per tick for brains (AiTickCache), scanned otherwise.
+func _enemies() -> Array:
+	var brain := self as TankBrain
+	if brain != null and brain.game_match != null and brain.game_match.tanks == tanks_root:
+		return AiTickCache.enemies(brain.game_match, tank.team)
+	return Perception.enemies_of(tank, tanks_root)
 
 
 ## ARC weapons: lob at a spotted enemy inside the [min_range, range] window, leading it by the flight time.
@@ -351,7 +369,7 @@ func _apply_indirect(cmd: TankCommand) -> void:
 			target = named
 	if target == null and (weapon_order["type"] == "fire_at_will" or weapon_order.get("fallback", false)):
 		var best_distance := INF
-		for enemy in Perception.enemies_of(tank, tanks_root):
+		for enemy: Tank in _enemies():
 			var d := tank.global_position.distance_to(enemy.global_position)
 			if d < best_distance and in_window.call(enemy) and sees.call(enemy):
 				best_distance = d

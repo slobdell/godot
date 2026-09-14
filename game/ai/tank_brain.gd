@@ -424,7 +424,7 @@ func build_situation() -> Dictionary:
 	var my_position := tank.global_position
 	var allies: Array = []
 	var squad_positions: Array = []
-	for ally in game_match.sorted_team_tanks(team):
+	for ally: Tank in AiTickCache.team_tanks(game_match, team):
 		if ally == tank or not ally.is_alive():
 			continue
 		allies.append({"name": String(ally.name), "position": ally.global_position})
@@ -432,6 +432,7 @@ func build_situation() -> Dictionary:
 			squad_positions.append(ally.global_position)
 
 	var contacts: Array = []
+	var my_name := String(tank.name)
 	var intel: Dictionary = game_match.intel[team]
 	var names := intel.keys()
 	names.sort()
@@ -449,7 +450,8 @@ func build_situation() -> Dictionary:
 			"visible": known["visible"],
 			"age": game_match.tick - int(known["seen_tick"]),
 			"exposed_face": Armor.FACING_NAMES[Armor.facing(known["forward"], offset)],
-			"facing_ally": _faces_any(known["position"], known["forward"], allies),
+			"facing_ally": AiTickCache.faced_by(game_match, team, contact_name, known).any(
+					func(faced: String) -> bool: return faced != my_name),
 			"aiming_at_me": known["visible"] and Ballistics.aim_error(known["position"], known["turret_forward"],
 					my_position) <= deg_to_rad(12.0),
 		})
@@ -473,7 +475,7 @@ func build_situation() -> Dictionary:
 		if c["visible"]:
 			threat_positions.append(c["position"])
 
-	var squad_context: Dictionary = game_match.squad_context(tank)
+	var squad_context: Dictionary = AiTickCache.squad_context(game_match, tank)
 	var effective_directives := directives
 	if squad_context.get("slot") != null:
 		effective_directives = Squad.drill_directives(directives, squad_context)
@@ -501,14 +503,6 @@ func build_situation() -> Dictionary:
 		"control": {"center": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner}
 				if game_match.control_point else null,
 	}
-
-
-static func _faces_any(position: Vector3, forward: Vector3, allies: Array) -> bool:
-	for ally in allies:
-		var offset: Vector3 = ally["position"] - position
-		if offset.length() < 80.0 and Ballistics.aim_error(position, forward, ally["position"]) <= deg_to_rad(30.0):
-			return true
-	return false
 
 
 ## Nearby reachable points that no visible threat can see, nearest first.
