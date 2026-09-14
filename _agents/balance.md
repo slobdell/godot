@@ -102,8 +102,9 @@ fights, cover, anti-shield ×1.5) without winning every open-field rush.
 
 ### Stretch: CPU commander
 v1 (hold in even fights): Individuals + commander vs Individuals **2 : 30** (both team identities, both
-bases). Holding still under recharging shields loses. v2 (assault unless clearly weaker) is opt-in
-(`--commander`) and not yet measured.
+bases). Holding still under recharging shields loses. v2 (assault unless clearly weaker): **11 : 9** (20).
+Parity, not yet an advantage, so it stays opt-in (`--commander`). Ideas: bound/flank with two squads, focus
+one target per squad, pull back to recharge as a squad.
 
 ## Recommendation: chassis + loadout (MechWarrior-lite), not fixed classes
 

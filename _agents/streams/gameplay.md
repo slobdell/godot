@@ -289,7 +289,8 @@ base (Break contact) to mend hulls and refill shells.
    tank's gun reach (direct fire already requires team visibility).
 3. Flamethrower: done for now (20 dps, 10/20 vs cannons; it had quietly dominated since the 09-13
    rebalance). Re-check `make skirmish ENEMY=flame_rush` for feel.
-4. CPU commander v2: measure (`--rust-commander`), then decide whether skirmish uses it.
+4. CPU commander: v2 measured at parity with plain brains (11 : 9); it needs smarter tactics (two-squad
+   flanks, squad focus fire, squad recharge) before skirmish should use it by default.
 5. Networked play for the new state: control point score and visibility aren't replicated (skirmish and
    the runner are single-process); coordinate with netcode.
 6. A heavy chassis with 2 hardpoints; phases (conditions that swap directives); Claude as the opposing
