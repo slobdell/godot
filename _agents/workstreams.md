@@ -15,26 +15,51 @@
 
 ## How to set up parallel copies: git worktrees, not folder copies
 
-Copies drift and can't merge back cleanly. Worktrees share one repository, and each has its own branch:
+Copies drift and can't merge back cleanly. **Worktrees** are extra checkouts of the *same*
+repository, each on its own branch. One command creates an isolated one:
 
 ```bash
-cd ~/projects/godot
-git worktree add ../godot-gameplay -b stream/gameplay
-git worktree add ../godot-look     -b stream/look-and-feel
-git worktree add ../godot-assets   -b stream/assets
-git worktree add ../godot-netcode  -b stream/netcode
-git worktree add ../godot-garage   -b stream/garage
-# In each worktree: share the 300 MB toolchain instead of re-downloading it
-ln -s ~/projects/godot/.tools ../godot-gameplay/.tools   # (repeat per worktree)
-cd ../godot-gameplay && make import && make check
+cd ~/projects/godot                       # the main checkout, on main: the orchestrator's home
+make worktree STREAM=gameplay OFFSET=1    # → ../godot-gameplay on branch stream/gameplay
+make worktree STREAM=look_and_feel OFFSET=2
+make worktree STREAM=assets OFFSET=3
+make worktree STREAM=netcode OFFSET=4
+make worktree STREAM=garage OFFSET=5
+make worktrees                            # status of all of them
 ```
 
-Start one agent per worktree and tell it: *"You are the <stream> workstream. Read CLAUDE.md,
-then `_agents/workstreams.md` and `_agents/streams/<stream>.md`."*
+What `tools/worktree.sh` isolates (verified 2026-09-14: two worktrees ran `net-smoke` + `combat-smoke`
+at the same moment, both passed, on ports 9261 and 9271):
 
-**Merging:** each stream merges into `main` when `make check` passes on the rebased branch.
-Rebase on `main` often (at least after any other stream merges). The lead (or one integrating
-agent) does the merges.
+| Shared resource | Collision risk | Isolation |
+|---|---|---|
+| Files and branch | agents overwrite each other | separate folder + `stream/<name>` branch |
+| Network ports (servers, smoke tests, agent bridge) | two `make check`s fight over 9181/8061/8765 | `local.mk`: every port + `10 × OFFSET` |
+| CPU (match series) | 5 agents × parallel matches thrash | `local.mk`: `JOBS := 2` |
+| Godot `user://` (saves, logs) | garage saves / logs collide | `override.cfg`: `tank_squad_<stream>` user dir |
+| `.godot/` import cache | a stale cache for another branch | per worktree (not shared) |
+| `.tools/` Godot toolchain (300 MB) | none (read-only use) | shared by symlink |
+
+## Running the agents
+
+1. One terminal per stream: `cd ~/projects/godot-<stream> && claude`, then: *"You are the `<stream>` workstream. Read CLAUDE.md, then `_agents/workstreams.md` and `_agents/streams/<stream>.md`."*
+2. Agents commit to their own branch as they go (they may `git push -u origin stream/<stream>` for backup).
+3. **The orchestrator** (a Claude session in the main checkout, or the lead) reviews and integrates:
+   ```bash
+   make worktrees                                   # who's dirty, who's ahead of main
+   git log --oneline main..stream/gameplay          # what a stream did
+   git diff main...stream/gameplay --stat           # what it touched: stay inside owned paths?
+   (cd ../godot-gameplay && git rebase main && make check)   # rebased branch must be green
+   git merge --no-ff stream/gameplay                 # in the main checkout
+   make check && git push
+   ```
+4. **After every merge, tell the other streams to `git rebase main`** (or merge main) so conflicts surface early and small.
+5. When a stream is finished: `make worktree-remove STREAM=<name>` (refuses with uncommitted work; keeps the branch).
+
+**Git facts that bite with worktrees:**
+- A branch can be checked out in only ONE worktree. Don't `git checkout main` inside a stream worktree; the orchestrator's checkout owns `main`.
+- `git stash`, hooks, and `git config` are **shared** across worktrees: a stash made in one shows up in all. Prefer WIP commits on the stream branch.
+- Deleting a worktree folder by hand leaves stale metadata; use `make worktree-remove` (or `git worktree prune`).
 
 ## Who owns what
 
