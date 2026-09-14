@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/fx/bench/naive_shell.gd" id="1_naive"]
+
+[node name="NaiveShell" type="Node3D"]
+script = ExtResource("1_naive")

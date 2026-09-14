@@ -65,7 +65,8 @@ export_presets.cfg       "Web" and "Linux Server" export presets
 game/
   main.tscn / main.gd    entry point: parses flags, picks a GameMode, owns camera/HUD/local controller
   modes/                 one file per way to run: offline, skirmish, match_runner, server, client (+ LaunchFlags)
-  theme/                 GameTheme (slot → scene, team colors, UI palette), VisualSlot, default/ placeholder art
+  theme/                 GameTheme (slot → scene, team colors, UI palette), VisualSlot; cyberpunk/ (default look),
+                         default/ (placeholder boxes), fx/ (pooled effects, FX lab), audio/ (SFX), gallery/
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
   combat/                Weapons (data: cannon, flamethrower), Shell, Armor, Ballistics, Impact
@@ -73,7 +74,8 @@ game/
                          OrderController (orders + reflexes → command),
                          BotController (legacy baseline), Steering, Perception, Pathing
   agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
-  ui/                    TacticalMap (squad command overlay), Hud (hud.tscn = layout, hud.gd = text)
+  ui/                    TacticalMap (squad command overlay), Hud (hud.tscn = layout, hud.gd = text),
+                         widgets/ (CyberFrame, CyberBanner, Conductors, HudSkin, title screen)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
   network/               NetworkInput (client→server commands + validation), Replication (what syncs)
   camera/                FollowCamera
@@ -101,6 +103,8 @@ build/   (gitignored)    exports and screenshots
 | Find a GDScript compile error fast | `make lint` |
 | Let Claude play | `make server BOTS=1` + `make agent-client`, then `tools/agent.py …` ([agent_bridge.md](agent_bridge.md)) |
 | Open the editor | `make editor` |
+| See the look (cyberpunk is the default theme; `--theme=default` for the boxes) | `make title` (menu), `make vehicle-gallery`, `make hud-gallery`; any mode takes `--perf` (overlay), `--fx-quality=low\|medium\|high`, `--hud-demo`, `--mute`, `--no-shake` |
+| Measure an effect's cost | `make fx-bench` (FX lab: per-trick configs, `build/fx-bench.json`; browser `?fx-bench`); results and tier budgets in `_agents/streams/references/fx_tricks.md` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
 | See it in a browser | `make serve-web` → http://localhost:8060 (add `?demo`) |
 | Prove the web build boots | `make web-smoke` → `build/screenshots/web.png` |
@@ -153,3 +157,10 @@ build/   (gitignored)    exports and screenshots
 38. **An unseeded `RandomNumberGenerator` is seeded randomly.** `Match._fire_rng` is only deterministic after `seed_spawns()`; a test that fires spread or scatter weapons without seeding is a dice roll (the artillery test flaked this way, 2026-09-15).
 39. **Touch arrives twice.** Godot emulates the mouse from the first finger (`emulate_mouse_from_touch`); those mouse events have `device == InputEvent.DEVICE_ID_EMULATION`. The tactical map uses that to give fingers their own grammar (drag = pan) while real mouse drags still order. Two-finger gestures come only as `InputEventScreenTouch/Drag` (handled in `_input`).
 40. **A full-rect `Control` with `MOUSE_FILTER_STOP` eats the wheel.** Events it receives never reach `_unhandled_input`, so the tactical map forwards wheel/middle-drag to `RtsCamera.handle_mouse()` explicitly.
+38. **Theme inheritance stops at a `CanvasLayer`.** Setting `get_window().theme` did not restyle the tactical map (a Control under the HUD's CanvasLayer). Set `theme` on the top Control under each CanvasLayer (`HudSkin` does it for the map).
+39. **A `Label` outside a container grows to fit new text**, even with autowrap on, so it overflows the width you set once. Re-pin `size.x` each frame (or put it in a container).
+40. **Dark glossy floors under a black sky render black blotches** (smooth patches reflect the black background as ambient specular) and glare into pale blobs facing the moon. Keep roughness ≥ 0.5, low specular, and `reflected_light_source = disabled` in night scenes.
+41. **A directional light's PSSM 4-split shadows redraw every shadow caster per split.** In the FX lab that was +65 draw calls and 3.3 ms; orthogonal mode with a 110 m max distance looked the same from our cameras.
+42. **The Compatibility renderer doesn't batch 3D draws.** A prop built from 23 boxes is 23 draw calls (46 with shadows). Merge static art per material (`StaticBatcher`) or build vehicles as one vertex-colored mesh (`ColorMeshBuilder`); `Decal` and `ReflectionProbe` don't help there (probed).
+43. **The tactical camera is orthographic, 200 m up, ~3 px per meter.** Art thinner than ~0.5 m vanishes, and exponential fog thick enough for the 3D view hides most of the map. Judge arena art from `--skirmish` screenshots, not only the follow camera.
+44. **Everything Godot imports under the project ships in exports, including `build/screenshots/*.png`.** The web `.pck` was 13.4 MB, almost all screenshots; `exclude_filter` now has `build/*` (0.6 MB). Keep generated files out of exports or out of the project tree.

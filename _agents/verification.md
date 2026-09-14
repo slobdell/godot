@@ -24,6 +24,8 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 
 **Skirmish screenshots:** `make skirmish-shots` runs a scripted skirmish and saves desktop and phone-aspect (1200×540 = a 2400×1080 phone at 2× UI scale) screenshots to `build/screenshots/`. Look at both after any UI, camera, or fog change.
 
+**Look & feel checks** (need a display; look at every PNG): `make fx-bench` (effect costs per trick; compare against the tier budgets in streams/references/fx_tricks.md), `make vehicle-gallery` (slot methods driven with fake values), `make hud-gallery` and `make title-shot` (desktop + phone aspect), and the real game with `--skirmish --hud-demo --screenshot=…` (the tactical camera is the hard case for arena art). Headless tests cover the pooling/budget logic (`tests/test_fx_systems.gd`), banner lifecycle (`test_hud_widgets.gd`), and vehicle slot contracts (`test_theme_vehicles.gd`).
+
 **Experiments** (`make matches …`) are not pass/fail checks, but any change to the map, spawning, navigation, or combat rules should re-run the fairness control: `python3 tools/match_series.py --godot <godot> --runs 60 --green 2 --rust 2` and again with `--extra=--swap-bases`. Win rates should stay near 50/50 ([squad_ai_design.md](squad_ai_design.md) "Fairness").
 
 **Playtesting with the agent bridge** is the last rung: not automated, but it finds design problems no assertion will ([agent_bridge.md](agent_bridge.md)).
