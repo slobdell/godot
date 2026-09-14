@@ -5,8 +5,8 @@
 
 GARAGE_SHOTS := $(BUILD_DIR)/screenshots
 
-garage: import ## Build an army on a budget (tap/drag), then FIGHT a skirmish with it (ENEMY=cpu:balanced|cpu:rush|cpu:turtle|cpu:flamers|<doctrine>)
-	$(GODOT) --path . -- --garage $(if $(filter command line,$(origin ENEMY)),--enemy=$(ENEMY))
+garage: import ## Build an army on a budget (tap/drag), then FIGHT a skirmish with it (ENEMY=cpu:balanced|cpu:rush|cpu:turtle|cpu:flamers|<doctrine>; CATALOG=preview shows a 20-unit army)
+	$(GODOT) --path . -- --garage $(if $(filter command line,$(origin ENEMY)),--enemy=$(ENEMY)) $(if $(CATALOG),--garage-catalog=$(CATALOG))
 
 garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must start with the saved army and log no errors
 	mkdir -p $(BUILD_DIR)
@@ -25,6 +25,7 @@ garage-shots: import ## Garage screenshots at desktop 1920x1080 and a 20:9 phone
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-desktop.png --screenshot-delay=2
 	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone.png --screenshot-delay=2
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --garage-panel=compare --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-compare.png --screenshot-delay=2
+	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --garage-catalog=preview --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-big-army.png --screenshot-delay=2
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --garage-autofight --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-fight.png --screenshot-delay=3
 	@echo "Now LOOK at $(GARAGE_SHOTS)/garage-*.png"
 

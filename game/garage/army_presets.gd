@@ -92,32 +92,21 @@ static func build(archetype: String, catalog: GarageCatalog, seed_value: int, fo
 		roster.append(pick)
 		spent += _base_cost(catalog, pick)
 
+	# Squad sizes are capped (catalog.max_squad_size), so a spec's share may need several squads.
+	roster = roster.slice(0, catalog.max_squads * catalog.max_squad_size)
 	var counts := _split(roster.size(), squad_specs)
+	var spec_of_squad: Array[int] = []
 	var next := 0
 	for squad_spec_index in squad_specs.size():
-		if counts[squad_spec_index] == 0:
-			continue
 		var squad_spec: Dictionary = squad_specs[squad_spec_index]
-		loadout.add_squad()
-		var squad_index := loadout.squads().size() - 1
-		var formations: Array = squad_spec["formations"]
-		loadout.set_formation(squad_index, formations[rng.randi_range(0, formations.size() - 1)])
-		loadout.set_squad_role(squad_index, squad_spec["role"])
-		var squad_data := loadout.squad(squad_index)
-		if not for_player:
-			# A doctrine formation means "form up and HOLD here" (Squad.apply_command), so a CPU squad
-			# with one never leaves its base. CPU squads rely on objectives and directives instead.
-			squad_data.erase("verb")
-			squad_data.erase("formation")
-			var directive: Dictionary = squad_data["directive"]
-			for key: String in squad_spec.get("directive", {}):
-				directive[key] = _roll(rng, squad_spec["directive"][key])
-			if squad_spec.has("objective"):
-				var side := -1.0 if squad_spec.get("mirror", false) and rng.randf() < 0.5 else 1.0
-				directive["objective"] = {"right": side * float(_roll(rng, squad_spec["objective"]["right"])),
-						"forward": float(_roll(rng, squad_spec["objective"]["forward"])), "radius": float(squad_spec["objective"]["radius"])}
 		var close_count := roundi(float(squad_spec.get("close_share", 0.0)) * counts[squad_spec_index])
 		for unit_offset in counts[squad_spec_index]:
+			var squad_index := _squad_for(loadout, spec_of_squad, squad_spec_index)
+			if squad_index < 0:
+				squad_index = loadout.squads().size()
+				loadout.add_squad()
+				spec_of_squad.append(squad_spec_index)
+				_roll_squad(loadout, squad_index, squad_spec, rng, for_player)
 			loadout.add_unit(squad_index, roster[next])
 			next += 1
 			var unit_index: int = loadout.squad(squad_index)["tanks"].size() - 1
@@ -128,6 +117,43 @@ static func build(archetype: String, catalog: GarageCatalog, seed_value: int, fo
 					loadout.set_weapon(squad_index, unit_index, hardpoint["id"], weapon_id)
 	_fit_components(loadout, String(spec["prefer"]))
 	return loadout
+
+
+## A squad for the next unit of spec `spec_index`: one of its own with room, else -1 to start a new one,
+## else (no squads left) any squad with room.
+static func _squad_for(loadout: Loadout, spec_of_squad: Array[int], spec_index: int) -> int:
+	var size := loadout.catalog.max_squad_size
+	for index in spec_of_squad.size():
+		if spec_of_squad[index] == spec_index and loadout.squad(index)["tanks"].size() < size:
+			return index
+	if loadout.squads().size() < loadout.catalog.max_squads:
+		return -1
+	for index in spec_of_squad.size():
+		if loadout.squad(index)["tanks"].size() < size:
+			return index
+	return 0
+
+
+## Formation, role, and (CPU only) rolled directives and objective for a new squad.
+static func _roll_squad(loadout: Loadout, squad_index: int, squad_spec: Dictionary, rng: RandomNumberGenerator,
+		for_player: bool) -> void:
+	var formations: Array = squad_spec["formations"]
+	loadout.set_formation(squad_index, formations[rng.randi_range(0, formations.size() - 1)])
+	loadout.set_squad_role(squad_index, squad_spec["role"])
+	if for_player:
+		return
+	var squad_data := loadout.squad(squad_index)
+	# A doctrine formation means "form up and HOLD here" (Squad.apply_command), so a CPU squad
+	# with one never leaves its base. CPU squads rely on objectives and directives instead.
+	squad_data.erase("verb")
+	squad_data.erase("formation")
+	var directive: Dictionary = squad_data["directive"]
+	for key: String in squad_spec.get("directive", {}):
+		directive[key] = _roll(rng, squad_spec["directive"][key])
+	if squad_spec.has("objective"):
+		var side := -1.0 if squad_spec.get("mirror", false) and rng.randf() < 0.5 else 1.0
+		directive["objective"] = {"right": side * float(_roll(rng, squad_spec["objective"]["right"])),
+				"forward": float(_roll(rng, squad_spec["objective"]["forward"])), "radius": float(squad_spec["objective"]["radius"])}
 
 
 ## The stat-preferred unit class ("cheapest", or the unit with the highest value of a stat; ties → cheaper).

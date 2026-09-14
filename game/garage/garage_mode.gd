@@ -10,6 +10,8 @@ extends GameMode
 ##                         unsaved, so automated runs never mark the player's tips as seen)
 ##   --garage-scratch      automated runs: settings in memory AND armies saved to an emptied SCRATCH_DIR, so smoke
 ##                         tests and screenshots never touch the player's tips, last army, or saved armies
+##   --garage-catalog=preview  a 20-unit catalog shaped like directive set 2 (scouts, artillery, lasers), to preview
+##                         big armies; not playable (FIGHT is refused)
 ##   --garage-panel=NAME   open an overlay on start: compare | share (screenshots)
 ##   --garage-autofight    tap FIGHT as soon as the garage opens (smoke tests, screenshots of the handover)
 ## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> green=<tanks> rust=<tanks>
@@ -33,6 +35,8 @@ func start() -> void:
 	_layer.layer = 10
 	screen = GarageScreen.new()
 	screen.name = "GarageScreen"
+	if flags.text("garage-catalog") == "preview":
+		screen.loadout = GarageScreen.starter_loadout(GarageCatalog.preview())
 	screen.enemy = flags.text("enemy", screen.enemy)
 	if flags.has("garage-settings"):
 		var settings := flags.text("garage-settings")
