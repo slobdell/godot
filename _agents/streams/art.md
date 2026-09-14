@@ -95,8 +95,9 @@ Gameplay collision, stats, and layouts (rules), behavior (ai), UI logic and came
 
 ## Waiting on the lead
 
-**Concept review #1 (2026-09-14, 18 images, 171 credits):** `make art-review` → `build/review/index.html` in the art
-worktree (pictures in `assets/review/images/`). Pick at most one per unit or prop, or ask for another direction:
+**Concept review #1 (2026-09-14, 17 images + 1 superseded, 162 credits):** tap Approve/Reject on the private review page
+https://claude.ai/artifact/Hg4RfJSgmP1xeJvfokkJk1 (decisions save to its database; the agent reads them with `read_db`),
+or `make art-review` → `build/review/index.html` in the art worktree (pictures in `assets/review/images/`). Pick at most one per unit or prop, or ask for another direction:
 - **Scout** (fixed hood gun): `scout_a` desert trophy truck, `scout_b` caged dune buggy, `scout_c` police interceptor muscle car
 - **IFV** (fast 30 mm turret): `ifv_a` school bus with slat armor, `ifv_b` garbage truck, `ifv_c` cash-in-transit truck
 - **Artillery:** `artillery_a` crane carrier with a mortar battery, `artillery_b` cement mixer turned mortar drum
@@ -128,7 +129,7 @@ _Updated 2026-09-14 (agent)._
   (`tools/assets/review.py`); `generate.py` logs every Meshy task to `assets/meshy_ledger.md` (credits + balance),
   refuses 3D without an approved `--review-item`, refuses a duplicate 3D request for the same concept, and gained
   `--keep-background` for scene art. 15 Python tests (the gate test is proven to fail without the gate).
-- **Concept batch 1:** 18 images (171 credits; balance 829). See *Waiting on the lead*.
+- **Concept batch 1:** 18 images (162 credits; balance 838), published as a review page with per-concept approve/reject. See *Waiting on the lead*.
 
 **Decisions**
 - Concept review images are committed as 1024 px JPEGs (`assets/review/images/`, ~150 KB each, `.gdignore`d) so
