@@ -75,6 +75,17 @@ static func label(preset: String) -> String:
 	return String(PRESETS.get(preset, {}).get("label", preset.capitalize()))
 
 
+## The unit types a preset is built around that this catalog hasn't unlocked (its roles fall back without them).
+static func missing_units(preset: String, catalog: ArmyCatalog) -> Array[String]:
+	var missing: Array[String] = []
+	for squad_spec: Dictionary in PRESETS.get(preset, {}).get("squads", []):
+		for role: String in squad_spec["mix"]:
+			for unit_id in catalog.units_with_role(role):
+				if not catalog.is_unlocked(unit_id) and not missing.has(unit_id):
+					missing.append(unit_id)
+	return missing
+
+
 static func blurb(preset: String) -> String:
 	return String(PRESETS.get(preset, {}).get("blurb", ""))
 

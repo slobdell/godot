@@ -153,11 +153,11 @@ static func counter_lesson(p_report: Dictionary, p_catalog: ArmyCatalog) -> Stri
 	var counters: PackedStringArray = []
 	for unit_id in p_catalog.unit_ids():
 		if p_catalog.good_vs(unit_id).has(role):
-			counters.append(GarageAdvice._pluralize(p_catalog.display_name(unit_id)))
+			counters.append(GarageAdvice._pluralize(p_catalog.display_name(unit_id)) + ("" if p_catalog.is_unlocked(unit_id) else " (locked)"))
 	var top_name := GarageAdvice._pluralize(p_catalog.display_name(top) if p_catalog.has_unit(top) else top.capitalize())
 	if counters.is_empty():
 		return "Their army was mostly %s." % top_name
-	return "Their army was mostly %s. %s %s built to beat them." % [top_name, " and ".join(counters), "is" if counters.size() == 1 and counters[0] == "Artillery" else "are"]
+	return "Their army was mostly %s. %s %s built to beat them." % [top_name, " and ".join(counters), "is" if counters.size() == 1 and counters[0].begins_with("Artillery") else "are"]
 
 
 ## What to save up for next: the cheapest thing still locked, and how far away it is.

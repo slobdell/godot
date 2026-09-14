@@ -279,7 +279,8 @@ func _build_top_bar() -> Control:
 	_preset_menu.add_item("PRESETS...")
 	_preset_menu.set_item_metadata(0, "")
 	for preset in ArmyPresets.ids():
-		_preset_menu.add_item(ArmyPresets.label(preset))
+		var missing := ArmyPresets.missing_units(preset, draft.catalog).map(func(id: String) -> String: return draft.catalog.display_name(id))
+		_preset_menu.add_item(ArmyPresets.label(preset) + ("" if missing.is_empty() else "  (needs %s)" % ", ".join(missing)))
 		_preset_menu.set_item_metadata(_preset_menu.item_count - 1, preset)
 		_preset_menu.set_item_tooltip(_preset_menu.item_count - 1, ArmyPresets.blurb(preset))
 	_preset_menu.item_selected.connect(func(index: int) -> void:

@@ -124,3 +124,21 @@ Unit stats and the army JSON parser (rules), squad behavior (ai), the in-match U
   - Shared-file edits: `game/main.gd` (+`static var next_flags`, 3 lines), `mk/core.mk` (`army-loop-smoke` in
     `check`).
   - Title → army: the title screen is art's file; see *Requests to other streams*.
+- **Browser loop verified.** `make garage-web-smoke` gained a third page: `?garage&garage-autofight&army-loop-*`
+  runs FIGHT → results → REMATCH → results → ARMY in Chrome (IndexedDB `user://`, in-process restarts);
+  `web-army-loop.png` reviewed (back in the builder with the same army).
+- **Y4 done: CPU opponents at the player's tier.** The tier budget goes to the skirmish for both armies (rules'
+  `Army` builds the CPU army at that budget, a fresh seed each FIGHT, the same seed on REMATCH);
+  `army-loop-smoke` asserts every CPU army's cost ≤ the tier budget (measured 800 ≤ 800). The results screen shows
+  the opponent's composition, its losses, and a counter lesson naming the units built to beat what they fielded
+  (locked ones marked). Decision: CPU armies may field units the player hasn't unlocked (they're sidegrades, and
+  meeting a unit first is how players learn they want it).
+  - Fixed: my stub had the scout good vs artillery and Lancer only; game_design.md also has tanks weak vs scouts,
+    so starters had no tank counter. The stub is now scout > tank > IFV > scout.
+- **Y5 done: economy note** in `_agents/balance.md` "Economy": award table, tier and unlock prices, and
+  `make economy-sim` (400 simulated players per win rate using the real `Progression` numbers): at 50% wins the
+  first unlock comes in ~5 matches, every unit type in ~17 matches (0.8 h), everything in ~55 matches (3.7 h);
+  35% → 4.6 h, 65% → 3.1 h.
+- **Y6 done: presets per tier and codes v2.** Presets carry a tier and adapt to unlocks (Y1); the PRESETS menu now
+  says what a preset is built around that you haven't unlocked ("Siege Line (needs Artillery)"). Codes are `TS2`
+  (Y1), round-1 `TS1` codes still import.

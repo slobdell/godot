@@ -165,3 +165,60 @@ python3 tools/match_series.py --godot .tools/godot-4.7.2-stable/Godot_v4.7.2-sta
 ```
 `match_series.py` prints wins, pace (first shot/kill), loser kills, idle guns, and what the brains spent
 their time doing (`stats.options`).
+
+## Economy (army stream; measured 2026-09-15)
+
+> Owned by the army stream. Numbers live in `game/progression/progression.gd` (`BUDGET_TIERS`,
+> `UNIT_UNLOCK_CREDITS`, `AWARD`) and each unit's catalog `unlock_tier`. Re-measure with `make economy-sim`
+> after changing any of them (or when rules adds units or changes costs).
+
+**Principles** (game_design.md "Progression", vision.md): credits come only from playing; nothing is ever sold.
+Unlocks add options, not power: both armies always fight at the same budget tier, and units are sidegrades.
+No grind walls: an average player unlocks everything in an evening or two, a weak player isn't locked out, and a
+strong player gets there a little faster.
+
+**What a match pays** (`Progression.credits_for`):
+
+| Outcome | Base | Per enemy unit destroyed | Tier bonus | Minimum length |
+|---|---|---|---|---|
+| Win | 100 | +6 | +25% of base per tier | 60 s simulated (shorter pays 0) |
+| Draw | 30 | +6 | same | same |
+| Loss | 10 | +6 | same | same |
+
+Why a loss pays so little on its own: the first numbers (loss 15, 20 s minimum) made a thrown match worth
+**45 credits/minute** against **39** for a real 3-minute win with 3 kills. A regression test
+(`test_throwing_matches_is_never_faster_than_trying`) now holds the order. A loss still pays for the damage done,
+so a close fight earns something. Each match pays once (`last_award` holds its key).
+
+**What unlocks cost:** budget tiers are bought in order; units can be bought any time, so the player chooses between
+a new unit type and a bigger army.
+
+| Tier | Name | Budget (both sides) | Unlock | ≈ units per side |
+|---|---|---|---|---|
+| 0 | Scrapyard | 800 | starter | 5 |
+| 1 | Pit | 1,200 | 400 | 8 |
+| 2 | Arena | 1,700 | 900 | 11 |
+| 3 | Colosseum | 2,400 | 1,600 | 16 |
+| 4 | Grand Circus | 3,200 | 2,500 | 21 (25 max) |
+
+Units: `unlock_tier` 0 = starter (scout, IFV, tank); 1 = 300 credits (artillery); 2 = 600 (Lancer); 3 = 1,000;
+4 = 1,500 (future units). Total to unlock everything today: 6,300 credits.
+
+**Simulated players** (`make economy-sim`, 400 players per row; model and assumptions in
+`tests/garage/economy_sim.gd`: a win destroys ~90% of the enemy, a loss ~35%; matches last 2.5 + 0.9 × tier
+minutes; players fight at their top tier and buy the cheapest unlock first). Matches (hours) to reach each milestone:
+
+| Win rate | first unlock | every unit | tier 1 | tier 2 | tier 3 | top tier | everything |
+|---|---|---|---|---|---|---|---|
+| 35% | 6 (0.3 h) | 21 (1.0 h) | 13 (0.5 h) | 33 (1.7 h) | 50 (2.9 h) | 70 (4.6 h) | 70 (4.6 h) |
+| 50% | 5 (0.2 h) | 17 (0.8 h) | 10 (0.4 h) | 26 (1.3 h) | 39 (2.3 h) | 55 (3.7 h) | 55 (3.7 h) |
+| 65% | 4 (0.2 h) | 14 (0.7 h) | 8 (0.4 h) | 22 (1.1 h) | 33 (1.9 h) | 47 (3.1 h) | 47 (3.1 h) |
+
+Typical pay: tier 0 win 130 / loss 22; tier 2 win 210 / loss 39; tier 4 win 314 / loss 62.
+
+**Reading:** the first unlock comes within ~5 matches (a quick first reward), every unit type within ~1 hour
+(counters are the game, so they shouldn't wait), and the biggest armies after 3–5 hours. A 65% player finishes
+~1.5 hours before a 35% player: skill is rewarded without walling anyone out. **Open for the lead:** this is
+deliberately short for a paid die-hard game where unlocks are options, not power. As units are added at tiers 3–4
+the path lengthens by ~1,000–1,500 credits each (≈ 5–7 matches). If the lead wants a longer arc, raise tier prices
+first (the army gets bigger, not stronger), and re-run the sim.

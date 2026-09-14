@@ -47,7 +47,7 @@ garage-preset-army: import ## Write a preset army (PRESET=<ArmyPresets id>) to u
 	$(GODOT) --headless --path . --script res://tests/garage/build_army.gd -- --preset=$(PRESET) 2>&1 | grep -E 'GARAGE_ARMY|GARAGE_CODE|ERROR'
 
 .PHONY: garage-web-smoke
-garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, and FIGHT hands over to the skirmish (user:// saves work in the browser) -> build/screenshots/web-garage*.png
+garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, FIGHT hands over to the skirmish, and the match loop (results → REMATCH → ARMY) runs -> build/screenshots/web-garage*.png, web-army-loop.png
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & server=$$!; \
 	trap 'kill $$server' EXIT; \
@@ -55,7 +55,10 @@ garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, and 
 		$(BUILD_DIR)/screenshots/web-garage.png 3 "TANK_SQUAD_READY role=GARAGE" && \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
 		"http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-scratch&garage-autofight&enemy=cpu:armor&seed=3" \
-		$(BUILD_DIR)/screenshots/web-garage-fight.png 3 GARAGE_FIGHT
+		$(BUILD_DIR)/screenshots/web-garage-fight.png 3 GARAGE_FIGHT && \
+	SMOKE_TIMEOUT_MS=240000 CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
+		"http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-scratch&garage-autofight&enemy=cpu:swarm&seed=4&army-loop-time=6&army-loop-delay=1&army-loop-auto=rematch,army" \
+		$(BUILD_DIR)/screenshots/web-army-loop.png 3 "ARMY_LOOP action=army"
 
 .PHONY: army-loop-smoke army-loop-shots
 army-loop-smoke: import ## Headless match loop: army → FIGHT → results → REMATCH → results → ARMY; checks the markers and that nothing errors
@@ -68,6 +71,11 @@ army-loop-smoke: import ## Headless match loop: army → FIGHT → results → R
 	grep -q 'ARMY_LOOP action=rematch' $(BUILD_DIR)/army-loop-smoke.log
 	grep -q 'ARMY_LOOP action=army' $(BUILD_DIR)/army-loop-smoke.log
 	test $$(grep -c 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/army-loop-smoke.log) -eq 3
+	$(PYTHON) -c "import re; log=open('$(BUILD_DIR)/army-loop-smoke.log').read(); \
+		budget=int(re.search(r'GARAGE_FIGHT .* budget=(\d+)', log).group(1)); \
+		costs=[int(c) for c in re.findall(r'SKIRMISH_ARMY Rust .*\((\d+) pts\)', log)]; \
+		assert costs and all(c <= budget for c in costs), ('the CPU army must fit the player tier budget', budget, costs); \
+		print('CPU armies fit the tier budget:', costs, '<=', budget)"
 	! grep -E 'ERROR' $(BUILD_DIR)/army-loop-smoke.log
 	@echo "army-loop-smoke passed"
 
@@ -78,3 +86,7 @@ army-loop-shots: import ## Results screen screenshots after a real 70 s skirmish
 	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --garage-autofight --enemy=cpu:armor --seed=7 --mute \
 		--army-loop-time=70 --army-loop-delay=0.5 --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/army-results-phone.png --screenshot-delay=76
 	@echo "Now LOOK at $(GARAGE_SHOTS)/army-results-*.png"
+
+.PHONY: economy-sim
+economy-sim: import ## Simulated players earning credits with the real Progression numbers: matches and hours to each unlock (ECON_PLAYERS=400) -> _agents/balance.md "Economy"
+	$(GODOT) --headless --path . --script res://tests/garage/economy_sim.gd -- --players=$(or $(ECON_PLAYERS),400) 2>&1 | grep -E '^\||ECONOMY_SIM|Typical|ERROR'

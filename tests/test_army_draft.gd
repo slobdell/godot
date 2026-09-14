@@ -172,6 +172,8 @@ func test_a_preset_uses_its_signature_unit_once_unlocked() -> void:
 	var catalog := ArmyCatalog.from_game().with_budget(1700)
 	assert_true(ArmyPresets.build("siege_line", catalog).counts_by_unit().has("artillery"), "Siege Line fields artillery when it's unlocked")
 	assert_true(not ArmyPresets.build("siege_line", _starters_only(catalog)).counts_by_unit().has("artillery"), "and falls back without it")
+	assert_eq(ArmyPresets.missing_units("siege_line", _starters_only(catalog)), ["artillery"], "the menu can say Siege Line needs artillery")
+	assert_eq(ArmyPresets.missing_units("siege_line", catalog), [], "and nothing once it's unlocked")
 	assert_eq(ArmyPresets.build("scout_screen", catalog).army, ArmyPresets.build("scout_screen", catalog).army, "presets are deterministic")
 
 

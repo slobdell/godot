@@ -67,10 +67,10 @@ static func _role_plural(role: String) -> String:
 
 
 static func _pluralize(word: String) -> String:
-	if word.ends_with("y") and not word.ends_with("ey"):
-		return word.trim_suffix("y") + "ies"
 	if word.to_lower() == "artillery":
 		return word
+	if word.ends_with("y") and not word.ends_with("ey"):
+		return word.trim_suffix("y") + "ies"
 	return word + "s"
 
 

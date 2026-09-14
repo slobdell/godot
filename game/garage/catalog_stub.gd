@@ -14,7 +14,7 @@ const PROFILES := {
 		"shield_recharge_delay": 3.0, "shield_recharge_rate": 40.0,
 		"max_forward_speed": 14.0, "max_reverse_speed": 7.0, "hull_turn_rate_deg": 140.0, "sight_radius": 110.0,
 		"weapon": "machine_gun", "mount": "fixed", "fire_arc_deg": 12.0, "muzzle_height": 1.1,
-		"good_vs": ["artillery", "lancer"], "weak_vs": ["ifv"],
+		"good_vs": ["tank", "artillery", "lancer"], "weak_vs": ["ifv"],
 	},
 	"ifv": {
 		"display_name": "IFV", "role": "ifv", "unlock_tier": 0, "cost": 150,
