@@ -4,7 +4,8 @@ extends GameMode
 ## MATCH_RESULT <json> and quits. Options: --green=N --rust=N (BotControllers) or
 ## --green-doctrine=PATH --rust-doctrine=PATH (or cpu / cpu:<archetype> with --budget), --score-limit=K --time-limit=SECONDS
 ## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation
-## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning); --control adds the center control point.
+## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning); --control adds the center control point;
+## --green-commander / --rust-commander give a team a CpuCommander.
 
 
 func role_name() -> String:
@@ -45,6 +46,14 @@ func start() -> void:
 				game_match.add_bot(team)
 	game_match.elimination = flags.has("elimination")
 	game_match.control_point = flags.has("control")
+	# Stretch: --green-commander / --rust-commander put a CpuCommander in charge of that team's gun squads.
+	for team in [Match.Team.GREEN, Match.Team.RUST]:
+		if flags.has(("green" if team == Match.Team.GREEN else "rust") + "-commander"):
+			var commander := CpuCommander.new()
+			commander.name = "Commander_%s" % Match.TEAM_NAMES[team]
+			commander.game_match = game_match
+			commander.team = team
+			game_match.add_child(commander)
 	game_match.start_limits(0 if game_match.elimination else flags.integer("score-limit", 5),
 			float(flags.integer("time-limit", 300)))
 	var started_msec := Time.get_ticks_msec()

@@ -5,6 +5,7 @@ extends GameMode
 ##   --player=DOCTRINE (default player_default; must fit --budget, default Units.DEFAULT_BUDGET)
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
 ##   --seed=N (the CPU army's seed; default: the clock)   --control (a control point at the center)
+##   --no-commander (the CPU army's squads fight without a CpuCommander issuing orders)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
 
@@ -44,6 +45,13 @@ func start() -> void:
 	game_match.elimination = true
 	# Stretch: --control adds a control point at the center (first to 90 points, or elimination).
 	game_match.control_point = flags.has("control")
+	# Stretch: the CPU army gets a commander that issues squad orders (--no-commander turns it off).
+	if not flags.has("no-commander"):
+		var commander := CpuCommander.new()
+		commander.name = "CpuCommander"
+		commander.game_match = game_match
+		commander.team = Match.Team.RUST
+		game_match.add_child(commander)
 	game_match.finished.connect(func(_result: Dictionary) -> void:
 		main.hud.show_banner("VICTORY" if _result["winner"] == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"))
 	# G1 fog of war: what Green can see, drawn over the arena and (G2) on the radar.
