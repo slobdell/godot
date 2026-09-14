@@ -205,3 +205,15 @@ det-spike: import export-web $(WEB_SMOKE_DEPS) ## N2: deterministic core native 
 		$(BUILD_DIR)/screenshots/det-spike.png 1 DET_SPIKE_RESULT > $(BUILD_DIR)/det-spike-web.log 2>&1 \
 		|| { tail -20 $(BUILD_DIR)/det-spike-web.log; exit 1; }
 	$(PYTHON) tests/net/det_spike_compare.py native=$(BUILD_DIR)/det-spike-native.log wasm=$(BUILD_DIR)/det-spike-web.log
+
+# A bad mobile link on every peer: 150 ms + up to 50 ms jitter added to every packet received (so
+# about 300-400 ms round trip). Same checks as relay-smoke: tanks replicate, commands move tanks,
+# combat replicates, nothing errors.
+relay-latency-smoke: import $(BROKER_DEPS) ## relay-smoke with 150 ms + 50 ms jitter injected on the host and both clients
+	mkdir -p $(BUILD_DIR)
+	$(eval RELAY_SMOKE_HOST_FLAGS := --demo --bots=2 --relay-latency=150 --relay-jitter=50)
+	$(call relay_host_up,,relay-latency-smoke); \
+	pids=""; \
+	$(call relay_client,relay-latency-smoke-client1,--demo --expect-tanks=5 --expect-any-damage --timeout=60 --measure=10 --relay-latency=150 --relay-jitter=50); \
+	$(call relay_client,relay-latency-smoke-client2,--demo --expect-tanks=5 --expect-any-damage --timeout=60 --relay-latency=150 --relay-jitter=50); \
+	$(call relay_verdict,relay-latency-smoke,relay-latency-smoke-client1 relay-latency-smoke-client2)

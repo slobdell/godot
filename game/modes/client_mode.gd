@@ -86,4 +86,7 @@ func _on_relay_event(event: String, data: Dictionary) -> void:
 		"host_away":
 			main.hud.set_status("The host's connection dropped: waiting for them…")
 		"closed":
-			main.hud.set_status("Match ended: %s" % data.get("reason", ""))
+			var reason := String(data.get("reason", ""))
+			main.hud.set_status("Match ended: %s" % reason)
+			if reason.begins_with("host_"):
+				main.hud.show_banner("HOST LEFT")
