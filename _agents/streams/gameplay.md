@@ -234,8 +234,14 @@ stretch series there.
    retune doctrines (the CPU and player defaults) for concentration; (b) slower recharge / smaller
    shield (the effect shrinks); (c) team-level mechanics that reward holding ground (control points,
    stretch item). I kept shields as briefed and moved on; `--tune=tank.max_shield=…` makes (b) a
-   one-flag experiment.
-2. Real phones need content scaling (`display/window/stretch/mode="canvas_items"`, aspect `expand`)
+   one-flag experiment. **Update:** (c) works: with the center control point (`--control`) Anvil &
+   Hammer vs Individuals is **10 : 10**. My recommendation: make `--control` the default skirmish rule
+   (it's opt-in now because it changes the victory condition you asked for).
+2. Directive set 2 balance (E3): the first archetype round robin had **Siege (2 artillery) at 81%** and
+   scout-heavy armies at 12–25%. I added a counter triangle (scouts hunt artillery) and raised artillery
+   to 220 points; round robin #2 is in `_agents/balance.md`. Worth deciding: is "an all-scout army can't
+   win" acceptable (scouts as eyes, not an army), or should scouts be viable alone?
+3. Real phones need content scaling (`display/window/stretch/mode="canvas_items"`, aspect `expand`)
    in `project.godot` (shared). I haven't changed it; the phone screenshots use a 1200×540 window.
 
 **Requests to other streams:**
