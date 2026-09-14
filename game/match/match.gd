@@ -30,7 +30,15 @@ const ARENA_HALF_SIZE := 120.0
 ## How close to the perimeter tanks and slots may be sent (walls' inner face minus clearance).
 const DRIVABLE_LIMIT := 116.0
 const BASE_Z := 90.0
-const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -6.0, 6.0, -18.0, 18.0]
+## R5 spawn grid: up to 5 squads x 5 units per side. Slot 0..8 fill the front row (center out), then the rows
+## behind it, SPAWN_ROW_SPACING apart toward the team's own wall. 12 m columns and 10 m rows keep even a
+## jittered 2.6 x 4 m hull clear of its neighbours (SPAWN_JITTER_MAX_X).
+const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -36.0, 36.0, -48.0, 48.0]
+const SPAWN_ROWS := 3
+const SPAWN_ROW_SPACING := 10.0
+const SPAWN_SLOTS := 27
+## Spawn jitter never moves a unit more than this sideways (half the column gap minus a hull width).
+const SPAWN_JITTER_MAX_X := 4.0
 
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false
@@ -103,6 +111,14 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		"gun_idle_samples": [0, 0],
 		# Sampled every INTEL_EVERY_TICKS: what living brain tanks are doing, {option: samples} per team.
 		"options": [{}, {}]}
+## C3: the match's budget (modes set it from --budget) and each team's army cost (load_doctrine adds it up).
+var budget := Units.DEFAULT_BUDGET
+var army_cost := [0, 0]
+## C3: destroyed units by team, and by unit type: kills_by_unit[team] = {unit_id: enemies of that type destroyed},
+## losses_by_unit[team] = {unit_id: own units of that type destroyed (friendly fire included)}.
+var units_lost := [0, 0]
+var kills_by_unit: Array[Dictionary] = [{}, {}]
+var losses_by_unit: Array[Dictionary] = [{}, {}]
 var sim_seconds := 0.0
 ## Physics ticks since the match began: THE clock for deterministic decisions.
 var tick := 0
@@ -193,7 +209,14 @@ func result(reason: String) -> Dictionary:
 			winner = TEAM_NAMES[Team.GREEN] if standing[0] > standing[1] else TEAM_NAMES[Team.RUST]
 	elif score_green != score_rust:
 		winner = TEAM_NAMES[Team.GREEN] if score_green > score_rust else TEAM_NAMES[Team.RUST]
+	var units_left := {"green": alive_count(Team.GREEN), "rust": alive_count(Team.RUST)}
 	return {"winner": winner, "reason": reason, "state_hash": state_hash(), "tick": tick,
+			# C3 (progression): what each side lost and kept, what it destroyed, how long, and at what budget.
+			"units_lost": {"green": units_lost[Team.GREEN], "rust": units_lost[Team.RUST]}, "units_left": units_left,
+			"kills_by_unit": {"green": kills_by_unit[Team.GREEN].duplicate(), "rust": kills_by_unit[Team.RUST].duplicate()},
+			"losses_by_unit": {"green": losses_by_unit[Team.GREEN].duplicate(), "rust": losses_by_unit[Team.RUST].duplicate()},
+			"duration_seconds": snappedf(sim_seconds, 0.1), "budget": budget,
+			"army_cost": {"green": army_cost[Team.GREEN], "rust": army_cost[Team.RUST]},
 			"score": {"green": score_green, "rust": score_rust},
 			"control": {"green": control_score[0], "rust": control_score[1]} if control_point else null,
 			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
@@ -239,7 +262,8 @@ func _jittered(point: Vector3) -> Vector3:
 	if spawn_jitter <= 0.0:
 		return point
 	# Less jitter along z keeps tanks inside their base area, clear of the cover walls.
-	return point + Vector3(_rng.randf_range(-spawn_jitter, spawn_jitter), 0.0,
+	var sideways := minf(spawn_jitter, SPAWN_JITTER_MAX_X)
+	return point + Vector3(_rng.randf_range(-sideways, sideways), 0.0,
 			_rng.randf_range(-spawn_jitter, spawn_jitter) * 0.4)
 
 
@@ -252,7 +276,8 @@ static func team_frame(team: int) -> Dictionary:
 static func spawn_position(team: int, slot: int) -> Vector3:
 	var south := (team == Team.GREEN) != swap_bases
 	var x: float = SLOT_X[slot % SLOT_X.size()]
-	return Vector3(x if south else -x, 0.0, BASE_Z if south else -BASE_Z)
+	var z := BASE_Z + SPAWN_ROW_SPACING * ((slot / SLOT_X.size()) % SPAWN_ROWS)
+	return Vector3(x if south else -x, 0.0, z if south else -z)
 
 
 ## Green starts in the south facing north (−Z); Rust in the north facing south.
@@ -263,6 +288,7 @@ static func spawn_yaw(team: int) -> float:
 ## A doctrine-driven team (army JSON v2): every unit gets a TankBrain with resolved directives.
 ## Returns "" or an error.
 func load_doctrine(team: int, doctrine: Dictionary) -> String:
+	army_cost[team] += Units.army_cost(doctrine)
 	for squad in doctrine["squads"]:
 		var index := 1
 		var roster: PackedStringArray = []
@@ -831,6 +857,7 @@ func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3,
 
 func _score_kill(team: int, killer: String, victim: Tank) -> void:
 	stats["kills"][team] += 1
+	kills_by_unit[team][victim.unit_id] = int(kills_by_unit[team].get(victim.unit_id, 0)) + 1
 	if stats["first_kill_seconds"] < 0.0:
 		stats["first_kill_seconds"] = snappedf(sim_seconds, 0.1)
 	if team == Team.GREEN:
@@ -853,6 +880,8 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 
 
 func _on_tank_died(tank: Tank) -> void:
+	units_lost[tank.team] += 1
+	losses_by_unit[tank.team][tank.unit_id] = int(losses_by_unit[tank.team].get(tank.unit_id, 0)) + 1
 	if elimination:
 		return  # squad vs squad: destroyed means destroyed
 	await get_tree().create_timer(respawn_seconds).timeout

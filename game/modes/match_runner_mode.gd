@@ -28,6 +28,7 @@ func start() -> void:
 		main.get_tree().quit(2)
 		return
 	var seed_value := flags.integer("seed", 0)
+	game_match.budget = flags.integer("budget", Units.DEFAULT_BUDGET)
 	game_match.seed_spawns(seed_value, 6.0 if flags.has("seed") else 0.0)
 	# --rust-first flips spawn (and therefore per-tick processing) order: a fairness probe.
 	var order := [Match.Team.RUST, Match.Team.GREEN] if flags.has("rust-first") else [Match.Team.GREEN, Match.Team.RUST]
