@@ -43,6 +43,9 @@ const FATAL_CLOSE_CODES := [4000, 4001, 4003, 4004, 4005, 4007, 4008, 4009, 4010
 enum Role { NONE, HOST, CLIENT }
 
 var role := Role.NONE
+## Client: an opaque key kept across sessions (see ClientMode), sent on join so the host can give
+## a returning player their old tank. Host: see player_key_of().
+var player_key := ""
 var url := ""
 var room_code := ""
 ## Why the session ended ("" while it's alive).
@@ -71,6 +74,8 @@ var _transfer_mode := MultiplayerPeer.TRANSFER_MODE_RELIABLE
 var _transfer_channel := 0
 ## Host: ids of connected players.
 var _peers := {}
+## Host: peer id → player key (from the broker).
+var _players := {}
 
 ## Received packets waiting for Godot: [sender, flags, payload], consumed from _incoming_head.
 var _incoming: Array = []
@@ -309,7 +314,8 @@ func _on_socket_open(now: int) -> void:
 		elif role == Role.HOST:
 			_send_control({"op": "host", "version": PROTOCOL_VERSION})
 		else:
-			_send_control({"op": "join", "version": PROTOCOL_VERSION, "room": room_code, "peer_id": _unique_id})
+			_send_control({"op": "join", "version": PROTOCOL_VERSION, "room": room_code, "peer_id": _unique_id,
+					"player": player_key})
 	while _ws != null and _ws.get_available_packet_count() > 0:
 		var packet := _ws.get_packet()
 		_last_receive_msec = now
@@ -403,6 +409,7 @@ func on_control(msg: Dictionary) -> void:
 		"ack":
 			_trim_retained(int(msg.get("seq", 0)))
 		"peer_joined":
+			_players[int(msg.get("peer_id", 0))] = String(msg.get("player", ""))
 			_add_peer(int(msg.get("peer_id", 0)))
 		"peer_left":
 			_forget_peer(int(msg.get("peer_id", 0)))
@@ -462,6 +469,8 @@ func _on_resumed(msg: Dictionary) -> void:
 	_trim_retained(broker_has)
 	for entry in _retained:
 		_send_frame(entry[1])
+	for peer_id in msg.get("players", {}):
+		_players[int(peer_id)] = String(msg["players"][peer_id])
 	if role == Role.HOST and msg.has("peers"):
 		# Joins and leaves while we were away were never delivered to us: reconcile.
 		var present := {}
@@ -505,6 +514,11 @@ func _trim_retained(acked_seq: int) -> void:
 		drop += 1
 	if drop > 0:
 		_retained = _retained.slice(drop)
+
+
+## Host: the player key a player joined with ("" if none). Still valid inside peer_disconnected.
+func player_key_of(peer_id: int) -> String:
+	return String(_players.get(peer_id, ""))
 
 
 func retained_count() -> int:

@@ -265,3 +265,13 @@ lobby-smoke: import $(BROKER_DEPS) ## --lobby: a wrong room code returns to the 
 		> $(BUILD_DIR)/lobby-smoke.log 2>&1; status=$$?; \
 	grep -E 'LOBBY_CHECK|ERROR' $(BUILD_DIR)/lobby-smoke.log; \
 	grep -q ERROR $(BUILD_DIR)/lobby-smoke.log && status=1; exit $$status
+
+# App killed for longer than the broker's grace (shortened to 3 s here): the seat is gone, the
+# client rejoins with its player key, and the host gives it its tank back (team, health, place).
+relay-rejoin-smoke: import $(BROKER_DEPS) ## Relay: seat lost after the grace period; the player rejoins by key and gets its tank back
+	mkdir -p $(BUILD_DIR)
+	$(eval RELAY_SMOKE_HOST_FLAGS := --demo --bots=0)
+	$(call relay_host_up,--grace-ms=3000,relay-rejoin-smoke); \
+	pids=""; \
+	$(call relay_client,relay-rejoin-smoke-client,--demo --expect-tanks=2 --drop-after=4 --drop-seconds=6 --expect-rejoin --timeout=60 --player-key=rejoin_smoke_player); \
+	$(call relay_verdict,relay-rejoin-smoke,relay-rejoin-smoke-client)

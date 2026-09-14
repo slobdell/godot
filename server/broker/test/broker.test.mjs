@@ -87,6 +87,17 @@ describe("lobbies", () => {
     assert.equal((await host.control("peer_joined")).peer_id, 777);
   });
 
+  test("a player key reaches only the host, and junk keys are dropped", async () => {
+    const host = await ctx.open();
+    await host.host();
+    const player = await ctx.open();
+    await player.join(host.room, { player: "key_ABC-123" });
+    assert.equal((await host.control("peer_joined")).player, "key_ABC-123");
+    const sneaky = await ctx.open();
+    await sneaky.join(host.room, { player: "<script>" });
+    assert.equal((await host.control("peer_joined")).player, "", "keys outside [A-Za-z0-9_-]{1,64} are ignored");
+  });
+
   test("a taken or invalid proposed peer id is replaced by a fresh one", async () => {
     const host = await ctx.open();
     await host.host();

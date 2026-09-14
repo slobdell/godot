@@ -16,6 +16,9 @@ extends SceneTree
 ##   5. with --drop-after=S --drop-seconds=D (relay only): S seconds after spawning, our socket is
 ##      cut for D seconds (a phone losing signal); we must resume the same seat, keep our tank, and
 ##      see it move again (--min-travel-after-drop=M, default 2) with no errors.
+##   5b. with --expect-rejoin as well (and a broker grace shorter than the drop): the seat is lost,
+##      ClientMode rejoins with the same player key, and the host restores our tank: new peer id,
+##      same team, same health, within 10 m of where we left.
 ##   6. with --measure=S: after passing, stay S more seconds and print NET_MEASURE {json}: relay
 ##      bytes and frames per second each way, and how often our tank's replicated position updated
 ##      (mean / p95 / max gap). Always reported: first_motion_ms, spawn → replicated movement ≥ 0.5 m.
@@ -76,6 +79,8 @@ func _run() -> void:
 	var relay: RelayPeer = null
 	var my_id := 0
 	var first_motion_msec := -1
+	var expect_rejoin := flags.has("expect-rejoin")
+	var before_drop := {}
 	while Time.get_ticks_msec() < deadline:
 		await process_frame
 		seen = maxi(seen, tanks.get_child_count())
@@ -104,9 +109,24 @@ func _run() -> void:
 				_finish(false, "--drop-after needs a relay connection (--join)")
 				return
 			print("NET_CHECK dropping our socket for %.0f s" % drop_seconds)
+			before_drop = {"id": my_id, "team": mine.team, "health": mine.sync_health, "position": mine.sync_position}
 			relay.simulate_drop(drop_seconds)
 			away_msec = Time.get_ticks_msec()
 			drop_state = "away"
+		elif drop_state == "away" and expect_rejoin:
+			var current := root.multiplayer.multiplayer_peer as RelayPeer
+			if current != null and current != relay and my_id != int(before_drop["id"]) \
+					and current.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
+				away_msec = Time.get_ticks_msec() - away_msec
+				var moved: float = mine.sync_position.distance_to(before_drop["position"])
+				print("NET_CHECK rejoined after %.1f s as peer %d (was %d): team %d/%d health %d/%d moved %.1f m" % [
+						away_msec / 1000.0, my_id, before_drop["id"], mine.team, before_drop["team"],
+						mine.sync_health, before_drop["health"], moved])
+				if mine.team != before_drop["team"] or mine.sync_health != before_drop["health"] or moved > 10.0:
+					_finish(false, "the rejoined tank wasn't restored (team, health or position)")
+					return
+				relay = current
+				drop_state = "back"
 		elif drop_state == "away" and not relay.is_away():
 			if root.multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
 				_finish(false, "the relay session ended instead of resuming: %s" % relay.close_reason)

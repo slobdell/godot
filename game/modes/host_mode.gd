@@ -13,6 +13,12 @@ extends ServerMode
 
 ## `make broker` listens here by default (NET_PORT 9080 + 5).
 const DEFAULT_BROKER_PORT := 9085
+## A player who drops for good (app killed, grace period over) and returns within this long gets
+## their tank back where it was, with the health it had: leaving can't be used to heal or relocate.
+const REJOIN_WINDOW_MSEC := 5 * 60 * 1000
+
+## Player key → {team, position, yaw, health, msec} of tanks whose players left.
+var _departed := {}
 
 
 func role_name() -> String:
@@ -46,6 +52,33 @@ func started(peer: MultiplayerPeer) -> void:
 		main.game_match.has_local_player = true
 		main.create_local_controller()
 		main.game_match.add_player(main.multiplayer.get_unique_id())
+
+
+func _on_peer_disconnected(peer_id: int) -> void:
+	var relay := main.multiplayer.multiplayer_peer as RelayPeer
+	var key := relay.player_key_of(peer_id) if relay != null else ""
+	var tank := main.game_match.tanks.get_node_or_null("Tank_%d" % peer_id) as Tank
+	if key != "" and tank != null:
+		_departed[key] = {"team": tank.team, "position": tank.global_position, "yaw": tank.rotation.y,
+				"health": tank.health, "msec": Time.get_ticks_msec()}
+	super._on_peer_disconnected(peer_id)
+
+
+func _on_peer_connected(peer_id: int) -> void:
+	var relay := main.multiplayer.multiplayer_peer as RelayPeer
+	var key := relay.player_key_of(peer_id) if relay != null else ""
+	var saved: Dictionary = _departed.get(key, {})
+	_departed.erase(key)
+	if saved.is_empty() or Time.get_ticks_msec() - int(saved["msec"]) > REJOIN_WINDOW_MSEC:
+		super._on_peer_connected(peer_id)
+		return
+	var tank := main.game_match.spawn_tank("Tank_%d" % peer_id, peer_id, saved["team"])
+	tank.respawn(saved["position"], saved["yaw"])
+	var lost: int = tank.max_health - int(saved["health"])
+	if lost > 0:
+		tank.apply_damage(lost)
+	print("peer %d rejoined -> %s (team %s, health %d, same place)" % [peer_id, tank.name,
+			Match.TEAM_NAMES[tank.team], tank.health])
 
 
 func _on_relay_event(event: String, data: Dictionary) -> void:

@@ -249,6 +249,9 @@ export class Broker {
     let id = Number.isInteger(msg.peer_id) ? msg.peer_id : 0;
     if (id <= HOST_ID || id > MAX_PEER_ID || room.peers.has(id)) id = this.#newPeerId(room);
     const peer = this.#addPeer(conn, room, id);
+    // An opaque key the client keeps across sessions, so the host can give a returning player
+    // their old tank. Only the host ever sees it.
+    peer.player = typeof msg.player === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(msg.player) ? msg.player : "";
     this.#sendJson(conn.ws, {
       op: "joined",
       room: room.code,
@@ -258,7 +261,7 @@ export class Broker {
       heartbeat_ms: this.config.heartbeatMs,
       grace_ms: this.config.graceMs,
     });
-    this.#notifyHost(room, { op: "peer_joined", peer_id: id });
+    this.#notifyHost(room, { op: "peer_joined", peer_id: id, player: peer.player });
   }
 
   #opResume(conn, msg) {
@@ -284,6 +287,9 @@ export class Broker {
       peer_id: peer.id,
       last_seq: peer.inSeq, // the peer retransmits its reliable frames after this
       peers: peer.isHost ? [...peer.room.peers.keys()].filter((id) => id !== HOST_ID) : undefined,
+      players: peer.isHost
+        ? Object.fromEntries([...peer.room.peers.values()].filter((p) => !p.isHost).map((p) => [p.id, p.player]))
+        : undefined,
     });
     const lastSeen = Number.isInteger(msg.last_seq) ? msg.last_seq : 0;
     peer.retained = peer.retained.filter((entry) => entry.seq > lastSeen);

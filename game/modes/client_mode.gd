@@ -3,6 +3,10 @@ extends GameMode
 ## Networked client: displays replicated state, sends its local controller's commands.
 ##   --connect[=ws://host:port]         a dedicated server (ServerMode)
 ##   --join=CODE [--relay=ws://broker]  a player-hosted room through the relay (HostMode)
+##     --player-key=KEY                 who we are across sessions (browser: kept per tab in
+##                                      sessionStorage; else random per process). If our seat is lost
+##                                      (gone longer than the broker's grace), we rejoin automatically
+##                                      and the host gives this key its old tank back.
 ##     --record=PATH                    save everything the host sends us, for --replay
 ##   --replay=PATH [--replay-speed=2]   watch a recording from the recorded player's seat
 ## Owned by the netcode workstream (_agents/streams/netcode.md).
@@ -12,8 +16,16 @@ func role_name() -> String:
 	return "CLIENT"
 
 
+## Seat lost (away past the broker's grace): rejoin the room with the same player key.
+const REJOIN_REASONS := ["grace_expired", "resume_failed"]
+const REJOIN_ATTEMPTS := 15
+const REJOIN_DELAY_SEC := 1.0
+const PLAYER_KEY_STORAGE := "tank_squad_player_key"
+
 ## Where we connect (for status text).
 var _url := ""
+var _player_key := ""
+var _rejoin_attempts_left := 0
 
 
 func start() -> void:
@@ -37,10 +49,8 @@ func start() -> void:
 	elif flags.has("join"):
 		# A player-hosted match through the broker's relay (HostMode on the other end).
 		_url = HostMode.relay_url(flags)
-		var relay := RelayPeer.new()
-		HostMode.apply_link_flags(relay, flags)
+		var relay := _new_relay()
 		err = relay.join(_url, flags.text("join"))
-		relay.relay_event.connect(_on_relay_event)
 		peer = relay
 	else:
 		var socket := WebSocketMultiplayerPeer.new()
@@ -59,7 +69,39 @@ func start() -> void:
 	main.hud.set_status("Connecting to %s…" % _url)
 
 
+func _new_relay() -> RelayPeer:
+	var relay := RelayPeer.new()
+	HostMode.apply_link_flags(relay, flags)
+	relay.player_key = player_key()
+	relay.relay_event.connect(_on_relay_event)
+	return relay
+
+
+## Who this player is across sessions (so a host can give a returning player their tank back).
+func player_key() -> String:
+	if not _player_key.is_empty():
+		return _player_key
+	_player_key = flags.text("player-key")
+	if _player_key.is_empty() and OS.has_feature("web"):
+		# Per tab: several tabs in one browser are different players, and a reloaded or restored
+		# tab (a phone that killed it) is the same one.
+		_player_key = str(JavaScriptBridge.eval("sessionStorage.getItem('%s') || ''" % PLAYER_KEY_STORAGE, true))
+	if _player_key.is_empty() or _player_key == "null":
+		_player_key = Crypto.new().generate_random_bytes(16).hex_encode()
+		if OS.has_feature("web"):
+			JavaScriptBridge.eval("sessionStorage.setItem('%s', '%s')" % [PLAYER_KEY_STORAGE, _player_key], true)
+	return _player_key
+
+
+func _rejoin() -> void:
+	var relay := _new_relay()
+	var err := relay.join(_url, flags.text("join"))
+	print("TANK_SQUAD_REJOIN attempt (%s)" % error_string(err))
+	main.multiplayer.multiplayer_peer = relay
+
+
 func _on_connected() -> void:
+	_rejoin_attempts_left = 0
 	var peer_id := main.multiplayer.get_unique_id()
 	var relay := main.multiplayer.multiplayer_peer as RelayPeer
 	if relay != null and flags.has("record"):
@@ -106,6 +148,16 @@ func _on_relay_event(event: String, data: Dictionary) -> void:
 			main.hud.set_status("The host's connection dropped: waiting for them…")
 		"closed":
 			var reason := String(data.get("reason", ""))
+			if flags.has("join") and (reason in REJOIN_REASONS or (_rejoin_attempts_left > 0
+					and reason in ["connection_failed", "cannot_connect"])):
+				if reason in REJOIN_REASONS:
+					_rejoin_attempts_left = REJOIN_ATTEMPTS
+				_rejoin_attempts_left -= 1
+				if _rejoin_attempts_left >= 0:
+					print("TANK_SQUAD_REJOINING reason=%s attempts_left=%d" % [reason, _rejoin_attempts_left])
+					main.hud.set_status("Seat lost: rejoining room %s…" % flags.text("join"))
+					main.get_tree().create_timer(REJOIN_DELAY_SEC).timeout.connect(_rejoin)
+					return
 			main.hud.set_status("Match ended: %s" % reason)
 			if reason.begins_with("host_"):
 				main.hud.show_banner("HOST LEFT")

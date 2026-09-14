@@ -22,15 +22,21 @@ func start() -> void:
 	# Clients may only talk to the server, never relay messages to each other.
 	(multiplayer as SceneMultiplayer).server_relay = false
 	multiplayer.multiplayer_peer = peer
-	multiplayer.peer_connected.connect(func(peer_id: int) -> void:
-		var tank := game_match.add_player(peer_id)
-		print("peer %d joined -> %s (team %s)" % [peer_id, tank.name, Match.TEAM_NAMES[tank.team]]))
-	multiplayer.peer_disconnected.connect(func(peer_id: int) -> void:
-		game_match.remove_player(peer_id)
-		print("peer %d left" % peer_id))
+	multiplayer.peer_connected.connect(_on_peer_connected)
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	started(peer)
 	for i in flags.integer("bots", 0):
 		game_match.add_bot()
+
+
+func _on_peer_connected(peer_id: int) -> void:
+	var tank := main.game_match.add_player(peer_id)
+	print("peer %d joined -> %s (team %s)" % [peer_id, tank.name, Match.TEAM_NAMES[tank.team]])
+
+
+func _on_peer_disconnected(peer_id: int) -> void:
+	main.game_match.remove_player(peer_id)
+	print("peer %d left" % peer_id)
 
 
 ## The transport. Returns null (after reporting why) if it can't be created.

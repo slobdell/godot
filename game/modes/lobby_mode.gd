@@ -36,7 +36,12 @@ func _join(code: String) -> void:
 	flags.values["join"] = code
 	var client := ClientMode.new()
 	_switch_to(client)
-	main.multiplayer.connection_failed.connect(_on_join_failed.bind(code), CONNECT_ONE_SHOT)
+	var on_failed := _on_join_failed.bind(code)
+	main.multiplayer.connection_failed.connect(on_failed, CONNECT_ONE_SHOT)
+	# Once in, later reconnection failures belong to ClientMode (it rejoins), not the lobby.
+	main.multiplayer.connected_to_server.connect(func() -> void:
+		if main.multiplayer.connection_failed.is_connected(on_failed):
+			main.multiplayer.connection_failed.disconnect(on_failed), CONNECT_ONE_SHOT)
 
 
 func _switch_to(next: GameMode) -> void:
