@@ -50,6 +50,11 @@ fire={
 
 ; Must match the arena NavigationMesh cell size, or baked meshes won't line up with the map.
 3d/default_cell_size=0.5
+; Synchronous map/region updates: with Godot 4.7's default async iterations, the navmesh became ready
+; after 2-5 physics frames depending on machine load, so the same seed simulated differently under load
+; (sim-baseline failed 4 of 6 runs with 6 busy cores, 2026-09-15). Found by the assets stream.
+world/map_use_async_iterations=false
+world/region_use_async_iterations=false
 
 [rendering]
 
