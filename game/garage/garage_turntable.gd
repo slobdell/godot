@@ -3,9 +3,9 @@ extends SubViewportContainer
 ## A 3D preview of one unit, built from the same visual slots the match uses (so look & feel and
 ## assets art shows up here for free), turning slowly. Swipe/drag across it to spin it by hand.
 ##
-## Slot choice per unit class: "<unit>.hull" / "<unit>.turret" when the theme has them, else the
-## tank's; the main hardpoint's weapon goes on the turret as "weapon.<id>" (slot contract in
-## _agents/slot_contracts.md: turret ring at y ≈ 1.22, z ≈ +0.2).
+## Slots per unit type (contract C6): "unit.<id>.hull" / ".turret" / ".weapon" when the theme has them, else
+## "tank.hull", "tank.turret", and "weapon.<the unit's weapon>" (_agents/slot_contracts.md: turret ring at
+## y ≈ 1.22, z ≈ +0.2).
 
 const SPIN_DEG_PER_SEC := 20.0
 const TURRET_OFFSET := Vector3(0.0, 1.22, 0.2)
@@ -87,15 +87,17 @@ func _ready() -> void:
 	_camera.look_at(Vector3(0.0, 0.9, 0.0))
 
 
-## Show `tank` (a Loadout unit dictionary) painted `color`.
-func show_unit(tank: Dictionary, color: Color) -> void:
-	unit_id = String(tank.get("unit", "tank"))
-	_hull.fill(_slot_for(unit_id, "hull"))
-	_turret.fill(_slot_for(unit_id, "turret"))
-	var main_weapon := String(tank.get("weapon", ""))
-	if main_weapon != "" and GameTheme.slots.has("weapon." + main_weapon):
-		_weapon.fill("weapon." + main_weapon)
-		_weapon.invoke("setup", [Weapons.profile(main_weapon)])
+## Show `entry` (an army unit: {"unit": id}) painted `color`. `weapon_id` is the unit's catalog weapon.
+func show_unit(entry: Dictionary, color: Color, weapon_id := "") -> void:
+	unit_id = String(entry.get("unit", "tank"))
+	_hull.fill(slot_for(unit_id, "hull"))
+	_turret.fill(slot_for(unit_id, "turret"))
+	var weapon_slot := "unit.%s.weapon" % unit_id
+	if not GameTheme.slots.has(weapon_slot):
+		weapon_slot = "weapon." + weapon_id
+	if weapon_id != "" and GameTheme.slots.has(weapon_slot):
+		_weapon.fill(weapon_slot)
+		_weapon.invoke("setup", [Weapons.profile(weapon_id)])
 	elif _weapon.visual != null:
 		_weapon.visual.free()
 		_weapon.visual = null
@@ -103,8 +105,9 @@ func show_unit(tank: Dictionary, color: Color) -> void:
 		slot.invoke("set_team_color", [color])
 
 
-static func _slot_for(unit: String, part: String) -> String:
-	var own := "%s.%s" % [unit, part]
+## Slot contract C6: "unit.<id>.<part>" when the theme has it, else the tank's.
+static func slot_for(unit: String, part: String) -> String:
+	var own := "unit.%s.%s" % [unit, part]
 	return own if GameTheme.slots.has(own) else "tank." + part
 
 

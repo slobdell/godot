@@ -1,6 +1,6 @@
 class_name GarageSettings
 extends RefCounted
-## The garage's small per-player memory, in a ConfigFile (path "" = in memory only, for tests and
+## The army builder's small per-player memory, in a ConfigFile (path "" = in memory only, for tests and
 ## automated runs, so they never touch the player's file):
 ##   - first-run tips: a tip bar that advances as the player does each thing (X skips), then a few
 ##     Hud.post_message tips when their first skirmish starts;
@@ -9,13 +9,13 @@ extends RefCounted
 const DEFAULT_PATH := "user://garage.cfg"
 ## [tip, the event that completes it]
 const STEPS := [
-	["TIP 1/3: tap a unit in a squad to equip it.", "select_unit"],
-	["TIP 2/3: pick a weapon, or drag a unit chip onto another squad.", "edit"],
+	["TIP 1/3: tap a unit in a squad to see what it's good and weak against.", "select_unit"],
+	["TIP 2/3: buy units with + ADD, or drag a unit onto another squad.", "edit"],
 	["TIP 3/3: choose an opponent, then tap FIGHT.", "fight"],
 ]
 const MATCH_TIPS := [
 	"Your squads hold position until you give orders.",
-	"Tap a tank to select its squad, then drag on the ground to send it (drag direction = facing).",
+	"Tap a squad, then tap the ground to send it there.",
 	"Planning pause: give orders first, then press Space to start the battle.",
 ]
 

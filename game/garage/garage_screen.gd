@@ -1,24 +1,25 @@
 class_name GarageScreen
 extends Control
-## The garage (GA1): spend a budget on an army before a skirmish. Touch first: every action is a
-## tap or a drag, and tap targets scale with the screen (≥ 48 px on a 1080p-tall screen).
+## The army builder (players see "ARMY"): spend a budget on fixed unit types and split them into up to
+## 5 squads before a skirmish. Touch first: every action is a tap or a drag, and tap targets scale with
+## the screen (≥ 48 px on a 1080p-tall screen).
 ##
-##   UNITS    catalog cards with stat bars. Tap ADD (joins the selected squad) or drag a card onto a squad.
-##            COMPARE opens side-by-side unit and weapon tables (best values highlighted).
-##   SQUADS   up to catalog.max_squads, each ≤ max_squad_size (5); panels wrap for big armies. Tap a squad to
-##            select it; pick its formation and role. Tap a unit chip to equip it; drag a chip onto another
-##            squad to move it. ADD into a full squad spills into the next one with room.
-##   EQUIP    the selected unit on a turntable (swipe to spin): a weapon per hardpoint (tap, or drag a
-##            weapon chip onto the hardpoint), components, trade-off hints, squad (tap to move), role, paint, remove.
+##   UNITS    one card per unit type: role, cost, a blurb, what it's good and weak against, stat bars.
+##            Tap + ADD (joins the selected squad) or drag a card onto a squad. COMPARE opens a table.
+##   SQUADS   up to catalog.max_squads, each ≤ max_squad_size (5); panels wrap. Tap a squad's name to select
+##            it; pick its formation and role. Tap a unit chip to inspect it; drag a chip onto another squad
+##            to move it. ADD into a full squad spills into the next one with room.
+##   UNIT     the selected unit on a turntable (swipe to spin), its weapon and matchups, army-composition
+##            hints, its squad (tap to move), paint, REMOVE.
 ##   TOP      army name, budget bar, presets, load, save, delete, share (army codes).   BOTTOM  problems, enemy, FIGHT.
 ##
 ## Saving: an army remembers the file it came from. SAVE and FIGHT update that file; a new army (starter,
 ## preset, code) gets a fresh file on its first save, so two armies with the same name never overwrite each
-## other. The garage reopens on the army you last fought with. DELETE takes two taps and leaves the army
+## other. The builder reopens on the army you last fought with. DELETE takes two taps and leaves the army
 ## open (unsaved), so a mistaken delete is undone by tapping SAVE.
 ##
-## All rules live in Loadout; this file only shows them. Colors come from GameTheme.ui (look & feel
-## owns them) with garage-specific keys falling back to placeholders here.
+## All rules live in ArmyDraft; this file only shows them. Colors come from GameTheme.ui (art owns them)
+## with army-specific keys falling back to placeholders here.
 
 signal fight_requested(player_path: String, enemy: String)
 
@@ -26,21 +27,15 @@ const BASE_HEIGHT := 720.0
 const FONT_SIZE := 17
 ## Minimum tap target at BASE_HEIGHT (scaled with the screen: 48 px at 1080p).
 const TAP := 40.0
-## Opponents offered for the skirmish: [value for --enemy, label]. "cpu" / "cpu:<archetype>" is a fresh
-## seeded budgeted army each fight, built by gameplay's Army (Army.ARCHETYPES; a test keeps this list in
-## sync); the rest are hand-written res://doctrines.
-const ENEMIES := [["cpu:balanced", "CPU army: Balanced"], ["cpu", "CPU army: Random"],
-		["cpu:armor", "CPU army: Armor"], ["cpu:recon_strike", "CPU army: Recon Strike"],
-		["cpu:siege", "CPU army: Siege"], ["cpu:swarm", "CPU army: Swarm"],
-		["combined_arms", "Doctrine: Combined Arms"], ["individuals", "Doctrine: Individuals"],
-		["anvil_hammer", "Doctrine: Anvil & Hammer"], ["flame_rush", "Doctrine: Flame Rush"]]
+## Opponents: [value for --enemy, label]. "cpu" / "cpu:<archetype>" is a fresh seeded army at the SAME budget each
+## fight, built by the rules stream's Army (a test keeps this list in sync with Army.ARCHETYPES).
+const ENEMIES := [["cpu", "CPU: Random"], ["cpu:balanced", "CPU: Balanced"], ["cpu:armor", "CPU: Armor"],
+		["cpu:recon_strike", "CPU: Recon Strike"], ["cpu:siege", "CPU: Siege"], ["cpu:swarm", "CPU: Swarm"]]
 
-var loadout: Loadout
+var draft: ArmyDraft
 ## Where armies are saved (tests point this elsewhere).
 var store_dir := ArmyStore.DIR
-var enemy := "cpu:balanced"
-## Seed for the next preset the player picks (each pick rolls a new variation).
-var preset_seed := 1
+var enemy := "cpu"
 ## Tips and the last army (tests use GarageSettings.new(""), in memory).
 var settings: GarageSettings
 ## The file this army is saved in, or "" if it has never been saved.
@@ -54,7 +49,7 @@ var _name_edit: LineEdit
 var _budget_bar: ProgressBar
 var _budget_label: Label
 var _catalog_box: VBoxContainer
-## Squad panels wrap onto new rows, so 6 squads (big armies) fit a phone-width screen.
+## Squad panels wrap onto new rows, so 5 squads fit a phone-width screen.
 var _squads_box: HFlowContainer
 var _inspector: VBoxContainer
 var _turntable: GarageTurntable
@@ -80,48 +75,21 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if settings == null:
 		settings = GarageSettings.new()
-	if loadout == null:
-		loadout = GarageScreen.starter_loadout(GarageCatalog.from_game())
+	if draft == null:
+		draft = GarageScreen.starter_army(ArmyCatalog.from_game())
 		_reopen_last_army()
-	loadout.changed.connect(_on_loadout_changed)
-	# Open on the first unit so the turntable and equipment show something right away.
-	selected_unit = 0 if not loadout.unit_at(0, 0).is_empty() else -1
+	draft.changed.connect(_on_draft_changed)
+	# Open on the first unit so the turntable shows something right away.
+	selected_unit = 0 if not draft.unit_at(0, 0).is_empty() else -1
 	resized.connect(_rebuild_if_scaled)
 	_build()
 
 
-## Share of the budget the starter spends on workhorses; the rest buys cheap units and leaves change for
-## the player's first weapon swap (a starter spent to the last point couldn't take a flamethrower).
-const STARTER_WORKHORSE_SHARE := 0.85
-
-
-## A ready-to-fight army for a first visit: workhorses (GarageCatalog.workhorse) up to
-## STARTER_WORKHORSE_SHARE of the budget, then the cheapest unit while money and slots last; squads of 3
-## (more per squad when a big army needs it), alternating wedge and line.
-static func starter_loadout(catalog: GarageCatalog) -> Loadout:
-	var loadout := Loadout.new(catalog)
-	var workhorse := catalog.workhorse()
-	var cheapest := catalog.unit_ids()[0]
-	var workhorse_cost := maxi(loadout.unit_cost(loadout.new_unit(workhorse)), 1)
-	var cheapest_cost := maxi(loadout.unit_cost(loadout.new_unit(cheapest)), 1)
-	var roster: Array[String] = []
-	var spent := 0
-	while roster.size() < catalog.max_units and spent + workhorse_cost <= catalog.budget * STARTER_WORKHORSE_SHARE:
-		roster.append(workhorse)
-		spent += workhorse_cost
-	while roster.size() < catalog.max_units and spent + cheapest_cost <= catalog.budget:
-		roster.append(cheapest)
-		spent += cheapest_cost
-	var per_squad := clampi(ceili(float(roster.size()) / catalog.max_squads), 3, catalog.max_squad_size)
-	for i in roster.size():
-		var squad_index := i / per_squad
-		if squad_index >= loadout.squads().size():
-			if loadout.add_squad() != "":
-				break
-			loadout.set_formation(squad_index, "wedge" if squad_index % 2 == 0 else "line")
-		if loadout.add_unit(squad_index, roster[i]) != "":
-			break
-	return loadout
+## A ready-to-fight army for a first visit: the starter preset at the catalog's budget.
+static func starter_army(catalog: ArmyCatalog) -> ArmyDraft:
+	var starter := ArmyPresets.build(ArmyPresets.STARTER, catalog)
+	starter.set_army_name("My Army")
+	return starter
 
 
 func _reopen_last_army() -> void:
@@ -129,8 +97,8 @@ func _reopen_last_army() -> void:
 		return
 	var loaded := ArmyStore.read(settings.last_army)
 	if loaded.has("doctrine"):
-		loadout = Loadout.from_doctrine(loadout.catalog, loaded["doctrine"])
-		loadout.make_player_army()
+		draft = ArmyDraft.from_doctrine(draft.catalog, loaded["doctrine"])
+		draft.make_player_army()
 		army_path = settings.last_army
 
 
@@ -145,7 +113,7 @@ func _process(delta: float) -> void:
 		_toast.visible = _toast_left > 0.0
 
 
-# ---- Palette (look & feel may add these keys to GameTheme.ui) ------------------------------
+# ---- Palette (art may add these keys to GameTheme.ui) ----------------------------------------------
 
 func _color(key: String) -> Color:
 	const FALLBACK := {"garage_bg": Color(0.055, 0.06, 0.075), "garage_panel": Color(0.1, 0.11, 0.14),
@@ -164,7 +132,7 @@ func _panel_style(border: Color, width := 2) -> StyleBoxFlat:
 	return style
 
 
-# ---- Layout -------------------------------------------------------------------------------
+# ---- Layout ----------------------------------------------------------------------------------------
 
 func _rebuild_if_scaled() -> void:
 	if not is_equal_approx(_scale_for(size.y), ui_scale):
@@ -208,8 +176,8 @@ func _build() -> void:
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", int(10 * ui_scale))
 	rows.add_child(body)
-	body.add_child(_column("UNITS", 0.9, func(box: VBoxContainer) -> void: _catalog_box = box))
-	var squads_scroll := _column("SQUADS", 1.6, func(_box: VBoxContainer) -> void: pass)
+	body.add_child(_column("UNITS", 1.0, func(box: VBoxContainer) -> void: _catalog_box = box))
+	var squads_scroll := _column("SQUADS", 1.5, func(_box: VBoxContainer) -> void: pass)
 	_squads_box = HFlowContainer.new()
 	_squads_box.add_theme_constant_override("h_separation", int(8 * ui_scale))
 	_squads_box.add_theme_constant_override("v_separation", int(8 * ui_scale))
@@ -217,7 +185,7 @@ func _build() -> void:
 	_squads_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	squads_scroll.get_meta("box").add_child(_squads_box)
 	body.add_child(squads_scroll)
-	body.add_child(_column("EQUIP", 1.1, func(box: VBoxContainer) -> void: _inspector = box))
+	body.add_child(_column("UNIT", 1.0, func(box: VBoxContainer) -> void: _inspector = box))
 
 	rows.add_child(_build_bottom_bar())
 
@@ -237,7 +205,7 @@ func _build() -> void:
 
 	_turntable = GarageTurntable.new()
 	_turntable.name = "Turntable"
-	_turntable.custom_minimum_size = Vector2(0, 200 * ui_scale)
+	_turntable.custom_minimum_size = Vector2(0, 170 * ui_scale)
 	_build_catalog()
 	_refresh()
 	toggle_compare(compare_open)
@@ -248,22 +216,23 @@ func _build() -> void:
 func _build_top_bar() -> Control:
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", int(10 * ui_scale))
-	var title := _label("GARAGE", 1.5)
+	var title := _label("ARMY", 1.5)
 	title.add_theme_color_override("font_color", _color("commander"))
 	bar.add_child(title)
 	_name_edit = LineEdit.new()
 	_name_edit.name = "ArmyName"
-	_name_edit.text = String(loadout.army.get("name", ""))
+	_name_edit.text = String(draft.army.get("name", ""))
 	_name_edit.placeholder_text = "Army name"
 	_name_edit.max_length = 32
-	_name_edit.custom_minimum_size = Vector2(220 * ui_scale, TAP * ui_scale)
-	_name_edit.text_changed.connect(func(text: String) -> void: loadout.set_army_name(text))
+	_name_edit.custom_minimum_size = Vector2(200 * ui_scale, TAP * ui_scale)
+	_name_edit.text_changed.connect(func(text: String) -> void: draft.set_army_name(text))
 	bar.add_child(_name_edit)
 
 	var budget := VBoxContainer.new()
 	budget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	budget.add_theme_constant_override("separation", 0)
 	_budget_label = _label("", 0.9)
+	_budget_label.clip_text = true
 	budget.add_child(_budget_label)
 	_budget_bar = ProgressBar.new()
 	_budget_bar.name = "BudgetBar"
@@ -274,24 +243,22 @@ func _build_top_bar() -> Control:
 
 	_preset_menu = OptionButton.new()
 	_preset_menu.name = "PresetMenu"
-	_preset_menu.custom_minimum_size = Vector2(150 * ui_scale, TAP * ui_scale)
+	_preset_menu.custom_minimum_size = Vector2(140 * ui_scale, TAP * ui_scale)
 	_preset_menu.add_item("PRESETS...")
 	_preset_menu.set_item_metadata(0, "")
-	_preset_menu.add_item("Starter")
-	_preset_menu.set_item_metadata(1, "starter")
-	for archetype in ArmyPresets.ids():
-		_preset_menu.add_item(ArmyPresets.label(archetype))
-		_preset_menu.set_item_metadata(_preset_menu.item_count - 1, archetype)
-		_preset_menu.set_item_tooltip(_preset_menu.item_count - 1, String(ArmyPresets.ARCHETYPES[archetype]["blurb"]))
+	for preset in ArmyPresets.ids():
+		_preset_menu.add_item(ArmyPresets.label(preset))
+		_preset_menu.set_item_metadata(_preset_menu.item_count - 1, preset)
+		_preset_menu.set_item_tooltip(_preset_menu.item_count - 1, ArmyPresets.blurb(preset))
 	_preset_menu.item_selected.connect(func(index: int) -> void:
-		var archetype := String(_preset_menu.get_item_metadata(index))
+		var preset := String(_preset_menu.get_item_metadata(index))
 		_preset_menu.select(0)
-		if archetype != "":
-			apply_preset(archetype))
+		if preset != "":
+			apply_preset(preset))
 	bar.add_child(_preset_menu)
 	_load_menu = OptionButton.new()
 	_load_menu.name = "LoadMenu"
-	_load_menu.custom_minimum_size = Vector2(150 * ui_scale, TAP * ui_scale)
+	_load_menu.custom_minimum_size = Vector2(120 * ui_scale, TAP * ui_scale)
 	_load_menu.item_selected.connect(_on_load_selected)
 	bar.add_child(_load_menu)
 	_fill_load_menu()
@@ -345,7 +312,7 @@ func _build_bottom_bar() -> Control:
 	bar.add_child(_problems_label)
 	_enemy_menu = OptionButton.new()
 	_enemy_menu.name = "EnemyMenu"
-	_enemy_menu.custom_minimum_size = Vector2(230 * ui_scale, TAP * 1.3 * ui_scale)
+	_enemy_menu.custom_minimum_size = Vector2(210 * ui_scale, TAP * 1.3 * ui_scale)
 	for entry in ENEMIES:
 		_enemy_menu.add_item(entry[1])
 		if entry[0] == enemy:
@@ -363,6 +330,7 @@ func _build_bottom_bar() -> Control:
 ## A titled, scrolling column. `bind` receives its content box; the column's meta "box" holds it too.
 func _column(title: String, stretch: float, bind: Callable) -> Control:
 	var panel := PanelContainer.new()
+	panel.name = "Column_" + title
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_stretch_ratio = stretch
 	panel.add_theme_stylebox_override("panel", _panel_style(_color("garage_text_dim").darkened(0.5), 1))
@@ -402,6 +370,14 @@ func _label(text: String, relative_size := 1.0) -> Label:
 	return label
 
 
+## A wrapping, dim label for longer text.
+func _note(text: String, relative_size := 0.8, color_key := "garage_text_dim") -> Label:
+	var label := _label(text, relative_size)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_color_override("font_color", _color(color_key))
+	return label
+
+
 func _button(text: String, on_press: Callable, toggled := false) -> Button:
 	var button := Button.new()
 	button.text = text
@@ -426,9 +402,7 @@ func _build_share_panel() -> void:
 	rows.add_theme_constant_override("separation", int(10 * ui_scale))
 	_share_panel.add_child(rows)
 	rows.add_child(_section("ARMY CODE"))
-	var hint := _label("Copy this code to share your army, or paste a friend's code and tap IMPORT.", 0.85)
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rows.add_child(hint)
+	rows.add_child(_note("Copy this code to share your army, or paste a friend's code and tap IMPORT.", 0.85, "garage_text_dim"))
 	_code_edit = LineEdit.new()
 	_code_edit.name = "CodeEdit"
 	_code_edit.custom_minimum_size.y = TAP * ui_scale
@@ -454,7 +428,7 @@ func _build_share_panel() -> void:
 	add_child(_share_panel)
 
 
-## An overlay comparing every unit class and weapon (GarageAdvice tables).
+## An overlay comparing every unit type (GarageAdvice.unit_table).
 func _build_compare_panel() -> void:
 	_compare_panel = PanelContainer.new()
 	_compare_panel.name = "ComparePanel"
@@ -466,10 +440,9 @@ func _build_compare_panel() -> void:
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", int(10 * ui_scale))
 	_compare_panel.add_child(rows)
-	rows.add_child(_section("UNIT CLASSES"))
-	rows.add_child(_table_grid(GarageAdvice.unit_table(loadout.catalog), "UnitTable"))
-	rows.add_child(_section("WEAPONS"))
-	rows.add_child(_table_grid(GarageAdvice.weapon_table(loadout.catalog), "WeaponTable"))
+	rows.add_child(_section("UNIT TYPES"))
+	rows.add_child(_table_grid(GarageAdvice.unit_table(draft.catalog), "UnitTable"))
+	rows.add_child(_note("Good vs / weak vs is what each unit is built for. Fights decide the rest: angles, range, and focus fire.", 0.8))
 	var close := _button("CLOSE", func() -> void: _compare_panel.visible = false)
 	close.name = "Close"
 	close.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -481,14 +454,14 @@ func _table_grid(table: Dictionary, grid_name: String) -> GridContainer:
 	var grid := GridContainer.new()
 	grid.name = grid_name
 	grid.columns = table["headers"].size()
-	grid.add_theme_constant_override("h_separation", int(22 * ui_scale))
+	grid.add_theme_constant_override("h_separation", int(18 * ui_scale))
 	for header: String in table["headers"]:
 		var cell := _label(header, 0.8)
 		cell.add_theme_color_override("font_color", _color("garage_text_dim"))
 		grid.add_child(cell)
 	for row_index in table["rows"].size():
 		for column in table["rows"][row_index].size():
-			var cell := _label(String(table["rows"][row_index][column]), 1.0)
+			var cell := _label(String(table["rows"][row_index][column]), 0.9)
 			if table["best"][row_index][column]:
 				cell.add_theme_color_override("font_color", _color("friendly"))
 			grid.add_child(cell)
@@ -499,52 +472,63 @@ func toggle_compare(open: bool) -> void:
 	_compare_panel.visible = open
 
 
-# ---- Catalog ------------------------------------------------------------------------------
+# ---- Unit cards ------------------------------------------------------------------------------------
 
 func _build_catalog() -> void:
-	var catalog := loadout.catalog
+	var catalog := draft.catalog
 	for unit_id in catalog.unit_ids():
-		var profile := catalog.unit(unit_id)
-		var card := PanelContainer.new()
-		card.name = "Card_" + unit_id
-		card.add_theme_stylebox_override("panel", _panel_style(_color("friendly").darkened(0.45)))
-		var rows := VBoxContainer.new()
-		card.add_child(rows)
-		var header := HBoxContainer.new()
-		var title := _label(catalog.display_name(profile, unit_id).to_upper(), 1.1)
-		title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		header.add_child(title)
-		var cost := _label("%d" % catalog.unit_cost(unit_id), 1.1)
-		cost.add_theme_color_override("font_color", _color("commander"))
-		header.add_child(cost)
-		rows.add_child(header)
-		var stats := GridContainer.new()
-		stats.columns = 2
-		for bar_data in catalog.unit_stat_bars(unit_id):
-			var stat_label := _label("%s %s" % [bar_data["label"], GarageCatalog._number(bar_data["value"])], 0.8)
-			stat_label.add_theme_color_override("font_color", _color("garage_text_dim"))
-			stats.add_child(stat_label)
-			stats.add_child(_stat_bar(bar_data["ratio"], GarageCatalog._number(bar_data["value"])))
-		rows.add_child(stats)
-		var mounts: PackedStringArray = []
-		for hardpoint in catalog.hardpoints(unit_id):
-			mounts.append("%s: %s" % [hardpoint["id"], "/".join(hardpoint.get("accepts", []))])
-		var slots := catalog.component_slots(unit_id)
-		if slots > 0:
-			mounts.append("%d component slot%s" % [slots, "" if slots == 1 else "s"])
-		var mounts_label := _label("\n".join(mounts), 0.8)
-		mounts_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		mounts_label.add_theme_color_override("font_color", _color("garage_text_dim"))
-		rows.add_child(mounts_label)
-		var add := _button("+ ADD", func() -> void: add_unit(unit_id))
-		add.name = "Add_" + unit_id
-		rows.add_child(add)
-		_forward_drag(card, func(_at: Vector2) -> Variant: return _drag({"kind": "catalog", "unit": unit_id},
-				catalog.display_name(profile, unit_id)))
-		_catalog_box.add_child(card)
+		_catalog_box.add_child(_unit_card(unit_id))
 	var compare := _button("COMPARE", func() -> void: toggle_compare(true))
 	compare.name = "Compare"
 	_catalog_box.add_child(compare)
+
+
+func _unit_card(unit_id: String) -> Control:
+	var catalog := draft.catalog
+	var unlocked := catalog.is_unlocked(unit_id)
+	var card := PanelContainer.new()
+	card.name = "Card_" + unit_id
+	card.add_theme_stylebox_override("panel", _panel_style(_color("friendly").darkened(0.45) if unlocked else _color("garage_text_dim").darkened(0.6)))
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", int(2 * ui_scale))
+	card.add_child(rows)
+	var header := HBoxContainer.new()
+	var title := _label(catalog.display_name(unit_id).to_upper(), 1.1)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	var cost := _label("%d" % catalog.unit_cost(unit_id), 1.1)
+	cost.add_theme_color_override("font_color", _color("commander"))
+	header.add_child(cost)
+	rows.add_child(header)
+	rows.add_child(_note(catalog.weapon_name(unit_id) + (" (fixed forward)" if catalog.mount_label(unit_id).begins_with("fixed") else " (turret)"), 0.8))
+	if catalog.blurb(unit_id) != "":
+		rows.add_child(_note(catalog.blurb(unit_id), 0.8))
+	var good := catalog.matchup_text(unit_id, true)
+	if good != "":
+		var good_label := _note(good, 0.85, "friendly")
+		good_label.name = "GoodVs"
+		rows.add_child(good_label)
+	var weak := catalog.matchup_text(unit_id, false)
+	if weak != "":
+		var weak_label := _note(weak, 0.85, "enemy")
+		weak_label.name = "WeakVs"
+		rows.add_child(weak_label)
+	var stats := GridContainer.new()
+	stats.columns = 2
+	for bar_data in catalog.unit_stat_bars(unit_id):
+		var stat_label := _label("%s %s" % [bar_data["label"], ArmyCatalog.number(bar_data["value"])], 0.75)
+		stat_label.add_theme_color_override("font_color", _color("garage_text_dim"))
+		stats.add_child(stat_label)
+		stats.add_child(_stat_bar(bar_data["ratio"], ArmyCatalog.number(bar_data["value"])))
+	rows.add_child(stats)
+	var add := _button("+ ADD" if unlocked else "LOCKED", func() -> void: add_unit(unit_id))
+	add.name = "Add_" + unit_id
+	rows.add_child(add)
+	if unlocked:
+		_forward_drag(card, func(_at: Vector2) -> Variant: return _drag({"kind": "catalog", "unit": unit_id}, catalog.display_name(unit_id)))
+	else:
+		card.modulate = Color(1, 1, 1, 0.7)
+	return card
 
 
 func _stat_bar(ratio: float, value_text: String) -> Control:
@@ -554,7 +538,7 @@ func _stat_bar(ratio: float, value_text: String) -> Control:
 	bar.value = ratio
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	bar.custom_minimum_size = Vector2(60 * ui_scale, 10 * ui_scale)
+	bar.custom_minimum_size = Vector2(50 * ui_scale, 8 * ui_scale)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = _color("friendly")
 	bar.add_theme_stylebox_override("fill", fill)
@@ -563,9 +547,9 @@ func _stat_bar(ratio: float, value_text: String) -> Control:
 	return bar
 
 
-# ---- Refresh (everything that depends on the army) -----------------------------------------
+# ---- Refresh (everything that depends on the army) -----------------------------------------------
 
-func _on_loadout_changed() -> void:
+func _on_draft_changed() -> void:
 	_tutorial("edit")
 	_refresh()
 
@@ -573,8 +557,8 @@ func _on_loadout_changed() -> void:
 func _refresh() -> void:
 	if _squads_box == null:
 		return
-	selected_squad = clampi(selected_squad, 0, maxi(loadout.squads().size() - 1, 0))
-	if loadout.unit_at(selected_squad, selected_unit).is_empty():
+	selected_squad = clampi(selected_squad, 0, maxi(draft.squads().size() - 1, 0))
+	if draft.unit_at(selected_squad, selected_unit).is_empty():
 		selected_unit = -1
 	_refresh_budget()
 	_refresh_delete()
@@ -584,35 +568,35 @@ func _refresh() -> void:
 
 
 func _refresh_budget() -> void:
-	var catalog := loadout.catalog
-	var spent := loadout.total_cost()
+	var catalog := draft.catalog
+	var spent := draft.total_cost()
 	_budget_bar.max_value = catalog.budget
 	_budget_bar.value = mini(spent, catalog.budget)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = _color("enemy") if spent > catalog.budget else _color("commander")
 	_budget_bar.add_theme_stylebox_override("fill", fill)
 	_budget_label.text = "BUDGET  %d / %d   (%d left)      UNITS  %d / %d" % [spent, catalog.budget,
-			catalog.budget - spent, loadout.unit_count(), catalog.max_units]
+			catalog.budget - spent, draft.unit_count(), catalog.max_units]
 
 
 func _refresh_squads() -> void:
 	_clear(_squads_box)
-	for squad_index in loadout.squads().size():
+	for squad_index in draft.squads().size():
 		_squads_box.add_child(_squad_panel(squad_index))
-	if loadout.squads().size() < loadout.catalog.max_squads:
-		var add := _button("+\nSQUAD", func() -> void: _act(loadout.add_squad()))
+	if draft.squads().size() < draft.catalog.max_squads:
+		var add := _button("+\nSQUAD", func() -> void: _act(draft.add_squad()))
 		add.name = "AddSquad"
 		add.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		_squads_box.add_child(add)
 
 
 func _squad_panel(squad_index: int) -> Control:
-	var squad_data := loadout.squad(squad_index)
+	var squad_data := draft.squad(squad_index)
 	var selected := squad_index == selected_squad
 	var panel := PanelContainer.new()
 	panel.name = "Squad_%d" % squad_index
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.custom_minimum_size.x = 215 * ui_scale
+	panel.custom_minimum_size.x = 200 * ui_scale
 	panel.add_theme_stylebox_override("panel", _panel_style(_color("commander") if selected else _color("garage_text_dim").darkened(0.4),
 			3 if selected else 1))
 	var rows := VBoxContainer.new()
@@ -620,55 +604,54 @@ func _squad_panel(squad_index: int) -> Control:
 	panel.add_child(rows)
 
 	var header := HBoxContainer.new()
-	var title := _button(String(squad_data["name"]).to_upper(), func() -> void: select_squad(squad_index))
+	var entries: Array = squad_data.get("units", [])
+	var squad_cost := 0
+	for entry: Dictionary in entries:
+		squad_cost += draft.unit_cost(entry)
+	var title := _button("%s  %d/%d" % [String(squad_data["name"]).to_upper(), entries.size(), draft.catalog.max_squad_size],
+			func() -> void: select_squad(squad_index))
 	title.name = "Select"
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.flat = true
 	title.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	title.add_theme_font_size_override("font_size", int(FONT_SIZE * 1.15 * ui_scale))
+	title.add_theme_font_size_override("font_size", int(FONT_SIZE * 1.1 * ui_scale))
 	header.add_child(title)
-	var remove := _button("X", func() -> void: _act(loadout.remove_squad(squad_index)))
+	var remove := _button("X", func() -> void: _act(draft.remove_squad(squad_index)))
 	remove.name = "Remove"
 	remove.tooltip_text = "Remove this squad and its units"
 	header.add_child(remove)
 	rows.add_child(header)
 
 	rows.add_child(_option_menu("Formation", Formations.NAMES, String(squad_data.get("formation", Formations.DEFAULT)),
-			func(value: String) -> void: _act(loadout.set_formation(squad_index, value))))
+			func(value: String) -> void: _act(draft.set_formation(squad_index, value))))
 	var role := String(squad_data.get("directive", {}).get("role", "assault")) if typeof(squad_data.get("directive")) == TYPE_DICTIONARY else "assault"
 	rows.add_child(_option_menu("Role", Directives.ROLES, role,
-			func(value: String) -> void: _act(loadout.set_squad_role(squad_index, value))))
+			func(value: String) -> void: _act(draft.set_squad_role(squad_index, value))))
 
-	var tanks: Array = squad_data.get("tanks", [])
-	for unit_index in tanks.size():
-		var tank: Dictionary = tanks[unit_index]
-		var chip := _button(_chip_text(tank), func() -> void: select_unit(squad_index, unit_index))
+	for unit_index in entries.size():
+		var entry: Dictionary = entries[unit_index]
+		var chip := _button(_chip_text(entry), func() -> void: select_unit(squad_index, unit_index))
 		chip.name = "Unit_%d" % unit_index
 		chip.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		chip.clip_text = true
 		_style_choice(chip, selected and unit_index == selected_unit)
+		if draft.unit_problem(entry) != "":
+			chip.add_theme_color_override("font_color", _color("enemy"))
 		_forward_drag(chip, func(_at: Vector2) -> Variant: return _drag(
-				{"kind": "unit", "squad": squad_index, "unit": unit_index}, _chip_text(tank)))
+				{"kind": "unit", "squad": squad_index, "unit": unit_index}, _chip_text(entry)))
 		rows.add_child(chip)
-	if tanks.is_empty():
-		var hint := _label("Empty: tap + ADD or drag a unit here", 0.8)
-		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		hint.add_theme_color_override("font_color", _color("garage_text_dim"))
-		rows.add_child(hint)
+	if entries.is_empty():
+		rows.add_child(_note("Empty: tap + ADD or drag a unit here", 0.8))
+	else:
+		rows.add_child(_note("%d pts" % squad_cost, 0.75))
 	_accept_drops(panel, func(data: Dictionary) -> bool: return data.get("kind") in ["catalog", "unit"],
 			func(data: Dictionary) -> void: _drop_on_squad(squad_index, data))
 	return panel
 
 
-func _chip_text(tank: Dictionary) -> String:
-	var catalog := loadout.catalog
-	var unit_id := String(tank.get("unit", ""))
-	var weapon_id := String(tank.get("weapon", ""))
-	var weapon_name := catalog.display_name(catalog.weapon(weapon_id), weapon_id) if weapon_id != "" else "unarmed"
-	var extras := ""
-	if not tank.get("components", []).is_empty():
-		extras = " +%d" % tank["components"].size()
-	return "%s  %s%s   %d" % [catalog.display_name(catalog.unit(unit_id), unit_id), weapon_name, extras, loadout.unit_cost(tank)]
+func _chip_text(entry: Dictionary) -> String:
+	var unit_id := String(entry.get("unit", ""))
+	return "%s   %d" % [draft.catalog.display_name(unit_id), draft.unit_cost(entry)]
 
 
 func _option_menu(label_text: String, values: Array, current: String, on_pick: Callable) -> Control:
@@ -695,116 +678,67 @@ func _refresh_inspector() -> void:
 	if _turntable.get_parent() != null:
 		_turntable.get_parent().remove_child(_turntable)
 	_clear(_inspector)
-	var tank := loadout.unit_at(selected_squad, selected_unit)
-	if tank.is_empty():
-		var hint := _label("Tap a unit in a squad to equip it.", 1.0)
-		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		hint.add_theme_color_override("font_color", _color("garage_text_dim"))
-		_inspector.add_child(hint)
+	var entry := draft.unit_at(selected_squad, selected_unit)
+	if entry.is_empty():
+		_inspector.add_child(_note("Tap a unit in a squad to see what it's good and weak against.", 1.0))
+		_add_composition_hints()
 		return
-	var catalog := loadout.catalog
-	var unit_id := String(tank["unit"])
+	var catalog := draft.catalog
+	var unit_id := String(entry["unit"])
 	_inspector.add_child(_turntable)
-	_turntable.show_unit(tank, _paint_color(tank))
+	_turntable.show_unit(entry, _paint_color(entry), catalog.weapon_id(unit_id))
 
 	var header := HBoxContainer.new()
-	var title := _label("%s  %s #%d" % [loadout.squad(selected_squad)["name"], catalog.display_name(catalog.unit(unit_id), unit_id),
-			selected_unit + 1], 1.1)
+	header.add_theme_constant_override("separation", int(12 * ui_scale))
+	var title := _label("%s  %s #%d" % [draft.squad(selected_squad)["name"], catalog.display_name(unit_id), selected_unit + 1], 1.1)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.clip_text = true
 	header.add_child(title)
-	var cost := _label("%d" % loadout.unit_cost(tank), 1.1)
+	var cost := _label("%d" % draft.unit_cost(entry), 1.1)
 	cost.add_theme_color_override("font_color", _color("commander"))
 	header.add_child(cost)
 	# In the header so it's reachable without scrolling on a short screen.
-	header.add_theme_constant_override("separation", int(12 * ui_scale))
-	var remove := _button("REMOVE", func() -> void: _act(loadout.remove_unit(selected_squad, selected_unit)))
+	var remove := _button("REMOVE", func() -> void: _act(draft.remove_unit(selected_squad, selected_unit)))
 	remove.name = "RemoveUnit"
 	remove.add_theme_color_override("font_color", _color("enemy"))
 	header.add_child(remove)
 	_inspector.add_child(header)
 
-	for hardpoint in catalog.hardpoints(unit_id):
-		var hardpoint_id := String(hardpoint["id"])
-		var mounted := String(tank["weapons"].get(hardpoint_id, ""))
-		_inspector.add_child(_section("WEAPON: " + hardpoint_id.to_upper()))
-		var choices := HFlowContainer.new()
-		choices.name = "Hardpoint_" + hardpoint_id
-		for weapon_id: String in hardpoint.get("accepts", []):
-			var weapon_cost := catalog.weapon_cost(weapon_id)
-			var text := catalog.display_name(catalog.weapon(weapon_id), weapon_id) + ("  +%d" % weapon_cost if weapon_cost > 0 else "")
-			var choice := _button(text, func() -> void: _act(loadout.set_weapon(selected_squad, selected_unit, hardpoint_id, weapon_id)),
-					weapon_id == mounted)
-			choice.name = weapon_id
-			_style_choice(choice, weapon_id == mounted)
-			_forward_drag(choice, func(_at: Vector2) -> Variant: return _drag({"kind": "weapon", "weapon": weapon_id}, text))
-			choices.add_child(choice)
-		_accept_drops(choices, func(data: Dictionary) -> bool: return data.get("kind") == "weapon" \
-				and hardpoint.get("accepts", []).has(data.get("weapon")),
-				func(data: Dictionary) -> void: _act(loadout.set_weapon(selected_squad, selected_unit, hardpoint_id, data["weapon"])))
-		_inspector.add_child(choices)
-		if mounted != "":
-			var summary := _label(catalog.weapon_summary(mounted), 0.8)
-			summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			summary.add_theme_color_override("font_color", _color("garage_text_dim"))
-			_inspector.add_child(summary)
+	var problem := draft.unit_problem(entry)
+	if problem != "":
+		_inspector.add_child(_note(problem.substr(0, 1).to_upper() + problem.substr(1), 0.9, "enemy"))
+	var weapon := _note(catalog.weapon_summary(unit_id), 0.8)
+	weapon.name = "WeaponSummary"
+	_inspector.add_child(weapon)
+	for strong in [true, false]:
+		var text := catalog.matchup_text(unit_id, strong)
+		if text != "":
+			_inspector.add_child(_note(text, 0.9, "friendly" if strong else "enemy"))
+	_add_composition_hints()
 
-	for hint in GarageAdvice.tradeoffs(catalog, tank):
-		var advice := _label("> " + hint, 0.8)
-		advice.name = "Advice"
-		advice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		advice.add_theme_color_override("font_color", _color("commander").lightened(0.2))
-		_inspector.add_child(advice)
-
-	var slots := catalog.component_slots(unit_id)
-	var installed: Array = tank.get("components", [])
-	_inspector.add_child(_section("COMPONENTS  %d / %d" % [installed.size(), slots]))
-	if slots == 0:
-		var none := _label("This chassis has no component slots.", 0.8)
-		none.add_theme_color_override("font_color", _color("garage_text_dim"))
-		_inspector.add_child(none)
-	else:
-		var components := HFlowContainer.new()
-		components.name = "Components"
-		for component_index in installed.size():
-			var component_id := String(installed[component_index])
-			var chip := _button(catalog.display_name(catalog.component(component_id), component_id) + "  X",
-					func() -> void: _act(loadout.remove_component(selected_squad, selected_unit, component_index)), true)
-			components.add_child(chip)
-		if installed.size() < slots:
-			for component_id in catalog.component_ids():
-				var profile := catalog.component(component_id)
-				var add := _button("+ %s %d" % [catalog.display_name(profile, component_id), catalog.component_cost(component_id)],
-						func() -> void: _act(loadout.add_component(selected_squad, selected_unit, component_id)))
-				add.name = "Add_" + component_id
-				add.tooltip_text = String(profile.get("description", ""))
-				components.add_child(add)
-		_inspector.add_child(components)
-
-	_inspector.add_child(_section("ORDERS"))
-	if loadout.squads().size() > 1:
-		var squad_names: Array = loadout.squads().map(func(squad_data: Dictionary) -> String: return String(squad_data["name"]))
-		_inspector.add_child(_option_menu("Squad", squad_names, String(loadout.squad(selected_squad)["name"]),
+	if draft.squads().size() > 1:
+		var squad_names: Array = draft.squads().map(func(squad_data: Dictionary) -> String: return String(squad_data["name"]))
+		_inspector.add_child(_option_menu("Squad", squad_names, String(draft.squad(selected_squad)["name"]),
 				func(value: String) -> void: move_selected_unit(squad_names.find(value))))
-	var role := String(tank.get("directive", {}).get("role", "")) if typeof(tank.get("directive")) == TYPE_DICTIONARY else ""
-	var roles: Array = [""] + Directives.ROLES
-	var role_row := _option_menu("Role", roles, role, func(value: String) -> void:
-			_act(loadout.set_unit_role(selected_squad, selected_unit, value)))
-	var role_menu := role_row.get_node("Role") as OptionButton
-	role_menu.set_item_text(0, "Squad's role")
-	_inspector.add_child(role_row)
 
-	_inspector.add_child(_section("PAINT"))
+	_inspector.add_child(_section("PAINT (free)"))
 	var paints := HFlowContainer.new()
 	paints.name = "Paints"
-	for paint: String in Loadout.PAINTS:
-		var swatch := _button("TEAM" if paint == "" else "", func() -> void: _act(loadout.set_paint(selected_squad, selected_unit, paint)))
-		var style := _panel_style(_color("commander") if String(tank.get("paint", "")) == paint else Color(0, 0, 0, 0), 3)
+	for paint: String in ArmyDraft.PAINTS:
+		var swatch := _button("TEAM" if paint == "" else "", func() -> void: _act(draft.set_paint(selected_squad, selected_unit, paint)))
+		var style := _panel_style(_color("commander") if String(entry.get("paint", "")) == paint else Color(0, 0, 0, 0), 3)
 		style.bg_color = GameTheme.team_color(Match.Team.GREEN) if paint == "" else Color.html(paint)
 		for state in ["normal", "hover", "pressed"]:
 			swatch.add_theme_stylebox_override(state, style)
 		paints.add_child(swatch)
 	_inspector.add_child(paints)
 
+
+func _add_composition_hints() -> void:
+	for hint in GarageAdvice.composition_hints(draft):
+		var advice := _note("> " + hint, 0.8, "commander")
+		advice.name = "Advice"
+		_inspector.add_child(advice)
 
 
 ## Rebuilds happen inside button callbacks, so children are detached now and freed after the signal.
@@ -825,19 +759,15 @@ func _section(text: String) -> Label:
 	return label
 
 
-func _paint_color(tank: Dictionary) -> Color:
-	var paint := String(tank.get("paint", ""))
+func _paint_color(entry: Dictionary) -> Color:
+	var paint := String(entry.get("paint", ""))
 	return Color.html(paint) if paint != "" and Color.html_is_valid(paint) else GameTheme.team_color(Match.Team.GREEN)
 
 
 func _refresh_problems() -> void:
-	var problems := loadout.problems()
-	if problems.is_empty() and not loadout.catalog.playable:
-		_problems_label.text = "PREVIEW: %s, %d units. The game can't field these units yet." % [loadout.army.get("name", ""), loadout.unit_count()]
-		_problems_label.add_theme_color_override("font_color", _color("commander"))
-		problems = PackedStringArray(["preview"])  # dims FIGHT below
-	elif problems.is_empty():
-		_problems_label.text = "READY: %s, %d units. Tap FIGHT." % [loadout.army.get("name", ""), loadout.unit_count()]
+	var problems := draft.problems()
+	if problems.is_empty():
+		_problems_label.text = "READY: %s, %d units. Tap FIGHT." % [draft.army.get("name", ""), draft.unit_count()]
 		_problems_label.add_theme_color_override("font_color", _color("friendly"))
 	else:
 		_problems_label.text = "  ".join(problems)
@@ -850,7 +780,7 @@ func _refresh_problems() -> void:
 	_fight_button.add_theme_color_override("font_hover_color", Color.BLACK if problems.is_empty() else _color("garage_text_dim"))
 
 
-# ---- Actions (public, so tests and presets drive the same paths as taps) ---------------------------
+# ---- Actions (public, so tests and presets drive the same paths as taps) -----------------------------
 
 func select_squad(squad_index: int) -> void:
 	if squad_index != selected_squad:
@@ -868,86 +798,88 @@ func select_unit(squad_index: int, unit_index: int) -> void:
 
 ## Adds to the selected squad, or (when it's full) the next squad with room, starting a new one if allowed.
 func add_unit(unit_id: String) -> String:
-	if loadout.unit_count() >= loadout.catalog.max_units:
-		return _act("The army is full: %d units max." % loadout.catalog.max_units)
-	var target := loadout.squad_with_room(selected_squad)
+	if not draft.catalog.is_unlocked(unit_id):
+		return _act("The %s is locked." % draft.catalog.display_name(unit_id))
+	if draft.unit_count() >= draft.catalog.max_units:
+		return _act("The army is full: %d units max." % draft.catalog.max_units)
+	if draft.catalog.unit_cost(unit_id) > draft.remaining_budget():
+		return _act("Not enough budget: a %s costs %d, %d left." % [draft.catalog.display_name(unit_id),
+				draft.catalog.unit_cost(unit_id), draft.remaining_budget()])
+	var target := draft.squad_with_room(selected_squad)
 	if target < 0:
 		return _act("Every squad is full.")
-	var error := loadout.add_unit(target, unit_id)
+	var error := draft.add_unit(target, unit_id)
 	if error == "":
-		if target != selected_squad and not loadout.squad(selected_squad).is_empty():
-			_show_toast("%s is full: added to %s." % [loadout.squad(selected_squad)["name"], loadout.squad(target)["name"]], false)
+		if target != selected_squad and not draft.squad(selected_squad).is_empty():
+			_show_toast("%s is full: added to %s." % [draft.squad(selected_squad)["name"], draft.squad(target)["name"]], false)
 		selected_squad = target
-		selected_unit = loadout.squad(target)["tanks"].size() - 1
+		selected_unit = draft.units_of(target).size() - 1
 		_refresh()
 	return _act(error)
 
 
 ## Tap alternative to dragging a unit chip: move the selected unit to another squad.
 func move_selected_unit(to_squad: int) -> String:
-	var error := loadout.move_unit(selected_squad, selected_unit, to_squad)
+	var error := draft.move_unit(selected_squad, selected_unit, to_squad)
 	if error == "" and to_squad != selected_squad:
 		selected_squad = to_squad
-		selected_unit = loadout.squad(to_squad)["tanks"].size() - 1
+		selected_unit = draft.units_of(to_squad).size() - 1
 		_refresh()
 	return _act(error)
 
 
 ## `path`: the file the army was loaded from ("" = a new, unsaved army).
-func set_loadout(new_loadout: Loadout, path := "") -> void:
+func set_draft(new_draft: ArmyDraft, path := "") -> void:
 	army_path = path
-	if loadout != null and loadout.changed.is_connected(_on_loadout_changed):
-		loadout.changed.disconnect(_on_loadout_changed)
-	loadout = new_loadout
-	loadout.make_player_army()
-	loadout.changed.connect(_on_loadout_changed)
+	if draft != null and draft.changed.is_connected(_on_draft_changed):
+		draft.changed.disconnect(_on_draft_changed)
+	draft = new_draft
+	draft.make_player_army()
+	draft.changed.connect(_on_draft_changed)
 	selected_squad = 0
-	selected_unit = 0 if not loadout.unit_at(0, 0).is_empty() else -1
+	selected_unit = 0 if not draft.unit_at(0, 0).is_empty() else -1
 	if _name_edit != null:
-		_name_edit.text = String(loadout.army.get("name", ""))
+		_name_edit.text = String(draft.army.get("name", ""))
 	_refresh()
+	if not draft.notes.is_empty():
+		_show_toast(draft.notes[0], false)
 
 
-## Replace the army with a preset ("starter" or an ArmyPresets archetype) for the player to tweak.
-func apply_preset(archetype: String) -> void:
-	var catalog := loadout.catalog
-	if archetype == "starter":
-		set_loadout(GarageScreen.starter_loadout(catalog))
-	else:
-		set_loadout(ArmyPresets.build(archetype, catalog, preset_seed, true))
-		preset_seed += 1
-	_show_toast("Preset: %s" % loadout.army["name"], false)
+## Replace the army with a preset (ArmyPresets id) for the player to tweak.
+func apply_preset(preset: String) -> void:
+	set_draft(ArmyPresets.build(preset, draft.catalog))
+	_show_toast("Preset: %s. %s" % [draft.army["name"], ArmyPresets.blurb(preset)], false)
 
 
 func toggle_share(open: bool) -> void:
-	_code_edit.text = ArmyCode.encode(loadout)
+	_code_edit.text = ArmyCode.encode(draft)
 	_share_panel.visible = open
 
 
 ## Replace the army with the one in `code`. Returns "" or the reason (also shown as a toast).
 func import_code(code: String) -> String:
-	var decoded := ArmyCode.decode(code, loadout.catalog)
+	var decoded := ArmyCode.decode(code, draft.catalog)
 	if decoded.has("error"):
 		return _act(String(decoded["error"]))
-	set_loadout(decoded["loadout"])
-	var problems := loadout.problems()
-	_show_toast("Imported %s" % loadout.army["name"] if problems.is_empty() else "Imported, but: " + problems[0], not problems.is_empty())
+	set_draft(decoded["draft"])
+	var problems := draft.problems()
+	_show_toast("Imported %s" % draft.army["name"] if problems.is_empty() else "Imported, but: " + problems[0], not problems.is_empty())
 	return ""
 
 
 ## Saves to the army's own file (a new file the first time). Returns the path, or "" (with a toast) on failure.
 func save() -> String:
 	var stem := army_path.get_file().get_basename() if army_path != "" \
-			else ArmyStore.unused_stem(String(loadout.army.get("name", "")), store_dir)
+			else ArmyStore.unused_stem(String(draft.army.get("name", "")), store_dir)
 	var dir := army_path.get_base_dir() if army_path != "" else store_dir
-	var saved := ArmyStore.save(loadout.to_doctrine(), stem, dir)
+	var saved := ArmyStore.save(draft.to_doctrine(), stem, dir)
 	if saved.has("error"):
 		_act(String(saved["error"]))
 		return ""
 	army_path = saved["path"]
 	_fill_load_menu()
 	_refresh_delete()
-	_show_toast("Saved %s" % loadout.army.get("name", ""), false)
+	_show_toast("Saved %s" % draft.army.get("name", ""), false)
 	return army_path
 
 
@@ -977,10 +909,7 @@ func _refresh_delete() -> void:
 
 ## Saves and asks to start the skirmish. Returns the saved path, or "" if the army can't fight yet.
 func fight() -> String:
-	if not loadout.catalog.playable:
-		_act("This is a preview catalog: the game can't field these units yet.")
-		return ""
-	var problems := loadout.problems()
+	var problems := draft.problems()
 	if not problems.is_empty():
 		_act("Not ready: " + problems[0])
 		return ""
@@ -1013,8 +942,9 @@ func _on_load_selected(index: int) -> void:
 	if loaded.has("error"):
 		_act(String(loaded["error"]))
 		return
-	set_loadout(Loadout.from_doctrine(loadout.catalog, loaded["doctrine"]), path)
-	_show_toast("Loaded %s" % loadout.army["name"], false)
+	set_draft(ArmyDraft.from_doctrine(draft.catalog, loaded["doctrine"]), path)
+	if draft.notes.is_empty():
+		_show_toast("Loaded %s" % draft.army["name"], false)
 
 
 func _drop_on_squad(squad_index: int, data: Dictionary) -> void:
@@ -1023,10 +953,10 @@ func _drop_on_squad(squad_index: int, data: Dictionary) -> void:
 			selected_squad = squad_index
 			add_unit(String(data["unit"]))
 		"unit":
-			var error := loadout.move_unit(int(data["squad"]), int(data["unit"]), squad_index)
+			var error := draft.move_unit(int(data["squad"]), int(data["unit"]), squad_index)
 			if error == "" and int(data["squad"]) != squad_index:
 				selected_squad = squad_index
-				selected_unit = loadout.squad(squad_index)["tanks"].size() - 1
+				selected_unit = draft.units_of(squad_index).size() - 1
 				_refresh()
 			_act(error)
 
@@ -1049,14 +979,14 @@ func _show_toast(text: String, is_error: bool) -> void:
 	_toast.text = text
 	_toast.add_theme_color_override("font_color", _color("enemy") if is_error else _color("friendly"))
 	_toast.visible = true
-	_toast_left = 2.5
+	_toast_left = 3.0
 
 
 func toast_text() -> String:
 	return _toast.text if _toast != null and _toast.visible else ""
 
 
-# ---- Drag and drop (Godot's GUI drag works with touch through mouse emulation) ------------------
+# ---- Drag and drop (Godot's GUI drag works with touch through mouse emulation) ------------------------
 
 func _drag(data: Dictionary, preview_text: String) -> Dictionary:
 	var preview := _label(preview_text, 1.1)

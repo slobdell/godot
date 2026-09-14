@@ -1,254 +1,150 @@
 class_name ArmyPresets
 extends RefCounted
-## GA4: army archetypes as data, built into legal, budget-constrained armies with a seed: the garage's
-## PRESETS menu (player armies) army codes. CPU *opponents* come from gameplay's
-## `Army` (cpu / cpu:<archetype>), the one generator skirmish and the match runner share (integration,
-## 2026-09-15).
+## Starter armies that each teach one composition idea (the army builder's PRESETS menu and a first
+## visit's army). CPU *opponents* come from the rules stream's `Army` (cpu / cpu:<archetype>).
 ##
-## Archetypes never name unit classes or weapons. They name PREFERENCES that resolve against whatever
-## catalog exists: "the fastest class", "the toughest", "the shortest-range weapon a hardpoint accepts",
-## "a component whose stats mention heat". When gameplay adds scouts, lasers, or heat sinks, the same
-## archetypes start using them.
+## Presets name ROLES, never unit ids, so they resolve against whatever catalog exists: when rules adds a
+## unit with role "ifv", the presets use it. A role the player hasn't unlocked falls back (FALLBACK), so a
+## preset always builds a legal army with what this player owns, at any budget.
 ##
-## Per squad: share (of the army's units), formations (one is picked; player presets only), role, close_share (fraction of
-## its units that mount the shortest-range weapon instead of the longest), objective (CPU only;
-## [min, max] ranges in team-relative meters, mirrored left/right at random when mirror is true), and
-## directive (extra Directives keys; [min, max] ranges are rolled). Player presets drop objectives
-## and start every squad holding for orders.
+## Per preset: label, tier (the budget tier it's written for; it scales to any budget), blurb (the idea, in
+## one sentence a new player understands), squads: [{formation, role (squad directive), mix: [unit role…]}].
+## The builder adds units round-robin across the squads, each squad cycling through its mix, until the
+## budget runs out; a full squad spills into a new squad with the same spec while squads remain.
 
-const ARCHETYPES := {
-	"balanced": {
-		"label": "Balanced", "prefer": "workhorse",
-		"blurb": "An anvil holds the center while a hammer swings wide.",
+const PRESETS := {
+	"anvil_hammer": {
+		"label": "Anvil & Hammer", "tier": 0,
+		"blurb": "Tanks hold the center (the anvil) while fast IFVs swing around a flank (the hammer).",
 		"squads": [
-			{"share": 0.6, "formations": ["wedge", "line"], "role": "anchor", "close_share": 0.0,
-				"objective": {"right": [-8, 8], "forward": [-16, -8], "radius": 10}},
-			{"share": 0.4, "formations": ["vee", "echelon_right", "wedge"], "role": "flanker", "close_share": 0.25, "mirror": true,
-				"objective": {"right": [30, 45], "forward": [0, 10], "radius": 10},
-				"directive": {"target_priority": "threatening_allies", "cohesion": [0.6, 0.8]}},
+			{"formation": "line", "role": "anchor", "mix": ["tank"]},
+			{"formation": "wedge", "role": "flanker", "mix": ["ifv", "ifv", "scout"]},
 		],
 	},
-	"rush": {
-		"label": "Rush", "prefer": "max_forward_speed",
-		"blurb": "Everything fast, straight at the enemy.",
+	"scout_screen": {
+		"label": "Scout Screen", "tier": 0,
+		"blurb": "Scouts find the enemy first; IFVs catch enemy scouts; tanks hit whatever gets found.",
 		"squads": [
-			{"share": 1.0, "formations": ["column", "wedge", "vee"], "role": "assault", "close_share": 0.4,
-				"directive": {"aggression": [0.8, 0.95], "caution": [0.15, 0.35], "target_priority": "nearest"}},
+			{"formation": "line", "role": "scout", "mix": ["scout"]},
+			{"formation": "wedge", "role": "assault", "mix": ["tank", "ifv"]},
 		],
 	},
-	"turtle": {
-		"label": "Turtle", "prefer": "max_health",
-		"blurb": "Tough units dug in short of center; they let you come to them.",
+	"hunter_killers": {
+		"label": "Hunter-Killers", "tier": 0,
+		"blurb": "IFV packs shred light units fast; a tank group answers their IFVs.",
 		"squads": [
-			{"share": 0.6, "formations": ["line", "coil"], "role": "anchor", "close_share": 0.0,
-				"objective": {"right": [-8, 8], "forward": [-18, -10], "radius": 12},
-				"directive": {"caution": [0.55, 0.7]}},
-			{"share": 0.4, "formations": ["line", "wedge"], "role": "support", "close_share": 0.0, "mirror": true,
-				"objective": {"right": [12, 22], "forward": [-22, -14], "radius": 8},
-				"directive": {"cohesion": [0.7, 0.85], "target_priority": "most_exposed"}},
+			{"formation": "vee", "role": "flanker", "mix": ["ifv"]},
+			{"formation": "wedge", "role": "assault", "mix": ["tank", "tank", "ifv"]},
 		],
 	},
-	"flamers": {
-		"label": "Flamers", "prefer": "workhorse",
-		"blurb": "A gun line draws fire while burners flank in close.",
+	"siege_line": {
+		"label": "Siege Line", "tier": 1,
+		"blurb": "Artillery behind a wall of tanks; scouts spot targets for the guns.",
 		"squads": [
-			{"share": 0.4, "formations": ["line", "wedge"], "role": "anchor", "close_share": 0.0,
-				"objective": {"right": [-5, 5], "forward": [-14, -8], "radius": 10}},
-			{"share": 0.6, "formations": ["vee", "echelon_right", "column"], "role": "flanker", "close_share": 1.0, "mirror": true,
-				"objective": {"right": [35, 50], "forward": [5, 15], "radius": 8},
-				"directive": {"caution": [0.25, 0.4], "target_priority": "threatening_allies", "cohesion": [0.7, 0.9]}},
+			{"formation": "line", "role": "anchor", "mix": ["tank"]},
+			{"formation": "line", "role": "support", "mix": ["artillery"]},
+			{"formation": "vee", "role": "scout", "mix": ["scout"]},
 		],
 	},
+	"lance_and_shield": {
+		"label": "Lance & Shield", "tier": 2,
+		"blurb": "Lancers burn enemy tanks at range while IFVs keep scouts off them.",
+		"squads": [
+			{"formation": "line", "role": "support", "mix": ["lancer"]},
+			{"formation": "wedge", "role": "anchor", "mix": ["ifv", "ifv", "tank"]},
+		],
+	},
+}
+## The army a first visit opens with.
+const STARTER := "anvil_hammer"
+## When a role has no unlocked unit, try these roles in order.
+const FALLBACK := {
+	"artillery": ["tank", "ifv"], "lancer": ["tank", "ifv"], "ifv": ["tank", "scout"],
+	"scout": ["ifv", "tank"], "tank": ["ifv", "scout"],
 }
 
 
 static func ids() -> Array[String]:
 	var result: Array[String] = []
-	for id: String in ARCHETYPES:
+	for id: String in PRESETS:
 		result.append(id)
 	return result
 
 
-static func label(archetype: String) -> String:
-	return String(ARCHETYPES.get(archetype, {}).get("label", archetype.capitalize()))
+static func label(preset: String) -> String:
+	return String(PRESETS.get(preset, {}).get("label", preset.capitalize()))
 
 
-## A legal army for `archetype`. The same (archetype, catalog, seed) always gives the same army.
-## `for_player`: squads hold for orders and carry no objectives (the player commands them).
-static func build(archetype: String, catalog: GarageCatalog, seed_value: int, for_player := false) -> Loadout:
-	var spec: Dictionary = ARCHETYPES[archetype]
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash([archetype, seed_value])
-	var squad_specs: Array = spec["squads"].slice(0, catalog.max_squads)
-	var loadout := Loadout.new(catalog, {"name": ("%s #%d" if for_player else "CPU %s %d") % [label(archetype), seed_value], "squads": []})
-
-	# Which unit each slot gets, filling the roster while the budget lasts.
-	var roster: Array[String] = []
-	var spent := 0
-	var preferred := _preferred_unit(catalog, String(spec["prefer"]))
-	var cheapest := catalog.unit_ids()[0]
-	while roster.size() < catalog.max_units:
-		var pick := preferred if spent + _base_cost(catalog, preferred) <= catalog.budget else cheapest
-		if spent + _base_cost(catalog, pick) > catalog.budget:
-			break
-		roster.append(pick)
-		spent += _base_cost(catalog, pick)
-
-	# Squad sizes are capped (catalog.max_squad_size), so a spec's share may need several squads.
-	roster = roster.slice(0, catalog.max_squads * catalog.max_squad_size)
-	var counts := _split(roster.size(), squad_specs)
-	var spec_of_squad: Array[int] = []
-	var next := 0
-	for squad_spec_index in squad_specs.size():
-		var squad_spec: Dictionary = squad_specs[squad_spec_index]
-		var close_count := roundi(float(squad_spec.get("close_share", 0.0)) * counts[squad_spec_index])
-		for unit_offset in counts[squad_spec_index]:
-			var squad_index := _squad_for(loadout, spec_of_squad, squad_spec_index)
-			if squad_index < 0:
-				squad_index = loadout.squads().size()
-				loadout.add_squad()
-				spec_of_squad.append(squad_spec_index)
-				_roll_squad(loadout, squad_index, squad_spec, rng, for_player)
-			var refused := loadout.add_unit(squad_index, roster[next])
-			next += 1
-			if refused != "":  # weapon swaps can eat the slack the roster was priced with
-				if loadout.squad(squad_index)["tanks"].is_empty():
-					loadout.remove_squad(squad_index)
-					spec_of_squad.pop_back()
-				continue
-			var unit_index: int = loadout.squad(squad_index)["tanks"].size() - 1
-			var tank := loadout.unit_at(squad_index, unit_index)
-			for hardpoint in catalog.hardpoints(tank["unit"]):
-				var weapon_id := _weapon_by_range(catalog, hardpoint.get("accepts", []), unit_offset < close_count)
-				if weapon_id != "":
-					loadout.set_weapon(squad_index, unit_index, hardpoint["id"], weapon_id)
-	_fit_components(loadout, String(spec["prefer"]))
-	return loadout
+static func blurb(preset: String) -> String:
+	return String(PRESETS.get(preset, {}).get("blurb", ""))
 
 
-## A squad for the next unit of spec `spec_index`: one of its own with room, else -1 to start a new one,
-## else (no squads left) any squad with room.
-static func _squad_for(loadout: Loadout, spec_of_squad: Array[int], spec_index: int) -> int:
-	var size := loadout.catalog.max_squad_size
-	for index in spec_of_squad.size():
-		if spec_of_squad[index] == spec_index and loadout.squad(index)["tanks"].size() < size:
-			return index
-	if loadout.squads().size() < loadout.catalog.max_squads:
-		return -1
-	for index in spec_of_squad.size():
-		if loadout.squad(index)["tanks"].size() < size:
-			return index
-	return 0
-
-
-## Formation, role, and (CPU only) rolled directives and objective for a new squad.
-static func _roll_squad(loadout: Loadout, squad_index: int, squad_spec: Dictionary, rng: RandomNumberGenerator,
-		for_player: bool) -> void:
-	var formations: Array = squad_spec["formations"]
-	loadout.set_formation(squad_index, formations[rng.randi_range(0, formations.size() - 1)])
-	loadout.set_squad_role(squad_index, squad_spec["role"])
-	if for_player:
-		return
-	var squad_data := loadout.squad(squad_index)
-	# A doctrine formation means "form up and HOLD here" (Squad.apply_command), so a CPU squad
-	# with one never leaves its base. CPU squads rely on objectives and directives instead.
-	squad_data.erase("verb")
-	squad_data.erase("formation")
-	var directive: Dictionary = squad_data["directive"]
-	for key: String in squad_spec.get("directive", {}):
-		directive[key] = _roll(rng, squad_spec["directive"][key])
-	if squad_spec.has("objective"):
-		var side := -1.0 if squad_spec.get("mirror", false) and rng.randf() < 0.5 else 1.0
-		directive["objective"] = {"right": side * float(_roll(rng, squad_spec["objective"]["right"])),
-				"forward": float(_roll(rng, squad_spec["objective"]["forward"])), "radius": float(squad_spec["objective"]["radius"])}
-
-
-## The preferred unit class: "cheapest", "workhorse" (GarageCatalog.workhorse), or the unit with the highest
-## value of a stat (ties → cheaper).
-static func _preferred_unit(catalog: GarageCatalog, prefer: String) -> String:
-	var best := catalog.unit_ids()[0]
-	if prefer == "cheapest":
-		return best
-	if prefer == "workhorse":
-		return catalog.workhorse()
-	for unit_id in catalog.unit_ids():  # cheapest first, so ties keep the cheaper class
-		if float(catalog.unit(unit_id).get(prefer, 0.0)) > float(catalog.unit(best).get(prefer, 0.0)):
-			best = unit_id
-	return best
-
-
-## A unit with its default weapons: what adding it costs before any swaps.
-static func _base_cost(catalog: GarageCatalog, unit_id: String) -> int:
-	var probe := Loadout.new(catalog, {"name": "probe", "squads": []})
-	return probe.unit_cost(probe.new_unit(unit_id))
-
-
-## Units per squad by share: largest remainders, and every squad gets one while units remain.
-static func _split(total: int, squad_specs: Array) -> Array[int]:
-	var counts: Array[int] = []
-	var assigned := 0
-	for squad_spec in squad_specs:
-		var count := floori(float(squad_spec["share"]) * total)
-		counts.append(count)
-		assigned += count
-	var index := 0
-	while assigned < total:
-		counts[index % counts.size()] += 1
-		assigned += 1
-		index += 1
-	# A squad with no units is dropped by the builder; take from the largest to fill it if possible.
-	for i in counts.size():
-		if counts[i] == 0 and total >= counts.size():
-			var largest := counts.find(counts.max())
-			counts[largest] -= 1
-			counts[i] = 1
-	return counts
-
-
-## The shortest-range (close) or longest-range weapon among those a hardpoint accepts; ties keep list order.
-static func _weapon_by_range(catalog: GarageCatalog, accepts: Array, close: bool) -> String:
-	var known := accepts.filter(func(weapon_id: String) -> bool: return catalog.weapons.has(weapon_id))
-	if known.is_empty():
-		return ""
-	var ranged := func(weapon_id: String) -> float: return float(catalog.weapon(weapon_id).get("range", 0.0))
-	var pick: String = known[0]
-	for weapon_id: String in known:
-		if (ranged.call(weapon_id) < ranged.call(pick)) if close else (ranged.call(weapon_id) > ranged.call(pick)):
-			pick = weapon_id
-	return pick
-
-
-## Spend what's left on components that suit each unit: heat weapons want heat components, ammo weapons
-## want ammo, tough armies want health. Matching is by stat-name keywords, so real components slot in.
-static func _fit_components(loadout: Loadout, prefer: String) -> void:
-	var catalog := loadout.catalog
-	if catalog.components.is_empty():
-		return
-	for squad_index in loadout.squads().size():
-		for unit_index in loadout.squad(squad_index)["tanks"].size():
-			var tank := loadout.unit_at(squad_index, unit_index)
-			var wanted: Array[String] = []
-			for weapon_id in tank["weapons"].values():
-				if GarageAdvice._has_key(catalog.weapon(weapon_id), "heat"):
-					wanted.append("heat")
-				elif GarageAdvice._has_key(catalog.weapon(weapon_id), "ammo"):
-					wanted.append("ammo")
-			wanted.append("health" if prefer == "max_health" else "shield")
-			for keyword in wanted:
-				var component_id := _component_matching(catalog, keyword)
-				if component_id != "":
-					loadout.add_component(squad_index, unit_index, component_id)  # refused quietly when full or broke
-
-
-static func _component_matching(catalog: GarageCatalog, keyword: String) -> String:
-	for component_id in catalog.component_ids():
-		if component_id.contains(keyword) or GarageAdvice._has_key(catalog.component(component_id), keyword):
-			return component_id
+## The unlocked unit that plays `role` in this catalog, falling back through FALLBACK, then the cheapest
+## unlocked unit; "" if nothing is unlocked.
+static func unit_for_role(catalog: ArmyCatalog, role: String) -> String:
+	for candidate: String in [role] + Array(FALLBACK.get(role, [])):
+		for unit_id in catalog.units_with_role(candidate):
+			if catalog.is_unlocked(unit_id):
+				return unit_id
+	for unit_id in catalog.unit_ids():
+		if catalog.is_unlocked(unit_id):
+			return unit_id
 	return ""
 
 
-static func _roll(rng: RandomNumberGenerator, value: Variant) -> Variant:
-	if typeof(value) == TYPE_ARRAY:
-		# Twentieths, computed so the double is the nearest one to its decimal (it survives JSON exactly).
-		return roundf(rng.randf_range(float(value[0]), float(value[1])) * 20.0) / 20.0
-	return value
+## A legal player army for `preset` at the catalog's budget. The same (preset, catalog) always gives the
+## same army. Squads start formed up and holding for orders.
+static func build(preset: String, catalog: ArmyCatalog) -> ArmyDraft:
+	var spec: Dictionary = PRESETS.get(preset, PRESETS[STARTER])
+	var draft := ArmyDraft.new(catalog, {"name": label(preset), "squads": []})
+	var squad_specs: Array = spec["squads"].slice(0, catalog.max_squads)
+	# One queue of units per squad spec, cycled; squads of that spec in the draft.
+	var next_in_mix: Array[int] = []
+	var squads_of_spec: Array = []
+	for _i in squad_specs.size():
+		next_in_mix.append(0)
+		squads_of_spec.append([])
+	var cheapest := INF
+	for unit_id in catalog.unit_ids():
+		if catalog.is_unlocked(unit_id):
+			cheapest = minf(cheapest, catalog.unit_cost(unit_id))
+	var stalled := 0
+	var turn := 0
+	while stalled < squad_specs.size() and draft.remaining_budget() >= cheapest and draft.unit_count() < catalog.max_units:
+		var spec_index := turn % squad_specs.size()
+		turn += 1
+		var squad_spec: Dictionary = squad_specs[spec_index]
+		var mix: Array = squad_spec["mix"]
+		var unit_id := unit_for_role(catalog, String(mix[next_in_mix[spec_index] % mix.size()]))
+		var squad_index := _squad_with_room(draft, squads_of_spec[spec_index])
+		if squad_index < 0 and draft.squads().size() < catalog.max_squads:
+			squad_index = draft.squads().size()
+			var squad_name: String = ArmyDraft.SQUAD_NAMES[squad_index] if squad_index < ArmyDraft.SQUAD_NAMES.size() else "Squad_%d" % (squad_index + 1)
+			draft.squads().append(ArmyDraft.new_squad(squad_name, String(squad_spec["formation"]), String(squad_spec["role"])))
+			squads_of_spec[spec_index].append(squad_index)
+		if squad_index < 0 or unit_id == "" or draft.add_unit(squad_index, unit_id) != "":
+			stalled += 1
+			continue
+		stalled = 0
+		next_in_mix[spec_index] += 1
+	# Spend what's left: the cheapest unlocked unit that fits, into the last squad with room.
+	var by_cost := catalog.unit_ids().filter(func(id: String) -> bool: return catalog.is_unlocked(id))
+	by_cost.sort_custom(func(a: String, b: String) -> bool: return catalog.unit_cost(a) < catalog.unit_cost(b))
+	for unit_id: String in by_cost:
+		while draft.unit_count() < catalog.max_units and catalog.unit_cost(unit_id) <= draft.remaining_budget():
+			var squad_index := -1
+			for index in range(draft.squads().size() - 1, -1, -1):
+				if draft.units_of(index).size() < catalog.max_squad_size:
+					squad_index = index
+					break
+			if squad_index < 0 or draft.add_unit(squad_index, unit_id) != "":
+				break
+	draft.drop_empty_squads()
+	return draft
+
+
+static func _squad_with_room(draft: ArmyDraft, indices: Array) -> int:
+	for index: int in indices:
+		if draft.units_of(index).size() < draft.catalog.max_squad_size:
+			return index
+	return -1

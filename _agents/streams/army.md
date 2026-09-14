@@ -65,3 +65,39 @@ Unit stats and the army JSON parser (rules), squad behavior (ai), the in-match U
 ## Status
 
 - 2026-09-15: brief written for round 2. Nothing started.
+
+### Round 2 run (army agent)
+
+**Plan** (backlog order, smallest foundation first):
+1. **Y1a model:** `ArmyCatalog` reads catalog v2 (C1) by shape; until checkpoint 1 it falls back to a stub
+   in `game/garage/catalog_stub.gd` that matches C1 (scout, tank, IFV, artillery, Lancer). `ArmyDraft` replaces
+   `Loadout` (squads of unit ids, ≤ 5 × 5, budget, problems). Saves write army JSON v2 (C2); v1 saves migrate
+   on load (`tanks` → `units`, weapons/components dropped, a laser tank becomes a Lancer).
+   A temporary adapter (`ArmyFormat.to_game_doctrine`) turns v2 into what today's loader reads, so FIGHT keeps
+   working until rules' R1 lands; it disappears at checkpoint 1.
+2. **Y1b screen:** unit grid (role, cost, blurb, good/weak vs, stat bars), squads with a budget bar and clear
+   problems, a unit detail column (turntable, stats, paint, squad, remove). No weapon/component UI.
+3. **Y2 progression:** `game/progression/` (`Progression`, profile JSON C8, award math, unlocks, migration),
+   a match report adapter for C3 until rules' result fields land.
+4. **Y3 loop:** army (tier + opponent) → skirmish → results screen → rematch / back to army, in-process.
+5. **Y4** CPU at the player's tier, opponent composition on the results screen. **Y5** economy note.
+   **Y6** presets per tier and army codes v2. Then the stretch items.
+
+**Progress:** (newest last)
+
+- Baseline `make check` green (294 tests) at `e4267ed`.
+- **Y1 done: the army builder on catalog v2.** `ArmyCatalog` (reads C1 by shape; `ArmyCatalogStub` until
+  checkpoint 1: scout 110, IFV 150, tank 200 as starters; artillery 220 at unlock tier 1; Lancer 190 at tier 2),
+  `ArmyDraft` (replaces `Loadout`: buy, move, squads ≤ 5 × 5, budget, locked units, player-readable problems,
+  saves army JSON v2), `ArmyFormat` (round-1 saves and `TS1` codes migrate: weapons/components dropped, a laser
+  unit becomes a Lancer, unknown units removed with a note; plus the pre-checkpoint v2 → v1 adapter FIGHT uses),
+  `ArmyCode` v2 (`TS2…`), role-based `ArmyPresets` (Anvil & Hammer, Scout Screen, Hunter-Killers, Siege Line,
+  Lance & Shield; they fall back to unlocked roles and spend the budget), `GarageAdvice` composition hints
+  ("Your Tanks are weak vs scouts and nothing here counters them: add an IFV") and a COMPARE table with
+  good/weak vs. Screen: unit cards with role, weapon + mount, blurb, good/weak vs, stat bars, LOCKED state;
+  squads show n/5 and points; the EQUIP column became UNIT (turntable via C6 `unit.<id>.*` slots, weapon,
+  matchups, hints, squad, free paint). 39 army tests (`tests/test_army_draft.gd`, `tests/test_army_screen.gd`),
+  including a preset fielded by a real `Match`. `make check` green (279 tests: loadout-only tests removed).
+  Screenshots reviewed (desktop, 20:9, compare, fight handover).
+  - Decision: opponents are CPU archetypes only (the hand-written doctrines don't fit a shared budget tier).
+  - Decision: the Lancer counts as a laser migration target because round-1 lasers were the lead's favorite.

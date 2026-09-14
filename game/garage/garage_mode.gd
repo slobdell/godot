@@ -3,22 +3,22 @@ extends GameMode
 ## --garage: build an army, tap FIGHT, and play the skirmish with it (GA2). The garage is a screen
 ## over the still-empty arena; FIGHT hands over to SkirmishMode in the same process (nothing has
 ## spawned yet, so no scene reload is needed).
-##   --enemy=OPPONENT      preselect the opponent: cpu / cpu:<archetype> (gameplay's Army, default cpu:balanced) or a doctrine
+##   --enemy=OPPONENT      preselect the opponent: cpu / cpu:<archetype> (rules' Army, default cpu = a random archetype)
 ##   --seed=N              seed for a cpu army (default: random each fight; passed on to the skirmish)
 ##   --army=CODE           open with a shared army code (ArmyCode; browser: ?garage&army=CODE)
 ##   --garage-settings=PATH  where first-run tip progress lives (default user://garage.cfg; "none" = fresh and
 ##                         unsaved, so automated runs never mark the player's tips as seen)
 ##   --garage-scratch      automated runs: settings in memory AND armies saved to an emptied SCRATCH_DIR, so smoke
 ##                         tests and screenshots never touch the player's tips, last army, or saved armies
-##   --garage-catalog=preview  a 20-unit catalog shaped like directive set 2 (scouts, artillery, lasers), to preview
-##                         big armies; not playable (FIGHT is refused)
 ##   --garage-panel=NAME   open an overlay on start: compare | share (screenshots)
 ##   --garage-autofight    tap FIGHT as soon as the garage opens (smoke tests, screenshots of the handover)
-## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> green=<tanks> rust=<tanks>
+## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> budget=<n> green=<tanks> rust=<tanks>
 ## when the skirmish starts.
 
-const CPU_DIR := "user://doctrines/cpu/"
 const SCRATCH_DIR := "user://garage_scratch/"
+## Until checkpoint 1, FIGHT hands the skirmish a v1 copy of the army here (ArmyFormat.to_game_doctrine),
+## outside the saved-armies folder so it never shows up under LOAD.
+const FIGHT_COPY := "user://army_fight/army.json"
 
 var screen: GarageScreen
 var _layer: CanvasLayer
@@ -35,8 +35,6 @@ func start() -> void:
 	_layer.layer = 10
 	screen = GarageScreen.new()
 	screen.name = "GarageScreen"
-	if flags.text("garage-catalog") == "preview":
-		screen.loadout = GarageScreen.starter_loadout(GarageCatalog.preview())
 	screen.enemy = flags.text("enemy", screen.enemy)
 	if flags.has("garage-settings"):
 		var settings := flags.text("garage-settings")
@@ -66,11 +64,18 @@ func fight(player_path: String, enemy: String) -> void:
 	var seed_value := flags.integer("seed", randi() % 100000)
 	# CPU armies are built by the skirmish itself (Army.load_army) from this seed.
 	var enemy_path := enemy
+	var budget := screen.draft.catalog.budget
+	var game_path := player_path
+	if not ArmyFormat.game_reads_v2():
+		var saved := ArmyStore.save(ArmyFormat.to_game_doctrine(screen.draft.to_doctrine()), FIGHT_COPY.get_file().get_basename(),
+				FIGHT_COPY.get_base_dir())
+		game_path = String(saved.get("path", player_path))
 	_layer.queue_free()
 	main.hud.visible = true
 	main.flags.values.erase("garage")
 	main.flags.values["skirmish"] = ""
-	main.flags.values["player"] = player_path
+	main.flags.values["player"] = game_path
+	main.flags.values["budget"] = str(budget)
 	main.flags.values["enemy"] = enemy_path
 	main.flags.values["seed"] = str(seed_value)
 	var skirmish := SkirmishMode.new()
@@ -80,5 +85,5 @@ func fight(player_path: String, enemy: String) -> void:
 	skirmish.start()
 	for tip: String in screen.settings.take_match_tips():
 		main.hud.post_message(tip, Hud.INFO)
-	print("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d green=%d rust=%d" % [player_path, enemy, enemy_path, seed_value,
+	print("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d budget=%d green=%d rust=%d" % [player_path, enemy, enemy_path, seed_value, budget,
 			main.game_match.team_tanks(Match.Team.GREEN).size(), main.game_match.team_tanks(Match.Team.RUST).size()])
