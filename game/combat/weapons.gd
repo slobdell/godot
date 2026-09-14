@@ -5,7 +5,8 @@ extends RefCounted
 ## profile. Adding a weapon should mostly mean adding a row here.
 ## See _agents/tank_brain.md "Weapons v1".
 
-enum Kind { PROJECTILE, CONE }
+## PROJECTILE: a Shell flies (travel time). CONE: continuous spray. BEAM: instant hitscan pulse (G7 laser).
+enum Kind { PROJECTILE, CONE, BEAM }
 
 const DEFAULT := "cannon"
 
@@ -24,6 +25,25 @@ const PROFILES := {
 		# tank mostly miss, so halting to shoot (hold, overwatch) matters.
 		"spread_deg": 0.8,
 		"armor": {"front": 0.5, "side": 1.0, "rear": 1.5},
+		# G7: finite shells. Refilled slowly inside the team's base (Match.RESUPPLY_RADIUS), so
+		# pulling back is a real decision. Weapons without an "ammo" key never run out.
+		"ammo": 30,
+		"heat_per_shot": 0.0,
+	},
+	# G7: the laser never runs out, but every pulse heats the tank, and a tank can't fire past its
+	# heat capacity (a hard cap, no damage). Trade-off vs the cannon: shorter range, less burst, no
+	# travel time, armor matters less; sustained fire is limited by heat, not ammo.
+	"laser": {
+		"kind": Kind.BEAM,
+		"range": 55.0,
+		"preferred_min": 15.0,
+		"preferred_max": 40.0,
+		"damage": 9.0,
+		"reload": 0.5,
+		"aim_tolerance_deg": 2.0,
+		"spread_deg": 0.3,
+		"heat_per_shot": 12.0,
+		"armor": {"front": 0.7, "side": 1.0, "rear": 1.3},
 	},
 	"flamethrower": {
 		"kind": Kind.CONE,
@@ -38,6 +58,11 @@ const PROFILES := {
 		"armor": {"front": 0.8, "side": 1.0, "rear": 1.2},
 	},
 }
+
+
+## Shells a weapon carries, or -1 when it never runs out.
+static func max_ammo(weapon: Dictionary) -> int:
+	return int(weapon.get("ammo", -1))
 
 
 static func exists(weapon_id: String) -> bool:

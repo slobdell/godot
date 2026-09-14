@@ -14,6 +14,9 @@ const TANK_PROPERTIES := [
 	["sync_reload", SceneReplicationConfig.REPLICATION_MODE_ALWAYS],
 	["sync_firing", SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	["sync_intent", SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+	# Appended by gameplay G7 (2026-09-14): shells left (-1 = unlimited) and heat as 0..1.
+	["sync_ammo", SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+	["sync_heat", SceneReplicationConfig.REPLICATION_MODE_ALWAYS],
 ]
 
 

@@ -166,6 +166,21 @@ func test_under_orders_only_a_dying_tank_breaks_off() -> void:
 			"while under orders at the same 30%, it keeps going")
 
 
+func _armed(situation: Dictionary, ammo: int, in_zone := false, heat := 0.0) -> Dictionary:
+	situation["self"].merge({"ammo": ammo, "max_ammo": 30, "in_resupply_zone": in_zone, "heat": heat}, true)
+	return situation
+
+
+func test_an_empty_gun_goes_home_to_resupply() -> void:
+	var enemy := [_enemy("Rust_A_1", Vector3(0, 0, -40))]
+	assert_eq(_choice(_armed(_situation({"contacts": enemy}), 0)), "RESUPPLY", "no shells: fighting is pointless, go reload")
+	assert_eq(_choice(_armed(_situation({"contacts": enemy}), 12)), "ENGAGE Rust_A_1", "with shells left it fights")
+	assert_eq(_choice(_armed(_situation(), 10, true)), "RESUPPLY", "at base and a third full: top up before heading out")
+	assert_eq(_choice(_armed(_situation(), 28, true)), "ADVANCE", "nearly full: don't wait for the last shells")
+	assert_eq(_choice(_armed(_ordered("hold", Vector3(0, 0, 40)), 0)), "KEEP_SLOT",
+			"a player's order still outranks going home (the player sees the ammo readout)")
+
+
 func test_directives_resolve_in_layers() -> void:
 	var resolved := Directives.resolve([{"role": "anchor"}, {"caution": 0.95}])
 	assert_eq(resolved["leash"], 15.0, "the squad's role preset applies")
@@ -189,7 +204,7 @@ func test_doctrine_validation() -> void:
 	assert_true(Doctrine.parse({"name": "x", "squads": []}).has("error"), "needs squads")
 	var too_many := {"name": "x", "squads": [{"name": "A", "tanks": [{}, {}, {}, {}, {}, {}]}]}
 	assert_true(Doctrine.parse(too_many).has("error"), "at most MAX_TANKS tanks")
-	var bad_weapon := {"name": "x", "squads": [{"name": "A", "tanks": [{"weapon": "laser"}]}]}
-	assert_true(String(Doctrine.parse(bad_weapon).get("error", "")).contains("laser"), "unknown weapons are named in the error")
+	var bad_weapon := {"name": "x", "squads": [{"name": "A", "tanks": [{"weapon": "railgun"}]}]}
+	assert_true(String(Doctrine.parse(bad_weapon).get("error", "")).contains("railgun"), "unknown weapons are named in the error")
 	for path in ["res://doctrines/individuals.json", "res://doctrines/anvil_hammer.json", "res://doctrines/flame_rush.json"]:
 		assert_true(Doctrine.load_file(path).has("doctrine"), "%s is valid: %s" % [path, Doctrine.load_file(path).get("error", "")])

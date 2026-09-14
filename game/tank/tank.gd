@@ -25,6 +25,9 @@ signal died
 ## Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 200.
 @export var max_health := 400
 @export var reload_seconds := 2.0
+## G7 heat (see Units.PROFILES "heat_capacity"/"heat_dissipation").
+@export var heat_capacity: float = Units.PROFILES["tank"]["heat_capacity"]
+@export var heat_dissipation: float = Units.PROFILES["tank"]["heat_dissipation"]
 ## Client-side display smoothing toward replicated state. Higher = snappier.
 @export var remote_smoothing := 18.0
 
@@ -46,6 +49,10 @@ var intent := ""
 
 var health := 200
 var alive := true
+## Shells left, or -1 for a weapon that never runs out (G7). Simulating peer.
+var ammo := -1
+## Current heat (0..heat_capacity). Simulating peer.
+var heat := 0.0
 ## World-space velocity: exact on the simulating peer, estimated from snapshots on clients.
 var estimated_velocity := Vector3.ZERO
 
@@ -59,6 +66,11 @@ var sync_alive := true
 var sync_reload := 1.0
 var sync_firing := false
 var sync_intent := ""
+var sync_ammo := -1
+## Match resupply bookkeeping: ticks spent in the base zone toward the next shell.
+var resupply_ticks := 0
+## Heat as a fraction of capacity, 0..1.
+var sync_heat := 0.0
 
 var _speed := 0.0
 var _reload_left := 0.0
@@ -84,6 +96,7 @@ func set_weapon(id: String) -> void:
 	weapon_id = id
 	weapon = Weapons.profile(id)
 	reload_seconds = weapon["reload"]
+	ammo = Weapons.max_ammo(weapon)
 	if _weapon_visual != null:
 		_weapon_visual.fill("weapon." + id)
 		_weapon_visual.invoke("setup", [weapon])
@@ -120,14 +133,19 @@ func _physics_process(delta: float) -> void:
 			turret_turn_rate, delta)
 
 	sync_firing = false
+	heat = maxf(0.0, heat - heat_dissipation * delta)
 	if weapon["kind"] == Weapons.Kind.CONE:
 		if cmd.fire:
 			sync_firing = true
 			sprayed.emit(muzzle_position(), turret_forward(), delta)
 	else:
 		_reload_left = maxf(0.0, _reload_left - delta)
-		if cmd.fire and _reload_left <= 0.0:
+		if cmd.fire and _reload_left <= 0.0 and ammo != 0 and _heat_allows_shot(heat):
 			_reload_left = reload_seconds
+			if ammo > 0:
+				ammo -= 1
+			heat += float(weapon.get("heat_per_shot", 0.0))
+			sync_firing = weapon["kind"] == Weapons.Kind.BEAM
 			fired.emit(muzzle_position(), turret_forward())
 	_publish_state()
 
@@ -147,6 +165,7 @@ func _process(delta: float) -> void:
 	if sync_intent != "":
 		nameplate.text += "\n" + sync_intent
 	_weapon_visual.invoke("set_firing", [sync_firing and alive])
+	_weapon_visual.invoke("set_heat", [sync_heat])
 
 
 # ---- Rules hooks (called by Match on the simulating peer) --------------------------
@@ -173,6 +192,8 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	_speed = 0.0
 	_reload_left = 0.0
 	health = max_health
+	ammo = Weapons.max_ammo(weapon)
+	heat = 0.0
 	_set_alive(true)
 	_publish_state()
 
@@ -186,6 +207,38 @@ func is_alive() -> bool:
 ## 0 = just fired, 1 = ready to fire.
 func reload_fraction() -> float:
 	return sync_reload
+
+
+## Loaded, not out of ammo, and cool enough for one more shot. Valid on every peer.
+func ready_to_fire() -> bool:
+	var current_heat := heat if simulate else sync_heat * heat_capacity
+	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat)
+
+
+## Shells left (-1 = unlimited): exact on the simulating peer, replicated elsewhere.
+func shells_left() -> int:
+	return ammo if simulate else sync_ammo
+
+
+## Ammo left as a fraction of a full load (1.0 for weapons that never run out).
+func ammo_fraction() -> float:
+	var full := Weapons.max_ammo(weapon)
+	return 1.0 if full <= 0 else float(maxi(shells_left(), 0)) / full
+
+
+## Add shells, up to a full load. Returns how many were added. Simulating peer (Match resupply).
+func resupply(shells: int) -> int:
+	var full := Weapons.max_ammo(weapon)
+	if full < 0 or not alive:
+		return 0
+	var added := mini(shells, full - ammo)
+	ammo += added
+	_publish_state()
+	return added
+
+
+func _heat_allows_shot(current_heat: float) -> bool:
+	return current_heat + float(weapon.get("heat_per_shot", 0.0)) <= heat_capacity + 0.001
 
 
 func muzzle_position() -> Vector3:
@@ -223,3 +276,5 @@ func _publish_state() -> void:
 	sync_alive = alive
 	sync_reload = 1.0 - (_reload_left / reload_seconds) if reload_seconds > 0.0 else 1.0
 	sync_intent = intent
+	sync_ammo = ammo
+	sync_heat = snappedf(heat / heat_capacity, 0.01) if heat_capacity > 0.0 else 0.0

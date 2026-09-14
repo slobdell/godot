@@ -457,8 +457,14 @@ func _refresh_panels() -> void:
 		for member in squad.roster:
 			var tank := by_name.get(member) as Tank
 			var short := member.get_slice("_", 1).left(1) + member.get_slice("_", 2)
-			var health := "--" if tank == null or not tank.is_alive() else str(tank.health)
-			members.append(("*" if member == squad.commander else "") + short + " " + health)
+			var readout := "--"
+			if tank != null and tank.is_alive():
+				readout = str(tank.health)
+				if tank.sync_ammo >= 0:
+					readout += " a%d" % tank.sync_ammo  # shells left (G7)
+				if float(tank.weapon.get("heat_per_shot", 0.0)) > 0.0:
+					readout += " h%d%%" % roundi(tank.sync_heat * 100.0)  # heat (G7)
+			members.append(("*" if member == squad.commander else "") + short + " " + readout)
 		_info.text = "%s  |  %s in %s  |  next drag: %s\n%s" % [squad.squad_name.to_upper(),
 				VERB_LABELS.get(squad.verb, "no orders"), FORMATION_LABELS.get(squad.formation, "no formation"),
 				VERB_LABELS[pending_verb], "   ".join(members)]

@@ -22,9 +22,13 @@ const CONTACT_FRESH_TICKS := 120
 const COVER_RING_RADIUS := 10.0
 const COVER_SAMPLES := 8
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
+## A tank at full heat fights with this fraction of its usual appetite (scaled in from 70% heat).
+const HOT_FIREPOWER := 0.75
+## A tank in its base's resupply zone stays until its ammo is back to this fraction.
+const RESUPPLY_TOP_UP := 0.8
 ## KEEP_SLOT's score under move/bound/hold orders (see decide()).
 const ORDER_WEIGHT := 0.95
 ## Under orders (not assault), RETREAT only below this health fraction, scaled by caution.
@@ -96,6 +100,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 	var visible_threats := 0
 	var threats_on_me := 0
+	# G7: a gun with no shells can't fight; a laser at its heat cap has to wait.
+	var max_ammo := int(me.get("max_ammo", -1))
+	var ammo := int(me.get("ammo", -1))
+	var out_of_ammo := max_ammo > 0 and ammo == 0
+	var firepower := 0.1 if out_of_ammo else lerpf(1.0, HOT_FIREPOWER, clampf((float(me.get("heat", 0.0)) - 0.7) / 0.3, 0.0, 1.0))
 	for c in contacts:
 		if c["visible"]:
 			visible_threats += 1
@@ -119,6 +128,19 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		retreat = 0.45 * float(d["caution"])
 	add.call("RETREAT", "", retreat)
 
+	# RESUPPLY (G7): empty guns go home; tanks already at base top up; low tanks refill in quiet moments.
+	# Under a player order it stays below ORDER_WEIGHT: the player sees ammo and decides.
+	var resupply := 0.0
+	if max_ammo > 0:
+		var ammo_ratio := float(ammo) / max_ammo
+		if out_of_ammo:
+			resupply = 0.9
+		elif bool(me.get("in_resupply_zone", false)) and ammo_ratio < RESUPPLY_TOP_UP:
+			resupply = 0.9 if visible_threats == 0 else 0.5
+		elif ammo_ratio <= OrderController.LOW_AMMO_FRACTION and visible_threats == 0:
+			resupply = 0.5
+	add.call("RESUPPLY", "", resupply)
+
 	# TAKE_COVER: guns on me, hurt, cautious, and somewhere hidden is close by.
 	var cover := 0.0
 	if not (s["cover"] as Array).is_empty() and threats_on_me > 0:
@@ -139,10 +161,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				reach = clampf(1.0 - (distance - float(weapon["range"])) / 80.0, 0.15, 1.0)
 			var priority := TankBrain._priority(String(d["target_priority"]), c, distance)
 			var engage := (0.3 + 0.7 * float(d["aggression"])) * reach * (0.55 + 0.45 * priority) \
-					* confidence * leash_factor * (1.0 if c["visible"] else 0.75)
+					* confidence * leash_factor * (1.0 if c["visible"] else 0.75) * firepower
 			engages.append([c["name"], engage])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
-			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor
+			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor * firepower
 			if c["exposed_face"] != "front":
 				flank *= 0.35
 			flanks.append([c["name"], flank])
@@ -345,7 +367,9 @@ func build_situation() -> Dictionary:
 	return {
 		"tick": game_match.tick,
 		"self": {"name": String(tank.name), "team": team, "position": my_position, "forward": -tank.global_basis.z,
-				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon},
+				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
+				"ammo": tank.ammo, "max_ammo": Weapons.max_ammo(tank.weapon), "heat": tank.sync_heat,
+				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
 		"directives": effective_directives,
 		"squad": squad_context if squad_context.get("slot") != null else null,
 		"contacts": contacts,
@@ -355,6 +379,7 @@ func build_situation() -> Dictionary:
 		"squad_center": squad_center,
 		"cover": _find_cover(threat_positions) if not threat_positions.is_empty() else [],
 		"rally": Match.spawn_position(team, tank.slot),
+		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
 	}
@@ -426,6 +451,14 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"RETREAT":
 			_order_move(_move_to(s["rally"], true))
+			_order_weapon({"type": "fire_at_will"})
+		"RESUPPLY":
+			var depot: Vector3 = s.get("resupply", s["rally"])
+			if bool(me.get("in_resupply_zone", false)) and my_position.distance_to(depot) < Match.RESUPPLY_RADIUS * 0.6:
+				_order_move({"type": "stop"})
+			else:
+				# Back in with the front armor toward any threat, drive in when it's quiet.
+				_order_move(_move_to(depot, not s["contacts"].filter(func(c: Dictionary) -> bool: return c["visible"]).is_empty()))
 			_order_weapon({"type": "fire_at_will"})
 		"INVESTIGATE":
 			_order_move(_move_to(contact["position"]))

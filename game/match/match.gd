@@ -43,6 +43,12 @@ const CONTACT_MEMORY_TICKS := 60 * 12
 @export var elimination := false
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## G7 resupply: tanks within this distance of their own base center regain one shell every
+## RESUPPLY_SECONDS_PER_SHELL. Slow on purpose: a full reload (30 shells) takes a minute at base.
+const RESUPPLY_RADIUS := 30.0
+const RESUPPLY_SECONDS_PER_SHELL := 2.0
+## World (layer 1) + tanks (layer 2): what beams and shells hit.
+const HIT_MASK := 3
 
 ## Replicated by ScoreSync.
 @export var score_green := 0
@@ -59,7 +65,8 @@ var has_local_player := true
 var spawn_jitter := 0.0
 
 ## Counters for match results and experiments, indexed by team where it's a pair.
-var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "kills": [0, 0],
+var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0],
+		"kills": [0, 0], "shells_resupplied": [0, 0],
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
@@ -112,6 +119,7 @@ func _physics_process(delta: float) -> void:
 	if tick % INTEL_EVERY_TICKS == 0:
 		_update_intel()
 		_update_squads()
+		_resupply()
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination):
 		return
 	var reason := ""
@@ -321,6 +329,31 @@ func sorted_team_tanks(team: int) -> Array[Tank]:
 	return result
 
 
+## Shells trickle back to tanks inside their own base (G7). Deterministic: counted in ticks.
+func _resupply() -> void:
+	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * 60.0)
+	for tank in _sorted_tanks():
+		if not tank.is_alive() or tank.ammo < 0 or tank.ammo >= Weapons.max_ammo(tank.weapon):
+			tank.resupply_ticks = 0
+			continue
+		if not in_resupply_zone(tank.team, tank.global_position):
+			tank.resupply_ticks = 0
+			continue
+		tank.resupply_ticks += INTEL_EVERY_TICKS
+		if tank.resupply_ticks >= ticks_per_shell:
+			tank.resupply_ticks -= ticks_per_shell
+			stats["shells_resupplied"][tank.team] += tank.resupply(1)
+
+
+static func resupply_center(team: int) -> Vector3:
+	return spawn_position(team, 0)
+
+
+static func in_resupply_zone(team: int, point: Vector3) -> bool:
+	var center := resupply_center(team)
+	return Vector2(point.x - center.x, point.z - center.z).length() <= RESUPPLY_RADIUS
+
+
 func _update_intel() -> void:
 	for team in 2:
 		var known: Dictionary = intel[team]
@@ -328,7 +361,7 @@ func _update_intel() -> void:
 			contact["visible"] = false
 		var viewers := sorted_team_tanks(team)
 		for viewer in viewers:
-			if not viewer.is_alive() or viewer.reload_fraction() < 1.0:
+			if not viewer.is_alive() or not viewer.ready_to_fire():
 				continue
 			for enemy in sorted_team_tanks(1 - team):
 				if enemy.is_alive() and viewer.global_position.distance_to(enemy.global_position) <= float(viewer.weapon["range"]) \
@@ -471,9 +504,35 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
 	var spread := deg_to_rad(float(tank.weapon.get("spread_deg", 0.0))) * (1.0 + MOVING_SPREAD_FACTOR * moving)
 	var actual := direction.rotated(Vector3.UP, _fire_rng.randfn(0.0, spread)) if spread > 0.0 else direction
+	if tank.weapon["kind"] == Weapons.Kind.BEAM:
+		_fire_beam(tank, muzzle, actual)
+		return
 	shell_spawner.spawn({"id": _next_shell_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
 			"direction": actual, "team": tank.team, "shooter": String(tank.name)})
 	_next_shell_id += 1
+
+
+## Beam weapons (G7 laser): an instant ray from the turret center; the first thing it touches takes
+## the pulse. Teammates block it but take no damage (no friendly fire).
+func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
+	var weapon := tank.weapon
+	var from := tank.turret.global_position
+	var to := from + direction * float(weapon["range"])
+	var query := PhysicsRayQueryParameters3D.create(from, to, HIT_MASK, [tank.get_rid()])
+	var hit := tank.get_world_3d().direct_space_state.intersect_ray(query)
+	var end := to
+	if not hit.is_empty():
+		end = hit.position
+		var victim := hit.collider as Tank
+		if victim != null and victim.is_alive() and victim.team != tank.team:
+			var damage := roundi(float(weapon["damage"]) * Armor.weapon_multiplier(weapon, -victim.global_basis.z, direction))
+			stats["hits"][tank.team] += 1
+			stats["damage"][tank.team] += mini(damage, victim.health)
+			stats["laser_damage"][tank.team] += mini(damage, victim.health)
+			stats["hits_by_face"][Armor.FACING_NAMES[Armor.facing(-victim.global_basis.z, direction)]] += 1
+			if victim.apply_damage(damage):
+				_score_kill(tank.team, String(tank.name), victim)
+	show_beam.rpc(muzzle, end)
 
 
 ## Cone weapons: every enemy inside the cone with line of sight burns this tick.
@@ -550,6 +609,21 @@ func _on_tank_died(tank: Tank) -> void:
 
 
 # ---- Effects (every peer with a screen) ----------------------------------------------
+
+## How long a laser pulse's visual lives before it's freed (the visual fades itself).
+const BEAM_VISUAL_SECONDS := 0.2
+
+
+@rpc("authority", "call_local", "unreliable")
+func show_beam(from: Vector3, to: Vector3) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var beam := VisualSlot.new()
+	beam.slot = "fx.laser_beam"
+	effects.add_child(beam)
+	beam.invoke("setup", [from, to])
+	get_tree().create_timer(BEAM_VISUAL_SECONDS).timeout.connect(beam.queue_free)
+
 
 @rpc("authority", "call_local", "unreliable")
 func show_impact(point: Vector3, big: bool) -> void:

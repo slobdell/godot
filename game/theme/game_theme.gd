@@ -14,6 +14,9 @@ const DEFAULT_SLOTS := {
 	"weapon.cannon": "res://game/theme/default/weapon_cannon.tscn",
 	"weapon.flamethrower": "res://game/theme/default/weapon_flamethrower.tscn",
 	"fx.shell": "res://game/theme/default/fx_shell.tscn",
+	# Added by gameplay G7 (2026-09-14), placeholder art: see streams/assets.md slot contracts.
+	"weapon.laser": "res://game/theme/default/weapon_laser.tscn",
+	"fx.laser_beam": "res://game/theme/default/fx_laser_beam.tscn",
 	"prop.crate": "res://game/theme/default/prop_crate.tscn",
 	"prop.wall": "res://game/theme/default/prop_wall.tscn",
 	"arena.environment": "res://game/theme/default/arena_environment.tscn",

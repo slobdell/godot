@@ -14,6 +14,8 @@ var game_match: Match
 var team := Match.Team.GREEN
 
 var _had_contact := false
+## Tank names already reported as out of ammo (cleared when they have shells again).
+var _dry := {}
 var _last_contact_tick := -CONTACT_COOLDOWN_TICKS
 
 
@@ -35,6 +37,14 @@ func _physics_process(_delta: float) -> void:
 		_last_contact_tick = game_match.tick
 		_say("Contact: %d enem%s in sight" % [in_sight, "y" if in_sight == 1 else "ies"], Hud.WARNING)
 	_had_contact = in_sight > 0
+	for tank in game_match.sorted_team_tanks(team):
+		var tank_name := String(tank.name)
+		if tank.is_alive() and tank.sync_ammo == 0:
+			if not _dry.has(tank_name):
+				_dry[tank_name] = true
+				_say("%s is out of ammo" % short_name(tank_name), Hud.WARNING)
+		else:
+			_dry.erase(tank_name)
 
 
 ## Connect TacticalMap.command_issued here. `summary` is the map's human description.

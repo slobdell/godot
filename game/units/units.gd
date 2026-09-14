@@ -24,8 +24,12 @@ const PROFILES := {
 		"max_forward_speed": 9.0,
 		"hull_turn_rate_deg": 80.0,
 		"sight_radius": 75.0,
+		# G7 heat: firing adds weapon heat_per_shot; a shot that would exceed the capacity is refused.
+		# Heat sinks (a component, directive set 2) will raise these.
+		"heat_capacity": 100.0,
+		"heat_dissipation": 12.0,
 		# Each hardpoint lists the weapon ids (Weapons.PROFILES) it accepts.
-		"hardpoints": [{"id": "main", "accepts": ["cannon", "flamethrower"]}],
+		"hardpoints": [{"id": "main", "accepts": ["cannon", "laser", "flamethrower"]}],
 		# Component slots (heat sinks, extra ammo, shield boosters…) arrive with directive set 2.
 		"component_slots": 0,
 	},

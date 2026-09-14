@@ -49,6 +49,8 @@ const WEAPON_TYPES := ["hold_fire", "aim", "fire_at_will", "target"]
 const REFLEX_TYPES := ["retreat_below_hp", "halt_on_contact"]
 const MAX_REFLEXES := 4
 const MAX_EVENTS := 8
+## At or below this fraction of a full ammo load, only fire inside the weapon's preferred range.
+const LOW_AMMO_FRACTION := 0.3
 ## A held turret heading aims at a point this far out along it.
 const HELD_AIM_DISTANCE := 1000.0
 
@@ -292,9 +294,13 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	if weapon["kind"] == Weapons.Kind.PROJECTILE:
 		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity, Shell.SPEED)
 	_cover(aim, cmd)
-	var in_range: bool = muzzle.distance_to(aim) <= float(weapon["range"])
+	var distance := muzzle.distance_to(aim)
+	var in_range: bool = distance <= float(weapon["range"])
+	# G7 ammo discipline: with few shells left, skip long-odds shots (spread makes them mostly miss).
+	if tank.ammo_fraction() <= LOW_AMMO_FRACTION and distance > float(weapon["preferred_max"]):
+		in_range = false
 	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
-	cmd.fire = in_range and aimed and tank.reload_fraction() >= 1.0
+	cmd.fire = in_range and aimed and tank.ready_to_fire()
 
 
 ## Point the turret at a world spot, and remember that heading for when the spot is gone.
