@@ -55,9 +55,9 @@ test: import ## Run the headless test suite (FILTER=substring to run a subset)
 
 # ---- Verification bundles (see _agents/verification.md) ------------------------
 
-check: lint test net-smoke combat-smoke match-smoke determinism sim-baseline ## Everything headless: tests + network + combat + match runner (no display/browser)
+check: lint test net-smoke combat-smoke broker-test relay-smoke match-smoke determinism sim-baseline ## Everything headless: tests + network + relay + combat + match runner (no display/browser)
 
-check-all: check screenshot web-smoke web-net-smoke export-server ## check + desktop render + browser checks + server export
+check-all: check relay-drop-smoke screenshot web-smoke web-net-smoke export-server ## check + desktop render + browser checks + server export
 	timeout 20 $(BUILD_DIR)/server/tank_squad_server.x86_64 --headless --quit-after 150 -- --server=$(SMOKE_NET_PORT) --bots=2 2>&1 \
 		| tee $(BUILD_DIR)/export-server-check.log | grep -E 'LISTENING|READY'
 	! grep -E 'ERROR' $(BUILD_DIR)/export-server-check.log

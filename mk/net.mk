@@ -73,3 +73,55 @@ broker-smoke: $(BROKER_DEPS) ## Real broker process + scripted host/players: rel
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) --heartbeat-ms=500 > $(BUILD_DIR)/broker-smoke.log 2>&1 & broker=$$!; \
 	trap 'kill $$broker 2>/dev/null' EXIT; \
 	$(NODE) $(BROKER_DIR)/smoke.mjs $(SMOKE_BROKER_PORT)
+
+# ---- Player-hosted matches through the relay (N1) ------------------------------------------
+# A headless player HOST (its own --demo tank + 2 bots, one per team so combat happens) opens a
+# room on a local broker; clients join with the code it prints.
+RELAY_SMOKE_HOST_FLAGS ?= --demo --bots=2
+
+# Start a broker + host, wait for the room code in $$code. Recipe fragment (one shell).
+define relay_host_up
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) $(1) > $(BUILD_DIR)/$(2)-broker.log 2>&1 & broker=$$!; \
+	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/$(2)-broker.log && break; sleep 0.1; done; \
+	$(GODOT) --headless --path . -- --host --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) $(RELAY_SMOKE_HOST_FLAGS) > $(BUILD_DIR)/$(2)-host.log 2>&1 & host=$$!; \
+	trap 'kill $$host $$broker 2>/dev/null' EXIT; \
+	code=""; for i in $$(seq 1 150); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/$(2)-host.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
+	if [ -z "$$code" ]; then echo "host never opened a room:"; cat $(BUILD_DIR)/$(2)-host.log; exit 1; fi; \
+	echo "host opened room $$code"
+endef
+
+# Run bot_client_check.gd clients in the background, one log each: $(call relay_client,NAME,FLAGS)
+define relay_client
+	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
+		--join=$$code --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) $(2) > $(BUILD_DIR)/$(1).log 2>&1 & \
+	pids="$$pids $$!"
+endef
+
+# Wait for the clients, show their verdicts, and fail on any client/host ERROR.
+define relay_verdict
+	status=0; for pid in $$pids; do wait $$pid || status=1; done; \
+	grep -hE 'NET_CHECK|ERROR' $(foreach c,$(2),$(BUILD_DIR)/$(c).log) || true; \
+	grep -qE 'ERROR' $(foreach c,$(2),$(BUILD_DIR)/$(c).log) && status=1; \
+	grep -E 'joined|left|RELAY|destroyed' $(BUILD_DIR)/$(1)-host.log | head -20 || true; \
+	grep -E 'ERROR' $(BUILD_DIR)/$(1)-host.log && status=1; \
+	exit $$status
+endef
+
+relay-smoke: import $(BROKER_DEPS) ## Broker + headless player host (+2 bots) + 2 headless clients by room code; combat replicates
+	mkdir -p $(BUILD_DIR)
+	$(call relay_host_up,,relay-smoke); \
+	pids=""; \
+	$(call relay_client,relay-smoke-client1,--demo --expect-tanks=5 --expect-any-damage --timeout=60); \
+	$(call relay_client,relay-smoke-client2,--demo --expect-tanks=5 --expect-any-damage --timeout=60); \
+	$(call relay_verdict,relay-smoke,relay-smoke-client1 relay-smoke-client2)
+
+# Mobile backgrounding / losing signal: one client's socket is cut for RELAY_DROP_SECONDS (default 10)
+# and must resume its seat and keep playing; the other client must be unaffected.
+RELAY_DROP_SECONDS ?= 10
+relay-drop-smoke: import $(BROKER_DEPS) ## Relay: cut one client's socket for 10 s mid-match; it must resume its seat and keep playing
+	mkdir -p $(BUILD_DIR)
+	$(call relay_host_up,,relay-drop-smoke); \
+	pids=""; \
+	$(call relay_client,relay-drop-smoke-dropper,--demo --expect-tanks=4 --drop-after=4 --drop-seconds=$(RELAY_DROP_SECONDS) --timeout=75); \
+	$(call relay_client,relay-drop-smoke-steady,--demo --expect-tanks=4 --min-travel=20 --timeout=40); \
+	$(call relay_verdict,relay-drop-smoke,relay-drop-smoke-dropper relay-drop-smoke-steady)

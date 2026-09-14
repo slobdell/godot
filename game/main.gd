@@ -10,13 +10,15 @@ extends Node3D
 ##   --match                    MatchRunnerMode: headless bots vs bots → MATCH_RESULT json
 ##   --server[=port]            ServerMode: authoritative WebSocket server (--bots=N)
 ##   --connect[=ws://host:port] ClientMode: join a server (browser default: /ws on the page's host)
+##   --host [--relay=ws://...]  HostMode: YOU host through the broker's relay (browser default: /relay)
+##   --join=CODE [--relay=...]  ClientMode: join a player-hosted room by its code
 ##   --demo                     scripted driver instead of keyboard/mouse (offline/client)
 ##   --agent-port=PORT          Claude commands your tank over localhost HTTP (_agents/agent_bridge.md)
 ##   --screenshot=<abs path>    save a PNG after --screenshot-delay seconds (default 3), then quit
 ## An exported server binary (feature tag "server") is a server unless told otherwise.
 ##
 ## Console markers. Smoke tests wait for these exact prefixes; rename with care:
-##   TANK_SQUAD_READY  TANK_SQUAD_LISTENING  TANK_SQUAD_CONNECTED  TANK_SQUAD_SPAWNED
+##   TANK_SQUAD_READY  TANK_SQUAD_LISTENING  TANK_SQUAD_CONNECTED  TANK_SQUAD_SPAWNED  TANK_SQUAD_ROOM
 
 const SCREENSHOT_DELAY_SEC := 3.0
 

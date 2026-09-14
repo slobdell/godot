@@ -28,7 +28,9 @@ var _window_count := 0
 
 
 func _ready() -> void:
-	if multiplayer.is_server():
+	if multiplayer.is_server() and owner_peer_id == multiplayer.get_unique_id():
+		set_physics_process(false)  # the host's own tank: its local controller drives it directly
+	elif multiplayer.is_server():
 		process_physics_priority = -10  # before the Tank consumes its command
 	elif owner_peer_id == multiplayer.get_unique_id():
 		process_physics_priority = -5  # after the local controller (-10) wrote tank.command
