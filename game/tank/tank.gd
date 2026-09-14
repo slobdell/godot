@@ -22,7 +22,8 @@ signal died
 @export var acceleration := 14.0
 @export var hull_turn_rate := deg_to_rad(80.0)
 @export var turret_turn_rate := deg_to_rad(110.0)
-@export var max_health := 100
+## Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 200.
+@export var max_health := 400
 @export var reload_seconds := 2.0
 ## Client-side display smoothing toward replicated state. Higher = snappier.
 @export var remote_smoothing := 18.0
@@ -43,7 +44,7 @@ var damage_accumulator := 0.0
 ## What the tank's brain is doing ("ENGAGE Rust_2"); set by the simulating peer, shown on nameplates.
 var intent := ""
 
-var health := 100
+var health := 200
 var alive := true
 ## World-space velocity: exact on the simulating peer, estimated from snapshots on clients.
 var estimated_velocity := Vector3.ZERO
@@ -52,7 +53,7 @@ var estimated_velocity := Vector3.ZERO
 var sync_position := Vector3.ZERO
 var sync_yaw := 0.0
 var sync_turret_yaw := 0.0
-var sync_health := 100
+var sync_health := 200
 var sync_alive := true
 ## 0 = just fired, 1 = ready.
 var sync_reload := 1.0

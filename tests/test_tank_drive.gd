@@ -7,7 +7,7 @@ const TANK := preload("res://game/tank/tank.tscn")
 
 
 ## An open lane on the west side of the arena, clear of obstacles for ~15 m each way.
-const LANE := Vector3(-48, 0, 0)
+const LANE := Vector3(-100, 0, 0)
 
 
 func _spawn_tank() -> Tank:

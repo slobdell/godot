@@ -100,9 +100,9 @@ func test_move_in_wedge_arrives_in_formation() -> void:
 	var squad: Squad = setup[1]
 	# Green spawns around (0..±12, 42). Move 40 m north up the open middle-west lane.
 	for tank in game_match.tanks.get_children():
-		tank.global_position = Vector3(-48 + (tank.slot - 1) * 5.0, 0, 40)
+		tank.global_position = Vector3(-100 + (tank.slot - 1) * 5.0, 0, 40)
 	await wait_physics_frames(3)
-	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "move", "to": [-48, 5]}), "", "order accepted")
+	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "move", "to": [-100, 5]}), "", "order accepted")
 	for frame in 60 * 14:
 		await tree.physics_frame
 		if squad.arrived:
@@ -119,9 +119,9 @@ func test_hold_faces_the_ordered_direction() -> void:
 	var setup: Array = _setup_squad("line", 2)
 	var game_match: Match = setup[0]
 	for tank in game_match.tanks.get_children():
-		tank.global_position = Vector3(-48 + (tank.slot) * 8.0, 0, 30)
+		tank.global_position = Vector3(-100 + (tank.slot) * 8.0, 0, 30)
 	await wait_physics_frames(3)
-	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "hold", "to": [-44, 30], "facing": [1, 0]}), "",
+	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "hold", "to": [-96, 30], "facing": [1, 0]}), "",
 			"hold facing east")
 	await wait_physics_frames(60 * 8)
 	for tank: Tank in game_match.tanks.get_children():
@@ -133,10 +133,10 @@ func test_break_contact_withdraws_front_first() -> void:
 	var setup: Array = _setup_squad("wedge", 2)
 	var game_match: Match = setup[0]
 	for tank in game_match.tanks.get_children():
-		tank.global_position = Vector3(-48 + (tank.slot) * 6.0, 0, 0)
+		tank.global_position = Vector3(-100 + (tank.slot) * 6.0, 0, 0)
 		tank.rotation.y = 0.0  # facing north, toward the (imagined) enemy
 	await wait_physics_frames(3)
-	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "break_contact", "to": [-45, 30]}), "",
+	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "break_contact", "to": [-97, 30]}), "",
 			"break contact toward the south")
 	await wait_physics_frames(60 * 3)
 	var brain: TankBrain = game_match.brains.get_child(0)
@@ -151,9 +151,9 @@ func test_bounding_overwatch_leapfrogs_to_the_destination() -> void:
 	var game_match: Match = setup[0]
 	var squad: Squad = setup[1]
 	for tank in game_match.tanks.get_children():
-		tank.global_position = Vector3(-46 + (tank.slot % 2) * 6.0, 0, 44 - tank.slot * 3.0)
+		tank.global_position = Vector3(-98 + (tank.slot % 2) * 6.0, 0, 44 - tank.slot * 3.0)
 	await wait_physics_frames(3)
-	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "bound", "to": [-44, -10]}), "", "bound north")
+	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "bound", "to": [-96, -10]}), "", "bound north")
 	var halted_while_other_moved := false
 	for frame in 60 * 60:
 		await tree.physics_frame

@@ -113,7 +113,7 @@ Commitment: the current option gets ×1.15 and at least 1 s before switching.
 
 | Weapon | Kind | Range | Damage | Reload / rate | Armor effect | Implies |
 |---|---|---|---|---|---|---|
-| `cannon` | projectile, 70 m/s | 110 m (preferred 25–60) | 34 per hit | 2.0 s | front ×0.5 / side ×1 / rear ×1.5 | Long-range duels; positioning for side shots |
+| `cannon` | projectile, 70 m/s, 0.8° spread (×2.5 moving) | 70 m (preferred 20–45); was 110 | 34 per hit (tanks have 400 HP since 2026-09-13) | 2.5 s | front ×0.5 / side ×1 / rear ×1.5 | Positioning for side shots; halting to fire accurately |
 | `flamethrower` | cone 30°, line of sight | 20 m (preferred 6–16) | 45 per second while in cone | continuous | armor matters less: ×0.8 / ×1 / ×1.2 | Must close distance: needs cover, flanks, or escorts; devastating on campers |
 
 ## Squad command UI (open: needs the lead)
@@ -140,6 +140,10 @@ inspect brains), and evaluate (1) for phones.
 | T3 | Do weapons create strategy? A flamethrower-heavy doctrine vs cannons in open vs cover-rich approaches | Results depend on doctrine (an approach via cover), not a flat winner |
 
 ## Results (2026-09-13)
+
+> ⚠ **T0–T3 below used the original rules** (100 HP, 110 m guns, respawns, 120 m arena).
+> The lead's first skirmish led to a rebalance (tactical_map.md "Iteration 2"); T1 was re-run
+> under the new rules (see "T1 v2" at the end of this section).
 
 All series: 5v5, first to 10 kills or 300 s, 60 seeded matches per row, doctrines in `doctrines/`.
 "Swapped" = the `--swap-bases` control. Raw per-match JSON: `build/experiments/` (not committed;

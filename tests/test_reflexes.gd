@@ -10,7 +10,7 @@ func _setup() -> Array:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var tank := game_match.spawn_tank("Commanded", 0, Match.Team.GREEN)
-	tank.global_position = Vector3(-48, 0, 20)
+	tank.global_position = Vector3(-100, 0, 20)
 	var orders := OrderController.new()
 	orders.tank = tank
 	orders.tanks_root = game_match.tanks
@@ -22,10 +22,10 @@ func test_retreat_below_hp_fires_once_and_rearms() -> void:
 	var setup: Array = _setup()
 	var tank: Tank = setup[1]
 	var orders: OrderController = setup[2]
-	orders.set_orders({"type": "stop"}, null, [{"type": "retreat_below_hp", "hp": 40, "x": -48, "z": 50}])
+	orders.set_orders({"type": "stop"}, null, [{"type": "retreat_below_hp", "hp": 40, "x": -100, "z": 50}])
 	await wait_physics_frames(2)
 	assert_eq(orders.move_order["type"], "stop", "healthy: the reflex stays quiet")
-	tank.apply_damage(70)
+	tank.apply_damage(tank.max_health - 30)
 	await wait_physics_frames(2)
 	assert_eq(orders.move_order["type"], "move_to", "below 40 HP the tank retreats")
 	assert_eq(orders.move_order.get("reverse"), true, "backing away by default, front armor forward")
@@ -35,7 +35,7 @@ func test_retreat_below_hp_fires_once_and_rearms() -> void:
 	assert_eq(orders.move_order["type"], "stop", "a new order overrides it; it doesn't re-fire while still hurt")
 	tank.respawn(tank.global_position, 0.0)
 	await wait_physics_frames(2)
-	tank.apply_damage(70)
+	tank.apply_damage(tank.max_health - 30)
 	await wait_physics_frames(2)
 	assert_eq(orders.move_order["type"], "move_to", "after healing (respawn) it re-arms and fires again")
 
@@ -45,8 +45,8 @@ func test_halt_on_contact_stops_an_advance() -> void:
 	var game_match: Match = setup[0]
 	var orders: OrderController = setup[2]
 	var enemy := game_match.spawn_tank("Enemy", 0, Match.Team.RUST)
-	enemy.global_position = Vector3(-48, 0, -40)  # far up the open lane, out of range but in sight
-	orders.set_orders({"type": "move_to", "x": -48, "z": -30}, {"type": "hold_fire"}, [{"type": "halt_on_contact"}])
+	enemy.global_position = Vector3(-100, 0, -40)  # far up the open lane, out of range but in sight
+	orders.set_orders({"type": "move_to", "x": -100, "z": -30}, {"type": "hold_fire"}, [{"type": "halt_on_contact"}])
 	await wait_physics_frames(3)
 	assert_eq(orders.move_order["type"], "stop", "an enemy in sight halts the advance")
 	assert_true(orders.events.size() == 1 and orders.events[0].contains("Enemy"), "the event names who was seen")

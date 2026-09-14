@@ -18,7 +18,13 @@ const TANK_SCENE := preload("res://game/tank/tank.tscn")
 const SHELL_SCENE := preload("res://game/combat/shell.tscn")
 const BASE_DAMAGE := 34.0
 ## Bases sit this far north/south of center; slots spread along x.
-const BASE_Z := 42.0
+## Arena geometry, the single source of truth (arena.tscn must match).
+## 2026-09-13: doubled from 60 → 120 after the lead's first skirmish; contact was
+## immediate on the small map and formations had no room.
+const ARENA_HALF_SIZE := 120.0
+## How close to the perimeter tanks and slots may be sent (walls' inner face minus clearance).
+const DRIVABLE_LIMIT := 116.0
+const BASE_Z := 90.0
 const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -6.0, 6.0, -18.0, 18.0]
 
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
@@ -26,10 +32,16 @@ static var swap_bases := false
 
 ## Shared team vision: refreshed this often, out to this range, remembered this long.
 const INTEL_EVERY_TICKS := 6
-const SENSOR_RANGE := 90.0
+const SENSOR_RANGE := 75.0
 const CONTACT_MEMORY_TICKS := 60 * 12
 
 @export var respawn_seconds := 4.0
+## Squad vs squad: destroyed tanks stay destroyed, and the match ends when one team has
+## no tanks left. Skirmish and `--elimination` matches use it; the network server and
+## `make run` keep respawns.
+@export var elimination := false
+## Firing while moving at full speed multiplies shot spread by (1 + this).
+const MOVING_SPREAD_FACTOR := 1.5
 
 ## Replicated by ScoreSync.
 @export var score_green := 0
@@ -50,6 +62,8 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
+		# Simulated seconds at the first shot fired and the first kill (pace of a fight).
+		"first_shot_seconds": -1.0, "first_kill_seconds": -1.0,
 		# ...and of those, how often it was NOT firing (turret still turning, or holding fire).
 		"gun_idle_samples": [0, 0]}
 var sim_seconds := 0.0
@@ -66,6 +80,8 @@ var squads := {}
 var _next_brain_index := 0
 
 var _rng := RandomNumberGenerator.new()
+## Shot spread. Seeded with the match seed, so seeded matches stay deterministic.
+var _fire_rng := RandomNumberGenerator.new()
 var _score_limit := 0
 var _time_limit := 0.0
 var _finished := false
@@ -95,10 +111,13 @@ func _physics_process(delta: float) -> void:
 	if tick % INTEL_EVERY_TICKS == 0:
 		_update_intel()
 		_update_squads()
-	if _finished or (_score_limit <= 0 and _time_limit <= 0.0):
+	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination):
 		return
 	var reason := ""
-	if _score_limit > 0 and maxi(score_green, score_rust) >= _score_limit:
+	if elimination and (alive_count(Team.GREEN) == 0 or alive_count(Team.RUST) == 0) \
+			and not team_tanks(Team.GREEN).is_empty() and not team_tanks(Team.RUST).is_empty():
+		reason = "elimination"
+	elif _score_limit > 0 and maxi(score_green, score_rust) >= _score_limit:
 		reason = "score_limit"
 	elif _time_limit > 0.0 and sim_seconds >= _time_limit:
 		reason = "time_limit"
@@ -115,12 +134,18 @@ func start_limits(score_limit: int, time_limit: float) -> void:
 
 func seed_spawns(seed_value: int, jitter: float) -> void:
 	_rng.seed = seed_value
+	_fire_rng.seed = seed_value + 7919
 	spawn_jitter = jitter
 
 
 func result(reason: String) -> Dictionary:
 	var winner := "draw"
-	if score_green != score_rust:
+	if elimination:
+		# Last team with tanks wins; on a time limit, more tanks alive, then more total health.
+		var standing := [_team_standing(Team.GREEN), _team_standing(Team.RUST)]
+		if standing[0] != standing[1]:
+			winner = TEAM_NAMES[Team.GREEN] if standing[0] > standing[1] else TEAM_NAMES[Team.RUST]
+	elif score_green != score_rust:
 		winner = TEAM_NAMES[Team.GREEN] if score_green > score_rust else TEAM_NAMES[Team.RUST]
 	return {"winner": winner, "reason": reason, "score": {"green": score_green, "rust": score_rust},
 			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
@@ -325,6 +350,23 @@ func _update_intel() -> void:
 				known.erase(contact_name)
 
 
+## Comparable team strength: tanks alive dominate, total health breaks ties.
+func _team_standing(team: int) -> int:
+	var health := 0
+	for tank in team_tanks(team):
+		if tank.is_alive():
+			health += tank.health
+	return alive_count(team) * 100000 + health
+
+
+func alive_count(team: int) -> int:
+	var count := 0
+	for tank in team_tanks(team):
+		if tank.is_alive():
+			count += 1
+	return count
+
+
 func team_tanks(team: int) -> Array[Tank]:
 	var result: Array[Tank] = []
 	for node in tanks.get_children():
@@ -402,8 +444,13 @@ func _build_shell(data: Dictionary) -> Node:
 
 func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	stats["shots"][tank.team] += 1
+	if stats["first_shot_seconds"] < 0.0:
+		stats["first_shot_seconds"] = snappedf(sim_seconds, 0.1)
+	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
+	var spread := deg_to_rad(float(tank.weapon.get("spread_deg", 0.0))) * (1.0 + MOVING_SPREAD_FACTOR * moving)
+	var actual := direction.rotated(Vector3.UP, _fire_rng.randfn(0.0, spread)) if spread > 0.0 else direction
 	shell_spawner.spawn({"id": _next_shell_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
-			"direction": direction, "team": tank.team, "shooter": String(tank.name)})
+			"direction": actual, "team": tank.team, "shooter": String(tank.name)})
 	_next_shell_id += 1
 
 
@@ -444,6 +491,8 @@ func _sorted_tanks() -> Array[Tank]:
 
 func _score_kill(team: int, killer: String, victim: Tank) -> void:
 	stats["kills"][team] += 1
+	if stats["first_kill_seconds"] < 0.0:
+		stats["first_kill_seconds"] = snappedf(sim_seconds, 0.1)
 	if team == Team.GREEN:
 		score_green += 1
 	else:
@@ -470,6 +519,8 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 
 
 func _on_tank_died(tank: Tank) -> void:
+	if elimination:
+		return  # squad vs squad: destroyed means destroyed
 	await get_tree().create_timer(respawn_seconds).timeout
 	if is_instance_valid(tank) and not tank.is_queued_for_deletion():
 		tank.respawn(_jittered(spawn_position(tank.team, tank.slot)), spawn_yaw(tank.team))

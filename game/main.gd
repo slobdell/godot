@@ -18,7 +18,7 @@ extends Node3D
 ##                              faster than real time (`make match`). Options:
 ##                              --green=N --rust=N (BotControllers) or --green-doctrine=PATH
 ##                              --rust-doctrine=PATH (TankBrains from doctrines/*.json),
-##                              --score-limit=K --time-limit=SECONDS --seed=S
+##                              --score-limit=K --time-limit=SECONDS --seed=S --elimination
 ##   --skirmish                 SKIRMISH: command your squads (doctrines/player_default.json) on the
 ##                              tactical map against a CPU doctrine (--enemy=NAME, default individuals).
 ##                              No server needed; works in the browser (?skirmish).
@@ -77,6 +77,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	status_label.text = "%s   |   tanks: %d" % [_status, game_match.tanks.get_child_count()]
 	var line := "Green %d : %d Rust" % [game_match.score_green, game_match.score_rust]
+	if game_match.elimination:
+		line = "Green %d tanks  vs  %d tanks Rust" % [game_match.alive_count(Match.Team.GREEN), game_match.alive_count(Match.Team.RUST)]
 	if _local_tank != null and is_instance_valid(_local_tank):
 		var bars := int(round(_local_tank.reload_fraction() * 10.0))
 		# ASCII on purpose: the default font has no block glyphs (they render as empty boxes).
@@ -120,7 +122,8 @@ func _start_match() -> void:
 		else:
 			for i in _int_flag(key, 1):
 				game_match.add_bot(team)
-	game_match.start_limits(_int_flag("score-limit", 5), float(_int_flag("time-limit", 300)))
+	game_match.elimination = _flags.has("elimination")
+	game_match.start_limits(0 if game_match.elimination else _int_flag("score-limit", 5), float(_int_flag("time-limit", 300)))
 	var started_msec := Time.get_ticks_msec()
 	game_match.finished.connect(func(result: Dictionary) -> void:
 		var real_seconds := (Time.get_ticks_msec() - started_msec) / 1000.0
@@ -149,9 +152,10 @@ func _start_skirmish() -> void:
 			push_error(error)
 			_set_status("Can't start skirmish: " + error)
 			return
-	game_match.start_limits(10, 0.0)
+	game_match.elimination = true
 	game_match.finished.connect(func(result: Dictionary) -> void:
-		banner.text = "VICTORY" if result["winner"] == "Green" else ("DEFEAT" if result["winner"] == "Rust" else "DRAW")
+		var green_alive := game_match.alive_count(Match.Team.GREEN)
+		banner.text = "VICTORY" if green_alive > 0 else "DEFEAT"
 		banner.visible = true)
 	var tactical := TacticalMap.new()
 	tactical.name = "TacticalMap"
@@ -159,6 +163,8 @@ func _start_skirmish() -> void:
 	tactical.camera = camera
 	$HUD.add_child(tactical)
 	_set_status("Skirmish vs %s" % lineups[Match.Team.RUST])
+	# Start in a planning pause: give your squads orders first, then press Space.
+	tactical.set_paused(true, "PLANNING: give orders, then press Space to begin")
 
 
 func _start_server(port: int) -> void:

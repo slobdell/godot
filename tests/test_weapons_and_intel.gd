@@ -4,7 +4,7 @@ extends TestCase
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 const CRATE := preload("res://game/arena/crate.tscn")
-const LANE_X := -48.0
+const LANE_X := -100.0
 
 
 func _setup() -> Match:
@@ -45,17 +45,17 @@ func _burn(target_z: float, target_yaw: float, seconds: float, blocker := false)
 
 func test_flamethrower_burns_at_close_range() -> void:
 	var target: Tank = await _burn(10.0, PI / 2.0, 1.0)  # 10 m ahead, side-on
-	assert_near(target.health, 100 - 45, 3, "one second in the cone deals ~45 to side armor")
+	assert_near(target.health, target.max_health - 45, 3, "one second in the cone deals ~45 to side armor")
 
 
 func test_flamethrower_is_short_range() -> void:
 	var target: Tank = await _burn(-5.0, PI / 2.0, 1.0)  # 25 m away
-	assert_eq(target.health, 100, "25 m is out of a flamethrower's 20 m reach")
+	assert_eq(target.health, target.max_health, "25 m is out of a flamethrower's 20 m reach")
 
 
 func test_flamethrower_needs_line_of_sight() -> void:
 	var target: Tank = await _burn(8.0, PI / 2.0, 1.0, true)
-	assert_eq(target.health, 100, "a crate between them blocks the flames")
+	assert_eq(target.health, target.max_health, "a crate between them blocks the flames")
 
 
 func test_team_vision_is_shared_and_remembered() -> void:
@@ -88,8 +88,8 @@ func test_brain_engages_a_visible_enemy() -> void:
 	for frame in 60 * 8:
 		await tree.physics_frame
 		lowest = mini(lowest, target.health)
-	assert_true(lowest < 100, "within 8 s the brain senses (via team intel), engages, and hits (lowest %d)" % lowest)
-	assert_true(brain_tank.intent.begins_with("ENGAGE") or lowest < 100, "its nameplate intent says what it's doing (%s)" % brain_tank.intent)
+	assert_true(lowest < target.max_health, "within 8 s the brain senses (via team intel), engages, and hits (lowest %d)" % lowest)
+	assert_true(brain_tank.intent.begins_with("ENGAGE") or lowest < target.max_health, "its nameplate intent says what it's doing (%s)" % brain_tank.intent)
 
 
 func test_hurt_brain_backs_away_under_fire() -> void:
@@ -98,7 +98,7 @@ func test_hurt_brain_backs_away_under_fire() -> void:
 	var enemy := game_match.spawn_tank("Enemy", 0, Match.Team.RUST)
 	_place(brain_tank, 20.0, 0.0)
 	_place(enemy, -10.0, PI)  # facing the brain tank: its gun points at it
-	brain_tank.apply_damage(85)
+	brain_tank.apply_damage(brain_tank.max_health - 15)
 	await wait_physics_frames(TankBrain.THINK_EVERY_TICKS * 3)
 	var brain: TankBrain = game_match.brains.get_node("Brain_Green_Solo_1")
 	assert_eq(brain.choice.get("option"), "RETREAT", "15 HP with an enemy gun on it: retreat (ranked %s)" % [brain.ranked])
@@ -128,4 +128,4 @@ func test_brain_shoots_what_it_can_see_while_its_target_is_hidden() -> void:
 		await tree.physics_frame
 		lowest = mini(lowest, exposed.health)
 	assert_true(not Perception.has_line_of_sight(brain_tank, hidden), "setup: the named target is hidden")
-	assert_true(lowest < 100, "with fallback it fires at the enemy it CAN see (lowest %d)" % lowest)
+	assert_true(lowest < exposed.max_health, "with fallback it fires at the enemy it CAN see (lowest %d)" % lowest)

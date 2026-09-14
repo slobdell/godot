@@ -4,10 +4,12 @@ extends Control
 ##
 ##   WHO    left-click a tank → select its squad; click a tank in the selected squad → make it commander;
 ##          keys 1-3 select squads
-##   WHERE  right-drag on the ground: press = destination, drag direction = facing on arrival
+##   WHERE  drag on open ground (left OR right button): press = destination, drag direction = facing
+##          (a left press ON a tank selects instead; left-drag was added after the lead's first playtest)
 ##   HOW    drill:     Q move · W bound · E hold (here) · R assault · T break contact
 ##          formation: Z column · X wedge · C vee · V line · B echelon (again: flips side) · N coil
 ##   VIEW   Tab toggles the top-down map and a 3D view behind the selected commander
+##   TIME   Space pauses/resumes (tactical pause: give orders while paused). Skirmish starts paused.
 ##
 ## Every action becomes a SquadCommand (structured data) sent to Match.command_squad().
 ## Enemies are drawn only from the team's intel: what someone on your team has seen.
@@ -43,12 +45,20 @@ var _info: Label
 var _log: Label
 var _hint: Label
 var _buttons := {}
+var _pause_label: Label
+var _toast: Label
+var _toast_left := 0.0
+## Which button started the current drag (left drags only count once they actually move).
+var _drag_button := MOUSE_BUTTON_NONE
+var _drag_moved := false
 
 
 func _ready() -> void:
 	# A Control under a CanvasLayer has no parent Control to size it: anchors AND offsets must be set.
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	# Keep taking orders (and drawing) while the game is paused.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_panels()
 	var squads := game_match.team_squads(team)
 	if not squads.is_empty():
@@ -56,7 +66,10 @@ func _ready() -> void:
 	set_tactical_view(true)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _toast != null and _toast_left > 0.0:
+		_toast_left -= delta
+		_toast.visible = _toast_left > 0.0
 	_apply_fog_of_war()
 	queue_redraw()
 	_refresh_panels()
@@ -78,7 +91,28 @@ func _apply_fog_of_war() -> void:
 func issue(command: Dictionary) -> String:
 	var error := game_match.command_squad(team, command)
 	command_issued.emit(command, error)
+	_show_toast(_describe_command(command) if error == "" else "Can't: " + error, error != "")
 	return error
+
+
+func _describe_command(command: Dictionary) -> String:
+	var squad := _squad(command["squad"])
+	var parts: PackedStringArray = [String(command["squad"])]
+	if command.has("commander"):
+		parts.append("%s takes command" % command["commander"])
+	if command.has("verb") or command.has("formation"):
+		parts.append("%s in %s" % [VERB_LABELS.get(squad.verb if squad else "", "—"),
+				FORMATION_LABELS.get(squad.formation if squad else "", "—")])
+	return ": ".join(parts)
+
+
+func _show_toast(text: String, is_error := false) -> void:
+	if _toast == null:
+		return
+	_toast.text = text
+	_toast.add_theme_color_override("font_color", ENEMY if is_error else Color.WHITE)
+	_toast.visible = true
+	_toast_left = 2.5
 
 
 func select_squad(squad_name: String) -> void:
@@ -133,6 +167,13 @@ func click(world: Vector3, screen: Vector2) -> void:
 		select_squad(squad_name)
 
 
+func set_paused(paused: bool, message := "PAUSED: give orders, Space to resume") -> void:
+	get_tree().paused = paused
+	if _pause_label != null:
+		_pause_label.text = message
+		_pause_label.visible = paused
+
+
 func set_tactical_view(enabled: bool) -> void:
 	tactical_view = enabled
 	if camera == null:
@@ -141,8 +182,8 @@ func set_tactical_view(enabled: bool) -> void:
 		if camera is FollowCamera:
 			(camera as FollowCamera).target = null
 		camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-		camera.size = 132.0
-		camera.global_position = Vector3(0.0, 120.0, 0.0)
+		camera.size = Match.ARENA_HALF_SIZE * 2.0 + 12.0
+		camera.global_position = Vector3(0.0, 200.0, 0.0)
 		camera.look_at(Vector3.ZERO, Vector3.FORWARD)  # north (the enemy) is up the screen
 	else:
 		camera.projection = Camera3D.PROJECTION_PERSPECTIVE
@@ -158,23 +199,31 @@ func set_tactical_view(enabled: bool) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var button := event as InputEventMouseButton
+		if button.button_index != MOUSE_BUTTON_LEFT and button.button_index != MOUSE_BUTTON_RIGHT:
+			return
 		var world: Variant = screen_to_world(button.position)
-		if button.button_index == MOUSE_BUTTON_LEFT and button.pressed and world != null:
-			click(world, button.position)
-			accept_event()
-		elif button.button_index == MOUSE_BUTTON_RIGHT:
-			if button.pressed and world != null:
+		if button.pressed and world != null:
+			if button.button_index == MOUSE_BUTTON_LEFT and _pick_tank(button.position) != null:
+				click(world, button.position)  # a press on a tank selects / elects
+			else:
 				_drag_start = world
 				_drag_end = world
-			elif not button.pressed and _drag_start != null:
+				_drag_button = button.button_index
+				_drag_moved = button.button_index == MOUSE_BUTTON_RIGHT  # a right click alone is still an order
+			accept_event()
+		elif not button.pressed and _drag_start != null and button.button_index == _drag_button:
+			if _drag_moved:
 				order_drag(_drag_start, _drag_end if _drag_end != null else _drag_start)
-				_drag_start = null
-				_drag_end = null
+			_drag_start = null
+			_drag_end = null
+			_drag_button = MOUSE_BUTTON_NONE
 			accept_event()
 	elif event is InputEventMouseMotion and _drag_start != null:
 		var world: Variant = screen_to_world((event as InputEventMouseMotion).position)
 		if world != null:
 			_drag_end = world
+			if (world as Vector3).distance_to(_drag_start) > 1.5:
+				_drag_moved = true
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -190,6 +239,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		apply_formation(FORMATION_KEYS[key.keycode])
 	elif key.keycode == KEY_TAB:
 		set_tactical_view(not tactical_view)
+	elif key.keycode == KEY_SPACE:
+		set_paused(not get_tree().paused)
 	else:
 		return
 	get_viewport().set_input_as_handled()
@@ -333,7 +384,22 @@ func _build_panels() -> void:
 	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_hint.offset_top = -64.0
 	_hint.offset_left = 12.0
-	_hint.text = "Click: select squad · click a squad tank again: make commander · Right-drag: go there (drag = facing) · 1-3 squads · Tab: 3D view"
+	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-3 squads · Space: pause · Tab: 3D"
+	_toast = _label(Vector2.ZERO, 20)
+	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_toast.offset_left = -360.0
+	_toast.offset_right = 360.0
+	_toast.offset_top = 100.0
+	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_toast.visible = false
+	_pause_label = _label(Vector2.ZERO, 26)
+	_pause_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_pause_label.offset_left = -360.0
+	_pause_label.offset_right = 360.0
+	_pause_label.offset_top = 60.0
+	_pause_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pause_label.add_theme_color_override("font_color", COMMANDER)
+	_pause_label.visible = false
 	_log = _label(Vector2.ZERO, 12)
 	_log.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	_log.offset_left = -430.0

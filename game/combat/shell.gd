@@ -11,7 +11,7 @@ signal hit(shell: Shell, collider: Object, point: Vector3)
 signal expired(shell: Shell)
 
 const SPEED := 70.0
-const MAX_RANGE := 110.0
+const MAX_RANGE := 75.0
 ## World (layer 1) + tanks (layer 2).
 const HIT_MASK := 3
 

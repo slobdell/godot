@@ -12,12 +12,17 @@ const DEFAULT := "cannon"
 const PROFILES := {
 	"cannon": {
 		"kind": Kind.PROJECTILE,
-		"range": 110.0,
-		"preferred_min": 25.0,
-		"preferred_max": 60.0,
+		# Shorter than the 84 m between bases, so contact is something you maneuver into.
+		"range": 70.0,
+		"preferred_min": 20.0,
+		"preferred_max": 45.0,
 		"damage": 34.0,
-		"reload": 2.0,
+		"reload": 2.5,
 		"aim_tolerance_deg": 2.5,
+		# Shot spread (standard deviation, degrees) when stationary. Firing on the move
+		# multiplies it (see Match.MOVING_SPREAD_FACTOR): long-range shots from a moving
+		# tank mostly miss, so halting to shoot (hold, overwatch) matters.
+		"spread_deg": 0.8,
 		"armor": {"front": 0.5, "side": 1.0, "rear": 1.5},
 	},
 	"flamethrower": {

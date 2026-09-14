@@ -12,7 +12,15 @@ _Last updated: 2026-09-13. Tactical map v1 (the lead's choice) committed on top 
 - **One URL for browser play:** `make play BOTS=1` → `http://localhost:8060/?connect`. The lead's first attempt opened the game server's WebSocket port in a browser; `/ws` is now proxied (trip-up #26).
 - **AI v1** ([tank_brain.md](_agents/tank_brain.md)): autonomous `TankBrain`s (utility scoring over directive weights), directives + doctrines as JSON (`doctrines/`), shared team vision with memory, weapons as data (cannon + flamethrower), `make watch-match`, `make lint`, `make determinism`.
 
-## Tactical map (latest)
+## Iteration 2 (latest): the lead's first skirmish was "a little bit unplayable"
+
+Fixed, with measurements in [tactical_map.md § Iteration 2](_agents/tactical_map.md#iteration-2-2026-09-13-the-leads-first-skirmish):
+squad-vs-squad elimination (no respawns), 400 HP, slower and shorter-ranged guns with shot spread,
+**arena doubled** (contact now ~8 s in instead of at spawn; first kill ~32 s), a **tactical pause**
+(skirmish starts paused; Space), left-drag orders, order toasts, and hurt tanks no longer yo-yo.
+Input was verified end to end through Godot's real input pipeline.
+
+## Tactical map
 
 `make skirmish` / browser `?skirmish`: the player commands Green's squads. Click = who
 (again = make commander), right-drag = where + facing, Q–T drills (move, bound, hold,

@@ -171,7 +171,7 @@ func describe_map() -> Dictionary:
 						"height": snappedf(box.size.y, 0.1)})
 	return {
 		"coordinates": "meters; x grows east, z grows south; compass 0=north(-z) 90=east(+x)",
-		"bounds": {"x": [-60, 60], "z": [-60, 60]},
+		"bounds": {"x": [-Match.ARENA_HALF_SIZE, Match.ARENA_HALF_SIZE], "z": [-Match.ARENA_HALF_SIZE, Match.ARENA_HALF_SIZE]},
 		"bases": {"Green": [0, Match.BASE_Z], "Rust": [0, -Match.BASE_Z]},
 		"shell_speed": Shell.SPEED, "shell_range": Shell.MAX_RANGE,
 		"armor_multipliers": {"front": 0.5, "side": 1.0, "rear": 1.5},

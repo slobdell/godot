@@ -21,7 +21,7 @@ const EMERGENCY_MARGIN := 1.6
 const CONTACT_FRESH_TICKS := 120
 const COVER_RING_RADIUS := 10.0
 const COVER_SAMPLES := 8
-const ARENA_LIMIT := 56.0
+const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 const OPTIONS := ["RETREAT", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
@@ -155,7 +155,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			advance = 0.95
 		elif not at_objective:
 			advance = 0.45 if visible_threats == 0 else 0.25
-	elif visible_threats == 0:
+	elif visible_threats == 0 and hp >= retreat_threshold:
+		# Hurt tanks don't go looking for a fight: without this, a damaged tank (no repairs in
+		# squad-vs-squad) yo-yoed between its base and the enemy forever.
 		advance = 0.3
 	if commanded:
 		advance = 0.0  # the squad's destination replaces free advancing
@@ -217,7 +219,7 @@ static func _priority(rule: String, contact: Dictionary, distance: float) -> flo
 			return {"rear": 1.0, "side": 0.7, "front": 0.3}[contact["exposed_face"]]
 		"threatening_allies":
 			return 1.0 if contact["facing_ally"] else 0.3
-	return 1.0 - clampf(distance / 120.0, 0.0, 1.0)  # nearest
+	return 1.0 - clampf(distance / 150.0, 0.0, 1.0)  # nearest
 
 
 ## Highest scores first; ties keep candidate order (stable, unlike sort_custom).

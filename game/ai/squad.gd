@@ -15,14 +15,14 @@ extends RefCounted
 
 const VERBS := ["move", "bound", "hold", "assault", "break_contact"]
 const NEEDS_DESTINATION := ["move", "bound", "assault"]
-const ARENA_LIMIT := 58.0
+const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 ## The commander counts as arrived within this distance of the destination.
 const ARRIVE_RADIUS := 6.0
 ## How far the bounding element moves before the elements swap roles.
 const BOUND_DISTANCE := 25.0
 const MAX_EVENTS := 12
 ## Perimeter walls' inner faces are at ±60 and tanks keep ~2 m off them.
-const SLOT_LIMIT := 56.0
+const SLOT_LIMIT := Match.DRIVABLE_LIMIT - 2.0
 
 var squad_name := ""
 var team := 0

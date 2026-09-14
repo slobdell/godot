@@ -47,6 +47,7 @@ func _run() -> void:
 	var timeout_sec := float(flags.get("timeout", str(TIMEOUT_SEC)))
 	var deadline := Time.get_ticks_msec() + int(timeout_sec * 1000)
 	var lowest_health := 1_000_000
+	var full_health := 1_000_000
 	var start: Variant = null
 	var travel := 0.0
 	var seen := 0
@@ -60,12 +61,13 @@ func _run() -> void:
 			start = mine.sync_position
 		travel = maxf(travel, mine.sync_position.distance_to(start))
 		lowest_health = mini(lowest_health, mine.sync_health)
+		full_health = mine.max_health
 		var damaged := lowest_health < mine.max_health
 		if seen >= expect_tanks and travel >= min_travel and (damaged or not expect_damage):
 			break
 
 	var peer_id := root.multiplayer.get_unique_id()
-	var damaged := lowest_health < 100
+	var damaged := start != null and lowest_health < full_health
 	var summary := "peer=%d got_tank=%s tanks_seen=%d/%d travel=%.1fm/%.1fm lowest_health=%s%s" % [
 			peer_id, start != null, seen, expect_tanks, travel, min_travel,
 			lowest_health if start != null else "-", " (damage expected)" if expect_damage else ""]

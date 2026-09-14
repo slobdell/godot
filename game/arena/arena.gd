@@ -17,7 +17,7 @@ signal navigation_ready
 ## Extra bake margin past the seam so the half-mesh isn't shrunk by the agent
 ## radius where it meets its mirror (NavigationMesh.border_size, for chunked bakes).
 const SEAM_BORDER := 2.5
-const HALF_EXTENT := 80.0
+const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 
 @onready var navigation: NavigationRegion3D = $Navigation
 

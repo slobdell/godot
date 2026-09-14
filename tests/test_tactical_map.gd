@@ -10,6 +10,10 @@ var _commands: Array = []
 
 
 func _setup() -> Array:
+	# Headless Godot's root viewport is 64×64. Give it a real screen size, or pushed mouse
+	# events land outside the map (this once masqueraded as "clicks don't work").
+	if tree.root.size.x < 640:
+		tree.root.size = Vector2i(1280, 720)
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
@@ -117,3 +121,97 @@ func test_hold_key_halts_in_place() -> void:
 	_key(map, KEY_E)
 	assert_eq(squad.verb, "hold", "E holds")
 	assert_true((squad.destination as Vector3).distance_to(lead.global_position) < 0.5, "right where the commander is")
+
+
+# ---- End to end through Godot's real input pipeline (Viewport.push_input) ----------
+# The tests above call the handlers directly; these make the ENGINE deliver the events,
+# so GUI hit-testing, mouse filters, focus, and pause handling are part of what's tested.
+
+func _push_key(keycode: Key) -> void:
+	for pressed in [true, false]:
+		var event := InputEventKey.new()
+		event.keycode = keycode
+		event.physical_keycode = keycode
+		event.pressed = pressed
+		tree.root.push_input(event)
+
+
+func _push_mouse(camera: Camera3D, button: MouseButton, pressed: bool, world: Vector3) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = pressed
+	event.position = camera.unproject_position(world)
+	event.global_position = event.position
+	tree.root.push_input(event)
+
+
+func _push_motion(camera: Camera3D, world: Vector3) -> void:
+	var event := InputEventMouseMotion.new()
+	event.position = camera.unproject_position(world)
+	event.global_position = event.position
+	event.button_mask = MOUSE_BUTTON_MASK_RIGHT
+	tree.root.push_input(event)
+
+
+func test_real_input_pipeline_drives_commander_and_formation() -> void:
+	var setup: Array = await _setup()
+	var game_match: Match = setup[0]
+	var map: TacticalMap = setup[1]
+	var camera: Camera3D = setup[2]
+	await wait_physics_frames(2)
+	_push_key(KEY_2)
+	assert_eq(map.selected_squad, "Bravo", "a real key press reaches the map")
+	_push_key(KEY_C)
+	assert_eq(game_match.squads["0/Bravo"].formation, "vee", "a real formation key changes the formation")
+	var wingman := game_match.tanks.get_node("Green_Bravo_2") as Tank
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, wingman.global_position)
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, wingman.global_position)
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, wingman.global_position)
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, wingman.global_position)
+	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "real clicks elect the commander")
+	_push_mouse(camera, MOUSE_BUTTON_RIGHT, true, Vector3(40, 0, 40))
+	_push_motion(camera, Vector3(40, 0, 32))
+	_push_motion(camera, Vector3(40, 0, 25))
+	_push_mouse(camera, MOUSE_BUTTON_RIGHT, false, Vector3(40, 0, 25))
+	var squad: Squad = game_match.squads["0/Bravo"]
+	assert_eq(squad.verb, "move", "a real right-drag issues a move")
+	assert_true(squad.destination != null and (squad.destination as Vector3).distance_to(Vector3(40, 0, 40)) < 1.0,
+			"to the pressed point (%s)" % [squad.destination])
+	assert_true(squad.facing_on_arrival.dot(Vector3(0, 0, -1)) > 0.99, "facing the drag direction")
+
+
+func test_orders_work_while_paused() -> void:
+	var setup: Array = await _setup()
+	var game_match: Match = setup[0]
+	var map: TacticalMap = setup[1]
+	var camera: Camera3D = setup[2]
+	map.set_paused(true)
+	_push_key(KEY_X)
+	_push_mouse(camera, MOUSE_BUTTON_RIGHT, true, Vector3(-30, 0, 30))
+	_push_mouse(camera, MOUSE_BUTTON_RIGHT, false, Vector3(-30, 0, 30))
+	var squad: Squad = game_match.squads["0/Alpha"]
+	assert_eq(squad.verb, "move", "orders are accepted during the tactical pause")
+	var lead := game_match.tanks.get_node(NodePath(squad.commander)) as Tank
+	var before := lead.global_position
+	await tree.create_timer(0.5, true).timeout
+	assert_true(lead.global_position.distance_to(before) < 0.01, "nothing moves while paused")
+	_push_key(KEY_SPACE)
+	assert_true(not tree.paused, "Space resumes")
+	await wait_physics_frames(60)
+	assert_true(lead.global_position.distance_to(before) > 1.0, "and the squad starts executing (moved %.1f m)" % lead.global_position.distance_to(before))
+
+
+func test_left_drag_on_open_ground_orders_too() -> void:
+	var setup: Array = await _setup()
+	var game_match: Match = setup[0]
+	var camera: Camera3D = setup[2]
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, Vector3(-60, 0, 20))
+	_push_motion(camera, Vector3(-60, 0, 5))
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, Vector3(-60, 0, 5))
+	var squad: Squad = game_match.squads["0/Alpha"]
+	assert_eq(squad.verb, "move", "a left-drag on open ground is an order (trackpad-friendly)")
+	assert_true((squad.destination as Vector3).distance_to(Vector3(-60, 0, 20)) < 1.0, "to the pressed point")
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, Vector3(60, 0, 20))
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, Vector3(60, 0, 20))
+	assert_true((squad.destination as Vector3).distance_to(Vector3(-60, 0, 20)) < 1.0,
+			"but a plain left click on empty ground is NOT an order (no accidental moves)")

@@ -5,7 +5,7 @@ const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 const CRATE := preload("res://game/arena/crate.tscn")
 ## Open lane on the west side of the arena.
-const LANE_X := -48.0
+const LANE_X := -100.0
 
 
 func _setup() -> Match:
@@ -38,22 +38,22 @@ func _duel(target_yaw: float, target_team: int = Match.Team.RUST) -> Array:
 
 func test_rear_shot_does_rear_damage() -> void:
 	var result: Array = await _duel(0.0)  # target faces north, away from the shooter
-	assert_eq(result[2].health, 100 - 51, "a shot into the rear armor deals 1.5x of 34")
+	assert_eq(result[2].health, result[2].max_health - 51, "a shot into the rear armor deals 1.5x of 34")
 
 
 func test_front_shot_does_front_damage() -> void:
 	var result: Array = await _duel(PI)  # target faces south, toward the shooter
-	assert_eq(result[2].health, 100 - 17, "a shot into the front armor deals half of 34")
+	assert_eq(result[2].health, result[2].max_health - 17, "a shot into the front armor deals half of 34")
 
 
 func test_side_shot_does_side_damage() -> void:
 	var result: Array = await _duel(PI / 2.0)
-	assert_eq(result[2].health, 100 - 34, "a shot into the side armor deals full damage")
+	assert_eq(result[2].health, result[2].max_health - 34, "a shot into the side armor deals full damage")
 
 
 func test_no_friendly_fire() -> void:
 	var result: Array = await _duel(0.0, Match.Team.GREEN)
-	assert_eq(result[2].health, 100, "shells don't damage teammates")
+	assert_eq(result[2].health, result[2].max_health, "shells don't damage teammates")
 
 
 func test_wall_blocks_shell() -> void:
@@ -71,7 +71,7 @@ func test_wall_blocks_shell() -> void:
 	await wait_physics_frames(1)
 	shooter.command = TankCommand.new()
 	await wait_physics_frames(30)
-	assert_eq(target.health, 100, "the crate absorbs the shell")
+	assert_eq(target.health, target.max_health, "the crate absorbs the shell")
 
 
 func test_kill_scores_and_respawns() -> void:
@@ -93,7 +93,7 @@ func test_kill_scores_and_respawns() -> void:
 	await tree.create_timer(1.2).timeout
 	await wait_physics_frames(2)
 	assert_true(target.is_alive(), "the tank respawns after respawn_seconds")
-	assert_eq(target.health, 100, "with full health")
+	assert_eq(target.health, target.max_health, "with full health")
 	assert_true(target.global_position.distance_to(Match.spawn_position(Match.Team.RUST, target.slot)) < 1.0,
 			"at its team's spawn slot")
 
@@ -111,4 +111,4 @@ func test_bot_engages_a_visible_enemy() -> void:
 	for frame in 60 * 5:
 		await tree.physics_frame
 		lowest_health = mini(lowest_health, target.health)
-	assert_true(lowest_health < 100, "within 5 s the bot turns its turret, leads, and hits (lowest health %d)" % lowest_health)
+	assert_true(lowest_health < target.max_health, "within 5 s the bot turns its turret, leads, and hits (lowest health %d)" % lowest_health)

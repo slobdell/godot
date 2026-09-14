@@ -113,3 +113,33 @@ makes scouting matter to the brains is also what the player sees.
 - **Touch/phone:** tap = select, long-press-drag = where, bottom chips = how (the input model already maps 1:1).
 - Formation slots don't yet avoid obstacles (a wedge along a wall clamps to the arena edge; slots inside crates rely on navmesh closest-point).
 - Pending drill is global, not per squad.
+
+## Iteration 2 (2026-09-13): the lead's first skirmish
+
+> "the game is a little bit unplayable at the moment. First off, tanks should not re-spawn,
+> this should be a squad vs squad match. Second, it should not be easy for our tanks to die…
+> I haven't been able to successfully use the commander and formations feature (maybe because
+> the tanks die too quickly)"
+
+**Diagnosis with measurements** (5v5 CPU matches, first-kill and first-shot timing):
+
+| Change | First shot | First kill | Why |
+|---|---|---|---|
+| Before (small map, 100 HP, 110 m guns, respawns) | **0 s** | 14 s | Bases were 84 m apart with a clear sightline: both teams fired from spawn. There was no maneuver phase at all, so formations had no time to matter |
+| 400 HP, 70 m cannon, 75 m sensors | 1 s | 29 s | Tougher, but still immediate contact: both sides close 84 m in a second |
+| **Arena doubled** (240 m, bases 180 m apart) + the above | **7–8 s** | **~32 s** | A real approach phase; a fight takes ~25 s to claim a tank |
+
+**What changed:**
+- **Squad vs squad elimination** in skirmish (`Match.elimination`): no respawns; the last team standing wins (VICTORY/DEFEAT). Time-limited elimination matches are decided by tanks alive, then total health. The runner has `--elimination`; the network server and `make run` keep respawns.
+- **Tougher tanks and slower killing:** 400 HP (was 100), cannon reload 2.5 s (was 2.0), cannon range 70 m (was 110), sensor 75 m (was 90), and **shot spread** 0.8° σ that grows ×2.5 at full speed, so halting to shoot (Hold, overwatch) is rewarded. The spread RNG is seeded, so matches stay deterministic.
+- **Arena doubled** to 240×240 m with 4.5 m crates, 18 m walls, and three extra mirrored cover pairs; all size constants now live in `Match` (`ARENA_HALF_SIZE`, `DRIVABLE_LIMIT`, `BASE_Z`).
+- **Tactical pause:** skirmish starts in a PLANNING pause; **Space** pauses and resumes anytime. Orders work while paused; the map processes with `PROCESS_MODE_ALWAYS`.
+- **Hurt tanks stop yo-yoing:** a tank below its retreat threshold no longer advances blindly (without repairs, it bounced between base and enemy forever and matches stalemated).
+- **Input discoverability:** **left-drag on open ground** also orders (right-drag still works; a left press on a tank selects; a plain left click on the ground does nothing). A **toast** confirms every order ("Alpha: Bound in Wedge") or explains a rejection.
+
+**Were clicks broken?** A new test drives the map through Godot's real input pipeline
+(`Viewport.push_input`). It first "failed", but only because **headless Godot's root
+viewport is 64×64**, so the pushed clicks landed off-map. In a real window the same click
+reaches the map. With a 1280×720 test viewport, keys, clicks, commander election, drags,
+and pausing all pass end to end. Conclusion: the lead's trouble was the pace and
+discoverability, not dropped input.
