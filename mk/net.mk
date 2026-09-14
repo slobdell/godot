@@ -169,3 +169,39 @@ web-host-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser HO
 	wait $$browser || status=1; \
 	grep -E 'joined|SMOKE|RELAY' $(BUILD_DIR)/web-host-smoke-browser.log | tail -5; \
 	exit $$status
+
+# ---- Measurements (not pass/fail; results are recorded in _agents/streams/netcode.md) --------
+# make net-measure TANKS=10 CLIENTS=1 LATENCY=150 JITTER=50 SECONDS=30
+# A relayed dedicated host (--no-player) with TANKS-CLIENTS bots, CLIENTS headless --demo players.
+TANKS   ?= 10
+CLIENTS ?= 1
+LATENCY ?= 0
+JITTER  ?= 0
+SECONDS ?= 30
+net-measure: import $(BROKER_DEPS) ## Relay bandwidth + snapshot cadence: NET_MEASURE per client (TANKS, CLIENTS, LATENCY, JITTER, SECONDS)
+	mkdir -p $(BUILD_DIR)
+	$(eval RELAY_SMOKE_HOST_FLAGS := --no-player --bots=$(shell echo $$(( $(TANKS) - $(CLIENTS) ))) --stats-every=10 --relay-latency=$(LATENCY) --relay-jitter=$(JITTER))
+	$(call relay_host_up,,net-measure); \
+	pids=""; for i in $$(seq 1 $(CLIENTS)); do \
+		$(call relay_client,net-measure-client$$i,--demo --expect-tanks=$(TANKS) --measure=$(SECONDS) --timeout=90 --relay-latency=$(LATENCY) --relay-jitter=$(JITTER)); \
+	done; \
+	status=0; for pid in $$pids; do wait $$pid || status=1; done; \
+	grep -hE 'NET_CHECK|NET_MEASURE|ERROR' $(BUILD_DIR)/net-measure-client*.log; \
+	grep -hE 'HOST_STATS|ERROR' $(BUILD_DIR)/net-measure-host.log | tail -4; \
+	exit $$status
+
+# ---- N2 deterministic-core spike -------------------------------------------------------------
+# The same seeded command log through game/network/detcore/ natively and as WebAssembly in Chrome;
+# every checkpoint hash must match. Also reports the cost per tick on each.
+DET_TANKS ?= 20
+DET_TICKS ?= 3600
+det-spike: import export-web $(WEB_SMOKE_DEPS) ## N2: deterministic core native vs WebAssembly: identical hashes? cost per tick? (DET_TANKS, DET_TICKS)
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(GODOT) --headless --path . -- --det-spike --tanks=$(DET_TANKS) --ticks=$(DET_TICKS) > $(BUILD_DIR)/det-spike-native.log 2>&1
+	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 >/dev/null 2>&1 & web=$$!; \
+	trap 'kill $$web 2>/dev/null' EXIT; \
+	SMOKE_TIMEOUT_MS=300000 CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
+		"http://127.0.0.1:$(SMOKE_PORT)/?det-spike&tanks=$(DET_TANKS)&ticks=$(DET_TICKS)" \
+		$(BUILD_DIR)/screenshots/det-spike.png 1 DET_SPIKE_RESULT > $(BUILD_DIR)/det-spike-web.log 2>&1 \
+		|| { tail -20 $(BUILD_DIR)/det-spike-web.log; exit 1; }
+	$(PYTHON) tests/net/det_spike_compare.py native=$(BUILD_DIR)/det-spike-native.log wasm=$(BUILD_DIR)/det-spike-web.log

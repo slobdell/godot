@@ -9,8 +9,10 @@ var main: Main
 var flags: LaunchFlags
 
 
-## Which mode the flags ask for. Order matters: match > skirmish > host > server > client > offline.
+## Which mode the flags ask for. Order matters: det-spike > match > skirmish > host > server > client > offline.
 static func choose(p_flags: LaunchFlags) -> GameMode:
+	if p_flags.has("det-spike"):
+		return DetSpikeMode.new()
 	if p_flags.has("match"):
 		return MatchRunnerMode.new()
 	if p_flags.has("skirmish"):

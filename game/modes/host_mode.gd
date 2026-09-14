@@ -6,6 +6,8 @@ extends ServerMode
 ##   --host [--relay=ws://broker]   (browser: ?host, the relay defaults to /relay on the page's host)
 ##   --no-player                    host without a tank of your own (a relayed dedicated host)
 ##   --demo / --agent-port          drive the host's tank like OfflineMode
+##   --relay-latency=MS --relay-jitter=MS   delay packets we receive (testing bad links; also on --join)
+##   --stats-every=SECONDS          TANK_SQUAD_HOST_STATS interval (default 5, 0 = off)
 ## Prints TANK_SQUAD_ROOM code=XXXXX when the room is open (smoke tests read it).
 ## Owned by the netcode workstream (_agents/streams/netcode.md).
 
@@ -20,6 +22,7 @@ func role_name() -> String:
 func create_peer() -> MultiplayerPeer:
 	var peer := RelayPeer.new()
 	var url := relay_url(flags)
+	apply_link_flags(peer, flags)
 	var err := peer.host(url)
 	if err != OK:
 		push_error("host: cannot reach the broker at %s: %s" % [url, error_string(err)])
@@ -75,6 +78,13 @@ func _report_stats_every(relay: RelayPeer, seconds: int) -> void:
 		last["tick"] = main.game_match.tick
 		last["bytes_out"] = relay.stats["bytes_out"]
 		last["bytes_in"] = relay.stats["bytes_in"])
+
+
+## Testing bad links: delay every packet this process receives by --relay-latency ms plus up to
+## --relay-jitter ms. Set on host and players alike, the round trip is about twice the latency.
+static func apply_link_flags(relay: RelayPeer, p_flags: LaunchFlags) -> void:
+	relay.latency_msec = p_flags.integer("relay-latency", 0)
+	relay.jitter_msec = p_flags.integer("relay-jitter", 0)
 
 
 ## Where the broker is: --relay=URL, else the page's own host under /relay in a browser.

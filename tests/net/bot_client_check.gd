@@ -15,6 +15,9 @@ extends SceneTree
 ##   5. with --drop-after=S --drop-seconds=D (relay only): S seconds after spawning, our socket is
 ##      cut for D seconds (a phone losing signal); we must resume the same seat, keep our tank, and
 ##      see it move again (--min-travel-after-drop=M, default 2) with no errors.
+##   6. with --measure=S: after passing, stay S more seconds and print NET_MEASURE {json}: relay
+##      bytes and frames per second each way, and how often our tank's replicated position updated
+##      (mean / p95 / max gap). Always reported: first_motion_ms, spawn → replicated movement ≥ 0.5 m.
 ## Exits 0 on success, 1 on failure, printing NET_CHECK PASS/FAIL.
 
 const TIMEOUT_SEC := 25.0
@@ -69,6 +72,7 @@ func _run() -> void:
 	var away_msec := 0
 	var relay: RelayPeer = null
 	var my_id := 0
+	var first_motion_msec := -1
 	while Time.get_ticks_msec() < deadline:
 		await process_frame
 		seen = maxi(seen, tanks.get_child_count())
@@ -88,6 +92,8 @@ func _run() -> void:
 			spawned_msec = Time.get_ticks_msec()
 			relay = root.multiplayer.multiplayer_peer as RelayPeer
 		travel = maxf(travel, mine.sync_position.distance_to(start))
+		if first_motion_msec < 0 and travel >= 0.5:
+			first_motion_msec = Time.get_ticks_msec() - spawned_msec
 		lowest_health = mini(lowest_health, mine.sync_health)
 		full_health = mine.max_health
 		if drop_state == "pending" and Time.get_ticks_msec() - spawned_msec > drop_after * 1000.0:
@@ -115,6 +121,10 @@ func _run() -> void:
 				and (drop_state == "none" or (drop_state == "back" and travel_after_drop >= min_travel_after_drop)):
 			break
 
+	var measure_seconds := float(flags.get("measure", "0"))
+	if measure_seconds > 0.0 and start != null:
+		await _measure(tanks, my_id, relay, measure_seconds)
+
 	var damaged := start != null and lowest_health < full_health
 	var drop_ok := drop_state == "none" or (drop_state == "back" and travel_after_drop >= min_travel_after_drop)
 	var summary := "peer=%d got_tank=%s tanks_seen=%d/%d travel=%.1fm/%.1fm lowest_health=%s%s%s" % [
@@ -124,11 +134,49 @@ func _run() -> void:
 	if drop_state != "none":
 		summary += " drop=%s away=%.1fs travel_after=%.1fm/%.1fm" % [drop_state, away_msec / 1000.0,
 				travel_after_drop, min_travel_after_drop]
+	summary += " first_motion=%dms" % first_motion_msec
 	if relay != null:
 		summary += " relay_in=%dB/%df out=%dB/%df" % [relay.stats["bytes_in"], relay.stats["frames_in"],
 				relay.stats["bytes_out"], relay.stats["frames_out"]]
 	_finish(start != null and seen >= expect_tanks and travel >= min_travel
 			and (damaged or not expect_damage) and (any_damaged or not expect_any_damage) and drop_ok, summary)
+
+
+## Bandwidth and snapshot cadence over a window, printed as NET_MEASURE {json}.
+func _measure(tanks: Node, my_id: int, relay: RelayPeer, seconds: float) -> void:
+	var begin := Time.get_ticks_msec()
+	var before: Dictionary = relay.stats.duplicate() if relay != null else {}
+	var gaps: Array[int] = []
+	var last_change := begin
+	var last_position: Variant = null
+	var max_tanks := 0
+	while Time.get_ticks_msec() - begin < seconds * 1000.0:
+		await process_frame
+		max_tanks = maxi(max_tanks, tanks.get_child_count())
+		var mine: Tank = tanks.get_node_or_null("Tank_%d" % my_id)
+		if mine == null:
+			continue
+		if last_position == null or mine.sync_position != last_position:
+			var now := Time.get_ticks_msec()
+			if last_position != null:
+				gaps.append(now - last_change)
+			last_change = now
+			last_position = mine.sync_position
+	var elapsed := (Time.get_ticks_msec() - begin) / 1000.0
+	var result := {"seconds": snappedf(elapsed, 0.1), "tanks": max_tanks, "position_updates": gaps.size()}
+	if not gaps.is_empty():
+		var total := 0
+		for gap in gaps:
+			total += gap
+		var sorted := gaps.duplicate()
+		sorted.sort()
+		result["gap_mean_ms"] = roundi(float(total) / gaps.size())
+		result["gap_p95_ms"] = sorted[mini(sorted.size() - 1, int(sorted.size() * 0.95))]
+		result["gap_max_ms"] = sorted[-1]
+	if relay != null:
+		for key in ["bytes_in", "frames_in", "bytes_out", "frames_out"]:
+			result[key + "_per_sec"] = roundi((int(relay.stats[key]) - int(before[key])) / elapsed)
+	print("NET_MEASURE " + JSON.stringify(result))
 
 
 func _wait_for_port(host: String, port: int) -> bool:

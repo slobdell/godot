@@ -26,6 +26,7 @@ func start() -> void:
 		# A player-hosted match through the broker's relay (HostMode on the other end).
 		_url = HostMode.relay_url(flags)
 		var relay := RelayPeer.new()
+		HostMode.apply_link_flags(relay, flags)
 		err = relay.join(_url, flags.text("join"))
 		relay.relay_event.connect(_on_relay_event)
 		peer = relay
