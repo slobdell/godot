@@ -25,6 +25,8 @@ garage-shots: import ## Garage screenshots at desktop 1920x1080 and a 20:9 phone
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-desktop.png --screenshot-delay=2
 	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone.png --screenshot-delay=2
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --garage-panel=compare --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-compare.png --screenshot-delay=2
+	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --credits=450 --garage-panel=unlocks --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-unlocks.png --screenshot-delay=2
+	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --garage-panel=challenges --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-challenges.png --screenshot-delay=2
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --garage-autofight --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-fight.png --screenshot-delay=3
 	@echo "Now LOOK at $(GARAGE_SHOTS)/garage-*.png"
 
@@ -77,6 +79,11 @@ army-loop-smoke: import ## Headless match loop: army → FIGHT → results → R
 		assert costs and all(c <= budget for c in costs), ('the CPU army must fit the player tier budget', budget, costs); \
 		print('CPU armies fit the tier budget:', costs, '<=', budget)"
 	! grep -E 'ERROR' $(BUILD_DIR)/army-loop-smoke.log
+	timeout 60 $(GODOT) --headless --path . -- --garage --garage-scratch --challenge=scout_hunt --army-loop-time=6 --army-loop-delay=0.5 \
+		--army-loop-auto=quit 2>&1 | tee $(BUILD_DIR)/army-challenge-smoke.log | grep -E 'ARMY_CHALLENGE|ARMY_RESULTS' || true
+	grep -Eq 'ARMY_CHALLENGE id=scout_hunt green=3 rust=5' $(BUILD_DIR)/army-challenge-smoke.log
+	grep -q 'ARMY_RESULTS outcome=' $(BUILD_DIR)/army-challenge-smoke.log
+	! grep -E 'ERROR' $(BUILD_DIR)/army-challenge-smoke.log
 	@echo "army-loop-smoke passed"
 
 army-loop-shots: import ## Results screen screenshots after a real 70 s skirmish, desktop and 20:9 phone (needs a display) -> build/screenshots/army-results-*.png

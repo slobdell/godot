@@ -142,3 +142,12 @@ Unit stats and the army JSON parser (rules), squad behavior (ai), the in-match U
 - **Y6 done: presets per tier and codes v2.** Presets carry a tier and adapt to unlocks (Y1); the PRESETS menu now
   says what a preset is built around that you haven't unlocked ("Siege Line (needs Artillery)"). Codes are `TS2`
   (Y1), round-1 `TS1` codes still import.
+- **Stretch: challenge missions done.** `game/garage/challenges.gd`: five fixed-army missions, each teaching one
+  counter from game_design.md's table: Scout Hunt (IFVs beat scouts), Turret Lag (scouts beat tanks), Hold the
+  Front (tanks beat IFVs), Spot for the Guns (artillery needs spotters), Rush the Battery (scouts beat artillery).
+  Armies are written by role, so they follow the catalog; opponents move by directive (no formation, trip-up #53).
+  CHALLENGES button under the unit cards → panel → PLAY; the results screen shows the challenge's lesson; the first
+  win pays 150 credits once (`completed_challenges` in the profile), replays pay nothing (no farming a solved
+  puzzle). `--challenge=ID`; `army-loop-smoke` also runs Scout Hunt headless. 3 challenge tests.
+  - Overlays (compare, share, unlocks, challenges) are now opaque over a dimming scrim (tap it to close): the
+    theme's translucent panel color made overlay text collide with the columns behind.

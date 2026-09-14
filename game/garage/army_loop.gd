@@ -28,6 +28,8 @@ var enemy := ""
 var seed_value := 0
 var tier := 0
 var budget := 0
+## A Challenges id when this fight is a challenge mission (pays its one-time reward instead of match credits).
+var challenge := ""
 
 var report: MatchReport
 var results: ResultsScreen
@@ -56,8 +58,11 @@ func begin() -> void:
 
 func _on_finished(result: Dictionary) -> void:
 	last_report = report.build(result, budget, tier)
-	last_paid = Progression.credits_for(last_report, Match.TEAM_NAMES[Match.Team.GREEN], tier)
-	progression.award(last_report, Match.TEAM_NAMES[Match.Team.GREEN], tier)
+	if challenge != "":
+		last_paid = challenge_pay(last_report, challenge, progression)
+	else:
+		last_paid = Progression.credits_for(last_report, Match.TEAM_NAMES[Match.Team.GREEN], tier)
+		progression.award(last_report, Match.TEAM_NAMES[Match.Team.GREEN], tier)
 	print("ARMY_RESULTS outcome=%s credits=%d balance=%d tier=%d enemy=%s" % [last_paid["outcome"], last_paid["credits"],
 			progression.credits, tier, JSON.stringify(last_report["teams"]["rust"]["units"])])
 	await get_tree().create_timer(float(main.flags.text("army-loop-delay", str(RESULTS_DELAY))), true).timeout
@@ -71,6 +76,8 @@ func show_results() -> void:
 	results = ResultsScreen.new()
 	results.name = "ResultsScreen"
 	results.setup(last_report, last_paid, progression, catalog, enemy_label())
+	if challenge != "":
+		results.lesson = String(Challenges.info(challenge)["lesson"])
 	layer.add_child(results)
 	add_child(layer)
 	results.rematch_requested.connect(rematch)
@@ -86,7 +93,20 @@ func show_results() -> void:
 				get_tree().quit()
 
 
+## A challenge's pay: its one-time reward on the first win, nothing on a replay or a loss (completes it on a win).
+static func challenge_pay(p_report: Dictionary, challenge_id: String, p_progression: Progression) -> Dictionary:
+	var winner := String(p_report.get("winner", "draw"))
+	var outcome := "draw" if winner == "draw" else ("win" if winner == Match.TEAM_NAMES[Match.Team.GREEN] else "loss")
+	var title := String(Challenges.info(challenge_id).get("title", challenge_id))
+	if outcome != "win":
+		return {"credits": 0, "outcome": outcome, "lines": [["%s not cleared yet: try again" % title, 0]]}
+	var paid := p_progression.complete_challenge(challenge_id, Challenges.REWARD)
+	return {"credits": paid, "outcome": outcome, "lines": [["%s cleared%s" % [title, "" if paid > 0 else " again (rewards pay once)"], paid]]}
+
+
 func enemy_label() -> String:
+	if challenge != "":
+		return "Challenge: %s" % Challenges.info(challenge).get("title", challenge)
 	var label := "CPU: %s" % enemy.trim_prefix("cpu:").capitalize() if enemy.begins_with("cpu:") else ("CPU: Random" if enemy == "cpu" else enemy)
 	return "%s (seed %d)" % [label, seed_value]
 
@@ -94,12 +114,18 @@ func enemy_label() -> String:
 ## The same armies again: the saved army against the same seeded opponent at the same tier.
 func rematch() -> void:
 	print("ARMY_LOOP action=rematch")
+	if challenge != "":
+		restart({"garage": "", "challenge": challenge, "tier": str(tier)})
+		return
 	restart({"garage": "", "garage-rematch": "", "garage-army": army_path, "enemy": enemy, "seed": str(seed_value), "tier": str(tier)})
 
 
 func back_to_army() -> void:
 	print("ARMY_LOOP action=army")
-	restart({"garage": "", "garage-army": army_path, "enemy": enemy, "tier": str(tier)})
+	var values := {"garage": "", "enemy": enemy, "tier": str(tier)}
+	if army_path != "":
+		values["garage-army"] = army_path
+	restart(values)
 
 
 ## Restart the game with `values` plus the carried flags (and what's left of --army-loop-auto).

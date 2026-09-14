@@ -26,6 +26,7 @@ extends Control
 ## with army-specific keys falling back to placeholders here.
 
 signal fight_requested(player_path: String, enemy: String)
+signal challenge_requested(challenge_id: String)
 
 const BASE_HEIGHT := 720.0
 const FONT_SIZE := 17
@@ -79,6 +80,9 @@ var _code_edit: LineEdit
 var _unlock_panel: PanelContainer
 var _credits_button: Button
 var _tier_menu: OptionButton
+var _challenge_panel: PanelContainer
+## Dims the builder behind an open overlay (tap it to close the overlay).
+var _scrim: ColorRect
 var _toast_left := 0.0
 
 
@@ -172,6 +176,7 @@ func _build() -> void:
 	var compare_open := _compare_panel != null and _compare_panel.visible
 	var share_open := _share_panel != null and _share_panel.visible
 	var unlocks_open := _unlock_panel != null and _unlock_panel.visible
+	var challenges_open := _challenge_panel != null and _challenge_panel.visible
 	_clear(self)
 	if _turntable != null and _turntable.get_parent() == null:
 		_turntable.queue_free()
@@ -223,9 +228,19 @@ func _build() -> void:
 	_toast.visible = false
 	add_child(_toast)
 
+	_scrim = ColorRect.new()
+	_scrim.name = "Scrim"
+	_scrim.color = Color(0, 0, 0, 0.62)
+	_scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_scrim.visible = false
+	_scrim.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed:
+			close_overlays())
+	add_child(_scrim)
 	_build_share_panel()
 	_build_compare_panel()
 	_build_unlock_panel()
+	_build_challenge_panel()
 	move_child(_toast, get_child_count() - 1)
 
 	_turntable = GarageTurntable.new()
@@ -237,6 +252,7 @@ func _build() -> void:
 	if share_open:
 		toggle_share(true)
 	toggle_unlocks(unlocks_open)
+	toggle_challenges(challenges_open)
 
 
 func _build_top_bar() -> Control:
@@ -406,6 +422,27 @@ func _style_choice(button: Button, selected: bool) -> void:
 	button.add_theme_color_override("font_color", Color.WHITE if selected else _color("garage_text_dim").lightened(0.2))
 
 
+## Overlays are opaque (the theme's panel color is translucent) and sit on the scrim.
+func _overlay_style() -> StyleBoxFlat:
+	var style := _panel_style(_color("commander"), 3)
+	style.bg_color.a = 1.0
+	style.set_content_margin_all(14 * ui_scale)
+	return style
+
+
+func close_overlays() -> void:
+	toggle_compare(false)
+	toggle_share(false)
+	toggle_unlocks(false)
+	toggle_challenges(false)
+
+
+func _update_scrim() -> void:
+	if _scrim != null:
+		_scrim.visible = [_share_panel, _compare_panel, _unlock_panel, _challenge_panel].any(
+				func(panel: Control) -> bool: return panel != null and panel.visible)
+
+
 func _label(text: String, relative_size := 1.0) -> Label:
 	var label := Label.new()
 	label.text = text
@@ -440,7 +477,7 @@ func _build_share_panel() -> void:
 	_share_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_share_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_share_panel.custom_minimum_size = Vector2(620 * ui_scale, 0)
-	_share_panel.add_theme_stylebox_override("panel", _panel_style(_color("commander"), 3))
+	_share_panel.add_theme_stylebox_override("panel", _overlay_style())
 	_share_panel.visible = false
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", int(10 * ui_scale))
@@ -479,7 +516,7 @@ func _build_compare_panel() -> void:
 	_compare_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_compare_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_compare_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_compare_panel.add_theme_stylebox_override("panel", _panel_style(_color("commander"), 3))
+	_compare_panel.add_theme_stylebox_override("panel", _overlay_style())
 	_compare_panel.visible = false
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", int(10 * ui_scale))
@@ -487,7 +524,7 @@ func _build_compare_panel() -> void:
 	rows.add_child(_section("UNIT TYPES"))
 	rows.add_child(_table_grid(GarageAdvice.unit_table(draft.catalog), "UnitTable"))
 	rows.add_child(_note("Good vs / weak vs is what each unit is built for. Fights decide the rest: angles, range, and focus fire.", 0.8))
-	var close := _button("CLOSE", func() -> void: _compare_panel.visible = false)
+	var close := _button("CLOSE", func() -> void: toggle_compare(false))
 	close.name = "Close"
 	close.size_flags_horizontal = Control.SIZE_SHRINK_END
 	rows.add_child(close)
@@ -514,6 +551,7 @@ func _table_grid(table: Dictionary, grid_name: String) -> GridContainer:
 
 func toggle_compare(open: bool) -> void:
 	_compare_panel.visible = open
+	_update_scrim()
 
 
 # ---- Unit cards ------------------------------------------------------------------------------------
@@ -525,6 +563,10 @@ func _build_catalog() -> void:
 	var compare := _button("COMPARE", func() -> void: toggle_compare(true))
 	compare.name = "Compare"
 	_catalog_box.add_child(compare)
+	var challenges := _button("CHALLENGES", func() -> void: toggle_challenges(true))
+	challenges.name = "Challenges"
+	challenges.tooltip_text = "Fixed-army missions, each teaching one counter"
+	_catalog_box.add_child(challenges)
 
 
 func _unit_card(unit_id: String) -> Control:
@@ -846,7 +888,7 @@ func _build_unlock_panel() -> void:
 	_unlock_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_unlock_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_unlock_panel.custom_minimum_size = Vector2(640 * ui_scale, 0)
-	_unlock_panel.add_theme_stylebox_override("panel", _panel_style(_color("commander"), 3))
+	_unlock_panel.add_theme_stylebox_override("panel", _overlay_style())
 	_unlock_panel.visible = false
 	add_child(_unlock_panel)
 
@@ -913,6 +955,7 @@ func toggle_unlocks(open: bool) -> void:
 	if open:
 		_fill_unlock_panel()
 	_unlock_panel.visible = open
+	_update_scrim()
 
 
 ## Fight at `new_tier`'s budget (clamped to the tiers owned). The army keeps its units; over budget shows as a problem.
@@ -921,6 +964,53 @@ func set_tier(new_tier: int) -> void:
 	draft.catalog = progression.catalog_for(base_catalog, tier)
 	draft.tier = tier
 	_build()
+
+
+# ---- Challenge missions ------------------------------------------------------------------------------
+
+func _build_challenge_panel() -> void:
+	_challenge_panel = PanelContainer.new()
+	_challenge_panel.name = "ChallengePanel"
+	_challenge_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_challenge_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_challenge_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_challenge_panel.custom_minimum_size = Vector2(760 * ui_scale, 0)
+	_challenge_panel.add_theme_stylebox_override("panel", _overlay_style())
+	_challenge_panel.visible = false
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", int(8 * ui_scale))
+	_challenge_panel.add_child(rows)
+	rows.add_child(_section("CHALLENGES: a fixed army, one counter to learn. The first win pays %d credits." % Challenges.REWARD))
+	for challenge_id in Challenges.ids():
+		if not Challenges.playable(challenge_id, base_catalog):
+			continue
+		var challenge := Challenges.info(challenge_id)
+		var done := progression.completed_challenges.has(challenge_id)
+		var row := HBoxContainer.new()
+		row.name = "Challenge_" + challenge_id
+		row.add_theme_constant_override("separation", int(12 * ui_scale))
+		var text := VBoxContainer.new()
+		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		text.add_child(_label("%s: %s%s" % [String(challenge["title"]).to_upper(), challenge["counter"], "   (cleared)" if done else ""], 0.95))
+		text.add_child(_note(String(challenge["brief"]), 0.8))
+		row.add_child(text)
+		var play := _button("PLAY" if done else "PLAY  +%d" % Challenges.REWARD, func() -> void:
+			toggle_challenges(false)
+			challenge_requested.emit(challenge_id))
+		play.name = "Play"
+		play.custom_minimum_size.x = 140 * ui_scale
+		row.add_child(play)
+		rows.add_child(row)
+	var close := _button("CLOSE", func() -> void: toggle_challenges(false))
+	close.name = "Close"
+	close.size_flags_horizontal = Control.SIZE_SHRINK_END
+	rows.add_child(close)
+	add_child(_challenge_panel)
+
+
+func toggle_challenges(open: bool) -> void:
+	_challenge_panel.visible = open
+	_update_scrim()
 
 
 # ---- Actions (public, so tests and presets drive the same paths as taps) -----------------------------
@@ -999,6 +1089,7 @@ func apply_preset(preset: String) -> void:
 func toggle_share(open: bool) -> void:
 	_code_edit.text = ArmyCode.encode(draft)
 	_share_panel.visible = open
+	_update_scrim()
 
 
 ## Replace the army with the one in `code`. Returns "" or the reason (also shown as a toast).

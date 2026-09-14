@@ -21,6 +21,8 @@ var progression: Progression
 var catalog: ArmyCatalog
 ## "CPU: Siege (seed 42)"
 var enemy_label := ""
+## Overrides the counter lesson (a challenge mission's own lesson).
+var lesson := ""
 var ui_scale := 1.0
 
 
@@ -89,7 +91,7 @@ func _build() -> void:
 	rows.add_child(body)
 	body.add_child(_panel("CREDITS", _credits_rows()))
 	body.add_child(_panel("YOUR ARMY", _army_rows("green")))
-	body.add_child(_panel("THEIR ARMY", _army_rows("rust") + [_note(counter_lesson(report, catalog), 0.9, "commander", "Lesson")]))
+	body.add_child(_panel("THEIR ARMY", _army_rows("rust") + [_note(lesson if lesson != "" else counter_lesson(report, catalog), 0.9, "commander", "Lesson")]))
 
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END

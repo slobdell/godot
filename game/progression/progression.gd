@@ -9,7 +9,7 @@ extends RefCounted
 ## The numbers and the reasoning behind them: _agents/balance.md, "Economy".
 ##
 ## Profile JSON: {"schema", "credits", "unlocked_units": [ids], "budget_tier", "wins", "losses", "draws",
-##                "last_award": "<match key>"}
+##                "last_award": "<match key>", "completed_challenges": [ids]}
 
 const SCHEMA := 1
 const DEFAULT_PATH := "user://profile.json"
@@ -45,6 +45,8 @@ var losses := 0
 var draws := 0
 ## The last match that paid out, so a result is never awarded twice.
 var last_award := ""
+## Challenge missions won at least once (Challenges): their reward pays once.
+var completed_challenges: Array[String] = []
 ## Set when the file on disk couldn't be read (it was moved aside to <path>.bad).
 var load_error := ""
 
@@ -71,11 +73,15 @@ static func migrate(data: Dictionary) -> Dictionary:
 			"budget_tier": clampi(_int(data.get("budget_tier")), 0, BUDGET_TIERS.size() - 1),
 			"wins": maxi(0, _int(data.get("wins"))), "losses": maxi(0, _int(data.get("losses"))),
 			"draws": maxi(0, _int(data.get("draws"))), "last_award": String(data.get("last_award", "")),
-			"unlocked_units": []}
+			"unlocked_units": [], "completed_challenges": []}
 	var units: Variant = data.get("unlocked_units", [])
 	for unit_id: Variant in (units if typeof(units) == TYPE_ARRAY else []):
 		if typeof(unit_id) == TYPE_STRING and not clean["unlocked_units"].has(unit_id):
 			clean["unlocked_units"].append(unit_id)
+	var completed: Variant = data.get("completed_challenges", [])
+	for challenge_id: Variant in (completed if typeof(completed) == TYPE_ARRAY else []):
+		if typeof(challenge_id) == TYPE_STRING and not clean["completed_challenges"].has(challenge_id):
+			clean["completed_challenges"].append(challenge_id)
 	return clean
 
 
@@ -93,11 +99,15 @@ func apply(data: Dictionary) -> void:
 	unlocked_units.clear()
 	for unit_id: String in data["unlocked_units"]:
 		unlocked_units.append(unit_id)
+	completed_challenges.clear()
+	for challenge_id: String in data["completed_challenges"]:
+		completed_challenges.append(challenge_id)
 
 
 func to_dict() -> Dictionary:
 	return {"schema": SCHEMA, "credits": credits, "unlocked_units": unlocked_units.duplicate(), "budget_tier": budget_tier,
-			"wins": wins, "losses": losses, "draws": draws, "last_award": last_award}
+			"wins": wins, "losses": losses, "draws": draws, "last_award": last_award,
+			"completed_challenges": completed_challenges.duplicate()}
 
 
 func save() -> String:
@@ -226,6 +236,16 @@ func award(report: Dictionary, team := "Green", tier := 0) -> int:
 	last_award = key
 	save()
 	return int(paid["credits"])
+
+
+## A challenge mission was won: the first win pays `reward` once; returns the credits paid (0 on a replay).
+func complete_challenge(challenge_id: String, reward: int) -> int:
+	if completed_challenges.has(challenge_id):
+		return 0
+	completed_challenges.append(challenge_id)
+	credits += reward
+	save()
+	return reward
 
 
 static func _thousands(value: int) -> String:
