@@ -123,6 +123,14 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 
 ### Overnight run 2026-09-14 → 15 (morning report; kept current as items land)
 
+**TL;DR.** All 13 backlog items landed, plus the stretch items. `make check` (170 tests) passes; web build,
+server export, and screenshots checked. Directive set 1 (G0–G7) is playable in `make skirmish`: a 3D RTS
+camera, radar, fog of war, touch controls, shields, ammo/heat/lasers, and turrets that keep fighting while
+moving. Directive set 2: scouts, artillery, loadouts with components, budgets, and seeded CPU armies. Three
+findings need you (Questions): **recharging shields broke the "coordination wins" result** (a center control
+point fixes it); **scout-heavy armies aren't viable**; and the **flamethrower had quietly dominated since
+the 09-13 rebalance** (now tuned).
+
 **Plan** (the Overnight backlog order, below): 1 G5 turrets · 2 G3 responsiveness · 3 HUD messages ·
 4 G7 ammo/heat/laser · 5 G6 shields · 6 G1 line of sight + fog · 7 G4 RTS camera · 8 G2 radar ·
 9 G0 touch pass · 10 unit catalog + scout · 11 artillery · 12 budget · 13 army balance · stretch.
@@ -155,7 +163,7 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   (72%); at 1.25, 14/24 (58%). Tests: `tests/test_ammo_heat.gd`.
 - **G6 shields** (d3556b5, tuned 4794a19). Hull 300 + shield 150; the shield refills 50/s after 4 s
   without damage. Shields are directional (front 0.7 / side 1.0 / rear 1.4) and weapons scale them
-  (cannon 0.8, laser and flamethrower 1.5: energy and fire strip shields, shells break hulls). Only
+  (cannon 0.8, laser 1.25, flamethrower 1.5: energy and fire strip shields, shells break hulls). Only
   damage the shield can't absorb meets the armor. Hulls mend only at base (6 HP/s once not hit for
   4 s). AI: RECHARGE (shield down, gun on me, hull < 75%: duck into cover or back off 25 m, return
   at 60% shield), worn tanks go home to mend and stay until 90%. `sync_shield`, hull slot
@@ -190,8 +198,8 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   and scouts ahead. Components: heat sink, ammo rack, shield booster, armor plating. Paint colors the
   vehicle; team color goes to `set_team_accent` (the lead's accent-light rule). Tests:
   `tests/test_loadouts.gd`.
-- **Directive set 2 part 2: artillery** (2caf994). 180 pts, 200+80, 6.5 m/s, 60 m sight, mortar:
-  35–160 m, 90 damage in an 8 m burst, over cover, only at team-spotted targets
+- **Directive set 2 part 2: artillery** (2caf994; tuned to 220 pts, 70 damage). 200+80, 6.5 m/s, 60 m
+  sight, mortar: 35–160 m, 70 damage in an 8 m burst, over cover, only at team-spotted targets
   (`OrderController.spotter`). Brain: BOMBARD from 80 m+, SHADOW behind friendlies, never brawls. A
   lone battery mostly suppresses shields (each hit restarts their recharge); kills come with direct fire.
   Tests: `tests/test_artillery.gd`. `doctrines/combined_arms.json`.
@@ -205,21 +213,34 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   bigger army doesn't capture faster: anti-snowball), 1 point/s to the holder, first to 90 wins or
   elimination. Brains CONTEST; map/radar rings, center score in the map panel, announcements. Tests:
   `tests/test_control_point.gd`. Measurement below under *Balance*.
-- **Stretch: CPU commander** (69b9456). `game/ai/cpu_commander.gd` issues real SquadCommands for a CPU
-  team's gun squads every 2 s from intel (move/bound, assault when stronger, break contact when weaker,
-  hold otherwise). On for skirmish's CPU army (`--no-commander` to disable); runner flags
-  `--green-commander` / `--rust-commander`. Tests: `tests/test_cpu_commander.gd`.
+- **Stretch: CPU commander** (69b9456, v2 be6b04e). `game/ai/cpu_commander.gd` issues real SquadCommands
+  for a CPU team's gun squads every 2 s from intel (move/bound; break contact when clearly weaker; else
+  assault). v1 (hold in even fights) lost 2 : 30; v2 is at parity (11 : 9), so it's opt-in
+  (`make skirmish COMMANDER=1`, runner `--green-commander` / `--rust-commander`). Tests:
+  `tests/test_cpu_commander.gd`.
+- **Stretch: flamethrower** (530a57a). It had dominated cannons since the 09-13 rebalance (9/10 on the
+  pre-overnight commit, 36/36 after shields); 45 → 20 dps gives 10/20.
+- **Balance passes on directive set 2**: scouts hunt artillery (counter triangle), artillery 180 → 220
+  pts, mortar 90 → 70 (Siege vs Armor/Balanced 12:4 → 10:6). Direct fire now needs the target seen by the
+  team (a fog-of-war hole).
 
-**Balance** (full tables in [`_agents/balance.md`](../balance.md)): see the archetype round robin and the
-stretch series there.
+**Balance** (full tables in [`_agents/balance.md`](../balance.md)): lasers vs cannons 58%; flamers vs cannons
+50%; T1 coordinated vs individuals ~10% (50% with `--control`); archetypes: siege/balanced/armor
+competitive after the mortar cut, recon_strike ~28%, swarm ~3%.
 
 **Decisions:**
-- G5: tanks fire only at enemies in their *own* line of sight and range; team intel only aims the turret.
-  Shooting at positions only a teammate sees would mostly hit walls.
+- G5, revised: direct fire needs the shooter's own line of sight AND the target seen by the team (a
+  scout's sight counts); team intel also aims idle turrets. Artillery needs only the team's sight.
 - G3: "player intent dominates unless about to die" = under move/bound/hold/break_contact, RETREAT only
   below 8–25% health (by caution). Assault keeps the old loose weights on purpose (brains hunt).
 - G3: kept hull turn rate (80°/s) and acceleration; measured start-up lag was think stagger and pacing,
   not the hull. Revisit if the lead still finds turning sluggish.
+- G6: shields are directional (front 0.7) so flanking still pays; hull mends only at base; ammo 45 with a
+  base resupply (30 shells ran tanks dry and they spent a quarter of each match going home).
+- Directive set 2: chassis + loadout (MechWarrior-lite), write-up in balance.md; strict loadout
+  validation; armies ≤ 20 units / 4 squads; the skirmish enemy defaults to a seeded budgeted CPU army.
+- Stretch modes that change the rules you set (control point) or were not clearly better (commander)
+  are opt-in flags, not defaults.
 - Phone screenshots are taken at 1200×540 (a 2400×1080 phone at 2× UI scale): the 1920×1080 desktop
   clamps bigger windows. Real phones need `display/window/stretch/mode` (see Questions).
 
@@ -237,10 +258,11 @@ stretch series there.
    one-flag experiment. **Update:** (c) works: with the center control point (`--control`) Anvil &
    Hammer vs Individuals is **10 : 10**. My recommendation: make `--control` the default skirmish rule
    (it's opt-in now because it changes the victory condition you asked for).
-2. Directive set 2 balance (E3): the first archetype round robin had **Siege (2 artillery) at 81%** and
-   scout-heavy armies at 12–25%. I added a counter triangle (scouts hunt artillery) and raised artillery
-   to 220 points; round robin #2 is in `_agents/balance.md`. Worth deciding: is "an all-scout army can't
-   win" acceptable (scouts as eyes, not an army), or should scouts be viable alone?
+2. **Scouts as an army** (E3): Siege (2 artillery) won 81–83% of two archetype round robins; the mortar
+   cut brought it to ~62% vs Armor/Balanced. Scout-heavy armies stay non-viable (Recon Strike ~28%, Swarm
+   ~3%) even with scouts hunting artillery and with near-sighted tanks (`tank.sight_radius=60`: 0 : 16).
+   Is "scouts are eyes, not an army" what you want? If not, scouts need real firepower (e.g. a laser that
+   flanks) or a cheaper price.
 3. Real phones need content scaling (`display/window/stretch/mode="canvas_items"`, aspect `expand`)
    in `project.godot` (shared). I haven't changed it; the phone screenshots use a 1200×540 window.
 
@@ -249,15 +271,17 @@ stretch series there.
   feedback is the tactical map's toast. Once banners render, the map toast can go (it duplicates them).
 
 **Known issues:**
-- T1 regression above. Fights still snowball (loser kills ~1).
+- T1 regression above. Fights still snowball (loser kills ~1; ~1.4 with `--control`).
+- Scout-heavy armies aren't viable (Question 2).
+- Control point score and visibility aren't replicated to network clients (single-process modes only).
 - Idle guns rose from 61–68% (G5) to 70–90% after G7/G6. Part is by design (low-ammo tanks hold
   long shots; empty or overheated guns count as idle); not yet separated out.
 - Beams are too thin to see from the flat tactical view (fine in 3D; look & feel owns the look).
 
 **Merge notes** (for the morning integrator):
 - Branch `stream/gameplay`, based on `ee20791`, not rebased (overnight rule). `make check` and
-  `make web-smoke` pass on the last commits; sim baseline changed on purpose several times (each
-  commit says why), now `acbce16086414508`.
+  `make web-smoke` pass; `make export-server` builds and boots with bots, no errors. Sim baseline changed
+  on purpose several times (each commit says why), now `fa0982efd4ab0d4c`.
 - Edits outside gameplay's paths, all additive: `Makefile` (`ENEMY ?= cpu`); `game/network/replication.gd`
   (appended `sync_ammo`, `sync_heat`, `sync_shield`: netcode please review); `game/theme/game_theme.gd`
   (slots `weapon.laser`, `fx.laser_beam`, `fx.fog_of_war`, `weapon.machine_gun`, `fx.tracer`,
@@ -279,14 +303,15 @@ contact; guns should stay on the enemy. Orders should visibly start within a bli
 the dark areas are what your team can't see. The squad readout shows hull+shield, shells (`a`),
 heat (`h`). `make skirmish ENEMY=individuals_laser` fights laser tanks. Pull a worn squad back to
 base (Break contact) to mend hulls and refill shells.
+`make skirmish CONTROL=1` adds the center control point (hold it to win); `COMMANDER=1` gives the CPU a
+squad commander. `make skirmish ENEMY=flame_rush` checks the retuned flamethrower.
 `make skirmish-shots` takes scripted screenshots (desktop + phone aspect) into `build/screenshots/`.
 
 **Next steps** (in the order I'd take them):
 1. Decide shields vs holding doctrines (Question 1). If the control point becomes the default, re-run T1
    and the archetype round robin with `--control`.
-2. Finish E3 at army level: read round robin #2 in balance.md; if Siege still dominates, try mortar damage
-   90 → 75 or scatter up; consider near-sighted tanks (`--tune=tank.sight_radius=60`) so scouts extend a
-   tank's gun reach (direct fire already requires team visibility).
+2. E3 at army level: re-run the round robin on the current numbers (the mortar cut was only probed on two
+   pairings), then decide the scouts question (Question 2).
 3. Flamethrower: done for now (20 dps, 10/20 vs cannons; it had quietly dominated since the 09-13
    rebalance). Re-check `make skirmish ENEMY=flame_rush` for feel.
 4. CPU commander: v2 measured at parity with plain brains (11 : 9); it needs smarter tactics (two-squad
