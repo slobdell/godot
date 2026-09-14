@@ -38,6 +38,21 @@ hardpoint, tap to pick) and readable on a phone.
 - 2026-09-13: brief written. Blocked on nothing for the data model; art waits for look & feel v1.
 - 2026-09-14: overnight backlog added; unit catalog v0 and `--player=<path>` landed on main.
 
+### Overnight run 2026-09-14 (garage agent): morning report
+
+**Plan** (backlog order): GA0 loadout model → GA1 garage screen → GA2 `--garage` flow + `make garage` →
+GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, paint, tutorial hints).
+
+**Progress:** (updated after each step, newest last)
+
+- Baseline `make check` green (91 tests) at `ee20791`.
+- **GA0 done.** `game/garage/garage_catalog.gd` (reads `Units`/`Weapons` by shape; optional `Units.COMPONENTS`,
+  weapon `cost`, else stub components), `loadout.gd` (army in doctrine shape: costs, budget, caps, player-readable
+  problems, edits that refuse with a reason), `army_store.gd` (`user://doctrines/`). 8 tests in
+  `tests/test_garage_loadout.gd`, incl. save → `Doctrine.load_file` → `Match.load_doctrine` (the tank fights with the
+  garage-picked flamethrower); mutation-checked (breaking weapon mirroring / budget refusal turns 2 red).
+  Contract row "Loadout fields in doctrine JSON" in workstreams.md now lists the exact fields.
+
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
 Rules: *Unattended runs* in workstreams.md. Landed on main for you: **`game/units/units.gd`** (unit catalog schema v0: `tank` only, with hardpoints, `DEFAULT_BUDGET`), and **`--player=` accepting a full path** (`make skirmish` → `--skirmish --player=user://doctrines/mine.json`). Gameplay grows the catalog in parallel (scouts, artillery, components), so code against the catalog's *shape*, never against a fixed list of units.

@@ -154,7 +154,7 @@ Changing one of these requires updating this section and telling the other strea
 | **HUD messages**: `Hud.post_message(text: String, severity: int)` with `Hud.INFO` / `WARNING` / `ERROR` | `game/ui/hud.gd` (stub: a plain label) | gameplay posts (orders, losses, results); look & feel renders (banners) |
 | **Visibility / radar data**: the team's visibility field (visible now / seen / unseen), units, contacts, destinations; radar frame styling hook | gameplay defines when building G1/G2 (streams/gameplay.md), then records the API here | gameplay's radar widget; look & feel skins it |
 | **Unit catalog** (classes, costs, stats, hardpoints, component slots, budget) | `game/units/units.gd` (schema v0: `tank` only, not yet read by the simulation); gameplay grows it in directive set 2 | garage (UI), doctrine files |
-| **Loadout fields in doctrine JSON** (per tank: `unit`, `weapons` by hardpoint, `components`, `paint`) | proposed 2026-09-14; the garage stream writes them (today's `Doctrine.parse` ignores unknown keys, so files stay loadable), and gameplay starts reading them when classes land | garage (produces), gameplay (consumes) |
+| **Loadout fields in doctrine JSON** (per tank: `unit`, `weapons` by hardpoint id, `components` (ids), `paint` (`"#rrggbb"`, absent = team color), optional `directive`; `weapon` always mirrors the unit's FIRST hardpoint; top-level `garage: {schema, budget, cost}`) | written by `game/garage/loadout.gd` since 2026-09-14 (schema 1; today's `Doctrine.parse` ignores the extra keys, so files stay loadable), and gameplay starts reading them when classes land | garage (produces), gameplay (consumes) |
 
 ## Invariants every stream must keep
 
