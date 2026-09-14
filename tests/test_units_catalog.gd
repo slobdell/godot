@@ -20,3 +20,9 @@ func test_hardpoints_only_accept_real_weapons() -> void:
 func test_skirmish_accepts_doctrine_names_and_paths() -> void:
 	assert_eq(SkirmishMode.doctrine_path("player_default"), "res://doctrines/player_default.json", "names resolve to res://doctrines")
 	assert_eq(SkirmishMode.doctrine_path("user://doctrines/mine.json"), "user://doctrines/mine.json", "full paths pass through")
+
+
+func test_unknown_cpu_archetypes_are_refused_not_silently_balanced() -> void:
+	# Integration 2026-09-15: the garage asked for cpu:flamers (its own archetype name) and quietly got Balanced.
+	assert_true(Army.load_army("cpu:flamers", 1).has("error"), "an archetype Army doesn't have is an error")
+	assert_true(Army.load_army("cpu", 1).has("doctrine"), "plain cpu picks a seeded archetype")

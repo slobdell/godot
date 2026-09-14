@@ -10,10 +10,10 @@ garage: import ## Build an army on a budget (tap/drag), then FIGHT a skirmish wi
 
 garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must start with the saved army and log no errors
 	mkdir -p $(BUILD_DIR)
-	timeout 60 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-scratch --garage-autofight --enemy=cpu:flamers --seed=4 \
+	timeout 60 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-scratch --garage-autofight --enemy=cpu:siege --seed=4 \
 		2>&1 | tee $(BUILD_DIR)/garage-smoke.log | grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' || true
 	grep -q 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/garage-smoke.log
-	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/my_army\.json enemy=cpu:flamers enemy_path=user://doctrines/cpu/flamers.json seed=4 green=[1-9] rust=5' $(BUILD_DIR)/garage-smoke.log
+	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/my_army\.json enemy=cpu:siege enemy_path=cpu:siege seed=4 green=[1-9] rust=[1-9]' $(BUILD_DIR)/garage-smoke.log
 	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
 	@echo "garage-smoke passed"
@@ -55,5 +55,5 @@ garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, and 
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-scratch" \
 		$(BUILD_DIR)/screenshots/web-garage.png 3 "TANK_SQUAD_READY role=GARAGE" && \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
-		"http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-scratch&garage-autofight&enemy=cpu:rush&seed=3" \
+		"http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-scratch&garage-autofight&enemy=cpu:armor&seed=3" \
 		$(BUILD_DIR)/screenshots/web-garage-fight.png 3 GARAGE_FIGHT

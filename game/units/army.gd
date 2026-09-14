@@ -32,6 +32,9 @@ static func is_cpu(name: String) -> bool:
 ## res://doctrines/, or a full path. Returns {"doctrine": Dictionary} or {"error": String}.
 static func load_army(name_or_path: String, seed_value: int, budget: int = Units.DEFAULT_BUDGET) -> Dictionary:
 	if is_cpu(name_or_path):
+		var archetype := name_or_path.trim_prefix("cpu:")
+		if name_or_path != "cpu" and not ARCHETYPES.has(archetype):
+			return {"error": "no CPU army archetype '%s' (have %s)" % [archetype, ARCHETYPES.keys()]}
 		return Doctrine.parse(cpu_army(name_or_path, seed_value, budget))
 	var path := name_or_path if name_or_path.contains("://") else "res://doctrines/%s.json" % name_or_path
 	return Doctrine.load_file(path)
