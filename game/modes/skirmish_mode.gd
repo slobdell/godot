@@ -7,6 +7,7 @@ extends GameMode
 ##   --seed=N (the CPU army's seed; default: the clock)   --control (a control point at the center)
 ##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
+##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
 
@@ -78,7 +79,7 @@ func start() -> void:
 	var rig := RtsCamera.new()
 	rig.name = "RtsCamera"
 	rig.camera = main.camera
-	rig.edge_pan = not flags.has("scripted")
+	rig.edge_pan = not (flags.has("scripted") or flags.has("command-playtest"))
 	var frame := Match.team_frame(Match.Team.GREEN)
 	rig.yaw = 0.0 if frame["forward"] == Vector3.FORWARD else PI
 	# C5: start where the vehicles read as vehicles: frame the whole army and the ground just ahead of it,
@@ -127,7 +128,15 @@ func start() -> void:
 		messages.order(tactical.describe_command(command), error))
 	main.hud.set_status("Skirmish vs %s%s" % [lineups[Match.Team.RUST],
 			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else ""])
-	if flags.has("scripted"):
+	if flags.has("command-playtest"):
+		var playtest := CommandPlaytest.new()
+		playtest.name = "CommandPlaytest"
+		playtest.map = tactical
+		playtest.radar = radar
+		playtest.out_dir = flags.text("command-playtest")
+		main.add_child(playtest)
+		playtest.run()
+	elif flags.has("scripted"):
 		_play_script(tactical)
 	else:
 		tactical.set_paused(true, "PLANNING: give orders, then Resume (Space)")

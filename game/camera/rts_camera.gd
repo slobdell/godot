@@ -38,6 +38,9 @@ const FRAME_MARGIN_M := 8.0
 const TRACK_SMOOTHING := 3.0
 const TRACK_SPEED := 120.0
 const TRACK_ZOOM_SPEED := 0.35
+## Order tracking never climbs above this zoom (below TacticalMap.ICON_ZOOM, so models stay models) to fit a far destination: it keeps the squad readable and leans
+## the view toward where it's going instead (the lead: follow them, don't make me zoom out and in).
+const TRACK_MAX_ZOOM := 0.48
 
 signal gesture_started
 ## C4: tracking stopped; reason = "arrived" (the tracked points ran out), "manual" (the player moved the
@@ -296,6 +299,9 @@ func track(points: Callable, mode := Track.ORDER) -> void:
 func stop_tracking(reason := "stopped") -> void:
 	if _track == Track.NONE:
 		return
+	# Stay where the view is now: a leftover tracking goal must not lurch the camera after it lets go.
+	focus = _shown_focus
+	zoom = _shown_zoom
 	_track = Track.NONE
 	_track_points = Callable()
 	tracking_ended.emit(reason)
@@ -316,9 +322,45 @@ func _update_tracking() -> void:
 	if points.is_empty():
 		stop_tracking("arrived")
 		return
-	var goal := RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom)
+	var goal: Array
+	if _track == Track.ORDER and points.size() >= 2:
+		goal = RtsCamera.order_pose(points.slice(0, points.size() - 1), points.back(), yaw, _aspect(), _track_floor_zoom)
+	else:
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom)
 	focus = goal[0]
 	zoom = goal[1]
+
+
+## [focus, zoom] for order tracking: `units` and `destination` together when that fits under TRACK_MAX_ZOOM
+## (or the player's own zoom, if higher); otherwise the units stay framed at that zoom and the view leans as
+## far toward the destination as it can while keeping them all on screen. Pure, for tests.
+static func order_pose(units: Array, destination: Vector3, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM) -> Array:
+	var both := RtsCamera.frame_pose(units + [destination], heading, aspect, floor_zoom)
+	var ceiling := maxf(TRACK_MAX_ZOOM, floor_zoom)
+	if float(both[1]) <= ceiling:
+		return both
+	var squad := RtsCamera.frame_pose(units, heading, aspect, floor_zoom)
+	var level := maxf(float(squad[1]), ceiling)
+	var start: Vector3 = squad[0]
+	var toward := Vector3(destination.x - start.x, 0.0, destination.z - start.z)
+	var corners: Array = []
+	var bounds := AABB(Vector3(units[0].x, 0.0, units[0].z), Vector3.ZERO)
+	for p in units:
+		bounds = bounds.expand(Vector3(p.x, 0.0, p.z))
+	bounds = bounds.grow(FRAME_MARGIN_M)
+	for x in [bounds.position.x, bounds.end.x]:
+		for z in [bounds.position.z, bounds.end.z]:
+			corners.append(Vector3(x, 0.0, z))
+	# Binary search for the furthest lean that still shows the whole squad.
+	var low := 0.0
+	var high := 1.0
+	for i in 12:
+		var mid := (low + high) / 2.0
+		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect):
+			low = mid
+		else:
+			high = mid
+	return [start + toward * low, level]
 
 
 ## The player touched the camera: tracking yields at once.

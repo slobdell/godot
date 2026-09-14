@@ -73,6 +73,9 @@ func test_far_out_markers_are_readable_icons() -> void:
 	assert_true(map.marker_size() >= 16.0, "icons are at least 16 px (%.0f)" % map.marker_size())
 	rig.toggle_overview(Match.Team.GREEN)
 	assert_true(not map.is_close_up(), "the overview always uses icons")
+	rig.toggle_overview(Match.Team.GREEN)
+	rig.zoom = RtsCamera.TRACK_MAX_ZOOM
+	assert_true(map.is_close_up(), "a camera following an order stays in the model view")
 
 
 func teardown() -> void:

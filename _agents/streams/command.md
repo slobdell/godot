@@ -124,6 +124,14 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
   A center meter under the squad bar (our points from the left, theirs from the right, who holds it). The
   debug event log (coordinates) is gone from the play view; the scoreboard says "units", not "tanks".
   Tests: `test_command_messages.gd` (including one that runs the real announcer's wording through the filter).
+- **Playtest script** (`game/ui/command_playtest.gd`, `mk/command.mk`): `make command-playtest` (headless) and
+  `make command-playtest-shots` (phone-sized window, frames in `build/command-playtest/*.png`) tap each squad's
+  chip, tap a far radar spot, and log the camera (`camera.jsonl`). Latest: Alpha and Bravo both tracked, squad
+  on screen within 0.4 s, max view speed 32–72 m/s over 0.25 s windows (limit 120), zoom capped at 0.48.
+  **It found two real bugs,** fixed: (1) when tracking let go, the camera lurched to tracking's last goal zoom
+  (now it stays where the view is); (2) framing a squad plus a destination 170 m away zoomed out to 0.97,
+  exactly the zoom-out-then-in chore the lead described (now order tracking caps the zoom, keeps the squad
+  framed, and leans the view toward the destination).
 
 ### Requests to other streams
 
@@ -168,6 +176,9 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
   order ("next order: Bound in Wedge. Half the squad covers while…").
 - **C4: track only when the squad or its destination is off screen** (outside the middle 85%). A tap on
   visible ground already shows the whole move, and moving the camera then would fight the player.
+- **C4: order tracking caps its zoom at 0.48** (still the model view) instead of always fitting squad +
+  destination: for a far goal it keeps the squad framed and leans the view toward the goal, and the
+  destination comes into view as the squad closes in. Fitting both zoomed a cross-arena order out to 0.97.
 - **C4: tracking never zooms in closer than the player had it**, eases at 3/s, and is capped at 120 m/s
   (scaled down when close) and 0.35 zoom levels/s. Any manual camera input (pan, pinch, wheel, rotate, radar
   look) ends it at once. An explicit Follow outranks order tracking and moves on with the selection.

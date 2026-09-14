@@ -65,10 +65,10 @@ func test_an_order_off_screen_frames_the_squad_and_its_destination() -> void:
 	var setup: Array = await _setup()
 	var map: TacticalMap = setup[1]
 	var rig: RtsCamera = setup[2]
-	var radar: Radar = setup[3]
-	var goal := Vector3(-70, 0, -80)
+	var alpha: Array = map.squad_points("Alpha")
+	var goal: Vector3 = alpha[0] + Vector3(55, 0, -5)
 	assert_true(not map.all_on_screen([goal]), "setup: the destination is off screen")
-	radar.tap(radar.world_to_radar(goal))
+	map.order_drag(goal, goal)
 	assert_eq(rig.tracking_mode(), RtsCamera.Track.ORDER, "an off-screen order starts tracking")
 	var before := rig._shown_focus
 	rig._process(1.0 / 60.0)
@@ -78,6 +78,28 @@ func test_an_order_off_screen_frames_the_squad_and_its_destination() -> void:
 	var points := map.order_points("Alpha")
 	assert_eq(points.size(), 4, "tracking watches Alpha's three vehicles and the destination")
 	assert_true(map.all_on_screen(points), "after it settles, the squad AND where it's going are on screen")
+	assert_true(rig.zoom <= RtsCamera.TRACK_MAX_ZOOM + 0.001, "without climbing past the tracking ceiling (%.2f)" % rig.zoom)
+
+
+func test_a_far_order_keeps_the_squad_readable_and_leans_toward_the_goal() -> void:
+	var setup: Array = await _setup()
+	var map: TacticalMap = setup[1]
+	var rig: RtsCamera = setup[2]
+	var radar: Radar = setup[3]
+	var goal := Vector3(-70, 0, -80)
+	radar.tap(radar.world_to_radar(goal))
+	assert_eq(rig.tracking_mode(), RtsCamera.Track.ORDER, "a radar tap across the arena starts tracking")
+	_settle(rig, 6.0)
+	var squad: Array = map.squad_points("Alpha")
+	assert_true(map.all_on_screen(squad), "the squad stays on screen")
+	assert_true(rig.zoom <= RtsCamera.TRACK_MAX_ZOOM + 0.001, "at a zoom where vehicles still read (%.2f), not the whole arena" % rig.zoom)
+	var center: Vector3 = (squad[0] + squad[1] + squad[2]) / 3.0
+	assert_true(Vector2(rig.focus.x - goal.x, rig.focus.z - goal.z).length() < Vector2(center.x - goal.x, center.z - goal.z).length() - 10.0,
+			"the view leans ahead of the squad toward where it's going (%s)" % rig.focus)
+	rig.pan_screen(Vector2(640, 360), Vector2(640, 380))
+	var shown := rig._shown_zoom
+	_settle(rig, 1.0)
+	assert_near(rig._shown_zoom, shown, 0.01, "letting go of tracking doesn't lurch the zoom")
 
 
 func test_an_order_to_a_visible_spot_leaves_the_camera_alone() -> void:

@@ -183,11 +183,17 @@ discoverability, not dropped input.
 - **Icons** (`game/ui/command_icons.gd`): unit roles, drills, and formations as CanvasItem drawings; formation
   icons come from the real geometry (a test checks the uniform scaling), with plain-language names, taglines,
   and one-line descriptions. The info line above the order bar says what the next tap will do.
-- **Camera follows orders** (`RtsCamera.frame/track`, C7): after an order whose squad or destination is off
-  screen, the camera frames the squad and its destination and tracks them, gently and speed-limited, until the
+- **Camera follows orders** (`RtsCamera.frame/track/order_pose`, C7): after an order whose squad or destination
+  is off screen, the camera frames the squad and its destination (or, when that would need more than zoom 0.48,
+  the squad with the view leaning toward the destination) and tracks them, gently and speed-limited, until the
   squad arrives, the player touches the camera (pan, zoom, rotate, radar look), or another squad is selected. It
   never zooms in closer than the player had it. **Follow** is a toggle that tracks the selected squad and moves
   on with the selection.
 - Signals: `TacticalMap.command_issued(command, error)`, `TacticalMap.squad_selected(squad_key)`,
   `RtsCamera.tracking_ended(reason)`.
-- Tests: `tests/test_command_*.gd` (grammar through real touch/mouse events, squad bar, icons, camera).
+- **Messages** (`game/ui/hud_messages.gd`): merged losses with unit types, squad destroyed, friendly-fire kills,
+  rate-limited order acks, control-point warnings; a center score meter under the squad bar.
+- **Readability:** the start camera frames the army (zoom ≥ 0.36); nameplates only when zoomed right in; close
+  up = models, rings, and small health bars; zoom ≥ 0.5 = unit-type icons.
+- Tests: `tests/test_command_*.gd` (grammar through real touch/mouse events, squad bar, icons, camera,
+  readability, messages). Playtest: `make command-playtest` / `make command-playtest-shots`.
