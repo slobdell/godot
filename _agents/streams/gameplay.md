@@ -281,6 +281,20 @@ heat (`h`). `make skirmish ENEMY=individuals_laser` fights laser tanks. Pull a w
 base (Break contact) to mend hulls and refill shells.
 `make skirmish-shots` takes scripted screenshots (desktop + phone aspect) into `build/screenshots/`.
 
+**Next steps** (in the order I'd take them):
+1. Decide shields vs holding doctrines (Question 1). If the control point becomes the default, re-run T1
+   and the archetype round robin with `--control`.
+2. Finish E3 at army level: read round robin #2 in balance.md; if Siege still dominates, try mortar damage
+   90 → 75 or scatter up; consider near-sighted tanks (`--tune=tank.sight_radius=60`) so scouts extend a
+   tank's gun reach (direct fire already requires team visibility).
+3. Flamethrower: with shields it went from dominated (0–6%) to dominant (36/36 vs cannons); tune its
+   shield multiplier from the flame series in balance.md.
+4. CPU commander v2: measure (`--rust-commander`), then decide whether skirmish uses it.
+5. Networked play for the new state: control point score and visibility aren't replicated (skirmish and
+   the runner are single-process); coordinate with netcode.
+6. A heavy chassis with 2 hardpoints; phases (conditions that swap directives); Claude as the opposing
+   commander via a `/squad` bridge endpoint.
+
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
 Rules: *Unattended runs* in workstreams.md. Each item: tests + `make check` + a smoke test (skirmish screenshots at 1920×1080 and 2400×1080 that you look at, and/or a match series) + a commit + a Status update. **Every change should show up in `make skirmish`**, since that's what the lead plays in the morning.
