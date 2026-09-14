@@ -48,6 +48,8 @@ const CYBERPUNK_SLOTS := {
 	# Gameplay G7's slots (contracts in streams/assets.md); default placeholders live on stream/gameplay.
 	"weapon.laser": "res://game/theme/cyberpunk/weapon_laser.tscn",
 	"fx.laser_beam": "res://game/theme/cyberpunk/fx_laser_beam.tscn",
+	# Gameplay G1's 3D fog of war (setup(data) contract); default placeholder on stream/gameplay.
+	"fx.fog_of_war": "res://game/theme/cyberpunk/fx_fog_of_war.tscn",
 	"prop.crate": "res://game/theme/cyberpunk/prop_crate.tscn",
 	"prop.wall": "res://game/theme/cyberpunk/prop_wall.tscn",
 	"arena.environment": "res://game/theme/cyberpunk/arena_environment.tscn",
@@ -95,7 +97,9 @@ static func use(name: String) -> bool:
 		return false
 	var theme: Dictionary = THEMES[name]
 	theme_name = name
-	slots = theme["slots"]
+	# Any slot a theme doesn't define falls back to the default scene, so a slot another stream adds
+	# to DEFAULT_SLOTS works in every theme the moment it lands.
+	slots = DEFAULT_SLOTS.merged(theme["slots"], true)
 	team_colors = theme["team_colors"]
 	team_glows = theme["team_glows"]
 	ui = theme["ui"]

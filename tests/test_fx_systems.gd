@@ -111,6 +111,29 @@ func test_themes_switch_slots_and_keep_every_slot_id() -> void:
 	GameTheme.use(previous)
 
 
+func test_a_slot_missing_from_a_theme_falls_back_to_the_default_scene() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	for slot in GameTheme.DEFAULT_SLOTS:
+		assert_true(GameTheme.slots.has(slot), "cyberpunk resolves %s (its own scene or the default)" % slot)
+	assert_eq(GameTheme.slots["prop.crate"], GameTheme.CYBERPUNK_SLOTS["prop.crate"], "a theme's own scene wins")
+	GameTheme.use(previous)
+
+
+func test_cyberpunk_fog_of_war_takes_the_visibility_texture() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var slot := VisualSlot.new()
+	slot.slot = "fx.fog_of_war"
+	add_to_tree(slot)
+	GameTheme.use(previous)
+	var image := Image.create_empty(64, 64, false, Image.FORMAT_L8)
+	slot.invoke("setup", [{"texture": ImageTexture.create_from_image(image), "origin": Vector2(-160, -160), "size": 320.0}])
+	var fog := slot.visual as MeshInstance3D
+	assert_true(fog.mesh is PlaneMesh and is_equal_approx((fog.mesh as PlaneMesh).size.x, 320.0), "the sheet spans the arena")
+	assert_near(fog.position.x, 0.0, 0.001, "centered on the texture's area")
+
+
 func test_every_theme_scene_loads_headless_without_errors() -> void:
 	var previous := GameTheme.theme_name
 	for theme_name in GameTheme.THEMES:

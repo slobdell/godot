@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/cyberpunk/fog_of_war.gd" id="1_fog"]
+
+[node name="FxFogOfWar" type="MeshInstance3D"]
+script = ExtResource("1_fog")
