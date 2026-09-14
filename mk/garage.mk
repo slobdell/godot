@@ -56,3 +56,25 @@ garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, and 
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs \
 		"http://127.0.0.1:$(SMOKE_PORT)/?garage&garage-scratch&garage-autofight&enemy=cpu:armor&seed=3" \
 		$(BUILD_DIR)/screenshots/web-garage-fight.png 3 GARAGE_FIGHT
+
+.PHONY: army-loop-smoke army-loop-shots
+army-loop-smoke: import ## Headless match loop: army → FIGHT → results → REMATCH → results → ARMY; checks the markers and that nothing errors
+	mkdir -p $(BUILD_DIR)
+	timeout 120 $(GODOT) --headless --path . -- --garage --garage-scratch --garage-autofight --enemy=cpu:swarm --seed=4 \
+		--army-loop-time=6 --army-loop-delay=0.5 --army-loop-auto=rematch,army,quit \
+		2>&1 | tee $(BUILD_DIR)/army-loop-smoke.log | grep -E 'GARAGE_FIGHT|ARMY_RESULTS|ARMY_LOOP' || true
+	test $$(grep -c 'GARAGE_FIGHT .*enemy=cpu:swarm .*seed=4 ' $(BUILD_DIR)/army-loop-smoke.log) -eq 2
+	test $$(grep -c 'ARMY_RESULTS outcome=' $(BUILD_DIR)/army-loop-smoke.log) -eq 2
+	grep -q 'ARMY_LOOP action=rematch' $(BUILD_DIR)/army-loop-smoke.log
+	grep -q 'ARMY_LOOP action=army' $(BUILD_DIR)/army-loop-smoke.log
+	test $$(grep -c 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/army-loop-smoke.log) -eq 3
+	! grep -E 'ERROR' $(BUILD_DIR)/army-loop-smoke.log
+	@echo "army-loop-smoke passed"
+
+army-loop-shots: import ## Results screen screenshots after a real 70 s skirmish, desktop and 20:9 phone (needs a display) -> build/screenshots/army-results-*.png
+	mkdir -p $(GARAGE_SHOTS)
+	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --garage-autofight --enemy=cpu:armor --seed=7 --mute \
+		--army-loop-time=70 --army-loop-delay=0.5 --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/army-results-desktop.png --screenshot-delay=76
+	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --garage-autofight --enemy=cpu:armor --seed=7 --mute \
+		--army-loop-time=70 --army-loop-delay=0.5 --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/army-results-phone.png --screenshot-delay=76
+	@echo "Now LOOK at $(GARAGE_SHOTS)/army-results-*.png"

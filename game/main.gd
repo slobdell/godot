@@ -26,6 +26,9 @@ const SCREENSHOT_DELAY_SEC := 3.0
 
 var flags: LaunchFlags
 var mode: GameMode
+## Set before reloading the scene to restart with these flags instead of the command line / URL (the army
+## stream's rematch loop, game/garage/army_loop.gd). Used once, then cleared.
+static var next_flags: LaunchFlags
 ## PlayerController / ScriptedController / OrderController; null when nobody drives locally.
 var local_controller: Node
 
@@ -36,7 +39,8 @@ var local_controller: Node
 
 
 func _ready() -> void:
-	flags = LaunchFlags.from_environment()
+	flags = next_flags if next_flags != null else LaunchFlags.from_environment()
+	next_flags = null
 	mode = GameMode.choose(flags)
 	mode.main = self
 	mode.flags = flags

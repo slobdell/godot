@@ -101,3 +101,26 @@ Unit stats and the army JSON parser (rules), squad behavior (ai), the in-match U
   Screenshots reviewed (desktop, 20:9, compare, fight handover).
   - Decision: opponents are CPU archetypes only (the hand-written doctrines don't fit a shared budget tier).
   - Decision: the Lancer counts as a laser migration target because round-1 lasers were the lead's favorite.
+- **Y2 done: progression.** `game/progression/progression.gd` (C8): `user://profile.json` with credits, unlocked
+  units, budget tier, wins/losses/draws; `BUDGET_TIERS` Scrapyard 800 → Pit 1,200 (400 cr) → Arena 1,700 (900) →
+  Colosseum 2,400 (1,600) → Grand Circus 3,200 (2,500); units unlock by catalog `unlock_tier` (tier 1: 300 cr,
+  tier 2: 600), independently of budget tiers, so the player chooses between a new unit and a bigger army.
+  `credits_for` / `award`: win 100, draw 30, loss 10, +6 per enemy unit destroyed, +25% base per tier, nothing
+  for matches under 60 s; a match key stops double pay. Migration clamps anything; an unreadable profile is moved
+  to `.bad`, never wiped. `MatchReport` (C3 adapter): per-team units, left/lost, kills by unit type, best unit,
+  preferring the rules stream's result fields when they exist. Screen: CREDITS button → UNLOCKS panel, locked
+  cards show `UNLOCK n CR`, a TIER picker (unowned tiers disabled). 10 progression tests.
+  - **Measured and fixed:** the first award numbers (loss 15, 20 s minimum) paid a thrown match 45 cr/min vs
+    39 cr/min for a real 3-minute win; a test now holds "throwing is never faster than trying".
+  - Fairness: the tier sets the budget for BOTH sides (`--budget` goes to the skirmish, which builds the CPU
+    army at the same budget).
+- **Y3 done: the match loop.** FIGHT → skirmish → (match ends, banner) → `ResultsScreen`: VICTORY/DEFEAT/DRAW,
+  reason, duration, tier, opponent; credits earned with the breakdown, balance, and the next unlock to save for;
+  both armies fielded/lost/kills; best unit; a counter lesson ("Their army was mostly Tanks. Scouts … are built
+  to beat them."). REMATCH (same army, same seeded opponent, same tier) and ARMY restart in-process
+  (`ArmyLoop` sets `Main.next_flags` and reloads the scene), so it behaves the same in a browser.
+  `make army-loop-smoke` (now in `make check`, ~25 s): FIGHT → results → REMATCH → results → ARMY, no errors.
+  `make army-loop-shots` (a real 70 s skirmish) reviewed at desktop and 20:9. 6 results/loop tests.
+  - Shared-file edits: `game/main.gd` (+`static var next_flags`, 3 lines), `mk/core.mk` (`army-loop-smoke` in
+    `check`).
+  - Title → army: the title screen is art's file; see *Requests to other streams*.

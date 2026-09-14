@@ -6,7 +6,7 @@ const TEST_DIR := "user://test_army_screen/"
 
 
 func _starter_size() -> int:
-	return GarageScreen.starter_army(ArmyCatalog.from_game()).unit_count()
+	return GarageScreen.starter_army(Progression.new("").catalog_for(ArmyCatalog.from_game(), 0)).unit_count()
 
 
 func _open(screen_size := Vector2i(1280, 720)) -> GarageScreen:
@@ -14,6 +14,7 @@ func _open(screen_size := Vector2i(1280, 720)) -> GarageScreen:
 	tree.root.size = screen_size
 	var screen := GarageScreen.new()
 	screen.settings = GarageSettings.new("")  # in memory: never the player's tips file
+	screen.progression = Progression.new("")  # nor their profile
 	screen.store_dir = TEST_DIR
 	add_to_tree(screen)
 	await wait_physics_frames(3)
@@ -136,6 +137,7 @@ func test_a_locked_unit_card_refuses_and_says_why() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var screen := GarageScreen.new()
 	screen.settings = GarageSettings.new("")
+	screen.progression = Progression.new("")
 	screen.store_dir = TEST_DIR
 	var catalog := ArmyCatalog.from_game()
 	var locked := catalog.unit_ids().filter(func(id: String) -> bool: return catalog.unlock_tier(id) > 0)
@@ -145,11 +147,44 @@ func test_a_locked_unit_card_refuses_and_says_why() -> void:
 	add_to_tree(screen)
 	await wait_physics_frames(3)
 	var add := _find(screen, "Add_" + String(locked[0])) as Button
-	assert_eq(add.text, "LOCKED", "a locked card's button says so")
+	assert_true(add.text.begins_with("UNLOCK"), "a locked card's button shows the unlock price: %s" % add.text)
 	var before := screen.draft.unit_count()
 	await _tap(add)
 	assert_eq(screen.draft.unit_count(), before, "tapping it buys nothing")
-	assert_true(screen.toast_text().contains("locked"), "and a toast says why: '%s'" % screen.toast_text())
+	assert_true(screen.toast_text().contains("locked"), "a toast says why: '%s'" % screen.toast_text())
+	assert_true((_find(screen, "UnlockPanel") as Control).visible, "and the UNLOCKS panel opens")
+
+
+func test_unlocking_a_unit_with_credits_makes_it_buyable() -> void:
+	tree.root.size = Vector2i(1280, 720)
+	var screen := GarageScreen.new()
+	screen.settings = GarageSettings.new("")
+	screen.progression = Progression.new("")
+	screen.progression.credits = 5000
+	screen.store_dir = TEST_DIR
+	add_to_tree(screen)
+	await wait_physics_frames(3)
+	var catalog := screen.base_catalog
+	var locked: String = catalog.unit_ids().filter(func(id: String) -> bool: return catalog.unlock_tier(id) > 0)[0]
+	screen.toggle_unlocks(true)
+	await wait_physics_frames(2)
+	var buy := _find(screen, "Unlock_" + locked).find_child("Buy", true, false) as Button
+	assert_true(not buy.disabled, "with enough credits the UNLOCK button is live")
+	await _tap(buy)
+	assert_true(screen.progression.has_unit(catalog, locked), "tapping it unlocks the %s" % locked)
+	assert_eq(screen.progression.credits, 5000 - Progression.unit_unlock_credits(catalog, locked), "for its price")
+	assert_eq((_find(screen, "Add_" + locked) as Button).text, "+ ADD", "and its card can buy it now")
+
+
+func test_the_tier_sets_the_budget_and_locked_tiers_are_disabled() -> void:
+	var screen := await _open()
+	var menu := _find(screen, "TierMenu") as OptionButton
+	assert_eq(screen.draft.catalog.budget, Progression.budget_for(0), "a new player fights at tier 0's budget")
+	assert_true(menu.is_item_disabled(1), "tier 1 isn't bought yet")
+	screen.progression.budget_tier = 2
+	screen.set_tier(2)
+	assert_eq(screen.draft.catalog.budget, Progression.budget_for(2), "picking tier 2 raises the budget")
+	assert_eq(int(screen.draft.to_doctrine()["garage"]["tier"]), 2, "and the saved army records its tier")
 
 
 func test_opening_a_round_one_save_explains_what_changed() -> void:
@@ -164,9 +199,10 @@ func test_opening_a_round_one_save_explains_what_changed() -> void:
 
 func test_drag_a_unit_chip_onto_another_squad() -> void:
 	var screen := await _open()
-	var chip := _find(screen, "Squad_0").find_child("Unit_2", true, false) as Control
+	var before := screen.draft.units_of(0).size()
+	var chip := _find(screen, "Squad_0").find_child("Unit_%d" % (before - 1), true, false) as Control
 	await _drag(chip, _find(screen, "Squad_1"))
-	assert_eq(screen.draft.units_of(0).size(), 2, "Alpha gave up a unit")
+	assert_eq(screen.draft.units_of(0).size(), before - 1, "Alpha gave up a unit")
 	assert_eq(screen.draft.units_of(1).size(), 3, "Bravo received it")
 	assert_eq([screen.selected_squad, screen.selected_unit], [1, 2], "the moved unit stays selected in its new squad")
 

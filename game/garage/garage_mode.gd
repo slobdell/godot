@@ -8,10 +8,17 @@ extends GameMode
 ##   --army=CODE           open with a shared army code (ArmyCode; browser: ?garage&army=CODE)
 ##   --garage-settings=PATH  where first-run tip progress lives (default user://garage.cfg; "none" = fresh and
 ##                         unsaved, so automated runs never mark the player's tips as seen)
-##   --garage-scratch      automated runs: settings in memory AND armies saved to an emptied SCRATCH_DIR, so smoke
-##                         tests and screenshots never touch the player's tips, last army, or saved armies
+##   --garage-scratch      automated runs: settings in memory, armies AND the progression profile in an emptied SCRATCH_DIR,
+##                         so smoke tests and screenshots never touch the player's tips, armies, or credits
+##   --profile=PATH        the progression profile (default user://profile.json; "none" = in memory)
+##   --credits=N           automated runs only (with --garage-scratch): start the scratch profile with N credits
 ##   --garage-panel=NAME   open an overlay on start: compare | share (screenshots)
 ##   --garage-autofight    tap FIGHT as soon as the garage opens (smoke tests, screenshots of the handover)
+##   --garage-army=PATH    open this saved army (the match loop's ARMY and REMATCH)
+##   --tier=N              the budget tier to fight at (clamped to the tiers the player owns)
+##   --garage-rematch      fight straight away with --garage-army, --enemy, --seed, --tier (REMATCH)
+##   --garage-keep         with --garage-scratch: keep the scratch folder (a restart inside an automated run)
+## After FIGHT an ArmyLoop shows results and offers REMATCH / ARMY (its flags: game/garage/army_loop.gd).
 ## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> budget=<n> green=<tanks> rust=<tanks>
 ## when the skirmish starts.
 
@@ -39,12 +46,27 @@ func start() -> void:
 	if flags.has("garage-settings"):
 		var settings := flags.text("garage-settings")
 		screen.settings = GarageSettings.new("" if settings == "none" else settings)
+	if flags.has("profile"):
+		screen.progression = Progression.new("" if flags.text("profile") == "none" else flags.text("profile"))
 	if flags.has("garage-scratch"):
 		screen.settings = GarageSettings.new("")
 		screen.store_dir = SCRATCH_DIR
 		DirAccess.make_dir_recursive_absolute(SCRATCH_DIR)
-		for file_name in DirAccess.get_files_at(SCRATCH_DIR):
-			DirAccess.remove_absolute(SCRATCH_DIR.path_join(file_name))
+		if not flags.has("garage-keep"):
+			for file_name in DirAccess.get_files_at(SCRATCH_DIR):
+				DirAccess.remove_absolute(SCRATCH_DIR.path_join(file_name))
+		screen.progression = Progression.new(SCRATCH_DIR.path_join("profile.json"))
+		if flags.has("credits") and not flags.has("garage-keep"):
+			screen.progression.credits = flags.integer("credits", 0)
+	if screen.progression == null:
+		screen.progression = Progression.new()
+	screen.tier = flags.integer("tier", 0)
+	if flags.has("garage-army"):
+		var loaded := ArmyStore.read(flags.text("garage-army"))
+		if loaded.has("doctrine"):
+			screen.draft = ArmyDraft.from_doctrine(ArmyCatalog.from_game(), loaded["doctrine"])
+			screen.draft.make_player_army()
+			screen.army_path = flags.text("garage-army")
 	_layer.add_child(screen)
 	main.add_child(_layer)
 	screen.fight_requested.connect(fight)
@@ -55,7 +77,9 @@ func start() -> void:
 			screen.toggle_compare(true)
 		"share":
 			screen.toggle_share(true)
-	if flags.has("garage-autofight"):
+	if flags.text("army-loop-auto").split(",", false).slice(0, 1) == PackedStringArray(["quit"]):
+		main.get_tree().quit.call_deferred()
+	elif flags.has("garage-autofight") or flags.has("garage-rematch"):
 		screen.fight.call_deferred()
 
 
@@ -85,5 +109,18 @@ func fight(player_path: String, enemy: String) -> void:
 	skirmish.start()
 	for tip: String in screen.settings.take_match_tips():
 		main.hud.post_message(tip, Hud.INFO)
+	var loop := ArmyLoop.new()
+	loop.name = "ArmyLoop"
+	loop.main = main
+	loop.progression = screen.progression
+	loop.catalog = screen.draft.catalog
+	loop.army = screen.draft.to_doctrine()
+	loop.army_path = player_path
+	loop.enemy = enemy
+	loop.seed_value = seed_value
+	loop.tier = screen.tier
+	loop.budget = budget
+	main.add_child(loop)
+	loop.begin()
 	print("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d budget=%d green=%d rust=%d" % [player_path, enemy, enemy_path, seed_value, budget,
 			main.game_match.team_tanks(Match.Team.GREEN).size(), main.game_match.team_tanks(Match.Team.RUST).size()])

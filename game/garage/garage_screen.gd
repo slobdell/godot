@@ -11,7 +11,11 @@ extends Control
 ##            to move it. ADD into a full squad spills into the next one with room.
 ##   UNIT     the selected unit on a turntable (swipe to spin), its weapon and matchups, army-composition
 ##            hints, its squad (tap to move), paint, REMOVE.
-##   TOP      army name, budget bar, presets, load, save, delete, share (army codes).   BOTTOM  problems, enemy, FIGHT.
+##   TOP      army name, budget bar, credits (UNLOCKS panel), presets, load, save, delete, share (army codes).
+##   BOTTOM   problems, budget tier, opponent, FIGHT.
+##
+## Progression (Y2): the catalog is the player's view of it (Progression.catalog_for): the chosen tier's budget
+## and only unlocked units. Locked cards show their price; UNLOCKS spends credits on units and budget tiers.
 ##
 ## Saving: an army remembers the file it came from. SAVE and FIGHT update that file; a new army (starter,
 ## preset, code) gets a fresh file on its first save, so two armies with the same name never overwrite each
@@ -33,6 +37,12 @@ const ENEMIES := [["cpu", "CPU: Random"], ["cpu:balanced", "CPU: Balanced"], ["c
 		["cpu:recon_strike", "CPU: Recon Strike"], ["cpu:siege", "CPU: Siege"], ["cpu:swarm", "CPU: Swarm"]]
 
 var draft: ArmyDraft
+## The player's credits and unlocks (tests use Progression.new(""), in memory).
+var progression: Progression
+## Every unit the game has; draft.catalog is this at the chosen tier with the player's unlocks.
+var base_catalog: ArmyCatalog
+## The budget tier this army fights at (≤ progression.budget_tier).
+var tier := 0
 ## Where armies are saved (tests point this elsewhere).
 var store_dir := ArmyStore.DIR
 var enemy := "cpu"
@@ -66,6 +76,9 @@ var _tip_label: Label
 var _share_panel: PanelContainer
 var _compare_panel: PanelContainer
 var _code_edit: LineEdit
+var _unlock_panel: PanelContainer
+var _credits_button: Button
+var _tier_menu: OptionButton
 var _toast_left := 0.0
 
 
@@ -75,9 +88,17 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if settings == null:
 		settings = GarageSettings.new()
+	if progression == null:
+		progression = Progression.new()
+	if base_catalog == null:
+		base_catalog = draft.catalog if draft != null else ArmyCatalog.from_game()
+	tier = clampi(tier, 0, progression.budget_tier)
 	if draft == null:
-		draft = GarageScreen.starter_army(ArmyCatalog.from_game())
+		draft = GarageScreen.starter_army(progression.catalog_for(base_catalog, tier))
 		_reopen_last_army()
+	else:
+		draft.catalog = progression.catalog_for(base_catalog, tier)
+	draft.tier = tier
 	draft.changed.connect(_on_draft_changed)
 	# Open on the first unit so the turntable shows something right away.
 	selected_unit = 0 if not draft.unit_at(0, 0).is_empty() else -1
@@ -100,6 +121,8 @@ func _reopen_last_army() -> void:
 		draft = ArmyDraft.from_doctrine(draft.catalog, loaded["doctrine"])
 		draft.make_player_army()
 		army_path = settings.last_army
+		tier = clampi(draft.tier, 0, progression.budget_tier)
+		draft.catalog = progression.catalog_for(base_catalog, tier)
 
 
 func _process(delta: float) -> void:
@@ -148,6 +171,7 @@ func _build() -> void:
 	# A rebuild (the window changed size) keeps open overlays open.
 	var compare_open := _compare_panel != null and _compare_panel.visible
 	var share_open := _share_panel != null and _share_panel.visible
+	var unlocks_open := _unlock_panel != null and _unlock_panel.visible
 	_clear(self)
 	if _turntable != null and _turntable.get_parent() == null:
 		_turntable.queue_free()
@@ -201,6 +225,7 @@ func _build() -> void:
 
 	_build_share_panel()
 	_build_compare_panel()
+	_build_unlock_panel()
 	move_child(_toast, get_child_count() - 1)
 
 	_turntable = GarageTurntable.new()
@@ -211,6 +236,7 @@ func _build() -> void:
 	toggle_compare(compare_open)
 	if share_open:
 		toggle_share(true)
+	toggle_unlocks(unlocks_open)
 
 
 func _build_top_bar() -> Control:
@@ -240,6 +266,12 @@ func _build_top_bar() -> Control:
 	_budget_bar.custom_minimum_size = Vector2(0, 14 * ui_scale)
 	budget.add_child(_budget_bar)
 	bar.add_child(budget)
+
+	_credits_button = _button("", func() -> void: toggle_unlocks(true))
+	_credits_button.name = "Credits"
+	_credits_button.tooltip_text = "Spend credits on new unit types and bigger budgets"
+	_credits_button.add_theme_color_override("font_color", _color("commander"))
+	bar.add_child(_credits_button)
 
 	_preset_menu = OptionButton.new()
 	_preset_menu.name = "PresetMenu"
@@ -310,6 +342,17 @@ func _build_bottom_bar() -> Control:
 	_problems_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_problems_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	bar.add_child(_problems_label)
+	_tier_menu = OptionButton.new()
+	_tier_menu.name = "TierMenu"
+	_tier_menu.custom_minimum_size = Vector2(200 * ui_scale, TAP * 1.3 * ui_scale)
+	_tier_menu.tooltip_text = "Budget tier: both armies spend the same budget"
+	for info: Dictionary in Progression.BUDGET_TIERS:
+		var owned := int(info["tier"]) <= progression.budget_tier
+		_tier_menu.add_item(Progression.tier_label(int(info["tier"])) + ("" if owned else " (locked)"))
+		_tier_menu.set_item_disabled(_tier_menu.item_count - 1, not owned)
+	_tier_menu.select(tier)
+	_tier_menu.item_selected.connect(func(index: int) -> void: set_tier(index))
+	bar.add_child(_tier_menu)
 	_enemy_menu = OptionButton.new()
 	_enemy_menu.name = "EnemyMenu"
 	_enemy_menu.custom_minimum_size = Vector2(210 * ui_scale, TAP * 1.3 * ui_scale)
@@ -521,7 +564,13 @@ func _unit_card(unit_id: String) -> Control:
 		stats.add_child(stat_label)
 		stats.add_child(_stat_bar(bar_data["ratio"], ArmyCatalog.number(bar_data["value"])))
 	rows.add_child(stats)
-	var add := _button("+ ADD" if unlocked else "LOCKED", func() -> void: add_unit(unit_id))
+	var price := Progression.unit_unlock_credits(catalog, unit_id)
+	var add := _button("+ ADD" if unlocked else "UNLOCK  %d CR" % price, func() -> void:
+		if catalog.is_unlocked(unit_id):
+			add_unit(unit_id)
+		else:
+			_show_toast("The %s is locked: unlock it for %d credits (you have %d)." % [catalog.display_name(unit_id), price, progression.credits], true)
+			toggle_unlocks(true))
 	add.name = "Add_" + unit_id
 	rows.add_child(add)
 	if unlocked:
@@ -561,6 +610,7 @@ func _refresh() -> void:
 	if draft.unit_at(selected_squad, selected_unit).is_empty():
 		selected_unit = -1
 	_refresh_budget()
+	_refresh_credits()
 	_refresh_delete()
 	_refresh_squads()
 	_refresh_inspector()
@@ -780,6 +830,98 @@ func _refresh_problems() -> void:
 	_fight_button.add_theme_color_override("font_hover_color", Color.BLACK if problems.is_empty() else _color("garage_text_dim"))
 
 
+# ---- Progression: credits, unlocks, tiers ---------------------------------------------------------
+
+func _refresh_credits() -> void:
+	if _credits_button != null:
+		_credits_button.text = "CREDITS %d" % progression.credits
+
+
+## An overlay to spend credits: each locked unit type, and the next budget tier.
+func _build_unlock_panel() -> void:
+	_unlock_panel = PanelContainer.new()
+	_unlock_panel.name = "UnlockPanel"
+	_unlock_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_unlock_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_unlock_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_unlock_panel.custom_minimum_size = Vector2(640 * ui_scale, 0)
+	_unlock_panel.add_theme_stylebox_override("panel", _panel_style(_color("commander"), 3))
+	_unlock_panel.visible = false
+	add_child(_unlock_panel)
+
+
+func _fill_unlock_panel() -> void:
+	_clear(_unlock_panel)
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", int(10 * ui_scale))
+	_unlock_panel.add_child(rows)
+	rows.add_child(_section("UNLOCKS: %d CREDITS   (record %d won, %d lost)" % [progression.credits, progression.wins, progression.losses]))
+	rows.add_child(_note("Win matches to earn credits. New units add options, not power: both armies always fight at the same budget.", 0.85))
+	var any_locked := false
+	for unit_id in base_catalog.unit_ids():
+		if progression.has_unit(base_catalog, unit_id):
+			continue
+		any_locked = true
+		rows.add_child(_unlock_row("Unlock_" + unit_id, "%s: %s" % [base_catalog.display_name(unit_id).to_upper(), base_catalog.matchup_text(unit_id, true)],
+				base_catalog.blurb(unit_id), Progression.unit_unlock_credits(base_catalog, unit_id),
+				func() -> String: return progression.unlock_unit(base_catalog, unit_id)))
+	if not any_locked:
+		rows.add_child(_note("Every unit type is unlocked.", 0.9, "friendly"))
+	var next := progression.next_tier()
+	if next.is_empty():
+		rows.add_child(_note("You have the biggest budget tier.", 0.9, "friendly"))
+	else:
+		rows.add_child(_unlock_row("UnlockTier", "BUDGET TIER: %s" % Progression.tier_label(int(next["tier"])),
+				"Bigger armies: both sides spend %d." % int(next["budget"]), int(next["unlock_credits"]),
+				func() -> String: return progression.unlock_next_tier()))
+	var close := _button("CLOSE", func() -> void: toggle_unlocks(false))
+	close.name = "Close"
+	close.size_flags_horizontal = Control.SIZE_SHRINK_END
+	rows.add_child(close)
+
+
+func _unlock_row(row_name: String, title: String, detail: String, price: int, unlock: Callable) -> Control:
+	var row := HBoxContainer.new()
+	row.name = row_name
+	row.add_theme_constant_override("separation", int(12 * ui_scale))
+	var text := VBoxContainer.new()
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text.add_child(_label(title, 0.95))
+	text.add_child(_note(detail, 0.8))
+	row.add_child(text)
+	var buy := _button("UNLOCK  %d" % price, func() -> void:
+		var error: String = unlock.call()
+		if error == "":
+			_on_unlocked()
+		else:
+			_act(error))
+	buy.name = "Buy"
+	buy.disabled = progression.credits < price
+	buy.custom_minimum_size.x = 150 * ui_scale
+	row.add_child(buy)
+	return row
+
+
+func _on_unlocked() -> void:
+	_show_toast("Unlocked! %d credits left." % progression.credits, false)
+	set_tier(tier)
+	toggle_unlocks(true)
+
+
+func toggle_unlocks(open: bool) -> void:
+	if open:
+		_fill_unlock_panel()
+	_unlock_panel.visible = open
+
+
+## Fight at `new_tier`'s budget (clamped to the tiers owned). The army keeps its units; over budget shows as a problem.
+func set_tier(new_tier: int) -> void:
+	tier = clampi(new_tier, 0, progression.budget_tier)
+	draft.catalog = progression.catalog_for(base_catalog, tier)
+	draft.tier = tier
+	_build()
+
+
 # ---- Actions (public, so tests and presets drive the same paths as taps) -----------------------------
 
 func select_squad(squad_index: int) -> void:
@@ -834,6 +976,8 @@ func set_draft(new_draft: ArmyDraft, path := "") -> void:
 	if draft != null and draft.changed.is_connected(_on_draft_changed):
 		draft.changed.disconnect(_on_draft_changed)
 	draft = new_draft
+	draft.catalog = progression.catalog_for(base_catalog, tier)
+	draft.tier = tier
 	draft.make_player_army()
 	draft.changed.connect(_on_draft_changed)
 	selected_squad = 0
