@@ -4,12 +4,13 @@ extends RefCounted
 ## without touching the others (see _agents/workstreams.md):
 ##   OfflineMode (gameplay)  SkirmishMode (gameplay)  MatchRunnerMode (gameplay/experiments)
 ##   ServerMode (netcode)    ClientMode (netcode)    HostMode (netcode: a player hosts via the relay)
+##   GarageMode (garage, game/garage/)
 
 var main: Main
 var flags: LaunchFlags
 
 
-## Which mode the flags ask for. Order matters: fx-bench > title > det-spike > match > skirmish > lobby > host > server > client > offline.
+## Which mode the flags ask for. Order matters: fx-bench > title > det-spike > match > garage > skirmish > lobby > host > server > client > offline.
 static func choose(p_flags: LaunchFlags) -> GameMode:
 	if p_flags.has("fx-bench"):
 		return FxBenchMode.new()  # look & feel's FX lab (game/theme/fx/bench/)
@@ -19,6 +20,8 @@ static func choose(p_flags: LaunchFlags) -> GameMode:
 		return DetSpikeMode.new()
 	if p_flags.has("match"):
 		return MatchRunnerMode.new()
+	if p_flags.has("garage"):
+		return GarageMode.new()
 	if p_flags.has("skirmish"):
 		return SkirmishMode.new()
 	if p_flags.has("lobby"):

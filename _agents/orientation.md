@@ -99,6 +99,7 @@ build/   (gitignored)    exports and screenshots
 | I want to… | Do |
 |---|---|
 | **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): click = who, right-drag = where/facing, Q-T drills, Z-N formations, Tab 3D view |
+| **Build an army, then fight with it** | `make garage` (browser `?garage`): tap/drag units into squads, pick weapons, FIGHT → skirmish. Saved armies: `user://doctrines/` |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
 | Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2`; doctrine series: `tools/match_series.py --extra="--green-doctrine=res://doctrines/X.json --rust-doctrine=…"` |
@@ -176,3 +177,5 @@ build/   (gitignored)    exports and screenshots
 40. **Signal lambdas that capture a refcounted object connected to that same object leak it** (`multiplayer.x.connect(func(): multiplayer…)`, or `peer.sig.connect(f.bind(peer))`). Exit prints "N resources still in use". Connect methods and look the object up inside.
 41. **"Stale input" must be judged from when the network was last read, not the physics tick's clock.** A browser host rendering at 2 fps read commands ~500 ms before simulating them and stopped every player's tank (`NetworkInput.command_for_tick`).
 42. **Don't trust float math across builds, and especially not trig.** Same seed: `+ − × ÷ √` hashed identically native vs wasm, but `sin/cos/atan2/exp` did not (`make det-spike` FLOAT_PROBE). Lockstep code must use `Fixed` (integers).
+38. **In a doctrine, a squad's `formation` alone means "form up and HOLD here."** `Squad.apply_command` turns a bare formation into `verb: hold`, so a CPU doctrine with formations never leaves its base (every garage CPU army lost 0-6 and drew 0-shot matches against each other until this was found). Player squads want it; CPU squads must omit `formation` and steer with objectives. Measure a new doctrine with a short match series before trusting it.
+39. **Tests must not write the player's real `user://` files.** Godot tests run with the same user dir as the game, so a test that opens the garage with default settings consumed the lead's first-run tips. Point stores and settings at test paths (or in-memory), and give automated runs a flag for it (`--garage-scratch`: in-memory settings and an emptied scratch save folder).
