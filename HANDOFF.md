@@ -53,5 +53,5 @@ Netcode is **paused** (its smokes stay in `make check`). Ownership, contracts C1
 ## Open questions for the lead
 
 1. **Control point as the default rule?** Round 1 measured that it restores "coordination wins" under shields.
-2. **Meshy spending cap for round 2?** The art stream logs credits per request in `assets/meshy_ledger.md`.
+2. ~~Meshy spending cap?~~ Answered: no cap, *"just don't be wasteful"* (recorded in `streams/art.md`).
 3. **Carried over:** rotate the Meshy API key (it was pasted in chat once); Git LFS for generated art; phone runs of `?fx-bench` and `?det-spike`; move `MESHY_API_KEY` above the interactive guard in `~/.bashrc` so agent shells see it.

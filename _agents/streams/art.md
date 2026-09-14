@@ -41,6 +41,10 @@ and the estimated 3D credits) → list the item under **Waiting on the lead** be
 ungated work. Only images the lead approves (quote their words here) go to image-to-3D. Keep a spend ledger
 (`assets/meshy_ledger.md`: date, task id, credits, result).
 
+**Spending (the lead, 2026-09-15):** *"I don't really care about the Meshy spending cap, just don't be wasteful."* No
+hard cap. Don't waste credits: batch and iterate on prompts at the cheap concept stage, never send an unapproved
+or duplicate image to 3D, reuse previews, and prefer the cheapest mode that meets the slot contract.
+
 ## Backlog (ungated items first, gated items as reviews come back)
 
 **X0. The review workflow:** `make art-review`, the ledger, and a short section in `assets/README.md`.
