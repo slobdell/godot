@@ -80,6 +80,42 @@ can capture `MATCH_RESULT` from the browser; see the measurement command in HAND
 - 2026-09-13: brief written; cross-platform determinism measured (diverges). Nothing started.
 - 2026-09-14: overnight backlog added with an assumed decision (N0 → N1 casual relay while N2 spikes).
 
+### Overnight run 2026-09-14 (netcode agent): morning report
+
+**Plan (in order):** N0 broker → N1 relay peer (headless relay-smoke, then browser) → bandwidth/latency
+measurements → N2 deterministic spike (native vs wasm) → N3 designs + a 10 s socket-drop test →
+stretch (replay recorder, hosting costs, anti-cheat notes).
+
+**Done**
+
+1. **N0 broker** (`server/broker/`, Node 22 + `ws` 8.21.3 pinned). `make broker-bootstrap`,
+   `make broker`, `make broker-test` (30 unit tests), `make broker-smoke` (real process: host + 2
+   players, 600 frames up, 600 down, one socket cut and resumed with zero reliable-frame loss, host
+   leaves → players told, `/stats` agrees). Protocol and decisions below under *N0 broker*.
+
+**Decisions (with reasons)**
+
+- Broker language: **Node + `ws`**. Node is already a project dependency (web smoke), `ws` is the
+  most used WebSocket server, one dependency (212 KB), and it runs on every cheap host. Go would be
+  leaner per connection but adds a toolchain for no gain at our message rates.
+- **Star topology enforced by the broker**: players can only address the host (Godot's
+  `server_relay = false`, enforced where a modified client can't skip it).
+- **Reconnect without losing reliable packets**: every frame carries a per-direction sequence
+  number; reliable frames are retained until acked; a resume retransmits what the other side
+  hasn't seen. Unreliable frames (snapshots) are never buffered. Without this, one dropped socket
+  loses a spawn/despawn RPC and Godot's replicated scene tree silently diverges.
+
+**Questions for the lead**
+
+1. *Assumed:* casual player-hosted matches through a relay first (N0 → N1) while N2 decides on
+   lockstep. Confirm or redirect.
+
+**Requests to other streams:** none yet.
+
+**Known issues:** none yet.
+
+**What to playtest:** `make broker-smoke`.
+
 ## Notes from other streams (2026-09-14)
 
 - Gameplay will add replicated state: `sync_shield` (G6), `sync_ammo`, `sync_heat` (G7). Budget bandwidth for it, and for more units per side (budgeted armies).
@@ -95,3 +131,35 @@ Rules: *Unattended runs* in workstreams.md. **Assumed decision (the lead hasn't 
 4. **N2 deterministic-core spike:** integer/fixed-point tank movement + shells + grid line-of-sight in GDScript (GDScript ints are 64-bit). Run the same command log native vs WebAssembly (the SwiftShader smoke browser is fine for *determinism*, which is CPU math) and compare hashes (`make det-spike`). Also measure the cost: can wasm GDScript tick 20 units at 30 Hz with headroom? Write a verdict: lockstep feasible, or not.
 5. **N3 designs:** the lockstep protocol (command scheduling at T+N, hash exchange, desync handling, reconnect/catch-up) if N2 passes, host migration or "host left" handling for N1, and how mobile backgrounding is survived (measured with a test that drops a client's socket for 10 s and rejoins).
 - **Stretch:** a command-log replay recorder/player (`make replay`); hosting cost estimates for the broker on common platforms (docs only, no accounts); an anti-cheat notes section for N1 (what a host can and can't fake).
+
+## N0 broker (built 2026-09-14)
+
+`server/broker/`: `src/protocol.mjs` (wire format), `src/broker.mjs` (rooms, relay, limits, resume),
+`src/main.mjs` (CLI; every limit is a `--kebab-case` flag), `src/test_peer.mjs` (test client),
+`smoke.mjs`. In-memory only; one process holds every room. HTTP `GET /healthz`, `GET /stats`
+(counts only, never room codes). WebSocket on any path (`/relay` behind a proxy works).
+
+**Control messages** (JSON text frames, `version: 1` on host/join):
+
+| Direction | op | Fields | Meaning |
+|---|---|---|---|
+| → | `host` | `max_peers?` | open a room; you are peer 1 |
+| ← | `hosted` | `room, peer_id, token, max_peers, heartbeat_ms, grace_ms` | 5-char code from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` |
+| → | `join` | `room, peer_id?` | proposed id is kept if free (Godot clients pick their id up front) |
+| ← | `joined` | `room, peer_id, token, host_id` | |
+| → | `resume` | `token, last_seq` | new socket for an existing seat; `last_seq` = last frame seq you received |
+| ← | `resumed` | `room, peer_id, last_seq, peers?` | `last_seq` = your last frame the broker got; retransmit reliable frames after it |
+| → / ← | `ack` | `seq` | trims the other side's retransmit buffer (broker acks every 250 ms) |
+| → | `leave`, `kick {peer_id}` (host), `set_open {open}` (host), `ping {t}` | | |
+| ← (host) | `peer_joined`, `peer_away`, `peer_back`, `peer_left {reason}` | `peer_id` | reasons: left, kicked, timeout, rate_limited, overflow |
+| ← (players) | `host_away`, `host_back`, `host_left {reason}` | | the room closes when the host leaves or its grace ends |
+| ← | `error` | `code, message` | then a 4xxx close for fatal ones (`protocol.mjs` `CLOSE`) |
+
+**Binary frames:** 9-byte header `int32 peer | uint8 flags | uint32 seq` + Godot's packet. `peer` is
+the target going up (0 all, N one, −N all but N) and the sender coming down. `flags` = transfer mode
+(bits 0-1) + channel (bits 2-7).
+
+**Limits (defaults):** 64 KiB frames, 4 KiB control, 16 peers/room, 1000 rooms, 10 s to
+host/join, ping every 5 s (two missed → away), 30 s grace, 4 MiB unacked reliable bytes per peer,
+rates host 6000 msg/s + 2 MiB/s and player 600 msg/s + 256 KiB/s (2 s burst; exceeding closes the
+seat with no grace), 5 wrong join codes per connection.

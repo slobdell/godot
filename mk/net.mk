@@ -47,3 +47,29 @@ combat-smoke: import ## Headless server with a bot + a stationary bot client tha
 	status=$$?; grep -E 'destroyed' $(BUILD_DIR)/combat-smoke-server.log || true; \
 	grep -E 'ERROR' $(BUILD_DIR)/combat-smoke-server.log && status=1; \
 	exit $$status
+
+# ---- Broker (N0: lobbies + relay; see _agents/streams/netcode.md) ----------------------
+# Ports derive from the per-worktree NET ports so parallel worktrees never collide.
+BROKER_DIR        := server/broker
+BROKER_DEPS       := $(BROKER_DIR)/node_modules/.package-lock.json
+BROKER_PORT       ?= $(shell echo $$(( $(NET_PORT) + 5 )))
+SMOKE_BROKER_PORT ?= $(shell echo $$(( $(SMOKE_NET_PORT) + 5 )))
+BROKER_HOST       ?= 127.0.0.1
+
+$(BROKER_DEPS): $(BROKER_DIR)/package.json $(BROKER_DIR)/package-lock.json
+	cd $(BROKER_DIR) && $(NPM) ci --no-audit --no-fund
+	touch $@
+
+broker-bootstrap: $(BROKER_DEPS) ## Install the broker's pinned Node dependencies (server/broker)
+
+broker: $(BROKER_DEPS) ## Run the match broker on ws://127.0.0.1:9085 (BROKER_PORT, BROKER_HOST=0.0.0.0 for LAN)
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(BROKER_PORT) --host=$(BROKER_HOST)
+
+broker-test: $(BROKER_DEPS) ## Broker unit tests (node --test)
+	cd $(BROKER_DIR) && $(NODE) --test test/*.test.mjs
+
+broker-smoke: $(BROKER_DEPS) ## Real broker process + scripted host/players: relay, drop + resume, host leaves
+	mkdir -p $(BUILD_DIR)
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) --heartbeat-ms=500 > $(BUILD_DIR)/broker-smoke.log 2>&1 & broker=$$!; \
+	trap 'kill $$broker 2>/dev/null' EXIT; \
+	$(NODE) $(BROKER_DIR)/smoke.mjs $(SMOKE_BROKER_PORT)
