@@ -43,6 +43,9 @@ const CONTACT_MEMORY_TICKS := 60 * 12
 @export var elimination := false
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
+## Tank.shield_recharge_delay. The hull is the lasting cost of a fight; mending it means going home.
+const REPAIR_HP_PER_SECOND := 4.0
 ## G7 resupply: tanks within this distance of their own base center regain one shell every
 ## RESUPPLY_SECONDS_PER_SHELL. Slow on purpose: a full reload (30 shells) takes a minute at base.
 const RESUPPLY_RADIUS := 30.0
@@ -65,7 +68,7 @@ var has_local_player := true
 var spawn_jitter := 0.0
 
 ## Counters for match results and experiments, indexed by team where it's a pair.
-var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0],
+var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0], "shield_damage": [0.0, 0.0],
 		"kills": [0, 0], "shells_resupplied": [0, 0],
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
@@ -329,10 +332,21 @@ func sorted_team_tanks(team: int) -> Array[Tank]:
 	return result
 
 
-## Shells trickle back to tanks inside their own base (G7). Deterministic: counted in ticks.
+## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base.
+## Deterministic: counted in ticks.
 func _resupply() -> void:
 	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * 60.0)
+	var ticks_per_hp := roundi(60.0 / REPAIR_HP_PER_SECOND)
 	for tank in _sorted_tanks():
+		if tank.is_alive() and tank.health < tank.max_health and in_resupply_zone(tank.team, tank.global_position) \
+				and tank.ticks_since_hit >= roundi(tank.shield_recharge_delay * 60.0):
+			tank.repair_ticks += INTEL_EVERY_TICKS
+			if tank.repair_ticks >= ticks_per_hp:
+				var hp := tank.repair_ticks / ticks_per_hp
+				tank.repair_ticks -= hp * ticks_per_hp
+				tank.repair(hp)
+		else:
+			tank.repair_ticks = 0
 		if not tank.is_alive() or tank.ammo < 0 or tank.ammo >= Weapons.max_ammo(tank.weapon):
 			tank.resupply_ticks = 0
 			continue
@@ -383,7 +397,7 @@ func _update_intel() -> void:
 					continue
 				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
 						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
-						"health": enemy.health, "weapon": enemy.weapon_id, "visible": true, "seen_tick": tick}
+						"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "visible": true, "seen_tick": tick}
 				break
 		for contact_name in known.keys():
 			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
@@ -525,13 +539,7 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
 		end = hit.position
 		var victim := hit.collider as Tank
 		if victim != null and victim.is_alive() and victim.team != tank.team:
-			var damage := roundi(float(weapon["damage"]) * Armor.weapon_multiplier(weapon, -victim.global_basis.z, direction))
-			stats["hits"][tank.team] += 1
-			stats["damage"][tank.team] += mini(damage, victim.health)
-			stats["laser_damage"][tank.team] += mini(damage, victim.health)
-			stats["hits_by_face"][Armor.FACING_NAMES[Armor.facing(-victim.global_basis.z, direction)]] += 1
-			if victim.apply_damage(damage):
-				_score_kill(tank.team, String(tank.name), victim)
+			_land_hit(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
 	show_beam.rpc(muzzle, end)
 
 
@@ -547,16 +555,8 @@ func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: T
 			continue
 		var attack := Vector3(victim.global_position.x - tank.global_position.x, 0.0,
 				victim.global_position.z - tank.global_position.z)
-		victim.damage_accumulator += weapon["damage_per_second"] * delta \
-				* Armor.weapon_multiplier(weapon, -victim.global_basis.z, attack)
-		var whole := int(victim.damage_accumulator)
-		if whole <= 0:
-			continue
-		victim.damage_accumulator -= whole
-		stats["flame_damage"][tank.team] += mini(whole, victim.health)
-		stats["damage"][tank.team] += mini(whole, victim.health)
-		if victim.apply_damage(whole):
-			_score_kill(tank.team, String(tank.name), victim)
+		_land_hit(victim, float(weapon["damage_per_second"]) * delta, weapon, attack, tank.team, String(tank.name),
+				"flame_damage", false)
 
 
 ## Tanks in a stable order (by name): anything that affects decisions or damage
@@ -568,6 +568,25 @@ func _sorted_tanks() -> Array[Tank]:
 			result.append(node)
 	result.sort_custom(func(a: Tank, b: Tank) -> bool: return String(a.name) < String(b.name))
 	return result
+
+
+## Every weapon's damage lands here (G6): shield first, then hull through the armor facing.
+## `direction` is the attack's travel direction. Returns true if it destroyed the victim.
+func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3, team: int, shooter: String,
+		weapon_stat: String, counts_as_hit: bool) -> bool:
+	var forward := -victim.global_basis.z
+	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)),
+			Armor.weapon_multiplier(weapon, forward, direction))
+	if counts_as_hit:
+		stats["hits"][team] += 1
+		stats["hits_by_face"][Armor.FACING_NAMES[Armor.facing(forward, direction)]] += 1
+	stats["damage"][team] += int(result["hull"])
+	stats["shield_damage"][team] += float(result["shield"])
+	if weapon_stat != "":
+		stats[weapon_stat][team] += int(result["hull"])
+	if result["killed"]:
+		_score_kill(team, shooter, victim)
+	return result["killed"]
 
 
 func _score_kill(team: int, killer: String, victim: Tank) -> void:
@@ -586,16 +605,9 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
 	if victim != null and victim.is_alive() and victim.team != shell.team:
-		var facing := Armor.facing(-victim.global_basis.z, shell.direction)
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
-		var damage := roundi(weapon["damage"] * Armor.weapon_multiplier(weapon, -victim.global_basis.z, shell.direction))
-		stats["hits"][shell.team] += 1
-		stats["damage"][shell.team] += mini(damage, victim.health)
-		stats["hits_by_face"][Armor.FACING_NAMES[facing]] += 1
-		killed = victim.apply_damage(damage)
-		if killed:
-			_score_kill(shell.team, shell.shooter_name, victim)
+		killed = _land_hit(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
 	show_impact.rpc(point, killed)
 	shell.queue_free()
 

@@ -32,6 +32,8 @@ func _burn(target_z: float, target_yaw: float, seconds: float, blocker := false)
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
 	_place(burner, 20.0, 0.0)
 	_place(target, target_z, target_yaw)
+	target.max_shield = 0.0
+	target.shield = 0.0  # hull damage math; shields are covered in test_shields.gd
 	if blocker:
 		var crate: Node3D = CRATE.instantiate()
 		crate.position = Vector3(LANE_X, 0.0, 14.0)
@@ -84,12 +86,13 @@ func test_brain_engages_a_visible_enemy() -> void:
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
 	_place(brain_tank, 20.0, 0.0)
 	_place(target, -20.0, PI / 2.0)
-	var lowest := target.health
+	var full := target.health + int(target.shield)
+	var lowest := full
 	for frame in 60 * 8:
 		await tree.physics_frame
-		lowest = mini(lowest, target.health)
-	assert_true(lowest < target.max_health, "within 8 s the brain senses (via team intel), engages, and hits (lowest %d)" % lowest)
-	assert_true(brain_tank.intent.begins_with("ENGAGE") or lowest < target.max_health, "its nameplate intent says what it's doing (%s)" % brain_tank.intent)
+		lowest = mini(lowest, target.health + int(target.shield))
+	assert_true(lowest < full, "within 8 s the brain senses (via team intel), engages, and hits (lowest health+shield %d)" % lowest)
+	assert_true(brain_tank.intent.begins_with("ENGAGE") or lowest < full, "its nameplate intent says what it's doing (%s)" % brain_tank.intent)
 
 
 func test_hurt_brain_backs_away_under_fire() -> void:
@@ -123,9 +126,10 @@ func test_brain_shoots_what_it_can_see_while_its_target_is_hidden() -> void:
 	add_to_tree(crate)
 	# Force the problem case: engage the hidden tank (as if a teammate had reported it).
 	brain.set_orders({"type": "stop"}, {"type": "target", "name": "Hidden", "fallback": true})
-	var lowest := exposed.health
+	var full := exposed.health + int(exposed.shield)
+	var lowest := full
 	for frame in 60 * 6:
 		await tree.physics_frame
-		lowest = mini(lowest, exposed.health)
+		lowest = mini(lowest, exposed.health + int(exposed.shield))
 	assert_true(not Perception.has_line_of_sight(brain_tank, hidden), "setup: the named target is hidden")
-	assert_true(lowest < exposed.max_health, "with fallback it fires at the enemy it CAN see (lowest %d)" % lowest)
+	assert_true(lowest < full, "with fallback it fires at the enemy it CAN see (lowest %d)" % lowest)

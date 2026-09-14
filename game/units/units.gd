@@ -19,8 +19,13 @@ const PROFILES := {
 		"display_name": "Tank",
 		"cost": 200,
 		# Mirrors today's Tank exports and Match constants; gameplay makes these authoritative.
-		"max_health": 400,
-		"max_shield": 0,
+		# G6 (2026-09-14): hull 400 -> 300 plus a 150 shield that recharges (effective 450 per fight).
+		"max_health": 300,
+		"max_shield": 150,
+		# The shield refills at shield_recharge_rate per second once no damage has landed for
+		# shield_recharge_delay seconds. Hull only repairs at base (Match.REPAIR_HP_PER_SECOND).
+		"shield_recharge_delay": 4.0,
+		"shield_recharge_rate": 50.0,
 		"max_forward_speed": 9.0,
 		"hull_turn_rate_deg": 80.0,
 		"sight_radius": 75.0,

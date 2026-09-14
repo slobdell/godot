@@ -14,6 +14,8 @@ var game_match: Match
 var team := Match.Team.GREEN
 
 var _had_contact := false
+## Squads currently reported as "shields down" (re-armed once most shields are back).
+var _shields_down := {}
 ## Tank names already reported as out of ammo (cleared when they have shells again).
 var _dry := {}
 var _last_contact_tick := -CONTACT_COOLDOWN_TICKS
@@ -37,6 +39,7 @@ func _physics_process(_delta: float) -> void:
 		_last_contact_tick = game_match.tick
 		_say("Contact: %d enem%s in sight" % [in_sight, "y" if in_sight == 1 else "ies"], Hud.WARNING)
 	_had_contact = in_sight > 0
+	_check_shields()
 	for tank in game_match.sorted_team_tanks(team):
 		var tank_name := String(tank.name)
 		if tank.is_alive() and tank.sync_ammo == 0:
@@ -45,6 +48,29 @@ func _physics_process(_delta: float) -> void:
 				_say("%s is out of ammo" % short_name(tank_name), Hud.WARNING)
 		else:
 			_dry.erase(tank_name)
+
+
+## G6: "Alpha: shields down" when at least half a squad's living tanks have no shield; said again
+## only after the squad's shields have mostly recharged.
+func _check_shields() -> void:
+	var by_name := game_match.tanks_by_name()
+	for squad in game_match.team_squads(team):
+		var alive := squad.alive_members(by_name)
+		if alive.is_empty():
+			continue
+		var down := 0
+		var charged := 0
+		for member in alive:
+			var tank := by_name[member] as Tank
+			if tank.max_shield <= 0.0:
+				continue
+			down += 1 if tank.sync_shield <= 0 else 0
+			charged += 1 if tank.sync_shield >= tank.max_shield * 0.5 else 0
+		if not _shields_down.has(squad.squad_name) and down * 2 >= alive.size() and down > 0:
+			_shields_down[squad.squad_name] = true
+			_say("%s: shields down" % squad.squad_name, Hud.WARNING)
+		elif _shields_down.has(squad.squad_name) and charged == alive.size():
+			_shields_down.erase(squad.squad_name)
 
 
 ## Connect TacticalMap.command_issued here. `summary` is the map's human description.

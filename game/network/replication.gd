@@ -17,6 +17,8 @@ const TANK_PROPERTIES := [
 	# Appended by gameplay G7 (2026-09-14): shells left (-1 = unlimited) and heat as 0..1.
 	["sync_ammo", SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	["sync_heat", SceneReplicationConfig.REPLICATION_MODE_ALWAYS],
+	# Appended by gameplay G6 (2026-09-14): shield points (recharges continuously, so ALWAYS).
+	["sync_shield", SceneReplicationConfig.REPLICATION_MODE_ALWAYS],
 ]
 
 

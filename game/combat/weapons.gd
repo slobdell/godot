@@ -25,6 +25,9 @@ const PROFILES := {
 		# tank mostly miss, so halting to shoot (hold, overwatch) matters.
 		"spread_deg": 0.8,
 		"armor": {"front": 0.5, "side": 1.0, "rear": 1.5},
+		# G6: damage to shields is (damage x shield_multiplier), evenly from any side; only what
+		# gets through the shield meets the armor table. Cannons are hull breakers.
+		"shield_multiplier": 0.8,
 		# G7: finite shells. Refilled slowly inside the team's base (Match.RESUPPLY_RADIUS), so
 		# pulling back is a real decision. Weapons without an "ammo" key never run out.
 		"ammo": 30,
@@ -44,6 +47,8 @@ const PROFILES := {
 		"spread_deg": 0.3,
 		"heat_per_shot": 12.0,
 		"armor": {"front": 0.7, "side": 1.0, "rear": 1.3},
+		# G6: energy weapons strip shields.
+		"shield_multiplier": 1.5,
 	},
 	"flamethrower": {
 		"kind": Kind.CONE,
@@ -56,6 +61,8 @@ const PROFILES := {
 		"aim_tolerance_deg": 12.0,
 		# Fire wraps around armor: facing matters much less than for shells.
 		"armor": {"front": 0.8, "side": 1.0, "rear": 1.2},
+		# G6: fire burns through shields quickly (the flamethrower's niche: finish what it reaches).
+		"shield_multiplier": 1.5,
 	},
 }
 

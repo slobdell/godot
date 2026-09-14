@@ -33,3 +33,17 @@ static func damage(base_damage: float, hull_forward: Vector3, shell_direction: V
 ## Multiplier for a weapon profile's own armor table (see Weapons.PROFILES).
 static func weapon_multiplier(weapon: Dictionary, hull_forward: Vector3, attack_direction: Vector3) -> float:
 	return weapon["armor"][FACING_NAMES[facing(hull_forward, attack_direction)]]
+
+
+## G6 shields: how one hit of `raw` damage splits between a shield holding `shield` points and the
+## hull behind it. The shield takes raw x shield_multiplier (no facing); whatever the shield can't
+## absorb continues to the hull as the matching fraction of raw, times the armor multiplier.
+## Returns Vector2(shield damage, hull damage).
+static func split_shield(raw: float, shield: float, shield_multiplier: float, armor_multiplier: float) -> Vector2:
+	var against_shield := raw * shield_multiplier
+	if shield <= 0.0 or against_shield <= 0.0:
+		return Vector2(0.0, raw * armor_multiplier)
+	if against_shield <= shield:
+		return Vector2(against_shield, 0.0)
+	var absorbed_fraction := shield / against_shield
+	return Vector2(shield, raw * (1.0 - absorbed_fraction) * armor_multiplier)

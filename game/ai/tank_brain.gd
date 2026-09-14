@@ -25,6 +25,10 @@ const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
+## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
+const SHIELD_DOWN_BREAK_HP := 0.75
+## A tank at base stays until its hull is back to this fraction (G6 repair).
+const REPAIR_TOP_UP := 0.9
 ## A tank at full heat fights with this fraction of its usual appetite (scaled in from 70% heat).
 const HOT_FIREPOWER := 0.75
 ## A tank in its base's resupply zone stays until its ammo is back to this fraction.
@@ -89,7 +93,13 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var d: Dictionary = s["directives"]
 	var weapon: Dictionary = me["weapon"]
 	var hp := float(me["health"]) / float(me["max_health"])
-	var confidence := lerpf(0.35, 1.0, hp)
+	# G6: confidence counts the shield (a fresh shield makes a fight winnable); retreat thresholds use
+	# the hull alone, because the hull is what doesn't come back.
+	var max_shield := float(me.get("max_shield", 0.0))
+	var shield := float(me.get("shield", 0.0))
+	var toughness := (float(me["health"]) + shield) / (float(me["max_health"]) + max_shield)
+	var shield_down := max_shield > 0.0 and shield <= 0.0
+	var confidence := lerpf(0.35, 1.0, toughness)
 	var contacts: Array = s["contacts"]
 	var objective: Variant = s["objective"]
 	var leash := float(d["leash"])
@@ -126,6 +136,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		retreat = 0.85 + 0.1 * float(d["caution"])
 	elif visible_threats >= 3 and hp < 0.6:
 		retreat = 0.45 * float(d["caution"])
+	elif shield_down and threats_on_me > 0 and hp < SHIELD_DOWN_BREAK_HP:
+		# G6: shield gone and the hull already worn: break contact, recharge, come back.
+		retreat = 0.45 + 0.35 * float(d["caution"])
 	add.call("RETREAT", "", retreat)
 
 	# RESUPPLY (G7): empty guns go home; tanks already at base top up; low tanks refill in quiet moments.
@@ -139,12 +152,21 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			resupply = 0.9 if visible_threats == 0 else 0.5
 		elif ammo_ratio <= OrderController.LOW_AMMO_FRACTION and visible_threats == 0:
 			resupply = 0.5
+	# G6 repair: the base also mends hulls. A worn tank at base stays until mended; a badly hurt one
+	# with nobody in sight heads home (this replaced standing still, and fixes camping hurt tanks:
+	# they go home, mend, and come back).
+	if bool(me.get("in_resupply_zone", false)) and hp < REPAIR_TOP_UP and visible_threats == 0:
+		resupply = maxf(resupply, 0.85)
+	elif hp < retreat_threshold and visible_threats == 0 and not commanded:
+		resupply = maxf(resupply, 0.6)
 	add.call("RESUPPLY", "", resupply)
 
 	# TAKE_COVER: guns on me, hurt, cautious, and somewhere hidden is close by.
 	var cover := 0.0
 	if not (s["cover"] as Array).is_empty() and threats_on_me > 0:
-		cover = float(d["caution"]) * minf(1.0, threats_on_me / 2.0) * (1.0 - hp) * 1.6
+		cover = float(d["caution"]) * minf(1.0, threats_on_me / 2.0) * (1.0 - toughness) * 1.6
+		if shield_down:
+			cover += 0.3 + 0.3 * float(d["caution"])  # G6: duck out of sight and let the shield come back
 	add.call("TAKE_COVER", "", cover)
 
 	var engages: Array = []
@@ -282,7 +304,10 @@ static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
 static func _priority(rule: String, contact: Dictionary, distance: float) -> float:
 	match rule:
 		"weakest":
-			return 1.0 - clampf(float(contact["health"]) / 100.0, 0.0, 1.0)
+			# Hull plus shield against a standard tank's full load (was health / 100, which rated every
+			# tank above 100 HP as equally healthy).
+			var full := float(Units.PROFILES["tank"]["max_health"]) + float(Units.PROFILES["tank"]["max_shield"])
+			return 1.0 - clampf((float(contact["health"]) + float(contact.get("shield", 0.0))) / full, 0.0, 1.0)
 		"most_exposed":
 			return {"rear": 1.0, "side": 0.7, "front": 0.3}[contact["exposed_face"]]
 		"threatening_allies":
@@ -331,6 +356,7 @@ func build_situation() -> Dictionary:
 			"velocity": known["velocity"],
 			"forward": known["forward"],
 			"health": known["health"],
+			"shield": known.get("shield", 0),
 			"weapon": known["weapon"],
 			"visible": known["visible"],
 			"age": game_match.tick - int(known["seen_tick"]),
@@ -369,6 +395,7 @@ func build_situation() -> Dictionary:
 		"self": {"name": String(tank.name), "team": team, "position": my_position, "forward": -tank.global_basis.z,
 				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
 				"ammo": tank.ammo, "max_ammo": Weapons.max_ammo(tank.weapon), "heat": tank.sync_heat,
+				"shield": tank.shield, "max_shield": tank.max_shield,
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
 		"directives": effective_directives,
 		"squad": squad_context if squad_context.get("slot") != null else null,

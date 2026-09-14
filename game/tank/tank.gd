@@ -22,8 +22,13 @@ signal died
 @export var acceleration := 14.0
 @export var hull_turn_rate := deg_to_rad(80.0)
 @export var turret_turn_rate := deg_to_rad(110.0)
-## Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 200.
-@export var max_health := 400
+## Hull. Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 400;
+## 2026-09-14 (G6): 300 plus a recharging shield (see Units.PROFILES).
+@export var max_health: int = Units.PROFILES["tank"]["max_health"]
+## G6 shield: absorbs damage before the hull and recharges after a quiet spell.
+@export var max_shield: float = Units.PROFILES["tank"]["max_shield"]
+@export var shield_recharge_delay: float = Units.PROFILES["tank"]["shield_recharge_delay"]
+@export var shield_recharge_rate: float = Units.PROFILES["tank"]["shield_recharge_rate"]
 @export var reload_seconds := 2.0
 ## G7 heat (see Units.PROFILES "heat_capacity"/"heat_dissipation").
 @export var heat_capacity: float = Units.PROFILES["tank"]["heat_capacity"]
@@ -49,6 +54,10 @@ var intent := ""
 
 var health := 200
 var alive := true
+## Shield points (0..max_shield). Simulating peer.
+var shield := 0.0
+## Physics ticks since the last damage landed (shield recharge and base repair wait on it).
+var ticks_since_hit := 1_000_000
 ## Shells left, or -1 for a weapon that never runs out (G7). Simulating peer.
 var ammo := -1
 ## Current heat (0..heat_capacity). Simulating peer.
@@ -67,8 +76,10 @@ var sync_reload := 1.0
 var sync_firing := false
 var sync_intent := ""
 var sync_ammo := -1
-## Match resupply bookkeeping: ticks spent in the base zone toward the next shell.
+var sync_shield := 0
+## Match base-service bookkeeping: ticks in the base zone toward the next shell / hull point.
 var resupply_ticks := 0
+var repair_ticks := 0
 ## Heat as a fraction of capacity, 0..1.
 var sync_heat := 0.0
 
@@ -87,6 +98,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _ready() -> void:
 	health = max_health
+	shield = max_shield
 	set_weapon(weapon_id)
 	_publish_state()
 	_previous_sync_position = sync_position
@@ -134,6 +146,9 @@ func _physics_process(delta: float) -> void:
 
 	sync_firing = false
 	heat = maxf(0.0, heat - heat_dissipation * delta)
+	ticks_since_hit += 1
+	if shield < max_shield and ticks_since_hit >= roundi(shield_recharge_delay * 60.0):
+		shield = minf(max_shield, shield + shield_recharge_rate * delta)
 	if weapon["kind"] == Weapons.Kind.CONE:
 		if cmd.fire:
 			sync_firing = true
@@ -162,6 +177,9 @@ func _process(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, sync_yaw, weight)
 		turret.rotation.y = lerp_angle(turret.rotation.y, sync_turret_yaw, weight)
 	nameplate.text = "%s  %d" % [display_name, sync_health]
+	if max_shield > 0.0:
+		nameplate.text += " +%d" % sync_shield
+	_hull_visual.invoke("set_shield", [float(sync_shield) / max_shield if max_shield > 0.0 else 0.0])
 	if sync_intent != "":
 		nameplate.text += "\n" + sync_intent
 	_weapon_visual.invoke("set_firing", [sync_firing and alive])
@@ -170,7 +188,35 @@ func _process(delta: float) -> void:
 
 # ---- Rules hooks (called by Match on the simulating peer) --------------------------
 
-## Returns true if this hit destroyed the tank.
+## A weapon hit (G6): the shield absorbs first (see Armor.split_shield), the rest hits the hull.
+## Fractions carry over between hits (flames deal a little every tick).
+## Returns {"shield": float, "hull": int, "killed": bool}.
+func take_hit(raw: float, shield_multiplier: float, armor_multiplier: float) -> Dictionary:
+	if not alive or raw <= 0.0:
+		return {"shield": 0.0, "hull": 0, "killed": false}
+	ticks_since_hit = 0
+	var split := Armor.split_shield(raw, shield, shield_multiplier, armor_multiplier)
+	shield = shield - split.x
+	if shield < 0.01:
+		shield = 0.0  # no float dust: "shield down" must read as exactly 0
+	damage_accumulator += split.y
+	var whole := int(damage_accumulator + 0.0001)
+	damage_accumulator = maxf(0.0, damage_accumulator - whole)
+	var hull := mini(whole, health)
+	var killed := apply_damage(whole) if whole > 0 else false
+	if whole == 0:
+		_publish_state()
+	return {"shield": split.x, "hull": hull, "killed": killed}
+
+
+## Hull points back (base repair). Simulating peer.
+func repair(amount: int) -> void:
+	if alive and amount > 0:
+		health = mini(max_health, health + amount)
+		_publish_state()
+
+
+## Direct hull damage, ignoring the shield. Returns true if this destroyed the tank.
 func apply_damage(amount: int) -> bool:
 	if not alive:
 		return false
@@ -192,6 +238,9 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	_speed = 0.0
 	_reload_left = 0.0
 	health = max_health
+	shield = max_shield
+	ticks_since_hit = 1_000_000
+	damage_accumulator = 0.0
 	ammo = Weapons.max_ammo(weapon)
 	heat = 0.0
 	_set_alive(true)
@@ -277,4 +326,5 @@ func _publish_state() -> void:
 	sync_reload = 1.0 - (_reload_left / reload_seconds) if reload_seconds > 0.0 else 1.0
 	sync_intent = intent
 	sync_ammo = ammo
+	sync_shield = roundi(shield)
 	sync_heat = snappedf(heat / heat_capacity, 0.01) if heat_capacity > 0.0 else 0.0

@@ -460,6 +460,8 @@ func _refresh_panels() -> void:
 			var readout := "--"
 			if tank != null and tank.is_alive():
 				readout = str(tank.health)
+				if tank.max_shield > 0.0:
+					readout += "+%d" % tank.sync_shield  # shield (G6)
 				if tank.sync_ammo >= 0:
 					readout += " a%d" % tank.sync_ammo  # shells left (G7)
 				if float(tank.weapon.get("heat_per_shot", 0.0)) > 0.0:

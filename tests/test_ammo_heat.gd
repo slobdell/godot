@@ -53,6 +53,8 @@ func test_the_laser_hits_instantly_and_never_runs_out() -> void:
 	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
 	target.global_position = Vector3(LANE_X, 0.0, -10.0)  # 30 m ahead
 	target.rotation.y = PI / 2.0  # side-on
+	target.max_shield = 0.0
+	target.shield = 0.0  # hull math here; lasers against shields: test_shields.gd
 	await wait_physics_frames(2)
 	assert_eq(shooter.ammo, -1, "lasers carry no ammo")
 	await _hold_trigger(shooter, target.global_position, 70)

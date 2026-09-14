@@ -133,6 +133,7 @@ func _describe(tank: Tank, viewer: Tank) -> Dictionary:
 		"heading": _compass(-tank.global_basis.z),
 		"turret": _compass(tank.turret_forward()),
 		"health": tank.sync_health,
+		"shield": tank.sync_shield,
 		"alive": tank.is_alive(),
 	}
 	if viewer != null:
