@@ -35,6 +35,7 @@ iterating until it looks like a game you'd want to play.
 | Original Android implementation | `~/projects/led-drone-microcontrollers/mavlink-hud/android-app/app/src/main/java/com/mavlink/hud/ui/CyberHudView.java` (HUD), `MapLibreCyberMap.java` (**cyber-styled map: the model for our radar**), `RssiView.java` |
 | Drawables (bracket borders, frames) | `…/android-app/app/src/main/res/drawable/bg_bracket_border.xml`, `bg_bracket_filled.xml`, `cyberpunk_border.xml` |
 | Palette | `…/android-app/app/src/main/res/values/colors.xml` |
+| **FX tricks catalog** (efficient lighting and effects on Compatibility/WebGL 2/phones, verified limits, and the FX lab protocol) | [references/fx_tricks.md](references/fx_tricks.md) |
 
 Read the original code for anything the specs don't cover (tapes, map styling, fonts). The
 specs are authoritative where they're explicit; their gotcha sections record mistakes already paid for.
@@ -52,6 +53,15 @@ specs are authoritative where they're explicit; their gotcha sections record mis
 | Conductors | core `#004D40`→`#008D9F` @ 59%, glow `#00E5FF` breathing to 71% |
 
 ## What to build (first milestone)
+
+0. **L0: the FX lab. Figure out the tricks before building the look on them.** The lead:
+   *"we need to figure out the 'tricks' to still render cool effects but do so in an efficient manner."*
+   Start from [references/fx_tricks.md](references/fx_tricks.md):
+   - Build `make fx-bench` (a worst-case firefight scene on a fixed camera path, per-trick toggles, `FX_BENCH` frame-time/draw-call output) plus an on-screen perf overlay.
+   - Prototype the core tricks as reusable pieces in `game/theme/fx/`: a **LightPool**, **pooled MultiMesh tracers with ground light splats**, a **laser beam** shader, **flipbook explosions** (replacing the per-hit allocation in `Impact`), **emissive neon** with shader flicker, and a **chunked ground**.
+   - Turn every **[verify]** in the catalog into a measured result in its Results table (support, ms cost, screenshot, verdict), and write the resulting **frame budget per quality tier** into this brief.
+   - Ask the lead for one phone run (`make serve-web WEB_HOST=0.0.0.0`, open `/?fx-bench` on the phone) when the lab is ready. Don't block on it; keep going with the desktop and real-browser numbers.
+   - `fx-bench` may use a standalone scene that reuses gameplay's tank/shell signals without editing gameplay code. Any hooks you need (e.g. the `fx.shell` slot) go through the lead/contracts.
 
 1. **Reusable HUD widgets in `game/ui/widgets/`:**
    - `CyberFrame`: chamfered translucent panel + glowing corner brackets (spec §3), for any panel.
@@ -79,10 +89,9 @@ specs are authoritative where they're explicit; their gotcha sections record mis
 - Scale geometry by `screen_height / 1080`; keep stroke widths and glow radii fixed, per the spec.
 
 ### Lighting on the Compatibility renderer (read before designing FX)
-- Real-time lights are **limited and expensive** on the Compatibility renderer (a per-object light limit and a total renderable light budget; check this Godot version's project settings and docs, e.g. `rendering/limits/opengl/max_lights_per_object`). Dozens of projectiles each carrying an `OmniLight3D` won't fly on a phone.
-- A pattern that scales: **a small, fixed pool of real `OmniLight3D`s** assigned to the most important events (nearest/brightest muzzle flashes, explosions, lasers), with everything else **faked**: unshaded emissive tracer meshes + environment glow, additive "light splat" quads or decals on the ground under a projectile, and emissive textures on props. Static neon on props can be emissive-only (plus baked light if it's supported and cheap).
-- Measure: an fps readout during a full 10v10 firefight in the browser; keep a quality setting (light-pool size) that can be lowered on phones.
-- All of this lives in visual slots, so the headless server and `make sim-baseline` never see it.
+- Verified in Godot 4.7.2: **8 real lights per object, 32 renderable lights** by default, and today's ground is **one** mesh, so dozens of projectiles each carrying an `OmniLight3D` won't work. The full catalog of workarounds (light pool, ground light splats, MultiMesh tracers, flipbooks, shader animation, chunked ground, fake wet reflections, quality tiers) is in [references/fx_tricks.md](references/fx_tricks.md). L0 proves which ones pay off.
+- **The SwiftShader-based `make web-smoke` is not a performance measurement.** Use native, a real GPU browser, and the lead's phone.
+- All of this lives in visual slots and `game/theme/fx/`, so the headless server and `make sim-baseline` never see it.
 
 ## Constraints
 
@@ -101,4 +110,4 @@ in merge notes. Compare against the reference app's look where possible.
 ## Status
 
 - 2026-09-13: brief written; `default` theme extracted into slots (placeholder boxes).
-- 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction (projectile light, glowing obstacles, lasers, heat/shield visuals) and mobile-first constraint added. Nothing started.
+- 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction (projectile light, glowing obstacles, lasers, heat/shield visuals) and mobile-first constraint added. FX tricks catalog + L0 FX lab added (the lead: efficiency tricks first). Nothing started.

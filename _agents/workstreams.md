@@ -104,7 +104,7 @@ stream that owns it, or through a contract change (below).
 | `game/ui/tactical_map.gd` (behavior), `game/ui/radar*` (new), `game/camera/`, `game/modes/{offline,skirmish,match_runner}_mode.gd` | gameplay |
 | `game/ui/widgets/**` (new: CyberFrame, CyberBanner, Conductors, reusable HUD components) | look & feel |
 | `doctrines/` | gameplay (garage adds player loadout files) |
-| `game/theme/**` (all art, the slot registry, team colors, UI palette) | look & feel |
+| `game/theme/**` (all art, the slot registry, team colors, UI palette, `game/theme/fx/` effect systems), `mk/fx.mk` (new: `fx-bench`) | look & feel |
 | `game/ui/hud.tscn` (HUD layout/styling) | look & feel (`hud.gd` text logic: gameplay) |
 | `assets/`, `tools/assets/`, `game/theme/*/generated/` | assets |
 | `game/network/`, `game/modes/{server,client}_mode.gd`, `tools/serve_web.py`, `tests/net/`, `mk/net.mk` | netcode |
