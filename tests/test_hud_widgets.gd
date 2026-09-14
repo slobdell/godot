@@ -173,6 +173,7 @@ func test_banners_move_beside_the_tactical_map_and_wrap() -> void:
 	await tree.process_frame
 	var messages := hud.get_node("CyberMessages") as CyberMessages
 	var arena_left := (1600.0 - 720.0) / 2.0
+	assert_eq(fake_map.theme, CyberUiTheme.get_theme(), "the tactical map (behind a CanvasLayer) gets the cyber UI theme")
 	assert_true(messages.status.column.has_area(), "with the tactical map up, info moves into a side column")
 	assert_true(messages.status.column.end.x <= arena_left, "the info column stays left of a top-down arena")
 	assert_true(messages.warning.column.position.x >= 1600.0 - arena_left, "warnings stay right of it")

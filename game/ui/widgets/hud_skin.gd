@@ -119,6 +119,9 @@ func _process(_delta: float) -> void:
 func _place_messages(screen: Vector2) -> void:
 	var tactical := _hud.get_node_or_null("TacticalMap")
 	var map_up: bool = tactical != null and tactical.visible
+	# Theme inheritance stops at the HUD's CanvasLayer, so style the map's Control directly.
+	if tactical is Control and (tactical as Control).theme == null:
+		(tactical as Control).theme = CyberUiTheme.get_theme()
 	var s := CyberStyle.ui_scale(screen)
 	var margin := 12.0 * s
 	var column_width := clampf((screen.x - screen.y) / 2.0 - margin * 2.0, 220.0 * s, screen.x * 0.26)
