@@ -217,3 +217,16 @@ relay-latency-smoke: import $(BROKER_DEPS) ## relay-smoke with 150 ms + 50 ms ji
 	$(call relay_client,relay-latency-smoke-client1,--demo --expect-tanks=5 --expect-any-damage --timeout=60 --measure=10 --relay-latency=150 --relay-jitter=50); \
 	$(call relay_client,relay-latency-smoke-client2,--demo --expect-tanks=5 --expect-any-damage --timeout=60 --relay-latency=150 --relay-jitter=50); \
 	$(call relay_verdict,relay-latency-smoke,relay-latency-smoke-client1 relay-latency-smoke-client2)
+
+# ---- Replays -----------------------------------------------------------------------------------
+# Lockstep-style: a match is its command log. Record one, replay it (every checkpoint hash must
+# match), then tamper with one command and prove the replay catches it.
+replay: import ## Record a deterministic-core command log, replay + verify every hash, and prove a 1-command tamper is caught
+	mkdir -p $(BUILD_DIR)/replays
+	$(GODOT) --headless --path . -- --det-spike --tanks=20 --ticks=1800 --save-replay=$(abspath $(BUILD_DIR))/replays/det.json 2>&1 | grep -E 'DET_REPLAY|DET_SPIKE_RESULT'
+	$(GODOT) --headless --path . -- --det-spike --replay-log=$(abspath $(BUILD_DIR))/replays/det.json 2>&1 | grep -E 'DET_REPLAY'
+	$(PYTHON) -c "import json; p='$(BUILD_DIR)/replays/det.json'; d=json.load(open(p)); c=d['commands'][len(d['commands'])//3]; c[3] = c[3] + 1 if c[3] < 127 else c[3] - 1; json.dump(d, open('$(BUILD_DIR)/replays/det-tampered.json', 'w')); print('tampered one command:', c)"
+	out=$$($(GODOT) --headless --path . -- --det-spike --replay-log=$(abspath $(BUILD_DIR))/replays/det-tampered.json 2>&1 || true); \
+	echo "$$out" | grep -E 'DET_REPLAY' || true; \
+	if echo "$$out" | grep -q 'DET_REPLAY DIVERGED'; then echo "replay passed: the tampered log was detected"; \
+	else echo "replay FAILED: a tampered log was not detected"; exit 1; fi
