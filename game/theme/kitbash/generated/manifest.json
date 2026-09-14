@@ -5,7 +5,7 @@
       "glb": "kit_billboard.glb",
       "license": "CC0 1.0 (Public Domain)",
       "notes": [
-        "decimated 1108 → 516 triangles (budget 1000)",
+        "decimated 1108 → 828 triangles (budget 1000)",
         "material 'Texture_Signs' made emissive ×2.5"
       ],
       "options": {
@@ -14,7 +14,7 @@
         },
         "exclude": [],
         "fitted_scale": 1.56444716453552,
-        "forward": "+z",
+        "forward": "-z",
         "include": [],
         "materials": {
           "heat": [],
@@ -26,7 +26,7 @@
       },
       "scene": "kit_billboard.tscn",
       "source": "https://poly.pizza/bundle/Cyberpunk-Game-Kit-Hkfxa8K8zF (Cyberpunk Signs, static.poly.pizza/44299e58-2793-47f6-8245-fba288fd2bfd.glb)",
-      "tris": 516.0
+      "tris": 828
     },
     "kit.light_pole": {
       "credit": "Quaternius, Toon Shooter Game Kit",
@@ -103,7 +103,7 @@
       },
       "scene": "prop_wall.tscn",
       "source": "https://poly.pizza/bundle/Toon-Shooter-Game-Kit-qraiSXoAru (Shipping Container, static.poly.pizza/e56c8efb-940f-4150-9bf8-d468c0165116.glb)",
-      "tris": 2656
+      "tris": 2656.0
     },
     "tank.hull": {
       "credit": "Quaternius, Animated Tank Pack",

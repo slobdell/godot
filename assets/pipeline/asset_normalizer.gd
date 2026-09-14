@@ -13,6 +13,9 @@ extends RefCounted
 ## Emission settings and textures on source materials are carried through untouched.
 
 ## Source axis names → vectors. glTF's convention is +Y up, models facing +Z.
+## Surfaces this small are decimated only if nothing else is left to reduce.
+const SMALL_SURFACE_TRIS := 64
+
 const AXES := {
 	"+x": Vector3.RIGHT, "-x": Vector3.LEFT, "+y": Vector3.UP, "-y": Vector3.DOWN,
 	"+z": Vector3.BACK, "-z": Vector3.FORWARD,
@@ -261,27 +264,40 @@ static func _build_mesh(groups: Array, budget: int, notes: PackedStringArray) ->
 		for surface in importer.get_surface_count():
 			_commit(mesh, importer, surface, importer.get_surface_arrays(surface))
 		return mesh
-	# Over budget: generate meshoptimizer LODs and take the most detailed level that fits.
+	# Over budget: generate meshoptimizer LODs, then step down the LOD of the surface with the most
+	# triangles until the model fits. Small surfaces (signs, decals, neon strips) are only touched as
+	# a last resort, because one LOD step collapses a 2-triangle quad into its frame.
 	importer.generate_lods(25.0, 60.0, [])
-	var chosen := -1
-	var chosen_tris := total
-	var deepest := 0
-	for surface in importer.get_surface_count():
-		deepest = maxi(deepest, importer.get_surface_lod_count(surface))
-	for level in deepest:
-		var tris := 0
-		for surface in importer.get_surface_count():
-			tris += _lod_indices(importer, surface, level).size() / 3
-		chosen = level
-		chosen_tris = tris
-		if tris <= budget:
+	var count := importer.get_surface_count()
+	var levels := []
+	var protected := []
+	for surface in count:
+		levels.append(-1)
+		protected.append(_lod_indices(importer, surface, -1).size() / 3 <= maxi(SMALL_SURFACE_TRIS, int(total * 0.1)))
+	var current := total
+	while current > budget:
+		var pick := -1
+		var pick_tris := 0
+		for pass_protected in [false, true]:
+			for surface in count:
+				if protected[surface] != pass_protected or levels[surface] + 1 >= importer.get_surface_lod_count(surface):
+					continue
+				var tris := _lod_indices(importer, surface, levels[surface]).size() / 3
+				if tris > pick_tris:
+					pick = surface
+					pick_tris = tris
+			if pick >= 0:
+				break
+		if pick < 0:
 			break
-	for surface in importer.get_surface_count():
+		levels[pick] += 1
+		current += _lod_indices(importer, pick, levels[pick]).size() / 3 - pick_tris
+	for surface in count:
 		var arrays := importer.get_surface_arrays(surface)
-		arrays[Mesh.ARRAY_INDEX] = _lod_indices(importer, surface, chosen)
+		arrays[Mesh.ARRAY_INDEX] = _lod_indices(importer, surface, levels[surface])
 		_commit(mesh, importer, surface, arrays)
-	notes.append("decimated %d → %d triangles (budget %d)" % [total, chosen_tris, budget])
-	if chosen_tris > budget:
+	notes.append("decimated %d → %d triangles (budget %d)" % [total, current, budget])
+	if current > budget:
 		notes.append("still over budget after the coarsest LOD")
 	return mesh
 

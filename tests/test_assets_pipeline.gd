@@ -127,6 +127,37 @@ func test_dense_models_are_decimated_to_the_budget() -> void:
 	assert_true(after["tris"] <= 2000 and after["tris"] > 200, "decimated under the 2000 budget without collapsing (%d tris)" % after["tris"])
 
 
+func test_decimation_spares_small_detail_surfaces() -> void:
+	var root: Node3D = _free_later(Node3D.new())
+	var sphere := SphereMesh.new()
+	sphere.radial_segments = 96
+	sphere.rings = 48
+	sphere.material = StandardMaterial3D.new()
+	sphere.material.resource_name = "body"
+	var body := MeshInstance3D.new()
+	body.mesh = sphere
+	root.add_child(body)
+	var plane := QuadMesh.new()  # a flat, subdivided decal: exactly what a LOD step collapses
+	plane.size = Vector2(1.0, 0.5)
+	plane.subdivide_width = 3
+	plane.subdivide_depth = 3
+	plane.material = StandardMaterial3D.new()
+	plane.material.resource_name = "sign"
+	var sign := MeshInstance3D.new()
+	sign.mesh = plane
+	sign.position = Vector3(0, 0, 0.6)
+	root.add_child(sign)
+	var result := AssetNormalizer.normalize(root, "prop.crate")
+	var tris := {}
+	var mesh: ArrayMesh = (result["scene"] as Node3D).get_node("Mesh").mesh
+	for surface in mesh.get_surface_count():
+		tris[mesh.surface_get_material(surface).resource_name] = mesh.surface_get_arrays(surface)[Mesh.ARRAY_INDEX].size() / 3
+	_free_later(result["scene"])
+	assert_eq(tris.get("sign", 0), 32, "the sign keeps all 32 triangles while the dense body is simplified")
+	assert_true(tris.get("body", 0) + tris.get("sign", 0) <= 2000, "and the model still fits the budget (%s)" % tris)
+	assert_true(tris.get("body", 0) >= 1000, "the body is reduced only as far as needed (%s)" % tris)
+
+
 func test_emissive_maps_survive_normalize_export_and_reload() -> void:
 	var root: Node3D = _free_later(Node3D.new())
 	var neon := StandardMaterial3D.new()

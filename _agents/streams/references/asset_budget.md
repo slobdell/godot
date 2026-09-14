@@ -68,6 +68,22 @@ at around **100–150k visible triangles and 150–250 draw calls** with cheap m
 into one small palette texture per model, keeping only the named `paint*` / `neon*` materials separate. That
 takes a prop to 2 draw calls. Identical props can also be drawn as a MultiMesh; the arena places them, so that's gameplay/look & feel's call.
 
+## Mesh LOD on the Compatibility renderer (measured)
+
+Godot's glTF importer generates LODs for every generated model (`meshes/generate_lods=true` in the `.import`), and
+**the Compatibility renderer uses them.** Primitives drawn for one kitbash tank hull (5,974 tris), 1280×720, by camera
+distance and the viewport's `mesh_lod_threshold` (`make`-less probe: `res://assets/pipeline/lod_probe.tscn`):
+
+| distance → | 4 m | 15 m | 30 m | 60 m | 120 m | 240 m |
+|---|---:|---:|---:|---:|---:|---:|
+| threshold 1.0 (default) | 5,974 | 5,974 | 5,974 | 5,974 | 4,102 | 3,862 |
+| threshold 4.0 | 5,974 | 5,974 | 4,102 | 3,862 | 3,230 | 3,230 |
+| threshold 16.0 | 5,974 | 3,862 | 3,230 | 3,230 | 3,230 | 3,230 |
+
+At RTS distances (30–60 m) the default threshold draws full detail. **`mesh_lod_threshold` is a free quality-tier knob**
+for look & feel's L6 (`FxQuality`): about 4 on low/phones cuts tank triangles by roughly 35% at play distance, with no
+new art. LODs never reduce draw calls. Hand-made LODs aren't needed while the importer's are this good.
+
 ## The web `.pck`: what it holds
 
 `build/web/index.pck`, measured with `tools/assets/pck_report.py` (exact, from the pack directory):
