@@ -53,7 +53,7 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   garage-picked flamethrower); mutation-checked (breaking weapon mirroring / budget refusal turns 2 red).
   Contract row "Loadout fields in doctrine JSON" in workstreams.md now lists the exact fields.
 - **GA1 + GA2 done.** `garage_screen.gd` (built from code, no .tscn): UNITS cards (stat bars + numbers, ADD, drag a
-  card onto a squad), SQUADS (≤3; formation + role pickers; unit chips: tap = equip, drag = move squad), EQUIP (turntable
+  card onto a squad), SQUADS (≤ `Doctrine.MAX_SQUADS`; formation + role pickers; unit chips: tap = equip, drag = move squad), EQUIP (turntable
   from visual slots, swipe to spin; weapon per hardpoint by tap or drag; components; per-unit role; paint swatches;
   REMOVE), top bar (name, budget bar, LOAD, SAVE), bottom (problems / READY, enemy picker, FIGHT). UI scales with
   screen height (1.5× at 1080 → ≥48 px taps). `garage_mode.gd`: `--garage` → garage → FIGHT saves to
@@ -62,7 +62,7 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   viewport (drag tests mutation-checked). Screenshots reviewed at 1920×1080 and 20:9.
   - Decision: first visit opens a ready starter army (3+2 tanks, the cheapest class) so FIGHT works immediately.
   - Decision: REMOVE moved into the EQUIP header after a test caught it scrolled off-screen at 720p.
-  - Decision: army saved on FIGHT under the army's name (overwrites the same name; SAVE does the same).
+  - Decision: FIGHT saves the army (superseded in the morning by per-army files; see *Saving* below).
 - **GA3 done.** `make garage-e2e`: `tests/garage/build_army.gd` builds a mixed army (3 squads, 2 flamethrowers,
   roles, paint) through `Loadout`, saves it to `user://doctrines/garage_e2e.json`, then the match runner fights it
   (`--green-doctrine=user://…` already worked, no adapter needed) vs Individuals to elimination; asserts 5 green tanks,
@@ -99,16 +99,35 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   keywords ("Laser runs hot: add a heat sink", "finite ammo: consider extra ammo", "close range: flank or ambush"),
   shown in EQUIP; COMPARE (bottom of UNITS) opens unit and weapon tables with derived damage/s and the best value
   per column highlighted. Paint shows in the skirmish via `GarageMode.paint_tanks` (visual only, deferred after
-  Match's team paint; an adapter until Match reads `paint`). `garage_tutorial.gd`: a 3-step tip bar that advances
+  Match's team paint; an adapter until Match reads `paint`). `garage_tutorial.gd` (now `garage_settings.gd`): a 3-step tip bar that advances
   as the player selects, edits, and fights (X skips), progress in `user://garage.cfg`; the first skirmish posts 3
   `Hud.post_message` tips. `--garage-panel=compare|share` for screenshots. 7 tests (paint test mutation-checked).
 - **Browser verified.** `make garage-web-smoke`: `?garage` boots (turntable renders under WebGL/SwiftShader) and
   `?garage&garage-autofight&enemy=cpu:rush` saves to `user://` (IndexedDB) and starts the skirmish with 5 v 5.
   `make web-smoke` passes. Screenshots reviewed.
 
-**Summary for the integrator:** the whole overnight backlog (GA0-GA4) and all four stretch items are done. Nothing
-blocked. `make check` (130 tests + `garage-smoke`), `make web-smoke`, and `make garage-web-smoke` pass on the last
-commit; sim baseline unchanged (`e69acc63a64f319a`). Not rebased on `main` (overnight rule).
+### After the lead's answers (2026-09-14, morning)
+
+- **Saving.** An army remembers the file it came from: SAVE and FIGHT update that file (even after a rename); a new
+  army (starter, preset, code) gets an unused file name on first save (`my_army`, `my_army_2`…), so two armies with
+  the same name never overwrite each other. The garage reopens on the army you last fought with. DELETE takes a
+  confirming second tap and leaves the army open, unsaved, so SAVE undoes a mistake. `GarageTutorial` became
+  `GarageSettings` (tips + last army). `--garage-scratch` (smoke, screenshots, browser smoke) uses in-memory
+  settings and an emptied `user://garage_scratch/`, so automated runs never touch the player's saves or tips.
+  4 tests.
+- **Big armies (up to 20).** Limits live in `GarageCatalog` (`max_units`, `max_squads` from `Doctrine`; new
+  `max_squad_size` = `Formations.MAX_MEMBERS` = 5, since formations place at most 5). Loadout refuses a 6th unit in a
+  squad (add or move) and flags oversized squads; 10 phonetic squad names. The screen: squad panels wrap
+  (`HFlowContainer`), ADD spills into the next squad with room (starting a squad if allowed) with a toast, and EQUIP
+  has a **Squad** picker so moving a unit doesn't need a drag. The starter buys what the budget allows in squads of
+  3 (more when needed); presets split an archetype squad into several capped squads. `GarageCatalog.preview()`: 20
+  units / 6 squads / scouts, artillery, lasers, machine guns, mortars, for `make garage CATALOG=preview` (not
+  playable: FIGHT is refused). 7 tests, incl. layout at 1280×720 and 2400×1080.
+
+**Summary for the integrator:** the whole overnight backlog (GA0-GA4) and all four stretch items are done, plus the
+morning follow-ups from the lead's answers (per-army saving, big armies up to 20). Nothing blocked. `make check`
+(141 tests + `garage-smoke`), `make web-smoke`, and `make garage-web-smoke` pass on the last commit; sim baseline
+unchanged (`e69acc63a64f319a`). Not rebased on `main`.
 
 **Shared-file edits (all additive):** `game/modes/game_mode.gd` (`--garage` → `GarageMode`, after `--match`),
 `game/main.gd` (one flag comment line), `Makefile` (`garage` in `LIGHT_GOALS`), `mk/core.mk` (`garage-smoke` added
@@ -117,7 +136,8 @@ to `check`), `_agents/workstreams.md` (Loadout fields contract row), `_agents/ve
 `tests/test_garage_*.gd`, `tests/garage/`.
 
 **Next steps:** adopt gameplay's real catalog when it lands (scouts, lasers, `COMPONENTS`, weapon costs) and delete
-`STUB_COMPONENTS`; remove `GarageMode.paint_tanks` once Match reads `paint`; try the garage on a real phone (drag inside
+`STUB_COMPONENTS`; once gameplay raises `Doctrine.MAX_TANKS`/`MAX_SQUADS` (and spawn slots), playtest a real 20-unit
+army end to end (today only `CATALOG=preview` shows one, and it can't fight); remove `GarageMode.paint_tanks` once Match reads `paint`; try the garage on a real phone (drag inside
 scrolling columns); a "rematch / back to garage" button after VICTORY/DEFEAT (needs a hook in skirmish); look & feel's
 styling pass.
 
@@ -125,6 +145,10 @@ styling pass.
 - `make garage`: the starter army is ready, so tap FIGHT → planning pause with your army vs a fresh CPU Balanced army.
   Try: PRESETS → Flamers, tap a unit, swap its weapon, drag a unit chip to another squad, drag the TANK card onto a
   squad, COMPARE, SHARE → COPY, paint a tank pink and find it in the skirmish.
+- Saving: SAVE, pick a preset, SAVE again (a second file, nothing overwritten); quit and `make garage` again (it
+  reopens the army you last fought with); DELETE twice, then SAVE to bring it back.
+- Big armies: `make garage CATALOG=preview` (20 units, 6 squads, scouts/artillery/lasers; FIGHT is refused). Tap ADD
+  with a full squad selected (it spills into the next one) and use EQUIP → Squad to move a unit.
 - Opponents: `make garage ENEMY=cpu:rush` (or turtle / flamers / a doctrine name); pin one with `--seed` by hand.
 - Browser: `?garage` (and `?garage&army=<code>` from `make garage-cpu-army PRESET=flamers SEED=2`).
 - Automated: `make garage-smoke` (in `make check`), `make garage-e2e`, `make garage-shots` → `build/screenshots/garage-*.png`.
@@ -138,24 +162,28 @@ styling pass.
 - FIGHT hands over in-process (GarageMode → SkirmishMode) instead of reloading the scene with new flags.
 - CPU opponents default to `cpu:balanced` with a random seed per fight (variety), printed in `GARAGE_FIGHT`.
 
-**Questions for the lead:**
-1. Paint: today it replaces the team color on painted tanks in the skirmish (visual only). Keep that, or should
-   paint be an accent (stripe/turret) so friend-or-foe stays readable at a glance?
-2. Budget vs `Doctrine.MAX_TANKS` (5): with 200-point tanks and a 1000 budget they coincide. Once scouts are cheaper,
-   should budgets allow more than 5 units (a gameplay limit)?
-3. Is saving on FIGHT (overwriting the army with the same name) OK, or do you want explicit save slots?
+**The lead's answers (2026-09-14 morning):**
+1. **Paint stays full-body.** Friend or foe will be shown by *accent lights* (look & feel), not by hull color.
+2. **Armies will get much bigger: "maybe max 20"** once scouts and other cheap vehicles exist. The garage now handles
+   that (see *Big armies* below); the cap itself is gameplay's `Doctrine.MAX_TANKS`.
+3. **Saving: "go with what you'd recommend."** Done: armies keep their own file (see *Saving* below).
+
+**Questions for the lead:** none open.
 
 **Requests to other streams** (nothing edited in their paths):
-- *Gameplay:* (a) read `unit`, `weapons`, `components`, `paint` from doctrine tanks when classes land (fields in
-  workstreams.md); (b) put `cost` on weapon profiles and `COMPONENTS` (id → {display_name, cost, description, stats})
-  in `Units`, which the garage already picks up; (c) apply `paint` in `Match._build_tank`, then
-  `GarageMode.paint_tanks` can go; (d) consider letting a doctrine squad start in a formation *without* holding
+- *Gameplay:* (0) **the lead wants armies of up to ~20 units**: raise `Doctrine.MAX_TANKS` (and `MAX_SQUADS`, e.g.
+  6; squads stay ≤ 5 for formations), and give `Match.SLOT_X` more than 9 spawn slots (it wraps with `%` today, so a
+  10th tank spawns on top of the first); the garage picks the new limits up automatically. (a) read `unit`,
+  `weapons`, `components`, `paint` from doctrine tanks when classes land (fields in workstreams.md); (b) put `cost` on weapon profiles and `COMPONENTS` (id → {display_name, cost, description, stats})
+  in `Units`, which the garage already picks up; (c) apply `paint` in `Match._build_tank` (full body, the lead
+  confirmed), then `GarageMode.paint_tanks` can go; (d) consider letting a doctrine squad start in a formation *without* holding
   (today `formation` alone = hold at base, which silently parked every CPU army); (e) skirmish's status line
   shows the enemy's path (`user://doctrines/cpu/rush.json`); showing the doctrine `name` would read better;
   (f) backlog item 12 (CPU armies in skirmish) can call `ArmyPresets.build(archetype, GarageCatalog.from_game(), seed)`;
   (g) archetype results above: Rush 22/24, Turtle 2/24 in the round robin.
-- *Look & feel:* style the garage by adding `garage_bg`, `garage_panel`, `garage_text_dim` to `GameTheme.ui` (read with
-  fallbacks); the turntable uses theme slots, so new hull/turret art shows up there; a CyberFrame around panels would
+- *Look & feel:* **friend or foe is shown by accent lights, not hull color** (the lead: players paint their whole
+  tank), so team identity needs a light/emissive accent on tank visuals, separate from paint. Style the garage by adding `garage_bg`, `garage_panel`, `garage_text_dim` to
+  `GameTheme.ui` (read with fallbacks); the turntable uses theme slots, so new hull/turret art shows up there; a CyberFrame around panels would
   be welcome. Garage tips go through `Hud.post_message` after FIGHT.
 - *Netcode:* army codes (`ArmyCode`, `TS1…`) are a compact portable format if armies ever travel over the wire or live
   server-side.

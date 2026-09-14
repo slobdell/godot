@@ -40,18 +40,26 @@ var units: Dictionary
 var weapons: Dictionary
 var components: Dictionary
 var budget: int
+## Army limits. Today's come from the doctrine loader (5 units, 3 squads); the lead wants ~20 units once
+## cheaper classes exist, and the garage already handles that (tests and the preview catalog use 20).
 var max_units: int
 var max_squads: int
+## A squad holds at most this many units (formations place up to Formations.MAX_MEMBERS).
+var max_squad_size: int
+## False for catalogs the game can't field yet (the preview): FIGHT is refused and problems skip Doctrine.parse.
+var playable := true
 
 
 func _init(p_units: Dictionary, p_weapons: Dictionary, p_components: Dictionary, p_budget: int,
-		p_max_units := Doctrine.MAX_TANKS, p_max_squads := Doctrine.MAX_SQUADS) -> void:
+		p_max_units := Doctrine.MAX_TANKS, p_max_squads := Doctrine.MAX_SQUADS,
+		p_max_squad_size := Formations.MAX_MEMBERS) -> void:
 	units = p_units
 	weapons = p_weapons
 	components = p_components
 	budget = p_budget
 	max_units = p_max_units
 	max_squads = p_max_squads
+	max_squad_size = p_max_squad_size
 
 
 ## The catalog the game ships with today.
@@ -60,6 +68,32 @@ static func from_game() -> GarageCatalog:
 	var game_components: Dictionary = constants.get("COMPONENTS", STUB_COMPONENTS)
 	return GarageCatalog.new(Units.PROFILES, Weapons.PROFILES, game_components,
 			int(constants.get("DEFAULT_BUDGET", 1000)))
+
+
+## A catalog shaped like gameplay's directive set 2 plans: scout, tank, artillery, a laser with heat, heat
+## sinks, and a 20-unit army in up to 6 squads. For previewing the garage at the size the lead wants
+## (`make garage CATALOG=preview`); the game can't field it, so it isn't playable.
+static func preview() -> GarageCatalog:
+	var units := {
+		"scout": {"display_name": "Scout", "cost": 90, "max_health": 180, "max_shield": 60, "max_forward_speed": 15.0,
+				"hull_turn_rate_deg": 140.0, "sight_radius": 120.0, "component_slots": 1,
+				"hardpoints": [{"id": "main", "accepts": ["machine_gun", "laser"]}]},
+		"tank": {"display_name": "Tank", "cost": 200, "max_health": 400, "max_shield": 120, "max_forward_speed": 9.0,
+				"hull_turn_rate_deg": 80.0, "sight_radius": 75.0, "component_slots": 2,
+				"hardpoints": [{"id": "main", "accepts": ["cannon", "laser", "flamethrower"]}]},
+		"artillery": {"display_name": "Artillery", "cost": 260, "max_health": 250, "max_shield": 40, "max_forward_speed": 6.0,
+				"hull_turn_rate_deg": 50.0, "sight_radius": 60.0, "component_slots": 1,
+				"hardpoints": [{"id": "main", "accepts": ["mortar"]}]},
+	}
+	var weapons: Dictionary = Weapons.PROFILES.duplicate(true)
+	weapons["machine_gun"] = {"display_name": "Machine gun", "range": 45.0, "damage": 6.0, "reload": 0.2, "ammo": 400}
+	weapons["laser"] = {"display_name": "Laser", "cost": 25, "range": 55.0, "damage": 14.0, "reload": 0.8, "heat_per_shot": 9.0}
+	weapons["mortar"] = {"display_name": "Mortar", "range": 110.0, "damage": 60.0, "reload": 5.0, "ammo": 24}
+	weapons["cannon"]["ammo"] = 40
+	var components := STUB_COMPONENTS.duplicate(true)
+	var catalog := GarageCatalog.new(units, weapons, components, 3000, 20, 6)
+	catalog.playable = false
+	return catalog
 
 
 ## Unit ids, cheapest first (ties by id), so the garage lists them in a stable, sensible order.

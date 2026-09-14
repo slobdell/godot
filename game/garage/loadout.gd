@@ -16,7 +16,7 @@ extends RefCounted
 signal changed
 
 const SCHEMA := 1
-const SQUAD_NAMES := ["Alpha", "Bravo", "Charlie", "Delta", "Echo"]
+const SQUAD_NAMES := ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliet"]
 ## Cosmetic paints offered in the garage ("" = team color).
 const PAINTS := ["", "#c8a02a", "#3a8fd0", "#d04a8c", "#35c0a0", "#e0e0e0", "#303030"]
 
@@ -135,6 +135,9 @@ func problems(with_loader := true) -> PackedStringArray:
 	for squad_data in squads():
 		if squad_data.get("tanks", []).is_empty():
 			found.append("%s has no units: add one or remove the squad." % squad_data.get("name", "A squad"))
+		elif squad_data.get("tanks", []).size() > catalog.max_squad_size:
+			found.append("%s has %d units; a squad holds at most %d." % [squad_data.get("name", "A squad"),
+					squad_data["tanks"].size(), catalog.max_squad_size])
 		for tank in squad_data.get("tanks", []):
 			var problem := unit_problem(tank)
 			if problem != "":
@@ -143,7 +146,7 @@ func problems(with_loader := true) -> PackedStringArray:
 		found.append("Too many units: %d of %d." % [unit_count(), catalog.max_units])
 	if total_cost() > catalog.budget:
 		found.append("Over budget by %d." % (total_cost() - catalog.budget))
-	if found.is_empty() and with_loader:
+	if found.is_empty() and with_loader and catalog.playable:
 		# The final word belongs to the loader the match uses.
 		var parsed := Doctrine.parse(to_doctrine())
 		if parsed.has("error"):
@@ -193,12 +196,25 @@ func add_squad() -> String:
 	if squads().size() >= catalog.max_squads:
 		return "An army has at most %d squads." % catalog.max_squads
 	var taken := squads().map(func(s: Dictionary) -> String: return String(s["name"]))
-	for candidate: String in SQUAD_NAMES:
+	var candidates: Array = SQUAD_NAMES.duplicate()
+	for n in range(SQUAD_NAMES.size() + 1, SQUAD_NAMES.size() + catalog.max_squads + 1):
+		candidates.append("Squad_%d" % n)
+	for candidate: String in candidates:
 		if not taken.has(candidate):
 			squads().append(new_squad(candidate))
 			changed.emit()
 			return ""
 	return "No free squad name."
+
+
+## The first squad that can take another unit (adding a squad if allowed), or -1.
+func squad_with_room(preferred := 0) -> int:
+	if squad(preferred).get("tanks", []).size() < catalog.max_squad_size and not squad(preferred).is_empty():
+		return preferred
+	for index in squads().size():
+		if squad(index)["tanks"].size() < catalog.max_squad_size:
+			return index
+	return squads().size() - 1 if add_squad() == "" else -1
 
 
 ## Removing a squad also removes its units (they'd have nowhere to go).
@@ -236,6 +252,8 @@ func add_unit(squad_index: int, unit_id: String) -> String:
 		return "Unknown unit %s." % unit_id
 	if unit_count() >= catalog.max_units:
 		return "The army is full: %d units max." % catalog.max_units
+	if squad(squad_index)["tanks"].size() >= catalog.max_squad_size:
+		return "%s is full: %d units per squad." % [squad(squad_index)["name"], catalog.max_squad_size]
 	var tank := new_unit(unit_id)
 	if unit_cost(tank) > remaining_budget():
 		return "Not enough budget: %s costs %d, %d left." % [
@@ -261,6 +279,8 @@ func move_unit(from_squad: int, unit_index: int, to_squad: int) -> String:
 		return "Can't move that unit there."
 	if from_squad == to_squad:
 		return ""
+	if squad(to_squad)["tanks"].size() >= catalog.max_squad_size:
+		return "%s is full: %d units per squad." % [squad(to_squad)["name"], catalog.max_squad_size]
 	squad(to_squad)["tanks"].append(source.pop_at(unit_index))
 	changed.emit()
 	return ""

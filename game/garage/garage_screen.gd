@@ -5,10 +5,11 @@ extends Control
 ##
 ##   UNITS    catalog cards with stat bars. Tap ADD (joins the selected squad) or drag a card onto a squad.
 ##            COMPARE opens side-by-side unit and weapon tables (best values highlighted).
-##   SQUADS   up to Doctrine.MAX_SQUADS. Tap a squad to select it; pick its formation and role.
-##            Tap a unit chip to equip it; drag a chip onto another squad to move it.
+##   SQUADS   up to catalog.max_squads, each ≤ max_squad_size (5); panels wrap for big armies. Tap a squad to
+##            select it; pick its formation and role. Tap a unit chip to equip it; drag a chip onto another
+##            squad to move it. ADD into a full squad spills into the next one with room.
 ##   EQUIP    the selected unit on a turntable (swipe to spin): a weapon per hardpoint (tap, or drag a
-##            weapon chip onto the hardpoint), components, role, paint, remove.
+##            weapon chip onto the hardpoint), components, trade-off hints, squad (tap to move), role, paint, remove.
 ##   TOP      army name, budget bar, presets, load, save, delete, share (army codes).   BOTTOM  problems, enemy, FIGHT.
 ##
 ## Saving: an army remembers the file it came from. SAVE and FIGHT update that file; a new army (starter,
@@ -51,7 +52,8 @@ var _name_edit: LineEdit
 var _budget_bar: ProgressBar
 var _budget_label: Label
 var _catalog_box: VBoxContainer
-var _squads_box: HBoxContainer
+## Squad panels wrap onto new rows, so 6 squads (big armies) fit a phone-width screen.
+var _squads_box: HFlowContainer
 var _inspector: VBoxContainer
 var _turntable: GarageTurntable
 var _problems_label: Label
@@ -86,15 +88,22 @@ func _ready() -> void:
 	_build()
 
 
-## A ready-to-fight army for a first visit: the cheapest unit class, 3 in Alpha and the rest in Bravo.
+## A ready-to-fight army for a first visit: as many of the cheapest class as the budget buys, in squads
+## of 3 (more per squad when a big army needs it), alternating wedge and line.
 static func starter_loadout(catalog: GarageCatalog) -> Loadout:
 	var loadout := Loadout.new(catalog)
-	loadout.add_squad()
 	var cheapest := catalog.unit_ids()[0]
-	for i in catalog.max_units:
-		if loadout.add_unit(0 if i < 3 else 1, cheapest) != "":
+	var probe := loadout.unit_cost(loadout.new_unit(cheapest))
+	var count := mini(catalog.max_units, catalog.budget / maxi(probe, 1))
+	var per_squad := clampi(ceili(float(count) / catalog.max_squads), 3, catalog.max_squad_size)
+	for i in count:
+		var squad_index := i / per_squad
+		if squad_index >= loadout.squads().size():
+			if loadout.add_squad() != "":
+				break
+			loadout.set_formation(squad_index, "wedge" if squad_index % 2 == 0 else "line")
+		if loadout.add_unit(squad_index, cheapest) != "":
 			break
-	loadout.set_formation(1, "line")
 	return loadout
 
 
@@ -184,8 +193,10 @@ func _build() -> void:
 	rows.add_child(body)
 	body.add_child(_column("UNITS", 0.9, func(box: VBoxContainer) -> void: _catalog_box = box))
 	var squads_scroll := _column("SQUADS", 1.6, func(_box: VBoxContainer) -> void: pass)
-	_squads_box = HBoxContainer.new()
-	_squads_box.add_theme_constant_override("separation", int(8 * ui_scale))
+	_squads_box = HFlowContainer.new()
+	_squads_box.add_theme_constant_override("h_separation", int(8 * ui_scale))
+	_squads_box.add_theme_constant_override("v_separation", int(8 * ui_scale))
+	_squads_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_squads_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	squads_scroll.get_meta("box").add_child(_squads_box)
 	body.add_child(squads_scroll)
@@ -584,6 +595,7 @@ func _squad_panel(squad_index: int) -> Control:
 	var panel := PanelContainer.new()
 	panel.name = "Squad_%d" % squad_index
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.custom_minimum_size.x = 215 * ui_scale
 	panel.add_theme_stylebox_override("panel", _panel_style(_color("commander") if selected else _color("garage_text_dim").darkened(0.4),
 			3 if selected else 1))
 	var rows := VBoxContainer.new()
@@ -752,6 +764,10 @@ func _refresh_inspector() -> void:
 		_inspector.add_child(components)
 
 	_inspector.add_child(_section("ORDERS"))
+	if loadout.squads().size() > 1:
+		var squad_names: Array = loadout.squads().map(func(squad_data: Dictionary) -> String: return String(squad_data["name"]))
+		_inspector.add_child(_option_menu("Squad", squad_names, String(loadout.squad(selected_squad)["name"]),
+				func(value: String) -> void: move_selected_unit(squad_names.find(value))))
 	var role := String(tank.get("directive", {}).get("role", "")) if typeof(tank.get("directive")) == TYPE_DICTIONARY else ""
 	var roles: Array = [""] + Directives.ROLES
 	var role_row := _option_menu("Role", roles, role, func(value: String) -> void:
@@ -799,7 +815,11 @@ func _paint_color(tank: Dictionary) -> Color:
 
 func _refresh_problems() -> void:
 	var problems := loadout.problems()
-	if problems.is_empty():
+	if problems.is_empty() and not loadout.catalog.playable:
+		_problems_label.text = "PREVIEW: %s, %d units. The game can't field these units yet." % [loadout.army.get("name", ""), loadout.unit_count()]
+		_problems_label.add_theme_color_override("font_color", _color("commander"))
+		problems = PackedStringArray(["preview"])  # dims FIGHT below
+	elif problems.is_empty():
 		_problems_label.text = "READY: %s, %d units. Tap FIGHT." % [loadout.army.get("name", ""), loadout.unit_count()]
 		_problems_label.add_theme_color_override("font_color", _color("friendly"))
 	else:
@@ -829,12 +849,29 @@ func select_unit(squad_index: int, unit_index: int) -> void:
 	_refresh()
 
 
+## Adds to the selected squad, or (when it's full) the next squad with room, starting a new one if allowed.
 func add_unit(unit_id: String) -> String:
-	if loadout.squads().is_empty():
-		loadout.add_squad()
-	var error := loadout.add_unit(selected_squad, unit_id)
+	if loadout.unit_count() >= loadout.catalog.max_units:
+		return _act("The army is full: %d units max." % loadout.catalog.max_units)
+	var target := loadout.squad_with_room(selected_squad)
+	if target < 0:
+		return _act("Every squad is full.")
+	var error := loadout.add_unit(target, unit_id)
 	if error == "":
-		selected_unit = loadout.squad(selected_squad)["tanks"].size() - 1
+		if target != selected_squad and not loadout.squad(selected_squad).is_empty():
+			_show_toast("%s is full: added to %s." % [loadout.squad(selected_squad)["name"], loadout.squad(target)["name"]], false)
+		selected_squad = target
+		selected_unit = loadout.squad(target)["tanks"].size() - 1
+		_refresh()
+	return _act(error)
+
+
+## Tap alternative to dragging a unit chip: move the selected unit to another squad.
+func move_selected_unit(to_squad: int) -> String:
+	var error := loadout.move_unit(selected_squad, selected_unit, to_squad)
+	if error == "" and to_squad != selected_squad:
+		selected_squad = to_squad
+		selected_unit = loadout.squad(to_squad)["tanks"].size() - 1
 		_refresh()
 	return _act(error)
 
@@ -923,6 +960,9 @@ func _refresh_delete() -> void:
 
 ## Saves and asks to start the skirmish. Returns the saved path, or "" if the army can't fight yet.
 func fight() -> String:
+	if not loadout.catalog.playable:
+		_act("This is a preview catalog: the game can't field these units yet.")
+		return ""
 	var problems := loadout.problems()
 	if not problems.is_empty():
 		_act("Not ready: " + problems[0])
