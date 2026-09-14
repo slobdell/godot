@@ -20,6 +20,7 @@ var streaks: StreakSystem
 var underglow: UnderglowSystem
 var beams: BeamSystem
 var shake := CameraShake.new()
+var sfx: SfxSystem
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
 ## Muzzle flashes when a projectile appears (the fx.shell slot has no firing hook, so a new
@@ -72,6 +73,8 @@ func _init() -> void:
 	tracers.splats_enabled = FxQuality.value("splats")
 	for system in [lights, tracers, bursts, streaks, underglow, beams]:
 		add_child(system)
+	sfx = SfxSystem.new()
+	add_child(sfx)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -163,6 +166,7 @@ func remove_tracer(source: Node3D) -> void:
 
 
 func muzzle_flash(position: Vector3, color: Color) -> void:
+	sfx.play_at("cannon_shot", position)
 	bursts.spawn(BurstSystem.Kind.STAR, position, 2.4, 0.09, color, now)
 	bursts.spawn(BurstSystem.Kind.GROUND_GLOW, position, 5.0, 0.2, color * 0.6, now)
 	lights.flash(position, color.lightened(0.3), 5.0, 8.0, 0.1, LightPool.PRIORITY_MUZZLE, now)
@@ -172,6 +176,7 @@ func muzzle_flash(position: Vector3, color: Color) -> void:
 ## glow. `source` is the beam visual (removed when it's freed).
 func laser(source: Object, from: Vector3, to: Vector3, color: Color) -> void:
 	beams.add(source, from, to, color, now)
+	sfx.play_at("laser_pulse", from)
 	bursts.spawn(BurstSystem.Kind.STAR, from, 1.6, 0.08, color, now)
 	bursts.spawn(BurstSystem.Kind.STAR, to, 2.2, 0.14, color.lightened(0.4), now)
 	bursts.spawn(BurstSystem.Kind.GROUND_GLOW, to, 6.0, 0.35, color * 0.8, now)
@@ -192,5 +197,6 @@ func explosion(position: Vector3, big := false) -> void:
 	if explosion_lights:
 		lights.flash(position + Vector3(0, 1.5, 0), Color(1.0, 0.55, 0.2), 10.0 if big else 6.0,
 				22.0 if big else 12.0, 0.8 if big else 0.4, LightPool.PRIORITY_EXPLOSION, now)
+	sfx.play_at("explosion_big" if big else "explosion_small", position)
 	# Kills jolt the view; ordinary hits only register up close.
 	shake.add(0.55 if big else 0.12, position, 30.0 if big else 14.0)

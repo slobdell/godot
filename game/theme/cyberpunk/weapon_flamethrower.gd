@@ -10,6 +10,7 @@ var firing := false
 var flame := MeshInstance3D.new()
 var ground_glow := MeshInstance3D.new()
 var _length := 20.0
+var _roar: AudioStreamPlayer3D
 
 
 func _ready() -> void:
@@ -61,9 +62,31 @@ func setup(weapon: Dictionary) -> void:
 
 
 func set_firing(value: bool) -> void:
+	if value == firing:
+		return
 	firing = value
 	flame.visible = value
 	ground_glow.visible = value
+	_set_roar(value)
+
+
+## The flame's roar: one looping voice per flamethrower, created the first time it fires.
+func _set_roar(on: bool) -> void:
+	var fx := FxWorld.existing()
+	if fx == null or fx.sfx.muted or not fx.sfx.streams.has("flame_loop"):
+		return
+	if _roar == null:
+		_roar = AudioStreamPlayer3D.new()
+		_roar.stream = fx.sfx.streams["flame_loop"]
+		_roar.unit_size = 45.0
+		_roar.max_distance = 500.0
+		_roar.volume_db = -6.0
+		_roar.position = Vector3(0, 0, -4.0)
+		add_child(_roar)
+	if on:
+		_roar.play()
+	else:
+		_roar.stop()
 
 
 func _process(_delta: float) -> void:

@@ -211,6 +211,16 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   accents alone. Test: paint never changes the accents. `GameTheme.ui` gains the garage's
   `garage_bg`, `garage_panel`, `garage_text_dim`.
 
+- **Stretch: sound design.** Ten effects **synthesized from scratch** by `make sfx`
+  (`game/theme/audio/make_sfx.gd` → `assets/audio/*.wav`, 264 KB, CC0, README with how each is made):
+  cannon shot, small/big explosion, laser pulse, shield hit/down, flame roar loop, UI blip/alert/tick.
+  Checked numerically since I can't listen: envelopes and pitch sweeps as designed, no clipping or DC,
+  and ≥ 50% of the heavy sounds' energy above 200 Hz so phone speakers play them (first pass was
+  sub-bass: cannon 15% → saturated to 57%). `SfxSystem` in FxWorld: 14 pooled 3D voices + 3 UI voices,
+  voice stealing, per-sound volume and pitch spread, attenuation tuned for the 200 m tactical camera;
+  hooked to muzzle flashes, explosions, laser pulses, shield hit/break (rate-limited under flames),
+  flamethrower roar while firing, banner open (blip/alert), FX button. `--mute`. Test: pool never grows.
+
 #### Frame budget per quality tier (L0, re-measured in L6; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured (UHD 620, 720p) |
 |---|---|---|---|---|---|---|---|---|---|
@@ -262,7 +272,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- Stretch: procedural SFX (in progress), then an animated title screen.
+- Stretch: animated title screen (in progress).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

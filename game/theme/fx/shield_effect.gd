@@ -19,6 +19,8 @@ var _hit := 0.0
 var _down := 0.0
 var _recharge_left := 0.0
 var _sweep := 0.0
+## Flames chip shields every tick; don't retrigger the hit sound faster than this.
+var _hit_sound_cooldown := 0.0
 
 
 func _init(size := Vector3(2.9, 2.2, 4.3)) -> void:
@@ -48,8 +50,14 @@ func set_shield(new_ratio: float) -> void:
 	new_ratio = clampf(new_ratio, 0.0, 1.0)
 	if new_ratio < ratio - 0.0001:
 		_hit = 1.0
+		var fx := FxWorld.existing()
 		if new_ratio <= 0.0:
 			_down = 1.0
+			if fx != null and is_inside_tree():
+				fx.sfx.play_at("shield_down", global_position)
+		elif fx != null and is_inside_tree() and _hit_sound_cooldown <= 0.0:
+			fx.sfx.play_at("shield_hit", global_position)
+			_hit_sound_cooldown = 0.12
 	elif new_ratio > ratio + 0.0001:
 		_recharge_left = RECHARGE_LINGER
 	ratio = new_ratio
@@ -65,6 +73,7 @@ func state() -> Dictionary:
 
 
 func _process(delta: float) -> void:
+	_hit_sound_cooldown = maxf(0.0, _hit_sound_cooldown - delta)
 	_hit = maxf(0.0, _hit - delta / HIT_SECONDS)
 	_down = maxf(0.0, _down - delta / DOWN_SECONDS)
 	_recharge_left = maxf(0.0, _recharge_left - delta)

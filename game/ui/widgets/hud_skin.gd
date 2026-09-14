@@ -81,6 +81,9 @@ func _run_demo() -> void:
 ## Cycle LOW → MEDIUM → HIGH → LOW and remember it on this device.
 func cycle_fx_quality() -> void:
 	FxQuality.apply((FxQuality.tier() + 1) % 3, "player", true)
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui("ui_blip")
 	_refresh_fx_button()
 
 

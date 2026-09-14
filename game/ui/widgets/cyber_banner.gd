@@ -224,6 +224,9 @@ func current_text() -> String:
 func _enter() -> void:
 	state = State.ENTERING
 	_text_box.visible = false
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui("ui_alert" if kind == Kind.WARNING else "ui_blip")
 	if kind == Kind.STATUS:
 		_set_box(0.0, BEAM_HEIGHT, 0.0)
 		_run([

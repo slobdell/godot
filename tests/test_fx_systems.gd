@@ -170,3 +170,18 @@ func test_every_tier_budget_is_complete_and_ordered() -> void:
 			assert_true(FxQuality.SETTINGS[tier].has(key), "tier %s sets %s" % [FxQuality.NAMES[tier], key])
 	assert_true(FxQuality.SETTINGS[FxQuality.Tier.LOW]["effects"] <= FxQuality.SETTINGS[FxQuality.Tier.HIGH]["effects"], "fewer pooled effects on low")
 	assert_true(not FxQuality.SETTINGS[FxQuality.Tier.LOW]["shadows"], "no dynamic shadows on phones (+4.9 ms in the lab)")
+
+
+func test_sfx_pool_never_grows_and_loads_every_sound() -> void:
+	var sfx: SfxSystem = add_to_tree(SfxSystem.new())
+	sfx.muted = false
+	for sound in SfxSystem.SOUNDS:
+		assert_true(sfx.streams.has(sound), "sound %s loads" % sound)
+	var voices := sfx.voice_count()
+	for i in 40:
+		sfx.play_at("cannon_shot", Vector3(i, 0, 0))
+	sfx.play_ui("ui_blip")
+	assert_eq(sfx.voice_count(), voices, "a 40-shot burst reuses the pooled voices")
+	assert_eq(sfx.played, 41, "every request played (oldest voices stolen when busy)")
+	var flame := sfx.streams["flame_loop"] as AudioStreamWAV
+	assert_eq(flame.loop_mode, AudioStreamWAV.LOOP_FORWARD, "the flame roar loops")
