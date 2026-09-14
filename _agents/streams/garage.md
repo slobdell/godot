@@ -6,15 +6,16 @@
 
 ## Goal
 
-Before a match, the player builds their squads: which tanks, what equipment, which squad each
-is in and in what role, plus cosmetics. The output is **data**: a doctrine the match loads
+Before a match, the player **spends a budget** on an army (the lead, 2026-09-14): scouts, tanks,
+artillery, possibly chassis configured with weapons MechWarrior-style. They assign units to squads
+and roles, plus cosmetics. The output is **data**: a doctrine the match loads
 (`--player=<name>`), so the garage never touches simulation code.
 
 ## Dependencies, and what can start now
 
 | Needs | From | Until then |
 |---|---|---|
-| What equipment exists and its trade-offs (hull classes, weapons, utilities) | gameplay | Build the data model and UI against today's weapons (`Weapons.PROFILES`) |
+| The **unit catalog**: classes (scout, tank, artillery…), costs, stats, hardpoints, and the per-match **budget** (gameplay directive set 2) | gameplay | Build the UI skeleton against today's weapons (`Weapons.PROFILES`) and a stub catalog; adopt the real one when it lands |
 | The look (turntable scene, UI style) | look & feel | Use the `default` theme through visual slots, so art swaps in later for free |
 | Where saved squads live for online play | netcode | Save locally under `user://` |
 

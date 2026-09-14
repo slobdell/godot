@@ -74,7 +74,8 @@ stream that owns it, or through a contract change (below).
 | `game/combat/impact.gd` (the hit VFX) | look & feel (candidate to become an `fx.impact` slot) |
 | `game/tank/tank.gd`, `tank_command.gd`, `tank_motion.gd`; `tank.tscn` structure | gameplay (netcode owns the `sync_*` properties' meaning) |
 | `game/arena/` (collision layout, navigation, `arena.gd`) | gameplay |
-| `game/ui/tactical_map.gd` (behavior), `game/modes/{offline,skirmish,match_runner}_mode.gd` | gameplay |
+| `game/ui/tactical_map.gd` (behavior), `game/ui/radar*` (new), `game/camera/`, `game/modes/{offline,skirmish,match_runner}_mode.gd` | gameplay |
+| `game/ui/widgets/**` (new: CyberFrame, CyberBanner, Conductors, reusable HUD components) | look & feel |
 | `doctrines/` | gameplay (garage adds player loadout files) |
 | `game/theme/**` (all art, the slot registry, team colors, UI palette) | look & feel |
 | `game/ui/hud.tscn` (HUD layout/styling) | look & feel (`hud.gd` text logic: gameplay) |
@@ -95,9 +96,12 @@ Changing one of these requires updating this section and telling the other strea
 | **SquadCommand**: `{squad, verb, to, facing, formation, commander}` | `game/ai/squad.gd` | tactical map, CPU, agent, netcode (sent over the wire) |
 | **Doctrine / loadout JSON** | `game/ai/doctrine.gd`, `game/ai/directives.gd` | gameplay, garage (produces), match runner |
 | **Simulation entry points**: `Match.command_squad()`, `Tank.command`, `Match.load_doctrine()`, `Match.finished`, `Match.state_hash()` | `game/match/match.gd` | netcode (what goes over the wire), garage, modes |
-| **Replicated tank state** (`sync_*`) | `game/network/replication.gd` + `tank.gd` | netcode, gameplay |
+| **Replicated tank state** (`sync_*`; gameplay G6 adds `sync_shield`) | `game/network/replication.gd` + `tank.gd` | netcode, gameplay |
 | **Launch flags** | `game/main.gd` header, `game/modes/*` | everyone (Makefile targets, smoke tests) |
 | **Console markers** `TANK_SQUAD_*`, `MATCH_RESULT` | `game/main.gd`, `match_runner_mode.gd` | smoke tests, `tools/match_series.py` |
+| **HUD messages**: `Hud.post_message(text: String, severity: int)` with `Hud.INFO` / `WARNING` / `ERROR` | `game/ui/hud.gd` (stub: a plain label) | gameplay posts (orders, losses, results); look & feel renders (banners) |
+| **Visibility / radar data**: the team's visibility field (visible now / seen / unseen), units, contacts, destinations; radar frame styling hook | gameplay defines when building G1/G2 (streams/gameplay.md), then records the API here | gameplay's radar widget; look & feel skins it |
+| **Unit catalog** (classes, costs, stats, hardpoints) | gameplay defines in directive set 2 | garage (UI), doctrine files |
 
 ## Invariants every stream must keep
 

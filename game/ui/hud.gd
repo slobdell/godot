@@ -3,6 +3,13 @@ extends CanvasLayer
 ## The always-on HUD: status line, scoreboard, center banner. Layout and styling live in
 ## hud.tscn (look-and-feel workstream); this script only fills in text.
 
+## Severity for post_message (contract: see _agents/workstreams.md "HUD messages").
+const INFO := 0
+const WARNING := 1
+const ERROR := 2
+
+signal message_posted(text: String, severity: int)
+
 var game_match: Match
 ## The tank a local player drives, if any (shows HP/reload).
 var local_tank: Tank
@@ -16,6 +23,13 @@ var _status := ""
 
 func set_status(text: String) -> void:
 	_status = text
+
+
+## Tell the player something happened. Gameplay calls this; how it looks (cyberpunk banners)
+## is the look & feel stream's job. For now: the banner label, briefly, plus the signal.
+func post_message(text: String, severity: int = INFO) -> void:
+	message_posted.emit(text, severity)
+	print("HUD_MESSAGE [%s] %s" % [["info", "warning", "error"][clampi(severity, 0, 2)], text])
 
 
 func show_banner(text: String) -> void:
