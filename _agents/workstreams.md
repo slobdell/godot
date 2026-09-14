@@ -40,6 +40,30 @@ test toward completion without my input."* Everything else is in the docs. It me
 5. **Stop and ask the lead only** for: a contract change that another stream must accept, spending money or creating accounts (e.g. asset services), anything destructive outside your worktree, or a directive that turns out to be impossible or self-contradictory as written. Otherwise, decide, document, and continue.
 6. **Done** = every directive in the current set meets its acceptance notes, `make check` + `make web-smoke` pass, screenshots were reviewed, the brief's Status is current, and the branch is ready to merge (rebased on `main`). Then write a short merge note: what changed, what to playtest, decisions made, and open questions for the lead.
 
+## Unattended runs (overnight): extra rules when the lead is away
+
+The lead starts all five streams at once with `/goal` and goes to bed. **Nobody will answer
+questions until morning.** On top of the mandate above:
+
+1. **Never wait for an answer.** Everything the mandate says to "ask the lead" becomes: write it
+   under **Questions for the lead** in your brief's Status, take the most *reversible* reasonable
+   option (or skip that item), and keep working on the next one.
+2. **Need something from another stream?** Don't edit their paths. Build a small adapter or stub
+   inside your own paths, write the request under **Requests to other streams** in your Status, and
+   continue. The integrator reconciles in the morning.
+3. **Don't merge or rebase on `main` overnight.** `main` won't move until the morning integration. Commit
+   to `stream/<name>` after every green step. You may `git push -u origin stream/<name>` as a backup.
+   Never push `main`, never force-push, never touch another worktree.
+4. **The machine is shared and small** (8 cores, 7.6 GB RAM, ~9 GB free disk on 2026-09-14):
+   - Heavy runs queue through `tools/slot.sh` automatically via `make` (orientation trip-up #37). Wrap any Godot/Chrome/match-series run you start outside make.
+   - At most **one** long-running background process of yours at a time (a server, an agent client). Stop it by PID when done; never `pkill -f` a pattern (trip-up #19). Never kill processes you didn't start.
+   - Disk: check `df -h .` before downloading. Keep each stream's downloads under **500 MB**. No local ML models or large Docker images. Delete stale `build/` outputs you created.
+5. **No money, accounts, or secrets.** No sign-ups, paid APIs, or keys. Anything that needs one gets scaffolded and documented so the lead can switch it on later.
+6. **Time-box.** If one item fights you for ~90 minutes without progress, write down what you learned and what you'd try next, then move on.
+7. **The backlog is deliberately longer than one night.** Finishing an item isn't a reason to stop; take the next one, then the stretch items. Stop only when the backlog is done or you're truly blocked on everything left.
+8. **Shared files** (`project.godot`, `game/main.gd`, `main.tscn`, `game/modes/game_mode.gd`, root `Makefile`, `mk/core.mk`): additive, minimal edits only, listed in your merge notes. Prefer adding UI and nodes from code in your own paths over editing shared scenes.
+9. **Leave a morning report.** Keep your brief's **Status** current as you go (a crash mustn't lose it). It needs: done (with measurements), decisions + reasons, questions for the lead, requests to other streams, known issues, what to playtest (exact `make` commands), and the next steps.
+
 ## How to set up parallel copies: git worktrees, not folder copies
 
 Copies drift and can't merge back cleanly. **Worktrees** are extra checkouts of the *same*
@@ -103,6 +127,7 @@ stream that owns it, or through a contract change (below).
 | `game/arena/` (collision layout, navigation, `arena.gd`) | gameplay |
 | `game/ui/tactical_map.gd` (behavior), `game/ui/radar*` (new), `game/camera/`, `game/modes/{offline,skirmish,match_runner}_mode.gd` | gameplay |
 | `game/ui/widgets/**` (new: CyberFrame, CyberBanner, Conductors, reusable HUD components) | look & feel |
+| `game/units/` (unit catalog, schema v0 landed 2026-09-14) | gameplay |
 | `doctrines/` | gameplay (garage adds player loadout files) |
 | `game/theme/**` (all art, the slot registry, team colors, UI palette, `game/theme/fx/` effect systems), `mk/fx.mk` (new: `fx-bench`) | look & feel |
 | `game/ui/hud.tscn` (HUD layout/styling) | look & feel (`hud.gd` text logic: gameplay) |
@@ -119,7 +144,7 @@ Changing one of these requires updating this section and telling the other strea
 
 | Contract | Defined in | Consumers |
 |---|---|---|
-| **Visual slots**: slot ids, orientation/size/origin, optional methods `set_team_color`, `setup`, `set_firing` (planned additions: `fx.shell` projectile + light, `weapon.laser`, `fx.laser_beam`, `set_heat(ratio)`, `set_shield(ratio)`; see streams/assets.md) | `game/theme/game_theme.gd`, `game/theme/visual_slot.gd`, [streams/assets.md § Slot contracts](streams/assets.md#slot-contracts) | gameplay places slots; look & feel and assets fill them |
+| **Visual slots**: slot ids, orientation/size/origin, optional methods `set_team_color`, `setup`, `set_firing` (`fx.shell` landed 2026-09-14; planned: `weapon.laser`, `fx.laser_beam`, `set_heat(ratio)`, `set_shield(ratio)`; see streams/assets.md) | `game/theme/game_theme.gd`, `game/theme/visual_slot.gd`, [streams/assets.md § Slot contracts](streams/assets.md#slot-contracts) | gameplay places slots; look & feel and assets fill them |
 | **SquadCommand**: `{squad, verb, to, facing, formation, commander}` | `game/ai/squad.gd` | tactical map, CPU, agent, netcode (sent over the wire) |
 | **Doctrine / loadout JSON** | `game/ai/doctrine.gd`, `game/ai/directives.gd` | gameplay, garage (produces), match runner |
 | **Simulation entry points**: `Match.command_squad()`, `Tank.command`, `Match.load_doctrine()`, `Match.finished`, `Match.state_hash()` | `game/match/match.gd` | netcode (what goes over the wire), garage, modes |
@@ -128,7 +153,8 @@ Changing one of these requires updating this section and telling the other strea
 | **Console markers** `TANK_SQUAD_*`, `MATCH_RESULT` | `game/main.gd`, `match_runner_mode.gd` | smoke tests, `tools/match_series.py` |
 | **HUD messages**: `Hud.post_message(text: String, severity: int)` with `Hud.INFO` / `WARNING` / `ERROR` | `game/ui/hud.gd` (stub: a plain label) | gameplay posts (orders, losses, results); look & feel renders (banners) |
 | **Visibility / radar data**: the team's visibility field (visible now / seen / unseen), units, contacts, destinations; radar frame styling hook | gameplay defines when building G1/G2 (streams/gameplay.md), then records the API here | gameplay's radar widget; look & feel skins it |
-| **Unit catalog** (classes, costs, stats, hardpoints) | gameplay defines in directive set 2 | garage (UI), doctrine files |
+| **Unit catalog** (classes, costs, stats, hardpoints, component slots, budget) | `game/units/units.gd` (schema v0: `tank` only, not yet read by the simulation); gameplay grows it in directive set 2 | garage (UI), doctrine files |
+| **Loadout fields in doctrine JSON** (per tank: `unit`, `weapons` by hardpoint, `components`, `paint`) | proposed 2026-09-14; the garage stream writes them (today's `Doctrine.parse` ignores unknown keys, so files stay loadable), and gameplay starts reading them when classes land | garage (produces), gameplay (consumes) |
 
 ## Invariants every stream must keep
 

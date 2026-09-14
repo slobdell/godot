@@ -19,8 +19,7 @@ Don't stall on details the lead will tune later; do make every tuning value easy
 
 **Autonomy:** the lead will start you with *"You are the gameplay agent. Execute, iterate, and smoke
 test toward completion without my input."* Follow *Autonomous mandate* in workstreams.md. Suggested
-order: G5 (small, fixes a visible bug) → G3 → G7 ammo → G6 → G1 → G4 → G2, designing every
-input for touch as you go (G0).
+order is the **Overnight backlog** at the end of this brief.
 
 ## G0. Standing constraint: mobile input (the lead, 2026-09-14)
 *"We eventually want to optimize for a mobile experience, meaning we'll be limited to taps, swipes, and button clicks."*
@@ -84,7 +83,7 @@ MechWarrior games, heat sinks can be one of the components added to a vehicle."*
 - **Heat sinks** raise the cap and/or the dissipation rate. They are a *component* in directive set 2's loadouts. Before loadouts exist, a per-unit stat is enough.
 - **AI:** brains must manage both resources: don't waste shells at long odds when ammo is low, pause laser fire near the heat cap, prefer the laser when ammo runs dry. Add these to the utility inputs and tank_brain.md.
 - **Contracts:** `sync_ammo`/`sync_heat` replicated; HUD shows ammo and a heat bar per selected unit; add slots `weapon.laser` + `fx.laser_beam` (`setup(from, to)`, `set_firing`) and `set_heat(ratio)` so look & feel can make hot barrels glow. Add the slot contract rows to streams/assets.md.
-- **Also move the shell's inline mesh into an `fx.shell` visual slot** (shell.tscn currently embeds a CapsuleMesh). Look & feel needs it for glowing tracers that light the arena. Keep `make sim-baseline` unchanged by that move.
+- The shell's mesh already lives in the `fx.shell` visual slot (landed on main 2026-09-14, sim hash unchanged), so look & feel can make glowing tracers. Give lasers the same treatment.
 - **Acceptance:** tests for the ammo count, heat cap (a shot is refused at the cap), and dissipation. A match series shows lasers vs cannons isn't a blowout (neither side wins >65%), with swap-bases control.
 
 ## Directive set 2 (next): the game's shape, a budgeted army
@@ -121,3 +120,22 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 
 - 2026-09-13: brief written.
 - 2026-09-14: directive sets 1 (G0 mobile input, G1–G7 incl. Halo-style shields, finite ammo, lasers + heat) and 2 (budgeted army with components like heat sinks) added from the lead. Nothing started.
+
+## Overnight backlog (2026-09-14): work top to bottom, then keep going
+
+Rules: *Unattended runs* in workstreams.md. Each item: tests + `make check` + a smoke test (skirmish screenshots at 1920×1080 and 2400×1080 that you look at, and/or a match series) + a commit + a Status update. **Every change should show up in `make skirmish`**, since that's what the lead plays in the morning.
+
+1. **G5 turrets fight while moving.** Small and fixes the bug the lead saw. Includes the break_contact acceptance test.
+2. **G3 responsiveness.** Immediate re-think on player commands, measure ticks-to-move before/after, and add a test.
+3. **HUD messages.** Call `main.hud.post_message()` for order acknowledgements, commander down, unit lost, shields down (later), and victory/defeat. Look & feel turns them into banners.
+4. **G7 finite ammo, heat, and the laser weapon** (+ `sync_ammo`/`sync_heat`, append-only in `replication.gd`'s list; netcode owns the file, so keep the edit minimal). HUD readouts can be plain text for now. Add the `weapon.laser`/`fx.laser_beam` slot ids to `GameTheme.DEFAULT_SLOTS` with a simple default scene (a minimal additive edit to look & feel's registry; note it in the merge notes). Balance series lasers vs cannons.
+5. **G6 shields + hull health**, with brain use (disengage to recharge) and `set_shield(ratio)` invoked on the hull slot. Measure: loser kills, time-to-kill, camping (idle-gun samples) before vs after.
+6. **G1 line of sight + visibility field**, and fog of war driven by it. Update the sim baseline on purpose.
+7. **G4 RTS 3D camera** with touch gestures (one-finger pan, pinch zoom, two-finger rotate), plus mouse/keys as extras.
+8. **G2 radar** (own `game/ui/radar*`, added from code by skirmish mode; don't edit `hud.tscn`): visible area, units, contacts, tap/drag orders.
+9. **G0 touch pass over the whole skirmish:** an on-screen button bar or radial menu for drills, formations, and pause; tap-select and drag-order everywhere; tests with `InputEventScreenTouch`/`ScreenDrag`.
+10. **Directive set 2, part 1:** wire `Units.PROFILES` (game/units/units.gd, schema v0) into Tank/Match as the source of stats; doctrine tanks accept `unit` (the garage writes it; see the Loadout fields contract). Add the **scout** class (fast, fragile, long sight, light MG) and scouting brain behavior.
+11. **Directive set 2, part 2:** **artillery/mortar** with indirect arcing fire and spotting (fires only at team-visible targets), with its brain behavior.
+12. **Budget in skirmish:** player and CPU armies built from a budget (a doctrine per army; the CPU picks a seeded composition). Chassis+loadout recommendation written up, with components (heat sinks first).
+13. **Army-level balance series:** no single composition dominates (E3 at army level). Record results in tank_brain.md or a new `_agents/balance.md`.
+- **Stretch:** anti-snowball ideas from "Known problems" (objectives/control points, comeback mechanics), measured with the match runner; flamethrower niche via shields; better CPU commander (uses drills).

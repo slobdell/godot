@@ -13,6 +13,7 @@ const DEFAULT_SLOTS := {
 	"tank.turret": "res://game/theme/default/tank_turret.tscn",
 	"weapon.cannon": "res://game/theme/default/weapon_cannon.tscn",
 	"weapon.flamethrower": "res://game/theme/default/weapon_flamethrower.tscn",
+	"fx.shell": "res://game/theme/default/fx_shell.tscn",
 	"prop.crate": "res://game/theme/default/prop_crate.tscn",
 	"prop.wall": "res://game/theme/default/prop_wall.tscn",
 	"arena.environment": "res://game/theme/default/arena_environment.tscn",

@@ -1,19 +1,11 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://game/combat/shell.gd" id="1_shell"]
-
-[sub_resource type="StandardMaterial3D" id="Mat_shell"]
-shading_mode = 0
-albedo_color = Color(1, 0.85, 0.35, 1)
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_shell"]
-material = SubResource("Mat_shell")
-radius = 0.12
-height = 0.9
+[ext_resource type="Script" path="res://game/theme/visual_slot.gd" id="2_slot"]
 
 [node name="Shell" type="Node3D"]
 script = ExtResource("1_shell")
 
-[node name="Mesh" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
-mesh = SubResource("CapsuleMesh_shell")
+[node name="Visual" type="Node3D" parent="."]
+script = ExtResource("2_slot")
+slot = "fx.shell"

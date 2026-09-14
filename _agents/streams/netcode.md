@@ -78,8 +78,20 @@ can capture `MATCH_RESULT` from the browser; see the measurement command in HAND
 ## Status
 
 - 2026-09-13: brief written; cross-platform determinism measured (diverges). Nothing started.
+- 2026-09-14: overnight backlog added with an assumed decision (N0 → N1 casual relay while N2 spikes).
 
 ## Notes from other streams (2026-09-14)
 
 - Gameplay will add replicated state: `sync_shield` (G6), `sync_ammo`, `sync_heat` (G7). Budget bandwidth for it, and for more units per side (budgeted armies).
 - The product is **mobile first**: design for phones on flaky cellular links (reconnects, app backgrounding), which weighs against a phone acting as the match host.
+
+## Overnight backlog (2026-09-14): work top to bottom, then keep going
+
+Rules: *Unattended runs* in workstreams.md. **Assumed decision (the lead hasn't answered the open question):** take the recommended plan, casual player-hosted matches through a relay first (N0 → N1) while the deterministic spike (N2) is explored. Record the assumption under Questions for the lead. Nothing gets deployed and no accounts are created; everything runs locally. **Don't restructure `replication.gd`'s `TANK_PROPERTIES` list tonight**: gameplay appends `sync_ammo`/`sync_heat`/`sync_shield` to it in parallel.
+
+1. **N0 broker** (`server/broker/` or similar, your call of language; dependencies pinned and installed by a `make broker-bootstrap`, run by `make broker`): lobbies with join codes, room relay of binary messages, host assignment, heartbeats, reconnect tokens, message size/rate caps, in-memory state. Unit tests + `make broker-smoke`.
+2. **N1 player-hosted through the relay:** a Godot `MultiplayerPeerExtension` (or equivalent) that tunnels the existing high-level multiplayer through the broker, so `MultiplayerSpawner`/`Synchronizer`/RPC code works unchanged with one player hosting. `make relay-smoke`: a headless host + 2 headless clients through a local broker, combat happens (like combat-smoke). Then the browser client through the relay (`make web-relay-smoke`).
+3. **Bandwidth + latency measurements:** bytes/second per client for today's snapshots with 10 and 20 tanks, the projected cost with shield/ammo/heat, and a latency-injection test (e.g. 150 ms + jitter) showing play stays sane. Record in this brief.
+4. **N2 deterministic-core spike:** integer/fixed-point tank movement + shells + grid line-of-sight in GDScript (GDScript ints are 64-bit). Run the same command log native vs WebAssembly (the SwiftShader smoke browser is fine for *determinism*, which is CPU math) and compare hashes (`make det-spike`). Also measure the cost: can wasm GDScript tick 20 units at 30 Hz with headroom? Write a verdict: lockstep feasible, or not.
+5. **N3 designs:** the lockstep protocol (command scheduling at T+N, hash exchange, desync handling, reconnect/catch-up) if N2 passes, host migration or "host left" handling for N1, and how mobile backgrounding is survived (measured with a test that drops a client's socket for 10 s and rejoins).
+- **Stretch:** a command-log replay recorder/player (`make replay`); hosting cost estimates for the broker on common platforms (docs only, no accounts); an anti-cheat notes section for N1 (what a host can and can't fake).

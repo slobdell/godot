@@ -111,3 +111,16 @@ in merge notes. Compare against the reference app's look where possible.
 
 - 2026-09-13: brief written; `default` theme extracted into slots (placeholder boxes).
 - 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction (projectile light, glowing obstacles, lasers, heat/shield visuals) and mobile-first constraint added. FX tricks catalog + L0 FX lab added (the lead: efficiency tricks first). Nothing started.
+
+## Overnight backlog (2026-09-14): work top to bottom, then keep going
+
+Rules: *Unattended runs* in workstreams.md. Each item: `make check` (sim-baseline unchanged!) + screenshots you look at (desktop and 2400×1080 phone aspect; `make web-smoke` for "boots in the browser") + a commit + a Status update with before/after screenshot paths.
+
+1. **L0 FX lab:** `mk/fx.mk` → `make fx-bench` + perf overlay; LightPool; MultiMesh tracers + ground light splats via the `fx.shell` slot (landed on main); chunked ground; glow check; a pooled, shared-material impact (`impact.gd` is yours); shader pre-warm. Fill the Results table in `references/fx_tricks.md` and set per-tier frame budgets. Note: this machine has no discrete GPU. Record native numbers, and mark browser/phone numbers "pending the lead's phone run".
+2. **L1 HUD widgets:** `CyberFrame`, `CyberBanner` (wired to `Hud.post_message`, top = warnings/errors, bottom = info), `Conductors`. Ship a monospace font with the block glyph (an OFL font such as Share Tech Mono or JetBrains Mono; put its license next to it in `assets/fonts/`). A demo/gallery scene plus tests for the banner lifecycle.
+3. **L2 cyberpunk arena** (`game/theme/cyberpunk/`): night environment + fog + glow; chunked dark wet-look ground with light streaks; perimeter walls with neon light bars; floodlight beams; neon versions of `prop.crate`/`prop.wall` (same footprints). Switch the default theme once it beats `default` in screenshots.
+4. **L3 vehicles:** hull/turret/weapon scenes with emissive trims, team colors cyan vs magenta (update `team_colors` and `GameTheme.ui`), team-colored underglow, glowing tracer shells, flipbook-style explosions (generate the flipbook frames procedurally in Godot if you have no source art).
+5. **L4 HUD restyle:** `hud.tscn` and the tactical map palette in the cyberpunk style, touch-sized and legible at phone size.
+6. **L5 future hooks, built against the documented contracts** (gameplay lands the mechanics in parallel): `set_heat(ratio)` barrel glow, `set_shield(ratio)` shield shimmer/down/recharge, a `weapon.laser` scene and `fx.laser_beam` (`setup(from, to)`), all shown in a gallery scene that drives the methods with fake values, so they work the moment gameplay calls them.
+7. **L6 quality tiers:** an `FxQuality` low/med/high setting wired into the light pool, splats, glow, and render scale; default by platform (web/mobile = low).
+- **Stretch:** camera shake (request it from gameplay, which owns the camera; you provide the effect curve); sound design with CC0 or procedurally generated SFX in `assets/audio/` (shots, laser hum, shield hit, explosions, UI blips), with licenses recorded; an animated main-menu/title screen in the HUD style.

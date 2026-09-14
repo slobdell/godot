@@ -3,6 +3,7 @@ extends GameMode
 ## Single player commands squads on the tactical map vs a CPU doctrine. Squad vs squad
 ## elimination; starts in a planning pause. See _agents/tactical_map.md.
 ##   --player=DOCTRINE (default player_default)   --enemy=DOCTRINE (default individuals)
+## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
 
 
 func role_name() -> String:
@@ -14,7 +15,7 @@ func start() -> void:
 	game_match.has_local_player = false
 	var lineups := {Match.Team.GREEN: flags.text("player", "player_default"), Match.Team.RUST: flags.text("enemy", "individuals")}
 	for team in lineups:
-		var loaded := Doctrine.load_file("res://doctrines/%s.json" % lineups[team])
+		var loaded := Doctrine.load_file(doctrine_path(lineups[team]))
 		var error: String = loaded.get("error", "")
 		if error == "":
 			error = game_match.load_doctrine(team, loaded["doctrine"])
@@ -32,3 +33,7 @@ func start() -> void:
 	main.hud.add_child(tactical)
 	main.hud.set_status("Skirmish vs %s" % lineups[Match.Team.RUST])
 	tactical.set_paused(true, "PLANNING: give orders, then press Space to begin")
+
+
+static func doctrine_path(name_or_path: String) -> String:
+	return name_or_path if name_or_path.contains("://") else "res://doctrines/%s.json" % name_or_path

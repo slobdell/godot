@@ -3,7 +3,7 @@
 > **Read [`_agents/orientation.md`](_agents/orientation.md) first.** Then, if you're a workstream
 > agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-14. The repo is prepared for **parallel workstreams**; gameplay and look & feel have concrete directives from the lead._
+_Last updated: 2026-09-14. **Five stream agents are set up to run overnight without the lead** (see below)._
 
 ## Current state (main)
 
@@ -32,6 +32,23 @@ dark neon cyberpunk arena where lighting is part of the fun.
 Setup (git worktrees, shared toolchain), ownership, contracts, and merge invariants:
 [`_agents/workstreams.md`](_agents/workstreams.md).
 
+## Overnight run (2026-09-14): five agents, no lead input
+
+Each stream's brief now ends with an **Overnight backlog** (more than a night's work, ordered, with
+stretch items). Rules for unattended work are in workstreams.md → *Unattended runs*. Landed on
+main first so streams don't block each other: the machine-wide heavy-run limiter (`tools/slot.sh`),
+the `fx.shell` visual slot, the unit catalog v0 (`game/units/units.gd`), and `--player=<path>` for garage armies.
+
+**Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude`), with the goal below
+(replace `<stream>` with `gameplay`, `look_and_feel`, `assets`, `netcode`, or `garage`):
+
+> /goal You are the `<stream>` agent for Tank Squad, working in this worktree on branch `stream/<stream>`. I'm asleep: you will get NO input from me until morning, so never stop to wait for an answer. Read CLAUDE.md, HANDOFF.md, `_agents/orientation.md`, `_agents/workstreams.md` (especially *Autonomous mandate* and *Unattended runs*), then `_agents/streams/<stream>.md`. Work through its **Overnight backlog** top to bottom, then its stretch items: build, test, `make check`, smoke test and look at your screenshots, and commit every green step. Done when every backlog item is complete or written up as blocked, `make check` passes on your last commit, and the brief's Status section holds the morning report.
+
+**Morning integration** (the orchestrator session in `~/projects/godot`): read each Status report,
+merge streams one at a time in the order netcode → assets → garage → gameplay → look_and_feel
+(smallest shared surface first; gameplay and look & feel touch the most), running `make check`
+after each merge, then playtest `make skirmish` with the lead.
+
 ## What changed to make parallel work possible
 
 - `main.gd` split into `game/modes/*` (offline, skirmish, match runner, server, client) + `LaunchFlags`.
@@ -41,5 +58,5 @@ Setup (git worktrees, shared toolchain), ownership, contracts, and merge invaria
 ## Open decisions for the lead
 
 1. **Netcode direction** (streams/netcode.md): OK to ship casual matches player-hosted through a relay first, while a deterministic-simulation spike decides whether cheat-resistant lockstep is feasible?
-2. **Starting streams:** gameplay and look & feel are ready (`make worktree STREAM=gameplay OFFSET=1`, `make worktree STREAM=look_and_feel OFFSET=2`). Who merges: you, or an integrator agent?
+2. **Netcode:** the overnight agent assumes the recommended plan (casual relay first, deterministic spike in parallel). Confirm or redirect in the morning.
 3. Still open from before: the flamethrower trade-off (now part of the gameplay stream), your son's Godot version and OS.

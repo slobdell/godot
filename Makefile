@@ -77,4 +77,22 @@ help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
+# ---- Machine-wide heavy-run slots ---------------------------------------------------
+# Parallel worktree agents share one machine. Every goal except interactive/long-running ones
+# re-runs itself through tools/slot.sh, which admits TANK_SQUAD_SLOTS (default 2) at a time.
+# New targets are heavy by default; add interactive ones to LIGHT_GOALS.
+LIGHT_GOALS := help doctor bootstrap worktree worktrees worktree-remove clean distclean \
+               editor run skirmish demo play serve-web server client watch-match agent-%
+_SLOT_GOALS := $(if $(TANK_SQUAD_SLOT),,$(filter-out $(LIGHT_GOALS),$(MAKECMDGOALS)))
+
+ifneq ($(_SLOT_GOALS),)
+.PHONY: $(MAKECMDGOALS)
+$(firstword $(MAKECMDGOALS)):
+	@tools/slot.sh $(MAKE) --no-print-directory $(MAKECMDGOALS)
+ifneq ($(words $(MAKECMDGOALS)),1)
+$(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS)):
+	@:
+endif
+else
 include mk/*.mk
+endif
