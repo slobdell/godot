@@ -243,3 +243,13 @@ replay: import $(BROKER_DEPS) ## Replays: det-core command log (verify hashes, c
 
 replay-watch: import ## Watch a recorded relay match in a window (REPLAY=path, default build/replays/relay.tsqrec; SPEED=1)
 	$(GODOT) --path . -- --replay=$(abspath $(or $(REPLAY),$(BUILD_DIR)/replays/relay.tsqrec)) --replay-speed=$(or $(SPEED),1)
+
+# Broker capacity: ROOMS × PLAYERS fake players replaying measured relay traffic (see load.mjs).
+ROOMS   ?= 25
+PLAYERS ?= 4
+broker-load: $(BROKER_DEPS) ## Broker CPU + memory under measured relay traffic (ROOMS=25 PLAYERS=4 per room, SECONDS=20)
+	mkdir -p $(BUILD_DIR)
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/broker-load.log 2>&1 & broker=$$!; \
+	trap 'kill $$broker 2>/dev/null' EXIT; \
+	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/broker-load.log && break; sleep 0.1; done; \
+	$(NODE) $(BROKER_DIR)/load.mjs $(SMOKE_BROKER_PORT) $$broker $(ROOMS) $(PLAYERS) $(or $(filter-out 30,$(SECONDS)),20)

@@ -165,10 +165,20 @@ integrity; only lockstep with hash checks (section 1) does.
 (The broker relays both directions, so its egress is what it sends to players plus what it sends
 to hosts.)
 
-**What a broker needs:** Node + `ws` holds a WebSocket in roughly tens of KB of memory, and relaying
-is a buffer copy per frame. A single small VM (1 shared vCPU, 256–512 MB) should hold on the order of
-a few hundred concurrent players at 60 frames/s each before CPU, not memory, becomes the limit.
-**Measure before trusting this:** a load test (`smoke.mjs`-style fake peers × N) is the next step.
+**What a broker needs (measured, `make broker-load`, 2026-09-14):** fake rooms replaying the
+measured 10-tank traffic (host → each player 33 frames/s × 440 B; each player → host 30 frames/s × 50 B)
+against one broker process on this 8-core desktop (shared with four other agents, so noisy):
+
+| Rooms × players | Frames/s offered | Broker CPU (of one core) | Broker RSS | Memory per connection |
+|---|---|---|---|---|
+| 25 × 4 = 100 players | 6,300 | 22% | 60 → 68 MB | ~20 KB |
+| 50 × 4 = 200 players | 12,500 | 38% | 66 → 81 MB | ~14 KB |
+
+So roughly **20% of a desktop core per 100 players**, and memory is a non-issue. A cheap shared
+vCPU (often half a desktop core or less) should carry **~200–300 concurrent players** in snapshot
+relay mode; lockstep traffic (~25× fewer bytes and frames) would carry thousands. CPU, not memory
+or bandwidth caps, is what scales a broker; add processes (rooms are independent) behind a join-code
+→ process router when one fills.
 
 **Rough monthly cost** for 1,000 player-hours per month at 10-tank matches (63 GB egress). List
 prices as remembered at the 2025–26 knowledge cutoff; **verify before choosing**:
