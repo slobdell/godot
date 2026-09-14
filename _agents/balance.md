@@ -48,8 +48,44 @@ Anvil & Hammer (coordinated) vs Individuals, 20–24 matches per row:
 Reading: recharging shields reward concentrated, sustained aggression, and the split/holding doctrine
 lost its edge. This is the top question for the lead (streams/gameplay.md Status).
 
-### Directive set 2: army archetypes (round robin)
-See the table appended below when the series finishes.
+### Directive set 2: army archetypes (E3 at army level)
+Five seeded CPU archetypes at 1000 points (`Army.ARCHETYPES`), every pairing 16 matches (4 each: normal and
+swapped bases, each side as Green and as Rust). Round robin #1 (commit d917809):
+
+| Pairing | Result |
+|---|---|
+| armor vs balanced | 6 : 10 |
+| armor vs recon_strike | 16 : 0 |
+| armor vs siege | 6 : 10 |
+| armor vs swarm | 16 : 0 |
+| balanced vs recon_strike | 14 : 2 |
+| balanced vs siege | 2 : 14 |
+| balanced vs swarm | 14 : 2 |
+| recon_strike vs siege | 1 : 15 |
+| recon_strike vs swarm | 13 : 3 |
+| siege vs swarm | 13 : 3 |
+
+Overall: **siege 81%**, armor 69%, balanced 62%, recon_strike 25%, swarm 12%. ❌ Siege dominates; scout-heavy
+armies aren't viable. Mechanisms: two mortars out-shell anything that has to walk into range, and scouts only
+spotted (they add nothing to tanks, whose 75 m sight already covers a 70 m gun).
+
+Changes for round robin #2: a counter triangle (scouts hunt artillery, SCOUT_HUNT), artillery 180 → 220
+points, and direct fire now needs the target seen by the team (a fog hole; also a prerequisite for making
+spotting matter to guns). Round robin #2 results: appended below when it finishes.
+
+### Stretch: control point (`--control`)
+| Series | Result |
+|---|---|
+| Anvil & Hammer vs Individuals, with `--control` (normal + swapped, 20) | **10 : 10** (without control: ~2 : 18) |
+| Individuals mirror, with `--control` (16) | 5 : 11 (small sample; watch for a Rust bias) |
+
+Loser kills rose to 0.9–1.9 (from ~0.6–1.0). A reason to hold ground restores what shields took from the
+holding doctrine. Recommendation to the lead: make the control point the default skirmish mode.
+
+### Stretch: CPU commander
+v1 (hold in even fights): Individuals + commander vs Individuals **2 : 30** (both team identities, both
+bases). Holding still under recharging shields loses. v2 (assault unless clearly weaker) is opt-in
+(`--commander`) and not yet measured.
 
 ## Recommendation: chassis + loadout (MechWarrior-lite), not fixed classes
 
