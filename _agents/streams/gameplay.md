@@ -201,6 +201,18 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   `--seed`; the match runner takes `cpu:<archetype>` too. Chassis + loadout recommendation written up in
   [`_agents/balance.md`](../balance.md). Tests: `tests/test_army.gd`.
 
+- **Stretch: control point** (7b2e9e9, opt-in `--control`). 16 m zone at the center, flat 8 s capture (a
+  bigger army doesn't capture faster: anti-snowball), 1 point/s to the holder, first to 90 wins or
+  elimination. Brains CONTEST; map/radar rings, center score in the map panel, announcements. Tests:
+  `tests/test_control_point.gd`. Measurement below under *Balance*.
+- **Stretch: CPU commander** (69b9456). `game/ai/cpu_commander.gd` issues real SquadCommands for a CPU
+  team's gun squads every 2 s from intel (move/bound, assault when stronger, break contact when weaker,
+  hold otherwise). On for skirmish's CPU army (`--no-commander` to disable); runner flags
+  `--green-commander` / `--rust-commander`. Tests: `tests/test_cpu_commander.gd`.
+
+**Balance** (full tables in [`_agents/balance.md`](../balance.md)): see the archetype round robin and the
+stretch series there.
+
 **Decisions:**
 - G5: tanks fire only at enemies in their *own* line of sight and range; team intel only aims the turret.
   Shooting at positions only a teammate sees would mostly hit walls.
@@ -235,6 +247,23 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 - Idle guns rose from 61–68% (G5) to 70–90% after G7/G6. Part is by design (low-ammo tanks hold
   long shots; empty or overheated guns count as idle); not yet separated out.
 - Beams are too thin to see from the flat tactical view (fine in 3D; look & feel owns the look).
+
+**Merge notes** (for the morning integrator):
+- Branch `stream/gameplay`, based on `ee20791`, not rebased (overnight rule). `make check` and
+  `make web-smoke` pass on the last commits; sim baseline changed on purpose several times (each
+  commit says why), now `acbce16086414508`.
+- Edits outside gameplay's paths, all additive: `Makefile` (`ENEMY ?= cpu`); `game/network/replication.gd`
+  (appended `sync_ammo`, `sync_heat`, `sync_shield`: netcode please review); `game/theme/game_theme.gd`
+  (slots `weapon.laser`, `fx.laser_beam`, `fx.fog_of_war`, `weapon.machine_gun`, `fx.tracer`,
+  `weapon.mortar`) + placeholder scenes in `game/theme/default/` (`weapon_laser.tscn`, `laser_visual.gd`,
+  `fx_laser_beam.tscn`, `laser_beam_visual.gd`, `fx_tracer.tscn`, `fx_fog_of_war.tscn`,
+  `fog_of_war_visual.gd`): look & feel owns the look; `_agents/streams/assets.md` slot rows;
+  `_agents/workstreams.md` contract rows (visibility/radar, unit catalog v1, loadout fields);
+  `game/ui/hud.gd` (text: shield, ammo); `game/agent/agent_bridge.gd` (shield in observations);
+  `tools/match_series.py` (pace, loser kills, what brains do). Untouched: `project.godot`, `main.gd`,
+  `main.tscn`, `game_mode.gd`, `mk/core.mk`, `tests/run_tests.gd`, `hud.tscn`.
+- Likely conflicts: look & feel also edits `game_theme.gd` and `game/theme/default/` (keep both sets of
+  slots); garage writes loadout JSON (now validated strictly: unknown units/components are errors).
 
 **What to playtest:** `make skirmish` now fights a random budgeted CPU army (`SEED=3` for a swarm of
 scouts, `ENEMY=cpu:siege` for artillery, `ENEMY=individuals` for the old five tanks). New camera: arrows/wheel/`,` `.`, F follows, Tab overview. The
