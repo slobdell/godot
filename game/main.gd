@@ -7,6 +7,7 @@ extends Node3D
 ## Flags (command line after `--`, or the browser URL query ?a&b=c):
 ##   (none)                     OfflineMode: your tank vs --bots (default 1)
 ##   --skirmish                 SkirmishMode: command squads on the tactical map (--player, --enemy)
+##   --garage                   GarageMode: build an army on a budget, then FIGHT a skirmish with it (--enemy)
 ##   --match                    MatchRunnerMode: headless bots vs bots → MATCH_RESULT json
 ##   --server[=port]            ServerMode: authoritative WebSocket server (--bots=N)
 ##   --connect[=ws://host:port] ClientMode: join a server (browser default: /ws on the page's host)

@@ -94,6 +94,7 @@ build/   (gitignored)    exports and screenshots
 | I want to… | Do |
 |---|---|
 | **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): click = who, right-drag = where/facing, Q-T drills, Z-N formations, Tab 3D view |
+| **Build an army, then fight with it** | `make garage` (browser `?garage`): tap/drag units into squads, pick weapons, FIGHT → skirmish. Saved armies: `user://doctrines/` |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
 | Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2`; doctrine series: `tools/match_series.py --extra="--green-doctrine=res://doctrines/X.json --rust-doctrine=…"` |

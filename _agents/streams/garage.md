@@ -52,6 +52,17 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   `tests/test_garage_loadout.gd`, incl. save → `Doctrine.load_file` → `Match.load_doctrine` (the tank fights with the
   garage-picked flamethrower); mutation-checked (breaking weapon mirroring / budget refusal turns 2 red).
   Contract row "Loadout fields in doctrine JSON" in workstreams.md now lists the exact fields.
+- **GA1 + GA2 done.** `garage_screen.gd` (built from code, no .tscn): UNITS cards (stat bars + numbers, ADD, drag a
+  card onto a squad), SQUADS (≤3; formation + role pickers; unit chips: tap = equip, drag = move squad), EQUIP (turntable
+  from visual slots, swipe to spin; weapon per hardpoint by tap or drag; components; per-unit role; paint swatches;
+  REMOVE), top bar (name, budget bar, LOAD, SAVE), bottom (problems / READY, enemy picker, FIGHT). UI scales with
+  screen height (1.5× at 1080 → ≥48 px taps). `garage_mode.gd`: `--garage` → garage → FIGHT saves to
+  `user://doctrines/<slug>.json` and starts `SkirmishMode` in-process (prints `GARAGE_FIGHT`). `make garage`,
+  `make garage-smoke` (now in `make check`), `make garage-shots`. 10 screen tests push real taps/drags through the
+  viewport (drag tests mutation-checked). Screenshots reviewed at 1920×1080 and 20:9.
+  - Decision: first visit opens a ready starter army (3+2 tanks, the cheapest class) so FIGHT works immediately.
+  - Decision: REMOVE moved into the EQUIP header after a test caught it scrolled off-screen at 720p.
+  - Decision: army saved on FIGHT under the army's name (overwrites the same name; SAVE does the same).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

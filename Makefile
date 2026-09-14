@@ -82,7 +82,7 @@ help: ## Show this help
 # re-runs itself through tools/slot.sh, which admits TANK_SQUAD_SLOTS (default 2) at a time.
 # New targets are heavy by default; add interactive ones to LIGHT_GOALS.
 LIGHT_GOALS := help doctor bootstrap worktree worktrees worktree-remove clean distclean \
-               editor run skirmish demo play serve-web server client watch-match agent-%
+               editor run skirmish garage demo play serve-web server client watch-match agent-%
 _SLOT_GOALS := $(if $(TANK_SQUAD_SLOT),,$(filter-out $(LIGHT_GOALS),$(MAKECMDGOALS)))
 
 ifneq ($(_SLOT_GOALS),)

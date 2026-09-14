@@ -3,16 +3,18 @@ extends RefCounted
 ## One way to run the game. Each mode owns its setup, so workstreams can change one mode
 ## without touching the others (see _agents/workstreams.md):
 ##   OfflineMode (gameplay)  SkirmishMode (gameplay)  MatchRunnerMode (gameplay/experiments)
-##   ServerMode (netcode)    ClientMode (netcode)
+##   ServerMode (netcode)    ClientMode (netcode)    GarageMode (garage, game/garage/)
 
 var main: Main
 var flags: LaunchFlags
 
 
-## Which mode the flags ask for. Order matters: match > skirmish > server > client > offline.
+## Which mode the flags ask for. Order matters: match > garage > skirmish > server > client > offline.
 static func choose(p_flags: LaunchFlags) -> GameMode:
 	if p_flags.has("match"):
 		return MatchRunnerMode.new()
+	if p_flags.has("garage"):
+		return GarageMode.new()
 	if p_flags.has("skirmish"):
 		return SkirmishMode.new()
 	if p_flags.has("server") or (OS.has_feature("server") and not p_flags.has("connect")):
