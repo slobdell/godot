@@ -17,6 +17,18 @@
 and write down what you chose and why (in this brief's Status and the relevant `_agents/` doc).
 Don't stall on details the lead will tune later; do make every tuning value easy to find and change.
 
+**Autonomy:** the lead will start you with *"You are the gameplay agent. Execute, iterate, and smoke
+test toward completion without my input."* Follow *Autonomous mandate* in workstreams.md. Suggested
+order: G5 (small, fixes a visible bug) → G3 → G7 ammo → G6 → G1 → G4 → G2, designing every
+input for touch as you go (G0).
+
+## G0. Standing constraint: mobile input (the lead, 2026-09-14)
+*"We eventually want to optimize for a mobile experience, meaning we'll be limited to taps, swipes, and button clicks."*
+- Every command must be possible with **tap, drag, pinch/two-finger gestures, and on-screen buttons**. Today's drill (Q–T) and formation (Z–N) hotkeys, right-drag, and Space/Tab must all have touch equivalents (e.g. a tap-to-select + drag-to-order grammar, and a compact button bar or radial menu for drills/formations/pause). Keys stay as desktop shortcuts.
+- The camera (G4) works with one-finger pan, pinch zoom, and two-finger rotate; the radar (G2) is a primary touch surface.
+- Prefer designs where the *common* orders take one gesture; that's also the "few inputs, hidden power" principle in tactical_map.md.
+- Test with synthetic `InputEventScreenTouch`/`InputEventScreenDrag` and screenshot at a phone aspect (e.g. 2400×1080 landscape).
+
 ## Directive set 1 (the lead, 2026-09-14): do these first
 
 ### G1. Line of sight: every tank sees a radius, blocked by obstacles
@@ -61,6 +73,20 @@ and adds another dimension of gameplay."*
 - **Contracts this touches:** a replicated `sync_shield` (netcode's Replication list), and HUD/radar/nameplate display of shield + hull (styling by look & feel; post a message when a squad's shields are down).
 - This fixes a known problem: today hurt tanks camp at base because nothing ever heals.
 
+### G7. Finite ammunition, and lasers that run on heat
+The lead: *"Another simple thing to do here to manage strategy is to make ammunition finite, but we
+can also make lasers one of the added weapons (also cool lighting effects) which never run out of
+ammunition but they will cause the tank to heat up, and a tank cannot overheat. Therefore like in
+MechWarrior games, heat sinks can be one of the components added to a vehicle."*
+- **Ammo:** ballistic weapons (cannon, and future MGs/artillery) carry a finite ammo count in their weapon profile. Decide whether and how resupply works (none, a slow trickle, or a resupply zone at base that makes pulling back meaningful, which pairs well with G6 shields) and record why.
+- **Lasers:** a new weapon in `Weapons.PROFILES`: hitscan or a very fast beam, **no ammo**, and **heat per shot/second**. Give it a clear trade-off against the cannon (e.g. lower burst damage or shorter range, but sustained and ammo-free; a natural anti-shield weapon if G6 wants one).
+- **Heat:** each vehicle has a heat level that dissipates over time. **A tank cannot overheat:** a weapon that would push heat past the cap simply can't fire until it cools. (This is our reading of the lead's sentence: a hard cap, not damage or shutdown. It keeps things simple and readable. Revisit if playtests want a risk/reward "override".)
+- **Heat sinks** raise the cap and/or the dissipation rate. They are a *component* in directive set 2's loadouts. Before loadouts exist, a per-unit stat is enough.
+- **AI:** brains must manage both resources: don't waste shells at long odds when ammo is low, pause laser fire near the heat cap, prefer the laser when ammo runs dry. Add these to the utility inputs and tank_brain.md.
+- **Contracts:** `sync_ammo`/`sync_heat` replicated; HUD shows ammo and a heat bar per selected unit; add slots `weapon.laser` + `fx.laser_beam` (`setup(from, to)`, `set_firing`) and `set_heat(ratio)` so look & feel can make hot barrels glow. Add the slot contract rows to streams/assets.md.
+- **Also move the shell's inline mesh into an `fx.shell` visual slot** (shell.tscn currently embeds a CapsuleMesh). Look & feel needs it for glowing tracers that light the arena. Keep `make sim-baseline` unchanged by that move.
+- **Acceptance:** tests for the ammo count, heat cap (a shot is refused at the cap), and dissipation. A match series shows lasers vs cannons isn't a blowout (neither side wins >65%), with swap-bases control.
+
 ## Directive set 2 (next): the game's shape, a budgeted army
 
 The lead: *"for each game you get some sort of budget to consume, and this can be composed of any
@@ -73,7 +99,7 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 - **Unit classes as data** (`Units.PROFILES`, like `Weapons.PROFILES`): cost, speed, turn rate, health, armor, **sight radius**, size, weapon hardpoints. Start with **Scout** (fast, fragile, long sight, light machine gun), **Tank** (today's), **Artillery/Mortar** (slow, fragile, **indirect fire**: arcing shells over obstacles, minimum range, inaccurate unless a teammate can see the target).
 - **Indirect fire + spotting** is the combined-arms heart: artillery is useless without scouts' vision, and scouts are useless without something that can hit what they see.
 - **Budget:** each side gets N points; skirmish setup picks a composition (the garage stream will build the full UI; you define the catalog and costs).
-- **Chassis + loadout (MechWarrior-style) vs fixed classes: your call, with a recommendation.** A sensible middle: a few chassis (scout, tank, artillery) with 1–2 hardpoints drawing from a weapon list with costs, which keeps the garage interesting without an explosion of balance work.
+- **Chassis + loadout (MechWarrior-style) vs fixed classes: your call, with a recommendation.** A sensible middle: a few chassis (scout, tank, artillery) with 1–2 weapon hardpoints plus component slots (**heat sinks**, extra ammo, shield booster, armor…) drawing from lists with costs, which keeps the garage interesting without an explosion of balance work.
 - Brains need per-class behavior (scouts avoid fights and spot; artillery stays back and fires on team-spotted targets). Doctrine/squad data must carry unit classes.
 - Validate with the match runner: compositions should matter and **no single composition should dominate** (squad_ai_design.md experiment E3, now at the army level).
 
@@ -94,4 +120,4 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 ## Status
 
 - 2026-09-13: brief written.
-- 2026-09-14: directive sets 1 (G1–G6, incl. Halo-style shields) and 2 (budgeted army) added from the lead. Nothing started.
+- 2026-09-14: directive sets 1 (G0 mobile input, G1–G7 incl. Halo-style shields, finite ammo, lasers + heat) and 2 (budgeted army with components like heat sinks) added from the lead. Nothing started.

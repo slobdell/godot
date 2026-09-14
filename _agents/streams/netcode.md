@@ -78,3 +78,8 @@ can capture `MATCH_RESULT` from the browser; see the measurement command in HAND
 ## Status
 
 - 2026-09-13: brief written; cross-platform determinism measured (diverges). Nothing started.
+
+## Notes from other streams (2026-09-14)
+
+- Gameplay will add replicated state: `sync_shield` (G6), `sync_ammo`, `sync_heat` (G7). Budget bandwidth for it, and for more units per side (budgeted armies).
+- The product is **mobile first**: design for phones on flaky cellular links (reconnects, app backgrounding), which weighs against a phone acting as the match host.

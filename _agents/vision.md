@@ -31,6 +31,14 @@ room for "new-world AI complexity" as players want to explore.
 
 ## The design space
 
+### Update 2026-09-14: the game's shape (the lead)
+
+- **Budgeted armies:** each match you spend a budget on scouts (fast, see far), tanks (workhorses), and artillery (indirect fire). Vehicles may be chassis with MechWarrior-style weapon and component loadouts.
+- **Resources that create decisions:** Halo-style rechargeable shields over lasting hull health; finite ammunition; lasers with no ammo that build heat, capped (a vehicle can't overheat) and eased by heat sinks.
+- **Mobile first:** everything playable with taps, swipes, and buttons.
+- **The look:** a dark cyberpunk gladiator arena (Mad Max × Death Race × Blade Runner), where weapon fire and neon light the scene.
+- The details live in `streams/gameplay.md` and `streams/look_and_feel.md`. The table below is the original brainstorm.
+
 ### Equipment (trade-offs are the point)
 
 | Slot | Options (initial brainstorm) | Trade-off axis |

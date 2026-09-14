@@ -18,11 +18,16 @@ _Last updated: 2026-09-14. The repo is prepared for **parallel workstreams**; ga
 
 | Stream | Brief | First milestone |
 |---|---|---|
-| Gameplay | [streams/gameplay.md](_agents/streams/gameplay.md) | Directive set 1: line-of-sight fog of war, radar, responsive commands, RTS 3D camera, turrets that fight while moving, Halo-style shields. Next: budgeted army (scouts/tanks/artillery) |
-| Look & feel | [streams/look_and_feel.md](_agents/streams/look_and_feel.md) | Port the mavlink-hud cyberpunk HUD (CyberFrame, CyberBanner, Conductors) via `Hud.post_message`; then a `cyberpunk` theme filling every visual slot |
+| Gameplay | [streams/gameplay.md](_agents/streams/gameplay.md) | Directive set 1: touch-first input, line-of-sight fog of war, radar, responsive commands, RTS 3D camera, turrets that fight while moving, Halo-style shields, finite ammo + lasers with heat. Next: budgeted army (scouts/tanks/artillery) |
+| Look & feel | [streams/look_and_feel.md](_agents/streams/look_and_feel.md) | Port the mavlink-hud cyberpunk HUD (CyberFrame, CyberBanner, Conductors) via `Hud.post_message`; then a dark `cyberpunk` theme where weapon fire, lasers, and neon obstacles light the arena |
 | Assets | [streams/assets.md](_agents/streams/assets.md) | One AI-generated tank in a test theme + `make assets-check` |
 | Netcode | [streams/netcode.md](_agents/streams/netcode.md) | Broker (lobbies + relay), then a deterministic-core spike |
 | Garage | [streams/garage.md](_agents/streams/garage.md) | Loadout schema + garage scene producing a playable doctrine |
+
+**Kickoff for any stream agent** (in its worktree): *"You are the `<stream>` agent. Execute, iterate,
+and smoke test toward completion without my input."* The docs carry the rest (workstreams.md →
+*Autonomous mandate*). **Standing product constraints:** mobile first (taps, swipes, buttons), and a
+dark neon cyberpunk arena where lighting is part of the fun.
 
 Setup (git worktrees, shared toolchain), ownership, contracts, and merge invariants:
 [`_agents/workstreams.md`](_agents/workstreams.md).

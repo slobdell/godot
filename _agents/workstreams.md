@@ -13,6 +13,33 @@
 | **Netcode** | [streams/netcode.md](streams/netcode.md) | Production multiplayer without paying for game compute | now (starts with a decision spike) |
 | **Garage** | [streams/garage.md](streams/garage.md) | Pre-match equipping / squad building | data model now; art after look & feel v1 |
 
+## Product constraints every stream designs for (the lead)
+
+1. **Mobile first** (2026-09-14): *"we eventually want to optimize for a mobile experience, meaning
+   we'll be limited to taps, swipes, and button clicks."* Every player action must be reachable
+   by tap, drag/swipe, pinch, or an on-screen button. Keyboard and mouse shortcuts are fine as
+   extras for desktop and testing, but never the only way. Tap targets are at least ~48 px at
+   1080p, and the HUD must stay readable on a phone-sized screen. Verify with touch emulation
+   (`input_devices/pointing/emulate_touch_from_mouse`) or `InputEventScreenTouch`/`ScreenDrag`
+   events in tests.
+2. **The vibe:** a cyberpunk gladiator arena, *Mad Max × Death Race × Blade Runner*: a dark
+   atmosphere lit by neon and weapon fire. **Lighting is a core part of the fun**, not polish
+   (streams/look_and_feel.md).
+3. **Web and phones:** Compatibility renderer, 60 fps on a mid-range phone, one simulation that
+   runs headless on a server.
+
+## Autonomous mandate: how a stream agent works without the lead
+
+The lead's kickoff is short on purpose: *"You are the `<stream>` agent. Execute, iterate, and smoke
+test toward completion without my input."* Everything else is in the docs. It means:
+
+1. **Orient:** read `CLAUDE.md` → `HANDOFF.md` → `_agents/orientation.md` → this file → your brief. Run `make check` to confirm a green start.
+2. **Plan:** turn your brief's directives into an ordered list in its **Status** section (smallest foundation first). Brief directives are the lead's intent. Where they leave a choice open, make the call a good game designer/engineer would, and record it with a one-line reason.
+3. **Loop per directive:** build → automated test (a regression test that fails without the change) → `make check` → **smoke test like a player** (launch it, take screenshots at desktop *and* phone aspect, and look at them; drive it through the agent bridge or scripted input; for gameplay, run `tools/match_series.py`) → fix what felt wrong → commit to your branch with a message saying what and why.
+4. **Keep going** to the next directive without waiting. Update your brief's Status after each one (done, measured result, decisions, known issues).
+5. **Stop and ask the lead only** for: a contract change that another stream must accept, spending money or creating accounts (e.g. asset services), anything destructive outside your worktree, or a directive that turns out to be impossible or self-contradictory as written. Otherwise, decide, document, and continue.
+6. **Done** = every directive in the current set meets its acceptance notes, `make check` + `make web-smoke` pass, screenshots were reviewed, the brief's Status is current, and the branch is ready to merge (rebased on `main`). Then write a short merge note: what changed, what to playtest, decisions made, and open questions for the lead.
+
 ## How to set up parallel copies: git worktrees, not folder copies
 
 Copies drift and can't merge back cleanly. **Worktrees** are extra checkouts of the *same*
@@ -42,7 +69,7 @@ at the same moment, both passed, on ports 9261 and 9271):
 
 ## Running the agents
 
-1. One terminal per stream: `cd ~/projects/godot-<stream> && claude`, then: *"You are the `<stream>` workstream. Read CLAUDE.md, then `_agents/workstreams.md` and `_agents/streams/<stream>.md`."*
+1. One terminal per stream: `cd ~/projects/godot-<stream> && claude`, then: *"You are the `<stream>` agent. Execute, iterate, and smoke test toward completion without my input."* (The docs, starting from `CLAUDE.md`, carry the rest; see *Autonomous mandate* above.)
 2. Agents commit to their own branch as they go (they may `git push -u origin stream/<stream>` for backup).
 3. **The orchestrator** (a Claude session in the main checkout, or the lead) reviews and integrates:
    ```bash
@@ -92,11 +119,11 @@ Changing one of these requires updating this section and telling the other strea
 
 | Contract | Defined in | Consumers |
 |---|---|---|
-| **Visual slots**: slot ids, orientation/size/origin, optional methods `set_team_color`, `setup`, `set_firing` | `game/theme/game_theme.gd`, `game/theme/visual_slot.gd`, [streams/assets.md § Slot contracts](streams/assets.md#slot-contracts) | gameplay places slots; look & feel and assets fill them |
+| **Visual slots**: slot ids, orientation/size/origin, optional methods `set_team_color`, `setup`, `set_firing` (planned additions: `fx.shell` projectile + light, `weapon.laser`, `fx.laser_beam`, `set_heat(ratio)`, `set_shield(ratio)`; see streams/assets.md) | `game/theme/game_theme.gd`, `game/theme/visual_slot.gd`, [streams/assets.md § Slot contracts](streams/assets.md#slot-contracts) | gameplay places slots; look & feel and assets fill them |
 | **SquadCommand**: `{squad, verb, to, facing, formation, commander}` | `game/ai/squad.gd` | tactical map, CPU, agent, netcode (sent over the wire) |
 | **Doctrine / loadout JSON** | `game/ai/doctrine.gd`, `game/ai/directives.gd` | gameplay, garage (produces), match runner |
 | **Simulation entry points**: `Match.command_squad()`, `Tank.command`, `Match.load_doctrine()`, `Match.finished`, `Match.state_hash()` | `game/match/match.gd` | netcode (what goes over the wire), garage, modes |
-| **Replicated tank state** (`sync_*`; gameplay G6 adds `sync_shield`) | `game/network/replication.gd` + `tank.gd` | netcode, gameplay |
+| **Replicated tank state** (`sync_*`; gameplay adds `sync_shield` (G6), `sync_ammo`, `sync_heat` (G7)) | `game/network/replication.gd` + `tank.gd` | netcode, gameplay |
 | **Launch flags** | `game/main.gd` header, `game/modes/*` | everyone (Makefile targets, smoke tests) |
 | **Console markers** `TANK_SQUAD_*`, `MATCH_RESULT` | `game/main.gd`, `match_runner_mode.gd` | smoke tests, `tools/match_series.py` |
 | **HUD messages**: `Hud.post_message(text: String, severity: int)` with `Hud.INFO` / `WARNING` / `ERROR` | `game/ui/hud.gd` (stub: a plain label) | gameplay posts (orders, losses, results); look & feel renders (banners) |

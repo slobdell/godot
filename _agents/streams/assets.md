@@ -43,8 +43,15 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 | `weapon.flamethrower` | turret pivot; nozzle along −Z | short; show a flame effect ~20 m long | `set_team_color`, `setup(weapon)`, `set_firing(bool)` | ≤ 2k tris + FX |
 | `prop.crate` | ground center | 4.5 × 3 × 4.5 | — | ≤ 2k tris |
 | `prop.wall` | ground center | 18 long (X) × 3 tall × 1.5 thick | — | ≤ 3k tris |
+| `weapon.laser` *(planned, gameplay G7)* | turret pivot; emitter along −Z | like the cannon | `set_team_color`, `setup(weapon)`, `set_firing(bool)`, `set_heat(ratio)` | ≤ 2k tris |
+| `fx.shell` *(planned, gameplay G7)* | projectile center, flying along −Z | ~0.3 × 0.3 × 1 | — (tracer + light, pooled) | ≤ 200 tris |
+| `fx.laser_beam` *(planned, gameplay G7)* | muzzle | stretched to the hit point | `setup(from: Vector3, to: Vector3)` | FX only |
 | `arena.environment` | world origin | sky/lighting/fog only | — | — |
 | `arena.dressing` | world origin | ground 320×320 at y=0; perimeter walls at ±121 | — | ≤ 50k tris |
+
+Style for everything generated: the cyberpunk gladiator arena (look_and_feel.md). Dark, weathered
+scrap and metal **with emissive maps** for neon strips, lights, and signage, since lighting is the
+game's headline look. Emissive textures must survive normalization and import.
 
 ## First milestone
 

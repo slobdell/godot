@@ -11,6 +11,14 @@ artillery, possibly chassis configured with weapons MechWarrior-style. They assi
 and roles, plus cosmetics. The output is **data**: a doctrine the match loads
 (`--player=<name>`), so the garage never touches simulation code.
 
+Loadouts include **weapons** (cannon with finite ammo, laser with heat, flamethrower…) and
+**components** such as **heat sinks** (MechWarrior-style), extra ammo, and shield boosters
+(gameplay G6/G7 and directive set 2). The garage should make the trade-offs readable: a laser boat
+needs heat sinks, and a cannon build needs ammo.
+
+**Mobile first** (workstreams.md): the garage is tap and drag only (drag a component onto a
+hardpoint, tap to pick) and readable on a phone.
+
 ## Dependencies, and what can start now
 
 | Needs | From | Until then |
