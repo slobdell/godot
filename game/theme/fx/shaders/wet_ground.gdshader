@@ -7,12 +7,12 @@ render_mode cull_back;
 uniform vec3 base_color : source_color = vec3(0.075, 0.08, 0.1);
 uniform vec3 patch_color : source_color = vec3(0.1, 0.095, 0.11);
 uniform vec3 line_color : source_color = vec3(0.3, 0.32, 0.75);
-uniform float line_energy = 0.22;
+uniform float line_energy = 0.3;
 uniform float cell_size = 8.0;
 uniform float line_width = 0.06;
 // Not too glossy: with a black sky, very smooth puddles reflect black ambient and read as holes.
-uniform float puddle_roughness = 0.45;
-uniform float dry_roughness = 0.7;
+uniform float puddle_roughness = 0.55;
+uniform float dry_roughness = 0.72;
 
 varying vec3 world_pos;
 
@@ -41,6 +41,7 @@ void fragment() {
 	ALBEDO = mix(mix(base_color, patch_color, n), base_color * vec3(0.85, 0.9, 1.1), puddle);
 	ROUGHNESS = mix(dry_roughness, puddle_roughness, puddle);
 	METALLIC = 0.0;
-	SPECULAR = 0.45;
+	// Low specular: seen against the moon (Rust's flipped camera) glossy puddles glared into pale blobs.
+	SPECULAR = 0.22;
 	EMISSION = line_color * line_energy * on_line * (1.0 - puddle * 0.5);
 }

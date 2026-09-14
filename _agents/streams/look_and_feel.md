@@ -230,6 +230,14 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   (desktop), so no shared entry code changed. Screenshots: `build/screenshots/title.png`,
   `title-phone.png`, `web-title.png`. Test: relaunch args + `--title` routing.
 
+- **Verification sweep:** `make check-all` passed (desktop render, web boot, browser multiplayer,
+  release server export with bots, no server ERRORs; the "3 resources still in use at exit" lines in
+  the bot clients were already on the baseline). The browser multiplayer screenshot (a Rust player,
+  camera flipped to face south) showed moon glare turning glossy puddles into pale blobs → lower
+  specular and roughness contrast, a slightly brighter lane grid; re-checked in `web-net.png`.
+  Docs: orientation (layout, common tasks, trip-ups 38–43), verification (look & feel checks),
+  workstreams (slot contract status + the `set_paint` proposal).
+
 #### Frame budget per quality tier (L0, re-measured in L6; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured (UHD 620, 720p) |
 |---|---|---|---|---|---|---|---|---|---|

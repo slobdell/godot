@@ -65,7 +65,8 @@ export_presets.cfg       "Web" and "Linux Server" export presets
 game/
   main.tscn / main.gd    entry point: parses flags, picks a GameMode, owns camera/HUD/local controller
   modes/                 one file per way to run: offline, skirmish, match_runner, server, client (+ LaunchFlags)
-  theme/                 GameTheme (slot → scene, team colors, UI palette), VisualSlot, default/ placeholder art
+  theme/                 GameTheme (slot → scene, team colors, UI palette), VisualSlot; cyberpunk/ (default look),
+                         default/ (placeholder boxes), fx/ (pooled effects, FX lab), audio/ (SFX), gallery/
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
   combat/                Weapons (data: cannon, flamethrower), Shell, Armor, Ballistics, Impact
@@ -73,7 +74,8 @@ game/
                          OrderController (orders + reflexes → command),
                          BotController (legacy baseline), Steering, Perception, Pathing
   agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
-  ui/                    TacticalMap (squad command overlay), Hud (hud.tscn = layout, hud.gd = text)
+  ui/                    TacticalMap (squad command overlay), Hud (hud.tscn = layout, hud.gd = text),
+                         widgets/ (CyberFrame, CyberBanner, Conductors, HudSkin, title screen)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
   network/               NetworkInput (client→server commands + validation), Replication (what syncs)
   camera/                FollowCamera
@@ -101,6 +103,8 @@ build/   (gitignored)    exports and screenshots
 | Find a GDScript compile error fast | `make lint` |
 | Let Claude play | `make server BOTS=1` + `make agent-client`, then `tools/agent.py …` ([agent_bridge.md](agent_bridge.md)) |
 | Open the editor | `make editor` |
+| See the look (cyberpunk is the default theme; `--theme=default` for the boxes) | `make title` (menu), `make vehicle-gallery`, `make hud-gallery`; any mode takes `--perf` (overlay), `--fx-quality=low\|medium\|high`, `--hud-demo`, `--mute`, `--no-shake` |
+| Measure an effect's cost | `make fx-bench` (FX lab: per-trick configs, `build/fx-bench.json`; browser `?fx-bench`); results and tier budgets in `_agents/streams/references/fx_tricks.md` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
 | See it in a browser | `make serve-web` → http://localhost:8060 (add `?demo`) |
 | Prove the web build boots | `make web-smoke` → `build/screenshots/web.png` |
@@ -150,3 +154,9 @@ build/   (gitignored)    exports and screenshots
 35. **The browser build and the native build do not simulate identically** (measured: same seed, different state hash after 40 s). Determinism holds per build only; don't design cross-platform lockstep on the current physics (streams/netcode.md).
 36. **`git stash` removes uncommitted code the running experiment/test depends on.** Don't stash to "test the committed version" mid-change; use a worktree.
 37. **Heavy runs queue for a machine-wide slot.** Parallel worktree agents share one 7.6 GB machine, so the root Makefile routes every non-interactive goal through `tools/slot.sh` (2 slots). `>> waiting for a heavy-run slot` is normal, not a hang. Wrap heavy commands you run outside make yourself (`tools/slot.sh python3 tools/match_series.py …`). Runs over 90 minutes are killed.
+38. **Theme inheritance stops at a `CanvasLayer`.** Setting `get_window().theme` did not restyle the tactical map (a Control under the HUD's CanvasLayer). Set `theme` on the top Control under each CanvasLayer (`HudSkin` does it for the map).
+39. **A `Label` outside a container grows to fit new text**, even with autowrap on, so it overflows the width you set once. Re-pin `size.x` each frame (or put it in a container).
+40. **Dark glossy floors under a black sky render black blotches** (smooth patches reflect the black background as ambient specular) and glare into pale blobs facing the moon. Keep roughness ≥ 0.5, low specular, and `reflected_light_source = disabled` in night scenes.
+41. **A directional light's PSSM 4-split shadows redraw every shadow caster per split.** In the FX lab that was +65 draw calls and 3.3 ms; orthogonal mode with a 110 m max distance looked the same from our cameras.
+42. **The Compatibility renderer doesn't batch 3D draws.** A prop built from 23 boxes is 23 draw calls (46 with shadows). Merge static art per material (`StaticBatcher`) or build vehicles as one vertex-colored mesh (`ColorMeshBuilder`); `Decal` and `ReflectionProbe` don't help there (probed).
+43. **The tactical camera is orthographic, 200 m up, ~3 px per meter.** Art thinner than ~0.5 m vanishes, and exponential fog thick enough for the 3D view hides most of the map. Judge arena art from `--skirmish` screenshots, not only the follow camera.

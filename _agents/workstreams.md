@@ -144,7 +144,7 @@ Changing one of these requires updating this section and telling the other strea
 
 | Contract | Defined in | Consumers |
 |---|---|---|
-| **Visual slots**: slot ids, orientation/size/origin, optional methods `set_team_color`, `setup`, `set_firing` (`fx.shell` landed 2026-09-14; planned: `weapon.laser`, `fx.laser_beam`, `set_heat(ratio)`, `set_shield(ratio)`; see streams/assets.md) | `game/theme/game_theme.gd`, `game/theme/visual_slot.gd`, [streams/assets.md § Slot contracts](streams/assets.md#slot-contracts) | gameplay places slots; look & feel and assets fill them |
+| **Visual slots**: slot ids, orientation/size/origin, optional methods `set_team_color`, `setup`, `set_firing` (`fx.shell` landed 2026-09-14; `weapon.laser`, `fx.laser_beam`, `set_heat(ratio)`, `set_shield(ratio)` built by gameplay G6/G7 and skinned by look & feel on their branches; **proposed 2026-09-14 by look & feel: `set_paint(Color)` for full-body paint, with `set_team_color` meaning team accent lights only**; see streams/assets.md) | `game/theme/game_theme.gd`, `game/theme/visual_slot.gd`, [streams/assets.md § Slot contracts](streams/assets.md#slot-contracts) | gameplay places slots; look & feel and assets fill them |
 | **SquadCommand**: `{squad, verb, to, facing, formation, commander}` | `game/ai/squad.gd` | tactical map, CPU, agent, netcode (sent over the wire) |
 | **Doctrine / loadout JSON** | `game/ai/doctrine.gd`, `game/ai/directives.gd` | gameplay, garage (produces), match runner |
 | **Simulation entry points**: `Match.command_squad()`, `Tank.command`, `Match.load_doctrine()`, `Match.finished`, `Match.state_hash()` | `game/match/match.gd` | netcode (what goes over the wire), garage, modes |
