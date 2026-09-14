@@ -49,8 +49,9 @@ const PROFILES := {
 		"spread_deg": 0.3,
 		"heat_per_shot": 12.0,
 		"armor": {"front": 0.7, "side": 1.0, "rear": 1.3},
-		# G6: energy weapons strip shields.
-		"shield_multiplier": 1.5,
+		# G6: energy weapons strip shields. 1.5 made lasers win 29/40 vs cannons (above the 65% bar);
+		# 1.25 measured 14/24 (58%), swap + team-identity counterbalanced (2026-09-15).
+		"shield_multiplier": 1.25,
 	},
 	"flamethrower": {
 		"kind": Kind.CONE,

@@ -65,6 +65,14 @@ func start() -> void:
 	main.add_child(rig)
 	tactical.rig = rig
 	main.hud.add_child(tactical)
+	# G2: the radar, bottom right; it reads the same intel and visibility field as the map.
+	var radar := Radar.new()
+	radar.name = "Radar"
+	radar.game_match = game_match
+	radar.map = tactical
+	radar.visibility = field
+	tactical.add_child(radar)
+	radar.read_arena(main.arena)
 	var announcer := MatchAnnouncer.new()
 	announcer.name = "Announcer"
 	announcer.game_match = game_match
