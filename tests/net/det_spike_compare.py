@@ -24,11 +24,28 @@ def parse(path):
     return checkpoints, result
 
 
+runs_paths = {}
+
+
+def report_float_probes(paths):
+    """Informational: do plain float recurrences agree across builds? (not a pass/fail condition)"""
+    probes = {}
+    for label, path in paths.items():
+        with open(path, encoding="utf-8", errors="replace") as log:
+            for line in log:
+                if m := re.search(r"FLOAT_PROBE kind=(\w+) hash=(\w+)", line):
+                    probes.setdefault(m.group(1), {})[label] = m.group(2)
+    for kind, by_label in sorted(probes.items()):
+        verdict = "identical" if len(set(by_label.values())) == 1 and len(by_label) == len(paths) else "DIFFERENT"
+        print(f"FLOAT_PROBE {kind}: {verdict} " + " ".join(f"{k}={v}" for k, v in by_label.items()))
+
+
 def main():
     runs = {}
     for arg in sys.argv[1:]:
         label, path = arg.split("=", 1)
         runs[label] = parse(path)
+        runs_paths[label] = path
     ok = True
     for label, (checkpoints, result) in runs.items():
         if result is None:
@@ -53,6 +70,7 @@ def main():
         if runs[labels[0]][1]["hash"] != runs[label][1]["hash"]:
             print(f"DET_SPIKE DIVERGED: final hashes differ ({labels[0]} vs {label})")
             return 1
+    report_float_probes(runs_paths)
     print(f"DET_SPIKE IDENTICAL across {', '.join(labels)}: {len(reference)} checkpoints, final {runs[labels[0]][1]['hash']}")
     return 0
 

@@ -121,7 +121,13 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
    same seeded command log (20 tanks, 3600 ticks = 2 min, 92 shots, 56 hits, 2 kills) gives
    **identical hashes at all 12 checkpoints natively and as WebAssembly in Chrome**
    (`ea02d9652cc08086`). Cost per tick: **284 µs native, 485 µs wasm = 1.5% of a 30 Hz budget**;
-   even a 5× slower phone has >90% headroom. 7 unit tests incl. a recorded baseline hash. Not yet
+   even a 5× slower phone has >90% headroom. 7 unit tests incl. a recorded baseline hash.
+   **Control experiment** (`FloatProbe`, printed by `make det-spike`): chaotic float recurrences
+   using only + − × ÷ √ hash **identically** native vs wasm; adding sin/cos/atan2/exp gives
+   **different** hashes. So today's cross-build divergence most likely comes from library trig
+   (inside Godot's math, physics and navigation), not from floats as such. Integers remain the
+   safe choice: a float core without libm could work on x86 and wasm, but ARM compilers may fuse
+   multiply-adds (FMA) and nothing here has been measured on ARM. Not yet
    run on ARM (needs a phone; see Questions). Caveat: this proves the *approach*; the real game's
    brains, intel, squads and pathing would all need porting to integers (designs, section 1).
 5. **N3 designs** in [references/netcode_designs.md](references/netcode_designs.md): lockstep

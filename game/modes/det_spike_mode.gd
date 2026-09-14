@@ -76,6 +76,8 @@ func _run() -> void:
 		# Fraction of a 30 Hz tick budget (33.3 ms) one tick uses.
 		"budget_used_at_30hz": snappedf(usec_per_tick / (1000000.0 / DetSim.TICKS_PER_SEC), 0.001),
 	}
+	for kind in ["basic", "trig"]:
+		print("FLOAT_PROBE kind=%s hash=%s" % [kind, FloatProbe.run(kind, 200000)])
 	print("DET_SPIKE_RESULT " + JSON.stringify(result))
 	main.hud.set_status("Deterministic spike: %s (%d µs per tick)" % [result["hash"], result["usec_per_tick"]])
 	if flags.has("save-replay"):
