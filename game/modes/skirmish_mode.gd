@@ -85,7 +85,7 @@ func start() -> void:
 	if flags.has("scripted"):
 		_play_script(tactical)
 	else:
-		tactical.set_paused(true, "PLANNING: give orders, then press Space to begin")
+		tactical.set_paused(true, "PLANNING: give orders, then Resume (Space)")
 
 
 ## A short, fixed sequence of player orders, so unattended runs (make skirmish-shots) show squads
