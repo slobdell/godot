@@ -77,6 +77,8 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 
 - **A4** procedural cyberpunk kit, `make assets-procedural` → theme `neon_kit` (`assets/pipeline/procedural_kit.gd`, seeded, headless, same normalize → GLB → wrapper → manifest path; all project-owned): `prop.crate` neon cargo stack (324 tris, same 4.5 × 3 × 4.5 footprint), `prop.wall` concrete blast barrier with alternating team-neon/pink light bars and holo-ad panels (268 tris, 18 × 3 × 1.5), and candidates `kit.container` 360, `kit.barrier` (jersey, underglow) 56, `kit.light_pole` (hooded lamp, neon strip) 192, `kit.billboard` (procedural neon ad texture) 62, `kit.scrap_pile` 360. Palette from look_and_feel.md (cyan #00F3FF, pink #FF0099, purple #D900FF) plus amber hazard lights. Grime textures 128², sign 256×96. **Handover to look & feel:** `make assets-gallery THEME=neon_kit NIGHT=1` shows them lit by their own neon (`build/screenshots/assets-gallery-neon_kit-night-1920x864.png`, day version beside it). To try them in the arena: `make assets-preview THEME=neon_kit FLAGS=--skirmish`. Materials named `neon_team*` take the team color via `set_team_color`; props aren't painted today, so they show the cyan default unless the arena calls it.
 
+- **A5** [references/asset_budget.md](references/asset_budget.md) (`make assets-report`): per-asset tris / draw calls / texture memory / packed bytes for `default`, `kitbash`, `neon_kit`; exact `.pck` breakdown with `tools/assets/pck_report.py`; texture modes measured on this Godot (a 1024² map ships as 2,035 KB lossless, 428 KB lossy, 683 KB per VRAM format, 1,249 KB Basis). Results: web pack **1,944 → 1,062 KB** once `build/` screenshots stop being imported (`build/.gdignore`); the unused test themes are most of what's left (proposed export exclude). **Texture policy** (≤ 256 px lossy, larger → Basis Universal) is applied by the pipeline and enforced by `assets-check`: neon_kit pack 231 → 91 KB. Finding for look & feel: default `fx.shell` is 3,456 tris (budget 200). Draw calls, not triangles, are the constraint for the neon kit (3–5 materials per prop), so a palette atlas is the next pipeline step.
+
 **Decisions**
 - Pipeline GDScript lives in `assets/pipeline/`, not `tools/assets/`: `tools/` has a `.gdignore`, so Godot never registers `class_name` scripts there. `tools/assets/` keeps non-Godot tooling (Python provider clients, mock server).
 - Slot contracts are data (`assets/pipeline/asset_contracts.gd`). Where the brief's table was loose I picked what matches today's placeholder art, so swapping art never moves gameplay: turret **bottom at y = −0.275** relative to its pivot (sits on the default hull deck at 0.945 m); cannon/laser barrel from z = −0.7 to the muzzle at **z = −3.2**, axis at y = 0.05; props **stretch** to their exact collision box (warning past 2× distortion); vehicles scale uniformly (**contain**); turret max 1.8 × 0.9 × 2.1.
@@ -89,16 +91,26 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 - `assets-generate` and `assets-mock` are added to `LIGHT_GOALS` in the root Makefile (shared, one line) so waiting on a remote service doesn't hold a heavy-run slot.
 
 **Questions for the lead**
-- (none yet)
+- A paid generator (Meshy Pro ~$20/mo) is the only step left to get AI models flowing; the client is ready. Worth it now, or keep using CC0 + procedural art until the look is settled?
+- Basis Universal textures on your phone's browser: does `/?fx-bench` (look & feel) or a kitbash preview load smoothly? SwiftShader can't verify it.
 
 **Requests to other streams**
-- (none yet)
+- **Look & feel:** `game/theme/default/fx_shell.tscn` capsule is 3,456 tris vs the 200 budget (asset_budget.md). Candidate art for L2: `make assets-gallery THEME=neon_kit NIGHT=1`, `make assets-preview THEME=neon_kit FLAGS=--skirmish`; copy what you like into `game/theme/cyberpunk/` or point slots at `game/theme/neon_kit/generated/*.tscn`.
+- **Gameplay / netcode:** `make sim-baseline` flaked once in 6 runs (hash `40503279562bab7e`) under heavy machine load; see Known issues. Worth a loop of `make sim-baseline` while `match_series` runs, because lockstep netcode would inherit this.
+- **Integrator (shared files):** (1) `mk/core.mk` import target: `mkdir -p build && touch build/.gdignore` (screenshots are shipped inside the web .pck today, ~0.9 MB measured); (2) `export_presets.cfg` `exclude_filter` += `assets/pipeline/*, game/theme/kitbash/*` (≈ 520 KB of web download) until a theme uses them; (3) later, `project.godot` `import_etc2_astc=true` for Android. Details in asset_budget.md.
 
 **Known issues**
-- (none yet)
+- Kitbash `kit.billboard` (Quaternius Cyberpunk Signs) renders its sign panels plain grey; the texture atlas may use UVs the merge doesn't preserve, or the signs are on another material. The procedural billboard is the better candidate; not debugged.
+- Decimation lands at 50–100% of budget (LOD halving), not exactly at budget.
+- The orphan check only catches files no manifest entry prefixes; a stale texture that shares a model's name prefix is removed on the next normalize (`clear_extracted`) but not flagged.
+- **Intermittent `sim-baseline` mismatch (not caused by this stream):** one `make check` at 02:40, run while other worktrees' match series were loading the machine, got `40503279562bab7e` instead of `e69acc63a64f319a`. The same tree then passed 5 times (including under 4 busy CPU loops), and `make determinism` passed in the failing run. The diff was assets-only (no simulation code), so something in the sim likely depends on timing: navigation-map readiness (trip-up #22) is the first suspect. Reported under Requests.
+- A 2400×1080 window is clamped to the display (1854×1011 here); use `SCREEN=1920x864` for 20:9 shots.
 
 **What to playtest**
-- `make assets-slots`, `make test FILTER=assets`
+- `make assets-gallery THEME=kitbash` and `make assets-gallery THEME=neon_kit NIGHT=1`, then look at `build/screenshots/assets-gallery-*.png`
+- `make assets-preview THEME=kitbash FLAGS=--skirmish` (a screenshot of the real game with CC0 tanks/containers; drop `--screenshot` by running `godot --path . res://assets/pipeline/theme_preview.tscn -- --theme=kitbash --skirmish` to play it)
+- `make assets-test` (Python provider tests vs the mock + Godot pipeline tests), `make assets-check`, `make assets-report`
+- `make assets-slots`
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

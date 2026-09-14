@@ -162,7 +162,8 @@ func _frame_camera() -> void:
 	var center := _bounds.get_center()
 	var radius := maxf(_bounds.size.length() * 0.5, 3.0)
 	var aspect := get_viewport().get_visible_rect().size.aspect()
-	var distance := radius / tan(deg_to_rad(camera.fov * 0.5)) * (1.0 if aspect >= 1.0 else 1.0 / aspect) * 0.62
+	var tightness := 0.62 if radius > 15.0 else 1.0  # big layouts can crop the empty corners; small ones can't
+	var distance := radius / tan(deg_to_rad(camera.fov * 0.5)) * (1.0 if aspect >= 1.0 else 1.0 / aspect) * tightness
 	camera.position = center + Vector3(0.55, 0.6, 1.0).normalized() * distance
 	camera.look_at(center)
 	camera.current = true

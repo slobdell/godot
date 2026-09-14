@@ -13,6 +13,7 @@ extends SceneTree
 ##             [--source=<url or path>] [--license=<text>] [--credit=<text>]
 ##             → game/theme/<theme>/generated/<slot file>.glb + .tscn wrapper + manifest.json entry
 ##   check     [--theme=<theme>]                enforce contracts on generated themes (exit 1 on errors)
+##   textures  --theme=<theme>                  apply the web/mobile texture import policy to extracted maps
 ##   slots                                      print the contract table
 
 
@@ -27,6 +28,9 @@ func _initialize() -> void:
 			status = _normalize(args)
 		"check":
 			status = _check(args)
+		"textures":
+			for file in AssetIO.apply_texture_policy(args.get("theme", "")):
+				print("texture policy applied: %s" % file)
 		"slots":
 			for slot in AssetContracts.all_slots():
 				print("%-22s %s" % [slot, AssetContracts.get_contract(slot)])

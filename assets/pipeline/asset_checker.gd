@@ -96,6 +96,14 @@ static func check_theme(theme: String) -> Dictionary:
 	var dir := AssetIO.generated_dir(theme)
 	if manifest["slots"].is_empty():
 		errors.append("%s: manifest has no slots" % theme)
+	for file in DirAccess.get_files_at(dir):
+		var config := ConfigFile.new()
+		if file.ends_with(".png") and config.load("%s/%s.import" % [dir, file]) == OK:
+			var image := Image.load_from_file(ProjectSettings.globalize_path("%s/%s" % [dir, file]))
+			if image != null and int(config.get_value("params", "compress/mode", 0)) != AssetIO.texture_policy(image.get_width(), image.get_height()):
+				errors.append("%s: %s isn't imported with the web texture policy (make assets-textures THEME=%s)" % [theme, file, theme])
+	for orphan in AssetIO.orphan_files(theme):
+		errors.append("%s: %s isn't owned by any manifest entry (stale? delete it)" % [theme, orphan])
 	for slot in manifest["slots"]:
 		var entry: Dictionary = manifest["slots"][slot]
 		var prefix := "%s/%s" % [theme, slot]
