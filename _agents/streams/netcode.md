@@ -108,6 +108,27 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
      joins, drives 37 m, sees combat. The SwiftShader tab hosted at only 2 fps / 15 ticks per s
      (software rendering; `TANK_SQUAD_HOST_STATS`), which exposed the stale-input bug below.
    - 10 GDScript unit tests (`tests/test_relay_peer.gd`) + 1 new `test_network_input` case.
+3. **Bandwidth + latency measured** (`make net-measure TANKS= CLIENTS= LATENCY= JITTER=`; table
+   under *Measurements* below). 10 tanks cost **14.6 KB/s down** per player, 20 tanks **27.3 KB/s**
+   (~1.37 KB/s per tank, linear); the host uploads that times the player count (60 KB/s for 4
+   players). Shield + heat as always-sent floats would add **+32%** (measured with stand-in
+   properties, not committed). Player upload was 3.0 KB/s (a command every 60 Hz tick); **now
+   1.5 KB/s** (send on change + keepalive). With 150 ms + 50 ms jitter on every peer
+   (`make relay-latency-smoke`), play stays sane: time from spawn to replicated motion goes from
+   ~300 ms to ~680 ms, snapshot gaps p95 50 → 67 ms (max 101 ms), combat replicates, no errors.
+4. **N2 verdict: lockstep is feasible.** `game/network/detcore/` (Q16.16 ints, integer CORDIC
+   trig, grid line of sight, arena walls, shells, turret brain; no floats). `make det-spike`: the
+   same seeded command log (20 tanks, 3600 ticks = 2 min, 92 shots, 56 hits, 2 kills) gives
+   **identical hashes at all 12 checkpoints natively and as WebAssembly in Chrome**
+   (`ea02d9652cc08086`). Cost per tick: **284 µs native, 485 µs wasm = 1.5% of a 30 Hz budget**;
+   even a 5× slower phone has >90% headroom. 7 unit tests incl. a recorded baseline hash. Not yet
+   run on ARM (needs a phone; see Questions). Caveat: this proves the *approach*; the real game's
+   brains, intel, squads and pathing would all need porting to integers (designs, section 1).
+5. **N3 designs** in [references/netcode_designs.md](references/netcode_designs.md): lockstep
+   protocol (T+D scheduling, adaptive delay, hash exchange, desync handling with majority resync
+   or server replay adjudication, autopilot for dropped seats, snapshot catch-up), host loss for N1
+   (end the match; migration not worth it), mobile backgrounding (10 s drop measured; gaps listed),
+   anti-cheat notes for N1, broker hosting cost estimates.
 
 **Decisions (with reasons)**
 
@@ -196,3 +217,30 @@ the target going up (0 all, N one, −N all but N) and the sender coming down. `
 host/join, ping every 5 s (two missed → away), 30 s grace, 4 MiB unacked reliable bytes per peer,
 rates host 6000 msg/s + 2 MiB/s and player 600 msg/s + 256 KiB/s (2 s burst; exceeding closes the
 seat with no grace), 5 wrong join codes per connection.
+
+## Measurements (2026-09-14, localhost, relay, Godot 4.7.2)
+
+`make net-measure`: a relayed dedicated host (`--no-player`) with bots, headless `--demo` players,
+30 s windows. "Down/up" are per player through the broker, including the 9-byte relay header.
+
+| Tanks | Players | Link | Down | Up | Snapshots/s in | Position update gap mean / p95 / max | Spawn → first motion |
+|---|---|---|---|---|---|---|---|
+| 10 | 1 | local | 14.6 KB/s | 3.0 KB/s | 36 | 37 / 50 / 67 ms | 300 ms |
+| 10 | 2 | local | 15.0 KB/s | 3.0 KB/s | 35 | 35 / 50 / 51 ms | 290 ms |
+| 10 | 4 | local | 14.7 KB/s | 3.0 KB/s | 33 | 35 / 50 / 51 ms | 291–323 ms |
+| 20 | 1 | local | 27.3 KB/s | 3.0 KB/s | 43 | 39 / 50 / 52 ms | 313 ms |
+| 10 | 2 | 150 ms + 50 ms jitter, every peer | 15.0 KB/s | 3.0 KB/s | 35 | 40 / 67 / 101 ms | 667–669 ms |
+| 10 | 1 | +2 always-sent floats (shield/heat stand-ins) | 19.2 KB/s | 3.0 KB/s | 36 | 36 / 50 / 51 ms | 307 ms |
+| 20 | 1 | +2 always-sent floats | 37.0 KB/s | 3.0 KB/s | 51 | 37 / 50 / 67 ms | 282 ms |
+| 10 | 1 | after the send-on-change input policy | 15.2 KB/s | **1.5 KB/s** | 37 | 35 / 50 / 51 ms | 290 ms |
+
+Host upload = players × down (10 tanks, 4 players: 60 KB/s measured by `TANK_SQUAD_HOST_STATS`).
+Hosting on a phone's cellular uplink: 4 players × 15 KB/s = 480 kbit/s, fine on 4G; 8 players at
+20 tanks ≈ 1.8 Mbit/s is where weak uplinks will hurt.
+
+**Bandwidth recommendations for gameplay's new state:** send `sync_shield`/`sync_heat` as ints
+quantized to 0–100 with `REPLICATION_MODE_ON_CHANGE` (only costs bytes while they change), not
+always-sent floats (+0.23 KB/s per tank per player each). `sync_ammo` as an ON_CHANGE int is
+negligible. Later wins (netcode, after tonight's no-restructure rule): drop `sync_position.y`
+(always 0), make `sync_reload` ON_CHANGE, and filter hidden enemies per peer once fog of war lands
+(fewer bytes and no map hack).
