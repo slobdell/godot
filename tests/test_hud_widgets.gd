@@ -160,3 +160,29 @@ func test_hud_font_has_the_block_cursor_glyph() -> void:
 	var font := CyberStyle.font()
 	assert_true(font.has_char(CyberBanner.CURSOR.unicode_at(0)), "the HUD font (with fallback) can draw the █ cursor")
 	assert_true(font.has_char("A".unicode_at(0)), "and ordinary text")
+
+
+func test_banners_move_beside_the_tactical_map_and_wrap() -> void:
+	tree.root.size = Vector2i(1600, 720)
+	var hud: Hud = add_to_tree(HUD_SCENE.instantiate())
+	var fake_map := Control.new()
+	fake_map.name = "TacticalMap"
+	fake_map.set_script(load("res://tests/support/fake_tactical_view.gd"))
+	hud.add_child(fake_map)
+	await tree.process_frame
+	await tree.process_frame
+	var messages := hud.get_node("CyberMessages") as CyberMessages
+	var arena_left := (1600.0 - 720.0) / 2.0
+	assert_true(messages.status.column.has_area(), "with the top-down map up, info moves into a side column")
+	assert_true(messages.status.column.end.x <= arena_left, "the info column stays left of the arena")
+	assert_true(messages.warning.column.position.x >= 1600.0 - arena_left, "warnings stay right of the arena")
+	hud.post_message("Commander ALPHA-1 down: ALPHA-2 takes command of the squad", Hud.ERROR)
+	messages.warning.advance(2.0)
+	var tall := messages.warning.size.y
+	hud.post_message("Short", Hud.WARNING)
+	messages.warning.advance(0.1)
+	assert_true(tall > messages.warning.size.y, "a long message wraps into a taller banner (%.0f vs %.0f px)" % [tall, messages.warning.size.y])
+	fake_map.set("tactical_view", false)
+	await tree.process_frame
+	assert_true(not messages.status.column.has_area(), "in the 3D view the spec's centered strips return")
+	assert_true(messages.status.position.y + messages.status.size.y <= 720.0 - HudSkin.COMMAND_BAR_PX, "above the command bar")

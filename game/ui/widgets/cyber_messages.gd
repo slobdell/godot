@@ -30,6 +30,13 @@ func _ready() -> void:
 		hud.message_posted.connect(post)
 
 
+## Put the banners in side columns (info left, warnings right), or back to the spec's
+## top/bottom strips with an empty Rect2.
+func set_columns(info_column: Rect2, warning_column: Rect2) -> void:
+	status.column = info_column
+	warning.column = warning_column
+
+
 ## Severity ints match Hud.INFO / WARNING / ERROR (0 / 1 / 2).
 func post(text: String, severity: int) -> void:
 	if severity >= CyberBanner.Severity.WARNING:

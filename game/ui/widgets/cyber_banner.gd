@@ -27,6 +27,22 @@ const FONT_1080 := 25.2
 const PADDING_1080 := 24.0
 
 @export var kind := Kind.STATUS
+## Extra px kept clear at this banner's screen edge (e.g. the tactical map's command bar).
+var bottom_inset := 0.0:
+	set(value):
+		if not is_equal_approx(value, bottom_inset):
+			bottom_inset = value
+			if is_inside_tree():
+				layout()
+## Column layout: when this rect has an area the banner lives inside it (top-anchored, full width,
+## text wraps, height fits the message) instead of the spec's centered 60% strip. HudSkin uses it
+## for the side columns beside the tactical map so banners never cover the arena.
+var column := Rect2():
+	set(value):
+		if value != column:
+			column = value
+			if is_inside_tree():
+				layout()
 
 var state := State.HIDDEN
 ## Previous messages, newest first, one per line (persists across appearances).
@@ -93,16 +109,23 @@ func _process(delta: float) -> void:
 	advance(delta)
 
 
-## Place and size the banner for the current screen (spec §2 and §4).
+## Place and size the banner for the current screen (spec §2 and §4), or inside `column`.
 func layout() -> void:
 	var screen := get_viewport_rect().size
 	var scale_1080 := CyberStyle.ui_scale(screen)
 	var font_size := roundi(FONT_1080 * scale_1080)
 	var line := font_size * 1.25
+	if column.has_area():
+		_layout_column(scale_1080, font_size, line)
+		return
+	for label in [_current_label, _history_label]:
+		label.autowrap_mode = TextServer.AUTOWRAP_OFF
+		label.clip_text = true
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	# 9% of the screen, but always room for the current line plus a peek at history (touch boost).
 	var box := Vector2(screen.x * WIDTH_FRACTION, maxf(screen.y * HEIGHT_FRACTION, line * 2.2))
 	var margin := MARGIN_1080 * scale_1080
-	var top := margin if kind == Kind.WARNING else screen.y - margin - box.y
+	var top := margin if kind == Kind.WARNING else screen.y - margin - bottom_inset - box.y
 	position = Vector2((screen.x - box.x) / 2.0, top)
 	size = box
 	var padding := PADDING_1080 * scale_1080
@@ -112,6 +135,38 @@ func layout() -> void:
 	_current_label.position = Vector2(padding, (box.y - line) / 2.0 - line * 0.35)
 	_history_label.position = Vector2(padding, _current_label.position.y + line)
 	_history_label.size.y = maxf(box.y - _history_label.position.y, line)
+
+
+func _layout_column(scale_1080: float, font_size: int, line: float) -> void:
+	var padding := 14.0 * scale_1080
+	var inner := column.size.x - padding * 2.0
+	var text := _full if _full != "" else _pending
+	var lines := 1
+	_current_label.clip_text = false
+	_current_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	_current_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_current_label.add_theme_font_size_override("font_size", font_size)
+	if text != "":
+		# Measure with the label itself (same wrapping rules), on the full text plus cursor.
+		var shown := _current_label.text
+		_current_label.size = Vector2(inner, 0.0)
+		_current_label.text = text + CURSOR
+		lines = maxi(1, _current_label.get_line_count())
+		_current_label.text = shown
+	# The font's real line height (mono fonts with fallbacks run taller than size × 1.25).
+	line = maxf(line, float(_current_label.get_line_height()) + float(_current_label.get_theme_constant("line_spacing")))
+	var history_lines := mini(2, history.count("\n") + 1) if history != "" else 0
+	var box := Vector2(column.size.x, padding * 1.6 + line * lines + line * 0.9 * history_lines)
+	position = column.position
+	size = box
+	_history_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	for label in [_current_label, _history_label]:
+		label.add_theme_font_size_override("font_size", font_size)
+	_current_label.position = Vector2(padding, padding * 0.8)
+	_current_label.size = Vector2(inner, line * lines)
+	_history_label.add_theme_font_size_override("font_size", roundi(font_size * 0.85))
+	_history_label.position = Vector2(padding, padding * 0.8 + line * lines)
+	_history_label.size = Vector2(inner, line * 0.9 * history_lines)
 
 
 ## Show a message. INFO goes to a STATUS banner; WARNING/ERROR restyle a WARNING banner.
@@ -273,6 +328,8 @@ func _type(line: String) -> void:
 	_blink_elapsed = 0.0
 	_cursor_on = true
 	_history_label.text = history
+	if column.has_area() and is_inside_tree():
+		layout()
 
 
 func _advance_typewriter(delta: float) -> void:

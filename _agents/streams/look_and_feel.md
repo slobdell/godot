@@ -172,6 +172,19 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   web-smoke` boots it in the browser with every shader compiling on WebGL 2 (`build/screenshots/web.png`).
   4 tests in `tests/test_theme_vehicles.gd`.
 
+- **L4 HUD restyle** (`hud.tscn` + `HudSkin`, `CyberUiTheme`): the whole UI in the HUD language
+  without touching gameplay code: a `Theme` (Share Tech Mono, chamfered translucent buttons via
+  `StyleBoxFlat.corner_detail = 1`, cyan when toggled, touch padding) applied to the window **and to
+  the tactical map's Control** (theme inheritance stops at a CanvasLayer), plus the fallback font
+  for custom-drawn unit labels. Status/scoreboard wrap inside a CyberFrame block limited to 19% of
+  the width (clear of the banner lane); the center banner (VICTORY / DEFEAT / Destroyed) gets a pink
+  CyberFrame. **Banners never cover the arena:** with the top-down tactical map up, info banners go
+  in the left column and warnings in the right column beside the square arena (text wraps, height
+  fits); in 3D views the spec's top/bottom strips return, lifted above the command bar. `--hud-demo`
+  posts sample messages + VICTORY for screenshots. Screenshots: `build/screenshots/l4_skirmish.png`,
+  `l4_skirmish_phone.png` (1600×720, `--ui-touch`), `l4_offline.png`. Test: banners move beside the map
+  and wrap.
+
 #### Frame budget per quality tier (from L0; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows |
 |---|---|---|---|---|---|---|---|---|
@@ -185,6 +198,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - **The muzzle-flash event is "a tracer appeared"**: the `fx.shell` slot has no firing hook, and this needs no contract change.
 - **Tracers take the team's neon** (`GameTheme.team_glow`, new): cyan vs magenta shots keep the two teams readable in the dark. The shell's team is read from the Shell node (read-only duck typing).
 - **Readability rules for arena art** (learned from the tactical camera): emissive features ≥ 0.5 m wide or they vanish at ~3 px/m; fog must stay thin (the tactical camera is 200 m away: density 0.006 hid 70% of the scene); glossy dark floors reflect a black sky as black blotches, so keep roughness ≥ 0.45 and environment reflections off.
+- **Banner placement adapts to the view** (deviation from the spec's fixed top/bottom strips): in skirmish the spec's bottom strip covered the player's own starting squads and the top strip hit the PLANNING label, while the tactical view leaves dark columns beside the arena (wider on 20:9 phones).
 - **HUD text grows 1.5× on touch devices** (`CyberStyle.touch_boost`, preview with `--ui-touch`): the spec's 25 px at 1080p is ~1.5 mm tall on a phone. Banners keep ≥ 2.2 lines of height so the boosted text fits.
 - **Banner timestamps use the wall clock (`HH:MM:SS`) like the reference**; `clock` is swappable (match time would be a one-line change).
 - **The FX lab uses visual-only tanks and shells** (slot visuals, not the simulation), so it never touches gameplay code and is deterministic without physics.
@@ -196,7 +210,8 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 1. **Phone run** when convenient: `make export-web && make serve-web WEB_HOST=0.0.0.0`, open `http://<LAN IP>:8080/?fx-bench` on the phone (this worktree serves on 8080), and read the overlay's summary at the end (or add `&fx-quality=low`).
 
 #### Requests to other streams
-- (none yet)
+- **Gameplay (tactical map layout):** the orders log (top-right, 430 px) and the pause label/toast (top center) sit where 3D-view warning banners go; in the top-down view banners now use the side columns, so this only matters in the 3D view (Tab). If you move the log, keep the right column below ~16% height free for warnings. The HUD's `Status`/`Scoreboard` text doesn't update while the tree is paused (hud.gd `_process` pauses), so the top-left block is hidden during PLANNING; `process_mode = ALWAYS` on the HUD would fix it (your file).
+- **Gameplay:** please call `hud.post_message()` for orders, commander down, unit lost, victory; the banners are live (`make hud-gallery`, `--hud-demo`).
 
 #### Known issues
 - The FX lab prints two "Texture … leaked" engine errors at exit (after switching MSAA/render scale at runtime). Bench only; the game itself exits clean.
@@ -207,7 +222,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- L4 HUD restyle (in progress).
+- L5 heat/shield/laser hooks (in progress).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
