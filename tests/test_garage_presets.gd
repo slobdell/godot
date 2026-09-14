@@ -52,14 +52,6 @@ func test_same_seed_same_army_and_seeds_vary() -> void:
 	assert_true(differs, "different seeds give different armies")
 
 
-func test_flamers_burn_and_turtles_do_not() -> void:
-	var catalog := GarageCatalog.from_game()
-	var flamers := _units(ArmyPresets.build("flamers", catalog, 1)).filter(func(t: Dictionary) -> bool: return t["weapon"] == "flamethrower")
-	assert_true(flamers.size() >= 2, "flamers mount the short-range weapon across the flank (%d burners)" % flamers.size())
-	var turtle_flames := _units(ArmyPresets.build("turtle", catalog, 1)).filter(func(t: Dictionary) -> bool: return t["weapon"] == "flamethrower")
-	assert_eq(turtle_flames.size(), 0, "turtles keep long-range guns")
-
-
 func test_archetypes_resolve_preferences_against_any_catalog() -> void:
 	var catalog := _future_catalog()
 	var rush := ArmyPresets.build("rush", catalog, 1)

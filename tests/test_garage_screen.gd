@@ -26,6 +26,17 @@ func _find(screen: Control, pattern: String) -> Control:
 	return found[0] if not found.is_empty() else null
 
 
+## Scroll a control into view (catalog v2 lists five unit cards, more than fit the column at 720p).
+func _reveal(control: Control) -> Control:
+	var parent := control.get_parent()
+	while parent != null and not parent is ScrollContainer:
+		parent = parent.get_parent()
+	if parent != null:
+		(parent as ScrollContainer).ensure_control_visible(control)
+		await wait_physics_frames(2)
+	return control
+
+
 func _center(control: Control) -> Vector2:
 	return control.get_global_rect().get_center()
 
@@ -75,7 +86,7 @@ func test_opens_with_a_ready_starter_army() -> void:
 
 func test_tapping_add_without_the_money_explains_why() -> void:
 	var screen := await _open()
-	var add := _find(screen, "Add_tank")
+	var add: Control = await _reveal(_find(screen, "Add_tank"))
 	assert_true(add != null, "the tank card has an ADD button")
 	var before := screen.loadout.unit_count()
 	await _tap(add)
@@ -89,19 +100,9 @@ func test_tap_remove_then_tap_add_updates_the_budget_bar() -> void:
 	assert_eq(screen.loadout.unit_count(), _starter_size() - 1, "REMOVE UNIT removes the selected unit")
 	var bar := _find(screen, "BudgetBar") as ProgressBar
 	assert_eq(int(bar.value), screen.loadout.total_cost(), "the budget bar shows the spend after removing")
-	await _tap(_find(screen, "Add_tank"))
+	await _tap(await _reveal(_find(screen, "Add_tank")))
 	assert_eq(screen.loadout.unit_count(), _starter_size(), "+ ADD puts a unit back")
 	assert_eq(int((_find(screen, "BudgetBar") as ProgressBar).value), screen.loadout.total_cost(), "and the bar follows")
-
-
-func test_tap_a_weapon_to_mount_it() -> void:
-	var screen := await _open()
-	await _tap(_find(screen, "Squad_1").find_child("Unit_0", true, false))
-	assert_eq([screen.selected_squad, screen.selected_unit], [1, 0], "tapping a unit chip selects it")
-	var flamer := _find(screen, "Hardpoint_main").find_child("flamethrower", true, false) as Control
-	await _tap(flamer)
-	assert_eq(screen.loadout.unit_at(1, 0)["weapon"], "flamethrower", "tapping Flamethrower mounts it on Bravo's first unit")
-	assert_eq(screen.loadout.unit_at(0, 0)["weapon"], "cannon", "other units keep their guns")
 
 
 func test_drag_a_unit_chip_onto_another_squad() -> void:
@@ -118,7 +119,7 @@ func test_drag_a_catalog_card_onto_a_new_squad() -> void:
 	await _tap(_find(screen, "RemoveUnit"))
 	await _tap(_find(screen, "AddSquad"))
 	assert_eq(screen.loadout.squads().size(), 3, "+ SQUAD adds Charlie")
-	await _drag(_find(screen, "Card_tank"), _find(screen, "Squad_2"))
+	await _drag(await _reveal(_find(screen, "Card_tank")), _find(screen, "Squad_2"))
 	assert_eq(screen.loadout.squad(2)["tanks"].size(), 1, "dropping the tank card on Charlie adds a tank there")
 	assert_true(screen.loadout.is_ready(), "the army is ready again: %s" % [screen.loadout.problems()])
 

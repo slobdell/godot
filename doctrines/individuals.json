@@ -2,6 +2,6 @@
   "name": "Individuals",
   "note": "Baseline for experiment T1: five competent tanks, no coordination. Default directives, one squad, no objective.",
   "squads": [
-    {"name": "All", "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}]}
+    {"name": "All", "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}]}
   ]
 }

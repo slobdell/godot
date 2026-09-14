@@ -83,3 +83,35 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
 ## Status
 
 - 2026-09-15: brief written for round 2. Nothing started.
+- 2026-09-14 (agent start): oriented; baseline `make check` queued behind other streams.
+
+### Plan (in order)
+1. R1a `Units` v2 (fixed types, C1) + `Tank` reads it (mount, turret rate, muzzle height; no components).
+2. R1b `Doctrine` v2 (C2: `units`, ≤ 5×5, v1 keys rejected), `Match.load_doctrine`/`spawn_tank(unit_id)`, migrate
+   `doctrines/`, `Army` archetypes on the roster, garage kept compiling through an adapter at its doctrine
+   boundary, tests updated, sim baseline re-recorded. **Checkpoint 1.**
+3. R2 mechanics: fixed-mount arc gating, per-weapon shell speed/range, penetration vs armor, autocannon, artillery
+   minimum range + team sight, Lancer shield stripping. Unit tests per mechanic.
+4. R3 roster rows + `unit.<id>.*` slot fallbacks (slot_contracts.md).
+5. R4 friendly fire + `friendlies_in_line_of_fire` (C4) + stats/announcer.
+6. R5 25-unit spawn zones + C3 result fields.
+7. R6 arenas as JSON (C5), `--arena`, `cover_features()`, second layout, swap-bases control.
+8. R7 matchup matrix tool + tuning. 9. R8 control point / ammo re-measure. Then stretch.
+
+### Decisions (with reasons)
+- **Unit ids** `scout`, `tank`, `ifv`, `artillery`, `lancer`; old ids kept so saves, AI checks, and art slots keep
+  meaning. **Weapon ids** kept (`cannon`, `laser`, `machine_gun`, `mortar`, `flamethrower`) plus `autocannon`.
+- **Starters (unlock_tier 0):** scout, tank, IFV (the three the lead named); artillery and Lancer are tier 1.
+  The army stream owns what a tier costs.
+- **Army JSON v2 requires `unit` on every entry** (no silent "tank" default) and rejects `tanks`, `weapon`,
+  `weapons`, `components` with a message naming the fix. Unknown extra keys (e.g. `note`) stay allowed.
+- **Units carry `armor {front, side, rear}` thickness** (an addition to C1): penetration needs something to beat.
+- **`muzzle_height` must stay ≥ 0.1 m below the shortest hull top** (a test enforces it): rounds fly flat.
+- **Doctrine files keep their names** (`flame_rush.json` is now "Hunter Rush" with IFVs) because the garage lists
+  them by file name; flamethrower doctrines became IFVs and laser doctrines became Lancers.
+- **Garage kept working through an adapter** in `Loadout.from_doctrine/to_doctrine` (v2 at the file boundary,
+  v1 `tanks` inside), `GarageCatalog.workhorse()` → tank, the turntable reads the unit's fixed weapon. Tests
+  for removed features (mounting a weapon in the game catalog, flamer presets on the game catalog) were deleted;
+  hand-made-catalog garage tests are untouched. The army stream owns the real rebuild.
+- **Per-unit art slots** `unit.<id>.hull/turret/weapon` fall back to `tank.*` / `weapon.<id>` / `weapon.cannon`
+  inside `Tank` (rules' path), so a theme without `weapon.autocannon` still draws something.

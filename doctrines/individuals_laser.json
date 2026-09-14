@@ -1,7 +1,7 @@
 {
-  "name": "Individuals (lasers)",
-  "note": "G7 balance probe: Individuals with five lasers instead of cannons. Lasers vs cannons should not be a blowout (neither side > 65%).",
+  "name": "Individuals (Lancers)",
+  "note": "G7 balance probe: Individuals with five Lancers instead of tanks (round 2: the laser is its own unit). Lancers vs tanks should not be a blowout (neither side > 65%).",
   "squads": [
-    {"name": "All", "tanks": [{"weapon": "laser"}, {"weapon": "laser"}, {"weapon": "laser"}, {"weapon": "laser"}, {"weapon": "laser"}]}
+    {"name": "All", "units": [{"unit": "lancer"}, {"unit": "lancer"}, {"unit": "lancer"}, {"unit": "lancer"}, {"unit": "lancer"}]}
   ]
 }

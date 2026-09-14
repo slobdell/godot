@@ -48,7 +48,7 @@ func test_the_base_resupplies_shells_slowly_and_only_at_base() -> void:
 
 func test_the_laser_hits_instantly_and_never_runs_out() -> void:
 	var game_match := _setup()
-	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "laser")
+	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "lancer")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
 	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
 	target.global_position = Vector3(LANE_X, 0.0, -10.0)  # 30 m ahead
@@ -67,7 +67,7 @@ func test_the_laser_hits_instantly_and_never_runs_out() -> void:
 
 func test_a_shot_that_would_overheat_is_refused_until_the_tank_cools() -> void:
 	var game_match := _setup()
-	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "laser")
+	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "lancer")
 	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
 	await wait_physics_frames(2)
 	var per_shot := float(Weapons.profile("laser")["heat_per_shot"])
@@ -86,7 +86,7 @@ func test_a_shot_that_would_overheat_is_refused_until_the_tank_cools() -> void:
 
 func test_heat_dissipates_over_time() -> void:
 	var game_match := _setup()
-	var tank := game_match.spawn_tank("Cooling", 0, Match.Team.GREEN, "laser")
+	var tank := game_match.spawn_tank("Cooling", 0, Match.Team.GREEN, "lancer")
 	tank.global_position = Vector3(LANE_X, 0.0, 20.0)
 	await wait_physics_frames(2)
 	tank.heat = 60.0

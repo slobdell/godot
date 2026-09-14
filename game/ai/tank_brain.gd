@@ -484,7 +484,7 @@ func build_situation() -> Dictionary:
 				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
 				"ammo": tank.ammo, "max_ammo": tank.max_ammo, "heat": tank.sync_heat,
 				"shield": tank.shield, "max_shield": tank.max_shield,
-				"class": Units.PROFILES.get(tank.unit_id, {}).get("class", "tank"), "sight_radius": tank.sight_radius,
+				"class": Units.PROFILES.get(tank.unit_id, {}).get("role", "tank"), "sight_radius": tank.sight_radius,
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
 		"directives": effective_directives,
 		"squad": squad_context if squad_context.get("slot") != null else null,

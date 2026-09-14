@@ -220,17 +220,15 @@ func add_bot(team: int = -1) -> Tank:
 	return tank
 
 
-## Spawn a tank on `team` (-1 = whichever team is smaller) at its team's next free slot.
-## `loadout` (optional, Units.loadout_of shape): {"unit", "weapons", "components", "paint"}.
-func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1,
-		weapon_id: String = Weapons.DEFAULT, loadout: Dictionary = {}) -> Tank:
+## Spawn a unit of type `unit_id` (Units.PROFILES) on `team` (-1 = whichever team is smaller) at its
+## team's next free slot. `paint` ("#rrggbb" or "") is cosmetic.
+func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1, unit_id: String = Units.DEFAULT,
+		paint: String = "") -> Tank:
 	if team < 0:
 		team = _smaller_team()
 	var slot := _free_slot(team)
 	return tank_spawner.spawn({"name": tank_name, "owner": owner_peer_id, "team": team, "slot": slot,
-			"position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team), "weapon": weapon_id,
-			"unit": loadout.get("unit", "tank"), "weapons": loadout.get("weapons", {}),
-			"components": loadout.get("components", []), "paint": loadout.get("paint", "")})
+			"position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team), "unit": unit_id, "paint": paint})
 
 
 func _jittered(point: Vector3) -> Vector3:
@@ -258,19 +256,18 @@ static func spawn_yaw(team: int) -> float:
 	return 0.0 if (team == Team.GREEN) != swap_bases else PI
 
 
-## A doctrine-driven team: every tank gets a TankBrain with resolved directives.
+## A doctrine-driven team (army JSON v2): every unit gets a TankBrain with resolved directives.
 ## Returns "" or an error.
 func load_doctrine(team: int, doctrine: Dictionary) -> String:
 	for squad in doctrine["squads"]:
 		var index := 1
 		var roster: PackedStringArray = []
-		for entry in squad["tanks"]:
+		for entry in squad["units"]:
 			var tank_name := "%s_%s_%d" % [TEAM_NAMES[team], squad["name"], index]
 			index += 1
 			roster.append(tank_name)
-			var loadout := Units.loadout_of(entry)
-			add_brain_tank(team, String(squad["name"]), entry.get("weapon", Weapons.DEFAULT),
-					[squad.get("directive", {}), entry.get("directive", {})], tank_name, loadout)
+			add_brain_tank(team, String(squad["name"]), String(entry["unit"]),
+					[squad.get("directive", {}), entry.get("directive", {})], tank_name, String(entry.get("paint", "")))
 		var runtime := Squad.new(String(squad["name"]), team, roster)
 		runtime.spacing = float(squad.get("spacing", Formations.DEFAULT_SPACING))
 		squads[_squad_key(team, runtime.squad_name)] = runtime
@@ -338,9 +335,9 @@ func _update_squads() -> void:
 		(squads[key] as Squad).update(by_name)
 
 
-func add_brain_tank(team: int, squad_name: String, weapon_id: String, directive_layers: Array,
-		tank_name: String, loadout: Dictionary = {}) -> Tank:
-	var tank := spawn_tank(tank_name, 0, team, weapon_id, loadout)
+func add_brain_tank(team: int, squad_name: String, unit_id: String, directive_layers: Array,
+		tank_name: String, paint: String = "") -> Tank:
+	var tank := spawn_tank(tank_name, 0, team, unit_id, paint)
 	_squad_by_tank[tank_name] = squad_name
 	var brain := TankBrain.new()
 	brain.name = "Brain_" + tank_name
@@ -475,7 +472,8 @@ func _update_intel() -> void:
 					continue
 				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
 						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
-						"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "visible": true, "seen_tick": tick}
+						"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "unit": enemy.unit_id,
+						"role": Units.role_of(enemy.unit_id), "visible": true, "seen_tick": tick}
 				break
 		for contact_name in known.keys():
 			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
@@ -555,10 +553,7 @@ func _build_tank(data: Dictionary) -> Node:
 	tank.owner_peer_id = data["owner"]
 	tank.position = data["position"]
 	tank.rotation.y = data["yaw"]
-	tank.weapon_id = data.get("weapon", Weapons.DEFAULT)
-	tank.unit_id = data.get("unit", "tank")
-	tank.weapons = data.get("weapons", {})
-	tank.components = data.get("components", [])
+	tank.unit_id = data.get("unit", Units.DEFAULT)
 	tank.simulate = simulate
 	var is_local: bool = has_local_player and tank.owner_peer_id != 0 \
 			and tank.owner_peer_id == multiplayer.get_unique_id()

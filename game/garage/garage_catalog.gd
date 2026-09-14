@@ -53,7 +53,7 @@ var is_game := false
 
 
 func _init(p_units: Dictionary, p_weapons: Dictionary, p_components: Dictionary, p_budget: int,
-		p_max_units := Doctrine.MAX_TANKS, p_max_squads := Doctrine.MAX_SQUADS,
+		p_max_units := Doctrine.MAX_UNITS, p_max_squads := Doctrine.MAX_SQUADS,
 		p_max_squad_size := Formations.MAX_MEMBERS) -> void:
 	units = p_units
 	weapons = p_weapons
@@ -67,7 +67,7 @@ func _init(p_units: Dictionary, p_weapons: Dictionary, p_components: Dictionary,
 ## The catalog the game ships with today.
 static func from_game() -> GarageCatalog:
 	var constants := (load(UNITS_SCRIPT) as Script).get_script_constant_map()
-	var game_components: Dictionary = constants.get("COMPONENTS", STUB_COMPONENTS)
+	var game_components: Dictionary = constants.get("COMPONENTS", {})  # catalog v2 has no components
 	var catalog := GarageCatalog.new(Units.PROFILES, Weapons.PROFILES, game_components,
 			int(constants.get("DEFAULT_BUDGET", 1000)))
 	catalog.is_game = true
@@ -112,6 +112,8 @@ func workhorse() -> String:
 		if options > best_options:
 			best = unit_id
 			best_options = options
+	if best_options == 0 and units.has("tank"):
+		return "tank"  # catalog v2 (rules R1): no hardpoints, so the tank is the all-rounder
 	return best
 
 

@@ -56,6 +56,11 @@ static func from_doctrine(p_catalog: GarageCatalog, doctrine: Dictionary) -> Loa
 	copy.erase("garage")
 	var loadout := Loadout.new(p_catalog, copy)
 	for squad in loadout.squads():
+		# Army JSON v2 (rules R1) lists "units"; the garage still edits "tanks" internally until the army
+		# stream rebuilds it on catalog v2. to_doctrine() converts back.
+		if squad.has("units") and not squad.has("tanks"):
+			squad["tanks"] = squad["units"]
+			squad.erase("units")
 		if typeof(squad.get("tanks")) != TYPE_ARRAY:
 			squad["tanks"] = []
 		for tank: Dictionary in squad["tanks"]:
@@ -370,8 +375,16 @@ func set_paint(squad_index: int, unit_index: int, paint: String) -> String:
 func to_doctrine() -> Dictionary:
 	var doctrine: Dictionary = army.duplicate(true)
 	for squad_data in doctrine.get("squads", []):
+		# Army JSON v2 (rules R1): "units" of {unit, paint?, directive?}; weapons are fixed per unit type.
+		var units: Array = []
 		for tank in squad_data.get("tanks", []):
-			_sync_main_weapon(tank)
+			var entry := {"unit": tank.get("unit", Units.DEFAULT)}
+			for key in ["paint", "directive"]:
+				if tank.has(key):
+					entry[key] = tank[key]
+			units.append(entry)
+		squad_data.erase("tanks")
+		squad_data["units"] = units
 	doctrine["garage"] = {"schema": SCHEMA, "budget": catalog.budget, "cost": total_cost()}
 	return doctrine
 

@@ -13,9 +13,10 @@ const DEFAULT := "cannon"
 
 const PROFILES := {
 	"cannon": {
+		# R2: armor-piercing power vs a unit's armor thickness on the face it hits (Units "armor").
+		"penetration": 10.0,
+		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
-		# Points on top of the chassis cost (Units.cost_of).
-		"cost": 0,
 		# Shorter than the 84 m between bases, so contact is something you maneuver into.
 		"range": 70.0,
 		"preferred_min": 20.0,
@@ -38,12 +39,31 @@ const PROFILES := {
 		"ammo": 45,
 		"heat_per_shot": 0.0,
 	},
+	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons". Fast fire, low penetration, modest range:
+	# it shreds light hulls and scouts' shields but can't get through a tank's front armor.
+	"autocannon": {
+		"penetration": 4.0,
+		"splash_radius": 0.0,
+		"kind": Kind.PROJECTILE,
+		"range": 60.0,
+		"preferred_min": 15.0,
+		"preferred_max": 45.0,
+		"damage": 9.0,
+		"reload": 0.35,
+		"aim_tolerance_deg": 3.0,
+		"spread_deg": 1.0,
+		"armor": {"front": 0.4, "side": 1.0, "rear": 1.3},
+		"shield_multiplier": 0.9,
+		"ammo": 300,
+		"heat_per_shot": 0.0,
+	},
 	# G7: the laser never runs out, but every pulse heats the tank, and a tank can't fire past its
 	# heat capacity (a hard cap, no damage). Trade-off vs the cannon: shorter range, less burst, no
 	# travel time, armor matters less; sustained fire is limited by heat, not ammo.
 	"laser": {
+		"penetration": 6.0,
+		"splash_radius": 0.0,
 		"kind": Kind.BEAM,
-		"cost": 20,
 		# Which visual slot draws each pulse (see Match.show_beam).
 		"fx": "fx.laser_beam",
 		"range": 55.0,
@@ -62,8 +82,9 @@ const PROFILES := {
 	# Directive set 2: the scout's light machine gun. Hitscan bursts: cheap, fast, and mostly
 	# ineffective against a tank's shield and front armor; fine against other scouts and exposed rears.
 	"machine_gun": {
+		"penetration": 2.5,
+		"splash_radius": 0.0,
 		"kind": Kind.BEAM,
-		"cost": 0,
 		"fx": "fx.tracer",
 		"range": 45.0,
 		"preferred_min": 12.0,
@@ -81,8 +102,8 @@ const PROFILES := {
 	# every enemy within splash_radius (falling off to 30% at the edge). It can only aim at what the
 	# TEAM sees (OrderController.spotter), so it needs scouts or tanks to spot for it.
 	"mortar": {
+		"penetration": 5.0,
 		"kind": Kind.ARC,
-		"cost": 0,
 		"range": 160.0,
 		"min_range": 35.0,
 		"preferred_min": 60.0,
@@ -107,8 +128,9 @@ const PROFILES := {
 		"shield_multiplier": 1.0,
 	},
 	"flamethrower": {
+		"penetration": 3.0,
+		"splash_radius": 0.0,
 		"kind": Kind.CONE,
-		"cost": 10,
 		"range": 20.0,
 		"preferred_min": 6.0,
 		"preferred_max": 16.0,

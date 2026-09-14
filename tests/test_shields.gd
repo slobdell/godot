@@ -22,9 +22,9 @@ func test_the_shield_split_is_pure_math() -> void:
 	assert_eq(Armor.split_shield(34.0, 0.0, 0.8, 0.5), Vector2(0.0, 17.0), "no shield: straight to the armor")
 
 
-func _shot(target_shield: float, weapon_id := "cannon") -> Tank:
+func _shot(target_shield: float, unit_id := "tank") -> Tank:
 	var game_match := _setup()
-	var shooter := game_match.spawn_tank("Shooter", 0, Match.Team.GREEN, weapon_id)
+	var shooter := game_match.spawn_tank("Shooter", 0, Match.Team.GREEN, unit_id)
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
 	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
 	target.global_position = Vector3(LANE_X, 0.0, 5.0)
@@ -55,7 +55,7 @@ func test_lasers_strip_shields_faster() -> void:
 	var cannon: float = Weapons.profile("cannon")["shield_multiplier"]
 	var laser: float = Weapons.profile("laser")["shield_multiplier"]
 	assert_true(laser > 1.0 and cannon < 1.0, "energy weapons are anti-shield, shells are hull breakers (%s vs %s)" % [laser, cannon])
-	var target: Tank = await _shot(150.0, "laser")
+	var target: Tank = await _shot(150.0, "lancer")
 	assert_near(target.shield, 150.0 - float(Weapons.profile("laser")["damage"]) * laser, 0.01, "one pulse x %.1f against the shield" % laser)
 
 

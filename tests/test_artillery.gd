@@ -15,7 +15,7 @@ func _setup() -> Match:
 
 ## An artillery tank driven by a plain OrderController that spots through team intel, like a brain.
 func _battery(game_match: Match, at: Vector3) -> Array:
-	var gun := game_match.spawn_tank("Green_Gun_1", 0, Match.Team.GREEN, Weapons.DEFAULT, {"unit": "artillery"})
+	var gun := game_match.spawn_tank("Green_Gun_1", 0, Match.Team.GREEN, "artillery")
 	gun.global_position = at
 	var orders := OrderController.new()
 	orders.tank = gun
@@ -45,7 +45,7 @@ func test_a_spotted_target_behind_cover_gets_shelled() -> void:
 	assert_true(not Perception.has_line_of_sight(gun, target), "setup: the battery can't see its target")
 	await wait_physics_frames(60 * 3)
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "with nobody spotting, it doesn't fire")
-	var spotter := game_match.spawn_tank("Green_Eyes_1", 0, Match.Team.GREEN, Weapons.DEFAULT, {"unit": "scout"})
+	var spotter := game_match.spawn_tank("Green_Eyes_1", 0, Match.Team.GREEN, "scout")
 	spotter.global_position = Vector3(-80, 0, 40)  # 63 m from the target, clear view
 	var before := _toughness(target)
 	var lowest := before

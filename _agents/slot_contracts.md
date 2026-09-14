@@ -44,6 +44,10 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 | (mortar rounds) | uses `fx.shell`, flown along an arc by `ArcRoundVisual` (game/combat/), pointing along its path | | | |
 | `fx.tracer` *(gameplay directive set 2, placeholder)* | like `fx.laser_beam` | muzzle to hit point (≤ 45 m), 5 bursts per second | `setup(from: Vector3, to: Vector3)` | FX only |
 | (all vehicle visuals) | | | `set_team_color(Color)` = the TEAM color (friend or foe), called once at spawn by `Tank.set_team_accent`; optional `set_paint(Color)` = cosmetic full-body paint, only when an army entry has `paint` | |
+| `unit.<id>.hull` *(round 2, rules R3; ids: scout, tank, ifv, artillery, lancer)* | like `tank.hull` | the unit's `hull_size` from `Units.PROFILES` (a slot filled by `unit.<id>.hull` is **not** rescaled; the `tank.hull` fallback is scaled from the tank's 2.4 × 1.6 × 3.6) | `set_team_color`, `set_paint`, `set_shield` | ≤ 15k tris |
+| `unit.<id>.turret` *(round 2)* | turret pivot at the unit's `muzzle_height − 0.05` m; rotates about +Y. Fixed mounts (the scout) swing only ±`fire_arc_deg`/2: draw a hood gun, not a turret | | `set_team_color`, `set_paint` | ≤ 4k tris |
+| `unit.<id>.weapon` *(round 2)* | turret pivot; along −Z; muzzle ~3.2 m ahead (times the turret scale) | falls back to `weapon.<the unit's weapon id>` | `set_team_color`, `setup(weapon)`, `set_firing`, `set_heat` | ≤ 2k tris |
+| `weapon.autocannon` *(round 2, the IFV's 30 mm)* | turret pivot; along −Z | twin short barrels read well; muzzle ~3.2 m ahead | `set_team_color`, `setup(weapon)` | ≤ 2k tris |
 | `arena.environment` | world origin | sky/lighting/fog only | — | — |
 | `arena.dressing` | world origin | ground 320×320 at y=0; perimeter walls at ±121 | — | ≤ 50k tris |
 

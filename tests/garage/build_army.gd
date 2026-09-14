@@ -33,11 +33,9 @@ func _initialize() -> void:
 	loadout.set_army_name("Garage E2E")
 	loadout.add_squad()
 	loadout.add_squad()
-	var unit_id := catalog.workhorse()
-	for squad_index in [0, 0, 1, 1, 2]:
-		_check(loadout.add_unit(squad_index, unit_id))
-	_check(loadout.set_weapon(1, 0, "main", "flamethrower"))
-	_check(loadout.set_weapon(1, 1, "main", "flamethrower"))
+	# Catalog v2 (rules R1): unit types instead of weapon picks.
+	for pick in [[0, "tank"], [0, "tank"], [1, "ifv"], [1, "ifv"], [2, "scout"]]:
+		_check(loadout.add_unit(pick[0], pick[1]))
 	_check(loadout.set_squad_role(1, "flanker"))
 	_check(loadout.set_formation(1, "echelon_right"))
 	_check(loadout.set_squad_role(2, "scout"))

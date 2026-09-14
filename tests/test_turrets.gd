@@ -18,8 +18,8 @@ func _setup() -> Match:
 func _squad(game_match: Match, count: int) -> Squad:
 	var tanks := []
 	for i in count:
-		tanks.append({"weapon": "cannon"})
-	var doctrine := {"name": "Test", "squads": [{"name": "Alpha", "formation": "line", "verb": "hold", "tanks": tanks}]}
+		tanks.append({"unit": "tank"})
+	var doctrine := {"name": "Test", "squads": [{"name": "Alpha", "formation": "line", "verb": "hold", "units": tanks}]}
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, doctrine), "", "setup: doctrine loads")
 	return game_match.squads["0/Alpha"]
 

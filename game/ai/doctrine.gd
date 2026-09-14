@@ -1,27 +1,28 @@
 class_name Doctrine
 extends RefCounted
-## A doctrine is a whole team plan as data: squads, each tank's weapon, and
-## directives. Match runner experiments load them from res://doctrines/*.json;
-## a squad-command UI or an LLM will produce the same shape.
+## A doctrine is a whole army as data: squads of units, with directives. Doctrine files
+## (res://doctrines/*.json), garage saves, CPU armies, and a future LLM commander all produce this shape.
+## Army JSON v2 (contract C2 in _agents/workstreams.md; owned by the rules stream):
 ##
 ## {
 ##   "name": "Pincer",
 ##   "squads": [
-##     {"name": "Anvil", "directive": {"role": "anchor", "objective": {"right": 0, "forward": -10, "radius": 10}},
-##      "tanks": [{"weapon": "cannon"}, {"weapon": "cannon", "directive": {"caution": 0.8}}]},
-##   Per tank (the Loadout fields contract, directive set 2): "unit" (Units.PROFILES id, default
-##   "tank"), "weapon" (main hardpoint) or "weapons" {hardpoint: weapon}, "components" [ids],
-##   "paint" "#rrggbb". See Units.validate_loadout.
+##     {"name": "Anvil", "formation": "wedge", "directive": {"role": "anchor"},
+##      "units": [{"unit": "tank"}, {"unit": "ifv", "paint": "#c8a02a", "directive": {"caution": 0.8}}]},
 ##     ...
 ##   ]
 ## }
-## Optional per squad: "formation" (see Formations.NAMES) and "verb": "hold", which starts the
-## squad formed up and waiting for tactical-map orders; "spacing" in meters.
+## Per unit: "unit" (a Units.PROFILES id, required), optional "paint" "#rrggbb" and "directive".
+## Optional per squad: "formation" (see Formations.NAMES) and "verb": "hold", which starts the squad formed
+## up and waiting for orders; "spacing" in meters. At most MAX_SQUADS squads of MAX_SQUAD_UNITS units.
+## v1 keys ("tanks", "weapon", "weapons", "components") are rejected with a message saying what changed.
+## Budgets are checked by the caller (Army.check_budget), which knows the match's budget.
 
-## 2026-09-15 (directive set 2): armies grow to ~20 units once cheap vehicles exist (the lead). A squad
-## still holds at most Formations.MAX_MEMBERS (5), so 4 squads.
-const MAX_SQUADS := 4
-const MAX_TANKS := 20
+const VERSION := 2
+## The lead (2026-09-15): "a player can have up to some finite number of squads (say 5)."
+const MAX_SQUADS := 5
+const MAX_SQUAD_UNITS := Formations.MAX_MEMBERS
+const MAX_UNITS := MAX_SQUADS * MAX_SQUAD_UNITS
 
 
 ## Returns {"doctrine": Dictionary} or {"error": String}.
@@ -32,7 +33,10 @@ static func load_file(path: String) -> Dictionary:
 	var data: Variant = JSON.parse_string(file.get_as_text())
 	if data == null:
 		return {"error": "doctrine %s is not valid JSON" % path}
-	return parse(data)
+	var parsed := parse(data)
+	if parsed.has("error"):
+		parsed["error"] = "%s: %s" % [path.get_file(), parsed["error"]]
+	return parsed
 
 
 static func parse(data: Variant) -> Dictionary:
@@ -42,8 +46,7 @@ static func parse(data: Variant) -> Dictionary:
 		return {"error": "doctrine needs a string 'name'"}
 	var squads: Variant = data.get("squads")
 	if typeof(squads) != TYPE_ARRAY or squads.is_empty() or squads.size() > MAX_SQUADS:
-		return {"error": "doctrine needs 1 to %d squads" % MAX_SQUADS}
-	var total_tanks := 0
+		return {"error": "an army needs 1 to %d squads" % MAX_SQUADS}
 	var names := {}
 	for squad in squads:
 		if typeof(squad) != TYPE_DICTIONARY or typeof(squad.get("name")) != TYPE_STRING:
@@ -53,6 +56,8 @@ static func parse(data: Variant) -> Dictionary:
 		names[squad["name"]] = true
 		if not String(squad["name"]).is_valid_ascii_identifier():
 			return {"error": "squad name '%s' must be letters, digits, underscores" % squad["name"]}
+		if squad.has("tanks"):
+			return {"error": "squad %s uses the v1 key 'tanks': army JSON v2 lists 'units' ([{\"unit\": \"tank\"}, ...])" % squad["name"]}
 		if squad.has("directive"):
 			var error := Directives.validate(squad["directive"])
 			if error != "":
@@ -61,22 +66,28 @@ static func parse(data: Variant) -> Dictionary:
 			return {"error": "squad %s: formation must be one of %s" % [squad["name"], Formations.NAMES]}
 		if squad.has("verb") and not ["hold"].has(squad["verb"]):
 			return {"error": "squad %s: a doctrine may only start a squad with verb 'hold' (others need a destination)" % squad["name"]}
-		var tanks: Variant = squad.get("tanks")
-		if typeof(tanks) != TYPE_ARRAY or tanks.is_empty():
-			return {"error": "squad %s needs at least one tank" % squad["name"]}
-		if tanks.size() > Formations.MAX_MEMBERS:
-			return {"error": "squad %s has %d tanks; a squad holds at most %d" % [squad["name"], tanks.size(), Formations.MAX_MEMBERS]}
-		for tank in tanks:
-			if typeof(tank) != TYPE_DICTIONARY:
-				return {"error": "squad %s: tanks must be objects" % squad["name"]}
-			var loadout_error := Units.validate_loadout(tank)
-			if loadout_error != "":
-				return {"error": "squad %s: %s" % [squad["name"], loadout_error]}
-			if tank.has("directive"):
-				var error := Directives.validate(tank["directive"])
+		var units: Variant = squad.get("units")
+		if typeof(units) != TYPE_ARRAY or units.is_empty():
+			return {"error": "squad %s needs at least one unit in 'units'" % squad["name"]}
+		if units.size() > MAX_SQUAD_UNITS:
+			return {"error": "squad %s has %d units; a squad holds at most %d" % [squad["name"], units.size(), MAX_SQUAD_UNITS]}
+		for entry in units:
+			if typeof(entry) != TYPE_DICTIONARY:
+				return {"error": "squad %s: units must be objects like {\"unit\": \"tank\"}" % squad["name"]}
+			var entry_error := Units.validate_entry(entry)
+			if entry_error != "":
+				return {"error": "squad %s: %s" % [squad["name"], entry_error]}
+			if entry.has("directive"):
+				var error := Directives.validate(entry["directive"])
 				if error != "":
-					return {"error": "squad %s tank: %s" % [squad["name"], error]}
-			total_tanks += 1
-	if total_tanks > MAX_TANKS:
-		return {"error": "doctrine has %d tanks; the limit is %d" % [total_tanks, MAX_TANKS]}
+					return {"error": "squad %s unit: %s" % [squad["name"], error]}
 	return {"doctrine": data}
+
+
+## Every unit entry in squad order: [{"squad": name, "entry": {...}}].
+static func entries(doctrine: Dictionary) -> Array:
+	var result: Array = []
+	for squad in doctrine.get("squads", []):
+		for entry in squad.get("units", []):
+			result.append({"squad": squad.get("name", ""), "entry": entry})
+	return result

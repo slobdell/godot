@@ -1,6 +1,5 @@
 extends TestCase
-## Directive set 2 part 1: the unit catalog drives the simulation, doctrines carry loadouts, and scouts
-## behave like scouts.
+## Catalog v2 (rules R1): fixed unit types drive the simulation, army JSON v2 lists them, and scouts behave like scouts.
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
@@ -14,12 +13,13 @@ func _setup() -> Match:
 
 
 func _army(entries: Array) -> Dictionary:
-	return {"name": "Test", "squads": [{"name": "A", "tanks": entries}]}
+	return {"name": "Test", "squads": [{"name": "A", "units": entries}]}
 
 
 func test_the_catalog_is_where_stats_come_from() -> void:
 	var game_match := _setup()
-	assert_eq(game_match.load_doctrine(Match.Team.GREEN, _army([{"unit": "tank"}, {"unit": "scout"}])), "", "a mixed army loads")
+	var army := _army([{"unit": "tank"}, {"unit": "scout"}, {"unit": "ifv"}, {"unit": "artillery"}, {"unit": "lancer", "paint": "#8a3ab9"}])
+	assert_eq(game_match.load_doctrine(Match.Team.GREEN, army), "", "a mixed army loads")
 	var tank := game_match.tanks.get_node("Green_A_1") as Tank
 	var scout := game_match.tanks.get_node("Green_A_2") as Tank
 	await wait_physics_frames(1)
@@ -27,45 +27,41 @@ func test_the_catalog_is_where_stats_come_from() -> void:
 	assert_eq(scout.max_health, int(Units.PROFILES["scout"]["max_health"]), "a scout's too")
 	assert_near(scout.sight_radius, 110.0, 0.01, "scouts see farther")
 	assert_true(scout.max_forward_speed > tank.max_forward_speed + 3.0, "and drive faster")
-	assert_eq(scout.weapon_id, "machine_gun", "a scout's default weapon is its hardpoint's first choice")
 	assert_true((scout.get_node("Collision") as CollisionShape3D).shape != (tank.get_node("Collision") as CollisionShape3D).shape,
 			"a scout gets its own, smaller hitbox (not the shared scene shape)")
+	for index in army["squads"][0]["units"].size():
+		var unit_id: String = army["squads"][0]["units"][index]["unit"]
+		var unit := game_match.tanks.get_node("Green_A_%d" % (index + 1)) as Tank
+		assert_eq(unit.unit_id, unit_id, "spawned as a %s" % unit_id)
+		assert_eq(unit.weapon_id, Units.PROFILES[unit_id]["weapon"], "a %s fires its fixed weapon" % unit_id)
+		assert_eq(unit.mount, Units.PROFILES[unit_id]["mount"], "and has the catalog's mount (C4)")
+		assert_near(unit.turret.global_position.y + Tank.MUZZLE_ABOVE_PIVOT, float(Units.PROFILES[unit_id]["muzzle_height"]), 0.01,
+				"its muzzle sits at the catalog's height")
+		assert_near(unit.heat_capacity, float(Units.PROFILES[unit_id].get("heat_capacity", 0.0)), 0.01, "heat only if its weapon heats")
 
 
-func test_loadout_weapons_and_components_apply() -> void:
-	var game_match := _setup()
-	var army := _army([{"unit": "tank", "weapons": {"main": "laser"}, "components": ["heat_sink", "shield_booster"]},
-			{"unit": "tank", "weapon": "cannon", "components": ["ammo_rack"], "paint": "#8a3ab9"}])
-	assert_true(Doctrine.parse(army).has("doctrine"), "a loadout doctrine validates: %s" % Doctrine.parse(army).get("error", ""))
-	assert_eq(game_match.load_doctrine(Match.Team.GREEN, army), "", "and loads")
-	var laser := game_match.tanks.get_node("Green_A_1") as Tank
-	var cannon := game_match.tanks.get_node("Green_A_2") as Tank
-	assert_eq(laser.weapon_id, "laser", "weapons by hardpoint")
-	assert_near(laser.heat_capacity, 100.0 + 40.0, 0.01, "a heat sink raises heat capacity")
-	assert_near(laser.max_shield, 150.0 + 60.0, 0.01, "a shield booster raises the shield")
-	assert_eq(cannon.max_ammo, roundi(45 * 1.5), "an ammo rack carries half a load more")
-	assert_eq(Units.cost_of({"unit": "tank", "weapons": {"main": "laser"}, "components": ["heat_sink", "shield_booster"]}),
-			200 + 20 + 30 + 40, "cost = chassis + weapon + components")
-
-
-func test_invalid_loadouts_are_rejected_with_reasons() -> void:
-	for pair in [[{"unit": "hovercraft"}, "hovercraft"], [{"unit": "scout", "weapon": "cannon"}, "doesn't take"],
-			[{"unit": "scout", "components": ["heat_sink", "ammo_rack"]}, "component slots"],
-			[{"components": ["flux_capacitor"]}, "flux_capacitor"], [{"weapons": {"turret2": "laser"}}, "no hardpoint"],
-			[{"paint": "greenish"}, "paint"]]:
+func test_v1_armies_are_rejected_with_reasons() -> void:
+	for pair in [[{"unit": "hovercraft"}, "hovercraft"], [{"unit": "tank", "weapon": "laser"}, "fixed weapons"],
+			[{"unit": "tank", "components": ["heat_sink"]}, "'components'"], [{"unit": "scout", "weapons": {"main": "laser"}}, "'weapons'"],
+			[{"paint": "#ffffff"}, "needs a 'unit'"], [{"unit": "tank", "paint": "greenish"}, "paint"]]:
 		var error: String = Doctrine.parse(_army([pair[0]])).get("error", "")
 		assert_true(error.contains(pair[1]), "%s is rejected mentioning '%s' (got '%s')" % [pair[0], pair[1], error])
-	var twenty := {"name": "Big", "squads": []}
-	for i in 4:
-		twenty["squads"].append({"name": "S%d" % i, "tanks": [{"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}]})
-	assert_true(Doctrine.parse(twenty).has("doctrine"), "armies grow to 20 units in 4 squads")
+	var v1 := {"name": "Old", "squads": [{"name": "A", "tanks": [{"unit": "tank"}]}]}
+	assert_true(String(Doctrine.parse(v1).get("error", "")).contains("'units'"), "a v1 'tanks' list says to use 'units'")
+	var full := {"name": "Big", "squads": []}
+	for i in 5:
+		full["squads"].append({"name": "S%d" % i, "units": [{"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}]})
+	assert_true(Doctrine.parse(full).has("doctrine"), "armies grow to 25 units in 5 squads")
+	full["squads"].append({"name": "S6", "units": [{"unit": "scout"}]})
+	assert_true(Doctrine.parse(full).has("error"), "but not a sixth squad")
+	assert_eq(Units.cost_of({"unit": "ifv"}), int(Units.PROFILES["ifv"]["cost"]), "a unit costs its type's points")
 
 
 func _scout_situation(contacts: Array) -> Dictionary:
 	return {
 		"tick": 1000,
 		"self": {"name": "Green_A_1", "team": 0, "position": Vector3.ZERO, "forward": Vector3.FORWARD,
-				"health": 140, "max_health": 140, "shield": 80.0, "max_shield": 80.0, "class": "scout",
+				"health": 140, "max_health": 140, "shield": 80.0, "max_shield": 80.0, "class": "scout", "role": "scout",
 				"weapon": Weapons.profile("machine_gun"), "ammo": 600, "max_ammo": 600},
 		"directives": Directives.resolve([{"role": "scout"}]), "contacts": contacts, "allies": [],
 		"objective": null, "objective_radius": 0.0, "squad_center": null, "cover": [],

@@ -92,7 +92,8 @@ func show_unit(tank: Dictionary, color: Color) -> void:
 	unit_id = String(tank.get("unit", "tank"))
 	_hull.fill(_slot_for(unit_id, "hull"))
 	_turret.fill(_slot_for(unit_id, "turret"))
-	var main_weapon := String(tank.get("weapon", ""))
+	# Catalog v2 (rules R1): a unit type's weapon is fixed in Units.PROFILES.
+	var main_weapon := String(tank.get("weapon", Units.profile(String(tank.get("unit", ""))).get("weapon", "")))
 	if main_weapon != "" and GameTheme.slots.has("weapon." + main_weapon):
 		_weapon.fill("weapon." + main_weapon)
 		_weapon.invoke("setup", [Weapons.profile(main_weapon)])

@@ -1,10 +1,10 @@
 {
-  "name": "Flame Rush",
-  "note": "Three flamethrowers escorted by two cannons. Must close distance to be useful.",
+  "name": "Hunter Rush",
+  "note": "Round 2 migration of Flame Rush (the flamethrower waits for its own unit, the Burner): three IFVs rush in close behind two tanks' escort. The file keeps its name because the garage lists it.",
   "squads": [
-    {"name": "Burners", "directive": {"role": "assault", "aggression": 0.9, "target_priority": "nearest"},
-     "tanks": [{"weapon": "flamethrower"}, {"weapon": "flamethrower"}, {"weapon": "flamethrower"}]},
+    {"name": "Hunters", "directive": {"role": "assault", "aggression": 0.9, "target_priority": "nearest"},
+     "units": [{"unit": "ifv"}, {"unit": "ifv"}, {"unit": "ifv"}]},
     {"name": "Escort", "directive": {"role": "support", "cohesion": 0.9},
-     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}]}
+     "units": [{"unit": "tank"}, {"unit": "tank"}]}
   ]
 }

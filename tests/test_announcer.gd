@@ -11,9 +11,9 @@ func _setup() -> Array:
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	var squad := {"name": "Alpha", "formation": "wedge", "verb": "hold", "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}]}
+	var squad := {"name": "Alpha", "formation": "wedge", "verb": "hold", "units": [{"unit": "tank"}, {"unit": "tank"}]}
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, {"name": "Us", "squads": [squad]}), "", "setup: player doctrine")
-	assert_eq(game_match.load_doctrine(Match.Team.RUST, {"name": "Them", "squads": [{"name": "X", "tanks": [{}, {}]}]}), "",
+	assert_eq(game_match.load_doctrine(Match.Team.RUST, {"name": "Them", "squads": [{"name": "X", "units": [{"unit": "tank"}, {"unit": "tank"}]}]}), "",
 			"setup: enemy doctrine")
 	game_match.elimination = true
 	var announcer := MatchAnnouncer.new()

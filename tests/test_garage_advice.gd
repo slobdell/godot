@@ -39,10 +39,8 @@ func test_cannons_mention_ammo_and_flamers_mention_range() -> void:
 	assert_true(_has(GarageAdvice.tradeoffs(catalog, loadout.unit_at(0, 0)), "finite ammo: consider extra ammo"), "a cannon build is told about ammo")
 	loadout.set_weapon(0, 0, "main", "flamethrower")
 	assert_true(_has(GarageAdvice.tradeoffs(catalog, loadout.unit_at(0, 0)), "close range"), "a flamethrower is flagged as close range")
-	var game := GarageCatalog.from_game()
-	var game_hints := GarageAdvice.tradeoffs(game, Loadout.new(game).new_unit("tank"))
-	assert_true(_has(game_hints, "finite ammo"), "the game's cannon carries finite ammo (G7): %s" % [game_hints])
-	assert_true(not _has(game_hints, "runs hot"), "a heat_per_shot of 0 isn't 'hot': %s" % [game_hints])
+	# Catalog v2 (rules R1): the game's units have fixed weapons and no hardpoints, so the game-catalog half of
+	# this test moved to the army stream's rebuild of the garage.
 
 
 func test_comparison_tables_highlight_the_best() -> void:
@@ -55,7 +53,7 @@ func test_comparison_tables_highlight_the_best() -> void:
 	assert_true(weapons["best"][1][2], "the flamethrower has the best damage/s")
 	assert_true(weapons["best"][0][4], "the cannon has the best range")
 	var game_weapons := GarageAdvice.weapon_table(GarageCatalog.from_game())
-	var flamer_row: Array = game_weapons["rows"][1]
+	var flamer_row: Array = game_weapons["rows"].filter(func(row: Array) -> bool: return row[0] == "Flamethrower")[0]
 	assert_eq(flamer_row[game_weapons["headers"].find("Reload")], "-", "a continuous weapon shows no reload (not a 'best' 0)")
 	assert_true(weapons["best"][0][1] and not weapons["best"][2][1], "free weapons tie for cheapest; the laser isn't")
 	var units := GarageAdvice.unit_table(catalog)
@@ -98,7 +96,7 @@ func test_tips_advance_with_the_player_and_are_remembered() -> void:
 	assert_true(screen.settings.tip().begins_with("TIP 2/3"), "selecting a unit moves to tip 2")
 	screen.select_unit(0, 1)
 	assert_true(screen.settings.tip().begins_with("TIP 2/3"), "selecting again doesn't skip tip 2")
-	screen.loadout.set_weapon(0, 1, "main", "flamethrower")
+	screen.loadout.set_paint(0, 1, "#c8a02a")  # catalog v2: no weapon picks; paint is an edit too
 	assert_true(screen.settings.tip().begins_with("TIP 3/3"), "an edit moves to tip 3")
 	assert_eq(GarageSettings.new(TIPS_PATH).step, 2, "progress is saved")
 	(screen.find_child("SkipTips", true, false) as Button).pressed.emit()

@@ -50,12 +50,12 @@ func test_army_size_squads_and_component_slots_are_capped() -> void:
 	var catalog := _catalog()
 	catalog.budget = 100000
 	var loadout := Loadout.new(catalog)
-	for i in Doctrine.MAX_TANKS:
+	for i in Doctrine.MAX_UNITS:
 		if loadout.squad_with_room() < 0:
 			assert_eq(loadout.add_squad(), "", "squad %d opens for unit %d" % [loadout.squads().size() + 1, i + 1])
 		assert_eq(loadout.add_unit(loadout.squad_with_room(), "scout"), "", "unit %d fits" % (i + 1))
-	assert_eq(loadout.squads().size(), Doctrine.MAX_SQUADS, "Doctrine.MAX_TANKS units fill Doctrine.MAX_SQUADS squads of %d" % Formations.MAX_MEMBERS)
-	assert_true(loadout.add_unit(0, "scout").contains("full"), "the army stops at Doctrine.MAX_TANKS units")
+	assert_eq(loadout.squads().size(), Doctrine.MAX_SQUADS, "Doctrine.MAX_UNITS units fill Doctrine.MAX_SQUADS squads of %d" % Formations.MAX_MEMBERS)
+	assert_true(loadout.add_unit(0, "scout").contains("full"), "the army stops at Doctrine.MAX_UNITS units")
 	assert_true(loadout.add_squad() != "", "no squad past Doctrine.MAX_SQUADS")
 	assert_eq(loadout.squad(1)["name"], "Bravo", "squads get the next phonetic name")
 	assert_eq(loadout.add_component(0, 0, "heat_sink"), "", "a scout has one component slot")
@@ -93,9 +93,9 @@ func test_moving_units_between_squads() -> void:
 func test_hand_written_doctrines_import_with_loadout_fields() -> void:
 	var loaded := Doctrine.load_file("res://doctrines/flame_rush.json")
 	var loadout := Loadout.from_doctrine(GarageCatalog.from_game(), loaded["doctrine"])
-	var burner := loadout.unit_at(0, 0)
-	assert_eq(burner["unit"], "tank", "an old doctrine's tanks become the tank class")
-	assert_eq(burner["weapons"], {"main": "flamethrower"}, "its weapon lands on the main hardpoint")
+	var hunter := loadout.unit_at(0, 0)
+	assert_eq(hunter["unit"], "ifv", "army JSON v2 units open as their unit type")
+	assert_eq(hunter["weapons"], {}, "catalog v2 units have no hardpoints to fill")
 	assert_eq(loadout.total_cost(), Units.army_cost(loaded["doctrine"]), "the garage prices an army exactly like the game")
 	assert_true(Array(loadout.problems()).all(func(p: String) -> bool: return p.contains("budget")),
 			"flame rush breaks no garage rule except, at most, the budget: %s" % [loadout.problems()])
@@ -117,8 +117,6 @@ func test_round_trip_save_load_and_fight() -> void:
 	loadout.set_army_name("Night Raiders!")
 	loadout.add_squad()
 	loadout.add_unit(0, "tank")
-	loadout.set_weapon(0, 0, "main", "flamethrower")
-	loadout.add_component(0, 0, "heat_sink")
 	loadout.set_paint(0, 0, "#c8a02a")
 	loadout.set_unit_role(0, 0, "flanker")
 	loadout.add_unit(1, "scout")
@@ -140,17 +138,17 @@ func test_round_trip_save_load_and_fight() -> void:
 
 	var reopened := Loadout.from_doctrine(catalog, ArmyStore.read(saved["path"])["doctrine"])
 	assert_eq(reopened.army, loadout.army, "reopening in the garage gives back the same army")
-	assert_eq(reopened.unit_at(0, 0)["components"], ["heat_sink"], "components survive the round trip")
+	assert_eq(reopened.unit_at(0, 0)["paint"], "#c8a02a", "paint survives the round trip")
 	assert_eq(loaded["doctrine"]["garage"]["cost"], Units.army_cost(loaded["doctrine"]), "the file records the cost the game computes")
 
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, loaded["doctrine"]), "", "the match loads the garage army")
-	var burner := game_match.tanks.get_node_or_null("Green_Alpha_1") as Tank
-	assert_true(burner != null, "Alpha's tank spawned")
-	if burner != null:
-		assert_eq(burner.weapon_id, "flamethrower", "it fights with the weapon picked in the garage")
+	var tank := game_match.tanks.get_node_or_null("Green_Alpha_1") as Tank
+	assert_true(tank != null, "Alpha's tank spawned")
+	if tank != null:
+		assert_eq(tank.weapon_id, "cannon", "it fights with its unit type's fixed weapon (catalog v2)")
 	assert_true(game_match.squads.has("0/Bravo"), "Bravo exists as a runtime squad")
 	await wait_physics_frames(2)
 	ArmyStore.remove(stem, TEST_DIR)

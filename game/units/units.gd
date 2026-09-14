@@ -1,53 +1,52 @@
 class_name Units
 extends RefCounted
-## The unit catalog: vehicle classes as DATA (like Weapons.PROFILES). Schema v0, written
-## 2026-09-14 so the gameplay and garage streams share one vocabulary from the start.
+## The unit catalog: fixed unit types as DATA (like Weapons.PROFILES). Contract C1 in
+## _agents/workstreams.md; owned by the rules stream. The simulation reads it (Tank.apply_unit), the army
+## builder lists it, the AI reads roles and mounts, and art fills `unit.<id>.*` visual slots for it.
 ##
-## Owned by the gameplay stream (_agents/streams/archive/round1/gameplay.md, directive set 2). The simulation reads
-## it (Tank.apply_loadout); the garage stream reads it to build army/loadout UI.
+## Round 2 (2026-09-15, the lead): *"simple units … static throughout gameplay … like rock-paper-scissors."*
+## Every unit is a fixed package: chassis, ONE weapon, how that weapon is mounted, armor, speed, sight, cost.
+## No loadouts, components, or hardpoints. Counters come from mechanics (turret tracking, fixed arcs,
+## penetration vs armor facing, minimum range), never from a damage table (see _agents/balance.md).
+##
+## Keys (all required unless marked optional):
+##   display_name, role (ROLES), blurb (one line for the army UI), cost (points), unlock_tier (0 = starter)
+##   hull_size [w, h, l] meters (the collision box), max_health, max_shield, shield_recharge_delay (s),
+##   shield_recharge_rate (/s), max_forward_speed, max_reverse_speed (m/s), hull_turn_rate_deg (/s),
+##   sight_radius (m), weapon (a Weapons.PROFILES id), mount ("turret" or "fixed"),
+##   turret_turn_rate_deg (/s: how fast a turret, or a fixed mount's small gimbal, swings),
+##   fire_arc_deg (fixed mounts: the full forward arc the gun can point into; the hull aims the rest),
+##   muzzle_height (m above the ground where rounds leave; must stay below every hull's top, see
+##   MUZZLE_CLEARANCE), armor {front, side, rear} (thickness against Weapons "penetration"),
+##   good_vs / weak_vs (role lists: design intent for AI hints and the army UI; mechanics decide outcomes),
+##   optional heat_capacity / heat_dissipation (only units whose weapon heats: the Lancer).
 ##
 ## Keep existing keys stable. Renaming or removing one is a contract change (_agents/workstreams.md).
 
-const SCHEMA_VERSION := 1
-## v1 (2026-09-15, gameplay directive set 2): the simulation reads this catalog (Tank.apply_loadout).
-## Added keys: max_reverse_speed, turret_turn_rate_deg, hull_size, class, shield/heat stats; the
-## scout; COMPONENTS; weapon costs live in Weapons.PROFILES ("cost"). v0 keys are unchanged.
+const SCHEMA_VERSION := 2
+## v2 (2026-09-15, round 2 R1): fixed unit types. Removed: class (now role), hardpoints, component_slots,
+## COMPONENTS, loadouts. Added: role, blurb, unlock_tier, weapon, mount, fire_arc_deg, muzzle_height,
+## armor, good_vs, weak_vs; the IFV and the Lancer.
+
+const ROLES := ["scout", "tank", "ifv", "artillery", "lancer"]
+const MOUNTS := ["turret", "fixed"]
+## Rounds fly flat at muzzle height, so every muzzle must sit below the shortest hull's top by this much
+## (orientation trip-up 15: shells once flew over every tank).
+const MUZZLE_CLEARANCE := 0.1
 
 ## Points a player spends on an army per match. A standard tank is 200.
 const DEFAULT_BUDGET := 1000
 
 const PROFILES := {
-	"tank": {
-		"display_name": "Tank",
-		"class": "tank",
-		"cost": 200,
-		# G6 (2026-09-14): hull 400 -> 300 plus a 150 shield that recharges (effective 450 per fight).
-		"max_health": 300,
-		"max_shield": 150,
-		# The shield refills at shield_recharge_rate per second once no damage has landed for
-		# shield_recharge_delay seconds. Hull only repairs at base (Match.REPAIR_HP_PER_SECOND).
-		"shield_recharge_delay": 4.0,
-		"shield_recharge_rate": 50.0,
-		"max_forward_speed": 9.0,
-		"max_reverse_speed": 4.0,
-		"hull_turn_rate_deg": 80.0,
-		"turret_turn_rate_deg": 110.0,
-		"sight_radius": 75.0,
-		# G7 heat: firing adds weapon heat_per_shot; a shot that would exceed the capacity is refused.
-		"heat_capacity": 100.0,
-		"heat_dissipation": 12.0,
-		# Collision box (width, height, length), meters. Visuals scale to match the tank's.
-		"hull_size": [2.4, 1.6, 3.6],
-		# Each hardpoint lists the weapon ids (Weapons.PROFILES) it accepts.
-		"hardpoints": [{"id": "main", "accepts": ["cannon", "laser", "flamethrower"]}],
-		# How many COMPONENTS this chassis can carry.
-		"component_slots": 2,
-	},
-	# Directive set 2: fast, fragile, sees far, light gun. Its job is vision for the guns behind it.
+	# The lead: "the scout vehicles can have no turret, and they just have a machine gun that shoots
+	# straight forward, so they can only shoot at what they point at." Fast, fragile, far-sighted.
 	"scout": {
 		"display_name": "Scout",
-		"class": "scout",
+		"role": "scout",
+		"blurb": "Fast rally truck with a hood-mounted machine gun. Sees far; hunts artillery and Lancers.",
 		"cost": 110,
+		"unlock_tier": 0,
+		"hull_size": [2.0, 1.4, 3.0],
 		"max_health": 140,
 		"max_shield": 80,
 		"shield_recharge_delay": 3.0,
@@ -55,20 +54,72 @@ const PROFILES := {
 		"max_forward_speed": 14.0,
 		"max_reverse_speed": 7.0,
 		"hull_turn_rate_deg": 140.0,
-		"turret_turn_rate_deg": 200.0,
 		"sight_radius": 110.0,
-		"heat_capacity": 80.0,
-		"heat_dissipation": 12.0,
-		"hull_size": [2.0, 1.4, 3.0],
-		"hardpoints": [{"id": "main", "accepts": ["machine_gun", "laser"]}],
-		"component_slots": 1,
+		"weapon": "machine_gun",
+		"mount": "fixed",
+		"turret_turn_rate_deg": 200.0,
+		"fire_arc_deg": 16.0,
+		"muzzle_height": 1.12,
+		"armor": {"front": 2.0, "side": 1.0, "rear": 1.0},
+		"good_vs": ["artillery", "lancer"],
+		"weak_vs": ["ifv"],
 	},
-	# Directive set 2: slow, fragile, nearly blind, long reach. Indirect fire at what teammates spot.
+	# The prison-bus dozer. The lead: "A tank turret moves slow so it would have a hard time tracking a scout."
+	"tank": {
+		"display_name": "Tank",
+		"role": "tank",
+		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
+		"cost": 200,
+		"unlock_tier": 0,
+		"hull_size": [2.4, 1.6, 3.6],
+		"max_health": 300,
+		"max_shield": 150,
+		"shield_recharge_delay": 4.0,
+		"shield_recharge_rate": 50.0,
+		"max_forward_speed": 9.0,
+		"max_reverse_speed": 4.0,
+		"hull_turn_rate_deg": 80.0,
+		"sight_radius": 75.0,
+		"weapon": "cannon",
+		"mount": "turret",
+		"turret_turn_rate_deg": 110.0,
+		"muzzle_height": 1.27,
+		"armor": {"front": 8.0, "side": 4.0, "rear": 2.0},
+		"good_vs": ["ifv", "tank"],
+		"weak_vs": ["scout"],
+	},
+	# The lead: "some in between vehicle (think a Bradley or a Stryker) that has the equivalent of 30 mm cannons."
+	"ifv": {
+		"display_name": "IFV",
+		"role": "ifv",
+		"blurb": "Armored troop bus with a 30 mm autocannon on a fast turret. Shreds scouts; can't crack tank fronts.",
+		"cost": 150,
+		"unlock_tier": 0,
+		"hull_size": [2.4, 1.6, 3.8],
+		"max_health": 220,
+		"max_shield": 100,
+		"shield_recharge_delay": 3.5,
+		"shield_recharge_rate": 45.0,
+		"max_forward_speed": 11.0,
+		"max_reverse_speed": 5.0,
+		"hull_turn_rate_deg": 100.0,
+		"sight_radius": 85.0,
+		"weapon": "autocannon",
+		"mount": "turret",
+		"turret_turn_rate_deg": 180.0,
+		"muzzle_height": 1.27,
+		"armor": {"front": 5.0, "side": 3.0, "rear": 2.0},
+		"good_vs": ["scout"],
+		"weak_vs": ["tank"],
+	},
+	# Indirect fire at what teammates spot. Slow, fragile, nearly blind, long reach.
 	"artillery": {
 		"display_name": "Artillery",
-		"class": "artillery",
-		# 180 -> 220 (2026-09-15): the Siege archetype (2 artillery) won 81% of a 5-archetype round robin.
+		"role": "artillery",
+		"blurb": "Crane carrier with a mortar battery. Shells what teammates spot; helpless up close.",
 		"cost": 220,
+		"unlock_tier": 1,
+		"hull_size": [2.6, 1.6, 4.0],
 		"max_health": 200,
 		"max_shield": 80,
 		"shield_recharge_delay": 4.0,
@@ -76,96 +127,102 @@ const PROFILES := {
 		"max_forward_speed": 6.5,
 		"max_reverse_speed": 3.5,
 		"hull_turn_rate_deg": 60.0,
-		"turret_turn_rate_deg": 70.0,
 		"sight_radius": 60.0,
+		"weapon": "mortar",
+		"mount": "turret",
+		"turret_turn_rate_deg": 70.0,
+		"muzzle_height": 1.27,
+		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
+		"good_vs": ["tank", "artillery"],
+		"weak_vs": ["scout"],
+	},
+	# The lead: "the laser is awesome, but we'll just move that to a different unit type."
+	"lancer": {
+		"display_name": "Lancer",
+		"role": "lancer",
+		"blurb": "Converted power-utility truck with a long laser. Strips shields at range; overheats.",
+		"cost": 200,
+		"unlock_tier": 1,
+		"hull_size": [2.4, 1.6, 3.8],
+		"max_health": 200,
+		"max_shield": 120,
+		"shield_recharge_delay": 4.0,
+		"shield_recharge_rate": 45.0,
+		"max_forward_speed": 8.5,
+		"max_reverse_speed": 4.0,
+		"hull_turn_rate_deg": 80.0,
+		"sight_radius": 80.0,
+		"weapon": "laser",
+		"mount": "turret",
+		"turret_turn_rate_deg": 80.0,
+		"muzzle_height": 1.27,
+		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
 		"heat_capacity": 100.0,
 		"heat_dissipation": 12.0,
-		"hull_size": [2.6, 1.6, 4.0],
-		"hardpoints": [{"id": "main", "accepts": ["mortar"]}],
-		"component_slots": 2,
+		"good_vs": ["tank"],
+		"weak_vs": ["scout", "ifv"],
 	},
 }
 
-## Components fill a chassis's component_slots. "modifiers" add to a unit stat (Units.PROFILES keys),
-## except "ammo_fraction", which adds that fraction of a full ammo load to every weapon that has ammo.
-const COMPONENTS := {
-	"heat_sink": {"display_name": "Heat sink", "cost": 30, "modifiers": {"heat_capacity": 40.0, "heat_dissipation": 6.0}},
-	"ammo_rack": {"display_name": "Ammo rack", "cost": 25, "modifiers": {"ammo_fraction": 0.5}},
-	"shield_booster": {"display_name": "Shield booster", "cost": 40, "modifiers": {"max_shield": 60.0}},
-	"armor_plating": {"display_name": "Armor plating", "cost": 35, "modifiers": {"max_health": 80.0, "max_forward_speed": -1.0}},
-}
+## The unit a bare spawn (network players, legacy bots) drives.
+const DEFAULT := "tank"
+## Keys a v1 army entry used. Army JSON v2 rejects them with V1_KEY_HELP.
+const V1_UNIT_KEYS := ["weapon", "weapons", "components"]
+const V1_KEY_HELP := "units have fixed weapons since army JSON v2: pick a unit type (%s) instead of '%s'"
 
 
-## A doctrine tank entry's loadout, normalized: {"unit", "weapons": {hardpoint: weapon}, "components": [], "paint"}.
-## Accepts the legacy `weapon` key (the main hardpoint). Doesn't validate (see validate_loadout).
-static func loadout_of(entry: Dictionary) -> Dictionary:
-	var unit_id: String = entry.get("unit", "tank")
-	var weapons := {}
-	var first_hardpoint: String = PROFILES[unit_id]["hardpoints"][0]["id"] if PROFILES.has(unit_id) else "main"
-	if entry.has("weapon"):
-		weapons[first_hardpoint] = entry["weapon"]
-	if typeof(entry.get("weapons")) == TYPE_DICTIONARY:
-		weapons.merge(entry["weapons"], true)
-	if not weapons.has(first_hardpoint) and PROFILES.has(unit_id):
-		weapons[first_hardpoint] = PROFILES[unit_id]["hardpoints"][0]["accepts"][0]
-	return {"unit": unit_id, "weapons": weapons, "components": entry.get("components", []), "paint": entry.get("paint", "")}
-
-
-## "" or a human-readable reason a tank entry's loadout is invalid.
-static func validate_loadout(entry: Dictionary) -> String:
-	var unit_id: Variant = entry.get("unit", "tank")
+## "" or a human-readable reason one army entry ({"unit", "paint"?, "directive"?}) is invalid. The
+## directive is validated by the doctrine parser (it knows Directives).
+static func validate_entry(entry: Dictionary) -> String:
+	for key: String in V1_UNIT_KEYS:
+		if entry.has(key):
+			return V1_KEY_HELP % [", ".join(ids()), key]
+	if not entry.has("unit"):
+		return "every unit needs a 'unit' type (%s)" % ", ".join(ids())
+	var unit_id: Variant = entry["unit"]
 	if typeof(unit_id) != TYPE_STRING or not PROFILES.has(unit_id):
-		return "unknown unit '%s' (have %s)" % [unit_id, PROFILES.keys()]
-	if entry.has("weapon") and (typeof(entry["weapon"]) != TYPE_STRING or not Weapons.exists(entry["weapon"])):
-		return "unknown weapon '%s' (have %s)" % [entry["weapon"], Weapons.PROFILES.keys()]
-	if entry.has("weapons") and typeof(entry["weapons"]) != TYPE_DICTIONARY:
-		return "weapons must be {hardpoint: weapon}"
-	var loadout := loadout_of(entry)
-	var hardpoints := {}
-	for hardpoint: Dictionary in PROFILES[unit_id]["hardpoints"]:
-		hardpoints[hardpoint["id"]] = hardpoint["accepts"]
-	for hardpoint_id in loadout["weapons"]:
-		var weapon_id: Variant = loadout["weapons"][hardpoint_id]
-		if not hardpoints.has(hardpoint_id):
-			return "%s has no hardpoint '%s' (has %s)" % [unit_id, hardpoint_id, hardpoints.keys()]
-		if typeof(weapon_id) != TYPE_STRING or not Weapons.exists(weapon_id):
-			return "unknown weapon '%s' (have %s)" % [weapon_id, Weapons.PROFILES.keys()]
-		if not (hardpoints[hardpoint_id] as Array).has(weapon_id):
-			return "%s's %s hardpoint doesn't take a %s (takes %s)" % [unit_id, hardpoint_id, weapon_id, hardpoints[hardpoint_id]]
-	var components: Variant = loadout["components"]
-	if typeof(components) != TYPE_ARRAY:
-		return "components must be a list"
-	if components.size() > int(PROFILES[unit_id]["component_slots"]):
-		return "%s has %d component slots, got %d" % [unit_id, PROFILES[unit_id]["component_slots"], components.size()]
-	for component in components:
-		if typeof(component) != TYPE_STRING or not COMPONENTS.has(component):
-			return "unknown component '%s' (have %s)" % [component, COMPONENTS.keys()]
-	var paint: Variant = loadout["paint"]
+		return "unknown unit '%s' (have %s)" % [unit_id, ", ".join(ids())]
+	var paint: Variant = entry.get("paint", "")
 	if typeof(paint) != TYPE_STRING or (paint != "" and not Color.html_is_valid(paint)):
 		return "paint must be an HTML color like \"#3a5f2b\""
 	return ""
 
 
-## Points one tank entry costs: chassis + weapons + components.
+## Points one army entry costs (0 for an unknown unit).
 static func cost_of(entry: Dictionary) -> int:
-	var loadout := loadout_of(entry)
-	if not PROFILES.has(loadout["unit"]):
-		return 0
-	var total := int(PROFILES[loadout["unit"]]["cost"])
-	for hardpoint_id in loadout["weapons"]:
-		total += int(Weapons.profile(loadout["weapons"][hardpoint_id]).get("cost", 0))
-	for component in loadout["components"]:
-		total += int(COMPONENTS.get(component, {}).get("cost", 0))
-	return total
+	var unit_id: Variant = entry.get("unit", "")
+	return int(PROFILES[unit_id]["cost"]) if typeof(unit_id) == TYPE_STRING and PROFILES.has(unit_id) else 0
 
 
-## Points a whole doctrine costs.
+## Points a whole army (doctrine) costs.
 static func army_cost(doctrine: Dictionary) -> int:
 	var total := 0
 	for squad in doctrine.get("squads", []):
-		for entry in squad.get("tanks", []):
+		for entry in squad.get("units", []):
 			total += cost_of(entry)
 	return total
+
+
+## Unit ids in catalog order (cheap and early roles first).
+static func ids() -> PackedStringArray:
+	var result: PackedStringArray = []
+	for unit_id: String in PROFILES:
+		result.append(unit_id)
+	return result
+
+
+## Unit ids with this role.
+static func with_role(role: String) -> PackedStringArray:
+	var result: PackedStringArray = []
+	for unit_id: String in PROFILES:
+		if PROFILES[unit_id]["role"] == role:
+			result.append(unit_id)
+	return result
+
+
+## A unit's role ("" for an unknown id).
+static func role_of(unit_id: String) -> String:
+	return String(PROFILES.get(unit_id, {}).get("role", ""))
 
 
 ## Experiment overrides ("unit.key" -> value), set from `--tune=` by the match runner and skirmish.
@@ -173,29 +230,43 @@ static func army_cost(doctrine: Dictionary) -> int:
 static var tuning := {}
 
 
-## A unit's stat, honoring `tuning`.
-static func stat(unit_id: String, key: String) -> Variant:
+## A unit's stat, honoring `tuning`. Optional keys a unit lacks read as `fallback`.
+static func stat(unit_id: String, key: String, fallback: Variant = null) -> Variant:
 	var tuned_key := "%s.%s" % [unit_id, key]
 	if tuning.has(tuned_key):
 		return tuning[tuned_key]
-	return PROFILES[unit_id][key]
+	return PROFILES[unit_id].get(key, fallback)
 
 
-## Parse "tank.max_shield=0,cannon.ammo=60" into Units.tuning and Weapons.tuning.
-## Returns "" or an error. Keys must exist; values become numbers.
+## Parse "tank.max_shield=0,cannon.ammo=60,tank.armor.front=6" into Units.tuning and Weapons.tuning.
+## Returns "" or an error. Keys must exist; values become numbers. One level of nesting is allowed
+## (armor facings).
 static func apply_tuning(spec: String) -> String:
 	for pair in spec.split(",", false):
 		var parts := pair.split("=")
 		var path := parts[0].split(".")
-		if parts.size() != 2 or path.size() != 2 or not parts[1].is_valid_float():
+		if parts.size() != 2 or path.size() < 2 or path.size() > 3 or not parts[1].is_valid_float():
 			return "tune: expected owner.key=number, got '%s'" % pair
-		if PROFILES.has(path[0]) and PROFILES[path[0]].has(path[1]):
-			tuning[parts[0]] = float(parts[1])
-		elif Weapons.PROFILES.has(path[0]) and Weapons.PROFILES[path[0]].has(path[1]):
-			Weapons.tuning[parts[0]] = float(parts[1])
-		else:
+		var is_unit := PROFILES.has(path[0])
+		var owner: Dictionary = PROFILES.get(path[0], Weapons.PROFILES.get(path[0], {}))
+		var value: Variant = owner.get(path[1])
+		if path.size() == 3:
+			value = value.get(path[2]) if typeof(value) == TYPE_DICTIONARY else null
+		if value == null:
 			return "tune: no stat '%s'" % parts[0]
+		if is_unit:
+			tuning[parts[0]] = float(parts[1])
+		else:
+			Weapons.tuning[parts[0]] = float(parts[1])
 	return ""
+
+
+## A unit's armor on one face ("front"/"side"/"rear"), honoring `--tune=unit.armor.face=`.
+static func armor(unit_id: String, face: String) -> float:
+	var tuned_key := "%s.armor.%s" % [unit_id, face]
+	if tuning.has(tuned_key):
+		return float(tuning[tuned_key])
+	return float(PROFILES.get(unit_id, PROFILES[DEFAULT])["armor"][face])
 
 
 static func exists(unit_id: String) -> bool:
