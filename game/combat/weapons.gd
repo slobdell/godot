@@ -89,7 +89,9 @@ const PROFILES := {
 		"preferred_max": 140.0,
 		# A lone battery can't out-damage a recharging shield for long (each hit restarts the recharge
 		# delay, though): artillery's job is pressure and finishing what the direct-fire guns wear down.
-		"damage": 90.0,
+		# 90 -> 70 (2026-09-15): the Siege archetype (2 artillery) still beat Armor and Balanced 12:4 after
+		# the scout counter; at 70 it's 10:6 against each (counterbalanced, 16 per pairing).
+		"damage": 70.0,
 		"splash_radius": 8.0,
 		"reload": 4.5,
 		"aim_tolerance_deg": 3.0,

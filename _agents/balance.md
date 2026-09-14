@@ -12,7 +12,7 @@
 |---|---|---|
 | Unit stats (hull, shield, speed, sight, heat, size, hardpoints, component slots, cost) | `game/units/units.gd` `PROFILES` | tank 300+150, 9 m/s, 75 m sight, 200 pts; scout 140+80, 14 m/s, 110 m, 110 pts; artillery 200+80, 6.5 m/s, 60 m, 220 pts |
 | Components | `game/units/units.gd` `COMPONENTS` | heat sink +40 cap +6/s (30); ammo rack +50% ammo (25); shield booster +60 (40); armor plating +80 hull −1 m/s (35) |
-| Weapons (damage, range, reload, spread, ammo, heat, armor table, shield multiplier, cost) | `game/combat/weapons.gd` `PROFILES` | cannon 34, 70 m, 2.5 s, 45 shells, shield ×0.8; laser 9/0.5 s, 55 m, 12 heat, shield ×1.25, +20 pts; machine gun 4/0.2 s, 45 m, shield ×0.6; mortar 90 in 8 m, 35–160 m, 4.5 s, 24 rounds; flamethrower 20/s, 20 m, shield ×1.5 |
+| Weapons (damage, range, reload, spread, ammo, heat, armor table, shield multiplier, cost) | `game/combat/weapons.gd` `PROFILES` | cannon 34, 70 m, 2.5 s, 45 shells, shield ×0.8; laser 9/0.5 s, 55 m, 12 heat, shield ×1.25, +20 pts; machine gun 4/0.2 s, 45 m, shield ×0.6; mortar 70 in 8 m, 35–160 m, 4.5 s, 24 rounds; flamethrower 20/s, 20 m, shield ×1.5 |
 | Armor facing, directional shields | `game/combat/armor.gd` | hull front 0.5 / side 1 / rear 1.5 (per weapon table); shield front 0.7 / side 1 / rear 1.4 |
 | Base service, arena, sensing | `game/match/match.gd` | resupply 1 shell/s and repair 6 HP/s within 30 m of your base; intel every 6 ticks, 12 s memory |
 | Brain weights | `game/ai/tank_brain.gd` | ORDER_WEIGHT 0.95, SCOUT_STANDOFF 85 m, SCOUT_HUNT 1.6 (floor 0.8), ARTILLERY_SAFE_DISTANCE 80 m, RECHARGED 0.6 |
