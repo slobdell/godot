@@ -92,6 +92,22 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
    `make broker`, `make broker-test` (30 unit tests), `make broker-smoke` (real process: host + 2
    players, 600 frames up, 600 down, one socket cut and resumed with zero reliable-frame loss, host
    leaves → players told, `/stats` agrees). Protocol and decisions below under *N0 broker*.
+2. **N1 player-hosted through the relay.** `game/network/relay_peer.gd` (`RelayPeer`, a
+   `MultiplayerPeerExtension`): the existing spawner/synchronizer/RPC code runs unchanged with a
+   player as host. `--host [--relay=URL]` (HostMode: ServerMode's rules plus the host's own tank;
+   `--no-player` for a relayed dedicated host), `--join=CODE` (ClientMode). Browser: `?host`,
+   `?join=CODE`, relay defaults to `/relay` on the page's origin (`tools/serve_web.py` proxies it).
+   Checks, all green:
+   - `make relay-smoke` (in `make check`): broker + headless host (own tank + 2 bots) + 2 headless
+     clients by room code: each sees 5 tanks, moves 37 m, sees damage replicate.
+   - `make relay-drop-smoke` (in `check-all`): one client's socket cut for **10 s**; it resumes the
+     same seat after 10.1 s and keeps driving; the other client is unaffected.
+   - `make web-relay-smoke` (check-all): a browser player joins a native host (screenshot
+     `build/screenshots/web-relay.png`).
+   - `make web-host-smoke` (check-all): **a browser hosts** (wasm simulation) and a headless client
+     joins, drives 37 m, sees combat. The SwiftShader tab hosted at only 2 fps / 15 ticks per s
+     (software rendering; `TANK_SQUAD_HOST_STATS`), which exposed the stale-input bug below.
+   - 10 GDScript unit tests (`tests/test_relay_peer.gd`) + 1 new `test_network_input` case.
 
 **Decisions (with reasons)**
 
@@ -104,6 +120,14 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
   number; reliable frames are retained until acked; a resume retransmits what the other side
   hasn't seen. Unreliable frames (snapshots) are never buffered. Without this, one dropped socket
   loses a spawn/despawn RPC and Godot's replicated scene tree silently diverges.
+- **A dropped socket is invisible to Godot**: `RelayPeer` stays `CONNECTED` and reconnects on its
+  own (every 1 s, within the broker's 30 s grace). Unreliable packets sent while away are dropped.
+  Clients also detect silent dead links (no traffic for 8 s → reconnect).
+- **Player peer ids are proposed by the client** (like Godot's own peers) and kept by the broker
+  unless taken, so `get_unique_id()` is valid before the join completes.
+- **Stale-input rule changed** (`network_input.gd`): "the owner went quiet" is now measured from
+  the host's last network read, not the physics tick's wall clock. Before, a host rendering slowly
+  (2 fps tab; a hitching phone) judged every fresh command stale and players' tanks never moved.
 
 **Questions for the lead**
 
@@ -114,7 +138,16 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
 
 **Known issues:** none yet.
 
-**What to playtest:** `make broker-smoke`.
+**What to playtest:** `make play-relay`, open http://localhost:8100/?host in one tab (this
+worktree's WEB_PORT; 8060 on main), read the room code off the HUD, open
+`http://localhost:8100/?join=CODE` in another tab. Add `&demo&bots=2` to the host URL for company.
+Headless: `make relay-smoke`, `make relay-drop-smoke`.
+
+**Shared-file edits (merge notes):** `game/modes/game_mode.gd` (`--host` → HostMode, `--join` →
+ClientMode), `game/main.gd` (flag docs only), `Makefile` (LIGHT_GOALS: broker, broker-bootstrap,
+broker-test, broker-smoke, play-relay), `mk/core.mk` (`check` += broker-test relay-smoke;
+`check-all` += relay-drop-smoke web-relay-smoke web-host-smoke). `make check` now needs
+`npm ci` for the broker once (like web-smoke does).
 
 ## Notes from other streams (2026-09-14)
 
