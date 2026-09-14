@@ -120,11 +120,11 @@ lobby say so. Show hosts a "keep this app open" banner when the page loses visib
 | Socket drops for < 30 s (tunnel, Wi-Fi to cellular) | `RelayPeer` reconnects every 1 s and resumes its seat; reliable frames retransmit both ways; unreliable frames sent meanwhile are dropped | `make relay-drop-smoke`: 10 s cut, resumed after 10.1 s, same peer id, tank kept and moving, no errors, other player unaffected |
 | Link silently dead (no FIN) | client notices after 8 s without traffic and reconnects; broker notices after two missed pings (≤ 10 s) | constants in `relay_peer.gd`, `broker.mjs` |
 | Browser tab in background (player) | the page stops rendering and Godot stops polling; the browser still answers WebSocket pings, so the seat stays; the host's `NetworkInput` stops the tank after 500 ms without commands; on return, queued snapshots apply at once | reasoning; not yet measured on a real phone |
-| App suspended > 30 s | seat released; the player can rejoin with the code but gets a **new** tank | gap: needs a player key → seat mapping in HostMode (next step) |
+| App suspended > 30 s | seat released; **(built)** the client rejoins automatically with its player key (per-tab `sessionStorage` in browsers) and the host restores its tank (team, place, health) for up to 5 min | `make relay-rejoin-smoke`: 3 s grace, 6 s outage → new peer, same team and health, 7.6 m from where it left |
 | Host backgrounded | the match freezes for everyone | inherent to N1; lockstep removes it |
 
-**Next steps:** (1) a player key saved in `localStorage` and sent on join, so HostMode gives a
-returning player their old tank; (2) `visibilitychange` → send `{"op":"away_intent"}` so the host
+**Next steps:** (1) ~~a player key so HostMode gives a returning player their old tank~~ (built);
+(2) `visibilitychange` → send `{"op":"away_intent"}` so the host
 shows "paused" instead of "lagging"; (3) measure on a real Android phone (Chrome background tab and
 app switch), which needs the lead's device.
 

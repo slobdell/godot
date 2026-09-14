@@ -86,6 +86,12 @@ can capture `MATCH_RESULT` from the browser; see the measurement command in HAND
 measurements → N2 deterministic spike (native vs wasm) → N3 designs + a 10 s socket-drop test →
 stretch (replay recorder, hosting costs, anti-cheat notes).
 
+**Summary:** every backlog item and all three stretch items are done. Players can host matches
+through a relay broker (browser or native, a touch lobby, reconnects, rejoin, replays); bandwidth
+and latency are measured; the deterministic-core spike is **bit-identical native vs WebAssembly at
+1.5% of a tick budget, so lockstep is feasible**; the N3 designs are written. `make check` is green
+(115 tests).
+
 **Done**
 
 1. **N0 broker** (`server/broker/`, Node 22 + `ws` 8.21.3 pinned). `make broker-bootstrap`,
@@ -156,25 +162,97 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
   the host's last network read, not the physics tick's wall clock. Before, a host rendering slowly
   (2 fps tab; a hitching phone) judged every fresh command stale and players' tanks never moved.
 
+**Stretch and extra items (done)**
+
+6. **Replays** (`make replay`): (a) lockstep-style: the deterministic core's command log + checkpoint
+   hashes saved and replayed with every hash verified; changing one command's turn by 1 is caught
+   (diverged at tick 600). (b) For today's game: `--join=CODE --record=PATH` saves every packet the
+   host sends that player; `--replay=PATH [--replay-speed=2]` rebuilds the match from that seat
+   through Godot's own replication (headless playback matched the live run: 4 tanks, 36.8 m,
+   damage). `make replay-watch REPLAY=path` opens one in a window (screenshot reviewed).
+7. **Broker capacity** (`make broker-load`): 100 players replaying measured traffic use 22% of one
+   core, 200 use 38%, ~14–20 KB per connection. Hosting costs and the anti-cheat notes are in
+   [references/netcode_designs.md](references/netcode_designs.md) §4–5.
+8. **Touch-first lobby** (`--lobby`, browser `?lobby`): HOST A MATCH, or tap a room code on an
+   on-screen keypad (no virtual keyboard on phones) and JOIN; a wrong code comes back with "No room
+   XXXXX". The host gets a big room-code badge with COPY INVITE LINK (`?join=CODE`). A test checks
+   every target is ≥ 48 px and on screen at 5 desktop/phone sizes; `make lobby-smoke` (in `make
+   check`) taps through it. Screenshots: `build/screenshots/lobby-desktop.png`, `lobby-phone.png`.
+9. **Rejoin after the grace period** (the app was killed): the client rejoins automatically with a
+   player key (per-tab `sessionStorage` in browsers) and the host restores its tank's team,
+   place and health for 5 min (`make relay-rejoin-smoke`, check-all).
+10. **Upload halved**: players send commands on change + 100 ms keepalive (3.0 → 1.5 KB/s).
+
+**Decisions (continued)**
+
+- **Browser player key per tab (`sessionStorage`), not per browser (`localStorage`):** several tabs
+  in one browser must be different players (that's how `make play` is tested), and a phone that
+  kills and restores a tab keeps its session storage.
+- **Host loss in N1 ends the match** (with a HOST LEFT banner); host migration isn't worth it
+  because lockstep removes the host (designs §2).
+- **The lobby switches modes in place** instead of reloading the page with `?host`/`?join`: it works
+  the same natively and in browsers, and a failed join can come straight back to the lobby.
+- **Measurement runs are uncommitted experiments** when they touch shared lists (the +2 floats test
+  on `TANK_PROPERTIES` was reverted, per the no-restructure rule).
+
 **Questions for the lead**
 
 1. *Assumed:* casual player-hosted matches through a relay first (N0 → N1) while N2 decides on
-   lockstep. Confirm or redirect.
+   lockstep. **N2 says lockstep is feasible** (bit-identical native vs wasm, 1.5% of a tick budget).
+   Next decision: when to start porting the simulation to an integer core (recommended: after
+   gameplay's directive sets 1–2 settle; designs §1 "What lockstep costs").
+2. Can you run `make det-spike` on an **Android phone** (Chrome, same page: `?det-spike`)? ARM is the
+   one platform not measured, and the one most likely to differ. The page prints
+   `DET_SPIKE_RESULT` with the hash in the HUD status line; it must read `ea02d9652cc08086`.
+3. Should the web build open the **lobby by default** when there are no URL flags? Today `?lobby`
+   is opt-in so gameplay's offline default is untouched.
 
-**Requests to other streams:** none yet.
+**Requests to other streams**
 
-**Known issues:** none yet.
+- **Gameplay:** (1) please add `sync_shield`/`sync_heat` as **ints quantized 0–100 with
+  `REPLICATION_MODE_ON_CHANGE`** rather than always-sent floats: each always-sent float costs +0.23
+  KB/s per tank per player (measured). (2) `tests/test_navigation.gd::test_path_goes_around_a_wall`
+  is flaky on the loaded machine (failed 2 of ~8 `make check` runs tonight, "got 2 points"; it
+  passed every run on its own). It looks like trip-up #22 (navmesh not ready right after baking).
+  (3) When fog of war (G1) lands, netcode will filter hidden enemies out of each player's snapshots
+  (`MultiplayerSynchronizer.set_visibility_for`); please expose the per-team visibility query.
+- **Look & feel:** `game/network/ui/lobby_panel.gd` and `room_badge.gd` are plain Buttons/Labels,
+  so please reskin them freely (keep the ≥ 48 px rule; `tests/test_lobby.gd` checks it).
 
-**What to playtest:** `make play-relay`, open http://localhost:8100/?host in one tab (this
-worktree's WEB_PORT; 8060 on main), read the room code off the HUD, open
-`http://localhost:8100/?join=CODE` in another tab. Add `&demo&bots=2` to the host URL for company.
-Headless: `make relay-smoke`, `make relay-drop-smoke`.
+**Known issues**
 
-**Shared-file edits (merge notes):** `game/modes/game_mode.gd` (`--host` → HostMode, `--join` →
-ClientMode), `game/main.gd` (flag docs only), `Makefile` (LIGHT_GOALS: broker, broker-bootstrap,
-broker-test, broker-smoke, play-relay), `mk/core.mk` (`check` += broker-test relay-smoke;
-`check-all` += relay-drop-smoke web-relay-smoke web-host-smoke). `make check` now needs
-`npm ci` for the broker once (like web-smoke does).
+- On the wasm host smoke, SwiftShader renders at 2 fps, so the host simulates at ~15 ticks/s.
+  That's the test machine's software rendering, not a phone measurement.
+- No real phone has run any of this yet (host, player, backgrounding, det-spike).
+- `make check` needs `npm ci` for the broker once (like web-smoke). Offline machines can't run it.
+
+**What to playtest**
+
+- `make play-relay`, then open **http://localhost:8100/?lobby** (this worktree's WEB_PORT; 8060
+  after merge to main). Tap HOST A MATCH; in a second tab (or a phone on the LAN with
+  `WEB_HOST=0.0.0.0`) open `?lobby`, tap the code, JOIN. Add `?host&demo&bots=2` for company.
+- Watch a recording: `make replay` (records one), then `make replay-watch`.
+- Headless proofs: `make relay-smoke relay-drop-smoke relay-latency-smoke relay-rejoin-smoke`,
+  `make det-spike`, `make net-measure TANKS=20`, `make broker-load ROOMS=50`.
+
+**Shared-file edits (merge notes):** `game/modes/game_mode.gd` (`--det-spike` → DetSpikeMode,
+`--lobby` → LobbyMode, `--host` → HostMode, `--join`/`--replay` → ClientMode; all additive
+checks), `game/main.gd` (flag docs only), `Makefile` (LIGHT_GOALS += broker, broker-bootstrap,
+broker-test, broker-smoke, play-relay, replay-watch), `mk/core.mk` (`check` += broker-test
+relay-smoke lobby-smoke; `check-all` += relay-drop-smoke relay-latency-smoke relay-rejoin-smoke
+web-relay-smoke web-host-smoke). Netcode-owned but behavior-changing: `network_input.gd`
+(staleness measured from the last network read; clients send on change), `server_mode.gd`
+(join/leave handlers are methods now).
+
+**Next steps (netcode)**
+
+1. Real-phone runs: Android Chrome as player, as host, backgrounded, and `?det-spike`.
+2. Interest management once fog lands (hidden enemies not sent: bandwidth + no map hack).
+3. Replication diet after gameplay's G6/G7 land: drop `sync_position.y`, ON_CHANGE reload,
+   quantized angles (estimate: −30–40% bytes).
+4. `visibilitychange` → "player paused" instead of "lagging"; keep-open banner for hosts.
+5. If the lead greenlights lockstep: broker protocol v2 (`lockstep` rooms), then port movement +
+   shells first behind cross-build hash checks.
 
 ## Notes from other streams (2026-09-14)
 
