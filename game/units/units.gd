@@ -63,6 +63,26 @@ const PROFILES := {
 		"hardpoints": [{"id": "main", "accepts": ["machine_gun", "laser"]}],
 		"component_slots": 1,
 	},
+	# Directive set 2: slow, fragile, nearly blind, long reach. Indirect fire at what teammates spot.
+	"artillery": {
+		"display_name": "Artillery",
+		"class": "artillery",
+		"cost": 180,
+		"max_health": 200,
+		"max_shield": 80,
+		"shield_recharge_delay": 4.0,
+		"shield_recharge_rate": 40.0,
+		"max_forward_speed": 6.5,
+		"max_reverse_speed": 3.5,
+		"hull_turn_rate_deg": 60.0,
+		"turret_turn_rate_deg": 70.0,
+		"sight_radius": 60.0,
+		"heat_capacity": 100.0,
+		"heat_dissipation": 12.0,
+		"hull_size": [2.6, 1.6, 4.0],
+		"hardpoints": [{"id": "main", "accepts": ["mortar"]}],
+		"component_slots": 2,
+	},
 }
 
 ## Components fill a chassis's component_slots. "modifiers" add to a unit stat (Units.PROFILES keys),

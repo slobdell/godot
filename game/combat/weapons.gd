@@ -6,7 +6,8 @@ extends RefCounted
 ## See _agents/tank_brain.md "Weapons v1".
 
 ## PROJECTILE: a Shell flies (travel time). CONE: continuous spray. BEAM: instant hitscan pulse (G7 laser).
-enum Kind { PROJECTILE, CONE, BEAM }
+## ARC: an indirect round lobbed at a ground point; it flies over obstacles and bursts on landing (artillery).
+enum Kind { PROJECTILE, CONE, BEAM, ARC }
 
 const DEFAULT := "cannon"
 
@@ -75,6 +76,33 @@ const PROFILES := {
 		"heat_per_shot": 0.0,
 		"armor": {"front": 0.3, "side": 0.7, "rear": 1.0},
 		"shield_multiplier": 0.6,
+	},
+	# Directive set 2: the artillery's mortar. Lobs rounds over cover at a ground point; the burst hurts
+	# every enemy within splash_radius (falling off to 30% at the edge). It can only aim at what the
+	# TEAM sees (OrderController.spotter), so it needs scouts or tanks to spot for it.
+	"mortar": {
+		"kind": Kind.ARC,
+		"cost": 0,
+		"range": 160.0,
+		"min_range": 35.0,
+		"preferred_min": 60.0,
+		"preferred_max": 140.0,
+		# A lone battery can't out-damage a recharging shield for long (each hit restarts the recharge
+		# delay, though): artillery's job is pressure and finishing what the direct-fire guns wear down.
+		"damage": 90.0,
+		"splash_radius": 8.0,
+		"reload": 4.5,
+		"aim_tolerance_deg": 3.0,
+		# Rounds land with this much scatter (meters, standard deviation) plus scatter_per_meter x range.
+		"scatter": 2.0,
+		"scatter_per_meter": 0.02,
+		# Horizontal speed: a 150 m shot is in the air for 3.75 s, so moving targets can dodge.
+		"flight_speed": 40.0,
+		"ammo": 24,
+		"heat_per_shot": 0.0,
+		# Rounds come down on top: facing barely matters.
+		"armor": {"front": 0.9, "side": 1.0, "rear": 1.1},
+		"shield_multiplier": 1.0,
 	},
 	"flamethrower": {
 		"kind": Kind.CONE,

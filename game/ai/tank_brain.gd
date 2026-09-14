@@ -22,7 +22,7 @@ const CONTACT_FRESH_TICKS := 120
 const COVER_RING_RADIUS := 10.0
 const COVER_SAMPLES := 8
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -39,6 +39,10 @@ const HOT_FIREPOWER := 0.75
 const RESUPPLY_TOP_UP := 0.8
 ## Scouts keep known enemies about this far away: outside a cannon's 70 m, inside their own 110 m sight.
 const SCOUT_STANDOFF := 85.0
+## Artillery keeps visible enemies at least this far away (outside a cannon's 70 m reach).
+const ARTILLERY_SAFE_DISTANCE := 80.0
+## With nothing to shell, artillery trails this far behind the nearest friendly gun, toward home.
+const ARTILLERY_TRAIL := 35.0
 ## A scout's appetite for a straight fight, relative to a tank's.
 const SCOUT_FIGHT := 0.6
 ## KEEP_SLOT's score under move/bound/hold orders (see decide()).
@@ -65,6 +69,9 @@ var _order_serial := 0
 func think(_delta: float) -> void:
 	if game_match == null or tank == null:
 		return
+	if not spotter.is_valid():
+		# Indirect fire aims at anything the TEAM can see (directive set 2: spotting).
+		spotter = func(other: Tank) -> bool: return game_match.is_visible_to(tank.team, other)
 	if not tank.is_alive():
 		choice = {}
 		tank.intent = ""
@@ -123,6 +130,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var ammo := int(me.get("ammo", -1))
 	var out_of_ammo := max_ammo > 0 and ammo == 0
 	var is_scout: bool = me.get("class", "tank") == "scout"
+	var is_artillery: bool = me.get("class", "tank") == "artillery"
 	var firepower := 0.1 if out_of_ammo else lerpf(1.0, HOT_FIREPOWER, clampf((float(me.get("heat", 0.0)) - 0.7) / 0.3, 0.0, 1.0))
 	for c in contacts:
 		if c["visible"]:
@@ -210,10 +218,25 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			var staleness := clampf(float(c["age"]) / float(s["memory_ticks"]), 0.0, 1.0)
 			# A last-known position beats marching blindly at the enemy base (ADVANCE's 0.3).
 			investigates.append([c["name"], (0.25 + 0.4 * float(d["aggression"])) * (1.0 - staleness) * leash_factor])
+	# Artillery never brawls: it shells what the team spots (BOMBARD) and stays behind (SHADOW).
+	var fight_scale := 0.0 if is_artillery else (SCOUT_FIGHT if is_scout else 1.0)
 	for pair in engages:
-		add.call("ENGAGE", pair[0], pair[1] * (SCOUT_FIGHT if is_scout else 1.0))
+		add.call("ENGAGE", pair[0], pair[1] * fight_scale)
 	for pair in flanks:
-		add.call("FLANK", pair[0], pair[1] * (SCOUT_FIGHT if is_scout else 1.0))
+		add.call("FLANK", pair[0], pair[1] * fight_scale)
+	if is_artillery:
+		for c in contacts:
+			if not c["visible"]:
+				continue
+			var reach := my_position.distance_to(c["position"])
+			if reach > float(weapon["range"]) + 40.0:
+				continue
+			var bombard := (0.6 + 0.3 * TankBrain._priority(String(d["target_priority"]), c, reach)) * confidence * firepower
+			add.call("BOMBARD", c["name"], bombard)
+		var trail := 0.0
+		if not (s["allies"] as Array).is_empty():
+			trail = 0.55 if visible_threats == 0 else 0.3
+		add.call("SHADOW", "", trail)
 
 	# SPOT (scouts, directive set 2): be the team's eyes. Keep the nearest visible enemy at SCOUT_STANDOFF
 	# (outside its guns, inside our sight); with nothing in sight, scout ahead.
@@ -231,7 +254,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			spot = 0.62
 	add.call("SPOT", "", spot)
 	for pair in investigates:
-		add.call("INVESTIGATE", pair[0], pair[1])
+		add.call("INVESTIGATE", pair[0], pair[1] * (0.0 if is_artillery else 1.0))
 
 	# REGROUP: drifted away from the squad, weighted by cohesion (formations do this job when commanded).
 	var regroup := 0.0
@@ -513,6 +536,33 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"RETREAT":
 			_order_move(_move_to(s["rally"], true))
+			_order_weapon({"type": "fire_at_will"})
+		"BOMBARD":
+			var target_position: Vector3 = contact["position"]
+			var distance := my_position.distance_to(target_position)
+			var nearest_threat := INF
+			var threat_at := Vector3.ZERO
+			for c in s["contacts"]:
+				if c["visible"] and my_position.distance_to(c["position"]) < nearest_threat:
+					nearest_threat = my_position.distance_to(c["position"])
+					threat_at = c["position"]
+			if nearest_threat < ARTILLERY_SAFE_DISTANCE:
+				# Too close to someone's guns: back away from them, facing them.
+				var away := (my_position - threat_at).normalized()
+				_order_move(_move_to(my_position + away * (ARTILLERY_SAFE_DISTANCE - nearest_threat + 10.0), true))
+			elif distance > float(weapon["preferred_max"]):
+				_order_move(_move_to(target_position + (my_position - target_position).normalized() * float(weapon["preferred_max"])))
+			else:
+				_order_move({"type": "face", "x": target_position.x, "z": target_position.z})
+			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
+		"SHADOW":
+			var nearest_ally: Variant = null
+			for ally in s["allies"]:
+				if nearest_ally == null or my_position.distance_to(ally["position"]) < my_position.distance_to(nearest_ally):
+					nearest_ally = ally["position"]
+			var home: Vector3 = s["rally"]
+			var behind: Vector3 = nearest_ally + ((home - nearest_ally) as Vector3).normalized() * ARTILLERY_TRAIL
+			_order_move(_move_to(behind))
 			_order_weapon({"type": "fire_at_will"})
 		"SPOT":
 			var nearest_visible: Dictionary = {}

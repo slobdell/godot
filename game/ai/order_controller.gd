@@ -66,6 +66,9 @@ var visible_enemy_names: PackedStringArray = []
 var reflexes: Array = []
 ## World point the turret covers while nothing is engaged (null = hold the current heading).
 var watch_point: Variant = null
+## Indirect weapons (ARC) may shoot at any enemy this returns true for. Brains set it to "my TEAM
+## sees it" (spotting); by default it's the tank's own line of sight.
+var spotter: Callable
 ## Recent notable happenings (reflexes firing), newest last. For observers like the bridge.
 var events: PackedStringArray = []
 
@@ -269,6 +272,9 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	engaged_target = ""
 
 	var target: Tank = null
+	if tank.weapon["kind"] == Weapons.Kind.ARC:
+		_apply_indirect(cmd)
+		return
 	match weapon_order["type"]:
 		"aim":
 			_cover(Vector3(weapon_order["x"], 0.0, weapon_order["z"]), cmd)
@@ -303,6 +309,44 @@ func _apply_weapon(cmd: TankCommand) -> void:
 		in_range = false
 	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
 	cmd.fire = in_range and aimed and tank.ready_to_fire()
+
+
+## ARC weapons: lob at a spotted enemy inside the [min_range, range] window, leading it by the flight time.
+func _apply_indirect(cmd: TankCommand) -> void:
+	if tanks_root == null or weapon_order["type"] in ["hold_fire", "aim"]:
+		if weapon_order["type"] == "aim":
+			_cover(Vector3(weapon_order["x"], 0.0, weapon_order["z"]), cmd)
+		elif watch_point != null:
+			_cover(watch_point as Vector3, cmd)
+		return
+	var weapon := tank.weapon
+	var sees: Callable = spotter if spotter.is_valid() else func(other: Tank) -> bool: return Perception.has_line_of_sight(tank, other)
+	var in_window := func(other: Tank) -> bool:
+		var d := tank.global_position.distance_to(other.global_position)
+		return d >= float(weapon["min_range"]) and d <= float(weapon["range"])
+	var target: Tank = null
+	if weapon_order["type"] == "target":
+		var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
+		if named != null and named.is_alive() and named.team != tank.team and sees.call(named) and in_window.call(named):
+			target = named
+	if target == null and (weapon_order["type"] == "fire_at_will" or weapon_order.get("fallback", false)):
+		var best_distance := INF
+		for enemy in Perception.enemies_of(tank, tanks_root):
+			var d := tank.global_position.distance_to(enemy.global_position)
+			if d < best_distance and in_window.call(enemy) and sees.call(enemy):
+				best_distance = d
+				target = enemy
+	if target == null:
+		engaged_target = ""
+		if watch_point != null:
+			_cover(watch_point as Vector3, cmd)
+		return
+	engaged_target = target.name
+	var flight := tank.global_position.distance_to(target.global_position) / float(weapon["flight_speed"])
+	var aim := target.global_position + target.estimated_velocity * flight
+	_cover(aim, cmd)
+	var aimed: bool = Ballistics.aim_error(tank.turret.global_position, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
+	cmd.fire = aimed and tank.ready_to_fire()
 
 
 ## Point the turret at a world spot, and remember that heading for when the spot is gone.

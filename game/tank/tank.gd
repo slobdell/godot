@@ -54,6 +54,8 @@ var weapon: Dictionary = Weapons.profile(Weapons.DEFAULT)
 var unit_id := "tank"
 var weapons := {}
 var components: Array = []
+## This tick's commanded aim point (world). Indirect weapons (ARC) fire at it, not along the barrel.
+var aim_point := Vector3.ZERO
 ## Shells a full load holds (weapon ammo plus ammo racks), or -1 for unlimited.
 var max_ammo := -1
 var ammo_bonus_fraction := 0.0
@@ -138,8 +140,13 @@ func apply_loadout() -> void:
 	_apply_hull_size(Units.stat(unit_id, "hull_size"))
 	health = max_health
 	shield = max_shield
-	var hardpoint: String = Units.PROFILES[unit_id]["hardpoints"][0]["id"] if Units.exists(unit_id) else "main"
-	set_weapon(String(weapons.get(hardpoint, weapon_id)))
+	var chosen := weapon_id
+	if Units.exists(unit_id):
+		var hardpoint: Dictionary = Units.PROFILES[unit_id]["hardpoints"][0]
+		chosen = String(weapons.get(hardpoint["id"], weapon_id))
+		if not (hardpoint["accepts"] as Array).has(chosen):
+			chosen = hardpoint["accepts"][0]  # e.g. an artillery piece spawned without naming its mortar
+	set_weapon(chosen)
 
 
 func _apply_hull_size(size_list: Variant) -> void:
@@ -183,6 +190,7 @@ func _physics_process(delta: float) -> void:
 		_publish_state()
 		return
 	var cmd := command.sanitized()
+	aim_point = cmd.aim_point
 
 	# Tank steering: turn in place or while moving; reversing does not invert.
 	rotate_y(-cmd.turn * hull_turn_rate * delta)

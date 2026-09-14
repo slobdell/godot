@@ -20,6 +20,7 @@ const DEFAULT_SLOTS := {
 	# Added by gameplay (directive set 2, 2026-09-15), placeholders: the scout's machine gun.
 	"weapon.machine_gun": "res://game/theme/default/weapon_cannon.tscn",
 	"fx.tracer": "res://game/theme/default/fx_tracer.tscn",
+	"weapon.mortar": "res://game/theme/default/weapon_cannon.tscn",
 	# Added by gameplay G1 (2026-09-14), placeholder: the 3D fog-of-war sheet (setup(data) contract in assets.md).
 	"fx.fog_of_war": "res://game/theme/default/fx_fog_of_war.tscn",
 	"prop.crate": "res://game/theme/default/prop_crate.tscn",

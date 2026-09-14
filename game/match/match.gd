@@ -69,7 +69,7 @@ var has_local_player := true
 var spawn_jitter := 0.0
 
 ## Counters for match results and experiments, indexed by team where it's a pair.
-var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0], "shield_damage": [0.0, 0.0],
+var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0], "mortar_damage": [0, 0], "shield_damage": [0.0, 0.0],
 		"kills": [0, 0], "shells_resupplied": [0, 0],
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
@@ -127,6 +127,7 @@ func _physics_process(delta: float) -> void:
 		_update_squads()
 		_resupply()
 		_sample_brain_options()
+	_land_rounds()
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination):
 		return
 	var reason := ""
@@ -553,9 +554,58 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	if tank.weapon["kind"] == Weapons.Kind.BEAM:
 		_fire_beam(tank, muzzle, actual)
 		return
+	if tank.weapon["kind"] == Weapons.Kind.ARC:
+		_lob(tank, muzzle)
+		return
 	shell_spawner.spawn({"id": _next_shell_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
 			"direction": actual, "team": tank.team, "shooter": String(tank.name)})
 	_next_shell_id += 1
+
+
+## Indirect rounds in the air: [{"from", "to", "land_tick", "team", "shooter", "weapon"}], in firing order.
+var _rounds: Array = []
+
+
+## ARC weapons (artillery): lob a round at the tank's aim point, scattered, clamped to the weapon's
+## range window. It lands after its flight time and bursts (see _land_rounds).
+func _lob(tank: Tank, muzzle: Vector3) -> void:
+	var weapon := tank.weapon
+	var flat := Vector3(tank.aim_point.x - muzzle.x, 0.0, tank.aim_point.z - muzzle.z)
+	var distance := clampf(flat.length(), float(weapon["min_range"]), float(weapon["range"]))
+	var direction := flat.normalized() if flat.length() > 0.01 else tank.turret_forward()
+	var sigma := float(weapon["scatter"]) + float(weapon["scatter_per_meter"]) * distance
+	var target := Vector3(muzzle.x, 0.0, muzzle.z) + direction * distance
+	target += Vector3(_fire_rng.randfn(0.0, sigma), 0.0, _fire_rng.randfn(0.0, sigma))
+	var flight_ticks := maxi(1, roundi(distance / float(weapon["flight_speed"]) * 60.0))
+	_rounds.append({"from": muzzle, "to": target, "land_tick": tick + flight_ticks, "team": tank.team,
+			"shooter": String(tank.name), "weapon": weapon})
+	show_arc.rpc(muzzle, target, flight_ticks / 60.0)
+
+
+func _land_rounds() -> void:
+	var due: Array = []
+	var flying: Array = []
+	for flying_round in _rounds:
+		(due if int(flying_round["land_tick"]) <= tick else flying).append(flying_round)
+	_rounds = flying
+	for landing: Dictionary in due:
+		var weapon: Dictionary = landing["weapon"]
+		var point: Vector3 = landing["to"]
+		var radius := float(weapon["splash_radius"])
+		var hit_any := false
+		var killed_any := false
+		for victim in _sorted_tanks():
+			if not victim.is_alive() or victim.team == int(landing["team"]):
+				continue
+			var offset := Vector3(victim.global_position.x - point.x, 0.0, victim.global_position.z - point.z)
+			if offset.length() > radius:
+				continue
+			var falloff := lerpf(1.0, 0.3, offset.length() / radius)
+			var from_burst := offset.normalized() if offset.length() > 0.1 else Vector3.FORWARD
+			killed_any = _land_hit(victim, float(weapon["damage"]) * falloff, weapon, from_burst, int(landing["team"]),
+					String(landing["shooter"]), "mortar_damage", not hit_any) or killed_any
+			hit_any = true
+		show_impact.rpc(point + Vector3.UP * 0.3, true)
 
 
 ## Beam weapons (G7 laser): an instant ray from the turret center; the first thing it touches takes
@@ -608,8 +658,10 @@ func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3,
 		weapon_stat: String, counts_as_hit: bool) -> bool:
 	var forward := -victim.global_basis.z
 	var face: String = Armor.FACING_NAMES[Armor.facing(forward, direction)]
+	if weapon["kind"] == Weapons.Kind.ARC:
+		face = "side"  # indirect rounds come down on top: no face is the strong one
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
-			Armor.weapon_multiplier(weapon, forward, direction))
+			float(weapon["armor"][face]))
 	if counts_as_hit:
 		stats["hits"][team] += 1
 		stats["hits_by_face"][face] += 1
@@ -657,6 +709,17 @@ func _on_tank_died(tank: Tank) -> void:
 
 ## How long a laser pulse's visual lives before it's freed (the visual fades itself).
 const BEAM_VISUAL_SECONDS := 0.2
+
+
+@rpc("authority", "call_local", "unreliable")
+func show_arc(from: Vector3, to: Vector3, seconds: float) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var round_visual := ArcRoundVisual.new()
+	round_visual.from = from
+	round_visual.to = to
+	round_visual.seconds = seconds
+	effects.add_child(round_visual)
 
 
 @rpc("authority", "call_local", "unreliable")
