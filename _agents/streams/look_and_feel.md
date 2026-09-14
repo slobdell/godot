@@ -238,6 +238,22 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   Docs: orientation (layout, common tasks, trip-ups 38–43), verification (look & feel checks),
   workstreams (slot contract status + the `set_paint` proposal).
 
+- **Integration rehearsal with `stream/gameplay`** (a throwaway detached worktree in my scratchpad
+  merging both branches; nothing pushed, `main` untouched): **the merge is clean** (git auto-merges
+  `game_theme.gd` and `workstreams.md`) and **all 177 tests pass** on the merged tree. It caught three
+  problems, fixed on this branch: (1) gameplay G1's new `fx.fog_of_war` slot wasn't in the cyberpunk
+  theme, so the default look would `push_error` → themes now fall back to `DEFAULT_SLOTS` for any
+  slot they don't define, and a cyberpunk fog of war (dark digital haze, dim memory, cyan vision
+  boundary, radar sweep) fills it; (2) gameplay's new tactical map (perspective RTS camera, top
+  button row, radar bottom-right, command bar bottom-left) collided with the banners and covered the
+  FX button → banners take mid-height side columns whenever the map is up, FX button top-left; (3) a
+  regression I introduced while doing (2) dropped the map's theme → restored with a test. The radar's
+  `GameTheme.ui["radar_frame"]` hook now gets a chamfered neon StyleBox. Screenshots of the merged
+  game: `build/screenshots/int_skirmish.png`, `int_skirmish_phone.png`, `int_skirmish_radar.png`,
+  `int_match.png`. **For the morning merge:** after merging gameplay, `game_theme.gd` should contain
+  gameplay's `DEFAULT_SLOTS` (with `weapon.laser`, `fx.laser_beam`, `fx.fog_of_war`) plus this
+  branch's themes; git did that automatically in the rehearsal.
+
 #### Frame budget per quality tier (L0, re-measured in L6; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured (UHD 620, 720p) |
 |---|---|---|---|---|---|---|---|---|---|
@@ -277,6 +293,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - **Gameplay:** `test_navigation::test_path_goes_around_a_wall` is load-sensitive (see Known issues); consider waiting until the map's regions include this arena's two regions (or a few extra physics frames) before querying.
 - **Gameplay:** `fx.laser_beam` has no team: the cyberpunk beam is a team-neutral violet-white. If you want team-colored lasers, call `beam.invoke("set_team_color", [GameTheme.team_color(team)])` after `setup` (already implemented).
 - **Gameplay (contract change, please accept):** friend-or-foe lives in accent lights, so split `Tank.set_paint(color)` (full-body paint, from the garage's `paint`) from the team: call `invoke("set_team_color", [GameTheme.team_color(team)])` at spawn and `invoke("set_paint", [paint])` for paint. Until then my adapter handles today's calls. **Assets:** add optional `set_paint(Color)` to the `tank.hull`/`tank.turret`/`weapon.*` slot contracts, and keep a separate emissive accent mask in generated models so team color never recolors the body.
+- **Gameplay (radar):** `GameTheme.ui["radar_frame"]` is now a chamfered neon StyleBox in the cyberpunk theme. Please also read `GameTheme.ui.get("radar_field", <your green>)` for the visibility-texture tint and `GameTheme.ui.get("radar_outline", <yours>)` for the arena outline (both defined), so the radar matches the palette.
 - **Gameplay (merge):** `game_theme.gd` gains `weapon.laser`/`fx.laser_beam` in `CYBERPUNK_SLOTS` here and in `DEFAULT_SLOTS` on your branch: keep both when merging.
 - **Gameplay:** please call `hud.post_message()` for orders, commander down, unit lost, victory; the banners are live (`make hud-gallery`, `--hud-demo`).
 

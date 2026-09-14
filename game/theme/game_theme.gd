@@ -68,6 +68,10 @@ const CYBERPUNK_UI := {
 	"garage_bg": Color("#050510"),
 	"garage_panel": Color(0x12 / 255.0, 0x12 / 255.0, 0x25 / 255.0, 0.86),
 	"garage_text_dim": Color(0.88, 0.88, 0.88, 0.6),
+	# Gameplay's radar (G2) styling: its field tint and arena outline (read with fallbacks, requested);
+	# "radar_frame" (a StyleBox) is added in use() because constants can't hold objects.
+	"radar_field": Color(0.0, 0.75, 0.9, 0.45),
+	"radar_outline": Color("#D900FF"),
 }
 
 const THEMES := {
@@ -102,8 +106,24 @@ static func use(name: String) -> bool:
 	slots = DEFAULT_SLOTS.merged(theme["slots"], true)
 	team_colors = theme["team_colors"]
 	team_glows = theme["team_glows"]
-	ui = theme["ui"]
+	ui = (theme["ui"] as Dictionary).duplicate()
+	if name == "cyberpunk":
+		ui["radar_frame"] = _cyber_panel_style()
 	return true
+
+
+## A chamfered dark panel with a neon border (the HUD language) for StyleBox styling hooks.
+static func _cyber_panel_style() -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(0x05 / 255.0, 0x05 / 255.0, 0x10 / 255.0, 0.86)
+	box.border_color = Color("#00F3FF")
+	box.set_border_width_all(2)
+	box.set_corner_radius_all(14)
+	box.corner_detail = 1
+	box.anti_aliasing = true
+	box.shadow_color = Color(0.0, 0.9, 1.0, 0.25)
+	box.shadow_size = 6
+	return box
 
 
 static func scene(slot: String) -> PackedScene:
