@@ -151,8 +151,8 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   AI: RESUPPLY option, no long shots at ≤ 30% ammo, less appetite when empty or hot. `sync_ammo` +
   `sync_heat` replicated; `weapon.laser` + `fx.laser_beam` placeholder slots. Map readout shows `aN`
   shells / `hN%` heat. Balance (lasers vs cannons, Individuals doctrines, swap + team-identity
-  counterbalanced): before shields lasers won 14/60 (23%); with shields 18/30 (60%); final numbers
-  on 4794a19 below under *Balance*. Tests: `tests/test_ammo_heat.gd`.
+  counterbalanced): before shields lasers won 14/60 (23%); with shields and multiplier 1.5, 29/40
+  (72%); at 1.25, 14/24 (58%). Tests: `tests/test_ammo_heat.gd`.
 - **G6 shields** (d3556b5, tuned 4794a19). Hull 300 + shield 150; the shield refills 50/s after 4 s
   without damage. Shields are directional (front 0.7 / side 1.0 / rear 1.4) and weapons scale them
   (cannon 0.8, laser and flamethrower 1.5: energy and fire strip shields, shells break hulls). Only
@@ -168,6 +168,21 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   only. `Match.is_visible_to(team, tank)`. 3D fog of war via a new `fx.fog_of_war` slot
   (placeholder shader). Screenshot `build/screenshots/g1_fog.png` shows lit fans, wall shadows,
   remembered ground. Tests: `tests/test_visibility.gd`.
+- **G4 RTS camera** (04f1437). `game/camera/rts_camera.gd` drives the main camera in skirmish: tilted
+  perspective, zoom from 16 m close behind (25°) to 260 m high (82°), arrows / screen edge /
+  middle-drag pan, wheel zooms toward the cursor, `,` `.` rotate, F follows the selected commander,
+  Tab overview. Touch: drag pans (grab the ground), pinch zooms, twist rotates. Nameplates in skirmish
+  are short and never show brain intents (enemy intents leaked through the fog). Tests:
+  `tests/test_rts_camera.gd`. Screenshots `build/screenshots/g4_*.png`.
+- **G2 radar** (a17a574). `game/ui/radar.gd`, bottom right: obstacles, fog (lit / remembered / dark),
+  friendlies with commanders ringed, enemies in sight, fading contacts, destinations, camera footprint.
+  Tap aims the camera; drag orders the selected squad. Enemies only from intel. Contract row recorded
+  in workstreams.md (styling hook `GameTheme.ui["radar_frame"]`). Tests: `tests/test_radar.gd`.
+- **G0 touch pass** (e077288). Tap tank = select (again = commander); tap ground = go there; hold then
+  drag = go + face; drag = pan; pinch/twist = camera. Buttons ≥ 40 px (7% of screen height) for every
+  drill, formation (popup row), squad, Pause/Resume, Overview, Follow. Tests: `tests/test_touch.gd`
+  (including a real `InputEventScreenTouch` through Godot's input). Screenshot `g0_phone.png`.
+- **Laser tuning**: laser shield multiplier 1.5 → 1.25; lasers vs cannons 29/40 (72%) → **14/24 (58%)**.
 
 **Decisions:**
 - G5: tanks fire only at enemies in their *own* line of sight and range; team intel only aims the turret.
@@ -204,7 +219,9 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   long shots; empty or overheated guns count as idle); not yet separated out.
 - Beams are too thin to see from the flat tactical view (fine in 3D; look & feel owns the look).
 
-**What to playtest:** `make skirmish`: order a squad back toward base (Move or Break contact) while in
+**What to playtest:** `make skirmish`. New camera: arrows/wheel/`,` `.`, F follows, Tab overview. The
+radar (bottom right): tap to look, drag to order. Try it like a phone: tap a tank, tap the ground,
+hold-then-drag, use the buttons. Order a squad back toward base (Move or Break contact) while in
 contact; guns should stay on the enemy. Orders should visibly start within a blink. Watch the fog:
 the dark areas are what your team can't see. The squad readout shows hull+shield, shells (`a`),
 heat (`h`). `make skirmish ENEMY=individuals_laser` fights laser tanks. Pull a worn squad back to
