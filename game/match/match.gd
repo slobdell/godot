@@ -9,6 +9,8 @@ extends Node
 signal local_tank_spawned(tank: Tank)
 ## Emitted once when a score or time limit is reached (see start_limits).
 signal finished(result: Dictionary)
+## Simulating peer: a tank was destroyed (by `killer`, a tank name).
+signal tank_destroyed(victim: Tank, killer: String)
 
 enum Team { GREEN, RUST }
 
@@ -518,6 +520,7 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 	else:
 		score_rust += 1
 	print("%s destroyed %s (score Green %d : %d Rust)" % [killer, victim.name, score_green, score_rust])
+	tank_destroyed.emit(victim, killer)
 
 
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:

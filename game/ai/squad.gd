@@ -13,6 +13,9 @@ extends RefCounted
 ##    "formation": "wedge",  (optional)
 ##    "commander": "Green_Alpha_2"}   (optional)
 
+## The commander was destroyed and `successor` took over (not emitted for elections).
+signal commander_lost(fallen: String, successor: String)
+
 const VERBS := ["move", "bound", "hold", "assault", "break_contact"]
 const NEEDS_DESTINATION := ["move", "bound", "assault"]
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
@@ -156,7 +159,9 @@ func update(tanks: Dictionary) -> void:
 			var candidate := roster[(start + step) % roster.size()]
 			if alive.has(candidate):
 				_log("commander down, %s takes command" % candidate)
+				var fallen := commander
 				commander = candidate
+				commander_lost.emit(fallen, candidate)
 				break
 	if not is_commanded() or destination == null:
 		return

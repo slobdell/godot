@@ -139,6 +139,12 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
   Commander pacing counts only followers lagging behind. Map pings the ordered spot. Measured
   (`tests/test_responsiveness.gd` prints MEASURE lines): ticks to first obey [1, 6] → [1, 1]; slowest
   tank starts moving in 11 ticks (budget 15); the commander covers 5 m in 53 ticks (acceleration-limited).
+- **HUD messages.** `game/match/announcer.gd` (`MatchAnnouncer`) turns match events into
+  `Hud.post_message` for the player's team in skirmish: order acknowledged / rejected, first contact
+  (20 s cooldown), "Alpha lost Alpha 1 (4 tanks left)", enemy destroyed, commander succession,
+  VICTORY/DEFEAT. New signals: `Match.tank_destroyed(victim, killer)`, `Squad.commander_lost(fallen,
+  successor)`. Tests: `tests/test_announcer.gd`. Smoke: a headless scripted skirmish prints the
+  `HUD_MESSAGE` lines in order.
 
 **Decisions:**
 - G5: tanks fire only at enemies in their *own* line of sight and range; team intel only aims the turret.
@@ -152,7 +158,9 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 
 **Questions for the lead:** none yet.
 
-**Requests to other streams:** none yet.
+**Requests to other streams:**
+- Look & feel: `Hud.post_message` is still the print-only stub, so in-game the only visible order
+  feedback is the tactical map's toast. Once banners render, the map toast can go (it duplicates them).
 
 **Known issues:** none yet.
 

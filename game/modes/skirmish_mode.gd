@@ -35,6 +35,14 @@ func start() -> void:
 	tactical.game_match = game_match
 	tactical.camera = main.camera
 	main.hud.add_child(tactical)
+	var announcer := MatchAnnouncer.new()
+	announcer.name = "Announcer"
+	announcer.game_match = game_match
+	announcer.team = Match.Team.GREEN
+	announcer.announced.connect(main.hud.post_message)
+	game_match.add_child(announcer)
+	tactical.command_issued.connect(func(command: Dictionary, error: String) -> void:
+		announcer.announce_command(tactical.describe_command(command), error))
 	main.hud.set_status("Skirmish vs %s" % lineups[Match.Team.RUST])
 	if flags.has("scripted"):
 		_play_script(tactical)

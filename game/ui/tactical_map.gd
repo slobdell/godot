@@ -104,11 +104,12 @@ func issue(command: Dictionary) -> String:
 	if error == "" and command.has("to"):
 		_ping_at = Vector3(float(command["to"][0]), 0.0, float(command["to"][1]))
 		_ping_left = PING_SECONDS
-	_show_toast(_describe_command(command) if error == "" else "Can't: " + error, error != "")
+	_show_toast(describe_command(command) if error == "" else "Can't: " + error, error != "")
 	return error
 
 
-func _describe_command(command: Dictionary) -> String:
+## A player-facing summary of a command, e.g. "Alpha: Bound in Wedge".
+func describe_command(command: Dictionary) -> String:
 	var squad := _squad(command["squad"])
 	var parts: PackedStringArray = [String(command["squad"])]
 	if command.has("commander"):
