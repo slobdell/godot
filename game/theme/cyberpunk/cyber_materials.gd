@@ -8,6 +8,7 @@ const NEON_SHADER := preload("res://game/theme/fx/shaders/neon.gdshader")
 const BEAM_SHADER := preload("res://game/theme/fx/shaders/beam_cone.gdshader")
 const HOLOGRAM_SHADER := preload("res://game/theme/fx/shaders/hologram.gdshader")
 const GROUND_SHADER := preload("res://game/theme/fx/shaders/wet_ground.gdshader")
+const PANEL_SHADER := preload("res://game/theme/fx/shaders/neon_panel.gdshader")
 
 ## The palette (mavlink-hud colors.xml + the specs).
 const CYAN := Color("#00F3FF")
@@ -66,6 +67,34 @@ static func hologram(color: Color, accent: Color, seed := 1.0) -> ShaderMaterial
 		material.set_shader_parameter("seed", seed)
 		_cache[key] = material
 	return _cache[key]
+
+
+## A glowing top panel (border + hazard stripes), sized for the tactical camera.
+static func panel(color: Color, aspect := 1.0, energy := 2.5, stripes := true) -> ShaderMaterial:
+	var key := "panel/%s/%s/%s/%s" % [color.to_html(), aspect, energy, stripes]
+	if not _cache.has(key):
+		var material := ShaderMaterial.new()
+		material.shader = PANEL_SHADER
+		material.set_shader_parameter("color", color)
+		material.set_shader_parameter("aspect", aspect)
+		material.set_shader_parameter("energy", energy)
+		material.set_shader_parameter("stripes", 1.0 if stripes else 0.0)
+		material.set_shader_parameter("border", 0.09 if aspect <= 2.0 else 0.18)
+		_cache[key] = material
+	return _cache[key]
+
+
+## A horizontal quad facing up (+Y) of `size` (x, z) at `center`.
+static func top_quad(parent: Node3D, size: Vector2, center: Vector3, material: Material) -> MeshInstance3D:
+	var mesh := PlaneMesh.new()
+	mesh.size = size
+	mesh.material = material
+	var instance := MeshInstance3D.new()
+	instance.mesh = mesh
+	instance.position = center
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(instance)
+	return instance
 
 
 static func ground() -> ShaderMaterial:

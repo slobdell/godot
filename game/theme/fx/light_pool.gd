@@ -10,6 +10,7 @@ extends Node3D
 ## explosions, muzzle flashes; the pool fades them), then FxWorld calls `commit()` once.
 
 ## Priorities. Within a priority, nearer the camera wins.
+const PRIORITY_VEHICLE := 0.5
 const PRIORITY_TRACER := 1.0
 const PRIORITY_MUZZLE := 2.0
 const PRIORITY_BEAM := 3.0

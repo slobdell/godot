@@ -123,3 +123,33 @@ func test_every_theme_scene_loads_headless_without_errors() -> void:
 			visual_slot.invoke("set_team_color", [Color.MAGENTA])
 	await tree.process_frame
 	GameTheme.use(previous)
+
+
+func test_streaks_add_and_remove_without_leaking_instances() -> void:
+	var streaks: StreakSystem = add_to_tree(StreakSystem.new())
+	var ids: Array[int] = []
+	for i in 12:
+		ids.append(streaks.add(Vector3(i * 3.0, 2.0, 0), Color.PURPLE))
+	await tree.process_frame
+	assert_eq(streaks.count(), 12, "every light gets a streak")
+	for id in ids.slice(0, 5):
+		streaks.remove(id)
+	await tree.process_frame
+	assert_eq(streaks.count(), 7, "props leaving the tree take their streaks with them")
+
+
+func test_underglow_follows_visible_vehicles_only() -> void:
+	var glow: UnderglowSystem = add_to_tree(UnderglowSystem.new())
+	var pool: LightPool = add_to_tree(LightPool.new(4))
+	var tanks: Array[Node3D] = []
+	for i in 6:
+		var tank: Node3D = add_to_tree(Node3D.new())
+		tank.position = Vector3(i * 5.0, 0, 0)
+		glow.add(tank, Color.CYAN)
+		tanks.append(tank)
+	tanks[0].visible = false  # destroyed or hidden by fog of war
+	glow.update(pool)
+	assert_eq(glow.active_count(), 5, "hidden vehicles don't glow (no fog-of-war leaks)")
+	pool.request(Vector3.ZERO, Color.WHITE, 1.0, 5.0, LightPool.PRIORITY_EXPLOSION)
+	pool.commit(Vector3.ZERO, 0.0)
+	assert_eq(pool.lit_count, 4, "vehicles only take pooled lights nobody more important needs")

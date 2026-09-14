@@ -145,6 +145,19 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   `make hud-gallery` → `build/screenshots/hud-gallery.png` / `-phone.png`. 10 tests in
   `tests/test_hud_widgets.gd` (mutation-checked: breaking the dismiss timer or the font fallback fails them).
 
+- **L2 cyberpunk arena** (`--theme=cyberpunk`): night environment (near-black background, cool
+  moonlight, thin exponential + height fog, HDR glow, environment reflections off so glossy floor
+  doesn't turn black), chunked wet-asphalt floor with faint violet lane grid, blast-barrier perimeter
+  with violet light bars and a rim-top light line, four floodlight towers with fake volumetric beams
+  and painted light pools, **wet-floor reflection streaks** (`StreakSystem`: one MultiMesh oriented
+  toward the camera in the shader, fading when looking straight down), neon props with the same
+  footprints: `prop.crate` = rusted container stack with amber hazard edges, a glowing top panel
+  and a failing red beacon; `prop.wall` = concrete barrier with a violet top light bar, chevrons, and
+  a hologram ad. **Props use violet/amber/red, never the team cyan/magenta.** Iterated from the
+  tactical camera (orthographic, 200 m up, ~3 px/m): thin strips vanish there, so every prop has a
+  wide emissive top. Screenshots: `build/screenshots/l2_skirmish_before.png` → `l2_skirmish.png`,
+  `l2_follow.png`; the default look for comparison: `l2_skirmish_default.png`.
+
 #### Frame budget per quality tier (from L0; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows |
 |---|---|---|---|---|---|---|---|---|
@@ -157,6 +170,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - **FX systems live under the scene root, created on first use** (`FxWorld.get_instance()`), and return null on headless peers: servers, tests, and `sim-baseline` never build effects.
 - **The muzzle-flash event is "a tracer appeared"**: the `fx.shell` slot has no firing hook, and this needs no contract change.
 - **Tracers take the team's neon** (`GameTheme.team_glow`, new): cyan vs magenta shots keep the two teams readable in the dark. The shell's team is read from the Shell node (read-only duck typing).
+- **Readability rules for arena art** (learned from the tactical camera): emissive features ≥ 0.5 m wide or they vanish at ~3 px/m; fog must stay thin (the tactical camera is 200 m away: density 0.006 hid 70% of the scene); glossy dark floors reflect a black sky as black blotches, so keep roughness ≥ 0.45 and environment reflections off.
 - **HUD text grows 1.5× on touch devices** (`CyberStyle.touch_boost`, preview with `--ui-touch`): the spec's 25 px at 1080p is ~1.5 mm tall on a phone. Banners keep ≥ 2.2 lines of height so the boosted text fits.
 - **Banner timestamps use the wall clock (`HH:MM:SS`) like the reference**; `clock` is swappable (match time would be a one-line change).
 - **The FX lab uses visual-only tanks and shells** (slot visuals, not the simulation), so it never touches gameplay code and is deterministic without physics.
@@ -179,7 +193,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- L2 cyberpunk arena (in progress).
+- L3 vehicles (in progress), then switch the default theme.
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

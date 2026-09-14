@@ -16,6 +16,8 @@ static var _instance: FxWorld
 var lights: LightPool
 var tracers: TracerSystem
 var bursts: BurstSystem
+var streaks: StreakSystem
+var underglow: UnderglowSystem
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
 ## Muzzle flashes when a projectile appears (the fx.shell slot has no firing hook, so a new
@@ -62,8 +64,10 @@ func _init() -> void:
 	lights = LightPool.new(FxQuality.value("lights"))
 	tracers = TracerSystem.new()
 	bursts = BurstSystem.new(FxQuality.value("effects"))
+	streaks = StreakSystem.new()
+	underglow = UnderglowSystem.new()
 	tracers.splats_enabled = FxQuality.value("splats")
-	for system in [lights, tracers, bursts]:
+	for system in [lights, tracers, bursts, streaks, underglow]:
 		add_child(system)
 
 
@@ -74,6 +78,7 @@ func _process(delta: float) -> void:
 		_prewarm(camera)
 	bursts.update(now)
 	tracers.update(lights)
+	underglow.update(lights)
 	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
 
 

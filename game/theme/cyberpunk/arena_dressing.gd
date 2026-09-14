@@ -1,4 +1,4 @@
-extends Node3D
+extends "res://game/theme/cyberpunk/cyber_prop.gd"
 ## Cyberpunk arena dressing: a chunked wet-asphalt floor, blast-barrier perimeter walls with neon
 ## light bars, corner floodlight towers throwing fake volumetric beams, and static glow pools
 ## under the light bars (painted light, not real lights). Ground 320×320 at y=0; perimeter walls
@@ -32,8 +32,8 @@ func _build_perimeter() -> void:
 	var concrete := CyberMaterials.surface(Color(0.09, 0.09, 0.1), 0.7, 0.1)
 	var rail := CyberMaterials.surface(Color(0.16, 0.12, 0.1), 0.45, 0.6)
 	var sides := [
-		[Vector3(0, 0, -HALF), Vector3(244, 0, WALL_THICK), CyberMaterials.MAGENTA, 1.0],
-		[Vector3(0, 0, HALF), Vector3(244, 0, WALL_THICK), CyberMaterials.CYAN, -1.0],
+		[Vector3(0, 0, -HALF), Vector3(244, 0, WALL_THICK), CyberMaterials.PURPLE, 1.0],
+		[Vector3(0, 0, HALF), Vector3(244, 0, WALL_THICK), CyberMaterials.PURPLE, -1.0],
 		[Vector3(HALF, 0, 0), Vector3(WALL_THICK, 0, 244), CyberMaterials.PURPLE, -1.0],
 		[Vector3(-HALF, 0, 0), Vector3(WALL_THICK, 0, 244), CyberMaterials.PURPLE, 1.0],
 	]
@@ -51,6 +51,10 @@ func _build_perimeter() -> void:
 		CyberMaterials.box(segment, Vector3(extent.x, WALL_HEIGHT, extent.z), center + Vector3(0, WALL_HEIGHT / 2.0, 0), concrete)
 		CyberMaterials.box(segment, Vector3(maxf(extent.x, 2.6), 0.35, maxf(extent.z, 2.6)),
 				center + Vector3(0, WALL_HEIGHT + 0.17, 0), rail)
+		# A light bar along the rim top: the arena's glowing outline from the tactical camera.
+		var rim_size := Vector2(extent.x, 0.9) if extent.x > extent.z else Vector2(0.9, extent.z)
+		CyberMaterials.top_quad(segment, rim_size, center + Vector3(0, WALL_HEIGHT + 0.36, 0),
+				CyberMaterials.neon(neon_color, 0.9, 0.03))
 		# The light bar runs along the inner face, just under the rim.
 		var along_x := extent.x > extent.z
 		var bar_size := Vector3(extent.x - 8.0, 0.18, 0.12) if along_x else Vector3(0.12, 0.18, extent.z - 8.0)
@@ -62,13 +66,16 @@ func _build_perimeter() -> void:
 		StaticBatcher.merge(segment)
 		# Painted glow pools on the floor along the bar (one batched draw for all of them).
 		var length := extent.x if along_x else extent.z
-		var count := int(length / 24.0)
+		var count := int(length / 14.0)
 		for i in count:
 			var t := -length / 2.0 + (i + 0.5) * length / count
 			var offset := Vector3(t, 0.04, inward * 5.0) if along_x else Vector3(inward * 5.0, 0.04, t)
-			var pool_basis := Basis.from_scale(Vector3(24.0, 1.0, 11.0) if along_x else Vector3(11.0, 1.0, 24.0))
+			var pool_basis := Basis.from_scale(Vector3(26.0, 1.0, 12.0) if along_x else Vector3(12.0, 1.0, 26.0))
 			pools.append(Transform3D(pool_basis, Vector3(center.x, 0.0, center.z) + offset))
-			pool_colors.append(neon_color * 0.35)
+			pool_colors.append(neon_color * 0.22)
+			# A reflection streak from the foot of the light bar (just inside the wall).
+			var foot := Vector3(t, 0.0, center.z + inward * 1.4) if along_x else Vector3(center.x + inward * 1.4, 0.0, t)
+			add_streak(foot, neon_color, 14.0, 5.0, 0.35)
 	glow_pools.name = "GlowPools"
 	glow_pools.multimesh = _glow_multimesh(pools, pool_colors)
 	glow_pools.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -88,7 +95,7 @@ func _build_tower(base: Vector3) -> void:
 	var lamp_pos := base + Vector3(0, height - 0.3, 0) + toward_center * 0.9
 	CyberMaterials.box(tower, Vector3(3.2, 0.4, 0.3), lamp_pos, CyberMaterials.neon(Color(0.85, 0.95, 1.0), 6.0, 0.02), false)
 	# Beam: an open cone from the lamp angled down toward the arena.
-	var target := base * 0.55
+	var target := base * 0.78
 	var beam_length := lamp_pos.distance_to(target)
 	var cone := CylinderMesh.new()
 	cone.top_radius = 0.6
@@ -97,7 +104,7 @@ func _build_tower(base: Vector3) -> void:
 	cone.cap_top = false
 	cone.cap_bottom = false
 	cone.radial_segments = 16
-	cone.material = CyberMaterials.beam(Color(0.55, 0.8, 1.0), 0.22)
+	cone.material = CyberMaterials.beam(Color(0.55, 0.8, 1.0), 0.14)
 	var beam := MeshInstance3D.new()
 	beam.name = "Beam"
 	beam.mesh = cone
@@ -113,6 +120,7 @@ func _build_tower(base: Vector3) -> void:
 	beam.transform = Transform3D(Basis(axis_x, axis_y, axis_z), lamp_pos + down * beam_length / 2.0)
 	StaticBatcher.merge(tower)
 	# A painted light pool where the beam lands.
+	add_streak(Vector3(target.x, 0.0, target.z), Color(0.55, 0.75, 1.0), 26.0, 7.0, 0.35)
 	var pool := MultiMeshInstance3D.new()
 	pool.name = "BeamPool"
 	pool.multimesh = _glow_multimesh([Transform3D(Basis.from_scale(Vector3(22, 1, 22)), Vector3(target.x, 0.04, target.z))],
