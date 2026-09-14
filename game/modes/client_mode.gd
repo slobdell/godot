@@ -3,6 +3,8 @@ extends GameMode
 ## Networked client: displays replicated state, sends its local controller's commands.
 ##   --connect[=ws://host:port]         a dedicated server (ServerMode)
 ##   --join=CODE [--relay=ws://broker]  a player-hosted room through the relay (HostMode)
+##     --record=PATH                    save everything the host sends us, for --replay
+##   --replay=PATH [--replay-speed=2]   watch a recording from the recorded player's seat
 ## Owned by the netcode workstream (_agents/streams/netcode.md).
 
 
@@ -22,7 +24,17 @@ func start() -> void:
 	_url = connect_url()
 	var peer: MultiplayerPeer
 	var err: Error
-	if flags.has("join"):
+	if flags.has("replay"):
+		var replay := ReplayPeer.new()
+		err = replay.open(flags.text("replay"))
+		replay.speed = maxf(float(flags.text("replay-speed", "1")), 0.1)
+		if err == OK:
+			print("TANK_SQUAD_REPLAY %d packets, %.1f s, seat %d" % [replay.record_count(),
+					replay.duration_msec() / 1000.0, int(replay.metadata.get("peer_id", 0))])
+			replay.finished.connect(func() -> void: print("TANK_SQUAD_REPLAY_FINISHED"))
+		_url = flags.text("replay")
+		peer = replay
+	elif flags.has("join"):
 		# A player-hosted match through the broker's relay (HostMode on the other end).
 		_url = HostMode.relay_url(flags)
 		var relay := RelayPeer.new()
@@ -49,7 +61,14 @@ func start() -> void:
 
 func _on_connected() -> void:
 	var peer_id := main.multiplayer.get_unique_id()
-	main.hud.set_status("Connected to %s as peer %d" % [_url, peer_id])
+	var relay := main.multiplayer.multiplayer_peer as RelayPeer
+	if relay != null and flags.has("record"):
+		var err := relay.start_recording(flags.text("record"))
+		print("TANK_SQUAD_RECORDING %s (%s)" % [flags.text("record"), error_string(err)])
+	if flags.has("replay"):
+		main.hud.set_status("Replay of %s (seat %d)" % [_url.get_file(), peer_id])
+	else:
+		main.hud.set_status("Connected to %s as peer %d" % [_url, peer_id])
 	print("TANK_SQUAD_CONNECTED peer=%d" % peer_id)
 
 

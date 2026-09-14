@@ -4,6 +4,7 @@ extends SceneTree
 ## Boots the REAL game (main.tscn) as a client using the flags after `--`, e.g.
 ##   --connect=ws://127.0.0.1:9181 --demo --expect-tanks=2
 ##   --join=K7QX2 --relay=ws://127.0.0.1:9186 --demo --expect-tanks=4   (player-hosted, via the broker)
+##   --replay=/abs/recording.tsqrec --expect-tanks=4                     (a recorded relay match)
 ## and checks, over real WebSockets against a real headless server or host, that:
 ##   1. the server spawned a tank for us,
 ##   2. we can see --expect-tanks tanks in total (other players replicate to us),
@@ -42,15 +43,17 @@ func _run() -> void:
 	var drop_after := float(flags.get("drop-after", "-1"))
 	var drop_seconds := float(flags.get("drop-seconds", "10"))
 	var min_travel_after_drop := float(flags.get("min-travel-after-drop", "2"))
-	if not url.begins_with("ws://"):
-		_finish(false, "pass --connect=ws://host:port, or --join=CODE --relay=ws://host:port")
+	if flags.has("replay"):
+		pass  # a recording: no server to wait for
+	elif not url.begins_with("ws://"):
+		_finish(false, "pass --connect=ws://host:port, --join=CODE --relay=ws://host:port, or --replay=PATH")
 		return
-
-	# The server is launched alongside us; wait until it accepts TCP connections.
-	var host_port := url.trim_prefix("ws://").split("/")[0].split(":")
-	if not await _wait_for_port(host_port[0], int(host_port[1])):
-		_finish(false, "server never opened %s" % url)
-		return
+	else:
+		# The server is launched alongside us; wait until it accepts TCP connections.
+		var host_port := url.trim_prefix("ws://").split("/")[0].split(":")
+		if not await _wait_for_port(host_port[0], int(host_port[1])):
+			_finish(false, "server never opened %s" % url)
+			return
 
 	var main: Node = load("res://game/main.tscn").instantiate()
 	root.add_child(main)

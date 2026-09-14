@@ -56,6 +56,9 @@ var jitter_msec := 0
 ## Counters for bandwidth measurements (frames and bytes, including our 9-byte header).
 var stats := {"frames_in": 0, "bytes_in": 0, "frames_out": 0, "bytes_out": 0, "resumes": 0, "dropped_out": 0}
 
+var _recording: FileAccess
+var _recording_start_msec := 0
+
 var _ws: WebSocketPeer
 var _status := MultiplayerPeer.CONNECTION_DISCONNECTED
 var _unique_id := 0
@@ -114,6 +117,18 @@ func _start(broker_url: String) -> Error:
 	url = broker_url
 	_status = MultiplayerPeer.CONNECTION_CONNECTING
 	return _open_socket()
+
+
+## Record every packet the host sends us from now on, for ReplayPeer (`--record=PATH`).
+func start_recording(path: String) -> Error:
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	_recording = FileAccess.open(path, FileAccess.WRITE)
+	if _recording == null:
+		return FileAccess.get_open_error()
+	_recording_start_msec = Time.get_ticks_msec()
+	_recording.store_line(ReplayPeer.MAGIC)
+	_recording.store_line(JSON.stringify({"peer_id": _unique_id, "room": room_code}))
+	return OK
 
 
 ## Testing aid: cut our socket now (as if the phone lost signal) and stay offline `seconds`.
@@ -365,6 +380,9 @@ func _end_session(reason: String) -> void:
 			peer_disconnected.emit(HOST_ID)
 	_retained.clear()
 	_retained_bytes = 0
+	if _recording != null:
+		_recording.close()
+		_recording = null
 	relay_event.emit("closed", {"reason": reason})
 
 
@@ -412,6 +430,12 @@ func on_frame(frame: PackedByteArray, now: int = Time.get_ticks_msec()) -> void:
 		return  # already delivered before a resume
 	_in_seq = seq
 	var packet := [frame.decode_s32(0), frame.decode_u8(4), frame.slice(HEADER_BYTES)]
+	if _recording != null:
+		_recording.store_32(now - _recording_start_msec)
+		_recording.store_32(packet[0])
+		_recording.store_8(packet[1])
+		_recording.store_32((packet[2] as PackedByteArray).size())
+		_recording.store_buffer(packet[2])
 	if latency_msec <= 0 and jitter_msec <= 0 and _delayed.is_empty():
 		_incoming.append(packet)
 		return

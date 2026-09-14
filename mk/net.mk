@@ -221,7 +221,7 @@ relay-latency-smoke: import $(BROKER_DEPS) ## relay-smoke with 150 ms + 50 ms ji
 # ---- Replays -----------------------------------------------------------------------------------
 # Lockstep-style: a match is its command log. Record one, replay it (every checkpoint hash must
 # match), then tamper with one command and prove the replay catches it.
-replay: import ## Record a deterministic-core command log, replay + verify every hash, and prove a 1-command tamper is caught
+replay: import $(BROKER_DEPS) ## Replays: det-core command log (verify hashes, catch a tamper) + record/play back a relay match
 	mkdir -p $(BUILD_DIR)/replays
 	$(GODOT) --headless --path . -- --det-spike --tanks=20 --ticks=1800 --save-replay=$(abspath $(BUILD_DIR))/replays/det.json 2>&1 | grep -E 'DET_REPLAY|DET_SPIKE_RESULT'
 	$(GODOT) --headless --path . -- --det-spike --replay-log=$(abspath $(BUILD_DIR))/replays/det.json 2>&1 | grep -E 'DET_REPLAY'
@@ -230,3 +230,16 @@ replay: import ## Record a deterministic-core command log, replay + verify every
 	echo "$$out" | grep -E 'DET_REPLAY' || true; \
 	if echo "$$out" | grep -q 'DET_REPLAY DIVERGED'; then echo "replay passed: the tampered log was detected"; \
 	else echo "replay FAILED: a tampered log was not detected"; exit 1; fi
+	@echo ">> Packet recording of a relay match, then playback from the recorded seat"
+	$(call relay_host_up,,replay); \
+	pids=""; \
+	$(call relay_client,replay-recorder,--demo --expect-tanks=4 --expect-any-damage --min-travel=20 --timeout=60 --record=$(abspath $(BUILD_DIR))/replays/relay.tsqrec); \
+	$(call relay_verdict,replay,replay-recorder)
+	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
+		--replay=$(abspath $(BUILD_DIR))/replays/relay.tsqrec --replay-speed=2 --expect-tanks=4 --expect-any-damage --min-travel=20 --timeout=40 \
+		> $(BUILD_DIR)/replay-playback.log 2>&1; status=$$?; \
+	grep -E 'TANK_SQUAD_REPLAY|NET_CHECK|ERROR' $(BUILD_DIR)/replay-playback.log; \
+	grep -q ERROR $(BUILD_DIR)/replay-playback.log && status=1; exit $$status
+
+replay-watch: import ## Watch a recorded relay match in a window (REPLAY=path, default build/replays/relay.tsqrec; SPEED=1)
+	$(GODOT) --path . -- --replay=$(abspath $(or $(REPLAY),$(BUILD_DIR)/replays/relay.tsqrec)) --replay-speed=$(or $(SPEED),1)

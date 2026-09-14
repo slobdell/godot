@@ -21,7 +21,7 @@ static func choose(p_flags: LaunchFlags) -> GameMode:
 		return HostMode.new()
 	if p_flags.has("server") or (OS.has_feature("server") and not p_flags.has("connect")):
 		return ServerMode.new()
-	if p_flags.has("connect") or p_flags.has("join"):
+	if p_flags.has("connect") or p_flags.has("join") or p_flags.has("replay"):
 		return ClientMode.new()
 	return OfflineMode.new()
 
