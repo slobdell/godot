@@ -49,9 +49,11 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 | `arena.environment` | world origin | sky/lighting/fog only | — | — |
 | `arena.dressing` | world origin | ground 320×320 at y=0; perimeter walls at ±121 | — | ≤ 50k tris |
 
-Style for everything generated: the cyberpunk gladiator arena (look_and_feel.md). Dark, weathered
-scrap and metal **with emissive maps** for neon strips, lights, and signage, since lighting is the
-game's headline look. Emissive textures must survive normalization and import.
+Style for everything generated: **[../art_direction.md](../art_direction.md) is the source of truth** (the
+"Death Race prison dozer" north star the lead picked on 2026-09-14): brutally converted real vehicles, riveted slab
+armor, grilles, chains, hazard stripes, blackened gunmetal and grime, magenta/cyan neon behind grilles. Concept
+art is **photoreal**, never stylized or cartoon. Neon comes through **emissive maps** (lighting is the headline
+look), and emissive textures must survive normalization and import.
 
 ## First milestone
 

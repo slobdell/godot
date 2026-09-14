@@ -4,28 +4,45 @@
 > ([asset_services.md](asset_services.md): Meshy first). Untested against a real generator (no key
 > overnight): treat these as a starting point and record what works in the **Results log** below.
 
-## The look in one paragraph
+## The look: see [../../art_direction.md](../../art_direction.md) (source of truth)
 
-A cyberpunk gladiator arena: *Mad Max × Death Race × Blade Runner*. Vehicles are **scrap-built war machines**:
-welded plates, exposed bolts, cages, spikes kept short, and one clear silhouette per class. Surfaces are **dark and
-weathered** (gunmetal, rust, oil stains, chipped paint), so the **neon reads**: thin strips of cyan `#00F3FF`, pink
-`#FF0099`, or purple `#D900FF`, plus amber hazard lights. The camera is an RTS camera 20–60 m away on a phone
-screen, so **big shapes beat small detail**. A detail smaller than about 15 cm on a tank won't be seen.
+The north star is the **Death Race prison dozer** (2026-09-14): a real vehicle brutally converted into an arena war
+machine, photoreal and gritty, with neon behind grilles. **Concept images must be photoreal.** The first concept, which
+had "stylized, low-poly game asset, plain light grey panels" in its prompt, came out looking like a cartoon and was rejected.
+Game budgets (triangles, textures) are enforced by the 3D step and the normalizer, **never by the image prompt.**
+
+## Production flow (proven 2026-09-14)
+
+1. **Concept** (text-to-image, `nano-banana-pro`): start from the art direction prompt, swap the base vehicle and weapon.
+   Generate several directions, and pick one with the lead.
+2. **Turnaround** (image-to-image with the chosen concept as reference, `--multi-view`) so the 3D step sees every side.
+3. **3D** (multi-image-to-3D `meshy-7` for detail, or image-to-3D Smart Topology for separated parts), textured with PBR.
+4. **Split + normalize** into the unit's slots, team paint + neon accents, then gallery / in-game / browser review.
+
+```bash
+tools/assets/generate.py --provider meshy --slot unit.tank --concept-only --prompt "<art direction prompt>" --name meshy/<unit>
+tools/assets/generate.py --provider meshy --slot unit.tank --concept-only --reference assets/incoming/meshy/<unit>.concept.png \
+    --multi-view --prompt "The same vehicle, identical design, turnaround views" --name meshy/<unit>_turn
+tools/assets/generate.py --provider meshy --slot unit.tank --multi-image --image-task <turnaround task id> \
+    --ai-model meshy-7 --ultra --polycount 30000 --name meshy/<unit>
+```
 
 ## Rules that make generated models pipeline-friendly
 
-| Rule | Why | How in the prompt / options |
+| Rule | Why | How |
 |---|---|---|
-| One object, no ground plane, no base, no scene | the normalizer fits the whole bounding box to the slot | "single isolated object, no ground, no pedestal, no background" |
-| Front view is unambiguous | bounds can't tell forward from backward (`--forward` is manual) | describe the front: "cannon pointing forward", "sloped front armor" |
-| Separate parts by name when possible | hull / turret / cannon are separate slots | Meshy `model_type: smart-topology` separates parts; otherwise generate hull, turret, cannon as three prompts |
-| Neutral team paint area | `set_team_color` tints materials named `paint*`/`Main` | "large flat painted armor panels in plain light grey"; after import, name that material `paint` |
-| Emissive strips as separate, saturated color | the pipeline can mark them emissive (`--emissive=glob:energy`) or use Meshy's emission map | "thin glowing cyan neon strips along the edges"; meshy-6 + `enable_pbr` returns an emission map |
-| Low poly on purpose | budgets: hull 8k, turret 4k, cannon 2k, props 2–3k | `target_polycount` is set from the slot budget automatically; add "low poly, game asset" |
-| No text or logos | generators garble text; signage is procedural (neon_kit billboard) | "no text, no letters, no logos" |
-| Matte, not glossy PBR | Compatibility renderer, no SSR; gloss reads as noise at distance | "matte weathered metal, stylized" |
+| One object, no ground, plain dark background | the normalizer fits the whole bounding box to the slot | "isolated on a plain dark grey studio background, no ground, no people" (plus `remove_background`) |
+| Whole vehicle in frame, three-quarter front view | the 3D step needs the full silhouette; the front must be unambiguous | "full vehicle in frame, three-quarter front view from slightly above" |
+| A distinct turret/weapon on top | hull / turret / cannon are separate slots (split after 3D) | "squat heavily armored turret carrying a long thick-barreled cannon" |
+| Neon as light bars and strips | becomes the emission map, then team accent lights | "magenta and cyan light bars behind the grilles and red warning lights" |
+| No text or logos | generators garble text | "no text, no logos" |
 
-Always append: **`, low poly game asset, single isolated object, no ground, no background, no text, stylized, matte`**.
+Always append: **`Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.`**
+
+## Older per-part prompts (superseded; kept for props and parts only)
+
+> These predate the art direction and ask for "stylized, low poly". For vehicles, use the production flow above
+> (the whole unit, photoreal, split afterwards). Rewrite any of these toward the art direction before use.
 
 ## Vehicles (unit classes from `game/units/units.gd`; gameplay grows the catalog)
 

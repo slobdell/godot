@@ -17,6 +17,7 @@ which is how the tests exercise the whole flow without a network or a key.
 """
 
 import argparse
+import base64
 import json
 import os
 import re
@@ -37,8 +38,15 @@ class ProviderError(Exception):
     pass
 
 
+# Whole units generated as one model, then split into their slots by the normalizer.
+UNITS = {"unit.tank": ["tank.hull", "tank.turret", "weapon.cannon"]}
+SMART_TOPOLOGY_MAX = 15000
+
+
 def slot_budget(slot: str) -> int:
-    """Triangle budget for a slot, read from the GDScript contract table (single source of truth)."""
+    """Triangle budget for a slot (or the sum for a unit), read from the GDScript contract table."""
+    if slot in UNITS:
+        return sum(slot_budget(part) for part in UNITS[slot])
     text = CONTRACTS.read_text()
     match = re.search(r'"%s":\s*\{(.*?)\n\t\}' % re.escape(slot), text, re.S)
     if not match:
@@ -98,17 +106,55 @@ class Meshy:
     def __init__(self, http: Http, poll_interval: float, timeout: float):
         self.http, self.poll_interval, self.timeout = http, poll_interval, timeout
 
-    def generate(self, prompt: str, image: str, polycount: int) -> dict:
-        common = {"ai_model": "meshy-6", "target_formats": ["glb"]}
-        if image:
-            task_id = self.http.request("POST", "/openapi/v1/image-to-3d", {
-                **common, "image_url": image, "should_texture": True, "enable_pbr": True,
-                "should_remesh": True, "topology": "triangle", "target_polycount": polycount,
-                "texture_prompt": prompt or None})["result"]
+    def concept(self, prompt: str, image_model: str, references: list = (), multi_view: bool = False) -> dict:
+        """Concept art before paying for 3D (Meshy runs Google's nano-banana models; 3–9 credits).
+        With references it's image-to-image (e.g. a consistent multi-view turnaround of a chosen design)."""
+        body = {"ai_model": image_model, "prompt": prompt, "remove_background": True}
+        body.update({"generate_multi_view": True} if multi_view else {"aspect_ratio": "1:1"})
+        family = "/openapi/v1/text-to-image"
+        if references:
+            family = "/openapi/v1/image-to-image"
+            body["reference_image_urls"] = list(references)
+        task_id = self.http.request("POST", family, body)["result"]
+        print(f"  concept task {task_id}")
+        return self._wait(family, task_id)
+
+    def multi_image(self, prompt: str, images: list, image_task: str, polycount: int, ai_model: str, ultra: bool,
+                    texture_resolution: str) -> dict:
+        """Multi-image-to-3D (meshy-6/7): 1–4 views of one design, first = front. Fused mesh; split later."""
+        body = {"ai_model": ai_model, "target_formats": ["glb"], "should_texture": True, "enable_pbr": True,
+                "texture_resolution": texture_resolution, "should_remesh": True, "topology": "triangle",
+                "target_polycount": polycount}
+        body.update({"input_task_id": image_task} if image_task else {"image_urls": list(images)})
+        if ultra:
+            body["ultra_mode"] = True
+        if prompt:
+            body["texture_prompt"] = prompt[:800]
+        task_id = self.http.request("POST", "/openapi/v1/multi-image-to-3d", body)["result"]
+        print(f"  multi-image-to-3d task {task_id}")
+        return self._wait("/openapi/v1/multi-image-to-3d", task_id)
+
+    def generate(self, prompt: str, image: str, polycount: int, image_task: str = "", smart_topology: bool = False,
+                 ai_model: str = "meshy-6", texture_resolution: str = "2k") -> dict:
+        common = {"ai_model": ai_model, "target_formats": ["glb"]}
+        if image or image_task:
+            source = {"input_task_id": image_task} if image_task else {"image_url": image}
+            if smart_topology:  # natively separated parts (hull / turret / gun); topology+remesh are ignored
+                shape = {"model_type": "smart-topology", "ai_model": "meshy-t2",
+                         "target_polycount": min(polycount, SMART_TOPOLOGY_MAX)}
+            else:
+                shape = {**common, "should_remesh": True, "topology": "triangle", "target_polycount": polycount}
+            body = {"target_formats": ["glb"], **shape, **source, "should_texture": True, "enable_pbr": True,
+                    "texture_resolution": texture_resolution}
+            if prompt:
+                body["texture_prompt"] = prompt[:800]
+            task_id = self.http.request("POST", "/openapi/v1/image-to-3d", body)["result"]
+            print(f"  image-to-3d task {task_id}")
             return self._wait("/openapi/v1/image-to-3d", task_id)
+        shape = {"model_type": "smart-topology", "target_polycount": min(polycount, SMART_TOPOLOGY_MAX)} if smart_topology \
+            else {**common, "should_remesh": True, "topology": "triangle", "target_polycount": polycount}
         preview_id = self.http.request("POST", "/openapi/v2/text-to-3d", {
-            **common, "mode": "preview", "prompt": prompt, "should_remesh": True,
-            "topology": "triangle", "target_polycount": polycount})["result"]
+            "target_formats": ["glb"], **shape, "mode": "preview", "prompt": prompt})["result"]
         print(f"  preview task {preview_id}")
         self._wait("/openapi/v2/text-to-3d", preview_id)
         # meshy-6 + enable_pbr is the only combination that returns an emission map (asset_services.md).
@@ -156,8 +202,9 @@ class Tripo:
     def __init__(self, http: Http, poll_interval: float, timeout: float):
         self.http, self.poll_interval, self.timeout = http, poll_interval, timeout
 
-    def generate(self, prompt: str, image: str, polycount: int) -> dict:
-        if image:
+    def generate(self, prompt: str, image: str, polycount: int, image_task: str = "", smart_topology: bool = False,
+                 ai_model: str = "", texture_resolution: str = "") -> dict:
+        if image or image_task:
             raise ProviderError("tripo image-to-model needs a file upload (POST /files); not implemented yet")
         created = self._data(self.http.request("POST", "/generation/text-to-model", {
             "prompt": prompt, "model": "tripo-p1", "face_limit": polycount, "pbr": True}))
@@ -190,12 +237,36 @@ class Tripo:
 PROVIDERS = {"meshy": Meshy, "tripo": Tripo}
 
 
+def data_uri(path: Path) -> str:
+    """A local reference image as a base64 data URI (Meshy accepts these in place of a public URL)."""
+    if not path.exists():
+        raise ProviderError(f"image {path} not found")
+    kind = "jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else "png"
+    return f"data:image/{kind};base64," + base64.b64encode(path.read_bytes()).decode()
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--provider", default="meshy", choices=sorted(PROVIDERS))
     parser.add_argument("--slot", required=True, help="visual slot the model is for (sets the polygon target)")
     parser.add_argument("--prompt", default="", help="text prompt (see _agents/streams/references/asset_prompts.md)")
-    parser.add_argument("--image", default="", help="reference image URL or data URI (image-to-3D)")
+    parser.add_argument("--image", default="", help="reference image: URL, data URI, or local .png/.jpg path (image-to-3D)")
+    parser.add_argument("--concept-only", action="store_true",
+                        help="meshy: generate a concept image from --prompt and stop (cheap review before 3D)")
+    parser.add_argument("--image-task", default="", help="meshy: build the 3D model from a finished text-to-image task id")
+    parser.add_argument("--image-model", default="nano-banana-pro", help="meshy text-to-image model for --concept-only")
+    parser.add_argument("--reference", action="append", default=[],
+                        help="meshy --concept-only: reference image (path/URL) for image-to-image; repeatable")
+    parser.add_argument("--multi-view", action="store_true", help="meshy --concept-only: generate a multi-view turnaround")
+    parser.add_argument("--multi-image", action="store_true",
+                        help="meshy: multi-image-to-3D from --image-task (a multi-view concept) or repeated --view images")
+    parser.add_argument("--view", action="append", default=[], help="meshy --multi-image: a view image (path/URL), front first")
+    parser.add_argument("--ai-model", default="", help="meshy 3D model: meshy-6 / meshy-7 / latest (default meshy-6; meshy-7 for --multi-image)")
+    parser.add_argument("--ultra", action="store_true", help="meshy-7 ultra mode (more geometric detail)")
+    parser.add_argument("--polycount", type=int, default=0, help="override the polygon target (the normalizer decimates to the slot budget)")
+    parser.add_argument("--texture-resolution", default="2k", choices=["2k", "4k", "8k"])
+    parser.add_argument("--smart-topology", action="store_true",
+                        help="meshy-t2: clean low-poly topology with natively separated parts (split a unit into slots)")
     parser.add_argument("--name", default="", help="output base name (default: <provider>_<slot>_<time>)")
     parser.add_argument("--out-dir", default=str(ROOT / "assets" / "incoming"))
     parser.add_argument("--base-url", default="", help="override the API base URL (the mock server in tests)")
@@ -211,17 +282,47 @@ def main(argv=None) -> int:
               f"  2. export {provider_class.key_env}=...   (in your shell profile, never in the repo)\n"
               f"  3. make assets-generate PROVIDER={args.provider} SLOT={args.slot} PROMPT=\"...\"", file=sys.stderr)
         return 3
-    if not args.prompt and not args.image:
-        print("give --prompt and/or --image", file=sys.stderr)
+    if not args.prompt and not args.image and not args.image_task and not args.view:
+        print("give --prompt, --image, or --image-task", file=sys.stderr)
         return 2
     try:
         polycount = max(100, int(slot_budget(args.slot) * POLY_HEADROOM))
         provider = provider_class(Http(args.base_url or provider_class.base_url, token), args.poll_interval, args.timeout)
-        print(f"{args.provider}: generating for {args.slot} (target {polycount} faces)")
-        task = provider.generate(args.prompt, args.image, polycount)
         name = args.name or f"{args.provider}_{args.slot.replace('.', '_')}_{time.strftime('%Y%m%d_%H%M%S')}"
         out_dir = Path(args.out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
+        if args.concept_only:
+            if args.provider != "meshy":
+                raise ProviderError("--concept-only is meshy-only")
+            references = [ref if ref.startswith(("http://", "https://", "data:")) else data_uri(Path(ref)) for ref in args.reference]
+            task = provider.concept(args.prompt, args.image_model, references, args.multi_view)
+            urls = task.get("image_urls") or []
+            if not urls:
+                raise ProviderError("the concept task succeeded but returned no image")
+            size = provider.http.download(urls[0], out_dir / f"{name}.concept.png")
+            for view, url in enumerate(urls[1:], start=1):
+                size += provider.http.download(url, out_dir / f"{name}.concept{view}.png")
+            (out_dir / f"{name}.concept.json").write_text(json.dumps({"provider": args.provider, "slot": args.slot,
+                "prompt": args.prompt, "image_model": args.image_model, "references": args.reference,
+                "multi_view": args.multi_view, "task": task}, indent=2) + "\n")
+            print(f"  downloaded {out_dir / (name + '.concept.png')} ({size / 1024:.0f} KB)")
+            print(f"next (after reviewing the image): --image-task {task['id']}")
+            return 0
+        image = args.image
+        if image and not image.startswith(("http://", "https://", "data:")):
+            image = data_uri(Path(image))
+        if args.polycount:
+            polycount = args.polycount
+        print(f"{args.provider}: generating for {args.slot} (target {polycount} faces)")
+        if args.multi_image:
+            views = [v if v.startswith(("http://", "https://", "data:")) else data_uri(Path(v)) for v in args.view]
+            if not views and not args.image_task:
+                raise ProviderError("--multi-image needs --image-task or --view images")
+            task = provider.multi_image(args.prompt, views, args.image_task, polycount, args.ai_model or "meshy-7",
+                                        args.ultra, args.texture_resolution)
+        else:
+            task = provider.generate(args.prompt, image, polycount, args.image_task, args.smart_topology,
+                                     args.ai_model or "meshy-6", args.texture_resolution)
         downloaded = {}
         for kind, url in provider.files(task).items():
             if not url:
@@ -233,7 +334,10 @@ def main(argv=None) -> int:
         if "model" not in downloaded:
             raise ProviderError("the task succeeded but returned no GLB url")
         (out_dir / f"{name}.json").write_text(json.dumps({
-            "provider": args.provider, "slot": args.slot, "prompt": args.prompt, "image": args.image,
+            "provider": args.provider, "slot": args.slot, "prompt": args.prompt,
+            "image": args.image if not args.image.startswith("data:") else "(data uri)", "image_task": args.image_task,
+            "smart_topology": args.smart_topology, "multi_image": args.multi_image, "views": args.view,
+            "ai_model": args.ai_model, "ultra": args.ultra, "texture_resolution": args.texture_resolution,
             "target_polycount": polycount, "files": downloaded, "license_note": provider.license_note,
             "task": task, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         }, indent=2) + "\n")

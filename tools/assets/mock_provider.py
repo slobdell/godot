@@ -82,7 +82,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self._auth():
             return
         self.state.requests.append(("GET", self.path, None))
-        meshy = re.fullmatch(r"/openapi/v[12]/(text-to-3d|image-to-3d|remesh)/([\w-]+)", self.path)
+        meshy = re.fullmatch(r"/openapi/v[12]/(text-to-3d|image-to-3d|remesh|text-to-image|image-to-image|multi-image-to-3d)/([\w-]+)", self.path)
         tripo = re.fullmatch(r"/v3/tasks/([\w-]+)", self.path)
         task_id = meshy.group(2) if meshy else tripo.group(1) if tripo else None
         with self.state.lock:
@@ -104,7 +104,8 @@ class Handler(BaseHTTPRequestHandler):
         if "RATELIMIT" in prompt and prompt not in self.state.rate_limited:
             self.state.rate_limited.add(prompt)
             return self._send(429, {"message": "RateLimitExceeded"}, headers={"Retry-After": "0"})
-        if self.path in ("/openapi/v2/text-to-3d", "/openapi/v1/image-to-3d", "/openapi/v1/remesh"):
+        if self.path in ("/openapi/v2/text-to-3d", "/openapi/v1/image-to-3d", "/openapi/v1/remesh", "/openapi/v1/text-to-image",
+                         "/openapi/v1/image-to-image", "/openapi/v1/multi-image-to-3d"):
             return self._create_meshy(body, prompt)
         if self.path == "/v3/generation/text-to-model":
             if not prompt:
@@ -125,14 +126,30 @@ class Handler(BaseHTTPRequestHandler):
                 prompt = preview["prompt"]
             elif mode != "preview":
                 return self._send(400, {"message": "mode must be preview or refine"})
-        elif family == "image-to-3d" and not body.get("image_url"):
-            return self._send(400, {"message": "image_url is required"})
+        elif family == "image-to-3d":
+            source = self.state.tasks.get(body.get("input_task_id", ""))
+            if not body.get("image_url") and (source is None or source["view"]["status"] != "SUCCEEDED"):
+                return self._send(400, {"message": "image_url or a SUCCEEDED input_task_id is required"})
+            if body.get("model_type") == "smart-topology" and body.get("target_polycount", 0) > 15000:
+                return self._send(400, {"message": "target_polycount must be 100-15000 for smart-topology"})
+        elif family in ("text-to-image", "image-to-image") and (not prompt or not body.get("ai_model")):
+            return self._send(400, {"message": "ai_model and prompt are required"})
+        elif family == "image-to-image" and not 1 <= len(body.get("reference_image_urls") or []) <= 5:
+            return self._send(400, {"message": "reference_image_urls must have 1-5 images"})
+        elif family == "multi-image-to-3d":
+            source = self.state.tasks.get(body.get("input_task_id", ""))
+            if not 1 <= len(body.get("image_urls") or []) <= 4 and (source is None or source["view"]["status"] != "SUCCEEDED"):
+                return self._send(400, {"message": "image_urls (1-4) or a SUCCEEDED input_task_id is required"})
+        if body.get("generate_multi_view") and body.get("aspect_ratio"):
+            return self._send(400, {"message": "generate_multi_view is incompatible with aspect_ratio"})
         with self.state.lock:
             task_id = f"mock-{next(self.state.ids):04d}"
             kind = f"text-to-3d-{body.get('mode')}" if family == "text-to-3d" else family
-            refine_like = kind in ("text-to-3d-refine", "image-to-3d")
+            image_like = family in ("text-to-image", "image-to-image")
+            views = 3 if body.get("generate_multi_view") else 1
+            refine_like = kind in ("text-to-3d-refine", "image-to-3d", "multi-image-to-3d")
             self.state.tasks[task_id] = {"api": "meshy", "prompt": prompt, "polls": 0, "pbr": body.get("enable_pbr"),
-                                         "refine_like": refine_like, "view": {
+                                         "refine_like": refine_like, "image_like": image_like, "views": views, "view": {
                 "id": task_id, "type": kind, "status": "PENDING", "progress": 0, "prompt": prompt,
                 "model_urls": {}, "texture_urls": [], "task_error": None, "created_at": 1}}
         self._send(200, {"result": task_id})
@@ -157,6 +174,9 @@ class Handler(BaseHTTPRequestHandler):
                 view.update(status="IN_PROGRESS", progress=50)
             elif failing:
                 view.update(status="FAILED", progress=0, task_error={"message": "mock generation failed"})
+            elif task.get("image_like"):
+                view.update(status="SUCCEEDED", progress=100,
+                            image_urls=[f"{base}/files/{view['id']}_concept{i}.png" for i in range(task["views"])])
             else:
                 view.update(status="SUCCEEDED", progress=100, model_urls={"glb": f"{base}/files/{view['id']}.glb"})
                 if task["refine_like"] and task["pbr"]:

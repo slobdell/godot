@@ -6,6 +6,13 @@
 
 ## The brief
 
+> **Art direction source of truth: [../art_direction.md](../art_direction.md)** (2026-09-14). The lead picked the
+> "Death Race prison dozer" concept as capturing *"the vibe of the entire game"*: repurposed real vehicles brutally
+> converted (riveted slab armor, grilles, chains, spikes, yellow-black hazard stripes, blackened gunmetal and grime)
+> with magenta/cyan neon behind grilles and red/amber warning lights. Photoreal, never cartoon. The arena follows
+> the same logic (a repurposed industrial site turned night-time gladiator venue). It layers on top of the
+> cyberpunk HUD and palette below.
+
 The lead, 2026-09-13: *"a futuristic Cyberpunk Gladiator arena. Think Mad Max meets Death Race meets Blade Runner."*
 
 The lead, 2026-09-14: *"On the look_and_feel I want to basically copy the cyberpunk theme from
