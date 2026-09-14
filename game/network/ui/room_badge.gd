@@ -11,6 +11,7 @@ var _code_label: Label
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	offset_right = -16  # a margin from the screen edge (and from phone corner rounding)
 	offset_left = -16
 	offset_top = 72
 	var box := VBoxContainer.new()

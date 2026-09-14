@@ -90,7 +90,9 @@ stretch (replay recorder, hosting costs, anti-cheat notes).
 through a relay broker (browser or native, a touch lobby, reconnects, rejoin, replays); bandwidth
 and latency are measured; the deterministic-core spike is **bit-identical native vs WebAssembly at
 1.5% of a tick budget, so lockstep is feasible**; the N3 designs are written. `make check` is green
-(115 tests).
+(115 tests) and **`make check-all` passed** (all relay stress smokes, browser boot/client/relay/host,
+desktop screenshot, server export); screenshots reviewed: `web.png`, `web-net.png`, `web-relay.png`,
+`web-host.png` (room badge), `host-badge.png`, `replay.png`, `lobby-desktop.png`, `lobby-phone.png`.
 
 **Done**
 
