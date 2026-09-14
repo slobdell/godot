@@ -10,6 +10,10 @@ build/
 # Web smoke-test harness dependencies (`make web-smoke` installs them).
 node_modules/
 
+# Per-worktree isolation files written by tools/worktree.sh (ports, Godot user dir).
+local.mk
+override.cfg
+
 # Editor/OS noise
 *.tmp
 *.translation

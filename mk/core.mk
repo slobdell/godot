@@ -78,3 +78,14 @@ sim-baseline: import ## The simulation matches the recorded baseline hash (art m
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	if [ "$$actual" = "$$expected" ]; then echo "sim-baseline passed: $$actual"; \
 	else echo "sim-baseline FAILED: expected $$expected, got $$actual. If gameplay changed on purpose, update tests/baselines/sim_state_hash.txt"; exit 1; fi
+
+# ---- Parallel workstreams (git worktrees; see _agents/workstreams.md) ---------------
+
+worktree: ## Create ../godot-STREAM on branch stream/STREAM with isolated ports (STREAM=name OFFSET=1-9)
+	tools/worktree.sh add $(STREAM) $(OFFSET)
+
+worktrees: ## List worktrees: branch, port offset, uncommitted changes, commits behind/ahead of main
+	@tools/worktree.sh list
+
+worktree-remove: ## Remove ../godot-STREAM (refuses with uncommitted changes; keeps the branch)
+	tools/worktree.sh remove $(STREAM)
