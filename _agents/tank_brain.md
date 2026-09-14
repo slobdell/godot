@@ -107,7 +107,18 @@ origin is the arena center. Green: world `(right, -forward)`. Rust: `(-right, +f
 | `HOLD` | Stay (or return inside the leash); fire at anything visible | at objective; anchor role; no reachable target |
 | `INVESTIGATE contact` | Go to a contact's last known position | contact recently lost; aggression |
 
-Commitment: the current option gets ×1.15 and at least 1 s before switching.
+Commitment: the current option gets ×1.15 and at least 45 ticks before switching.
+
+**Player orders (G3, 2026-09-14).** A new squad order (`Squad.order_serial` changes) makes every brain
+in the squad think on the next tick with no commitment. Under move/bound/hold, KEEP_SLOT scores
+`ORDER_WEIGHT` 0.95 (break_contact 0.97), which beats even a committed ENGAGE; while an order is pending,
+other options get no commitment bonus. RETREAT overrides an order only when the tank is about to die
+(below 8–25% health, by caution). Assault keeps loose weights so brains hunt.
+
+**Turret (G5, 2026-09-14).** With nothing in its own sights, the turret covers `TankBrain.watch_for()`:
+the chosen target, else a visible gun aimed at me, else the nearest visible contact, else the freshest
+memory (dead-reckoned up to 1.5 s). With no contacts it holds its world heading. Firing still requires
+the tank's own line of sight and range.
 
 ## Weapons v1 (data-driven)
 

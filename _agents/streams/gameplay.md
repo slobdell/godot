@@ -121,6 +121,45 @@ This depends on G1 (vision makes scouting valuable) and brings new mechanics:
 - 2026-09-13: brief written.
 - 2026-09-14: directive sets 1 (G0 mobile input, G1–G7 incl. Halo-style shields, finite ammo, lasers + heat) and 2 (budgeted army with components like heat sinks) added from the lead. Nothing started.
 
+### Overnight run 2026-09-14 → 15 (morning report; kept current as items land)
+
+**Plan** (the Overnight backlog order, below): 1 G5 turrets · 2 G3 responsiveness · 3 HUD messages ·
+4 G7 ammo/heat/laser · 5 G6 shields · 6 G1 line of sight + fog · 7 G4 RTS camera · 8 G2 radar ·
+9 G0 touch pass · 10 unit catalog + scout · 11 artillery · 12 budget · 13 army balance · stretch.
+
+**Done:**
+- **G5 turrets fight while moving** (d17dcc4). The turret holds its world heading with nothing to shoot
+  (was: 28° drift during a 1.5 s hull turn) and covers a `watch_point` brains set from team intel
+  (chosen target > visible gun on me > nearest visible > freshest memory, dead-reckoned ≤ 1.5 s).
+  Series anvil_hammer vs individuals, 20 + 20 (swap) matches: **idle guns 83–87% → 61–68%**, first shot
+  7.3 → 6.2 s, loser kills ~1.2 → ~1.5. Tests: `tests/test_turrets.gd` (heading hold and watch fail
+  without the change; break_contact and move-away keep firing, ≥ 80% front armor toward pursuers).
+- **G3 responsiveness** (d17dcc4). New squad order → every brain re-thinks next tick, commitment dropped
+  (`Squad.order_serial`). KEEP_SLOT 0.95 under move/bound/hold; RETREAT overrides only when about to die.
+  Commander pacing counts only followers lagging behind. Map pings the ordered spot. Measured
+  (`tests/test_responsiveness.gd` prints MEASURE lines): ticks to first obey [1, 6] → [1, 1]; slowest
+  tank starts moving in 11 ticks (budget 15); the commander covers 5 m in 53 ticks (acceleration-limited).
+
+**Decisions:**
+- G5: tanks fire only at enemies in their *own* line of sight and range; team intel only aims the turret.
+  Shooting at positions only a teammate sees would mostly hit walls.
+- G3: "player intent dominates unless about to die" = under move/bound/hold/break_contact, RETREAT only
+  below 8–25% health (by caution). Assault keeps the old loose weights on purpose (brains hunt).
+- G3: kept hull turn rate (80°/s) and acceleration; measured start-up lag was think stagger and pacing,
+  not the hull. Revisit if the lead still finds turning sluggish.
+- Phone screenshots are taken at 1200×540 (a 2400×1080 phone at 2× UI scale): the 1920×1080 desktop
+  clamps bigger windows. Real phones need `display/window/stretch/mode` (see Questions).
+
+**Questions for the lead:** none yet.
+
+**Requests to other streams:** none yet.
+
+**Known issues:** none yet.
+
+**What to playtest:** `make skirmish`: order a squad back toward base (Move or Break contact) while in
+contact; guns should stay on the enemy. Orders should visibly start within a blink.
+`make skirmish-shots` takes scripted screenshots (desktop + phone aspect) into `build/screenshots/`.
+
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
 Rules: *Unattended runs* in workstreams.md. Each item: tests + `make check` + a smoke test (skirmish screenshots at 1920×1080 and 2400×1080 that you look at, and/or a match series) + a commit + a Status update. **Every change should show up in `make skirmish`**, since that's what the lead plays in the morning.
