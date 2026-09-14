@@ -19,7 +19,7 @@
 
 | Input | Gesture (mouse / keys; touch later) | Answers |
 |---|---|---|
-| **Who** | Click a tank (selects its squad) or press `1` / `2` / `3`. Click a tank in the already-selected squad to **make it commander** | Which squad, and who leads it |
+| **Who** | Click a tank (selects its squad) or press `1`–`4`. Click a tank in the already-selected squad to **make it commander** | Which squad, and who leads it |
 | **Where / which way** | **Right-drag** on the map: press = destination, drag direction = facing on arrival (a short drag faces the direction of travel). A ghost of the formation follows the cursor | The spot and the orientation |
 | **How** | One **drill** chip (`Q` Move · `W` Bound · `E` Hold · `R` Assault · `T` Break contact) and one **formation** chip (`Z` Column · `X` Wedge · `C` Vee · `V` Line · `B` Echelon · `N` Coil) | The battle drill and the shape |
 

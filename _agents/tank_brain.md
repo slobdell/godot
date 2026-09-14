@@ -133,8 +133,14 @@ the tank's own line of sight and range.
 
 | Weapon | Kind | Range | Damage | Reload / rate | Armor effect | Implies |
 |---|---|---|---|---|---|---|
-| `cannon` | projectile, 70 m/s, 0.8° spread (×2.5 moving) | 70 m (preferred 20–45); was 110 | 34 per hit (tanks have 400 HP since 2026-09-13) | 2.5 s | front ×0.5 / side ×1 / rear ×1.5 | Positioning for side shots; halting to fire accurately |
-| `flamethrower` | cone 30°, line of sight | 20 m (preferred 6–16) | 45 per second while in cone | continuous | armor matters less: ×0.8 / ×1 / ×1.2 | Must close distance: needs cover, flanks, or escorts; devastating on campers |
+| `cannon` | projectile, 70 m/s, 0.8° spread (×2.5 moving) | 70 m (preferred 20–45); was 110 | 34 per hit; 45 shells, refilled at base; shield ×0.8 | 2.5 s | front ×0.5 / side ×1 / rear ×1.5 | Positioning for side shots; halting to fire accurately; hull breaker |
+| `laser` (G7) | hitscan pulse, 0.3° spread | 55 m (preferred 15–40) | 9 per pulse; no ammo, 12 heat per pulse; shield ×1.25 | 0.5 s | ×0.7 / ×1 / ×1.3 | Sustained, heat-limited; strips shields |
+| `machine_gun` (scouts) | hitscan bursts, 1.5° spread | 45 m | 4 per round; 600 rounds; shield ×0.6 | 0.2 s | ×0.3 / ×0.7 / ×1 | Harassment; rears and other scouts |
+| `mortar` (artillery) | indirect arc over cover, 40 m/s, scatter 2 m + 2% of range | 35–160 m | 70 in an 8 m burst (30% at the edge); 24 rounds | 4.5 s | top attack: facing ignored | Needs team spotting; pressure on shields |
+| `flamethrower` | cone 30°, line of sight | 20 m (preferred 6–16) | 20 per second while in cone (45 until 2026-09-15); shield ×1.5 | continuous | armor matters less: ×0.8 / ×1 / ×1.2 | Must close distance; up close ~4× a cannon's damage |
+
+Units since 2026-09-15: tank 300 hull + 150 shield, scout 140 + 80, artillery 200 + 80; shields are directional
+(front ×0.7 / side ×1 / rear ×1.4). Current numbers and where they live: [balance.md](balance.md).
 
 ## Squad command UI (open: needs the lead)
 

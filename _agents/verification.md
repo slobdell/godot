@@ -22,6 +22,8 @@ at the screenshots** (Claude can read PNGs). Report failures as failures.
 
 **Bundles:** `make check` = rows 0, 1, 2, 6, 6b, 6c, 6d (all headless, ~2 min). `make check-all` = `check` + rows 3, 4, 5, 7 and fails on any `ERROR` from the exported server shutting down with bots. **Then read the screenshots.**
 
+**Skirmish screenshots:** `make skirmish-shots` runs a scripted skirmish and saves desktop and phone-aspect (1200×540 = a 2400×1080 phone at 2× UI scale) screenshots to `build/screenshots/`. Look at both after any UI, camera, or fog change.
+
 **Experiments** (`make matches …`) are not pass/fail checks, but any change to the map, spawning, navigation, or combat rules should re-run the fairness control: `python3 tools/match_series.py --godot <godot> --runs 60 --green 2 --rust 2` and again with `--extra=--swap-bases`. Win rates should stay near 50/50 ([squad_ai_design.md](squad_ai_design.md) "Fairness").
 
 **Playtesting with the agent bridge** is the last rung: not automated, but it finds design problems no assertion will ([agent_bridge.md](agent_bridge.md)).
