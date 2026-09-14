@@ -588,6 +588,7 @@ func _build_shell(data: Dictionary) -> Node:
 	shell.direction = data["direction"]
 	shell.team = data["team"]
 	shell.shooter_name = data["shooter"]
+	shell.max_range = data.get("range", Shell.MAX_RANGE)
 	shell.simulate = simulate
 	if simulate:
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
@@ -614,7 +615,8 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 		_lob(tank, muzzle)
 		return
 	shell_spawner.spawn({"id": _next_shell_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
-			"direction": actual, "team": tank.team, "shooter": String(tank.name)})
+			"direction": actual, "team": tank.team, "shooter": String(tank.name),
+			"range": float(tank.weapon["range"]) + Shell.RANGE_MARGIN})
 	_next_shell_id += 1
 
 
@@ -629,13 +631,40 @@ func _lob(tank: Tank, muzzle: Vector3) -> void:
 	var flat := Vector3(tank.aim_point.x - muzzle.x, 0.0, tank.aim_point.z - muzzle.z)
 	var distance := clampf(flat.length(), float(weapon["min_range"]), float(weapon["range"]))
 	var direction := flat.normalized() if flat.length() > 0.01 else tank.turret_forward()
-	var sigma := float(weapon["scatter"]) + float(weapon["scatter_per_meter"]) * distance
 	var target := Vector3(muzzle.x, 0.0, muzzle.z) + direction * distance
+	var sigma := arc_scatter(weapon, distance, is_point_spotted(tank.team, target))
 	target += Vector3(_fire_rng.randfn(0.0, sigma), 0.0, _fire_rng.randfn(0.0, sigma))
 	var flight_ticks := maxi(1, roundi(distance / float(weapon["flight_speed"]) * 60.0))
 	_rounds.append({"from": muzzle, "to": target, "land_tick": tick + flight_ticks, "team": tank.team,
 			"shooter": String(tank.name), "weapon": weapon})
 	show_arc.rpc(muzzle, target, flight_ticks / 60.0)
+
+
+## R2 "artillery needs team sight": rounds at a point no teammate sees land BLIND_SCATTER_FACTOR times wider.
+const BLIND_SCATTER_FACTOR := 3.0
+
+
+## Scatter (meters, standard deviation) of an indirect round fired `distance` meters.
+static func arc_scatter(weapon: Dictionary, distance: float, spotted: bool) -> float:
+	var sigma := float(weapon["scatter"]) + float(weapon["scatter_per_meter"]) * distance
+	return sigma if spotted else sigma * BLIND_SCATTER_FACTOR
+
+
+## Whether some living tank of `team` has `point` (a ground spot) inside its sight radius with a clear view.
+func is_point_spotted(team: int, point: Vector3) -> bool:
+	for viewer in sorted_team_tanks(team):
+		if viewer.is_alive() and Vector2(viewer.global_position.x - point.x, viewer.global_position.z - point.z).length() <= viewer.sight_radius \
+				and _clear_view(viewer, point):
+			return true
+	return false
+
+
+## No static world geometry between a tank's eyes and a spot at the same height above `point`.
+static func _clear_view(viewer: Tank, point: Vector3) -> bool:
+	var eye := Vector3.UP * Perception.EYE_HEIGHT
+	var query := PhysicsRayQueryParameters3D.create(viewer.global_position + eye, Vector3(point.x, 0.0, point.z) + eye,
+			Perception.WORLD_MASK)
+	return viewer.get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
 func _land_rounds() -> void:
@@ -708,6 +737,11 @@ func _sorted_tanks() -> Array[Tank]:
 	return result
 
 
+## R2: the fraction of a hit's hull damage that gets through `unit_id`'s armor on `face`.
+static func armor_multiplier(weapon: Dictionary, unit_id: String, face: String) -> float:
+	return Armor.penetration_multiplier(float(weapon.get("penetration", 0.0)), Units.armor(unit_id, face))
+
+
 ## Every weapon's damage lands here (G6): shield first, then hull through the armor facing.
 ## `direction` is the attack's travel direction. Returns true if it destroyed the victim.
 func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3, team: int, shooter: String,
@@ -717,7 +751,7 @@ func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3,
 	if weapon["kind"] == Weapons.Kind.ARC:
 		face = "side"  # indirect rounds come down on top: no face is the strong one
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
-			float(weapon["armor"][face]))
+			armor_multiplier(weapon, victim.unit_id, face))
 	if counts_as_hit:
 		stats["hits"][team] += 1
 		stats["hits_by_face"][face] += 1

@@ -11,13 +11,16 @@ signal hit(shell: Shell, collider: Object, point: Vector3)
 signal expired(shell: Shell)
 
 const SPEED := 70.0
+## Default flight distance; Match gives each shell its weapon's range + RANGE_MARGIN (R2: per-weapon range).
 const MAX_RANGE := 75.0
+const RANGE_MARGIN := 5.0
 ## World (layer 1) + tanks (layer 2).
 const HIT_MASK := 3
 
 var direction := Vector3.FORWARD
 var team := 0
 var shooter_name := ""
+var max_range := MAX_RANGE
 var simulate := true
 ## Physics bodies the ray ignores (the shooter itself).
 var exclude: Array[RID] = []
@@ -49,7 +52,7 @@ func _physics_process(delta: float) -> void:
 			return
 	global_position = to
 	_travelled += step.length()
-	if _travelled >= MAX_RANGE:
+	if _travelled >= max_range:
 		set_physics_process(false)
 		if simulate:
 			expired.emit(self)

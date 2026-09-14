@@ -301,6 +301,10 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	if weapon["kind"] == Weapons.Kind.PROJECTILE:
 		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity, Shell.SPEED)
 	_cover(aim, cmd)
+	# Rules R2 (minimal hook; the ai stream owns the real behavior): a fixed-mount gun (the scout) only
+	# points inside its fire arc, so a halted unit swings its hull onto the target.
+	if tank.mount == "fixed" and move_order["type"] == "stop":
+		cmd.turn = Steering.drive_toward(tank.global_position, -tank.global_basis.z, aim, 0.0).y
 	var distance := muzzle.distance_to(aim)
 	var in_range: bool = distance <= float(weapon["range"])
 	# G7 ammo discipline: with few shells left, skip long-odds shots (spread makes them mostly miss).

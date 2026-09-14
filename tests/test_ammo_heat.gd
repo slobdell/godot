@@ -58,10 +58,11 @@ func test_the_laser_hits_instantly_and_never_runs_out() -> void:
 	await wait_physics_frames(2)
 	assert_eq(shooter.ammo, -1, "lasers carry no ammo")
 	await _hold_trigger(shooter, target.global_position, 70)
-	var pulse := int(Weapons.profile("laser")["damage"])
+	var pulse := float(Weapons.profile("laser")["damage"]) * Match.armor_multiplier(Weapons.profile("laser"), target.unit_id, "side")
 	var lost := target.max_health - target.health
 	assert_true(lost >= pulse * 2, "pulses land with no travel time (%d damage in ~1 s)" % lost)
-	assert_eq(lost % pulse, 0, "each side-on pulse does exactly %d" % pulse)
+	var pulses := roundi(lost / pulse)
+	assert_true(absf(lost - pulses * pulse) < 1.0, "each side-on pulse does %.1f through the side armor (%d = %d pulses)" % [pulse, lost, pulses])
 	assert_true(shooter.heat > 0.0, "and every pulse heats the tank (heat %.1f)" % shooter.heat)
 
 

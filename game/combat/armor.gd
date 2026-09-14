@@ -33,9 +33,22 @@ static func damage(base_damage: float, hull_forward: Vector3, shell_direction: V
 	return roundi(base_damage * MULTIPLIER[facing(hull_forward, shell_direction)])
 
 
-## Multiplier for a weapon profile's own armor table (see Weapons.PROFILES).
-static func weapon_multiplier(weapon: Dictionary, hull_forward: Vector3, attack_direction: Vector3) -> float:
-	return weapon["armor"][FACING_NAMES[facing(hull_forward, attack_direction)]]
+## R2 penetration (round 2): how much of a hit's damage gets through armor `thickness` (Units "armor", per face)
+## for a round with `penetration` (Weapons "penetration"). Logarithmic in the ratio, so doubling penetration (or
+## halving the armor) always adds +0.5: a round with 1.25x the armor's thickness gets half its damage through,
+## 2.5x all of it, 5x the capped 1.5 (weak spots). The cannon against the tank reproduces round 1's
+## front / side / rear table (0.5 / 1.0 / 1.5). Far below the armor a hit barely scratches (PENETRATION_FLOOR),
+## which is what lets light guns lose to heavy fronts without a damage table.
+const PENETRATION_FLOOR := 0.05
+const PENETRATION_CAP := 1.5
+
+
+static func penetration_multiplier(penetration: float, thickness: float) -> float:
+	if thickness <= 0.0:
+		return PENETRATION_CAP
+	if penetration <= 0.0:
+		return PENETRATION_FLOOR
+	return clampf(0.5 * log(1.6 * penetration / thickness) / log(2.0), PENETRATION_FLOOR, PENETRATION_CAP)
 
 
 ## G6 shields: how one hit of `raw` damage splits between a shield holding `shield` points and the

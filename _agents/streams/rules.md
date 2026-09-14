@@ -85,6 +85,20 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
 - 2026-09-15: brief written for round 2. Nothing started.
 - 2026-09-14 (agent start): oriented; baseline `make check` queued behind other streams.
 
+- **R1 done (commit e8547aa): CHECKPOINT 1 READY for the orchestrator.** `make check` green (295 tests), sim
+  baseline unchanged (`e5cf33921713b657`: tank stats are identical). Smoke: `cpu:balanced` vs `cpu:recon_strike` at
+  1500 points plays a full 300 s match with all five unit types firing, no errors.
+
+- **R2 (mechanics):** penetration vs per-unit armor thickness replaces per-weapon armor tables
+  (`Armor.penetration_multiplier`: 0.5·log2(1.6·pen/armor), clamped 0.05–1.5; the cannon vs the tank reproduces
+  round 1's 0.5/1/1.5 exactly); fixed mounts clamp the gun to ±`fire_arc_deg`/2 (`Tank.gun_yaw_toward`,
+  `Tank.can_bear_on`); tank turret 110 → 50°/s; shells fly their weapon's range + 5 m; artillery rounds at a
+  point no teammate sees scatter 3× (`Match.is_point_spotted`); Lancer beam 55 → 80 m. Tests:
+  `tests/test_combat_mechanics.gd` (arc gating, tracking: the tank's gun falls >7.5° behind a scout crossing at
+  10 m while the IFV stays within 3°, penetration, range, blind fire). Sim baseline → `a4106d15a8711f5c` (the
+  slower tank turret). Two turret-hold tests moved to the IFV (they test the order layer, and the tank's turret
+  is now slower than its hull on purpose).
+
 ### Plan (in order)
 1. R1a `Units` v2 (fixed types, C1) + `Tank` reads it (mount, turret rate, muzzle height; no components).
 2. R1b `Doctrine` v2 (C2: `units`, ≤ 5×5, v1 keys rejected), `Match.load_doctrine`/`spawn_tank(unit_id)`, migrate
@@ -115,3 +129,21 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
   hand-made-catalog garage tests are untouched. The army stream owns the real rebuild.
 - **Per-unit art slots** `unit.<id>.hull/turret/weapon` fall back to `tank.*` / `weapon.<id>` / `weapon.cannon`
   inside `Tank` (rules' path), so a theme without `weapon.autocannon` still draws something.
+
+### Requests to other streams
+- **ai:** (1) fixed-mount units (the scout) must aim with the hull. `OrderController` has a minimal rules hook that
+  turns a *halted* fixed-mount unit onto its target (`order_controller.gd`, marked); the real behavior (strafing
+  runs, turning while moving) is yours. Query `Tank.can_bear_on(point)`, `Tank.mount`, `Tank.fire_arc_deg`.
+  (2) `tank_brain.gd`/`cpu_commander.gd` read `Units.PROFILES[...]["role"]` now (the brain's `me["class"]` key is
+  unchanged, fed from `role`). (3) Intel contacts gain `unit` and `role`. (4) The tank's turret is 50°/s (the lead's
+  "slow turret"): brains that expect a tank to track fast targets should turn the hull too. (5) `Units.armor(unit,
+  face)` and `Match.armor_multiplier(weapon, unit, face)` tell a brain whether a shot is worth taking.
+- **art:** new slot `weapon.autocannon` (IFV), per-unit slots `unit.<id>.hull/turret/weapon` (rows in
+  slot_contracts.md). Until they exist the IFV draws `weapon.cannon` and the Lancer `weapon.laser`.
+- **army:** the garage runs on catalog v2 through an adapter in `Loadout.from_doctrine/to_doctrine`; `Doctrine.MAX_SQUADS`
+  is 5, `MAX_SQUAD_UNITS` 5, `MAX_UNITS` 25 (`MAX_TANKS` is gone). Unit cards: `display_name`, `blurb`, `cost`,
+  `unlock_tier`, `role`, `good_vs`/`weak_vs`.
+- **command:** `player_default.json` is now tank, tank, IFV (Alpha) + IFV, scout (Bravo), 810 points, still 5 units.
+
+### Questions for the lead
+- None blocking yet.

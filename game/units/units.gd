@@ -82,7 +82,8 @@ const PROFILES := {
 		"sight_radius": 75.0,
 		"weapon": "cannon",
 		"mount": "turret",
-		"turret_turn_rate_deg": 110.0,
+		# R2: 110 -> 50 (the lead's "slow turret"): a scout crossing at 15 m sweeps ~53°/s, faster than it turns.
+		"turret_turn_rate_deg": 50.0,
 		"muzzle_height": 1.27,
 		"armor": {"front": 8.0, "side": 4.0, "rear": 2.0},
 		"good_vs": ["ifv", "tank"],

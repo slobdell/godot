@@ -220,8 +220,7 @@ func _physics_process(delta: float) -> void:
 	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
 
 	var local_aim := to_local(cmd.aim_point)
-	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, TankMotion.yaw_toward(local_aim),
-			turret_turn_rate, delta)
+	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, gun_yaw_toward(local_aim), turret_turn_rate, delta)
 
 	sync_firing = false
 	heat = maxf(0.0, heat - heat_dissipation * delta)
@@ -365,6 +364,25 @@ func resupply(shells: int) -> int:
 
 func _heat_allows_shot(current_heat: float) -> bool:
 	return current_heat + float(weapon.get("heat_per_shot", 0.0)) <= heat_capacity + 0.001
+
+
+## R2 fixed mounts: the hull-relative yaw the gun swings toward to aim at `local_target` (hull space). A
+## turret reaches any yaw; a fixed mount stops at the edge of its fire arc, so the hull must turn to aim.
+func gun_yaw_toward(local_target: Vector3) -> float:
+	var yaw := TankMotion.yaw_toward(local_target)
+	if mount != "fixed":
+		return yaw
+	var half_arc := deg_to_rad(fire_arc_deg / 2.0)
+	return clampf(yaw, -half_arc, half_arc)
+
+
+## Whether this unit's gun can point at `point` without turning the hull (C4: fixed mounts only inside
+## fire_arc_deg of the hull heading; turrets always). Valid on every peer.
+func can_bear_on(point: Vector3) -> bool:
+	if mount != "fixed":
+		return true
+	var yaw := TankMotion.yaw_toward(to_local(point))
+	return absf(yaw) <= deg_to_rad(fire_arc_deg / 2.0) + 0.0001
 
 
 func muzzle_position() -> Vector3:
