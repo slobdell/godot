@@ -95,8 +95,54 @@ Gameplay collision, stats, and layouts (rules), behavior (ai), UI logic and came
 
 ## Waiting on the lead
 
-- (nothing yet)
+**Concept review #1 (2026-09-14, 18 images, 171 credits):** `make art-review` → `build/review/index.html` in the art
+worktree (pictures in `assets/review/images/`). Pick at most one per unit or prop, or ask for another direction:
+- **Scout** (fixed hood gun): `scout_a` desert trophy truck, `scout_b` caged dune buggy, `scout_c` police interceptor muscle car
+- **IFV** (fast 30 mm turret): `ifv_a` school bus with slat armor, `ifv_b` garbage truck, `ifv_c` cash-in-transit truck
+- **Artillery:** `artillery_a` crane carrier with a mortar battery, `artillery_b` cement mixer turned mortar drum
+- **Lancer:** `lancer_a` utility bucket truck with a laser boom, `lancer_b` transformer flatbed with a coil cannon
+- **Arena:** `arena_key_b` (mood picture for lighting/ground/dressing, never 3D), `stands_a` grandstand section,
+  `gate_a` perimeter wall with gate, `tower_a` floodlight tower
+- **Props:** `container_a` (prop.crate), `barrier_a` (prop.wall, tiled), `scrap_a` (a future scrap obstacle type)
+
+Estimated 3D cost if one of each is approved: 10 × 15 = 150 credits (image-to-3D meshy-t2, textured).
+
+**Approvals** (the lead's words, recorded with `make art-decide`):
+- (none yet)
 
 ## Status
 
-- 2026-09-15: brief written for round 2. Nothing started.
+_Updated 2026-09-14 (agent)._
+
+**Plan** (order: unblock the lead's review first, since concepts are cheap and the 3D waits on them; then ungated work):
+1. X0 review workflow + concept batch 1 → **done**
+2. X1 vehicle readability (team tint of the model's own neon, no muzzle square, rim light, 15k hull budget, one texture set per unit)
+3. X2 lighting pass (floodlights, brighter key/fill; fx-bench tier budgets)
+4. X3 textured ground (CC0 concrete/asphalt + hazard paint, oil, tire marks, drains)
+5. X5 ungated: stands/walls/towers fitted to `arena.dressing` `setup(layout)`, instanced crowds that cheer on events, crowd audio
+6. X4/X5/X6 3D + pipeline + slots as approvals arrive
+7. Stretch: engine sound per unit type, burning wrecks, weather/smoke
+
+**Done**
+- **X0** (commit eebd2e9): `make art-concept` / `art-review` / `art-review-status` / `art-decide`
+  (`tools/assets/review.py`); `generate.py` logs every Meshy task to `assets/meshy_ledger.md` (credits + balance),
+  refuses 3D without an approved `--review-item`, refuses a duplicate 3D request for the same concept, and gained
+  `--keep-background` for scene art. 15 Python tests (the gate test is proven to fail without the gate).
+- **Concept batch 1:** 18 images (171 credits; balance 829). See *Waiting on the lead*.
+
+**Decisions**
+- Concept review images are committed as 1024 px JPEGs (`assets/review/images/`, ~150 KB each, `.gdignore`d) so
+  the record survives a worktree removal; Meshy concept tasks expire ~3 days after creation, so a late approval
+  sends the local image instead of the task id.
+- Three directions each for the scout and IFV (the units the lead named), two for artillery and Lancer, one per
+  arena piece and prop: choice where the silhouette matters most.
+- `arena_key` (first try) was superseded: background removal erased the scene. Mood art now uses `KEEP_BG=1`.
+
+**Questions for the lead**
+- The concept review above.
+
+**Requests to other streams**
+- (none yet)
+
+**Shared-file edits (for the merge notes)**
+- `Makefile`: `art-concept art-review art-review-status art-decide` added to `LIGHT_GOALS`.
