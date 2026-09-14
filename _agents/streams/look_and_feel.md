@@ -110,204 +110,92 @@ in merge notes. Compare against the reference app's look where possible.
 ## Status
 
 - 2026-09-13: brief written; `default` theme extracted into slots (placeholder boxes).
-- 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction (projectile light, glowing obstacles, lasers, heat/shield visuals) and mobile-first constraint added. FX tricks catalog + L0 FX lab added (the lead: efficiency tricks first).
+- 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction, mobile-first constraint, FX tricks catalog + L0 FX lab added.
+- **2026-09-14 overnight run: backlog L0–L6 and all three stretch items done**, plus a verification sweep and an integration rehearsal with gameplay. Morning report below.
 
-### Overnight run 2026-09-14: morning report (kept current as items land)
+### Morning report (overnight run 2026-09-14)
 
-**Plan (backlog order):** L0 FX lab → L1 HUD widgets → L2 cyberpunk arena → L3 vehicles → L4 HUD
-restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-shake curve, SFX, title screen).
+**In one paragraph:** the game now looks like the brief. **Cyberpunk is the default theme**: a dark
+night arena lit by neon and weapon fire, with procedural scrap tanks carrying team accent lights and
+underglow, tracers that light the floor along their path, flipbook explosions, lasers, shields, and a
+styled fog of war. The whole UI is in the mavlink-hud language (banners, frames, conductors, themed
+buttons, a title screen), and procedural sound comes with it. It was all built on an FX lab that
+measured which tricks are cheap on the Compatibility renderer, and it stays inside per-tier frame
+budgets (phone tier 5.9 ms worst case on this laptop iGPU). `make check` and `make check-all` pass,
+sim-baseline is unchanged (`e69acc63a64f319a`), and web-smoke passes. A rehearsal merge with
+`stream/gameplay` is clean and passes all 177 tests.
+
+#### What to playtest (exact commands)
+- `make title`: the title screen (tap SKIRMISH to relaunch into it).
+- `make skirmish`: tactical view (banners in the side columns, themed buttons, FX button top-left: tap to cycle LOW/MEDIUM/HIGH).
+- `make run`: drive a tank in the 3D follow view (spec banners top/bottom, camera shake on kills).
+- `make vehicle-gallery`: tanks, lasers, shields (hit/break/recharge), flamethrowers, heat, paint.
+- `make fx-bench`: the FX lab (about 3 min, opens a window) → `build/fx-bench.json`, `build/screenshots/fx/`.
+- `make hud-gallery`: banners, frames, conductors. Browser: `make serve-web`, then `?title`, `?skirmish`, `?fx-bench`.
+- Flags for any mode: `--theme=default` (old boxes), `--fx-quality=low|medium|high`, `--perf`, `--hud-demo`, `--mute`, `--no-shake`, `--ui-touch` (phone-sized HUD on desktop).
 
 #### Done
-- **L0 FX lab.** `make fx-bench` (browser `?fx-bench`) runs an 18-config worst-case firefight and
-  prints `FX_BENCH` JSON lines + `build/fx-bench.json` + a screenshot per config; `PerfOverlay`
-  shows fps/ms/draws/lights on screen. Systems in `game/theme/fx/`: `FxWorld` (lazy, never on
-  headless), `LightPool` (priority + distance), `TracerSystem` (MultiMesh tracers + ground splats),
-  `BurstSystem` (one ring-buffer MultiMesh for flipbook fireballs, muzzle stars, ground glows; atlas
-  generated procedurally by `make fx-textures`), `ChunkedGround`, `StaticBatcher` (merge props by
-  material), `FxQuality` tiers, shader pre-warm, shaders (tracer, splat, burst, neon, wet ground,
-  beam cone, hologram). `Impact` now forwards to the pooled bursts (no per-hit mesh/material).
-  **Measured** (UHD 620, 720p; full table in references/fx_tricks.md → Results): worst case
-  tier high 15.1 ms / 384 draws, medium 8.0 ms / 190, low 5.5 ms / 190. Moon shadows +4.9 ms and
-  2× draws; render scale 0.7 −4.3 ms; 16 pooled lights +0.9 ms; glow +1.1 ms; splats ≈ 0; a single
-  ground plane +1.6 ms vs tiles; merging props −180 draws and −1.6 ms CPU; the naive per-shell
-  light/mesh approach hitches to 33 ms. Probe: instance uniforms work, `Decal` and `ReflectionProbe`
-  don't help in Compatibility, GPUParticles3D works natively. Browser/phone numbers pending.
+- **L0 FX lab.** `make fx-bench` / `?fx-bench`: a deterministic 10v10 worst-case firefight on the real arena (tracers, lasers, shields, explosions), one pass per trick config, `FX_BENCH` JSON lines, hitch logging, a screenshot per config, an on-screen `PerfOverlay`; on the web it reports after the first pass and keeps looping for phone tests. Systems (`game/theme/fx/`): `FxWorld` (lazy; never on headless peers), `LightPool` (priority + distance), `TracerSystem` (MultiMesh tracers + ground light splats), `BurstSystem` (ring-buffer MultiMesh: flipbook fireballs with a procedurally generated atlas, muzzle stars, ground glows), `BeamSystem`, `StreakSystem`, `UnderglowSystem`, `ChunkedGround`, `StaticBatcher`, `ColorMeshBuilder`, `CameraShake`, `FxQuality`/`FxAutoQuality`, shader pre-warm, a support probe. `Impact` forwards to the pooled bursts (no per-hit mesh/material). **Results table + verdicts for every [verify] item: `references/fx_tricks.md` → Results.** Headline numbers (UHD 620, 720p): the naive per-shell light/mesh approach hitches to 33 ms; splats cost ≈ 0; 16 pooled lights +0.9 ms; glow +1.1 ms; render scale 0.7 −4.3 ms; a single ground plane +1.6 ms vs tiles; merging props −180 draws / −1.6 ms CPU; moon shadows with 4 PSSM splits +3.3 ms / +65 draws vs orthogonal. `Decal` and `ReflectionProbe` don't help in Compatibility; instance uniforms work.
+- **L1 HUD widgets** (`game/ui/widgets/`): `CyberFrame`, `CyberBanner` (beam → open → glitch → snap, typewriter with █ cursor, history, dedup, 5 s dismiss; a manual timeline so it runs during the tactical pause), `CyberMessages` (wired to `Hud.message_posted`: `hud.post_message(text, Hud.WARNING)` just works), `Conductors` (breathing traces, glow baked once into two tiny textures), `CyberStyle`. Font: Share Tech Mono + a 14 KB JetBrains Mono block-glyph subset (`assets/fonts/`, OFL). `make hud-gallery`.
+- **L2 cyberpunk arena:** night environment (thin fog + height fog, HDR glow, cool moonlight), chunked wet-asphalt floor with a violet lane grid, blast-barrier perimeter with light bars, floodlight towers with fake volumetric beams, wet-floor reflection streaks, neon props on the same footprints (amber-lit container stacks with failing beacons, violet-lit blast walls with holograms). Props never use team colors. Iterated from the orthographic tactical camera, where thin neon vanished and fog hid the map.
+- **L3 vehicles:** procedural Death Race tanks (one mesh and two draws per part; all tanks share two materials), team accent lights (trims, stripes, crest, coils) + underglow, a flamethrower with a turbulent flame, pooled light and roar. **Friend or foe = accent lights; paint is full-body** (`set_paint`, per the lead's garage answer). Team neon: cyan `#00F3FF` vs magenta `#FF0099`.
+- **L4 HUD restyle:** `CyberUiTheme` for every Control (including gameplay's tactical map, without code changes there), a framed status block, a framed center banner. **Banners never cover the arena:** with the tactical map up they sit in mid-height side columns (info left, warnings right, wrapping), clear of the map's top buttons, orders log, radar and command bar; without it the spec strips return. Touch boost 1.5× on phones.
+- **L5 hooks, built to gameplay's actual G1/G6/G7 contracts** (read from `stream/gameplay`): shields (hit shimmer, break crackle, recharge sweep), `weapon.laser` (heating coils, pulse flash), `fx.laser_beam` (batched beams that light the floor and borrow pooled lights), `set_heat` on every weapon, `fx.fog_of_war` (dark digital haze, cyan vision boundary), `radar_frame` StyleBox. `make vehicle-gallery` drives them all with fake values.
+- **L6 quality tiers:** `FxQuality` drives lights, splats, effect capacity, glow, shadows, 3D render scale and MSAA, live-switchable; the tier comes from the flag, then the player's saved choice (HUD FX button), then the platform default (web/mobile LOW). `FxAutoQuality` steps down on web/mobile when frames drop.
+- **Stretch:** camera shake (through `Camera3D.h_offset/v_offset`, so the camera code is untouched); **sound design**: ten effects synthesized from scratch (`make sfx`, CC0, 264 KB, checked numerically for phone-speaker audibility) through a pooled `SfxSystem`; **animated title screen** (`make title`, `?title`).
+- **Verification:** `make check` green on every commit (129 tests on the last one), `make check-all` passed, web boot verified for the default game, `?fx-bench`, `?title`, and browser multiplayer. Tests: `tests/test_fx_systems.gd`, `test_hud_widgets.gd`, `test_theme_vehicles.gd` (mutation-checked where it mattered).
+- **Integration rehearsal** (a throwaway detached worktree in my scratchpad; nothing pushed; `main` untouched): merging `stream/gameplay` is clean and all 177 tests pass. It caught three problems, all fixed here: gameplay's new `fx.fog_of_war` slot was missing from the cyberpunk theme (themes now fall back to `DEFAULT_SLOTS`; a cyberpunk fog fills it), banner/FX-button collisions with gameplay's new tactical map layout, and a theme regression I introduced along the way (now tested). Screenshots of the merged game: `build/screenshots/int_skirmish.png`, `int_skirmish_phone.png`, `int_skirmish_radar.png`, `int_match.png`.
 
-- **L1 HUD widgets** (`game/ui/widgets/`): `CyberFrame` (chamfer fill + glowing corner brackets,
-  animatable about its center), `CyberBanner` (beam → open → glitch → snap choreography, typewriter
-  with █ cursor at 30 fps, blink, history newest-first with caps, dedup, 5 s auto-dismiss; a manual
-  timeline so it animates during the tactical pause and tests step it exactly), `CyberMessages`
-  (top = warnings/errors, bottom = info; **wired into `hud.tscn`, listening to `Hud.message_posted`**,
-  so `hud.post_message(text, Hud.WARNING)` just works), `Conductors` (breathing traces; glow baked
-  once into two tiny textures, per-frame alpha only; `add_bus` builds nested 45° elbows),
-  `CyberStyle` (palette, easing curves, 1080p scale × a 1.5 touch boost on phones, font). Font:
-  Share Tech Mono + a 14 KB JetBrains Mono subset as fallback for █ ▲ ─ (`assets/fonts/`, OFL, README).
-  `make hud-gallery` → `build/screenshots/hud-gallery.png` / `-phone.png`. 10 tests in
-  `tests/test_hud_widgets.gd` (mutation-checked: breaking the dismiss timer or the font fallback fails them).
-
-- **L2 cyberpunk arena** (`--theme=cyberpunk`): night environment (near-black background, cool
-  moonlight, thin exponential + height fog, HDR glow, environment reflections off so glossy floor
-  doesn't turn black), chunked wet-asphalt floor with faint violet lane grid, blast-barrier perimeter
-  with violet light bars and a rim-top light line, four floodlight towers with fake volumetric beams
-  and painted light pools, **wet-floor reflection streaks** (`StreakSystem`: one MultiMesh oriented
-  toward the camera in the shader, fading when looking straight down), neon props with the same
-  footprints: `prop.crate` = rusted container stack with amber hazard edges, a glowing top panel
-  and a failing red beacon; `prop.wall` = concrete barrier with a violet top light bar, chevrons, and
-  a hologram ad. **Props use violet/amber/red, never the team cyan/magenta.** Iterated from the
-  tactical camera (orthographic, 200 m up, ~3 px/m): thin strips vanish there, so every prop has a
-  wide emissive top. Screenshots: `build/screenshots/l2_skirmish_before.png` → `l2_skirmish.png`,
-  `l2_follow.png`; the default look for comparison: `l2_skirmish_default.png`.
-
-- **L3 vehicles** (cyberpunk `tank.hull`, `tank.turret`, `weapon.cannon`, `weapon.flamethrower`):
-  Death Race scrap tanks built procedurally by `ColorMeshBuilder` (vertex-colored boxes/cylinders →
-  **one mesh, two surfaces: lit + neon; every tank shares the same two materials**; team color lives
-  in vertex colors). Treads with neon seams, rust skirts, ram spikes, headlights, exhaust stacks,
-  team neon deck stripes/rear bar, turret crest stripe (heading reads from above), antenna; cannon
-  with team rings and muzzle brake whose rings glow via `set_heat` (an `instance uniform`); a
-  flamethrower with a turbulent additive flame cone, ground glow, and a pooled light while firing.
-  Team colors are now neon **cyan `#00F3FF` vs magenta `#FF0099`** (paint is derived dark), plus a
-  team **underglow** under every visible vehicle. Tracers and flipbook explosions from L0.
-  `make vehicle-gallery` → `build/screenshots/vehicle-gallery.png`; combat: `build/screenshots/fx/fx_all.png`.
-  **The cyberpunk theme is now the default** (`--theme=default` brings back the boxes); `make
-  web-smoke` boots it in the browser with every shader compiling on WebGL 2 (`build/screenshots/web.png`).
-  4 tests in `tests/test_theme_vehicles.gd`.
-
-- **L4 HUD restyle** (`hud.tscn` + `HudSkin`, `CyberUiTheme`): the whole UI in the HUD language
-  without touching gameplay code: a `Theme` (Share Tech Mono, chamfered translucent buttons via
-  `StyleBoxFlat.corner_detail = 1`, cyan when toggled, touch padding) applied to the window **and to
-  the tactical map's Control** (theme inheritance stops at a CanvasLayer), plus the fallback font
-  for custom-drawn unit labels. Status/scoreboard wrap inside a CyberFrame block limited to 19% of
-  the width (clear of the banner lane); the center banner (VICTORY / DEFEAT / Destroyed) gets a pink
-  CyberFrame. **Banners never cover the arena:** with the top-down tactical map up, info banners go
-  in the left column and warnings in the right column beside the square arena (text wraps, height
-  fits); in 3D views the spec's top/bottom strips return, lifted above the command bar. `--hud-demo`
-  posts sample messages + VICTORY for screenshots. Screenshots: `build/screenshots/l4_skirmish.png`,
-  `l4_skirmish_phone.png` (1600×720, `--ui-touch`), `l4_offline.png`. Test: banners move beside the map
-  and wrap.
-
-- **L5 hooks, built to gameplay's actual contracts** (read from `stream/gameplay`: `Tank` calls
-  `set_shield(ratio)` on the hull and `set_firing`/`set_heat` on the weapon every frame;
-  `Match.show_beam` spawns an `fx.laser_beam` slot per pulse, calls `setup(from, to)` once, frees it
-  0.2 s later): **shields** (`ShieldEffect`: hex/fresnel shell, hidden at rest; hit shimmer, a red-orange
-  shield-down crackle at 0, a recharge sweep while rising; one shared material, instance uniforms),
-  **`weapon.laser`** (emitter with team neon coils that heat to orange-white, flash on each pulse),
-  **`fx.laser_beam`** (`BeamSystem`: every pulse in one MultiMesh with a white-hot core and violet halo,
-  a floor glow along the beam, pooled lights at the hit point and mid-beam, muzzle and impact stars;
-  fades itself in 0.18 s), `set_heat` on cannon/flamethrower too (only writes on change). Registered in
-  the cyberpunk theme (default-theme placeholders come from gameplay's branch). `make vehicle-gallery`
-  drives all of it with fake values; close-ups: `--gallery-focus=N --gallery-time=S`. Screenshots:
-  `build/screenshots/vehicle-gallery.png`, `l5_shield_hit.png`, `l5_shield_break.png`, `l5_shield_recharge.png`.
-  Tests: shield events show/hide, laser parts + beam follow the contract, beams batch and expire.
-
-- **Stretch: camera shake** (`CameraShake` in FxWorld): trauma model (trauma² × smooth noise, linear
-  decay), distance falloff from where the camera looks, applied through `Camera3D.h_offset/v_offset`
-  so it shakes gameplay's camera **without touching camera code** (and works in the ortho tactical
-  view). Kills jolt, ordinary hits only up close; `--no-shake` turns it off. Test: falloff + trauma².
-- **Paint vs team accents** (new lead direction via the garage stream: players paint the whole
-  vehicle; friend or foe is shown by accent lights): cyberpunk vehicles take `set_paint(color)` for
-  the full body (default worn gunmetal) and `set_team_color(team neon)` for trims, stripes, coils,
-  shields, underglow. Adapter until gameplay calls `set_paint`: a non-team color passed to
-  `set_team_color` (how the garage paints today via `Tank.set_paint`) paints the body and leaves the
-  accents alone. Test: paint never changes the accents. `GameTheme.ui` gains the garage's
-  `garage_bg`, `garage_panel`, `garage_text_dim`.
-
-- **Stretch: sound design.** Ten effects **synthesized from scratch** by `make sfx`
-  (`game/theme/audio/make_sfx.gd` → `assets/audio/*.wav`, 264 KB, CC0, README with how each is made):
-  cannon shot, small/big explosion, laser pulse, shield hit/down, flame roar loop, UI blip/alert/tick.
-  Checked numerically since I can't listen: envelopes and pitch sweeps as designed, no clipping or DC,
-  and ≥ 50% of the heavy sounds' energy above 200 Hz so phone speakers play them (first pass was
-  sub-bass: cannon 15% → saturated to 57%). `SfxSystem` in FxWorld: 14 pooled 3D voices + 3 UI voices,
-  voice stealing, per-sound volume and pitch spread, attenuation tuned for the 200 m tactical camera;
-  hooked to muzzle flashes, explosions, laser pulses, shield hit/break (rate-limited under flames),
-  flamethrower roar while firing, banner open (blip/alert), FX button. `--mute`. Test: pool never grows.
-
-- **Stretch: animated title screen** (`make title`, browser `?title`, `make title-shot`): the night arena
-  with six tanks trading tracers, laser pulses, shield hits and explosions under a slow orbiting
-  camera; a `GlitchTitle` ("TANK SQUAD" types in with a block cursor, breathes, and glitches every few
-  seconds: cyan/magenta channel split, flicker, displaced slice); a chamfered CyberFrame menu wired to
-  the screen edges by breathing conductors; touch-sized buttons that fit between subtitle and footer
-  on 20:9. Buttons start a mode by reloading with its URL query (web) or relaunching with its flag
-  (desktop), so no shared entry code changed. Screenshots: `build/screenshots/title.png`,
-  `title-phone.png`, `web-title.png`. Test: relaunch args + `--title` routing.
-
-- **Verification sweep:** `make check-all` passed (desktop render, web boot, browser multiplayer,
-  release server export with bots, no server ERRORs; the "3 resources still in use at exit" lines in
-  the bot clients were already on the baseline). The browser multiplayer screenshot (a Rust player,
-  camera flipped to face south) showed moon glare turning glossy puddles into pale blobs → lower
-  specular and roughness contrast, a slightly brighter lane grid; re-checked in `web-net.png`.
-  Docs: orientation (layout, common tasks, trip-ups 38–43), verification (look & feel checks),
-  workstreams (slot contract status + the `set_paint` proposal).
-
-- **Integration rehearsal with `stream/gameplay`** (a throwaway detached worktree in my scratchpad
-  merging both branches; nothing pushed, `main` untouched): **the merge is clean** (git auto-merges
-  `game_theme.gd` and `workstreams.md`) and **all 177 tests pass** on the merged tree. It caught three
-  problems, fixed on this branch: (1) gameplay G1's new `fx.fog_of_war` slot wasn't in the cyberpunk
-  theme, so the default look would `push_error` → themes now fall back to `DEFAULT_SLOTS` for any
-  slot they don't define, and a cyberpunk fog of war (dark digital haze, dim memory, cyan vision
-  boundary, radar sweep) fills it; (2) gameplay's new tactical map (perspective RTS camera, top
-  button row, radar bottom-right, command bar bottom-left) collided with the banners and covered the
-  FX button → banners take mid-height side columns whenever the map is up, FX button top-left; (3) a
-  regression I introduced while doing (2) dropped the map's theme → restored with a test. The radar's
-  `GameTheme.ui["radar_frame"]` hook now gets a chamfered neon StyleBox. Screenshots of the merged
-  game: `build/screenshots/int_skirmish.png`, `int_skirmish_phone.png`, `int_skirmish_radar.png`,
-  `int_match.png`. **For the morning merge:** after merging gameplay, `game_theme.gd` should contain
-  gameplay's `DEFAULT_SLOTS` (with `weapon.laser`, `fx.laser_beam`, `fx.fog_of_war`) plus this
-  branch's themes; git did that automatically in the rehearsal.
-
-#### Frame budget per quality tier (L0, re-measured in L6; details in references/fx_tricks.md)
+#### Frame budget per quality tier (measured in the FX lab; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured (UHD 620, 720p) |
 |---|---|---|---|---|---|---|---|---|---|
 | low | web, mobile | ≤ 12 ms | ≤ 250 | 4 | on | 0.75 | off | off | 5.9 ms / 240 |
 | medium | — | ≤ 12 ms | ≤ 250 | 8 | on | 1.0 | off | off | 8.6 ms / 240 |
 | high | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon (orthogonal) | 14.1 ms / 401 |
 
-- **L6 quality tiers:** `FxQuality` now drives light-pool size, splats, effect capacity, glow, moon
-  shadows, **3D render scale and MSAA on the main viewport** (`FxWorld._apply_viewport`), switchable at
-  runtime (`FxQuality.apply`) with every system and the environment updating live. Selection: flag >
-  saved player choice > platform default (web/mobile low). A touch **"FX LOW/MEDIUM/HIGH" button**
-  (bottom-right, ≥ 48 px at 1080p) cycles and saves the tier per device. `FxAutoQuality` steps down on
-  web/mobile when frames drop. `--perf` shows the perf overlay in any mode (phone tests). Re-bench with
-  lasers/shields/vehicles found the moon's 4-split shadows costing 3.3 ms and 65 draws → orthogonal
-  mode; pre-warm extended to shields/flames/beams removed a 56 ms first-laser hitch.
+#### Merge notes (for the morning integration)
+- **Shared-file edits:** `game/modes/game_mode.gd`: 4 lines at the top of `choose()` (`--fx-bench` → `FxBenchMode`, `--title` → `TitleMode`); `hud.tscn` (mine) gains `HudSkin` + `CyberMessages` nodes; `_agents/orientation.md` (common tasks, layout, trip-ups 38–43), `verification.md`, `workstreams.md` (contract row).
+- **Conflicts `git merge-tree` predicts:** gameplay and assets merge clean. **netcode:** `game_mode.gd` (keep netcode's new routes and put my two `if` lines first) and `orientation.md` (both append trip-ups numbered 38+ and common-task rows: keep all, renumber). **garage:** `orientation.md` only (same fix).
+- After merging gameplay, `game_theme.gd` holds gameplay's `DEFAULT_SLOTS` (with `weapon.laser`, `fx.laser_beam`, `fx.fog_of_war`) plus this branch's themes; git did it automatically in the rehearsal.
+- New default look: other streams' screenshot-based checks will now see the cyberpunk theme; `--theme=default` restores the boxes for comparison.
 
 #### Decisions (with reasons)
-- **Theme switch by flag:** `--theme=cyberpunk` / `?theme=cyberpunk` read in `GameTheme._static_init`, so no shared file changes were needed to select a theme.
-- **FX systems live under the scene root, created on first use** (`FxWorld.get_instance()`), and return null on headless peers: servers, tests, and `sim-baseline` never build effects.
-- **The muzzle-flash event is "a tracer appeared"**: the `fx.shell` slot has no firing hook, and this needs no contract change.
-- **Tracers take the team's neon** (`GameTheme.team_glow`, new): cyan vs magenta shots keep the two teams readable in the dark. The shell's team is read from the Shell node (read-only duck typing).
-- **Readability rules for arena art** (learned from the tactical camera): emissive features ≥ 0.5 m wide or they vanish at ~3 px/m; fog must stay thin (the tactical camera is 200 m away: density 0.006 hid 70% of the scene); glossy dark floors reflect a black sky as black blotches, so keep roughness ≥ 0.45 and environment reflections off.
-- **Banner placement adapts to the view** (deviation from the spec's fixed top/bottom strips): in skirmish the spec's bottom strip covered the player's own starting squads and the top strip hit the PLANNING label, while the tactical view leaves dark columns beside the arena (wider on 20:9 phones).
-- **HUD text grows 1.5× on touch devices** (`CyberStyle.touch_boost`, preview with `--ui-touch`): the spec's 25 px at 1080p is ~1.5 mm tall on a phone. Banners keep ≥ 2.2 lines of height so the boosted text fits.
-- **Banner timestamps use the wall clock (`HH:MM:SS`) like the reference**; `clock` is swappable (match time would be a one-line change).
-- **The FX lab uses visual-only tanks and shells** (slot visuals, not the simulation), so it never touches gameplay code and is deterministic without physics.
-
-#### Shared-file edits (for the merge notes)
-- `game/modes/game_mode.gd`: 2 lines, `--fx-bench` routes to `FxBenchMode` (in `game/theme/fx/bench/`).
+- **Cyberpunk became the default theme** once screenshots beat `default` from both the follow and tactical cameras, and web-smoke compiled every shader on WebGL 2.
+- **Themes are selected by flag** (`--theme`, read in `GameTheme._static_init`) and **fall back to `DEFAULT_SLOTS`** for undefined slots, so slots other streams add always work.
+- **FX systems live under the scene root, created on first use, never on headless peers**: servers, tests, and sim-baseline never build effects. Visual RNGs are private (the simulation's RNG is untouched).
+- **The muzzle-flash event is "a tracer appeared"** (the `fx.shell` slot has no firing hook; no contract change needed). **Tracers take the team neon** (`GameTheme.team_glow`).
+- **Friend or foe = accent lights; paint = full body** (the lead via garage). Props use violet/amber/red so they never read as a team.
+- **Arena art readability rules** (from the tactical camera, ~3 px/m): emissive features ≥ 0.5 m wide, thin fog, roughness ≥ 0.5, low specular, no environment reflections under a black sky.
+- **Banners adapt to the view instead of the spec's fixed strips**: the spec's bottom strip covered the player's squads in skirmish.
+- **HUD text is 1.5× on touch devices**: the spec's 25 px at 1080p is about 1.5 mm tall on a phone.
+- **No per-event allocation in combat:** every effect joins a pool or MultiMesh; lasers from gameplay's per-pulse slot register with `BeamSystem` instead of drawing themselves.
+- **Sounds are synthesized, not downloaded:** no licenses to track, deterministic, tiny, and tuned for phone speakers.
+- **Lasers are team-neutral violet-white** until gameplay passes a team (the `fx.laser_beam` contract has none).
 
 #### Questions for the lead
-0. **Make the title screen the entry point?** Today `run/main_scene` is `main.tscn` (straight into offline play). Pointing it at the title (or making `TitleMode` the no-flag default) is a one-line shared change; I left it off because modes, the web page, and smoke tests assume today's entry. Try it with `make title`.
-1. **Phone run** when convenient: `make serve-web WEB_HOST=0.0.0.0` (it exports first), open `http://<LAN IP>:8080/?fx-bench` on the phone (this worktree serves on 8080; after merging, main serves on 8060). It runs every config once (~3 min), then the overlay shows the summary table and keeps the firefight looping. A screenshot of that overlay is all I need; `?fx-bench=all,tier_low,tier_medium` is a 30-second version. Verified in headless Chrome (SwiftShader, so its numbers are meaningless): it completes and logs `FX_BENCH_DONE`; WebGL reports no GPU timing, so use frame times.
+1. **Phone run, when convenient:** `make serve-web WEB_HOST=0.0.0.0` (it exports first), open `http://<LAN IP>:8080/?fx-bench` on the phone (this worktree serves on 8080; main uses 8060). It runs every config once (~3 min), then the overlay shows the summary; a screenshot of it is all I need (`?fx-bench=all,tier_low,tier_medium` is a 30 s version). Also worth a look on the phone: `?title` and `?skirmish` (HUD size, banner columns, FX button).
+2. **Make the title screen the entry point?** `run/main_scene` is `main.tscn` (straight into offline play). Switching is a one-line shared change I left alone, because modes, the web page, and smoke tests assume today's entry.
+3. **Sound:** I can't listen. The effects are designed and measured, but please give them a listen (`make vehicle-gallery` or `make skirmish`); `--mute` silences them.
 
 #### Requests to other streams
-- **Gameplay (tactical map layout):** the orders log (top-right, 430 px) and the pause label/toast (top center) sit where 3D-view warning banners go; in the top-down view banners now use the side columns, so this only matters in the 3D view (Tab). If you move the log, keep the right column below ~16% height free for warnings. The HUD's `Status`/`Scoreboard` text doesn't update while the tree is paused (hud.gd `_process` pauses), so the top-left block is hidden during PLANNING; `process_mode = ALWAYS` on the HUD would fix it (your file).
-- **Gameplay:** `test_navigation::test_path_goes_around_a_wall` is load-sensitive (see Known issues); consider waiting until the map's regions include this arena's two regions (or a few extra physics frames) before querying.
-- **Gameplay:** `fx.laser_beam` has no team: the cyberpunk beam is a team-neutral violet-white. If you want team-colored lasers, call `beam.invoke("set_team_color", [GameTheme.team_color(team)])` after `setup` (already implemented).
-- **Gameplay (contract change, please accept):** friend-or-foe lives in accent lights, so split `Tank.set_paint(color)` (full-body paint, from the garage's `paint`) from the team: call `invoke("set_team_color", [GameTheme.team_color(team)])` at spawn and `invoke("set_paint", [paint])` for paint. Until then my adapter handles today's calls. **Assets:** add optional `set_paint(Color)` to the `tank.hull`/`tank.turret`/`weapon.*` slot contracts, and keep a separate emissive accent mask in generated models so team color never recolors the body.
-- **Gameplay (radar):** `GameTheme.ui["radar_frame"]` is now a chamfered neon StyleBox in the cyberpunk theme. Please also read `GameTheme.ui.get("radar_field", <your green>)` for the visibility-texture tint and `GameTheme.ui.get("radar_outline", <yours>)` for the arena outline (both defined), so the radar matches the palette.
-- **Gameplay (merge):** `game_theme.gd` gains `weapon.laser`/`fx.laser_beam` in `CYBERPUNK_SLOTS` here and in `DEFAULT_SLOTS` on your branch: keep both when merging.
-- **Gameplay:** please call `hud.post_message()` for orders, commander down, unit lost, victory; the banners are live (`make hud-gallery`, `--hud-demo`).
+- **Gameplay (contract change, please accept):** split paint from team: `invoke("set_team_color", [GameTheme.team_color(team)])` at spawn and `invoke("set_paint", [color])` for the garage's paint. An adapter handles today's `Tank.set_paint` meanwhile.
+- **Gameplay (radar):** read `GameTheme.ui.get("radar_field", …)` for the visibility tint and `GameTheme.ui.get("radar_outline", …)` for the arena outline (both defined); `radar_frame` is already used.
+- **Gameplay:** `fx.laser_beam` has no team: call `beam.invoke("set_team_color", [GameTheme.team_color(team)])` after `setup` if lasers should be team-colored (implemented).
+- **Gameplay:** `test_navigation::test_path_goes_around_a_wall` is a load race (see Known issues); wait until the map contains this arena's regions before querying.
+- **Gameplay:** the HUD's `Status`/`Scoreboard` don't update while paused (hud.gd `_process`), so the top-left block stays hidden during PLANNING; `process_mode = ALWAYS` on the HUD fixes it.
+- **Gameplay:** a destroyed tank just disappears (`visible = false`). A wreck hook (e.g. `tank.hull` `set_destroyed()`) would let the art leave a burning hulk.
+- **Assets:** add optional `set_paint(Color)` to the `tank.hull`/`tank.turret`/`weapon.*` slot contracts, and keep a separate emissive accent mask in generated models so team color never recolors the body. Style reference for generated art: `make vehicle-gallery`.
 
 #### Known issues
-- `test_navigation::test_path_goes_around_a_wall` (gameplay's test) is **a load race, reproduced without any look & feel test**: run alone (`make test FILTER=test_navigation`) under 6 busy CPU loops it failed 1 of 3 times (a straight 2-point path); at normal load it passes alone and in full runs. It failed 3 of ~9 full `make check` runs tonight while four agents shared the machine. Not an art change (the nav bake parses collision shapes only).
-- The FX lab prints two "Texture … leaked" engine errors at exit (after switching MSAA/render scale at runtime). Bench only; the game itself exits clean.
-- Bench frame times are GPU-bound on a shared laptop iGPU with four other agents running; use deltas, not absolutes.
-
-#### What to playtest
-- `make fx-bench` (≈2 min, opens a window), then look at `build/screenshots/fx/`.
-- `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
+- `test_navigation::test_path_goes_around_a_wall` (gameplay's test) is **a load race, reproduced without any look & feel code involved**: run alone under 6 busy CPU loops it failed 1 of 3 times (a straight 2-point path). It failed 3 of ~12 full `make check` runs tonight while four agents shared the machine, and passed at normal load.
+- The FX lab prints two "Texture … leaked" engine errors at exit (after switching MSAA/render scale at runtime); the game itself exits clean.
+- FX-lab frame times are GPU-bound on a shared laptop iGPU; compare deltas, not absolutes. WebGL reports no GPU timing.
+- The explosion flipbook is generated procedurally: fine at gameplay distance, soft up close.
 
 #### Next steps
-- Backlog and stretch items are complete. Next, if the night allows: polish passes from screenshots (tank legibility in the follow camera, destroyed-tank wreck visuals, the flamethrower's range vs its visual), and a `--fx-quality` phone check once the lead's numbers arrive.
+- The phone numbers → adjust tier budgets (and the auto step-down threshold) if the phone misses them.
+- After the merge: wrecks (with a gameplay hook), team-colored lasers, the radar palette, and art for gameplay's future units (scouts, artillery) in the same `ColorMeshBuilder` style.
+- Swap procedural art for the assets stream's generated models as they land (slot contracts unchanged; keep accent masks separate).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
