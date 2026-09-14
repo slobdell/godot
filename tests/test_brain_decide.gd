@@ -122,6 +122,50 @@ func test_decide_is_deterministic() -> void:
 	assert_eq(TankBrain.label(first["choice"]), "ENGAGE Rust_A_1", "an exact tie goes to the earlier name")
 
 
+func test_the_turret_watches_the_most_pressing_known_threat() -> void:
+	var near_hidden := _enemy("Rust_A_1", Vector3(0, 0, -20), {"visible": false, "age": 90})
+	var far_visible := _enemy("Rust_A_2", Vector3(30, 0, -60))
+	var gun_on_me := _enemy("Rust_A_3", Vector3(-40, 0, -50), {"aiming_at_me": true})
+	var s := _situation({"contacts": [near_hidden, far_visible, gun_on_me]})
+	assert_eq(TankBrain.watch_for(s, {}), gun_on_me["position"], "a visible gun pointed at me beats a slightly nearer one that isn't")
+	assert_eq(TankBrain.watch_for(_situation({"contacts": [near_hidden, far_visible]}), {}), far_visible["position"],
+			"something in sight now beats a nearer memory")
+	assert_eq(TankBrain.watch_for(s, {"option": "ENGAGE", "target": "Rust_A_2"}), far_visible["position"],
+			"the chosen target always wins")
+	var moving := _enemy("Rust_A_4", Vector3(0, 0, -30), {"visible": false, "age": 60, "velocity": Vector3(4, 0, 0)})
+	assert_eq(TankBrain.watch_for(_situation({"contacts": [moving]}), {}), Vector3(4, 0, -30),
+			"a remembered contact is expected where it was heading (1 s of dead reckoning)")
+	assert_eq(TankBrain.watch_for(_situation(), {}), null, "nothing known: no watch point (hold the turret's heading)")
+
+
+func _ordered(verb: String, slot: Vector3, overrides: Dictionary = {}) -> Dictionary:
+	var s := _situation(overrides)
+	s["squad"] = {"verb": verb, "slot": slot, "facing": Vector3.FORWARD, "moving": true, "pace": 1.0,
+			"reverse": verb == "break_contact", "is_commander": true}
+	return s
+
+
+func test_a_move_order_beats_a_committed_fight() -> void:
+	# G3: "I'm commanding the tanks like in an RTS but they're not very responsive."
+	var s := _ordered("move", Vector3(0, 0, 60), {"contacts": [_enemy("Rust_A_1", Vector3(0, 0, -25), {"aiming_at_me": true})]})
+	s["directives"]["aggression"] = 0.9
+	var committed := {"option": "ENGAGE", "target": "Rust_A_1", "since": 990}
+	assert_eq(_choice(s, committed), "KEEP_SLOT", "the player's move order wins even mid-commitment to a close fight")
+	assert_eq(_choice(s, {"option": "ENGAGE", "target": "Rust_A_1", "since": 0}), "KEEP_SLOT", "and after the commitment window")
+
+
+func test_under_orders_only_a_dying_tank_breaks_off() -> void:
+	var threat := [_enemy("Rust_A_1", Vector3(0, 0, -30), {"aiming_at_me": true})]
+	assert_eq(_choice(_hurt(_ordered("move", Vector3(0, 0, 60), {"contacts": threat}), 35)), "KEEP_SLOT",
+			"hurt (35%) but not dying: follow the order")
+	assert_eq(_choice(_hurt(_ordered("move", Vector3(0, 0, 60), {"contacts": threat}), 10)), "RETREAT",
+			"about to die (10%): save yourself")
+	assert_eq(_choice(_hurt(_situation({"contacts": threat}), 30)), "RETREAT",
+			"without orders, its own caution pulls it out at 30%")
+	assert_eq(_choice(_hurt(_ordered("move", Vector3(0, 0, 60), {"contacts": threat}), 30)), "KEEP_SLOT",
+			"while under orders at the same 30%, it keeps going")
+
+
 func test_directives_resolve_in_layers() -> void:
 	var resolved := Directives.resolve([{"role": "anchor"}, {"caution": 0.95}])
 	assert_eq(resolved["leash"], 15.0, "the squad's role preset applies")

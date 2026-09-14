@@ -259,8 +259,13 @@ func team_squads(team: int) -> Array[Squad]:
 	return result
 
 
+## The runtime Squad a brain tank belongs to, or null.
+func squad_for(tank: Tank) -> Squad:
+	return squads.get(_squad_key(tank.team, squad_of(tank))) as Squad
+
+
 func squad_context(tank: Tank) -> Dictionary:
-	var squad := squads.get(_squad_key(tank.team, squad_of(tank))) as Squad
+	var squad := squad_for(tank)
 	if squad == null:
 		return {}
 	return squad.context_for(String(tank.name), tanks_by_name())

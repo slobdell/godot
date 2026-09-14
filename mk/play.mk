@@ -18,3 +18,10 @@ demo: import ## Play with a scripted driver instead of the keyboard
 screenshot: import ## Render the demo and save build/screenshots/demo.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(GODOT) --path . -- --demo --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/demo.png
+
+skirmish-shots: import ## Scripted skirmish screenshots at desktop and phone aspect (1200x540 = a 2400x1080 phone at 2x scale): build/screenshots/skirmish_{desktop,phone}.png (needs a display; DELAY=seconds)
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --enemy=$(ENEMY) --screenshot-delay=$(or $(DELAY),20) \
+		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/skirmish_desktop.png
+	$(GODOT) --path . --resolution 1200x540 -- --skirmish --scripted --enemy=$(ENEMY) --screenshot-delay=$(or $(DELAY),20) \
+		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/skirmish_phone.png

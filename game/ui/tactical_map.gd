@@ -17,6 +17,7 @@ extends Control
 signal command_issued(command: Dictionary, error: String)
 
 const PICK_RADIUS_PX := 18.0
+const PING_SECONDS := 0.6
 ## Drags shorter than this (meters) mean "no particular facing".
 const MIN_FACING_DRAG := 4.0
 const VERB_KEYS := {KEY_Q: "move", KEY_W: "bound", KEY_E: "hold", KEY_R: "assault", KEY_T: "break_contact"}
@@ -56,6 +57,9 @@ var _toast_left := 0.0
 ## Which button started the current drag (left drags only count once they actually move).
 var _drag_button := MOUSE_BUTTON_NONE
 var _drag_moved := false
+## Order acknowledgement (G3): a ring that expands at the ordered spot the moment an order lands.
+var _ping_at: Variant = null
+var _ping_left := 0.0
 
 
 func _ready() -> void:
@@ -72,6 +76,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_ping_left = maxf(0.0, _ping_left - delta)
 	if _toast != null and _toast_left > 0.0:
 		_toast_left -= delta
 		_toast.visible = _toast_left > 0.0
@@ -96,6 +101,9 @@ func _apply_fog_of_war() -> void:
 func issue(command: Dictionary) -> String:
 	var error := game_match.command_squad(team, command)
 	command_issued.emit(command, error)
+	if error == "" and command.has("to"):
+		_ping_at = Vector3(float(command["to"][0]), 0.0, float(command["to"][1]))
+		_ping_left = PING_SECONDS
 	_show_toast(_describe_command(command) if error == "" else "Can't: " + error, error != "")
 	return error
 
@@ -334,6 +342,10 @@ func _draw() -> void:
 			if selected:
 				draw_arc(at, 11.0, 0.0, TAU, 24, Color.WHITE, 1.5)
 				draw_string(font, at + Vector2(-20, 24), tank.intent, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.8))
+
+	if _ping_left > 0.0 and _ping_at != null:
+		var t := 1.0 - _ping_left / PING_SECONDS
+		draw_arc(_screen(_ping_at), lerpf(6.0, 34.0, t), 0.0, TAU, 32, Color(COMMANDER, 1.0 - t), 3.0)
 
 	# Live drag preview: where the formation will stand and which way it will face.
 	var squad := _squad(selected_squad)

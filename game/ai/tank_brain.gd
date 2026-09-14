@@ -25,6 +25,13 @@ const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 const OPTIONS := ["RETREAT", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
+## KEEP_SLOT's score under move/bound/hold orders (see decide()).
+const ORDER_WEIGHT := 0.95
+## Under orders (not assault), RETREAT only below this health fraction, scaled by caution.
+const CRITICAL_HP_MIN := 0.08
+const CRITICAL_HP_MAX := 0.25
+## A remembered contact's position is extrapolated along its last velocity for at most this long.
+const WATCH_PREDICT_SECONDS := 1.5
 
 var game_match: Match
 ## Fully resolved directives (Directives.resolve).
@@ -35,6 +42,8 @@ var think_offset := 0
 var choice := {}
 ## Top scored options from the last think: [{"option", "target", "score"}], best first.
 var ranked: Array = []
+## The squad order_serial this brain last acted on.
+var _order_serial := 0
 
 
 func think(_delta: float) -> void:
@@ -44,16 +53,22 @@ func think(_delta: float) -> void:
 		choice = {}
 		tank.intent = ""
 		return
-	if (game_match.tick + think_offset) % THINK_EVERY_TICKS != 0:
+	# A new squad order is thought about on the very next tick and breaks commitment (G3).
+	var squad := game_match.squad_for(tank)
+	var serial := squad.order_serial if squad != null else 0
+	var fresh_order := serial != _order_serial
+	_order_serial = serial
+	if not fresh_order and (game_match.tick + think_offset) % THINK_EVERY_TICKS != 0:
 		return
 	var situation := build_situation()
-	var decision := TankBrain.decide(situation, choice)
+	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	ranked = decision["ranked"]
 	var best: Dictionary = decision["choice"]
 	var same: bool = best["option"] == choice.get("option") and best["target"] == choice.get("target")
 	best["since"] = choice["since"] if same else game_match.tick
 	choice = best
 	_act(situation)
+	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice)
 
 
@@ -94,7 +109,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# RETREAT: hurt past the caution-derived threshold with enemies in sight, or badly outnumbered.
 	var retreat_threshold := lerpf(0.15, 0.55, float(d["caution"]))
 	var retreat := 0.0
-	if hp < retreat_threshold and visible_threats > 0:
+	if commanded and String(squad["verb"]) != "assault":
+		# Player intent dominates (G3): a tank under orders only saves itself when it's about to die.
+		if hp < lerpf(CRITICAL_HP_MIN, CRITICAL_HP_MAX, float(d["caution"])) and visible_threats > 0:
+			retreat = 0.99
+	elif hp < retreat_threshold and visible_threats > 0:
 		retreat = 0.85 + 0.1 * float(d["caution"])
 	elif visible_threats >= 3 and hp < 0.6:
 		retreat = 0.45 * float(d["caution"])
@@ -163,9 +182,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		advance = 0.0  # the squad's destination replaces free advancing
 	add.call("ADVANCE", "", advance)
 
-	# KEEP_SLOT: be where the squad's formation and drill want me. Scores sit just below RETREAT,
-	# so a badly hurt tank still saves itself, and above a normal ENGAGE while moving, so
-	# "Move" means return fire on the move rather than stopping for every fight.
+	# KEEP_SLOT: be where the squad's formation and drill want me. The player's order dominates
+	# (G3): it beats even a committed ENGAGE (~0.8 x COMMIT_BONUS), and only a tank about to die
+	# (RETREAT 0.99) overrides it. "Move" means return fire on the move (the turret tracks threats,
+	# G5) rather than stopping for every fight. Assault deliberately lets brains hunt.
 	var keep_slot := 0.0
 	var in_position := false
 	if commanded:
@@ -173,16 +193,16 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		in_position = gap <= SLOT_TOLERANCE and not squad["moving"]
 		match String(squad["verb"]):
 			"move":
-				keep_slot = 0.0 if in_position else 0.78
+				keep_slot = 0.0 if in_position else ORDER_WEIGHT
 			"bound":
-				keep_slot = 0.8 if squad["moving"] and gap > 3.0 else 0.0
+				keep_slot = ORDER_WEIGHT if squad["moving"] and gap > 3.0 else 0.0
 				in_position = not squad["moving"]
 			"hold":
-				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.8
+				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else ORDER_WEIGHT
 			"assault":
 				keep_slot = 0.0 if in_position else (0.5 if visible_threats == 0 else 0.15)
 			"break_contact":
-				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.92
+				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.97
 	add.call("KEEP_SLOT", "", keep_slot)
 
 	# HOLD: the fallback, and the anchor's job once at its objective.
@@ -195,7 +215,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 	# Commitment: favor the current choice; keep it through MIN_COMMIT_TICKS unless beaten decisively.
 	var committed: Dictionary = {}
+	# An order the tank isn't carrying out yet outranks commitment to anything but itself or survival.
+	var order_pending := keep_slot > 0.0 and not ["KEEP_SLOT", "RETREAT"].has(current.get("option", ""))
 	for candidate in candidates:
+		if order_pending:
+			break
 		if not current.is_empty() and candidate["option"] == current["option"] and candidate["target"] == current["target"]:
 			candidate["score"] *= COMMIT_BONUS
 			committed = candidate
@@ -209,6 +233,28 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 	return {"choice": {"option": best["option"], "target": best["target"]},
 			"ranked": TankBrain._top(candidates, 3)}
+
+
+## Where the turret covers when nothing is in this tank's own sights (G5): the chosen target,
+## else the most pressing known contact: visible before remembered, guns on me first, then nearest.
+## Null with no contacts (the turret holds its heading).
+static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
+	var my_position: Vector3 = s["self"]["position"]
+	var best: Variant = null
+	var best_score := INF
+	for c in s["contacts"]:
+		# Where it probably is now: last known position plus a short dead-reckoning.
+		var seconds := minf(float(c["age"]) / 60.0, WATCH_PREDICT_SECONDS)
+		var predicted: Vector3 = c["position"] + (c["velocity"] as Vector3) * seconds
+		if c["name"] == current.get("target", ""):
+			return predicted
+		var score := my_position.distance_to(c["position"]) * (0.6 if c["aiming_at_me"] else 1.0)
+		if not c["visible"]:
+			score += 1000.0 + float(c["age"])
+		if score < best_score:
+			best_score = score
+			best = predicted
+	return best
 
 
 static func _priority(rule: String, contact: Dictionary, distance: float) -> float:

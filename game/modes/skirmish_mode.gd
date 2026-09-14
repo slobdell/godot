@@ -3,7 +3,11 @@ extends GameMode
 ## Single player commands squads on the tactical map vs a CPU doctrine. Squad vs squad
 ## elimination; starts in a planning pause. See _agents/tactical_map.md.
 ##   --player=DOCTRINE (default player_default)   --enemy=DOCTRINE (default individuals)
+##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
+
+
+const SCRIPT_BREAK_CONTACT_SECONDS := 30.0
 
 
 func role_name() -> String:
@@ -32,7 +36,26 @@ func start() -> void:
 	tactical.camera = main.camera
 	main.hud.add_child(tactical)
 	main.hud.set_status("Skirmish vs %s" % lineups[Match.Team.RUST])
-	tactical.set_paused(true, "PLANNING: give orders, then press Space to begin")
+	if flags.has("scripted"):
+		_play_script(tactical)
+	else:
+		tactical.set_paused(true, "PLANNING: give orders, then press Space to begin")
+
+
+## A short, fixed sequence of player orders, so unattended runs (make skirmish-shots) show squads
+## doing things: Alpha advances in a wedge, Bravo bounds up the other flank, then Alpha breaks contact.
+func _play_script(tactical: TacticalMap) -> void:
+	var steps := [[0.0, {"squad": "Alpha", "verb": "move", "to": [-30.0, 10.0], "facing": [0.0, -1.0]}],
+			[0.5, {"squad": "Bravo", "verb": "bound", "to": [40.0, 0.0]}],
+			[SCRIPT_BREAK_CONTACT_SECONDS, {"squad": "Alpha", "verb": "break_contact"}]]
+	var tree := main.get_tree()
+	var elapsed := 0.0
+	for step in steps:
+		if float(step[0]) > elapsed:
+			await tree.create_timer(float(step[0]) - elapsed).timeout
+			elapsed = float(step[0])
+		tactical.select_squad(step[1]["squad"])
+		tactical.issue(step[1])
 
 
 static func doctrine_path(name_or_path: String) -> String:
