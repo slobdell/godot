@@ -34,11 +34,11 @@ running per effect per frame. Triangle counts matter much less than those.
    at load; recycle them. No `new()`/`instantiate()`/`queue_free()` per shot.
 3. **Batch.** Many copies of an effect = one `MultiMeshInstance3D` with one material, with
    per-instance color/data via `INSTANCE_CUSTOM`. Share materials; never give every object a
-   unique `StandardMaterial3D` just to change a color. Use `instance uniform`s **[verify]** or MultiMesh custom data.
+   unique `StandardMaterial3D` just to change a color. Use `instance uniform`s **[verified: work in Compatibility]** or MultiMesh custom data.
 4. **Animate in shaders, not scripts.** Flicker, breathing neon, scrolling beams, heat shimmer,
    and fades driven by `TIME` or a start-time uniform cost nothing per frame in GDScript.
 5. **Bake what doesn't move.** Light pools under lamps and neon glow on the floor can be painted
-   into textures or vertex colors, or baked **[verify LightmapGI in Compatibility]**, instead of lit live.
+   into textures or vertex colors, or baked (LightmapGI: not tested), instead of lit live.
 6. **Small on screen, few layers.** Additive sprites are cheap *per pixel* but overdraw stacks: prefer
    thin, bright, short-lived effects over big soft fullscreen ones.
 7. **Pre-warm shaders.** Spawn every effect once off-camera during loading so the first shot doesn't hitch. This matters most on the web.
@@ -60,7 +60,7 @@ running per effect per frame. Triangle counts matter much less than those.
 - **Chunk the ground** (e.g. 40×40 m tiles) or the 8-lights-per-object cap makes the pool useless
   on the floor. This also helps culling.
 - **Custom light field (advanced):** pack up to ~16–32 light positions/colors into a small float
-  data texture **[verify float textures in WebGL2 path]** or shader uniform arrays **[verify]**,
+  data texture (not tested) or shader uniform arrays (not tested),
   and add their falloff in the ground and prop shaders: one draw and one loop per pixel instead of
   engine light passes. Only if the splats + pool aren't enough.
 
@@ -74,7 +74,7 @@ running per effect per frame. Triangle counts matter much less than those.
 - **Muzzle flash:** 2–3 crossed quads with random rotation, 2–3 frames long, plus a pooled light with a ~0.08 s decay.
 - **Explosions:** **flipbook sprite sheets** (pre-rendered animated fireball/smoke frames on a
   billboard) look far richer than a runtime particle sim and cost one quad. Add a few sparks
-  (`GPUParticles3D` **[verify on WebGL2]** or `CPUParticles3D`) and a pooled light pulse.
+  (`GPUParticles3D` **[verified natively; browser pending]** or `CPUParticles3D`) and a pooled light pulse.
 - **Replace `Impact`'s per-hit allocation** with a pooled, shared-material flipbook.
 - **Camera shake** on big hits is free and adds weight. It's visual-only; never slow the simulation for "hit-stop".
 
@@ -83,28 +83,28 @@ running per effect per frame. Triangle counts matter much less than those.
 - Flicker, buzz, and breathing in the shader via `TIME` (per-prop phase offset from world position, so there's no script).
 - **Holograms / ads:** additive unshaded quads with scanline + noise shader.
 - **Fake light pools:** painted gradient decals/quads on the ground under each neon source (static,
-  so batch them or bake them into the ground texture). `Decal` node support in Compatibility **[verify]**; a plain additive quad always works.
+  so batch them or bake them into the ground texture). `Decal` nodes **[verified: render nothing in Compatibility]**; use additive quads (MultiMesh).
 
 ### Blade Runner wet ground (reflections without SSR)
 - SSR isn't available in Compatibility. Fake it: under each bright neon source, draw **vertical
   light streaks** on the ground (stretched, blurred, additive quads toward the camera), which is how
-  wet asphalt reads. A dark, glossy-looking ground texture helps. `ReflectionProbe` **[verify cost]** only if cheap.
+  wet asphalt reads. A dark, glossy-looking ground texture helps. `ReflectionProbe` **[verified: no useful reflection in Compatibility]**.
 
 ### Atmosphere
 - **Depth fog + height fog** from `Environment` (cheap); no volumetric fog in Compatibility.
 - **Fake volumetric beams** (floodlights, searchlights): additive cone meshes with soft edges (fresnel) and slow noise scroll.
-- **Glow/bloom:** `Environment` glow **[verify levels/quality in 4.7.2 Compatibility]**, with a
+- **Glow/bloom:** `Environment` glow **[verified: works, +1.1 ms at 720p]**, with a
   threshold so only HDR emissive (>1) blooms; lower quality on phones.
 - One directional light (moon/floodlight) at most with shadows; **blob shadows** (a soft dark quad) under vehicles instead of dynamic shadows on phones.
 
 ### Heat, shields, damage state
-- **Heat:** `instance uniform float heat` **[verify]** (or MultiMesh custom data) driving barrel/vent emission and a subtle heat-shimmer sprite, with no unique materials.
+- **Heat:** `instance uniform float heat` **[verified: works]** (or MultiMesh custom data) driving barrel/vent emission and a subtle heat-shimmer sprite, with no unique materials.
 - **Shield:** a slightly larger hull "shell" mesh with a fresnel rim + hex/noise shader, invisible
   normally; on a hit, show it briefly with a ripple from the hit point (uniform). Show a "shield down" crackle and a recharge sweep.
 - **Damage:** smoke flipbooks and sparking emissive flicker at low hull health.
 
 ### Whole-frame levers
-- **3D render scale** (`scaling_3d_scale`) ~0.7 on phones while the UI stays crisp **[verify Compatibility support]**.
+- **3D render scale** (`scaling_3d_scale`) ~0.7 on phones while the UI stays crisp **[verified: 0.7 saves 4.3 ms]**.
 - MSAA 2× vs none as a quality-tier setting.
 - Skip effects off screen (`VisibleOnScreenNotifier3D`) and use visibility ranges for far detail.
 
@@ -115,7 +115,7 @@ running per effect per frame. Triangle counts matter much less than those.
    It prints `FX_BENCH` lines: average / p95 / p99 frame time, draw calls and objects
    (`Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME`, `RENDER_TOTAL_OBJECTS_IN_FRAME`), and per-trick
    toggles (so each trick's cost is its on/off delta). GPU timing via
-   `RenderingServer.viewport_set_measure_render_time` **[verify in Compatibility]**. Otherwise, use frame time with vsync off.
+   `RenderingServer.viewport_set_measure_render_time` **[verified: works; use medians]**. Otherwise, use frame time with vsync off.
 2. **An on-screen perf overlay** (`--fx-bench` also shows fps / frame ms / draw calls in a corner) so a phone test needs no console.
 3. **Where to measure:** native desktop (fast iteration), a **real browser with GPU** (not the SwiftShader smoke test), and **the lead's phone**:
    `make export-web && make serve-web WEB_HOST=0.0.0.0`, then open `http://<this machine's LAN IP>:8060/?fx-bench` on the phone. The phone test is a checkpoint to hand to the lead (a question at the end of a milestone, not a blocker mid-way).
@@ -124,8 +124,70 @@ running per effect per frame. Triangle counts matter much less than those.
    (use / tier-gated / rejected). The **[verify]** tags above become facts.
 5. **Set the budget from the data**, e.g. "phone low tier: ≤ 12 ms frame at the worst case, ≤ N draw calls, light pool = 4", and put it in look_and_feel.md so all later FX work designs to it.
 
-## Results (fill in during L0)
+## Results (L0, measured 2026-09-14)
 
-| Trick | Supported (4.7.2 Compat) | Cost desktop / browser / phone | Verdict |
+**How:** `make fx-bench` (18 configs × 6 s each, same seeded timeline: 10 v 10 tanks firing every
+0.7 s, ~23 tracers in flight, explosions on every hit, orbiting camera at gameplay heights, the
+cyberpunk arena). Native desktop, **Intel UHD 620 (Mesa, laptop iGPU, no discrete GPU)**,
+1280×720, vsync off, while four other agents shared the CPU. Raw numbers: `build/fx-bench.json`;
+screenshots: `build/screenshots/fx/fx_<config>.png`. A trick's cost = its config minus `all`
+(tier-high budgets: 16 pooled lights, glow, MSAA 2×, moon shadows, chunked ground, merged props).
+Support checks for features the bench doesn't use: `game/theme/fx/bench/fx_probe.gd` → `probe.png`.
+Frame times on this GPU are GPU-bound (median GPU time ≈ frame time − 0.7 ms), so a GPU delta is the
+honest cost. **Browser (real GPU) and phone: pending the lead's phone run** (`?fx-bench`).
+
+| Config | Frame avg / p95 ms | GPU ms (median) | CPU render ms | Draw calls |
+|---|---|---|---|---|
+| `arena_only` (no firing) | 13.70 / 14.97 | 13.03 | 1.68 | 381 |
+| **`all`** (tier high) | **15.11 / 16.67** | **14.39** | **1.98** | **384** |
+| `lights_0` / `lights_4` / `lights_8` / `lights_32` | 14.17 / 14.74 / 14.87 / 16.30 | 13.49 / 14.01 / 14.14 / 15.41 | ~2.0 | 384 |
+| `no_splats` | 15.39 | 14.62 | 2.10 | 383 |
+| `no_glow` | 14.08 | 13.29 | 2.03 | 384 |
+| `single_ground` (one 320 m plane, 16 lights) | 16.95 | 15.99 | 1.87 | 361 |
+| `msaa_off` | 13.82 | 13.14 | 2.23 | 384 |
+| `scale_0.7` (3D render scale) | 10.80 | 10.10 | 2.28 | 384 |
+| `no_shadows` (moon DirectionalLight shadow off) | 10.20 | 9.53 | 1.36 | **191** |
+| `no_muzzle_flash` | 15.77 | 14.92 | 2.18 | 384 |
+| `unmerged_props` (every box its own mesh) | 16.19 | 15.50 | **3.55** | **564** |
+| `naive` (per-shell mesh + material + OmniLight3D; per-hit sphere + material) | 17.42 / p99 19.4, max 33.5 | 16.23 | 2.82 | 447, 275k prims |
+| `tier_low` / `tier_medium` / `tier_high` | **5.47** / 7.97 / 16.00 | 4.8 / 7.29 / 15.24 | 1.71 / 1.54 / 2.44 | 190 / 190 / 384 |
+
+| Trick | Supported (4.7.2 Compat) | Cost desktop (UHD 620) / browser / phone | Verdict |
 |---|---|---|---|
-| _(none measured yet)_ | | | |
+| **LightPool** (N pooled OmniLight3D, priority + distance) | yes | 16 lights **+0.9 ms** GPU over 0; 4 → +0.5; 8 → +0.65; 32 → +1.9. Draw calls don't change (light passes aren't counted as draws). Pool of 20 requests → only N nodes ever exist. / pending / pending | **use**; tiers: low 4, medium 8, high 16 |
+| **MultiMesh tracers** (one draw for all shells, axis-billboard shader) | yes | tracers + splats + bursts together ≈ `all` − `arena_only` = **+1.4 ms** for ~23 tracers, 16 lights, explosions; 3 draws total / pending / pending | **use** |
+| **Ground light splats** (additive MultiMesh under each tracer) | yes | **≈0** (within noise: `no_splats` was 0.2 ms *slower*) / pending / pending | **use** on every tier; this is the core "light along the path" trick |
+| **Flipbook explosions in a pooled ring-buffer MultiMesh** (shader-animated from a start time in `INSTANCE_CUSTOM`) | yes: float custom data survives, animation is smooth | part of the +1.4 ms above; zero allocation per hit (was SphereMesh + material per hit) / pending / pending | **use**; replaced `Impact` |
+| Naive per-shell light + mesh (the "before") | yes, but | **+1.8 ms GPU, +0.8 ms CPU, 275k primitives, p99 19.4 ms, max 33.5 ms hitches** (allocation + first-use compiles) / pending / pending | **rejected** |
+| **Chunked ground** (8×8 tiles of 40 m) | yes | a single plane costs **+1.6 ms GPU** with 16 lights (+1.9 with 8): lights re-draw the whole plane; tiles cost +23 draw calls / pending / pending | **use** |
+| **Merged static props** (`StaticBatcher`: one surface per material) | yes | **−180 draw calls, −1.6 ms CPU render**, −0.9 ms GPU / pending / pending | **use** for all static art (the Compatibility renderer does no 3D batching) |
+| **Environment glow** (HDR threshold 0.9, additive) | yes: blooms emissive > 1 (tracers, neon, emission on StandardMaterial3D) | **+1.1 ms** / pending / pending | **use**; candidate to drop first on a slow phone |
+| Moon **DirectionalLight3D shadows** | yes | **+4.9 ms GPU, doubles draw calls (191 → 384)** / pending / pending | **tier-gated: high only**; the arena reads fine without them (neon is the lighting) |
+| **3D render scale** (`scaling_3d_scale`) | yes (bilinear) | 0.7 → **−4.3 ms**; UI stays crisp / pending / pending | **use** on phones (low tier 0.75) |
+| MSAA 2× | yes | **+1.3 ms** / pending / pending | tier-gated: high only |
+| Muzzle flash (burst star + ground glow + pooled light flash) | yes | within noise (≤ 0.7 ms, `no_muzzle_flash` measured *slower*) / pending / pending | **use** |
+| Emissive neon shader with per-object flicker from `NODE_POSITION_WORLD` | yes | in `arena_only`; shared material, no script / pending / pending | **use** |
+| Fake volumetric beam cones (additive fresnel) | yes | in `arena_only`, 4 beams / pending / pending | **use**; watch overdraw when the camera is inside a cone |
+| Hologram ad shader (additive, scanlines, procedural text blocks) | yes | in `arena_only`, 4 ads / pending / pending | **use** |
+| **Shader pre-warm** (every effect + every pooled light drawn invisibly for 3 frames at load) | yes | native first-shot worst frame 28–31 ms without vs 20–27 ms with, but Mesa's on-disk shader cache hides most compiles natively; the web has no such cache / pending / pending | **use** (3 frames at load, free) |
+| `instance uniform` (per-instance shader params without unique materials) | **yes** (probe: three cubes, one material, three `heat` values render three colors) | not measured (no per-object cost expected) | **use** for `set_heat` / `set_shield` |
+| `Decal` node | **no**: renders nothing in Compatibility (probe) | — | **rejected**; use additive quads / MultiMesh glow pools |
+| `GPUParticles3D` | yes natively (probe); browser pending | — | allowed for sparks; CPUParticles3D also works and is the safe web fallback |
+| `ReflectionProbe` | no useful result (probe: metal sphere shows no probe reflection) | — | **rejected**; fake wet reflections with low roughness + pooled lights + streaks |
+| `viewport_set_measure_render_time` | yes (GPU/CPU ms reported; an occasional garbage sample, so the bench uses medians) | — | used by the bench |
+| Float data textures / uniform-array light field; LightmapGI | not tested | — | not needed yet: splats + pool are enough |
+
+### Frame budgets per quality tier (set from these numbers)
+
+Worst case = the bench firefight. Native UHD 620 numbers are the reference; a mid-range phone GPU is
+roughly this class or slower, so phones start **low**.
+
+| Tier | Default for | Frame budget (worst case) | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows | Measured here |
+|---|---|---|---|---|---|---|---|---|---|
+| **low** | web, mobile | **≤ 12 ms** (leaves 4 ms of a 16.7 ms frame for game logic) | ≤ 250 | 4 | on (first to cut) | 0.75 | off | off | 5.5 ms, 190 draws |
+| **medium** | — | ≤ 12 ms | ≤ 250 | 8 | on | 1.0 | off | off | 8.0 ms, 190 draws |
+| **high** | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon | 16.0 ms, 384 draws |
+
+Rules for all later FX work: new effects join an existing MultiMesh or pool (no per-event nodes with
+meshes/materials/lights), static art goes through `StaticBatcher`, and any new per-frame cost gets a
+bench config so its delta is measured.

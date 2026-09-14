@@ -1,0 +1,23 @@
+# FX lab: effect performance measurements and generated FX textures
+# Owner: look-and-feel (see _agents/workstreams.md). Included by the root Makefile.
+
+FX_CONFIGS ?=
+FX_SECONDS ?= 6
+FX_QUALITY ?=
+
+fx-bench: import ## FX lab: worst-case firefight per trick config; prints FX_BENCH lines, writes build/fx-bench.json (needs a display)
+	mkdir -p $(BUILD_DIR)/screenshots/fx
+	$(GODOT) --path . -- --fx-bench=$(FX_CONFIGS) --fx-bench-seconds=$(FX_SECONDS) \
+		$(if $(FX_QUALITY),--fx-quality=$(FX_QUALITY)) \
+		--fx-bench-out=$(CURDIR)/$(BUILD_DIR)/fx-bench.json --fx-bench-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/fx \
+		2>&1 | tee $(BUILD_DIR)/fx-bench.log | grep -E 'FX_BENCH|ERROR|FX LAB|^ ' || true
+	@grep -q FX_BENCH_DONE $(BUILD_DIR)/fx-bench.log
+
+fx-textures: import ## Regenerate procedural FX textures (explosion flipbook atlas)
+	$(GODOT) --headless --path . --script res://game/theme/fx/tools/make_flipbook.gd
+	$(GODOT) --headless --path . --import
+
+hud-gallery: import ## HUD widget gallery (frames, banners, conductors); screenshots build/screenshots/hud-gallery{,-phone}.png
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(GODOT) --path . res://game/ui/widgets/gallery/widget_gallery.tscn -- --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/hud-gallery.png --screenshot-delay=4
+	$(GODOT) --path . --resolution 1920x864 res://game/ui/widgets/gallery/widget_gallery.tscn -- --ui-touch --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/hud-gallery-phone.png --screenshot-delay=4

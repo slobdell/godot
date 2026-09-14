@@ -11,6 +11,8 @@ var flags: LaunchFlags
 
 ## Which mode the flags ask for. Order matters: match > skirmish > server > client > offline.
 static func choose(p_flags: LaunchFlags) -> GameMode:
+	if p_flags.has("fx-bench"):
+		return FxBenchMode.new()  # look & feel's FX lab (game/theme/fx/bench/)
 	if p_flags.has("match"):
 		return MatchRunnerMode.new()
 	if p_flags.has("skirmish"):

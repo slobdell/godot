@@ -110,7 +110,62 @@ in merge notes. Compare against the reference app's look where possible.
 ## Status
 
 - 2026-09-13: brief written; `default` theme extracted into slots (placeholder boxes).
-- 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction (projectile light, glowing obstacles, lasers, heat/shield visuals) and mobile-first constraint added. FX tricks catalog + L0 FX lab added (the lead: efficiency tricks first). Nothing started.
+- 2026-09-14: reference HUD chosen (mavlink-hud); specs copied into `references/`. Lighting direction (projectile light, glowing obstacles, lasers, heat/shield visuals) and mobile-first constraint added. FX tricks catalog + L0 FX lab added (the lead: efficiency tricks first).
+
+### Overnight run 2026-09-14: morning report (kept current as items land)
+
+**Plan (backlog order):** L0 FX lab → L1 HUD widgets → L2 cyberpunk arena → L3 vehicles → L4 HUD
+restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-shake curve, SFX, title screen).
+
+#### Done
+- **L0 FX lab.** `make fx-bench` (browser `?fx-bench`) runs an 18-config worst-case firefight and
+  prints `FX_BENCH` JSON lines + `build/fx-bench.json` + a screenshot per config; `PerfOverlay`
+  shows fps/ms/draws/lights on screen. Systems in `game/theme/fx/`: `FxWorld` (lazy, never on
+  headless), `LightPool` (priority + distance), `TracerSystem` (MultiMesh tracers + ground splats),
+  `BurstSystem` (one ring-buffer MultiMesh for flipbook fireballs, muzzle stars, ground glows; atlas
+  generated procedurally by `make fx-textures`), `ChunkedGround`, `StaticBatcher` (merge props by
+  material), `FxQuality` tiers, shader pre-warm, shaders (tracer, splat, burst, neon, wet ground,
+  beam cone, hologram). `Impact` now forwards to the pooled bursts (no per-hit mesh/material).
+  **Measured** (UHD 620, 720p; full table in references/fx_tricks.md → Results): worst case
+  tier high 15.1 ms / 384 draws, medium 8.0 ms / 190, low 5.5 ms / 190. Moon shadows +4.9 ms and
+  2× draws; render scale 0.7 −4.3 ms; 16 pooled lights +0.9 ms; glow +1.1 ms; splats ≈ 0; a single
+  ground plane +1.6 ms vs tiles; merging props −180 draws and −1.6 ms CPU; the naive per-shell
+  light/mesh approach hitches to 33 ms. Probe: instance uniforms work, `Decal` and `ReflectionProbe`
+  don't help in Compatibility, GPUParticles3D works natively. Browser/phone numbers pending.
+
+#### Frame budget per quality tier (from L0; details in references/fx_tricks.md)
+| Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows |
+|---|---|---|---|---|---|---|---|---|
+| low | web, mobile | ≤ 12 ms | ≤ 250 | 4 | on | 0.75 | off | off |
+| medium | — | ≤ 12 ms | ≤ 250 | 8 | on | 1.0 | off | off |
+| high | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon |
+
+#### Decisions (with reasons)
+- **Theme switch by flag:** `--theme=cyberpunk` / `?theme=cyberpunk` read in `GameTheme._static_init`, so no shared file changes were needed to select a theme.
+- **FX systems live under the scene root, created on first use** (`FxWorld.get_instance()`), and return null on headless peers: servers, tests, and `sim-baseline` never build effects.
+- **The muzzle-flash event is "a tracer appeared"**: the `fx.shell` slot has no firing hook, and this needs no contract change.
+- **Tracers take the team's neon** (`GameTheme.team_glow`, new): cyan vs magenta shots keep the two teams readable in the dark. The shell's team is read from the Shell node (read-only duck typing).
+- **The FX lab uses visual-only tanks and shells** (slot visuals, not the simulation), so it never touches gameplay code and is deterministic without physics.
+
+#### Shared-file edits (for the merge notes)
+- `game/modes/game_mode.gd`: 2 lines, `--fx-bench` routes to `FxBenchMode` (in `game/theme/fx/bench/`).
+
+#### Questions for the lead
+1. **Phone run** when convenient: `make export-web && make serve-web WEB_HOST=0.0.0.0`, open `http://<LAN IP>:8080/?fx-bench` on the phone (this worktree serves on 8080), and read the overlay's summary at the end (or add `&fx-quality=low`).
+
+#### Requests to other streams
+- (none yet)
+
+#### Known issues
+- The FX lab prints two "Texture … leaked" engine errors at exit (after switching MSAA/render scale at runtime). Bench only; the game itself exits clean.
+- Bench frame times are GPU-bound on a shared laptop iGPU with four other agents running; use deltas, not absolutes.
+
+#### What to playtest
+- `make fx-bench` (≈2 min, opens a window), then look at `build/screenshots/fx/`.
+- `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
+
+#### Next steps
+- L1 HUD widgets (in progress).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 
