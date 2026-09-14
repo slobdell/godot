@@ -2,7 +2,7 @@ class_name MatchRunnerMode
 extends GameMode
 ## Headless bots-vs-bots, faster than real time under Godot's --fixed-fps; prints
 ## MATCH_RESULT <json> and quits. Options: --green=N --rust=N (BotControllers) or
-## --green-doctrine=PATH --rust-doctrine=PATH, --score-limit=K --time-limit=SECONDS
+## --green-doctrine=PATH --rust-doctrine=PATH (or cpu / cpu:<archetype> with --budget), --score-limit=K --time-limit=SECONDS
 ## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation
 ## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning).
 
@@ -33,7 +33,8 @@ func start() -> void:
 	for team in order:
 		var key := "green" if team == Match.Team.GREEN else "rust"
 		if flags.has(key + "-doctrine"):
-			var loaded := Doctrine.load_file(flags.text(key + "-doctrine"))
+			# A doctrine path, or "cpu" / "cpu:<archetype>" for a budgeted army seeded from the match seed.
+			var loaded := Army.load_army(flags.text(key + "-doctrine"), seed_value * 2 + team, flags.integer("budget", Units.DEFAULT_BUDGET))
 			if loaded.has("error"):
 				push_error(loaded["error"])
 				main.get_tree().quit(2)

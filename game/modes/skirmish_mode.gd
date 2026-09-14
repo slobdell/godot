@@ -2,7 +2,9 @@ class_name SkirmishMode
 extends GameMode
 ## Single player commands squads on the tactical map vs a CPU doctrine. Squad vs squad
 ## elimination; starts in a planning pause. See _agents/tactical_map.md.
-##   --player=DOCTRINE (default player_default)   --enemy=DOCTRINE (default individuals)
+##   --player=DOCTRINE (default player_default; must fit --budget, default Units.DEFAULT_BUDGET)
+##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
+##   --seed=N (the CPU army's seed; default: the clock)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
 
@@ -22,11 +24,18 @@ func role_name() -> String:
 func start() -> void:
 	var game_match := main.game_match
 	game_match.has_local_player = false
-	var lineups := {Match.Team.GREEN: flags.text("player", "player_default"), Match.Team.RUST: flags.text("enemy", "individuals")}
+	var lineups := {Match.Team.GREEN: flags.text("player", "player_default"), Match.Team.RUST: flags.text("enemy", "cpu")}
+	# Directive set 2: armies are bought with a budget. The CPU army is seeded (--seed, else the clock,
+	# printed so a surprising match can be replayed).
+	var budget := flags.integer("budget", Units.DEFAULT_BUDGET)
+	var seed_value := flags.integer("seed", int(Time.get_unix_time_from_system()) % 100000)
 	for team in lineups:
-		var loaded := Doctrine.load_file(doctrine_path(lineups[team]))
+		var loaded := Army.load_army(lineups[team], seed_value, budget)
 		var error: String = loaded.get("error", "")
+		if error == "" and team == Match.Team.GREEN:
+			error = Army.check_budget(loaded["doctrine"], budget)
 		if error == "":
+			print("SKIRMISH_ARMY %s %s: %s" % [Match.TEAM_NAMES[team], lineups[team], Army.describe(loaded["doctrine"])])
 			error = game_match.load_doctrine(team, loaded["doctrine"])
 		if error != "":
 			push_error(error)
@@ -81,7 +90,8 @@ func start() -> void:
 	game_match.add_child(announcer)
 	tactical.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		announcer.announce_command(tactical.describe_command(command), error))
-	main.hud.set_status("Skirmish vs %s" % lineups[Match.Team.RUST])
+	main.hud.set_status("Skirmish vs %s%s" % [lineups[Match.Team.RUST],
+			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else ""])
 	if flags.has("scripted"):
 		_play_script(tactical)
 	else:
