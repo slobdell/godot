@@ -126,7 +126,7 @@ running per effect per frame. Triangle counts matter much less than those.
 
 ## Results (L0, measured 2026-09-14)
 
-**How:** `make fx-bench` (18 configs × 6 s each, same seeded timeline: 10 v 10 tanks firing every
+**How:** `make fx-bench` (18 configs at L0, 21 since L6, × 6 s each, same seeded timeline: 10 v 10 tanks firing every
 0.7 s, ~23 tracers in flight, explosions on every hit, orbiting camera at gameplay heights, the
 cyberpunk arena). Native desktop, **Intel UHD 620 (Mesa, laptop iGPU, no discrete GPU)**,
 1280×720, vsync off, while four other agents shared the CPU. Raw numbers: `build/fx-bench.json`;

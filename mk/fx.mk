@@ -22,7 +22,7 @@ hud-gallery: import ## HUD widget gallery (frames, banners, conductors); screens
 	$(GODOT) --path . res://game/ui/widgets/gallery/widget_gallery.tscn -- --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/hud-gallery.png --screenshot-delay=4
 	$(GODOT) --path . --resolution 1920x864 res://game/ui/widgets/gallery/widget_gallery.tscn -- --ui-touch --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/hud-gallery-phone.png --screenshot-delay=4
 
-vehicle-gallery: import ## Vehicle/weapon FX gallery (team colors, heat, flame; shields and lasers after L5) → build/screenshots/vehicle-gallery.png
+vehicle-gallery: import ## Vehicle/weapon FX gallery (team colors, paint, heat, flames, lasers, shields; --gallery-focus=N close-ups) → build/screenshots/vehicle-gallery.png
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(GODOT) --path . res://game/theme/gallery/vehicle_gallery.tscn -- --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/vehicle-gallery.png --screenshot-delay=4
 

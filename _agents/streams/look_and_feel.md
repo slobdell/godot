@@ -154,9 +154,10 @@ sim-baseline is unchanged (`e69acc63a64f319a`), and web-smoke passes. A rehearsa
 | high | desktop | ≤ 16 ms | ≤ 450 | 16 | on | 1.0 | 2× | moon (orthogonal) | 14.1 ms / 401 |
 
 #### Merge notes (for the morning integration)
-- **Shared-file edits:** `game/modes/game_mode.gd`: 4 lines at the top of `choose()` (`--fx-bench` → `FxBenchMode`, `--title` → `TitleMode`); `hud.tscn` (mine) gains `HudSkin` + `CyberMessages` nodes; `_agents/orientation.md` (common tasks, layout, trip-ups 38–43), `verification.md`, `workstreams.md` (contract row).
-- **Conflicts `git merge-tree` predicts:** gameplay and assets merge clean. **netcode:** `game_mode.gd` (keep netcode's new routes and put my two `if` lines first) and `orientation.md` (both append trip-ups numbered 38+ and common-task rows: keep all, renumber). **garage:** `orientation.md` only (same fix).
+- **Shared-file edits:** `export_presets.cfg`: `exclude_filter` gains `build/*` in both presets. **The web `.pck` was shipping every PNG screenshot under `build/` (Godot imports them): 13.4 MB → 0.6 MB**, web-smoke and the server export re-verified. `game/modes/game_mode.gd`: 4 lines at the top of `choose()` (`--fx-bench` → `FxBenchMode`, `--title` → `TitleMode`); `hud.tscn` (mine) gains `HudSkin` + `CyberMessages` nodes; `_agents/orientation.md` (common tasks, layout, trip-ups 38–43), `verification.md`, `workstreams.md` (contract row).
+- **Conflicts `git merge-tree` predicts** (re-checked at the final commit): assets merges clean. **gameplay, garage:** `orientation.md` only (every stream appends trip-ups numbered 38+ and common-task rows: keep all, renumber). **netcode:** that plus `game_mode.gd` (keep netcode's new routes and put my two `if` lines first).
 - After merging gameplay, `game_theme.gd` holds gameplay's `DEFAULT_SLOTS` (with `weapon.laser`, `fx.laser_beam`, `fx.fog_of_war`) plus this branch's themes; git did it automatically in the rehearsal.
+- **Post-merge doc fixes** (left out of this branch because the neighboring lines change on gameplay/netcode and would conflict): `workstreams.md` HUD-messages contract row: `hud.gd` is no longer a stub; `message_posted` feeds the `CyberMessages` banners in `hud.tscn`. `orientation.md` trip-up 20: HUD widgets draw █ ▲ ─ through `CyberStyle.font()` (Share Tech Mono + a JetBrains Mono fallback); keep ASCII only in labels on the default font.
 - New default look: other streams' screenshot-based checks will now see the cyberpunk theme; `--theme=default` restores the boxes for comparison.
 
 #### Decisions (with reasons)
