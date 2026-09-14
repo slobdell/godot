@@ -15,7 +15,9 @@ static func load_glb(path: String) -> Node3D:
 	if error != OK:
 		push_error("could not read %s (error %d)" % [path, error])
 		return null
-	return document.generate_scene(state) as Node3D
+	var scene := document.generate_scene(state) as Node3D
+	AssetInspector.bake_skins(scene)
+	return scene
 
 
 static func save_glb(root: Node, path: String) -> Error:

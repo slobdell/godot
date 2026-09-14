@@ -61,6 +61,85 @@ static func inspect(root: Node) -> Dictionary:
 	return report
 
 
+## Replaces every skinned mesh with a static copy posed at the skeleton's rest pose, so bounds,
+## normalization, and export see where the parts actually render. (Visual slots don't play
+## skeletal animation; tread animations in packs are dropped.) Returns how many were baked.
+static func bake_skins(root: Node) -> int:
+	var baked := 0
+	var transforms := {}
+	for entry in mesh_instances(root):
+		transforms[entry[0]] = entry[1]
+	for entry in mesh_instances(root):
+		var instance: MeshInstance3D = entry[0]
+		var skeleton := instance.get_node_or_null(instance.skeleton) as Skeleton3D
+		if instance.skin == null or skeleton == null or instance.mesh == null:
+			continue
+		var skeleton_xform := _transform_to(root, skeleton)
+		# Skinned vertices land in skeleton space; express them in the instance's own space.
+		var to_local: Transform3D = (entry[1] as Transform3D).affine_inverse() * skeleton_xform
+		var bind_poses := []
+		for bind in instance.skin.get_bind_count():
+			var bone := instance.skin.get_bind_bone(bind)
+			if bone < 0:
+				bone = skeleton.find_bone(instance.skin.get_bind_name(bind))
+			var bone_rest := skeleton.get_bone_global_rest(bone) if bone >= 0 else Transform3D.IDENTITY
+			bind_poses.append(to_local * bone_rest * instance.skin.get_bind_pose(bind))
+		var static_mesh := ArrayMesh.new()
+		for surface in instance.mesh.get_surface_count():
+			var arrays := instance.mesh.surface_get_arrays(surface)
+			_skin_arrays(arrays, bind_poses)
+			static_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+			static_mesh.surface_set_material(surface, instance.mesh.surface_get_material(surface))
+			static_mesh.surface_set_name(surface, (instance.mesh as ArrayMesh).surface_get_name(surface) if instance.mesh is ArrayMesh else "")
+		instance.mesh = static_mesh
+		instance.skin = null
+		instance.skeleton = NodePath()
+		baked += 1
+	return baked
+
+
+static func _skin_arrays(arrays: Array, bind_poses: Array) -> void:
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals = arrays[Mesh.ARRAY_NORMAL]
+	var bones = arrays[Mesh.ARRAY_BONES]
+	var weights = arrays[Mesh.ARRAY_WEIGHTS]
+	if bones == null or weights == null or vertices.size() == 0:
+		return
+	var per_vertex: int = bones.size() / vertices.size()
+	for i in vertices.size():
+		var position := Vector3.ZERO
+		var normal := Vector3.ZERO
+		var total := 0.0
+		for k in per_vertex:
+			var weight: float = weights[i * per_vertex + k]
+			var bind: int = bones[i * per_vertex + k]
+			if weight <= 0.0 or bind >= bind_poses.size():
+				continue
+			var pose: Transform3D = bind_poses[bind]
+			position += (pose * vertices[i]) * weight
+			if normals != null:
+				normal += (pose.basis * normals[i]) * weight
+			total += weight
+		if total > 0.0:
+			vertices[i] = position / total
+			if normals != null:
+				normals[i] = normal.normalized()
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_BONES] = null
+	arrays[Mesh.ARRAY_WEIGHTS] = null
+	arrays[Mesh.ARRAY_TANGENT] = null
+
+
+static func _transform_to(root: Node, node: Node) -> Transform3D:
+	var xform := Transform3D.IDENTITY
+	while node != null and node != root:
+		if node is Node3D:
+			xform = (node as Node3D).transform * xform
+		node = node.get_parent()
+	return xform
+
+
 ## [[MeshInstance3D, transform relative to root], ...] for every mesh under root (root included).
 static func mesh_instances(root: Node) -> Array:
 	var found := []

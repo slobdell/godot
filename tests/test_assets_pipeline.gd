@@ -146,6 +146,19 @@ func test_emissive_maps_survive_normalize_export_and_reload() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
+func test_a_separate_emission_map_is_wired_into_matching_materials() -> void:
+	var root: Node3D = _free_later(Node3D.new())
+	_add_box(root, "Hull", Vector3(4.5, 3, 4.5), Vector3.ZERO, "Main")
+	_add_box(root, "Tracks", Vector3(4.5, 1, 4.5), Vector3.ZERO, "Tracks")
+	var emission := ImageTexture.create_from_image(Image.create(64, 64, false, Image.FORMAT_RGBA8))
+	var result := AssetNormalizer.normalize(root, "prop.crate", {"emission_maps": {"main": emission}})
+	var materials := {}
+	for material in AssetInspector.inspect(_free_later(result["scene"]))["materials"]:
+		materials[material["name"]] = material
+	assert_true(materials["Main"]["emissive"], "the generator's emission map lights the material it was made for")
+	assert_true(not materials["Tracks"]["emissive"], "other materials stay dark")
+
+
 func test_oversized_textures_are_capped_at_1024() -> void:
 	var root: Node3D = _free_later(Node3D.new())
 	var material := StandardMaterial3D.new()

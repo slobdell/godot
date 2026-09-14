@@ -7,7 +7,8 @@ extends SceneTree
 ##   normalize --in=<glb> --slot=<slot> --theme=<theme>
 ##             [--forward=+z] [--up=+y] [--include=glob,..] [--exclude=glob,..] [--scale=<f>]
 ##             [--scale-from=<slot>]  reuse the uniform scale another slot got from the same source
-##             [--emissive=glob:energy,..] [--tint=glob,..] [--team-emissive=glob,..] [--heat=glob,..]
+##             [--emissive=glob:energy,..] [--emission-map=<png>[:material glob]] (e.g. Meshy's emission map)
+##             [--tint=glob,..] [--team-emissive=glob,..] [--heat=glob,..]
 ##             [--source=<url or path>] [--license=<text>] [--credit=<text>]
 ##             → game/theme/<theme>/generated/<slot file>.glb + .tscn wrapper + manifest.json entry
 ##   check     [--theme=<theme>]                enforce contracts on generated themes (exit 1 on errors)
@@ -71,6 +72,16 @@ func _normalize(args: Dictionary) -> int:
 	for pair in _list(args.get("emissive", "")):
 		var parts := String(pair).split(":")
 		options["emissive"][parts[0]] = float(parts[1]) if parts.size() > 1 else 2.0
+	if args.has("emission-map"):
+		# <file.png> or <file.png>:<material glob>
+		var spec := String(args["emission-map"])
+		var png := spec.get_slice(".png:", 0) + ".png" if spec.contains(".png:") else spec
+		var glob := spec.get_slice(".png:", 1) if spec.contains(".png:") else "*"
+		var image := Image.load_from_file(png)
+		if image == null:
+			printerr("could not read emission map %s" % png)
+			return 1
+		options["emission_maps"] = {glob: ImageTexture.create_from_image(image)}
 	var before := AssetInspector.inspect(source)
 	print("source %s:\n%s" % [args["in"], AssetInspector.summary(before)])
 	var result := AssetNormalizer.normalize(source, slot, options)
@@ -92,6 +103,9 @@ func _normalize(args: Dictionary) -> int:
 	var materials := {"tint": _list(args.get("tint", "")), "team_emissive": _list(args.get("team-emissive", "")),
 			"heat": _list(args.get("heat", ""))}
 	var scene_path := AssetIO.write_wrapper(theme, slot, materials)
+	options.erase("emission_maps")
+	if args.has("emission-map"):
+		options["emission_map"] = args["emission-map"]
 	options["fitted_scale"] = (result["scale"] as Vector3).x
 	options["materials"] = materials
 	manifest["theme"] = theme

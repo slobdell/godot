@@ -19,3 +19,18 @@ assets-normalize: import ## Fit a model to a slot: IN=path.glb SLOT=tank.hull TH
 
 assets-check: import ## Enforce slot contracts on every generated theme (budgets, size, anchor, orientation, textures)
 	$(ASSETS_PIPELINE) check $(if $(filter command line,$(origin THEME)),--theme=$(THEME))
+
+# ---- A2: hosted generators (keys from the environment; see tools/assets/generate.py) ----------
+.PHONY: assets-generate assets-test assets-mock
+PROVIDER ?= meshy
+
+assets-generate: ## Generate a model with a hosted AI service: PROVIDER=meshy SLOT=tank.hull PROMPT="..." [IMAGE=url] [NAME=]
+	$(PYTHON) tools/assets/generate.py --provider $(PROVIDER) --slot $(SLOT) --prompt "$(PROMPT)" \
+		$(if $(IMAGE),--image "$(IMAGE)") $(if $(NAME),--name $(NAME))
+
+assets-test: ## Provider clients vs the local mock server + the Godot asset pipeline tests
+	$(PYTHON) -m unittest discover -s tools/assets -p 'test_*.py'
+	$(MAKE) --no-print-directory test FILTER=assets
+
+assets-mock: ## Serve the mock Meshy/Tripo API on 127.0.0.1:8799 (point generate.py --base-url at it)
+	$(PYTHON) tools/assets/mock_provider.py 8799

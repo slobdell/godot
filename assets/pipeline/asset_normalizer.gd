@@ -25,6 +25,7 @@ const AXES := {
 ##   scale (0)       fixed uniform scale instead of the slot's fit (keep a hull and turret consistent)
 ##   emissive {}     material-name glob → energy: emission = albedo color/texture (neon from paint)
 ##   tris (0)        override the slot's triangle budget
+##   emission_maps {} material-name glob → Texture2D: an emission map delivered beside the GLB (Meshy PBR)
 ## Returns {scene: Node3D, notes: PackedStringArray, scale: Vector3, source: report}.
 static func normalize(source: Node, slot: String, options: Dictionary = {}) -> Dictionary:
 	var contract := AssetContracts.get_contract(slot)
@@ -46,7 +47,7 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 	var groups := _merge_by_material(parts, fit["transform"], notes)
 	var budget := int(options.get("tris", 0)) if int(options.get("tris", 0)) > 0 else int(contract["tris"])
 	var mesh := _build_mesh(groups, budget, notes)
-	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes)
+	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}))
 
 	var root := Node3D.new()
 	root.name = String(contract["file"]).to_pascal_case()
@@ -283,7 +284,8 @@ static func _commit(mesh: ArrayMesh, importer: ImporterMesh, surface: int, array
 
 
 ## Copies each material, caps its textures, strips unsupported features, applies emissive rules.
-static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dictionary, notes: PackedStringArray) -> void:
+static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dictionary, notes: PackedStringArray,
+		emission_maps: Dictionary = {}) -> void:
 	var resized := {}
 	for surface in mesh.get_surface_count():
 		var source := mesh.surface_get_material(surface)
@@ -295,6 +297,12 @@ static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dict
 		var material := source.duplicate() as Material
 		if material is BaseMaterial3D:
 			var base := material as BaseMaterial3D
+			for glob in emission_maps:
+				if base.resource_name.matchn(String(glob)):
+					base.emission_enabled = true
+					base.emission = Color.WHITE
+					base.emission_texture = emission_maps[glob]
+					notes.append("material '%s' uses the supplied emission map" % base.resource_name)
 			for property in AssetInspector.TEXTURE_PROPERTIES:
 				var texture := base.get(property) as Texture2D
 				if texture != null and maxi(texture.get_width(), texture.get_height()) > max_texture:

@@ -1,0 +1,86 @@
+{
+  "slots": {
+    "tank.hull": {
+      "credit": "Quaternius, Animated Tank Pack",
+      "glb": "tank_hull.glb",
+      "license": "CC0 1.0 (Public Domain)",
+      "notes": [],
+      "options": {
+        "emissive": {},
+        "exclude": [
+          "tank_turret",
+          "tank_gun"
+        ],
+        "fitted_scale": 0.227646172046661,
+        "forward": "-x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "team_emissive": [],
+          "tint": [
+            "Main"
+          ]
+        },
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "scene": "tank_hull.tscn",
+      "source": "https://poly.pizza/bundle/Animated-Tank-Pack-0tfvbeAJkU (static.poly.pizza/58c387b2-636f-49dc-a900-13b0852717d6.glb)",
+      "tris": 5974.0
+    },
+    "tank.turret": {
+      "credit": "Quaternius, Animated Tank Pack",
+      "glb": "tank_turret.glb",
+      "license": "CC0 1.0 (Public Domain)",
+      "notes": [],
+      "options": {
+        "emissive": {},
+        "exclude": [],
+        "fitted_scale": 0.227646172046661,
+        "forward": "-x",
+        "include": [
+          "tank_turret"
+        ],
+        "materials": {
+          "heat": [],
+          "team_emissive": [],
+          "tint": [
+            "Main",
+            "Main_Dark"
+          ]
+        },
+        "scale": 0.227646172046661,
+        "up": "+y"
+      },
+      "scene": "tank_turret.tscn",
+      "source": "https://poly.pizza/bundle/Animated-Tank-Pack-0tfvbeAJkU (static.poly.pizza/58c387b2-636f-49dc-a900-13b0852717d6.glb)",
+      "tris": 392
+    },
+    "weapon.cannon": {
+      "credit": "Quaternius, Animated Tank Pack",
+      "glb": "weapon_cannon.glb",
+      "license": "CC0 1.0 (Public Domain)",
+      "notes": [],
+      "options": {
+        "emissive": {},
+        "exclude": [],
+        "fitted_scale": 0.457562416791916,
+        "forward": "-x",
+        "include": [
+          "tank_gun"
+        ],
+        "materials": {
+          "heat": [],
+          "team_emissive": [],
+          "tint": []
+        },
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "scene": "weapon_cannon.tscn",
+      "source": "https://poly.pizza/bundle/Animated-Tank-Pack-0tfvbeAJkU (static.poly.pizza/58c387b2-636f-49dc-a900-13b0852717d6.glb)",
+      "tris": 178.0
+    }
+  },
+  "theme": "kitbash"
+}
