@@ -29,3 +29,8 @@
 | 2026-09-14 22:24 | image-to-3d meshy-t2 smart-topology | `01a0a203-166c-76c8-8929-d42cdc7d5617` | 15 | ifv_b | SUCCEEDED | 763 |
 | 2026-09-14 22:24 | image-to-3d meshy-t2 smart-topology | `01a0a203-166c-74e0-afc5-6cce70341625` | 15 | lancer_b | SUCCEEDED | 763 |
 | 2026-09-14 22:25 | image-to-3d meshy-t2 smart-topology | `01a0a203-166a-716a-b337-a3f7aede589f` | 15 | stands_a | SUCCEEDED | 763 |
+| 2026-09-14 22:28 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d83-76bc-812d-2b93a0282af9` | 15 | tower_a | SUCCEEDED | 688 |
+| 2026-09-14 22:28 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d83-77ed-a579-6f7c53473b2f` | 15 | barrier_a | SUCCEEDED | 688 |
+| 2026-09-14 22:28 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d8e-726f-a68e-e712e95804db` | 15 | gate_a | SUCCEEDED | 688 |
+| 2026-09-14 22:28 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d8e-7508-b648-5f958b08748d` | 15 | scrap_a | SUCCEEDED | 688 |
+| 2026-09-14 22:29 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d80-72ac-b6e2-160cf3ae6fd3` | 15 | container_a | SUCCEEDED | 688 |
