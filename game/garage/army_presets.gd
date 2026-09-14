@@ -39,11 +39,11 @@ const ARCHETYPES := {
 		"blurb": "Tough units dug in short of center; they let you come to them.",
 		"squads": [
 			{"share": 0.6, "formations": ["line", "coil"], "role": "anchor", "close_share": 0.0,
-				"objective": {"right": [-10, 10], "forward": [-32, -22], "radius": 12},
-				"directive": {"caution": [0.7, 0.85]}},
+				"objective": {"right": [-8, 8], "forward": [-18, -10], "radius": 12},
+				"directive": {"caution": [0.55, 0.7]}},
 			{"share": 0.4, "formations": ["line", "wedge"], "role": "support", "close_share": 0.0, "mirror": true,
-				"objective": {"right": [10, 25], "forward": [-36, -28], "radius": 8},
-				"directive": {"cohesion": [0.8, 0.95], "target_priority": "weakest"}},
+				"objective": {"right": [12, 22], "forward": [-22, -14], "radius": 8},
+				"directive": {"cohesion": [0.7, 0.85], "target_priority": "most_exposed"}},
 		],
 	},
 	"flamers": {

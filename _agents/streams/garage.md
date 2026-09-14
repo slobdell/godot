@@ -92,6 +92,9 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   current rules reward (fights 30-80 s sim); turtle is too passive and loses long (160-290 s) matches. Balance is
   gameplay's call (their backlog item 13); CPU variety is what GA4 is for. Reproduce: build armies with
   `make garage-cpu-army PRESET=<p> SEED=1`, then `tools/match_series.py --extra="--elimination --green-doctrine=user://doctrines/cpu/<a>_1.json --rust-doctrine=…"`.
+  - One time-boxed Turtle pass (objectives -18..-10 forward instead of -32..-22, caution 0.55-0.7, support targets
+    most_exposed): vs Individuals 5/12 (was 3/12), vs Balanced 2/8 (same), vs Rush 0/8 (same). Kept; further balance
+    is gameplay's.
 - **Stretch: readable trade-offs, comparison, paint, first-run tips done.** `garage_advice.gd`: per-unit hints from stat
   keywords ("Laser runs hot: add a heat sink", "finite ammo: consider extra ammo", "close range: flank or ambush"),
   shown in EQUIP; COMPARE (bottom of UNITS) opens unit and weapon tables with derived damage/s and the best value
@@ -102,6 +105,21 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
 - **Browser verified.** `make garage-web-smoke`: `?garage` boots (turntable renders under WebGL/SwiftShader) and
   `?garage&garage-autofight&enemy=cpu:rush` saves to `user://` (IndexedDB) and starts the skirmish with 5 v 5.
   `make web-smoke` passes. Screenshots reviewed.
+
+**Summary for the integrator:** the whole overnight backlog (GA0-GA4) and all four stretch items are done. Nothing
+blocked. `make check` (130 tests + `garage-smoke`), `make web-smoke`, and `make garage-web-smoke` pass on the last
+commit; sim baseline unchanged (`e69acc63a64f319a`). Not rebased on `main` (overnight rule).
+
+**Shared-file edits (all additive):** `game/modes/game_mode.gd` (`--garage` → `GarageMode`, after `--match`),
+`game/main.gd` (one flag comment line), `Makefile` (`garage` in `LIGHT_GOALS`), `mk/core.mk` (`garage-smoke` added
+to `check`), `_agents/workstreams.md` (Loadout fields contract row), `_agents/verification.md` (row 6e),
+`_agents/orientation.md` (common-task row, trip-ups 38-39). Everything else is in `game/garage/`, `mk/garage.mk`,
+`tests/test_garage_*.gd`, `tests/garage/`.
+
+**Next steps:** adopt gameplay's real catalog when it lands (scouts, lasers, `COMPONENTS`, weapon costs) and delete
+`STUB_COMPONENTS`; remove `GarageMode.paint_tanks` once Match reads `paint`; try the garage on a real phone (drag inside
+scrolling columns); a "rematch / back to garage" button after VICTORY/DEFEAT (needs a hook in skirmish); look & feel's
+styling pass.
 
 **What to playtest** (morning):
 - `make garage`: the starter army is ready, so tap FIGHT → planning pause with your army vs a fresh CPU Balanced army.
