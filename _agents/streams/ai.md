@@ -91,4 +91,16 @@ Unit stats and combat rules (rules; request changes), the UI and camera (command
 
 ## Status
 
-- 2026-09-15: brief written for round 2. Nothing started.
+- 2026-09-15: brief written for round 2.
+
+### Plan (ordered, smallest foundation first)
+
+1. A0 design doc `_agents/unit_ai.md` — **done** (literature survey, what we adopt and skip, budgets).
+2. A1 scenario harness: `AiScenario` helper + `tests/test_ai_scenarios.gd` (in `make test`) + `tests/ai_scenarios/` long runs (`make ai-scenarios`, new `mk/ai.mk`).
+3. A2 `CoverMap` (pure 2D LOS over cover features, C4 stub reading the arena scene until rules' `Arena.cover_features()`), `TacticalQuery` (generate/filter/score), `UtilityCurves`; `make ai-perf` per-tick cost at 50 units.
+4. A3 `COVER_FIRE` (hide → peek → fire → back), replacing the crude ring-sample cover.
+5. A4 `FireLanes` + OrderController hold-fire gate + `CLEAR_LANE`; artillery splash check.
+6. A5 `Matchups` (after checkpoint 1; stub on today's scout/tank/artillery until then).
+7. A6 `SquadTactics` blackboard; re-measure T1 with/without control point.
+8. A7 `make ai-ladder` + brain variants selectable by flag + ELO table.
+9. Stretch: smarter CpuCommander; on-map explanations.
