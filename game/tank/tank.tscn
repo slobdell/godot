@@ -1,65 +1,10 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://game/tank/tank.gd" id="1_tank"]
+[ext_resource type="Script" path="res://game/theme/visual_slot.gd" id="2_slot"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hull"]
 size = Vector3(2.4, 1.6, 3.6)
-
-[sub_resource type="StandardMaterial3D" id="Mat_hull"]
-albedo_color = Color(0.33, 0.4, 0.22, 1)
-roughness = 0.8
-
-[sub_resource type="StandardMaterial3D" id="Mat_tread"]
-albedo_color = Color(0.12, 0.12, 0.11, 1)
-roughness = 1.0
-
-[sub_resource type="StandardMaterial3D" id="Mat_turret"]
-albedo_color = Color(0.4, 0.47, 0.27, 1)
-roughness = 0.7
-
-[sub_resource type="BoxMesh" id="BoxMesh_hull"]
-material = SubResource("Mat_hull")
-size = Vector3(1.8, 0.7, 3.4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_tread"]
-material = SubResource("Mat_tread")
-size = Vector3(0.45, 0.8, 3.7)
-
-[sub_resource type="BoxMesh" id="BoxMesh_turret"]
-material = SubResource("Mat_turret")
-size = Vector3(1.4, 0.55, 1.7)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_barrel"]
-material = SubResource("Mat_turret")
-top_radius = 0.11
-bottom_radius = 0.13
-height = 2.4
-
-[sub_resource type="SceneReplicationConfig" id="ReplicationConfig_state"]
-properties/0/path = NodePath(".:sync_position")
-properties/0/spawn = true
-properties/0/replication_mode = 1
-properties/1/path = NodePath(".:sync_yaw")
-properties/1/spawn = true
-properties/1/replication_mode = 1
-properties/2/path = NodePath(".:sync_turret_yaw")
-properties/2/spawn = true
-properties/2/replication_mode = 1
-properties/3/path = NodePath(".:sync_health")
-properties/3/spawn = true
-properties/3/replication_mode = 2
-properties/4/path = NodePath(".:sync_alive")
-properties/4/spawn = true
-properties/4/replication_mode = 2
-properties/5/path = NodePath(".:sync_reload")
-properties/5/spawn = true
-properties/5/replication_mode = 1
-properties/6/path = NodePath(".:sync_firing")
-properties/6/spawn = true
-properties/6/replication_mode = 2
-properties/7/path = NodePath(".:sync_intent")
-properties/7/spawn = true
-properties/7/replication_mode = 2
 
 [node name="Tank" type="CharacterBody3D"]
 collision_layer = 2
@@ -70,31 +15,19 @@ script = ExtResource("1_tank")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 shape = SubResource("BoxShape3D_hull")
 
-[node name="Hull" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
-mesh = SubResource("BoxMesh_hull")
-
-[node name="TreadLeft" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.4, 0)
-mesh = SubResource("BoxMesh_tread")
-
-[node name="TreadRight" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0.4, 0)
-mesh = SubResource("BoxMesh_tread")
+[node name="HullVisual" type="Node3D" parent="."]
+script = ExtResource("2_slot")
+slot = "tank.hull"
 
 [node name="Turret" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 0.2)
 
-[node name="TurretBody" type="MeshInstance3D" parent="Turret"]
-mesh = SubResource("BoxMesh_turret")
+[node name="TurretVisual" type="Node3D" parent="Turret"]
+script = ExtResource("2_slot")
+slot = "tank.turret"
 
-[node name="Barrel" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.05, -1.95)
-mesh = SubResource("CylinderMesh_barrel")
-
-[node name="StateSync" type="MultiplayerSynchronizer" parent="."]
-replication_interval = 0.033
-replication_config = SubResource("ReplicationConfig_state")
+[node name="WeaponVisual" type="Node3D" parent="Turret"]
+script = ExtResource("2_slot")
 
 [node name="Nameplate" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0)

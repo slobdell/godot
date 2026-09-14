@@ -198,3 +198,9 @@ Re-run T3/T3b after any change; the goal is "depends on doctrine and map", not "
 
 - Everyone's idle-gun rate is ~72% even when working correctly: most of the time a loaded tank with an enemy in sight is still swinging its turret (110°/s) or waiting for the 2.5° aim tolerance. That's a combat-feel knob (turret speed, tolerance) to revisit with the lead's playtest feedback.
 - Hits are still ~83% front / 17% side / ~0% rear. Flanking happens but rarely *completes* a rear shot; FLANK standoff positions and cover-seeking are the obvious next heuristics to tune.
+
+### T1 v2: coordination under the new rules (2026-09-13)
+
+Elimination, 400 HP, 70 m guns, shot spread, 240 m arena; 60 + 60 matches:
+Anvil & Hammer vs Individuals **38 : 22** (normal bases) and **34 : 26** (swapped) = **coordinated 60%**.
+The lead's thesis still holds after the rebalance. Matches average ~230 s.

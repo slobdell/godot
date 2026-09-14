@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://game/theme/default/ground_grid.gdshader" id="1_grid"]
+
+[sub_resource type="ShaderMaterial" id="Mat_ground"]
+shader = ExtResource("1_grid")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+material = SubResource("Mat_ground")
+size = Vector2(320, 320)
+
+[sub_resource type="StandardMaterial3D" id="Mat_perimeter"]
+albedo_color = Color(0.45, 0.45, 0.43, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_perimeter_ns"]
+material = SubResource("Mat_perimeter")
+size = Vector3(244, 3, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_perimeter_ew"]
+material = SubResource("Mat_perimeter")
+size = Vector3(2, 3, 244)
+
+[node name="ArenaDressing" type="Node3D"]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_ground")
+
+[node name="NorthMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -121)
+mesh = SubResource("BoxMesh_perimeter_ns")
+
+[node name="SouthMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 121)
+mesh = SubResource("BoxMesh_perimeter_ns")
+
+[node name="EastMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 121, 1.5, 0)
+mesh = SubResource("BoxMesh_perimeter_ew")
+
+[node name="WestMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -121, 1.5, 0)
+mesh = SubResource("BoxMesh_perimeter_ew")
+

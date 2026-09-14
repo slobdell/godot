@@ -68,7 +68,9 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var turret: Node3D = $Turret
 @onready var nameplate: Label3D = $Nameplate
 @onready var _collision: CollisionShape3D = $Collision
-var _flame: MeshInstance3D
+@onready var _hull_visual: VisualSlot = $HullVisual
+@onready var _turret_visual: VisualSlot = $Turret/TurretVisual
+@onready var _weapon_visual: VisualSlot = $Turret/WeaponVisual
 
 
 func _ready() -> void:
@@ -82,8 +84,9 @@ func set_weapon(id: String) -> void:
 	weapon_id = id
 	weapon = Weapons.profile(id)
 	reload_seconds = weapon["reload"]
-	if weapon["kind"] == Weapons.Kind.CONE and _flame == null and is_inside_tree():
-		_build_flame_visual()
+	if _weapon_visual != null:
+		_weapon_visual.fill("weapon." + id)
+		_weapon_visual.invoke("setup", [weapon])
 
 
 func _physics_process(delta: float) -> void:
@@ -143,8 +146,7 @@ func _process(delta: float) -> void:
 	nameplate.text = "%s  %d" % [display_name, sync_health]
 	if sync_intent != "":
 		nameplate.text += "\n" + sync_intent
-	if _flame != null:
-		_flame.visible = sync_firing and alive
+	_weapon_visual.invoke("set_firing", [sync_firing and alive])
 
 
 # ---- Rules hooks (called by Match on the simulating peer) --------------------------
@@ -200,40 +202,10 @@ func speed() -> float:
 	return _speed
 
 
-## Repaint hull and turret. The scene's materials are shared by every tank
-## instance, so each repainted tank gets its own copies.
-func set_paint(hull_color: Color) -> void:
-	var parts := {$Hull: hull_color, $Turret/TurretBody: hull_color.lightened(0.15),
-			$Turret/Barrel: hull_color.lightened(0.15)}
-	for mesh_instance: MeshInstance3D in parts:
-		var material := mesh_instance.mesh.surface_get_material(0).duplicate() as StandardMaterial3D
-		material.albedo_color = parts[mesh_instance]
-		mesh_instance.material_override = material
-
-
-func _build_flame_visual() -> void:
-	# A translucent cone along the turret's forward axis, sized to the weapon's reach.
-	var length: float = weapon["range"]
-	var cone := CylinderMesh.new()
-	cone.top_radius = 0.2
-	cone.bottom_radius = tan(deg_to_rad(weapon["cone_deg"] / 2.0)) * length
-	cone.height = length
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color = Color(1.0, 0.45, 0.1, 0.35)
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	cone.material = material
-	_flame = MeshInstance3D.new()
-	_flame.name = "Flame"
-	_flame.mesh = cone
-	_flame.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	# Cylinder axis is +Y; rotate it to point along -Z (forward), narrow end at the muzzle.
-	_flame.transform = Transform3D(Basis(Vector3.RIGHT, -PI / 2.0), Vector3(0.0, 0.05, -1.2 - length / 2.0))
-	_flame.visible = false
-	turret.add_child(_flame)
-	# A stubby, fat barrel reads as "not a cannon" from above.
-	$Turret/Barrel.scale = Vector3(2.2, 0.45, 2.2)
+## Paint this tank in a team color. What that looks like is up to the theme's visuals.
+func set_paint(color: Color) -> void:
+	for slot in [_hull_visual, _turret_visual, _weapon_visual]:
+		(slot as VisualSlot).invoke("set_team_color", [color])
 
 
 func _set_alive(value: bool) -> void:

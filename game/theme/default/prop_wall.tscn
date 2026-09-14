@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="Mat_wall"]
+albedo_color = Color(0.58, 0.58, 0.55, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+material = SubResource("Mat_wall")
+size = Vector3(18, 3, 1.5)
+
+[node name="PropWall" type="Node3D"]
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+mesh = SubResource("BoxMesh_wall")

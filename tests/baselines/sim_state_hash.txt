@@ -1,0 +1,6 @@
+e69acc63a64f319a
+# ^ state_hash of: --match --elimination --green-doctrine=res://doctrines/anvil_hammer.json
+#   --rust-doctrine=res://doctrines/individuals.json --time-limit=40 --seed=3 (x86-64 Linux, Godot 4.7.2)
+# Checked by `make sim-baseline` (part of `make check`). Art, assets, garage, and netcode changes
+# must NOT change it. Gameplay changes it on purpose: update this first line in the same commit
+# and say why in the commit message.

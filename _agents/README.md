@@ -9,6 +9,8 @@ that way: a note that only says "do X" teaches nothing.
 
 ## Files
 
+- **[workstreams.md](workstreams.md)**: **Parallel work.** The five streams (gameplay, look & feel, assets, netcode, garage), git worktree setup, who owns which paths, the contracts between streams, and the invariants every merge keeps. Each stream's brief is in `streams/`.
+
 - **[orientation.md](orientation.md)**: **Read this first.** A 3-minute warmup: the mental model, how context is handed between sessions, the repo layout, and the trip-ups that have already cost someone time.
 - **[vision.md](vision.md)**: Where the game is going. Players don't drive tanks; they write *strategy* for a 5-tank squad, compiled by an on-device LLM (Gemini Nano on Android) into data the simulation runs. Read before making any design decision that would be hard to undo.
 - **[squad_ai_design.md](squad_ai_design.md)**: Exploration of *how* tanks think (utility AI: directives and phases over a per-tank sense→think→act loop) and *where player skill comes from* when both sides have identical tanks. Includes the experiments (E1–E4) that validate it. Read before any AI, doctrine, or game-balance work.

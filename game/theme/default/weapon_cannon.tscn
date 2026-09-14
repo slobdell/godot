@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/default/tinted_visual.gd" id="1_tint"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_barrel"]
+albedo_color = Color(0.4, 0.47, 0.27, 1)
+roughness = 0.7
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_barrel"]
+material = SubResource("Mat_barrel")
+top_radius = 0.11
+bottom_radius = 0.13
+height = 2.4
+
+[node name="WeaponCannon" type="Node3D"]
+script = ExtResource("1_tint")
+tinted = Array[NodePath]([NodePath("Barrel")])
+lighten = 0.15
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.05, -1.95)
+mesh = SubResource("CylinderMesh_barrel")

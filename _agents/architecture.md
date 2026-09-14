@@ -48,6 +48,15 @@ Rules that fall out of this:
 3. **The LLM is never in the tick loop** (reasons in [vision.md](vision.md#where-the-llm-fits-and-where-it-must-not)).
 4. **Anything the client sends is untrusted.** A client sends *intent* (commands now, doctrine later); the server clamps and validates (`TankCommand.sanitized()` is the first instance of this).
 
+## Seams for parallel work (2026-09-13)
+
+- **Modes:** `main.gd` only parses flags and hands off to one `GameMode` (`game/modes/`).
+- **Visuals:** gameplay scenes hold `VisualSlot`s; `GameTheme` maps slot ids to art scenes. Changing art never edits gameplay files, and `make sim-baseline` proves the simulation didn't change.
+- **Replication:** `Replication.attach_tank_sync()` builds the synchronizer in code (netcode owns what syncs); `tank.tscn` has no networking nodes.
+- **HUD:** `hud.tscn` (layout) + `hud.gd` (text).
+- **Makefile:** `mk/<area>.mk`.
+- Ownership and contracts: [workstreams.md](workstreams.md).
+
 ## One codebase, three builds
 
 | Build | How | Includes |

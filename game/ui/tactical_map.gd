@@ -25,10 +25,15 @@ const VERB_LABELS := {"move": "Move", "bound": "Bound", "hold": "Hold", "assault
 const FORMATION_LABELS := {"column": "Column", "wedge": "Wedge", "vee": "Vee", "line": "Line",
 		"echelon_right": "Echelon R", "echelon_left": "Echelon L", "coil": "Coil"}
 
-const FRIENDLY := Color(0.45, 0.85, 0.4)
-const ENEMY := Color(0.95, 0.35, 0.3)
-const COMMANDER := Color(1.0, 0.85, 0.25)
-const GHOST := Color(1, 1, 1, 0.55)
+# Colors come from the theme (look-and-feel owns them); this file owns behavior.
+var FRIENDLY: Color:
+	get: return GameTheme.ui["friendly"]
+var ENEMY: Color:
+	get: return GameTheme.ui["enemy"]
+var COMMANDER: Color:
+	get: return GameTheme.ui["commander"]
+var GHOST: Color:
+	get: return GameTheme.ui["ghost"]
 
 var game_match: Match
 var camera: Camera3D

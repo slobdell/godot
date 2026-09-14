@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/default/tinted_visual.gd" id="1_tint"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_turret"]
+albedo_color = Color(0.4, 0.47, 0.27, 1)
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_turret"]
+material = SubResource("Mat_turret")
+size = Vector3(1.4, 0.55, 1.7)
+
+[node name="TankTurret" type="Node3D"]
+script = ExtResource("1_tint")
+tinted = Array[NodePath]([NodePath("TurretBody")])
+lighten = 0.15
+
+[node name="TurretBody" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_turret")

@@ -11,6 +11,10 @@ When a task is complete, the running agent updates `HANDOFF.md` at the project
 root before the context window is cleared. A fresh agent with no memory should
 regain full situational awareness from `HANDOFF.md` in under 5 minutes.
 
+**If you were started as a WORKSTREAM agent** (gameplay, look & feel, assets, netcode, garage), read
+[workstreams.md](workstreams.md) and your brief in `streams/` right after this file: they define what you own
+and the contracts you must not break.
+
 **If you were just handed the repo:**
 1. Read `HANDOFF.md` (project root): the current state and the task you're here to do.
 2. Read this file for the mental model and trip-ups.
@@ -59,7 +63,9 @@ Makefile                 every workflow: `make help`
 project.godot            engine config: renderer, input map, main scene
 export_presets.cfg       "Web" and "Linux Server" export presets
 game/
-  main.tscn / main.gd    entry point: picks role OFFLINE/SERVER/CLIENT from flags; HUD; local controller
+  main.tscn / main.gd    entry point: parses flags, picks a GameMode, owns camera/HUD/local controller
+  modes/                 one file per way to run: offline, skirmish, match_runner, server, client (+ LaunchFlags)
+  theme/                 GameTheme (slot → scene, team colors, UI palette), VisualSlot, default/ placeholder art
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
   combat/                Weapons (data: cannon, flamethrower), Shell, Armor, Ballistics, Impact
@@ -67,13 +73,16 @@ game/
                          OrderController (orders + reflexes → command),
                          BotController (legacy baseline), Steering, Perception, Pathing
   agent/                 AgentBridge: localhost HTTP → OrderController (Claude plays)
-  ui/                    TacticalMap: squad command overlay (skirmish mode)
+  ui/                    TacticalMap (squad command overlay), Hud (hud.tscn = layout, hud.gd = text)
   controllers/           PlayerController (keyboard+mouse), ScriptedController (demo/tests)
-  network/               NetworkInput: client→server command relay + server-side validation
+  network/               NetworkInput (client→server commands + validation), Replication (what syncs)
   camera/                FollowCamera
-  arena/                 ground, walls, crates, sky; arena.gd bakes the (mirrored, fair) navmesh
+  arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
 tests/                   headless runner + TestCase base + test_*.gd; net/bot_client_check.gd
 doctrines/               team plans as JSON (squads, weapons, directives) for the match runner
+mk/                      Makefile targets split by area (core, play, net, match, web); root Makefile includes them
+tests/baselines/         recorded simulation hash (make sim-baseline)
+_agents/streams/         per-workstream briefs (gameplay, look_and_feel, assets, netcode, garage)
 tools/                   serve_web.py, web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
 _agents/                 you are here
 .tools/  (gitignored)    pinned Godot + export templates, from `make bootstrap`
@@ -137,3 +146,6 @@ build/   (gitignored)    exports and screenshots
 31. **Headless Godot's root viewport is 64×64.** Anything that turns screen coordinates into GUI hits (pushed mouse events, `gui_get_hovered_control`) silently misses in headless tests. Set `tree.root.size = Vector2i(1280, 720)` first.
 32. **Windowed playtest scripts open on the lead's desktop,** where a stray click becomes an in-game order (it happened once: two phantom "bound" orders). Prefer headless tests; keep windowed runs short and say when one is coming.
 33. **Balance numbers are spread across weapons.gd (damage, reload, range, spread), tank.gd (max_health), and match.gd (SENSOR_RANGE, arena size).** Re-measure pace (`first_shot_seconds`, `first_kill_seconds` in match stats) and re-run the fairness control after changing any of them. Earlier experiment results (T0–T3) predate the 2026-09-13 rebalance.
+34. **Gameplay scenes must not contain meshes.** Art goes through `VisualSlot` + `GameTheme` (streams/assets.md has the slot contracts). A mesh added straight into `tank.tscn` or `arena.tscn` will collide with the look & feel stream's work.
+35. **The browser build and the native build do not simulate identically** (measured: same seed, different state hash after 40 s). Determinism holds per build only; don't design cross-platform lockstep on the current physics (streams/netcode.md).
+36. **`git stash` removes uncommitted code the running experiment/test depends on.** Don't stash to "test the committed version" mid-change; use a worktree.

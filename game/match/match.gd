@@ -13,7 +13,6 @@ signal finished(result: Dictionary)
 enum Team { GREEN, RUST }
 
 const TEAM_NAMES := ["Green", "Rust"]
-const RUST_PAINT := Color(0.55, 0.27, 0.2)
 const TANK_SCENE := preload("res://game/tank/tank.tscn")
 const SHELL_SCENE := preload("res://game/combat/shell.tscn")
 const BASE_DAMAGE := 34.0
@@ -147,7 +146,8 @@ func result(reason: String) -> Dictionary:
 			winner = TEAM_NAMES[Team.GREEN] if standing[0] > standing[1] else TEAM_NAMES[Team.RUST]
 	elif score_green != score_rust:
 		winner = TEAM_NAMES[Team.GREEN] if score_green > score_rust else TEAM_NAMES[Team.RUST]
-	return {"winner": winner, "reason": reason, "score": {"green": score_green, "rust": score_rust},
+	return {"winner": winner, "reason": reason, "state_hash": state_hash(), "tick": tick,
+			"score": {"green": score_green, "rust": score_rust},
 			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
 			"rust": team_tanks(Team.RUST).size()}, "stats": stats.duplicate(true)}
 
@@ -350,6 +350,21 @@ func _update_intel() -> void:
 				known.erase(contact_name)
 
 
+## A fingerprint of the exact simulation state (full float bits of every tank's
+## position, heading, turret, and health). Two runs, or two machines, agree only if
+## they simulated identically. Basis for determinism checks and future lockstep desync detection.
+func state_hash() -> String:
+	var bytes := PackedByteArray()
+	bytes.append_array(var_to_bytes(tick))
+	for tank in _sorted_tanks():
+		bytes.append_array(var_to_bytes([String(tank.name), tank.global_position, tank.rotation.y,
+				tank.turret.rotation.y, tank.health, tank.alive]))
+	var hashing := HashingContext.new()
+	hashing.start(HashingContext.HASH_SHA256)
+	hashing.update(bytes)
+	return hashing.finish().hex_encode().left(16)
+
+
 ## Comparable team strength: tanks alive dominate, total health breaks ties.
 func _team_standing(team: int) -> int:
 	var health := 0
@@ -405,8 +420,8 @@ func _build_tank(data: Dictionary) -> Node:
 	var is_local: bool = has_local_player and tank.owner_peer_id != 0 \
 			and tank.owner_peer_id == multiplayer.get_unique_id()
 	tank.display_name = "YOU" if is_local else tank.name
-	if tank.team == Team.RUST:
-		tank.set_paint.call_deferred(RUST_PAINT)  # needs its child meshes ready
+	tank.set_paint.call_deferred(GameTheme.team_color(tank.team))  # needs its visuals ready
+	Replication.attach_tank_sync(tank)
 	if simulate:
 		tank.fired.connect(_on_tank_fired.bind(tank))
 		tank.sprayed.connect(_on_tank_sprayed.bind(tank))

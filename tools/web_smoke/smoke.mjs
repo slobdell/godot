@@ -12,7 +12,7 @@ import puppeteer from "puppeteer-core";
 const [url, screenshotPath, settleArg, markerArg] = process.argv.slice(2);
 const settleMs = Number(settleArg ?? 3) * 1000;
 const READY_MARKER = markerArg ?? "TANK_SQUAD_READY";
-const BOOT_TIMEOUT_MS = 60_000;
+const BOOT_TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS ?? 60_000);
 
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME ?? "/usr/bin/google-chrome",
