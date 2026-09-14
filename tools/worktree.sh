@@ -55,7 +55,7 @@ CFG
     echo
     echo "Worktree ready: $dir  (branch $branch, ports +$((10 * offset)))"
     echo "Start its agent:  cd $dir && claude"
-    echo "Tell it: \"You are the $stream workstream. Read CLAUDE.md, then _agents/workstreams.md and _agents/streams/$stream.md.\""
+    echo "Tell it: the /goal kickoff in HANDOFF.md (Overnight run), with <stream> = $stream"
     ;;
   list)
     printf "%-34s %-26s %-10s %-7s %s\n" "FOLDER" "BRANCH" "PORTS+" "DIRTY" "VS MAIN (behind/ahead)"
