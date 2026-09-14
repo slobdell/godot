@@ -39,10 +39,10 @@ stretch items). Rules for unattended work are in workstreams.md → *Unattended 
 main first so streams don't block each other: the machine-wide heavy-run limiter (`tools/slot.sh`),
 the `fx.shell` visual slot, the unit catalog v0 (`game/units/units.gd`), and `--player=<path>` for garage armies.
 
-**Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude`), with the goal below
-(replace `<stream>` with `gameplay`, `look_and_feel`, `assets`, `netcode`, or `garage`):
+**Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude`) with this goal. It's
+the same text for all five; the agent works out its stream from its folder:
 
-> /goal You are the `<stream>` agent for Tank Squad, working in this worktree on branch `stream/<stream>`. I'm asleep: you will get NO input from me until morning, so never stop to wait for an answer. Read CLAUDE.md, HANDOFF.md, `_agents/orientation.md`, `_agents/workstreams.md` (especially *Autonomous mandate* and *Unattended runs*), then `_agents/streams/<stream>.md`. Work through its **Overnight backlog** top to bottom, then its stretch items: build, test, `make check`, smoke test and look at your screenshots, and commit every green step. Done when every backlog item is complete or written up as blocked, `make check` passes on your last commit, and the brief's Status section holds the morning report.
+> /goal You are a Tank Squad workstream agent. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>` (one of gameplay, look_and_feel, assets, netcode, garage). Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. I'm asleep: you will get NO input from me until morning, so never stop to wait for an answer. Read CLAUDE.md, HANDOFF.md, `_agents/orientation.md`, `_agents/workstreams.md` (especially *Autonomous mandate* and *Unattended runs*), then `_agents/streams/<stream>.md`. Work through its **Overnight backlog** top to bottom, then its stretch items: build, test, `make check`, smoke test and look at your screenshots, and commit every green step. Done when every backlog item is complete or written up as blocked, `make check` passes on your last commit, and the brief's Status section holds the morning report.
 
 **Morning integration** (the orchestrator session in `~/projects/godot`): read each Status report,
 merge streams one at a time in the order netcode → assets → garage → gameplay → look_and_feel
