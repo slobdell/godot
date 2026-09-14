@@ -53,3 +53,47 @@ func test_flamethrower_shows_its_flame_only_while_firing() -> void:
 	assert_true(flame.visible, "the flame shows while firing")
 	var cone := flame.mesh as CylinderMesh
 	assert_near(cone.height, float(Weapons.profile("flamethrower").get("range", 20.0)), 0.01, "the flame is as long as the weapon's range")
+
+
+func test_shield_events_show_then_hide_the_shell() -> void:
+	var hull := _part("tank.hull")
+	var shield := hull.get_node("Shield") as ShieldEffect
+	for frame in 5:
+		hull.call("set_shield", 1.0)  # gameplay calls this every frame
+	assert_true(not shield.visible, "a full, untouched shield draws nothing")
+	hull.call("set_shield", 0.6)
+	assert_true(shield.visible and shield.state()["hit"] > 0.0, "a hit shows the shimmer")
+	hull.call("set_shield", 0.0)
+	assert_true(shield.state()["down"] > 0.0, "reaching zero plays the shield-down crackle")
+	for i in 90:
+		shield._process(1.0 / 60.0)
+	assert_true(not shield.visible, "the shell hides once the events finish")
+	hull.call("set_shield", 0.1)
+	assert_true(shield.visible and shield.state()["recharge"] > 0.0, "a rising shield shows the recharge sweep")
+
+
+func test_laser_parts_and_beams_follow_the_gameplay_contract() -> void:
+	var laser := _part("weapon.laser")
+	for method in ["set_team_color", "setup", "set_firing", "set_heat"]:
+		assert_true(laser.has_method(method), "weapon.laser implements %s" % method)
+	laser.call("set_heat", 0.7)
+	assert_near(float((laser.get_node("Mesh") as MeshInstance3D).get_instance_shader_parameter("heat")), 0.7, 0.001, "laser coils take heat")
+	var beam := _part("fx.laser_beam")
+	assert_true(beam.has_method("setup"), "fx.laser_beam implements setup(from, to)")
+	beam.call("setup", Vector3.ZERO, Vector3(0, 1, -20))  # headless: no FxWorld, must not error
+
+
+func test_beam_system_batches_and_expires_pulses() -> void:
+	var beams: BeamSystem = add_to_tree(BeamSystem.new())
+	var pool: LightPool = add_to_tree(LightPool.new(4))
+	var sources: Array[Node] = []
+	for i in 20:
+		var source: Node = add_to_tree(Node.new())
+		beams.add(source, Vector3(i, 1.2, 0), Vector3(i, 1.0, -30), Color.VIOLET, 0.0)
+		sources.append(source)
+	beams.update(pool, 0.05)
+	assert_eq(beams.active_count(), 20, "twenty live pulses draw in one batch")
+	pool.commit(Vector3.ZERO, 0.05)
+	assert_eq(pool.lit_count, 4, "beams borrow pooled lights instead of carrying their own")
+	beams.update(pool, BeamSystem.FADE_SECONDS + 0.01)
+	assert_eq(beams.active_count(), 0, "faded pulses stop drawing even before Match frees them")

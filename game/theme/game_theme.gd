@@ -41,6 +41,9 @@ const CYBERPUNK_SLOTS := {
 	"weapon.cannon": "res://game/theme/cyberpunk/weapon_cannon.tscn",
 	"weapon.flamethrower": "res://game/theme/cyberpunk/weapon_flamethrower.tscn",
 	"fx.shell": "res://game/theme/cyberpunk/fx_shell.tscn",
+	# Gameplay G7's slots (contracts in streams/assets.md); default placeholders live on stream/gameplay.
+	"weapon.laser": "res://game/theme/cyberpunk/weapon_laser.tscn",
+	"fx.laser_beam": "res://game/theme/cyberpunk/fx_laser_beam.tscn",
 	"prop.crate": "res://game/theme/cyberpunk/prop_crate.tscn",
 	"prop.wall": "res://game/theme/cyberpunk/prop_wall.tscn",
 	"arena.environment": "res://game/theme/cyberpunk/arena_environment.tscn",

@@ -21,6 +21,11 @@ func set_team_color(color: Color) -> void:
 		rebuild()
 
 
+## The weapon profile (slot contract); parts that size themselves from it override this.
+func setup(_weapon: Dictionary) -> void:
+	pass
+
+
 ## Heat 0..1: barrels and vents glow from their color to orange-white (per instance, no new material).
 func set_heat(ratio: float) -> void:
 	heat = clampf(ratio, 0.0, 1.0)

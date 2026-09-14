@@ -2,9 +2,9 @@
 // with turbulent noise scrolling outward (TIME) and soft edges (view-facing fresnel). No texture.
 // CylinderMesh UV.y: 0 at the top cap ring (the nozzle, narrow end) → 1 at the far end.
 shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, fog_disabled;
+render_mode unshaded, blend_add, depth_draw_never, cull_back, fog_disabled;
 
-uniform float intensity = 0.8;
+uniform float intensity = 0.6;
 uniform float scroll_speed = 3.5;
 
 float hash(vec2 p) {
@@ -25,7 +25,7 @@ void fragment() {
 	float turbulence = noise(flow) * 0.6 + noise(flow * 2.3 + 7.0) * 0.4;
 	float body = pow(facing, 3.0) * smoothstep(1.0, 0.5, along) * smoothstep(0.0, 0.04, along);
 	// Tongues: turbulence cuts gaps into the jet, more of them farther from the nozzle.
-	float tongues = smoothstep(0.25 + along * 0.45, 0.85 + along * 0.1, turbulence + (1.0 - along) * 0.35);
+	float tongues = smoothstep(0.35 + along * 0.4, 0.95, turbulence + (1.0 - along) * 0.3);
 	float fire = clamp(body * tongues, 0.0, 1.0);
 	vec3 hot = mix(vec3(1.0, 0.95, 0.75), vec3(1.0, 0.45, 0.08), smoothstep(0.0, 0.45, along));
 	vec3 color = mix(hot, vec3(0.7, 0.08, 0.02), smoothstep(0.45, 0.95, along));

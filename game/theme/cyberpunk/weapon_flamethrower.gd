@@ -73,3 +73,8 @@ func _process(_delta: float) -> void:
 	if fx != null:
 		var middle := global_transform * Vector3(0, 0.3, -1.8 - _length * 0.35)
 		fx.lights.request(middle, Color(1.0, 0.5, 0.15), 4.0, _length * 0.8, LightPool.PRIORITY_BEAM)
+
+
+func set_heat(ratio: float) -> void:
+	if not is_equal_approx(ratio, heat):
+		super.set_heat(ratio)

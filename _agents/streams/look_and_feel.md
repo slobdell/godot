@@ -185,6 +185,20 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
   `l4_skirmish_phone.png` (1600×720, `--ui-touch`), `l4_offline.png`. Test: banners move beside the map
   and wrap.
 
+- **L5 hooks, built to gameplay's actual contracts** (read from `stream/gameplay`: `Tank` calls
+  `set_shield(ratio)` on the hull and `set_firing`/`set_heat` on the weapon every frame;
+  `Match.show_beam` spawns an `fx.laser_beam` slot per pulse, calls `setup(from, to)` once, frees it
+  0.2 s later): **shields** (`ShieldEffect`: hex/fresnel shell, hidden at rest; hit shimmer, a red-orange
+  shield-down crackle at 0, a recharge sweep while rising; one shared material, instance uniforms),
+  **`weapon.laser`** (emitter with team neon coils that heat to orange-white, flash on each pulse),
+  **`fx.laser_beam`** (`BeamSystem`: every pulse in one MultiMesh with a white-hot core and violet halo,
+  a floor glow along the beam, pooled lights at the hit point and mid-beam, muzzle and impact stars;
+  fades itself in 0.18 s), `set_heat` on cannon/flamethrower too (only writes on change). Registered in
+  the cyberpunk theme (default-theme placeholders come from gameplay's branch). `make vehicle-gallery`
+  drives all of it with fake values; close-ups: `--gallery-focus=N --gallery-time=S`. Screenshots:
+  `build/screenshots/vehicle-gallery.png`, `l5_shield_hit.png`, `l5_shield_break.png`, `l5_shield_recharge.png`.
+  Tests: shield events show/hide, laser parts + beam follow the contract, beams batch and expire.
+
 #### Frame budget per quality tier (from L0; details in references/fx_tricks.md)
 | Tier | Default for | Worst-case frame | Draw calls | Pooled lights | Glow | Render scale | MSAA | Shadows |
 |---|---|---|---|---|---|---|---|---|
@@ -211,9 +225,13 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 
 #### Requests to other streams
 - **Gameplay (tactical map layout):** the orders log (top-right, 430 px) and the pause label/toast (top center) sit where 3D-view warning banners go; in the top-down view banners now use the side columns, so this only matters in the 3D view (Tab). If you move the log, keep the right column below ~16% height free for warnings. The HUD's `Status`/`Scoreboard` text doesn't update while the tree is paused (hud.gd `_process` pauses), so the top-left block is hidden during PLANNING; `process_mode = ALWAYS` on the HUD would fix it (your file).
+- **Gameplay:** `test_navigation::test_path_goes_around_a_wall` is load-sensitive (see Known issues); consider waiting until the map's regions include this arena's two regions (or a few extra physics frames) before querying.
+- **Gameplay:** `fx.laser_beam` has no team: the cyberpunk beam is a team-neutral violet-white. If you want team-colored lasers, call `beam.invoke("set_team_color", [GameTheme.team_color(team)])` after `setup` (already implemented).
+- **Gameplay (merge):** `game_theme.gd` gains `weapon.laser`/`fx.laser_beam` in `CYBERPUNK_SLOTS` here and in `DEFAULT_SLOTS` on your branch: keep both when merging.
 - **Gameplay:** please call `hud.post_message()` for orders, commander down, unit lost, victory; the banners are live (`make hud-gallery`, `--hud-demo`).
 
 #### Known issues
+- `test_navigation::test_path_goes_around_a_wall` (gameplay's test) failed in 2 of 4 full `make check` runs while the machine load average was ~8 (four agents), got a straight 2-point path; it passes alone (2/2) and in full runs at load ~3.4, and passed when a debug print slowed it. Looks like a readiness race in its `_setup` wait under load, not an art change (the arena's nav bake parses collision shapes only). Reported to gameplay below.
 - The FX lab prints two "Texture … leaked" engine errors at exit (after switching MSAA/render scale at runtime). Bench only; the game itself exits clean.
 - Bench frame times are GPU-bound on a shared laptop iGPU with four other agents running; use deltas, not absolutes.
 
@@ -222,7 +240,7 @@ restyle → L5 heat/shield/laser hooks → L6 quality tiers → stretch (camera-
 - `make run` with the cyberpunk look: `godot --path . -- --theme=cyberpunk` (tanks still placeholder until L3).
 
 #### Next steps
-- L5 heat/shield/laser hooks (in progress).
+- L6 quality tiers (in progress).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

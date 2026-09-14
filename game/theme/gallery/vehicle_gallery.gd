@@ -1,9 +1,11 @@
 extends Node3D
 ## Vehicle + weapon FX gallery (`make vehicle-gallery`): both teams' tanks up close under the active
 ## theme's environment, each slot's optional methods driven with fake values so the looks exist
-## before gameplay calls them: set_team_color, set_firing (flamethrower), set_heat (cannon cycles
-## cold → hot), and later set_shield / weapon.laser / fx.laser_beam (L5). Visual only.
+## before gameplay calls them: set_team_color, set_firing (flamethrowers burst, lasers pulse),
+## set_heat (weapons cycle cold → hot), set_shield (hit, hit, break, recharge), and fx.laser_beam
+## pulses spawned exactly like Match.show_beam (a slot per pulse, freed after 0.2 s). Visual only.
 ## Flags: --theme=NAME (default cyberpunk) --screenshot=<abs png> [--screenshot-delay=S] [--gallery-time=S]
+##        --gallery-focus=N (close-up on tank N)
 
 const ORBIT_SPEED := 0.25
 
@@ -11,6 +13,10 @@ var camera := Camera3D.new()
 var time := 0.0
 var tanks: Array[Node3D] = []
 var _flags: LaunchFlags
+var _targets: Array[Node3D] = []
+var _next_pulse := 0.0
+## Shield script per tank index: ratio over time (hit, hit, break, recharge).
+var _shield_clock := 0.0
 
 
 func _ready() -> void:
@@ -25,13 +31,18 @@ func _ready() -> void:
 	camera.fov = 50.0
 	add_child(camera)
 	camera.current = true
-	var weapons := ["weapon.cannon", "weapon.flamethrower", "weapon.cannon", "weapon.flamethrower"]
-	for i in 4:
+	var weapons := ["weapon.cannon", "weapon.laser", "weapon.flamethrower", "weapon.laser", "weapon.cannon", "weapon.flamethrower"]
+	for i in weapons.size():
 		var team := i % 2
 		var tank := _tank(team, weapons[i])
-		tank.position = Vector3(-7.5 + i * 5.0, 0, 0)
-		tank.rotation.y = 0.5 - i * 0.3
+		tank.position = Vector3(-12.5 + i * 5.0, 0, 0)
+		tank.rotation.y = 0.5 - i * 0.2
 		tanks.append(tank)
+	for i in 3:
+		var target := Node3D.new()
+		target.position = Vector3(-10.0 + i * 10.0, 1.0, -26.0)
+		add_child(target)
+		_targets.append(target)
 	var overlay := PerfOverlay.new()
 	add_child(overlay)
 	overlay.extra = "VEHICLE GALLERY (%s)" % GameTheme.theme_name
@@ -41,9 +52,14 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	time += delta
-	var angle := 0.6 + sin(time * ORBIT_SPEED) * 0.5
-	camera.position = Vector3(sin(angle) * 16.0, 7.5, cos(angle) * 16.0)
-	camera.look_at(Vector3(0, 1.0, 0), Vector3.UP)
+	if _flags.has("gallery-focus"):
+		var focus := tanks[clampi(_flags.integer("gallery-focus", 0), 0, tanks.size() - 1)].global_position
+		camera.position = focus + Vector3(4.5, 4.0, 7.5)
+		camera.look_at(focus + Vector3(0, 1.0, 0), Vector3.UP)
+	else:
+		var angle := 0.6 + sin(time * ORBIT_SPEED) * 0.5
+		camera.position = Vector3(sin(angle) * 21.0, 9.0, cos(angle) * 21.0)
+		camera.look_at(Vector3(0, 1.0, -4.0), Vector3.UP)
 	for i in tanks.size():
 		var tank := tanks[i]
 		var turret := tank.get_node("Turret") as Node3D
@@ -55,6 +71,35 @@ func _process(delta: float) -> void:
 		(tank.get_node("Hull") as VisualSlot).invoke("set_heat", [heat])
 		if weapon.slot == "weapon.flamethrower":
 			weapon.invoke("set_firing", [fmod(time + i, 3.0) < 2.0])
+		(tank.get_node("Hull") as VisualSlot).invoke("set_shield", [_shield_ratio(fmod(time + i * 0.9, 6.0))])
+	# Laser tanks pulse like gameplay does: a fresh fx.laser_beam slot per pulse, freed after 0.2 s.
+	if time >= _next_pulse:
+		_next_pulse = time + 0.3
+		for i in tanks.size():
+			var weapon := tanks[i].get_node("Turret/Weapon") as VisualSlot
+			if weapon.slot != "weapon.laser":
+				continue
+			weapon.invoke("set_firing", [true])
+			var muzzle := weapon.global_transform * Vector3(0, 0.05, -3.25)
+			var target := _targets[(i + int(time * 2.0)) % _targets.size()].global_position
+			var beam := VisualSlot.new()
+			beam.slot = "fx.laser_beam"
+			add_child(beam)
+			beam.invoke("setup", [muzzle, target])
+			get_tree().create_timer(0.2).timeout.connect(beam.queue_free)
+
+
+## A 6 s shield story: two hits, a break, a pause, then recharge.
+static func _shield_ratio(t: float) -> float:
+	if t < 1.0:
+		return 1.0
+	if t < 2.0:
+		return 0.6
+	if t < 3.0:
+		return 0.25
+	if t < 3.8:
+		return 0.0
+	return clampf((t - 3.8) / 2.2, 0.0, 1.0)
 
 
 func _tank(team: int, weapon_slot: String) -> Node3D:
@@ -77,7 +122,7 @@ func _tank(team: int, weapon_slot: String) -> Node3D:
 	weapon.name = "Weapon"
 	weapon.slot = weapon_slot
 	turret.add_child(weapon)
-	weapon.invoke("setup", [Weapons.profile("flamethrower") if weapon_slot == "weapon.flamethrower" else {}])
+	weapon.invoke("setup", [Weapons.profile(weapon_slot.trim_prefix("weapon."))])
 	for slot in [hull, body, weapon]:
 		slot.invoke("set_team_color", [GameTheme.team_color(team)])
 	return tank

@@ -2,11 +2,17 @@ extends "res://game/theme/cyberpunk/cyber_vehicle.gd"
 ## `tank.hull` (2.4 W × 3.6 L × ≤ 1.6 H, ground center, forward −Z; turret ring at y 1.22, z +0.2):
 ## a Death Race scrap tank. Treads with neon seams, a dark team-tinted hull with bolted rust skirts,
 ## a ram spike bar, headlights, a team light bar at the rear, and team neon deck stripes. It also
-## registers the team underglow (one batched draw for all vehicles).
+## registers the team underglow (one batched draw for all vehicles) and carries the energy shield
+## (set_shield) and exhaust heat (set_heat).
+
+
+var shield := ShieldEffect.new()
 
 
 func _ready() -> void:
 	super._ready()
+	add_child(shield)
+	shield.set_tint(team_color)
 	var fx := FxWorld.get_instance()
 	if fx != null:
 		fx.underglow.add(self, team_color)
@@ -14,9 +20,15 @@ func _ready() -> void:
 
 func set_team_color(color: Color) -> void:
 	super.set_team_color(color)
+	shield.set_tint(color)
 	var fx := FxWorld.existing()
 	if fx != null and is_inside_tree():
 		fx.underglow.add(self, color)
+
+
+## Gameplay G6: shield fraction 0..1. Hits shimmer, a break crackles, recharging sweeps.
+func set_shield(ratio: float) -> void:
+	shield.set_shield(ratio)
 
 
 func _exit_tree() -> void:
