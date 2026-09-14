@@ -71,7 +71,28 @@ spotted (they add nothing to tanks, whose 75 m sight already covers a 70 m gun).
 
 Changes for round robin #2: a counter triangle (scouts hunt artillery, SCOUT_HUNT), artillery 180 → 220
 points, and direct fire now needs the target seen by the team (a fog hole; also a prerequisite for making
-spotting matter to guns). Round robin #2 results: appended below when it finishes.
+spotting matter to guns). Round robin #2 (commit 10f33e3, mortar still 90):
+
+| Pairing | #1 | #2 |
+|---|---|---|
+| armor vs balanced | 6 : 10 | 7 : 9 |
+| armor vs recon_strike | 16 : 0 | 16 : 0 |
+| armor vs siege | 6 : 10 | 4 : 12 |
+| armor vs swarm | 16 : 0 | 16 : 0 |
+| balanced vs recon_strike | 14 : 2 | 15 : 1 |
+| balanced vs siege | 2 : 14 | 4 : 12 |
+| balanced vs swarm | 14 : 2 | 16 : 0 |
+| recon_strike vs siege | 1 : 15 | 3 : 13 |
+| recon_strike vs swarm | 13 : 3 | 14 : 2 |
+| siege vs swarm | 13 : 3 | 16 : 0 |
+
+Overall #2: siege 83%, balanced 69%, armor 67%, recon_strike 28%, swarm 3%. The scout counter didn't move
+anything (the scout armies lose to tank armies, which have no artillery to hunt). Then **mortar 90 → 70**
+(probe, 16 each): siege vs armor **10 : 6**, siege vs balanced **10 : 6** (from 12 : 4). Applied (049f5d5).
+
+Where E3 stands: siege, balanced, and armor are within reach of each other; scout-heavy armies are not
+viable (recon_strike ~28%, swarm ~3%). Scouts earn their points only next to artillery. Open design
+question for the lead in the Status.
 
 ### Stretch: control point (`--control`)
 | Series | Result |
