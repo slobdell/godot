@@ -151,3 +151,80 @@ Unit stats and the army JSON parser (rules), squad behavior (ai), the in-match U
   puzzle). `--challenge=ID`; `army-loop-smoke` also runs Scout Hunt headless. 3 challenge tests.
   - Overlays (compare, share, unlocks, challenges) are now opaque over a dimming scrim (tap it to close): the
     theme's translucent panel color made overlay text collide with the columns behind.
+- **Stretch: matchup view done.** COMPARE now ends with a MATCHUPS grid (your unit vs theirs): "beats" / "loses" /
+  "even" from design intent today, and win rates (≥ 60% green, ≤ 40% red) as soon as rules publishes a measured
+  matrix at `res://game/units/matchups.json` (`{"win_rate": {unit: {opponent: 0..1}}}`, see Requests). Checked at
+  1920×1080 and 1200×540. 1 test.
+
+### Report (2026-09-15, end of run)
+
+**Done:** the whole backlog (Y1–Y6) and both stretch items. `make check` passes on the last commit (299 tests +
+`army-loop-smoke`); `make garage-web-smoke` (browser loop), `make garage-e2e`, and `make economy-sim` pass;
+screenshots reviewed: builder at 1920×1080 / 1800×810, compare (desktop and 1200×540), unlocks, challenges,
+FIGHT handover, results at desktop and 20:9, browser loop. Sim baseline unchanged (`e5cf33921713b657`).
+
+**Decisions** (each reversible):
+- The army builder keeps the path `game/garage/` and class `GarageScreen`/`GarageMode`; players see "ARMY".
+  `Loadout`/`GarageCatalog` are gone (`ArmyDraft`/`ArmyCatalog`).
+- Until checkpoint 1: `ArmyCatalogStub` (C1 shape) and `ArmyFormat.to_game_doctrine` (v2 → v1 stand-ins, each no
+  dearer in v1 points) keep FIGHT working. Both switch off by themselves once `Units.PROFILES` is v2.
+- Tier 0 is 800 (4–5 units a side: small first fights); tiers go to 3,200 (~21 units, the C2 cap is 25).
+- Units unlock independently of budget tiers (a real choice); CPU opponents may field units the player hasn't
+  unlocked (sidegrades, and meeting a unit is how you learn to want it).
+- Match pay: loss 10 + 6 per kill (a thrown match never out-earns trying); nothing under 60 s; one award per match.
+- Opponents in the builder are CPU archetypes only; hand-written doctrines don't fit a shared budget.
+- REMATCH = same saved army, same seeded opponent, same tier; restarts are in-process scene reloads.
+- Challenge rewards pay once; challenge matches pay no match credits (no farming solved puzzles).
+- Army saves add `"verb": "hold"` per squad and a top-level `"garage": {schema: 2, budget, cost, tier}`.
+- Profile JSON (C8) gained additive keys: `draws`, `last_award`, `completed_challenges`.
+
+**Questions for the lead:**
+1. **How long should unlocking take?** Today ~3.7 h at a 50% win rate (everything), ~1 h for every unit type
+   (balance.md "Economy"). I chose short on purpose (unlocks are options, not power). Longer = raise tier prices.
+2. **Tier names** (Scrapyard, Pit, Arena, Colosseum, Grand Circus): keep, or name them yourself?
+3. Should challenge missions be required before ranked/online play (a tutorial path), or stay optional?
+
+**Requests to other streams:**
+- *Rules (checkpoint 1):* (a) keep accepting a squad `"verb": "hold"` and ignoring the top-level `"garage"` object
+  in army JSON v2; (b) `unlock_tier` values: my stub assumes scout/IFV/tank = 0, artillery = 1, Lancer = 2;
+  (c) C3 fields in `Match.result()`: `MatchReport` reads `units_left`/`units_lost`/`kills` as `{green, rust}` if
+  present, else counts them; a `kills_by_unit` in the same shape would replace my recorder; (d) R7: please also
+  write the matrix as `res://game/units/matchups.json` `{"win_rate": {unit: {opponent: 0..1}}}` so COMPARE shows
+  measured rates; (e) `game_design.md` has tanks weak vs scouts, so scout `good_vs` should include `tank`.
+- *Rules/merge:* when R1 touches `game/garage/` or `tests/test_garage_*` to keep them compiling, those files are
+  replaced here (`test_garage_*` → `test_army_*`); at the merge take the army stream's side, then delete
+  `ArmyCatalogStub` and the v1 branch of `ArmyFormat.to_game_doctrine`.
+- *Art:* (a) **title screen → ARMY**: add `["ARMY", "garage", "Build an army, then fight"]` first in
+  `title_screen.gd` `MENU` (Y3's "title → army"; I didn't edit your file); (b) the builder, results screen, and
+  overlays read `GameTheme.ui` `garage_bg`, `garage_panel`, `garage_text_dim`, `friendly`, `enemy`, `commander`; a
+  CyberFrame pass would be welcome; (c) unit cards and results would love per-unit icons (C6 `unit.<id>.*`).
+- *Command:* (a) an in-match "surrender / back to army" button would let a player leave a lost fight
+  (the loop pays nothing under 60 s, so it can't be abused); (b) `GarageSettings.MATCH_TIPS` now says "Tap a
+  squad, then tap the ground to send it there." (your round-2 grammar); tell me if the words change.
+- *Orchestrator:* C8 row in workstreams.md: add the additive profile keys above; verification.md row 6h could list
+  `army-loop-smoke`.
+
+**Shared-file edits:** `game/main.gd` (+`static var next_flags` and 2 lines in `_ready`), `mk/core.mk`
+(`army-loop-smoke` added to `check`), `_agents/balance.md` (new "Economy" section at the end).
+
+**Known issues:**
+- Challenge missions aren't balance-checked yet: until R2's counter mechanics land, stand-ins (an IFV fights as
+  a v1 scout) make the lessons untrue in play. Re-run them after checkpoint 1 (`make garage ...` → CHALLENGES,
+  or `--challenge=ID`).
+- A player can reach a tier and then open an old army that's over its budget: it shows "Over budget by N" (not
+  auto-trimmed).
+- Tips restart in `--garage-scratch` runs (in-memory settings), by design.
+- Headless loop smoke uses 6 s matches, so it checks flow, not credit amounts (unit tests cover the math).
+
+**What to playtest:**
+- `make garage`: a new profile opens at Scrapyard (800) with Anvil & Hammer. Tap a unit chip (matchups + hints),
+  PRESETS, COMPARE (scroll to MATCHUPS), CREDITS → UNLOCKS, CHALLENGES → Scout Hunt, then FIGHT a CPU army. When
+  it ends: the results screen → REMATCH → ARMY. Your real profile is `user://profile.json` in this checkout's user dir.
+- Give yourself credits to try unlocks without touching your profile:
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --garage --garage-scratch --credits=2000`.
+- Browser: `make garage-web-smoke`, or `make serve-web` then `http://localhost:8060/?garage`.
+- `make economy-sim`, `make army-loop-shots` (two 76 s windowed runs), `make garage-shots`.
+
+**Next steps:** merge main at checkpoint 1 and switch to the real catalog (delete the stub and adapter); play each
+challenge and tune the opponents so the lesson holds; re-run `make economy-sim` when units or costs change; add
+the ARMY entry to the title (art) and a leave-match button (command).

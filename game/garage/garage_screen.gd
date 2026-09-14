@@ -524,6 +524,10 @@ func _build_compare_panel() -> void:
 	rows.add_child(_section("UNIT TYPES"))
 	rows.add_child(_table_grid(GarageAdvice.unit_table(draft.catalog), "UnitTable"))
 	rows.add_child(_note("Good vs / weak vs is what each unit is built for. Fights decide the rest: angles, range, and focus fire.", 0.8))
+	var grid := GarageAdvice.matchup_grid(draft.catalog, GarageAdvice.measured_matchups())
+	rows.add_child(_section("MATCHUPS: your unit (row) against theirs (column), %s" % (
+			"win rate in cost-equal fights" if grid["measured"] else "as designed")))
+	rows.add_child(_matchup_grid(grid))
 	var close := _button("CLOSE", func() -> void: toggle_compare(false))
 	close.name = "Close"
 	close.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -547,6 +551,25 @@ func _table_grid(table: Dictionary, grid_name: String) -> GridContainer:
 				cell.add_theme_color_override("font_color", _color("friendly"))
 			grid.add_child(cell)
 	return grid
+
+
+func _matchup_grid(grid: Dictionary) -> GridContainer:
+	var view := GridContainer.new()
+	view.name = "MatchupGrid"
+	view.columns = grid["units"].size() + 1
+	view.add_theme_constant_override("h_separation", int(18 * ui_scale))
+	view.add_child(_label("", 0.8))
+	for unit_id: String in grid["units"]:
+		var header := _label(draft.catalog.display_name(unit_id), 0.8)
+		header.add_theme_color_override("font_color", _color("garage_text_dim"))
+		view.add_child(header)
+	for row_index in grid["units"].size():
+		view.add_child(_label(draft.catalog.display_name(grid["units"][row_index]), 0.9))
+		for cell: Dictionary in grid["rows"][row_index]:
+			var label := _label(String(cell["text"]), 0.9)
+			label.add_theme_color_override("font_color", _color({"good": "friendly", "bad": "enemy", "even": "garage_text_dim"}[cell["tone"]]))
+			view.add_child(label)
+	return view
 
 
 func toggle_compare(open: bool) -> void:

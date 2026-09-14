@@ -235,3 +235,18 @@ func test_compare_table_marks_the_best_values() -> void:
 	var hull_column: int = table["headers"].find("Hull")
 	assert_true(table["best"][2][hull_column], "the tank is toughest")
 	assert_eq(table["rows"][0][table["headers"].find("Weak vs")], "IFV", "matchups are in the table")
+
+
+func test_the_matchup_grid_shows_intent_and_prefers_measured_rates() -> void:
+	var catalog := _catalog()
+	var grid := GarageAdvice.matchup_grid(catalog)
+	var scout: int = grid["units"].find("scout")
+	var ifv: int = grid["units"].find("ifv")
+	var artillery: int = grid["units"].find("artillery")
+	assert_eq(grid["rows"][scout][artillery], {"text": "beats", "tone": "good"}, "a scout is built to beat artillery")
+	assert_eq(grid["rows"][scout][ifv], {"text": "loses", "tone": "bad"}, "and to lose to IFVs")
+	assert_eq(grid["rows"][scout][scout]["text"], "-", "no mirror matchups")
+	var measured := GarageAdvice.matchup_grid(catalog, {"scout": {"ifv": 0.55}})
+	assert_eq(measured["rows"][scout][ifv], {"text": "55%", "tone": "even"}, "a measured rate wins over intent (and 55% is close to even)")
+	assert_true(measured["measured"], "and the view says it's measured")
+

@@ -115,3 +115,43 @@ static func _is_best(catalog: ArmyCatalog, ids: Array[String], key: String, valu
 	if values.min() == values.max():
 		return false
 	return is_equal_approx(value, values.min() if key in LOWER_IS_BETTER else values.max())
+
+
+## Where the rules stream's measured matchup matrix may live (R7), as {"win_rate": {unit: {opponent: 0..1}}}
+## from cost-equal fights. Optional: without it the grid shows design intent (good_vs / weak_vs) only.
+const MEASURED_MATRIX := "res://game/units/matchups.json"
+
+
+## {unit: {opponent: win rate}} from MEASURED_MATRIX, or {} when rules hasn't published one.
+static func measured_matchups(path := MEASURED_MATRIX) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return data.get("win_rate", {}) if typeof(data) == TYPE_DICTIONARY and typeof(data.get("win_rate")) == TYPE_DICTIONARY else {}
+
+
+## The matchup view: rows are your unit, columns the opponent. Each cell is
+## {"text", "tone": "good"|"bad"|"even"} where tone comes from the measured win rate when there is one
+## (≥ 60% good, ≤ 40% bad), else from design intent (row good_vs / weak_vs the column's role).
+static func matchup_grid(catalog: ArmyCatalog, measured: Dictionary = {}) -> Dictionary:
+	var ids := catalog.unit_ids()
+	var rows := []
+	for unit_id in ids:
+		var cells := []
+		for opponent in ids:
+			var rate: Variant = measured.get(unit_id, {}).get(opponent)
+			var role := catalog.role(opponent)
+			if unit_id == opponent:
+				cells.append({"text": "-", "tone": "even"})
+			elif rate != null:
+				var tone := "good" if float(rate) >= 0.6 else ("bad" if float(rate) <= 0.4 else "even")
+				cells.append({"text": "%d%%" % roundi(float(rate) * 100.0), "tone": tone})
+			elif catalog.good_vs(unit_id).has(role):
+				cells.append({"text": "beats", "tone": "good"})
+			elif catalog.weak_vs(unit_id).has(role):
+				cells.append({"text": "loses", "tone": "bad"})
+			else:
+				cells.append({"text": "even", "tone": "even"})
+		rows.append(cells)
+	return {"units": ids, "rows": rows, "measured": not measured.is_empty()}
+
