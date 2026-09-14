@@ -4,7 +4,7 @@ extends GameMode
 ## MATCH_RESULT <json> and quits. Options: --green=N --rust=N (BotControllers) or
 ## --green-doctrine=PATH --rust-doctrine=PATH (or cpu / cpu:<archetype> with --budget), --score-limit=K --time-limit=SECONDS
 ## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation
-## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning).
+## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning); --control adds the center control point.
 
 
 func role_name() -> String:
@@ -44,6 +44,7 @@ func start() -> void:
 			for i in flags.integer(key, 1):
 				game_match.add_bot(team)
 	game_match.elimination = flags.has("elimination")
+	game_match.control_point = flags.has("control")
 	game_match.start_limits(0 if game_match.elimination else flags.integer("score-limit", 5),
 			float(flags.integer("time-limit", 300)))
 	var started_msec := Time.get_ticks_msec()

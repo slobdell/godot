@@ -430,6 +430,23 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	var by_name := game_match.tanks_by_name()
 
+	# The control point (stretch): a ring on the ground in the holder's color, filling with capture progress.
+	if game_match.control_point:
+		var ring := PackedVector2Array()
+		for i in 33:
+			var angle := TAU * i / 32.0
+			ring.append(_screen(Match.CONTROL_CENTER + Vector3(cos(angle), 0.0, sin(angle)) * Match.CONTROL_RADIUS))
+		var holder := Color(1, 1, 1, 0.8) if game_match.control_owner < 0 else (FRIENDLY if game_match.control_owner == team else ENEMY)
+		draw_polyline(ring, holder, 3.0)
+		var ours := game_match.control_progress if team == Match.Team.GREEN else -game_match.control_progress
+		var progress_color := FRIENDLY if ours > 0.0 else ENEMY
+		var arc := PackedVector2Array()
+		for i in int(absf(ours) * 32.0) + 1:
+			var angle := TAU * i / 32.0
+			arc.append(_screen(Match.CONTROL_CENTER + Vector3(cos(angle), 0.0, sin(angle)) * (Match.CONTROL_RADIUS - 2.0)))
+		if arc.size() > 1:
+			draw_polyline(arc, progress_color, 4.0)
+
 	# Enemies, only as our intel knows them: solid = in sight now, hollow and fading = remembered.
 	var intel: Dictionary = game_match.intel[team]
 	for contact_name in intel:
@@ -694,6 +711,9 @@ func _refresh_panels() -> void:
 		_info.text = "%s  |  %s in %s  |  next order: %s\n%s" % [squad.squad_name.to_upper(),
 				VERB_LABELS.get(squad.verb, "no orders"), FORMATION_LABELS.get(squad.formation, "no formation"),
 				VERB_LABELS[pending_verb], "   ".join(members)]
+	if game_match.control_point:
+		_info.text = "CENTER  us %d  them %d  (first to %d)\n%s" % [game_match.control_score[team],
+				game_match.control_score[1 - team], Match.CONTROL_POINTS_TO_WIN, _info.text]
 	var lines: PackedStringArray = []
 	for s in game_match.team_squads(team):
 		for event in s.events.slice(maxi(0, s.events.size() - 3)):

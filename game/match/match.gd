@@ -9,6 +9,8 @@ extends Node
 signal local_tank_spawned(tank: Tank)
 ## Emitted once when a score or time limit is reached (see start_limits).
 signal finished(result: Dictionary)
+## Simulating peer: the control point changed hands (-1 = neutral).
+signal control_changed(owner: int)
 ## Simulating peer: a tank was destroyed (by `killer`, a tank name).
 signal tank_destroyed(victim: Tank, killer: String)
 
@@ -42,6 +44,23 @@ const CONTACT_MEMORY_TICKS := 60 * 12
 ## no tanks left. Skirmish and `--elimination` matches use it; the network server and
 ## `make run` keep respawns.
 @export var elimination := false
+## Stretch (anti-snowball): a control point at the arena center. Any number of one team's tanks
+## alone in the zone capture it in CONTROL_CAPTURE_SECONDS (a flat rate: a bigger army doesn't capture
+## faster, so a losing side can still steal it); the holder scores a point per second; the first to
+## CONTROL_POINTS_TO_WIN wins (elimination still wins too). Off unless a mode turns it on (--control).
+@export var control_point := false
+const CONTROL_CENTER := Vector3.ZERO
+const CONTROL_RADIUS := 16.0
+const CONTROL_CAPTURE_SECONDS := 8.0
+const CONTROL_POINTS_TO_WIN := 90
+## -1 = neutral, else the team that holds it.
+var control_owner := -1
+## -1 (Rust has it) .. 0 (neutral) .. 1 (Green has it).
+var control_progress := 0.0
+## Whole points (seconds held) per team.
+var control_score := [0, 0]
+var _control_ticks := [0, 0]
+
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
 ## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
@@ -127,11 +146,15 @@ func _physics_process(delta: float) -> void:
 		_update_squads()
 		_resupply()
 		_sample_brain_options()
+		if control_point and not _finished:
+			_update_control()
 	_land_rounds()
-	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination):
+	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination and not control_point):
 		return
 	var reason := ""
-	if elimination and (alive_count(Team.GREEN) == 0 or alive_count(Team.RUST) == 0) \
+	if control_point and maxi(control_score[0], control_score[1]) >= CONTROL_POINTS_TO_WIN:
+		reason = "control"
+	elif elimination and (alive_count(Team.GREEN) == 0 or alive_count(Team.RUST) == 0) \
 			and not team_tanks(Team.GREEN).is_empty() and not team_tanks(Team.RUST).is_empty():
 		reason = "elimination"
 	elif _score_limit > 0 and maxi(score_green, score_rust) >= _score_limit:
@@ -157,7 +180,9 @@ func seed_spawns(seed_value: int, jitter: float) -> void:
 
 func result(reason: String) -> Dictionary:
 	var winner := "draw"
-	if elimination:
+	if reason == "control" or (control_point and reason == "time_limit" and control_score[0] != control_score[1]):
+		winner = TEAM_NAMES[Team.GREEN] if control_score[0] > control_score[1] else TEAM_NAMES[Team.RUST]
+	elif elimination:
 		# Last team with tanks wins; on a time limit, more tanks alive, then more total health.
 		var standing := [_team_standing(Team.GREEN), _team_standing(Team.RUST)]
 		if standing[0] != standing[1]:
@@ -166,6 +191,7 @@ func result(reason: String) -> Dictionary:
 		winner = TEAM_NAMES[Team.GREEN] if score_green > score_rust else TEAM_NAMES[Team.RUST]
 	return {"winner": winner, "reason": reason, "state_hash": state_hash(), "tick": tick,
 			"score": {"green": score_green, "rust": score_rust},
+			"control": {"green": control_score[0], "rust": control_score[1]} if control_point else null,
 			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
 			"rust": team_tanks(Team.RUST).size()}, "stats": stats.duplicate(true)}
 
@@ -375,6 +401,40 @@ static func resupply_center(team: int) -> Vector3:
 static func in_resupply_zone(team: int, point: Vector3) -> bool:
 	var center := resupply_center(team)
 	return Vector2(point.x - center.x, point.z - center.z).length() <= RESUPPLY_RADIUS
+
+
+## Tanks of each team alive inside the control zone.
+func control_presence() -> Array:
+	var present := [0, 0]
+	for tank in _sorted_tanks():
+		if tank.is_alive() and in_control_zone(tank.global_position):
+			present[tank.team] += 1
+	return present
+
+
+static func in_control_zone(point: Vector3) -> bool:
+	return Vector2(point.x - CONTROL_CENTER.x, point.z - CONTROL_CENTER.z).length() <= CONTROL_RADIUS
+
+
+func _update_control() -> void:
+	var present := control_presence()
+	var step := float(INTEL_EVERY_TICKS) / 60.0 / CONTROL_CAPTURE_SECONDS
+	if present[Team.GREEN] > 0 and present[Team.RUST] == 0:
+		control_progress = minf(1.0, control_progress + step)
+	elif present[Team.RUST] > 0 and present[Team.GREEN] == 0:
+		control_progress = maxf(-1.0, control_progress - step)
+	var previous := control_owner
+	if control_progress >= 1.0:
+		control_owner = Team.GREEN
+	elif control_progress <= -1.0:
+		control_owner = Team.RUST
+	elif (control_owner == Team.GREEN and control_progress <= 0.0) or (control_owner == Team.RUST and control_progress >= 0.0):
+		control_owner = -1  # pushed back past neutral
+	if control_owner != previous:
+		control_changed.emit(control_owner)
+	if control_owner >= 0:
+		_control_ticks[control_owner] += INTEL_EVERY_TICKS
+		control_score[control_owner] = _control_ticks[control_owner] / 60
 
 
 func _sample_brain_options() -> void:

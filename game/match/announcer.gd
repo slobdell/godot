@@ -24,6 +24,7 @@ var _last_contact_tick := -CONTACT_COOLDOWN_TICKS
 func _ready() -> void:
 	game_match.tank_destroyed.connect(_on_tank_destroyed)
 	game_match.finished.connect(_on_finished)
+	game_match.control_changed.connect(_on_control_changed)
 	for squad in game_match.team_squads(team):
 		squad.commander_lost.connect(_on_commander_lost.bind(squad.squad_name))
 
@@ -94,9 +95,21 @@ func _on_commander_lost(fallen: String, successor: String, squad_name: String) -
 	_say("%s: commander down, %s takes command" % [squad_name, short_name(successor)], Hud.WARNING)
 
 
+func _on_control_changed(owner: int) -> void:
+	if owner == team:
+		_say("We hold the center", Hud.INFO)
+	elif owner >= 0:
+		_say("The enemy took the center", Hud.WARNING)
+	else:
+		_say("The center is neutral", Hud.INFO)
+
+
 func _on_finished(_result: Dictionary) -> void:
 	var mine := game_match.alive_count(team)
 	var theirs := game_match.alive_count(1 - team)
+	if game_match.control_point and maxi(game_match.control_score[0], game_match.control_score[1]) >= Match.CONTROL_POINTS_TO_WIN:
+		mine = 1 if game_match.control_score[team] >= Match.CONTROL_POINTS_TO_WIN else 0
+		theirs = 1 - mine
 	if mine > 0 and theirs == 0:
 		_say("VICTORY", Hud.INFO)
 	elif mine == 0:

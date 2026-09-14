@@ -4,7 +4,7 @@ extends GameMode
 ## elimination; starts in a planning pause. See _agents/tactical_map.md.
 ##   --player=DOCTRINE (default player_default; must fit --budget, default Units.DEFAULT_BUDGET)
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
-##   --seed=N (the CPU army's seed; default: the clock)
+##   --seed=N (the CPU army's seed; default: the clock)   --control (a control point at the center)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
 
@@ -42,8 +42,10 @@ func start() -> void:
 			main.hud.set_status("Can't start skirmish: " + error)
 			return
 	game_match.elimination = true
+	# Stretch: --control adds a control point at the center (first to 90 points, or elimination).
+	game_match.control_point = flags.has("control")
 	game_match.finished.connect(func(_result: Dictionary) -> void:
-		main.hud.show_banner("VICTORY" if game_match.alive_count(Match.Team.GREEN) > 0 else "DEFEAT"))
+		main.hud.show_banner("VICTORY" if _result["winner"] == Match.TEAM_NAMES[Match.Team.GREEN] else "DEFEAT"))
 	# G1 fog of war: what Green can see, drawn over the arena and (G2) on the radar.
 	var field := VisibilityField.new()
 	field.name = "VisibilityField"

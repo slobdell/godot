@@ -22,7 +22,7 @@ const CONTACT_FRESH_TICKS := 120
 const COVER_RING_RADIUS := 10.0
 const COVER_SAMPLES := 8
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -283,6 +283,21 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		advance = 0.0  # the squad's destination replaces free advancing
 	add.call("ADVANCE", "", advance)
 
+	# CONTEST (stretch, control point): take and hold the center when it isn't ours. Holding tanks stay
+	# inside and fight from there. Artillery doesn't contest (it can't hold ground).
+	var contest := 0.0
+	var control: Variant = s.get("control")
+	if control != null and not commanded and not is_artillery and hp >= retreat_threshold:
+		var inside := my_position.distance_to(control["center"]) <= float(control["radius"]) * 0.8
+		if int(control["owner"]) != int(me["team"]):
+			contest = 0.72 if visible_threats == 0 else 0.5
+		elif inside:
+			contest = 0.4
+		else:
+			contest = 0.45 if visible_threats == 0 else 0.2
+		contest *= 0.8 if is_scout else 1.0
+	add.call("CONTEST", "", contest)
+
 	# KEEP_SLOT: be where the squad's formation and drill want me. The player's order dominates
 	# (G3): it beats even a committed ENGAGE (~0.8 x COMMIT_BONUS), and only a tank about to die
 	# (RETREAT 0.99) overrides it. "Move" means return fire on the move (the turret tracks threats,
@@ -467,6 +482,8 @@ func build_situation() -> Dictionary:
 		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
+		"control": {"center": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner}
+				if game_match.control_point else null,
 	}
 
 
@@ -555,6 +572,23 @@ func _act(s: Dictionary) -> void:
 			else:
 				_order_move({"type": "face", "x": target_position.x, "z": target_position.z})
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
+		"CONTEST":
+			var control: Dictionary = s["control"]
+			var center: Vector3 = control["center"]
+			# Spread out inside the zone: each tank takes its own spot on a ring (stable per tank).
+			var angle := TAU * float(think_offset % 8) / 8.0
+			var spot: Vector3 = center + Vector3(cos(angle), 0.0, sin(angle)) * float(control["radius"]) * 0.45
+			var nearest_visible: Variant = null
+			for c in s["contacts"]:
+				if c["visible"] and (nearest_visible == null or my_position.distance_to(c["position"]) < my_position.distance_to(nearest_visible)):
+					nearest_visible = c["position"]
+			if my_position.distance_to(spot) > 4.0:
+				_order_move(_move_to(spot))
+			elif nearest_visible != null:
+				_order_move({"type": "face", "x": nearest_visible.x, "z": nearest_visible.z})
+			else:
+				_order_move({"type": "stop"})
+			_order_weapon({"type": "fire_at_will"})
 		"SHADOW":
 			var nearest_ally: Variant = null
 			for ally in s["allies"]:

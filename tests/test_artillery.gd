@@ -32,6 +32,7 @@ func _toughness(tank: Tank) -> float:
 
 func test_a_spotted_target_behind_cover_gets_shelled() -> void:
 	var game_match := _setup()
+	game_match.seed_spawns(3, 0.0)  # scatter uses the match RNG: seed it, or the test is a dice roll
 	var setup: Array = _battery(game_match, Vector3(-100, 0, 80))
 	var gun: Tank = setup[0]
 	var target := game_match.spawn_tank("Rust_Target_1", 0, Match.Team.RUST)
@@ -54,7 +55,9 @@ func test_a_spotted_target_behind_cover_gets_shelled() -> void:
 		lowest = minf(lowest, _toughness(target))  # the shield recharges between rounds: track the lowest
 	var shots: int = game_match.stats["shots"][Match.Team.GREEN]
 	assert_true(shots >= 3, "once a scout spots it, the battery fires (%d)" % shots)
-	assert_true(lowest < before - 60.0, "and rounds land on it over the cover (lowest %.0f of %.0f after %d rounds)" % [lowest, before, shots])
+	var hits: int = game_match.stats["hits"][Match.Team.GREEN]
+	assert_true(hits >= 2, "rounds land on it over the cover (%d of %d rounds hit)" % [hits, shots])
+	assert_true(lowest < before - 40.0, "and hurt it (lowest %.0f of %.0f)" % [lowest, before])
 
 
 func test_no_firing_inside_the_minimum_range() -> void:

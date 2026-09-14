@@ -182,6 +182,10 @@ func _draw() -> void:
 		for c in corners:
 			shape.append(world_to_radar(Vector3(c.x, 0, c.y)))
 		draw_colored_polygon(shape, Color(0.75, 0.8, 0.85, 0.85))
+	if game_match.control_point:
+		var owner_color: Color = Color(1, 1, 1, 0.7) if game_match.control_owner < 0 else (GameTheme.ui["friendly"] if game_match.control_owner == team else GameTheme.ui["enemy"])
+		var zone_radius := Match.CONTROL_RADIUS / SPAN * size.x
+		draw_arc(world_to_radar(Match.CONTROL_CENTER), zone_radius, 0.0, TAU, 32, owner_color, 2.0)
 	_draw_camera_footprint()
 	var friendly: Color = GameTheme.ui["friendly"]
 	var enemy: Color = GameTheme.ui["enemy"]
