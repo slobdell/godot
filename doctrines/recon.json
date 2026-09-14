@@ -1,0 +1,9 @@
+{
+  "name": "Recon",
+  "note": "Directive set 2: three tanks behind a two-scout screen (1040 points). The scouts spot from 85 m, outside cannon range, so the tanks can shoot what they can't see yet.",
+  "squads": [
+    {"name": "Guns", "directive": {"role": "assault", "cohesion": 0.7}, "formation": "wedge", "verb": "hold",
+     "tanks": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}]},
+    {"name": "Eyes", "directive": {"role": "scout"}, "tanks": [{"unit": "scout"}, {"unit": "scout"}]}
+  ]
+}

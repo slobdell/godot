@@ -13,6 +13,9 @@ extends RefCounted
 ##    "formation": "wedge",  (optional)
 ##    "commander": "Green_Alpha_2"}   (optional)
 
+## The commander was destroyed and `successor` took over (not emitted for elections).
+signal commander_lost(fallen: String, successor: String)
+
 const VERBS := ["move", "bound", "hold", "assault", "break_contact"]
 const NEEDS_DESTINATION := ["move", "bound", "assault"]
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
@@ -21,6 +24,11 @@ const ARRIVE_RADIUS := 6.0
 ## How far the bounding element moves before the elements swap roles.
 const BOUND_DISTANCE := 25.0
 const MAX_EVENTS := 12
+## Commander pacing: followers may lag this far behind their slots before the commander slows,
+## down to MIN_PACE when they're PACE_SLACK + PACE_FALLOFF behind.
+const PACE_SLACK := 10.0
+const PACE_FALLOFF := 40.0
+const MIN_PACE := 0.5
 ## Perimeter walls' inner faces are at ±60 and tanks keep ~2 m off them.
 const SLOT_LIMIT := Match.DRIVABLE_LIMIT - 2.0
 
@@ -43,6 +51,9 @@ var arrived := false
 var bounding_element := 1
 var bound_goal: Variant = null
 var events: PackedStringArray = []
+## Bumped by every accepted command. Brains compare it to re-think at once and drop their
+## commitment, so a player order takes effect on the next tick (G3 responsiveness).
+var order_serial := 0
 
 
 func _init(p_name: String = "", p_team: int = 0, p_roster: PackedStringArray = []) -> void:
@@ -118,6 +129,7 @@ func apply_command(command: Dictionary, tanks: Dictionary, rally: Vector3) -> St
 			formation = Formations.DEFAULT
 	if destination == null and tanks.get(commander) != null:
 		destination = (tanks[commander] as Tank).global_position
+	order_serial += 1
 	_log("orders: %s%s%s" % [verb, " in " + formation if formation != "" else "",
 			"" if destination == null else " to (%.0f, %.0f)" % [destination.x, destination.z]])
 	return ""
@@ -147,7 +159,9 @@ func update(tanks: Dictionary) -> void:
 			var candidate := roster[(start + step) % roster.size()]
 			if alive.has(candidate):
 				_log("commander down, %s takes command" % candidate)
+				var fallen := commander
 				commander = candidate
+				commander_lost.emit(fallen, candidate)
 				break
 	if not is_commanded() or destination == null:
 		return
@@ -277,13 +291,16 @@ func _element_anchor(tanks: Dictionary) -> String:
 	return commander
 
 
-## Slow the commander while followers are far out of their slots, so the squad arrives together.
+## Slow the commander while followers lag far BEHIND their slots, so the squad arrives together.
+## Only lag along the heading counts: a wingman off to the side catches up by cutting across, and
+## counting it made a freshly ordered squad crawl (G3: pace lag was the biggest start-up delay).
 func _commander_pace(tanks: Dictionary, order: PackedStringArray, offsets: Array[Vector2], lead: Tank) -> float:
 	var worst := 0.0
 	for i in range(1, order.size()):
 		var slot := Formations.to_world(lead.global_position, heading, offsets[i])
-		worst = maxf(worst, (tanks[order[i]] as Tank).global_position.distance_to(slot))
-	return clampf(1.0 - (worst - 10.0) / 30.0, 0.35, 1.0)
+		var behind := (slot - (tanks[order[i]] as Tank).global_position).dot(heading)
+		worst = maxf(worst, behind)
+	return clampf(1.0 - (worst - PACE_SLACK) / PACE_FALLOFF, MIN_PACE, 1.0)
 
 
 ## A drill's effect on a brain's weights. The brain still decides; the drill tilts it.

@@ -1,0 +1,7 @@
+{
+  "name": "Individuals (lasers)",
+  "note": "G7 balance probe: Individuals with five lasers instead of cannons. Lasers vs cannons should not be a blowout (neither side > 65%).",
+  "squads": [
+    {"name": "All", "tanks": [{"weapon": "laser"}, {"weapon": "laser"}, {"weapon": "laser"}, {"weapon": "laser"}, {"weapon": "laser"}]}
+  ]
+}

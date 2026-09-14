@@ -1,0 +1,34 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/default/laser_visual.gd" id="1_laser"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_barrel"]
+albedo_color = Color(0.4, 0.47, 0.27, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_barrel"]
+material = SubResource("Mat_barrel")
+size = Vector3(0.22, 0.2, 2.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_tip"]
+shading_mode = 0
+albedo_color = Color(0.3, 0.9, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_tip"]
+material = SubResource("Mat_tip")
+radius = 0.17
+height = 0.34
+
+[node name="WeaponLaser" type="Node3D"]
+script = ExtResource("1_laser")
+tinted = Array[NodePath]([NodePath("Barrel")])
+lighten = 0.15
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -1.9)
+mesh = SubResource("BoxMesh_barrel")
+
+[node name="Tip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -3.05)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_tip")

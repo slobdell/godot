@@ -1,0 +1,266 @@
+class_name RtsCamera
+extends Node
+## G4: the skirmish camera. A tilted, perspective RTS camera that drives an existing Camera3D:
+## pan, zoom from close behind a tank up to a high tactical angle, rotate, follow a squad.
+##
+##   Desktop   arrows (or the screen edge) pan · wheel zooms toward the cursor · , . rotate
+##             middle-drag pans · F follows the selected squad's commander · Tab overview / back
+##   Touch     one finger drags the ground (pan) · pinch zooms · two-finger twist rotates
+##             (the tactical map owns one-finger taps and long-press drags: see tactical_map.gd)
+##
+## The pose is pure math (pose_for) so it's testable without a screen. Runs while paused, so the
+## player can look around during the tactical pause.
+
+const MIN_DISTANCE := 16.0
+const MAX_DISTANCE := 260.0
+const MIN_PITCH_DEG := 25.0
+const MAX_PITCH_DEG := 82.0
+const FOV_DEG := 55.0
+## Keyboard pan speed in meters per second at zoom 1 (scales down as you zoom in).
+const PAN_SPEED := 160.0
+const ROTATE_SPEED := deg_to_rad(100.0)
+const WHEEL_ZOOM_STEP := 0.07
+const KEY_ZOOM_SPEED := 0.8
+## Higher = snappier. Exponential smoothing of the shown pose toward the wanted one.
+const SMOOTHING := 12.0
+const EDGE_PAN_PX := 6.0
+## How far past the arena the focus may wander.
+const FOCUS_LIMIT := Match.ARENA_HALF_SIZE + 10.0
+const OVERVIEW_ZOOM := 0.92
+const FOLLOW_ZOOM := 0.18
+
+signal gesture_started
+
+var camera: Camera3D
+## What we look at (on the ground), which way we face (0 = north up the screen), how far out (0..1).
+var focus := Vector3(0.0, 0.0, 40.0)
+var yaw := 0.0
+var zoom := 0.7
+var follow_target: Node3D
+## Screen-edge panning: off in tests and when the window isn't focused.
+var edge_pan := true
+
+var _shown_focus := Vector3.ZERO
+var _shown_yaw := 0.0
+var _shown_zoom := 0.7
+var _before_overview: Variant = null
+## Touch: finger index → screen position, for pinch/twist.
+var _fingers := {}
+var _middle_dragging := false
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	if camera is FollowCamera:
+		(camera as FollowCamera).target = null
+	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+	camera.fov = FOV_DEG
+	camera.far = 1200.0
+	snap()
+
+
+## Jump the shown pose to the wanted pose (no smoothing).
+func snap() -> void:
+	_shown_focus = focus
+	_shown_yaw = yaw
+	_shown_zoom = zoom
+	_apply()
+
+
+func _process(delta: float) -> void:
+	var keys := Vector2(float(Input.is_key_pressed(KEY_RIGHT)) - float(Input.is_key_pressed(KEY_LEFT)),
+			float(Input.is_key_pressed(KEY_DOWN)) - float(Input.is_key_pressed(KEY_UP)))
+	if edge_pan and DisplayServer.window_is_focused() and camera.get_viewport() != null:
+		var viewport := camera.get_viewport()
+		var mouse := viewport.get_mouse_position()
+		var size := viewport.get_visible_rect().size
+		if Rect2(Vector2.ZERO, size).has_point(mouse):
+			keys.x += float(mouse.x >= size.x - EDGE_PAN_PX) - float(mouse.x <= EDGE_PAN_PX)
+			keys.y += float(mouse.y >= size.y - EDGE_PAN_PX) - float(mouse.y <= EDGE_PAN_PX)
+	if keys != Vector2.ZERO:
+		follow_target = null
+		pan_world(keys.limit_length(1.0) * PAN_SPEED * lerpf(0.25, 1.0, zoom) * delta)
+	var turn := float(Input.is_key_pressed(KEY_PERIOD)) - float(Input.is_key_pressed(KEY_COMMA))
+	if turn != 0.0:
+		rotate_by(turn * ROTATE_SPEED * delta)
+	var zoom_keys := float(Input.is_key_pressed(KEY_MINUS)) - float(Input.is_key_pressed(KEY_EQUAL))
+	if zoom_keys != 0.0:
+		zoom_by(zoom_keys * KEY_ZOOM_SPEED * delta)
+	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
+		focus = Vector3(follow_target.global_position.x, 0.0, follow_target.global_position.z)
+	var weight := 1.0 - exp(-SMOOTHING * delta)
+	_shown_focus = _shown_focus.lerp(focus, weight)
+	_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
+	_shown_zoom = lerpf(_shown_zoom, zoom, weight)
+	_apply()
+
+
+func _apply() -> void:
+	if camera != null:
+		camera.global_transform = RtsCamera.pose_for(_shown_focus, _shown_yaw, _shown_zoom)
+
+
+## Camera transform looking at `at` from `yaw` (0 = camera south of the focus, looking north) and
+## `level` (0 = close and low behind, 1 = high tactical view).
+static func pose_for(at: Vector3, heading: float, level: float) -> Transform3D:
+	var t := clampf(level, 0.0, 1.0)
+	# Ease the distance so the middle of the range isn't all high-altitude.
+	var distance := lerpf(MIN_DISTANCE, MAX_DISTANCE, t * t)
+	var pitch := deg_to_rad(lerpf(MIN_PITCH_DEG, MAX_PITCH_DEG, t))
+	var back := Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, heading) * distance
+	return Transform3D(Basis.IDENTITY, at + back).looking_at(at, Vector3.UP)
+
+
+# ---- Commands (input handlers and other code call these) -------------------------------
+
+## Move the focus by a world-space amount in the camera's frame: +x = screen right, +y = screen down.
+func pan_world(amount: Vector2) -> void:
+	var right := Vector3.RIGHT.rotated(Vector3.UP, yaw)
+	var down := Vector3.BACK.rotated(Vector3.UP, yaw)
+	focus += right * amount.x + down * amount.y
+	focus.x = clampf(focus.x, -FOCUS_LIMIT, FOCUS_LIMIT)
+	focus.z = clampf(focus.z, -FOCUS_LIMIT, FOCUS_LIMIT)
+	focus.y = 0.0
+
+
+## "Grab the ground": dragging the screen by `pixels` moves the view so the ground under the finger
+## follows it.
+func pan_screen(from: Vector2, to: Vector2) -> void:
+	var a: Variant = ground_point(from)
+	var b: Variant = ground_point(to)
+	if a == null or b == null:
+		return
+	follow_target = null
+	var shift: Vector3 = (a as Vector3) - (b as Vector3)
+	focus += Vector3(shift.x, 0.0, shift.z)
+	focus.x = clampf(focus.x, -FOCUS_LIMIT, FOCUS_LIMIT)
+	focus.z = clampf(focus.z, -FOCUS_LIMIT, FOCUS_LIMIT)
+	# Panning is direct manipulation: no smoothing lag under the finger.
+	_shown_focus = focus
+	_apply()
+
+
+func rotate_by(radians: float) -> void:
+	yaw = wrapf(yaw + radians, -PI, PI)
+
+
+func zoom_by(amount: float) -> void:
+	zoom = clampf(zoom + amount, 0.0, 1.0)
+
+
+## Zoom toward (or away from) a screen point, keeping the ground under it roughly in place.
+func zoom_at(screen: Vector2, amount: float) -> void:
+	var before: Variant = ground_point(screen)
+	zoom_by(amount)
+	if before != null and amount < 0.0:
+		follow_target = null
+		var toward: Vector3 = (before as Vector3) - focus
+		focus += Vector3(toward.x, 0.0, toward.z) * clampf(-amount * 2.5, 0.0, 0.5)
+
+
+func focus_on(point: Vector3) -> void:
+	follow_target = null
+	focus = Vector3(point.x, 0.0, point.z)
+
+
+func follow(target: Node3D) -> void:
+	follow_target = target
+	if target != null:
+		zoom = minf(zoom, FOLLOW_ZOOM)
+
+
+## Toggle a high view over the whole arena, and back to where you were.
+func toggle_overview(team: int) -> void:
+	if _before_overview == null:
+		_before_overview = [focus, yaw, zoom, follow_target]
+		follow_target = null
+		focus = Vector3.ZERO
+		yaw = 0.0 if Match.team_frame(team)["forward"] == Vector3.FORWARD else PI
+		zoom = OVERVIEW_ZOOM
+	else:
+		focus = _before_overview[0]
+		yaw = _before_overview[1]
+		zoom = _before_overview[2]
+		follow_target = _before_overview[3]
+		_before_overview = null
+
+
+func is_overview() -> bool:
+	return _before_overview != null
+
+
+func ground_point(screen: Vector2) -> Variant:
+	if camera == null:
+		return null
+	return Plane(Vector3.UP, 0.0).intersects_ray(camera.project_ray_origin(screen), camera.project_ray_normal(screen))
+
+
+# ---- Input ------------------------------------------------------------------------------
+
+## Mouse wheel and middle-drag. The tactical map forwards these (it stops GUI mouse events).
+func handle_mouse(event: InputEvent) -> bool:
+	if event is InputEventMouseButton:
+		var button := event as InputEventMouseButton
+		match button.button_index:
+			MOUSE_BUTTON_WHEEL_UP:
+				if button.pressed:
+					zoom_at(button.position, -WHEEL_ZOOM_STEP * maxf(button.factor, 1.0))
+				return true
+			MOUSE_BUTTON_WHEEL_DOWN:
+				if button.pressed:
+					zoom_at(button.position, WHEEL_ZOOM_STEP * maxf(button.factor, 1.0))
+				return true
+			MOUSE_BUTTON_MIDDLE:
+				_middle_dragging = button.pressed
+				return true
+	elif event is InputEventMouseMotion and _middle_dragging:
+		var motion := event as InputEventMouseMotion
+		pan_screen(motion.position - motion.relative, motion.position)
+		return true
+	elif event is InputEventMagnifyGesture:
+		var magnify := event as InputEventMagnifyGesture
+		zoom_at(magnify.position, (1.0 - magnify.factor) * 0.5)
+		return true
+	elif event is InputEventPanGesture:
+		pan_world((event as InputEventPanGesture).delta * 2.0)
+		return true
+	return false
+
+
+## Two-finger gestures (pinch = zoom, twist = rotate, both fingers moving = pan). Returns true while
+## two or more fingers are down, so the map knows to leave the touch alone.
+func handle_touch(event: InputEvent) -> bool:
+	if event is InputEventScreenTouch:
+		var touch := event as InputEventScreenTouch
+		if touch.pressed:
+			_fingers[touch.index] = touch.position
+			if _fingers.size() == 2:
+				gesture_started.emit()
+		else:
+			_fingers.erase(touch.index)
+		return _fingers.size() >= 2
+	if event is InputEventScreenDrag and _fingers.size() >= 2:
+		var drag := event as InputEventScreenDrag
+		var keys := _fingers.keys()
+		keys.sort()
+		var other_index: int = keys[1] if keys[0] == drag.index else keys[0]
+		if not _fingers.has(drag.index):
+			return true
+		var anchor: Vector2 = _fingers[other_index]
+		var before: Vector2 = _fingers[drag.index]
+		var after := drag.position
+		# Pinch: the ratio of finger spans. Twist: the change in the angle between fingers.
+		var span_before := maxf(anchor.distance_to(before), 1.0)
+		var span_after := maxf(anchor.distance_to(after), 1.0)
+		zoom_by((span_before / span_after - 1.0) * 0.6)
+		# +yaw turns the ground clockwise on screen, so a clockwise twist (screen angle grows) adds yaw.
+		rotate_by(angle_difference((before - anchor).angle(), (after - anchor).angle()))
+		# Pan by half the motion of the midpoint.
+		pan_screen((anchor + before) / 2.0, (anchor + after) / 2.0)
+		_fingers[drag.index] = after
+		return true
+	return _fingers.size() >= 2
+
+
+func finger_count() -> int:
+	return _fingers.size()

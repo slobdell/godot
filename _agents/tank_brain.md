@@ -106,15 +106,41 @@ origin is the arena center. Green: world `(right, -forward)`. Rust: `(-right, +f
 | `ADVANCE` | Move to the objective | objective set and I'm outside its radius; no pressing threat |
 | `HOLD` | Stay (or return inside the leash); fire at anything visible | at objective; anchor role; no reachable target |
 | `INVESTIGATE contact` | Go to a contact's last known position | contact recently lost; aggression |
+| `KEEP_SLOT` (2026-09-13) | Drive to my formation slot for the squad's drill | a player order (move/bound/hold/break contact) and I'm out of position (0.95, G3) |
+| `RESUPPLY` (G7/G6) | Go to the base zone, stay to refill shells and mend the hull | out of ammo (0.9); at base and < 80% ammo or < 90% hull; badly hurt with nobody in sight |
+| `RECHARGE` (G6) | Duck into nearby cover or back off 25 m; return at 60% shield | shield down, a gun on me, hull < 75% |
+| `SPOT` (scouts) | Keep the nearest visible enemy at 85 m (outside cannon range, inside scout sight); scout ahead otherwise | unit class scout |
+| `BOMBARD target` (artillery) | Lob mortar rounds at a team-spotted enemy; back away from anyone inside 80 m | unit class artillery, a spotted enemy within ~200 m |
+| `SHADOW` (artillery) | Trail 35 m behind the nearest friendly, toward home | unit class artillery, nothing to shell |
 
-Commitment: the current option gets ×1.15 and at least 1 s before switching.
+Unit classes (directive set 2) scale the fight options: scouts ENGAGE/FLANK at 60%, artillery never
+ENGAGE/FLANK/INVESTIGATE. Balance data and tuning locations: [balance.md](balance.md).
+
+Commitment: the current option gets ×1.15 and at least 45 ticks before switching.
+
+**Player orders (G3, 2026-09-14).** A new squad order (`Squad.order_serial` changes) makes every brain
+in the squad think on the next tick with no commitment. Under move/bound/hold, KEEP_SLOT scores
+`ORDER_WEIGHT` 0.95 (break_contact 0.97), which beats even a committed ENGAGE; while an order is pending,
+other options get no commitment bonus. RETREAT overrides an order only when the tank is about to die
+(below 8–25% health, by caution). Assault keeps loose weights so brains hunt.
+
+**Turret (G5, 2026-09-14).** With nothing in its own sights, the turret covers `TankBrain.watch_for()`:
+the chosen target, else a visible gun aimed at me, else the nearest visible contact, else the freshest
+memory (dead-reckoned up to 1.5 s). With no contacts it holds its world heading. Firing still requires
+the tank's own line of sight and range.
 
 ## Weapons v1 (data-driven)
 
 | Weapon | Kind | Range | Damage | Reload / rate | Armor effect | Implies |
 |---|---|---|---|---|---|---|
-| `cannon` | projectile, 70 m/s, 0.8° spread (×2.5 moving) | 70 m (preferred 20–45); was 110 | 34 per hit (tanks have 400 HP since 2026-09-13) | 2.5 s | front ×0.5 / side ×1 / rear ×1.5 | Positioning for side shots; halting to fire accurately |
-| `flamethrower` | cone 30°, line of sight | 20 m (preferred 6–16) | 45 per second while in cone | continuous | armor matters less: ×0.8 / ×1 / ×1.2 | Must close distance: needs cover, flanks, or escorts; devastating on campers |
+| `cannon` | projectile, 70 m/s, 0.8° spread (×2.5 moving) | 70 m (preferred 20–45); was 110 | 34 per hit; 45 shells, refilled at base; shield ×0.8 | 2.5 s | front ×0.5 / side ×1 / rear ×1.5 | Positioning for side shots; halting to fire accurately; hull breaker |
+| `laser` (G7) | hitscan pulse, 0.3° spread | 55 m (preferred 15–40) | 9 per pulse; no ammo, 12 heat per pulse; shield ×1.25 | 0.5 s | ×0.7 / ×1 / ×1.3 | Sustained, heat-limited; strips shields |
+| `machine_gun` (scouts) | hitscan bursts, 1.5° spread | 45 m | 4 per round; 600 rounds; shield ×0.6 | 0.2 s | ×0.3 / ×0.7 / ×1 | Harassment; rears and other scouts |
+| `mortar` (artillery) | indirect arc over cover, 40 m/s, scatter 2 m + 2% of range | 35–160 m | 70 in an 8 m burst (30% at the edge); 24 rounds | 4.5 s | top attack: facing ignored | Needs team spotting; pressure on shields |
+| `flamethrower` | cone 30°, line of sight | 20 m (preferred 6–16) | 20 per second while in cone (45 until 2026-09-15); shield ×1.5 | continuous | armor matters less: ×0.8 / ×1 / ×1.2 | Must close distance; up close ~4× a cannon's damage |
+
+Units since 2026-09-15: tank 300 hull + 150 shield, scout 140 + 80, artillery 200 + 80; shields are directional
+(front ×0.7 / side ×1 / rear ×1.4). Current numbers and where they live: [balance.md](balance.md).
 
 ## Squad command UI (open: needs the lead)
 
@@ -181,6 +207,9 @@ results, and the conclusions stand. **New rule:** counterbalance *team identity*
 any close comparison (E2/E3).
 
 ### T3: weapons don't create strategy yet, because the flamethrower has no upside
+
+> ⚠ **Stale since the 2026-09-13 rebalance** (70 m guns, 400 HP): re-measured 2026-09-15, flamers were winning
+> 9/10 before the overnight changes and 36/36 after shields. Flamethrower now 20 dps (10/20). See balance.md.
 
 Swapping T1's two flanking *cannons* for *flamethrowers* took the doctrine from 62.5% to 0%.
 The flamers averaged only ~130 flame damage per match (the naive Flame Rush managed 332), meaning they

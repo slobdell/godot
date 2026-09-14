@@ -37,15 +37,21 @@ All: units are meters, **forward is −Z**, up is +Y, and origin as stated. Visu
 
 | Slot | Anchor / origin | Size guide (matches gameplay collision) | Optional methods | Budget |
 |---|---|---|---|---|
-| `tank.hull` | ground contact, center of the hull | 2.4 wide × 3.6 long × ≤ 1.6 tall (turret ring at y ≈ 1.22, z ≈ +0.2) | `set_team_color(Color)` | ≤ 8k tris |
+| `tank.hull` | ground contact, center of the hull | 2.4 wide × 3.6 long × ≤ 1.6 tall (turret ring at y ≈ 1.22, z ≈ +0.2) | `set_team_color(Color)`, `set_shield(ratio 0..1)` (every frame, gameplay G6) | ≤ 8k tris |
 | `tank.turret` | turret pivot (rotates about +Y) | ~1.4 × 1.7 × 0.55 | `set_team_color` | ≤ 4k tris |
 | `weapon.cannon` | turret pivot; barrel along −Z | muzzle ~3.2 m ahead of the pivot (gameplay fires from there) | `set_team_color`, `setup(weapon)` | ≤ 2k tris |
 | `weapon.flamethrower` | turret pivot; nozzle along −Z | short; show a flame effect ~20 m long | `set_team_color`, `setup(weapon)`, `set_firing(bool)` | ≤ 2k tris + FX |
 | `prop.crate` | ground center | 4.5 × 3 × 4.5 | — | ≤ 2k tris |
 | `prop.wall` | ground center | 18 long (X) × 3 tall × 1.5 thick | — | ≤ 3k tris |
-| `weapon.laser` *(planned, gameplay G7)* | turret pivot; emitter along −Z | like the cannon | `set_team_color`, `setup(weapon)`, `set_firing(bool)`, `set_heat(ratio)` | ≤ 2k tris |
+| `weapon.laser` *(gameplay G7, placeholder landed on stream/gameplay)* | turret pivot; emitter along −Z | like the cannon; muzzle ~3.2 m ahead | `set_team_color`, `setup(weapon)`, `set_firing(bool)` (true on the tick a pulse fires), `set_heat(ratio 0..1)` (every frame) | ≤ 2k tris |
 | `fx.shell` | projectile center, flying along −Z | ~0.3 × 0.3 × 1 | — (tracer + light; look & feel may pool) | ≤ 200 tris |
-| `fx.laser_beam` *(planned, gameplay G7)* | muzzle | stretched to the hit point | `setup(from: Vector3, to: Vector3)` | FX only |
+| `fx.laser_beam` *(gameplay G7, placeholder landed on stream/gameplay)* | created at the world origin, then `setup` places it | from the muzzle to the hit point (≤ 55 m) | `setup(from: Vector3, to: Vector3)` (world space, called once right after it enters the tree); Match frees it 0.2 s later | FX only |
+| `fx.fog_of_war` *(gameplay G1, placeholder landed on stream/gameplay)* | world origin; `setup` places it | covers the arena floor (240 × 240 m) just above y = 0 | `setup({"texture": Texture2D, "origin": Vector2, "size": float})`: L8 texture, 1 px per 2 m cell, 0 never seen / ~90 seen before / 255 visible now; updated in place ~2×/s | one draw call |
+| `weapon.machine_gun` *(gameplay directive set 2, placeholder = the cannon barrel)* | turret pivot; along −Z | slim; on the scout (a 2.0 × 1.4 × 3.0 hull, visuals scaled from the tank's) | `set_team_color`, `setup(weapon)`, `set_firing(bool)` | ≤ 1k tris |
+| `weapon.mortar` *(gameplay directive set 2, placeholder = the cannon barrel)* | turret pivot; tube along −Z | on the artillery (a 2.6 × 1.6 × 4.0 hull, visuals scaled from the tank's) | `set_team_color`, `setup(weapon)` | ≤ 2k tris |
+| (mortar rounds) | uses `fx.shell`, flown along an arc by `ArcRoundVisual` (game/combat/), pointing along its path | | | |
+| `fx.tracer` *(gameplay directive set 2, placeholder)* | like `fx.laser_beam` | muzzle to hit point (≤ 45 m), 5 bursts per second | `setup(from: Vector3, to: Vector3)` | FX only |
+| (all tank visuals) | | | optional `set_team_accent(Color)`: the team's friend-or-foe accent, called once at spawn; a loadout's `paint` goes to `set_team_color` instead of the team color | |
 | `arena.environment` | world origin | sky/lighting/fog only | — | — |
 | `arena.dressing` | world origin | ground 320×320 at y=0; perimeter walls at ±121 | — | ≤ 50k tris |
 

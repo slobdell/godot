@@ -3,12 +3,14 @@ extends Control
 ## The tactical map: command squads with few inputs (see _agents/tactical_map.md).
 ##
 ##   WHO    left-click a tank → select its squad; click a tank in the selected squad → make it commander;
-##          keys 1-3 select squads
+##          keys 1-4 select squads
 ##   WHERE  drag on open ground (left OR right button): press = destination, drag direction = facing
 ##          (a left press ON a tank selects instead; left-drag was added after the lead's first playtest)
 ##   HOW    drill:     Q move · W bound · E hold (here) · R assault · T break contact
 ##          formation: Z column · X wedge · C vee · V line · B echelon (again: flips side) · N coil
-##   VIEW   Tab toggles the top-down map and a 3D view behind the selected commander
+##   VIEW   with an RtsCamera (skirmish, G4): arrows/edge/middle-drag pan, wheel zoom, , . rotate,
+##          F follow the selected squad, Tab overview; on touch, one finger drags the view.
+##          Without one (tests): Tab toggles a flat top-down map and a view behind the commander
 ##   TIME   Space pauses/resumes (tactical pause: give orders while paused). Skirmish starts paused.
 ##
 ## Every action becomes a SquadCommand (structured data) sent to Match.command_squad().
@@ -17,6 +19,9 @@ extends Control
 signal command_issued(command: Dictionary, error: String)
 
 const PICK_RADIUS_PX := 18.0
+const PING_SECONDS := 0.6
+## With the RTS camera, 3D nameplates show below this zoom level.
+const NAMEPLATE_ZOOM := 0.45
 ## Drags shorter than this (meters) mean "no particular facing".
 const MIN_FACING_DRAG := 4.0
 const VERB_KEYS := {KEY_Q: "move", KEY_W: "bound", KEY_E: "hold", KEY_R: "assault", KEY_T: "break_contact"}
@@ -37,6 +42,10 @@ var GHOST: Color:
 
 var game_match: Match
 var camera: Camera3D
+## G1: what our team can see (optional; the map still works without it).
+var visibility: VisibilityField
+## G4: the RTS camera controller (optional; without it the map uses its legacy flat view).
+var rig: RtsCamera
 var team := Match.Team.GREEN
 ## Squad name, or "" for none.
 var selected_squad := ""
@@ -56,6 +65,9 @@ var _toast_left := 0.0
 ## Which button started the current drag (left drags only count once they actually move).
 var _drag_button := MOUSE_BUTTON_NONE
 var _drag_moved := false
+## Order acknowledgement (G3): a ring that expands at the ordered spot the moment an order lands.
+var _ping_at: Variant = null
+var _ping_left := 0.0
 
 
 func _ready() -> void:
@@ -68,10 +80,12 @@ func _ready() -> void:
 	var squads := game_match.team_squads(team)
 	if not squads.is_empty():
 		selected_squad = squads[0].squad_name
-	set_tactical_view(true)
+	set_tactical_view(rig == null)  # legacy flat map without an RTS camera; the tilted view with one
 
 
 func _process(delta: float) -> void:
+	_ping_left = maxf(0.0, _ping_left - delta)
+	_update_touch(delta)
 	if _toast != null and _toast_left > 0.0:
 		_toast_left -= delta
 		_toast.visible = _toast_left > 0.0
@@ -83,12 +97,18 @@ func _process(delta: float) -> void:
 ## The 3D scene would otherwise show every enemy tank: hide enemies our team can't see
 ## right now, and hide 3D nameplates on the map (the map draws its own labels).
 func _apply_fog_of_war() -> void:
-	var intel: Dictionary = game_match.intel[team]
 	for tank in game_match.sorted_team_tanks(1 - team):
-		var contact: Dictionary = intel.get(String(tank.name), {})
-		tank.visible = tank.is_alive() and contact.get("visible", false)
-	for tank in game_match.tanks.get_children():
-		(tank as Tank).nameplate.visible = not tactical_view
+		tank.visible = game_match.is_visible_to(team, tank)
+	# Nameplates help up close; from high up the map draws its own labels.
+	var show_plates := not tactical_view if rig == null else rig.zoom < NAMEPLATE_ZOOM and not rig.is_overview()
+	for node in game_match.tanks.get_children():
+		var tank := node as Tank
+		tank.nameplate.visible = show_plates
+		if rig != null:
+			# Short names, and no brain intents: an enemy's would leak its plans through the fog, and
+			# the map already prints our selected squad's.
+			tank.show_intent = false
+			tank.display_name = MatchAnnouncer.short_name(String(tank.name))
 
 
 # ---- Commands (the only way the map changes the game) -----------------------------
@@ -96,11 +116,15 @@ func _apply_fog_of_war() -> void:
 func issue(command: Dictionary) -> String:
 	var error := game_match.command_squad(team, command)
 	command_issued.emit(command, error)
-	_show_toast(_describe_command(command) if error == "" else "Can't: " + error, error != "")
+	if error == "" and command.has("to"):
+		_ping_at = Vector3(float(command["to"][0]), 0.0, float(command["to"][1]))
+		_ping_left = PING_SECONDS
+	_show_toast(describe_command(command) if error == "" else "Can't: " + error, error != "")
 	return error
 
 
-func _describe_command(command: Dictionary) -> String:
+## A player-facing summary of a command, e.g. "Alpha: Bound in Wedge".
+func describe_command(command: Dictionary) -> String:
 	var squad := _squad(command["squad"])
 	var parts: PackedStringArray = [String(command["squad"])]
 	if command.has("commander"):
@@ -161,8 +185,8 @@ func order_drag(from: Vector3, to: Vector3) -> String:
 
 
 ## Left click on the map at a world point.
-func click(world: Vector3, screen: Vector2) -> void:
-	var picked := _pick_tank(screen)
+func click(world: Vector3, screen: Vector2, finger := false) -> void:
+	var picked := _pick_tank(screen, finger)
 	if picked == null:
 		return
 	var squad_name := game_match.squad_of(picked)
@@ -172,15 +196,27 @@ func click(world: Vector3, screen: Vector2) -> void:
 		select_squad(squad_name)
 
 
-func set_paused(paused: bool, message := "PAUSED: give orders, Space to resume") -> void:
+func set_paused(paused: bool, message := "PAUSED: give orders, then Resume (Space)") -> void:
 	get_tree().paused = paused
 	if _pause_label != null:
 		_pause_label.text = message
 		_pause_label.visible = paused
 
 
+## G4: point the camera at the selected squad's commander and ride along.
+func follow_selected() -> void:
+	var squad := _squad(selected_squad)
+	var lead := game_match.tanks.get_node_or_null(NodePath(squad.commander)) as Tank if squad != null else null
+	if rig != null and lead != null and lead.is_alive():
+		rig.follow(lead)
+
+
 func set_tactical_view(enabled: bool) -> void:
 	tactical_view = enabled
+	if rig != null:
+		if enabled != rig.is_overview():
+			rig.toggle_overview(team)
+		return
 	if camera == null:
 		return
 	if enabled:
@@ -201,15 +237,34 @@ func set_tactical_view(enabled: bool) -> void:
 
 # ---- Input --------------------------------------------------------------------------
 
+func _input(event: InputEvent) -> void:
+	# Two-finger camera gestures come straight from the touch stream; they cancel any one-finger drag.
+	if rig != null and (event is InputEventScreenTouch or event is InputEventScreenDrag):
+		if rig.handle_touch(event):
+			_drag_start = null
+			_drag_end = null
+			_drag_button = MOUSE_BUTTON_NONE
+
+
 func _gui_input(event: InputEvent) -> void:
+	if rig != null:
+		if rig.handle_mouse(event):
+			accept_event()
+			return
+		if rig.finger_count() >= 2:
+			accept_event()  # a pinch/twist is in progress: its emulated mouse events aren't orders
+			return
+		if _is_touch(event) and _touch_gesture(event):
+			accept_event()
+			return
 	if event is InputEventMouseButton:
 		var button := event as InputEventMouseButton
 		if button.button_index != MOUSE_BUTTON_LEFT and button.button_index != MOUSE_BUTTON_RIGHT:
 			return
 		var world: Variant = screen_to_world(button.position)
 		if button.pressed and world != null:
-			if button.button_index == MOUSE_BUTTON_LEFT and _pick_tank(button.position) != null:
-				click(world, button.position)  # a press on a tank selects / elects
+			if button.button_index == MOUSE_BUTTON_LEFT and _pick_tank(button.position, _is_touch(event)) != null:
+				click(world, button.position, _is_touch(event))  # a press on a tank selects / elects
 			else:
 				_drag_start = world
 				_drag_end = world
@@ -231,12 +286,99 @@ func _gui_input(event: InputEvent) -> void:
 				_drag_moved = true
 
 
+## Mouse events Godot emulates from a touchscreen (the first finger).
+static func _is_touch(event: InputEvent) -> bool:
+	return event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION
+
+
+## Touch grammar (G0): a finger's press is PENDING until it moves (PAN the camera) or rests for
+## LONG_PRESS_SECONDS (ORDER: drag sets the facing, like a mouse drag). Lifting a pending finger is a
+## TAP: on one of our tanks it selects (the normal click path); on the ground it orders the selected
+## squad there. The common order is one gesture; facing is a hold-and-drag.
+enum Touch { NONE, PENDING, PAN, ORDER }
+const LONG_PRESS_SECONDS := 0.35
+## A finger that moves less than this (pixels) is still a tap.
+const TOUCH_SLOP_PX := 14.0
+
+var _touch := Touch.NONE
+var _touch_start := Vector2.ZERO
+var _touch_last := Vector2.ZERO
+var _touch_held := 0.0
+
+
+## Consumes emulated-from-touch mouse events that start on open ground. Returns true when handled.
+func _touch_gesture(event: InputEvent) -> bool:
+	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		var button := event as InputEventMouseButton
+		if button.pressed:
+			if _pick_tank(button.position, true) != null:
+				_touch = Touch.NONE
+				return false  # a tap on one of our tanks selects / elects (the normal click path)
+			_touch = Touch.PENDING
+			_touch_start = button.position
+			_touch_last = button.position
+			_touch_held = 0.0
+			return true
+		var ended := _touch
+		_touch = Touch.NONE
+		match ended:
+			Touch.PENDING:
+				var spot: Variant = screen_to_world(_touch_start)
+				if spot != null and _squad(selected_squad) != null:
+					order_drag(spot, spot)  # tap on the ground: go there
+				return true
+			Touch.ORDER:
+				if _drag_start != null:
+					order_drag(_drag_start, _drag_end if _drag_end != null else _drag_start)
+				_drag_start = null
+				_drag_end = null
+				_drag_button = MOUSE_BUTTON_NONE
+				return true
+			Touch.PAN:
+				return true
+		return false
+	if event is InputEventMouseMotion and _touch != Touch.NONE:
+		var at := (event as InputEventMouseMotion).position
+		match _touch:
+			Touch.PENDING:
+				if at.distance_to(_touch_start) > TOUCH_SLOP_PX:
+					_touch = Touch.PAN
+					if rig != null:
+						rig.pan_screen(_touch_last, at)
+			Touch.PAN:
+				if rig != null:
+					rig.pan_screen(_touch_last, at)
+			Touch.ORDER:
+				var world: Variant = screen_to_world(at)
+				if world != null:
+					_drag_end = world
+		_touch_last = at
+		return true
+	return false
+
+
+## Called every frame: a pending finger that rests long enough becomes an order drag (the ghost shows).
+func _update_touch(delta: float) -> void:
+	if _touch != Touch.PENDING:
+		return
+	_touch_held += delta
+	if _touch_held >= LONG_PRESS_SECONDS:
+		var world: Variant = screen_to_world(_touch_start)
+		if world == null:
+			return
+		_touch = Touch.ORDER
+		_drag_start = world
+		_drag_end = world
+		_drag_button = MOUSE_BUTTON_LEFT
+		_drag_moved = true
+
+
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.echo:
 		return
 	var squads := game_match.team_squads(team)
-	if key.keycode >= KEY_1 and key.keycode <= KEY_3 and key.keycode - KEY_1 < squads.size():
+	if key.keycode >= KEY_1 and key.keycode <= KEY_4 and key.keycode - KEY_1 < squads.size():
 		select_squad(squads[key.keycode - KEY_1].squad_name)
 	elif VERB_KEYS.has(key.keycode):
 		apply_verb(VERB_KEYS[key.keycode])
@@ -244,6 +386,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		apply_formation(FORMATION_KEYS[key.keycode])
 	elif key.keycode == KEY_TAB:
 		set_tactical_view(not tactical_view)
+	elif key.keycode == KEY_F and rig != null:
+		follow_selected()
 	elif key.keycode == KEY_SPACE:
 		set_paused(not get_tree().paused)
 	else:
@@ -257,9 +401,10 @@ func screen_to_world(screen: Vector2) -> Variant:
 	return Plane(Vector3.UP, 0.0).intersects_ray(camera.project_ray_origin(screen), camera.project_ray_normal(screen))
 
 
-func _pick_tank(screen: Vector2) -> Tank:
+func _pick_tank(screen: Vector2, finger := false) -> Tank:
 	var best: Tank = null
-	var best_distance := PICK_RADIUS_PX
+	# Fingers are fat (G0): for a touch, anything within 60% of a tap target's height counts.
+	var best_distance := maxf(PICK_RADIUS_PX, button_height() * 0.6) if finger or _touch_first() else PICK_RADIUS_PX
 	for tank in game_match.sorted_team_tanks(team):
 		if not tank.is_alive() or camera.is_position_behind(tank.global_position):
 			continue
@@ -284,6 +429,23 @@ func _draw() -> void:
 		return
 	var font := ThemeDB.fallback_font
 	var by_name := game_match.tanks_by_name()
+
+	# The control point (stretch): a ring on the ground in the holder's color, filling with capture progress.
+	if game_match.control_point:
+		var ring := PackedVector2Array()
+		for i in 33:
+			var angle := TAU * i / 32.0
+			ring.append(_screen(Match.CONTROL_CENTER + Vector3(cos(angle), 0.0, sin(angle)) * Match.CONTROL_RADIUS))
+		var holder := Color(1, 1, 1, 0.8) if game_match.control_owner < 0 else (FRIENDLY if game_match.control_owner == team else ENEMY)
+		draw_polyline(ring, holder, 3.0)
+		var ours := game_match.control_progress if team == Match.Team.GREEN else -game_match.control_progress
+		var progress_color := FRIENDLY if ours > 0.0 else ENEMY
+		var arc := PackedVector2Array()
+		for i in int(absf(ours) * 32.0) + 1:
+			var angle := TAU * i / 32.0
+			arc.append(_screen(Match.CONTROL_CENTER + Vector3(cos(angle), 0.0, sin(angle)) * (Match.CONTROL_RADIUS - 2.0)))
+		if arc.size() > 1:
+			draw_polyline(arc, progress_color, 4.0)
 
 	# Enemies, only as our intel knows them: solid = in sight now, hollow and fading = remembered.
 	var intel: Dictionary = game_match.intel[team]
@@ -335,6 +497,10 @@ func _draw() -> void:
 				draw_arc(at, 11.0, 0.0, TAU, 24, Color.WHITE, 1.5)
 				draw_string(font, at + Vector2(-20, 24), tank.intent, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.8))
 
+	if _ping_left > 0.0 and _ping_at != null:
+		var t := 1.0 - _ping_left / PING_SECONDS
+		draw_arc(_screen(_ping_at), lerpf(6.0, 34.0, t), 0.0, TAU, 32, Color(COMMANDER, 1.0 - t), 3.0)
+
 	# Live drag preview: where the formation will stand and which way it will face.
 	var squad := _squad(selected_squad)
 	if _drag_start != null and squad != null:
@@ -358,68 +524,156 @@ func _draw_arrow(from: Vector3, to: Vector3, color: Color) -> void:
 
 
 func _screen(world: Vector3) -> Vector2:
+	if camera.is_position_behind(world):
+		return Vector2(-10000, -10000)  # off screen: perspective views can put points behind the camera
 	return camera.unproject_position(world)
 
 
 # ---- Panels ------------------------------------------------------------------------
+# G0 (mobile first): every action has an on-screen control sized for a thumb. Bottom left: the five
+# drills and a Formation button that opens the formation row. Top center: squad chips (tap = select,
+# tap the selected chip = follow it), Pause, Overview, Follow. Keys stay as desktop shortcuts.
+
+## Tap targets are this fraction of the screen height (48 px at 1080p is ~4.4%; we go a bit larger),
+## clamped to [BUTTON_MIN_PX, BUTTON_MAX_PX] logical pixels.
+const BUTTON_HEIGHT_FRACTION := 0.07
+const BUTTON_MIN_PX := 40.0
+const BUTTON_MAX_PX := 60.0
+## Hide the long desktop hint on screens narrower than this.
+const HINT_MIN_WIDTH := 1500.0
+
+var _command_bar: HBoxContainer
+var _formation_row: HBoxContainer
+var _top_row: HBoxContainer
+var _squad_chips := {}
+
+
+func button_height() -> float:
+	return clampf(get_viewport().get_visible_rect().size.y * BUTTON_HEIGHT_FRACTION, BUTTON_MIN_PX, BUTTON_MAX_PX)
+
+
+static func _touch_first() -> bool:
+	return DisplayServer.is_touchscreen_available()
+
+
+func _key_hint(key: Key) -> String:
+	return "" if _touch_first() else OS.get_keycode_string(key) + " "
+
 
 func _build_panels() -> void:
-	var bar := HBoxContainer.new()
-	bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bar.offset_top = -44.0
-	bar.offset_left = 10.0
-	bar.add_theme_constant_override("separation", 4)
-	add_child(bar)
+	_command_bar = HBoxContainer.new()
+	_command_bar.add_theme_constant_override("separation", 4)
+	add_child(_command_bar)
 	for key in VERB_KEYS:
 		var verb: String = VERB_KEYS[key]
-		_add_button(bar, "%s %s" % [OS.get_keycode_string(key), VERB_LABELS[verb]], func() -> void: apply_verb(verb), "verb:" + verb)
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(18, 0)
-	bar.add_child(spacer)
+		_add_button(_command_bar, _key_hint(key) + VERB_LABELS[verb], func() -> void: apply_verb(verb), "verb:" + verb)
+	_add_button(_command_bar, "Formation", func() -> void: toggle_formation_row(), "formations", false)
+
+	_formation_row = HBoxContainer.new()
+	_formation_row.add_theme_constant_override("separation", 4)
+	_formation_row.visible = false
+	add_child(_formation_row)
 	for key in FORMATION_KEYS:
 		var formation: String = FORMATION_KEYS[key]
-		_add_button(bar, "%s %s" % [OS.get_keycode_string(key), FORMATION_LABELS[formation]],
-				func() -> void: apply_formation(formation), "formation:" + formation)
+		_add_button(_formation_row, _key_hint(key) + FORMATION_LABELS[formation], func() -> void:
+			apply_formation(formation)
+			_formation_row.visible = false, "formation:" + formation)
 
-	_info = _label(Vector2(12, -120), 15)
-	_info.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	_info.offset_left = 12.0
-	_info.offset_top = -118.0
+	_top_row = HBoxContainer.new()
+	_top_row.add_theme_constant_override("separation", 4)
+	add_child(_top_row)
+	for squad in game_match.team_squads(team):
+		var squad_name := squad.squad_name
+		_add_button(_top_row, squad_name, func() -> void: tap_squad_chip(squad_name), "squad:" + squad_name)
+		_squad_chips[squad_name] = _buttons["squad:" + squad_name]
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(12, 0)
+	_top_row.add_child(gap)
+	_add_button(_top_row, "Pause", func() -> void: set_paused(not get_tree().paused), "pause", false)
+	if rig != null:
+		_add_button(_top_row, "Overview", func() -> void: set_tactical_view(not tactical_view), "overview", false)
+		_add_button(_top_row, "Follow", func() -> void: follow_selected(), "follow", false)
+
+	_info = _label(Vector2.ZERO, 15)
 	_hint = _label(Vector2.ZERO, 12)
-	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	_hint.offset_top = -64.0
-	_hint.offset_left = 12.0
-	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-3 squads · Space: pause · Tab: 3D"
+	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-4 squads · Space: pause · Tab: overview · F: follow · arrows/wheel/, .: camera"
+	if _touch_first():
+		_hint.text = "Tap a tank: select (again: commander) · Tap ground: go · Hold then drag: go + face · Drag: look around · Pinch: zoom · Twist: turn"
 	_toast = _label(Vector2.ZERO, 20)
-	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_toast.offset_left = -360.0
-	_toast.offset_right = 360.0
-	_toast.offset_top = 100.0
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.visible = false
 	_pause_label = _label(Vector2.ZERO, 26)
-	_pause_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_pause_label.offset_left = -360.0
-	_pause_label.offset_right = 360.0
-	_pause_label.offset_top = 60.0
 	_pause_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_pause_label.add_theme_color_override("font_color", COMMANDER)
 	_pause_label.visible = false
 	_log = _label(Vector2.ZERO, 12)
+	_log.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_layout_panels()
+	get_viewport().size_changed.connect(_layout_panels)
+
+
+## Place everything for the current screen size (phones and desktops share one layout).
+func _layout_panels() -> void:
+	var screen := get_viewport().get_visible_rect().size
+	var h := button_height()
+	for id in _buttons:
+		(_buttons[id] as Button).custom_minimum_size = Vector2(h * 1.3, h)
+		(_buttons[id] as Button).add_theme_font_size_override("font_size", roundi(clampf(h * 0.36, 13.0, 20.0)))
+	_command_bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_command_bar.offset_left = 10.0
+	_command_bar.offset_top = -h - 10.0
+	_command_bar.offset_bottom = -10.0
+	_formation_row.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_formation_row.offset_left = 10.0
+	_formation_row.offset_top = -2.0 * h - 16.0
+	_formation_row.offset_bottom = -h - 16.0
+	_top_row.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_top_row.offset_top = 8.0
+	_top_row.offset_bottom = 8.0 + h
+	_top_row.offset_left = -_top_row.get_combined_minimum_size().x / 2.0
+	_top_row.offset_right = _top_row.get_combined_minimum_size().x / 2.0
+	var above_bar := h + 16.0
+	_hint.visible = screen.x >= HINT_MIN_WIDTH or _touch_first()
+	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_hint.offset_left = 12.0
+	_hint.offset_top = -above_bar - 20.0
+	_info.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_info.offset_left = 12.0
+	_info.offset_top = -above_bar - (66.0 if _hint.visible else 46.0) - (h + 6.0 if _formation_row.visible else 0.0)
+	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_toast.offset_left = -360.0
+	_toast.offset_right = 360.0
+	_toast.offset_top = h + 58.0
+	_pause_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_pause_label.offset_left = -360.0
+	_pause_label.offset_right = 360.0
+	_pause_label.offset_top = h + 18.0
 	_log.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	_log.offset_left = -430.0
 	_log.offset_right = -12.0
-	_log.offset_top = 10.0
-	_log.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_log.offset_top = h + 16.0
 
 
-func _add_button(bar: HBoxContainer, text: String, action: Callable, id: String) -> void:
+func toggle_formation_row() -> void:
+	_formation_row.visible = not _formation_row.visible
+	_layout_panels()
+
+
+## Squad chip: tap selects; tapping the already-selected squad's chip follows its commander.
+func tap_squad_chip(squad_name: String) -> void:
+	if selected_squad == squad_name and rig != null:
+		follow_selected()
+	else:
+		select_squad(squad_name)
+
+
+func _add_button(row: HBoxContainer, text: String, action: Callable, id: String, toggles := true) -> void:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE  # keep keyboard shortcuts working
-	button.toggle_mode = true
+	button.toggle_mode = toggles
 	button.pressed.connect(action)
-	bar.add_child(button)
+	row.add_child(button)
 	_buttons[id] = button
 
 
@@ -444,11 +698,22 @@ func _refresh_panels() -> void:
 		for member in squad.roster:
 			var tank := by_name.get(member) as Tank
 			var short := member.get_slice("_", 1).left(1) + member.get_slice("_", 2)
-			var health := "--" if tank == null or not tank.is_alive() else str(tank.health)
-			members.append(("*" if member == squad.commander else "") + short + " " + health)
-		_info.text = "%s  |  %s in %s  |  next drag: %s\n%s" % [squad.squad_name.to_upper(),
+			var readout := "--"
+			if tank != null and tank.is_alive():
+				readout = str(tank.health)
+				if tank.max_shield > 0.0:
+					readout += "+%d" % tank.sync_shield  # shield (G6)
+				if tank.sync_ammo >= 0:
+					readout += " a%d" % tank.sync_ammo  # shells left (G7)
+				if float(tank.weapon.get("heat_per_shot", 0.0)) > 0.0:
+					readout += " h%d%%" % roundi(tank.sync_heat * 100.0)  # heat (G7)
+			members.append(("*" if member == squad.commander else "") + short + " " + readout)
+		_info.text = "%s  |  %s in %s  |  next order: %s\n%s" % [squad.squad_name.to_upper(),
 				VERB_LABELS.get(squad.verb, "no orders"), FORMATION_LABELS.get(squad.formation, "no formation"),
 				VERB_LABELS[pending_verb], "   ".join(members)]
+	if game_match.control_point:
+		_info.text = "CENTER  us %d  them %d  (first to %d)\n%s" % [game_match.control_score[team],
+				game_match.control_score[1 - team], Match.CONTROL_POINTS_TO_WIN, _info.text]
 	var lines: PackedStringArray = []
 	for s in game_match.team_squads(team):
 		for event in s.events.slice(maxi(0, s.events.size() - 3)):
@@ -457,7 +722,18 @@ func _refresh_panels() -> void:
 	for id in _buttons:
 		var parts: PackedStringArray = String(id).split(":")
 		var active := false
-		if squad != null:
-			active = pending_verb == parts[1] if parts[0] == "verb" else squad.formation == parts[1] \
-					or (parts[1] == "echelon_right" and squad.formation == "echelon_left")
+		match parts[0]:
+			"verb":
+				active = squad != null and pending_verb == parts[1]
+			"formation":
+				active = squad != null and (squad.formation == parts[1] \
+						or (parts[1] == "echelon_right" and squad.formation == "echelon_left"))
+			"squad":
+				active = selected_squad == parts[1]
+			"formations":
+				active = _formation_row.visible
+			"pause":
+				(_buttons[id] as Button).text = "Resume" if get_tree().paused else "Pause"
+			"overview":
+				active = tactical_view
 		(_buttons[id] as Button).set_pressed_no_signal(active)

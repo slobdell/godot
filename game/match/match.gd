@@ -9,6 +9,10 @@ extends Node
 signal local_tank_spawned(tank: Tank)
 ## Emitted once when a score or time limit is reached (see start_limits).
 signal finished(result: Dictionary)
+## Simulating peer: the control point changed hands (-1 = neutral).
+signal control_changed(owner: int)
+## Simulating peer: a tank was destroyed (by `killer`, a tank name).
+signal tank_destroyed(victim: Tank, killer: String)
 
 enum Team { GREEN, RUST }
 
@@ -29,9 +33,10 @@ const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -6.0, 6.0, -18.0, 18.0]
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false
 
-## Shared team vision: refreshed this often, out to this range, remembered this long.
+## Shared team vision: refreshed this often, remembered this long. How far each tank sees is its own
+## Tank.sight_radius (G1); SENSOR_RANGE is the standard tank's, kept for callers that need a default.
 const INTEL_EVERY_TICKS := 6
-const SENSOR_RANGE := 75.0
+const SENSOR_RANGE: float = Units.PROFILES["tank"]["sight_radius"]
 const CONTACT_MEMORY_TICKS := 60 * 12
 
 @export var respawn_seconds := 4.0
@@ -39,8 +44,34 @@ const CONTACT_MEMORY_TICKS := 60 * 12
 ## no tanks left. Skirmish and `--elimination` matches use it; the network server and
 ## `make run` keep respawns.
 @export var elimination := false
+## Stretch (anti-snowball): a control point at the arena center. Any number of one team's tanks
+## alone in the zone capture it in CONTROL_CAPTURE_SECONDS (a flat rate: a bigger army doesn't capture
+## faster, so a losing side can still steal it); the holder scores a point per second; the first to
+## CONTROL_POINTS_TO_WIN wins (elimination still wins too). Off unless a mode turns it on (--control).
+@export var control_point := false
+const CONTROL_CENTER := Vector3.ZERO
+const CONTROL_RADIUS := 16.0
+const CONTROL_CAPTURE_SECONDS := 8.0
+const CONTROL_POINTS_TO_WIN := 90
+## -1 = neutral, else the team that holds it.
+var control_owner := -1
+## -1 (Rust has it) .. 0 (neutral) .. 1 (Green has it).
+var control_progress := 0.0
+## Whole points (seconds held) per team.
+var control_score := [0, 0]
+var _control_ticks := [0, 0]
+
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
+## Tank.shield_recharge_delay. The hull is the lasting cost of a fight; mending it means going home.
+const REPAIR_HP_PER_SECOND := 6.0
+## G7 resupply: tanks within this distance of their own base center regain one shell every
+## RESUPPLY_SECONDS_PER_SHELL. A full reload (45 shells) takes 45 s at base.
+const RESUPPLY_RADIUS := 30.0
+const RESUPPLY_SECONDS_PER_SHELL := 1.0
+## World (layer 1) + tanks (layer 2): what beams and shells hit.
+const HIT_MASK := 3
 
 ## Replicated by ScoreSync.
 @export var score_green := 0
@@ -57,14 +88,17 @@ var has_local_player := true
 var spawn_jitter := 0.0
 
 ## Counters for match results and experiments, indexed by team where it's a pair.
-var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "kills": [0, 0],
+var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0], "mortar_damage": [0, 0], "shield_damage": [0.0, 0.0],
+		"kills": [0, 0], "shells_resupplied": [0, 0],
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
 		# Simulated seconds at the first shot fired and the first kill (pace of a fight).
 		"first_shot_seconds": -1.0, "first_kill_seconds": -1.0,
 		# ...and of those, how often it was NOT firing (turret still turning, or holding fire).
-		"gun_idle_samples": [0, 0]}
+		"gun_idle_samples": [0, 0],
+		# Sampled every INTEL_EVERY_TICKS: what living brain tanks are doing, {option: samples} per team.
+		"options": [{}, {}]}
 var sim_seconds := 0.0
 ## Physics ticks since the match began: THE clock for deterministic decisions.
 var tick := 0
@@ -110,10 +144,17 @@ func _physics_process(delta: float) -> void:
 	if tick % INTEL_EVERY_TICKS == 0:
 		_update_intel()
 		_update_squads()
-	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination):
+		_resupply()
+		_sample_brain_options()
+		if control_point and not _finished:
+			_update_control()
+	_land_rounds()
+	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination and not control_point):
 		return
 	var reason := ""
-	if elimination and (alive_count(Team.GREEN) == 0 or alive_count(Team.RUST) == 0) \
+	if control_point and maxi(control_score[0], control_score[1]) >= CONTROL_POINTS_TO_WIN:
+		reason = "control"
+	elif elimination and (alive_count(Team.GREEN) == 0 or alive_count(Team.RUST) == 0) \
 			and not team_tanks(Team.GREEN).is_empty() and not team_tanks(Team.RUST).is_empty():
 		reason = "elimination"
 	elif _score_limit > 0 and maxi(score_green, score_rust) >= _score_limit:
@@ -139,7 +180,9 @@ func seed_spawns(seed_value: int, jitter: float) -> void:
 
 func result(reason: String) -> Dictionary:
 	var winner := "draw"
-	if elimination:
+	if reason == "control" or (control_point and reason == "time_limit" and control_score[0] != control_score[1]):
+		winner = TEAM_NAMES[Team.GREEN] if control_score[0] > control_score[1] else TEAM_NAMES[Team.RUST]
+	elif elimination:
 		# Last team with tanks wins; on a time limit, more tanks alive, then more total health.
 		var standing := [_team_standing(Team.GREEN), _team_standing(Team.RUST)]
 		if standing[0] != standing[1]:
@@ -148,6 +191,7 @@ func result(reason: String) -> Dictionary:
 		winner = TEAM_NAMES[Team.GREEN] if score_green > score_rust else TEAM_NAMES[Team.RUST]
 	return {"winner": winner, "reason": reason, "state_hash": state_hash(), "tick": tick,
 			"score": {"green": score_green, "rust": score_rust},
+			"control": {"green": control_score[0], "rust": control_score[1]} if control_point else null,
 			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
 			"rust": team_tanks(Team.RUST).size()}, "stats": stats.duplicate(true)}
 
@@ -177,13 +221,16 @@ func add_bot(team: int = -1) -> Tank:
 
 
 ## Spawn a tank on `team` (-1 = whichever team is smaller) at its team's next free slot.
+## `loadout` (optional, Units.loadout_of shape): {"unit", "weapons", "components", "paint"}.
 func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1,
-		weapon_id: String = Weapons.DEFAULT) -> Tank:
+		weapon_id: String = Weapons.DEFAULT, loadout: Dictionary = {}) -> Tank:
 	if team < 0:
 		team = _smaller_team()
 	var slot := _free_slot(team)
 	return tank_spawner.spawn({"name": tank_name, "owner": owner_peer_id, "team": team, "slot": slot,
-			"position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team), "weapon": weapon_id})
+			"position": _jittered(spawn_position(team, slot)), "yaw": spawn_yaw(team), "weapon": weapon_id,
+			"unit": loadout.get("unit", "tank"), "weapons": loadout.get("weapons", {}),
+			"components": loadout.get("components", []), "paint": loadout.get("paint", "")})
 
 
 func _jittered(point: Vector3) -> Vector3:
@@ -221,8 +268,9 @@ func load_doctrine(team: int, doctrine: Dictionary) -> String:
 			var tank_name := "%s_%s_%d" % [TEAM_NAMES[team], squad["name"], index]
 			index += 1
 			roster.append(tank_name)
+			var loadout := Units.loadout_of(entry)
 			add_brain_tank(team, String(squad["name"]), entry.get("weapon", Weapons.DEFAULT),
-					[squad.get("directive", {}), entry.get("directive", {})], tank_name)
+					[squad.get("directive", {}), entry.get("directive", {})], tank_name, loadout)
 		var runtime := Squad.new(String(squad["name"]), team, roster)
 		runtime.spacing = float(squad.get("spacing", Formations.DEFAULT_SPACING))
 		squads[_squad_key(team, runtime.squad_name)] = runtime
@@ -259,8 +307,13 @@ func team_squads(team: int) -> Array[Squad]:
 	return result
 
 
+## The runtime Squad a brain tank belongs to, or null.
+func squad_for(tank: Tank) -> Squad:
+	return squads.get(_squad_key(tank.team, squad_of(tank))) as Squad
+
+
 func squad_context(tank: Tank) -> Dictionary:
-	var squad := squads.get(_squad_key(tank.team, squad_of(tank))) as Squad
+	var squad := squad_for(tank)
 	if squad == null:
 		return {}
 	return squad.context_for(String(tank.name), tanks_by_name())
@@ -286,8 +339,8 @@ func _update_squads() -> void:
 
 
 func add_brain_tank(team: int, squad_name: String, weapon_id: String, directive_layers: Array,
-		tank_name: String) -> Tank:
-	var tank := spawn_tank(tank_name, 0, team, weapon_id)
+		tank_name: String, loadout: Dictionary = {}) -> Tank:
+	var tank := spawn_tank(tank_name, 0, team, weapon_id, loadout)
 	_squad_by_tank[tank_name] = squad_name
 	var brain := TankBrain.new()
 	brain.name = "Brain_" + tank_name
@@ -314,6 +367,85 @@ func sorted_team_tanks(team: int) -> Array[Tank]:
 	return result
 
 
+## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base.
+## Deterministic: counted in ticks.
+func _resupply() -> void:
+	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * 60.0)
+	var ticks_per_hp := roundi(60.0 / REPAIR_HP_PER_SECOND)
+	for tank in _sorted_tanks():
+		if tank.is_alive() and tank.health < tank.max_health and in_resupply_zone(tank.team, tank.global_position) \
+				and tank.ticks_since_hit >= roundi(tank.shield_recharge_delay * 60.0):
+			tank.repair_ticks += INTEL_EVERY_TICKS
+			if tank.repair_ticks >= ticks_per_hp:
+				var hp := tank.repair_ticks / ticks_per_hp
+				tank.repair_ticks -= hp * ticks_per_hp
+				tank.repair(hp)
+		else:
+			tank.repair_ticks = 0
+		if not tank.is_alive() or tank.ammo < 0 or tank.ammo >= tank.max_ammo:
+			tank.resupply_ticks = 0
+			continue
+		if not in_resupply_zone(tank.team, tank.global_position):
+			tank.resupply_ticks = 0
+			continue
+		tank.resupply_ticks += INTEL_EVERY_TICKS
+		if tank.resupply_ticks >= ticks_per_shell:
+			tank.resupply_ticks -= ticks_per_shell
+			stats["shells_resupplied"][tank.team] += tank.resupply(1)
+
+
+static func resupply_center(team: int) -> Vector3:
+	return spawn_position(team, 0)
+
+
+static func in_resupply_zone(team: int, point: Vector3) -> bool:
+	var center := resupply_center(team)
+	return Vector2(point.x - center.x, point.z - center.z).length() <= RESUPPLY_RADIUS
+
+
+## Tanks of each team alive inside the control zone.
+func control_presence() -> Array:
+	var present := [0, 0]
+	for tank in _sorted_tanks():
+		if tank.is_alive() and in_control_zone(tank.global_position):
+			present[tank.team] += 1
+	return present
+
+
+static func in_control_zone(point: Vector3) -> bool:
+	return Vector2(point.x - CONTROL_CENTER.x, point.z - CONTROL_CENTER.z).length() <= CONTROL_RADIUS
+
+
+func _update_control() -> void:
+	var present := control_presence()
+	var step := float(INTEL_EVERY_TICKS) / 60.0 / CONTROL_CAPTURE_SECONDS
+	if present[Team.GREEN] > 0 and present[Team.RUST] == 0:
+		control_progress = minf(1.0, control_progress + step)
+	elif present[Team.RUST] > 0 and present[Team.GREEN] == 0:
+		control_progress = maxf(-1.0, control_progress - step)
+	var previous := control_owner
+	if control_progress >= 1.0:
+		control_owner = Team.GREEN
+	elif control_progress <= -1.0:
+		control_owner = Team.RUST
+	elif (control_owner == Team.GREEN and control_progress <= 0.0) or (control_owner == Team.RUST and control_progress >= 0.0):
+		control_owner = -1  # pushed back past neutral
+	if control_owner != previous:
+		control_changed.emit(control_owner)
+	if control_owner >= 0:
+		_control_ticks[control_owner] += INTEL_EVERY_TICKS
+		control_score[control_owner] = _control_ticks[control_owner] / 60
+
+
+func _sample_brain_options() -> void:
+	for node in brains.get_children():
+		var brain := node as TankBrain
+		if brain == null or brain.tank == null or not brain.tank.is_alive() or brain.choice.is_empty():
+			continue
+		var counts: Dictionary = stats["options"][brain.tank.team]
+		counts[brain.choice["option"]] = int(counts.get(brain.choice["option"], 0)) + 1
+
+
 func _update_intel() -> void:
 	for team in 2:
 		var known: Dictionary = intel[team]
@@ -321,7 +453,7 @@ func _update_intel() -> void:
 			contact["visible"] = false
 		var viewers := sorted_team_tanks(team)
 		for viewer in viewers:
-			if not viewer.is_alive() or viewer.reload_fraction() < 1.0:
+			if not viewer.is_alive() or not viewer.ready_to_fire():
 				continue
 			for enemy in sorted_team_tanks(1 - team):
 				if enemy.is_alive() and viewer.global_position.distance_to(enemy.global_position) <= float(viewer.weapon["range"]) \
@@ -337,13 +469,13 @@ func _update_intel() -> void:
 			for viewer in viewers:
 				if not viewer.is_alive():
 					continue
-				if viewer.global_position.distance_to(enemy.global_position) > SENSOR_RANGE:
+				if viewer.global_position.distance_to(enemy.global_position) > viewer.sight_radius:
 					continue
 				if not Perception.has_line_of_sight(viewer, enemy):
 					continue
 				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
 						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
-						"health": enemy.health, "weapon": enemy.weapon_id, "visible": true, "seen_tick": tick}
+						"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "visible": true, "seen_tick": tick}
 				break
 		for contact_name in known.keys():
 			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
@@ -353,6 +485,14 @@ func _update_intel() -> void:
 ## A fingerprint of the exact simulation state (full float bits of every tank's
 ## position, heading, turret, and health). Two runs, or two machines, agree only if
 ## they simulated identically. Basis for determinism checks and future lockstep desync detection.
+## G1: whether `team` sees `tank` right now (its own tanks always; enemies only through intel).
+## Presentation code (fog of war, radar, map) must ask this instead of reading positions.
+func is_visible_to(team: int, tank: Tank) -> bool:
+	if tank.team == team:
+		return tank.is_alive()
+	return tank.is_alive() and bool(intel[team].get(String(tank.name), {}).get("visible", false))
+
+
 func state_hash() -> String:
 	var bytes := PackedByteArray()
 	bytes.append_array(var_to_bytes(tick))
@@ -416,11 +556,18 @@ func _build_tank(data: Dictionary) -> Node:
 	tank.position = data["position"]
 	tank.rotation.y = data["yaw"]
 	tank.weapon_id = data.get("weapon", Weapons.DEFAULT)
+	tank.unit_id = data.get("unit", "tank")
+	tank.weapons = data.get("weapons", {})
+	tank.components = data.get("components", [])
 	tank.simulate = simulate
 	var is_local: bool = has_local_player and tank.owner_peer_id != 0 \
 			and tank.owner_peer_id == multiplayer.get_unique_id()
 	tank.display_name = "YOU" if is_local else tank.name
-	tank.set_paint.call_deferred(GameTheme.team_color(tank.team))  # needs its visuals ready
+	# Needs its visuals ready. A loadout's paint colors the whole vehicle; the team shows as an accent
+	# (the lead, 2026-09-14: friend or foe by accent lights, not hull color).
+	var paint: String = data.get("paint", "")
+	tank.set_paint.call_deferred(Color.html(paint) if paint != "" else GameTheme.team_color(tank.team))
+	tank.set_team_accent.call_deferred(GameTheme.team_color(tank.team))
 	Replication.attach_tank_sync(tank)
 	if simulate:
 		tank.fired.connect(_on_tank_fired.bind(tank))
@@ -464,9 +611,78 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
 	var spread := deg_to_rad(float(tank.weapon.get("spread_deg", 0.0))) * (1.0 + MOVING_SPREAD_FACTOR * moving)
 	var actual := direction.rotated(Vector3.UP, _fire_rng.randfn(0.0, spread)) if spread > 0.0 else direction
+	if tank.weapon["kind"] == Weapons.Kind.BEAM:
+		_fire_beam(tank, muzzle, actual)
+		return
+	if tank.weapon["kind"] == Weapons.Kind.ARC:
+		_lob(tank, muzzle)
+		return
 	shell_spawner.spawn({"id": _next_shell_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
 			"direction": actual, "team": tank.team, "shooter": String(tank.name)})
 	_next_shell_id += 1
+
+
+## Indirect rounds in the air: [{"from", "to", "land_tick", "team", "shooter", "weapon"}], in firing order.
+var _rounds: Array = []
+
+
+## ARC weapons (artillery): lob a round at the tank's aim point, scattered, clamped to the weapon's
+## range window. It lands after its flight time and bursts (see _land_rounds).
+func _lob(tank: Tank, muzzle: Vector3) -> void:
+	var weapon := tank.weapon
+	var flat := Vector3(tank.aim_point.x - muzzle.x, 0.0, tank.aim_point.z - muzzle.z)
+	var distance := clampf(flat.length(), float(weapon["min_range"]), float(weapon["range"]))
+	var direction := flat.normalized() if flat.length() > 0.01 else tank.turret_forward()
+	var sigma := float(weapon["scatter"]) + float(weapon["scatter_per_meter"]) * distance
+	var target := Vector3(muzzle.x, 0.0, muzzle.z) + direction * distance
+	target += Vector3(_fire_rng.randfn(0.0, sigma), 0.0, _fire_rng.randfn(0.0, sigma))
+	var flight_ticks := maxi(1, roundi(distance / float(weapon["flight_speed"]) * 60.0))
+	_rounds.append({"from": muzzle, "to": target, "land_tick": tick + flight_ticks, "team": tank.team,
+			"shooter": String(tank.name), "weapon": weapon})
+	show_arc.rpc(muzzle, target, flight_ticks / 60.0)
+
+
+func _land_rounds() -> void:
+	var due: Array = []
+	var flying: Array = []
+	for flying_round in _rounds:
+		(due if int(flying_round["land_tick"]) <= tick else flying).append(flying_round)
+	_rounds = flying
+	for landing: Dictionary in due:
+		var weapon: Dictionary = landing["weapon"]
+		var point: Vector3 = landing["to"]
+		var radius := float(weapon["splash_radius"])
+		var hit_any := false
+		var killed_any := false
+		for victim in _sorted_tanks():
+			if not victim.is_alive() or victim.team == int(landing["team"]):
+				continue
+			var offset := Vector3(victim.global_position.x - point.x, 0.0, victim.global_position.z - point.z)
+			if offset.length() > radius:
+				continue
+			var falloff := lerpf(1.0, 0.3, offset.length() / radius)
+			var from_burst := offset.normalized() if offset.length() > 0.1 else Vector3.FORWARD
+			killed_any = _land_hit(victim, float(weapon["damage"]) * falloff, weapon, from_burst, int(landing["team"]),
+					String(landing["shooter"]), "mortar_damage", not hit_any) or killed_any
+			hit_any = true
+		show_impact.rpc(point + Vector3.UP * 0.3, true)
+
+
+## Beam weapons (G7 laser): an instant ray from the turret center; the first thing it touches takes
+## the pulse. Teammates block it but take no damage (no friendly fire).
+func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
+	var weapon := tank.weapon
+	var from := tank.turret.global_position
+	var to := from + direction * float(weapon["range"])
+	var query := PhysicsRayQueryParameters3D.create(from, to, HIT_MASK, [tank.get_rid()])
+	var hit := tank.get_world_3d().direct_space_state.intersect_ray(query)
+	var end := to
+	if not hit.is_empty():
+		end = hit.position
+		var victim := hit.collider as Tank
+		if victim != null and victim.is_alive() and victim.team != tank.team:
+			_land_hit(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
+	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
 
 
 ## Cone weapons: every enemy inside the cone with line of sight burns this tick.
@@ -481,16 +697,8 @@ func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: T
 			continue
 		var attack := Vector3(victim.global_position.x - tank.global_position.x, 0.0,
 				victim.global_position.z - tank.global_position.z)
-		victim.damage_accumulator += weapon["damage_per_second"] * delta \
-				* Armor.weapon_multiplier(weapon, -victim.global_basis.z, attack)
-		var whole := int(victim.damage_accumulator)
-		if whole <= 0:
-			continue
-		victim.damage_accumulator -= whole
-		stats["flame_damage"][tank.team] += mini(whole, victim.health)
-		stats["damage"][tank.team] += mini(whole, victim.health)
-		if victim.apply_damage(whole):
-			_score_kill(tank.team, String(tank.name), victim)
+		_land_hit(victim, float(weapon["damage_per_second"]) * delta, weapon, attack, tank.team, String(tank.name),
+				"flame_damage", false)
 
 
 ## Tanks in a stable order (by name): anything that affects decisions or damage
@@ -504,6 +712,28 @@ func _sorted_tanks() -> Array[Tank]:
 	return result
 
 
+## Every weapon's damage lands here (G6): shield first, then hull through the armor facing.
+## `direction` is the attack's travel direction. Returns true if it destroyed the victim.
+func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3, team: int, shooter: String,
+		weapon_stat: String, counts_as_hit: bool) -> bool:
+	var forward := -victim.global_basis.z
+	var face: String = Armor.FACING_NAMES[Armor.facing(forward, direction)]
+	if weapon["kind"] == Weapons.Kind.ARC:
+		face = "side"  # indirect rounds come down on top: no face is the strong one
+	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
+			float(weapon["armor"][face]))
+	if counts_as_hit:
+		stats["hits"][team] += 1
+		stats["hits_by_face"][face] += 1
+	stats["damage"][team] += int(result["hull"])
+	stats["shield_damage"][team] += float(result["shield"])
+	if weapon_stat != "":
+		stats[weapon_stat][team] += int(result["hull"])
+	if result["killed"]:
+		_score_kill(team, shooter, victim)
+	return result["killed"]
+
+
 func _score_kill(team: int, killer: String, victim: Tank) -> void:
 	stats["kills"][team] += 1
 	if stats["first_kill_seconds"] < 0.0:
@@ -513,22 +743,16 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 	else:
 		score_rust += 1
 	print("%s destroyed %s (score Green %d : %d Rust)" % [killer, victim.name, score_green, score_rust])
+	tank_destroyed.emit(victim, killer)
 
 
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
 	if victim != null and victim.is_alive() and victim.team != shell.team:
-		var facing := Armor.facing(-victim.global_basis.z, shell.direction)
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
-		var damage := roundi(weapon["damage"] * Armor.weapon_multiplier(weapon, -victim.global_basis.z, shell.direction))
-		stats["hits"][shell.team] += 1
-		stats["damage"][shell.team] += mini(damage, victim.health)
-		stats["hits_by_face"][Armor.FACING_NAMES[facing]] += 1
-		killed = victim.apply_damage(damage)
-		if killed:
-			_score_kill(shell.team, shell.shooter_name, victim)
+		killed = _land_hit(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
 	show_impact.rpc(point, killed)
 	shell.queue_free()
 
@@ -542,6 +766,32 @@ func _on_tank_died(tank: Tank) -> void:
 
 
 # ---- Effects (every peer with a screen) ----------------------------------------------
+
+## How long a laser pulse's visual lives before it's freed (the visual fades itself).
+const BEAM_VISUAL_SECONDS := 0.2
+
+
+@rpc("authority", "call_local", "unreliable")
+func show_arc(from: Vector3, to: Vector3, seconds: float) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var round_visual := ArcRoundVisual.new()
+	round_visual.from = from
+	round_visual.to = to
+	round_visual.seconds = seconds
+	effects.add_child(round_visual)
+
+
+@rpc("authority", "call_local", "unreliable")
+func show_beam(from: Vector3, to: Vector3, fx_slot: String) -> void:
+	if DisplayServer.get_name() == "headless" or not GameTheme.slots.has(fx_slot):
+		return
+	var beam := VisualSlot.new()
+	beam.slot = fx_slot
+	effects.add_child(beam)
+	beam.invoke("setup", [from, to])
+	get_tree().create_timer(BEAM_VISUAL_SECONDS).timeout.connect(beam.queue_free)
+
 
 @rpc("authority", "call_local", "unreliable")
 func show_impact(point: Vector3, big: bool) -> void:

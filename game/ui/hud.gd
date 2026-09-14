@@ -48,7 +48,10 @@ func _process(_delta: float) -> void:
 	if local_tank != null and is_instance_valid(local_tank):
 		var bars := int(round(local_tank.reload_fraction() * 10.0))
 		# ASCII on purpose: the default font has no block glyphs (they render as empty boxes).
-		line += "      HP %d      Reload [%s]" % [local_tank.sync_health, "#".repeat(bars) + "-".repeat(10 - bars)]
+		line += "      HP %d  Shield %d      Reload [%s]" % [local_tank.sync_health, local_tank.sync_shield,
+				"#".repeat(bars) + "-".repeat(10 - bars)]
+		if local_tank.sync_ammo >= 0:
+			line += "  Ammo %d" % local_tank.sync_ammo
 		if not local_tank.is_alive():
 			show_banner("Destroyed — respawning…")
 		elif banner.text.begins_with("Destroyed"):

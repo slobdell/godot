@@ -9,8 +9,9 @@ editor: $(GODOT) ## Open the Godot editor on this project
 run: import ## Play offline vs BOTS server bots (default 1): WASD/arrows drive, mouse aims, click fires
 	$(GODOT) --path . -- --bots=$(or $(filter-out 0,$(BOTS)),1)
 
-skirmish: import ## Command your squads on the tactical map vs a CPU doctrine (ENEMY=individuals|anvil_hammer|flame_rush)
-	$(GODOT) --path . -- --skirmish --enemy=$(ENEMY)
+skirmish: import ## Command your squads vs a budgeted CPU army (ENEMY=cpu|cpu:siege|individuals..., SEED=n, CONTROL=1, COMMANDER=1)
+	$(GODOT) --path . -- --skirmish --enemy=$(ENEMY) $(if $(filter command line,$(origin SEED)),--seed=$(SEED)) \
+		$(if $(CONTROL),--control) $(if $(COMMANDER),--commander)
 
 demo: import ## Play with a scripted driver instead of the keyboard
 	$(GODOT) --path . -- --demo
@@ -18,3 +19,10 @@ demo: import ## Play with a scripted driver instead of the keyboard
 screenshot: import ## Render the demo and save build/screenshots/demo.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(GODOT) --path . -- --demo --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/demo.png
+
+skirmish-shots: import ## Scripted skirmish screenshots at desktop and phone aspect (1200x540 = a 2400x1080 phone at 2x scale): build/screenshots/skirmish_{desktop,phone}.png (needs a display; DELAY=seconds)
+	mkdir -p $(BUILD_DIR)/screenshots
+	$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --enemy=$(ENEMY) --screenshot-delay=$(or $(DELAY),20) \
+		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/skirmish_desktop.png
+	$(GODOT) --path . --resolution 1200x540 -- --skirmish --scripted --enemy=$(ENEMY) --screenshot-delay=$(or $(DELAY),20) \
+		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/skirmish_phone.png

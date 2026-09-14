@@ -1,6 +1,7 @@
 # Tactical Map: Few Inputs, Deep Control
 
-> **Status: v1 implemented (2026-09-13).** Play it: `make skirmish` (desktop) or `make serve-web` → `http://localhost:8060/?skirmish` (browser, no server). Builds on
+> **Status: v1 implemented (2026-09-13); v2 (2026-09-15, stream/gameplay): RTS 3D camera, radar, fog of
+> war, touch-first controls. See "v2" at the end.** Play it: `make skirmish` (desktop) or `make serve-web` → `http://localhost:8060/?skirmish` (browser, no server). Builds on
 > [tank_brain.md](tank_brain.md) (autonomous brains + directives) and answers its
 > "Squad command UI" open question.
 
@@ -18,7 +19,7 @@
 
 | Input | Gesture (mouse / keys; touch later) | Answers |
 |---|---|---|
-| **Who** | Click a tank (selects its squad) or press `1` / `2` / `3`. Click a tank in the already-selected squad to **make it commander** | Which squad, and who leads it |
+| **Who** | Click a tank (selects its squad) or press `1`–`4`. Click a tank in the already-selected squad to **make it commander** | Which squad, and who leads it |
 | **Where / which way** | **Right-drag** on the map: press = destination, drag direction = facing on arrival (a short drag faces the direction of travel). A ghost of the formation follows the cursor | The spot and the orientation |
 | **How** | One **drill** chip (`Q` Move · `W` Bound · `E` Hold · `R` Assault · `T` Break contact) and one **formation** chip (`Z` Column · `X` Wedge · `C` Vee · `V` Line · `B` Echelon · `N` Coil) | The battle drill and the shape |
 
@@ -143,3 +144,20 @@ viewport is 64×64**, so the pushed clicks landed off-map. In a real window the 
 reaches the map. With a 1280×720 test viewport, keys, clicks, commander election, drags,
 and pausing all pass end to end. Conclusion: the lead's trouble was the pace and
 discoverability, not dropped input.
+
+
+## v2 (2026-09-15): 3D camera, radar, fog, touch
+
+| Input | Mouse / keys | Touch |
+|---|---|---|
+| Who | click a tank (again: commander), 1–3, squad chips | tap a tank (again: commander), squad chips |
+| Where | left- or right-drag on the ground (press = spot, drag = facing), radar drag | tap ground (go), hold 0.35 s then drag (go + face), radar drag |
+| How | Q–T drills, Z–N formations, or the buttons | buttons (drills; Formation opens the formation row) |
+| Camera | arrows / screen edge / middle-drag pan, wheel zoom, `,` `.` rotate, F follow, Tab overview, radar tap | drag pan, pinch zoom, twist rotate, radar tap, Follow / Overview buttons (tap the selected squad's chip to follow) |
+| Time | Space | Pause / Resume button |
+
+- The camera is `RtsCamera` (a controller for the main camera); the map works in perspective because every
+  interaction is a ground raycast. Without a rig (tests) the old flat top-down view remains.
+- Fog of war: `VisibilityField` (team vision grid) drawn in 3D by the `fx.fog_of_war` slot and on the radar;
+  enemies are drawn only from intel. Nameplates never show brain intents in skirmish.
+- The radar (`Radar`) is an input too: tap = look there, drag = order.

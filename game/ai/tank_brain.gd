@@ -22,9 +22,39 @@ const CONTACT_FRESH_TICKS := 120
 const COVER_RING_RADIUS := 10.0
 const COVER_SAMPLES := 8
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "TAKE_COVER", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
+## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
+const SHIELD_DOWN_BREAK_HP := 0.75
+## RECHARGE continues until the shield is back to this fraction.
+const RECHARGED := 0.6
+## How far RECHARGE backs off when there's no cover nearby.
+const RECHARGE_BACKOFF := 25.0
+## A tank at base stays until its hull is back to this fraction (G6 repair).
+const REPAIR_TOP_UP := 0.9
+## A tank at full heat fights with this fraction of its usual appetite (scaled in from 70% heat).
+const HOT_FIREPOWER := 0.75
+## A tank in its base's resupply zone stays until its ammo is back to this fraction.
+const RESUPPLY_TOP_UP := 0.8
+## Scouts keep known enemies about this far away: outside a cannon's 70 m, inside their own 110 m sight.
+const SCOUT_STANDOFF := 85.0
+## Artillery keeps visible enemies at least this far away (outside a cannon's 70 m reach).
+const ARTILLERY_SAFE_DISTANCE := 80.0
+## With nothing to shell, artillery trails this far behind the nearest friendly gun, toward home.
+const ARTILLERY_TRAIL := 35.0
+## A scout's appetite for attacking enemy artillery, relative to a tank's normal appetite.
+const SCOUT_HUNT := 1.6
+const SCOUT_HUNT_FLOOR := 0.8
+## A scout's appetite for a straight fight, relative to a tank's.
+const SCOUT_FIGHT := 0.6
+## KEEP_SLOT's score under move/bound/hold orders (see decide()).
+const ORDER_WEIGHT := 0.95
+## Under orders (not assault), RETREAT only below this health fraction, scaled by caution.
+const CRITICAL_HP_MIN := 0.08
+const CRITICAL_HP_MAX := 0.25
+## A remembered contact's position is extrapolated along its last velocity for at most this long.
+const WATCH_PREDICT_SECONDS := 1.5
 
 var game_match: Match
 ## Fully resolved directives (Directives.resolve).
@@ -35,25 +65,36 @@ var think_offset := 0
 var choice := {}
 ## Top scored options from the last think: [{"option", "target", "score"}], best first.
 var ranked: Array = []
+## The squad order_serial this brain last acted on.
+var _order_serial := 0
 
 
 func think(_delta: float) -> void:
 	if game_match == null or tank == null:
 		return
+	if not spotter.is_valid():
+		# Indirect fire aims at anything the TEAM can see (directive set 2: spotting).
+		spotter = func(other: Tank) -> bool: return game_match.is_visible_to(tank.team, other)
 	if not tank.is_alive():
 		choice = {}
 		tank.intent = ""
 		return
-	if (game_match.tick + think_offset) % THINK_EVERY_TICKS != 0:
+	# A new squad order is thought about on the very next tick and breaks commitment (G3).
+	var squad := game_match.squad_for(tank)
+	var serial := squad.order_serial if squad != null else 0
+	var fresh_order := serial != _order_serial
+	_order_serial = serial
+	if not fresh_order and (game_match.tick + think_offset) % THINK_EVERY_TICKS != 0:
 		return
 	var situation := build_situation()
-	var decision := TankBrain.decide(situation, choice)
+	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	ranked = decision["ranked"]
 	var best: Dictionary = decision["choice"]
 	var same: bool = best["option"] == choice.get("option") and best["target"] == choice.get("target")
 	best["since"] = choice["since"] if same else game_match.tick
 	choice = best
 	_act(situation)
+	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice)
 
 
@@ -70,7 +111,13 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var d: Dictionary = s["directives"]
 	var weapon: Dictionary = me["weapon"]
 	var hp := float(me["health"]) / float(me["max_health"])
-	var confidence := lerpf(0.35, 1.0, hp)
+	# G6: confidence counts the shield (a fresh shield makes a fight winnable); retreat thresholds use
+	# the hull alone, because the hull is what doesn't come back.
+	var max_shield := float(me.get("max_shield", 0.0))
+	var shield := float(me.get("shield", 0.0))
+	var toughness := (float(me["health"]) + shield) / (float(me["max_health"]) + max_shield)
+	var shield_down := max_shield > 0.0 and shield <= 0.0
+	var confidence := lerpf(0.35, 1.0, toughness)
 	var contacts: Array = s["contacts"]
 	var objective: Variant = s["objective"]
 	var leash := float(d["leash"])
@@ -81,6 +128,13 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 	var visible_threats := 0
 	var threats_on_me := 0
+	# G7: a gun with no shells can't fight; a laser at its heat cap has to wait.
+	var max_ammo := int(me.get("max_ammo", -1))
+	var ammo := int(me.get("ammo", -1))
+	var out_of_ammo := max_ammo > 0 and ammo == 0
+	var is_scout: bool = me.get("class", "tank") == "scout"
+	var is_artillery: bool = me.get("class", "tank") == "artillery"
+	var firepower := 0.1 if out_of_ammo else lerpf(1.0, HOT_FIREPOWER, clampf((float(me.get("heat", 0.0)) - 0.7) / 0.3, 0.0, 1.0))
 	for c in contacts:
 		if c["visible"]:
 			visible_threats += 1
@@ -94,17 +148,53 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# RETREAT: hurt past the caution-derived threshold with enemies in sight, or badly outnumbered.
 	var retreat_threshold := lerpf(0.15, 0.55, float(d["caution"]))
 	var retreat := 0.0
-	if hp < retreat_threshold and visible_threats > 0:
+	if commanded and String(squad["verb"]) != "assault":
+		# Player intent dominates (G3): a tank under orders only saves itself when it's about to die.
+		if hp < lerpf(CRITICAL_HP_MIN, CRITICAL_HP_MAX, float(d["caution"])) and visible_threats > 0:
+			retreat = 0.99
+	elif hp < retreat_threshold and visible_threats > 0:
 		retreat = 0.85 + 0.1 * float(d["caution"])
 	elif visible_threats >= 3 and hp < 0.6:
 		retreat = 0.45 * float(d["caution"])
+
 	add.call("RETREAT", "", retreat)
+
+	# RESUPPLY (G7): empty guns go home; tanks already at base top up; low tanks refill in quiet moments.
+	# Under a player order it stays below ORDER_WEIGHT: the player sees ammo and decides.
+	var resupply := 0.0
+	if max_ammo > 0:
+		var ammo_ratio := float(ammo) / max_ammo
+		if out_of_ammo:
+			resupply = 0.9
+		elif bool(me.get("in_resupply_zone", false)) and ammo_ratio < RESUPPLY_TOP_UP:
+			resupply = 0.9 if visible_threats == 0 else 0.5
+		elif ammo_ratio <= OrderController.LOW_AMMO_FRACTION and visible_threats == 0:
+			resupply = 0.5
+	# G6 repair: the base also mends hulls. A worn tank at base stays until mended; a badly hurt one
+	# with nobody in sight heads home (this replaced standing still, and fixes camping hurt tanks:
+	# they go home, mend, and come back).
+	if bool(me.get("in_resupply_zone", false)) and hp < REPAIR_TOP_UP and visible_threats == 0:
+		resupply = maxf(resupply, 0.85)
+	elif hp < retreat_threshold and visible_threats == 0 and not commanded:
+		resupply = maxf(resupply, 0.6)
+	add.call("RESUPPLY", "", resupply)
 
 	# TAKE_COVER: guns on me, hurt, cautious, and somewhere hidden is close by.
 	var cover := 0.0
 	if not (s["cover"] as Array).is_empty() and threats_on_me > 0:
-		cover = float(d["caution"]) * minf(1.0, threats_on_me / 2.0) * (1.0 - hp) * 1.6
+		cover = float(d["caution"]) * minf(1.0, threats_on_me / 2.0) * (1.0 - toughness) * 1.6
+
 	add.call("TAKE_COVER", "", cover)
+
+	# RECHARGE (G6): shield gone, a gun on me, hull already worn: break contact for a few seconds (the
+	# nearest cover, or back off out of the line of fire) and come back when the shield is up. A short
+	# hop, not a trip home: RETREAT to base (2026-09-14 first cut) cost the fight and lost T1 22 of 24.
+	var recharge := 0.0
+	if shield_down and threats_on_me > 0 and hp < SHIELD_DOWN_BREAK_HP:
+		recharge = 0.4 + 0.3 * float(d["caution"])
+	elif max_shield > 0.0 and current.get("option", "") == "RECHARGE" and shield < max_shield * RECHARGED and visible_threats > 0:
+		recharge = 0.5  # keep ducking until the shield is mostly back
+	add.call("RECHARGE", "", recharge)
 
 	var engages: Array = []
 	var flanks: Array = []
@@ -120,10 +210,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				reach = clampf(1.0 - (distance - float(weapon["range"])) / 80.0, 0.15, 1.0)
 			var priority := TankBrain._priority(String(d["target_priority"]), c, distance)
 			var engage := (0.3 + 0.7 * float(d["aggression"])) * reach * (0.55 + 0.45 * priority) \
-					* confidence * leash_factor * (1.0 if c["visible"] else 0.75)
+					* confidence * leash_factor * (1.0 if c["visible"] else 0.75) * firepower
 			engages.append([c["name"], engage])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
-			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor
+			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor * firepower
 			if c["exposed_face"] != "front":
 				flank *= 0.35
 			flanks.append([c["name"], flank])
@@ -131,12 +221,49 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			var staleness := clampf(float(c["age"]) / float(s["memory_ticks"]), 0.0, 1.0)
 			# A last-known position beats marching blindly at the enemy base (ADVANCE's 0.3).
 			investigates.append([c["name"], (0.25 + 0.4 * float(d["aggression"])) * (1.0 - staleness) * leash_factor])
+	# Artillery never brawls: it shells what the team spots (BOMBARD) and stays behind (SHADOW).
+	var fight_scale := 0.0 if is_artillery else (SCOUT_FIGHT if is_scout else 1.0)
 	for pair in engages:
-		add.call("ENGAGE", pair[0], pair[1])
+		var score: float = pair[1] * fight_scale
+		if is_scout and _is_artillery_contact(contacts, pair[0]):
+			# Scouts hunt artillery (directive set 2 counter triangle): artillery is blind up close, can't
+			# fire inside 35 m, and is fragile; a scout closing fast on it is its nightmare. Even a
+			# cautious scout goes for it.
+			score = maxf(pair[1] * SCOUT_HUNT, SCOUT_HUNT_FLOOR * confidence)
+		add.call("ENGAGE", pair[0], score)
 	for pair in flanks:
-		add.call("FLANK", pair[0], pair[1])
+		add.call("FLANK", pair[0], pair[1] * fight_scale)
+	if is_artillery:
+		for c in contacts:
+			if not c["visible"]:
+				continue
+			var reach := my_position.distance_to(c["position"])
+			if reach > float(weapon["range"]) + 40.0:
+				continue
+			var bombard := (0.6 + 0.3 * TankBrain._priority(String(d["target_priority"]), c, reach)) * confidence * firepower
+			add.call("BOMBARD", c["name"], bombard)
+		var trail := 0.0
+		if not (s["allies"] as Array).is_empty():
+			trail = 0.55 if visible_threats == 0 else 0.3
+		add.call("SHADOW", "", trail)
+
+	# SPOT (scouts, directive set 2): be the team's eyes. Keep the nearest visible enemy at SCOUT_STANDOFF
+	# (outside its guns, inside our sight); with nothing in sight, scout ahead.
+	var spot := 0.0
+	if is_scout:
+		var nearest := INF
+		for c in contacts:
+			if c["visible"] and c.get("weapon", "") != "mortar":  # artillery isn't a threat up close: hunt it
+				nearest = minf(nearest, my_position.distance_to(c["position"]))
+		if nearest < SCOUT_STANDOFF - 10.0:
+			spot = 0.88
+		elif nearest < INF:
+			spot = 0.7
+		else:
+			spot = 0.62
+	add.call("SPOT", "", spot)
 	for pair in investigates:
-		add.call("INVESTIGATE", pair[0], pair[1])
+		add.call("INVESTIGATE", pair[0], pair[1] * (0.0 if is_artillery else 1.0))
 
 	# REGROUP: drifted away from the squad, weighted by cohesion (formations do this job when commanded).
 	var regroup := 0.0
@@ -152,7 +279,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		var to_objective := my_position.distance_to(objective)
 		at_objective = to_objective <= float(s["objective_radius"])
 		if leash > 0.0 and to_objective > leash:
-			advance = 0.95
+			# Back to the post, unless the tank is breaking contact to recharge (G6): a hard leash kept
+			# anchors from ever letting their shields come back.
+			advance = 0.95 if recharge <= 0.0 else 0.3
 		elif not at_objective:
 			advance = 0.45 if visible_threats == 0 else 0.25
 	elif visible_threats == 0 and hp >= retreat_threshold:
@@ -163,9 +292,25 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		advance = 0.0  # the squad's destination replaces free advancing
 	add.call("ADVANCE", "", advance)
 
-	# KEEP_SLOT: be where the squad's formation and drill want me. Scores sit just below RETREAT,
-	# so a badly hurt tank still saves itself, and above a normal ENGAGE while moving, so
-	# "Move" means return fire on the move rather than stopping for every fight.
+	# CONTEST (stretch, control point): take and hold the center when it isn't ours. Holding tanks stay
+	# inside and fight from there. Artillery doesn't contest (it can't hold ground).
+	var contest := 0.0
+	var control: Variant = s.get("control")
+	if control != null and not commanded and not is_artillery and hp >= retreat_threshold:
+		var inside := my_position.distance_to(control["center"]) <= float(control["radius"]) * 0.8
+		if int(control["owner"]) != int(me["team"]):
+			contest = 0.72 if visible_threats == 0 else 0.5
+		elif inside:
+			contest = 0.4
+		else:
+			contest = 0.45 if visible_threats == 0 else 0.2
+		contest *= 0.8 if is_scout else 1.0
+	add.call("CONTEST", "", contest)
+
+	# KEEP_SLOT: be where the squad's formation and drill want me. The player's order dominates
+	# (G3): it beats even a committed ENGAGE (~0.8 x COMMIT_BONUS), and only a tank about to die
+	# (RETREAT 0.99) overrides it. "Move" means return fire on the move (the turret tracks threats,
+	# G5) rather than stopping for every fight. Assault deliberately lets brains hunt.
 	var keep_slot := 0.0
 	var in_position := false
 	if commanded:
@@ -173,16 +318,16 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		in_position = gap <= SLOT_TOLERANCE and not squad["moving"]
 		match String(squad["verb"]):
 			"move":
-				keep_slot = 0.0 if in_position else 0.78
+				keep_slot = 0.0 if in_position else ORDER_WEIGHT
 			"bound":
-				keep_slot = 0.8 if squad["moving"] and gap > 3.0 else 0.0
+				keep_slot = ORDER_WEIGHT if squad["moving"] and gap > 3.0 else 0.0
 				in_position = not squad["moving"]
 			"hold":
-				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.8
+				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else ORDER_WEIGHT
 			"assault":
 				keep_slot = 0.0 if in_position else (0.5 if visible_threats == 0 else 0.15)
 			"break_contact":
-				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.92
+				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.97
 	add.call("KEEP_SLOT", "", keep_slot)
 
 	# HOLD: the fallback, and the anchor's job once at its objective.
@@ -195,7 +340,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 	# Commitment: favor the current choice; keep it through MIN_COMMIT_TICKS unless beaten decisively.
 	var committed: Dictionary = {}
+	# An order the tank isn't carrying out yet outranks commitment to anything but itself or survival.
+	var order_pending := keep_slot > 0.0 and not ["KEEP_SLOT", "RETREAT"].has(current.get("option", ""))
 	for candidate in candidates:
+		if order_pending:
+			break
 		if not current.is_empty() and candidate["option"] == current["option"] and candidate["target"] == current["target"]:
 			candidate["score"] *= COMMIT_BONUS
 			committed = candidate
@@ -211,10 +360,42 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			"ranked": TankBrain._top(candidates, 3)}
 
 
+## Where the turret covers when nothing is in this tank's own sights (G5): the chosen target,
+## else the most pressing known contact: visible before remembered, guns on me first, then nearest.
+## Null with no contacts (the turret holds its heading).
+static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
+	var my_position: Vector3 = s["self"]["position"]
+	var best: Variant = null
+	var best_score := INF
+	for c in s["contacts"]:
+		# Where it probably is now: last known position plus a short dead-reckoning.
+		var seconds := minf(float(c["age"]) / 60.0, WATCH_PREDICT_SECONDS)
+		var predicted: Vector3 = c["position"] + (c["velocity"] as Vector3) * seconds
+		if c["name"] == current.get("target", ""):
+			return predicted
+		var score := my_position.distance_to(c["position"]) * (0.6 if c["aiming_at_me"] else 1.0)
+		if not c["visible"]:
+			score += 1000.0 + float(c["age"])
+		if score < best_score:
+			best_score = score
+			best = predicted
+	return best
+
+
+static func _is_artillery_contact(contacts: Array, contact_name: String) -> bool:
+	for c in contacts:
+		if c["name"] == contact_name:
+			return c.get("weapon", "") == "mortar"
+	return false
+
+
 static func _priority(rule: String, contact: Dictionary, distance: float) -> float:
 	match rule:
 		"weakest":
-			return 1.0 - clampf(float(contact["health"]) / 100.0, 0.0, 1.0)
+			# Hull plus shield against a standard tank's full load (was health / 100, which rated every
+			# tank above 100 HP as equally healthy).
+			var full := float(Units.stat("tank", "max_health")) + float(Units.stat("tank", "max_shield"))
+			return 1.0 - clampf((float(contact["health"]) + float(contact.get("shield", 0.0))) / full, 0.0, 1.0)
 		"most_exposed":
 			return {"rear": 1.0, "side": 0.7, "front": 0.3}[contact["exposed_face"]]
 		"threatening_allies":
@@ -263,6 +444,7 @@ func build_situation() -> Dictionary:
 			"velocity": known["velocity"],
 			"forward": known["forward"],
 			"health": known["health"],
+			"shield": known.get("shield", 0),
 			"weapon": known["weapon"],
 			"visible": known["visible"],
 			"age": game_match.tick - int(known["seen_tick"]),
@@ -299,7 +481,11 @@ func build_situation() -> Dictionary:
 	return {
 		"tick": game_match.tick,
 		"self": {"name": String(tank.name), "team": team, "position": my_position, "forward": -tank.global_basis.z,
-				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon},
+				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
+				"ammo": tank.ammo, "max_ammo": tank.max_ammo, "heat": tank.sync_heat,
+				"shield": tank.shield, "max_shield": tank.max_shield,
+				"class": Units.PROFILES.get(tank.unit_id, {}).get("class", "tank"), "sight_radius": tank.sight_radius,
+				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
 		"directives": effective_directives,
 		"squad": squad_context if squad_context.get("slot") != null else null,
 		"contacts": contacts,
@@ -309,8 +495,11 @@ func build_situation() -> Dictionary:
 		"squad_center": squad_center,
 		"cover": _find_cover(threat_positions) if not threat_positions.is_empty() else [],
 		"rally": Match.spawn_position(team, tank.slot),
+		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
+		"control": {"center": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner}
+				if game_match.control_point else null,
 	}
 
 
@@ -380,6 +569,99 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"RETREAT":
 			_order_move(_move_to(s["rally"], true))
+			_order_weapon({"type": "fire_at_will"})
+		"BOMBARD":
+			var target_position: Vector3 = contact["position"]
+			var distance := my_position.distance_to(target_position)
+			var nearest_threat := INF
+			var threat_at := Vector3.ZERO
+			for c in s["contacts"]:
+				if c["visible"] and my_position.distance_to(c["position"]) < nearest_threat:
+					nearest_threat = my_position.distance_to(c["position"])
+					threat_at = c["position"]
+			if nearest_threat < ARTILLERY_SAFE_DISTANCE:
+				# Too close to someone's guns: back away from them, facing them.
+				var away := (my_position - threat_at).normalized()
+				_order_move(_move_to(my_position + away * (ARTILLERY_SAFE_DISTANCE - nearest_threat + 10.0), true))
+			elif distance > float(weapon["preferred_max"]):
+				_order_move(_move_to(target_position + (my_position - target_position).normalized() * float(weapon["preferred_max"])))
+			else:
+				_order_move({"type": "face", "x": target_position.x, "z": target_position.z})
+			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
+		"CONTEST":
+			var control: Dictionary = s["control"]
+			var center: Vector3 = control["center"]
+			# Spread out inside the zone: each tank takes its own spot on a ring (stable per tank).
+			var angle := TAU * float(think_offset % 8) / 8.0
+			var spot: Vector3 = center + Vector3(cos(angle), 0.0, sin(angle)) * float(control["radius"]) * 0.45
+			var nearest_visible: Variant = null
+			for c in s["contacts"]:
+				if c["visible"] and (nearest_visible == null or my_position.distance_to(c["position"]) < my_position.distance_to(nearest_visible)):
+					nearest_visible = c["position"]
+			if my_position.distance_to(spot) > 4.0:
+				_order_move(_move_to(spot))
+			elif nearest_visible != null:
+				_order_move({"type": "face", "x": nearest_visible.x, "z": nearest_visible.z})
+			else:
+				_order_move({"type": "stop"})
+			_order_weapon({"type": "fire_at_will"})
+		"SHADOW":
+			var nearest_ally: Variant = null
+			for ally in s["allies"]:
+				if nearest_ally == null or my_position.distance_to(ally["position"]) < my_position.distance_to(nearest_ally):
+					nearest_ally = ally["position"]
+			var home: Vector3 = s["rally"]
+			var behind: Vector3 = nearest_ally + ((home - nearest_ally) as Vector3).normalized() * ARTILLERY_TRAIL
+			_order_move(_move_to(behind))
+			_order_weapon({"type": "fire_at_will"})
+		"SPOT":
+			var nearest_visible: Dictionary = {}
+			for c in s["contacts"]:
+				if c["visible"] and (nearest_visible.is_empty()
+						or my_position.distance_to(c["position"]) < my_position.distance_to(nearest_visible["position"])):
+					nearest_visible = c
+			if not nearest_visible.is_empty():
+				var threat: Vector3 = nearest_visible["position"]
+				var away := my_position - threat
+				away.y = 0.0
+				var post: Vector3 = threat + (away.normalized() if away.length() > 0.1 else -(me["forward"] as Vector3)) * SCOUT_STANDOFF
+				if my_position.distance_to(post) > 6.0:
+					# Back off facing the enemy, so it stays in sight.
+					_order_move(_move_to(post, (post - my_position).dot(threat - my_position) < 0.0))
+				else:
+					_order_move({"type": "face", "x": threat.x, "z": threat.z})
+			else:
+				var goal: Vector3 = s["objective"] if s["objective"] != null else s["enemy_base"]
+				var freshest: Dictionary = {}
+				for c in s["contacts"]:
+					if freshest.is_empty() or int(c["age"]) < int(freshest["age"]):
+						freshest = c
+				if not freshest.is_empty():
+					var toward: Vector3 = (freshest["position"] as Vector3) - my_position
+					goal = (freshest["position"] as Vector3) - toward.normalized() * SCOUT_STANDOFF * 0.8
+				_order_move(_move_to(goal))
+			_order_weapon({"type": "fire_at_will"})
+		"RECHARGE":
+			if not (s["cover"] as Array).is_empty():
+				var hide: Vector3 = s["cover"][0]
+				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0))
+			else:
+				var threat_center := Vector3.ZERO
+				var seen := 0
+				for c in s["contacts"]:
+					if c["visible"]:
+						threat_center += c["position"]
+						seen += 1
+				var away := (my_position - threat_center / maxf(seen, 1)).normalized() if seen > 0 else -(me["forward"] as Vector3)
+				_order_move(_move_to(my_position + away * RECHARGE_BACKOFF, true))
+			_order_weapon({"type": "fire_at_will"})
+		"RESUPPLY":
+			var depot: Vector3 = s.get("resupply", s["rally"])
+			if bool(me.get("in_resupply_zone", false)) and my_position.distance_to(depot) < Match.RESUPPLY_RADIUS * 0.6:
+				_order_move({"type": "stop"})
+			else:
+				# Back in with the front armor toward any threat, drive in when it's quiet.
+				_order_move(_move_to(depot, not s["contacts"].filter(func(c: Dictionary) -> bool: return c["visible"]).is_empty()))
 			_order_weapon({"type": "fire_at_will"})
 		"INVESTIGATE":
 			_order_move(_move_to(contact["position"]))

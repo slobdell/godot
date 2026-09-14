@@ -1,0 +1,9 @@
+{
+  "name": "Combined Arms",
+  "note": "Directive set 2: a scout spots from 85 m, an artillery piece shells what it spots from behind the tanks, and three tanks hold the line (930 points).",
+  "squads": [
+    {"name": "Guns", "directive": {"role": "assault", "cohesion": 0.7}, "tanks": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}]},
+    {"name": "Eyes", "directive": {"role": "scout"}, "tanks": [{"unit": "scout"}]},
+    {"name": "Battery", "directive": {"role": "support"}, "tanks": [{"unit": "artillery"}]}
+  ]
+}

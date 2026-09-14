@@ -22,9 +22,20 @@ signal died
 @export var acceleration := 14.0
 @export var hull_turn_rate := deg_to_rad(80.0)
 @export var turret_turn_rate := deg_to_rad(110.0)
-## Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 200.
-@export var max_health := 400
+## Hull. Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 400;
+## 2026-09-14 (G6): 300 plus a recharging shield (see Units.PROFILES).
+@export var max_health: int = Units.stat("tank", "max_health")
+## G6 shield: absorbs damage before the hull and recharges after a quiet spell.
+@export var max_shield: float = Units.stat("tank", "max_shield")
+@export var shield_recharge_delay: float = Units.stat("tank", "shield_recharge_delay")
+@export var shield_recharge_rate: float = Units.stat("tank", "shield_recharge_rate")
 @export var reload_seconds := 2.0
+## G1: how far this tank sees (inside the radius AND an unobstructed line of sight). Team vision is
+## the union of its tanks' views (Match.intel).
+@export var sight_radius: float = Units.stat("tank", "sight_radius")
+## G7 heat (see Units.PROFILES "heat_capacity"/"heat_dissipation").
+@export var heat_capacity: float = Units.stat("tank", "heat_capacity")
+@export var heat_dissipation: float = Units.stat("tank", "heat_dissipation")
 ## Client-side display smoothing toward replicated state. Higher = snappier.
 @export var remote_smoothing := 18.0
 
@@ -39,13 +50,32 @@ var owner_peer_id := 0
 var display_name := ""
 var weapon_id := Weapons.DEFAULT
 var weapon: Dictionary = Weapons.profile(Weapons.DEFAULT)
+## Loadout, fixed at spawn (directive set 2): the unit class, weapons by hardpoint, component ids.
+var unit_id := "tank"
+var weapons := {}
+var components: Array = []
+## This tick's commanded aim point (world). Indirect weapons (ARC) fire at it, not along the barrel.
+var aim_point := Vector3.ZERO
+## Shells a full load holds (weapon ammo plus ammo racks), or -1 for unlimited.
+var max_ammo := -1
+var ammo_bonus_fraction := 0.0
 ## Fractional cone damage not yet applied as whole hit points.
 var damage_accumulator := 0.0
 ## What the tank's brain is doing ("ENGAGE Rust_2"); set by the simulating peer, shown on nameplates.
 var intent := ""
+## Whether the nameplate shows `intent` (skirmish hides it: enemy intents would leak through the fog).
+var show_intent := true
 
 var health := 200
 var alive := true
+## Shield points (0..max_shield). Simulating peer.
+var shield := 0.0
+## Physics ticks since the last damage landed (shield recharge and base repair wait on it).
+var ticks_since_hit := 1_000_000
+## Shells left, or -1 for a weapon that never runs out (G7). Simulating peer.
+var ammo := -1
+## Current heat (0..heat_capacity). Simulating peer.
+var heat := 0.0
 ## World-space velocity: exact on the simulating peer, estimated from snapshots on clients.
 var estimated_velocity := Vector3.ZERO
 
@@ -59,6 +89,13 @@ var sync_alive := true
 var sync_reload := 1.0
 var sync_firing := false
 var sync_intent := ""
+var sync_ammo := -1
+var sync_shield := 0
+## Match base-service bookkeeping: ticks in the base zone toward the next shell / hull point.
+var resupply_ticks := 0
+var repair_ticks := 0
+## Heat as a fraction of capacity, 0..1.
+var sync_heat := 0.0
 
 var _speed := 0.0
 var _reload_left := 0.0
@@ -74,16 +111,67 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
 func _ready() -> void:
-	health = max_health
-	set_weapon(weapon_id)
+	apply_loadout()
 	_publish_state()
 	_previous_sync_position = sync_position
+
+
+## Directive set 2: stats come from the unit catalog (Units.PROFILES + component modifiers) and the
+## main hardpoint's weapon. Called once in _ready, from data set at spawn (identical on every peer).
+func apply_loadout() -> void:
+	var base := func(key: String) -> float: return float(Units.stat(unit_id, key))
+	var bonus := {}
+	for component in components:
+		for key in Units.COMPONENTS.get(component, {}).get("modifiers", {}):
+			bonus[key] = float(bonus.get(key, 0.0)) + float(Units.COMPONENTS[component]["modifiers"][key])
+	var stat := func(key: String) -> float: return base.call(key) + float(bonus.get(key, 0.0))
+	max_health = roundi(stat.call("max_health"))
+	max_shield = stat.call("max_shield")
+	shield_recharge_delay = stat.call("shield_recharge_delay")
+	shield_recharge_rate = stat.call("shield_recharge_rate")
+	max_forward_speed = stat.call("max_forward_speed")
+	max_reverse_speed = stat.call("max_reverse_speed")
+	hull_turn_rate = deg_to_rad(stat.call("hull_turn_rate_deg"))
+	turret_turn_rate = deg_to_rad(stat.call("turret_turn_rate_deg"))
+	sight_radius = stat.call("sight_radius")
+	heat_capacity = stat.call("heat_capacity")
+	heat_dissipation = stat.call("heat_dissipation")
+	ammo_bonus_fraction = float(bonus.get("ammo_fraction", 0.0))
+	_apply_hull_size(Units.stat(unit_id, "hull_size"))
+	health = max_health
+	shield = max_shield
+	var chosen := weapon_id
+	if Units.exists(unit_id):
+		var hardpoint: Dictionary = Units.PROFILES[unit_id]["hardpoints"][0]
+		chosen = String(weapons.get(hardpoint["id"], weapon_id))
+		if not (hardpoint["accepts"] as Array).has(chosen):
+			chosen = hardpoint["accepts"][0]  # e.g. an artillery piece spawned without naming its mortar
+	set_weapon(chosen)
+
+
+func _apply_hull_size(size_list: Variant) -> void:
+	var size := Vector3(size_list[0], size_list[1], size_list[2])
+	var standard: Array = Units.PROFILES["tank"]["hull_size"]
+	if size.is_equal_approx(Vector3(standard[0], standard[1], standard[2])):
+		return
+	# Scene sub-resources are shared by every instance (trip-up 13): resize a copy.
+	var box := BoxShape3D.new()
+	box.size = size
+	_collision.shape = box
+	_collision.position.y = size.y / 2.0
+	var ratio := Vector3(size.x / float(standard[0]), size.y / float(standard[1]), size.z / float(standard[2]))
+	_hull_visual.scale = ratio
+	turret.position.y *= ratio.y
+	turret.scale = Vector3.ONE * minf(ratio.x, ratio.z)
 
 
 func set_weapon(id: String) -> void:
 	weapon_id = id
 	weapon = Weapons.profile(id)
 	reload_seconds = weapon["reload"]
+	var full := Weapons.max_ammo(weapon)
+	max_ammo = full if full < 0 else roundi(full * (1.0 + ammo_bonus_fraction))
+	ammo = max_ammo
 	if _weapon_visual != null:
 		_weapon_visual.fill("weapon." + id)
 		_weapon_visual.invoke("setup", [weapon])
@@ -102,6 +190,7 @@ func _physics_process(delta: float) -> void:
 		_publish_state()
 		return
 	var cmd := command.sanitized()
+	aim_point = cmd.aim_point
 
 	# Tank steering: turn in place or while moving; reversing does not invert.
 	rotate_y(-cmd.turn * hull_turn_rate * delta)
@@ -120,14 +209,22 @@ func _physics_process(delta: float) -> void:
 			turret_turn_rate, delta)
 
 	sync_firing = false
+	heat = maxf(0.0, heat - heat_dissipation * delta)
+	ticks_since_hit += 1
+	if shield < max_shield and ticks_since_hit >= roundi(shield_recharge_delay * 60.0):
+		shield = minf(max_shield, shield + shield_recharge_rate * delta)
 	if weapon["kind"] == Weapons.Kind.CONE:
 		if cmd.fire:
 			sync_firing = true
 			sprayed.emit(muzzle_position(), turret_forward(), delta)
 	else:
 		_reload_left = maxf(0.0, _reload_left - delta)
-		if cmd.fire and _reload_left <= 0.0:
+		if cmd.fire and _reload_left <= 0.0 and ammo != 0 and _heat_allows_shot(heat):
 			_reload_left = reload_seconds
+			if ammo > 0:
+				ammo -= 1
+			heat += float(weapon.get("heat_per_shot", 0.0))
+			sync_firing = weapon["kind"] == Weapons.Kind.BEAM
 			fired.emit(muzzle_position(), turret_forward())
 	_publish_state()
 
@@ -144,14 +241,46 @@ func _process(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, sync_yaw, weight)
 		turret.rotation.y = lerp_angle(turret.rotation.y, sync_turret_yaw, weight)
 	nameplate.text = "%s  %d" % [display_name, sync_health]
-	if sync_intent != "":
+	if max_shield > 0.0:
+		nameplate.text += " +%d" % sync_shield
+	_hull_visual.invoke("set_shield", [float(sync_shield) / max_shield if max_shield > 0.0 else 0.0])
+	if sync_intent != "" and show_intent:
 		nameplate.text += "\n" + sync_intent
 	_weapon_visual.invoke("set_firing", [sync_firing and alive])
+	_weapon_visual.invoke("set_heat", [sync_heat])
 
 
 # ---- Rules hooks (called by Match on the simulating peer) --------------------------
 
-## Returns true if this hit destroyed the tank.
+## A weapon hit (G6): the shield absorbs first (see Armor.split_shield), the rest hits the hull.
+## Fractions carry over between hits (flames deal a little every tick).
+## Returns {"shield": float, "hull": int, "killed": bool}.
+func take_hit(raw: float, shield_multiplier: float, armor_multiplier: float) -> Dictionary:
+	if not alive or raw <= 0.0:
+		return {"shield": 0.0, "hull": 0, "killed": false}
+	ticks_since_hit = 0
+	var split := Armor.split_shield(raw, shield, shield_multiplier, armor_multiplier)
+	shield = shield - split.x
+	if shield < 0.01:
+		shield = 0.0  # no float dust: "shield down" must read as exactly 0
+	damage_accumulator += split.y
+	var whole := int(damage_accumulator + 0.0001)
+	damage_accumulator = maxf(0.0, damage_accumulator - whole)
+	var hull := mini(whole, health)
+	var killed := apply_damage(whole) if whole > 0 else false
+	if whole == 0:
+		_publish_state()
+	return {"shield": split.x, "hull": hull, "killed": killed}
+
+
+## Hull points back (base repair). Simulating peer.
+func repair(amount: int) -> void:
+	if alive and amount > 0:
+		health = mini(max_health, health + amount)
+		_publish_state()
+
+
+## Direct hull damage, ignoring the shield. Returns true if this destroyed the tank.
 func apply_damage(amount: int) -> bool:
 	if not alive:
 		return false
@@ -173,6 +302,11 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	_speed = 0.0
 	_reload_left = 0.0
 	health = max_health
+	shield = max_shield
+	ticks_since_hit = 1_000_000
+	damage_accumulator = 0.0
+	ammo = max_ammo
+	heat = 0.0
 	_set_alive(true)
 	_publish_state()
 
@@ -188,6 +322,36 @@ func reload_fraction() -> float:
 	return sync_reload
 
 
+## Loaded, not out of ammo, and cool enough for one more shot. Valid on every peer.
+func ready_to_fire() -> bool:
+	var current_heat := heat if simulate else sync_heat * heat_capacity
+	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat)
+
+
+## Shells left (-1 = unlimited): exact on the simulating peer, replicated elsewhere.
+func shells_left() -> int:
+	return ammo if simulate else sync_ammo
+
+
+## Ammo left as a fraction of a full load (1.0 for weapons that never run out).
+func ammo_fraction() -> float:
+	return 1.0 if max_ammo <= 0 else float(maxi(shells_left(), 0)) / max_ammo
+
+
+## Add shells, up to a full load. Returns how many were added. Simulating peer (Match resupply).
+func resupply(shells: int) -> int:
+	if max_ammo < 0 or not alive:
+		return 0
+	var added := mini(shells, max_ammo - ammo)
+	ammo += added
+	_publish_state()
+	return added
+
+
+func _heat_allows_shot(current_heat: float) -> bool:
+	return current_heat + float(weapon.get("heat_per_shot", 0.0)) <= heat_capacity + 0.001
+
+
 func muzzle_position() -> Vector3:
 	return turret.global_transform * Vector3(0.0, 0.05, -3.2)
 
@@ -200,6 +364,12 @@ func turret_forward() -> Vector3:
 ## Current hull speed in m/s (negative when reversing). Simulating peer only.
 func speed() -> float:
 	return _speed
+
+
+## The team's identity color as an accent (lights, trim): visuals implement set_team_accent if they can.
+func set_team_accent(color: Color) -> void:
+	for slot in [_hull_visual, _turret_visual, _weapon_visual]:
+		(slot as VisualSlot).invoke("set_team_accent", [color])
 
 
 ## Paint this tank in a team color. What that looks like is up to the theme's visuals.
@@ -223,3 +393,6 @@ func _publish_state() -> void:
 	sync_alive = alive
 	sync_reload = 1.0 - (_reload_left / reload_seconds) if reload_seconds > 0.0 else 1.0
 	sync_intent = intent
+	sync_ammo = ammo
+	sync_shield = roundi(shield)
+	sync_heat = snappedf(heat / heat_capacity, 0.01) if heat_capacity > 0.0 else 0.0

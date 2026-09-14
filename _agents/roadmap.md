@@ -60,16 +60,21 @@ AI v1 landed 2026-09-13, after the lead's direction ("tank heuristics that respo
 - [x] Determinism: golden `decide()` tests, `make determinism` in `make check`; `make lint`; `make watch-match`
 - [x] Experiments T1–T3 run with swap-bases controls (results in tank_brain.md)
 - [x] **Tactical map** (the lead chose it): skirmish mode, commander election + succession, 7 formations, 5 drills incl. bounding overwatch, fog-of-war map ([tactical_map.md](tactical_map.md))
-- [ ] Networked squad command; Claude as the opposing commander (`/squad` on the agent bridge); touch controls
+- [x] Touch controls (2026-09-15, stream/gameplay G0): tap/hold-drag/pinch/twist + buttons for every command
+- [x] RTS 3D camera, radar, fog of war with a visibility field (2026-09-15, stream/gameplay G4/G2/G1)
+- [x] Halo-style shields over hull, finite ammo with base resupply/repair, lasers with heat (G6/G7)
+- [x] A CPU commander that issues squad orders (`CpuCommander`, opt-in; v1 measured weaker than plain brains)
+- [ ] Networked squad command; Claude as the opposing commander (`/squad` on the agent bridge)
 - [ ] Brains for `make run` / server bots (after T2 confirms they beat BotController)
 - [ ] In-game score overlay (top 3 options per tank); intents already show on nameplates
 - **Acceptance:** experiment **E1** passes ([squad_ai_design.md](squad_ai_design.md))
 
 ## M5: Squads, doctrine as data, and "does skill exist?"
 - [ ] 5 tanks per side; squad blackboard; phases (conditions that swap directive sets)
-- [ ] Doctrine JSON schema: loadout (points budget), per-tank directives + phases; server-side validation
-- [ ] Equipment trade-offs (armor / speed / gun types)
-- [ ] Experiments **E2** (knob sensitivity) and **E3** (skill existence) run and logged
+- [x] Doctrine JSON loadouts (unit, weapons by hardpoint, components, paint) with a points budget, validated (2026-09-15)
+- [ ] Phases (conditions that swap directive sets)
+- [x] Equipment trade-offs: scout / tank / artillery chassis; cannon, laser, machine gun, mortar, flamethrower; heat sinks, ammo racks, shield boosters, armor plating (2026-09-15)
+- [ ] Experiments **E2** (knob sensitivity) and **E3** (skill existence) run and logged. E3 at army level started: archetype round robins in [balance.md](balance.md)
 - **Acceptance:** E3 passes, i.e. authored doctrines beat random and no doctrine dominates
 
 ## M6: Deploy (stage S1)

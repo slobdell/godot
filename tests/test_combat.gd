@@ -28,6 +28,8 @@ func _duel(target_yaw: float, target_team: int = Match.Team.RUST) -> Array:
 	var target := game_match.spawn_tank("Target", 0, target_team)
 	_place(shooter, 20.0, 0.0)
 	_place(target, 5.0, target_yaw)
+	target.max_shield = 0.0  # these tests are about hull armor; shields have their own tests (test_shields.gd)
+	target.shield = 0.0
 	await wait_physics_frames(2)
 	shooter.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 	await wait_physics_frames(1)
@@ -84,6 +86,8 @@ func test_kill_scores_and_respawns() -> void:
 	await wait_physics_frames(2)
 	assert_true(Perception.has_line_of_sight(shooter, target), "open lane: clear line of sight")
 	target.health = 10
+	target.max_shield = 0.0
+	target.shield = 0.0
 	shooter.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 	await wait_physics_frames(1)
 	shooter.command = TankCommand.new()
@@ -107,8 +111,10 @@ func test_bot_engages_a_visible_enemy() -> void:
 	_place(bot, -15.0, PI)
 	# Track the lowest health seen: a lethal bot can kill AND the target can respawn
 	# at full health before the check (this exact false failure happened once).
-	var lowest_health := target.health
+	# Health + shield (G6): the first hits land on the shield.
+	var full := target.health + int(target.shield)
+	var lowest_health := full
 	for frame in 60 * 5:
 		await tree.physics_frame
-		lowest_health = mini(lowest_health, target.health)
-	assert_true(lowest_health < target.max_health, "within 5 s the bot turns its turret, leads, and hits (lowest health %d)" % lowest_health)
+		lowest_health = mini(lowest_health, target.health + int(target.shield))
+	assert_true(lowest_health < full, "within 5 s the bot turns its turret, leads, and hits (lowest health+shield %d)" % lowest_health)
