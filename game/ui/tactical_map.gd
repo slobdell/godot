@@ -2,26 +2,33 @@ class_name TacticalMap
 extends Control
 ## The tactical map: command squads with few inputs (see _agents/tactical_map.md).
 ##
-##   WHO    left-click a tank → select its squad; click a tank in the selected squad → make it commander;
-##          keys 1-4 select squads
-##   WHERE  drag on open ground (left OR right button): press = destination, drag direction = facing
-##          (a left press ON a tank selects instead; left-drag was added after the lead's first playtest)
-##   HOW    drill:     Q move · W bound · E hold (here) · R assault · T break contact
-##          formation: Z column · X wedge · C vee · V line · B echelon (again: flips side) · N coil
-##   VIEW   with an RtsCamera (skirmish, G4): arrows/edge/middle-drag pan, wheel zoom, , . rotate,
-##          F follow the selected squad, Tab overview; on touch, one finger drags the view.
-##          Without one (tests): Tab toggles a flat top-down map and a view behind the commander
-##   TIME   Space pauses/resumes (tactical pause: give orders while paused). Skirmish starts paused.
+## C1 one-tap grammar: a finger and the left mouse button behave the same; nothing needs right-click.
+##   WHO    tap a squad chip or any of its units → select it; tap a unit of the selected squad → commander
+##   WHERE  tap the ground (or the radar) → the selected squad goes there
+##          hold 0.35 s, then drag → go there and face the drag direction (advanced)
+##   HOW    drill and formation buttons (keys: Q move · W bound · E hold · R assault · T break contact;
+##          Z column · X wedge · C vee · V line · B echelon (again: flips side) · N coil)
+##   VIEW   drag the ground to pan; pinch zooms, twist rotates; wheel, middle-drag, arrows, , . on desktop;
+##          F / Follow tracks the selected squad, Tab / Overview. Without an RtsCamera (tests) Tab toggles
+##          a flat top-down map and a view behind the commander
+##   TIME   Space / Pause (tactical pause: give orders while paused). Skirmish starts paused.
+##   Desktop shortcuts: 1-5 select squads; right-drag orders with a facing in one motion.
 ##
 ## Every action becomes a SquadCommand (structured data) sent to Match.command_squad().
 ## Enemies are drawn only from the team's intel: what someone on your team has seen.
 
 signal command_issued(command: Dictionary, error: String)
+## C7: the player selected a squad (key "<team>/<name>", as in Match.squads).
+signal squad_selected(squad_key: String)
 
 const PICK_RADIUS_PX := 18.0
+## A tap within this many meters of a vehicle's center picks it, when that's more than the pixel radius.
+const PICK_BODY_M := 2.5
 const PING_SECONDS := 0.6
 ## With the RTS camera, 3D nameplates show below this zoom level.
 const NAMEPLATE_ZOOM := 0.45
+## C5: below this zoom the map leaves vehicles to their 3D models and ground rings; above it, 2D markers.
+const ICON_ZOOM := 0.5
 ## Drags shorter than this (meters) mean "no particular facing".
 const MIN_FACING_DRAG := 4.0
 const VERB_KEYS := {KEY_Q: "move", KEY_W: "bound", KEY_E: "hold", KEY_R: "assault", KEY_T: "break_contact"}
@@ -64,7 +71,6 @@ var _toast: Label
 var _toast_left := 0.0
 ## Which button started the current drag (left drags only count once they actually move).
 var _drag_button := MOUSE_BUTTON_NONE
-var _drag_moved := false
 ## Order acknowledgement (G3): a ring that expands at the ordered spot the moment an order lands.
 var _ping_at: Variant = null
 var _ping_left := 0.0
@@ -84,6 +90,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if rig != null:
+		tactical_view = rig.is_overview()  # tracking can leave the overview on its own
 	_ping_left = maxf(0.0, _ping_left - delta)
 	_update_touch(delta)
 	if _toast != null and _toast_left > 0.0:
@@ -120,7 +128,63 @@ func issue(command: Dictionary) -> String:
 		_ping_at = Vector3(float(command["to"][0]), 0.0, float(command["to"][1]))
 		_ping_left = PING_SECONDS
 	_show_toast(describe_command(command) if error == "" else "Can't: " + error, error != "")
+	if error == "":
+		_camera_after_order(command)
 	return error
+
+
+# ---- C4: the camera follows orders ----------------------------------------------------
+
+## Drills that travel somewhere (tracked until the squad arrives).
+const TRAVEL_VERBS := ["move", "bound", "assault", "break_contact"]
+## A point counts as on screen inside this fraction of the screen (the rest is under the HUD).
+const ON_SCREEN_INSET := 0.85
+
+
+## After an order, if the squad or its destination is off screen, the camera frames both and tracks the
+## squad until it arrives, the player moves the camera, or another squad is selected.
+func _camera_after_order(command: Dictionary) -> void:
+	if rig == null or not command.has("verb") or rig.tracking_mode() == RtsCamera.Track.FOLLOW:
+		return
+	var points := order_points(String(command["squad"]))
+	if points.is_empty() or all_on_screen(points):
+		return
+	rig.track(order_points.bind(String(command["squad"])), RtsCamera.Track.ORDER)
+
+
+## What order tracking keeps in view: the squad's vehicles and where it's going. Empty once it has
+## arrived (or stopped travelling, or is gone).
+func order_points(squad_name: String) -> Array:
+	var squad := _squad(squad_name)
+	if squad == null or squad.arrived or not TRAVEL_VERBS.has(squad.verb) or squad.destination == null:
+		return []
+	var points := squad_points(squad_name)
+	if points.is_empty():
+		return []
+	points.append(squad.destination)
+	return points
+
+
+## Where a squad's surviving vehicles are.
+func squad_points(squad_name: String) -> Array:
+	var squad := _squad(squad_name)
+	var points: Array = []
+	if squad == null:
+		return points
+	var by_name := game_match.tanks_by_name()
+	for member in squad.alive_members(by_name):
+		points.append((by_name[member] as Tank).global_position)
+	return points
+
+
+func all_on_screen(points: Array) -> bool:
+	var screen := get_viewport().get_visible_rect()
+	var inner := screen.grow_individual(-screen.size.x * (1.0 - ON_SCREEN_INSET) / 2.0, -screen.size.y * (1.0 - ON_SCREEN_INSET) / 2.0,
+			-screen.size.x * (1.0 - ON_SCREEN_INSET) / 2.0, -screen.size.y * (1.0 - ON_SCREEN_INSET) / 2.0)
+	for p in points:
+		if camera.is_position_behind(p) or not inner.has_point(camera.unproject_position(p)):
+			return false
+	return true
 
 
 ## A player-facing summary of a command, e.g. "Alpha: Bound in Wedge".
@@ -145,8 +209,20 @@ func _show_toast(text: String, is_error := false) -> void:
 
 
 func select_squad(squad_name: String) -> void:
-	if _squad(squad_name) != null:
+	if _squad(squad_name) != null and squad_name != selected_squad:
 		selected_squad = squad_name
+		if rig != null:
+			match rig.tracking_mode():
+				RtsCamera.Track.ORDER:
+					rig.stop_tracking("replaced")  # C4: another selection ends order tracking
+				RtsCamera.Track.FOLLOW:
+					rig.track(squad_points.bind(squad_name), RtsCamera.Track.FOLLOW)  # "follow selected" moves on
+		squad_selected.emit("%d/%s" % [team, squad_name])
+
+
+## The selected Squad, or null.
+func selected() -> Squad:
+	return _squad(selected_squad)
 
 
 func apply_verb(verb: String) -> String:
@@ -164,11 +240,11 @@ func apply_verb(verb: String) -> String:
 	return ""  # takes effect on the next right-drag
 
 
-func apply_formation(formation: String) -> String:
+func apply_formation(formation: String, flip_echelon := true) -> String:
 	var squad := _squad(selected_squad)
 	if squad == null:
 		return "no squad selected"
-	if formation == "echelon_right" and squad.formation == "echelon_right":
+	if flip_echelon and formation == "echelon_right" and squad.formation == "echelon_right":
 		formation = "echelon_left"  # pressing Echelon again flips the side
 	return issue({"squad": selected_squad, "formation": formation})
 
@@ -203,12 +279,22 @@ func set_paused(paused: bool, message := "PAUSED: give orders, then Resume (Spac
 		_pause_label.visible = paused
 
 
-## G4: point the camera at the selected squad's commander and ride along.
+## C4 "follow selected" toggle: keep the selected squad framed (it follows new selections) until toggled
+## off or the player moves the camera.
 func follow_selected() -> void:
-	var squad := _squad(selected_squad)
-	var lead := game_match.tanks.get_node_or_null(NodePath(squad.commander)) as Tank if squad != null else null
-	if rig != null and lead != null and lead.is_alive():
-		rig.follow(lead)
+	if rig == null:
+		return
+	if rig.tracking_mode() == RtsCamera.Track.FOLLOW:
+		rig.stop_tracking("stopped")
+	elif not squad_points(selected_squad).is_empty():
+		rig.track(squad_points.bind(selected_squad), RtsCamera.Track.FOLLOW)
+
+
+## C2: a second tap on the selected squad's chip centers the camera on the squad (one frame, no tracking).
+func center_on_selected() -> void:
+	var points := squad_points(selected_squad)
+	if rig != null and not points.is_empty():
+		rig.frame(points)
 
 
 func set_tactical_view(enabled: bool) -> void:
@@ -241,9 +327,7 @@ func _input(event: InputEvent) -> void:
 	# Two-finger camera gestures come straight from the touch stream; they cancel any one-finger drag.
 	if rig != null and (event is InputEventScreenTouch or event is InputEventScreenDrag):
 		if rig.handle_touch(event):
-			_drag_start = null
-			_drag_end = null
-			_drag_button = MOUSE_BUTTON_NONE
+			_cancel_press()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -252,38 +336,26 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 			return
 		if rig.finger_count() >= 2:
+			_cancel_press()
 			accept_event()  # a pinch/twist is in progress: its emulated mouse events aren't orders
-			return
-		if _is_touch(event) and _touch_gesture(event):
-			accept_event()
 			return
 	if event is InputEventMouseButton:
 		var button := event as InputEventMouseButton
-		if button.button_index != MOUSE_BUTTON_LEFT and button.button_index != MOUSE_BUTTON_RIGHT:
-			return
-		var world: Variant = screen_to_world(button.position)
-		if button.pressed and world != null:
-			if button.button_index == MOUSE_BUTTON_LEFT and _pick_tank(button.position, _is_touch(event)) != null:
-				click(world, button.position, _is_touch(event))  # a press on a tank selects / elects
-			else:
-				_drag_start = world
+		if button.button_index == MOUSE_BUTTON_LEFT:
+			_press_button(button.pressed, button.position, _is_touch(event))
+			accept_event()
+		elif button.button_index == MOUSE_BUTTON_RIGHT:
+			_right_button(button.pressed, button.position)
+			accept_event()
+	elif event is InputEventMouseMotion:
+		var at := (event as InputEventMouseMotion).position
+		if _press != Press.NONE:
+			_press_motion(at)
+			accept_event()
+		elif _drag_button == MOUSE_BUTTON_RIGHT and _drag_start != null:
+			var world: Variant = screen_to_world(at)
+			if world != null:
 				_drag_end = world
-				_drag_button = button.button_index
-				_drag_moved = button.button_index == MOUSE_BUTTON_RIGHT  # a right click alone is still an order
-			accept_event()
-		elif not button.pressed and _drag_start != null and button.button_index == _drag_button:
-			if _drag_moved:
-				order_drag(_drag_start, _drag_end if _drag_end != null else _drag_start)
-			_drag_start = null
-			_drag_end = null
-			_drag_button = MOUSE_BUTTON_NONE
-			accept_event()
-	elif event is InputEventMouseMotion and _drag_start != null:
-		var world: Variant = screen_to_world((event as InputEventMouseMotion).position)
-		if world != null:
-			_drag_end = world
-			if (world as Vector3).distance_to(_drag_start) > 1.5:
-				_drag_moved = true
 
 
 ## Mouse events Godot emulates from a touchscreen (the first finger).
@@ -291,86 +363,111 @@ static func _is_touch(event: InputEvent) -> bool:
 	return event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION
 
 
-## Touch grammar (G0): a finger's press is PENDING until it moves (PAN the camera) or rests for
-## LONG_PRESS_SECONDS (ORDER: drag sets the facing, like a mouse drag). Lifting a pending finger is a
-## TAP: on one of our tanks it selects (the normal click path); on the ground it orders the selected
-## squad there. The common order is one gesture; facing is a hold-and-drag.
-enum Touch { NONE, PENDING, PAN, ORDER }
+## C1 one-tap grammar, identical for a finger and the left mouse button. A press on open ground is
+## PENDING until it moves (PAN the camera: grab the ground) or rests for LONG_PRESS_SECONDS (ORDER: the
+## ghost formation appears and the drag sets the facing). Releasing a pending press is a TAP: on one of
+## our tanks it selects its squad (again: elects it commander); on the ground it orders the selected
+## squad there. The right mouse button stays as a desktop shortcut: press = destination, drag = facing.
+enum Press { NONE, PENDING, PAN, ORDER }
 const LONG_PRESS_SECONDS := 0.35
-## A finger that moves less than this (pixels) is still a tap.
+## A press that moves less than this (pixels) is still a tap.
 const TOUCH_SLOP_PX := 14.0
 
-var _touch := Touch.NONE
-var _touch_start := Vector2.ZERO
-var _touch_last := Vector2.ZERO
-var _touch_held := 0.0
+var _press := Press.NONE
+var _press_start := Vector2.ZERO
+var _press_last := Vector2.ZERO
+var _press_held := 0.0
+var _press_finger := false
+## The tank under the press, if any: released without moving, it's a tap on that tank.
+var _press_tank: Tank = null
 
 
-## Consumes emulated-from-touch mouse events that start on open ground. Returns true when handled.
-func _touch_gesture(event: InputEvent) -> bool:
-	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
-		var button := event as InputEventMouseButton
-		if button.pressed:
-			if _pick_tank(button.position, true) != null:
-				_touch = Touch.NONE
-				return false  # a tap on one of our tanks selects / elects (the normal click path)
-			_touch = Touch.PENDING
-			_touch_start = button.position
-			_touch_last = button.position
-			_touch_held = 0.0
-			return true
-		var ended := _touch
-		_touch = Touch.NONE
-		match ended:
-			Touch.PENDING:
-				var spot: Variant = screen_to_world(_touch_start)
-				if spot != null and _squad(selected_squad) != null:
-					order_drag(spot, spot)  # tap on the ground: go there
-				return true
-			Touch.ORDER:
-				if _drag_start != null:
-					order_drag(_drag_start, _drag_end if _drag_end != null else _drag_start)
-				_drag_start = null
-				_drag_end = null
-				_drag_button = MOUSE_BUTTON_NONE
-				return true
-			Touch.PAN:
-				return true
-		return false
-	if event is InputEventMouseMotion and _touch != Touch.NONE:
-		var at := (event as InputEventMouseMotion).position
-		match _touch:
-			Touch.PENDING:
-				if at.distance_to(_touch_start) > TOUCH_SLOP_PX:
-					_touch = Touch.PAN
-					if rig != null:
-						rig.pan_screen(_touch_last, at)
-			Touch.PAN:
-				if rig != null:
-					rig.pan_screen(_touch_last, at)
-			Touch.ORDER:
-				var world: Variant = screen_to_world(at)
-				if world != null:
-					_drag_end = world
-		_touch_last = at
-		return true
-	return false
-
-
-## Called every frame: a pending finger that rests long enough becomes an order drag (the ghost shows).
-func _update_touch(delta: float) -> void:
-	if _touch != Touch.PENDING:
+func _press_button(pressed: bool, at: Vector2, finger: bool) -> void:
+	if pressed:
+		_press = Press.PENDING
+		_press_start = at
+		_press_last = at
+		_press_held = 0.0
+		_press_finger = finger
+		_press_tank = _pick_tank(at, finger)
 		return
-	_touch_held += delta
-	if _touch_held >= LONG_PRESS_SECONDS:
-		var world: Variant = screen_to_world(_touch_start)
+	var ended := _press
+	var tank := _press_tank
+	_press = Press.NONE
+	_press_tank = null
+	match ended:
+		Press.PENDING:
+			tap(_press_start, finger, tank)
+		Press.ORDER:
+			if _drag_start != null:
+				order_drag(_drag_start, _drag_end if _drag_end != null else _drag_start)
+			_clear_drag()
+
+
+func _press_motion(at: Vector2) -> void:
+	match _press:
+		Press.PENDING:
+			if at.distance_to(_press_start) > TOUCH_SLOP_PX:
+				_press = Press.PAN
+				if rig != null:
+					rig.pan_screen(_press_start, at)
+		Press.PAN:
+			if rig != null:
+				rig.pan_screen(_press_last, at)
+		Press.ORDER:
+			var world: Variant = screen_to_world(at)
+			if world != null:
+				_drag_end = world
+	_press_last = at
+
+
+## A tap at a screen point: select (or elect) the tank there, else send the selected squad to the ground.
+func tap(screen: Vector2, finger := false, tank: Tank = null) -> void:
+	if tank == null:
+		tank = _pick_tank(screen, finger)
+	var world: Variant = screen_to_world(screen)
+	if tank != null:
+		click(world, screen, finger)
+	elif world != null and _squad(selected_squad) != null:
+		order_drag(world, world)
+
+
+func _right_button(pressed: bool, at: Vector2) -> void:
+	var world: Variant = screen_to_world(at)
+	if pressed and world != null:
+		_drag_start = world
+		_drag_end = world
+		_drag_button = MOUSE_BUTTON_RIGHT
+	elif not pressed and _drag_button == MOUSE_BUTTON_RIGHT and _drag_start != null:
+		order_drag(_drag_start, _drag_end if _drag_end != null else _drag_start)
+		_clear_drag()
+
+
+func _cancel_press() -> void:
+	_press = Press.NONE
+	_press_tank = null
+	_clear_drag()
+
+
+func _clear_drag() -> void:
+	_drag_start = null
+	_drag_end = null
+	_drag_button = MOUSE_BUTTON_NONE
+
+
+## Called every frame: a pending press on open ground that rests long enough becomes an order drag.
+func _update_touch(delta: float) -> void:
+	if _press != Press.PENDING or _press_tank != null:
+		return
+	_press_held += delta
+	if _press_held >= LONG_PRESS_SECONDS:
+		var world: Variant = screen_to_world(_press_start)
 		if world == null:
 			return
-		_touch = Touch.ORDER
+		_press = Press.ORDER
 		_drag_start = world
 		_drag_end = world
 		_drag_button = MOUSE_BUTTON_LEFT
-		_drag_moved = true
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -378,7 +475,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if key == null or not key.pressed or key.echo:
 		return
 	var squads := game_match.team_squads(team)
-	if key.keycode >= KEY_1 and key.keycode <= KEY_4 and key.keycode - KEY_1 < squads.size():
+	if key.keycode >= KEY_1 and key.keycode <= KEY_5 and key.keycode - KEY_1 < squads.size():
 		select_squad(squads[key.keycode - KEY_1].squad_name)
 	elif VERB_KEYS.has(key.keycode):
 		apply_verb(VERB_KEYS[key.keycode])
@@ -404,12 +501,16 @@ func screen_to_world(screen: Vector2) -> Variant:
 func _pick_tank(screen: Vector2, finger := false) -> Tank:
 	var best: Tank = null
 	# Fingers are fat (G0): for a touch, anything within 60% of a tap target's height counts.
-	var best_distance := maxf(PICK_RADIUS_PX, button_height() * 0.6) if finger or _touch_first() else PICK_RADIUS_PX
+	var reach := maxf(PICK_RADIUS_PX, button_height() * 0.6) if finger or _touch_first() else PICK_RADIUS_PX
+	var best_distance := INF
 	for tank in game_match.sorted_team_tanks(team):
 		if not tank.is_alive() or camera.is_position_behind(tank.global_position):
 			continue
-		var distance := camera.unproject_position(tank.global_position).distance_to(screen)
-		if distance <= best_distance:
+		var at := camera.unproject_position(tank.global_position)
+		var distance := at.distance_to(screen)
+		# Up close a vehicle is bigger than the finger: anywhere on its (rough) footprint counts.
+		var body := camera.unproject_position(tank.global_position + camera.global_basis.x * PICK_BODY_M).distance_to(at)
+		if distance <= maxf(reach, body) and distance < best_distance:
 			best = tank
 			best_distance = distance
 	return best
@@ -429,6 +530,7 @@ func _draw() -> void:
 		return
 	var font := ThemeDB.fallback_font
 	var by_name := game_match.tanks_by_name()
+	var close_up := is_close_up()
 
 	# The control point (stretch): a ring on the ground in the holder's color, filling with capture progress.
 	if game_match.control_point:
@@ -475,7 +577,10 @@ func _draw() -> void:
 					draw_arc(_screen(context["slot"]), 7.0, 0.0, TAU, 20, GHOST, 1.5)
 			if squad.facing_on_arrival != Vector3.ZERO:
 				_draw_arrow(squad.destination, squad.destination + squad.facing_on_arrival * 10.0, GHOST)
-		# The tanks.
+		# The tanks. Up close the 3D ground rings (SelectionMarkers) mark them without painting over the
+		# models; from far out the map draws its own markers.
+		if close_up:
+			continue
 		for member in squad.roster:
 			var tank := by_name.get(member) as Tank
 			if tank == null or not tank.is_alive():
@@ -495,7 +600,6 @@ func _draw() -> void:
 						Color.WHITE if selected else Color(1, 1, 1, 0.6))
 			if selected:
 				draw_arc(at, 11.0, 0.0, TAU, 24, Color.WHITE, 1.5)
-				draw_string(font, at + Vector2(-20, 24), tank.intent, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.8))
 
 	if _ping_left > 0.0 and _ping_at != null:
 		var t := 1.0 - _ping_left / PING_SECONDS
@@ -514,6 +618,11 @@ func _draw() -> void:
 			_draw_arrow(_drag_start, _drag_end, COMMANDER)
 
 
+## Whether the camera is close enough that vehicles read as models (3D rings mark them, no 2D markers).
+func is_close_up() -> bool:
+	return rig != null and not rig.is_overview() and rig.zoom < ICON_ZOOM
+
+
 func _draw_arrow(from: Vector3, to: Vector3, color: Color) -> void:
 	var a := _screen(from)
 	var b := _screen(to)
@@ -530,9 +639,10 @@ func _screen(world: Vector3) -> Vector2:
 
 
 # ---- Panels ------------------------------------------------------------------------
-# G0 (mobile first): every action has an on-screen control sized for a thumb. Bottom left: the five
-# drills and a Formation button that opens the formation row. Top center: squad chips (tap = select,
-# tap the selected chip = follow it), Pause, Overview, Follow. Keys stay as desktop shortcuts.
+# G0 (mobile first): every action has an on-screen control sized for a thumb. Bottom left (C3): the five
+# drills as icon buttons and a Formation button (showing the squad's formation) that opens the formation
+# picker: cards drawn from the real formation geometry, with a plain-language line about the chosen one.
+# Top center (C2): the squad bar. Top right: Pause, Overview, Follow. Keys stay as desktop shortcuts.
 
 ## Tap targets are this fraction of the screen height (48 px at 1080p is ~4.4%; we go a bit larger),
 ## clamped to [BUTTON_MIN_PX, BUTTON_MAX_PX] logical pixels.
@@ -541,10 +651,27 @@ const BUTTON_MIN_PX := 40.0
 const BUTTON_MAX_PX := 60.0
 ## Hide the long desktop hint on screens narrower than this.
 const HINT_MIN_WIDTH := 1500.0
+## Squad chips are this many button heights wide and tall.
+const CHIP_WIDTH := 3.0
+const CHIP_HEIGHT := 1.3
+## Drill buttons (icon over a short name), in button heights.
+const DRILL_WIDTH := 1.55
+const DRILL_HEIGHT := 1.3
+## Formation picker cards, in button heights, and cards per row.
+const CARD_WIDTH := 3.0
+const CARD_HEIGHT := 2.1
+const CARD_COLUMNS := 4
+## Picker order: every formation, both echelons.
+const PICKER_FORMATIONS := ["wedge", "column", "line", "vee", "echelon_left", "echelon_right", "coil"]
+const DRILL_SHORT := {"move": "Move", "bound": "Bound", "hold": "Hold", "assault": "Assault", "break_contact": "Break"}
 
 var _command_bar: HBoxContainer
-var _formation_row: HBoxContainer
+## The formation picker (kept under its old name: it replaced the formation row).
+var _formation_row: PanelContainer
+var _formation_grid: GridContainer
+var _formation_about: Label
 var _top_row: HBoxContainer
+var _squad_bar: HBoxContainer
 var _squad_chips := {}
 
 
@@ -557,48 +684,84 @@ static func _touch_first() -> bool:
 
 
 func _key_hint(key: Key) -> String:
-	return "" if _touch_first() else OS.get_keycode_string(key) + " "
+	return "" if _touch_first() else OS.get_keycode_string(key)
 
 
 func _build_panels() -> void:
 	_command_bar = HBoxContainer.new()
+	_command_bar.name = "OrderBar"
 	_command_bar.add_theme_constant_override("separation", 4)
 	add_child(_command_bar)
 	for key in VERB_KEYS:
 		var verb: String = VERB_KEYS[key]
-		_add_button(_command_bar, _key_hint(key) + VERB_LABELS[verb], func() -> void: apply_verb(verb), "verb:" + verb)
-	_add_button(_command_bar, "Formation", func() -> void: toggle_formation_row(), "formations", false)
+		var drill := _icon_button(_command_bar, IconButton.Kind.DRILL, verb, DRILL_SHORT[verb], "verb:" + verb,
+				func() -> void: apply_verb(verb))
+		drill.hotkey = _key_hint(key)
+	var formations := _icon_button(_command_bar, IconButton.Kind.FORMATION, Formations.DEFAULT, "Formation", "formations",
+			func() -> void: toggle_formation_row())
+	formations.toggle_mode = false
 
-	_formation_row = HBoxContainer.new()
-	_formation_row.add_theme_constant_override("separation", 4)
+	_formation_row = PanelContainer.new()
+	_formation_row.name = "FormationPicker"
 	_formation_row.visible = false
 	add_child(_formation_row)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 6)
+	_formation_row.add_child(column)
+	_formation_about = Label.new()
+	_formation_about.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(_formation_about)
+	_formation_grid = GridContainer.new()
+	_formation_grid.columns = CARD_COLUMNS
+	_formation_grid.add_theme_constant_override("h_separation", 4)
+	_formation_grid.add_theme_constant_override("v_separation", 4)
+	column.add_child(_formation_grid)
+	var formation_keys := {}
 	for key in FORMATION_KEYS:
-		var formation: String = FORMATION_KEYS[key]
-		_add_button(_formation_row, _key_hint(key) + FORMATION_LABELS[formation], func() -> void:
-			apply_formation(formation)
-			_formation_row.visible = false, "formation:" + formation)
+		formation_keys[FORMATION_KEYS[key]] = key
+	for formation in PICKER_FORMATIONS:
+		var info: Array = CommandIcons.FORMATION_INFO[formation]
+		var card := _icon_button(_formation_grid, IconButton.Kind.FORMATION, formation, info[0], "formation:" + formation,
+				func() -> void:
+					apply_formation(formation, false)
+					_formation_row.visible = false
+					_layout_panels())
+		card.tagline = info[1]
+		card.count = 5
+		if formation_keys.has(formation):
+			card.hotkey = _key_hint(formation_keys[formation])
 
+# C2: the squad bar (top center): one chip per squad, up to 5.
+	_squad_bar = HBoxContainer.new()
+	_squad_bar.name = "SquadBar"
+	_squad_bar.add_theme_constant_override("separation", 4)
+	add_child(_squad_bar)
+	var squads := game_match.team_squads(team)
+	for i in squads.size():
+		var squad_name := squads[i].squad_name
+		var chip := SquadChip.new()
+		chip.name = "Chip_" + squad_name
+		chip.squad = squads[i]
+		chip.game_match = game_match
+		chip.hotkey = "" if _touch_first() or i >= 5 else str(i + 1)
+		chip.pressed.connect(func() -> void: tap_squad_chip(squad_name))
+		_squad_bar.add_child(chip)
+		_buttons["squad:" + squad_name] = chip
+		_squad_chips[squad_name] = chip
+	# Camera and time (top right).
 	_top_row = HBoxContainer.new()
 	_top_row.add_theme_constant_override("separation", 4)
 	add_child(_top_row)
-	for squad in game_match.team_squads(team):
-		var squad_name := squad.squad_name
-		_add_button(_top_row, squad_name, func() -> void: tap_squad_chip(squad_name), "squad:" + squad_name)
-		_squad_chips[squad_name] = _buttons["squad:" + squad_name]
-	var gap := Control.new()
-	gap.custom_minimum_size = Vector2(12, 0)
-	_top_row.add_child(gap)
 	_add_button(_top_row, "Pause", func() -> void: set_paused(not get_tree().paused), "pause", false)
 	if rig != null:
 		_add_button(_top_row, "Overview", func() -> void: set_tactical_view(not tactical_view), "overview", false)
-		_add_button(_top_row, "Follow", func() -> void: follow_selected(), "follow", false)
+		_add_button(_top_row, "Follow", func() -> void: follow_selected(), "follow")
 
 	_info = _label(Vector2.ZERO, 15)
 	_hint = _label(Vector2.ZERO, 12)
-	_hint.text = "Click a tank: select its squad (again: make it commander) · Drag on the ground: go there, drag direction = facing · 1-4 squads · Space: pause · Tab: overview · F: follow · arrows/wheel/, .: camera"
+	_hint.text = "Click a squad: select · Click ground or radar: go · Hold then drag: go + face · Drag: look around · Wheel: zoom · 1-5 squads · Space: pause"
 	if _touch_first():
-		_hint.text = "Tap a tank: select (again: commander) · Tap ground: go · Hold then drag: go + face · Drag: look around · Pinch: zoom · Twist: turn"
+		_hint.text = "Tap a squad: select · Tap ground or radar: go · Hold then drag: go + face · Drag: look around · Pinch: zoom · Twist: turn"
 	_toast = _label(Vector2.ZERO, 20)
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.visible = false
@@ -617,41 +780,66 @@ func _layout_panels() -> void:
 	var screen := get_viewport().get_visible_rect().size
 	var h := button_height()
 	for id in _buttons:
-		(_buttons[id] as Button).custom_minimum_size = Vector2(h * 1.3, h)
-		(_buttons[id] as Button).add_theme_font_size_override("font_size", roundi(clampf(h * 0.36, 13.0, 20.0)))
+		var button := _buttons[id] as Button
+		if button is SquadChip:
+			button.custom_minimum_size = Vector2(h * CHIP_WIDTH, h * CHIP_HEIGHT)
+		elif button is IconButton and String(id).begins_with("formation:"):
+			button.custom_minimum_size = Vector2(h * CARD_WIDTH, h * CARD_HEIGHT)
+		elif button is IconButton:
+			button.custom_minimum_size = Vector2(h * DRILL_WIDTH, h * DRILL_HEIGHT)
+		else:
+			button.custom_minimum_size = Vector2(h * 1.3, h)
+			button.add_theme_font_size_override("font_size", roundi(clampf(h * 0.36, 13.0, 20.0)))
+	var bar_height := h * DRILL_HEIGHT
 	_command_bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_command_bar.offset_left = 10.0
-	_command_bar.offset_top = -h - 10.0
+	_command_bar.offset_top = -bar_height - 10.0
 	_command_bar.offset_bottom = -10.0
+	_formation_about.add_theme_font_size_override("font_size", roundi(clampf(h * 0.3, 12.0, 17.0)))
+	_formation_about.custom_minimum_size.x = _formation_grid.get_combined_minimum_size().x
+	var picker_size := _formation_row.get_combined_minimum_size()
 	_formation_row.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_formation_row.offset_left = 10.0
-	_formation_row.offset_top = -2.0 * h - 16.0
-	_formation_row.offset_bottom = -h - 16.0
-	_top_row.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_formation_row.offset_bottom = -bar_height - 16.0
+	_formation_row.offset_top = _formation_row.offset_bottom - picker_size.y
+	_formation_row.offset_right = 10.0 + picker_size.x
+	var bar_width := _squad_bar.get_combined_minimum_size().x
+	_squad_bar.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_squad_bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_squad_bar.offset_top = 8.0
+	_squad_bar.offset_bottom = 8.0 + h * CHIP_HEIGHT
+	_squad_bar.offset_left = -bar_width / 2.0
+	_squad_bar.offset_right = bar_width / 2.0
+	var tools_width := _top_row.get_combined_minimum_size().x
+	_top_row.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_top_row.grow_horizontal = Control.GROW_DIRECTION_BEGIN  # a stale minimum size must grow left, not off screen
+	_top_row.offset_right = -10.0
+	_top_row.offset_left = -10.0 - tools_width
 	_top_row.offset_top = 8.0
-	_top_row.offset_bottom = 8.0 + h
-	_top_row.offset_left = -_top_row.get_combined_minimum_size().x / 2.0
-	_top_row.offset_right = _top_row.get_combined_minimum_size().x / 2.0
-	var above_bar := h + 16.0
+	# Narrow screens: if the tools would overlap the squad bar, drop them below it on the right.
+	if screen.x - 10.0 - tools_width < (screen.x + bar_width) / 2.0 + 8.0:
+		_top_row.offset_top = 14.0 + h * CHIP_HEIGHT
+	_top_row.offset_bottom = _top_row.offset_top + h
+	var above_bar := bar_height + 16.0
 	_hint.visible = screen.x >= HINT_MIN_WIDTH or _touch_first()
 	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_hint.offset_left = 12.0
 	_hint.offset_top = -above_bar - 20.0
 	_info.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_info.offset_left = 12.0
-	_info.offset_top = -above_bar - (66.0 if _hint.visible else 46.0) - (h + 6.0 if _formation_row.visible else 0.0)
+	_info.offset_top = -above_bar - (46.0 if _hint.visible else 26.0) - (picker_size.y + 6.0 if _formation_row.visible else 0.0)
 	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_toast.offset_left = -360.0
 	_toast.offset_right = 360.0
-	_toast.offset_top = h + 58.0
+	_toast.offset_top = h * CHIP_HEIGHT + 58.0
 	_pause_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_pause_label.offset_left = -360.0
 	_pause_label.offset_right = 360.0
-	_pause_label.offset_top = h + 18.0
+	_pause_label.offset_top = h * CHIP_HEIGHT + 18.0
 	_log.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	_log.offset_left = -430.0
 	_log.offset_right = -12.0
-	_log.offset_top = h + 16.0
+	_log.offset_top = _top_row.offset_bottom + 8.0
 
 
 func toggle_formation_row() -> void:
@@ -659,12 +847,25 @@ func toggle_formation_row() -> void:
 	_layout_panels()
 
 
-## Squad chip: tap selects; tapping the already-selected squad's chip follows its commander.
+## Squad chip: tap selects; tapping the already-selected squad's chip centers the camera on it.
 func tap_squad_chip(squad_name: String) -> void:
 	if selected_squad == squad_name and rig != null:
-		follow_selected()
+		center_on_selected()
 	else:
 		select_squad(squad_name)
+
+
+func _icon_button(parent: Container, kind: IconButton.Kind, id: String, text: String, button_id: String,
+		action: Callable) -> IconButton:
+	var button := IconButton.new()
+	button.kind = kind
+	button.id = id
+	button.label = text
+	button.toggle_mode = true
+	button.pressed.connect(action)
+	parent.add_child(button)
+	_buttons[button_id] = button
+	return button
 
 
 func _add_button(row: HBoxContainer, text: String, action: Callable, id: String, toggles := true) -> void:
@@ -690,27 +891,24 @@ func _label(at: Vector2, size: int) -> Label:
 
 func _refresh_panels() -> void:
 	var squad := _squad(selected_squad)
-	var by_name := game_match.tanks_by_name()
 	if squad == null:
-		_info.text = "No squad selected (press 1)"
+		_info.text = "No squad selected: tap a squad"
 	else:
-		var members: PackedStringArray = []
-		for member in squad.roster:
-			var tank := by_name.get(member) as Tank
-			var short := member.get_slice("_", 1).left(1) + member.get_slice("_", 2)
-			var readout := "--"
-			if tank != null and tank.is_alive():
-				readout = str(tank.health)
-				if tank.max_shield > 0.0:
-					readout += "+%d" % tank.sync_shield  # shield (G6)
-				if tank.sync_ammo >= 0:
-					readout += " a%d" % tank.sync_ammo  # shells left (G7)
-				if float(tank.weapon.get("heat_per_shot", 0.0)) > 0.0:
-					readout += " h%d%%" % roundi(tank.sync_heat * 100.0)  # heat (G7)
-			members.append(("*" if member == squad.commander else "") + short + " " + readout)
-		_info.text = "%s  |  %s in %s  |  next order: %s\n%s" % [squad.squad_name.to_upper(),
-				VERB_LABELS.get(squad.verb, "no orders"), FORMATION_LABELS.get(squad.formation, "no formation"),
-				VERB_LABELS[pending_verb], "   ".join(members)]
+		# The squad bar shows the squads; this line teaches what the next tap will do.
+		var drill: Array = CommandIcons.DRILL_INFO[pending_verb]
+		var shape: Array = CommandIcons.FORMATION_INFO.get(squad.formation if squad.formation != "" else Formations.DEFAULT)
+		_info.text = "%s · next order: %s in %s. %s" % [squad.squad_name.to_upper(), drill[0], shape[0], drill[1]]
+		_formation_about.text = "%s: %s" % [shape[0], shape[2]]
+		var formation_button := _buttons["formations"] as IconButton
+		if formation_button.id != squad.formation and squad.formation != "":
+			formation_button.id = squad.formation
+			formation_button.queue_redraw()
+		var alive := squad.alive_members(game_match.tanks_by_name()).size()
+		for formation in PICKER_FORMATIONS:
+			var card := _buttons["formation:" + formation] as IconButton
+			if card.count != clampi(alive, 2, Formations.MAX_MEMBERS):
+				card.count = clampi(alive, 2, Formations.MAX_MEMBERS)
+				card.queue_redraw()
 	if game_match.control_point:
 		_info.text = "CENTER  us %d  them %d  (first to %d)\n%s" % [game_match.control_score[team],
 				game_match.control_score[1 - team], Match.CONTROL_POINTS_TO_WIN, _info.text]
@@ -736,4 +934,6 @@ func _refresh_panels() -> void:
 				(_buttons[id] as Button).text = "Resume" if get_tree().paused else "Pause"
 			"overview":
 				active = tactical_view
+			"follow":
+				active = rig != null and rig.tracking_mode() == RtsCamera.Track.FOLLOW
 		(_buttons[id] as Button).set_pressed_no_signal(active)

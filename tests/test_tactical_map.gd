@@ -104,9 +104,11 @@ func test_clicking_a_squad_tank_twice_makes_it_commander() -> void:
 	var camera: Camera3D = setup[2]
 	var wingman := game_match.tanks.get_node("Green_Bravo_2") as Tank
 	_mouse(map, camera, MOUSE_BUTTON_LEFT, true, wingman.global_position)
+	_mouse(map, camera, MOUSE_BUTTON_LEFT, false, wingman.global_position)
 	assert_eq(map.selected_squad, "Bravo", "clicking a tank selects its squad")
 	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_1", "a first click only selects")
 	_mouse(map, camera, MOUSE_BUTTON_LEFT, true, wingman.global_position)
+	_mouse(map, camera, MOUSE_BUTTON_LEFT, false, wingman.global_position)
 	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "clicking it again elects it commander")
 
 
@@ -201,17 +203,19 @@ func test_orders_work_while_paused() -> void:
 	assert_true(lead.global_position.distance_to(before) > 1.0, "and the squad starts executing (moved %.1f m)" % lead.global_position.distance_to(before))
 
 
-func test_left_drag_on_open_ground_orders_too() -> void:
+func test_a_left_click_on_open_ground_orders_like_a_tap() -> void:
+	# C1 (the lead, round 2): "click on a squad then click on a place on the map and they go there".
 	var setup: Array = await _setup()
 	var game_match: Match = setup[0]
 	var camera: Camera3D = setup[2]
 	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, Vector3(-60, 0, 20))
-	_push_motion(camera, Vector3(-60, 0, 5))
-	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, Vector3(-60, 0, 5))
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, Vector3(-60, 0, 20))
 	var squad: Squad = game_match.squads["0/Alpha"]
-	assert_eq(squad.verb, "move", "a left-drag on open ground is an order (trackpad-friendly)")
-	assert_true((squad.destination as Vector3).distance_to(Vector3(-60, 0, 20)) < 1.0, "to the pressed point")
+	assert_eq(squad.verb, "move", "a plain left click on open ground sends the selected squad")
+	assert_true((squad.destination as Vector3).distance_to(Vector3(-60, 0, 20)) < 1.0, "to the clicked point (%s)" % [squad.destination])
+	assert_eq(squad.facing_on_arrival, Vector3.ZERO, "with no particular facing")
 	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, Vector3(60, 0, 20))
-	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, Vector3(60, 0, 20))
+	_push_motion(camera, Vector3(60, 0, 0))
+	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, Vector3(60, 0, 0))
 	assert_true((squad.destination as Vector3).distance_to(Vector3(-60, 0, 20)) < 1.0,
-			"but a plain left click on empty ground is NOT an order (no accidental moves)")
+			"but a left DRAG is a camera pan, not an order (the same as a finger)")

@@ -130,8 +130,13 @@ func test_every_command_has_a_thumb_sized_button() -> void:
 	assert_true(not tree.paused, "and resumes")
 	(map._buttons["overview"] as Button).pressed.emit()
 	assert_true(map.rig.is_overview(), "Overview button")
+	(map._buttons["overview"] as Button).pressed.emit()
 	(map._buttons["squad:Bravo"] as Button).pressed.emit()
-	assert_true(map.rig.follow_target != null, "tapping the selected squad's chip follows it")
+	var center := Vector3.ZERO
+	for p in map.squad_points("Bravo"):
+		center += p / 2.0
+	assert_true(map.rig.focus.distance_to(Vector3(center.x, 0, center.z)) < 2.0,
+			"tapping the selected squad's chip centers the camera on it (%s)" % map.rig.focus)
 
 
 func test_buttons_fit_a_phone_screen() -> void:

@@ -1,6 +1,6 @@
 # Tactical Map: Few Inputs, Deep Control
 
-> **Round 2 note (2026-09-15):** the command stream makes commanding tap-only (squad bar, tap the ground or the radar), adds formation and drill icons, and makes the camera follow orders ([game_design.md](game_design.md) "Commanding", [streams/command.md](streams/command.md)).
+> **Round 2 (command stream):** commanding is tap-only (squad bar, tap the ground or the radar), formations and drills have icons, and the camera follows orders. **The current grammar is "v3" at the end of this file**; the v1/v2 tables below are history ([game_design.md](game_design.md) "Commanding", [streams/command.md](streams/command.md)).
 
 > **Status: v1 implemented (2026-09-13); v2 (2026-09-15, stream/gameplay): RTS 3D camera, radar, fog of
 > war, touch-first controls. See "v2" at the end.** Play it: `make skirmish` (desktop) or `make serve-web` → `http://localhost:8060/?skirmish` (browser, no server). Builds on
@@ -163,3 +163,31 @@ discoverability, not dropped input.
 - Fog of war: `VisibilityField` (team vision grid) drawn in 3D by the `fx.fog_of_war` slot and on the radar;
   enemies are drawn only from intel. Nameplates never show brain intents in skirmish.
 - The radar (`Radar`) is an input too: tap = look there, drag = order.
+
+
+## v3 (round 2, command stream): one-tap grammar, squad bar, icons, camera that follows orders
+
+| Input | Finger **and** left mouse button (identical) | Desktop extras |
+|---|---|---|
+| Who | tap a squad chip, or any unit of the squad (again on a unit of the selected squad: commander) | 1–5 |
+| Where | tap the ground **or the radar**; hold 0.35 s then drag = go + face | right-drag = go + face |
+| How | drill buttons (icons); Formation opens the picker (cards drawn from `Formations.offsets`) | Q–T, Z–N |
+| Camera | drag = pan; pinch = zoom; twist = rotate; radar drag or long press = look; second tap on the selected chip = center on the squad; Follow = toggle "follow selected" | wheel, middle-drag, arrows, `,` `.`, F, Tab |
+| Time | Pause / Resume | Space |
+
+- **Radar:** a tap orders the selected squad there (the lead's request); a drag or a resting press looks.
+- **Squad bar** (`game/ui/squad_chip.gd`): name, order state (Moving / Holding / Arrived / Destroyed…), one
+  pictogram per vehicle (lost ones crossed out), hull and shield bars, a red pip when in contact.
+- **World marks** (`game/ui/selection_markers.gd`): 3D ground rings, depth-tested: the selected squad bright
+  (commander gold), other friendlies faint, enemies in sight faint red. Close up the map draws no 2D markers.
+- **Icons** (`game/ui/command_icons.gd`): unit roles, drills, and formations as CanvasItem drawings; formation
+  icons come from the real geometry (a test checks the uniform scaling), with plain-language names, taglines,
+  and one-line descriptions. The info line above the order bar says what the next tap will do.
+- **Camera follows orders** (`RtsCamera.frame/track`, C7): after an order whose squad or destination is off
+  screen, the camera frames the squad and its destination and tracks them, gently and speed-limited, until the
+  squad arrives, the player touches the camera (pan, zoom, rotate, radar look), or another squad is selected. It
+  never zooms in closer than the player had it. **Follow** is a toggle that tracks the selected squad and moves
+  on with the selection.
+- Signals: `TacticalMap.command_issued(command, error)`, `TacticalMap.squad_selected(squad_key)`,
+  `RtsCamera.tracking_ended(reason)`.
+- Tests: `tests/test_command_*.gd` (grammar through real touch/mouse events, squad bar, icons, camera).

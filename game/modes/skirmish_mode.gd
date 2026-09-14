@@ -85,6 +85,12 @@ func start() -> void:
 	main.add_child(rig)
 	tactical.rig = rig
 	main.hud.add_child(tactical)
+	# C2: ground rings under the selected squad (and faint team marks), depth-tested under the models.
+	var markers := SelectionMarkers.new()
+	markers.name = "SelectionMarkers"
+	markers.game_match = game_match
+	markers.map = tactical
+	main.add_child(markers)
 	# G2: the radar, bottom right; it reads the same intel and visibility field as the map.
 	var radar := Radar.new()
 	radar.name = "Radar"
@@ -126,8 +132,8 @@ func _play_script(tactical: TacticalMap) -> void:
 		if step[1]["squad"] == "Bravo" and tactical.rig != null:
 			# Ride along with Alpha, a little above, so screenshots show the fight in 3D.
 			tactical.select_squad("Alpha")
-			tactical.follow_selected()
 			tactical.rig.zoom = SCRIPT_FOLLOW_ZOOM
+			tactical.follow_selected()
 
 
 static func doctrine_path(name_or_path: String) -> String:

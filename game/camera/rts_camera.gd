@@ -28,8 +28,23 @@ const EDGE_PAN_PX := 6.0
 const FOCUS_LIMIT := Match.ARENA_HALF_SIZE + 10.0
 const OVERVIEW_ZOOM := 0.92
 const FOLLOW_ZOOM := 0.18
+## C4 framing: points must sit inside this fraction of the screen (so they aren't under the HUD).
+const FRAME_INSET := 0.62
+## Framing never zooms in closer than this, and a frame adds this much ground around the points.
+const FRAME_MIN_ZOOM := 0.22
+const FRAME_MARGIN_M := 8.0
+## Tracking moves gently: exponential smoothing this slow, and never faster than these limits
+## (meters per second at zoom 1, scaled down when close; zoom levels per second).
+const TRACK_SMOOTHING := 3.0
+const TRACK_SPEED := 120.0
+const TRACK_ZOOM_SPEED := 0.35
 
 signal gesture_started
+## C4: tracking stopped; reason = "arrived" (the tracked points ran out), "manual" (the player moved the
+## camera), or "replaced" / "stopped" (code).
+signal tracking_ended(reason: String)
+
+enum Track { NONE, ORDER, FOLLOW }
 
 var camera: Camera3D
 ## What we look at (on the ground), which way we face (0 = north up the screen), how far out (0..1).
@@ -47,6 +62,11 @@ var _before_overview: Variant = null
 ## Touch: finger index → screen position, for pinch/twist.
 var _fingers := {}
 var _middle_dragging := false
+var _track := Track.NONE
+## Returns the Array of ground points to keep framed; an empty array ends the tracking ("arrived").
+var _track_points: Callable
+## While tracking, never zoom in past the zoom the player had when it started.
+var _track_floor_zoom := 0.0
 
 
 func _ready() -> void:
@@ -88,10 +108,18 @@ func _process(delta: float) -> void:
 		zoom_by(zoom_keys * KEY_ZOOM_SPEED * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
 		focus = Vector3(follow_target.global_position.x, 0.0, follow_target.global_position.z)
+	_update_tracking()
 	var weight := 1.0 - exp(-SMOOTHING * delta)
-	_shown_focus = _shown_focus.lerp(focus, weight)
+	if _track != Track.NONE:
+		# Gentle and speed-limited, so a long camera move never whips (no motion sickness).
+		var soft := 1.0 - exp(-TRACK_SMOOTHING * delta)
+		var step := (_shown_focus.lerp(focus, soft) - _shown_focus).limit_length(TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom) * delta)
+		_shown_focus += step
+		_shown_zoom += clampf(lerpf(_shown_zoom, zoom, soft) - _shown_zoom, -TRACK_ZOOM_SPEED * delta, TRACK_ZOOM_SPEED * delta)
+	else:
+		_shown_focus = _shown_focus.lerp(focus, weight)
+		_shown_zoom = lerpf(_shown_zoom, zoom, weight)
 	_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
-	_shown_zoom = lerpf(_shown_zoom, zoom, weight)
 	_apply()
 
 
@@ -115,6 +143,7 @@ static func pose_for(at: Vector3, heading: float, level: float) -> Transform3D:
 
 ## Move the focus by a world-space amount in the camera's frame: +x = screen right, +y = screen down.
 func pan_world(amount: Vector2) -> void:
+	_manual()
 	var right := Vector3.RIGHT.rotated(Vector3.UP, yaw)
 	var down := Vector3.BACK.rotated(Vector3.UP, yaw)
 	focus += right * amount.x + down * amount.y
@@ -131,6 +160,7 @@ func pan_screen(from: Vector2, to: Vector2) -> void:
 	if a == null or b == null:
 		return
 	follow_target = null
+	_manual()
 	var shift: Vector3 = (a as Vector3) - (b as Vector3)
 	focus += Vector3(shift.x, 0.0, shift.z)
 	focus.x = clampf(focus.x, -FOCUS_LIMIT, FOCUS_LIMIT)
@@ -141,10 +171,12 @@ func pan_screen(from: Vector2, to: Vector2) -> void:
 
 
 func rotate_by(radians: float) -> void:
+	_manual()
 	yaw = wrapf(yaw + radians, -PI, PI)
 
 
 func zoom_by(amount: float) -> void:
+	_manual()
 	zoom = clampf(zoom + amount, 0.0, 1.0)
 
 
@@ -160,10 +192,12 @@ func zoom_at(screen: Vector2, amount: float) -> void:
 
 func focus_on(point: Vector3) -> void:
 	follow_target = null
+	_manual()
 	focus = Vector3(point.x, 0.0, point.z)
 
 
 func follow(target: Node3D) -> void:
+	stop_tracking("replaced")
 	follow_target = target
 	if target != null:
 		zoom = minf(zoom, FOLLOW_ZOOM)
@@ -171,6 +205,7 @@ func follow(target: Node3D) -> void:
 
 ## Toggle a high view over the whole arena, and back to where you were.
 func toggle_overview(team: int) -> void:
+	stop_tracking("replaced")
 	if _before_overview == null:
 		_before_overview = [focus, yaw, zoom, follow_target]
 		follow_target = null
@@ -193,6 +228,109 @@ func ground_point(screen: Vector2) -> Variant:
 	if camera == null:
 		return null
 	return Plane(Vector3.UP, 0.0).intersects_ray(camera.project_ray_origin(screen), camera.project_ray_normal(screen))
+
+
+# ---- C4: framing and tracking --------------------------------------------------------------
+
+## Aim and zoom so every ground point is on screen (inside FRAME_INSET), keeping the current yaw. Never
+## zooms in past FRAME_MIN_ZOOM (or `floor_zoom`). With `instant`, the shown pose jumps there too.
+func frame(points: Array, instant := false, floor_zoom := FRAME_MIN_ZOOM) -> void:
+	if points.is_empty():
+		return
+	follow_target = null
+	var goal := RtsCamera.frame_pose(points, yaw, _aspect(), floor_zoom)
+	focus = goal[0]
+	zoom = goal[1]
+	if instant:
+		snap()
+
+
+## [focus, zoom] that frames `points` (Vector3 on the ground) from `heading`. Pure, for tests.
+static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM) -> Array:
+	var bounds := AABB(Vector3(points[0].x, 0.0, points[0].z), Vector3.ZERO)
+	for p in points:
+		bounds = bounds.expand(Vector3(p.x, 0.0, p.z))
+	var center := bounds.get_center()
+	center.y = 0.0
+	center.x = clampf(center.x, -FOCUS_LIMIT, FOCUS_LIMIT)
+	center.z = clampf(center.z, -FOCUS_LIMIT, FOCUS_LIMIT)
+	# Test the bounding box's corners, grown by the margin: points in between are then inside too.
+	var grown := bounds.grow(FRAME_MARGIN_M)
+	var corners: Array[Vector3] = []
+	for x in [grown.position.x, grown.end.x]:
+		for z in [grown.position.z, grown.end.z]:
+			corners.append(Vector3(x, 0.0, z))
+	var level := clampf(floor_zoom, 0.0, 1.0)
+	while level < 1.0 and not RtsCamera.shows_all(corners, center, heading, level, aspect):
+		level += 0.01
+	return [center, minf(level, 1.0)]
+
+
+## Whether a camera at pose_for(at, heading, level) shows every point inside FRAME_INSET of the screen.
+static func shows_all(points: Array, at: Vector3, heading: float, level: float, aspect: float) -> bool:
+	var view := RtsCamera.pose_for(at, heading, level).affine_inverse()
+	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0) * FRAME_INSET
+	for p in points:
+		var c: Vector3 = view * (p as Vector3)
+		if c.z >= -0.1:
+			return false
+		if absf(c.x / -c.z) > tan_y * aspect or absf(c.y / -c.z) > tan_y:
+			return false
+	return true
+
+
+## Keep the points returned by `points` framed every frame until it returns an empty array (then
+## tracking_ended("arrived")) or the player moves the camera (tracking_ended("manual")).
+func track(points: Callable, mode := Track.ORDER) -> void:
+	if _track != Track.NONE:
+		stop_tracking("replaced")
+	follow_target = null
+	if _before_overview != null:
+		toggle_overview(0)
+	_track = mode
+	_track_points = points
+	_track_floor_zoom = maxf(zoom, FRAME_MIN_ZOOM)
+	_update_tracking()
+
+
+func stop_tracking(reason := "stopped") -> void:
+	if _track == Track.NONE:
+		return
+	_track = Track.NONE
+	_track_points = Callable()
+	tracking_ended.emit(reason)
+
+
+func is_tracking() -> bool:
+	return _track != Track.NONE
+
+
+func tracking_mode() -> Track:
+	return _track
+
+
+func _update_tracking() -> void:
+	if _track == Track.NONE:
+		return
+	var points: Array = _track_points.call() if _track_points.is_valid() else []
+	if points.is_empty():
+		stop_tracking("arrived")
+		return
+	var goal := RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom)
+	focus = goal[0]
+	zoom = goal[1]
+
+
+## The player touched the camera: tracking yields at once.
+func _manual() -> void:
+	stop_tracking("manual")
+
+
+func _aspect() -> float:
+	if camera == null or camera.get_viewport() == null:
+		return 16.0 / 9.0
+	var size := camera.get_viewport().get_visible_rect().size
+	return size.x / maxf(size.y, 1.0)
 
 
 # ---- Input ------------------------------------------------------------------------------
