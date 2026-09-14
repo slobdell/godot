@@ -5,6 +5,8 @@ extends Node3D
 ##   set_team_color(color)  tints materials matching `tint_materials` (albedo) and
 ##                          `team_emissive_materials` (emission: team-colored neon)
 ##   set_heat(ratio)        drives emission energy on `heat_materials` (barrels glow when hot)
+##   set_shield(ratio)      fades `shield_materials` (a shell mesh around the model) with shield strength;
+##                          hidden at 0 (planned contract, gameplay G6; look & feel may replace the effect)
 ##   set_firing(firing)     shows/hides a child named "Firing" if the wrapper has one
 ##   setup(weapon)          stores the weapon profile (for effects sized from it)
 ## Materials are shared by every instance of a scene, so each change works on a per-instance copy.
@@ -13,6 +15,7 @@ extends Node3D
 @export var tint_materials: PackedStringArray = []
 @export var team_emissive_materials: PackedStringArray = []
 @export var heat_materials: PackedStringArray = []
+@export var shield_materials: PackedStringArray = []
 ## Blend between the model's own albedo (0) and the team color (1).
 @export_range(0.0, 1.0) var tint_strength := 1.0
 @export var heat_energy := 4.0
@@ -52,6 +55,18 @@ func set_heat(ratio: float) -> void:
 		if material != null:
 			material.emission_enabled = true
 			material.emission_energy_multiplier = clampf(ratio, 0.0, 1.0) * heat_energy
+
+
+func set_shield(ratio: float) -> void:
+	var strength := clampf(ratio, 0.0, 1.0)
+	for target in _surfaces(shield_materials):
+		var material := _own_material(target[0], target[1])
+		if material != null:
+			material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			material.albedo_color.a = 0.35 * strength
+			material.emission_enabled = true
+			material.emission_energy_multiplier = 2.0 * strength
+		(target[0] as MeshInstance3D).visible = strength > 0.0
 
 
 func set_firing(firing: bool) -> void:

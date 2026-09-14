@@ -318,6 +318,20 @@ func test_wrapper_tints_only_named_materials_per_instance() -> void:
 	assert_near(gun_material.emission_energy_multiplier if gun_material != null else 0.0, 2.0, 0.001, "a half-hot barrel glows at half the heat energy")
 
 
+func test_wrapper_shield_fades_with_strength_and_hides_when_down() -> void:
+	var wrapper: Node3D = _free_later(Node3D.new())
+	wrapper.set_script(WRAPPER)
+	wrapper.set("shield_materials", PackedStringArray(["shield"]))
+	var bubble := _add_box(wrapper, "Bubble", Vector3(3, 2, 4), Vector3.ZERO, "shield")
+	wrapper.call("set_shield", 1.0)
+	var material := bubble.get_surface_override_material(0) as StandardMaterial3D
+	assert_true(bubble.visible and material != null and material.albedo_color.a > 0.3, "a full shield shows the translucent bubble")
+	wrapper.call("set_shield", 0.5)
+	assert_near(material.albedo_color.a, 0.175, 0.001, "a half shield is half as opaque")
+	wrapper.call("set_shield", 0.0)
+	assert_true(not bubble.visible, "a downed shield hides the bubble")
+
+
 func test_committed_generated_themes_meet_their_contracts() -> void:
 	for theme in AssetIO.generated_themes():
 		var result := AssetChecker.check_theme(theme)

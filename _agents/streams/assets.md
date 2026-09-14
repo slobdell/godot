@@ -63,67 +63,105 @@ One generated tank hull (and turret) rendering in a test theme at the right size
 - 2026-09-13: brief and slot contracts written. Nothing started.
 - 2026-09-14: overnight backlog added (no keys/GPU: research, pipeline, mock-tested providers, CC0 + procedural models). `fx.shell` slot landed.
 
-### Overnight run 2026-09-14: morning report (kept current as work lands)
+### Overnight run 2026-09-14: morning report
 
-**Plan (backlog order):** A0 research → A1 normalize/check pipeline → A2 Meshy client vs mock → A3 CC0 kitbash theme → A4 procedural kit → A5 budget report → stretch (prompt library, LODs, son's guide).
+**TL;DR.** The whole backlog (A0–A5) and the stretch items are done. There's a working pipeline from "a GLB from anywhere"
+(AI service, CC0 pack, or code) to "a model in a visual slot that meets its contract", enforced by `make assets-check`
+and 18 Godot + 9 Python tests. The Meshy/Tripo client is ready and waits only for a paid key. Two art sets: `kitbash` (CC0
+Quaternius tank, containers, neon sign sheet) and `neon_kit` (procedural neon props in the look & feel palette),
+both viewable in native and browser galleries and in the real game. Three findings for others: **`sim-baseline` flakes
+under load (cause found: async navigation sync)**, **screenshots were being shipped inside the web .pck (+0.9 MB)**,
+and **the default `fx.shell` is 17× its triangle budget**. `make check` and `make web-smoke` pass on the last commit.
 
 **Done**
-- **A0** [references/asset_services.md](references/asset_services.md): Meshy recommended first (API on Pro ~$20/mo, `target_polycount`, smart-topology 100–15k faces, paid-tier outputs owned by us; only service with an emission map: meshy-6 + `enable_pbr`), Tripo second, Rodin for later hero hulls. Luma Genie and CSM are gone. Open models all need ≥ 6–29 GB VRAM and none output emissive.
-- **A1** pipeline (Godot-side code in `assets/pipeline/`, runtime wrapper in `assets/runtime/`): `make assets-inspect IN=… [SLOT=…]`, `make assets-normalize IN=… SLOT=… THEME=… ARGS=…`, `make assets-check`, `make assets-slots`. Normalize = select meshes by name glob → rotate source forward/up to −Z/+Y → contain/stretch/length fit + slot anchor → bake transforms, merge per material (1 draw call per material) → meshoptimizer LOD decimation to budget → textures ≤ 1024 → strip Compatibility-unsupported material features → optional emissive-from-albedo → GLB + wrapper `.tscn` + `manifest.json` (source, license, options). 12 tests in `tests/test_assets_pipeline.gd` (synthetic wrong-scale / sideways / dense / 4096² / collision models; emissive GLB round trip; per-instance team tint). Verified two tests go red when orientation and decimation are broken.
+- **A0 service research**, [references/asset_services.md](references/asset_services.md). **Meshy** first: API on Pro (~$20/mo), `target_polycount`, paid-tier outputs owned by us, and the only service that returns an **emission map** (meshy-6 + `enable_pbr`). **Tripo** second, **Rodin** later for hero hulls. Luma Genie and CSM have shut down. Open models need 6–29 GB of VRAM, and none output emissive maps.
+- **A1 normalize + check pipeline** (Godot code in `assets/pipeline/`, runtime wrapper `assets/runtime/generated_visual.gd`). `make assets-inspect / assets-normalize / assets-check / assets-slots`. Normalize: select meshes by name → remap forward/up to −Z/+Y → fit (contain/stretch/length) + slot anchor → bake skins and transforms, one surface per material → decimate to budget (sparing small detail surfaces) → compact + re-anchor → textures ≤ 1024 → strip material features Compatibility lacks → optional emissive-from-albedo / emission map / `--palette` / `--repeat` tiling → GLB + wrapper `.tscn` + `manifest.json` (source, license, options). The wrapper implements `set_team_color`, `set_heat`, `set_shield`, `set_firing`, `setup` by material-name globs. Tests: synthetic wrong-scale / sideways / dense / 4096² / collision models, emissive GLB round trip, team tint, palette, shield; each new test confirmed red on broken or old code.
+- **A2 provider clients**, `tools/assets/generate.py`: Meshy text-to-3D (preview → refine with PBR) and image-to-3D, plus Tripo v3. Polygon target = 85% of the slot budget. Downloads GLB + maps + a JSON sidecar with the license note. Tested against `tools/assets/mock_provider.py` (progress, 401/402/429 retry, FAILED).
+  **To turn it on:** buy Meshy Pro, `export MESHY_API_KEY=msy_…` in your shell profile, then `make assets-generate PROVIDER=meshy SLOT=tank.hull PROMPT="…"` → `make assets-inspect` → `make assets-normalize`. Prompts: [references/asset_prompts.md](references/asset_prompts.md).
+- **A3 `kitbash` theme** from CC0 packs (licenses quoted in `assets/CREDITS.md`). Rebuild from its recipe with `make assets-kitbash` (`tools/assets/build_kitbash.sh`, deterministic):
+  - Quaternius tank → `tank.hull` 5,974 tris / `tank.turret` 392 / `weapon.cannon` 178 (muzzle exactly at gameplay's z = −3.2)
+  - Container Small → `prop.crate` 920
+  - 4 × Shipping Container → `prop.wall` 2,656
+  - candidates: `kit.light_pole`, `kit.billboard` (13 glowing neon signs, a ready-made sign sheet for look & feel)
+  - Seen in `make assets-gallery THEME=kitbash` and in the real game with `make assets-preview THEME=kitbash FLAGS=--skirmish`.
+- **A4 procedural `neon_kit`**, `make assets-procedural` (seeded, project-owned):
+  - neon cargo-stack `prop.crate` (324 tris)
+  - blast-barrier `prop.wall` with light bars and holo-ad panels (268 tris)
+  - candidates: container, jersey barrier, light pole, billboard, scrap pile (56–360 tris each)
+  - Palette: cyan/pink/purple from look_and_feel.md, plus amber hazard lights. `neon_team*` materials take team color.
+- **A5 budget report**, [references/asset_budget.md](references/asset_budget.md) (`make assets-report`):
+  - per-asset tris, draw calls, texture memory, and packed bytes
+  - exact web `.pck` breakdown (`tools/assets/pck_report.py`)
+  - texture compression modes measured
+  - **Texture policy** in the pipeline: ≤ 256 px lossy, larger → Basis Universal, enforced by `assets-check`
+  - `--palette` cut kitbash match draw calls: props 38 → 19, tanks 70 → 50
+  - LODs: the Compatibility renderer uses the importer's LODs, and `mesh_lod_threshold` ≈ 4 cuts ~35% of tank tris at play distance, a free quality-tier knob
+- **Stretch:** prompt library + style guide; [`assets/README.md`](../../assets/README.md) (how to bring a model into the game, written for the lead's son); LOD measurements; browser proof with `make assets-web-gallery` (Basis texture + emissive + glow render in headless Chrome/WebGL 2).
 
-- **A2** `tools/assets/generate.py` (stdlib Python): Meshy text-to-3D preview → refine (`ai_model: meshy-6`, `enable_pbr` so the emission map comes back) and image-to-3D; Tripo v3 text-to-model. `target_polycount` = 85% of the slot budget, read from `asset_contracts.gd`. Downloads GLB + texture maps + a JSON sidecar (task, prompt, license note) into `assets/incoming/`. Tested against `tools/assets/mock_provider.py` (status progression, 401/402/429 retry/FAILED paths): 9 tests via `make assets-test`. `--emission-map=<png>[:glob]` on normalize wires a delivered emission map in.
-  **How the lead turns it on:** buy Meshy Pro (~$20/mo, API access), `export MESHY_API_KEY=msy_…` in your shell profile, then `make assets-generate PROVIDER=meshy SLOT=tank.hull PROMPT="…"` → `make assets-inspect IN=assets/incoming/<name>.glb SLOT=tank.hull` → `make assets-normalize …`. Without a key the command prints these steps and exits 3.
-- **A3** `kitbash` test theme from CC0 packs (licenses quoted in `assets/CREDITS.md`, sources in `game/theme/kitbash/generated/manifest.json`, re-fetch with `make assets-kitbash`): Quaternius tank → `tank.hull` 5974 tris / `tank.turret` 392 / `weapon.cannon` 178 (muzzle at z = −3.20); Quaternius Container Small → `prop.crate` 920; 4 × Shipping Container → `prop.wall` 2656 (decimated from 5344); candidates `kit.light_pole` (Street Light, emissive lamp) and `kit.billboard` (Cyberpunk Signs, emissive). Tools to look at them: `make assets-gallery THEME=kitbash` (models beside default art, contract ghost boxes, muzzle marker) and `make assets-preview THEME=kitbash FLAGS=--skirmish` (the real game with the theme's slots swapped in via `assets/pipeline/theme_preview.tscn`, no shared edits). Screenshots reviewed: `build/screenshots/assets-gallery-kitbash-1600x900.png`, `assets-preview-kitbash-1600x900.png` (skirmish map), `assets-preview-kitbash-2400x1080.png` (demo; window clamped to 1854×1011 by the display).
+**Screenshots reviewed** (`build/screenshots/`): `assets-gallery-kitbash-1920x864.png`, `assets-gallery-kitbash-kit.b-1920x864.png` (neon signs), `assets-gallery-neon_kit-1920x864.png` and `-night-`, `assets-preview-kitbash-1600x900.png` (skirmish), `assets-preview-kitbash-1920x864.png` (demo, ~20:9), `assets-web-gallery-kitbash-kit.b.png` and `assets-web-gallery-neon_kit-night.png` (browser), `web.png`.
 
-- **A4** procedural cyberpunk kit, `make assets-procedural` → theme `neon_kit` (`assets/pipeline/procedural_kit.gd`, seeded, headless, same normalize → GLB → wrapper → manifest path; all project-owned): `prop.crate` neon cargo stack (324 tris, same 4.5 × 3 × 4.5 footprint), `prop.wall` concrete blast barrier with alternating team-neon/pink light bars and holo-ad panels (268 tris, 18 × 3 × 1.5), and candidates `kit.container` 360, `kit.barrier` (jersey, underglow) 56, `kit.light_pole` (hooded lamp, neon strip) 192, `kit.billboard` (procedural neon ad texture) 62, `kit.scrap_pile` 360. Palette from look_and_feel.md (cyan #00F3FF, pink #FF0099, purple #D900FF) plus amber hazard lights. Grime textures 128², sign 256×96. **Handover to look & feel:** `make assets-gallery THEME=neon_kit NIGHT=1` shows them lit by their own neon (`build/screenshots/assets-gallery-neon_kit-night-1920x864.png`, day version beside it). To try them in the arena: `make assets-preview THEME=neon_kit FLAGS=--skirmish`. Materials named `neon_team*` take the team color via `set_team_color`; props aren't painted today, so they show the cyan default unless the arena calls it.
-
-- **A5** [references/asset_budget.md](references/asset_budget.md) (`make assets-report`): per-asset tris / draw calls / texture memory / packed bytes for `default`, `kitbash`, `neon_kit`; exact `.pck` breakdown with `tools/assets/pck_report.py`; texture modes measured on this Godot (a 1024² map ships as 2,035 KB lossless, 428 KB lossy, 683 KB per VRAM format, 1,249 KB Basis). Results: web pack **1,944 → 1,062 KB** once `build/` screenshots stop being imported (`build/.gdignore`); the unused test themes are most of what's left (proposed export exclude). **Texture policy** (≤ 256 px lossy, larger → Basis Universal) is applied by the pipeline and enforced by `assets-check`: neon_kit pack 231 → 91 KB. Finding for look & feel: default `fx.shell` is 3,456 tris (budget 200). Draw calls, not triangles, are the constraint for the neon kit (3–5 materials per prop), so a palette atlas is the next pipeline step.
-
-- **Stretch done:** [references/asset_prompts.md](references/asset_prompts.md) (style guide + prompts per slot/class + post-generation checklist), [`assets/README.md`](../../assets/README.md) (step-by-step guide for the lead's son), **LODs measured** (asset_budget.md: the Compatibility renderer uses importer LODs; `mesh_lod_threshold` ≈ 4 cuts ~35% of tank triangles at play distance, a free quality-tier knob for look & feel).
-- **Decimation fix** (found while debugging the grey kitbash billboard): stepping the whole model down a LOD collapsed its 2-triangle sign quads into their frames. Decimation now lowers the LOD of the largest surface first and spares small surfaces (≤ 64 tris or ≤ 10% of the model); results land close to budget (billboard 1108 → 828 at budget 1000, instead of 516). Regression test fails on the old code. The remaining grey was orientation (the camera saw the signs' backs); with `--forward=-z`, all 13 Quaternius neon signs glow through GLB + Basis import (`build/screenshots/assets-gallery-kitbash-kit.b-1920x864.png`). A ready-made neon sign sheet for look & feel.
-
-- **Browser proof:** `make assets-web-gallery THEME=… [ONLY=…] [NIGHT=1]` exports a copy of the project with the gallery as main scene (release web templates refuse scene-path args) and renders it in headless Chrome. Kitbash neon signs (Basis texture + emissive + glow) and the neon kit at night both render in WebGL 2 (`build/screenshots/assets-web-gallery-*.png`). `make web-smoke` passes.
-
-- **Reproducible themes:** `make assets-kitbash` = `tools/assets/build_kitbash.sh`, the checked-in recipe (fetch CC0 sources + every normalize command with its reasons); `make assets-procedural` rebuilds `neon_kit`. Both are **deterministic**: a second rebuild leaves git clean. Unchanged GLBs aren't rewritten, because Godot wouldn't re-import them and their extracted textures would vanish; a regression test covers this. Re-run both after any pipeline change.
-
-- **`--palette` draw-call merge:** flat, untextured, non-emissive materials that aren't tint/neon/heat targets merge into one `vertex_palette` material, with albedo moved into sRGB vertex colors. glTF drops the vertex-color flags, so the wrapper restores them in `_ready`. Kitbash went from 16 → 11 draw calls per set (match: props 38 → 19, tanks 70 → 50); colors unchanged in the gallery. Test covers the merge, the kept materials, and the round trip through the wrapper. The rebuild exposed that decimation left unused vertices behind: the in-memory check saw the old bounds while the imported GLB floated 8 cm up. Now vertices are compacted after decimation and the anchor is re-applied to the final geometry; the committed-theme test caught it.
-
-**Decisions**
-- Pipeline GDScript lives in `assets/pipeline/`, not `tools/assets/`: `tools/` has a `.gdignore`, so Godot never registers `class_name` scripts there. `tools/assets/` keeps non-Godot tooling (Python provider clients, mock server).
-- Slot contracts are data (`assets/pipeline/asset_contracts.gd`). Where the brief's table was loose I picked what matches today's placeholder art, so swapping art never moves gameplay: turret **bottom at y = −0.275** relative to its pivot (sits on the default hull deck at 0.945 m); cannon/laser barrel from z = −0.7 to the muzzle at **z = −3.2**, axis at y = 0.05; props **stretch** to their exact collision box (warning past 2× distortion); vehicles scale uniformly (**contain**); turret max 1.8 × 0.9 × 2.1.
-- Wrapper methods work by **material name** globs (`tint_materials`, `team_emissive_materials`, `heat_materials`), so any model joins team colors / neon / heat by naming materials; per-instance material copies.
-- Raw downloads go in `assets/incoming/` (git- and Godot-ignored).
-- Limitation: bounds can't tell forward from backward; the orientation unit test + screenshots cover the sign.
-- Skinned meshes (rigged pack tanks) are baked to their rest pose on load; tread animations are dropped (slots don't animate skeletons).
-- Walls are **tiled** from segments (`--repeat=4x1x1`) rather than stretched. The first try (Quaternius Barrier Large ×10) read as a see-through fence, which would mislead players about cover; solid-looking shipping containers replaced it.
-- Decimation takes meshoptimizer LOD levels (each about half the previous), so decimated models land at 50–100% of budget. `SurfaceTool.generate_lod` hits exact targets but is deprecated and its warning fails the error-capturing test runner.
-- `assets-generate` and `assets-mock` are added to `LIGHT_GOALS` in the root Makefile (shared, one line) so waiting on a remote service doesn't hold a heavy-run slot.
+**Decisions** (each reversible)
+- Pipeline GDScript lives in `assets/pipeline/`, not `tools/assets/`: `tools/` has a `.gdignore`, so `class_name` scripts there never register. `tools/assets/` holds the non-Godot tooling.
+- Slot contracts are data (`asset_contracts.gd`), matched to today's placeholder art so swapping art never moves gameplay:
+  - turret bottom at pivot −0.275 (the default hull deck)
+  - barrel from z = −0.7 to the muzzle at z = −3.2, at y = 0.05
+  - props **stretch** to their exact collision box; vehicles scale uniformly
+- The wrapper finds materials by **name** (per-instance copies), so any model joins team color / neon / heat / shield by naming its materials.
+- Skinned meshes are baked to rest pose; pack tread animations are dropped.
+- Walls are **tiled** from segments, not stretched. A see-through fence wall was rejected because it misleads players about cover.
+- Decimation lowers the largest surface first and never touches surfaces ≤ 64 tris / 10% unless it must: whole-model LOD steps erased the neon signs. Unused vertices are compacted and the anchor is re-applied afterwards.
+- Unchanged GLBs aren't rewritten; otherwise Godot wouldn't re-import them and their extracted textures would vanish.
+- `--palette` merges only flat, untextured, non-emissive, non-tint materials; the vertex-color flags glTF drops are restored by the wrapper.
+- Raw downloads go in `assets/incoming/` (git- and Godot-ignored). Screenshot targets write `build/.gdignore`.
 
 **Questions for the lead**
-- A paid generator (Meshy Pro ~$20/mo) is the only step left to get AI models flowing; the client is ready. Worth it now, or keep using CC0 + procedural art until the look is settled?
-- Basis Universal textures on your phone: they render in desktop Chrome/WebGL 2. Phone load time is unmeasured; a quick look at a web gallery build on the phone would settle it (`make assets-web-gallery` leaves the export in `build/web-gallery` if you remove the cleanup line in `tools/assets/web_gallery.sh`, then serve it with `python3 tools/serve_web.py build/web-gallery 8090 0.0.0.0`).
+1. Buy Meshy Pro (~$20/mo) now to start generating, or stay on CC0 + procedural art until look & feel settles the style?
+2. Basis textures on your phone: they render in desktop Chrome; phone load time is unmeasured. To check, remove the `rm -rf "$out"` cleanup in `tools/assets/web_gallery.sh`, run `make assets-web-gallery THEME=kitbash ONLY=kit.b`, then `python3 tools/serve_web.py build/web-gallery 8090 0.0.0.0` and open it on the phone.
 
 **Requests to other streams**
-- **Look & feel:** `game/theme/default/fx_shell.tscn` capsule is 3,456 tris vs the 200 budget (asset_budget.md). Candidate art for L2: `make assets-gallery THEME=neon_kit NIGHT=1`, `make assets-preview THEME=neon_kit FLAGS=--skirmish`; copy what you like into `game/theme/cyberpunk/` or point slots at `game/theme/neon_kit/generated/*.tscn`.
-- **Gameplay / netcode: `make sim-baseline` is flaky, and I found why.** It failed 2 of ~12 runs overnight, with a different hash each time (`40503279562bab7e`, `72906422db671e8b`), always while other worktrees loaded the machine. Cause: Godot 4.7 syncs navigation maps on a worker thread (`navigation/world/map_use_async_iterations=true` by default), so `Pathing.is_ready` first turns true at **physics frame 5 idle but frame 3–4 under load** (measured, 5 runs each), and brains steer straight until then. With `navigation/world/map_use_async_iterations=false` and `region_use_async_iterations=false` (tested via a local override.cfg, since reverted), readiness is **frame 2 in all 10 runs, idle or loaded**. The baseline hash changes with that setting, so it's a `project.godot` edit plus a `tests/baselines/sim_state_hash.txt` update, which is gameplay's call. `make determinism` never caught it because both of its runs see the same load. Lockstep netcode would inherit the same bug.
-- **Integrator (shared files):** (1) `mk/core.mk` import target: `mkdir -p build && touch build/.gdignore` (screenshots are shipped inside the web .pck today, ~0.9 MB measured); (2) `export_presets.cfg` `exclude_filter` += `assets/pipeline/*, game/theme/kitbash/*` (≈ 520 KB of web download) until a theme uses them; (3) later, `project.godot` `import_etc2_astc=true` for Android. Details in asset_budget.md.
+- **Gameplay / netcode: `make sim-baseline` is flaky, and I found why.**
+  - It failed 2 of ~12 runs overnight, each time with a different hash (`40503279562bab7e`, `72906422db671e8b`), while other worktrees loaded the machine.
+  - Godot 4.7 syncs navigation maps on a worker thread (`navigation/world/map_use_async_iterations=true` by default), so `Pathing.is_ready` turns true at physics **frame 5 idle but 3–4 under load** (measured), and brains steer straight until then.
+  - With `navigation/world/map_use_async_iterations=false` + `region_use_async_iterations=false` (tried via a local override.cfg, since reverted), it's **frame 2 in 10/10 runs, idle or loaded**.
+  - The fix is a `project.godot` edit + a baseline hash update, which is gameplay's call. `make determinism` can't catch it (both of its runs see the same load), and lockstep netcode would inherit it.
+- **Look & feel:**
+  - The default `fx_shell.tscn` capsule is 3,456 tris against a 200 budget.
+  - Candidate art: `make assets-gallery THEME=neon_kit NIGHT=1` and the kitbash sign sheet (`ONLY=kit.b`). Point slots at `game/theme/<theme>/generated/*.tscn`, or copy pieces into `cyberpunk/`.
+  - `mesh_lod_threshold` is a quality-tier knob for L6.
+- **Gameplay (proposal for directive set 2):** per-class vehicle slots (`scout.hull`, `artillery.hull`, …) sized from each class's collision; the pipeline needs one contract row each, and 3 more Quaternius tank variants are ready.
+- **Integrator (shared files, not edited overnight):**
+  1. `mk/core.mk` `import`: `mkdir -p build && touch build/.gdignore` (screenshots ship inside the web .pck today, ~0.9 MB measured)
+  2. `export_presets.cfg` `exclude_filter` += `assets/pipeline/*, game/theme/kitbash/*` until a theme uses them (≈ 520 KB of web download)
+  3. later, `project.godot` `import_etc2_astc=true` for Android
+
+**Merge notes**
+- **Shared-file edits:** the root `Makefile` `LIGHT_GOALS` gets `assets-generate assets-mock` (one line, so remote waits don't hold a heavy-run slot).
+- **New files outside owned paths:** `tests/test_assets_pipeline.gd` (+ `.uid`), plus `_agents/streams/references/asset_{services,budget,prompts}.md`.
+- **Everything else** is in owned paths: `assets/`, `tools/assets/`, `mk/assets.mk`, `game/theme/{kitbash,neon_kit}/generated/`.
+- **No gameplay code was touched.** `sim-baseline` is unchanged (`e69acc63a64f319a`). The branch isn't rebased on `main` (overnight rule).
+- **Web pack cost:** the two test themes add ~550 KB to it until excluded (integrator item 2).
+- **Proposed orientation trip-ups** (not added overnight, to avoid five streams conflicting on that list):
+  1. `tools/` has a `.gdignore`, so `class_name` scripts there are invisible to Godot; Godot code goes under `game/` or `assets/`.
+  2. Anything under `build/` without a `.gdignore` gets imported and **exported into the .pck** (screenshots added ~0.9 MB).
+  3. Navigation maps sync asynchronously by default, so anything waiting on `Pathing.is_ready` is load-dependent (the sim-baseline flake).
+  4. Release web templates refuse a scene path on the command line; export a copy with a different `run/main_scene` instead (`tools/assets/web_gallery.sh`).
 
 **Known issues**
-- The orphan check only catches files no manifest entry prefixes; a stale texture that shares a model's name prefix is removed on the next normalize (`clear_extracted`) but not flagged.
-- **Intermittent `sim-baseline` mismatch (not caused by this stream):** diagnosed; async navigation map sync. See Requests to other streams. Commits after 02:40 were made on runs where every other check passed and a `sim-baseline` rerun passed.
-- A 2400×1080 window is clamped to the display (1854×1011 here); use `SCREEN=1920x864` for 20:9 shots.
+- The orphan-file check can't flag a stale texture that shares a live model's name prefix (the next normalize removes it).
+- Kitbash billboard decimation is aggressive after the palette merge (282 tris for budget 1000); the signs are intact.
+- Windowed shots are clamped to the display (1854×1011); use `SCREEN=1920x864` for 20:9.
+- Browser galleries are darker than native (SwiftShader lighting); judge brightness natively.
 
-**Next steps** (assets stream, in order)
-1. Once the lead buys a key: generate a hero hull/turret/cannon with `asset_prompts.md`, normalize into a `generated` theme, record results in its Results log.
-2. Neon kit draw calls: share one grime texture across its textured materials so `--palette`-style merging applies (asset_budget.md).
-3. Unit classes (gameplay G-set 2: scout/artillery): slot variants per class once the catalog defines hardpoints; the Quaternius pack has 4 tank variants ready to normalize.
-4. After look & feel picks a direction: move chosen pieces into `game/theme/cyberpunk/` (their call), then drop unused test themes from the export (asset_budget.md proposal 2).
+**Next steps** (assets stream)
+1. With a key: generate a hero hull/turret/cannon from `asset_prompts.md`, normalize, and log results in its Results table.
+2. Per-class slots once gameplay adds unit classes; normalize the other Quaternius tank variants.
+3. After look & feel picks pieces: trim unused test themes from the export.
+4. Only if `fx-bench` shows draw calls hurting: share one grime texture across the neon kit's materials so they can merge.
 
 **What to playtest**
-- `make assets-gallery THEME=kitbash` and `make assets-gallery THEME=neon_kit NIGHT=1`, then look at `build/screenshots/assets-gallery-*.png`
-- `make assets-preview THEME=kitbash FLAGS=--skirmish` (a screenshot of the real game with CC0 tanks/containers; drop `--screenshot` by running `godot --path . res://assets/pipeline/theme_preview.tscn -- --theme=kitbash --skirmish` to play it)
-- `make assets-test` (Python provider tests vs the mock + Godot pipeline tests), `make assets-check`, `make assets-report`
-- `make assets-slots`
+- `make assets-gallery THEME=kitbash` · `make assets-gallery THEME=neon_kit NIGHT=1` · `make assets-web-gallery THEME=kitbash ONLY=kit.b`
+- `make assets-preview THEME=kitbash FLAGS=--skirmish` (screenshot). To play it: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . res://assets/pipeline/theme_preview.tscn -- --theme=kitbash --skirmish`
+- `make assets-test` · `make assets-check` · `make assets-report` · `make assets-kitbash` (rebuild; git should stay clean)
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

@@ -106,7 +106,7 @@ static func generated_dir(theme: String) -> String:
 
 
 ## Writes <dir>/<file>.tscn instancing <file>.glb under the GeneratedVisual script.
-## `materials`: {tint: [...], team_emissive: [...], heat: [...]} material-name globs.
+## `materials`: {tint: [...], team_emissive: [...], heat: [...], shield: [...]} material-name globs.
 static func write_wrapper(theme: String, slot: String, materials: Dictionary = {}) -> String:
 	var contract := AssetContracts.get_contract(slot)
 	var file: String = contract["file"]
@@ -122,7 +122,8 @@ static func write_wrapper(theme: String, slot: String, materials: Dictionary = {
 		"script = ExtResource(\"1_visual\")",
 		"slot = \"%s\"" % slot,
 	])
-	for key in [["tint", "tint_materials"], ["team_emissive", "team_emissive_materials"], ["heat", "heat_materials"]]:
+	for key in [["tint", "tint_materials"], ["team_emissive", "team_emissive_materials"], ["heat", "heat_materials"],
+			["shield", "shield_materials"]]:
 		var globs: Array = materials.get(key[0], [])
 		if not globs.is_empty():
 			var quoted := PackedStringArray()

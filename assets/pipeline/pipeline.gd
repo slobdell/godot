@@ -11,7 +11,7 @@ extends SceneTree
 ##             [--repeat=5x1x2]  tile the selection along x/y/z (after the axis remap) before fitting
 ##             [--scale-from=<slot>]  reuse the uniform scale another slot got from the same source
 ##             [--emissive=glob:energy,..] [--emission-map=<png>[:material glob]] (e.g. Meshy's emission map)
-##             [--tint=glob,..] [--team-emissive=glob,..] [--heat=glob,..]
+##             [--tint=glob,..] [--team-emissive=glob,..] [--heat=glob,..] [--shield=glob,..]
 ##             [--source=<url or path>] [--license=<text>] [--credit=<text>]
 ##             → game/theme/<theme>/generated/<slot file>.glb + .tscn wrapper + manifest.json entry
 ##   check     [--theme=<theme>]                enforce contracts on generated themes (exit 1 on errors)
@@ -72,7 +72,8 @@ func _normalize(args: Dictionary) -> int:
 	}
 	if args.has("palette"):
 		options["palette"] = true
-		options["keep"] = _list(args.get("tint", "")) + _list(args.get("team-emissive", "")) + _list(args.get("heat", ""))
+		options["keep"] = _list(args.get("tint", "")) + _list(args.get("team-emissive", "")) + _list(args.get("heat", "")) \
+				+ _list(args.get("shield", ""))
 	if args.has("repeat"):
 		var counts := String(args["repeat"]).split("x")
 		options["repeat"] = Vector3i(int(counts[0]), int(counts[1]) if counts.size() > 1 else 1, int(counts[2]) if counts.size() > 2 else 1)
@@ -114,7 +115,7 @@ func _normalize(args: Dictionary) -> int:
 		printerr("could not write %s (error %d)" % [glb_path, error])
 		return 1
 	var materials := {"tint": _list(args.get("tint", "")), "team_emissive": _list(args.get("team-emissive", "")),
-			"heat": _list(args.get("heat", ""))}
+			"heat": _list(args.get("heat", "")), "shield": _list(args.get("shield", ""))}
 	var scene_path := AssetIO.write_wrapper(theme, slot, materials)
 	options.erase("emission_maps")
 	if options.has("repeat"):
