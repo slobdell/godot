@@ -101,6 +101,16 @@ func test_props_stretch_to_their_collision_footprint() -> void:
 	assert_eq(AssetChecker.check_report(report, "prop.wall")["errors"], PackedStringArray(), "the wall meets its contract")
 
 
+func test_short_segments_tile_into_a_long_wall() -> void:
+	var root: Node3D = _free_later(Node3D.new())
+	_add_box(root, "Barrier", Vector3(3.8, 3.2, 0.7), Vector3.ZERO, "concrete")
+	var result := AssetNormalizer.normalize(root, "prop.wall", {"forward": "-z", "repeat": Vector3i(5, 1, 2)})
+	var report := AssetInspector.inspect(_free_later(result["scene"]))
+	assert_eq(report["tris"], 12 * 10, "five segments, two deep, all kept")
+	assert_true((report["aabb"] as AABB).size.is_equal_approx(Vector3(18, 3, 1.5)), "tiled then fitted to the wall's collision box")
+	assert_true(not "\n".join(result["notes"]).contains("out of proportion"), "tiling avoids stretching a 3.8 m barrier into an 18 m wall")
+
+
 func test_dense_models_are_decimated_to_the_budget() -> void:
 	var root: Node3D = _free_later(Node3D.new())
 	var sphere := SphereMesh.new()

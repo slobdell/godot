@@ -25,6 +25,7 @@ const AXES := {
 ##   scale (0)       fixed uniform scale instead of the slot's fit (keep a hull and turret consistent)
 ##   emissive {}     material-name glob → energy: emission = albedo color/texture (neon from paint)
 ##   tris (0)        override the slot's triangle budget
+##   repeat (1,1,1)  tile the selection N×M×K times along x/y/z before fitting (a wall from barrier segments)
 ##   emission_maps {} material-name glob → Texture2D: an emission map delivered beside the GLB (Meshy PBR)
 ## Returns {scene: Node3D, notes: PackedStringArray, scale: Vector3, source: report}.
 static func normalize(source: Node, slot: String, options: Dictionary = {}) -> Dictionary:
@@ -42,6 +43,10 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 		notes.append("no meshes selected")
 		return {"scene": null, "notes": notes}
 
+	var repeat: Vector3i = options.get("repeat", Vector3i.ONE)
+	if repeat != Vector3i.ONE:
+		parts = _tile(parts, repeat)
+		notes.append("tiled the model %d × %d × %d" % [repeat.x, repeat.y, repeat.z])
 	var oriented := _bounds(parts)
 	var fit := _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
 	var groups := _merge_by_material(parts, fit["transform"], notes)
@@ -86,6 +91,18 @@ static func _selected(instance: Node, root: Node, include: Array, exclude: Array
 	if not include.is_empty() and not matches.call(include):
 		return false
 	return not matches.call(exclude)
+
+
+static func _tile(parts: Array, repeat: Vector3i) -> Array:
+	var step := _bounds(parts).size
+	var tiled := []
+	for i in maxi(repeat.x, 1):
+		for j in maxi(repeat.y, 1):
+			for k in maxi(repeat.z, 1):
+				var offset := Transform3D(Basis(), Vector3(step.x * i, step.y * j, step.z * k))
+				for part in parts:
+					tiled.append([part[0], offset * (part[1] as Transform3D)])
+	return tiled
 
 
 static func _bounds(parts: Array) -> AABB:

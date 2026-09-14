@@ -77,8 +77,8 @@ const SLOTS := {
 const CANDIDATES := {
 	"kit.container": {"guide": Vector3(2.4, 2.6, 6.1), "fit": "contain", "anchor": "ground_center", "tris": 1500},
 	"kit.barrier": {"guide": Vector3(3.0, 1.1, 0.8), "fit": "contain", "anchor": "ground_center", "tris": 800},
-	"kit.light_pole": {"guide": Vector3(1.6, 8.0, 1.6), "fit": "contain", "anchor": "ground_center", "tris": 800},
-	"kit.billboard": {"guide": Vector3(8.0, 7.0, 1.0), "fit": "contain", "anchor": "ground_center", "tris": 1000},
+	"kit.light_pole": {"guide": Vector3(1.2, 8.0, 3.0), "fit": "contain", "anchor": "ground_center", "tris": 800},
+	"kit.billboard": {"guide": Vector3(8.0, 6.0, 3.0), "fit": "contain", "anchor": "ground_center", "tris": 1000},
 	"kit.scrap_pile": {"guide": Vector3(5.0, 2.0, 5.0), "fit": "contain", "anchor": "ground_center", "tris": 1500},
 }
 

@@ -1,5 +1,110 @@
 {
   "slots": {
+    "kit.billboard": {
+      "credit": "Quaternius, Cyberpunk Game Kit",
+      "glb": "kit_billboard.glb",
+      "license": "CC0 1.0 (Public Domain)",
+      "notes": [
+        "decimated 1108 → 516 triangles (budget 1000)",
+        "material 'Texture_Signs' made emissive ×2.5"
+      ],
+      "options": {
+        "emissive": {
+          "Texture_Signs": 2.5
+        },
+        "exclude": [],
+        "fitted_scale": 1.56444716453552,
+        "forward": "+z",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "team_emissive": [],
+          "tint": []
+        },
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "scene": "kit_billboard.tscn",
+      "source": "https://poly.pizza/bundle/Cyberpunk-Game-Kit-Hkfxa8K8zF (Cyberpunk Signs, static.poly.pizza/44299e58-2793-47f6-8245-fba288fd2bfd.glb)",
+      "tris": 516.0
+    },
+    "kit.light_pole": {
+      "credit": "Quaternius, Toon Shooter Game Kit",
+      "glb": "kit_light_pole.glb",
+      "license": "CC0 1.0 (Public Domain)",
+      "notes": [
+        "material 'Light' made emissive ×4.0"
+      ],
+      "options": {
+        "emissive": {
+          "Light": 4.0
+        },
+        "exclude": [],
+        "fitted_scale": 1.41698336601257,
+        "forward": "+z",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "team_emissive": [],
+          "tint": []
+        },
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "scene": "kit_light_pole.tscn",
+      "source": "https://poly.pizza/bundle/Toon-Shooter-Game-Kit-qraiSXoAru (Street Light, static.poly.pizza/9a8aac3e-d1ee-4860-b294-edca62ef50be.glb)",
+      "tris": 324.0
+    },
+    "prop.crate": {
+      "credit": "Quaternius, Toon Shooter Game Kit",
+      "glb": "prop_crate.glb",
+      "license": "CC0 1.0 (Public Domain)",
+      "notes": [],
+      "options": {
+        "emissive": {},
+        "exclude": [],
+        "fitted_scale": 2.05060529708862,
+        "forward": "+z",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "team_emissive": [],
+          "tint": []
+        },
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "scene": "prop_crate.tscn",
+      "source": "https://poly.pizza/bundle/Toon-Shooter-Game-Kit-qraiSXoAru (Container Small, static.poly.pizza/2e1f581e-5f9d-42ff-9ef9-600b1cfde0a6.glb)",
+      "tris": 920.0
+    },
+    "prop.wall": {
+      "credit": "Quaternius, Toon Shooter Game Kit",
+      "glb": "prop_wall.glb",
+      "license": "CC0 1.0 (Public Domain)",
+      "notes": [
+        "tiled the model 4 × 1 × 1",
+        "decimated 5344 → 2656 triangles (budget 3000)"
+      ],
+      "options": {
+        "emissive": {},
+        "exclude": [],
+        "fitted_scale": 1.03222978115082,
+        "forward": "+z",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "team_emissive": [],
+          "tint": []
+        },
+        "repeat": "4x1x1",
+        "scale": 0.0,
+        "up": "+y"
+      },
+      "scene": "prop_wall.tscn",
+      "source": "https://poly.pizza/bundle/Toon-Shooter-Game-Kit-qraiSXoAru (Shipping Container, static.poly.pizza/e56c8efb-940f-4150-9bf8-d468c0165116.glb)",
+      "tris": 2656
+    },
     "tank.hull": {
       "credit": "Quaternius, Animated Tank Pack",
       "glb": "tank_hull.glb",
@@ -54,7 +159,7 @@
       },
       "scene": "tank_turret.tscn",
       "source": "https://poly.pizza/bundle/Animated-Tank-Pack-0tfvbeAJkU (static.poly.pizza/58c387b2-636f-49dc-a900-13b0852717d6.glb)",
-      "tris": 392
+      "tris": 392.0
     },
     "weapon.cannon": {
       "credit": "Quaternius, Animated Tank Pack",

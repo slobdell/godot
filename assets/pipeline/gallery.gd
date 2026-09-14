@@ -97,7 +97,7 @@ func _add_ghost(size: Vector3, at: Vector3, anchor: String) -> void:
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color = Color(1.0, 0.9, 0.2, 0.12)
+	material.albedo_color = Color(1.0, 0.9, 0.2, 0.06)
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	box.material = material
 	var ghost := MeshInstance3D.new()
@@ -111,7 +111,7 @@ func _add_label(text: String, at: Vector3) -> void:
 	var label := Label3D.new()
 	label.text = text
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.pixel_size = 0.012
+	label.pixel_size = 0.02
 	label.outline_size = 8
 	label.position = at
 	add_child(label)
@@ -153,7 +153,7 @@ func _frame_camera() -> void:
 	var center := _bounds.get_center()
 	var radius := maxf(_bounds.size.length() * 0.5, 3.0)
 	var aspect := get_viewport().get_visible_rect().size.aspect()
-	var distance := radius / tan(deg_to_rad(camera.fov * 0.5)) * (1.0 if aspect >= 1.0 else 1.0 / aspect) * 0.9
+	var distance := radius / tan(deg_to_rad(camera.fov * 0.5)) * (1.0 if aspect >= 1.0 else 1.0 / aspect) * 0.62
 	camera.position = center + Vector3(0.55, 0.6, 1.0).normalized() * distance
 	camera.look_at(center)
 	camera.current = true

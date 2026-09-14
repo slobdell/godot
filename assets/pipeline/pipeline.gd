@@ -6,6 +6,7 @@ extends SceneTree
 ##   inspect   --in=<glb> [--slot=<slot>]      measure a model; with a slot, check it against the contract
 ##   normalize --in=<glb> --slot=<slot> --theme=<theme>
 ##             [--forward=+z] [--up=+y] [--include=glob,..] [--exclude=glob,..] [--scale=<f>]
+##             [--repeat=5x1x2]  tile the selection along x/y/z (after the axis remap) before fitting
 ##             [--scale-from=<slot>]  reuse the uniform scale another slot got from the same source
 ##             [--emissive=glob:energy,..] [--emission-map=<png>[:material glob]] (e.g. Meshy's emission map)
 ##             [--tint=glob,..] [--team-emissive=glob,..] [--heat=glob,..]
@@ -63,6 +64,9 @@ func _normalize(args: Dictionary) -> int:
 		"include": _list(args.get("include", "")), "exclude": _list(args.get("exclude", "")),
 		"scale": float(args.get("scale", "0")), "emissive": {},
 	}
+	if args.has("repeat"):
+		var counts := String(args["repeat"]).split("x")
+		options["repeat"] = Vector3i(int(counts[0]), int(counts[1]) if counts.size() > 1 else 1, int(counts[2]) if counts.size() > 2 else 1)
 	if args.has("scale-from"):
 		var other: Dictionary = manifest["slots"].get(args["scale-from"], {})
 		options["scale"] = float(other.get("options", {}).get("fitted_scale", 0.0))
@@ -104,6 +108,8 @@ func _normalize(args: Dictionary) -> int:
 			"heat": _list(args.get("heat", ""))}
 	var scene_path := AssetIO.write_wrapper(theme, slot, materials)
 	options.erase("emission_maps")
+	if options.has("repeat"):
+		options["repeat"] = args["repeat"]
 	if args.has("emission-map"):
 		options["emission_map"] = args["emission-map"]
 	options["fitted_scale"] = (result["scale"] as Vector3).x
