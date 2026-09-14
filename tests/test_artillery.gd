@@ -89,7 +89,8 @@ func test_a_burst_hurts_everything_nearby_with_falloff() -> void:
 	assert_near(full - _toughness(near), float(weapon["damage"]), 1.5, "a direct hit deals full damage")
 	assert_true(full - _toughness(edge) > 0.0 and full - _toughness(edge) < float(weapon["damage"]) * 0.6, "the edge of the burst deals less (%.0f)" % (full - _toughness(edge)))
 	assert_eq(_toughness(far), full, "20 m away is untouched")
-	assert_eq(_toughness(friend), full, "no friendly fire")
+	assert_true(_toughness(friend) < full, "R4: a teammate inside the burst is hurt too (friendly fire)")
+	assert_true(game_match.stats["friendly_damage"][Match.Team.GREEN] > 0.0, "and it's recorded as friendly damage")
 
 
 func _situation(contacts: Array, allies: Array = []) -> Dictionary:

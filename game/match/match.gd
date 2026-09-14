@@ -13,6 +13,8 @@ signal finished(result: Dictionary)
 signal control_changed(owner: int)
 ## Simulating peer: a tank was destroyed (by `killer`, a tank name).
 signal tank_destroyed(victim: Tank, killer: String)
+## Simulating peer: `shooter` (a tank name) hurt its own teammate `victim` (R4: friendly fire is on).
+signal friendly_fire(victim: Tank, shooter: String, hull: int, killed: bool)
 
 enum Team { GREEN, RUST }
 
@@ -90,6 +92,8 @@ var spawn_jitter := 0.0
 ## Counters for match results and experiments, indexed by team where it's a pair.
 var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0], "mortar_damage": [0, 0], "shield_damage": [0.0, 0.0],
 		"kills": [0, 0], "shells_resupplied": [0, 0],
+		# R4 friendly fire, by the SHOOTER's team: hull + shield points dealt to teammates, hits, and teammates destroyed.
+		"friendly_damage": [0.0, 0.0], "friendly_hits": [0, 0], "friendly_kills": [0, 0],
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
@@ -680,8 +684,8 @@ func _land_rounds() -> void:
 		var hit_any := false
 		var killed_any := false
 		for victim in _sorted_tanks():
-			if not victim.is_alive() or victim.team == int(landing["team"]):
-				continue
+			if not victim.is_alive():
+				continue  # R4: bursts hurt everyone inside, teammates included
 			var offset := Vector3(victim.global_position.x - point.x, 0.0, victim.global_position.z - point.z)
 			if offset.length() > radius:
 				continue
@@ -694,7 +698,7 @@ func _land_rounds() -> void:
 
 
 ## Beam weapons (G7 laser): an instant ray from the turret center; the first thing it touches takes
-## the pulse. Teammates block it but take no damage (no friendly fire).
+## the pulse, teammates included (R4 friendly fire).
 func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
 	var weapon := tank.weapon
 	var from := tank.turret.global_position
@@ -705,16 +709,16 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
 	if not hit.is_empty():
 		end = hit.position
 		var victim := hit.collider as Tank
-		if victim != null and victim.is_alive() and victim.team != tank.team:
+		if victim != null and victim.is_alive():
 			_land_hit(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
 	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
 
 
-## Cone weapons: every enemy inside the cone with line of sight burns this tick.
+## Cone weapons: every tank inside the cone with line of sight burns this tick, teammates included (R4).
 func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> void:
 	var weapon := tank.weapon
 	for victim in _sorted_tanks():
-		if not victim.is_alive() or victim.team == tank.team:
+		if not victim.is_alive() or victim == tank:
 			continue
 		if not Weapons.in_cone(origin, direction, victim.global_position, weapon["range"], weapon["cone_deg"]):
 			continue
@@ -737,6 +741,58 @@ func _sorted_tanks() -> Array[Tank]:
 	return result
 
 
+## A missed direct-fire round carries on past its aim point: friendlies this far beyond it count as in the line.
+const LINE_OF_FIRE_OVERSHOOT := 15.0
+## Friendlies within this many standard deviations of a weapon's spread (or a round's scatter) count as at risk.
+const LINE_OF_FIRE_SIGMAS := 2.0
+
+
+## C4 (R4): living teammates of `shooter` that a shot at `aim_point` could hit, nearest first. Pure geometry
+## (walls are ignored: a wall in between makes the shot pointless anyway). Direct fire (shells, beams): the
+## corridor from the turret toward the aim point, out to LINE_OF_FIRE_OVERSHOOT past it (capped at the weapon's
+## range), as wide as a hull plus the weapon's spread at that distance. Arcs: teammates inside the splash radius
+## of the landing point, widened by its scatter. Cones: teammates inside the flame cone.
+func friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array[Tank]:
+	var weapon := shooter.weapon
+	var origin := shooter.turret.global_position
+	var flat_origin := Vector2(origin.x, origin.z)
+	var flat_aim := Vector2(aim_point.x, aim_point.z)
+	var to_aim := flat_aim - flat_origin
+	var direction := to_aim.normalized() if to_aim.length() > 0.01 else Vector2(shooter.turret_forward().x, shooter.turret_forward().z)
+	var at_risk: Array[Tank] = []
+	var distances := {}
+	for friend in sorted_team_tanks(shooter.team):
+		if friend == shooter or not friend.is_alive():
+			continue
+		var spot := Vector2(friend.global_position.x, friend.global_position.z)
+		var size: Array = Units.stat(friend.unit_id, "hull_size")
+		var radius := Vector2(float(size[0]), float(size[2])).length() / 2.0
+		var risky := false
+		match int(weapon["kind"]):
+			Weapons.Kind.ARC:
+				var distance := clampf(to_aim.length(), float(weapon["min_range"]), float(weapon["range"]))
+				var landing := flat_origin + direction * distance
+				var sigma := arc_scatter(weapon, distance, true)
+				risky = spot.distance_to(landing) <= float(weapon["splash_radius"]) + radius + LINE_OF_FIRE_SIGMAS * sigma
+			Weapons.Kind.CONE:
+				risky = Weapons.in_cone(origin, Vector3(direction.x, 0.0, direction.y), friend.global_position,
+						float(weapon["range"]) + radius, float(weapon["cone_deg"]))
+			_:
+				var reach := minf(to_aim.length() + LINE_OF_FIRE_OVERSHOOT, float(weapon["range"]) + Shell.RANGE_MARGIN)
+				var along := (spot - flat_origin).dot(direction)
+				if along > 0.0 and along <= reach + radius:
+					var across := absf((spot - flat_origin).cross(direction))
+					var moving := clampf(absf(shooter.speed()) / maxf(shooter.max_forward_speed, 0.1), 0.0, 1.0)
+					var spread_deg := float(weapon.get("spread_deg", 0.0)) * (1.0 + MOVING_SPREAD_FACTOR * moving)
+					var spread := tan(deg_to_rad(spread_deg) * LINE_OF_FIRE_SIGMAS) * along
+					risky = across <= radius + spread
+		if risky:
+			at_risk.append(friend)
+			distances[friend] = spot.distance_to(flat_origin)
+	at_risk.sort_custom(func(a: Tank, b: Tank) -> bool: return distances[a] < distances[b])
+	return at_risk
+
+
 ## R2: the fraction of a hit's hull damage that gets through `unit_id`'s armor on `face`.
 static func armor_multiplier(weapon: Dictionary, unit_id: String, face: String) -> float:
 	return Armor.penetration_multiplier(float(weapon.get("penetration", 0.0)), Units.armor(unit_id, face))
@@ -752,6 +808,15 @@ func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3,
 		face = "side"  # indirect rounds come down on top: no face is the strong one
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
 			armor_multiplier(weapon, victim.unit_id, face))
+	if victim.team == team:
+		stats["friendly_damage"][team] += float(result["hull"]) + float(result["shield"])
+		stats["friendly_hits"][team] += 1 if counts_as_hit else 0
+		if result["killed"]:
+			stats["friendly_kills"][team] += 1
+			print("%s destroyed teammate %s (friendly fire)" % [shooter, victim.name])
+			tank_destroyed.emit(victim, shooter)
+		friendly_fire.emit(victim, shooter, int(result["hull"]), bool(result["killed"]))
+		return result["killed"]
 	if counts_as_hit:
 		stats["hits"][team] += 1
 		stats["hits_by_face"][face] += 1
@@ -779,7 +844,7 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
-	if victim != null and victim.is_alive() and victim.team != shell.team:
+	if victim != null and victim.is_alive():
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
 		killed = _land_hit(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
