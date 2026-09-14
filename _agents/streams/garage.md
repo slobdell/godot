@@ -86,6 +86,67 @@ GA3 end-to-end match → GA4 CPU armies → stretch (army codes, comparison, pai
   16 KB. Garage SHARE panel (code shown, COPY to clipboard, paste + IMPORT) and `--army=CODE` (browser
   `?garage&army=CODE`). `make garage-cpu-army` prints a `GARAGE_CODE`. Anything the garage opens (load, preset, code)
   becomes a player army (`Loadout.make_player_army`: hold, formation, no CPU objectives). 5 tests.
+- **GA4 measured** (after the fix; seed-1 armies; elimination, 300 s cap; every pairing in both team orders; Individuals
+  6+6, archetype pairs 4+4). vs Individuals: Balanced 12-0, Rush 11-1, Flamers 12-0, Turtle 3-9. Round robin (24 games
+  each): **Rush 22 wins, Flamers 17, Balanced 7, Turtle 2**; no draws. Reading: rush and flamers close fast, which the
+  current rules reward (fights 30-80 s sim); turtle is too passive and loses long (160-290 s) matches. Balance is
+  gameplay's call (their backlog item 13); CPU variety is what GA4 is for. Reproduce: build armies with
+  `make garage-cpu-army PRESET=<p> SEED=1`, then `tools/match_series.py --extra="--elimination --green-doctrine=user://doctrines/cpu/<a>_1.json --rust-doctrine=…"`.
+- **Stretch: readable trade-offs, comparison, paint, first-run tips done.** `garage_advice.gd`: per-unit hints from stat
+  keywords ("Laser runs hot: add a heat sink", "finite ammo: consider extra ammo", "close range: flank or ambush"),
+  shown in EQUIP; COMPARE (bottom of UNITS) opens unit and weapon tables with derived damage/s and the best value
+  per column highlighted. Paint shows in the skirmish via `GarageMode.paint_tanks` (visual only, deferred after
+  Match's team paint; an adapter until Match reads `paint`). `garage_tutorial.gd`: a 3-step tip bar that advances
+  as the player selects, edits, and fights (X skips), progress in `user://garage.cfg`; the first skirmish posts 3
+  `Hud.post_message` tips. `--garage-panel=compare|share` for screenshots. 7 tests (paint test mutation-checked).
+
+**What to playtest** (morning):
+- `make garage`: the starter army is ready, so tap FIGHT → planning pause with your army vs a fresh CPU Balanced army.
+  Try: PRESETS → Flamers, tap a unit, swap its weapon, drag a unit chip to another squad, drag the TANK card onto a
+  squad, COMPARE, SHARE → COPY, paint a tank pink and find it in the skirmish.
+- Opponents: `make garage ENEMY=cpu:rush` (or turtle / flamers / a doctrine name); pin one with `--seed` by hand.
+- Browser: `?garage` (and `?garage&army=<code>` from `make garage-cpu-army PRESET=flamers SEED=2`).
+- Automated: `make garage-smoke` (in `make check`), `make garage-e2e`, `make garage-shots` → `build/screenshots/garage-*.png`.
+
+**Decisions** (beyond the ones inline above):
+- The army IS a doctrine dict (no parallel model), so save/load/match share one format and nothing converts.
+- Garage UI built entirely from code in `game/garage/` (no `.tscn`), so look & feel can restyle via `GameTheme.ui`
+  keys without merge conflicts; no shared scene edited.
+- Taps and drags use Godot's GUI drag-and-drop (touch arrives as emulated mouse), with `set_drag_forwarding`
+  instead of subclassing every control.
+- FIGHT hands over in-process (GarageMode → SkirmishMode) instead of reloading the scene with new flags.
+- CPU opponents default to `cpu:balanced` with a random seed per fight (variety), printed in `GARAGE_FIGHT`.
+
+**Questions for the lead:**
+1. Paint: today it replaces the team color on painted tanks in the skirmish (visual only). Keep that, or should
+   paint be an accent (stripe/turret) so friend-or-foe stays readable at a glance?
+2. Budget vs `Doctrine.MAX_TANKS` (5): with 200-point tanks and a 1000 budget they coincide. Once scouts are cheaper,
+   should budgets allow more than 5 units (a gameplay limit)?
+3. Is saving on FIGHT (overwriting the army with the same name) OK, or do you want explicit save slots?
+
+**Requests to other streams** (nothing edited in their paths):
+- *Gameplay:* (a) read `unit`, `weapons`, `components`, `paint` from doctrine tanks when classes land (fields in
+  workstreams.md); (b) put `cost` on weapon profiles and `COMPONENTS` (id → {display_name, cost, description, stats})
+  in `Units`, which the garage already picks up; (c) apply `paint` in `Match._build_tank`, then
+  `GarageMode.paint_tanks` can go; (d) consider letting a doctrine squad start in a formation *without* holding
+  (today `formation` alone = hold at base, which silently parked every CPU army); (e) skirmish's status line
+  shows the enemy's path (`user://doctrines/cpu/rush.json`); showing the doctrine `name` would read better;
+  (f) backlog item 12 (CPU armies in skirmish) can call `ArmyPresets.build(archetype, GarageCatalog.from_game(), seed)`;
+  (g) archetype results above: Rush 22/24, Turtle 2/24 in the round robin.
+- *Look & feel:* style the garage by adding `garage_bg`, `garage_panel`, `garage_text_dim` to `GameTheme.ui` (read with
+  fallbacks); the turntable uses theme slots, so new hull/turret art shows up there; a CyberFrame around panels would
+  be welcome. Garage tips go through `Hud.post_message` after FIGHT.
+- *Netcode:* army codes (`ArmyCode`, `TS1…`) are a compact portable format if armies ever travel over the wire or live
+  server-side.
+
+**Known issues:**
+- Not verified on a real touchscreen: on a phone, a drag that starts inside a scrolling column might scroll the column
+  instead of starting a drag (headless tests use emulated mouse events). Tap-based paths (ADD, tap to select, tap a
+  weapon) work either way.
+- Windows can't exceed the monitor, so `garage-shots` uses a 20:9 1800×810 window for the phone aspect; tap sizes at a
+  true 2400×1080 are asserted in tests.
+- The arena still renders behind the opaque garage screen (wasted GPU on phones); hide it if it matters.
+- CPU archetypes are unbalanced under current rules (see GA4 measurements).
 
 ## Overnight backlog (2026-09-14): work top to bottom, then keep going
 

@@ -6,6 +6,9 @@ extends GameMode
 ##   --enemy=OPPONENT      preselect the opponent: cpu:<archetype> (ArmyPresets, default cpu:balanced) or a doctrine
 ##   --seed=N              seed for a cpu:<archetype> army (default: random each fight)
 ##   --army=CODE           open with a shared army code (ArmyCode; browser: ?garage&army=CODE)
+##   --garage-settings=PATH  where first-run tip progress lives (default user://garage.cfg; "none" = fresh and
+##                         unsaved, so automated runs never mark the player's tips as seen)
+##   --garage-panel=NAME   open an overlay on start: compare | share (screenshots)
 ##   --garage-autofight    tap FIGHT as soon as the garage opens (smoke tests, screenshots of the handover)
 ## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> green=<tanks> rust=<tanks>
 ## when the skirmish starts.
@@ -28,11 +31,19 @@ func start() -> void:
 	screen = GarageScreen.new()
 	screen.name = "GarageScreen"
 	screen.enemy = flags.text("enemy", screen.enemy)
+	if flags.has("garage-settings"):
+		var settings := flags.text("garage-settings")
+		screen.tutorial = GarageTutorial.new("" if settings == "none" else settings)
 	_layer.add_child(screen)
 	main.add_child(_layer)
 	screen.fight_requested.connect(fight)
 	if flags.has("army"):
 		screen.import_code(flags.text("army"))
+	match flags.text("garage-panel"):
+		"compare":
+			screen.toggle_compare(true)
+		"share":
+			screen.toggle_share(true)
 	if flags.has("garage-autofight"):
 		screen.fight.call_deferred()
 
@@ -58,6 +69,10 @@ func fight(player_path: String, enemy: String) -> void:
 	skirmish.flags = main.flags
 	main.mode = skirmish
 	skirmish.start()
+	var player: Dictionary = ArmyStore.read(player_path).get("doctrine", {})
+	GarageMode.paint_tanks(main.game_match, Match.Team.GREEN, player)
+	for tip: String in screen.tutorial.take_match_tips():
+		main.hud.post_message(tip, Hud.INFO)
 	print("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d green=%d rust=%d" % [player_path, enemy, enemy_path, seed_value,
 			main.game_match.team_tanks(Match.Team.GREEN).size(), main.game_match.team_tanks(Match.Team.RUST).size()])
 
@@ -70,3 +85,19 @@ static func save_cpu_army(archetype: String, seed_value: int) -> Dictionary:
 	if not loadout.is_ready():
 		return {"error": "CPU army %s isn't legal: %s" % [archetype, loadout.problems()]}
 	return ArmyStore.save(loadout.to_doctrine(), archetype, CPU_DIR)
+
+
+## Cosmetics (visual only, never the simulation): tint each tank the garage painted. An adapter until
+## Match reads `paint` itself (requested from gameplay); relies on Match naming tanks
+## <Team>_<Squad>_<n>. Deferred so it lands after Match's own team-color paint.
+static func paint_tanks(game_match: Match, team: int, doctrine: Dictionary) -> int:
+	var painted := 0
+	for squad in doctrine.get("squads", []):
+		var tanks: Array = squad.get("tanks", [])
+		for index in tanks.size():
+			var paint := String(tanks[index].get("paint", ""))
+			var tank := game_match.tanks.get_node_or_null("%s_%s_%d" % [Match.TEAM_NAMES[team], squad.get("name", ""), index + 1]) as Tank
+			if tank != null and paint != "" and Color.html_is_valid(paint):
+				tank.set_paint.call_deferred(Color.html(paint))
+				painted += 1
+	return painted

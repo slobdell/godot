@@ -4,6 +4,7 @@ extends Control
 ## tap or a drag, and tap targets scale with the screen (≥ 48 px on a 1080p-tall screen).
 ##
 ##   UNITS    catalog cards with stat bars. Tap ADD (joins the selected squad) or drag a card onto a squad.
+##            COMPARE opens side-by-side unit and weapon tables (best values highlighted).
 ##   SQUADS   up to Doctrine.MAX_SQUADS. Tap a squad to select it; pick its formation and role.
 ##            Tap a unit chip to equip it; drag a chip onto another squad to move it.
 ##   EQUIP    the selected unit on a turntable (swipe to spin): a weapon per hardpoint (tap, or drag a
@@ -32,6 +33,8 @@ var store_dir := ArmyStore.DIR
 var enemy := "cpu:balanced"
 ## Seed for the next preset the player picks (each pick rolls a new variation).
 var preset_seed := 1
+## First-run tips (tests point it at their own file).
+var tutorial: GarageTutorial
 var selected_squad := 0
 ## Index in the selected squad, or -1.
 var selected_unit := -1
@@ -50,7 +53,10 @@ var _load_menu: OptionButton
 var _preset_menu: OptionButton
 var _enemy_menu: OptionButton
 var _toast: Label
+var _tip_bar: HBoxContainer
+var _tip_label: Label
 var _share_panel: PanelContainer
+var _compare_panel: PanelContainer
 var _code_edit: LineEdit
 var _toast_left := 0.0
 
@@ -59,9 +65,11 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	if tutorial == null:
+		tutorial = GarageTutorial.new()
 	if loadout == null:
 		loadout = GarageScreen.starter_loadout(GarageCatalog.from_game())
-	loadout.changed.connect(_refresh)
+	loadout.changed.connect(_on_loadout_changed)
 	# Open on the first unit so the turntable and equipment show something right away.
 	selected_unit = 0 if not loadout.unit_at(0, 0).is_empty() else -1
 	resized.connect(_rebuild_if_scaled)
@@ -119,6 +127,9 @@ static func _scale_for(height: float) -> float:
 
 func _build() -> void:
 	ui_scale = _scale_for(size.y if size.y > 0.0 else get_viewport_rect().size.y)
+	# A rebuild (the window changed size) keeps open overlays open.
+	var compare_open := _compare_panel != null and _compare_panel.visible
+	var share_open := _share_panel != null and _share_panel.visible
 	_clear(self)
 	if _turntable != null and _turntable.get_parent() == null:
 		_turntable.queue_free()
@@ -141,6 +152,7 @@ func _build() -> void:
 	rows.add_theme_constant_override("separation", int(10 * ui_scale))
 	margin.add_child(rows)
 	rows.add_child(_build_top_bar())
+	rows.add_child(_build_tip_bar())
 
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -168,6 +180,7 @@ func _build() -> void:
 	add_child(_toast)
 
 	_build_share_panel()
+	_build_compare_panel()
 	move_child(_toast, get_child_count() - 1)
 
 	_turntable = GarageTurntable.new()
@@ -175,6 +188,9 @@ func _build() -> void:
 	_turntable.custom_minimum_size = Vector2(0, 200 * ui_scale)
 	_build_catalog()
 	_refresh()
+	toggle_compare(compare_open)
+	if share_open:
+		toggle_share(true)
 
 
 func _build_top_bar() -> Control:
@@ -232,6 +248,33 @@ func _build_top_bar() -> Control:
 	share.name = "Share"
 	bar.add_child(share)
 	return bar
+
+
+func _build_tip_bar() -> Control:
+	_tip_bar = HBoxContainer.new()
+	_tip_bar.name = "TipBar"
+	_tip_label = _label("", 1.0)
+	_tip_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_tip_label.add_theme_color_override("font_color", _color("commander"))
+	_tip_bar.add_child(_tip_label)
+	var skip := _button("X", func() -> void:
+		tutorial.skip()
+		_refresh_tip())
+	skip.name = "SkipTips"
+	skip.tooltip_text = "Hide tips"
+	_tip_bar.add_child(skip)
+	_refresh_tip()
+	return _tip_bar
+
+
+func _refresh_tip() -> void:
+	_tip_label.text = tutorial.tip()
+	_tip_bar.visible = _tip_label.text != ""
+
+
+func _tutorial(event: String) -> void:
+	if tutorial.notify(event) and _tip_bar != null:
+		_refresh_tip()
 
 
 func _build_bottom_bar() -> Control:
@@ -353,6 +396,51 @@ func _build_share_panel() -> void:
 	add_child(_share_panel)
 
 
+## An overlay comparing every unit class and weapon (GarageAdvice tables).
+func _build_compare_panel() -> void:
+	_compare_panel = PanelContainer.new()
+	_compare_panel.name = "ComparePanel"
+	_compare_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_compare_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_compare_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_compare_panel.add_theme_stylebox_override("panel", _panel_style(_color("commander"), 3))
+	_compare_panel.visible = false
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", int(10 * ui_scale))
+	_compare_panel.add_child(rows)
+	rows.add_child(_section("UNIT CLASSES"))
+	rows.add_child(_table_grid(GarageAdvice.unit_table(loadout.catalog), "UnitTable"))
+	rows.add_child(_section("WEAPONS"))
+	rows.add_child(_table_grid(GarageAdvice.weapon_table(loadout.catalog), "WeaponTable"))
+	var close := _button("CLOSE", func() -> void: _compare_panel.visible = false)
+	close.name = "Close"
+	close.size_flags_horizontal = Control.SIZE_SHRINK_END
+	rows.add_child(close)
+	add_child(_compare_panel)
+
+
+func _table_grid(table: Dictionary, grid_name: String) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.name = grid_name
+	grid.columns = table["headers"].size()
+	grid.add_theme_constant_override("h_separation", int(22 * ui_scale))
+	for header: String in table["headers"]:
+		var cell := _label(header, 0.8)
+		cell.add_theme_color_override("font_color", _color("garage_text_dim"))
+		grid.add_child(cell)
+	for row_index in table["rows"].size():
+		for column in table["rows"][row_index].size():
+			var cell := _label(String(table["rows"][row_index][column]), 1.0)
+			if table["best"][row_index][column]:
+				cell.add_theme_color_override("font_color", _color("friendly"))
+			grid.add_child(cell)
+	return grid
+
+
+func toggle_compare(open: bool) -> void:
+	_compare_panel.visible = open
+
+
 # ---- Catalog ------------------------------------------------------------------------------
 
 func _build_catalog() -> void:
@@ -396,6 +484,9 @@ func _build_catalog() -> void:
 		_forward_drag(card, func(_at: Vector2) -> Variant: return _drag({"kind": "catalog", "unit": unit_id},
 				catalog.display_name(profile, unit_id)))
 		_catalog_box.add_child(card)
+	var compare := _button("COMPARE", func() -> void: toggle_compare(true))
+	compare.name = "Compare"
+	_catalog_box.add_child(compare)
 
 
 func _stat_bar(ratio: float, value_text: String) -> Control:
@@ -415,6 +506,11 @@ func _stat_bar(ratio: float, value_text: String) -> Control:
 
 
 # ---- Refresh (everything that depends on the army) -----------------------------------------
+
+func _on_loadout_changed() -> void:
+	_tutorial("edit")
+	_refresh()
+
 
 func _refresh() -> void:
 	if _squads_box == null:
@@ -592,6 +688,13 @@ func _refresh_inspector() -> void:
 			summary.add_theme_color_override("font_color", _color("garage_text_dim"))
 			_inspector.add_child(summary)
 
+	for hint in GarageAdvice.tradeoffs(catalog, tank):
+		var advice := _label("> " + hint, 0.8)
+		advice.name = "Advice"
+		advice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		advice.add_theme_color_override("font_color", _color("commander").lightened(0.2))
+		_inspector.add_child(advice)
+
 	var slots := catalog.component_slots(unit_id)
 	var installed: Array = tank.get("components", [])
 	_inspector.add_child(_section("COMPONENTS  %d / %d" % [installed.size(), slots]))
@@ -691,6 +794,7 @@ func select_squad(squad_index: int) -> void:
 func select_unit(squad_index: int, unit_index: int) -> void:
 	selected_squad = squad_index
 	selected_unit = unit_index
+	_tutorial("select_unit")
 	_refresh()
 
 
@@ -705,11 +809,11 @@ func add_unit(unit_id: String) -> String:
 
 
 func set_loadout(new_loadout: Loadout) -> void:
-	if loadout != null and loadout.changed.is_connected(_refresh):
-		loadout.changed.disconnect(_refresh)
+	if loadout != null and loadout.changed.is_connected(_on_loadout_changed):
+		loadout.changed.disconnect(_on_loadout_changed)
 	loadout = new_loadout
 	loadout.make_player_army()
-	loadout.changed.connect(_refresh)
+	loadout.changed.connect(_on_loadout_changed)
 	selected_squad = 0
 	selected_unit = 0 if not loadout.unit_at(0, 0).is_empty() else -1
 	if _name_edit != null:
@@ -763,6 +867,7 @@ func fight() -> String:
 		return ""
 	var path := save()
 	if path != "":
+		_tutorial("fight")
 		fight_requested.emit(path, enemy)
 	return path
 

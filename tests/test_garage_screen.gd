@@ -10,6 +10,7 @@ func _open(screen_size := Vector2i(1280, 720)) -> GarageScreen:
 	# Headless Godot's root viewport is 64×64 (trip-up #31): give it a real screen.
 	tree.root.size = screen_size
 	var screen := GarageScreen.new()
+	screen.tutorial = GarageTutorial.new("")  # in memory: never the player's tips file
 	screen.store_dir = TEST_DIR
 	add_to_tree(screen)
 	await wait_physics_frames(3)
@@ -160,3 +161,13 @@ func test_turntable_builds_the_unit_from_visual_slots() -> void:
 func test_garage_flag_chooses_the_garage_mode() -> void:
 	assert_true(GameMode.choose(LaunchFlags.parse(["--garage"])) is GarageMode, "--garage opens the garage")
 	assert_true(GameMode.choose(LaunchFlags.parse(["--match", "--garage"])) is MatchRunnerMode, "the match runner still wins")
+
+
+
+func test_a_resize_rebuild_keeps_open_overlays() -> void:
+	var screen := await _open()
+	screen.toggle_compare(true)
+	tree.root.size = Vector2i(2400, 1080)
+	await wait_physics_frames(3)
+	assert_near(screen.ui_scale, 1.5, 0.01, "setup: the screen rebuilt at the new scale")
+	assert_true((_find(screen, "ComparePanel") as Control).visible, "COMPARE stays open across the rebuild")

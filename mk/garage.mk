@@ -10,10 +10,11 @@ garage: import ## Build an army on a budget (tap/drag), then FIGHT a skirmish wi
 
 garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must start with the saved army and log no errors
 	mkdir -p $(BUILD_DIR)
-	timeout 60 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-autofight --enemy=cpu:flamers --seed=4 \
+	timeout 60 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-settings=none --garage-autofight --enemy=cpu:flamers --seed=4 \
 		2>&1 | tee $(BUILD_DIR)/garage-smoke.log | grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' || true
 	grep -q 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/garage-smoke.log
 	grep -Eq 'GARAGE_FIGHT player=user://doctrines/[a-z0-9_]+\.json enemy=cpu:flamers enemy_path=user://doctrines/cpu/flamers.json seed=4 green=[1-9] rust=5' $(BUILD_DIR)/garage-smoke.log
+	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
 	@echo "garage-smoke passed"
 
@@ -21,9 +22,10 @@ garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must 
 # checks tap-target sizes at a true 2400x1080.
 garage-shots: import ## Garage screenshots at desktop 1920x1080 and a 20:9 phone aspect (needs a display) -> build/screenshots/garage-*.png
 	mkdir -p $(GARAGE_SHOTS)
-	$(GODOT) --path . --resolution 1920x1080 -- --garage --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-desktop.png --screenshot-delay=2
-	$(GODOT) --path . --resolution 1800x810 -- --garage --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone.png --screenshot-delay=2
-	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-autofight --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-fight.png --screenshot-delay=3
+	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-settings=none --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-desktop.png --screenshot-delay=2
+	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-settings=none --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone.png --screenshot-delay=2
+	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-settings=none --garage-panel=compare --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-compare.png --screenshot-delay=2
+	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-settings=none --garage-autofight --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-fight.png --screenshot-delay=3
 	@echo "Now LOOK at $(GARAGE_SHOTS)/garage-*.png"
 
 garage-e2e: import ## GA3: build an army with the garage's Loadout API, save it to user://, and fight a full headless match with it
