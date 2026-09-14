@@ -66,7 +66,7 @@ func test_comparison_tables_highlight_the_best() -> void:
 func test_compare_panel_opens_from_the_units_column() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var screen := GarageScreen.new()
-	screen.tutorial = GarageTutorial.new("")  # in memory: never the player's tips file
+	screen.settings = GarageSettings.new("")  # in memory: never the player's tips file
 	screen.store_dir = "user://test_garage_advice/"
 	add_to_tree(screen)
 	await wait_physics_frames(2)
@@ -88,28 +88,28 @@ func test_tips_advance_with_the_player_and_are_remembered() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var screen := GarageScreen.new()
 	screen.store_dir = "user://test_garage_advice/"
-	screen.tutorial = GarageTutorial.new(TIPS_PATH)
+	screen.settings = GarageSettings.new(TIPS_PATH)
 	add_to_tree(screen)
 	await wait_physics_frames(2)
 	var tip := screen.find_child("TipBar", true, false) as Control
-	assert_true(tip.visible and screen.tutorial.tip().begins_with("TIP 1/3"), "a first visit shows tip 1")
+	assert_true(tip.visible and screen.settings.tip().begins_with("TIP 1/3"), "a first visit shows tip 1")
 	screen.select_unit(1, 0)
-	assert_true(screen.tutorial.tip().begins_with("TIP 2/3"), "selecting a unit moves to tip 2")
+	assert_true(screen.settings.tip().begins_with("TIP 2/3"), "selecting a unit moves to tip 2")
 	screen.select_unit(0, 1)
-	assert_true(screen.tutorial.tip().begins_with("TIP 2/3"), "selecting again doesn't skip tip 2")
+	assert_true(screen.settings.tip().begins_with("TIP 2/3"), "selecting again doesn't skip tip 2")
 	screen.loadout.set_weapon(0, 1, "main", "flamethrower")
-	assert_true(screen.tutorial.tip().begins_with("TIP 3/3"), "an edit moves to tip 3")
-	assert_eq(GarageTutorial.new(TIPS_PATH).step, 2, "progress is saved")
+	assert_true(screen.settings.tip().begins_with("TIP 3/3"), "an edit moves to tip 3")
+	assert_eq(GarageSettings.new(TIPS_PATH).step, 2, "progress is saved")
 	(screen.find_child("SkipTips", true, false) as Button).pressed.emit()
 	assert_true(not tip.visible, "X hides the tips")
-	assert_eq(GarageTutorial.new(TIPS_PATH).take_match_tips(), [], "skipping also skips the skirmish tips")
+	assert_eq(GarageSettings.new(TIPS_PATH).take_match_tips(), [], "skipping also skips the skirmish tips")
 	DirAccess.remove_absolute(TIPS_PATH)
 
 
 func test_skirmish_tips_come_once() -> void:
 	DirAccess.remove_absolute(TIPS_PATH)
-	assert_eq(GarageTutorial.new(TIPS_PATH).take_match_tips().size(), GarageTutorial.MATCH_TIPS.size(), "the first skirmish gets the tips")
-	assert_eq(GarageTutorial.new(TIPS_PATH).take_match_tips(), [], "later ones don't")
+	assert_eq(GarageSettings.new(TIPS_PATH).take_match_tips().size(), GarageSettings.MATCH_TIPS.size(), "the first skirmish gets the tips")
+	assert_eq(GarageSettings.new(TIPS_PATH).take_match_tips(), [], "later ones don't")
 	DirAccess.remove_absolute(TIPS_PATH)
 
 

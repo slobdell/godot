@@ -50,7 +50,7 @@ func test_bad_codes_are_refused_politely() -> void:
 func test_share_panel_copies_and_imports() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var screen := GarageScreen.new()
-	screen.tutorial = GarageTutorial.new("")  # in memory: never the player's tips file
+	screen.settings = GarageSettings.new("")  # in memory: never the player's tips file
 	screen.store_dir = "user://test_garage_codes/"
 	add_to_tree(screen)
 	await wait_physics_frames(2)
@@ -73,7 +73,7 @@ func test_share_panel_copies_and_imports() -> void:
 func test_imported_cpu_armies_become_player_armies() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var screen := GarageScreen.new()
-	screen.tutorial = GarageTutorial.new("")  # in memory: never the player's tips file
+	screen.settings = GarageSettings.new("")  # in memory: never the player's tips file
 	screen.store_dir = "user://test_garage_codes/"
 	add_to_tree(screen)
 	await wait_physics_frames(2)

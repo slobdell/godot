@@ -114,7 +114,7 @@ func test_cpu_armies_load_into_a_match() -> void:
 func test_garage_preset_menu_rolls_a_new_variation_each_pick() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var screen := GarageScreen.new()
-	screen.tutorial = GarageTutorial.new("")  # in memory: never the player's tips file
+	screen.settings = GarageSettings.new("")  # in memory: never the player's tips file
 	screen.store_dir = "user://test_garage_presets/"
 	add_to_tree(screen)
 	await wait_physics_frames(2)

@@ -1,8 +1,10 @@
-class_name GarageTutorial
+class_name GarageSettings
 extends RefCounted
-## First-run hints: a short tip bar in the garage that advances as the player does each thing, then
-## a few Hud.post_message tips when their first skirmish starts. Progress lives in a ConfigFile so
-## returning players aren't nagged (path "" = in memory only, for automated runs). Tap the tip bar's X to skip.
+## The garage's small per-player memory, in a ConfigFile (path "" = in memory only, for tests and
+## automated runs, so they never touch the player's file):
+##   - first-run tips: a tip bar that advances as the player does each thing (X skips), then a few
+##     Hud.post_message tips when their first skirmish starts;
+##   - the army they last fought with, so the garage reopens on it.
 
 const DEFAULT_PATH := "user://garage.cfg"
 ## [tip, the event that completes it]
@@ -20,6 +22,8 @@ const MATCH_TIPS := [
 var path: String
 var step := 0
 var match_tips_shown := false
+## Path of the army the player last fought with ("" = none).
+var last_army := ""
 
 
 func _init(p_path := DEFAULT_PATH) -> void:
@@ -28,6 +32,7 @@ func _init(p_path := DEFAULT_PATH) -> void:
 	if path != "" and config.load(path) == OK:
 		step = int(config.get_value("tutorial", "step", 0))
 		match_tips_shown = bool(config.get_value("tutorial", "match_tips_shown", false))
+		last_army = String(config.get_value("armies", "last", ""))
 
 
 ## The current garage tip, or "" when done.
@@ -44,7 +49,7 @@ func notify(event: String) -> bool:
 	return true
 
 
-func skip() -> void:
+func skip_tips() -> void:
 	step = STEPS.size()
 	match_tips_shown = true
 	_save()
@@ -59,6 +64,11 @@ func take_match_tips() -> Array:
 	return MATCH_TIPS
 
 
+func remember_army(army_path: String) -> void:
+	last_army = army_path
+	_save()
+
+
 func _save() -> void:
 	if path == "":
 		return
@@ -66,4 +76,5 @@ func _save() -> void:
 	config.load(path)
 	config.set_value("tutorial", "step", step)
 	config.set_value("tutorial", "match_tips_shown", match_tips_shown)
+	config.set_value("armies", "last", last_army)
 	config.save(path)

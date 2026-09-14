@@ -17,6 +17,17 @@ static func slug(army_name: String) -> String:
 	return result if result != "" else "army"
 
 
+## A file stem for a NEW army that doesn't overwrite any saved one: "my_army", then "my_army_2", …
+static func unused_stem(army_name: String, dir := DIR) -> String:
+	var base := slug(army_name)
+	var stem := base
+	var n := 2
+	while FileAccess.file_exists(path_for(stem, dir)):
+		stem = "%s_%d" % [base, n]
+		n += 1
+	return stem
+
+
 static func path_for(stem: String, dir := DIR) -> String:
 	return dir.path_join(stem + ".json")
 

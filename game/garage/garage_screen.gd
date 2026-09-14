@@ -9,7 +9,12 @@ extends Control
 ##            Tap a unit chip to equip it; drag a chip onto another squad to move it.
 ##   EQUIP    the selected unit on a turntable (swipe to spin): a weapon per hardpoint (tap, or drag a
 ##            weapon chip onto the hardpoint), components, role, paint, remove.
-##   TOP      army name, budget bar, presets, load, save, share (army codes).   BOTTOM  problems, enemy, FIGHT.
+##   TOP      army name, budget bar, presets, load, save, delete, share (army codes).   BOTTOM  problems, enemy, FIGHT.
+##
+## Saving: an army remembers the file it came from. SAVE and FIGHT update that file; a new army (starter,
+## preset, code) gets a fresh file on its first save, so two armies with the same name never overwrite each
+## other. The garage reopens on the army you last fought with. DELETE takes two taps and leaves the army
+## open (unsaved), so a mistaken delete is undone by tapping SAVE.
 ##
 ## All rules live in Loadout; this file only shows them. Colors come from GameTheme.ui (look & feel
 ## owns them) with garage-specific keys falling back to placeholders here.
@@ -33,8 +38,10 @@ var store_dir := ArmyStore.DIR
 var enemy := "cpu:balanced"
 ## Seed for the next preset the player picks (each pick rolls a new variation).
 var preset_seed := 1
-## First-run tips (tests point it at their own file).
-var tutorial: GarageTutorial
+## Tips and the last army (tests use GarageSettings.new(""), in memory).
+var settings: GarageSettings
+## The file this army is saved in, or "" if it has never been saved.
+var army_path := ""
 var selected_squad := 0
 ## Index in the selected squad, or -1.
 var selected_unit := -1
@@ -50,6 +57,8 @@ var _turntable: GarageTurntable
 var _problems_label: Label
 var _fight_button: Button
 var _load_menu: OptionButton
+var _delete_button: Button
+var _delete_armed_left := 0.0
 var _preset_menu: OptionButton
 var _enemy_menu: OptionButton
 var _toast: Label
@@ -65,10 +74,11 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	if tutorial == null:
-		tutorial = GarageTutorial.new()
+	if settings == null:
+		settings = GarageSettings.new()
 	if loadout == null:
 		loadout = GarageScreen.starter_loadout(GarageCatalog.from_game())
+		_reopen_last_army()
 	loadout.changed.connect(_on_loadout_changed)
 	# Open on the first unit so the turntable and equipment show something right away.
 	selected_unit = 0 if not loadout.unit_at(0, 0).is_empty() else -1
@@ -88,7 +98,21 @@ static func starter_loadout(catalog: GarageCatalog) -> Loadout:
 	return loadout
 
 
+func _reopen_last_army() -> void:
+	if settings.last_army == "" or not FileAccess.file_exists(settings.last_army):
+		return
+	var loaded := ArmyStore.read(settings.last_army)
+	if loaded.has("doctrine"):
+		loadout = Loadout.from_doctrine(loadout.catalog, loaded["doctrine"])
+		loadout.make_player_army()
+		army_path = settings.last_army
+
+
 func _process(delta: float) -> void:
+	if _delete_armed_left > 0.0:
+		_delete_armed_left -= delta
+		if _delete_armed_left <= 0.0 and _delete_button != null:
+			_delete_button.text = "DELETE"
 	if _toast_left > 0.0:
 		_toast_left -= delta
 		_toast.modulate.a = clampf(_toast_left / 0.4, 0.0, 1.0)
@@ -243,7 +267,13 @@ func _build_top_bar() -> Control:
 	_load_menu.item_selected.connect(_on_load_selected)
 	bar.add_child(_load_menu)
 	_fill_load_menu()
-	bar.add_child(_button("SAVE", func() -> void: save()))
+	var save_button := _button("SAVE", func() -> void: save())
+	save_button.name = "Save"
+	bar.add_child(save_button)
+	_delete_button = _button("DELETE", func() -> void: delete_army())
+	_delete_button.name = "Delete"
+	_delete_button.add_theme_color_override("font_color", _color("enemy"))
+	bar.add_child(_delete_button)
 	var share := _button("SHARE", func() -> void: toggle_share(true))
 	share.name = "Share"
 	bar.add_child(share)
@@ -258,7 +288,7 @@ func _build_tip_bar() -> Control:
 	_tip_label.add_theme_color_override("font_color", _color("commander"))
 	_tip_bar.add_child(_tip_label)
 	var skip := _button("X", func() -> void:
-		tutorial.skip()
+		settings.skip_tips()
 		_refresh_tip())
 	skip.name = "SkipTips"
 	skip.tooltip_text = "Hide tips"
@@ -268,12 +298,12 @@ func _build_tip_bar() -> Control:
 
 
 func _refresh_tip() -> void:
-	_tip_label.text = tutorial.tip()
+	_tip_label.text = settings.tip()
 	_tip_bar.visible = _tip_label.text != ""
 
 
 func _tutorial(event: String) -> void:
-	if tutorial.notify(event) and _tip_bar != null:
+	if settings.notify(event) and _tip_bar != null:
 		_refresh_tip()
 
 
@@ -519,6 +549,7 @@ func _refresh() -> void:
 	if loadout.unit_at(selected_squad, selected_unit).is_empty():
 		selected_unit = -1
 	_refresh_budget()
+	_refresh_delete()
 	_refresh_squads()
 	_refresh_inspector()
 	_refresh_problems()
@@ -808,7 +839,9 @@ func add_unit(unit_id: String) -> String:
 	return _act(error)
 
 
-func set_loadout(new_loadout: Loadout) -> void:
+## `path`: the file the army was loaded from ("" = a new, unsaved army).
+func set_loadout(new_loadout: Loadout, path := "") -> void:
+	army_path = path
 	if loadout != null and loadout.changed.is_connected(_on_loadout_changed):
 		loadout.changed.disconnect(_on_loadout_changed)
 	loadout = new_loadout
@@ -848,15 +881,44 @@ func import_code(code: String) -> String:
 	return ""
 
 
-## Saves under the army's name. Returns the path, or "" (with a toast) on failure.
+## Saves to the army's own file (a new file the first time). Returns the path, or "" (with a toast) on failure.
 func save() -> String:
-	var saved := ArmyStore.save(loadout.to_doctrine(), ArmyStore.slug(String(loadout.army.get("name", ""))), store_dir)
+	var stem := army_path.get_file().get_basename() if army_path != "" \
+			else ArmyStore.unused_stem(String(loadout.army.get("name", "")), store_dir)
+	var dir := army_path.get_base_dir() if army_path != "" else store_dir
+	var saved := ArmyStore.save(loadout.to_doctrine(), stem, dir)
 	if saved.has("error"):
 		_act(String(saved["error"]))
 		return ""
+	army_path = saved["path"]
 	_fill_load_menu()
-	_show_toast("Saved %s" % saved["path"], false)
-	return saved["path"]
+	_refresh_delete()
+	_show_toast("Saved %s" % loadout.army.get("name", ""), false)
+	return army_path
+
+
+## First tap arms, a second tap within 3 s deletes the saved file. The army stays open, unsaved.
+func delete_army() -> void:
+	if army_path == "":
+		return
+	if _delete_armed_left <= 0.0:
+		_delete_armed_left = 3.0
+		_delete_button.text = "CONFIRM?"
+		return
+	ArmyStore.remove(army_path.get_file().get_basename(), army_path.get_base_dir())
+	if settings.last_army == army_path:
+		settings.remember_army("")
+	army_path = ""
+	_delete_armed_left = 0.0
+	_fill_load_menu()
+	_refresh_delete()
+	_show_toast("Deleted. It's still open: tap SAVE to keep it after all.", false)
+
+
+func _refresh_delete() -> void:
+	if _delete_button != null:
+		_delete_button.text = "DELETE"
+		_delete_button.visible = army_path != ""
 
 
 ## Saves and asks to start the skirmish. Returns the saved path, or "" if the army can't fight yet.
@@ -867,6 +929,7 @@ func fight() -> String:
 		return ""
 	var path := save()
 	if path != "":
+		settings.remember_army(path)
 		_tutorial("fight")
 		fight_requested.emit(path, enemy)
 	return path
@@ -893,7 +956,7 @@ func _on_load_selected(index: int) -> void:
 	if loaded.has("error"):
 		_act(String(loaded["error"]))
 		return
-	set_loadout(Loadout.from_doctrine(loadout.catalog, loaded["doctrine"]))
+	set_loadout(Loadout.from_doctrine(loadout.catalog, loaded["doctrine"]), path)
 	_show_toast("Loaded %s" % loadout.army["name"], false)
 
 

@@ -10,7 +10,7 @@ func _open(screen_size := Vector2i(1280, 720)) -> GarageScreen:
 	# Headless Godot's root viewport is 64×64 (trip-up #31): give it a real screen.
 	tree.root.size = screen_size
 	var screen := GarageScreen.new()
-	screen.tutorial = GarageTutorial.new("")  # in memory: never the player's tips file
+	screen.settings = GarageSettings.new("")  # in memory: never the player's tips file
 	screen.store_dir = TEST_DIR
 	add_to_tree(screen)
 	await wait_physics_frames(3)
@@ -171,3 +171,84 @@ func test_a_resize_rebuild_keeps_open_overlays() -> void:
 	await wait_physics_frames(3)
 	assert_near(screen.ui_scale, 1.5, 0.01, "setup: the screen rebuilt at the new scale")
 	assert_true((_find(screen, "ComparePanel") as Control).visible, "COMPARE stays open across the rebuild")
+
+
+# ---- Saving policy ----------------------------------------------------------------------------
+
+const SAVE_DIR := "user://test_garage_saving/"
+const SETTINGS_PATH := "user://test_garage_saving.cfg"
+
+
+func _clean_saves() -> void:
+	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
+	for file_name in DirAccess.get_files_at(SAVE_DIR):
+		DirAccess.remove_absolute(SAVE_DIR.path_join(file_name))
+	DirAccess.remove_absolute(SETTINGS_PATH)
+
+
+func _open_with(settings: GarageSettings) -> GarageScreen:
+	tree.root.size = Vector2i(1280, 720)
+	var screen := GarageScreen.new()
+	screen.settings = settings
+	screen.store_dir = SAVE_DIR
+	add_to_tree(screen)
+	await wait_physics_frames(2)
+	return screen
+
+
+func test_two_new_armies_with_the_same_name_never_overwrite_each_other() -> void:
+	_clean_saves()
+	var screen := await _open_with(GarageSettings.new(""))
+	var first := screen.save()
+	screen.apply_preset("flamers")
+	screen.loadout.set_army_name("My Army")
+	var second := screen.save()
+	assert_eq(first, SAVE_DIR + "my_army.json", "the first army takes the plain name")
+	assert_eq(second, SAVE_DIR + "my_army_2.json", "a different army with the same name gets its own file")
+	assert_eq(ArmyStore.read(first)["doctrine"]["squads"].size(), 2, "the first army's file is untouched")
+	_clean_saves()
+
+
+func test_a_loaded_army_saves_back_to_its_own_file_even_when_renamed() -> void:
+	_clean_saves()
+	var screen := await _open_with(GarageSettings.new(""))
+	var path := screen.save()
+	screen.apply_preset("rush")
+	screen.set_loadout(Loadout.from_doctrine(screen.loadout.catalog, ArmyStore.read(path)["doctrine"]), path)
+	screen.loadout.set_army_name("Renamed")
+	screen.loadout.set_formation(0, "column")
+	assert_eq(screen.save(), path, "SAVE updates the file it was loaded from")
+	assert_eq(ArmyStore.list(SAVE_DIR).size(), 1, "no duplicate file appeared")
+	assert_eq(ArmyStore.read(path)["doctrine"]["name"], "Renamed", "with the edits")
+	_clean_saves()
+
+
+func test_the_garage_reopens_on_the_army_you_last_fought_with() -> void:
+	_clean_saves()
+	var screen := await _open_with(GarageSettings.new(SETTINGS_PATH))
+	screen.apply_preset("flamers")
+	var fought := screen.fight()
+	assert_true(fought != "", "setup: FIGHT saved the preset army")
+	screen.queue_free()
+	await wait_physics_frames(1)
+	var again := await _open_with(GarageSettings.new(SETTINGS_PATH))
+	assert_eq(String(again.loadout.army["name"]), "Flamers #1", "the next visit opens the same army")
+	assert_eq(again.army_path, fought, "tied to its file, so SAVE updates it")
+	_clean_saves()
+
+
+func test_delete_takes_two_taps_and_keeps_the_army_open() -> void:
+	_clean_saves()
+	var screen := await _open_with(GarageSettings.new(""))
+	var delete := screen.find_child("Delete", true, false) as Button
+	assert_true(not delete.visible, "an unsaved army has nothing to delete")
+	var path := screen.save()
+	assert_true(delete.visible, "a saved army can be deleted")
+	delete.pressed.emit()
+	assert_true(FileAccess.file_exists(path), "one tap only arms DELETE")
+	assert_eq(delete.text, "CONFIRM?", "and asks for confirmation")
+	delete.pressed.emit()
+	assert_true(not FileAccess.file_exists(path), "the second tap deletes the file")
+	assert_eq(screen.loadout.unit_count(), Doctrine.MAX_TANKS, "the army stays open")
+	assert_eq(screen.save(), path, "so SAVE brings it back")
+	_clean_saves()
