@@ -40,6 +40,7 @@ func _initialize() -> void:
 	_seeded("mg_loop", _mg_loop)
 	_seeded("ricochet", _ricochet)
 	_seeded("bullet_hit_metal", _bullet_hit_metal)
+	_seeded("weak_spot_hit", _weak_spot_hit)
 	quit()
 
 
@@ -518,3 +519,31 @@ func _bullet_hit_metal() -> PackedFloat32Array:
 			ring += sin(phases[k]) * exp(-t * (28.0 + k * 12.0)) / (k + 1)
 		out[i] = ring * 0.8 + rng.randf_range(-1.0, 1.0) * exp(-t * 160.0) * 0.9
 	return out
+
+
+## A weak-spot hit: a heavy crunch into something that matters, then a bright rising two-note chime that rings out. It
+## has to feel like a reward you learn to listen for.
+func _weak_spot_hit() -> PackedFloat32Array:
+	var out := _buffer(1.0)
+	var lp := 0.0
+	var thump := 0.0
+	var bell := [0.0, 0.0, 0.0, 0.0]
+	for i in out.size():
+		var t := float(i) / RATE
+		var noise := rng.randf_range(-1.0, 1.0)
+		lp += (noise - lp) * 0.3
+		var crunch := lp * exp(-t * 14.0) * (1.0 if rng.randf() < 0.5 else 0.4) * 1.6
+		thump += TAU * (90.0 + 90.0 * exp(-t * 30.0)) / RATE
+		var body := tanh(sin(thump) * 3.0) * exp(-t * 10.0) * 0.6
+		# The chime: E6 then B6, each with a detuned partner for shimmer, entering a beat after the crunch.
+		var chime := 0.0
+		var notes := [[1318.5, 0.06], [1975.5, 0.14]]
+		for k in notes.size():
+			var start := float(notes[k][1])
+			if t >= start:
+				var local := t - start
+				bell[k * 2] += TAU * float(notes[k][0]) / RATE
+				bell[k * 2 + 1] += TAU * float(notes[k][0]) * 1.004 / RATE
+				chime += (sin(bell[k * 2]) + 0.6 * sin(bell[k * 2 + 1])) * exp(-local * 4.5) * minf(1.0, local * 300.0) * 0.35
+		out[i] = crunch + body + chime
+	return _echoes(out, [0.16], [0.18])

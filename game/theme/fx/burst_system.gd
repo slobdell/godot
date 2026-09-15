@@ -9,7 +9,7 @@ const SHADER := preload("res://game/theme/fx/shaders/burst.gdshader")
 const ATLAS := preload("res://game/theme/fx/textures/explosion_flipbook.png")
 const WORLD_AABB := AABB(Vector3(-200, -20, -200), Vector3(400, 80, 400))
 
-enum Kind { FIREBALL, STAR, GROUND_GLOW, SHOCKWAVE, SMOKE, SCORCH, SPARKS, DEBRIS }
+enum Kind { FIREBALL, STAR, GROUND_GLOW, SHOCKWAVE, SMOKE, SCORCH, SPARKS, DEBRIS, FLARE }
 
 var material := ShaderMaterial.new()
 ## Effects started since load (for the bench and tests).

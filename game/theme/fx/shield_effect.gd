@@ -11,6 +11,7 @@ const SHADER := preload("res://game/theme/fx/shaders/shield.gdshader")
 const HIT_SECONDS := 0.45
 const DOWN_SECONDS := 0.9
 const RECHARGE_LINGER := 0.6
+const RIPPLE_SECONDS := 0.5
 
 static var _material: ShaderMaterial
 
@@ -19,6 +20,8 @@ var _hit := 0.0
 var _down := 0.0
 var _recharge_left := 0.0
 var _sweep := 0.0
+## 0 = no ripple, else the ripple's progress (grows to 1).
+var _ripple := 0.0
 ## Flames chip shields every tick; don't retrigger the hit sound faster than this.
 var _hit_sound_cooldown := 0.0
 
@@ -67,9 +70,19 @@ func set_shield(new_ratio: float) -> void:
 		set_process(true)
 
 
-## Seconds of each event left (for tests): {hit, down, recharge}.
+## A round struck the shield at `world_point` (feel X4): a ring spreads across the shell from there.
+func hit_at(world_point: Vector3) -> void:
+	var local := (global_transform.affine_inverse() * world_point)
+	set_instance_shader_parameter("ripple_from", local.normalized() if local.length() > 0.001 else Vector3.BACK)
+	_ripple = 0.001
+	_hit = maxf(_hit, 0.6)
+	visible = true
+	set_process(true)
+
+
+## Seconds of each event left (for tests): {hit, down, recharge, ripple}.
 func state() -> Dictionary:
-	return {"hit": _hit, "down": _down, "recharge": _recharge_left, "visible": visible}
+	return {"hit": _hit, "down": _down, "recharge": _recharge_left, "ripple": _ripple, "visible": visible}
 
 
 func _process(delta: float) -> void:
@@ -78,9 +91,14 @@ func _process(delta: float) -> void:
 	_down = maxf(0.0, _down - delta / DOWN_SECONDS)
 	_recharge_left = maxf(0.0, _recharge_left - delta)
 	_sweep = fmod(_sweep + delta * 0.9, 1.0) if _recharge_left > 0.0 else 0.0
+	if _ripple > 0.0:
+		_ripple += delta / RIPPLE_SECONDS
+		if _ripple >= 1.0:
+			_ripple = 0.0
+	set_instance_shader_parameter("ripple", _ripple)
 	set_instance_shader_parameter("hit", _hit * _hit)
 	set_instance_shader_parameter("down", _down)
 	set_instance_shader_parameter("recharge", maxf(_sweep, 0.001) if _recharge_left > 0.0 else 0.0)
-	if _hit <= 0.0 and _down <= 0.0 and _recharge_left <= 0.0:
+	if _hit <= 0.0 and _down <= 0.0 and _recharge_left <= 0.0 and _ripple <= 0.0:
 		visible = false
 		set_process(false)

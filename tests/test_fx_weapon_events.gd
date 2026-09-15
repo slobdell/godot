@@ -116,3 +116,29 @@ func _count_nodes(node: Node) -> int:
 	for child in node.get_children():
 		count += _count_nodes(child)
 	return count
+
+
+func test_every_sound_the_effects_ask_for_is_a_loaded_sound() -> void:
+	var names := {GunfireLoops.SOUND: true}
+	for family: Dictionary in WeaponFx.FAMILIES.values():
+		for key in ["fire_sound", "hit_sound", "miss_sound"]:
+			if String(family.get(key, "")) != "":
+				names[String(family[key])] = true
+	var regex := RegEx.create_from_string('_sound\\("([a-z_]+)"')
+	for script_path in ["res://game/theme/fx/weapon_fx.gd", "res://game/theme/fx/fire_sites.gd"]:
+		for found in regex.search_all(FileAccess.get_file_as_string(script_path)):
+			names[found.get_string(1)] = true
+	for sound in names:
+		assert_true(SfxSystem.SOUNDS.has(sound), "the effects play %s, and SfxSystem loads it" % sound)
+
+
+func test_flamethrower_puffs_reported_as_stream_events_draw_no_machine_gun_rounds() -> void:
+	var fx: FxWorld = add_to_tree(FxWorld.new())
+	var before := fx.weapons.events
+	fx.weapons.fired({"tick": 1, "shooter": "", "weapon": "flamethrower", "fire_model": "stream", "muzzle": [0.0, 1.0, 0.0],
+			"direction": [0.0, 0.0, -1.0], "projectile_id": 5, "speed_mps": 0.0, "range": 20.0})
+	assert_eq(fx.weapons.events, before, "a flame puff is the flame slot's to draw")
+	fx.weapons.fired({"tick": 1, "shooter": "", "weapon": "machine_gun", "fire_model": "stream", "muzzle": [0.0, 1.0, 0.0],
+			"direction": [0.0, 0.0, -1.0], "projectile_id": 6, "speed_mps": 0.0, "range": 33.0})
+	fx.weapons.flush(fx.now)
+	assert_near(fx.tracers.round_end(fx.tracers.newest_round()).z, -33.0, 0.5, "a K2 event's own range wins over the profile's")

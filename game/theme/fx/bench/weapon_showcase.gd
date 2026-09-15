@@ -11,7 +11,13 @@ const SCENES := {
 			"shots": [["muzzle", 0.05, "shooter"], ["smoke", 0.45, "shooter"], ["flight", 0.22, "mid"], ["impact", 0.5, "target"],
 					["aftermath", 1.1, "target"], ["rts_flight", 0.3, "rts"]]},
 	"tank_kill": {"shooter": "tank", "target": "ifv", "distance": 34.0, "aim_offset": 0.0, "kill": true, "hold": 0.0,
-			"shots": [["impact", 0.52, "target"], ["cook_off", 0.85, "target"], ["burning", 2.6, "target_wide"], ["rts_cook_off", 0.95, "rts"]]},
+			"shots": [["impact", 0.52, "target"], ["cook_off", 0.85, "target"], ["burning", 2.6, "target_wide"], ["rts_cook_off", 0.95, "rts"],
+					["wreck", 7.0, "target_wide"]]},
+	# Feel X4: a weak-spot hit (forced on: round 2 has none) and rounds splashing on a shield that holds.
+	"tank_weak_spot": {"shooter": "tank", "target": "tank", "distance": 34.0, "aim_offset": 0.0, "kill": false, "hold": 0.0,
+			"weak_spot": true, "shots": [["flare", 0.52, "target"], ["flare_late", 0.7, "target"], ["rts", 0.56, "rts"]]},
+	"ifv_on_shield": {"shooter": "ifv", "target": "tank", "distance": 30.0, "aim_offset": 0.0, "kill": false, "hold": 1.5,
+			"keep_shield": true, "shots": [["splash", 0.5, "target"], ["splash_2", 1.0, "target"]]},
 	"tank_miss": {"shooter": "tank", "target": "tank", "distance": 34.0, "aim_offset": 7.0, "kill": false, "hold": 0.0,
 			"shots": [["passing", 0.42, "target_wide"], ["dirt", 1.2, "far"], ["dust", 1.9, "far"]]},
 	"ifv_burst": {"shooter": "ifv", "target": "scout", "distance": 30.0, "aim_offset": 0.0, "kill": false, "hold": 1.6,
@@ -80,9 +86,11 @@ func _stage(scene_name: String, scene: Dictionary) -> void:
 	_match = preload("res://game/match/match.tscn").instantiate()
 	_match.name = "Match"
 	add_child(_match)
+	_match.elimination = true  # the dead stay dead, so a wreck keeps burning where it fell
 	var fx := FxWorld.get_instance()
 	if fx != null:
 		fx.link.attach(_match)
+		fx.weapons.showcase_weak_spots = bool(scene.get("weak_spot", false))
 	var shooter := _match.spawn_tank("Shooter", 0, Match.Team.GREEN, String(scene["shooter"]))
 	var target := _match.spawn_tank("Target", 0, Match.Team.RUST, String(scene["target"]))
 	await get_tree().physics_frame
@@ -90,16 +98,18 @@ func _stage(scene_name: String, scene: Dictionary) -> void:
 	shooter.rotation.y = 0.0
 	target.global_position = Vector3(0, 0, SHOOTER_Z - float(scene["distance"]))
 	target.rotation.y = PI / 2.0
-	target.shield = 0.0
+	if not scene.get("keep_shield", false):
+		target.shield = 0.0
 	if scene["kill"]:
 		target.health = 1
 	await _seconds(1.2)
 	var aim := target.global_position + Vector3(float(scene["aim_offset"]), 1.0, 0.0)
 	shooter.command.aim_point = aim
 	await _seconds(0.4)
-	# Shields recharge while the scene settles: strip them again right before the shot.
-	target.shield = 0.0
-	target.ticks_since_hit = 0
+	# Shields recharge while the scene settles: strip them again right before the shot (unless the scene shows shields).
+	if not scene.get("keep_shield", false):
+		target.shield = 0.0
+		target.ticks_since_hit = 0
 	var fired_at := [-1.0]
 	var clock := [0.0]
 	shooter.fired.connect(func(_muzzle: Vector3, _direction: Vector3) -> void:

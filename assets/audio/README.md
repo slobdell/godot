@@ -39,3 +39,4 @@ another. Share of energy above 200 Hz (what laptop and phone speakers play) meas
 | `mg_loop.wav` | a scout's machine gun held down (loops; GunfireLoops gives the 4 nearest gunners a voice) | exactly 11 dry cracks a second, each with its own weight and knock, over the rattle of the action (seamless) | 95% |
 | `ricochet.wav` | a small round glancing off armor (at most one every 0.15 s) | a metallic tick and a zinging FM whine falling 3 kHz → 500 Hz | 100% |
 | `bullet_hit_metal.wav` | a bullet or 25 mm round striking steel (at most one per target every 0.09 s) | three inharmonic partials around 900 Hz with a noise click | 100% |
+| `weak_spot_hit.wav` | a weak-spot hit (any weapon; at most one per target and weapon every 0.15 s) | a heavy crunch and 90–180 Hz thump, then a bright two-note chime (E6, B6, each with a detuned partner) ringing out | 63% |

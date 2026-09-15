@@ -46,6 +46,14 @@ const SMOKE_COLOR := Color(0.5, 0.5, 0.53)
 const DUST_COLOR := Color(0.52, 0.43, 0.33)
 const DIRT_COLOR := Color(0.36, 0.27, 0.19)
 const METAL_COLOR := Color(0.32, 0.31, 0.3)
+## Weak-spot hits flare gold: the "critical hit" color, never a team color (cyan and magenta).
+const CRIT_COLOR := Color(1.0, 0.8, 0.22)
+## Weak-spot flare size per fire model (m).
+const CRIT_SIZE := {"shell": 9.0, "arc": 8.0, "burst": 5.0, "stream": 3.6, "beam": 5.0}
+## Two kill explosions this close in time and space are one death reported twice (a hit and the unit's died signal).
+const KILL_DEDUPE_SECONDS := 0.8
+const KILL_DEDUPE_METERS := 6.0
+const CRIT_EVERY := 0.15
 
 ## Events handled since load.
 var events := 0
@@ -65,12 +73,19 @@ var _rng := RandomNumberGenerator.new()
 ## Draw hitscan rounds from weapon events (live K2). MatchFxLink turns it off in stub mode, where the fx.tracer slot
 ## knows both ends of each round and draws it instead.
 var draw_hitscan := true
+## The FX showcase only: treat every hit on a vehicle as a weak-spot hit (round 2 has no weak spots to show yet).
+var showcase_weak_spots := false
 ## Hitscan rounds fired this frame, waiting for their impact (same tick) to know where they end: id -> shot.
 var _pending_hitscan := {}
 ## Budgets for small rounds pouring into one hull: last spark and clank time per target, last ricochet sound.
 var _last_spark := {}
 var _last_clank := {}
 var _last_ricochet_sound := -1.0
+var _last_crit := {}
+## [{position: Vector3, time: float}], recent kill explosions (for de-duplication).
+var _recent_kills: Array[Dictionary] = []
+## vehicle -> its ShieldEffect (or null), found once.
+var _shield_cache := {}
 ## Small rounds on one target spark at most this often (s); a 11-rounds-a-second stream still reads as continuous.
 const SPARK_EVERY := 0.07
 const CLANK_EVERY := 0.09
@@ -89,7 +104,9 @@ func tracked_projectiles() -> int:
 ## K2 weapon_fired: the muzzle side of a shot.
 func fired(event: Dictionary) -> void:
 	var model := _model_of(event)
-	if not FAMILIES.has(model):
+	var weapon := Weapons.profile(String(event.get("weapon", "")))
+	# Combat's K2 announces flamethrower puffs as "stream" events; the flame slot draws fire, not machine-gun tracers.
+	if not FAMILIES.has(model) or int(weapon.get("kind", -1)) == Weapons.Kind.CONE:
 		return
 	_begin(model)
 	var family: Dictionary = FAMILIES[model]
@@ -103,10 +120,10 @@ func fired(event: Dictionary) -> void:
 	var color := _team_glow(shooter)
 	_track(int(event.get("projectile_id", -1)), {"model": model, "shooter": shooter_name, "color": color, "muzzle": muzzle,
 			"direction": direction})
-	var weapon := Weapons.profile(String(event.get("weapon", "")))
-	if draw_hitscan and (model == "stream" or model == "burst") and K2Events.projectile_speed(weapon) <= 0.0:
+	var speed := float(event.get("speed_mps", K2Events.projectile_speed(weapon)))
+	if draw_hitscan and (model == "stream" or model == "burst") and speed <= 0.0:
 		_pending_hitscan[int(event.get("projectile_id", -1))] = {"muzzle": muzzle, "direction": direction,
-				"range": float(weapon.get("range", 45.0)), "color": color, "model": model}
+				"range": float(event.get("range", weapon.get("range", 45.0))), "color": color, "model": model}
 	match model:
 		"shell":
 			_shell_blast(family, muzzle, direction, color)
@@ -174,13 +191,19 @@ func impact(event: Dictionary) -> void:
 	var target_name := String(event.get("target", ""))
 	var target := _unit(target_name)
 	if target_name != "" or killed:
-		match model:
-			"shell", "arc":
-				_shell_hit(family, position, direction, killed)
-			_:
-				_small_hit(model, family, position, direction, bool(event.get("weak_spot", false)), target_name)
+		var weak_spot := bool(event.get("weak_spot", false)) or (showcase_weak_spots and target_name != "")
+		if not killed and _shielded(target):
+			_shield_splash(model, family, position, direction, target)
+		else:
+			match model:
+				"shell", "arc":
+					_shell_hit(family, position, direction, killed)
+				_:
+					_small_hit(model, family, position, direction, weak_spot, target_name)
+			if weak_spot:
+				_weak_spot(model, position, direction, target_name)
 		if killed:
-			_kill(model, family, position, direction)
+			_kill(model, family, position, direction, target_name)
 		if float(family["hit_rock_deg"]) > 0.0 and target is Node3D:
 			_fx.jolts.kick(target, direction, float(family["hit_rock_deg"]) * (1.6 if killed else 1.0), 0.2, _fx.now, 15.0, 4.5)
 			_piece("hit_rock")
@@ -261,30 +284,126 @@ func _shell_hit(family: Dictionary, position: Vector3, direction: Vector3, kille
 		_fx.spectacle.emit(position, 0.3)
 
 
-func _kill(model: String, family: Dictionary, position: Vector3, direction: Vector3) -> void:
+func _kill(model: String, family: Dictionary, position: Vector3, direction: Vector3, unit_name := "") -> void:
 	var now := _fx.now
-	# The round-2 kill explosion (fireballs, glow, a burning site, the crowd, the big boom), then more on top.
-	_fx.explosion(position, true, 0.35 if model == "shell" or model == "arc" else 1.0)
+	if _killed_recently(position, now, unit_name):
+		return
+	_recent_kills.append({"position": position, "time": now, "unit": unit_name})
+	# The round-2 kill explosion (fireballs, glow, a burning site, the crowd, the big boom), then more on top: whatever
+	# killed it, the vehicle itself blows up. A tank shell or a mortar makes it bigger.
+	var heavy := model == "shell" or model == "arc"
+	_fx.explosion(position, true, 0.35)
 	_piece("kill_explosion")
 	_fx.shake.add(maxf(float(family["kill_shake"]) - 0.55, 0.0), position, float(family["shake_radius"]) * 1.25)
+	# It cooks off: a second blast a beat later, a huge shockwave, debris thrown high, a column of black smoke.
+	var offset := Vector3(_rng.randf_range(-1.0, 1.0), 2.2, _rng.randf_range(-1.0, 1.0))
+	_fx.bursts.spawn(BurstSystem.Kind.FIREBALL, position + offset, 6.5 if heavy else 5.0, 1.0, FIRE_COLOR, now + 0.28, Vector3.ZERO, 0.0, 0.0, 1.5)
+	_fx.bursts.spawn(BurstSystem.Kind.STAR, position + offset, 7.0, 0.14, Color(1.0, 0.85, 0.6), now + 0.28)
+	_fx.bursts.spawn(BurstSystem.Kind.SPARKS, position + Vector3.UP * 2.0, 11.0, 1.1, SPARK_COLOR, now + 0.28)
+	_fx.lights.flash(position + Vector3.UP * 2.0, Color(1.0, 0.5, 0.2), 7.0, 18.0, 0.6, LightPool.PRIORITY_EXPLOSION, now + 0.28)
+	_piece("secondary_blast")
+	var ground := Vector3(position.x, 0.0, position.z)
+	_fx.bursts.spawn(BurstSystem.Kind.SHOCKWAVE, ground, 34.0 if heavy else 24.0, 0.8, Color(1.0, 0.55, 0.25) * 0.5, now + 0.05)
+	_fx.bursts.spawn(BurstSystem.Kind.DEBRIS, position + Vector3.UP * 1.5, 12.0, 1.6, Color(METAL_COLOR.r, METAL_COLOR.g, METAL_COLOR.b, 1.0), now + 0.02)
+	_fx.bursts.spawn(BurstSystem.Kind.DEBRIS, position + Vector3.UP * 1.0, 8.0, 1.3, Color(0.2, 0.18, 0.16, 1.0), now + 0.3)
+	for i in _count(5, 3):
+		_fx.bursts.spawn(BurstSystem.Kind.SMOKE, position + Vector3(_rng.randf_range(-1.2, 1.2), 1.5, _rng.randf_range(-1.2, 1.2)),
+				_rng.randf_range(4.5, 6.5), _rng.randf_range(3.5, 4.5), Color(0.14, 0.13, 0.13, 0.9), now + 0.4 + i * 0.35,
+				Vector3(direction.x, 0.0, direction.z) * 0.6, 0.3, 0.0, 2.4)
+	_fx.decals.spawn(BurstSystem.Kind.SCORCH, ground, 9.0, 28.0, Color(0, 0, 0, 1), now)
+	_piece("scorch")
+
+
+## A vehicle died (its `died` signal): blow it up unless the hit that killed it already did (hazards, beams, and round-2
+## hitscan kills have no killing impact).
+func unit_destroyed(unit: Node3D) -> void:
+	if unit == null or not unit.is_inside_tree():
+		return
+	var position := unit.global_position + Vector3.UP * 0.8
+	if _killed_recently(position, _fx.now, String(unit.name)):
+		return
+	_begin("destroyed")
+	_kill("burst", FAMILIES["burst"], position, -unit.global_basis.z, String(unit.name))
+
+
+## The same death reported twice: the same unit (when both reports name it), or the same spot when one doesn't.
+func _killed_recently(position: Vector3, now: float, unit_name: String) -> bool:
+	for i in range(_recent_kills.size() - 1, -1, -1):
+		var kill: Dictionary = _recent_kills[i]
+		if now - float(kill["time"]) > KILL_DEDUPE_SECONDS:
+			_recent_kills.remove_at(i)
+		elif unit_name != "" and String(kill["unit"]) != "":
+			if String(kill["unit"]) == unit_name:
+				return true
+		elif (kill["position"] as Vector3).distance_to(position) <= KILL_DEDUPE_METERS:
+			return true
+	return false
+
+
+## A weak-spot hit (K2 `weak_spot`): a gold four-point flare and ring, a gush of gold sparks, a sting you learn to want.
+## A tank shell in the engine deck also blows a jet of fire out of the hull.
+func _weak_spot(model: String, position: Vector3, direction: Vector3, target: String) -> void:
+	var now := _fx.now
+	var key := "%s/%s" % [target if target != "" else str(position.snapped(Vector3.ONE * 2.0)), model]
+	if now - float(_last_crit.get(key, -1.0)) < CRIT_EVERY:
+		return
+	_last_crit[key] = now
+	if _last_crit.size() > 64:
+		_last_crit.clear()
+	var size := float(CRIT_SIZE.get(model, 5.0))
+	_fx.bursts.spawn(BurstSystem.Kind.FLARE, position - direction * 0.4 + Vector3.UP * 0.3, size, 0.45, CRIT_COLOR, now)
+	_fx.bursts.spawn(BurstSystem.Kind.SPARKS, position + Vector3.UP * 0.5, size * 0.9, 0.7, CRIT_COLOR, now)
+	_fx.lights.flash(position + Vector3.UP, CRIT_COLOR, 3.5 if model == "shell" else 2.5, 9.0, 0.25, LightPool.PRIORITY_EXPLOSION, now)
 	if model == "shell" or model == "arc":
-		# It cooks off: a second blast a beat later, a huge shockwave, debris thrown high, a column of black smoke.
-		var offset := Vector3(_rng.randf_range(-1.0, 1.0), 2.2, _rng.randf_range(-1.0, 1.0))
-		_fx.bursts.spawn(BurstSystem.Kind.FIREBALL, position + offset, 6.5, 1.0, FIRE_COLOR, now + 0.28, Vector3.ZERO, 0.0, 0.0, 1.5)
-		_fx.bursts.spawn(BurstSystem.Kind.STAR, position + offset, 7.0, 0.14, Color(1.0, 0.85, 0.6), now + 0.28)
-		_fx.bursts.spawn(BurstSystem.Kind.SPARKS, position + Vector3.UP * 2.0, 11.0, 1.1, SPARK_COLOR, now + 0.28)
-		_fx.lights.flash(position + Vector3.UP * 2.0, Color(1.0, 0.5, 0.2), 7.0, 18.0, 0.6, LightPool.PRIORITY_EXPLOSION, now + 0.28)
-		_piece("secondary_blast")
-		var ground := Vector3(position.x, 0.0, position.z)
-		_fx.bursts.spawn(BurstSystem.Kind.SHOCKWAVE, ground, 34.0, 0.8, Color(1.0, 0.55, 0.25) * 0.5, now + 0.05)
-		_fx.bursts.spawn(BurstSystem.Kind.DEBRIS, position + Vector3.UP * 1.5, 12.0, 1.6, Color(METAL_COLOR.r, METAL_COLOR.g, METAL_COLOR.b, 1.0), now + 0.02)
-		_fx.bursts.spawn(BurstSystem.Kind.DEBRIS, position + Vector3.UP * 1.0, 8.0, 1.3, Color(0.2, 0.18, 0.16, 1.0), now + 0.3)
-		for i in _count(5, 3):
-			_fx.bursts.spawn(BurstSystem.Kind.SMOKE, position + Vector3(_rng.randf_range(-1.2, 1.2), 1.5, _rng.randf_range(-1.2, 1.2)),
-					_rng.randf_range(4.5, 6.5), _rng.randf_range(3.5, 4.5), Color(0.14, 0.13, 0.13, 0.9), now + 0.4 + i * 0.35,
-					Vector3(direction.x, 0.0, direction.z) * 0.6, 0.3, 0.0, 2.4)
-		_fx.decals.spawn(BurstSystem.Kind.SCORCH, ground, 9.0, 28.0, Color(0, 0, 0, 1), now)
-		_piece("scorch")
+		_fx.bursts.spawn(BurstSystem.Kind.FIREBALL, position + Vector3.UP * 1.0, 3.5, 0.7, FIRE_COLOR, now + 0.05, Vector3.UP * 7.0, 2.5)
+		_fx.bursts.spawn(BurstSystem.Kind.FIREBALL, position + Vector3.UP * 0.6, 2.8, 0.6, FIRE_COLOR, now + 0.12, Vector3.UP * 5.0 - direction * 2.0, 2.5)
+	_piece("weak_spot_flare")
+	_sound("weak_spot_hit", position)
+	_fx.spectacle.emit(position, 0.5)
+
+
+## The vehicle's shield took the round: an energy splash in its team's glow and a ripple across the shell from the struck
+## point, instead of steel sparks. Heavy rounds still thump.
+func _shield_splash(model: String, family: Dictionary, position: Vector3, direction: Vector3, target: Node) -> void:
+	var now := _fx.now
+	var size := float(family["hit_size"])
+	var glow := _team_glow(target).lerp(Color.WHITE, 0.3)
+	_fx.bursts.spawn(BurstSystem.Kind.STAR, position - direction * 0.3, size * 1.6, 0.12, glow, now)
+	_fx.bursts.spawn(BurstSystem.Kind.SPARKS, position, size * 2.2, 0.35, glow, now)
+	if model == "shell" or model == "arc":
+		_fx.bursts.spawn(BurstSystem.Kind.SHOCKWAVE, Vector3(position.x, 0.0, position.z), size * 3.0, 0.4, glow * 0.5, now)
+		_fx.lights.flash(position, glow, 5.0, 12.0, 0.25, LightPool.PRIORITY_EXPLOSION, now)
+		_fx.shake.add(float(family["hit_shake"]) * 0.6, position, float(family["shake_radius"]))
+	var shield := _shield_effect(target)
+	if shield != null:
+		shield.hit_at(position)
+	_piece("shield_splash")
+
+
+func _shielded(unit: Node) -> bool:
+	if unit == null:
+		return false
+	var value: Variant = unit.get("sync_shield")
+	return value != null and float(value) > 0.0
+
+
+func _shield_effect(unit: Node) -> ShieldEffect:
+	if unit == null:
+		return null
+	if _shield_cache.has(unit) and is_instance_valid(_shield_cache[unit]):
+		return _shield_cache[unit]
+	var hull := unit.get_node_or_null("HullVisual")
+	var found: ShieldEffect = null
+	if hull != null:
+		for node in hull.find_children("*", "MeshInstance3D", true, false):
+			if node is ShieldEffect:
+				found = node
+				break
+	if found != null:
+		if _shield_cache.size() > 64:
+			_shield_cache.clear()
+		_shield_cache[unit] = found
+	return found
 
 
 func _shell_miss(family: Dictionary, position: Vector3, direction: Vector3) -> void:

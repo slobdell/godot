@@ -4,8 +4,8 @@ extends Node3D
 ## deserves one. Colored by the shell's team and styled by its weapon's fire model (a tank shell is a fat glowing slug,
 ## an autocannon round a short bright tracer, an arcing mortar round in between).
 ##
-## Until K2 is live, a shell that flies out of range without hitting anything fizzles into the dirt below where it
-## gave out (the round-2 Shell just expires in mid-air), so a miss still reads as a miss.
+## A shell that flies out of range without hitting anything fizzles into the dirt below where it gave out (the Shell just
+## expires in mid-air and K2 reports nothing for it), so a miss still reads as a miss.
 
 
 func _ready() -> void:
@@ -27,7 +27,8 @@ func _exit_tree() -> void:
 
 func _on_expired(_shell_node: Node) -> void:
 	var fx := FxWorld.existing()
-	if fx != null and not fx.link.live:
+	# K2 reports nothing for a round that flies out of range, so the fizzle is drawn in both modes.
+	if fx != null:
 		var shell := _shell()
 		fx.weapons.fizzle(global_position, -global_basis.z, _fire_model(fx, shell), shell.get("ray_start") if shell != null else null,
 				String(shell.get("shooter_name")) if shell != null else "")

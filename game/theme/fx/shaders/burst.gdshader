@@ -8,6 +8,7 @@
 //   kind 3: flat shockwave ring            kind 4: smoke/dust puff (variant = darkness)
 //   kind 5: flat scorch mark               kind 6: spark spray billboard (additive)
 //   kind 7: debris/dirt spray billboard (variant = chunkiness)
+//   kind 8: weak-spot flare billboard: a four-point glint that pops and spins, the "critical hit" read
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, skip_vertex_transform, fog_disabled;
 
@@ -171,6 +172,21 @@ void fragment() {
 		}
 		vec3 hot = mix(vec3(1.0, 0.95, 0.8), tint, age);
 		ALBEDO = hot * light * 3.0 * (1.0 - age * age);
+		ALPHA = 0.0;
+	} else if (v_kind > 7.5) {
+		// Weak-spot flare: a hot four-point glint that punches out fast, turns a little, and shrinks away, with a ring.
+		vec2 p = UV * 2.0 - 1.0;
+		float spin = age * 1.2 + v_seed;
+		mat2 rot = mat2(vec2(cos(spin), sin(spin)), vec2(-sin(spin), cos(spin)));
+		vec2 q = rot * p;
+		float pop = 1.0 - pow(age, 0.5);
+		float star = pow(max(0.0, 1.0 - abs(q.x) * 14.0), 2.0) * max(0.0, 1.0 - abs(q.y) / max(pop, 0.01))
+				+ pow(max(0.0, 1.0 - abs(q.y) * 14.0), 2.0) * max(0.0, 1.0 - abs(q.x) / max(pop, 0.01));
+		float r = length(p);
+		float core = exp(-r * r * 60.0) * pop;
+		float ring = exp(-pow((r - (0.2 + age * 0.7)) / 0.04, 2.0)) * (1.0 - age);
+		// Gold, not white: only the very core goes white-hot, so the glint keeps its "critical hit" color under bloom.
+		ALBEDO = (tint * (star * 1.6 + ring * 1.2) + mix(tint, vec3(1.0), 0.6) * core * 1.8) * (1.0 - age * age);
 		ALPHA = 0.0;
 	} else {
 		// Debris or dirt: jagged shards thrown up and falling, tumbling (variant 1 = steel shards, 0 = dirt clods).

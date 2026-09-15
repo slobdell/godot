@@ -66,7 +66,7 @@ func attach(game_match: Node) -> void:
 	if live:
 		game_match.connect("weapon_fired", _on_weapon_fired)
 		game_match.connect("projectile_impact", _on_projectile_impact)
-	elif _simulating():
+	if _simulating():
 		var tanks := _tanks_root()
 		if tanks != null:
 			tanks.child_entered_tree.connect(_on_tank_added)
@@ -149,8 +149,17 @@ func _on_projectile_impact(event: Dictionary) -> void:
 
 
 func _on_tank_added(node: Node) -> void:
-	if node.has_signal("fired") and not node.is_connected("fired", _on_tank_fired):
+	# Stub only: live K2 reports shots itself.
+	if not live and node.has_signal("fired") and not node.is_connected("fired", _on_tank_fired):
 		node.connect("fired", _on_tank_fired.bind(node))
+	# Every death blows up, including ones without a killing impact (hazards, beams); WeaponFx drops duplicates.
+	if node.has_signal("died") and not node.is_connected("died", _on_tank_died):
+		node.connect("died", _on_tank_died.bind(node))
+
+
+func _on_tank_died(tank: Node) -> void:
+	if tank is Node3D:
+		weapons.unit_destroyed(tank)
 
 
 func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Node) -> void:

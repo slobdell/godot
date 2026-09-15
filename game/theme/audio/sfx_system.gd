@@ -30,6 +30,10 @@ const SOUNDS := {
 	"autocannon_shot": "res://assets/audio/autocannon_shot.wav",
 	"mg_round": "res://assets/audio/mg_round.wav",
 	"mortar_launch": "res://assets/audio/mortar_launch.wav",
+	"mg_loop": "res://assets/audio/mg_loop.wav",
+	"ricochet": "res://assets/audio/ricochet.wav",
+	"bullet_hit_metal": "res://assets/audio/bullet_hit_metal.wav",
+	"weak_spot_hit": "res://assets/audio/weak_spot_hit.wav",
 }
 const WORLD_VOICES := 20
 const UI_VOICES := 3
@@ -40,6 +44,7 @@ const MIX := {
 	"ui_blip": [-14.0, 0.0], "ui_alert": [-10.0, 0.0], "ui_tick": [-20.0, 0.15],
 	"tank_boom": [1.0, 0.05], "shell_whine": [-5.0, 0.08], "shell_hit_armor": [-1.0, 0.07], "dirt_impact": [-3.0, 0.1],
 	"autocannon_shot": [-6.0, 0.06], "mg_round": [-13.0, 0.12], "mortar_launch": [-5.0, 0.05],
+	"ricochet": [-9.0, 0.15], "bullet_hit_metal": [-12.0, 0.12], "weak_spot_hit": [-2.0, 0.03],
 }
 
 var muted := false
