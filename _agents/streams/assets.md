@@ -103,9 +103,9 @@ review is the long pole; everything ungated ran while it waits)
 2. X1 stackable containers → **done**
 3. X2 giant ad screens → **done** (placeholder ads and copy until the lead picks)
 4. X5 artillery outriggers as parts → **done**
-5. X6 size and draw budget → **done** (numbers below)
+5. X6 size and draw budget → **done**, with ~0.8 MB of growth rather than none (numbers below)
 6. X4 approved faction vehicles in 3D → **groundwork done** (K4 slots, faction gallery); models wait on the lead's taps
-7. Stretch → see *Next steps*
+7. Stretch → neon signs and scrap barricades **done**; wreck husk concepts **waiting on the lead**
 
 **Done**
 - **X3 concepts** (1a29652, 5e1d64f): 33 options (3 factions × 5 roles; 3 tank-class options, 2 for each other role) on
@@ -133,13 +133,26 @@ review is the long pole; everything ungated ran while it waits)
   light pool in the ad's average color; the cyberpunk venue raises 4 screens over the short walls on 2 channels
   (visible behind the title screen). The live card counts confirmed kills and odds from `Match.tank_destroyed`. Six
   placeholder ads (`make assets-ads`). 8 tests.
-- **X5 outriggers** (next commit): `OutriggerRig` cuts the crane carrier's four legs out of its generated hull by region
+- **X5 outriggers** (8e883d6): `OutriggerRig` cuts the crane carrier's four legs out of its generated hull by region
   boxes (shared per mesh, no pipeline rebuild) and `unit.artillery.hull` `set_deployed(ratio)` slides them in and lifts
   the jacks (0 = stowed, 0.5 = beams out, 1 = braced, the default). 3 tests; `make artillery-deploy-shot`.
-- **X4 groundwork** (in progress, ungated): K4 slot contracts `unit.<faction>.<role>.<part>` in `AssetContracts` (fitted
+- **X6 size and draw budget** (3df61be + neon atlas): web `.pck` measured on builder0 with `make remote T=assets-report`:
+  **21.3 MB** (round 2: 20.3 MB). The arena kit's share, from `pck_report.py --group`: containers **236 KB**, screens,
+  ads and neon signs **~530 KB** (after halving the neon atlas, 644 → ~530), Oswald **33 KB**: about **0.8 MB**, not
+  zero. Cuts made to get there: analytic corrugation instead of a normal map, container maps at 256 px, ad stills at
+  256 × 512, flipbook frames at 128 × 256, Oswald subset to Latin (172 → 49 KB source), Basis Universal on everything
+  new. Faction vehicles will live in `game/theme/factions/` (to be excluded from the web export until factions are
+  playable). Draws (`make arena-kit-measure`, yard view, tier high): kit hidden 81 draws / 49k primitives; 36 containers
+  +4 draws / +15.7k primitives (two MultiMeshes, with shadows); 6 screens +24 draws / +0.5k primitives. The venue adds 4
+  screens, one sign MultiMesh and 4 container stacks (inside the existing container draws) to every match.
+- **Stretch** (3df61be, 06fb861): neon tube signs crown the grandstands (AquaCorp, Organ Futures, Syndicate Life, Live
+  from the Pit; one MultiMesh, warm and violet neon only, never team colors); gang-tagged container stacks barricade
+  both gates (reusing X1, no new textures); two wreck husk concepts are on their own review page.
+- **X4 groundwork** (3df61be, ungated): K4 slot contracts `unit.<faction>.<role>.<part>` in `AssetContracts` (fitted
   to the Condemned unit in the same role), faction themes under `game/theme/factions/<faction>/generated` found by the
   checker, `FactionArt` (which model fills each role), `make vehicle-gallery FACTION=<id>` (a labeled empty spot for
-  roles not built yet). 3 tests.
+  roles not built yet). 3 tests. `tools/assets/model_batch.py` sends every approved, not-yet-built concept to
+  image-to-3D in parallel (`--list` shows the credits first); generate.py still enforces the gate.
 
 **Decisions**
 - No people in faction concepts (image-to-3D turns riders into blobs); crews come later as cheap figures.

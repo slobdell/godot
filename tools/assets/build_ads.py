@@ -9,7 +9,7 @@ the copy in ads.json written to the humor direction in game_design.md (believabl
 
 Outputs (game/theme/arena_kit/ads/):
     <id>.png       256 × 512 portrait still (drawn at 512 × 1024), or a flipbook sheet (frames laid out left to right, top to bottom)
-    neon_signs.png 1024 × 512 atlas of neon tube signs for the stands (4 rows of 1024 × 128): R = tube core, G = glow
+    neon_signs.png 512 × 256 atlas of neon tube signs for the stands (4 rows of 512 × 64): R = tube core, G = glow
                    (text drawn here from our own brand names in Oswald; neon_signs.gd lays them out)
     ads.json       the playlist: id, image, frames [cols, rows], fps, seconds, brand, headline, fine_print, accent,
                    average_color (tints the screen's light spill on the ground), kind ("still" or "live")
@@ -208,7 +208,8 @@ def neon_atlas() -> Image.Image:
         core.paste(outline, (0, row * 128))
     glow = core.filter(ImageFilter.GaussianBlur(9))
     glow = Image.fromarray(np.clip(np.asarray(glow, np.float32) * 2.2, 0, 255).astype(np.uint8))
-    return Image.merge("RGB", (core, glow, Image.new("L", core.size)))
+    # Drawn at 1024 × 512 for clean tubes, shipped at half: a sign is 16 m wide, so that's still ~3 cm per texel (X6).
+    return Image.merge("RGB", (core, glow, Image.new("L", core.size))).resize((512, 256), Image.LANCZOS)
 
 
 def main() -> int:
