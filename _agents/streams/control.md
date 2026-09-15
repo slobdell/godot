@@ -87,4 +87,65 @@ field), effects and HUD styling (feel), models (assets).
 
 ## Status
 
-- 2026-09-15: brief written for round 3. Nothing started.
+_Updated 2026-09-15 by the control worker._
+
+### Plan (in order) and progress
+
+| Item | State |
+|---|---|
+| X1 Orders API (K1, CP1): `UnitCommand`, `Orders`, `GroupFormation`, temporary `OrderExecutor` | **done** (2114693): 17 tests; response measured at 1 tick from fighting, driving, holding, hurt |
+| X2 Selection: click, box, shift, ctrl/double-click by type, Escape, inspect enemies, rings | **done** (2114693): 7 tests through `Viewport.push_input` |
+| X3 Orders from mouse and keyboard: right-click move/attack/follow, A/F/M + click, S, H, shift queue + waypoints, acks | **done** (2114693): 7 tests; click-to-tracks 1 tick |
+| X4 Control groups and camera: ctrl/shift/1–9, double tap centers, Tab, doctrine squads = groups 1–5, radar look/order, group bar | **done** (2114693): 7 tests |
+| X5 Group movement, automatic formations, regrouping | built, 8 tests green locally |
+| X6 Selection panel and command card; retire drill/formation pickers (kept behind `--touch-map`) | |
+| X7 `make control-playtest-shots` | |
+| X8 Touch adaptation (stretch) | |
+
+### CP1 (K1 Orders API): READY, commit 2114693
+
+**CP1 is green** (`make remote T=check` on builder0: 452 tests, every smoke). Merge `stream/control` at 2114693 (or
+later) to `main`. What consumers get: `game/control/unit_command.gd`, `game/control/orders.gd` (K1 exactly, plus
+`issue(command, team)`, `queue_changed`, `goal_position`, `Orders.goal_of`, `Orders.reached`, `Orders.of/attach`), and
+the temporary `OrderExecutor`. That commit also switches skirmish to the new desktop controls (round 2's map behind
+`--touch-map`).
+
+### Decisions
+
+- **Brains keep their autonomy until ai X1; ordered units obey a temporary executor.** `OrderExecutor`
+  (`game/control/order_executor.gd`) pauses an ordered unit's `TankBrain` and drives it with a plain
+  `OrderController` (pathing, unsticking, fire at will). When its queue runs out the unit keeps station where it
+  stopped (returns if pushed, faces the nearest visible enemy, shoots). Why: the lead's first complaint is units
+  ignoring clicks; obedient beats clever-but-deaf until brains execute orders. It steps aside by itself once
+  `TankBrain` declares `const EXECUTES_ORDERS := true`. Units never ordered keep their brains and doctrine squads.
+- **`Orders` is a RefCounted per match**, reachable with `Orders.of(match)`: `Match.orders` once combat adds it,
+  else a meta set by `Orders.attach` (skirmish mode does that today). `issue(command, team = -1)` adds an optional
+  team check. Extra signal `queue_changed(unit)` for waypoint markers. Destinations outside the arena are clamped,
+  not rejected (a click on the edge still orders).
+- **Per-unit order data** carries the group (`units`), `slot` ([right, back] m), `goal`, `heading`, and `pace_mps`,
+  so brains don't need control's code to honor formations. `Orders.goal_of(order, match)` resolves follow slots live.
+- **Automatic slots (X1 version):** rows of up to 5 abreast, 10 m apart, heavies in front, centered on the click;
+  units keep their left-right order so paths don't cross. Named formations use `Formations.offsets` (≤ 5 units).
+- **New desktop controls are a new node, not a rewrite of `TacticalMap`**: `RtsControls` (`game/control/`) is the
+  default in skirmish; round 2's tap grammar stays behind `--touch-map` (and the camera playtest) so its tests keep
+  passing until the lead has played the new controls. The node keeps the name `TacticalMap` so feel's HUD skin
+  lays out around it.
+- **Keys:** A attack-move, F follow, M move (armed orders, cancelled by right-click or Escape; shift keeps them armed),
+  S stop, H hold, C center on selection, Tab next group, Space pause. Right-click on a friend outside the selection
+  follows it (StarCraft). Arrows, edges, middle-drag, wheel, `,` `.` stay the camera.
+
+### Questions for the lead
+
+- None yet.
+
+### Requests to other streams
+
+- **combat:** add `var orders: Orders` to `Match` (K1). `Orders.attach` already sets it when the field exists; no
+  other change needed.
+- **ai:** when brains execute K1 orders, add `const EXECUTES_ORDERS := true` to `TankBrain`; `OrderExecutor` then does
+  nothing, and control deletes it. Per-unit order fields are listed in `game/control/orders.gd`'s header.
+
+### Merge notes (shared or other streams' files)
+
+- `game/garage/army_loop.gd` (paused army stream): the unpause lookup no longer casts to `TacticalMap` (the node may be
+  `RtsControls`); minimal compatibility fix.
