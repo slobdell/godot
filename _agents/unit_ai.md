@@ -313,6 +313,20 @@ The press probe was deleted. Re-run after checkpoint 1: friendly fire on and the
 challenger didn't win, so **the champion stays a6**. `a6t9` stays in `BrainVariants` as the first lever if phones
 need the CPU (re-test it there with more matches).
 
+### CpuCommander (stretch): does a CPU commander beat plain brains?
+
+Individuals mirror (one 5-tank squad each), one side commanded, 8 matches × {Green, Rust} × {normal, swapped}:
+
+| Commander | Commanded side wins |
+|---|---|
+| v1 (round 1) | 8/32 (25%) |
+| v2 (assault toward fresh contacts, no break-contact within 45 m, fewer re-issued orders) | 9/32 (28%) |
+
+Reading: on a single squad of competent brains, squad orders only constrain them (KEEP_SLOT 6–15% of the
+commanded tanks' time; RETREAT and hunting are limited under orders). v2's rules are sounder but not
+measurably better. It stays opt-in (`--commander` / `--green-commander`). A commander's value should come from
+several squads (one fixes, one flanks), which needs catalog-v2 armies (≤ 5 per squad): measure again then.
+
 ### The 2D cover map vs physics
 
 `CoverMap.clear_line` agreed with physics raycasts on 139 of 139 random sight lines on the real arena

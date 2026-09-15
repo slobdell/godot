@@ -5,20 +5,29 @@ extends Node
 ## bridge, and the network send) to its gun squads. Scout and artillery squads are left to their
 ## brains (SPOT, BOMBARD), which already do their jobs.
 ##
-## Policy (deterministic, thinks on Match.tick):
-##   nothing known         -> MOVE in a wedge toward the objective (the center if contested, else a
-##                            point ahead, advancing), BOUND once within BOUND_RANGE of old contacts
-##   enemies in sight      -> compare strength (hull + shield of our living tanks vs the enemies we
-##                            know about): BREAK CONTACT when clearly weaker, otherwise ASSAULT (HOLD
-##                            only on a control point we own)
-## A command is only re-issued when the verb changes or the destination moves by REISSUE_METERS,
-## because every new order resets the brains' commitment.
+## Policy v2 (2026-09-15, ai stream; deterministic, thinks on Match.tick). v1 won 8 of 32 against plain brains:
+## its MOVE/BOUND legs and early BREAK CONTACTs pulled tanks out of fights they were winning (KEEP_SLOT 15% of
+## their time). v2 lets the brains fight inside ASSAULT and only drives when nothing is known:
+##   enemies in sight      -> compare strength (hull + shield of our living tanks vs the enemies we know about):
+##                            BREAK CONTACT only when clearly weaker AND the nearest enemy is still beyond
+##                            DISENGAGE_RANGE (turning away up close gets you shot); otherwise ASSAULT their
+##                            center (HOLD only on a control point we own)
+##   a fresh contact       -> ASSAULT toward it (the brains hunt and use cover inside an assault)
+##   nothing known         -> MOVE in a wedge toward the objective (the center if contested, else a point
+##                            ahead), BOUND once within BOUND_RANGE of old contacts
+## A command is only re-issued when the verb changes or the destination moves by REISSUE_METERS (ASSAULT:
+## ASSAULT_REISSUE_METERS), because every new order resets the brains' commitment.
 
 const THINK_TICKS := 120
 const ASSAULT_RATIO := 1.25
 const WITHDRAW_RATIO := 0.6
 const BOUND_RANGE := 110.0
 const REISSUE_METERS := 15.0
+const ASSAULT_REISSUE_METERS := 30.0
+## Don't break contact once the nearest enemy is this close (meters).
+const DISENGAGE_RANGE := 45.0
+## A contact seen within this many ticks is chased with ASSAULT rather than MOVE.
+const FRESH_TICKS := 60 * 10
 ## How far ahead of the squad a movement leg goes when there's nothing to go for.
 const LEG := 50.0
 
@@ -73,6 +82,7 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 	names.sort()
 	var visible_sum := Vector3.ZERO
 	var visible_count := 0
+	var nearest_visible := INF
 	var enemy_strength := 0.0
 	var freshest: Variant = null
 	var freshest_tick := -1
@@ -82,6 +92,7 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 		if contact["visible"]:
 			visible_sum += contact["position"]
 			visible_count += 1
+			nearest_visible = minf(nearest_visible, lead.global_position.distance_to(contact["position"]))
 		if int(contact["seen_tick"]) > freshest_tick:
 			freshest_tick = int(contact["seen_tick"])
 			freshest = contact["position"]
@@ -93,7 +104,7 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 	if visible_count > 0:
 		var threat := visible_sum / visible_count
 		var facing := threat - lead.global_position
-		if our_strength <= enemy_strength * WITHDRAW_RATIO:
+		if our_strength <= enemy_strength * WITHDRAW_RATIO and nearest_visible > DISENGAGE_RANGE:
 			return {"squad": squad.squad_name, "verb": "break_contact", "to": _clamp_xz(home)}
 		if our_strength >= enemy_strength * ASSAULT_RATIO:
 			return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(threat), "formation": "line"}
@@ -105,6 +116,9 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 					"facing": [facing.x, facing.z], "formation": "line"}
 		return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(threat), "formation": "line"}
 
+	if freshest != null and game_match.tick - freshest_tick <= FRESH_TICKS \
+			and not (game_match.control_point and game_match.control_owner != team):
+		return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(freshest), "formation": "line"}
 	var goal: Vector3
 	if game_match.control_point and game_match.control_owner != team:
 		goal = Match.CONTROL_CENTER
@@ -122,7 +136,7 @@ func _worth_sending(squad_name: String, command: Dictionary) -> bool:
 		return true
 	var a := Vector2(float(last["to"][0]), float(last["to"][1]))
 	var b := Vector2(float(command["to"][0]), float(command["to"][1]))
-	return a.distance_to(b) >= REISSUE_METERS
+	return a.distance_to(b) >= (ASSAULT_REISSUE_METERS if command["verb"] == "assault" else REISSUE_METERS)
 
 
 static func _clamp_xz(point: Vector3) -> Array:

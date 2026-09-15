@@ -105,7 +105,7 @@ Unit stats and combat rules (rules; request changes), the UI and camera (command
 6. A5 matchups — **groundwork done, blocked on checkpoint 1**: `Matchups` (pure mechanics-based damage estimates + duel advantage, tested on catalog-v2-shaped data). Wiring into target choice, scout orbiting, IFV screening, and Lancer/artillery standoff needs rules' catalog v2 on `main` (intel `unit`/`role`, `mount`, `fire_arc_deg`). Two scenarios are written and pending.
 7. A6 squad tactics — **done**: `SquadTactics` (focus fire, suppress-and-flank, cover a withdrawing squad-mate, fragile threats), bounding overwatch from tactical spots (the bound waits for the overwatch to set); T1 re-measured with and without the control point.
 8. A7 ladder — **done**: `BrainVariants` (r1, a4, a6, a6t9), `--green-brain/--rust-brain`, `tools/ai_ladder.py`, `make ai-ladder`; three runs; **champion a6**; CPU cost per tick reported.
-9. Stretch: on-map explanations — **done from the AI side** (`tank.intent` carries a short why; the tactical map already draws intent). Smarter CpuCommander — measuring v1 against plain brains (in progress).
+9. Stretch: on-map explanations — **done from the AI side** (`tank.intent` carries a short why; the tactical map draws intent; the agent bridge reports teammates' intents). Smarter CpuCommander — **v2 built and measured, not better** (9/32 vs v1's 8/32 against plain brains); stays opt-in; re-measure with multi-squad v2 armies after checkpoint 1.
 
 ### Report (kept current)
 
@@ -139,5 +139,7 @@ Unit stats and combat rules (rules; request changes), the UI and camera (command
 - CPU: ~7–9 ms per tick at 50 brains (target 1 ms; phones need ≤ ~4 ms). Next levers, in order: `a6t9` (−24%, re-test with more matches), a shared per-team contact table, 30 Hz order execution for units not firing, typed arrays in `decide()`.
 - Idle guns read 95% (was 78–89%): by design (holding for friends, reloading in cover), but it makes that stat less useful; a "held for friend" counter would separate it (needs a Match stat, rules-owned).
 - A hurt tank that hid eventually leaves cover to repair at base and can re-expose itself on the way.
+- A CPU commander doesn't beat plain brains yet (25–28%); keep it off by default.
+- A 45 s browser skirmish screenshot hangs under SwiftShader (tried once; `make web-smoke` itself passes). Behavior was verified headless (scenarios, series), not by watching a rendered match.
 
 **What to playtest:** `make skirmish` (tanks should duck behind walls under fire, peek out to shoot, never shoot through a teammate, and a squad should pile onto one enemy). `make watch-match GREEN_DOCTRINE=anvil_hammer RUST_DOCTRINE=individuals` shows intents with reasons on nameplates. `make ai-scenarios`, `make ai-ladder`, `make ai-perf` reproduce the numbers.
