@@ -109,6 +109,33 @@ else made x3 the champion (`BrainVariants.CHAMPION`, 2026-09-15). CPU pass: Comb
 14 m/s² hull moves ~2 m off the shooter's lead, less than half a hull; the dodge threshold scenario is pending until
 combat's slower, visible tank shells land.
 
+### Driving, reload windows, and tools (round 3, later)
+
+- **Wheels** (`Steering.drive_toward_wheels` / `reverse_toward_wheels`, for K3 `locomotion: wheels`): pure pursuit, full
+  lock while the point is more than 45° off the nose, a three-point turn only while the point is inside the turning
+  circle on its side; wheeled units finish a move within 0.6 turning radii and move on to the next path waypoint within
+  0.8 (a car orbits a point it must hit exactly). Against a car double of combat's wheels: 60 m behind in 8.9 s, 9 m
+  behind in 5.4 s, inside the turning circle in 3.5 s.
+- **Local avoidance** (`OrderController._around_friends`): a friend parked within 10 m of the path is passed 5 m beside it;
+  navmesh paths ignore units and a wheeled unit can't pivot round one.
+- **Reload windows** (variant x4, opt-in): brains see when an enemy's slow gun fired (`AiTickCache.gun_ready_in`, from
+  `Tank.fired`), keep a cover-fire target through its reload, peek only while it reloads or looks away, bait a watching
+  gun with a flick out of cover, and short-halt only when the target can't punish it. Wall duel vs a durable cannon: 8
+  hits taken → 4. Not better on the ladder (x4 vs x3: 31–41 round-2 weapons, 36–36 combat's), so opt-in.
+- **Difficulty** (`Difficulty`, `--<team>-difficulty=easy|normal|hard`): think interval and a deterministic aim wander.
+  Normal beats easy 15–1 (easy hits 53% vs 74%); hard ≈ normal (8–8).
+- **Explanation overlay** (`AiExplainOverlay`, `--ai-explain[=green|rust]`): lines to each brain's move goal (colored by
+  what it's doing) and target; `make ai-shots` draws it.
+
+### Preview of the checkpoints (round-3 weapons and wheels)
+
+A throwaway clone with `stream/control` and `stream/combat` merged onto `stream/ai` (2026-09-15; the official numbers
+come after the real merge): 550 of 551 tests after the integration fixes above; commander v6 vs plain x3 38–26; brains x3
+vs a6 51–69 pooled (individuals 18–14, balanced 19–25, combined_arms 14–30). With 320-damage shells on a 5 s reload the
+first accurate shot decides a duel: a parked tank keeps its 50°/s turret on the target while a moving one drags it off and
+fires with a 2.5× moving spread. Probes that didn't close the gap: no dodging, matchup targeting, shoot-and-scoot, halting
+only for 3 s+ reloads. Requests to combat: turret stabilization and a softer moving-fire spread.
+
 ### A CPU that maneuvers (X5)
 
 `CpuCommander` policies v3–v6 (`game/ai/cpu_commander.gd`, `--green-commander=<policy>` / `--rust-commander=<policy>`)

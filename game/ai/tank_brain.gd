@@ -1718,7 +1718,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		var about_to_be_hit := not incoming.is_empty() and CombatMotion.would_be_hit(my_position, tank.estimated_velocity,
 				tank.estimated_velocity, incoming)
 		var loaded_for := 0 if _loaded_tick < 0 else tick - _loaded_tick
-		if ready_in <= braking + SHORT_HALT_LEAD and loaded_for <= SHORT_HALT_MAX_TICKS and not about_to_be_hit \
+		var halt_lead := float(s.get("features", {}).get("short_halt_lead", SHORT_HALT_LEAD))
+		if ready_in <= braking + halt_lead and loaded_for <= SHORT_HALT_MAX_TICKS and not about_to_be_hit \
 				and _window_open(s, contact, braking + SHORT_HALT_EXPOSURE, loaded_for):
 			why = TankBrain._join(why, "short halt")
 			return {"type": "stop"}

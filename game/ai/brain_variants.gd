@@ -20,6 +20,7 @@ extends RefCounted
 ##   dodge             steer clear of incoming rounds while fighting on the move (round-3 X3, IncomingFire)
 ##   reload_windows    peek from cover and short-halt while a slow enemy gun reloads (round-3 X3)
 ##   short_halt_reload (float) guns reloading at least this long (s) halt to fire while fighting on the move (default 1.5)
+##   short_halt_lead   (float) how long (s) before the gun is loaded the halt starts, after braking (default 0.15)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -33,10 +34,9 @@ const PROFILES := {
 	"x3": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true},
 	# Round 3 X3: x3 that times its peeks and halts to the enemy's reload.
 	"x4": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true},
-	# Probes for combat's round-3 weapons (preview of CP2): x3 with matchup-aware targets, x3 short-halting only guns that
-	# reload 3 s or more (IFV bursts keep strafing).
+	# Probe for combat's round-3 weapons (preview of CP2): x3 with matchup-aware targets. Shoot-and-scoot (short_halt_lead
+	# 1.2 / 2.0 s) and halting only 3 s+ reloads (short_halt_reload 3.0) were measured no better and removed.
 	"x3m": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": true, "combat_motion": true, "dodge": true},
-	"x3h": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "short_halt_reload": 3.0},
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
 	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": 9},
