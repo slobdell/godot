@@ -193,10 +193,10 @@ review is the long pole; everything ungated ran while it waits)
    (`cyber_vehicle.gd`).
 4. **A fresh worktree has no `assets/incoming/meshy/`:** three paid concept downloads failed on the missing folder.
    `generate.py` now creates it and can re-download a finished task (`--concept-task`).
-6. **builder0's Chrome has no WebGL2:** `make remote T=web-smoke` fails with "WebGL2 - Check web browser configuration"
-   before Godot starts. Run web smokes locally (SwiftShader works there).
 5. **builder0 may have no logged-in desktop:** `make remote T=<screenshot target>` fails with "X11 Display is not
    available"; run short rendering targets locally.
+6. **builder0's Chrome has no WebGL2:** `make remote T=web-smoke` fails with "WebGL2 - Check web browser configuration"
+   before Godot starts. Run web smokes locally (SwiftShader works there).
 
 **Requests to other streams**
 - **combat (layouts, C5):** obstacle types `container_20` [6.06, 2.59, 2.44] and `container_40` [12.19, 2.59, 2.44] with
