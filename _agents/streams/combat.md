@@ -276,8 +276,7 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
   your paths: `order_controller.gd` and `fire_lanes.gd` lead with the weapon's `projectile_speed_mps`;
   `tests/ai_scenarios/scenario_cover.gd` gives the hurt tank a hull that survives one volley.
 - **control:** skirmish `control_point` default on (X7). `Match.orders` exists (`Object`, assign your `Orders`).
-  Minimal edit in your path: `CommandIcons.draw_unit` skips icons projected beyond ±16384 px (renderer triangulation
-  error in `army-loop-smoke` under load, measured at (87913, 110814)).
+  (The `army-loop-smoke` triangulation flake I patched is fixed properly on main, 8dbe23e; merged, my guard dropped.)
 - **feel:** K2 events carry `speed_mps` and `range` (fly rounds without nodes); arc bursts carry `victims`; flames emit
   `weapon_fired` every 6 ticks and no impacts; `unit_destroyed` has the wreck transform; artillery visuals get
   `set_deployed(ratio)`; wheeled units drift (`lateral_grip`, velocity vs heading) for tire marks.
@@ -305,7 +304,6 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
 
 ### Merge notes (edits outside combat's paths)
 - `game/ai/order_controller.gd`, `game/ai/fire_lanes.gd` (lead speed), `tests/ai_scenarios/scenario_cover.gd` (ai).
-- `game/ui/command_icons.gd` (control): off-screen guard.
 - `_agents/slot_contracts.md` (shared, additive): `set_deployed`. `_agents/determinism.md` inventory rows.
   `_agents/verification.md` row 6i.
 - Round-2 tests now derive from data: `tests/test_combat.gd`, `test_shields.gd`, `test_weapons_and_intel.gd`,
