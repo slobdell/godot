@@ -26,10 +26,13 @@ var engines: EngineSystem
 var fires := FireSites.new()
 var shake := CameraShake.new()
 var sfx: SfxSystem
+## Effect families per K2 fire model (feel X1), fed by `link` from the running match's weapon events.
+var weapons: WeaponFx
+var link: MatchFxLink
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
-## Muzzle flashes when a projectile appears (the fx.shell slot has no firing hook, so a new
-## tracer is the muzzle event).
+## Legacy muzzle flashes when a projectile appears, used only when no match drives weapon events (a networked client,
+## or a scene without a Match); otherwise WeaponFx draws muzzles from weapon_fired.
 var muzzle_flashes := true
 var explosion_lights := true
 ## Draw every effect and light once, invisibly, on the first frames so shaders and light
@@ -84,6 +87,9 @@ func _init() -> void:
 	engines.muted = sfx.muted
 	engines.use_streams(sfx.streams)
 	add_child(engines)
+	weapons = WeaponFx.new(self)
+	link = MatchFxLink.new(weapons)
+	add_child(link)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -169,7 +175,7 @@ func _apply_viewport() -> void:
 ## A projectile visual appeared: draw it as a tracer and flash its muzzle.
 func add_tracer(source: Node3D, color: Color) -> void:
 	tracers.add(source, color)
-	if muzzle_flashes:
+	if muzzle_flashes and not link.drives_muzzles():
 		muzzle_flash(source.global_position, color)
 
 
