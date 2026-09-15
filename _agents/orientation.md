@@ -78,7 +78,8 @@ game/
                          RelayPeer (multiplayer through the broker), ReplayPeer, ui/ (lobby, room badge),
                          detcore/ (integer deterministic-simulation spike: Fixed, DetSim, CommandReplay)
   units/                 Units (the unit catalog) and Army (budgets, seeded CPU armies); round 2: fixed unit types
-  garage/                the army builder (buy units, squads, saves, army codes); round 2 adds progression
+  garage/                the army builder (fixed unit types, ≤ 5 squads, presets, army codes v2, challenges), results screen, ArmyLoop (rematch)
+  progression/           Progression (credits, unlocks, budget tiers: user://profile.json), MatchReport (match result for credits)
   camera/                FollowCamera, RtsCamera (the skirmish camera: pan/zoom/rotate/follow, touch gestures)
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
 tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
@@ -99,7 +100,7 @@ build/   (gitignored)    exports and screenshots
 | I want to… | Do |
 |---|---|
 | **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): tap a squad chip or unit, then tap the ground or the radar = go; hold then drag = go + face; drag = pan; the camera follows off-screen orders; Formation opens the picker. The mouse's left button works exactly like a finger ([tactical_map.md](tactical_map.md) "v3") |
-| **Build an army, then fight with it** | `make garage` (browser `?garage`): tap/drag units into squads, FIGHT → skirmish. Saved armies: `user://doctrines/` (round 2 removes weapon picking) |
+| **Build an army, then fight with it** | `make garage` (browser `?garage`): buy units, tap/drag them into squads, pick a tier and opponent, FIGHT → skirmish → results → REMATCH / ARMY. Saved armies: `user://doctrines/`; credits and unlocks: `user://profile.json`. Economy numbers: `make economy-sim` and balance.md "Economy" |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
 | Run bot matches / experiments | `make match GREEN=2 RUST=2`, `make matches N=40 JOBS=6 GREEN=2 RUST=2`; doctrine series: `tools/match_series.py --extra="--green-doctrine=res://doctrines/X.json --rust-doctrine=…"` |
@@ -187,3 +188,5 @@ build/   (gitignored)    exports and screenshots
 58. **Release web templates refuse a scene path on the command line.** To export a different entry scene (e.g. the asset gallery), export a copy of the project with another `run/main_scene` (`tools/assets/web_gallery.sh`).
 59. **Agent shells are non-interactive, and Ubuntu's `~/.bashrc` returns early for those.** An `export MESHY_API_KEY=…` at the end of it is invisible to `make assets-generate` run by an agent. Put keys before the interactive guard or in `~/.profile`.
 60. **Two streams, one concept: check `main` before inventing a system.** Overnight the garage and gameplay each built a CPU army generator and both used `cpu:balanced` for different armies; integration kept gameplay's `Army` for opponents (garage `ArmyPresets` = player presets). Unknown `cpu:<archetype>` names are now errors instead of silently becoming Balanced.
+61. **`get_tree().paused` survives `reload_current_scene()`.** The skirmish's planning pause pauses the tree, so a restart from the results screen came back frozen until `ArmyLoop.restart` unpaused first. To restart with different launch flags, set `Main.next_flags` before reloading (main.gd reads it once instead of the command line / URL); that works the same in the browser.
+62. **The theme's panel colors are translucent** (`GameTheme.ui["garage_panel"]` alpha 0.86). An overlay drawn with them over busy UI makes its text collide with whatever is behind. Overlays need an opaque background (the army screen's `_overlay_style`) and a scrim.

@@ -1,128 +1,157 @@
 class_name GarageAdvice
 extends RefCounted
-## Makes the garage's trade-offs readable: per-unit hints ("runs hot: add a heat sink") and the
-## comparison tables. Pure data over the catalog's SHAPE (stat-name keywords, not weapon ids), so
-## lasers, ammo, and heat sinks from gameplay's directive set 2 get advice without garage changes.
+## Makes counters readable while an army is built: composition hints ("your tanks are weak vs scouts and
+## nothing here counters them: add an IFV") and the COMPARE table. Pure data over the catalog's
+## good_vs / weak_vs roles (design intent from catalog v2), so new units get advice without changes here.
 
-## Weapon columns in the comparison: [key, header]. "dps" is derived (damage / reload, or damage_per_second).
-const WEAPON_COLUMNS := [["cost", "Cost"], ["dps", "Dmg/s"], ["damage", "Hit"], ["range", "Range"],
-		["reload", "Reload"], ["ammo", "Ammo"], ["heat_per_shot", "Heat/shot"], ["heat_per_second", "Heat/s"]]
+## Columns in the comparison: [key, header]. "weapon", "good_vs", "weak_vs" are text; the rest numbers.
+const UNIT_COLUMNS := [["cost", "Cost"], ["max_health", "Hull"], ["max_shield", "Shield"], ["max_forward_speed", "Speed"],
+		["sight_radius", "Sight"], ["weapon", "Weapon"], ["good_vs", "Good vs"], ["weak_vs", "Weak vs"]]
 ## Stats where LOWER is better (highlighting picks the minimum).
-const LOWER_IS_BETTER := ["cost", "reload", "heat_per_shot", "heat_per_second"]
+const LOWER_IS_BETTER := ["cost"]
 
 
-## Short hints for one unit: what its weapons need and whether it has it.
-static func tradeoffs(catalog: GarageCatalog, tank: Dictionary) -> PackedStringArray:
+## Short, actionable hints about an army's composition, most important first.
+static func composition_hints(draft: ArmyDraft) -> PackedStringArray:
+	var catalog := draft.catalog
 	var hints: PackedStringArray = []
-	var components: Array = tank.get("components", [])
-	var slots := catalog.component_slots(String(tank.get("unit", "")))
-	for weapon_id in tank.get("weapons", {}).values():
-		var weapon := catalog.weapon(weapon_id)
-		var name := catalog.display_name(weapon, weapon_id)
-		if _has_key(weapon, "heat"):
-			if _has_component(catalog, components, "heat"):
-				hints.append("%s runs hot; your heat sink helps." % name)
-			elif slots > 0:
-				hints.append("%s runs hot: add a heat sink to keep firing." % name)
-			else:
-				hints.append("%s runs hot and this chassis can't carry heat sinks." % name)
-		if _has_key(weapon, "ammo"):
-			if _has_component(catalog, components, "ammo"):
-				hints.append("%s has finite ammo; your extra ammo helps." % name)
-			else:
-				hints.append("%s has finite ammo%s." % [name, ": consider extra ammo" if slots > 0 else ""])
-		var weapon_range := float(weapon.get("range", 0.0))
-		if weapon_range > 0.0 and weapon_range < 30.0:
-			hints.append("%s is close range (%d m): flank or ambush, don't trade shots." % [name, int(weapon_range)])
+	var counts := draft.counts_by_unit()
+	if counts.is_empty():
+		return hints
+	var my_roles := {}
+	for unit_id: String in counts:
+		my_roles[catalog.role(unit_id)] = true
+	# Each weakness of a unit I own that nothing I own is good against.
+	var reported := {}
+	for unit_id: String in counts:
+		for threat: Variant in catalog.weak_vs(unit_id):
+			var threat_role := String(threat)
+			if reported.has(threat_role) or _army_counters(draft, threat_role):
+				continue
+			reported[threat_role] = true
+			var fix := _counter_for(catalog, threat_role)
+			hints.append("Your %s %s weak vs %s and nothing here counters them%s." % [_plural(catalog, unit_id, counts[unit_id]),
+					"is" if counts[unit_id] == 1 else "are", _role_plural(threat_role),
+					": add %s" % _with_article(catalog.display_name(fix)) if fix != "" else ""])
+	if my_roles.has("artillery") and not my_roles.has("scout"):
+		var scout := ArmyPresets.unit_for_role(catalog, "scout")
+		if scout != "" and catalog.role(scout) == "scout":
+			hints.append("Artillery hits what teammates see: a scout spots for it from far away.")
+	if my_roles.size() == 1 and catalog.units.size() > 1:
+		hints.append("One unit type is easy to counter: mix in a second type.")
 	return hints
 
 
-static func dps(weapon: Dictionary) -> float:
-	if weapon.has("damage_per_second"):
-		return float(weapon["damage_per_second"])
-	if weapon.has("damage") and float(weapon.get("reload", 0.0)) > 0.0:
-		return float(weapon["damage"]) / float(weapon["reload"])
-	return 0.0
+static func _army_counters(draft: ArmyDraft, threat_role: String) -> bool:
+	for unit_id: String in draft.counts_by_unit():
+		if draft.catalog.good_vs(unit_id).has(threat_role):
+			return true
+	return false
 
 
-## {"headers": [String], "rows": [[label, value text…]], "best": [[bool…]]} for the unit classes.
-static func unit_table(catalog: GarageCatalog) -> Dictionary:
-	var columns := [["cost", "Cost"]]
-	for stat in GarageCatalog.UNIT_STATS:
-		if catalog.units.values().any(func(u: Dictionary) -> bool: return float(u.get(stat[0], 0.0)) > 0.0):
-			columns.append(stat)
-	columns.append(["component_slots", "Slots"])
-	var ids := catalog.unit_ids()
-	return _table(columns, ids.map(func(id: String) -> String: return catalog.display_name(catalog.unit(id), id)),
-			ids.map(func(id: String) -> Dictionary: return catalog.unit(id)), func(profile: Dictionary, key: String) -> Variant:
-				return profile.get(key))
+## An unlocked unit designed to beat `threat_role`, cheapest first; "" if none.
+static func _counter_for(catalog: ArmyCatalog, threat_role: String) -> String:
+	for unit_id in catalog.unit_ids():
+		if catalog.is_unlocked(unit_id) and catalog.good_vs(unit_id).has(threat_role):
+			return unit_id
+	return ""
 
 
-static func weapon_table(catalog: GarageCatalog) -> Dictionary:
-	var ids: Array = catalog.weapons.keys()
-	ids.sort()
-	var profiles := ids.map(func(id: String) -> Dictionary: return catalog.weapon(id))
-	var columns := WEAPON_COLUMNS.filter(func(column: Array) -> bool:
-		return column[0] == "dps" or column[0] == "cost" or profiles.any(func(p: Dictionary) -> bool: return p.has(column[0])))
-	return _table(columns, ids.map(func(id: String) -> String: return catalog.display_name(catalog.weapon(id), id)), profiles,
-			func(profile: Dictionary, key: String) -> Variant:
-				if key == "dps":
-					return dps(profile)
-				if key == "reload" and float(profile.get(key, 0.0)) <= 0.0:
-					return null  # continuous weapons (flamethrower) have no reload to compare
-				return profile.get(key, 0) if key == "cost" else profile.get(key))
+static func _plural(catalog: ArmyCatalog, unit_id: String, count: int) -> String:
+	var unit_name := catalog.display_name(unit_id)
+	return unit_name if count == 1 else _pluralize(unit_name)
 
 
-static func _table(columns: Array, labels: Array, profiles: Array, value_of: Callable) -> Dictionary:
+static func _role_plural(role: String) -> String:
+	return _pluralize(ArmyCatalog.role_label(role)).to_lower() if role != "ifv" else "IFVs"
+
+
+static func _pluralize(word: String) -> String:
+	if word.to_lower() == "artillery":
+		return word
+	if word.ends_with("y") and not word.ends_with("ey"):
+		return word.trim_suffix("y") + "ies"
+	return word + "s"
+
+
+static func _with_article(word: String) -> String:
+	if word.to_lower() == "artillery":
+		return "artillery"
+	return ("an " if word.substr(0, 1).to_lower() in ["a", "e", "i", "o", "u"] else "a ") + word
+
+
+## {"headers": [String], "rows": [[label, value text…]], "best": [[bool…]]} for every unit type.
+static func unit_table(catalog: ArmyCatalog) -> Dictionary:
 	var headers := [""]
-	for column in columns:
+	for column in UNIT_COLUMNS:
 		headers.append(column[1])
+	var ids := catalog.unit_ids()
 	var rows := []
 	var best := []
-	for i in profiles.size():
-		var row := [labels[i]]
+	for unit_id in ids:
+		var row := [catalog.display_name(unit_id) + ("" if catalog.is_unlocked(unit_id) else " (locked)")]
 		var marks := [false]
-		for column in columns:
-			var value: Variant = value_of.call(profiles[i], column[0])
-			row.append("-" if value == null else GarageCatalog._number(value))
-			marks.append(value != null and profiles.size() > 1 and _is_best(profiles, column[0], float(value), value_of))
+		for column in UNIT_COLUMNS:
+			match String(column[0]):
+				"weapon":
+					row.append(catalog.weapon_name(unit_id))
+					marks.append(false)
+				"good_vs", "weak_vs":
+					var roles: Array = catalog.unit(unit_id).get(column[0], [])
+					row.append(", ".join(roles.map(func(r: Variant) -> String: return ArmyCatalog.role_label(String(r)))) if not roles.is_empty() else "-")
+					marks.append(false)
+				_:
+					var value := float(catalog.unit(unit_id).get(column[0], 0.0))
+					row.append(ArmyCatalog.number(value))
+					marks.append(_is_best(catalog, ids, String(column[0]), value))
 		rows.append(row)
 		best.append(marks)
 	return {"headers": headers, "rows": rows, "best": best}
 
 
 ## True if `value` is the best in its column, and the column isn't all ties.
-static func _is_best(profiles: Array, key: String, value: float, value_of: Callable) -> bool:
-	var differs := false
-	for profile in profiles:
-		var other: Variant = value_of.call(profile, key)
-		if other != null and not is_equal_approx(float(other), value):
-			differs = true
-	if not differs:
+static func _is_best(catalog: ArmyCatalog, ids: Array[String], key: String, value: float) -> bool:
+	var values := ids.map(func(id: String) -> float: return float(catalog.unit(id).get(key, 0.0)))
+	if values.min() == values.max():
 		return false
-	for profile in profiles:
-		var other: Variant = value_of.call(profile, key)
-		if other == null:
-			continue
-		if (float(other) < value) if key in LOWER_IS_BETTER else (float(other) > value):
-			return false
-	return true
+	return is_equal_approx(value, values.min() if key in LOWER_IS_BETTER else values.max())
 
 
-## True if a stat named like `keyword` is really there: a zero (the game's cannon has heat_per_shot 0.0)
-## doesn't count, and nested dictionaries (Units.COMPONENTS "modifiers") are searched too.
-static func _has_key(profile: Dictionary, keyword: String) -> bool:
-	for key: String in profile:
-		var value: Variant = profile[key]
-		if typeof(value) == TYPE_DICTIONARY:
-			if _has_key(value, keyword):
-				return true
-		elif key.contains(keyword):
-			var numeric := typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
-			if not numeric or not is_zero_approx(float(value)):
-				return true
-	return false
+## Where the rules stream's measured matchup matrix may live (R7), as {"win_rate": {unit: {opponent: 0..1}}}
+## from cost-equal fights. Optional: without it the grid shows design intent (good_vs / weak_vs) only.
+const MEASURED_MATRIX := "res://game/units/matchups.json"
 
 
-static func _has_component(catalog: GarageCatalog, components: Array, keyword: String) -> bool:
-	return components.any(func(id: String) -> bool: return id.contains(keyword) or _has_key(catalog.component(id), keyword))
+## {unit: {opponent: win rate}} from MEASURED_MATRIX, or {} when rules hasn't published one.
+static func measured_matchups(path := MEASURED_MATRIX) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return data.get("win_rate", {}) if typeof(data) == TYPE_DICTIONARY and typeof(data.get("win_rate")) == TYPE_DICTIONARY else {}
+
+
+## The matchup view: rows are your unit, columns the opponent. Each cell is
+## {"text", "tone": "good"|"bad"|"even"} where tone comes from the measured win rate when there is one
+## (≥ 60% good, ≤ 40% bad), else from design intent (row good_vs / weak_vs the column's role).
+static func matchup_grid(catalog: ArmyCatalog, measured: Dictionary = {}) -> Dictionary:
+	var ids := catalog.unit_ids()
+	var rows := []
+	for unit_id in ids:
+		var cells := []
+		for opponent in ids:
+			var rate: Variant = measured.get(unit_id, {}).get(opponent)
+			var role := catalog.role(opponent)
+			if unit_id == opponent:
+				cells.append({"text": "-", "tone": "even"})
+			elif rate != null:
+				var tone := "good" if float(rate) >= 0.6 else ("bad" if float(rate) <= 0.4 else "even")
+				cells.append({"text": "%d%%" % roundi(float(rate) * 100.0), "tone": tone})
+			elif catalog.good_vs(unit_id).has(role):
+				cells.append({"text": "beats", "tone": "good"})
+			elif catalog.weak_vs(unit_id).has(role):
+				cells.append({"text": "loses", "tone": "bad"})
+			else:
+				cells.append({"text": "even", "tone": "even"})
+		rows.append(cells)
+	return {"units": ids, "rows": rows, "measured": not measured.is_empty()}
+
