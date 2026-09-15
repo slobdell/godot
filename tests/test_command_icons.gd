@@ -139,9 +139,16 @@ func test_unit_icons_skip_positions_a_camera_could_not_project() -> void:
 			drawn[0] += 1
 		# Enemy diamonds and zero-length arrows had the same failure (army-loop-smoke flaked on builder0).
 		CommandIcons.draw_hostile_frame(canvas, Vector2(NAN, NAN), 17.0, Color.RED, true)
-		# Any degenerate polygon is skipped rather than handed to the renderer.
+		# Degenerate polygons are skipped rather than handed to the renderer. A collinear triangle has zero area (and
+		# Geometry2D.triangulate_polygon still returns indices for it); a small icon quad a million px off screen has area
+		# but fails triangulation on precision, like the far-zoom icons in builder0's army-loop runs (probed on 4.7.2).
 		assert_true(not CommandIcons._fill(canvas, PackedVector2Array([Vector2(5, 5), Vector2(6, 6), Vector2(7, 7)]), Color.WHITE),
 				"a collinear triangle is not drawn")
+		assert_true(not CommandIcons._fill(canvas, PackedVector2Array([Vector2(1e6, 1e6), Vector2(1e6 + 6, 1e6 - 5),
+				Vector2(1e6 + 15, 1e6 + 5), Vector2(1e6 + 9, 1e6 + 10)]), Color.WHITE),
+				"a far-off-screen quad the renderer can't triangulate is not drawn")
+		assert_true(CommandIcons._fill(canvas, PackedVector2Array([Vector2(0, 0), Vector2(10, 0), Vector2(10, 10)]), Color.WHITE),
+				"an ordinary triangle is drawn")
 		CommandIcons.draw_hostile_frame(canvas, Vector2(40, 40), 0.0, Color.RED, true)
 		CommandIcons._arrow(canvas, Vector2(30, 30), Vector2(30, 30), Color.WHITE, 2.0, 6.0))
 	add_to_tree(canvas)
