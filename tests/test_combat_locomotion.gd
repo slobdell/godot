@@ -140,8 +140,8 @@ func test_wheel_yaw_rate_is_speed_over_radius() -> void:
 
 
 func test_a_full_lock_circle_has_the_minimum_radius() -> void:
-	var state := _car(5.0)
-	var poses := TankMotion.predict(state, 5.0 / 14.0, 1.0, 60 * 20)
+	var state := _car(8.4)  # 0.6 throttle: above the multi-point-turn creep, below the yaw-rate cap
+	var poses := TankMotion.predict(state, 0.6, 1.0, 60 * 20)
 	var min_x := INF
 	var max_x := -INF
 	for pose: Dictionary in poses:
@@ -161,12 +161,23 @@ func test_turn_is_the_hulls_yaw_in_either_gear() -> void:
 	assert_true(float(creeping_back[-1]["speed"]) < 0.0, "a turn with no throttle while reversing keeps backing around the circle")
 
 
-func test_a_turn_command_at_a_standstill_creeps_forward_around_the_circle() -> void:
-	# Tank-style steering (turn in place, throttle 0) becomes a tight forward arc on wheels, so older brains don't stall.
-	var poses := TankMotion.predict(_car(), 0.0, 1.0, 120)
-	var last: Dictionary = poses[-1]
-	assert_true(float(last["speed"]) > 0.5, "it creeps forward (%.2f m/s)" % last["speed"])
-	assert_true(_yaw_deg(last["forward"]) > 20.0, "and swings right along its turning circle (%.0f°)" % _yaw_deg(last["forward"]))
+func test_a_turn_command_at_a_standstill_is_a_multi_point_turn() -> void:
+	# Tank-style steering (turn in place, throttle 0) becomes forward and reverse legs on wheels, so a car rotates near
+	# its spot (brains facing a target, an arrived group facing its heading) instead of stalling or driving off.
+	var poses := TankMotion.predict(_car(), 0.0, 1.0, 60 * 8)
+	var yawed := 0.0
+	var farthest := 0.0
+	var previous := Vector3.FORWARD
+	var went_back := false
+	for pose: Dictionary in poses:
+		yawed += -rad_to_deg(previous.signed_angle_to(pose["forward"], Vector3.UP))
+		previous = pose["forward"]
+		farthest = maxf(farthest, (pose["position"] as Vector3).length())
+		went_back = went_back or float(pose["speed"]) < -0.5
+	assert_true(float(poses[0]["speed"]) > 0.0, "the first leg rolls forward")
+	assert_true(went_back, "then it backs up")
+	assert_true(yawed > 150.0, "turning right the whole time: %.0f° in 8 s" % yawed)
+	assert_true(farthest < 4.0, "without wandering off its spot (%.1f m at most)" % farthest)
 
 
 func test_low_grip_drifts_and_high_grip_carves() -> void:

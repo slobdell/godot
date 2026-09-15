@@ -284,6 +284,11 @@ func test_a_unit_sees_a_mortar_round_that_will_land_on_it() -> void:
 func test_the_match_has_a_slot_for_orders() -> void:
 	var game_match := _setup()
 	assert_true("orders" in game_match, "Match.orders exists for control's Orders (K1)")
+	var orders := Orders.new()
+	Orders.attach(game_match, orders)
+	assert_true(game_match.orders == orders, "Orders.attach fills the field")
+	assert_true(Orders.of(game_match) == orders, "and Orders.of reads it back")
+	assert_true(not game_match.has_meta("orders"), "not the meta fallback")
 
 
 # ---- unit_destroyed (round 3 stretch: wrecks) --------------------------------------------------

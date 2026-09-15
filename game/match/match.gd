@@ -157,9 +157,9 @@ var _finished := false
 
 ## Every round fired gets the next id (shells are named Shell_<id>); K2 events carry it.
 var _next_shell_id := 0
-## K1 (control's Orders, one per match): the player's and the CPU's unit orders. Typed loosely so Match compiles
-## before control's class lands; control (or the mode) assigns it.
-var orders: Object = null
+## K1 (control's Orders, one per match): the player's and the CPU's unit orders. Modes attach it
+## (Orders.attach(match, orders)); null in modes that don't use unit orders.
+var orders: Orders = null
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks

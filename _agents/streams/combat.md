@@ -308,3 +308,13 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
   `_agents/verification.md` row 6i.
 - Round-2 tests now derive from data: `tests/test_combat.gd`, `test_shields.gd`, `test_weapons_and_intel.gd`,
   `test_turrets.gd`.
+
+### After CP1 (2026-09-15): `Match.orders` typed, and wheels make multi-point turns
+
+- Merged main at CP1 (07e07bf). `Match.orders` (added in X1) is now `var orders: Orders`; control's `Orders.attach`
+  already fills it (test: `test_the_match_has_a_slot_for_orders`).
+- CP1 + X4 interaction: control's executor tells an arrived turret unit to "face" its heading (turn in place). On
+  wheels the creep assist drove it off its station and it circled (`test_control_group_moves`: facing on arrival,
+  rejoining a pushed-away group). **Wheels now turn "in place" as a multi-point turn:** a bare turn command alternates
+  30-tick forward and reverse legs, yawing the commanded way, so a car rotates within a few meters of its spot
+  (tested: > 150° in 8 s within 4 m). Both control tests pass; sim baseline unchanged.

@@ -83,11 +83,14 @@ static func step(state: Dictionary, throttle: float, turn: float, delta: float) 
 	return next
 
 
-## X4: a turn command with (almost) no throttle drives wheels at this fraction of full throttle per unit of turn, so
-## tank-style "turn in place" steering becomes a tight arc along the turning circle instead of a stall. The creep keeps
-## the direction of travel: forward, or backward when already reversing faster than CREEP_REVERSE_SPEED.
+## X4: a turn command with (almost) no throttle is a multi-point turn on wheels: short legs at this fraction of full
+## throttle per unit of turn, alternating forward and reverse every CREEP_LEG_TICKS while yawing the commanded way (turn
+## is the hull's yaw in either gear), so tank-style "turn in place" steering rotates a car near its spot instead of
+## stalling or driving off in a circle. The first leg keeps the direction of travel (backward when already reversing
+## faster than CREEP_REVERSE_SPEED). State keys: creep_dir (-1, 0, 1) and creep_ticks.
 const WHEEL_CREEP_THROTTLE := 0.5
 const CREEP_REVERSE_SPEED := 0.5
+const CREEP_LEG_TICKS := 30
 
 
 ## One tick of driving, updating `state` in place (the Tank keeps one state and steps it every physics tick).
@@ -107,8 +110,20 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 	if String(state["locomotion"]) == "wheels":
 		var creep := WHEEL_CREEP_THROTTLE * absf(turn_c)
 		if absf(throttle_c) < creep:
-			var backward := throttle_c < 0.0 or (throttle_c == 0.0 and speed < -CREEP_REVERSE_SPEED)
-			throttle_c = -creep if backward else creep
+			var direction := int(state.get("creep_dir", 0))
+			var leg := int(state.get("creep_ticks", 0))
+			if direction == 0:
+				direction = -1 if throttle_c < 0.0 or (throttle_c == 0.0 and speed < -CREEP_REVERSE_SPEED) else 1
+				leg = 0
+			elif leg >= CREEP_LEG_TICKS:
+				direction = -direction
+				leg = 0
+			state["creep_dir"] = direction
+			state["creep_ticks"] = leg + 1
+			throttle_c = creep * direction
+		else:
+			state["creep_dir"] = 0
+			state["creep_ticks"] = 0
 		var radius := maxf(float(state["min_turn_radius_m"]), 0.1)
 		var yaw_rate := clampf(absf(speed) * turn_c / radius, -max_rate, max_rate)
 		forward = turn_heading(forward, yaw_rate * delta)
