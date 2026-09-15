@@ -53,6 +53,15 @@ Netcode is **paused** (its smokes stay in `make check`). Ownership, contracts C1
 2. Relay art's review sheets to the lead (`build/review/index.html` in the art worktree) and record approvals in `streams/art.md`.
 3. **Final integration order:** rules → ai → command → army → art, running `make check` after each; then playtest `make skirmish` with the lead.
 
+## Follow-ups to track
+
+- **Cross-build determinism** ([`_agents/determinism.md`](_agents/determinism.md)): the simulation is identical
+  within one build only, but lockstep for ranked play (the lead's relay-only servers) needs every device to agree.
+  Round-2 rules and ai follow its portability guidelines (workstreams.md invariant 7). The running agents started
+  before these guidelines existed: they get them when they merge `main` at checkpoint 1, so at each merge, review new
+  simulation code for engine raycasts, navigation calls, and trig, and check the inventory is updated. Steps D1–D4
+  come after round 2.
+
 ## Open questions for the lead
 
 1. **Control point as the default rule?** Round 1 measured that it restores "coordination wins" under shields.

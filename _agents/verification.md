@@ -68,6 +68,7 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 
 ## Known limits
 
+- **`make determinism` and `make sim-baseline` prove same-build determinism only.** Native vs WebAssembly runs of the same seed diverge today; nothing checks cross-build agreement for the real simulation yet (follow-up D1 in [determinism.md](determinism.md)).
 - The desktop screenshot uses the local Intel GPU (OpenGL 3.3+); the web one uses SwiftShader. Colors and shadows can differ slightly. Neither is a performance measurement.
 - `web-net-smoke`'s screenshot timing depends on the bot's drive time; if the bot isn't in frame, the check still passes (it only asserts boot + spawn). Look at the picture.
 - Latency and jitter are *injected* (`--relay-latency`, `--relay-jitter`) on localhost; no real cellular link or phone has been measured yet.

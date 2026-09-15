@@ -180,3 +180,4 @@ Changing one requires updating this section, and the owning stream announcing it
 4. Fairness: any change to the arena, spawns, or navigation re-runs the swap-bases control (verification.md).
 5. Docs move with code: update your stream brief's **Status** section and any stale `_agents/` doc in the same merge.
 6. **Design follows [game_design.md](game_design.md).** If your work shows a design rule is wrong, record the evidence and propose the change in your Status; do not silently diverge.
+7. **Keep new simulation code portable** (rules and ai): follow the guidelines in [determinism.md](determinism.md) (pure classes, simple geometry we own, one seam per engine query, vector math instead of trig) and add any new engine dependency to its inventory. Today's simulation is deterministic within one build only; lockstep for ranked play needs it identical across builds, so every engine-math feature is future porting work.

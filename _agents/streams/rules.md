@@ -69,6 +69,17 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
 - **Stretch:** the Burner (flamethrower unit); arena hazards (fire pits, crushing gates) as layout data; ammo
   simplification if R8 says so.
 
+## Portability (read [../determinism.md](../determinism.md))
+
+The simulation is deterministic within one build only; lockstep for ranked play needs it identical across builds,
+so new mechanics are future porting work. Keep that work cheap:
+- fire arcs, turret tracking, and armor facing with dot and cross products, not `atan2`/`angle_to`
+- friendly fire as segment-vs-circle, splash as squared distance, cover features (C4) as segments and boxes
+- arena layouts (C5) as simple shapes we own, so the integer core can load the same data
+- one seam per engine query (line of sight, rays, paths)
+
+Add any new engine dependency to the determinism.md inventory in the same commit.
+
 ## How to verify
 
 - `make check`, sim baseline updated on purpose.

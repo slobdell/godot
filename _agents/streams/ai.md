@@ -80,6 +80,10 @@ replaces it. Report the CPU cost per unit per tick.
 
 ## Rules of the road
 
+- **Portability** ([../determinism.md](../determinism.md)): the simulation must eventually be bit-identical on every
+  device for lockstep. Build A2's position evaluation, A4's line-of-fire checks, and arc and tracking math as pure
+  classes over simple geometry (segments, circles, boxes, grids) with dot and cross products instead of trig, and
+  route line of sight and path queries through one seam each. Add new engine dependencies to the inventory.
 - **Determinism:** decisions read `Match.tick`, never the clock; iterate in sorted order; `make determinism` must stay
   green. Update the sim baseline on purpose, with a reason.
 - **Player intent wins:** smart behavior happens *within* the squad's order (G3's responsiveness tests must still pass).

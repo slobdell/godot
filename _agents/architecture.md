@@ -160,6 +160,7 @@ matters for fairness.
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-09-15 | Servers only match players and route packets (the lead's cost strategy); round-2 simulation code follows portability guidelines, with a cross-build determinism follow-up before ranked lockstep | Per-match server compute is the cost we refuse; lockstep needs bit-identical simulation and today's engine-based simulation is identical only within one build (determinism.md) |
 | 2026-09-12 | Godot 4.7.2, GDScript, Compatibility renderer | Web export needs WebGL 2 + GDScript; matches what a beginner (the lead's son) uses |
 | 2026-09-12 | `TankCommand` seam before anything else | Human, network, and AI control become interchangeable; avoids a rewrite at M2/M4 |
 | 2026-09-12 | Web export without threads | Any static host works; no COOP/COEP; enough for this game |

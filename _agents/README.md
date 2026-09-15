@@ -22,6 +22,7 @@ that way: a note that only says "do X" teaches nothing.
 - **[tank_brain.md](tank_brain.md)**: The deterministic utility AI (brains, directives, doctrines, team intel) and experiments T0–T3.
 - **[squad_ai_design.md](squad_ai_design.md)**: Where player skill comes from; experiments E1–E4; fairness measurement.
 - **[tactical_map.md](tactical_map.md)**: How the player commands squads: commanders, formations, drills, SquadCommand, the map and radar.
+- **[determinism.md](determinism.md)**: Same-build vs cross-build determinism, where the simulation depends on engine math, portability guidelines for new simulation code, and the follow-up toward lockstep.
 - **[balance.md](balance.md)**: Tuning values, measured results, and how to run balance experiments.
 - **[slot_contracts.md](slot_contracts.md)**: The visual slot contract between gameplay and art (ids, sizes, optional methods, budgets).
 - **[agent_bridge.md](agent_bridge.md)**: Claude commands a tank over a localhost HTTP bridge (smoke test and commander prototype).
