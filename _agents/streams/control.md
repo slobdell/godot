@@ -101,7 +101,7 @@ _Updated 2026-09-15 by the control worker._
 | X6 Selection panel and command card; retire drill/formation pickers (kept behind `--touch-map`) | **done** (0620b4c): 6 tests; panel clear of the radar at 1920×1080 and 1280×720 |
 | X7 `make control-playtest` / `make control-playtest-shots` | **done**: headless and windowed 1920×1080 and 1280×720 all ok on builder0; 7 orders logged per run, worst response 1 tick; frames looked at (the first windowed runs exposed harness timing: units still sliding into their spawn wedge during the box drag, and a 150 s timeout; fixed) |
 | X8 Touch adaptation (stretch) | **deferred:** workstreams.md forbids new touch-only work this round; the round-2 touch map still runs behind `--touch-map` |
-| Stretch: smart attack, select idle (F1), hover tooltips | built, 4 tests; final check running |
+| Stretch: smart attack, select idle (F1), hover tooltips | **done** (b0da368): 4 tests; `make remote T=check` green (470 tests); `make remote T=garage-web-smoke` passes with the new controls in the browser |
 
 ### CP1 (K1 Orders API): READY, commit 2114693
 
@@ -196,6 +196,8 @@ the dark floor; the panel's single-unit card is text-heavy.
 
 - `game/garage/army_loop.gd` (paused army stream): the unpause lookup no longer casts to `TacticalMap` (the node may be
   `RtsControls`); minimal compatibility fix.
+- `game/garage/garage_settings.gd` (paused army stream): the second in-match tip described round 2's tap grammar; it
+  now describes box select, number keys, and right-click (seen in the browser smoke screenshot). Text only.
 - `tools/remote.sh` (shared): builder0 screenshots picked a stale `.mutter-Xwaylandauth.*` file ("X11 Display is not
   available", then a headless Godot that never quit); it now uses the auth file of the running Xwayland.
 - `_agents/orientation.md` (common tasks: the skirmish row, a control playtest row) and `_agents/verification.md`
