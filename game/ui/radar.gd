@@ -296,6 +296,7 @@ func _draw_camera_footprint() -> void:
 			var origin := view_camera.project_ray_origin(screen)
 			var direction := view_camera.project_ray_normal(screen)
 			ground = origin + Vector3(direction.x, 0.0, direction.z).normalized() * SPAN
-		points.append(world_to_radar(ground))
+		# Clamped to the radar's frame: a far corner must not draw outside it.
+		points.append(world_to_radar(ground).clamp(Vector2.ZERO, size))
 	points.append(points[0])
 	draw_polyline(points, Color(1, 1, 1, 0.5), 1.0)

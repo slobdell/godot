@@ -97,10 +97,11 @@ _Updated 2026-09-15 by the control worker._
 | X2 Selection: click, box, shift, ctrl/double-click by type, Escape, inspect enemies, rings | **done** (2114693): 7 tests through `Viewport.push_input` |
 | X3 Orders from mouse and keyboard: right-click move/attack/follow, A/F/M + click, S, H, shift queue + waypoints, acks | **done** (2114693): 7 tests; click-to-tracks 1 tick |
 | X4 Control groups and camera: ctrl/shift/1–9, double tap centers, Tab, doctrine squads = groups 1–5, radar look/order, group bar | **done** (2114693): 7 tests |
-| X5 Group movement, automatic formations, regrouping | built, 8 tests green locally |
-| X6 Selection panel and command card; retire drill/formation pickers (kept behind `--touch-map`) | |
-| X7 `make control-playtest-shots` | |
-| X8 Touch adaptation (stretch) | |
+| X5 Group movement, automatic formations, regrouping | **done** (0620b4c): 8 tests; a scout and a tank arrive 25 ticks apart (the scout tops out at 10.7 of 14 m/s); a laggard 40 m behind arrives 21 ticks after its leader |
+| X6 Selection panel and command card; retire drill/formation pickers (kept behind `--touch-map`) | **done** (0620b4c): 6 tests; panel clear of the radar at 1920×1080 and 1280×720 |
+| X7 `make control-playtest` / `make control-playtest-shots` | **done** (0620b4c): headless run ok, 7 orders logged, worst response 1 tick |
+| X8 Touch adaptation (stretch) | **deferred:** workstreams.md forbids new touch-only work this round; the round-2 touch map still runs behind `--touch-map` |
+| Stretch: smart attack, select idle (F1), hover tooltips | built, 4 tests green locally |
 
 ### CP1 (K1 Orders API): READY, commit 2114693
 
@@ -134,9 +135,26 @@ the temporary `OrderExecutor`. That commit also switches skirmish to the new des
   S stop, H hold, C center on selection, Tab next group, Space pause. Right-click on a friend outside the selection
   follows it (StarCraft). Arrows, edges, middle-drag, wheel, `,` `.` stay the camera.
 
+### How selecting and ordering feels (from the screenshots and the scripted playtest)
+
+The skirmish opens paused with group 1 (Alpha) selected: bright cyan rings under its three vehicles, faint rings
+under the rest, a bottom panel with one big portrait per unit (hull and shield bars) and a six-button command card
+with yellow hotkeys, a small group bar above it (`1` lit, `2`), and the radar at the bottom right. Dragging a box
+lights the units inside; a right-click drops a shrinking ring on the ground and every selected hull turns toward it
+on the next tick; dashed lines run from each unit through its current and shift-queued stops (gold for
+attack-moves). A group ordered forward spreads into a wedge with the tanks at the point and arrives together (the
+scout visibly holds back). Pressing `2` swaps to the other group; `2` again swings the camera over it. A unit
+shoved away from its group drives back to its slot within a few seconds. What still feels thin: once ordered, units
+fight like simple turrets (no cover, no flanking) until ai X1 lets brains execute orders; waypoint lines are faint on
+the dark floor; the panel's single-unit card is text-heavy.
+
 ### Questions for the lead
 
-- None yet.
+- **Playtest the new controls** (`make skirmish`): do right-click orders, groups, and automatic formations feel
+  StarCraft-like? Can the round-2 touch map (`--touch-map`), with its drill and formation pickers, be deleted?
+- **Tab:** the brief asks for Tab to cycle groups (done). StarCraft uses Tab for sub-groups inside a selection;
+  worth switching once there are more unit types per group?
+- **Planning pause at start:** kept (Space starts). StarCraft has none; drop it for a faster start?
 
 ### Requests to other streams
 
@@ -145,7 +163,41 @@ the temporary `OrderExecutor`. That commit also switches skirmish to the new des
 - **ai:** when brains execute K1 orders, add `const EXECUTES_ORDERS := true` to `TankBrain`; `OrderExecutor` then does
   nothing, and control deletes it. Per-unit order fields are listed in `game/control/orders.gd`'s header.
 
+### Known issues
+
+- **Ordered units lose their brains' cleverness** (cover, retreat, flanking) until ai X1: the executor drives them
+  with a plain `OrderController`. Never-ordered units keep their brains.
+- **Idle stations don't follow a moving group.** A unit whose orders ran out returns to its last slot, not to where
+  the rest of its old group went later; give the group a new order together to regroup it somewhere else.
+- **Attack-move splits a group:** each unit halts to fight what it meets (StarCraft does the same); the rest carry
+  on to the destination.
+- **Pathing around the ordered spot:** slots are not checked against obstacles; a slot inside a crate relies on the
+  navmesh's closest point (as round 2's formations did).
+- **X8 touch adaptation is deferred** by the round's "no new touch-only work" constraint; touch still works through
+  `--touch-map`.
+
+### What to playtest (exact commands)
+
+- `make skirmish` (desktop controls; try: drag a box, right-click the ground, shift+right-click a route, A + click,
+  ctrl+3 then 3 3, G then right-click, F1, hover an enemy, right-click an enemy with tanks and a scout selected).
+- Round 2's map for comparison: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish
+  --touch-map` (`mk/play.mk` isn't control's, so no make variable was added).
+- `make control-playtest` (headless, prints each check) and `make remote T=control-playtest-shots` (frames in
+  `build/control-playtest/1920x1080/` and `1280x720/`).
+
+### Next steps
+
+- ai X1: brains execute `Orders.current()`, honor `slot`/`goal`/`pace_factor`, regroup to `Orders.station()`, then
+  add `EXECUTES_ORDERS`; control deletes `OrderExecutor` and re-checks the response guarantee test against brains.
+- Feel: skin the order markers and waypoint lines (they're plain 2D draws in `RtsControls._draw_*`), order sounds.
+- Obstacle-aware slots; station following for split groups; sub-group Tab once the roster grows.
+
 ### Merge notes (shared or other streams' files)
 
 - `game/garage/army_loop.gd` (paused army stream): the unpause lookup no longer casts to `TacticalMap` (the node may be
   `RtsControls`); minimal compatibility fix.
+- `tools/remote.sh` (shared): builder0 screenshots picked a stale `.mutter-Xwaylandauth.*` file ("X11 Display is not
+  available", then a headless Godot that never quit); it now uses the auth file of the running Xwayland.
+- `_agents/orientation.md` (common tasks: the skirmish row, a control playtest row) and `_agents/verification.md`
+  (a control playtest paragraph): small additive edits.
+- `mk/command.mk` (control's now): `control-playtest`, `control-playtest-shots` added; command-playtest targets kept.

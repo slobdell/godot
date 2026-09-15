@@ -10,6 +10,8 @@ extends Control
 ##            A then click = attack-move · F then click a friend = follow · M then click = move
 ##            S = stop · H = hold · shift queues any order (and keeps A/F/M armed for the next click)
 ##            G cycles the formation (auto by default: the group arranges itself by role and situation)
+##            right-clicking an enemy with a mixed selection sends only the guns that can hurt it; the rest escort
+##   OTHER    F1 selects idle units · resting the mouse on a unit shows its stats
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
 ##   TIME     Space pauses (orders still work while paused)
@@ -30,6 +32,11 @@ const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy",
 		"move": "MOVE: click the ground"}
 ## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
 const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
+## A right-clicked enemy is attacked only by selected units whose weapon does at least this fraction of its damage
+## through the target's side armor (Match.armor_multiplier); the rest escort them. With none, everyone attacks.
+const SMART_ATTACK_MULTIPLIER := 0.25
+## The mouse resting this long on a unit shows its tooltip (seconds).
+const HOVER_SECONDS := 0.35
 ## How long an order's acknowledgement marker shows (seconds).
 const ACK_SECONDS := 0.7
 ## A second tap on the same group number within this long centers the camera on it (seconds, wall time: UI only).
@@ -65,6 +72,10 @@ var _last_group := 0
 var _last_group_at := -10.0
 ## The pause banner's text ("" = none), shown while the tree is paused.
 var _pause_text := ""
+var _hover_at := Vector2(-1, -1)
+var _hover_time := 0.0
+## Draws above the panel, group bar, and radar (children draw over their parent): the tooltip and the armed-order hint.
+var _overlay: Control
 
 
 func _ready() -> void:
@@ -73,12 +84,20 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_NONE
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_overlay = Control.new()
+	_overlay.name = "Overlay"
+	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.z_index = 50
+	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_overlay)
+	_overlay.draw.connect(_draw_overlay)
 
 
 func _process(delta: float) -> void:
 	if game_match == null:
 		return
 	_clock += delta
+	_hover_time += delta
 	for ack: Dictionary in _acks:
 		ack["left"] = float(ack["left"]) - delta
 	_acks = _acks.filter(func(ack: Dictionary) -> bool: return float(ack["left"]) > 0.0)
@@ -88,6 +107,7 @@ func _process(delta: float) -> void:
 	mouse_default_cursor_shape = Control.CURSOR_CROSS if mode != "" else Control.CURSOR_ARROW
 	_apply_fog_of_war()
 	queue_redraw()
+	_overlay.queue_redraw()
 
 
 ## Enemies our team can't see are hidden in 3D; nameplates stay off (rings, bars, and the panel carry the info).
@@ -128,7 +148,12 @@ func _gui_input(event: InputEvent) -> void:
 				else:
 					right_click_order(button.position, button.shift_pressed)
 			accept_event()
-	elif event is InputEventMouseMotion and _press_at != null:
+	if event is InputEventMouseMotion:
+		var at := (event as InputEventMouseMotion).position
+		if at.distance_to(_hover_at) > 3.0:
+			_hover_at = at
+			_hover_time = 0.0
+	if event is InputEventMouseMotion and _press_at != null:
 		_box_now = (event as InputEventMouseMotion).position
 		if not _boxing and _box_now.distance_to(_press_at) > DRAG_THRESHOLD_PX:
 			_boxing = true
@@ -275,6 +300,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			center_on(selection.units)
 		KEY_G:
 			cycle_formation()
+		KEY_F1:
+			select_idle()
 		KEY_SPACE:
 			set_paused(not get_tree().paused)
 		_:
@@ -350,7 +377,7 @@ func right_click_order(at: Vector2, queue := false) -> String:
 		return ""
 	var tank := pick_unit(at)
 	if tank != null and tank.team != team:
-		return order_selection("attack", {"target": String(tank.name), "queue": queue})
+		return smart_attack(tank, queue)
 	if tank != null and not selection.units.has(String(tank.name)):
 		return order_selection("follow", {"target": String(tank.name), "queue": queue})
 	var world: Variant = screen_to_world(at)
@@ -375,6 +402,66 @@ func armed_world_order(world: Vector3, queue := false) -> String:
 	if armed in ["attack_move", "move"]:
 		return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
+
+
+## Right-click an enemy: the selected units whose guns can hurt it attack; the others follow the nearest attacker.
+func smart_attack(target: Tank, queue := false) -> String:
+	var attackers: Array[String] = []
+	var escorts: Array[String] = []
+	for unit_name in selection.units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null:
+			continue
+		if Match.armor_multiplier(tank.weapon, target.unit_id, "side") >= SMART_ATTACK_MULTIPLIER:
+			attackers.append(unit_name)
+		else:
+			escorts.append(unit_name)
+	if attackers.is_empty():
+		return order_selection("attack", {"target": String(target.name), "queue": queue})
+	var error := issue(UnitCommand.make(attackers, "attack", {"target": String(target.name), "queue": queue}))
+	if error != "" or escorts.is_empty():
+		return error
+	var lead: String = attackers[0]
+	var lead_tank := game_match.tanks.get_node(NodePath(lead)) as Tank
+	for unit_name in attackers:
+		var candidate := game_match.tanks.get_node(NodePath(unit_name)) as Tank
+		if candidate.global_position.distance_to(target.global_position) < lead_tank.global_position.distance_to(target.global_position):
+			lead = unit_name
+			lead_tank = candidate
+	return issue(UnitCommand.make(escorts, "follow", {"target": lead, "queue": queue}))
+
+
+## F1: select every one of our units that has no orders (never ordered, or done). Keeps the selection if none.
+func select_idle() -> void:
+	var idle: Array[String] = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive() and (orders == null or orders.is_idle(String(tank.name))):
+			idle.append(String(tank.name))
+	if not idle.is_empty():
+		selection.set_units(idle)
+		disarm()
+
+
+## The tooltip for the unit under a resting mouse: {"unit", "title", "lines": [String], "enemy": bool}, or {}.
+func tooltip() -> Dictionary:
+	if _hover_time < HOVER_SECONDS or _press_at != null or _hover_at.x < 0.0 or game_match == null:
+		return {}
+	if get_viewport().gui_get_hovered_control() != self:
+		return {}  # the mouse is over the panel, the radar, or other UI
+	var tank := pick_unit(_hover_at)
+	if tank == null:
+		return {}
+	var id := tank.unit_id
+	var weapon := Weapons.profile(tank.weapon_id)
+	var words := func(roles: Variant) -> String:
+		return ", ".join((roles if roles is Array else []).map(func(r: Variant) -> String: return String(r).capitalize())) if roles is Array and not (roles as Array).is_empty() else "-"
+	return {"unit": String(tank.name), "enemy": tank.team != team,
+			"title": ("Enemy " if tank.team != team else "") + String(Units.stat(id, "display_name", id)),
+			"lines": [String(Units.stat(id, "blurb", "")),
+				"Hull %d/%d   Shield %d/%d" % [tank.health, tank.max_health, roundi(tank.shield), roundi(tank.max_shield)],
+				"Weapon %s   Range %d m   Speed %d m/s" % [String(weapon.get("display_name", tank.weapon_id)).capitalize(),
+						roundi(float(weapon.get("range", 0.0))), roundi(tank.max_forward_speed)],
+				"Strong vs %s   Weak vs %s" % [words.call(Units.stat(id, "good_vs", [])), words.call(Units.stat(id, "weak_vs", []))]]}
 
 
 ## A left click while an order is armed. Shift keeps it armed for the next click (queue a chain).
@@ -560,3 +647,37 @@ func _unit_label(unit_name: String) -> String:
 	if tank == null:
 		return unit_name
 	return ("%s %s" % ["enemy" if tank.team != team else "", String(Units.stat(tank.unit_id, "display_name", tank.unit_id))]).strip_edges()
+
+
+func _draw_overlay() -> void:
+	if mode != "":
+		var mouse := _overlay.get_local_mouse_position()
+		var font := get_theme_default_font()
+		_overlay.draw_string_outline(font, mouse + Vector2(18, -8), MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color.BLACK)
+		_overlay.draw_string(font, mouse + Vector2(18, -8), MODE_HINTS[mode], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, _order_color(mode))
+	_draw_tooltip(_overlay)
+
+
+func _draw_tooltip(canvas: Control) -> void:
+	var tip := tooltip()
+	if tip.is_empty():
+		return
+	var font := CyberStyle.font()
+	var s := CyberStyle.ui_scale(size)
+	var title_size := roundi(17.0 * s)
+	var line_size := roundi(14.0 * s)
+	var lines: Array = tip["lines"]
+	var width := font.get_string_size(tip["title"], HORIZONTAL_ALIGNMENT_LEFT, -1, title_size).x
+	for line: String in lines:
+		width = maxf(width, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, line_size).x)
+	var box := Rect2(_hover_at + Vector2(18, 18), Vector2(width + 20.0 * s, title_size * 1.6 + lines.size() * line_size * 1.35 + 8.0 * s))
+	box.position.x = minf(box.position.x, size.x - box.size.x - 4.0)
+	box.position.y = minf(box.position.y, size.y - box.size.y - 4.0)
+	var accent: Color = GameTheme.ui["enemy"] if tip["enemy"] else GameTheme.ui["friendly"]
+	canvas.draw_rect(box, Color(CyberStyle.HUD_BACKGROUND, 0.92))
+	canvas.draw_rect(box, Color(accent, 0.8), false, 1.5)
+	var y := box.position.y + title_size * 1.2
+	canvas.draw_string(font, Vector2(box.position.x + 10.0 * s, y), tip["title"], HORIZONTAL_ALIGNMENT_LEFT, -1, title_size, accent)
+	for line: String in lines:
+		y += line_size * 1.35
+		canvas.draw_string(font, Vector2(box.position.x + 10.0 * s, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, line_size, CyberStyle.TEXT)

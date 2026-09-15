@@ -10,11 +10,13 @@ control-playtest: import ## Headless: box select, attack-move, a queued route, a
 	grep -q 'CONTROL_PLAYTEST_DONE ok=true' $(CONTROL_PLAYTEST_DIR)/headless/run.log
 	! grep -E 'SCRIPT ERROR|^ERROR' $(CONTROL_PLAYTEST_DIR)/headless/run.log
 
-control-playtest-shots: import ## The same session in windows at 1920x1080 and 1280x720, saving screenshots to build/control-playtest/<size>/*.png (needs a display)
-	rm -rf $(CONTROL_PLAYTEST_DIR)/1920x1080 $(CONTROL_PLAYTEST_DIR)/1280x720
-	for size in 1920x1080 1280x720; do \
+CONTROL_SIZES ?= 1920x1080 1280x720
+
+control-playtest-shots: import ## The same session in windows (CONTROL_SIZES, default 1920x1080 1280x720), screenshots in build/control-playtest/<size>/*.png (needs a display)
+	for size in $(CONTROL_SIZES); do \
+		rm -rf $(CONTROL_PLAYTEST_DIR)/$$size; \
 		mkdir -p $(CONTROL_PLAYTEST_DIR)/$$size; \
-		timeout 150 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(CONTROL_PLAYTEST_DIR)/$$size 2>&1 \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(CONTROL_PLAYTEST_DIR)/$$size 2>&1 \
 			| tee $(CONTROL_PLAYTEST_DIR)/$$size/run.log | grep -E 'CONTROL_PLAYTEST|SCRIPT ERROR|^ERROR' || true; \
 		grep -q 'CONTROL_PLAYTEST_DONE ok=true' $(CONTROL_PLAYTEST_DIR)/$$size/run.log || exit 1; \
 	done

@@ -62,18 +62,43 @@ func run() -> void:
 # ---- Steps ----------------------------------------------------------------------------------------------
 
 func _box_select() -> void:
+	await _settle_camera()
 	var members := _alive(controls.groups.members(1))
+	# At spawn the squads are still sliding into their doctrine formation: box them once they've stopped (≤ 6 s).
+	for i in 120:
+		if members.all(func(n: String) -> bool: return _tank(n).estimated_velocity.length() < 0.3):
+			break
+		await get_tree().create_timer(0.05).timeout
 	var rect := Rect2()
+	var seen := {}
 	for i in members.size():
 		var at := _screen(_tank(members[i]).global_position)
+		seen[members[i]] = [roundi(at.x), roundi(at.y)]
 		rect = Rect2(at, Vector2.ZERO) if i == 0 else rect.expand(at)
 	rect = rect.grow(16.0)
 	await _drag(rect.position, rect.end)
 	# Whatever else the box catches (neighbors at spawn) is fine; every unit of group 1 must be in it.
 	_checks["box_select_takes_group_1"] = not members.is_empty() and members.all(func(n: String) -> bool: return controls.selection.units.has(n))
-	_step("box_select", {"selected": controls.selection.units})
+	var after := {}
+	for unit_name in members:
+		var at := _screen(_tank(unit_name).global_position)
+		after[unit_name] = [roundi(at.x), roundi(at.y)]
+	_step("box_select", {"selected": controls.selection.units, "viewport": [get_viewport().get_visible_rect().size.x,
+			get_viewport().get_visible_rect().size.y], "box": [roundi(rect.position.x), roundi(rect.position.y), roundi(rect.end.x),
+			roundi(rect.end.y)], "group_1_on_screen_before": seen, "after": after})
 	await get_tree().create_timer(0.4).timeout
 	await _capture("1_box_select")
+
+
+## Wait until the camera stops moving (its start framing is smoothed), at most 3 s.
+func _settle_camera() -> void:
+	var last := controls.camera.global_transform
+	for i in 60:
+		await get_tree().create_timer(0.05).timeout
+		var now := controls.camera.global_transform
+		if now.origin.distance_to(last.origin) < 0.01:
+			return
+		last = now
 
 
 func _attack_move() -> void:
@@ -133,30 +158,31 @@ func _group_swap() -> void:
 func _rejoin() -> void:
 	var members := _alive(controls.groups.members(3))
 	if members.size() < 2:
-		members = _alive(controls.selection.units)
-	# Send the group somewhere open behind our lines and let it arrive.
+		members = _alive(controls.groups.members(1))
+	# Send the group somewhere open behind our lines, away from the fight, and let it arrive.
 	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
-	var spot := -forward * 60.0 + Vector3(-45.0, 0.0, 0.0)
+	var spot := -forward * 75.0 + Vector3(-60.0, 0.0, 0.0)
 	controls.selection.set_units(members)
-	await _right_click(radar.get_global_rect().position + radar.world_to_radar(spot))
+	var error := controls.world_order(spot)
 	var tree := get_tree()
 	var waited := 0.0
-	while waited < 20.0 and not members.all(func(n: String) -> bool: return controls.orders.is_idle(n)):
+	while waited < 25.0 and not _alive(members).all(func(n: String) -> bool: return controls.orders.is_idle(n)):
 		await tree.create_timer(0.5).timeout
 		waited += 0.5
-	var pushed := members[members.size() - 1]
-	var station := controls.orders.station(pushed)
-	if station.is_empty() or _tank(pushed) == null:
+	var survivors := _alive(members).filter(func(n: String) -> bool: return not controls.orders.station(n).is_empty())
+	if survivors.is_empty():
 		_checks["separated_unit_rejoins"] = false
-		_step("rejoin", {"error": "no station", "waited": waited})
+		_step("rejoin", {"error": "no living unit with a station", "order_error": error, "waited": waited, "members": members})
 		return
+	var pushed: String = survivors[survivors.size() - 1]
+	var station := controls.orders.station(pushed)
 	var home := Vector3(float(station["position"][0]), 0.0, float(station["position"][1]))
-	controls.center_on(members)
+	controls.center_on(survivors)
 	_tank(pushed).global_position = home + Vector3(18.0, 0.0, 14.0 * forward.dot(Vector3.BACK))
 	await tree.create_timer(0.6).timeout
 	await _capture("5_rejoin_pushed")
 	await tree.create_timer(REJOIN_SECONDS).timeout
-	var gap := _tank(pushed).global_position.distance_to(home) if _tank(pushed) != null else INF
+	var gap := _tank(pushed).global_position.distance_to(home) if _tank(pushed) != null and _tank(pushed).is_alive() else INF
 	_checks["separated_unit_rejoins"] = gap <= REJOIN_DISTANCE
 	_step("rejoin", {"unit": pushed, "arrived_after_s": waited, "gap_after_s": REJOIN_SECONDS, "gap_m": snappedf(gap, 0.1)})
 	await _capture("5_rejoin_back")
