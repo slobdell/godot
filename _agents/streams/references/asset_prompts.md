@@ -13,7 +13,7 @@ Game budgets (triangles, textures) are enforced by the 3D step and the normalize
 ## Production flow (proven 2026-09-14)
 
 1. **Concept** (text-to-image, `nano-banana-pro`): start from the art direction prompt, swap the base vehicle and weapon.
-   Generate several directions, and pick one with the lead.
+   Generate 2–3 directions per slot and let the lead pick on the review page: [concept_review.md](concept_review.md).
 2. **Turnaround** (image-to-image with the chosen concept as reference, `--multi-view`) so the 3D step sees every side.
 3. **3D: image-to-3D Smart Topology (`meshy-t2`) from the chosen 3/4 concept**, textured with PBR. It won the side-by-side
    against multi-image `meshy-7` Ultra from the turnaround: T2 kept the neon bars, hazard stripes, red lights and emission map

@@ -110,13 +110,17 @@ make check            # the whole game still works
 ## The lead reviews every concept before 3D (round 2)
 
 3D models cost real credits; concept images are cheap. So every new model waits at the concept stage until the
-lead has looked at it ([`_agents/workstreams.md`](../_agents/workstreams.md), *Lead gates*):
+lead has picked it ([`_agents/workstreams.md`](../_agents/workstreams.md), *Lead gates*). **The full process (2–3
+directions per slot, the tap-to-approve review page, reading the lead's taps back) is in
+[`_agents/streams/references/concept_review.md`](../_agents/streams/references/concept_review.md).** The commands:
 
 ```bash
-make art-concept NAME=scout_a GROUP="X4 roster" TARGET_SLOT=unit.scout TITLE="Scout A: …" PROMPT="…"  # ≈9 credits
+make art-concept NAME=scout_a GROUP="Scout" TARGET_SLOT=unit.scout TITLE="Scout A: …" NOTES="the tradeoff" PROMPT="…"  # ≈9 credits; GROUP = the slot
 make art-review            # build/review/index.html: every concept, its prompt, slot, and estimated 3D credits
 make art-review-status     # the same list in the terminal, plus the credits spent
-make art-decide ID=scout_a DECISION=approved WORDS="the lead's own words"   # or rejected / superseded
+make art-review-page TITLE="Concept review #2"   # build/review_page/: the page the lead taps Approve/Reject on
+make art-apply-decisions DIR=<read_db out_dir> URL=<page url>   # record the lead's taps
+make art-decide ID=scout_a DECISION=approved WORDS="the lead's own words"   # or rejected / superseded (chat answers)
 tools/assets/generate.py --provider meshy --slot unit.tank --review-item scout_a --smart-topology --name meshy/scout
 ```
 

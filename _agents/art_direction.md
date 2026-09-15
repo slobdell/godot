@@ -73,7 +73,8 @@ For a new unit, keep everything and swap the **base vehicle** and the **weapon**
 | Lancer | power-utility or cherry-picker truck with coils | a laser emitter on the boom |
 
 Prompt library and pipeline: `streams/references/asset_prompts.md`. **Every new concept goes to the lead for review
-before image-to-3D** ([workstreams.md](workstreams.md) "Lead gates").
+before image-to-3D** ([workstreams.md](workstreams.md) "Lead gates"): 2–3 directions per slot on a tap-to-approve
+review page, the process in [streams/references/concept_review.md](streams/references/concept_review.md).
 
 ## First production unit
 

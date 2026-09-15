@@ -41,6 +41,11 @@ and the estimated 3D credits) → list the item under **Waiting on the lead** be
 ungated work. Only images the lead approves (quote their words here) go to image-to-3D. Keep a spend ledger
 (`assets/meshy_ledger.md`: date, task id, credits, result).
 
+**How:** [references/concept_review.md](references/concept_review.md) is the whole process: 2–3 directions per slot,
+`make art-review-page` → a private Artifact where the lead taps Approve/Reject → `make art-apply-decisions` → 3D only
+for approved items. The lead, after review #1: *"whatever you did to give me the 3 choices of assets to choose from
+per item - that was amazing"*; they want the same for every new unit.
+
 **Spending (the lead, 2026-09-15):** *"I don't really care about the Meshy spending cap, just don't be wasteful."* No
 hard cap. Don't waste credits: batch and iterate on prompts at the cheap concept stage, never send an unapproved
 or duplicate image to 3D, reuse previews, and prefer the cheapest mode that meets the slot contract.
@@ -289,9 +294,12 @@ passes on the last commit, and the sim baseline is unchanged (`e5cf33921713b657`
 3. Wrecks: once rules add a death event with the transform, concept a wreck husk (gated) and leave it burning.
 4. Weather/smoke only if the phone run shows headroom.
 
+- **orchestrator:** `workstreams.md` *Lead gates* item 1 still names only `make art-review`. Point it at
+  `references/concept_review.md` (the tap-to-approve page) so every stream that adds a unit finds the process.
+
 **Merge notes**
 - **Shared-file edits:** the root `Makefile` (`LIGHT_GOALS` gains `art-concept art-review art-review-status
-  art-decide`). Nothing else shared.
+  art-decide art-review-page art-apply-decisions`). Nothing else shared.
 - **Owned paths only:** `game/theme/**`, `assets/**`, `tools/assets/`, `mk/assets.mk`, `tests/test_theme_*`,
   `test_fx_*`, `test_assets_pipeline`, and `_agents/art_direction.md` plus the references.
 - **New themes:** `roster` and `arena_kit` both ship (neither is in `exclude_filter`).
