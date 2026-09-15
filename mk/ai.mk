@@ -11,9 +11,9 @@ VARIANTS ?= r1,a4,a6
 CHAMPION ?= a6
 RUNS ?= 4
 LADDER_DOCTRINE ?= individuals
-ai-ladder: import ## AI ELO ladder: brain VARIANTS (a4,a6) play mirror armies, each seed 4 ways; CHAMPION must be beaten
+ai-ladder: import ## AI ELO ladder: brain VARIANTS (a6,x3; x3+v3 = with CPU commander v3) play mirror armies (LADDER_DOCTRINE: a file or cpu:<archetype>, LADDER_EXTRA=--budget=1000), each seed 4 ways; CHAMPION must be beaten
 	$(PYTHON) tools/ai_ladder.py --godot $(GODOT) --variants $(VARIANTS) --champion $(CHAMPION) --runs $(RUNS) \
-		--jobs $(JOBS) --doctrine $(LADDER_DOCTRINE) --json $(BUILD_DIR)/ai_ladder.json
+		--jobs $(JOBS) --doctrine $(LADDER_DOCTRINE) $(if $(LADDER_EXTRA),--extra="$(LADDER_EXTRA)") --json $(BUILD_DIR)/ai_ladder.json
 
 ai-shots: import ## Staged AI fights with driving trails, frames in build/ai-shots/ (needs a display: make remote T=ai-shots; STAGE=duel|scout_runs|brawl)
 	mkdir -p $(BUILD_DIR)/ai-shots

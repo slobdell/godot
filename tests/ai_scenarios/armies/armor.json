@@ -1,0 +1,46 @@
+{
+  "name": "Mirror Armor",
+  "note": "CPU archetype armor at 1000 points, the same army for both sides.",
+  "squads": [
+    {
+      "name": "Guns",
+      "directive": {
+        "role": "assault",
+        "cohesion": 0.7
+      },
+      "units": [
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        }
+      ]
+    },
+    {
+      "name": "Hunters",
+      "directive": {
+        "role": "assault"
+      },
+      "units": [
+        {
+          "unit": "ifv"
+        }
+      ]
+    },
+    {
+      "name": "Lances",
+      "directive": {
+        "role": "support"
+      },
+      "units": [
+        {
+          "unit": "lancer"
+        }
+      ]
+    }
+  ]
+}

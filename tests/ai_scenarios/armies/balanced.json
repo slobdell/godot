@@ -1,0 +1,57 @@
+{
+  "name": "Mirror Balanced",
+  "note": "CPU archetype balanced at 1000 points (Army.cpu_army's purchase order from its first unit), one army for both sides so a ladder compares commanders, not armies.",
+  "squads": [
+    {
+      "name": "Guns",
+      "directive": {
+        "role": "assault",
+        "cohesion": 0.7
+      },
+      "units": [
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        }
+      ]
+    },
+    {
+      "name": "Hunters",
+      "directive": {
+        "role": "assault"
+      },
+      "units": [
+        {
+          "unit": "ifv"
+        }
+      ]
+    },
+    {
+      "name": "Eyes",
+      "directive": {
+        "role": "scout"
+      },
+      "units": [
+        {
+          "unit": "scout"
+        },
+        {
+          "unit": "scout"
+        }
+      ]
+    },
+    {
+      "name": "Battery",
+      "directive": {
+        "role": "support"
+      },
+      "units": [
+        {
+          "unit": "artillery"
+        }
+      ]
+    }
+  ]
+}

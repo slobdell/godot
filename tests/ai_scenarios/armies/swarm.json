@@ -1,0 +1,54 @@
+{
+  "name": "Mirror Swarm",
+  "note": "CPU archetype swarm at 1000 points, the same army for both sides.",
+  "squads": [
+    {
+      "name": "Hunters",
+      "directive": {
+        "role": "assault"
+      },
+      "units": [
+        {
+          "unit": "ifv"
+        },
+        {
+          "unit": "ifv"
+        }
+      ]
+    },
+    {
+      "name": "Eyes",
+      "directive": {
+        "role": "scout"
+      },
+      "units": [
+        {
+          "unit": "scout"
+        },
+        {
+          "unit": "scout"
+        },
+        {
+          "unit": "scout"
+        },
+        {
+          "unit": "scout"
+        },
+        {
+          "unit": "scout"
+        }
+      ]
+    },
+    {
+      "name": "Eyes2",
+      "directive": {
+        "role": "scout"
+      },
+      "units": [
+        {
+          "unit": "scout"
+        }
+      ]
+    }
+  ]
+}

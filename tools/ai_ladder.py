@@ -9,6 +9,9 @@ ELO: every match is a game between the two variants (a draw is half a win), K=16
 the match list is replayed in a fixed order PASSES times so the table doesn't depend on schedule order.
 A challenger replaces the champion only if it beats it head to head (more wins than losses) AND out-rates it.
 
+A variant "x3+v3" is brain x3 with a CpuCommander running policy v3; --doctrine takes a file name or "cpu:<archetype>"
+(with --extra "--budget=1000").
+
 Usage: ai_ladder.py --godot PATH --variants a4,a6 [--champion a4] [--runs 4] [--jobs 2]
                     [--doctrine individuals] [--time-limit 240] [--extra "--control"] [--json out.json]
 """
@@ -24,11 +27,23 @@ K = 16
 PASSES = 20
 
 
+def side_flags(side, variant):
+    """A variant is a BrainVariants id, optionally "+<policy>" for a CpuCommander on that side (e.g. "x3+v3")."""
+    brain, _, commander = variant.partition("+")
+    flags = [f"--{side}-brain={brain}"]
+    if commander:
+        flags.append(f"--{side}-commander={commander}")
+    return flags
+
+
 def run_match(args, green, rust, seed, swap):
-    doctrine = f"res://doctrines/{args.doctrine}.json"
+    # A doctrine file name, or a seeded CPU army ("cpu:balanced"; both sides get the same one from the match seed).
+    # A "res://" path is used as is (tests/ai_scenarios/armies/ holds same-army mirrors of the CPU archetypes: "cpu:"
+    # armies are seeded per side, so they aren't mirrors).
+    doctrine = args.doctrine if args.doctrine.startswith(("cpu", "res://")) else f"res://doctrines/{args.doctrine}.json"
     command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination",
-               f"--green-doctrine={doctrine}", f"--rust-doctrine={doctrine}", f"--green-brain={green}",
-               f"--rust-brain={rust}", f"--time-limit={args.time_limit}", f"--seed={seed}"]
+               f"--green-doctrine={doctrine}", f"--rust-doctrine={doctrine}", *side_flags("green", green),
+               *side_flags("rust", rust), f"--time-limit={args.time_limit}", f"--seed={seed}"]
     if swap:
         command.append("--swap-bases")
     command += args.extra.split()

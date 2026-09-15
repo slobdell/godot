@@ -99,6 +99,9 @@ var _scan_left := 0
 ## Stuck detection (round-3 X1): consecutive ticks a move_to made no progress toward its goal (0 while arrived or not
 ## driving to a point), and ticks since this unit last pulled the trigger. Brains time out options with them.
 var stalled_ticks := 0
+## _wheel_radius() per unit type (the catalog doesn't change mid-match).
+var _wheel_radius_unit := ""
+var _wheel_radius_value := 0.0
 var ticks_since_fire := 0
 var _progress_goal := Vector3.INF
 var _progress_best := INF
@@ -261,10 +264,17 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
 			var direct: bool = move_order.get("direct", false)
 			var waypoint := goal if direct else _next_waypoint(goal, delta)
-			var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
-			var drive: Vector2 = steer.call(tank.global_position, -tank.global_basis.z, waypoint,
-					clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5,
-				_flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal))
+			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
+			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
+			var drive: Vector2
+			var radius := _wheel_radius()
+			if radius > 0.0:
+				# K3 wheels drive like cars: pure pursuit, three-point turns (Steering.drive_toward_wheels).
+				var wheels := Steering.reverse_toward_wheels if move_order.get("reverse", false) else Steering.drive_toward_wheels
+				drive = wheels.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+			else:
+				var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
+				drive = steer.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
 			_track_progress(goal, drive, direct)
@@ -272,6 +282,9 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
 			cmd.turn = turn_only.y if absf(turn_only.y) > 0.08 else 0.0
+			if _wheel_radius() > 0.0 and cmd.turn != 0.0 and absf(turn_only.y) >= 1.0:
+				# Wheels can't turn standing still: creep round (combat's wheels roll along the arc on a pure turn command).
+				cmd.throttle = Steering.WHEELS_MIN_THROTTLE
 		"drive":
 			_drive_elapsed += delta
 			if _drive_elapsed <= float(move_order["seconds"]):
@@ -279,6 +292,16 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				cmd.turn = move_order["turn"]
 			else:
 				move_order = {"type": "stop"}
+
+
+## The minimum turning radius when this unit rolls on wheels (K3 `locomotion` "wheels", `min_turn_radius_m`), else 0.
+func _wheel_radius() -> float:
+	if _wheel_radius_unit != tank.unit_id:
+		_wheel_radius_unit = tank.unit_id
+		_wheel_radius_value = 0.0
+		if String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels":
+			_wheel_radius_value = maxf(float(Units.stat(tank.unit_id, "min_turn_radius_m", 0.0)), 0.5)
+	return _wheel_radius_value
 
 
 ## Counts ticks without getting at least 0.5 m closer (along the path) to the current move goal.

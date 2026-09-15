@@ -4,10 +4,11 @@ extends SceneTree
 ## be judged from stills: does it circle, dodge, run at the rear, break away? Nameplates show each brain's intent.
 ## Needs a display: `make remote T=ai-shots` uses builder0's desktop. `--stage=<name>` runs one stage.
 ##
-## Stages: duel (two x3 tanks), scout_runs (an x3 scout ordered onto a tank), brawl (3 v 3 mixed, x3 vs a6).
+## Stages: duel (two x3 tanks), scout_runs (an x3 scout ordered onto a tank), brawl (3 v 3 mixed, x3 vs a6),
+## cpu_charge (a CPU swarm army under CpuCommander v3 charging a small army with artillery: the scout V).
 
 const OUT := "res://build/ai-shots"
-const STAGES := ["duel", "scout_runs", "brawl"]
+const STAGES := ["duel", "scout_runs", "brawl", "cpu_charge"]
 ## Trail length (samples, one every TRAIL_EVERY_TICKS).
 const TRAIL_SAMPLES := 90
 const TRAIL_EVERY_TICKS := 4
@@ -148,3 +149,20 @@ func _stage_brawl() -> void:
 		scenario.brain_tank(Match.Team.GREEN, "Green_A_%d" % (i + 1), Vector3(-108 + i * 9, 0, 45), 0.0, {}, units[i], "", "Alpha")
 		scenario.brain_tank(Match.Team.RUST, "Rust_A_%d" % (i + 1), Vector3(-104 + i * 9, 0, -25), PI, {}, units[i], "", "Alpha")
 	await _play("brawl", 24.0, [6, 12, 18, 24])
+
+
+func _stage_cpu_charge() -> void:
+	_setup(Vector3(0, 0, 10), 150.0)
+	var swarm: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/ai_scenarios/armies/swarm.json"))
+	scenario.game_match.load_doctrine(Match.Team.RUST, swarm)
+	var defenders := {"name": "Defenders", "squads": [{"name": "Guns", "units": [{"unit": "tank"}, {"unit": "tank"}]},
+			{"name": "Battery", "units": [{"unit": "artillery"}]}]}
+	scenario.game_match.load_doctrine(Match.Team.GREEN, defenders)
+	for tank: Tank in scenario.game_match.tanks_by_name().values():
+		trails.get_or_add(String(tank.name), [])
+	var commander := CpuCommander.new()
+	commander.game_match = scenario.game_match
+	commander.team = Match.Team.RUST
+	commander.policy = "v3"
+	case.add_to_tree(commander)
+	await _play("cpu_charge", 30.0, [8, 14, 20, 26, 30])
