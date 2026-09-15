@@ -65,6 +65,10 @@ Netcode is **paused** (its smokes stay in `make check`). Ownership, contracts C1
 - **Wheeled vehicles drive like cars** (the lead, 2026-09-15): added as rules R9, ai A8, command C7, and contract C1
   (`locomotion`, `min_turn_radius_m`). Every unit still pivots like a tank today. The running agents get these items
   when they merge `main`.
+- **Round-3 stream candidate: announcer** ([`_agents/streams/announcer.md`](_agents/streams/announcer.md)), drafted
+  and ready for a one-line kickoff. It builds in isolation against a match-event contract and fake-match fixtures, and
+  ends with a demo mixdown the lead can listen to. The lead is preparing ElevenLabs voices; the key is
+  `ELEVENLABS_KEY_ID`.
 - **Unit-count bench** (roadmap.md *Next*): how many vehicles render and simulate smoothly on the web and a phone.
   It decides squad sizes and how expendable factions like the road gangs can be. Until measured, design to the
   current 5 × 5 (50 vehicles in a match).
@@ -73,4 +77,4 @@ Netcode is **paused** (its smokes stay in `make check`). Ownership, contracts C1
 
 1. **Control point as the default rule?** Round 1 measured that it restores "coordination wins" under shields.
 2. ~~Meshy spending cap?~~ Answered: no cap, *"just don't be wasteful"* (recorded in `streams/art.md`).
-3. **Carried over:** rotate the Meshy API key (it was pasted in chat once); Git LFS for generated art; phone runs of `?fx-bench` and `?det-spike`; move `MESHY_API_KEY` above the interactive guard in `~/.bashrc` so agent shells see it.
+3. **Carried over:** rotate the Meshy API key (it was pasted in chat once); Git LFS for generated art; phone runs of `?fx-bench` and `?det-spike`; move `MESHY_API_KEY` and `ELEVENLABS_KEY_ID` above the interactive guard in `~/.bashrc` (line 6) so agent shells see them.

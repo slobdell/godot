@@ -68,7 +68,8 @@ Paused this round: **netcode** (works today; resumes once the core loop is fun).
 - **Arena hazards and spectacle:** crushing gates, fire pits, mines, a crowd "hype" meter.
 - **The arena announcer** (stretch, [game_design.md](game_design.md) *The arena announcer*): two original ElevenLabs
   voices; a big tagged clip library stitched at runtime by a banter graph so commentary differs every match; text
-  transcripts reviewed by the lead before audio is generated.
+  transcripts reviewed by the lead before audio is generated. **A round-3 stream candidate that can run in isolation**
+  against fixture match events: [streams/announcer.md](streams/announcer.md).
 - **Ranked with fixed budgets and full rosters,** so progression never affects competitive fairness.
 - **Spectate AI vs AI** as a mode (great for learning counters, and for the lead's son).
 - **Terrain height** for hull-down positions once the cover AI is solid.

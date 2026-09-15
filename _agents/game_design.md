@@ -307,7 +307,7 @@ credits, then converts to OGG with ffmpeg):
 1. **Write the library as text first** (Claude can draft thousands of tagged lines): `assets/announcer/lines.json`.
 2. **Transcript simulator (cheap, no credits):** run recorded or headless matches through the director and print the
    banter as text, so the lead can read sample matches and judge coherence and tone **before any audio is paid for**.
-3. **Generate masters** (`make announcer-generate`): key from `ELEVENLABS_API_KEY` in the environment (never a file in
+3. **Generate masters** (`make announcer-generate`): key from `ELEVENLABS_KEY_ID` in the environment (never a file in
    the repo; orientation trip-up 59 about `~/.bashrc`), idempotent by clip id, credits logged to a ledger like Meshy's.
 4. **Post-process:** slice by timestamps, loudness-normalize, trim, speech-to-text check, encode mono Ogg Vorbis at a
    speech bitrate (~32–48 kbps; the reference's quality 4 is ~128 kbps, more than speech needs), write a manifest with
