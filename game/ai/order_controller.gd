@@ -9,8 +9,10 @@ extends Node
 ##
 ## Move orders (one at a time):
 ##   {"type": "stop"}
-##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional), "speed": 0.2..1 (optional)}
+##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional), "speed": 0.2..1 (optional),
+##    "arrive": 0.5..10 meters (optional, default ARRIVE_RADIUS)}
 ##       reverse = back up to the point, front armor kept toward where you came from
+##       arrive = how close counts as there (brains use ~1 m for hide and peek spots)
 ##   {"type": "drive", "throttle": float, "turn": float, "seconds": float}
 ##   {"type": "face", "x": float, "z": float}   turn in place to point the hull (front armor) at a spot
 ## Weapon orders (one at a time):
@@ -53,6 +55,14 @@ const MAX_EVENTS := 8
 const LOW_AMMO_FRACTION := 0.3
 ## A held turret heading aims at a point this far out along it.
 const HELD_AIM_DISTANCE := 1000.0
+## fire_at_will (and target fallbacks) look for the nearest shootable enemy this often, keeping a still
+## shootable pick in between: the per-tick scan of every enemy was a top AI cost at 50 units.
+const SCAN_EVERY_TICKS := 6
+
+## Measurement only (make ai-perf): microseconds spent in think + compute_command while `profiling` is on.
+## Never read by decisions.
+static var profiling := false
+static var profile_usec := 0
 
 @export var tank: Tank
 ## Where to look for other tanks (Match/Tanks).
@@ -83,6 +93,20 @@ var _path_goal := Vector3.INF
 var _repath_left := 0.0
 var _stuck_time := 0.0
 var _unstick_left := 0.0
+var _scan_pick: Tank = null
+var _scan_left := 0
+
+## A4 fire discipline: consecutive ticks the gun was ready and aimed but held because a friend was in the line
+## of fire (or the splash), and which friend. Brains read it to move and clear the lane.
+var lane_blocked_ticks := 0
+var lane_blocker := ""
+## Brain variants can turn the friendly-fire gate off (BrainVariants "hold_for_friends").
+var hold_for_friends := true
+## Measurement (not decisions): shots held for friends, by every controller since the process started.
+static var held_for_friends := 0
+## A blocked lane is re-checked only every this many ticks (a friend doesn't clear a lane in one tick).
+const LANE_RECHECK_TICKS := 3
+var _lane_hold_left := 0
 
 
 func _ready() -> void:
@@ -93,8 +117,11 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if tank == null or not is_instance_valid(tank):
 		return
+	var started := Time.get_ticks_usec() if profiling else 0
 	think(delta)
 	tank.command = compute_command(delta)
+	if profiling:
+		profile_usec += Time.get_ticks_usec() - started
 
 
 ## Subclasses decide orders here (called every tick before orders execute).
@@ -153,7 +180,9 @@ func compute_command(delta: float) -> TankCommand:
 
 func _sense() -> void:
 	visible_enemy_names = PackedStringArray()
-	if tanks_root == null:
+	# Only halt_on_contact reads what this tank sees; skipping the sight rays otherwise was the biggest
+	# single AI cost at 50 units (_agents/unit_ai.md "Results").
+	if tanks_root == null or not reflexes.any(func(r: Dictionary) -> bool: return r["type"] == "halt_on_contact"):
 		return
 	for enemy in Perception.enemies_of(tank, tanks_root):
 		# G1: a tank sees within its sight radius, and only with a clear line of sight.
@@ -204,7 +233,8 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var waypoint := _next_waypoint(goal, delta)
 			var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
 			var drive: Vector2 = steer.call(tank.global_position, -tank.global_basis.z, waypoint,
-					ARRIVE_RADIUS if waypoint == goal else 0.5, _remaining_path_distance(goal))
+					clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5,
+				_remaining_path_distance(goal))
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
 		"face":
@@ -281,14 +311,14 @@ func _apply_weapon(cmd: TankCommand) -> void:
 			return
 		"fire_at_will":
 			if tanks_root != null:
-				target = _nearest_shootable()
+				target = _scanned_shootable()
 		"target":
 			if tanks_root != null:
-				var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
+				var named := _named_tank(String(weapon_order["name"]))
 				if named != null and named.is_alive() and named.team != tank.team and _shootable(named):
 					target = named
 				elif weapon_order.get("fallback", false):
-					target = _nearest_shootable()
+					target = _scanned_shootable()
 	if target == null:
 		if watch_point != null:
 			_cover((watch_point as Vector3), cmd)
@@ -311,7 +341,7 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	if tank.ammo_fraction() <= LOW_AMMO_FRACTION and distance > float(weapon["preferred_max"]):
 		in_range = false
 	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
-	cmd.fire = in_range and aimed and tank.ready_to_fire()
+	cmd.fire = _clear_to_fire(in_range and aimed and tank.ready_to_fire(), aim)
 
 
 ## Direct fire needs a clear line of sight from this tank AND the target being seen: by the team when a
@@ -324,15 +354,42 @@ func _shootable(enemy: Tank) -> bool:
 	return seen and Perception.has_line_of_sight(tank, enemy)
 
 
+## _nearest_shootable(), re-scanned every SCAN_EVERY_TICKS while the last pick is still shootable (a nearer enemy
+## may have appeared), and every tick while there's nothing to shoot (a delay there leaves loaded guns idle).
+func _scanned_shootable() -> Tank:
+	_scan_left -= 1
+	if _scan_left > 0 and _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive() and _shootable(_scan_pick):
+		return _scan_pick
+	_scan_left = SCAN_EVERY_TICKS
+	_scan_pick = _nearest_shootable()
+	return _scan_pick
+
+
 func _nearest_shootable() -> Tank:
 	var best: Tank = null
 	var best_distance := INF
-	for enemy in Perception.enemies_of(tank, tanks_root):
+	for enemy: Tank in _enemies():
 		var distance := tank.global_position.distance_to(enemy.global_position)
 		if distance < best_distance and _shootable(enemy):
 			best = enemy
 			best_distance = distance
 	return best
+
+
+## A tank by name: the brains' shared per-tick table (no NodePath parsing every tick), else a node lookup.
+func _named_tank(tank_name: String) -> Tank:
+	var brain := self as TankBrain
+	if brain != null and brain.game_match != null and brain.game_match.tanks == tanks_root:
+		return AiTickCache.tanks_by_name(brain.game_match).get(tank_name) as Tank
+	return tanks_root.get_node_or_null(NodePath(tank_name)) as Tank
+
+
+## Living enemies in scene order: shared per tick for brains (AiTickCache), scanned otherwise.
+func _enemies() -> Array:
+	var brain := self as TankBrain
+	if brain != null and brain.game_match != null and brain.game_match.tanks == tanks_root:
+		return AiTickCache.enemies(brain.game_match, tank.team)
+	return Perception.enemies_of(tank, tanks_root)
 
 
 ## ARC weapons: lob at a spotted enemy inside the [min_range, range] window, leading it by the flight time.
@@ -350,12 +407,12 @@ func _apply_indirect(cmd: TankCommand) -> void:
 		return d >= float(weapon["min_range"]) and d <= float(weapon["range"])
 	var target: Tank = null
 	if weapon_order["type"] == "target":
-		var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
+		var named := _named_tank(String(weapon_order["name"]))
 		if named != null and named.is_alive() and named.team != tank.team and sees.call(named) and in_window.call(named):
 			target = named
 	if target == null and (weapon_order["type"] == "fire_at_will" or weapon_order.get("fallback", false)):
 		var best_distance := INF
-		for enemy in Perception.enemies_of(tank, tanks_root):
+		for enemy: Tank in _enemies():
 			var d := tank.global_position.distance_to(enemy.global_position)
 			if d < best_distance and in_window.call(enemy) and sees.call(enemy):
 				best_distance = d
@@ -370,7 +427,32 @@ func _apply_indirect(cmd: TankCommand) -> void:
 	var aim := target.global_position + target.estimated_velocity * flight
 	_cover(aim, cmd)
 	var aimed: bool = Ballistics.aim_error(tank.turret.global_position, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
-	cmd.fire = aimed and tank.ready_to_fire()
+	cmd.fire = _clear_to_fire(aimed and tank.ready_to_fire(), aim)
+
+
+## A4: the last gate before the trigger. A shot that would pass through (or splash) a friend is held, and
+## counted in lane_blocked_ticks. Only checked when the gun would otherwise fire, so it costs one check per
+## reload, not per tick.
+func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
+	if not would_fire:
+		return false
+	if not hold_for_friends:
+		return true
+	if _lane_hold_left > 0:
+		_lane_hold_left -= 1
+		lane_blocked_ticks += 1
+		held_for_friends += 1
+		return false
+	var blockers := FireLanes.for_shot(tanks_root, tank, aim)
+	if blockers.is_empty():
+		lane_blocked_ticks = 0
+		lane_blocker = ""
+		return true
+	lane_blocked_ticks += 1
+	lane_blocker = String(blockers[0])
+	held_for_friends += 1
+	_lane_hold_left = LANE_RECHECK_TICKS - 1
+	return false
 
 
 ## Point the turret at a world spot, and remember that heading for when the spot is gone.
@@ -401,4 +483,6 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'fallback' must be true or false"
 	if order.has("speed") and not (typeof(order["speed"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["speed"]))):
 		return "'speed' must be a number"
+	if order.has("arrive") and not (typeof(order["arrive"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["arrive"]))):
+		return "'arrive' must be a number"
 	return ""

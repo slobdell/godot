@@ -150,6 +150,10 @@ func _describe(tank: Tank, viewer: Tank) -> Dictionary:
 			# Is its gun already pointed at me? (The first shot usually wins an even duel.)
 			info["aiming_at_me"] = Ballistics.aim_error(tank.global_position, tank.turret_forward(),
 					viewer.global_position) <= deg_to_rad(10.0)
+		elif tank.intent != "":
+			# A teammate's brain: what it's doing and why ("COVER_FIRE Rust_2 - squad focus, peek"). Enemies' intents
+			# stay hidden (they would leak through the fog).
+			info["intent"] = tank.intent
 	return info
 
 

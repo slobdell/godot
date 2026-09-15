@@ -55,3 +55,19 @@ func test_it_commands_gun_squads_only_and_does_not_spam_orders() -> void:
 	var serial: int = game_match.squads["1/Guns"].order_serial
 	commander.think()
 	assert_eq(game_match.squads["1/Guns"].order_serial, serial, "the same plan isn't re-sent (it would reset commitment)")
+
+
+func test_v2_fights_it_out_up_close_and_chases_fresh_contacts() -> void:
+	var setup: Array = await _setup()
+	var game_match: Match = setup[0]
+	var commander: CpuCommander = setup[1]
+	var guns: Squad = game_match.squads["1/Guns"]
+	var by_name := game_match.tanks_by_name()
+	var lead := by_name[guns.commander] as Tank
+	_spot(game_match, 6, lead.global_position + Vector3(-12, 0, 25))
+	assert_eq(commander.plan_for(guns, by_name)["verb"], "assault", "6 tanks 25 m away: too close to turn and run, fight")
+	game_match.intel[Match.Team.RUST].clear()
+	_spot(game_match, 1, Vector3(40, 0, 10))
+	for contact in game_match.intel[Match.Team.RUST].values():
+		contact["visible"] = false
+	assert_eq(commander.plan_for(guns, by_name)["verb"], "assault", "a contact seen a moment ago: go get it (the brains hunt inside an assault)")
