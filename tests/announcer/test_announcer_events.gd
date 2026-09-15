@@ -4,7 +4,8 @@ extends TestCase
 
 const FIXTURES := "res://tests/announcer/fixtures/"
 const CASES := "res://tests/announcer/contract_cases.json"
-const SCENARIOS := ["close_match", "blowout", "comeback", "friendly_fire_disaster", "scouts_vs_tanks", "control_swing"]
+const SCENARIOS := ["close_match", "blowout", "comeback", "friendly_fire_disaster", "scouts_vs_tanks", "control_swing",
+		"gangs_vs_law", "syndicate_showcase"]
 
 
 static func fixture(name: String) -> Array:

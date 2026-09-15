@@ -32,7 +32,19 @@
       "priority": 30, "stale_s": 22, "intensity": 1,
       "beats": [
         {"name": "caller reads the army", "weight": 2, "steps": [{"speaker": "caller", "act": "call"}]},
-        {"name": "the Veteran reads the army", "weight": 1, "steps": [{"speaker": "color", "act": "analysis"}]}
+        {"name": "the Veteran reads the army", "weight": 1, "steps": [{"speaker": "color", "act": "analysis"}]},
+        {"name": "faction introduction", "weight": 1, "when": ["introduce"], "steps": [
+          {"speaker": "caller", "act": "call", "require": ["introduce"]},
+          {"speaker": "pa", "act": "notice", "chance": 0.6, "require": ["introduce"]}]}
+      ]
+    },
+    "tape": {
+      "priority": 29, "stale_s": 22, "intensity": 1,
+      "beats": [
+        {"name": "tale of the tape", "weight": 2, "steps": [
+          {"speaker": "caller", "act": "stat"},
+          {"speaker": "color", "act": "analysis", "chance": 0.5}]},
+        {"name": "skip the tape", "weight": 1, "steps": [{"speaker": "color", "act": "analysis"}]}
       ]
     },
     "preview": {
@@ -93,6 +105,9 @@
         {"name": "trade", "weight": 3, "when": ["trade"], "unless": ["final_kill"], "steps": [
           {"speaker": "caller", "act": "call", "require": ["trade"]},
           {"speaker": "color", "act": "analysis", "chance": 0.4, "require": ["trade"]}]},
+        {"name": "a product demonstration", "weight": 2, "when": ["faction_syndicate"], "unless": ["final_kill", "flurry"], "steps": [
+          {"speaker": "caller", "act": "call"},
+          {"speaker": "pa", "act": "sponsor_read", "chance": 0.6, "require": ["faction_syndicate"]}]},
         {"name": "final kill", "weight": 3, "when": ["final_kill"], "steps": [{"speaker": "caller", "act": "call", "require": ["final_kill"]}]}
       ]
     },

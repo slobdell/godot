@@ -67,5 +67,10 @@ Deviations from the brief's first draft (2026-09-15, the announcer stream): inst
 | `friendly_fire_disaster.jsonl` | an artillery-heavy army shells its own front line |
 | `scouts_vs_tanks.jsonl` | a scout swarm against a tank wall |
 | `control_swing.jsonl` | the control point changes hands and decides the match |
+| `gangs_vs_law.jsonl` | a road gang rushes the Law (factions are concept art this round; this exercises the faction lines) |
+| `syndicate_showcase.jsonl` | the Syndicate's few expensive Lancers and artillery against a Condemned army |
+
+A real match recorded by the booth (`make announcer-record-smoke` → `build/announcer/recorded.jsonl`) passes the same
+validators; `game/announcer/match_event_adapter.gd` is the adapter from `Match` signals.
 
 Regenerate with `make announcer-fixtures` (the same seeds give the same files).

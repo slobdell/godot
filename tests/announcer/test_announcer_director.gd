@@ -3,7 +3,8 @@ extends TestCase
 ## Unit tests use tiny in-test libraries; the fixture tests run the real library over every fixture.
 
 const FIXTURES := "res://tests/announcer/fixtures/"
-const SCENARIOS := ["close_match", "blowout", "comeback", "friendly_fire_disaster", "scouts_vs_tanks", "control_swing"]
+const SCENARIOS := ["close_match", "blowout", "comeback", "friendly_fire_disaster", "scouts_vs_tanks", "control_swing",
+		"gangs_vs_law", "syndicate_showcase"]
 const VOCABULARY := {
 	"team": {"green": "Green", "rust": "Rust"},
 	"team_s": {"green": "Green's", "rust": "Rust's"},
@@ -128,10 +129,11 @@ func test_memory_notices_first_blood_counters_upsets_streaks_and_last_units() ->
 	var surprise: Dictionary = memory.observe(kill(35.0, "rust_2", "green_3", "tank", "scout"))[0]
 	assert_true(surprise["tag_set"].has("upset"), "a tank beating a scout is the upset: %s" % [surprise["tags"]])
 	var last: Dictionary = memory.observe(kill(40.0, "green_1", "rust_2", "ifv", "tank"))[0]
-	assert_true(last["tag_set"].has("final_kill") and last["tag_set"].has("upset"), "an IFV beats the last Rust tank: %s" % [last["tags"]])
+	assert_true(last["tag_set"].has("final_kill") and not last["tag_set"].has("upset"),
+			"an IFV beating a tank is an upset, but not five seconds after the last one: %s" % [last["tags"]])
 	var again: Array = AnnouncerMemory.new(library).observe(start_event(["tank", "tank"], ["scout", "scout"]))
-	assert_eq(again.map(func(found: Dictionary) -> String: return found["kind"]), ["intro", "army", "army", "preview"],
-			"match_start opens with the intro, both armies, and the matchup")
+	assert_eq(again.map(func(found: Dictionary) -> String: return found["kind"]), ["intro", "army", "army", "tape", "preview"],
+			"match_start opens with the intro, both armies, the tale of the tape, and the matchup")
 
 
 func test_a_kill_in_the_lead_swings_standings_and_comebacks() -> void:

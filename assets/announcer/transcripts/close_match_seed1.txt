@@ -12,15 +12,15 @@ result: rust by elimination at 1:17.8
 0:17.2   CALLER   That is not supposed to happen! Green's tank just took down the Lancer!
 0:22.8   ── rust ifv destroys green scout
 0:22.8   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
-0:32.2   PA       Tonight's attendance is ninety-four thousand, a weeknight record, including four thousand seats reserved for the families of tonight's crews.
+0:32.2   PA       A child has been found near gate three. The child is safe, and may be collected with valid district papers.
 0:39.2   ── rust tank destroys green ifv
 0:39.8   ── friendly fire: green tank hits its own artillery
-0:40.3   CALLER   The IFV is finished! Rust cracks it wide open!
+0:40.7   CALLER   The IFV is finished! Rust cracks it wide open!
 0:42.0   ── green ifv destroys rust ifv
 0:42.8   ── rust scout destroys green artillery
 0:42.8   ── green squad Bravo wiped out
-0:43.6   CALLER   Both sides lose one! Neither army is backing down!
-0:47.5   VETERAN  Green is bleeding and doesn't know it yet.
+0:44.0   CALLER   Both sides lose one! Neither army is backing down!
+0:47.9   VETERAN  Green is bleeding and doesn't know it yet.
 0:54.0   CALLER   That IFV is hurt! That IFV is hurt!
 1:03.0   ── rust tank destroys green tank
 1:03.0   CALLER   Green is down to its last vehicle!

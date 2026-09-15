@@ -1,0 +1,37 @@
+TRANSCRIPT: gangs_vs_law (director seed 2)
+the Scrapyard | green: scout, scout, ifv, burner, scout | rust: tank, ifv, ifv, scout
+result: green by elimination at 1:08.8
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
+0:04.8   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:14.1   CALLER   IFVs for Rust. Those autocannons are going to be busy tonight.
+0:18.0   ── first contact: green scout fires on a ifv
+0:18.0   CALLER   The scout finds them first! That's the job, and Green is doing it!
+0:23.2   CALLER   Big shot! Big shot from Rust!
+0:26.2   CALLER   Green is taking over this match!
+0:28.5   ── green scout destroys rust scout
+0:28.5   ── rust squad Spotlight wiped out
+0:28.5   CALLER   Green draws first blood, and this crowd is on its feet!
+0:30.0   ── close call: green scout at 0% hull
+0:32.4   VETERAN  Patience. Green waited for the shot and took it.
+0:35.0   ── close call: rust ifv at 12% hull
+0:37.2   CALLER   Look at that IFV—
+0:37.2   ── rust ifv destroys green scout
+0:37.5   ── friendly fire: green burner hits its own scout
+0:39.0   ── rust ifv destroys green scout
+0:39.0   CALLER   Vehicles are going down all over the floor! Two in a matter of seconds!
+0:43.0   ── green ifv destroys rust ifv
+0:43.8   ── green burner destroys rust ifv
+0:43.8   CALLER   It's all on the last Rust vehicle now!
+0:46.7   CALLER   Oh, my goodness!
+0:53.3   VETERAN  You learn the floor by the scorch marks. Every one of them is somebody's bad night.
+1:03.3   CALLER   Right in the weak spot! What a shot!
+1:08.8   ── green scout destroys rust tank
+1:08.8   ── rust squad Precinct wiped out
+1:08.8   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
+1:08.8   CALLER   Green finishes it! The last tank is gone!
+1:11.8   CALLER   And Green is the last army standing! Green wins!
+1:15.1   VETERAN  Green earned that. I didn't see them get lucky once.
+1:20.3   PA       Green wins tonight's match. Thank you for joining us. Please exit by section, and have your papers ready.

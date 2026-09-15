@@ -122,7 +122,7 @@ func _offer(found: Dictionary) -> void:
 		return
 	if found["kind"] == "contact":
 		# Once the shooting starts, nobody reads out the armies anymore.
-		_queue = _queue.filter(func(queued: Dictionary) -> bool: return not queued["kind"] in ["army", "preview"])
+		_queue = _queue.filter(func(queued: Dictionary) -> bool: return not queued["kind"] in ["army", "tape", "preview"])
 	if found["kind"] == "result":
 		# The match is over: nothing that happened before the end is worth a call anymore, except the final kill.
 		_queue = _queue.filter(func(queued: Dictionary) -> bool: return queued["tag_set"].has("final_kill"))
@@ -370,6 +370,11 @@ func _speak_step() -> Dictionary:
 	var found: Dictionary = _current["moment"]
 	var acts: Array = step["act"] if typeof(step["act"]) == TYPE_ARRAY else [step["act"]]
 	var topic: String = _current["topic"] if step.get("answers", false) else ""
+	# "Thank you, Celeste" only follows the PA: lines can require after_<speaker> of the previous line in this beat.
+	for speaker in AnnouncerLibrary.SPEAKERS:
+		found["tag_set"].erase("after_" + speaker)
+	if _current.get("last_speaker", "") != "":
+		found["tag_set"]["after_" + _current["last_speaker"]] = true
 	var line := _choose_line(String(step["speaker"]), acts, found, topic, int(found["intensity"]), step.get("require", []))
 	if line.is_empty():
 		if optional and int(_current["spoken"]) > 0 or optional and not steps.is_empty():
@@ -396,6 +401,7 @@ func _speak_step() -> Dictionary:
 	if line.has("topic"):
 		_current["topic"] = line["topic"]
 	_current["spoken"] = int(_current["spoken"]) + 1
+	_current["last_speaker"] = line["speaker"]
 	_busy_until = float(cue["end"]) + GAP_S
 	_last_cue = cue
 	cues.append(cue)

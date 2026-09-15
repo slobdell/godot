@@ -18,6 +18,8 @@ const WEAK_SPOT_MEMORY_S := 3.0
 var library: AnnouncerLibrary
 var arena := ""
 var control_point := false
+## team -> faction id (K4: condemned, gangs, law, syndicate).
+var factions := {}
 var units := {}
 var alive := {"green": 0, "rust": 0}
 var started := {"green": 0, "rust": 0}
@@ -42,6 +44,9 @@ var end_t := 0.0
 var flags := {}
 var _last_damage := {}
 var _seen_upsets := {}
+var _last_upset_t := -100.0
+## Two "upsets" seconds apart stop being surprising: at most one this often.
+const UPSET_GAP_S := 20.0
 
 
 func _init(line_library: AnnouncerLibrary) -> void:
@@ -88,6 +93,8 @@ func moment(kind: String, t: float, tags: Array, slots: Dictionary, team: String
 		slots["other_team"] = other(team)
 		all_tags.append("team_" + standing(team))
 		all_tags.append("team_" + team)
+		all_tags.append("faction_" + String(factions.get(team, "condemned")))
+		all_tags.append("other_faction_" + String(factions.get(other(team), "condemned")))
 	var tag_set := {}
 	for tag in all_tags:
 		tag_set[tag] = true
@@ -144,6 +151,7 @@ func _on_start(event: Dictionary, t: float) -> Array:
 	var composition := {}
 	for team_data in event["teams"]:
 		var team: String = team_data["team"]
+		factions[team] = String(team_data.get("faction", "condemned"))
 		composition[team] = {}
 		for unit in team_data["units"]:
 			units[unit["id"]] = {"team": team, "unit": unit["unit"], "squad": unit.get("squad", ""), "alive": true}
@@ -163,7 +171,7 @@ func _on_start(event: Dictionary, t: float) -> Array:
 					or (composition[team][unit] == composition[team][best] and unit < best):
 				best = unit
 		main_unit[team] = best
-		var tags: Array = ["main_" + best]
+		var tags: Array = ["main_" + best, "introduce"]
 		if composition[team].size() == 1:
 			tags.append_array(["all_same", "all_" + best])
 		elif composition[team][best] >= 3:
@@ -174,6 +182,11 @@ func _on_start(event: Dictionary, t: float) -> Array:
 			tags.append("several")
 		found.append(moment("army", t, tags, {"units": best, "unit": best, "count": composition[team][best],
 				"other_count": started[team]}, team, "%s: %d units, mostly %s" % [team, started[team], best]))
+	# Tale of the tape: who has the numbers.
+	var tape_team := "green" if started["green"] >= started["rust"] else "rust"
+	found.append(moment("tape", t, ["outnumbers" if started["green"] != started["rust"] else "even_numbers"],
+			{"count": started[tape_team], "other_count": started[other(tape_team)]}, tape_team,
+			"tale of the tape: %s %d, %s %d" % [tape_team, started[tape_team], other(tape_team), started[other(tape_team)]]))
 	var preview_tags: Array = []
 	var preview_team := "green"
 	for team in TEAMS:
@@ -266,8 +279,9 @@ func _on_destroyed(event: Dictionary, t: float) -> Array:
 		elif event["killer_unit"] in counters_of(event["victim_unit"]):
 			# The second tank to beat a scout isn't a surprise anymore.
 			var pair := "upset_%s_%s" % [event["killer_unit"], event["victim_unit"]]
-			if not _seen_upsets.has(pair):
+			if not _seen_upsets.has(pair) and t - _last_upset_t >= UPSET_GAP_S:
 				_seen_upsets[pair] = true
+				_last_upset_t = t
 				tags.append("upset")
 		if streak_team == killer_team:
 			streak += 1

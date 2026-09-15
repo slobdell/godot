@@ -14,7 +14,7 @@ result: rust by elimination at 1:17.8
 0:22.8   ── rust ifv destroys green scout
 0:23.4   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
 0:28.3   CALLER   Listen to this crowd!
-0:37.0   PA       Meridian Transport. Moving workers between—
+0:37.0   PA       The Syndicate Lottery draws tonight—
 0:39.2   ── rust tank destroys green ifv
 0:39.3   CALLER   Rust's tank puts the IFV away!
 0:39.8   ── friendly fire: green tank hits its own artillery

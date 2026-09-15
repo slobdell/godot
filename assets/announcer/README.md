@@ -45,6 +45,7 @@ blood" line beats a generic kill call, and a beat can `require` a tag outright.
 |---|---|---|
 | `intro` | match_start | `arena_<name>`, `control_point` |
 | `army` | match_start, per team | `main_<unit>`, `all_same`/`all_<unit>`, `heavy`/`heavy_<unit>` (3+), `mixed`, `several` (2+ of the main unit) |
+| `tape` | match_start (tale of the tape) | `outnumbers`, `even_numbers` |
 | `preview` | match_start | `counter` (one army's main unit beats the other's), `mirror` |
 | `contact` | first_contact | `unit_<unit>`, `target_<unit>` |
 | `big_hit` | damage (critical and a weak spot, 30%+, or low hull) | `shooter_<unit>`, `victim_<unit>`, `weak_spot`, `rear`, `hurt` |
@@ -60,8 +61,10 @@ blood" line beats a generic kill call, and a beat can `require` a tag outright.
 | `result` | match_end | `win_elimination`/`win_control`/`win_time`, `draw`, `flawless`, `close`, `comeback`, `quick`, `long` |
 | `outro` | match_end (after the result call) | same as result |
 
-Every moment also carries `phase_early|mid|late|final|post`, and when it has a team: `team_green|rust` and
-`team_leading|trailing|even` (by units alive).
+Every moment also carries `phase_early|mid|late|final|post`, and when it has a team: `team_green|rust`,
+`team_leading|trailing|even` (by units alive), `faction_<id>` and `other_faction_<id>` (K4: `condemned`, `gangs`,
+`law`, `syndicate`; army moments add `introduce`). While a beat runs, the line after another speaker's also sees
+`after_caller|color|pa` ("Thank you, Celeste" needs `after_pa`).
 
 ## Slots
 

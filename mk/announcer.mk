@@ -3,7 +3,7 @@
 # No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
 .PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
-        announcer-transcripts-check announcer-check
+        announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
 ANNOUNCER_CLI := $(GODOT) --headless --path . --script res://game/announcer/announcer_cli.gd --
@@ -96,5 +96,13 @@ announcer-record-smoke: import ## A real headless match with the announcer recor
 	$(PYTHON) tools/announcer/events.py $(BUILD_DIR)/announcer/recorded.jsonl; \
 	$(ANNOUNCER_CLI) --fixture=$(CURDIR)/$(BUILD_DIR)/announcer/recorded.jsonl --seed=1 --out=$(BUILD_DIR)/announcer/recorded 2>&1 | grep -q 'ANNOUNCER_CLI_EXIT=0'; \
 	echo "announcer-record-smoke passed: hash $$actual ($${expected:+matches the $$key baseline}), $$(wc -l < $(BUILD_DIR)/announcer/recorded.jsonl) events, $$(grep -c '^[0-9]:[0-9.]*   [A-Z]' $(BUILD_DIR)/announcer/recorded.txt) lines in build/announcer/recorded.txt"
+
+announcer-shots: import ## A scripted skirmish with the announcer's subtitles, desktop and phone aspect (needs a display): build/screenshots/announcer_*.png
+	mkdir -p $(BUILD_DIR)/screenshots $(BUILD_DIR)/announcer
+	$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --enemy=$(ENEMY) --announcer=text --announcer-seed=2 \
+		--screenshot-delay=$(or $(DELAY),24) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/announcer_desktop.png 2>&1 \
+		| tee $(BUILD_DIR)/announcer/shots.log | grep -E 'HUD_MESSAGE \[info\] (CALLER|VETERAN|PA):' || true
+	$(GODOT) --path . --resolution 1200x540 -- --skirmish --scripted --enemy=$(ENEMY) --announcer=text --announcer-seed=2 \
+		--screenshot-delay=$(or $(DELAY),24) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/announcer_phone.png >/dev/null 2>&1
 
 announcer-check: announcer-validate announcer-pytest announcer-audit announcer-transcripts-check announcer-record-smoke ## Everything the announcer verifies headless (in make check)

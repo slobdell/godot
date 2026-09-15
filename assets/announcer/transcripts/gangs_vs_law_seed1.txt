@@ -1,0 +1,37 @@
+TRANSCRIPT: gangs_vs_law (director seed 1)
+the Scrapyard | green: scout, scout, ifv, burner, scout | rust: tank, ifv, ifv, scout
+result: green by elimination at 1:08.8
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:08.7   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
+0:14.1   CALLER   And here comes the Law. Listen to this building. They are not popular in here.
+0:18.0   ── first contact: green scout fires on a ifv
+0:19.3   CALLER   Shots fired! Green takes the first shot!
+0:22.6   CALLER   That scout's machine gun is just hosing the scout!
+0:26.4   VETERAN  Rust is bleeding and—
+0:28.5   ── green scout destroys rust scout
+0:28.5   ── rust squad Spotlight wiped out
+0:28.6   CALLER   And Green strikes first! The scout gets the honors!
+0:30.0   ── close call: green scout at 0% hull
+0:31.9   VETERAN  First kill doesn't win it. But it's a long way back from being down one.
+0:35.0   ── close call: rust ifv at 12% hull
+0:37.2   ── rust ifv destroys green scout
+0:37.5   ── friendly fire: green burner hits its own scout
+0:39.0   ── rust ifv destroys green scout
+0:39.0   CALLER   Did everybody see that? Two vehicles gone in the blink of an eye!
+0:43.0   ── green ifv destroys rust ifv
+0:43.8   ── green burner destroys rust ifv
+0:43.8   CALLER   One left! Rust has one left!
+0:46.8   CALLER   They found the soft spot on that tank!
+0:56.5   CALLER   Is it over for Rust?
+0:58.5   VETERAN  Not yet. I've come back from worse. Not much worse.
+1:03.2   CALLER   And that's why you're in the booth.
+1:08.8   ── green scout destroys rust tank
+1:08.8   ── rust squad Precinct wiped out
+1:08.8   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
+1:08.8   CALLER   That's the last one! Green wipes them out!
+1:11.8   CALLER   That's the match! Green is your winner tonight!
+1:14.8   VETERAN  Green stayed together. That's it. That's the whole secret.
+1:19.7   PA       The match has been decided in favor of Green. Highlights will air throughout the week on all district screens.

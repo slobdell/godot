@@ -6,19 +6,19 @@ result: green by elimination at 0:57.5
 
 0:00.0   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
 0:08.7   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
-0:14.1   CALLER   A little bit of everything from Green. A mixed army with a lot of options.
+0:14.1   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
 0:18.0   ── first contact: rust artillery fires on a ifv
-0:19.2   CALLER   Artillery opens the night! Rust is shelling from long range!
+0:19.1   CALLER   Artillery opens the night! Rust is shelling from long range!
 0:22.2   ── friendly fire: rust artillery hits its own tank
-0:23.4   CALLER   That artillery shell landed on Rust's own tank!
+0:23.3   CALLER   That artillery shell landed on Rust's own tank!
 0:25.5   ── friendly fire: rust artillery hits its own ifv
-0:26.9   CALLER   Green is taking over this match!
+0:26.8   CALLER   Green is taking over this match!
 0:28.8   ── green ifv destroys rust artillery
-0:29.2   CALLER   They got to the artillery! Green gets in close and silences the big guns!
+0:29.1   CALLER   They got to the artillery! Green gets in close and silences the big guns!
 0:31.0   ── green ifv destroys rust artillery
 0:31.0   ── rust squad Battery wiped out
 0:31.0   ── close call: green ifv at 9% hull
-0:34.6   CALLER   And the artillery goes down right behind it!
+0:34.5   CALLER   And the artillery goes down right behind it!
 0:42.8   CALLER   They found the—
 0:44.0   ── green ifv destroyed by its own tank
 0:44.0   CALLER   That's a Green tank destroying a Green IFV! Their own teammate!

@@ -82,6 +82,7 @@ class Scenario:
     contact: tuple = (12.0, 20.0)
     control: bool = False
     hazard_rate: float = 0.0  # per second, per badly hurt unit (hull < 30%) during a fight: drives into a fire pit
+    factions: tuple = ("condemned", "condemned")  # green, rust (K4 faction ids)
     fits: callable = None  # (events) -> bool
     notes: dict = field(default_factory=dict)
 
@@ -151,6 +152,19 @@ SCENARIOS = {
         control=True,
         fits=lambda ev: _end(ev)["reason"] == "control"
         and sum(1 for e in ev if e["type"] == "control_changed") >= 3),
+    # Factions are concept art this round (K4); these two let the booth's faction lines be read before they play.
+    "gangs_vs_law": Scenario(
+        "gangs_vs_law", "A road gang (Green) rushes the Law (Rust); the crowd boos the Law.", "scrapyard",
+        green=[("Wreckers", ["scout", "scout", "ifv"]), ("Chrome", ["burner", "scout"])],
+        rust=[("Precinct", ["tank", "ifv", "ifv"]), ("Spotlight", ["scout"])],
+        factions=("gangs", "law"),
+        fits=lambda ev: _end(ev)["winner"] == "green" and _deaths(ev, "green") >= 2),
+    "syndicate_showcase": Scenario(
+        "syndicate_showcase", "The Syndicate's few expensive hover units (Rust) against a Condemned army.", "foundry",
+        green=[("Alpha", ["tank", "tank"]), ("Bravo", ["scout", "scout", "ifv"])],
+        rust=[("Vesper", ["lancer", "lancer"]), ("Halo", ["artillery"])],
+        factions=("condemned", "syndicate"),
+        fits=lambda ev: _end(ev)["kills_by_unit"]["rust"].get("lancer", 0) >= 2 and _deaths(ev, "rust") >= 1),
 }
 
 
@@ -202,7 +216,7 @@ class FakeMatch:
         for team in ("green", "rust"):
             members = [u for u in self.units if u.team == team]
             budget = max(budget, -(-sum(COSTS[u.unit] for u in members) // 100) * 100)
-            teams.append({"team": team, "faction": "condemned", "units": [{"id": u.id, "unit": u.unit, "squad": u.squad} for u in members]})
+            teams.append({"team": team, "faction": self.scenario.factions[0 if team == "green" else 1], "units": [{"id": u.id, "unit": u.unit, "squad": u.squad} for u in members]})
         self.emit("match_start", arena=self.scenario.arena, budget=budget, teams=teams, control_point=self.scenario.control,
                   fixture={"scenario": self.scenario.name, "seed": self.seed})
         next_momentum = MOMENTUM_EVERY

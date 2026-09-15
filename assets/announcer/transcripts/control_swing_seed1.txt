@@ -6,7 +6,7 @@ result: rust by control at 2:20.0
 
 0:00.0   PA       Welcome to the Furnace. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve.
 0:07.9   CALLER   And the control point is live tonight, so nobody gets to sit back and wait!
-0:13.6   CALLER   A little bit of everything from Green. A—
+0:13.6   CALLER   Green fields the Condemned tonight. Prison steel—
 0:16.2   ── first contact: green ifv fires on a scout
 0:16.3   CALLER   The autocannon opens up! Green's IFV is the first to speak!
 0:20.8   CALLER   That scout's machine gun is just hosing the IFV!

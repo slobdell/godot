@@ -6,36 +6,38 @@ result: green by elimination at 1:18.5
 
 0:00.0   CALLER   Nine vehicles on the floor tonight, and every one of them came to fight.
 0:04.8   PA       Good evening. On behalf of the Syndicate, welcome to the Furnace. Please take a moment to locate the exit nearest your seat. Exits will open after the match.
-0:16.4   VETERAN  Mixed army. That's the smart build. It's—
+0:16.4   CALLER   Green fields the Condemned tonight. Prison steel, welded—
 0:19.5   ── first contact: rust lancer fires on a scout
-0:19.6   CALLER   There's the beam! The Lancer reaches out across the floor for the scout!
-0:24.7   CALLER   Big shot! Big shot from Green!
+0:19.6   CALLER   And we have contact! Rust opens fire!
+0:22.9   CALLER   Big shot! Big shot from Green!
 0:26.5   ── rust scout destroys green scout
-0:27.1   CALLER   There it is! The first kill of the night belongs to Rust!
-0:35.0   VETERAN  Green is—
+0:26.5   CALLER   There it is! The first kill of the night belongs to Rust!
+0:32.5   CALLER   The IFV is smoking, and Rust smells blood!
+0:36.1   VETERAN  Green—
 0:36.2   ── rust scout destroys green ifv
-0:36.3   CALLER   Upset! Upset on the floor! The scout gets it done!
-0:40.0   CALLER   Oh, my goodness!
+0:36.6   CALLER   Hold on, hold on!
+0:38.4   CALLER   Nobody saw that coming! The scout beats the IFV!
+0:41.7   VETERAN  That IFV should have won that. It sat still—
 0:45.8   ── green ifv destroys rust scout
-0:45.8   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
-0:50.7   VETERAN  That's what they built it for. No surprises there.
+0:45.8   CALLER   Whoa, whoa, whoa!
+0:47.4   CALLER   Burst after burst, and the scout can't take any more!
 0:52.2   ── close call: green ifv at 12% hull
+0:52.3   CALLER   The Green IFV is hanging on by a thread!
 0:54.8   ── green ifv destroys rust lancer
 0:54.8   ── rust squad Needle wiped out
-0:55.5   CALLER   The Lancer goes dark! Green shuts off the beam!
-1:07.0   PA       This segment is—
+0:56.1   CALLER   The Lancer goes dark! Green shuts off the beam!
+1:07.9   PA       Fans—
 1:08.5   ── green tank destroys rust tank
-1:08.5   CALLER   Here it comes!
+1:08.5   CALLER   Sorry to cut you off, but look!
 1:09.8   ── rust tank destroys green tank
 1:09.8   ── green squad Alpha wiped out
-1:09.9   CALLER   Another one for Green! This is a clinic!
-1:13.5   CALLER   Tank against tank, and Rust wins the exchange!
-1:16.5   CALLER   Wow. Just wow.
+1:11.2   CALLER   Green is on a tear! That's three straight!
+1:14.8   CALLER   The autocannon is chewing right through that tank!
 1:18.5   ── green ifv destroys rust tank
 1:18.5   ── rust squad Hammer wiped out
 1:18.5   ── MATCH OVER: green wins by elimination (2 green, 0 rust left)
 1:18.5   CALLER   And that's it! That's the last one!
-1:21.2   CALLER   It's all over! Green wins it!
-1:23.6   VETERAN  That comeback started with one crew deciding not to panic.
-1:28.1   CALLER   Listen to this crowd!
-1:30.4   PA       The match has been decided in favor of Green. Highlights will air throughout the week on all district screens.
+1:21.2   CALLER   And Green is the last army standing! Green wins!
+1:24.5   VETERAN  That comeback started with one crew deciding not to panic.
+1:29.0   CALLER   Unbelievable!
+1:30.4   PA       Green wins tonight's match. Thank you for joining us. Please exit by section, and have your papers ready.
