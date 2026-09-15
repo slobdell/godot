@@ -267,7 +267,7 @@ some giant decision graph where many edges link to many nodes, and traversals ar
 hyped, conversational fight-night crew. **Never an imitation of a real person:** ElevenLabs' policy prohibits
 replicating a voice without consent (and blocks prominent voices), and a commercial game can't use someone's likeness.
 A sports-broadcast trio: a hype play-by-play **caller** (`JR1`), a color commentator **"the Veteran"** (a former
-arena champion: deep, dry, the expert), and **"the Corporate Co-host"** for the arena PA and sponsor reads (a Syndicate
+arena champion: deep, dry, the expert), and **"the Corporate Co-host"** (`corporate2`) for the arena PA and sponsor reads (a Syndicate
 host whose comedy is sincere corporate euphemism over carnage). Casting, the Voice Design prompt, and example lines:
 [streams/announcer.md](streams/announcer.md) *Voices*.
 

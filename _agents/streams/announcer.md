@@ -117,7 +117,7 @@ The announcer never affects gameplay.
   he is the authority, never a hype-man foil for the caller; describe the voice by timbre and personality (e.g. "deep,
   gravelly baritone, slow deliberate delivery, dry humor, older, a former fighter"), never by race or dialect, and write
   his lines in his own voice, not exaggerated dialect.
-- **Arena PA and sponsor reads: "the Corporate Co-host"** (placeholder name Celeste Vance; voice not made yet). A polished
+- **Arena PA and sponsor reads: "the Corporate Co-host"** (placeholder name Celeste Vance): **`corporate2`** in the lead's ElevenLabs account (2026-09-15). A polished
   host the Syndicate assigned to the broadcast. A woman, for the most distinct timbre of the three voices. The
   third alternative considered: a stiff, monotone Law liaison (deadpan, booed by the crowd).
 
@@ -155,7 +155,7 @@ graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's lan
 
 ## Waiting on the lead
 
-- The Veteran and Corporate Co-host voices (the caller `JR1` is ready, 2026-09-15; the co-host's Voice Design prompt is above).
+- The Veteran's voice (ready: the caller `JR1` and the Corporate Co-host `corporate2`, 2026-09-15).
 - **Environment:** as of 2026-09-15, `ELEVENLABS_KEY_ID` (and `MESHY_API_KEY`) sit after the interactive guard in
   `~/.bashrc`, so agent shells can't see them (orientation trip-up 59). Move both above line 6 or into `~/.profile`.
 
