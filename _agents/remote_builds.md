@@ -56,5 +56,10 @@ version; builder0's is canonical. When gameplay changes on purpose: `make remote
 - **Stale import cache weirdness:** `ssh slobdell@builder0 rm -rf ~/tank_squad/<folder>/.godot` and rerun.
 - **Disk:** each remote folder holds its own `.godot` cache and `build/`; clean old ones with
   `ssh slobdell@builder0 rm -rf ~/tank_squad/godot-<old stream>` when a round closes.
+- **One remote run per worktree at a time.** Every `make remote` rsyncs (with `--delete`) into the same
+  `~/tank_squad/<folder>`, so a second run started while a `check` is going swaps the files under it (feel, 2026-09-15:
+  a screenshot run synced uncommitted code mid-check and the check failed on a class it hadn't imported).
+- **Stale screenshots:** if every capture after the first looks the same, Godot fell back to Wayland (a stale Xwayland
+  cookie); `tools/remote.sh` now reads the running Xwayland's `-auth` file (feel, 2026-09-15).
 - Secrets: remote runs don't forward API keys. Paid-generation targets (Meshy, ElevenLabs) run locally, where the
   lead's environment has the keys.

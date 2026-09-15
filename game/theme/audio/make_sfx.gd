@@ -41,6 +41,9 @@ func _initialize() -> void:
 	_seeded("ricochet", _ricochet)
 	_seeded("bullet_hit_metal", _bullet_hit_metal)
 	_seeded("weak_spot_hit", _weak_spot_hit)
+	_seeded("ui_ack_move", _ack_move)
+	_seeded("ui_ack_attack", _ack_attack)
+	_seeded("ui_select", _select_blip)
 	quit()
 
 
@@ -547,3 +550,45 @@ func _weak_spot_hit() -> PackedFloat32Array:
 				chime += (sin(bell[k * 2]) + 0.6 * sin(bell[k * 2 + 1])) * exp(-local * 4.5) * minf(1.0, local * 300.0) * 0.35
 		out[i] = crunch + body + chime
 	return _echoes(out, [0.16], [0.18])
+
+
+## A radio squelch click then two quick rising tones: "copy, moving."
+func _ack_move() -> PackedFloat32Array:
+	var out := _buffer(0.2)
+	var phase := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var click := rng.randf_range(-1.0, 1.0) * exp(-t * 400.0) * 0.5
+		var freq := 880.0 if t < 0.07 else 1318.5
+		var gate := 1.0 if (t > 0.012 and t < 0.065) or (t > 0.08 and t < 0.16) else 0.0
+		phase += TAU * freq / RATE
+		var tone := (sin(phase) * 0.7 + signf(sin(phase)) * 0.15) * gate * exp(-maxf(t - 0.08, 0.0) * 12.0)
+		out[i] = click + tone * 0.6
+	return out
+
+
+## A squelch click and a hard descending buzz with a stab on top: "engaging."
+func _ack_attack() -> PackedFloat32Array:
+	var out := _buffer(0.24)
+	var phase := 0.0
+	var stab := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var click := rng.randf_range(-1.0, 1.0) * exp(-t * 400.0) * 0.5
+		phase += TAU * (420.0 - 700.0 * t) / RATE
+		var saw := (fmod(phase / TAU, 1.0) * 2.0 - 1.0) * minf(1.0, t * 200.0) * exp(-t * 9.0)
+		stab += TAU * 1760.0 / RATE
+		var top := sin(stab) * exp(-t * 30.0) * 0.4
+		out[i] = click + tanh(saw * 2.0) * 0.45 + top
+	return out
+
+
+## A soft short blip for selecting units.
+func _select_blip() -> PackedFloat32Array:
+	var out := _buffer(0.07)
+	var phase := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		phase += TAU * (1500.0 + 500.0 * t / 0.07) / RATE
+		out[i] = sin(phase) * minf(1.0, t * 800.0) * exp(-t * 45.0)
+	return out

@@ -27,6 +27,23 @@ const SCENES := {
 			"shots": [["muzzle", 0.65, "shooter"], ["stream", 1.07, "mid"], ["hits", 1.5, "target"], ["rts", 1.91, "rts"]]},
 }
 const SHOOTER_Z := 18.0
+## Feel X5's order markers, staged with a K1-shaped stand-in (control's Orders isn't merged into this branch yet).
+const ORDERS_STANDIN := """extends RefCounted
+signal order_changed(unit_name: String)
+signal queue_changed(unit_name: String)
+var current_orders := {}
+var queues := {}
+func current(unit_name: String) -> Dictionary:
+	return current_orders.get(unit_name, {})
+func queue(unit_name: String) -> Array:
+	return queues.get(unit_name, [])
+"""
+const CONTROLS_STANDIN := """extends Node
+var team := 0
+var selection := Picked.new()
+class Picked:
+	var units: Array[String] = []
+"""
 
 var camera := Camera3D.new()
 var _flags: LaunchFlags
@@ -70,6 +87,10 @@ func _run() -> void:
 	for scene_name in names:
 		if SCENES.has(scene_name):
 			await _stage(String(scene_name), SCENES[scene_name])
+		elif scene_name == "orders":
+			await _stage_orders()
+	if _flags.text("showcase") == "":
+		await _stage_orders()  # every scene by default
 	print("FX_SHOTS_DONE")
 	var fx := FxWorld.existing()
 	if fx != null:
@@ -138,6 +159,63 @@ func _stage(scene_name: String, scene: Dictionary) -> void:
 		elif clock[0] > 3.0:
 			push_error("showcase %s: the shooter never fired" % scene_name)
 			return
+
+
+func _stage_orders() -> void:
+	if _match != null:
+		_match.queue_free()
+		await get_tree().process_frame
+	_match = preload("res://game/match/match.tscn").instantiate()
+	_match.name = "Match"
+	_match.elimination = true
+	add_child(_match)
+	var fx := FxWorld.get_instance()
+	var orders_script := GDScript.new()
+	orders_script.source_code = ORDERS_STANDIN
+	orders_script.reload()
+	var orders: RefCounted = orders_script.new()
+	var controls_script := GDScript.new()
+	controls_script.source_code = CONTROLS_STANDIN
+	controls_script.reload()
+	var controls: Node = controls_script.new()
+	add_child(controls)
+	fx.link.attach(_match)
+	fx.order_feedback.attach(orders, _match, controls)
+	var units: Array[String] = []
+	for i in 4:
+		var tank := _match.spawn_tank("Green%d" % i, 0, Match.Team.GREEN, ["tank", "ifv", "scout", "ifv"][i])
+		units.append(String(tank.name))
+	var enemy := _match.spawn_tank("Enemy", 0, Match.Team.RUST, "tank")
+	await get_tree().physics_frame
+	for i in 4:
+		(_match.tanks.get_node(units[i]) as Node3D).global_position = Vector3(-9.0 + i * 6.0, 0, 20)
+	enemy.global_position = Vector3(18, 0, -14)
+	await _seconds(1.0)
+	camera.global_position = Vector3(0, 38, 42)
+	camera.look_at(Vector3(0, 0, 2), Vector3.UP)
+	controls.selection.units.assign(units)
+	await _seconds(0.12)
+	_save("orders_select")
+	var issue := func(id: int, verb: String, extra: Dictionary) -> void:
+		for unit_name in units:
+			var order := {"id": id, "verb": verb, "units": units, "queue": false}
+			order.merge(extra)
+			orders.current_orders[unit_name] = order
+			orders.order_changed.emit(unit_name)
+	issue.call(1, "move", {"to": [-12.0, -6.0], "goal": [-12.0, -6.0]})
+	await _seconds(0.12)
+	_save("orders_move")
+	issue.call(2, "attack", {"target": "Enemy"})
+	await _seconds(0.15)
+	_save("orders_attack")
+	issue.call(3, "attack_move", {"to": [4.0, -20.0], "goal": [4.0, -20.0]})
+	for unit_name in units:
+		orders.queues[unit_name] = [{"id": 4, "verb": "move", "units": units, "queue": true, "to": [22.0, 4.0], "goal": [22.0, 4.0]},
+				{"id": 5, "verb": "move", "units": units, "queue": true, "to": [-20.0, 12.0], "goal": [-20.0, 12.0]}]
+		orders.queue_changed.emit(unit_name)
+	await _seconds(0.2)
+	_save("orders_queue")
+	controls.queue_free()
 
 
 func _frame(view: String, shooter: Tank, target: Tank, aim: Vector3) -> void:

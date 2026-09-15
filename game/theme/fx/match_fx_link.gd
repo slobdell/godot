@@ -53,6 +53,11 @@ func _process(delta: float) -> void:
 		attach(found)
 
 
+## The match effects follow, or null.
+func attached_match() -> Node:
+	return _match if is_attached() else null
+
+
 ## True while effects come from a match (live or stubbed).
 func is_attached() -> bool:
 	return _match != null and is_instance_valid(_match) and not _match.is_queued_for_deletion()

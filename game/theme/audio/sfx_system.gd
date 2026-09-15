@@ -34,9 +34,12 @@ const SOUNDS := {
 	"ricochet": "res://assets/audio/ricochet.wav",
 	"bullet_hit_metal": "res://assets/audio/bullet_hit_metal.wav",
 	"weak_spot_hit": "res://assets/audio/weak_spot_hit.wav",
+	"ui_ack_move": "res://assets/audio/ui_ack_move.wav",
+	"ui_ack_attack": "res://assets/audio/ui_ack_attack.wav",
+	"ui_select": "res://assets/audio/ui_select.wav",
 }
 const WORLD_VOICES := 20
-const UI_VOICES := 3
+const UI_VOICES := 4
 ## Per sound: base volume (dB) and random pitch spread, so repeated shots don't sound identical.
 const MIX := {
 	"cannon_shot": [-4.0, 0.08], "explosion_small": [-3.0, 0.1], "explosion_big": [0.0, 0.06],
@@ -45,6 +48,7 @@ const MIX := {
 	"tank_boom": [1.0, 0.05], "shell_whine": [-5.0, 0.08], "shell_hit_armor": [-1.0, 0.07], "dirt_impact": [-3.0, 0.1],
 	"autocannon_shot": [-6.0, 0.06], "mg_round": [-13.0, 0.12], "mortar_launch": [-5.0, 0.05],
 	"ricochet": [-9.0, 0.15], "bullet_hit_metal": [-12.0, 0.12], "weak_spot_hit": [-2.0, 0.03],
+	"ui_ack_move": [-13.0, 0.03], "ui_ack_attack": [-12.0, 0.03], "ui_select": [-18.0, 0.05],
 }
 
 var muted := false
