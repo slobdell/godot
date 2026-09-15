@@ -2,13 +2,13 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://civm331neh5uh"
+uid="uid://c0ew3iryg26qf"
 path="res://.godot/imported/kit_stands_material_0_normal.png-8b5944c29ba9625025eeb1ce7017ca19.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "072d143e097a644ad0578329426a3847"
+"md5": "565a8df153682f4cb572f67da9b65935"
 }
 
 [deps]
@@ -39,5 +39,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=512
 detect_3d/compress_to=0

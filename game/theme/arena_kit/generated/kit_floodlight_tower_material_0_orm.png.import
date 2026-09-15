@@ -2,13 +2,13 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1l7wd13d20bl"
+uid="uid://b5nfuicpa42a"
 path="res://.godot/imported/kit_floodlight_tower_material_0_orm.png-38b77c58abaeaa0c8da4b680dbf75b49.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "845093fe1e8ec8809f21e3863ee0b822"
+"md5": "b7ff88941d124ff193821450f6d86a97"
 }
 
 [deps]
@@ -39,5 +39,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=512
 detect_3d/compress_to=0

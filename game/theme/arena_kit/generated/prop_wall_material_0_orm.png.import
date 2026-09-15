@@ -2,13 +2,13 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3hywa023uqft"
+uid="uid://d4h4qxq0kpol7"
 path="res://.godot/imported/prop_wall_material_0_orm.png-3498e3d9daebc8033f56bef4e1f7d390.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "b22092689c00cbcdf6287a6370f6f979"
+"md5": "c9418b4a3fe21ff440d5a431d88eed34"
 }
 
 [deps]
@@ -39,5 +39,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=512
 detect_3d/compress_to=0

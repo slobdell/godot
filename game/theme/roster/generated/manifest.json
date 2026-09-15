@@ -40,6 +40,7 @@
           0.0
         ],
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -101,6 +102,7 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -154,6 +156,7 @@
           0.0
         ],
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -215,6 +218,7 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -278,6 +282,7 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -331,6 +336,7 @@
           0.0
         ],
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -392,6 +398,7 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -455,6 +462,7 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "ao_texture": 512,
           "metallic_texture": 512,
           "normal_texture": 512,
           "roughness_texture": 512
@@ -507,6 +515,7 @@
           0.0
         ],
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -569,6 +578,7 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "ao_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0

@@ -75,6 +75,12 @@ const COMPRESS_LOSSY := 1
 const COMPRESS_BASIS_UNIVERSAL := 4
 
 
+## Extracted ORM and normal maps import at most this big (process/size_limit). glTF export re-composes a model's
+## metallic/roughness image at its albedo's size, so a 512 cap in the normalizer comes back 1024 on import; at RTS
+## distance these maps don't need more, and they were a third of each unit's web download (art stream, 2026-09-14).
+const DETAIL_MAP_LIMIT := 512
+
+
 static func texture_policy(width: int, height: int) -> int:
 	return COMPRESS_LOSSY if maxi(width, height) <= SMALL_TEXTURE else COMPRESS_BASIS_UNIVERSAL
 
@@ -98,11 +104,14 @@ static func apply_texture_policy_dir(dir: String) -> PackedStringArray:
 			continue
 		var mode := texture_policy(image.get_width(), image.get_height())
 		var normal_map := 1 if file.contains("normal") else int(config.get_value("params", "compress/normal_map", 0))
+		var size_limit := DETAIL_MAP_LIMIT if (file.ends_with("_orm.png") or file.ends_with("_normal.png")) else 0
 		if int(config.get_value("params", "compress/mode", 0)) != mode or int(config.get_value("params", "detect_3d/compress_to", 1)) != 0 \
-				or int(config.get_value("params", "compress/normal_map", 0)) != normal_map:
+				or int(config.get_value("params", "compress/normal_map", 0)) != normal_map \
+				or int(config.get_value("params", "process/size_limit", 0)) != size_limit:
 			config.set_value("params", "compress/mode", mode)
 			config.set_value("params", "detect_3d/compress_to", 0)  # no silent re-import by the editor later
 			config.set_value("params", "compress/normal_map", normal_map)
+			config.set_value("params", "process/size_limit", size_limit)
 			config.save(import_path)
 			changed.append(file)
 	return changed

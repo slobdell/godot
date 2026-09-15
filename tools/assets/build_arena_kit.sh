@@ -12,6 +12,8 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 THEME=arena_kit
 LICENSE="--license='Meshy Pro (paid plan): customer owns the generated output' --credit='Generated with Meshy'"
+# Every map at 512: the kit is seen from RTS distance, and at 1024 it added ~20 MB to the web download (40 MB .pck).
+KIT_CAPS="--texture-caps=albedo_texture:512,normal_texture:512,roughness_texture:512,metallic_texture:512,ao_texture:512,emission_texture:512"
 
 source_of() {
 	python3 - "$1" <<'PY'
@@ -25,13 +27,13 @@ normalize() {  # model slot args
 	local model="assets/incoming/meshy/$1_t2.glb"
 	[ -s "$model" ] || { echo "missing $model (see assets/review/review.json for its task)"; exit 1; }
 	make --no-print-directory assets-normalize IN="$model" SLOT="$2" THEME=$THEME \
-		ARGS="$3 --emission-energy=4 $(source_of "$1") $LICENSE" 2>&1 \
+		ARGS="$3 --emission-energy=4 $KIT_CAPS $(source_of "$1") $LICENSE" 2>&1 \
 		| grep -E "note: (tiled|decimated)|size \(|triangles:|contract|CONTRACT|warning" || true
 }
 
 normalize container_a prop.crate "--forward=+z"
 normalize barrier_a prop.wall "--forward=+x --repeat=4x1x1"
-normalize scrap_a kit.scrap_heap "--forward=+z"
+# normalize scrap_a kit.scrap_heap "--forward=+z"   # not shipped until rules add a scrap obstacle type (C5): 4 MB unused
 normalize stands_a kit.stands "--forward=${STANDS_FORWARD:-+z}"
 normalize gate_a kit.gate "--forward=+z"
 normalize tower_a kit.floodlight_tower "--forward=+z"

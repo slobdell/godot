@@ -2,13 +2,13 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bmeo8edy3d2fb"
+uid="uid://bl6th7e3n24dt"
 path="res://.godot/imported/kit_gate_material_0_orm.png-63ade2eb88ff25620dc448de37b6dbe7.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "47fe1d4ce32702db27bf20b86ddf639d"
+"md5": "10bc652ce7f91ad319057dff5adf3d5e"
 }
 
 [deps]
@@ -39,5 +39,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=512
 detect_3d/compress_to=0

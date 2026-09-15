@@ -7,10 +7,10 @@
       "notes": [
         "decimated 10133 → 5065 triangles (budget 8000)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -36,6 +36,14 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "albedo_texture": 512,
+          "ao_texture": 512,
+          "emission_texture": 512,
+          "metallic_texture": 512,
+          "normal_texture": 512,
+          "roughness_texture": 512
+        },
         "up": "+y"
       },
       "roof": 21.138,
@@ -50,10 +58,10 @@
       "notes": [
         "decimated 12897 → 5895 triangles (budget 10000)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -79,55 +87,20 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 12.0,
       "scene": "kit_gate.tscn",
       "source": "Meshy image-to-3D meshy-t2 task 01a0a206-8d8e-726f-a68e-e712e95804db from review item gate_a (concept 01a0a1da-3ad6-75c5-9134-e6f285147864)",
       "tris": 5895.0
-    },
-    "kit.scrap_heap": {
-      "credit": "Generated with Meshy",
-      "glb": "kit_scrap_heap.glb",
-      "license": "Meshy Pro (paid plan): customer owns the generated output",
-      "notes": [
-        "decimated 8296 → 1490 triangles (budget 4000)",
-        "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
-      ],
-      "options": {
-        "emission_energy": 4.0,
-        "emissive": {},
-        "exclude": [],
-        "fitted_offset": [
-          0.0,
-          1.6523,
-          0.0264
-        ],
-        "fitted_scale": 4.5,
-        "forward": "+z",
-        "include": [],
-        "materials": {
-          "heat": [],
-          "shield": [],
-          "team_emissive": [],
-          "tint": []
-        },
-        "scale": 0.0,
-        "shift": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "up": "+y"
-      },
-      "roof": 3.226,
-      "scene": "kit_scrap_heap.tscn",
-      "source": "Meshy image-to-3D meshy-t2 task 01a0a206-8d8e-7508-b648-5f958b08748d from review item scrap_a (concept 01a0a1da-52e9-702e-859f-4ead065507be)",
-      "tris": 1490.0
     },
     "kit.stands": {
       "credit": "Generated with Meshy",
@@ -136,10 +109,10 @@
       "notes": [
         "decimated 13939 → 5445 triangles (budget 12000)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -165,6 +138,14 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 15.721,
@@ -180,10 +161,10 @@
         "decimated 7928 → 3425 triangles (budget 4000)",
         "refit to the collision box after decimation (×1.000, ×1.100, ×1.000)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -209,6 +190,14 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 3.0,
@@ -225,10 +214,10 @@
         "decimated 33508 → 7047 triangles (budget 8000)",
         "refit to the collision box after decimation (×1.001, ×1.075, ×1.005)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -255,6 +244,14 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 3.0,

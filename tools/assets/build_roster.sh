@@ -19,7 +19,7 @@ THEME=roster
 LICENSE="--license='Meshy Pro (paid plan): customer owns the generated output' --credit='Generated with Meshy'"
 # Normal and ORM maps at 512 (albedo and emission stay 1024): they barely show at RTS distance and were half of each
 # unit's web download (22.4 MB .pck with all five units at 1024).
-COMMON="--tint=material_0 --tint-strength=0.2 --emission-energy=4 --texture-caps=normal_texture:512,roughness_texture:512,metallic_texture:512"
+COMMON="--tint=material_0 --tint-strength=0.2 --emission-energy=4 --texture-caps=normal_texture:512,roughness_texture:512,metallic_texture:512,ao_texture:512"
 
 source_of() {  # unit name → "--source=…" from the generate.py sidecar
 	python3 - "$1" <<'EOF'

@@ -2,13 +2,13 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ypscshnxwsea"
+uid="uid://dfgqe1yl1fug3"
 path="res://.godot/imported/prop_crate_material_0_orm.png-00b6dba6340baa7102d5463e14293128.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "9aa8fe084cbd1cb38e989ea32d408080"
+"md5": "f050945feb4aaddab5280716ea0e2452"
 }
 
 [deps]
@@ -39,5 +39,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=512
 detect_3d/compress_to=0
