@@ -54,7 +54,8 @@ func _process(delta: float) -> void:
 func advance(seconds: float) -> void:
 	_clock += seconds
 	for key in _pending.keys():
-		if _clock - float(_pending[key]["since"]) >= LOSS_MERGE_SECONDS:
+		# A small tolerance: _clock sums frame deltas, so "exactly LOSS_MERGE_SECONDS later" can land a hair short.
+		if _clock - float(_pending[key]["since"]) >= LOSS_MERGE_SECONDS - 0.001:
 			_flush(key)
 	_check_control()
 
