@@ -322,12 +322,9 @@ Questions for the lead with the review:
 
 - ~~`army-loop-smoke` flaked twice on builder0~~ ("Invalid polygon data, triangulation failed"): **fixed on main**
   (8dbe23e: far-zoom command icons off screen failed triangulation on precision), merged here.
-- **main's 8dbe23e brings a failing unit test** (reported to the orchestrator 2026-09-15):
-  `test_command_icons::test_unit_icons_skip_positions_a_camera_could_not_project` ("a collinear triangle is not
-  drawn") fails every run on both machines, because Godot 4.7.2's `Geometry2D.triangulate_polygon` returns `[0, 2, 1]`
-  for collinear points. Not announcer code. With it failing, every other `make check` target passes on this branch on
-  builder0 (lint, network/relay/lobby smokes, match, determinism, sim baseline, garage, army loop, announcer-check),
-  and the other 432 tests pass. I'll merge main again when it's fixed.
+- ~~A command_icons test from that fix failed on 4.7.2~~ (collinear polygons still triangulate): fixed on main as
+  13685ce (a zero-area guard), merged here. **Full `make check` passes on builder0 after the merge: 433 tests,
+  every smoke, announcer-check.**
 - Mock durations are longer than the per-word estimate; real ElevenLabs pacing will differ again, which is why the
   director reads the manifest.
 - ~~Rendering on builder0 hangs~~ **fixed on main** (7dc7bdc, a stale Xwayland auth file; merged here): after the merge,
