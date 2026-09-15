@@ -257,6 +257,33 @@ is driven by textures, not meshes: share texture sets, vary instances in shaders
 **Art direction:** these ideas supersede round-1 bans on logos, text, and pristine surfaces (the lead, 2026-09-15);
 art_direction.md is updated to match.
 
+### The arena announcer (stretch; lead, 2026-09-15)
+
+The lead: an ElevenLabs pipeline for *"an arena commentator … We'd want the announcer to make it feel like a sporting
+event."*
+
+- **An original voice, never an imitation of a real person.** Voices are designed from a written description
+  (ElevenLabs Voice Design), aiming at the archetype: a hyped, conversational fight-night commentator. Cloning or
+  approximating a real person's voice is out: ElevenLabs' policy prohibits it without consent (and blocks prominent
+  voices), and a commercial game can't use someone's likeness. Same rule as ads: no real people, no real brands.
+- **Two voices, like a sports broadcast:** a play-by-play caller and a color commentator who banters, plus the arena PA
+  and ad voice-overs for the screens.
+- **Pre-generated at build time, never live text-to-speech in a match:** a line library (text + category + variants)
+  → `make` target calls the API with the lead's key from the environment (never committed) → compressed mono OGG
+  (~32 kbps) + a manifest. No API key or cost at play time, works offline, same on every platform.
+- **Commercial rights need a paid plan** (the free plan is non-commercial with attribution). Log generations like the
+  Meshy ledger; don't be wasteful.
+- **Categories (3–6 variants each so it never repeats):** match start and introductions per faction; first blood;
+  multi-kills; a scout outmaneuvering a tank; friendly fire (roast it); close calls and escapes; comebacks; control
+  point captured; a squad wiped; last unit standing; victory and defeat; sponsor reads that match the ad screens;
+  crowd reactions (the Law gets booed). Team names by color ("Rust"), never player names, so lines stay pre-generated.
+- **The director (runtime, presentation only):** match events → priority queue with cooldowns, no overlapping lines,
+  interruptions for bigger moments, rarity weights, music and effects ducking under speech, subtitles through
+  `Hud.post_message`, and cues to the crowd (cheers) and screens (replays, odds). It never touches the simulation.
+- **Size:** ~300 lines × ~3 s at 32 kbps ≈ 3–4 MB. Load it as a separate pack after the game starts on web.
+- **Tone and rating:** dark, funny, over the top; mild language only (strong profanity and crude humor raise the
+  IARC rating). Re-generate per language later from the same text library.
+
 ## Match rules (current defaults)
 
 - Squad-vs-squad elimination; no respawns.
