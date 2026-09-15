@@ -1,6 +1,6 @@
 extends Node3D
 ## Weapon FX showcase (`make fx-shots`): close-up captures of each weapon's fire, flight, and impact, staged with a real
-## Match and real Tanks (so the shots go through the same rules, stub or K2 events, and effect families as a game) in
+## Match and real Tanks (so the shots go through the same rules, K2 events, and effect families as a game) in
 ## the night arena's lighting. For each scene a shooter fires at a target, and the camera jumps to the muzzle, the
 ## round in flight, and the impact at scripted times after the shot, saving a PNG each time. Visual only; needs a display.
 ## Flags: --shots=<abs dir> (required to save) --showcase=tank_hit,tank_kill,... (default: all) --theme=NAME
@@ -13,7 +13,8 @@ const SCENES := {
 	"tank_kill": {"shooter": "tank", "target": "ifv", "distance": 34.0, "aim_offset": 0.0, "kill": true, "hold": 0.0,
 			"shots": [["impact", 0.52, "target"], ["cook_off", 0.85, "target"], ["burning", 2.6, "target_wide"], ["rts_cook_off", 0.95, "rts"],
 					["wreck", 7.0, "target_wide"]]},
-	# Feel X4: a weak-spot hit (forced on: round 2 has none) and rounds splashing on a shield that holds.
+	# Feel X4: a weak-spot hit (forced on: a staged shot hits the flank, not the engine deck) and rounds splashing on a
+	# shield that holds.
 	"tank_weak_spot": {"shooter": "tank", "target": "tank", "distance": 34.0, "aim_offset": 0.0, "kill": false, "hold": 0.0,
 			"weak_spot": true, "shots": [["flare", 0.52, "target"], ["flare_late", 0.7, "target"], ["rts", 0.56, "rts"]]},
 	"ifv_on_shield": {"shooter": "ifv", "target": "tank", "distance": 30.0, "aim_offset": 0.0, "kill": false, "hold": 1.5,
@@ -23,7 +24,6 @@ const SCENES := {
 	"ifv_burst": {"shooter": "ifv", "target": "scout", "distance": 30.0, "aim_offset": 0.0, "kill": false, "hold": 1.6,
 			"shots": [["muzzle", 0.3, "shooter"], ["tracers", 0.75, "mid"], ["hits", 1.2, "target"], ["rts", 1.4, "rts"]]},
 	"scout_stream": {"shooter": "scout", "target": "ifv", "distance": 26.0, "aim_offset": 0.0, "kill": false, "hold": 2.0,
-			# Round 2 fires 5 rounds a second, so captures land just after a round leaves (combat is raising the rate).
 			"shots": [["muzzle", 0.65, "shooter"], ["stream", 1.07, "mid"], ["hits", 1.5, "target"], ["rts", 1.91, "rts"]]},
 }
 const SHOOTER_Z := 18.0
@@ -202,8 +202,8 @@ func _stage_orders() -> void:
 	controls.queue_free()
 
 
-## Feel X6: a scout drifting around a curve, an IFV braking hard, a tank rolling past, moved by script (round 2 units
-## can't slide yet), so dust, drift marks, and the lurch show.
+## Feel X6: a scout drifting around a curve, an IFV braking hard, a tank rolling past, moved by script (so the frames are
+## repeatable), so dust, drift marks, and the lurch show.
 func _stage_motion() -> void:
 	if _match != null:
 		_match.queue_free()

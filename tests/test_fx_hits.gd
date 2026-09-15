@@ -82,23 +82,22 @@ func test_every_kill_blows_the_vehicle_up_whatever_killed_it() -> void:
 		assert_true(fx.weapons.last_pieces.has("secondary_blast"), "a %s kill still cooks the vehicle off (%s)" % [model, fx.weapons.last_pieces])
 
 
-func test_a_death_without_a_killing_impact_still_explodes_once() -> void:
+func test_every_unit_destroyed_explodes_once_and_burns_along_its_hull() -> void:
 	var setup := _match_world()
 	var fx: FxWorld = setup[0]
 	var game_match: Match = setup[1]
-	game_match.elimination = true  # no respawn timers outliving the test
-	var burned := game_match.spawn_tank("Burned", 0, Match.Team.GREEN, "scout")
-	var shot := game_match.spawn_tank("Shot", 0, Match.Team.RUST, "scout")
-	await wait_physics_frames(1)
-	burned.global_position = Vector3(40, 0, 0)
-	shot.global_position = Vector3(-40, 0, 0)
 	var sites := fx.fires.burning_count()
-	burned.died.emit()
+	game_match.unit_destroyed.emit({"tick": 1, "unit": "Burned", "unit_id": "ifv", "team": 0, "killer": "hazard:fire_pit",
+			"cause": "hazard", "position": [40.0, 0.0, 0.0], "forward": [1.0, 0.0, 0.0], "hull_size": [2.4, 1.6, 3.8]})
 	assert_true(fx.weapons.last_pieces.has("kill_explosion"), "a vehicle that dies in a fire pit explodes (%s)" % [fx.weapons.last_pieces])
 	assert_eq(fx.fires.burning_count(), sites + 1, "and leaves a burning wreck site")
+	var site: Dictionary = fx.fires.sites[-1]
+	assert_near((site["forward"] as Vector3).x, 1.0, 0.01, "the fire follows the wreck's facing")
+	assert_near((site["half"] as Vector2).y, 1.9, 0.01, "over the length of its hull")
 	fx.weapons.impact(_hit(9, "Shot", false, true, Vector3(-40, 1.2, 0)))
 	var events := fx.weapons.events
-	shot.died.emit()
+	game_match.unit_destroyed.emit({"tick": 2, "unit": "Shot", "unit_id": "scout", "team": 1, "killer": "Gunner",
+			"cause": "enemy", "position": [-40.0, 0.0, 0.0], "forward": [0.0, 0.0, -1.0], "hull_size": [2.0, 1.4, 3.0]})
 	assert_eq(fx.weapons.events, events, "a death its killing hit already blew up doesn't explode twice")
 
 

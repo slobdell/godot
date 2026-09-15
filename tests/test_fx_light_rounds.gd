@@ -114,17 +114,23 @@ func _match_world() -> Array:
 	return [fx, game_match]
 
 
-func test_the_stub_draws_todays_machine_gun_hits_from_the_tracer_slot() -> void:
+func test_a_real_scout_s_rounds_fly_to_where_the_rules_say_they_hit() -> void:
 	var setup := _match_world()
 	var fx: FxWorld = setup[0]
 	var game_match: Match = setup[1]
+	game_match.elimination = true
 	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
 	var victim := game_match.spawn_tank("Victim", 0, Match.Team.RUST, "ifv")
 	await wait_physics_frames(1)
 	scout.global_position = Vector3(0, 0, 0)
+	scout.rotation.y = 0.0
 	victim.global_position = Vector3(0, 0, -20)
-	assert_true(not fx.weapons.draw_hitscan, "in the stub the slot, not the events, draws hitscan rounds")
-	var rounds := fx.tracers.active_count_at(fx.now + 0.01)
-	assert_true(fx.link.stub_hitscan(Vector3(0, 1.1, -1.5), Vector3(0, 1.1, -19)), "the stub takes the round")
-	assert_eq(fx.tracers.active_count_at(fx.now + 0.01) - rounds >= 1, true, "the round is drawn as a tracer")
-	assert_eq(fx.weapons.last_family, "stream", "and its hit on the IFV uses the stream family")
+	await wait_physics_frames(2)
+	game_match.seed_spawns(4, 0.0)  # the MG's spread is seeded (trip-up 38)
+	var muzzle := scout.muzzle_position()
+	var at_victim := Vector3(victim.global_position.x, muzzle.y, victim.global_position.z) - muzzle
+	scout.fired.emit(muzzle, at_victim.normalized())
+	assert_eq(fx.weapons.last_family, "stream", "the rules' impact on the IFV uses the stream family")
+	fx.weapons.flush(fx.now)
+	var end := fx.tracers.round_end(fx.tracers.newest_round())
+	assert_true(end.z > -21.5 and end.z < -17.0, "the tracer ends on the IFV the rules hit, not at full range (%s)" % end)

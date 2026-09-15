@@ -70,10 +70,7 @@ var _fx: FxWorld
 var _projectiles := {}
 var _order: Array[int] = []
 var _rng := RandomNumberGenerator.new()
-## Draw hitscan rounds from weapon events (live K2). MatchFxLink turns it off in stub mode, where the fx.tracer slot
-## knows both ends of each round and draws it instead.
-var draw_hitscan := true
-## The FX showcase only: treat every hit on a vehicle as a weak-spot hit (round 2 has no weak spots to show yet).
+## The FX showcase only: treat every hit on a vehicle as a weak-spot hit (staged shots rarely land on the engine deck).
 var showcase_weak_spots := false
 ## Hitscan rounds fired this frame, waiting for their impact (same tick) to know where they end: id -> shot.
 var _pending_hitscan := {}
@@ -121,7 +118,7 @@ func fired(event: Dictionary) -> void:
 	_track(int(event.get("projectile_id", -1)), {"model": model, "shooter": shooter_name, "color": color, "muzzle": muzzle,
 			"direction": direction})
 	var speed := float(event.get("speed_mps", K2Events.projectile_speed(weapon)))
-	if draw_hitscan and (model == "stream" or model == "burst") and speed <= 0.0:
+	if (model == "stream" or model == "burst") and speed <= 0.0:
 		_pending_hitscan[int(event.get("projectile_id", -1))] = {"muzzle": muzzle, "direction": direction,
 				"range": float(event.get("range", weapon.get("range", 45.0))), "color": color, "model": model}
 	match model:
@@ -156,19 +153,6 @@ func flush(now: float) -> void:
 		var muzzle: Vector3 = shot["muzzle"]
 		_fx.tracers.shoot(muzzle, muzzle + shot["direction"] * float(shot["range"]), shot["color"], shot["model"], now)
 	_pending_hitscan.clear()
-
-
-## Stub (round 2): a hitscan round drawn by the fx.tracer slot from `from` to `to`. `target` is the vehicle it struck
-## ("" = none); `hit_world` means it stopped short on a wall or prop.
-func hitscan(from: Vector3, to: Vector3, shooter_name: String, target: String, hit_world: bool, model := "stream") -> void:
-	var color := _team_glow(_unit(shooter_name))
-	_fx.tracers.shoot(from, to, color, model, _fx.now)
-	if target != "":
-		impact({"projectile_id": -1, "fire_model": model, "position": K2Events.from_vector(to), "target": target,
-				"normal": K2Events.from_vector((from - to).normalized()), "killed": false, "weak_spot": false})
-	elif hit_world:
-		_begin(model)
-		_small_miss(model, FAMILIES[model], to)
 
 
 ## K2 projectile_impact: the landing side.
@@ -289,7 +273,7 @@ func _kill(model: String, family: Dictionary, position: Vector3, direction: Vect
 	if _killed_recently(position, now, unit_name):
 		return
 	_recent_kills.append({"position": position, "time": now, "unit": unit_name})
-	# The round-2 kill explosion (fireballs, glow, a burning site, the crowd, the big boom), then more on top: whatever
+	# The base kill explosion (fireballs, glow, a burning site, the crowd, the big boom), then more on top: whatever
 	# killed it, the vehicle itself blows up. A tank shell or a mortar makes it bigger.
 	var heavy := model == "shell" or model == "arc"
 	_fx.explosion(position, true, 0.35)
@@ -319,8 +303,8 @@ func last_kill() -> Dictionary:
 	return _recent_kills[-1] if not _recent_kills.is_empty() else {}
 
 
-## A vehicle died (its `died` signal): blow it up unless the hit that killed it already did (hazards, beams, and round-2
-## hitscan kills have no killing impact).
+## A vehicle died (its `died` signal, for a match without K2's unit_destroyed): blow it up unless the hit that killed
+## it already did.
 func unit_destroyed(unit: Node3D) -> void:
 	if unit == null or not unit.is_inside_tree():
 		return
@@ -329,6 +313,20 @@ func unit_destroyed(unit: Node3D) -> void:
 		return
 	_begin("destroyed")
 	_kill("burst", FAMILIES["burst"], position, -unit.global_basis.z, String(unit.name))
+
+
+## K2 unit_destroyed: blow the unit up where its wreck lies (unless its killing hit already did), and set the wreck's
+## fire along its hull.
+func destroyed(event: Dictionary) -> void:
+	var unit_name := String(event.get("unit", ""))
+	var position := K2Events.to_vector(event.get("position")) + Vector3.UP * 0.8
+	if _killed_recently(position, _fx.now, unit_name):
+		_fx.fires.shape_last(position, K2Events.to_vector(event.get("forward")), event.get("hull_size", []))
+		return
+	_begin("destroyed")
+	var forward := K2Events.to_vector(event.get("forward"))
+	_kill("burst", FAMILIES["burst"], position, forward, unit_name)
+	_fx.fires.shape_last(position, forward, event.get("hull_size", []))
 
 
 ## The same death reported twice: the same unit (when both reports name it), or the same spot when one doesn't.
@@ -439,7 +437,7 @@ func _shell_miss(family: Dictionary, position: Vector3, direction: Vector3) -> v
 	_sound(String(family["miss_sound"]), position)
 
 
-## A round that flew out of range without hitting anything (round-2 shells expire in mid-air): it drops into the dirt
+## A round that flew out of range without hitting anything (the Shell expires in mid-air; K2 reports nothing): it drops into the dirt
 ## just beyond where it gave out.
 func fizzle(position: Vector3, direction: Vector3, model: String, from: Variant = null, shooter := "") -> void:
 	if not FAMILIES.has(model):

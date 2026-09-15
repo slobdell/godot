@@ -216,7 +216,7 @@ func _apply_viewport() -> void:
 ## A projectile visual appeared: draw it as a tracer and flash its muzzle.
 func add_tracer(source: Node3D, color: Color, style := "default") -> void:
 	tracers.add(source, color, style)
-	if muzzle_flashes and not link.drives_muzzles():
+	if muzzle_flashes and not link.live:
 		muzzle_flash(source.global_position, color)
 
 

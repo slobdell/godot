@@ -72,30 +72,26 @@ func test_the_link_listens_to_real_k2_signals_when_the_match_has_them() -> void:
 	assert_eq(fx.weapons.events, before + 2, "both K2 signals reach the effect families")
 
 
-func test_the_stub_turns_todays_tank_shots_into_k2_events() -> void:
+func test_a_real_match_s_shots_reach_the_effects_live() -> void:
 	var fx: FxWorld = add_to_tree(FxWorld.new())
 	var game_match: Match = add_to_tree(preload("res://game/match/match.tscn").instantiate())
+	game_match.elimination = true
 	fx.link.attach(game_match)
-	assert_true(not fx.link.live, "today's match has no K2 signals yet: the stub runs")
-	var tank := game_match.spawn_tank("StubShooter", 0, Match.Team.GREEN, "ifv")
+	assert_true(fx.link.live, "combat's Match emits K2: the effects follow it live")
+	var tank := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "ifv")
 	await wait_physics_frames(1)
 	var before := fx.weapons.events
-	tank.fired.emit(Vector3(0, 1.3, 0), Vector3.FORWARD)
-	assert_eq(fx.weapons.events, before + 1, "a Tank.fired signal becomes one weapon_fired event")
-	assert_eq(fx.weapons.last_family, "burst", "the IFV's shot uses the burst family")
-	fx.link.stub_impact(Vector3(0, 1.0, -25.0), false)
-	assert_eq(fx.weapons.last_family, "burst", "a stub impact on that shot's line is attributed to the IFV's round")
+	tank.fired.emit(tank.muzzle_position(), tank.turret_forward())
+	assert_true(fx.weapons.events > before, "the rules' weapon_fired reaches the effect families")
+	assert_eq(fx.weapons.last_family, "burst", "the IFV's round uses the burst family")
 
 
-func test_impacts_come_only_from_k2_once_it_is_live() -> void:
+func test_a_match_that_does_not_simulate_is_not_live() -> void:
 	var fx: FxWorld = add_to_tree(FxWorld.new())
-	var fake_match: Node = add_to_tree(Node.new())
-	fake_match.add_user_signal("weapon_fired", [{"name": "event", "type": TYPE_DICTIONARY}])
-	fake_match.add_user_signal("projectile_impact", [{"name": "event", "type": TYPE_DICTIONARY}])
-	fx.link.attach(fake_match)
-	var before := fx.weapons.events
-	fx.link.stub_impact(Vector3.ZERO, true)
-	assert_eq(fx.weapons.events, before, "the old Impact path is ignored when K2 impacts drive the effects (no double hits)")
+	var game_match: Match = add_to_tree(preload("res://game/match/match.tscn").instantiate())
+	game_match.simulate = false
+	fx.link.attach(game_match)
+	assert_true(not fx.link.live, "a networked client gets no events, so it keeps the legacy effects")
 
 
 func test_a_long_firefight_adds_no_nodes() -> void:

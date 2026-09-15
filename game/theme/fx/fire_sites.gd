@@ -34,6 +34,19 @@ func ignite(position: Vector3, now: float, bursts: BurstSystem) -> void:
 	bursts.spawn(BurstSystem.Kind.GROUND_GLOW, position, 7.0, BURN_SECONDS, Color(0.6, 0.22, 0.05), now)
 
 
+## Fit the newest site near `position` to its wreck (K2 unit_destroyed): flames spread along `forward` over the hull.
+func shape_last(position: Vector3, forward: Vector3, hull_size: Variant) -> void:
+	for i in range(sites.size() - 1, -1, -1):
+		var site: Dictionary = sites[i]
+		if Vector2(position.x - (site["position"] as Vector3).x, position.z - (site["position"] as Vector3).z).length() > 6.0:
+			continue
+		if forward.length() > 0.01:
+			site["forward"] = Vector3(forward.x, 0.0, forward.z).normalized()
+		if hull_size is Array and (hull_size as Array).size() >= 3:
+			site["half"] = Vector2(float(hull_size[0]), float(hull_size[2])) * 0.5
+		return
+
+
 func update(now: float, bursts: BurstSystem, lights: LightPool) -> void:
 	for i in range(sites.size() - 1, -1, -1):
 		var site: Dictionary = sites[i]
@@ -46,7 +59,10 @@ func update(now: float, bursts: BurstSystem, lights: LightPool) -> void:
 		if now >= float(site["next"]):
 			site["next"] = now + FLAME_EVERY * _rng.randf_range(0.7, 1.3)
 			# Flames lick up from anywhere along a hull-sized patch, not one point.
-			var jitter := Vector3(_rng.randf_range(-1.4, 1.4), _rng.randf_range(0.8, 2.6), _rng.randf_range(-1.8, 1.8))
+			var forward: Vector3 = site.get("forward", Vector3.FORWARD)
+			var half: Vector2 = site.get("half", Vector2(1.4, 1.8))
+			var jitter := forward.cross(Vector3.UP) * _rng.randf_range(-half.x, half.x) + forward * _rng.randf_range(-half.y, half.y) \
+					+ Vector3.UP * _rng.randf_range(0.8, 2.6)
 			bursts.spawn(BurstSystem.Kind.FIREBALL, position + jitter, _rng.randf_range(2.6, 3.8) * (0.5 + 0.5 * strength),
 					_rng.randf_range(0.8, 1.2), Color(1.0, 0.75, 0.55), now, Vector3.ZERO, 0.0, 0.0, _rng.randf_range(0.5, 1.2))
 		if now >= float(site["next_smoke"]):

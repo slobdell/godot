@@ -1,7 +1,7 @@
 class_name K2Events
 extends RefCounted
-## The K2 weapon-event shapes as the feel stream reads them (_agents/workstreams.md, K2), plus the stub mapping from
-## today's weapon profiles to fire models until combat's profile v3 lands (CP2). Pure helpers: no nodes, no renderer.
+## The K2 weapon-event shapes as the feel stream reads them (_agents/workstreams.md, K2), plus a fallback mapping for
+## profiles without `fire_model` (the FX lab's stand-ins, older data). Pure helpers: no nodes, no renderer.
 ##
 ## weapon_fired:      {tick, shooter, weapon, fire_model, muzzle [x,y,z], direction [x,y,z], projectile_id}
 ## projectile_impact: {tick, projectile_id, position, normal, target?, face?: "front"|"side"|"rear", weak_spot, damage,
@@ -10,7 +10,7 @@ extends RefCounted
 const FIRE_MODELS: Array[String] = ["shell", "burst", "stream", "beam", "arc"]
 
 
-## A weapon profile's fire model: its own `fire_model` (profile v3), else the round-2 stub mapping by kind and id.
+## A weapon profile's fire model: its own `fire_model` (profile v3), else a mapping by kind and id.
 static func fire_model(weapon: Dictionary) -> String:
 	var own := String(weapon.get("fire_model", ""))
 	if own in FIRE_MODELS:
@@ -21,12 +21,12 @@ static func fire_model(weapon: Dictionary) -> String:
 		Weapons.Kind.CONE:
 			return ""  # flamethrowers spray every tick: their visual slot draws them, not weapon events
 		Weapons.Kind.BEAM:
-			# The round-2 machine gun is a hitscan "beam" drawn as tracers; lasers are real beams.
+			# A hitscan "beam" drawn as tracers is a machine gun; lasers are real beams.
 			return "stream" if String(weapon.get("fx", "")) == "fx.tracer" else "beam"
 	return "burst" if float(weapon.get("reload", weapon.get("reload_s", 3.0))) < 1.0 else "shell"
 
 
-## How fast a weapon's rounds fly (m/s); 0 = hitscan. Profile v3's `projectile_speed_mps`, else round 2's kinds.
+## How fast a weapon's rounds fly (m/s); 0 = hitscan. Profile v3's `projectile_speed_mps`, else by kind.
 static func projectile_speed(weapon: Dictionary) -> float:
 	if weapon.has("projectile_speed_mps"):
 		return float(weapon["projectile_speed_mps"])
