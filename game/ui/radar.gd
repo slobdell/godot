@@ -1,9 +1,11 @@
 class_name Radar
 extends Control
-## G2: the always-on radar / minimap. Shows what the team knows, and doubles as an input:
-##   tap / click     aim the camera there
-##   drag            order the selected squad there (press = destination, drag direction = facing),
-##                   the same SquadCommand a drag on the map sends
+## G2: the always-on radar / minimap. Shows what the team knows, and doubles as an input (C1):
+##   tap / click     order the selected squad there (the same SquadCommand a tap on the map sends)
+##   drag or hold    look: the camera follows the finger across the radar (no order)
+## Why tap = order: the lead asked to "click on a location in the radar" to send a squad, and ordering is
+## the action that matters most; looking stays one gesture (touch and scrub, the usual minimap idiom),
+## and a press that rests is a look too, so a hesitant finger never sends anyone.
 ## Draws: arena outline and obstacles, the visibility field (lit / remembered / unexplored), friendly
 ## tanks (commander ringed), enemies in sight, last-known contacts fading out, squad destinations, and
 ## the camera's footprint. Enemies come ONLY from team intel (fog of war).
@@ -18,7 +20,7 @@ const HEIGHT_FRACTION := 0.3
 const MIN_SIZE := 150.0
 const MAX_SIZE := 300.0
 const MARGIN := 12.0
-## A press that moves less than this (pixels) is a tap (aim the camera), not a drag (order).
+## A press that moves less than this (pixels) is a tap (order), not a drag (look).
 const DRAG_PX := 10.0
 
 var game_match: Match
@@ -31,6 +33,7 @@ var obstacles: Array[PackedVector2Array] = []
 var _press: Variant = null
 var _press_moved := false
 var _drag_now := Vector2.ZERO
+var _press_held := 0.0
 
 
 func _ready() -> void:
@@ -48,10 +51,6 @@ func _layout() -> void:
 	offset_right = -MARGIN
 	offset_top = -side - MARGIN
 	offset_bottom = -MARGIN
-
-
-func _process(_delta: float) -> void:
-	queue_redraw()
 
 
 ## Collect obstacle footprints from an arena's collision boxes (the Obstacles node).
@@ -124,10 +123,11 @@ func _gui_input(event: InputEvent) -> void:
 		if button.pressed:
 			_press = button.position
 			_press_moved = false
+			_press_held = 0.0
 			_drag_now = button.position
 		elif _press != null:
 			if _press_moved:
-				drag_order(_press, button.position)
+				look(button.position)
 			else:
 				tap(button.position)
 			_press = null
@@ -136,16 +136,36 @@ func _gui_input(event: InputEvent) -> void:
 		_drag_now = (event as InputEventMouseMotion).position
 		if _drag_now.distance_to(_press) > DRAG_PX:
 			_press_moved = true
+		if _press_moved:
+			look(_drag_now)
 		accept_event()
 
 
-## A tap: aim the camera at that spot.
-func tap(local: Vector2) -> void:
+func _process(delta: float) -> void:
+	if _press != null and not _press_moved:
+		_press_held += delta
+		if _press_held >= TacticalMap.LONG_PRESS_SECONDS:
+			_press_moved = true  # a resting press is a look, not an order
+			look(_drag_now)
+	queue_redraw()
+
+
+## A tap: send the selected squad there; with no squad to command, look there instead.
+func tap(local: Vector2) -> String:
+	if map != null and map.selected() != null:
+		var spot := radar_to_world(local)
+		return map.order_drag(spot, spot)
+	look(local)
+	return ""
+
+
+## Aim the camera at a radar point.
+func look(local: Vector2) -> void:
 	if map != null and map.rig != null:
 		map.rig.focus_on(radar_to_world(local))
 
 
-## A drag: order the selected squad to the press point, facing along the drag.
+## An order with a facing, from radar points (kept for scripts and the agent's point of view).
 func drag_order(from_local: Vector2, to_local: Vector2) -> String:
 	if map == null:
 		return "no map"
@@ -200,14 +220,18 @@ func _draw() -> void:
 				draw_circle(at, dot, friendly)
 				draw_arc(at, dot + 2.5, 0.0, TAU, 16, commander, 1.5)
 			"enemy":
-				draw_circle(at, dot, enemy)
+				# Diamonds for enemies, circles for us: readable without color (accessibility).
+				var r := dot * 1.3
+				draw_colored_polygon(PackedVector2Array([at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(0, r), at + Vector2(-r, 0)]), enemy)
 			"contact":
-				draw_arc(at, dot, 0.0, TAU, 12, Color(enemy, blip["fade"]), 1.5)
+				var r := dot * 1.3
+				draw_polyline(PackedVector2Array([at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(0, r), at + Vector2(-r, 0),
+						at + Vector2(0, -r)]), Color(enemy, blip["fade"]), 1.5)
 			"destination":
 				draw_line(at + Vector2(-dot, -dot), at + Vector2(dot, dot), commander, 1.5)
 				draw_line(at + Vector2(-dot, dot), at + Vector2(dot, -dot), commander, 1.5)
 	if _press != null and _press_moved:
-		draw_line(_press, _drag_now, commander, 2.0)
+		draw_arc(_drag_now, dot * 3.0, 0.0, TAU, 20, Color(1, 1, 1, 0.7), 1.5)  # looking here
 
 
 ## The ground area the camera currently shows, as a trapezoid.

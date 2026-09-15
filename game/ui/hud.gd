@@ -40,10 +40,10 @@ func show_banner(text: String) -> void:
 func _process(_delta: float) -> void:
 	if game_match == null:
 		return
-	status_label.text = "%s   |   tanks: %d" % [_status, game_match.tanks.get_child_count()]
+	status_label.text = _status
 	var line := "Green %d : %d Rust" % [game_match.score_green, game_match.score_rust]
 	if game_match.elimination:
-		line = "Green %d tanks  vs  %d tanks Rust" % [game_match.alive_count(Match.Team.GREEN),
+		line = "Green %d units  vs  %d units Rust" % [game_match.alive_count(Match.Team.GREEN),
 				game_match.alive_count(Match.Team.RUST)]
 	if local_tank != null and is_instance_valid(local_tank):
 		var bars := int(round(local_tank.reload_fraction() * 10.0))

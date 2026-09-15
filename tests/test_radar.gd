@@ -68,31 +68,42 @@ func test_enemies_appear_only_through_team_intel() -> void:
 	assert_eq(_kinds(radar, "enemy"), 0, "not a live blip")
 
 
-func test_tap_aims_the_camera_and_drag_orders_the_selected_squad() -> void:
+func test_tap_orders_the_selected_squad_and_drag_looks() -> void:
 	var setup: Array = await _setup()
 	var game_match: Match = setup[0]
 	var rig: RtsCamera = setup[2]
 	var radar: Radar = setup[3]
-	var spot := Vector3(-60, 0, -30)
+	var focus_before := rig.focus
+	var goal := Vector3(-60, 0, -30)
 	var press := InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.pressed = true
-	press.position = radar.world_to_radar(spot)
+	press.position = radar.world_to_radar(goal)
 	radar._gui_input(press)
 	var release := press.duplicate()
 	release.pressed = false
 	radar._gui_input(release)
-	assert_true(rig.focus.distance_to(spot) < 2.0, "a tap moves the camera there (%s)" % rig.focus)
-	assert_eq(game_match.squads["0/Alpha"].verb, "hold", "and orders nothing")
-	var goal := Vector3(40, 0, 10)
-	press.position = radar.world_to_radar(goal)
+	var squad: Squad = game_match.squads["0/Alpha"]
+	assert_eq(squad.verb, "move", "a tap on the radar sends the selected squad (C1)")
+	assert_true((squad.destination as Vector3).distance_to(goal) < 3.0, "to the tapped spot (%s)" % [squad.destination])
+	var bravo: Squad = game_match.squads["0/Bravo"]
+	var look_at := Vector3(40, 0, 10)
+	press.position = radar.world_to_radar(Vector3(0, 0, 60))
 	radar._gui_input(press)
 	var motion := InputEventMouseMotion.new()
-	motion.position = radar.world_to_radar(goal + Vector3(0, 0, -30))
+	motion.position = radar.world_to_radar(look_at)
 	radar._gui_input(motion)
+	assert_true(rig.focus.distance_to(look_at) < 3.0, "a drag scrubs the camera across the radar while the finger is down (%s)" % rig.focus)
 	release.position = motion.position
 	radar._gui_input(release)
-	var squad: Squad = game_match.squads["0/Alpha"]
-	assert_eq(squad.verb, "move", "a drag on the radar orders the selected squad")
-	assert_true((squad.destination as Vector3).distance_to(goal) < 3.0, "to the press point (%s)" % [squad.destination])
-	assert_true(squad.facing_on_arrival.dot(Vector3(0, 0, -1)) > 0.95, "facing along the drag (north)")
+	assert_true((squad.destination as Vector3).distance_to(goal) < 3.0, "and a drag orders nothing")
+	assert_eq(bravo.verb, "hold", "nobody else moved either")
+	assert_true(rig.focus.distance_to(focus_before) > 10.0, "the view stays where the drag left it")
+	# A press that rests (a hesitant finger) looks instead of ordering.
+	press.position = radar.world_to_radar(Vector3(-20, 0, 80))
+	radar._gui_input(press)
+	radar._process(TacticalMap.LONG_PRESS_SECONDS + 0.05)
+	release.position = press.position
+	radar._gui_input(release)
+	assert_true((squad.destination as Vector3).distance_to(goal) < 3.0, "a long press on the radar orders nothing")
+	assert_true(rig.focus.distance_to(Vector3(-20, 0, 80)) < 3.0, "it looks there (%s)" % rig.focus)

@@ -6,13 +6,16 @@ extends GameMode
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
 ##   --seed=N (the CPU army's seed; default: the clock)   --control (a control point at the center)
 ##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
+##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
+##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
+##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
 
 
 const SCRIPT_BREAK_CONTACT_SECONDS := 30.0
-## Where the RTS camera starts (0 = close behind a tank, 1 = high over the arena).
-const START_ZOOM := 0.62
+## The closest the RTS camera starts (0 = close behind a tank, 1 = high over the arena); it frames the army.
+const START_ZOOM := 0.36
 ## The camera starts looking this far ahead of the player's base (tanks sit in the lower third).
 const START_AHEAD := 25.0
 const SCRIPT_FOLLOW_ZOOM := 0.42
@@ -73,18 +76,35 @@ func start() -> void:
 	tactical.game_match = game_match
 	tactical.visibility = field
 	tactical.camera = main.camera
+	tactical.ui_scale = clampf(float(flags.text("ui-scale", "1")), 0.75, 2.0)
 	# G4: an RTS camera over the player's base, looking toward the enemy.
 	var rig := RtsCamera.new()
 	rig.name = "RtsCamera"
 	rig.camera = main.camera
-	rig.edge_pan = not flags.has("scripted")
+	rig.edge_pan = not (flags.has("scripted") or flags.has("command-playtest"))
 	var frame := Match.team_frame(Match.Team.GREEN)
 	rig.yaw = 0.0 if frame["forward"] == Vector3.FORWARD else PI
-	rig.focus = Match.spawn_position(Match.Team.GREEN, 0) + (frame["forward"] as Vector3) * START_AHEAD
-	rig.zoom = START_ZOOM
+	# C5: start where the vehicles read as vehicles: frame the whole army and the ground just ahead of it,
+	# never higher than needed (--zoom=0..1 overrides, for screenshots and tuning).
+	var army: Array = []
+	var middle := Vector3.ZERO
+	for tank in game_match.sorted_team_tanks(Match.Team.GREEN):
+		army.append(tank.global_position)
+		middle += tank.global_position
+	army.append(middle / maxf(army.size(), 1.0) + (frame["forward"] as Vector3) * START_AHEAD)
+	rig.frame(army, false, START_ZOOM)
+	if flags.has("zoom"):
+		rig.zoom = clampf(float(flags.text("zoom")), 0.0, 1.0)
 	main.add_child(rig)
+	print("SKIRMISH_CAMERA focus=(%.0f, %.0f) zoom=%.2f vehicles=%d" % [rig.focus.x, rig.focus.z, rig.zoom, army.size() - 1])
 	tactical.rig = rig
 	main.hud.add_child(tactical)
+	# C2: ground rings under the selected squad (and faint team marks), depth-tested under the models.
+	var markers := SelectionMarkers.new()
+	markers.name = "SelectionMarkers"
+	markers.game_match = game_match
+	markers.map = tactical
+	main.add_child(markers)
 	# G2: the radar, bottom right; it reads the same intel and visibility field as the map.
 	var radar := Radar.new()
 	radar.name = "Radar"
@@ -97,13 +117,29 @@ func start() -> void:
 	announcer.name = "Announcer"
 	announcer.game_match = game_match
 	announcer.team = Match.Team.GREEN
-	announcer.announced.connect(main.hud.post_message)
 	game_match.add_child(announcer)
+	# C6: one filtered feed to the HUD (merges losses, rate-limits order acks, adds squad-destroyed and
+	# friendly-fire messages); the announcer's other messages pass through it.
+	var messages := HudMessages.new()
+	messages.name = "HudMessages"
+	messages.game_match = game_match
+	messages.team = Match.Team.GREEN
+	main.add_child(messages)
+	announcer.announced.connect(messages.relay)
+	messages.posted.connect(main.hud.post_message)
 	tactical.command_issued.connect(func(command: Dictionary, error: String) -> void:
-		announcer.announce_command(tactical.describe_command(command), error))
+		messages.order(tactical.describe_command(command), error))
 	main.hud.set_status("Skirmish vs %s%s" % [lineups[Match.Team.RUST],
 			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else ""])
-	if flags.has("scripted"):
+	if flags.has("command-playtest"):
+		var playtest := CommandPlaytest.new()
+		playtest.name = "CommandPlaytest"
+		playtest.map = tactical
+		playtest.radar = radar
+		playtest.out_dir = flags.text("command-playtest")
+		main.add_child(playtest)
+		playtest.run()
+	elif flags.has("scripted"):
 		_play_script(tactical)
 	else:
 		tactical.set_paused(true, "PLANNING: give orders, then Resume (Space)")
@@ -126,8 +162,9 @@ func _play_script(tactical: TacticalMap) -> void:
 		if step[1]["squad"] == "Bravo" and tactical.rig != null:
 			# Ride along with Alpha, a little above, so screenshots show the fight in 3D.
 			tactical.select_squad("Alpha")
+			if not flags.has("zoom"):
+				tactical.rig.zoom = SCRIPT_FOLLOW_ZOOM
 			tactical.follow_selected()
-			tactical.rig.zoom = SCRIPT_FOLLOW_ZOOM
 
 
 static func doctrine_path(name_or_path: String) -> String:

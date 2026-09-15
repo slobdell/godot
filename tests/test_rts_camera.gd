@@ -133,7 +133,7 @@ func test_the_map_orders_through_the_tilted_camera() -> void:
 	assert_true((squad.destination as Vector3).distance_to(target) < 0.5, "to the ground point under the cursor (%s)" % [squad.destination])
 
 
-func test_f_follows_the_selected_commander_and_tab_toggles_overview() -> void:
+func test_f_follows_the_selected_squad_and_tab_toggles_overview() -> void:
 	var setup: Array = await _skirmish()
 	var game_match: Match = setup[0]
 	var map: TacticalMap = setup[1]
@@ -142,17 +142,24 @@ func test_f_follows_the_selected_commander_and_tab_toggles_overview() -> void:
 	key.pressed = true
 	key.keycode = KEY_F
 	map._unhandled_key_input(key)
-	var lead := game_match.tanks.get_node("Green_Alpha_1") as Tank
-	assert_eq(rig.follow_target, lead, "F follows Alpha's commander")
-	lead.global_position = Vector3(30, 0, 20)
+	assert_eq(rig.tracking_mode(), RtsCamera.Track.FOLLOW, "F follows the selected squad")
+	for member in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
+		(game_match.tanks.get_node(member) as Tank).global_position += Vector3(30, 0, -40)
 	for i in 3:
 		await tree.process_frame
-	assert_true(rig.focus.distance_to(Vector3(30, 0, 20)) < 0.5, "and the focus rides along (%s)" % rig.focus)
+	var center := Vector3.ZERO
+	for p in map.squad_points("Alpha"):
+		center += p / 3.0
+	assert_true(rig.focus.distance_to(Vector3(center.x, 0, center.z)) < 8.0, "and the focus rides along (%s vs %s)" % [rig.focus, center])
 	key.keycode = KEY_TAB
 	map._unhandled_key_input(key)
 	assert_true(rig.is_overview() and rig.zoom > 0.9, "Tab jumps to the overview")
 	map._unhandled_key_input(key)
-	assert_true(not rig.is_overview() and rig.follow_target == lead, "and Tab again returns to following")
+	assert_true(not rig.is_overview(), "and Tab again returns")
+	key.keycode = KEY_F
+	map._unhandled_key_input(key)
+	map._unhandled_key_input(key)
+	assert_eq(rig.tracking_mode(), RtsCamera.Track.NONE, "F is a toggle")
 
 
 func test_a_one_finger_drag_on_open_ground_pans_instead_of_ordering() -> void:
