@@ -158,6 +158,15 @@ without it: flankers pick ENGAGE with combat motion instead).
 | …tank hull + shield lost in 25 s | 84 | **173** |
 | Scout circling a tank (`ai_scout_orbit`) | 39°/s, 35 rounds, tank untouched | 12°/s astern, 98 rounds, hull 134, shield 0 |
 
+**Champion after the merges: x4** (x3 + reload windows). Two independent four-army ladder runs (96 and 144 matches per
+army, both colors) put **x4 over x3 92–68** head to head. The deck-seeking **x4mw** (x4 + matchups + weak spots) beat x4
+**93–67** over the same runs and led three of four tables, but is only even with x3 (48–48), is last on the all-armor
+army (29–43), and drives scouts onto a tank's engine deck at 3 m — which rules' catalog test forbids
+(`test_units_roster::test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range`). It stays opt-in
+(`--green-brain=x4mw`) until rules and combat settle what a scout's counter is. Pooled wins over the four armies (288
+matches each): x4mw 148, x4 146, x3m 144, x3 138 — a field within noise of itself, which is why the head-to-head rule
+decides.
+
 **A boxed-in unit used to freeze.** In `build/ai-shots/scout_runs_16s.png` the scout sat still against its target for
 6 s. `CombatMotion` had dropped every candidate (each end inside a grown obstacle, or the path to it crossing one) and
 the brain fell back to "face", so the unit fired from a standstill — exactly the round-2 complaint. It now takes the

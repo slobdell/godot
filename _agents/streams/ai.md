@@ -137,7 +137,14 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   anvil_hammer 11–13), so v6 stays the default.
 - **Weak spots after CP2** (combat's request b, feature `weak_spots`): a matchup-aware scout orbits to a tank's stern
   and bursts in while the cannon reloads: **57 of 71 hits on the engine deck** (19 of 46 before), and the tank loses 173
-  instead of 84 in 25 s. Ladder (x4 vs x4w vs x4mw vs x3m, four armies) below.
+  instead of 84 in 25 s.
+- **Champion is now x4** (x3 + reload windows), by two independent four-army ladder runs (144–96 matches per army, both
+  colors): **x4 beat x3 92–68** over 160 head-to-head matches (17–7, 14–10, 12–12, 13–11 in the second run). The
+  deck-seeking **x4mw** (x4 + matchups + weak spots) beat x4 **93–67** over the same runs and led three of four tables,
+  but is only even with x3 (**48–48**), is last on the all-armor army (29–43), and sends scouts onto a tank's engine deck
+  at 3 m — which rules' catalog test forbids (`test_units_roster::test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range`).
+  So x4mw stays opt-in (`--green-brain=x4mw`) until rules and combat settle what a scout's counter is (request below).
+  Pooled wins over all four armies, 288 matches each: x4mw 148, x4 146, x3m 144, x3 138.
 - **Lone units (request f):** two lone tanks from mirror spawns with no objective passed **9 m apart, never seen** (the
   line between mirror positions always runs through the center crate; mirror-image lanes still passed at 48 m unseen).
   With both teams' lanes on the same side of the map they meet head-on: **first sighting at 61 m after 7.3 s**, 4 shots
@@ -158,8 +165,9 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   it meets and retreats only when about to die): pillar 7 and StarCraft semantics. Regroup = a post left by every
   finished order (30 m leash). No stuck states: timeouts and stalls put options on cooldown.
 - Fighting on the move is one pure context-steering layer with styles as weight tables, so new weapon numbers retune data.
-- Champions by the ladder rule: brain **x3**, commander **v6**. x3 stays the default even though parked brains edge it with
-  combat's weapons in the preview (question 1).
+- Champions by the ladder rule: brain **x4**, commander **v6** (the preview's "parked brains win" result did not survive
+  the real merge). A variant is adopted only when it beats the champion head to head over the whole four-army field,
+  which is why x4mw — better than x4, even with x3 — stays opt-in.
 - Same-army mirror armies for commander ladders (`tests/ai_scenarios/armies/`): `cpu:` armies are seeded per side.
 
 **Questions for the lead:** none open. (Round 3's question — whether parked round-2 brains beat moving ones under
@@ -172,6 +180,11 @@ trade-off to rule on. If the CPU ever feels weak in a playtest, `--green-brain=a
   deleted when convenient. Turn the CPU commander on by default in skirmish (`skirmish_mode.gd` creates it only with `--commander`;
   v6 meets X5's bar). Optional: player words for `TankBrain.ORDER_ONLY_OPTIONS` (MOVE, FOLLOW, PURSUE: "Moving",
   "Following", "Closing in"); cull off-screen icons in `tactical_map.gd` before drawing (the 16384 px guard is a backstop).
+- **rules + combat:** **what is a scout's counter?** Rules' catalog says scouts are `good_vs` artillery and lancers and
+  `test_units_roster` requires a scout to keep a tank spotted from beyond 70 m; combat's request (b) says a scout's
+  stream through a tank's engine deck does ×1.13 instead of ×0.05, which only pays at 3–10 m astern. Both can't hold. My
+  measurement: the deck-hunting brain (x4mw) takes a tank to 134 of 300 hull in 25 s, but is the weakest variant on the
+  all-armor army. Whichever you pick, I'll make it the champion's behavior.
 - **combat:** (0) **a scout's machine gun cannot get through a Lancer's shield**, so the catalog's counter (scout
   `good_vs` lancer) never pays: 3.5 damage × 0.6 shield multiplier × facing = 15 (front) to 29 (rear) shield dps, and
   the shield holds 120 and recharges 45/s after 4 s. Breaking it needs ~8 s of unbroken hits; an attack run gives 1–2 s.

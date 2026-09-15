@@ -59,7 +59,10 @@ func test_two_tanks_duel_on_the_move_front_armor_first() -> void:
 
 
 func test_two_tanks_on_one_work_round_to_its_side() -> void:
+	# Both sides pinned: this measures the pair's flanking, not whatever the champion does to the lone defender (with
+	# x4's reload windows it peeks and hides, and the angle the pair gets drops from 4.2 s to 2.6 s of 20).
 	BrainVariants.use(Match.Team.GREEN, "x3")
+	BrainVariants.use(Match.Team.RUST, "x3")
 	var s := AiScenario.create(self, 2)
 	var enemy := s.brain_tank(Match.Team.RUST, "Rust_A_1", Vector3(-98, 0, -20), PI)
 	AiScenario.make_durable(enemy)

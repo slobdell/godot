@@ -49,7 +49,13 @@ const PROFILES := {
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
 ## 2026-09-15: a6 (beat a4 9-7 in ladder run 1 and r1 7-5 in run 2; see unit_ai.md "AI ladder").
 ## 2026-09-15 (round 3): x3, fighting on the move (beat a6 14-10 on individuals and 17-7 on combined_arms).
-const CHAMPION := "x3"
+## 2026-09-15 (round 3, after CP1+CP2): x4, which times its peeks and halts to the enemy's reload: it beat x3 92-68
+## over two four-army ladder runs (160 matches). x4mw (matchup targets and engine decks) beat x4 93-67 over the same
+## runs but is only even with x3 (48-48), is the weakest of the four on the all-armor army (29-43), and sends scouts
+## onto a tank's engine deck at 3 m, which rules' catalog test says a scout must not do
+## (test_units_roster::test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range). It stays opt-in until rules and
+## combat settle what a scout's counter is (streams/ai.md "Requests").
+const CHAMPION := "x4"
 
 static var _from_flags: Array = []
 
