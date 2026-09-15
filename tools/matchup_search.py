@@ -17,6 +17,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.dont_write_bytecode = True  # importing matchup_matrix must not leave tools/__pycache__ in the checkout
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import matchup_matrix  # noqa: E402
 
