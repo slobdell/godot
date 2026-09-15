@@ -1,0 +1,6 @@
+{
+ "M_blind_tank": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.damage=22,laser.heat_per_shot=18,tank.sight_radius=62",
+ "N_M_laser26_pen16": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.damage=26,laser.penetration=16,laser.heat_per_shot=18,tank.sight_radius=62",
+ "O_M_laser90": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.damage=22,laser.heat_per_shot=18,tank.sight_radius=62,laser.range=90,laser.preferred_min=76,laser.preferred_max=86,lancer.sight_radius=90",
+ "P_N_slow_lancer_turret": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.damage=26,laser.penetration=16,laser.heat_per_shot=18,tank.sight_radius=62,lancer.turret_turn_rate_deg=40"
+}

@@ -39,16 +39,21 @@ func _shot(target_shield: float, unit_id := "tank") -> Tank:
 	return target
 
 
+func _cannon_damage() -> float:
+	return float(Weapons.profile("cannon")["damage"])
+
+
 func test_a_full_shield_absorbs_a_shell() -> void:
-	var target: Tank = await _shot(150.0)
+	var deep := _cannon_damage() * 2.0
+	var target: Tank = await _shot(deep)
 	assert_eq(target.health, target.max_health, "the hull is untouched")
-	assert_near(target.shield, 150.0 - 34.0 * 0.8, 0.01, "the shield took 34 x 0.8, from the side or any side")
+	assert_near(target.shield, deep - _cannon_damage() * 0.8, 0.01, "the shield took a shell x 0.8, from the side or any side")
 
 
 func test_what_the_shield_cannot_absorb_reaches_the_hull() -> void:
-	var target: Tank = await _shot(13.6)
+	var target: Tank = await _shot(_cannon_damage() * 0.4)  # half of what the shell does to shields (x0.8)
 	assert_near(target.shield, 0.0, 0.001, "the shield breaks")
-	assert_eq(target.health, target.max_health - 17, "half the shell gets through to the side armor")
+	assert_eq(target.health, target.max_health - int(_cannon_damage() / 2.0 + 0.0001), "half the shell gets through to the side armor")
 
 
 func test_lasers_strip_shields_faster() -> void:

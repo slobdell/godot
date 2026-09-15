@@ -1,0 +1,7 @@
+{
+ "m140_s2": "mortar.damage=140,mortar.scatter=2.0",
+ "m200_s2": "mortar.damage=200,mortar.scatter=2.0",
+ "m260_s2": "mortar.damage=260,mortar.scatter=2.0",
+ "m260_s15": "mortar.damage=260",
+ "m320_s2": "mortar.damage=320,mortar.scatter=2.0"
+}

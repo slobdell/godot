@@ -20,6 +20,10 @@ extends RefCounted
 ##   MUZZLE_CLEARANCE), armor {front, side, rear} (thickness against Weapons "penetration"),
 ##   good_vs / weak_vs (role lists: design intent for AI hints and the army UI; mechanics decide outcomes),
 ##   optional heat_capacity / heat_dissipation (only units whose weapon heats: the Lancer).
+##   K3 (round 3): locomotion (LOCOMOTIONS), min_turn_radius_m (wheels: the tightest circle at any speed),
+##   acceleration_mps2, braking_mps2, lateral_grip (0..1: the fraction of sideways slide the tires kill each tick; lower
+##   drifts). Optional deploy_seconds / pack_seconds (X5: units that must stand and deploy before firing).
+##   On wheels, hull_turn_rate_deg is the most yaw per second at any speed (TankMotion.step_in_place).
 ##
 ## Keep existing keys stable. Renaming or removing one is a contract change (_agents/workstreams.md).
 
@@ -30,6 +34,9 @@ const SCHEMA_VERSION := 2
 
 const ROLES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
 const MOUNTS := ["turret", "fixed"]
+## K3: how a hull moves. Tracks pivot in place; wheels need speed to turn (a turning circle). Hover and articulated
+## are reserved for later factions.
+const LOCOMOTIONS := ["tracks", "wheels", "hover", "articulated"]
 ## Rounds fly flat at muzzle height, so every muzzle must sit below the shortest hull's top by this much
 ## (orientation trip-up 15: shells once flew over every tank).
 const MUZZLE_CLEARANCE := 0.1
@@ -55,6 +62,13 @@ const PROFILES := {
 		"max_reverse_speed": 7.0,
 		"hull_turn_rate_deg": 140.0,
 		"sight_radius": 110.0,
+		# K3 locomotion (round 3 X4). Rally truck: the tightest circle, quick off the line, and loose: it drifts through
+		# hard turns.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 5.0,
+		"acceleration_mps2": 16.0,
+		"braking_mps2": 22.0,
+		"lateral_grip": 0.45,
 		"weapon": "machine_gun",
 		"mount": "fixed",
 		"turret_turn_rate_deg": 200.0,
@@ -79,7 +93,16 @@ const PROFILES := {
 		"max_forward_speed": 9.0,
 		"max_reverse_speed": 4.0,
 		"hull_turn_rate_deg": 80.0,
-		"sight_radius": 75.0,
+		# X6 (round 3): 75 -> 62, a welded-slit dozer: it needs spotters to use its 70 m gun, and Lancers at 76-86 m see
+		# it first (Lancer > tank).
+		"sight_radius": 62.0,
+		# K3 locomotion (round 3 X4). The dozer on tracks pivots in place; heavy: 0.9 s to top speed (the scout takes
+		# the same to reach 14 m/s).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
+		"acceleration_mps2": 10.0,
+		"braking_mps2": 12.0,
+		"lateral_grip": 1.0,
 		"weapon": "cannon",
 		"mount": "turret",
 		# R2: 110 -> 50 (the lead's "slow turret"): a scout crossing at 15 m sweeps ~53°/s, faster than it turns.
@@ -105,11 +128,19 @@ const PROFILES := {
 		"max_reverse_speed": 5.0,
 		"hull_turn_rate_deg": 100.0,
 		"sight_radius": 85.0,
+		# K3 locomotion (round 3 X4). Armored bus on big wheels: planted, a wider circle than the scout.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 7.0,
+		"acceleration_mps2": 9.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 0.7,
 		"weapon": "autocannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
 		"muzzle_height": 1.27,
-		"armor": {"front": 5.0, "side": 3.0, "rear": 2.0},
+		# X6 (round 3): front 5 -> 7, so a laser needs longer to cut through an IFV rush (IFV > Lancer 0% -> 75%);
+		# flanks unchanged.
+		"armor": {"front": 7.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["scout"],
 		"weak_vs": ["tank"],
 	},
@@ -129,6 +160,16 @@ const PROFILES := {
 		"max_reverse_speed": 3.5,
 		"hull_turn_rate_deg": 60.0,
 		"sight_radius": 60.0,
+		# K3 locomotion (round 3 X4). Crane carrier: the widest circle and slowest to get going.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 9.0,
+		"acceleration_mps2": 6.0,
+		"braking_mps2": 10.0,
+		"lateral_grip": 0.85,
+		# X5 (round 3): the crane carrier lowers its outriggers before firing (game_design.md). 2.5 s down, 2 s up: a
+		# scout that catches it moving or a battery forced to relocate under fire is a real decision.
+		"deploy_seconds": 2.5,
+		"pack_seconds": 2.0,
 		"weapon": "mortar",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
@@ -153,12 +194,20 @@ const PROFILES := {
 		"max_reverse_speed": 4.0,
 		"hull_turn_rate_deg": 80.0,
 		# R7: sight 80 -> 85 (it must see what its 85 m beam reaches); turret 80 -> 55°/s, so fast IFVs get inside it.
-		"sight_radius": 85.0,
+		# X6: sees what its 90 m beam reaches.
+		"sight_radius": 90.0,
+		# K3 locomotion (round 3 X4). Utility truck on wheels.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 7.5,
+		"acceleration_mps2": 8.0,
+		"braking_mps2": 12.0,
+		"lateral_grip": 0.75,
 		"weapon": "laser",
 		"mount": "turret",
 		"turret_turn_rate_deg": 55.0,
 		"muzzle_height": 1.27,
-		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
+		# X6 (round 3): 4/3/2 -> 3/2/1.5, a utility truck: IFV bursts must hurt it (IFV > Lancer).
+		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"heat_capacity": 100.0,
 		"heat_dissipation": 12.0,
 		"good_vs": ["tank"],
@@ -171,7 +220,8 @@ const PROFILES := {
 		"display_name": "Burner",
 		"role": "burner",
 		"blurb": "Plow-nosed fire truck with a flamethrower. Melts light hulls and artillery it reaches; tanks and Lancers stop it first.",
-		# Stretch tuning (2026-09-14, `make matchups ... --focus burner`): at 160 pts, 12 m/s, front armor 7, hull 260 it won
+		# Stretch tuning (2026-09-14, `make matchups ... --focus burner`): at 160 pts, 12 m/s, front armor 7, hull 260
+		# it won
 		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
 		"cost": 220,
 		"unlock_tier": 2,
@@ -184,11 +234,18 @@ const PROFILES := {
 		"max_reverse_speed": 5.0,
 		"hull_turn_rate_deg": 110.0,
 		"sight_radius": 70.0,
+		# K3 locomotion (round 3 X4). Fire truck on wheels: charges in, slides a little.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 7.0,
+		"acceleration_mps2": 9.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 0.65,
 		"weapon": "flamethrower",
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
 		"muzzle_height": 1.27,
-		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
+		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
+		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],
 		"weak_vs": ["tank", "lancer"],
 	},

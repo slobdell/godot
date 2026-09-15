@@ -1,0 +1,6 @@
+{
+ "U_shield_tank_armored_ifv": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=90,lancer.sight_radius=90,tank.max_shield=210,tank.max_health=240,ifv.armor.front=7",
+ "V_armored_ifv": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=90,lancer.sight_radius=90,ifv.armor.front=7",
+ "W_shield_tank": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=90,lancer.sight_radius=90,tank.max_shield=210,tank.max_health=240",
+ "X_U_ifv_front6": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=90,lancer.sight_radius=90,tank.max_shield=210,tank.max_health=240,ifv.armor.front=6"
+}
