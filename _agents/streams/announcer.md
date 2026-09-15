@@ -195,6 +195,31 @@ _Updated 2026-09-15 by the announcer worker._
 7. **N6** in-game adapter (Match signals → K5), playback bus with ducking, subtitles; stays within announcer paths.
 8. Stretch: sponsor reads for the ad screens, faction introductions, tale of the tape.
 
+### Waiting on the lead: read the booth (lead gate 2)
+
+**The text is ready for review; no audio has been generated.** Two ways to read it:
+- **The Arena Booth Monitor** (private page): https://claude.ai/artifact/FCkbZb1uyg4fjcBfEpRttw. Pick a match and a
+  director seed, press Play (4× by default), and the floor's events and the booth's lines scroll in sync; "Why" shows
+  what the director noticed; seed 1 of each match plays mock audio (tone bursts where words go) to show timing. Rebuild
+  locally: `make announcer-demo` (text) or `make announcer-demo-audio` (with the mock mixdowns).
+- **Plain transcripts** in `assets/announcer/transcripts/` (every fixture × seeds 1–2), and `make announcer-transcript
+  FIXTURE=comeback SEED=3` for more. The full library: `assets/announcer/lines.json` (393 lines).
+
+Questions for the lead with the review:
+1. **Tone:** is the PA (Celeste Vance) subtle enough? Lines to judge her by: `pa.welcome.03` ("the medical team has been
+   asked not to intervene"), `pa.notice.04` ("will be considered a participant"), `pa.result.02` ("The surviving crews
+   will be processed shortly"). Is the caller's hype authentic, not jokey? Is the Veteran's dark past (`color.lore.*`)
+   the right amount?
+2. **Cost:** `make announcer-generate` (dry run) estimates **25,563 characters ≈ 25,600 credits** on
+   eleven_multilingual_v2 for all 654 clips (caller 11.6k, Veteran 8.6k, PA 5.3k), plus ~28 minutes of speech-to-text.
+   Flash v2.5 would halve it; quality first per your standing direction, so v2 is the default.
+3. **The Veteran's voice** still needs making in ElevenLabs (casting notes under *Voices*); his lines are skipped until a
+   voice with the name set in `lines.json` → `speakers.color.voice` exists.
+4. After approval: `pip install -r tools/announcer/requirements.txt`, then `make announcer-generate APPROVED=1` (it
+   resolves voices by name, skips what's recorded, prints credits, logs `assets/announcer/ledger.md`). Suggest a pilot
+   first: `make announcer-generate APPROVED=1 ONLY=caller.kill.13,caller.kill.52,pa.welcome.03` (~250 characters) to
+   hear stitching before the bulk run.
+
 ### Decisions
 
 - **Fixture ids vs types got distinct field names** (`unit_id`/`shooter`/`victim` hold instance ids; `unit`/`*_unit` hold
@@ -205,6 +230,26 @@ _Updated 2026-09-15 by the announcer worker._
   first match that fits, so `--seed 1` always writes the same file (a test enforces fixtures == generator output).
 - **Python tests live beside the tools** (`tools/announcer/test_*.py`, the assets stream's precedent), GDScript tests
   in `tests/announcer/`.
+- **Tags, not edges:** a line fits a moment when all its tags are on the moment; each extra matched tag multiplies its
+  chance by 8, and a beat can `require` its key tag (a first-blood beat always says "first blood"). Format:
+  `assets/announcer/README.md`.
+- **Friendly and hazard kills are their own moment kinds**, so a generic "{team} takes out the {victim_unit}!" can
+  never be said about a team killing itself.
+- **The booth doesn't talk over live action:** follow-ups by the Veteran and the PA are skipped within 1.5 s of a shot;
+  a kill cuts off a follow-up (soft priority) but not another call; kills that pile up merge into one "flurry" or
+  "trade" call; the result clears everything but the final kill. These came from reading transcripts: the first
+  version narrated stale kills 4 s late and cut the Veteran off after one word three times a match.
+- **What the audience heard, not what happened:** the director sets `said_<kind>_<team>`, so "again!" only follows a
+  first friendly-fire call the audience actually heard; an upset is called once per matchup; a close call is dropped if
+  that unit has died since.
+- **Stitching:** whole sentences with character timestamps, sliced at word boundaries; slots are separate filler clips
+  recorded in carrier sentences per intonation (mid, final, rising); punctuation after a slot stays with the slot
+  (the mock's speech-to-text check caught a sliver of the filler word in the next segment); loudness is normalized on
+  the whole master, then sliced (normalizing 0.2 s fillers alone made them 10 dB hotter than sentences).
+- **Voice settings** default to stability 0.45 / similarity 0.8 / style 0.35 (commentary needs more life than the
+  reference's alert voice at stability 1.0); tune after the pilot.
+- **Timing uses recorded durations when they exist** (`--manifest`): with the mock, estimated per-word timing made
+  lines overlap the next cue in 6 of 22 cues; with manifest durations, 0 overlaps.
 
 ### Done
 
@@ -212,6 +257,32 @@ _Updated 2026-09-15 by the announcer worker._
   broken cases (`tests/announcer/contract_cases.json`, 18 cases both reject), generator, six fixtures (54–141 s
   matches, 36–83 events each; one hazard kill, 3+ friendly-fire hits, a control-point win), `make announcer-fixtures`,
   `announcer-validate`, `announcer-pytest`, `announcer-check`.
+- **N1:** `assets/announcer/lines.json`, 393 lines / 4,303 words (caller 224, Veteran 125, PA 44) across 17 moment
+  kinds, plus `beats.json` (the grammar). `tools/announcer/audit_lines.py` (`make announcer-audit`): structure,
+  unknown acts/slots, "a {unit}" articles, digits and symbols, duplicates, dangling flags, unanswered questions, beats
+  without lines; warnings for the rejected tone's phrases and borrowed catchphrases. Clean (2 near-duplicate warnings).
+- **N2:** `AnnouncerLibrary`, `AnnouncerMemory`, `AnnouncerDirector` (pure GDScript, headless): 12 unit tests (tag
+  matching, slots, flags, memory tags, cooldowns, interrupts and staleness, kill merging, answers on topic, recorded
+  durations, determinism and the global RNG untouched) + every fixture × 3 seeds reads as a broadcast (intro first,
+  result and sign-off last, no repeats, no overlaps, no unfilled slots). Mutation-checked: without merging or
+  interrupts, their tests fail.
+- **N3:** `make announcer-transcript`, `make announcer-transcripts` (12 review transcripts, checked in);
+  `announcer-check` fails when they're stale. 18–31 lines per match, 1–4 cut lines each.
+- **N5:** the Arena Booth Monitor (`make announcer-demo`, published above): 18 matches, 354 KB, plays mixdowns in sync.
+- **N4:** `tools/announcer/{recording_plan,voice_client,generate,mixdown}.py`; 12 pipeline tests against the mock
+  (plan rebuilds every line, fillers cover every slot value, dry run sends nothing, key only from the environment,
+  masters idempotent, mono Vorbis, fillers within 3 dB of sentences, mishearing and bad slices flagged, missing voices
+  skipped, ledger only for paid runs, mixdown places fillers and cuts). SDK calls checked against elevenlabs 2.24.0
+  installed in a scratch venv (no key, no requests). **Measured on the mock mixdowns** (no voices exist to listen to):
+  in comeback and control swing, every line's sound starts at its cue except back-to-back lines, silence begins within
+  0.35 s of every line's end (26/26), 0 overlaps; clip levels −13.2 to −14.9 dB mean. Real listening waits for the pilot.
+
+### Known issues
+
+- `army-loop-smoke` (paused garage area) failed once on builder0 with "Invalid polygon data, triangulation failed" and
+  passed on the rerun; not announcer code (flaky, recorded for the orchestrator).
+- Mock durations are longer than the per-word estimate; real ElevenLabs pacing will differ again, which is why the
+  director reads the manifest.
 
 ### Merge notes (shared files)
 
