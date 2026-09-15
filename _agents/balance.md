@@ -30,6 +30,30 @@ both bases, each type as both colors. Intended counters (game_design.md): scout 
 IFV > scout, tank > IFV, Lancer > tank, artillery > slow clumps. Bar: a counter wins ≥ 65% cost-equal and every
 unit wins some matchup.
 
+### Fairness controls after rules R1–R6 (2026-09-14)
+
+2v2 legacy bots (`--green 2 --rust 2`, first to 5 kills or 300 s), 24 seeds per row:
+
+| Arena | Normal bases (Green south) | Swapped (Green north) | South base | Green team |
+|---|---|---|---|---|
+| foundry | Green 14 : 7 Rust (3 draws) | Green 8 : 14 Rust (2) | 28 : 15 | 22 : 21 |
+| scrapyard | Green 16 : 7 Rust (1) | Green 14 : 8 Rust (2) | 24 : 21 | 30 : 15 |
+
+Friendly fire dominates these bot matches: ~2 friendly kills per team per match (the legacy BotController
+doesn't check its line of fire), so matches rarely reach 5 enemy kills. Each layout is fair on one axis and
+lopsided on the other, which reads as noise, not geometry (the navmesh symmetry tests pass for both); the brain-
+driven control below decides.
+
+Brain-driven control (Individuals mirror, 5 tanks a side, elimination, 240 s), 30 seeds per row:
+
+| Arena | Normal bases | Swapped | South base | Green team | Friendly kills / match |
+|---|---|---|---|---|---|
+| foundry | Green 16 : 14 Rust | Green 18 : 12 Rust | 28 : 32 (47%) ✅ | 34 : 26 | 0.25 |
+| scrapyard | Green 16 : 14 Rust | Green 14 : 16 Rust | 32 : 28 (53%) ✅ | 30 : 30 ✅ | 0.4 |
+
+Both layouts are fair. Dense cover (scrapyard) doubles friendly damage (~1,200 vs ~650 points per match): more
+shots through teammates at corners, which the AI stream's line-of-fire checks should cut.
+
 <!-- MATCHUP MATRIX BEGIN -->
 _Not measured yet._
 <!-- MATCHUP MATRIX END -->
