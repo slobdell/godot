@@ -82,3 +82,33 @@ K2 events), models (assets).
 ## Status
 
 - 2026-09-15: brief written for round 3. Nothing started.
+
+### Plan (worker, 2026-09-15)
+
+1. **X1 (CP2)** skeleton with **no gameplay change** (sim baseline must hold): profile v3 fields with today's values,
+   `weapon_fired` / `projectile_impact` from every weapon path, `incoming_projectiles`, K3 catalog fields, pure
+   `TankMotion.predict` (heading as a unit vector: `√` only, no per-tick trig), `Match.orders`. Tests first.
+2. **X3 before X2's tuning pass** is not worth it: X2 weapons (bursts, streams, per-weapon shell speed, integer tick
+   timers) then X3 weak spots, then X4 driving (the tank starts using `TankMotion.step`), X5 deploy, X6 matrix, X7.
+3. Minimal compatibility edits outside my paths get listed under *Merge notes*.
+
+### CP2 announcement: K2 and K3 skeleton are green (X1, 2026-09-15)
+
+**Orchestrator: `stream/combat` is ready to merge for CP2** at the commit "Combat X1: K2 weapon events and K3
+locomotion skeleton". `make remote T=check` passed with the sim baseline unchanged (`c9cfbb1a221f5c94`): no gameplay
+changed. What landed (tests: `tests/test_combat_events.gd`, `tests/test_combat_locomotion.gd`):
+- **K2 profile v3** on every `Weapons.PROFILES` row (`Weapons.FIRE_MODELS`). `kind` stays the mechanical resolver.
+  The flamethrower has `damage: 0` (it deals `damage_per_second`); the mortar's `spread_deg` is 0 (it scatters on landing).
+- **`Match.weapon_fired(event)`** from shells, beams, arcs, and (every `CONE_EVENT_TICKS` = 6 ticks) flames. Additive
+  fields beyond K2: `speed_mps`, `range` (so effects can fly a round without a node).
+- **`Match.projectile_impact(event)`** for shells and beams (wall hits too: no `target`, damage 0) and one per arc
+  burst. Additive: bursts carry `victims: [{target, face, damage, killed}]`, `target` = the most-hurt victim. Rounds that
+  burn out in the air report nothing. Flames report no impacts (kills still come through `tank_destroyed`).
+  `weak_spot` is a direct-fire rear hit for now (X3 refines it).
+- **`Match.incoming_projectiles(unit)`**: `{position, velocity, eta_ticks, damage_estimate}` plus `projectile_id`,
+  `weapon`; soonest first; anyone's rounds but the unit's own; walls ignored (pure geometry).
+- **K3 catalog fields** (`Units.LOCOMOTIONS`; all `tracks`, accel = braking = 14, grip 1 for now; X4 changes values) and
+  **`TankMotion.predict(state, throttle, turn, ticks)`** with `TankMotion.state_for(unit_id, position, forward, speed)`,
+  `state_of(tank)`, `step(...)`, `turn_heading(...)`. Poses: `{position, forward (unit Vector3), speed, velocity}`;
+  headings are vectors, not yaw angles. Matches a real tank within 0.3 m over a second on open ground.
+- **`Match.orders`** (`var orders: Object = null`): control assigns its `Orders`; tighten the type when it lands.

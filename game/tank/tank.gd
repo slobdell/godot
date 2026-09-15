@@ -20,6 +20,12 @@ signal died
 @export var max_forward_speed := 9.0
 @export var max_reverse_speed := 4.0
 @export var acceleration := 14.0
+## K3 locomotion (Units.PROFILES): speed shed per second when slowing, "tracks" or "wheels", the tightest turning circle
+## (wheels), and how much sideways slide the tires kill (1 = none, lower drifts).
+@export var braking := 14.0
+var locomotion := "tracks"
+var min_turn_radius := 0.0
+var lateral_grip := 1.0
 @export var hull_turn_rate := deg_to_rad(80.0)
 @export var turret_turn_rate := deg_to_rad(110.0)
 ## Hull. Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 400;
@@ -132,6 +138,11 @@ func apply_unit() -> void:
 	max_forward_speed = stat.call("max_forward_speed")
 	max_reverse_speed = stat.call("max_reverse_speed")
 	hull_turn_rate = deg_to_rad(stat.call("hull_turn_rate_deg"))
+	acceleration = stat.call("acceleration_mps2", 14.0)
+	braking = stat.call("braking_mps2", acceleration)
+	locomotion = String(Units.stat(unit_id, "locomotion", "tracks"))
+	min_turn_radius = stat.call("min_turn_radius_m", 0.0)
+	lateral_grip = stat.call("lateral_grip", 1.0)
 	turret_turn_rate = deg_to_rad(stat.call("turret_turn_rate_deg"))
 	sight_radius = stat.call("sight_radius")
 	heat_capacity = stat.call("heat_capacity")

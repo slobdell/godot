@@ -9,10 +9,23 @@ extends RefCounted
 ## ARC: an indirect round lobbed at a ground point; it flies over obstacles and bursts on landing (artillery).
 enum Kind { PROJECTILE, CONE, BEAM, ARC }
 
+## K2 (round 3) weapon profile v3, for effects, sound, the announcer, and the AI. `kind` stays the mechanical
+## resolver; `fire_model` is how the weapon reads: shell (one heavy round), burst (a few rounds per trigger pull),
+## stream (continuous fire while held), beam (instant pulse), arc (lobbed). Other v3 keys: reload_s (seconds between
+## trigger pulls; equal to the round-2 "reload"), burst_count and burst_interval_s (rounds per pull and the gap
+## between them), projectile_speed_mps (0 = hitscan), spread_deg, damage (per round), penetration, splash_radius.
+const FIRE_MODELS := ["shell", "burst", "stream", "beam", "arc"]
+
 const DEFAULT := "cannon"
 
 const PROFILES := {
 	"cannon": {
+		# K2 (round 3): profile v3.
+		"fire_model": "shell",
+		"reload_s": 2.5,
+		"burst_count": 1,
+		"burst_interval_s": 0.0,
+		"projectile_speed_mps": 70.0,
 		# R2: armor-piercing power vs a unit's armor thickness on the face it hits (Units "armor").
 		"penetration": 10.0,
 		"splash_radius": 0.0,
@@ -40,6 +53,12 @@ const PROFILES := {
 	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons". Fast fire, low penetration, modest range:
 	# it shreds light hulls and scouts' shields but can't get through a tank's front armor.
 	"autocannon": {
+		# K2 (round 3): profile v3.
+		"fire_model": "burst",
+		"reload_s": 0.35,
+		"burst_count": 1,
+		"burst_interval_s": 0.0,
+		"projectile_speed_mps": 70.0,
 		"penetration": 4.0,
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
@@ -57,6 +76,12 @@ const PROFILES := {
 	# heat capacity (a hard cap, no damage). Trade-off vs the cannon: shorter range, less burst, no
 	# travel time, armor matters less; sustained fire is limited by heat, not ammo.
 	"laser": {
+		# K2 (round 3): profile v3.
+		"fire_model": "beam",
+		"reload_s": 0.5,
+		"burst_count": 1,
+		"burst_interval_s": 0.0,
+		"projectile_speed_mps": 0.0,
 		"penetration": 12.0,
 		"splash_radius": 0.0,
 		"kind": Kind.BEAM,
@@ -82,6 +107,12 @@ const PROFILES := {
 	# Directive set 2: the scout's light machine gun. Hitscan bursts: cheap, fast, and mostly
 	# ineffective against a tank's shield and front armor; fine against other scouts and exposed rears.
 	"machine_gun": {
+		# K2 (round 3): profile v3.
+		"fire_model": "stream",
+		"reload_s": 0.2,
+		"burst_count": 1,
+		"burst_interval_s": 0.0,
+		"projectile_speed_mps": 0.0,
 		"penetration": 3.0,
 		"splash_radius": 0.0,
 		"kind": Kind.BEAM,
@@ -100,6 +131,14 @@ const PROFILES := {
 	# every enemy within splash_radius (falling off to 30% at the edge). It can only aim at what the
 	# TEAM sees (OrderController.spotter), so it needs scouts or tanks to spot for it.
 	"mortar": {
+		# K2 (round 3): profile v3.
+		"fire_model": "arc",
+		# Arcs scatter where they land ("scatter" below) instead of spreading at the muzzle.
+		"spread_deg": 0.0,
+		"reload_s": 4.5,
+		"burst_count": 1,
+		"burst_interval_s": 0.0,
+		"projectile_speed_mps": 40.0,
 		"penetration": 10.0,
 		"kind": Kind.ARC,
 		"range": 160.0,
@@ -127,6 +166,15 @@ const PROFILES := {
 		"shield_multiplier": 1.0,
 	},
 	"flamethrower": {
+		# K2 (round 3): profile v3.
+		"fire_model": "stream",
+		"reload_s": 0.0,
+		"burst_count": 1,
+		"burst_interval_s": 0.0,
+		"projectile_speed_mps": 0.0,
+		# Fire deals damage_per_second while it touches; "damage" (per round) is 0 for it.
+		"damage": 0.0,
+		"spread_deg": 0.0,
 		"penetration": 12.0,
 		"splash_radius": 0.0,
 		"kind": Kind.CONE,

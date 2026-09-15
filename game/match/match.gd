@@ -15,6 +15,14 @@ signal control_changed(owner: int)
 signal tank_destroyed(victim: Tank, killer: String)
 ## Simulating peer: `shooter` (a tank name) hurt its own teammate `victim` (R4: friendly fire is on).
 signal friendly_fire(victim: Tank, shooter: String, hull: int, killed: bool)
+## K2 (round 3), simulating peer: a weapon fired one round (or, for fire, a puff every CONE_EVENT_TICKS while held).
+## {tick, shooter, weapon, fire_model, muzzle [x,y,z], direction [x,y,z], projectile_id, speed_mps, range}.
+signal weapon_fired(event: Dictionary)
+## K2, simulating peer: a round struck something. {tick, projectile_id, position [x,y,z], normal [x,y,z],
+## target? (unit name), face? ("front"/"side"/"rear"), weak_spot, damage (shield + hull points), killed}. A shell or beam
+## that hits a wall has no target and 0 damage; a round that flies out of range reports nothing. Arc bursts add
+## victims: [{target, face, damage, killed}] and name the most-hurt victim as target.
+signal projectile_impact(event: Dictionary)
 
 enum Team { GREEN, RUST }
 
@@ -141,7 +149,11 @@ var _score_limit := 0
 var _time_limit := 0.0
 var _finished := false
 
+## Every round fired gets the next id (shells are named Shell_<id>); K2 events carry it.
 var _next_shell_id := 0
+## K1 (control's Orders, one per match): the player's and the CPU's unit orders. Typed loosely so Match compiles
+## before control's class lands; control (or the mode) assigns it.
+var orders: Object = null
 var _next_bot_id := 1
 
 @onready var tanks: Node3D = $Tanks
@@ -652,6 +664,8 @@ func _build_shell(data: Dictionary) -> Node:
 	shell.team = data["team"]
 	shell.shooter_name = data["shooter"]
 	shell.max_range = data.get("range", Shell.MAX_RANGE)
+	shell.speed = data.get("speed", Shell.SPEED)
+	shell.projectile_id = data["id"]
 	shell.simulate = simulate
 	if simulate:
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
@@ -671,16 +685,46 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
 	var spread := deg_to_rad(float(tank.weapon.get("spread_deg", 0.0))) * (1.0 + MOVING_SPREAD_FACTOR * moving)
 	var actual := direction.rotated(Vector3.UP, _fire_rng.randfn(0.0, spread)) if spread > 0.0 else direction
+	var projectile_id := _next_shell_id
+	_next_shell_id += 1
 	if tank.weapon["kind"] == Weapons.Kind.BEAM:
-		_fire_beam(tank, muzzle, actual)
+		_emit_fired(tank, muzzle, actual, projectile_id)
+		_fire_beam(tank, muzzle, actual, projectile_id)
 		return
 	if tank.weapon["kind"] == Weapons.Kind.ARC:
-		_lob(tank, muzzle)
+		_lob(tank, muzzle, projectile_id)
 		return
-	shell_spawner.spawn({"id": _next_shell_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
+	_emit_fired(tank, muzzle, actual, projectile_id)
+	shell_spawner.spawn({"id": projectile_id, "muzzle": muzzle, "ray_start": tank.turret.global_position,
 			"direction": actual, "team": tank.team, "shooter": String(tank.name),
-			"range": float(tank.weapon["range"]) + Shell.RANGE_MARGIN})
-	_next_shell_id += 1
+			"range": float(tank.weapon["range"]) + Shell.RANGE_MARGIN,
+			"speed": float(tank.weapon.get("projectile_speed_mps", Shell.SPEED))})
+
+
+## K2: announce one round leaving `tank`'s gun.
+func _emit_fired(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: int) -> void:
+	var weapon := tank.weapon
+	weapon_fired.emit({"tick": tick, "shooter": String(tank.name), "weapon": tank.weapon_id,
+			"fire_model": String(weapon.get("fire_model", "shell")), "muzzle": _triple(muzzle), "direction": _triple(direction),
+			"projectile_id": projectile_id, "speed_mps": float(weapon.get("projectile_speed_mps", 0.0)),
+			"range": float(weapon["range"])})
+
+
+static func _triple(v: Vector3) -> Array:
+	return [v.x, v.y, v.z]
+
+
+## K2: announce a round striking something. `hit` is _land_hit_result's dictionary, or empty for a wall.
+func _emit_impact(projectile_id: int, position: Vector3, normal: Vector3, victim: Tank, hit: Dictionary) -> void:
+	var event := {"tick": tick, "projectile_id": projectile_id, "position": _triple(position), "normal": _triple(normal),
+			"weak_spot": false, "damage": 0.0, "killed": false}
+	if victim != null and not hit.is_empty():
+		event["target"] = String(victim.name)
+		event["face"] = hit["face"]
+		event["weak_spot"] = hit["weak_spot"]
+		event["damage"] = float(hit["hull"]) + float(hit["shield"])
+		event["killed"] = hit["killed"]
+	projectile_impact.emit(event)
 
 
 ## Indirect rounds in the air: [{"from", "to", "land_tick", "team", "shooter", "weapon"}], in firing order.
@@ -689,7 +733,7 @@ var _rounds: Array = []
 
 ## ARC weapons (artillery): lob a round at the tank's aim point, scattered, clamped to the weapon's
 ## range window. It lands after its flight time and bursts (see _land_rounds).
-func _lob(tank: Tank, muzzle: Vector3) -> void:
+func _lob(tank: Tank, muzzle: Vector3, projectile_id: int) -> void:
 	var weapon := tank.weapon
 	var flat := Vector3(tank.aim_point.x - muzzle.x, 0.0, tank.aim_point.z - muzzle.z)
 	var distance := clampf(flat.length(), float(weapon["min_range"]), float(weapon["range"]))
@@ -698,8 +742,9 @@ func _lob(tank: Tank, muzzle: Vector3) -> void:
 	var sigma := arc_scatter(weapon, distance, is_point_spotted(tank.team, target))
 	target += Vector3(_fire_rng.randfn(0.0, sigma), 0.0, _fire_rng.randfn(0.0, sigma))
 	var flight_ticks := maxi(1, roundi(distance / float(weapon["flight_speed"]) * 60.0))
-	_rounds.append({"from": muzzle, "to": target, "land_tick": tick + flight_ticks, "team": tank.team,
-			"shooter": String(tank.name), "weapon": weapon})
+	_emit_fired(tank, muzzle, (target - Vector3(muzzle.x, 0.0, muzzle.z)).normalized(), projectile_id)
+	_rounds.append({"from": muzzle, "to": target, "fire_tick": tick, "land_tick": tick + flight_ticks, "team": tank.team,
+			"shooter": String(tank.name), "weapon": weapon, "weapon_id": tank.weapon_id, "projectile_id": projectile_id})
 	show_arc.rpc(muzzle, target, flight_ticks / 60.0)
 
 
@@ -742,6 +787,9 @@ func _land_rounds() -> void:
 		var radius := float(weapon["splash_radius"])
 		var hit_any := false
 		var killed_any := false
+		var victims: Array = []
+		var main_victim: Tank = null
+		var main_hit := {}
 		for victim in _sorted_tanks():
 			if not victim.is_alive():
 				continue  # R4: bursts hurt everyone inside, teammates included
@@ -750,15 +798,29 @@ func _land_rounds() -> void:
 				continue
 			var falloff := lerpf(1.0, 0.3, offset.length() / radius)
 			var from_burst := offset.normalized() if offset.length() > 0.1 else Vector3.FORWARD
-			killed_any = _land_hit(victim, float(weapon["damage"]) * falloff, weapon, from_burst, int(landing["team"]),
-					String(landing["shooter"]), "mortar_damage", not hit_any) or killed_any
+			var hit := _land_hit_result(victim, float(weapon["damage"]) * falloff, weapon, from_burst, int(landing["team"]),
+					String(landing["shooter"]), "mortar_damage", not hit_any)
+			killed_any = bool(hit["killed"]) or killed_any
 			hit_any = true
+			var dealt := float(hit["hull"]) + float(hit["shield"])
+			victims.append({"target": String(victim.name), "face": hit["face"], "damage": dealt, "killed": hit["killed"]})
+			if main_victim == null or dealt > float(main_hit["hull"]) + float(main_hit["shield"]):
+				main_victim = victim
+				main_hit = hit
+		var burst := {"tick": tick, "projectile_id": int(landing.get("projectile_id", -1)), "position": _triple(point),
+				"normal": [0.0, 1.0, 0.0], "weak_spot": false, "damage": 0.0, "killed": killed_any, "victims": victims}
+		if main_victim != null:
+			burst["target"] = String(main_victim.name)
+			burst["face"] = main_hit["face"]
+			for entry: Dictionary in victims:
+				burst["damage"] += float(entry["damage"])
+		projectile_impact.emit(burst)
 		show_impact.rpc(point + Vector3.UP * 0.3, true)
 
 
 ## Beam weapons (G7 laser): an instant ray from the turret center; the first thing it touches takes
 ## the pulse, teammates included (R4 friendly fire).
-func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
+func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: int) -> void:
 	var weapon := tank.weapon
 	var from := tank.turret.global_position
 	var to := from + direction * float(weapon["range"])
@@ -769,13 +831,19 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3) -> void:
 		end = hit.position
 		var victim := hit.collider as Tank
 		if victim != null and victim.is_alive():
-			_land_hit(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
+			var result := _land_hit_result(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
+			_emit_impact(projectile_id, hit.position, hit.normal, victim, result)
+		else:
+			_emit_impact(projectile_id, hit.position, hit.normal, null, {})
 	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
 
 
 ## Cone weapons: every tank inside the cone with line of sight burns this tick, teammates included (R4).
 func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> void:
 	var weapon := tank.weapon
+	if tick % CONE_EVENT_TICKS == 0:
+		_emit_fired(tank, origin, direction, _next_shell_id)
+		_next_shell_id += 1
 	for victim in _sorted_tanks():
 		if not victim.is_alive() or victim == tank:
 			continue
@@ -787,6 +855,10 @@ func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: T
 				victim.global_position.z - tank.global_position.z)
 		_land_hit(victim, float(weapon["damage_per_second"]) * delta, weapon, attack, tank.team, String(tank.name),
 				"flame_damage", false)
+
+
+## K2: fire weapons (cones) announce a weapon_fired puff this often while the trigger is held, not every tick.
+const CONE_EVENT_TICKS := 6
 
 
 ## Tanks in a stable order (by name): anything that affects decisions or damage
@@ -852,6 +924,72 @@ func friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array[Tank
 	return at_risk
 
 
+## A shell passing within this many meters of a hull's edge counts as incoming (K2 dodging).
+const INCOMING_MARGIN := 1.0
+
+
+## K2, for dodging: rounds in flight that will reach `unit` if it holds still, soonest first. Each is {position,
+## velocity (m/s), eta_ticks, damage_estimate (shield + hull points at its current shield), projectile_id, weapon}.
+## Shells count when their straight path passes within the hull's half-diagonal + INCOMING_MARGIN before they burn
+## out; lobbed rounds when they will land within their splash of it. Anyone's rounds but the unit's own (friendly
+## fire is real). Walls are ignored: pure geometry (dot and cross products, no engine queries).
+func incoming_projectiles(unit: Tank) -> Array:
+	var threats: Array = []
+	if unit == null or not unit.is_alive():
+		return threats
+	var here := Vector2(unit.global_position.x, unit.global_position.z)
+	var size: Array = Units.stat(unit.unit_id, "hull_size")
+	var radius := Vector2(float(size[0]), float(size[2])).length() / 2.0
+	var forward := -unit.global_basis.z
+	for node in shells.get_children():
+		var shell := node as Shell
+		if shell == null or not shell.in_flight() or shell.shooter_name == String(unit.name) or shell.speed <= 0.0:
+			continue
+		var from := Vector2(shell.global_position.x, shell.global_position.z)
+		var direction := Vector2(shell.direction.x, shell.direction.z).normalized()
+		var offset := here - from
+		var along := offset.dot(direction)
+		if along <= 0.0 or along > shell.remaining_range() + radius:
+			continue
+		if absf(direction.cross(offset)) > radius + INCOMING_MARGIN:
+			continue
+		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
+		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
+		threats.append({"position": shell.global_position, "velocity": shell.direction * shell.speed,
+				"eta_ticks": ceili(maxf(0.0, along - radius) / shell.speed * 60.0), "projectile_id": shell.projectile_id,
+				"weapon": shooter.weapon_id if shooter != null else Weapons.DEFAULT,
+				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]), weapon, shell.direction, false)})
+	for flying: Dictionary in _rounds:
+		if String(flying["shooter"]) == String(unit.name):
+			continue
+		var weapon: Dictionary = flying["weapon"]
+		var landing: Vector3 = flying["to"]
+		var distance := here.distance_to(Vector2(landing.x, landing.z))
+		var splash := float(weapon["splash_radius"])
+		if distance > splash + radius:
+			continue
+		var from: Vector3 = flying["from"]
+		var flight := maxi(1, int(flying["land_tick"]) - int(flying["fire_tick"]))
+		var fraction := clampf(float(tick - int(flying["fire_tick"])) / flight, 0.0, 1.0)
+		var falloff := lerpf(1.0, 0.3, clampf(distance / maxf(splash, 0.01), 0.0, 1.0))
+		threats.append({"position": ArcRoundVisual.point_at(from, landing, fraction),
+				"velocity": Vector3(landing.x - from.x, 0.0, landing.z - from.z) / (flight / 60.0),
+				"eta_ticks": maxi(0, int(flying["land_tick"]) - tick), "projectile_id": int(flying.get("projectile_id", -1)),
+				"weapon": String(flying.get("weapon_id", "")),
+				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]) * falloff, weapon, forward, true)})
+	threats.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a["eta_ticks"]) < int(b["eta_ticks"]) or (int(a["eta_ticks"]) == int(b["eta_ticks"]) and int(a["projectile_id"]) < int(b["projectile_id"])))
+	return threats
+
+
+## Shield + hull points a hit of `raw` travelling along `direction` would take from `unit` now (no state change).
+func _damage_estimate(unit: Tank, raw: float, weapon: Dictionary, direction: Vector3, arcing: bool) -> float:
+	var face: String = "side" if arcing else Armor.FACING_NAMES[Armor.facing(-unit.global_basis.z, direction)]
+	var split := Armor.split_shield(raw, unit.shield, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
+			armor_multiplier(weapon, unit.unit_id, face))
+	return split.x + split.y
+
+
 ## R2: the fraction of a hit's hull damage that gets through `unit_id`'s armor on `face`.
 static func armor_multiplier(weapon: Dictionary, unit_id: String, face: String) -> float:
 	return Armor.penetration_multiplier(float(weapon.get("penetration", 0.0)), Units.armor(unit_id, face))
@@ -861,12 +999,20 @@ static func armor_multiplier(weapon: Dictionary, unit_id: String, face: String) 
 ## `direction` is the attack's travel direction. Returns true if it destroyed the victim.
 func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3, team: int, shooter: String,
 		weapon_stat: String, counts_as_hit: bool) -> bool:
+	return _land_hit_result(victim, raw, weapon, direction, team, shooter, weapon_stat, counts_as_hit)["killed"]
+
+
+## _land_hit, returning {"shield", "hull", "killed", "face", "weak_spot"} for K2 events.
+func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3, team: int, shooter: String,
+		weapon_stat: String, counts_as_hit: bool) -> Dictionary:
 	var forward := -victim.global_basis.z
 	var face: String = Armor.FACING_NAMES[Armor.facing(forward, direction)]
 	if weapon["kind"] == Weapons.Kind.ARC:
 		face = "side"  # indirect rounds come down on top: no face is the strong one
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
 			armor_multiplier(weapon, victim.unit_id, face))
+	result["face"] = face
+	result["weak_spot"] = is_weak_spot(weapon, face)
 	if victim.team == team:
 		stats["friendly_damage"][team] += float(result["hull"]) + float(result["shield"])
 		stats["friendly_hits"][team] += 1 if counts_as_hit else 0
@@ -875,7 +1021,7 @@ func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3,
 			print("%s destroyed teammate %s (friendly fire)" % [shooter, victim.name])
 			tank_destroyed.emit(victim, shooter)
 		friendly_fire.emit(victim, shooter, int(result["hull"]), bool(result["killed"]))
-		return result["killed"]
+		return result
 	if counts_as_hit:
 		stats["hits"][team] += 1
 		stats["hits_by_face"][face] += 1
@@ -885,7 +1031,12 @@ func _land_hit(victim: Tank, raw: float, weapon: Dictionary, direction: Vector3,
 		stats[weapon_stat][team] += int(result["hull"])
 	if result["killed"]:
 		_score_kill(team, shooter, victim)
-	return result["killed"]
+	return result
+
+
+## K2 weak spots: a direct round into a hull's rear (combat X3 refines this).
+static func is_weak_spot(weapon: Dictionary, face: String) -> bool:
+	return face == "rear" and int(weapon.get("kind", -1)) != Weapons.Kind.ARC and int(weapon.get("kind", -1)) != Weapons.Kind.CONE
 
 
 func _score_kill(team: int, killer: String, victim: Tank) -> void:
@@ -907,7 +1058,11 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	if victim != null and victim.is_alive():
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
-		killed = _land_hit(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
+		var hit := _land_hit_result(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
+		killed = hit["killed"]
+		_emit_impact(shell.projectile_id, point, shell.hit_normal, victim, hit)
+	else:
+		_emit_impact(shell.projectile_id, point, shell.hit_normal, null, {})
 	show_impact.rpc(point, killed)
 	shell.queue_free()
 

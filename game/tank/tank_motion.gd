@@ -2,6 +2,14 @@ class_name TankMotion
 extends RefCounted
 ## Pure movement math for tanks, kept free of nodes so it can be unit tested
 ## headless and reused later by AI planners ("where will I be in 2 seconds?").
+##
+## K3 (round 3): `predict(state, throttle, turn, ticks)` rolls a hull forward without a scene. A motion state is a
+## plain Dictionary: position (Vector3), forward (flat unit Vector3), speed (m/s along forward, negative in reverse),
+## velocity (Vector3, m/s), plus the unit's locomotion numbers (see state_for). Headings are unit vectors turned by
+## small-angle steps and renormalized (`√` only, no per-tick trig: _agents/determinism.md guideline 4).
+
+## The physics tick length the simulation runs at (`--fixed-fps 60`).
+const TICK_SECONDS := 1.0 / 60.0
 
 
 ## Next hull speed (m/s) after one tick. Forward and reverse have separate caps.
@@ -9,6 +17,14 @@ static func next_speed(speed: float, throttle: float, max_forward: float, max_re
 		acceleration: float, delta: float) -> float:
 	var target := throttle * (max_forward if throttle >= 0.0 else max_reverse)
 	return move_toward(speed, target, acceleration * delta)
+
+
+## Like next_speed, but shedding speed (toward zero or through it) uses `braking` instead of `acceleration`.
+static func next_speed_braking(speed: float, throttle: float, max_forward: float, max_reverse: float,
+		acceleration: float, braking: float, delta: float) -> float:
+	var target := throttle * (max_forward if throttle >= 0.0 else max_reverse)
+	var slowing := absf(target) < absf(speed) or target * speed < 0.0
+	return move_toward(speed, target, (braking if slowing else acceleration) * delta)
 
 
 ## Turret yaw (radians, relative to the hull) that points at `local_target`,
@@ -21,3 +37,68 @@ static func yaw_toward(local_target: Vector3) -> float:
 ## way around the circle.
 static func step_yaw(current: float, target: float, rate: float, delta: float) -> float:
 	return rotate_toward(current, target, rate * delta)
+
+
+## A motion state for a unit type at a pose (K3). `forward` is flattened and normalized.
+static func state_for(unit_id: String, position: Vector3, forward: Vector3, speed: float = 0.0) -> Dictionary:
+	var flat := Vector3(forward.x, 0.0, forward.z).normalized()
+	var stat := func(key: String, fallback: Variant) -> Variant: return Units.stat(unit_id, key, fallback)
+	return {"position": position, "forward": flat, "speed": speed, "velocity": flat * speed,
+			"locomotion": String(stat.call("locomotion", "tracks")),
+			"max_forward_speed": float(stat.call("max_forward_speed", 9.0)),
+			"max_reverse_speed": float(stat.call("max_reverse_speed", 4.0)),
+			"hull_turn_rate_deg": float(stat.call("hull_turn_rate_deg", 80.0)),
+			"acceleration_mps2": float(stat.call("acceleration_mps2", 14.0)),
+			"braking_mps2": float(stat.call("braking_mps2", 14.0)),
+			"min_turn_radius_m": float(stat.call("min_turn_radius_m", 0.0)),
+			"lateral_grip": float(stat.call("lateral_grip", 1.0))}
+
+
+## The motion state of a live tank (simulating peer: exact speed; clients: estimated).
+static func state_of(tank: Tank) -> Dictionary:
+	var state := state_for(tank.unit_id, tank.global_position, -tank.global_basis.z, tank.speed())
+	state["velocity"] = tank.estimated_velocity
+	state["max_forward_speed"] = tank.max_forward_speed
+	state["max_reverse_speed"] = tank.max_reverse_speed
+	state["hull_turn_rate_deg"] = rad_to_deg(tank.hull_turn_rate)
+	return state
+
+
+## Poses after each of the next `ticks` ticks holding `throttle` (-1..1) and `turn` (-1 left .. 1 right).
+## Pure: `state` is not modified. Ignores collisions (walls, other hulls).
+static func predict(state: Dictionary, throttle: float, turn: float, ticks: int) -> Array:
+	var poses: Array = []
+	var current := state.duplicate()
+	for i in maxi(ticks, 0):
+		current = step(current, throttle, turn, TICK_SECONDS)
+		poses.append({"position": current["position"], "forward": current["forward"], "speed": current["speed"],
+				"velocity": current["velocity"]})
+	return poses
+
+
+## One tick of driving: returns a new state (the input is not modified).
+static func step(state: Dictionary, throttle: float, turn: float, delta: float) -> Dictionary:
+	var next := state.duplicate()
+	var throttle_c := clampf(throttle, -1.0, 1.0)
+	var turn_c := clampf(turn, -1.0, 1.0)
+	var forward: Vector3 = state["forward"]
+	# Tracks: turn at the hull rate whatever the speed (a pivot at a standstill).
+	var turn_radians := turn_c * deg_to_rad(float(state["hull_turn_rate_deg"])) * delta
+	forward = turn_heading(forward, turn_radians)
+	var speed := next_speed_braking(float(state["speed"]), throttle_c, float(state["max_forward_speed"]),
+			float(state["max_reverse_speed"]), float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
+	var velocity := forward * speed
+	next["forward"] = forward
+	next["speed"] = speed
+	next["velocity"] = velocity
+	next["position"] = (state["position"] as Vector3) + velocity * delta
+	return next
+
+
+## `forward` (a flat unit vector) turned clockwise seen from above (to the RIGHT) by `radians` (negative = left).
+## A small-angle step renormalized: exact to ~radians³/3 per call, which at ≤ 3° per tick is far below a millimeter.
+static func turn_heading(forward: Vector3, radians: float) -> Vector3:
+	if radians == 0.0:
+		return forward
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	return (forward + right * radians).normalized()

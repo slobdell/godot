@@ -20,6 +20,8 @@ extends RefCounted
 ##   MUZZLE_CLEARANCE), armor {front, side, rear} (thickness against Weapons "penetration"),
 ##   good_vs / weak_vs (role lists: design intent for AI hints and the army UI; mechanics decide outcomes),
 ##   optional heat_capacity / heat_dissipation (only units whose weapon heats: the Lancer).
+##   K3 (round 3): locomotion (LOCOMOTIONS), min_turn_radius_m (wheels: the tightest circle at any speed),
+##   acceleration_mps2, braking_mps2, lateral_grip (0..1: how much sideways slide the tires kill per second; lower drifts).
 ##
 ## Keep existing keys stable. Renaming or removing one is a contract change (_agents/workstreams.md).
 
@@ -30,6 +32,9 @@ const SCHEMA_VERSION := 2
 
 const ROLES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
 const MOUNTS := ["turret", "fixed"]
+## K3: how a hull moves. Tracks pivot in place; wheels need speed to turn (a turning circle). Hover and articulated
+## are reserved for later factions.
+const LOCOMOTIONS := ["tracks", "wheels", "hover", "articulated"]
 ## Rounds fly flat at muzzle height, so every muzzle must sit below the shortest hull's top by this much
 ## (orientation trip-up 15: shells once flew over every tank).
 const MUZZLE_CLEARANCE := 0.1
@@ -55,6 +60,12 @@ const PROFILES := {
 		"max_reverse_speed": 7.0,
 		"hull_turn_rate_deg": 140.0,
 		"sight_radius": 110.0,
+		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
+		"acceleration_mps2": 14.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 1.0,
 		"weapon": "machine_gun",
 		"mount": "fixed",
 		"turret_turn_rate_deg": 200.0,
@@ -80,6 +91,12 @@ const PROFILES := {
 		"max_reverse_speed": 4.0,
 		"hull_turn_rate_deg": 80.0,
 		"sight_radius": 75.0,
+		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
+		"acceleration_mps2": 14.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 1.0,
 		"weapon": "cannon",
 		"mount": "turret",
 		# R2: 110 -> 50 (the lead's "slow turret"): a scout crossing at 15 m sweeps ~53°/s, faster than it turns.
@@ -105,6 +122,12 @@ const PROFILES := {
 		"max_reverse_speed": 5.0,
 		"hull_turn_rate_deg": 100.0,
 		"sight_radius": 85.0,
+		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
+		"acceleration_mps2": 14.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 1.0,
 		"weapon": "autocannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
@@ -129,6 +152,12 @@ const PROFILES := {
 		"max_reverse_speed": 3.5,
 		"hull_turn_rate_deg": 60.0,
 		"sight_radius": 60.0,
+		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
+		"acceleration_mps2": 14.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 1.0,
 		"weapon": "mortar",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
@@ -154,6 +183,12 @@ const PROFILES := {
 		"hull_turn_rate_deg": 80.0,
 		# R7: sight 80 -> 85 (it must see what its 85 m beam reaches); turret 80 -> 55°/s, so fast IFVs get inside it.
 		"sight_radius": 85.0,
+		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
+		"acceleration_mps2": 14.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 1.0,
 		"weapon": "laser",
 		"mount": "turret",
 		"turret_turn_rate_deg": 55.0,
@@ -184,6 +219,12 @@ const PROFILES := {
 		"max_reverse_speed": 5.0,
 		"hull_turn_rate_deg": 110.0,
 		"sight_radius": 70.0,
+		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
+		"locomotion": "tracks",
+		"min_turn_radius_m": 0.0,
+		"acceleration_mps2": 14.0,
+		"braking_mps2": 14.0,
+		"lateral_grip": 1.0,
 		"weapon": "flamethrower",
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
