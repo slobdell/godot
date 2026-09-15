@@ -123,6 +123,14 @@ Unit stats and combat rules (rules; request changes), the UI and camera (command
 8. A7 ladder — **done**: `BrainVariants` (r1, a4, a6, a6t9), `--green-brain/--rust-brain`, `tools/ai_ladder.py`, `make ai-ladder`; three runs; **champion a6**; CPU cost per tick reported.
 9. Stretch: on-map explanations — **done from the AI side** (`tank.intent` carries a short why; the tactical map draws intent; the agent bridge reports teammates' intents). Smarter CpuCommander — **v2 built and measured, not better** (9/32 vs v1's 8/32 against plain brains); stays opt-in; re-measure with multi-squad v2 armies after checkpoint 1.
 
+**Close-out (2026-09-15, stopped by the lead to respawn agents):** after the orchestrator merged rules and ai into `main`,
+A5 was wired behind brain variant `a5` (matchup target choice, scouts ORBIT slow turrets; both A5 scenarios pass,
+11/11 scenarios green), and a portability pass removed runtime trig from the AI's new geometry. **Not finished:**
+the scout matchup matrix (a6 vs a5) and ladder a5 vs a6 on `combined_arms` were stopped mid-run, so the champion
+is still a6; next agent: run `make ai-ladder VARIANTS=a6,a5 CHAMPION=a6 LADDER_DOCTRINE=combined_arms` and
+`tools/matchup_matrix.py --focus scout` with each variant as default, then make check. A8 (wheels) waits on rules R9.
+Last full `make check` passed at 4870277; since then lint, `make test` AI tests, and `make ai-scenarios` passed.
+
 ### Report (kept current)
 
 **Done (measured):**

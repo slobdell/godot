@@ -28,8 +28,8 @@ const FRAGILE_ROLES := ["artillery", "lancer"]
 const FRAGILE_RADIUS := 45.0
 ## Options that mean "I'm pulling out of the fight" (a squad-mate should cover me).
 const WITHDRAWING := ["RETREAT", "RECHARGE", "TAKE_COVER"]
-## A gun counts as aimed at a tank within this angle.
-const AIMED_DEG := 12.0
+## A gun counts as aimed at a tank within 12° of it: cos 12° (compared with a dot product, no trig at runtime).
+const AIMED_COS := 0.978
 
 static var _cache := {}
 static var _cache_match := 0
@@ -140,7 +140,13 @@ static func _damage_rate(weapon: Dictionary, contact: Dictionary, from: Vector3)
 
 
 static func _aimed(contact: Dictionary, at: Vector3) -> bool:
-	return contact.has("turret_forward") and Ballistics.aim_error(contact["position"], contact["turret_forward"], at) <= deg_to_rad(AIMED_DEG)
+	if not contact.has("turret_forward"):
+		return false
+	var gun := Vector2(contact["turret_forward"].x, contact["turret_forward"].z)
+	var to := Vector2(at.x - contact["position"].x, at.z - contact["position"].z)
+	if gun.length_squared() < 1e-8 or to.length_squared() < 1e-8:
+		return false
+	return gun.normalized().dot(to.normalized()) >= AIMED_COS
 
 
 static func _contact(contacts: Array, contact_name: String) -> Dictionary:

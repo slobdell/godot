@@ -22,9 +22,10 @@ const MAX_CANDIDATES := 16
 const MAX_DEEP := 8
 ## Candidates closer than this to a friend are skipped (splash, blocking each other's lanes).
 const FRIEND_SPACING := 5.0
-## Peek spots: these many degrees off the bearing to the target, smallest first (up to Armor.ARC_DEG 45 the
-## front armor stays toward it; 60 gets around a wall's end at the cost of showing some side while out),
-const PEEK_ANGLES_DEG := [30.0, 45.0, 60.0]
+## Peek spots: 30°, 45°, and 60° off the bearing to the target, smallest first (up to Armor.ARC_DEG 45 the front
+## armor stays toward it; 60 gets around a wall's end at the cost of showing some side while out), as [cos, sin]
+## constants so no trig runs at decision time (_agents/determinism.md),
+const PEEK_ROTATIONS := [[0.866025, 0.5], [0.707107, 0.707107], [0.5, 0.866025]]
 ## at these distances from the hide spot (meters), shortest first.
 const PEEK_STEPS := [3.0, 4.5, 6.0, 7.5, 9.0]
 const PEEK_MAX := 10.5
@@ -99,8 +100,9 @@ static func find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
 			continue
 		var others := _cover(map, hide, threats) if not threats.is_empty() else 1.0
 		var out := Vector2(peek.x - hide.x, peek.z - hide.z)
-		var off_bearing := absf(rad_to_deg(out.angle_to(Vector2(target.x - hide.x, target.z - hide.z))))
-		var peek_quality := 0.5 * (1.0 - out.length() / PEEK_MAX) + 0.5 * (1.0 - off_bearing / 90.0)
+		# How squarely the peek faces the target: cos of the angle off the bearing (0.5 at 60°, 0.87 at 30°).
+		var facing := out.normalized().dot(Vector2(target.x - hide.x, target.z - hide.z).normalized())
+		var peek_quality := 0.5 * (1.0 - out.length() / PEEK_MAX) + 0.5 * facing
 		var score := 0.35 * float(entry["fit"]) + 0.25 * float(entry["travel"]) + 0.25 * others + 0.15 * peek_quality
 		if best.is_empty() or score > float(best["score"]):
 			best = {"hide": hide, "peek": peek, "score": snappedf(score, 0.0001)}
@@ -141,9 +143,11 @@ static func peek_from(map: CoverMap, hide: Vector3, target: Vector3, reach: floa
 	bearing = bearing.normalized()
 	var start := Vector2(hide.x, hide.z)
 	for distance: float in PEEK_STEPS:
-		for angle: float in PEEK_ANGLES_DEG:
+		for rotation: Array in PEEK_ROTATIONS:
 			for side in [1.0, -1.0]:
-				var direction := bearing.rotated(side * deg_to_rad(angle))
+				var c := float(rotation[0])
+				var sn: float = float(rotation[1]) * side
+				var direction := Vector2(bearing.x * c - bearing.y * sn, bearing.x * sn + bearing.y * c)
 				var peek: Variant = _peek_spot(map, start, direction, distance, target, reach)
 				if peek == null:
 					continue
