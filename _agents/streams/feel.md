@@ -66,41 +66,90 @@ Weapons and damage (combat: you only read K2), brains (ai), selection and orders
 
 ## Status
 
-_Updated 2026-09-15 by the feel worker._
+_Report, 2026-09-15, by the feel worker. Branch `stream/feel`; every item below is committed and each backlog commit
+passed `make remote T=check` on builder0 (the last one is noted at the end)._
 
-### Plan (in order) and progress
-1. **X1 effects from K2 events** — done (`0e57e2a`). `WeaponFx` (one family per fire model) + `MatchFxLink` (live K2
-   signals when the match has them; until CP2 a stub turns `Tank.fired` and `Impact` into K2-shaped events).
-2. **X2 the tank shell** — done (`4daca5d`), looked at in `make fx-shots` close-ups; gameplay-distance shots pending.
-3. X3 25 mm bursts and the machine-gun stream — next.
-4. X4 hits that read (weak spots, shields, kills and burning wrecks).
-5. X5 order and selection feedback (against a K1 stub until CP1).
-6. X6 vehicles in motion (dust, drift marks, engine by speed, braking lurch).
-7. X7 budget (`fx-bench` with weapon events, 50 vehicles) and the listening list.
-8. Stretch: kill-cam moment, heat haze.
+### Done
 
-### Decisions
-- **Effects are data-driven families keyed by K2 `fire_model`** (`game/theme/fx/weapon_fx.gd` `FAMILIES`), so combat's
-  retuned weapons get the right look from the event alone.
-- **Stub attribution:** a stub impact belongs to the recent shot whose line passes within 3.5 m; its target is the
-  vehicle within 3.2 m. Round-2 shells that expire in mid-air "fizzle" into the dirt (stub only).
-- **The burst MultiMesh's instance basis carries motion** (velocity, drag, gravity, rise), so smoke rings and thrown
-  dust move with one write and no script per frame. Scorches live in their own pool (`FxWorld.decals`) so sparks never
-  recycle them. Tier budgets: effects 128/192/320, decals 12/24/48, spray pieces 6/10/14.
-- **Recoil and hit rocks move the vehicle's art only** (its VisualSlot nodes), never the Tank body or turret
-  (`VehicleJolt`; test asserts the sim transform is untouched).
-- **`make fx-shots`** (new): a real Match + Tanks stage each weapon; captures muzzle, flight, impact, aftermath.
+| Item | Commit | What it is | Verified |
+|---|---|---|---|
+| **X1** effects from K2 events | `0e57e2a` (+ `64ac80e`) | `WeaponFx` (one family per `fire_model`) fed by `MatchFxLink`: live K2 signals when the match has them, else a stub from `Tank.fired` + `Impact` (a hit is attributed to the recent shot whose line passes within 3.5 m). Matched to combat's real K2 on its branch: events' own `speed_mps`/`range`, flamethrower puffs (`stream` events of a CONE weapon) ignored, deaths via each unit's `died` | 11 tests (`test_fx_weapon_events`), mutation-checked |
+| **X2** the tank shell | `4daca5d` | Muzzle: white-hot star, tongue of fire, smoke ring flung off the barrel, dust ring and puffs off the ground, recoil rock (`VehicleJolt`: the art only), light burst, `tank_boom` (2.8 s tail with stand echoes). Flight: fat glowing slug, long floor light, wins a pooled light. Hit: shockwave, sparks, torn-steel debris, smoke, distance-scaled shake, hit rock. Kill: cooks off (second blast, 34 m ring, debris, smoke column, scorch). Miss: dirt geyser + small scorch; `shell_whine` for a 1–7 m near miss; shells that fly out of range fizzle into the dirt | 10 tests; `make fx-shots` close-ups and RTS views looked at |
+| **X3** 25 mm bursts, MG streams | `d1d9623` | Every burst round counted (flash, gas puff, short fat tracer, `autocannon_shot` thump, HE pop). Streams: node-less virtual tracers in the tracer MultiMesh (muzzle → where each round stopped), a muzzle light flickering while the trigger is held, sparks rate-limited per target, ricochet streaks + zing. Sound: `mg_loop` held per gunner (4 nearest), not a click per round. New cyberpunk `fx.tracer` slot for round 2's hitscan MG | 8 tests |
+| **X4** hits that read | `64ac80e` | Weak spots (K2 `weak_spot`): gold four-point flare + ring, gold sparks, fire jets from a tank's hull, `weak_spot_hit` crunch + two-note chime. Shield holds → splash in the victim's glow + a ripple across the shell from the struck point (`ShieldEffect.hit_at`). Every death explodes and cooks off whatever killed it (duplicate reports dropped). Wrecks burn from several points, smoke column, cook-offs | 6 tests + fires test; showcase `tank_weak_spot`, `ifv_on_shield` |
+| **X5** order and selection feedback | `a5fab5e` | `OrderFeedback`: one ground marker per command (move ring, attack brackets on the target and following it, gold attack-move chevrons, follow diamond, hold frame, stop X), a marker per queued waypoint, a dotted trail with a running light under selected units with queues, a pulse under newly selected units; `ui_ack_move`, `ui_ack_attack`, `ui_select`. Local team only. Reads K1 and the selection by duck typing | 7 tests; showcase `orders` (K1 stand-in) looked at from the RTS camera |
+| **X6** vehicles in motion | `b6bef7c` | `MotionFx` (from node movement, never the sim; nearest 6/12/20 by tier): dust behind treads and tires by speed (own pool), drift marks when wheeled units slide (own MultiMesh, 16 s fade; K3 `locomotion` when present), a lurch on hard braking/launch. Engine sound by speed already existed (round 2) | 6 tests; showcase `motion` |
+| **X7** budget and listening | `f0c1c48` | FX lab `Round3Firefight`: 25 v 25 with round 3's weapons through `WeaponFx`, moving, orders. builder0 (Iris Xe): **high 6.9 ms / 273 draws, low 4.4 ms / 140 draws; weapon FX +0.6 ms, motion ~0.06 ms** (full table in `references/fx_tricks.md`). `make sfx-listen` | bench run and screenshots looked at |
+| **Stretch** kill-cam, heat haze | `10dd979` | `KillCam`: an elimination that ends on a kill → time 0.2×, sound 0.55× for 1.4 real s, camera centers on the final kill, eases back; never networked; `--no-kill-cam`. `HeatHaze`: ≤ 8 screen-bending quads over the nearest fires, tier high only, cost within noise | 4 tests |
 
-### Found and fixed outside my paths (merge notes)
-- **`tools/remote.sh` (shared):** it took the first `.mutter-Xwaylandauth.*` on builder0, a stale cookie; Godot then
-  fell back to Wayland, which stops redrawing a hidden window, so **every remote capture after the first frame
-  repeated a stale image** (and `frame_post_draw` never fired again). Now it reads the auth from the running
-  Xwayland. **Other streams' remote screenshots taken before this fix may be stale.**
+Also verified: `make remote T=skirmish-shots` (the real game, stub path: shell rings, sparks, a burning wreck with smoke
+read at desktop and phone aspect) and `make remote T=web-smoke` (boots, tier low, no console errors). Sim baseline
+untouched (feel never changes it).
+
+### Decisions (one line each)
+- Effects are **data families keyed by K2 `fire_model`**, so combat's retuned weapons pick the right look from the event.
+- The burst MultiMesh's **instance basis carries motion** (velocity, drag, gravity, rise): moving smoke, dust, and
+  delayed cook-offs cost one write each, no script per frame. New kinds: shockwave, smoke, scorch, sparks, debris, flare.
+- **Long-lived things get their own pools** (scorches, dust, drift marks) so a firefight never recycles them. Tier
+  budgets: effects 128/192/320, decals 12/24/48, spray pieces 6/10/14, haze off/off/on.
+- **Recoil, hit rocks, and lurches move only the vehicle's VisualSlot nodes** (tested: body and turret untouched).
+- **Weak-spot color is gold**, never a team color (cyan/magenta). **No floating damage numbers**: the gold flare and chime
+  are the hit marker (question below).
+- **Machine guns are held loops for the 4 nearest gunners**; small-round sparks 0.07 s per target, clanks 0.09 s,
+  ricochet sounds 0.15 s globally.
+- **Order markers read K1 by duck typing** and ignore other teams, so they work before and after CP1 and never show
+  the CPU's orders.
+- **Kill-cam is presentation after the result**: it never runs on a networked match and counts wall time (it slows
+  `Engine.time_scale` itself).
+- All new sounds are synthesized by `make sfx` (CC0), each reseeding from its name; old files stayed byte-identical;
+  energy above 200 Hz measured per file (`assets/audio/README.md`).
 
 ### Questions for the lead
-- (none yet)
+1. **Listen:** `make sfx-listen` plays the new sounds in order (or `make sfx-listen LISTEN="tank_boom mg_loop
+   weak_spot_hit"`). Is the tank boom heavy enough? Is the weak-spot chime too "gamey" for the arena, or the reward you
+   want? Does the machine-gun loop read as brrrt?
+2. **Hit markers:** no floating damage numbers; weak spots get a gold flare and chime instead. OK, or do you want numbers?
+3. **Kill-cam:** slow motion on the final kill of an elimination. Keep it? Also on big moments mid-match in single
+   player (it would change pace)?
 
 ### Requests to other streams
-- **combat (K2):** please emit `projectile_impact` for rounds that miss (ground or range end) with no `target`, so
-  misses throw dirt without feel's stub; and a `unit_destroyed`-style event (or `killed` on every lethal hit, including
-  beams and hazards) so every kill gets its explosion.
+- **control (after CP1):** feel now draws the order acknowledgements, waypoint trails, and selection pulses in 3D with
+  sounds (`game/theme/fx/order_feedback.gd`). Please drop `RtsControls._draw_acks` (2D rings) so markers don't draw
+  twice; keep or drop the 2D waypoint dashes as you prefer (feel's trail is on the ground). Don't add ack sounds.
+- **combat:** (1) optional: a `projectile_impact` with no target when a shell reaches its range, so misses land where
+  the rules say (feel fizzles them into the dirt meanwhile); (2) the wreck-husk stretch (keep a dead unit visible):
+  feel's burning wreck sites already sit where kills happen and would dress a husk.
+- **orchestrator:** `tools/remote.sh` fix (stale Xwayland cookie → stale remote screenshots) is on this branch;
+  **other streams' remote screenshots taken before it may be stale**. Merge order: after control and combat, then check
+  that `MatchFxLink.live` is true in a skirmish (effects switch to real K2 on their own).
+
+### Known issues
+- Tier high on the laptop's UHD 620 is estimated at ~16 ms for the 50-vehicle bench (Iris Xe × 2.3), the edge of its
+  budget; the 50 vehicles' 886k primitives are the main cost, not effects.
+- Round 2's MG fires 5 rounds/s, so streams look sparse until combat's ~11/s lands. Weak spots in the showcase are
+  forced on (round 2 has none).
+- Order markers were checked against a K1 stand-in, not control's real `Orders` (not on this branch yet); control's 2D
+  ack rings will double them until removed.
+- The kill-cam was verified by tests, not seen at a real match end; ArmyLoop's results screen appears a moment later
+  (its timer slows too).
+- On networked clients the link stays detached (no `Tank.fired` there): legacy effects only. Netcode is paused.
+
+### What to playtest
+- `make skirmish`: tank shells (watch a miss whine past and throw dirt), IFV bursts, scout streams, kills burning,
+  order markers after CP1 (right-click move/attack, A-click, shift-queue with units selected).
+- `make fx-shots` → `build/screenshots/fx-shots/*.png` (close-ups and RTS views of every weapon, weak spot, shield,
+  wreck, orders, motion); `make fx-shots SHOWCASE=tank_kill,scout_stream` for a subset.
+- `make fx-bench FX_CONFIGS=r3_all,r3_tier_low` on the laptop to measure the UHD 620; `make sfx-listen`.
+
+### Next steps
+- After CP1/CP2 merge: rerun `make fx-shots` and a skirmish with combat's weapons (live K2, weak spots, bursts at real
+  rates); retune stream density and hit sizes against the real fire rates; delete the stub path once K2 is on `main`.
+- Wire order markers to control's `Orders` in a real skirmish and screenshot them.
+
+### Merge notes (shared files)
+- `tools/remote.sh`: the Xwayland auth line (reads the running Xwayland's `-auth`, falls back to the newest file).
+- `game/theme/game_theme.gd`: additive `fx.tracer` entry in `CYBERPUNK_SLOTS`.
+- `_agents/remote_builds.md` (troubleshooting notes), `_agents/orientation.md` (trip-ups 65–66).
+- Everything else is in feel's paths: `game/theme/fx/**`, `game/theme/audio/`, `assets/audio/`, `game/combat/impact.gd`,
+  `game/theme/cyberpunk/{tracer_shell,tracer_round}.gd` + `fx_tracer.tscn`, `mk/fx.mk`, `references/fx_tricks.md`,
+  tests `test_fx_*.gd`.
