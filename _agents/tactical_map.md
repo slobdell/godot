@@ -15,6 +15,7 @@
 | **Groups** | **ctrl+1–9** saves the selection · **shift+1–9** adds to a group · **1–9** selects (a quick second tap centers the camera) · **Tab** next group · doctrine squads start as groups 1–5 · the group bar (bottom center) shows each group; click a chip to select it |
 | **Camera** | screen edges, arrows, middle-drag pan · wheel zoom · `,` `.` rotate · **C** centers on the selection · radar: left-click or drag looks, right-click moves the selection there, A then a radar click attack-moves there |
 | **Panel** | portraits (hull and shield) for a group: click selects one, shift-click drops it, ctrl-click keeps its type · a card for one unit or an inspected enemy · the command card (Move M, Stop S, Hold H, Attack-move A, Follow F, Formation G) |
+| **Quality of life** | right-click an enemy with a mixed selection: only units whose guns hurt it (≥ 25% through its side armor) attack, the rest escort the nearest attacker · **F1** selects idle units · rest the mouse on any unit for its stats (hull, shield, weapon, range, speed, strong and weak against) |
 | **Time** | Space pauses (orders still land); skirmish starts in a planning pause |
 
 **Feedback:** bright rings under selected units (an inspected enemy's ring is bright red), a ground ring that shrinks
@@ -63,7 +64,7 @@ mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, que
 | Panel, group bar, rings, radar | `game/ui/selection_panel.gd`, `game/ui/group_bar.gd`, `game/ui/selection_markers.gd`, `game/ui/radar.gd` |
 | Scripted playtest | `game/control/control_playtest.gd` |
 
-- Tests: `tests/test_control_{orders,response,selection,commands,groups,group_moves,panel}.gd` (real mouse and key
+- Tests: `tests/test_control_{orders,response,selection,commands,groups,group_moves,panel,stretch}.gd` (real mouse and key
   events through `Viewport.push_input`; shared setup in `tests/support/control_fixture.gd`).
 - `make control-playtest` (headless): box select, attack-move across the arena, a queued route, a group swap, a
   pushed unit rejoining; every order's response tick in `build/control-playtest/headless/orders.jsonl`.

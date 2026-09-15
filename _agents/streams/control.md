@@ -99,9 +99,9 @@ _Updated 2026-09-15 by the control worker._
 | X4 Control groups and camera: ctrl/shift/1–9, double tap centers, Tab, doctrine squads = groups 1–5, radar look/order, group bar | **done** (2114693): 7 tests |
 | X5 Group movement, automatic formations, regrouping | **done** (0620b4c): 8 tests; a scout and a tank arrive 25 ticks apart (the scout tops out at 10.7 of 14 m/s); a laggard 40 m behind arrives 21 ticks after its leader |
 | X6 Selection panel and command card; retire drill/formation pickers (kept behind `--touch-map`) | **done** (0620b4c): 6 tests; panel clear of the radar at 1920×1080 and 1280×720 |
-| X7 `make control-playtest` / `make control-playtest-shots` | **done** (0620b4c): headless run ok, 7 orders logged, worst response 1 tick |
+| X7 `make control-playtest` / `make control-playtest-shots` | **done**: headless and windowed 1920×1080 and 1280×720 all ok on builder0; 7 orders logged per run, worst response 1 tick; frames looked at (the first windowed runs exposed harness timing: units still sliding into their spawn wedge during the box drag, and a 150 s timeout; fixed) |
 | X8 Touch adaptation (stretch) | **deferred:** workstreams.md forbids new touch-only work this round; the round-2 touch map still runs behind `--touch-map` |
-| Stretch: smart attack, select idle (F1), hover tooltips | built, 4 tests green locally |
+| Stretch: smart attack, select idle (F1), hover tooltips | built, 4 tests; final check running |
 
 ### CP1 (K1 Orders API): READY, commit 2114693
 
