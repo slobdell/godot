@@ -41,8 +41,12 @@ const PEEK_SHIELD := 0.35
 ## A COVER_FIRE query stays valid while the tank is this close to its hide spot and the target this close to
 ## where it was (meters), and the target still can't see the hide spot.
 const COVER_FIRE_KEEP := 12.0
+## A4: a gun held this many ticks for a friend in the line of fire makes the brain move to clear the lane.
+const LANE_BLOCKED_TICKS := 20
+## How far CLEAR_LANE looks for a new firing spot (meters).
+const LANE_SEARCH := 10.0
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -89,6 +93,9 @@ var ranked: Array = []
 var _order_serial := 0
 ## The last cover query: {"tick", "position", "threats" (count), "result" [Vector3]}.
 var _cover_cache := {}
+## CLEAR_LANE's chosen spot and when it was chosen (kept until reached or stale, so the tank settles to fire).
+var _lane_goal: Variant = null
+var _lane_goal_tick := 0
 ## The last COVER_FIRE query: {"tick", "target" (name), "target_position", "result" ({hide, peek, target} or {})}.
 var _cover_fire_cache := {}
 
@@ -270,6 +277,13 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			add.call("COVER_FIRE", pair[0], score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality)
 	for pair in flanks:
 		add.call("FLANK", pair[0], pair[1] * fight_scale)
+	# CLEAR_LANE (A4): my gun is ready and aimed but a friend is in the way: step aside to a spot with a clear
+	# line to the target instead of waiting (or shooting through it). Above the fight it serves, even when
+	# that fight is committed (×COMMIT_BONUS).
+	if int(me.get("lane_blocked_ticks", 0)) >= LANE_BLOCKED_TICKS and current.get("target", "") != "":
+		for pair in engages:
+			if pair[0] == current["target"]:
+				add.call("CLEAR_LANE", pair[0], maxf(float(pair[1]) * fight_scale, 0.3) * COMMIT_BONUS * 1.15)
 	if is_artillery:
 		for c in contacts:
 			if not c["visible"]:
@@ -536,6 +550,7 @@ func build_situation() -> Dictionary:
 				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
 				"ammo": tank.ammo, "max_ammo": tank.max_ammo, "heat": tank.sync_heat,
 				"shield": tank.shield, "max_shield": tank.max_shield, "reload": tank.sync_reload,
+				"lane_blocked_ticks": lane_blocked_ticks,
 				"class": Units.PROFILES.get(tank.unit_id, {}).get("class", "tank"), "sight_radius": tank.sight_radius,
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
 		"directives": effective_directives,
@@ -644,6 +659,8 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 # ---- Acting: choice → standing orders ----------------------------------------------
 
 func _act(s: Dictionary) -> void:
+	if choice["option"] != "CLEAR_LANE":
+		_lane_goal = null
 	var me: Dictionary = s["self"]
 	var my_position: Vector3 = me["position"]
 	var weapon: Dictionary = me["weapon"]
@@ -682,6 +699,16 @@ func _act(s: Dictionary) -> void:
 			else:
 				_order_move(_move_to(TankBrain.withdraw_point(s), true))
 			_order_weapon({"type": "fire_at_will"})
+		"CLEAR_LANE":
+			if _lane_goal == null or game_match.tick - _lane_goal_tick > 120:
+				_lane_goal = _lane_spot(s, contact)
+				_lane_goal_tick = game_match.tick
+			var spot: Vector3 = _lane_goal
+			if my_position.distance_to(spot) > SPOT_ARRIVE + 0.5:
+				_order_move(_move_to(spot, false, 1.0, SPOT_ARRIVE))
+			else:
+				_order_move({"type": "face", "x": contact["position"].x, "z": contact["position"].z})
+			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"COVER_FIRE":
 			var pair: Dictionary = s["cover_fire"]
 			var hide: Vector3 = pair["hide"]
@@ -826,6 +853,40 @@ func _contact(s: Dictionary, contact_name: String) -> Dictionary:
 		if c["name"] == contact_name:
 			return c
 	return {}
+
+
+## CLEAR_LANE's destination: the nearest of 16 nearby spots (two rings) that stands clear of obstacles, sees the
+## target, and has no friend in the new line of fire; otherwise a sidestep away from the blocking friend.
+func _lane_spot(s: Dictionary, contact: Dictionary) -> Vector3:
+	var me: Vector3 = s["self"]["position"]
+	var target: Vector3 = contact["position"]
+	var map := CoverMap.of(tank)
+	var friends: Array = (s["allies"] as Array).map(func(ally: Dictionary) -> Dictionary:
+			return {"name": ally["name"], "position": ally["position"]})
+	var best: Variant = null
+	for ring: float in [LANE_SEARCH * 0.6, LANE_SEARCH]:
+		for i in 8:
+			var angle := TAU * i / 8.0
+			var spot := me + Vector3(cos(angle), 0.0, sin(angle)) * ring
+			if absf(spot.x) > ARENA_LIMIT or absf(spot.z) > ARENA_LIMIT or map.inside_any(Vector2(spot.x, spot.z), 2.4):
+				continue
+			if not map.clear_line(spot, target) or not FireLanes.in_line(spot, target, friends).is_empty():
+				continue
+			# Keep the range: the spot whose distance to the target changes least.
+			var range_change := absf(spot.distance_to(target) - me.distance_to(target))
+			if best == null or range_change < absf((best as Vector3).distance_to(target) - me.distance_to(target)) - 0.01:
+				best = spot
+		if best != null:
+			return best
+	var blocker: Vector3 = me
+	for ally: Dictionary in s["allies"]:
+		if ally["name"] == lane_blocker:
+			blocker = ally["position"]
+	var lane := Vector3(target.x - me.x, 0.0, target.z - me.z).normalized()
+	var side := Vector3(-lane.z, 0.0, lane.x)
+	if side.dot(blocker - me) > 0.0:
+		side = -side
+	return me + side * 6.0
 
 
 ## Where a tank breaking contact heads next: straight away from the nearest recently seen enemy that could

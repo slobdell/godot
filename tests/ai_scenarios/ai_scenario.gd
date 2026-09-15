@@ -102,6 +102,14 @@ func start() -> void:
 			break
 
 
+## Free this scenario's arena and match now (to run a second scenario in the same test; otherwise the
+## TestCase frees them afterwards). Two live arenas would share one physics world.
+func dispose() -> void:
+	for node: Node in [game_match, arena]:
+		if is_instance_valid(node):
+			node.free()
+
+
 ## One physics tick.
 func step() -> void:
 	await case.tree.physics_frame

@@ -211,4 +211,35 @@ A1 scenario harness → A2 `CoverMap` + `TacticalQuery` → A3 `COVER_FIRE` → 
 
 ## Results
 
-_(filled in as backlog items land: scenario timings, per-tick cost, ladder ELO)_
+### Behavior scenarios (`make ai-scenarios`, seeded, 2026-09-15)
+
+| Scenario | Before (round 1 brain) | Now |
+|---|---|---|
+| A hurt tank (120/300 hull, shield down) under two guns, cover 8 m away | never hidden: backed 100 m toward base across open ground | out of both guns' sight after 3.3 s, stays hidden 2.4 s+ (RETREAT breaks line of sight first) |
+| A healthy cannon tank near a wall vs a gun 45 m away, 20 s | hidden 0%, 10 shots from the open | hidden 68%, 9 shots, back into cover after firing 7 times (COVER_FIRE) |
+| A friend shuttles across the line of fire | 1 of 7 shots fired through the friend | 0 of 7 |
+| A friend parked in the line of fire | never fires (every shot would hit the friend) | sidesteps 5.4 m, first shot at 2.9 s, 4 shots, none through the friend (CLEAR_LANE) |
+| Artillery shells an enemy with a friend 5 m from it | (not measured before) | 0 rounds (4 when the friend is 50 m off) |
+| Scout circles a slow turret; IFV prioritizes scouts | pending: needs rules' catalog v2 (checkpoint 1) | |
+
+### The 2D cover map vs physics
+
+`CoverMap.clear_line` agreed with physics raycasts on 139 of 139 random sight lines on the real arena
+(`test_ai_cover_map`). Microbenchmarks on the dev machine: a physics ray ≈ 3 µs from GDScript; a computed
+CoverMap line ≈ 10 µs; a memoized one ≈ 0.7 µs.
+
+### CPU cost (`make ai-perf`: 50 brains, 25 v 25, 30 s, most of it fighting)
+
+| Step | usec per physics tick |
+|---|---|
+| Round 1 brain as found | ~15 300 |
+| Sight rays only for halt_on_contact reflexes; per-tick shared tank tables (behavior identical) | ~9 800 |
+| + A2/A3 tactical queries (unoptimized) | ~14 700 |
+| + contact cap (nearest 8), cover queries only for worn tanks, 6-tick target scans, cheap facing | ~6 800–9 000 |
+
+The shared machine swings ±30% with other worktrees' load. Where the rest goes (per tick): building
+situations ~3 ms (contact dictionaries), decide ~1.4 ms, weapon target checks ~1.8 ms, pathing ~0.8 ms,
+tactical queries ~1.1 ms. **The 1 ms target is not met.** Next steps, in order of expected gain: think LOD
+(units with no contact within 120 m think every 18 ticks), orders at 30 Hz for units not firing, a
+per-team shared contact table built once per intel refresh (brains add only their per-tank fields), and
+typed arrays in place of dictionaries in `decide()`.

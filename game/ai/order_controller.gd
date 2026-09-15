@@ -96,6 +96,13 @@ var _unstick_left := 0.0
 var _scan_pick: Tank = null
 var _scan_left := 0
 
+## A4 fire discipline: consecutive ticks the gun was ready and aimed but held because a friend was in the line
+## of fire (or the splash), and which friend. Brains read it to move and clear the lane.
+var lane_blocked_ticks := 0
+var lane_blocker := ""
+## Measurement (not decisions): shots held for friends, by every controller since the process started.
+static var held_for_friends := 0
+
 
 func _ready() -> void:
 	# Lower priority runs first: the command is ready before the tank consumes it.
@@ -325,7 +332,7 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	if tank.ammo_fraction() <= LOW_AMMO_FRACTION and distance > float(weapon["preferred_max"]):
 		in_range = false
 	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
-	cmd.fire = in_range and aimed and tank.ready_to_fire()
+	cmd.fire = _clear_to_fire(in_range and aimed and tank.ready_to_fire(), aim)
 
 
 ## Direct fire needs a clear line of sight from this tank AND the target being seen: by the team when a
@@ -405,7 +412,24 @@ func _apply_indirect(cmd: TankCommand) -> void:
 	var aim := target.global_position + target.estimated_velocity * flight
 	_cover(aim, cmd)
 	var aimed: bool = Ballistics.aim_error(tank.turret.global_position, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
-	cmd.fire = aimed and tank.ready_to_fire()
+	cmd.fire = _clear_to_fire(aimed and tank.ready_to_fire(), aim)
+
+
+## A4: the last gate before the trigger. A shot that would pass through (or splash) a friend is held, and
+## counted in lane_blocked_ticks. Only checked when the gun would otherwise fire, so it costs one check per
+## reload, not per tick.
+func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
+	if not would_fire:
+		return false
+	var blockers := FireLanes.for_shot(tanks_root, tank, aim)
+	if blockers.is_empty():
+		lane_blocked_ticks = 0
+		lane_blocker = ""
+		return true
+	lane_blocked_ticks += 1
+	lane_blocker = String(blockers[0])
+	held_for_friends += 1
+	return false
 
 
 ## Point the turret at a world spot, and remember that heading for when the spot is gone.
