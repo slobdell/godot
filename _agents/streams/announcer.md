@@ -111,13 +111,51 @@ The announcer never affects gameplay.
   famous podcaster. Keep the *character* original: no real name, catchphrases, or references in lines, and before
   shipping, the lead confirms the voice doesn't imitate a real person (ElevenLabs' policy; sound-alike voices in
   commercial products carry legal risk even as parody). Resolve the voice id by name, as mavlink-hud does.
-- **Color commentator:** not chosen yet. Cast by character first (see game_design.md), with a timbre clearly
-  different from JR1 on phone speakers.
-- **Arena PA / sponsor voice:** not chosen yet.
+- **Color commentator: "the Veteran"** (recommended 2026-09-15, voice not made yet). A former arena champion, an ex-convict
+  who won his freedom: the expert with scars. Deep, slow, gravelly, dry humor; roasts bad tactics; "I survived that
+  arena" callbacks. The classic pairing of a hype caller and an expert. **Casting notes:** if he's voiced as a Black man,
+  he is the authority, never a hype-man foil for the caller; describe the voice by timbre and personality (e.g. "deep,
+  gravelly baritone, slow deliberate delivery, dry humor, older, a former fighter"), never by race or dialect, and write
+  his lines in his own voice, not exaggerated dialect.
+- **Arena PA and sponsor reads: "the Corporate Co-host"** (placeholder name Celeste Vance; voice not made yet). A polished
+  host the Syndicate assigned to the broadcast. A woman, for the most distinct timbre of the three voices. The
+  third alternative considered: a stiff, monotone Law liaison (deadpan, booed by the crowd).
+
+### The Corporate Co-host: Voice Design prompt and examples
+
+**Voice description** (ElevenLabs Voice Design):
+
+> A polished, warm-but-hollow corporate broadcast host, a woman in her mid-30s with a neutral American accent. Bright,
+> crisp, perfectly enunciated delivery with a permanent smile you can hear. Medium pace, confident and upbeat, the
+> tone of a luxury brand commercial or a morning show host. Underneath the cheer is something cold and rehearsed:
+> every sentence sounds approved by legal. Clean studio-quality recording, close microphone, no background noise.
+
+**Preview text:**
+
+> Good evening, and welcome to tonight's match, brought to you by Syndicate Life Insurance. Because you won't make it.
+> I'm Celeste Vance, and what a crowd we have tonight! Remember, folks: every casualty you see this evening is fully
+> covered under our Platinum Afterlife plan. Now let's go down to the arena floor!
+
+**Her comedy rule:** cheerful corporate euphemism over horror, delivered sincerely, never as a joke. In the banter
+graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's language), and `filler`.
+
+**Example lines** (tone references for the line library; fictional brands only):
+- Match intro: "Tonight's Condemned have been given a generous opportunity to earn their freedom. Terms and conditions
+  apply. Void where survived."
+- Over carnage: "That dozer has just been reduced to scrap! And speaking of reductions, AquaCorp is lowering water
+  rations by only eight percent this quarter. Hydration is a privilege!"
+- Friendly fire: "Rust's artillery has just delivered a surprise team-building exercise. Syndicate HR reminds all
+  combatants: accidents are a learning opportunity."
+- Answering the caller: Caller: "Oh, he's dead! That scout is gone!" / Co-host: "*Retired*. We say retired. His organs
+  are already trading on Organ Futures. Up four points!"
+- The Law booed: "I'm hearing some enthusiastic feedback from the stands for our friends at the Law. The Syndicate
+  values all public input. Your seat number has been recorded."
+- Victory: "And Green takes the match! A thrilling demonstration of our Series Nine railgun, available now to qualified
+  governments. Pre-orders ship before the next uprising."
 
 ## Waiting on the lead
 
-- The color commentator and PA voices (the caller `JR1` is ready, 2026-09-15).
+- The Veteran and Corporate Co-host voices (the caller `JR1` is ready, 2026-09-15; the co-host's Voice Design prompt is above).
 - **Environment:** as of 2026-09-15, `ELEVENLABS_KEY_ID` (and `MESHY_API_KEY`) sit after the interactive guard in
   `~/.bashrc`, so agent shells can't see them (orientation trip-up 59). Move both above line 6 or into `~/.profile`.
 

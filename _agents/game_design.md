@@ -266,7 +266,10 @@ some giant decision graph where many edges link to many nodes, and traversals ar
 **Voices.** Original voices designed from a written description (ElevenLabs Voice Design), aiming at an archetype: a
 hyped, conversational fight-night crew. **Never an imitation of a real person:** ElevenLabs' policy prohibits
 replicating a voice without consent (and blocks prominent voices), and a commercial game can't use someone's likeness.
-Two voices like a sports broadcast (a play-by-play caller and a color commentator), plus the arena PA and ad voice-overs.
+A sports-broadcast trio: a hype play-by-play **caller** (`JR1`), a color commentator **"the Veteran"** (a former
+arena champion: deep, dry, the expert), and **"the Corporate Co-host"** for the arena PA and sponsor reads (a Syndicate
+host whose comedy is sincere corporate euphemism over carnage). Casting, the Voice Design prompt, and example lines:
+[streams/announcer.md](streams/announcer.md) *Voices*.
 
 **Pre-generated audio, composed at runtime.** No live text-to-speech in a match (cost, latency, keys, offline play).
 Instead a large tagged clip library is recorded ahead of time, and a runtime **banter graph** stitches clips into
