@@ -29,8 +29,9 @@ Recorded in full in [`_agents/game_design.md`](_agents/game_design.md) and [`_ag
 - **The vibe:** over-the-top eccentric vehicles (the up-armored bus).
 - **Business:** a die-hard game with no pay-to-win; free web, paid Android app.
 - **Later, not this round:** an optional **AI Commander** opponent, with bring-your-own Gemini key first as the
-  proving ground for on-device **Gemini Nano on Android** ([vision.md](_agents/vision.md)). Factions and a desktop or
-  Steam build are under discussion ([roadmap.md](_agents/roadmap.md) idea backlog). No round-2 stream builds these.
+  proving ground for on-device **Gemini Nano on Android** ([vision.md](_agents/vision.md)). **Factions are decided**
+  (four, wildly different trade-offs; [game_design.md](_agents/game_design.md)); a desktop or Steam build is under
+  discussion. No round-2 stream builds these.
 
 ## Round 2: five streams
 
@@ -61,6 +62,9 @@ Netcode is **paused** (its smokes stay in `make check`). Ownership, contracts C1
   before these guidelines existed: they get them when they merge `main` at checkpoint 1, so at each merge, review new
   simulation code for engine raycasts, navigation calls, and trig, and check the inventory is updated. Steps D1–D4
   come after round 2.
+- **Unit-count bench** (roadmap.md *Next*): how many vehicles render and simulate smoothly on the web and a phone.
+  It decides squad sizes and how expendable factions like the road gangs can be. Until measured, design to the
+  current 5 × 5 (50 vehicles in a match).
 
 ## Open questions for the lead
 

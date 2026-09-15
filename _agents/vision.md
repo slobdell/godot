@@ -60,8 +60,9 @@ asset pipelines, mobile export.
   progression, friendly fire, sophisticated unit AI, tap-only commanding, gladiator arena with crowds, no
   pay-to-win.** The LLM is now a possible later *commander* issuing the same squad commands, not the core loop.
 - 2026-09-15 (later): the LLM commander becomes a planned **optional opponent**: bring-your-own Gemini key first,
-  as the proving ground for on-device Gemini Nano on Android (below). Factions and a Steam build are under
-  discussion (roadmap.md idea backlog).
+  as the proving ground for on-device Gemini Nano on Android (below). **Factions decided** (game_design.md): the
+  Condemned, road gangs, the Law, and the Syndicate, with wildly different trade-offs. A Steam build is under
+  discussion.
 
 ## The AI Commander: an optional LLM opponent (decided 2026-09-15)
 

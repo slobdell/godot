@@ -63,6 +63,48 @@ emerge from these mechanics rather than a damage multiplier table, and be **meas
 base resupply (rules stream may simplify if it doesn't add decisions), heat only where a unit's weapon uses
 it (the Lancer). **Drop:** components, heat sinks, ammo racks, per-hardpoint weapons.
 
+## Factions (lead, 2026-09-15)
+
+The lead: *"So I think we're settled on the idea for factions. We want them, and we'll make them wildly different
+characteristics. We will figure out over time how to balance the factions."* Not scheduled yet: round 2 builds one
+roster (today's vehicles become the Condemned).
+
+**Principles**
+- **Same roles, wildly different trade-offs.** Every faction fills the same five roles (scout, tank, IFV, artillery,
+  special), so counters stay learnable, but each role plays differently per faction. The lead's example: the gang's
+  tank-class vehicle is a converted fuel truck whose back is a giant war machine, in the spirit of Death Race's
+  Dreadnought, not a dozer with different numbers.
+- **One shared mechanics vocabulary.** Mechanics are built once in rules (shields, field repair, turning circle vs
+  pivot steering, pinning harpoons, burning ground, energy vs ammo, …) and a faction's identity is the combination
+  it gets. The AI learns each mechanic once, so faction count doesn't multiply AI work.
+- **A faction is a choice, never more power** (pillar 1). Unlocking one, if ever, is a sidegrade.
+- **Balance over time** with headless simulation: the matchup matrix across factions, plus a search for dominant
+  armies ([determinism.md](determinism.md) keeps runs reproducible). Playtests judge feel and exploits.
+- **Our own names and designs.** Mad Max, Death Race, and Judge Dredd set the vibe; no copied vehicles or names.
+- **People are visible, violence isn't graphic** (proposed): riders and crews on vehicles, **crews bail out** when a
+  vehicle dies, riders are thrown clear as damage builds, no blood or gore. Target around ESRB Teen / PEGI 12 (the
+  Google Play IARC questionnaire decides). Explosions, fire, and scrap carry the spectacle.
+- **Readability:** faction lighting (Law strobes, Syndicate cyan) must never be confused with team accent colors.
+
+**The four factions (working names and first ideas)**
+
+| Faction | Who | Look | Trade-offs | Signature ideas |
+|---|---|---|---|---|
+| **The Condemned** | Convicts fighting for freedom; the crowd pities them | Prison dozers, armored buses, garbage trucks: tall, boxy, welded shut, hazard paint, cage mesh | Tough, cheap, holds ground; slow | Today's roster: treads that pivot, shields |
+| **Road gangs** (the Wreckers / Scrapborn / Chrome Cult) | Wasteland raiders; the crowd favorite | Low, open hot rods and buggies on huge tires; chrome, rust, spikes, fire; visible crews | **No shields**; fast, cheap, deadly up close, fragile; wheels with turning circles | Field repairs by crews; explosive spears (high penetration, short range); harpoon ballista that pins; catapult of flaming barrels leaving burning ground |
+| **The Law** | The state's wardens, the house team the crowd boos | Judge Dredd-style riot vehicles, red and blue strobes, spotlight towers | Pricier, armored, fewer units | Water cannon knockback, spotting and reveal, crowd control |
+| **The Syndicate / "the Sponsors"** | The corporation that owns the show; every match is a product demo | Unmanned, glossy faceted shells, cyan light lines, holo logos | Few, very expensive, strong at range, fragile once shields drop | Energy (heat and shields) instead of ammo; lasers (the Lancer); spotter-guided missiles; a shield projector; optical camo scouts |
+
+**Road gang roster sketch:** scout = spear buggy; IFV = hot-rod pickup with twin salvaged machine guns and spear
+riders; **tank = the fuel-truck war rig** (lots of scrap hit points, fast in a straight line, wide turning circle,
+rams, harpoon ballista, spear riders; weak when flanked while turning); artillery = catapult truck; special =
+war-drum truck that rallies nearby units, or a resupply tanker. Idea pool: hub blades that damage what they pass,
+a wrecking-ball crane, caltrops or oil slicks, nitro bursts.
+
+**Rendering crews cheaply:** oversized "miniature scale" riders baked into the vehicle model, shader sway or a few
+rigid moving parts (no skeletons), detail saved for close-ups (army builder, kill-cams, victory), and the same
+cheap figure tech as the arena crowds.
+
 ## Army, squads, budget
 
 - **Before the round:** a budget, **buy any mix of units, and divide them into up to 5 squads** **(lead)**.
@@ -136,5 +178,4 @@ The lead wants this *"really sophisticated"*. The player's orders set intent; ea
   feasible (integer core spike). Resumes after the core loop is fun.
 - **The AI Commander:** an optional LLM opponent that issues the same SquadCommands. Bring-your-own Gemini key
   first, then on-device Gemini Nano on Android (the plan and its rules are in vision.md).
-- **Factions** (idea, not decided): see roadmap.md's idea backlog.
 - Replays and spectating (recording works over the relay today).
