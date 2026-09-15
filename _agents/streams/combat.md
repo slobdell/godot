@@ -112,3 +112,33 @@ changed. What landed (tests: `tests/test_combat_events.gd`, `tests/test_combat_l
   `state_of(tank)`, `step(...)`, `turn_heading(...)`. Poses: `{position, forward (unit Vector3), speed, velocity}`;
   headings are vectors, not yaw angles. Matches a real tank within 0.3 m over a second on open ground.
 - **`Match.orders`** (`var orders: Object = null`): control assigns its `Orders`; tighten the type when it lands.
+
+### X2 done: the weapons rebuilt (2026-09-15)
+
+| Weapon | Round 2 | Round 3 | Why |
+|---|---|---|---|
+| Tank cannon (shell) | 34 dmg / 2.5 s, 70 m/s | **320 dmg / 5 s, 75 m/s** | Side hit = 63% of a full tank's shield + hull, front 39%, rear 95%; kills in 2 (side, rear) to 4 (front) shells. Measured in `test_combat_weapons.gd` |
+| IFV 25 mm (burst) | 9 dmg / 0.35 s | **4 x 15 dmg, 0.12 s apart, every 1.8 s, 180 m/s** | ~33 dps; a started burst is committed |
+| Scout MG (stream) | 4 dmg / 0.2 s, spread 1.5° | **3.5 dmg / 0.1 s, spread 2°, hitscan** | 10 rounds/s; hitscan because a node per bullet costs 10 spawns/s per scout and dodging single bullets isn't the counterplay |
+| Laser (first pass) | 12 dmg, 16 heat | 28 dmg, 20 heat | keeps the Lancer's job against tanks that now die fast; X6 tunes |
+| Flamethrower (first pass) | 20 dps | 55 dps | same ratio to the cannon's new dps; X6 tunes |
+| Mortar (first pass) | 90 | 140 | X6 tunes |
+
+Mechanics: weapon timing is in whole ticks (`Tank._reload_ticks`, `_burst_rounds_left`), deterministic; shells fly at
+their weapon's `projectile_speed_mps`. Sim baseline re-recorded on purpose (twice on builder0, repeatable):
+`glibc-2.43 f63aa6d6ea9545f9`. Tools: `make duel GREEN_UNITS=tank RUST_UNITS=scout,scout` (text timeline from the new
+match runner flag `--combat-log`).
+
+**A 1-v-1 tank duel, tick by tick** (`make duel`, seed 3, both advancing on (30, 0)): first shots at 6.9 s from 76 m
+(both fire the same tick: today's brains shoot the moment they're loaded and aimed); Green's shell lands 0.8 s later
+on Rust's front (176 = shield + 26 hull), Rust's misses. They stop at 38 m and trade every 5.0 s: 11.9 s both hit
+fronts; 16.9 s Green's shell catches Rust's side as it turns and kills it (17.4 s). Three volleys, 5 s of dread each,
+and the one angled hit decides it. Nobody dodges or circles yet: that's ai X2/X3 reading `incoming_projectiles`.
+
+**Two scouts on a tank** (seed 2): the scouts see the tank at ~80 m and back off to their spotting standoff (ai's
+brain); the tank chases at 9 m/s, fires at 10.8 s and 15.8 s at reversing scouts and misses both (leading a
+7 m/s target at 50 m), then kills a scout pinned against the north wall with a 220 front hit at 21.4 s. The scouts
+never fire: their brain treats them as spotters. Worth a look by ai: a scout reversing into a wall.
+
+Tests adjusted to derive from data (merge notes): `test_combat.gd`, `test_shields.gd`, `test_weapons_and_intel.gd`,
+`test_turrets.gd` (expected shots from the reload).

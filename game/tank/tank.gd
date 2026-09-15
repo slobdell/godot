@@ -106,7 +106,11 @@ var repair_ticks := 0
 var sync_heat := 0.0
 
 var _speed := 0.0
-var _reload_left := 0.0
+## X2 (round 3): weapon timing in whole physics ticks (deterministic). Ticks until the next trigger pull may fire,
+## rounds of the current burst still to come, and ticks until the next of them.
+var _reload_ticks := 0
+var _burst_rounds_left := 0
+var _burst_ticks := 0
 var _previous_sync_position := Vector3.ZERO
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -187,7 +191,7 @@ func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 func set_weapon(id: String) -> void:
 	weapon_id = id
 	weapon = Weapons.profile(id)
-	reload_seconds = weapon["reload"]
+	reload_seconds = float(weapon.get("reload_s", weapon["reload"]))
 	max_ammo = Weapons.max_ammo(weapon)
 	ammo = max_ammo
 	if _weapon_visual != null:
@@ -243,15 +247,33 @@ func _physics_process(delta: float) -> void:
 			sync_firing = true
 			sprayed.emit(muzzle_position(), turret_forward(), delta)
 	else:
-		_reload_left = maxf(0.0, _reload_left - delta)
-		if cmd.fire and _reload_left <= 0.0 and ammo != 0 and _heat_allows_shot(heat):
-			_reload_left = reload_seconds
-			if ammo > 0:
-				ammo -= 1
+		_reload_ticks = maxi(0, _reload_ticks - 1)
+		if _burst_rounds_left > 0:
+			# X2: a started burst is committed; its rounds follow burst_interval_s apart whatever the trigger does.
+			_burst_ticks -= 1
+			if _burst_ticks <= 0 and ammo != 0:
+				_burst_rounds_left -= 1
+				_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
+				_fire_round()
+		elif cmd.fire and _reload_ticks <= 0 and ammo != 0 and _heat_allows_shot(heat):
+			_reload_ticks = _ticks_of(reload_seconds)
+			_burst_rounds_left = maxi(1, int(weapon.get("burst_count", 1))) - 1
+			_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
 			heat += float(weapon.get("heat_per_shot", 0.0))
-			sync_firing = weapon["kind"] == Weapons.Kind.BEAM
-			fired.emit(muzzle_position(), turret_forward())
+			_fire_round()
 	_publish_state()
+
+
+## One round leaves the gun (a shell, a beam pulse, a burst round, a lobbed round).
+func _fire_round() -> void:
+	if ammo > 0:
+		ammo -= 1
+	sync_firing = weapon["kind"] == Weapons.Kind.BEAM or int(weapon.get("burst_count", 1)) > 1
+	fired.emit(muzzle_position(), turret_forward())
+
+
+static func _ticks_of(seconds: float) -> int:
+	return maxi(1, roundi(seconds * 60.0)) if seconds > 0.0 else 0
 
 
 func _process(delta: float) -> void:
@@ -325,7 +347,8 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	turret.rotation.y = 0.0
 	velocity = Vector3.ZERO
 	_speed = 0.0
-	_reload_left = 0.0
+	_reload_ticks = 0
+	_burst_rounds_left = 0
 	health = max_health
 	shield = max_shield
 	ticks_since_hit = 1_000_000
@@ -438,7 +461,8 @@ func _publish_state() -> void:
 	sync_turret_yaw = turret.rotation.y
 	sync_health = health
 	sync_alive = alive
-	sync_reload = 1.0 - (_reload_left / reload_seconds) if reload_seconds > 0.0 else 1.0
+	var reload_ticks := _ticks_of(reload_seconds)
+	sync_reload = 1.0 - float(_reload_ticks) / reload_ticks if reload_ticks > 0 else 1.0
 	sync_intent = intent
 	sync_ammo = ammo
 	sync_shield = roundi(shield)

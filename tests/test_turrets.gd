@@ -89,6 +89,11 @@ func test_turret_watches_a_known_threat_it_cannot_shoot_yet() -> void:
 	assert_true(worst < deg_to_rad(10.0), "while driving away, the turret stays on the known threat (worst %.0f deg off)" % rad_to_deg(worst))
 
 
+## Two tanks firing half the time they could over 10 s (derived from the cannon's reload: round 3 slowed it).
+static func _expected_shots() -> int:
+	return maxi(2, roundi(2.0 * 10.0 / float(Weapons.profile("cannon")["reload_s"]) / 2.0))
+
+
 func _retreat_under_pursuit(verb: String, destination: Vector2) -> Dictionary:
 	var game_match := _setup()
 	var squad := _squad(game_match, 2)
@@ -119,7 +124,7 @@ func _retreat_under_pursuit(verb: String, destination: Vector2) -> Dictionary:
 func test_break_contact_keeps_firing_at_pursuers() -> void:
 	var outcome: Dictionary = await _retreat_under_pursuit("break_contact", Vector2(LANE_X, 80.0))
 	assert_true(outcome["lead_z"] > 25.0, "the squad actually withdraws south (lead z %.1f)" % outcome["lead_z"])
-	assert_true(outcome["shots"] >= 4, "retreating tanks keep shooting at pursuers in range (%d shots in 10 s)" % outcome["shots"])
+	assert_true(outcome["shots"] >= _expected_shots(), "retreating tanks keep shooting at pursuers in range (%d shots in 10 s, want %d)" % [outcome["shots"], _expected_shots()])
 	assert_true(outcome["front"] >= 0.8, "and keep their front armor toward the threat (%.0f%% of samples)" % (outcome["front"] * 100.0))
 
 
@@ -127,4 +132,4 @@ func test_a_move_away_from_the_enemy_still_returns_fire() -> void:
 	# The lead's playtest: a plain Move order back toward base. The hull turns to drive; the gun must not.
 	var outcome: Dictionary = await _retreat_under_pursuit("move", Vector2(LANE_X, 80.0))
 	assert_true(outcome["lead_z"] > 30.0, "the squad drives south (lead z %.1f)" % outcome["lead_z"])
-	assert_true(outcome["shots"] >= 4, "tanks moving away keep shooting at pursuers in range (%d shots in 10 s)" % outcome["shots"])
+	assert_true(outcome["shots"] >= _expected_shots(), "tanks moving away keep shooting at pursuers in range (%d shots in 10 s, want %d)" % [outcome["shots"], _expected_shots()])

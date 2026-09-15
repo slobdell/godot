@@ -81,7 +81,6 @@ func test_a_cannon_shell_reports_its_shot_and_its_hit() -> void:
 	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
 	target.global_position = Vector3(LANE_X, 0.0, -10.0)
 	target.rotation.y = PI / 2.0  # its side toward the gunner
-	_unshielded(target)
 	await wait_physics_frames(2)
 	await _hold_fire(shooter, target.global_position, [target], 60)
 	assert_true(events["fired"].size() >= 1, "the shot was announced")
@@ -104,7 +103,8 @@ func test_a_cannon_shell_reports_its_shot_and_its_hit() -> void:
 	assert_eq(impact.get("target", ""), "Target", "it names what it hit")
 	assert_eq(impact.get("face", ""), "side", "and the face it struck")
 	assert_true(int(impact["tick"]) > int(fired["tick"]), "a shell takes time to arrive")
-	assert_near(float(impact["damage"]), float(target.max_health - target.health), 0.51, "damage is what the hit took")
+	assert_near(float(impact["damage"]), float(target.max_health - target.health) + target.max_shield - target.shield, 1.0,
+			"damage is the shield and hull the hit took")
 	assert_eq(impact["killed"], false, "one shell doesn't kill a tank")
 	assert_eq((impact["position"] as Array).size(), 3, "position is [x, y, z]")
 	assert_eq((impact["normal"] as Array).size(), 3, "normal is [x, y, z]")

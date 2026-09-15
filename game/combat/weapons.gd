@@ -22,10 +22,14 @@ const PROFILES := {
 	"cannon": {
 		# K2 (round 3): profile v3.
 		"fire_model": "shell",
-		"reload_s": 2.5,
+		# X2 (round 3, the lead: "very low frequency … devastating hit, but a miss is also quite costly"): 2.5 s -> 5 s,
+		# 34 -> 320 damage, 70 -> 75 m/s. A side hit strips a full tank shield and ~45% of its hull (63% of shield +
+		# hull); front 39%; rear 95%. Kills: side 2, rear 2, front 4 (shield regrows 1 s between shells). A shell flies
+		# 0.7 s over 50 m: lead the target, and a jink makes it miss.
+		"reload_s": 5.0,
 		"burst_count": 1,
 		"burst_interval_s": 0.0,
-		"projectile_speed_mps": 70.0,
+		"projectile_speed_mps": 75.0,
 		# R2: armor-piercing power vs a unit's armor thickness on the face it hits (Units "armor").
 		"penetration": 10.0,
 		"splash_radius": 0.0,
@@ -34,8 +38,8 @@ const PROFILES := {
 		"range": 70.0,
 		"preferred_min": 20.0,
 		"preferred_max": 45.0,
-		"damage": 34.0,
-		"reload": 2.5,
+		"damage": 320.0,
+		"reload": 5.0,
 		"aim_tolerance_deg": 2.5,
 		# Shot spread (standard deviation, degrees) when stationary. Firing on the move
 		# multiplies it (see Match.MOVING_SPREAD_FACTOR): long-range shots from a moving
@@ -50,23 +54,27 @@ const PROFILES := {
 		# took 0-6% of brain time: it added readouts, not decisions. Artillery keeps its 24 rounds.
 		"heat_per_shot": 0.0,
 	},
-	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons". Fast fire, low penetration, modest range:
+	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons" (round 3: a 25 mm Bradley-style gun). Fast fire, low penetration, modest range:
 	# it shreds light hulls and scouts' shields but can't get through a tank's front armor.
 	"autocannon": {
 		# K2 (round 3): profile v3.
 		"fire_model": "burst",
-		"reload_s": 0.35,
-		"burst_count": 1,
-		"burst_interval_s": 0.0,
-		"projectile_speed_mps": 70.0,
+		# X2 (round 3, the lead: "a 25mm cannon like a Bradley … a low frequency machine gun"): 4-round bursts 0.12 s
+		# apart every 1.8 s at 180 m/s (0.33 s to 60 m, near-instant). 9 dmg / 0.35 s (26 dps) -> 15 x 4 / 1.8 s (33
+		# dps): shreds scouts, chips tank fronts, hurts tank rears (pen 4 vs rear armor 2). Projectile, not hitscan:
+		# rounds still fly, so they miss what dodges at range and incoming_projectiles sees them.
+		"reload_s": 1.8,
+		"burst_count": 4,
+		"burst_interval_s": 0.12,
+		"projectile_speed_mps": 180.0,
 		"penetration": 4.0,
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 60.0,
 		"preferred_min": 15.0,
 		"preferred_max": 45.0,
-		"damage": 9.0,
-		"reload": 0.35,
+		"damage": 15.0,
+		"reload": 1.8,
 		"aim_tolerance_deg": 3.0,
 		"spread_deg": 1.0,
 		"shield_multiplier": 0.9,
@@ -95,11 +103,14 @@ const PROFILES := {
 		"preferred_max": 82.0,
 		# R7: 9 dmg / 12 heat -> 12 / 16: burstier, so it wins against a few big hulls but overheats against a
 		# swarm of IFVs (IFV vs Lancer 42% -> 75%).
-		"damage": 12.0,
+		# X2 first pass (round 3): the cannon went from ~14 to ~64 dps, so the Lancer keeps its job (tanks at range)
+		# with 12 -> 28 per pulse and 16 -> 20 heat: 5 pulses from cold, ~17 dps sustained. X6 tunes it against the
+		# matrix.
+		"damage": 28.0,
 		"reload": 0.5,
 		"aim_tolerance_deg": 2.0,
 		"spread_deg": 0.3,
-		"heat_per_shot": 16.0,
+		"heat_per_shot": 20.0,
 		# G6: energy weapons strip shields. 1.5 made lasers win 29/40 vs cannons (above the 65% bar);
 		# 1.25 measured 14/24 (58%), swap + team-identity counterbalanced (2026-09-15).
 		"shield_multiplier": 1.25,
@@ -109,7 +120,11 @@ const PROFILES := {
 	"machine_gun": {
 		# K2 (round 3): profile v3.
 		"fire_model": "stream",
-		"reload_s": 0.2,
+		# X2 (round 3, the lead: "machine guns … with their wall of bullets"): a stream, 5 -> 10 rounds/s, 4 -> 3.5 dmg,
+		# spread 1.5 -> 2 deg. Hitscan: at 45 m a real round arrives in a tick or two, a stream of nodes would cost 10
+		# spawns/s per scout (and network spawns), and the counterplay is getting out of the nose arc, not dodging
+		# single bullets. Feel draws the tracers from weapon_fired.
+		"reload_s": 0.1,
 		"burst_count": 1,
 		"burst_interval_s": 0.0,
 		"projectile_speed_mps": 0.0,
@@ -120,10 +135,10 @@ const PROFILES := {
 		"range": 45.0,
 		"preferred_min": 12.0,
 		"preferred_max": 35.0,
-		"damage": 4.0,
-		"reload": 0.2,
+		"damage": 3.5,
+		"reload": 0.1,
 		"aim_tolerance_deg": 4.0,
-		"spread_deg": 1.5,
+		"spread_deg": 2.0,
 		"heat_per_shot": 0.0,
 		"shield_multiplier": 0.6,
 	},
@@ -151,7 +166,9 @@ const PROFILES := {
 		# 90 -> 70 (2026-09-15): the Siege archetype (2 artillery) still beat Armor and Balanced 12:4 after
 		# the scout counter; at 70 it's 10:6 against each (counterbalanced, 16 per pairing).
 		# R7: 70 -> 90 and splash 8 -> 9: spotted artillery wins a matchup (vs IFVs 58%) instead of none.
-		"damage": 90.0,
+		# X2 first pass (round 3): 90 -> 140, so a direct hit still matters against tanks that now die to two or three
+		# shells. X6 tunes it.
+		"damage": 140.0,
 		"splash_radius": 9.0,
 		"reload": 4.5,
 		"aim_tolerance_deg": 3.0,
@@ -160,7 +177,8 @@ const PROFILES := {
 		"scatter_per_meter": 0.02,
 		# Horizontal speed: a 150 m shot is in the air for 3.75 s, so moving targets can dodge.
 		"flight_speed": 40.0,
-		# Finite (R8 kept it): a battery that shells all match long would be too strong; 24 rounds is ~2 minutes of fire.
+		# Finite (R8 kept it): a battery that shells all match long would be too strong; 24 rounds is ~2 minutes of
+		# fire.
 		"ammo": 24,
 		"heat_per_shot": 0.0,
 		"shield_multiplier": 1.0,
@@ -184,7 +202,9 @@ const PROFILES := {
 		# 45 -> 20 (2026-09-15): since the 09-13 rebalance (70 m guns, 400 HP) five flamers crossed gun
 		# range almost intact and won 36/36 vs five cannons (4 flamers vs 5 cannons: 20/20). At 20: 10/20,
 		# counterbalanced. Still ~4x a cannon's damage per second once it arrives.
-		"damage_per_second": 20.0,
+		# X2 first pass (round 3): 20 -> 55, keeping its ~4x-a-cannon ratio over the cannons new damage per second once
+		# it arrives. X6 tunes it.
+		"damage_per_second": 55.0,
 		"cone_deg": 30.0,
 		"reload": 0.0,
 		"aim_tolerance_deg": 12.0,

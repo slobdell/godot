@@ -39,3 +39,7 @@ match-smoke: import ## A short 2v2 match must finish with a result, faster than 
 matchups: import ## R7 unit-vs-unit matrix: cost-equal armies for every pair, both bases and colors (BUDGET=600 SEEDS=3 ARENA= TUNE= BALANCE=1 writes balance.md)
 	$(PYTHON) tools/matchup_matrix.py --godot $(GODOT) --jobs $(JOBS) --budget $(or $(BUDGET),600) --seeds $(or $(SEEDS),3) \
 		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) $(if $(BALANCE),--balance) --json $(BUILD_DIR)/matchups.json
+
+duel: import ## Watch a small fight as a text timeline (shots, hits, poses): GREEN_UNITS=tank RUST_UNITS=scout,scout SEED=1 DUEL_TIME=90 [ARENA= TUNE=]
+	$(PYTHON) tools/combat_duel.py --godot $(GODOT) --green $(or $(GREEN_UNITS),tank) --rust $(or $(RUST_UNITS),tank) \
+		--seed $(SEED) --time-limit $(or $(DUEL_TIME),90) $(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE))
