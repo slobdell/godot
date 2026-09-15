@@ -57,6 +57,25 @@ func test_v1_armies_are_rejected_with_reasons() -> void:
 	assert_eq(Units.cost_of({"unit": "ifv"}), int(Units.PROFILES["ifv"]["cost"]), "a unit costs its type's points")
 
 
+func test_the_burner_is_the_flamethrowers_unit() -> void:
+	var game_match := _setup()
+	assert_eq(game_match.load_doctrine(Match.Team.GREEN, _army([{"unit": "burner"}])), "", "a Burner loads")
+	var burner := game_match.tanks.get_node("Green_A_1") as Tank
+	var target := game_match.spawn_tank("Rust_Target_1", 0, Match.Team.RUST, "tank")
+	await wait_physics_frames(1)
+	assert_eq(burner.weapon_id, "flamethrower", "it carries the flamethrower (stretch: the future Burner)")
+	assert_true(int(Units.profile("burner")["unlock_tier"]) > 0, "it is an unlock, not a starter")
+	burner.global_position = Vector3(-100, 0, 20)
+	target.global_position = Vector3(-100, 0, 8)
+	target.rotation.y = PI / 2.0
+	var full: float = target.health + target.shield
+	for tick in 60 * 2:
+		burner.command = TankCommand.new(0.0, 0.0, target.global_position, true)
+		target.command = TankCommand.new()
+		await tree.physics_frame
+	assert_true(target.health + target.shield < full - 30.0, "and burns what it reaches (%.0f of %.0f left)" % [target.health + target.shield, full])
+
+
 func _scout_situation(contacts: Array) -> Dictionary:
 	return {
 		"tick": 1000,

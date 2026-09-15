@@ -154,6 +154,23 @@ RESUPPLY option most of the time). Reversible: put `"ammo"` back on a weapon.
 which SPOT and BOMBARD instead of fighting (38% + 19% of their time). For the army stream's CPU presets and
 the ai stream's scouts.
 
+## Stretch: the Burner and arena hazards (rules, 2026-09-14)
+
+**Burner** (`burner`, unlock tier 2, flamethrower, CPU archetype `brawl`). `tools/matchup_matrix.py --focus burner` rows (12 per pair):
+
+| Burner values | vs scout | vs tank | vs IFV | vs artillery | vs Lancer |
+|---|---|---|---|---|---|
+| 160 pts, 12 m/s, front armor 7, hull 260, 20 dps | 100% | 100% | 100% | 100% | 100% ❌ |
+| **220 pts, 10 m/s, front armor 4, hull 220, 20 dps (applied)** | 100% | 0% | **67%** | **83%** | 0% |
+| same + 14 dps | 100% | 0% | 33% | 83% | 0% |
+
+The scout column is the scout brain again (it never fights). Burner = anti-light/anti-artillery brawler that
+tanks and Lancers stop.
+
+**Hazards:** `arenas/furnace.json` = foundry + six fire pits (30 dps, shields ×1.5, armor ignored, either team).
+Not measured in series yet: the brains don't know about hazards (`Arena.hazards()` exists for the ai stream), and
+the pits are invisible until art makes `prop.fire_pit`, so furnace isn't a default.
+
 ## Results so far
 
 ### G5 turrets (5 cannons each, Anvil & Hammer vs Individuals, 40 matches)

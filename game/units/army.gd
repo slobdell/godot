@@ -13,12 +13,15 @@ const ARCHETYPES := {
 	"recon_strike": {"units": ["scout", "ifv", "scout", "tank", "scout", "lancer"]},
 	"siege": {"units": ["artillery", "scout", "tank", "artillery", "ifv", "scout"]},
 	"swarm": {"units": ["scout", "scout", "ifv", "scout", "scout", "ifv"]},
+	# Stretch: close-range pressure. Burners charge behind a tank's front armor while an IFV screens scouts.
+	"brawl": {"units": ["burner", "tank", "burner", "ifv", "burner", "lancer"]},
 }
 ## Squad name and directive per role. Squads are formed by role, in this order.
 const SQUADS := {
 	"tank": {"name": "Guns", "directive": {"role": "assault", "cohesion": 0.7}},
 	"ifv": {"name": "Hunters", "directive": {"role": "assault"}},
 	"lancer": {"name": "Lances", "directive": {"role": "support"}},
+	"burner": {"name": "Burners", "directive": {"role": "assault", "aggression": 0.9}},
 	"scout": {"name": "Eyes", "directive": {"role": "scout"}},
 	"artillery": {"name": "Battery", "directive": {"role": "support"}},
 }

@@ -82,97 +82,91 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
 
 ## Status
 
-- 2026-09-15: brief written for round 2. Nothing started.
-- 2026-09-14 (agent start): oriented; baseline `make check` queued behind other streams.
+_Report for the lead and the orchestrator, 2026-09-14 (rules agent, first run). Branch `stream/rules`._
 
-- **R1 done (commit e8547aa): CHECKPOINT 1 READY for the orchestrator.** `make check` green (295 tests), sim
-  baseline unchanged (`e5cf33921713b657`: tank stats are identical). Smoke: `cpu:balanced` vs `cpu:recon_strike` at
-  1500 points plays a full 300 s match with all five unit types firing, no errors.
+### Done (every item committed with `make check` green)
 
-- **R2 (mechanics):** penetration vs per-unit armor thickness replaces per-weapon armor tables
-  (`Armor.penetration_multiplier`: 0.5·log2(1.6·pen/armor), clamped 0.05–1.5; the cannon vs the tank reproduces
-  round 1's 0.5/1/1.5 exactly); fixed mounts clamp the gun to ±`fire_arc_deg`/2 (`Tank.gun_yaw_toward`,
-  `Tank.can_bear_on`); tank turret 110 → 50°/s; shells fly their weapon's range + 5 m; artillery rounds at a
-  point no teammate sees scatter 3× (`Match.is_point_spotted`); Lancer beam 55 → 80 m. Tests:
-  `tests/test_combat_mechanics.gd` (arc gating, tracking: the tank's gun falls >7.5° behind a scout crossing at
-  10 m while the IFV stays within 3°, penetration, range, blind fire). Sim baseline → `a4106d15a8711f5c` (the
-  slower tank turret). Two turret-hold tests moved to the IFV (they test the order layer, and the tank's turret
-  is now slower than its hull on purpose).
+| Item | Commit | What it is | Measured |
+|---|---|---|---|
+| **R1** catalog v2 + army JSON v2 | e8547aa | `Units.PROFILES`: scout, tank, IFV, artillery, Lancer (C1); `Doctrine` v2 (`units`, ≤ 5 × 5, v1 keys rejected with a fix-it message, C2); every doctrine migrated; CPU archetypes on the roster; garage kept working through an adapter | **CHECKPOINT 1 READY.** Sim baseline unchanged |
+| **R2** counters from mechanics | 0592458 | penetration vs per-unit armor thickness (no damage table); fixed-mount arcs (`Tank.can_bear_on`); tank turret 50°/s; per-weapon shell range; blind artillery scatters 3×; autocannon | tank's gun falls > 7.5° behind a scout crossing at 10 m, IFV stays within 3° |
+| **R3** roster + art slots | (R1, R2) | `unit.<id>.hull/turret/weapon` with fallbacks in `Tank`; slot_contracts.md rows | skirmish screenshots, desktop + phone |
+| **R4** friendly fire | 28c09cc | shells, beams, bursts, flames hurt teammates; stats; announcer; `Match.friendlies_in_line_of_fire` (C4) | brains: 0.25–0.4 friendly kills per 5v5 match; legacy bots ~2 per team |
+| **R5** 25 units a side + C3 | a88db9e | 9 × 3 spawn grid; `units_lost/left`, `kills_by_unit`, `losses_by_unit`, `duration_seconds`, `budget`, `army_cost` in `Match.finished` | 5 × 5 per side spawns clear of each other and of cover |
+| **R6** arenas as data (C5) | 6fb62db | `arenas/foundry.json` (round 1's map), `arenas/scrapyard.json` (dense cover); `Arena` validates symmetry, builds collision + mirrored navmesh, `cover_features()`, `--arena=` | fairness (brains, 60 matches each): foundry south 47%, scrapyard south 53% |
+| **R7** matchup matrix | e9ac208 | `make matchups` (tools/matchup_matrix.py: `--tune --escort --focus --balance`); 9 tuning experiments | tank > IFV > Lancer > tank; IFV > scout; scout > artillery 92%; every unit wins a matchup (artillery with a spotter). Matrix in balance.md |
+| **R8** rules defaults | dd03ca5 | control point re-measured; direct-fire guns unlimited (mortar keeps 24) | coordination 0/32 without control, 15/32 with it; unlimited ammo changed no outcome |
+| Stretch: Burner, fire pits | (last commit) | `burner` unit (tier 2, flamethrower, archetype `brawl`); layout `hazards` (fire pits, symmetric, either team) and `arenas/furnace.json`; `Arena.hazards()`; `tools/make_arenas.py` | Burner beats IFV 67% / artillery 83%, loses to tank / Lancer |
 
-- **R3 done:** the roster rows are R1's catalog; `unit.<id>.hull/turret/weapon` slots fall back in `Tank`
-  (slot_contracts.md rows). Screenshots (`make skirmish-shots ENEMY=cpu:balanced`, desktop + phone) show the mixed
-  armies spawning and fighting; every unit still wears the dozer art until art fills the per-unit slots.
-- **R4 done (28c09cc):** friendly fire on for shells, beams, bursts, flames; stats `friendly_damage/hits/kills`
-  (shooter's team), no score for friendly kills; `Match.friendly_fire` signal; announcer "Friendly fire: Alpha 1 hit
-  Alpha 2" (once per shooter per 10 s) and "Alpha lost Alpha 2 to friendly fire from Alpha 1";
-  `Match.friendlies_in_line_of_fire(shooter, aim_point)` (C4). `tools/match_series.py` prints friendly damage.
-  Sim baseline → `698d9058af076a38`.
-- **R5 done (a88db9e):** 9 × 3 spawn grid per side (first 5 slots = round 1's front row), sideways jitter ≤ 4 m;
-  a 5 × 5 army per side spawns with no hull within 0.5 m of another and none inside cover. C3 result fields:
-  `units_lost`, `units_left`, `kills_by_unit`, `losses_by_unit`, `duration_seconds`, `budget`, `army_cost`.
-  Sim baseline → `3fb60602d435d1c2`.
-- **R6 (arenas as data):** `arenas/foundry.json` (round 1's 19 obstacles) and `arenas/scrapyard.json` (dense cover:
-  36 m lane walls, crate clusters, base cover walls, 37 obstacles); `Arena` (class) validates point symmetry,
-  size, spawns (≥ 25 mirrored), builds collision under `Obstacles` (the radar still reads it), bakes the mirrored
-  navmesh, `cover_features()`, `--arena=<name>`, `arena.dressing` gets `setup(layout)`. Tests:
-  `tests/test_arena_layouts.gd`. `half_size` must stay 120 for now (radar, fog, perimeter are sized for it).
-  Networked clients build the default layout (netcode paused: pass `--arena` to both sides).
-
-- **R6 done (6fb62db):** fairness controls in balance.md: brain-driven Individuals mirror, 30 seeds per row,
-  foundry south base 28 : 32, scrapyard 32 : 28 (team 30 : 30). Legacy 2v2 bots were noisy (friendly fire: ~2
-  friendly kills per team per match; BotController doesn't check its line of fire).
-- **R7 (matchup matrix):** `make matchups` (tools/matchup_matrix.py: cost-equal single-type armies, every pair,
-  both bases, both colors; `--tune`, `--escort`, `--focus`, `--balance`). Matrix #1: tank dominant, artillery
-  dominated, scouts only beat artillery (the brain keeps scouts at an 85 m spotting standoff instead of
-  fighting), Lancer inverted. Tuned by experiment (A–I in balance.md): laser 85 m / preferred 72–82 / 12 dmg /
-  16 heat, Lancer sight 85 and turret 55°/s (tank > IFV > Lancer > tank holds); mortar 90 dmg, splash 9, minimum
-  range 42 (scouts > artillery 92%; spotted artillery beats IFVs 58%).
-
-### Plan (in order)
-1. R1a `Units` v2 (fixed types, C1) + `Tank` reads it (mount, turret rate, muzzle height; no components).
-2. R1b `Doctrine` v2 (C2: `units`, ≤ 5×5, v1 keys rejected), `Match.load_doctrine`/`spawn_tank(unit_id)`, migrate
-   `doctrines/`, `Army` archetypes on the roster, garage kept compiling through an adapter at its doctrine
-   boundary, tests updated, sim baseline re-recorded. **Checkpoint 1.**
-3. R2 mechanics: fixed-mount arc gating, per-weapon shell speed/range, penetration vs armor, autocannon, artillery
-   minimum range + team sight, Lancer shield stripping. Unit tests per mechanic.
-4. R3 roster rows + `unit.<id>.*` slot fallbacks (slot_contracts.md).
-5. R4 friendly fire + `friendlies_in_line_of_fire` (C4) + stats/announcer.
-6. R5 25-unit spawn zones + C3 result fields.
-7. R6 arenas as JSON (C5), `--arena`, `cover_features()`, second layout, swap-bases control.
-8. R7 matchup matrix tool + tuning. 9. R8 control point / ammo re-measure. Then stretch.
+Sim baseline history (each change on purpose): `e5cf33921713b657` → `a4106d15a8711f5c` (slow tank turret) →
+`698d9058af076a38` (friendly fire) → `3fb60602d435d1c2` (spawn jitter).
 
 ### Decisions (with reasons)
-- **Unit ids** `scout`, `tank`, `ifv`, `artillery`, `lancer`; old ids kept so saves, AI checks, and art slots keep
-  meaning. **Weapon ids** kept (`cannon`, `laser`, `machine_gun`, `mortar`, `flamethrower`) plus `autocannon`.
-- **Starters (unlock_tier 0):** scout, tank, IFV (the three the lead named); artillery and Lancer are tier 1.
+- **Unit ids** `scout`, `tank`, `ifv`, `artillery`, `lancer` (+ `burner`); weapon ids kept (`cannon`, `laser`,
+  `machine_gun`, `mortar`, `flamethrower`) plus `autocannon`, so saves, AI checks, and art slots keep meaning.
+- **Starters (tier 0):** scout, tank, IFV (the three the lead named); artillery and Lancer tier 1; Burner tier 2.
   The army stream owns what a tier costs.
-- **Army JSON v2 requires `unit` on every entry** (no silent "tank" default) and rejects `tanks`, `weapon`,
-  `weapons`, `components` with a message naming the fix. Unknown extra keys (e.g. `note`) stay allowed.
-- **Units carry `armor {front, side, rear}` thickness** (an addition to C1): penetration needs something to beat.
-- **`muzzle_height` must stay ≥ 0.1 m below the shortest hull top** (a test enforces it): rounds fly flat.
-- **Doctrine files keep their names** (`flame_rush.json` is now "Hunter Rush" with IFVs) because the garage lists
-  them by file name; flamethrower doctrines became IFVs and laser doctrines became Lancers.
-- **Garage kept working through an adapter** in `Loadout.from_doctrine/to_doctrine` (v2 at the file boundary,
-  v1 `tanks` inside), `GarageCatalog.workhorse()` → tank, the turntable reads the unit's fixed weapon. Tests
-  for removed features (mounting a weapon in the game catalog, flamer presets on the game catalog) were deleted;
-  hand-made-catalog garage tests are untouched. The army stream owns the real rebuild.
-- **Per-unit art slots** `unit.<id>.hull/turret/weapon` fall back to `tank.*` / `weapon.<id>` / `weapon.cannon`
-  inside `Tank` (rules' path), so a theme without `weapon.autocannon` still draws something.
-
-### Requests to other streams
-- **ai:** (1) fixed-mount units (the scout) must aim with the hull. `OrderController` has a minimal rules hook that
-  turns a *halted* fixed-mount unit onto its target (`order_controller.gd`, marked); the real behavior (strafing
-  runs, turning while moving) is yours. Query `Tank.can_bear_on(point)`, `Tank.mount`, `Tank.fire_arc_deg`.
-  (2) `tank_brain.gd`/`cpu_commander.gd` read `Units.PROFILES[...]["role"]` now (the brain's `me["class"]` key is
-  unchanged, fed from `role`). (3) Intel contacts gain `unit` and `role`. (4) The tank's turret is 50°/s (the lead's
-  "slow turret"): brains that expect a tank to track fast targets should turn the hull too. (5) `Units.armor(unit,
-  face)` and `Match.armor_multiplier(weapon, unit, face)` tell a brain whether a shot is worth taking.
-- **art:** new slot `weapon.autocannon` (IFV), per-unit slots `unit.<id>.hull/turret/weapon` (rows in
-  slot_contracts.md). Until they exist the IFV draws `weapon.cannon` and the Lancer `weapon.laser`.
-- **army:** the garage runs on catalog v2 through an adapter in `Loadout.from_doctrine/to_doctrine`; `Doctrine.MAX_SQUADS`
-  is 5, `MAX_SQUAD_UNITS` 5, `MAX_UNITS` 25 (`MAX_TANKS` is gone). Unit cards: `display_name`, `blurb`, `cost`,
-  `unlock_tier`, `role`, `good_vs`/`weak_vs`.
-- **command:** `player_default.json` is now tank, tank, IFV (Alpha) + IFV, scout (Bravo), 810 points, still 5 units.
+- **Army JSON v2 requires `unit` on every entry** (no silent default) and rejects `tanks`, `weapon`, `weapons`,
+  `components` with a message naming the fix. Unknown extra keys (`note`) stay allowed.
+- **Armor is per-unit thickness** `{front, side, rear}` (an addition to C1); damage through it is
+  `clamp(0.5·log2(1.6·penetration/armor), 0.05, 1.5)`, chosen so the cannon vs the tank reproduces round 1's
+  0.5/1/1.5 exactly (sim baseline unchanged by R2's armor change).
+- **`muzzle_height` stays ≥ 0.1 m under the shortest hull top** (tested): rounds fly flat, so a taller muzzle
+  would shoot over scouts.
+- **Doctrine files keep their names** (`flame_rush.json` is "Hunter Rush", IFVs): the garage lists them by name.
+- **Garage adapter, not a rewrite:** v2 at the file boundary (`Loadout.from_doctrine/to_doctrine`), `workhorse()` →
+  tank; tests of removed features deleted; the army stream owns the rebuild.
+- **Arena `half_size` stays 120** (radar, fog, perimeter are sized for it); obstacles and spawns are data.
+- **Matchup verdicts:** elimination decides; a timeout goes to the side with more army value left. Artillery is
+  also measured with a scout escort, since alone it is blind by design.
+- **Ammo simplified** (the brief allowed it after R8): direct-fire guns never run out; the mortar keeps 24 rounds;
+  base repair stays.
+- **Fire pits aren't in a default layout:** the brains don't avoid them yet and they're invisible until art.
 
 ### Questions for the lead
-- None blocking yet.
+1. **Control point as the default rule?** R8 re-measured it with the new roster: it's the difference between a
+   coordinated army losing 32 of 32 and winning 15 of 32. Recommended (balance.md "Round 2 rules defaults").
+2. **Ammo:** OK to keep finite ammo only on artillery? (Applied; reversible per weapon.)
+3. **Scouts:** the design says scouts beat Lancers and trouble tanks. Today they only beat artillery, because the
+   brain keeps them spotting at 85 m. Should scouts be fighters (ai stream changes the brain) or spotters (the
+   design table changes)? The rules side (fixed forward gun, speed, armor) supports either.
+
+### Requests to other streams
+- **ai:** (1) **scouts:** matchup targeting and fixed-mount strafing runs (turn the hull while moving;
+  `Tank.can_bear_on`, `mount`, `fire_arc_deg`). A minimal rules hook in `order_controller.gd` (marked) only turns a
+  *halted* fixed-mount unit onto its target. (2) Use `Match.friendlies_in_line_of_fire(shooter, aim_point)` before
+  firing (friendly damage ~650 points per foundry match, ~1,200 on scrapyard). (3) `tank_brain.gd`/`cpu_commander.gd`
+  read `role` now (`me["class"]` is fed from it); intel contacts carry `unit` and `role`. (4) The tank turret is
+  50°/s on purpose: turn the hull to track fast targets. (5) `Units.armor(unit, face)` and
+  `Match.armor_multiplier(weapon, unit, face)` say whether a shot is worth it. (6) `Arena.cover_features()` and
+  `Arena.hazards()` for cover and routing. (7) Legacy `BotController` shoots through teammates. (8) Re-run
+  `make matchups` after brain changes: the matrix is only as good as the brains.
+- **art:** slots `weapon.autocannon`, `unit.<id>.hull/turret/weapon` (ids incl. `burner`), `prop.fire_pit`
+  (`setup(hazard)`), and optional `arena.dressing.setup(layout)` (slot_contracts.md). Until then the IFV draws
+  the cannon, the Lancer the laser, and fire pits are invisible.
+- **army:** garage adapter as above; `Doctrine.MAX_SQUADS` 5, `MAX_SQUAD_UNITS` 5, `MAX_UNITS` 25; unit cards from
+  `display_name`, `blurb`, `cost`, `unlock_tier`, `role`, `good_vs`/`weak_vs`; `Match.finished` C3 fields for
+  credits. The CPU `armor` archetype beats `balanced` 26 : 6 (scouts and artillery don't fight): a preset note.
+- **command:** `player_default.json` is tank, tank, IFV + IFV, scout (810 pts, 5 units). Skirmish should set
+  `game_match.budget` (C3) and may pass `--arena`; the radar outline already reads layout obstacles.
+- **orchestrator:** fold into workstreams.md contracts: C1 + `armor`, role `burner`; C4 + `Tank.can_bear_on`,
+  `Arena.hazards()`; C5 + optional `hazards`. HANDOFF: new make targets `make matchups`; flag `--arena=`.
+
+### Known issues
+- Scouts beat nothing but artillery (brain behavior, above); samples are 12 per pair (±14 points).
+- Networked clients build the default arena unless given `--arena` too (netcode paused).
+- Background `make check` runs launched by an agent were killed three times by the session's memory guard while
+  queued for a slot; detaching with `setsid nohup … &` and watching the log worked. (Proposed trip-up.)
+
+### What to playtest
+- `make skirmish ENEMY=cpu:balanced SEED=3`: the mixed roster (your squads: 2 tanks + IFV, IFV + scout).
+- `make skirmish ENEMY=cpu:brawl CONTROL=1`: Burners rushing, with the control point on.
+- Arenas (`make skirmish` has no arena knob yet; command owns it):
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --enemy=cpu:balanced --arena=scrapyard`
+  (dense cover), or `--arena=furnace` (fire pits, invisible until art).
+- Watch friendly fire: the HUD says "Friendly fire: Alpha 1 hit Alpha 2".
+
+### Next steps
+1. After checkpoint 1 merges and the ai stream's brains land: re-run `make matchups BALANCE=1` and retune scouts.
+2. Measure the Burner and furnace in CPU-army series once brains route around hazards.
+3. Arena hazards beyond fire pits (the brief's crushing gates need moving collision and nav updates: not started).

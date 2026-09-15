@@ -102,6 +102,8 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		"kills": [0, 0], "shells_resupplied": [0, 0],
 		# R4 friendly fire, by the SHOOTER's team: hull + shield points dealt to teammates, hits, and teammates destroyed.
 		"friendly_damage": [0.0, 0.0], "friendly_hits": [0, 0], "friendly_kills": [0, 0],
+		# Stretch hazards, by the VICTIM's team: hull + shield points lost to the arena, and units it destroyed.
+		"hazard_damage": [0.0, 0.0], "hazard_kills": [0, 0],
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
@@ -165,6 +167,7 @@ func _physics_process(delta: float) -> void:
 		_update_intel()
 		_update_squads()
 		_resupply()
+		_apply_hazards()
 		_sample_brain_options()
 		if control_point and not _finished:
 			_update_control()
@@ -431,6 +434,33 @@ static func resupply_center(team: int) -> Vector3:
 static func in_resupply_zone(team: int, point: Vector3) -> bool:
 	var center := resupply_center(team)
 	return Vector2(point.x - center.x, point.z - center.z).length() <= RESUPPLY_RADIUS
+
+
+## Fire burns through shields like the flamethrower and wraps around armor (no strong face).
+const HAZARD_SHIELD_MULTIPLIER := 1.5
+const HAZARD_ARMOR_MULTIPLIER := 1.0
+
+
+## Stretch: the arena's hazards (Arena layout "hazards") hurt every living unit inside them, either team, every
+## INTEL_EVERY_TICKS. Deterministic: sorted units, tick-counted time.
+func _apply_hazards() -> void:
+	var hazards := Arena.hazards_of(Arena.active)
+	if hazards.is_empty():
+		return
+	var seconds := float(INTEL_EVERY_TICKS) / 60.0
+	for tank in _sorted_tanks():
+		for hazard: Dictionary in hazards:
+			if not tank.is_alive():
+				break
+			var center: Vector3 = hazard["position"]
+			if Vector2(tank.global_position.x - center.x, tank.global_position.z - center.z).length() > float(hazard["radius"]):
+				continue
+			var hit := tank.take_hit(float(hazard["damage_per_second"]) * seconds, HAZARD_SHIELD_MULTIPLIER, HAZARD_ARMOR_MULTIPLIER)
+			stats["hazard_damage"][tank.team] += float(hit["hull"]) + float(hit["shield"])
+			if hit["killed"]:
+				stats["hazard_kills"][tank.team] += 1
+				print("%s burned in a %s" % [tank.name, hazard["type"]])
+				tank_destroyed.emit(tank, "hazard:" + String(hazard["type"]))
 
 
 ## Tanks of each team alive inside the control zone.

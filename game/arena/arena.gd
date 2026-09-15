@@ -1,7 +1,8 @@
 class_name Arena
 extends Node3D
 ## The static battlefield, built from a LAYOUT (rules R6, contract C5): `arenas/<name>.json` =
-## {name, half_size, obstacles: [{type, position [x, z], rotation_deg, size?}], spawns: {green, rust}, control_point?}.
+## {name, half_size, obstacles: [{type, position [x, z], rotation_deg, size?}], spawns: {green, rust}, control_point?,
+## hazards?: [{type, position [x, z], radius, damage_per_second}]} (stretch: fire pits hurt whatever stands in them).
 ## Pick one with `--arena=<name>` (default DEFAULT_LAYOUT). Obstacles become collision boxes under the
 ## "Obstacles" node (the radar reads them there) with a `prop.<type>` visual slot each; `arena.dressing` gets
 ## `setup(layout)` so stands and crowds can fit it.
@@ -49,10 +50,16 @@ func _ready() -> void:
 	layout = loaded["layout"]
 	active = layout
 	_build_obstacles()
+	_build_hazards()
 	var dressing := get_node_or_null("Dressing") as VisualSlot
 	if dressing != null:
 		dressing.invoke("setup", [layout])
 	_bake()
+
+
+func _exit_tree() -> void:
+	if is_same(active, layout):
+		active = {}  # no stale spawns or hazards for a match that runs without an arena
 
 
 func _bake() -> void:
@@ -96,6 +103,36 @@ func _build_obstacles() -> void:
 			visual.scale = Vector3(size.x / standard[0], size.y / standard[1], size.z / standard[2])
 		body.add_child(visual)
 		obstacles_root.add_child(body)
+
+
+## Hazards get a `prop.<type>` visual only when the theme has one (art's request list in slot_contracts.md);
+## the damage is Match's (Match._apply_hazards), so a hazard works on a headless server with no art at all.
+func _build_hazards() -> void:
+	var index := 0
+	for hazard: Dictionary in hazards():
+		var slot := "prop." + String(hazard["type"])
+		if not GameTheme.slots.has(slot):
+			continue
+		var visual := VisualSlot.new()
+		visual.name = "Hazard_%d" % index
+		index += 1
+		visual.slot = slot
+		visual.position = hazard["position"]
+		add_child(visual)
+		visual.invoke("setup", [hazard])
+
+
+## The layout's hazards: [{type, position: Vector3, radius, damage_per_second}] (the AI should route around them).
+func hazards() -> Array:
+	return hazards_of(layout)
+
+
+static func hazards_of(data: Dictionary) -> Array:
+	var result: Array = []
+	for hazard: Dictionary in data.get("hazards", []):
+		result.append({"type": hazard["type"], "position": Vector3(hazard["position"][0], 0.0, hazard["position"][1]),
+				"radius": float(hazard["radius"]), "damage_per_second": float(hazard["damage_per_second"])})
+	return result
 
 
 ## C4: every obstacle as cover for the AI: [{position: Vector3 (ground center), size: Vector3 (before rotation),
@@ -188,6 +225,24 @@ static func validate(data: Variant) -> String:
 		var rust: Array = spawns["rust"][i]
 		if absf(float(green[0]) + float(rust[0])) > SYMMETRY_TOLERANCE or absf(float(green[1]) + float(rust[1])) > SYMMETRY_TOLERANCE:
 			return "not point-symmetric: spawns.rust[%d] must be the mirror of spawns.green[%d]" % [i, i]
+	var hazards_data: Variant = data.get("hazards", [])
+	if typeof(hazards_data) != TYPE_ARRAY:
+		return "'hazards' must be a list"
+	for hazard in hazards_data:
+		if typeof(hazard) != TYPE_DICTIONARY or typeof(hazard.get("type")) != TYPE_STRING or not _is_point(hazard.get("position")):
+			return "every hazard needs a string 'type' and a 'position' [x, z]"
+		if not _is_number(hazard.get("radius")) or float(hazard["radius"]) <= 0.0:
+			return "hazard %s needs a positive 'radius'" % hazard["type"]
+		if not _is_number(hazard.get("damage_per_second")) or float(hazard["damage_per_second"]) < 0.0:
+			return "hazard %s needs 'damage_per_second' >= 0" % hazard["type"]
+	for hazard: Dictionary in hazards_data:
+		var mirrored: bool = hazards_data.any(func(other: Dictionary) -> bool:
+			return other["type"] == hazard["type"] and is_equal_approx(float(other["radius"]), float(hazard["radius"])) \
+					and is_equal_approx(float(other["damage_per_second"]), float(hazard["damage_per_second"])) \
+					and absf(float(other["position"][0]) + float(hazard["position"][0])) <= SYMMETRY_TOLERANCE \
+					and absf(float(other["position"][1]) + float(hazard["position"][1])) <= SYMMETRY_TOLERANCE)
+		if not mirrored:
+			return "not point-symmetric: hazard %s at %s has no 180° mirror" % [hazard["type"], hazard["position"]]
 	if data.has("control_point") and typeof(data["control_point"]) != TYPE_DICTIONARY:
 		return "control_point must be an object like {\"radius\": 16}"
 	return ""

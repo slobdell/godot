@@ -96,3 +96,35 @@ func _path_length(path: PackedVector3Array) -> float:
 	for i in range(1, path.size()):
 		total += path[i - 1].distance_to(path[i])
 	return total
+
+
+func test_hazard_layouts_validate_symmetric_fire_pits() -> void:
+	var loaded := Arena.load_layout("furnace")
+	assert_true(loaded.has("layout"), "furnace validates: %s" % loaded.get("error", ""))
+	var lopsided: Dictionary = loaded["layout"].duplicate(true)
+	lopsided["hazards"][0]["radius"] = 12.0
+	assert_true(String(Arena.validate(lopsided)).contains("hazard"), "a fire pit without an equal mirror is refused: %s" % Arena.validate(lopsided))
+	var bad := _sample()
+	bad["hazards"] = [{"type": "fire_pit", "position": [0.0, 0.0], "radius": -1.0, "damage_per_second": 10.0}]
+	assert_true(String(Arena.validate(bad)).contains("radius"), "a hazard needs a positive radius")
+
+
+func test_fire_pits_burn_whoever_stands_in_them() -> void:
+	var arena: Arena = await _arena("furnace")
+	var game_match: Match = preload("res://game/match/match.tscn").instantiate()
+	add_to_tree(game_match)
+	var pit: Dictionary = arena.hazards()[0]
+	var burning := game_match.spawn_tank("Green_In_1", 0, Match.Team.GREEN, "tank")
+	var enemy := game_match.spawn_tank("Rust_In_1", 0, Match.Team.RUST, "ifv")
+	var safe := game_match.spawn_tank("Green_Out_1", 0, Match.Team.GREEN, "tank")
+	burning.global_position = pit["position"] + Vector3(1.5, 0, 0)
+	enemy.global_position = pit["position"] + Vector3(-3.0, 0, 0)
+	safe.global_position = pit["position"] + Vector3(float(pit["radius"]) + 6.0, 0, 0)
+	await wait_physics_frames(60 * 3)
+	var toughness := func(tank: Tank) -> float: return tank.health + tank.shield
+	assert_true(toughness.call(burning) < burning.max_health + burning.max_shield - 60.0,
+			"3 s in a %.0f dps pit burns a tank (%.0f left)" % [pit["damage_per_second"], toughness.call(burning)])
+	assert_true(toughness.call(enemy) < enemy.max_health + enemy.max_shield, "fire doesn't care about teams")
+	assert_eq(toughness.call(safe), safe.max_health + safe.max_shield, "outside the pit: untouched")
+	assert_true(game_match.stats["hazard_damage"][Match.Team.GREEN] > 0.0, "hazard damage is recorded by the victim's team")
+	assert_eq(game_match.stats["damage"], [0, 0], "and never credited to either team as combat damage")

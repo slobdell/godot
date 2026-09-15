@@ -28,7 +28,7 @@ const SCHEMA_VERSION := 2
 ## COMPONENTS, loadouts. Added: role, blurb, unlock_tier, weapon, mount, fire_arc_deg, muzzle_height,
 ## armor, good_vs, weak_vs; the IFV and the Lancer.
 
-const ROLES := ["scout", "tank", "ifv", "artillery", "lancer"]
+const ROLES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
 const MOUNTS := ["turret", "fixed"]
 ## Rounds fly flat at muzzle height, so every muzzle must sit below the shortest hull's top by this much
 ## (orientation trip-up 15: shells once flew over every tank).
@@ -163,6 +163,34 @@ const PROFILES := {
 		"heat_dissipation": 12.0,
 		"good_vs": ["tank"],
 		"weak_vs": ["scout", "ifv"],
+	},
+	# Stretch (rules, 2026-09-14): the Burner, the flamethrower's own unit (game_design.md "a close-range Burner").
+	# A close-range brawler: it must cross open ground under fire, then out-damages what it reaches and burns through
+	# shields. A cannon through its thin front and a Lancer's standoff range stop it.
+	"burner": {
+		"display_name": "Burner",
+		"role": "burner",
+		"blurb": "Plow-nosed fire truck with a flamethrower. Melts light hulls and artillery it reaches; tanks and Lancers stop it first.",
+		# Stretch tuning (2026-09-14, `make matchups ... --focus burner`): at 160 pts, 12 m/s, front armor 7, hull 260 it won
+		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
+		"cost": 220,
+		"unlock_tier": 2,
+		"hull_size": [2.4, 1.6, 3.8],
+		"max_health": 220,
+		"max_shield": 100,
+		"shield_recharge_delay": 3.5,
+		"shield_recharge_rate": 45.0,
+		"max_forward_speed": 10.0,
+		"max_reverse_speed": 5.0,
+		"hull_turn_rate_deg": 110.0,
+		"sight_radius": 70.0,
+		"weapon": "flamethrower",
+		"mount": "turret",
+		"turret_turn_rate_deg": 120.0,
+		"muzzle_height": 1.27,
+		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
+		"good_vs": ["ifv", "artillery"],
+		"weak_vs": ["tank", "lancer"],
 	},
 }
 
