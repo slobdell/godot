@@ -170,8 +170,8 @@ review is the long pole; everything ungated ran while it waits)
   channels so neighboring screens don't mirror each other. Low tier redraws the feed at half rate.
 - Outriggers are cut at load time from the existing model rather than re-split in the pipeline: no Meshy re-run, the
   legs keep the hull's texture set, and the cut is cached per mesh.
-- Rendering targets run locally: builder0 had no logged-in desktop (no Xwayland auth), so `make remote T=<shots>` fails
-  with "X11 Display is not available". The windowed runs are short and take no input.
+- Screenshots in this round were taken locally: remote rendering failed until main's `tools/remote.sh` fix (merged
+  3600ad0); a remote `arena-kit-gallery` capture afterwards matched the local ones.
 
 **Questions for the lead**
 1. **Meshy balance:** 328 credits left. One 3D model per role is 15 × 15 = 225 credits (+15 for a wreck), which leaves
@@ -193,8 +193,9 @@ review is the long pole; everything ungated ran while it waits)
    (`cyber_vehicle.gd`).
 4. **A fresh worktree has no `assets/incoming/meshy/`:** three paid concept downloads failed on the missing folder.
    `generate.py` now creates it and can re-download a finished task (`--concept-task`).
-5. **builder0 may have no logged-in desktop:** `make remote T=<screenshot target>` fails with "X11 Display is not
-   available"; run short rendering targets locally.
+5. ~~builder0 may have no logged-in desktop~~: the "X11 Display is not available" failures were a stale Xwayland auth
+   file, fixed on main (7dc7bdc, merged here). Remote gallery captures work now. None of this stream's judged
+   screenshots came from builder0 (all were taken locally), so none needed retaking.
 6. **builder0's Chrome has no WebGL2:** `make remote T=web-smoke` fails with "WebGL2 - Check web browser configuration"
    before Godot starts. Run web smokes locally (SwiftShader works there).
 
