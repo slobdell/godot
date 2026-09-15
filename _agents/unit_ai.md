@@ -222,6 +222,18 @@ A1 scenario harness → A2 `CoverMap` + `TacticalQuery` → A3 `COVER_FIRE` → 
 | Artillery shells an enemy with a friend 5 m from it | (not measured before) | 0 rounds (4 when the friend is 50 m off) |
 | Scout circles a slow turret; IFV prioritizes scouts | pending: needs rules' catalog v2 (checkpoint 1) | |
 
+### T1: does coordination beat individuals? (Anvil & Hammer vs Individuals, elimination, 300 s, 16 per row)
+
+| Brain | Normal bases | Swapped | + control point | + control, swapped | Coordinated overall |
+|---|---|---|---|---|---|
+| `main` as of round 2 start (round 1 brain) | 1 : 15 | | | | (idle guns Green 78%, Rust 89%) |
+| A0–A4 (before squad tactics) | 2 : 14 | 3 : 13 | 9 : 7 | 13 : 3 | 5/32 without the control point (16%), 22/32 with it (69%) |
+
+Reading: round 1's finding stands with the new brains: under recharging shields the split doctrine loses
+unless the control point gives the anchor something to hold. The A0–A4 brains raised idle guns to 95%
+(from 78/89% on `main`): the 6-tick target scan kept "nothing to shoot" for 5 ticks, in phase with the
+intel sampler. Fixed with A6 (re-scan every tick while nothing is picked).
+
 ### The 2D cover map vs physics
 
 `CoverMap.clear_line` agreed with physics raycasts on 139 of 139 random sight lines on the real arena

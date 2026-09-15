@@ -100,6 +100,8 @@ var _scan_left := 0
 ## of fire (or the splash), and which friend. Brains read it to move and clear the lane.
 var lane_blocked_ticks := 0
 var lane_blocker := ""
+## Brain variants can turn the friendly-fire gate off (BrainVariants "hold_for_friends").
+var hold_for_friends := true
 ## Measurement (not decisions): shots held for friends, by every controller since the process started.
 static var held_for_friends := 0
 
@@ -345,14 +347,12 @@ func _shootable(enemy: Tank) -> bool:
 	return seen and Perception.has_line_of_sight(tank, enemy)
 
 
-## _nearest_shootable(), re-scanned every SCAN_EVERY_TICKS; in between, the last pick while still shootable.
+## _nearest_shootable(), re-scanned every SCAN_EVERY_TICKS while the last pick is still shootable (a nearer enemy
+## may have appeared), and every tick while there's nothing to shoot (a delay there leaves loaded guns idle).
 func _scanned_shootable() -> Tank:
 	_scan_left -= 1
-	if _scan_left > 0:
-		if _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive() and _shootable(_scan_pick):
-			return _scan_pick
-		if _scan_pick == null:
-			return null
+	if _scan_left > 0 and _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive() and _shootable(_scan_pick):
+		return _scan_pick
 	_scan_left = SCAN_EVERY_TICKS
 	_scan_pick = _nearest_shootable()
 	return _scan_pick
@@ -421,6 +421,8 @@ func _apply_indirect(cmd: TankCommand) -> void:
 func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
 	if not would_fire:
 		return false
+	if not hold_for_friends:
+		return true
 	var blockers := FireLanes.for_shot(tanks_root, tank, aim)
 	if blockers.is_empty():
 		lane_blocked_ticks = 0

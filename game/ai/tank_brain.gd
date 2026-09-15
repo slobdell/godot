@@ -45,6 +45,13 @@ const COVER_FIRE_KEEP := 12.0
 const LANE_BLOCKED_TICKS := 20
 ## How far CLEAR_LANE looks for a new firing spot (meters).
 const LANE_SEARCH := 10.0
+## A6 squad tactics: how much more a brain wants the squad's focus, an enemy shooting a retreating squad-mate
+## it was asked to cover, and an enemy near the team's artillery or Lancers.
+const FOCUS_BONUS := 1.25
+const COVER_TEAMMATE_BONUS := 1.4
+const FRAGILE_THREAT_BONUS := 1.15
+## The flanker's FLANK floor (× confidence × firepower) on the squad's focus.
+const FLANKER_APPETITE := 0.72
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
@@ -156,6 +163,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	## Squad orders (tactical map): null when this tank's squad has no drill.
 	var squad: Variant = s.get("squad")
 	var commanded: bool = squad != null and squad["slot"] != null
+	## Brain variant switches (BrainVariants): missing = on.
+	var features: Dictionary = s.get("features", {})
+	var tactics: Dictionary = s.get("tactics", {}) if features.get("squad_tactics", true) else {}
+	var fragile_threats: Array = tactics.get("fragile_threats", [])
 
 	var visible_threats := 0
 	var threats_on_me := 0
@@ -247,11 +258,25 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			var priority := TankBrain._priority(String(d["target_priority"]), c, distance)
 			var engage := (0.3 + 0.7 * float(d["aggression"])) * reach * (0.55 + 0.45 * priority) \
 					* confidence * leash_factor * (1.0 if c["visible"] else 0.75) * firepower
+			# A6: the squad's plan tilts who to shoot (never whether to follow the player's order).
+			var squad_bonus := 1.0
+			if c["name"] == tactics.get("focus", ""):
+				squad_bonus *= FOCUS_BONUS
+			if c["name"] == tactics.get("cover_target", ""):
+				squad_bonus *= COVER_TEAMMATE_BONUS
+			if fragile_threats.has(c["name"]):
+				squad_bonus *= FRAGILE_THREAT_BONUS
+			if squad_bonus > 1.0:
+				var boosted := engage * squad_bonus
+				engage = minf(boosted, maxf(engage, ORDER_WEIGHT - 0.1)) if commanded else boosted
 			engages.append([c["name"], engage])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
 			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor * firepower
 			if c["exposed_face"] != "front":
 				flank *= 0.35
+			elif tactics.get("flank_target", "") == c["name"] and (not commanded or String(squad["verb"]) == "assault"):
+				# A6 suppress-and-flank: the squad sent me to its focus's side while the others keep it busy.
+				flank = maxf(flank, FLANKER_APPETITE * confidence * firepower * leash_factor)
 			flanks.append([c["name"], flank])
 		else:
 			var staleness := clampf(float(c["age"]) / float(s["memory_ticks"]), 0.0, 1.0)
@@ -271,7 +296,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		# COVER_FIRE (A3): the same fight, from a hide/peek pair: hide while reloading, peek to shoot. Worth it
 		# for slow-reloading direct-fire guns (a machine gun or laser gains little from ducking between
 		# shots); cautious crews like it more. Considerations: fight appetite × reload × caution × spot quality.
-		if not cover_fire.is_empty() and cover_fire["target"] == pair[0] and weapon["kind"] != Weapons.Kind.ARC:
+		if features.get("cover_fire", true) and not cover_fire.is_empty() and cover_fire["target"] == pair[0] \
+				and weapon["kind"] != Weapons.Kind.ARC:
 			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), 0.4, 2.0)
 			var spot_quality := UtilityCurves.floor_at(float(cover_fire.get("score", 0.5)), 0.6)
 			add.call("COVER_FIRE", pair[0], score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality)
@@ -280,7 +306,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# CLEAR_LANE (A4): my gun is ready and aimed but a friend is in the way: step aside to a spot with a clear
 	# line to the target instead of waiting (or shooting through it). Above the fight it serves, even when
 	# that fight is committed (×COMMIT_BONUS).
-	if int(me.get("lane_blocked_ticks", 0)) >= LANE_BLOCKED_TICKS and current.get("target", "") != "":
+	if features.get("hold_for_friends", true) and int(me.get("lane_blocked_ticks", 0)) >= LANE_BLOCKED_TICKS \
+			and current.get("target", "") != "":
 		for pair in engages:
 			if pair[0] == current["target"]:
 				add.call("CLEAR_LANE", pair[0], maxf(float(pair[1]) * fight_scale, 0.3) * COMMIT_BONUS * 1.15)
@@ -482,6 +509,8 @@ func build_situation() -> Dictionary:
 		if game_match.squad_of(ally) == squad_name:
 			squad_positions.append(ally.global_position)
 
+	var features := BrainVariants.for_team(team)
+	hold_for_friends = features.get("hold_for_friends", true)
 	var contacts: Array = []
 	var cover_map := CoverMap.of(tank)
 	var my_name := String(tank.name)
@@ -560,6 +589,8 @@ func build_situation() -> Dictionary:
 		"objective": objective,
 		"objective_radius": objective_radius,
 		"squad_center": squad_center,
+		"features": features,
+		"tactics": _tactics(features),
 		"cover": _cover_spots(contacts, allies, squad_context),
 		"cover_fire": _cover_fire_spot(contacts, allies, squad_context, cover_map),
 		"rally": Match.spawn_position(team, tank.slot),
@@ -644,6 +675,25 @@ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary,
 	return null if found.is_empty() else found
 
 
+## This tank's slice of its squad's plan (SquadTactics): {"focus", "flank_target" (if I'm the flanker),
+## "cover_target" (if I'm covering a squad-mate), "fragile_threats"}.
+func _tactics(features: Dictionary) -> Dictionary:
+	if not features.get("squad_tactics", true):
+		return {}
+	var plan := SquadTactics.for_squad(game_match, game_match.squad_for(tank))
+	if plan.is_empty():
+		return {}
+	var my_name := String(tank.name)
+	return {"focus": plan["focus"], "flank_target": plan["focus"] if plan["flanker"] == my_name else "",
+			"cover_target": (plan["cover_for"] as Dictionary).get(my_name, ""), "fragile_threats": plan["fragile_threats"]}
+
+
+## A unit's role: catalog v2 "role", round 1 "class", else "tank".
+static func role_of(unit: Tank) -> String:
+	var profile: Dictionary = Units.PROFILES.get(unit.unit_id, {})
+	return String(profile.get("role", profile.get("class", "tank")))
+
+
 ## Visible contacts as TacticalQuery threats: guns aimed at me first (weight 1), then the rest (0.6),
 ## nearest first within each group.
 static func threat_list(contacts: Array, my_position: Vector3) -> Array:
@@ -693,7 +743,9 @@ func _act(s: Dictionary) -> void:
 			var exposed := (s["contacts"] as Array).any(func(c: Dictionary) -> bool:
 				return c["visible"] and c.get("threatens_me", c["aiming_at_me"]))
 			var cover_spots: Array = s["cover"]
-			if exposed and not cover_spots.is_empty() and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE:
+			if not s.get("features", {}).get("retreat_to_cover", true):
+				_order_move(_move_to(s["rally"], true))
+			elif exposed and not cover_spots.is_empty() and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE:
 				var hide: Vector3 = cover_spots[0]
 				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0, 1.0, SPOT_ARRIVE))
 			else:
@@ -812,7 +864,7 @@ func _act(s: Dictionary) -> void:
 			var depot: Vector3 = s.get("resupply", s["rally"])
 			if bool(me.get("in_resupply_zone", false)) and my_position.distance_to(depot) < Match.RESUPPLY_RADIUS * 0.6:
 				_order_move({"type": "stop"})
-			elif TankBrain.withdraw_point(s) != s["rally"]:
+			elif s.get("features", {}).get("retreat_to_cover", true) and TankBrain.withdraw_point(s) != s["rally"]:
 				# Enemies seen close by a moment ago: back straight away from them first (stays in cover's shadow).
 				_order_move(_move_to(TankBrain.withdraw_point(s), true))
 			else:
