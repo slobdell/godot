@@ -23,6 +23,12 @@ const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 const ARRIVE_RADIUS := 6.0
 ## How far the bounding element moves before the elements swap roles.
 const BOUND_DISTANCE := 25.0
+## Bounding overwatch (A6): after a swap the next bound waits until the new overwatch element is set (every member
+## slower than OVERWATCH_SET_SPEED m/s, after at least OVERWATCH_MIN_WAIT squad updates) or OVERWATCH_MAX_WAIT
+## updates pass. Squad updates run every Match.INTEL_EVERY_TICKS (0.1 s).
+const OVERWATCH_SET_SPEED := 1.0
+const OVERWATCH_MIN_WAIT := 10
+const OVERWATCH_MAX_WAIT := 40
 const MAX_EVENTS := 12
 ## Commander pacing: followers may lag this far behind their slots before the commander slows,
 ## down to MIN_PACE when they're PACE_SLACK + PACE_FALLOFF behind.
@@ -50,6 +56,8 @@ var arrived := false
 ## Bounding overwatch: which element (0 = the commander's, 1 = the other) is moving, and where to.
 var bounding_element := 1
 var bound_goal: Variant = null
+## Squad updates the bounding element has waited for the overwatch to set (-1 = not waiting).
+var bound_waited := -1
 var events: PackedStringArray = []
 ## Bumped by every accepted command. Brains compare it to re-think at once and drop their
 ## commitment, so a player order takes effect on the next tick (G3 responsiveness).
@@ -114,6 +122,7 @@ func apply_command(command: Dictionary, tanks: Dictionary, rally: Vector3) -> St
 		arrived = false
 		bound_goal = null
 		bounding_element = 1
+		bound_waited = -1
 		var lead := tanks.get(commander) as Tank
 		if command.has("to"):
 			destination = Vector3(float(command["to"][0]), 0.0, float(command["to"][1]))
@@ -178,6 +187,16 @@ func update(tanks: Dictionary) -> void:
 
 
 func _update_bound(tanks: Dictionary, alive: PackedStringArray) -> void:
+	if bound_waited >= 0:
+		bound_waited += 1
+		var set := bound_waited >= OVERWATCH_MIN_WAIT
+		for member in _element_members(1 - bounding_element, alive):
+			if (tanks[member] as Tank).estimated_velocity.length() > OVERWATCH_SET_SPEED:
+				set = false
+		if set or bound_waited >= OVERWATCH_MAX_WAIT:
+			bound_waited = -1
+			_log("bound: overwatch set, element %d moves" % bounding_element)
+		return
 	var moving := _element_members(bounding_element, alive)
 	if moving.is_empty():
 		bounding_element = 1 - bounding_element
@@ -192,6 +211,7 @@ func _update_bound(tanks: Dictionary, alive: PackedStringArray) -> void:
 		# The bounding element is set: it becomes the overwatch, and the other element bounds past it.
 		bounding_element = 1 - bounding_element
 		bound_goal = _next_bound_goal(bound_goal)
+		bound_waited = 0
 		_log("bound: element %d moves" % bounding_element)
 
 
@@ -260,7 +280,8 @@ func _raw_context(tank_name: String, tanks: Dictionary) -> Dictionary:
 	var lead: Tank = tanks[commander]
 
 	if verb == "bound":
-		var moving_now := element_of(tank_name) == bounding_element
+		var moving_now := element_of(tank_name) == bounding_element and bound_waited < 0
+		context["waiting"] = element_of(tank_name) == bounding_element and bound_waited >= 0
 		if moving_now and bound_goal != null:
 			context["slot"] = Formations.to_world(bound_goal, heading, offsets[index] - offsets[order.find(_element_anchor(tanks))])
 			context["moving"] = true

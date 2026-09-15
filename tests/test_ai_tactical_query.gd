@@ -69,3 +69,16 @@ func test_queries_are_deterministic() -> void:
 	for i in 3:
 		assert_eq([TacticalQuery.find_cover(shared, request), TacticalQuery.find_cover_fire(shared, request)], first,
 				"same map and request, same answer (run %d, warm memo)" % i)
+
+
+func test_overwatch_sees_the_bound_and_hides_from_the_threat() -> void:
+	var map := _map()
+	var watch := Vector3(20, 0, -10)
+	var request := {"position": Vector3(14, 0, 10), "watch": watch, "threats": [{"position": Vector3(0, 0, -40), "weight": 1.0}]}
+	var spot := TacticalQuery.find_overwatch(map, request)
+	assert_true(spot.distance_to(request["position"]) <= TacticalQuery.OVERWATCH_RADIUS + 0.01, "a short hop (%s)" % spot)
+	assert_true(map.clear_line(spot, watch), "it sees where the bounding element is going (%s)" % spot)
+	assert_true(not map.clear_line(Vector3(0, 0, -40), spot), "and the threat can't see it")
+	assert_true(map.clear_line(Vector3(0, 0, -40), request["position"]), "setup: the threat sees the starting spot")
+	var open := TacticalQuery.find_overwatch(CoverMap.from_features([]), request)
+	assert_eq(open, request["position"], "in the open with nothing better: stay put")

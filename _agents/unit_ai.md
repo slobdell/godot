@@ -220,6 +220,8 @@ A1 scenario harness → A2 `CoverMap` + `TacticalQuery` → A3 `COVER_FIRE` → 
 | A friend shuttles across the line of fire | 1 of 7 shots fired through the friend | 0 of 7 |
 | A friend parked in the line of fire | never fires (every shot would hit the friend) | sidesteps 5.4 m, first shot at 2.9 s, 4 shots, none through the friend (CLEAR_LANE) |
 | Artillery shells an enemy with a friend 5 m from it | (not measured before) | 0 rounds (4 when the friend is 50 m off) |
+| Three brains in a squad vs three targets: share of damage on the most-damaged target | 66% (each shoots its nearest) | 100% (squad focus) |
+| Bounding overwatch next to a wall: the watcher's time hidden from a known gun during the first leg | 0% (stays where it halted) | 51% (tactical overwatch spot; the bound waits for the overwatch to set) |
 | Scout circles a slow turret; IFV prioritizes scouts | pending: needs rules' catalog v2 (checkpoint 1) | |
 
 ### T1: does coordination beat individuals? (Anvil & Hammer vs Individuals, elimination, 300 s, 16 per row)
@@ -228,11 +230,21 @@ A1 scenario harness → A2 `CoverMap` + `TacticalQuery` → A3 `COVER_FIRE` → 
 |---|---|---|---|---|---|
 | `main` as of round 2 start (round 1 brain) | 1 : 15 | | | | (idle guns Green 78%, Rust 89%) |
 | A0–A4 (before squad tactics) | 2 : 14 | 3 : 13 | 9 : 7 | 13 : 3 | 5/32 without the control point (16%), 22/32 with it (69%) |
+| a6 (squad tactics, champion) | 4 : 12 | 1 : 15 | 4 : 12 | 8 : 8 | 5/32 without (16%), **12/32 with it (38%)** |
 
-Reading: round 1's finding stands with the new brains: under recharging shields the split doctrine loses
-unless the control point gives the anchor something to hold. The A0–A4 brains raised idle guns to 95%
-(from 78/89% on `main`): the 6-tick target scan kept "nothing to shoot" for 5 ticks, in phase with the
-intel sampler. Fixed with A6 (re-scan every tick while nothing is picked).
+Reading: without the control point nothing changed. With it, squad tactics cut the coordinated doctrine's edge
+from 69% to 38%. The "Individuals" doctrine is one 5-tank squad, so squad tactics (focus fire, a flanker)
+coordinate it too, while Anvil & Hammer's 3 + 2 split gets less from them. **Design question for the lead:**
+smarter autonomous squads shrink the payoff of a player's coordination. That's intended ("units handle how"),
+but the player's edge must come from *where and when* (splitting, flanking routes, timing, the control
+point), not from making units fight well. Watch this in playtests; the counters in catalog v2 (checkpoint 1)
+should add payoff to composition choices.
+
+**Idle guns** (a loaded gun with an enemy in its own sight and range, not firing): 78/89% on `main`, 95% with
+the new brains. An 8+8 mirror probe: r1 brains 88–90% idle, 3298 shots, 79% accuracy, 16% side hits; a6 brains
+95% idle, 3163 shots (−4%), **85% accuracy, 25% side hits**: a6 lands more hits. The extra idle time is by
+design (holding fire for a friend in the lane, waiting in cover to reload), not a lost-shots bug. (One real
+contributor was fixed with A6: the 6-tick target scan kept "nothing to shoot" for 5 ticks after a miss.)
 
 ### AI ladder (`make ai-ladder`)
 

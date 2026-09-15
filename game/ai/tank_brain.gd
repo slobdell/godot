@@ -108,6 +108,8 @@ var _think_every := THINK_EVERY_TICKS
 var why := ""
 ## The last cover query: {"tick", "position", "threats" (count), "result" [Vector3]}.
 var _cover_cache := {}
+## Bounding overwatch (A6): {"goal": the bound goal it was chosen for, "spot": Vector3}.
+var _overwatch := {}
 ## CLEAR_LANE's chosen spot and when it was chosen (kept until reached or stale, so the tank settles to fire).
 var _lane_goal: Variant = null
 var _lane_goal_tick := 0
@@ -424,8 +426,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			"move":
 				keep_slot = 0.0 if in_position else ORDER_WEIGHT
 			"bound":
-				keep_slot = ORDER_WEIGHT if squad["moving"] and gap > 3.0 else 0.0
-				in_position = not squad["moving"]
+				# The overwatch element drives to its overwatch spot (A6), then holds there.
+				var to_spot: bool = squad["moving"] or squad.get("overwatch", false)
+				keep_slot = ORDER_WEIGHT if to_spot and gap > 3.0 else 0.0
+				in_position = not squad["moving"] and (not squad.get("overwatch", false) or gap <= 3.0)
 			"hold":
 				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else ORDER_WEIGHT
 			"assault":
@@ -595,6 +599,8 @@ func build_situation() -> Dictionary:
 		squad_center = sum / squad_positions.size()
 
 	var squad_context: Dictionary = AiTickCache.squad_context(game_match, tank)
+	if features.get("squad_tactics", true):
+		squad_context = _with_overwatch(squad_context, contacts, allies)
 	var effective_directives := directives
 	if squad_context.get("slot") != null:
 		effective_directives = Squad.drill_directives(directives, squad_context)
@@ -734,6 +740,26 @@ static func tactics_tag(s: Dictionary, current: Dictionary) -> String:
 
 static func _join(a: String, b: String) -> String:
 	return b if a == "" else a + ", " + b
+
+
+## Bounding overwatch (A6): while this tank's element covers the bound, its slot becomes a tactical overwatch spot
+## near where it halted (sees the bound's destination, hidden from known threats) instead of "stay put". Chosen
+## once per bound leg.
+func _with_overwatch(context: Dictionary, contacts: Array, allies: Array) -> Dictionary:
+	var squad := game_match.squad_for(tank)
+	if context.get("verb", "") != "bound" or context.get("moving", true) or context.get("waiting", false) \
+			or squad == null or squad.bound_goal == null:
+		_overwatch = {}
+		return context
+	if _overwatch.is_empty() or not (_overwatch["goal"] as Vector3).is_equal_approx(squad.bound_goal):
+		var request := {"position": tank.global_position, "watch": squad.bound_goal,
+				"threats": TankBrain.threat_list(contacts, tank.global_position),
+				"friends": allies.map(func(ally: Dictionary) -> Vector3: return ally["position"])}
+		_overwatch = {"goal": squad.bound_goal, "spot": TacticalQuery.find_overwatch(CoverMap.of(tank), request)}
+	var result := context.duplicate()
+	result["slot"] = _overwatch["spot"]
+	result["overwatch"] = true
+	return result
 
 
 ## A unit's role: catalog v2 "role", round 1 "class", else "tank".

@@ -37,6 +37,8 @@ const STAND_CLEARANCE := 2.4
 const HULL_MARGIN := 1.6
 ## Peek this much past the first spot that sees the target, so the tank is clearly out when it stops.
 const PEEK_MARGIN := 1.5
+## Overwatch spots are searched this close to where the element halted (the drill still owns the formation).
+const OVERWATCH_RADIUS := 12.0
 
 
 ## Up to `count` hiding places, best first: [{"point": Vector3, "score": float, "cover": float}].
@@ -102,6 +104,32 @@ static func find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
 		var score := 0.35 * float(entry["fit"]) + 0.25 * float(entry["travel"]) + 0.25 * others + 0.15 * peek_quality
 		if best.is_empty() or score > float(best["score"]):
 			best = {"hide": hide, "peek": peek, "score": snappedf(score, 0.0001)}
+	return best
+
+
+## Bounding overwatch (A6): a spot near me that sees `request["watch"]` (where the bounding element is going),
+## preferably hidden from the known threats, a short drive away, and spaced from friends. Always returns a
+## point: my own position if nothing nearby sees the watch point.
+## Extra request key: "watch": Vector3. The search radius defaults to OVERWATCH_RADIUS.
+static func find_overwatch(map: CoverMap, request: Dictionary) -> Vector3:
+	var me: Vector3 = request["position"]
+	var watch: Vector3 = request["watch"]
+	var radius := float(request.get("search_radius", OVERWATCH_RADIUS))
+	var threats := _threats(request)
+	var best := me
+	var best_score := -1.0
+	var candidates: Array = [me]
+	for index in _candidates(map, request, radius):
+		candidates.append(_point3(map.points[index]))
+	for point: Vector3 in candidates:
+		if not map.clear_line(point, watch):
+			continue
+		var cover := _cover(map, point, threats) if not threats.is_empty() else 0.5
+		var travel := 1.0 - _flat_distance(me, point) / maxf(radius, 1.0)
+		var score := 0.5 * cover + 0.3 * travel + 0.2 * _spacing(point, request)
+		if score > best_score + 1e-6:
+			best_score = score
+			best = point
 	return best
 
 
