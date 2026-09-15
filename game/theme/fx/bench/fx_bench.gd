@@ -57,6 +57,7 @@ const CONFIGS := {
 	"r3_all": {"round3": true},
 	"r3_no_weapons": {"round3": true, "fire": false},
 	"r3_no_motion": {"round3": true, "motion": false},
+	"r3_no_haze": {"round3": true, "haze": false},
 	"r3_tier_medium": {"round3": true, "tier": FxQuality.Tier.MEDIUM},
 	"r3_tier_low": {"round3": true, "tier": FxQuality.Tier.LOW},
 }
@@ -206,6 +207,7 @@ func _apply(config: Dictionary) -> void:
 		fx.tracers.splats_enabled = config.get("splats", settings["splats"])
 		fx.muzzle_flashes = config.get("muzzle", true)
 		fx.explosion_lights = true
+		fx.haze.enabled = config.get("haze", true)
 	var environment := _find_environment()
 	if environment != null:
 		environment.glow_enabled = config.get("glow", settings["glow"])

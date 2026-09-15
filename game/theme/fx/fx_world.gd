@@ -39,6 +39,10 @@ var link: MatchFxLink
 var order_feedback: OrderFeedback
 ## Dust, drift marks, and lurches from vehicles on the move.
 var motion: MotionFx
+## The slow-motion moment on a match's final kill.
+var kill_cam: KillCam
+## Heat haze over burning wrecks (tier high).
+var haze: HeatHaze
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
 ## Legacy muzzle flashes when a projectile appears, used only when no match drives weapon events (a networked client,
@@ -111,6 +115,10 @@ func _init() -> void:
 	add_child(order_feedback)
 	motion = MotionFx.new(self)
 	add_child(motion)
+	kill_cam = KillCam.new(self)
+	add_child(kill_cam)
+	haze = HeatHaze.new()
+	add_child(haze)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -138,6 +146,7 @@ func _process(delta: float) -> void:
 	underglow.update(lights)
 	beams.update(lights, now)
 	fires.update(now, bursts, lights)
+	haze.update(fires.sites, camera.global_position if camera != null else Vector3.ZERO, now)
 	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
 	if camera != null:
 		engines.update(camera.global_position, delta)

@@ -314,6 +314,11 @@ func _kill(model: String, family: Dictionary, position: Vector3, direction: Vect
 	_piece("scorch")
 
 
+## The most recent kill explosion, {position, time, unit} on FxWorld's clock, or {}.
+func last_kill() -> Dictionary:
+	return _recent_kills[-1] if not _recent_kills.is_empty() else {}
+
+
 ## A vehicle died (its `died` signal): blow it up unless the hit that killed it already did (hazards, beams, and round-2
 ## hitscan kills have no killing impact).
 func unit_destroyed(unit: Node3D) -> void:

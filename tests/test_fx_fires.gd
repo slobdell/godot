@@ -30,3 +30,20 @@ func test_the_tier_caps_how_many_sites_burn() -> void:
 	assert_eq(fires.burning_count(), FireSites.PER_TIER[FxQuality.Tier.LOW], "phones keep only the newest few fires")
 	assert_near((fires.sites[0]["position"] as Vector3).x, 50.0, 0.001, "the oldest went out first")
 	FxQuality.set_tier(previous, "test")
+
+
+func test_heat_haze_rises_over_the_nearest_fires_on_the_high_tier_only() -> void:
+	var previous := FxQuality.tier()
+	var haze: HeatHaze = add_to_tree(HeatHaze.new())
+	var sites: Array = []
+	for i in 12:
+		sites.append({"position": Vector3(i * 10.0, 0, 0), "start": 0.0})
+	FxQuality.set_tier(FxQuality.Tier.HIGH, "test")
+	var nodes := haze.get_child_count()
+	haze.update(sites, Vector3.ZERO, 5.0)
+	assert_eq(haze.active_count(), HeatHaze.MAX_QUADS, "twelve fires, the %d nearest shimmer" % HeatHaze.MAX_QUADS)
+	assert_eq(haze.get_child_count(), nodes, "one MultiMesh however many fires")
+	FxQuality.set_tier(FxQuality.Tier.LOW, "test")
+	haze.update(sites, Vector3.ZERO, 5.0)
+	assert_eq(haze.active_count(), 0, "phones skip the screen-copy haze")
+	FxQuality.set_tier(previous, "test")

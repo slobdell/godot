@@ -14,11 +14,11 @@ const SAVE_PATH := "user://fx_quality.cfg"
 
 ## Per tier: real lights in the pool, projectile ground splats, Environment glow, 3D render scale,
 ## MSAA, moon shadows, capacity of the transient effect buffer (explosions, flashes, glows, smoke), the long-lived
-## scorch-mark pool, and sparks/debris chunks per spray (a per-pixel loop).
+## scorch-mark pool, sparks/debris chunks per spray (a per-pixel loop), and heat haze over fires (a screen copy).
 const SETTINGS := {
-	Tier.LOW: {"lights": 4, "splats": true, "glow": true, "render_scale": 0.75, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 128, "decals": 12, "sprays": 6},
-	Tier.MEDIUM: {"lights": 8, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 192, "decals": 24, "sprays": 10},
-	Tier.HIGH: {"lights": 16, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_2X, "shadows": true, "effects": 320, "decals": 48, "sprays": 14},
+	Tier.LOW: {"lights": 4, "splats": true, "glow": true, "render_scale": 0.75, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 128, "decals": 12, "sprays": 6, "haze": false},
+	Tier.MEDIUM: {"lights": 8, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 192, "decals": 24, "sprays": 10, "haze": false},
+	Tier.HIGH: {"lights": 16, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_2X, "shadows": true, "effects": 320, "decals": 48, "sprays": 14, "haze": true},
 }
 
 static var _tier := -1

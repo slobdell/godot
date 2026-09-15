@@ -71,6 +71,8 @@ func attach(game_match: Node) -> void:
 	if live:
 		game_match.connect("weapon_fired", _on_weapon_fired)
 		game_match.connect("projectile_impact", _on_projectile_impact)
+	if game_match.has_signal("finished"):
+		game_match.connect("finished", _on_finished)
 	if _simulating():
 		var tanks := _tanks_root()
 		if tanks != null:
@@ -160,6 +162,12 @@ func _on_tank_added(node: Node) -> void:
 	# Every death blows up, including ones without a killing impact (hazards, beams); WeaponFx drops duplicates.
 	if node.has_signal("died") and not node.is_connected("died", _on_tank_died):
 		node.connect("died", _on_tank_died.bind(node))
+
+
+func _on_finished(result: Dictionary) -> void:
+	var fx := get_parent() as FxWorld
+	if fx != null:
+		fx.kill_cam.on_finished(result, _match)
 
 
 func _on_tank_died(tank: Node) -> void:

@@ -271,3 +271,6 @@ K2 events would. Raw numbers: `build/fx-bench.json`; screenshots: `build/screens
   sparks are rate-limited per target (0.07 s) and ricochet sounds globally (0.15 s); dust and marks only for the
   vehicles nearest the camera (6/12/20 by tier); scorches, dust, and marks have their own pools so a firefight never
   recycles them.
+- **Heat haze** (stretch, `HeatHaze`: ≤ 8 camera-facing quads over the nearest fires reading the screen texture, tier
+  high only): `r3_all` vs `r3_no_haze`, two passes each: 7.12 / 7.08 ms vs 6.96 / 7.13 ms, the same 273 draws: **within
+  noise** on the Iris Xe. Not measured on web or phones (it's off on low and medium).
