@@ -1,0 +1,42 @@
+TRANSCRIPT: close_match (director seed 1)
+the Foundry | green: tank, ifv, ifv, scout, artillery | rust: tank, ifv, scout, lancer, ifv
+result: rust by elimination at 1:17.8
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   PA       Welcome to the Foundry. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:09.5   CALLER   Ten vehicles on the floor tonight, and every one of—
+0:12.8   ── first contact: green tank fires on a lancer
+0:12.8   CALLER   Big gun, first shot! The Green tank gets things started!
+0:16.0   ── green tank destroys rust lancer
+0:16.5   CALLER   That is not supposed to happen! Green's tank just took down the Lancer!
+0:21.6   VETERAN  Mixed army—
+0:22.8   ── rust ifv destroys green scout
+0:22.8   CALLER   Burst after burst, and the scout can't take any more!
+0:26.4   CALLER   Oh, that was nasty.
+0:35.7   PA       The owner of a grey sedan in lot four—
+0:39.2   ── rust tank destroys green ifv
+0:39.3   CALLER   Textbook! The tank eats the IFV alive!
+0:39.8   ── friendly fire: green tank hits its own artillery
+0:42.0   ── green ifv destroys rust ifv
+0:42.6   CALLER   They hit the weak spot and the IFV just folds!
+0:42.8   ── rust scout destroys green artillery
+0:42.8   ── green squad Bravo wiped out
+0:46.7   CALLER   Put it away! Rust puts it away!
+0:54.0   CALLER   The tank round lands! You felt that one in the seats!
+1:03.0   ── rust tank destroys green tank
+1:03.0   CALLER   One left! Green has one left!
+1:04.2   ── green ifv destroys rust scout
+1:06.0   CALLER   The scout runs out of road!
+1:08.2   ── green ifv destroys rust ifv
+1:08.2   ── rust squad Lance wiped out
+1:08.3   CALLER   That leaves Rust with one. One!
+1:11.3   CALLER   Ohh, that rocked the IFV!
+1:17.8   ── rust tank destroys green ifv
+1:17.8   ── green squad Alpha wiped out
+1:17.8   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
+1:17.8   CALLER   Rust finishes it! The last IFV is gone!
+1:20.8   CALLER   It's all over! Rust wins it!
+1:23.2   VETERAN  One left. That driver is going to remember every second of that.
+1:28.6   CALLER   This is fight night!
+1:30.9   PA       That concludes tonight's match. Congratulations to Rust. On behalf of the Syndicate, good night, and please drive safely.

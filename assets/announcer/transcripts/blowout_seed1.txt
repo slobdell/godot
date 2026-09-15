@@ -1,0 +1,36 @@
+TRANSCRIPT: blowout (director seed 1)
+the Scrapyard | green: tank, tank, tank, scout | rust: scout, scout, ifv, artillery, artillery
+result: green by elimination at 0:54.0
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   PA       Welcome to the Scrapyard. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:09.5   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
+0:14.9   CALLER   Green rolls out three tanks tonight.
+0:17.8   VETERAN  Artillery needs somebody else's—
+0:20.0   ── first contact: rust scout fires on a tank
+0:20.1   CALLER   Whoa, whoa, whoa!
+0:21.7   CALLER   The scout finds them first! That's the job, and Rust is doing it!
+0:21.8   ── friendly fire: green tank hits its own tank
+0:26.0   ── green tank destroys rust ifv
+0:26.3   CALLER   One shot! One shot from the big gun and it's over for that IFV!
+0:31.7   CALLER   Green is taking over this match!
+0:33.5   ── close call: rust artillery at 14% hull
+0:34.6   CALLER   That artillery should be scrap, and it is still in the fight!
+0:41.8   CALLER   Right in the—
+0:43.0   ── green tank destroys rust artillery
+0:43.0   CALLER   The tank round lands, and the artillery just comes apart!
+0:46.6   CALLER   Oh, my goodness!
+0:46.8   ── green tank destroys rust scout
+0:48.1   CALLER   They got another one! Oh my goodness!
+0:51.2   ── green tank destroys rust artillery
+0:51.2   ── rust squad Battery wiped out
+0:51.3   CALLER   Another one for Green! This is a clinic!
+0:54.0   ── green tank destroys rust scout
+0:54.0   ── rust squad Swarm wiped out
+0:54.0   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
+0:54.3   CALLER   Green finishes it! The last scout is gone!
+0:57.3   CALLER   Green wins it without losing a single vehicle! Flawless!
+1:00.6   VETERAN  Flawless is rare. I never did it. Not once.
+1:04.9   CALLER   You cannot script this!
+1:07.2   PA       Green wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
