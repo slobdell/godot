@@ -58,19 +58,13 @@ static func role_of(tank: Tank) -> String:
 	return role
 
 
-## Icons centered farther than this many pixels from the canvas origin are off every screen and are skipped.
-const MAX_SCREEN_COORD := 16384.0
-
-
 ## A unit pictogram (top-down silhouette) centered at `at`, `size` px tall, pointing along `heading`
 ## (radians, 0 = up the screen, positive = clockwise).
 static func draw_unit(canvas: CanvasItem, role: String, at: Vector2, size: float, color: Color, heading := 0.0,
 		outline := Color(0, 0, 0, 0.75)) -> void:
 	# A camera that isn't set up yet (headless runs, the first frame after a mode switch) unprojects to NaN, and a
-	# degenerate polygon makes the renderer log a triangulation error: draw nothing instead. A unit near the camera
-	# plane projects finite but huge (measured (87913, 110814) in army-loop-smoke under load), which the renderer
-	# can't triangulate either: skip anything far off any screen.
-	if not (at.is_finite() and is_finite(heading) and size >= 1.0) or absf(at.x) > MAX_SCREEN_COORD or absf(at.y) > MAX_SCREEN_COORD:
+	# degenerate polygon makes the renderer log a triangulation error: draw nothing instead.
+	if not (_drawable(at) and is_finite(heading) and size >= 1.0):
 		return
 	var s := size / 2.0
 	var xf := Transform2D(heading, at)
@@ -89,7 +83,8 @@ static func draw_unit(canvas: CanvasItem, role: String, at: Vector2, size: float
 			body = _pts([Vector2(-0.55, -0.6), Vector2(0.55, -0.6), Vector2(0.55, 0.9), Vector2(-0.55, 0.9)], s, xf)
 	var closed := body.duplicate()
 	closed.append(body[0])
-	canvas.draw_colored_polygon(body, color)
+	if not _fill(canvas, body, color):
+		return
 	canvas.draw_polyline(closed, outline, maxf(1.0, size / 16.0))
 	var ink := Color(0.02, 0.03, 0.05, 0.9)
 	var w := maxf(1.5, size / 9.0)
@@ -124,12 +119,34 @@ static func draw_unit(canvas: CanvasItem, role: String, at: Vector2, size: float
 
 ## A hostile marker: a diamond (filled faintly, or hollow for a remembered contact). Friendly markers are round.
 static func draw_hostile_frame(canvas: CanvasItem, at: Vector2, radius: float, color: Color, filled: bool) -> void:
+	if not (_drawable(at) and radius >= 1.0):  # see draw_unit: degenerate polygons log engine errors
+		return
 	var diamond := PackedVector2Array([at + Vector2(0, -radius), at + Vector2(radius, 0), at + Vector2(0, radius),
 			at + Vector2(-radius, 0)])
 	if filled:
-		canvas.draw_colored_polygon(diamond, Color(0, 0, 0, 0.45))
+		_fill(canvas, diamond, Color(0, 0, 0, 0.45))
 	diamond.append(diamond[0])
 	canvas.draw_polyline(diamond, color, 2.0)
+
+
+## True for a screen position an icon can be drawn at.
+static func _drawable(at: Vector2) -> bool:
+	return at.is_finite()
+
+
+## Draw a filled polygon only if the renderer can triangulate it. The engine logs "Invalid polygon data, triangulation
+## failed" for shapes it can't triangulate, which fails tests and smoke runs. Measured on builder0 (2026-09-15): in about
+## 1 of 3 headless army-loop runs a far-zoom icon for a unit near the camera plane lands 30k–100k px off screen, where a
+## perfectly shaped 20 px quad fails triangulation on precision. The first skipped polygon is printed once.
+static var _reported_degenerate := false
+static func _fill(canvas: CanvasItem, polygon: PackedVector2Array, color: Color) -> bool:
+	if Geometry2D.triangulate_polygon(polygon).is_empty():
+		if not _reported_degenerate:
+			_reported_degenerate = true
+			print("COMMAND_ICONS_DEGENERATE_POLYGON %s" % [polygon])
+		return false
+	canvas.draw_colored_polygon(polygon, color)
+	return true
 
 
 static func _pts(points: Array, scale: float, xf: Transform2D) -> PackedVector2Array:
@@ -201,8 +218,10 @@ static func draw_drill(canvas: CanvasItem, verb: String, rect: Rect2, color: Col
 
 
 static func _arrow(canvas: CanvasItem, from: Vector2, to: Vector2, color: Color, width: float, head: float) -> void:
+	if not (from.is_finite() and to.is_finite()) or from.distance_to(to) < 0.01 or head < 0.5:
+		return  # a zero-length arrow has no direction: its head would be a degenerate triangle
 	var direction := (to - from).normalized()
 	canvas.draw_line(from, to - direction * head * 0.5, color, width)
 	var side := Vector2(-direction.y, direction.x)
-	canvas.draw_colored_polygon(PackedVector2Array([to, to - direction * head + side * head * 0.6,
+	_fill(canvas, PackedVector2Array([to, to - direction * head + side * head * 0.6,
 			to - direction * head - side * head * 0.6]), color)
