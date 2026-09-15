@@ -122,6 +122,38 @@ artillery (the design wants scout > Lancer and trouble for tanks). That's the sc
 (SCOUT_STANDOFF 85 m, SCOUT_FIGHT): re-run `make matchups` when the ai stream's matchup targeting and fixed-mount
 strafing land, before touching scout stats. Samples are 12 per pair (±14 points).
 
+## Round 2 rules defaults (rules R8, 2026-09-14): recommendations for the lead
+
+Measured on the R7-tuned catalog with friendly fire on, 8 seeds per row, elimination, 300 s limit.
+
+**1. Make the control point the default rule. (Recommended.)** "Coordination beats individuals" (T1): Anvil &
+Hammer (3 + 2 tanks, split) vs Individuals (5 tanks):
+
+| Rules | Normal bases, AH as Green / as Rust | Swapped bases, AH as Green / as Rust | Coordinated wins |
+|---|---|---|---|
+| Elimination only | 0 : 8 / 0 : 8 | 0 : 8 / 0 : 8 | **0 of 32** |
+| + `--control` | 4 : 4 / 6 : 2 | 0 : 8 / 5 : 3 | **15 of 32 (47%)** |
+
+Under recharging shields the concentrated brawl wins every time; a reason to hold ground restores the split
+doctrine to parity, as in round 1 (10 : 10). Command/skirmish owns the flag (`--control`).
+
+**2. Drop finite ammo on direct-fire guns; keep the mortar's 24 rounds. (Applied: the brief lets rules simplify.)**
+Armor vs Balanced CPU armies (1000 points), both bases, both colors:
+
+| Ammo | Armor wins | RESUPPLY share of brain time | Avg length |
+|---|---|---|---|
+| Finite (cannon 45, autocannon 300, MG 600, mortar 24) | 26 of 32 | 1–6% | 122 s |
+| Unlimited everywhere (`--tune=…ammo=-1`) | 25 of 32 | 0–4% | 112 s |
+
+No outcome changed, and resupply trips were mostly base repair. In squad matches without respawns a load lasts
+the fight, so ammo added HUD readouts and "out of ammo" messages, not decisions. The mortar keeps its load (a
+battery that shells all match long is the one place a limit matters), and base repair stays (it drives the
+RESUPPLY option most of the time). Reversible: put `"ammo"` back on a weapon.
+
+**Also seen:** the Armor archetype beats Balanced 26 : 6. Balanced spends half its army on artillery and scouts,
+which SPOT and BOMBARD instead of fighting (38% + 19% of their time). For the army stream's CPU presets and
+the ai stream's scouts.
+
 ## Results so far
 
 ### G5 turrets (5 cannons each, Anvil & Hammer vs Individuals, 40 matches)

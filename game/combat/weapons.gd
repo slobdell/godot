@@ -31,11 +31,10 @@ const PROFILES := {
 		# G6: damage to shields is (damage x shield_multiplier), evenly from any side; only what
 		# gets through the shield meets the armor (Armor.penetration_multiplier). Cannons are hull breakers.
 		"shield_multiplier": 0.8,
-		# G7: finite shells. Refilled slowly inside the team's base (Match.RESUPPLY_RADIUS), so
-		# pulling back is a real decision. Weapons without an "ammo" key never run out.
-		# 2026-09-15: 30 -> 45 after G6 measurements: with shields, fights take ~370 shells per 5v5
-		# match and 30-shell tanks spent a quarter of the match driving home to refill.
-		"ammo": 45,
+		# Weapons without an "ammo" key never run out. Rules R8 (2026-09-14): direct-fire guns lost their finite
+		# loads (cannon 45, autocannon 300, machine gun 600). In squad-vs-squad matches (~2 min, no respawns)
+		# unlimited ammo changed no outcome (Armor vs Balanced 26:6 finite, 25:7 unlimited) and resupply trips
+		# took 0-6% of brain time: it added readouts, not decisions. Artillery keeps its 24 rounds.
 		"heat_per_shot": 0.0,
 	},
 	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons". Fast fire, low penetration, modest range:
@@ -52,7 +51,6 @@ const PROFILES := {
 		"aim_tolerance_deg": 3.0,
 		"spread_deg": 1.0,
 		"shield_multiplier": 0.9,
-		"ammo": 300,
 		"heat_per_shot": 0.0,
 	},
 	# G7: the laser never runs out, but every pulse heats the tank, and a tank can't fire past its
@@ -95,7 +93,6 @@ const PROFILES := {
 		"reload": 0.2,
 		"aim_tolerance_deg": 4.0,
 		"spread_deg": 1.5,
-		"ammo": 600,
 		"heat_per_shot": 0.0,
 		"shield_multiplier": 0.6,
 	},
@@ -124,6 +121,7 @@ const PROFILES := {
 		"scatter_per_meter": 0.02,
 		# Horizontal speed: a 150 m shot is in the air for 3.75 s, so moving targets can dodge.
 		"flight_speed": 40.0,
+		# Finite (R8 kept it): a battery that shells all match long would be too strong; 24 rounds is ~2 minutes of fire.
 		"ammo": 24,
 		"heat_per_shot": 0.0,
 		"shield_multiplier": 1.0,
