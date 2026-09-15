@@ -179,3 +179,16 @@ Tests adjusted to derive from data (merge notes): `test_combat.gd`, `test_shield
   intent in reverse, creep, drift vs grip, coasting and braking, predict vs the real scout). Adjusted:
   `test_turrets.gd` (the IFV spins at full throttle: speed buys yaw). Sim baseline re-recorded on purpose:
   `glibc-2.43 67a9f2750b4a7f52`. determinism.md inventory updated.
+
+### X5 done: artillery deploys (2026-09-15)
+
+- `deploy_seconds` 2.5 / `pack_seconds` 2.0 on artillery (optional C1 keys; no other unit has them). A battery whose
+  command has no throttle or turn for `Tank.DEPLOY_SETTLE_TICKS` (15) while nearly stopped lowers its legs; it fires
+  only at `deploy_ratio` 1 (`Tank.is_deployed()`, also folded into `ready_to_fire()`); any drive command packs it up
+  first, and it can't move or fire until packed. Stop-and-go never deploys. The turret still turns while deployed.
+- **Why automatic, not an order verb:** today's brains already stop to shell; deploying on a held stop needs no new
+  AI or control work, and a player's move order naturally packs it. ai may add explicit "relocate now" logic.
+- Slot: `set_deployed(ratio)` every frame on the hull, turret, and weapon visuals of units that deploy
+  (slot_contracts.md). Tests: `tests/test_combat_deploy.gd`; the K2 mortar tests now wait for the legs.
+- Also fixed: `tools/remote.sh` picked the oldest Xwayland cookie on builder0 (a stale July session), so every native
+  rendering target (`skirmish-shots`, galleries) hung for 20+ minutes. It now takes the newest (`ls -t`).

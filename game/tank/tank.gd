@@ -24,6 +24,17 @@ signal died
 ## (wheels), and how much sideways slide the tires kill (1 = none, lower drifts).
 @export var braking := 14.0
 var locomotion := "tracks"
+## X5 (round 3): units with deploy_seconds > 0 (artillery) must stand still and lower their outriggers before firing,
+## and pack up before driving. 0 = packed (can drive), 1 = deployed (can fire). Simulating peer; visuals get
+## set_deployed(ratio) every frame.
+var deploy_ratio := 0.0
+var deploy_seconds := 0.0
+var pack_seconds := 0.0
+## A stop order must hold this many ticks before the legs start down (stop-and-go driving never deploys).
+const DEPLOY_SETTLE_TICKS := 15
+## Below this speed (m/s) a hull counts as stopped for deploying.
+const DEPLOY_MAX_SPEED := 0.3
+var _still_ticks := 0
 var min_turn_radius := 0.0
 var lateral_grip := 1.0
 @export var hull_turn_rate := deg_to_rad(80.0)
@@ -147,6 +158,9 @@ func apply_unit() -> void:
 	locomotion = String(Units.stat(unit_id, "locomotion", "tracks"))
 	min_turn_radius = stat.call("min_turn_radius_m", 0.0)
 	lateral_grip = stat.call("lateral_grip", 1.0)
+	deploy_seconds = stat.call("deploy_seconds", 0.0)
+	pack_seconds = stat.call("pack_seconds", 0.0)
+	deploy_ratio = 0.0
 	turret_turn_rate = deg_to_rad(stat.call("turret_turn_rate_deg"))
 	sight_radius = stat.call("sight_radius")
 	heat_capacity = stat.call("heat_capacity")
@@ -225,7 +239,8 @@ func _physics_process(delta: float) -> void:
 	# X4 (K3): drive through the same pure model ai plans with (TankMotion.step_in_place): tracks pivot, wheels need
 	# speed to turn and slide on low grip. Collisions stay with the physics body: the velocity after the slide feeds the
 	# next tick, so a wall eats a wheeled unit's momentum.
-	_drive(cmd, delta)
+	var drive_cmd := _deploy_step(cmd)
+	_drive(drive_cmd, delta)
 
 	var local_aim := to_local(cmd.aim_point)
 	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, gun_yaw_toward(local_aim), turret_turn_rate, delta)
@@ -248,7 +263,7 @@ func _physics_process(delta: float) -> void:
 				_burst_rounds_left -= 1
 				_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
 				_fire_round()
-		elif cmd.fire and _reload_ticks <= 0 and ammo != 0 and _heat_allows_shot(heat):
+		elif cmd.fire and _reload_ticks <= 0 and ammo != 0 and _heat_allows_shot(heat) and is_deployed():
 			_reload_ticks = _ticks_of(reload_seconds)
 			_burst_rounds_left = maxi(1, int(weapon.get("burst_count", 1))) - 1
 			_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
@@ -267,6 +282,36 @@ func _fire_round() -> void:
 
 static func _ticks_of(seconds: float) -> int:
 	return maxi(1, roundi(seconds * 60.0)) if seconds > 0.0 else 0
+
+
+## X5: advance deploying or packing for this tick's command; returns the command driving may use (throttle and turn
+## zeroed while the legs are down or moving).
+func _deploy_step(cmd: TankCommand) -> TankCommand:
+	if deploy_seconds <= 0.0:
+		return cmd
+	var wants_to_move := absf(cmd.throttle) > 0.05 or absf(cmd.turn) > 0.05
+	if wants_to_move:
+		_still_ticks = 0
+		if deploy_ratio > 0.0:
+			deploy_ratio = maxf(0.0, deploy_ratio - 1.0 / maxf(pack_seconds * 60.0, 1.0))
+	else:
+		if absf(_speed) < DEPLOY_MAX_SPEED:
+			_still_ticks += 1
+		if _still_ticks >= DEPLOY_SETTLE_TICKS:
+			deploy_ratio = minf(1.0, deploy_ratio + 1.0 / maxf(deploy_seconds * 60.0, 1.0))
+	# Snap float dust so "fully deployed" and "packed" are exact.
+	if deploy_ratio > 0.9999:
+		deploy_ratio = 1.0
+	elif deploy_ratio < 0.0001:
+		deploy_ratio = 0.0
+	if deploy_ratio > 0.0:
+		return TankCommand.new(0.0, 0.0, cmd.aim_point, cmd.fire)
+	return cmd
+
+
+## Whether this unit may fire: always for units that don't deploy; fully deployed for those that do.
+func is_deployed() -> bool:
+	return deploy_seconds <= 0.0 or deploy_ratio >= 1.0
 
 
 ## The motion state this tank steps every physics tick (TankMotion's K3 dictionary), built once per unit.
@@ -322,6 +367,9 @@ func _process(delta: float) -> void:
 		nameplate.text += "\n" + sync_intent
 	_weapon_visual.invoke("set_firing", [sync_firing and alive])
 	_weapon_visual.invoke("set_heat", [sync_heat])
+	if deploy_seconds > 0.0:
+		for visual: VisualSlot in [_hull_visual, _turret_visual, _weapon_visual]:
+			visual.invoke("set_deployed", [deploy_ratio])
 
 
 # ---- Rules hooks (called by Match on the simulating peer) --------------------------
@@ -375,6 +423,8 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	velocity = Vector3.ZERO
 	_speed = 0.0
 	_motion = {}
+	deploy_ratio = 0.0
+	_still_ticks = 0
 	_reload_ticks = 0
 	_burst_rounds_left = 0
 	health = max_health
@@ -401,7 +451,7 @@ func reload_fraction() -> float:
 ## Loaded, not out of ammo, and cool enough for one more shot. Valid on every peer.
 func ready_to_fire() -> bool:
 	var current_heat := heat if simulate else sync_heat * heat_capacity
-	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat)
+	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat) and is_deployed()
 
 
 ## Shells left (-1 = unlimited): exact on the simulating peer, replicated elsewhere.

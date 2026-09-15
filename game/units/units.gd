@@ -22,7 +22,8 @@ extends RefCounted
 ##   optional heat_capacity / heat_dissipation (only units whose weapon heats: the Lancer).
 ##   K3 (round 3): locomotion (LOCOMOTIONS), min_turn_radius_m (wheels: the tightest circle at any speed),
 ##   acceleration_mps2, braking_mps2, lateral_grip (0..1: the fraction of sideways slide the tires kill each tick; lower
-##   drifts). On wheels, hull_turn_rate_deg is the most yaw per second at any speed (TankMotion.step_in_place).
+##   drifts). Optional deploy_seconds / pack_seconds (X5: units that must stand and deploy before firing).
+##   On wheels, hull_turn_rate_deg is the most yaw per second at any speed (TankMotion.step_in_place).
 ##
 ## Keep existing keys stable. Renaming or removing one is a contract change (_agents/workstreams.md).
 
@@ -160,6 +161,10 @@ const PROFILES := {
 		"acceleration_mps2": 6.0,
 		"braking_mps2": 10.0,
 		"lateral_grip": 0.85,
+		# X5 (round 3): the crane carrier lowers its outriggers before firing (game_design.md). 2.5 s down, 2 s up: a
+		# scout that catches it moving or a battery forced to relocate under fire is a real decision.
+		"deploy_seconds": 2.5,
+		"pack_seconds": 2.0,
 		"weapon": "mortar",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,

@@ -181,7 +181,9 @@ func test_a_mortar_burst_reports_one_impact_with_its_victims() -> void:
 	target.global_position = Vector3(LANE_X, 0.0, 0.0)
 	_unshielded(target)
 	await wait_physics_frames(2)
-	await _hold_fire(battery, target.global_position, [eyes, target], 150)
+	# Artillery deploys first (combat X5): the legs, then a 60 m flight.
+	var deploy_ticks := roundi((float(Units.stat("artillery", "deploy_seconds", 0.0)) * 60.0)) + Tank.DEPLOY_SETTLE_TICKS
+	await _hold_fire(battery, target.global_position, [eyes, target], 150 + deploy_ticks)
 	assert_true(not events["fired"].is_empty(), "the round was lobbed")
 	assert_true(not events["impacts"].is_empty(), "and burst")
 	if events["fired"].is_empty() or events["impacts"].is_empty():
@@ -264,7 +266,7 @@ func test_a_unit_sees_a_mortar_round_that_will_land_on_it() -> void:
 	var fired := [false]
 	game_match.weapon_fired.connect(func(_event: Dictionary) -> void: fired[0] = true)
 	var ticks := 0
-	while not fired[0] and ticks < 120:
+	while not fired[0] and ticks < 120 + 60 * 4:  # deploying comes first (combat X5)
 		battery.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 		await tree.physics_frame
 		ticks += 1
