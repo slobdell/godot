@@ -37,6 +37,8 @@ const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
 const SMART_ATTACK_MULTIPLIER := 0.25
 ## The mouse resting this long on a unit shows its tooltip (seconds).
 const HOVER_SECONDS := 0.35
+## Order markers and waypoint lines farther than this outside the screen aren't drawn (pixels).
+const OFF_SCREEN_PX := 4000.0
 ## How long an order's acknowledgement marker shows (seconds).
 const ACK_SECONDS := 0.7
 ## A second tap on the same group number within this long centers the camera on it (seconds, wall time: UI only).
@@ -603,9 +605,11 @@ func _draw_waypoints() -> void:
 		for stop: Dictionary in route:
 			var to: Vector3 = stop["position"]
 			var color := _order_color(stop["kind"])
-			if not camera.is_position_behind(from) and not camera.is_position_behind(to):
-				draw_dashed_line(camera.unproject_position(from), camera.unproject_position(to), Color(color, 0.55), 1.5, 8.0)
-				draw_circle(camera.unproject_position(to), 3.0, Color(color, 0.8))
+			var a: Variant = _screen_point(from)
+			var b: Variant = _screen_point(to)
+			if a != null and b != null:
+				draw_dashed_line(a, b, Color(color, 0.55), 1.5, 8.0)
+				draw_circle(b, 3.0, Color(color, 0.8))
 			from = to
 
 
@@ -621,10 +625,23 @@ func _draw_ground_ring(center: Vector3, radius: float, color: Color, width: floa
 	for i in 25:
 		var angle := TAU * i / 24.0
 		var world := center + Vector3(cos(angle), 0.0, sin(angle)) * radius
-		if camera.is_position_behind(world):
+		var at: Variant = _screen_point(world)
+		if at == null:
 			return
-		points.append(camera.unproject_position(world))
+		points.append(at)
 	draw_polyline(points, color, width, true)
+
+
+## Where a ground point is on screen, or null when it can't be drawn sensibly: behind the camera, not finite (a camera
+## not set up yet unprojects to NaN), or far off screen (points near the camera plane project 30k–100k px out, where
+## the renderer loses precision: main 8dbe23e, the army-loop-smoke triangulation flake).
+func _screen_point(world: Vector3) -> Variant:
+	if camera == null or camera.is_position_behind(world):
+		return null
+	var at := camera.unproject_position(world)
+	if not at.is_finite() or not Rect2(Vector2.ZERO, size).grow(OFF_SCREEN_PX).has_point(at):
+		return null
+	return at
 
 
 ## A player-facing summary of a command for the HUD ("Tank: attack-move", "3 units: follow Scout").
