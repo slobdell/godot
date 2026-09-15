@@ -1,0 +1,25 @@
+{
+  "name": "Round 3 wreck husk concepts (assets stretch)",
+  "why": "The brief's stretch item: a wreck husk concept for the wreck a unit leaves when it dies (feel's wreck effects; the round-2 fires burn where kills happened). One shared husk that reads as 'a destroyed vehicle' from the RTS camera, scaled per unit, so no per-unit wreck art. Gated like every concept.",
+  "tail": "Full object in frame, three-quarter view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+  "est_3d": 15,
+  "factions": {
+    "arena": {
+      "label": "Arena kit",
+      "target": "prop.{role}",
+      "intro": "What a vehicle leaves behind: one burned-out husk, scaled to the unit that died, smoldering where the kill happened. Pick one, or none.",
+      "lead": "Photorealistic concept art of a destroyed arena death-race {role}, Death Race meets Mad Max, after a battle at night.",
+      "look": "Blackened and scorched steel, burned-off paint with ghosts of yellow-black hazard stripes, glowing orange embers inside the torn metal, a thin rising smoke wisp, no working lights, dead neon tubes hanging loose.",
+      "roles": {"wreck": "vehicle wreck"},
+      "role_notes": {"wreck": "Left where a unit dies (feel's wreck effects). One model for every unit, scaled to its hull, so it must read as a generic armored war machine."},
+      "concepts": [
+        {"id": "wreck_a", "role": "wreck", "title": "burned-out armored truck shell",
+         "subject": "The gutted shell of a heavy armored truck with slab armor: the cab caved in, the turret ring empty and the turret thrown off, wheels burned down to the rims, armor plates peeled back and buckled.",
+         "notes": "Reads clearly as 'that was a vehicle' from above; a long, truck-like footprint."},
+        {"id": "wreck_b", "role": "wreck", "title": "crushed scrap-heap hulk",
+         "subject": "A low crushed hulk of a war machine flattened into a heap: a twisted chassis frame, a bent cannon barrel sticking out, tangled chains and spikes, a broken road wheel on its side.",
+         "notes": "Lower and messier; fits any unit shape when scaled, but reads less as a specific vehicle."}
+      ]
+    }
+  }
+}

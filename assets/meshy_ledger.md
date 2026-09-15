@@ -72,3 +72,5 @@
 | 2026-09-15 08:20 | text-to-image nano-banana-pro | `01a0a426-5b2b-77cc-925f-fe48534d302e` | 9 | meshy/law_special_a2 | SUCCEEDED | 346 |
 | 2026-09-15 08:20 | text-to-image nano-banana-pro | `01a0a426-5b51-73a1-8200-8e38a144097d` | 9 | meshy/law_ifv_a2 | SUCCEEDED | 346 |
 | 2026-09-15 08:20 | text-to-image nano-banana-pro | `01a0a426-5b2c-747d-acf1-9f0d8dc09789` | 9 | meshy/gangs_tank_c2 | SUCCEEDED | 346 |
+| 2026-09-15 09:29 | text-to-image nano-banana-pro | `01a0a466-267a-7515-b832-0cb93b811465` | 9 | meshy/wreck_b | SUCCEEDED | 328 |
+| 2026-09-15 09:29 | text-to-image nano-banana-pro | `01a0a466-267c-72b2-b3b8-c8f08cc3c793` | 9 | meshy/wreck_a | SUCCEEDED | 328 |

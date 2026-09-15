@@ -83,6 +83,13 @@ class ConceptBatch(unittest.TestCase):
         self.assertEqual(scout["title"], "Scout A: stripped dune buggy")
         self.assertEqual(concept_batch.group_notes(SPEC), {"Road gangs · Tank": "The fuel-truck war rig."})
 
+    def test_a_group_can_target_a_prop_slot(self):
+        spec = json.loads(json.dumps(SPEC))
+        spec["factions"]["law"].update(target="prop.{role}", label="Arena kit")
+        law = [c for c in concept_batch.expand(spec) if c["faction"] == "law"][0]
+        self.assertEqual(law["target"], "prop.scout", "arena pieces fill prop slots, not unit slots")
+        self.assertEqual(law["group"], "Arena kit · Scout")
+
     def test_ids_must_be_unique_and_roles_known(self):
         bad = json.loads(json.dumps(SPEC))
         bad["factions"]["law"]["concepts"].append(dict(bad["factions"]["law"]["concepts"][0]))

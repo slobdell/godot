@@ -86,6 +86,10 @@ the spec is `assets/review/batches/round3_factions.json`.
 | The Law | https://claude.ai/artifact/TytWFgfoKRpRtbFSu2QazG | tank `law_tank_a` 8×8 assault gun, `_b` airport crash tender, `_c2` heavy transporter · scout `_a` sedan, `_b` pickup · IFV `_a2` 6×6 MRAP, `_b` retired APC · artillery `_a` gas rocket pod truck, `_b2` command van launcher · special `_a2` water cannon, `_b` sonic emitter |
 | The Syndicate | https://claude.ai/artifact/BBfezgVH9zmLmbCcYKtEL8 | tank `syndicate_tank_a` yacht hull, `_b` pebble monocoque, `_c` supercar · scout `_a` teardrop, `_b` manta wing · IFV `_a` pearl gunship, `_b` black-glass limousine · artillery `_a` petal launch cells, `_b` ring with missile wings · special `_a` shield projector, `_b` Lancer laser |
 
+**Wreck husk review (stretch), published 2026-09-15:** https://claude.ai/artifact/NXAg84GYQ8uUb7QsdghXvF: `wreck_a`
+burned-out armored truck shell, `wreck_b` crushed scrap-heap hulk (one model for every unit, scaled to its hull; spec
+`assets/review/batches/round3_wrecks.json`).
+
 Read back with `read_db` (collection `decisions`) per page, then `make art-apply-decisions DIR=… URL=…`.
 
 ## Status
@@ -115,7 +119,8 @@ review is the long pole; everything ungated ran while it waits)
   - Looked at every image before publishing; regenerated 5: three Law concepts had lettering baked in ("POLICE", "RIOT
     ROCKET TRUCK": the Law's look now forbids words and insignia), the Law water cannon read as a tank gun, and gang
     tank C was a near-copy of B.
-  - **Spend: 342 credits** (38 concept images), balance **346**. Every request is in `assets/meshy_ledger.md`.
+  - **Spend: 342 credits** (38 concept images), then 18 for the two wreck concepts: **360 this round, balance 328**.
+    Every request is in `assets/meshy_ledger.md`.
 - **X1 containers** (43faff4): `prop.container_20` / `prop.container_40` at ISO sizes, ~314 triangles each, built in code
   (`ContainerMesh`); one shared texture set (`make assets-containers`: CC0 ambientCG rust + chipped-paint erosion
   order, a stencil atlas); `container.gdshader` picks paint, rust (gathers along rails and bottoms), stencil and door
@@ -154,14 +159,27 @@ review is the long pole; everything ungated ran while it waits)
   with "X11 Display is not available". The windowed runs are short and take no input.
 
 **Questions for the lead**
-1. **Meshy balance:** 346 credits left. One 3D model per role is 15 × 15 = 225 credits, which leaves ~120 for retries
-   and the stretch concepts. A top-up may be needed before round 4's assets.
+1. **Meshy balance:** 328 credits left. One 3D model per role is 15 × 15 = 225 credits (+15 for a wreck), which leaves
+   ~90 for retries. A top-up may be needed before round 4's assets.
 2. **Ad art and copy** are placeholders (`tools/assets/build_ads.py`, `game/theme/arena_kit/ads/ads.json`): Syndicate Life
    "Coverage that outlives you", AquaCorp "Clean water. Every day you qualify.", Office of the Warden "Safer streets
    start with a report", Organ Futures "Invest in tonight's champions", The Freedom Program "Win your freedom tonight",
    and a live card. Keep, rewrite, or send real ad concepts through a review page?
 3. **Container stencil brands** (AquaCorp, Organ Futures, a WRECKERS gang tag, PRISON TRANSPORT, EVIDENCE, IMPOUND LOT 7,
    DETENTION STORAGE) are ours and fictional; say if any should change.
+
+**Proposed trip-ups** (for orientation.md; orchestrator's file)
+1. **A MultiMesh without `use_colors` zeroes vertex `COLOR` in the Compatibility renderer** (it multiplies by the
+   instance color). Container doors tagged by vertex color never opened; tags moved to UV2.
+2. **Headless runs don't keep MultiMesh instance data:** `get_instance_transform()` returns zeros under the dummy
+   renderer. Keep a CPU copy for tests (ContainerYard entries, NeonSigns placements metadata).
+3. **Nodes created in `var x := Node.new()` initializers leak if the owner is freed before `_ready`** (tests that
+   instantiate a scene and free it). Create them in `_ready`, or free orphans on `NOTIFICATION_PREDELETE`
+   (`cyber_vehicle.gd`).
+4. **A fresh worktree has no `assets/incoming/meshy/`:** three paid concept downloads failed on the missing folder.
+   `generate.py` now creates it and can re-download a finished task (`--concept-task`).
+5. **builder0 may have no logged-in desktop:** `make remote T=<screenshot target>` fails with "X11 Display is not
+   available"; run short rendering targets locally.
 
 **Requests to other streams**
 - **combat (layouts, C5):** obstacle types `container_20` [6.06, 2.59, 2.44] and `container_40` [12.19, 2.59, 2.44] with

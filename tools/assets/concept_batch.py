@@ -56,7 +56,7 @@ def expand(spec: dict) -> list:
             concepts.append({
                 "id": concept["id"], "faction": faction_id, "role": role,
                 "group": f"{faction['label']} · {_role_label(role)}",
-                "target": f"unit.{faction_id}.{role}",
+                "target": faction.get("target", "unit.{faction}.{role}").format(faction=faction_id, role=role),
                 "title": f"{_role_label(role)} {letter}: {concept['title']}",
                 "notes": concept.get("notes", ""),
                 "est_3d": int(concept.get("est_3d", spec.get("est_3d", 15))),
