@@ -124,3 +124,21 @@ func test_the_info_line_teaches_the_next_order() -> void:
 func teardown() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	super.teardown()
+
+
+func test_unit_icons_skip_positions_a_camera_could_not_project() -> void:
+	# The army loop's headless skirmish unprojected a vehicle to NaN on its first frame, and drawing that icon logged
+	# "Invalid polygon data, triangulation failed" (an engine error fails this test).
+	var canvas := Control.new()
+	var drawn := [0]
+	canvas.draw.connect(func() -> void:
+		for role in ["tank", "scout", "ifv", "artillery", "lancer"]:
+			CommandIcons.draw_unit(canvas, role, Vector2(NAN, NAN), 20.0, Color.WHITE)
+			CommandIcons.draw_unit(canvas, role, Vector2(50, 50), 20.0, Color.WHITE, NAN)
+			CommandIcons.draw_unit(canvas, role, Vector2(50, 50), 20.0, Color.WHITE, 0.3)
+			drawn[0] += 1)
+	add_to_tree(canvas)
+	canvas.queue_redraw()
+	await tree.process_frame
+	await tree.process_frame
+	assert_eq(drawn[0], 5, "the icons were drawn")

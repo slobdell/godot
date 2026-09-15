@@ -61,6 +61,10 @@ static func role_of(tank: Tank) -> String:
 ## (radians, 0 = up the screen, positive = clockwise).
 static func draw_unit(canvas: CanvasItem, role: String, at: Vector2, size: float, color: Color, heading := 0.0,
 		outline := Color(0, 0, 0, 0.75)) -> void:
+	# A camera that isn't set up yet (headless runs, the first frame after a mode switch) unprojects to NaN, and a
+	# degenerate polygon makes the renderer log a triangulation error: draw nothing instead.
+	if not (at.is_finite() and is_finite(heading) and size >= 1.0):
+		return
 	var s := size / 2.0
 	var xf := Transform2D(heading, at)
 	var body: PackedVector2Array
