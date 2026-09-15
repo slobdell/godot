@@ -10,11 +10,16 @@ extends RefCounted
 ##
 ## Geometry (Dictionary): "distance" m, "face" ("front"/"side"/"rear": the defender's face toward the attacker),
 ## "angular_speed_deg" (how fast the defender sweeps around the attacker, deg/s), "in_arc" (fixed mounts: is the
-## defender inside the fire arc right now; default true).
+## defender inside the fire arc right now; default true), "weak_spot" (rounds strike the engine deck: within the
+## weak-spot arc of dead astern; only counts with face "rear").
 
 ## Mirrors rules' Armor.penetration_multiplier (catalog v2).
 const PENETRATION_FLOOR := 0.05
 const PENETRATION_CAP := 1.5
+## Mirrors Armor's round-3 engine deck: cos(WEAK_SPOT_ARC_DEG = 25°) (a constant, no runtime trig) and the deck's share of
+## the rear armor.
+const WEAK_SPOT_COS := 0.906307787
+const WEAK_SPOT_ARMOR_FRACTION := 0.5
 const SHIELD_FACING := {"front": 0.7, "side": 1.0, "rear": 1.4}
 ## A hull's half width (m): what a spreading gun has to hit.
 const TARGET_HALF_WIDTH := 1.2
@@ -42,15 +47,36 @@ static func effective_dps(attacker: Dictionary, weapon: Dictionary, defender: Di
 	if distance > float(weapon.get("range", 0.0)) or distance < float(weapon.get("min_range", 0.0)):
 		return 0.0
 	var reload := maxf(float(weapon.get("reload", 1.0)), 0.05)
-	var dps := float(weapon["damage_per_second"]) if weapon.has("damage_per_second") else float(weapon.get("damage", 0.0)) / reload
+	var per_pull := float(weapon.get("damage", 0.0)) * maxf(float(weapon.get("burst_count", 1)), 1.0)
+	var dps := float(weapon["damage_per_second"]) if weapon.has("damage_per_second") else per_pull / reload
 	var face := String(geometry.get("face", "front"))
 	if on_shield:
 		dps *= float(weapon.get("shield_multiplier", 1.0)) * float(SHIELD_FACING.get(face, 1.0))
 	elif weapon.has("penetration") and defender.has("armor"):
-		dps *= penetration_multiplier(float(weapon["penetration"]), float(defender["armor"].get(face, 1.0)))
+		var thickness := float(defender["armor"].get(face, 1.0))
+		if face == "rear" and geometry.get("weak_spot", false):
+			thickness *= WEAK_SPOT_ARMOR_FRACTION
+		dps *= penetration_multiplier(float(weapon["penetration"]), thickness)
 	elif weapon.has("armor"):
 		dps *= float(weapon["armor"].get(face, 1.0))
 	return dps * hit_chance(weapon, distance) * tracking(attacker, weapon, geometry)
+
+
+## Whether a round travelling along `shell_direction` strikes the engine deck of a hull facing `hull_forward` (mirrors
+## Armor.is_weak_spot without trig).
+static func is_weak_spot(hull_forward: Vector3, shell_direction: Vector3) -> bool:
+	var forward := Vector2(hull_forward.x, hull_forward.z).normalized()
+	return forward.dot(Vector2(shell_direction.x, shell_direction.z).normalized()) >= WEAK_SPOT_COS
+
+
+## How much more of `weapon`'s damage gets through `defender`'s engine deck than its rear plate (1 = no gain: heavy
+## rounds already at the cap). Brains seek the deck when this is worth the drive (TankBrain.DECK_SEEK_GAIN).
+static func deck_gain(weapon: Dictionary, defender: Dictionary) -> float:
+	if not weapon.has("penetration") or not defender.has("armor") or weapon.get("kind", -1) == Weapons.Kind.ARC:
+		return 1.0
+	var penetration := float(weapon["penetration"])
+	var rear := float(defender["armor"].get("rear", 1.0))
+	return penetration_multiplier(penetration, rear * WEAK_SPOT_ARMOR_FRACTION) / penetration_multiplier(penetration, rear)
 
 
 ## Rough chance a round hits a hull at `distance`: its angular half width (small-angle: width / distance, radians)

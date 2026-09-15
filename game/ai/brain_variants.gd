@@ -20,6 +20,8 @@ extends RefCounted
 ##   dodge             steer clear of incoming rounds while fighting on the move (round-3 X3, IncomingFire)
 ##   reload_windows    peek from cover and short-halt while a slow enemy gun reloads (round-3 X3)
 ##   short_halt_reload (float) guns reloading at least this long (s) halt to fire while fighting on the move (default 1.5)
+##   weak_spots        seek engine decks (combat's request b): flank astern, and orbit to the stern and burst in while a
+##                     slow gun reloads, when the deck lets my rounds through (TankBrain.DECK_SEEK_GAIN)
 ##   short_halt_lead   (float) how long (s) before the gun is loaded the halt starts, after braking (default 0.15)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
@@ -37,6 +39,9 @@ const PROFILES := {
 	# Probe for combat's round-3 weapons (preview of CP2): x3 with matchup-aware targets. Shoot-and-scoot (short_halt_lead
 	# 1.2 / 2.0 s) and halting only 3 s+ reloads (short_halt_reload 3.0) were measured no better and removed.
 	"x3m": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": true, "combat_motion": true, "dodge": true},
+	# After CP2 (combat's request b): x4 seeking engine decks, without and with matchup-aware targets (orbiting needs them).
+	"x4w": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "weak_spots": true},
+	"x4mw": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": true, "combat_motion": true, "dodge": true, "reload_windows": true, "weak_spots": true},
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
 	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": 9},

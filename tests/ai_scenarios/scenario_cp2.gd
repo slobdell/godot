@@ -56,6 +56,30 @@ func test_artillery_digs_in_and_shells_a_spotted_target() -> void:
 	assert_true(s.shots_by(battery) >= 3, "the battery digs in and fires (%d rounds)" % s.shots_by(battery))
 
 
+## Combat's request (d): a battery stays dug in while its target drives across its range (the turret follows it);
+## re-facing the hull every think packed it up again.
+func test_artillery_stays_dug_in_on_a_moving_target() -> void:
+	var s := AiScenario.create(self)
+	var target := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-110, 0, -40), PI, {"type": "move_to", "x": -30.0, "z": -40.0},
+			{"type": "hold_fire"})
+	AiScenario.make_durable(target)
+	var spotter := s.dummy(Match.Team.GREEN, "Green_Scout_1", Vector3(-80, 0, 0), 0.0, "scout")
+	AiScenario.make_durable(spotter)
+	var battery := s.brain_tank(Match.Team.GREEN, "Green_Battery_1", Vector3(-100, 0, 60), 0.0, {}, "artillery")
+	AiScenario.make_durable(battery)
+	var packs := 0
+	var was_deployed := false
+	await s.start()
+	for tick in 60 * 25:
+		await s.step()
+		if was_deployed and battery.deploy_ratio < 1.0:
+			packs += 1
+		was_deployed = battery.deploy_ratio >= 1.0
+	print("MEASURE ai_cp2_artillery_moving_target packed up %d times, %d rounds, battery moved to %s" % [packs,
+			s.shots_by(battery), battery.global_position.snapped(Vector3.ONE)])
+	assert_true(packs <= 1, "it stays dug in while the target crosses its range (packed up %d times)" % packs)
+	assert_true(s.shots_by(battery) >= 3, "and keeps shelling it (%d rounds)" % s.shots_by(battery))
+
 func test_a_scout_guns_down_a_lancer() -> void:
 	var s := AiScenario.create(self)
 	var lancer := s.shooter(Match.Team.RUST, "Rust_Lancer_1", Vector3(-100, 0, -20), PI, {"type": "stop"},
@@ -66,6 +90,28 @@ func test_a_scout_guns_down_a_lancer() -> void:
 	await s.start()
 	for tick in 60 * 20:
 		await s.step()
-	print("MEASURE ai_cp2_scout_vs_lancer scout shots %d, lancer lost %d" % [s.shots_by(scout),
+	print("MEASURE ai_cp2_scout_vs_lancer scout shots %d (%d hits, %d on the deck), lancer lost %d" % [s.shots_by(scout),
+			s.game_match.stats["hits"][Match.Team.GREEN], s.game_match.stats["weak_spot_hits"][Match.Team.GREEN],
 			1_000_000 - lancer.health + int(lancer.max_shield - lancer.shield)])
 	assert_true(s.shots_by(scout) >= 30, "a scout closes on a Lancer (its counter) and fires (%d rounds)" % s.shots_by(scout))
+
+
+## Combat's request (b): a scout's machine gun barely scratches a tank's plates (×0.05 on the front) but gets through
+## its engine deck (×1.13), so a scout hunting a tank works its way dead astern and bursts in while the cannon reloads.
+## Orbiting is the matchup-aware brains' move (x4mw); without weak_spots (x3m), 19 of 46 hits landed on the deck.
+func test_a_scout_works_onto_a_tanks_engine_deck() -> void:
+	var s := AiScenario.create(self)
+	BrainVariants.use(Match.Team.GREEN, "x4mw")
+	var tank := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-100, 0, -20), PI, {"type": "stop"}, {"type": "fire_at_will"})
+	AiScenario.make_durable(tank)
+	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-70, 0, 20), 0.0, {}, "scout")
+	AiScenario.make_durable(scout)
+	await s.start()
+	for tick in 60 * 25:
+		await s.step()
+	var deck: int = s.game_match.stats["weak_spot_hits"][Match.Team.GREEN]
+	var hits: int = s.game_match.stats["hits"][Match.Team.GREEN]
+	print("MEASURE ai_cp2_scout_engine_deck %d of %d hits on the deck, %d shots, tank lost %d" % [deck, hits, s.shots_by(scout),
+			1_000_000 - tank.health + int(tank.max_shield - tank.shield)])
+	assert_true(deck >= 40 and deck * 2 >= hits, "the scout works onto the engine deck (%d deck hits of %d)" % [deck, hits])
+	BrainVariants.reset()

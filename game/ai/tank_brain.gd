@@ -61,6 +61,16 @@ const FLANKER_APPETITE := 0.72
 ## A5 matchups: a fixed-gun unit circles a turret that turns slower than this orbit sweeps (radius in meters, its
 ## speed / radius = the angular speed it forces on the turret), bursting in when that turret points away.
 const ORBIT_RADIUS := 11.0
+## Combat's request (b), weak spots: a gun that gets at least this much more through a target's engine deck than its
+## rear plate (Matchups.deck_gain: a scout's machine gun on a tank, ×1.8) circles to its stern before bursting in, and
+## flanks astern rather than abeam. (Attack runs that circled to the stern first were measured worse and dropped: a
+## scout on a Lancer fired 24 rounds instead of 37 and hit the deck 2 times instead of 6; a straight run's break-away
+## already passes astern.)
+const DECK_SEEK_GAIN := 1.4
+## An orbiting fixed gun bursts in while the target's gun needs at least this long to reload (seconds), wherever it points.
+const ORBIT_RELOAD_WINDOW := 1.0
+## cos 45° astern (Armor.ARC_DEG): inside it I see the target's rear.
+const COS_ASTERN := 0.70710678
 ## ...when the estimated duel advantage is at least ORBIT_START_ADVANTAGE, and keeps orbiting down to ORBIT_KEEP_ADVANTAGE.
 const ORBIT_START_ADVANTAGE := 0.9
 const ORBIT_KEEP_ADVANTAGE := 0.6
@@ -1301,6 +1311,7 @@ static func matchups_for(s: Dictionary) -> Dictionary:
 		var their_forward: Vector3 = c["forward"]
 		var my_face: String = Armor.FACING_NAMES[Armor.facing(my_forward, bearing)]
 		var mine := {"distance": distance, "face": c["exposed_face"], "angular_speed_deg": omega_deg,
+				"weak_spot": Matchups.is_weak_spot(their_forward, bearing),
 				"in_arc": not fixed or Vector2(my_forward.x, my_forward.z).normalized().dot(Vector2(bearing.x, bearing.z)) >= half_arc_cos}
 		var their_arc_cos := 1.0 - 0.5 * pow(deg_to_rad(float(their_profile.get("fire_arc_deg", 360.0)) / 2.0), 2.0)
 		var theirs := {"distance": distance, "face": my_face, "angular_speed_deg": omega_deg,
@@ -1316,8 +1327,9 @@ static func matchups_for(s: Dictionary) -> Dictionary:
 			# Orbiting and bursting in: up close, on its side (or its rear if that's what it shows), in my arc, and
 			# sweeping around its turret at the orbit's rate.
 			var close := minf(distance, ORBIT_RADIUS + 5.0)
-			mine = {"distance": close, "face": "rear" if c["exposed_face"] == "rear" else "side", "angular_speed_deg": orbit_rate_deg,
-					"in_arc": true}
+			var deck: bool = s.get("features", {}).get("weak_spots", false) and Matchups.deck_gain(weapon, their_profile) >= DECK_SEEK_GAIN
+			mine = {"distance": close, "face": "rear" if c["exposed_face"] == "rear" or deck else "side",
+					"angular_speed_deg": orbit_rate_deg, "in_arc": true, "weak_spot": deck}
 			theirs["distance"] = close
 			theirs["face"] = "side"
 			theirs["angular_speed_deg"] = orbit_rate_deg
@@ -1405,6 +1417,11 @@ func _act(s: Dictionary) -> void:
 				side = -side
 			var standoff := clampf((float(weapon["preferred_min"]) + float(weapon["preferred_max"])) / 2.0, 8.0, 45.0)
 			var point: Vector3 = contact["position"] + side * standoff - contact["forward"] * (0.3 * standoff)
+			if s.get("features", {}).get("weak_spots", false) \
+					and Matchups.deck_gain(weapon, Units.profile(String(contact.get("unit", "")))) >= DECK_SEEK_GAIN:
+				# Its engine deck lets my rounds through: come in from astern.
+				point = contact["position"] + side * (0.25 * standoff) - contact["forward"] * standoff
+				why = TankBrain._join(why, "for its engine deck")
 			var from_target: Vector3 = my_position - contact["position"]
 			if s.get("features", {}).get("combat_motion", false) \
 					and (contact["forward"] as Vector3).dot(from_target) > FLANK_WIDE_COS * from_target.length():
@@ -1444,9 +1461,17 @@ func _act(s: Dictionary) -> void:
 			# Where its gun points relative to me: cos of the angle (dot product).
 			var gun: Vector3 = contact["turret_forward"]
 			var gun_on_me := Vector2(gun.x, gun.z).normalized().dot(Vector2(out.x, out.z))
-			if _bursting and (gun_on_me > ORBIT_BREAK_COS or distance < ORBIT_BREAK_RANGE):
+			# Weak spots: where its hull points relative to me (-1 = I'm dead astern).
+			var hull: Vector3 = contact["forward"]
+			var hull_on_me := Vector2(hull.x, hull.z).normalized().dot(Vector2(out.x, out.z))
+			var weak_spots: bool = s.get("features", {}).get("weak_spots", false)
+			var deck := weak_spots and Matchups.deck_gain(weapon, Units.profile(String(contact.get("unit", "")))) >= DECK_SEEK_GAIN
+			# Its slow gun still reloading (a 5 s cannon): the run is on even with the turret on me.
+			var reloading := weak_spots and _gun_ready_in(String(contact["name"])) >= ORBIT_RELOAD_WINDOW
+			if _bursting and ((gun_on_me > ORBIT_BREAK_COS and not reloading) or distance < ORBIT_BREAK_RANGE):
 				_bursting = false
-			elif not _bursting and gun_on_me < ORBIT_BURST_COS and distance <= ORBIT_BURST_RANGE:
+			elif not _bursting and (gun_on_me < ORBIT_BURST_COS or reloading) and distance <= ORBIT_BURST_RANGE \
+					and (not deck or hull_on_me <= -COS_ASTERN):
 				_bursting = true
 			if _bursting:
 				# Swing the hull (and the fixed gun) onto it and fire until its turret catches up.
@@ -1456,6 +1481,11 @@ func _act(s: Dictionary) -> void:
 				why = TankBrain._join(why, "circling its slow turret")
 				var side := 1.0 if think_offset % 2 == 0 else -1.0
 				var tangent := Vector3(-out.z, 0.0, out.x) * side
+				if deck and hull_on_me > -COS_ASTERN:
+					# Circle the short way round to its stern.
+					why = TankBrain._join(why, "for its engine deck")
+					if tangent.dot(hull) > 0.0:
+						tangent = -tangent
 				var point: Vector3 = target_position + (out * ORBIT_LEAD_COS + tangent * ORBIT_LEAD_SIN) * ORBIT_RADIUS
 				_order_move(_move_to(point, false, 1.0, 2.0))
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
