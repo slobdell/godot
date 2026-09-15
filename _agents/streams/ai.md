@@ -82,7 +82,10 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 
 ### Plan and state
 
-1. **X1 orders always win** — **done**; checked against control's real `Orders` in the preview.
+1. **X1 orders always win** — **done and verified at CP1** (main 07e07bf merged 2026-09-15): `make remote T=check` 509
+   passed, scenarios 27 passed + 1 pending, now running against control's real `Orders` (AiScenario.orders() prefers it;
+   StubOrders is only a fallback). Response worst 1 tick over 14 orders; control's executor stands down for brains
+   (`TankBrain.EXECUTES_ORDERS`).
 2. **X2 movement while fighting** — **done** (CombatMotion: strafe, weave, attack runs; wheels steering for K3).
 3. **X3 evasion and weak spots** — **done except the dodge bar**: busy-target flanking, front armor toward every gun,
    dodging (`IncomingFire`, K2 when present), reload windows and baiting (opt-in x4). The "dodge ≥ 35% of tank shells"
@@ -144,7 +147,8 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
    stabilization or a softer moving-fire spread). If the CPU feels weak in playtests, `--green-brain=a6 --rust-brain=a6`.
 
 **Requests to other streams:**
-- **control:** turn the CPU commander on by default in skirmish (`skirmish_mode.gd` creates it only with `--commander`;
+- **control:** CP1 is in: `OrderExecutor` now does nothing for brain units (`TankBrain.EXECUTES_ORDERS`), so it can be
+  deleted when convenient. Turn the CPU commander on by default in skirmish (`skirmish_mode.gd` creates it only with `--commander`;
   v6 meets X5's bar). Optional: player words for `TankBrain.ORDER_ONLY_OPTIONS` (MOVE, FOLLOW, PURSUE: "Moving",
   "Following", "Closing in"); cull off-screen icons in `tactical_map.gd` before drawing (the 16384 px guard is a backstop).
 - **combat:** (1) **turret stabilization** (a hull turning at 80°/s drags a 50°/s turret off its target; moving tanks lose
@@ -167,7 +171,7 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   commander: `VARIANTS=x3,x3+v6 LADDER_DOCTRINE=res://tests/ai_scenarios/armies/balanced.json`.
 
 **Next steps:**
-1. After CP1+CP2 merge: `git merge main`, rerun `make remote T=check`, the scenarios, the brain ladder (a6, x3, x3m, x4)
+1. After CP2 merges (CP1 is in): `git merge main`, rerun `make remote T=check`, the scenarios, the brain ladder (a6, x3, x3m, x4)
    and the commander ladder; re-tune x3 for combat's final weapons (especially combined_arms); re-test the dodge bar.
 2. If combat stabilizes turrets or softens moving spread, re-run the x3 vs a6 ladder first: that's the expected fix.
 3. Unit-vs-unit matchup matrix with the final champion (combat's `make matchups`).
