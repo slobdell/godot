@@ -287,10 +287,6 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
   Xwayland's auth file), so no merge note remains for it.
 
 ### Known issues
-- **Blocking `make check` since merging main's 8dbe23e (not combat code):** main's new
-  `test_command_icons::test_unit_icons_skip_positions_a_camera_could_not_project` fails deterministically on builder0
-  ("a collinear triangle is not drawn"); `game/ui/` and that test are identical to main. Reported to the orchestrator.
-  The last green combat commit is d921ffb/26f2476 (full check), and 887e18e (merge of 7dc7bdc) was green too.
 - Lancer > tank is a coin flip (50%); scouts win only vs artillery; artillery wins nothing (see questions).
 - `make skirmish-shots` at 35 s wall clock on builder0 rarely catches a shell in flight at that zoom; the timelines
   (`make duel`) are the reliable evidence for shells, bursts, and streams.
