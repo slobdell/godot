@@ -10,6 +10,11 @@ extends SceneTree
 ##                          --tint/--team-emissive/--heat/--emissive materials are kept separate
 ##             [--split=tank]  a whole generated unit in one mesh: split into islands and label them
 ##                             hull_N / turret_N / cannon_N, then pick a slot's parts with --include/--exclude
+##             [--split=regions --turret-box=x0,y0,z0,x1,y1,z1 --cannon-box=…]  label islands by position instead
+##                             (fractions of the oriented bounds; z 0 = front): units the tank heuristic can't read
+##             [--place-from=unit.<id>.hull [--center] [--shift-from=unit.<id>.turret]]  a unit's turret/weapon keeps
+##                             its generated placement on that hull, in turret space (--center: onto the pivot; --turn=180: about it;
+##                             --stretch: a barrel keeps its breech and reaches the gameplay muzzle point)
 ##             [--repeat=5x1x2]  tile the selection along x/y/z (after the axis remap) before fitting
 ##             [--deck-from=tank.hull]  raise turret/cannon onto that hull's roof when it is taller than the default deck
 ##             [--emission-energy=<f>]  emission energy for emissive materials (generated maps come in dim)
@@ -21,7 +26,7 @@ extends SceneTree
 ##             [--source=<url or path>] [--license=<text>] [--credit=<text>]
 ##             → game/theme/<theme>/generated/<slot file>.glb + .tscn wrapper + manifest.json entry
 ##   check     [--theme=<theme>]                enforce contracts on generated themes (exit 1 on errors)
-##   textures  --theme=<theme>                  apply the web/mobile texture import policy to extracted maps
+##   textures  --theme=<theme> | --dir=res://…  apply the web/mobile texture import policy to extracted maps / a folder
 ##   slots                                      print the contract table
 
 
@@ -37,7 +42,8 @@ func _initialize() -> void:
 		"check":
 			status = _check(args)
 		"textures":
-			for file in AssetIO.apply_texture_policy(args.get("theme", "")):
+			var changed := AssetIO.apply_texture_policy_dir(args["dir"]) if args.has("dir") else AssetIO.apply_texture_policy(args.get("theme", ""))
+			for file in changed:
 				print("texture policy applied: %s" % file)
 		"slots":
 			for slot in AssetContracts.all_slots():
@@ -74,6 +80,14 @@ func _normalize(args: Dictionary) -> int:
 		var islands := AssetSplitter.split_islands(source)
 		var counts := AssetSplitter.label_tank(source, args.get("forward", "+z"), args.get("up", "+y"))
 		print("split into %d islands: %d hull, %d turret, %d cannon" % [islands, counts["hull"], counts["turret"], counts["cannon"]])
+	elif args.get("split", "") == "regions":
+		var islands := AssetSplitter.split_islands(source)
+		var regions := {}
+		for label in ["cannon", "turret"]:  # cannon first: a gun inside the turret's box stays the gun
+			if args.has(label + "-box"):
+				regions[label] = AssetSplitter.parse_box(args[label + "-box"])
+		var counts := AssetSplitter.label_regions(source, args.get("forward", "+z"), args.get("up", "+y"), regions)
+		print("split into %d islands by region: %s" % [islands, counts])
 	var manifest := AssetIO.read_manifest(theme)
 	var options := {
 		"forward": args.get("forward", "+z"), "up": args.get("up", "+y"),
@@ -103,6 +117,23 @@ func _normalize(args: Dictionary) -> int:
 			printerr("--attach-to=%s: normalize that slot first" % args["attach-to"])
 			return 1
 		options["attach"] = {"scale": float(turret["options"]["fitted_scale"]), "offset": Vector3(placed[0], placed[1], placed[2])}
+	if args.has("place-from"):
+		var hull: Dictionary = manifest["slots"].get(args["place-from"], {})
+		var placed: Array = hull.get("options", {}).get("fitted_offset", [])
+		var unit := AssetContracts.unit_of(args["place-from"])
+		if placed.size() != 3 or unit == "":
+			printerr("--place-from=%s: normalize that unit hull first" % args["place-from"])
+			return 1
+		var pivot := AssetContracts.unit_pivot(unit)
+		options["place"] = {"hull_scale": float(hull["options"]["fitted_scale"]), "hull_offset": Vector3(placed[0], placed[1], placed[2]),
+				"pivot": pivot["pivot"], "turret_scale": pivot["turret_scale"], "center_xz": args.has("center"),
+				"turn_deg": float(args.get("turn", "0")), "stretch": args.has("stretch")}
+		var contract_now := AssetContracts.get_contract(slot)
+		if String(contract_now.get("anchor", "")) == "barrel":
+			options["place"]["muzzle_z"] = float(contract_now["barrel_back"]) - (contract_now["guide"] as Vector3).z
+		if args.has("shift-from"):
+			var shift: Array = manifest["slots"].get(args["shift-from"], {}).get("options", {}).get("shift", [0, 0, 0])
+			options["place"]["shift"] = Vector3(shift[0], shift[1], shift[2])
 	if args.has("scale-from"):
 		var other: Dictionary = manifest["slots"].get(args["scale-from"], {})
 		options["scale"] = float(other.get("options", {}).get("fitted_scale", 0.0))
@@ -159,6 +190,12 @@ func _normalize(args: Dictionary) -> int:
 	if args.has("emission-map"):
 		options["emission_map"] = args["emission-map"]
 	options["fitted_scale"] = (result["scale"] as Vector3).x
+	var shift_applied: Vector3 = result["shift"]
+	options["shift"] = [snappedf(shift_applied.x, 0.0001), 0.0, snappedf(shift_applied.z, 0.0001)]
+	if options.has("place"):
+		var place: Dictionary = options["place"]
+		options["place"] = {"from": args["place-from"], "center_xz": place["center_xz"], "turret_scale": place["turret_scale"],
+				"turn_deg": place["turn_deg"], "stretch": place["stretch"]}
 	var offset: Vector3 = result["offset"]
 	options["fitted_offset"] = [snappedf(offset.x, 0.0001), snappedf(offset.y, 0.0001), snappedf(offset.z, 0.0001)]
 	if options.has("attach"):
@@ -174,7 +211,8 @@ func _normalize(args: Dictionary) -> int:
 	}
 	AssetIO.write_manifest(theme, manifest)
 	print("wrote %s and %s:\n%s" % [glb_path, scene_path, AssetInspector.summary(after)])
-	return _print_result(AssetChecker.check_report(after, slot, float(options.get("raise", 0.0)), options.has("attach")), slot)
+	return _print_result(AssetChecker.check_report(after, slot, float(options.get("raise", 0.0)), options.has("attach"),
+			options.get("place", {})), slot)
 
 
 func _check(args: Dictionary) -> int:

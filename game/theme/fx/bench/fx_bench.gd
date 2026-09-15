@@ -41,6 +41,11 @@ const CONFIGS := {
 	"naive": {"naive": true, "lights": 0},
 	"no_lasers": {"lasers": false},
 	"no_shields": {"shields": false},
+	# Art X2/X3: the textured floor against the round-1 procedural wet asphalt and a flat material.
+	"ground_wet": {"ground": "wet"},
+	"ground_flat": {"ground": "flat"},
+	"ground_lite": {"ground": "lite"},
+	"tier_low_ground_wet": {"tier": FxQuality.Tier.LOW, "ground": "wet"},
 	"tier_low": {"tier": FxQuality.Tier.LOW},
 	"tier_medium": {"tier": FxQuality.Tier.MEDIUM},
 	"tier_high": {"tier": FxQuality.Tier.HIGH},
@@ -208,6 +213,8 @@ func _apply(config: Dictionary) -> void:
 	var dressing := _arena.get_node_or_null("Dressing") as VisualSlot
 	if dressing != null:
 		dressing.invoke("set_chunked", [config.get("chunked", true)])
+		var tier_ground := "lite" if int(config.get("tier", FxQuality.Tier.HIGH)) < FxQuality.Tier.HIGH else "textured"
+		dressing.invoke("set_ground_style", [config.get("ground", tier_ground)])
 	var slots := _default_slots.duplicate()
 	if config.get("naive", false):
 		slots["fx.shell"] = NAIVE_SHELL

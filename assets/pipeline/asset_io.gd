@@ -82,8 +82,12 @@ static func texture_policy(width: int, height: int) -> int:
 ## Rewrites the .import of every extracted texture in a generated theme to follow the policy.
 ## Returns the files changed (re-run `godot --import` afterwards).
 static func apply_texture_policy(theme: String) -> PackedStringArray:
+	return apply_texture_policy_dir(generated_dir(theme))
+
+
+## The same policy for any folder of textures (e.g. the arena ground set). Files named *normal* import as normal maps.
+static func apply_texture_policy_dir(dir: String) -> PackedStringArray:
 	var changed := PackedStringArray()
-	var dir := generated_dir(theme)
 	for file in DirAccess.get_files_at(dir):
 		if not file.ends_with(".png"):
 			continue
@@ -93,9 +97,12 @@ static func apply_texture_policy(theme: String) -> PackedStringArray:
 		if image == null or config.load(import_path) != OK:
 			continue
 		var mode := texture_policy(image.get_width(), image.get_height())
-		if int(config.get_value("params", "compress/mode", 0)) != mode or int(config.get_value("params", "detect_3d/compress_to", 1)) != 0:
+		var normal_map := 1 if file.contains("normal") else int(config.get_value("params", "compress/normal_map", 0))
+		if int(config.get_value("params", "compress/mode", 0)) != mode or int(config.get_value("params", "detect_3d/compress_to", 1)) != 0 \
+				or int(config.get_value("params", "compress/normal_map", 0)) != normal_map:
 			config.set_value("params", "compress/mode", mode)
 			config.set_value("params", "detect_3d/compress_to", 0)  # no silent re-import by the editor later
+			config.set_value("params", "compress/normal_map", normal_map)
 			config.save(import_path)
 			changed.append(file)
 	return changed
@@ -177,6 +184,6 @@ static func theme_slots(theme: String) -> Dictionary:
 	var slots := {}
 	var manifest := read_manifest(theme)
 	for slot in manifest["slots"]:
-		if AssetContracts.SLOTS.has(slot):
+		if AssetContracts.SLOTS.has(slot) or AssetContracts.unit_of(slot) != "":
 			slots[slot] = "%s/%s" % [generated_dir(theme), manifest["slots"][slot]["scene"]]
 	return slots

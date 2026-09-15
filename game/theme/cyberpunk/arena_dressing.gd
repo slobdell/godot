@@ -1,5 +1,6 @@
 extends "res://game/theme/cyberpunk/cyber_prop.gd"
-## Cyberpunk arena dressing: a chunked wet-asphalt floor, blast-barrier perimeter walls with neon
+## Cyberpunk arena dressing: a chunked textured floor (asphalt, concrete, hazard paint, drains) lit by painted
+## floodlight pools (FLOODLIGHTS, art X2), blast-barrier perimeter walls with neon
 ## light bars, corner floodlight towers throwing fake volumetric beams, and static glow pools
 ## under the light bars (painted light, not real lights). Ground 320×320 at y=0; perimeter walls
 ## at ±121 (slot contract: arena.dressing).
@@ -8,14 +9,24 @@ const HALF := 121.0
 const WALL_HEIGHT := 3.0
 const WALL_THICK := 2.0
 const TOWER_INSET := 112.0
+## Painted floodlight pools on the floor: [x, z, radius, intensity]. The corner towers throw theirs toward the
+## center; the side pools stand in for the stands' lamps (X5). Emission only: no light passes (fx_tricks.md).
+const FLOODLIGHTS := [
+	Vector4(-80, -80, 75, 0.75), Vector4(80, -80, 75, 0.75), Vector4(-80, 80, 75, 0.75), Vector4(80, 80, 75, 0.75),
+	Vector4(0, -62, 60, 0.55), Vector4(0, 62, 60, 0.55), Vector4(-62, 0, 60, 0.55), Vector4(62, 0, 60, 0.55),
+]
 
 var ground: ChunkedGround
+var _flood_maps := {}
 
 
 func _ready() -> void:
 	ground = ChunkedGround.new()
 	ground.name = "Ground"
-	ground.material = CyberMaterials.ground()
+	_apply_ground_quality()
+	var fx := FxWorld.get_instance()
+	if fx != null:
+		fx.quality_changed.connect(_apply_ground_quality)
 	add_child(ground)
 	_build_perimeter()
 	for sx in [-1.0, 1.0]:
@@ -23,9 +34,58 @@ func _ready() -> void:
 			_build_tower(Vector3(sx * TOWER_INSET, 0.0, sz * TOWER_INSET))
 
 
+## The floodlight pools baked into a small light map for the ground shader (R = intensity / FLOOD_SCALE over
+## ±FLOOD_HALF m): one texture fetch per pixel instead of a loop over lamps in every light pass.
+const FLOOD_HALF := 160.0
+const FLOOD_SCALE := 2.0
+const FLOOD_MAP_SIZE := 64
+
+
+static func flood_map(lamps: Array) -> ImageTexture:
+	var image := Image.create(FLOOD_MAP_SIZE, FLOOD_MAP_SIZE, false, Image.FORMAT_L8)
+	for y in FLOOD_MAP_SIZE:
+		for x in FLOOD_MAP_SIZE:
+			var world := (Vector2(x, y) + Vector2(0.5, 0.5)) / FLOOD_MAP_SIZE * 2.0 * FLOOD_HALF - Vector2(FLOOD_HALF, FLOOD_HALF)
+			var light := 0.0
+			for lamp: Vector4 in lamps:
+				var falloff := 1.0 - clampf(world.distance_to(Vector2(lamp.x, lamp.y)) / lamp.z, 0.0, 1.0)
+				light += falloff * falloff * (3.0 - 2.0 * falloff) * lamp.w
+			var v := clampf(light / FLOOD_SCALE, 0.0, 1.0)
+			image.set_pixel(x, y, Color(v, v, v))
+	return ImageTexture.create_from_image(image)
+
+
 func set_chunked(chunked: bool) -> void:
 	ground.chunked = chunked
 	ground.build()
+
+
+## The floor shader follows the FX tier: full on high, lite on low and medium.
+func _apply_ground_quality() -> void:
+	set_ground_style("lite" if FxQuality.tier() < FxQuality.Tier.HIGH else "textured")
+
+
+## FX lab comparisons: "textured" (the high-tier floor), "lite" (low/medium), "wet" (round 1's procedural asphalt),
+## "flat" (plain material).
+func set_ground_style(style: String) -> void:
+	var material: Material = ground.material
+	match style:
+		"lite", "textured":
+			material = CyberMaterials.ground(style == "lite")
+			if not _flood_maps.has("map"):
+				_flood_maps["map"] = flood_map(FLOODLIGHTS)
+			(material as ShaderMaterial).set_shader_parameter("flood_map", _flood_maps["map"])
+		"wet":
+			material = ShaderMaterial.new()
+			(material as ShaderMaterial).shader = preload("res://game/theme/fx/shaders/wet_ground.gdshader")
+		"flat":
+			material = StandardMaterial3D.new()
+			(material as StandardMaterial3D).albedo_color = Color(0.2, 0.2, 0.22)
+		_:
+			push_warning("unknown ground style '%s'" % style)
+	if material != ground.material:
+		ground.material = material
+		ground.build()
 
 
 func _build_perimeter() -> void:
