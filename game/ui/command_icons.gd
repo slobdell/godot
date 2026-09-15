@@ -140,13 +140,26 @@ static func _drawable(at: Vector2) -> bool:
 ## perfectly shaped 20 px quad fails triangulation on precision. The first skipped polygon is printed once.
 static var _reported_degenerate := false
 static func _fill(canvas: CanvasItem, polygon: PackedVector2Array, color: Color) -> bool:
-	if Geometry2D.triangulate_polygon(polygon).is_empty():
+	if _area(polygon) < 0.5 or Geometry2D.triangulate_polygon(polygon).is_empty():
 		if not _reported_degenerate:
 			_reported_degenerate = true
 			print("COMMAND_ICONS_DEGENERATE_POLYGON %s" % [polygon])
 		return false
 	canvas.draw_colored_polygon(polygon, color)
 	return true
+
+
+## Absolute shoelace area in px² (0 for non-finite points): collinear or zero-area shapes draw nothing anyway, and
+## Geometry2D.triangulate_polygon still returns indices for them.
+static func _area(polygon: PackedVector2Array) -> float:
+	var twice := 0.0
+	for i in polygon.size():
+		var a := polygon[i]
+		var b := polygon[(i + 1) % polygon.size()]
+		if not (a.is_finite() and b.is_finite()):
+			return 0.0
+		twice += a.x * b.y - b.x * a.y
+	return absf(twice) * 0.5
 
 
 static func _pts(points: Array, scale: float, xf: Transform2D) -> PackedVector2Array:
