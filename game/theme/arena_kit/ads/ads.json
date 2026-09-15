@@ -1,0 +1,102 @@
+{
+  "placeholder": true,
+  "note": "Art and copy are the lead's call; see tools/assets/build_ads.py.",
+  "ads": [
+    {
+      "id": "syndicate_life",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/syndicate_life.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 9,
+      "brand": "SYNDICATE LIFE",
+      "headline": "COVERAGE THAT\nOUTLIVES YOU",
+      "fine_print": "Beneficiary payouts processed within 90 business days of confirmed loss.",
+      "accent": "#d8b86a",
+      "average_color": "#40392b"
+    },
+    {
+      "id": "aquacorp",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/aquacorp.png",
+      "frames": [
+        4,
+        2
+      ],
+      "fps": 6,
+      "seconds": 8,
+      "brand": "AQUACORP",
+      "headline": "CLEAN WATER.\nEVERY DAY\nYOU QUALIFY.",
+      "fine_print": "Ration tier verified at point of sale.",
+      "accent": "#7fe3ff",
+      "average_color": "#1e4657"
+    },
+    {
+      "id": "warden",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/warden.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "OFFICE OF THE WARDEN",
+      "headline": "SAFER STREETS\nSTART WITH\nA REPORT",
+      "fine_print": "Verified tips earn ration credit. Reports cannot be withdrawn.",
+      "accent": "#e8ecf2",
+      "average_color": "#2d2845"
+    },
+    {
+      "id": "organ_futures",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/organ_futures.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "ORGAN FUTURES",
+      "headline": "INVEST IN\nTONIGHT'S\nCHAMPIONS",
+      "fine_print": "Contracts settle at the final bell.",
+      "accent": "#e2c27a",
+      "average_color": "#251e14"
+    },
+    {
+      "id": "freedom_program",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/freedom_program.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "THE FREEDOM PROGRAM",
+      "headline": "WIN YOUR\nFREEDOM\nTONIGHT",
+      "fine_print": "Release subject to review by the Board. Terms apply.",
+      "accent": "#ffb13b",
+      "average_color": "#b39959"
+    },
+    {
+      "id": "arena_live",
+      "kind": "live",
+      "image": "res://game/theme/arena_kit/ads/arena_live.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 7,
+      "brand": "LIVE FROM THE PIT",
+      "headline": "GREEN\nvs\nRUST",
+      "fine_print": "Odds update after every confirmed kill.",
+      "accent": "#ffffff",
+      "average_color": "#2f2f52"
+    }
+  ]
+}

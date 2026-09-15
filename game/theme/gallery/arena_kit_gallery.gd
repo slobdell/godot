@@ -1,6 +1,6 @@
 extends Node3D
 ## Arena kit gallery (`make arena-kit-gallery`, assets X1/X2): a container yard (20 ft and 40 ft, stacks of 1–3, open
-## doors, each faction's paint and stencils) under the cyberpunk arena's night lighting, placed through the real
+## doors, each faction's paint and stencils) and giant ad screens on two channels under the cyberpunk arena's night lighting, placed through the real
 ## `prop.<type>` visual slots and `setup(obstacle)` the way the Arena places layout obstacles. Captures several views in
 ## one run, including the 200 m orthographic tactical overview (orientation trip-up 46). Visual only.
 ## Flags: --shots-dir=<abs dir> (saves arena-kit-<view>.png for every view, then quits) [--views=a,b] [--theme=NAME]
@@ -26,12 +26,16 @@ const YARD := [
 	["container_20", -7.0, 26.0, -8.0, {"faction": "gangs", "stack": 2}],
 	["container_20", 2.0, 24.0, 20.0, {"faction": "condemned", "stencil": "prison"}],
 	["container_20", 10.0, 25.0, 0.0, {"faction": "condemned", "stencil": "hazard", "stack": 2}],
+	# Giant screens behind the yard, turned to face it; the right one runs a second channel.
+	["ad_screen", -10.0, -36.0, 180.0, {}],
+	["ad_screen", 12.0, -34.0, 200.0, {"channel": "odds"}],
 ]
 ## view → [camera position, look-at point, fov (0 = orthographic, size in m)]
 const VIEWS := {
 	"close": [Vector3(13.5, 3.2, 10.5), Vector3(0.0, 1.6, 3.5), 45.0],
 	"yard": [Vector3(26.0, 17.0, 34.0), Vector3(-3.0, 1.0, 1.0), 50.0],
 	"doors": [Vector3(-8.5, 2.4, -2.5), Vector3(-13.6, 1.3, -8.0), 55.0],
+	"screens": [Vector3(-2.0, 2.2, -14.0), Vector3(-6.0, 12.0, -36.0), 62.0],
 	"overview": [Vector3(0.0, 200.0, 0.0001), Vector3.ZERO, 0.0],
 }
 

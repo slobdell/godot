@@ -3,7 +3,8 @@ extends "res://game/theme/cyberpunk/cyber_prop.gd"
 ## floodlight pools (FLOODLIGHTS, art X2), blast-barrier perimeter walls with neon light bars, and the gladiator
 ## venue around them (art X5, the lead's approved Meshy kit, theme arena_kit): grandstands full of a cheering crowd
 ## (CrowdSystem) along the long sides, vehicle gates on the short sides, floodlight towers throwing fake volumetric
-## beams at the corners, and static glow pools under the light bars (painted light, not real lights).
+## beams at the corners, and static glow pools under the light bars (painted light, not real lights). Round 3 (assets
+## X2): giant ad screens tower over the short walls either side of the gates, on two broadcast channels.
 ## Ground 320×320 at y=0; perimeter walls at ±121 by default (slot contract: arena.dressing). `setup(layout)` (rules'
 ## C5 arena layouts) fits the walls, venue, floodlights, hazard band and center ring to the layout. Visual only, no
 ## collision.
@@ -22,6 +23,9 @@ const FLOODLIGHTS := [
 
 ## The generated arena kit (tools/assets/build_arena_kit.sh). Missing scenes fall back to the procedural pieces.
 const KIT := "res://game/theme/arena_kit/generated/%s.tscn"
+const AD_SCREEN := preload("res://game/theme/arena_kit/prop_ad_screen.tscn")
+## Screens either side of each gate, this far along the wall from its middle.
+const SCREEN_OFFSET := 46.0
 const STANDS_ROWS := 5
 
 var ground: ChunkedGround
@@ -111,12 +115,20 @@ func _build_venue() -> void:
 			var depth := _bounds(gate).size.z
 			gate.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0), Vector3(side * (half + WALL_THICK / 2.0 + depth / 2.0), 0.0, 0.0))
 			structures.add_child(gate, true)
+	for side in [1.0, -1.0]:  # outside the east (+X) and west walls, turned so their -Z face looks at the center
+		for along in [1.0, -1.0]:
+			var screen := AD_SCREEN.instantiate() as Node3D
+			screen.name = "AdScreen"
+			screen.set("channel_name", "arena" if along * side > 0.0 else "odds")
+			screen.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0),
+					Vector3(side * (half + WALL_THICK / 2.0 + 4.0), 0.0, along * minf(SCREEN_OFFSET, half * 0.45)))
+			structures.add_child(screen, true)
 
 
 ## FX lab: hide the venue (stands, crowd, gates) to measure what it costs.
 func set_venue_visible(shown: bool) -> void:
 	for child in structures.get_children():
-		if child.name.begins_with("Stands") or child.name.begins_with("Gate") or child == crowd:
+		if child.name.begins_with("Stands") or child.name.begins_with("Gate") or child.name.begins_with("AdScreen") or child == crowd:
 			(child as Node3D).visible = shown
 
 
