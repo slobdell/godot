@@ -34,7 +34,8 @@ func _process(delta: float) -> void:
 	if scene == null:
 		return
 	var found: Node = scene if scene is Match else scene.get_node_or_null("Match")
-	if found != null:
+	# A match queued for deletion (a scene change) is on its way out: wait for its replacement.
+	if found != null and not found.is_queued_for_deletion():
 		attach(found)
 
 
@@ -70,7 +71,8 @@ func attach(game_match: Node) -> void:
 
 
 func detach() -> void:
-	if is_attached():
+	# Disconnect even from a match that's being freed: re-attaching to it would connect everything twice.
+	if _match != null and is_instance_valid(_match):
 		for connection in get_incoming_connections():
 			var source: Object = connection["signal"].get_object()
 			if is_instance_valid(source):

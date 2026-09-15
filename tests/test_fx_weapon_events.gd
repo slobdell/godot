@@ -138,3 +138,12 @@ func test_flamethrower_puffs_reported_as_stream_events_draw_no_machine_gun_round
 			"direction": [0.0, 0.0, -1.0], "projectile_id": 6, "speed_mps": 0.0, "range": 33.0})
 	fx.weapons.flush(fx.now)
 	assert_near(fx.tracers.round_end(fx.tracers.newest_round()).z, -33.0, 0.5, "a K2 event's own range wins over the profile's")
+
+
+func test_re_attaching_a_match_on_its_way_out_never_double_connects() -> void:
+	var fx: FxWorld = add_to_tree(FxWorld.new())
+	var game_match: Match = add_to_tree(preload("res://game/match/match.tscn").instantiate())
+	fx.link.attach(game_match)
+	game_match.queue_free()  # a scene change: the match lingers until the end of the frame
+	fx.link.attach(game_match)  # the engine logs "already connected" (a test failure) if the old connections stayed
+	assert_eq(game_match.get_signal_connection_list("weapon_fired").size(), 1, "one connection, not two")
