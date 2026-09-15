@@ -233,10 +233,10 @@ func _engine(firing: float, rasp: float, clatter: float, hum: float) -> PackedFl
 	var noise_low := 0.0
 	for i in out.size():
 		var t := float(i) / RATE
-		var cycle := fmod(t * firing, 1.0)
 		# Four cylinders of uneven strength per engine cycle: the lope of a big engine.
 		var cylinder := int(fmod(t * firing * 4.0, 4.0))
-		var pulse := (1.0 if fmod(t * firing * 4.0, 1.0) < 0.18 else 0.0) * [1.0, 0.8, 0.95, 0.7][cylinder]
+		var strength: float = [1.0, 0.8, 0.95, 0.7][cylinder]
+		var pulse := (1.0 if fmod(t * firing * 4.0, 1.0) < 0.18 else 0.0) * strength
 		low += (pulse - low) * 0.08
 		band += (low - band) * 0.02
 		var body := tanh((low - band) * (3.0 + rasp * 6.0))
@@ -246,7 +246,7 @@ func _engine(firing: float, rasp: float, clatter: float, hum: float) -> PackedFl
 		var electric := 0.0
 		if hum > 0.0:
 			electric = hum * (0.6 * sin(TAU * 120.0 * t) + 0.25 * sin(TAU * 360.0 * t) + 0.12 * signf(sin(TAU * 240.0 * t)))
-		out[i] = body * 0.8 + clank + electric * 0.5 + 0.0 * cycle
+		out[i] = body * 0.8 + clank + electric * 0.5
 	return out
 
 
