@@ -88,8 +88,8 @@ field), effects and HUD styling (feel), models (assets).
 ## Status
 
 _Updated 2026-09-15 by the control worker. **Round report: every backlog item is done except X8 (deferred by the
-round's no-new-touch-work constraint). `make remote T=check` is green (470 tests, every smoke) on fd5dbc1, the last code
-commit; later commits change only this brief.**_
+round's no-new-touch-work constraint). `make remote T=check` is green (470 tests, every smoke) on a39c135, the merge of main's
+tools/remote.sh fix; every remote screenshot was re-taken after that merge, and each was checked to be a distinct frame and looked at.**_
 
 ### Plan (in order) and progress
 
