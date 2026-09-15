@@ -136,7 +136,14 @@ func test_unit_icons_skip_positions_a_camera_could_not_project() -> void:
 			CommandIcons.draw_unit(canvas, role, Vector2(NAN, NAN), 20.0, Color.WHITE)
 			CommandIcons.draw_unit(canvas, role, Vector2(50, 50), 20.0, Color.WHITE, NAN)
 			CommandIcons.draw_unit(canvas, role, Vector2(50, 50), 20.0, Color.WHITE, 0.3)
-			drawn[0] += 1)
+			drawn[0] += 1
+		# Enemy diamonds and zero-length arrows had the same failure (army-loop-smoke flaked on builder0).
+		CommandIcons.draw_hostile_frame(canvas, Vector2(NAN, NAN), 17.0, Color.RED, true)
+		# Any degenerate polygon is skipped rather than handed to the renderer.
+		assert_true(not CommandIcons._fill(canvas, PackedVector2Array([Vector2(5, 5), Vector2(6, 6), Vector2(7, 7)]), Color.WHITE),
+				"a collinear triangle is not drawn")
+		CommandIcons.draw_hostile_frame(canvas, Vector2(40, 40), 0.0, Color.RED, true)
+		CommandIcons._arrow(canvas, Vector2(30, 30), Vector2(30, 30), Color.WHITE, 2.0, 6.0))
 	add_to_tree(canvas)
 	canvas.queue_redraw()
 	await tree.process_frame
