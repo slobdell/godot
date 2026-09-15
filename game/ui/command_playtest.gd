@@ -59,6 +59,7 @@ func run() -> void:
 		ok = ok and tracked and float(result["squad_after"]) >= 0.0 and float(result["squad_after"]) <= FRAME_DEADLINE \
 				and float(result["max_speed"]) <= RtsCamera.TRACK_SPEED * 1.05 and float(result["max_zoom"]) <= RtsCamera.TRACK_MAX_ZOOM + 0.02
 	_camera_log.close()
+	await _ui_tour()
 	print("COMMAND_PLAYTEST_DONE ok=%s dir=%s" % [ok, out_dir])
 	tree.quit(0 if ok else 1)
 
@@ -104,6 +105,29 @@ func _watch(squad_name: String, goal: Vector3, index: int) -> Dictionary:
 		if not frames.is_empty() and elapsed >= float(frames[0]):
 			await _capture("%d_%s_order_%.0fs" % [index, squad_name.to_lower(), float(frames.pop_front())])
 	return {"squad_after": squad_after, "both_after": both_after, "max_speed": max_speed, "max_zoom": max_zoom}
+
+
+## Frames of the stretch UI for review: a unit card with quick commands open, then the far-zoom icons.
+func _ui_tour() -> void:
+	var tree := get_tree()
+	var squads := map.game_match.team_squads(map.team)
+	if squads.is_empty():
+		return
+	map.tap_squad_chip(squads[0].squad_name)
+	var members := map.squad_points(squads[0].squad_name)
+	map.rig.frame(members, true)
+	var alive := squads[0].alive_members(map.game_match.tanks_by_name())
+	if alive.size() > 1:
+		map.focus_unit(alive[1])
+	map.open_quick_commands(squads[squads.size() - 1].squad_name)
+	await tree.create_timer(0.6).timeout
+	await _capture("ui_card_and_quick")
+	map.close_quick_commands()
+	map.focus_unit("")
+	map.rig.zoom = 0.75
+	map.rig.snap()
+	await tree.create_timer(0.6).timeout
+	await _capture("ui_far_icons")
 
 
 func _capture(shot_name: String) -> void:

@@ -78,6 +78,41 @@ func test_far_out_markers_are_readable_icons() -> void:
 	assert_true(map.is_close_up(), "a camera following an order stays in the model view")
 
 
+func test_friend_and_foe_differ_by_shape_not_only_color() -> void:
+	var setup: Array = await _setup(Vector2i(1280, 720))
+	var game_match: Match = setup[0]
+	var map: TacticalMap = setup[1]
+	var markers := SelectionMarkers.new()
+	markers.game_match = game_match
+	markers.map = map
+	add_to_tree(markers)
+	var enemy := game_match.spawn_tank("Rust_Near_1", 0, Match.Team.RUST)
+	enemy.global_position = (game_match.tanks.get_node("Green_Alpha_1") as Tank).global_position + Vector3(0, 0, -25)
+	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
+	markers.refresh()
+	var enemy_ring := markers.get_node("Ring_Rust_Near_1") as MeshInstance3D
+	var friend_ring := markers.get_node("Ring_Green_Bravo_1") as MeshInstance3D
+	assert_true(enemy_ring.visible, "setup: the enemy in sight has a ring")
+	var enemy_triangles := (enemy_ring.mesh as ArrayMesh).surface_get_array_len(0)
+	var friend_triangles := (friend_ring.mesh as ArrayMesh).surface_get_array_len(0)
+	assert_true(enemy_triangles < friend_triangles * 0.75, "the enemy ring is dashed (gaps), the friendly ring solid (%d vs %d vertices)" % [enemy_triangles, friend_triangles])
+
+
+func test_ui_scale_makes_everything_bigger_and_still_fits_a_phone() -> void:
+	var setup: Array = await _setup(Vector2i(1200, 540))
+	var map: TacticalMap = setup[1]
+	var normal := map.button_height()
+	map.ui_scale = 1.25
+	map._layout_panels()
+	await tree.process_frame
+	await tree.process_frame
+	assert_near(map.button_height(), normal * 1.25, 0.5, "a 1.25 UI scale makes tap targets 25% bigger")
+	var screen := Rect2(Vector2.ZERO, Vector2(1200, 540))
+	for panel in [map._squad_bar, map._command_bar, map._top_row]:
+		assert_true(screen.encloses((panel as Control).get_global_rect()), "%s still fits a phone (%s)" % [panel.name, (panel as Control).get_global_rect()])
+	assert_true(not map._squad_bar.get_global_rect().intersects(map._top_row.get_global_rect()), "without overlapping")
+
+
 func teardown() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	super.teardown()

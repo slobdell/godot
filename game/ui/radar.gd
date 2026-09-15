@@ -220,9 +220,13 @@ func _draw() -> void:
 				draw_circle(at, dot, friendly)
 				draw_arc(at, dot + 2.5, 0.0, TAU, 16, commander, 1.5)
 			"enemy":
-				draw_circle(at, dot, enemy)
+				# Diamonds for enemies, circles for us: readable without color (accessibility).
+				var r := dot * 1.3
+				draw_colored_polygon(PackedVector2Array([at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(0, r), at + Vector2(-r, 0)]), enemy)
 			"contact":
-				draw_arc(at, dot, 0.0, TAU, 12, Color(enemy, blip["fade"]), 1.5)
+				var r := dot * 1.3
+				draw_polyline(PackedVector2Array([at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(0, r), at + Vector2(-r, 0),
+						at + Vector2(0, -r)]), Color(enemy, blip["fade"]), 1.5)
 			"destination":
 				draw_line(at + Vector2(-dot, -dot), at + Vector2(dot, dot), commander, 1.5)
 				draw_line(at + Vector2(-dot, dot), at + Vector2(dot, -dot), commander, 1.5)

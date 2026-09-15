@@ -30,6 +30,21 @@ const ORDER_STATE := {"move": "Moving", "bound": "Bounding", "hold": "Holding", 
 		"break_contact": "Retreat", "": "Idle"}
 
 
+## What a vehicle is doing, in player words, from its brain's option (TankBrain.OPTIONS; unknown options are
+## shown capitalized, so the AI stream can add options freely).
+const INTENT_WORDS := {"RETREAT": "Retreating", "RESUPPLY": "Resupplying", "TAKE_COVER": "Taking cover",
+		"RECHARGE": "Recharging shields", "SPOT": "Spotting", "BOMBARD": "Bombarding", "SHADOW": "Shadowing",
+		"CONTEST": "Taking the center", "ENGAGE": "Engaging", "FLANK": "Flanking", "INVESTIGATE": "Investigating",
+		"REGROUP": "Regrouping", "ADVANCE": "Advancing", "KEEP_SLOT": "In formation", "HOLD": "Holding"}
+
+
+static func intent_words(intent: String) -> String:
+	if intent == "":
+		return "Idle"
+	var option := intent.get_slice(" ", 0)
+	return String(INTENT_WORDS.get(option, option.replace("_", " ").capitalize()))
+
+
 ## The unit's role for icons: catalog v2's `role` (contract C1) when present; v1's `class`, with a laser
 ## tank shown as a lancer, until rules' catalog v2 lands.
 static func role_of(tank: Tank) -> String:
@@ -94,6 +109,16 @@ static func draw_unit(canvas: CanvasItem, role: String, at: Vector2, size: float
 			canvas.draw_circle(xf * Vector2(0, 0.35 * s), 0.18 * s, ink)
 		_:
 			canvas.draw_circle(xf * Vector2(0, 0.15 * s), 0.2 * s, ink)
+
+
+## A hostile marker: a diamond (filled faintly, or hollow for a remembered contact). Friendly markers are round.
+static func draw_hostile_frame(canvas: CanvasItem, at: Vector2, radius: float, color: Color, filled: bool) -> void:
+	var diamond := PackedVector2Array([at + Vector2(0, -radius), at + Vector2(radius, 0), at + Vector2(0, radius),
+			at + Vector2(-radius, 0)])
+	if filled:
+		canvas.draw_colored_polygon(diamond, Color(0, 0, 0, 0.45))
+	diamond.append(diamond[0])
+	canvas.draw_polyline(diamond, color, 2.0)
 
 
 static func _pts(points: Array, scale: float, xf: Transform2D) -> PackedVector2Array:

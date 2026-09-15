@@ -164,6 +164,72 @@ func test_close_up_the_map_leaves_vehicles_to_their_models() -> void:
 	assert_true(not map.is_close_up(), "zoomed out, the map draws markers again")
 
 
+func test_a_unit_card_shows_one_vehicle_and_follows_the_selection() -> void:
+	var setup: Array = await _setup(army(2, 3), Vector2i(1200, 540))
+	var game_match: Match = setup[0]
+	var map: TacticalMap = setup[1]
+	var markers: SelectionMarkers = setup[3]
+	map.focus_unit("Green_Alpha_3")
+	await tree.process_frame
+	await tree.process_frame
+	assert_true(map._unit_card.visible, "focusing a unit opens its card")
+	assert_true(map._unit_title.text.begins_with("Alpha 3 · Tank"), "naming the vehicle and its type (%s)" % map._unit_title.text)
+	assert_true(map._unit_stats.text.contains("Hull"), "with its hull (%s)" % map._unit_stats.text)
+	var screen := Rect2(Vector2.ZERO, Vector2(1200, 540))
+	assert_true(screen.encloses(map._unit_card.get_global_rect()), "the card fits a phone (%s)" % map._unit_card.get_global_rect())
+	assert_true(not map._unit_card.get_global_rect().intersects(map._command_bar.get_global_rect()), "above the order bar")
+	markers.refresh()
+	assert_eq(markers.state()["Green_Alpha_3"]["kind"], "focused", "its ground ring turns white")
+	map.focus_unit("Green_Bravo_1")
+	assert_eq(map.focused_unit, "", "a unit outside the selected squad can't be focused")
+	map.focus_unit("Green_Alpha_3")
+	map.select_squad("Bravo")
+	assert_eq(map.focused_unit, "", "selecting another squad closes the card")
+	assert_true(not map._unit_card.visible, "(hidden)")
+	map.select_squad("Alpha")
+	map.focus_unit("Green_Alpha_2")
+	var victim := game_match.tanks.get_node("Green_Alpha_2") as Tank
+	victim.apply_damage(victim.health)
+	await tree.process_frame
+	await tree.process_frame
+	assert_eq(map.focused_unit, "", "a destroyed unit's card closes")
+
+
+func test_long_pressing_a_chip_gives_quick_commands_for_that_squad() -> void:
+	var setup: Array = await _setup({}, Vector2i(1200, 540))
+	var game_match: Match = setup[0]
+	var map: TacticalMap = setup[1]
+	var chip := map._squad_chips["Bravo"] as SquadChip
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	chip._gui_input(press)
+	chip._process(TacticalMap.LONG_PRESS_SECONDS + 0.05)
+	assert_eq(map.quick_squad, "Bravo", "holding Bravo's chip opens Bravo's quick commands")
+	var release := press.duplicate()
+	release.pressed = false
+	chip._gui_input(release)
+	chip.pressed.emit()  # what the Button does on release
+	assert_eq(map.selected_squad, "Alpha", "the long press didn't change the selection")
+	await tree.process_frame
+	await tree.process_frame
+	var row := map._quick_row.get_global_rect()
+	assert_true(Rect2(Vector2.ZERO, Vector2(1200, 540)).encloses(row), "the quick row fits the phone (%s)" % row)
+	assert_true(not row.intersects(map._squad_bar.get_global_rect()), "under the squad bar, not over it")
+	assert_true(absf(row.get_center().x - chip.get_global_rect().get_center().x) < row.size.x / 2.0, "near Bravo's chip")
+	(map._buttons["quick:break_contact"] as Button).pressed.emit()
+	assert_eq(game_match.squads["0/Bravo"].verb, "break_contact", "Break contact went to Bravo")
+	assert_eq(game_match.squads["0/Alpha"].verb, "hold", "not to the selected squad")
+	assert_eq(map.quick_squad, "", "and the quick row closed")
+	chip._gui_input(press)
+	chip._process(0.1)
+	chip._gui_input(release)
+	assert_eq(map.quick_squad, "", "a short tap is not a long press")
+	map.open_quick_commands("Bravo")
+	map._process(TacticalMap.QUICK_SECONDS + 0.1)
+	assert_eq(map.quick_squad, "", "unused quick commands close by themselves")
+
+
 func teardown() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	super.teardown()

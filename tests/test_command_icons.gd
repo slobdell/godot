@@ -54,6 +54,13 @@ func test_every_drill_and_formation_is_explained() -> void:
 		assert_eq((CommandIcons.FORMATION_INFO[formation] as Array).size(), 3, "%s: [name, tagline, description]" % formation)
 
 
+func test_every_brain_option_reads_as_player_words() -> void:
+	for option in TankBrain.OPTIONS:
+		assert_true(CommandIcons.INTENT_WORDS.has(option), "%s has player words for the unit card" % option)
+	assert_eq(CommandIcons.intent_words("ENGAGE Rust_Gun_2"), "Engaging", "the target name is dropped")
+	assert_eq(CommandIcons.intent_words("SOMETHING_NEW"), "Something New", "an unknown option still reads")
+
+
 func _setup(screen: Vector2i) -> Array:
 	tree.root.size = screen
 	add_to_tree(ARENA.instantiate())

@@ -6,6 +6,7 @@ extends GameMode
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
 ##   --seed=N (the CPU army's seed; default: the clock)   --control (a control point at the center)
 ##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
+##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
@@ -75,6 +76,7 @@ func start() -> void:
 	tactical.game_match = game_match
 	tactical.visibility = field
 	tactical.camera = main.camera
+	tactical.ui_scale = clampf(float(flags.text("ui-scale", "1")), 0.75, 2.0)
 	# G4: an RTS camera over the player's base, looking toward the enemy.
 	var rig := RtsCamera.new()
 	rig.name = "RtsCamera"

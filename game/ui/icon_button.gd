@@ -29,8 +29,8 @@ func _draw() -> void:
 	var font := get_theme_font("font")
 	var h := size.y
 	var pad := minf(h, size.x) * 0.08
-	var text_size := roundi(clampf(h * (0.2 if tagline != "" else 0.26), 10.0, 18.0))
-	var tag_size := roundi(clampf(h * 0.14, 9.0, 13.0))
+	var text_size := roundi(clampf(h * (0.2 if tagline != "" else 0.26), 10.0, 24.0))
+	var tag_size := roundi(clampf(h * 0.14, 9.0, 17.0))
 	var icon_rect: Rect2
 	if tagline != "":
 		# Card: icon on top, name and tagline below.

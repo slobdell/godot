@@ -133,6 +133,41 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
   exactly the zoom-out-then-in chore the lead described (now order tracking caps the zoom, keeps the squad
   framed, and leans the view toward the destination).
 
+- **Stretch: single-unit selection** (`tactical_map.gd` `focus_unit`, unit card): tapping a unit of the
+  selected squad opens its card (name, type, hull/shield/ammo/heat, what it's doing in player words) with
+  **Lead squad** and Close; its ground ring turns white. Orders still go to the whole squad (SquadCommand has
+  no per-unit verb; see requests). Tests: `test_command_squad_bar.gd`, updated map/touch tests.
+- **Stretch: quick commands from the squad bar:** long-press a chip → Hold / Break / Assault / Follow for that
+  squad under its chip, without changing the selection; closes after one command or 5 s. Test in
+  `test_command_squad_bar.gd`.
+- **Stretch: accessibility:** friend and foe differ by shape as well as color (enemy ground rings dashed; far
+  icons on a hostile diamond vs a round friendly backing; radar enemies as diamonds), and `--ui-scale=0.75..2`
+  scales every tap target and its text (1.25 still fits a 1200×540 phone, tested). Tests:
+  `test_command_readability.gd`.
+
+### Questions for the lead
+
+1. **Commander election moved behind a button.** Round 1 elected a commander when you tapped a unit of the
+   selected squad; with tap-to-go that swapped leaders by accident whenever you tapped near your own vehicles.
+   Now that tap opens a unit card with **Lead squad**. Keep it, or go back? (Reversible: one branch in
+   `TacticalMap.click`.)
+2. **Radar tap = order** (the look is a drag or a long press). If you'd rather a radar tap only look, it's a
+   one-line swap in `Radar.tap`.
+3. **Order tracking caps at zoom 0.48** and leans toward far destinations instead of zooming out to show both.
+   Playtest a cross-arena radar order and say if you'd like it to show more of the map.
+4. A **settings screen** for `--ui-scale` (and a colorblind palette from art) needs a home: the title or army
+   flow (army stream)? Today it's a launch flag only.
+
+### What to playtest
+
+- `make skirmish`: tap a squad chip, tap the ground; tap the radar; hold then drag for facing; drag to pan.
+- Tap a far spot on the radar: the camera should follow the squad without you zooming. Pan to take over.
+- Tap a unit of the selected squad: its card; **Lead squad**. Long-press a chip: quick commands.
+- Formation button → the picker; read the descriptions. `make skirmish CONTROL=1` for the center meter.
+- Zoom all the way out: unit-type icons; enemies on diamonds. `--ui-scale=1.25` via
+  `godot --path . -- --skirmish --ui-scale=1.25`.
+- `make command-playtest-shots` saves a camera walk-through to `build/command-playtest/`.
+
 ### Requests to other streams
 
 - **rules:** tag `MatchAnnouncer.announced` with a kind (e.g. `announced(text, severity, kind)`) so
@@ -146,6 +181,10 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
   (2) The ring, icon, and meter colors come from `GameTheme.ui` (`friendly`, `enemy`, `commander`); restyle
   freely. (3) `SquadChip`/`IconButton` draw over the theme's Button style; a dedicated chip style (less
   transparent, so crates behind don't show through) is welcome.
+- **ai:** per-unit orders are the natural next step for single-unit selection: a SquadCommand `unit` field
+  (or a detach verb) the squad applies to one member. The unit card is ready to host those buttons. This is a C7
+  contract change, so it's only a proposal.
+- **art:** a colorblind-safe palette option in `GameTheme.ui` (the shapes already carry friend/foe).
 - **ai:** squad verbs are unchanged; the map only reads `Squad.arrived`, `verb`, `destination`, `roster`,
   `commander`, `formation`, `alive_members`.
 

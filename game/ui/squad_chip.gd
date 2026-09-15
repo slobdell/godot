@@ -5,15 +5,22 @@ extends Button
 ##   row 1   NAME                                  order state ("Moving", "Holding", "Destroyed")
 ##   row 2   one unit-type pictogram per vehicle (lost vehicles fade out with a cross)
 ##   row 3   hull bar with the shield as a thin bar above it; a red contact pip when under fire or an enemy is in sight
-## Tap handling lives in TacticalMap (tap selects; tapping the selected chip frames and follows it).
+## Tap handling lives in TacticalMap (tap selects; tapping the selected chip centers the camera on it; a long
+## press opens quick commands for this squad without selecting it).
 
 ## A squad counts as in contact for this long after a hit (3 s).
 const CONTACT_TICKS := 180
+
+## Held for TacticalMap.LONG_PRESS_SECONDS: the map opens this squad's quick commands.
+signal long_pressed
 
 var squad: Squad
 var game_match: Match
 ## Shown in the top-left corner as a desktop hint ("1"), or "" on touch screens.
 var hotkey := ""
+var long_press_fired := false
+var _down := false
+var _held := 0.0
 
 
 func _init() -> void:
@@ -22,8 +29,29 @@ func _init() -> void:
 	clip_text = true
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _down and not long_press_fired:
+		_held += delta
+		if _held >= TacticalMap.LONG_PRESS_SECONDS:
+			long_press_fired = true
+			long_pressed.emit()
 	queue_redraw()
+
+
+func _gui_input(event: InputEvent) -> void:
+	var button := event as InputEventMouseButton
+	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
+		_down = button.pressed
+		if button.pressed:
+			_held = 0.0
+			long_press_fired = false
+
+
+## True (once) when the tap that just ended was a long press, so the tap must not also select.
+func take_long_press() -> bool:
+	var fired := long_press_fired
+	long_press_fired = false
+	return fired
 
 
 ## A summary of the squad for drawing and tests:
@@ -85,8 +113,8 @@ func _draw() -> void:
 	var h := size.y
 	var pad := h * 0.1
 	var ink := Color(1, 1, 1, 0.35) if info["lost"] else Color.WHITE
-	var name_size := roundi(clampf(h * 0.26, 11.0, 20.0))
-	var small_size := roundi(clampf(h * 0.19, 9.0, 15.0))
+	var name_size := roundi(clampf(h * 0.26, 11.0, 26.0))
+	var small_size := roundi(clampf(h * 0.19, 9.0, 19.0))
 	var baseline := pad + name_size * 0.9
 	var name_x := pad
 	if hotkey != "":

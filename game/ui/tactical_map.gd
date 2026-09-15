@@ -57,9 +57,13 @@ var rig: RtsCamera
 var team := Match.Team.GREEN
 ## Squad name, or "" for none.
 var selected_squad := ""
+## Stretch: the unit whose card is open ("" = none); always a member of the selected squad.
+var focused_unit := ""
 ## The drill a right-drag will issue.
 var pending_verb := "move"
 var tactical_view := true
+## Accessibility: scales every button, chip, card, and their text (skirmish --ui-scale=1.25).
+var ui_scale := 1.0
 
 var _drag_start: Variant = null
 var _drag_end: Variant = null
@@ -69,6 +73,7 @@ var _buttons := {}
 var _pause_label: Label
 var _toast: Label
 var _toast_left := 0.0
+var _quick_left := 0.0
 ## Which button started the current drag (left drags only count once they actually move).
 var _drag_button := MOUSE_BUTTON_NONE
 ## Order acknowledgement (G3): a ring that expands at the ordered spot the moment an order lands.
@@ -93,6 +98,10 @@ func _process(delta: float) -> void:
 	if rig != null:
 		tactical_view = rig.is_overview()  # tracking can leave the overview on its own
 	_ping_left = maxf(0.0, _ping_left - delta)
+	if quick_squad != "":
+		_quick_left -= delta
+		if _quick_left <= 0.0:
+			close_quick_commands()
 	_update_touch(delta)
 	if _toast != null and _toast_left > 0.0:
 		_toast_left -= delta
@@ -211,6 +220,7 @@ func _show_toast(text: String, is_error := false) -> void:
 func select_squad(squad_name: String) -> void:
 	if _squad(squad_name) != null and squad_name != selected_squad:
 		selected_squad = squad_name
+		focus_unit("")
 		if rig != null:
 			match rig.tracking_mode():
 				RtsCamera.Track.ORDER:
@@ -266,10 +276,33 @@ func click(world: Vector3, screen: Vector2, finger := false) -> void:
 	if picked == null:
 		return
 	var squad_name := game_match.squad_of(picked)
-	if squad_name == selected_squad and _squad(squad_name).commander != String(picked.name):
-		issue({"squad": squad_name, "commander": String(picked.name)})
+	if squad_name == selected_squad:
+		focus_unit("" if focused_unit == String(picked.name) else String(picked.name))  # again: close the card
 	else:
 		select_squad(squad_name)
+
+
+## Stretch: single-unit selection. Tapping a unit of the selected squad opens its unit card (type, hull,
+## shield, ammo, heat, what it's doing) with "Lead squad"; orders still go to the whole squad. "" closes it.
+## Round 1 elected the commander on this tap, which made a tap near your own vehicles silently reshuffle
+## the formation; election is now one deliberate button.
+func focus_unit(tank_name: String) -> void:
+	var tank := game_match.tanks.get_node_or_null(NodePath(tank_name)) as Tank if tank_name != "" else null
+	if tank == null or not tank.is_alive() or game_match.squad_of(tank) != selected_squad:
+		focused_unit = ""
+	else:
+		focused_unit = tank_name
+	if _unit_card != null:
+		_unit_card.visible = focused_unit != ""
+		_refresh_unit_card()
+		_layout_panels()
+
+
+## The focused unit takes command of its squad.
+func lead_with_focused() -> String:
+	if focused_unit == "":
+		return "no unit selected"
+	return issue({"squad": selected_squad, "commander": focused_unit})
 
 
 func set_paused(paused: bool, message := "PAUSED: give orders, then Resume (Space)") -> void:
@@ -563,10 +596,11 @@ func _draw() -> void:
 			if close_up:
 				_draw_health_bar(enemy, false)
 			else:
+				# A hostile diamond behind the icon (NATO style), so friend and foe differ by shape, not only color.
+				CommandIcons.draw_hostile_frame(self, at, glyph * 0.85, ENEMY, true)
 				CommandIcons.draw_unit(self, CommandIcons.role_of(enemy), at, glyph, ENEMY, _screen_heading(enemy))
 		elif not contact["visible"]:
-			var triangle := PackedVector2Array([at + Vector2(0, -9), at + Vector2(8, 6), at + Vector2(-8, 6), at + Vector2(0, -9)])
-			draw_polyline(triangle, color, 2.0)
+			CommandIcons.draw_hostile_frame(self, at, 9.0, color, false)
 
 	for squad in game_match.team_squads(team):
 		var selected := squad.squad_name == selected_squad
@@ -593,8 +627,8 @@ func _draw() -> void:
 					_draw_health_bar(tank, true)
 				continue
 			var at := _screen(tank.global_position)
+			draw_circle(at, glyph * 0.8, Color(0, 0, 0, 0.45))  # friendly = round, hostile = diamond
 			if selected:
-				draw_circle(at, glyph * 0.8, Color(0, 0, 0, 0.45))
 				draw_arc(at, glyph * 0.8, 0.0, TAU, 24, COMMANDER if member == squad.commander else Color.WHITE, 2.0)
 			CommandIcons.draw_unit(self, CommandIcons.role_of(tank), at, glyph,
 					FRIENDLY if selected else FRIENDLY.darkened(0.3), _screen_heading(tank))
@@ -724,6 +758,9 @@ const CARD_HEIGHT := 2.1
 const CARD_COLUMNS := 4
 ## Picker order: every formation, both echelons.
 const PICKER_FORMATIONS := ["wedge", "column", "line", "vee", "echelon_left", "echelon_right", "coil"]
+## Drills that make sense without choosing a spot: they use where the squad is or where it was going.
+const QUICK_VERBS := ["hold", "break_contact", "assault"]
+const QUICK_SECONDS := 5.0
 const DRILL_SHORT := {"move": "Move", "bound": "Bound", "hold": "Hold", "assault": "Assault", "break_contact": "Break"}
 
 var _command_bar: HBoxContainer
@@ -731,13 +768,20 @@ var _command_bar: HBoxContainer
 var _formation_row: PanelContainer
 var _formation_grid: GridContainer
 var _formation_about: Label
+var _unit_card: PanelContainer
+var _quick_row: HBoxContainer
+## The squad whose quick commands are open ("" = closed).
+var quick_squad := ""
+var _unit_title: Label
+var _unit_stats: Label
 var _top_row: HBoxContainer
 var _squad_bar: HBoxContainer
 var _squad_chips := {}
 
 
 func button_height() -> float:
-	return clampf(get_viewport().get_visible_rect().size.y * BUTTON_HEIGHT_FRACTION, BUTTON_MIN_PX, BUTTON_MAX_PX)
+	return clampf(get_viewport().get_visible_rect().size.y * BUTTON_HEIGHT_FRACTION * ui_scale,
+			BUTTON_MIN_PX * ui_scale, BUTTON_MAX_PX * ui_scale)
 
 
 static func _touch_first() -> bool:
@@ -792,7 +836,25 @@ func _build_panels() -> void:
 		if formation_keys.has(formation):
 			card.hotkey = _key_hint(formation_keys[formation])
 
-# C2: the squad bar (top center): one chip per squad, up to 5.
+	# Stretch: the unit card (bottom left, above the order bar), for the focused unit.
+	_unit_card = PanelContainer.new()
+	_unit_card.name = "UnitCard"
+	_unit_card.visible = false
+	add_child(_unit_card)
+	var card_rows := VBoxContainer.new()
+	card_rows.add_theme_constant_override("separation", 2)
+	_unit_card.add_child(card_rows)
+	_unit_title = Label.new()
+	_unit_stats = Label.new()
+	card_rows.add_child(_unit_title)
+	card_rows.add_child(_unit_stats)
+	var card_buttons := HBoxContainer.new()
+	card_buttons.add_theme_constant_override("separation", 4)
+	card_rows.add_child(card_buttons)
+	_add_button(card_buttons, "Lead squad", func() -> void: lead_with_focused(), "unit:lead", false)
+	_add_button(card_buttons, "Close", func() -> void: focus_unit(""), "unit:close", false)
+
+	# C2: the squad bar (top center): one chip per squad, up to 5.
 	_squad_bar = HBoxContainer.new()
 	_squad_bar.name = "SquadBar"
 	_squad_bar.add_theme_constant_override("separation", 4)
@@ -805,10 +867,24 @@ func _build_panels() -> void:
 		chip.squad = squads[i]
 		chip.game_match = game_match
 		chip.hotkey = "" if _touch_first() or i >= 5 else str(i + 1)
-		chip.pressed.connect(func() -> void: tap_squad_chip(squad_name))
+		chip.pressed.connect(func() -> void:
+			if not chip.take_long_press():
+				tap_squad_chip(squad_name))
+		chip.long_pressed.connect(func() -> void: open_quick_commands(squad_name))
 		_squad_bar.add_child(chip)
 		_buttons["squad:" + squad_name] = chip
 		_squad_chips[squad_name] = chip
+	# Stretch: quick commands for one squad, under its chip (long press a chip).
+	_quick_row = HBoxContainer.new()
+	_quick_row.name = "QuickCommands"
+	_quick_row.add_theme_constant_override("separation", 4)
+	_quick_row.visible = false
+	add_child(_quick_row)
+	for verb in QUICK_VERBS:
+		var quick := _icon_button(_quick_row, IconButton.Kind.DRILL, verb, DRILL_SHORT[verb], "quick:" + verb,
+				func() -> void: quick_command(verb))
+		quick.toggle_mode = false
+	_add_button(_quick_row, "Follow", func() -> void: quick_command("follow"), "quick:follow", false)
 	# Camera and time (top right).
 	_top_row = HBoxContainer.new()
 	_top_row.add_theme_constant_override("separation", 4)
@@ -848,13 +924,15 @@ func _layout_panels() -> void:
 			button.custom_minimum_size = Vector2(h * DRILL_WIDTH, h * DRILL_HEIGHT)
 		else:
 			button.custom_minimum_size = Vector2(h * 1.3, h)
-			button.add_theme_font_size_override("font_size", roundi(clampf(h * 0.36, 13.0, 20.0)))
+			button.add_theme_font_size_override("font_size", roundi(clampf(h * 0.36, 13.0 * ui_scale, 20.0 * ui_scale)))
 	var bar_height := h * DRILL_HEIGHT
+	for pair in [[_info, 15], [_hint, 12], [_toast, 20], [_pause_label, 26]]:
+		(pair[0] as Label).add_theme_font_size_override("font_size", roundi(float(pair[1]) * ui_scale))
 	_command_bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_command_bar.offset_left = 10.0
 	_command_bar.offset_top = -bar_height - 10.0
 	_command_bar.offset_bottom = -10.0
-	_formation_about.add_theme_font_size_override("font_size", roundi(clampf(h * 0.3, 12.0, 17.0)))
+	_formation_about.add_theme_font_size_override("font_size", roundi(clampf(h * 0.3, 12.0 * ui_scale, 17.0 * ui_scale)))
 	_formation_about.custom_minimum_size.x = _formation_grid.get_combined_minimum_size().x
 	var picker_size := _formation_row.get_combined_minimum_size()
 	_formation_row.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
@@ -869,6 +947,15 @@ func _layout_panels() -> void:
 	_squad_bar.offset_bottom = 8.0 + h * CHIP_HEIGHT
 	_squad_bar.offset_left = -bar_width / 2.0
 	_squad_bar.offset_right = bar_width / 2.0
+	if quick_squad != "" and _squad_chips.has(quick_squad):
+		var chip := _squad_chips[quick_squad] as Control
+		var quick_width := _quick_row.get_combined_minimum_size().x
+		var chip_center := bar_width / 2.0 * -1.0 + chip.position.x + chip.size.x / 2.0
+		_quick_row.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+		_quick_row.offset_left = clampf(chip_center - quick_width / 2.0, -screen.x / 2.0 + 10.0, screen.x / 2.0 - 10.0 - quick_width)
+		_quick_row.offset_right = _quick_row.offset_left + quick_width
+		_quick_row.offset_top = 8.0 + h * CHIP_HEIGHT + 4.0
+		_quick_row.offset_bottom = _quick_row.offset_top + h * DRILL_HEIGHT
 	var tools_width := _top_row.get_combined_minimum_size().x
 	_top_row.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	_top_row.grow_horizontal = Control.GROW_DIRECTION_BEGIN  # a stale minimum size must grow left, not off screen
@@ -886,7 +973,17 @@ func _layout_panels() -> void:
 	_hint.offset_top = -above_bar - 20.0
 	_info.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_info.offset_left = 12.0
-	_info.offset_top = -above_bar - (46.0 if _hint.visible else 26.0) - (picker_size.y + 6.0 if _formation_row.visible else 0.0)
+	var card_size := _unit_card.get_combined_minimum_size()
+	_unit_title.add_theme_font_size_override("font_size", roundi(clampf(h * 0.34, 13.0 * ui_scale, 19.0 * ui_scale)))
+	_unit_stats.add_theme_font_size_override("font_size", roundi(clampf(h * 0.28, 11.0 * ui_scale, 16.0 * ui_scale)))
+	_unit_card.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_unit_card.grow_vertical = Control.GROW_DIRECTION_BEGIN  # longer text grows it upward, never over the bar
+	_unit_card.offset_left = 10.0
+	_unit_card.offset_bottom = -bar_height - 16.0 - (picker_size.y + 6.0 if _formation_row.visible else 0.0)
+	_unit_card.offset_top = _unit_card.offset_bottom - card_size.y
+	_unit_card.offset_right = 10.0 + card_size.x
+	var raised := (picker_size.y + 6.0 if _formation_row.visible else 0.0) + (card_size.y + 6.0 if _unit_card.visible else 0.0)
+	_info.offset_top = -above_bar - (46.0 if _hint.visible else 26.0) - raised
 	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_toast.offset_left = -360.0
 	_toast.offset_right = 360.0
@@ -902,12 +999,71 @@ func toggle_formation_row() -> void:
 	_layout_panels()
 
 
+## Stretch: long-press a squad chip → quick commands for that squad under its chip, without changing the
+## selection (hold it, pull it back, send it in, or follow it). Closes after one command or QUICK_SECONDS.
+func open_quick_commands(squad_name: String) -> void:
+	var squad := _squad(squad_name)
+	if squad == null:
+		return
+	quick_squad = squad_name
+	_quick_left = QUICK_SECONDS
+	_quick_row.visible = true
+	(_buttons["quick:assault"] as Button).disabled = squad.destination == null
+	_layout_panels()
+
+
+func close_quick_commands() -> void:
+	quick_squad = ""
+	_quick_row.visible = false
+
+
+func quick_command(action: String) -> String:
+	var squad := _squad(quick_squad)
+	var error := "no squad"
+	if squad != null:
+		match action:
+			"follow":
+				select_squad(quick_squad)
+				if rig != null and rig.tracking_mode() != RtsCamera.Track.FOLLOW:
+					follow_selected()
+				error = ""
+			"assault":
+				var goal: Variant = squad.destination
+				error = "no destination" if goal == null else issue({"squad": quick_squad, "verb": "assault", "to": [goal.x, goal.z]})
+			_:
+				error = issue({"squad": quick_squad, "verb": action})
+	close_quick_commands()
+	return error
+
+
 ## Squad chip: tap selects; tapping the already-selected squad's chip centers the camera on it.
 func tap_squad_chip(squad_name: String) -> void:
 	if selected_squad == squad_name and rig != null:
 		center_on_selected()
 	else:
 		select_squad(squad_name)
+
+
+func _refresh_unit_card() -> void:
+	if focused_unit == "":
+		return
+	var tank := game_match.tanks.get_node_or_null(NodePath(focused_unit)) as Tank
+	if tank == null or not tank.is_alive():
+		focus_unit("")
+		return
+	var squad := _squad(selected_squad)
+	var leader := squad != null and squad.commander == focused_unit
+	_unit_title.text = "%s · %s%s" % [MatchAnnouncer.short_name(focused_unit), HudMessages.unit_name(tank), " · leader" if leader else ""]
+	var parts: PackedStringArray = ["Hull %d/%d" % [tank.sync_health, tank.max_health]]
+	if tank.max_shield > 0.0:
+		parts.append("Shield %d/%d" % [tank.sync_shield, roundi(tank.max_shield)])
+	if tank.sync_ammo >= 0:
+		parts.append("Ammo %d" % tank.sync_ammo)
+	if float(tank.weapon.get("heat_per_shot", 0.0)) > 0.0:
+		parts.append("Heat %d%%" % roundi(tank.sync_heat * 100.0))
+	var doing := CommandIcons.intent_words(tank.intent)
+	_unit_stats.text = "  ".join(parts) + "\n" + doing
+	(_buttons["unit:lead"] as Button).disabled = leader
 
 
 func _icon_button(parent: Container, kind: IconButton.Kind, id: String, text: String, button_id: String,
@@ -923,7 +1079,7 @@ func _icon_button(parent: Container, kind: IconButton.Kind, id: String, text: St
 	return button
 
 
-func _add_button(row: HBoxContainer, text: String, action: Callable, id: String, toggles := true) -> void:
+func _add_button(row: Container, text: String, action: Callable, id: String, toggles := true) -> void:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE  # keep keyboard shortcuts working
@@ -946,6 +1102,7 @@ func _label(at: Vector2, size: int) -> Label:
 
 func _refresh_panels() -> void:
 	var squad := _squad(selected_squad)
+	_refresh_unit_card()
 	if squad == null:
 		_info.text = "No squad selected: tap a squad"
 	else:

@@ -82,7 +82,7 @@ func test_hold_then_drag_orders_with_a_facing() -> void:
 	assert_true(rig.focus.distance_to(focus_before) < 0.01, "and the camera didn't move")
 
 
-func test_tapping_a_tank_selects_and_a_second_tap_elects_it() -> void:
+func test_tapping_a_tank_selects_and_a_second_tap_opens_its_card() -> void:
 	var setup: Array = await _setup()
 	var game_match: Match = setup[0]
 	var map: TacticalMap = setup[1]
@@ -95,7 +95,9 @@ func test_tapping_a_tank_selects_and_a_second_tap_elects_it() -> void:
 	assert_eq(map.selected_squad, "Bravo", "a tap near a tank selects its squad")
 	_finger(map, true, at)
 	_finger(map, false, at)
-	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "tapping it again makes it commander")
+	assert_eq(map.focused_unit, "Green_Bravo_2", "tapping it again opens its unit card")
+	(map._buttons["unit:lead"] as Button).pressed.emit()
+	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "and Lead squad makes it commander")
 	assert_eq(game_match.squads["0/Bravo"].verb, "hold", "and neither tap ordered a move")
 
 

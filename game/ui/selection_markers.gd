@@ -2,9 +2,10 @@ class_name SelectionMarkers
 extends Node3D
 ## C2/C5: flat rings on the ground under vehicles, drawn in 3D with depth testing so a vehicle always
 ## covers its own ring (the old 2D circles were painted over the models).
-##   selected squad     a bright ring in the team color; the commander's ring is gold
+##   selected squad     a bright ring in the team color; the commander's ring is gold; the focused unit's white
 ##   our other units    a faint thin team-colored ring (so "whose is it" reads at a glance)
-##   enemies in sight   a faint enemy-colored ring (never for enemies hidden by the fog)
+##   enemies in sight   a faint enemy-colored DASHED ring (never for enemies hidden by the fog); the dashes
+##                      tell friend from foe without relying on color (accessibility)
 ## The command stream owns what is shown when; colors come from GameTheme.ui (art owns the palette).
 
 ## Ring radius as a multiple of the vehicle's longest hull side.
@@ -23,6 +24,7 @@ var _rings := {}  # tank name → MeshInstance3D
 var _materials := {}  # key → StandardMaterial3D
 static var _mesh_thick: ArrayMesh
 static var _mesh_thin: ArrayMesh
+static var _mesh_dashed: ArrayMesh
 
 
 func _ready() -> void:
@@ -59,6 +61,8 @@ func refresh() -> void:
 			if tank.team == team:
 				if selected != null and selected.roster.has(tank_name):
 					kind = "commander" if selected.commander == tank_name else "selected"
+					if map.focused_unit == tank_name:
+						kind = "focused"
 				else:
 					kind = "friendly"
 			elif game_match.is_visible_to(team, tank):
@@ -68,7 +72,7 @@ func refresh() -> void:
 			continue
 		if ring.get_meta("kind", "") != kind:
 			ring.set_meta("kind", kind)
-			ring.mesh = _thin_mesh() if kind == "friendly" or kind == "enemy" else _thick_mesh()
+			ring.mesh = _dashed_mesh() if kind == "enemy" else (_thin_mesh() if kind == "friendly" else _thick_mesh())
 			ring.material_override = _material(kind)
 		var hull: Array = Units.stat(tank.unit_id, "hull_size")
 		var radius := maxf(float(hull[0]), float(hull[2])) * RADIUS_FACTOR
@@ -99,6 +103,8 @@ func _material(kind: String) -> StandardMaterial3D:
 	match kind:
 		"commander":
 			color = Color(GameTheme.ui["commander"], SELECTED_ALPHA)
+		"focused":
+			color = Color(1, 1, 1, SELECTED_ALPHA)
 		"selected":
 			color = Color(GameTheme.ui["friendly"], SELECTED_ALPHA)
 		"friendly":
@@ -127,17 +133,26 @@ static func _thin_mesh() -> ArrayMesh:
 	return _mesh_thin
 
 
-## A flat ring in the XZ plane (unit outer radius).
-static func annulus(inner: float, outer: float, segments := 40) -> ArrayMesh:
+static func _dashed_mesh() -> ArrayMesh:
+	if _mesh_dashed == null:
+		_mesh_dashed = annulus(0.9, 1.0, 48, 12)
+	return _mesh_dashed
+
+
+## A flat ring in the XZ plane (unit outer radius); with `dashes` > 0, that many gaps break it up.
+static func annulus(inner: float, outer: float, segments := 40, dashes := 0) -> ArrayMesh:
 	var vertices := PackedVector3Array()
-	for i in segments + 1:
-		var angle := TAU * i / segments
-		var direction := Vector3(cos(angle), 0.0, sin(angle))
-		vertices.append(direction * outer)
-		vertices.append(direction * inner)
+	for i in segments:
+		if dashes > 0 and (i * dashes / segments) % 2 == 1:
+			continue  # a gap
+		var a := TAU * i / segments
+		var b := TAU * (i + 1) / segments
+		var da := Vector3(cos(a), 0.0, sin(a))
+		var db := Vector3(cos(b), 0.0, sin(b))
+		vertices.append_array([da * outer, db * outer, da * inner, db * outer, db * inner, da * inner])
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLE_STRIP, arrays)
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh

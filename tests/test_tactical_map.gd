@@ -97,7 +97,7 @@ func test_right_drag_orders_destination_and_facing() -> void:
 	assert_eq(squad.verb, "bound", "the squad is now bounding")
 
 
-func test_clicking_a_squad_tank_twice_makes_it_commander() -> void:
+func test_clicking_a_squad_tank_twice_opens_its_card_and_lead_elects_it() -> void:
 	var setup: Array = await _setup()
 	var game_match: Match = setup[0]
 	var map: TacticalMap = setup[1]
@@ -109,7 +109,10 @@ func test_clicking_a_squad_tank_twice_makes_it_commander() -> void:
 	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_1", "a first click only selects")
 	_mouse(map, camera, MOUSE_BUTTON_LEFT, true, wingman.global_position)
 	_mouse(map, camera, MOUSE_BUTTON_LEFT, false, wingman.global_position)
-	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "clicking it again elects it commander")
+	assert_eq(map.focused_unit, "Green_Bravo_2", "clicking it again opens its unit card")
+	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_1", "without silently changing the leader")
+	(map._buttons["unit:lead"] as Button).pressed.emit()
+	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "Lead squad elects it commander")
 
 
 func test_hold_key_halts_in_place() -> void:
@@ -168,9 +171,9 @@ func test_real_input_pipeline_drives_commander_and_formation() -> void:
 	var wingman := game_match.tanks.get_node("Green_Bravo_2") as Tank
 	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, wingman.global_position)
 	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, wingman.global_position)
-	_push_mouse(camera, MOUSE_BUTTON_LEFT, true, wingman.global_position)
-	_push_mouse(camera, MOUSE_BUTTON_LEFT, false, wingman.global_position)
-	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "real clicks elect the commander")
+	assert_eq(map.focused_unit, "Green_Bravo_2", "a real click on a unit of the selected squad focuses it")
+	map.lead_with_focused()
+	assert_eq(game_match.squads["0/Bravo"].commander, "Green_Bravo_2", "and it can take command")
 	_push_mouse(camera, MOUSE_BUTTON_RIGHT, true, Vector3(40, 0, 40))
 	_push_motion(camera, Vector3(40, 0, 32))
 	_push_motion(camera, Vector3(40, 0, 25))
