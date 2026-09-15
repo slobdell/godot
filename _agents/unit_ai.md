@@ -131,8 +131,9 @@ not commanders; 12 matches per pairing, brain x3 everywhere):
 | v3 | role-based army plan above | 3–9 | 9–3 | 9–3 | 7–5 | 28–20 |
 | v4 | flank only with a 1.15× edge, wide advance, scouts charge only artillery/Lancers | 5–7 | 11–1 | 12–0 | 2–10 | 30–18 |
 | v5 | v3, but a squad flanks only with ≥ 40% of the main squad's strength | 5–7 | 8–4 | 9–3 | 7–5 | 29–19 |
+| **v6** (default) | v5's flanking + v4's wide advance and scout rule (16 matches per pairing) | 6–10 | 13–3 | 16–0 | 10–6 | **45–19** |
 
-Head to head v4 beat v3 30–18 and v5 32–16. Reading: v5's flanking wins with tank-heavy armies (armor, anvil_hammer);
+Head to head v4 beat v3 30–18 and v5 32–16; v6 and v4 split 31–33, and v6 beats plain brains where v4 doesn't (anvil_hammer 10–6 vs 3–13). Reading: v5's flanking wins with tank-heavy armies (armor, anvil_hammer);
 v4's scouts, left holding their screening spot ahead of the line, shred light armies with machine guns from there
 (swarm 12–0, 272 kills); charging the enemy line with scouts is worth it only against artillery and Lancers. Two traps
 found on the way: every policy but "v3" fell back to v2's planner (a dispatch bug; the first v4 and v5 numbers were v2's),
