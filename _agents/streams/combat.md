@@ -191,8 +191,8 @@ Tests adjusted to derive from data (merge notes): `test_combat.gd`, `test_shield
   AI or control work, and a player's move order naturally packs it. ai may add explicit "relocate now" logic.
 - Slot: `set_deployed(ratio)` every frame on the hull, turret, and weapon visuals of units that deploy
   (slot_contracts.md). Tests: `tests/test_combat_deploy.gd`; the K2 mortar tests now wait for the legs.
-- Also fixed: `tools/remote.sh` picked the oldest Xwayland cookie on builder0 (a stale July session), so every native
-  rendering target (`skirmish-shots`, galleries) hung for 20+ minutes. It now takes the newest (`ls -t`).
+- Also found: `tools/remote.sh` picked a stale Xwayland cookie on builder0, so native rendering targets hung. Main's
+  7dc7bdc fixes it properly (merged into this branch).
 
 ### X6 done (time-boxed): time-to-kill and matrix #5 (2026-09-15)
 
@@ -284,8 +284,8 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
 - **assets:** `set_deployed(ratio 0..1)` on artillery hull, turret, and weapon (slot_contracts.md); wreck art can size
   to `unit_destroyed.hull_size`.
 - **orchestrator:** fold K2 additive fields (`speed_mps`, `range`, `victims`, `unit_destroyed`) and K3's "turn = yaw
-  direction in either gear" into workstreams.md; `tools/remote.sh` now picks builder0's newest Xwayland cookie (native
-  screenshot targets hung for 20+ min on a stale one).
+  direction in either gear" into workstreams.md; `tools/remote.sh`'s Xwayland fix: superseded by main's 7dc7bdc (merged; the running
+  Xwayland's auth file), so no merge note remains for it.
 
 ### Known issues
 - Lancer > tank is a coin flip (50%); scouts win only vs artillery; artillery wins nothing (see questions).
@@ -306,7 +306,6 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
 ### Merge notes (edits outside combat's paths)
 - `game/ai/order_controller.gd`, `game/ai/fire_lanes.gd` (lead speed), `tests/ai_scenarios/scenario_cover.gd` (ai).
 - `game/ui/command_icons.gd` (control): off-screen guard.
-- `tools/remote.sh` (shared): newest Xwayland cookie.
 - `_agents/slot_contracts.md` (shared, additive): `set_deployed`. `_agents/determinism.md` inventory rows.
   `_agents/verification.md` row 6i.
 - Round-2 tests now derive from data: `tests/test_combat.gd`, `test_shields.gd`, `test_weapons_and_intel.gd`,
