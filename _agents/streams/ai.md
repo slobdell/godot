@@ -80,30 +80,42 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 
 ### Plan (ordered, smallest foundation first)
 
-1. **X1 orders always win** — in progress: `OrderFeed` (K1 adapter), order execution in `TankBrain`, stuck-state
-   timeouts, idle posts (regroup), `StubOrders` + scenarios until CP1.
-2. **X2 movement while fighting** — a pure combat-motion layer (context steering over a fixed ring of directions:
-   range band, tangential motion, armor facing, obstacles, friends, hysteresis) behind ENGAGE and friends, per
-   locomotion and mount; `TankMotion.predict` through an adapter once K3 lands.
-3. **X3 evasion and weak spots** — incoming shells (K2 `incoming_projectiles`, adapter until CP2) as a danger term;
-   flank weight toward the target's side and rear; COVER_FIRE retuned for long reloads.
-4. **X4 make it visible** — hysteresis and exaggeration; recorded frames looked at; a spectator description.
-5. **X5 CPU commander v3** — formations and maneuvers the player can see; must beat plain brains on the ladder.
-6. **X6 ladder and matrix** — round 2's a5/a6 runs first (done, below); the re-run waits for CP2 + combat X2/X4.
+1. **X1 orders always win** — **done** (built against K1 through `OrderFeed` + `StubOrders`; re-verify against control's
+   real `Orders` at CP1).
+2. **X2 movement while fighting** — **done for tracks** (`CombatMotion` styles strafe / angle-weave / attack runs, short
+   halt); wheels: the pure layer respects turning circles, the driving (`Steering` for wheels) waits for K3 at CP2.
+3. **X3 evasion and weak spots** — **mostly done**: busy-target flanking, front armor toward every gun, dodge model
+   (`IncomingFire`, adapter until K2). The dodge-rate bar is a pending scenario until combat's slower tank shells land.
+4. **X4 make it visible** — tooling done (`make ai-shots`: trails + intents); tuning after CP2's weapons.
+5. **X5 CPU commander v3** — next.
+6. **X6 ladder and matrix** — round 2's runs done; re-run after CP2 + combat X2/X4; CPU cost to bring back down.
 7. Stretch: explanation overlay, CPU difficulty knob.
 
 ### Report (kept current)
 
 **Done (measured):**
-- X6 part 1 (round 2's unfinished runs, round-2 weapons, builder0): ladder `a6,a5` on `combined_arms`, 16 matches in
-  118 s: **a6 11–5 a5** (ELO 1070 / 930), champion stays a6. Full matchup matrix with a6 (180 matches, 486 s) saved
-  for the X6 comparison; the scout matrix with a5 as the default is running.
-- X1 (in progress): order scenarios `make remote T="ai-scenarios FILTER=scenario_orders"`: worst response **1 tick**
-  over 14 move orders issued mid-brawl (interrupting ENGAGE, SPOT, HOLD, RETREAT, TAKE_COVER); mutation check (orders
-  picked up only on think ticks) → 6 ticks, test fails. Attack-move kills a scout beside its route, then arrives
-  (23.7 s, 2.6 m off). Attack keeps fire on the ordered target (475 ticks vs 0 on a nearer enemy). Hold drifts 0.0 m
-  and still shoots behind it. Follow stays within 18 m of a moving IFV 100% of the time. An idle unit pushed 57 m off
-  its post is back in 7.0 s.
+- **X6 part 1** (round 2's unfinished runs, round-2 weapons, builder0): ladder `a6,a5` on `combined_arms`: **a6 11–5 a5**
+  (ELO 1070 / 930). Scout matrix (12 matches per pairing) with a6 / a5 as the default brain: scouts beat artillery 10–2 /
+  6–6 and lose everything else (vs tank, IFV, Lancer 0–12; Burner 2–10) either way: a5's orbiting doesn't rescue them.
+- **X1 orders always win**: worst response **1 tick** over 13–14 move orders issued mid-brawl (interrupting ENGAGE,
+  SPOT, HOLD, RETREAT, RECHARGE, TAKE_COVER); mutation check (orders only on think ticks) → 6 ticks, the test fails.
+  Attack-move kills a scout beside its route, then arrives (24 s, 3 m off). Attack keeps fire on the ordered target
+  (475 ticks vs 0 on a nearer enemy). Hold drifts 0.0 m and still shoots behind it. Follow stays within 18 m of a moving
+  IFV 100% of the time. An idle unit pushed 57 m off its post is back in 7.0 s. Stuck-state timeouts cost nothing on
+  the ladder (with vs without: 26–22 over two doctrines).
+- **X2/X3, new champion x3** (fights on the move, weaves, flanks busy targets, dodges), round-2 weapons: beat a6
+  **14–10** on `individuals` and **17–7** on `combined_arms` (94 kills vs 31). Tank duel: moving 79–84% of the time
+  (a6 1%) with 100% of hits on fronts; two tanks on one get its side for 3.9–5 s of 20; a scout ordered onto a tank
+  makes 4 wide attack runs in 25 s with all 22 hits in its side or rear.
+- **What a spectator sees** (`make remote T=ai-shots`, frames looked at): moving units leave 20–50 m sweeping arcs while
+  round-2 brains sit as dots; tanks rock forward and back nose-on and lurch to a stop to fire; the scout loops 50 m past
+  the tank and comes back on the other flank; a hurt IFV peels off to recharge; nameplates read "ENGAGE Rust_A_1 - going
+  for its side, weaving, front armor on it".
+- The road there (ladder vs a6, tank mirror): circling side-on 0–24 → short halt 3–13 → weave 4–12 → turn cost and
+  busy-target flanking 14–10. Mirror hits by face: a6 front 66%; first cut front 36%, side 49%, rear 15%; weave front 56%.
+- Dodging: IFV vs a cannon at 30–45 m, shells that miss: a6 0%, x2/x3 6–15%. Physically marginal with 70 m/s shells
+  (see Requests); the ≥ 35% bar is a pending scenario.
+- Sim baseline: `397d0a3e14891d2d` (X1 timeouts), then `9d936357e51d78dd` (x3 champion), both on purpose.
 
 **Decisions (with reasons):**
 - Brains read K1 through `OrderFeed` (duck-typed: `Match.orders` when the field exists, else an attached object), so
@@ -119,6 +131,13 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - **No stuck states:** any autonomous option kept past its timeout (fights: since the last shot) or driving 3 s
   without progress goes on a 5 s cooldown (×0.25). Orders never time out.
 
+- **Fighting on the move = context steering** (`CombatMotion`): one pure scoring over 32 candidates with styles as
+  weight tables, so combat's new numbers retune data, not code. Heavy hulls weave nose-on (front armor 0.5×) and short
+  halt to fire; light turrets circle; fixed guns make runs. A pivot costs seconds of standing still, so jinks shuffle
+  forward and back. Why: the ladder (each step above) and the lead's "circle your opponent".
+- **Champion x3** by the ladder rule (out-rates a6 and beats it head to head on both doctrines); the skirmish and match
+  runner use it by default. a6 stays runnable (`--green-brain=a6`).
+
 **Questions for the lead:** none yet.
 
 **Requests to other streams:**
@@ -126,5 +145,21 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   in world meters relative to `to`; add `speed` (0.2–1) if you pace a group; `complete(unit)` should pop the queue and
   emit `order_changed`. Brains execute orders directly, so the "minimal adapter" in your X1 isn't needed for brains.
 - combat: the `Match.orders` field (K1) as planned.
+- combat (X2 weapons, measured reasons): (1) **tank shell flight time ≥ ~0.7 s at 30–50 m** (≤ ~60 m/s) if dodging should
+  read: with 70 m/s shells a 14 m/s² hull moves ~2 m off the shooter's lead before impact, less than half a hull, so
+  even strafing IFVs dodge only 6–15%. (2) **Turret stabilization:** the turret turns relative to the hull, so a tank
+  pivoting at 80°/s drags its 50°/s turret off target; world-space turret aim would let tanks shoot on the move (today
+  they must short-halt). (3) Moving spread ×2.5 at full speed punishes moving fire; arcade feel wants it smaller for
+  turrets (accuracy measured 82–86% either way at today's ranges, so it matters most for long shots).
+- control (shared test): `test_command_icons` requires player words for every `TankBrain.OPTIONS`; the order-only
+  options live in `TankBrain.ORDER_ONLY_OPTIONS` (MOVE, FOLLOW, PURSUE) and read as "Move"/"Follow"/"Pursue" through the
+  fallback; add words when convenient ("Moving", "Following", "Closing in").
 
-**Known issues:** none yet.
+**Known issues:**
+- **CPU:** x3 costs 6.1 ms per tick at 50 brains on builder0 (a6 4.0 ms): moving units miss the position-keyed line of
+  sight memo (144k LOS computed vs 63k). X6 brings it back to ≤ round 2's.
+- Heavy tanks can't dodge (physics, above); they take hits on the front armor instead.
+
+**Merge notes (shared files):**
+- `tools/remote.sh`: picks the newest Xwayland auth file (`ls -t`); a stale one made every rendering target on builder0
+  fall back to Wayland and hang.

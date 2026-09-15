@@ -36,9 +36,12 @@ def run_match(args, green, rust, seed, swap):
     for line in completed.stdout.splitlines():
         if line.startswith("MATCH_RESULT "):
             result = json.loads(line[len("MATCH_RESULT "):])
+            stats = result["stats"]
             return {"green": green, "rust": rust, "seed": seed, "swap": swap, "winner": result["winner"],
-                    "sim_seconds": result["sim_seconds"], "shots": result["stats"]["shots"],
-                    "kills": result["stats"]["kills"]}
+                    "sim_seconds": result["sim_seconds"], "shots": stats["shots"], "kills": stats["kills"],
+                    "hits": stats.get("hits", [0, 0]), "damage": stats.get("damage", [0, 0]),
+                    "shield_damage": stats.get("shield_damage", [0, 0]), "options": stats.get("options", [{}, {}]),
+                    "hits_by_face": stats.get("hits_by_face", {})}
     errors = [l for l in (completed.stdout + completed.stderr).splitlines() if "ERROR" in l][:5]
     raise RuntimeError(f"{green} vs {rust} seed {seed} swap {swap}: no MATCH_RESULT (exit {completed.returncode}) {errors}")
 
@@ -66,6 +69,39 @@ def elo(variants, matches):
     # Average the last half of the passes: ratings oscillate around their fixed point.
     tail = history[PASSES // 2:]
     return {v: sum(h[v] for h in tail) / len(tail) for v in variants}
+
+
+def print_stats(variants, matches):
+    """Per variant, summed over its sides: accuracy, damage dealt, and where its brains spent their time (Match
+    stats["options"] samples). Mirrors of one variant are skipped (a ladder never plays them)."""
+    print("Per variant (both colors): shots, hits (accuracy), hull + shield damage dealt, kills; top options by time")
+    for v in variants:
+        shots = hits = damage = kills = 0
+        options = {}
+        for m in matches:
+            for side, index in (("green", 0), ("rust", 1)):
+                if m[side] != v:
+                    continue
+                shots += m["shots"][index]
+                hits += m["hits"][index]
+                damage += m["damage"][index] + m["shield_damage"][index]
+                kills += m["kills"][index]
+                for option, count in m["options"][index].items():
+                    options[option] = options.get(option, 0) + count
+        total = max(sum(options.values()), 1)
+        top = sorted(options.items(), key=lambda kv: -kv[1])[:6]
+        faces = {}
+        for m in matches:
+            if m["green"] == v and m["rust"] == v + "_twin" or m["rust"] == v and m["green"] == v + "_twin":
+                for face, count in m["hits_by_face"].items():
+                    faces[face] = faces.get(face, 0) + count
+        face_note = ""
+        if faces:
+            total_faces = max(sum(faces.values()), 1)
+            face_note = " (mirror vs its _twin, hits by face: " + ", ".join(
+                f"{f} {100.0 * c / total_faces:.0f}%" for f, c in sorted(faces.items())) + ")"
+        print(f"  {v}{face_note}: {shots} shots, {hits} hits ({100.0 * hits / max(shots, 1):.0f}%), {damage:.0f} damage, {kills} kills; "
+              + ", ".join(f"{o} {100.0 * c / total:.0f}%" for o, c in top))
 
 
 def main():
@@ -123,6 +159,7 @@ def main():
             l = sum(1 for m in pair if score_for(m, a) == 0.0)
             cells.append(f"{w}-{l}-{len(pair) - w - l}")
         print(f"  {a}: " + "  ".join(f"{b} {c}" for b, c in zip(variants, cells)))
+    print_stats(variants, matches)
     verdict = ""
     if args.champion and args.champion in variants:
         best = max(variants, key=lambda v: ratings[v])

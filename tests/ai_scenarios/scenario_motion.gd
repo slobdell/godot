@@ -6,8 +6,8 @@ extends TestCase
 const PENDING := []
 
 
-## A duel between two brain tanks of `variant`: [moving share per side, seconds each spent seeing its enemy's side or
-## rear, shots per side, hull + shield lost per side].
+## A duel between two brain tanks of `variant`: moving share per side, seconds each spent seeing the other's side or
+## rear, shots per side, and the share of hits that landed on a front.
 func _duel(variant: String, seed_value: int) -> Dictionary:
 	BrainVariants.use(Match.Team.GREEN, variant)
 	BrainVariants.use(Match.Team.RUST, variant)
@@ -25,35 +25,62 @@ func _duel(variant: String, seed_value: int) -> Dictionary:
 			break
 		counted += 1
 		for i in 2:
-			var me := tanks[i]
-			var other := tanks[1 - i]
-			if me.estimated_velocity.length() > 1.5:
+			if tanks[i].estimated_velocity.length() > 1.5:
 				moving[i] += 1
-			# I see its side or rear: more than 45° off its front (cos 0.707).
-			var from_other := Vector3(me.global_position.x - other.global_position.x, 0.0, me.global_position.z - other.global_position.z).normalized()
-			if (-other.global_basis.z).dot(from_other) < 0.707:
+			if _sees_side_or_rear(tanks[i], tanks[1 - i]):
 				flanked[i] += 1
+	var faces: Dictionary = s.game_match.stats["hits_by_face"]
+	var hits := maxi(int(faces["front"]) + int(faces["side"]) + int(faces["rear"]), 1)
 	var result := {"moving": [float(moving[0]) / maxf(counted, 1), float(moving[1]) / maxf(counted, 1)],
 			"flank_seconds": [flanked[0] / 60.0, flanked[1] / 60.0], "shots": [s.shots_by(green), s.shots_by(rust)],
-			"lost": [green.max_health + green.max_shield - green.health - green.shield, rust.max_health + rust.max_shield - rust.health - rust.shield],
-			"seconds": counted / 60.0}
+			"front_share": float(faces["front"]) / hits, "seconds": counted / 60.0}
 	s.dispose()
 	BrainVariants.reset()
 	return result
 
 
-func test_two_tanks_duel_on_the_move_and_one_gets_an_angle() -> void:
+## `me` looks at `other`'s side or rear: more than 45° off its front (cos 0.707).
+static func _sees_side_or_rear(me: Tank, other: Tank) -> bool:
+	var from_other := Vector3(me.global_position.x - other.global_position.x, 0.0, me.global_position.z - other.global_position.z).normalized()
+	return (-other.global_basis.z).dot(from_other) < 0.707
+
+
+func test_two_tanks_duel_on_the_move_front_armor_first() -> void:
 	var control := await _duel("a6", 1)
-	var moving := await _duel("x2", 1)
-	print("MEASURE ai_duel a6 (round 2): moving %s, flank seconds %s, shots %s, lost %s over %.1f s" % [control["moving"],
-			control["flank_seconds"], control["shots"], control["lost"], control["seconds"]])
-	print("MEASURE ai_duel x2 (moving): moving %s, flank seconds %s, shots %s, lost %s over %.1f s" % [moving["moving"],
-			moving["flank_seconds"], moving["shots"], moving["lost"], moving["seconds"]])
+	var moving := await _duel("x3", 1)
+	for entry: Array in [["a6 (round 2)", control], ["x3 (moving)", moving]]:
+		var r: Dictionary = entry[1]
+		print("MEASURE ai_duel %s: moving %s, flank seconds %s, shots %s, front hits %.0f%% over %.1f s" % [entry[0],
+				r["moving"], r["flank_seconds"], r["shots"], float(r["front_share"]) * 100.0, r["seconds"]])
 	for i in 2:
-		assert_true(float(moving["moving"][i]) >= 0.6, "side %d keeps moving while it fights (%.0f%% of the time)" % [i, float(moving["moving"][i]) * 100.0])
-	assert_true(maxf(moving["flank_seconds"][0], moving["flank_seconds"][1]) >= 2.0,
-			"at least one works round to the other's side or rear for 2 s+ (%s)" % [moving["flank_seconds"]])
+		assert_true(float(moving["moving"][i]) >= 0.5, "side %d keeps moving while it fights (%.0f%% of the time)" % [i, float(moving["moving"][i]) * 100.0])
+	assert_true(float(moving["front_share"]) >= 0.5, "weaving keeps the front armor on the gun (%.0f%% of hits on fronts)" % (float(moving["front_share"]) * 100.0))
 	assert_true(int(moving["shots"][0]) + int(moving["shots"][1]) >= 6, "and they still fight (%s shots)" % [moving["shots"]])
+
+
+func test_two_tanks_on_one_work_round_to_its_side() -> void:
+	BrainVariants.use(Match.Team.GREEN, "x3")
+	var s := AiScenario.create(self, 2)
+	var enemy := s.brain_tank(Match.Team.RUST, "Rust_A_1", Vector3(-98, 0, -20), PI)
+	AiScenario.make_durable(enemy)
+	var pair: Array[Tank] = []
+	for i in 2:
+		var tank := s.brain_tank(Match.Team.GREEN, "Green_Alpha_%d" % (i + 1), Vector3(-104 + i * 12, 0, 28), 0.0, {}, "tank", "", "Alpha")
+		AiScenario.make_durable(tank)
+		pair.append(tank)
+	s.form_squad(Match.Team.GREEN, "Alpha", pair)
+	var flank_ticks := 0
+	var first := -1
+	await s.start()
+	for tick in 60 * 20:
+		await s.step()
+		if pair.any(func(t: Tank) -> bool: return _sees_side_or_rear(t, enemy)):
+			flank_ticks += 1
+			first = tick if first < 0 else first
+	print("MEASURE ai_pair_flank a tank sees the enemy's side or rear %.1f s of 20 (first after %.1f s)" % [flank_ticks / 60.0, first / 60.0])
+	assert_true(flank_ticks >= 60 * 3 and first >= 0 and first <= 60 * 10,
+			"one of the pair gets an angle on it within 10 s, for 3 s+ (%.1f s, first after %.1f s)" % [flank_ticks / 60.0, first / 60.0])
+	BrainVariants.reset()
 
 
 func test_a_scout_makes_attack_runs_on_a_tank() -> void:

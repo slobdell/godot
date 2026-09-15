@@ -49,7 +49,7 @@ if [ ! -x ~/$root/.tools/node/bin/node ]; then
 fi
 export PATH=~/$root/.tools/node/bin:\$PATH
 export TANK_SQUAD_SLOTS=$slots
-auth=\$(ls /run/user/\$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1)
+auth=\$(ls -t /run/user/\$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1)  # newest: stale ones linger after re-logins
 if [ -n "\$auth" ]; then export DISPLAY=:0 XAUTHORITY="\$auth"; fi
 if ! compgen -G ".tools/godot-*/editor_data/export_templates/*/.installed" >/dev/null && [ "\$1" != bootstrap ]; then
 	echo ">> remote: first run here, bootstrapping the toolchain" >&2

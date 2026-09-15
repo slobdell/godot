@@ -18,7 +18,11 @@ extends RefCounted
 ##           "target": {"position", "forward", "velocity"?}, "band": [min, max] (preferred range),
 ##           "side": +1 / -1 (which way around; the caller flips it to jink), "phase": "run" | "extend" (run style),
 ##           "map": CoverMap or null, "friends": [Vector3], "limit": arena half size (meters),
-##           "wheels": bool, "min_turn_radius": meters (wheels)}
+##           "wheels": bool, "min_turn_radius": meters (wheels),
+##           "velocity": Vector3 (current), "incoming": IncomingFire.for_unit() entries (X3: dodge them),
+##           "acceleration": m/s², "turn_rate_deg": hull turn rate (the dodge model),
+##           "threats": [{"position", "weight"}] other guns that can shoot me (front armor toward them too),
+##           "target_busy": bool (its gun points at someone else: go for its side)}
 ## result:  {"point": Vector3 (steer at it), "reverse": bool, "index": int, "score": float} or {} when every
 ##          direction is blocked.
 
@@ -41,12 +45,31 @@ const FRIEND_SPACING := 7.0
 ## Never closer to the target than this (meters), except on a run.
 const MIN_GAP := 6.0
 ## Term weights per style: range band, tangential motion, keeping the chosen side, working toward the target's side and
-## rear, front armor toward the target, and continuity with the current heading.
+## rear, front armor toward the target, and continuity with the current heading; "reverse" is subtracted from a
+## reversing candidate (negative: never reverse) and "turn" per second the hull needs to swing onto it (a pivot is time
+## standing still, the easiest shot there is: a jink should shuffle forward and back, not spin round).
 const WEIGHTS := {
-	"strafe": {"range": 1.0, "tangent": 0.8, "side": 0.35, "flank": 0.35, "armor": 0.15, "continuity": 0.25, "reverse": 0.6},
-	"angle": {"range": 1.0, "tangent": 0.45, "side": 0.3, "flank": 0.25, "armor": 0.7, "continuity": 0.25, "reverse": 0.75},
-	"run": {"range": 0.0, "tangent": 0.3, "side": 0.2, "flank": 0.6, "armor": 0.0, "continuity": 0.45, "reverse": 0.0},
+	"strafe": {"range": 1.0, "tangent": 0.8, "side": 0.35, "flank": 0.35, "armor": 0.15, "continuity": 0.1, "reverse": 0.25, "turn": 0.25},
+	"angle": {"range": 1.0, "tangent": 0.35, "side": 0.35, "flank": 0.1, "armor": 1.0, "continuity": 0.2, "reverse": 0.1, "turn": 0.25},
+	"run": {"range": 0.0, "tangent": 0.3, "side": 0.2, "flank": 0.6, "armor": 0.0, "continuity": 0.45, "reverse": -1.0, "turn": 0.0},
 }
+## Dangers are subtracted (scores can go below zero once turning costs are in): heading side-on in the angle style,
+## passing too close to the target, ending next to a friend, and (X3) passing within HIT_RADIUS of an incoming round
+## (would_be_hit models the hull's turn and acceleration, stepped every DODGE_STEP seconds).
+const PENALTY_SIDE_ON := 1.5
+const PENALTY_RAM := 1.2
+const PENALTY_CROWD := 0.6
+const PENALTY_HIT := 3.0
+const HIT_RADIUS := 2.8
+const DODGE_STEP := 0.1
+## Turns longer than this (seconds) are pivots in place in the dodge model (≈ Steering.TURN_IN_PLACE_DEG at 90°/s).
+const PIVOT_SECONDS := 0.75
+## A busy target (its gun on someone else): flank weight and the armor weight's factor.
+const BUSY_FLANK := 1.2
+const BUSY_ARMOR := 0.3
+## Angle style: a hull more than this far off the target (cos 50°) is masked unless the unit must close or open the range,
+## so heavy hulls rock forward and back along one angled heading instead of turning side-on.
+const ANGLE_MASK_COS := 0.64
 ## Run style: how far past the target's flank a run aims (meters), and the distances where a run breaks away and where
 ## the extension turns back in.
 const RUN_OFFSET := 5.0
@@ -85,12 +108,20 @@ static func choose(request: Dictionary) -> Dictionary:
 	if style == "run":
 		var across := Vector3(-bearing.z, 0.0, bearing.x) * side
 		run_goal = target_at + across * RUN_OFFSET
+	var incoming: Array = request.get("incoming", [])
+	var threats: Array = request.get("threats", [])
+	# X3 weak spots: while the target's gun points at someone else, its side is there for the taking and my own front
+	# matters less, so even a heavy hull swings wide for the angle.
+	var busy: bool = request.get("target_busy", false)
+	var flank_weight := BUSY_FLANK if busy else float(weights["flank"])
+	var armor_weight := float(weights["armor"]) * (BUSY_ARMOR if busy else 1.0)
+	var velocity_now := _flat(request.get("velocity", Vector3.ZERO))
 	var scored: Array = []
 	for i in RING.size():
 		var ring := Vector3(RING[i].x, 0.0, RING[i].y)
 		for reverse: bool in [false, true]:
 			var travel := travel_reverse if reverse else travel_forward
-			if travel <= 0.0 or (reverse and float(weights["reverse"]) <= 0.0):
+			if travel <= 0.0 or (reverse and float(weights["reverse"]) < 0.0):
 				continue
 			var hull := -ring if reverse else ring
 			var turn_cos := hull.dot(forward)
@@ -114,23 +145,48 @@ static func choose(request: Dictionary) -> Dictionary:
 					score += float(weights["range"]) * _band(gap, float(band[0]), float(band[1]))
 					score += float(weights["tangent"]) * tangent
 			score += float(weights["side"]) * (1.0 if around * side > 0.0 else 0.0)
-			score += float(weights["flank"]) * (1.0 - target_forward.dot(from_target / gap)) * 0.5
+			score += flank_weight * (1.0 - target_forward.dot(from_target / gap)) * 0.5
 			var new_bearing := (target_at - end) / gap
-			score += float(weights["armor"]) * maxf(0.0, hull.dot(new_bearing))
+			var front := maxf(0.0, hull.dot(new_bearing))
+			# Front armor toward everything that can shoot me, the target counting double (X3 "keep your front toward threats").
+			if not threats.is_empty():
+				var weighted := 2.0 * front
+				var weight_sum := 2.0
+				for threat: Dictionary in threats:
+					var toward := _flat(threat["position"]) - end
+					var length := toward.length()
+					if length > 0.1:
+						weighted += float(threat.get("weight", 1.0)) * maxf(0.0, hull.dot(toward / length))
+						weight_sum += float(threat.get("weight", 1.0))
+				front = weighted / weight_sum
+			score += armor_weight * front
+			if style == "angle" and not busy and hull.dot(bearing) < ANGLE_MASK_COS and _band(gap, float(band[0]), float(band[1])) >= 1.0:
+				score -= PENALTY_SIDE_ON
 			score += float(weights["continuity"]) * (turn_cos + 1.0) * 0.5
+			var turning := 0.0 if wheels else CombatMotion.turn_seconds(turn_cos, float(request.get("turn_rate_deg", 90.0)))
+			score -= float(weights["turn"]) * turning
 			if reverse:
-				score *= float(weights["reverse"])
+				score -= float(weights["reverse"])
 			# Don't ram it: the closest the path passes to the target (a run's approach aims beside it on purpose).
 			var along := clampf((target_at - here).dot(ring), 0.0, travel)
 			var passes := (here + ring * along).distance_to(target_at)
 			if (style != "run" or phase != "run") and minf(gap, passes) < MIN_GAP:
-				score *= 0.2
+				score -= PENALTY_RAM
 			for friend: Vector3 in friends:
 				if _flat(friend).distance_to(end) < FRIEND_SPACING:
-					score *= 0.4
+					score -= PENALTY_CROWD
 					break
-			scored.append([-score, i, reverse, end])
+			var undodged := score
+			if not incoming.is_empty() and CombatMotion.would_be_hit(here, velocity_now,
+					ring * (float(request.get("reverse_speed", 0.0)) if reverse else float(request["speed"])), incoming,
+					turning,
+					float(request.get("acceleration", 1000.0))):
+				score -= PENALTY_HIT
+			scored.append([-score, i, reverse, end, undodged])
 	scored.sort()
+	var best_undodged := -INF
+	for entry: Array in scored:
+		best_undodged = maxf(best_undodged, float(entry[4]))
 	# Dangers last, best first: only the winner's path is checked in the common case.
 	for entry: Array in scored:
 		var end: Vector3 = entry[3]
@@ -143,8 +199,43 @@ static func choose(request: Dictionary) -> Dictionary:
 		var point := here + direction * STEER_DISTANCE
 		point.x = clampf(point.x, -limit, limit)
 		point.z = clampf(point.z, -limit, limit)
-		return {"point": point, "reverse": entry[2], "index": entry[1], "score": -float(entry[0])}
+		# Dodging: without the incoming rounds, something better would have been picked.
+		return {"point": point, "reverse": entry[2], "index": entry[1], "score": -float(entry[0]),
+				"dodging": not incoming.is_empty() and float(entry[4]) < best_undodged - 0.001}
 	return {}
+
+
+## Whether a unit at `here` moving at `now` that sets out on `planned` passes within HIT_RADIUS of any incoming round
+## before it arrives (plus a little: rounds arrive early when the unit drives toward them). Driving model: the current
+## velocity holds while the hull turns onto the new heading (`turn_seconds`), then ramps toward `planned` at
+## `acceleration` m/s². Stepped every DODGE_STEP seconds with an exact closest approach inside each step (pure).
+static func would_be_hit(here: Vector3, now: Vector3, planned: Vector3, incoming: Array, turn_seconds := 0.0,
+		acceleration := 1000.0) -> bool:
+	for entry: Dictionary in incoming:
+		var round_at: Vector3 = entry["position"]
+		var round_velocity: Vector3 = entry["velocity"]
+		var seconds := float(entry.get("eta_ticks", 30)) / 60.0 + 0.25
+		var t := 0.0
+		var position := here
+		var velocity := now
+		while t < seconds:
+			var step := minf(DODGE_STEP, seconds - t)
+			if IncomingFire.closest_approach(position, velocity, round_at + round_velocity * t, round_velocity, step) < HIT_RADIUS:
+				return true
+			position += velocity * step
+			t += step
+			# A hull swinging through more than Steering.TURN_IN_PLACE_DEG pivots in place: it brakes while it turns.
+			var goal := planned if t >= turn_seconds else (Vector3.ZERO if turn_seconds > PIVOT_SECONDS else velocity)
+			velocity = velocity.move_toward(goal, acceleration * step)
+	return false
+
+
+## Seconds a hull turning at `turn_rate_deg` needs to swing through the angle whose cosine is `turn_cos`
+## (θ ≈ √(2(1 − cos θ)) radians: exact at 0, 4% short at 90°; square roots are portable, trig isn't).
+static func turn_seconds(turn_cos: float, turn_rate_deg: float) -> float:
+	if turn_rate_deg <= 0.0:
+		return 0.0
+	return sqrt(maxf(0.0, 2.0 * (1.0 - turn_cos))) * 57.29578 / turn_rate_deg
 
 
 ## 1 inside [low, high], falling off linearly to 0 over 12 m below and 20 m above.

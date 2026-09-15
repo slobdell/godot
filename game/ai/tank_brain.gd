@@ -115,10 +115,17 @@ const STALL_TICKS := 180
 const MOTION_REACH_MARGIN := 15.0
 ## ...hulls with at least this much front armor angle it toward the target instead of circling side-on...
 const ANGLE_FRONT_ARMOR := 6.0
+## ...keeping the front toward at most this many visible guns (nearest, the ones aimed at it first).
+const MOTION_THREATS := 4
 ## ...and a jink flips the circling side no sooner than JINK_MIN_TICKS after the last, and no later than
 ## JINK_MIN_TICKS + JINK_SPREAD_TICKS (per unit, so a group doesn't jink in step).
 const JINK_MIN_TICKS := 90
 const JINK_SPREAD_TICKS := 150
+## ...and guns reloading at least SHORT_HALT_RELOAD seconds halt to fire: braking starts this long (s) before the gun is
+## loaded, and a halt lasts at most SHORT_HALT_MAX_TICKS after it is (a gun that can't get a shot off moves on).
+const SHORT_HALT_RELOAD := 1.5
+const SHORT_HALT_LEAD := 0.15
+const SHORT_HALT_MAX_TICKS := 60
 ## Cooldown length (ticks) and what an option on cooldown scores (× its score).
 const COOLDOWN_TICKS := 300
 const COOLDOWN_FACTOR := 0.25
@@ -195,6 +202,10 @@ var cooldowns := {}
 ## X2 combat motion: which way around the target (+1/-1, 0 = not chosen yet), when the next jink may flip it, and a
 ## fixed gun's run phase ("run" in, "extend" out).
 var _strafe_side := 0
+## X3: how many rounds were on their way at the last look (a new one triggers a think).
+var _incoming_count := 0
+## The tick the gun became loaded (-1 while reloading), for the short halt.
+var _loaded_tick := -1
 var _jink_tick := 0
 var _run_phase := "run"
 
@@ -219,6 +230,12 @@ func think(_delta: float) -> void:
 	if _poll_order(think_tick):
 		fresh_order = true
 		interrupt()
+	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
+	# arrives in 43 ticks; waiting up to 6 for the next think wastes the dodge).
+	if not think_tick and not fresh_order and _dodges() and FIGHT_OPTIONS.has(choice.get("option", "")):
+		var count := IncomingFire.for_unit(game_match, tank).size()
+		think_tick = count > _incoming_count
+		_incoming_count = count
 	# Think LOD wake-up: an idle brain checks each fresh intel refresh for an enemy coming near.
 	if _think_every == IDLE_THINK_EVERY_TICKS and game_match.tick % Match.INTEL_EVERY_TICKS == 0 and _enemy_near():
 		_think_every = int(BrainVariants.for_team(tank.team).get("think_ticks", THINK_EVERY_TICKS))
@@ -955,6 +972,7 @@ func build_situation() -> Dictionary:
 				if game_match.control_point else null,
 		"order": order_context,
 		"cooldowns": cooldowns,
+		"incoming": IncomingFire.for_unit(game_match, tank) if _dodges() else [],
 	}
 
 
@@ -1433,6 +1451,11 @@ func _moves_while_fighting(s: Dictionary) -> bool:
 	return squad == null or String(squad["verb"]) != "hold"
 
 
+## X3: whether this brain variant dodges incoming rounds.
+func _dodges() -> bool:
+	return bool(BrainVariants.for_team(tank.team).get("dodge", false))
+
+
 ## X2 styles by chassis: a fixed gun aims with the hull, so it makes runs; a thick front wants to face the target, so
 ## heavy hulls angle; the rest circle-strafe.
 static func motion_style(unit_id: String) -> String:
@@ -1472,6 +1495,23 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		elif _run_phase == "extend" and distance >= CombatMotion.RUN_RETURN:
 			_run_phase = "run"
 			_strafe_side = -_strafe_side  # come back in on the other flank
+	# Short halt (slow guns): brake so the gun is loaded as the hull stops, fire from a standstill (moving spread, and
+	# a turning hull drags the turret off), then move again while reloading. Never waits more than SHORT_HALT_MAX_TICKS.
+	var reload_seconds := float(weapon["reload"])
+	if float(me.get("reload", 1.0)) >= 1.0:
+		_loaded_tick = tick if _loaded_tick < 0 else _loaded_tick
+	else:
+		_loaded_tick = -1
+	if style != "run" and reload_seconds >= SHORT_HALT_RELOAD and distance <= float(weapon["range"]):
+		var ready_in := (1.0 - float(me.get("reload", 1.0))) * reload_seconds
+		var braking := absf(tank.speed()) / maxf(tank.acceleration, 0.1)
+		var incoming: Array = s.get("incoming", [])
+		var about_to_be_hit := not incoming.is_empty() and CombatMotion.would_be_hit(my_position, tank.estimated_velocity,
+				tank.estimated_velocity, incoming)
+		if ready_in <= braking + SHORT_HALT_LEAD and (_loaded_tick < 0 or tick - _loaded_tick <= SHORT_HALT_MAX_TICKS) \
+				and not about_to_be_hit:
+			why = TankBrain._join(why, "short halt")
+			return {"type": "stop"}
 	var cover_map := CoverMap.of(tank)
 	var request := {"position": my_position, "forward": me["forward"], "speed": tank.max_forward_speed,
 			"reverse_speed": tank.max_reverse_speed, "style": style,
@@ -1480,15 +1520,24 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			"phase": _run_phase, "map": cover_map,
 			"friends": (s["allies"] as Array).map(func(ally: Dictionary) -> Vector3: return ally["position"]),
 			"wheels": String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels",
-			"min_turn_radius": float(Units.stat(tank.unit_id, "min_turn_radius_m", 0.0))}
+			"min_turn_radius": float(Units.stat(tank.unit_id, "min_turn_radius_m", 0.0)),
+			"velocity": tank.estimated_velocity, "incoming": s.get("incoming", []), "acceleration": tank.acceleration,
+			"turn_rate_deg": rad_to_deg(tank.hull_turn_rate),
+			"threats": TankBrain.threat_list(s["contacts"], my_position).slice(0, MOTION_THREATS),
+			"target_busy": not bool(contact.get("aiming_at_me", false))}
+	_incoming_count = (s.get("incoming", []) as Array).size()
 	var result := CombatMotion.choose(request)
 	if result.is_empty():
 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
+	if result.get("dodging", false):
+		why = TankBrain._join(why, "dodging")
+	if bool(request["target_busy"]) and style != "run":
+		why = TankBrain._join(why, "going for its side")
 	match style:
 		"run":
 			why = TankBrain._join(why, "attack run" if _run_phase == "run" else "breaking away")
 		"angle":
-			why = TankBrain._join(why, "angling, front armor on it")
+			why = TankBrain._join(why, "weaving, front armor on it")
 		_:
 			why = TankBrain._join(why, "circling")
 	return _move_to(result["point"], result["reverse"], 1.0, 1.0)

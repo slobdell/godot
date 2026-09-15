@@ -93,3 +93,27 @@ func test_wheels_only_pick_turns_they_can_drive() -> void:
 func test_the_same_request_gives_the_same_answer() -> void:
 	var request := _request("angle", Vector3(12, 0, -27), {"friends": [Vector3(5, 0, 3)]})
 	assert_eq(CombatMotion.choose(request), CombatMotion.choose(request.duplicate(true)), "deterministic")
+
+
+func test_it_steers_out_of_the_path_of_an_incoming_shell() -> void:
+	var calm := CombatMotion.choose(_request("strafe", Vector3(0, 0, -30)))
+	var wanted := _direction(calm)
+	# A shell from a second gun 60 m out, aimed where the calm choice leaves me when it arrives in ~0.86 s (the hull spends
+	# most of that swinging onto the new heading, so barely a meter along it).
+	var aim := wanted * 1.0
+	var from := Vector3(0, 0, -60)
+	var velocity := (aim - from).normalized() * 70.0
+	var shell := {"position": from, "velocity": velocity, "eta_ticks": roundi(from.distance_to(aim) / 70.0 * 60.0)}
+	var dodged := CombatMotion.choose(_request("strafe", Vector3(0, 0, -30), {"incoming": [shell], "velocity": Vector3.ZERO}))
+	assert_true(bool(dodged["dodging"]), "it knows it's dodging")
+	assert_true((dodged["point"] as Vector3).distance_to(calm["point"]) > 3.0, "it picks another way (%s, calm %s)" % [dodged["point"], calm["point"]])
+	assert_true(not bool(calm.get("dodging", false)), "no rounds, no dodging")
+
+
+func test_closest_approach() -> void:
+	assert_near(IncomingFire.closest_approach(Vector3.ZERO, Vector3.ZERO, Vector3(10, 0, -50), Vector3(0, 0, 70), 2.0), 10.0, 0.01,
+			"a round passing 10 m to the side")
+	assert_near(IncomingFire.closest_approach(Vector3.ZERO, Vector3(10, 0, 0), Vector3(10, 0, -70), Vector3(0, 0, 70), 2.0), 0.0, 0.01,
+			"driving into its path: it arrives where I'll be in 1 s")
+	assert_near(IncomingFire.closest_approach(Vector3.ZERO, Vector3(10, 0, 0), Vector3(10, 0, -70), Vector3(0, 0, 70), 0.5), 35.36, 0.01,
+			"...but not within half a second")

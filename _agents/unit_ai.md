@@ -39,6 +39,72 @@ deviations.
 | AI ladder | `game/ai/brain_variants.gd`, `tools/ai_ladder.py`, `make ai-ladder` | Variants are feature switches read from `--green-brain/--rust-brain` by the brain itself (no match-runner edits) |
 | Perf ≤ 1 ms at 50 units | ~7–9 ms (see Results) | Not met; think LOD (18 ticks with no enemy within 130 m) and per-tick shared tables built; the rest is listed under Results |
 
+## Round 3: alive and responsive (2026-09-15, [streams/ai.md](streams/ai.md) X1–X6)
+
+The lead after round 2: *"Tanks will just sit there stationary and shoot each other - there's no intent at evasive
+action, no intent of trying to shoot a weak spot, no intent of trying to circle your opponent … the units just don't
+feel controllable right now, they seem to get stuck in some particular state and then not respond to my clicks."*
+
+### Orders always win (X1)
+
+| Piece | Code | What it does |
+|---|---|---|
+| K1 adapter | `game/ai/order_feed.gd` | Reads control's `Orders` duck-typed (`Match.orders`, or an object attached to the match before CP1); normalizes `current(unit)` to `{verb, goal, target, issued_tick, speed}`. A unit's goal is `slot` if given, else `to` + `slot_offset`, else `to` |
+| Response guarantee | `TankBrain._poll_order` | Polled every think tick and whenever `order_changed` names the unit; a new order interrupts the unstick routine and commitment and is executed the same tick (measured worst 1 tick) |
+| What vs how | `TankBrain.ORDER_OPTIONS`, `_obey` | The verb filters the options: move → MOVE; hold → HOLD; follow → FOLLOW; attack → only fights on its target, PURSUE when out of sight; attack-move → MOVE at 0.55 unless a visible enemy in weapon range + 10 m gets fought (+0.5), RETREAT only when about to die |
+| Completion | `_update_order_progress` | Brains call `Orders.complete`: move/attack-move on arrival (3.5 m, or 12 m after 3 s without progress), attack/follow when the other unit is gone, stop at once |
+| Regroup | idle posts | Every finished order leaves a post; an idle unit fights within 30 m of it (the situation's objective + leash) and drives back beyond that. No scouting, contesting, or resupply trips on its own |
+| No stuck states | `_timed_out`, `cooldowns` | An option kept past its timeout (fights: since the last shot) or driving 3 s without progress (`OrderController.stalled_ticks`) goes on a 5 s cooldown (×0.25). Ladder: with vs without, 26–22 over two doctrines |
+
+Scenarios: `tests/ai_scenarios/scenario_orders.gd` (`StubOrders` stands in for control's `Orders` until CP1); pure
+decide tests: `tests/test_ai_orders.gd`.
+
+### Fighting on the move (X2) and evasion and weak spots (X3)
+
+**Literature.** Context steering (Andrew Fray, *Game AI Pro 2*, 2015: interest and danger maps over a ring of
+directions, the choice with the best interest among the least danger), steering behaviors (Reynolds, GDC 1999:
+evade, pursue with prediction), and armor doctrine (short halts; angling the hull so the front takes the hits).
+
+**`CombatMotion`** (`game/ai/combat_motion.gd`, pure): 16 directions × {forward, reverse}, each judged where it ends
+after ~1.2 s of driving. Interest terms: the weapon's range band, tangential motion, keeping the chosen side (a jink
+flips it), working toward the target's side and rear, front armor toward every gun that can shoot (the target
+counting double), continuity. Costs: seconds of hull turn (a pivot is standing still), reversing. Dangers
+(subtracted): obstacles on the path (CoverMap), arena edges, ramming the target, crowding a friend, and an incoming
+round that would hit (`would_be_hit`: current velocity, hull turn, acceleration, stepped closest approach).
+
+| Style | Who (`TankBrain.motion_style`) | How it fights |
+|---|---|---|
+| `strafe` | turret units, front armor < 6 (IFV, Lancer, Burner) | Circles inside the band, jinks sides every 1.5–4 s per unit; jinks shuffle forward/back instead of pivoting |
+| `angle` | front armor ≥ 6 (the tank) | A **weave**: the hull stays within 50° of the target and rocks forward and back along it; a **short halt** brakes so the gun is loaded as the hull stops, fires, then moves again while reloading |
+| `run` | fixed guns (the scout) | Attack runs aimed past the target's flank, break away inside 9 m, turn back in beyond 30 m on the other flank |
+
+A **busy target** (its gun on someone else) flips the priorities: flank weight up, own armor weight down, no side-on
+mask, so the unit not being shot at swings wide for the side (`why`: "going for its side"). `IncomingFire`
+(`game/ai/incoming_fire.gd`) reads `Match.incoming_projectiles` (K2) when combat ships it and the Shells container
+until then; a new round on its way triggers a think at once.
+
+Brain variants: **x2** = a6 + `combat_motion`; **x3** = x2 + `dodge`. The champion stays a6 until a ladder says
+otherwise (results below).
+
+### Measurements so far (round-2 weapons, builder0)
+
+| Measure | a6 (round 2) | x2 / x3 |
+|---|---|---|
+| Tank duel: time moving | 1% | 79–84% |
+| Tank duel: hits on the front | 100% | 36% (circling side-on) → 100% (weave) |
+| Tank mirror (5 v 5) hits by face | front 66%, side 31%, rear 3% | first cut front 36–39%, side 47–49%, rear 15%; weave front 56%, side 35%, rear 8% |
+| Two tanks on one: time seeing its side or rear | | 0 s (weave only) → 5.0 s of 20 (busy-target flanking) |
+| Scout ordered onto a tank (x2) | | 4 attack runs in 25 s, all 22 hits into its side or rear |
+| IFV vs a cannon at 30–45 m: shells that miss | 0% | 6–15% (noise over 33 shells) |
+| Ladder vs a6, individuals mirror | | x2 0–24 (first cut) → 3–13 (short halt) → x3 4–12 (weave) |
+| Ladder vs a6, combined_arms | | x2 12–12 |
+
+Reading: moving tanks lost mirrors because they showed their sides (the armor multiplier is 0.5 front, 1.0 side,
+1.5 rear) and fired on the move with a turret the hull drags off target; the weave and the short halt recovered
+most of it. **Dodging is physically marginal with round-2 shells:** 70 m/s at 25–45 m arrives in ~0.5 s, in which a
+14 m/s² hull moves ~2 m off the shooter's lead, less than half a hull; the dodge threshold scenario is pending until
+combat's slower, visible tank shells land.
+
 ## 1. Decision making: considerations and response curves
 
 **Literature.** Dave Mark's *Behavioral Mathematics for Game AI* (2009) and the GDC talks with Kevin Dill

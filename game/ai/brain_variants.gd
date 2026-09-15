@@ -17,6 +17,7 @@ extends RefCounted
 ##   matchups          target choice and duel appetite from Matchups; fixed guns ORBIT slow turrets (A5)
 ##   timeouts          stuck-state timeouts: options that stop producing shots or progress go on cooldown (X1; default on)
 ##   combat_motion     fight on the move: circle-strafe, angle the front armor, attack runs (round-3 X2, CombatMotion)
+##   dodge             steer clear of incoming rounds while fighting on the move (round-3 X3, IncomingFire)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -26,26 +27,31 @@ const PROFILES := {
 	# Probe: thinking 50% less often in contact (CPU) — must not lose to a6 to be adopted.
 	# Round 3 X2: a6 that keeps moving while it fights.
 	"x2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true},
+	# Round 3 X3: x2 that dodges incoming rounds.
+	"x3": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true},
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
 	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": 9},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
 ## 2026-09-15: a6 (beat a4 9-7 in ladder run 1 and r1 7-5 in run 2; see unit_ai.md "AI ladder").
-const CHAMPION := "a6"
+## 2026-09-15 (round 3): x3, fighting on the move (beat a6 14-10 on individuals and 17-7 on combined_arms).
+const CHAMPION := "x3"
 
 static var _from_flags: Array = []
 
 
 ## The feature profile for `team`'s brains.
+## "<id>_twin" is the same brain under another name, so the ladder can play a variant against itself (a mirror's hit
+## statistics describe that one brain).
 static func for_team(team: int) -> Dictionary:
 	if _from_flags.is_empty():
 		_from_flags = [CHAMPION, CHAMPION]
 		for arg in OS.get_cmdline_user_args():
 			for side in 2:
 				var prefix := "--%s-brain=" % ["green", "rust"][side]
-				if arg.begins_with(prefix) and PROFILES.has(arg.trim_prefix(prefix)):
-					_from_flags[side] = arg.trim_prefix(prefix)
+				if arg.begins_with(prefix) and PROFILES.has(arg.trim_prefix(prefix).trim_suffix("_twin")):
+					_from_flags[side] = arg.trim_prefix(prefix).trim_suffix("_twin")
 				elif arg.begins_with(prefix):
 					push_error("unknown brain variant '%s' (have %s)" % [arg.trim_prefix(prefix), PROFILES.keys()])
 	return PROFILES[_from_flags[team]]
