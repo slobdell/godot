@@ -217,6 +217,9 @@ review is the long pole; everything ungated ran while it waits)
 - After merging CP1 from main (9a12f79), `make remote T=check` passes (493 tests) and the gallery shots were re-taken on
   builder0 (`arena-kit-*`, `artillery-deploy`, `vehicle-gallery-condemned`): they match the local ones. builder0's
   overlay reads 7–8 fps under its shared desktop GPU; that's not a performance number.
+- After merging CP2 (cb434ef) and adding the combat-deploy integration test, `make remote T=check` passes (540 tests,
+  c8bc7cd). The test first failed on builder0 only: `process_frame` fires before `_process`, and a loaded machine runs
+  several physics ticks per iteration, so it now waits whole frames before reading the legs.
 - The arena kit adds ~0.8 MB to the web `.pck` (target was no growth); the biggest pieces are the placeholder ads and the
   container texture set. Real ads chosen by the lead should keep to 256 × 512 stills.
 - The screens' live card finds the Match by searching the scene a few times after it appears; a direct hook from
