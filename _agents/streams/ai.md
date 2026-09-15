@@ -215,6 +215,9 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - Heavy tanks can't dodge (physics, above); they take hits on the front armor instead.
 
 **Merge notes (shared files):**
+- `game/ai/order_controller.gd` will conflict with stream/combat's one-line lead-speed edit in `_apply_weapon`: take
+  ai's version (the same per-weapon `projectile_speed_mps` fix plus the difficulty aim wander). Combat's edits to
+  `game/ai/fire_lanes.gd` and `tests/ai_scenarios/scenario_cover.gd` are applied here byte-identically.
 - `tools/remote.sh` is **byte-identical to stream/control's** (it finds the running Xwayland's auth file; a stale one hung
   every rendering target on builder0), and `game/ui/command_icons.gd` is **byte-identical to stream/combat's** (icons
   beyond 16384 px are skipped: army-loop-smoke failed ~1 run in 3 on a (53141, 63901) px icon). All three streams hit
