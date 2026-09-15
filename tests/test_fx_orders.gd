@@ -150,3 +150,32 @@ func _ready_setup() -> Dictionary:
 	var s := _setup()
 	await wait_physics_frames(1)
 	return s
+
+
+func test_real_k1_orders_are_found_on_the_match_and_drawn() -> void:
+	var fx: FxWorld = add_to_tree(FxWorld.new())
+	var game_match: Match = add_to_tree(preload("res://game/match/match.tscn").instantiate())
+	game_match.elimination = true
+	fx.link.attach(game_match)
+	var orders := Orders.new(game_match)
+	Orders.attach(game_match, orders)
+	var names: Array = []
+	for i in 3:
+		names.append(String(game_match.spawn_tank("Green_%d" % i, 0, Match.Team.GREEN, "tank").name))
+	var enemy := game_match.spawn_tank("Rust_0", 0, Match.Team.RUST, "tank")
+	await wait_physics_frames(1)
+	fx.order_feedback.update(fx.now)  # finds Match.orders (or the "orders" meta) through FxWorld's link
+	var before := fx.order_feedback.markers_started
+	assert_eq(orders.issue({"units": names, "verb": "move", "to": [10.0, -20.0]}, Match.Team.GREEN), "", "the move is valid")
+	fx.order_feedback.update(fx.now)
+	assert_eq(fx.order_feedback.markers_started - before, 1, "control's Orders: one marker for the group's move")
+	assert_eq(fx.order_feedback.last_marker_kind, "move", "a move marker")
+	assert_near(fx.order_feedback.last_marker_position.z, -20.0, 0.01, "at the destination")
+	assert_eq(orders.issue({"units": names, "verb": "attack_move", "to": [30.0, -40.0], "queue": true}, Match.Team.GREEN), "",
+			"a shift-queued attack-move is valid")
+	fx.order_feedback.update(fx.now)
+	assert_eq(fx.order_feedback.last_marker_kind, "waypoint", "a queued order drops a waypoint marker")
+	before = fx.order_feedback.markers_started
+	assert_eq(orders.issue({"units": [String(enemy.name)], "verb": "hold"}, Match.Team.RUST), "", "the CPU's order is valid")
+	fx.order_feedback.update(fx.now)
+	assert_eq(fx.order_feedback.markers_started, before, "the CPU's orders draw nothing")

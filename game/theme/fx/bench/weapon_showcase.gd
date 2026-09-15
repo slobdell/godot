@@ -27,17 +27,7 @@ const SCENES := {
 			"shots": [["muzzle", 0.65, "shooter"], ["stream", 1.07, "mid"], ["hits", 1.5, "target"], ["rts", 1.91, "rts"]]},
 }
 const SHOOTER_Z := 18.0
-## Feel X5's order markers, staged with a K1-shaped stand-in (control's Orders isn't merged into this branch yet).
-const ORDERS_STANDIN := """extends RefCounted
-signal order_changed(unit_name: String)
-signal queue_changed(unit_name: String)
-var current_orders := {}
-var queues := {}
-func current(unit_name: String) -> Dictionary:
-	return current_orders.get(unit_name, {})
-func queue(unit_name: String) -> Array:
-	return queues.get(unit_name, [])
-"""
+## Feel X5: the controls stand-in (team and selection) for the orders scene.
 const CONTROLS_STANDIN := """extends Node
 var team := 0
 var selection := Picked.new()
@@ -173,10 +163,9 @@ func _stage_orders() -> void:
 	_match.elimination = true
 	add_child(_match)
 	var fx := FxWorld.get_instance()
-	var orders_script := GDScript.new()
-	orders_script.source_code = ORDERS_STANDIN
-	orders_script.reload()
-	var orders: RefCounted = orders_script.new()
+	# Control's real K1 Orders (CP1); the controls stand-in only supplies the team and the selection.
+	var orders := Orders.new(_match)
+	Orders.attach(_match, orders)
 	var controls_script := GDScript.new()
 	controls_script.source_code = CONTROLS_STANDIN
 	controls_script.reload()
@@ -199,23 +188,15 @@ func _stage_orders() -> void:
 	controls.selection.units.assign(units)
 	await _seconds(0.12)
 	_save("orders_select")
-	var issue := func(id: int, verb: String, extra: Dictionary) -> void:
-		for unit_name in units:
-			var order := {"id": id, "verb": verb, "units": units, "queue": false}
-			order.merge(extra)
-			orders.current_orders[unit_name] = order
-			orders.order_changed.emit(unit_name)
-	issue.call(1, "move", {"to": [-12.0, -6.0], "goal": [-12.0, -6.0]})
-	await _seconds(0.12)
+	orders.issue({"units": units, "verb": "move", "to": [-12.0, -6.0]}, Match.Team.GREEN)
+	await _seconds(0.15)
 	_save("orders_move")
-	issue.call(2, "attack", {"target": "Enemy"})
+	orders.issue({"units": units, "verb": "attack", "target": "Enemy"}, Match.Team.GREEN)
 	await _seconds(0.15)
 	_save("orders_attack")
-	issue.call(3, "attack_move", {"to": [4.0, -20.0], "goal": [4.0, -20.0]})
-	for unit_name in units:
-		orders.queues[unit_name] = [{"id": 4, "verb": "move", "units": units, "queue": true, "to": [22.0, 4.0], "goal": [22.0, 4.0]},
-				{"id": 5, "verb": "move", "units": units, "queue": true, "to": [-20.0, 12.0], "goal": [-20.0, 12.0]}]
-		orders.queue_changed.emit(unit_name)
+	orders.issue({"units": units, "verb": "attack_move", "to": [4.0, -20.0]}, Match.Team.GREEN)
+	orders.issue({"units": units, "verb": "move", "to": [22.0, 4.0], "queue": true}, Match.Team.GREEN)
+	orders.issue({"units": units, "verb": "move", "to": [-20.0, 12.0], "queue": true}, Match.Team.GREEN)
 	await _seconds(0.2)
 	_save("orders_queue")
 	controls.queue_free()
