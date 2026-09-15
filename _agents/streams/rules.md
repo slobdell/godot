@@ -123,13 +123,15 @@ Sim baseline history (each change on purpose): `e5cf33921713b657` → `a4106d15a
   base repair stays.
 - **Fire pits aren't in a default layout:** the brains don't avoid them yet and they're invisible until art.
 
-### Questions for the lead
-1. **Control point as the default rule?** R8 re-measured it with the new roster: it's the difference between a
-   coordinated army losing 32 of 32 and winning 15 of 32. Recommended (balance.md "Round 2 rules defaults").
-2. **Ammo:** OK to keep finite ammo only on artillery? (Applied; reversible per weapon.)
-3. **Scouts:** the design says scouts beat Lancers and trouble tanks. Today they only beat artillery, because the
-   brain keeps them spotting at 85 m. Should scouts be fighters (ai stream changes the brain) or spotters (the
-   design table changes)? The rules side (fixed forward gun, speed, armor) supports either.
+### Questions for the lead (answered 2026-09-14)
+1. **Control point as the default rule?** The lead: *"sure, I agree with you."* Decided: default on. Skirmish
+   (command) and game_design.md (orchestrator) should flip it; the match runner keeps `--control` for experiments.
+2. **Finite ammo only on artillery?** The lead: *"yes that's ok for now."* Kept as applied.
+3. **Scouts: fighters or spotters?** The lead: *"scouts should be spotters more than fighters, but there will be
+   cases where its machine gun is useful."* Decided: spotting stays the scout's main job (the brain's standoff is
+   right); the matrix bar no longer expects scouts to beat Lancers or tanks head-on. Their gun matters for
+   opportunistic kills (exposed rears, artillery, finishing wrecked units). game_design.md's roster table should
+   say so (orchestrator).
 
 ### Requests to other streams
 - **ai:** (1) **scouts:** matchup targeting and fixed-mount strafing runs (turn the hull while moving;
@@ -153,7 +155,7 @@ Sim baseline history (each change on purpose): `e5cf33921713b657` → `a4106d15a
   `Arena.hazards()`; C5 + optional `hazards`. HANDOFF: new make targets `make matchups`; flag `--arena=`.
 
 ### Known issues
-- Scouts beat nothing but artillery (brain behavior, above); samples are 12 per pair (±14 points).
+- Scouts beat nothing but artillery head-on; the lead wants them as spotters first, so that is acceptable. Samples are 12 per pair (±14 points).
 - Networked clients build the default arena unless given `--arena` too (netcode paused).
 - Background `make check` runs launched by an agent were killed three times by the session's memory guard while
   queued for a slot; detaching with `setsid nohup … &` and watching the log worked. (Proposed trip-up.)
@@ -167,6 +169,6 @@ Sim baseline history (each change on purpose): `e5cf33921713b657` → `a4106d15a
 - Watch friendly fire: the HUD says "Friendly fire: Alpha 1 hit Alpha 2".
 
 ### Next steps
-1. After checkpoint 1 merges and the ai stream's brains land: re-run `make matchups BALANCE=1` and retune scouts.
+1. After checkpoint 1 merges and the ai stream's brains land: re-run `make matchups BALANCE=1` (judge scouts as spotters, per the lead).
 2. Measure the Burner and furnace in CPU-army series once brains route around hazards.
 3. Arena hazards beyond fire pits (the brief's crushing gates need moving collision and nav updates: not started).

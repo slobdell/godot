@@ -126,7 +126,7 @@ strafing land, before touching scout stats. Samples are 12 per pair (±14 points
 
 Measured on the R7-tuned catalog with friendly fire on, 8 seeds per row, elimination, 300 s limit.
 
-**1. Make the control point the default rule. (Recommended.)** "Coordination beats individuals" (T1): Anvil &
+**1. Make the control point the default rule.** (Recommended; **the lead agreed 2026-09-14**.) "Coordination beats individuals" (T1): Anvil &
 Hammer (3 + 2 tanks, split) vs Individuals (5 tanks):
 
 | Rules | Normal bases, AH as Green / as Rust | Swapped bases, AH as Green / as Rust | Coordinated wins |
@@ -137,7 +137,7 @@ Hammer (3 + 2 tanks, split) vs Individuals (5 tanks):
 Under recharging shields the concentrated brawl wins every time; a reason to hold ground restores the split
 doctrine to parity, as in round 1 (10 : 10). Command/skirmish owns the flag (`--control`).
 
-**2. Drop finite ammo on direct-fire guns; keep the mortar's 24 rounds. (Applied: the brief lets rules simplify.)**
+**2. Drop finite ammo on direct-fire guns; keep the mortar's 24 rounds.** (Applied; **the lead: "ok for now"**.)
 Armor vs Balanced CPU armies (1000 points), both bases, both colors:
 
 | Ammo | Armor wins | RESUPPLY share of brain time | Avg length |
