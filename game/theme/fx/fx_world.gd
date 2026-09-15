@@ -21,6 +21,7 @@ var bursts: BurstSystem
 var streaks: StreakSystem
 var underglow: UnderglowSystem
 var beams: BeamSystem
+var engines: EngineSystem
 var shake := CameraShake.new()
 var sfx: SfxSystem
 ## Seconds since this FxWorld started; the clock every shader animation uses.
@@ -77,6 +78,10 @@ func _init() -> void:
 		add_child(system)
 	sfx = SfxSystem.new()
 	add_child(sfx)
+	engines = EngineSystem.new()
+	engines.muted = sfx.muted
+	engines.use_streams(sfx.streams)
+	add_child(engines)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -98,6 +103,8 @@ func _process(delta: float) -> void:
 	underglow.update(lights)
 	beams.update(lights, now)
 	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
+	if camera != null:
+		engines.update(camera.global_position, delta)
 
 
 ## Put one of each effect (near-invisible) and every pooled light just in front of the camera, so

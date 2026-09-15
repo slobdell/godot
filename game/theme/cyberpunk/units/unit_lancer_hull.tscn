@@ -7,3 +7,4 @@
 script = ExtResource("1_part")
 model_scene = ExtResource("2_model")
 part = "hull"
+engine_sound = "engine_electric"

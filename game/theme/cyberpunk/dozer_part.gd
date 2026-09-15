@@ -12,6 +12,8 @@ extends "res://game/theme/cyberpunk/cyber_vehicle.gd"
 @export var part := "hull"
 ## How strongly paint recolors the model's body (its grime and neon survive).
 @export_range(0.0, 1.0) var paint_strength := 0.45
+## Hulls only: the engine loop this vehicle runs (EngineSystem; "" = silent).
+@export var engine_sound := "engine_diesel"
 
 var model: Node3D
 ## The model's bounds in this node's space (the shield is sized from it).
@@ -36,6 +38,8 @@ func _ready() -> void:
 		var fx := FxWorld.get_instance()
 		if fx != null:
 			fx.underglow.add(self, team_color)
+			if engine_sound != "":
+				fx.engines.add(self, engine_sound)
 	super._ready()
 	_apply_skin()
 
@@ -84,6 +88,7 @@ func _exit_tree() -> void:
 		var fx := FxWorld.existing()
 		if fx != null:
 			fx.underglow.remove(self)
+			fx.engines.remove(self)
 
 
 ## No added geometry: the model's own neon is the team accent. (The base class keeps an empty accent mesh.)

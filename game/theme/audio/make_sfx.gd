@@ -225,9 +225,10 @@ func _crowd_cheer() -> PackedFloat32Array:
 
 ## An engine loop: a firing-pulse train at `firing` Hz (a narrow pulse through a resonant lowpass, saturated so its
 ## harmonics carry on phone speakers), a clattering noise layer, and an optional 120 Hz electrical hum with buzz
-## (the Lancer's transformer). `rasp` = exhaust distortion. Exactly 1 s: whole cycles loop without a seam.
+## (the Lancer's transformer). `rasp` = exhaust distortion. Rendered 1.08 s and crossfaded into 1 s so the filters'
+## state doesn't click at the seam.
 func _engine(firing: float, rasp: float, clatter: float, hum: float) -> PackedFloat32Array:
-	var out := _buffer(1.0)
+	var out := _buffer(1.08)
 	var low := 0.0
 	var band := 0.0
 	var noise_low := 0.0
@@ -237,9 +238,10 @@ func _engine(firing: float, rasp: float, clatter: float, hum: float) -> PackedFl
 		var cylinder := int(fmod(t * firing * 4.0, 4.0))
 		var strength: float = [1.0, 0.8, 0.95, 0.7][cylinder]
 		var pulse := (1.0 if fmod(t * firing * 4.0, 1.0) < 0.18 else 0.0) * strength
-		low += (pulse - low) * 0.08
-		band += (low - band) * 0.02
-		var body := tanh((low - band) * (3.0 + rasp * 6.0))
+		low += (pulse - low) * 0.22
+		band += (low - band) * 0.03
+		# Hard saturation: phone speakers can't play the firing frequency itself, only its harmonics.
+		var body := tanh((low - band) * (8.0 + rasp * 10.0))
 		var noise := rng.randf_range(-1.0, 1.0)
 		noise_low += (noise - noise_low) * 0.25
 		var clank := noise_low * clatter * (0.6 + 0.4 * sin(TAU * firing * 2.0 * t))
@@ -247,6 +249,11 @@ func _engine(firing: float, rasp: float, clatter: float, hum: float) -> PackedFl
 		if hum > 0.0:
 			electric = hum * (0.6 * sin(TAU * 120.0 * t) + 0.25 * sin(TAU * 360.0 * t) + 0.12 * signf(sin(TAU * 240.0 * t)))
 		out[i] = body * 0.8 + clank + electric * 0.5
+	var fade := int(0.08 * RATE)
+	for i in fade:
+		var w := float(i) / fade
+		out[i] = out[i] * w + out[out.size() - fade + i] * (1.0 - w)
+	out.resize(out.size() - fade)
 	return out
 
 
