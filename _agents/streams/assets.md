@@ -212,6 +212,9 @@ review is the long pole; everything ungated ran while it waits)
 **Known issues**
 - (Resolved) main's command-icons test that failed on builder0 after the 1241e93 merge was fixed on main (13685ce); merged
   as dd4706a, and `make remote T=check` is green again (437 tests).
+- After merging CP1 from main (9a12f79), `make remote T=check` passes (493 tests) and the gallery shots were re-taken on
+  builder0 (`arena-kit-*`, `artillery-deploy`, `vehicle-gallery-condemned`): they match the local ones. builder0's
+  overlay reads 7–8 fps under its shared desktop GPU; that's not a performance number.
 - The arena kit adds ~0.8 MB to the web `.pck` (target was no growth); the biggest pieces are the placeholder ads and the
   container texture set. Real ads chosen by the lead should keep to 256 × 512 stills.
 - The screens' live card finds the Match by searching the scene a few times after it appears; a direct hook from
