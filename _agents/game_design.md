@@ -114,6 +114,19 @@ target is behind it; `game/tank/tank.gd`, `game/ai/steering.gd`).
   instead of pivoting in place; wheels want open lanes, tracks win in dense cover, and arenas (containers, chokepoints)
   become a locomotion choice. It's a counter lever, not just realism.
 
+**The scout's job, ruled 2026-09-15** (ai asked; the lead's answer to rules in round 2 decides it): *"scouts should be
+spotters more than fighters, but there will be cases where its machine gun is useful."* So:
+- **Spotting is the default behavior.** A scout keeps its distance (rules' roster test: it spots a tank from beyond
+  70 m) and feeds team sight. A brain that abandons spotting to hunt engine decks is not the champion, even when it
+  wins more duels.
+- **Rear-deck runs are opportunistic, not a doctrine:** allowed when the target is reloading, already hurt, occupied,
+  or cut off, and there's an escape route. Measure them as a bonus, never as the scout's counter to tanks.
+- **The matchup matrix must not expect scout > tank.** Scouts counter artillery and Lancers (fragile, slow-turreted,
+  long-range units), and screen for the army.
+- **A counter in `good_vs` must be real in the mechanics** (ai measured `scout > lancer` as impossible: a machine gun
+  does 15–29 shield dps against a 120 shield recharging 45/s, so the Lancer never drops). Combat either makes it pay
+  (machine-gun penetration or shield behavior) or removes the claim from the catalog. Design intent alone isn't a counter.
+
 **Weapons feel (lead, 2026-09-15; the round-3 combat stream implements it):**
 - **Tank:** very low rate of fire; a heavy, visible shell that lands a **devastating hit**; a miss is costly (long
   reload), so leading the target and timing matter.
