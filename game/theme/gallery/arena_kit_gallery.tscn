@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/gallery/arena_kit_gallery.gd" id="1_gallery"]
+
+[node name="ArenaKitGallery" type="Node3D"]
+script = ExtResource("1_gallery")
