@@ -15,7 +15,7 @@ const STEPS := [
 ]
 const MATCH_TIPS := [
 	"Your squads hold position until you give orders.",
-	"Tap a squad, then tap the ground to send it there.",
+	"Drag a box or press 1-5 to select, then right-click the ground to move (A: attack-move).",
 	"Planning pause: give orders first, then press Space to start the battle.",
 ]
 

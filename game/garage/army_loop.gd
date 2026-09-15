@@ -51,9 +51,10 @@ func begin() -> void:
 	main.game_match.finished.connect(_on_finished)
 	if main.flags.has("army-loop-time"):
 		main.game_match.start_limits(0, float(main.flags.text("army-loop-time")))
-		var tactical := main.hud.get_node_or_null("TacticalMap") as TacticalMap
-		if tactical != null:
-			tactical.set_paused(false, "")
+		# Round 3: the node is TacticalMap (--touch-map) or RtsControls (default); both pause the same way.
+		var tactical := main.hud.get_node_or_null("TacticalMap")
+		if tactical != null and tactical.has_method("set_paused"):
+			tactical.call("set_paused", false, "")
 
 
 func _on_finished(result: Dictionary) -> void:
