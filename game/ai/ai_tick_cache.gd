@@ -10,8 +10,11 @@ static var _tick := -1
 static var _by_name := {}
 static var _team_tanks: Array = [[], []]
 static var _enemies: Array = [[], []]
-## [team] -> {contact name: [names of that team's living tanks the contact faces]}
-static var _facing: Array = [{}, {}]
+const COS_30 := 0.8660254
+## [team] -> {contact name: [names of that team's living tanks the contact faces]}, per intel refresh.
+static var _facing_cache: Array = [{}, {}]
+static var _facing_bucket := -1
+static var _facing_bucket_match := 0
 
 
 static func _refresh(game_match: Match) -> void:
@@ -29,7 +32,6 @@ static func _refresh(game_match: Match) -> void:
 		var tank := node as Tank
 		if tank != null and tank.is_alive():
 			(_enemies[1 - tank.team] as Array).append(tank)
-	_facing = [{}, {}]
 
 
 ## Match.tanks_by_name(), once per tick.
@@ -59,20 +61,32 @@ static func squad_context(game_match: Match, tank: Tank) -> Dictionary:
 
 
 ## Names of `team`'s living tanks within 80 m that `known` (an intel contact) points its hull at (±30°).
-## TankBrain._faces_any over all allies, computed once per contact per tick.
+## Cached per contact for one intel refresh (Match.INTEL_EVERY_TICKS): the contact's data only changes then,
+## and allies move under 1.5 m in that time. Plain dot products: this was the costliest part of a brain's
+## situation at 50 units (contacts × allies).
 static func faced_by(game_match: Match, team: int, contact_name: String, known: Dictionary) -> Array:
-	_refresh(game_match)
-	var table: Dictionary = _facing[team]
+	var bucket := game_match.tick / Match.INTEL_EVERY_TICKS
+	if _facing_bucket_match != game_match.get_instance_id() or _facing_bucket != bucket:
+		_facing_bucket_match = game_match.get_instance_id()
+		_facing_bucket = bucket
+		_facing_cache = [{}, {}]
+	var table: Dictionary = _facing_cache[team]
 	if table.has(contact_name):
 		return table[contact_name]
 	var position: Vector3 = known["position"]
-	var forward: Vector3 = known["forward"]
+	var forward := Vector2(known["forward"].x, known["forward"].z)
 	var faced: Array = []
-	for ally: Tank in _team_tanks[team]:
-		if not ally.is_alive():
-			continue
-		var offset := ally.global_position - position
-		if offset.length() < 80.0 and Ballistics.aim_error(position, forward, ally.global_position) <= deg_to_rad(30.0):
-			faced.append(String(ally.name))
+	if forward.length_squared() > 1e-6:
+		forward = forward.normalized()
+		for ally: Tank in team_tanks(game_match, team):
+			if not ally.is_alive():
+				continue
+			var dx := ally.global_position.x - position.x
+			var dz := ally.global_position.z - position.z
+			var distance_squared := dx * dx + dz * dz
+			if distance_squared >= 6400.0 or distance_squared < 1e-6:
+				continue
+			if forward.x * dx + forward.y * dz >= COS_30 * sqrt(distance_squared):
+				faced.append(String(ally.name))
 	table[contact_name] = faced
 	return faced

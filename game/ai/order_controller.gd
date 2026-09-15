@@ -55,6 +55,9 @@ const MAX_EVENTS := 8
 const LOW_AMMO_FRACTION := 0.3
 ## A held turret heading aims at a point this far out along it.
 const HELD_AIM_DISTANCE := 1000.0
+## fire_at_will (and target fallbacks) look for the nearest shootable enemy this often, keeping a still
+## shootable pick in between: the per-tick scan of every enemy was a top AI cost at 50 units.
+const SCAN_EVERY_TICKS := 6
 
 ## Measurement only (make ai-perf): microseconds spent in think + compute_command while `profiling` is on.
 ## Never read by decisions.
@@ -90,6 +93,8 @@ var _path_goal := Vector3.INF
 var _repath_left := 0.0
 var _stuck_time := 0.0
 var _unstick_left := 0.0
+var _scan_pick: Tank = null
+var _scan_left := 0
 
 
 func _ready() -> void:
@@ -294,14 +299,14 @@ func _apply_weapon(cmd: TankCommand) -> void:
 			return
 		"fire_at_will":
 			if tanks_root != null:
-				target = _nearest_shootable()
+				target = _scanned_shootable()
 		"target":
 			if tanks_root != null:
 				var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
 				if named != null and named.is_alive() and named.team != tank.team and _shootable(named):
 					target = named
 				elif weapon_order.get("fallback", false):
-					target = _nearest_shootable()
+					target = _scanned_shootable()
 	if target == null:
 		if watch_point != null:
 			_cover((watch_point as Vector3), cmd)
@@ -331,6 +336,19 @@ func _shootable(enemy: Tank) -> bool:
 	var seen: bool = spotter.call(enemy) if spotter.is_valid() \
 			else tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius
 	return seen and Perception.has_line_of_sight(tank, enemy)
+
+
+## _nearest_shootable(), re-scanned every SCAN_EVERY_TICKS; in between, the last pick while still shootable.
+func _scanned_shootable() -> Tank:
+	_scan_left -= 1
+	if _scan_left > 0:
+		if _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive() and _shootable(_scan_pick):
+			return _scan_pick
+		if _scan_pick == null:
+			return null
+	_scan_left = SCAN_EVERY_TICKS
+	_scan_pick = _nearest_shootable()
+	return _scan_pick
 
 
 func _nearest_shootable() -> Tank:

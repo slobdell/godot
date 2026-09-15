@@ -23,8 +23,13 @@ const CONTACT_FRESH_TICKS := 120
 const QUERY_EVERY_TICKS := 30
 ## ...or this far from where the last one was asked (meters).
 const QUERY_MOVED := 6.0
-## Hiding places are searched this far around a tank (meters).
+## Hiding places are searched this far around a tank (meters)...
 const COVER_SEARCH_RADIUS := 30.0
+## ...and only by tanks that might use them: worn below this fraction of hull + shield, or shield down.
+const COVER_QUERY_TOUGHNESS := 0.8
+## A brain reasons about its nearest this-many contacts (plus its current target and any artillery): the
+## situation's cost grows with contacts, and a far enemy never outranks a near one anyway.
+const MAX_CONTACTS := 8
 ## A retreating tank that's in a gun's sight first breaks line of sight at cover this close (meters), then withdraws.
 const RETREAT_COVER_DISTANCE := 25.0
 ## COVER_FIRE (A3): hide and peek spots count as reached within this distance (meters).
@@ -466,10 +471,23 @@ func build_situation() -> Dictionary:
 	var contacts: Array = []
 	var cover_map := CoverMap.of(tank)
 	var my_name := String(tank.name)
+	var flank_reach := float(tank.weapon["range"]) + 30.0
 	var intel: Dictionary = game_match.intel[team]
 	var names := intel.keys()
 	names.sort()
+	var keep := {}
+	if names.size() > MAX_CONTACTS:
+		var by_distance: Array = []
+		for contact_name in names:
+			by_distance.append([my_position.distance_to(intel[contact_name]["position"]), contact_name])
+		by_distance.sort()
+		for i in by_distance.size():
+			var contact_name: String = by_distance[i][1]
+			if i < MAX_CONTACTS or contact_name == choice.get("target", "") or intel[contact_name]["weapon"] == "mortar":
+				keep[contact_name] = true
 	for contact_name in names:
+		if not keep.is_empty() and not keep.has(contact_name):
+			continue
 		var known: Dictionary = intel[contact_name]
 		var offset: Vector3 = known["position"] - my_position
 		contacts.append({
@@ -483,7 +501,8 @@ func build_situation() -> Dictionary:
 			"visible": known["visible"],
 			"age": game_match.tick - int(known["seen_tick"]),
 			"exposed_face": Armor.FACING_NAMES[Armor.facing(known["forward"], offset)],
-			"facing_ally": AiTickCache.faced_by(game_match, team, contact_name, known).any(
+			# Only near enough to flank or prioritize matters (reach + 30 m); the check is contacts × allies.
+			"facing_ally": offset.length() <= flank_reach and AiTickCache.faced_by(game_match, team, contact_name, known).any(
 					func(faced: String) -> bool: return faced != my_name),
 			"aiming_at_me": known["visible"] and Ballistics.aim_error(known["position"], known["turret_forward"],
 					my_position) <= deg_to_rad(12.0),
@@ -537,16 +556,17 @@ func build_situation() -> Dictionary:
 	}
 
 
-## Nearby hiding places from the visible threats, best first (TacticalQuery.find_cover). Cached for
-## QUERY_EVERY_TICKS unless the tank moved or the number of visible threats changed.
+## Nearby hiding places from the visible threats, best first (TacticalQuery.find_cover), for worn tanks.
+## Cached for QUERY_EVERY_TICKS unless the tank moved QUERY_MOVED.
 func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> Array:
 	var threats := TankBrain.threat_list(contacts, tank.global_position)
-	if threats.is_empty():
+	var toughness := (tank.health + tank.shield) / maxf(tank.max_health + tank.max_shield, 1.0)
+	var shield_down := tank.max_shield > 0.0 and tank.shield <= 0.0
+	if threats.is_empty() or (toughness >= COVER_QUERY_TOUGHNESS and not shield_down):
 		_cover_cache = {}
 		return []
 	if not _cover_cache.is_empty() and game_match.tick - int(_cover_cache["tick"]) < QUERY_EVERY_TICKS \
-			and tank.global_position.distance_to(_cover_cache["position"]) < QUERY_MOVED \
-			and int(_cover_cache["threats"]) == threats.size():
+			and tank.global_position.distance_to(_cover_cache["position"]) < QUERY_MOVED:
 		return _cover_cache["result"]
 	var request := {"position": tank.global_position, "threats": threats, "search_radius": COVER_SEARCH_RADIUS,
 			"friends": allies.map(func(ally: Dictionary) -> Vector3: return ally["position"])}

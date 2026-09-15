@@ -17,7 +17,7 @@ extends RefCounted
 const SEARCH_RADIUS := 30.0
 const MAX_THREATS := 6
 ## Candidates kept (nearest first) before line-of-sight tests...
-const MAX_CANDIDATES := 24
+const MAX_CANDIDATES := 16
 ## ...and how many of the best get the expensive tests (peek search, every threat).
 const MAX_DEEP := 8
 ## Candidates closer than this to a friend are skipped (splash, blocking each other's lanes).
@@ -149,14 +149,16 @@ static func hull_hidden(map: CoverMap, viewer: Vector3, point: Vector3) -> bool:
 	return not map.clear_line(viewer, point + across) and not map.clear_line(viewer, point - across)
 
 
-## Whether a spot is out of every listed threat's sight (by weight): 0..1.
+## Whether a spot is out of every listed threat's sight (by weight): 0..1. The whole hull must be hidden
+## from the main (first) threat; the others are checked at the hull's center (cheaper).
 static func _cover(map: CoverMap, point: Vector3, threats: Array) -> float:
 	var total := 0.0
 	var hidden := 0.0
-	for threat: Dictionary in threats:
+	for i in threats.size():
+		var threat: Dictionary = threats[i]
 		var weight := float(threat.get("weight", 1.0))
 		total += weight
-		if hull_hidden(map, threat["position"], point):
+		if hull_hidden(map, threat["position"], point) if i == 0 else not map.clear_line(threat["position"], point):
 			hidden += weight
 	return hidden / total if total > 0.0 else 1.0
 
