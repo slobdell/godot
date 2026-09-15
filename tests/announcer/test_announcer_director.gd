@@ -84,6 +84,10 @@ func test_needs_only_sees_flags_set_before_the_moment() -> void:
 			"a flag set while calling this same moment doesn't count")
 	assert_true(library.eligible(line, tags, {"team": "rust"}, {"said_friendly_rust": 4.0}, "", 10.0), "said earlier")
 	assert_true(not library.eligible(line, tags, {"team": "green"}, {"said_friendly_rust": 4.0}, "", 10.0), "flags name the team")
+	var welcome := {"id": "w", "speaker": "pa", "act": "welcome", "tags": ["friendly_fire"], "unless_flags": ["welcomed"],
+			"text": "Welcome.", "slots": PackedStringArray()}
+	assert_true(library.eligible(welcome, tags, {}, {}, "", 1.0), "nobody has welcomed the crowd yet")
+	assert_true(not library.eligible(welcome, tags, {}, {"welcomed": 0.5}, "", 1.0), "a second welcome is skipped")
 
 
 func test_memory_notices_first_blood_counters_upsets_streaks_and_last_units() -> void:

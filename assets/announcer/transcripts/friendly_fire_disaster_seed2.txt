@@ -5,8 +5,8 @@ result: green by elimination at 0:57.5
  a line ending in — was cut off by something bigger.)
 
 0:00.0   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
-0:04.8   PA       Good evening. On behalf of the Syndicate, welcome to the Scrapyard. Please take a moment to locate the exit nearest your seat. Exits will open after the match.
-0:16.4   VETERAN  Mixed army. That's—
+0:04.8   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:14.1   VETERAN  Mixed army. That's the smart build. It's also—
 0:18.0   ── first contact: rust artillery fires on a ifv
 0:18.1   CALLER   Artillery opens the night! Rust is shelling from long range!
 0:21.7   VETERAN  First—

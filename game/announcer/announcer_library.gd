@@ -156,6 +156,9 @@ func eligible(line: Dictionary, tags: Dictionary, slots: Dictionary, flags: Dict
 		var source := base_slot(slot)
 		if not slots.has(source) or speak(slot, slots[source]) == "":
 			return false
+	for flag in line.get("unless_flags", []):
+		if flags.has(fill_flag(flag, slots)):
+			return false
 	for flag in line.get("needs", []):
 		var filled := fill_flag(flag, slots)
 		if not flags.has(filled) or float(flags[filled]) >= moment_t:

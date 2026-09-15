@@ -2,7 +2,7 @@
 # Owner: announcer (_agents/streams/announcer.md). Included by the root Makefile.
 # No target here calls ElevenLabs unless you run announcer-generate without DRY_RUN=1 (lead gate: text approved first).
 
-.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-transcript announcer-transcripts \
+.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-transcript announcer-transcripts announcer-demo \
         announcer-transcripts-check announcer-check
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
@@ -45,5 +45,13 @@ announcer-transcripts-check: import ## The checked-in review transcripts match w
 	@diff -r $(ANNOUNCER_REVIEW) $(BUILD_DIR)/announcer/fresh >/dev/null \
 		|| { echo "review transcripts are stale: run make announcer-transcripts and commit"; diff -r $(ANNOUNCER_REVIEW) $(BUILD_DIR)/announcer/fresh | head -20; exit 1; }
 	@echo "announcer transcripts current"
+
+announcer-demo: import ## Build the Arena Booth Monitor page (every fixture, seeds 1-3; FIXTURE=name for one): build/announcer/demo/index.html
+	@rm -rf $(BUILD_DIR)/announcer/demo/data && mkdir -p $(BUILD_DIR)/announcer/demo/data
+	@$(ANNOUNCER_CLI) --all=res://$(ANNOUNCER_FIXTURES) --seeds=1,2,3 --out-dir=$(BUILD_DIR)/announcer/demo/data 2>&1 \
+		| grep -E 'ANNOUNCER_CLI_EXIT=0' >/dev/null || { echo "announcer CLI failed"; exit 1; }
+	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
+	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html \
+		$(if $(filter command line,$(origin FIXTURE)),--fixture $(FIXTURE))
 
 announcer-check: announcer-validate announcer-pytest announcer-audit announcer-transcripts-check ## Everything the announcer verifies headless (in make check)

@@ -199,6 +199,7 @@ func _is_speaking() -> bool:
 func _interrupt(found: Dictionary) -> void:
 	var cut_what: String = _last_cue["moment"] if _is_speaking() else String(_current.get("moment", {}).get("kind", "nothing"))
 	if _is_speaking():
+		_last_cue["full_seconds"] = snappedf(float(_last_cue["end"]) - float(_last_cue["t"]), 0.01)
 		_last_cue["end"] = snappedf(maxf(now, float(_last_cue["t"]) + 0.4), 0.01)
 		_last_cue["cut"] = true
 		_busy_until = float(_last_cue["end"]) + 0.1

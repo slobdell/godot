@@ -5,31 +5,31 @@ result: green by elimination at 0:54.0
  a line ending in — was cut off by something bigger.)
 
 0:00.0   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
-0:04.8   PA       Good evening. On behalf of the Syndicate, welcome to the Scrapyard. Please take a moment to locate the exit nearest your seat. Exits will open after the match.
-0:16.4   VETERAN  Green came to hold ground. That army doesn't chase anybody.
+0:04.8   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:14.1   VETERAN  Green came to hold ground. That army doesn't chase anybody.
+0:19.3   CALLER   A—
 0:20.0   ── first contact: rust scout fires on a tank
-0:21.0   CALLER   And we have contact! Rust opens fire!
+0:20.1   CALLER   Contact, contact! Rust found them first!
 0:21.8   ── friendly fire: green tank hits its own tank
-0:24.3   CALLER   Friendly fire! The Green tank catches a teammate!
+0:23.2   CALLER   Green's tank lands one on its own tank! Wrong target!
 0:26.0   ── green tank destroys rust ifv
-0:27.3   CALLER   The IFV is finished! Green cracks it wide open!
-0:31.2   VETERAN  Rust is bleeding and doesn't know it yet.
+0:26.8   CALLER   There it is! The first kill of the night belongs to Green!
+0:31.0   VETERAN  Rust will want that one back. You don't give up the first one that easy.
 0:33.5   ── close call: rust artillery at 14% hull
-0:35.5   CALLER   Look at that artillery! Smoking, burning, and still going!
-0:41.8   CALLER   Right in the—
+0:41.8   CALLER   That scout's machine—
 0:43.0   ── green tank destroys rust artillery
 0:43.0   CALLER   Are you kidding me? The tank takes out the artillery!
+0:46.6   CALLER   Wow. Just wow.
 0:46.8   ── green tank destroys rust scout
-0:46.8   CALLER   Green is on a tear! That's three straight!
-0:49.8   CALLER   Green has taken out—
+0:48.1   CALLER   That's three in a row for Green! They cannot miss!
 0:51.2   ── green tank destroys rust artillery
 0:51.2   ── rust squad Battery wiped out
-0:51.3   CALLER   Another one for Green! This is a clinic!
+0:51.7   CALLER   Another one for Green! This is a clinic!
 0:54.0   ── green tank destroys rust scout
 0:54.0   ── rust squad Swarm wiped out
 0:54.0   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-0:54.3   CALLER   Green finishes it! The last scout is gone!
-0:57.3   CALLER   Green wins it without losing a single vehicle! Flawless!
-1:00.6   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-1:06.4   CALLER   You cannot script this!
-1:08.7   PA       Green wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+0:54.7   CALLER   Green finishes it! The last scout is gone!
+0:57.7   CALLER   Green wins it without losing a single vehicle! Flawless!
+1:01.0   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
+1:06.8   CALLER   You cannot script this!
+1:09.1   PA       Green wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.

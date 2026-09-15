@@ -33,6 +33,7 @@ Owner: the announcer stream ([_agents/streams/announcer.md](../../_agents/stream
 | `intensity` | 1 calm … 3 screaming; a line is used within ±1 of the moment's intensity (omit = any) |
 | `topic` | setup questions and their answers pair by topic (`any` answers anything) |
 | `sets` / `needs` | memory flags: a prediction sets `predicted_friendly_fire`; a callback needs it. The director also sets `said_<kind>_<team>` and `said_friendly_<team>` when a moment was actually called, so "again!" only follows a first time the audience heard |
+| `unless_flags` | the line is skipped while any of these flags is set (only one "welcome to the Foundry" per intro: welcome lines set and exclude `welcomed`) |
 | `text` | plain words, no digits or symbols; `{slots}` below |
 
 **More specific lines win:** each matched tag beyond the moment kind multiplies a line's chance by 8, so a "first

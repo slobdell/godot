@@ -4,8 +4,8 @@ result: rust by elimination at 2:21.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   PA       Welcome to the Foundry. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
-0:09.5   CALLER   Ten vehicles on the floor tonight—
+0:00.0   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:08.7   CALLER   Ten vehicles on the floor tonight, and every one—
 0:11.8   ── first contact: green scout fires on a tank
 0:11.8   CALLER   The scout finds them first! That's the job, and Green is doing it!
 0:17.0   CALLER   Green is here with six scouts and a whole lot of bad intentions.

@@ -4,10 +4,10 @@ result: green by elimination at 0:54.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   PA       Welcome to the Scrapyard. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
-0:09.5   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
-0:14.9   CALLER   Green rolls out three tanks tonight.
-0:17.8   VETERAN  Artillery needs somebody else's—
+0:00.0   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:08.7   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
+0:14.1   CALLER   Green rolls out three tanks tonight.
+0:17.0   VETERAN  Artillery needs somebody else's eyes. Rust—
 0:20.0   ── first contact: rust scout fires on a tank
 0:20.1   CALLER   Whoa, whoa, whoa!
 0:21.7   CALLER   The scout finds them first! That's the job, and Rust is doing it!
