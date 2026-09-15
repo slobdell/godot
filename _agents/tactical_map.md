@@ -1,6 +1,79 @@
-# Tactical Map: Few Inputs, Deep Control
+# Controls: StarCraft-style, desktop first (v4, round 3)
 
-> **Round 2 (command stream):** commanding is tap-only (squad bar, tap the ground or the radar), formations and drills have icons, and the camera follows orders. **The current grammar is "v3" at the end of this file**; the v1/v2 tables below are history ([game_design.md](game_design.md) "Commanding", [streams/archive/round2/command.md](streams/archive/round2/command.md)).
+> **The current controls are v4 below** (control stream, round 3, 2026-09-15): select units, control groups,
+> right-click orders, automatic formations. Everything after "History" (v1–v3: squad grammar, drills, the mobile tap
+> map) is kept for reference; v3 still runs behind `--touch-map`. Design: [game_design.md](game_design.md)
+> *Controlling units*; brief: [streams/control.md](streams/control.md).
+
+## v4: the grammar
+
+| Do | Mouse and keys |
+|---|---|
+| **Select** | left-click a unit · drag a box · shift-click or shift-box adds (shift-click a selected unit drops it) · double-click or ctrl-click: every unit of that type on screen · Escape clears · click an enemy to inspect it (panel card, never commanded) |
+| **Order** | right-click the ground = **move** · right-click an enemy = **attack** · right-click a friend = **follow** · **A** then click = attack-move (click an enemy = attack) · **F** then click a friend = follow · **M** then click = move · **S** stop · **H** hold position · **shift** queues any order and keeps A/F/M armed for the next click · right-click or Escape cancels an armed order |
+| **Formation** | automatic (see below) · **G** cycles wedge, line, column, vee, back to auto for the next orders |
+| **Groups** | **ctrl+1–9** saves the selection · **shift+1–9** adds to a group · **1–9** selects (a quick second tap centers the camera) · **Tab** next group · doctrine squads start as groups 1–5 · the group bar (bottom center) shows each group; click a chip to select it |
+| **Camera** | screen edges, arrows, middle-drag pan · wheel zoom · `,` `.` rotate · **C** centers on the selection · radar: left-click or drag looks, right-click moves the selection there, A then a radar click attack-moves there |
+| **Panel** | portraits (hull and shield) for a group: click selects one, shift-click drops it, ctrl-click keeps its type · a card for one unit or an inspected enemy · the command card (Move M, Stop S, Hold H, Attack-move A, Follow F, Formation G) |
+| **Quality of life** | right-click an enemy with a mixed selection: only units whose guns hurt it (≥ 25% through its side armor) attack, the rest escort the nearest attacker · **F1** selects idle units · rest the mouse on any unit for its stats (hull, shield, weapon, range, speed, strong and weak against) |
+| **Time** | Space pauses (orders still land); skirmish starts in a planning pause |
+
+**Feedback:** bright rings under selected units (an inspected enemy's ring is bright red), a ground ring that shrinks
+onto every ordered spot (team color = move, red = attack, gold = attack-move), dashed waypoint lines from each selected
+unit through its current and queued stops, a crosshair cursor and a hint while an order is armed, and a HUD line per
+order ("3 units: attack-move"). Sounds are feel's.
+
+## v4: how orders work (K1)
+
+```
+mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, queue, formation?}
+                                  │ Orders.issue(command, team)       (game/control/orders.gd, one per match)
+                                  ▼
+             per-unit order: group, slot, goal, heading, pace ──▶ order_changed(unit)
+                                  │
+                   brains execute it (ai X1)  ·  until then OrderExecutor (game/control/order_executor.gd)
+```
+
+- **The response guarantee:** a unit steers toward a new order within 3 ticks whatever it was doing. Measured: 1 tick
+  from fighting, driving elsewhere, holding, and hurt (`tests/test_control_response.gd`, `make control-playtest`).
+- **Automatic formations** (`GroupFormation`): heavies in front, fragile and artillery behind; a wedge for up to five
+  units, rows beyond; a line when holding; a group of only fast units (≥ 12 m/s) attack-moving spreads into a wide
+  wedge. Slots are centered on the click and face the direction of travel; units keep their left-right order so
+  paths don't cross. Named formations come from `Formations.offsets` (ai's geometry).
+- **Arriving together:** each unit paces itself so its group arrives at once (`Orders.pace_factor`: the slowest
+  member's time to arrive sets everyone's speed, never below 35%; a laggard drives flat out).
+- **Regrouping:** when a unit's orders run out it keeps a **station** (`Orders.station`: its slot in its group,
+  facing the group's heading). Pushed or drawn away, it drives back; a unit given its own order gets its own station.
+- **Stop** clears the queue and halts; **hold** stays on the spot but turns and shoots; **attack-move** halts to
+  fight what it meets, then carries on; **follow** keeps a slot behind the target; **attack** closes to 80% of the
+  weapon's range and completes when the target dies.
+- **Temporary executor:** until brains execute orders (ai X1), an ordered unit's brain is paused and a plain
+  `OrderController` drives it (pathing, unsticking, fire at will). Never-ordered units keep their brains. The executor
+  steps aside when `TankBrain` declares `const EXECUTES_ORDERS := true`.
+
+## v4: files, tests, playtest
+
+| Piece | File |
+|---|---|
+| Command data and validation | `game/control/unit_command.gd` |
+| Orders per match (K1) | `game/control/orders.gd` (`Orders.of(match)`) |
+| Automatic formation slots, pacing | `game/control/group_formation.gd` |
+| Temporary order executor | `game/control/order_executor.gd` |
+| Selection, control groups | `game/control/selection.gd`, `game/control/control_groups.gd` |
+| Mouse and keyboard | `game/control/rts_controls.gd` (node named `TacticalMap` in skirmish, for the HUD skin) |
+| Panel, group bar, rings, radar | `game/ui/selection_panel.gd`, `game/ui/group_bar.gd`, `game/ui/selection_markers.gd`, `game/ui/radar.gd` |
+| Scripted playtest | `game/control/control_playtest.gd` |
+
+- Tests: `tests/test_control_{orders,response,selection,commands,groups,group_moves,panel,stretch}.gd` (real mouse and key
+  events through `Viewport.push_input`; shared setup in `tests/support/control_fixture.gd`).
+- `make control-playtest` (headless): box select, attack-move across the arena, a queued route, a group swap, a
+  pushed unit rejoining; every order's response tick in `build/control-playtest/headless/orders.jsonl`.
+- `make control-playtest-shots` (a display; `make remote T=control-playtest-shots` uses builder0's): the same session
+  at 1920×1080 and 1280×720, frames in `build/control-playtest/<size>/`.
+- Launch flags (skirmish): `--touch-map` (round 2's tap grammar), `--control-playtest=DIR`, `--scripted` (the
+  desktop script: group 1 attack-moves, group 2 moves with a queued leg).
+
+## History: v1–v3 (the squad grammar and the mobile tap map)
 
 > **Status: v1 implemented (2026-09-13); v2 (2026-09-15, stream/gameplay): RTS 3D camera, radar, fog of
 > war, touch-first controls. See "v2" at the end.** Play it: `make skirmish` (desktop) or `make serve-web` → `http://localhost:8060/?skirmish` (browser, no server). Builds on

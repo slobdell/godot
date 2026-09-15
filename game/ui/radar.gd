@@ -10,6 +10,9 @@ extends Control
 ## tanks (commander ringed), enemies in sight, last-known contacts fading out, squad destinations, and
 ## the camera's footprint. Enemies come ONLY from team intel (fog of war).
 ##
+## Round 3 (desktop, StarCraft-style; set `controls` instead of `map`): left click or drag = look there; right click
+## = move the selection there (shift queues); with an order armed (A, M), a left click orders it there.
+##
 ## Behavior and data are gameplay's; the frame and palette are look & feel's: a StyleBox under
 ## GameTheme.ui["radar_frame"] replaces the placeholder frame, and GameTheme.ui colors tint the blips.
 
@@ -25,6 +28,8 @@ const DRAG_PX := 10.0
 
 var game_match: Match
 var map: TacticalMap
+## Round 3: the desktop controls (takes precedence over `map`).
+var controls: RtsControls
 var visibility: VisibilityField
 var team := Match.Team.GREEN
 ## Obstacles as world-space rectangles: [PackedVector2Array of 4 xz corners].
@@ -98,7 +103,20 @@ func radar_to_world(local: Vector2) -> Vector3:
 func blips() -> Array:
 	var result: Array = []
 	var by_name := game_match.tanks_by_name()
-	for squad in game_match.team_squads(team):
+	if controls != null:
+		for tank in game_match.sorted_team_tanks(team):
+			if tank.is_alive():
+				result.append({"kind": "commander" if controls.selection.units.has(String(tank.name)) else "friendly",
+						"position": tank.global_position, "fade": 1.0})
+		var destinations := {}
+		for unit_name in controls.selection.units:
+			var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
+			if goal != null:
+				destinations[Vector2i(roundi(goal.x / 4.0), roundi(goal.z / 4.0))] = goal
+		for key in destinations:
+			result.append({"kind": "destination", "position": destinations[key], "fade": 1.0})
+	var legacy_squads: Array = [] if controls != null else game_match.team_squads(team)
+	for squad: Squad in legacy_squads:
 		for member in squad.alive_members(by_name):
 			result.append({"kind": "commander" if member == squad.commander else "friendly",
 					"position": (by_name[member] as Tank).global_position, "fade": 1.0})
@@ -118,6 +136,9 @@ func blips() -> Array:
 # ---- Input -------------------------------------------------------------------------------
 
 func _gui_input(event: InputEvent) -> void:
+	if controls != null and _desktop_input(event):
+		accept_event()
+		return
 	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		var button := event as InputEventMouseButton
 		if button.pressed:
@@ -141,7 +162,32 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 
 
+## Round 3 desktop grammar. Returns true when the event was handled.
+func _desktop_input(event: InputEvent) -> bool:
+	var button := event as InputEventMouseButton
+	if button != null and button.button_index == MOUSE_BUTTON_RIGHT:
+		if button.pressed:
+			controls.world_order(radar_to_world(button.position), button.shift_pressed)
+		return true
+	if button != null and button.button_index == MOUSE_BUTTON_LEFT and button.pressed and controls.mode != "":
+		controls.armed_world_order(radar_to_world(button.position), button.shift_pressed)
+		return true
+	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
+		_press = button.position if button.pressed else null
+		if button.pressed:
+			look(button.position)
+		return true
+	if event is InputEventMouseMotion and _press != null:
+		_drag_now = (event as InputEventMouseMotion).position
+		look(_drag_now)
+		return true
+	return false
+
+
 func _process(delta: float) -> void:
+	if controls != null:
+		queue_redraw()
+		return
 	if _press != null and not _press_moved:
 		_press_held += delta
 		if _press_held >= TacticalMap.LONG_PRESS_SECONDS:
@@ -161,7 +207,9 @@ func tap(local: Vector2) -> String:
 
 ## Aim the camera at a radar point.
 func look(local: Vector2) -> void:
-	if map != null and map.rig != null:
+	if controls != null and controls.rig != null:
+		controls.rig.focus_on(radar_to_world(local))
+	elif map != null and map.rig != null:
 		map.rig.focus_on(radar_to_world(local))
 
 
@@ -236,17 +284,19 @@ func _draw() -> void:
 
 ## The ground area the camera currently shows, as a trapezoid.
 func _draw_camera_footprint() -> void:
-	if map == null or map.camera == null:
+	var view_camera: Camera3D = controls.camera if controls != null else (map.camera if map != null else null)
+	if view_camera == null:
 		return
 	var viewport_size := get_viewport().get_visible_rect().size
 	var points := PackedVector2Array()
 	for screen in [Vector2.ZERO, Vector2(viewport_size.x, 0), viewport_size, Vector2(0, viewport_size.y)]:
-		var ground: Variant = map.screen_to_world(screen)
+		var ground: Variant = Plane(Vector3.UP, 0.0).intersects_ray(view_camera.project_ray_origin(screen), view_camera.project_ray_normal(screen))
 		if ground == null:
 			# A corner above the horizon: clamp it to the far edge of what the radar can show.
-			var origin := map.camera.project_ray_origin(screen)
-			var direction := map.camera.project_ray_normal(screen)
+			var origin := view_camera.project_ray_origin(screen)
+			var direction := view_camera.project_ray_normal(screen)
 			ground = origin + Vector3(direction.x, 0.0, direction.z).normalized() * SPAN
-		points.append(world_to_radar(ground))
+		# Clamped to the radar's frame: a far corner must not draw outside it.
+		points.append(world_to_radar(ground).clamp(Vector2.ZERO, size))
 	points.append(points[0])
 	draw_polyline(points, Color(1, 1, 1, 0.5), 1.0)
