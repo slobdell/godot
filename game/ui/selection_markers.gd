@@ -6,6 +6,9 @@ extends Node3D
 ##   our other units    a faint thin team-colored ring (so "whose is it" reads at a glance)
 ##   enemies in sight   a faint enemy-colored DASHED ring (never for enemies hidden by the fog); the dashes
 ##                      tell friend from foe without relying on color (accessibility)
+##   inspected enemy    a bright enemy-colored ring (round 3: clicking an enemy inspects it)
+## Round 3 (RtsControls): set `selection` and the rings follow it (per unit, no commander); `map` is the legacy
+## squad-grammar TacticalMap.
 ## The command stream owns what is shown when; colors come from GameTheme.ui (art owns the palette).
 
 ## Ring radius as a multiple of the vehicle's longest hull side.
@@ -18,6 +21,10 @@ const ENEMY_ALPHA := 0.45
 
 var game_match: Match
 var map: TacticalMap
+## Round 3: the player's unit selection (takes precedence over `map`).
+var selection: Selection
+## Tests without fog of war: every enemy counts as seen.
+var reveal_all := false
 var team := Match.Team.GREEN
 
 var _rings := {}  # tank name → MeshInstance3D
@@ -58,7 +65,14 @@ func refresh() -> void:
 		var ring := _ring_for(tank)
 		var kind := ""
 		if tank.is_alive():
-			if tank.team == team:
+			if selection != null:
+				if tank.team == team:
+					kind = "selected" if selection.units.has(tank_name) else "friendly"
+				elif selection.inspected == tank_name and (reveal_all or game_match.is_visible_to(team, tank)):
+					kind = "inspected"
+				elif reveal_all or game_match.is_visible_to(team, tank):
+					kind = "enemy"
+			elif tank.team == team:
 				if selected != null and selected.roster.has(tank_name):
 					kind = "commander" if selected.commander == tank_name else "selected"
 					if map.focused_unit == tank_name:
@@ -109,6 +123,8 @@ func _material(kind: String) -> StandardMaterial3D:
 			color = Color(GameTheme.ui["friendly"], SELECTED_ALPHA)
 		"friendly":
 			color = Color(GameTheme.ui["friendly"], IDLE_ALPHA)
+		"inspected":
+			color = Color(GameTheme.ui["enemy"], SELECTED_ALPHA)
 		_:
 			color = Color(GameTheme.ui["enemy"], ENEMY_ALPHA)
 	var material := StandardMaterial3D.new()

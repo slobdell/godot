@@ -1,5 +1,26 @@
-# Commanding: tactical map, camera, readability
-# Owner: command (see _agents/workstreams.md). Included by the root Makefile.
+# Commanding: desktop controls, tactical map, camera, readability
+# Owner: control (round 3; see _agents/workstreams.md). Included by the root Makefile.
+
+CONTROL_PLAYTEST_DIR := $(BUILD_DIR)/control-playtest
+
+control-playtest: import ## Headless: box select, attack-move, a queued route, a group swap, a unit rejoining; every order's response tick in build/control-playtest/headless/orders.jsonl
+	rm -rf $(CONTROL_PLAYTEST_DIR)/headless && mkdir -p $(CONTROL_PLAYTEST_DIR)/headless
+	timeout 120 $(GODOT) --headless --path . -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(CONTROL_PLAYTEST_DIR)/headless 2>&1 \
+		| tee $(CONTROL_PLAYTEST_DIR)/headless/run.log | grep -E 'CONTROL_PLAYTEST|SCRIPT ERROR|^ERROR' || true
+	grep -q 'CONTROL_PLAYTEST_DONE ok=true' $(CONTROL_PLAYTEST_DIR)/headless/run.log
+	! grep -E 'SCRIPT ERROR|^ERROR' $(CONTROL_PLAYTEST_DIR)/headless/run.log
+
+CONTROL_SIZES ?= 1920x1080 1280x720
+
+control-playtest-shots: import ## The same session in windows (CONTROL_SIZES, default 1920x1080 1280x720), screenshots in build/control-playtest/<size>/*.png (needs a display)
+	for size in $(CONTROL_SIZES); do \
+		rm -rf $(CONTROL_PLAYTEST_DIR)/$$size; \
+		mkdir -p $(CONTROL_PLAYTEST_DIR)/$$size; \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --enemy=cpu --seed=3 --control-playtest=$(CURDIR)/$(CONTROL_PLAYTEST_DIR)/$$size 2>&1 \
+			| tee $(CONTROL_PLAYTEST_DIR)/$$size/run.log | grep -E 'CONTROL_PLAYTEST|SCRIPT ERROR|^ERROR' || true; \
+		grep -q 'CONTROL_PLAYTEST_DONE ok=true' $(CONTROL_PLAYTEST_DIR)/$$size/run.log || exit 1; \
+	done
+	@echo "Now LOOK at $(CONTROL_PLAYTEST_DIR)/*/*.png"
 
 COMMAND_PLAYTEST_DIR := $(BUILD_DIR)/command-playtest
 
