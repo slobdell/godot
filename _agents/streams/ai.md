@@ -175,7 +175,7 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - `game/ai/order_controller.gd` conflicts with stream/combat's one-line lead-speed edit in `_apply_weapon`: take ai's
   version (the same per-weapon fix plus the difficulty aim wander). Combat's edits to `game/ai/fire_lanes.gd` and
   `tests/ai_scenarios/scenario_cover.gd` are applied here byte-identically.
-- `tools/remote.sh` is byte-identical to stream/control's (the running Xwayland's auth file; a stale one hung every
-  rendering target on builder0) and `game/ui/command_icons.gd` to stream/combat's (icons beyond 16384 px are skipped:
-  army-loop-smoke failed ~1 run in 3 on a (53141, 63901) px icon). Combat's remote.sh differs: take control's.
+- `tools/remote.sh` is main's (7dc7bdc, merged here 2026-09-15; control's and combat's copies differ: take main's) and
+  `game/ui/command_icons.gd` is byte-identical to stream/combat's (icons beyond 16384 px are skipped: army-loop-smoke
+  failed ~1 run in 3 on a (53141, 63901) px icon).
 - Sim baseline: take the one recorded after the final merge (`make remote T=sim-baseline-record`).
