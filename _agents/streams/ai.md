@@ -92,47 +92,52 @@ Unit stats and combat rules (rules; request changes), the UI and camera (command
 ## Status
 
 - 2026-09-15: brief written for round 2.
-- 2026-09-15 (ai agent, unattended run): A0–A4 done and committed on `stream/ai`; details and numbers below and in
-  [../unit_ai.md](../unit_ai.md) "Results".
+- 2026-09-15 (ai agent, unattended run): A0–A4, A6, A7 done and committed on `stream/ai` (pushed as backup);
+  A5 groundwork done, the rest waits on checkpoint 1. Numbers in [../unit_ai.md](../unit_ai.md) "Results".
 
 ### Plan (ordered, smallest foundation first)
 
-1. A0 design doc `_agents/unit_ai.md` — **done** (literature survey, what we adopt and skip, budgets).
-2. A1 scenario harness — **done**: `AiScenario` (tests/ai_scenarios/ai_scenario.gd), `make ai-scenarios` (faster than real time, `PENDING` lists for not-yet-built behaviors that must fail until promoted), quick subset in `tests/test_ai_scenarios.gd` (runs in `make test`).
-3. A2 tactical positions — **done**: `CoverMap` (pure 2D cover + memoized quantized LOS, grid broadphase, static tactical points; reads rules' `Arena.cover_features()` when present, else the arena's Obstacles boxes), `TacticalQuery` (generate/filter/score: `find_cover`, `find_cover_fire`), `UtilityCurves`, `make ai-perf`.
-4. A3 cover discipline — **done**: `COVER_FIRE` (hide → peek when loaded → fire → reverse back), RETREAT breaks line of sight first, withdrawals back straight away from threats.
-5. A4 fire discipline — **done**: `FireLanes`, OrderController hold-fire gate (`lane_blocked_ticks`), `CLEAR_LANE`, artillery splash check.
-6. A5 `Matchups` — **waiting on checkpoint 1** (rules' catalog v2 is on `stream/rules`, not `main` yet). Scenarios written and pending.
-7. A6 squad tactics — **done** (`SquadTactics`: focus fire, suppress-and-flank, cover a withdrawing squad-mate, fragile threats); T1 measured before A6 (after-A6 re-measure pending the ladder's champion).
-8. A7 ladder — **tooling done** (`BrainVariants`, `--green-brain/--rust-brain`, `tools/ai_ladder.py`, `make ai-ladder`); run 1 says r1 beats a4 13–3 (see unit_ai.md); probe run 2 in progress.
-9. Stretch: smarter CpuCommander; on-map explanations.
+1. A0 design doc `_agents/unit_ai.md` — **done** (literature survey, what we adopt and skip, budgets; an "As built" table maps plan → code).
+2. A1 scenario harness — **done**: `AiScenario`, `make ai-scenarios` (faster than real time; `PENDING` lists must fail until promoted), quick subset in `tests/test_ai_scenarios.gd` (runs in `make test`).
+3. A2 tactical positions — **done**: `CoverMap` (pure 2D cover, memoized quantized LOS, static tactical points; reads rules' `Arena.cover_features()` when present), `TacticalQuery` (`find_cover`, `find_cover_fire`, `find_overwatch`), `UtilityCurves`, `make ai-perf`.
+4. A3 cover discipline — **done**: `COVER_FIRE` (hide → peek when loaded → fire → reverse back), RETREAT breaks line of sight first, withdrawals back away from threats.
+5. A4 fire discipline — **done**: `FireLanes`, hold-fire gate, `CLEAR_LANE`, artillery splash check.
+6. A5 matchups — **groundwork done, blocked on checkpoint 1**: `Matchups` (pure mechanics-based damage estimates + duel advantage, tested on catalog-v2-shaped data). Wiring into target choice, scout orbiting, IFV screening, and Lancer/artillery standoff needs rules' catalog v2 on `main` (intel `unit`/`role`, `mount`, `fire_arc_deg`). Two scenarios are written and pending.
+7. A6 squad tactics — **done**: `SquadTactics` (focus fire, suppress-and-flank, cover a withdrawing squad-mate, fragile threats), bounding overwatch from tactical spots (the bound waits for the overwatch to set); T1 re-measured with and without the control point.
+8. A7 ladder — **done**: `BrainVariants` (r1, a4, a6, a6t9), `--green-brain/--rust-brain`, `tools/ai_ladder.py`, `make ai-ladder`; three runs; **champion a6**; CPU cost per tick reported.
+9. Stretch: on-map explanations — **done from the AI side** (`tank.intent` carries a short why; the tactical map already draws intent). Smarter CpuCommander — measuring v1 against plain brains (in progress).
 
 ### Report (kept current)
 
-**Done (measured, seeded scenarios):**
+**Done (measured):**
 - A hurt tank under two guns is out of sight in 3.3 s (the round-1 brain backed 100 m across open ground and never hid).
-- A healthy cannon tank near a wall is hidden 68% of a 20 s duel, fires 9 shots, and returns to cover 7 times (was 0%).
-- Fire discipline: 0 of 7 shots through a crossing friend (was 1); a parked friend in the lane → sidestep 5.4 m, first shot 2.9 s; artillery won't shell an enemy touching a friend.
-- `CoverMap` agrees with physics raycasts on 139/139 random sight lines.
-- AI CPU at 50 brains: ~15.3 → ~7–9 ms per tick (see "Known issues").
-- Sim baseline updated on purpose three times (A2+A3, perf, A4): now `a6dff29a834f0628`.
+- A cannon tank near a wall is hidden 65–68% of a 20 s duel, fires 9 shots, returns to cover 6–7 times (was 0%).
+- Fire discipline: 0 of 7 shots through a crossing friend (was 1); parked friend → sidestep 5.4 m, first shot 2.9 s; artillery won't shell an enemy touching a friend.
+- Squad focus: 100% of a squad's damage on one target (66% without squad tactics). Bounding overwatch: the watcher beside a wall hidden 51% of its watch (0% before).
+- Ladder: a6 1189 / r1 997 in run 2 (a6 beat r1 7–5, a4 9–7 in run 1; r1 vs a6 14–14 over both runs). In mirrors a6 lands more hits (85% vs 79% accuracy, 25% vs 16% side hits) with 4% fewer shots.
+- T1 (Anvil & Hammer vs Individuals, 64 matches per brain): without the control point 16% both before and after squad tactics; with it 69% → 38% after squad tactics.
+- AI CPU at 50 brains: ~15.3 ms (round 1 as found) → ~7–9 ms per tick on this shared machine.
+- Sim baseline updated on purpose with each behavior change; now `eaef1755546f1eeb`.
 
 **Decisions (with reasons):**
-- Line of sight for decisions is pure 2D math (CoverMap), not physics rays: testable on hand-built situations, deterministic via quantized memo keys, and it matches physics on the real arena.
-- Hiding places must hide the whole hull (center ± 1.6 m), not the center point: center-only spots left tanks parked on the shadow's edge.
-- Peek spots allow 30–60° off the target bearing (not ≤ 45°): tanks can't strafe, and ≤ 45° can't get around a wall's end; smaller angles are preferred in scoring.
-- Brains reason about their nearest 8 contacts (+ current target + artillery), and cover queries run only for worn tanks: the biggest CPU wins with small behavior cost.
-- `fire_at_will` re-scans targets every 6 ticks (keeps a still-shootable pick in between): cheaper, ≤ 0.1 s slower target switching.
-- `move_to` orders gained an optional `arrive` radius (1 m for hide/peek spots); validated like the other fields.
+- Line of sight for decisions is pure 2D math (CoverMap): testable on hand-built situations, deterministic, and it matched physics raycasts 139/139.
+- Hiding places hide the whole hull (center ± 1.6 m); peeks allow 30–60° off the bearing (tanks can't strafe around a wall's end).
+- Brains reason about their nearest 8 contacts; cover queries only for worn tanks; think LOD (18 ticks with no enemy within 130 m): CPU wins with small behavior cost.
+- Champion chosen by the ladder, not by intuition: my guess that holding fire for friends was a handicap was wrong (a6 beat no-hold 9–3); a "press instead of duck" tweak lost 0–12 and was deleted; a 9-tick think interval saved 24% CPU but didn't beat a6, so it isn't the default.
+- Brain variants are read from `--green-brain/--rust-brain` by the brain itself, so no rules-owned file (match runner) changed.
+- `move_to` orders gained an optional `arrive` radius; squads' bound drill waits for the overwatch to set (≥ 1 s, ≤ 4 s).
 
-**Questions for the lead:** none blocking. (Design note for later: peeking shows some side armor when a wall's end forces a 60° peek; low cover or terrain would allow true hull-down.)
+**Questions for the lead:**
+1. **Smart squads vs player coordination (design, pillar-adjacent):** squad tactics made one autonomous 5-tank squad fight nearly as well as a split, coordinated doctrine (T1 with the control point 69% → 38%). That's what "units handle how" implies; it means the player's edge must come from where/when (splits, routes, timing, objectives) and composition counters. OK, or should autonomous squad tactics be weaker (e.g. only when the player orders an assault)? The switch exists (`squad_tactics` in `BrainVariants`).
+2. Peeking round a wall's end shows some side armor (60° peeks). Low cover or terrain would allow true hull-down; worth asking rules/art for low cover pieces?
 
 **Requests to other streams:**
-- rules: none required. My adapters already match your branch: `Arena.cover_features()` (Vector3 size, radians) feeds CoverMap, and `Match.friendlies_in_line_of_fire()` replaces my FireLanes geometry automatically when present. At checkpoint 1 I'll adapt `AiScenario` and `scenario_perf` to the v2 `spawn_tank(name, owner, team, unit_id, paint)` / `add_brain_tank(..., unit_id, ...)` / `"units"` doctrine key.
-- command (optional): `tank.intent` now shows COVER_FIRE / CLEAR_LANE; worth an icon or color on the map later.
+- rules: none required. Adapters match your branch (`Arena.cover_features()`, `Match.friendlies_in_line_of_fire()`, intel `unit`/`role`). At checkpoint 1 I'll adapt `AiScenario`/`scenario_perf` to the v2 `spawn_tank`/`add_brain_tank`/`"units"` signatures and wire `Matchups`.
+- command (optional): `tank.intent` now reads like "COVER_FIRE Rust_2 - squad focus, peek"; the tactical map's intent text could use an icon or truncation.
 
 **Known issues:**
-- CPU: ~7–9 ms per tick at 50 brains on the shared dev machine, far above the 1 ms design target (phones need ≤ ~4 ms). Plan in unit_ai.md "Results": think LOD, 30 Hz orders, a shared per-team contact table, typed arrays in decide.
-- The hurt-tank scenario still ends with the tank leaving cover to go home once it's hidden (withdraws straight away from the threat, but eventually re-exposes on a long route).
+- CPU: ~7–9 ms per tick at 50 brains (target 1 ms; phones need ≤ ~4 ms). Next levers, in order: `a6t9` (−24%, re-test with more matches), a shared per-team contact table, 30 Hz order execution for units not firing, typed arrays in `decide()`.
+- Idle guns read 95% (was 78–89%): by design (holding for friends, reloading in cover), but it makes that stat less useful; a "held for friend" counter would separate it (needs a Match stat, rules-owned).
+- A hurt tank that hid eventually leaves cover to repair at base and can re-expose itself on the way.
 
-**What to playtest:** `make skirmish` and watch tanks near walls under fire: they should duck behind cover, peek out to shoot, and never shoot through a teammate. Nameplates (`make watch-match GREEN_DOCTRINE=anvil_hammer RUST_DOCTRINE=individuals`) show COVER_FIRE / CLEAR_LANE.
+**What to playtest:** `make skirmish` (tanks should duck behind walls under fire, peek out to shoot, never shoot through a teammate, and a squad should pile onto one enemy). `make watch-match GREEN_DOCTRINE=anvil_hammer RUST_DOCTRINE=individuals` shows intents with reasons on nameplates. `make ai-scenarios`, `make ai-ladder`, `make ai-perf` reproduce the numbers.
