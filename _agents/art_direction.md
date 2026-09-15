@@ -107,6 +107,19 @@ The concept above is now in the game as theme `prison_dozer` (Meshy image-to-3D,
 `make assets-unit THEME=prison_dozer` renders it. How it was made and what to reuse: `streams/archive/round1/assets.md` (update
 2026-09-14) and `streams/references/asset_prompts.md`.
 
+## Round 2 production (art stream, 2026-09-14)
+
+The lead reviewed 17 concepts on a review page and approved one per slot. They're in the game now:
+- **The roster** (theme `roster`, `make assets-roster`): scout = caged dune buggy with a nose gun, IFV = armored
+  garbage truck with a 30 mm turret, artillery = crane carrier with a mortar rack, Lancer = transformer flatbed with a
+  coil emitter. Team identity is the model's own neon tinted per team, plus the underglow.
+- **The arena kit** (theme `arena_kit`, `make assets-arena-kit`): container and blast barrier cover, container
+  grandstands with an instanced cheering crowd, a gate, and floodlight towers.
+- **The floor:** CC0 cracked asphalt with baked concrete slabs, oil, skid marks, worn hazard paint, drains, and
+  floodlight pools.
+- The concept images and the lead's decisions are in `assets/review/`; every new concept goes through
+  `make art-review` first.
+
 ## Where this is referenced
 
 `HANDOFF.md`, `vision.md` (the vibe), `game_design.md`, `workstreams.md` (product constraint 2), `streams/art.md`,

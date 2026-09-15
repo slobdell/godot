@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/cyberpunk/prop_generated.gd" id="1_prop"]
+[ext_resource type="PackedScene" path="res://game/theme/arena_kit/generated/prop_crate.tscn" id="2_model"]
+
+[node name="PropCrateGenerated" type="Node3D"]
+script = ExtResource("1_prop")
+model_scene = ExtResource("2_model")
+footprint = Vector2(4.5, 4.5)
+trim_color = Color(1, 0.5, 0.1, 1)

@@ -215,3 +215,28 @@ browsers cap frames at the display rate).
 Rules for all later FX work: new effects join an existing MultiMesh or pool (no per-event nodes with
 meshes/materials/lights), static art goes through `StaticBatcher`, and any new per-frame cost gets a
 bench config so its delta is measured.
+
+### Round 2 (art X2/X3, 2026-09-14): the textured floor and the lighting pass
+
+Same bench, while four other worktree agents loaded the machine, so **compare configs within one run only** (absolute
+numbers drift by several ms between runs). New configs: `ground_wet` (round 1's procedural wet asphalt), `ground_flat`
+(a plain material), `ground_lite` (the low/medium floor on tier high), `tier_low_ground_wet`.
+
+| Floor shader (tier high unless noted) | Δ frame vs `ground_wet` (same run) | Verdict |
+|---|---:|---|
+| First textured floor: 2 asphalt + concrete + normal + 2 detail + drain + per-pixel hash noise + an 8-lamp loop (12 fetches) | **+6.6 ms** (low tier +3.7) | rejected |
+| … hash noise replaced by noise texture channels, lamp loop by a baked 64² light map | no better (+7 ms): fetches, not math, are the cost | — |
+| … pooled lights excluded from the floor (cull mask) | within noise: extra light passes weren't the cost either | not kept |
+| … minus anisotropic filtering / minus the normal map / minus 4 fetches | −1.0 / −2.0 / −3.2 ms | the cost is texture fetches |
+| **Shipped, tier high:** asphalt ×2 (anti-tiling), baked `arena_macro` (weathering, slabs, oil), skid-mark detail, light map, drain fetched only inside drain cells; no normal map | **+1.9 ms** | use (desktop) |
+| **Shipped, low/medium (`arena_ground_lite`):** asphalt, macro, light map (3 fetches) | **+0.1 ms** at tier low (6.44 vs 6.33); medium 9.13 | use (web/phones) |
+
+- On this GPU (Intel UHD 620, Compatibility), **per-pixel texture fetches on a full-screen surface dominate**; branch
+  away fetches that only matter in small areas (`textureLod` inside `if`), bake static variation into one arena-wide map.
+- Painted floodlight pools (a 64² light map baked from the dressing's lamp list, added as emission) light the floor
+  for one fetch; the moon (key light) went 0.65 → 1.15 energy and neutral white, ambient less saturated (no measurable cost).
+- **The gladiator venue (X5)**, `no_venue` configs: 18 Meshy grandstand modules, 2 gates, 4 generated floodlight towers,
+  ~2,000 instanced spectators in **one MultiMesh draw** (alpha scissor, shader-animated idle/cheer, per-tier counts
+  900/1,800/4,000): **+0.3 ms at tier high, +0.14 ms at low, +2 draw calls** from the bench's orbit camera.
+- Tier budgets hold: low 6.4 ms / 189 draws, medium 9.1 ms / 189 draws; high +1.9 ms over round 1's floor (borderline
+  against 16 ms on a loaded machine; switch high to the lite floor if a desktop GPU struggles).

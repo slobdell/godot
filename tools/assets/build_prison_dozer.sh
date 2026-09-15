@@ -16,6 +16,8 @@ normalize() {
 }
 # The bus roof (1.6 m) is above the default deck, so turret and cannon ride on it (--deck-from); Meshy's emission map
 # comes in at energy 1, too dim for the night arena.
-normalize tank.hull "--exclude=turret_*,cannon_* --tint=material_0 --tint-strength=0.2 --emission-energy=4"
-normalize tank.turret "--include=turret_* --scale-from=tank.hull --deck-from=tank.hull --tint=material_0 --tint-strength=0.2 --emission-energy=4"
-normalize weapon.cannon "--include=cannon_* --attach-to=tank.turret --emission-energy=4"
+normalize tank.hull "--exclude=turret_*,cannon_* --tint=material_0 --tint-strength=0.2 --emission-energy=4 --texture-caps=normal_texture:512,roughness_texture:512,metallic_texture:512,ao_texture:512"
+# One texture set per unit (art X1): the turret and cannon ship untextured and wear the hull's materials, which
+# cut the web download by two 1024² PBR sets. The hull keeps the generator's full detail (15k budget: the treads).
+normalize tank.turret "--include=turret_* --scale-from=tank.hull --deck-from=tank.hull --tint=material_0 --tint-strength=0.2 --emission-energy=4 --textures-from=tank.hull"
+normalize weapon.cannon "--include=cannon_* --attach-to=tank.turret --emission-energy=4 --textures-from=tank.hull"

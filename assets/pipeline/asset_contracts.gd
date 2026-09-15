@@ -34,9 +34,10 @@ const DEFAULT_DECK_Y := TURRET_PIVOT_Y - 0.275
 const ANCHOR_TOLERANCE := 0.05
 
 const SLOTS := {
+	# 15k (art X1, 2026-09-14): generated hulls keep the generator's detail; 8k flattened the dozer's treads.
 	"tank.hull": {
 		"guide": Vector3(2.4, 1.6, 3.6), "fit": "contain", "anchor": "ground_center",
-		"tris": 8000, "methods": ["set_team_color"], "elongated": "z", "file": "tank_hull",
+		"tris": 15000, "methods": ["set_team_color"], "elongated": "z", "file": "tank_hull",
 	},
 	"tank.turret": {
 		"guide": Vector3(1.4, 0.55, 1.7), "max": Vector3(1.8, 0.9, 2.1), "fit": "contain",
@@ -64,13 +65,14 @@ const SLOTS := {
 		"guide": Vector3(0.3, 0.3, 1.0), "fit": "contain", "anchor": "center",
 		"tris": 200, "methods": [], "elongated": "z", "file": "fx_shell",
 	},
+	# Props 2k/3k → 4k/8k (art X6, 2026-09-14): generated props decimated to 2k lost their chains, sandbags and grilles.
 	"prop.crate": {
 		"guide": Vector3(4.5, 3.0, 4.5), "fit": "stretch", "anchor": "ground_center",
-		"tris": 2000, "methods": [], "file": "prop_crate",
+		"tris": 4000, "methods": [], "file": "prop_crate",
 	},
 	"prop.wall": {
 		"guide": Vector3(18.0, 3.0, 1.5), "fit": "stretch", "anchor": "ground_center",
-		"tris": 3000, "methods": [], "elongated": "x", "file": "prop_wall",
+		"tris": 8000, "methods": [], "elongated": "x", "file": "prop_wall",
 	},
 	"arena.dressing": {
 		"guide": Vector3(320.0, 30.0, 320.0), "fit": "none", "anchor": "world",
@@ -86,15 +88,74 @@ const CANDIDATES := {
 	"kit.light_pole": {"guide": Vector3(1.2, 8.0, 3.0), "fit": "contain", "anchor": "ground_center", "tris": 800},
 	"kit.billboard": {"guide": Vector3(8.0, 6.0, 3.0), "fit": "contain", "anchor": "ground_center", "tris": 1000},
 	"kit.scrap_pile": {"guide": Vector3(5.0, 2.0, 5.0), "fit": "contain", "anchor": "ground_center", "tris": 1500},
+	# Gladiator arena dressing (art X5, the lead's approved concepts): modules placed around the perimeter by the dressing.
+	"kit.scrap_heap": {"guide": Vector3(4.5, 3.0, 4.5), "max": Vector3(4.5, 3.4, 4.5), "fit": "contain", "anchor": "ground_center", "tris": 4000},
+	"kit.stands": {"guide": Vector3(24.0, 16.0, 20.0), "fit": "contain", "anchor": "ground_center", "tris": 12000},
+	"kit.gate": {"guide": Vector3(24.0, 12.0, 5.0), "fit": "contain", "anchor": "ground_center", "tris": 10000},
+	"kit.floodlight_tower": {"guide": Vector3(9.0, 24.0, 9.0), "fit": "contain", "anchor": "ground_center", "tris": 8000},
 }
 
 
+## Round 2 unit types (rules' catalog v2, contract C1, `Units.PROFILES` on stream/rules 2026-09-14): the numbers art
+## needs to fit `unit.<id>.hull/turret/weapon` (_agents/slot_contracts.md). The tank places per-unit art this way:
+## the hull is not rescaled; the turret node sits at (0, muzzle_height − 0.05, 0.2) and is scaled by
+## min(width, length) ratio to the standard tank hull (2.4 × 3.6); rounds leave 3.2 m ahead of it (× that scale).
+const UNITS := {
+	"scout": {"hull_size": Vector3(2.0, 1.4, 3.0), "muzzle_height": 1.12},
+	"tank": {"hull_size": Vector3(2.4, 1.6, 3.6), "muzzle_height": 1.27},
+	"ifv": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
+	"artillery": {"hull_size": Vector3(2.6, 1.6, 4.0), "muzzle_height": 1.27},
+	"lancer": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
+}
+const STANDARD_HULL := Vector3(2.4, 1.6, 3.6)
+const MUZZLE_ABOVE_PIVOT := 0.05
+const TURRET_Z := 0.2
+## Generated units are taller than their collision box (a garbage truck is taller than wide); their hull art may rise
+## this much above hull_size.y so trucks aren't shrunk to toys (art X4 decision; gameplay collision is unchanged).
+const UNIT_ART_HEIGHT := 1.35
+
+
+## Where a unit's turret node sits in hull space, and its scale (both from Tank._apply_hull_size on stream/rules).
+static func unit_pivot(unit: String) -> Dictionary:
+	var info: Dictionary = UNITS[unit]
+	var size: Vector3 = info["hull_size"]
+	var turret_scale := 1.0 if size.is_equal_approx(STANDARD_HULL) else minf(size.x / STANDARD_HULL.x, size.z / STANDARD_HULL.z)
+	return {"pivot": Vector3(0.0, float(info["muzzle_height"]) - MUZZLE_ABOVE_PIVOT, TURRET_Z), "turret_scale": turret_scale}
+
+
+## "unit.scout.hull" → "scout" (or "" for any other slot).
+static func unit_of(slot: String) -> String:
+	var parts := slot.split(".")
+	return parts[1] if parts.size() == 3 and parts[0] == "unit" and UNITS.has(parts[1]) else ""
+
+
+static func _unit_contract(slot: String) -> Dictionary:
+	var unit := unit_of(slot)
+	if unit == "":
+		return {}
+	var file := slot.replace(".", "_")
+	match slot.get_slice(".", 2):
+		"hull":
+			return {"guide": UNITS[unit]["hull_size"], "max": (UNITS[unit]["hull_size"] as Vector3) * Vector3(1.0, UNIT_ART_HEIGHT, 1.0),
+					"fit": "contain", "anchor": "ground_center", "tris": 15000,
+					"methods": ["set_team_color"], "elongated": "z", "file": file}
+		"turret":
+			var turret: Dictionary = SLOTS["tank.turret"].duplicate()
+			turret["file"] = file
+			return turret
+		"weapon":
+			var weapon: Dictionary = SLOTS["weapon.cannon"].duplicate()
+			weapon["file"] = file
+			return weapon
+	return {}
+
+
 static func has(slot: String) -> bool:
-	return SLOTS.has(slot) or CANDIDATES.has(slot)
+	return SLOTS.has(slot) or CANDIDATES.has(slot) or not _unit_contract(slot).is_empty()
 
 
 static func get_contract(slot: String) -> Dictionary:
-	var contract: Dictionary = SLOTS.get(slot, CANDIDATES.get(slot, {})).duplicate()
+	var contract: Dictionary = SLOTS.get(slot, CANDIDATES.get(slot, _unit_contract(slot))).duplicate()
 	if contract.is_empty():
 		return contract
 	if not contract.has("max"):
@@ -105,4 +166,8 @@ static func get_contract(slot: String) -> Dictionary:
 
 
 static func all_slots() -> Array:
-	return SLOTS.keys() + CANDIDATES.keys()
+	var unit_slots := []
+	for unit in UNITS:
+		for part in ["hull", "turret", "weapon"]:
+			unit_slots.append("unit.%s.%s" % [unit, part])
+	return SLOTS.keys() + CANDIDATES.keys() + unit_slots

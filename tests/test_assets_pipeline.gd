@@ -134,7 +134,9 @@ func test_dense_models_are_decimated_to_the_budget() -> void:
 	assert_true(AssetChecker.check_report(before, "prop.crate")["errors"][0].contains("budget"), "the checker flags the budget first")
 	var result := AssetNormalizer.normalize(root, "prop.crate")
 	var after := AssetInspector.inspect(_free_later(result["scene"]))
-	assert_true(after["tris"] <= 2000 and after["tris"] > 200, "decimated under the 2000 budget without collapsing (%d tris)" % after["tris"])
+	var budget := int(AssetContracts.get_contract("prop.crate")["tris"])
+	assert_true(before["tris"] > budget, "the source is over the crate budget (%d tris)" % before["tris"])
+	assert_true(after["tris"] <= budget and after["tris"] > budget / 10, "decimated under the %d budget without collapsing (%d tris)" % [budget, after["tris"]])
 	var arrays: Array = (result["scene"] as Node3D).get_node("Mesh").mesh.surface_get_arrays(0)
 	var used := {}
 	for index in arrays[Mesh.ARRAY_INDEX]:
@@ -170,7 +172,7 @@ func test_decimation_spares_small_detail_surfaces() -> void:
 		tris[mesh.surface_get_material(surface).resource_name] = mesh.surface_get_arrays(surface)[Mesh.ARRAY_INDEX].size() / 3
 	_free_later(result["scene"])
 	assert_eq(tris.get("sign", 0), 32, "the sign keeps all 32 triangles while the dense body is simplified")
-	assert_true(tris.get("body", 0) + tris.get("sign", 0) <= 2000, "and the model still fits the budget (%s)" % tris)
+	assert_true(tris.get("body", 0) + tris.get("sign", 0) <= int(AssetContracts.get_contract("prop.crate")["tris"]), "and the model still fits the budget (%s)" % tris)
 	assert_true(tris.get("body", 0) >= 1000, "the body is reduced only as far as needed (%s)" % tris)
 
 
@@ -424,3 +426,38 @@ func test_committed_generated_themes_meet_their_contracts() -> void:
 	for theme in AssetIO.generated_themes():
 		var result := AssetChecker.check_theme(theme)
 		assert_eq(result["errors"], PackedStringArray(), "generated theme '%s' meets every slot contract" % theme)
+
+
+func test_a_unit_part_can_ship_without_textures_and_wear_its_hulls() -> void:
+	# Art X1: a unit split into three slot GLBs used to carry three identical texture sets (~10.7 MB of web download).
+	var texture := ImageTexture.create_from_image(Image.create(8, 8, false, Image.FORMAT_RGBA8))
+	var material := StandardMaterial3D.new()
+	material.resource_name = "material_0"
+	material.albedo_texture = texture
+	material.emission_enabled = true
+	material.emission_texture = texture
+	var model := Node3D.new()
+	_add_box(model, "Turret", Vector3(1.7, 0.55, 1.4), Vector3(0, 1.3, 0), "", material)
+	_free_later(model)
+	var turret := AssetNormalizer.normalize(model, "tank.turret", {"forward": "+x", "strip_textures": true})
+	var part: Node3D = _free_later(turret["scene"])
+	var stripped := ((part.find_children("*", "MeshInstance3D", true, false)[0] as MeshInstance3D).mesh.surface_get_material(0)) as BaseMaterial3D
+	assert_eq(stripped.resource_name, "material_0", "the material keeps its name, so the lender's can replace it")
+	assert_true(stripped.albedo_texture == null and stripped.emission_texture == null, "no texture ships with the part")
+
+	# The hull that lends its materials, packed like an imported GLB scene.
+	var lender := Node3D.new()
+	_add_box(lender, "Hull", Vector3(2.4, 1.0, 3.6), Vector3.ZERO, "", material)
+	for child in lender.get_children():
+		child.owner = lender
+	var packed := PackedScene.new()
+	assert_eq(packed.pack(lender), OK, "the lender scene packs")
+	lender.free()
+	var wrapper := Node3D.new()
+	wrapper.set_script(WRAPPER)
+	wrapper.set("material_source", packed)
+	part.get_parent().remove_child(part)
+	wrapper.add_child(part)
+	_free_later(wrapper)
+	var worn := (part.find_children("*", "MeshInstance3D", true, false)[0] as MeshInstance3D).get_active_material(0) as BaseMaterial3D
+	assert_true(worn != null and worn.albedo_texture == texture, "the part wears the hull's textured material")

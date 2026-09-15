@@ -17,7 +17,7 @@ make assets-slots
 ```
 
 For example, `tank.hull` must be 2.4 m wide and 3.6 m long, sit on the ground, face **−Z** (Godot's "forward"), and use at
-most 8,000 triangles, because phones have to draw ten of them at once.
+most 15,000 triangles (phones draw ten of them at once, with automatic LODs at a distance).
 
 Downloaded models almost never follow these rules. That's fine: the pipeline fixes them.
 
@@ -106,6 +106,44 @@ make check            # the whole game still works
   | `--tint-strength=0.2` | how much team color shows through the dirt (0 = none, 1 = fully painted) |
 
   If an agent can't see your key, see *Proposed orientation trip-ups* 5 in `_agents/streams/archive/round1/assets.md`.
+
+## The lead reviews every concept before 3D (round 2)
+
+3D models cost real credits; concept images are cheap. So every new model waits at the concept stage until the
+lead has looked at it ([`_agents/workstreams.md`](../_agents/workstreams.md), *Lead gates*):
+
+```bash
+make art-concept NAME=scout_a GROUP="X4 roster" TARGET_SLOT=unit.scout TITLE="Scout A: …" PROMPT="…"  # ≈9 credits
+make art-review            # build/review/index.html: every concept, its prompt, slot, and estimated 3D credits
+make art-review-status     # the same list in the terminal, plus the credits spent
+make art-decide ID=scout_a DECISION=approved WORDS="the lead's own words"   # or rejected / superseded
+tools/assets/generate.py --provider meshy --slot unit.tank --review-item scout_a --smart-topology --name meshy/scout
+```
+
+- `assets/review/review.json` holds the items and decisions; `assets/review/images/` the pictures the lead saw.
+- `generate.py` refuses a 3D request without an approved `--review-item`, and refuses a second 3D request for the
+  same concept (unless `--retry-reason` says why). It sends the approved concept, not whatever image you name.
+- Every Meshy request, concept or 3D, is appended to [`meshy_ledger.md`](meshy_ledger.md) with the credits it
+  cost and the balance left.
+- Scenes and mood pictures (not models) need `KEEP_BG=1`: background removal erases a whole scene.
+
+## Round 2 recipes and tools (art stream)
+
+| command | what it does |
+|---|---|
+| `make assets-view IN=assets/incoming/meshy/x.glb [SPLIT=1 FORWARD=+x]` | turnaround of a raw download (and how it would split) before normalizing |
+| `make assets-unit THEME=roster UNIT=ifv` | close-up of one unit assembled at its own turret pivot, with the muzzle marked |
+| `make assets-roster` / `make assets-arena-kit` / `make assets-prison-dozer` | rebuild the generated themes from the Meshy sources in `assets/incoming/meshy/` |
+| `make assets-ground` / `make sfx` | rebuild the arena floor textures (CC0 ambientCG) / the synthesized sounds |
+
+Extra normalize settings for units and props:
+- `--split=regions --turret-box=… --cannon-box=…`: label parts by position, for when the tank heuristic can't read
+  them.
+- `--place-from=unit.<id>.hull [--center] [--shift-from=…] [--stretch]`: keep a turret or gun where the generator
+  put it.
+- `--textures-from=<slot>`: one texture set per unit.
+- `--texture-caps=normal_texture:512,…`: smaller maps for the web download. Extracted ORM and normal maps also
+  import at most 512 px.
 
 ## When something looks wrong
 

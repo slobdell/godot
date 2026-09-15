@@ -120,6 +120,45 @@ static func label_tank(root: Node, forward: String, up: String) -> Dictionary:
 	return counts
 
 
+## Labels islands by where they sit: each region is a box in fractions of the whole model's bounds after orientation
+## (x 0 = left … 1 = right, y 0 = bottom … 1 = top, z 0 = FRONT … 1 = back). An island whose bounds center lies in a
+## region's box takes that label (first region wins); the rest are hull. For generated units the tank heuristic
+## can't read (a hood gun, a mortar rack, a coil emitter). Returns {label: count}.
+static func label_regions(root: Node, forward: String, up: String, regions: Dictionary) -> Dictionary:
+	var orient := Transform3D(AssetNormalizer.orientation_basis(forward, up), Vector3.ZERO)
+	var parts := []
+	var whole := AABB()
+	for entry in AssetInspector.mesh_instances(root):
+		var holder := Node3D.new()
+		var copy := MeshInstance3D.new()
+		copy.mesh = (entry[0] as MeshInstance3D).mesh
+		copy.transform = orient * (entry[1] as Transform3D)
+		holder.add_child(copy)
+		var aabb: AABB = AssetInspector.inspect(holder)["aabb"]
+		holder.free()
+		parts.append({"node": entry[0], "aabb": aabb})
+		whole = aabb if whole.size == Vector3.ZERO else whole.merge(aabb)
+	var counts := {"hull": 0}
+	for label in regions:
+		counts[label] = 0
+	for part in parts:
+		var center := ((part["aabb"] as AABB).get_center() - whole.position) / whole.size
+		var label := "hull"
+		for candidate in regions:
+			if (regions[candidate] as AABB).has_point(center):
+				label = candidate
+				break
+		(part["node"] as Node).name = "%s_%d" % [label, counts[label]]
+		counts[label] += 1
+	return counts
+
+
+## "x0,y0,z0,x1,y1,z1" → AABB (fractions).
+static func parse_box(text: String) -> AABB:
+	var v := text.split_floats(",")
+	return AABB(Vector3(v[0], v[1], v[2]), Vector3(v[3] - v[0], v[4] - v[1], v[5] - v[2]))
+
+
 static func _volume(aabb: AABB) -> float:
 	return aabb.size.x * aabb.size.y * aabb.size.z
 

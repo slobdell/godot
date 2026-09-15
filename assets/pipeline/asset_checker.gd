@@ -8,7 +8,9 @@ extends RefCounted
 ## Returns {errors: PackedStringArray, warnings: PackedStringArray}.
 ## raise: the manifest's options.raise for this slot (turret/barrel anchors lifted onto a tall hull's roof).
 ## attached: a barrel placed by its turret (options.attach): only the muzzle point and cross-section are enforced.
-static func check_report(report: Dictionary, slot: String, raise := 0.0, attached := false) -> Dictionary:
+## placed: a unit turret/weapon kept where the generator put it (options.place): size and anchor aren't enforced;
+## a weapon reports how far its visible tip is from the gameplay muzzle (a warning).
+static func check_report(report: Dictionary, slot: String, raise := 0.0, attached := false, placed := {}) -> Dictionary:
 	var errors := PackedStringArray()
 	var warnings := PackedStringArray()
 	var contract := AssetContracts.get_contract(slot)
@@ -28,6 +30,18 @@ static func check_report(report: Dictionary, slot: String, raise := 0.0, attache
 		errors.append("no triangles")
 		return {"errors": errors, "warnings": warnings}
 
+	if not placed.is_empty():
+		var aabb_placed: AABB = report["aabb"]
+		if String(contract["anchor"]) == "barrel":
+			var muzzle := float(contract["barrel_back"]) - (contract["guide"] as Vector3).z
+			if absf(aabb_placed.position.z - muzzle) > 0.3:
+				warnings.append("visible muzzle at z %.2f, gameplay fires from %.2f (turret space ×%.2f)" % [aabb_placed.position.z, muzzle, float(placed.get("turret_scale", 1.0))])
+		if aabb_placed.size.length() > 12.0:
+			errors.append("placed part is %s: far bigger than a vehicle part" % _v(aabb_placed.size))
+		contract = contract.duplicate()
+		contract["fit"] = "none"
+		contract["anchor"] = "world"
+		contract["elongated"] = ""
 	match String(contract["fit"]):
 		"contain":
 			if size.x > max_size.x * (1 + tolerance) or size.y > max_size.y * (1 + tolerance) or size.z > max_size.z * (1 + tolerance):
@@ -133,7 +147,7 @@ static func check_theme(theme: String) -> Dictionary:
 		var report := AssetInspector.inspect(model)
 		model.free()
 		var options: Dictionary = entry.get("options", {})
-		var result := check_report(report, slot, float(options.get("raise", 0.0)), options.has("attach"))
+		var result := check_report(report, slot, float(options.get("raise", 0.0)), options.has("attach"), options.get("place", {}))
 		var aabb: AABB = report["aabb"]
 		lines.append("%s: %d tris, %.2f × %.2f × %.2f m, %d materials, %.0f KB textures%s" % [prefix, report["tris"],
 				aabb.size.x, aabb.size.y, aabb.size.z, report["materials"].size(), report["texture_bytes"] / 1024.0,

@@ -1,8 +1,9 @@
 extends SceneTree
 ## Close-up turnaround of an assembled tank unit from a generated theme: hull + turret + cannon placed the way
 ## game/tank/tank.tscn places the slots (turret pivot at 1.22 m, 0.2 m back), four angles in one sheet.
-##   godot --path . --script res://assets/pipeline/unit_view.gd -- <theme> <out.png> <day|night> [turret yaw°]
-## `make assets-unit THEME=prison_dozer` renders day + night. The gallery's camera is too far to judge detail.
+##   godot --path . --script res://assets/pipeline/unit_view.gd -- <theme> <out.png> <day|night> [turret yaw°] [unit id]
+## `make assets-unit THEME=prison_dozer` renders day + night; `UNIT=ifv THEME=roster` assembles unit.ifv.* at the IFV's
+## own turret pivot and scale (AssetContracts.unit_pivot). The gallery's camera is too far to judge detail.
 
 const TURRET_PIVOT := Vector3(0.0, 1.22, 0.2)
 const TEAM_COLOR := Color(0.33, 0.4, 0.22)  # the default theme's green team
@@ -17,17 +18,40 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var night: bool = args.size() > 2 and args[2] == "night"
 	var slots := AssetIO.theme_slots(args[0])
+	var unit_id: String = args[4] if args.size() > 4 else ""
+	var names := ["tank.hull", "tank.turret", "weapon.cannon"]
+	var pivot_position := TURRET_PIVOT
+	var turret_scale := 1.0
+	if unit_id != "":
+		names = ["unit.%s.hull" % unit_id, "unit.%s.turret" % unit_id, "unit.%s.weapon" % unit_id]
+		var placement := AssetContracts.unit_pivot(unit_id)
+		pivot_position = placement["pivot"]
+		turret_scale = placement["turret_scale"]
 	var unit := Node3D.new()
 	root.add_child(unit)
-	var parts: Array[Node] = [(load(slots["tank.hull"]) as PackedScene).instantiate()]
+	var parts: Array[Node] = [(load(slots[names[0]]) as PackedScene).instantiate()]
 	unit.add_child(parts[0])
 	var pivot := Node3D.new()
-	pivot.position = TURRET_PIVOT
+	pivot.position = pivot_position
+	pivot.scale = Vector3.ONE * turret_scale
 	pivot.rotation_degrees.y = float(args[3]) if args.size() > 3 else 0.0
 	unit.add_child(pivot)
-	for slot in ["tank.turret", "weapon.cannon"]:
+	for slot in names.slice(1):
+		if not slots.has(slot):
+			continue  # e.g. the scout has no turret, the artillery no barrel
 		parts.append((load(slots[slot]) as PackedScene).instantiate())
 		pivot.add_child(parts[-1])
+	var marker := MeshInstance3D.new()  # where gameplay's rounds leave (Tank.muzzle_position)
+	var dot := SphereMesh.new()
+	dot.radius = 0.08
+	dot.height = 0.16
+	var red := StandardMaterial3D.new()
+	red.albedo_color = Color.RED
+	red.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dot.material = red
+	marker.mesh = dot
+	marker.position = Vector3(0, 0.05, -3.2)
+	pivot.add_child(marker)
 	for part in parts:
 		if part.has_method("set_team_color"):
 			part.call("set_team_color", TEAM_COLOR)

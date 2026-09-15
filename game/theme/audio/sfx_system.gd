@@ -17,6 +17,11 @@ const SOUNDS := {
 	"ui_blip": "res://assets/audio/ui_blip.wav",
 	"ui_alert": "res://assets/audio/ui_alert.wav",
 	"ui_tick": "res://assets/audio/ui_tick.wav",
+	"crowd_murmur": "res://assets/audio/crowd_murmur.wav",
+	"crowd_cheer": "res://assets/audio/crowd_cheer.wav",
+	"engine_diesel": "res://assets/audio/engine_diesel.wav",
+	"engine_v8": "res://assets/audio/engine_v8.wav",
+	"engine_electric": "res://assets/audio/engine_electric.wav",
 }
 const WORLD_VOICES := 14
 const UI_VOICES := 3

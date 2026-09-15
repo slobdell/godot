@@ -75,6 +75,12 @@ const COMPRESS_LOSSY := 1
 const COMPRESS_BASIS_UNIVERSAL := 4
 
 
+## Extracted ORM and normal maps import at most this big (process/size_limit). glTF export re-composes a model's
+## metallic/roughness image at its albedo's size, so a 512 cap in the normalizer comes back 1024 on import; at RTS
+## distance these maps don't need more, and they were a third of each unit's web download (art stream, 2026-09-14).
+const DETAIL_MAP_LIMIT := 512
+
+
 static func texture_policy(width: int, height: int) -> int:
 	return COMPRESS_LOSSY if maxi(width, height) <= SMALL_TEXTURE else COMPRESS_BASIS_UNIVERSAL
 
@@ -82,8 +88,12 @@ static func texture_policy(width: int, height: int) -> int:
 ## Rewrites the .import of every extracted texture in a generated theme to follow the policy.
 ## Returns the files changed (re-run `godot --import` afterwards).
 static func apply_texture_policy(theme: String) -> PackedStringArray:
+	return apply_texture_policy_dir(generated_dir(theme))
+
+
+## The same policy for any folder of textures (e.g. the arena ground set). Files named *normal* import as normal maps.
+static func apply_texture_policy_dir(dir: String) -> PackedStringArray:
 	var changed := PackedStringArray()
-	var dir := generated_dir(theme)
 	for file in DirAccess.get_files_at(dir):
 		if not file.ends_with(".png"):
 			continue
@@ -93,9 +103,15 @@ static func apply_texture_policy(theme: String) -> PackedStringArray:
 		if image == null or config.load(import_path) != OK:
 			continue
 		var mode := texture_policy(image.get_width(), image.get_height())
-		if int(config.get_value("params", "compress/mode", 0)) != mode or int(config.get_value("params", "detect_3d/compress_to", 1)) != 0:
+		var normal_map := 1 if file.contains("normal") else int(config.get_value("params", "compress/normal_map", 0))
+		var size_limit := DETAIL_MAP_LIMIT if (file.ends_with("_orm.png") or file.ends_with("_normal.png")) else 0
+		if int(config.get_value("params", "compress/mode", 0)) != mode or int(config.get_value("params", "detect_3d/compress_to", 1)) != 0 \
+				or int(config.get_value("params", "compress/normal_map", 0)) != normal_map \
+				or int(config.get_value("params", "process/size_limit", 0)) != size_limit:
 			config.set_value("params", "compress/mode", mode)
 			config.set_value("params", "detect_3d/compress_to", 0)  # no silent re-import by the editor later
+			config.set_value("params", "compress/normal_map", normal_map)
+			config.set_value("params", "process/size_limit", size_limit)
 			config.save(import_path)
 			changed.append(file)
 	return changed
@@ -107,7 +123,9 @@ static func generated_dir(theme: String) -> String:
 
 ## Writes <dir>/<file>.tscn instancing <file>.glb under the GeneratedVisual script.
 ## `materials`: {tint: [...], team_emissive: [...], heat: [...], shield: [...]} material-name globs.
-static func write_wrapper(theme: String, slot: String, materials: Dictionary = {}, tint_strength := 1.0) -> String:
+## `material_source`: a GLB (res:// path) whose same-named materials the model wears (it was exported untextured).
+static func write_wrapper(theme: String, slot: String, materials: Dictionary = {}, tint_strength := 1.0,
+		material_source := "") -> String:
 	var contract := AssetContracts.get_contract(slot)
 	var file: String = contract["file"]
 	var dir := generated_dir(theme)
@@ -117,6 +135,10 @@ static func write_wrapper(theme: String, slot: String, materials: Dictionary = {
 		"",
 		"[ext_resource type=\"Script\" path=\"%s\" id=\"1_visual\"]" % WRAPPER_SCRIPT,
 		"[ext_resource type=\"PackedScene\" path=\"%s/%s.glb\" id=\"2_model\"]" % [dir, file],
+	])
+	if material_source != "":
+		lines.append("[ext_resource type=\"PackedScene\" path=\"%s\" id=\"3_materials\"]" % material_source)
+	lines.append_array([
 		"",
 		"[node name=\"%s\" type=\"Node3D\"]" % file.to_pascal_case(),
 		"script = ExtResource(\"1_visual\")",
@@ -132,6 +154,8 @@ static func write_wrapper(theme: String, slot: String, materials: Dictionary = {
 			lines.append("%s = PackedStringArray(%s)" % [key[1], ", ".join(quoted)])
 	if tint_strength < 1.0:
 		lines.append("tint_strength = %s" % snappedf(tint_strength, 0.01))
+	if material_source != "":
+		lines.append("material_source = ExtResource(\"3_materials\")")
 	lines.append_array(["", "[node name=\"Model\" parent=\".\" instance=ExtResource(\"2_model\")]", ""])
 	var handle := FileAccess.open(path, FileAccess.WRITE)
 	handle.store_string("\n".join(lines))
@@ -169,6 +193,6 @@ static func theme_slots(theme: String) -> Dictionary:
 	var slots := {}
 	var manifest := read_manifest(theme)
 	for slot in manifest["slots"]:
-		if AssetContracts.SLOTS.has(slot):
+		if AssetContracts.SLOTS.has(slot) or AssetContracts.unit_of(slot) != "":
 			slots[slot] = "%s/%s" % [generated_dir(theme), manifest["slots"][slot]["scene"]]
 	return slots

@@ -7,7 +7,16 @@ extends RefCounted
 const NEON_SHADER := preload("res://game/theme/fx/shaders/neon.gdshader")
 const BEAM_SHADER := preload("res://game/theme/fx/shaders/beam_cone.gdshader")
 const HOLOGRAM_SHADER := preload("res://game/theme/fx/shaders/hologram.gdshader")
-const GROUND_SHADER := preload("res://game/theme/fx/shaders/wet_ground.gdshader")
+## The arena floor (art X2/X3): textured asphalt, baked weathering and slabs, hazard paint, drains, floodlight pools.
+## High tier gets the full shader; low and medium the lite one (arena_ground.gdshaderinc, costs in fx_tricks.md).
+const GROUND_SHADER := preload("res://game/theme/fx/shaders/arena_ground.gdshader")
+const GROUND_LITE_SHADER := preload("res://game/theme/fx/shaders/arena_ground_lite.gdshader")
+const GROUND_TEXTURES := {
+	"asphalt_albedo": preload("res://game/theme/cyberpunk/ground/asphalt_albedo_rough.png"),
+	"arena_macro": preload("res://game/theme/cyberpunk/ground/arena_macro.png"),
+	"detail_masks": preload("res://game/theme/cyberpunk/ground/ground_detail.png"),
+	"drain_texture": preload("res://game/theme/cyberpunk/ground/drain.png"),
+}
 const PANEL_SHADER := preload("res://game/theme/fx/shaders/neon_panel.gdshader")
 
 ## The palette (mavlink-hud colors.xml + the specs).
@@ -97,12 +106,16 @@ static func top_quad(parent: Node3D, size: Vector2, center: Vector3, material: M
 	return instance
 
 
-static func ground() -> ShaderMaterial:
-	if not _cache.has("ground"):
+## `lite`: the low/medium-tier floor (FxQuality.tier() < HIGH).
+static func ground(lite := false) -> ShaderMaterial:
+	var key := "ground_lite" if lite else "ground"
+	if not _cache.has(key):
 		var material := ShaderMaterial.new()
-		material.shader = GROUND_SHADER
-		_cache["ground"] = material
-	return _cache["ground"]
+		material.shader = GROUND_LITE_SHADER if lite else GROUND_SHADER
+		for texture in GROUND_TEXTURES:
+			material.set_shader_parameter(texture, GROUND_TEXTURES[texture])
+		_cache[key] = material
+	return _cache[key]
 
 
 ## A MeshInstance3D box with a material, positioned at `center` (helper for procedural props).

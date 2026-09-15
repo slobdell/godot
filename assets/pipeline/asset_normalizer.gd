@@ -42,6 +42,13 @@ const AXES := {
 ##   keep []         material-name globs the palette must not absorb
 ##   repeat (1,1,1)  tile the selection N×M×K times along x/y/z before fitting (a wall from barrier segments)
 ##   emission_maps {} material-name glob → Texture2D: an emission map delivered beside the GLB (Meshy PBR)
+##   texture_caps {}  texture property → max edge, below the slot's cap (e.g. normal and ORM at 512 on a unit: they barely
+##                   show at RTS distance and are half its web download)
+##   strip_textures (false) export materials without their textures: the part borrows another slot's (--textures-from)
+##   place {}        turret/weapon of a generated unit: keep the placement the generator gave it relative to the hull.
+##                   {hull_scale, hull_offset (the hull's fit), pivot (turret node, hull space), turret_scale,
+##                   center_xz (turrets: move onto the pivot so they rotate in place), shift (weapons: the turret's
+##                   recentering, so the gun stays on its turret)}. Result "shift" = the recentering applied.
 ## Returns {scene: Node3D, notes: PackedStringArray, scale: Vector3, source: report}.
 static func normalize(source: Node, slot: String, options: Dictionary = {}) -> Dictionary:
 	var contract := AssetContracts.get_contract(slot)
@@ -65,17 +72,27 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 		notes.append("tiled the model %d × %d × %d" % [repeat.x, repeat.y, repeat.z])
 	var oriented := _bounds(parts)
 	var attach: Dictionary = options.get("attach", {})
-	var fit := _attached_barrel(oriented, contract, attach, notes) if not attach.is_empty() and String(contract["anchor"]) == "barrel" \
-			else _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
+	var place: Dictionary = options.get("place", {})
+	var fit: Dictionary
+	if not place.is_empty():
+		fit = _placed(oriented, place, notes)
+	elif not attach.is_empty() and String(contract["anchor"]) == "barrel":
+		fit = _attached_barrel(oriented, contract, attach, notes)
+	else:
+		fit = _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
 	var groups := _merge_by_material(parts, fit["transform"], notes, true)
 	if options.get("palette", false):
 		groups = _palette(groups, options.get("keep", []) + options.get("emissive", {}).keys(), notes)
 	var budget := int(options.get("tris", 0)) if int(options.get("tris", 0)) > 0 else int(contract["tris"])
 	var mesh := _merge_surfaces_by_material(_build_mesh(groups, budget, notes))
-	if attach.is_empty():
-		_reanchor(mesh, contract)  # an attached barrel keeps the turret's placement instead
+	if String(contract["fit"]) == "stretch" and float(options.get("scale", 0.0)) <= 0.0:
+		_restretch(mesh, contract["guide"], notes)  # decimation can shave a prop's top (beacons, spikes): refit the box
+	if attach.is_empty() and place.is_empty():
+		_reanchor(mesh, contract)  # attached and placed parts keep their generated placement instead
 	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}),
-			float(options.get("emission_energy", 0.0)))
+			float(options.get("emission_energy", 0.0)), options.get("texture_caps", {}))
+	if options.get("strip_textures", false):
+		_strip_textures(mesh, notes)
 
 	var root := Node3D.new()
 	root.name = String(contract["file"]).to_pascal_case()
@@ -84,7 +101,8 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 	instance.mesh = mesh
 	root.add_child(instance)
 	instance.owner = root
-	return {"scene": root, "notes": notes, "scale": fit["scale"], "offset": (fit["transform"] as Transform3D).origin}
+	return {"scene": root, "notes": notes, "scale": fit["scale"], "offset": (fit["transform"] as Transform3D).origin,
+			"shift": fit.get("shift", Vector3.ZERO)}
 
 
 ## Rotation taking the source's forward/up axes to Godot's −Z/+Y.
@@ -184,6 +202,35 @@ static func _fit_transform(bounds: AABB, contract: Dictionary, fixed_scale: floa
 			offset = Vector3(-center.x, float(contract["barrel_y"]) + float(contract.get("raise", 0.0)) - center.y,
 					float(contract["barrel_back"]) - scaled.end.z)
 	return {"transform": Transform3D(Basis.from_scale(scale), offset), "scale": scale}
+
+
+static func _placed(bounds: AABB, place: Dictionary, notes: PackedStringArray) -> Dictionary:
+	var turret_scale := float(place.get("turret_scale", 1.0))
+	var s := float(place["hull_scale"]) / turret_scale
+	var origin := ((place["hull_offset"] as Vector3) - (place["pivot"] as Vector3)) / turret_scale + (place.get("shift", Vector3.ZERO) as Vector3)
+	var shift := Vector3.ZERO
+	if place.get("center_xz", false):
+		var center := bounds.get_center() * s + origin
+		shift = Vector3(-center.x, 0.0, -center.z)
+		origin += shift
+		notes.append("placed as generated, moved (%.2f, %.2f) onto the turret pivot" % [shift.x, shift.z])
+	else:
+		notes.append("placed as generated relative to the hull")
+	var turn := deg_to_rad(float(place.get("turn_deg", 0.0)))  # about the pivot: e.g. a rack generated facing the rear
+	if absf(turn) > 0.0001:
+		notes.append("turned %.0f° about the pivot" % place["turn_deg"])
+	var scale := Vector3.ONE * s
+	var muzzle_z := float(place.get("muzzle_z", 0.0))
+	if place.get("stretch", false) and muzzle_z < 0.0:
+		# A real barrel: keep the breech where it was generated and stretch along the axis to the gameplay muzzle.
+		var back := s * bounds.end.z + origin.z
+		var front := s * bounds.position.z + origin.z
+		var k := (muzzle_z - back) / (front - back) if absf(front - back) > 1e-6 else 1.0
+		scale.z = s * k
+		origin.z = back - scale.z * bounds.end.z
+		notes.append("barrel stretched ×%.2f from its breech to the muzzle point" % k)
+	var xform := Transform3D(Basis(Vector3.UP, turn), Vector3.ZERO) * Transform3D(Basis.from_scale(scale), origin)
+	return {"transform": xform, "scale": scale, "shift": shift}
 
 
 static func _attached_barrel(bounds: AABB, contract: Dictionary, attach: Dictionary, notes: PackedStringArray) -> Dictionary:
@@ -466,6 +513,31 @@ static func _compact(arrays: Array) -> Array:
 
 ## Decimation can remove the outermost vertices, so re-apply the slot's anchor to the final geometry
 ## (a translation only; the fitted scale stays).
+static func _restretch(mesh: ArrayMesh, guide: Vector3, notes: PackedStringArray) -> void:
+	var holder := MeshInstance3D.new()
+	holder.mesh = mesh
+	var bounds: AABB = AssetInspector.inspect(holder)["aabb"]
+	holder.free()
+	var safe := Vector3(maxf(bounds.size.x, 1e-6), maxf(bounds.size.y, 1e-6), maxf(bounds.size.z, 1e-6))
+	var factor := guide / safe
+	if (factor - Vector3.ONE).abs().length() < 0.005:
+		return
+	notes.append("refit to the collision box after decimation (×%.3f, ×%.3f, ×%.3f)" % [factor.x, factor.y, factor.z])
+	var surfaces := []
+	for surface in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(surface)
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		for i in vertices.size():
+			vertices[i] = bounds.position * factor + (vertices[i] - bounds.position) * factor
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		surfaces.append([arrays, mesh.surface_get_material(surface), mesh.surface_get_name(surface)])
+	mesh.clear_surfaces()
+	for entry in surfaces:
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, entry[0])
+		mesh.surface_set_material(mesh.get_surface_count() - 1, entry[1])
+		mesh.surface_set_name(mesh.get_surface_count() - 1, entry[2])
+
+
 static func _reanchor(mesh: ArrayMesh, contract: Dictionary) -> void:
 	var holder := MeshInstance3D.new()
 	holder.mesh = mesh
@@ -505,7 +577,7 @@ static func _commit(mesh: ArrayMesh, importer: ImporterMesh, surface: int, array
 
 ## Copies each material, caps its textures, strips unsupported features, applies emissive rules.
 static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dictionary, notes: PackedStringArray,
-		emission_maps: Dictionary = {}, emission_energy := 0.0) -> void:
+		emission_maps: Dictionary = {}, emission_energy := 0.0, texture_caps: Dictionary = {}) -> void:
 	var resized := {}
 	for surface in mesh.get_surface_count():
 		var source := mesh.surface_get_material(surface)
@@ -528,9 +600,10 @@ static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dict
 					notes.append("material '%s' uses the supplied emission map" % base.resource_name)
 			for property in AssetInspector.TEXTURE_PROPERTIES:
 				var texture := base.get(property) as Texture2D
-				if texture != null and maxi(texture.get_width(), texture.get_height()) > max_texture:
+				var cap := mini(max_texture, int(texture_caps.get(property, max_texture)))
+				if texture != null and maxi(texture.get_width(), texture.get_height()) > cap:
 					if not resized.has(texture):
-						resized[texture] = _shrink(texture, max_texture)
+						resized[texture] = _shrink(texture, cap)
 						notes.append("texture %s %d×%d → %d×%d" % [property, texture.get_width(), texture.get_height(),
 								resized[texture].get_width(), resized[texture].get_height()])
 					base.set(property, resized[texture])
@@ -546,6 +619,20 @@ static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dict
 					base.emission_energy_multiplier = float(emissive[glob])
 					notes.append("material '%s' made emissive ×%.1f" % [base.resource_name, float(emissive[glob])])
 		mesh.surface_set_material(surface, material)
+
+
+## Drops every texture from the mesh's materials (names and scalar settings stay, so the borrowed material matches).
+static func _strip_textures(mesh: ArrayMesh, notes: PackedStringArray) -> void:
+	var stripped := 0
+	for surface in mesh.get_surface_count():
+		var base := mesh.surface_get_material(surface) as BaseMaterial3D
+		if base == null:
+			continue
+		for property in AssetInspector.TEXTURE_PROPERTIES:
+			if base.get(property) != null:
+				base.set(property, null)
+				stripped += 1
+	notes.append("stripped %d texture references (textures come from another slot)" % stripped)
 
 
 static func _shrink(texture: Texture2D, max_edge: int) -> ImageTexture:

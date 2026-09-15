@@ -10,6 +10,8 @@ extends Node3D
 
 ## Emitted when effect budgets change (FxQuality tier switch).
 signal quality_changed
+## Something the crowd should react to (art X5): weight 1 = a kill, ~0.15 = a hit. The arena's CrowdSystem listens.
+signal spectacle(position: Vector3, weight: float)
 
 static var _instance: FxWorld
 
@@ -19,6 +21,9 @@ var bursts: BurstSystem
 var streaks: StreakSystem
 var underglow: UnderglowSystem
 var beams: BeamSystem
+var engines: EngineSystem
+## Kill sites that keep burning (art stretch).
+var fires := FireSites.new()
 var shake := CameraShake.new()
 var sfx: SfxSystem
 ## Seconds since this FxWorld started; the clock every shader animation uses.
@@ -75,6 +80,10 @@ func _init() -> void:
 		add_child(system)
 	sfx = SfxSystem.new()
 	add_child(sfx)
+	engines = EngineSystem.new()
+	engines.muted = sfx.muted
+	engines.use_streams(sfx.streams)
+	add_child(engines)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -95,7 +104,10 @@ func _process(delta: float) -> void:
 	tracers.update(lights)
 	underglow.update(lights)
 	beams.update(lights, now)
+	fires.update(now, bursts, lights)
 	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
+	if camera != null:
+		engines.update(camera.global_position, delta)
 
 
 ## Put one of each effect (near-invisible) and every pooled light just in front of the camera, so
@@ -198,5 +210,8 @@ func explosion(position: Vector3, big := false) -> void:
 		lights.flash(position + Vector3(0, 1.5, 0), Color(1.0, 0.55, 0.2), 10.0 if big else 6.0,
 				22.0 if big else 12.0, 0.8 if big else 0.4, LightPool.PRIORITY_EXPLOSION, now)
 	sfx.play_at("explosion_big" if big else "explosion_small", position)
+	spectacle.emit(position, 1.0 if big else 0.15)
+	if big:
+		fires.ignite(position, now, bursts)
 	# Kills jolt the view; ordinary hits only register up close.
 	shake.add(0.55 if big else 0.12, position, 30.0 if big else 14.0)
