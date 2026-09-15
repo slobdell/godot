@@ -48,3 +48,8 @@ duel: import ## Watch a small fight as a text timeline (shots, hits, poses): GRE
 matchup-search: import ## Score --tune variants of the matchup matrix against the designed counters: VARIANTS=tools/matchup_variants/<file>.json [UNITS= SEEDS=2 ESCORT=]
 	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANTS) --seeds $(or $(SEEDS),2) \
 		$(if $(UNITS),--units $(UNITS)) $(if $(ESCORT),--escort $(ESCORT))
+
+pace: import ## Match pace with seeded CPU armies like a skirmish (first shot, first kill, length): N=24 BUDGET=1000 CONTROL=1 -> build/pace[-control].json
+	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),24) --jobs $(JOBS) --time-limit 300 --score-limit 0 \
+		--json $(BUILD_DIR)/pace$(if $(CONTROL),-control).json \
+		--extra="--green-doctrine=cpu --rust-doctrine=cpu --elimination --budget=$(or $(BUDGET),1000) $(if $(CONTROL),--control)"

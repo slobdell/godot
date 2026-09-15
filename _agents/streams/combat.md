@@ -81,7 +81,8 @@ K2 events), models (assets).
 
 ## Status
 
-- 2026-09-15: brief written for round 3. Nothing started.
+- 2026-09-15: brief written for round 3.
+- 2026-09-15 (worker): **backlog complete** (X1-X7, stretch `unit_destroyed`); X6 time-boxed at 8 of 12 counters; X7's default flip is a request to control. Report at the end of this section.
 
 ### Plan (worker, 2026-09-15)
 
@@ -217,3 +218,96 @@ Full story and tables: balance.md *Round 3: weapons rebuilt and matrix #5*. Shor
 right after `tank_destroyed` for every destruction (one `_announce_destroyed` path). For feel (explosions, wreck
 effects), assets (wreck art sized to `hull_size`), and the announcer. **Wreck husks as cover are not built**: a husk that
 blocks shells but not the navmesh strands units, and one that blocks both needs runtime navmesh carving; proposal below.
+
+### X7 done (measured; the default flip is control's): match defaults (2026-09-15)
+
+`make pace [CONTROL=1]` (new): seeded CPU vs CPU armies at the skirmish budget (1000), elimination, 10 matches each on
+builder0.
+
+| Rules | First shot (median) | First kill (median) | Length: median (p25-p75) | Ends by |
+|---|---|---|---|---|
+| Elimination only | 5.7 s | 11.6 s | 54 s (42-83) | elimination 10 |
+| + control point | 5.5 s | 11.8 s | **92 s (54-113)** | elimination 7, control 3 |
+
+**Recommendation:** control point on by default (the lead already agreed). With the new time-to-kill, elimination alone
+ends most fights in under a minute; the point keeps a match to ~1.5 minutes, gives a losing side a path back, and makes
+3 of 10 matches about holding ground instead of the last kill. First contact within ~6 s of the battle starting (after
+the skirmish's planning pause) feels right for arcade-tactical; no change to `CONTROL_POINTS_TO_WIN` (90) yet.
+**Request to control (owner of `game/modes/skirmish_mode.gd`):** make `game_match.control_point` default to true
+(`--no-control` to turn it off). One line; I haven't touched the file.
+
+## Report (combat stream, round 3, 2026-09-15)
+
+**Done:** X1 (CP2), X2, X3, X4, X5, X6 (time-boxed at 8/12 counters), X7 (measured; the flag flip is a request to
+control), stretch `unit_destroyed`. Every step green on `make remote T=check`; last sim baseline
+`glibc-2.43 79fd0387fc497327`.
+
+### Decisions (with reasons, in the sections above)
+- Hitscan MG and beams; projectile shells and 25 mm rounds (spawn cost, dodging counterplay).
+- Weapon timing in whole ticks; a started burst is committed.
+- Weak spot = engine deck through half the rear armor, not a flat damage bonus (keeps tank shells a 2-hit kill).
+- `TankCommand.turn` = the hull's yaw direction in either gear; wheels creep along the circle on a bare turn command.
+- Artillery deploys automatically: a fire command digs in; a drive command held 0.5 s packs up.
+- Laser range/strength sits on a knife edge between IFV > Lancer and Lancer > tank; IFV front armor and tank sight
+  were the levers that move one edge only.
+
+### Questions for the lead
+1. **Scouts as fighters:** matrix #5 has scouts beating only artillery (they hold a spotting standoff, per your
+   "spotters more than fighters"). `Units.PROFILES.scout.good_vs` still lists the Lancer. Keep scouts as pure
+   spotters (and drop Lancer from good_vs), or should ai give them attack runs on light units and exposed rears?
+2. **Artillery's role:** it's a support unit that wins nothing alone or spotted (a stronger mortar wipes scouts, its
+   one counter). Is that acceptable for now, or should it get a mechanic (e.g. a bigger minimum range but a slow
+   shell that ignores cover) in a later round?
+3. **Boost / ram (stretch, pillar-level, not built):** proposed a short nitro boost on wheels (1.5 s at +40% speed and
+   half grip, 8 s cooldown) and ram damage scaled by mass × closing speed (tanks and Burners best). It would give
+   scouts and IFVs a way to break a tank's firing solution and to finish attack runs. Build it next round?
+4. **Wreck husks as cover (stretch, not built):** husks that block shells and sight need runtime navmesh carving or
+   units strand on them. Want them (a later round, with ai), or keep wrecks visual only (the `unit_destroyed` event)?
+
+### Requests to other streams
+- **ai:** (a) read `Match.incoming_projectiles` to dodge tank shells (a 5 s reload makes every dodge count; the duel
+  timeline shows tanks trading from a standstill). (b) Use `Armor.is_weak_spot` / `Match.weak_spot_multiplier` to seek
+  engine-deck angles (a scout's stream there does ×1.13 instead of ×0.05 on the front). (c) Wheeled units: plan with
+  `TankMotion.predict`; `Steering` still assumes pivots (the creep assist hides it). (d) Artillery BOMBARD: stop and fire
+  rather than nudging range every tick (a fire command now deploys it). (e) `matchups.gd` mirrors the penetration
+  curve: add the engine deck, and note burst weapons (`burst_count` × `damage` per `reload_s`). (f) A lone unit with no
+  objective drives straight at the enemy base through the center crate's shadow on point-symmetric arenas: two lone
+  tanks passed each other at 9 m unseen (`make duel` works around it with objectives). (g) Minimal edits I made in
+  your paths: `order_controller.gd` and `fire_lanes.gd` lead with the weapon's `projectile_speed_mps`;
+  `tests/ai_scenarios/scenario_cover.gd` gives the hurt tank a hull that survives one volley.
+- **control:** skirmish `control_point` default on (X7). `Match.orders` exists (`Object`, assign your `Orders`).
+  Minimal edit in your path: `CommandIcons.draw_unit` skips icons projected beyond ±16384 px (renderer triangulation
+  error in `army-loop-smoke` under load, measured at (87913, 110814)).
+- **feel:** K2 events carry `speed_mps` and `range` (fly rounds without nodes); arc bursts carry `victims`; flames emit
+  `weapon_fired` every 6 ticks and no impacts; `unit_destroyed` has the wreck transform; artillery visuals get
+  `set_deployed(ratio)`; wheeled units drift (`lateral_grip`, velocity vs heading) for tire marks.
+- **assets:** `set_deployed(ratio 0..1)` on artillery hull, turret, and weapon (slot_contracts.md); wreck art can size
+  to `unit_destroyed.hull_size`.
+- **orchestrator:** fold K2 additive fields (`speed_mps`, `range`, `victims`, `unit_destroyed`) and K3's "turn = yaw
+  direction in either gear" into workstreams.md; `tools/remote.sh` now picks builder0's newest Xwayland cookie (native
+  screenshot targets hung for 20+ min on a stale one).
+
+### Known issues
+- Lancer > tank is a coin flip (50%); scouts win only vs artillery; artillery wins nothing (see questions).
+- `make skirmish-shots` at 35 s wall clock on builder0 rarely catches a shell in flight at that zoom; the timelines
+  (`make duel`) are the reliable evidence for shells, bursts, and streams.
+- Balance samples are 12 per pair (±14 points); brains react to numbers, so neighbouring values swing ±15%.
+
+### What to playtest (exact commands)
+- `make skirmish` then fight: tanks should feel slow and heavy-hitting (5 s between shells, a flank shot guts a tank),
+  IFVs rattle 4-round bursts, scouts stream tracers only where the hood points, wheeled units swing wide and slide.
+- `make watch-match GREEN_DOCTRINE=anvil_hammer RUST_DOCTRINE=flame_rush` to watch driving and deploying artillery.
+- Text: `make remote T="duel GREEN_UNITS=tank RUST_UNITS=tank"`, `… GREEN_UNITS=scout,scout RUST_UNITS=tank`.
+
+### Next steps
+- Behavior before stats: once ai dodges and flanks, re-run `make matchups` and `make matchup-search` (variant files in
+  `tools/matchup_variants/`). Then the lead's answers on scouts, artillery, boost/ram, and husks.
+
+### Merge notes (edits outside combat's paths)
+- `game/ai/order_controller.gd`, `game/ai/fire_lanes.gd` (lead speed), `tests/ai_scenarios/scenario_cover.gd` (ai).
+- `game/ui/command_icons.gd` (control): off-screen guard.
+- `tools/remote.sh` (shared): newest Xwayland cookie.
+- `_agents/slot_contracts.md` (shared, additive): `set_deployed`. `_agents/determinism.md` inventory rows.
+  `_agents/verification.md` row 6i.
+- Round-2 tests now derive from data: `tests/test_combat.gd`, `test_shields.gd`, `test_weapons_and_intel.gd`,
+  `test_turrets.gd`.
