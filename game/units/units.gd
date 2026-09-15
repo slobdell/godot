@@ -152,10 +152,11 @@ const PROFILES := {
 		"max_forward_speed": 8.5,
 		"max_reverse_speed": 4.0,
 		"hull_turn_rate_deg": 80.0,
-		"sight_radius": 80.0,
+		# R7: sight 80 -> 85 (it must see what its 85 m beam reaches); turret 80 -> 55°/s, so fast IFVs get inside it.
+		"sight_radius": 85.0,
 		"weapon": "laser",
 		"mount": "turret",
-		"turret_turn_rate_deg": 80.0,
+		"turret_turn_rate_deg": 55.0,
 		"muzzle_height": 1.27,
 		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
 		"heat_capacity": 100.0,

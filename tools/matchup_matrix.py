@@ -48,13 +48,16 @@ def tuned_costs(units, tune):
     return units
 
 
-def army(unit_id, cost, budget):
-    """The count of `unit_id` whose total cost is closest to `budget` (at least 1), in squads of 5."""
+def army(unit_id, cost, budget, escort=""):
+    """The count of `unit_id` whose total cost is closest to `budget` (at least 1), in squads of 5, plus an
+    optional escort unit outside the budget (the same for both sides: e.g. a spotter for artillery)."""
     count = max(1, round(budget / cost))
     squads = []
     for index in range(0, count, MAX_SQUAD):
         squads.append({"name": f"{unit_id.capitalize()}{index // MAX_SQUAD + 1}", "directive": {"role": "assault"},
                        "units": [{"unit": unit_id}] * min(MAX_SQUAD, count - index)})
+    if escort:
+        squads.append({"name": "Escort", "directive": {"role": "scout"}, "units": [{"unit": escort}]})
     return {"name": f"{count} x {unit_id}", "squads": squads}, count, count * cost
 
 
@@ -76,17 +79,24 @@ def run_match(args, green_file, rust_file, seed, swap):
     raise RuntimeError(f"{green_file} vs {rust_file} seed {seed}: no MATCH_RESULT (exit {completed.returncode}) {errors}")
 
 
-def value_left(result, side, units):
-    lost = sum(units[u]["cost"] * n for u, n in result.get("losses_by_unit", {}).get(side, {}).items())
-    cost = max(result["army_cost"][side], 1)
+def value_left(result, side, units, escort=""):
+    """Share of a side's measured army (the escort excluded) still alive at the end."""
+    losses = dict(result.get("losses_by_unit", {}).get(side, {}))
+    cost = result["army_cost"][side]
+    if escort:
+        losses.pop(escort, None)
+        cost -= units[escort]["cost"]
+    lost = sum(units[u]["cost"] * n for u, n in losses.items())
+    cost = max(cost, 1)
     return (cost - lost) / cost
 
 
-def verdict(result, units):
-    """"green", "rust", or "draw": elimination decides; a timeout goes to the larger share of army value left."""
-    if result["reason"] == "elimination" and result["winner"] in ("Green", "Rust"):
+def verdict(result, units, escort=""):
+    """"green", "rust", or "draw". Elimination decides; a timeout (or any match with an escort, whose survival
+    shouldn't count) goes to the larger share of measured army value left."""
+    if not escort and result["reason"] == "elimination" and result["winner"] in ("Green", "Rust"):
         return result["winner"].lower()
-    green, rust = value_left(result, "green", units), value_left(result, "rust", units)
+    green, rust = value_left(result, "green", units, escort), value_left(result, "rust", units, escort)
     if abs(green - rust) < 0.1:
         return "draw"
     return "green" if green > rust else "rust"
@@ -104,6 +114,8 @@ def main():
     parser.add_argument("--arena", default="")
     parser.add_argument("--tune", default="")
     parser.add_argument("--mirrors", action="store_true", help="also play each unit against itself (fairness)")
+    parser.add_argument("--escort", default="", help="a unit type both sides get outside the budget (e.g. scout: a spotter)")
+    parser.add_argument("--focus", default="", help="only pairs that include this unit")
     parser.add_argument("--json")
     parser.add_argument("--balance", action="store_true", help="write the matrix into _agents/balance.md")
     args = parser.parse_args()
@@ -113,12 +125,14 @@ def main():
     os.makedirs(BUILD, exist_ok=True)
     armies = {}
     for unit_id in ids:
-        doctrine, count, cost = army(unit_id, units[unit_id]["cost"], args.budget)
+        doctrine, count, cost = army(unit_id, units[unit_id]["cost"], args.budget, args.escort)
         with open(os.path.join(BUILD, f"{unit_id}.json"), "w") as handle:
             json.dump(doctrine, handle)
         armies[unit_id] = (count, cost)
 
     pairs = list(itertools.combinations(ids, 2)) + ([(u, u) for u in ids] if args.mirrors else [])
+    if args.focus:
+        pairs = [pair for pair in pairs if args.focus in pair]
     jobs = []
     for a, b in pairs:
         for seed in range(args.first_seed, args.first_seed + args.seeds):
@@ -143,7 +157,7 @@ def main():
                 failures.append(str(err))
                 continue
             raw.append({"a": a, "b": b, "a_is_green": a_is_green, "result": result})
-            outcome = verdict(result, units)
+            outcome = verdict(result, units, args.escort)
             row = tally[(a, b)]
             row["n"] += 1
             row["seconds"] += result["duration_seconds"]
@@ -163,7 +177,8 @@ def main():
             share[(b, a)] = (row["b"] + row["draw"] / 2) / row["n"]
     lines = [f"Cost-equal armies at ~{args.budget} points per side ({', '.join(f'{u} {armies[u][0]}x = {armies[u][1]}' for u in ids)}); "
              f"{args.seeds} seeds x both bases x both colors = {4 * args.seeds} matches per pair, {args.time_limit} s limit"
-             f"{', arena ' + args.arena if args.arena else ''}{', tune ' + args.tune if args.tune else ''}. "
+             f"{', arena ' + args.arena if args.arena else ''}{', tune ' + args.tune if args.tune else ''}"
+             f"{', each side escorted by 1 ' + args.escort + ' (outside the budget and the verdict)' if args.escort else ''}. "
              "Cell = the ROW unit's win share against the COLUMN unit (draws count half; a timeout goes to the side with more army value left).", "",
              "| row beats column | " + " | ".join(ids) + " |", "|---|" + "---|" * len(ids)]
     for a in ids:

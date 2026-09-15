@@ -118,6 +118,16 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
   `tests/test_arena_layouts.gd`. `half_size` must stay 120 for now (radar, fog, perimeter are sized for it).
   Networked clients build the default layout (netcode paused: pass `--arena` to both sides).
 
+- **R6 done (6fb62db):** fairness controls in balance.md: brain-driven Individuals mirror, 30 seeds per row,
+  foundry south base 28 : 32, scrapyard 32 : 28 (team 30 : 30). Legacy 2v2 bots were noisy (friendly fire: ~2
+  friendly kills per team per match; BotController doesn't check its line of fire).
+- **R7 (matchup matrix):** `make matchups` (tools/matchup_matrix.py: cost-equal single-type armies, every pair,
+  both bases, both colors; `--tune`, `--escort`, `--focus`, `--balance`). Matrix #1: tank dominant, artillery
+  dominated, scouts only beat artillery (the brain keeps scouts at an 85 m spotting standoff instead of
+  fighting), Lancer inverted. Tuned by experiment (A–I in balance.md): laser 85 m / preferred 72–82 / 12 dmg /
+  16 heat, Lancer sight 85 and turret 55°/s (tank > IFV > Lancer > tank holds); mortar 90 dmg, splash 9, minimum
+  range 42 (scouts > artillery 92%; spotted artillery beats IFVs 58%).
+
 ### Plan (in order)
 1. R1a `Units` v2 (fixed types, C1) + `Tank` reads it (mount, turret rate, muzzle height; no components).
 2. R1b `Doctrine` v2 (C2: `units`, ≤ 5×5, v1 keys rejected), `Match.load_doctrine`/`spawn_tank(unit_id)`, migrate

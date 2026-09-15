@@ -54,9 +54,73 @@ Brain-driven control (Individuals mirror, 5 tanks a side, elimination, 240 s), 3
 Both layouts are fair. Dense cover (scrapyard) doubles friendly damage (~1,200 vs ~650 points per match): more
 shots through teammates at corners, which the AI stream's line-of-fire checks should cut.
 
+### Matrix #1 (commit 6fb62db, current brains, before any R7 tuning)
+
+| row beats column | scout | tank | ifv | artillery | lancer |
+|---|---|---|---|---|---|
+| scout | — | 0% | 0% | **83%** | 0% |
+| tank | **100%** | — | **100%** | **100%** | **67%** |
+| ifv | **100%** | 0% | — | **100%** | **67%** |
+| artillery | 17% | 0% | 0% | — | 0% |
+| lancer | **100%** | 33% | 33% | **100%** | — |
+
+Holds: IFV > scout, tank > IFV, scout > artillery. Fails: tank > scout (should lose), Lancer > scout and Lancer
+< tank (inverted), artillery dominated, tank dominant.
+Mechanisms (watched in the brain's option stats): **scouts don't fight** anything but artillery. The brain gives
+scouts SPOT (hold 85 m standoff) and scales their ENGAGE by SCOUT_FIGHT, so five scouts orbit a tank at 85 m
+until it runs them down, and Lancers (80 m beam) pick them off at their standoff distance. That's brain behavior
+(ai stream: matchup targeting, fixed-mount strafing runs), not a stat; the scout rows can't be judged until it
+lands. Artillery alone has only its own 60 m sight, so it can barely fire (35 m minimum range).
+
+### R7 tuning experiments (12 matches per pair, 600 points, `--tune`)
+
+| # | Change | Result |
+|---|---|---|
+| A+B | laser 85 m, preferred 72–82, Lancer sight 85; artillery sight 90 | Lancer vs tank 33% → 58%, but Lancer vs IFV 33% → 58% (wrong way); artillery still 0% |
+| C | A + laser 12 dmg / 16 heat, Lancer turret 55°/s | **tank > IFV 100%, IFV > Lancer 75%, Lancer > tank 67%** ✅ applied |
+| D | artillery sight 90, both sides escorted by 1 scout (a spotter, outside the budget) | artillery 0–17% ❌ |
+| E | D + mortar 110 dmg, splash 10, reload 4 s, artillery 180 pts | artillery 92–100% ❌ (flipped) |
+| F | mortar 85, splash 9, artillery sight 90 (escort for tank/IFV/Lancer rows; none vs scouts) | spotted artillery 46–79% ✅, but beats scouts 58% ❌ (sees them coming) |
+| G | mortar 85, splash 9 (sight 60) | spotted 0–58%; beats scouts 75% ❌ (splash wrecks clumped scouts) |
+| H | G + minimum range 50 m | scouts > artillery 88% ✅; spotted artillery 0–29% ❌ (rushers get under it) |
+| I | mortar 90, splash 9, minimum range 42 m | **scouts > artillery 92%; spotted artillery beats IFVs 58%**, loses to tanks 33% and Lancers 17% ✅ applied |
+
 <!-- MATCHUP MATRIX BEGIN -->
-_Not measured yet._
+_Matrix #2, measured 2026-09-14 with `tools/matchup_matrix.py` on the R7-tuned catalog (committed right after 2b6d33c)._
+
+Cost-equal armies at ~600 points per side (scout 5x = 550, tank 3x = 600, ifv 4x = 600, artillery 3x = 660, lancer 3x = 600); 3 seeds x both bases x both colors = 12 matches per pair, 180 s limit. Cell = the ROW unit's win share against the COLUMN unit (draws count half; a timeout goes to the side with more army value left).
+
+| row beats column | scout | tank | ifv | artillery | lancer |
+|---|---|---|---|---|---|
+| scout | — | 0% | 0% | **92%** | 0% |
+| tank | **100%** | — | **100%** | **83%** | 33% |
+| ifv | **100%** | 0% | — | **100%** | **75%** |
+| artillery | 8% | 17% | 0% | — | 0% |
+| lancer | **100%** | **67%** | 25% | **100%** | — |
+
+| pair | row wins : column wins : draws | avg length | friendly damage / match |
+|---|---|---|---|
+| scout vs tank | 0 : 12 : 0 | 131 s | 400 |
+| scout vs ifv | 0 : 12 : 0 | 50 s | 473 |
+| scout vs artillery | 10 : 0 : 2 | 101 s | 133 |
+| scout vs lancer | 0 : 12 : 0 | 63 s | 80 |
+| tank vs ifv | 12 : 0 : 0 | 95 s | 600 |
+| tank vs artillery | 10 : 2 : 0 | 97 s | 248 |
+| tank vs lancer | 4 : 8 : 0 | 103 s | 362 |
+| ifv vs artillery | 12 : 0 : 0 | 72 s | 182 |
+| ifv vs lancer | 9 : 3 : 0 | 64 s | 163 |
+| artillery vs lancer | 0 : 12 : 0 | 36 s | 258 |
 <!-- MATCHUP MATRIX END -->
+
+Spotted artillery (both sides escorted by one scout, outside the budget and the verdict), same tuned catalog:
+artillery vs tank 33%, vs IFV **58%**, vs Lancer 17%. Artillery is a support unit: alone it is blind (60 m sight,
+42 m minimum range), so the pure matrix row understates it.
+
+**Where R7 stands:** five designed counters hold at ≥ 65% (IFV > scout, tank > IFV, Lancer > tank, IFV > Lancer,
+scout > artillery) and every unit wins a matchup (artillery only with a spotter). Not yet: scouts beat nothing but
+artillery (the design wants scout > Lancer and trouble for tanks). That's the scout brain's spotting standoff
+(SCOUT_STANDOFF 85 m, SCOUT_FIGHT): re-run `make matchups` when the ai stream's matchup targeting and fixed-mount
+strafing land, before touching scout stats. Samples are 12 per pair (±14 points).
 
 ## Results so far
 
