@@ -120,6 +120,9 @@ func _offer(found: Dictionary) -> void:
 		return
 	if memory.finished and not found["kind"] in ["result", "outro"]:
 		return
+	if found["kind"] == "contact":
+		# Once the shooting starts, nobody reads out the armies anymore.
+		_queue = _queue.filter(func(queued: Dictionary) -> bool: return not queued["kind"] in ["army", "preview"])
 	if found["kind"] == "result":
 		# The match is over: nothing that happened before the end is worth a call anymore, except the final kill.
 		_queue = _queue.filter(func(queued: Dictionary) -> bool: return queued["tag_set"].has("final_kill"))

@@ -9,44 +9,43 @@ result: rust by control at 2:20.0
 0:13.6   CALLER   A little bit of everything from Green. A—
 0:16.2   ── first contact: green ifv fires on a scout
 0:16.3   CALLER   The autocannon opens up! Green's IFV is the first to speak!
-0:20.8   CALLER   And on the other side of the floor, Rust is lined up and ready.
-0:28.5   CALLER   Ohh, that rocked the IFV!
+0:20.8   CALLER   That scout's machine gun is just hosing the IFV!
 0:30.0   ── control point: rust
-0:31.2   CALLER   Rust is on the point, and the clock is ticking for Green!
+0:30.0   PA       Rust now holds the control point. Scoring has been updated.
 0:40.5   CALLER   They found the soft spot on that Lancer!
 0:44.0   ── green ifv destroys rust scout
-0:44.0   CALLER   And Green strikes first! The IFV gets the honors!
-0:47.3   VETERAN  Patience. Green waited for the shot and took it.
-0:52.1   VETERAN  Rust is bleeding and doesn't know it yet.
-1:02.6   CALLER   Is it over for Rust?
+0:44.0   CALLER   Green draws first blood, and this crowd is on its feet!
+0:47.9   VETERAN  You don't take the scout into that. You just don't.
+0:59.0   VETERAN  My first season in here, they didn't have the lights—
 1:03.0   ── close call: green ifv at 5% hull
 1:03.5   ── rust ifv destroys green ifv
-1:05.2   CALLER   Put it away! Rust puts it away!
-1:07.9   CALLER   Unbelievable!
-1:09.3   CALLER   Green lands a heavy one!
+1:03.5   CALLER   Rust picks off the IFV. Clean work.
+1:06.9   CALLER   Right in the weak spot! What a shot!
 1:10.2   ── rust ifv destroys green scout
-1:11.9   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
+1:10.5   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
 1:13.8   ── close call: rust lancer at 9% hull
-1:16.8   CALLER   You cannot script this!
+1:15.4   VETERAN  He'll want that one—
 1:17.2   ── green tank destroys rust ifv
-1:19.1   CALLER   All square! This thing is dead even!
+1:17.3   CALLER   Oh! Look at this!
+1:19.1   CALLER   It's gone! That IFV is gone!
 1:20.0   ── control point: green
-1:22.4   CALLER   Green steals the point away from Rust!
-1:25.0   VETERAN  Rust has to go get it now. That means coming out into the open.
-1:31.8   CALLER   The tank round—
+1:22.1   CALLER   Oh, Green takes it right back!
+1:28.5   CALLER   The autocannon is chewing right through that tank!
 1:33.0   ── rust tank destroys green ifv
 1:33.0   ── green squad Bravo wiped out
-1:33.0   CALLER   Green is down to its last vehicle!
-1:40.1   CALLER   Rust leads—
+1:33.0   CALLER   It's all on the last Green vehicle now!
+1:40.8   VETERAN  They—
 1:41.0   ── control point: rust
-1:41.0   CALLER   Oh, Rust takes it right back!
-1:49.9   CALLER   What does it take to earn your release in a place like this?
-1:54.3   VETERAN  Luck. And the kind of patience most people lose on the first day.
-2:08.4   CALLER   What does Green—
+1:41.3   CALLER   Rust steals the point away from Green!
+1:52.4   VETERAN  People ask if I miss it. I don't. I still dream about the floor, though.
+2:04.6   CALLER   Is it over for Green?
+2:06.6   VETERAN  Not yet. I've come back from—
 2:09.5   ── green tank destroys rust lancer
 2:09.5   ── rust squad Dart wiped out
-2:09.5   CALLER   Are you kidding me? The tank takes out the Lancer!
+2:09.5   CALLER   Hold on, hold on!
+2:11.3   CALLER   Are you kidding me? The tank takes out the Lancer!
+2:14.9   VETERAN  That Lancer should have won that. It sat still and let it happen.
 2:20.0   ── MATCH OVER: rust wins by control (1 green, 1 rust left)
-2:20.0   CALLER   Rust wins it with one vehicle left! One! What a finish!
-2:24.0   VETERAN  One left. That driver is going to remember every second of that.
-2:30.0   PA       Tonight's winner is Rust. The surviving crews will be processed shortly. Good night.
+2:20.7   CALLER   Rust wins it with one vehicle left! One! What a finish!
+2:24.7   VETERAN  Holding the point takes nerve. Rust had it.
+2:29.1   PA       That concludes tonight's match. Congratulations to Rust. On behalf of the Syndicate, good night, and please drive safely.

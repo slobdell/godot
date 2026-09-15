@@ -80,4 +80,21 @@ announcer-demo-audio: announcer-demo ## The Booth Monitor with mock audio: mock-
 	$(PYTHON) tools/announcer/mixdown.py --manifest $(ANNOUNCER_MOCK)/manifest.json --match $(BUILD_DIR)/announcer/demo/data/*_seed1.json
 	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html
 
-announcer-check: announcer-validate announcer-pytest announcer-audit announcer-transcripts-check ## Everything the announcer verifies headless (in make check)
+# The sim-baseline match (mk/core.mk) again, with the booth recording K5 events: the hash must not move (the announcer
+# never touches gameplay) and the recorded real-match timeline must pass both validators and read as a broadcast.
+announcer-record-smoke: import ## A real headless match with the announcer recording: same sim hash, valid K5 events, a transcript
+	@mkdir -p $(BUILD_DIR)/announcer
+	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
+	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
+	$(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination \
+		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
+		--time-limit=40 --seed=3 --announcer-record=$(CURDIR)/$(BUILD_DIR)/announcer/recorded.jsonl 2>/dev/null \
+		> $(BUILD_DIR)/announcer/record-smoke.log; \
+	grep -q 'ANNOUNCER_RECORDED .* problems=0' $(BUILD_DIR)/announcer/record-smoke.log || { grep ANNOUNCER $(BUILD_DIR)/announcer/record-smoke.log; echo "announcer-record-smoke FAILED: no valid recording"; exit 1; }; \
+	actual=$$(grep MATCH_RESULT $(BUILD_DIR)/announcer/record-smoke.log | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+	if [ -n "$$expected" ] && [ "$$actual" != "$$expected" ]; then echo "announcer-record-smoke FAILED: the booth changed the simulation ($$actual, baseline $$expected)"; exit 1; fi; \
+	$(PYTHON) tools/announcer/events.py $(BUILD_DIR)/announcer/recorded.jsonl; \
+	$(ANNOUNCER_CLI) --fixture=$(CURDIR)/$(BUILD_DIR)/announcer/recorded.jsonl --seed=1 --out=$(BUILD_DIR)/announcer/recorded 2>&1 | grep -q 'ANNOUNCER_CLI_EXIT=0'; \
+	echo "announcer-record-smoke passed: hash $$actual ($${expected:+matches the $$key baseline}), $$(wc -l < $(BUILD_DIR)/announcer/recorded.jsonl) events, $$(grep -c '^[0-9]:[0-9.]*   [A-Z]' $(BUILD_DIR)/announcer/recorded.txt) lines in build/announcer/recorded.txt"
+
+announcer-check: announcer-validate announcer-pytest announcer-audit announcer-transcripts-check announcer-record-smoke ## Everything the announcer verifies headless (in make check)

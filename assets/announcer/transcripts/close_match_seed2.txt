@@ -10,11 +10,11 @@ result: rust by elimination at 1:17.8
 0:12.8   CALLER   Big gun, first shot! The Green tank gets things started!
 0:16.0   ── green tank destroys rust lancer
 0:16.5   CALLER   Nobody saw that coming! The tank beats the Lancer!
-0:20.4   CALLER   A little bit of everything from Green—
+0:20.4   CALLER   Big shot! Big shot from Green!
 0:22.8   ── rust ifv destroys green scout
-0:22.8   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
-0:27.7   CALLER   Listen to this crowd!
-0:36.4   PA       Meridian Transport. Moving workers between districts safely—
+0:23.4   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
+0:28.3   CALLER   Listen to this crowd!
+0:37.0   PA       Meridian Transport. Moving workers between—
 0:39.2   ── rust tank destroys green ifv
 0:39.3   CALLER   Rust's tank puts the IFV away!
 0:39.8   ── friendly fire: green tank hits its own artillery

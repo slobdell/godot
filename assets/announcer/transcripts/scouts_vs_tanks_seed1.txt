@@ -8,45 +8,41 @@ result: rust by elimination at 2:21.0
 0:08.7   CALLER   Ten vehicles on the floor tonight, and every one—
 0:11.8   ── first contact: green scout fires on a tank
 0:11.8   CALLER   The scout finds them first! That's the job, and Green is doing it!
-0:17.0   CALLER   Green is here with six scouts and a whole lot of bad intentions.
-0:22.0   VETERAN  Rust came to hold ground—
+0:17.0   CALLER   Right up the tailpipe! Green caught that tank from behind!
 0:24.5   ── rust ifv destroys green scout
-0:24.6   CALLER   And Rust strikes first! The IFV gets the honors!
-0:27.9   VETERAN  You don't take the scout into that. You just don't.
-0:35.3   CALLER   That scout's machine gun is just hosing the tank!
-0:38.5   VETERAN  That's where you aim. Everybody knows it. Almost nobody does it.
+0:24.5   CALLER   First blood goes to Rust!
+0:35.1   PA       The owner of a grey sedan in lot four, please return to your vehicle. It is being relocated.
+0:43.0   CALLER   That scout's machine gun is just hosing the tank!
 0:49.0   ── rust tank destroyed by a hazard
-0:49.0   CALLER   The pit claims one! Rust loses the tank to the floor itself!
+0:49.0   CALLER   That tank was already hurting, and the fire finishes the job!
 0:52.2   ── rust tank destroys green scout
-0:53.2   CALLER   Nobody saw that coming! The tank beats the scout!
+0:52.9   CALLER   Nobody saw that coming! The tank beats the scout!
 0:55.8   ── close call: rust ifv at 1% hull
 0:56.2   ── rust ifv destroys green scout
 0:56.2   ── green scout destroys rust ifv
 0:56.2   ── rust squad Spotter wiped out
-0:56.5   CALLER   Both sides lose one! Neither army is backing down!
-0:59.8   VETERAN  That's a brawl. Nobody planned that. Somebody's going to wish they had.
-1:05.9   CALLER   Green lands a heavy one!
-1:07.9   VETERAN  They showed their side. You can't show your side in here.
-1:18.5   CALLER   They found the soft spot on that tank!
+0:56.3   CALLER   Blow for blow! Everybody is swinging, and everybody is getting hit!
+1:02.3   CALLER   Right in the weak spot! What a shot!
+1:12.3   CALLER   That tank is hurt! That tank is hurt!
 1:18.8   ── close call: rust tank at 4% hull
+1:18.8   CALLER   The Rust tank is hanging on by a thread!
 1:21.2   ── rust tank destroys green scout
-1:21.4   CALLER   The tank round lands, and the scout just comes apart!
 1:21.8   ── rust tank destroys green scout
 1:21.8   ── green squad Wasps wiped out
+1:22.0   CALLER   Vehicles are going down all over the floor! Two in a matter of seconds!
 1:22.8   ── green scout destroys rust tank
-1:25.0   CALLER   Blow for blow! Everybody is swinging, and everybody is getting hit!
-1:36.4   CALLER   Dead even out there. Who blinks first?
-1:39.1   VETERAN  Hard to say. Ask me again in a minute.
-1:50.5   VETERAN  The paperwork says every one of those crews volunteered. I signed the same paperwork.
-2:00.0   CALLER   The tank round lands! You felt that one in the seats!
+1:26.8   CALLER   Rust is down to its last vehicle!
+1:35.6   CALLER   Dead even out there. Who blinks first?
+1:38.3   VETERAN  Hard to say. Ask me again in a minute.
+1:49.9   CALLER   You always talk about cover. Why does it matter so much in here?
+1:54.4   VETERAN  Everything in here can reach you from across the room. The wall is the only thing on your side.
 2:09.5   CALLER   The tank is smoking, and Green smells blood!
-2:19.5   VETERAN  People ask if—
+2:12.5   VETERAN  That's where you aim. Everybody knows it. Almost nobody does it.
 2:21.0   ── rust tank destroys green scout
 2:21.0   ── green squad Hornets wiped out
 2:21.0   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-2:21.0   CALLER   Whoa, whoa, whoa!
-2:22.6   CALLER   Rust finishes it! The last scout is gone!
-2:25.6   CALLER   And Rust is the last army standing! Rust wins!
-2:28.9   VETERAN  One left. That driver is going to remember every second of that.
-2:34.3   CALLER   You cannot script this!
-2:36.6   PA       Rust wins tonight's match. Thank you for joining us. Please exit by section, and have your papers ready.
+2:21.0   CALLER   The last Green vehicle goes down!
+2:23.3   CALLER   Rust wins it with one vehicle left! One! What a finish!
+2:27.3   VETERAN  One left. That driver is going to remember every second of that.
+2:32.7   CALLER   Unbelievable!
+2:34.1   PA       The match has been decided in favor of Rust. Highlights will air throughout the week on all district screens.
