@@ -37,6 +37,8 @@ var weapons: WeaponFx
 var link: MatchFxLink
 ## Ground markers, waypoint trails, selection pulses, and acknowledgements for the player's K1 orders.
 var order_feedback: OrderFeedback
+## Dust, drift marks, and lurches from vehicles on the move.
+var motion: MotionFx
 ## Seconds since this FxWorld started; the clock every shader animation uses.
 var now := 0.0
 ## Legacy muzzle flashes when a projectile appears, used only when no match drives weapon events (a networked client,
@@ -107,6 +109,8 @@ func _init() -> void:
 	add_child(link)
 	order_feedback = OrderFeedback.new()
 	add_child(order_feedback)
+	motion = MotionFx.new(self)
+	add_child(motion)
 	add_child(FxAutoQuality.new())
 	shake.enabled = not LaunchFlags.from_environment().has("no-shake")
 	add_child(shake)
@@ -127,6 +131,8 @@ func _process(delta: float) -> void:
 	decals.update(now)
 	jolts.update(now)
 	order_feedback.update(now)
+	if link.is_attached():
+		motion.update(link.unit_nodes(), camera.global_position if camera != null else Vector3.ZERO, now, delta)
 	weapons.flush(now)
 	tracers.update(lights, now)
 	underglow.update(lights)
@@ -182,6 +188,7 @@ func apply_quality() -> void:
 	bursts.resize(FxQuality.value("effects"))
 	bursts.set_spray_count(FxQuality.value("sprays"))
 	decals.resize(FxQuality.value("decals"))
+	motion.resize()
 	tracers.splats_enabled = FxQuality.value("splats")
 	_apply_viewport()
 	quality_changed.emit()

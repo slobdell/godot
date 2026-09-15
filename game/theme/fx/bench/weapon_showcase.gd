@@ -89,8 +89,11 @@ func _run() -> void:
 			await _stage(String(scene_name), SCENES[scene_name])
 		elif scene_name == "orders":
 			await _stage_orders()
+		elif scene_name == "motion":
+			await _stage_motion()
 	if _flags.text("showcase") == "":
 		await _stage_orders()  # every scene by default
+		await _stage_motion()
 	print("FX_SHOTS_DONE")
 	var fx := FxWorld.existing()
 	if fx != null:
@@ -216,6 +219,57 @@ func _stage_orders() -> void:
 	await _seconds(0.2)
 	_save("orders_queue")
 	controls.queue_free()
+
+
+## Feel X6: a scout drifting around a curve, an IFV braking hard, a tank rolling past, moved by script (round 2 units
+## can't slide yet), so dust, drift marks, and the lurch show.
+func _stage_motion() -> void:
+	if _match != null:
+		_match.queue_free()
+		await get_tree().process_frame
+	_match = preload("res://game/match/match.tscn").instantiate()
+	_match.name = "Match"
+	_match.elimination = true
+	add_child(_match)
+	FxWorld.get_instance().link.attach(_match)
+	var scout := _match.spawn_tank("Drifter", 0, Match.Team.GREEN, "scout")
+	var ifv := _match.spawn_tank("Braker", 0, Match.Team.GREEN, "ifv")
+	var tank := _match.spawn_tank("Roller", 0, Match.Team.RUST, "tank")
+	await get_tree().physics_frame
+	# The script moves them; with no commands the Tanks don't drive themselves. (simulate = false would make each one
+	# glide back toward its replicated spawn position every frame.)
+	var clock := 0.0
+	var ifv_speed := 13.0
+	var shots := [[1.6, "motion_drift"], [2.2, "motion_brake"], [2.9, "motion_rts"]]
+	while not shots.is_empty():
+		await get_tree().process_frame
+		var dt := get_process_delta_time()
+		clock += dt
+		# The scout: a 14 m radius curve at 12 m/s, its nose turned into the curve so it slides outward.
+		var angle := clock * 12.0 / 14.0
+		scout.global_position = Vector3(cos(angle) * 14.0 - 14.0, 0.0, sin(angle) * 14.0)
+		scout.rotation.y = -angle - 0.45
+		tank.global_position = Vector3(18.0, 0.0, 22.0 - clock * 8.0)
+		tank.rotation.y = 0.0
+		if clock > 1.4:
+			ifv_speed = maxf(0.0, ifv_speed - 32.0 * dt)
+		ifv.global_position += Vector3.FORWARD.rotated(Vector3.UP, 0.3) * ifv_speed * dt
+		ifv.rotation.y = 0.3
+		if clock >= float(shots[0][0]):
+			var shot: Array = shots.pop_front()
+			match String(shot[1]):
+				"motion_drift":
+					camera.global_position = scout.global_position + Vector3(12.0, 9.0, 12.0)
+					camera.look_at(scout.global_position, Vector3.UP)
+				"motion_brake":
+					camera.global_position = ifv.global_position + Vector3(9.0, 3.5, 2.0)
+					camera.look_at(ifv.global_position + Vector3.UP, Vector3.UP)
+				_:
+					camera.global_position = Vector3(0.0, 40.0, 38.0)
+					camera.look_at(Vector3(0.0, 0.0, 4.0), Vector3.UP)
+			for i in 2:
+				await get_tree().process_frame
+			_save(String(shot[1]))
 
 
 func _frame(view: String, shooter: Tank, target: Tank, aim: Vector3) -> void:
