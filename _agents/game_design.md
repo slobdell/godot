@@ -77,6 +77,16 @@ roster (today's vehicles become the Condemned).
 - **One shared mechanics vocabulary.** Mechanics are built once in rules (shields, field repair, turning circle vs
   pivot steering, pinning harpoons, burning ground, energy vs ammo, …) and a faction's identity is the combination
   it gets. The AI learns each mechanic once, so faction count doesn't multiply AI work.
+- **Counters live between units, not factions** (lead, 2026-09-15: *"I was talking rock paper scissors across
+  units. The gang shouldn't inherently be weaker than the syndicate"*). Every faction must have an answer to every
+  enemy unit type, so any faction pair is near 50/50 when both sides build good armies. A mechanic that is strong
+  against one faction's units (knockback vs light hover units, hover vs ground hazards) is balanced by that faction
+  having other units that answer it, and scales with unit properties (knockback by mass), never with the faction.
+  **Measure both levels:** the unit matrix shows clear counters; faction vs faction, each with its best searched
+  army, lands near 50%. Where it doesn't, add or tune a unit-level answer.
+- **Locomotion is part of the vocabulary:** treads pivot in place (Condemned), articulated trucks and wheels turn
+  wide but run fast (road gangs), heavy wheels are quick and controlled (the Law), hover strafes and drifts on
+  momentum (the Syndicate). Factions read apart by how they move.
 - **A faction is a choice, never more power** (pillar 1). Unlocking one, if ever, is a sidegrade.
 - **Balance over time** with headless simulation: the matchup matrix across factions, plus a search for dominant
   armies ([determinism.md](determinism.md) keeps runs reproducible). Playtests judge feel and exploits.
@@ -92,14 +102,24 @@ roster (today's vehicles become the Condemned).
 |---|---|---|---|---|
 | **The Condemned** | Convicts fighting for freedom; the crowd pities them | Prison dozers, armored buses, garbage trucks: tall, boxy, welded shut, hazard paint, cage mesh | Tough, cheap, holds ground; slow | Today's roster: treads that pivot, shields |
 | **Road gangs** (the Wreckers / Scrapborn / Chrome Cult) | Wasteland raiders; the crowd favorite | Low, open hot rods and buggies on huge tires; chrome, rust, spikes, fire; visible crews | **No shields**; fast, cheap, deadly up close, fragile; wheels with turning circles | Field repairs by crews; explosive spears (high penetration, short range); harpoon ballista that pins; catapult of flaming barrels leaving burning ground |
-| **The Law** | The state's wardens, the house team the crowd boos | Judge Dredd-style riot vehicles, red and blue strobes, spotlight towers | Pricier, armored, fewer units | Water cannon knockback, spotting and reveal, crowd control |
-| **The Syndicate / "the Sponsors"** | The corporation that owns the show; every match is a product demo | Unmanned, glossy faceted shells, cyan light lines, holo logos | Few, very expensive, strong at range, fragile once shields drop | Energy (heat and shields) instead of ammo; lasers (the Lancer); spotter-guided missiles; a shield projector; optical camo scouts |
+| **The Law** | The state's wardens, the house team the crowd boos; the **baseline faction**, easiest to learn (closest to the lead's original sci-fi army vision) | Militarized cyberpunk police: MRAPs, up-armored cruisers, 8×8 assault guns; red and blue strobes, spotlight towers, holo POLICE projections; one exaggerated feature per vehicle | Reliable, moderate damage, heavy wheels | Information and control: reveal, spotting, tear gas and smoke that cut sight and accuracy, knockback scaled by target mass |
+| **The Syndicate / "the Sponsors"** | The corporation that owns the show; every match is a product demo | **Curvy sci-fi hover vehicles** (the lead: like Halo's Wraith, but human corporate luxury, our own designs): glossy white or black shells, cyan light lines, sponsor logos, hover glow lighting the floor, unmanned | Few, very expensive, strong at range; hover drifts and has lighter armor | Energy (heat and shields) instead of ammo; railgun; lasers (the Lancer); spotter-guided missiles; a shield projector; optical camo |
 
 **Road gang roster sketch:** scout = spear buggy; IFV = hot-rod pickup with twin salvaged machine guns and spear
 riders; **tank = the fuel-truck war rig** (lots of scrap hit points, fast in a straight line, wide turning circle,
 rams, harpoon ballista, spear riders; weak when flanked while turning); artillery = catapult truck; special =
 war-drum truck that rallies nearby units, or a resupply tanker. Idea pool: hub blades that damage what they pass,
 a wrecking-ball crane, caltrops or oil slicks, nitro bursts.
+
+**The Law roster sketch:** scout = up-armored pursuit cruiser (ram bar, giant light bar, hood gun, siren pulse that
+briefly reveals hidden units); IFV = Cougar-style 6×6 MRAP with a remote autocannon turret; **tank = 8×8 wheeled
+assault gun** (Stryker-style: big cannon, faster than the dozer, less armor, longer sight); artillery = truck rocket
+launcher firing tear gas and smoke; special = riot truck with water cannon or sonic emitter (knockback).
+
+**Syndicate roster sketch:** scout = hover skimmer drone with optical camo; IFV = hover gunship with a heat-limited
+pulse cannon; **tank = curvy hover battle tank with a charge-up railgun** (the conventional tank role, made sci-fi);
+artillery = missile platform that fires only at spotted targets; special = shield projector or the Lancer laser
+(decide with the full roster).
 
 **Rendering crews cheaply:** oversized "miniature scale" riders baked into the vehicle model, shader sway or a few
 rigid moving parts (no skeletons), detail saved for close-ups (army builder, kill-cams, victory), and the same
