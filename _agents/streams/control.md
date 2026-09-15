@@ -87,7 +87,9 @@ field), effects and HUD styling (feel), models (assets).
 
 ## Status
 
-_Updated 2026-09-15 by the control worker._
+_Updated 2026-09-15 by the control worker. **Round report: every backlog item is done except X8 (deferred by the
+round's no-new-touch-work constraint). `make remote T=check` is green (470 tests, every smoke) on fd5dbc1, the last code
+commit; later commits change only this brief.**_
 
 ### Plan (in order) and progress
 
@@ -109,14 +111,15 @@ _Updated 2026-09-15 by the control worker._
 later) to `main`. What consumers get: `game/control/unit_command.gd`, `game/control/orders.gd` (K1 exactly, plus
 `issue(command, team)`, `queue_changed`, `goal_position`, `Orders.goal_of`, `Orders.reached`, `Orders.of/attach`), and
 the temporary `OrderExecutor`. That commit also switches skirmish to the new desktop controls (round 2's map behind
-`--touch-map`).
+`--touch-map`). Later commits on the branch (X5–X7, stretch) are green too; merging the branch head brings
+`Orders.pace_factor` and `Orders.station`, which ai X1 wants.
 
 ### Decisions
 
 - **Brains keep their autonomy until ai X1; ordered units obey a temporary executor.** `OrderExecutor`
   (`game/control/order_executor.gd`) pauses an ordered unit's `TankBrain` and drives it with a plain
-  `OrderController` (pathing, unsticking, fire at will). When its queue runs out the unit keeps station where it
-  stopped (returns if pushed, faces the nearest visible enemy, shoots). Why: the lead's first complaint is units
+  `OrderController` (pathing, unsticking, fire at will). When its queue runs out the unit keeps its station (its
+  slot in its group: returns if pushed, faces the group's heading or the nearest visible enemy, shoots). Why: the lead's first complaint is units
   ignoring clicks; obedient beats clever-but-deaf until brains execute orders. It steps aside by itself once
   `TankBrain` declares `const EXECUTES_ORDERS := true`. Units never ordered keep their brains and doctrine squads.
 - **`Orders` is a RefCounted per match**, reachable with `Orders.of(match)`: `Match.orders` once combat adds it,
@@ -125,15 +128,27 @@ the temporary `OrderExecutor`. That commit also switches skirmish to the new des
   not rejected (a click on the edge still orders).
 - **Per-unit order data** carries the group (`units`), `slot` ([right, back] m), `goal`, `heading`, and `pace_mps`,
   so brains don't need control's code to honor formations. `Orders.goal_of(order, match)` resolves follow slots live.
-- **Automatic slots (X1 version):** rows of up to 5 abreast, 10 m apart, heavies in front, centered on the click;
-  units keep their left-right order so paths don't cross. Named formations use `Formations.offsets` (≤ 5 units).
+- **Automatic formations (X5):** a wedge for 2–5 units with the heaviest at the point (tank, then IFV/Burner, scout,
+  Lancer, artillery last), rows of up to 5 abreast beyond that, a line when holding, and a 1.4× wider wedge when only
+  fast units (≥ 12 m/s) attack-move. Slots are 10 m apart, centered on the click, facing the direction of travel;
+  units keep their left-right order so paths don't cross. Named formations (G) use `Formations.offsets` (≤ 5 units).
+  Why a wedge over a line for moving groups: it keeps the heavy in front and reads as a formation from the camera.
+- **Arriving together = equal arrival times, not a speed cap:** each unit drives at `remaining / slowest member's time
+  to arrive` (floor 35%). A cap at the slowest unit's top speed would also slow the laggard it waits for.
+- **Stations are slots, not stop positions:** a unit returns to where its group put it, which is what "rejoin the
+  group" means in a StarCraft model where the player decides who goes together.
 - **New desktop controls are a new node, not a rewrite of `TacticalMap`**: `RtsControls` (`game/control/`) is the
   default in skirmish; round 2's tap grammar stays behind `--touch-map` (and the camera playtest) so its tests keep
   passing until the lead has played the new controls. The node keeps the name `TacticalMap` so feel's HUD skin
   lays out around it.
 - **Keys:** A attack-move, F follow, M move (armed orders, cancelled by right-click or Escape; shift keeps them armed),
-  S stop, H hold, C center on selection, Tab next group, Space pause. Right-click on a friend outside the selection
-  follows it (StarCraft). Arrows, edges, middle-drag, wheel, `,` `.` stay the camera.
+  S stop, H hold, G formation, C center on selection, Tab next group, F1 idle units, Space pause. Right-click on a
+  friend outside the selection follows it (StarCraft). Arrows, edges, middle-drag, wheel, `,` `.` stay the camera.
+  Round 2's F (camera follow) and Tab (overview) are gone from the desktop controls; wheel out for the overview.
+- **Smart attack threshold 25% through side armor:** scouts (13% vs a tank) escort instead of plinking; IFVs (34%)
+  still join, matching "the IFV chips tanks". Combat's K2 weapons may move these numbers; the rule reads live data.
+- **X8 deferred, not attempted:** the round's product constraint ("no new touch-only work this round") outranks the
+  brief's stretch item.
 
 ### How selecting and ordering feels (from the screenshots and the scripted playtest)
 
@@ -157,6 +172,13 @@ the dark floor; the panel's single-unit card is text-heavy.
 - **Planning pause at start:** kept (Space starts). StarCraft has none; drop it for a faster start?
 
 ### Requests to other streams
+
+- **orchestrator (K1 additions, all additive, for workstreams.md):** `Orders.issue(command, team = -1)`;
+  `Orders.queue_changed(unit)`; `Orders.goal_position(unit)` / `Orders.goal_of(order, match)`; `Orders.reached(order,
+  position)`; `Orders.pace_factor(unit)` (arrive together); `Orders.station(unit)` (`{position, heading, units, id}`,
+  where an idle unit regroups); `Orders.of(match)` / `Orders.attach(match, orders)`. Per-unit order fields beyond K1:
+  `id`, `units`, `started_tick`, `slot`, `goal`, `heading`, `pace_mps`; `formation` holds the resolved name. `UnitCommand`
+  rejects unknown keys. `stop` is never queued; `to` is clamped into the arena.
 
 - **combat:** add `var orders: Orders` to `Match` (K1). `Orders.attach` already sets it when the field exists; no
   other change needed.
