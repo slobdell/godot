@@ -162,3 +162,26 @@ func test_the_generated_dozer_wears_team_neon_paint_heat_and_a_shield() -> void:
 	var hull_heat = mesh.get_instance_shader_parameter("heat")  # never set on a hull: null (the shader's 0)
 	assert_true(hull_heat == null or float(hull_heat) < 0.001, "the hull stays cold")
 
+
+
+func test_the_round_2_roster_fills_every_unit_slot_with_one_material_per_unit() -> void:
+	# Art X4: the lead's approved concepts (review #1) as per-unit slots; Tank uses them once catalog v2 lands (C6).
+	for unit in ["scout", "ifv", "artillery", "lancer"]:
+		var materials := []
+		for part in ["hull", "turret", "weapon"]:
+			var slot_name := "unit.%s.%s" % [unit, part]
+			assert_true(GameTheme.CYBERPUNK_SLOTS.has(slot_name), "the cyberpunk theme has %s" % slot_name)
+			var visual := _part(slot_name)
+			assert_true(visual != null, "%s instantiates" % slot_name)
+			if visual.get("skinned") == null:
+				assert_eq(visual.get_child_count(), 0, "%s is deliberately empty (no dozer turret on a buggy)" % slot_name)
+				continue
+			var skinned: Array = visual.get("skinned")
+			assert_true(skinned.size() > 0, "%s wears the unit shader" % slot_name)
+			if part == "hull":
+				assert_true(visual.get_node_or_null("Shield") is ShieldEffect, "the %s hull has the shield shell" % unit)
+			materials.append((skinned[0] as MeshInstance3D).get_active_material(0))
+		assert_true(materials.size() >= 2 and materials.all(func(m: Material) -> bool: return m == materials[0]),
+				"every %s part shares the hull's one material (one texture set)" % unit)
+	assert_eq(_part("unit.scout.turret").get_child_count(), 0, "the scout's hood gun has no turret")
+	assert_eq(_part("unit.artillery.weapon").get_child_count(), 0, "the artillery's tubes ride on its rack")

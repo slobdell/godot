@@ -6,8 +6,19 @@ extends Node3D
 ## pulses spawned exactly like Match.show_beam (a slot per pulse, freed after 0.2 s). Visual only.
 ## Flags: --theme=NAME (default cyberpunk) --screenshot=<abs png> [--screenshot-delay=S] [--gallery-time=S]
 ##        --gallery-focus=N (close-up on tank N)
+##        --gallery-units: the round-2 roster instead (tank, scout, IFV, artillery, Lancer; both teams), each unit's
+##        own slots at its own turret pivot and scale, the way Tank places them (catalog v2, C6)
 
 const ORBIT_SPEED := 0.25
+## Catalog v2 numbers the gallery needs to place per-unit art like Tank does (rules' Units.PROFILES; mirrored in
+## assets/pipeline/asset_contracts.gd, which isn't exported).
+const ROSTER := {
+	"tank": {"hull_size": Vector3(2.4, 1.6, 3.6), "muzzle_height": 1.27},
+	"scout": {"hull_size": Vector3(2.0, 1.4, 3.0), "muzzle_height": 1.12},
+	"ifv": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
+	"artillery": {"hull_size": Vector3(2.6, 1.6, 4.0), "muzzle_height": 1.27},
+	"lancer": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
+}
 
 var camera := Camera3D.new()
 var time := 0.0
@@ -31,7 +42,16 @@ func _ready() -> void:
 	camera.fov = 50.0
 	add_child(camera)
 	camera.current = true
-	var weapons := ["weapon.cannon", "weapon.laser", "weapon.flamethrower", "weapon.laser", "weapon.cannon", "weapon.flamethrower"]
+	if _flags.has("gallery-units"):
+		var i := 0
+		for unit in ROSTER:
+			for team in 2:
+				var tank := _unit_tank(unit, team)
+				tank.position = Vector3(-18.0 + i * 4.2, 0, -4.0 * team)
+				tank.rotation.y = 0.5 - i * 0.1
+				tanks.append(tank)
+				i += 1
+	var weapons := [] if _flags.has("gallery-units") else ["weapon.cannon", "weapon.laser", "weapon.flamethrower", "weapon.laser", "weapon.cannon", "weapon.flamethrower"]
 	for i in weapons.size():
 		var team := i % 2
 		var tank := _tank(team, weapons[i])
@@ -130,6 +150,40 @@ func _tank(team: int, weapon_slot: String) -> Node3D:
 		for slot in [hull, body, weapon]:
 			slot.invoke("set_paint", [[Color("#C8A030"), Color("#B03060"), Color("#3A7040")][tanks.size() % 3]])
 	return tank
+
+
+## A unit with its own slots (falling back to the tank's), placed like Tank._apply_hull_size.
+func _unit_tank(unit: String, team: int) -> Node3D:
+	var info: Dictionary = ROSTER[unit]
+	var size: Vector3 = info["hull_size"]
+	var tank := Node3D.new()
+	tank.name = "Tank%d" % tanks.size()
+	add_child(tank)
+	var hull := VisualSlot.new()
+	hull.name = "Hull"
+	hull.slot = _slot_or("unit.%s.hull" % unit, "tank.hull")
+	tank.add_child(hull)
+	var turret := Node3D.new()
+	turret.name = "Turret"
+	turret.position = Vector3(0, float(info["muzzle_height"]) - 0.05, 0.2)
+	if unit != "tank":
+		turret.scale = Vector3.ONE * minf(size.x / 2.4, size.z / 3.6)
+	tank.add_child(turret)
+	var body := VisualSlot.new()
+	body.name = "Body"
+	body.slot = _slot_or("unit.%s.turret" % unit, "tank.turret")
+	turret.add_child(body)
+	var weapon := VisualSlot.new()
+	weapon.name = "Weapon"
+	weapon.slot = _slot_or("unit.%s.weapon" % unit, "weapon.cannon")
+	turret.add_child(weapon)
+	for slot in [hull, body, weapon]:
+		slot.invoke("set_team_color", [GameTheme.team_color(team)])
+	return tank
+
+
+func _slot_or(slot: String, fallback: String) -> String:
+	return slot if GameTheme.slots.has(slot) else fallback
 
 
 func _capture(path: String, delay: float) -> void:

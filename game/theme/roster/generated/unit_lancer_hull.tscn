@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://assets/runtime/generated_visual.gd" id="1_visual"]
+[ext_resource type="PackedScene" path="res://game/theme/roster/generated/unit_lancer_hull.glb" id="2_model"]
+
+[node name="UnitLancerHull" type="Node3D"]
+script = ExtResource("1_visual")
+slot = "unit.lancer.hull"
+tint_materials = PackedStringArray("material_0")
+tint_strength = 0.2
+
+[node name="Model" parent="." instance=ExtResource("2_model")]

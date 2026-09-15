@@ -43,6 +43,10 @@ const AXES := {
 ##   repeat (1,1,1)  tile the selection N×M×K times along x/y/z before fitting (a wall from barrier segments)
 ##   emission_maps {} material-name glob → Texture2D: an emission map delivered beside the GLB (Meshy PBR)
 ##   strip_textures (false) export materials without their textures: the part borrows another slot's (--textures-from)
+##   place {}        turret/weapon of a generated unit: keep the placement the generator gave it relative to the hull.
+##                   {hull_scale, hull_offset (the hull's fit), pivot (turret node, hull space), turret_scale,
+##                   center_xz (turrets: move onto the pivot so they rotate in place), shift (weapons: the turret's
+##                   recentering, so the gun stays on its turret)}. Result "shift" = the recentering applied.
 ## Returns {scene: Node3D, notes: PackedStringArray, scale: Vector3, source: report}.
 static func normalize(source: Node, slot: String, options: Dictionary = {}) -> Dictionary:
 	var contract := AssetContracts.get_contract(slot)
@@ -66,15 +70,21 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 		notes.append("tiled the model %d × %d × %d" % [repeat.x, repeat.y, repeat.z])
 	var oriented := _bounds(parts)
 	var attach: Dictionary = options.get("attach", {})
-	var fit := _attached_barrel(oriented, contract, attach, notes) if not attach.is_empty() and String(contract["anchor"]) == "barrel" \
-			else _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
+	var place: Dictionary = options.get("place", {})
+	var fit: Dictionary
+	if not place.is_empty():
+		fit = _placed(oriented, place, notes)
+	elif not attach.is_empty() and String(contract["anchor"]) == "barrel":
+		fit = _attached_barrel(oriented, contract, attach, notes)
+	else:
+		fit = _fit_transform(oriented, contract, float(options.get("scale", 0.0)), notes)
 	var groups := _merge_by_material(parts, fit["transform"], notes, true)
 	if options.get("palette", false):
 		groups = _palette(groups, options.get("keep", []) + options.get("emissive", {}).keys(), notes)
 	var budget := int(options.get("tris", 0)) if int(options.get("tris", 0)) > 0 else int(contract["tris"])
 	var mesh := _merge_surfaces_by_material(_build_mesh(groups, budget, notes))
-	if attach.is_empty():
-		_reanchor(mesh, contract)  # an attached barrel keeps the turret's placement instead
+	if attach.is_empty() and place.is_empty():
+		_reanchor(mesh, contract)  # attached and placed parts keep their generated placement instead
 	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}),
 			float(options.get("emission_energy", 0.0)))
 	if options.get("strip_textures", false):
@@ -87,7 +97,8 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 	instance.mesh = mesh
 	root.add_child(instance)
 	instance.owner = root
-	return {"scene": root, "notes": notes, "scale": fit["scale"], "offset": (fit["transform"] as Transform3D).origin}
+	return {"scene": root, "notes": notes, "scale": fit["scale"], "offset": (fit["transform"] as Transform3D).origin,
+			"shift": fit.get("shift", Vector3.ZERO)}
 
 
 ## Rotation taking the source's forward/up axes to Godot's −Z/+Y.
@@ -187,6 +198,35 @@ static func _fit_transform(bounds: AABB, contract: Dictionary, fixed_scale: floa
 			offset = Vector3(-center.x, float(contract["barrel_y"]) + float(contract.get("raise", 0.0)) - center.y,
 					float(contract["barrel_back"]) - scaled.end.z)
 	return {"transform": Transform3D(Basis.from_scale(scale), offset), "scale": scale}
+
+
+static func _placed(bounds: AABB, place: Dictionary, notes: PackedStringArray) -> Dictionary:
+	var turret_scale := float(place.get("turret_scale", 1.0))
+	var s := float(place["hull_scale"]) / turret_scale
+	var origin := ((place["hull_offset"] as Vector3) - (place["pivot"] as Vector3)) / turret_scale + (place.get("shift", Vector3.ZERO) as Vector3)
+	var shift := Vector3.ZERO
+	if place.get("center_xz", false):
+		var center := bounds.get_center() * s + origin
+		shift = Vector3(-center.x, 0.0, -center.z)
+		origin += shift
+		notes.append("placed as generated, moved (%.2f, %.2f) onto the turret pivot" % [shift.x, shift.z])
+	else:
+		notes.append("placed as generated relative to the hull")
+	var turn := deg_to_rad(float(place.get("turn_deg", 0.0)))  # about the pivot: e.g. a rack generated facing the rear
+	if absf(turn) > 0.0001:
+		notes.append("turned %.0f° about the pivot" % place["turn_deg"])
+	var scale := Vector3.ONE * s
+	var muzzle_z := float(place.get("muzzle_z", 0.0))
+	if place.get("stretch", false) and muzzle_z < 0.0:
+		# A real barrel: keep the breech where it was generated and stretch along the axis to the gameplay muzzle.
+		var back := s * bounds.end.z + origin.z
+		var front := s * bounds.position.z + origin.z
+		var k := (muzzle_z - back) / (front - back) if absf(front - back) > 1e-6 else 1.0
+		scale.z = s * k
+		origin.z = back - scale.z * bounds.end.z
+		notes.append("barrel stretched ×%.2f from its breech to the muzzle point" % k)
+	var xform := Transform3D(Basis(Vector3.UP, turn), Vector3.ZERO) * Transform3D(Basis.from_scale(scale), origin)
+	return {"transform": xform, "scale": scale, "shift": shift}
 
 
 static func _attached_barrel(bounds: AABB, contract: Dictionary, attach: Dictionary, notes: PackedStringArray) -> Dictionary:

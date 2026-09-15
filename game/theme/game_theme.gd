@@ -66,6 +66,21 @@ const CYBERPUNK_SLOTS := {
 	"prop.wall": "res://game/theme/cyberpunk/prop_wall.tscn",
 	"arena.environment": "res://game/theme/cyberpunk/arena_environment.tscn",
 	"arena.dressing": "res://game/theme/cyberpunk/arena_dressing.tscn",
+	# Round 2 unit roster (art X4, the lead's approved Meshy concepts; game/theme/roster, tools/assets/build_roster.sh).
+	# Tank fills unit.<id>.* when the theme has them (C6). A fixed-mount scout has no turret and the artillery's rack
+	# carries its tubes, so those slots are deliberately empty (no_part.tscn) rather than falling back to the dozer's.
+	"unit.scout.hull": "res://game/theme/cyberpunk/units/unit_scout_hull.tscn",
+	"unit.scout.turret": "res://game/theme/cyberpunk/units/no_part.tscn",
+	"unit.scout.weapon": "res://game/theme/cyberpunk/units/unit_scout_weapon.tscn",
+	"unit.ifv.hull": "res://game/theme/cyberpunk/units/unit_ifv_hull.tscn",
+	"unit.ifv.turret": "res://game/theme/cyberpunk/units/unit_ifv_turret.tscn",
+	"unit.ifv.weapon": "res://game/theme/cyberpunk/units/unit_ifv_weapon.tscn",
+	"unit.artillery.hull": "res://game/theme/cyberpunk/units/unit_artillery_hull.tscn",
+	"unit.artillery.turret": "res://game/theme/cyberpunk/units/unit_artillery_turret.tscn",
+	"unit.artillery.weapon": "res://game/theme/cyberpunk/units/no_part.tscn",
+	"unit.lancer.hull": "res://game/theme/cyberpunk/units/unit_lancer_hull.tscn",
+	"unit.lancer.turret": "res://game/theme/cyberpunk/units/unit_lancer_turret.tscn",
+	"unit.lancer.weapon": "res://game/theme/cyberpunk/units/unit_lancer_weapon.tscn",
 }
 
 ## Vehicle parts receive the team's neon and derive their dark paint from it (cyber_vehicle.gd).

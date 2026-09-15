@@ -58,11 +58,11 @@ assets-preview: import ## Screenshot the real game with THEME's generated slots 
 	timeout 120 $(GODOT) --path . --resolution $(SCREEN) res://assets/pipeline/theme_preview.tscn -- --theme=$(THEME) \
 		$(or $(FLAGS),--demo) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/assets-preview-$(THEME)-$(SCREEN).png
 
-assets-unit: import ## Close-up turnaround of THEME's assembled tank (hull + turret + cannon), day and night [SCREEN=900x600]
+assets-unit: import ## Close-up turnaround of THEME's assembled tank (hull + turret + cannon), day and night [UNIT=ifv YAW=0]
 	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
 	for light in day night; do \
 		timeout 120 $(GODOT) --path . --resolution 900x600 --script res://assets/pipeline/unit_view.gd -- \
-			$(THEME) $(CURDIR)/$(BUILD_DIR)/screenshots/$(THEME)-unit-$$light.png $$light | grep UNIT_VIEW; \
+			$(THEME) $(CURDIR)/$(BUILD_DIR)/screenshots/$(THEME)$(if $(UNIT),-$(UNIT))-unit-$$light.png $$light $(or $(YAW),0) $(UNIT) | grep UNIT_VIEW; \
 	done
 
 assets-procedural: import ## A4: build the procedural neon kit (containers, barriers, poles, billboards, scrap) into THEME=neon_kit
@@ -111,3 +111,22 @@ art-review-status: ## List review items (waiting / approved / rejected) and the 
 
 art-decide: ## Record the lead's decision: ID=scout_a DECISION=approved|rejected|superseded WORDS="the lead's words"
 	$(PYTHON) tools/assets/review.py decide $(ID) $(DECISION) --words "$(WORDS)"
+
+# ---- Round 2 (art X3): the arena floor's texture set from CC0 ambientCG sources -------------------------------
+.PHONY: assets-ground
+assets-ground: ## Rebuild the arena floor textures (tools/assets/build_ground.py; downloads CC0 sources if missing)
+	$(PYTHON) tools/assets/build_ground.py
+	$(GODOT) --headless --path . --import >/dev/null 2>&1
+	$(ASSETS_PIPELINE) textures --dir=res://game/theme/cyberpunk/ground 2>/dev/null | grep 'policy' || true
+	$(GODOT) --headless --path . --import >/dev/null 2>&1
+
+.PHONY: assets-view
+assets-view: import ## Turnaround of a raw model before normalizing: IN=path.glb [SPLIT=1 FORWARD=+x] → build/screenshots/view-<name>.png
+	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
+	timeout 120 $(GODOT) --path . --resolution 900x600 --script res://assets/pipeline/model_view.gd -- $(IN) \
+		$(CURDIR)/$(BUILD_DIR)/screenshots/view-$(basename $(notdir $(IN)))$(if $(SPLIT),-split).png $(if $(SPLIT),--split --forward=$(or $(FORWARD),+z)) \
+		| grep -E 'size|triangles|islands|labels|MODEL_VIEW'
+
+.PHONY: assets-roster
+assets-roster: ## Rebuild the round-2 unit roster theme (scout, IFV, artillery, Lancer) from its Meshy recipe
+	tools/assets/build_roster.sh

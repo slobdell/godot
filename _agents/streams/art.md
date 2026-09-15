@@ -149,7 +149,37 @@ _Updated 2026-09-14 (agent)._
   - Not changed (rules' call): the barrel still sits ~0.65 m above gameplay's muzzle height until catalog v2's
     per-unit `muzzle_height` lands.
 
+- **Review #1 → 3D:** the 10 approved concepts generated (meshy-t2 textured, 150 credits; balance 688).
+- **X4 roster** (theme `roster`, `make assets-roster` = `tools/assets/build_roster.sh`):
+  - **Units:** scout (caged dune buggy with a nose gun, no turret), IFV (garbage truck with a turret and 30 mm gun),
+    artillery (crane carrier whose mortar rack is the turret), Lancer (transformer flatbed with a turntable and coil
+    emitter).
+  - **Slots:** filled per rules' C6 (`unit.<id>.hull/turret/weapon`) in the cyberpunk theme; the scout's turret and
+    the artillery's weapon are deliberately empty (`units/no_part.tscn`).
+  - **Contract checks:** all 10 parts pass `make assets-check`, and one texture set ships per unit.
+  - **New pipeline tools:**
+    - `--split=regions` (label islands by boxes), `--place-from` (keep the generated placement in turret space,
+      with `--center`, `--shift-from` and `--stretch`), and unit contracts mirrored from catalog v2 in
+      `AssetContracts.UNITS`.
+    - `make assets-view` (raw-model turnaround and split preview) and `make assets-unit UNIT=<id> THEME=roster`.
+    - Vehicle gallery `--gallery-units`.
+  - Screenshots: `build/screenshots/roster-*-day.png`, `x4-roster-gallery.png`.
+- **X2 lighting + X3 textured floor:**
+  - **Floor** (`arena_ground.gdshaderinc`): CC0 cracked asphalt, a baked arena macro map (weathering, rectangular
+    concrete slabs, oil), skid marks, worn hazard paint (a perimeter band and a center ring), drain grates, and
+    painted floodlight pools (a light map baked from `FLOODLIGHTS`).
+  - **Lighting:** a neutral white key (moon 0.65 → 1.15) and less blue ambient.
+  - **Cost:** the tier-high floor is +1.9 ms, and the low/medium lite floor is +0.1 ms (full numbers in
+    `references/fx_tricks.md`). The first version cost +6.6 ms and was rebuilt.
+  - Screenshots: `x3-skirmish.png`, `x3-phone-low.png`, `x3-overview.png`.
+
 **Decisions**
+- Unit hull art may rise to 1.35× the collision height (`AssetContracts.UNIT_ART_HEIGHT`) so a garbage truck isn't
+  shrunk to a toy by the 1.6 m box; gameplay collision is unchanged.
+- Real barrels (scout, IFV) are stretched from their breech to the gameplay muzzle; the Lancer's coil emitter is not
+  (it would look silly 4× longer), so its beam starts ~2.3 m ahead of the lens until rules can move the muzzle.
+- The floor has no normal map (2 ms at tier high for relief the RTS camera barely shows) and no concrete texture
+  (slabs are a baked tint over the asphalt): texture fetches are this GPU's bottleneck.
 - Team identity on generated vehicles = the model's own neon tinted per team + the underglow (no added strips):
   at the skirmish camera the underglow and nameplates carry friend/foe; up close the tinted light bars do.
   ACES tonemapping bleached bright cyan to white, so team neon energy is moderate (0.6 × 4).
@@ -164,7 +194,12 @@ _Updated 2026-09-14 (agent)._
 - (none open; review #1 answered)
 
 **Requests to other streams**
-- (none yet)
+- **rules:** per-unit muzzle placement to match the art (C1 extension), e.g. `muzzle_forward` and a higher
+  `muzzle_height` where hulls allow. Measured visible gun tips in turret space: IFV and scout reach −3.2 (stretched),
+  the Lancer's emitter −0.93 (beam starts 2.3 m ahead of it), and the dozer's barrel sits ~0.65 m above 1.27 m.
+  Raising muzzles needs taller hull boxes (trip-up 15), so it's your call.
+- **rules (C5):** when arena layouts land, `arena.dressing.setup(layout)` will want `half_size` and obstacle
+  positions for hazard borders and stands; the floor's perimeter band is hard-coded at 108 m for now.
 
 **Shared-file edits (for the merge notes)**
 - `Makefile`: `art-concept art-review art-review-status art-decide` added to `LIGHT_GOALS`.
