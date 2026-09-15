@@ -101,8 +101,13 @@ const ATTACK_MOVE_REACH_MARGIN := 10.0
 const ORDER_ARRIVE := 3.5
 ## ...or this close, when it has made no progress for STALL_TICKS (a crowded slot, a slot against a wall).
 const ORDER_STALL_ARRIVE := 12.0
+## ...and for wheeled units within this share of their turning radius (see _order_arrive), at most WHEELS_ARRIVE_MAX.
+const WHEELS_ARRIVE_RADII := 0.6
+const WHEELS_ARRIVE_MAX := 6.0
 ## A stop order is done once the unit is slower than this (m/s).
 const STOPPED_SPEED := 0.5
+## ...no sooner than this many ticks after it was issued.
+const STOP_SETTLE_TICKS := 20
 ## A hold order keeps the unit this close to its spot (meters).
 const HOLD_TOLERANCE := 3.0
 ## An idle unit fights near its post and returns when it drifts farther than this (regroup).
@@ -353,10 +358,12 @@ func _update_order_progress() -> void:
 			var distance := _flat(here).distance_to(goal)
 			# An attack-move is done when it's there and nothing is left to shoot (control's rule).
 			var fighting: bool = order["verb"] == "attack_move" and engaged_target != ""
-			if not fighting and (distance <= ORDER_ARRIVE or (stalled_ticks >= STALL_TICKS and distance <= ORDER_STALL_ARRIVE)):
-				_finish_order(goal if distance <= ORDER_ARRIVE else here)
+			var arrive := _order_arrive()
+			if not fighting and (distance <= arrive or (stalled_ticks >= STALL_TICKS and distance <= ORDER_STALL_ARRIVE)):
+				_finish_order(goal if distance <= arrive else here)
 		"stop":
-			if tank.estimated_velocity.length() < STOPPED_SPEED:
+			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
+			if tank.estimated_velocity.length() < STOPPED_SPEED and game_match.tick - int(order["issued_tick"]) >= STOP_SETTLE_TICKS:
 				_finish_order(here)
 		"attack", "follow":
 			var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
@@ -395,6 +402,13 @@ func _order_context() -> Variant:
 				"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 	var context := {"verb": order["verb"], "goal": order["goal"], "target": order["target"], "speed": order["speed"],
 			"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
+	# Live values: a follow's station moves with the friend, and a group's pace changes as it closes up.
+	if _order_source != null:
+		if order["verb"] == "follow":
+			context["goal"] = OrderFeed.point(_order_source.call("goal_position", String(tank.name))) \
+					if _order_source.has_method("goal_position") else null
+		if _order_source.has_method("pace_factor"):
+			context["speed"] = clampf(float(_order_source.call("pace_factor", String(tank.name))), 0.2, 1.0)
 	var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
 	if other != null and other.is_alive():
 		context["target_alive"] = true
@@ -451,6 +465,13 @@ static func _lap(part: String, since: int) -> int:
 
 static func _flat(point: Vector3) -> Vector3:
 	return Vector3(point.x, 0.0, point.z)
+
+
+## How close counts as arrived for a move order: ORDER_ARRIVE, or for wheels WHEELS_ARRIVE_RADII of the turning radius (a
+## car can't settle on a point much closer than that without circling it), at most WHEELS_ARRIVE_MAX.
+func _order_arrive() -> float:
+	var radius := _wheel_radius()
+	return ORDER_ARRIVE if radius <= 0.0 else clampf(radius * WHEELS_ARRIVE_RADII, ORDER_ARRIVE, WHEELS_ARRIVE_MAX)
 
 
 ## True if team intel knows an enemy within LOD_RADIUS of this tank.
@@ -1282,10 +1303,10 @@ func _act(s: Dictionary) -> void:
 			var o: Dictionary = s["order"]
 			var goal: Vector3 = o["goal"]
 			why = TankBrain._join(why, "attack-move" if o["verb"] == "attack_move" else "ordered")
-			if _flat(my_position).distance_to(goal) <= ORDER_ARRIVE:
+			if _flat(my_position).distance_to(goal) <= _order_arrive():
 				_order_move({"type": "stop"})
 			else:
-				_order_move(_move_to(goal, false, float(o["speed"]), ORDER_ARRIVE))
+				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
 			_order_weapon({"type": "fire_at_will"})
 		"PURSUE":
 			var o: Dictionary = s["order"]

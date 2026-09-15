@@ -11,6 +11,8 @@ func test_a_scout_circles_a_tank_instead_of_trading_frontally() -> void:
 	# A normal tank (an invulnerable one would make any duel hopeless, and the brain would rightly refuse it).
 	var tank := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-100, 0, 0), PI)
 	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-100, 0, 40), 0.0, {}, "scout")
+	# Durable: this measures the orbit, and one of round 3's tank shells kills a scout outright.
+	AiScenario.make_durable(scout)
 	var close_ticks := 0
 	var swept := 0.0
 	var last_bearing := NAN

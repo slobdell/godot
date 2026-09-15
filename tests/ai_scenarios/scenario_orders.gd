@@ -36,7 +36,9 @@ func test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing()
 				["tank", "ifv", "scout", "tank"][i]))
 		s.brain_tank(Match.Team.RUST, "Rust_A_%d" % (i + 1), Vector3(-100 + i * 10, 0, -10), PI, {}, ["tank", "ifv", "scout", "ifv"][i])
 	for tank in greens:
-		tank.health = roundi(tank.max_health * 0.4)  # hurt: retreats and cover are in the mix
+		# Hurt (retreats and cover are in the mix) but sturdy enough to outlive the orders whatever the weapons do.
+		tank.max_health *= 4
+		tank.health = roundi(tank.max_health * 0.4)
 	var orders := s.orders()
 	await s.start()
 	var interrupted := {}
@@ -46,9 +48,14 @@ func test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing()
 	for round_index in 14:
 		for tick in 90:
 			await s.step()
-		var tank := greens[round_index % greens.size()]
-		if not tank.is_alive():
-			continue
+		var tank: Tank = null
+		for offset in greens.size():
+			var candidate := greens[(round_index + offset) % greens.size()]
+			if candidate.is_alive():
+				tank = candidate
+				break
+		if tank == null:
+			break
 		var brain := s.brain_of(tank)
 		var was: String = brain.choice.get("option", "")
 		var goal := Vector3(-110 + (round_index * 37) % 40, 0, 50 - (round_index * 23) % 70)

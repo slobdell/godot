@@ -143,6 +143,16 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - Sim baseline: `397d0a3e14891d2d` (X1 timeouts), `9d936357e51d78dd` (x3 champion), `fe0a7942ac259713` (the CPU pass
   and K1 alignment), `08c31b3dccbcb72e` (X4 flank and breakaway), each on purpose. CPU at 50 brains: x3 4.5 ms, a6 3.7.
 
+- **Checkpoint preview** (a throwaway clone with `stream/control` and `stream/combat` merged onto this branch; nothing
+  merged here): with control's real `Orders` and combat's weapons and wheels, 550 of 551 tests passed after four fixes
+  now on this branch: **local avoidance** (a friend parked in the way is passed 5 m beside it: a wheeled IFV looped its
+  unstick routine against a parked tank for 8 s), **live follow stations and group pace** (a follow's goal was read once,
+  so the follower parked at the leader's first station), **wheels finish a move within 0.6 turning radii and move on to
+  the next path waypoint within 0.8** (a car orbited tight path corners and its goal), and **stop completes after 20
+  ticks at rest** (it finished before the unit had even started moving). Scenarios there: 23 of 27; left for after CP2:
+  the cover duel (320-damage shells on a 5 s reload punish peeking into a loaded gun: next, peek in the enemy's reload
+  window) and the pending dodge bar (x3 tanks dodge 22% of combat's shells vs a6 11%; IFVs 11% vs 6%).
+
 **Decisions (with reasons):**
 - Brains read K1 through `OrderFeed` (duck-typed: `Match.orders` when the field exists, else an attached object), so
   ai never names control's classes and works before and after CP1 unchanged.
@@ -193,8 +203,7 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - Heavy tanks can't dodge (physics, above); they take hits on the front armor instead.
 
 **Merge notes (shared files):**
-- `tools/remote.sh`: picks the newest Xwayland auth file (`ls -t`); a stale one made every rendering target on builder0
-  fall back to Wayland and hang.
-- `game/ui/command_icons.gd` (control's; a paused-area smoke broke): `draw_unit` skips icons centered beyond 16384 px.
-  `army-loop-smoke` failed about 1 run in 3 in full checks with "Invalid polygon data, triangulation failed": the icon
-  before the error was at (53141, 63901) px, where the renderer's triangulation loses precision; 4 of 4 clean after.
+- `tools/remote.sh` is **byte-identical to stream/control's** (it finds the running Xwayland's auth file; a stale one hung
+  every rendering target on builder0), and `game/ui/command_icons.gd` is **byte-identical to stream/combat's** (icons
+  beyond 16384 px are skipped: army-loop-smoke failed ~1 run in 3 on a (53141, 63901) px icon). All three streams hit
+  both bugs; with identical copies the merges don't conflict on them (combat's remote.sh differs: take control's).

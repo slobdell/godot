@@ -116,6 +116,12 @@ var hold_for_friends := true
 static var held_for_friends := 0
 ## A blocked lane is re-checked only every this many ticks (a friend doesn't clear a lane in one tick).
 const LANE_RECHECK_TICKS := 3
+## Local avoidance of friends in the way (see _around_friends), meters.
+const AVOID_LOOKAHEAD := 10.0
+const AVOID_WIDTH := 3.2
+const AVOID_CLEARANCE := 5.0
+## Wheels move on to the next path waypoint within this share of their turning radius (at least WAYPOINT_RADIUS).
+const WHEELS_WAYPOINT_RADII := 0.8
 var _lane_hold_left := 0
 
 
@@ -263,7 +269,7 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var goal := Vector3(move_order["x"], 0.0, move_order["z"])
 			# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
 			var direct: bool = move_order.get("direct", false)
-			var waypoint := goal if direct else _next_waypoint(goal, delta)
+			var waypoint := _around_friends(goal if direct else _next_waypoint(goal, delta))
 			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
 			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
 			var drive: Vector2
@@ -292,6 +298,39 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				cmd.turn = move_order["turn"]
 			else:
 				move_order = {"type": "stop"}
+
+
+## Local avoidance: a friend parked in the way within AVOID_LOOKAHEAD meters (within AVOID_WIDTH of the line to the
+## waypoint) is passed beside, AVOID_CLEARANCE meters off its center on the side the line already leans to. Navmesh paths
+## ignore units, move_and_slide stops a hull against another, and wheels can't pivot round one (a wheeled IFV looped its
+## unstick routine against a parked tank for 8 s). Brains only (they share the per-tick tank table).
+func _around_friends(waypoint: Vector3) -> Vector3:
+	var brain := self as TankBrain
+	if brain == null or brain.game_match == null:
+		return waypoint
+	var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	var to_waypoint := Vector3(waypoint.x, 0.0, waypoint.z) - here
+	var distance := to_waypoint.length()
+	if distance < 1.0:
+		return waypoint
+	var direction := to_waypoint / distance
+	var nearest := INF
+	var detour := waypoint
+	for ally: Tank in AiTickCache.team_tanks(brain.game_match, tank.team):
+		if ally == tank or not ally.is_alive():
+			continue
+		var offset := Vector3(ally.global_position.x - here.x, 0.0, ally.global_position.z - here.z)
+		var along := offset.dot(direction)
+		if along <= 0.0 or along >= minf(distance + AVOID_WIDTH, AVOID_LOOKAHEAD) or along >= nearest:
+			continue
+		var lateral := offset.x * direction.z - offset.z * direction.x
+		if absf(lateral) >= AVOID_WIDTH:
+			continue
+		nearest = along
+		# Pass on the side away from it (ties: its right).
+		var across := Vector3(direction.z, 0.0, -direction.x)
+		detour = Vector3(ally.global_position.x, 0.0, ally.global_position.z) - across * (AVOID_CLEARANCE if lateral >= 0.0 else -AVOID_CLEARANCE)
+	return detour
 
 
 ## The minimum turning radius when this unit rolls on wheels (K3 `locomotion` "wheels", `min_turn_radius_m`), else 0.
@@ -327,8 +366,10 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		_path_goal = goal
 		_path = Pathing.find_path(tank, tank.global_position, goal)
 		_path_index = 0
+	# Wheels can't thread a waypoint the way tracks pivot onto one: they move on to the next one a turning radius out.
+	var reach := maxf(WAYPOINT_RADIUS, _wheel_radius() * WHEELS_WAYPOINT_RADII)
 	while _path_index < _path.size() \
-			and _flat_distance(tank.global_position, _path[_path_index]) < WAYPOINT_RADIUS:
+			and _flat_distance(tank.global_position, _path[_path_index]) < reach:
 		_path_index += 1
 	if _path_index >= _path.size():
 		return goal
