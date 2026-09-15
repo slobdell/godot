@@ -292,6 +292,9 @@ func _build_top_bar() -> Control:
 	_preset_menu = OptionButton.new()
 	_preset_menu.name = "PresetMenu"
 	_preset_menu.custom_minimum_size = Vector2(140 * ui_scale, TAP * ui_scale)
+	# Labels like "Siege Line  (needs Artillery)" would otherwise widen the menu and squeeze the budget line.
+	_preset_menu.fit_to_longest_item = false
+	_preset_menu.clip_text = true
 	_preset_menu.add_item("PRESETS...")
 	_preset_menu.set_item_metadata(0, "")
 	for preset in ArmyPresets.ids():
@@ -308,6 +311,8 @@ func _build_top_bar() -> Control:
 	_load_menu = OptionButton.new()
 	_load_menu.name = "LoadMenu"
 	_load_menu.custom_minimum_size = Vector2(120 * ui_scale, TAP * ui_scale)
+	_load_menu.fit_to_longest_item = false
+	_load_menu.clip_text = true
 	_load_menu.item_selected.connect(_on_load_selected)
 	bar.add_child(_load_menu)
 	_fill_load_menu()

@@ -160,7 +160,7 @@ Unit stats and the army JSON parser (rules), squad behavior (ai), the in-match U
 
 **Done:** the whole backlog (Y1–Y6) and both stretch items. `make check` passes on the last commit (299 tests +
 `army-loop-smoke`); `make garage-web-smoke` (browser loop), `make garage-e2e`, and `make economy-sim` pass;
-screenshots reviewed: builder at 1920×1080 / 1800×810, compare (desktop and 1200×540), unlocks, challenges,
+`make web-smoke` passes; screenshots reviewed: builder at 1920×1080 / 1800×810 / 1280×720 (browser too), compare (desktop and 1200×540), unlocks, challenges,
 FIGHT handover, results at desktop and 20:9, browser loop. Sim baseline unchanged (`e5cf33921713b657`).
 
 **Decisions** (each reversible):
@@ -201,8 +201,12 @@ FIGHT handover, results at desktop and 20:9, browser loop. Sim baseline unchange
 - *Command:* (a) an in-match "surrender / back to army" button would let a player leave a lost fight
   (the loop pays nothing under 60 s, so it can't be abused); (b) `GarageSettings.MATCH_TIPS` now says "Tap a
   squad, then tap the ground to send it there." (your round-2 grammar); tell me if the words change.
-- *Orchestrator:* C8 row in workstreams.md: add the additive profile keys above; verification.md row 6h could list
-  `army-loop-smoke`.
+- *Orchestrator:* I updated the C8 row in workstreams.md (additive profile keys, the `award` signature),
+  verification.md row 6h (`army-loop-smoke`, loop screenshots), and orientation.md (layout, common task, trip-ups
+  61–62); review them at the merge.
+
+**Doc edits outside the brief:** `_agents/balance.md` (Economy), `_agents/workstreams.md` (C8 row),
+`_agents/verification.md` (row 6h), `_agents/orientation.md` (layout, common task, trip-ups 61–62).
 
 **Shared-file edits:** `game/main.gd` (+`static var next_flags` and 2 lines in `_ready`), `mk/core.mk`
 (`army-loop-smoke` added to `check`), `_agents/balance.md` (new "Economy" section at the end).
