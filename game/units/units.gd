@@ -21,7 +21,8 @@ extends RefCounted
 ##   good_vs / weak_vs (role lists: design intent for AI hints and the army UI; mechanics decide outcomes),
 ##   optional heat_capacity / heat_dissipation (only units whose weapon heats: the Lancer).
 ##   K3 (round 3): locomotion (LOCOMOTIONS), min_turn_radius_m (wheels: the tightest circle at any speed),
-##   acceleration_mps2, braking_mps2, lateral_grip (0..1: how much sideways slide the tires kill per second; lower drifts).
+##   acceleration_mps2, braking_mps2, lateral_grip (0..1: the fraction of sideways slide the tires kill each tick; lower
+##   drifts). On wheels, hull_turn_rate_deg is the most yaw per second at any speed (TankMotion.step_in_place).
 ##
 ## Keep existing keys stable. Renaming or removing one is a contract change (_agents/workstreams.md).
 
@@ -60,12 +61,13 @@ const PROFILES := {
 		"max_reverse_speed": 7.0,
 		"hull_turn_rate_deg": 140.0,
 		"sight_radius": 110.0,
-		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
-		"locomotion": "tracks",
-		"min_turn_radius_m": 0.0,
-		"acceleration_mps2": 14.0,
-		"braking_mps2": 14.0,
-		"lateral_grip": 1.0,
+		# K3 locomotion (round 3 X4). Rally truck: the tightest circle, quick off the line, and loose: it drifts through
+		# hard turns.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 5.0,
+		"acceleration_mps2": 16.0,
+		"braking_mps2": 22.0,
+		"lateral_grip": 0.45,
 		"weapon": "machine_gun",
 		"mount": "fixed",
 		"turret_turn_rate_deg": 200.0,
@@ -91,11 +93,11 @@ const PROFILES := {
 		"max_reverse_speed": 4.0,
 		"hull_turn_rate_deg": 80.0,
 		"sight_radius": 75.0,
-		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
+		# K3 locomotion (round 3 X4). The dozer on tracks pivots in place; heavy: 0.9 s to top speed (the scout takes the same to reach 14 m/s).
 		"locomotion": "tracks",
 		"min_turn_radius_m": 0.0,
-		"acceleration_mps2": 14.0,
-		"braking_mps2": 14.0,
+		"acceleration_mps2": 10.0,
+		"braking_mps2": 12.0,
 		"lateral_grip": 1.0,
 		"weapon": "cannon",
 		"mount": "turret",
@@ -122,12 +124,12 @@ const PROFILES := {
 		"max_reverse_speed": 5.0,
 		"hull_turn_rate_deg": 100.0,
 		"sight_radius": 85.0,
-		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
-		"locomotion": "tracks",
-		"min_turn_radius_m": 0.0,
-		"acceleration_mps2": 14.0,
+		# K3 locomotion (round 3 X4). Armored bus on big wheels: planted, a wider circle than the scout.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 7.0,
+		"acceleration_mps2": 9.0,
 		"braking_mps2": 14.0,
-		"lateral_grip": 1.0,
+		"lateral_grip": 0.7,
 		"weapon": "autocannon",
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
@@ -152,12 +154,12 @@ const PROFILES := {
 		"max_reverse_speed": 3.5,
 		"hull_turn_rate_deg": 60.0,
 		"sight_radius": 60.0,
-		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
-		"locomotion": "tracks",
-		"min_turn_radius_m": 0.0,
-		"acceleration_mps2": 14.0,
-		"braking_mps2": 14.0,
-		"lateral_grip": 1.0,
+		# K3 locomotion (round 3 X4). Crane carrier: the widest circle and slowest to get going.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 9.0,
+		"acceleration_mps2": 6.0,
+		"braking_mps2": 10.0,
+		"lateral_grip": 0.85,
 		"weapon": "mortar",
 		"mount": "turret",
 		"turret_turn_rate_deg": 70.0,
@@ -183,12 +185,12 @@ const PROFILES := {
 		"hull_turn_rate_deg": 80.0,
 		# R7: sight 80 -> 85 (it must see what its 85 m beam reaches); turret 80 -> 55°/s, so fast IFVs get inside it.
 		"sight_radius": 85.0,
-		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
-		"locomotion": "tracks",
-		"min_turn_radius_m": 0.0,
-		"acceleration_mps2": 14.0,
-		"braking_mps2": 14.0,
-		"lateral_grip": 1.0,
+		# K3 locomotion (round 3 X4). Utility truck on wheels.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 7.5,
+		"acceleration_mps2": 8.0,
+		"braking_mps2": 12.0,
+		"lateral_grip": 0.75,
 		"weapon": "laser",
 		"mount": "turret",
 		"turret_turn_rate_deg": 55.0,
@@ -219,12 +221,12 @@ const PROFILES := {
 		"max_reverse_speed": 5.0,
 		"hull_turn_rate_deg": 110.0,
 		"sight_radius": 70.0,
-		# K3 locomotion (round 3 X1: today's driving, tracks for all; combat X4 moves the light units to wheels).
-		"locomotion": "tracks",
-		"min_turn_radius_m": 0.0,
-		"acceleration_mps2": 14.0,
+		# K3 locomotion (round 3 X4). Fire truck on wheels: charges in, slides a little.
+		"locomotion": "wheels",
+		"min_turn_radius_m": 7.0,
+		"acceleration_mps2": 9.0,
 		"braking_mps2": 14.0,
-		"lateral_grip": 1.0,
+		"lateral_grip": 0.65,
 		"weapon": "flamethrower",
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,

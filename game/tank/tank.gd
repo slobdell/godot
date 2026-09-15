@@ -222,17 +222,10 @@ func _physics_process(delta: float) -> void:
 	var cmd := command.sanitized()
 	aim_point = cmd.aim_point
 
-	# Tank steering: turn in place or while moving; reversing does not invert.
-	rotate_y(-cmd.turn * hull_turn_rate * delta)
-	_speed = TankMotion.next_speed(_speed, cmd.throttle, max_forward_speed, max_reverse_speed,
-			acceleration, delta)
-
-	var forward := -global_basis.z
-	velocity.x = forward.x * _speed
-	velocity.z = forward.z * _speed
-	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
-	move_and_slide()
-	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
+	# X4 (K3): drive through the same pure model ai plans with (TankMotion.step_in_place): tracks pivot, wheels need
+	# speed to turn and slide on low grip. Collisions stay with the physics body: the velocity after the slide feeds the
+	# next tick, so a wall eats a wheeled unit's momentum.
+	_drive(cmd, delta)
 
 	var local_aim := to_local(cmd.aim_point)
 	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, gun_yaw_toward(local_aim), turret_turn_rate, delta)
@@ -274,6 +267,40 @@ func _fire_round() -> void:
 
 static func _ticks_of(seconds: float) -> int:
 	return maxi(1, roundi(seconds * 60.0)) if seconds > 0.0 else 0
+
+
+## The motion state this tank steps every physics tick (TankMotion's K3 dictionary), built once per unit.
+var _motion := {}
+
+
+func _drive(cmd: TankCommand, delta: float) -> void:
+	if _motion.is_empty():
+		_motion = TankMotion.state_for(unit_id, global_position, -global_basis.z, _speed)
+	_motion["position"] = global_position
+	var facing := -global_basis.z  # re-read: spawns, respawns, and tests place hulls by setting rotation
+	_motion["forward"] = Vector3(facing.x, 0.0, facing.z).normalized()
+	_motion["speed"] = _speed
+	_motion["max_forward_speed"] = max_forward_speed
+	_motion["max_reverse_speed"] = max_reverse_speed
+	_motion["hull_turn_rate_deg"] = rad_to_deg(hull_turn_rate)
+	_motion["acceleration_mps2"] = acceleration
+	_motion["braking_mps2"] = braking
+	_motion["locomotion"] = locomotion
+	_motion["min_turn_radius_m"] = min_turn_radius
+	_motion["lateral_grip"] = lateral_grip
+	TankMotion.step_in_place(_motion, cmd.throttle, cmd.turn, delta)
+	var forward: Vector3 = _motion["forward"]
+	global_basis = Basis.looking_at(forward, Vector3.UP)
+	_speed = float(_motion["speed"])
+	var planar: Vector3 = _motion["velocity"]
+	velocity.x = planar.x
+	velocity.z = planar.z
+	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
+	move_and_slide()
+	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
+	_motion["velocity"] = estimated_velocity
+	if locomotion == "wheels":
+		_speed = estimated_velocity.dot(forward)
 
 
 func _process(delta: float) -> void:
@@ -347,6 +374,7 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	turret.rotation.y = 0.0
 	velocity = Vector3.ZERO
 	_speed = 0.0
+	_motion = {}
 	_reload_ticks = 0
 	_burst_rounds_left = 0
 	health = max_health

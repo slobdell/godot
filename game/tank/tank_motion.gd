@@ -70,7 +70,7 @@ static func predict(state: Dictionary, throttle: float, turn: float, ticks: int)
 	var poses: Array = []
 	var current := state.duplicate()
 	for i in maxi(ticks, 0):
-		current = step(current, throttle, turn, TICK_SECONDS)
+		step_in_place(current, throttle, turn, TICK_SECONDS)
 		poses.append({"position": current["position"], "forward": current["forward"], "speed": current["speed"],
 				"velocity": current["velocity"]})
 	return poses
@@ -79,20 +79,56 @@ static func predict(state: Dictionary, throttle: float, turn: float, ticks: int)
 ## One tick of driving: returns a new state (the input is not modified).
 static func step(state: Dictionary, throttle: float, turn: float, delta: float) -> Dictionary:
 	var next := state.duplicate()
+	step_in_place(next, throttle, turn, delta)
+	return next
+
+
+## X4: a turn command with (almost) no throttle drives wheels at this fraction of full throttle per unit of turn, so
+## tank-style "turn in place" steering becomes a tight arc along the turning circle instead of a stall. The creep keeps
+## the direction of travel: forward, or backward when already reversing faster than CREEP_REVERSE_SPEED.
+const WHEEL_CREEP_THROTTLE := 0.5
+const CREEP_REVERSE_SPEED := 0.5
+
+
+## One tick of driving, updating `state` in place (the Tank keeps one state and steps it every physics tick).
+##   tracks: the hull turns at hull_turn_rate_deg whatever the speed (a pivot at a standstill); no sideways slide.
+##   wheels: yaw rate = |speed| / turning radius (speed at the start of the tick; full lock = min_turn_radius_m), capped
+##     at hull_turn_rate_deg, so a car can't turn standing still. `turn` is the way the HULL should yaw in either gear:
+##     in reverse the wheels steer opposite to get it (a driver's inverted steering, done for the brain). Momentum: the
+##     velocity is split along the new heading, the sideways part keeps sliding and lateral_grip kills that fraction of
+##     it each tick (1 = carve, lower = drift), and the forward part accelerates or brakes.
+static func step_in_place(state: Dictionary, throttle: float, turn: float, delta: float) -> void:
 	var throttle_c := clampf(throttle, -1.0, 1.0)
 	var turn_c := clampf(turn, -1.0, 1.0)
 	var forward: Vector3 = state["forward"]
-	# Tracks: turn at the hull rate whatever the speed (a pivot at a standstill).
-	var turn_radians := turn_c * deg_to_rad(float(state["hull_turn_rate_deg"])) * delta
-	forward = turn_heading(forward, turn_radians)
-	var speed := next_speed_braking(float(state["speed"]), throttle_c, float(state["max_forward_speed"]),
-			float(state["max_reverse_speed"]), float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
-	var velocity := forward * speed
-	next["forward"] = forward
-	next["speed"] = speed
-	next["velocity"] = velocity
-	next["position"] = (state["position"] as Vector3) + velocity * delta
-	return next
+	var speed := float(state["speed"])
+	var velocity: Vector3
+	var max_rate := deg_to_rad(float(state["hull_turn_rate_deg"]))
+	if String(state["locomotion"]) == "wheels":
+		var creep := WHEEL_CREEP_THROTTLE * absf(turn_c)
+		if absf(throttle_c) < creep:
+			var backward := throttle_c < 0.0 or (throttle_c == 0.0 and speed < -CREEP_REVERSE_SPEED)
+			throttle_c = -creep if backward else creep
+		var radius := maxf(float(state["min_turn_radius_m"]), 0.1)
+		var yaw_rate := clampf(absf(speed) * turn_c / radius, -max_rate, max_rate)
+		forward = turn_heading(forward, yaw_rate * delta)
+		var right := Vector3(-forward.z, 0.0, forward.x)
+		var carried: Vector3 = state["velocity"]
+		var along := next_speed_braking(carried.dot(forward), throttle_c, float(state["max_forward_speed"]),
+				float(state["max_reverse_speed"]), float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
+		var sideways := carried.dot(right)
+		sideways -= sideways * clampf(float(state["lateral_grip"]) * delta * 60.0, 0.0, 1.0)
+		speed = along
+		velocity = forward * along + right * sideways
+	else:
+		forward = turn_heading(forward, turn_c * max_rate * delta)
+		speed = next_speed_braking(speed, throttle_c, float(state["max_forward_speed"]), float(state["max_reverse_speed"]),
+				float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
+		velocity = forward * speed
+	state["forward"] = forward
+	state["speed"] = speed
+	state["velocity"] = Vector3(velocity.x, 0.0, velocity.z)
+	state["position"] = (state["position"] as Vector3) + velocity * delta
 
 
 ## `forward` (a flat unit vector) turned clockwise seen from above (to the RIGHT) by `radians` (negative = left).

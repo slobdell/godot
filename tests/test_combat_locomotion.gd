@@ -87,3 +87,130 @@ func test_predict_matches_a_real_tank_on_open_ground() -> void:
 	var heading_error := rad_to_deg(absf((-tank.global_basis.z).signed_angle_to(predicted["forward"], Vector3.UP)))
 	assert_true(heading_error < 2.0, "and faces the same way (%.2f° off)" % heading_error)
 	assert_near(tank.speed(), float(predicted["speed"]), 0.05, "at the same speed")
+
+
+# ---- X4: arcade driving -----------------------------------------------------------------------
+
+## A wheeled state with explicit numbers, so the math is checked independently of catalog tuning.
+func _car(speed := 0.0, grip := 1.0) -> Dictionary:
+	var state := TankMotion.state_for("scout", Vector3.ZERO, Vector3.FORWARD, speed)
+	state["locomotion"] = "wheels"
+	state["min_turn_radius_m"] = 6.0
+	state["hull_turn_rate_deg"] = 150.0
+	state["max_forward_speed"] = 14.0
+	state["max_reverse_speed"] = 7.0
+	state["acceleration_mps2"] = 12.0
+	state["braking_mps2"] = 20.0
+	state["lateral_grip"] = grip
+	return state
+
+
+func _yaw_deg(forward: Vector3) -> float:
+	## Degrees turned from north; positive = right (clockwise from above).
+	return -rad_to_deg(Vector3.FORWARD.signed_angle_to(forward, Vector3.UP))
+
+
+func test_the_roster_drives_on_the_proposed_locomotion() -> void:
+	for unit_id in ["scout", "ifv", "artillery", "lancer"]:
+		assert_eq(Units.profile(unit_id)["locomotion"], "wheels", "%s rolls on wheels" % unit_id)
+	assert_eq(Units.profile("tank")["locomotion"], "tracks", "the dozer tank keeps its tracks")
+	assert_true(float(Units.profile("scout")["min_turn_radius_m"]) < float(Units.profile("artillery")["min_turn_radius_m"]),
+			"the rally truck turns tighter than the crane carrier")
+
+
+func test_wheels_do_not_rotate_standing_still() -> void:
+	var poses := TankMotion.predict(_car(), 0.0, 0.0, 60)
+	assert_true((poses[-1]["forward"] as Vector3).is_equal_approx(Vector3.FORWARD), "no throttle, no turn: nothing moves")
+	var brake := _car()
+	var held := TankMotion.predict(brake, 0.0, 1.0, 1)
+	assert_true(absf(_yaw_deg(held[0]["forward"])) < 0.01, "a turn at a standstill doesn't pivot the hull on the spot")
+
+
+func test_wheel_yaw_rate_is_speed_over_radius() -> void:
+	# The tick's yaw uses the speed the tick started with.
+	var slow := TankMotion.predict(_car(6.0), 6.0 / 14.0, 1.0, 1)
+	var expected := rad_to_deg(6.0 / 6.0) / 60.0
+	assert_near(_yaw_deg(slow[0]["forward"]), expected, expected * 0.01, "6 m/s on a 6 m circle: 1 rad/s")
+	var half := TankMotion.predict(_car(6.0), 6.0 / 14.0, 0.5, 1)
+	assert_near(_yaw_deg(half[0]["forward"]), rad_to_deg(6.0 / 12.0) / 60.0, 0.005, "half lock = twice the radius")
+	var fast_car := _car(14.0)
+	fast_car["hull_turn_rate_deg"] = 100.0  # 14 m/s on a 6 m circle would be 134°/s
+	var fast := TankMotion.predict(fast_car, 1.0, 1.0, 1)
+	assert_near(_yaw_deg(fast[0]["forward"]), 100.0 / 60.0, 0.02, "at speed the yaw rate caps at hull_turn_rate_deg")
+
+
+func test_a_full_lock_circle_has_the_minimum_radius() -> void:
+	var state := _car(5.0)
+	var poses := TankMotion.predict(state, 5.0 / 14.0, 1.0, 60 * 20)
+	var min_x := INF
+	var max_x := -INF
+	for pose: Dictionary in poses:
+		min_x = minf(min_x, (pose["position"] as Vector3).x)
+		max_x = maxf(max_x, (pose["position"] as Vector3).x)
+	assert_near(max_x - min_x, 12.0, 0.5, "the circle's diameter is twice min_turn_radius_m")
+	assert_true(min_x > -0.3, "turning right circles to the right of the start")
+
+
+func test_turn_is_the_hulls_yaw_in_either_gear() -> void:
+	# A driver steers the wheels the other way in reverse; TankCommand.turn names the yaw the hull should make, so
+	# brains that swing a reversing hull's back like its front (Steering.reverse_toward) still work on wheels.
+	var poses := TankMotion.predict(_car(-4.0), -4.0 / 7.0, 1.0, 30)
+	var yawed := _yaw_deg(poses[-1]["forward"])
+	assert_near(yawed, rad_to_deg(4.0 / 6.0) * 0.5, 1.5, "turn right while reversing at 4 m/s on a 6 m circle: 19° right (%.1f°)" % yawed)
+	var creeping_back := TankMotion.predict(_car(-4.0), 0.0, 1.0, 20)
+	assert_true(float(creeping_back[-1]["speed"]) < 0.0, "a turn with no throttle while reversing keeps backing around the circle")
+
+
+func test_a_turn_command_at_a_standstill_creeps_forward_around_the_circle() -> void:
+	# Tank-style steering (turn in place, throttle 0) becomes a tight forward arc on wheels, so older brains don't stall.
+	var poses := TankMotion.predict(_car(), 0.0, 1.0, 120)
+	var last: Dictionary = poses[-1]
+	assert_true(float(last["speed"]) > 0.5, "it creeps forward (%.2f m/s)" % last["speed"])
+	assert_true(_yaw_deg(last["forward"]) > 20.0, "and swings right along its turning circle (%.0f°)" % _yaw_deg(last["forward"]))
+
+
+func test_low_grip_drifts_and_high_grip_carves() -> void:
+	var slide := func(grip: float) -> float:
+		var poses := TankMotion.predict(_car(14.0, grip), 1.0, 1.0, 30)
+		var last: Dictionary = poses[-1]
+		var velocity: Vector3 = last["velocity"]
+		var forward: Vector3 = last["forward"]
+		return absf(velocity.dot(Vector3(-forward.z, 0.0, forward.x)))
+	var loose: float = slide.call(0.3)
+	var planted: float = slide.call(1.0)
+	assert_true(loose > 1.0, "a loose rally truck slides sideways through a hard turn (%.1f m/s)" % loose)
+	assert_true(planted < 0.2 * loose, "full grip carves (%.2f m/s)" % planted)
+
+
+func test_momentum_coasts_and_brakes() -> void:
+	var car := _car(14.0)
+	var coast := TankMotion.predict(car, 0.0, 0.0, 60)
+	var stop_ticks := 0
+	for pose: Dictionary in coast:
+		if float(pose["speed"]) > 0.0:
+			stop_ticks += 1
+	assert_near(float(stop_ticks), 14.0 / 20.0 * 60.0, 2.0, "off the throttle it sheds braking_mps2")
+	var reverse := TankMotion.predict(_car(14.0), -1.0, 0.0, 60)
+	assert_true(float(reverse[-1]["speed"]) < 0.0, "full reverse brakes through zero, then backs up")
+
+
+func test_predict_matches_a_real_scout_carving_a_turn() -> void:
+	add_to_tree(ARENA.instantiate())
+	var game_match: Match = add_to_tree(MATCH.instantiate())
+	var scout := game_match.spawn_tank("Driver", 0, Match.Team.GREEN, "scout")
+	scout.global_position = Vector3(LANE_X, 0.0, 60.0)
+	await wait_physics_frames(3)
+	for tick in 60:  # get up to speed first
+		scout.command = TankCommand.new(1.0, 0.0, Vector3.ZERO, false)
+		await tree.physics_frame
+	var start := TankMotion.state_of(scout)
+	var poses := TankMotion.predict(start, 1.0, 0.8, 60)
+	for tick in 60:
+		scout.command = TankCommand.new(1.0, 0.8, Vector3.ZERO, false)
+		await tree.physics_frame
+	var predicted: Dictionary = poses[-1]
+	var actual := scout.global_position
+	assert_near(Vector2(actual.x, actual.z).distance_to(Vector2(predicted["position"].x, predicted["position"].z)), 0.0, 0.5,
+			"a second of carving lands where predict said (%s vs %s)" % [actual, predicted["position"]])
+	var heading_error := rad_to_deg(absf((-scout.global_basis.z).signed_angle_to(predicted["forward"], Vector3.UP)))
+	assert_true(heading_error < 2.0, "facing the same way (%.2f° off)" % heading_error)

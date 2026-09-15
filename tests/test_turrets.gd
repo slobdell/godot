@@ -57,7 +57,7 @@ func test_turret_holds_its_world_heading_while_the_hull_turns() -> void:
 	add_to_tree(orders)
 	await wait_physics_frames(3)
 	var before := _turret_yaw(tank)
-	orders.set_orders({"type": "drive", "throttle": 0.6, "turn": 1.0, "seconds": 1.5}, {"type": "hold_fire"})
+	orders.set_orders({"type": "drive", "throttle": 1.0, "turn": 1.0, "seconds": 1.5}, {"type": "hold_fire"})  # wheels: speed buys yaw (combat X4)
 	await wait_physics_frames(80)
 	var hull_turned := absf(angle_difference(tank.rotation.y, 0.0))
 	assert_true(hull_turned > deg_to_rad(60.0), "setup: the hull swung around (%.0f deg)" % rad_to_deg(hull_turned))

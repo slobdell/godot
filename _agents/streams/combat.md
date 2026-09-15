@@ -155,3 +155,27 @@ Tests adjusted to derive from data (merge notes): `test_combat.gd`, `test_shield
 - Why not a flat damage bonus: at ×1.3 a tank shell into the deck one-shots a full tank, which breaks "2-4 hits" and
   makes a single lucky angle end a duel; thinner armor keeps it mechanical (no damage table) and makes a scout's
   flanking run on a tank's engine a real threat. Tests: `tests/test_combat_weak_spots.gd`.
+
+### X4 done: arcade driving (2026-09-15)
+
+- **One driving model for the sim and the planners:** `Tank` steps its own K3 state through
+  `TankMotion.step_in_place` every tick (so `predict` matches a real tank within 0.3 m and a real scout carving a
+  turn within 0.5 m over a second), `Basis.looking_at` sets the hull, `move_and_slide` still owns collisions, and the
+  slid velocity feeds the next tick (walls eat a car's momentum).
+- **Tracks** (the tank): pivot in place at `hull_turn_rate_deg`, accel 10, braking 12 m/s².
+- **Wheels** (scout, IFV, artillery, Lancer, Burner): yaw rate = |speed| / turning radius (full lock =
+  `min_turn_radius_m`), capped at `hull_turn_rate_deg`; no rotation standing still; momentum split along the new
+  heading with `lateral_grip` killing that fraction of sideways slide per tick (scout 0.45 drifts ~1.3 m/s sideways
+  through a flat-out full-lock turn; artillery 0.85 carves). Radii: scout 5, IFV 7, Burner 7, Lancer 7.5, artillery 9 m.
+- **Decision: `TankCommand.turn` is the direction the hull should yaw, in either gear.** In reverse the wheels steer
+  the opposite way to get it (a driver's inverted steering, done for the brain). Why: every brain's
+  `Steering.reverse_toward` already swings a reversing hull's back like its front; true inverted input sent scouts
+  backing away from a tank into a dithering stall at 65 m (inside cannon range). A player-facing direct drive mode can
+  invert for feel later.
+- **Decision: a turn command with almost no throttle creeps wheels** (`WHEEL_CREEP_THROTTLE` 0.5 × |turn|, in the
+  current direction of travel) along the turning circle instead of stalling, so tank-style "turn in place" steering
+  from today's brains becomes a tight arc. ai can plan real multi-point turns with `predict`.
+- Tests: `tests/test_combat_locomotion.gd` (yaw = speed/radius, the circle's diameter, no pivot at a standstill, yaw
+  intent in reverse, creep, drift vs grip, coasting and braking, predict vs the real scout). Adjusted:
+  `test_turrets.gd` (the IFV spins at full throttle: speed buys yaw). Sim baseline re-recorded on purpose:
+  `glibc-2.43 67a9f2750b4a7f52`. determinism.md inventory updated.
