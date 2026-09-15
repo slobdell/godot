@@ -178,5 +178,7 @@ The kickoff prompt is one line; this section is the rest.
 7. `grep -q DONE` matched Godot's own `[ DONE ]` progress lines: use unique end markers (`CHECK_EXIT=`).
 8. The same Godot binary simulates differently on machines with different glibc (libm trig): baseline hashes are keyed
    by glibc version, builder0 canonical (round 3 setup).
-9. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+9. Infra fixes a worker finds (round 3: remote screenshots after the first frame were stale on builder0) go to `main`
+   right away as their own commit, then every stream is told to `git merge main`; don't wait for a checkpoint.
+10. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.
