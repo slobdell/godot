@@ -34,8 +34,9 @@ Paused this round: **netcode** (works today; resumes once the core loop is fun).
 
 ## Next (after round 2, order to be decided)
 
-- **Play online for real:** interest management with fog, the new rules replicated, accounts and progression
-  server-side, deploy the broker (and the web build) publicly.
+- **Play online for real,** within the lead's cost strategy (servers only match players and route packets;
+  server_management.md §5): the new rules replicated in player-hosted matches, deploy the broker on one cheap box and
+  the web build on free static hosting; then lockstep on the integer core for ranked. Progression stays on the device.
 - **Android paid app:** export, touch polish on real devices, store listing. The integer-core lockstep for ranked play, if the lead wants ranked.
 - **Content:** more units (one at a time, each with a counter), more arenas, arena hazards.
 - **The AI Commander** (decided 2026-09-15; plan and rules in [vision.md](vision.md#the-ai-commander-an-optional-llm-opponent-decided-2026-09-15)):

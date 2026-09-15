@@ -20,7 +20,11 @@ constrained UX capabilities eventually on a phone)."*
 
 - **No pay-to-win, microtransactions, premium currency, loot boxes, ads, or energy timers.** Progression is
   earned only by playing (credits from wins unlock units and budget tiers; [game_design.md](game_design.md)).
-- **Business model (intent):** the online/web version is **free**; the **Android app is a paid app**.
+- **Business model (intent):** the online/web version is **free**; the **Android app is a paid app**. A paid
+  desktop build (Steam) is under discussion.
+- **Keep our running costs near zero** (the lead, 2026-09-15): *"making the game servers strictly match makers and
+  packet routers."* Players' devices simulate (player-hosted now, lockstep for ranked later); LLM opponents use the
+  player's own key or on-device models. Plan: [server_management.md](server_management.md) §5.
 - Depth over onboarding funnels. Respect the player's intelligence; teach through play (challenges, clear
   counters), not through nags.
 
@@ -37,6 +41,7 @@ stream's up-armored prison-bus dozer found this vibe in round 1. Photoreal and g
 - **Mobile first:** single taps, drags, and pinches; no right-click, no hover, no keyboard required.
 - Online play: players host matches through our relay broker, so our servers never simulate (built in
   round 1, paused while the core game gets fun); lockstep for ranked play is feasible (integer-core spike).
+  Cross-play: web, Android, and any desktop build share one player pool.
 
 ## Why this is also a learning project
 

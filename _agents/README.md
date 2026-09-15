@@ -25,7 +25,7 @@ that way: a note that only says "do X" teaches nothing.
 - **[balance.md](balance.md)**: Tuning values, measured results, and how to run balance experiments.
 - **[slot_contracts.md](slot_contracts.md)**: The visual slot contract between gameplay and art (ids, sizes, optional methods, budgets).
 - **[agent_bridge.md](agent_bridge.md)**: Claude commands a tank over a localhost HTTP bridge (smoke test and commander prototype).
-- **[server_management.md](server_management.md)**: A primer on how online games run servers and the staged plan.
+- **[server_management.md](server_management.md)**: A primer on how online games run servers, and the staged plan (our servers only match players and route packets).
 - **`streams/references/`**: deep references from round 1: FX tricks and tier budgets, asset services, the asset budget, prompts, netcode designs, and HUD widget specs.
 
 **Working here**

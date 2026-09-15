@@ -4,15 +4,22 @@ A primer for a programmer who knows web backends but not game backends,
 followed by the staged plan for Tank Squad. Read before any networking or
 deployment work.
 
+> **Decided (the lead, 2026-09-15): our servers are strictly matchmakers and packet routers.** *"my general strategy
+> here for commercial sales is keeping my own costs low, which I think can be done by making the game servers
+> strictly match makers and packet routers."* Players' devices run the simulation; we never pay for per-match
+> compute. The primer below is still the right background, but the verdicts in §1 and the plan in §5 follow this
+> decision. What's built: [archive/round1/netcode.md](streams/archive/round1/netcode.md); protocols and hosting
+> costs: [references/netcode_designs.md](streams/references/netcode_designs.md).
+
 ---
 
 ## 1. Who is in charge? Topologies
 
 | Topology | How it works | Used for | Verdict for us |
 |---|---|---|---|
-| **Peer-to-peer / lockstep** | Every client runs the full sim from shared inputs; it must be deterministic | Classic RTS (StarCraft, Age of Empires) | ❌ Godot physics isn't cross-platform deterministic; cheating is easy |
-| **Listen server** | One *player's* machine hosts; others connect | Casual co-op, LAN games | ❌ A browser can't accept incoming connections; the host has an advantage |
-| **Dedicated authoritative server** | A server process owns the true game state; clients send intent and render what the server says | Almost every competitive online game | ✅ **Ours** |
+| **Peer-to-peer / lockstep** | Every client runs the full sim from shared inputs; it must be deterministic | Classic RTS (StarCraft, Age of Empires) | ✅ **The end goal, for ranked:** no host advantage, tiny bandwidth. Godot's float physics isn't cross-build deterministic, but the integer-core spike is (identical native and wasm hashes); the cost is porting the sim |
+| **Listen server** (player-hosted) | One *player's* device simulates; others connect | Casual co-op, LAN games | ✅ **Built in round 1**, through our relay (browsers can't accept connections, so the broker routes packets). Host advantage accepted for casual play |
+| **Dedicated authoritative server** | A server process owns the true game state; clients send intent and render what the server says | Almost every competitive online game | ❌ **Not for live matches:** per-match server compute is the cost we refuse. The headless export stays for tests, the match runner, and rare replay adjudication of disputes |
 
 "Authoritative" means **the client never decides outcomes.** A client says "I'm
 pressing forward" (or, in squad mode, "here is my doctrine"). The server decides
@@ -88,18 +95,23 @@ matches might not need to be real-time at all:
 Building M2 (networked direct control) first is still right: it teaches the
 real-time stack, and the authoritative-server habit is costly to retrofit.
 
-## 5. Staged plan for Tank Squad
+## 5. Staged plan for Tank Squad (revised 2026-09-15)
 
-| Stage | What | Complexity we accept | Milestone |
+| Stage | What | Our running cost | Status |
 |---|---|---|---|
-| **S0: Local** ✅ | `make server` in one terminal, 2+ browser tabs connect to `ws://localhost` | none; learn the MultiplayerAPI | M2 (done 2026-09-12) |
-| **S1: One box** | One small VPS: Caddy serves `build/web` over HTTPS and reverse-proxies `wss://…/game` to **one long-running** headless match server under systemd; `make deploy` | TLS, systemd, a firewall | M6 |
-| **S2: Many matches** | A tiny allocator service on the same box spawns one server process per match on its own port/path, and reaps finished ones | process lifecycle, join tokens | after M6 |
-| **S3: Players persist** | Accounts, saved doctrines, match history. Evaluate Nakama vs a small API + Postgres | a database, auth | M9 |
-| **S4: Scale** | Multiple boxes/regions; containers; Agones or managed hosting **only if needed** | real ops | maybe never |
+| **S0: Local** ✅ | `make server` plus browser tabs on `ws://localhost` | none | done 2026-09-12 |
+| **N0/N1: Broker + player-hosted** ✅ | Node `ws` broker: lobbies, room codes, a WebSocket relay; one player's device simulates | bandwidth only | built in round 1 (paused) |
+| **S1: One box** | One small VPS with bundled bandwidth: the broker behind TLS (`wss://`); the web build on free static hosting (the no-threads export needs no special headers) | ~€4–6/mo at 1,000 player-hours (netcode_designs §5) | next online step |
+| **S2: Lockstep for ranked** | Port the sim to the integer core; the broker relays inputs only; peers exchange state hashes; the server only replays a match when peers disagree | ~20× less bandwidth than snapshots | after the core loop is fun |
+| **S3: Identity without a database of our own** | Device keys or platform identity (Steam, Google Play) instead of passwords. Progression stays on the device: ranked uses fixed budgets and full rosters, so editing a local profile wins nothing | none | when ranked exists |
+| **S4: Scale** | More broker boxes or regions; lobbies route players to the nearest | tens of $/mo at 100,000 player-hours | only if needed |
+
+Cost cutters to evaluate later: WebRTC data channels (the broker only introduces peers; packets flow directly, with
+a relay only when NAT traversal fails), Steam's free relay for Steam-only matches, and Cloudflare Durable Objects
+(no egress fees). Keep cross-play (web, Android, Steam in one pool) whichever transport wins.
 
 Security notes that apply from S0:
-- Validate and clamp every client message on the server (already started: `TankCommand.sanitized()`).
+- Validate and clamp every client message on whoever simulates (already started: `TankCommand.sanitized()`).
 - Rate-limit client messages per peer.
 - Never send a client state it shouldn't know (fog of war).
 - Browsers require `wss://` (TLS) when the page is served over `https://`. Plan the reverse proxy at S1.
