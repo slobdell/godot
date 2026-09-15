@@ -136,6 +136,40 @@ first accurate shot decides a duel: a parked tank keeps its 50°/s turret on the
 fires with a 2.5× moving spread. Probes that didn't close the gap: no dodging, matchup targeting, shoot-and-scoot, halting
 only for 3 s+ reloads. Requests to combat: turret stabilization and a softer moving-fire spread.
 
+### After the real merges: weak spots and the official X6 (round-3 weapons)
+
+**Weak spots** (combat's request b; `Armor.is_weak_spot`, `Match.weak_spot_multiplier`). `Matchups` now estimates what
+a round-3 weapon really does: `burst_count` × `damage` per reload (an IFV's 4-round burst was counted as one round),
+and, with `weak_spot` in the geometry, penetration against the engine deck (rear armor × `Armor.WEAK_SPOT_ARMOR_FRACTION`).
+`Matchups.deck_gain(weapon, defender)` says how much more a deck lets through than the rear plate: a scout's machine gun
+on a tank ×1.79, an IFV's autocannon ×1.5, a cannon or laser ×1 (already at the penetration cap from behind).
+
+Feature `weak_spots` (variant **x4mw** = x4 + matchups + weak spots): an orbiting fixed gun circles the *short* way to
+the target's stern, only starts its attack run from inside the 45° rear arc, and also starts one whenever a slow gun is
+still reloading, wherever its turret points. A scout on a stopped tank, 25 s: **57 of 71 hits on the engine deck** (19 of
+46 before), the tank losing 173 instead of 84. Two other ways of seeking decks were measured and dropped: attack runs
+that circle to the stern first (a scout on a Lancer: 37 rounds → 24, 6 deck hits → 2 — a straight run's break-away
+already passes astern), and FLANK coming in astern (four ladders and an IFV-pair scenario ran byte-identical with and
+without it: flankers pick ENGAGE with combat motion instead).
+
+| Measure (builder0, round-3 weapons) | Before | After |
+|---|---|---|
+| Scout (matchup brain) vs a stopped tank: hits on the engine deck | 19 of 46 | **57 of 71** |
+| …tank hull + shield lost in 25 s | 84 | **173** |
+| Scout circling a tank (`ai_scout_orbit`) | 39°/s, 35 rounds, tank untouched | 12°/s astern, 98 rounds, hull 134, shield 0 |
+
+**A boxed-in unit used to freeze.** In `build/ai-shots/scout_runs_16s.png` the scout sat still against its target for
+6 s. `CombatMotion` had dropped every candidate (each end inside a grown obstacle, or the path to it crossing one) and
+the brain fell back to "face", so the unit fired from a standstill — exactly the round-2 complaint. It now takes the
+best-scoring direction that stays inside the arena and re-plans from the new spot: the same scout makes 3 full attack
+runs over 25 s instead of parking at 10 m.
+
+**Lone units and the center crate** (request f): two lone tanks with no objective, from mirror spawns, drove the
+straight base-to-base line and passed **9 m apart, never seeing each other** — the line between two mirror positions
+always runs through the center crate, so mirror-image side lanes don't help either (48 m, still unseen). A lone unit
+with no objective now takes a side lane to the midfield **on the same side of the map for both teams**, so they meet in
+it head-on: first sighting at 61 m after 7.3 s.
+
 ### A CPU that maneuvers (X5)
 
 `CpuCommander` policies v3–v6 (`game/ai/cpu_commander.gd`, `--green-commander=<policy>` / `--rust-commander=<policy>`)

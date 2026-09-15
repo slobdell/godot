@@ -142,7 +142,11 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   line between mirror positions always runs through the center crate; mirror-image lanes still passed at 48 m unseen).
   With both teams' lanes on the same side of the map they meet head-on: **first sighting at 61 m after 7.3 s**, 4 shots
   each.
-- Sim baseline changed on purpose five times; now `470f6950f0845991` (glibc-2.43).
+- **A boxed-in unit used to freeze** (found by looking at `build/ai-shots/scout_runs_16s.png`, where the scout sat
+  against its target for 6 s): every candidate direction was inside a grown obstacle, so `CombatMotion` returned nothing
+  and the brain fell back to "face" — firing from a standstill, round 2's complaint. It now nudges out along the best
+  direction inside the arena: the same scout makes 3 full attack runs over 25 s instead of parking at 10 m.
+- Sim baseline changed on purpose; recorded again after this round's behavior changes.
 
 **Decisions (with reasons):**
 - K1 through `OrderFeed`, duck-typed (`Match.orders` or the attached object): ai never names control's classes. A unit's
@@ -158,28 +162,36 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   combat's weapons in the preview (question 1).
 - Same-army mirror armies for commander ladders (`tests/ai_scenarios/armies/`): `cpu:` armies are seeded per side.
 
-**Questions for the lead:**
-1. **Alive vs. optimal under round-3 weapons** (pillar 7): in the preview, parked round-2 brains beat moving ones 69–51.
-   I kept the moving brain as the default (pillar 7; the gap is modest and should shrink with combat's turret
-   stabilization or a softer moving-fire spread). If the CPU feels weak in playtests, `--green-brain=a6 --rust-brain=a6`.
+**Questions for the lead:** none open. (Round 3's question — whether parked round-2 brains beat moving ones under
+combat's weapons, which the checkpoint preview suggested 69–51 — was answered by the official X6 run after the real
+merge: moving brains lead on three of four armies, a6 only on `combined_arms`. Pillar 7 and the ladder now agree, so no
+trade-off to rule on. If the CPU ever feels weak in a playtest, `--green-brain=a6 --rust-brain=a6` still swaps it.)
 
 **Requests to other streams:**
 - **control:** CP1 is in: `OrderExecutor` now does nothing for brain units (`TankBrain.EXECUTES_ORDERS`), so it can be
   deleted when convenient. Turn the CPU commander on by default in skirmish (`skirmish_mode.gd` creates it only with `--commander`;
   v6 meets X5's bar). Optional: player words for `TankBrain.ORDER_ONLY_OPTIONS` (MOVE, FOLLOW, PURSUE: "Moving",
   "Following", "Closing in"); cull off-screen icons in `tactical_map.gd` before drawing (the 16384 px guard is a backstop).
-- **combat:** (1) **turret stabilization** (a hull turning at 80°/s drags a 50°/s turret off its target; moving tanks lose
+- **combat:** (0) **a scout's machine gun cannot get through a Lancer's shield**, so the catalog's counter (scout
+  `good_vs` lancer) never pays: 3.5 damage × 0.6 shield multiplier × facing = 15 (front) to 29 (rear) shield dps, and
+  the shield holds 120 and recharges 45/s after 4 s. Breaking it needs ~8 s of unbroken hits; an attack run gives 1–2 s.
+  Measured: a scout on a stopped Lancer fired 37 rounds in 20 s for **0 net damage** (scenario `ai_cp2_scout_vs_lancer`),
+  and in your matrix #6 scout vs lancer is 0:12 in 21 s. Knobs: the MG's `shield_multiplier`, the recharge delay
+  against light hits, or accept scouts as spotters and change the catalog's `good_vs`. Same for scout vs tank if the
+  engine deck isn't enough (the deck itself works: 57 of 71 hits land there now).
+  (1) **turret stabilization** (a hull turning at 80°/s drags a 50°/s turret off its target; moving tanks lose
   the first shot to parked ones); (2) a **softer moving-fire spread** for turrets (2.5× at full speed); (3) for dodging to
   read, **tank shells taking ≥ 0.7 s over 30–50 m** (a 14 m/s² hull moves ~2 m off the lead in 0.5 s, under half a hull).
 
 **Known issues:**
 - Heavy tanks can't dodge tank shells (physics); they take them on the front armor.
 - The dodge bar (≥ 35% of tank shells for a light unit) is pending: IFVs reach 6–15%.
-- With combat's weapons single matches swing; 16-match ladders are noisy: on 12 more combined_arms matches (seeds 1–6,
-  both colors) x3 won 6, a6 5, one draw, and x3's tanks lived 37% longer on the same number of shots, so the preview's
-  combined_arms deficit (14–30) is weak evidence. Re-measure with more seeds after the merge.
+- With combat's weapons single matches swing; a 16-match pairing is ±2 wins of noise, so champions are decided on the
+  pooled four-army record, not one army (the official X6 run has a6 leading combined_arms while x4 leads three others).
+- Scouts still can't hurt a Lancer (its shield outlasts their machine gun; combat request 0) and artillery wins nothing
+  in combat's matrix: both are weapon numbers, not behavior.
 
-**What to playtest (after the merges):**
+**What to playtest:**
 - `make skirmish` (with control's desktop controls): order units mid-fight (they respond at once), push one away (it
   regroups), watch tanks weave and IFVs circle, scouts make runs. Add `--commander` for the maneuvering CPU,
   `--ai-explain` for the lines, `--rust-difficulty=easy` for a gentler CPU.
@@ -188,10 +200,12 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   commander: `VARIANTS=x3,x3+v6 LADDER_DOCTRINE=res://tests/ai_scenarios/armies/balanced.json`.
 
 **Next steps:**
-1. After CP2 merges (CP1 is in): `git merge main`, rerun `make remote T=check`, the scenarios, the brain ladder (a6, x3, x3m, x4)
-   and the commander ladder; re-tune x3 for combat's final weapons (especially combined_arms); re-test the dodge bar.
-2. If combat stabilizes turrets or softens moving spread, re-run the x3 vs a6 ladder first: that's the expected fix.
-3. Unit-vs-unit matchup matrix with the final champion (combat's `make matchups`).
+1. If combat changes the machine gun's shield multiplier or the shield recharge (request 0), re-run
+   `make remote T="ai-ladder VARIANTS=x3,x4mw LADDER_DOCTRINE=combined_arms"` and combat's `make matchups`: scouts are
+   the units whose behavior is currently wasted.
+2. If combat stabilizes turrets or softens moving spread, re-run x3 vs a6 as well: that was round 3's expected fix for
+   moving brains.
+3. Re-test the dodge bar (≥ 35% of tank shells for a light unit) once shells fly slower.
 
 **Merge notes (shared files):**
 - `game/ai/order_controller.gd` conflicts with stream/combat's one-line lead-speed edit in `_apply_weapon`: take ai's
