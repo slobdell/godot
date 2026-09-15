@@ -121,3 +121,27 @@ func test_the_arena_venue_raises_screens_over_the_short_walls() -> void:
 		if node.name.begins_with("AdScreen"):
 			assert_true(absf((node as Node3D).position.x) > 81.0 and absf((node as Node3D).position.x) < 95.0,
 					"screens move in with a smaller arena's walls")
+
+
+func test_the_live_card_follows_kills_in_a_match() -> void:
+	var channel: AdBroadcast = add_to_tree(AdBroadcast.new())
+	var fake := FakeMatch.new()
+	add_to_tree(fake)
+	channel.watch_match(fake)
+	var rust_scout := RustScout.new()
+	add_to_tree(rust_scout)
+	fake.tank_destroyed.emit(rust_scout, "Green_Alpha_0")
+	fake.tank_destroyed.emit(rust_scout, "Green_Alpha_1")
+	channel.show_ad(channel.index_of("arena_live"))
+	assert_eq(channel.headline_text(), "GREEN  2\nRUST  0", "the card counts confirmed kills per team")
+	assert_true(channel.fine_print_text().begins_with("Rust lost a scout"), "and says who just lost what (%s)" % channel.fine_print_text())
+	assert_true(channel.fine_print_text().contains("GREEN 3:1"), "and the odds that follow (%s)" % channel.fine_print_text())
+
+
+class FakeMatch extends Node:
+	signal tank_destroyed(victim: Node, killer: String)
+
+
+class RustScout extends Node:
+	var team := 1
+	var unit_id := "scout"

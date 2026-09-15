@@ -164,3 +164,10 @@ arena-kit-gallery: import ## Screenshot the container yard (and ad screens) at n
 	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
 	timeout 120 $(GODOT) --path . --resolution $(SCREEN) res://game/theme/gallery/arena_kit_gallery.tscn -- \
 		--shots-dir=$(CURDIR)/$(BUILD_DIR)/screenshots $(if $(VIEWS),--views=$(VIEWS))
+
+# ---- Round 3 (assets X5): artillery outriggers as parts, posed by the hull slot's set_deployed(ratio) ---------------
+.PHONY: artillery-deploy-shot
+artillery-deploy-shot: import ## Screenshot three crane carriers stowed / half deployed / braced → build/screenshots/artillery-deploy.png
+	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
+	timeout 90 $(GODOT) --path . --resolution 1600x900 res://game/theme/gallery/vehicle_gallery.tscn -- --gallery-deploy \
+		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/artillery-deploy.png --screenshot-delay=3

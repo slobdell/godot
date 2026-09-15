@@ -8,6 +8,8 @@ extends Node3D
 ##        --gallery-focus=N (close-up on tank N)
 ##        --gallery-units: the round-2 roster instead (tank, scout, IFV, artillery, Lancer; both teams), each unit's
 ##        own slots at its own turret pivot and scale, the way Tank places them (catalog v2, C6)
+##        --gallery-deploy: three crane carriers side by side, stowed, half deployed, and braced (assets X5,
+##        the hull slot's set_deployed); `make artillery-deploy-shot`
 
 const ORBIT_SPEED := 0.25
 ## Catalog v2 numbers the gallery needs to place per-unit art like Tank does (rules' Units.PROFILES; mirrored in
@@ -51,7 +53,14 @@ func _ready() -> void:
 				tank.rotation.y = 0.5 - i * 0.1
 				tanks.append(tank)
 				i += 1
-	var weapons := [] if _flags.has("gallery-units") else ["weapon.cannon", "weapon.laser", "weapon.flamethrower", "weapon.laser", "weapon.cannon", "weapon.flamethrower"]
+	if _flags.has("gallery-deploy"):
+		for i in 3:
+			var carrier := _unit_tank("artillery", 0)
+			carrier.position = Vector3(-5.2 + i * 5.2, 0, 0)
+			carrier.rotation.y = 0.0
+			(carrier.get_node("Hull") as VisualSlot).invoke("set_deployed", [i * 0.5])
+			tanks.append(carrier)
+	var weapons := [] if _flags.has("gallery-units") or _flags.has("gallery-deploy") else ["weapon.cannon", "weapon.laser", "weapon.flamethrower", "weapon.laser", "weapon.cannon", "weapon.flamethrower"]
 	for i in weapons.size():
 		var team := i % 2
 		var tank := _tank(team, weapons[i])
@@ -72,7 +81,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	time += delta
-	if _flags.has("gallery-focus"):
+	if _flags.has("gallery-deploy"):
+		camera.position = Vector3(0.0, 9.0, 7.5)
+		camera.look_at(Vector3(0, 1.0, 0), Vector3.UP)
+	elif _flags.has("gallery-focus"):
 		var focus := tanks[clampi(_flags.integer("gallery-focus", 0), 0, tanks.size() - 1)].global_position
 		camera.position = focus + Vector3(4.5, 4.0, 7.5)
 		camera.look_at(focus + Vector3(0, 1.0, 0), Vector3.UP)
@@ -91,7 +103,8 @@ func _process(delta: float) -> void:
 		(tank.get_node("Hull") as VisualSlot).invoke("set_heat", [heat])
 		if weapon.slot == "weapon.flamethrower":
 			weapon.invoke("set_firing", [fmod(time + i, 3.0) < 2.0])
-		(tank.get_node("Hull") as VisualSlot).invoke("set_shield", [_shield_ratio(fmod(time + i * 0.9, 6.0))])
+		if not _flags.has("gallery-deploy"):
+			(tank.get_node("Hull") as VisualSlot).invoke("set_shield", [_shield_ratio(fmod(time + i * 0.9, 6.0))])
 	# Laser tanks pulse like gameplay does: a fresh fx.laser_beam slot per pulse, freed after 0.2 s.
 	if time >= _next_pulse:
 		_next_pulse = time + 0.3

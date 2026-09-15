@@ -7,7 +7,8 @@ extends Node
 ## the screens throw on the ground. Visual only: nothing here reads or changes the simulation.
 ##
 ## The playlist is ads.json (tools/assets/build_ads.py; placeholders until the lead picks real art and copy). The "live"
-## card shows whatever the match posts with `post_live({headline, fine_print})`.
+## card shows whatever the match posts with `post_live({headline, fine_print})`; on its own the channel finds the
+## running Match once and posts confirmed kills and the odds (it only listens to `tank_destroyed`).
 
 const PLAYLIST := "res://game/theme/arena_kit/ads/ads.json"
 const SCREEN_SHADER := preload("res://game/theme/arena_kit/ads/ad_screen.gdshader")
@@ -42,6 +43,10 @@ var _bar := ColorRect.new()
 var _fine := Label.new()
 var _ticker := Label.new()
 var _frame_skip := 0
+var _kills := [0, 0]
+var _match_search := 0.0
+var _match_tries := 0
+var _watched: Node
 
 
 ## The channel named `name` in `node`'s viewport, created on first use.
@@ -87,6 +92,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	advance(delta)
+	_find_match(delta)
 	# Phones redraw the feed at half the frame rate; the shader's flicker hides it.
 	if FxQuality.tier() == FxQuality.Tier.LOW:
 		_frame_skip = (_frame_skip + 1) % 2
@@ -181,6 +187,47 @@ func fine_print_text() -> String:
 
 func light_color() -> Color:
 	return _light
+
+
+## Live card content from a match: confirmed kills per team and the odds they imply.
+func watch_match(game_match: Node) -> void:
+	if _watched != null or not game_match.has_signal("tank_destroyed"):
+		return
+	_watched = game_match
+	game_match.connect("tank_destroyed", _on_tank_destroyed)
+	post_live({"headline": "GREEN  0\nRUST  0", "fine_print": "Odds even. Wagers close at the first kill."})
+
+
+func _on_tank_destroyed(victim: Node, _killer: String) -> void:
+	var team := int(victim.get("team"))
+	var winner := 1 - clampi(team, 0, 1)
+	_kills[winner] += 1
+	var names := ["GREEN", "RUST"]
+	var leader := 0 if _kills[0] >= _kills[1] else 1
+	var odds := "Odds even." if _kills[0] == _kills[1] else "%s %d:1." % [names[leader], maxi(2, roundi(float(_kills[leader] + 1) / float(_kills[1 - leader] + 1)))]
+	var profile: Dictionary = Units.PROFILES.get(String(victim.get("unit_id")), {})
+	var unit := String(profile.get("display_name", "vehicle"))
+	unit = unit if unit == unit.to_upper() else unit.to_lower()  # "an IFV", "a scout"
+	var article := "an" if "AEIOUaeiou".contains(unit.left(1)) else "a"
+	post_live({"headline": "GREEN  %d\nRUST  %d" % _kills, "fine_print": "%s lost %s %s. %s" % [names[team % 2].capitalize(), article, unit, odds]})
+
+
+## Looks for the running Match a few times after the channel appears (skirmish builds it after the dressing).
+func _find_match(delta: float) -> void:
+	if _watched != null or _match_tries >= 10:
+		return
+	_match_search -= delta
+	if _match_search > 0.0:
+		return
+	_match_search = 2.0
+	_match_tries += 1
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	for node in scene.find_children("*", "Node", true, false):
+		if node is Match:
+			watch_match(node)
+			return
 
 
 func _on_spectacle(_position: Vector3, weight: float) -> void:
