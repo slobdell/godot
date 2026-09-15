@@ -58,13 +58,19 @@ static func role_of(tank: Tank) -> String:
 	return role
 
 
+## Icons centered farther than this many pixels from the canvas origin are off every screen and are skipped.
+const MAX_SCREEN_COORD := 16384.0
+
+
 ## A unit pictogram (top-down silhouette) centered at `at`, `size` px tall, pointing along `heading`
 ## (radians, 0 = up the screen, positive = clockwise).
 static func draw_unit(canvas: CanvasItem, role: String, at: Vector2, size: float, color: Color, heading := 0.0,
 		outline := Color(0, 0, 0, 0.75)) -> void:
 	# A camera that isn't set up yet (headless runs, the first frame after a mode switch) unprojects to NaN, and a
-	# degenerate polygon makes the renderer log a triangulation error: draw nothing instead.
-	if not (at.is_finite() and is_finite(heading) and size >= 1.0):
+	# degenerate polygon makes the renderer log a triangulation error: draw nothing instead. A unit near the camera
+	# plane projects finite but huge (measured (87913, 110814) in army-loop-smoke under load), which the renderer
+	# can't triangulate either: skip anything far off any screen.
+	if not (at.is_finite() and is_finite(heading) and size >= 1.0) or absf(at.x) > MAX_SCREEN_COORD or absf(at.y) > MAX_SCREEN_COORD:
 		return
 	var s := size / 2.0
 	var xf := Transform2D(heading, at)

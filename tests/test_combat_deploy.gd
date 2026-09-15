@@ -34,7 +34,7 @@ func test_a_battery_fires_only_once_its_legs_are_down() -> void:
 	var deploy_ticks := roundi(float(Units.stat("artillery", "deploy_seconds")) * 60.0)
 	var aim := gun.global_position + Vector3(0.0, 0.0, -90.0)
 	var ratios: Array = []
-	for tick in deploy_ticks + Tank.DEPLOY_SETTLE_TICKS - 5:  # the 2 setup ticks already count as standing still
+	for tick in deploy_ticks - 3:  # a fire command digs in at once
 		gun.command = TankCommand.new(0.0, 0.0, aim, true)
 		await tree.physics_frame
 		ratios.append(gun.deploy_ratio)
@@ -62,16 +62,46 @@ func test_a_deployed_battery_packs_up_before_it_drives() -> void:
 	assert_true(gun.is_deployed(), "setup: dug in")
 	var start := gun.global_position
 	var pack_ticks := roundi(float(Units.stat("artillery", "pack_seconds")) * 60.0)
-	for tick in pack_ticks - 2:
-		gun.command = TankCommand.new(1.0, 0.0, gun.global_position + Vector3(0.0, 0.0, -90.0), true)
+	for tick in Tank.PACK_SETTLE_TICKS + pack_ticks - 2:
+		gun.command = TankCommand.new(1.0, 0.0, gun.global_position + Vector3(0.0, 0.0, -90.0), false)
 		await tree.physics_frame
 	assert_true(gun.global_position.distance_to(start) < 0.05, "it doesn't move while packing (%.2f m)" % gun.global_position.distance_to(start))
-	assert_eq(shots[0], 0, "and can't fire while its legs come up")
+	assert_eq(shots[0], 0, "setup: no fire ordered")
 	for tick in 60:
 		gun.command = TankCommand.new(1.0, 0.0, gun.global_position + Vector3(0.0, 0.0, -90.0), false)
 		await tree.physics_frame
 	assert_near(gun.deploy_ratio, 0.0, 0.0001, "packed")
 	assert_true(gun.global_position.distance_to(start) > 1.0, "then it drives off")
+
+
+func test_a_nudge_between_rounds_keeps_the_legs_down() -> void:
+	var setup := _battery()
+	var gun: Tank = setup[1]
+	await wait_physics_frames(2)
+	for tick in 60 * 4:
+		gun.command = TankCommand.new(0.0, 0.0, gun.global_position + Vector3(0.0, 0.0, -90.0), false)
+		await tree.physics_frame
+	for tick in Tank.PACK_SETTLE_TICKS - 5:
+		gun.command = TankCommand.new(-1.0, 0.3, Vector3.ZERO, false)
+		await tree.physics_frame
+	assert_true(gun.is_deployed(), "a drive command shorter than PACK_SETTLE_TICKS doesn't lift the legs")
+
+
+func test_an_order_to_fire_stops_a_moving_battery_and_digs_it_in() -> void:
+	var setup := _battery()
+	var gun: Tank = setup[1]
+	var shots: Array = setup[2]
+	await wait_physics_frames(2)
+	for tick in 60:
+		gun.command = TankCommand.new(1.0, 0.0, Vector3.ZERO, false)
+		await tree.physics_frame
+	assert_true(gun.speed() > 3.0, "setup: rolling (%.1f m/s)" % gun.speed())
+	var aim := gun.global_position + Vector3(0.0, 0.0, -90.0)
+	for tick in 60 * 5:
+		gun.command = TankCommand.new(1.0, 0.0, aim, true)  # a brain still asking to drive while it asks to fire
+		await tree.physics_frame
+	assert_true(gun.is_deployed(), "it braked and deployed")
+	assert_eq(shots[0], 1, "and fired")
 
 
 func test_a_brief_pause_does_not_start_deploying() -> void:

@@ -30,11 +30,16 @@ var locomotion := "tracks"
 var deploy_ratio := 0.0
 var deploy_seconds := 0.0
 var pack_seconds := 0.0
-## A stop order must hold this many ticks before the legs start down (stop-and-go driving never deploys).
+## A stop order must hold this many ticks before the legs start down (stop-and-go driving never deploys). A fire
+## command deploys at once: a battery told to shoot stops and digs in.
 const DEPLOY_SETTLE_TICKS := 15
+## A drive command must hold this many ticks before a deployed battery packs up (a brain nudging its position between
+## rounds doesn't lift the legs every reload).
+const PACK_SETTLE_TICKS := 30
 ## Below this speed (m/s) a hull counts as stopped for deploying.
 const DEPLOY_MAX_SPEED := 0.3
 var _still_ticks := 0
+var _moving_ticks := 0
 var min_turn_radius := 0.0
 var lateral_grip := 1.0
 @export var hull_turn_rate := deg_to_rad(80.0)
@@ -290,21 +295,24 @@ func _deploy_step(cmd: TankCommand) -> TankCommand:
 	if deploy_seconds <= 0.0:
 		return cmd
 	var wants_to_move := absf(cmd.throttle) > 0.05 or absf(cmd.turn) > 0.05
-	if wants_to_move:
+	if wants_to_move and not cmd.fire:
 		_still_ticks = 0
-		if deploy_ratio > 0.0:
-			deploy_ratio = maxf(0.0, deploy_ratio - 1.0 / maxf(pack_seconds * 60.0, 1.0))
+		_moving_ticks += 1
 	else:
+		_moving_ticks = 0
+		_still_ticks += 1
+	if cmd.fire or (not wants_to_move and _still_ticks >= DEPLOY_SETTLE_TICKS):
 		if absf(_speed) < DEPLOY_MAX_SPEED:
-			_still_ticks += 1
-		if _still_ticks >= DEPLOY_SETTLE_TICKS:
 			deploy_ratio = minf(1.0, deploy_ratio + 1.0 / maxf(deploy_seconds * 60.0, 1.0))
+	elif wants_to_move and (_moving_ticks >= PACK_SETTLE_TICKS or deploy_ratio < 1.0):
+		deploy_ratio = maxf(0.0, deploy_ratio - 1.0 / maxf(pack_seconds * 60.0, 1.0))
 	# Snap float dust so "fully deployed" and "packed" are exact.
 	if deploy_ratio > 0.9999:
 		deploy_ratio = 1.0
 	elif deploy_ratio < 0.0001:
 		deploy_ratio = 0.0
-	if deploy_ratio > 0.0:
+	# Firing overrides driving (brake, then dig in); legs that aren't fully up hold the hull still.
+	if cmd.fire or deploy_ratio > 0.0:
 		return TankCommand.new(0.0, 0.0, cmd.aim_point, cmd.fire)
 	return cmd
 
@@ -451,7 +459,8 @@ func reload_fraction() -> float:
 ## Loaded, not out of ammo, and cool enough for one more shot. Valid on every peer.
 func ready_to_fire() -> bool:
 	var current_heat := heat if simulate else sync_heat * heat_capacity
-	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat) and is_deployed()
+	# Not is_deployed(): a brain asks a packed battery to fire, and the fire command is what digs it in.
+	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat)
 
 
 ## Shells left (-1 = unlimited): exact on the simulating peer, replicated elsewhere.

@@ -1,5 +1,8 @@
 # Balance: measurements, tuning values, and the army design
 
+> **Round 3 (2026-09-15, combat stream):** weapons, weak spots, driving, deploy, and the matchup search are in
+> *Round 3: weapons rebuilt and matrix #5* below; the round-2 sections stay as history.
+
 > **Round 2 note (2026-09-15):** the chassis + loadout recommendation below was superseded by the lead's fixed unit types ([game_design.md](game_design.md)). Measurements stay as history; the rules stream adds the unit-vs-unit matchup matrix, and the army stream adds the economy section.
 
 > Started 2026-09-15 by the gameplay stream's overnight run. Everything here was measured with
@@ -10,7 +13,7 @@
 
 ## Where the tuning values live
 
-| What | File | Key values (round 2, rules stream) |
+| What | File | Key values (round 2, rules stream; **round 3 changes: see *Round 3* below**) |
 |---|---|---|
 | Unit types (cost, tier, hull, shield, speed, turn rates, sight, weapon, mount, fire arc, muzzle height, armor thickness) | `game/units/units.gd` `PROFILES` | scout 110 pts, 140+80, 14 m/s, fixed MG ±8°, armor 2/1/1; tank 200, 300+150, 9 m/s, turret 50°/s, armor 8/4/2; IFV 150, 220+100, 11 m/s, turret 180°/s, armor 5/3/2; artillery 220, 200+80, 6.5 m/s, armor 3/2/1.5; Lancer 200, 200+120, 8.5 m/s, turret 80°/s, heat 100 (−12/s), armor 4/3/2 |
 | Weapons (damage, range, reload, spread, ammo, heat, penetration, splash, shield multiplier) | `game/combat/weapons.gd` `PROFILES` | cannon 34, 70 m, 2.5 s, pen 10; autocannon 9, 60 m, 0.35 s, pen 4; laser 9/0.5 s, 80 m, 12 heat, pen 12, shield ×1.25; machine gun 4/0.2 s, 45 m, pen 3; mortar 70 in 8 m, 35–160 m, 4.5 s, pen 10; flamethrower 20/s, 20 m, pen 12 |
@@ -86,31 +89,40 @@ lands. Artillery alone has only its own 60 m sight, so it can barely fire (35 m 
 | I | mortar 90, splash 9, minimum range 42 m | **scouts > artillery 92%; spotted artillery beats IFVs 58%**, loses to tanks 33% and Lancers 17% ✅ applied |
 
 <!-- MATCHUP MATRIX BEGIN -->
-_Matrix #2, measured 2026-09-14 with `tools/matchup_matrix.py` on the R7-tuned catalog (committed right after 2b6d33c)._
+_Matrix #5, measured 2026-09-15 on builder0 with `tools/matchup_matrix.py` (round 3: combat X2-X6 catalog, brain a6)._
 
-Cost-equal armies at ~600 points per side (scout 5x = 550, tank 3x = 600, ifv 4x = 600, artillery 3x = 660, lancer 3x = 600); 3 seeds x both bases x both colors = 12 matches per pair, 180 s limit. Cell = the ROW unit's win share against the COLUMN unit (draws count half; a timeout goes to the side with more army value left).
+Cost-equal armies at ~600 points per side (scout 5x = 550, tank 3x = 600, ifv 4x = 600, artillery 3x = 660, lancer 3x = 600, burner 3x = 660); 3 seeds x both bases x both colors = 12 matches per pair, 180 s limit. Cell = the ROW unit's win share against the COLUMN unit (draws count half; a timeout goes to the side with more army value left).
 
-| row beats column | scout | tank | ifv | artillery | lancer |
-|---|---|---|---|---|---|
-| scout | — | 0% | 0% | **92%** | 0% |
-| tank | **100%** | — | **100%** | **83%** | 33% |
-| ifv | **100%** | 0% | — | **100%** | **75%** |
-| artillery | 8% | 17% | 0% | — | 0% |
-| lancer | **100%** | **67%** | 25% | **100%** | — |
+| row beats column | scout | tank | ifv | artillery | lancer | burner |
+|---|---|---|---|---|---|---|
+| scout | — | 0% | 0% | **79%** | 0% | 0% |
+| tank | **100%** | — | **100%** | **100%** | 50% | **100%** |
+| ifv | **100%** | 0% | — | **100%** | **75%** | 33% |
+| artillery | 21% | 0% | 0% | — | 0% | 0% |
+| lancer | **100%** | 50% | 25% | **100%** | — | **100%** |
+| burner | **100%** | 0% | **67%** | **100%** | 0% | — |
 
 | pair | row wins : column wins : draws | avg length | friendly damage / match |
 |---|---|---|---|
-| scout vs tank | 0 : 12 : 0 | 131 s | 400 |
-| scout vs ifv | 0 : 12 : 0 | 50 s | 473 |
-| scout vs artillery | 10 : 0 : 2 | 101 s | 133 |
-| scout vs lancer | 0 : 12 : 0 | 63 s | 80 |
-| tank vs ifv | 12 : 0 : 0 | 95 s | 600 |
-| tank vs artillery | 10 : 2 : 0 | 97 s | 248 |
-| tank vs lancer | 4 : 8 : 0 | 103 s | 362 |
-| ifv vs artillery | 12 : 0 : 0 | 72 s | 182 |
-| ifv vs lancer | 9 : 3 : 0 | 64 s | 163 |
-| artillery vs lancer | 0 : 12 : 0 | 36 s | 258 |
+| scout vs tank | 0 : 12 : 0 | 168 s | 0 |
+| scout vs ifv | 0 : 12 : 0 | 52 s | 3 |
+| scout vs artillery | 9 : 2 : 1 | 77 s | 0 |
+| scout vs lancer | 0 : 12 : 0 | 42 s | 0 |
+| scout vs burner | 0 : 12 : 0 | 169 s | 0 |
+| tank vs ifv | 12 : 0 : 0 | 34 s | 0 |
+| tank vs artillery | 12 : 0 : 0 | 22 s | 0 |
+| tank vs lancer | 6 : 6 : 0 | 60 s | 0 |
+| tank vs burner | 12 : 0 : 0 | 22 s | 0 |
+| ifv vs artillery | 12 : 0 : 0 | 22 s | 4 |
+| ifv vs lancer | 9 : 3 : 0 | 42 s | 11 |
+| ifv vs burner | 4 : 8 : 0 | 30 s | 2 |
+| artillery vs lancer | 0 : 12 : 0 | 29 s | 0 |
+| artillery vs burner | 0 : 12 : 0 | 33 s | 0 |
+| lancer vs burner | 12 : 0 : 0 | 46 s | 0 |
 <!-- MATCHUP MATRIX END -->
+
+_Round 2's matrix #2 (before round 3's weapons) is preserved in git history (`git show 391f22b:_agents/balance.md`)._
+
 
 Spotted artillery (both sides escorted by one scout, outside the budget and the verdict), same tuned catalog:
 artillery vs tank 33%, vs IFV **58%**, vs Lancer 17%. Artillery is a support unit: alone it is blind (60 m sight,
@@ -121,6 +133,49 @@ scout > artillery) and every unit wins a matchup (artillery only with a spotter)
 artillery (the design wants scout > Lancer and trouble for tanks). That's the scout brain's spotting standoff
 (SCOUT_STANDOFF 85 m, SCOUT_FIGHT): re-run `make matchups` when the ai stream's matchup targeting and fixed-mount
 strafing land, before touching scout stats. Samples are 12 per pair (±14 points).
+
+
+## Round 3: weapons rebuilt and matrix #5 (combat X2-X6, 2026-09-15)
+
+**What changed** (numbers in `game/combat/weapons.gd` and `game/units/units.gd`, each with its reason in a comment):
+
+| Area | Round 2 | Round 3 |
+|---|---|---|
+| Tank cannon | 34 dmg / 2.5 s, 70 m/s | 320 dmg / 5 s, 75 m/s: 2 shells kill a tank from the side or rear, 4 from the front |
+| IFV 25 mm | 9 dmg / 0.35 s, pen 4 | 4-round bursts of 15 dmg every 1.8 s at 180 m/s, pen 5 |
+| Scout MG | 4 dmg / 0.2 s | a 10 rounds/s hitscan stream of 3.5 dmg, spread 2° |
+| Laser | 12 dmg, 16 heat, 85 m | 22 dmg, 18 heat, 90 m (preferred 76-86); Lancer sight 90 |
+| Flamethrower | 20 dps | 55 dps |
+| Mortar | 90 | 140 (swept to 320: see below) |
+| Armor | IFV 5/3/2, Lancer 4/3/2, Burner 4/3/2 | IFV front 7, Lancer 3/2/1.5, Burner front 6 (a plow) |
+| Tank sight | 75 m | 62 m (a welded-slit dozer: it needs spotters for its 70 m gun) |
+| Weak spots | none | engine deck: ≤ 25° off dead astern, armored like half the rear |
+| Driving | every hull pivots | the tank on tracks (accel 10); wheels elsewhere with turning circles (scout 5 m .. artillery 9 m) and drift |
+| Artillery | fires on the move | deploys 2.5 s (a fire command digs it in), packs 2 s |
+
+**Pace:** fights that took 50-130 s in matrix #2 now take 22-60 s (scouts, who spot instead of fighting, still stall to
+the time limit against tanks and Burners). A 1-v-1 tank duel ends in three volleys (~17 s); see the combat brief's
+Status for tick-by-tick timelines (`make duel`).
+
+**How it was tuned:** `make matchup-search VARIANTS=tools/matchup_variants/<round>.json` plays tune variants on
+builder0 and scores each against the designed counters (every unit's `good_vs`, plus inverted `weak_vs`: 12 pairs).
+Rounds 1-6 (`tools/matchup_variants/x6_round*.json`) and two artillery sweeps, 8-16 matches per pair:
+
+| Finding | Evidence |
+|---|---|
+| **The IFV / Lancer / tank triangle is zero-sum on laser strength.** A laser strong or long enough to beat tanks kites and burns down IFV rushes; one weak enough for IFVs loses to tanks. | laser 26 dmg, pen 20, 100 m: Lancer > tank 75%, IFV > Lancer 0%. laser 22, 85 m: IFV > Lancer 56%, Lancer > tank 0% |
+| Levers that move one edge only: **IFV front armor** (IFV > Lancer 50% -> 75% with Lancer > tank unchanged) and **tank sight** (Lancers see it first). | round 5 V vs O; round 3 M-O |
+| Counter-intuitive: more tank shield (lasers strip shields ×1.25) *lowered* Lancer > tank (50% -> 6%), and a slower tank lowered it too (19%). The brains' matchup appetite reacts to the numbers; results swing ±15% between neighbours. | rounds 5-6 |
+| **Artillery's mortar has a cliff at the scout's 220 effective HP:** at 200+ a burst kills bunched scouts, flipping scout > artillery from 79% to 0-33%, and scouts then win nothing. Spotted batteries (a scout escort each side) win at most 17% against tanks even at 320. | `x6_mortar_vs_scouts.json`, `x6_artillery.json` |
+| Deploying broke artillery with today's brains until a fire command itself digs the battery in: ai's BOMBARD keeps adjusting range while backing off and never stood still. | `make duel GREEN_UNITS=artillery,artillery,artillery,scout …` |
+
+**Where matrix #5 stands:** 8 of 12 designed counters hold at ≥ 65%: tank > IFV 100%, IFV > scout 100%, IFV > Lancer
+75%, scout > artillery 79%, Burner > IFV 67%, Burner > artillery 100%, tank > Burner 100%, Lancer > Burner 100%.
+Not yet: **Lancer > tank 50%** (a coin flip), **scout > tank and scout > Lancer 0%** (scouts hold their spotting
+standoff: the lead's "spotters first"; they beat nothing but artillery), **artillery > tank 0%** (blind alone, weak
+spotted). Every unit but artillery wins a matchup. The tank is still the strongest unit per point (it loses only
+the Lancer coin flip); the next lever is behavior, not stats: ai's dodging (`incoming_projectiles`), flanking for
+weak spots, and circle-strafing should punish a 5 s reload far more than any number here.
 
 ## Round 2 rules defaults (rules R8, 2026-09-14): recommendations for the lead
 

@@ -93,8 +93,11 @@ const PROFILES := {
 		"max_forward_speed": 9.0,
 		"max_reverse_speed": 4.0,
 		"hull_turn_rate_deg": 80.0,
-		"sight_radius": 75.0,
-		# K3 locomotion (round 3 X4). The dozer on tracks pivots in place; heavy: 0.9 s to top speed (the scout takes the same to reach 14 m/s).
+		# X6 (round 3): 75 -> 62, a welded-slit dozer: it needs spotters to use its 70 m gun, and Lancers at 76-86 m see
+		# it first (Lancer > tank).
+		"sight_radius": 62.0,
+		# K3 locomotion (round 3 X4). The dozer on tracks pivots in place; heavy: 0.9 s to top speed (the scout takes
+		# the same to reach 14 m/s).
 		"locomotion": "tracks",
 		"min_turn_radius_m": 0.0,
 		"acceleration_mps2": 10.0,
@@ -135,7 +138,9 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 180.0,
 		"muzzle_height": 1.27,
-		"armor": {"front": 5.0, "side": 3.0, "rear": 2.0},
+		# X6 (round 3): front 5 -> 7, so a laser needs longer to cut through an IFV rush (IFV > Lancer 0% -> 75%);
+		# flanks unchanged.
+		"armor": {"front": 7.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["scout"],
 		"weak_vs": ["tank"],
 	},
@@ -189,7 +194,8 @@ const PROFILES := {
 		"max_reverse_speed": 4.0,
 		"hull_turn_rate_deg": 80.0,
 		# R7: sight 80 -> 85 (it must see what its 85 m beam reaches); turret 80 -> 55°/s, so fast IFVs get inside it.
-		"sight_radius": 85.0,
+		# X6: sees what its 90 m beam reaches.
+		"sight_radius": 90.0,
 		# K3 locomotion (round 3 X4). Utility truck on wheels.
 		"locomotion": "wheels",
 		"min_turn_radius_m": 7.5,
@@ -200,7 +206,8 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 55.0,
 		"muzzle_height": 1.27,
-		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
+		# X6 (round 3): 4/3/2 -> 3/2/1.5, a utility truck: IFV bursts must hurt it (IFV > Lancer).
+		"armor": {"front": 3.0, "side": 2.0, "rear": 1.5},
 		"heat_capacity": 100.0,
 		"heat_dissipation": 12.0,
 		"good_vs": ["tank"],
@@ -213,7 +220,8 @@ const PROFILES := {
 		"display_name": "Burner",
 		"role": "burner",
 		"blurb": "Plow-nosed fire truck with a flamethrower. Melts light hulls and artillery it reaches; tanks and Lancers stop it first.",
-		# Stretch tuning (2026-09-14, `make matchups ... --focus burner`): at 160 pts, 12 m/s, front armor 7, hull 260 it won
+		# Stretch tuning (2026-09-14, `make matchups ... --focus burner`): at 160 pts, 12 m/s, front armor 7, hull 260
+		# it won
 		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
 		"cost": 220,
 		"unlock_tier": 2,
@@ -236,7 +244,8 @@ const PROFILES := {
 		"mount": "turret",
 		"turret_turn_rate_deg": 120.0,
 		"muzzle_height": 1.27,
-		"armor": {"front": 4.0, "side": 3.0, "rear": 2.0},
+		# X6 (round 3): plow front 4 -> 6, so it survives the 25 mm while closing on IFVs (Burner > IFV).
+		"armor": {"front": 6.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["ifv", "artillery"],
 		"weak_vs": ["tank", "lancer"],
 	},

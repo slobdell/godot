@@ -284,3 +284,31 @@ func test_a_unit_sees_a_mortar_round_that_will_land_on_it() -> void:
 func test_the_match_has_a_slot_for_orders() -> void:
 	var game_match := _setup()
 	assert_true("orders" in game_match, "Match.orders exists for control's Orders (K1)")
+
+
+# ---- unit_destroyed (round 3 stretch: wrecks) --------------------------------------------------
+
+func test_a_destroyed_unit_reports_where_its_wreck_lies() -> void:
+	var game_match := _setup()
+	var wrecks: Array = []
+	game_match.unit_destroyed.connect(func(event: Dictionary) -> void: wrecks.append(event))
+	var shooter := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN, "tank")
+	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST, "scout")
+	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
+	target.global_position = Vector3(LANE_X, 0.0, -10.0)
+	target.rotation.y = PI / 2.0  # facing west
+	await wait_physics_frames(2)
+	await _hold_fire(shooter, target.global_position, [target], 60)
+	assert_eq(wrecks.size(), 1, "one wreck")
+	if wrecks.size() != 1:
+		return
+	var wreck: Dictionary = wrecks[0]
+	for key in ["tick", "unit", "unit_id", "team", "killer", "cause", "position", "forward", "hull_size"]:
+		assert_true(wreck.has(key), "unit_destroyed has %s" % key)
+	assert_eq(wreck["unit"], "Target", "names the unit")
+	assert_eq(wreck["unit_id"], "scout", "and its type")
+	assert_eq(wreck["killer"], "Gunner", "and who did it")
+	assert_eq(wreck["cause"], "enemy", "an enemy kill")
+	assert_near(float(wreck["position"][2]), -10.0, 0.5, "where it died")
+	assert_true(float(wreck["forward"][0]) < -0.9, "facing the way it faced (west)")
+	assert_eq(wreck["hull_size"], Units.stat("scout", "hull_size"), "the hull the wreck art must fit")

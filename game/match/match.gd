@@ -23,6 +23,10 @@ signal weapon_fired(event: Dictionary)
 ## that hits a wall has no target and 0 damage; a round that flies out of range reports nothing. Arc bursts add
 ## victims: [{target, face, damage, killed}] and name the most-hurt victim as target.
 signal projectile_impact(event: Dictionary)
+## Round 3 stretch, simulating peer: a unit was destroyed, with where its wreck lies (effects, wreck art, the announcer).
+## {tick, unit (name), unit_id, team, killer (a unit name, "hazard:<type>", or ""), cause ("enemy" | "friendly_fire" |
+## "hazard"), position [x,y,z], forward [x,y,z] (flat unit vector), hull_size [w,h,l]}. Emitted right after tank_destroyed.
+signal unit_destroyed(event: Dictionary)
 
 enum Team { GREEN, RUST }
 
@@ -474,7 +478,7 @@ func _apply_hazards() -> void:
 			if hit["killed"]:
 				stats["hazard_kills"][tank.team] += 1
 				print("%s burned in a %s" % [tank.name, hazard["type"]])
-				tank_destroyed.emit(tank, "hazard:" + String(hazard["type"]))
+				_announce_destroyed(tank, "hazard:" + String(hazard["type"]))
 
 
 ## Tanks of each team alive inside the control zone.
@@ -1026,7 +1030,7 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 		if result["killed"]:
 			stats["friendly_kills"][team] += 1
 			print("%s destroyed teammate %s (friendly fire)" % [shooter, victim.name])
-			tank_destroyed.emit(victim, shooter)
+			_announce_destroyed(victim, shooter)
 		friendly_fire.emit(victim, shooter, int(result["hull"]), bool(result["killed"]))
 		return result
 	if counts_as_hit:
@@ -1063,7 +1067,7 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 	else:
 		score_rust += 1
 	print("%s destroyed %s (score Green %d : %d Rust)" % [killer, victim.name, score_green, score_rust])
-	tank_destroyed.emit(victim, killer)
+	_announce_destroyed(victim, killer)
 
 
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
@@ -1079,6 +1083,20 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 		_emit_impact(shell.projectile_id, point, shell.hit_normal, null, {})
 	show_impact.rpc(point, killed)
 	shell.queue_free()
+
+
+## Every destruction goes through here: the round-2 signal, then the round-3 event with the wreck's transform.
+func _announce_destroyed(victim: Tank, killer: String) -> void:
+	tank_destroyed.emit(victim, killer)
+	var shooter: Tank = null
+	if killer != "" and not killer.begins_with("hazard:"):
+		shooter = tanks.get_node_or_null(NodePath(killer)) as Tank
+	var cause := "hazard" if killer.begins_with("hazard:") else ("friendly_fire" if shooter != null and shooter.team == victim.team else "enemy")
+	var forward := -victim.global_basis.z
+	unit_destroyed.emit({"tick": tick, "unit": String(victim.name), "unit_id": victim.unit_id, "team": victim.team,
+			"killer": killer, "cause": cause, "position": _triple(victim.global_position),
+			"forward": _triple(Vector3(forward.x, 0.0, forward.z).normalized()),
+			"hull_size": (Units.stat(victim.unit_id, "hull_size") as Array).duplicate()})
 
 
 func _on_tank_died(tank: Tank) -> void:

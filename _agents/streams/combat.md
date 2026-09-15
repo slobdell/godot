@@ -192,3 +192,28 @@ Tests adjusted to derive from data (merge notes): `test_combat.gd`, `test_shield
   (slot_contracts.md). Tests: `tests/test_combat_deploy.gd`; the K2 mortar tests now wait for the legs.
 - Also fixed: `tools/remote.sh` picked the oldest Xwayland cookie on builder0 (a stale July session), so every native
   rendering target (`skirmish-shots`, galleries) hung for 20+ minutes. It now takes the newest (`ls -t`).
+
+### X6 done (time-boxed): time-to-kill and matrix #5 (2026-09-15)
+
+Full story and tables: balance.md *Round 3: weapons rebuilt and matrix #5*. Short version:
+- **Fights resolve in 22-60 s** (matrix #2: 50-130 s); scouts, who spot instead of fighting, still stall.
+- **8 of 12 designed counters hold at ≥ 65%** (tank > IFV, IFV > scout, IFV > Lancer 75%, scout > artillery 79%, Burner >
+  IFV 67%, Burner > artillery, tank > Burner, Lancer > Burner). **Lancer > tank is 50%**; scout > tank and scout > Lancer
+  are 0% (scouts hold a spotting standoff); artillery > tank 0%. Artillery wins nothing alone.
+- **Tuned:** laser 22 dmg / 18 heat / 90 m (Lancer sight 90), 25 mm penetration 5, IFV front armor 7, Lancer armor
+  3/2/1.5, Burner front 6, tank sight 62, mortar back to 140 (a cliff at 200+ wipes bunched scouts).
+- **New tools:** `make matchup-search VARIANTS=tools/matchup_variants/<file>.json [UNITS= SEEDS= ESCORT=]` scores tune
+  variants against every unit's good_vs/weak_vs; `make matchups FOCUS= ESCORT=`. Variant files for every round are kept.
+- **Deploy revised for today's brains:** a fire command digs a battery in at once (it brakes first), and a drive command
+  must persist `PACK_SETTLE_TICKS` (0.5 s) to pack it; `ready_to_fire()` no longer includes deployment (a brain asks a
+  packed battery to fire). Before this, ai's BOMBARD kept nudging its range and artillery never fired.
+- Stopped at the 90-minute time-box: outcomes swing ±15% between neighbouring numbers because brains react to them
+  (more tank shield and a slower tank both *lowered* Lancer > tank). The next lever is behavior (ai X2/X3).
+- Sim baseline re-recorded on purpose: `glibc-2.43 79fd0387fc497327`.
+
+### Stretch done: `Match.unit_destroyed(event)` for wrecks (2026-09-15)
+
+`{tick, unit, unit_id, team, killer, cause ("enemy" | "friendly_fire" | "hazard"), position, forward, hull_size}`, emitted
+right after `tank_destroyed` for every destruction (one `_announce_destroyed` path). For feel (explosions, wreck
+effects), assets (wreck art sized to `hull_size`), and the announcer. **Wreck husks as cover are not built**: a husk that
+blocks shells but not the navmesh strands units, and one that blocks both needs runtime navmesh carving; proposal below.

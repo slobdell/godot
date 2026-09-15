@@ -1,0 +1,6 @@
+{
+ "mortar200": "mortar.damage=200",
+ "mortar260_splash10": "mortar.damage=260,mortar.splash_radius=10",
+ "mortar320_scatter15": "mortar.damage=320,mortar.scatter=1.5",
+ "mortar260_reload4_deploy15": "mortar.damage=260,mortar.reload=4.0,mortar.reload_s=4.0,artillery.deploy_seconds=1.5,artillery.pack_seconds=1.5"
+}

@@ -54,7 +54,8 @@ const PROFILES := {
 		# took 0-6% of brain time: it added readouts, not decisions. Artillery keeps its 24 rounds.
 		"heat_per_shot": 0.0,
 	},
-	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons" (round 3: a 25 mm Bradley-style gun). Fast fire, low penetration, modest range:
+	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons" (round 3: a 25 mm Bradley-style gun). Fast fire, low
+	# penetration, modest range:
 	# it shreds light hulls and scouts' shields but can't get through a tank's front armor.
 	"autocannon": {
 		# K2 (round 3): profile v3.
@@ -67,7 +68,9 @@ const PROFILES := {
 		"burst_count": 4,
 		"burst_interval_s": 0.12,
 		"projectile_speed_mps": 180.0,
-		"penetration": 4.0,
+		# X6 (round 3): 4 -> 5, so bursts get through a Lancer (armor 3 now) and hurt flanks; still x0.05 on a tank
+		# front (8).
+		"penetration": 5.0,
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 60.0,
@@ -98,19 +101,21 @@ const PROFILES := {
 		# Round 2: the Lancer's "long hitscan beam" (55 m on round 1's laser tanks). R7 matrix (2026-09-14): 85 m
 		# with a 72-82 m preferred band outranges the cannon (70 m) and the tank's 75 m sight, so a Lancer duels
 		# tanks from where they can't answer: Lancer vs tank 33% -> 67%.
-		"range": 85.0,
-		"preferred_min": 72.0,
-		"preferred_max": 82.0,
+		"range": 90.0,
+		"preferred_min": 76.0,
+		"preferred_max": 86.0,
 		# R7: 9 dmg / 12 heat -> 12 / 16: burstier, so it wins against a few big hulls but overheats against a
 		# swarm of IFVs (IFV vs Lancer 42% -> 75%).
 		# X2 first pass (round 3): the cannon went from ~14 to ~64 dps, so the Lancer keeps its job (tanks at range)
 		# with 12 -> 28 per pulse and 16 -> 20 heat: 5 pulses from cold, ~17 dps sustained. X6 tunes it against the
 		# matrix.
-		"damage": 28.0,
+		# X6 (matchup search, 2026-09-15): 28 -> 22, heat 20 -> 18, range 85 -> 90 (preferred 76-86). Stronger or longer
+		# and IFV rushes lose every time; weaker or shorter and tanks run Lancers down. See balance.md "Round 3".
+		"damage": 22.0,
 		"reload": 0.5,
 		"aim_tolerance_deg": 2.0,
 		"spread_deg": 0.3,
-		"heat_per_shot": 20.0,
+		"heat_per_shot": 18.0,
 		# G6: energy weapons strip shields. 1.5 made lasers win 29/40 vs cannons (above the 65% bar);
 		# 1.25 measured 14/24 (58%), swap + team-identity counterbalanced (2026-09-15).
 		"shield_multiplier": 1.25,
@@ -166,8 +171,9 @@ const PROFILES := {
 		# 90 -> 70 (2026-09-15): the Siege archetype (2 artillery) still beat Armor and Balanced 12:4 after
 		# the scout counter; at 70 it's 10:6 against each (counterbalanced, 16 per pairing).
 		# R7: 70 -> 90 and splash 8 -> 9: spotted artillery wins a matchup (vs IFVs 58%) instead of none.
-		# X2 first pass (round 3): 90 -> 140, so a direct hit still matters against tanks that now die to two or three
-		# shells. X6 tunes it.
+		# X6 (round 3): 90 -> 140. Swept 140-320 (balance.md "Round 3"): at 200+ one burst kills a bunch of scouts
+		# (140 + 80 effective), which flips scout > artillery from 79% to 0-33% and leaves scouts winning nothing; at
+		# 140 artillery stays a spotted support unit that finishes what direct fire wears down.
 		"damage": 140.0,
 		"splash_radius": 9.0,
 		"reload": 4.5,

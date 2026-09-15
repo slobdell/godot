@@ -36,10 +36,15 @@ match-smoke: import ## A short 2v2 match must finish with a result, faster than 
 	$(PYTHON) -c "import json,sys; r=json.loads(open('$(BUILD_DIR)/match-smoke.log').read().split('MATCH_RESULT ')[1].splitlines()[0]); \
 		assert r['speedup'] > 2, r; assert sum(r['stats']['shots']) > 0, r; print('match-smoke passed:', r['winner'], r['score'], f\"{r['speedup']}x\")"
 
-matchups: import ## R7 unit-vs-unit matrix: cost-equal armies for every pair, both bases and colors (BUDGET=600 SEEDS=3 ARENA= TUNE= BALANCE=1 writes balance.md)
+matchups: import ## R7 unit-vs-unit matrix: cost-equal armies for every pair, both bases and colors (BUDGET=600 SEEDS=3 ARENA= TUNE= FOCUS=unit ESCORT=unit BALANCE=1 writes balance.md)
 	$(PYTHON) tools/matchup_matrix.py --godot $(GODOT) --jobs $(JOBS) --budget $(or $(BUDGET),600) --seeds $(or $(SEEDS),3) \
-		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) $(if $(BALANCE),--balance) --json $(BUILD_DIR)/matchups.json
+		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) $(if $(FOCUS),--focus $(FOCUS)) $(if $(ESCORT),--escort $(ESCORT)) \
+		$(if $(BALANCE),--balance) --json $(BUILD_DIR)/matchups.json
 
 duel: import ## Watch a small fight as a text timeline (shots, hits, poses): GREEN_UNITS=tank RUST_UNITS=scout,scout SEED=1 DUEL_TIME=90 [ARENA= TUNE=]
 	$(PYTHON) tools/combat_duel.py --godot $(GODOT) --green $(or $(GREEN_UNITS),tank) --rust $(or $(RUST_UNITS),tank) \
 		--seed $(SEED) --time-limit $(or $(DUEL_TIME),90) $(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE))
+
+matchup-search: import ## Score --tune variants of the matchup matrix against the designed counters: VARIANTS=tools/matchup_variants/<file>.json [UNITS= SEEDS=2 ESCORT=]
+	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANTS) --seeds $(or $(SEEDS),2) \
+		$(if $(UNITS),--units $(UNITS)) $(if $(ESCORT),--escort $(ESCORT))
