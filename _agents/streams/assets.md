@@ -210,6 +210,10 @@ review is the long pole; everything ungated ran while it waits)
   the screens' live card (score, odds, the announcer's hype line).
 
 **Known issues**
+- **After merging main (1241e93), `make remote T=check` has 1 failure that isn't this stream's:** main's new
+  `test_command_icons::test_unit_icons_skip_positions_a_camera_could_not_project` ("a collinear triangle is not drawn",
+  from 8dbe23e) fails on builder0; `game/ui` and that test are identical to main here. Reported to the orchestrator.
+  Before that merge, e60d9dd passed check completely (437 tests).
 - The arena kit adds ~0.8 MB to the web `.pck` (target was no growth); the biggest pieces are the placeholder ads and the
   container texture set. Real ads chosen by the lead should keep to 256 × 512 stills.
 - The screens' live card finds the Match by searching the scene a few times after it appears; a direct hook from
