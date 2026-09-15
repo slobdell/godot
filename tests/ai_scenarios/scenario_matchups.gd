@@ -1,5 +1,5 @@
 extends TestCase
-## Matchup-aware fighting (A5 in _agents/streams/ai.md). Needs rules' catalog v2 (fixed-mount scouts, IFVs);
+## Matchup-aware fighting (A5 in _agents/streams/archive/round2/ai.md). Needs rules' catalog v2 (fixed-mount scouts, IFVs);
 ## until checkpoint 1 these are pending and say what they wait for.
 
 const PENDING := []

@@ -1,5 +1,5 @@
 extends TestCase
-## Fire discipline (A4 in _agents/streams/ai.md): friendly fire is on in round 2, so a brain must never put a
+## Fire discipline (A4 in _agents/streams/archive/round2/ai.md): friendly fire is on in round 2, so a brain must never put a
 ## shell through a teammate. The stage is the open west lane (x ≈ -100), clear of obstacles.
 
 const PENDING := []

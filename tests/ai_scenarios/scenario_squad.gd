@@ -1,5 +1,5 @@
 extends TestCase
-## Squad tactics (A6 in _agents/streams/ai.md): three brains in one squad against three targets spread in front
+## Squad tactics (A6 in _agents/streams/archive/round2/ai.md): three brains in one squad against three targets spread in front
 ## of them. Each brain alone shoots whatever is nearest; a squad with a plan piles onto one target.
 
 const PENDING := []

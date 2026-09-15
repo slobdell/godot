@@ -1,8 +1,11 @@
 # Stream: army (army builder, progression, the match loop)
 
-> Read [../game_design.md](../game_design.md) ("Army, squads, budget" and "Progression"), [../vision.md](../vision.md)
-> (no pay-to-win), and [../workstreams.md](../workstreams.md). The round-1 garage report is
-> [archive/round1/garage.md](archive/round1/garage.md). You own `game/garage/` (keep the path; players see
+> **Archived 2026-09-15:** round 2 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../game_design.md](../../../game_design.md) ("Army, squads, budget" and "Progression"), [../vision.md](../../../vision.md)
+> (no pay-to-win), and [../workstreams.md](../../../workstreams.md). The round-1 garage report is
+> [archive/round1/garage.md](../round1/garage.md). You own `game/garage/` (keep the path; players see
 > "Army"), `game/progression/` (new), `game/modes/garage_mode.gd`, new flow and results modes and screens, and `mk/garage.mk`.
 
 ## The lead's direction (2026-09-15)

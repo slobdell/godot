@@ -12,7 +12,7 @@
 #   lancer     transformer flatbed, faces -X: the turntable is the turret, the coil emitter the weapon
 # Turrets and weapons keep their generated placement on the hull (--place-from); turrets move onto the pivot
 # (--center); real barrels reach the gameplay muzzle (--stretch; the Lancer's coil emitter doesn't: see
-# streams/art.md requests); every part wears the hull's textures (--textures-from: one texture set per unit).
+# streams/archive/round2/art.md requests); every part wears the hull's textures (--textures-from: one texture set per unit).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 THEME=roster

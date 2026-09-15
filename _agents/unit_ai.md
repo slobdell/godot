@@ -1,6 +1,6 @@
 # Unit AI: how every vehicle fights smart (round 2)
 
-> **Owner: ai stream.** Written 2026-09-15 (A0 in [streams/ai.md](streams/ai.md)). Builds on
+> **Owner: ai stream.** Written 2026-09-15 (A0 in [streams/archive/round2/ai.md](streams/archive/round2/ai.md)). Builds on
 > [tank_brain.md](tank_brain.md) (the utility brain as it stood after round 1) and
 > [squad_ai_design.md](squad_ai_design.md) (why utility AI, where skill comes from). The design rules come
 > from [game_design.md](game_design.md) "Unit AI". Results and the ELO table are at the bottom.

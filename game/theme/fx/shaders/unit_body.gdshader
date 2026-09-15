@@ -1,5 +1,5 @@
 // Generated vehicle bodies (Meshy PBR: albedo, normal, glTF ORM, emission) in the cyberpunk theme. One material
-// per unit is shared by every instance; everything per-vehicle is an instance uniform (streams/art.md X1):
+// per unit is shared by every instance; everything per-vehicle is an instance uniform (streams/archive/round2/art.md X1):
 //   team_color  the model's own neon light bars (the cyan/magenta emission) glow in the TEAM color, so friend or
 //               foe reads without extra geometry; red and amber warning lights keep their generated color
 //   paint       rgb = the garage's body color, a = how strongly it shows through the grime (0 = none)

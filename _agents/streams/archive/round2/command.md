@@ -1,7 +1,10 @@
 # Stream: command (how the player commands, camera, readability)
 
-> Read [../game_design.md](../game_design.md) ("Commanding"), [../workstreams.md](../workstreams.md), and
-> [../tactical_map.md](../tactical_map.md). You own `game/ui/` (except `widgets/**` and `hud.tscn`),
+> **Archived 2026-09-15:** round 2 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../game_design.md](../../../game_design.md) ("Commanding"), [../workstreams.md](../../../workstreams.md), and
+> [../tactical_map.md](../../../tactical_map.md). You own `game/ui/` (except `widgets/**` and `hud.tscn`),
 > `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, and `_agents/tactical_map.md`.
 
 ## The lead's direction (2026-09-15)

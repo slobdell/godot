@@ -123,5 +123,5 @@ The lead reviewed 17 concepts on a review page and approved one per slot. They'r
 
 ## Where this is referenced
 
-`HANDOFF.md`, `vision.md` (the vibe), `game_design.md`, `workstreams.md` (product constraint 2), `streams/art.md`,
+`HANDOFF.md`, `vision.md` (the vibe), `game_design.md`, `workstreams.md` (product constraint 2), `streams/archive/round2/art.md`,
 `slot_contracts.md`, `streams/references/asset_prompts.md`. Update those links if this file moves.

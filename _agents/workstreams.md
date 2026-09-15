@@ -1,85 +1,125 @@
-# Workstreams: Working in Parallel
+# Workstreams: the current round
 
-> Parallel agents, each on an independent problem, in git worktrees. Round 1 ran 2026-09-14 (gameplay, look &
-> feel, assets, netcode, garage; archived in `streams/archive/round1/`). **Round 2 was planned 2026-09-15.**
-> Read [game_design.md](game_design.md), this file, then your brief in `streams/`.
+> **Round 3, planned 2026-09-15.** How rounds work (roles, lifecycle, the worker contract, the kickoff prompt) is in
+> [orchestration.md](orchestration.md): read it first. This file is round 3's streams, ownership, contracts, gates, and
+> invariants. Rounds 1–2 are archived in `streams/archive/round1/` and `streams/archive/round2/`.
 
-## Round 2 streams
+## Round 3 goal
+
+**Make it fun.** The lead played the round-2 build: *"it's still currently boring and no fun to play … looking like a
+military nerd game."* Round 3 rebuilds control (StarCraft-style, desktop first), makes combat feel alive
+(arcade-tactical: moving while shooting, dodging, weak spots, devastating tank shells, 25 mm bursts, machine-gun
+streams), gives hits real impact, and in parallel fills the arena kit, concepts the three new factions, sets up the
+announcer's script engine, and moves builds to builder0. The lead's full verdict: [game_design.md](game_design.md)
+*Round 3 direction*.
+
+## Round 3 streams
 
 | Stream | Brief | Outcome |
 |---|---|---|
-| **rules** | [streams/rules.md](streams/rules.md) | Fixed unit roster v2 replaces loadouts; counters from mechanics; friendly fire; ≤ 5 squads; arena layouts as data; matchup matrix |
-| **ai** | [streams/ai.md](streams/ai.md) | Sophisticated unit and squad AI: cover and peeking, matchup targeting, friendly-fire-aware firing, squad tactics, AI ELO ladder |
-| **command** | [streams/command.md](streams/command.md) | Tap-only commanding, squad bar, formation/drill icons, camera that follows orders, readability at play distance |
-| **art** | [streams/art.md](streams/art.md) | Meshy roster and arena art behind lead review gates; textured ground; lighting; stands with crowds; vehicle readability |
-| **army** | [streams/army.md](streams/army.md) | Army builder on catalog v2, credits and unlocks, budget tiers, the full match loop |
+| **control** | [streams/control.md](streams/control.md) | StarCraft-style selection and orders (click, box, groups, right-click, attack-move, queue, follow), instant responsiveness, regrouping, automatic formations, selection panel and order feedback, desktop first |
+| **combat** | [streams/combat.md](streams/combat.md) | Weapons rebuilt (tank shells, 25 mm bursts, MG streams), weak spots, arcade driving with momentum and turning circles, artillery deploy, control point default, matchup matrix re-run |
+| **ai** | [streams/ai.md](streams/ai.md) | Units that feel alive: circle-strafing, dodging, flanking for weak spots, cover pops, range keeping, wheeled driving; a CPU opponent that maneuvers and uses formations; orders always win |
+| **feel** | [streams/feel.md](streams/feel.md) | Impact: weapon and hit effects for the new weapons, camera shake, weak-spot hits, wrecks, weapon and engine sound, order and selection feedback visuals |
+| **assets** | [streams/assets.md](streams/assets.md) | Arena kit (stackable 20/40 ft containers, giant ad screens), Meshy concepts and approved 3D for the road gangs, the Law, and the Syndicate, artillery outrigger parts |
+| **announcer** | [streams/announcer.md](streams/announcer.md) | Match-event fixtures, the banter director, and transcripts for the lead to review; the ElevenLabs pipeline built and tested **without API calls** |
 
-**Paused: netcode** (relay, lobby, replays, and the lockstep spike all work; see
-[streams/archive/round1/netcode.md](streams/archive/round1/netcode.md)). No stream owns its paths this round; a stream that breaks a
-netcode smoke test fixes it minimally and says so in its merge notes.
+**Paused:** netcode (relay, lobby, replays, lockstep spike), army and progression (builder, unlocks, match loop), and
+faction *gameplay* (factions get concept art only). No stream owns their paths this round; a stream that breaks one of
+their tests fixes it minimally and says so in its merge notes.
 
-**Why this split** (2026-09-15): round 1's gameplay stream carried rules, AI, UI, and camera at once. The lead's
-round-2 asks are deep in each (a "really sophisticated" AI, a new unit model, a mobile command UX), so each
-gets its own agent. Art and assets merge because generation is gated on the lead's reviews: one agent
-alternates gated generation with ungated lighting, ground, and crowd work. The garage becomes **army**, since
-loadouts are gone and progression is new.
+**Why this split:** each of the lead's complaints is one independent problem with one owner: control (burdensome,
+unresponsive), combat (weapons wrong, dead driving), ai (no intent), feel (no impact). Assets and the announcer are
+independent of gameplay and keep paid generation behind lead gates. Remote builds were set up by the orchestrator
+before launch ([remote_builds.md](remote_builds.md)).
 
-**Dependency order:** rules' **R1 (catalog v2 + army JSON v2)** is the foundation for ai (roles and weapon mounts),
-army (what can be bought), and art (which units need models). **Checkpoint 1:** when R1 lands on `stream/rules`,
-the orchestrator merges it to `main` and the other streams `git merge main`. Until then they build against
-the contracts below (stubs in their own paths).
+**Checkpoints** (the orchestrator merges these early and tells every stream to `git merge main`):
+- **CP1, control's K1 Orders API** (control X1): brains, combat, and feel need the order data and signals.
+- **CP2, combat's K2 weapon events and K3 locomotion fields** (combat X1): ai and feel build against them.
+Until a checkpoint lands, build against the contract with a stub in your own paths.
 
 ## Product constraints every stream designs for (the lead)
 
-1. **Mobile first:** every action by single tap, drag, pinch, or on-screen button; no right-click, hover, or
-   keyboard required. Tap targets ≥ ~48 px at 1080p. Test with `InputEventScreenTouch`/`ScreenDrag`.
-2. **The vibe:** over-the-top converted vehicles in a night gladiator arena. Mad Max × Death Race × Blade Runner,
-   photoreal and grimy, neon behind grilles, never cartoon. Source of truth: [art_direction.md](art_direction.md).
-3. **Die-hard, no pay-to-win:** nothing that sells power or shortcuts; progression is earned ([vision.md](vision.md)).
-4. **Web and phones:** Compatibility renderer, 60 fps on a mid-range phone, one simulation that runs headless.
+1. **Fun first, desktop first** (pillar 5): mouse and keyboard, StarCraft-style. Touch must keep compiling and its
+   existing tests pass or be consciously retired with a note; no new touch-only work this round.
+2. **Alive and responsive** (pillar 7): orders obey instantly; units move while fighting.
+3. **The vibe:** over-the-top converted vehicles in a night gladiator arena ([art_direction.md](art_direction.md)).
+4. **Die-hard, no pay-to-win** ([vision.md](vision.md)).
+5. **Performance:** 60 fps on a laptop-class integrated GPU with 50 vehicles; the web build still boots.
 
-## Lead gates (the only items that block on the lead)
+## Lead gates this round
 
-1. **Meshy concept review (art):** before any image-to-3D request, the art stream prepares the concept images as a
-   review sheet (`make art-review` → `build/review/index.html` + the PNGs), lists them under **Waiting on the
-   lead** in its Status, and moves on to ungated work. Only approved images (recorded in the brief with the lead's
-   words) go to 3D. Record credits spent per request.
-2. **Design changes to game_design.md pillars** (any stream): propose with evidence; the lead decides.
-3. Anything that spends money, creates accounts, or is destructive outside your worktree.
+1. **Meshy concepts (assets):** every new model's concepts go on the tap-to-approve review page
+   (`make art-review-page`, references/concept_review.md) before any image-to-3D. Batch reviews: roster options per
+   faction on one page.
+2. **Announcer text (announcer):** **no ElevenLabs calls this round**, not even a pilot. The lead reviews generated
+   transcripts first (*"I'd prefer not to run the ingestion yet because I'll want to review what the generated text is
+   for our potential conversations"*).
+3. **Design pillars** and anything that spends money, creates accounts, or is destructive outside your worktree.
 
-## Autonomous mandate: how a stream agent works without the lead
+## Who owns what (round 3)
 
-The lead's kickoff is short on purpose (the `/goal` prompt in `HANDOFF.md`); everything else is in the docs. It means:
+| Path | Owner |
+|---|---|
+| `game/control/` (new: selection, control groups, the Orders API, group moves, automatic formation slots, regrouping), `game/ui/` except `widgets/**` and `hud.tscn`, `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md` (becomes the controls doc) | control |
+| `game/units/`, `game/combat/` except `impact.gd`, `game/match/`, `game/tank/`, `game/arena/` + `arenas/`, `game/ai/doctrine.gd`, `doctrines/`, `tools/match_series.py`, `tools/matchup_matrix.py`, `tools/make_arenas.py`, `mk/match.mk`, `game/modes/match_runner_mode.gd`, `_agents/balance.md` | combat |
+| `game/ai/` except `doctrine.gd` (brains, order execution inside brains, squads, formations geometry, perception, pathing, CPU commander, cover, fire lanes, matchups), `game/agent/`, `tools/agent.py`, `tools/ai_ladder.py`, `mk/ai.mk`, `tests/ai_scenarios/`, `_agents/{tank_brain,squad_ai_design,unit_ai}.md` | ai |
+| `game/theme/fx/**`, `game/theme/audio/`, `assets/audio/`, `game/combat/impact.gd`, the weapon, shell, beam, and tracer effect scenes and scripts in `game/theme/cyberpunk/` (`fx_*`, `tracer_shell.gd`, `laser_beam.gd`), `game/ui/widgets/**`, `game/ui/hud.tscn`, `mk/fx.mk`, `_agents/streams/references/fx_tricks.md` | feel |
+| Models, props, dressing, and galleries in `game/theme/**` not listed for feel (`roster/`, `arena_kit/`, `prison_dozer/`, `gallery/`, new `factions/`, cyberpunk vehicle and prop parts), `assets/**` except `assets/audio/` and `assets/announcer/`, `tools/assets/`, `mk/assets.mk`, `_agents/art_direction.md`, `_agents/streams/references/{asset_*,concept_review}.md` | assets |
+| `game/announcer/`, `assets/announcer/`, `tools/announcer/`, `tests/announcer/`, `mk/announcer.mk` (all new) | announcer |
+| `game/theme/game_theme.gd` (the slot table), `_agents/slot_contracts.md` | combat + feel + assets (additive edits only) |
+| `game/network/`, `server/`, net modes, `tests/net/`, `mk/net.mk`; `game/garage/`, `game/progression/`, `game/modes/garage_mode.gd`, `mk/garage.mk` | **paused**: minimal compatibility fixes only |
+| `_agents/game_design.md`, `vision.md`, `roadmap.md`, `workstreams.md`, `orchestration.md`, `HANDOFF.md` | orchestrator (streams propose edits in their Status) |
+| **Shared:** `project.godot`, `export_presets.cfg`, `game/main.gd`, `game/main.tscn`, `game/modes/game_mode.gd`, `Makefile`, `mk/core.mk`, `tests/run_tests.gd`, `tools/remote.sh`, `tools/slot.sh`, `CLAUDE.md` | nobody alone: minimal edits, listed in merge notes |
 
-1. **Orient:** read `CLAUDE.md` → `HANDOFF.md` → `_agents/orientation.md` → [game_design.md](game_design.md) → this file → your brief. Run `make check` to confirm a green start.
-2. **Plan:** turn your brief's directives into an ordered list in its **Status** section (smallest foundation first). Brief directives are the lead's intent. Where they leave a choice open, make the call a good game designer/engineer would, and record it with a one-line reason.
-3. **Loop per directive:** build → automated test (a regression test that fails without the change) → `make check` → **smoke test like a player** (launch it, take screenshots at desktop *and* phone aspect, and look at them; drive it through the agent bridge or scripted input; for gameplay, run `tools/match_series.py`) → fix what felt wrong → commit to your branch with a message saying what and why.
-4. **Keep going** to the next directive without waiting. Update your brief's Status after each one (done, measured result, decisions, known issues).
-5. **Stop and ask the lead only** at a **lead gate** (below), for a contract change that another stream must accept, for spending money or creating accounts, for anything destructive outside your worktree, or when a directive is impossible or self-contradictory as written. Otherwise, decide, document, and continue.
-6. **Done** = every directive in the current set meets its acceptance notes, `make check` + `make web-smoke` pass, screenshots were reviewed, the brief's Status is current, and the branch is ready to merge (rebased on `main`). Then write a short merge note: what changed, what to playtest, decisions made, and open questions for the lead.
+Tests: `test_control_*.gd`, `test_combat_*.gd` (and existing rules tests), `test_ai_*.gd`, `test_fx_*.gd`,
+`test_assets_*.gd`/`test_theme_*.gd`, `test_announcer_*.gd`.
 
-## Unattended runs (overnight): extra rules when the lead is away
+## New contracts (round 3)
 
-Streams run with the lead mostly away (round 1 ran overnight). **Assume nobody answers questions for hours.** On top of the mandate above:
+Changing one requires updating this section, and the owning stream announcing it in its Status.
 
-1. **Never wait for an answer.** Everything the mandate says to "ask the lead" becomes: write it
-   under **Questions for the lead** in your brief's Status, take the most *reversible* reasonable
-   option (or skip that item), and keep working on the next one.
-2. **Need something from another stream?** Don't edit their paths. Build a small adapter or stub
-   inside your own paths, write the request under **Requests to other streams** in your Status, and
-   continue. The integrator reconciles in the morning.
-3. **Merge `main` into your branch only when the orchestrator announces a checkpoint** (e.g. rules' catalog v2); otherwise `main` doesn't move under you. Commit
-   to `stream/<name>` after every green step. You may `git push -u origin stream/<name>` as a backup.
-   Never push `main`, never force-push, never touch another worktree.
-4. **The machine is shared and small** (8 cores, 7.6 GB RAM, ~8 GB free disk on 2026-09-15):
-   - Heavy runs queue through `tools/slot.sh` automatically via `make` (orientation trip-up #37). Wrap any Godot/Chrome/match-series run you start outside make.
-   - At most **one** long-running background process of yours at a time (a server, an agent client). Stop it by PID when done; never `pkill -f` a pattern (trip-up #19). Never kill processes you didn't start.
-   - Disk: check `df -h .` before downloading. Keep each stream's downloads under **500 MB**. No local ML models or large Docker images. Delete stale `build/` outputs you created.
-5. **No new money, accounts, or secrets.** The only paid service in use is Meshy (the lead's key, `MESHY_API_KEY`), and only through the art stream's lead gate. Never commit keys.
-6. **Time-box.** If one item fights you for ~90 minutes without progress, write down what you learned and what you'd try next, then move on.
-7. **The backlog is deliberately longer than one night.** Finishing an item isn't a reason to stop; take the next one, then the stretch items. Stop only when the backlog is done or you're truly blocked on everything left.
-8. **Shared files** (`project.godot`, `game/main.gd`, `main.tscn`, `game/modes/game_mode.gd`, root `Makefile`, `mk/core.mk`): additive, minimal edits only, listed in your merge notes. Prefer adding UI and nodes from code in your own paths over editing shared scenes.
-9. **Leave a morning report.** Keep your brief's **Status** current as you go (a crash mustn't lose it). It needs: done (with measurements), decisions + reasons, questions for the lead, requests to other streams, known issues, what to playtest (exact `make` commands), and the next steps.
+| Contract | Owner, where | Consumers |
+|---|---|---|
+| **K1 Orders API** (CP1). `UnitCommand` data (serializable, for the CPU, the agent bridge, replays, and a future LLM): `{"units": [names], "verb": "move" \| "attack" \| "attack_move" \| "follow" \| "hold" \| "stop", "to"?: [x, z], "target"?: name, "queue": bool, "formation"?: "auto" \| name}`. `Orders` (one per match, reachable as `Match.orders`; combat adds that one field): `issue(command) -> String` (error or ""), `current(unit_name) -> Dictionary` (the active order with its formation slot offset and `issued_tick`), `queue(unit_name) -> Array`, signal `order_changed(unit_name)`, `complete(unit_name)`. **Response guarantee:** a brain receiving `order_changed` starts executing the new order within **3 ticks**, whatever it was doing; tests in both streams. `SquadCommand` (C7) stays for doctrines and the CPU until ai migrates them. | control: `game/control/orders.gd`, `unit_command.gd` | ai (brains execute orders), combat (`Match.orders` field), feel (order markers), announcer (later) |
+| **K2 Weapon profile v3 and weapon events** (CP2). `Weapons.PROFILES[id]` adds `fire_model` (`shell` \| `burst` \| `stream` \| `beam` \| `arc`), `reload_s`, `burst_count`, `burst_interval_s`, `projectile_speed_mps` (0 = hitscan), `spread_deg`, `damage`, `penetration`, `splash_radius`. Signals on `Match`: `weapon_fired(event)` `{tick, shooter, weapon, fire_model, muzzle [x,y,z], direction [x,y,z], projectile_id}` and `projectile_impact(event)` `{tick, projectile_id, position, normal, target?, face?: "front"\|"side"\|"rear", weak_spot: bool, damage, killed: bool}`. `Match.incoming_projectiles(unit) -> Array` of `{position, velocity, eta_ticks, damage_estimate}` for dodging. | combat: `game/combat/weapons.gd`, `game/match/match.gd` | ai (range, dodging, weak spots), feel (effects and sound), announcer (events) |
+| **K3 Locomotion** (CP2). Unit catalog adds `locomotion` (`tracks` \| `wheels`; `hover`, `articulated` reserved), `min_turn_radius_m`, `acceleration_mps2`, `braking_mps2`, `lateral_grip` (0–1, lower drifts); `TankMotion.predict(state, throttle, turn, ticks) -> Array` of poses (pure), so ai plans maneuvers and control previews paths. | combat: `game/units/units.gd`, `game/tank/tank_motion.gd` | ai, control, feel (tire and track effects) |
+| **K4 Faction art slots.** Faction ids `condemned` (today's roster), `gangs`, `law`, `syndicate`; models fill `unit.<faction>.<role>.hull/turret/weapon` and show in `make vehicle-gallery FACTION=<id>`. Gallery only this round: no gameplay units. | assets: `game/theme/factions/` | combat (a later round) |
+| **K5 Match events for the announcer** (C9 in streams/announcer.md): JSON lines, fixtures now; an adapter from K2 and `Match` signals later. | announcer | combat (adapter, later round) |
+
+## Standing contracts (from round 2, still in force)
+
+| Contract | Owner, where | Consumers |
+|---|---|---|
+| **C1 Unit catalog v2** (replaces v1 loadouts). `Units.PROFILES[id]` = `display_name`, `role` (`scout`/`tank`/`ifv`/`artillery`/`lancer`/`burner`, extensible), `blurb`, `cost`, `unlock_tier` (0 = starter), `hull_size` [w, h, l], `max_health`, `max_shield`, `shield_recharge_delay`, `shield_recharge_rate`, `max_forward_speed`, `max_reverse_speed`, `hull_turn_rate_deg`, `sight_radius`, `weapon` (a `Weapons.PROFILES` id), `mount` (`turret` or `fixed`), `turret_turn_rate_deg` (turret mounts), `fire_arc_deg` (fixed mounts), `muzzle_height`, optional `heat_capacity`/`heat_dissipation`, `good_vs`/`weak_vs` (role lists: design intent for AI hints and the army UI; mechanics decide real outcomes). Weapons gain `penetration` and `splash_radius`. No components, no hardpoints. `armor` `{front, side, rear}` thickness per unit (added by rules, round 2; damage through it follows `Armor.penetration_multiplier`). `locomotion` (`tracks` | `wheels`; `hover`, `articulated` reserved) and `min_turn_radius_m` for wheels (added 2026-09-15, rules R9). Optional `faction` (default `condemned`; added 2026-09-15 for future factions, rules adds it after checkpoint 1). | rules: `game/units/units.gd`, `game/combat/weapons.gd` | ai, army, art, command (unit cards, icons) |
+| **C2 Army JSON v2** (doctrine files, garage saves): `{"name", "squads": [{"name", "formation"?, "directive"?, "units": [{"unit": id, "paint"?: "#rrggbb", "directive"?}]}]}`; ≤ 5 squads, ≤ 5 units per squad; cost ≤ the match budget. Rules migrates `doctrines/` and rejects v1 loadout keys with a clear error. | rules: `game/ai/doctrine.gd`, `game/units/` | army (produces), skirmish/match runner (load), ai (squads) |
+| **C3 Match result for progression:** `Match.finished(result)` includes `winner`, `reason`, per-team `units_lost`/`units_left`, kills by unit type, `duration_seconds`, `budget`. | rules: `game/match/match.gd` | army (credits), command (results display) |
+| **C4 Combat queries for AI:** (all new) `Match.friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array` (direct fire, and splash for arcs), `Arena.cover_features() -> Array` of `{position, size, rotation, height, type}`, `Tank` exposes `mount`, `fire_arc_deg`, `turret_turn_rate`, `muzzle_height`; `Tank.can_bear_on(point)`, `Arena.hazards()`, `Units.armor(unit, face)`, `Match.armor_multiplier(weapon, unit, face)` (added round 2). | rules | ai |
+| **C5 Arena layouts:** `arenas/<name>.json` = `{name, half_size, obstacles: [{type, position [x, z], rotation_deg, size?}], spawns: {green: [...], rust: [...]}, control_point?, hazards?}` (hazards: symmetric fire pits, round 2), validated point-symmetric; `--arena=<name>`. Obstacle `type` maps to visual slot `prop.<type>`; `arena.dressing` gets `setup(layout)` so stands and crowds fit the arena. | rules (data, collision, nav) | art (props, dressing), ai (cover), command (radar outline) |
+| **C6 Visual slots**, including per-unit ids `unit.<id>.hull/turret/weapon` (fall back to `tank.*`/`weapon.*`), `set_team_color` = team accent, `set_paint` = cosmetic, `set_shield`, `set_heat`, `set_firing`, `setup` | rules + art: [slot_contracts.md](slot_contracts.md), `game/theme/game_theme.gd` | art fills; rules places |
+| **C7 Command API:** `SquadCommand` `{squad, verb, to, facing, formation, commander}` (unchanged); `Formations.offsets(formation, count)` (exists) for icons (ai keeps it stable); `TacticalMap.command_issued` (exists) plus a new selection signal `squad_selected(squad_key)`; camera: `RtsCamera.follow(target)` / `focus_on(point)` (exist) plus a new `frame(points: Array)` | command (UI and camera), ai (squad and formations) | ai, army (squad names), agent bridge |
+| **C8 Progression profile:** `user://profile.json` = `{schema, credits, unlocked_units [ids], budget_tier, wins, losses}` plus additive `draws`, `last_award`, `completed_challenges` (army, 2026-09-15); `Progression.BUDGET_TIERS` = `[{tier, budget, unlock_credits, name}]`; `Progression.award(report, team, tier) -> credits` (report = `MatchReport.build(result)`, C3 fields) | army: `game/progression/` | command (results screen shows credits), skirmish (budget) |
+| **HUD messages:** `Hud.post_message(text, severity)` → cyber banners | command posts; art renders | everyone |
+| **Visibility / radar data:** `VisibilityField`, `Match.is_visible_to`, `Match.intel`, `Radar.blips()`, `GameTheme.ui["radar_frame"]`, slot `fx.fog_of_war` (defined in round 1) | rules (field), command (radar) | art (skin) |
+| **Launch flags and console markers** (`TANK_SQUAD_*`, `MATCH_RESULT`, `GARAGE_FIGHT`, …) | each mode's owner; list in `game/main.gd` header | smoke tests, match_series.py |
+
+C7 (`SquadCommand`) remains for doctrines and the CPU commander; player control moves to K1.
+
+## Invariants every stream must keep
+
+1. **`make remote T=check` passes before merging** (lint, tests, network + relay + lobby smoke, combat, match,
+   determinism, sim baseline, garage smoke). Paused areas keep their tests green.
+2. **The sim baseline** (`tests/baselines/sim_state_hash.txt`: one hash per glibc version; builder0's `glibc-2.43
+   c9cfbb1a221f5c94` is canonical on 2026-09-15) changes only on purpose (record with `make remote T=sim-baseline-record`,
+   copy `build/sim_state_hash.txt` over the file, which drops other machines' stale lines), by **combat** and **ai** (and control if order execution changes a doctrine match), updated in the same
+   commit with the reason. Feel, assets, and announcer never change it.
+3. The web build still boots (`make remote T=web-smoke`) and the server still exports. Visual slots load headless.
+4. Fairness: arena, spawn, or navigation changes re-run the swap-bases control (verification.md).
+5. Docs move with code: your brief's Status and any stale `_agents/` doc, in the same merge.
+6. **Design follows [game_design.md](game_design.md)**; propose changes with evidence in your Status.
+7. **Portable simulation code** (combat, ai, control's order execution): [determinism.md](determinism.md) guidelines,
+   and add new engine dependencies to its inventory.
+8. **Heavy runs go to builder0** (`make remote T=…`, [remote_builds.md](remote_builds.md)); this laptop is for editing.
 
 ## How to set up parallel copies: git worktrees, not folder copies
 
@@ -88,11 +128,12 @@ repository, each on its own branch. One command creates an isolated one:
 
 ```bash
 cd ~/projects/godot                       # the main checkout, on main: the orchestrator's home
-make worktree STREAM=rules OFFSET=1       # → ../godot-rules on branch stream/rules
-make worktree STREAM=ai OFFSET=2
-make worktree STREAM=command OFFSET=3
-make worktree STREAM=art OFFSET=4
-make worktree STREAM=army OFFSET=5
+make worktree STREAM=control OFFSET=1    # → ../godot-control on branch stream/control
+make worktree STREAM=combat OFFSET=2
+make worktree STREAM=ai OFFSET=3
+make worktree STREAM=feel OFFSET=4
+make worktree STREAM=assets OFFSET=5
+make worktree STREAM=announcer OFFSET=6
 make worktrees                            # status of all of them
 ```
 
@@ -129,55 +170,3 @@ at the same moment, both passed, on ports 9261 and 9271):
 - `git stash`, hooks, and `git config` are **shared** across worktrees: a stash made in one shows up in all. Prefer WIP commits on the stream branch.
 - Deleting a worktree folder by hand leaves stale metadata; use `make worktree-remove` (or `git worktree prune`).
 
-## Who owns what (round 2)
-
-Owning a path means you may change it freely. Anything else, change only through the
-stream that owns it, or through a contract change (below).
-
-| Path | Owner |
-|---|---|
-| `game/units/` (catalog v2, army validation), `game/ai/doctrine.gd` (the army/doctrine JSON parser) | rules |
-| `game/combat/` except `impact.gd` (weapons, armor, ballistics, shells, arc rounds) | rules |
-| `game/match/` (rules, spawning, damage, friendly fire, intel, visibility field, announcer, control point) | rules |
-| `game/tank/` (the vehicle simulation; rename to units is rules' call), `game/arena/` + `arenas/` (new: layout data) | rules |
-| `doctrines/`, `tools/match_series.py`, `mk/match.mk`, `game/modes/match_runner_mode.gd`, `_agents/balance.md` | rules |
-| `game/ai/` except `doctrine.gd` (brains, orders, squads, formations geometry, directives, perception, pathing, CPU commander, new tactical-position code), `game/agent/`, `tools/agent.py` | ai |
-| `_agents/tank_brain.md`, `_agents/squad_ai_design.md`, `_agents/unit_ai.md` (new) | ai |
-| `game/ui/` except `widgets/**` and `hud.tscn` (tactical map, radar, `hud.gd` text, new squad bar and icons), `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, `_agents/tactical_map.md` | command |
-| `game/theme/**` (themes, fx, audio, galleries), `game/ui/widgets/**`, `game/ui/hud.tscn`, `game/combat/impact.gd`, `assets/**`, `tools/assets/`, `mk/assets.mk`, `mk/fx.mk`, `_agents/art_direction.md`, `_agents/streams/references/{fx_tricks,asset_*}.md` | art |
-| `game/garage/` (the army builder; keep the path), `game/progression/` (new), `game/modes/garage_mode.gd`, new flow/results modes and screens, `mk/garage.mk` | army |
-| `game/network/`, `server/`, `game/modes/{server,client,host,lobby,det_spike}_mode.gd`, `tools/serve_web.py`, `tests/net/`, `mk/net.mk` | **paused** (netcode): minimal compatibility fixes only |
-| `_agents/slot_contracts.md` | rules + art together (contract) |
-| `_agents/game_design.md`, `vision.md`, `roadmap.md`, `workstreams.md`, `HANDOFF.md` | orchestrator (streams propose edits in their Status) |
-| **Shared:** `project.godot`, `export_presets.cfg`, `game/main.gd`, `game/main.tscn`, `game/modes/game_mode.gd`, `Makefile`, `mk/core.mk`, `tests/run_tests.gd`, `CLAUDE.md` | nobody alone: keep edits minimal and mention them in your merge notes |
-
-Tests live beside their owner's code in `tests/`; name them for the area (`test_units_*.gd`, `test_ai_*.gd`,
-`test_command_*.gd`, `test_art_*.gd`/`test_fx_*.gd`, `test_army_*.gd`) so ownership is obvious.
-
-## Contracts between streams (round 2)
-
-Changing one requires updating this section, and the owning stream announcing it in its Status.
-
-| Contract | Owner, where | Consumers |
-|---|---|---|
-| **C1 Unit catalog v2** (replaces v1 loadouts). `Units.PROFILES[id]` = `display_name`, `role` (`scout`/`tank`/`ifv`/`artillery`/`lancer`, extensible), `blurb`, `cost`, `unlock_tier` (0 = starter), `hull_size` [w, h, l], `max_health`, `max_shield`, `shield_recharge_delay`, `shield_recharge_rate`, `max_forward_speed`, `max_reverse_speed`, `hull_turn_rate_deg`, `sight_radius`, `weapon` (a `Weapons.PROFILES` id), `mount` (`turret` or `fixed`), `turret_turn_rate_deg` (turret mounts), `fire_arc_deg` (fixed mounts), `muzzle_height`, optional `heat_capacity`/`heat_dissipation`, `good_vs`/`weak_vs` (role lists: design intent for AI hints and the army UI; mechanics decide real outcomes). Weapons gain `penetration` and `splash_radius`. No components, no hardpoints. `locomotion` (`tracks` | `wheels`; `hover`, `articulated` reserved) and `min_turn_radius_m` for wheels (added 2026-09-15, rules R9). Optional `faction` (default `condemned`; added 2026-09-15 for future factions, rules adds it after checkpoint 1). | rules: `game/units/units.gd`, `game/combat/weapons.gd` | ai, army, art, command (unit cards, icons) |
-| **C2 Army JSON v2** (doctrine files, garage saves): `{"name", "squads": [{"name", "formation"?, "directive"?, "units": [{"unit": id, "paint"?: "#rrggbb", "directive"?}]}]}`; ≤ 5 squads, ≤ 5 units per squad; cost ≤ the match budget. Rules migrates `doctrines/` and rejects v1 loadout keys with a clear error. | rules: `game/ai/doctrine.gd`, `game/units/` | army (produces), skirmish/match runner (load), ai (squads) |
-| **C3 Match result for progression:** `Match.finished(result)` includes `winner`, `reason`, per-team `units_lost`/`units_left`, kills by unit type, `duration_seconds`, `budget`. | rules: `game/match/match.gd` | army (credits), command (results display) |
-| **C4 Combat queries for AI:** (all new) `Match.friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array` (direct fire, and splash for arcs), `Arena.cover_features() -> Array` of `{position, size, rotation, height, type}`, `Tank` exposes `mount`, `fire_arc_deg`, `turret_turn_rate`, `muzzle_height`. | rules | ai |
-| **C5 Arena layouts:** `arenas/<name>.json` = `{name, half_size, obstacles: [{type, position [x, z], rotation_deg, size?}], spawns: {green: [...], rust: [...]}, control_point?}`, validated point-symmetric; `--arena=<name>`. Obstacle `type` maps to visual slot `prop.<type>`; `arena.dressing` gets `setup(layout)` so stands and crowds fit the arena. | rules (data, collision, nav) | art (props, dressing), ai (cover), command (radar outline) |
-| **C6 Visual slots**, including per-unit ids `unit.<id>.hull/turret/weapon` (fall back to `tank.*`/`weapon.*`), `set_team_color` = team accent, `set_paint` = cosmetic, `set_shield`, `set_heat`, `set_firing`, `setup` | rules + art: [slot_contracts.md](slot_contracts.md), `game/theme/game_theme.gd` | art fills; rules places |
-| **C7 Command API:** `SquadCommand` `{squad, verb, to, facing, formation, commander}` (unchanged); `Formations.offsets(formation, count)` (exists) for icons (ai keeps it stable); `TacticalMap.command_issued` (exists) plus a new selection signal `squad_selected(squad_key)`; camera: `RtsCamera.follow(target)` / `focus_on(point)` (exist) plus a new `frame(points: Array)` | command (UI and camera), ai (squad and formations) | ai, army (squad names), agent bridge |
-| **C8 Progression profile:** `user://profile.json` = `{schema, credits, unlocked_units [ids], budget_tier, wins, losses}` plus additive `draws`, `last_award`, `completed_challenges` (army, 2026-09-15); `Progression.BUDGET_TIERS` = `[{tier, budget, unlock_credits, name}]`; `Progression.award(report, team, tier) -> credits` (report = `MatchReport.build(result)`, C3 fields) | army: `game/progression/` | command (results screen shows credits), skirmish (budget) |
-| **HUD messages:** `Hud.post_message(text, severity)` → cyber banners | command posts; art renders | everyone |
-| **Visibility / radar data:** `VisibilityField`, `Match.is_visible_to`, `Match.intel`, `Radar.blips()`, `GameTheme.ui["radar_frame"]`, slot `fx.fog_of_war` (defined in round 1) | rules (field), command (radar) | art (skin) |
-| **Launch flags and console markers** (`TANK_SQUAD_*`, `MATCH_RESULT`, `GARAGE_FIGHT`, …) | each mode's owner; list in `game/main.gd` header | smoke tests, match_series.py |
-
-## Invariants every stream must keep
-
-1. `make check` passes before merging (lint, tests, network + relay + lobby smoke, combat, match, determinism, sim baseline, garage smoke). Netcode is paused, not abandoned: keep its smokes green.
-2. **Art never changes the simulation.** `make sim-baseline` (part of `make check`) replays a seeded match and compares its `state_hash` to `tests/baselines/sim_state_hash.txt` (`e5cf33921713b657` on 2026-09-15). Only **rules** and **ai** change it, on purpose, updating the file in the same commit and saying why; command, art, and army must leave it unchanged.
-3. The web build still boots (`make web-smoke`) and the dedicated server still exports (`make export-server`). Visual slots must load on a headless server.
-4. Fairness: any change to the arena, spawns, or navigation re-runs the swap-bases control (verification.md).
-5. Docs move with code: update your stream brief's **Status** section and any stale `_agents/` doc in the same merge.
-6. **Design follows [game_design.md](game_design.md).** If your work shows a design rule is wrong, record the evidence and propose the change in your Status; do not silently diverge.
-7. **Keep new simulation code portable** (rules and ai): follow the guidelines in [determinism.md](determinism.md) (pure classes, simple geometry we own, one seam per engine query, vector math instead of trig) and add any new engine dependency to its inventory. Today's simulation is deterministic within one build only; lockstep for ranked play needs it identical across builds, so every engine-math feature is future porting work.

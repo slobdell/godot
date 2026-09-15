@@ -11,8 +11,8 @@ When a task is complete, the running agent updates `HANDOFF.md` at the project
 root before the context window is cleared. A fresh agent with no memory should
 regain full situational awareness from `HANDOFF.md` in under 5 minutes.
 
-**If you were started as a WORKSTREAM agent** (round 2: rules, ai, command, art, army), read
-[game_design.md](game_design.md), [workstreams.md](workstreams.md), and your brief in `streams/` right after this file:
+**If you were started as a WORKSTREAM agent** (round 3: control, combat, ai, feel, assets, announcer), read
+[orchestration.md](orchestration.md) (the worker contract), [game_design.md](game_design.md), [workstreams.md](workstreams.md), and your brief in `streams/` right after this file. **If you're the orchestrator** (the main checkout, talking with the lead), read [orchestration.md](orchestration.md) in full:
 they define what the game is, what you own, and the contracts you must not break.
 
 **If you were just handed the repo:**
@@ -86,7 +86,7 @@ tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_
 doctrines/               armies as JSON (squads, units, directives) for skirmish and the match runner
 mk/                      Makefile targets split by area (core, play, net, match, web); root Makefile includes them
 tests/baselines/         recorded simulation hash (make sim-baseline)
-_agents/streams/         per-workstream briefs (round 2: rules, ai, command, art, army); archive/round1/ has round 1
+_agents/streams/         per-workstream briefs (round 3: control, combat, ai, feel, assets, announcer); archive/round1/ and archive/round2/
 assets/                  asset pipeline (assets/pipeline/, runtime wrapper), CREDITS, fonts, audio; raw downloads in assets/incoming/ (git-ignored)
 server/broker/           match broker (Node + ws): lobbies, relay, resume; `make broker`, `make broker-test`
 tools/                   serve_web.py (/ws + /relay proxies), web_smoke/, agent.py (Claude's CLI for the bridge), match_series.py (experiments)
@@ -190,3 +190,5 @@ build/   (gitignored)    exports and screenshots
 60. **Two streams, one concept: check `main` before inventing a system.** Overnight the garage and gameplay each built a CPU army generator and both used `cpu:balanced` for different armies; integration kept gameplay's `Army` for opponents (garage `ArmyPresets` = player presets). Unknown `cpu:<archetype>` names are now errors instead of silently becoming Balanced.
 61. **`get_tree().paused` survives `reload_current_scene()`.** The skirmish's planning pause pauses the tree, so a restart from the results screen came back frozen until `ArmyLoop.restart` unpaused first. To restart with different launch flags, set `Main.next_flags` before reloading (main.gd reads it once instead of the command line / URL); that works the same in the browser.
 62. **The theme's panel colors are translucent** (`GameTheme.ui["garage_panel"]` alpha 0.86). An overlay drawn with them over busy UI makes its text collide with whatever is behind. Overlays need an opaque background (the army screen's `_overlay_style`) and a scrim.
+63. **The sim baseline hash depends on the machine's glibc, not just the Godot binary.** builder0 (glibc 2.43) and the laptop (2.39) disagree while each is repeatable (libm trig). `tests/baselines/sim_state_hash.txt` keys hashes by glibc version; record with `make remote T=sim-baseline-record` ([determinism.md](determinism.md)).
+64. **Heavy runs go to builder0:** `make remote T=check` (6 min 40 s there vs 14–22 min here). See [remote_builds.md](remote_builds.md). Long local background runs can be killed by the session's memory guard: detach with `setsid nohup … &` and poll a log with a unique end marker (Godot prints its own `[ DONE ]` lines).

@@ -11,10 +11,12 @@ that way: a note that only says "do X" teaches nothing.
 
 **Start here**
 - **[orientation.md](orientation.md)**: **Read this first.** A 3-minute warmup: the mental model, how context is handed between sessions, the repo layout, common tasks, and the trip-ups that have already cost someone time.
-- **[game_design.md](game_design.md)**: **What the game is:** fixed unit types that counter each other, up to 5 squads, budget and progression, tap-only commanding, smart unit AI, friendly fire, the gladiator arena. The design source of truth since 2026-09-15.
+- **[game_design.md](game_design.md)**: **What the game is:** fixed unit types that counter each other, StarCraft-style control (desktop first), arcade-tactical combat, factions, the gladiator arena and announcer. The design source of truth; round 3's direction is at the top.
 - **[vision.md](vision.md)**: Why and for whom: a die-hard game with no pay-to-win; free on the web, paid on Android; over-the-top converted vehicles; how the vision moved.
 - **[art_direction.md](art_direction.md)**: The look: the Death Race prison dozer north star, rules for every piece of art, the roster and arena concepts.
-- **[workstreams.md](workstreams.md)**: **Parallel work.** The current streams, lead gates, the autonomous and unattended rules, worktrees, path ownership, contracts, and merge invariants. Briefs are in `streams/`; round 1 is archived in `streams/archive/round1/`; `streams/announcer.md` is a drafted round-3 candidate.
+- **[orchestration.md](orchestration.md)**: **How we work.** The reusable orchestrator/worker pattern: roles, the round lifecycle, the worker contract, integration and closing checklists, the kickoff prompt, and lessons.
+- **[workstreams.md](workstreams.md)**: **The current round.** Streams, lead gates, path ownership, contracts, checkpoints, invariants, and worktree mechanics. Briefs are in `streams/`; rounds 1–2 are archived in `streams/archive/`.
+- **[remote_builds.md](remote_builds.md)**: Run heavy make targets on builder0 (`make remote T=check`).
 - **[roadmap.md](roadmap.md)**: What's done, the current round, what's next, and the idea backlog.
 
 **How the systems work**

@@ -1,6 +1,6 @@
 # Tactical Map: Few Inputs, Deep Control
 
-> **Round 2 (command stream):** commanding is tap-only (squad bar, tap the ground or the radar), formations and drills have icons, and the camera follows orders. **The current grammar is "v3" at the end of this file**; the v1/v2 tables below are history ([game_design.md](game_design.md) "Commanding", [streams/command.md](streams/command.md)).
+> **Round 2 (command stream):** commanding is tap-only (squad bar, tap the ground or the radar), formations and drills have icons, and the camera follows orders. **The current grammar is "v3" at the end of this file**; the v1/v2 tables below are history ([game_design.md](game_design.md) "Commanding", [streams/archive/round2/command.md](streams/archive/round2/command.md)).
 
 > **Status: v1 implemented (2026-09-13); v2 (2026-09-15, stream/gameplay): RTS 3D camera, radar, fog of
 > war, touch-first controls. See "v2" at the end.** Play it: `make skirmish` (desktop) or `make serve-web` → `http://localhost:8060/?skirmish` (browser, no server). Builds on

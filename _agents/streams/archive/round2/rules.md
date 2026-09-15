@@ -1,6 +1,9 @@
 # Stream: rules (units, combat, match, arenas)
 
-> Read [../game_design.md](../game_design.md), [../workstreams.md](../workstreams.md), and [../balance.md](../balance.md).
+> **Archived 2026-09-15:** round 2 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../game_design.md](../../../game_design.md), [../workstreams.md](../../../workstreams.md), and [../balance.md](../../../balance.md).
 > You own `game/units/`, `game/combat/` (except `impact.gd`), `game/match/`, `game/tank/`, `game/arena/` +
 > `arenas/` (new), `game/ai/doctrine.gd`, `doctrines/`, `tools/match_series.py`, `mk/match.mk`,
 > `game/modes/match_runner_mode.gd`, `_agents/balance.md`. You and art share `_agents/slot_contracts.md`.
@@ -21,7 +24,7 @@
 `Units.PROFILES` v1 has chassis `tank`/`scout`/`artillery` with hardpoints and `COMPONENTS`; `Tank.apply_loadout`
 reads it; `Doctrine.parse` validates loadouts; `Army` builds seeded CPU armies; weapons are data (cannon, laser,
 machine gun, mortar, flamethrower); shields, ammo, heat, control point, visibility field all exist. Friendly
-fire is off (teammates block shots but take no damage). Balance history: [../balance.md](../balance.md).
+fire is off (teammates block shots but take no damage). Balance history: [../balance.md](../../../balance.md).
 
 ## Backlog (in order; R1 is checkpoint 1: tell the orchestrator when it lands)
 
@@ -56,7 +59,7 @@ the AI stream, with tests.
 **R6. Arena layouts as data** (C5): extract today's arena into `arenas/<name>.json`, build collision and the
 mirrored navmesh from it, validate point symmetry, add `--arena=<name>` and `Arena.cover_features()`. Author a
 second layout with a different character (e.g. open lanes vs dense cover). Re-run the swap-bases fairness
-control for each ([../verification.md](../verification.md)).
+control for each ([../verification.md](../../../verification.md)).
 
 **R7. The matchup matrix:** a tool (`tools/matchup_matrix.py` or an extension of match_series) that plays
 cost-equal unit-vs-unit fights for every pair, both base sides, seeded. It writes a matrix into balance.md. Tune until
@@ -66,7 +69,7 @@ the intended counters hold clearly (e.g. the counter wins ≥ 65% cost-equal) an
 **R8. Rules defaults with roster v2:** re-measure the control point ("coordination beats individuals" under
 shields) and whether ammo resupply adds decisions; recommend defaults in balance.md for the lead.
 
-**R9. Locomotion: wheels drive like cars** (added 2026-09-15 by the lead; [../game_design.md](../game_design.md)
+**R9. Locomotion: wheels drive like cars** (added 2026-09-15 by the lead; [../game_design.md](../../../game_design.md)
 *Locomotion*). Today every unit rotates in place at `hull_turn_rate_deg`.
 - Catalog: `locomotion` (`tracks` | `wheels`; `hover` and `articulated` reserved) and `min_turn_radius_m` for wheels
   (contract C1).
@@ -81,7 +84,7 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
 - **Stretch:** the Burner (flamethrower unit); arena hazards (fire pits, crushing gates) as layout data; ammo
   simplification if R8 says so.
 
-## Portability (read [../determinism.md](../determinism.md))
+## Portability (read [../determinism.md](../../../determinism.md))
 
 The simulation is deterministic within one build only; lockstep for ranked play needs it identical across builds,
 so new mechanics are future porting work. Keep that work cheap:

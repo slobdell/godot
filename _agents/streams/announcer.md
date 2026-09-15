@@ -1,8 +1,8 @@
-# Stream: announcer (a round-3 candidate; not active yet)
+# Stream: announcer (script engine and transcripts; the audio pipeline without API calls)
 
-> Drafted 2026-09-15 so a future agent can start from a one-line kickoff. Read
-> [../game_design.md](../game_design.md) *The arena announcer* (the design: voices, the banter graph, recording tricks,
-> the pipeline) first, then [../workstreams.md](../workstreams.md) for the autonomous and unattended rules.
+> **Active in round 3** (2026-09-15). Read [../orchestration.md](../orchestration.md) (the worker contract),
+> [../game_design.md](../game_design.md) *The arena announcer* (voices, the banter graph, **humor direction**, recording
+> tricks, the pipeline), and [../workstreams.md](../workstreams.md) (K5 is this brief's event contract; lead gate 2).
 > Proposed ownership: `game/announcer/`, `assets/announcer/`, `tools/announcer/`, `mk/announcer.mk`, `tests/announcer/`,
 > and this brief.
 
@@ -14,6 +14,15 @@
 > be built in isolation outside of the game because the API boundary would be so strict. We'll want to simulate a fake
 > game with whatever fixture data might eventually exist, and then I'd want to be able to hear these announcers in
 > action. I will prepare some voices in Elevenlabs now."*
+
+**Round 3 scope, from the lead:** *"setting up the audio ingestion pipeline for our announcers, but I actually think I'd
+> prefer not to run the ingestion yet because I'll want to review what the generated text is for our potential
+> conversations - with the earlier samples you gave me to play to Elevenlabs, the humor was far too overt and just not
+> funny … we should be able to get the full program to formulate a synthesized announcers script based on fixture
+> gameplay data that we sent (where the recorded data we pass doesn't necessarily need to exist yet)."*
+>
+> So: **no ElevenLabs API calls this round, not even a pilot.** Build and test the pipeline with a mock client and a
+> dry run; deliver transcripts for the lead to read.
 
 ## Why this stream can run in isolation
 
@@ -56,7 +65,9 @@ the director derives streaks, comebacks, and callbacks itself.
   swing. Check in a handful of generated fixtures.
 - When the game can do it, add an adapter that records real events from the headless match runner (coordinate with rules).
 
-**N1. The line library as text** (`assets/announcer/lines.json`): hundreds of tagged lines for two original voices
+**N1. The line library as text** (`assets/announcer/lines.json`), **written to the humor direction** (believable,
+slightly off; authentic fight-night hype; no punchlines, no pun brand names; the rejected example lines below show what
+to avoid): hundreds of tagged lines for two original voices
 (caller and color) plus the arena PA, following game_design.md's tags (speaker, dialog act, event, intensity,
 position and intonation, slots). A text audit tool like mavlink-hud's `audit_tts.py` (odd symbols, overlong lines,
 missing tags, duplicates).
@@ -70,7 +81,7 @@ anti-repetition, and a seeded random generator of its own (never the simulation'
 director and writes a readable transcript with timestamps. **Lead gate:** the lead reads sample transcripts and
 approves tone and coherence **before bulk audio generation** (list them under *Waiting on the lead*).
 
-**N4. The audio pipeline** (`tools/announcer/`, `make announcer-generate`), modeled on the lead's
+**N4. The audio pipeline, built but not run against the API** (`tools/announcer/`, `make announcer-generate`), modeled on the lead's
 `~/projects/led-drone-microcontrollers/mavlink-hud/speech-to-text-elevenlabs` (ElevenLabs Python SDK, rules JSON →
 MP3 masters, skip existing, print credits, ffmpeg → OGG):
 - the key from the environment variable `ELEVENLABS_KEY_ID` (the lead's name for it); never write it to a file
@@ -79,13 +90,15 @@ MP3 masters, skip existing, print credits, ffmpeg → OGG):
 - loudness normalization and silence trimming; a speech-to-text check of every clip
 - mono Ogg Vorbis at a speech bitrate; a manifest with tags and durations; masters git-ignored
 - a ledger (`assets/announcer/ledger.md`: date, clips, characters, credits)
-- **Pilot first:** a small batch (~30 clips per voice, enough for one demo match) is fine before the transcript gate,
-  so the lead can hear the voices. Bulk generation waits for approval.
+- **No API calls this round.** Test everything against a mock ElevenLabs client (canned MP3s or silence with fake
+  timestamps) so slicing, normalization, the speech-to-text check (mocked), encoding, and the manifest are proven.
+  `make announcer-generate DRY_RUN=1` prints what would be sent: clip count, characters per voice, estimated credits.
+  Real generation waits for the lead's approval of the text (lead gate 2).
 
-**N5. Hear it in action** (`make announcer-demo FIXTURE=…`): renders a fixture's cues into a single mixed audio file
-(`build/announcer/<fixture>.ogg`, with ffmpeg: clips placed at their cue times, ducking, an optional crowd bed) and a
-transcript synced to it, then opens an HTML player page that highlights the current line and marks the match events on
-a timeline. This is the lead's playtest for the announcer.
+**N5. Read it in action** (`make announcer-demo FIXTURE=…`): an HTML page with the match's event timeline and the
+banter scrolling in sync (speaker, line, why the director chose it), so the lead can "watch" a match as text. Several
+fixtures, several seeds each, so the lead sees the variety. The same page plays the mixed audio later, once clips exist
+(ffmpeg mixdown built and tested with the mock clips).
 
 **N6. In-game integration** (after round-2 integration, coordinating with command and art): an adapter from `Match`
 signals to the event contract, playback on an announcer audio bus with ducking, subtitles through `Hud.post_message`,
@@ -136,10 +149,14 @@ The announcer never affects gameplay.
 > I'm Celeste Vance, and what a crowd we have tonight! Remember, folks: every casualty you see this evening is fully
 > covered under our Platinum Afterlife plan. Now let's go down to the arena floor!
 
-**Her comedy rule:** cheerful corporate euphemism over horror, delivered sincerely, never as a joke. In the banter
+**Her comedy rule (revised by the lead, 2026-09-15):** she's a believable professional; something is *slightly off*,
+never a joke. See game_design.md *Humor direction*. **The example lines below are the wrong tone** (the lead heard them
+in ElevenLabs: *"far too overt and just not funny"*); they stay only as a record of what to avoid. A better direction,
+for calibration: "Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been told
+not to intervene." (Ordinary broadcast cadence; one detail is wrong; no emphasis.) In the banter
 graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's language), and `filler`.
 
-**Example lines** (tone references for the line library; fictional brands only):
+**Example lines (REJECTED tone, too overt; kept as what to avoid):**
 - Match intro: "Tonight's Condemned have been given a generous opportunity to earn their freedom. Terms and conditions
   apply. Void where survived."
 - Over carnage: "That dozer has just been reduced to scrap! And speaking of reductions, AquaCorp is lowering water
@@ -161,4 +178,4 @@ graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's lan
 
 ## Status
 
-- 2026-09-15: drafted as a round-3 candidate. Nothing started.
+- 2026-09-15: activated for round 3 (no API calls; transcripts for the lead's review). Nothing started.

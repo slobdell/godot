@@ -4,7 +4,7 @@ extends RefCounted
 ## smokes for BURN_SECONDS, fed into the pooled BurstSystem (small fireball flipbooks that end in smoke, one long
 ## ground glow) plus a low-priority pooled light, so it costs no new draw calls or nodes. How many burn at once
 ## follows the tier; the oldest goes out first. Visual only: a site is just where FxWorld.explosion(big) happened.
-## (A wreck MODEL left behind needs rules to keep the dead unit's transform: see streams/art.md requests.)
+## (A wreck MODEL left behind needs rules to keep the dead unit's transform: see streams/archive/round2/art.md requests.)
 
 const BURN_SECONDS := 30.0
 const FLAME_EVERY := 0.25

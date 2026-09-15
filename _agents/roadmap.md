@@ -17,22 +17,32 @@ archived stream briefs).
 | | netcode: relay broker, player-hosted matches, lobby, reconnect, replays; lockstep feasibility spike | archive/round1/netcode.md, references/netcode_designs.md |
 | | garage: touch army builder, saving, army codes, presets | archive/round1/garage.md |
 
-## Now: Round 2 (planned 2026-09-15)
+| 2026-09-15 | **Round 2: rules, ai, command, art, army**, merged 2026-09-15 | streams/archive/round2/ |
+| | rules: fixed unit catalog v2, counters from mechanics, friendly fire, 25 units a side, arenas as data, matchup matrix, Burner and fire pits | archive/round2/rules.md, balance.md |
+| | ai: cover map, peek and shoot, fire lanes, matchup groundwork, squad tactics, AI ladder | archive/round2/ai.md, unit_ai.md |
+| | command: tap grammar, squad bar, formation and drill icons, camera follows orders, HUD messages | archive/round2/command.md |
+| | art: roster and arena kit from reviewed Meshy concepts, textured floor, crowds, the review page | archive/round2/art.md |
+| | army: army builder v2, progression and unlocks, match loop with results, challenges | archive/round2/army.md |
+| 2026-09-15 | **Remote builds on builder0** (`make remote T=check`: 6 min 40 s vs 14–22 min) | remote_builds.md |
 
-Goal: **the core loop is fun and looks like the vibe.** Buy fixed units, split them into squads, command with taps,
-and watch smart vehicles fight in a lit, textured gladiator arena. Streams and briefs: [workstreams.md](workstreams.md).
+## Now: Round 3 (planned 2026-09-15)
+
+Goal: **make it fun.** The lead's verdict on round 2: boring, burdensome to command, lifeless combat. Round 3 rebuilds
+control (StarCraft-style, desktop first), makes combat alive (arcade-tactical), gives hits impact, and in parallel builds
+the arena kit, faction concepts, and the announcer's script engine. Streams and briefs: [workstreams.md](workstreams.md).
 
 | Stream | Outcome |
 |---|---|
-| **rules** | Fixed unit roster v2 (scout with a fixed gun, tank, IFV, artillery, Lancer) replaces loadouts; counters that emerge from mechanics; friendly fire; up to 5 squads; arena layouts as data; unit-vs-unit matchup matrix measured |
-| **ai** | Sophisticated unit brains: cover and peek-shooting, matchup-aware targeting, friendly-fire-aware firing, squad tactics; behavior scenarios and an AI ELO ladder |
-| **command** | Tap-only commanding (squad → ground or radar), squad bar, formation and drill icons, camera that follows orders, readability at play distance |
-| **art** | Meshy concepts for the roster and arena (the lead reviews images before any 3D), textured ground, lighting, gladiator stands with crowds, vehicle readability |
-| **army** | Army builder on catalog v2 (buy units, assign to ≤ 5 squads), credits and unlocks, budget tiers, the match loop (title → army → match → results → rematch) |
+| **control** | Select, box, groups, right-click orders, attack-move, queues, follow; instant response; automatic formations |
+| **combat** | Tank shells, 25 mm bursts, MG streams, weak spots, arcade driving with turning circles, artillery deploy |
+| **ai** | Circle-strafing, dodging, flanking for weak spots, cover pops, a CPU that maneuvers |
+| **feel** | Weapon and hit effects, weak-spot hits, wrecks, sound, order feedback |
+| **assets** | Stackable containers, ad screens, concepts and approved 3D for three factions, artillery outriggers |
+| **announcer** | Event fixtures, banter director, transcripts for the lead (no audio calls yet) |
 
-Paused this round: **netcode** (works today; resumes once the core loop is fun). Every stream keeps its smoke tests green.
+Paused this round: netcode, army/progression, faction gameplay.
 
-## Next (after round 2, order to be decided)
+## Next (after round 3, order to be decided)
 
 - **Play online for real,** within the lead's cost strategy (servers only match players and route packets;
   server_management.md §5): the new rules replicated in player-hosted matches, deploy the broker on one cheap box and

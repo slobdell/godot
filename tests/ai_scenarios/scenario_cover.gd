@@ -1,5 +1,5 @@
 extends TestCase
-## Cover behavior (A2/A3 in _agents/streams/ai.md). The stage: WallWestA (x -45..-27, z ≈ -20) with a Green
+## Cover behavior (A2/A3 in _agents/streams/archive/round2/ai.md). The stage: WallWestA (x -45..-27, z ≈ -20) with a Green
 ## tank in the open south-east of it and Rust guns to the north whose sight lines pass east of the wall.
 
 const PENDING := []

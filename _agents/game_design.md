@@ -29,10 +29,42 @@ opponent. Winning earns **credits** that unlock more unit types and bigger budge
    **(lead)**. Depth comes from matchups, positioning, and squad coordination, not from menus.
 4. **Smart autonomous units.** Even before any LLM, every vehicle behaves like a competent crew. The player
    decides *where* and *what*; units handle *how* **(lead)**.
-5. **Mobile first.** Everything works with single taps, drags, and pinches on a phone. No right-click, no
-   hover, no keyboard required **(lead)**.
+5. **Fun first, desktop first** **(lead, 2026-09-15; replaces "mobile first")**. Controls are designed for mouse and
+   keyboard (StarCraft-style) to find the fun; Steam is the primary target for now. Touch keeps working and gets its
+   own adaptation later; Android with on-device Gemini Nano follows once the game is fun.
 6. **Readable at a glance.** You can always tell whose unit it is, what type it is, and where your squads are
    going, even in the dark neon arena.
+7. **Alive and responsive** **(lead, 2026-09-15)**. Units obey instantly, never get stuck, and fight like they want
+   to win: they move while shooting, dodge, flank for weak spots, and use cover. Arcade-tactical: Twisted Metal
+   energy inside an RTS, with counters that still matter.
+
+## Round 3 direction: the lead's playtest verdict (2026-09-15)
+
+After playing the merged round-2 build, the lead:
+- *"it's still currently boring and no fun to play … right now this is looking like a military nerd game instead of
+  something that's fun to play."*
+- **Controls:** *"having to click between squads is quite burdensome; I would say we should draw inspiration from unit
+  combat completely from starcraft (i.e. regroup units, click individual units, the units are actually responsive) …
+  Trying to manage different formations is overwhelming … re-imagine this in the interest of making it fun (and
+  perhaps that even means we target Steam as our primary platform so we can shift, right click, etc)."* Decided:
+  **desktop first, StarCraft-style control** (see *Controlling units*).
+- **Responsiveness:** *"the units just don't feel controllable right now, they seem to get stuck in some particular
+  state and then not respond to my clicks; units within the same squad ended up getting separated and didn't
+  rejoin."*
+- **Combat feels dead:** *"Tanks will just sit there stationary and shoot each other - there's no intent at evasive
+  action, no intent of trying to shoot a weak spot, no intent of trying to circle your opponent (i.e. move
+  tangentially from your opponent while shooting at him). There's no action from the computer player to use
+  different formations or flanking maneuvers. There's no intent to pop in and out of cover."*
+- **Weapons:** *"Tanks should shoot at very low frequency and be able to land devastating hit, but a miss is also quite
+  costly. The IFV's were supposed to have something like a 25mm cannon like a Bradley fighting vehicle where it's
+  basically a low frequency machine gun (but much higher frequency than a tank). The scouts currently are not
+  shooting machine guns (note that I would think machine guns in and of themselves with their wall of bullets would
+  even be valuable in circumstances, even though they can only shoot directly forward)."*
+- **Inspiration:** *"another game I'm drawing inspiration from is Twisted Metal 3 that I remember playing as a kid (and
+  it was fun)."* Decided: **arcade-tactical** feel.
+- **Formations:** *"the formations are definitely cool and useful, I know they serve practical purposes and a V
+  formation of scouts from the gang coming at you would be scary; I just don't know how to incorporate it well."*
+  Decided: formations become **automatic** (see below); the CPU uses them visibly.
 
 ## Units: fixed types that counter each other
 
@@ -81,6 +113,15 @@ target is behind it; `game/tank/tank.gd`, `game/ai/steering.gd`).
 - **Why it matters for play:** a fixed-gun scout on wheels aims by driving, so it fights with attack runs and circling
   instead of pivoting in place; wheels want open lanes, tracks win in dense cover, and arenas (containers, chokepoints)
   become a locomotion choice. It's a counter lever, not just realism.
+
+**Weapons feel (lead, 2026-09-15; the round-3 combat stream implements it):**
+- **Tank:** very low rate of fire; a heavy, visible shell that lands a **devastating hit**; a miss is costly (long
+  reload), so leading the target and timing matter.
+- **IFV:** a **25 mm Bradley-style cannon**: bursts at a moderate rate, far faster than the tank, far weaker per round.
+- **Scout:** a real **forward machine gun**: a stream of tracer rounds, a wall of bullets that only hits what the hull
+  points at. Deadly against light targets, rears, and exposed crews.
+- **Weak spots:** side and rear armor are clearly punishing, so maneuvering for an angle pays off.
+- Hits read instantly: impact effects, sparks on armor, a distinct weak-spot hit.
 
 **Keep from round 1:** Halo-style recharging shields over hull health (the lead chose them), finite ammo with
 base resupply (rules stream may simplify if it doesn't add decisions), heat only where a unit's weapon uses
@@ -178,7 +219,26 @@ cheap figure tech as the arena crowds.
 - **No money in the loop**, ever (pillar 1).
 - Progress is saved locally first (`user://`); an account system comes with online play (netcode, later).
 
-## Commanding (mobile first)
+## Controlling units (desktop first, StarCraft-style; lead 2026-09-15)
+
+- **Select anything:** click a unit, drag a box, shift-click to add or remove, double-click (or ctrl-click) to select
+  every visible unit of that type. Number keys: ctrl+1–9 saves a control group, 1–9 recalls it, double-tap centers
+  the camera. **Squads become ordinary control groups**, not a mode the player must switch between.
+- **Right-click orders:** right-click ground = move; right-click an enemy = attack; A + click = attack-move (fight
+  what you meet on the way); shift queues orders; S = stop; H = hold position; F + click a friendly = follow/escort.
+- **Orders are instant and always win.** A unit given an order starts executing it within a few ticks, whatever its
+  brain was doing; nothing leaves a unit unresponsive. Units that get separated regroup on their own.
+- **Formations are automatic.** A selected group moving together arranges itself by role and situation (heavies in
+  front, fragile units behind, fast units spreading into a V when charging, a line when holding). One optional key
+  cycles a formation for players who want control. The CPU uses formations visibly (a scout V charging at you).
+- **Readable feedback:** move and attack markers on the ground, a selection panel with the selected units' portraits
+  and health, clear hover and selection highlights, and sounds on order acknowledgement.
+- Touch stays supported through an adaptation layer (tap select, drag box, two-finger pan), designed after the desktop
+  controls are fun.
+- History: rounds 1–2 designed a mobile-first tap grammar (tap a squad, tap the ground; squad bar; formation picker).
+  It's in [tactical_map.md](tactical_map.md) and archive/round2/command.md; the round-3 control stream replaces it.
+
+### Round 2's mobile commanding (superseded 2026-09-15)
 
 - **Tap a squad** (its chip in the squad bar, or any of its units on the map) → **tap the ground or the radar**
   → it goes there **(lead)**. No right-click. Advanced (optional): hold-and-drag to set facing.
@@ -201,6 +261,10 @@ The lead wants this *"really sophisticated"*. The player's orders set intent; ea
   risk explicitly; move to clear a firing lane.
 - **Squad tactics:** bounding overwatch, suppress-and-flank, focus fire, covering a retreating teammate,
   protecting fragile units (artillery, Lancers).
+- **Alive in combat (lead, 2026-09-15):** move while shooting (circle-strafe: move tangentially around the target),
+  take evasive action (jink, dodge slow tank shells), maneuver for side and rear shots, pop in and out of cover, keep
+  the range that suits the weapon. The CPU opponent flanks, uses formations, focuses fire, and retreats hurt units.
+- **Player orders always override** the brain immediately (pillar 7).
 - **Deterministic, measurable:** pure decision functions, seeded; behavior regression scenarios ("peeks from
   cover", "holds fire when a friendly crosses") plus AI-vs-AI tournaments with ELO so a new brain must beat the old one.
 - Grounding in game-AI literature: utility AI (what we have), tactical position evaluation (Killzone,
@@ -325,16 +389,31 @@ credits, then converts to OGG with ffmpeg):
 5. **Packs:** a core pack ships with the game (a few MB); bigger banter packs load after the game starts on web and
    ship inside the paid Android app. At ~2 s per clip and 32 kbps, 1,000 clips is ~8 MB.
 
+**Humor direction (lead, 2026-09-15, after hearing the first samples in ElevenLabs):** *"the humor was far too overt
+and just not funny. What makes satire funny is things blur the line between believable and non-believable; in the
+humor with our professional reporter the listener should just get the sense that something's slightly off with what
+she said. For the JR announcer, it would be easy enough to formulate a lot of stereotypical reactions to the sporting
+event, and of course we can draw inspiration from the UFC announcers and how excited they are getting into it."*
+- **The Corporate Co-host:** a real, polished broadcaster. Almost everything she says is ordinary sports-broadcast
+  professionalism; the dystopia leaks through one slightly wrong detail, delivered with zero emphasis, and she moves
+  on. No jokes, no punchlines, no winks, no pun brand names. If a line reads as a joke, cut it.
+- **The caller (JR):** authentic fight-night hype: the stock reactions, disbelief, and escalating excitement of real
+  MMA commentary, played straight. The comedy is that he's this excited about armored buses.
+- **The Veteran:** dry, expert, understated.
+
 **Rights and tone:** commercial use needs a paid ElevenLabs plan (the free plan is non-commercial with attribution).
-Dark, funny, over the top; mild language only (strong profanity and crude humor raise the IARC rating). Team names by
+Dark and understated; mild language only (strong profanity and crude humor raise the IARC rating). Team names by
 color, never player names. Lines in other languages later from the same text library.
 
 ## Match rules (current defaults)
 
 - Squad-vs-squad elimination; no respawns.
 - **Friendly fire on** **(lead)**.
-- The center **control point** as a second win condition: round 1 measured that it restores "coordination
-  beats individuals" under shields (balance.md). **Recommended default; pending the lead.**
+- The center **control point** as a second win condition, **on by default** (the lead, answering rules' question:
+  *"sure, I agree with you"*). Round 1 measured that it restores "coordination beats individuals" under shields.
+- **Ammo:** only artillery has finite ammo; direct-fire guns never run out (the lead: *"yes that's ok for now"*).
+- **Scouts are spotters first** (the lead: *"scouts should be spotters more than fighters, but there will be cases where
+  its machine gun is useful"*).
 - Fog of war from per-unit sight; scouting matters.
 
 ## Later layers (kept, not now)

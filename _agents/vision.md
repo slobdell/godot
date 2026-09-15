@@ -37,8 +37,12 @@ stream's up-armored prison-bus dozer found this vibe in round 1. Photoreal and g
 
 ## Platforms
 
-- **Web** (WebAssembly, free) and **Android** (paid), from one Godot codebase; a headless server build exists.
-- **Mobile first:** single taps, drags, and pinches; no right-click, no hover, no keyboard required.
+- **Desktop first, Steam as the primary target for now** (the lead, 2026-09-15: *"perhaps that even means we target
+  Steam as our primary platform so we can shift, right click, etc"*): StarCraft-style mouse and keyboard controls to
+  find the fun. **Web** (free) and **Android** (paid, with on-device Gemini Nano, which the lead still sees as *"the
+  whole magic of this system"*) follow from the same Godot codebase once the game is fun; touch gets its own adaptation.
+- History: rounds 1–2 designed mobile first (single taps, no right-click); superseded because commanding felt
+  burdensome.
 - Online play: players host matches through our relay broker, so our servers never simulate (built in
   round 1, paused while the core game gets fun); lockstep for ranked play is feasible (integer-core spike).
   Cross-play: web, Android, and any desktop build share one player pool.

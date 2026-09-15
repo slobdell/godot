@@ -1,9 +1,12 @@
 # Stream: art (units, arena, lighting, crowds)
 
-> Read [../art_direction.md](../art_direction.md) (the source of truth for the look), [../game_design.md](../game_design.md),
-> [../workstreams.md](../workstreams.md) (especially **Lead gates**), and [../slot_contracts.md](../slot_contracts.md).
-> Then the references: [references/fx_tricks.md](references/fx_tricks.md), [references/asset_prompts.md](references/asset_prompts.md),
-> [references/asset_budget.md](references/asset_budget.md), [references/asset_services.md](references/asset_services.md), and
+> **Archived 2026-09-15:** round 2 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../art_direction.md](../../../art_direction.md) (the source of truth for the look), [../game_design.md](../../../game_design.md),
+> [../workstreams.md](../../../workstreams.md) (especially **Lead gates**), and [../slot_contracts.md](../../../slot_contracts.md).
+> Then the references: [references/fx_tricks.md](../../references/fx_tricks.md), [references/asset_prompts.md](../../references/asset_prompts.md),
+> [references/asset_budget.md](../../references/asset_budget.md), [references/asset_services.md](../../references/asset_services.md), and
 > `assets/README.md`. You own `game/theme/**`, `game/ui/widgets/**`, `game/ui/hud.tscn`, `game/combat/impact.gd`,
 > `assets/**`, `tools/assets/`, `mk/assets.mk`, `mk/fx.mk`, `_agents/art_direction.md`, and those references.
 > You and rules share `slot_contracts.md`.
@@ -41,7 +44,7 @@ and the estimated 3D credits) → list the item under **Waiting on the lead** be
 ungated work. Only images the lead approves (quote their words here) go to image-to-3D. Keep a spend ledger
 (`assets/meshy_ledger.md`: date, task id, credits, result).
 
-**How:** [references/concept_review.md](references/concept_review.md) is the whole process: 2–3 directions per slot,
+**How:** [references/concept_review.md](../../references/concept_review.md) is the whole process: 2–3 directions per slot,
 `make art-review-page` → a private Artifact where the lead taps Approve/Reject → `make art-apply-decisions` → 3D only
 for approved items. The lead, after review #1: *"whatever you did to give me the 3 choices of assets to choose from
 per item - that was amazing"*; they want the same for every new unit.

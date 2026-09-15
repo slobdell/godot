@@ -118,7 +118,7 @@ tools/assets/generate.py --provider meshy --slot unit.tank --review-item burner_
   - A recipe like `tools/assets/build_roster.sh` to split and fit it into slots.
   - `make assets-unit UNIT=<id> THEME=roster` to look at the result.
   - `make assets-check`.
-- The whole round-1 path, concept to in-game, is in `streams/art.md` (Status).
+- The whole round-1 path, concept to in-game, is in `streams/archive/round2/art.md` (Status).
 
 ## Round 1 for reference (2026-09-14)
 
