@@ -98,7 +98,7 @@ build/   (gitignored)    exports and screenshots
 
 | I want to… | Do |
 |---|---|
-| **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): tap a tank = select its squad, tap ground = go, hold-drag = go + face, buttons for drills/formations; mouse right-drag and Q-T / Z-N keys also work (round 2 makes it tap-only) |
+| **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): tap a squad chip or unit, then tap the ground or the radar = go; hold then drag = go + face; drag = pan; the camera follows off-screen orders; Formation opens the picker. The mouse's left button works exactly like a finger ([tactical_map.md](tactical_map.md) "v3") |
 | **Build an army, then fight with it** | `make garage` (browser `?garage`): tap/drag units into squads, FIGHT → skirmish. Saved armies: `user://doctrines/` (round 2 removes weapon picking) |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
@@ -111,6 +111,7 @@ build/   (gitignored)    exports and screenshots
 | See the look (cyberpunk is the default theme; `--theme=default` for the boxes) | `make title` (menu), `make vehicle-gallery`, `make hud-gallery`; any mode takes `--perf` (overlay), `--fx-quality=low\|medium\|high`, `--hud-demo`, `--mute`, `--no-shake` |
 | Measure an effect's cost | `make fx-bench` (FX lab: per-trick configs, `build/fx-bench.json`; browser `?fx-bench`); results and tier budgets in `_agents/streams/references/fx_tricks.md` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
+| Check the command UI and camera like a player | `make command-playtest` (headless camera check), `make command-playtest-shots` (frames in `build/command-playtest/`) |
 | See it in a browser | `make serve-web` → http://localhost:8060 (add `?demo`) |
 | Prove the web build boots | `make web-smoke` → `build/screenshots/web.png` |
 | Play multiplayer locally | `make play BOTS=1`, then open several tabs at http://localhost:8060/?connect (or `make client`) |

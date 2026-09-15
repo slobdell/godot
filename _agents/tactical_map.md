@@ -197,3 +197,5 @@ discoverability, not dropped input.
   up = models, rings, and small health bars; zoom ≥ 0.5 = unit-type icons.
 - Tests: `tests/test_command_*.gd` (grammar through real touch/mouse events, squad bar, icons, camera,
   readability, messages). Playtest: `make command-playtest` / `make command-playtest-shots`.
+- Launch flags (skirmish): `--zoom=0..1` (start height), `--ui-scale=0.75..2`, `--command-playtest=DIR`.
+  Console markers: `SKIRMISH_CAMERA`, `COMMAND_PLAYTEST`, `COMMAND_PLAYTEST_DONE`.

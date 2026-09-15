@@ -96,6 +96,7 @@ func start() -> void:
 	if flags.has("zoom"):
 		rig.zoom = clampf(float(flags.text("zoom")), 0.0, 1.0)
 	main.add_child(rig)
+	print("SKIRMISH_CAMERA focus=(%.0f, %.0f) zoom=%.2f vehicles=%d" % [rig.focus.x, rig.focus.z, rig.zoom, army.size() - 1])
 	tactical.rig = rig
 	main.hud.add_child(tactical)
 	# C2: ground rings under the selected squad (and faint team marks), depth-tested under the models.
