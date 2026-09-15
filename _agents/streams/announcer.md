@@ -324,9 +324,9 @@ Questions for the lead with the review:
   passed on the rerun; not announcer code (flaky, recorded for the orchestrator).
 - Mock durations are longer than the per-word estimate; real ElevenLabs pacing will differ again, which is why the
   director reads the manifest.
-- **Rendering on builder0 hangs** (2026-09-15, ~03:00): `make remote T=skirmish-shots` (not just `announcer-shots`)
-  never reaches `frame_post_draw`; the desktop session there has two Xwayland auth files and likely isn't presenting
-  frames. I stopped my stuck processes by PID. Screenshots were taken on the laptop instead.
+- ~~Rendering on builder0 hangs~~ **fixed on main** (7dc7bdc, a stale Xwayland auth file; merged here): after the merge,
+  `make remote T=announcer-shots` rendered `build/screenshots/announcer_{desktop,phone}.png` on builder0. At phone
+  aspect (1200×540) the newest subtitle wraps in full and older ones truncate with an ellipsis; readable.
 - Inferred damage credits the victim's nearest enemy until K2's `projectile_impact` exists (occasionally the wrong
   shooter type in a big-hit call).
 - Director seeds in live matches are random per match (presentation only); `--announcer-seed` pins one.
