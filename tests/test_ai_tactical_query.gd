@@ -49,9 +49,9 @@ func test_cover_fire_hides_from_the_target_and_peeks_at_it_front_first() -> void
 	assert_true(map.clear_line(peek, target), "the peek spot sees the target (%s)" % peek)
 	var to_peek := Vector2(peek.x - hide.x, peek.z - hide.z)
 	var to_target := Vector2(target.x - hide.x, target.z - hide.z)
-	assert_true(absf(rad_to_deg(to_peek.angle_to(to_target))) <= Armor.ARC_DEG, "driving out to peek keeps the front toward the target")
+	assert_true(absf(rad_to_deg(to_peek.angle_to(to_target))) <= 60.01, "driving out to peek keeps the front mostly toward the target")
 	assert_true(not map.path_blocked(Vector2(hide.x, hide.z), Vector2(peek.x, peek.z), 1.0), "the hide-peek drive is clear")
-	assert_true(hide.distance_to(peek) <= 9.01, "the peek is a short hop (%.1f m)" % hide.distance_to(peek))
+	assert_true(hide.distance_to(peek) <= TacticalQuery.PEEK_MAX + 0.01, "the peek is a short hop (%.1f m)" % hide.distance_to(peek))
 
 
 func test_no_cover_fire_in_the_open() -> void:

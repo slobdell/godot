@@ -2,7 +2,7 @@ extends TestCase
 ## Cover behavior (A2/A3 in _agents/streams/ai.md). The stage: WallWestA (x -45..-27, z ≈ -20) with a Green
 ## tank in the open south-east of it and Rust guns to the north whose sight lines pass east of the wall.
 
-const PENDING := ["test_a_hurt_tank_under_fire_gets_out_of_sight", "test_a_healthy_tank_near_a_wall_fights_from_cover"]
+const PENDING := []
 
 const GREEN_START := Vector3(-20, 0, -12)
 ## Behind the wall from both guns (checked by the setup assertions).
@@ -11,7 +11,7 @@ const HIDDEN_SPOT := Vector3(-36, 0, -14)
 
 func _stage(s: AiScenario, gun_count: int) -> Array[Tank]:
 	var guns: Array[Tank] = []
-	var spots := [Vector3(-40, 0, -65), Vector3(-30, 0, -70)]
+	var spots := [Vector3(-38, 0, -55), Vector3(-30, 0, -58)]
 	for i in gun_count:
 		var gun := s.shooter(Match.Team.RUST, "Rust_Gun_%d" % (i + 1), spots[i], PI)
 		AiScenario.make_durable(gun)
@@ -32,6 +32,7 @@ func test_a_hurt_tank_under_fire_gets_out_of_sight() -> void:
 	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", GREEN_START, 0.0)
 	me.health = 120
 	me.shield = 0.0
+	me.ticks_since_hit = 0  # just hit: the shield stays down for its recharge delay
 	var hidden_run := 0
 	var longest_hidden := 0
 	var first_hidden := -1

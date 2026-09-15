@@ -19,10 +19,25 @@ const MIN_COMMIT_TICKS := 45
 const EMERGENCY_MARGIN := 1.6
 ## Contacts older than this are investigated rather than engaged.
 const CONTACT_FRESH_TICKS := 120
-const COVER_RING_RADIUS := 10.0
-const COVER_SAMPLES := 8
+## Tactical queries (TacticalQuery) are re-run at most this often per tank unless the situation changed.
+const QUERY_EVERY_TICKS := 30
+## ...or this far from where the last one was asked (meters).
+const QUERY_MOVED := 6.0
+## Hiding places are searched this far around a tank (meters).
+const COVER_SEARCH_RADIUS := 30.0
+## A retreating tank that's in a gun's sight first breaks line of sight at cover this close (meters), then withdraws.
+const RETREAT_COVER_DISTANCE := 25.0
+## COVER_FIRE (A3): hide and peek spots count as reached within this distance (meters).
+const SPOT_ARRIVE := 1.0
+## ...peek when the gun will be loaded by the time the tank gets there, driving at about this speed (m/s),
+const PEEK_SPEED := 5.0
+## ...and only with at least this much shield left (fraction).
+const PEEK_SHIELD := 0.35
+## A COVER_FIRE query stays valid while the tank is this close to its hide spot and the target this close to
+## where it was (meters), and the target still can't see the hide spot.
+const COVER_FIRE_KEEP := 12.0
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -67,6 +82,10 @@ var choice := {}
 var ranked: Array = []
 ## The squad order_serial this brain last acted on.
 var _order_serial := 0
+## The last cover query: {"tick", "position", "threats" (count), "result" [Vector3]}.
+var _cover_cache := {}
+## The last COVER_FIRE query: {"tick", "target" (name), "target_position", "result" ({hide, peek, target} or {})}.
+var _cover_fire_cache := {}
 
 
 func think(_delta: float) -> void:
@@ -135,11 +154,16 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var is_scout: bool = me.get("class", "tank") == "scout"
 	var is_artillery: bool = me.get("class", "tank") == "artillery"
 	var firepower := 0.1 if out_of_ammo else lerpf(1.0, HOT_FIREPOWER, clampf((float(me.get("heat", 0.0)) - 0.7) / 0.3, 0.0, 1.0))
+	# Guns that can shoot me right now: in their reach with a clear line (A3). Hand-built situations may omit
+	# it; then a gun aimed at me counts.
+	var exposed_to := 0
 	for c in contacts:
 		if c["visible"]:
 			visible_threats += 1
 			if c["aiming_at_me"]:
 				threats_on_me += 1
+			if c.get("threatens_me", c["aiming_at_me"]):
+				exposed_to += 1
 
 	var candidates: Array = []
 	var add := func(option: String, target: String, score: float) -> void:
@@ -181,8 +205,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 	# TAKE_COVER: guns on me, hurt, cautious, and somewhere hidden is close by.
 	var cover := 0.0
-	if not (s["cover"] as Array).is_empty() and threats_on_me > 0:
-		cover = float(d["caution"]) * minf(1.0, threats_on_me / 2.0) * (1.0 - toughness) * 1.6
+	if not (s["cover"] as Array).is_empty() and maxi(threats_on_me, exposed_to) > 0:
+		cover = float(d["caution"]) * minf(1.0, maxi(threats_on_me, exposed_to) / 2.0) * (1.0 - toughness) * 1.6
 
 	add.call("TAKE_COVER", "", cover)
 
@@ -223,6 +247,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			investigates.append([c["name"], (0.25 + 0.4 * float(d["aggression"])) * (1.0 - staleness) * leash_factor])
 	# Artillery never brawls: it shells what the team spots (BOMBARD) and stays behind (SHADOW).
 	var fight_scale := 0.0 if is_artillery else (SCOUT_FIGHT if is_scout else 1.0)
+	var cover_fire: Dictionary = s.get("cover_fire", {}) if s.get("cover_fire") != null else {}
 	for pair in engages:
 		var score: float = pair[1] * fight_scale
 		if is_scout and _is_artillery_contact(contacts, pair[0]):
@@ -231,6 +256,13 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			# cautious scout goes for it.
 			score = maxf(pair[1] * SCOUT_HUNT, SCOUT_HUNT_FLOOR * confidence)
 		add.call("ENGAGE", pair[0], score)
+		# COVER_FIRE (A3): the same fight, from a hide/peek pair: hide while reloading, peek to shoot. Worth it
+		# for slow-reloading direct-fire guns (a machine gun or laser gains little from ducking between
+		# shots); cautious crews like it more. Considerations: fight appetite × reload × caution × spot quality.
+		if not cover_fire.is_empty() and cover_fire["target"] == pair[0] and weapon["kind"] != Weapons.Kind.ARC:
+			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), 0.4, 2.0)
+			var spot_quality := UtilityCurves.floor_at(float(cover_fire.get("score", 0.5)), 0.6)
+			add.call("COVER_FIRE", pair[0], score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality)
 	for pair in flanks:
 		add.call("FLANK", pair[0], pair[1] * fight_scale)
 	if is_artillery:
@@ -432,6 +464,7 @@ func build_situation() -> Dictionary:
 			squad_positions.append(ally.global_position)
 
 	var contacts: Array = []
+	var cover_map := CoverMap.of(tank)
 	var my_name := String(tank.name)
 	var intel: Dictionary = game_match.intel[team]
 	var names := intel.keys()
@@ -454,6 +487,9 @@ func build_situation() -> Dictionary:
 					func(faced: String) -> bool: return faced != my_name),
 			"aiming_at_me": known["visible"] and Ballistics.aim_error(known["position"], known["turret_forward"],
 					my_position) <= deg_to_rad(12.0),
+			# In its weapon's reach with a clear line to me (CoverMap): it can shoot me right now.
+			"threatens_me": known["visible"] and my_position.distance_to(known["position"]) <= float(Weapons.profile(known["weapon"])["range"]) + 5.0
+					and cover_map.clear_line(known["position"], my_position),
 		})
 
 	var objective: Variant = null
@@ -470,11 +506,6 @@ func build_situation() -> Dictionary:
 			sum += p
 		squad_center = sum / squad_positions.size()
 
-	var threat_positions: Array = []
-	for c in contacts:
-		if c["visible"]:
-			threat_positions.append(c["position"])
-
 	var squad_context: Dictionary = AiTickCache.squad_context(game_match, tank)
 	var effective_directives := directives
 	if squad_context.get("slot") != null:
@@ -485,7 +516,7 @@ func build_situation() -> Dictionary:
 		"self": {"name": String(tank.name), "team": team, "position": my_position, "forward": -tank.global_basis.z,
 				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
 				"ammo": tank.ammo, "max_ammo": tank.max_ammo, "heat": tank.sync_heat,
-				"shield": tank.shield, "max_shield": tank.max_shield,
+				"shield": tank.shield, "max_shield": tank.max_shield, "reload": tank.sync_reload,
 				"class": Units.PROFILES.get(tank.unit_id, {}).get("class", "tank"), "sight_radius": tank.sight_radius,
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
 		"directives": effective_directives,
@@ -495,7 +526,8 @@ func build_situation() -> Dictionary:
 		"objective": objective,
 		"objective_radius": objective_radius,
 		"squad_center": squad_center,
-		"cover": _find_cover(threat_positions) if not threat_positions.is_empty() else [],
+		"cover": _cover_spots(contacts, allies, squad_context),
+		"cover_fire": _cover_fire_spot(contacts, allies, squad_context, cover_map),
 		"rally": Match.spawn_position(team, tank.slot),
 		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
@@ -505,30 +537,88 @@ func build_situation() -> Dictionary:
 	}
 
 
-## Nearby reachable points that no visible threat can see, nearest first.
-func _find_cover(threat_positions: Array) -> Array:
-	var space := tank.get_world_3d().direct_space_state
-	var map := tank.get_world_3d().navigation_map
-	var eye := Vector3.UP * Perception.EYE_HEIGHT
-	var found: Array = []
-	for i in COVER_SAMPLES:
-		var angle := TAU * i / COVER_SAMPLES
-		var point := tank.global_position + Vector3(cos(angle), 0.0, sin(angle)) * COVER_RING_RADIUS
-		if absf(point.x) > ARENA_LIMIT or absf(point.z) > ARENA_LIMIT:
+## Nearby hiding places from the visible threats, best first (TacticalQuery.find_cover). Cached for
+## QUERY_EVERY_TICKS unless the tank moved or the number of visible threats changed.
+func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> Array:
+	var threats := TankBrain.threat_list(contacts, tank.global_position)
+	if threats.is_empty():
+		_cover_cache = {}
+		return []
+	if not _cover_cache.is_empty() and game_match.tick - int(_cover_cache["tick"]) < QUERY_EVERY_TICKS \
+			and tank.global_position.distance_to(_cover_cache["position"]) < QUERY_MOVED \
+			and int(_cover_cache["threats"]) == threats.size():
+		return _cover_cache["result"]
+	var request := {"position": tank.global_position, "threats": threats, "search_radius": COVER_SEARCH_RADIUS,
+			"friends": allies.map(func(ally: Dictionary) -> Vector3: return ally["position"])}
+	if squad_context.get("slot") != null:
+		request["anchor"] = squad_context["slot"]
+		request["anchor_radius"] = COVER_SEARCH_RADIUS * 0.6
+	elif typeof(directives["objective"]) == TYPE_DICTIONARY and float(directives["leash"]) > 0.0:
+		var o: Dictionary = directives["objective"]
+		request["anchor"] = Directives.to_world(tank.team, float(o["right"]), float(o["forward"]))
+		request["anchor_radius"] = float(directives["leash"])
+	var result: Array = TacticalQuery.find_cover(CoverMap.of(tank), request).map(
+			func(spot: Dictionary) -> Vector3: return spot["point"])
+	_cover_cache = {"tick": game_match.tick, "position": tank.global_position, "threats": threats.size(), "result": result}
+	return result
+
+
+## A hide/peek pair for fighting the most pressing target from cover (TacticalQuery.find_cover_fire), or
+## null. The target is the one this tank is already fighting, else the nearest visible enemy in reach. Cached
+## while the tank stays near the hide spot, the target stays put, and the hide spot stays hidden from it.
+func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary, cover_map: CoverMap) -> Variant:
+	if tank.weapon["kind"] == Weapons.Kind.ARC:
+		return null
+	var reach := float(tank.weapon["range"])
+	var target: Dictionary = {}
+	for c: Dictionary in contacts:
+		# A target that ducked out of sight a moment ago is still the fight (hiding breaks our own line of sight too).
+		if int(c["age"]) > CONTACT_FRESH_TICKS or tank.global_position.distance_to(c["position"]) > reach + 15.0:
 			continue
-		if Pathing.is_ready(tank):
-			var snapped := NavigationServer3D.map_get_closest_point(map, point)
-			if Vector2(snapped.x - point.x, snapped.z - point.z).length() > 1.0:
-				continue  # inside an obstacle
-		var hidden := true
-		for threat in threat_positions:
-			var query := PhysicsRayQueryParameters3D.create(threat + eye, point + eye, Perception.WORLD_MASK)
-			if space.intersect_ray(query).is_empty():
-				hidden = false
-				break
-		if hidden:
-			found.append(point)
-	return found
+		if c["name"] == choice.get("target", ""):
+			target = c
+			break
+		if not c["visible"]:
+			continue
+		if target.is_empty() or tank.global_position.distance_to(c["position"]) < tank.global_position.distance_to(target["position"]):
+			target = c
+	if target.is_empty():
+		_cover_fire_cache = {}
+		return null
+	var cached: Dictionary = _cover_fire_cache.get("result", {})
+	if not _cover_fire_cache.is_empty() and _cover_fire_cache["target"] == target["name"] \
+			and game_match.tick - int(_cover_fire_cache["tick"]) < QUERY_EVERY_TICKS * 4 \
+			and (target["position"] as Vector3).distance_to(_cover_fire_cache["target_position"]) < 6.0 \
+			and (cached.is_empty() or (tank.global_position.distance_to(cached["hide"]) < COVER_FIRE_KEEP
+				and TacticalQuery.hull_hidden(cover_map, target["position"], cached["hide"]))):
+		return null if cached.is_empty() else cached
+	if not _cover_fire_cache.is_empty() and _cover_fire_cache["target"] == target["name"] \
+			and game_match.tick - int(_cover_fire_cache["tick"]) < QUERY_EVERY_TICKS:
+		return null if cached.is_empty() else cached  # asked recently: don't re-run every think
+	var request := {"position": tank.global_position, "target": target["position"],
+			"threats": TankBrain.threat_list(contacts, tank.global_position), "search_radius": COVER_SEARCH_RADIUS,
+			"range": [float(tank.weapon["preferred_min"]), float(tank.weapon["preferred_max"]), reach],
+			"friends": allies.map(func(ally: Dictionary) -> Vector3: return ally["position"])}
+	if squad_context.get("slot") != null:
+		request["anchor"] = squad_context["slot"]
+		request["anchor_radius"] = COVER_SEARCH_RADIUS * 0.6
+	var found := TacticalQuery.find_cover_fire(cover_map, request)
+	if not found.is_empty():
+		found["target"] = target["name"]
+	_cover_fire_cache = {"tick": game_match.tick, "target": target["name"], "target_position": target["position"], "result": found}
+	return null if found.is_empty() else found
+
+
+## Visible contacts as TacticalQuery threats: guns aimed at me first (weight 1), then the rest (0.6),
+## nearest first within each group.
+static func threat_list(contacts: Array, my_position: Vector3) -> Array:
+	var ranked: Array = []
+	for c: Dictionary in contacts:
+		if c["visible"]:
+			var aimed: bool = c["aiming_at_me"]
+			ranked.append([0 if aimed else 1, my_position.distance_to(c["position"]), c["name"], c["position"], 1.0 if aimed else 0.6])
+	ranked.sort()
+	return ranked.map(func(entry: Array) -> Dictionary: return {"position": entry[3], "weight": entry[4]})
 
 
 # ---- Acting: choice → standing orders ----------------------------------------------
@@ -562,8 +652,30 @@ func _act(s: Dictionary) -> void:
 			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0))
 			_order_weapon({"type": "fire_at_will"})
 		"RETREAT":
-			_order_move(_move_to(s["rally"], true))
+			# Break line of sight first (A3): backing 100 m across open ground under fire is how hurt tanks died.
+			var exposed := (s["contacts"] as Array).any(func(c: Dictionary) -> bool:
+				return c["visible"] and c.get("threatens_me", c["aiming_at_me"]))
+			var cover_spots: Array = s["cover"]
+			if exposed and not cover_spots.is_empty() and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE:
+				var hide: Vector3 = cover_spots[0]
+				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0, 1.0, SPOT_ARRIVE))
+			else:
+				_order_move(_move_to(TankBrain.withdraw_point(s), true))
 			_order_weapon({"type": "fire_at_will"})
+		"COVER_FIRE":
+			var pair: Dictionary = s["cover_fire"]
+			var hide: Vector3 = pair["hide"]
+			var peek: Vector3 = pair["peek"]
+			var travel := my_position.distance_to(peek) / PEEK_SPEED
+			var loaded_by_then := float(me.get("reload", 1.0)) >= 1.0 - travel / maxf(float(weapon["reload"]), 0.01)
+			var max_shield := float(me.get("max_shield", 0.0))
+			var shield_ok := max_shield <= 0.0 or float(me.get("shield", 0.0)) >= max_shield * PEEK_SHIELD
+			if loaded_by_then and shield_ok:
+				_order_move(_move_to(peek, false, 1.0, SPOT_ARRIVE))
+			else:
+				# Back into cover with the front still toward the target.
+				_order_move(_move_to(hide, true, 1.0, SPOT_ARRIVE))
+			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"BOMBARD":
 			var target_position: Vector3 = contact["position"]
 			var distance := my_position.distance_to(target_position)
@@ -653,6 +765,9 @@ func _act(s: Dictionary) -> void:
 			var depot: Vector3 = s.get("resupply", s["rally"])
 			if bool(me.get("in_resupply_zone", false)) and my_position.distance_to(depot) < Match.RESUPPLY_RADIUS * 0.6:
 				_order_move({"type": "stop"})
+			elif TankBrain.withdraw_point(s) != s["rally"]:
+				# Enemies seen close by a moment ago: back straight away from them first (stays in cover's shadow).
+				_order_move(_move_to(TankBrain.withdraw_point(s), true))
 			else:
 				# Back in with the front armor toward any threat, drive in when it's quiet.
 				_order_move(_move_to(depot, not s["contacts"].filter(func(c: Dictionary) -> bool: return c["visible"]).is_empty()))
@@ -693,15 +808,43 @@ func _contact(s: Dictionary, contact_name: String) -> Dictionary:
 	return {}
 
 
-static func _move_to(point: Vector3, reverse := false, speed := 1.0) -> Dictionary:
+## Where a tank breaking contact heads next: straight away from the nearest recently seen enemy that could
+## still reach it (moving directly away from a threat keeps an obstacle between us: shadows widen with
+## distance), bent toward home when home is roughly that way; the rally point once clear.
+static func withdraw_point(s: Dictionary) -> Vector3:
+	var me: Vector3 = s["self"]["position"]
+	var rally: Vector3 = s["rally"]
+	var nearest: Dictionary = {}
+	for c: Dictionary in s["contacts"]:
+		if int(c["age"]) > CONTACT_FRESH_TICKS * 2:
+			continue
+		var distance := me.distance_to(c["position"])
+		if distance > float(Weapons.profile(String(c.get("weapon", "cannon")))["range"]) + 25.0:
+			continue
+		if nearest.is_empty() or distance < me.distance_to(nearest["position"]):
+			nearest = c
+	if nearest.is_empty():
+		return rally
+	var away := Vector3(me.x - nearest["position"].x, 0.0, me.z - nearest["position"].z)
+	away = away.normalized() if away.length() > 0.1 else -(s["self"]["forward"] as Vector3)
+	var home := Vector3(rally.x - me.x, 0.0, rally.z - me.z)
+	if home.length() > 0.1 and home.normalized().dot(away) > 0.3:
+		away = (away * 0.6 + home.normalized() * 0.4).normalized()
+	var point := me + away * 20.0
+	return Vector3(clampf(point.x, -ARENA_LIMIT, ARENA_LIMIT), 0.0, clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT))
+
+
+static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := OrderController.ARRIVE_RADIUS) -> Dictionary:
 	return {"type": "move_to", "x": clampf(point.x, -ARENA_LIMIT, ARENA_LIMIT),
-			"z": clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT), "reverse": reverse, "speed": snappedf(speed, 0.05)}
+			"z": clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT), "reverse": reverse, "speed": snappedf(speed, 0.05),
+			"arrive": arrive}
 
 
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
 func _order_move(order: Dictionary) -> void:
 	if order["type"] == move_order.get("type") and order.get("reverse", false) == move_order.get("reverse", false) \
-			and absf(float(order.get("speed", 1.0)) - float(move_order.get("speed", 1.0))) < 0.1:
+			and absf(float(order.get("speed", 1.0)) - float(move_order.get("speed", 1.0))) < 0.1 \
+			and is_equal_approx(float(order.get("arrive", 0.0)), float(move_order.get("arrive", 0.0))):
 		if not order.has("x"):
 			return
 		if Vector2(float(order["x"]) - float(move_order["x"]), float(order["z"]) - float(move_order["z"])).length() < 2.0:

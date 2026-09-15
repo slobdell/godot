@@ -22,14 +22,21 @@ const MAX_CANDIDATES := 24
 const MAX_DEEP := 8
 ## Candidates closer than this to a friend are skipped (splash, blocking each other's lanes).
 const FRIEND_SPACING := 5.0
-## Peek spots: this many degrees off the bearing to the target (front armor stays toward it: Armor.ARC_DEG 45),
-const PEEK_ANGLE_DEG := 38.0
+## Peek spots: these many degrees off the bearing to the target, smallest first (up to Armor.ARC_DEG 45 the
+## front armor stays toward it; 60 gets around a wall's end at the cost of showing some side while out),
+const PEEK_ANGLES_DEG := [30.0, 45.0, 60.0]
 ## at these distances from the hide spot (meters), shortest first.
 const PEEK_STEPS := [3.0, 4.5, 6.0, 7.5, 9.0]
+const PEEK_MAX := 10.5
 ## A drive between hide and peek keeps this far from obstacles (half a hull plus a margin).
 const DRIVE_CLEARANCE := 1.3
 ## A spot where a tank can sit: this far outside obstacles.
 const STAND_CLEARANCE := 2.4
+## A hiding place must hide the whole hull, not just its center: sight lines to points this far to either
+## side (across the line of sight) must be blocked too.
+const HULL_MARGIN := 1.6
+## Peek this much past the first spot that sees the target, so the tank is clearly out when it stops.
+const PEEK_MARGIN := 1.5
 
 
 ## Up to `count` hiding places, best first: [{"point": Vector3, "score": float, "cover": float}].
@@ -57,9 +64,9 @@ static func find_cover(map: CoverMap, request: Dictionary, count := 3) -> Array:
 
 
 ## A place to fight from cover: {"hide": Vector3, "peek": Vector3, "score": float} or {} if none.
-## HIDE is out of the target's sight and inside weapon reach; PEEK is 3–9 m away, within PEEK_ANGLE_DEG of
-## the bearing to the target, drivable in a straight line, and sees the target. Driving forward to peek and
-## reversing to hide keeps the front armor toward the target.
+## HIDE hides the whole hull from the target and is inside weapon reach; PEEK is 3–10.5 m away, within
+## 30–60° of the bearing to the target, drivable in a straight line, and sees the target. Driving forward to
+## peek and reversing to hide keeps the front armor (mostly) toward the target.
 static func find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
 	if request.get("target") == null:
 		return {}
@@ -74,8 +81,8 @@ static func find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
 		var to_target := _flat_distance(point, target)
 		if to_target > float(band[2]) - 4.0 or to_target < 8.0:
 			continue
-		if map.clear_line(point, target):
-			continue  # the target sees it: not a hiding place
+		if not hull_hidden(map, target, point):
+			continue  # the target sees (part of) it: not a hiding place
 		var travel := 1.0 - _flat_distance(me, point) / radius
 		var fit := UtilityCurves.band(to_target, float(band[0]), float(band[1]), 20.0)
 		shortlist.append({"index": index, "point": point, "pre": 0.55 * fit + 0.45 * travel, "fit": fit, "travel": travel,
@@ -89,8 +96,10 @@ static func find_cover_fire(map: CoverMap, request: Dictionary) -> Dictionary:
 		if peek == null:
 			continue
 		var others := _cover(map, hide, threats) if not threats.is_empty() else 1.0
-		var peek_near := 1.0 - hide.distance_to(peek) / 9.0
-		var score := 0.35 * float(entry["fit"]) + 0.25 * float(entry["travel"]) + 0.25 * others + 0.15 * peek_near
+		var out := Vector2(peek.x - hide.x, peek.z - hide.z)
+		var off_bearing := absf(rad_to_deg(out.angle_to(Vector2(target.x - hide.x, target.z - hide.z))))
+		var peek_quality := 0.5 * (1.0 - out.length() / PEEK_MAX) + 0.5 * (1.0 - off_bearing / 90.0)
+		var score := 0.35 * float(entry["fit"]) + 0.25 * float(entry["travel"]) + 0.25 * others + 0.15 * peek_quality
 		if best.is_empty() or score > float(best["score"]):
 			best = {"hide": hide, "peek": peek, "score": snappedf(score, 0.0001)}
 	return best
@@ -104,16 +113,40 @@ static func peek_from(map: CoverMap, hide: Vector3, target: Vector3, reach: floa
 	bearing = bearing.normalized()
 	var start := Vector2(hide.x, hide.z)
 	for distance: float in PEEK_STEPS:
-		for side in [1.0, -1.0]:
-			var flat := start + bearing.rotated(side * deg_to_rad(PEEK_ANGLE_DEG)) * distance
-			if absf(flat.x) > CoverMap.EDGE or absf(flat.y) > CoverMap.EDGE:
-				continue
-			if map.inside_any(flat, STAND_CLEARANCE) or map.path_blocked(start, flat, DRIVE_CLEARANCE):
-				continue
-			var peek := Vector3(flat.x, 0.0, flat.y)
-			if _flat_distance(peek, target) <= reach - 2.0 and map.clear_line(peek, target):
-				return peek
+		for angle: float in PEEK_ANGLES_DEG:
+			for side in [1.0, -1.0]:
+				var direction := bearing.rotated(side * deg_to_rad(angle))
+				var peek: Variant = _peek_spot(map, start, direction, distance, target, reach)
+				if peek == null:
+					continue
+				# Step a little further out if that's still a good spot, so the stop isn't on the shadow's edge.
+				var further: Variant = _peek_spot(map, start, direction, distance + PEEK_MARGIN, target, reach)
+				return further if further != null else peek
 	return null
+
+
+static func _peek_spot(map: CoverMap, start: Vector2, direction: Vector2, distance: float, target: Vector3,
+		reach: float) -> Variant:
+	var flat := start + direction * distance
+	if absf(flat.x) > CoverMap.EDGE or absf(flat.y) > CoverMap.EDGE:
+		return null
+	if map.inside_any(flat, STAND_CLEARANCE) or map.path_blocked(start, flat, DRIVE_CLEARANCE):
+		return null
+	var peek := Vector3(flat.x, 0.0, flat.y)
+	if _flat_distance(peek, target) > reach - 2.0 or not map.clear_line(peek, target):
+		return null
+	return peek
+
+
+## True if no part of a hull at `point` is in sight of `viewer`: the center and HULL_MARGIN to either side.
+static func hull_hidden(map: CoverMap, viewer: Vector3, point: Vector3) -> bool:
+	if map.clear_line(viewer, point):
+		return false
+	var across := Vector3(point.z - viewer.z, 0.0, viewer.x - point.x)
+	if across.length_squared() < 0.01:
+		return true
+	across = across.normalized() * HULL_MARGIN
+	return not map.clear_line(viewer, point + across) and not map.clear_line(viewer, point - across)
 
 
 ## Whether a spot is out of every listed threat's sight (by weight): 0..1.
@@ -123,7 +156,7 @@ static func _cover(map: CoverMap, point: Vector3, threats: Array) -> float:
 	for threat: Dictionary in threats:
 		var weight := float(threat.get("weight", 1.0))
 		total += weight
-		if not map.clear_line(threat["position"], point):
+		if hull_hidden(map, threat["position"], point):
 			hidden += weight
 	return hidden / total if total > 0.0 else 1.0
 

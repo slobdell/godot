@@ -9,8 +9,10 @@ extends Node
 ##
 ## Move orders (one at a time):
 ##   {"type": "stop"}
-##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional), "speed": 0.2..1 (optional)}
+##   {"type": "move_to", "x": float, "z": float, "reverse": bool (optional), "speed": 0.2..1 (optional),
+##    "arrive": 0.5..10 meters (optional, default ARRIVE_RADIUS)}
 ##       reverse = back up to the point, front armor kept toward where you came from
+##       arrive = how close counts as there (brains use ~1 m for hide and peek spots)
 ##   {"type": "drive", "throttle": float, "turn": float, "seconds": float}
 ##   {"type": "face", "x": float, "z": float}   turn in place to point the hull (front armor) at a spot
 ## Weapon orders (one at a time):
@@ -214,7 +216,8 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var waypoint := _next_waypoint(goal, delta)
 			var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
 			var drive: Vector2 = steer.call(tank.global_position, -tank.global_basis.z, waypoint,
-					ARRIVE_RADIUS if waypoint == goal else 0.5, _remaining_path_distance(goal))
+					clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5,
+				_remaining_path_distance(goal))
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
 		"face":
@@ -415,4 +418,6 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'fallback' must be true or false"
 	if order.has("speed") and not (typeof(order["speed"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["speed"]))):
 		return "'speed' must be a number"
+	if order.has("arrive") and not (typeof(order["arrive"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["arrive"]))):
+		return "'arrive' must be a number"
 	return ""
