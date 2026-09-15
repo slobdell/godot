@@ -4,6 +4,12 @@
 > makes or places art (look & feel, assets, garage, HUD, marketing) designs toward this. It sits *on top of*
 > the established cyberpunk theme (neon palette, the mavlink-hud HUD language in `streams/archive/round1/look_and_feel.md`);
 > it doesn't replace it.
+>
+> **Updated 2026-09-15: factions and the arena kit supersede the round-1 rules where they conflict.** The lead:
+> *"Our new ideas supercede that."* The rules table below was written by the round-1 assets stream from the prison
+> dozer concept and its prompt; it now describes **the Condemned** (and gritty arena dressing), not the whole game.
+> Faction looks (the wear spectrum, the Law's neglected professionalism, the Syndicate's ivory tower) and the arena
+> kit (containers, giant ad screens with text and fictional brands) are in [game_design.md](game_design.md).
 
 ![North star: the Death Race prison dozer](art/north_star_prison_dozer.jpg)
 
@@ -28,15 +34,33 @@ cartoon or toy-like.**
 
 ## Rules for every piece of art
 
+**For every faction and prop:**
+- **Photoreal, gritty, cinematic concept art** as the reference target; never "stylized", "toon", or
+  "low-poly-looking" (the first Meshy concept was rejected for looking like a cartoon). The Syndicate is pristine,
+  not cartoonish.
+- **Heavy, readable silhouettes** from an RTS camera; a distinct turret or weapon on top; nothing that vanishes at 40 m.
+- **Neon lives behind or inside things** (light bars behind grilles, strips in seams), not outlines on everything.
+- **No text in generated images:** image generators garble it. Put logos, stencils, ad copy, and signage on as
+  separate textures, decals, or font overlays. Readable text and fictional brands are welcome (ad screens, sponsor
+  branding, stencils); real brands and real people never are.
+- **Team identity comes from accent lights** (below), and faction lighting must not be mistaken for team colors.
+
+### The Condemned (the round-1 rules, now this faction's)
+
 | Do | Don't |
 |---|---|
-| Base each vehicle on a recognizable real vehicle that's been brutally converted (you should be able to tell what it used to be) | Invent clean sci-fi hovertanks or generic "cool tanks" |
+| Base each vehicle on a recognizable real vehicle that's been brutally converted (you should be able to tell what it used to be) | Clean sci-fi hovertanks (those belong to the Syndicate) or generic "cool tanks" |
 | Riveted slab armor, steel grilles over openings, welded chains, short spikes, dozer blades and rams, sheet-metal track skirts | Smooth, sleek, or pristine surfaces |
 | Blackened gunmetal and dark steel as the base; rust, grime, oil, soot as the wear | Bright or saturated base paint; plain flat colors |
-| Worn **yellow-black hazard stripes** as the recurring graphic motif | Logos, readable text, clean decals |
+| Worn **yellow-black hazard stripes** as the recurring graphic motif; faded prison stencils and inmate numbers | Clean decals or glossy branding |
 | **Neon lives behind or inside things**: light bars behind grilles, strips in armor seams, magenta + cyan, plus red warning and amber beacon lights | Neon as outlines on everything, or a cartoon glow |
 | Heavy, low, wide, top-heavy silhouettes that read from an RTS camera; a distinct turret or weapon on top | Thin, spindly, or detail-only silhouettes that vanish at 40 m |
-| Photoreal, gritty, cinematic concept art as the reference target | "Stylized", "toon", "low-poly-looking" style (the first Meshy concept was rejected for looking like a cartoon) |
+
+### The other factions
+
+Road gangs (rusted but loved hot rods, chrome, visible crews), the Law (military and police vehicles, professional
+but neglected), and the Syndicate (curvy hover vehicles, immaculate ivory tower): see *Factions* and the wear
+spectrum in [game_design.md](game_design.md). Write their rules here when a faction is scheduled.
 
 **Paint and team identity** (the lead's standing direction): players **paint the whole vehicle** (cosmetic, over
 the grime), and **friend or foe is shown by accent lights** (the neon light bars and warning lights), not by hull
@@ -61,7 +85,9 @@ Meshy text-to-image, `nano-banana-pro`, task `01a09fec-d5c3-700a-bce1-3cdf543842
 > isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic,
 > gritty, high detail, cinematic lighting, grounded real-world materials.
 
-For a new unit, keep everything and swap the **base vehicle** and the **weapon**. Round-2 roster ideas
+For a new Condemned unit, keep everything and swap the **base vehicle** and the **weapon**. ("No text, no logos" in
+the prompt is the technical rule above: add text and branding afterwards. "No people" keeps the studio shot
+clean; crews are a later faction decision.) Round-2 roster ideas
 ([game_design.md](game_design.md)):
 
 | Unit | Base vehicle idea | Weapon (must read at RTS distance) |

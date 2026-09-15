@@ -238,9 +238,8 @@ is driven by textures, not meshes: share texture sets, vary instances in shaders
 - **Size:** ad images around 512 × 1024, compressed, a few hundred KB each; keep a budget (e.g. 20 ads) and consider
   loading extra ad packs after the game starts.
 
-**Art direction note for later:** art_direction.md currently bans logos, readable text, and pristine surfaces on
-vehicles. Screens, sponsor branding, and the Syndicate's immaculate look are deliberate exceptions to fold in when the
-arena kit and factions are scheduled.
+**Art direction:** these ideas supersede round-1 bans on logos, text, and pristine surfaces (the lead, 2026-09-15);
+art_direction.md is updated to match.
 
 ## Match rules (current defaults)
 
