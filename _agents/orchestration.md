@@ -82,7 +82,11 @@ Worktrees must be created **after** the docs commit, or workers start without th
 - Relay lead gates: the art review page, text reviews. Record the lead's answers in the stream's brief.
 - Design conversations with the lead continue here; record every decision in docs on `main` and in HANDOFF.
   Don't push new scope into running workers' briefs mid-run unless it's cheap and theirs; queue it for the next round.
-- **Checkpoints:** when a foundation item lands, merge it to `main` and tell workers to `git merge main`.
+- **Checkpoints:** when a foundation item lands, merge it to `main`, run `make remote T=check`, and tell workers to
+  `git merge main` (SendMessage to each worker session; ListAgents shows them as `godot-<stream>-…`). Relay every
+  cross-stream request you find in a worker's Status or messages to the stream that owns the work.
+- Also skim each worker's Status now and then (`git show stream/<s>:_agents/streams/<s>.md`) for announcements that
+  weren't messaged.
 - Watch progress without disturbing workers: `git -C ../godot-<s> log --oneline main..HEAD`, `status --short`.
 
 ### 7. Integrate
@@ -131,6 +135,10 @@ The kickoff prompt is one line; this section is the rest.
    reasonable option and keep going. Lead gates (below) stop only that item.
 5. **Need another stream's code?** Don't edit their paths. Build an adapter or stub in yours, write the request under
    *Requests to other streams*, continue.
+5a. **Tell the orchestrator directly** for anything someone else must act on: a checkpoint is ready, a request to another
+   stream, a bug in shared code or on `main`. Write it in Status *and* send a short message to the orchestrator session
+   (Claude Code's SendMessage; the orchestrator's session runs in `~/projects/godot`, find it with ListAgents). Status
+   alone gets missed (round 3: combat's CP2 announcement sat unread in its Status).
 6. **Merge `main` only at announced checkpoints.** Commit after every green step. You may
    `git push -u origin stream/<stream>`. Never push `main`, never force-push, never touch another worktree.
 7. **Shared machine:** heavy runs go through `tools/slot.sh` automatically (locally) or to builder0
@@ -184,5 +192,7 @@ The kickoff prompt is one line; this section is the rest.
     restored a guard, misread `40 passed, 1 failed` as green, and broke `main` for all six streams (a test assumed
     `Geometry2D.triangulate_polygon` rejects a collinear triangle; it doesn't). Probe engine behavior with a tiny
     `--script` before encoding an assumption in a test.
-11. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+11. Workers announced checkpoints only in their Status, and one sat unmerged: workers now message the orchestrator, and
+    the orchestrator skims Status files too.
+12. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.
