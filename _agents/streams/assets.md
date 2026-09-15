@@ -90,24 +90,25 @@ Read back with `read_db` (collection `decisions`) per page, then `make art-apply
 
 ## Status
 
-_Updated 2026-09-15 (worker)._ Baseline `make remote T=check` green on builder0 before any change.
+_Updated 2026-09-15 (worker). Baseline `make remote T=check` was green on builder0 before any change; every commit
+below passed `make remote T=check` (sim baseline unchanged: assets never touch the simulation)._
 
-**Plan** (order changed from the brief on purpose: the faction concepts went first because the lead's review is the
-long pole; everything ungated runs while it waits)
-1. X3 faction concepts → **waiting on the lead** (three review pages above)
-2. X1 stackable containers → in progress
-3. X2 giant ad screens
-4. X5 artillery outriggers as parts
-5. X6 size and draw budget (measured before/after X1–X2, and again at the end)
-6. X4 approved faction vehicles in 3D → after the lead's taps
-7. Stretch: neon billboards and scrap barricades; a wreck husk concept (gated)
+**Plan and outcome** (order changed from the brief on purpose: the faction concepts went first because the lead's
+review is the long pole; everything ungated ran while it waits)
+1. X3 faction concepts → **done, waiting on the lead** (three review pages above)
+2. X1 stackable containers → **done**
+3. X2 giant ad screens → **done** (placeholder ads and copy until the lead picks)
+4. X5 artillery outriggers as parts → **done**
+5. X6 size and draw budget → **done** (numbers below)
+6. X4 approved faction vehicles in 3D → **groundwork done** (K4 slots, faction gallery); models wait on the lead's taps
+7. Stretch → see *Next steps*
 
 **Done**
-- **X3 concepts** (commits 1a29652 and next): 33 options (3 factions × 5 roles; 3 tank-class options, 2 for each other
-  role) on one page per faction. New `tools/assets/concept_batch.py` (`make art-concept-batch SPEC=…`): concepts as a
-  committed spec (faction lead sentence + subject + faction look + no-text tail), generated in parallel, registered
-  once, `supersedes` for regenerated failures; `review_page.py --groups/--intro` builds a page per faction;
-  `generate.py` gained `--concept-task` (re-download a paid task without a new request) and download retries.
+- **X3 concepts** (1a29652, 5e1d64f): 33 options (3 factions × 5 roles; 3 tank-class options, 2 for each other role) on
+  one page per faction. New `tools/assets/concept_batch.py` (`make art-concept-batch SPEC=…`): concepts as a committed
+  spec (faction lead sentence + subject + faction look + no-text tail), generated in parallel, registered once,
+  `supersedes` for regenerated failures; `review_page.py --groups/--intro` builds a page per faction; `generate.py`
+  gained `--concept-task` (re-download a paid task without a new request) and download retries.
   - Pilot first (one tank per faction, 27 credits) to check the style: gang turrets came out small (prompts now say
     "oversized") and the Syndicate read a little like a concept car (its look now asks for "heavy and armored like a
     real military machine").
@@ -115,6 +116,25 @@ long pole; everything ungated runs while it waits)
     ROCKET TRUCK": the Law's look now forbids words and insignia), the Law water cannon read as a tank gun, and gang
     tank C was a near-copy of B.
   - **Spend: 342 credits** (38 concept images), balance **346**. Every request is in `assets/meshy_ledger.md`.
+- **X1 containers** (43faff4): `prop.container_20` / `prop.container_40` at ISO sizes, ~314 triangles each, built in code
+  (`ContainerMesh`); one shared texture set (`make assets-containers`: CC0 ambientCG rust + chipped-paint erosion
+  order, a stencil atlas); `container.gdshader` picks paint, rust (gathers along rails and bottoms), stencil and door
+  opening per instance; `ContainerYard` draws every container of a kind as one MultiMesh; stacks via `setup(obstacle)`
+  `stack` or the Arena's height scale; faction yards (`faction`: condemned, law, syndicate, gangs). 7 tests.
+  Screenshots: `make arena-kit-gallery` → `build/screenshots/arena-kit-{close,yard,doors,screens,overview}.png`.
+- **X2 ad screens** (7cf0287): `prop.ad_screen` (7 × 14 m LED wall, legs, plinth, beacon); `AdBroadcast` channels render
+  the ad into a small 2D feed shared by every screen on the channel (art with a slow push-in, flipbooks, copy set in
+  Oswald, a ticker), `ad_screen.gdshader` (scanlines, LED grid, flicker, glitch between ads and on big kills), a ground
+  light pool in the ad's average color; the cyberpunk venue raises 4 screens over the short walls on 2 channels
+  (visible behind the title screen). The live card counts confirmed kills and odds from `Match.tank_destroyed`. Six
+  placeholder ads (`make assets-ads`). 8 tests.
+- **X5 outriggers** (next commit): `OutriggerRig` cuts the crane carrier's four legs out of its generated hull by region
+  boxes (shared per mesh, no pipeline rebuild) and `unit.artillery.hull` `set_deployed(ratio)` slides them in and lifts
+  the jacks (0 = stowed, 0.5 = beams out, 1 = braced, the default). 3 tests; `make artillery-deploy-shot`.
+- **X4 groundwork** (in progress, ungated): K4 slot contracts `unit.<faction>.<role>.<part>` in `AssetContracts` (fitted
+  to the Condemned unit in the same role), faction themes under `game/theme/factions/<faction>/generated` found by the
+  checker, `FactionArt` (which model fills each role), `make vehicle-gallery FACTION=<id>` (a labeled empty spot for
+  roles not built yet). 3 tests.
 
 **Decisions**
 - No people in faction concepts (image-to-3D turns riders into blobs); crews come later as cheap figures.
@@ -122,7 +142,33 @@ long pole; everything ungated runs while it waits)
   amber lights keep their color. So the Law's blue strobes will glow in team color and its red ones stay red.
 - The Syndicate's special and the gangs' special each show two different jobs (the roster sketches say "or"); the
   lead's pick decides the role.
+- Containers are code-built meshes plus CC0 textures, not Meshy: simple hard-surface shapes, exact ISO sizes, and a 40 ft
+  mesh of its own for free. Corrugation is analytic in the shader (crisp up close, no shimmer at distance, no texels).
+- Door tags live in UV2, not vertex colors: the Compatibility renderer multiplies vertex COLOR by MultiMesh instance
+  colors, which are zero when a MultiMesh doesn't use them (doors silently never opened). Proposed trip-up below.
+- Screens share one 2D feed per channel instead of a video or a feed per screen; text is engine-set, never baked. Two
+  channels so neighboring screens don't mirror each other. Low tier redraws the feed at half rate.
+- Outriggers are cut at load time from the existing model rather than re-split in the pipeline: no Meshy re-run, the
+  legs keep the hull's texture set, and the cut is cached per mesh.
+- Rendering targets run locally: builder0 had no logged-in desktop (no Xwayland auth), so `make remote T=<shots>` fails
+  with "X11 Display is not available". The windowed runs are short and take no input.
 
 **Questions for the lead**
 1. **Meshy balance:** 346 credits left. One 3D model per role is 15 × 15 = 225 credits, which leaves ~120 for retries
    and the stretch concepts. A top-up may be needed before round 4's assets.
+2. **Ad art and copy** are placeholders (`tools/assets/build_ads.py`, `game/theme/arena_kit/ads/ads.json`): Syndicate Life
+   "Coverage that outlives you", AquaCorp "Clean water. Every day you qualify.", Office of the Warden "Safer streets
+   start with a report", Organ Futures "Invest in tonight's champions", The Freedom Program "Win your freedom tonight",
+   and a live card. Keep, rewrite, or send real ad concepts through a review page?
+3. **Container stencil brands** (AquaCorp, Organ Futures, a WRECKERS gang tag, PRISON TRANSPORT, EVIDENCE, IMPOUND LOT 7,
+   DETENTION STORAGE) are ours and fictional; say if any should change.
+
+**Requests to other streams**
+- **combat (layouts, C5):** obstacle types `container_20` [6.06, 2.59, 2.44] and `container_40` [12.19, 2.59, 2.44] with
+  an optional `stack` (collision height = 2.59 × stack; one high is hull-down cover, two high blocks sight), and
+  `ad_screen` with a plinth footprint [7.4, 1.4, 1.4]. Please call `visual.invoke("setup", [obstacle])` on obstacle
+  visuals (as `_build_hazards` does) so layouts can set `stack`, `faction`, `paint`, `stencil`, `rust`, `doors`,
+  `channel`; without it a height-scaled visual still stacks. Rows are in slot_contracts.md.
+- **combat (X5 deploy):** call `invoke("set_deployed", [ratio])` on the artillery's hull slot as it deploys and packs up.
+- **control / announcer (later):** `AdBroadcast.channel(node, "arena").post_live({headline, fine_print})` puts anything on
+  the screens' live card (score, odds, the announcer's hype line).

@@ -179,12 +179,15 @@ static func write_manifest(theme: String, manifest: Dictionary) -> void:
 	handle.close()
 
 
-## Themes that have a generated/manifest.json.
+## Themes that have a generated/manifest.json, including faction themes ("factions/gangs", contract K4).
 static func generated_themes() -> PackedStringArray:
 	var themes := PackedStringArray()
 	for theme in DirAccess.get_directories_at(THEMES_ROOT):
 		if FileAccess.file_exists("%s/manifest.json" % generated_dir(theme)):
 			themes.append(theme)
+	for faction in DirAccess.get_directories_at(THEMES_ROOT + "/factions"):
+		if FileAccess.file_exists("%s/manifest.json" % generated_dir("factions/" + faction)):
+			themes.append("factions/" + faction)
 	return themes
 
 

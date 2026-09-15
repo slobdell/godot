@@ -145,3 +145,41 @@ class FakeMatch extends Node:
 class RustScout extends Node:
 	var team := 1
 	var unit_id := "scout"
+
+
+func test_neon_signs_crown_the_stands_in_one_draw() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	GameTheme.use(previous)
+	var structures: Node3D = dressing.get("structures")
+	var signs := structures.find_children("NeonSigns", "MultiMeshInstance3D", true, false)
+	assert_eq(signs.size(), 1, "every neon sign in the venue is one MultiMesh")
+	if signs.is_empty():
+		return
+	var multimesh := (signs[0] as MultiMeshInstance3D).multimesh
+	var placements: Array = signs[0].get_meta("placements")
+	assert_eq(multimesh.instance_count, placements.size(), "one instance per sign")
+	assert_true(placements.size() >= 6, "signs along both grandstands (%d)" % placements.size())
+	var cells := {}
+	for placement: Dictionary in placements:
+		cells[int(placement["cell"]) % NeonSigns.CELLS] = true
+		var at: Vector3 = (placement["transform"] as Transform3D).origin
+		assert_true(absf(at.z) > 121.0 and at.y > 8.0, "signs sit high on the stands, outside the walls (%s)" % at)
+		var tint: Color = placement["color"]
+		for team: Color in GameTheme.CYBERPUNK_TEAM_COLORS:
+			assert_true(Vector3(tint.r - team.r, tint.g - team.g, tint.b - team.b).length() > 0.3, "sign neon never looks like a team color")
+	assert_true(cells.size() >= 3, "a mix of signs, not one brand repeated (%d)" % cells.size())
+
+
+func test_the_gates_are_barricaded_with_tagged_containers() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	GameTheme.use(previous)
+	var structures: Node3D = dressing.get("structures")
+	var barricades := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Barricade"))
+	assert_eq(barricades.size(), 4, "container barricades either side of both gates")
+	for node: Node3D in barricades:
+		assert_true(absf(node.position.x) > 121.0, "barricades stay outside the walls, out of the fight (x %.1f)" % node.position.x)
+		assert_eq(String(node.get("options").get("faction", "")), "gangs", "and wear the road gangs' tags and rust")

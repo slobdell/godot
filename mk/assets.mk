@@ -151,10 +151,13 @@ art-apply-decisions: ## Record the lead's taps from the review page: DIR=<read_d
 	$(PYTHON) tools/assets/review_page.py apply --decisions "$(DIR)" --url "$(URL)"
 
 # ---- Round 3 (assets X1/X2): the arena kit: stackable containers and giant ad screens ---------------------------
-.PHONY: assets-containers assets-ads arena-kit-gallery
+.PHONY: assets-containers assets-ads arena-kit-gallery arena-kit-measure
 assets-containers: ## Rebuild the containers' shared texture set (tools/assets/build_containers.py; CC0 ambientCG + procedural)
 	$(PYTHON) tools/assets/build_containers.py
 	$(GODOT) --headless --path . --import >/dev/null 2>&1
+
+arena-kit-measure: import ## Draw calls and primitives with the arena kit hidden / containers / containers + screens (ARENA_KIT_MEASURE lines)
+	timeout 120 $(GODOT) --path . --resolution 1600x900 res://game/theme/gallery/arena_kit_gallery.tscn -- --measure | grep ARENA_KIT_MEASURE
 
 assets-ads: ## Rebuild the placeholder ads for the giant screens (tools/assets/build_ads.py → game/theme/arena_kit/ads/)
 	$(PYTHON) tools/assets/build_ads.py

@@ -4,6 +4,8 @@ extends Node3D
 ## `prop.<type>` visual slots and `setup(obstacle)` the way the Arena places layout obstacles. Captures several views in
 ## one run, including the 200 m orthographic tactical overview (orientation trip-up 46). Visual only.
 ## Flags: --shots-dir=<abs dir> (saves arena-kit-<view>.png for every view, then quits) [--views=a,b] [--theme=NAME]
+##        --measure: prints ARENA_KIT_MEASURE lines (draw calls and primitives from the yard view) with the kit hidden,
+##        with containers, and with containers and screens, then quits (assets X6)
 
 ## [type, x, z, rotation_deg, extra obstacle keys]
 const YARD := [
@@ -36,6 +38,7 @@ const VIEWS := {
 	"yard": [Vector3(26.0, 17.0, 34.0), Vector3(-3.0, 1.0, 1.0), 50.0],
 	"doors": [Vector3(-8.5, 2.4, -2.5), Vector3(-13.6, 1.3, -8.0), 55.0],
 	"screens": [Vector3(-2.0, 2.2, -14.0), Vector3(-6.0, 12.0, -36.0), 62.0],
+	"gate": [Vector3(92.0, 9.0, 30.0), Vector3(126.0, 4.0, 0.0), 60.0],
 	"overview": [Vector3(0.0, 200.0, 0.0001), Vector3.ZERO, 0.0],
 }
 
@@ -71,7 +74,9 @@ func _ready() -> void:
 	var overlay := PerfOverlay.new()
 	add_child(overlay)
 	overlay.extra = "ARENA KIT GALLERY (%s)" % GameTheme.theme_name
-	if _flags.has("shots-dir"):
+	if _flags.has("measure"):
+		_measure()
+	elif _flags.has("shots-dir"):
 		_capture_all(_flags.text("shots-dir"))
 
 
@@ -102,3 +107,21 @@ func _capture_all(folder: String) -> void:
 		print("screenshot saved: " if err == OK else "screenshot failed: ", path)
 		failed += int(err != OK)
 	get_tree().quit(failed)
+
+
+func _measure() -> void:
+	_view("yard")
+	await get_tree().create_timer(2.0).timeout
+	var yard := get_node("Yard") as Node3D
+	var screens := find_children("AdScreen*", "Node3D", true, false) + yard.get_children().filter(
+			func(body: Node) -> bool: return body.get_child(0) is VisualSlot and (body.get_child(0) as VisualSlot).slot == "prop.ad_screen")
+	for stage in ["none", "containers", "containers+screens"]:
+		ContainerYard.for_node(self).visible = stage != "none"
+		for node: Node3D in screens:
+			node.visible = stage == "containers+screens"
+		for i in 8:
+			await RenderingServer.frame_post_draw
+		print("ARENA_KIT_MEASURE stage=%s draws=%d primitives=%d" % [stage,
+				RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+				RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME)])
+	get_tree().quit()

@@ -15,6 +15,9 @@ uniform float height_m = 2.59;
 uniform float hinge_z = 1.24;
 // The stencil band on a side panel: 4.8 × 1.2 m, centered, bottom at 0.72 m.
 uniform vec4 stencil_rect = vec4(-2.4, 0.72, 4.8, 1.2);
+// ISO side corrugation, analytic: 8 trapezoid cycles per 2.4 m tile (0.3 m pitch), 36 mm deep.
+uniform float corrugation_cycles = 8.0;
+uniform float corrugation_slope = 0.92;
 uniform vec3 rim_color : source_color = vec3(0.5, 0.6, 1.0);
 uniform float rim_strength = 0.12;
 
@@ -75,8 +78,15 @@ void fragment() {
 	if (interior) {
 		albedo = vec3(0.025);
 	} else if (!frame) {
-		vec2 n = det.rg * 2.0 - 1.0;
-		NORMAL_MAP = vec3(det.rg, sqrt(max(0.0, 1.0 - dot(n, n))) * 0.5 + 0.5);
+		// One cycle: outer flat 0.37, falling web 0.13, inner flat 0.37, rising web 0.13. The webs' slope fades out once
+		// a pixel covers a good part of a cycle, so distant walls don't shimmer.
+		float u = UV.x * corrugation_cycles;
+		float phase = fract(u);
+		float web = smoothstep(0.35, 0.39, phase) * (1.0 - smoothstep(0.48, 0.52, phase)) - smoothstep(0.85, 0.89, phase) * (1.0 - smoothstep(0.98, 1.0, phase)) - (1.0 - smoothstep(0.0, 0.02, phase));
+		float fade = 1.0 - smoothstep(0.15, 0.45, fwidth(u));
+		vec2 dent = det.rg * 2.0 - 1.0;
+		vec3 n = normalize(vec3(web * corrugation_slope * fade + dent.x, dent.y, 1.0));
+		NORMAL_MAP = n * 0.5 + 0.5;
 	}
 	ALBEDO = albedo;
 	ROUGHNESS = interior ? 1.0 : mix(0.6, 0.92, bare);

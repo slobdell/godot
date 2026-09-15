@@ -13,7 +13,7 @@ extends Node
 const PLAYLIST := "res://game/theme/arena_kit/ads/ads.json"
 const SCREEN_SHADER := preload("res://game/theme/arena_kit/ads/ad_screen.gdshader")
 const SPILL_SHADER := preload("res://game/theme/arena_kit/ads/ad_spill.gdshader")
-const DISPLAY_FONT := preload("res://assets/fonts/Oswald-Variable.ttf")
+const DISPLAY_FONT := preload("res://assets/fonts/Oswald-Latin.ttf")
 const MONO_FONT := preload("res://assets/fonts/ShareTechMono-Regular.ttf")
 ## The layout is designed at 320 × 640 and rendered at the tier's size.
 const LAYOUT := Vector2i(320, 640)
@@ -302,7 +302,7 @@ func _build_layout() -> void:
 	strip.position = Vector2(0, LAYOUT.y - 30)
 	strip.size = Vector2(LAYOUT.x, 30)
 	root.add_child(strip)
-	var line := " ◆ ".join(ads.map(func(ad: Dictionary) -> String: return String(ad["brand"]))) + " ◆ TANK SQUAD ARENA ◆ "
+	var line := "  //  ".join(ads.map(func(ad: Dictionary) -> String: return String(ad["brand"]))) + "  //  TANK SQUAD ARENA  //  "
 	_style(_ticker, MONO_FONT, 14, Vector2(0, LAYOUT.y - 25))
 	_ticker.text = line + line
 	_ticker.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dtn32vrkf2lss"
-path="res://.godot/imported/arena_live.png-bbb81d8a58f99578b39f706361f833e6.ctex"
+uid="uid://dxp34tjq0x545"
+path="res://.godot/imported/neon_signs.png-e9feee8217264dcf67924959174ddd90.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://game/theme/arena_kit/ads/arena_live.png"
-dest_files=["res://.godot/imported/arena_live.png-bbb81d8a58f99578b39f706361f833e6.ctex"]
+source_file="res://game/theme/arena_kit/ads/neon_signs.png"
+dest_files=["res://.godot/imported/neon_signs.png-e9feee8217264dcf67924959174ddd90.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

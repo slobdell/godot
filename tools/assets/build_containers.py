@@ -12,10 +12,11 @@ Font: Share Tech Mono (SIL Open Font License, assets/fonts/ShareTechMono-OFL.txt
 Outputs (game/theme/arena_kit/containers/), one set for every container of every kind, varied per instance in
 container.gdshader. Texture space is meters: one tile = TILE_M (2.4 m) on every face, so 20 ft and 40 ft containers
 share the same texel density.
-    container_surface.png  512   RGB rust albedo, A = erosion order (low values lose their paint first; the shader
+    container_surface.png  256   RGB rust albedo, A = erosion order (low values lose their paint first; the shader
                                  thresholds it by the instance's rust amount)
-    container_detail.png   512   RG = corrugation + dent normal (tangent space x, y), B = grime streak mask,
-                                 A = paint mottling
+    container_detail.png   256   RG = dent normal (tangent space x, y), B = grime streak mask, A = paint mottling.
+                                 The corrugation itself is analytic in the shader (CYCLES, DEPTH_M there): sharper up
+                                 close, antialiased at distance, and no texels spent on it (assets X6)
     container_stencils.png 1024×512  RGBA atlas, 2 columns × 4 rows of 512×128 cells (4.8 × 1.2 m on the side):
                                  colored stencils with worn coverage in A (STENCILS below, in shader order)
 """
@@ -35,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 INCOMING = ROOT / "assets" / "incoming" / "ambientcg"
 OUT = ROOT / "game" / "theme" / "arena_kit" / "containers"
 FONT = ROOT / "assets" / "fonts" / "ShareTechMono-Regular.ttf"
-SIZE = 512
+SIZE = 256
 TILE_M = 2.4
 ## ISO side corrugation: 8 trapezoid cycles per 2.4 m tile (0.3 m pitch), 36 mm deep.
 CYCLES = 8
@@ -109,7 +110,7 @@ def detail(rng: random.Random) -> Image.Image:
     slope = np.gradient(np.tile(height, 3), TILE_M / SIZE)[SIZE:SIZE * 2]
     dents = wrap_blur(tileable_noise(20, rng), 6) - 0.5
     dy, dx = np.gradient(np.tile(dents, (3, 3)) * 0.03, TILE_M / SIZE)
-    nx = -slope[None, :] - dx[SIZE:SIZE * 2, SIZE:SIZE * 2]
+    nx = -dx[SIZE:SIZE * 2, SIZE:SIZE * 2]
     ny = -dy[SIZE:SIZE * 2, SIZE:SIZE * 2]
     length = np.sqrt(nx * nx + ny * ny + 1.0)
     nx, ny = nx / length, ny / length

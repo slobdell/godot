@@ -24,7 +24,7 @@ hud-gallery: import ## HUD widget gallery (frames, banners, conductors); screens
 
 vehicle-gallery: import ## Vehicle/weapon FX gallery (team colors, paint, heat, flames, lasers, shields; --gallery-focus=N close-ups) → build/screenshots/vehicle-gallery.png
 	mkdir -p $(BUILD_DIR)/screenshots
-	$(GODOT) --path . res://game/theme/gallery/vehicle_gallery.tscn -- --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/vehicle-gallery.png --screenshot-delay=4
+	$(GODOT) --path . res://game/theme/gallery/vehicle_gallery.tscn -- $(if $(FACTION),--gallery-faction=$(FACTION)) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/vehicle-gallery$(if $(FACTION),-$(FACTION)).png --screenshot-delay=4
 
 sfx: import ## Regenerate the procedural sound effects in assets/audio (CC0, see its README)
 	$(GODOT) --headless --path . --script res://game/theme/audio/make_sfx.gd

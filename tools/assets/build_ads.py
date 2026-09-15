@@ -8,7 +8,9 @@ the screen: graphic backgrounds drawn here (no text baked in: text is overlaid i
 the copy in ads.json written to the humor direction in game_design.md (believable, slightly off, never a punchline).
 
 Outputs (game/theme/arena_kit/ads/):
-    <id>.png       512 × 1024 portrait still, or a flipbook sheet (frames laid out left to right, top to bottom)
+    <id>.png       256 × 512 portrait still (drawn at 512 × 1024), or a flipbook sheet (frames laid out left to right, top to bottom)
+    neon_signs.png 1024 × 512 atlas of neon tube signs for the stands (4 rows of 1024 × 128): R = tube core, G = glow
+                   (text drawn here from our own brand names in Oswald; neon_signs.gd lays them out)
     ads.json       the playlist: id, image, frames [cols, rows], fps, seconds, brand, headline, fine_print, accent,
                    average_color (tints the screen's light spill on the ground), kind ("still" or "live")
 """
@@ -77,8 +79,9 @@ def syndicate_life() -> Image.Image:
 
 
 def aquacorp() -> Image.Image:
-    # Flipbook frames at half resolution: motion hides it, and eight full frames would weigh as much as eight ads.
-    sheet = Image.new("RGB", (W * 2, H))
+    # Flipbook frames at quarter resolution (128 × 256): motion hides it, and eight full frames would weigh as much as
+    # eight ads.
+    sheet = Image.new("RGB", (W, H // 2))
     for frame in range(8):
         rgb = gradient((0.0, 0.08, 0.14), (0.0, 0.02, 0.05))
         layer = Image.new("RGB", (W, H))
@@ -93,8 +96,8 @@ def aquacorp() -> Image.Image:
         d.polygon([(200, y + 140), (256, y), (312, y + 140)], fill=(90, 210, 255))
         d.ellipse([222, y + 120, 250, y + 148], fill=(210, 245, 255))
         rgb = rgb + glow(layer, 16, 1.0) * 0.8
-        frame_image = to_image(rgb + noise(10 + frame, 0.02)).resize((W // 2, H // 2), Image.LANCZOS)
-        sheet.paste(frame_image, ((frame % 4) * W // 2, (frame // 4) * H // 2))
+        frame_image = to_image(rgb + noise(10 + frame, 0.02)).resize((W // 4, H // 4), Image.LANCZOS)
+        sheet.paste(frame_image, ((frame % 4) * W // 4, (frame // 4) * H // 4))
     return sheet
 
 
@@ -176,18 +179,54 @@ def average_color(image: Image.Image, frames) -> str:
     return "#%02x%02x%02x" % tuple(int(v) for v in mean)
 
 
+NEON_SIGNS = ["AQUACORP", "ORGAN FUTURES", "SYNDICATE LIFE", "LIVE FROM THE PIT"]
+
+
+def neon_atlas() -> Image.Image:
+    from PIL import ImageFont
+    font_path = ROOT / "assets" / "fonts" / "Oswald-Latin.ttf"
+    core = Image.new("L", (1024, 512))
+    for row, text in enumerate(NEON_SIGNS):
+        cell = Image.new("L", (1024, 128))
+        size = 96
+        font = ImageFont.truetype(str(font_path), size)
+        try:
+            font.set_variation_by_axes([300])  # a thin weight reads as bent glass tube
+        except Exception:
+            pass
+        while font.getlength(text) > 940:
+            size -= 4
+            font = ImageFont.truetype(str(font_path), size)
+            try:
+                font.set_variation_by_axes([300])
+            except Exception:
+                pass
+        ImageDraw.Draw(cell).text((512, 64), text, font=font, fill=255, anchor="mm")
+        # Tubes: keep only the outline of each glyph, like glass bent along the letter's edge.
+        outline = Image.fromarray(np.clip(np.asarray(cell.filter(ImageFilter.MaxFilter(5)), np.int16) - np.asarray(cell.filter(ImageFilter.MinFilter(5)), np.int16), 0, 255).astype(np.uint8))
+        ImageDraw.Draw(outline).rectangle([6, 6, 1017, 121], outline=160, width=3)  # the sign's frame tube
+        core.paste(outline, (0, row * 128))
+    glow = core.filter(ImageFilter.GaussianBlur(9))
+    glow = Image.fromarray(np.clip(np.asarray(glow, np.float32) * 2.2, 0, 255).astype(np.uint8))
+    return Image.merge("RGB", (core, glow, Image.new("L", core.size)))
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     playlist = []
     for ad in ADS:
         image = PAINTERS[ad["id"]]()
-        image.save(OUT / f"{ad['id']}.png", optimize=True)
+        # Stills ship at half size (256 × 512): the feed is 320 × 640 at most and the screen blurs them anyway (X6).
+        shipped = image if ad.get("frames") else image.resize((W // 2, H // 2), Image.LANCZOS)
+        shipped.save(OUT / f"{ad['id']}.png", optimize=True)
         entry = {"id": ad["id"], "kind": ad.get("kind", "still"), "image": f"res://game/theme/arena_kit/ads/{ad['id']}.png",
                  "frames": ad.get("frames", [1, 1]), "fps": ad.get("fps", 0), "seconds": ad["seconds"],
                  "brand": ad["brand"], "headline": ad["headline"], "fine_print": ad["fine_print"], "accent": ad["accent"],
                  "average_color": average_color(image, ad.get("frames"))}
         playlist.append(entry)
         print(f"ads: {ad['id']:<16} {(OUT / (ad['id'] + '.png')).stat().st_size / 1024:.0f} KB  light {entry['average_color']}")
+    neon_atlas().save(OUT / "neon_signs.png", optimize=True)
+    print(f"ads: neon_signs       {(OUT / 'neon_signs.png').stat().st_size / 1024:.0f} KB")
     (OUT / "ads.json").write_text(json.dumps({"placeholder": True, "note": "Art and copy are the lead's call; see "
                                               "tools/assets/build_ads.py.", "ads": playlist}, indent=2) + "\n")
     return 0

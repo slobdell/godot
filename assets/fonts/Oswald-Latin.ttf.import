@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://cdpo70f1b0a8q"
-path="res://.godot/imported/Oswald-Variable.ttf-0f32ae864af915ab60a8b44231ac7505.fontdata"
+uid="uid://c2v0ck7tos5fx"
+path="res://.godot/imported/Oswald-Latin.ttf-f268d7afaeaef1f4327e629eb6c151d9.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/Oswald-Variable.ttf"
-dest_files=["res://.godot/imported/Oswald-Variable.ttf-0f32ae864af915ab60a8b44231ac7505.fontdata"]
+source_file="res://assets/fonts/Oswald-Latin.ttf"
+dest_files=["res://.godot/imported/Oswald-Latin.ttf-f268d7afaeaef1f4327e629eb6c151d9.fontdata"]
 
 [params]
 

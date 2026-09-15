@@ -4,7 +4,8 @@ extends "res://game/theme/cyberpunk/cyber_prop.gd"
 ## venue around them (art X5, the lead's approved Meshy kit, theme arena_kit): grandstands full of a cheering crowd
 ## (CrowdSystem) along the long sides, vehicle gates on the short sides, floodlight towers throwing fake volumetric
 ## beams at the corners, and static glow pools under the light bars (painted light, not real lights). Round 3 (assets
-## X2): giant ad screens tower over the short walls either side of the gates, on two broadcast channels.
+## X2): giant ad screens tower over the short walls either side of the gates, on two broadcast channels; neon signs crown
+## the grandstands and gang-tagged container stacks barricade the gates (stretch).
 ## Ground 320×320 at y=0; perimeter walls at ±121 by default (slot contract: arena.dressing). `setup(layout)` (rules'
 ## C5 arena layouts) fits the walls, venue, floodlights, hazard band and center ring to the layout. Visual only, no
 ## collision.
@@ -24,6 +25,7 @@ const FLOODLIGHTS := [
 ## The generated arena kit (tools/assets/build_arena_kit.sh). Missing scenes fall back to the procedural pieces.
 const KIT := "res://game/theme/arena_kit/generated/%s.tscn"
 const AD_SCREEN := preload("res://game/theme/arena_kit/prop_ad_screen.tscn")
+const CONTAINER_20 := preload("res://game/theme/arena_kit/prop_container_20.tscn")
 ## Screens either side of each gate, this far along the wall from its middle.
 const SCREEN_OFFSET := 46.0
 const STANDS_ROWS := 5
@@ -89,6 +91,7 @@ func _build_venue() -> void:
 		probe.free()
 		var modules := int((2.0 * half) / size.x)
 		var rows := []
+		var signs := []
 		for side in [1.0, -1.0]:  # the model's seats face -Z: the south stands as they are, the north ones turned
 			for i in modules:
 				var x := -half + size.x * (i + 0.5) + (2.0 * half - size.x * modules) / 2.0
@@ -98,12 +101,17 @@ func _build_venue() -> void:
 				stands.name = "Stands"
 				stands.transform = xform
 				structures.add_child(stands, true)
+				if i % 3 == 1:  # a neon sign on every third module's top rail, facing the arena
+					signs.append({"transform": xform * Transform3D(Basis(), Vector3(0.0, size.y * 0.92 + 1.0, -size.z / 2.0 + 1.5)),
+							"cell": signs.size(), "color": NeonSigns.COLORS[signs.size() % NeonSigns.COLORS.size()]})
 				# Seat rows climb from the front tier (~30% of the height) to the top (~80%), facing the arena.
 				for r in STANDS_ROWS:
 					var f := float(r) / (STANDS_ROWS - 1)
 					var local_z := -size.z / 2.0 + size.z * lerpf(0.16, 0.7, f)
 					var local_y := size.y * lerpf(0.32, 0.8, f)
 					rows.append([xform * Vector3(-size.x / 2.0 + 1.0, local_y, local_z), xform * Vector3(size.x / 2.0 - 1.0, local_y, local_z)])
+		if not signs.is_empty():
+			structures.add_child(NeonSigns.build(signs))
 		crowd = CrowdSystem.new()
 		structures.add_child(crowd)
 		crowd.seat_rows(rows)
@@ -115,6 +123,13 @@ func _build_venue() -> void:
 			var depth := _bounds(gate).size.z
 			gate.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0), Vector3(side * (half + WALL_THICK / 2.0 + depth / 2.0), 0.0, 0.0))
 			structures.add_child(gate, true)
+	for side in [1.0, -1.0]:  # scrap barricades: gang-tagged container stacks flanking each gate, outside the wall
+		for along in [1.0, -1.0]:
+			var barricade := CONTAINER_20.instantiate() as Node3D
+			barricade.name = "Barricade"
+			barricade.transform = Transform3D(Basis(Vector3.UP, along * 0.35 + PI / 2.0), Vector3(side * (half + WALL_THICK / 2.0 + 5.5), 0.0, along * 17.0))
+			barricade.call("setup", {"stack": 2, "faction": "gangs", "doors": "open" if along < 0.0 else "closed"})
+			structures.add_child(barricade, true)
 	for side in [1.0, -1.0]:  # outside the east (+X) and west walls, turned so their -Z face looks at the center
 		for along in [1.0, -1.0]:
 			var screen := AD_SCREEN.instantiate() as Node3D
@@ -128,7 +143,8 @@ func _build_venue() -> void:
 ## FX lab: hide the venue (stands, crowd, gates) to measure what it costs.
 func set_venue_visible(shown: bool) -> void:
 	for child in structures.get_children():
-		if child.name.begins_with("Stands") or child.name.begins_with("Gate") or child.name.begins_with("AdScreen") or child == crowd:
+		if child.name.begins_with("Stands") or child.name.begins_with("Gate") or child.name.begins_with("AdScreen") \
+				or child.name == "NeonSigns" or child == crowd:
 			(child as Node3D).visible = shown
 
 
