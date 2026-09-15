@@ -56,7 +56,7 @@ func think() -> void:
 static func _is_gun_squad(squad: Squad, by_name: Dictionary) -> bool:
 	for member in squad.alive_members(by_name):
 		var tank := by_name[member] as Tank
-		return Units.PROFILES.get(tank.unit_id, {}).get("class", "tank") == "tank"
+		return Units.PROFILES.get(tank.unit_id, {}).get("role", "tank") == "tank"
 	return false
 
 
@@ -87,7 +87,7 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 			freshest = contact["position"]
 	var our_strength := 0.0
 	for tank in game_match.sorted_team_tanks(team):
-		if tank.is_alive() and Units.PROFILES.get(tank.unit_id, {}).get("class", "tank") != "artillery":
+		if tank.is_alive() and Units.PROFILES.get(tank.unit_id, {}).get("role", "tank") != "artillery":
 			our_strength += tank.health + tank.shield
 
 	if visible_count > 0:

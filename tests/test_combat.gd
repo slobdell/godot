@@ -53,9 +53,11 @@ func test_side_shot_does_side_damage() -> void:
 	assert_eq(result[2].health, result[2].max_health - 34, "a shot into the side armor deals full damage")
 
 
-func test_no_friendly_fire() -> void:
+func test_friendly_fire_hurts_teammates() -> void:
 	var result: Array = await _duel(0.0, Match.Team.GREEN)
-	assert_eq(result[2].health, result[2].max_health, "shells don't damage teammates")
+	assert_eq(result[2].health, result[2].max_health - 51, "R4: a shell into a teammate's rear hurts like any other")
+	assert_eq(result[0].stats["hits"][Match.Team.GREEN], 0, "it isn't counted as a hit on the enemy")
+	assert_eq(result[0].stats["friendly_hits"][Match.Team.GREEN], 1, "it's counted as friendly fire")
 
 
 func test_wall_blocks_shell() -> void:

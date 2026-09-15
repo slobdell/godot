@@ -9,7 +9,7 @@ func _setup() -> Array:
 	add_to_tree(ARENA.instantiate())
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	var army := {"name": "CPU", "squads": [{"name": "Guns", "tanks": [{}, {}, {}]}, {"name": "Eyes", "tanks": [{"unit": "scout"}]}]}
+	var army := {"name": "CPU", "squads": [{"name": "Guns", "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}]}, {"name": "Eyes", "units": [{"unit": "scout"}]}]}
 	assert_eq(game_match.load_doctrine(Match.Team.RUST, army), "", "setup: CPU army")
 	var commander := CpuCommander.new()
 	commander.game_match = game_match

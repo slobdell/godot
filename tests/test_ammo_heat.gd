@@ -1,5 +1,6 @@
 extends TestCase
-## G7: finite ammunition with a base resupply zone, the laser (hitscan, heat), and the heat cap.
+## G7: finite ammunition with a base resupply zone, the laser (hitscan, heat), and the heat cap. Rules R8 made
+## direct-fire guns unlimited (only the mortar has a load), so the ammo mechanics are tested on a tank given a load.
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
@@ -24,7 +25,9 @@ func test_a_cannon_runs_out_of_shells() -> void:
 	var tank := game_match.spawn_tank("Gunner", 0, Match.Team.GREEN)
 	tank.global_position = Vector3(LANE_X, 0.0, 20.0)
 	await wait_physics_frames(2)
-	assert_eq(tank.ammo, Weapons.max_ammo(Weapons.profile("cannon")), "a cannon tank starts with a full load")
+	assert_eq(tank.ammo, -1, "R8: a cannon never runs out")
+	assert_eq(Weapons.max_ammo(Weapons.profile("mortar")), 24, "the mortar still carries a load")
+	tank.max_ammo = 45  # the mechanism, on a weapon given a load
 	tank.ammo = 2
 	await _hold_trigger(tank, Vector3(LANE_X, 0.0, -40.0), 60 * 8)  # three reloads' worth of trigger
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 2, "two shells, two shots, then the gun is dry")
@@ -39,8 +42,9 @@ func test_the_base_resupplies_shells_slowly_and_only_at_base() -> void:
 	home.global_position = Match.resupply_center(Match.Team.GREEN) + Vector3(10, 0, 0)
 	away.global_position = Vector3(LANE_X, 0.0, 0.0)
 	await wait_physics_frames(2)
-	home.ammo = 0
-	away.ammo = 0
+	for tank: Tank in [home, away]:
+		tank.max_ammo = 45
+		tank.ammo = 0
 	await wait_physics_frames(roundi(Match.RESUPPLY_SECONDS_PER_SHELL * 60.0 * 2.0) + Match.INTEL_EVERY_TICKS)
 	assert_eq(home.ammo, 2, "at base: one shell every %.1f s" % Match.RESUPPLY_SECONDS_PER_SHELL)
 	assert_eq(away.ammo, 0, "away from base: nothing")
@@ -48,7 +52,7 @@ func test_the_base_resupplies_shells_slowly_and_only_at_base() -> void:
 
 func test_the_laser_hits_instantly_and_never_runs_out() -> void:
 	var game_match := _setup()
-	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "laser")
+	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "lancer")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
 	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
 	target.global_position = Vector3(LANE_X, 0.0, -10.0)  # 30 m ahead
@@ -58,16 +62,17 @@ func test_the_laser_hits_instantly_and_never_runs_out() -> void:
 	await wait_physics_frames(2)
 	assert_eq(shooter.ammo, -1, "lasers carry no ammo")
 	await _hold_trigger(shooter, target.global_position, 70)
-	var pulse := int(Weapons.profile("laser")["damage"])
+	var pulse := float(Weapons.profile("laser")["damage"]) * Match.armor_multiplier(Weapons.profile("laser"), target.unit_id, "side")
 	var lost := target.max_health - target.health
 	assert_true(lost >= pulse * 2, "pulses land with no travel time (%d damage in ~1 s)" % lost)
-	assert_eq(lost % pulse, 0, "each side-on pulse does exactly %d" % pulse)
+	var pulses := roundi(lost / pulse)
+	assert_true(absf(lost - pulses * pulse) < 1.0, "each side-on pulse does %.1f through the side armor (%d = %d pulses)" % [pulse, lost, pulses])
 	assert_true(shooter.heat > 0.0, "and every pulse heats the tank (heat %.1f)" % shooter.heat)
 
 
 func test_a_shot_that_would_overheat_is_refused_until_the_tank_cools() -> void:
 	var game_match := _setup()
-	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "laser")
+	var shooter := game_match.spawn_tank("Laser", 0, Match.Team.GREEN, "lancer")
 	shooter.global_position = Vector3(LANE_X, 0.0, 20.0)
 	await wait_physics_frames(2)
 	var per_shot := float(Weapons.profile("laser")["heat_per_shot"])
@@ -86,7 +91,7 @@ func test_a_shot_that_would_overheat_is_refused_until_the_tank_cools() -> void:
 
 func test_heat_dissipates_over_time() -> void:
 	var game_match := _setup()
-	var tank := game_match.spawn_tank("Cooling", 0, Match.Team.GREEN, "laser")
+	var tank := game_match.spawn_tank("Cooling", 0, Match.Team.GREEN, "lancer")
 	tank.global_position = Vector3(LANE_X, 0.0, 20.0)
 	await wait_physics_frames(2)
 	tank.heat = 60.0
@@ -101,6 +106,7 @@ func test_low_on_shells_it_skips_long_shots() -> void:
 	var far := game_match.spawn_tank("Far", 0, Match.Team.RUST)
 	tank.global_position = Vector3(LANE_X, 0.0, 30.0)
 	far.global_position = Vector3(LANE_X, 0.0, -30.0)  # 60 m: in range, outside the 45 m preferred range
+	tank.max_ammo = 30  # R8: guns are unlimited; give this one a load to test the discipline
 	tank.ammo = 5  # 17% of a load
 	var orders := OrderController.new()
 	orders.tank = tank

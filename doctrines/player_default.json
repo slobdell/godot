@@ -1,10 +1,10 @@
 {
   "name": "Player Default",
-  "note": "The player's squads in skirmish mode (make skirmish). They start formed up and holding, waiting for tactical-map orders.",
+  "note": "The player's squads in skirmish mode (make skirmish): starter units only (unlock tier 0), 810 of 1000 points. They start formed up and holding, waiting for orders.",
   "squads": [
     {"name": "Alpha", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
-     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"}]},
+     "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}]},
     {"name": "Bravo", "formation": "line", "verb": "hold", "directive": {"role": "assault"},
-     "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}]}
+     "units": [{"unit": "ifv"}, {"unit": "scout"}]}
   ]
 }

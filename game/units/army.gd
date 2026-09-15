@@ -1,24 +1,27 @@
 class_name Army
 extends RefCounted
-## Budgeted armies (directive set 2): what an army costs, whether it fits a budget, and seeded CPU
-## armies built from archetypes. An army IS a doctrine (squads of loadouts), so everything that loads
-## doctrines (skirmish, the match runner, the garage) can use them.
+## Budgeted armies: what an army costs, whether it fits a budget, and seeded CPU armies built from
+## archetypes. An army IS a doctrine (army JSON v2: squads of units, see Doctrine), so everything that
+## loads doctrines (skirmish, the match runner, the garage) can use them.
 ##
 ## CPU army names: "cpu" (a seeded random archetype) or "cpu:<archetype>" (see ARCHETYPES).
 
-## Each archetype: the unit mix to buy, in order, and how to arm it. The generator buys the list until
-## the budget runs out, then spends what's left on components.
-##   units: [unit id, ...] purchase order (repeated while money lasts)    lasers: chance a tank or scout takes a laser
+## Each archetype: the unit mix to buy, in purchase order (repeated while money lasts).
 const ARCHETYPES := {
-	"balanced": {"units": ["tank", "tank", "scout", "artillery", "tank", "scout", "tank"], "lasers": 0.3},
-	"armor": {"units": ["tank", "tank", "tank", "tank", "tank", "tank"], "lasers": 0.4},
-	"recon_strike": {"units": ["scout", "tank", "scout", "tank", "scout", "tank", "scout"], "lasers": 0.6},
-	"siege": {"units": ["artillery", "scout", "tank", "artillery", "tank", "scout", "tank"], "lasers": 0.2},
-	"swarm": {"units": ["scout", "scout", "scout", "scout", "scout", "scout", "scout", "scout", "scout"], "lasers": 0.4},
+	"balanced": {"units": ["tank", "ifv", "scout", "artillery", "tank", "lancer", "ifv"]},
+	"armor": {"units": ["tank", "tank", "lancer", "tank", "ifv"]},
+	"recon_strike": {"units": ["scout", "ifv", "scout", "tank", "scout", "lancer"]},
+	"siege": {"units": ["artillery", "scout", "tank", "artillery", "ifv", "scout"]},
+	"swarm": {"units": ["scout", "scout", "ifv", "scout", "scout", "ifv"]},
+	# Stretch: close-range pressure. Burners charge behind a tank's front armor while an IFV screens scouts.
+	"brawl": {"units": ["burner", "tank", "burner", "ifv", "burner", "lancer"]},
 }
-## Squad names by unit class, and the directive each class's squad gets.
+## Squad name and directive per role. Squads are formed by role, in this order.
 const SQUADS := {
-	"tank": {"name": "Guns", "directive": {"role": "assault", "cohesion": 0.7}, "formation": "wedge"},
+	"tank": {"name": "Guns", "directive": {"role": "assault", "cohesion": 0.7}},
+	"ifv": {"name": "Hunters", "directive": {"role": "assault"}},
+	"lancer": {"name": "Lances", "directive": {"role": "support"}},
+	"burner": {"name": "Burners", "directive": {"role": "assault", "aggression": 0.9}},
 	"scout": {"name": "Eyes", "directive": {"role": "scout"}},
 	"artillery": {"name": "Battery", "directive": {"role": "support"}},
 }
@@ -57,82 +60,69 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 	var archetype := name.trim_prefix("cpu:") if name.begins_with("cpu:") else String(archetypes[rng.randi_range(0, archetypes.size() - 1)])
 	if not ARCHETYPES.has(archetype):
 		archetype = "balanced"
-	var plan: Dictionary = ARCHETYPES[archetype]
-	var entries: Array = []
-	var spent := 0
-	var order: Array = plan["units"]
+	var order: Array = ARCHETYPES[archetype]["units"]
 	var cheapest := INF
 	for unit_id: String in order:
 		cheapest = minf(cheapest, Units.cost_of({"unit": unit_id}))
-	# Cycle through the purchase order until the budget or the army cap runs out.
-	for step in order.size() * 4:
-		if entries.size() >= Doctrine.MAX_TANKS or spent + cheapest > budget:
+	var entries: Array = []
+	var spent := 0
+	# Cycle through the purchase order until the budget or the army cap runs out; a seeded rotation of
+	# the starting point varies armies of one archetype.
+	var start := rng.randi_range(0, order.size() - 1)
+	for step in order.size() * Doctrine.MAX_UNITS:
+		if entries.size() >= Doctrine.MAX_UNITS or spent + cheapest > budget:
 			break
-		var unit_id: String = order[step % order.size()]
-		var entry := {"unit": unit_id}
-		var accepts: Array = Units.PROFILES[unit_id]["hardpoints"][0]["accepts"]
-		if accepts.has("laser") and rng.randf() < float(plan["lasers"]):
-			entry["weapon"] = "laser"
-		else:
-			entry["weapon"] = accepts[0]
+		var entry := {"unit": String(order[(start + step) % order.size()])}
 		var cost := Units.cost_of(entry)
 		if spent + cost > budget:
 			continue
 		entries.append(entry)
 		spent += cost
-	# Leftover points: components where they matter most (heat sinks on lasers first, then shields,
-	# then ammo racks on cannons), cheapest useful upgrade first, one pass per slot.
-	for pass_index in 2:
-		for entry: Dictionary in entries:
-			var slots := int(Units.PROFILES[entry["unit"]]["component_slots"])
-			var fitted: Array = entry.get("components", [])
-			if fitted.size() > pass_index or fitted.size() >= slots:
-				continue
-			var wish := "shield_booster"
-			if entry["weapon"] == "laser" and not fitted.has("heat_sink"):
-				wish = "heat_sink"
-			elif entry["weapon"] in ["cannon", "mortar"] and not fitted.has("ammo_rack") and pass_index == 1:
-				wish = "ammo_rack"
-			elif fitted.has("shield_booster"):
-				wish = "armor_plating"
-			var price := int(Units.COMPONENTS[wish]["cost"])
-			if spent + price <= budget:
-				fitted.append(wish)
-				entry["components"] = fitted
-				spent += price
-	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "cost": spent, "squads": _squads_for(entries)}
+	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "cost": spent, "squads": squads_for(entries)}
 
 
-## Group entries into squads by class, at most Formations.MAX_MEMBERS each (Guns, Guns2, ...).
-static func _squads_for(entries: Array) -> Array:
-	var by_class := {}
+## Group entries into at most Doctrine.MAX_SQUADS squads of Doctrine.MAX_SQUAD_UNITS, by role (Guns,
+## Guns2, ...). When roles need more squads than allowed, the extra units join squads that have room.
+static func squads_for(entries: Array) -> Array:
+	var by_role := {}
 	for entry: Dictionary in entries:
-		var unit_class: String = Units.PROFILES[entry["unit"]]["class"]
-		if not by_class.has(unit_class):
-			by_class[unit_class] = []
-		by_class[unit_class].append(entry)
+		var role := Units.role_of(entry["unit"])
+		if not by_role.has(role):
+			by_role[role] = []
+		by_role[role].append(entry)
 	var squads: Array = []
-	for unit_class in ["tank", "scout", "artillery"]:
-		var members: Array = by_class.get(unit_class, [])
+	for role: String in SQUADS:
+		var members: Array = by_role.get(role, [])
 		var index := 0
 		while index < members.size():
-			var template: Dictionary = SQUADS[unit_class]
-			var squad := {"name": template["name"] + ("" if index == 0 else str(index / Formations.MAX_MEMBERS + 1)),
-					"directive": template["directive"].duplicate(), "tanks": members.slice(index, index + Formations.MAX_MEMBERS)}
-			squads.append(squad)
-			index += Formations.MAX_MEMBERS
-	return squads.slice(0, Doctrine.MAX_SQUADS)
+			var template: Dictionary = SQUADS[role]
+			var number := index / Doctrine.MAX_SQUAD_UNITS + 1
+			squads.append({"name": template["name"] + ("" if number == 1 else str(number)),
+					"directive": template["directive"].duplicate(), "units": members.slice(index, index + Doctrine.MAX_SQUAD_UNITS)})
+			index += Doctrine.MAX_SQUAD_UNITS
+	# Too many squads: fold the smallest ones into squads with room (≤ 25 units always fit 5 × 5).
+	while squads.size() > Doctrine.MAX_SQUADS:
+		var smallest := 0
+		for i in squads.size():
+			if squads[i]["units"].size() < squads[smallest]["units"].size():
+				smallest = i
+		var homeless: Array = squads.pop_at(smallest)["units"]
+		for squad: Dictionary in squads:
+			while not homeless.is_empty() and squad["units"].size() < Doctrine.MAX_SQUAD_UNITS:
+				squad["units"].append(homeless.pop_front())
+	return squads
 
 
-## "3 tanks, 1 scout, 1 artillery (980 pts)"
+## "3 tanks, 1 scout, 1 artillery (930 pts)"
 static func describe(doctrine: Dictionary) -> String:
 	var counts := {}
-	for squad in doctrine.get("squads", []):
-		for entry in squad.get("tanks", []):
-			var unit_id: String = entry.get("unit", "tank")
-			counts[unit_id] = int(counts.get(unit_id, 0)) + 1
+	for item in Doctrine.entries(doctrine):
+		var unit_id: String = item["entry"].get("unit", "")
+		counts[unit_id] = int(counts.get(unit_id, 0)) + 1
 	var parts: PackedStringArray = []
-	for unit_id in ["tank", "scout", "artillery"]:
+	for unit_id in Units.ids():
 		if counts.has(unit_id):
-			parts.append("%d %s%s" % [counts[unit_id], unit_id, "" if counts[unit_id] == 1 or unit_id == "artillery" else "s"])
+			var label := String(Units.PROFILES[unit_id]["display_name"]).to_lower() if unit_id != "ifv" else "IFV"
+			var plural: bool = counts[unit_id] != 1 and unit_id != "artillery"
+			parts.append("%d %s%s" % [counts[unit_id], label, "s" if plural else ""])
 	return "%s (%d pts)" % [", ".join(parts), Units.army_cost(doctrine)]

@@ -28,7 +28,8 @@ func test_cone_geometry() -> void:
 
 func _burn(target_z: float, target_yaw: float, seconds: float, blocker := false) -> Tank:
 	var game_match := _setup()
-	var burner := game_match.spawn_tank("Burner", 0, Match.Team.GREEN, "flamethrower")
+	var burner := game_match.spawn_tank("Burner", 0, Match.Team.GREEN)
+	burner.set_weapon("flamethrower")  # the future Burner unit's weapon on a standard hull
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
 	_place(burner, 20.0, 0.0)
 	_place(target, target_z, target_yaw)
@@ -83,7 +84,7 @@ func test_team_vision_is_shared_and_remembered() -> void:
 
 func test_brain_engages_a_visible_enemy() -> void:
 	var game_match := _setup()
-	var brain_tank := game_match.add_brain_tank(Match.Team.GREEN, "Solo", "cannon", [], "Green_Solo_1")
+	var brain_tank := game_match.add_brain_tank(Match.Team.GREEN, "Solo", "tank", [], "Green_Solo_1")
 	var target := game_match.spawn_tank("Target", 0, Match.Team.RUST)
 	_place(brain_tank, 20.0, 0.0)
 	_place(target, -20.0, PI / 2.0)
@@ -98,7 +99,7 @@ func test_brain_engages_a_visible_enemy() -> void:
 
 func test_hurt_brain_backs_away_under_fire() -> void:
 	var game_match := _setup()
-	var brain_tank := game_match.add_brain_tank(Match.Team.GREEN, "Solo", "cannon", [], "Green_Solo_1")
+	var brain_tank := game_match.add_brain_tank(Match.Team.GREEN, "Solo", "tank", [], "Green_Solo_1")
 	var enemy := game_match.spawn_tank("Enemy", 0, Match.Team.RUST)
 	_place(brain_tank, 20.0, 0.0)
 	_place(enemy, -10.0, PI)  # facing the brain tank: its gun points at it
@@ -114,7 +115,7 @@ func test_brain_shoots_what_it_can_see_while_its_target_is_hidden() -> void:
 	# brain would lock onto a target only a TEAMMATE could see and never fire at the enemy
 	# in its own sights. Measured: guns idle 95-97% of loaded-and-in-sight samples.
 	var game_match := _setup()
-	var brain_tank := game_match.add_brain_tank(Match.Team.GREEN, "Solo", "cannon", [], "Green_Solo_1")
+	var brain_tank := game_match.add_brain_tank(Match.Team.GREEN, "Solo", "tank", [], "Green_Solo_1")
 	var brain: TankBrain = game_match.brains.get_node("Brain_Green_Solo_1")
 	brain.game_match = null  # freeze the brain's own decisions BEFORE any frame; test the order layer
 	var hidden := game_match.spawn_tank("Hidden", 0, Match.Team.RUST)

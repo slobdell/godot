@@ -34,8 +34,8 @@ signal died
 ## the union of its tanks' views (Match.intel).
 @export var sight_radius: float = Units.stat("tank", "sight_radius")
 ## G7 heat (see Units.PROFILES "heat_capacity"/"heat_dissipation").
-@export var heat_capacity: float = Units.stat("tank", "heat_capacity")
-@export var heat_dissipation: float = Units.stat("tank", "heat_dissipation")
+@export var heat_capacity: float = 0.0
+@export var heat_dissipation: float = 0.0
 ## Client-side display smoothing toward replicated state. Higher = snappier.
 @export var remote_smoothing := 18.0
 
@@ -50,15 +50,17 @@ var owner_peer_id := 0
 var display_name := ""
 var weapon_id := Weapons.DEFAULT
 var weapon: Dictionary = Weapons.profile(Weapons.DEFAULT)
-## Loadout, fixed at spawn (directive set 2): the unit class, weapons by hardpoint, component ids.
-var unit_id := "tank"
-var weapons := {}
-var components: Array = []
+## The unit type (Units.PROFILES id), fixed at spawn. Everything below comes from it (catalog v2).
+var unit_id := Units.DEFAULT
+## "turret" or "fixed" (C4). A fixed mount's gun swings only inside fire_arc_deg of the hull heading.
+var mount := "turret"
+var fire_arc_deg := 360.0
+## Where rounds leave the gun, meters above the ground (C4).
+var muzzle_height := 1.27
 ## This tick's commanded aim point (world). Indirect weapons (ARC) fire at it, not along the barrel.
 var aim_point := Vector3.ZERO
-## Shells a full load holds (weapon ammo plus ammo racks), or -1 for unlimited.
+## Shells a full load holds, or -1 for unlimited.
 var max_ammo := -1
-var ammo_bonus_fraction := 0.0
 ## Fractional cone damage not yet applied as whole hit points.
 var damage_accumulator := 0.0
 ## What the tank's brain is doing ("ENGAGE Rust_2"); set by the simulating peer, shown on nameplates.
@@ -111,20 +113,18 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
 func _ready() -> void:
-	apply_loadout()
+	apply_unit()
 	_publish_state()
 	_previous_sync_position = sync_position
 
 
-## Directive set 2: stats come from the unit catalog (Units.PROFILES + component modifiers) and the
-## main hardpoint's weapon. Called once in _ready, from data set at spawn (identical on every peer).
-func apply_loadout() -> void:
-	var base := func(key: String) -> float: return float(Units.stat(unit_id, key))
-	var bonus := {}
-	for component in components:
-		for key in Units.COMPONENTS.get(component, {}).get("modifiers", {}):
-			bonus[key] = float(bonus.get(key, 0.0)) + float(Units.COMPONENTS[component]["modifiers"][key])
-	var stat := func(key: String) -> float: return base.call(key) + float(bonus.get(key, 0.0))
+## Catalog v2: every stat and the one weapon come from Units.PROFILES[unit_id]. Called once in _ready,
+## from data set at spawn (identical on every peer).
+func apply_unit() -> void:
+	if not Units.exists(unit_id):
+		push_error("unknown unit '%s'; spawning a %s" % [unit_id, Units.DEFAULT])
+		unit_id = Units.DEFAULT
+	var stat := func(key: String, fallback: float = 0.0) -> float: return float(Units.stat(unit_id, key, fallback))
 	max_health = roundi(stat.call("max_health"))
 	max_shield = stat.call("max_shield")
 	shield_recharge_delay = stat.call("shield_recharge_delay")
@@ -136,22 +136,29 @@ func apply_loadout() -> void:
 	sight_radius = stat.call("sight_radius")
 	heat_capacity = stat.call("heat_capacity")
 	heat_dissipation = stat.call("heat_dissipation")
-	ammo_bonus_fraction = float(bonus.get("ammo_fraction", 0.0))
-	_apply_hull_size(Units.stat(unit_id, "hull_size"))
+	mount = String(Units.stat(unit_id, "mount"))
+	fire_arc_deg = stat.call("fire_arc_deg", 360.0) if mount == "fixed" else 360.0
+	muzzle_height = stat.call("muzzle_height", 1.27)
+	# C6: per-unit art when the theme has it, else the shared tank scenes (scaled to this hull).
+	var own_hull := GameTheme.slots.has("unit.%s.hull" % unit_id)
+	if own_hull:
+		_hull_visual.fill("unit.%s.hull" % unit_id)
+	if GameTheme.slots.has("unit.%s.turret" % unit_id):
+		_turret_visual.fill("unit.%s.turret" % unit_id)
+	_apply_hull_size(Units.stat(unit_id, "hull_size"), own_hull)
 	health = max_health
 	shield = max_shield
-	var chosen := weapon_id
-	if Units.exists(unit_id):
-		var hardpoint: Dictionary = Units.PROFILES[unit_id]["hardpoints"][0]
-		chosen = String(weapons.get(hardpoint["id"], weapon_id))
-		if not (hardpoint["accepts"] as Array).has(chosen):
-			chosen = hardpoint["accepts"][0]  # e.g. an artillery piece spawned without naming its mortar
-	set_weapon(chosen)
+	set_weapon(String(Units.stat(unit_id, "weapon")))
 
 
-func _apply_hull_size(size_list: Variant) -> void:
+## The turret pivot sits MUZZLE_ABOVE_PIVOT below the muzzle (see muzzle_position).
+const MUZZLE_ABOVE_PIVOT := 0.05
+
+
+func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 	var size := Vector3(size_list[0], size_list[1], size_list[2])
-	var standard: Array = Units.PROFILES["tank"]["hull_size"]
+	turret.position.y = muzzle_height - MUZZLE_ABOVE_PIVOT
+	var standard: Array = Units.PROFILES[Units.DEFAULT]["hull_size"]
 	if size.is_equal_approx(Vector3(standard[0], standard[1], standard[2])):
 		return
 	# Scene sub-resources are shared by every instance (trip-up 13): resize a copy.
@@ -160,21 +167,29 @@ func _apply_hull_size(size_list: Variant) -> void:
 	_collision.shape = box
 	_collision.position.y = size.y / 2.0
 	var ratio := Vector3(size.x / float(standard[0]), size.y / float(standard[1]), size.z / float(standard[2]))
-	_hull_visual.scale = ratio
-	turret.position.y *= ratio.y
+	if not own_hull_art:
+		_hull_visual.scale = ratio
 	turret.scale = Vector3.ONE * minf(ratio.x, ratio.z)
 
 
+## Swap the weapon (the unit's own at spawn; tests use it to try a weapon on a standard hull).
 func set_weapon(id: String) -> void:
 	weapon_id = id
 	weapon = Weapons.profile(id)
 	reload_seconds = weapon["reload"]
-	var full := Weapons.max_ammo(weapon)
-	max_ammo = full if full < 0 else roundi(full * (1.0 + ammo_bonus_fraction))
+	max_ammo = Weapons.max_ammo(weapon)
 	ammo = max_ammo
 	if _weapon_visual != null:
-		_weapon_visual.fill("weapon." + id)
+		_weapon_visual.fill(first_drawable_slot(["unit.%s.weapon" % unit_id, "weapon." + id, "weapon." + Weapons.DEFAULT]))
 		_weapon_visual.invoke("setup", [weapon])
+
+
+## The first slot id the active theme can draw (C6 fallbacks: per-unit art, then shared art).
+static func first_drawable_slot(candidates: Array) -> String:
+	for candidate: String in candidates:
+		if GameTheme.slots.has(candidate):
+			return candidate
+	return candidates[-1]
 
 
 func _physics_process(delta: float) -> void:
@@ -205,8 +220,7 @@ func _physics_process(delta: float) -> void:
 	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
 
 	var local_aim := to_local(cmd.aim_point)
-	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, TankMotion.yaw_toward(local_aim),
-			turret_turn_rate, delta)
+	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, gun_yaw_toward(local_aim), turret_turn_rate, delta)
 
 	sync_firing = false
 	heat = maxf(0.0, heat - heat_dissipation * delta)
@@ -350,6 +364,25 @@ func resupply(shells: int) -> int:
 
 func _heat_allows_shot(current_heat: float) -> bool:
 	return current_heat + float(weapon.get("heat_per_shot", 0.0)) <= heat_capacity + 0.001
+
+
+## R2 fixed mounts: the hull-relative yaw the gun swings toward to aim at `local_target` (hull space). A
+## turret reaches any yaw; a fixed mount stops at the edge of its fire arc, so the hull must turn to aim.
+func gun_yaw_toward(local_target: Vector3) -> float:
+	var yaw := TankMotion.yaw_toward(local_target)
+	if mount != "fixed":
+		return yaw
+	var half_arc := deg_to_rad(fire_arc_deg / 2.0)
+	return clampf(yaw, -half_arc, half_arc)
+
+
+## Whether this unit's gun can point at `point` without turning the hull (C4: fixed mounts only inside
+## fire_arc_deg of the hull heading; turrets always). Valid on every peer.
+func can_bear_on(point: Vector3) -> bool:
+	if mount != "fixed":
+		return true
+	var yaw := TankMotion.yaw_toward(to_local(point))
+	return absf(yaw) <= deg_to_rad(fire_arc_deg / 2.0) + 0.0001
 
 
 func muzzle_position() -> Vector3:

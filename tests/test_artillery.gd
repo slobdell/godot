@@ -15,7 +15,7 @@ func _setup() -> Match:
 
 ## An artillery tank driven by a plain OrderController that spots through team intel, like a brain.
 func _battery(game_match: Match, at: Vector3) -> Array:
-	var gun := game_match.spawn_tank("Green_Gun_1", 0, Match.Team.GREEN, Weapons.DEFAULT, {"unit": "artillery"})
+	var gun := game_match.spawn_tank("Green_Gun_1", 0, Match.Team.GREEN, "artillery")
 	gun.global_position = at
 	var orders := OrderController.new()
 	orders.tank = gun
@@ -45,7 +45,7 @@ func test_a_spotted_target_behind_cover_gets_shelled() -> void:
 	assert_true(not Perception.has_line_of_sight(gun, target), "setup: the battery can't see its target")
 	await wait_physics_frames(60 * 3)
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "with nobody spotting, it doesn't fire")
-	var spotter := game_match.spawn_tank("Green_Eyes_1", 0, Match.Team.GREEN, Weapons.DEFAULT, {"unit": "scout"})
+	var spotter := game_match.spawn_tank("Green_Eyes_1", 0, Match.Team.GREEN, "scout")
 	spotter.global_position = Vector3(-80, 0, 40)  # 63 m from the target, clear view
 	var before := _toughness(target)
 	var lowest := before
@@ -89,7 +89,8 @@ func test_a_burst_hurts_everything_nearby_with_falloff() -> void:
 	assert_near(full - _toughness(near), float(weapon["damage"]), 1.5, "a direct hit deals full damage")
 	assert_true(full - _toughness(edge) > 0.0 and full - _toughness(edge) < float(weapon["damage"]) * 0.6, "the edge of the burst deals less (%.0f)" % (full - _toughness(edge)))
 	assert_eq(_toughness(far), full, "20 m away is untouched")
-	assert_eq(_toughness(friend), full, "no friendly fire")
+	assert_true(_toughness(friend) < full, "R4: a teammate inside the burst is hurt too (friendly fire)")
+	assert_true(game_match.stats["friendly_damage"][Match.Team.GREEN] > 0.0, "and it's recorded as friendly damage")
 
 
 func _situation(contacts: Array, allies: Array = []) -> Dictionary:

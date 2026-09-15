@@ -15,11 +15,11 @@ func _setup() -> Match:
 	return game_match
 
 
-func _squad(game_match: Match, count: int) -> Squad:
+func _squad(game_match: Match, count: int, unit_id := "tank") -> Squad:
 	var tanks := []
 	for i in count:
-		tanks.append({"weapon": "cannon"})
-	var doctrine := {"name": "Test", "squads": [{"name": "Alpha", "formation": "line", "verb": "hold", "tanks": tanks}]}
+		tanks.append({"unit": unit_id})
+	var doctrine := {"name": "Test", "squads": [{"name": "Alpha", "formation": "line", "verb": "hold", "units": tanks}]}
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, doctrine), "", "setup: doctrine loads")
 	return game_match.squads["0/Alpha"]
 
@@ -47,7 +47,9 @@ func _turret_yaw(tank: Tank) -> float:
 
 func test_turret_holds_its_world_heading_while_the_hull_turns() -> void:
 	var game_match := _setup()
-	var tank := game_match.spawn_tank("Spinner", 0, Match.Team.GREEN)
+	# Rules R2: the tank's turret (50°/s) is slower than its hull on purpose; the order layer's heading hold is
+	# tested on the IFV, whose turret can out-turn its hull.
+	var tank := game_match.spawn_tank("Spinner", 0, Match.Team.GREEN, "ifv")
 	tank.global_position = Vector3(LANE_X, 0.0, 30.0)
 	var orders := OrderController.new()
 	orders.tank = tank
@@ -65,11 +67,11 @@ func test_turret_holds_its_world_heading_while_the_hull_turns() -> void:
 
 func test_turret_watches_a_known_threat_it_cannot_shoot_yet() -> void:
 	var game_match := _setup()
-	var squad := _squad(game_match, 1)
+	var squad := _squad(game_match, 1, "ifv")  # a turret faster than the hull (the tank's is slower on purpose)
 	var tank := game_match.tanks.get_node("Green_Alpha_1") as Tank
 	tank.global_position = Vector3(LANE_X, 0.0, 40.0)
 	tank.rotation.y = 0.0
-	# 72 m east: inside team sensor range (75) but beyond the cannon's 70 m reach.
+	# 72 m east: inside the IFV's 85 m sight but beyond its autocannon's 60 m reach.
 	var enemy := game_match.spawn_tank("Rust_Far_1", 0, Match.Team.RUST)
 	enemy.global_position = Vector3(LANE_X + 72.0, 0.0, 40.0)
 	await wait_physics_frames(3)

@@ -1,0 +1,440 @@
+{
+ "name": "furnace",
+ "note": "Stretch hazards: foundry's cover plus burning fire pits (30 damage per second, shields first) in the center lanes and on the flanks. Charging straight down the middle costs hull; the pits punish clumps that don't route around them.",
+ "half_size": 120.0,
+ "obstacles": [
+  {
+   "type": "crate",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -36.0,
+    -20.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    36.0,
+    20.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -72.0,
+    24.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    72.0,
+    -24.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -28.0,
+    60.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    28.0,
+    -60.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -24.0,
+    12.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    24.0,
+    -12.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    60.0,
+    52.0
+   ],
+   "rotation_deg": 45.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -60.0,
+    -52.0
+   ],
+   "rotation_deg": 45.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -12.0,
+    56.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    12.0,
+    -56.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -80.0,
+    64.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    80.0,
+    -64.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -88.0,
+    -20.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    88.0,
+    20.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    40.0,
+    30.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -40.0,
+    -30.0
+   ],
+   "rotation_deg": 0.0
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -12.0,
+    90.0
+   ],
+   [
+    12.0,
+    90.0
+   ],
+   [
+    -24.0,
+    90.0
+   ],
+   [
+    24.0,
+    90.0
+   ],
+   [
+    -36.0,
+    90.0
+   ],
+   [
+    36.0,
+    90.0
+   ],
+   [
+    -48.0,
+    90.0
+   ],
+   [
+    48.0,
+    90.0
+   ],
+   [
+    0.0,
+    100.0
+   ],
+   [
+    -12.0,
+    100.0
+   ],
+   [
+    12.0,
+    100.0
+   ],
+   [
+    -24.0,
+    100.0
+   ],
+   [
+    24.0,
+    100.0
+   ],
+   [
+    -36.0,
+    100.0
+   ],
+   [
+    36.0,
+    100.0
+   ],
+   [
+    -48.0,
+    100.0
+   ],
+   [
+    48.0,
+    100.0
+   ],
+   [
+    0.0,
+    110.0
+   ],
+   [
+    -12.0,
+    110.0
+   ],
+   [
+    12.0,
+    110.0
+   ],
+   [
+    -24.0,
+    110.0
+   ],
+   [
+    24.0,
+    110.0
+   ],
+   [
+    -36.0,
+    110.0
+   ],
+   [
+    36.0,
+    110.0
+   ],
+   [
+    -48.0,
+    110.0
+   ],
+   [
+    48.0,
+    110.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    12.0,
+    -90.0
+   ],
+   [
+    -12.0,
+    -90.0
+   ],
+   [
+    24.0,
+    -90.0
+   ],
+   [
+    -24.0,
+    -90.0
+   ],
+   [
+    36.0,
+    -90.0
+   ],
+   [
+    -36.0,
+    -90.0
+   ],
+   [
+    48.0,
+    -90.0
+   ],
+   [
+    -48.0,
+    -90.0
+   ],
+   [
+    0.0,
+    -100.0
+   ],
+   [
+    12.0,
+    -100.0
+   ],
+   [
+    -12.0,
+    -100.0
+   ],
+   [
+    24.0,
+    -100.0
+   ],
+   [
+    -24.0,
+    -100.0
+   ],
+   [
+    36.0,
+    -100.0
+   ],
+   [
+    -36.0,
+    -100.0
+   ],
+   [
+    48.0,
+    -100.0
+   ],
+   [
+    -48.0,
+    -100.0
+   ],
+   [
+    0.0,
+    -110.0
+   ],
+   [
+    12.0,
+    -110.0
+   ],
+   [
+    -12.0,
+    -110.0
+   ],
+   [
+    24.0,
+    -110.0
+   ],
+   [
+    -24.0,
+    -110.0
+   ],
+   [
+    36.0,
+    -110.0
+   ],
+   [
+    -36.0,
+    -110.0
+   ],
+   [
+    48.0,
+    -110.0
+   ],
+   [
+    -48.0,
+    -110.0
+   ]
+  ]
+ },
+ "control_point": {
+  "radius": 16.0
+ },
+ "hazards": [
+  {
+   "type": "fire_pit",
+   "position": [
+    0.0,
+    30.0
+   ],
+   "radius": 7.0,
+   "damage_per_second": 30.0
+  },
+  {
+   "type": "fire_pit",
+   "position": [
+    0.0,
+    -30.0
+   ],
+   "radius": 7.0,
+   "damage_per_second": 30.0
+  },
+  {
+   "type": "fire_pit",
+   "position": [
+    -60.0,
+    0.0
+   ],
+   "radius": 9.0,
+   "damage_per_second": 30.0
+  },
+  {
+   "type": "fire_pit",
+   "position": [
+    60.0,
+    0.0
+   ],
+   "radius": 9.0,
+   "damage_per_second": 30.0
+  },
+  {
+   "type": "fire_pit",
+   "position": [
+    24.0,
+    -36.0
+   ],
+   "radius": 6.0,
+   "damage_per_second": 30.0
+  },
+  {
+   "type": "fire_pit",
+   "position": [
+    -24.0,
+    36.0
+   ],
+   "radius": 6.0,
+   "damage_per_second": 30.0
+  }
+ ]
+}

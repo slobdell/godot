@@ -61,8 +61,8 @@ func _setup_squad(formation := "wedge", count := 3) -> Array:
 	add_to_tree(game_match)
 	var tanks := []
 	for i in count:
-		tanks.append({"weapon": "cannon"})
-	var doctrine := {"name": "Test", "squads": [{"name": "Alpha", "formation": formation, "verb": "hold", "tanks": tanks}]}
+		tanks.append({"unit": "tank"})
+	var doctrine := {"name": "Test", "squads": [{"name": "Alpha", "formation": formation, "verb": "hold", "units": tanks}]}
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, doctrine), "", "setup: doctrine loads")
 	return [game_match, game_match.squads["0/Alpha"]]
 

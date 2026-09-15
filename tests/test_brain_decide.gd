@@ -202,9 +202,10 @@ func test_team_relative_coordinates_are_mirror_images() -> void:
 
 func test_doctrine_validation() -> void:
 	assert_true(Doctrine.parse({"name": "x", "squads": []}).has("error"), "needs squads")
-	var too_many := {"name": "x", "squads": [{"name": "A", "tanks": [{}, {}, {}, {}, {}, {}]}]}
-	assert_true(Doctrine.parse(too_many).has("error"), "at most MAX_TANKS tanks")
-	var bad_weapon := {"name": "x", "squads": [{"name": "A", "tanks": [{"weapon": "railgun"}]}]}
-	assert_true(String(Doctrine.parse(bad_weapon).get("error", "")).contains("railgun"), "unknown weapons are named in the error")
+	var tank := {"unit": "tank"}
+	var too_many := {"name": "x", "squads": [{"name": "A", "units": [tank, tank, tank, tank, tank, tank]}]}
+	assert_true(Doctrine.parse(too_many).has("error"), "at most 5 units in a squad")
+	var bad_unit := {"name": "x", "squads": [{"name": "A", "units": [{"unit": "railgun"}]}]}
+	assert_true(String(Doctrine.parse(bad_unit).get("error", "")).contains("railgun"), "unknown units are named in the error")
 	for path in ["res://doctrines/individuals.json", "res://doctrines/anvil_hammer.json", "res://doctrines/flame_rush.json"]:
 		assert_true(Doctrine.load_file(path).has("doctrine"), "%s is valid: %s" % [path, Doctrine.load_file(path).get("error", "")])

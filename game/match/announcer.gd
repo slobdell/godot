@@ -9,6 +9,8 @@ signal announced(text: String, severity: int)
 
 ## Don't repeat "contact" more often than this while enemies keep popping in and out of sight.
 const CONTACT_COOLDOWN_TICKS := 60 * 20
+## R4: say "friendly fire" at most this often per shooter (flames hurt every tick).
+const FRIENDLY_FIRE_COOLDOWN_TICKS := 60 * 10
 
 var game_match: Match
 var team := Match.Team.GREEN
@@ -19,10 +21,13 @@ var _shields_down := {}
 ## Tank names already reported as out of ammo (cleared when they have shells again).
 var _dry := {}
 var _last_contact_tick := -CONTACT_COOLDOWN_TICKS
+## Shooter name -> tick of its last friendly-fire message.
+var _friendly_fire_ticks := {}
 
 
 func _ready() -> void:
 	game_match.tank_destroyed.connect(_on_tank_destroyed)
+	game_match.friendly_fire.connect(_on_friendly_fire)
 	game_match.finished.connect(_on_finished)
 	game_match.control_changed.connect(_on_control_changed)
 	for squad in game_match.team_squads(team):
@@ -82,13 +87,24 @@ func announce_command(summary: String, error: String) -> void:
 		_say("Can't: " + error, Hud.WARNING)
 
 
-func _on_tank_destroyed(victim: Tank, _killer: String) -> void:
+func _on_tank_destroyed(victim: Tank, killer: String) -> void:
 	if victim.team == team:
 		var squad_name := game_match.squad_of(victim)
-		_say("%s lost %s (%d tanks left)" % [squad_name if squad_name != "" else "We", short_name(String(victim.name)),
-				game_match.alive_count(team)], Hud.WARNING)
+		var by_us := killer.begins_with(Match.TEAM_NAMES[team] + "_")
+		_say("%s lost %s%s (%d tanks left)" % [squad_name if squad_name != "" else "We", short_name(String(victim.name)),
+				" to friendly fire from %s" % short_name(killer) if by_us else "", game_match.alive_count(team)], Hud.WARNING)
 	else:
 		_say("Enemy tank destroyed (%d enemies left)" % game_match.alive_count(1 - team), Hud.INFO)
+
+
+## R4: our own fire hit one of ours (the kill itself is reported by _on_tank_destroyed).
+func _on_friendly_fire(victim: Tank, shooter: String, _hull: int, killed: bool) -> void:
+	if victim.team != team or killed:
+		return
+	if game_match.tick - int(_friendly_fire_ticks.get(shooter, -FRIENDLY_FIRE_COOLDOWN_TICKS)) < FRIENDLY_FIRE_COOLDOWN_TICKS:
+		return
+	_friendly_fire_ticks[shooter] = game_match.tick
+	_say("Friendly fire: %s hit %s" % [short_name(shooter), short_name(String(victim.name))], Hud.WARNING)
 
 
 func _on_commander_lost(fallen: String, successor: String, squad_name: String) -> void:
