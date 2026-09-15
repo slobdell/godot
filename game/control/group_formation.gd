@@ -10,18 +10,54 @@ const SPACING := 10.0
 const ROW_WIDTH := 5
 ## Front to back: who leads a group. Heavies in front, fragile and indirect-fire units behind.
 const ROLE_RANK := {"tank": 0, "burner": 1, "ifv": 1, "scout": 2, "lancer": 3, "artillery": 4}
+## Units at least this fast (m/s) count as fast: a group of only fast units charging spreads into a wide wedge.
+const FAST_MPS := 12.0
+## A fast charge spaces its wedge this much wider.
+const CHARGE_SPREAD := 1.4
+## A holding line is at most this many units abreast before it adds a second row.
+const LINE_WIDTH := 8
+## Within this distance of its slot a unit stops pacing itself to the group (meters).
+const PACE_NEAR := 8.0
+## The slowest a unit paces itself for its group (fraction of its top speed).
+const PACE_FLOOR := 0.35
 
 
-## {unit name: Vector2 slot} for `tanks` moving along `heading` to `anchor`.
-static func slots(tanks: Array[Tank], formation: String, heading: Vector3, anchor: Vector3) -> Dictionary:
+## The formation a group uses for `verb` when the player asked for `requested` ("auto" or a Formations name):
+## automatic = a line when holding, a wide wedge when only fast units charge, a wedge up to five, rows beyond.
+## "single" for one unit, "rows" when a named formation can't place that many.
+static func choose(tanks: Array[Tank], requested: String, verb: String) -> String:
+	if tanks.size() <= 1:
+		return "single"
+	if requested != UnitCommand.AUTO and Formations.NAMES.has(requested):
+		return requested if tanks.size() <= Formations.MAX_MEMBERS else "rows"
+	if verb == "hold":
+		return "line"
+	if tanks.size() > Formations.MAX_MEMBERS:
+		return "rows"
+	return "wedge"
+
+
+## True when every unit is fast (a charge by these spreads wide).
+static func all_fast(tanks: Array[Tank]) -> bool:
+	for tank in tanks:
+		if tank.max_forward_speed < FAST_MPS:
+			return false
+	return not tanks.is_empty()
+
+
+## {unit name: Vector2 slot} for `tanks` in `formation` (a choose() result) moving along `heading` to `anchor`.
+static func slots(tanks: Array[Tank], formation: String, heading: Vector3, anchor: Vector3, verb := "move") -> Dictionary:
 	if tanks.size() == 1:
 		return {String(tanks[0].name): Vector2.ZERO}
 	var ordered := _front_to_back(tanks)
+	var spacing := SPACING * (CHARGE_SPREAD if verb == "attack_move" and all_fast(tanks) else 1.0)
 	var offsets: Array[Vector2] = []
-	if formation != UnitCommand.AUTO and Formations.NAMES.has(formation) and tanks.size() <= Formations.MAX_MEMBERS:
-		offsets = Formations.offsets(formation, tanks.size(), SPACING)
+	if formation == "line" and tanks.size() > Formations.MAX_MEMBERS:
+		offsets = rows(tanks.size(), LINE_WIDTH, spacing)
+	elif Formations.NAMES.has(formation) and tanks.size() <= Formations.MAX_MEMBERS:
+		offsets = Formations.offsets(formation, tanks.size(), spacing)
 	else:
-		offsets = rows(tanks.size())
+		offsets = rows(tanks.size(), 0, spacing)
 	offsets = _centered(offsets)
 	return _assign(ordered, offsets, heading, anchor)
 
@@ -36,16 +72,26 @@ static func follow_slots(tanks: Array[Tank]) -> Dictionary:
 	return result
 
 
-## Rows abreast, front row first, each row centered on the line of travel.
-static func rows(count: int) -> Array[Vector2]:
+## Rows abreast, front row first, each row centered on the line of travel. `width` 0 = automatic.
+static func rows(count: int, width := 0, spacing := SPACING) -> Array[Vector2]:
 	var result: Array[Vector2] = []
-	var width := mini(ROW_WIDTH, count) if count <= ROW_WIDTH * 2 else ceili(sqrt(count * 2.0))
+	if width <= 0:
+		width = mini(ROW_WIDTH, count) if count <= ROW_WIDTH * 2 else ceili(sqrt(count * 2.0))
 	for i in count:
 		var row := i / width
 		var in_row := mini(width, count - row * width)
 		var column := i - row * width
-		result.append(Vector2((column - (in_row - 1) * 0.5) * SPACING, row * SPACING))
+		result.append(Vector2((column - (in_row - 1) * 0.5) * spacing, row * spacing))
 	return result
+
+
+## Arrive together: the speed fraction (of its own top speed) for a unit `remaining` meters from its slot, when the
+## slowest-to-arrive member of its group needs `group_eta` seconds. Units near their slot, and the laggard itself,
+## drive flat out; the rest slow to arrive at the same moment, never below PACE_FLOOR.
+static func pace(remaining: float, top_speed: float, group_eta: float) -> float:
+	if remaining <= PACE_NEAR or top_speed <= 0.0 or group_eta <= 0.0:
+		return 1.0
+	return clampf(remaining / group_eta / top_speed, PACE_FLOOR, 1.0)
 
 
 ## Units sorted heavy-first (then by name, for determinism).

@@ -10,6 +10,7 @@ extends GameMode
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
+##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
 ##   --touch-map  round 2's tap grammar (squad bar, drill and formation pickers) instead of the desktop controls
 ## Round 3 (control stream): the default is StarCraft-style desktop control (RtsControls, _agents/tactical_map.md "v4").
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
@@ -129,7 +130,7 @@ func start() -> void:
 
 
 ## Round 3's desktop controls: RtsControls (named "TacticalMap" so the HUD skin lays out around it), selection rings,
-## the radar, and the group bar. Doctrine squads become control groups 1–5.
+## the radar, the selection panel with its command card, and the group bar. Doctrine squads become control groups 1–5.
 func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: HudMessages, orders: Orders) -> void:
 	var game_match := main.game_match
 	var controls := RtsControls.new()
@@ -153,13 +154,26 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	radar.visibility = field
 	controls.add_child(radar)
 	radar.read_arena(main.arena)
+	var panel := SelectionPanel.new()
+	panel.name = "SelectionPanel"
+	panel.controls = controls
+	controls.add_child(panel)
 	var bar := GroupBar.new()
 	bar.name = "GroupBar"
 	bar.controls = controls
+	bar.panel = panel
 	controls.add_child(bar)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
-	if flags.has("scripted"):
+	if flags.has("control-playtest"):
+		var playtest := ControlPlaytest.new()
+		playtest.name = "ControlPlaytest"
+		playtest.controls = controls
+		playtest.radar = radar
+		playtest.out_dir = flags.text("control-playtest")
+		main.add_child(playtest)
+		playtest.run()
+	elif flags.has("scripted"):
 		_play_desktop_script(controls)
 	else:
 		controls.recall_group(1)

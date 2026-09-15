@@ -13,12 +13,16 @@ extends RefCounted
 ##
 ## An order (current or queued) is the command resolved for one unit:
 ##   {"id": int (same for every unit of one issue), "verb", "units": [the group, sorted], "queue": bool,
-##    "formation": "auto" | name, "issued_tick": Match.tick at issue, "started_tick": when it became current,
+##    "formation": what the group uses (GroupFormation.choose: a Formations name, "rows", or "single"),
+##    "issued_tick": Match.tick at issue, "started_tick": when it became current,
 ##    "to"?: [x, z] (the group's destination, clamped into the arena), "target"?: unit name,
 ##    "slot"?: [right, back] meters in the group's frame (this unit's place in the formation),
 ##    "heading"?: [x, z] (the group's direction of travel, and its facing on arrival),
 ##    "goal"?: [x, z] (this unit's own destination: to + slot; for follow, see goal_position()),
-##    "pace_mps"?: float (the group's speed: its slowest member's top speed, so it arrives together)}
+##    "pace_mps"?: float (the group's slowest member's top speed)}
+##   pace_factor(unit_name) -> float           arrive together: the fraction of its top speed a unit drives at now
+##   station(unit_name) -> Dictionary          where an idle unit belongs (regroup): {"position": [x, z],
+##                                            "heading": [x, z], "units": [its group], "id"}; {} if never ordered
 ## Deterministic: no clock, no randomness; units are processed in name order.
 
 signal order_changed(unit_name: String)
@@ -32,6 +36,7 @@ var game_match: Match
 var _current := {}
 var _queues := {}
 var _next_id := 1
+var _stations := {}
 
 
 func _init(p_match: Match = null) -> void:
@@ -133,6 +138,7 @@ func complete(unit_name: String) -> void:
 		return
 	var waiting: Array = _queues.get(unit_name, [])
 	if waiting.is_empty():
+		_remember_station(unit_name, _current[unit_name])
 		_queues.erase(unit_name)
 		_current.erase(unit_name)
 		order_changed.emit(unit_name)
@@ -171,6 +177,29 @@ static func goal_of(order: Dictionary, p_match: Match) -> Variant:
 	if order.has("goal"):
 		return Vector3(float(order["goal"][0]), 0.0, float(order["goal"][1]))
 	return null
+
+
+func station(unit_name: String) -> Dictionary:
+	if not _alive(unit_name):
+		return {}
+	return _stations.get(unit_name, {})
+
+
+func pace_factor(unit_name: String) -> float:
+	var order := current(unit_name)
+	var tank := _tank(unit_name)
+	if tank == null or not order.has("goal") or (order["units"] as Array).size() <= 1:
+		return 1.0
+	var group_eta := 0.0
+	for member: String in order["units"]:
+		var member_order := current(member)
+		var member_tank := _tank(member)
+		if member_tank == null or member_order.get("id", -1) != order["id"] or member_tank.max_forward_speed <= 0.0:
+			continue
+		var goal: Vector3 = Orders.goal_of(member_order, game_match)
+		group_eta = maxf(group_eta, _flat_distance(member_tank.global_position, goal) / member_tank.max_forward_speed)
+	var own_goal: Vector3 = Orders.goal_of(order, game_match)
+	return GroupFormation.pace(_flat_distance(tank.global_position, own_goal), tank.max_forward_speed, group_eta)
 
 
 ## True when a unit at `position` has reached a move-like order's goal.
@@ -213,17 +242,20 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 	var slots := {}
 	var heading := forward
 	var anchor: Variant = null
+	var formation := GroupFormation.choose(tanks, String(base["formation"]), verb)
 	if verb in ["move", "attack_move"] or (verb == "hold" and base.has("to")):
 		anchor = Vector3(float(base["to"][0]), 0.0, float(base["to"][1]))
 		var travel: Vector3 = anchor - start
 		if travel.length() > 2.0:
 			heading = travel.normalized()
-		slots = GroupFormation.slots(tanks, base["formation"], heading, anchor)
+		slots = GroupFormation.slots(tanks, formation, heading, anchor, verb)
 	elif verb == "follow":
 		slots = GroupFormation.follow_slots(tanks)
+		formation = "rows" if tanks.size() > 1 else "single"
 	for i in tanks.size():
 		var unit_name: String = names[i]
 		var order := base.duplicate()
+		order["formation"] = formation
 		if slots.has(unit_name):
 			var slot: Vector2 = slots[unit_name]
 			order["slot"] = [slot.x, slot.y]
@@ -251,6 +283,26 @@ func _last_destination(unit_name: String) -> Variant:
 	return null
 
 
+## Where a unit that just finished its orders belongs: its slot for orders with a goal (so a pushed or distracted unit
+## returns to its group), else where it stopped.
+func _remember_station(unit_name: String, order: Dictionary) -> void:
+	var tank := _tank(unit_name)
+	var position: Array = order.get("goal", [])
+	var heading: Array = order.get("heading", [])
+	if tank != null:
+		if position.is_empty():
+			position = [tank.global_position.x, tank.global_position.z]
+		if heading.is_empty():
+			heading = [(-tank.global_basis.z).x, (-tank.global_basis.z).z]
+	if position.is_empty():
+		return
+	_stations[unit_name] = {"position": position, "heading": heading, "units": order["units"], "id": order["id"]}
+
+
+static func _flat_distance(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
 func _tank(unit_name: String) -> Tank:
 	if game_match == null or game_match.tanks == null:
 		return null
@@ -259,13 +311,14 @@ func _tank(unit_name: String) -> Tank:
 
 ## Dead units drop their orders (lazily, so no signal wiring per spawned tank).
 func _alive(unit_name: String) -> bool:
-	if not _current.has(unit_name) and not _queues.has(unit_name):
+	if not _current.has(unit_name) and not _queues.has(unit_name) and not _stations.has(unit_name):
 		return true
 	var tank := _tank(unit_name)
 	if tank != null and tank.is_alive():
 		return true
 	_current.erase(unit_name)
 	_queues.erase(unit_name)
+	_stations.erase(unit_name)
 	return false
 
 

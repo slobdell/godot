@@ -9,6 +9,7 @@ extends Control
 ##   ORDER    right-click ground = move · right-click an enemy = attack · right-click a friend = follow
 ##            A then click = attack-move · F then click a friend = follow · M then click = move
 ##            S = stop · H = hold · shift queues any order (and keeps A/F/M armed for the next click)
+##            G cycles the formation (auto by default: the group arranges itself by role and situation)
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
 ##   TIME     Space pauses (orders still work while paused)
@@ -27,6 +28,8 @@ const BOX_MARGIN_PX := 4.0
 const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move"}
 const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy", "follow": "FOLLOW: click a friendly unit",
 		"move": "MOVE: click the ground"}
+## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
+const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
 ## How long an order's acknowledgement marker shows (seconds).
 const ACK_SECONDS := 0.7
 ## A second tap on the same group number within this long centers the camera on it (seconds, wall time: UI only).
@@ -45,6 +48,8 @@ var selection := Selection.new()
 var groups := ControlGroups.new()
 ## The armed order waiting for a click ("" = none): "attack_move", "follow", or "move".
 var mode := ""
+## The formation move, attack-move, and hold orders ask for (FORMATION_CYCLE; G cycles it).
+var formation: String = UnitCommand.AUTO
 
 var _press_at: Variant = null
 var _press_shift := false
@@ -268,6 +273,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				recall_group(next, true)
 		KEY_C:
 			center_on(selection.units)
+		KEY_G:
+			cycle_formation()
 		KEY_SPACE:
 			set_paused(not get_tree().paused)
 		_:
@@ -327,7 +334,14 @@ func issue(command: Dictionary) -> String:
 func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	if selection.units.is_empty():
 		return ""
-	return issue(UnitCommand.make(selection.units, verb, extra))
+	var command := UnitCommand.make(selection.units, verb, extra)
+	if formation != UnitCommand.AUTO and verb in ["move", "attack_move", "hold"]:
+		command["formation"] = formation
+	return issue(command)
+
+
+func cycle_formation() -> void:
+	formation = FORMATION_CYCLE[(FORMATION_CYCLE.find(formation) + 1) % FORMATION_CYCLE.size()]
 
 
 ## Right-click: an enemy = attack, a friend outside the selection = follow, anything else = move there.

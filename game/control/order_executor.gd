@@ -5,8 +5,9 @@ extends Node
 ##
 ## How it works: when a unit gets its first order, its TankBrain is paused and a plain OrderController drives it
 ## (pathing, unsticking, fire at will). Orders take effect in the same tick they're issued (the response
-## guarantee). When the queue runs out, the unit keeps station where its last order left it: it returns there if
-## pushed or drawn away, faces the nearest visible enemy, and shoots what it can. Units that were never ordered
+## guarantee). Group moves pace every unit so the group arrives together (Orders.pace_factor). When the queue runs
+## out, the unit keeps its station (Orders.station: its slot in its group): it returns there if pushed or drawn away,
+## faces the group's heading or the nearest visible enemy, and shoots what it can. Units that were never ordered
 ## keep their brains (and their doctrine squad) untouched.
 ##
 ## Verbs: move (drive to the slot; arrive → complete), attack_move (drive, but halt and fight anything in reach),
@@ -24,8 +25,6 @@ var game_match: Match
 var orders: Orders
 ## unit name -> OrderController driving it.
 var _controllers := {}
-## unit name -> {"position": Vector3, "facing": Vector3}: where an idle ordered unit keeps station.
-var _stations := {}
 
 
 ## True once brains execute K1 orders natively (ai X1): this adapter then does nothing.
@@ -43,20 +42,11 @@ func is_controlling(unit_name: String) -> bool:
 	return _controllers.has(unit_name)
 
 
-func station(unit_name: String) -> Dictionary:
-	return _stations.get(unit_name, {})
-
-
 func _on_order_changed(unit_name: String) -> void:
 	var tank := _tank(unit_name)
 	if tank == null or not tank.is_alive():
 		return
-	var controller := _take(tank)
-	var order := orders.current(unit_name)
-	if order.is_empty():
-		# The queue ran out: keep station where the unit is now (its last order's goal when it arrived there).
-		_stations[unit_name] = {"position": _flat(tank.global_position), "facing": -tank.global_basis.z}
-	_drive(tank, controller, order)
+	_drive(tank, _take(tank), orders.current(unit_name))
 
 
 func _physics_process(_delta: float) -> void:
@@ -70,7 +60,6 @@ func _physics_process(_delta: float) -> void:
 		if tank == null or not tank.is_alive():
 			controller.queue_free()
 			_controllers.erase(unit_name)
-			_stations.erase(unit_name)
 			continue
 		var order := orders.current(unit_name)
 		if _done(tank, controller, order):
@@ -114,9 +103,8 @@ func _done(tank: Tank, controller: OrderController, order: Dictionary) -> bool:
 
 func _drive(tank: Tank, controller: OrderController, order: Dictionary) -> void:
 	var unit_name := String(tank.name)
-	var pace := 1.0
-	if order.has("pace_mps") and tank.max_forward_speed > 0.0:
-		pace = clampf(float(order["pace_mps"]) / tank.max_forward_speed, 0.2, 1.0)
+	# Arrive together, in steps of 0.1 so the order isn't re-issued (and re-pathed) every tick.
+	var pace := snappedf(orders.pace_factor(unit_name), 0.1)
 	var verb: String = order.get("verb", "")
 	tank.intent = verb.replace("_", "-")
 	match verb:
@@ -140,12 +128,15 @@ func _drive(tank: Tank, controller: OrderController, order: Dictionary) -> void:
 			var spot: Variant = orders.goal_position(unit_name)
 			_order(controller, {"type": "stop"} if spot == null else _move_to(spot, 1.0, 4.0), {"type": "fire_at_will"})
 		"hold":
-			_keep_spot(tank, controller, orders.goal_position(unit_name), _heading(order))
+			_keep_spot(tank, controller, orders.goal_position(unit_name), _heading(order.get("heading", [])))
 		"stop":
 			_order(controller, {"type": "stop"}, {"type": "fire_at_will"})
 		_:
-			var at: Dictionary = _stations.get(unit_name, {})
-			_keep_spot(tank, controller, at.get("position"), at.get("facing", Vector3.ZERO))
+			var station := orders.station(unit_name)
+			var spot: Variant = null
+			if station.has("position"):
+				spot = Vector3(float(station["position"][0]), 0.0, float(station["position"][1]))
+			_keep_spot(tank, controller, spot, _heading(station.get("heading", [])))
 
 
 ## Stay on `spot`: drive back when pushed off it, else face the nearest enemy in sight (or `facing`) and shoot.
@@ -174,7 +165,7 @@ func _order(controller: OrderController, move: Dictionary, weapon: Dictionary) -
 	var same_move: bool = move["type"] == controller.move_order.get("type")
 	if same_move and move.has("x"):
 		same_move = Vector2(float(move["x"]) - float(controller.move_order["x"]), float(move["z"]) - float(controller.move_order["z"])).length() < 1.0 \
-				and is_equal_approx(float(move.get("speed", 1.0)), float(controller.move_order.get("speed", 1.0)))
+				and absf(float(move.get("speed", 1.0)) - float(controller.move_order.get("speed", 1.0))) < 0.05
 	var error := controller.set_orders(null if same_move else move, null if weapon.recursive_equal(controller.weapon_order, 2) else weapon)
 	if error != "":
 		push_error("OrderExecutor: %s" % error)
@@ -187,10 +178,10 @@ static func _move_to(point: Variant, pace: float, arrive := Orders.ARRIVE_RADIUS
 	return {"type": "move_to", "x": p.x, "z": p.z, "speed": pace, "arrive": arrive}
 
 
-static func _heading(order: Dictionary) -> Vector3:
-	if not order.has("heading"):
+static func _heading(pair: Array) -> Vector3:
+	if pair.size() != 2:
 		return Vector3.ZERO
-	return Vector3(float(order["heading"][0]), 0.0, float(order["heading"][1]))
+	return Vector3(float(pair[0]), 0.0, float(pair[1]))
 
 
 static func _flat(point: Vector3) -> Vector3:
