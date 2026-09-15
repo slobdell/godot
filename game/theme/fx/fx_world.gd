@@ -18,6 +18,10 @@ static var _instance: FxWorld
 var lights: LightPool
 var tracers: TracerSystem
 var bursts: BurstSystem
+## Long-lived ground marks (scorches) in their own pool, so a firefight's sparks never recycle them.
+var decals: BurstSystem
+## Vehicles rocking from recoil, hits, and braking (visual only).
+var jolts := VehicleJolt.new()
 var streaks: StreakSystem
 var underglow: UnderglowSystem
 var beams: BeamSystem
@@ -75,11 +79,14 @@ func _init() -> void:
 	lights = LightPool.new(FxQuality.value("lights"))
 	tracers = TracerSystem.new()
 	bursts = BurstSystem.new(FxQuality.value("effects"))
+	bursts.set_spray_count(FxQuality.value("sprays"))
+	decals = BurstSystem.new(FxQuality.value("decals"))
+	decals.name = "Decals"
 	streaks = StreakSystem.new()
 	underglow = UnderglowSystem.new()
 	beams = BeamSystem.new()
 	tracers.splats_enabled = FxQuality.value("splats")
-	for system in [lights, tracers, bursts, streaks, underglow, beams]:
+	for system in [lights, tracers, bursts, decals, streaks, underglow, beams]:
 		add_child(system)
 	sfx = SfxSystem.new()
 	add_child(sfx)
@@ -107,6 +114,8 @@ func _process(delta: float) -> void:
 	if _prewarm_frames < PREWARM_FRAMES and prewarm_enabled and camera != null:
 		_prewarm(camera)
 	bursts.update(now)
+	decals.update(now)
+	jolts.update(now)
 	tracers.update(lights)
 	underglow.update(lights)
 	beams.update(lights, now)
@@ -142,8 +151,9 @@ func _prewarm(camera: Camera3D) -> void:
 	var spot := camera.global_transform * Vector3(0, 0, -6)
 	_prewarm_marker.global_position = spot
 	beams.add(_prewarm_marker, spot, spot + camera.global_basis.x * 0.05, Color(0, 0, 0), now)
-	for kind in [BurstSystem.Kind.FIREBALL, BurstSystem.Kind.STAR, BurstSystem.Kind.GROUND_GLOW]:
-		bursts.spawn(kind, spot, 0.01, 0.05, Color(0, 0, 0), now)
+	for kind in BurstSystem.Kind.values():
+		bursts.spawn(kind, spot, 0.01, 0.05, Color(0, 0, 0, 0), now)
+	decals.spawn(BurstSystem.Kind.SCORCH, spot, 0.01, 0.05, Color(0, 0, 0, 0), now)
 	for i in lights.lights.size():
 		lights.request(spot, Color(0, 0, 0), 0.001, 0.5, 100.0)
 	if _prewarm_frames >= PREWARM_FRAMES:
@@ -157,6 +167,8 @@ func _prewarm(camera: Camera3D) -> void:
 func apply_quality() -> void:
 	lights.resize(FxQuality.value("lights"))
 	bursts.resize(FxQuality.value("effects"))
+	bursts.set_spray_count(FxQuality.value("sprays"))
+	decals.resize(FxQuality.value("decals"))
 	tracers.splats_enabled = FxQuality.value("splats")
 	_apply_viewport()
 	quality_changed.emit()
@@ -173,8 +185,8 @@ func _apply_viewport() -> void:
 
 
 ## A projectile visual appeared: draw it as a tracer and flash its muzzle.
-func add_tracer(source: Node3D, color: Color) -> void:
-	tracers.add(source, color)
+func add_tracer(source: Node3D, color: Color, style := "default") -> void:
+	tracers.add(source, color, style)
 	if muzzle_flashes and not link.drives_muzzles():
 		muzzle_flash(source.global_position, color)
 
@@ -200,21 +212,22 @@ func laser(source: Object, from: Vector3, to: Vector3, color: Color) -> void:
 	bursts.spawn(BurstSystem.Kind.GROUND_GLOW, to, 6.0, 0.35, color * 0.8, now)
 
 
-## A hit (big = a tank destroyed): flipbook fireball, sparks star, ground glow, light pulse.
-func explosion(position: Vector3, big := false) -> void:
+## A hit (big = a tank destroyed): flipbook fireball, sparks star, ground glow, light pulse. `glow` scales the ground glow
+## and light (effect families that add their own layers turn it down so lights don't stack into a white-out).
+func explosion(position: Vector3, big := false, glow := 1.0) -> void:
 	var size := 7.0 if big else 3.2
 	var fire := Color(1.0, 0.85, 0.7)
 	bursts.spawn(BurstSystem.Kind.FIREBALL, position + Vector3(0, size * 0.25, 0), size,
 			1.1 if big else 0.6, fire, now)
 	bursts.spawn(BurstSystem.Kind.STAR, position, size * 0.9, 0.12, Color(1.0, 0.7, 0.35), now)
-	bursts.spawn(BurstSystem.Kind.GROUND_GLOW, position, size * 2.6, 0.9 if big else 0.5, Color(0.8, 0.32, 0.08), now)
+	bursts.spawn(BurstSystem.Kind.GROUND_GLOW, position, size * 2.6, 0.9 if big else 0.5, Color(0.8, 0.32, 0.08) * glow, now)
 	if big:
 		# A second, offset fireball so a kill reads bigger than a hit.
 		var offset := Vector3(_rng.randf_range(-1.2, 1.2), 1.6, _rng.randf_range(-1.2, 1.2))
 		bursts.spawn(BurstSystem.Kind.FIREBALL, position + offset, size * 0.8, 1.3, fire, now + 0.12)
 	if explosion_lights:
-		lights.flash(position + Vector3(0, 1.5, 0), Color(1.0, 0.55, 0.2), 10.0 if big else 6.0,
-				22.0 if big else 12.0, 0.8 if big else 0.4, LightPool.PRIORITY_EXPLOSION, now)
+		lights.flash(position + Vector3(0, 1.5, 0), Color(1.0, 0.55, 0.2), (10.0 if big else 6.0) * glow,
+				(22.0 if big else 12.0) * lerpf(0.5, 1.0, glow), 0.8 if big else 0.4, LightPool.PRIORITY_EXPLOSION, now)
 	sfx.play_at("explosion_big" if big else "explosion_small", position)
 	spectacle.emit(position, 1.0 if big else 0.15)
 	if big:

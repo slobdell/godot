@@ -1,0 +1,163 @@
+extends Node3D
+## Weapon FX showcase (`make fx-shots`): close-up captures of each weapon's fire, flight, and impact, staged with a real
+## Match and real Tanks (so the shots go through the same rules, stub or K2 events, and effect families as a game) in
+## the night arena's lighting. For each scene a shooter fires at a target, and the camera jumps to the muzzle, the
+## round in flight, and the impact at scripted times after the shot, saving a PNG each time. Visual only; needs a display.
+## Flags: --shots=<abs dir> (required to save) --showcase=tank_hit,tank_kill,... (default: all) --theme=NAME
+
+const SCENES := {
+	# The tank cannon hitting a tank broadside: the muzzle blast, the glowing shell, the devastating hit.
+	"tank_hit": {"shooter": "tank", "target": "tank", "distance": 34.0, "aim_offset": 0.0, "kill": false, "hold": 0.0,
+			"shots": [["muzzle", 0.05, "shooter"], ["smoke", 0.45, "shooter"], ["flight", 0.22, "mid"], ["impact", 0.5, "target"],
+					["aftermath", 1.1, "target"]]},
+	"tank_kill": {"shooter": "tank", "target": "ifv", "distance": 34.0, "aim_offset": 0.0, "kill": true, "hold": 0.0,
+			"shots": [["impact", 0.52, "target"], ["cook_off", 0.85, "target"], ["burning", 2.6, "target_wide"]]},
+	"tank_miss": {"shooter": "tank", "target": "tank", "distance": 34.0, "aim_offset": 7.0, "kill": false, "hold": 0.0,
+			"shots": [["passing", 0.42, "target_wide"], ["dirt", 1.2, "far"], ["dust", 1.9, "far"]]},
+	"ifv_burst": {"shooter": "ifv", "target": "scout", "distance": 30.0, "aim_offset": 0.0, "kill": false, "hold": 1.6,
+			"shots": [["muzzle", 0.3, "shooter"], ["tracers", 0.75, "mid"], ["hits", 1.2, "target"]]},
+	"scout_stream": {"shooter": "scout", "target": "ifv", "distance": 26.0, "aim_offset": 0.0, "kill": false, "hold": 2.0,
+			"shots": [["muzzle", 0.6, "shooter"], ["stream", 1.0, "mid"], ["hits", 1.5, "target"]]},
+}
+const SHOOTER_Z := 18.0
+
+var camera := Camera3D.new()
+var _flags: LaunchFlags
+var _dir := ""
+var _match: Match
+
+
+func _ready() -> void:
+	_flags = LaunchFlags.from_environment()
+	if not _flags.has("theme"):
+		GameTheme.use("cyberpunk")
+	_dir = _flags.text("shots")
+	# A remote desktop's hidden window gets no vsync frame callbacks, which would stall the capture loop.
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	Engine.max_fps = 90
+	for slot_name in ["arena.environment", "arena.dressing"]:
+		var slot := VisualSlot.new()
+		slot.slot = slot_name
+		add_child(slot)
+	var ground := StaticBody3D.new()
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(400, 1, 400)
+	shape.shape = box
+	shape.position = Vector3(0, -0.5, 0)
+	ground.add_child(shape)
+	add_child(ground)
+	camera.fov = 55.0
+	add_child(camera)
+	camera.current = true
+	_run.call_deferred()
+
+
+func _run() -> void:
+	var names: Array = SCENES.keys()
+	if _flags.text("showcase") != "":
+		names = Array(_flags.text("showcase").split(","))
+	# Let FxWorld exist and pre-warm its shaders before the first capture.
+	FxWorld.get_instance()
+	await _seconds(1.0)
+	for scene_name in names:
+		if SCENES.has(scene_name):
+			await _stage(String(scene_name), SCENES[scene_name])
+	print("FX_SHOTS_DONE")
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.stop_all()
+	for i in 3:
+		await get_tree().process_frame
+	get_tree().quit()
+
+
+func _stage(scene_name: String, scene: Dictionary) -> void:
+	if _match != null:
+		_match.queue_free()
+		await get_tree().process_frame
+	_match = preload("res://game/match/match.tscn").instantiate()
+	_match.name = "Match"
+	add_child(_match)
+	var fx := FxWorld.get_instance()
+	if fx != null:
+		fx.link.attach(_match)
+	var shooter := _match.spawn_tank("Shooter", 0, Match.Team.GREEN, String(scene["shooter"]))
+	var target := _match.spawn_tank("Target", 0, Match.Team.RUST, String(scene["target"]))
+	await get_tree().physics_frame
+	shooter.global_position = Vector3(0, 0, SHOOTER_Z)
+	shooter.rotation.y = 0.0
+	target.global_position = Vector3(0, 0, SHOOTER_Z - float(scene["distance"]))
+	target.rotation.y = PI / 2.0
+	target.shield = 0.0
+	if scene["kill"]:
+		target.health = 1
+	await _seconds(1.2)
+	var aim := target.global_position + Vector3(float(scene["aim_offset"]), 1.0, 0.0)
+	shooter.command.aim_point = aim
+	await _seconds(0.4)
+	# Shields recharge while the scene settles: strip them again right before the shot.
+	target.shield = 0.0
+	target.ticks_since_hit = 0
+	var fired_at := [-1.0]
+	var clock := [0.0]
+	shooter.fired.connect(func(_muzzle: Vector3, _direction: Vector3) -> void:
+		if fired_at[0] < 0.0:
+			fired_at[0] = clock[0])
+	shooter.command.fire = true
+	var hold := float(scene["hold"])
+	var shots: Array = scene["shots"].duplicate()
+	shots.sort_custom(func(a: Array, b: Array) -> bool: return float(a[1]) < float(b[1]))
+	var last_time := float(shots[-1][1])
+	while fired_at[0] < 0.0 or clock[0] - fired_at[0] <= last_time + 0.05:
+		await get_tree().process_frame
+		clock[0] += get_process_delta_time()
+		if fired_at[0] >= 0.0:
+			var since: float = clock[0] - fired_at[0]
+			shooter.command.fire = since < hold
+			if not shots.is_empty() and since >= float(shots[0][1]):
+				var shot: Array = shots.pop_front()
+				_frame(String(shot[2]), shooter, target, aim)
+				# Two frames later the viewport texture holds the new view. (Awaiting RenderingServer.frame_post_draw a
+				# second time never returned on builder0's hidden Wayland window.)
+				for i in 2:
+					await get_tree().process_frame
+					clock[0] += get_process_delta_time()
+				_save("%s_%s" % [scene_name, shot[0]])
+		elif clock[0] > 3.0:
+			push_error("showcase %s: the shooter never fired" % scene_name)
+			return
+
+
+func _frame(view: String, shooter: Tank, target: Tank, aim: Vector3) -> void:
+	var muzzle := shooter.muzzle_position()
+	match view:
+		"shooter":
+			camera.global_position = muzzle + Vector3(6.5, 2.2, -5.0)
+			camera.look_at(muzzle + Vector3(0, -0.3, -3.0), Vector3.UP)
+		"mid":
+			var middle := muzzle.lerp(aim, 0.5)
+			camera.global_position = middle + Vector3(15.0, 7.0, 4.0)
+			camera.look_at(middle, Vector3.UP)
+		"target":
+			camera.global_position = target.global_position + Vector3(7.0, 3.2, 6.5)
+			camera.look_at(target.global_position + Vector3(0, 1.2, 0), Vector3.UP)
+		"target_wide":
+			camera.global_position = target.global_position + Vector3(14.0, 7.0, 13.0)
+			camera.look_at(target.global_position + Vector3(0, 1.0, -3.0), Vector3.UP)
+		"far":
+			var beyond := muzzle + (aim - muzzle).normalized() * 76.0
+			camera.global_position = beyond + Vector3(12.0, 6.0, 12.0)
+			camera.look_at(Vector3(beyond.x, 0.5, beyond.z), Vector3.UP)
+
+
+func _save(file_name: String) -> void:
+	if _dir == "":
+		return
+	var path := _dir.path_join(file_name + ".png")
+	var err := get_viewport().get_texture().get_image().save_png(path)
+	print("FX_SHOT %s %s" % [file_name, error_string(err)])
+
+
+func _seconds(seconds: float) -> void:
+	await get_tree().create_timer(seconds).timeout

@@ -34,6 +34,16 @@ func test_light_pool_flash_fades_and_expires() -> void:
 	assert_eq(pool.lit_count, 0, "after its duration the flash releases the light")
 
 
+func test_light_pool_flash_scheduled_for_later_waits_its_turn() -> void:
+	var pool: LightPool = add_to_tree(LightPool.new(2))
+	pool.flash(Vector3.ZERO, Color.ORANGE, 8.0, 10.0, 0.5, LightPool.PRIORITY_EXPLOSION, 1.0)
+	pool.commit(Vector3.ZERO, 0.5)
+	assert_eq(pool.lit_count, 0, "a cook-off light due in half a second isn't lit yet")
+	pool.commit(Vector3.ZERO, 1.0)
+	assert_eq(pool.lit_count, 1, "it lights when its time comes")
+	assert_true(pool.lights[0].light_energy <= 8.0, "and never brighter than its peak (%.1f)" % pool.lights[0].light_energy)
+
+
 func test_light_pool_resize_is_the_only_allocation() -> void:
 	var pool: LightPool = add_to_tree(LightPool.new(8))
 	assert_eq(pool.get_child_count(), 8, "the pool preallocates its lights")

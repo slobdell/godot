@@ -22,14 +22,24 @@ const SOUNDS := {
 	"engine_diesel": "res://assets/audio/engine_diesel.wav",
 	"engine_v8": "res://assets/audio/engine_v8.wav",
 	"engine_electric": "res://assets/audio/engine_electric.wav",
+	# Feel (round 3): the new weapons (make_sfx.gd).
+	"tank_boom": "res://assets/audio/tank_boom.wav",
+	"shell_whine": "res://assets/audio/shell_whine.wav",
+	"shell_hit_armor": "res://assets/audio/shell_hit_armor.wav",
+	"dirt_impact": "res://assets/audio/dirt_impact.wav",
+	"autocannon_shot": "res://assets/audio/autocannon_shot.wav",
+	"mg_round": "res://assets/audio/mg_round.wav",
+	"mortar_launch": "res://assets/audio/mortar_launch.wav",
 }
-const WORLD_VOICES := 14
+const WORLD_VOICES := 20
 const UI_VOICES := 3
 ## Per sound: base volume (dB) and random pitch spread, so repeated shots don't sound identical.
 const MIX := {
 	"cannon_shot": [-4.0, 0.08], "explosion_small": [-3.0, 0.1], "explosion_big": [0.0, 0.06],
 	"laser_pulse": [-8.0, 0.12], "shield_hit": [-7.0, 0.1], "shield_down": [-4.0, 0.03],
 	"ui_blip": [-14.0, 0.0], "ui_alert": [-10.0, 0.0], "ui_tick": [-20.0, 0.15],
+	"tank_boom": [1.0, 0.05], "shell_whine": [-5.0, 0.08], "shell_hit_armor": [-1.0, 0.07], "dirt_impact": [-3.0, 0.1],
+	"autocannon_shot": [-6.0, 0.06], "mg_round": [-13.0, 0.12], "mortar_launch": [-5.0, 0.05],
 }
 
 var muted := false
@@ -99,6 +109,18 @@ func play_ui(sound: String) -> void:
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
 	voice.play()
 	played += 1
+
+
+## Silence every voice (before quitting: a playback still running at exit leaks its stream, e.g. the tank boom's tail).
+func stop_all() -> void:
+	for voice in _world:
+		voice.stop()
+	for voice in _ui:
+		voice.stop()
+
+
+func _exit_tree() -> void:
+	stop_all()
 
 
 func voice_count() -> int:

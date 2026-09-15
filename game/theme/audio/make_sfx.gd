@@ -29,7 +29,20 @@ func _initialize() -> void:
 	_write("engine_diesel", _engine(31.0, 0.55, 0.35, 0.0))
 	_write("engine_v8", _engine(57.0, 0.9, 0.5, 0.0))
 	_write("engine_electric", _engine(29.0, 0.45, 0.25, 0.6))
+	# Feel (round 3): the new weapons. Each reseeds from its name, so adding one never changes another.
+	_seeded("tank_boom", _tank_boom)
+	_seeded("shell_whine", _shell_whine)
+	_seeded("shell_hit_armor", _shell_hit_armor)
+	_seeded("dirt_impact", _dirt_impact)
+	_seeded("autocannon_shot", _autocannon_shot)
+	_seeded("mg_round", _mg_round)
+	_seeded("mortar_launch", _mortar_launch)
 	quit()
+
+
+func _seeded(sound: String, synth: Callable) -> void:
+	rng.seed = hash(sound)
+	_write(sound, synth.call())
 
 
 func _write(name: String, samples: PackedFloat32Array) -> void:
@@ -280,4 +293,165 @@ func _tick() -> PackedFloat32Array:
 	for i in out.size():
 		var t := float(i) / RATE
 		out[i] = rng.randf_range(-1.0, 1.0) * exp(-t * 400.0)
+	return out
+
+
+# ---- Feel (round 3) ------------------------------------------------------------------------------------------------
+
+## Mixes delayed, darker copies of the sound back in: slap echoes off the arena walls and stands.
+func _echoes(samples: PackedFloat32Array, delays: Array, gains: Array) -> PackedFloat32Array:
+	var out := samples.duplicate()
+	for k in delays.size():
+		var offset := int(float(delays[k]) * RATE)
+		var dark := 0.0
+		for i in range(offset, out.size()):
+			dark += (samples[i - offset] - dark) * 0.12
+			out[i] += dark * float(gains[k])
+	return out
+
+
+## The tank cannon: a supersonic crack, a chest-deep pitch-dropping boom, a 150–400 Hz body a phone can play, and a long
+## rumbling tail with slap echoes off the stands. Built to sound expensive: you wait five seconds for the next one.
+func _tank_boom() -> PackedFloat32Array:
+	var out := _buffer(2.8)
+	var phase := 0.0
+	var crack_hp := 0.0
+	var crack_lp := 0.0
+	var body_lp := 0.0
+	var body_bp := 0.0
+	var rumble := 0.0
+	var rumble2 := 0.0
+	var mid_lp := 0.0
+	var mid_bp := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var noise := rng.randf_range(-1.0, 1.0)
+		crack_lp += (noise - crack_lp) * 0.55
+		crack_hp = noise - crack_lp
+		var crack := crack_hp * exp(-t * 90.0) * 1.6
+		var freq := 34.0 + 110.0 * exp(-t * 14.0)
+		phase += TAU * freq / RATE
+		var boom := tanh(sin(phase) * 5.0) * exp(-t * 3.2) * minf(1.0, t * 600.0)
+		body_lp += (noise - body_lp) * 0.09
+		body_bp += (body_lp - body_bp) * 0.02
+		var body := (body_lp - body_bp) * exp(-t * 5.5) * 7.0
+		rumble += (noise - rumble) * 0.018
+		rumble2 += (rumble - rumble2) * 0.2
+		var tail := rumble2 * 9.0 * exp(-t * 1.25) * minf(1.0, t * 12.0) * (0.8 + 0.2 * sin(TAU * 5.5 * t + sin(TAU * 1.3 * t)))
+		# The tail's audible part: a 200–500 Hz roll that laptop and phone speakers can play.
+		mid_lp += (noise - mid_lp) * 0.08
+		mid_bp += (mid_lp - mid_bp) * 0.025
+		var mid_tail := (mid_lp - mid_bp) * 3.4 * exp(-t * 1.7) * minf(1.0, t * 8.0) * (0.7 + 0.3 * sin(TAU * 3.1 * t))
+		out[i] = crack * 1.5 + boom * 0.55 + body + tail * 0.8 + mid_tail
+	return _echoes(out, [0.19, 0.43, 0.71], [0.35, 0.22, 0.12])
+
+
+## A shell tearing past: an airy whoosh that swells as it nears and a falling, wavering whistle (Doppler), cut off sharply.
+func _shell_whine() -> PackedFloat32Array:
+	var out := _buffer(0.85)
+	var phase := 0.0
+	var air_lp := 0.0
+	var air_bp := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var approach := pow(minf(t / 0.55, 1.0), 2.5)
+		var away := exp(-maxf(t - 0.55, 0.0) * 14.0)
+		var freq := 1650.0 - 900.0 * smoothstep(0.35, 0.7, t) + 35.0 * sin(TAU * 11.0 * t)
+		phase += TAU * freq / RATE
+		var whistle := (sin(phase) + 0.3 * sin(phase * 2.01)) * 0.35
+		var noise := rng.randf_range(-1.0, 1.0)
+		air_lp += (noise - air_lp) * 0.3
+		air_bp += (air_lp - air_bp) * 0.04
+		out[i] = (whistle + (air_lp - air_bp) * 1.4) * approach * away
+	return out
+
+
+## A shell slamming into armor: a heavy metal clang (inharmonic partials of a thick plate), a crunch of tearing steel,
+## and a low thump.
+func _shell_hit_armor() -> PackedFloat32Array:
+	var out := _buffer(1.4)
+	var partials := [[247.0, 3.2], [389.0, 4.5], [611.0, 5.5], [1013.0, 8.0], [1577.0, 12.0]]
+	var phases := PackedFloat32Array([0, 0, 0, 0, 0])
+	var crunch_lp := 0.0
+	var thump := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var ring := 0.0
+		for k in partials.size():
+			phases[k] += TAU * float(partials[k][0]) * (1.0 - 0.02 * t) / RATE
+			ring += sin(phases[k]) * exp(-t * float(partials[k][1])) / (1.0 + k * 0.6)
+		var noise := rng.randf_range(-1.0, 1.0)
+		crunch_lp += (noise - crunch_lp) * 0.4
+		var grit := 1.0 if rng.randf() < 0.3 * exp(-t * 6.0) else 0.3
+		var crunch := crunch_lp * exp(-t * 11.0) * grit * 1.8
+		thump += TAU * (70.0 + 60.0 * exp(-t * 25.0)) / RATE
+		out[i] = tanh(ring * 1.6) * 1.3 * minf(1.0, t * 900.0) + crunch * 1.3 + tanh(sin(thump) * 3.0) * exp(-t * 9.0) * 0.4
+	return _echoes(out, [0.17, 0.39], [0.25, 0.12])
+
+
+## A shell burying itself in the dirt: a dull thud, a spray of grit, and clods pattering back down.
+func _dirt_impact() -> PackedFloat32Array:
+	var out := _buffer(1.1)
+	var phase := 0.0
+	var spray_lp := 0.0
+	var spray_hp := 0.0
+	var patter_lp := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		phase += TAU * (55.0 + 80.0 * exp(-t * 20.0)) / RATE
+		var thud := tanh(sin(phase) * 4.0) * exp(-t * 7.0)
+		var noise := rng.randf_range(-1.0, 1.0)
+		spray_lp += (noise - spray_lp) * 0.25
+		spray_hp += (spray_lp - spray_hp) * 0.03
+		var spray := (spray_lp - spray_hp) * exp(-t * 6.0) * minf(1.0, t * 200.0) * 1.6
+		var clod := rng.randf_range(0.4, 1.0) if t > 0.25 and rng.randf() < 0.0025 * exp(-(t - 0.25) * 3.0) else 0.0
+		patter_lp += (clod * noise * 3.0 - patter_lp) * 0.5
+		out[i] = thud * 0.5 + spray * 1.7 + patter_lp * 1.4
+	return _echoes(out, [0.18], [0.2])
+
+
+## The IFV's 25 mm: a short punchy thump with a hard crack (thump-thump-thump when strung into a burst).
+func _autocannon_shot() -> PackedFloat32Array:
+	var out := _buffer(0.45)
+	var phase := 0.0
+	var lp := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		phase += TAU * (95.0 + 160.0 * exp(-t * 30.0)) / RATE
+		var thump := tanh(sin(phase) * 6.0) * exp(-t * 16.0)
+		var noise := rng.randf_range(-1.0, 1.0)
+		lp += (noise - lp) * 0.5
+		var crack := (noise - lp) * exp(-t * 120.0) * 2.2 + lp * exp(-t * 28.0) * 1.3
+		out[i] = thump * 0.8 + crack
+	return _echoes(out, [0.12], [0.2])
+
+
+## One machine-gun round: a sharp dry crack with a hint of mechanism.
+func _mg_round() -> PackedFloat32Array:
+	var out := _buffer(0.11)
+	var lp := 0.0
+	var phase := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var noise := rng.randf_range(-1.0, 1.0)
+		lp += (noise - lp) * 0.35
+		phase += TAU * (180.0 + 200.0 * exp(-t * 80.0)) / RATE
+		out[i] = (noise - lp * 0.5) * exp(-t * 70.0) + tanh(sin(phase) * 3.0) * exp(-t * 45.0) * 0.5
+	return out
+
+
+## A mortar leaving its tube: a hollow resonant "thoonk" and a breathy push of gas.
+func _mortar_launch() -> PackedFloat32Array:
+	var out := _buffer(0.6)
+	var low := 0.0
+	var band := 0.0
+	var phase := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var noise := rng.randf_range(-1.0, 1.0)
+		low += (noise - low) * 0.2
+		band += (low - band) * 0.05
+		phase += TAU * (230.0 - 60.0 * t) / RATE
+		var tube := sin(phase) * exp(-t * 11.0) * minf(1.0, t * 300.0)
+		out[i] = tube * 0.9 + (low - band) * exp(-t * 7.0) * 1.3
 	return out

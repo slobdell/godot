@@ -43,9 +43,9 @@ func test_a_fired_event_starts_its_familys_muzzle_effects_from_the_pools() -> vo
 	var before := fx.bursts.started
 	fx.weapons.fired(_fired("shell"))
 	assert_true(fx.bursts.started > before, "a tank shot starts pooled bursts")
-	assert_true(fx.weapons.last_pieces.has("muzzle_blast"), "a tank shot gets the heavy muzzle blast (%s)" % [fx.weapons.last_pieces])
+	assert_true(fx.weapons.last_pieces.has("muzzle_fireball"), "a tank shot gets the heavy muzzle blast (%s)" % [fx.weapons.last_pieces])
 	fx.weapons.fired(_fired("stream", "machine_gun", 2))
-	assert_true(not fx.weapons.last_pieces.has("muzzle_blast"), "a machine-gun round gets a light flash, not the tank's blast")
+	assert_true(not fx.weapons.last_pieces.has("muzzle_fireball"), "a machine-gun round gets a light flash, not the tank's blast")
 
 
 func test_an_impact_uses_the_family_of_the_projectile_that_caused_it() -> void:

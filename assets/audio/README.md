@@ -23,3 +23,16 @@ their energy above it (cannon 57%, small explosion 78%, big explosion 50%, measu
 | `crowd_murmur.wav` | the stands' crowd, looping under the match (volume follows the crowd's excitement) | noise through three slowly moving vowel-like bands (~520 Hz, 900 Hz, 1.4 kHz) with random swells + room rumble, rolled off above ~2 kHz, crossfaded seam |
 | `crowd_cheer.wav` | the roar after a kill | wide noise band with a fast swell and slow decay, upward whistle sweeps, scattered claps |
 | `engine_diesel.wav` / `engine_v8.wav` / `engine_electric.wav` | engine loops per unit type (tank, IFV, artillery / scout / Lancer), pitch and volume follow each vehicle's speed (EngineSystem, the 4 nearest the camera) | a four-cylinder firing-pulse train (uneven strength = lope) at 31 / 57 / 29 Hz through a resonant lowpass, hard-saturated so the harmonics carry on phone speakers, clatter noise; the Lancer adds a 120 Hz transformer hum with buzz; crossfaded seam |
+
+**Feel stream (round 3, the new weapons):** each synthesizer reseeds from its sound's name, so adding one never changes
+another. Share of energy above 200 Hz (what laptop and phone speakers play) measured from the files.
+
+| File | Used for | How it's made | > 200 Hz |
+|---|---|---|---|
+| `tank_boom.wav` | every tank cannon shot (2.8 s) | a highpassed noise crack, a pitch-dropping saturated sine boom (144 → 34 Hz), a 150–400 Hz body, a low rumbling tail plus a 200–500 Hz rolling tail, slap echoes off the stands at 0.19 / 0.43 / 0.71 s | 49% |
+| `shell_whine.wav` | a tank shell missing a vehicle by 1–7 m | an airy bandpassed whoosh swelling as it nears, a wavering whistle falling 1650 → 750 Hz (Doppler), cut off sharply | 98% |
+| `shell_hit_armor.wav` | a tank shell striking a vehicle | five inharmonic plate partials (247–1577 Hz), a gritty crunch, a low thump, two echoes | 97% |
+| `dirt_impact.wav` | a shell or mortar round landing in the dirt | a dull 55–135 Hz thud, a gritty spray, sparse clods pattering down | 57% |
+| `autocannon_shot.wav` | each 25 mm round (bursts sound thump-thump-thump) | a punchy pitch-dropping thump (255 → 95 Hz) with a hard crack and one echo | 57% |
+| `mg_round.wav` | each machine-gun round | a 0.11 s dry noise crack with a short mechanical knock | 95% |
+| `mortar_launch.wav` | a mortar leaving its tube | a hollow resonant 230 Hz tube pop and a breathy push of gas | 98% |

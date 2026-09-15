@@ -73,6 +73,7 @@ func attach(game_match: Node) -> void:
 			for tank in tanks.get_children():
 				_on_tank_added(tank)
 	weapons.resolver = find_unit
+	weapons.units = unit_nodes
 
 
 func detach() -> void:
@@ -95,6 +96,12 @@ func drives_muzzles() -> bool:
 func find_unit(unit_name: String) -> Node:
 	var tanks := _tanks_root()
 	return tanks.get_node_or_null(NodePath(unit_name)) if tanks != null and unit_name != "" else null
+
+
+## Every vehicle node in the attached match (alive or not).
+func unit_nodes() -> Array:
+	var tanks := _tanks_root()
+	return tanks.get_children() if tanks != null else []
 
 
 ## Impact (Match.show_impact) reports a hit. Returns true if the link handled it (stub) or deliberately ignored it

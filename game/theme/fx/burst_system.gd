@@ -9,7 +9,7 @@ const SHADER := preload("res://game/theme/fx/shaders/burst.gdshader")
 const ATLAS := preload("res://game/theme/fx/textures/explosion_flipbook.png")
 const WORLD_AABB := AABB(Vector3(-200, -20, -200), Vector3(400, 80, 400))
 
-enum Kind { FIREBALL, STAR, GROUND_GLOW }
+enum Kind { FIREBALL, STAR, GROUND_GLOW, SHOCKWAVE, SMOKE, SCORCH, SPARKS, DEBRIS }
 
 var material := ShaderMaterial.new()
 ## Effects started since load (for the bench and tests).
@@ -50,7 +50,7 @@ func resize(new_capacity: int) -> void:
 	multimesh.instance_count = maxi(new_capacity, 1)
 	# Every slot starts expired (start far in the past) so nothing draws until used.
 	for i in multimesh.instance_count:
-		multimesh.set_instance_transform(i, Transform3D.IDENTITY)
+		multimesh.set_instance_transform(i, Transform3D(Basis(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO), Vector3.ZERO))
 		multimesh.set_instance_color(i, Color.WHITE)
 		multimesh.set_instance_custom_data(i, Color(-1000.0, 0.001, 0.0, 0.0))
 	_next = 0
@@ -61,9 +61,19 @@ func update(now: float) -> void:
 	material.set_shader_parameter("now", now)
 
 
-func spawn(kind: int, position: Vector3, size: float, duration: float, color: Color, now: float) -> void:
+## Sparks and debris chunks drawn per spray (a quality-tier budget: each is a loop step per pixel of the spray).
+func set_spray_count(count: int) -> void:
+	material.set_shader_parameter("spray_count", count)
+
+
+## Start an effect. `color.a` is the kind's variant (smoke darkness, debris chunkiness). Moving effects (smoke rings,
+## thrown dust) drift from `position` at `velocity`, slowed by `drag` (1/s), pulled down by `gravity` (m/s²), and
+## lifted at `rise` (m/s); the shader integrates it, so a moving effect still costs one write.
+func spawn(kind: int, position: Vector3, size: float, duration: float, color: Color, now: float,
+		velocity := Vector3.ZERO, drag := 0.0, gravity := 0.0, rise := 0.0) -> void:
 	var multimesh := _mesh.multimesh
-	multimesh.set_instance_transform(_next, Transform3D(Basis.IDENTITY, position))
+	# The basis carries motion, not rotation (see burst.gdshader).
+	multimesh.set_instance_transform(_next, Transform3D(Basis(velocity, Vector3(drag, gravity, rise), Vector3.ZERO), position))
 	multimesh.set_instance_color(_next, color)
 	multimesh.set_instance_custom_data(_next, Color(now, duration, size, float(kind)))
 	_next = (_next + 1) % multimesh.instance_count
