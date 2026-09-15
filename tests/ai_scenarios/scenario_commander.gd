@@ -4,7 +4,7 @@ extends TestCase
 ## at you would be scary."* CpuCommander policy from COMMANDER_POLICY against plain brains.
 
 const PENDING := []
-const COMMANDER_POLICY := "v3"
+const COMMANDER_POLICY := CpuCommander.DEFAULT_POLICY
 
 
 func _army(path: String) -> Dictionary:

@@ -49,8 +49,9 @@ const FRESH_TICKS := 60 * 10
 const LEG := 50.0
 
 ## v3 (see the header).
-const POLICIES := ["v2", "v3", "v4", "v5"]
-const DEFAULT_POLICY := "v2"
+const POLICIES := ["v2", "v3", "v4", "v5", "v6"]
+## v6 since 2026-09-15: it beat plain x3 brains 45-19 over four same-army mirrors (unit_ai.md "A CPU that maneuvers").
+const DEFAULT_POLICY := "v6"
 const THINK_TICKS_V3 := 60
 const RALLY_AHEAD := 40.0
 const MUSTER_RADIUS := 25.0
@@ -73,6 +74,8 @@ const ADVANCE_SPREAD_V4 := 35.0
 ## v5 (v3 with one change): a line squad flanks only with at least this share of the main squad's strength; a lone IFV
 ## sent round the side just died (armor mirror: v3 4-12 against plain brains).
 const FLANK_SHARE_V5 := 0.4
+## v6 = v5's flanking rule + v4's wide advance and scout rule (the ladder: v5's flanking wins with tank-heavy armies, v4's
+## scouts holding a firing screen win with light ones; see unit_ai.md "A CPU that maneuvers").
 
 var game_match: Match
 var team := Match.Team.RUST
@@ -227,7 +230,9 @@ static func squad_class(squad: Squad, by_name: Dictionary) -> String:
 ## Every squad's command this think under policy v3 or v4: {squad name: SquadCommand}. Updates the team phase.
 func plan_team(by_name: Dictionary) -> Dictionary:
 	var v4 := policy == "v4"
-	var v5 := policy == "v5"
+	var wide_advance := policy == "v4" or policy == "v6"
+	var flank_by_share := policy == "v5" or policy == "v6"
+	var scouts_charge_fragile_only := policy == "v4" or policy == "v6"
 	var frame := Match.team_frame(team)
 	var forward: Vector3 = frame["forward"]
 	var right: Vector3 = frame["right"]
@@ -332,7 +337,7 @@ func plan_team(by_name: Dictionary) -> Dictionary:
 			_plan(plans, main, "move", goal, "wedge")
 			for i in range(1, line.size()):
 				var side := 1.0 if i % 2 == 1 else -1.0
-				var spread := ADVANCE_SPREAD_V4 * float((i + 1) / 2) if v4 else 25.0
+				var spread := ADVANCE_SPREAD_V4 * float((i + 1) / 2) if wide_advance else 25.0
 				_plan(plans, line[i], "move", goal + across * side * spread - direction * 5.0, "wedge")
 			for i in fast.size():
 				var side := -1.0 if i % 2 == 0 else 1.0
@@ -351,15 +356,15 @@ func plan_team(by_name: Dictionary) -> Dictionary:
 				var side := 1.0 if i % 2 == 1 else -1.0
 				var flank_point := target + across * side * FLANK_OFFSET + axis * 10.0
 				var at := _center(squad, by_name)
-				var big_enough := not v5 or _strength(squad, by_name) >= _strength(main, by_name) * FLANK_SHARE_V5
+				var big_enough := not flank_by_share or _strength(squad, by_name) >= _strength(main, by_name) * FLANK_SHARE_V5
 				if can_flank and big_enough and at.distance_to(flank_point) > FLANK_ARRIVE and _nearest_contact(at) > FLANK_CONTACT \
 						and last_commands.get(squad.squad_name, {}).get("verb", "") != "assault":
 					_plan(plans, squad, "move", flank_point, "wedge")
 				else:
 					_plan(plans, squad, "assault", target, "line")
 			for squad: Squad in fast:
-				if v4 and fragile.is_empty():
-					continue  # left to its brains: spotting
+				if scouts_charge_fragile_only and fragile.is_empty():
+					continue  # its last order stands: screening ahead of the line (it holds there and shoots)
 				var at := _center(squad, by_name)
 				var prey: Vector3 = target + axis * 20.0
 				var best := INF

@@ -125,6 +125,9 @@ const MOTION_THREATS := 4
 ## cos 45° (Armor.ARC_DEG) and cos 12° (a gun this close to pointing at me is aimed at me), as constants.
 const COS_ARMOR_ARC := 0.70710678
 const COS_AIMED_AT_ME := 0.9781476
+## X4: a flanker still in front of its target (within ~60° of its nose) aims this much wider (meters).
+const FLANK_WIDE_COS := 0.5
+const FLANK_WIDE_EXTRA := 20.0
 ## ...and re-plans the move at most this often (ticks) while nothing changed.
 const MOTION_REPLAN_TICKS := 15
 ## ...and a jink flips the circling side no sooner than JINK_MIN_TICKS after the last, and no later than
@@ -1322,6 +1325,12 @@ func _act(s: Dictionary) -> void:
 				side = -side
 			var standoff := clampf((float(weapon["preferred_min"]) + float(weapon["preferred_max"])) / 2.0, 8.0, 45.0)
 			var point: Vector3 = contact["position"] + side * standoff - contact["forward"] * (0.3 * standoff)
+			var from_target: Vector3 = my_position - contact["position"]
+			if s.get("features", {}).get("combat_motion", false) \
+					and (contact["forward"] as Vector3).dot(from_target) > FLANK_WIDE_COS * from_target.length():
+				# X4: still in front of it: swing wide first, so the flank reads as a flank (and stays out of its sights).
+				point += side * FLANK_WIDE_EXTRA
+				why = TankBrain._join(why, "swinging wide")
 			_order_move(_move_to(point))
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"TAKE_COVER":
@@ -1340,7 +1349,12 @@ func _act(s: Dictionary) -> void:
 				var hide: Vector3 = cover_spots[0]
 				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0, 1.0, SPOT_ARRIVE))
 			else:
-				_order_move(_move_to(TankBrain.withdraw_point(s), true))
+				# X4: light hulls break away at full speed; only a thick front is worth backing off behind.
+				var back_off: bool = not s.get("features", {}).get("combat_motion", false) \
+						or TankBrain.motion_style(String(me.get("unit", ""))) == "angle"
+				if not back_off:
+					why = TankBrain._join(why, "breaking away")
+				_order_move(_move_to(TankBrain.withdraw_point(s), back_off))
 			_order_weapon({"type": "fire_at_will"})
 		"ORBIT":
 			var target_position: Vector3 = contact["position"]

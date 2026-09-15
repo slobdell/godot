@@ -86,8 +86,10 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
    halt); wheels: the pure layer respects turning circles, the driving (`Steering` for wheels) waits for K3 at CP2.
 3. **X3 evasion and weak spots** — **mostly done**: busy-target flanking, front armor toward every gun, dodge model
    (`IncomingFire`, adapter until K2). The dodge-rate bar is a pending scenario until combat's slower tank shells land.
-4. **X4 make it visible** — tooling done (`make ai-shots`: trails + intents); tuning after CP2's weapons.
-5. **X5 CPU commander v3** — next.
+4. **X4 make it visible** — **done for today's weapons**: `make ai-shots` (trails + intents, looked at), wide flank arcs,
+   light hulls break away at speed, dithering measured (4.7 option switches per unit per minute); re-tune after CP2.
+5. **X5 CPU commander** — **done**: policy v6 beats plain brains 45–19 over four same-army mirrors and is
+   `CpuCommander.DEFAULT_POLICY`; making it the skirmish default is control's one-line change (request below).
 6. **X6 ladder and matrix** — round 2's runs done; re-run after CP2 + combat X2/X4; CPU cost to bring back down.
 7. Stretch: explanation overlay, CPU difficulty knob.
 
@@ -125,8 +127,21 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   follow, `pace_factor`, and `station` for idle posts; stop completes once stopped, attack-move once arrived with
   nothing engaged; order identity ignores live values. `TankBrain.EXECUTES_ORDERS` makes control's stand-in
   OrderExecutor leave brains alone. AiScenario.orders() uses control's `Orders` once it exists.
+- **X5 CPU commander** (details and the variant table in unit_ai.md "A CPU that maneuvers"): army plans by squad role
+  (muster, advance in a wedge with scouts screening in a V, the main line assaults while other line squads with ≥ 40% of
+  its strength swing 45 m out to a flank, scouts charge artillery and Lancers in a V, worn squads rest, withdraw when
+  outmatched). Same-army mirrors (x3 brains both sides), v6 vs plain: armor 6–10, balanced 13–3, swarm 16–0,
+  anvil_hammer 10–6 = **45–19**; v2 (round 2) lost to plain brains 3–13. The scout V at speed: 16.4 s of a 45 s swarm
+  attack, spread up to 72 m. Frames: `make remote T="ai-shots STAGE=cpu_charge"` (IFVs swing 40 m arcs round the
+  defenders, scouts charge the battery).
+- **X4:** a flanker still in front of its target swings 20 m wider ("swinging wide"); light hulls break away forward at
+  full speed instead of backing off at 4–5 m/s ("breaking away"); x3 after both: 16–8 (individuals), 21–3
+  (combined_arms) vs a6. Dithering: 4.7 option switches per unit per minute (a6 2.7).
+- **Wheels ready for CP2:** `Steering.drive_toward_wheels` (pure pursuit, full lock far off the nose, three-point turns
+  only for points inside the turning circle) used for `locomotion: wheels`; against a car double of combat's K3 wheels: a
+  point 60 m behind in 8.9 s, 9 m behind in 5.4 s (loop), inside the turning circle in 3.5 s (2 s reversing).
 - Sim baseline: `397d0a3e14891d2d` (X1 timeouts), `9d936357e51d78dd` (x3 champion), `fe0a7942ac259713` (the CPU pass
-  and K1 alignment), each on purpose.
+  and K1 alignment), `08c31b3dccbcb72e` (X4 flank and breakaway), each on purpose. CPU at 50 brains: x3 4.5 ms, a6 3.7.
 
 **Decisions (with reasons):**
 - Brains read K1 through `OrderFeed` (duck-typed: `Match.orders` when the field exists, else an attached object), so
@@ -163,6 +178,9 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   pivoting at 80°/s drags its 50°/s turret off target; world-space turret aim would let tanks shoot on the move (today
   they must short-halt). (3) Moving spread ×2.5 at full speed punishes moving fire; arcade feel wants it smaller for
   turrets (accuracy measured 82–86% either way at today's ranges, so it matters most for long shots).
+- control (skirmish): turn the CPU commander on by default in skirmish (`skirmish_mode.gd` creates `CpuCommander` only
+  with `--commander`); policy v6 beats plain brains 45–19, so X5's bar is met. Its SquadCommands need the CPU's doctrine
+  squads (not K1), which skirmish already loads.
 - control (shared test): `test_command_icons` requires player words for every `TankBrain.OPTIONS`; the order-only
   options live in `TankBrain.ORDER_ONLY_OPTIONS` (MOVE, FOLLOW, PURSUE) and read as "Move"/"Follow"/"Pursue" through the
   fallback; add words when convenient ("Moving", "Following", "Closing in").

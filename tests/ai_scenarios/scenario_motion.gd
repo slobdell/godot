@@ -114,3 +114,40 @@ func test_a_scout_makes_attack_runs_on_a_tank() -> void:
 	assert_true(runs >= 3, "repeated attack runs (%d)" % runs)
 	assert_true(behind_shots >= 10, "firing into its side and rear (%d shots)" % behind_shots)
 	BrainVariants.reset()
+
+
+## Round-3 X4: no dithering. A 3 v 3 mixed brawl; how often each brain changes what it's doing (option switches per unit
+## per minute of fighting). Printed for a6 and x3; x3 must stay readable.
+func _switches_per_minute(variant: String) -> float:
+	BrainVariants.use(Match.Team.GREEN, variant)
+	BrainVariants.use(Match.Team.RUST, variant)
+	var s := AiScenario.create(self, 6)
+	var units := ["tank", "ifv", "scout"]
+	var brains: Array[TankBrain] = []
+	for i in 3:
+		brains.append(s.brain_of(s.brain_tank(Match.Team.GREEN, "Green_A_%d" % (i + 1), Vector3(-108 + i * 9, 0, 40), 0.0, {}, units[i], "", "Alpha")))
+		brains.append(s.brain_of(s.brain_tank(Match.Team.RUST, "Rust_A_%d" % (i + 1), Vector3(-104 + i * 9, 0, -20), PI, {}, units[i], "", "Alpha")))
+	var last := {}
+	var switches := 0
+	var unit_ticks := 0
+	await s.start()
+	for tick in 60 * 30:
+		await s.step()
+		for brain in brains:
+			if not brain.tank.is_alive() or brain.choice.is_empty():
+				continue
+			unit_ticks += 1
+			var option := TankBrain.label(brain.choice)
+			if last.has(brain.name) and last[brain.name] != option:
+				switches += 1
+			last[brain.name] = option
+	s.dispose()
+	BrainVariants.reset()
+	return switches / maxf(unit_ticks / 3600.0, 0.01)
+
+
+func test_brains_dont_dither() -> void:
+	var round2 := await _switches_per_minute("a6")
+	var moving := await _switches_per_minute("x3")
+	print("MEASURE ai_dither option switches per unit per minute: a6 %.1f, x3 %.1f" % [round2, moving])
+	assert_true(moving <= 12.0, "x3 changes its mind at most every 5 s on average (%.1f per minute)" % moving)

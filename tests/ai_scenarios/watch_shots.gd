@@ -5,7 +5,7 @@ extends SceneTree
 ## Needs a display: `make remote T=ai-shots` uses builder0's desktop. `--stage=<name>` runs one stage.
 ##
 ## Stages: duel (two x3 tanks), scout_runs (an x3 scout ordered onto a tank), brawl (3 v 3 mixed, x3 vs a6),
-## cpu_charge (a CPU swarm army under CpuCommander v3 charging a small army with artillery: the scout V).
+## cpu_charge (a CPU swarm army under the default CpuCommander charging a small army with artillery: the scout V).
 
 const OUT := "res://build/ai-shots"
 const STAGES := ["duel", "scout_runs", "brawl", "cpu_charge"]
@@ -163,6 +163,6 @@ func _stage_cpu_charge() -> void:
 	var commander := CpuCommander.new()
 	commander.game_match = scenario.game_match
 	commander.team = Match.Team.RUST
-	commander.policy = "v3"
+	commander.policy = CpuCommander.DEFAULT_POLICY
 	case.add_to_tree(commander)
 	await _play("cpu_charge", 30.0, [8, 14, 20, 26, 30])

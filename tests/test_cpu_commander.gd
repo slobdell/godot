@@ -14,6 +14,7 @@ func _setup() -> Array:
 	var commander := CpuCommander.new()
 	commander.game_match = game_match
 	commander.team = Match.Team.RUST
+	commander.policy = "v2"  # these test v2's squad-by-squad planner (v3+ are in test_ai_commander_v3.gd)
 	add_to_tree(commander)
 	await wait_physics_frames(2)
 	return [game_match, commander]

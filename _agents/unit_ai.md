@@ -109,6 +109,35 @@ else made x3 the champion (`BrainVariants.CHAMPION`, 2026-09-15). CPU pass: Comb
 14 m/s² hull moves ~2 m off the shooter's lead, less than half a hull; the dodge threshold scenario is pending until
 combat's slower, visible tank shells land.
 
+### A CPU that maneuvers (X5)
+
+`CpuCommander` policies v3–v6 (`game/ai/cpu_commander.gd`, `--green-commander=<policy>` / `--rust-commander=<policy>`)
+plan the whole army every second by squad role (`squad_class`: fast = mostly scouts, support = mostly artillery or
+Lancers, line = the rest), in shapes a player can see: **muster** at a rally point ahead of base (line in a wedge,
+scouts in a V, support in a column), **advance** with the main line in a wedge and the others beside it, scouts
+screening ahead, support trailing; on contact **engage**: the strongest line squad assaults the enemy's center, other
+line squads swing to a flank point 45 m off the axis in a wedge and assault from there, scouts charge in a V; worn
+squads **rest** (break contact below 35% hull + shield, back at 70%); clearly outmatched far off, the army
+**withdraws**. The scout V reads in a real fight: 13.2 s of a 45 s swarm attack at speed, spread up to 72 m
+(`scenario_commander.gd`). Commands go out as SquadCommands (C7) so doctrines and the skirmish CPU use them unchanged.
+
+The variants, each one change measured against the last (ladder on **same-army mirrors**: `tests/ai_scenarios/armies/`
+holds the CPU archetypes as fixed armies, because `cpu:` armies are seeded per side and a `cpu:` ladder compared armies,
+not commanders; 12 matches per pairing, brain x3 everywhere):
+
+| Policy | Change | vs plain x3: armor | balanced | swarm | anvil_hammer | total |
+|---|---|---|---|---|---|---|
+| v2 (round 2) | squad-by-squad assault | | | | 3–13 | |
+| v3 | role-based army plan above | 3–9 | 9–3 | 9–3 | 7–5 | 28–20 |
+| v4 | flank only with a 1.15× edge, wide advance, scouts charge only artillery/Lancers | 5–7 | 11–1 | 12–0 | 2–10 | 30–18 |
+| v5 | v3, but a squad flanks only with ≥ 40% of the main squad's strength | 5–7 | 8–4 | 9–3 | 7–5 | 29–19 |
+
+Head to head v4 beat v3 30–18 and v5 32–16. Reading: v5's flanking wins with tank-heavy armies (armor, anvil_hammer);
+v4's scouts, left holding their screening spot ahead of the line, shred light armies with machine guns from there
+(swarm 12–0, 272 kills); charging the enemy line with scouts is worth it only against artillery and Lancers. Two traps
+found on the way: every policy but "v3" fell back to v2's planner (a dispatch bug; the first v4 and v5 numbers were v2's),
+and `cpu:` mirrors aren't mirrors.
+
 ## 1. Decision making: considerations and response curves
 
 **Literature.** Dave Mark's *Behavioral Mathematics for Game AI* (2009) and the GDC talks with Kevin Dill
