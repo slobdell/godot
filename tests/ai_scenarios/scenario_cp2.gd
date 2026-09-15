@@ -115,3 +115,32 @@ func test_a_scout_works_onto_a_tanks_engine_deck() -> void:
 			1_000_000 - tank.health + int(tank.max_shield - tank.shield)])
 	assert_true(deck >= 40 and deck * 2 >= hits, "the scout works onto the engine deck (%d deck hits of %d)" % [deck, hits])
 	BrainVariants.reset()
+
+
+## Combat's request (f): two lone tanks with no objective, from mirror spawns on the point-symmetric arena. Both used to
+## drive the straight base-to-base line, so each hid behind the center crate from the other and they passed at 9 m unseen
+## (mirror-image side lanes didn't help: the line between mirror positions always crosses the center: 48 m, never seen).
+func test_lone_tanks_without_objectives_find_each_other() -> void:
+	var s := AiScenario.create(self)
+	var green := s.brain_tank(Match.Team.GREEN, "Green_Tank_1", Match.spawn_position(Match.Team.GREEN, 0),
+			Match.spawn_yaw(Match.Team.GREEN))
+	var rust := s.brain_tank(Match.Team.RUST, "Rust_Tank_1", Match.spawn_position(Match.Team.RUST, 0),
+			Match.spawn_yaw(Match.Team.RUST))
+	AiScenario.make_durable(green)
+	AiScenario.make_durable(rust)
+	var seen_at := -1
+	var closest_unseen := INF
+	await s.start()
+	for tick in 60 * 40:
+		await s.step()
+		if seen_at >= 0:
+			continue
+		if s.game_match.is_visible_to(Match.Team.GREEN, rust) or s.game_match.is_visible_to(Match.Team.RUST, green):
+			seen_at = tick
+		else:
+			closest_unseen = minf(closest_unseen, green.global_position.distance_to(rust.global_position))
+	print("MEASURE ai_cp2_lone_tanks first sighting after %.1f s, closest unseen %.0f m, shots %d + %d" % [seen_at / 60.0,
+			closest_unseen, s.shots_by(green), s.shots_by(rust)])
+	assert_true(seen_at >= 0 and closest_unseen >= 25.0, "they spot each other before passing close (%.1f s, %.0f m)" % [
+			seen_at / 60.0, closest_unseen])
+	assert_true(s.shots_by(green) + s.shots_by(rust) >= 2, "and fight")

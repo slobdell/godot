@@ -200,6 +200,9 @@ const RESUPPLY_TOP_UP := 0.8
 const SCOUT_STANDOFF := 85.0
 ## Artillery keeps visible enemies at least this far away (outside a cannon's 70 m reach).
 const ARTILLERY_SAFE_DISTANCE := 80.0
+## A lone unit advancing with no objective swings this far to the right of the base-to-base line (meters).
+const LONE_LANE := 25.0
+const LONE_LANE_REACHED := 8.0
 ## With nothing to shell, artillery trails this far behind the nearest friendly gun, toward home.
 const ARTILLERY_TRAIL := 35.0
 ## A scout's appetite for attacking enemy artillery, relative to a tank's normal appetite.
@@ -1651,7 +1654,23 @@ func _act(s: Dictionary) -> void:
 			_order_move(_move_to(s["squad_center"]))
 			_order_weapon({"type": "fire_at_will"})
 		"ADVANCE":
-			_order_move(_move_to(s["objective"] if s["objective"] != null else s["enemy_base"]))
+			var goal: Vector3 = s["objective"] if s["objective"] != null else s["enemy_base"]
+			if s["objective"] == null and (s["allies"] as Array).is_empty():
+				# Combat's request (f): a lone unit with nowhere to be takes a side lane to the midfield before turning in on
+				# the enemy base. On a point-symmetric arena a mirror opponent drove the mirror path, and the line between
+				# two mirror positions always runs through the center crate: they passed 9 m apart unseen. So the lane is
+				# on the same side of the map for both teams (to Green's right, Rust's left): they meet in it head-on.
+				var home: Vector3 = s["rally"]
+				var across := Vector3(goal.x - home.x, 0.0, goal.z - home.z)
+				var length := across.length()
+				if length > 1.0:
+					var ahead := across / length
+					var side := 1.0 if tank.team == Match.Team.GREEN else -1.0
+					var lane: Vector3 = (home + goal) * 0.5 + Vector3(-ahead.z, 0.0, ahead.x) * LONE_LANE * side
+					if (my_position - home).dot(ahead) < length * 0.5 and _flat(my_position).distance_to(_flat(lane)) > LONE_LANE_REACHED:
+						goal = lane
+						why = TankBrain._join(why, "side lane")
+			_order_move(_move_to(goal))
 			_order_weapon({"type": "fire_at_will"})
 		"KEEP_SLOT":
 			var squad: Dictionary = s["squad"]

@@ -92,9 +92,14 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
    scenario stays pending: physically marginal at combat's shell speeds (request below).
 4. **X4 make it visible** — **done**: `make ai-shots` (trails, intents, explain lines), wide flanks, fast breakaways.
 5. **X5 CPU commander** — **done**: v6 is `CpuCommander.DEFAULT_POLICY`; skirmish default is control's switch (request).
-6. **X6 ladder and matrix** — round 2's runs **done**; the re-run with combat's weapons **done provisionally in the
-   preview**; **waiting on the real CP2 merge** for the official one.
+6. **X6 ladder and matrix** — **done** after CP1 and CP2 merged: the official brain ladder (a6, x3, x3m, x4 on four
+   armies, 16 matches per pairing), the commander ladder (x3 vs x3+v6 on four mirrors) and combat's matchup matrix all
+   re-run on builder0 against round-3 weapons. Results under "Report"; champion changed by the ladder rule.
 7. **Stretch** — difficulty knob **done**; explanation overlay **done**.
+8. **After CP2, combat's requests** (combat.md "Requests to other streams"): (a) dodging **done** (x3), (b) weak spots
+   **done** (feature `weak_spots`), (c) wheels **done** (Steering's turning circles, CombatMotion's reachable headings),
+   (d) artillery BOMBARD **done** (stays dug in on a moving target), (e) `matchups.gd` bursts and engine deck **done**,
+   (f) lone units through the center crate's shadow **done** (side lane).
 
 ### Report
 
@@ -125,6 +130,18 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - **Provisional X6 (preview, combat's weapons):** x3 vs a6 51–69 pooled (individuals 18–14, balanced 19–25,
   combined_arms 14–30); no probe closed it (no dodging, matchup targets, shoot-and-scoot, halting only 3 s+ reloads).
   Dodging tank shells: x3 tanks 22% vs a6 11%, IFVs 11% vs 6%.
+- **Official X6 after CP1+CP2** (builder0, 16 matches per pairing, both colors, four armies). Brains, wins across the
+  four armies: **x4 102**, x3m 97, x3 96, a6 89; x4 beat x3 **36–28** head to head (13–3 individuals, 9–7
+  combined_arms, 8–8 balanced, 6–10 armor). The preview's "parked brains win" result did not survive the real merge:
+  a6 leads only on combined_arms. **Commander v6** vs plain x3: **58–37–1** (balanced 18–6, swarm 20–4, armor 9–14–1,
+  anvil_hammer 11–13), so v6 stays the default.
+- **Weak spots after CP2** (combat's request b, feature `weak_spots`): a matchup-aware scout orbits to a tank's stern
+  and bursts in while the cannon reloads: **57 of 71 hits on the engine deck** (19 of 46 before), and the tank loses 173
+  instead of 84 in 25 s. Ladder (x4 vs x4w vs x4mw vs x3m, four armies) below.
+- **Lone units (request f):** two lone tanks from mirror spawns with no objective passed **9 m apart, never seen** (the
+  line between mirror positions always runs through the center crate; mirror-image lanes still passed at 48 m unseen).
+  With both teams' lanes on the same side of the map they meet head-on: **first sighting at 61 m after 7.3 s**, 4 shots
+  each.
 - Sim baseline changed on purpose five times; now `470f6950f0845991` (glibc-2.43).
 
 **Decisions (with reasons):**
