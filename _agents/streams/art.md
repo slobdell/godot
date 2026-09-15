@@ -196,6 +196,15 @@ _Updated 2026-09-14 (agent)._
   - Normal and ORM maps are capped at 512 on units (`--texture-caps`), because the `.pck` had grown to 22.4 MB with
     all five units at 1024. Re-measure after the next export.
 
+- **C5 layouts:** `arena.dressing.setup(layout)` fits the walls, stands, towers, floodlight pools and hazard band
+  to `half_size`, paints the center ring only when the layout has a `control_point` (at its radius), and rebuilds
+  cleanly (tested with an 80 m layout). Rules' `Arena` already calls it on `stream/rules`.
+- **Stretch: engine sounds per unit type:**
+  - `EngineSystem` gives the 4 vehicles nearest the camera pooled engine voices, with pitch and volume following
+    each visual's own measured speed.
+  - Loops: diesel (tank, IFV, artillery), V8 (scout), diesel with transformer hum (Lancer).
+  - Synthesized and not listened to by a human yet.
+
 **Decisions**
 - The crowd is emissive-lit silhouettes (a procedural atlas), not meshes: at RTS distance a spectator is a few
   pixels, so motion and density carry it; one draw call. Clothes stay grimy and desaturated (6% neon fans):

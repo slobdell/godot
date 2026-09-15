@@ -57,8 +57,9 @@ func test_the_arena_dressing_builds_the_venue_from_the_kit() -> void:
 	GameTheme.use("cyberpunk")
 	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
 	GameTheme.use(previous)
-	var stands := dressing.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Stands"))
-	var gates := dressing.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Gate"))
+	var structures: Node3D = dressing.get("structures")
+	var stands := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Stands"))
+	var gates := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Gate"))
 	assert_true(stands.size() >= 16, "grandstands line both long walls (%d modules)" % stands.size())
 	assert_eq(gates.size(), 2, "a vehicle gate in each short wall")
 	var crowd: CrowdSystem = dressing.get("crowd")
@@ -67,3 +68,25 @@ func test_the_arena_dressing_builds_the_venue_from_the_kit() -> void:
 		var z: float = (node as Node3D).position.z
 		assert_true(absf(z) > 121.0, "stands sit outside the arena walls (z %.1f)" % z)
 	assert_eq(dressing.find_children("*", "CollisionObject3D", true, false).size(), 0, "the venue adds no collision")
+
+
+func test_the_dressing_fits_an_arena_layout() -> void:
+	# C5 (rules R6): Arena calls arena.dressing.setup(layout) after building the obstacles.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	GameTheme.use(previous)
+	dressing.call("setup", {"name": "small", "half_size": 80.0, "obstacles": [], "control_point": {"radius": 12.0}})
+	var structures: Node3D = dressing.get("structures")
+	var walls := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("Perimeter"))
+	assert_eq(walls.size(), 4, "four perimeter walls after the rebuild (old ones freed)")
+	for node in structures.get_children():
+		if node.name.begins_with("Stands"):
+			var z: float = (node as Node3D).position.z
+			assert_true(absf(z) > 81.0 and absf(z) < 100.0, "stands move in with the 80 m arena's walls (z %.1f)" % z)
+	var ground := CyberMaterials.ground(false)
+	assert_near(float(ground.get_shader_parameter("band_inner")), 68.0, 0.001, "the hazard band follows the walls")
+	assert_near(float(ground.get_shader_parameter("ring_radius")), 12.0, 0.001, "the painted ring marks the control point")
+	dressing.call("setup", {"name": "no_point", "half_size": 80.0, "obstacles": []})
+	assert_near(float(ground.get_shader_parameter("ring_width")), 0.0, 0.001, "no control point, no ring")
+	dressing.call("setup", {"name": "default", "half_size": 120.0, "obstacles": [], "control_point": {"radius": 16.0}})

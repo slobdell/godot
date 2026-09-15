@@ -14,6 +14,11 @@ func add_streak(local: Vector3, color: Color, length := 9.0, width := 1.6, inten
 
 
 func _exit_tree() -> void:
+	clear_streaks()
+
+
+## Remove every streak this prop registered (on leaving the tree, or before rebuilding).
+func clear_streaks() -> void:
 	var fx := FxWorld.existing()
 	if fx != null:
 		for id in _streak_ids:
