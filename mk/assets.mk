@@ -96,7 +96,7 @@ EST_3D ?= 15
 
 # One photoreal concept image (≈9 credits, logged in assets/meshy_ledger.md), registered on the review sheet.
 # REFS=path.png (repeatable via space-separated list) makes it image-to-image from references.
-art-concept: ## Generate a concept image for the lead's review: NAME=scout_a TITLE="…" PROMPT="…" [GROUP= TARGET_SLOT= EST_3D= NOTES= REFS= KEEP_BG=1 for scenes]
+art-concept: ## Generate a concept image for the lead's review: NAME=scout_a TITLE="…" PROMPT="…" GROUP=<the slot the options compete for> [TARGET_SLOT= EST_3D= NOTES=<tradeoff> REFS= KEEP_BG=1 for scenes]
 	@test -n "$(NAME)" -a -n "$(PROMPT)" -a -n "$(TITLE)" || { echo "need NAME=, TITLE=, PROMPT="; exit 2; }
 	$(PYTHON) tools/assets/generate.py --provider meshy --slot unit.tank --concept-only --prompt "$(PROMPT)" \
 		--name meshy/$(NAME) $(foreach r,$(REFS),--reference $(r)) $(if $(KEEP_BG),--keep-background)
@@ -134,3 +134,12 @@ assets-roster: ## Rebuild the round-2 unit roster theme (scout, IFV, artillery, 
 .PHONY: assets-arena-kit
 assets-arena-kit: ## Rebuild the gladiator arena kit theme (props, stands, gate, floodlight tower) from its Meshy recipe
 	tools/assets/build_arena_kit.sh
+
+# ---- The lead's review page (tools/assets/review_page.py; process: _agents/streams/references/concept_review.md) ----
+.PHONY: art-review-page art-apply-decisions
+art-review-page: ## Build the tap-to-approve review page from waiting concepts: TITLE="Concept review #2" [ALL=1] → build/review_page/
+	$(PYTHON) tools/assets/review_page.py build --title "$(or $(TITLE),Concept review)" $(if $(ALL),--all)
+
+art-apply-decisions: ## Record the lead's taps from the review page: DIR=<read_db out_dir> URL=<artifact url>
+	@test -n "$(DIR)" || { echo "need DIR= (the folder read_db saved the decisions collection into)"; exit 2; }
+	$(PYTHON) tools/assets/review_page.py apply --decisions "$(DIR)" --url "$(URL)"

@@ -9,6 +9,9 @@ enforces it), and each concept goes to 3D at most once.
     make art-review                                   # build/review/index.html + images, for the lead
     make art-review-status                            # the table in the terminal
     make art-decide ID=scout_a DECISION=approved WORDS="the lead's words"
+    make art-review-page / art-apply-decisions      # the tap-to-approve page (tools/assets/review_page.py)
+
+The whole process: _agents/streams/references/concept_review.md
 
 Files:
     assets/review/review.json     the manifest (committed): items, prompts, task ids, decisions
