@@ -67,8 +67,8 @@ Weapons and damage (combat: you only read K2), brains (ai), selection and orders
 ## Status
 
 _Report, 2026-09-15, by the feel worker. Branch `stream/feel`; every item below is committed and each backlog commit
-passed `make remote T=check` on builder0. **Final: `make remote T=check` green on `cd8df03` (466 tests, every smoke,
-sim baseline unchanged).**_
+passed `make remote T=check` on builder0. **Final: `make remote T=check` green on `5852c0a` (466 tests, every smoke,
+sim baseline unchanged), the merge of `main` through 13685ce.**_
 
 ### Done
 
@@ -125,10 +125,7 @@ untouched (feel never changes it).
   that `MatchFxLink.live` is true in a skirmish (effects switch to real K2 on their own).
 
 ### Known issues
-- **After merging `main` (8dbe23e, the orchestrator asked) `make check` is red on one test outside feel's paths:**
-  `test_command_icons::test_unit_icons_skip_positions_a_camera_could_not_project` ("a collinear triangle is not drawn")
-  fails 3/3 locally and on builder0; the files are identical to `main`. Reported to the orchestrator 2026-09-15. Feel's
-  79 fx tests pass; the last all-green check is `cd8df03` (before the merge).
+
 - Tier high on the laptop's UHD 620 is estimated at ~16 ms for the 50-vehicle bench (Iris Xe × 2.3), the edge of its
   budget; the 50 vehicles' 886k primitives are the main cost, not effects.
 - Round 2's MG fires 5 rounds/s, so streams look sparse until combat's ~11/s lands. Weak spots in the showcase are
