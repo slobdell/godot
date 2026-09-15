@@ -312,7 +312,8 @@ func _is_ours(unit_name: String) -> bool:
 	if unit == null:
 		return false
 	var team: Variant = _controls.get("team") if is_instance_valid(_controls) else null
-	return int(unit.get("team")) == (int(team) if team != null else Match.Team.GREEN)
+	var unit_team: Variant = unit.get("team") if unit.get("team") != null else unit.get_meta("team", -1)
+	return int(unit_team) == (int(team) if team != null else Match.Team.GREEN)
 
 
 func _unit(unit_name: String) -> Node3D:

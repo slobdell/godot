@@ -571,6 +571,8 @@ func _unit(unit_name: String) -> Node:
 func _team_glow(unit: Node) -> Color:
 	if unit != null and unit.get("team") is int:
 		return GameTheme.team_glow(int(unit.get("team")))
+	if unit != null and unit.has_meta("team"):
+		return GameTheme.team_glow(int(unit.get_meta("team")))  # the FX lab's stand-in vehicles
 	return NEUTRAL_GLOW
 
 

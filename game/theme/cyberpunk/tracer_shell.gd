@@ -14,6 +14,9 @@ func _ready() -> void:
 		return
 	var shell := _shell()
 	var style := "arc" if _is_arc() else _fire_model(fx, shell)
+	var tagged: Variant = _tagged("fire_model")
+	if tagged != null and TracerSystem.STYLES.has(String(tagged)):
+		style = String(tagged)  # the FX lab tags its stand-in rounds
 	fx.add_tracer(self, GameTheme.team_glow(_team()), style)
 	if shell != null and shell.has_signal("expired"):
 		shell.connect("expired", _on_expired)
@@ -71,4 +74,15 @@ func _team() -> int:
 		if team is int:
 			return team
 		node = node.get_parent()
-	return 0
+	var tagged: Variant = _tagged("team")
+	return int(tagged) if tagged != null else 0
+
+
+## A meta value on the nearest ancestor that has it (the FX lab's rounds), or null.
+func _tagged(key: String) -> Variant:
+	var node := get_parent()
+	while node != null:
+		if node.has_meta(key):
+			return node.get_meta(key)
+		node = node.get_parent()
+	return null
