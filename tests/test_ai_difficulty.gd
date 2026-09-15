@@ -27,3 +27,19 @@ func test_use_sets_a_team_and_reset_restores_the_default() -> void:
 	assert_eq(Difficulty.name_for_team(Match.Team.GREEN), Difficulty.DEFAULT, "green unchanged")
 	Difficulty.reset()
 	assert_eq(Difficulty.name_for_team(Match.Team.RUST), Difficulty.DEFAULT, "reset")
+
+
+func test_the_explain_overlay_draws_what_brains_are_doing() -> void:
+	var s := AiScenario.create(self)
+	s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(-100, 0, 40), 0.0)
+	s.dummy(Match.Team.RUST, "Rust_Target_1", Vector3(-100, 0, -10), PI)
+	var overlay := AiExplainOverlay.new()
+	overlay.game_match = s.game_match
+	s.game_match.add_child(overlay)
+	await s.start()
+	for tick in 60 * 3:
+		await s.step()
+	var drawn := overlay.redraw()
+	assert_eq(drawn, 1, "one brain drawn (dummies have no brain)")
+	assert_true((overlay.mesh as ImmediateMesh).get_surface_count() >= 1, "with at least a line")
+	assert_eq(AiExplainOverlay.flag_team(), -2, "off without the flag")

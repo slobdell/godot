@@ -265,6 +265,7 @@ func think(_delta: float) -> void:
 	if not spotter.is_valid():
 		# Indirect fire aims at anything the TEAM can see (directive set 2: spotting).
 		spotter = func(other: Tank) -> bool: return game_match.is_visible_to(tank.team, other)
+		AiExplainOverlay.ensure(game_match)  # --ai-explain (playtests): lines showing what each brain is up to
 	if not tank.is_alive():
 		choice = {}
 		tank.intent = ""
@@ -1709,7 +1710,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		_loaded_tick = tick if _loaded_tick < 0 else _loaded_tick
 	else:
 		_loaded_tick = -1
-	if style != "run" and reload_seconds >= SHORT_HALT_RELOAD and distance <= float(weapon["range"]):
+	var halt_reload := float(s.get("features", {}).get("short_halt_reload", SHORT_HALT_RELOAD))
+	if style != "run" and reload_seconds >= halt_reload and distance <= float(weapon["range"]):
 		var ready_in := (1.0 - float(me.get("reload", 1.0))) * reload_seconds
 		var braking := absf(tank.speed()) / maxf(tank.acceleration, 0.1)
 		var incoming: Array = s.get("incoming", [])

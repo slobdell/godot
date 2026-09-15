@@ -91,7 +91,8 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 5. **X5 CPU commander** — **done**: policy v6 beats plain brains 45–19 over four same-army mirrors and is
    `CpuCommander.DEFAULT_POLICY`; making it the skirmish default is control's one-line change (request below).
 6. **X6 ladder and matrix** — round 2's runs done; re-run after CP2 + combat X2/X4; CPU cost to bring back down.
-7. Stretch: CPU difficulty knob — **done** (`--<team>-difficulty=easy|normal|hard`); explanation overlay — open.
+7. Stretch: CPU difficulty knob — **done** (`--<team>-difficulty=easy|normal|hard`); explanation overlay — **done**
+   (`--ai-explain[=green|rust]`).
 
 ### Report (kept current)
 
@@ -164,6 +165,16 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - **Difficulty knob** (`game/ai/difficulty.gd`, stretch): easy thinks every 18 ticks and its aim wanders up to 2 m
   (deterministic pattern, no RNG); hard thinks every 4. Balanced mirror: normal beats easy 15–1 (easy hits 53% vs 74%),
   hard vs normal 8–8 (faster reactions alone don't win: a harder level needs better decisions, not speed).
+
+- **Explanation overlay** (`--ai-explain`, or `=green` / `=rust`; `game/ai/ai_explain_overlay.gd`): each brain draws a
+  line to where it's driving, colored by what it's doing (blue orders, red fights, yellow cover, white retreats, green
+  roaming), a cross at the spot, and a thin red line to its target. In `make ai-shots` frames (looked at): a tank's
+  weave hop, a hurt IFV's yellow line to a hiding spot behind a wall, red lines to targets.
+- **Provisional X6 in the preview** (combat's weapons and wheels, control's Orders; to redo after the real merge):
+  commander v6 vs plain x3 still wins 38–26 (armor 10–6, balanced 9–7, swarm 11–5, anvil_hammer 8–8). Brains: x3 vs
+  a6 21–27 (individuals 9–7, combined_arms 5–11, balanced 7–9): with 320-damage shells fights end in seconds and x3's
+  moving shots land less (67% vs 73% on combined_arms), so x3 needs re-tuning for combat's weapons (probes running:
+  x2, x3 + matchups, x3 short-halting only 3 s+ reloads).
 
 **Decisions (with reasons):**
 - Brains read K1 through `OrderFeed` (duck-typed: `Match.orders` when the field exists, else an attached object), so
