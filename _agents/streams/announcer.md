@@ -107,11 +107,17 @@ The announcer never affects gameplay.
 
 ## Voices
 
-- (the lead is preparing voices in ElevenLabs; record their names, ids, and settings here)
+- **Caller (play-by-play): `JR1`** in the lead's ElevenLabs account (2026-09-15). The lead describes it as a parody of a
+  famous podcaster. Keep the *character* original: no real name, catchphrases, or references in lines, and before
+  shipping, the lead confirms the voice doesn't imitate a real person (ElevenLabs' policy; sound-alike voices in
+  commercial products carry legal risk even as parody). Resolve the voice id by name, as mavlink-hud does.
+- **Color commentator:** not chosen yet. Cast by character first (see game_design.md), with a timbre clearly
+  different from JR1 on phone speakers.
+- **Arena PA / sponsor voice:** not chosen yet.
 
 ## Waiting on the lead
 
-- Voice names (being prepared 2026-09-15).
+- The color commentator and PA voices (the caller `JR1` is ready, 2026-09-15).
 - **Environment:** as of 2026-09-15, `ELEVENLABS_KEY_ID` (and `MESHY_API_KEY`) sit after the interactive guard in
   `~/.bashrc`, so agent shells can't see them (orientation trip-up 59). Move both above line 6 or into `~/.profile`.
 
