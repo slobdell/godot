@@ -88,8 +88,9 @@ field), effects and HUD styling (feel), models (assets).
 ## Status
 
 _Updated 2026-09-15 by the control worker. **Round report: every backlog item is done except X8 (deferred by the
-round's no-new-touch-work constraint). `make remote T=check` is green (470 tests, every smoke) on a39c135, the merge of main's
-tools/remote.sh fix; every remote screenshot was re-taken after that merge, and each was checked to be a distinct frame and looked at.**_
+round's no-new-touch-work constraint). `make remote T=check` is green (470 tests, every smoke) on 72e5b51, the merge of main's
+icon triangulation fixes (8dbe23e, 13685ce); every remote screenshot was re-taken after main's tools/remote.sh fix
+(a39c135), and each was checked to be a distinct frame and looked at.**_
 
 ### Plan (in order) and progress
 
@@ -224,4 +225,7 @@ the dark floor; the panel's single-unit card is text-heavy.
   (7dc7bdc, from feel) was merged in and its version kept.
 - `_agents/orientation.md` (common tasks: the skirmish row, a control playtest row) and `_agents/verification.md`
   (a control playtest paragraph): small additive edits.
+- Main's `CommandIcons._fill` (8dbe23e, 13685ce) merged into control's paths and kept. The desktop controls draw no
+  filled polygons at world-projected positions; their waypoint lines and order rings now skip points that are
+  non-finite or more than 4000 px off screen (`RtsControls._screen_point`).
 - `mk/command.mk` (control's now): `control-playtest`, `control-playtest-shots` added; command-playtest targets kept.
