@@ -113,6 +113,8 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		# Stretch hazards, by the VICTIM's team: hull + shield points lost to the arena, and units it destroyed.
 		"hazard_damage": [0.0, 0.0], "hazard_kills": [0, 0],
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
+		# X3: enemy hits on the engine deck (Armor.is_weak_spot), by the shooter's team.
+		"weak_spot_hits": [0, 0],
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
 		# Simulated seconds at the first shot fired and the first kill (pace of a fight).
@@ -985,8 +987,10 @@ func incoming_projectiles(unit: Tank) -> Array:
 ## Shield + hull points a hit of `raw` travelling along `direction` would take from `unit` now (no state change).
 func _damage_estimate(unit: Tank, raw: float, weapon: Dictionary, direction: Vector3, arcing: bool) -> float:
 	var face: String = "side" if arcing else Armor.FACING_NAMES[Armor.facing(-unit.global_basis.z, direction)]
+	var through_armor := weak_spot_multiplier(weapon, unit.unit_id) if not arcing and is_weak_spot_hit(weapon, -unit.global_basis.z, direction) \
+			else armor_multiplier(weapon, unit.unit_id, face)
 	var split := Armor.split_shield(raw, unit.shield, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
-			armor_multiplier(weapon, unit.unit_id, face))
+			through_armor)
 	return split.x + split.y
 
 
@@ -1009,10 +1013,13 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	var face: String = Armor.FACING_NAMES[Armor.facing(forward, direction)]
 	if weapon["kind"] == Weapons.Kind.ARC:
 		face = "side"  # indirect rounds come down on top: no face is the strong one
-	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]),
-			armor_multiplier(weapon, victim.unit_id, face))
+	var weak := is_weak_spot_hit(weapon, forward, direction)
+	var through_armor := weak_spot_multiplier(weapon, victim.unit_id) if weak else armor_multiplier(weapon, victim.unit_id, face)
+	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
 	result["face"] = face
-	result["weak_spot"] = is_weak_spot(weapon, face)
+	result["weak_spot"] = weak
+	if weak and victim.team != team and counts_as_hit:
+		stats["weak_spot_hits"][team] += 1
 	if victim.team == team:
 		stats["friendly_damage"][team] += float(result["hull"]) + float(result["shield"])
 		stats["friendly_hits"][team] += 1 if counts_as_hit else 0
@@ -1034,9 +1041,16 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	return result
 
 
-## K2 weak spots: a direct round into a hull's rear (combat X3 refines this).
-static func is_weak_spot(weapon: Dictionary, face: String) -> bool:
-	return face == "rear" and int(weapon.get("kind", -1)) != Weapons.Kind.ARC and int(weapon.get("kind", -1)) != Weapons.Kind.CONE
+## X3 weak spots: a direct round (shell or beam; not a lobbed burst or a flame) into the engine deck.
+static func is_weak_spot_hit(weapon: Dictionary, hull_forward: Vector3, direction: Vector3) -> bool:
+	var kind := int(weapon.get("kind", -1))
+	return kind != Weapons.Kind.ARC and kind != Weapons.Kind.CONE and Armor.is_weak_spot(hull_forward, direction)
+
+
+## X3: the fraction of a hit's hull damage that gets through `unit_id`'s engine deck (thinner than its rear armor).
+static func weak_spot_multiplier(weapon: Dictionary, unit_id: String) -> float:
+	return Armor.penetration_multiplier(float(weapon.get("penetration", 0.0)),
+			Units.armor(unit_id, "rear") * Armor.WEAK_SPOT_ARMOR_FRACTION)
 
 
 func _score_kill(team: int, killer: String, victim: Tank) -> void:

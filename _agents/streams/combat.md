@@ -142,3 +142,16 @@ never fire: their brain treats them as spotters. Worth a look by ai: a scout rev
 
 Tests adjusted to derive from data (merge notes): `test_combat.gd`, `test_shields.gd`, `test_weapons_and_intel.gd`,
 `test_turrets.gd` (expected shots from the reload).
+
+### X3 done: weak spots that read (2026-09-15)
+
+- **Flanks punish through armor** (tested for every direct weapon against tanks and IFVs: front < side < rear). Cannon
+  into a tank: ×0.5 / ×1.0 / ×1.5; 25 mm: ×0.05 / ×0.13 / ×0.84; MG: ×0.05 / ×0.13 / ×0.63.
+- **The engine deck** (`Armor.is_weak_spot`: a shell or beam arriving within `WEAK_SPOT_ARC_DEG` = 25° of dead astern) is
+  armored like half the rear (`Match.weak_spot_multiplier`). Light guns get through there: a scout's stream on a tank's
+  engine does ×1.13 per round instead of ×0.63 (measured 1.4×+ the hull damage of the same stream from 37° off the
+  quarter). Heavy rounds are already at the cap from behind, so a tank shell on the deck leaves a full tank at 21 hull
+  (still two shells). Flagged `weak_spot: true` in `projectile_impact`; `stats.weak_spot_hits` per team.
+- Why not a flat damage bonus: at ×1.3 a tank shell into the deck one-shots a full tank, which breaks "2-4 hits" and
+  makes a single lucky angle end a duel; thinner armor keeps it mechanical (no damage table) and makes a scout's
+  flanking run on a tank's engine a real threat. Tests: `tests/test_combat_weak_spots.gd`.
