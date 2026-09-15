@@ -22,12 +22,12 @@ const FAMILIES := {
 			"flash_size": 3.6, "light_energy": 4.0, "light_range": 8.0, "hit_size": 4.0,
 			"fire_shake": 0.16, "hit_shake": 0.32, "kill_shake": 0.8, "miss_shake": 0.12, "shake_radius": 24.0,
 			"recoil_deg": 3.5, "recoil_m": 0.35, "hit_rock_deg": 4.5},
-	"burst": {"fire_sound": "autocannon_shot", "hit_sound": "shield_hit", "miss_sound": "",
+	"burst": {"fire_sound": "autocannon_shot", "hit_sound": "bullet_hit_metal", "miss_sound": "", "ricochet_chance": 0.3,
 			"flash_size": 1.6, "light_energy": 3.0, "light_range": 6.0, "hit_size": 1.3,
 			"fire_shake": 0.0, "hit_shake": 0.0, "kill_shake": 0.5, "miss_shake": 0.0, "shake_radius": 16.0,
 			"recoil_deg": 0.6, "recoil_m": 0.04, "hit_rock_deg": 0.5},
-	"stream": {"fire_sound": "mg_round", "hit_sound": "", "miss_sound": "",
-			"flash_size": 0.9, "light_energy": 2.0, "light_range": 4.0, "hit_size": 0.6,
+	"stream": {"fire_sound": "mg_loop", "hit_sound": "bullet_hit_metal", "miss_sound": "", "ricochet_chance": 0.2,
+			"flash_size": 1.3, "light_energy": 2.5, "light_range": 5.0, "hit_size": 1.1,
 			"fire_shake": 0.0, "hit_shake": 0.0, "kill_shake": 0.45, "miss_shake": 0.0, "shake_radius": 14.0,
 			"recoil_deg": 0.0, "recoil_m": 0.0, "hit_rock_deg": 0.0},
 	"beam": {"fire_sound": "laser_pulse", "hit_sound": "", "miss_sound": "",
@@ -62,6 +62,19 @@ var _fx: FxWorld
 var _projectiles := {}
 var _order: Array[int] = []
 var _rng := RandomNumberGenerator.new()
+## Draw hitscan rounds from weapon events (live K2). MatchFxLink turns it off in stub mode, where the fx.tracer slot
+## knows both ends of each round and draws it instead.
+var draw_hitscan := true
+## Hitscan rounds fired this frame, waiting for their impact (same tick) to know where they end: id -> shot.
+var _pending_hitscan := {}
+## Budgets for small rounds pouring into one hull: last spark and clank time per target, last ricochet sound.
+var _last_spark := {}
+var _last_clank := {}
+var _last_ricochet_sound := -1.0
+## Small rounds on one target spark at most this often (s); a 11-rounds-a-second stream still reads as continuous.
+const SPARK_EVERY := 0.07
+const CLANK_EVERY := 0.09
+const RICOCHET_SOUND_EVERY := 0.15
 
 
 func _init(fx: FxWorld) -> void:
@@ -90,6 +103,10 @@ func fired(event: Dictionary) -> void:
 	var color := _team_glow(shooter)
 	_track(int(event.get("projectile_id", -1)), {"model": model, "shooter": shooter_name, "color": color, "muzzle": muzzle,
 			"direction": direction})
+	var weapon := Weapons.profile(String(event.get("weapon", "")))
+	if draw_hitscan and (model == "stream" or model == "burst") and K2Events.projectile_speed(weapon) <= 0.0:
+		_pending_hitscan[int(event.get("projectile_id", -1))] = {"muzzle": muzzle, "direction": direction,
+				"range": float(weapon.get("range", 45.0)), "color": color, "model": model}
 	match model:
 		"shell":
 			_shell_blast(family, muzzle, direction, color)
@@ -102,14 +119,49 @@ func fired(event: Dictionary) -> void:
 		_piece("recoil")
 	if float(family["fire_shake"]) > 0.0:
 		_fx.shake.add(float(family["fire_shake"]), muzzle, float(family["shake_radius"]) * 0.8)
-	if model != "beam":
+	if model == "stream":
+		# Held loops, not a click per round: the nearest few gunners get a brrrt that lasts as long as their trigger.
+		_fx.gunfire.trigger(shooter_name if shooter_name != "" else str(muzzle.snapped(Vector3.ONE)), muzzle, _fx.now)
+		_piece("sound:mg_loop")
+	elif model != "beam":
 		_sound(String(family["fire_sound"]), muzzle)
+
+
+## Hitscan rounds that got no impact this frame hit nothing: they fly their full range. FxWorld calls it once per frame.
+func flush(now: float) -> void:
+	# A gun held down lights its muzzle with a hard flicker for as long as it fires, not just on the frame of each round.
+	var gunners := _fx.gunfire.firing_positions(now)
+	for i in gunners.size():
+		var flicker := 0.35 + 0.65 * absf(sin(now * 71.0 + i * 1.7) * sin(now * 43.0 + i))
+		_fx.lights.request(gunners[i] + Vector3.UP * 0.2, Color(1.0, 0.8, 0.45), 3.2 * flicker, 6.0, LightPool.PRIORITY_MUZZLE - 0.2)
+	for id in _pending_hitscan:
+		var shot: Dictionary = _pending_hitscan[id]
+		var muzzle: Vector3 = shot["muzzle"]
+		_fx.tracers.shoot(muzzle, muzzle + shot["direction"] * float(shot["range"]), shot["color"], shot["model"], now)
+	_pending_hitscan.clear()
+
+
+## Stub (round 2): a hitscan round drawn by the fx.tracer slot from `from` to `to`. `target` is the vehicle it struck
+## ("" = none); `hit_world` means it stopped short on a wall or prop.
+func hitscan(from: Vector3, to: Vector3, shooter_name: String, target: String, hit_world: bool, model := "stream") -> void:
+	var color := _team_glow(_unit(shooter_name))
+	_fx.tracers.shoot(from, to, color, model, _fx.now)
+	if target != "":
+		impact({"projectile_id": -1, "fire_model": model, "position": K2Events.from_vector(to), "target": target,
+				"normal": K2Events.from_vector((from - to).normalized()), "killed": false, "weak_spot": false})
+	elif hit_world:
+		_begin(model)
+		_small_miss(model, FAMILIES[model], to)
 
 
 ## K2 projectile_impact: the landing side.
 func impact(event: Dictionary) -> void:
 	var id := int(event.get("projectile_id", -1))
 	var shot: Dictionary = _projectiles.get(id, {})
+	if _pending_hitscan.has(id):
+		var pending: Dictionary = _pending_hitscan[id]
+		_fx.tracers.shoot(pending["muzzle"], K2Events.to_vector(event.get("position")), pending["color"], pending["model"], _fx.now)
+		_pending_hitscan.erase(id)
 	var model := String(shot.get("model", event.get("fire_model", "shell")))
 	if not FAMILIES.has(model):
 		model = "shell"
@@ -126,7 +178,7 @@ func impact(event: Dictionary) -> void:
 			"shell", "arc":
 				_shell_hit(family, position, direction, killed)
 			_:
-				_small_hit(family, position, direction, bool(event.get("weak_spot", false)))
+				_small_hit(model, family, position, direction, bool(event.get("weak_spot", false)), target_name)
 		if killed:
 			_kill(model, family, position, direction)
 		if float(family["hit_rock_deg"]) > 0.0 and target is Node3D:
@@ -139,7 +191,7 @@ func impact(event: Dictionary) -> void:
 				if model == "shell" and shot.has("muzzle"):
 					_near_miss(shot["muzzle"], position, String(shot.get("shooter", "")))
 			_:
-				_small_miss(family, position)
+				_small_miss(model, family, position)
 
 
 # ---- Shell family (X2) ---------------------------------------------------------------------------------------------
@@ -277,7 +329,7 @@ func fizzle(position: Vector3, direction: Vector3, model: String, from: Variant 
 			if model == "shell" and from is Vector3:
 				_near_miss(from, position, shooter)
 		_:
-			_small_miss(FAMILIES[model], landing)
+			_small_miss(model, FAMILIES[model], landing)
 
 
 ## The missed shell passed a vehicle closely on its way: play the whine at the closest point.
@@ -304,30 +356,61 @@ func _near_miss(from: Vector3, to: Vector3, shooter: String) -> void:
 		_sound("shell_whine", best_point)
 
 
-# ---- Light rounds (X3 refines them) --------------------------------------------------------------------------------
+# ---- Light rounds (X3): the 25 mm burst and the machine-gun stream -------------------------------------------------
 
 func _muzzle_flash(family: Dictionary, muzzle: Vector3, direction: Vector3, color: Color) -> void:
 	var now := _fx.now
-	_fx.bursts.spawn(BurstSystem.Kind.STAR, muzzle + direction * 0.3, float(family["flash_size"]), 0.06, color.lightened(0.4), now)
-	_fx.lights.flash(muzzle, color, float(family["light_energy"]), float(family["light_range"]), 0.06,
+	# Every round flashes a little differently, so a stream flickers instead of glowing steadily.
+	var flicker := _rng.randf_range(0.7, 1.25)
+	var hot := color.lerp(Color(1.0, 0.9, 0.7), 0.5)
+	_fx.bursts.spawn(BurstSystem.Kind.STAR, muzzle + direction * 0.4, float(family["flash_size"]) * flicker, 0.05, hot, now)
+	_fx.lights.flash(muzzle + direction * 0.5, hot, float(family["light_energy"]) * flicker, float(family["light_range"]), 0.05,
 			LightPool.PRIORITY_MUZZLE - 0.5, now)
+	if family == FAMILIES["burst"]:
+		# The 25 mm's gas: a small puff that drifts off the barrel, one per round, so a burst leaves a little haze.
+		_fx.bursts.spawn(BurstSystem.Kind.SMOKE, muzzle + direction * 0.9, 1.1, 0.8, Color(SMOKE_COLOR.r, SMOKE_COLOR.g, SMOKE_COLOR.b, 0.2),
+				now, direction * 3.0, 3.0, 0.0, 0.4)
 	_piece("muzzle_flash")
 
 
-func _small_hit(family: Dictionary, position: Vector3, direction: Vector3, weak_spot: bool) -> void:
+func _small_hit(model: String, family: Dictionary, position: Vector3, direction: Vector3, weak_spot: bool, target: String) -> void:
 	var now := _fx.now
 	var size := float(family["hit_size"])
-	_fx.bursts.spawn(BurstSystem.Kind.STAR, position - direction * 0.2, size * (1.6 if weak_spot else 1.0), 0.08, Color(1.0, 0.8, 0.5), now)
-	_fx.bursts.spawn(BurstSystem.Kind.SPARKS, position, size * 2.5, 0.35, SPARK_COLOR, now)
-	_piece("weak_spot_hit" if weak_spot else "armor_sparks")
-	if String(family["hit_sound"]) != "":
+	var key := target if target != "" else str(position.snapped(Vector3.ONE * 2.0))
+	if now - float(_last_spark.get(key, -1.0)) >= SPARK_EVERY or weak_spot:
+		_last_spark[key] = now
+		_fx.bursts.spawn(BurstSystem.Kind.STAR, position - direction * 0.2, size * (1.6 if weak_spot else 1.0), 0.1, Color(1.0, 0.8, 0.5), now)
+		_fx.bursts.spawn(BurstSystem.Kind.SPARKS, position, size * 3.0, 0.3 if model == "stream" else 0.4, SPARK_COLOR, now)
+		if model == "burst":
+			# High-explosive 25 mm rounds pop on contact.
+			_fx.bursts.spawn(BurstSystem.Kind.FIREBALL, position, 1.4, 0.3, FIRE_COLOR, now)
+		_piece("weak_spot_hit" if weak_spot else "armor_sparks")
+	if _rng.randf() < float(family.get("ricochet_chance", 0.0)):
+		# Glancing off: a hot streak skipping away off the armor, and now and then its zing.
+		var away := direction.bounce(Vector3.UP).rotated(Vector3.UP, _rng.randf_range(-1.2, 1.2)) \
+				+ Vector3.UP * _rng.randf_range(0.1, 0.6)
+		_fx.tracers.shoot(position, position + away.normalized() * _rng.randf_range(6.0, 11.0), SPARK_COLOR, "ricochet", now,
+				_rng.randf_range(45.0, 70.0))
+		_piece("ricochet")
+		if now - _last_ricochet_sound >= RICOCHET_SOUND_EVERY:
+			_last_ricochet_sound = now
+			_sound("ricochet", position)
+	if String(family["hit_sound"]) != "" and now - float(_last_clank.get(key, -1.0)) >= CLANK_EVERY:
+		_last_clank[key] = now
 		_sound(String(family["hit_sound"]), position)
+	if _last_spark.size() > 64:
+		_last_spark.clear()
+		_last_clank.clear()
 
 
-func _small_miss(family: Dictionary, position: Vector3) -> void:
+func _small_miss(model: String, family: Dictionary, position: Vector3) -> void:
+	var now := _fx.now
 	var size := float(family["hit_size"])
-	_fx.bursts.spawn(BurstSystem.Kind.SMOKE, Vector3(position.x, 0.4, position.z), size * 1.6, 0.6,
-			Color(DUST_COLOR.r, DUST_COLOR.g, DUST_COLOR.b, 0.1), _fx.now, Vector3.ZERO, 0.0, 0.0, 0.8)
+	_fx.bursts.spawn(BurstSystem.Kind.SMOKE, Vector3(position.x, maxf(position.y, 0.4), position.z), size * 2.2, 0.7,
+			Color(DUST_COLOR.r, DUST_COLOR.g, DUST_COLOR.b, 0.0), now, Vector3.ZERO, 0.0, 0.0, 1.0)
+	if model == "burst":
+		_fx.bursts.spawn(BurstSystem.Kind.STAR, position, 1.0, 0.05, Color(1.0, 0.8, 0.5), now)
+		_fx.bursts.spawn(BurstSystem.Kind.DEBRIS, position + Vector3.UP * 0.3, 2.2, 0.6, Color(DIRT_COLOR.r, DIRT_COLOR.g, DIRT_COLOR.b, 0.0), now)
 	_piece("dirt_puff")
 
 

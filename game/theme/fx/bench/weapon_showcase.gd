@@ -9,15 +9,16 @@ const SCENES := {
 	# The tank cannon hitting a tank broadside: the muzzle blast, the glowing shell, the devastating hit.
 	"tank_hit": {"shooter": "tank", "target": "tank", "distance": 34.0, "aim_offset": 0.0, "kill": false, "hold": 0.0,
 			"shots": [["muzzle", 0.05, "shooter"], ["smoke", 0.45, "shooter"], ["flight", 0.22, "mid"], ["impact", 0.5, "target"],
-					["aftermath", 1.1, "target"]]},
+					["aftermath", 1.1, "target"], ["rts_flight", 0.3, "rts"]]},
 	"tank_kill": {"shooter": "tank", "target": "ifv", "distance": 34.0, "aim_offset": 0.0, "kill": true, "hold": 0.0,
-			"shots": [["impact", 0.52, "target"], ["cook_off", 0.85, "target"], ["burning", 2.6, "target_wide"]]},
+			"shots": [["impact", 0.52, "target"], ["cook_off", 0.85, "target"], ["burning", 2.6, "target_wide"], ["rts_cook_off", 0.95, "rts"]]},
 	"tank_miss": {"shooter": "tank", "target": "tank", "distance": 34.0, "aim_offset": 7.0, "kill": false, "hold": 0.0,
 			"shots": [["passing", 0.42, "target_wide"], ["dirt", 1.2, "far"], ["dust", 1.9, "far"]]},
 	"ifv_burst": {"shooter": "ifv", "target": "scout", "distance": 30.0, "aim_offset": 0.0, "kill": false, "hold": 1.6,
-			"shots": [["muzzle", 0.3, "shooter"], ["tracers", 0.75, "mid"], ["hits", 1.2, "target"]]},
+			"shots": [["muzzle", 0.3, "shooter"], ["tracers", 0.75, "mid"], ["hits", 1.2, "target"], ["rts", 1.4, "rts"]]},
 	"scout_stream": {"shooter": "scout", "target": "ifv", "distance": 26.0, "aim_offset": 0.0, "kill": false, "hold": 2.0,
-			"shots": [["muzzle", 0.6, "shooter"], ["stream", 1.0, "mid"], ["hits", 1.5, "target"]]},
+			# Round 2 fires 5 rounds a second, so captures land just after a round leaves (combat is raising the rate).
+			"shots": [["muzzle", 0.65, "shooter"], ["stream", 1.07, "mid"], ["hits", 1.5, "target"], ["rts", 1.91, "rts"]]},
 }
 const SHOOTER_Z := 18.0
 
@@ -145,6 +146,11 @@ func _frame(view: String, shooter: Tank, target: Tank, aim: Vector3) -> void:
 		"target_wide":
 			camera.global_position = target.global_position + Vector3(14.0, 7.0, 13.0)
 			camera.look_at(target.global_position + Vector3(0, 1.0, -3.0), Vector3.UP)
+		"rts":
+			# The skirmish's perspective RTS camera: ~45 m up and back, looking down at the fight.
+			var middle := muzzle.lerp(aim, 0.5)
+			camera.global_position = middle + Vector3(0.0, 42.0, 30.0)
+			camera.look_at(middle, Vector3.UP)
 		"far":
 			var beyond := muzzle + (aim - muzzle).normalized() * 76.0
 			camera.global_position = beyond + Vector3(12.0, 6.0, 12.0)
@@ -156,7 +162,12 @@ func _save(file_name: String) -> void:
 		return
 	var path := _dir.path_join(file_name + ".png")
 	var err := get_viewport().get_texture().get_image().save_png(path)
-	print("FX_SHOT %s %s" % [file_name, error_string(err)])
+	var fx := FxWorld.existing()
+	var stats := ""
+	if fx != null:
+		stats = " tracers=%d bursts=%d events=%d lights=%d last=%s:%s" % [fx.tracers.active_count(), fx.bursts.started,
+				fx.weapons.events, fx.lights.lit_count, fx.weapons.last_family, ",".join(fx.weapons.last_pieces)]
+	print("FX_SHOT %s %s%s" % [file_name, error_string(err), stats])
 
 
 func _seconds(seconds: float) -> void:

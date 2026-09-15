@@ -36,3 +36,6 @@ another. Share of energy above 200 Hz (what laptop and phone speakers play) meas
 | `autocannon_shot.wav` | each 25 mm round (bursts sound thump-thump-thump) | a punchy pitch-dropping thump (255 → 95 Hz) with a hard crack and one echo | 57% |
 | `mg_round.wav` | each machine-gun round | a 0.11 s dry noise crack with a short mechanical knock | 95% |
 | `mortar_launch.wav` | a mortar leaving its tube | a hollow resonant 230 Hz tube pop and a breathy push of gas | 98% |
+| `mg_loop.wav` | a scout's machine gun held down (loops; GunfireLoops gives the 4 nearest gunners a voice) | exactly 11 dry cracks a second, each with its own weight and knock, over the rattle of the action (seamless) | 95% |
+| `ricochet.wav` | a small round glancing off armor (at most one every 0.15 s) | a metallic tick and a zinging FM whine falling 3 kHz → 500 Hz | 100% |
+| `bullet_hit_metal.wav` | a bullet or 25 mm round striking steel (at most one per target every 0.09 s) | three inharmonic partials around 900 Hz with a noise click | 100% |

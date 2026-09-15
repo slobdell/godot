@@ -74,6 +74,8 @@ func attach(game_match: Node) -> void:
 				_on_tank_added(tank)
 	weapons.resolver = find_unit
 	weapons.units = unit_nodes
+	# In the stub, the fx.tracer slot knows where each hitscan round ended and draws it; live K2 draws from events.
+	weapons.draw_hitscan = live
 
 
 func detach() -> void:
@@ -85,6 +87,8 @@ func detach() -> void:
 	_match = null
 	live = false
 	_recent.clear()
+	if weapons != null:
+		weapons.draw_hitscan = true
 
 
 ## Whether stubbed weapon events are flowing (so FxWorld skips its legacy muzzle flash on new tracers).
@@ -120,6 +124,19 @@ func stub_impact(position: Vector3, big: bool) -> bool:
 		if shot["model"] != "arc":
 			_recent.erase(shot)
 	weapons.impact(event)
+	return true
+
+
+## The fx.tracer slot reports a round-2 hitscan round from `from` to `to`. Returns false when no match drives effects.
+func stub_hitscan(from: Vector3, to: Vector3) -> bool:
+	if live or not drives_muzzles():
+		return false
+	var shooter := _nearest_unit(from, 4.0)
+	var unit := find_unit(shooter)
+	var weapon: Dictionary = unit.get("weapon") if unit != null and unit.get("weapon") is Dictionary else {}
+	var reach := float(weapon.get("range", 45.0))
+	var target := _nearest_unit(to, TARGET_RADIUS, shooter)
+	weapons.hitscan(from, to, shooter, target, target == "" and from.distance_to(to) < reach - 0.5)
 	return true
 
 
@@ -174,15 +191,15 @@ func _attribute(position: Vector3) -> Dictionary:
 	return best
 
 
-func _nearest_unit(position: Vector3) -> String:
+func _nearest_unit(position: Vector3, radius := TARGET_RADIUS, exclude := "") -> String:
 	var tanks := _tanks_root()
 	if tanks == null:
 		return ""
 	var best := ""
-	var best_distance := TARGET_RADIUS
+	var best_distance := radius
 	for node in tanks.get_children():
 		var unit := node as Node3D
-		if unit == null:
+		if unit == null or String(unit.name) == exclude:
 			continue
 		var distance := Vector2(unit.global_position.x - position.x, unit.global_position.z - position.z).length()
 		if distance < best_distance:

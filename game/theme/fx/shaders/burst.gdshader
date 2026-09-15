@@ -166,7 +166,8 @@ void fragment() {
 			vec2 velocity = dir * speed * 2.0 * (1.0 - age) - vec2(0.0, 1.8 * age);
 			vec2 tail = head - velocity * 0.12;
 			float d = segment(p, head, tail);
-			light += smoothstep(0.02, 0.0, d) * step(hash(vec2(fi, v_seed)) * 0.6, 1.0 - age);
+			// At least ~7 cm wide whatever the spray's size, so small sprays don't vanish below a pixel.
+			light += smoothstep(max(0.02, 0.07 / max(v_size, 0.1)), 0.0, d) * step(hash(vec2(fi, v_seed)) * 0.6, 1.0 - age);
 		}
 		vec3 hot = mix(vec3(1.0, 0.95, 0.8), tint, age);
 		ALBEDO = hot * light * 3.0 * (1.0 - age * age);

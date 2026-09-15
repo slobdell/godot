@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/theme/cyberpunk/tracer_round.gd" id="1_round"]
+
+[node name="FxTracer" type="Node3D"]
+script = ExtResource("1_round")

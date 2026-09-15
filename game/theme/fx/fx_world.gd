@@ -30,6 +30,8 @@ var engines: EngineSystem
 var fires := FireSites.new()
 var shake := CameraShake.new()
 var sfx: SfxSystem
+## Machine-gun streams as held loops (a few voices for the nearest gunners).
+var gunfire: GunfireLoops
 ## Effect families per K2 fire model (feel X1), fed by `link` from the running match's weapon events.
 var weapons: WeaponFx
 var link: MatchFxLink
@@ -90,6 +92,10 @@ func _init() -> void:
 		add_child(system)
 	sfx = SfxSystem.new()
 	add_child(sfx)
+	gunfire = GunfireLoops.new()
+	gunfire.muted = sfx.muted
+	gunfire.use_streams(sfx.streams)
+	add_child(gunfire)
 	engines = EngineSystem.new()
 	engines.muted = sfx.muted
 	engines.use_streams(sfx.streams)
@@ -116,13 +122,15 @@ func _process(delta: float) -> void:
 	bursts.update(now)
 	decals.update(now)
 	jolts.update(now)
-	tracers.update(lights)
+	weapons.flush(now)
+	tracers.update(lights, now)
 	underglow.update(lights)
 	beams.update(lights, now)
 	fires.update(now, bursts, lights)
 	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
 	if camera != null:
 		engines.update(camera.global_position, delta)
+	gunfire.update(camera.global_position if camera != null else Vector3.ZERO, now)
 
 
 ## Put one of each effect (near-invisible) and every pooled light just in front of the camera, so

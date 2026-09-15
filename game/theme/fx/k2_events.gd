@@ -26,6 +26,13 @@ static func fire_model(weapon: Dictionary) -> String:
 	return "burst" if float(weapon.get("reload", weapon.get("reload_s", 3.0))) < 1.0 else "shell"
 
 
+## How fast a weapon's rounds fly (m/s); 0 = hitscan. Profile v3's `projectile_speed_mps`, else round 2's kinds.
+static func projectile_speed(weapon: Dictionary) -> float:
+	if weapon.has("projectile_speed_mps"):
+		return float(weapon["projectile_speed_mps"])
+	return 0.0 if int(weapon.get("kind", Weapons.Kind.PROJECTILE)) == Weapons.Kind.BEAM else Shell.SPEED
+
+
 ## K2 carries positions as [x, y, z] arrays (serializable); tests and adapters may pass vectors.
 static func to_vector(value: Variant) -> Vector3:
 	if value is Vector3:

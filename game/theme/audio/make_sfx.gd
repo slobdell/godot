@@ -37,6 +37,9 @@ func _initialize() -> void:
 	_seeded("autocannon_shot", _autocannon_shot)
 	_seeded("mg_round", _mg_round)
 	_seeded("mortar_launch", _mortar_launch)
+	_seeded("mg_loop", _mg_loop)
+	_seeded("ricochet", _ricochet)
+	_seeded("bullet_hit_metal", _bullet_hit_metal)
 	quit()
 
 
@@ -454,4 +457,64 @@ func _mortar_launch() -> PackedFloat32Array:
 		phase += TAU * (230.0 - 60.0 * t) / RATE
 		var tube := sin(phase) * exp(-t * 11.0) * minf(1.0, t * 300.0)
 		out[i] = tube * 0.9 + (low - band) * exp(-t * 7.0) * 1.3
+	return out
+
+
+## The scout's machine gun held down (loops): exactly 11 rounds per second so the loop is seamless, each a dry crack with
+## a slightly different weight, over the rattle of the action and a low chug that phones render as its harmonics. brrrt.
+func _mg_loop() -> PackedFloat32Array:
+	var out := _buffer(1.0)
+	var rounds := 11
+	var period := out.size() / rounds
+	var lp := 0.0
+	var rattle := 0.0
+	for r in rounds:
+		var weight := rng.randf_range(0.75, 1.0)
+		var tone := rng.randf_range(170.0, 210.0)
+		var phase := 0.0
+		for j in period:
+			var i := r * period + j
+			var t := float(j) / RATE
+			var noise := rng.randf_range(-1.0, 1.0)
+			lp += (noise - lp) * 0.35
+			phase += TAU * (tone + 180.0 * exp(-t * 70.0)) / RATE
+			var crack := (noise - lp * 0.5) * exp(-t * 90.0) * weight
+			var knock := tanh(sin(phase) * 3.0) * exp(-t * 38.0) * 0.55 * weight
+			rattle += (noise * 0.25 - rattle) * 0.08
+			out[i] = crack + knock + rattle * (0.6 + 0.4 * exp(-t * 20.0))
+	for i in range(rounds * period, out.size()):
+		out[i] = 0.0
+	return out
+
+
+## A round glancing off armor: a bright metallic tick and a zinging whine that falls away (pee-yoww).
+func _ricochet() -> PackedFloat32Array:
+	var out := _buffer(0.55)
+	var phase := 0.0
+	var mod := 0.0
+	var start := rng.randf_range(2600.0, 3200.0)
+	for i in out.size():
+		var t := float(i) / RATE
+		var freq := start * exp(-t * 2.2) + 500.0
+		mod += TAU * 37.0 / RATE
+		phase += TAU * freq * (1.0 + 0.012 * sin(mod)) / RATE
+		var zing := sin(phase) * exp(-t * 5.5) * minf(1.0, t * 150.0) * 0.6
+		var tick := rng.randf_range(-1.0, 1.0) * exp(-t * 300.0)
+		out[i] = zing + tick
+	return out
+
+
+## A bullet or 25 mm round striking steel: a short hard clank.
+func _bullet_hit_metal() -> PackedFloat32Array:
+	var out := _buffer(0.16)
+	var ratios := [1.0, 2.31, 3.87]
+	var phases := [0.0, 0.0, 0.0]
+	var base := rng.randf_range(820.0, 980.0)
+	for i in out.size():
+		var t := float(i) / RATE
+		var ring := 0.0
+		for k in ratios.size():
+			phases[k] += TAU * base * float(ratios[k]) / RATE
+			ring += sin(phases[k]) * exp(-t * (28.0 + k * 12.0)) / (k + 1)
+		out[i] = ring * 0.8 + rng.randf_range(-1.0, 1.0) * exp(-t * 160.0) * 0.9
 	return out
