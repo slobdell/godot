@@ -68,3 +68,24 @@ func test_duels_follow_the_counters() -> void:
 	assert_true(ifv_vs_scout > 1.5, "an IFV beats a scout (%.2f)" % ifv_vs_scout)
 	assert_true(ifv_vs_tank < 1.0, "an IFV loses to a tank head-on (%.2f)" % ifv_vs_tank)
 	assert_true(scout_vs_tank > 1.0, "a scout circling a slow turret and shooting its rear wins (%.2f)" % scout_vs_tank)
+
+
+func test_a_burst_weapon_counts_every_round_in_the_burst() -> void:
+	var single := {"kind": Weapons.Kind.PROJECTILE, "penetration": 5.0, "range": 60.0, "damage": 15.0, "reload": 1.8}
+	var burst := single.duplicate()
+	burst["burst_count"] = 4
+	var geometry := {"distance": 20.0, "face": "side"}
+	assert_near(Matchups.effective_dps(IFV, burst, SCOUT, geometry, false),
+			4.0 * Matchups.effective_dps(IFV, single, SCOUT, geometry, false), 0.001, "four rounds per pull: four times the damage")
+
+
+func test_the_engine_deck_lets_a_light_gun_through() -> void:
+	var rear := Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "rear"}, false)
+	var deck := Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "rear", "weak_spot": true}, false)
+	assert_true(deck > 1.5 * rear, "a stream on the engine deck (%.2f dps) beats one on the rear plate (%.2f)" % [deck, rear])
+	var side_flag := Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "side", "weak_spot": true}, false)
+	assert_near(side_flag, Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "side"}, false), 0.001,
+			"the deck only faces astern")
+	assert_near(Matchups.WEAK_SPOT_COS, cos(deg_to_rad(Armor.WEAK_SPOT_ARC_DEG)), 0.0001, "the arc mirrors the rules")
+	assert_true(Matchups.is_weak_spot(Vector3(0, 0, -1), Vector3(0.2, 0, -1).normalized()), "a round up the tailpipe")
+	assert_true(not Matchups.is_weak_spot(Vector3(0, 0, -1), Vector3(1, 0, -1).normalized()), "a quartering round hits the plate")

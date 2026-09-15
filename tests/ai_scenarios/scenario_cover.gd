@@ -65,6 +65,8 @@ func test_a_healthy_tank_near_a_wall_fights_from_cover() -> void:
 	var s := AiScenario.create(self)
 	var guns := _stage(s, 1)
 	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", GREEN_START, 0.0)
+	# Durable since CP2 (round-3 cannons: 320 per shell, three hits kill): this measures fighting from cover, not survival.
+	AiScenario.make_durable(me)
 	var samples := 0
 	var hidden := 0
 	var back_in_cover_after_shot := 0
@@ -86,7 +88,41 @@ func test_a_healthy_tank_near_a_wall_fights_from_cover() -> void:
 	var fraction := float(hidden) / maxf(samples, 1)
 	print("MEASURE ai_cover_fire hidden %.0f%% of 20 s, shots %d, returns to cover %d, alive %s" % [fraction * 100.0,
 			s.shots_by(me), back_in_cover_after_shot, me.is_alive()])
-	assert_true(me.is_alive(), "it survives the duel (the gun is durable, so hiding is what saves it)")
 	assert_true(fraction >= 0.5, "it spends most of the fight out of the gun's sight (%.0f%%)" % (fraction * 100.0))
-	assert_true(s.shots_by(me) >= 4, "and still shoots back from cover (%d shots)" % s.shots_by(me))
+	# At least half the shots its reload allows over the 20 s measured.
+	var reload := float(Weapons.profile(me.weapon_id).get("reload", 2.5))
+	var expected := int(20.0 / reload * 0.5)
+	assert_true(s.shots_by(me) >= expected, "and still shoots back from cover (%d shots, at least %d)" % [s.shots_by(me), expected])
 	assert_true(back_in_cover_after_shot >= 2, "it goes back into cover after firing, repeatedly (%d times)" % back_in_cover_after_shot)
+
+
+## X3 reload windows: the same wall duel for a brain variant, with the brain made durable so hits can be counted:
+## [hits it took, shots it fired].
+func _cover_duel(variant: String) -> Array:
+	BrainVariants.use(Match.Team.GREEN, variant)
+	var s := AiScenario.create(self)
+	var guns := _stage(s, 1)
+	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", GREEN_START, 0.0)
+	AiScenario.make_durable(me)
+	var hits := 0
+	var last := me.health + me.shield
+	await s.start()
+	for tick in 60 * 30:
+		await s.step()
+		var now := me.health + me.shield
+		if now < last - 5.0:
+			hits += 1
+		last = now
+	var result := [hits, s.shots_by(me), s.shots_by(guns[0])]
+	s.dispose()
+	BrainVariants.reset()
+	return result
+
+
+func test_peeking_while_the_enemy_reloads_takes_fewer_hits() -> void:
+	var plain: Array = await _cover_duel("x3")
+	var timed: Array = await _cover_duel("x4")
+	print("MEASURE ai_reload_window over 30 s: x3 took %d hits and fired %d (gun fired %d); x4 took %d and fired %d (gun fired %d)" % [
+			plain[0], plain[1], plain[2], timed[0], timed[1], timed[2]])
+	assert_true(int(timed[0]) < int(plain[0]), "timing peeks to the gun's reload takes fewer hits (%d vs %d)" % [timed[0], plain[0]])
+	assert_true(int(timed[1]) >= 3, "and it still fights (%d shots)" % timed[1])

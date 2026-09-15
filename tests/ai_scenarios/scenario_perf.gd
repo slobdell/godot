@@ -27,6 +27,7 @@ func test_fifty_brains_stay_inside_the_cpu_budget() -> void:
 		tank.global_position = Vector3(x if tank.team == Match.Team.GREEN else -x, 0, 70 if tank.team == Match.Team.GREEN else -70)
 	await s.start()
 	OrderController.profile_usec = 0
+	TankBrain.profile_parts = {}
 	OrderController.profiling = true
 	var los_before := CoverMap.los_computed
 	var queries_before := CoverMap.los_queries
@@ -41,5 +42,8 @@ func test_fifty_brains_stay_inside_the_cpu_budget() -> void:
 	var alive := s.game_match.alive_count(Match.Team.GREEN) + s.game_match.alive_count(Match.Team.RUST)
 	print("MEASURE ai_usec_per_tick %.0f at 50 brains (budget %.0f); %d ticks fighting, %d alive at the end; LOS %d queries, %d computed" % [
 			per_tick, BUDGET_USEC, fighting_ticks, alive, CoverMap.los_queries - queries_before, CoverMap.los_computed - los_before])
+	var parts: Array = TankBrain.profile_parts.keys().map(func(part: String) -> String:
+		return "%s %.0f" % [part, float(TankBrain.profile_parts[part]) / ticks])
+	print("MEASURE ai_usec_per_tick_parts %s (the rest: executing orders, aiming, firing)" % ", ".join(parts))
 	assert_true(fighting_ticks > 60 * 5, "the armies actually fight during the measurement (%d ticks)" % fighting_ticks)
 	assert_true(per_tick < FAIL_USEC, "AI cost stays near budget (%.0f usec per tick)" % per_tick)

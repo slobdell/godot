@@ -13,6 +13,7 @@ extends Node
 ##    "arrive": 0.5..10 meters (optional, default ARRIVE_RADIUS)}
 ##       reverse = back up to the point, front armor kept toward where you came from
 ##       arrive = how close counts as there (brains use ~1 m for hide and peek spots)
+##       direct = true: steer straight at the point, no navmesh path (brains' short, already-checked hops)
 ##   {"type": "drive", "throttle": float, "turn": float, "seconds": float}
 ##   {"type": "face", "x": float, "z": float}   turn in place to point the hull (front armor) at a spot
 ## Weapon orders (one at a time):
@@ -95,6 +96,15 @@ var _stuck_time := 0.0
 var _unstick_left := 0.0
 var _scan_pick: Tank = null
 var _scan_left := 0
+## Stuck detection (round-3 X1): consecutive ticks a move_to made no progress toward its goal (0 while arrived or not
+## driving to a point), and ticks since this unit last pulled the trigger. Brains time out options with them.
+var stalled_ticks := 0
+## _wheel_radius() per unit type (the catalog doesn't change mid-match).
+var _wheel_radius_unit := ""
+var _wheel_radius_value := 0.0
+var ticks_since_fire := 0
+var _progress_goal := Vector3.INF
+var _progress_best := INF
 
 ## A4 fire discipline: consecutive ticks the gun was ready and aimed but held because a friend was in the line
 ## of fire (or the splash), and which friend. Brains read it to move and clear the lane.
@@ -106,6 +116,12 @@ var hold_for_friends := true
 static var held_for_friends := 0
 ## A blocked lane is re-checked only every this many ticks (a friend doesn't clear a lane in one tick).
 const LANE_RECHECK_TICKS := 3
+## Local avoidance of friends in the way (see _around_friends), meters.
+const AVOID_LOOKAHEAD := 10.0
+const AVOID_WIDTH := 3.2
+const AVOID_CLEARANCE := 5.0
+## Wheels move on to the next path waypoint within this share of their turning radius (at least WAYPOINT_RADIUS).
+const WHEELS_WAYPOINT_RADII := 0.8
 var _lane_hold_left := 0
 
 
@@ -170,12 +186,31 @@ func compute_command(delta: float) -> TankCommand:
 		_held_aim = tank.turret_forward()
 	# Far away, so the tank's own movement doesn't swing the aim (parallax).
 	var cmd := TankCommand.new(0.0, 0.0, tank.global_position + _held_aim * HELD_AIM_DISTANCE)
+	ticks_since_fire += 1
 	_sense()
 	_apply_reflexes()
+	var clock := Time.get_ticks_usec() if profiling else 0
 	_apply_move(cmd, delta)
 	_apply_unstick(cmd, delta)
+	if profiling:
+		TankBrain.profile_parts["move"] = int(TankBrain.profile_parts.get("move", 0)) + Time.get_ticks_usec() - clock
+		clock = Time.get_ticks_usec()
 	_apply_weapon(cmd)
+	if profiling:
+		TankBrain.profile_parts["weapon"] = int(TankBrain.profile_parts.get("weapon", 0)) + Time.get_ticks_usec() - clock
+	if cmd.fire:
+		ticks_since_fire = 0
 	return cmd
+
+
+## A new order from the player: drop the unstick routine, the old path, and stall bookkeeping, so the new order
+## drives this very tick (K1 response guarantee).
+func interrupt() -> void:
+	_unstick_left = 0.0
+	_stuck_time = 0.0
+	_repath_left = 0.0
+	stalled_ticks = 0
+	_progress_goal = Vector3.INF
 
 
 func _sense() -> void:
@@ -227,20 +262,35 @@ func _log_event(text: String) -> void:
 # ---- Movement ------------------------------------------------------------------------
 
 func _apply_move(cmd: TankCommand, delta: float) -> void:
+	if move_order["type"] != "move_to":
+		stalled_ticks = 0
 	match move_order["type"]:
 		"move_to":
 			var goal := Vector3(move_order["x"], 0.0, move_order["z"])
-			var waypoint := _next_waypoint(goal, delta)
-			var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
-			var drive: Vector2 = steer.call(tank.global_position, -tank.global_basis.z, waypoint,
-					clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5,
-				_remaining_path_distance(goal))
+			# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
+			var direct: bool = move_order.get("direct", false)
+			var waypoint := _around_friends(goal if direct else _next_waypoint(goal, delta))
+			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
+			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
+			var drive: Vector2
+			var radius := _wheel_radius()
+			if radius > 0.0:
+				# K3 wheels drive like cars: pure pursuit, three-point turns (Steering.drive_toward_wheels).
+				var wheels := Steering.reverse_toward_wheels if move_order.get("reverse", false) else Steering.drive_toward_wheels
+				drive = wheels.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+			else:
+				var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
+				drive = steer.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
+			_track_progress(goal, drive, direct)
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
 			cmd.turn = turn_only.y if absf(turn_only.y) > 0.08 else 0.0
+			if _wheel_radius() > 0.0 and cmd.turn != 0.0 and absf(turn_only.y) >= 1.0:
+				# Wheels can't turn standing still: creep round (combat's wheels roll along the arc on a pure turn command).
+				cmd.throttle = Steering.WHEELS_MIN_THROTTLE
 		"drive":
 			_drive_elapsed += delta
 			if _drive_elapsed <= float(move_order["seconds"]):
@@ -248,6 +298,63 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				cmd.turn = move_order["turn"]
 			else:
 				move_order = {"type": "stop"}
+
+
+## Local avoidance: a friend parked in the way within AVOID_LOOKAHEAD meters (within AVOID_WIDTH of the line to the
+## waypoint) is passed beside, AVOID_CLEARANCE meters off its center on the side the line already leans to. Navmesh paths
+## ignore units, move_and_slide stops a hull against another, and wheels can't pivot round one (a wheeled IFV looped its
+## unstick routine against a parked tank for 8 s). Brains only (they share the per-tick tank table).
+func _around_friends(waypoint: Vector3) -> Vector3:
+	var brain := self as TankBrain
+	if brain == null or brain.game_match == null:
+		return waypoint
+	var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	var to_waypoint := Vector3(waypoint.x, 0.0, waypoint.z) - here
+	var distance := to_waypoint.length()
+	if distance < 1.0:
+		return waypoint
+	var direction := to_waypoint / distance
+	var nearest := INF
+	var detour := waypoint
+	for ally: Tank in AiTickCache.team_tanks(brain.game_match, tank.team):
+		if ally == tank or not ally.is_alive():
+			continue
+		var offset := Vector3(ally.global_position.x - here.x, 0.0, ally.global_position.z - here.z)
+		var along := offset.dot(direction)
+		if along <= 0.0 or along >= minf(distance + AVOID_WIDTH, AVOID_LOOKAHEAD) or along >= nearest:
+			continue
+		var lateral := offset.x * direction.z - offset.z * direction.x
+		if absf(lateral) >= AVOID_WIDTH:
+			continue
+		nearest = along
+		# Pass on the side away from it (ties: its right).
+		var across := Vector3(direction.z, 0.0, -direction.x)
+		detour = Vector3(ally.global_position.x, 0.0, ally.global_position.z) - across * (AVOID_CLEARANCE if lateral >= 0.0 else -AVOID_CLEARANCE)
+	return detour
+
+
+## The minimum turning radius when this unit rolls on wheels (K3 `locomotion` "wheels", `min_turn_radius_m`), else 0.
+func _wheel_radius() -> float:
+	if _wheel_radius_unit != tank.unit_id:
+		_wheel_radius_unit = tank.unit_id
+		_wheel_radius_value = 0.0
+		if String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels":
+			_wheel_radius_value = maxf(float(Units.stat(tank.unit_id, "min_turn_radius_m", 0.0)), 0.5)
+	return _wheel_radius_value
+
+
+## Counts ticks without getting at least 0.5 m closer (along the path) to the current move goal.
+func _track_progress(goal: Vector3, drive: Vector2, direct := false) -> void:
+	var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
+	if _flat_distance(goal, _progress_goal) > 2.0 or drive == Vector2.ZERO:
+		_progress_goal = goal
+		_progress_best = remaining
+		stalled_ticks = 0
+	elif remaining < _progress_best - 0.5:
+		_progress_best = remaining
+		stalled_ticks = 0
+	else:
+		stalled_ticks += 1
 
 
 ## The point to steer at now: the next navmesh waypoint toward `goal`, or `goal`
@@ -259,8 +366,10 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		_path_goal = goal
 		_path = Pathing.find_path(tank, tank.global_position, goal)
 		_path_index = 0
+	# Wheels can't thread a waypoint the way tracks pivot onto one: they move on to the next one a turning radius out.
+	var reach := maxf(WAYPOINT_RADIUS, _wheel_radius() * WHEELS_WAYPOINT_RADII)
 	while _path_index < _path.size() \
-			and _flat_distance(tank.global_position, _path[_path_index]) < WAYPOINT_RADIUS:
+			and _flat_distance(tank.global_position, _path[_path_index]) < reach:
 		_path_index += 1
 	if _path_index >= _path.size():
 		return goal
@@ -329,7 +438,13 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	var muzzle := tank.turret.global_position
 	var aim := target.global_position
 	if weapon["kind"] == Weapons.Kind.PROJECTILE:
-		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity, float(weapon.get("projectile_speed_mps", Shell.SPEED)))
+		# K2 weapon profile v3: each weapon's own round speed (a 25 mm round flies far faster than a tank shell).
+		var round_speed := float(weapon.get("projectile_speed_mps", 0.0))
+		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity,
+				round_speed if round_speed > 0.0 else Shell.SPEED)
+	var brain := self as TankBrain
+	if brain != null and brain.game_match != null:
+		aim += Difficulty.aim_offset(float(Difficulty.for_team(tank.team)["aim_wander_m"]), brain.game_match.tick, tank.slot)
 	_cover(aim, cmd)
 	# Rules R2 (minimal hook; the ai stream owns the real behavior): a fixed-mount gun (the scout) only
 	# points inside its fire arc, so a halted unit swings its hull onto the target.
@@ -479,6 +594,8 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'target' needs a string 'name'"
 	if order.has("reverse") and typeof(order["reverse"]) != TYPE_BOOL:
 		return "'reverse' must be true or false"
+	if order.has("direct") and typeof(order["direct"]) != TYPE_BOOL:
+		return "'direct' must be true or false"
 	if order.has("fallback") and typeof(order["fallback"]) != TYPE_BOOL:
 		return "'fallback' must be true or false"
 	if order.has("speed") and not (typeof(order["speed"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["speed"]))):

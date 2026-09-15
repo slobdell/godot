@@ -39,6 +39,176 @@ deviations.
 | AI ladder | `game/ai/brain_variants.gd`, `tools/ai_ladder.py`, `make ai-ladder` | Variants are feature switches read from `--green-brain/--rust-brain` by the brain itself (no match-runner edits) |
 | Perf ≤ 1 ms at 50 units | ~7–9 ms (see Results) | Not met; think LOD (18 ticks with no enemy within 130 m) and per-tick shared tables built; the rest is listed under Results |
 
+## Round 3: alive and responsive (2026-09-15, [streams/ai.md](streams/ai.md) X1–X6)
+
+The lead after round 2: *"Tanks will just sit there stationary and shoot each other - there's no intent at evasive
+action, no intent of trying to shoot a weak spot, no intent of trying to circle your opponent … the units just don't
+feel controllable right now, they seem to get stuck in some particular state and then not respond to my clicks."*
+
+### Orders always win (X1)
+
+| Piece | Code | What it does |
+|---|---|---|
+| K1 adapter | `game/ai/order_feed.gd` | Reads control's `Orders` duck-typed (`Match.orders`, or the object `Orders.attach` stored on the match); normalizes `current(unit)` to `{verb, goal, target, issued_tick, speed}`: the per-unit world `goal` (control's `to` + formation slot), `goal_position(unit)` for a follow's live station, `pace_factor(unit)` as speed, `station(unit)` as the idle post. `TankBrain.EXECUTES_ORDERS` tells control's stand-in executor to leave brains alone |
+| Response guarantee | `TankBrain._poll_order` | Polled every think tick and whenever `order_changed` names the unit; a new order interrupts the unstick routine and commitment and is executed the same tick (measured worst 1 tick) |
+| What vs how | `TankBrain.ORDER_OPTIONS`, `_obey` | The verb filters the options: move → MOVE; hold → HOLD; follow → FOLLOW; attack → only fights on its target, PURSUE when out of sight; attack-move → MOVE at 0.55 unless a visible enemy in weapon range + 10 m gets fought (+0.5), RETREAT only when about to die |
+| Completion | `_update_order_progress` | Brains call `Orders.complete`: move on arrival (3.5 m, or 12 m after 3 s without progress), attack-move the same once nothing is engaged, attack/follow when the other unit is gone, stop once below 0.5 m/s |
+| Regroup | idle posts | Every finished order leaves a post; an idle unit fights within 30 m of it (the situation's objective + leash) and drives back beyond that. No scouting, contesting, or resupply trips on its own |
+| No stuck states | `_timed_out`, `cooldowns` | An option kept past its timeout (fights: since the last shot) or driving 3 s without progress (`OrderController.stalled_ticks`) goes on a 5 s cooldown (×0.25). Ladder: with vs without, 26–22 over two doctrines |
+
+Scenarios: `tests/ai_scenarios/scenario_orders.gd` (`StubOrders` stands in for control's `Orders` until CP1); pure
+decide tests: `tests/test_ai_orders.gd`.
+
+### Fighting on the move (X2) and evasion and weak spots (X3)
+
+**Literature.** Context steering (Andrew Fray, *Game AI Pro 2*, 2015: interest and danger maps over a ring of
+directions, the choice with the best interest among the least danger), steering behaviors (Reynolds, GDC 1999:
+evade, pursue with prediction), and armor doctrine (short halts; angling the hull so the front takes the hits).
+
+**`CombatMotion`** (`game/ai/combat_motion.gd`, pure): 16 directions × {forward, reverse}, each judged where it ends
+after ~1.2 s of driving. Interest terms: the weapon's range band, tangential motion, keeping the chosen side (a jink
+flips it), working toward the target's side and rear, front armor toward every gun that can shoot (the target
+counting double), continuity. Costs: seconds of hull turn (a pivot is standing still), reversing. Dangers
+(subtracted): obstacles on the path (CoverMap), arena edges, ramming the target, crowding a friend, and an incoming
+round that would hit (`would_be_hit`: current velocity, hull turn, acceleration, stepped closest approach).
+
+| Style | Who (`TankBrain.motion_style`) | How it fights |
+|---|---|---|
+| `strafe` | turret units, front armor < 6 (IFV, Lancer, Burner) | Circles inside the band, jinks sides every 1.5–4 s per unit; jinks shuffle forward/back instead of pivoting |
+| `angle` | front armor ≥ 6 (the tank) | A **weave**: the hull stays within 50° of the target and rocks forward and back along it; a **short halt** brakes so the gun is loaded as the hull stops, fires, then moves again while reloading |
+| `run` | fixed guns (the scout) | Attack runs aimed past the target's flank, break away inside 9 m, turn back in beyond 30 m on the other flank |
+
+A **busy target** (its gun on someone else) flips the priorities: flank weight up, own armor weight down, no side-on
+mask, so the unit not being shot at swings wide for the side (`why`: "going for its side"). `IncomingFire`
+(`game/ai/incoming_fire.gd`) reads `Match.incoming_projectiles` (K2) when combat ships it and the Shells container
+until then; a new round on its way triggers a think at once.
+
+Brain variants: **x2** = a6 + `combat_motion`; **x3** = x2 + `dodge`. The champion stays a6 until a ladder says
+otherwise (results below).
+
+### Measurements so far (round-2 weapons, builder0)
+
+| Measure | a6 (round 2) | x2 / x3 |
+|---|---|---|
+| Tank duel: time moving | 1% | 79–84% |
+| Tank duel: hits on the front | 100% | 36% (circling side-on) → 100% (weave) |
+| Tank mirror (5 v 5) hits by face | front 66%, side 31%, rear 3% | first cut front 36–39%, side 47–49%, rear 15%; weave front 56%, side 35%, rear 8% |
+| Two tanks on one: time seeing its side or rear | | 0 s (weave only) → 5.0 s of 20 (busy-target flanking) |
+| Scout ordered onto a tank (x2) | | 4 attack runs in 25 s, all 22 hits into its side or rear |
+| IFV vs a cannon at 30–45 m: shells that miss | 0% | 6–15% (noise over 33 shells) |
+| Ladder vs a6, individuals mirror | | x2 0–24 (first cut) → 3–13 (short halt) → x3 4–12 (weave) → **14–10** (turn cost, busy-target flanking) → **15–9** (after the CPU pass) |
+| Ladder vs a6, combined_arms | | x2 12–12 → x3 **17–7** → **21–3** |
+| CPU, 50 brains, builder0, back to back | 3.9–4.6 ms per tick | x3 5.0–6.1 ms → **4.7 ms** |
+
+Reading: moving tanks lost mirrors because they showed their sides (the armor multiplier is 0.5 front, 1.0 side,
+1.5 rear) and fired on the move with a turret the hull drags off target; the weave and the short halt recovered
+most of it, and charging for hull turns (a pivot is standing still) plus flanking only targets busy with someone
+else made x3 the champion (`BrainVariants.CHAMPION`, 2026-09-15). CPU pass: CombatMotion's hops skip the navmesh
+(`direct` move orders), plans are reused for 15 ticks unless a round, a jink, the target, or the run phase changes,
+"can that gun shoot me" uses a 2 m line-of-sight memo, and ally lists and sorted intel names are shared per tick. **Dodging is physically marginal with round-2 shells:** 70 m/s at 25–45 m arrives in ~0.5 s, in which a
+14 m/s² hull moves ~2 m off the shooter's lead, less than half a hull; the dodge threshold scenario is pending until
+combat's slower, visible tank shells land.
+
+### Driving, reload windows, and tools (round 3, later)
+
+- **Wheels** (`Steering.drive_toward_wheels` / `reverse_toward_wheels`, for K3 `locomotion: wheels`): pure pursuit, full
+  lock while the point is more than 45° off the nose, a three-point turn only while the point is inside the turning
+  circle on its side; wheeled units finish a move within 0.6 turning radii and move on to the next path waypoint within
+  0.8 (a car orbits a point it must hit exactly). Against a car double of combat's wheels: 60 m behind in 8.9 s, 9 m
+  behind in 5.4 s, inside the turning circle in 3.5 s.
+- **Local avoidance** (`OrderController._around_friends`): a friend parked within 10 m of the path is passed 5 m beside it;
+  navmesh paths ignore units and a wheeled unit can't pivot round one.
+- **Reload windows** (variant x4, opt-in): brains see when an enemy's slow gun fired (`AiTickCache.gun_ready_in`, from
+  `Tank.fired`), keep a cover-fire target through its reload, peek only while it reloads or looks away, bait a watching
+  gun with a flick out of cover, and short-halt only when the target can't punish it. Wall duel vs a durable cannon: 8
+  hits taken → 4. Not better on the ladder (x4 vs x3: 31–41 round-2 weapons, 36–36 combat's), so opt-in.
+- **Difficulty** (`Difficulty`, `--<team>-difficulty=easy|normal|hard`): think interval and a deterministic aim wander.
+  Normal beats easy 15–1 (easy hits 53% vs 74%); hard ≈ normal (8–8).
+- **Explanation overlay** (`AiExplainOverlay`, `--ai-explain[=green|rust]`): lines to each brain's move goal (colored by
+  what it's doing) and target; `make ai-shots` draws it.
+
+### Preview of the checkpoints (round-3 weapons and wheels)
+
+A throwaway clone with `stream/control` and `stream/combat` merged onto `stream/ai` (2026-09-15; the official numbers
+come after the real merge): 550 of 551 tests after the integration fixes above; commander v6 vs plain x3 38–26; brains x3
+vs a6 51–69 pooled (individuals 18–14, balanced 19–25, combined_arms 14–30). With 320-damage shells on a 5 s reload the
+first accurate shot decides a duel: a parked tank keeps its 50°/s turret on the target while a moving one drags it off and
+fires with a 2.5× moving spread. Probes that didn't close the gap: no dodging, matchup targeting, shoot-and-scoot, halting
+only for 3 s+ reloads. Requests to combat: turret stabilization and a softer moving-fire spread.
+
+### After the real merges: weak spots and the official X6 (round-3 weapons)
+
+**Weak spots** (combat's request b; `Armor.is_weak_spot`, `Match.weak_spot_multiplier`). `Matchups` now estimates what
+a round-3 weapon really does: `burst_count` × `damage` per reload (an IFV's 4-round burst was counted as one round),
+and, with `weak_spot` in the geometry, penetration against the engine deck (rear armor × `Armor.WEAK_SPOT_ARMOR_FRACTION`).
+`Matchups.deck_gain(weapon, defender)` says how much more a deck lets through than the rear plate: a scout's machine gun
+on a tank ×1.79, an IFV's autocannon ×1.5, a cannon or laser ×1 (already at the penetration cap from behind).
+
+Feature `weak_spots` (variant **x4mw** = x4 + matchups + weak spots): an orbiting fixed gun circles the *short* way to
+the target's stern, only starts its attack run from inside the 45° rear arc, and also starts one whenever a slow gun is
+still reloading, wherever its turret points. A scout on a stopped tank, 25 s: **57 of 71 hits on the engine deck** (19 of
+46 before), the tank losing 173 instead of 84. Two other ways of seeking decks were measured and dropped: attack runs
+that circle to the stern first (a scout on a Lancer: 37 rounds → 24, 6 deck hits → 2 — a straight run's break-away
+already passes astern), and FLANK coming in astern (four ladders and an IFV-pair scenario ran byte-identical with and
+without it: flankers pick ENGAGE with combat motion instead).
+
+| Measure (builder0, round-3 weapons) | Before | After |
+|---|---|---|
+| Scout (matchup brain) vs a stopped tank: hits on the engine deck | 19 of 46 | **57 of 71** |
+| …tank hull + shield lost in 25 s | 84 | **173** |
+| Scout circling a tank (`ai_scout_orbit`) | 39°/s, 35 rounds, tank untouched | 12°/s astern, 98 rounds, hull 134, shield 0 |
+
+**Champion after the merges: x4** (x3 + reload windows). Two independent four-army ladder runs (96 and 144 matches per
+army, both colors) put **x4 over x3 92–68** head to head. The deck-seeking **x4mw** (x4 + matchups + weak spots) beat x4
+**93–67** over the same runs and led three of four tables, but is only even with x3 (48–48), is last on the all-armor
+army (29–43), and drives scouts onto a tank's engine deck at 3 m — which rules' catalog test forbids
+(`test_units_roster::test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range`). It stays opt-in
+(`--green-brain=x4mw`) until rules and combat settle what a scout's counter is. Pooled wins over the four armies (288
+matches each): x4mw 148, x4 146, x3m 144, x3 138 — a field within noise of itself, which is why the head-to-head rule
+decides.
+
+**A boxed-in unit used to freeze.** In `build/ai-shots/scout_runs_16s.png` the scout sat still against its target for
+6 s. `CombatMotion` had dropped every candidate (each end inside a grown obstacle, or the path to it crossing one) and
+the brain fell back to "face", so the unit fired from a standstill — exactly the round-2 complaint. It now takes the
+best-scoring direction that stays inside the arena and re-plans from the new spot: the same scout makes 3 full attack
+runs over 25 s instead of parking at 10 m.
+
+**Lone units and the center crate** (request f): two lone tanks with no objective, from mirror spawns, drove the
+straight base-to-base line and passed **9 m apart, never seeing each other** — the line between two mirror positions
+always runs through the center crate, so mirror-image side lanes don't help either (48 m, still unseen). A lone unit
+with no objective now takes a side lane to the midfield **on the same side of the map for both teams**, so they meet in
+it head-on: first sighting at 61 m after 7.3 s.
+
+### A CPU that maneuvers (X5)
+
+`CpuCommander` policies v3–v6 (`game/ai/cpu_commander.gd`, `--green-commander=<policy>` / `--rust-commander=<policy>`)
+plan the whole army every second by squad role (`squad_class`: fast = mostly scouts, support = mostly artillery or
+Lancers, line = the rest), in shapes a player can see: **muster** at a rally point ahead of base (line in a wedge,
+scouts in a V, support in a column), **advance** with the main line in a wedge and the others beside it, scouts
+screening ahead, support trailing; on contact **engage**: the strongest line squad assaults the enemy's center, other
+line squads swing to a flank point 45 m off the axis in a wedge and assault from there, scouts charge in a V; worn
+squads **rest** (break contact below 35% hull + shield, back at 70%); clearly outmatched far off, the army
+**withdraws**. The scout V reads in a real fight: 13.2 s of a 45 s swarm attack at speed, spread up to 72 m
+(`scenario_commander.gd`). Commands go out as SquadCommands (C7) so doctrines and the skirmish CPU use them unchanged.
+
+The variants, each one change measured against the last (ladder on **same-army mirrors**: `tests/ai_scenarios/armies/`
+holds the CPU archetypes as fixed armies, because `cpu:` armies are seeded per side and a `cpu:` ladder compared armies,
+not commanders; 12 matches per pairing, brain x3 everywhere):
+
+| Policy | Change | vs plain x3: armor | balanced | swarm | anvil_hammer | total |
+|---|---|---|---|---|---|---|
+| v2 (round 2) | squad-by-squad assault | | | | 3–13 | |
+| v3 | role-based army plan above | 3–9 | 9–3 | 9–3 | 7–5 | 28–20 |
+| v4 | flank only with a 1.15× edge, wide advance, scouts charge only artillery/Lancers | 5–7 | 11–1 | 12–0 | 2–10 | 30–18 |
+| v5 | v3, but a squad flanks only with ≥ 40% of the main squad's strength | 5–7 | 8–4 | 9–3 | 7–5 | 29–19 |
+| **v6** (default) | v5's flanking + v4's wide advance and scout rule (16 matches per pairing) | 6–10 | 13–3 | 16–0 | 10–6 | **45–19** |
+
+Head to head v4 beat v3 30–18 and v5 32–16; v6 and v4 split 31–33, and v6 beats plain brains where v4 doesn't (anvil_hammer 10–6 vs 3–13). Reading: v5's flanking wins with tank-heavy armies (armor, anvil_hammer);
+v4's scouts, left holding their screening spot ahead of the line, shred light armies with machine guns from there
+(swarm 12–0, 272 kills); charging the enemy line with scouts is worth it only against artillery and Lancers. Two traps
+found on the way: every policy but "v3" fell back to v2's planner (a dispatch bug; the first v4 and v5 numbers were v2's),
+and `cpu:` mirrors aren't mirrors.
+
 ## 1. Decision making: considerations and response curves
 
 **Literature.** Dave Mark's *Behavioral Mathematics for Game AI* (2009) and the GDC talks with Kevin Dill

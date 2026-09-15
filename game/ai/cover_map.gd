@@ -19,6 +19,8 @@ const EYE_HEIGHT := Perception.EYE_HEIGHT
 const CELL := 12.0
 ## Line-of-sight inputs snap to this grid (meters).
 const QUANTUM := 0.5
+## ...or this one for clear_line_coarse.
+const COARSE_QUANTUM := 2.0
 ## Tactical points ring each feature at these clearances (meters from its faces)...
 const RING_CLEARANCES := [3.5, 7.5]
 ## ...every this many meters along the ring.
@@ -43,6 +45,7 @@ static var los_queries := 0
 static var los_computed := 0
 
 var _grid := {}
+var _coarse_memo := {}
 var _memo := {}
 var _stamp := PackedInt32Array()
 var _stamp_id := 0
@@ -163,6 +166,28 @@ func clear_line(a: Vector3, b: Vector3) -> bool:
 	if _memo.size() >= MEMO_LIMIT:
 		_memo.clear()
 	_memo[key] = clear
+	return clear
+
+
+## clear_line on a coarse grid (COARSE_QUANTUM meters) with its own memo: for rough per-think questions ("can that gun
+## shoot me?") where moving units would otherwise miss the fine memo every tick. Deterministic the same way.
+func clear_line_coarse(a: Vector3, b: Vector3) -> bool:
+	los_queries += 1
+	var qa := Vector2i(roundi(a.x / COARSE_QUANTUM), roundi(a.z / COARSE_QUANTUM))
+	var qb := Vector2i(roundi(b.x / COARSE_QUANTUM), roundi(b.z / COARSE_QUANTUM))
+	if qb.x < qa.x or (qb.x == qa.x and qb.y < qa.y):
+		var swap := qa
+		qa = qb
+		qb = swap
+	var key := Vector4i(qa.x, qa.y, qb.x, qb.y)
+	var known: Variant = _coarse_memo.get(key)
+	if known != null:
+		return known
+	los_computed += 1
+	var clear := not blocked(Vector2(qa) * COARSE_QUANTUM, Vector2(qb) * COARSE_QUANTUM)
+	if _coarse_memo.size() >= MEMO_LIMIT:
+		_coarse_memo.clear()
+	_coarse_memo[key] = clear
 	return clear
 
 
