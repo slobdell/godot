@@ -329,7 +329,7 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	var muzzle := tank.turret.global_position
 	var aim := target.global_position
 	if weapon["kind"] == Weapons.Kind.PROJECTILE:
-		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity, Shell.SPEED)
+		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity, float(weapon.get("projectile_speed_mps", Shell.SPEED)))
 	_cover(aim, cmd)
 	# Rules R2 (minimal hook; the ai stream owns the real behavior): a fixed-mount gun (the scout) only
 	# points inside its fire arc, so a halted unit swings its hull onto the target.

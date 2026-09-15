@@ -10,6 +10,7 @@ extends Node3D
 signal hit(shell: Shell, collider: Object, point: Vector3)
 signal expired(shell: Shell)
 
+## Default speed (m/s); each shell flies at its weapon's projectile_speed_mps (K2).
 const SPEED := 70.0
 ## Default flight distance; Match gives each shell its weapon's range + RANGE_MARGIN (R2: per-weapon range).
 const MAX_RANGE := 75.0
@@ -18,6 +19,11 @@ const RANGE_MARGIN := 5.0
 const HIT_MASK := 3
 
 var direction := Vector3.FORWARD
+## K2: this round's id in weapon_fired / projectile_impact, and its speed (the weapon's projectile_speed_mps).
+var projectile_id := -1
+var speed := SPEED
+## Surface normal where the sweep stopped (set just before `hit`).
+var hit_normal := Vector3.UP
 var team := 0
 var shooter_name := ""
 var max_range := MAX_RANGE
@@ -38,7 +44,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var step := direction * SPEED * delta
+	var step := direction * speed * delta
 	var from := ray_start if _first_step else global_position
 	_first_step = false
 	var to := global_position + step
@@ -47,6 +53,7 @@ func _physics_process(delta: float) -> void:
 		var result := get_world_3d().direct_space_state.intersect_ray(query)
 		if not result.is_empty():
 			global_position = result.position
+			hit_normal = result.normal
 			set_physics_process(false)
 			hit.emit(self, result.collider, result.position)
 			return
@@ -58,3 +65,13 @@ func _physics_process(delta: float) -> void:
 			expired.emit(self)
 		else:
 			visible = false  # the server will despawn it shortly
+
+
+## Meters this shell can still fly before it burns out.
+func remaining_range() -> float:
+	return maxf(0.0, max_range - _travelled)
+
+
+## Still flying (not yet hit or burned out).
+func in_flight() -> bool:
+	return is_physics_processing() and not is_queued_for_deletion()

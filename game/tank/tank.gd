@@ -20,6 +20,28 @@ signal died
 @export var max_forward_speed := 9.0
 @export var max_reverse_speed := 4.0
 @export var acceleration := 14.0
+## K3 locomotion (Units.PROFILES): speed shed per second when slowing, "tracks" or "wheels", the tightest turning circle
+## (wheels), and how much sideways slide the tires kill (1 = none, lower drifts).
+@export var braking := 14.0
+var locomotion := "tracks"
+## X5 (round 3): units with deploy_seconds > 0 (artillery) must stand still and lower their outriggers before firing,
+## and pack up before driving. 0 = packed (can drive), 1 = deployed (can fire). Simulating peer; visuals get
+## set_deployed(ratio) every frame.
+var deploy_ratio := 0.0
+var deploy_seconds := 0.0
+var pack_seconds := 0.0
+## A stop order must hold this many ticks before the legs start down (stop-and-go driving never deploys). A fire
+## command deploys at once: a battery told to shoot stops and digs in.
+const DEPLOY_SETTLE_TICKS := 15
+## A drive command must hold this many ticks before a deployed battery packs up (a brain nudging its position between
+## rounds doesn't lift the legs every reload).
+const PACK_SETTLE_TICKS := 30
+## Below this speed (m/s) a hull counts as stopped for deploying.
+const DEPLOY_MAX_SPEED := 0.3
+var _still_ticks := 0
+var _moving_ticks := 0
+var min_turn_radius := 0.0
+var lateral_grip := 1.0
 @export var hull_turn_rate := deg_to_rad(80.0)
 @export var turret_turn_rate := deg_to_rad(110.0)
 ## Hull. Tuned 2026-09-13 after the lead's first skirmish ("tanks die too quickly"): 100 → 400;
@@ -100,7 +122,11 @@ var repair_ticks := 0
 var sync_heat := 0.0
 
 var _speed := 0.0
-var _reload_left := 0.0
+## X2 (round 3): weapon timing in whole physics ticks (deterministic). Ticks until the next trigger pull may fire,
+## rounds of the current burst still to come, and ticks until the next of them.
+var _reload_ticks := 0
+var _burst_rounds_left := 0
+var _burst_ticks := 0
 var _previous_sync_position := Vector3.ZERO
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -132,6 +158,14 @@ func apply_unit() -> void:
 	max_forward_speed = stat.call("max_forward_speed")
 	max_reverse_speed = stat.call("max_reverse_speed")
 	hull_turn_rate = deg_to_rad(stat.call("hull_turn_rate_deg"))
+	acceleration = stat.call("acceleration_mps2", 14.0)
+	braking = stat.call("braking_mps2", acceleration)
+	locomotion = String(Units.stat(unit_id, "locomotion", "tracks"))
+	min_turn_radius = stat.call("min_turn_radius_m", 0.0)
+	lateral_grip = stat.call("lateral_grip", 1.0)
+	deploy_seconds = stat.call("deploy_seconds", 0.0)
+	pack_seconds = stat.call("pack_seconds", 0.0)
+	deploy_ratio = 0.0
 	turret_turn_rate = deg_to_rad(stat.call("turret_turn_rate_deg"))
 	sight_radius = stat.call("sight_radius")
 	heat_capacity = stat.call("heat_capacity")
@@ -176,7 +210,7 @@ func _apply_hull_size(size_list: Variant, own_hull_art := false) -> void:
 func set_weapon(id: String) -> void:
 	weapon_id = id
 	weapon = Weapons.profile(id)
-	reload_seconds = weapon["reload"]
+	reload_seconds = float(weapon.get("reload_s", weapon["reload"]))
 	max_ammo = Weapons.max_ammo(weapon)
 	ammo = max_ammo
 	if _weapon_visual != null:
@@ -207,17 +241,11 @@ func _physics_process(delta: float) -> void:
 	var cmd := command.sanitized()
 	aim_point = cmd.aim_point
 
-	# Tank steering: turn in place or while moving; reversing does not invert.
-	rotate_y(-cmd.turn * hull_turn_rate * delta)
-	_speed = TankMotion.next_speed(_speed, cmd.throttle, max_forward_speed, max_reverse_speed,
-			acceleration, delta)
-
-	var forward := -global_basis.z
-	velocity.x = forward.x * _speed
-	velocity.z = forward.z * _speed
-	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
-	move_and_slide()
-	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
+	# X4 (K3): drive through the same pure model ai plans with (TankMotion.step_in_place): tracks pivot, wheels need
+	# speed to turn and slide on low grip. Collisions stay with the physics body: the velocity after the slide feeds the
+	# next tick, so a wall eats a wheeled unit's momentum.
+	var drive_cmd := _deploy_step(cmd)
+	_drive(drive_cmd, delta)
 
 	var local_aim := to_local(cmd.aim_point)
 	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, gun_yaw_toward(local_aim), turret_turn_rate, delta)
@@ -232,15 +260,100 @@ func _physics_process(delta: float) -> void:
 			sync_firing = true
 			sprayed.emit(muzzle_position(), turret_forward(), delta)
 	else:
-		_reload_left = maxf(0.0, _reload_left - delta)
-		if cmd.fire and _reload_left <= 0.0 and ammo != 0 and _heat_allows_shot(heat):
-			_reload_left = reload_seconds
-			if ammo > 0:
-				ammo -= 1
+		_reload_ticks = maxi(0, _reload_ticks - 1)
+		if _burst_rounds_left > 0:
+			# X2: a started burst is committed; its rounds follow burst_interval_s apart whatever the trigger does.
+			_burst_ticks -= 1
+			if _burst_ticks <= 0 and ammo != 0:
+				_burst_rounds_left -= 1
+				_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
+				_fire_round()
+		elif cmd.fire and _reload_ticks <= 0 and ammo != 0 and _heat_allows_shot(heat) and is_deployed():
+			_reload_ticks = _ticks_of(reload_seconds)
+			_burst_rounds_left = maxi(1, int(weapon.get("burst_count", 1))) - 1
+			_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
 			heat += float(weapon.get("heat_per_shot", 0.0))
-			sync_firing = weapon["kind"] == Weapons.Kind.BEAM
-			fired.emit(muzzle_position(), turret_forward())
+			_fire_round()
 	_publish_state()
+
+
+## One round leaves the gun (a shell, a beam pulse, a burst round, a lobbed round).
+func _fire_round() -> void:
+	if ammo > 0:
+		ammo -= 1
+	sync_firing = weapon["kind"] == Weapons.Kind.BEAM or int(weapon.get("burst_count", 1)) > 1
+	fired.emit(muzzle_position(), turret_forward())
+
+
+static func _ticks_of(seconds: float) -> int:
+	return maxi(1, roundi(seconds * 60.0)) if seconds > 0.0 else 0
+
+
+## X5: advance deploying or packing for this tick's command; returns the command driving may use (throttle and turn
+## zeroed while the legs are down or moving).
+func _deploy_step(cmd: TankCommand) -> TankCommand:
+	if deploy_seconds <= 0.0:
+		return cmd
+	var wants_to_move := absf(cmd.throttle) > 0.05 or absf(cmd.turn) > 0.05
+	if wants_to_move and not cmd.fire:
+		_still_ticks = 0
+		_moving_ticks += 1
+	else:
+		_moving_ticks = 0
+		_still_ticks += 1
+	if cmd.fire or (not wants_to_move and _still_ticks >= DEPLOY_SETTLE_TICKS):
+		if absf(_speed) < DEPLOY_MAX_SPEED:
+			deploy_ratio = minf(1.0, deploy_ratio + 1.0 / maxf(deploy_seconds * 60.0, 1.0))
+	elif wants_to_move and (_moving_ticks >= PACK_SETTLE_TICKS or deploy_ratio < 1.0):
+		deploy_ratio = maxf(0.0, deploy_ratio - 1.0 / maxf(pack_seconds * 60.0, 1.0))
+	# Snap float dust so "fully deployed" and "packed" are exact.
+	if deploy_ratio > 0.9999:
+		deploy_ratio = 1.0
+	elif deploy_ratio < 0.0001:
+		deploy_ratio = 0.0
+	# Firing overrides driving (brake, then dig in); legs that aren't fully up hold the hull still.
+	if cmd.fire or deploy_ratio > 0.0:
+		return TankCommand.new(0.0, 0.0, cmd.aim_point, cmd.fire)
+	return cmd
+
+
+## Whether this unit may fire: always for units that don't deploy; fully deployed for those that do.
+func is_deployed() -> bool:
+	return deploy_seconds <= 0.0 or deploy_ratio >= 1.0
+
+
+## The motion state this tank steps every physics tick (TankMotion's K3 dictionary), built once per unit.
+var _motion := {}
+
+
+func _drive(cmd: TankCommand, delta: float) -> void:
+	if _motion.is_empty():
+		_motion = TankMotion.state_for(unit_id, global_position, -global_basis.z, _speed)
+	_motion["position"] = global_position
+	var facing := -global_basis.z  # re-read: spawns, respawns, and tests place hulls by setting rotation
+	_motion["forward"] = Vector3(facing.x, 0.0, facing.z).normalized()
+	_motion["speed"] = _speed
+	_motion["max_forward_speed"] = max_forward_speed
+	_motion["max_reverse_speed"] = max_reverse_speed
+	_motion["hull_turn_rate_deg"] = rad_to_deg(hull_turn_rate)
+	_motion["acceleration_mps2"] = acceleration
+	_motion["braking_mps2"] = braking
+	_motion["locomotion"] = locomotion
+	_motion["min_turn_radius_m"] = min_turn_radius
+	_motion["lateral_grip"] = lateral_grip
+	TankMotion.step_in_place(_motion, cmd.throttle, cmd.turn, delta)
+	var forward: Vector3 = _motion["forward"]
+	global_basis = Basis.looking_at(forward, Vector3.UP)
+	_speed = float(_motion["speed"])
+	var planar: Vector3 = _motion["velocity"]
+	velocity.x = planar.x
+	velocity.z = planar.z
+	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
+	move_and_slide()
+	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
+	_motion["velocity"] = estimated_velocity
+	if locomotion == "wheels":
+		_speed = estimated_velocity.dot(forward)
 
 
 func _process(delta: float) -> void:
@@ -262,6 +375,9 @@ func _process(delta: float) -> void:
 		nameplate.text += "\n" + sync_intent
 	_weapon_visual.invoke("set_firing", [sync_firing and alive])
 	_weapon_visual.invoke("set_heat", [sync_heat])
+	if deploy_seconds > 0.0:
+		for visual: VisualSlot in [_hull_visual, _turret_visual, _weapon_visual]:
+			visual.invoke("set_deployed", [deploy_ratio])
 
 
 # ---- Rules hooks (called by Match on the simulating peer) --------------------------
@@ -314,7 +430,11 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	turret.rotation.y = 0.0
 	velocity = Vector3.ZERO
 	_speed = 0.0
-	_reload_left = 0.0
+	_motion = {}
+	deploy_ratio = 0.0
+	_still_ticks = 0
+	_reload_ticks = 0
+	_burst_rounds_left = 0
 	health = max_health
 	shield = max_shield
 	ticks_since_hit = 1_000_000
@@ -339,6 +459,7 @@ func reload_fraction() -> float:
 ## Loaded, not out of ammo, and cool enough for one more shot. Valid on every peer.
 func ready_to_fire() -> bool:
 	var current_heat := heat if simulate else sync_heat * heat_capacity
+	# Not is_deployed(): a brain asks a packed battery to fire, and the fire command is what digs it in.
 	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat)
 
 
@@ -427,7 +548,8 @@ func _publish_state() -> void:
 	sync_turret_yaw = turret.rotation.y
 	sync_health = health
 	sync_alive = alive
-	sync_reload = 1.0 - (_reload_left / reload_seconds) if reload_seconds > 0.0 else 1.0
+	var reload_ticks := _ticks_of(reload_seconds)
+	sync_reload = 1.0 - float(_reload_ticks) / reload_ticks if reload_ticks > 0 else 1.0
 	sync_intent = intent
 	sync_ammo = ammo
 	sync_shield = roundi(shield)

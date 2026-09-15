@@ -30,6 +30,8 @@ func _duel(target_yaw: float, target_team: int = Match.Team.RUST) -> Array:
 	_place(target, 5.0, target_yaw)
 	target.max_shield = 0.0  # these tests are about hull armor; shields have their own tests (test_shields.gd)
 	target.shield = 0.0
+	target.max_health = 5000  # one shell must not kill it: the damage is what we measure
+	target.health = 5000
 	await wait_physics_frames(2)
 	shooter.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 	await wait_physics_frames(1)
@@ -38,24 +40,29 @@ func _duel(target_yaw: float, target_team: int = Match.Team.RUST) -> Array:
 	return [game_match, shooter, target]
 
 
+## Whole hull points one cannon shell deals through an armor multiplier (derived from the data: lesson 3).
+static func _cannon(multiplier: float) -> int:
+	return int(float(Weapons.profile("cannon")["damage"]) * multiplier + 0.0001)
+
+
 func test_rear_shot_does_rear_damage() -> void:
 	var result: Array = await _duel(0.0)  # target faces north, away from the shooter
-	assert_eq(result[2].health, result[2].max_health - 51, "a shot into the rear armor deals 1.5x of 34")
+	assert_eq(result[2].health, result[2].max_health - _cannon(1.5), "a shot into the rear armor deals 1.5x a cannon shell")
 
 
 func test_front_shot_does_front_damage() -> void:
 	var result: Array = await _duel(PI)  # target faces south, toward the shooter
-	assert_eq(result[2].health, result[2].max_health - 17, "a shot into the front armor deals half of 34")
+	assert_eq(result[2].health, result[2].max_health - _cannon(0.5), "a shot into the front armor deals half a cannon shell")
 
 
 func test_side_shot_does_side_damage() -> void:
 	var result: Array = await _duel(PI / 2.0)
-	assert_eq(result[2].health, result[2].max_health - 34, "a shot into the side armor deals full damage")
+	assert_eq(result[2].health, result[2].max_health - _cannon(1.0), "a shot into the side armor deals full damage")
 
 
 func test_friendly_fire_hurts_teammates() -> void:
 	var result: Array = await _duel(0.0, Match.Team.GREEN)
-	assert_eq(result[2].health, result[2].max_health - 51, "R4: a shell into a teammate's rear hurts like any other")
+	assert_eq(result[2].health, result[2].max_health - _cannon(1.5), "R4: a shell into a teammate's rear hurts like any other")
 	assert_eq(result[0].stats["hits"][Match.Team.GREEN], 0, "it isn't counted as a hit on the enemy")
 	assert_eq(result[0].stats["friendly_hits"][Match.Team.GREEN], 1, "it's counted as friendly fire")
 

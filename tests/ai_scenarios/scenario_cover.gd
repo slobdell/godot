@@ -30,7 +30,10 @@ func test_a_hurt_tank_under_fire_gets_out_of_sight() -> void:
 	var s := AiScenario.create(self)
 	var guns := _stage(s, 2)
 	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", GREEN_START, 0.0)
-	me.health = 120
+	# 40% hurt. Combat X2 (round 3): a hull big enough to live through one volley of the new cannons (320 per shell);
+	# at 120 of 300 the first shell killed it before any brain could react (two side hits: 640).
+	me.max_health = 2000
+	me.health = 800
 	me.shield = 0.0
 	me.ticks_since_hit = 0  # just hit: the shield stays down for its recharge delay
 	var hidden_run := 0
