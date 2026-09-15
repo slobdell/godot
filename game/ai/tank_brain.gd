@@ -62,10 +62,11 @@ const FLANKER_APPETITE := 0.72
 ## speed / radius = the angular speed it forces on the turret), bursting in when that turret points away.
 const ORBIT_RADIUS := 11.0
 ## Combat's request (b), weak spots: a gun that gets at least this much more through a target's engine deck than its
-## rear plate (Matchups.deck_gain: a scout's machine gun on a tank, ×1.8) circles to its stern before bursting in, and
-## flanks astern rather than abeam. (Attack runs that circled to the stern first were measured worse and dropped: a
-## scout on a Lancer fired 24 rounds instead of 37 and hit the deck 2 times instead of 6; a straight run's break-away
-## already passes astern.)
+## rear plate (Matchups.deck_gain: a scout's machine gun on a tank, ×1.8) circles to its stern before bursting in.
+## (Two other ways of seeking the deck were measured and dropped: attack runs that circle to the stern first cost a scout
+## on a Lancer 37 rounds -> 24 and 6 deck hits -> 2, since a straight run's break-away already passes astern; and FLANK
+## coming in astern never fires — flankers pick ENGAGE with combat motion instead, so four ladders and an IFV-pair
+## scenario ran byte-identical with and without it.)
 const DECK_SEEK_GAIN := 1.4
 ## An orbiting fixed gun bursts in while the target's gun needs at least this long to reload (seconds), wherever it points.
 const ORBIT_RELOAD_WINDOW := 1.0
@@ -1420,11 +1421,6 @@ func _act(s: Dictionary) -> void:
 				side = -side
 			var standoff := clampf((float(weapon["preferred_min"]) + float(weapon["preferred_max"])) / 2.0, 8.0, 45.0)
 			var point: Vector3 = contact["position"] + side * standoff - contact["forward"] * (0.3 * standoff)
-			if s.get("features", {}).get("weak_spots", false) \
-					and Matchups.deck_gain(weapon, Units.profile(String(contact.get("unit", "")))) >= DECK_SEEK_GAIN:
-				# Its engine deck lets my rounds through: come in from astern.
-				point = contact["position"] + side * (0.25 * standoff) - contact["forward"] * standoff
-				why = TankBrain._join(why, "for its engine deck")
 			var from_target: Vector3 = my_position - contact["position"]
 			if s.get("features", {}).get("combat_motion", false) \
 					and (contact["forward"] as Vector3).dot(from_target) > FLANK_WIDE_COS * from_target.length():

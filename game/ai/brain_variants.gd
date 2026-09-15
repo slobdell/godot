@@ -39,8 +39,8 @@ const PROFILES := {
 	# Probe for combat's round-3 weapons (preview of CP2): x3 with matchup-aware targets. Shoot-and-scoot (short_halt_lead
 	# 1.2 / 2.0 s) and halting only 3 s+ reloads (short_halt_reload 3.0) were measured no better and removed.
 	"x3m": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": true, "combat_motion": true, "dodge": true},
-	# After CP2 (combat's request b): x4 seeking engine decks, without and with matchup-aware targets (orbiting needs them).
-	"x4w": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "weak_spots": true},
+	# After CP2 (combat's request b): x4 with matchup-aware targets, seeking engine decks (the seeking needs them: a plain
+	# x4 with weak_spots ran byte-identical on four ladders).
 	"x4mw": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": true, "combat_motion": true, "dodge": true, "reload_windows": true, "weak_spots": true},
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
