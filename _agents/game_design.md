@@ -59,6 +59,22 @@ forward arc; scouts' speed beats slow turrets; artillery's minimum range punishe
 emerge from these mechanics rather than a damage multiplier table, and be **measured** with the match runner
 (a unit-vs-unit matrix in balance.md).
 
+**Locomotion: wheels drive like cars** (lead, 2026-09-15: *"when we move to wheeled vehicles, they won't be able to
+turn like a tank, they will have a turning radius and will need to drive like cars"*). Not built yet: as of
+2026-09-15 every unit steers like a tank (rotates at a fixed rate, even standing still, and pivots in place when the
+target is behind it; `game/tank/tank.gd`, `game/ai/steering.gd`).
+- **Tracks** pivot in place and turn at a rate (the dozer tank).
+- **Wheels** can't rotate while stopped: yaw rate = speed ÷ turning radius, down to a minimum radius per unit; steering
+  inverts in reverse; tight spots need multi-point turns. Proposed for today's roster: **scout, IFV, artillery, and
+  Lancer on wheels, the tank on tracks**, matching their base vehicles.
+- Later: **articulated** trucks (the gang war rig: a trailer that follows, the widest turns) and **hover** (strafes,
+  drifts on momentum; the Syndicate).
+- **A kinematic model we own, not physics wheels** (`VehicleBody3D` is hard to network, to AI-drive, and to make
+  deterministic): curvature-based, pure math in `TankMotion`, integer-friendly (determinism.md).
+- **Why it matters for play:** a fixed-gun scout on wheels aims by driving, so it fights with attack runs and circling
+  instead of pivoting in place; wheels want open lanes, tracks win in dense cover, and arenas (containers, chokepoints)
+  become a locomotion choice. It's a counter lever, not just realism.
+
 **Keep from round 1:** Halo-style recharging shields over hull health (the lead chose them), finite ammo with
 base resupply (rules stream may simplify if it doesn't add decisions), heat only where a unit's weapon uses
 it (the Lancer). **Drop:** components, heat sinks, ammo racks, per-hardpoint weapons.
@@ -84,7 +100,7 @@ roster (today's vehicles become the Condemned).
   having other units that answer it, and scales with unit properties (knockback by mass), never with the faction.
   **Measure both levels:** the unit matrix shows clear counters; faction vs faction, each with its best searched
   army, lands near 50%. Where it doesn't, add or tune a unit-level answer.
-- **Locomotion is part of the vocabulary:** treads pivot in place (Condemned), articulated trucks and wheels turn
+- **Locomotion is part of the vocabulary** (see *Locomotion* above): tracks on the heavies and heavy wheels elsewhere (Condemned), articulated trucks and wheels turn
   wide but run fast (road gangs), heavy wheels are quick and controlled (the Law), hover strafes and drifts on
   momentum (the Syndicate). Factions read apart by how they move.
 - **A faction is a choice, never more power** (pillar 1). Unlocking one, if ever, is a sidegrade.
@@ -100,7 +116,7 @@ roster (today's vehicles become the Condemned).
 
 | Faction | Who | Look | Trade-offs | Signature ideas |
 |---|---|---|---|---|
-| **The Condemned** | Convicts fighting for freedom; the crowd pities them | Prison dozers, armored buses, garbage trucks: tall, boxy, welded shut, hazard paint, cage mesh | Tough, cheap, holds ground; slow | Today's roster: treads that pivot, shields |
+| **The Condemned** | Convicts fighting for freedom; the crowd pities them | Prison dozers, armored buses, garbage trucks: tall, boxy, welded shut, hazard paint, cage mesh | Tough, cheap, holds ground; slow | Today's roster: a tracked dozer tank, wheeled light units, shields |
 | **Road gangs** (the Wreckers / Scrapborn / Chrome Cult) | Wasteland raiders; the crowd favorite | Low, open hot rods and buggies on huge tires; chrome, rust, spikes, fire; visible crews | **No shields**; fast, cheap, deadly up close, fragile; wheels with turning circles | Field repairs by crews; explosive spears (high penetration, short range); harpoon ballista that pins; catapult of flaming barrels leaving burning ground |
 | **The Law** | The state's wardens, the house team the crowd boos; the **baseline faction**, easiest to learn (closest to the lead's original sci-fi army vision) | Militarized cyberpunk police, **professional but worn down** (a failing state): MRAPs, up-armored cruisers, 8×8 assault guns; red and blue strobes, spotlight towers, holo POLICE projections; one exaggerated feature per vehicle | Reliable, moderate damage, heavy wheels | Information and control: reveal, spotting, tear gas and smoke that cut sight and accuracy, knockback scaled by target mass |
 | **The Syndicate / "the Sponsors"** | The corporation that owns the show; every match is a product demo | **Curvy sci-fi hover vehicles** (the lead: like Halo's Wraith, but human corporate luxury, our own designs): **ivory tower**: immaculate glossy ivory or black shells, cyan light lines, sponsor logos, hover glow lighting the floor, unmanned | Few, very expensive, strong at range; hover drifts and has lighter armor | Energy (heat and shields) instead of ammo; railgun; lasers (the Lancer); spotter-guided missiles; a shield projector; optical camo |

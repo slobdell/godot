@@ -62,6 +62,9 @@ Netcode is **paused** (its smokes stay in `make check`). Ownership, contracts C1
   before these guidelines existed: they get them when they merge `main` at checkpoint 1, so at each merge, review new
   simulation code for engine raycasts, navigation calls, and trig, and check the inventory is updated. Steps D1–D4
   come after round 2.
+- **Wheeled vehicles drive like cars** (the lead, 2026-09-15): added as rules R9, ai A8, command C7, and contract C1
+  (`locomotion`, `min_turn_radius_m`). Every unit still pivots like a tank today. The running agents get these items
+  when they merge `main`.
 - **Unit-count bench** (roadmap.md *Next*): how many vehicles render and simulate smoothly on the web and a phone.
   It decides squad sizes and how expendable factions like the road gangs can be. Until measured, design to the
   current 5 × 5 (50 vehicles in a match).

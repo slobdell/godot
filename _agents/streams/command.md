@@ -58,6 +58,11 @@ order. Add `RtsCamera.frame(points)` (C7).
 **C6. The in-match HUD for the new rules:** squads ≤ 5, unit types, friendly-fire events, and the control point.
 Post the right `Hud.post_message`s (orders, losses, squad destroyed) without spamming.
 
+**C7. Orders for vehicles that can't pivot** (added 2026-09-15; with rules' R9 and ai's A8). Wheeled units need
+room to turn. Arrival facing is approximate, the ghost formation and path preview should show the curve a wheeled
+squad will take, and the camera-follow in C4 should expect wider paths. Keep G3's responsiveness tests meaningful:
+"responds within N ticks" means starts turning, not faces the new direction.
+
 - **Stretch:**
   - selecting a single unit inside a squad
   - quick commands per drill from the squad bar

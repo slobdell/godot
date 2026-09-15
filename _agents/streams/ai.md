@@ -75,6 +75,18 @@ the control point.
 swap bases), keeps an ELO table in `_agents/unit_ai.md`, and a new brain must beat the previous champion before it
 replaces it. Report the CPU cost per unit per tick.
 
+**A8. Driving wheeled vehicles** (added 2026-09-15; needs rules' R9). Wheels can't pivot in place, so:
+- `Steering` for wheels: pure pursuit with a lookahead, speed control before corners, multi-point turns when the goal
+  is behind in a tight space, and an unstick routine that reverses with inverted steering.
+- Paths that respect the minimum turning radius (smooth navmesh corners, or prefer wide lanes for wheels).
+- Formations and slot keeping by matching speed and heading rather than stopping and pivoting; arrival facing
+  approximated with an approach curve.
+- Tactics that fit the locomotion: fixed-gun wheeled scouts make attack runs and circle outside a turret's tracking
+  speed; peeking on wheels is drive forward, fire, reverse; retreating chooses between reversing (front armor kept)
+  and turning away (faster, rear exposed).
+- Scenarios first (A1): "a wheeled scout makes repeated attack runs on a tank", "a wheeled unit escapes a dead end
+  with a multi-point turn", "a wedge of wheeled units arrives without circling".
+
 - **Stretch:** a smarter `CpuCommander` that uses the new squad tactics (it must beat plain brains before becoming
   the skirmish default); explanations on the map (why a unit is doing what it does) for the lead's playtests.
 

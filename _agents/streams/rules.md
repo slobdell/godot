@@ -66,6 +66,18 @@ the intended counters hold clearly (e.g. the counter wins ≥ 65% cost-equal) an
 **R8. Rules defaults with roster v2:** re-measure the control point ("coordination beats individuals" under
 shields) and whether ammo resupply adds decisions; recommend defaults in balance.md for the lead.
 
+**R9. Locomotion: wheels drive like cars** (added 2026-09-15 by the lead; [../game_design.md](../game_design.md)
+*Locomotion*). Today every unit rotates in place at `hull_turn_rate_deg`.
+- Catalog: `locomotion` (`tracks` | `wheels`; `hover` and `articulated` reserved) and `min_turn_radius_m` for wheels
+  (contract C1).
+- A curvature-based kinematic model in `TankMotion` (pure, unit tested, dot/cross math per determinism.md): tracks
+  keep today's behavior; wheels get no rotation at standstill, yaw rate from speed and radius, inverted steering in
+  reverse.
+- Proposed assignment: scout, IFV, artillery, Lancer on wheels; tank on tracks. Re-run the matchup matrix (R7) and
+  record how turning radius changes the counters (the fixed-gun scout now aims by driving).
+- Tell the ai stream in your Status: `Steering`, pathing, unstick, formations, and peek-and-shoot must handle wheels
+  (their A8). Update the sim baseline with a reason.
+
 - **Stretch:** the Burner (flamethrower unit); arena hazards (fire pits, crushing gates) as layout data; ammo
   simplification if R8 says so.
 
