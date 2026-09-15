@@ -69,9 +69,7 @@ same text for all six (also in [orchestration.md](_agents/orchestration.md)):
    as a tutorial path; command's radar tap and commander election (likely moot with the new controls); art's web
    `.pck` size (20.3 MB) and listening to the synthesized engine and crowd sounds; ai's question whether autonomous
    squad tactics should be weaker so player coordination matters more.
-2. **Carried over:** rotate the Meshy API key (it was pasted in chat once); move `MESHY_API_KEY` and
-   `ELEVENLABS_KEY_ID` above the interactive guard in `~/.bashrc` (line 6) so agent shells see them (the assets
-   stream needs Meshy; announcer makes no calls this round); Git LFS for generated art; create the Veteran voice.
+2. **Carried over:** rotate the Meshy API key (it was pasted in chat once); Git LFS for generated art; create the Veteran voice.
 
 ## Follow-ups to track (not in round 3)
 

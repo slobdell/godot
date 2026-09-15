@@ -173,8 +173,8 @@ graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's lan
 ## Waiting on the lead
 
 - The Veteran's voice (ready: the caller `JR1` and the Corporate Co-host `corporate2`, 2026-09-15).
-- **Environment:** as of 2026-09-15, `ELEVENLABS_KEY_ID` (and `MESHY_API_KEY`) sit after the interactive guard in
-  `~/.bashrc`, so agent shells can't see them (orientation trip-up 59). Move both above line 6 or into `~/.profile`.
+- **Environment:** `ELEVENLABS_KEY_ID` and `MESHY_API_KEY` are exported before the interactive guard in `~/.bashrc`
+  (fixed 2026-09-15), so agent shells see them. No ElevenLabs calls this round regardless.
 
 ## Status
 
