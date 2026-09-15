@@ -178,4 +178,41 @@ graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's lan
 
 ## Status
 
-- 2026-09-15: activated for round 3 (no API calls; transcripts for the lead's review). Nothing started.
+_Updated 2026-09-15 by the announcer worker._
+
+### Plan (in order; smallest foundation first)
+
+1. **N0** contract README + two validators (Python, GDScript) that agree on shared broken cases; seeded fake-match
+   generator with six scenario shapes; fixtures checked in; `make announcer-check` in `make check`.
+2. **N2 skeleton before N1 bulk:** the library schema and loader, tag matching, slot filling, and a first ~60 lines, so
+   the director is testable; then **N1** grows the library to hundreds of lines plus the text audit.
+3. **N2** the director: moments derived from events, beat templates, memory, priority queue with interrupts,
+   cooldowns, anti-repetition, own seeded RNG; cues `{t, speaker, clip_id, text, reason}`.
+4. **N3** `make announcer-transcript FIXTURE=…` → readable transcripts for every fixture (lead gate).
+5. **N5** the HTML demo page (timeline + banter in sync, several seeds per fixture).
+6. **N4** the audio pipeline against a mock ElevenLabs client (slicing, loudnorm, trim, STT check, Ogg, manifest,
+   ledger, `DRY_RUN=1` credit estimate), then the mixdown for the demo page.
+7. **N6** in-game adapter (Match signals → K5), playback bus with ducking, subtitles; stays within announcer paths.
+8. Stretch: sponsor reads for the ad screens, faction introductions, tale of the tape.
+
+### Decisions
+
+- **Fixture ids vs types got distinct field names** (`unit_id`/`shooter`/`victim` hold instance ids; `unit`/`*_unit` hold
+  types) so no field means two things; `friendly_fire` gained unit types and team; `momentum` carries both teams.
+  Recorded in `tests/announcer/fixtures/README.md` (K5).
+- **Generator in Python** (`tools/announcer/fake_match.py`): an abstract duel model, not the game's sim, so fixtures
+  don't churn with combat's round-3 rebalance. Each scenario has a predicate; the generator walks seeds upward to the
+  first match that fits, so `--seed 1` always writes the same file (a test enforces fixtures == generator output).
+- **Python tests live beside the tools** (`tools/announcer/test_*.py`, the assets stream's precedent), GDScript tests
+  in `tests/announcer/`.
+
+### Done
+
+- **N0 (2026-09-15):** contract, validators (`tools/announcer/events.py`, `game/announcer/announcer_events.gd`), shared
+  broken cases (`tests/announcer/contract_cases.json`, 18 cases both reject), generator, six fixtures (54–141 s
+  matches, 36–83 events each; one hazard kill, 3+ friendly-fire hits, a control-point win), `make announcer-fixtures`,
+  `announcer-validate`, `announcer-pytest`, `announcer-check`.
+
+### Merge notes (shared files)
+
+- `mk/core.mk`: `announcer-check` appended to `check`'s prerequisites.
