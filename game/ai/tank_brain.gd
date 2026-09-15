@@ -12,6 +12,10 @@ extends OrderController
 ##   - ties go to the earlier option in OPTIONS order, then earlier target name
 
 const THINK_EVERY_TICKS := 6
+## Think LOD (_agents/unit_ai.md §8): a brain with no known enemy within LOD_RADIUS thinks this often instead.
+## Squad orders still take effect on the next tick (G3).
+const IDLE_THINK_EVERY_TICKS := 18
+const LOD_RADIUS := 130.0
 ## The current choice gets this multiplier, so near-equal options don't flip-flop...
 const COMMIT_BONUS := 1.15
 ## ...and it's kept at least this long unless something is EMERGENCY_MARGIN× better.
@@ -98,6 +102,10 @@ var choice := {}
 var ranked: Array = []
 ## The squad order_serial this brain last acted on.
 var _order_serial := 0
+## THINK_EVERY_TICKS, or IDLE_THINK_EVERY_TICKS while nothing is near (think LOD).
+var _think_every := THINK_EVERY_TICKS
+## A few words on why the current choice (phase, squad role), shown after the option on nameplates.
+var why := ""
 ## The last cover query: {"tick", "position", "threats" (count), "result" [Vector3]}.
 var _cover_cache := {}
 ## CLEAR_LANE's chosen spot and when it was chosen (kept until reached or stale, so the tank settles to fire).
@@ -122,9 +130,18 @@ func think(_delta: float) -> void:
 	var serial := squad.order_serial if squad != null else 0
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
-	if not fresh_order and (game_match.tick + think_offset) % THINK_EVERY_TICKS != 0:
+	# Think LOD wake-up: an idle brain checks each fresh intel refresh for an enemy coming near.
+	if _think_every > THINK_EVERY_TICKS and game_match.tick % Match.INTEL_EVERY_TICKS == 0 and _enemy_near():
+		_think_every = THINK_EVERY_TICKS
+		fresh_order = true
+	if not fresh_order and (game_match.tick + think_offset) % _think_every != 0:
 		return
 	var situation := build_situation()
+	_think_every = IDLE_THINK_EVERY_TICKS
+	for c: Dictionary in situation["contacts"]:
+		if tank.global_position.distance_to(c["position"]) <= LOD_RADIUS:
+			_think_every = THINK_EVERY_TICKS
+			break
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	ranked = decision["ranked"]
 	var best: Dictionary = decision["choice"]
@@ -133,7 +150,15 @@ func think(_delta: float) -> void:
 	choice = best
 	_act(situation)
 	watch_point = TankBrain.watch_for(situation, choice)
-	tank.intent = TankBrain.label(choice)
+	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
+
+
+## True if team intel knows an enemy within LOD_RADIUS of this tank.
+func _enemy_near() -> bool:
+	for known: Dictionary in (game_match.intel[tank.team] as Dictionary).values():
+		if tank.global_position.distance_to(known["position"]) <= LOD_RADIUS:
+			return true
+	return false
 
 
 static func label(option: Dictionary) -> String:
@@ -300,7 +325,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				and weapon["kind"] != Weapons.Kind.ARC:
 			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), 0.4, 2.0)
 			var spot_quality := UtilityCurves.floor_at(float(cover_fire.get("score", 0.5)), 0.6)
-			add.call("COVER_FIRE", pair[0], score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality)
+			var cover_value := score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality
+			add.call("COVER_FIRE", pair[0], cover_value)
 	for pair in flanks:
 		add.call("FLANK", pair[0], pair[1] * fight_scale)
 	# CLEAR_LANE (A4): my gun is ready and aimed but a friend is in the way: step aside to a spot with a clear
@@ -688,6 +714,28 @@ func _tactics(features: Dictionary) -> Dictionary:
 			"cover_target": (plan["cover_for"] as Dictionary).get(my_name, ""), "fragile_threats": plan["fragile_threats"]}
 
 
+## The squad-plan part of a choice's explanation: "focus", "flanking", "covering a squad-mate", "guarding artillery".
+static func tactics_tag(s: Dictionary, current: Dictionary) -> String:
+	var tactics: Dictionary = s.get("tactics", {})
+	var target: String = current.get("target", "")
+	if tactics.is_empty() or target == "":
+		return ""
+	var tags: Array = []
+	if target == tactics.get("cover_target", ""):
+		tags.append("covering a squad-mate")
+	if target == tactics.get("flank_target", "") and current.get("option", "") == "FLANK":
+		tags.append("flanking for the squad")
+	elif target == tactics.get("focus", ""):
+		tags.append("squad focus")
+	if (tactics.get("fragile_threats", []) as Array).has(target):
+		tags.append("guarding artillery")
+	return ", ".join(tags)
+
+
+static func _join(a: String, b: String) -> String:
+	return b if a == "" else a + ", " + b
+
+
 ## A unit's role: catalog v2 "role", round 1 "class", else "tank".
 static func role_of(unit: Tank) -> String:
 	var profile: Dictionary = Units.PROFILES.get(unit.unit_id, {})
@@ -709,6 +757,7 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 # ---- Acting: choice → standing orders ----------------------------------------------
 
 func _act(s: Dictionary) -> void:
+	why = TankBrain.tactics_tag(s, choice)
 	if choice["option"] != "CLEAR_LANE":
 		_lane_goal = null
 	var me: Dictionary = s["self"]
@@ -746,6 +795,7 @@ func _act(s: Dictionary) -> void:
 			if not s.get("features", {}).get("retreat_to_cover", true):
 				_order_move(_move_to(s["rally"], true))
 			elif exposed and not cover_spots.is_empty() and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE:
+				why = TankBrain._join(why, "breaking line of sight")
 				var hide: Vector3 = cover_spots[0]
 				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0, 1.0, SPOT_ARRIVE))
 			else:
@@ -756,6 +806,7 @@ func _act(s: Dictionary) -> void:
 				_lane_goal = _lane_spot(s, contact)
 				_lane_goal_tick = game_match.tick
 			var spot: Vector3 = _lane_goal
+			why = TankBrain._join(why, "%s in the line of fire" % lane_blocker if lane_blocker != "" else "friend in the line of fire")
 			if my_position.distance_to(spot) > SPOT_ARRIVE + 0.5:
 				_order_move(_move_to(spot, false, 1.0, SPOT_ARRIVE))
 			else:
@@ -771,7 +822,9 @@ func _act(s: Dictionary) -> void:
 			var shield_ok := max_shield <= 0.0 or float(me.get("shield", 0.0)) >= max_shield * PEEK_SHIELD
 			if loaded_by_then and shield_ok:
 				_order_move(_move_to(peek, false, 1.0, SPOT_ARRIVE))
+				why = TankBrain._join(why, "peek")
 			else:
+				why = TankBrain._join(why, "reloading in cover" if not loaded_by_then else "shield low, in cover")
 				# Back into cover with the front still toward the target.
 				_order_move(_move_to(hide, true, 1.0, SPOT_ARRIVE))
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})

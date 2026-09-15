@@ -103,8 +103,8 @@ Unit stats and combat rules (rules; request changes), the UI and camera (command
 4. A3 cover discipline — **done**: `COVER_FIRE` (hide → peek when loaded → fire → reverse back), RETREAT breaks line of sight first, withdrawals back straight away from threats.
 5. A4 fire discipline — **done**: `FireLanes`, OrderController hold-fire gate (`lane_blocked_ticks`), `CLEAR_LANE`, artillery splash check.
 6. A5 `Matchups` — **waiting on checkpoint 1** (rules' catalog v2 is on `stream/rules`, not `main` yet). Scenarios written and pending.
-7. A6 `SquadTactics` blackboard; re-measure T1 with/without control point — next.
-8. A7 `make ai-ladder` + brain variants selectable by flag + ELO table.
+7. A6 squad tactics — **done** (`SquadTactics`: focus fire, suppress-and-flank, cover a withdrawing squad-mate, fragile threats); T1 measured before A6 (after-A6 re-measure pending the ladder's champion).
+8. A7 ladder — **tooling done** (`BrainVariants`, `--green-brain/--rust-brain`, `tools/ai_ladder.py`, `make ai-ladder`); run 1 says r1 beats a4 13–3 (see unit_ai.md); probe run 2 in progress.
 9. Stretch: smarter CpuCommander; on-map explanations.
 
 ### Report (kept current)

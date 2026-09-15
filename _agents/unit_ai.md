@@ -234,6 +234,50 @@ unless the control point gives the anchor something to hold. The A0–A4 brains 
 (from 78/89% on `main`): the 6-tick target scan kept "nothing to shoot" for 5 ticks, in phase with the
 intel sampler. Fixed with A6 (re-scan every tick while nothing is picked).
 
+### AI ladder (`make ai-ladder`)
+
+Brain variants (`game/ai/brain_variants.gd`): **r1** = round 1's behaviors on today's sensing; **a4** = + cover
+fire, retreat to cover, fire discipline; **a6** = + squad tactics. Every pairing plays a mirror army (default
+`individuals`: five cannons in one squad), each seed four ways (both colors × both bases). ELO: K = 16, all
+start at 1000, the match list replayed 20 times and the last 10 averaged. A challenger becomes champion only by
+out-rating the champion AND beating it head to head. The champion is `BrainVariants.CHAMPION` (the default
+brain everywhere).
+
+<!-- ladder-table -->
+**Run 1 (2026-09-15, `main`'s rules: no friendly fire; individuals mirror; 16 matches per pairing):**
+
+| Variant | ELO | W–L |
+|---|---|---|
+| r1 | 1090 | 22–10 |
+| a6 | 1007 | 16–16 |
+| a4 | 903 | 10–22 |
+
+Head to head: r1 beat a4 **13–3** and a6 9–7; a6 beat a4 9–7.
+
+Reading: the new behaviors look smart in scenarios but lost the straight fight. Two suspects: (1) holding fire
+for friends is a pure handicap while shells that hit friends do no damage (rules turn friendly fire on in round
+2, which flips this); (2) a hide/peek cycle of ~4 s gives the enemy's shield (4 s recharge delay) time to come
+back. Squad tactics recovered part of the gap (a6 over a4).
+
+**Run 2 (same rules, with think LOD; 12 matches per pairing):** probes `a6n` = a6 without holding fire for
+friends, `a6np` = a6n + COVER_FIRE backing off against broken shields and winning trades.
+
+| Variant | ELO | W–L |
+|---|---|---|
+| **a6** | 1189 | 28–8 |
+| r1 | 997 | 20–16 |
+| a6n | 974 | 16–20 |
+| a6np | 839 | 8–28 |
+
+Head to head: a6 beat r1 7–5, a6n 9–3, a6np 12–0; r1 beat a6n 7–5 and a6np 8–4.
+
+Reading: both suspects were wrong. Holding fire for friends *helps* even without friendly fire (a6 over a6n
+9–3: shells stopped by a friend were wasted reloads), and "press instead of ducking" was clearly worse (0–12).
+Across both runs r1 vs a6 is 14–14: in a straight mirror brawl the new behaviors are about even with round 1's
+charge-and-shoot, while being the behavior the lead asked for (cover, peeking, no friendly fire), and they
+win the coordinated fights (squad tactics). **Champion: a6** (it beat champion a4 in run 1 and r1 in run 2).
+The press probe was deleted. Re-run after checkpoint 1: friendly fire on and the v2 roster change the answer.
+
 ### The 2D cover map vs physics
 
 `CoverMap.clear_line` agreed with physics raycasts on 139 of 139 random sight lines on the real arena

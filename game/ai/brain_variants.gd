@@ -20,7 +20,8 @@ const PROFILES := {
 	"a6": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
-const CHAMPION := "a4"
+## 2026-09-15: a6 (beat a4 9-7 in ladder run 1 and r1 7-5 in run 2; see unit_ai.md "AI ladder").
+const CHAMPION := "a6"
 
 static var _from_flags: Array = []
 
