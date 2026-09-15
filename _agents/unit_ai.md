@@ -34,7 +34,7 @@ deviations.
 | Peek within the front arc | 30°, 45°, 60° off the bearing, 3–10.5 m, +1.5 m past the first clear spot | ≤ 45° can't get around a wall's end with a tank that can't strafe |
 | Exposure influence layer | `threatens_me` per contact (in its weapon's reach with a clear line) | Only the count is used (TAKE_COVER, RETREAT); no damage-rate weighting yet |
 | FireLanes | `game/ai/fire_lanes.gd`; OrderController `_clear_to_fire`; brain CLEAR_LANE | Corridor = 2 m (a side-on hull's half length) + 2σ spread, swept by the friend's motion for shells; defers to rules' `Match.friendlies_in_line_of_fire` when present |
-| Matchups | not built | Blocked on rules' catalog v2 (checkpoint 1); scenarios pending |
+| Matchups | `game/ai/matchups.gd` (`effective_dps`, `hit_chance`, `tracking`, `prior`, `duel_advantage`), tested on catalog-v2-shaped data | Not yet wired into target choice or movement: needs catalog v2 on `main` (checkpoint 1); two scenarios pending. Target value will be effective dps ÷ toughness × prior; duel advantage scales ENGAGE appetite; fixed mounts orbit when a turret's tracking factor drops |
 | SquadTactics | `game/ai/squad_tactics.gd` + bounding overwatch in `TankBrain._with_overwatch` and `Squad._update_bound` | Escorts for fragile units are a target-priority bonus on enemies within 45 m of them, not a movement assignment |
 | AI ladder | `game/ai/brain_variants.gd`, `tools/ai_ladder.py`, `make ai-ladder` | Variants are feature switches read from `--green-brain/--rust-brain` by the brain itself (no match-runner edits) |
 | Perf ≤ 1 ms at 50 units | ~7–9 ms (see Results) | Not met; think LOD (18 ticks with no enemy within 130 m) and per-tick shared tables built; the rest is listed under Results |
