@@ -42,6 +42,8 @@ Paused this round: **netcode** (works today; resumes once the core loop is fun).
   behind seams, then play lockstep matches. Round 2 keeps the debt small by following its guidelines.
 - **Android paid app:** export, touch polish on real devices, store listing. The integer-core lockstep for ranked play, if the lead wants ranked.
 - **Content:** more units (one at a time, each with a counter), more arenas, arena hazards.
+- **The arena kit** ([game_design.md](game_design.md) *The arena kit*): stackable 20 and 40 ft shipping containers
+  and giant dystopian ad screens with live match content, so new arenas are layout data over shared props.
 - **Factions** (decided 2026-09-15, not scheduled; [game_design.md](game_design.md#factions-lead-2026-09-15)): the
   Condemned (today's roster), road gangs, the Law, the Syndicate. Same five roles, wildly different trade-offs, one
   shared mechanics vocabulary, balanced over time by headless simulation. First step: a `faction` field in the unit

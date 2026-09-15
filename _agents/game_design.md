@@ -196,6 +196,52 @@ The lead wants this *"really sophisticated"*. The player's orders set intent; ea
 - Unit art and arena art come from the Meshy pipeline, **with the lead approving concept images before any
   image-to-3D request** **(lead)**.
 
+### The arena kit: reuse beats new assets (lead, 2026-09-15; not scheduled)
+
+The lead expects asset size to balloon as maps fill up, and proposed two highly reusable pieces. The principle:
+**arenas are layouts (C5 JSON) over one shared prop kit**, so a new arena costs kilobytes, not megabytes. Download size
+is driven by textures, not meshes: share texture sets, vary instances in shaders, and watch `tools/assets/pck_report.py`.
+
+**1. Shipping containers** (20 ft: 6.06 × 2.44 × 2.59 m; 40 ft: 12.19 m long)
+- Two simple meshes (a few hundred triangles) sharing **one** corrugated-steel texture set. Hand-built or CC0 beats
+  Meshy for simple hard-surface shapes (verify and record licenses). A 40 ft container is its own mesh with tiled
+  UVs, never a stretched 20 ft.
+- **Variation without new textures:** per-instance paint color, rust and grime amount, door open or closed, and a
+  stencil decal chosen in the shader. Faction-flavored stencils on the same mesh: prison transport, "EVIDENCE" and
+  impound (the Law), sponsor-branded (the Syndicate), spray-painted gang tags.
+- **Stack them** into walls, towers, and chokepoints. Draw every container of a kind with one MultiMesh (one draw call
+  per kind, however many are placed).
+- **Gameplay:** containers are axis-aligned boxes, ideal for cover features (C4) and portable collision
+  (determinism.md). Stack height is a design lever: one high is hull-down cover, two high blocks line of sight.
+- In layout data: `{"type": "container_20", "position", "rotation_deg", "stack": 2}`.
+
+**2. Giant screens** (the Syndicate's arena broadcast, Blade Runner billboards)
+- A flat quad with an emissive shader: cheap geometry, and the brightest thing in a night arena.
+- **Content without video files:** still ad images or small flipbook sheets, animated by the shader: slow pan and zoom,
+  scanlines, CRT flicker, glitch transitions between ads, a scrolling ticker. Avoid real video on web and phones (CPU
+  decoding and file size).
+- **Text is overlaid, not baked into generated images** (AI images garble text): a font label or font atlas over the
+  image, which also allows translations and live text.
+- **Live match content:** score, kill feed, shifting betting odds ("RUST 3:1"), sponsor reactions when a Syndicate unit
+  scores, the announcer's hype lines. Kill replays rendered from a second camera only on the high quality tier.
+- **Light spill:** each ad frame stores its average color, and the screen tints a fake light splat on the ground and
+  nearby props (references/fx_tricks.md), so the arena flickers with the ads at almost no cost.
+- **Ads are dystopian satire of our own fictional brands** (never real brands or real people), in the spirit of
+  GTA's over-the-top radio. First ideas:
+  - *Syndicate Life Insurance: "Because you won't make it."*
+  - *"CONDEMNED? Win your freedom tonight!\* \*Terms and conditions apply."*
+  - *The Law: "Report your neighbor. Earn ration credits."*
+  - *AquaCorp: "Hydration is a privilege."*
+  - *Organ Futures: "Invest in tonight's champion."*
+- **Audio later:** PA jingles and ad voice-overs between rounds (an in-house synthesized corporate voice may fit the
+  dystopia better than a human one). The lead's GTA reference sets the tone: ridiculous, dark, funny.
+- **Size:** ad images around 512 × 1024, compressed, a few hundred KB each; keep a budget (e.g. 20 ads) and consider
+  loading extra ad packs after the game starts.
+
+**Art direction note for later:** art_direction.md currently bans logos, readable text, and pristine surfaces on
+vehicles. Screens, sponsor branding, and the Syndicate's immaculate look are deliberate exceptions to fold in when the
+arena kit and factions are scheduled.
+
 ## Match rules (current defaults)
 
 - Squad-vs-squad elimination; no respawns.
