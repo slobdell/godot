@@ -122,7 +122,9 @@ static func from_features(list: Array) -> CoverMap:
 			axis = (entry["axis"] as Vector2).normalized()
 		else:
 			var angle := deg_to_rad(float(entry["rotation_deg"])) if entry.has("rotation_deg") else float(entry.get("rotation", 0.0))
-			axis = Vector2(cos(angle), -sin(angle))  # Basis(UP, angle).x seen from above
+			# Basis(UP, angle).x seen from above. The one trig call in the AI's geometry: once per obstacle at arena
+			# load, on layout data (listed in _agents/determinism.md's inventory).
+			axis = Vector2(cos(angle), -sin(angle))
 		map.features.append({"center": position, "axis": axis, "half": size / 2.0,
 				"height": float(entry.get("height", 3.0)), "type": String(entry.get("type", ""))})
 	map._index()

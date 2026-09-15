@@ -26,7 +26,8 @@ static func in_line(muzzle: Vector3, aim: Vector3, friends: Array, spread_deg :=
 	if length < 0.01:
 		return result
 	var along_unit := line / length
-	var spread := tan(deg_to_rad(spread_deg) * SPREAD_SIGMAS)
+	# Small-angle: tan(x) ≈ x for spreads of a few degrees (no library trig, _agents/determinism.md).
+	var spread := deg_to_rad(spread_deg) * SPREAD_SIGMAS
 	for friend: Dictionary in friends:
 		var now := Vector2(friend["position"].x - muzzle.x, friend["position"].z - muzzle.z)
 		var spots := [now]

@@ -39,6 +39,10 @@ Update this table whenever simulation code adds an engine dependency.
 | Match rules | `game/match/match.gd` | raycasts, float timers by tick | integer rules on the core |
 | Randomness | `game/units/army.gd` and brains | Godot `RandomNumberGenerator` (seeded) | one PRNG we implement, seeded by the match |
 | Brain scoring | `game/ai/tank_brain.gd`, `order_controller.gd` | float utility math, trig for angles | fixed point, or floats restricted to `+ − × ÷ √` (measure on ARM first) |
+| Cover line of sight and tactical positions (ai, round 2) | `game/ai/cover_map.gd`, `game/ai/tactical_query.gd` | none at decision time: pure 2D boxes/segments (slab tests, dot and cross products, `√` for normalizing), quantized memo keys; one `cos`/`sin` per obstacle at arena load (layout rotation) | integer segment-vs-box on the core; rotations as integer axis vectors in layout data |
+| Line of fire (ai) | `game/ai/fire_lanes.gd` | pure segment-vs-circle with a small-angle spread (no trig); defers to `Match.friendlies_in_line_of_fire` | fixed point |
+| Matchups and squad tactics (ai) | `game/ai/matchups.gd`, `game/ai/squad_tactics.gd` | floats; `log` in the penetration curve (mirrors `Armor.penetration_multiplier`); arcs and aim by dot products | a penetration lookup table; fixed point |
+| Brain LOD, variants, per-tick caches (ai) | `game/ai/tank_brain.gd`, `brain_variants.gd`, `ai_tick_cache.gd` | tick counts and command-line flags only | nothing to port |
 
 ## Guidelines for simulation code from now on (rules and ai streams)
 

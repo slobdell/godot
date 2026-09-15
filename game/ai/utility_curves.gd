@@ -23,11 +23,6 @@ static func smooth(x: float, from: float, to: float) -> float:
 	return t * t * (3.0 - 2.0 * t)
 
 
-## Logistic S centered on `mid`; `steepness` in 1/units (larger = sharper).
-static func logistic(x: float, mid: float, steepness: float) -> float:
-	return 1.0 / (1.0 + exp(-steepness * (x - mid)))
-
-
 ## A plateau: 1 between `low` and `high`, falling smoothly to 0 over `soft` outside them ("preferred range").
 static func band(x: float, low: float, high: float, soft: float) -> float:
 	if x < low:
