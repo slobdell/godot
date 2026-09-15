@@ -104,6 +104,9 @@ var lane_blocker := ""
 var hold_for_friends := true
 ## Measurement (not decisions): shots held for friends, by every controller since the process started.
 static var held_for_friends := 0
+## A blocked lane is re-checked only every this many ticks (a friend doesn't clear a lane in one tick).
+const LANE_RECHECK_TICKS := 3
+var _lane_hold_left := 0
 
 
 func _ready() -> void:
@@ -311,7 +314,7 @@ func _apply_weapon(cmd: TankCommand) -> void:
 				target = _scanned_shootable()
 		"target":
 			if tanks_root != null:
-				var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
+				var named := _named_tank(String(weapon_order["name"]))
 				if named != null and named.is_alive() and named.team != tank.team and _shootable(named):
 					target = named
 				elif weapon_order.get("fallback", false):
@@ -369,6 +372,14 @@ func _nearest_shootable() -> Tank:
 	return best
 
 
+## A tank by name: the brains' shared per-tick table (no NodePath parsing every tick), else a node lookup.
+func _named_tank(tank_name: String) -> Tank:
+	var brain := self as TankBrain
+	if brain != null and brain.game_match != null and brain.game_match.tanks == tanks_root:
+		return AiTickCache.tanks_by_name(brain.game_match).get(tank_name) as Tank
+	return tanks_root.get_node_or_null(NodePath(tank_name)) as Tank
+
+
 ## Living enemies in scene order: shared per tick for brains (AiTickCache), scanned otherwise.
 func _enemies() -> Array:
 	var brain := self as TankBrain
@@ -392,7 +403,7 @@ func _apply_indirect(cmd: TankCommand) -> void:
 		return d >= float(weapon["min_range"]) and d <= float(weapon["range"])
 	var target: Tank = null
 	if weapon_order["type"] == "target":
-		var named := tanks_root.get_node_or_null(NodePath(weapon_order["name"])) as Tank
+		var named := _named_tank(String(weapon_order["name"]))
 		if named != null and named.is_alive() and named.team != tank.team and sees.call(named) and in_window.call(named):
 			target = named
 	if target == null and (weapon_order["type"] == "fire_at_will" or weapon_order.get("fallback", false)):
@@ -423,6 +434,11 @@ func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
 		return false
 	if not hold_for_friends:
 		return true
+	if _lane_hold_left > 0:
+		_lane_hold_left -= 1
+		lane_blocked_ticks += 1
+		held_for_friends += 1
+		return false
 	var blockers := FireLanes.for_shot(tanks_root, tank, aim)
 	if blockers.is_empty():
 		lane_blocked_ticks = 0
@@ -431,6 +447,7 @@ func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
 	lane_blocked_ticks += 1
 	lane_blocker = String(blockers[0])
 	held_for_friends += 1
+	_lane_hold_left = LANE_RECHECK_TICKS - 1
 	return false
 
 

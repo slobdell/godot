@@ -13,11 +13,14 @@ extends RefCounted
 ##   retreat_to_cover  RETREAT breaks line of sight at nearby cover first; withdrawals back away from threats (A3)
 ##   hold_for_friends  never fire through a friend; CLEAR_LANE to fix the lane (A4)
 ##   squad_tactics     focus fire, suppress-and-flank, covering retreats, fragile escorts (A6)
+##   think_ticks       (int) how often a brain in contact thinks (default TankBrain.THINK_EVERY_TICKS = 6)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false},
 	"a4": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": false},
 	"a6": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true},
+	# Probe: thinking 50% less often in contact (CPU) — must not lose to a6 to be adopted.
+	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "think_ticks": 9},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
 ## 2026-09-15: a6 (beat a4 9-7 in ladder run 1 and r1 7-5 in run 2; see unit_ai.md "AI ladder").

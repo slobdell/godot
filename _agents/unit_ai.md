@@ -21,6 +21,24 @@ going in and out of cover to shoot … avoid shooting their own friendlies … r
 | Squad coordination | F.E.A.R. (Orkin): per-agent planners plus squad behaviors that hand out goals; US Army bounding overwatch (FM 3-20.15) | `SquadTactics`, a squad blackboard every 30 ticks: focus target, suppress-and-flank roles, cover for a retreating teammate, escorts for fragile units, overwatch positions for bounds. Brains read it as considerations, never as commands | A GOAP planner: our action set is small and flat, plans would be hard to measure and explain. F.E.A.R.'s squad behaviors were simple coordinators, which is the part we take |
 | Cost | Staggered updates, AI LOD, caching (TPS, EQS) | Think staggering (exists), tactical queries only when a position is needed, per-team memoized LOS keyed by quantized positions (deterministic), a CPU budget test at 50 units | Multi-threading: the web export has no threads |
 
+## As built (2026-09-15): where the code differs from the plan below
+
+The sections below are the design as planned in A0; this is the map from plan to code and the deliberate
+deviations.
+
+| Plan | Code | Deviation and why |
+|---|---|---|
+| Considerations × curves | `game/ai/utility_curves.gd`; COVER_FIRE and TAKE_COVER use them | Older options keep their hand-tuned products (rewriting them would move every measurement for no gain) |
+| `why` explanations | `TankBrain.why` appended to `tank.intent` ("COVER_FIRE Rust_2 - squad focus, peek") | Phase and squad-role tags, not consideration dumps: readable on a nameplate |
+| Tactical points around cover | `CoverMap` (rings at 3.5 m and 7.5 m, every 3 m) + `TacticalQuery.find_cover/find_cover_fire/find_overwatch` | No dynamic rings around me (static points were enough in scenarios); hiding means the whole hull (center ± 1.6 m) is hidden; friends spacing 5 m; ≤ 16 candidates, ≤ 8 deep, ≤ 6 threats (hull check only for the main one) |
+| Peek within the front arc | 30°, 45°, 60° off the bearing, 3–10.5 m, +1.5 m past the first clear spot | ≤ 45° can't get around a wall's end with a tank that can't strafe |
+| Exposure influence layer | `threatens_me` per contact (in its weapon's reach with a clear line) | Only the count is used (TAKE_COVER, RETREAT); no damage-rate weighting yet |
+| FireLanes | `game/ai/fire_lanes.gd`; OrderController `_clear_to_fire`; brain CLEAR_LANE | Corridor = 2 m (a side-on hull's half length) + 2σ spread, swept by the friend's motion for shells; defers to rules' `Match.friendlies_in_line_of_fire` when present |
+| Matchups | not built | Blocked on rules' catalog v2 (checkpoint 1); scenarios pending |
+| SquadTactics | `game/ai/squad_tactics.gd` + bounding overwatch in `TankBrain._with_overwatch` and `Squad._update_bound` | Escorts for fragile units are a target-priority bonus on enemies within 45 m of them, not a movement assignment |
+| AI ladder | `game/ai/brain_variants.gd`, `tools/ai_ladder.py`, `make ai-ladder` | Variants are feature switches read from `--green-brain/--rust-brain` by the brain itself (no match-runner edits) |
+| Perf ≤ 1 ms at 50 units | ~7–9 ms (see Results) | Not met; think LOD (18 ticks with no enemy within 130 m) and per-tick shared tables built; the rest is listed under Results |
+
 ## 1. Decision making: considerations and response curves
 
 **Literature.** Dave Mark's *Behavioral Mathematics for Game AI* (2009) and the GDC talks with Kevin Dill
@@ -289,6 +307,11 @@ Across both runs r1 vs a6 is 14–14: in a straight mirror brawl the new behavio
 charge-and-shoot, while being the behavior the lead asked for (cover, peeking, no friendly fire), and they
 win the coordinated fights (squad tactics). **Champion: a6** (it beat champion a4 in run 1 and r1 in run 2).
 The press probe was deleted. Re-run after checkpoint 1: friendly fire on and the v2 roster change the answer.
+
+**Run 3 (CPU probe, 16 matches):** `a6t9` = a6 thinking every 9 ticks in contact instead of 6. AI cost 11.2 →
+8.6 ms per tick at 50 brains (same machine load, back to back: −24%). Head to head a6 9–7: within noise, but the
+challenger didn't win, so **the champion stays a6**. `a6t9` stays in `BrainVariants` as the first lever if phones
+need the CPU (re-test it there with more matches).
 
 ### The 2D cover map vs physics
 

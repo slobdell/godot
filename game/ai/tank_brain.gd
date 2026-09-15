@@ -133,8 +133,8 @@ func think(_delta: float) -> void:
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
 	# Think LOD wake-up: an idle brain checks each fresh intel refresh for an enemy coming near.
-	if _think_every > THINK_EVERY_TICKS and game_match.tick % Match.INTEL_EVERY_TICKS == 0 and _enemy_near():
-		_think_every = THINK_EVERY_TICKS
+	if _think_every == IDLE_THINK_EVERY_TICKS and game_match.tick % Match.INTEL_EVERY_TICKS == 0 and _enemy_near():
+		_think_every = int(BrainVariants.for_team(tank.team).get("think_ticks", THINK_EVERY_TICKS))
 		fresh_order = true
 	if not fresh_order and (game_match.tick + think_offset) % _think_every != 0:
 		return
@@ -142,7 +142,7 @@ func think(_delta: float) -> void:
 	_think_every = IDLE_THINK_EVERY_TICKS
 	for c: Dictionary in situation["contacts"]:
 		if tank.global_position.distance_to(c["position"]) <= LOD_RADIUS:
-			_think_every = THINK_EVERY_TICKS
+			_think_every = int((situation["features"] as Dictionary).get("think_ticks", THINK_EVERY_TICKS))
 			break
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	ranked = decision["ranked"]
