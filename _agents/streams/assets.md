@@ -94,8 +94,10 @@ Read back with `read_db` (collection `decisions`) per page, then `make art-apply
 
 ## Status
 
-_Updated 2026-09-15 (worker). Baseline `make remote T=check` was green on builder0 before any change; every commit
-below passed `make remote T=check` (sim baseline unchanged: assets never touch the simulation)._
+_Updated 2026-09-15 (worker). **Report: every backlog item is done or waiting on the lead's taps (X3 → X4 models; the
+wreck concepts).** Baseline `make remote T=check` was green before any change; every commit passed it, and the last
+(e60d9dd) did too: 437 tests, every smoke, sim baseline unchanged (assets never touch the simulation). `make web-smoke`
+passes locally (builder0's Chrome has no WebGL2, so it can't run there: proposed trip-up 6)._
 
 **Plan and outcome** (order changed from the brief on purpose: the faction concepts went first because the lead's
 review is the long pole; everything ungated ran while it waits)
@@ -191,6 +193,8 @@ review is the long pole; everything ungated ran while it waits)
    (`cyber_vehicle.gd`).
 4. **A fresh worktree has no `assets/incoming/meshy/`:** three paid concept downloads failed on the missing folder.
    `generate.py` now creates it and can re-download a finished task (`--concept-task`).
+6. **builder0's Chrome has no WebGL2:** `make remote T=web-smoke` fails with "WebGL2 - Check web browser configuration"
+   before Godot starts. Run web smokes locally (SwiftShader works there).
 5. **builder0 may have no logged-in desktop:** `make remote T=<screenshot target>` fails with "X11 Display is not
    available"; run short rendering targets locally.
 
@@ -203,3 +207,48 @@ review is the long pole; everything ungated ran while it waits)
 - **combat (X5 deploy):** call `invoke("set_deployed", [ratio])` on the artillery's hull slot as it deploys and packs up.
 - **control / announcer (later):** `AdBroadcast.channel(node, "arena").post_live({headline, fine_print})` puts anything on
   the screens' live card (score, odds, the announcer's hype line).
+
+**Known issues**
+- The arena kit adds ~0.8 MB to the web `.pck` (target was no growth); the biggest pieces are the placeholder ads and the
+  container texture set. Real ads chosen by the lead should keep to 256 × 512 stills.
+- The screens' live card finds the Match by searching the scene a few times after it appears; a direct hook from
+  control or the announcer (`post_live`) would be cleaner (request above).
+- Outrigger leg boxes are tuned to this crane carrier's mesh (`artillery_part.gd` LEG_BOXES); a new artillery model needs
+  its own boxes.
+- Barricade containers outside the gates aren't hidden by the FX lab's venue toggle (they draw with the containers).
+- Gameplay can't place containers or screens as cover until combat adds the obstacle types (request above).
+
+**What to playtest**
+- `make title` or `make skirmish`: the four screens over the short walls (ads cycle every ~8 s with a glitch; the live
+  card shows kills and odds once units die), neon signs on the stands, gang container barricades beside the gates.
+- `make arena-kit-gallery` then open `build/screenshots/arena-kit-*.png`: container yard (stacks, open doors, each
+  faction's stencils), screens on two channels, the 200 m overview. Windowed and interactive:
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . res://game/theme/gallery/arena_kit_gallery.tscn`
+- `make artillery-deploy-shot`: three crane carriers stowed / half / braced.
+- `make vehicle-gallery FACTION=condemned` (all five roles) and `FACTION=gangs|law|syndicate` (empty until models land).
+- The review pages in *Waiting on the lead*.
+
+**Next steps**
+1. When the lead taps: `read_db` each page → `make art-apply-decisions`, copy the decisions here, then
+   `tools/assets/model_batch.py --list` and run it (≈15 credits per model).
+2. For each model: `make assets-view IN=assets/incoming/meshy/<id>_t2.glb SPLIT=1`, write a recipe
+   (`tools/assets/build_factions.sh`, like build_roster.sh) normalizing into `THEME=factions/<faction>` slots
+   `unit.<faction>.<role>.*`, then `make vehicle-gallery FACTION=<id>` next to the concepts, and add
+   `game/theme/factions/*/generated/*` to the web/server `exclude_filter` (shared file) until factions are playable.
+3. An approved wreck: normalize into a `prop.wreck` scene for feel's wreck effects.
+4. After combat adds the obstacle types, an arena layout built from containers (combat owns `arenas/`) and a
+   swap-bases fairness run.
+
+**Merge notes**
+- **Shared-file edits:** `Makefile` (`LIGHT_GOALS` += `art-concept-batch`); `mk/fx.mk` (`vehicle-gallery` passes
+  `FACTION=` as `--gallery-faction` and names the screenshot per faction); `game/theme/game_theme.gd` (additive slot rows
+  `prop.container_20`, `prop.container_40`, `prop.ad_screen` in DEFAULT_SLOTS).
+- **Owned paths:** `game/theme/{arena_kit,cyberpunk,gallery,factions}/`, `assets/{pipeline,review,fonts,CREDITS.md,
+  meshy_ledger.md}`, `tools/assets/`, `mk/assets.mk`, `tests/test_assets_*.gd`, `_agents/art_direction.md`,
+  `_agents/slot_contracts.md` (new rows).
+- **Contracts:** K4 slot ids live in `AssetContracts` and `FactionArt`; new slot rows (containers, ad screen,
+  `set_deployed`) in slot_contracts.md. No gameplay code changed; the sim baseline is untouched.
+- `dozer_part.gd` gained a `_prepare_model()` hook and `cyber_vehicle.gd` frees an orphan mesh node on predelete (both
+  assets-owned, used by every generated unit).
+- Rescue before removing the worktree: `assets/incoming/meshy/` holds 40 concept PNGs and the artillery source
+  (`rsync -a --ignore-existing assets/incoming/ ~/projects/godot/assets/incoming/`), plus `assets/incoming/ambientcg/`.
