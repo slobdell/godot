@@ -38,7 +38,8 @@ Update this table whenever simulation code adds an engine dependency.
 
 | System | File(s) | Engine dependency | Port to |
 |---|---|---|---|
-| Movement and collision | `game/tank/tank.gd`, `game/tank/tank_motion.gd` | physics body motion, trig for heading | integer kinematics, circle vs segment collision (detcore has arena walls) |
+| Movement and collision | `game/tank/tank.gd`, `game/tank/tank_motion.gd` | round 3 (combat X4): heading, speed, turning circles, and drift are pure `TankMotion.step_in_place` over vectors (`+ − × ÷ √`, no per-tick trig); the body's basis is set with `Basis.looking_at` (cross products); `move_and_slide` collisions; `rotation.y` (an euler extraction) is read only for sync and the state hash | integer kinematics on the same step, circle vs segment collision (detcore has arena walls) |
+| Weapons timing and events (combat, round 3) | `game/tank/tank.gd`, `game/match/match.gd` | reloads and bursts in whole ticks; `incoming_projectiles` is pure 2D dot/cross geometry; shells still sweep engine raycasts | shells as integer segment tests |
 | Shells | `game/combat/shell.gd` | physics raycasts per step | integer segment vs box/circle tests |
 | Line of sight, perception | `game/ai/perception.gd`, `game/match/visibility_field.gd` | physics raycasts | detcore grid line of sight |
 | Pathing | `game/ai/pathing.gd`, `game/ai/tank_brain.gd` | `NavigationServer3D` navmesh queries | grid A* or a baked integer graph |

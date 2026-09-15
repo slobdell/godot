@@ -1,0 +1,7 @@
+{
+ "O": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=90,lancer.sight_radius=90",
+ "Q_dmg24": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=24,laser.range=90,lancer.sight_radius=90",
+ "R_range94": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=94,lancer.sight_radius=94,laser.preferred_max=90",
+ "S_tank_sight58": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=90,lancer.sight_radius=90,tank.sight_radius=58",
+ "T_heat15": "autocannon.penetration=5,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,laser.heat_per_shot=18,tank.sight_radius=62,laser.preferred_min=76,laser.preferred_max=86,laser.damage=22,laser.range=90,lancer.sight_radius=90,laser.heat_per_shot=15"
+}

@@ -1,0 +1,6 @@
+{
+ "H_light_lancer_plow_burner": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6",
+ "I_H_slow_reverse_lancer": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,lancer.max_reverse_speed=2.5",
+ "J_H_reach_ifv": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,autocannon.range=65,ifv.max_forward_speed=12.5",
+ "K_H_mg5": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100,lancer.armor.front=3,lancer.armor.side=2,lancer.armor.rear=1.5,burner.armor.front=6,machine_gun.damage=5"
+}
