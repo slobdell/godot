@@ -153,8 +153,9 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 **Known issues:**
 - Heavy tanks can't dodge tank shells (physics); they take them on the front armor.
 - The dodge bar (≥ 35% of tank shells for a light unit) is pending: IFVs reach 6–15%.
-- With combat's weapons single matches swing; 16-match ladders are noisy (x3 won one combined_arms seed 5–0 and 5–1 while
-  losing the 16-match ladder 5–11).
+- With combat's weapons single matches swing; 16-match ladders are noisy: on 12 more combined_arms matches (seeds 1–6,
+  both colors) x3 won 6, a6 5, one draw, and x3's tanks lived 37% longer on the same number of shots, so the preview's
+  combined_arms deficit (14–30) is weak evidence. Re-measure with more seeds after the merge.
 
 **What to playtest (after the merges):**
 - `make skirmish` (with control's desktop controls): order units mid-fight (they respond at once), push one away (it
