@@ -4,7 +4,7 @@ extends GameMode
 ## elimination; starts in a planning pause. See _agents/tactical_map.md.
 ##   --player=DOCTRINE (default player_default; must fit --budget, default Units.DEFAULT_BUDGET)
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
-##   --seed=N (the CPU army's seed; default: the clock)   --control (a control point at the center)
+##   --seed=N (the CPU army's seed; default: the clock)   --no-control (no control point at the center; on by default)
 ##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
 ##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
@@ -60,8 +60,10 @@ func start() -> void:
 	executor.orders = orders
 	main.add_child(executor)
 	game_match.elimination = true
-	# Stretch: --control adds a control point at the center (first to 90 points, or elimination).
-	game_match.control_point = flags.has("control")
+	# The center control point is on by default (the lead: "control point on by default"; combat X7 measured CPU vs CPU
+	# at this budget: median match 92 s with it, most fights end under a minute without). --no-control turns it off;
+	# --control is still accepted.
+	game_match.control_point = not flags.has("no-control")
 	# Stretch: --commander gives the CPU army a CpuCommander that issues squad orders. Opt-in: v1 made
 	# the CPU weaker (see _agents/balance.md), so it stays off until a series shows it helps.
 	if flags.has("commander"):
