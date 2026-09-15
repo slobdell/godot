@@ -141,6 +141,14 @@ const MOTION_REPLAN_TICKS := 15
 ## JINK_MIN_TICKS + JINK_SPREAD_TICKS (per unit, so a group doesn't jink in step).
 const JINK_MIN_TICKS := 90
 const JINK_SPREAD_TICKS := 150
+## Circling units jink only within this distance of their target (meters).
+const JINK_RANGE := 50.0
+## A unit this far outside its target's weapon range (and inside its own) holds still and shoots (meters).
+const OUTRANGE_MARGIN := 4.0
+## A fixed gun's run slows to this throttle inside its weapon's range.
+const RUN_FIRING_SPEED := 0.65
+## ...once its nose is within ~20° of the target (cos).
+const RUN_AIMED_COS := 0.94
 ## ...and guns reloading at least SHORT_HALT_RELOAD seconds halt to fire: braking starts this long (s) before the gun is
 ## loaded, and a halt lasts at most SHORT_HALT_MAX_TICKS after it is (a gun that can't get a shot off moves on).
 const SHORT_HALT_RELOAD := 1.5
@@ -679,7 +687,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var cover_fire: Dictionary = s.get("cover_fire", {}) if s.get("cover_fire") != null else {}
 	for pair in engages:
 		var score: float = pair[1] * fight_scale
-		if is_scout and _is_artillery_contact(contacts, pair[0]):
+		if is_scout and TankBrain._is_prey_contact(contacts, pair[0], String(me.get("unit", ""))):
 			# Scouts hunt artillery (directive set 2 counter triangle): artillery is blind up close, can't
 			# fire inside 35 m, and is fragile; a scout closing fast on it is its nightmare. Even a
 			# cautious scout goes for it.
@@ -731,7 +739,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			# Artillery isn't a threat up close (hunt it), and neither is a slow turret I can orbit (A5).
 			var orbitable: bool = matchups.has(c["name"]) and matchups[c["name"]].get("orbit", false) \
 					and float(matchups[c["name"]]["advantage"]) >= ORBIT_KEEP_ADVANTAGE
-			if c["visible"] and c.get("weapon", "") != "mortar" and not orbitable:
+			if c["visible"] and not TankBrain._is_prey(c, String(me.get("unit", ""))) and not orbitable:
 				nearest = minf(nearest, my_position.distance_to(c["position"]))
 		if nearest < SCOUT_STANDOFF - 10.0:
 			spot = 0.88
@@ -936,6 +944,22 @@ static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
 			best_score = score
 			best = predicted
 	return best
+
+
+## A scout's prey: artillery (it can't fire up close) and the roles its catalog entry is good against (the Lancer's
+## turret can't track it; since CP2 a scout that only spotted a Lancer never fired, balance.md matrix #6).
+static func _is_prey(contact: Dictionary, my_unit: String) -> bool:
+	if contact.get("weapon", "") == "mortar":
+		return true
+	var role := Units.role_of(String(contact.get("unit", ""))) if Units.exists(String(contact.get("unit", ""))) else ""
+	return role != "" and (Units.profile(my_unit).get("good_vs", []) as Array).has(role)
+
+
+static func _is_prey_contact(contacts: Array, contact_name: String, my_unit: String) -> bool:
+	for c in contacts:
+		if c["name"] == contact_name:
+			return TankBrain._is_prey(c, my_unit)
+	return false
 
 
 static func _is_artillery_contact(contacts: Array, contact_name: String) -> bool:
@@ -1693,7 +1717,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		"angle":
 			jink_due = tick >= _jink_tick + JINK_SPREAD_TICKS or (tick >= _jink_tick and ticks_since_fire <= THINK_EVERY_TICKS)
 		"strafe":
-			jink_due = tick >= _jink_tick + (think_offset * 37) % JINK_SPREAD_TICKS
+			# Close in, jinks spoil a gunner's lead; at a long standoff they just look like rocking (a Lancer at 80 m).
+			jink_due = distance <= JINK_RANGE and tick >= _jink_tick + (think_offset * 37) % JINK_SPREAD_TICKS
 	if jink_due:
 		_strafe_side = -_strafe_side
 		_jink_tick = tick + JINK_MIN_TICKS
@@ -1703,6 +1728,13 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		elif _run_phase == "extend" and distance >= CombatMotion.RUN_RETURN:
 			_run_phase = "run"
 			_strafe_side = -_strafe_side  # come back in on the other flank
+	# Outranging (a Lancer on a tank): standing where its gun can't reach and mine can, there's nothing to dodge. Hold still
+	# and shoot, moving only if something is on its way or it closes in.
+	var their_reach := float(Weapons.profile(String(contact.get("weapon", ""))).get("range", 0.0))
+	if style != "run" and distance > their_reach + OUTRANGE_MARGIN and distance <= float(weapon["range"]) \
+			and (s.get("incoming", []) as Array).is_empty():
+		why = TankBrain._join(why, "outranging it")
+		return {"type": "stop"}
 	# Short halt (slow guns): brake so the gun is loaded as the hull stops, fire from a standstill (moving spread, and
 	# a turning hull drags the turret off), then move again while reloading. Never waits more than SHORT_HALT_MAX_TICKS.
 	var reload_seconds := float(weapon["reload"])
@@ -1760,8 +1792,11 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			why = TankBrain._join(why, "weaving, front armor on it")
 		_:
 			why = TankBrain._join(why, "circling")
+	# A fixed gun on a run eases off inside its range: longer on target per pass (a scout's stream fired ~2.5 s a pass).
+	var nose_on := (me["forward"] as Vector3).dot((Vector3(contact["position"].x, 0.0, contact["position"].z) - _flat(my_position)).normalized()) >= RUN_AIMED_COS
+	var speed := RUN_FIRING_SPEED if style == "run" and _run_phase == "run" and distance <= float(weapon["range"]) and nose_on else 1.0
 	_motion_cache = {"tick": tick, "key": motion_key, "why": why,
-			"order": _move_to(result["point"], result["reverse"], 1.0, 1.0, true)}
+			"order": _move_to(result["point"], result["reverse"], speed, 1.0, true)}
 	return _motion_cache["order"]
 
 

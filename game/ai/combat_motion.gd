@@ -44,6 +44,12 @@ const OBSTACLE_GROW := 2.2
 const FRIEND_SPACING := 7.0
 ## Never closer to the target than this (meters), except on a run.
 const MIN_GAP := 6.0
+## How many drivable candidates (best first) are checked for keeping the target in sight before settling for one that
+## doesn't.
+const SIGHT_CHECKS := 6
+## Wheels steer at a point at least this many turning radii out: a closer point off the nose can sit inside the turning
+## circle, where the wheel steering backs up, and the next plan picks the mirror point (a Lancer rocked 9 times in 15 s).
+const WHEELS_STEER_RADII := 3.0
 ## Term weights per style: range band, tangential motion, keeping the chosen side, working toward the target's side and
 ## rear, front armor toward the target, and continuity with the current heading; "reverse" is subtracted from a
 ## reversing candidate (negative: never reverse) and "turn" per second the hull needs to swing onto it (a pivot is time
@@ -51,7 +57,7 @@ const MIN_GAP := 6.0
 const WEIGHTS := {
 	"strafe": {"range": 1.0, "tangent": 0.8, "side": 0.35, "flank": 0.35, "armor": 0.15, "continuity": 0.1, "reverse": 0.25, "turn": 0.25},
 	"angle": {"range": 1.0, "tangent": 0.35, "side": 0.35, "flank": 0.1, "armor": 1.0, "continuity": 0.2, "reverse": 0.1, "turn": 0.25},
-	"run": {"range": 0.0, "tangent": 0.3, "side": 0.2, "flank": 0.6, "armor": 0.0, "continuity": 0.45, "reverse": -1.0, "turn": 0.0},
+	"run": {"range": 0.0, "tangent": 0.3, "side": 0.2, "flank": 0.6, "armor": 0.0, "continuity": 1.0, "reverse": -1.0, "turn": 0.0},
 }
 ## Dangers are subtracted (scores can go below zero once turning costs are in): heading side-on in the angle style,
 ## passing too close to the target, ending next to a friend, and (X3) passing within HIT_RADIUS of an incoming round
@@ -77,7 +83,9 @@ const ANGLE_MASK_COS := 0.64
 ## the extension turns back in.
 const RUN_OFFSET := 5.0
 const RUN_BREAK := 9.0
-const RUN_RETURN := 30.0
+const RUN_RETURN := 22.0
+## ...and over the last this many meters before the break the run veers from dead-on to past its flank.
+const RUN_VEER := 10.0
 
 
 static func choose(request: Dictionary) -> Dictionary:
@@ -109,8 +117,9 @@ static func choose(request: Dictionary) -> Dictionary:
 	# A run aims past the target's flank on my side of it; the extension heads out and around.
 	var run_goal := target_at
 	if style == "run":
+		# Straight at it (the gun on target) until the last RUN_VEER meters, then past its flank.
 		var across := Vector3(-bearing.z, 0.0, bearing.x) * side
-		run_goal = target_at + across * RUN_OFFSET
+		run_goal = target_at + across * RUN_OFFSET * clampf((RUN_BREAK + RUN_VEER - distance) / RUN_VEER, 0.0, 1.0)
 	var incoming: Array = request.get("incoming", [])
 	var threats: Array = request.get("threats", [])
 	# X3 weak spots: while the target's gun points at someone else, its side is there for the taking and my own front
@@ -190,7 +199,11 @@ static func choose(request: Dictionary) -> Dictionary:
 	var best_undodged := -INF
 	for entry: Array in scored:
 		best_undodged = maxf(best_undodged, float(entry[4]))
-	# Dangers last, best first: only the winner's path is checked in the common case.
+	# Dangers last, best first: only the winner's path is checked in the common case. A spot that loses sight of the
+	# target is used only if nothing in the first SIGHT_CHECKS does (circling behind cover loses the fight: a Lancer
+	# circled out of view and wandered off after CP2).
+	var fallback: Dictionary = {}
+	var checked := 0
 	for entry: Array in scored:
 		var end: Vector3 = entry[3]
 		if absf(end.x) > limit or absf(end.z) > limit:
@@ -199,13 +212,21 @@ static func choose(request: Dictionary) -> Dictionary:
 				or map.inside_any(Vector2(end.x, end.z), OBSTACLE_GROW)):
 			continue
 		var direction := Vector3(RING[entry[1]].x, 0.0, RING[entry[1]].y)
-		var point := here + direction * STEER_DISTANCE
+		var steer := maxf(STEER_DISTANCE, float(request.get("min_turn_radius", 0.0)) * WHEELS_STEER_RADII) if wheels else STEER_DISTANCE
+		var point := here + direction * steer
 		point.x = clampf(point.x, -limit, limit)
 		point.z = clampf(point.z, -limit, limit)
 		# Dodging: without the incoming rounds, something better would have been picked.
-		return {"point": point, "reverse": entry[2], "index": entry[1], "score": -float(entry[0]),
+		var result := {"point": point, "reverse": entry[2], "index": entry[1], "score": -float(entry[0]),
 				"dodging": not incoming.is_empty() and float(entry[4]) < best_undodged - 0.001}
-	return {}
+		if map == null or style == "run" or map.clear_line_coarse(end, target_at):
+			return result
+		if fallback.is_empty():
+			fallback = result
+		checked += 1
+		if checked >= SIGHT_CHECKS:
+			break
+	return fallback
 
 
 ## Whether a unit at `here` moving at `now` that sets out on `planned` passes within HIT_RADIUS of any incoming round
