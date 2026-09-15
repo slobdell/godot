@@ -23,43 +23,48 @@ func test_penetration_mirrors_the_rules_table() -> void:
 
 func test_an_autocannon_shreds_a_scout_but_not_a_tank_front() -> void:
 	var near := {"distance": 30.0, "face": "front"}
-	var on_scout := Matchups.effective_dps(IFV, AUTOCANNON, SCOUT, near)
-	var on_tank := Matchups.effective_dps(IFV, AUTOCANNON, TANK, near)
+	var on_scout := Matchups.effective_dps(IFV, AUTOCANNON, SCOUT, near, false)
+	var on_tank := Matchups.effective_dps(IFV, AUTOCANNON, TANK, near, false)
 	assert_true(on_scout > 3.0 * on_tank, "30 mm on a scout vs on a tank's front (%.1f vs %.1f dps)" % [on_scout, on_tank])
 
 
 func test_a_slow_turret_cant_track_a_circling_scout() -> void:
-	var still := Matchups.effective_dps(TANK, CANNON, SCOUT, {"distance": 20.0, "face": "side", "angular_speed_deg": 10.0})
-	var circling := Matchups.effective_dps(TANK, CANNON, SCOUT, {"distance": 20.0, "face": "side", "angular_speed_deg": 55.0})
+	var still := Matchups.effective_dps(TANK, CANNON, SCOUT, {"distance": 20.0, "face": "side", "angular_speed_deg": 10.0}, false)
+	var circling := Matchups.effective_dps(TANK, CANNON, SCOUT, {"distance": 20.0, "face": "side", "angular_speed_deg": 55.0}, false)
 	assert_true(circling < 0.3 * still, "a scout sweeping 55°/s around a 50°/s turret (%.1f vs %.1f dps)" % [circling, still])
-	var ifv_on_circling := Matchups.effective_dps(IFV, AUTOCANNON, SCOUT, {"distance": 20.0, "face": "side", "angular_speed_deg": 55.0})
+	var ifv_on_circling := Matchups.effective_dps(IFV, AUTOCANNON, SCOUT, {"distance": 20.0, "face": "side", "angular_speed_deg": 55.0}, false)
 	assert_true(ifv_on_circling > circling, "the IFV's fast turret keeps up where the tank's can't")
 
 
 func test_a_fixed_gun_only_hits_what_the_hull_points_at() -> void:
-	var ahead := Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "rear", "aim_error_deg": 4.0})
-	var beside := Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "rear", "aim_error_deg": 60.0})
+	var ahead := Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "rear", "in_arc": true}, false)
+	var beside := Matchups.effective_dps(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "rear", "in_arc": false}, false)
 	assert_true(beside < 0.5 * ahead, "outside its 16° arc the scout has to turn first")
 
 
 func test_shields_and_range_limits() -> void:
-	var bare := Matchups.effective_dps(TANK, CANNON, TANK, {"distance": 30.0, "face": "side"})
-	var shielded := Matchups.effective_dps(TANK, CANNON, TANK, {"distance": 30.0, "face": "side", "shield_up": true})
+	var bare := Matchups.effective_dps(TANK, CANNON, TANK, {"distance": 30.0, "face": "side"}, false)
+	var shielded := Matchups.effective_dps(TANK, CANNON, TANK, {"distance": 30.0, "face": "side"}, true)
 	assert_true(shielded < bare, "a cannon is a hull breaker: less against a shield")
-	assert_eq(Matchups.effective_dps(TANK, CANNON, TANK, {"distance": 90.0}), 0.0, "out of range: nothing")
-	assert_eq(Matchups.effective_dps(TANK, MORTAR, TANK, {"distance": 20.0}), 0.0, "inside a mortar's minimum range: nothing")
+	assert_eq(Matchups.effective_dps(TANK, CANNON, TANK, {"distance": 90.0}, false), 0.0, "out of range: nothing")
+	assert_eq(Matchups.effective_dps(TANK, MORTAR, TANK, {"distance": 20.0}, false), 0.0, "inside a mortar's minimum range: nothing")
+	assert_true(Matchups.time_to_kill(TANK, CANNON, TANK, {"distance": 30.0, "face": "side"}, 300.0, 150.0)
+			> Matchups.time_to_kill(TANK, CANNON, TANK, {"distance": 30.0, "face": "side"}, 300.0, 0.0), "a shield buys time")
 
 
 func test_duels_follow_the_counters() -> void:
 	var circle := {"distance": 20.0, "face": "side", "angular_speed_deg": 60.0}
-	var scout_vs_tank := Matchups.duel_advantage(SCOUT, MACHINE_GUN, 220.0, {"distance": 20.0, "face": "rear"},
-			TANK, CANNON, 450.0, circle)
-	var ifv_vs_scout := Matchups.duel_advantage(IFV, AUTOCANNON, 320.0, {"distance": 25.0, "face": "front", "angular_speed_deg": 30.0},
-			SCOUT, MACHINE_GUN, 220.0, {"distance": 25.0, "face": "front"})
-	var ifv_vs_tank := Matchups.duel_advantage(IFV, AUTOCANNON, 320.0, {"distance": 40.0, "face": "front"},
-			TANK, CANNON, 450.0, {"distance": 40.0, "face": "front"})
+	var scout_ttk_tank := Matchups.time_to_kill(SCOUT, MACHINE_GUN, TANK, {"distance": 20.0, "face": "rear"}, 300.0, 150.0)
+	var tank_ttk_scout := Matchups.time_to_kill(TANK, CANNON, SCOUT, circle, 140.0, 80.0)
+	var scout_vs_tank := Matchups.duel_advantage(scout_ttk_tank, tank_ttk_scout)
+	var ifv_ttk_scout := Matchups.time_to_kill(IFV, AUTOCANNON, SCOUT, {"distance": 25.0, "face": "front", "angular_speed_deg": 30.0}, 140.0, 80.0)
+	var scout_ttk_ifv := Matchups.time_to_kill(SCOUT, MACHINE_GUN, IFV, {"distance": 25.0, "face": "front"}, 220.0, 100.0)
+	var ifv_vs_scout := Matchups.duel_advantage(ifv_ttk_scout, scout_ttk_ifv)
+	var ifv_ttk_tank := Matchups.time_to_kill(IFV, AUTOCANNON, TANK, {"distance": 40.0, "face": "front"}, 300.0, 150.0)
+	var tank_ttk_ifv := Matchups.time_to_kill(TANK, CANNON, IFV, {"distance": 40.0, "face": "front"}, 220.0, 100.0)
+	var ifv_vs_tank := Matchups.duel_advantage(ifv_ttk_tank, tank_ttk_ifv)
 	print("MEASURE ai_matchups duel advantage: scout circling a tank's rear %.2f, IFV vs scout %.2f, IFV vs tank front %.2f" % [
 			scout_vs_tank, ifv_vs_scout, ifv_vs_tank])
 	assert_true(ifv_vs_scout > 1.5, "an IFV beats a scout (%.2f)" % ifv_vs_scout)
 	assert_true(ifv_vs_tank < 1.0, "an IFV loses to a tank head-on (%.2f)" % ifv_vs_tank)
-	assert_true(scout_vs_tank > ifv_vs_tank, "a scout on a tank's rear does better than an IFV on its front")
+	assert_true(scout_vs_tank > 1.0, "a scout circling a slow turret and shooting its rear wins (%.2f)" % scout_vs_tank)

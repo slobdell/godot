@@ -16,8 +16,8 @@ func test_fifty_brains_stay_inside_the_cpu_budget() -> void:
 	var s := AiScenario.create(self, 5)
 	var squads: Array = []
 	for i in 5:
-		squads.append({"name": "S%d" % i, "tanks": [{"weapon": "cannon"}, {"weapon": "cannon"}, {"weapon": "cannon"},
-				{"weapon": "cannon"}, {"weapon": "cannon"}]})
+		squads.append({"name": "S%d" % i, "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"},
+				{"unit": "tank"}, {"unit": "tank"}]})
 	for team in [Match.Team.GREEN, Match.Team.RUST]:
 		assert_eq(s.game_match.load_doctrine(team, {"name": "Perf", "squads": squads}), "", "setup: 25 tanks load")
 	# Spread each side along its base line so they don't start stacked on nine spawn slots.

@@ -35,7 +35,9 @@ const ORDER_STATE := {"move": "Moving", "bound": "Bounding", "hold": "Holding", 
 const INTENT_WORDS := {"RETREAT": "Retreating", "RESUPPLY": "Resupplying", "TAKE_COVER": "Taking cover",
 		"RECHARGE": "Recharging shields", "SPOT": "Spotting", "BOMBARD": "Bombarding", "SHADOW": "Shadowing",
 		"CONTEST": "Taking the center", "ENGAGE": "Engaging", "FLANK": "Flanking", "INVESTIGATE": "Investigating",
-		"REGROUP": "Regrouping", "ADVANCE": "Advancing", "KEEP_SLOT": "In formation", "HOLD": "Holding"}
+		"REGROUP": "Regrouping", "ADVANCE": "Advancing", "KEEP_SLOT": "In formation", "HOLD": "Holding",
+		# ai stream round 2 (A3-A5): minimal additive entries so every brain option has player words.
+		"COVER_FIRE": "Firing from cover", "CLEAR_LANE": "Clearing a firing lane", "ORBIT": "Circling"}
 
 
 static func intent_words(intent: String) -> String:

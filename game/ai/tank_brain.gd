@@ -56,8 +56,24 @@ const COVER_TEAMMATE_BONUS := 1.4
 const FRAGILE_THREAT_BONUS := 1.15
 ## The flanker's FLANK floor (× confidence × firepower) on the squad's focus.
 const FLANKER_APPETITE := 0.72
+## A5 matchups: a fixed-gun unit circles a turret that turns slower than this orbit sweeps (radius in meters, its
+## speed / radius = the angular speed it forces on the turret), bursting in when that turret points away.
+const ORBIT_RADIUS := 11.0
+## ...when the estimated duel advantage is at least ORBIT_START_ADVANTAGE, and keeps orbiting down to ORBIT_KEEP_ADVANTAGE.
+const ORBIT_START_ADVANTAGE := 0.9
+const ORBIT_KEEP_ADVANTAGE := 0.6
+## ...bursts in when the target's gun is more than 60° off it (cos 0.5) and it's this close...
+const ORBIT_BURST_RANGE := 30.0
+const ORBIT_BURST_COS := 0.5
+## ...and swings back out when the gun comes within ~37° (cos 0.8) or it's this close.
+const ORBIT_BREAK_COS := 0.8
+const ORBIT_BREAK_RANGE := 5.0
+## cos and sin of 75°: the orbit steers at a point this far ahead on the circle (constants, no runtime trig); far
+## enough ahead (~13 m) that steering doesn't slow down for arrival.
+const ORBIT_LEAD_COS := 0.259
+const ORBIT_LEAD_SIN := 0.966
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "ORBIT", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -110,6 +126,8 @@ var why := ""
 var _cover_cache := {}
 ## Bounding overwatch (A6): {"goal": the bound goal it was chosen for, "spot": Vector3}.
 var _overwatch := {}
+## ORBIT's phase: driving at the target (true) or circling it (false).
+var _bursting := false
 ## CLEAR_LANE's chosen spot and when it was chosen (kept until reached or stale, so the tank settles to fire).
 var _lane_goal: Variant = null
 var _lane_goal_tick := 0
@@ -270,8 +288,14 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		recharge = 0.5  # keep ducking until the shield is mostly back
 	add.call("RECHARGE", "", recharge)
 
+	# A5: how fast my weapon kills each fresh contact (mechanics + catalog prior), and how the duel goes.
+	var matchups: Dictionary = TankBrain.matchups_for(s) if features.get("matchups", true) else {}
+	var best_kill_rate := 0.0
+	for entry: Dictionary in matchups.values():
+		best_kill_rate = maxf(best_kill_rate, float(entry["kill_rate"]))
 	var engages: Array = []
 	var flanks: Array = []
+	var orbits: Array = []
 	var investigates: Array = []
 	for c in contacts:
 		var distance := my_position.distance_to(c["position"])
@@ -285,6 +309,16 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			var priority := TankBrain._priority(String(d["target_priority"]), c, distance)
 			var engage := (0.3 + 0.7 * float(d["aggression"])) * reach * (0.55 + 0.45 * priority) \
 					* confidence * leash_factor * (1.0 if c["visible"] else 0.75) * firepower
+			var matchup_factor := 1.0
+			if matchups.has(c["name"]) and best_kill_rate > 0.0:
+				var m: Dictionary = matchups[c["name"]]
+				# Shoot what my weapon kills fastest; lean into duels I win, away from ones I lose.
+				matchup_factor = (0.5 + 0.5 * float(m["kill_rate"]) / best_kill_rate) * clampf(pow(float(m["advantage"]), 0.25), 0.8, 1.25)
+				# Orbit a turret I can out-turn when the duel looks winnable; once circling, keep at it unless it's clearly lost.
+				var keep_orbiting: bool = current.get("option", "") == "ORBIT" and current.get("target", "") == c["name"]
+				if m.get("orbit", false) and c["visible"] and float(m["advantage"]) >= (ORBIT_KEEP_ADVANTAGE if keep_orbiting else ORBIT_START_ADVANTAGE):
+					orbits.append([c["name"], maxf(engage * 1.2, 0.95 * confidence * firepower * leash_factor)])
+			engage *= matchup_factor
 			# A6: the squad's plan tilts who to shoot (never whether to follow the player's order).
 			var squad_bonus := 1.0
 			if c["name"] == tactics.get("focus", ""):
@@ -298,7 +332,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				engage = minf(boosted, maxf(engage, ORDER_WEIGHT - 0.1)) if commanded else boosted
 			engages.append([c["name"], engage])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
-			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor * firepower
+			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor * firepower \
+					* minf(matchup_factor, 1.0)
 			if c["exposed_face"] != "front":
 				flank *= 0.35
 			elif tactics.get("flank_target", "") == c["name"] and (not commanded or String(squad["verb"]) == "assault"):
@@ -331,6 +366,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			add.call("COVER_FIRE", pair[0], cover_value)
 	for pair in flanks:
 		add.call("FLANK", pair[0], pair[1] * fight_scale)
+	# ORBIT (A5): a fixed gun can't out-shoot a turret head-on, but it can out-turn a slow one: circle it and burst in
+	# when its gun points away. Scores above SPOT, so scouts fight what they counter instead of hanging back.
+	for pair in orbits:
+		add.call("ORBIT", pair[0], pair[1])
 	# CLEAR_LANE (A4): my gun is ready and aimed but a friend is in the way: step aside to a spot with a clear
 	# line to the target instead of waiting (or shooting through it). Above the fight it serves, even when
 	# that fight is committed (×COMMIT_BONUS).
@@ -359,7 +398,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	if is_scout:
 		var nearest := INF
 		for c in contacts:
-			if c["visible"] and c.get("weapon", "") != "mortar":  # artillery isn't a threat up close: hunt it
+			# Artillery isn't a threat up close (hunt it), and neither is a slow turret I can orbit (A5).
+			var orbitable: bool = matchups.has(c["name"]) and matchups[c["name"]].get("orbit", false) \
+					and float(matchups[c["name"]]["advantage"]) >= ORBIT_KEEP_ADVANTAGE
+			if c["visible"] and c.get("weapon", "") != "mortar" and not orbitable:
 				nearest = minf(nearest, my_position.distance_to(c["position"]))
 		if nearest < SCOUT_STANDOFF - 10.0:
 			spot = 0.88
@@ -571,6 +613,8 @@ func build_situation() -> Dictionary:
 			"health": known["health"],
 			"shield": known.get("shield", 0),
 			"weapon": known["weapon"],
+			"unit": known.get("unit", ""),
+			"turret_forward": known["turret_forward"],
 			"visible": known["visible"],
 			"age": game_match.tick - int(known["seen_tick"]),
 			"exposed_face": Armor.FACING_NAMES[Armor.facing(known["forward"], offset)],
@@ -611,7 +655,7 @@ func build_situation() -> Dictionary:
 				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
 				"ammo": tank.ammo, "max_ammo": tank.max_ammo, "heat": tank.sync_heat,
 				"shield": tank.shield, "max_shield": tank.max_shield, "reload": tank.sync_reload,
-				"lane_blocked_ticks": lane_blocked_ticks,
+				"lane_blocked_ticks": lane_blocked_ticks, "unit": tank.unit_id, "velocity": tank.estimated_velocity,
 				"class": Units.PROFILES.get(tank.unit_id, {}).get("role", "tank"), "sight_radius": tank.sight_radius,
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
 		"directives": effective_directives,
@@ -762,6 +806,64 @@ func _with_overwatch(context: Dictionary, contacts: Array, allies: Array) -> Dic
 	return result
 
 
+## A5: {contact name: {"kill_rate": 1/seconds to kill it, "advantage": duel advantage, "orbit": bool}} for fresh
+## contacts whose unit type is known, from Matchups over the catalog. Empty for hand-built situations without
+## unit ids. Angular speed and fire arcs use cross and dot products (no trig).
+static func matchups_for(s: Dictionary) -> Dictionary:
+	var me: Dictionary = s["self"]
+	var my_profile := Units.profile(String(me.get("unit", "")))
+	var result := {}
+	if my_profile.is_empty():
+		return result
+	var weapon: Dictionary = me["weapon"]
+	var my_position: Vector3 = me["position"]
+	var my_forward: Vector3 = me["forward"]
+	var my_velocity: Vector3 = me.get("velocity", Vector3.ZERO)
+	var my_health := float(me["health"])
+	var my_shield := float(me.get("shield", 0.0))
+	var fixed := String(my_profile.get("mount", "turret")) == "fixed"
+	var half_arc_cos := 1.0 - 0.5 * pow(deg_to_rad(float(my_profile.get("fire_arc_deg", 360.0)) / 2.0), 2.0)  # cos, small-angle
+	var orbit_rate_deg := rad_to_deg(float(my_profile.get("max_forward_speed", 0.0)) / ORBIT_RADIUS)
+	for c: Dictionary in s["contacts"]:
+		var their_profile := Units.profile(String(c.get("unit", "")))
+		if their_profile.is_empty() or int(c["age"]) > CONTACT_FRESH_TICKS:
+			continue
+		var offset := Vector3(c["position"].x - my_position.x, 0.0, c["position"].z - my_position.z)
+		var distance := maxf(offset.length(), 0.1)
+		var bearing := offset / distance
+		var relative: Vector3 = (c["velocity"] as Vector3) - my_velocity
+		var omega_deg := rad_to_deg(absf(relative.x * bearing.z - relative.z * bearing.x) / distance)
+		var their_forward: Vector3 = c["forward"]
+		var my_face: String = Armor.FACING_NAMES[Armor.facing(my_forward, bearing)]
+		var mine := {"distance": distance, "face": c["exposed_face"], "angular_speed_deg": omega_deg,
+				"in_arc": not fixed or Vector2(my_forward.x, my_forward.z).normalized().dot(Vector2(bearing.x, bearing.z)) >= half_arc_cos}
+		var their_arc_cos := 1.0 - 0.5 * pow(deg_to_rad(float(their_profile.get("fire_arc_deg", 360.0)) / 2.0), 2.0)
+		var theirs := {"distance": distance, "face": my_face, "angular_speed_deg": omega_deg,
+				"in_arc": String(their_profile.get("mount", "turret")) != "fixed"
+					or Vector2(their_forward.x, their_forward.z).normalized().dot(Vector2(-bearing.x, -bearing.z)) >= their_arc_cos}
+		var their_weapon := Weapons.profile(String(c.get("weapon", their_profile.get("weapon", ""))))
+		var my_ttk := Matchups.time_to_kill(my_profile, weapon, their_profile, mine, float(c["health"]), float(c.get("shield", 0.0)))
+		# A fixed gun that orbits fights at its best: in its arc on the burst, and forcing the orbit's sweep on the turret.
+		var orbit: bool = fixed and String(their_profile.get("mount", "turret")) == "turret" \
+				and float(their_profile.get("turret_turn_rate_deg", 360.0)) < orbit_rate_deg * 0.8 \
+				and their_weapon.get("kind", -1) != Weapons.Kind.ARC and distance <= float(weapon["range"]) + 25.0
+		if orbit:
+			# Orbiting and bursting in: up close, on its side (or its rear if that's what it shows), in my arc, and
+			# sweeping around its turret at the orbit's rate.
+			var close := minf(distance, ORBIT_RADIUS + 5.0)
+			mine = {"distance": close, "face": "rear" if c["exposed_face"] == "rear" else "side", "angular_speed_deg": orbit_rate_deg,
+					"in_arc": true}
+			theirs["distance"] = close
+			theirs["face"] = "side"
+			theirs["angular_speed_deg"] = orbit_rate_deg
+			my_ttk = Matchups.time_to_kill(my_profile, weapon, their_profile, mine, float(c["health"]), float(c.get("shield", 0.0)))
+		var their_ttk := Matchups.time_to_kill(their_profile, their_weapon, my_profile, theirs, my_health, my_shield)
+		var advantage := Matchups.duel_advantage(my_ttk, their_ttk)
+		result[c["name"]] = {"kill_rate": 0.0 if my_ttk >= Matchups.NEVER else 1.0 / my_ttk, "advantage": advantage,
+				"orbit": orbit}
+	return result
+
+
 ## A unit's role: catalog v2 "role", round 1 "class", else "tank".
 static func role_of(unit: Tank) -> String:
 	var profile: Dictionary = Units.PROFILES.get(unit.unit_id, {})
@@ -827,6 +929,29 @@ func _act(s: Dictionary) -> void:
 			else:
 				_order_move(_move_to(TankBrain.withdraw_point(s), true))
 			_order_weapon({"type": "fire_at_will"})
+		"ORBIT":
+			var target_position: Vector3 = contact["position"]
+			var out := Vector3(my_position.x - target_position.x, 0.0, my_position.z - target_position.z)
+			var distance := out.length()
+			out = out / distance if distance > 0.1 else -(me["forward"] as Vector3)
+			# Where its gun points relative to me: cos of the angle (dot product).
+			var gun: Vector3 = contact["turret_forward"]
+			var gun_on_me := Vector2(gun.x, gun.z).normalized().dot(Vector2(out.x, out.z))
+			if _bursting and (gun_on_me > ORBIT_BREAK_COS or distance < ORBIT_BREAK_RANGE):
+				_bursting = false
+			elif not _bursting and gun_on_me < ORBIT_BURST_COS and distance <= ORBIT_BURST_RANGE:
+				_bursting = true
+			if _bursting:
+				# Swing the hull (and the fixed gun) onto it and fire until its turret catches up.
+				why = TankBrain._join(why, "attack run")
+				_order_move({"type": "face", "x": target_position.x, "z": target_position.z})
+			else:
+				why = TankBrain._join(why, "circling its slow turret")
+				var side := 1.0 if think_offset % 2 == 0 else -1.0
+				var tangent := Vector3(-out.z, 0.0, out.x) * side
+				var point: Vector3 = target_position + (out * ORBIT_LEAD_COS + tangent * ORBIT_LEAD_SIN) * ORBIT_RADIUS
+				_order_move(_move_to(point, false, 1.0, 2.0))
+			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"CLEAR_LANE":
 			if _lane_goal == null or game_match.tick - _lane_goal_tick > 120:
 				_lane_goal = _lane_spot(s, contact)
