@@ -160,7 +160,7 @@ Unit stats and the army JSON parser (rules), squad behavior (ai), the in-match U
 
 **Done:** the whole backlog (Y1–Y6) and both stretch items. `make check` passes on the last commit (299 tests +
 `army-loop-smoke`); `make garage-web-smoke` (browser loop), `make garage-e2e`, and `make economy-sim` pass;
-screenshots reviewed: builder at 1920×1080 / 1800×810, compare (desktop and 1200×540), unlocks, challenges,
+`make web-smoke` passes; screenshots reviewed: builder at 1920×1080 / 1800×810 / 1280×720 (browser too), compare (desktop and 1200×540), unlocks, challenges,
 FIGHT handover, results at desktop and 20:9, browser loop. Sim baseline unchanged (`e5cf33921713b657`).
 
 **Decisions** (each reversible):
