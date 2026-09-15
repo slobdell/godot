@@ -89,36 +89,37 @@ lands. Artillery alone has only its own 60 m sight, so it can barely fire (35 m 
 | I | mortar 90, splash 9, minimum range 42 m | **scouts > artillery 92%; spotted artillery beats IFVs 58%**, loses to tanks 33% and Lancers 17% ✅ applied |
 
 <!-- MATCHUP MATRIX BEGIN -->
-_Matrix #5, measured 2026-09-15 on builder0 with `tools/matchup_matrix.py` (round 3: combat X2-X6 catalog, brain a6)._
+_Matrix #6, measured 2026-09-15 on builder0 after CP1 (control's Orders merged) and wheels' multi-point turns (brain a6).
+Same catalog as matrix #5._
 
 Cost-equal armies at ~600 points per side (scout 5x = 550, tank 3x = 600, ifv 4x = 600, artillery 3x = 660, lancer 3x = 600, burner 3x = 660); 3 seeds x both bases x both colors = 12 matches per pair, 180 s limit. Cell = the ROW unit's win share against the COLUMN unit (draws count half; a timeout goes to the side with more army value left).
 
 | row beats column | scout | tank | ifv | artillery | lancer | burner |
 |---|---|---|---|---|---|---|
-| scout | — | 0% | 0% | **79%** | 0% | 0% |
-| tank | **100%** | — | **100%** | **100%** | 50% | **100%** |
-| ifv | **100%** | 0% | — | **100%** | **75%** | 33% |
-| artillery | 21% | 0% | 0% | — | 0% | 0% |
-| lancer | **100%** | 50% | 25% | **100%** | — | **100%** |
-| burner | **100%** | 0% | **67%** | **100%** | 0% | — |
+| scout | — | 0% | 0% | **100%** | 0% | 0% |
+| tank | **100%** | — | **100%** | **100%** | **92%** | **100%** |
+| ifv | **100%** | 0% | — | **100%** | 25% | 25% |
+| artillery | 0% | 0% | 0% | — | 0% | 0% |
+| lancer | **100%** | 8% | **75%** | **100%** | — | **100%** |
+| burner | **100%** | 0% | **75%** | **100%** | 0% | — |
 
 | pair | row wins : column wins : draws | avg length | friendly damage / match |
 |---|---|---|---|
-| scout vs tank | 0 : 12 : 0 | 168 s | 0 |
-| scout vs ifv | 0 : 12 : 0 | 52 s | 3 |
-| scout vs artillery | 9 : 2 : 1 | 77 s | 0 |
-| scout vs lancer | 0 : 12 : 0 | 42 s | 0 |
-| scout vs burner | 0 : 12 : 0 | 169 s | 0 |
-| tank vs ifv | 12 : 0 : 0 | 34 s | 0 |
-| tank vs artillery | 12 : 0 : 0 | 22 s | 0 |
-| tank vs lancer | 6 : 6 : 0 | 60 s | 0 |
-| tank vs burner | 12 : 0 : 0 | 22 s | 0 |
-| ifv vs artillery | 12 : 0 : 0 | 22 s | 4 |
-| ifv vs lancer | 9 : 3 : 0 | 42 s | 11 |
-| ifv vs burner | 4 : 8 : 0 | 30 s | 2 |
-| artillery vs lancer | 0 : 12 : 0 | 29 s | 0 |
-| artillery vs burner | 0 : 12 : 0 | 33 s | 0 |
-| lancer vs burner | 12 : 0 : 0 | 46 s | 0 |
+| scout vs tank | 0 : 12 : 0 | 169 s | 0 |
+| scout vs ifv | 0 : 12 : 0 | 57 s | 0 |
+| scout vs artillery | 12 : 0 : 0 | 51 s | 0 |
+| scout vs lancer | 0 : 12 : 0 | 50 s | 0 |
+| scout vs burner | 0 : 12 : 0 | 167 s | 0 |
+| tank vs ifv | 12 : 0 : 0 | 35 s | 2 |
+| tank vs artillery | 12 : 0 : 0 | 23 s | 0 |
+| tank vs lancer | 11 : 1 : 0 | 54 s | 0 |
+| tank vs burner | 12 : 0 : 0 | 21 s | 0 |
+| ifv vs artillery | 12 : 0 : 0 | 23 s | 9 |
+| ifv vs lancer | 3 : 9 : 0 | 59 s | 9 |
+| ifv vs burner | 3 : 9 : 0 | 41 s | 1 |
+| artillery vs lancer | 0 : 12 : 0 | 32 s | 0 |
+| artillery vs burner | 0 : 12 : 0 | 37 s | 0 |
+| lancer vs burner | 12 : 0 : 0 | 35 s | 0 |
 <!-- MATCHUP MATRIX END -->
 
 _Round 2's matrix #2 (before round 3's weapons) is preserved in git history (`git show 391f22b:_agents/balance.md`)._
@@ -169,7 +170,14 @@ Rounds 1-6 (`tools/matchup_variants/x6_round*.json`) and two artillery sweeps, 8
 | **Artillery's mortar has a cliff at the scout's 220 effective HP:** at 200+ a burst kills bunched scouts, flipping scout > artillery from 79% to 0-33%, and scouts then win nothing. Spotted batteries (a scout escort each side) win at most 17% against tanks even at 320. | `x6_mortar_vs_scouts.json`, `x6_artillery.json` |
 | Deploying broke artillery with today's brains until a fire command itself digs the battery in: ai's BOMBARD keeps adjusting range while backing off and never stood still. | `make duel GREEN_UNITS=artillery,artillery,artillery,scout …` |
 
-**Where matrix #5 stands:** 8 of 12 designed counters hold at ≥ 65%: tank > IFV 100%, IFV > scout 100%, IFV > Lancer
+**Matrix #6 (after CP1, same catalog):** wheels now turn "in place" as multi-point turns (control's executor faces
+arrived units that way, and one-direction creep sent them circling off their stations). Lancer brains face threats by
+turning in place, so a wheeled Lancer now rocks on the spot instead of circling: Lancer > tank 33% -> **8%**, IFV >
+Lancer 75% -> **25%** (A/B on the Lancer pairs with the old creep, same commit). 7 of 12 counters hold. Kept on
+purpose: circling was an accident of the assist, and the fix is behavior (ai: drive wheeled units with
+`TankMotion.predict` instead of "face"), not stats.
+
+**Where matrix #5 stood:** 8 of 12 designed counters hold at ≥ 65%: tank > IFV 100%, IFV > scout 100%, IFV > Lancer
 75%, scout > artillery 79%, Burner > IFV 67%, Burner > artillery 100%, tank > Burner 100%, Lancer > Burner 100%.
 Not yet: **Lancer > tank 50%** (a coin flip), **scout > tank and scout > Lancer 0%** (scouts hold their spotting
 standoff: the lead's "spotters first"; they beat nothing but artillery), **artillery > tank 0%** (blind alone, weak

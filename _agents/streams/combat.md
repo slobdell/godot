@@ -318,3 +318,7 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
   rejoining a pushed-away group). **Wheels now turn "in place" as a multi-point turn:** a bare turn command alternates
   30-tick forward and reverse legs, yawing the commanded way, so a car rotates within a few meters of its spot
   (tested: > 150° in 8 s within 4 m). Both control tests pass; sim baseline unchanged.
+- **Balance cost, measured:** matrix #6 (balance.md): Lancer > tank 33% -> 8% and IFV > Lancer 75% -> 25% (A/B with the old
+  creep on the same commit), because Lancer brains "face" threats by turning in place and a wheeled Lancer now rocks on
+  the spot instead of circling. Kept on purpose; **request to ai:** drive wheeled units with `TankMotion.predict`
+  (circle, back off) instead of the "face" order.
