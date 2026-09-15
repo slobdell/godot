@@ -226,7 +226,21 @@ static func choose(request: Dictionary) -> Dictionary:
 		checked += 1
 		if checked >= SIGHT_CHECKS:
 			break
-	return fallback
+	if not fallback.is_empty():
+		return fallback
+	# Boxed in: every end was inside an obstacle (or the path to it crossed one). Standing still in a fight is worse
+	# than nudging out of the box, so take the best-scoring direction that stays inside the arena and let the next
+	# plan (from the new spot) find clear ground.
+	for entry: Array in scored:
+		var end: Vector3 = entry[3]
+		if absf(end.x) > limit or absf(end.z) > limit:
+			continue
+		var direction := Vector3(RING[entry[1]].x, 0.0, RING[entry[1]].y)
+		var steer := maxf(STEER_DISTANCE, float(request.get("min_turn_radius", 0.0)) * WHEELS_STEER_RADII) if wheels else STEER_DISTANCE
+		var point := here + direction * steer
+		return {"point": Vector3(clampf(point.x, -limit, limit), point.y, clampf(point.z, -limit, limit)),
+				"reverse": entry[2], "index": entry[1], "score": -float(entry[0]), "dodging": false, "boxed_in": true}
+	return {}
 
 
 ## Whether a unit at `here` moving at `now` that sets out on `planned` passes within HIT_RADIUS of any incoming round

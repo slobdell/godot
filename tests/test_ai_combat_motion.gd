@@ -117,3 +117,15 @@ func test_closest_approach() -> void:
 			"driving into its path: it arrives where I'll be in 1 s")
 	assert_near(IncomingFire.closest_approach(Vector3.ZERO, Vector3(10, 0, 0), Vector3(10, 0, -70), Vector3(0, 0, 70), 0.5), 35.36, 0.01,
 			"...but not within half a second")
+
+
+func test_boxed_in_by_obstacles_it_still_picks_a_way_out() -> void:
+	# Obstacles all around (an x3 scout drove between a crate and its target and froze there for 6 s, firing from a
+	# standstill: every candidate end was inside a grown obstacle, so nothing was chosen).
+	var features := []
+	for x in [-12.0, 0.0, 12.0]:
+		for z in [-12.0, 0.0, 12.0]:
+			features.append({"position": Vector2(x, z), "size": [6.0, 6.0]})
+	var map := CoverMap.from_features(features)
+	var result := CombatMotion.choose(_request("run", Vector3(0, 0, -30), {"map": map}))
+	assert_true(not result.is_empty(), "it still moves instead of standing in the open")
