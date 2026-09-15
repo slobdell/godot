@@ -375,7 +375,7 @@ func _speak_step() -> Dictionary:
 		_current = {}
 		return {}
 	var text := library.fill(line, found["slots"])
-	var duration := library.estimate_seconds(line["speaker"], text)
+	var duration := library.line_seconds(line, found["slots"], text)
 	var start := snappedf(now, 0.01)
 	var cue := {"t": start, "end": snappedf(start + duration, 0.01), "speaker": line["speaker"], "line_id": line["id"],
 			"text": text, "act": line["act"], "moment": found["kind"], "event_t": found["t"], "cut": false,

@@ -28,6 +28,11 @@ var tag_intensity := {}
 var counters := {}
 ## Seconds of speech per word, per speaker (used until real clip durations exist).
 var seconds_per_word := {}
+## From a clip manifest, when one is loaded: line id -> {speaker, parts}, and clip id -> seconds.
+var manifest_lines := {}
+var clip_seconds := {}
+## Silence between the clips of one line (tools/announcer/mixdown.py PART_GAP_S).
+const PART_GAP_S := 0.02
 var kind_tags := PackedStringArray()
 var errors := PackedStringArray()
 
@@ -196,6 +201,41 @@ func specificity(line: Dictionary) -> int:
 		if tag != "any" and not tag in kind_tags:
 			score += 1
 	return score
+
+
+## Loads a clip manifest (tools/announcer/generate.py) so lines take as long as their recorded audio. Returns false
+## when there is no manifest; estimates stay in use.
+func load_manifest(path: String) -> bool:
+	if not FileAccess.file_exists(path):
+		return false
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if typeof(data) != TYPE_DICTIONARY:
+		errors.append("%s is not a clip manifest" % path)
+		return false
+	manifest_lines = data.get("lines", {})
+	clip_seconds = {}
+	for clip in data.get("clips", {}):
+		clip_seconds[clip] = float(data["clips"][clip]["duration_s"])
+	return true
+
+
+## How long a line takes to say with these slot values: its clips' durations when recorded, else an estimate.
+func line_seconds(line: Dictionary, slots: Dictionary, text: String) -> float:
+	var recorded: Dictionary = manifest_lines.get(line["id"], {})
+	if recorded.is_empty():
+		return estimate_seconds(line["speaker"], text)
+	var total := 0.0
+	for part in recorded["parts"]:
+		var clip := String(part.get("clip", ""))
+		if clip == "":
+			var value: Variant = slots.get(base_slot(part["slot"]), "")
+			if part["vocab"] == "number":
+				value = int(value)
+			clip = "fill.%s.%s.%s.%s" % [line["speaker"], part["vocab"], value, part["intonation"]]
+		if not clip_seconds.has(clip):
+			return estimate_seconds(line["speaker"], text)
+		total += float(clip_seconds[clip]) + PART_GAP_S
+	return total
 
 
 ## Estimated speaking time for a text (real clip durations replace it once audio exists).

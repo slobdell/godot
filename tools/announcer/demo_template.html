@@ -127,7 +127,7 @@
   <header class="bar">
     <div class="title-row">
       <h1>Arena Booth Monitor</h1>
-      <span class="gate"><b>●</b> Text only. No audio has been generated; the lead approves this text first.</span>
+      <span class="gate" id="gate"><b>●</b> Text only. No voice audio has been generated; the lead approves this text first.</span>
     </div>
     <div class="controls">
       <span class="label">Match</span>
@@ -144,6 +144,7 @@
         <input type="range" id="scrub" min="0" max="100" step="0.1" value="0" aria-label="Match time">
         <span class="clock" id="clock">0:00.0</span>
       </div>
+      <label class="toggle" id="sound-toggle" hidden><input type="checkbox" id="sound" checked> Sound</label>
       <label class="toggle"><input type="checkbox" id="why" checked> Why</label>
       <label class="toggle"><input type="checkbox" id="skips"> Skipped</label>
     </div>
@@ -230,6 +231,7 @@
     $("seeds").onclick = (ev) => { const b = ev.target.closest("button"); if (b) select(state.fixture, Number(b.dataset.seed)); };
     for (const b of $("fixtures").children) b.setAttribute("aria-pressed", String(b.dataset.fixture === fixture));
     render();
+    setAudio(state.match.audio);
     const end = state.match.cues.length ? state.match.cues[state.match.cues.length - 1].end : 0;
     $("scrub").max = end.toFixed(1);
     seek(state.playing ? 0 : end);
@@ -275,8 +277,9 @@
     return units;
   }
 
-  function seek(t) {
+  function seek(t, fromClock) {
     state.t = Math.max(0, Math.min(t, Number($("scrub").max)));
+    if (!fromClock && soundOn()) audio.currentTime = state.t;
     $("scrub").value = state.t;
     $("clock").textContent = clock(state.t);
     const units = alive(state.t);
@@ -312,11 +315,31 @@
     }
   }
 
+  // A mixdown (mock tones today, voices once the lead approves) plays in sync when the match has one.
+  const audio = new Audio();
+  audio.preload = "auto";
+  const soundOn = () => Boolean(state.match && state.match.audio) && $("sound").checked;
+  function setAudio(src) {
+    audio.pause();
+    $("sound-toggle").hidden = !src;
+    if (src) audio.src = src; else audio.removeAttribute("src");
+    $("gate").innerHTML = src
+      ? "<b>●</b> Mock audio: tone bursts stand in for words, to check timing and stitching. No voice audio yet."
+      : "<b>●</b> Text only. No voice audio has been generated; the lead approves this text first.";
+  }
+  function syncAudio() {
+    if (!soundOn()) { audio.pause(); return; }
+    audio.playbackRate = Number($("speed").value);
+    if (Math.abs(audio.currentTime - state.t) > 0.25) audio.currentTime = state.t;
+    if (state.playing) audio.play().catch(() => { $("sound").checked = false; });
+    else audio.pause();
+  }
+
   function tick(now) {
     if (!state.playing) return;
     const dt = (now - state.last) / 1000;
     state.last = now;
-    seek(state.t + dt * Number($("speed").value));
+    seek(soundOn() && !audio.paused ? audio.currentTime : state.t + dt * Number($("speed").value), true);
     if (state.t >= Number($("scrub").max)) { setPlaying(false); return; }
     requestAnimationFrame(tick);
   }
@@ -329,10 +352,13 @@
       state.last = performance.now();
       requestAnimationFrame(tick);
     }
+    syncAudio();
   }
 
   $("play").onclick = () => setPlaying(!state.playing);
   $("scrub").oninput = () => seek(Number($("scrub").value));
+  $("sound").onchange = syncAudio;
+  $("speed").onchange = syncAudio;
   $("why").onchange = () => $("desk").classList.toggle("hide-why", !$("why").checked);
   $("skips").onchange = () => $("desk").classList.toggle("hide-skips", !$("skips").checked);
   $("desk").classList.add("hide-skips");

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -57,6 +58,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--fixture", default="", help="only this fixture")
     args = parser.parse_args(argv)
     matches = load_matches(args.data, args.fixture)
+    prefix = os.path.relpath(args.data.resolve(), args.out.parent.resolve())
+    for match in matches:
+        if "audio" in match:
+            match["audio"] = "%s/%s" % (prefix, match["audio"])
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(build(matches))
     print("wrote %s: %d matches, %d lines, %.0f KB" % (args.out, len(matches), sum(len(m["cues"]) for m in matches),

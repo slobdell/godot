@@ -74,6 +74,28 @@ func test_slots_are_spoken_capitalized_and_required() -> void:
 	assert_eq(ids, ["count"], "a line whose slot has no value in this moment (or no vocabulary) is not eligible")
 
 
+func test_recorded_clips_set_how_long_a_line_takes() -> void:
+	var library := tiny([{"id": "k", "speaker": "caller", "act": "call", "tags": ["kill"], "text": "{team} is down to {count}!"}], {"kill": {}})
+	var line: Dictionary = library.by_id["k"]
+	var estimated := library.line_seconds(line, {"team": "rust", "count": 2}, "Rust is down to two!")
+	assert_near(estimated, library.estimate_seconds("caller", "Rust is down to two!"), 0.001, "no manifest: estimated")
+	var path := ProjectSettings.globalize_path("res://build/test_announcer_manifest.json")
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"lines": {"k": {"speaker": "caller", "parts": [
+			{"slot": "team", "vocab": "team", "intonation": "mid"}, {"clip": "k#0"},
+			{"slot": "count", "vocab": "number", "intonation": "final"}]}},
+			"clips": {"fill.caller.team.rust.mid": {"duration_s": 0.4}, "k#0": {"duration_s": 0.7},
+			"fill.caller.number.2.final": {"duration_s": 0.5}}}))
+	file.close()
+	assert_true(library.load_manifest(path), "the manifest loads")
+	assert_near(library.line_seconds(line, {"team": "rust", "count": 2.0}, "Rust is down to two!"), 1.66, 0.001,
+			"the clips it will play, plus the gaps between them")
+	assert_near(library.line_seconds(line, {"team": "green", "count": 2}, "Green is down to two!"),
+			library.estimate_seconds("caller", "Green is down to two!"), 0.001, "a filler not recorded yet: estimated")
+	DirAccess.remove_absolute(path)
+
+
 func test_needs_only_sees_flags_set_before_the_moment() -> void:
 	var library := tiny([{"id": "again", "speaker": "caller", "act": "call", "tags": ["friendly_fire"],
 			"needs": ["said_friendly_{team}"], "text": "Again!"}], {"friendly_fire": {}})

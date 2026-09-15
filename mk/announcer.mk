@@ -1,8 +1,8 @@
 # The arena announcer: match-event fixtures, the line library, the director, transcripts, and the audio pipeline
 # Owner: announcer (_agents/streams/announcer.md). Included by the root Makefile.
-# No target here calls ElevenLabs unless you run announcer-generate without DRY_RUN=1 (lead gate: text approved first).
+# No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
-.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-transcript announcer-transcripts announcer-demo \
+.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
         announcer-transcripts-check announcer-check
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
@@ -53,5 +53,31 @@ announcer-demo: import ## Build the Arena Booth Monitor page (every fixture, see
 	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
 	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html \
 		$(if $(filter command line,$(origin FIXTURE)),--fixture $(FIXTURE))
+
+## Real generation needs APPROVED=1 (lead gate 2: the lead has approved the text). The default is the dry run.
+announcer-generate: ## Voice clips from lines.json: DRY_RUN=1 (default) prints requests and credits; APPROVED=1 calls ElevenLabs (key: ELEVENLABS_KEY_ID)
+	@if [ "$(APPROVED)" = "1" ]; then \
+		$(PYTHON) -c "import elevenlabs" 2>/dev/null || { echo "pip install elevenlabs==2.24.0 first (tools/announcer/requirements.txt)"; exit 1; }; \
+		$(PYTHON) tools/announcer/generate.py --lead-approved $(if $(SPEAKERS),--speakers $(SPEAKERS)) $(if $(ONLY),--only $(ONLY)); \
+	else \
+		$(PYTHON) tools/announcer/generate.py --dry-run $(if $(SPEAKERS),--speakers $(SPEAKERS)) $(if $(ONLY),--only $(ONLY)); \
+		echo; echo "(dry run: nothing was sent. The lead approves the text before APPROVED=1.)"; \
+	fi
+
+# Seed 1 of each fixture is re-called with the recorded clip durations, so voicing the lines it picks can change
+# what it picks: loop until every line it uses has clips (a few passes).
+ANNOUNCER_MOCK := $(BUILD_DIR)/announcer/mock
+announcer-demo-audio: announcer-demo ## The Booth Monitor with mock audio: mock-voice the lines seed 1 of each fixture uses, mix them in sync, rebuild the page
+	@for pass in 1 2 3 4 5; do \
+		$(ANNOUNCER_CLI) --all=res://$(ANNOUNCER_FIXTURES) --seeds=1 --manifest=$(CURDIR)/$(ANNOUNCER_MOCK)/manifest.json \
+			--out-dir=$(BUILD_DIR)/announcer/demo/data 2>&1 | grep -q 'ANNOUNCER_CLI_EXIT=0' || { echo "announcer CLI failed"; exit 1; }; \
+		missing=$$($(PYTHON) tools/announcer/mixdown.py --missing-lines $(ANNOUNCER_MOCK)/manifest.json $(BUILD_DIR)/announcer/demo/data/*_seed1.json); \
+		[ -z "$$missing" ] && break; \
+		echo "pass $$pass: mock-voicing $$(echo $$missing | tr ',' '\n' | wc -l) lines"; \
+		$(PYTHON) tools/announcer/generate.py --mock --out $(ANNOUNCER_MOCK) --only "$$missing" | tail -1; \
+	done
+	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
+	$(PYTHON) tools/announcer/mixdown.py --manifest $(ANNOUNCER_MOCK)/manifest.json --match $(BUILD_DIR)/announcer/demo/data/*_seed1.json
+	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html
 
 announcer-check: announcer-validate announcer-pytest announcer-audit announcer-transcripts-check ## Everything the announcer verifies headless (in make check)

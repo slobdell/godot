@@ -5,6 +5,7 @@ extends SceneTree
 ##   --seed=N            the director's seed (default 1)
 ##   --out=PATH_PREFIX   writes PREFIX.txt (the readable transcript) and PREFIX.json (events, cues, decisions)
 ##   --all=DIR --seeds=1,2 --out-dir=DIR   every fixture in DIR, for each seed
+##   --manifest=PATH     a clip manifest: lines last as long as their recorded clips (else estimated)
 ##   --audit             prints library coverage instead (lines per moment kind, speaker, and act)
 ## Prints ANNOUNCER_CLI_EXIT=<code> last, so wrappers can find the result among Godot's own output.
 
@@ -23,6 +24,8 @@ func _initialize() -> void:
 
 func _run(args: Dictionary) -> int:
 	var library := AnnouncerLibrary.load_default()
+	if args.has("manifest") and library.load_manifest(args["manifest"]):
+		print("line durations from %s" % args["manifest"])
 	if not library.errors.is_empty():
 		printerr("library errors:\n  " + "\n  ".join(library.errors))
 		return 1
@@ -150,7 +153,7 @@ static func transcript(name: String, seed_value: int, events: Array, cues: Array
 			index += 1
 		var text: String = cue["text"]
 		if cue["cut"]:
-			text = _cut_text(text, float(cue["end"]) - float(cue["t"]), library.estimate_seconds(cue["speaker"], text))
+			text = _cut_text(text, float(cue["end"]) - float(cue["t"]), float(cue.get("full_seconds", library.estimate_seconds(cue["speaker"], text))))
 		out.append("%s   %-8s %s" % [clock(float(cue["t"])), SPEAKER_LABELS[cue["speaker"]], text])
 	while index < events.size():
 		var said := describe(events[index])
