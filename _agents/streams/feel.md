@@ -125,7 +125,6 @@ untouched (feel never changes it).
   that `MatchFxLink.live` is true in a skirmish (effects switch to real K2 on their own).
 
 ### Known issues
-
 - Tier high on the laptop's UHD 620 is estimated at ~16 ms for the 50-vehicle bench (Iris Xe × 2.3), the edge of its
   budget; the 50 vehicles' 886k primitives are the main cost, not effects.
 - Round 2's MG fires 5 rounds/s, so streams look sparse until combat's ~11/s lands. Weak spots in the showcase are
