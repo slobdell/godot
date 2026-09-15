@@ -260,29 +260,64 @@ art_direction.md is updated to match.
 ### The arena announcer (stretch; lead, 2026-09-15)
 
 The lead: an ElevenLabs pipeline for *"an arena commentator … We'd want the announcer to make it feel like a sporting
-event."*
+event"*, then: *"we can formulate massive dumps of audio data and then just randomly select some fitting phrases …
+some giant decision graph where many edges link to many nodes, and traversals are chosen at random."*
 
-- **An original voice, never an imitation of a real person.** Voices are designed from a written description
-  (ElevenLabs Voice Design), aiming at the archetype: a hyped, conversational fight-night commentator. Cloning or
-  approximating a real person's voice is out: ElevenLabs' policy prohibits it without consent (and blocks prominent
-  voices), and a commercial game can't use someone's likeness. Same rule as ads: no real people, no real brands.
-- **Two voices, like a sports broadcast:** a play-by-play caller and a color commentator who banters, plus the arena PA
-  and ad voice-overs for the screens.
-- **Pre-generated at build time, never live text-to-speech in a match:** a line library (text + category + variants)
-  → `make` target calls the API with the lead's key from the environment (never committed) → compressed mono OGG
-  (~32 kbps) + a manifest. No API key or cost at play time, works offline, same on every platform.
-- **Commercial rights need a paid plan** (the free plan is non-commercial with attribution). Log generations like the
-  Meshy ledger; don't be wasteful.
-- **Categories (3–6 variants each so it never repeats):** match start and introductions per faction; first blood;
-  multi-kills; a scout outmaneuvering a tank; friendly fire (roast it); close calls and escapes; comebacks; control
-  point captured; a squad wiped; last unit standing; victory and defeat; sponsor reads that match the ad screens;
-  crowd reactions (the Law gets booed). Team names by color ("Rust"), never player names, so lines stay pre-generated.
-- **The director (runtime, presentation only):** match events → priority queue with cooldowns, no overlapping lines,
-  interruptions for bigger moments, rarity weights, music and effects ducking under speech, subtitles through
-  `Hud.post_message`, and cues to the crowd (cheers) and screens (replays, odds). It never touches the simulation.
-- **Size:** ~300 lines × ~3 s at 32 kbps ≈ 3–4 MB. Load it as a separate pack after the game starts on web.
-- **Tone and rating:** dark, funny, over the top; mild language only (strong profanity and crude humor raise the
-  IARC rating). Re-generate per language later from the same text library.
+**Voices.** Original voices designed from a written description (ElevenLabs Voice Design), aiming at an archetype: a
+hyped, conversational fight-night crew. **Never an imitation of a real person:** ElevenLabs' policy prohibits
+replicating a voice without consent (and blocks prominent voices), and a commercial game can't use someone's likeness.
+Two voices like a sports broadcast (a play-by-play caller and a color commentator), plus the arena PA and ad voice-overs.
+
+**Pre-generated audio, composed at runtime.** No live text-to-speech in a match (cost, latency, keys, offline play).
+Instead a large tagged clip library is recorded ahead of time, and a runtime **banter graph** stitches clips into
+lines that are different every match.
+
+**The banter graph: tags, not hand-drawn edges.** Drawing every edge by hand explodes. Each clip carries tags, and a
+clip can follow another when their tags fit, so edges come for free:
+- **Clip tags:** speaker; dialog act (`hype`, `call`, `setup_question`, `answer_agree`, `answer_disagree`, `roast`,
+  `stat`, `callback`, `button`, `interrupt`, `filler`, `sponsor_read`); event context (`first_blood`, `friendly_fire`,
+  `scout_vs_tank`, `comeback`, `squad_wiped`, …); intensity (1–3); position and intonation (`opener`, `mid`, `closer`,
+  `rising`); optional slots it expects (`{team}`, `{unit}`, `{faction}`, `{count}`).
+- **Beat templates (the grammar):** an event picks a beat shape such as caller `interrupt` → caller `call` with
+  `{team}` and `{unit}` → color `roast` or `answer` → caller `button`. Each slot draws a random clip whose tags fit.
+  The math works for us: 20 openers × 60 calls × 80 reactions × 20 closers is ~2 million distinct lines from 180 clips.
+- **Slot fillers** ("Rust", "that dozer", "the Law", "three") are recorded in each intonation (mid-sentence, final,
+  rising) so stitched lines don't sound pasted together.
+- **Memory makes it coherent:** the director tracks match state (momentum from army health, streaks, who caused
+  friendly fire, earlier predictions) so it can pick `callback` clips ("told you that scout was trouble") and
+  running jokes, and follow a match arc (introductions, early skirmish, momentum swing, final stand, result).
+- **Two-person banter by dialog acts:** a setup tagged `setup_question` accepts any answer tagged for it; agree and
+  disagree branches keep it from feeling scripted.
+- **Anti-repetition:** per-clip cooldowns, least-recently-used selection, and never the same clip twice in a match
+  where possible. Lulls get interruptible filler (faction lore, sponsor reads tied to the screens, crowd).
+- **The director (presentation only):** match events → priority queue with cooldowns, interrupts for bigger moments,
+  no overlapping speakers, ducking music and effects under speech, subtitles through `Hud.post_message`, cues to the
+  crowd and screens. Its randomness never touches the simulation's generators.
+
+**Recording tricks for natural stitching** (verify each API feature when building):
+- Generate whole sentences for natural delivery and **slice clips at word boundaries** using ElevenLabs' character
+  timestamps, instead of generating fragments in isolation.
+- Use the API's previous/next-text context (request stitching) so a clip's intonation fits what comes around it.
+- Normalize loudness and trim silence (ffmpeg `loudnorm`, `silenceremove`) so any clip can follow any other.
+- **Verify every clip with speech-to-text** and flag ones that don't match their text (mispronunciations, dropped words).
+
+**The pipeline** (reference: the lead's `~/projects/led-drone-microcontrollers/mavlink-hud/speech-to-text-elevenlabs`,
+which turns a rules JSON into MP3 masters with the ElevenLabs Python SDK, skips files that exist, prints remaining
+credits, then converts to OGG with ffmpeg):
+1. **Write the library as text first** (Claude can draft thousands of tagged lines): `assets/announcer/lines.json`.
+2. **Transcript simulator (cheap, no credits):** run recorded or headless matches through the director and print the
+   banter as text, so the lead can read sample matches and judge coherence and tone **before any audio is paid for**.
+3. **Generate masters** (`make announcer-generate`): key from `ELEVENLABS_API_KEY` in the environment (never a file in
+   the repo; orientation trip-up 59 about `~/.bashrc`), idempotent by clip id, credits logged to a ledger like Meshy's.
+4. **Post-process:** slice by timestamps, loudness-normalize, trim, speech-to-text check, encode mono Ogg Vorbis at a
+   speech bitrate (~32–48 kbps; the reference's quality 4 is ~128 kbps, more than speech needs), write a manifest with
+   tags and durations.
+5. **Packs:** a core pack ships with the game (a few MB); bigger banter packs load after the game starts on web and
+   ship inside the paid Android app. At ~2 s per clip and 32 kbps, 1,000 clips is ~8 MB.
+
+**Rights and tone:** commercial use needs a paid ElevenLabs plan (the free plan is non-commercial with attribution).
+Dark, funny, over the top; mild language only (strong profanity and crude humor raise the IARC rating). Team names by
+color, never player names. Lines in other languages later from the same text library.
 
 ## Match rules (current defaults)
 
