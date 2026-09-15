@@ -63,6 +63,13 @@ same text for all six (also in [orchestration.md](_agents/orchestration.md)):
 3. Relay the assets review pages (one per faction) and the announcer's transcripts to the lead; record answers.
 4. **Final integration order:** combat → control → ai → feel → assets → announcer, `make remote T=check` after each.
 
+## Waiting on the lead (round 3)
+
+- **Announcer text review (lead gate 2):** the announcer stream is done and waiting. Booth monitor page:
+  https://claude.ai/artifact/FCkbZb1uyg4fjcBfEpRttw; transcripts in `assets/announcer/transcripts/` on
+  `stream/announcer`; its questions (tone of the PA lines, cost ≈ 28,500 credits for all 701 clips, faction lines, the
+  Veteran's voice, a ~250-character pilot) are in its brief's Status.
+
 ## Open questions for the lead
 
 1. From round 2 (answer any time): army's unlock pacing (~3.7 h to unlock everything), tier names, challenge missions
