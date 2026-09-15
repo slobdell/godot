@@ -96,7 +96,7 @@ _Report for the lead and the orchestrator, 2026-09-14 (rules agent, first run). 
 | **R6** arenas as data (C5) | 6fb62db | `arenas/foundry.json` (round 1's map), `arenas/scrapyard.json` (dense cover); `Arena` validates symmetry, builds collision + mirrored navmesh, `cover_features()`, `--arena=` | fairness (brains, 60 matches each): foundry south 47%, scrapyard south 53% |
 | **R7** matchup matrix | e9ac208 | `make matchups` (tools/matchup_matrix.py: `--tune --escort --focus --balance`); 9 tuning experiments | tank > IFV > Lancer > tank; IFV > scout; scout > artillery 92%; every unit wins a matchup (artillery with a spotter). Matrix in balance.md |
 | **R8** rules defaults | dd03ca5 | control point re-measured; direct-fire guns unlimited (mortar keeps 24) | coordination 0/32 without control, 15/32 with it; unlimited ammo changed no outcome |
-| Stretch: Burner, fire pits | (last commit) | `burner` unit (tier 2, flamethrower, archetype `brawl`); layout `hazards` (fire pits, symmetric, either team) and `arenas/furnace.json`; `Arena.hazards()`; `tools/make_arenas.py` | Burner beats IFV 67% / artillery 83%, loses to tank / Lancer |
+| Stretch: Burner, fire pits | 268b117 | `burner` unit (tier 2, flamethrower, archetype `brawl`); layout `hazards` (fire pits, symmetric, either team) and `arenas/furnace.json`; `Arena.hazards()`; `tools/make_arenas.py` | Burner beats IFV 67% / artillery 83%, loses to tank / Lancer |
 
 Sim baseline history (each change on purpose): `e5cf33921713b657` → `a4106d15a8711f5c` (slow tank turret) →
 `698d9058af076a38` (friendly fire) → `3fb60602d435d1c2` (spawn jitter).
