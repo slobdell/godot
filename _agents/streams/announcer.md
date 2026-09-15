@@ -320,8 +320,9 @@ Questions for the lead with the review:
 
 ### Known issues
 
-- `army-loop-smoke` (paused garage area) failed once on builder0 with "Invalid polygon data, triangulation failed" and
-  passed on the rerun; not announcer code (flaky, recorded for the orchestrator).
+- `army-loop-smoke` (paused garage area) failed **twice** on builder0 (2026-09-15, including after merging main) with
+  "Invalid polygon data, triangulation failed", and passed on each rerun; it runs before `announcer-check` in `make
+  check`, so a failure hides the announcer's results. Not announcer code; flaky, reported to the orchestrator.
 - Mock durations are longer than the per-word estimate; real ElevenLabs pacing will differ again, which is why the
   director reads the manifest.
 - ~~Rendering on builder0 hangs~~ **fixed on main** (7dc7bdc, a stale Xwayland auth file; merged here): after the merge,
