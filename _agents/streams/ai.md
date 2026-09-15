@@ -152,10 +152,6 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   read, **tank shells taking ≥ 0.7 s over 30–50 m** (a 14 m/s² hull moves ~2 m off the lead in 0.5 s, under half a hull).
 
 **Known issues:**
-- After merging main 8dbe23e (the icon-flake fix), `make check` fails 1 test that isn't ai's:
-  `test_command_icons::test_unit_icons_skip_positions_a_camera_could_not_project` ("a collinear triangle is not drawn"),
-  2 of 2 runs on builder0. Its files are byte-identical to main's; reported to the orchestrator. The last ai-only commit
-  before that merge (df82296) passed the full check.
 - Heavy tanks can't dodge tank shells (physics); they take them on the front armor.
 - The dodge bar (≥ 35% of tank shells for a light unit) is pending: IFVs reach 6–15%.
 - With combat's weapons single matches swing; 16-match ladders are noisy: on 12 more combined_arms matches (seeds 1–6,
@@ -180,6 +176,6 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - `game/ai/order_controller.gd` conflicts with stream/combat's one-line lead-speed edit in `_apply_weapon`: take ai's
   version (the same per-weapon fix plus the difficulty aim wander). Combat's edits to `game/ai/fire_lanes.gd` and
   `tests/ai_scenarios/scenario_cover.gd` are applied here byte-identically.
-- `tools/remote.sh` (7dc7bdc) and `game/ui/command_icons.gd` (8dbe23e, the army-loop-smoke triangulation flake) are
-  main's, merged here 2026-09-15; control's and combat's copies of those files differ: take main's.
+- `tools/remote.sh` (7dc7bdc) and `game/ui/command_icons.gd` (8dbe23e + 13685ce, the army-loop-smoke triangulation
+  flake) are main's, merged here 2026-09-15; control's and combat's copies of those files differ: take main's.
 - Sim baseline: take the one recorded after the final merge (`make remote T=sim-baseline-record`).
