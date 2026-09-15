@@ -77,8 +77,11 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - 2026-09-15: brief written for round 3.
 - 2026-09-15 (ai agent, unattended): baseline green at 72cc9f3. CP1 and CP2 were announced ready in control's and combat's
   briefs but not merged to `main` during this run, so ai built against K1/K2/K3 through adapters, then **previewed both
-  checkpoints in a throwaway merge** (nothing merged into this branch) and fixed what broke. Details and tables:
-  [../unit_ai.md](../unit_ai.md) "Round 3". Last `make remote T=check` green on this branch's last commit.
+  checkpoints in a throwaway merge** and fixed what broke; both checkpoints have since been merged here for real, and
+  all six of combat's requests to ai are done. Details and tables: [../unit_ai.md](../unit_ai.md) "Round 3".
+  **X1–X6 and both stretch items are complete**, nothing is blocked, and one design question is open for rules and
+  combat (what a scout's counter is). `make remote T=check` green on the last commit (558 tests, scenarios 33 passed +
+  1 pending, sim baseline `d7967d8b36d4417b` for glibc-2.43, recorded on purpose).
 
 ### Plan and state
 
@@ -94,7 +97,8 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 5. **X5 CPU commander** — **done**: v6 is `CpuCommander.DEFAULT_POLICY`; skirmish default is control's switch (request).
 6. **X6 ladder and matrix** — **done** after CP1 and CP2 merged: the official brain ladder (a6, x3, x3m, x4 on four
    armies, 16 matches per pairing), the commander ladder (x3 vs x3+v6 on four mirrors) and combat's matchup matrix all
-   re-run on builder0 against round-3 weapons. Results under "Report"; champion changed by the ladder rule.
+   re-run on builder0 against round-3 weapons, then a second four-army run at 6 seeds to decide the champion. Results
+   under "Report"; the champion changed by the ladder rule from x3 to **x4**.
 7. **Stretch** — difficulty knob **done**; explanation overlay **done**.
 8. **After CP2, combat's requests** (combat.md "Requests to other streams"): (a) dodging **done** (x3), (b) weak spots
    **done** (feature `weak_spots`), (c) wheels **done** (Steering's turning circles, CombatMotion's reachable headings),
@@ -115,8 +119,9 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   (combined_arms). Tank duel: moving ~80% of the time (a6 1%), 100% of hits on fronts; two tanks on one see its side or
   rear 4–7 s of 20; a scout ordered onto a tank makes 3–4 wide attack runs with every hit in its side or rear. Road to
   it: circling side-on 0–24 → short halt 3–13 → weave 4–12 → turn cost + busy-target flanking 14–10.
-- **What a spectator sees** (frames looked at; all 16 `make remote T=ai-shots` frames retaken after main's remote.sh fix
-  7dc7bdc, all distinct, same picture): moving units trace 20–50 m arcs where round-2 brains sit still; tanks
+- **What a spectator sees** (frames looked at; all 16 `make remote T=ai-shots` frames retaken again after the champion
+  change, all distinct: a scout loops around a tank and breaks away beside it, two IFVs converge on a gun by the control
+  point "going for its side, weaving, front armor on it", hurt units peel off with tracers crossing behind them): moving units trace 20–50 m arcs where round-2 brains sit still; tanks
   rock nose-on and lurch to a stop to fire; the scout loops 50 m past a tank and returns on the other flank; a hurt unit
   peels off to cover; the CPU's IFVs swing 40 m arcs round defenders while its scouts charge the battery in a V; explain
   lines show each move goal and target.
