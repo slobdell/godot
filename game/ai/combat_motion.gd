@@ -64,6 +64,9 @@ const HIT_RADIUS := 2.8
 const DODGE_STEP := 0.1
 ## Turns longer than this (seconds) are pivots in place in the dodge model (≈ Steering.TURN_IN_PLACE_DEG at 90°/s).
 const PIVOT_SECONDS := 0.75
+## Front armor is weighed against every gun only for styles that care this much about it (the loop costs; light hulls
+## barely weigh armor at all).
+const MULTI_THREAT_ARMOR := 0.5
 ## A busy target (its gun on someone else): flank weight and the armor weight's factor.
 const BUSY_FLANK := 1.2
 const BUSY_ARMOR := 0.3
@@ -149,7 +152,7 @@ static func choose(request: Dictionary) -> Dictionary:
 			var new_bearing := (target_at - end) / gap
 			var front := maxf(0.0, hull.dot(new_bearing))
 			# Front armor toward everything that can shoot me, the target counting double (X3 "keep your front toward threats").
-			if not threats.is_empty():
+			if not threats.is_empty() and armor_weight >= MULTI_THREAT_ARMOR:
 				var weighted := 2.0 * front
 				var weight_sum := 2.0
 				for threat: Dictionary in threats:

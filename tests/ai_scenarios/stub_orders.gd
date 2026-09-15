@@ -25,7 +25,10 @@ func issue(command: Dictionary) -> String:
 	for unit_name: String in command["units"]:
 		var order := command.duplicate(true)
 		order.erase("units")
+		order["units"] = (command["units"] as Array).duplicate()
 		order["issued_tick"] = game_match.tick if game_match != null else 0
+		if command.has("to") and command["verb"] != "follow":
+			order["goal"] = command["to"]  # control resolves each unit's formation slot into `goal`; one spot per unit here
 		if bool(command.get("queue", false)) and _current.has(unit_name):
 			(_queues.get_or_add(unit_name, []) as Array).append(order)
 			continue

@@ -89,12 +89,18 @@ func form_squad(team: int, squad_name: String, members: Array) -> Squad:
 	return squad
 
 
-## K1 orders for this match's brains (OrderFeed): the match's own `orders` once it has them (after CP1), else a
+## K1 orders for this match's brains (OrderFeed): the match's own, else control's `Orders` (after CP1), else a
 ## StubOrders with the contract's shape. Issue with `orders().issue({"units": [name], "verb": "move", "to": [x, z]})`.
 func orders() -> Object:
 	var existing := OrderFeed.source(game_match)
 	if existing != null:
 		return existing
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		if entry["class"] == "Orders":
+			var script: GDScript = load(entry["path"])
+			var real: Object = script.new(game_match)
+			OrderFeed.attach(game_match, real)
+			return real
 	var stub := StubOrders.new(game_match)
 	OrderFeed.attach(game_match, stub)
 	return stub

@@ -6,16 +6,16 @@ extends RefCounted
 ## Duck-typed on purpose: ai builds against the contract before checkpoint CP1 lands, so nothing here names
 ## control's classes. The source is `Match.orders` when that field exists and is set, else an object attached
 ## with attach() (tests before CP1, tools). It needs `current(unit_name) -> Dictionary`, `complete(unit_name)`,
-## and signal `order_changed(unit_name)`.
+## and signal `order_changed(unit_name)`; it uses control's helpers when present: `goal_position(unit)` (a follow's live
+## station), `pace_factor(unit)` (a group's pace), `station(unit)` (where an idle unit regroups).
 ##
 ## current() is normalized for brains into
 ##   {"verb": "move" | "attack" | "attack_move" | "follow" | "hold" | "stop",
-##    "goal": Vector3 | null   this unit's own destination: the order's `slot` [x, z] if given (control's
-##                             formation slot in world meters), else `to` plus `slot_offset` [dx, dz] (world),
-##                             else `to`,
+##    "goal": Vector3 | null   this unit's own destination in world meters: control's per-unit `goal` [x, z] (the group's
+##                             `to` plus this unit's formation slot), else `goal_position(unit)`, else `to`,
 ##    "target": String         attack: the enemy; follow: the friend ("" otherwise),
-##    "issued_tick": int, "speed": float (0.2..1, a group's pace when control sends one)}
-## or {} when the unit has no order.
+##    "issued_tick": int, "speed": float (0.2..1, `pace_factor(unit)` when the source has it)}
+## or {} when the unit has no order. Control's `slot` is [right, back] in the group's frame: not a position.
 
 const VERBS := ["move", "attack", "attack_move", "follow", "hold", "stop"]
 
@@ -42,8 +42,24 @@ static func attach(game_match: Object, orders: Object) -> void:
 static func current(orders: Object, unit_name: String) -> Dictionary:
 	if orders == null:
 		return {}
-	var raw: Variant = orders.call("current", unit_name)
-	return normalize(raw)
+	var order := normalize(orders.call("current", unit_name))
+	if order.is_empty():
+		return order
+	if order["goal"] == null and orders.has_method("goal_position"):
+		order["goal"] = point(orders.call("goal_position", unit_name))
+	if orders.has_method("pace_factor"):
+		order["speed"] = clampf(float(orders.call("pace_factor", unit_name)), 0.2, 1.0)
+	return order
+
+
+## Where an idle unit regroups (control's `station(unit).position`), or null when the source doesn't keep stations.
+static func station(orders: Object, unit_name: String) -> Variant:
+	if orders == null or not orders.has_method("station"):
+		return null
+	var found: Variant = orders.call("station", unit_name)
+	if typeof(found) != TYPE_DICTIONARY or not (found as Dictionary).has("position"):
+		return null
+	return point(found["position"])
 
 
 static func complete(orders: Object, unit_name: String) -> void:
@@ -60,26 +76,24 @@ static func normalize(raw: Variant) -> Dictionary:
 	if not VERBS.has(verb):
 		return {}
 	var goal: Variant = null
-	if order.get("slot") != null:
-		goal = point(order["slot"])
-	elif order.get("to") != null:
+	if order.get("goal") != null:
+		goal = point(order["goal"])
+	elif order.get("to") != null and order["verb"] != "follow":
 		goal = point(order["to"])
-		if goal != null and order.get("slot_offset") != null:
-			var offset: Variant = point(order["slot_offset"])
-			if offset != null:
-				goal = (goal as Vector3) + (offset as Vector3)
+	# The identity of this order: fields that never change while it runs (a follow's live goal does, so it isn't one).
+	var identity := "%s|%s|%s|%s|%s|%s|%s" % [order.get("id", ""), verb, order.get("issued_tick", ""),
+			order.get("started_tick", ""), order.get("target", ""), order.get("goal", ""), order.get("to", "")]
 	return {"verb": verb, "goal": goal, "target": String(order.get("target", "")),
 			"issued_tick": int(order.get("issued_tick", -1)),
-			"speed": clampf(float(order.get("speed", 1.0)), 0.2, 1.0)}
+			"speed": clampf(float(order.get("speed", 1.0)), 0.2, 1.0), "identity": identity}
 
 
-## Identity of an order, to notice a new one even without the signal (same verb and tick can't repeat).
+## Identity of an order, to notice a new one even without the signal: its id, verb, ticks, target, and destination as
+## issued (normalize's "identity"), never live values like a follow's station or a group's pace.
 static func key(order: Dictionary) -> String:
 	if order.is_empty():
 		return ""
-	var goal: Variant = order["goal"]
-	return "%s|%d|%s|%s" % [order["verb"], order["issued_tick"], order["target"],
-			"" if goal == null else "%.1f,%.1f" % [(goal as Vector3).x, (goal as Vector3).z]]
+	return String(order.get("identity", "%s|%s|%s" % [order.get("verb"), order.get("issued_tick"), order.get("target")]))
 
 
 ## [x, z], [x, y, z], Vector2(x, z), or Vector3 → a flat Vector3; null otherwise.

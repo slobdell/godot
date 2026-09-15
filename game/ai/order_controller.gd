@@ -13,6 +13,7 @@ extends Node
 ##    "arrive": 0.5..10 meters (optional, default ARRIVE_RADIUS)}
 ##       reverse = back up to the point, front armor kept toward where you came from
 ##       arrive = how close counts as there (brains use ~1 m for hide and peek spots)
+##       direct = true: steer straight at the point, no navmesh path (brains' short, already-checked hops)
 ##   {"type": "drive", "throttle": float, "turn": float, "seconds": float}
 ##   {"type": "face", "x": float, "z": float}   turn in place to point the hull (front armor) at a spot
 ## Weapon orders (one at a time):
@@ -179,9 +180,15 @@ func compute_command(delta: float) -> TankCommand:
 	ticks_since_fire += 1
 	_sense()
 	_apply_reflexes()
+	var clock := Time.get_ticks_usec() if profiling else 0
 	_apply_move(cmd, delta)
 	_apply_unstick(cmd, delta)
+	if profiling:
+		TankBrain.profile_parts["move"] = int(TankBrain.profile_parts.get("move", 0)) + Time.get_ticks_usec() - clock
+		clock = Time.get_ticks_usec()
 	_apply_weapon(cmd)
+	if profiling:
+		TankBrain.profile_parts["weapon"] = int(TankBrain.profile_parts.get("weapon", 0)) + Time.get_ticks_usec() - clock
 	if cmd.fire:
 		ticks_since_fire = 0
 	return cmd
@@ -251,14 +258,16 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 	match move_order["type"]:
 		"move_to":
 			var goal := Vector3(move_order["x"], 0.0, move_order["z"])
-			var waypoint := _next_waypoint(goal, delta)
+			# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
+			var direct: bool = move_order.get("direct", false)
+			var waypoint := goal if direct else _next_waypoint(goal, delta)
 			var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
 			var drive: Vector2 = steer.call(tank.global_position, -tank.global_basis.z, waypoint,
 					clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5,
-				_remaining_path_distance(goal))
+				_flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal))
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
-			_track_progress(goal, drive)
+			_track_progress(goal, drive, direct)
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
@@ -273,8 +282,8 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 
 
 ## Counts ticks without getting at least 0.5 m closer (along the path) to the current move goal.
-func _track_progress(goal: Vector3, drive: Vector2) -> void:
-	var remaining := _remaining_path_distance(goal)
+func _track_progress(goal: Vector3, drive: Vector2, direct := false) -> void:
+	var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
 	if _flat_distance(goal, _progress_goal) > 2.0 or drive == Vector2.ZERO:
 		_progress_goal = goal
 		_progress_best = remaining
@@ -515,6 +524,8 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'target' needs a string 'name'"
 	if order.has("reverse") and typeof(order["reverse"]) != TYPE_BOOL:
 		return "'reverse' must be true or false"
+	if order.has("direct") and typeof(order["direct"]) != TYPE_BOOL:
+		return "'direct' must be true or false"
 	if order.has("fallback") and typeof(order["fallback"]) != TYPE_BOOL:
 		return "'fallback' must be true or false"
 	if order.has("speed") and not (typeof(order["speed"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["speed"]))):

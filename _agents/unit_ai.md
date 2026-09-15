@@ -49,10 +49,10 @@ feel controllable right now, they seem to get stuck in some particular state and
 
 | Piece | Code | What it does |
 |---|---|---|
-| K1 adapter | `game/ai/order_feed.gd` | Reads control's `Orders` duck-typed (`Match.orders`, or an object attached to the match before CP1); normalizes `current(unit)` to `{verb, goal, target, issued_tick, speed}`. A unit's goal is `slot` if given, else `to` + `slot_offset`, else `to` |
+| K1 adapter | `game/ai/order_feed.gd` | Reads control's `Orders` duck-typed (`Match.orders`, or the object `Orders.attach` stored on the match); normalizes `current(unit)` to `{verb, goal, target, issued_tick, speed}`: the per-unit world `goal` (control's `to` + formation slot), `goal_position(unit)` for a follow's live station, `pace_factor(unit)` as speed, `station(unit)` as the idle post. `TankBrain.EXECUTES_ORDERS` tells control's stand-in executor to leave brains alone |
 | Response guarantee | `TankBrain._poll_order` | Polled every think tick and whenever `order_changed` names the unit; a new order interrupts the unstick routine and commitment and is executed the same tick (measured worst 1 tick) |
 | What vs how | `TankBrain.ORDER_OPTIONS`, `_obey` | The verb filters the options: move → MOVE; hold → HOLD; follow → FOLLOW; attack → only fights on its target, PURSUE when out of sight; attack-move → MOVE at 0.55 unless a visible enemy in weapon range + 10 m gets fought (+0.5), RETREAT only when about to die |
-| Completion | `_update_order_progress` | Brains call `Orders.complete`: move/attack-move on arrival (3.5 m, or 12 m after 3 s without progress), attack/follow when the other unit is gone, stop at once |
+| Completion | `_update_order_progress` | Brains call `Orders.complete`: move on arrival (3.5 m, or 12 m after 3 s without progress), attack-move the same once nothing is engaged, attack/follow when the other unit is gone, stop once below 0.5 m/s |
 | Regroup | idle posts | Every finished order leaves a post; an idle unit fights within 30 m of it (the situation's objective + leash) and drives back beyond that. No scouting, contesting, or resupply trips on its own |
 | No stuck states | `_timed_out`, `cooldowns` | An option kept past its timeout (fights: since the last shot) or driving 3 s without progress (`OrderController.stalled_ticks`) goes on a 5 s cooldown (×0.25). Ladder: with vs without, 26–22 over two doctrines |
 
@@ -96,12 +96,16 @@ otherwise (results below).
 | Two tanks on one: time seeing its side or rear | | 0 s (weave only) → 5.0 s of 20 (busy-target flanking) |
 | Scout ordered onto a tank (x2) | | 4 attack runs in 25 s, all 22 hits into its side or rear |
 | IFV vs a cannon at 30–45 m: shells that miss | 0% | 6–15% (noise over 33 shells) |
-| Ladder vs a6, individuals mirror | | x2 0–24 (first cut) → 3–13 (short halt) → x3 4–12 (weave) |
-| Ladder vs a6, combined_arms | | x2 12–12 |
+| Ladder vs a6, individuals mirror | | x2 0–24 (first cut) → 3–13 (short halt) → x3 4–12 (weave) → **14–10** (turn cost, busy-target flanking) → **15–9** (after the CPU pass) |
+| Ladder vs a6, combined_arms | | x2 12–12 → x3 **17–7** → **21–3** |
+| CPU, 50 brains, builder0, back to back | 3.9–4.6 ms per tick | x3 5.0–6.1 ms → **4.7 ms** |
 
 Reading: moving tanks lost mirrors because they showed their sides (the armor multiplier is 0.5 front, 1.0 side,
 1.5 rear) and fired on the move with a turret the hull drags off target; the weave and the short halt recovered
-most of it. **Dodging is physically marginal with round-2 shells:** 70 m/s at 25–45 m arrives in ~0.5 s, in which a
+most of it, and charging for hull turns (a pivot is standing still) plus flanking only targets busy with someone
+else made x3 the champion (`BrainVariants.CHAMPION`, 2026-09-15). CPU pass: CombatMotion's hops skip the navmesh
+(`direct` move orders), plans are reused for 15 ticks unless a round, a jink, the target, or the run phase changes,
+"can that gun shoot me" uses a 2 m line-of-sight memo, and ally lists and sorted intel names are shared per tick. **Dodging is physically marginal with round-2 shells:** 70 m/s at 25–45 m arrives in ~0.5 s, in which a
 14 m/s² hull moves ~2 m off the shooter's lead, less than half a hull; the dodge threshold scenario is pending until
 combat's slower, visible tank shells land.
 

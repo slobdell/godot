@@ -143,8 +143,11 @@ func test_order_feed_reads_k1_orders() -> void:
 	var move := OrderFeed.normalize({"verb": "move", "to": [10, -20], "issued_tick": 7, "queue": false})
 	assert_eq(move["goal"], Vector3(10, 0, -20), "to [x, z]")
 	assert_eq(move["issued_tick"], 7, "issued_tick")
-	var slotted := OrderFeed.normalize({"verb": "move", "to": [10, -20], "slot_offset": [4, 2]})
-	assert_eq(slotted["goal"], Vector3(14, 0, -18), "to + slot_offset")
-	var slot := OrderFeed.normalize({"verb": "attack_move", "to": [10, -20], "slot": Vector2(3, 4)})
-	assert_eq(slot["goal"], Vector3(3, 0, 4), "an explicit slot wins")
+	# Control's shape (K1 as built): `goal` is this unit's world destination; `slot` is [right, back] in the group frame.
+	var slotted := OrderFeed.normalize({"id": 4, "verb": "move", "to": [10, -20], "slot": [10, 10], "goal": [14, -12],
+			"issued_tick": 7, "started_tick": 7, "units": ["A", "B"]})
+	assert_eq(slotted["goal"], Vector3(14, 0, -12), "the per-unit goal, not the group's `to` or the slot")
 	assert_true(OrderFeed.key(move) != OrderFeed.key(slotted), "different orders have different keys")
+	var follow := {"id": 5, "verb": "follow", "target": "Green_B_1", "slot": [0, 10], "issued_tick": 9, "started_tick": 9}
+	assert_eq(OrderFeed.normalize(follow)["goal"], null, "a follow has no fixed goal (the source's goal_position is live)")
+	assert_eq(OrderFeed.key(OrderFeed.normalize(follow)), OrderFeed.key(OrderFeed.normalize(follow.duplicate())), "stable key")

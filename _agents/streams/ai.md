@@ -115,7 +115,18 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   busy-target flanking 14–10. Mirror hits by face: a6 front 66%; first cut front 36%, side 49%, rear 15%; weave front 56%.
 - Dodging: IFV vs a cannon at 30–45 m, shells that miss: a6 0%, x2/x3 6–15%. Physically marginal with 70 m/s shells
   (see Requests); the ≥ 35% bar is a pending scenario.
-- Sim baseline: `397d0a3e14891d2d` (X1 timeouts), then `9d936357e51d78dd` (x3 champion), both on purpose.
+- **CPU (X6 part):** 50 brains, back to back on builder0: a6 3.9–4.6 ms per tick; x3 first cut 5.0–6.1 ms, now
+  **4.7 ms** (direct moves skip the navmesh for CombatMotion's checked hops, motion re-plans every 15 ticks unless
+  something changed, a 2 m line-of-sight memo for "can that gun shoot me", shared per-tick ally and intel-name tables,
+  the multi-threat armor loop only for heavy hulls). `make ai-perf BRAIN=a6` profiles any variant and prints the parts
+  (situation 1.6 ms, decide 0.56, act 0.53 of which motion 0.30, move 0.33, weapon 0.84). The ladder after these:
+  x3 15–9 (individuals), 21–3 (combined_arms).
+- **K1 aligned with control's branch** (read, not merged): brains read control's per-unit `goal`, `goal_position` for
+  follow, `pace_factor`, and `station` for idle posts; stop completes once stopped, attack-move once arrived with
+  nothing engaged; order identity ignores live values. `TankBrain.EXECUTES_ORDERS` makes control's stand-in
+  OrderExecutor leave brains alone. AiScenario.orders() uses control's `Orders` once it exists.
+- Sim baseline: `397d0a3e14891d2d` (X1 timeouts), `9d936357e51d78dd` (x3 champion), `fe0a7942ac259713` (the CPU pass
+  and K1 alignment), each on purpose.
 
 **Decisions (with reasons):**
 - Brains read K1 through `OrderFeed` (duck-typed: `Match.orders` when the field exists, else an attached object), so
@@ -141,9 +152,10 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 **Questions for the lead:** none yet.
 
 **Requests to other streams:**
-- control (K1): please put each unit's own destination in `current()` as `slot: [x, z]` (world), or `slot_offset`
-  in world meters relative to `to`; add `speed` (0.2–1) if you pace a group; `complete(unit)` should pop the queue and
-  emit `order_changed`. Brains execute orders directly, so the "minimal adapter" in your X1 isn't needed for brains.
+- control (K1, after reading your branch): done on my side: brains read `goal`, `goal_position`, `pace_factor`,
+  `station`, call `complete`, and declare `TankBrain.EXECUTES_ORDERS`, so `OrderExecutor` can go once both branches
+  merge. I added a one-line guard in your `CommandIcons.draw_unit` (see Merge notes): `tactical_map.gd:633` draws icons
+  for units projected tens of thousands of pixels off-screen; culling them before drawing would be the real fix.
 - combat: the `Match.orders` field (K1) as planned.
 - combat (X2 weapons, measured reasons): (1) **tank shell flight time ≥ ~0.7 s at 30–50 m** (≤ ~60 m/s) if dodging should
   read: with 70 m/s shells a 14 m/s² hull moves ~2 m off the shooter's lead before impact, less than half a hull, so
@@ -156,10 +168,15 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   fallback; add words when convenient ("Moving", "Following", "Closing in").
 
 **Known issues:**
-- **CPU:** x3 costs 6.1 ms per tick at 50 brains on builder0 (a6 4.0 ms): moving units miss the position-keyed line of
-  sight memo (144k LOS computed vs 63k). X6 brings it back to ≤ round 2's.
+- **CPU:** x3 4.7 ms per tick at 50 brains vs a6 3.9–4.6 ms on the same machine (round 2's 7–9 ms was the laptop).
+  Next levers if phones need it: order execution's per-tick line of sight for named targets (0.84 ms), contact
+  dictionaries (0.5 ms), cover queries for moving units (0.4 ms).
+
 - Heavy tanks can't dodge (physics, above); they take hits on the front armor instead.
 
 **Merge notes (shared files):**
 - `tools/remote.sh`: picks the newest Xwayland auth file (`ls -t`); a stale one made every rendering target on builder0
   fall back to Wayland and hang.
+- `game/ui/command_icons.gd` (control's; a paused-area smoke broke): `draw_unit` skips icons centered beyond 16384 px.
+  `army-loop-smoke` failed about 1 run in 3 in full checks with "Invalid polygon data, triangulation failed": the icon
+  before the error was at (53141, 63901) px, where the renderer's triangulation loses precision; 4 of 4 clean after.

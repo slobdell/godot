@@ -11,6 +11,8 @@ extends OrderController
 ##   - decide(situation, current) is a pure static function: same input → same output
 ##   - ties go to the earlier option in OPTIONS order, then earlier target name
 
+## K1: brains execute control's orders themselves, so control's stand-in OrderExecutor leaves them alone.
+const EXECUTES_ORDERS := true
 const THINK_EVERY_TICKS := 6
 ## Think LOD (_agents/unit_ai.md §8): a brain with no known enemy within LOD_RADIUS thinks this often instead.
 ## Squad orders still take effect on the next tick (G3).
@@ -82,6 +84,7 @@ const ORDER_ONLY_OPTIONS := ["MOVE", "FOLLOW", "PURSUE"]
 ## the post its last order left it at.
 const ORDER_OPTIONS := {
 	"move": ["MOVE"],
+	"stop": ["MOVE"],
 	"hold": ["HOLD"],
 	"follow": ["FOLLOW"],
 	"attack": ["ENGAGE", "COVER_FIRE", "FLANK", "ORBIT", "CLEAR_LANE", "BOMBARD", "PURSUE"],
@@ -98,6 +101,8 @@ const ATTACK_MOVE_REACH_MARGIN := 10.0
 const ORDER_ARRIVE := 3.5
 ## ...or this close, when it has made no progress for STALL_TICKS (a crowded slot, a slot against a wall).
 const ORDER_STALL_ARRIVE := 12.0
+## A stop order is done once the unit is slower than this (m/s).
+const STOPPED_SPEED := 0.5
 ## A hold order keeps the unit this close to its spot (meters).
 const HOLD_TOLERANCE := 3.0
 ## An idle unit fights near its post and returns when it drifts farther than this (regroup).
@@ -117,6 +122,11 @@ const MOTION_REACH_MARGIN := 15.0
 const ANGLE_FRONT_ARMOR := 6.0
 ## ...keeping the front toward at most this many visible guns (nearest, the ones aimed at it first).
 const MOTION_THREATS := 4
+## cos 45° (Armor.ARC_DEG) and cos 12° (a gun this close to pointing at me is aimed at me), as constants.
+const COS_ARMOR_ARC := 0.70710678
+const COS_AIMED_AT_ME := 0.9781476
+## ...and re-plans the move at most this often (ticks) while nothing changed.
+const MOTION_REPLAN_TICKS := 15
 ## ...and a jink flips the circling side no sooner than JINK_MIN_TICKS after the last, and no later than
 ## JINK_MIN_TICKS + JINK_SPREAD_TICKS (per unit, so a group doesn't jink in step).
 const JINK_MIN_TICKS := 90
@@ -162,6 +172,10 @@ const CRITICAL_HP_MAX := 0.25
 ## A remembered contact's position is extrapolated along its last velocity for at most this long.
 const WATCH_PREDICT_SECONDS := 1.5
 
+## Measurement only (make ai-perf, while OrderController.profiling): microseconds per part of thinking. Never read by
+## decisions.
+static var profile_parts := {}
+
 var game_match: Match
 ## Fully resolved directives (Directives.resolve).
 var directives: Dictionary = Directives.DEFAULTS.duplicate(true)
@@ -206,6 +220,8 @@ var _strafe_side := 0
 var _incoming_count := 0
 ## The tick the gun became loaded (-1 while reloading), for the short halt.
 var _loaded_tick := -1
+## The last CombatMotion plan: {"tick", "key", "why", "order"} (reused for MOTION_REPLAN_TICKS).
+var _motion_cache := {}
 var _jink_tick := 0
 var _run_phase := "run"
 
@@ -233,7 +249,7 @@ func think(_delta: float) -> void:
 	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
 	# arrives in 43 ticks; waiting up to 6 for the next think wastes the dodge).
 	if not think_tick and not fresh_order and _dodges() and FIGHT_OPTIONS.has(choice.get("option", "")):
-		var count := IncomingFire.for_unit(game_match, tank).size()
+		var count := IncomingFire.count_for(game_match, tank)
 		think_tick = count > _incoming_count
 		_incoming_count = count
 	# Think LOD wake-up: an idle brain checks each fresh intel refresh for an enemy coming near.
@@ -247,19 +263,28 @@ func think(_delta: float) -> void:
 	if timed_out != "":
 		cooldowns[timed_out] = game_match.tick + COOLDOWN_TICKS
 		fresh_order = true
+	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
 	var situation := build_situation()
+	if OrderController.profiling:
+		profile_parts["situation"] = int(profile_parts.get("situation", 0)) + Time.get_ticks_usec() - clock
+		clock = Time.get_ticks_usec()
 	_think_every = IDLE_THINK_EVERY_TICKS
 	for c: Dictionary in situation["contacts"]:
 		if tank.global_position.distance_to(c["position"]) <= LOD_RADIUS:
 			_think_every = int((situation["features"] as Dictionary).get("think_ticks", THINK_EVERY_TICKS))
 			break
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
+	if OrderController.profiling:
+		profile_parts["decide"] = int(profile_parts.get("decide", 0)) + Time.get_ticks_usec() - clock
+		clock = Time.get_ticks_usec()
 	ranked = decision["ranked"]
 	var best: Dictionary = decision["choice"]
 	var same: bool = best["option"] == choice.get("option") and best["target"] == choice.get("target")
 	best["since"] = choice["since"] if same else game_match.tick
 	choice = best
 	_act(situation)
+	if OrderController.profiling:
+		profile_parts["act"] = int(profile_parts.get("act", 0)) + Time.get_ticks_usec() - clock
 	_update_order_progress()
 	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
@@ -292,12 +317,10 @@ func _poll_order(think_tick: bool) -> bool:
 		return true
 	if _order_home == null:
 		_order_home = _flat(tank.global_position)
-	if order["goal"] == null and ["hold", "move", "attack_move"].has(order["verb"]):
-		order["goal"] = _flat(tank.global_position)  # hold here (a move with nowhere to go holds too)
-		if order["verb"] != "hold":
+	if order["goal"] == null and ["hold", "move", "attack_move", "stop"].has(order["verb"]):
+		order["goal"] = _flat(tank.global_position)  # hold or stop here (a move with nowhere to go holds too)
+		if order["verb"] == "move" or order["verb"] == "attack_move":
 			order["verb"] = "hold"
-	if order["verb"] == "stop":
-		_finish_order(tank.global_position)
 	return true
 
 
@@ -325,8 +348,13 @@ func _update_order_progress() -> void:
 		"move", "attack_move":
 			var goal: Vector3 = order["goal"]
 			var distance := _flat(here).distance_to(goal)
-			if distance <= ORDER_ARRIVE or (stalled_ticks >= STALL_TICKS and distance <= ORDER_STALL_ARRIVE):
+			# An attack-move is done when it's there and nothing is left to shoot (control's rule).
+			var fighting: bool = order["verb"] == "attack_move" and engaged_target != ""
+			if not fighting and (distance <= ORDER_ARRIVE or (stalled_ticks >= STALL_TICKS and distance <= ORDER_STALL_ARRIVE)):
 				_finish_order(goal if distance <= ORDER_ARRIVE else here)
+		"stop":
+			if tank.estimated_velocity.length() < STOPPED_SPEED:
+				_finish_order(here)
 		"attack", "follow":
 			var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
 			if other == null or not other.is_alive():
@@ -359,8 +387,9 @@ func _order_context() -> Variant:
 	if _order_home == null:
 		return null
 	if order.is_empty():
-		return {"verb": "idle", "goal": _order_home, "target": "", "speed": 1.0, "target_alive": false,
-				"target_position": null, "target_forward": null, "target_velocity": null}
+		var post: Variant = OrderFeed.station(_order_source, String(tank.name))
+		return {"verb": "idle", "goal": post if post != null else _order_home, "target": "", "speed": 1.0,
+				"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 	var context := {"verb": order["verb"], "goal": order["goal"], "target": order["target"], "speed": order["speed"],
 			"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 	var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
@@ -375,6 +404,46 @@ func _order_context() -> Variant:
 			context["target_position"] = known["position"]
 			context["target_velocity"] = known["velocity"]
 	return context
+
+
+## Armor.facing as a name, with the arc's cosine as a constant (no trig per contact): which face a round travelling
+## along `shell_direction` strikes on a hull facing `hull_forward`.
+static func face_hit(hull_forward: Vector3, shell_direction: Vector3) -> String:
+	var forward := Vector2(hull_forward.x, hull_forward.z)
+	var toward_shooter := Vector2(-shell_direction.x, -shell_direction.z)
+	var lengths := forward.length() * toward_shooter.length()
+	var alignment := forward.dot(toward_shooter) / lengths if lengths > 1e-9 else 0.0
+	if alignment >= COS_ARMOR_ARC:
+		return "front"
+	if alignment <= -COS_ARMOR_ARC:
+		return "rear"
+	return "side"
+
+
+## Whether a flat `forward` points within the angle whose cosine is `min_cos` of `direction` (a zero vector counts as
+## pointing, like Ballistics.aim_error).
+static func points_at(forward: Vector3, direction: Vector3, min_cos: float) -> bool:
+	var a := Vector2(forward.x, forward.z)
+	var b := Vector2(direction.x, direction.z)
+	var lengths := a.length() * b.length()
+	return lengths < 1e-8 or a.dot(b) >= min_cos * lengths
+
+
+## Whether a contact faces one of my team other than me (AiTickCache.faced_by, without a lambda per contact).
+func _faces_someone_else(known: Dictionary, contact_name: String, my_name: String) -> bool:
+	for faced: String in AiTickCache.faced_by(game_match, tank.team, contact_name, known):
+		if faced != my_name:
+			return true
+	return false
+
+
+## Measurement only: adds the time since `since` to profile_parts[part] while profiling; returns now.
+static func _lap(part: String, since: int) -> int:
+	if not OrderController.profiling:
+		return 0
+	var now := Time.get_ticks_usec()
+	profile_parts[part] = int(profile_parts.get(part, 0)) + now - since
+	return now
 
 
 static func _flat(point: Vector3) -> Vector3:
@@ -775,7 +844,7 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 		result.append(candidate)
 	var goal: Variant = o.get("goal")
 	match verb:
-		"move":
+		"move", "stop":
 			if goal != null:
 				result.append({"option": "MOVE", "target": "", "score": 1.0})
 		"attack_move":
@@ -854,26 +923,29 @@ static func _top(candidates: Array, count: int) -> Array:
 # ---- Sensing (the only impure part) -----------------------------------------------
 
 func build_situation() -> Dictionary:
+	var lap := Time.get_ticks_usec() if OrderController.profiling else 0
 	var team := tank.team
 	var my_position := tank.global_position
 	var allies: Array = []
 	var squad_positions: Array = []
-	for ally: Tank in AiTickCache.team_tanks(game_match, team):
-		if ally == tank or not ally.is_alive():
+	var my_name := String(tank.name)
+	for ally: Dictionary in AiTickCache.allies(game_match, team):
+		if ally["name"] == my_name:
 			continue
-		allies.append({"name": String(ally.name), "position": ally.global_position})
-		if game_match.squad_of(ally) == squad_name:
-			squad_positions.append(ally.global_position)
+		allies.append(ally)
+		if ally["squad"] == squad_name:
+			squad_positions.append(ally["position"])
 
+	lap = _lap("s.allies", lap)
 	var features := BrainVariants.for_team(team)
 	hold_for_friends = features.get("hold_for_friends", true)
 	var contacts: Array = []
 	var cover_map := CoverMap.of(tank)
-	var my_name := String(tank.name)
 	var flank_reach := float(tank.weapon["range"]) + 30.0
 	var intel: Dictionary = game_match.intel[team]
-	var names := intel.keys()
-	names.sort()
+	# Intel changes only on its refresh, so the sorted names are shared (intel can gain a name between refreshes only
+	# through a refresh, and a name that died is skipped below).
+	var names: Array = AiTickCache.intel_names(game_match, team)
 	var keep := {}
 	if names.size() > MAX_CONTACTS:
 		var by_distance: Array = []
@@ -885,8 +957,9 @@ func build_situation() -> Dictionary:
 			if i < MAX_CONTACTS or contact_name == choice.get("target", "") or contact_name == order.get("target", "") \
 					or intel[contact_name]["weapon"] == "mortar":
 				keep[contact_name] = true
+	lap = _lap("s.select", lap)
 	for contact_name in names:
-		if not keep.is_empty() and not keep.has(contact_name):
+		if (not keep.is_empty() and not keep.has(contact_name)) or not intel.has(contact_name):
 			continue
 		var known: Dictionary = intel[contact_name]
 		var offset: Vector3 = known["position"] - my_position
@@ -902,17 +975,16 @@ func build_situation() -> Dictionary:
 			"turret_forward": known["turret_forward"],
 			"visible": known["visible"],
 			"age": game_match.tick - int(known["seen_tick"]),
-			"exposed_face": Armor.FACING_NAMES[Armor.facing(known["forward"], offset)],
+			"exposed_face": TankBrain.face_hit(known["forward"], offset),
 			# Only near enough to flank or prioritize matters (reach + 30 m); the check is contacts × allies.
-			"facing_ally": offset.length() <= flank_reach and AiTickCache.faced_by(game_match, team, contact_name, known).any(
-					func(faced: String) -> bool: return faced != my_name),
-			"aiming_at_me": known["visible"] and Ballistics.aim_error(known["position"], known["turret_forward"],
-					my_position) <= deg_to_rad(12.0),
+			"facing_ally": offset.length() <= flank_reach and _faces_someone_else(known, contact_name, my_name),
+			"aiming_at_me": known["visible"] and TankBrain.points_at(known["turret_forward"], -offset, COS_AIMED_AT_ME),
 			# In its weapon's reach with a clear line to me (CoverMap): it can shoot me right now.
 			"threatens_me": known["visible"] and my_position.distance_to(known["position"]) <= float(Weapons.profile(known["weapon"])["range"]) + 5.0
-					and cover_map.clear_line(known["position"], my_position),
+					and cover_map.clear_line_coarse(known["position"], my_position),
 		})
 
+	lap = _lap("s.contacts", lap)
 	var objective: Variant = null
 	var objective_radius := 0.0
 	var order_context: Variant = _order_context()
@@ -943,6 +1015,14 @@ func build_situation() -> Dictionary:
 		effective_directives = directives.duplicate()
 		effective_directives["leash"] = IDLE_LEASH
 		effective_directives["objective"] = null
+	lap = _lap("s.squad", lap)
+	var tactics := _tactics(features)
+	lap = _lap("s.tactics", lap)
+	var cover := _cover_spots(contacts, allies, squad_context)
+	var cover_fire: Variant = _cover_fire_spot(contacts, allies, squad_context, cover_map)
+	lap = _lap("s.cover", lap)
+	var incoming: Array = IncomingFire.for_unit(game_match, tank) if _dodges() else []
+	lap = _lap("s.incoming", lap)
 
 	return {
 		"tick": game_match.tick,
@@ -961,9 +1041,9 @@ func build_situation() -> Dictionary:
 		"objective_radius": objective_radius,
 		"squad_center": squad_center,
 		"features": features,
-		"tactics": _tactics(features),
-		"cover": _cover_spots(contacts, allies, squad_context),
-		"cover_fire": _cover_fire_spot(contacts, allies, squad_context, cover_map),
+		"tactics": tactics,
+		"cover": cover,
+		"cover_fire": cover_fire,
 		"rally": Match.spawn_position(team, tank.slot),
 		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
@@ -972,7 +1052,7 @@ func build_situation() -> Dictionary:
 				if game_match.control_point else null,
 		"order": order_context,
 		"cooldowns": cooldowns,
-		"incoming": IncomingFire.for_unit(game_match, tank) if _dodges() else [],
+		"incoming": incoming,
 	}
 
 
@@ -1214,8 +1294,10 @@ func _act(s: Dictionary) -> void:
 			var friend: Vector3 = o["target_position"]
 			var heading: Vector3 = o["target_forward"]
 			var velocity: Vector3 = o["target_velocity"]
-			# Station behind the friend, leading it by half a second so a moving escort doesn't trail off.
-			var station := _flat(friend + velocity * 0.5 - heading * FOLLOW_DISTANCE)
+			# Control's live station for this unit around the friend (its formation slot) when it gives one, else behind the
+			# friend; either way led by half a second so a moving escort doesn't trail off.
+			var station := _flat(friend - heading * FOLLOW_DISTANCE) if o["goal"] == null else _flat(o["goal"])
+			station += _flat(velocity * 0.5)
 			why = TankBrain._join(why, "following " + String(o["target"]))
 			if _flat(my_position).distance_to(station) > 4.0:
 				_order_move(_move_to(station, false, 1.0, 3.0))
@@ -1512,6 +1594,12 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 				and not about_to_be_hit:
 			why = TankBrain._join(why, "short halt")
 			return {"type": "stop"}
+	# Re-plan every MOTION_REPLAN_TICKS unless something that changes the plan happened (a new round on its way, a
+	# jink, a run phase flip, another target): the steer point is 12 m out, so a 0.2 s old plan still drives true.
+	var motion_key := "%s|%d|%s|%d" % [contact["name"], _strafe_side, _run_phase, (s.get("incoming", []) as Array).size()]
+	if not _motion_cache.is_empty() and _motion_cache["key"] == motion_key and tick - int(_motion_cache["tick"]) < MOTION_REPLAN_TICKS:
+		why = _motion_cache["why"]
+		return _motion_cache["order"]
 	var cover_map := CoverMap.of(tank)
 	var request := {"position": my_position, "forward": me["forward"], "speed": tank.max_forward_speed,
 			"reverse_speed": tank.max_reverse_speed, "style": style,
@@ -1526,7 +1614,10 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			"threats": TankBrain.threat_list(s["contacts"], my_position).slice(0, MOTION_THREATS),
 			"target_busy": not bool(contact.get("aiming_at_me", false))}
 	_incoming_count = (s.get("incoming", []) as Array).size()
+	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
 	var result := CombatMotion.choose(request)
+	if OrderController.profiling:
+		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
 	if result.is_empty():
 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
 	if result.get("dodging", false):
@@ -1540,7 +1631,9 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			why = TankBrain._join(why, "weaving, front armor on it")
 		_:
 			why = TankBrain._join(why, "circling")
-	return _move_to(result["point"], result["reverse"], 1.0, 1.0)
+	_motion_cache = {"tick": tick, "key": motion_key, "why": why,
+			"order": _move_to(result["point"], result["reverse"], 1.0, 1.0, true)}
+	return _motion_cache["order"]
 
 
 ## Turn the hull toward the nearest visible enemy (front armor, and a fixed gun's aim), else `fallback`.
@@ -1622,15 +1715,20 @@ static func withdraw_point(s: Dictionary) -> Vector3:
 	return Vector3(clampf(point.x, -ARENA_LIMIT, ARENA_LIMIT), 0.0, clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT))
 
 
-static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := OrderController.ARRIVE_RADIUS) -> Dictionary:
-	return {"type": "move_to", "x": clampf(point.x, -ARENA_LIMIT, ARENA_LIMIT),
+static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := OrderController.ARRIVE_RADIUS,
+		direct := false) -> Dictionary:
+	var order := {"type": "move_to", "x": clampf(point.x, -ARENA_LIMIT, ARENA_LIMIT),
 			"z": clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT), "reverse": reverse, "speed": snappedf(speed, 0.05),
 			"arrive": arrive}
+	if direct:
+		order["direct"] = true
+	return order
 
 
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
 func _order_move(order: Dictionary) -> void:
 	if order["type"] == move_order.get("type") and order.get("reverse", false) == move_order.get("reverse", false) \
+			and order.get("direct", false) == move_order.get("direct", false) \
 			and absf(float(order.get("speed", 1.0)) - float(move_order.get("speed", 1.0))) < 0.1 \
 			and is_equal_approx(float(order.get("arrive", 0.0)), float(move_order.get("arrive", 0.0))):
 		if not order.has("x"):

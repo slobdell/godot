@@ -45,18 +45,32 @@ static func for_unit(game_match: Node, unit: Node3D) -> Array:
 
 ## Before K2: live enemy shells under Match/Shells.
 static func _from_shells(game_match: Node, unit: Node3D) -> Array:
-	var shells := game_match.get_node_or_null("Shells")
 	var result: Array = []
-	if shells == null:
-		return result
 	var team := int(unit.get("team"))
-	for node in shells.get_children():
-		var shell := node as Shell
-		if shell == null or shell.team == team or not shell.is_physics_processing():
-			continue
-		result.append({"position": shell.global_position, "velocity": shell.direction * Shell.SPEED,
-				"damage_estimate": Match.BASE_DAMAGE})
+	for entry: Array in AiTickCache.rounds(game_match as Match):
+		if int(entry[2]) != team:
+			result.append({"position": entry[0], "velocity": entry[1], "damage_estimate": Match.BASE_DAMAGE})
 	return result
+
+
+## How many rounds are on their way at `unit` (the for_unit() filter) without building the list: the cheap per-tick
+## trigger for a dodge think.
+static func count_for(game_match: Node, unit: Node3D) -> int:
+	if game_match.has_method("incoming_projectiles"):
+		return for_unit(game_match, unit).size()
+	var here := Vector3(unit.global_position.x, 0.0, unit.global_position.z)
+	var team := int(unit.get("team"))
+	var count := 0
+	for entry: Array in AiTickCache.rounds(game_match as Match):
+		if int(entry[2]) == team:
+			continue
+		var velocity: Vector3 = entry[1]
+		var flat_velocity := Vector3(velocity.x, 0.0, velocity.z)
+		var offset := here - Vector3((entry[0] as Vector3).x, 0.0, (entry[0] as Vector3).z)
+		var seconds := offset.dot(flat_velocity) / maxf(flat_velocity.length_squared(), 1.0)
+		if seconds > 0.0 and seconds * 60.0 <= HORIZON_TICKS and (offset - flat_velocity * seconds).length() <= DANGER_RADIUS:
+			count += 1
+	return count
 
 
 ## Where a unit at `here` driving at `velocity` would be closest to a round (position, velocity), and how close (meters),
