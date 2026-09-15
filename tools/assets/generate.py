@@ -93,8 +93,16 @@ class Http:
         raise ProviderError(f"{method} {path}: still rate limited after {self.retries} retries")
 
     def download(self, url: str, dest: Path) -> int:
-        with urllib.request.urlopen(url, timeout=120) as response:
-            payload = response.read()
+        for attempt in range(self.retries + 1):  # a paid result must survive a flaky connection
+            try:
+                with urllib.request.urlopen(url, timeout=120) as response:
+                    payload = response.read()
+                break
+            except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+                if attempt == self.retries:
+                    raise ProviderError(f"download {url}: {error}")
+                print(f"  download failed ({error}); retrying", file=sys.stderr)
+                time.sleep(self.backoff * (2 ** attempt))
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(payload)
         return len(payload)

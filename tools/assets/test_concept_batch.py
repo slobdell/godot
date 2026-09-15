@@ -119,6 +119,18 @@ class ConceptBatch(unittest.TestCase):
         self.assertEqual(calls, [], "the image on disk is reused (a crash between download and register costs nothing)")
         self.assertEqual(len(review.load(self.manifest_path)["items"]), 1)
 
+    def test_a_regenerated_concept_supersedes_the_failed_one(self):
+        calls = []
+        concept_batch.run(SPEC, self.manifest_path, self.incoming, generate=self.fake_generate(calls), jobs=1, only={"law"})
+        redo = json.loads(json.dumps(SPEC))
+        redo["factions"]["law"]["concepts"][0].update(id="law_scout_a2", supersedes="law_scout_a", why="text in the image")
+        concept_batch.run(redo, self.manifest_path, self.incoming, generate=self.fake_generate(calls), jobs=1, only={"law"})
+        manifest = review.load(self.manifest_path)
+        self.assertEqual(review.find(manifest, "law_scout_a")["status"], "superseded", "the lead never sees the failure")
+        self.assertIn("law_scout_a2", review.find(manifest, "law_scout_a")["lead_words"], "the record says what replaced it")
+        self.assertIn("text in the image", review.find(manifest, "law_scout_a")["lead_words"])
+        self.assertEqual(review.find(manifest, "law_scout_a2")["status"], "waiting")
+
     def test_a_failed_generation_is_reported_and_not_registered(self):
         def failing(concept):
             return 1

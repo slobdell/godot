@@ -8,7 +8,8 @@
 The spec is the record of what was asked for (assets stream, round 3; process in
 _agents/streams/references/concept_review.md). Each faction has a lead sentence with a {role} placeholder, a look
 paragraph (the wear spectrum in _agents/game_design.md), role names, optional role notes (shown under each group on
-the review page), and concepts {id, role, title, subject, notes, tail?}. A prompt is
+the review page), and concepts {id, role, title, subject, notes, tail?,
+supersedes?, why?} (a regenerated concept marks the failed one superseded, so the lead never sees it). A prompt is
     lead(role) + subject + look + tail
 so every option of a faction shares its materials and every prompt ends with the no-text studio tail.
 
@@ -61,6 +62,7 @@ def expand(spec: dict) -> list:
                 "est_3d": int(concept.get("est_3d", spec.get("est_3d", 15))),
                 "keep_background": bool(concept.get("keep_background", False)),
                 "prompt": " ".join(p.strip() for p in parts if p.strip()),
+                "supersedes": concept.get("supersedes", ""), "why": concept.get("why", ""),
             })
     return concepts
 
@@ -118,6 +120,11 @@ def run(spec: dict, manifest_path: Path, incoming: Path = INCOMING, generate=Non
         review.add(manifest, concept["id"], sidecar(concept), concept["group"], concept["target"], concept["title"],
                    concept["est_3d"], MODE_3D, concept["notes"], manifest_path.parent / "images")
         registered.append(concept["id"])
+    for concept in concepts:
+        old = next((i for i in manifest["items"] if i["id"] == concept["supersedes"]), None)
+        if old is not None and old["status"] == "waiting" and concept["id"] in {i["id"] for i in manifest["items"]}:
+            review.decide(manifest, old["id"], "superseded",
+                          f"Regenerated as {concept['id']} before review ({concept['why'] or 'failed the pre-review look'}).")
     review.save(manifest, manifest_path)
     return registered
 

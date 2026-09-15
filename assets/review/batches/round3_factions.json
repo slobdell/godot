@@ -67,11 +67,13 @@
           "notes": "The same war rig in one rigid body: simpler to drive and to build in 3D, less dramatic than the semi."
         },
         {
-          "id": "gangs_tank_c",
+          "id": "gangs_tank_c2",
           "role": "tank",
-          "title": "mining water-tanker haul truck war rig",
-          "subject": "A giant open-pit mining water tanker truck on enormous knobby tires, its huge tank body wrapped in riveted scrap armor and polished chrome bands, an oversized rotating turret on top with a long heavy cannon and a huge harpoon ballista beside it, a wide spiked ram blade on the front, ladders, catwalks and chrome exhaust stacks.",
-          "notes": "The most over-the-top option: enormous tires read from any distance. Risk: very tall and boxy next to the others."
+          "title": "giant mining haul truck war rig",
+          "subject": "A colossal two-axle open-pit mining haul truck with tires taller than a man and a tiny cab perched high on a platform at one side of the front deck, its dump bed replaced by a huge cylindrical water tank wrapped in riveted scrap armor and polished chrome bands, an oversized rotating turret on top of the tank with a long heavy cannon and a huge harpoon ballista beside it, a wide spiked ram blade across the front, ladders and catwalks up the sides.",
+          "notes": "The most over-the-top option: enormous tires read from any distance. Risk: very tall and boxy next to the others.",
+          "supersedes": "gangs_tank_c",
+          "why": "came back as a near-copy of gangs_tank_b: a road tanker on bigger tires, not a mining truck"
         },
         {
           "id": "gangs_artillery_a",
@@ -107,7 +109,7 @@
       "label": "The Law",
       "intro": "The state's wardens, the house team the crowd boos, the easiest faction to learn. Professional design, failing upkeep: a uniform livery that is faded and peeling, primer replacement panels, rust at the seams, dented patched armor, light bars with dead bulbs, cyberpunk gear zip-tied onto old hulls. Heavy wheels. Tank-class = the 8×8 assault gun.",
       "lead": "Photorealistic concept art of an arena {role} of a failing cyberpunk police state, Blade Runner meets dystopian riot police.",
-      "look": "Institutional but neglected: a uniform dark navy and white police livery, faded, scratched and peeling, mismatched replacement armor panels in grey primer, rust at the seams, dented and patched armor, blank stencil panels, retrofitted cyberpunk equipment zip-tied and bolted onto the old hull. A roof light bar of red and blue strobes with dead bulbs and a cracked lens, harsh white spotlights, thin cyan neon strips in the armor seams.",
+      "look": "Institutional but neglected: a uniform dark navy and white police livery, faded, scratched and peeling, mismatched replacement armor panels in grey primer, rust at the seams, dented and patched armor, plain blank panels with no lettering, retrofitted cyberpunk equipment zip-tied and bolted onto the old hull. A roof light bar of red and blue strobes with dead bulbs and a cracked lens, harsh white spotlights, thin cyan neon strips in the armor seams. No words, letters, numbers or insignia anywhere on the vehicle.",
       "roles": {
         "scout": "pursuit vehicle",
         "ifv": "armored patrol vehicle",
@@ -138,11 +140,13 @@
           "notes": "Taller and tougher-looking; the bed gear gives the siren-pulse emitter a home."
         },
         {
-          "id": "law_ifv_a",
+          "id": "law_ifv_a2",
           "role": "ifv",
           "title": "6×6 mine-resistant patrol truck",
           "subject": "A tall six-wheeled mine-resistant armored patrol truck with a V-shaped armored hull, big thick bulletproof windows with cracked glass, and a small remote-controlled weapon station on the roof carrying a 25 mm autocannon.",
-          "notes": "Tall, wheeled, unmistakably militarized police. Risk: taller than the hull box, so it may be squashed a little."
+          "notes": "Tall, wheeled, unmistakably militarized police. Risk: taller than the hull box, so it may be squashed a little.",
+          "supersedes": "law_ifv_a",
+          "why": "lettering baked into the image (POLICE on the doors)"
         },
         {
           "id": "law_ifv_b",
@@ -166,11 +170,13 @@
           "notes": "The most eccentric: a public-service truck militarized, one exaggerated feature. Wide, low front."
         },
         {
-          "id": "law_tank_c",
+          "id": "law_tank_c2",
           "role": "tank",
           "title": "8×8 heavy transporter with a gun deck",
           "subject": "An ex-military eight-wheeled heavy transporter truck with a blunt slab-armored cab and armored engine grille, its long flat bed carrying a large armored turret with a long heavy cannon, stowed riot barricades and spotlight poles along the bed.",
-          "notes": "Truck-based like the other factions' heavies: the longest wheelbase, reads as converted rather than sleek."
+          "notes": "Truck-based like the other factions' heavies: the longest wheelbase, reads as converted rather than sleek.",
+          "supersedes": "law_tank_c",
+          "why": "lettering baked into the image (POLICE on the cab)"
         },
         {
           "id": "law_artillery_a",
@@ -180,18 +186,22 @@
           "notes": "The box launcher reads clearly and elevates as the deploy animation."
         },
         {
-          "id": "law_artillery_b",
+          "id": "law_artillery_b2",
           "role": "artillery",
           "title": "mobile command van with a roof launcher",
           "subject": "A big boxy police mobile command center truck with antenna masts and satellite dishes, a retractable roof launcher of tear gas rocket tubes raised on a hydraulic arm, stabilizer legs folded at the sides.",
-          "notes": "More police than military; the launcher is smaller from above."
+          "notes": "More police than military; the launcher is smaller from above.",
+          "supersedes": "law_artillery_b",
+          "why": "lettering baked into the image (RIOT ROCKET TRUCK)"
         },
         {
-          "id": "law_special_a",
+          "id": "law_special_a2",
           "role": "special",
           "title": "riot water-cannon truck",
-          "subject": "A heavy armored riot-control truck with a big water tank body and a large remote-controlled water cannon on the roof, a wide riot plow blade on the front, steel mesh over the windows.",
-          "notes": "Knockback by water: the classic riot truck."
+          "subject": "A heavy armored riot-control truck with a big water tank body and a stubby remote-controlled water cannon nozzle on the roof, short and wide like a fire monitor with a hose coiled beside it, a wide riot plow blade on the front, steel mesh over the windows.",
+          "notes": "Knockback by water: the classic riot truck.",
+          "supersedes": "law_special_a",
+          "why": "the water cannon read as a long tank gun"
         },
         {
           "id": "law_special_b",

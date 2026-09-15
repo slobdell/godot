@@ -76,8 +76,53 @@ Layouts, collision, and navigation (combat), effects and sound (feel), brains (a
 
 ## Waiting on the lead
 
-- (nothing yet)
+**Faction concept review (X3), published 2026-09-15.** Tap Approve on at most one option per group (add words if you
+like); only approved concepts go to 3D (≈15 credits each, 15 if one per role). Prompts and tradeoffs are on the cards;
+the spec is `assets/review/batches/round3_factions.json`.
+
+| Faction | Page | Groups (options) |
+|---|---|---|
+| Road gangs | https://claude.ai/artifact/7j75ZXkvHiqHoZ4ACTBKqr | tank `gangs_tank_a` semi tanker, `_b` rigid tanker, `_c2` mining haul truck · scout `_a` dune buggy, `_b` rat rod · IFV `_a` 1950s pickup, `_b` muscle-car ute · artillery `_a` logging-truck catapult, `_b` tow-wrecker catapult · special `_a` war-drum truck, `_b` resupply tanker |
+| The Law | https://claude.ai/artifact/TytWFgfoKRpRtbFSu2QazG | tank `law_tank_a` 8×8 assault gun, `_b` airport crash tender, `_c2` heavy transporter · scout `_a` sedan, `_b` pickup · IFV `_a2` 6×6 MRAP, `_b` retired APC · artillery `_a` gas rocket pod truck, `_b2` command van launcher · special `_a2` water cannon, `_b` sonic emitter |
+| The Syndicate | https://claude.ai/artifact/BBfezgVH9zmLmbCcYKtEL8 | tank `syndicate_tank_a` yacht hull, `_b` pebble monocoque, `_c` supercar · scout `_a` teardrop, `_b` manta wing · IFV `_a` pearl gunship, `_b` black-glass limousine · artillery `_a` petal launch cells, `_b` ring with missile wings · special `_a` shield projector, `_b` Lancer laser |
+
+Read back with `read_db` (collection `decisions`) per page, then `make art-apply-decisions DIR=… URL=…`.
 
 ## Status
 
-- 2026-09-15: brief written for round 3. Nothing started.
+_Updated 2026-09-15 (worker)._ Baseline `make remote T=check` green on builder0 before any change.
+
+**Plan** (order changed from the brief on purpose: the faction concepts went first because the lead's review is the
+long pole; everything ungated runs while it waits)
+1. X3 faction concepts → **waiting on the lead** (three review pages above)
+2. X1 stackable containers → in progress
+3. X2 giant ad screens
+4. X5 artillery outriggers as parts
+5. X6 size and draw budget (measured before/after X1–X2, and again at the end)
+6. X4 approved faction vehicles in 3D → after the lead's taps
+7. Stretch: neon billboards and scrap barricades; a wreck husk concept (gated)
+
+**Done**
+- **X3 concepts** (commits 1a29652 and next): 33 options (3 factions × 5 roles; 3 tank-class options, 2 for each other
+  role) on one page per faction. New `tools/assets/concept_batch.py` (`make art-concept-batch SPEC=…`): concepts as a
+  committed spec (faction lead sentence + subject + faction look + no-text tail), generated in parallel, registered
+  once, `supersedes` for regenerated failures; `review_page.py --groups/--intro` builds a page per faction;
+  `generate.py` gained `--concept-task` (re-download a paid task without a new request) and download retries.
+  - Pilot first (one tank per faction, 27 credits) to check the style: gang turrets came out small (prompts now say
+    "oversized") and the Syndicate read a little like a concept car (its look now asks for "heavy and armored like a
+    real military machine").
+  - Looked at every image before publishing; regenerated 5: three Law concepts had lettering baked in ("POLICE", "RIOT
+    ROCKET TRUCK": the Law's look now forbids words and insignia), the Law water cannon read as a tank gun, and gang
+    tank C was a near-copy of B.
+  - **Spend: 342 credits** (38 concept images), balance **346**. Every request is in `assets/meshy_ledger.md`.
+
+**Decisions**
+- No people in faction concepts (image-to-3D turns riders into blobs); crews come later as cheap figures.
+- Cool neon (cyan, magenta, blue strobes) in faction prompts becomes the team accent through the unit shader; red and
+  amber lights keep their color. So the Law's blue strobes will glow in team color and its red ones stay red.
+- The Syndicate's special and the gangs' special each show two different jobs (the roster sketches say "or"); the
+  lead's pick decides the role.
+
+**Questions for the lead**
+1. **Meshy balance:** 346 credits left. One 3D model per role is 15 × 15 = 225 credits, which leaves ~120 for retries
+   and the stretch concepts. A top-up may be needed before round 4's assets.
