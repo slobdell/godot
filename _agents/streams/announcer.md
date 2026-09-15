@@ -180,7 +180,10 @@ graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's lan
 
 _Updated 2026-09-15 by the announcer worker._
 
-### Plan (in order; smallest foundation first)
+**Report (2026-09-15): N0–N6 and all three stretch items are done; N3's approval and N4's real generation wait on
+the lead (lead gate 2). No ElevenLabs request was made. `make check` passes on builder0.**
+
+### Plan (in order; smallest foundation first; all done)
 
 1. **N0** contract README + two validators (Python, GDScript) that agree on shared broken cases; seeded fake-match
    generator with six scenario shapes; fixtures checked in; `make announcer-check` in `make check`.
@@ -202,20 +205,24 @@ _Updated 2026-09-15 by the announcer worker._
   director seed, press Play (4× by default), and the floor's events and the booth's lines scroll in sync; "Why" shows
   what the director noticed; seed 1 of each match plays mock audio (tone bursts where words go) to show timing. Rebuild
   locally: `make announcer-demo` (text) or `make announcer-demo-audio` (with the mock mixdowns).
-- **Plain transcripts** in `assets/announcer/transcripts/` (every fixture × seeds 1–2), and `make announcer-transcript
-  FIXTURE=comeback SEED=3` for more. The full library: `assets/announcer/lines.json` (393 lines).
+- **Plain transcripts** in `assets/announcer/transcripts/` (8 fixtures × seeds 1–2), and `make announcer-transcript
+  FIXTURE=comeback SEED=3` for more. The full library: `assets/announcer/lines.json` (429 lines).
 
 Questions for the lead with the review:
 1. **Tone:** is the PA (Celeste Vance) subtle enough? Lines to judge her by: `pa.welcome.03` ("the medical team has been
    asked not to intervene"), `pa.notice.04` ("will be considered a participant"), `pa.result.02` ("The surviving crews
    will be processed shortly"). Is the caller's hype authentic, not jokey? Is the Veteran's dark past (`color.lore.*`)
    the right amount?
-2. **Cost:** `make announcer-generate` (dry run) estimates **25,563 characters ≈ 25,600 credits** on
-   eleven_multilingual_v2 for all 654 clips (caller 11.6k, Veteran 8.6k, PA 5.3k), plus ~28 minutes of speech-to-text.
+2. **Cost:** `make announcer-generate` (dry run) estimates **28,524 characters ≈ 28,500 credits** on
+   eleven_multilingual_v2 for all 701 clips (caller 12.5k, Veteran 9.3k, PA 6.7k; 19.3k for the two voices that exist
+   today), plus ~32 minutes of speech-to-text.
    Flash v2.5 would halve it; quality first per your standing direction, so v2 is the default.
-3. **The Veteran's voice** still needs making in ElevenLabs (casting notes under *Voices*); his lines are skipped until a
+3. **Factions** (stretch): each faction has introductions, and the Law is booed; the Syndicate's kills get a product
+   read ("The Syndicate congratulates its engineering team on another successful field test."). Read
+   `gangs_vs_law_seed*.txt` and `syndicate_showcase_seed*.txt`. Right direction?
+4. **The Veteran's voice** still needs making in ElevenLabs (casting notes under *Voices*); his lines are skipped until a
    voice with the name set in `lines.json` → `speakers.color.voice` exists.
-4. After approval: `pip install -r tools/announcer/requirements.txt`, then `make announcer-generate APPROVED=1` (it
+5. After approval: `pip install -r tools/announcer/requirements.txt`, then `make announcer-generate APPROVED=1` (it
    resolves voices by name, skips what's recorded, prints credits, logs `assets/announcer/ledger.md`). Suggest a pilot
    first: `make announcer-generate APPROVED=1 ONLY=caller.kill.13,caller.kill.52,pa.welcome.03` (~250 characters) to
    hear stitching before the bulk run.
@@ -276,6 +283,40 @@ Questions for the lead with the review:
   installed in a scratch venv (no key, no requests). **Measured on the mock mixdowns** (no voices exist to listen to):
   in comeback and control swing, every line's sound starts at its cue except back-to-back lines, silence begins within
   0.35 s of every line's end (26/26), 0 overlaps; clip levels −13.2 to −14.9 dB mean. Real listening waits for the pilot.
+- **N6:** `MatchEventAdapter` (Match signals, `Tank.fired`, and health reads → K5; listens only), `AnnouncerBooth`
+  (adapter → director → `Hud.post_message` subtitles and `line_started`), `AnnouncerVoice` (manifest clips on an
+  `Announcer` bus; cut lines fade; a `World` bus gets a sidechain compressor keyed on the announcer when it exists;
+  clips load from files so voice packs can arrive after start). Flags `--announcer=text|voice|off`,
+  `--announcer-volume`, `--announcer-clips`, `--announcer-seed`, `--announcer-record=PATH`. 3 tests (a live Match
+  becomes a valid K5 timeline with kills, a teamkill, a hazard, first contact, a squad wipe, and the end; the booth
+  calls a live match; the voice picks filler clips, refuses half-recorded lines, ducks the world bus).
+  **`make announcer-record-smoke`** (in `announcer-check`): the sim-baseline match with the recorder attached keeps its
+  hash (builder0 `c9cfbb1a221f5c94`, laptop `772dfb5198e15909`), records 28 valid events, and gets a transcript.
+  **Played like a player:** a scripted skirmish with `--announcer=text` (screenshot `build/screenshots/announcer_desktop.png`,
+  laptop window, 30 s): the caller, PA, and Veteran lines appear in the HUD message log with the typewriter effect,
+  readable at 1920×1080; they push gameplay messages out of the four-line log (request to control and feel below).
+- **Stretch (all three):** faction introductions (caller, PA, Veteran for the Condemned, road gangs, the Law, the
+  Syndicate; the Law is booed; Syndicate kills get a product read), a tale-of-the-tape moment, and ad-screen PA lines
+  (the Law's report-your-neighbor, AquaCorp's water schedule, betting odds). Library 429 lines / 4,797 words. Fixtures
+  `gangs_vs_law` and `syndicate_showcase`; 16 review transcripts.
+- **Quiet stand-offs:** the builder0 skirmish run showed the Veteran telling stories back to back through a long lull;
+  banter now backs off (each lull in a row waits longer, up to 4×): 9–10 beats in five quiet minutes instead of 16–19.
+
+### Requests to other streams
+
+- **control** (skirmish mode): turn the booth on for players: `--announcer=text` by default in skirmish (or an
+  options toggle: text / voice / off, and a volume), wiring `AnnouncerBooth.attach` already runs from `game/main.gd`.
+  Subtitles arrive through `Hud.post_message` as `CALLER: …`; if they crowd gameplay messages, a separate subtitle line
+  in the HUD would be better (feel owns `hud.tscn`).
+- **feel** (audio): route world sound effects through an audio bus named `World`; the announcer then ducks it
+  automatically (a sidechain compressor keyed on the `Announcer` bus). Crowd: connect `AnnouncerBooth.line_started`
+  and swell on `intensity == 3`.
+- **assets** (ad screens): `line_started` carries the caller's text and the team for the screens' live ticker.
+- **combat** (K2): when `Match.projectile_impact` lands, the adapter should take `shooter`, `weak_spot`, and `face` from
+  it instead of inferring damage from hull changes (a small change in `game/announcer/match_event_adapter.gd`, mine).
+- **orchestrator**: record K5 as final in workstreams.md (the field names changed from the first draft; see Decisions),
+  and export `assets/announcer/*.json` (+ clips later) in `export_presets.cfg` `include_filter` when the booth ships
+  in the web build (not done: shared file, and nothing plays it by default yet).
 
 ### Known issues
 
@@ -283,7 +324,29 @@ Questions for the lead with the review:
   passed on the rerun; not announcer code (flaky, recorded for the orchestrator).
 - Mock durations are longer than the per-word estimate; real ElevenLabs pacing will differ again, which is why the
   director reads the manifest.
+- **Rendering on builder0 hangs** (2026-09-15, ~03:00): `make remote T=skirmish-shots` (not just `announcer-shots`)
+  never reaches `frame_post_draw`; the desktop session there has two Xwayland auth files and likely isn't presenting
+  frames. I stopped my stuck processes by PID. Screenshots were taken on the laptop instead.
+- Inferred damage credits the victim's nearest enemy until K2's `projectile_impact` exists (occasionally the wrong
+  shooter type in a big-hit call).
+- Director seeds in live matches are random per match (presentation only); `--announcer-seed` pins one.
+
+### What to playtest
+
+- `make announcer-transcript FIXTURE=gangs_vs_law SEED=3` (any fixture, any seed) and the Booth Monitor link above.
+- `make skirmish` with subtitles: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --announcer=text`.
+- `make announcer-generate` (dry run; nothing is sent). After text approval: the pilot command under *Waiting on the lead*.
+
+### Next steps (after the lead's review)
+
+1. Apply tone notes to `lines.json` (the audit and the transcript check keep it honest), then the pilot generation.
+2. Listen to the pilot: stitching at slot boundaries, filler intonation, loudness; tune `VOICE_SETTINGS` and carriers.
+3. Bulk generation; commit `assets/announcer/clips/` (mono Vorbis, ~40 kbps: ~701 clips × ~2 s ≈ 7 MB) with the manifest;
+   `--announcer=voice` then plays in skirmish; web packs load the clips after start.
+4. Swap inferred damage for K2 `projectile_impact` once combat merges.
 
 ### Merge notes (shared files)
 
-- `mk/core.mk`: `announcer-check` appended to `check`'s prerequisites.
+- `mk/core.mk`: `announcer-check` appended to `check`'s prerequisites (it includes `announcer-record-smoke`, ~15 s).
+- `game/main.gd`: `AnnouncerBooth.attach(self)` after `mode.start()` (returns at once unless an `--announcer*` flag is
+  given), plus one header line documenting the flags.

@@ -20,6 +20,7 @@ const URGENT_PRIORITY := 70
 ## Quiet this long (after the last line ends) gets banter.
 const LULL_MIN_S := 3.5
 const LULL_MAX_S := 8.0
+const LULL_BACKOFF_MAX := 4.0
 const MAX_QUEUE := 6
 ## Only moments this important ever cut someone off; a line this close to its end is allowed to finish.
 const INTERRUPT_MIN := 50
@@ -54,6 +55,7 @@ var _cooldown_until := {}
 var _next_lull_at := -1.0
 var _outro_done := false
 var _heat_t := -100.0
+var _quiet_lulls := 0
 
 
 func _init(line_library: AnnouncerLibrary, seed_value: int = 1) -> void:
@@ -247,7 +249,8 @@ func _start_next_beat() -> bool:
 	if in_breath or memory.finished or memory.arena == "" or _is_hot():
 		return false
 	if _next_lull_at < 0.0:
-		_next_lull_at = now + rng.randf_range(LULL_MIN_S, LULL_MAX_S)
+		# A long stand-off gets quieter: each banter in a row without action waits longer for the next.
+		_next_lull_at = now + rng.randf_range(LULL_MIN_S, LULL_MAX_S) * minf(1.0 + 0.6 * _quiet_lulls, LULL_BACKOFF_MAX)
 	if now < _next_lull_at:
 		return false
 	_next_lull_at = -1.0
@@ -319,6 +322,7 @@ func _begin(found: Dictionary) -> bool:
 			"beat": beat.get("name", "")}
 	_cooldown_until[found["kind"]] = now + float(config.get("cooldown_s", 0.0))
 	_next_lull_at = -1.0
+	_quiet_lulls = _quiet_lulls + 1 if found["kind"] == "lull" else 0
 	return true
 
 
@@ -387,6 +391,7 @@ func _speak_step() -> Dictionary:
 	var start := snappedf(now, 0.01)
 	var cue := {"t": start, "end": snappedf(start + duration, 0.01), "speaker": line["speaker"], "line_id": line["id"],
 			"text": text, "act": line["act"], "moment": found["kind"], "event_t": found["t"], "cut": false,
+			"intensity": int(found["intensity"]), "team": found["team"],
 			"slots": _slots_used(line, found["slots"]),
 			"reason": _reason(found, line), "_moment": found,
 			"_priority": int(found["priority"]) if step.get("hard", false) else int(found["priority"]) - SOFT_DISCOUNT}
@@ -445,6 +450,8 @@ func _choose_line(speaker: String, acts: Array, found: Dictionary, topic: String
 			continue
 		fresh.append(line)
 		var weight := pow(SPECIFIC_WEIGHT, library.specificity(line)) * (2.0 if line_intensity == intensity else 1.0)
+		if topic != "" and line.get("topic", "") == "any":
+			weight *= 0.05  # "ask me again in a minute" only when nothing on topic is left
 		weights.append(weight)
 	if fresh.is_empty():
 		return {}

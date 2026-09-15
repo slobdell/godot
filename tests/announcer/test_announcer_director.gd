@@ -254,6 +254,23 @@ func test_every_fixture_reads_as_a_broadcast() -> void:
 					assert_true(float(cue["t"]) >= float(cues[index - 1]["end"]), "%s: %s overlaps the line before" % [label, cue["line_id"]])
 
 
+func test_a_long_standoff_gets_quieter_instead_of_running_out_of_stories() -> void:
+	var library := AnnouncerLibrary.load_default()
+	var events: Array = [start_event(["tank", "tank"], ["tank", "tank"]),
+		event(10.0, "first_contact", {"team": "green", "unit_id": "green_0", "unit": "tank", "target_id": "rust_0", "target_unit": "tank"}),
+		event(310.0, "match_end", {"winner": "draw", "reason": "time", "duration_seconds": 310.0,
+			"units_left": {"green": 2, "rust": 2}, "kills_by_unit": {"green": {}, "rust": {}}})]
+	var director := run(library, events, 3)
+	var quiet: Array = director.cues.filter(func(cue: Dictionary) -> bool: return cue["moment"] == "lull" and cue["t"] > 30.0 and cue["t"] < 310.0)
+	var beats := {}
+	for cue in quiet:
+		beats[snappedf(cue["event_t"], 0.01)] = true
+	var starts: Array = beats.keys()
+	starts.sort()
+	# Measured 2026-09-15: 9-10 banter beats with the backoff, 16-19 without it (seeds 1-4).
+	assert_true(starts.size() >= 5 and starts.size() <= 13, "some banter across five quiet minutes, not wall-to-wall (%d beats)" % starts.size())
+
+
 func test_the_same_seed_gives_the_same_broadcast_and_the_game_rng_is_untouched() -> void:
 	var library := AnnouncerLibrary.load_default()
 	var events: Array = AnnouncerEvents.load_file(FIXTURES + "comeback.jsonl")["events"]

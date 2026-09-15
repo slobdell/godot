@@ -33,9 +33,9 @@ result: rust by elimination at 2:21.0
 1:22.8   ── green scout destroys rust tank
 1:26.8   CALLER   Rust is down to its last vehicle!
 1:35.6   CALLER   Dead even out there. Who blinks first?
-1:38.3   VETERAN  Hard to say. Ask me again in a minute.
-1:49.9   CALLER   You always talk about cover. Why does it matter so much in here?
-1:54.4   VETERAN  Everything in here can reach you from across the room. The wall is the only thing on your side.
+1:38.3   VETERAN  Nobody blinks. Somebody runs out of cover. It's different.
+1:54.0   CALLER   You always talk about cover. Why does it matter so much in here?
+1:58.5   VETERAN  Everything in here can reach you from across the room. The wall is the only thing on your side.
 2:09.5   CALLER   The tank is smoking, and Green smells blood!
 2:12.5   VETERAN  That's where you aim. Everybody knows it. Almost nobody does it.
 2:21.0   ── rust tank destroys green scout

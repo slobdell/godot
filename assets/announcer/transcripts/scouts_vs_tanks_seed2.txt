@@ -35,15 +35,15 @@ result: rust by elimination at 2:21.0
 1:28.7   VETERAN  That last Rust crew has nothing to lose. That's the dangerous one.
 1:40.3   CALLER   Artillery in a room this size. Is that smart?
 1:43.6   VETERAN  Only if your own people know where it's landing.
-1:55.0   CALLER   Dead even, one apiece. Anybody's match.
-2:00.0   CALLER   That scout is hurt! That scout is hurt!
-2:07.5   CALLER   It's one a side, and neither army is giving an inch.
-2:12.0   CALLER   Ohh, that rocked the tank!
+1:59.0   CALLER   Dead even, one apiece. Anybody's match.
+2:02.1   CALLER   The tank is smoking, and Green smells blood!
+2:05.1   CALLER   What a moment!
+2:11.0   CALLER   It's one a side, and neither army is giving an inch.
 2:21.0   ── rust tank destroys green scout
 2:21.0   ── green squad Hornets wiped out
 2:21.0   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-2:21.0   CALLER   That's the last one! Rust wipes them out!
-2:24.0   CALLER   And Rust is the last army standing! Rust wins!
-2:27.3   VETERAN  That comeback started with one crew deciding not to panic.
-2:31.8   CALLER   You cannot script this!
-2:34.1   PA       Tonight's winner is Rust. The surviving crews will be processed shortly. Good night.
+2:21.0   CALLER   Rust finishes it! The last scout is gone!
+2:24.0   CALLER   It's all over! Rust wins it!
+2:26.4   VETERAN  Rust earned that. I didn't see them get lucky once.
+2:31.0   CALLER   What a night!
+2:33.0   PA       That concludes tonight's match. Congratulations to Rust. On behalf of the Syndicate, good night, and please drive safely.

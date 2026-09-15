@@ -43,12 +43,12 @@ result: rust by control at 2:20.0
 1:41.5   CALLER   The center belongs to Rust!
 1:49.8   CALLER   What's going through a driver's head right now?
 1:52.7   VETERAN  Nothing useful. You're counting shells and checking mirrors.
-2:05.1   CALLER   What does it take to earn your release in a place like this?
 2:09.5   ── green tank destroys rust lancer
 2:09.5   ── rust squad Dart wiped out
-2:09.5   CALLER   Upset! Upset on the floor! The tank gets it done!
+2:09.5   CALLER   Nobody saw that coming! The tank beats the Lancer!
+2:12.8   CALLER   That's why we're here, folks!
 2:20.0   ── MATCH OVER: rust wins by control (1 green, 1 rust left)
 2:20.0   CALLER   Rust wins it on the control point! They held the middle, and it paid off!
 2:25.2   VETERAN  One left. That driver is going to remember every second of that.
-2:30.6   CALLER   This is fight night!
-2:32.9   PA       The match has been decided in favor of Rust. Highlights will air throughout the week on all district screens.
+2:30.6   CALLER   What a night!
+2:32.6   PA       The match has been decided in favor of Rust. Highlights will air throughout the week on all district screens.

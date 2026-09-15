@@ -38,14 +38,12 @@ result: rust by control at 2:20.0
 1:41.0   ── control point: rust
 1:41.3   CALLER   Rust steals the point away from Green!
 1:52.4   VETERAN  People ask if I miss it. I don't. I still dream about the floor, though.
-2:04.6   CALLER   Is it over for Green?
-2:06.6   VETERAN  Not yet. I've come back from—
+2:07.4   CALLER   Is it over for Green?
 2:09.5   ── green tank destroys rust lancer
 2:09.5   ── rust squad Dart wiped out
-2:09.5   CALLER   Hold on, hold on!
-2:11.3   CALLER   Are you kidding me? The tank takes out the Lancer!
-2:14.9   VETERAN  That Lancer should have won that. It sat still and let it happen.
+2:09.5   CALLER   Nobody saw that coming! The tank beats the Lancer!
+2:18.6   CALLER   Dead even out there. Who blinks first?
 2:20.0   ── MATCH OVER: rust wins by control (1 green, 1 rust left)
-2:20.7   CALLER   Rust wins it with one vehicle left! One! What a finish!
-2:24.7   VETERAN  Holding the point takes nerve. Rust had it.
-2:29.1   PA       That concludes tonight's match. Congratulations to Rust. On behalf of the Syndicate, good night, and please drive safely.
+2:21.3   CALLER   Rust wins it with one vehicle left! One! What a finish!
+2:25.3   VETERAN  One left. That driver is going to remember every second of that.
+2:31.3   PA       Tonight's winner is Rust. The surviving crews will be processed shortly. Good night.

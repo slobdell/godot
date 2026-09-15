@@ -12,6 +12,8 @@ extends Node
 ##   --announcer-record=PATH      also write the match's K5 events to PATH (.jsonl) when it ends
 ## Marker: ANNOUNCER_RECORDED path=... events=N problems=N
 
+## Every line as it starts: {t, end, speaker, text, moment, intensity 1-3, team, ...}. For the crowd (swell on
+## intensity 3) and the ad screens (show the caller's line, the team that scored).
 signal line_started(cue: Dictionary)
 
 const DEFAULT_CLIPS := "res://assets/announcer/clips"
