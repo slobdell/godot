@@ -72,13 +72,29 @@ clean: ## Remove build outputs and Godot's import cache
 distclean: clean ## Also remove the downloaded toolchain
 	rm -rf $(TOOLS_DIR)
 
-sim-baseline: import ## The simulation matches the recorded baseline hash (art must never change gameplay)
-	@expected=$$(head -1 tests/baselines/sim_state_hash.txt); \
+sim-baseline: import ## The simulation matches the recorded baseline hash for this machine's libm (art must never change gameplay)
+	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
+	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
 	actual=$$($(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
-	if [ "$$actual" = "$$expected" ]; then echo "sim-baseline passed: $$actual"; \
-	else echo "sim-baseline FAILED: expected $$expected, got $$actual. If gameplay changed on purpose, update tests/baselines/sim_state_hash.txt"; exit 1; fi
+	if [ -z "$$expected" ]; then echo "sim-baseline SKIPPED: no baseline for $$key (got $$actual). The canonical one is builder0's (make remote T=check); see _agents/determinism.md"; \
+	elif [ "$$actual" = "$$expected" ]; then echo "sim-baseline passed: $$actual ($$key)"; \
+	else echo "sim-baseline FAILED: expected $$expected for $$key, got $$actual. If gameplay changed on purpose, run make remote T=sim-baseline-record, copy build/sim_state_hash.txt over tests/baselines/, and commit"; exit 1; fi
+
+sim-baseline-record: import ## Write this machine's sim baseline line to build/sim_state_hash.txt (copy it over tests/baselines/ when gameplay changed on purpose)
+	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
+	actual=$$($(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination \
+		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
+		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
+	test -n "$$actual" || { echo "no MATCH_RESULT"; exit 1; }; \
+	mkdir -p $(BUILD_DIR); printf '%s %s\n' "$$key" "$$actual" > $(BUILD_DIR)/sim_state_hash.txt; \
+	echo "recorded $$key $$actual in $(BUILD_DIR)/sim_state_hash.txt: cp it to tests/baselines/sim_state_hash.txt (other machines' lines go stale)"
+
+# ---- Remote builds on builder0 (tools/remote.sh; _agents/remote_builds.md) --------------------------------
+remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"
+	@test -n "$(T)" || { echo 'usage: make remote T="check"'; exit 2; }
+	tools/remote.sh $(T)
 
 # ---- Parallel workstreams (git worktrees; see _agents/workstreams.md) ---------------
 

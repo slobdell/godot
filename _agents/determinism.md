@@ -23,6 +23,12 @@
   of sight) is bit-identical native vs wasm (`make det-spike`, hash `ea02d9652cc08086`) at 485 µs per tick in wasm
   for 20 tanks. Only a spike: the real game's movement, combat, pathing, perception, and brains are not ported.
 
+- **Even the same binary disagrees across machines with different system math libraries** (measured 2026-09-15): the
+  laptop (Ubuntu 24.04, glibc 2.39) and builder0 (Ubuntu 26.04, glibc 2.43) produce different sim-baseline hashes
+  (`772dfb5198e15909` vs `c9cfbb1a221f5c94`) while each is repeatable. Godot calls the system's `libm` for trig, and
+  glibc versions differ in the last bits. So `tests/baselines/sim_state_hash.txt` holds one line per glibc version
+  (`glibc-2.43 <hash>`); builder0's is canonical, and `make sim-baseline` skips machines with no recorded line.
+
 **Every simulation feature we build on Godot's engine is future porting work.** That's accepted (find the fun first,
 then port a settled design), but we keep the debt visible and cheap to pay.
 
