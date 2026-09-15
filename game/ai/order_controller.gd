@@ -438,7 +438,13 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	var muzzle := tank.turret.global_position
 	var aim := target.global_position
 	if weapon["kind"] == Weapons.Kind.PROJECTILE:
-		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity, Shell.SPEED)
+		# K2 weapon profile v3: each weapon's own round speed (a 25 mm round flies far faster than a tank shell).
+		var round_speed := float(weapon.get("projectile_speed_mps", 0.0))
+		aim = Ballistics.lead_point(muzzle, target.global_position, target.estimated_velocity,
+				round_speed if round_speed > 0.0 else Shell.SPEED)
+	var brain := self as TankBrain
+	if brain != null and brain.game_match != null:
+		aim += Difficulty.aim_offset(float(Difficulty.for_team(tank.team)["aim_wander_m"]), brain.game_match.tick, tank.slot)
 	_cover(aim, cmd)
 	# Rules R2 (minimal hook; the ai stream owns the real behavior): a fixed-mount gun (the scout) only
 	# points inside its fire arc, so a halted unit swings its hull onto the target.

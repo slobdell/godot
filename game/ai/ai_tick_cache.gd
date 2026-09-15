@@ -17,6 +17,10 @@ static var _facing_bucket := -1
 static var _facing_bucket_match := 0
 ## Rounds in flight this tick, for dodging (IncomingFire): [[position, velocity, team, id]], scene order.
 static var _rounds: Array = []
+## Physics frame each tank last fired (by instance id): a muzzle flash is plain to see, so brains may use it to tell a
+## loaded gun from a reloading one (X3 reload windows). Hooked to Tank.fired once per tank.
+static var _fired := {}
+static var _hooked := {}
 ## [team] -> [{"name", "position", "squad"}] for living tanks, by name (brains skip themselves).
 static var _allies: Array = [[], []]
 ## [team] -> intel names sorted, per intel refresh.
@@ -27,9 +31,17 @@ static var _intel_bucket := -1
 static func _refresh(game_match: Match) -> void:
 	if _match_id == game_match.get_instance_id() and _tick == game_match.tick:
 		return
+	if _match_id != game_match.get_instance_id():
+		_fired = {}
+		_hooked = {}
 	_match_id = game_match.get_instance_id()
 	_tick = game_match.tick
 	_by_name = game_match.tanks_by_name()
+	for tank: Tank in _by_name.values():
+		var id := tank.get_instance_id()
+		if not _hooked.has(id):
+			_hooked[id] = true
+			tank.fired.connect(AiTickCache._on_fired.bind(id))
 	_team_tanks = [[], []]
 	_allies = [[], []]
 	for tank: Tank in _by_name.values():
@@ -69,6 +81,21 @@ static func intel_names(game_match: Match, team: int) -> Array:
 			names.sort()
 			_intel_names[side] = names
 	return _intel_names[team]
+
+
+static func _on_fired(_muzzle: Vector3, _direction: Vector3, id: int) -> void:
+	_fired[id] = Engine.get_physics_frames()
+
+
+## Seconds until `tank`'s gun is loaded again, judged from its last shot and its weapon's reload (0 = loaded or never
+## seen firing).
+static func gun_ready_in(game_match: Match, tank: Tank) -> float:
+	_refresh(game_match)
+	var fired: Variant = _fired.get(tank.get_instance_id())
+	if fired == null:
+		return 0.0
+	var reload := float(tank.weapon.get("reload", 0.0))
+	return maxf(0.0, reload - float(Engine.get_physics_frames() - int(fired)) / 60.0)
 
 
 ## Shells in flight this tick: [[position, velocity, team, name]] (IncomingFire's source before K2).

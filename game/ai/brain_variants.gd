@@ -18,6 +18,7 @@ extends RefCounted
 ##   timeouts          stuck-state timeouts: options that stop producing shots or progress go on cooldown (X1; default on)
 ##   combat_motion     fight on the move: circle-strafe, angle the front armor, attack runs (round-3 X2, CombatMotion)
 ##   dodge             steer clear of incoming rounds while fighting on the move (round-3 X3, IncomingFire)
+##   reload_windows    peek from cover and short-halt while a slow enemy gun reloads (round-3 X3)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -29,6 +30,8 @@ const PROFILES := {
 	"x2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true},
 	# Round 3 X3: x2 that dodges incoming rounds.
 	"x3": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true},
+	# Round 3 X3: x3 that times its peeks and halts to the enemy's reload.
+	"x4": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true},
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
 	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": 9},

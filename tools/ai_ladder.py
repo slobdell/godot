@@ -28,9 +28,13 @@ PASSES = 20
 
 
 def side_flags(side, variant):
-    """A variant is a BrainVariants id, optionally "+<policy>" for a CpuCommander on that side (e.g. "x3+v3")."""
+    """A variant is a BrainVariants id, optionally "+<policy>" for a CpuCommander on that side (e.g. "x3+v3") and
+    "@<difficulty>" (e.g. "x3@easy")."""
+    variant, _, difficulty = variant.partition("@")
     brain, _, commander = variant.partition("+")
     flags = [f"--{side}-brain={brain}"]
+    if difficulty:
+        flags.append(f"--{side}-difficulty={difficulty}")
     if commander:
         flags.append(f"--{side}-commander={commander}")
     return flags

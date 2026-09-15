@@ -91,7 +91,7 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 5. **X5 CPU commander** — **done**: policy v6 beats plain brains 45–19 over four same-army mirrors and is
    `CpuCommander.DEFAULT_POLICY`; making it the skirmish default is control's one-line change (request below).
 6. **X6 ladder and matrix** — round 2's runs done; re-run after CP2 + combat X2/X4; CPU cost to bring back down.
-7. Stretch: explanation overlay, CPU difficulty knob.
+7. Stretch: CPU difficulty knob — **done** (`--<team>-difficulty=easy|normal|hard`); explanation overlay — open.
 
 ### Report (kept current)
 
@@ -152,6 +152,18 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   ticks at rest** (it finished before the unit had even started moving). Scenarios there: 23 of 27; left for after CP2:
   the cover duel (320-damage shells on a 5 s reload punish peeking into a loaded gun: next, peek in the enemy's reload
   window) and the pending dodge bar (x3 tanks dodge 22% of combat's shells vs a6 11%; IFVs 11% vs 6%).
+
+- **X3 reload windows (variant x4, opt-in):** brains see when an enemy's slow gun fired (a muzzle flash), keep a cover-fire
+  target in memory through its reload, peek only while it reloads (or isn't watching), bait a watching gun with a quick
+  flick out of cover, and short-halt only when the target can't punish it. Wall duel vs a durable cannon, 30 s: x3 takes
+  8 hits (round-2 weapons) / 6 (combat's), x4 takes 4 / 4. But on the ladder x4 isn't better than x3: 31–41 with
+  round-2 weapons (individuals 12–12, combined_arms 8–16, balanced 11–13) and 36–36 with combat's (8–16, 16–8, 12–12),
+  so x3 stays champion; re-test x4 after CP2.
+- **Integration fix:** order execution led moving targets with `Shell.SPEED` (70 m/s) for every weapon; it now uses the
+  weapon's `projectile_speed_mps` (K2: combat's 25 mm rounds fly at 180 m/s, so brains would have over-led).
+- **Difficulty knob** (`game/ai/difficulty.gd`, stretch): easy thinks every 18 ticks and its aim wanders up to 2 m
+  (deterministic pattern, no RNG); hard thinks every 4. Balanced mirror: normal beats easy 15–1 (easy hits 53% vs 74%),
+  hard vs normal 8–8 (faster reactions alone don't win: a harder level needs better decisions, not speed).
 
 **Decisions (with reasons):**
 - Brains read K1 through `OrderFeed` (duck-typed: `Match.orders` when the field exists, else an attached object), so
