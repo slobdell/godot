@@ -96,6 +96,19 @@ untouched (feel never changes it).
   on; frames show the selection pulses on box select, feel's dotted trails and waypoint rings under the queued route,
   and dust behind moving units. Control's thin 2D waypoint dashes still draw beside feel's trail (request below).
 
+### CP2 (merged 2026-09-15)
+- **Effects follow combat's real K2; the stub is gone** (`84be103`). `MatchFxLink` listens to `weapon_fired`,
+  `projectile_impact`, and **`unit_destroyed`** (kills explode where the wreck lies; its fire spreads along the hull's
+  length and facing) on the simulating peer; a peer that doesn't simulate keeps the legacy muzzle flashes and Impact
+  explosions. Tests drive the real rules: an IFV's round through `weapon_fired`, a scout's hitscan round ending where
+  the rules' impact says, a hazard death via `unit_destroyed`.
+- **Bug found by the showcase and fixed** (`1f09aa0`): re-attaching to a match queued for deletion connected every
+  signal twice (engine errors, doubled effects after a scene change). Regression test fails without the fix.
+- **Seen at combat's real rates** (`make remote T=fx-shots`, all scenes clean): the scout's 10 rounds/s stream and
+  sparks, 4-round IFV bursts popping, shell hits, cook-offs, weak-spot fire jets, the miss geyser. A real skirmish
+  (`make remote T="skirmish-shots DELAY=28"`): three kills left burning wrecks with smoke columns where they fell.
+- **`make remote T=check` green on `1f09aa0` (570 tests).**
+
 ### Decisions (one line each)
 - Effects are **data families keyed by K2 `fire_model`**, so combat's retuned weapons pick the right look from the event.
 - The burst MultiMesh's **instance basis carries motion** (velocity, drag, gravity, rise): moving smoke, dust, and
@@ -126,9 +139,8 @@ untouched (feel never changes it).
 - **control (after CP1):** feel now draws the order acknowledgements, waypoint trails, and selection pulses in 3D with
   sounds (`game/theme/fx/order_feedback.gd`). Please drop `RtsControls._draw_acks` (2D rings) so markers don't draw
   twice; keep or drop the 2D waypoint dashes as you prefer (feel's trail is on the ground). Don't add ack sounds.
-- **combat:** (1) optional: a `projectile_impact` with no target when a shell reaches its range, so misses land where
-  the rules say (feel fizzles them into the dirt meanwhile); (2) the wreck-husk stretch (keep a dead unit visible):
-  feel's burning wreck sites already sit where kills happen and would dress a husk.
+- **combat:** optional: a `projectile_impact` with no target when a shell reaches its range, so misses land where the
+  rules say (feel fizzles them into the dirt meanwhile). Wreck art (assets) can sit in feel's burning wreck sites.
 - **orchestrator:** `tools/remote.sh` fix (stale Xwayland cookie → stale remote screenshots): **landed on `main` as
   7dc7bdc** (2026-09-15; identical hunk here, so the merge is clean); remote screenshots taken before it may be stale. Merge order: after control and combat, then check
   that `MatchFxLink.live` is true in a skirmish (effects switch to real K2 on their own).
@@ -136,13 +148,12 @@ untouched (feel never changes it).
 ### Known issues
 - Tier high on the laptop's UHD 620 is estimated at ~16 ms for the 50-vehicle bench (Iris Xe × 2.3), the edge of its
   budget; the 50 vehicles' 886k primitives are the main cost, not effects.
-- Round 2's MG fires 5 rounds/s, so streams look sparse until combat's ~11/s lands. Weak spots in the showcase are
-  forced on (round 2 has none).
+- Weak spots in the showcase are forced on (`showcase_weak_spots`): staged shots hit a flank, not the engine deck.
 - Control's 2D ack rings and waypoint dashes (`RtsControls._draw_acks`, `_draw_waypoints`) still draw beside feel's 3D
   markers and trails until control removes them.
 - The kill-cam was verified by tests, not seen at a real match end; ArmyLoop's results screen appears a moment later
   (its timer slows too).
-- On networked clients the link stays detached (no `Tank.fired` there): legacy effects only. Netcode is paused.
+- On networked clients (no K2 events there) effects are the legacy ones only. Netcode is paused.
 
 ### What to playtest
 - `make skirmish`: tank shells (watch a miss whine past and throw dirt), IFV bursts, scout streams, kills burning,
@@ -152,8 +163,8 @@ untouched (feel never changes it).
 - `make fx-bench FX_CONFIGS=r3_all,r3_tier_low` on the laptop to measure the UHD 620; `make sfx-listen`.
 
 ### Next steps
-- After CP2 merges: rerun `make fx-shots` and a skirmish with combat's weapons (live K2, weak spots, bursts at real
-  rates); retune stream density and hit sizes against the real fire rates; delete the stub path once K2 is on `main`.
+- Playtest-driven tuning with the lead (stream density, hit sizes, shake) now that weapons fire at their real rates.
+- Optional: dust and a clank when artillery deploys (`set_deployed(ratio)` reaches the unit's visuals, assets' slot).
 
 ### Merge notes (shared files)
 - `tools/remote.sh`: the Xwayland auth line (reads the running Xwayland's `-auth`, falls back to the newest file).
