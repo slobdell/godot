@@ -67,7 +67,8 @@ Weapons and damage (combat: you only read K2), brains (ai), selection and orders
 ## Status
 
 _Report, 2026-09-15, by the feel worker. Branch `stream/feel`; every item below is committed and each backlog commit
-passed `make remote T=check` on builder0 (the last one is noted at the end)._
+passed `make remote T=check` on builder0. **Final: `make remote T=check` green on `cd8df03` (466 tests, every smoke,
+sim baseline unchanged).**_
 
 ### Done
 
