@@ -1,7 +1,7 @@
 extends "res://game/theme/cyberpunk/dozer_part.gd"
 ## The crane carrier's hull (`unit.artillery.hull`, assets X5): the generated model with its four outrigger legs cut
 ## loose (OutriggerRig) and posed by `set_deployed(ratio)` (0 = stowed for driving, 1 = braced to fire; combat's X5).
-## Until gameplay calls it the legs stay down, the pose the lead approved in the concept.
+## Tank (combat CP2) calls it every frame; before anything does, the legs stay down (the approved concept's pose).
 
 ## The legs in the normalized hull (look: make assets-unit THEME=roster UNIT=artillery): outside the wheels on both
 ## sides, from behind the cab to the tail, below the bed.

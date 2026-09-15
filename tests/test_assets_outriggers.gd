@@ -90,13 +90,17 @@ func test_a_real_battery_lowers_its_legs_as_combat_deploys_it() -> void:
 	assert_eq(legs.size(), 4, "the spawned battery wears the rigged hull")
 	if legs.is_empty():
 		return
-	await tree.process_frame
+	# process_frame fires before nodes' _process, and a loaded machine can run several physics ticks in one iteration:
+	# wait for whole frames so Tank._process has pushed set_deployed to the visual.
+	for i in 3:
+		await tree.process_frame
 	var packed_y := (legs[0] as MeshInstance3D).position.y
 	assert_true(packed_y > 0.2, "a battery that hasn't deployed drives with its legs up (%.2f)" % packed_y)
 	var aim := gun.global_position + Vector3(0.0, 0.0, -90.0)
 	for tick in roundi(float(Units.stat("artillery", "deploy_seconds")) * 60.0) + 10:
 		gun.command = TankCommand.new(0.0, 0.0, aim, true)
 		await tree.physics_frame
-	await tree.process_frame
+	for i in 3:
+		await tree.process_frame
 	assert_near(gun.deploy_ratio, 1.0, 0.001, "combat deployed it")
 	assert_near((legs[0] as MeshInstance3D).position.y, 0.0, 0.01, "and the jacks are down on the ground")
