@@ -75,7 +75,11 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
 
 ## Status
 
-- 2026-09-15: brief written for round 2. Nothing started.
+- 2026-09-15: brief written for round 2.
+- **2026-09-14 (command agent): backlog C1–C6 and all three stretch items are done, tested, and committed on
+  `stream/command`; `make check`, `make web-smoke`, and `make garage-web-smoke` pass; sim baseline unchanged.**
+  Nothing is waiting on a lead gate. Report below: Done, Decisions, Questions for the lead, What to
+  playtest, Requests to other streams, Known issues, Next steps, Merge note.
 
 ### Plan (command agent, 2026-09-14 session)
 
@@ -228,3 +232,42 @@ Unit rules and stats (rules), brain behavior (ai; but squad verbs are shared, so
 - **C6: the command stream filters messages in `game/ui/hud_messages.gd` instead of editing the announcer**
   (rules owns `game/match/announcer.gd`). It drops the announcer's loss/kill lines by pattern and posts richer
   ones; a test pins the announcer's wording so a format change can't silently double messages.
+
+### Known issues
+
+- **Browser screenshot timing:** `make garage-web-smoke`'s `web-garage-fight.png` shows the frame before the
+  skirmish camera applies (SwiftShader renders ~1 frame in the 3 s wait; a 2 s timer never fired). The logged
+  start pose (`SKIRMISH_CAMERA focus=(0, 78) zoom=0.47`) is correct and the same flow natively frames the army.
+- **Pending drill is still global,** not per squad (round 1 gap): Bound on Alpha then selecting Bravo keeps
+  Bound as the next order. The info line always says what the next tap does.
+- **The center meter** is thin and small on phones; art may want to style it.
+- **`tests/run_tests.gd` skips a test file that fails to parse** (prints `0 passed, 0 failed` for a filtered
+  run). `make lint` catches it first in `make check`, but a filtered `make test` alone can look green. Shared
+  file: flagged here rather than changed.
+- Chip state text shrinks to 8 px for a long squad name on the narrowest phones.
+
+### Next steps
+
+- Per-unit orders on the unit card once ai agrees to a `unit` field in SquadCommand (C7).
+- Per-squad pending drill; a "last order" recall on the chip.
+- After checkpoint 1 (catalog v2): check the icons against the new roles and the scout's fixed gun (a
+  firing-arc wedge on the unit card would teach fixed mounts).
+- A settings home for UI scale and a colorblind palette (army or art).
+
+### Merge note (for the orchestrator)
+
+- **What changed:** tap-only commanding (finger = mouse), radar tap orders, squad bar, 3D selection rings,
+  formation/drill icons and picker, order-following camera (`RtsCamera.frame/track/order_pose`,
+  `tracking_ended`), readable start zoom and far icons, filtered HUD messages, unit card, chip quick
+  commands, shape-coded friend/foe, `--ui-scale`, `--zoom`, `--command-playtest`.
+- **New files:** `game/ui/{command_icons,icon_button,squad_chip,selection_markers,hud_messages,command_playtest}.gd`,
+  `mk/command.mk`, `tests/test_command_{grammar,squad_bar,icons,camera,readability,messages}.gd`.
+- **Edits outside `game/ui`, `game/camera`, `game/modes/skirmish_mode.gd`:** `_agents/orientation.md`
+  (common-tasks row), `_agents/verification.md` (command playtest paragraph). No shared code files touched;
+  `mk/command.mk` is picked up by the root Makefile's `include mk/*.mk`.
+- **Contract C7:** `TacticalMap.squad_selected(squad_key)` and `RtsCamera.frame(points)` added as specified;
+  `RtsCamera.follow(target)` and `focus_on(point)` still exist. `Hud.post_message` usage unchanged.
+- **Proposed doc edits (orchestrator-owned):** HANDOFF "Play it" can say "tap a squad, tap the ground or the
+  radar"; roadmap: mark round-2 command outcomes done.
+- **Playtest:** see "What to playtest" above.
+
