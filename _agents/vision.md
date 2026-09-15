@@ -54,29 +54,76 @@ asset pipelines, mobile export.
 - **2026-09-15: fixed unit types instead of loadouts (StarCraft-style counters), up to 5 squads, credits and
   progression, friendly fire, sophisticated unit AI, tap-only commanding, gladiator arena with crowds, no
   pay-to-win.** The LLM is now a possible later *commander* issuing the same squad commands, not the core loop.
+- 2026-09-15 (later): the LLM commander becomes a planned **optional opponent**: bring-your-own Gemini key first,
+  as the proving ground for on-device Gemini Nano on Android (below). Factions and a Steam build are under
+  discussion (roadmap.md idea backlog).
 
-## If an LLM joins later: where it fits, and where it must NOT
+## The AI Commander: an optional LLM opponent (decided 2026-09-15)
 
-**The LLM is a compiler, not a pilot.** It runs at *authoring time* and turns
-natural language into doctrine data. It never runs inside the 30–60 Hz game loop.
+The lead: *"we'll plan on a bring your own key model. The use case would be to make the game more fun by making
+the opponent smarter, and it would otherwise load test our eventual intended Android use case. We want to be
+pioneers in the Gemini Nano space for android."*
 
-Why this is non-negotiable:
-1. **Latency.** On-device inference takes hundreds of milliseconds to seconds. A tick is 16–33 ms.
-2. **Fairness.** Phones differ wildly in inference speed. If the LLM decided in real time, faster phones would play better.
-3. **Authority and cheating.** Doctrine is *data* that the server validates against a schema. A modified client can't send "my tank has 10× armor"; it can only send a doctrine that the server checks.
-4. **Replays and debugging.** Same doctrines + same map → a match you can re-simulate, inspect, and balance with headless batch runs.
-5. **Availability.** Not every device has Gemini Nano. Web players and older phones still need a form-based doctrine editor, plus optionally a cloud model. The doctrine format is the contract that all authoring paths share.
+**What it is.** An optional opponent whose *commander* is an LLM. Every ~10–15 s it reads a compact battle summary
+and issues **SquadCommands**, the same data the player's taps produce. The heuristic unit brains still drive, aim,
+and take cover. The heuristic `CpuCommander` stays the default and must be a good opponent on its own (the die-hard
+promise); the AI Commander is the fun extra: a more surprising opponent that can state its plan, taunt through the
+announcer, and explain itself in an after-match debrief.
 
-A later, *optional* extension: a bounded "commander" re-plan, where the LLM may
-revise doctrine every N seconds (for example, 20 s) from a summarized battle
-state. It still emits data, and the server still enforces the cadence. Treat it
-as a separate design decision with its own fairness analysis.
+**Why, in order:**
+1. **Fun:** a smarter, less predictable opponent.
+2. **The proving ground for on-device Gemini Nano on Android.** The web and desktop version uses the same prompt,
+   JSON schema, cadence, and fallback as the Android app will, so shipping on Android is a backend swap, not a
+   redesign. We intend to be early: few games use on-device LLMs yet.
 
-## Platform facts to re-verify when we get there
+**Backends** (one commander-backend interface; the game never knows which one answers):
 
-These were believed true in 2026-09 but move fast. **Verify before building the Android layer.**
-- Gemini Nano on Android runs through the system **AICore** service. App developers reach it through Google's **ML Kit GenAI APIs**, including a general-purpose prompt API. It's available only on specific recent devices, so plan for capability detection plus fallback.
-- Godot 4 exports to Android. Native Android APIs are reached through a **Godot Android plugin** (Kotlin/Java, v2 plugin architecture) that exposes methods and signals to GDScript. The Gemini Nano bridge would be one such plugin.
-- Chrome has shipped experimental built-in AI APIs backed by Gemini Nano on desktop. If that's stable by then, web players might get on-device doctrine compilation too, reached through `JavaScriptBridge`. Unverified; don't design around it.
-- Structured output matters: constrain the LLM to the doctrine JSON schema. Validate *everything* on the server regardless.
+| Backend | Where | Status |
+|---|---|---|
+| Scripted fake | tests, CI, the sim baseline | first, so everything else is testable |
+| **Bring your own key:** the player pastes their own Google AI Studio key | web, desktop | **first real backend** |
+| **Gemini Nano on device** via ML Kit's GenAI Prompt API (AICore) and a Godot Android plugin | Android (paid app) | **the target** |
+| Chrome's built-in Prompt API (Gemini Nano) | desktop Chrome on capable machines | bonus, detect and use when present |
 
+**Bring your own key, the rules:**
+- The key is stored only on the player's device, and the game calls Google directly. It never touches a server of
+  ours, so we can't leak it and it costs us nothing. Nothing is sold (vision: no microtransactions).
+- The free tier covers it (checked 2026-09-14: Gemini 3.5 Flash-Lite and 3.1 Flash-Lite have free input and output).
+  Free-tier content is used to improve Google's products; say so in one line in settings. Rate limits are per
+  Google Cloud project, unpublished, and have been cut before, so design for them to shrink.
+- Budget: ~50 calls for a 10-minute match, with small prompts and short JSON replies.
+
+**Non-negotiables (all backends):**
+1. **Never in the tick loop.** Inference takes hundreds of ms to seconds; a tick is 16–33 ms. The game sets the
+   cadence, not the device's speed.
+2. **Schema-constrained output, validated like player input.** Invalid or illegal orders are dropped.
+3. **Replays stay deterministic:** the LLM isn't, so its orders are recorded like any other input and a match
+   re-simulates from the recording.
+4. **Fail quietly:** a rate limit, timeout, bad JSON, or missing model hands that decision to the heuristic
+   commander. A match never stalls.
+5. **Fairness:** against the CPU only. Never in ranked.
+6. **Design for Nano's size.** Nano is far smaller than Flash-Lite. Tune prompts and the battle summary against the
+   smallest model available during development (Google describes Gemma 3n as sharing Nano's architecture; verify
+   it is on the Gemini API), so we never build a design only a big model can follow.
+
+**Measure it** like any brain (ai stream's ladder): win rate against the heuristic commander, latency, tokens per
+match, and fallback rate per backend. That's the load test for Android.
+
+The 2026-09-12 idea of an LLM *compiling doctrine* before a match is superseded, but the reasoning carries over:
+commands are data, validated, never real-time control.
+
+## Platform facts (checked 2026-09-14; re-verify before building each layer)
+
+- **Gemini API pricing:** free tiers exist for Flash-Lite (3.5, 3.1) and Flash (3.5–3.8). Paid 3.5 Flash-Lite:
+  $0.30 / $2.50 per million input / output tokens. [Pricing](https://ai.google.dev/gemini-api/docs/pricing),
+  [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits) (per project, shown in AI Studio).
+- **Gemini Nano on Android:** the system **AICore** service, reached through **ML Kit's GenAI Prompt API** (alpha
+  since 2025-10). Supported on Pixel 8+, Galaxy S24+, and some Xiaomi and Motorola phones; best on Pixel 10. Plan for
+  capability detection plus fallback. [ML Kit Prompt API](https://developers.google.com/ml-kit/genai/prompt/android).
+- **Godot on Android:** native APIs are reached through a **Godot Android plugin** (Kotlin/Java, v2 plugin
+  architecture) exposing methods and signals to GDScript. The Nano bridge is one such plugin.
+- **Chrome's Prompt API** (Gemini Nano) is available to regular web pages on **desktop** Chrome, reached from Godot
+  through `JavaScriptBridge`. Requirements: Windows 10/11, macOS 13+, Linux, or Chromebook Plus; 22 GB free disk;
+  a GPU with more than 4 GB VRAM, or 16 GB RAM and 4 cores. No mobile Chrome. The model (~3–4 GB) downloads on first
+  use. The lead's dev laptop does **not** qualify (Intel UHD 620, 7.6 GB RAM).
+  [Prompt API](https://developer.chrome.com/docs/ai/prompt-api).

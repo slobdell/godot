@@ -28,6 +28,9 @@ Recorded in full in [`_agents/game_design.md`](_agents/game_design.md) and [`_ag
 - **Arena and art:** a gladiator arena with crowds; textured ground; better lighting; more Meshy art, with the lead reviewing concept images before any 3D.
 - **The vibe:** over-the-top eccentric vehicles (the up-armored bus).
 - **Business:** a die-hard game with no pay-to-win; free web, paid Android app.
+- **Later, not this round:** an optional **AI Commander** opponent, with bring-your-own Gemini key first as the
+  proving ground for on-device **Gemini Nano on Android** ([vision.md](_agents/vision.md)). Factions and a desktop or
+  Steam build are under discussion ([roadmap.md](_agents/roadmap.md) idea backlog). No round-2 stream builds these.
 
 ## Round 2: five streams
 

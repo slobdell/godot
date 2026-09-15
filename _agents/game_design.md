@@ -134,5 +134,7 @@ The lead wants this *"really sophisticated"*. The player's orders set intent; ea
 
 - Online play: the relay broker and player-hosted matches exist (archive/round1/netcode.md); lockstep for ranked is
   feasible (integer core spike). Resumes after the core loop is fun.
-- Claude or an on-device LLM as a commander that issues the same SquadCommands (vision.md).
+- **The AI Commander:** an optional LLM opponent that issues the same SquadCommands. Bring-your-own Gemini key
+  first, then on-device Gemini Nano on Android (the plan and its rules are in vision.md).
+- **Factions** (idea, not decided): see roadmap.md's idea backlog.
 - Replays and spectating (recording works over the relay today).

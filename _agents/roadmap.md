@@ -38,7 +38,14 @@ Paused this round: **netcode** (works today; resumes once the core loop is fun).
   server-side, deploy the broker (and the web build) publicly.
 - **Android paid app:** export, touch polish on real devices, store listing. The integer-core lockstep for ranked play, if the lead wants ranked.
 - **Content:** more units (one at a time, each with a counter), more arenas, arena hazards.
-- **Commander layer:** Claude, or an LLM later, issuing SquadCommands through the same API as the player (agent_bridge.md).
+- **The AI Commander** (decided 2026-09-15; plan and rules in [vision.md](vision.md#the-ai-commander-an-optional-llm-opponent-decided-2026-09-15)):
+  an optional LLM opponent issuing SquadCommands. Order: the commander-backend interface with a scripted fake →
+  bring-your-own Gemini key on web → measured on the AI ladder against the heuristic commander → **on-device
+  Gemini Nano in the Android app** (the goal; ML Kit GenAI Prompt API through a Godot Android plugin) → Chrome's
+  built-in Nano on capable desktops. Claude through the agent bridge (agent_bridge.md) is already a prototype of the loop.
+- **Desktop build, possibly on Steam** (under discussion 2026-09-15): native export with the Forward+ renderer as a
+  "desktop high" tier (more lights, volumetric fog, better glow and shadows); the web build stays the design
+  constraint. Needs controller or Steam Deck input if it ships there.
 
 ## Idea backlog (not scheduled; pick deliberately)
 
@@ -49,3 +56,20 @@ Paused this round: **netcode** (works today; resumes once the core loop is fun).
 - **Spectate AI vs AI** as a mode (great for learning counters, and for the lead's son).
 - **Terrain height** for hull-down positions once the cover AI is solid.
 - **Colorblind-safe team accents** and a readability pass for small phone screens.
+- **Factions** (brainstormed 2026-09-15, not decided): StarCraft-style factions, each filling the same five roles
+  (scout, tank, IFV, artillery, special) with its own look and **at most one signature mechanic**, so counters stay
+  learnable and the AI work stays bounded. Factions are a choice, never more power. Story frame: the arena is a
+  televised bloodsport.
+  - **The Condemned** (convicts, today's vehicles): prison dozers, buses, garbage trucks; tall, boxy, welded shut;
+    cheap, tough, numerous.
+  - **The Law** (the state's wardens, the house team the crowd boos): Judge Dredd-style riot vehicles, red and blue
+    strobes, spotlights; pricier, armored, crowd control (water cannon knockback) and spotting.
+  - **Road gangs** (wasteland raiders, the crowd favorite): low, open hot rods and buggies on huge tires, chrome,
+    spikes, fire; fast and fragile, harpoons, burning ground, a mobile resupply tanker, a war-drum truck that rallies.
+  - **The Syndicate / "The Sponsors"** (the corporation that owns the show; every match is a product demo):
+    unmanned, glossy faceted shells, cyan light lines, holo logos; lasers (the Lancer), guided missiles that need
+    spotters, a shield projector; energy (heat and shields) instead of ammo.
+  - Cheap now: a `faction` field in the unit catalog. Balance scales with headless simulation (the matchup matrix
+    plus an evolutionary search for dominant armies); the real costs are AI support per signature mechanic and
+    concept art. Keep our own names and designs (no copying Mad Max vehicles). Faction lighting must never be
+    confused with team accent colors.

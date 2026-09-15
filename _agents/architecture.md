@@ -44,7 +44,7 @@ for *decision-making*, stop: that logic belongs in a controller.
 Rules that fall out of this:
 1. **Simulation code doesn't depend on presentation.** A tank must work with no camera, no meshes, and no display. The headless server and `tests/` prove it continuously.
 2. **Pure math lives in pure classes** (`TankMotion`), so tests and future AI planners can use it without a scene tree.
-3. **The LLM is never in the tick loop** (reasons in [vision.md](vision.md#where-the-llm-fits-and-where-it-must-not)).
+3. **The LLM is never in the tick loop** (reasons in [vision.md](vision.md#the-ai-commander-an-optional-llm-opponent-decided-2026-09-15)).
 4. **Anything the client sends is untrusted.** A client sends *intent* (commands now, doctrine later); the server clamps and validates (`TankCommand.sanitized()` is the first instance of this).
 
 ## Seams for parallel work (2026-09-13)
