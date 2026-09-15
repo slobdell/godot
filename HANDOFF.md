@@ -69,6 +69,11 @@ Netcode is **paused** (its smokes stay in `make check`). Ownership, contracts C1
   and ready for a one-line kickoff. It builds in isolation against a match-event contract and fake-match fixtures, and
   ends with a demo mixdown the lead can listen to. The lead is preparing ElevenLabs voices; the key is
   `ELEVENLABS_KEY_ID`.
+- **Artillery deploy (next round, rules + ai + art):** the approved crane-carrier artillery drives around with its
+  outrigger legs baked down (one fused Meshy mesh). Proposed fix and mechanic in game_design.md (*Artillery deploys
+  before firing*): rules adds a `deployed` state and timing, ai decides when to deploy and pack up, art separates the
+  arms (or hand-builds telescoping beams) and animates them from `set_deployed(ratio)`. Not given to the round-2
+  agents, to avoid mid-run scope changes.
 - **Unit-count bench** (roadmap.md *Next*): how many vehicles render and simulate smoothly on the web and a phone.
   It decides squad sizes and how expendable factions like the road gangs can be. Until measured, design to the
   current 5 × 5 (50 vehicles in a match).
