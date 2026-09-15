@@ -107,7 +107,8 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   (combined_arms). Tank duel: moving ~80% of the time (a6 1%), 100% of hits on fronts; two tanks on one see its side or
   rear 4–7 s of 20; a scout ordered onto a tank makes 3–4 wide attack runs with every hit in its side or rear. Road to
   it: circling side-on 0–24 → short halt 3–13 → weave 4–12 → turn cost + busy-target flanking 14–10.
-- **What a spectator sees** (frames looked at): moving units trace 20–50 m arcs where round-2 brains sit still; tanks
+- **What a spectator sees** (frames looked at; all 16 `make remote T=ai-shots` frames retaken after main's remote.sh fix
+  7dc7bdc, all distinct, same picture): moving units trace 20–50 m arcs where round-2 brains sit still; tanks
   rock nose-on and lurch to a stop to fire; the scout loops 50 m past a tank and returns on the other flank; a hurt unit
   peels off to cover; the CPU's IFVs swing 40 m arcs round defenders while its scouts charge the battery in a V; explain
   lines show each move goal and target.
