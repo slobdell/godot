@@ -72,3 +72,31 @@ func test_the_artillery_hull_drives_its_legs_from_set_deployed() -> void:
 	var skinned: Array = hull.get("skinned")
 	for leg in legs:
 		assert_true(skinned.has(leg), "legs wear the unit material (team neon, paint) like the rest of the hull")
+
+
+func test_a_real_battery_lowers_its_legs_as_combat_deploys_it() -> void:
+	# Integration with combat's X5 (CP2): Tank calls set_deployed(deploy_ratio) on its hull slot every frame.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	add_to_tree(preload("res://game/arena/arena.tscn").instantiate())
+	var game_match: Match = add_to_tree(preload("res://game/match/match.tscn").instantiate())
+	game_match.seed_spawns(2, 0.0)
+	var gun := game_match.spawn_tank("Gun", 0, Match.Team.GREEN, "artillery")
+	GameTheme.use(previous)
+	gun.global_position = Vector3(-100.0, 0.0, 60.0)
+	await wait_physics_frames(2)
+	var hull := gun.get_node("HullVisual") as VisualSlot
+	var legs := hull.visual.find_children("Outrigger*", "MeshInstance3D", true, false) if hull.visual != null else []
+	assert_eq(legs.size(), 4, "the spawned battery wears the rigged hull")
+	if legs.is_empty():
+		return
+	await tree.process_frame
+	var packed_y := (legs[0] as MeshInstance3D).position.y
+	assert_true(packed_y > 0.2, "a battery that hasn't deployed drives with its legs up (%.2f)" % packed_y)
+	var aim := gun.global_position + Vector3(0.0, 0.0, -90.0)
+	for tick in roundi(float(Units.stat("artillery", "deploy_seconds")) * 60.0) + 10:
+		gun.command = TankCommand.new(0.0, 0.0, aim, true)
+		await tree.physics_frame
+	await tree.process_frame
+	assert_near(gun.deploy_ratio, 1.0, 0.001, "combat deployed it")
+	assert_near((legs[0] as MeshInstance3D).position.y, 0.0, 0.01, "and the jacks are down on the ground")

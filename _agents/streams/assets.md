@@ -205,7 +205,9 @@ review is the long pole; everything ungated ran while it waits)
   `ad_screen` with a plinth footprint [7.4, 1.4, 1.4]. Please call `visual.invoke("setup", [obstacle])` on obstacle
   visuals (as `_build_hazards` does) so layouts can set `stack`, `faction`, `paint`, `stencil`, `rust`, `doors`,
   `channel`; without it a height-scaled visual still stacks. Rows are in slot_contracts.md.
-- **combat (X5 deploy):** call `invoke("set_deployed", [ratio])` on the artillery's hull slot as it deploys and packs up.
+- ~~combat (X5 deploy)~~: done in CP2 (Tank calls `set_deployed(deploy_ratio)` every frame); merged here (cb434ef) and
+  covered by `test_a_real_battery_lowers_its_legs_as_combat_deploys_it` (a spawned battery drives with legs up and
+  plants them when combat deploys it; fails without the rig).
 - **control / announcer (later):** `AdBroadcast.channel(node, "arena").post_live({headline, fine_print})` puts anything on
   the screens' live card (score, odds, the announcer's hype line).
 
