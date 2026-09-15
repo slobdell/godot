@@ -117,3 +117,11 @@ the paint and not the treads? Does anything glow?
 | 2026-09-14 | image-to-image nano-banana-pro, multi-view | concept B | consistent front/back/side turnaround (needs edge-sliver trimming) | 9 | good |
 | 2026-09-14 | image-to-3D **meshy-t2**, PBR | concept B (3/4 view) | 14.6k tris, 282 islands, base/normal/roughness/metallic/**emission** 2k | 15 | **chosen**: neon, stripes, lights kept; clean split |
 | 2026-09-14 | multi-image-to-3D meshy-7 Ultra, PBR | concept B + 3 turnaround views | 30k tris fused, no emission map | ~35 | not chosen: flat dark texture, neon lost |
+| 2026-09-14 | text-to-image nano-banana-pro ×18 (round 2 review #1) | art-direction prompt with the base vehicle, weapon and prop swapped (`assets/review/review.json` has every prompt) | 4 roster units ×2–3 directions, arena key art, stands, gate, tower, container, barrier, scrap | 162 | lead approved 10 (+ mood art); **`remove_background` erased a whole-scene mood image**: use `--keep-background` for scenes |
+| 2026-09-14 | image-to-3D **meshy-t2** ×10, textured PBR | the approved concepts | 8–16k tris each, emission maps kept | 150 | all usable; units split with `--split=regions` / `--place-from` (`tools/assets/build_roster.sh`) |
+
+**Lessons from round 2:** props and units come back at ~1 m scale facing arbitrary axes. Look first with
+`make assets-view`. The IFV's turret split by the tank heuristic; the scout's nose gun, the artillery rack, and the
+Lancer's emitter needed region boxes. Meshy's 3/4-view concepts sometimes place a weapon facing the rear: check the
+side view before turning a part.
+

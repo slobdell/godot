@@ -22,6 +22,8 @@ var streaks: StreakSystem
 var underglow: UnderglowSystem
 var beams: BeamSystem
 var engines: EngineSystem
+## Kill sites that keep burning (art stretch).
+var fires := FireSites.new()
 var shake := CameraShake.new()
 var sfx: SfxSystem
 ## Seconds since this FxWorld started; the clock every shader animation uses.
@@ -102,6 +104,7 @@ func _process(delta: float) -> void:
 	tracers.update(lights)
 	underglow.update(lights)
 	beams.update(lights, now)
+	fires.update(now, bursts, lights)
 	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
 	if camera != null:
 		engines.update(camera.global_position, delta)
@@ -208,5 +211,7 @@ func explosion(position: Vector3, big := false) -> void:
 				22.0 if big else 12.0, 0.8 if big else 0.4, LightPool.PRIORITY_EXPLOSION, now)
 	sfx.play_at("explosion_big" if big else "explosion_small", position)
 	spectacle.emit(position, 1.0 if big else 0.15)
+	if big:
+		fires.ignite(position, now, bursts)
 	# Kills jolt the view; ordinary hits only register up close.
 	shake.add(0.55 if big else 0.12, position, 30.0 if big else 14.0)
