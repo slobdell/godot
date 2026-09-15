@@ -66,4 +66,41 @@ Weapons and damage (combat: you only read K2), brains (ai), selection and orders
 
 ## Status
 
-- 2026-09-15: brief written for round 3. Nothing started.
+_Updated 2026-09-15 by the feel worker._
+
+### Plan (in order) and progress
+1. **X1 effects from K2 events** — done (`0e57e2a`). `WeaponFx` (one family per fire model) + `MatchFxLink` (live K2
+   signals when the match has them; until CP2 a stub turns `Tank.fired` and `Impact` into K2-shaped events).
+2. **X2 the tank shell** — done (`4daca5d`), looked at in `make fx-shots` close-ups; gameplay-distance shots pending.
+3. X3 25 mm bursts and the machine-gun stream — next.
+4. X4 hits that read (weak spots, shields, kills and burning wrecks).
+5. X5 order and selection feedback (against a K1 stub until CP1).
+6. X6 vehicles in motion (dust, drift marks, engine by speed, braking lurch).
+7. X7 budget (`fx-bench` with weapon events, 50 vehicles) and the listening list.
+8. Stretch: kill-cam moment, heat haze.
+
+### Decisions
+- **Effects are data-driven families keyed by K2 `fire_model`** (`game/theme/fx/weapon_fx.gd` `FAMILIES`), so combat's
+  retuned weapons get the right look from the event alone.
+- **Stub attribution:** a stub impact belongs to the recent shot whose line passes within 3.5 m; its target is the
+  vehicle within 3.2 m. Round-2 shells that expire in mid-air "fizzle" into the dirt (stub only).
+- **The burst MultiMesh's instance basis carries motion** (velocity, drag, gravity, rise), so smoke rings and thrown
+  dust move with one write and no script per frame. Scorches live in their own pool (`FxWorld.decals`) so sparks never
+  recycle them. Tier budgets: effects 128/192/320, decals 12/24/48, spray pieces 6/10/14.
+- **Recoil and hit rocks move the vehicle's art only** (its VisualSlot nodes), never the Tank body or turret
+  (`VehicleJolt`; test asserts the sim transform is untouched).
+- **`make fx-shots`** (new): a real Match + Tanks stage each weapon; captures muzzle, flight, impact, aftermath.
+
+### Found and fixed outside my paths (merge notes)
+- **`tools/remote.sh` (shared):** it took the first `.mutter-Xwaylandauth.*` on builder0, a stale cookie; Godot then
+  fell back to Wayland, which stops redrawing a hidden window, so **every remote capture after the first frame
+  repeated a stale image** (and `frame_post_draw` never fired again). Now it reads the auth from the running
+  Xwayland. **Other streams' remote screenshots taken before this fix may be stale.**
+
+### Questions for the lead
+- (none yet)
+
+### Requests to other streams
+- **combat (K2):** please emit `projectile_impact` for rounds that miss (ground or range end) with no `target`, so
+  misses throw dirt without feel's stub; and a `unit_destroyed`-style event (or `killed` on every lethal hit, including
+  beams and hazards) so every kill gets its explosion.
