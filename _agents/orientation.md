@@ -99,7 +99,7 @@ build/   (gitignored)    exports and screenshots
 
 | I want to… | Do |
 |---|---|
-| **Command squads (the real game)** | `make skirmish` (or browser `?skirmish`): tap a squad chip or unit, then tap the ground or the radar = go; hold then drag = go + face; drag = pan; the camera follows off-screen orders; Formation opens the picker. The mouse's left button works exactly like a finger ([tactical_map.md](tactical_map.md) "v3") |
+| **Command your army (the real game)** | `make skirmish`: StarCraft-style controls (round 3): click or box-select, right-click to move/attack/follow, A attack-move, S stop, H hold, shift queues, ctrl+1–9 groups, G formation, Space pause ([tactical_map.md](tactical_map.md) "v4"). Round 2's tap grammar: `--touch-map` |
 | **Build an army, then fight with it** | `make garage` (browser `?garage`): buy units, tap/drag them into squads, pick a tier and opponent, FIGHT → skirmish → results → REMATCH / ARMY. Saved armies: `user://doctrines/`; credits and unlocks: `user://profile.json`. Economy numbers: `make economy-sim` and balance.md "Economy" |
 | Play it | `make run` (WASD/arrows drive, mouse aims, click/space fires; 1 bot; `BOTS=3` for more) |
 | Verify everything headless | `make check` (then `make check-all` for render + browser + export) |
@@ -113,6 +113,7 @@ build/   (gitignored)    exports and screenshots
 | Measure an effect's cost | `make fx-bench` (FX lab: per-trick configs, `build/fx-bench.json`; browser `?fx-bench`); results and tier budgets in `_agents/streams/references/fx_tricks.md` |
 | Check nothing broke | `make test`, then the relevant rows of [verification.md](verification.md) |
 | Check the command UI and camera like a player | `make command-playtest` (headless camera check), `make command-playtest-shots` (frames in `build/command-playtest/`) |
+| Check the desktop controls like a player | `make control-playtest` (headless: every order's response tick), `make remote T=control-playtest-shots` (frames in `build/control-playtest/`) |
 | See it in a browser | `make serve-web` → http://localhost:8060 (add `?demo`) |
 | Prove the web build boots | `make web-smoke` → `build/screenshots/web.png` |
 | Play multiplayer locally | `make play BOTS=1`, then open several tabs at http://localhost:8060/?connect (or `make client`) |
