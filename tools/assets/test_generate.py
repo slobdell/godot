@@ -96,6 +96,24 @@ class GenerateAgainstMock(unittest.TestCase):
                          "a whole tank asks for the hull + turret + cannon budgets together, capped at Smart Topology's limit")
         self.assertEqual(Path(self.out.name, "tank.glb").read_bytes()[:4], b"glTF")
 
+    def test_a_finished_concept_task_is_downloaded_again_without_paying_or_logging_twice(self):
+        code, _, err = self.run_cli("--provider", "meshy", "--base-url", self.base, "--slot", "unit.tank",
+                                    "--prompt", "scrap tank", "--concept-only", "--name", "sub/first")
+        self.assertEqual(code, 0, err)
+        self.assertTrue(Path(self.out.name, "sub", "first.concept.png").exists(), "a name with a folder creates the folder")
+        task_id = json.loads(Path(self.out.name, "sub", "first.concept.json").read_text())["task"]["id"]
+        ledger = self.ledger
+        rows = ledger.read_text().count(task_id)
+        self.assertEqual(rows, 1)
+        self.state.requests.clear()
+        code, _, err = self.run_cli("--provider", "meshy", "--base-url", self.base, "--slot", "unit.tank", "--concept-only",
+                                    "--concept-task", task_id, "--prompt", "scrap tank", "--name", "again/second")
+        self.assertEqual(code, 0, err)
+        self.assertEqual([p for m, p, _ in self.state.requests if m == "POST"], [], "recovering a download starts no new task")
+        self.assertTrue(Path(self.out.name, "again", "second.concept.png").exists())
+        self.assertEqual(json.loads(Path(self.out.name, "again", "second.concept.json").read_text())["task"]["id"], task_id)
+        self.assertEqual(ledger.read_text().count(task_id), rows, "the ledger lists the spend once")
+
     def test_meshy_turnaround_from_a_chosen_concept_then_multi_image_to_3d(self):
         chosen = Path(self.out.name, "chosen.png")
         chosen.write_bytes(mock_provider.PNG_1PX)

@@ -34,3 +34,6 @@
 | 2026-09-14 22:28 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d8e-726f-a68e-e712e95804db` | 15 | gate_a | SUCCEEDED | 688 |
 | 2026-09-14 22:28 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d8e-7508-b648-5f958b08748d` | 15 | scrap_a | SUCCEEDED | 688 |
 | 2026-09-14 22:29 | image-to-3d meshy-t2 smart-topology | `01a0a206-8d80-72ac-b6e2-160cf3ae6fd3` | 15 | container_a | SUCCEEDED | 688 |
+| 2026-09-15 08:12 | text-to-image nano-banana-pro | `01a0a41f-4a9c-7390-9f5e-133117c9b966` | 9 | meshy/law_tank_a | SUCCEEDED | 661 |
+| 2026-09-15 08:12 | text-to-image nano-banana-pro | `01a0a41f-4a9f-74b2-a7fb-8764eb7fcae0` | 9 | meshy/syndicate_tank_a | SUCCEEDED | 661 |
+| 2026-09-15 08:12 | text-to-image nano-banana-pro | `01a0a41f-4aa0-716e-b422-bdd7fa26aac6` | 9 | meshy/gangs_tank_a | SUCCEEDED | 661 |

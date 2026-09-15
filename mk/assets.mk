@@ -136,9 +136,15 @@ assets-arena-kit: ## Rebuild the gladiator arena kit theme (props, stands, gate,
 	tools/assets/build_arena_kit.sh
 
 # ---- The lead's review page (tools/assets/review_page.py; process: _agents/streams/references/concept_review.md) ----
-.PHONY: art-review-page art-apply-decisions
-art-review-page: ## Build the tap-to-approve review page from waiting concepts: TITLE="Concept review #2" [ALL=1] → build/review_page/
-	$(PYTHON) tools/assets/review_page.py build --title "$(or $(TITLE),Concept review)" $(if $(ALL),--all)
+.PHONY: art-review-page art-apply-decisions art-concept-batch
+art-review-page: ## Build the tap-to-approve review page from waiting concepts: TITLE="Concept review #2" [ALL=1 GROUPS=<group prefix> INTRO= OUT=] → build/review_page/
+	$(PYTHON) tools/assets/review_page.py build --title "$(or $(TITLE),Concept review)" $(if $(ALL),--all) \
+		$(if $(GROUPS),--groups "$(GROUPS)") $(if $(INTRO),--intro "$(INTRO)") $(if $(OUT),--out "$(OUT)")
+
+# One batch of concepts from a committed spec (tools/assets/concept_batch.py): LIST=1 prints the prompts without spending.
+art-concept-batch: ## Generate and register a spec's missing concepts: SPEC=assets/review/batches/x.json [ONLY=<faction or id> LIST=1]
+	@test -n "$(SPEC)" || { echo "need SPEC="; exit 2; }
+	$(PYTHON) tools/assets/concept_batch.py $(SPEC) $(foreach o,$(ONLY),--only $(o)) $(if $(LIST),--list)
 
 art-apply-decisions: ## Record the lead's taps from the review page: DIR=<read_db out_dir> URL=<artifact url>
 	@test -n "$(DIR)" || { echo "need DIR= (the folder read_db saved the decisions collection into)"; exit 2; }

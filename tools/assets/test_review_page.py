@@ -48,6 +48,16 @@ class ReviewPage(unittest.TestCase):
         self.assertEqual(review_page.build(self.manifest, self.dir / "all", "x", include_decided=True,
                                            ledger=self.dir / "ledger.md").read_text().count('<article class="card"'), 5)
 
+    def test_one_page_per_faction_shows_only_its_groups_with_an_intro(self):
+        self.manifest["items"] += [item("gangs_tank_a", "Road gangs · Tank"), item("law_tank_a", "The Law · Tank")]
+        page = review_page.build(self.manifest, self.dir / "gangs", "Road gangs", ledger=self.dir / "ledger.md",
+                                 group_prefix="Road gangs", intro="Rusted but loved.").read_text()
+        self.assertEqual(page.count('<article class="card"'), 1, "another faction's options stay off this page")
+        self.assertIn("gangs_tank_a", page)
+        self.assertNotIn("law_tank_a", page)
+        self.assertIn("Rusted but loved.", page, "the faction's look is summarized for the lead")
+        self.assertEqual(review_page.select(self.manifest, group_prefix="Nobody"), [])
+
     def test_tapped_decisions_are_recorded_with_the_leads_words(self):
         saved = self.dir / "dump" / "decisions"
         saved.mkdir(parents=True)

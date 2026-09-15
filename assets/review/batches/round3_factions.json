@@ -1,0 +1,307 @@
+{
+  "name": "Round 3 faction concepts (assets X3)",
+  "why": "The lead, 2026-09-15: concepts for all three new factions, 2-3 options per role, one review page per faction, before any 3D. Looks from game_design.md (Factions, the wear spectrum, roster sketches). Crews are left out of the images on purpose: image-to-3D turns people into blobs; riders come later as cheap figures (game_design.md, Rendering crews cheaply). Cool neon (cyan, magenta, blue) becomes the team accent in the unit shader; red and amber lights keep their color.",
+  "tail": "Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, gritty, high detail, cinematic lighting, grounded real-world materials.",
+  "est_3d": 15,
+  "factions": {
+    "gangs": {
+      "label": "Road gangs",
+      "intro": "Wasteland raiders, the crowd favorite. Rusted but loved: rust and dust over polished chrome engines, hand-painted flames and skulls, trophies bolted on. Low, open hot rods and trucks on huge tires, no shields, fast and fragile, wide turning circles. Tank-class = the fuel-truck war rig.",
+      "lead": "Photorealistic concept art of an arena death-race {role} built by a wasteland road gang, Mad Max meets Death Race.",
+      "look": "Rusted but lovingly kept: sun-faded paint, rust and desert dust over polished chrome engine parts and exhaust stacks, hand-painted flames and skull motifs, scrap trophies and short welded spikes bolted on with pride. Harsh neon accents in the Blade Runner style: magenta and cyan underglow strips and light bars, amber and red warning lights.",
+      "roles": {
+        "scout": "scout vehicle",
+        "ifv": "gun truck",
+        "tank": "heavy war rig",
+        "artillery": "catapult artillery truck",
+        "special": "support truck"
+      },
+      "role_notes": {
+        "scout": "Spear buggy: fast, cheap, fragile. A fixed forward launcher of explosive spears (high penetration, short range), no turret.",
+        "ifv": "Hot-rod gun truck: twin salvaged machine guns on a turret in the bed. Spear riders come later as figures.",
+        "tank": "The fuel-truck war rig (the lead's Death Race reference): lots of scrap hit points, fast in a straight line, a wide turning circle, rams; a heavy cannon and a harpoon ballista on the back.",
+        "artillery": "Catapult truck: lobs flaming oil barrels that leave burning ground. The arm is the deploy animation.",
+        "special": "Two different jobs from the roster sketch, pick one: a war-drum truck that rallies nearby units, or a resupply tanker for field repairs."
+      },
+      "concepts": [
+        {
+          "id": "gangs_scout_a",
+          "role": "scout",
+          "title": "stripped dune buggy with a spear launcher",
+          "subject": "A stripped-down dune buggy on an open tubular frame with huge balloon rear tires and narrow front wheels, a big chrome supercharged engine exposed at the back with tall flame-scorched exhaust pipes, a riveted scrap-plate nose cone. A rack of explosive-tipped harpoon spears on a fixed launcher bolted to the nose, pointing straight forward, no turret.",
+          "notes": "Tiny, open, fast; the chrome engine and spear rack read from above. Risk: same body type as the Condemned's caged buggy scout."
+        },
+        {
+          "id": "gangs_scout_b",
+          "role": "scout",
+          "title": "chopped rat-rod coupe with a hood spear launcher",
+          "subject": "A chopped 1930s rat-rod hot rod coupe with its roof cut off, huge rear drag slicks and skinny front wheels, a chrome supercharger with velocity stacks bursting through the hood, a spiked grille, rusted fenders. A rack of explosive-tipped harpoon spears on a fixed launcher welded across the hood, pointing straight forward, no turret.",
+          "notes": "Unmistakably a gang hot rod, nothing like a prison vehicle. Longer and lower than a buggy."
+        },
+        {
+          "id": "gangs_ifv_a",
+          "role": "ifv",
+          "title": "lifted 1950s pickup with a twin machine-gun turret",
+          "subject": "A lifted 1950s pickup truck on giant off-road tires, rounded fenders, a chrome bumper with welded spikes, scrap armor plates bolted over the doors and windows. In the truck bed a rotating ring turret with twin salvaged heavy machine guns side by side behind a scrap gun shield, bundles of spears strapped along the bed sides.",
+          "notes": "The classic gang truck; the bed turret reads clearly from the RTS camera."
+        },
+        {
+          "id": "gangs_ifv_b",
+          "role": "ifv",
+          "title": "muscle-car ute with a twin machine-gun turret",
+          "subject": "A long 1970s muscle car cut down into a ute with an open flatbed behind the cab, a huge chrome blower engine through the hood, wide rear tires, side exhaust pipes, a spiked push bar. On the flatbed a rotating turret with twin salvaged heavy machine guns side by side behind a scrap gun shield.",
+          "notes": "Lower and faster-looking than the pickup; the turret sits further back."
+        },
+        {
+          "id": "gangs_tank_a",
+          "role": "tank",
+          "title": "semi-truck fuel tanker war rig",
+          "subject": "A long semi-truck tractor pulling a cylindrical fuel tanker trailer converted into a rolling fortress: the tanker wrapped in riveted scrap armor and polished chrome bands, a massive rotating turret on top of the tanker with a long heavy cannon and a huge harpoon ballista beside it, a giant spiked ram plow on the tractor's nose, twin tall chrome exhaust stacks, many wheels.",
+          "notes": "Closest to the lead's Death Race reference. Articulated (tractor + trailer): the widest turns in the game and the longest silhouette. Risk: a trailer needs two parts in 3D."
+        },
+        {
+          "id": "gangs_tank_b",
+          "role": "tank",
+          "title": "rigid fuel tanker truck with a turret fortress",
+          "subject": "A heavy six-wheeled rigid fuel tanker truck on one chassis, no trailer, with a tall armored cab behind a giant spiked ram plow: the cylindrical tank on its back wrapped in riveted scrap armor and polished chrome bands, topped by an oversized rotating turret with a long heavy cannon and a huge harpoon ballista beside it, twin tall chrome exhaust stacks.",
+          "notes": "The same war rig in one rigid body: simpler to drive and to build in 3D, less dramatic than the semi."
+        },
+        {
+          "id": "gangs_tank_c",
+          "role": "tank",
+          "title": "mining water-tanker haul truck war rig",
+          "subject": "A giant open-pit mining water tanker truck on enormous knobby tires, its huge tank body wrapped in riveted scrap armor and polished chrome bands, an oversized rotating turret on top with a long heavy cannon and a huge harpoon ballista beside it, a wide spiked ram blade on the front, ladders, catwalks and chrome exhaust stacks.",
+          "notes": "The most over-the-top option: enormous tires read from any distance. Risk: very tall and boxy next to the others."
+        },
+        {
+          "id": "gangs_artillery_a",
+          "role": "artillery",
+          "title": "logging truck with a flaming-barrel catapult",
+          "subject": "A long flatbed logging truck carrying a huge steel-and-timber catapult arm with a heavy counterweight, its sling loaded with a burning oil barrel, spare oil barrels chained along the bed, hydraulic stabilizer legs folded at the sides.",
+          "notes": "The catapult arm is a big readable shape and animates as it fires."
+        },
+        {
+          "id": "gangs_artillery_b",
+          "role": "artillery",
+          "title": "tow wrecker with its boom turned catapult",
+          "subject": "A heavy tow-truck wrecker whose recovery boom has been rebuilt into a catapult arm with a basket holding a burning oil barrel, chains and winch drums, spare oil barrels strapped behind the cab, outrigger stabilizer legs folded at the sides.",
+          "notes": "Cheaper-looking and very gang; a shorter silhouette than the logging truck."
+        },
+        {
+          "id": "gangs_special_a",
+          "role": "special",
+          "title": "war-drum rally truck",
+          "subject": "A big flatbed stake truck carrying a stage of huge war drums made from oil drums and tractor tires, towering stacks of salvaged loudspeakers, flame jets on top of the cab, chrome air horns, flags made of scrap metal.",
+          "notes": "Rallies nearby units. Risk: the idea echoes a famous film truck; the drums and speakers are ours, but it's familiar."
+        },
+        {
+          "id": "gangs_special_b",
+          "role": "special",
+          "title": "armored resupply tanker",
+          "subject": "A short armored fuel and ammunition resupply truck: a squat cylindrical fuel tank with hoses and nozzles on chrome reels, crates of spears and ammunition belts strapped on, a small welding crane arm with a cutting torch for field repairs, a spiked push bar.",
+          "notes": "Resupply and field repairs; a quieter shape that works behind the lines."
+        }
+      ]
+    },
+    "law": {
+      "label": "The Law",
+      "intro": "The state's wardens, the house team the crowd boos, the easiest faction to learn. Professional design, failing upkeep: a uniform livery that is faded and peeling, primer replacement panels, rust at the seams, dented patched armor, light bars with dead bulbs, cyberpunk gear zip-tied onto old hulls. Heavy wheels. Tank-class = the 8×8 assault gun.",
+      "lead": "Photorealistic concept art of an arena {role} of a failing cyberpunk police state, Blade Runner meets dystopian riot police.",
+      "look": "Institutional but neglected: a uniform dark navy and white police livery, faded, scratched and peeling, mismatched replacement armor panels in grey primer, rust at the seams, dented and patched armor, blank stencil panels, retrofitted cyberpunk equipment zip-tied and bolted onto the old hull. A roof light bar of red and blue strobes with dead bulbs and a cracked lens, harsh white spotlights, thin cyan neon strips in the armor seams.",
+      "roles": {
+        "scout": "pursuit vehicle",
+        "ifv": "armored patrol vehicle",
+        "tank": "heavy assault gun",
+        "artillery": "riot rocket truck",
+        "special": "riot control truck"
+      },
+      "role_notes": {
+        "scout": "Up-armored pursuit cruiser: ram bar, giant light bar, a machine gun fixed on the hood (no turret), a siren pulse that briefly reveals hidden units.",
+        "ifv": "Six-wheeled mine-resistant patrol vehicle with a remote autocannon turret.",
+        "tank": "The 8×8 wheeled assault gun: a big cannon, faster than the dozer, less armor, longer sight.",
+        "artillery": "Truck rocket launcher firing tear gas and smoke that cut sight and accuracy.",
+        "special": "Riot truck with knockback scaled by target mass: pick the water cannon or the sonic emitter."
+      },
+      "concepts": [
+        {
+          "id": "law_scout_a",
+          "role": "scout",
+          "title": "up-armored full-size police sedan",
+          "subject": "A boxy 1990s full-size police sedan cruiser, up-armored: a massive steel ram bar on the front, bolted armor plates over the doors, steel mesh over the windows, an oversized roof light bar. A machine gun mounted rigidly on the hood, pointing straight forward, no turret.",
+          "notes": "The most readable police vehicle there is; the giant light bar is the Law's signature from above."
+        },
+        {
+          "id": "law_scout_b",
+          "role": "scout",
+          "title": "police pursuit pickup",
+          "subject": "A full-size police pursuit pickup truck, up-armored: a heavy push-bumper ram bar, armor plates over the doors, a caged bed carrying a spotlight rack and a siren horn array, an oversized roof light bar. A machine gun mounted rigidly on the hood, pointing straight forward, no turret.",
+          "notes": "Taller and tougher-looking; the bed gear gives the siren-pulse emitter a home."
+        },
+        {
+          "id": "law_ifv_a",
+          "role": "ifv",
+          "title": "6×6 mine-resistant patrol truck",
+          "subject": "A tall six-wheeled mine-resistant armored patrol truck with a V-shaped armored hull, big thick bulletproof windows with cracked glass, and a small remote-controlled weapon station on the roof carrying a 25 mm autocannon.",
+          "notes": "Tall, wheeled, unmistakably militarized police. Risk: taller than the hull box, so it may be squashed a little."
+        },
+        {
+          "id": "law_ifv_b",
+          "role": "ifv",
+          "title": "retired 6×6 army personnel carrier",
+          "subject": "An old boxy six-wheeled military armored personnel carrier, decommissioned and repainted in police livery, sloped front armor, a remote-controlled weapon turret on the roof carrying a 25 mm autocannon, riot shields and spare wheels strapped to the sides.",
+          "notes": "Lower and boxier; reads as the army's hand-me-downs."
+        },
+        {
+          "id": "law_tank_a",
+          "role": "tank",
+          "title": "8×8 wheeled assault gun",
+          "subject": "A long angular eight-wheeled armored combat vehicle with sloped hull armor and slat armor cages, a large turret carrying a long heavy cannon, a spotlight array and sensor mast on the turret.",
+          "notes": "The straight military read: fast on wheels, big gun, lighter armor than the dozer. The Law's baseline look."
+        },
+        {
+          "id": "law_tank_b",
+          "role": "tank",
+          "title": "8×8 airport crash tender turned assault gun",
+          "subject": "A huge eight-wheeled airport crash fire-rescue truck converted into a riot assault gun: its rounded cab armored with bolted slabs, the water tank body replaced by an armored turret with a long heavy cannon, the old roof foam cannon kept beside the turret.",
+          "notes": "The most eccentric: a public-service truck militarized, one exaggerated feature. Wide, low front."
+        },
+        {
+          "id": "law_tank_c",
+          "role": "tank",
+          "title": "8×8 heavy transporter with a gun deck",
+          "subject": "An ex-military eight-wheeled heavy transporter truck with a blunt slab-armored cab and armored engine grille, its long flat bed carrying a large armored turret with a long heavy cannon, stowed riot barricades and spotlight poles along the bed.",
+          "notes": "Truck-based like the other factions' heavies: the longest wheelbase, reads as converted rather than sleek."
+        },
+        {
+          "id": "law_artillery_a",
+          "role": "artillery",
+          "title": "6×6 truck with a gas rocket pod",
+          "subject": "A six-wheeled municipal utility truck carrying a large box launcher of rocket tubes that fire tear gas and smoke canisters, on a rotating base that elevates, hydraulic stabilizer legs folded at the sides.",
+          "notes": "The box launcher reads clearly and elevates as the deploy animation."
+        },
+        {
+          "id": "law_artillery_b",
+          "role": "artillery",
+          "title": "mobile command van with a roof launcher",
+          "subject": "A big boxy police mobile command center truck with antenna masts and satellite dishes, a retractable roof launcher of tear gas rocket tubes raised on a hydraulic arm, stabilizer legs folded at the sides.",
+          "notes": "More police than military; the launcher is smaller from above."
+        },
+        {
+          "id": "law_special_a",
+          "role": "special",
+          "title": "riot water-cannon truck",
+          "subject": "A heavy armored riot-control truck with a big water tank body and a large remote-controlled water cannon on the roof, a wide riot plow blade on the front, steel mesh over the windows.",
+          "notes": "Knockback by water: the classic riot truck."
+        },
+        {
+          "id": "law_special_b",
+          "role": "special",
+          "title": "sonic emitter truck",
+          "subject": "A boxy armored riot truck carrying a large rotating array of dish-shaped long-range acoustic emitters on a raised mast, heavy cables and cooling fans, a wide riot plow blade on the front.",
+          "notes": "The same knockback job, more cyberpunk; the dish array is a striking silhouette."
+        }
+      ]
+    },
+    "syndicate": {
+      "label": "The Syndicate",
+      "intro": "The corporation that owns the show; every match is a product demo. The ivory tower: immaculate curvy hover vehicles in glossy ivory or black, black glass, thin gold and cyan trim, no fasteners, no wear, unmanned. Few, very expensive, strong at range, lighter armor, energy instead of ammo. Tank-class = the hover battle tank with a railgun.",
+      "lead": "Photorealistic concept art of an arena {role} made by a luxury megacorporation, an immaculate ivory tower design.",
+      "look": "Curvy seamless sculpted shell in glossy pearl ivory with black mirrored glass panels and thin brushed gold trim, no visible fasteners, no wear, spotless and brand new. Unmanned, no cockpit. It hovers with no wheels, a soft cyan anti-gravity glow underneath and thin cyan light lines tracing the panel seams. Heavy and armored like a real military machine, with precise panel lines, black glass sensor domes and slotted heat vents. Human-made corporate luxury design, like a supercar crossed with a yacht, not alien, not a toy.",
+      "tail": "Full vehicle in frame, three-quarter front view from slightly above, isolated on a plain dark grey studio background, no ground, no people, no text, no logos. Photorealistic, high detail, cinematic lighting, grounded real-world materials.",
+      "roles": {
+        "scout": "hover scout drone",
+        "ifv": "hover gunship",
+        "tank": "hover battle tank",
+        "artillery": "hover missile platform",
+        "special": "hover support unit"
+      },
+      "role_notes": {
+        "scout": "Hover skimmer drone with optical camo (a shader later); a fixed forward pulse gun, no turret.",
+        "ifv": "Hover gunship with a heat-limited pulse cannon on a fast turret; its fins glow as it heats.",
+        "tank": "The curvy hover battle tank with a charge-up railgun: the conventional tank role, made sci-fi.",
+        "artillery": "Missile platform that fires only at targets a teammate spots. Opening launchers = the deploy animation.",
+        "special": "Undecided in the roster sketch, pick one: a shield projector, or the Lancer laser."
+      },
+      "concepts": [
+        {
+          "id": "syndicate_scout_a",
+          "role": "scout",
+          "title": "teardrop hover skimmer",
+          "subject": "A small fast hover skimmer drone: a sleek narrow teardrop-shaped single-piece shell, low to the ground, a short fixed pulse gun built into the nose pointing straight forward, no turret, faintly shimmering optical camouflage panels on the flanks.",
+          "notes": "Small and sleek. Risk: small shapes can vanish at RTS distance."
+        },
+        {
+          "id": "syndicate_scout_b",
+          "role": "scout",
+          "title": "manta-wing hover skimmer",
+          "subject": "A wide flat manta-ray-shaped hover skimmer drone with gently swept wings, twin fixed pulse guns set into the wing roots pointing straight forward, no turret, faintly shimmering optical camouflage panels on the wings.",
+          "notes": "The wider silhouette reads better from above; more aircraft-like."
+        },
+        {
+          "id": "syndicate_ifv_a",
+          "role": "ifv",
+          "title": "pearl gunship with a twin pulse-cannon turret",
+          "subject": "A mid-size hover gunship with a smooth rounded body, a compact rotating turret carrying twin pulse cannons with slotted heat vents and cooling fins along the barrels.",
+          "notes": "The Syndicate's house style at its purest; the fins can glow with heat."
+        },
+        {
+          "id": "syndicate_ifv_b",
+          "role": "ifv",
+          "title": "black-glass executive hover carrier",
+          "subject": "A long low hover carrier shaped like an executive limousine, its body mostly black mirrored glass with ivory and gold trim, a rotating roof turret carrying a single heavy pulse cannon with slotted heat vents and cooling fins.",
+          "notes": "The dark variant: black glass contrasts with its ivory siblings. Risk: dark shells vanish on the night floor."
+        },
+        {
+          "id": "syndicate_tank_a",
+          "role": "tank",
+          "title": "yacht-hull hover tank with a railgun",
+          "subject": "A curvy hover battle tank with a wide, low, flowing hull shaped like a luxury yacht, a smooth sculpted turret carrying a very long twin-rail railgun with glowing cyan charging coils between the rails.",
+          "notes": "Wide, low, elegant: the conventional tank role made sci-fi. The long rails read from any distance."
+        },
+        {
+          "id": "syndicate_tank_b",
+          "role": "tank",
+          "title": "pebble monocoque with a spine railgun",
+          "subject": "A heavy hover battle tank with a smooth pebble-shaped monocoque body, a long twin-rail railgun with glowing cyan charging coils built into a raised rotating spine along its back.",
+          "notes": "The most unified shape. Risk: the turret is subtle and may read less well from the RTS camera."
+        },
+        {
+          "id": "syndicate_tank_c",
+          "role": "tank",
+          "title": "supercar-styled hover tank",
+          "subject": "An aggressive supercar-styled hover battle tank with sharp creases and air intakes, a glossy two-tone black and ivory body with gold trim, a low wedge turret carrying a very long twin-rail railgun with glowing cyan charging coils.",
+          "notes": "Sportier and more aggressive; closest to a car, least like a hover tank from a film."
+        },
+        {
+          "id": "syndicate_artillery_a",
+          "role": "artillery",
+          "title": "hover platform with vertical launch cells",
+          "subject": "A hover missile platform: a sleek oval body whose upper shell opens like petals to reveal rows of vertical missile launch cells with glowing cyan hatches.",
+          "notes": "Fires only at spotted targets; the opening shell is the deploy animation."
+        },
+        {
+          "id": "syndicate_artillery_b",
+          "role": "artillery",
+          "title": "ring platform with folding missile wings",
+          "subject": "A hover artillery platform with a floating ring frame around a central pod, two folding wing launchers lined with sleek white missiles, the wings raised for firing.",
+          "notes": "An unusual silhouette; the wings unfold as the deploy animation."
+        },
+        {
+          "id": "syndicate_special_a",
+          "role": "special",
+          "title": "shield projector",
+          "subject": "A hover support vehicle that projects energy shields: a smooth rounded pod with a large floating gold-trimmed halo ring hovering above it, emitter lenses around the ring glowing cyan.",
+          "notes": "Shields nearby units. Picking this decides the Syndicate's special."
+        },
+        {
+          "id": "syndicate_special_b",
+          "role": "special",
+          "title": "Lancer laser platform",
+          "subject": "A hover laser platform: a long elegant body with a raised boom carrying a large lens-tipped laser emitter with glowing cyan lens rings and slotted cooling fins.",
+          "notes": "The Lancer role: a long heat-limited beam that strips shields. Picking this decides the Syndicate's special."
+        }
+      ]
+    }
+  },
+  "pilot_note": "Pilot 2026-09-15: gangs_tank_a, law_tank_a, syndicate_tank_a generated first to check the style. After it the gang tanks' turrets were made 'oversized' (the pilot's turret and ballista read small) and the Syndicate look gained 'heavy and armored like a real military machine…' (the pilot read a little like a concept car); the pilot items keep their original prompts in review.json."
+}
