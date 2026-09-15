@@ -85,6 +85,12 @@ def main():
     print(f"  pace: first shot {mean([r['stats'].get('first_shot_seconds') for r in results])}s, "
           f"first kill {mean([r['stats'].get('first_kill_seconds') for r in results])}s; "
           f"loser kills {mean(loser_kills)}; shots/match {shots / n:.0f}")
+    friendly = [sum(r["stats"].get("friendly_damage", [0, 0])[t] for r in results) for t in (0, 1)]
+    if sum(friendly):
+        # R4 friendly fire: hull + shield points each team dealt to its own units.
+        print(f"  friendly damage per match: Green {friendly[0] / n:.0f}  Rust {friendly[1] / n:.0f}; "
+              f"friendly kills Green {sum(r['stats'].get('friendly_kills', [0, 0])[0] for r in results)}  "
+              f"Rust {sum(r['stats'].get('friendly_kills', [0, 0])[1] for r in results)}")
     options = [{}, {}]
     for r in results:
         for t in (0, 1):

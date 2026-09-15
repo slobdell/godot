@@ -99,6 +99,25 @@ shields) and whether ammo resupply adds decisions; recommend defaults in balance
   slower tank turret). Two turret-hold tests moved to the IFV (they test the order layer, and the tank's turret
   is now slower than its hull on purpose).
 
+- **R3 done:** the roster rows are R1's catalog; `unit.<id>.hull/turret/weapon` slots fall back in `Tank`
+  (slot_contracts.md rows). Screenshots (`make skirmish-shots ENEMY=cpu:balanced`, desktop + phone) show the mixed
+  armies spawning and fighting; every unit still wears the dozer art until art fills the per-unit slots.
+- **R4 done (28c09cc):** friendly fire on for shells, beams, bursts, flames; stats `friendly_damage/hits/kills`
+  (shooter's team), no score for friendly kills; `Match.friendly_fire` signal; announcer "Friendly fire: Alpha 1 hit
+  Alpha 2" (once per shooter per 10 s) and "Alpha lost Alpha 2 to friendly fire from Alpha 1";
+  `Match.friendlies_in_line_of_fire(shooter, aim_point)` (C4). `tools/match_series.py` prints friendly damage.
+  Sim baseline → `698d9058af076a38`.
+- **R5 done (a88db9e):** 9 × 3 spawn grid per side (first 5 slots = round 1's front row), sideways jitter ≤ 4 m;
+  a 5 × 5 army per side spawns with no hull within 0.5 m of another and none inside cover. C3 result fields:
+  `units_lost`, `units_left`, `kills_by_unit`, `losses_by_unit`, `duration_seconds`, `budget`, `army_cost`.
+  Sim baseline → `3fb60602d435d1c2`.
+- **R6 (arenas as data):** `arenas/foundry.json` (round 1's 19 obstacles) and `arenas/scrapyard.json` (dense cover:
+  36 m lane walls, crate clusters, base cover walls, 37 obstacles); `Arena` (class) validates point symmetry,
+  size, spawns (≥ 25 mirrored), builds collision under `Obstacles` (the radar still reads it), bakes the mirrored
+  navmesh, `cover_features()`, `--arena=<name>`, `arena.dressing` gets `setup(layout)`. Tests:
+  `tests/test_arena_layouts.gd`. `half_size` must stay 120 for now (radar, fog, perimeter are sized for it).
+  Networked clients build the default layout (netcode paused: pass `--arena` to both sides).
+
 ### Plan (in order)
 1. R1a `Units` v2 (fixed types, C1) + `Tank` reads it (mount, turret rate, muzzle height; no components).
 2. R1b `Doctrine` v2 (C2: `units`, ≤ 5×5, v1 keys rejected), `Match.load_doctrine`/`spawn_tank(unit_id)`, migrate

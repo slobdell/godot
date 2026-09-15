@@ -10,15 +10,29 @@
 
 ## Where the tuning values live
 
-| What | File | Key values (2026-09-15) |
+| What | File | Key values (round 2, rules stream) |
 |---|---|---|
-| Unit stats (hull, shield, speed, sight, heat, size, hardpoints, component slots, cost) | `game/units/units.gd` `PROFILES` | tank 300+150, 9 m/s, 75 m sight, 200 pts; scout 140+80, 14 m/s, 110 m, 110 pts; artillery 200+80, 6.5 m/s, 60 m, 220 pts |
-| Components | `game/units/units.gd` `COMPONENTS` | heat sink +40 cap +6/s (30); ammo rack +50% ammo (25); shield booster +60 (40); armor plating +80 hull −1 m/s (35) |
-| Weapons (damage, range, reload, spread, ammo, heat, armor table, shield multiplier, cost) | `game/combat/weapons.gd` `PROFILES` | cannon 34, 70 m, 2.5 s, 45 shells, shield ×0.8; laser 9/0.5 s, 55 m, 12 heat, shield ×1.25, +20 pts; machine gun 4/0.2 s, 45 m, shield ×0.6; mortar 70 in 8 m, 35–160 m, 4.5 s, 24 rounds; flamethrower 20/s, 20 m, shield ×1.5 |
-| Armor facing, directional shields | `game/combat/armor.gd` | hull front 0.5 / side 1 / rear 1.5 (per weapon table); shield front 0.7 / side 1 / rear 1.4 |
-| Base service, arena, sensing | `game/match/match.gd` | resupply 1 shell/s and repair 6 HP/s within 30 m of your base; intel every 6 ticks, 12 s memory |
-| Brain weights | `game/ai/tank_brain.gd` | ORDER_WEIGHT 0.95, SCOUT_STANDOFF 85 m, SCOUT_HUNT 1.6 (floor 0.8), ARTILLERY_SAFE_DISTANCE 80 m, RECHARGED 0.6 |
+| Unit types (cost, tier, hull, shield, speed, turn rates, sight, weapon, mount, fire arc, muzzle height, armor thickness) | `game/units/units.gd` `PROFILES` | scout 110 pts, 140+80, 14 m/s, fixed MG ±8°, armor 2/1/1; tank 200, 300+150, 9 m/s, turret 50°/s, armor 8/4/2; IFV 150, 220+100, 11 m/s, turret 180°/s, armor 5/3/2; artillery 220, 200+80, 6.5 m/s, armor 3/2/1.5; Lancer 200, 200+120, 8.5 m/s, turret 80°/s, heat 100 (−12/s), armor 4/3/2 |
+| Weapons (damage, range, reload, spread, ammo, heat, penetration, splash, shield multiplier) | `game/combat/weapons.gd` `PROFILES` | cannon 34, 70 m, 2.5 s, pen 10; autocannon 9, 60 m, 0.35 s, pen 4; laser 9/0.5 s, 80 m, 12 heat, pen 12, shield ×1.25; machine gun 4/0.2 s, 45 m, pen 3; mortar 70 in 8 m, 35–160 m, 4.5 s, pen 10; flamethrower 20/s, 20 m, pen 12 |
+| Penetration vs armor, directional shields | `game/combat/armor.gd` | hull multiplier = clamp(0.5·log2(1.6·pen/armor), 0.05, 1.5) on the face hit (arcs hit "side"); shield front 0.7 / side 1 / rear 1.4 |
+| Base service, arena, sensing, friendly fire, spawns | `game/match/match.gd` | resupply 1 shell/s and repair 6 HP/s within 30 m of your base; intel every 6 ticks, 12 s memory; blind artillery scatter ×3; friendly fire always on; 9 × 3 spawn grid |
+| Arena layouts | `arenas/*.json` (`Arena`) | `foundry` (round 1's map), `scrapyard` (dense cover, three lanes) |
+| Brain weights | `game/ai/tank_brain.gd` (ai stream) | ORDER_WEIGHT 0.95, SCOUT_STANDOFF 85 m, SCOUT_HUNT 1.6 (floor 0.8), ARTILLERY_SAFE_DISTANCE 80 m, RECHARGED 0.6 |
 | Budget | `Units.DEFAULT_BUDGET` | 1000 |
+
+Try a number without editing code: `--tune=tank.turret_turn_rate_deg=70,ifv.armor.front=4,autocannon.penetration=5`
+(match runner, `tools/match_series.py --extra=`, `make matchups TUNE=`).
+
+## Round 2: the unit-vs-unit matchup matrix (rules R7)
+
+`make matchups` (tools/matchup_matrix.py) plays cost-equal single-type armies for every pair of unit types, on
+both bases, each type as both colors. Intended counters (game_design.md): scout > artillery, scout > Lancer,
+IFV > scout, tank > IFV, Lancer > tank, artillery > slow clumps. Bar: a counter wins ≥ 65% cost-equal and every
+unit wins some matchup.
+
+<!-- MATCHUP MATRIX BEGIN -->
+_Not measured yet._
+<!-- MATCHUP MATRIX END -->
 
 ## Results so far
 

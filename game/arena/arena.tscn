@@ -2,8 +2,6 @@
 
 [ext_resource type="Script" path="res://game/arena/arena.gd" id="0_arena"]
 [ext_resource type="Script" path="res://game/theme/visual_slot.gd" id="1_slot"]
-[ext_resource type="PackedScene" path="res://game/arena/crate.tscn" id="2_crate"]
-[ext_resource type="PackedScene" path="res://game/arena/wall.tscn" id="3_wall"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(320, 1, 320)
@@ -64,59 +62,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -121, 1.5, 0)
 shape = SubResource("BoxShape3D_perimeter_ew")
 
 [node name="Obstacles" type="Node3D" parent="." groups=["navigation_source"]]
-
-[node name="CenterCrate" parent="Obstacles" instance=ExtResource("2_crate")]
-
-[node name="WallWestA" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 0, -20)
-
-[node name="WallEastA" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 20)
-
-[node name="WallWestB" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -72, 0, 24)
-
-[node name="WallEastB" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 72, 0, -24)
-
-[node name="CoverSouth" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28, 0, 60)
-
-[node name="CoverNorth" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -60)
-
-[node name="Crate1" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, -12)
-
-[node name="Crate1Mirror" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 0, 12)
-
-[node name="Crate2" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, -60, 0, -52)
-
-[node name="Crate2Mirror" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, 60, 0, 52)
-
-[node name="Crate3" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -56)
-
-[node name="Crate3Mirror" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 56)
-
-[node name="FlankCrateWest" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 0, 64)
-
-[node name="FlankCrateEast" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, -64)
-
-[node name="FlankWallWest" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -88, 0, -20)
-
-[node name="FlankWallEast" parent="Obstacles" instance=ExtResource("3_wall")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 88, 0, 20)
-
-[node name="MidCrateWest" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 0, -30)
-
-[node name="MidCrateEast" parent="Obstacles" instance=ExtResource("2_crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 30)

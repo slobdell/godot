@@ -23,7 +23,7 @@ const TANK_SCENE := preload("res://game/tank/tank.tscn")
 const SHELL_SCENE := preload("res://game/combat/shell.tscn")
 const BASE_DAMAGE := 34.0
 ## Bases sit this far north/south of center; slots spread along x.
-## Arena geometry, the single source of truth (arena.tscn must match).
+## Arena geometry. Obstacles and spawns come from the arena layout (arenas/*.json, Arena); the size is fixed here.
 ## 2026-09-13: doubled from 60 → 120 after the lead's first skirmish; contact was
 ## immediate on the small map and formations had no room.
 const ARENA_HALF_SIZE := 120.0
@@ -275,6 +275,9 @@ static func team_frame(team: int) -> Dictionary:
 
 static func spawn_position(team: int, slot: int) -> Vector3:
 	var south := (team == Team.GREEN) != swap_bases
+	var from_layout: Variant = Arena.spawn_spot(south, slot)
+	if from_layout != null:
+		return from_layout
 	var x: float = SLOT_X[slot % SLOT_X.size()]
 	var z := BASE_Z + SPAWN_ROW_SPACING * ((slot / SLOT_X.size()) % SPAWN_ROWS)
 	return Vector3(x if south else -x, 0.0, z if south else -z)

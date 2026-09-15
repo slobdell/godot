@@ -1,0 +1,540 @@
+{
+ "name": "scrapyard",
+ "note": "Rules R6's second layout: dense cover. Long walls cut the field into three lanes, crate clusters break sight lines, and cover walls shield each base. Short fights at corners: scouts and IFVs shine, long guns and artillery need spotters.",
+ "half_size": 120.0,
+ "obstacles": [
+  {
+   "type": "crate",
+   "position": [
+    10.0,
+    10.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -10.0,
+    -10.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -10.0,
+    10.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    10.0,
+    -10.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    30.0,
+    22.0
+   ],
+   "rotation_deg": 90.0,
+   "size": [
+    36.0,
+    3.0,
+    1.5
+   ]
+  },
+  {
+   "type": "wall",
+   "position": [
+    -30.0,
+    -22.0
+   ],
+   "rotation_deg": 90.0,
+   "size": [
+    36.0,
+    3.0,
+    1.5
+   ]
+  },
+  {
+   "type": "wall",
+   "position": [
+    -30.0,
+    22.0
+   ],
+   "rotation_deg": 90.0,
+   "size": [
+    36.0,
+    3.0,
+    1.5
+   ]
+  },
+  {
+   "type": "wall",
+   "position": [
+    30.0,
+    -22.0
+   ],
+   "rotation_deg": 90.0,
+   "size": [
+    36.0,
+    3.0,
+    1.5
+   ]
+  },
+  {
+   "type": "crate",
+   "position": [
+    0.0,
+    34.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    0.0,
+    -34.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -52.0,
+    30.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    52.0,
+    -30.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    52.0,
+    30.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -52.0,
+    -30.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    18.0,
+    48.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -18.0,
+    -48.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -18.0,
+    48.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    18.0,
+    -48.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    0.0,
+    70.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    0.0,
+    -70.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -64.0,
+    70.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    64.0,
+    -70.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    64.0,
+    70.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -64.0,
+    -70.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -96.0,
+    8.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    96.0,
+    -8.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -76.0,
+    46.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    76.0,
+    -46.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    76.0,
+    46.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -76.0,
+    -46.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -44.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    44.0,
+    0.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -96.0,
+    40.0
+   ],
+   "rotation_deg": 45.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    96.0,
+    -40.0
+   ],
+   "rotation_deg": 45.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    96.0,
+    40.0
+   ],
+   "rotation_deg": 45.0
+  },
+  {
+   "type": "crate",
+   "position": [
+    -96.0,
+    -40.0
+   ],
+   "rotation_deg": 45.0
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -12.0,
+    90.0
+   ],
+   [
+    12.0,
+    90.0
+   ],
+   [
+    -24.0,
+    90.0
+   ],
+   [
+    24.0,
+    90.0
+   ],
+   [
+    -36.0,
+    90.0
+   ],
+   [
+    36.0,
+    90.0
+   ],
+   [
+    -48.0,
+    90.0
+   ],
+   [
+    48.0,
+    90.0
+   ],
+   [
+    0.0,
+    100.0
+   ],
+   [
+    -12.0,
+    100.0
+   ],
+   [
+    12.0,
+    100.0
+   ],
+   [
+    -24.0,
+    100.0
+   ],
+   [
+    24.0,
+    100.0
+   ],
+   [
+    -36.0,
+    100.0
+   ],
+   [
+    36.0,
+    100.0
+   ],
+   [
+    -48.0,
+    100.0
+   ],
+   [
+    48.0,
+    100.0
+   ],
+   [
+    0.0,
+    110.0
+   ],
+   [
+    -12.0,
+    110.0
+   ],
+   [
+    12.0,
+    110.0
+   ],
+   [
+    -24.0,
+    110.0
+   ],
+   [
+    24.0,
+    110.0
+   ],
+   [
+    -36.0,
+    110.0
+   ],
+   [
+    36.0,
+    110.0
+   ],
+   [
+    -48.0,
+    110.0
+   ],
+   [
+    48.0,
+    110.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    12.0,
+    -90.0
+   ],
+   [
+    -12.0,
+    -90.0
+   ],
+   [
+    24.0,
+    -90.0
+   ],
+   [
+    -24.0,
+    -90.0
+   ],
+   [
+    36.0,
+    -90.0
+   ],
+   [
+    -36.0,
+    -90.0
+   ],
+   [
+    48.0,
+    -90.0
+   ],
+   [
+    -48.0,
+    -90.0
+   ],
+   [
+    0.0,
+    -100.0
+   ],
+   [
+    12.0,
+    -100.0
+   ],
+   [
+    -12.0,
+    -100.0
+   ],
+   [
+    24.0,
+    -100.0
+   ],
+   [
+    -24.0,
+    -100.0
+   ],
+   [
+    36.0,
+    -100.0
+   ],
+   [
+    -36.0,
+    -100.0
+   ],
+   [
+    48.0,
+    -100.0
+   ],
+   [
+    -48.0,
+    -100.0
+   ],
+   [
+    0.0,
+    -110.0
+   ],
+   [
+    12.0,
+    -110.0
+   ],
+   [
+    -12.0,
+    -110.0
+   ],
+   [
+    24.0,
+    -110.0
+   ],
+   [
+    -24.0,
+    -110.0
+   ],
+   [
+    36.0,
+    -110.0
+   ],
+   [
+    -36.0,
+    -110.0
+   ],
+   [
+    48.0,
+    -110.0
+   ],
+   [
+    -48.0,
+    -110.0
+   ]
+  ]
+ },
+ "control_point": {
+  "radius": 16.0
+ }
+}
