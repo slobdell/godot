@@ -75,3 +75,56 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 ## Status
 
 - 2026-09-15: brief written for round 3. Nothing started.
+- 2026-09-15 (ai agent): baseline `make remote T=check` green at 72cc9f3. CP1 and CP2 not announced yet, so X1–X3
+  build against K1/K2/K3 through adapters in `game/ai/` (see Decisions).
+
+### Plan (ordered, smallest foundation first)
+
+1. **X1 orders always win** — in progress: `OrderFeed` (K1 adapter), order execution in `TankBrain`, stuck-state
+   timeouts, idle posts (regroup), `StubOrders` + scenarios until CP1.
+2. **X2 movement while fighting** — a pure combat-motion layer (context steering over a fixed ring of directions:
+   range band, tangential motion, armor facing, obstacles, friends, hysteresis) behind ENGAGE and friends, per
+   locomotion and mount; `TankMotion.predict` through an adapter once K3 lands.
+3. **X3 evasion and weak spots** — incoming shells (K2 `incoming_projectiles`, adapter until CP2) as a danger term;
+   flank weight toward the target's side and rear; COVER_FIRE retuned for long reloads.
+4. **X4 make it visible** — hysteresis and exaggeration; recorded frames looked at; a spectator description.
+5. **X5 CPU commander v3** — formations and maneuvers the player can see; must beat plain brains on the ladder.
+6. **X6 ladder and matrix** — round 2's a5/a6 runs first (done, below); the re-run waits for CP2 + combat X2/X4.
+7. Stretch: explanation overlay, CPU difficulty knob.
+
+### Report (kept current)
+
+**Done (measured):**
+- X6 part 1 (round 2's unfinished runs, round-2 weapons, builder0): ladder `a6,a5` on `combined_arms`, 16 matches in
+  118 s: **a6 11–5 a5** (ELO 1070 / 930), champion stays a6. Full matchup matrix with a6 (180 matches, 486 s) saved
+  for the X6 comparison; the scout matrix with a5 as the default is running.
+- X1 (in progress): order scenarios `make remote T="ai-scenarios FILTER=scenario_orders"`: worst response **1 tick**
+  over 14 move orders issued mid-brawl (interrupting ENGAGE, SPOT, HOLD, RETREAT, TAKE_COVER); mutation check (orders
+  picked up only on think ticks) → 6 ticks, test fails. Attack-move kills a scout beside its route, then arrives
+  (23.7 s, 2.6 m off). Attack keeps fire on the ordered target (475 ticks vs 0 on a nearer enemy). Hold drifts 0.0 m
+  and still shoots behind it. Follow stays within 18 m of a moving IFV 100% of the time. An idle unit pushed 57 m off
+  its post is back in 7.0 s.
+
+**Decisions (with reasons):**
+- Brains read K1 through `OrderFeed` (duck-typed: `Match.orders` when the field exists, else an attached object), so
+  ai never names control's classes and works before and after CP1 unchanged.
+- A unit's destination is the order's `slot` [x, z] if present, else `to` + `slot_offset` (world meters), else `to`.
+- Brains call `Orders.complete(unit)`: move/attack-move on arrival (3.5 m, or 12 m after 3 s without progress, for
+  crowded slots), attack/follow when the target is gone, stop at once. Hold never completes.
+- Orders are absolute: move, hold, and follow never retreat or wander; attack fights only its target (in any style the
+  brain likes) and chases it to its last sighting; attack-move fights what it meets (visible, within weapon range +
+  10 m) and retreats only when about to die. Why: pillar 7 ("orders always win"), StarCraft semantics.
+- **Regroup = a post:** every finished order leaves the unit a post (its slot); idle units fight within 30 m of it and
+  drive back when they drift farther. No squad bookkeeping needed, and it works per unit for any group shape.
+- **No stuck states:** any autonomous option kept past its timeout (fights: since the last shot) or driving 3 s
+  without progress goes on a 5 s cooldown (×0.25). Orders never time out.
+
+**Questions for the lead:** none yet.
+
+**Requests to other streams:**
+- control (K1): please put each unit's own destination in `current()` as `slot: [x, z]` (world), or `slot_offset`
+  in world meters relative to `to`; add `speed` (0.2–1) if you pace a group; `complete(unit)` should pop the queue and
+  emit `order_changed`. Brains execute orders directly, so the "minimal adapter" in your X1 isn't needed for brains.
+- combat: the `Match.orders` field (K1) as planned.
+
+**Known issues:** none yet.

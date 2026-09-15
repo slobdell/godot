@@ -95,6 +95,12 @@ var _stuck_time := 0.0
 var _unstick_left := 0.0
 var _scan_pick: Tank = null
 var _scan_left := 0
+## Stuck detection (round-3 X1): consecutive ticks a move_to made no progress toward its goal (0 while arrived or not
+## driving to a point), and ticks since this unit last pulled the trigger. Brains time out options with them.
+var stalled_ticks := 0
+var ticks_since_fire := 0
+var _progress_goal := Vector3.INF
+var _progress_best := INF
 
 ## A4 fire discipline: consecutive ticks the gun was ready and aimed but held because a friend was in the line
 ## of fire (or the splash), and which friend. Brains read it to move and clear the lane.
@@ -170,12 +176,25 @@ func compute_command(delta: float) -> TankCommand:
 		_held_aim = tank.turret_forward()
 	# Far away, so the tank's own movement doesn't swing the aim (parallax).
 	var cmd := TankCommand.new(0.0, 0.0, tank.global_position + _held_aim * HELD_AIM_DISTANCE)
+	ticks_since_fire += 1
 	_sense()
 	_apply_reflexes()
 	_apply_move(cmd, delta)
 	_apply_unstick(cmd, delta)
 	_apply_weapon(cmd)
+	if cmd.fire:
+		ticks_since_fire = 0
 	return cmd
+
+
+## A new order from the player: drop the unstick routine, the old path, and stall bookkeeping, so the new order
+## drives this very tick (K1 response guarantee).
+func interrupt() -> void:
+	_unstick_left = 0.0
+	_stuck_time = 0.0
+	_repath_left = 0.0
+	stalled_ticks = 0
+	_progress_goal = Vector3.INF
 
 
 func _sense() -> void:
@@ -227,6 +246,8 @@ func _log_event(text: String) -> void:
 # ---- Movement ------------------------------------------------------------------------
 
 func _apply_move(cmd: TankCommand, delta: float) -> void:
+	if move_order["type"] != "move_to":
+		stalled_ticks = 0
 	match move_order["type"]:
 		"move_to":
 			var goal := Vector3(move_order["x"], 0.0, move_order["z"])
@@ -237,6 +258,7 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				_remaining_path_distance(goal))
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
+			_track_progress(goal, drive)
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
@@ -248,6 +270,20 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				cmd.turn = move_order["turn"]
 			else:
 				move_order = {"type": "stop"}
+
+
+## Counts ticks without getting at least 0.5 m closer (along the path) to the current move goal.
+func _track_progress(goal: Vector3, drive: Vector2) -> void:
+	var remaining := _remaining_path_distance(goal)
+	if _flat_distance(goal, _progress_goal) > 2.0 or drive == Vector2.ZERO:
+		_progress_goal = goal
+		_progress_best = remaining
+		stalled_ticks = 0
+	elif remaining < _progress_best - 0.5:
+		_progress_best = remaining
+		stalled_ticks = 0
+	else:
+		stalled_ticks += 1
 
 
 ## The point to steer at now: the next navmesh waypoint toward `goal`, or `goal`

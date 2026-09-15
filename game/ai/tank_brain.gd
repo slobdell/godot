@@ -74,6 +74,54 @@ const ORBIT_LEAD_COS := 0.259
 const ORBIT_LEAD_SIN := 0.966
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
 const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "ORBIT", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+## Options only a K1 order produces (TankBrain._obey adds them): MOVE (drive to the order's slot), FOLLOW (keep station
+## on a friend), PURSUE (close in on an ordered target that's out of sight).
+const ORDER_ONLY_OPTIONS := ["MOVE", "FOLLOW", "PURSUE"]
+## K1 orders (round-3 X1, _agents/unit_ai.md "Orders always win"): which options each verb leaves the brain. The
+## player decides WHAT; these options only decide HOW. "idle" = no order now, but one earlier: the unit keeps
+## the post its last order left it at.
+const ORDER_OPTIONS := {
+	"move": ["MOVE"],
+	"hold": ["HOLD"],
+	"follow": ["FOLLOW"],
+	"attack": ["ENGAGE", "COVER_FIRE", "FLANK", "ORBIT", "CLEAR_LANE", "BOMBARD", "PURSUE"],
+	"attack_move": ["MOVE", "ENGAGE", "COVER_FIRE", "FLANK", "ORBIT", "CLEAR_LANE", "BOMBARD", "TAKE_COVER", "RECHARGE", "RETREAT"],
+	"idle": ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "CLEAR_LANE", "ORBIT", "COVER_FIRE",
+			"ENGAGE", "FLANK", "INVESTIGATE", "ADVANCE", "HOLD"],
+}
+## Attack-move: driving on scores this, so any real fight on the way (ENGAGE ~0.6-0.9) comes first.
+const ATTACK_MOVE_WEIGHT := 0.55
+## ...because a fight with a visible enemy within weapon range + ATTACK_MOVE_REACH_MARGIN gets this added.
+const ATTACK_MOVE_FIGHT := 0.5
+const ATTACK_MOVE_REACH_MARGIN := 10.0
+## A move or attack-move counts as done within this distance of the unit's slot (meters)...
+const ORDER_ARRIVE := 3.5
+## ...or this close, when it has made no progress for STALL_TICKS (a crowded slot, a slot against a wall).
+const ORDER_STALL_ARRIVE := 12.0
+## A hold order keeps the unit this close to its spot (meters).
+const HOLD_TOLERANCE := 3.0
+## An idle unit fights near its post and returns when it drifts farther than this (regroup).
+const IDLE_LEASH := 30.0
+## Follow: station this far behind the friend (meters).
+const FOLLOW_DISTANCE := 10.0
+## No stuck states: an autonomous option kept this long (ticks) goes on cooldown; for the fighting options the
+## clock restarts with every shot, so only a fight that stopped producing shots times out.
+const OPTION_TIMEOUT_TICKS := {"COVER_FIRE": 600, "CLEAR_LANE": 300, "TAKE_COVER": 720, "RECHARGE": 720, "ORBIT": 900,
+		"FLANK": 900, "INVESTIGATE": 1200, "RETREAT": 1200, "RESUPPLY": 2400, "BOMBARD": 900, "ENGAGE": 900}
+const FIGHT_OPTIONS := ["COVER_FIRE", "ORBIT", "FLANK", "BOMBARD", "ENGAGE", "CLEAR_LANE"]
+## ...and a move goal with no progress for this many ticks puts the option on cooldown too.
+const STALL_TICKS := 180
+## X2 combat motion: fight on the move when the target is visible and within weapon range + this (meters)...
+const MOTION_REACH_MARGIN := 15.0
+## ...hulls with at least this much front armor angle it toward the target instead of circling side-on...
+const ANGLE_FRONT_ARMOR := 6.0
+## ...and a jink flips the circling side no sooner than JINK_MIN_TICKS after the last, and no later than
+## JINK_MIN_TICKS + JINK_SPREAD_TICKS (per unit, so a group doesn't jink in step).
+const JINK_MIN_TICKS := 90
+const JINK_SPREAD_TICKS := 150
+## Cooldown length (ticks) and what an option on cooldown scores (× its score).
+const COOLDOWN_TICKS := 300
+const COOLDOWN_FACTOR := 0.25
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
@@ -133,6 +181,22 @@ var _lane_goal: Variant = null
 var _lane_goal_tick := 0
 ## The last COVER_FIRE query: {"tick", "target" (name), "target_position", "result" ({hide, peek, target} or {})}.
 var _cover_fire_cache := {}
+## K1: the unit's current order (OrderFeed.normalize shape, {} = none), its identity, and the post the last
+## finished order left it at (null = never ordered: doctrine and squad behavior as before).
+var order := {}
+var _order_key := ""
+var _order_dirty := false
+## The key of the order this brain reported complete (so it reports it once).
+var _finished_key := ""
+var _order_home: Variant = null
+var _order_source: Object = null
+## Option name → tick its cooldown ends (stuck-state timeouts).
+var cooldowns := {}
+## X2 combat motion: which way around the target (+1/-1, 0 = not chosen yet), when the next jink may flip it, and a
+## fixed gun's run phase ("run" in, "extend" out).
+var _strafe_side := 0
+var _jink_tick := 0
+var _run_phase := "run"
 
 
 func think(_delta: float) -> void:
@@ -150,12 +214,22 @@ func think(_delta: float) -> void:
 	var serial := squad.order_serial if squad != null else 0
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
+	# K1 response guarantee: a new player order is taken up on this very tick, whatever the brain was doing.
+	var think_tick := (game_match.tick + think_offset) % _think_every == 0
+	if _poll_order(think_tick):
+		fresh_order = true
+		interrupt()
 	# Think LOD wake-up: an idle brain checks each fresh intel refresh for an enemy coming near.
 	if _think_every == IDLE_THINK_EVERY_TICKS and game_match.tick % Match.INTEL_EVERY_TICKS == 0 and _enemy_near():
 		_think_every = int(BrainVariants.for_team(tank.team).get("think_ticks", THINK_EVERY_TICKS))
 		fresh_order = true
-	if not fresh_order and (game_match.tick + think_offset) % _think_every != 0:
+	if not fresh_order and not think_tick:
 		return
+	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
+	var timed_out := _timed_out()
+	if timed_out != "":
+		cooldowns[timed_out] = game_match.tick + COOLDOWN_TICKS
+		fresh_order = true
 	var situation := build_situation()
 	_think_every = IDLE_THINK_EVERY_TICKS
 	for c: Dictionary in situation["contacts"]:
@@ -169,8 +243,125 @@ func think(_delta: float) -> void:
 	best["since"] = choice["since"] if same else game_match.tick
 	choice = best
 	_act(situation)
+	_update_order_progress()
 	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
+
+
+# ---- K1 orders (round-3 X1) ---------------------------------------------------------
+
+## Reads this unit's order from the match's Orders (OrderFeed). True when it changed since the last poll. Polled on
+## every think tick and whenever order_changed named this unit (every tick if the source has no signal).
+func _poll_order(think_tick: bool) -> bool:
+	var feed := OrderFeed.source(game_match)
+	if feed != _order_source:
+		_order_source = feed
+		_order_dirty = true
+		if feed != null and feed.has_signal("order_changed") and not feed.is_connected("order_changed", _on_order_changed):
+			feed.connect("order_changed", _on_order_changed)
+	if feed == null or not (_order_dirty or think_tick or not feed.has_signal("order_changed")):
+		return false
+	_order_dirty = false
+	var now := OrderFeed.current(feed, String(tank.name))
+	var now_key := OrderFeed.key(now)
+	if now_key == _order_key:
+		return false
+	var finished := _order_key != "" and _order_key == _finished_key
+	_order_key = now_key
+	if now.is_empty() and not finished:
+		_order_home = _flat(tank.global_position)  # cleared before it was done: stay where it stopped
+	order = now
+	if order.is_empty():
+		return true
+	if _order_home == null:
+		_order_home = _flat(tank.global_position)
+	if order["goal"] == null and ["hold", "move", "attack_move"].has(order["verb"]):
+		order["goal"] = _flat(tank.global_position)  # hold here (a move with nowhere to go holds too)
+		if order["verb"] != "hold":
+			order["verb"] = "hold"
+	if order["verb"] == "stop":
+		_finish_order(tank.global_position)
+	return true
+
+
+func _on_order_changed(unit_name: String) -> void:
+	if tank != null and unit_name == String(tank.name):
+		_order_dirty = true
+
+
+## The order is done: remember the post it leaves the unit at (idle units regroup there) and tell Orders.
+func _finish_order(home: Vector3) -> void:
+	if _order_key == "" or _finished_key == _order_key:
+		return
+	_finished_key = _order_key
+	_order_home = _flat(home)
+	OrderFeed.complete(_order_source, String(tank.name))
+
+
+## Completes move and attack-move on arrival (or near a slot it can't reach), attack when the target is gone, follow
+## when the friend is. Hold never completes.
+func _update_order_progress() -> void:
+	if order.is_empty():
+		return
+	var here := tank.global_position
+	match String(order["verb"]):
+		"move", "attack_move":
+			var goal: Vector3 = order["goal"]
+			var distance := _flat(here).distance_to(goal)
+			if distance <= ORDER_ARRIVE or (stalled_ticks >= STALL_TICKS and distance <= ORDER_STALL_ARRIVE):
+				_finish_order(goal if distance <= ORDER_ARRIVE else here)
+		"attack", "follow":
+			var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
+			if other == null or not other.is_alive():
+				_finish_order(here)
+
+
+## The option to put on cooldown now, or "": kept past its OPTION_TIMEOUT_TICKS (fights: since the last shot), or
+## driving toward a goal without progress for STALL_TICKS. Options that carry out a player order never time out.
+func _timed_out() -> String:
+	if choice.is_empty() or not BrainVariants.for_team(tank.team).get("timeouts", true):
+		return ""
+	var option: String = choice["option"]
+	if ["MOVE", "FOLLOW", "PURSUE", "HOLD", "KEEP_SLOT"].has(option):
+		return ""
+	var started := int(choice.get("since", game_match.tick))
+	if FIGHT_OPTIONS.has(option):
+		started = maxi(started, game_match.tick - ticks_since_fire)
+	var limit := int(OPTION_TIMEOUT_TICKS.get(option, 0))
+	if limit > 0 and game_match.tick - started > limit:
+		return option
+	if stalled_ticks >= STALL_TICKS and move_order.get("type") == "move_to":
+		return option
+	return ""
+
+
+## What the player's order means for decide(), or null for a unit that has never had one:
+## {"verb" (an ORDER_OPTIONS key), "goal": Vector3 | null, "target": String, "speed", "target_alive": bool,
+##  "target_position", "target_forward", "target_velocity" (Vector3 | null)}.
+func _order_context() -> Variant:
+	if _order_home == null:
+		return null
+	if order.is_empty():
+		return {"verb": "idle", "goal": _order_home, "target": "", "speed": 1.0, "target_alive": false,
+				"target_position": null, "target_forward": null, "target_velocity": null}
+	var context := {"verb": order["verb"], "goal": order["goal"], "target": order["target"], "speed": order["speed"],
+			"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
+	var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
+	if other != null and other.is_alive():
+		context["target_alive"] = true
+		context["target_position"] = other.global_position
+		context["target_forward"] = -other.global_basis.z
+		context["target_velocity"] = other.estimated_velocity
+		# An enemy the team lost sight of is chased to where it was last seen, not through the fog.
+		var known: Variant = (game_match.intel[tank.team] as Dictionary).get(String(order["target"]))
+		if other.team != tank.team and known != null:
+			context["target_position"] = known["position"]
+			context["target_velocity"] = known["velocity"]
+	return context
+
+
+static func _flat(point: Vector3) -> Vector3:
+	return Vector3(point.x, 0.0, point.z)
 
 
 ## True if team intel knows an enemy within LOD_RADIUS of this tank.
@@ -488,6 +679,19 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		hold = maxf(hold, 0.72)  # in formation and halted: fight from here
 	add.call("HOLD", "", hold)
 
+	# No stuck states (X1): an option on cooldown after timing out scores much less, so something else gets a turn.
+	var cooldowns: Dictionary = s.get("cooldowns", {})
+	if not cooldowns.is_empty():
+		for candidate in candidates:
+			if int(cooldowns.get(candidate["option"], -1)) > int(s["tick"]):
+				candidate["score"] *= COOLDOWN_FACTOR
+	# K1 (X1): the player's order decides what this unit does; the options above only decide how.
+	var order_context: Variant = s.get("order")
+	if order_context != null:
+		var critical := hp < lerpf(CRITICAL_HP_MIN, CRITICAL_HP_MAX, float(d["caution"])) and visible_threats > 0
+		candidates = TankBrain._obey(candidates, order_context, s, critical, out_of_ammo)
+		keep_slot = 0.0
+
 	# Commitment: favor the current choice; keep it through MIN_COMMIT_TICKS unless beaten decisively.
 	var committed: Dictionary = {}
 	# An order the tank isn't carrying out yet outranks commitment to anything but itself or survival.
@@ -508,6 +712,69 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 	return {"choice": {"option": best["option"], "target": best["target"]},
 			"ranked": TankBrain._top(candidates, 3)}
+
+
+## K1: keep only the options the order's verb allows (ORDER_OPTIONS) and add the ones that carry it out. A move,
+## hold, or follow is absolute; an attack fights only its target (any way the brain likes) and chases it when it's
+## out of sight; an attack-move drives on unless a fight on the way outscores ATTACK_MOVE_WEIGHT; an idle unit fights
+## around its post (the situation's objective) and never roams off to scout, contest, or resupply.
+static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: bool, out_of_ammo: bool) -> Array:
+	var verb: String = o["verb"]
+	var allowed: Array = ORDER_OPTIONS.get(verb, [])
+	var target: String = o.get("target", "")
+	var contacts: Array = s["contacts"]
+	var target_fresh := contacts.any(func(c: Dictionary) -> bool:
+		return c["name"] == target and int(c["age"]) <= CONTACT_FRESH_TICKS)
+	var anything_visible := contacts.any(func(c: Dictionary) -> bool: return c["visible"])
+	# Attack-move: visible enemies within the weapon's reach (plus a margin) are "met on the way".
+	var in_reach: Array = []
+	var my_position: Vector3 = s["self"]["position"]
+	var reach := float(s["self"]["weapon"]["range"]) + ATTACK_MOVE_REACH_MARGIN
+	for c: Dictionary in contacts:
+		if c["visible"] and my_position.distance_to(c["position"]) <= reach:
+			in_reach.append(c["name"])
+	var result: Array = []
+	for candidate: Dictionary in candidates:
+		var option: String = candidate["option"]
+		if not allowed.has(option):
+			continue
+		match verb:
+			"hold":
+				candidate["score"] = 1.0
+			"attack":
+				if candidate["target"] != target:
+					continue
+				candidate["score"] = 1.0 + float(candidate["score"])
+			"attack_move":
+				if option == "RETREAT":
+					if not critical:
+						continue
+					candidate["score"] = 0.99
+				elif candidate["target"] in in_reach:
+					candidate["score"] = ATTACK_MOVE_FIGHT + float(candidate["score"])  # met on the way: fight it
+			"idle":
+				if (option == "SPOT" and not anything_visible) or (option == "RESUPPLY" and not out_of_ammo):
+					continue
+		result.append(candidate)
+	var goal: Variant = o.get("goal")
+	match verb:
+		"move":
+			if goal != null:
+				result.append({"option": "MOVE", "target": "", "score": 1.0})
+		"attack_move":
+			if goal != null:
+				result.append({"option": "MOVE", "target": "", "score": ATTACK_MOVE_WEIGHT})
+		"follow":
+			if bool(o.get("target_alive", false)):
+				result.append({"option": "FOLLOW", "target": target, "score": 1.0})
+		"attack":
+			if bool(o.get("target_alive", false)) and not target_fresh:
+				result.append({"option": "PURSUE", "target": target, "score": 1.0})
+			elif target_fresh and not result.any(func(c: Dictionary) -> bool: return float(c["score"]) > 0.0):
+				result.append({"option": "ENGAGE", "target": target, "score": 1.0})
+	if result.is_empty():
+		result.append({"option": "HOLD", "target": "", "score": 0.1})
+	return result
 
 
 ## Where the turret covers when nothing is in this tank's own sights (G5): the chosen target,
@@ -598,7 +865,8 @@ func build_situation() -> Dictionary:
 		by_distance.sort()
 		for i in by_distance.size():
 			var contact_name: String = by_distance[i][1]
-			if i < MAX_CONTACTS or contact_name == choice.get("target", "") or intel[contact_name]["weapon"] == "mortar":
+			if i < MAX_CONTACTS or contact_name == choice.get("target", "") or contact_name == order.get("target", "") \
+					or intel[contact_name]["weapon"] == "mortar":
 				keep[contact_name] = true
 	for contact_name in names:
 		if not keep.is_empty() and not keep.has(contact_name):
@@ -630,7 +898,12 @@ func build_situation() -> Dictionary:
 
 	var objective: Variant = null
 	var objective_radius := 0.0
-	if typeof(directives["objective"]) == TYPE_DICTIONARY:
+	var order_context: Variant = _order_context()
+	if order_context != null:
+		# K1 replaces doctrine objectives: an idle unit's post is where its last order left it.
+		objective = order_context["goal"] if order_context["verb"] == "idle" else null
+		objective_radius = 5.0
+	elif typeof(directives["objective"]) == TYPE_DICTIONARY:
 		var o: Dictionary = directives["objective"]
 		objective = Directives.to_world(team, float(o["right"]), float(o["forward"]))
 		objective_radius = float(o["radius"])
@@ -642,12 +915,17 @@ func build_situation() -> Dictionary:
 			sum += p
 		squad_center = sum / squad_positions.size()
 
-	var squad_context: Dictionary = AiTickCache.squad_context(game_match, tank)
-	if features.get("squad_tactics", true):
+	# A unit under K1 orders ignores its doctrine squad's drill (the player's order replaced it).
+	var squad_context: Dictionary = {} if order_context != null else AiTickCache.squad_context(game_match, tank)
+	if features.get("squad_tactics", true) and order_context == null:
 		squad_context = _with_overwatch(squad_context, contacts, allies)
 	var effective_directives := directives
 	if squad_context.get("slot") != null:
 		effective_directives = Squad.drill_directives(directives, squad_context)
+	if order_context != null:
+		effective_directives = directives.duplicate()
+		effective_directives["leash"] = IDLE_LEASH
+		effective_directives["objective"] = null
 
 	return {
 		"tick": game_match.tick,
@@ -675,6 +953,8 @@ func build_situation() -> Dictionary:
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
 		"control": {"center": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner}
 				if game_match.control_point else null,
+		"order": order_context,
+		"cooldowns": cooldowns,
 	}
 
 
@@ -695,6 +975,10 @@ func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> 
 	if squad_context.get("slot") != null:
 		request["anchor"] = squad_context["slot"]
 		request["anchor_radius"] = COVER_SEARCH_RADIUS * 0.6
+	elif _order_home != null:
+		if order.is_empty():
+			request["anchor"] = _order_home
+			request["anchor_radius"] = IDLE_LEASH
 	elif typeof(directives["objective"]) == TYPE_DICTIONARY and float(directives["leash"]) > 0.0:
 		var o: Dictionary = directives["objective"]
 		request["anchor"] = Directives.to_world(tank.team, float(o["right"]), float(o["forward"]))
@@ -893,10 +1177,39 @@ func _act(s: Dictionary) -> void:
 	var weapon: Dictionary = me["weapon"]
 	var contact := _contact(s, choice["target"])
 	match choice["option"]:
+		"MOVE":
+			var o: Dictionary = s["order"]
+			var goal: Vector3 = o["goal"]
+			why = TankBrain._join(why, "attack-move" if o["verb"] == "attack_move" else "ordered")
+			if _flat(my_position).distance_to(goal) <= ORDER_ARRIVE:
+				_order_move({"type": "stop"})
+			else:
+				_order_move(_move_to(goal, false, float(o["speed"]), ORDER_ARRIVE))
+			_order_weapon({"type": "fire_at_will"})
+		"PURSUE":
+			var o: Dictionary = s["order"]
+			why = TankBrain._join(why, "ordered, closing in")
+			_order_move(_move_to(o["target_position"], false, 1.0, 2.0))
+			_order_weapon({"type": "target", "name": o["target"], "fallback": true})
+		"FOLLOW":
+			var o: Dictionary = s["order"]
+			var friend: Vector3 = o["target_position"]
+			var heading: Vector3 = o["target_forward"]
+			var velocity: Vector3 = o["target_velocity"]
+			# Station behind the friend, leading it by half a second so a moving escort doesn't trail off.
+			var station := _flat(friend + velocity * 0.5 - heading * FOLLOW_DISTANCE)
+			why = TankBrain._join(why, "following " + String(o["target"]))
+			if _flat(my_position).distance_to(station) > 4.0:
+				_order_move(_move_to(station, false, 1.0, 3.0))
+			else:
+				_order_move(_face_threat_or(s, {"type": "stop"}))
+			_order_weapon({"type": "fire_at_will"})
 		"ENGAGE":
 			var distance := my_position.distance_to(contact["position"])
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
-			if not contact["visible"] or distance > float(weapon["preferred_max"]):
+			if contact["visible"] and distance <= float(weapon["range"]) + MOTION_REACH_MARGIN and _moves_while_fighting(s):
+				_order_move(_combat_move(s, contact))
+			elif not contact["visible"] or distance > float(weapon["preferred_max"]):
 				_order_move(_move_to(contact["position"]))
 			elif distance < float(weapon["preferred_min"]):
 				var away: Vector3 = my_position + (my_position - contact["position"]).normalized() * 8.0
@@ -1088,6 +1401,13 @@ func _act(s: Dictionary) -> void:
 			var squad: Dictionary = s["squad"]
 			_order_move(_move_to(squad["slot"], squad["reverse"], squad["pace"]))
 			_order_weapon({"type": "fire_at_will"})
+		"HOLD" when s.get("order") != null and s["order"]["verb"] == "hold" \
+				and _flat(my_position).distance_to(s["order"]["goal"]) > HOLD_TOLERANCE:
+			# Pushed off the spot (or ordered to hold somewhere else): back onto it, front toward trouble.
+			var spot: Vector3 = s["order"]["goal"]
+			why = TankBrain._join(why, "holding")
+			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, 1.5))
+			_order_weapon({"type": "fire_at_will"})
 		"HOLD":
 			var nearest_visible: Variant = null
 			for c in s["contacts"]:
@@ -1102,6 +1422,88 @@ func _act(s: Dictionary) -> void:
 			else:
 				_order_move({"type": "stop"})
 			_order_weapon({"type": "fire_at_will"})
+
+
+## X2: whether this unit keeps moving while it fights (CombatMotion). Not artillery (it deploys), not a squad holding a
+## position, and only for brain variants with `combat_motion`.
+func _moves_while_fighting(s: Dictionary) -> bool:
+	if not s.get("features", {}).get("combat_motion", false) or tank.weapon["kind"] == Weapons.Kind.ARC:
+		return false
+	var squad: Variant = s.get("squad")
+	return squad == null or String(squad["verb"]) != "hold"
+
+
+## X2 styles by chassis: a fixed gun aims with the hull, so it makes runs; a thick front wants to face the target, so
+## heavy hulls angle; the rest circle-strafe.
+static func motion_style(unit_id: String) -> String:
+	var profile := Units.profile(unit_id)
+	if String(profile.get("mount", "turret")) == "fixed":
+		return "run"
+	if float((profile.get("armor", {}) as Dictionary).get("front", 0.0)) >= ANGLE_FRONT_ARMOR:
+		return "angle"
+	return "strafe"
+
+
+## X2: the move order for fighting `contact` on the move: circle it in the weapon's band (CombatMotion), jinking to the
+## other side now and then (heavy hulls right after firing, while they reload), and for fixed guns runs at its side and
+## rear that break away when close. Falls back to facing the target when every direction is blocked.
+func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
+	var me: Dictionary = s["self"]
+	var my_position: Vector3 = me["position"]
+	var weapon: Dictionary = me["weapon"]
+	var style := TankBrain.motion_style(String(me.get("unit", "")))
+	var tick := game_match.tick
+	var distance := _flat(my_position).distance_to(_flat(contact["position"]))
+	if _strafe_side == 0:
+		_strafe_side = 1 if think_offset % 2 == 0 else -1
+		_jink_tick = tick + JINK_MIN_TICKS
+	var jink_due := false
+	match style:
+		"angle":
+			jink_due = tick >= _jink_tick + JINK_SPREAD_TICKS or (tick >= _jink_tick and ticks_since_fire <= THINK_EVERY_TICKS)
+		"strafe":
+			jink_due = tick >= _jink_tick + (think_offset * 37) % JINK_SPREAD_TICKS
+	if jink_due:
+		_strafe_side = -_strafe_side
+		_jink_tick = tick + JINK_MIN_TICKS
+	if style == "run":
+		if _run_phase == "run" and distance <= CombatMotion.RUN_BREAK:
+			_run_phase = "extend"
+		elif _run_phase == "extend" and distance >= CombatMotion.RUN_RETURN:
+			_run_phase = "run"
+			_strafe_side = -_strafe_side  # come back in on the other flank
+	var cover_map := CoverMap.of(tank)
+	var request := {"position": my_position, "forward": me["forward"], "speed": tank.max_forward_speed,
+			"reverse_speed": tank.max_reverse_speed, "style": style,
+			"target": {"position": contact["position"], "forward": contact["forward"], "velocity": contact["velocity"]},
+			"band": [float(weapon["preferred_min"]), float(weapon["preferred_max"])], "side": _strafe_side,
+			"phase": _run_phase, "map": cover_map,
+			"friends": (s["allies"] as Array).map(func(ally: Dictionary) -> Vector3: return ally["position"]),
+			"wheels": String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels",
+			"min_turn_radius": float(Units.stat(tank.unit_id, "min_turn_radius_m", 0.0))}
+	var result := CombatMotion.choose(request)
+	if result.is_empty():
+		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
+	match style:
+		"run":
+			why = TankBrain._join(why, "attack run" if _run_phase == "run" else "breaking away")
+		"angle":
+			why = TankBrain._join(why, "angling, front armor on it")
+		_:
+			why = TankBrain._join(why, "circling")
+	return _move_to(result["point"], result["reverse"], 1.0, 1.0)
+
+
+## Turn the hull toward the nearest visible enemy (front armor, and a fixed gun's aim), else `fallback`.
+static func _face_threat_or(s: Dictionary, fallback: Dictionary) -> Dictionary:
+	var my_position: Vector3 = s["self"]["position"]
+	var nearest: Variant = null
+	for c: Dictionary in s["contacts"]:
+		if c["visible"] and (nearest == null or my_position.distance_to(c["position"]) < my_position.distance_to(nearest)):
+			nearest = c["position"]
+	if nearest == null:
+		return fallback
+	return {"type": "face", "x": (nearest as Vector3).x, "z": (nearest as Vector3).z}
 
 
 func _contact(s: Dictionary, contact_name: String) -> Dictionary:

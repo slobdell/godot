@@ -15,6 +15,8 @@ extends RefCounted
 ##   squad_tactics     focus fire, suppress-and-flank, covering retreats, fragile escorts (A6)
 ##   think_ticks       (int) how often a brain in contact thinks (default TankBrain.THINK_EVERY_TICKS = 6)
 ##   matchups          target choice and duel appetite from Matchups; fixed guns ORBIT slow turrets (A5)
+##   timeouts          stuck-state timeouts: options that stop producing shots or progress go on cooldown (X1; default on)
+##   combat_motion     fight on the move: circle-strafe, angle the front armor, attack runs (round-3 X2, CombatMotion)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -22,6 +24,10 @@ const PROFILES := {
 	"a6": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false},
 	"a5": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": true},
 	# Probe: thinking 50% less often in contact (CPU) — must not lose to a6 to be adopted.
+	# Round 3 X2: a6 that keeps moving while it fights.
+	"x2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true},
+	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
+	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
 	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": 9},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
