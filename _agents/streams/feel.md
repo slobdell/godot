@@ -120,8 +120,8 @@ untouched (feel never changes it).
 - **combat:** (1) optional: a `projectile_impact` with no target when a shell reaches its range, so misses land where
   the rules say (feel fizzles them into the dirt meanwhile); (2) the wreck-husk stretch (keep a dead unit visible):
   feel's burning wreck sites already sit where kills happen and would dress a husk.
-- **orchestrator:** `tools/remote.sh` fix (stale Xwayland cookie → stale remote screenshots) is on this branch;
-  **other streams' remote screenshots taken before it may be stale**. Merge order: after control and combat, then check
+- **orchestrator:** `tools/remote.sh` fix (stale Xwayland cookie → stale remote screenshots): **landed on `main` as
+  7dc7bdc** (2026-09-15; identical hunk here, so the merge is clean); remote screenshots taken before it may be stale. Merge order: after control and combat, then check
   that `MatchFxLink.live` is true in a skirmish (effects switch to real K2 on their own).
 
 ### Known issues
