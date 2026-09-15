@@ -180,5 +180,9 @@ The kickoff prompt is one line; this section is the rest.
    by glibc version, builder0 canonical (round 3 setup).
 9. Infra fixes a worker finds (round 3: remote screenshots after the first frame were stale on builder0) go to `main`
    right away as their own commit, then every stream is told to `git merge main`; don't wait for a checkpoint.
-10. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+10. Read every test result line before committing a fix, especially after a mutation check: the orchestrator once
+    restored a guard, misread `40 passed, 1 failed` as green, and broke `main` for all six streams (a test assumed
+    `Geometry2D.triangulate_polygon` rejects a collinear triangle; it doesn't). Probe engine behavior with a tiny
+    `--script` before encoding an assumption in a test.
+11. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.
