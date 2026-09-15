@@ -220,8 +220,8 @@ the dark floor; the panel's single-unit card is text-heavy.
   `RtsControls`); minimal compatibility fix.
 - `game/garage/garage_settings.gd` (paused army stream): the second in-match tip described round 2's tap grammar; it
   now describes box select, number keys, and right-click (seen in the browser smoke screenshot). Text only.
-- `tools/remote.sh` (shared): builder0 screenshots picked a stale `.mutter-Xwaylandauth.*` file ("X11 Display is not
-  available", then a headless Godot that never quit); it now uses the auth file of the running Xwayland.
+- `tools/remote.sh` (shared): none left. Control found the stale Xwayland auth file independently; main's fix
+  (7dc7bdc, from feel) was merged in and its version kept.
 - `_agents/orientation.md` (common tasks: the skirmish row, a control playtest row) and `_agents/verification.md`
   (a control playtest paragraph): small additive edits.
 - `mk/command.mk` (control's now): `control-playtest`, `control-playtest-shots` added; command-playtest targets kept.

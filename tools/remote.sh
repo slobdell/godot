@@ -49,8 +49,9 @@ if [ ! -x ~/$root/.tools/node/bin/node ]; then
 fi
 export PATH=~/$root/.tools/node/bin:\$PATH
 export TANK_SQUAD_SLOTS=$slots
-# The auth file the running Xwayland uses (stale ones from earlier sessions linger in /run/user).
-auth=\$(pgrep -a Xwayland 2>/dev/null | grep -o "/run/user/\$(id -u)/.mutter-Xwaylandauth[.][A-Za-z0-9]*" | head -1)
+# The auth file the running Xwayland uses (older sessions leave stale ones: with a stale cookie Godot falls back to Wayland,
+# which stops redrawing a hidden window, so screenshots after the first silently repeat old frames).
+auth=\$(ps -C Xwayland -o args= 2>/dev/null | sed -n 's/.* -auth \\([^ ]*\\).*/\\1/p' | head -1)
 [ -n "\$auth" ] || auth=\$(ls -t /run/user/\$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1)
 if [ -n "\$auth" ]; then export DISPLAY=:0 XAUTHORITY="\$auth"; fi
 if ! compgen -G ".tools/godot-*/editor_data/export_templates/*/.installed" >/dev/null && [ "\$1" != bootstrap ]; then
