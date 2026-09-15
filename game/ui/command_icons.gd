@@ -34,7 +34,8 @@ const ORDER_STATE := {"move": "Moving", "bound": "Bounding", "hold": "Holding", 
 ## shown capitalized, so the AI stream can add options freely).
 const INTENT_WORDS := {"RETREAT": "Retreating", "RESUPPLY": "Resupplying", "TAKE_COVER": "Taking cover",
 		"RECHARGE": "Recharging shields", "SPOT": "Spotting", "BOMBARD": "Bombarding", "SHADOW": "Shadowing",
-		"CONTEST": "Taking the center", "ENGAGE": "Engaging", "FLANK": "Flanking", "INVESTIGATE": "Investigating",
+		"CONTEST": "Taking the center", "CLEAR_LANE": "Moving for a clear shot", "COVER_FIRE": "Peeking from cover",
+		"ENGAGE": "Engaging", "FLANK": "Flanking", "INVESTIGATE": "Investigating",
 		"REGROUP": "Regrouping", "ADVANCE": "Advancing", "KEEP_SLOT": "In formation", "HOLD": "Holding"}
 
 
