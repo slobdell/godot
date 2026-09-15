@@ -62,8 +62,11 @@ const CYBERPUNK_SLOTS := {
 	"fx.laser_beam": "res://game/theme/cyberpunk/fx_laser_beam.tscn",
 	# Gameplay G1's 3D fog of war (setup(data) contract); default placeholder on stream/gameplay.
 	"fx.fog_of_war": "res://game/theme/cyberpunk/fx_fog_of_war.tscn",
-	"prop.crate": "res://game/theme/cyberpunk/prop_crate.tscn",
-	"prop.wall": "res://game/theme/cyberpunk/prop_wall.tscn",
+	# Art X6: the lead's approved Meshy props (theme arena_kit, tools/assets/build_arena_kit.sh) with a neon footprint frame
+	# for the tactical overview (prop_generated.gd). The procedural neon
+	# crate and wall (cyberpunk/prop_*.tscn) remain as fallback art.
+	"prop.crate": "res://game/theme/cyberpunk/prop_crate_generated.tscn",
+	"prop.wall": "res://game/theme/cyberpunk/prop_wall_generated.tscn",
 	"arena.environment": "res://game/theme/cyberpunk/arena_environment.tscn",
 	"arena.dressing": "res://game/theme/cyberpunk/arena_dressing.tscn",
 	# Round 2 unit roster (art X4, the lead's approved Meshy concepts; game/theme/roster, tools/assets/build_roster.sh).

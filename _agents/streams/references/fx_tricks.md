@@ -235,5 +235,8 @@ numbers drift by several ms between runs). New configs: `ground_wet` (round 1's 
   away fetches that only matter in small areas (`textureLod` inside `if`), bake static variation into one arena-wide map.
 - Painted floodlight pools (a 64² light map baked from the dressing's lamp list, added as emission) light the floor
   for one fetch; the moon (key light) went 0.65 → 1.15 energy and neutral white, ambient less saturated (no measurable cost).
+- **The gladiator venue (X5)**, `no_venue` configs: 18 Meshy grandstand modules, 2 gates, 4 generated floodlight towers,
+  ~2,000 instanced spectators in **one MultiMesh draw** (alpha scissor, shader-animated idle/cheer, per-tier counts
+  900/1,800/4,000): **+0.3 ms at tier high, +0.14 ms at low, +2 draw calls** from the bench's orbit camera.
 - Tier budgets hold: low 6.4 ms / 189 draws, medium 9.1 ms / 189 draws; high +1.9 ms over round 1's floor (borderline
   against 16 ms on a loaded machine; switch high to the lite floor if a desktop GPU struggles).

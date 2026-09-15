@@ -15,3 +15,10 @@ recorded samples, no downloads, deterministic (seeded). We dedicate them to the 
 
 Mobile check: phone speakers don't reproduce much below ~200 Hz, so the heavy sounds carry most of
 their energy above it (cannon 57%, small explosion 78%, big explosion 50%, measured from the files).
+
+**Art stream (round 2, X5):**
+
+| File | Used for | How it's made |
+|---|---|---|
+| `crowd_murmur.wav` | the stands' crowd, looping under the match (volume follows the crowd's excitement) | noise through three slowly moving vowel-like bands (~520 Hz, 900 Hz, 1.4 kHz) with random swells + room rumble, rolled off above ~2 kHz, crossfaded seam |
+| `crowd_cheer.wav` | the roar after a kill | wide noise band with a fast swell and slow decay, upward whistle sweeps, scattered claps |

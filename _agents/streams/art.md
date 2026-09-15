@@ -173,7 +173,35 @@ _Updated 2026-09-14 (agent)._
     `references/fx_tricks.md`). The first version cost +6.6 ms and was rebuilt.
   - Screenshots: `x3-skirmish.png`, `x3-phone-low.png`, `x3-overview.png`.
 
+- **X6 props:**
+  - The approved container and barrier fill `prop.crate` and `prop.wall` in the cyberpunk theme
+    (`make assets-arena-kit`).
+  - `prop_generated.gd` adds a neon hazard frame on the floor around each cover footprint (amber for crates, violet
+    for walls). Without it the textured props vanished in the 200 m tactical overview (trip-up 46).
+  - Prop budgets are 4k (crate) and 8k (wall of 4 barriers).
+  - Stretched props are refit to their collision box after decimation, which had shaved off tops (beacons, spikes).
+  - The scrap pile is in `kit.scrap_heap`, waiting for a scrap obstacle type (rules' C5).
+- **X5 gladiator venue:**
+  - The arena dressing adds 18 Meshy grandstand modules along the long walls, gates in the short walls, and the
+    generated floodlight tower at each corner (the fake beams are kept).
+  - **The crowd** (`CrowdSystem`, `crowd.gdshader`, `tools/assets/build_crowd.py`): ~2,000 spectators in one
+    MultiMesh draw. They idle-sway, and jump with arms up after a kill (strongest within 90 m of it) via the new
+    `FxWorld.spectacle` signal, then settle in ~6 s. A few neon-shirted fans, and phone flashes when it's loud.
+  - **Crowd audio:** a synthesized murmur loop whose volume follows the excitement, and a roar after kills
+    (`make sfx`; the existing WAVs stayed byte-identical).
+  - **Cost:** +0.3 ms at tier high, +0.14 ms at low.
+  - Screenshots: `x5-stands.png` (mid-cheer), `x5-title.png`, `x5-overview.png`, `x6-skirmish.png`, `x6-overview.png`.
+- **Web:**
+  - `make web-smoke` passes.
+  - Normal and ORM maps are capped at 512 on units (`--texture-caps`), because the `.pck` had grown to 22.4 MB with
+    all five units at 1024. Re-measure after the next export.
+
 **Decisions**
+- The crowd is emissive-lit silhouettes (a procedural atlas), not meshes: at RTS distance a spectator is a few
+  pixels, so motion and density carry it; one draw call. Clothes stay grimy and desaturated (6% neon fans):
+  saturated shirts read as cartoon.
+- Stands only on the long walls, and gates on the short ones: 18 modules keep the triangle count near 95k before
+  LODs. The perimeter is mostly out of frame from the gameplay camera.
 - Unit hull art may rise to 1.35× the collision height (`AssetContracts.UNIT_ART_HEIGHT`) so a garbage truck isn't
   shrunk to a toy by the 1.6 m box; gameplay collision is unchanged.
 - Real barrels (scout, IFV) are stretched from their breech to the gameplay muzzle; the Lancer's coil emitter is not

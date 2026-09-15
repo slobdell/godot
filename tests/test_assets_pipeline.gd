@@ -134,7 +134,9 @@ func test_dense_models_are_decimated_to_the_budget() -> void:
 	assert_true(AssetChecker.check_report(before, "prop.crate")["errors"][0].contains("budget"), "the checker flags the budget first")
 	var result := AssetNormalizer.normalize(root, "prop.crate")
 	var after := AssetInspector.inspect(_free_later(result["scene"]))
-	assert_true(after["tris"] <= 2000 and after["tris"] > 200, "decimated under the 2000 budget without collapsing (%d tris)" % after["tris"])
+	var budget := int(AssetContracts.get_contract("prop.crate")["tris"])
+	assert_true(before["tris"] > budget, "the source is over the crate budget (%d tris)" % before["tris"])
+	assert_true(after["tris"] <= budget and after["tris"] > budget / 10, "decimated under the %d budget without collapsing (%d tris)" % [budget, after["tris"]])
 	var arrays: Array = (result["scene"] as Node3D).get_node("Mesh").mesh.surface_get_arrays(0)
 	var used := {}
 	for index in arrays[Mesh.ARRAY_INDEX]:
@@ -170,7 +172,7 @@ func test_decimation_spares_small_detail_surfaces() -> void:
 		tris[mesh.surface_get_material(surface).resource_name] = mesh.surface_get_arrays(surface)[Mesh.ARRAY_INDEX].size() / 3
 	_free_later(result["scene"])
 	assert_eq(tris.get("sign", 0), 32, "the sign keeps all 32 triangles while the dense body is simplified")
-	assert_true(tris.get("body", 0) + tris.get("sign", 0) <= 2000, "and the model still fits the budget (%s)" % tris)
+	assert_true(tris.get("body", 0) + tris.get("sign", 0) <= int(AssetContracts.get_contract("prop.crate")["tris"]), "and the model still fits the budget (%s)" % tris)
 	assert_true(tris.get("body", 0) >= 1000, "the body is reduced only as far as needed (%s)" % tris)
 
 

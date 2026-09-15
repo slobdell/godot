@@ -130,3 +130,7 @@ assets-view: import ## Turnaround of a raw model before normalizing: IN=path.glb
 .PHONY: assets-roster
 assets-roster: ## Rebuild the round-2 unit roster theme (scout, IFV, artillery, Lancer) from its Meshy recipe
 	tools/assets/build_roster.sh
+
+.PHONY: assets-arena-kit
+assets-arena-kit: ## Rebuild the gladiator arena kit theme (props, stands, gate, floodlight tower) from its Meshy recipe
+	tools/assets/build_arena_kit.sh

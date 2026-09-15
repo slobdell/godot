@@ -242,7 +242,7 @@ class GenerateAgainstMock(unittest.TestCase):
 
     def test_every_contract_slot_has_a_readable_budget(self):
         for slot, budget in {"tank.hull": 15000, "tank.turret": 4000, "weapon.cannon": 2000, "fx.shell": 200,
-                             "prop.wall": 3000, "arena.dressing": 50000, "kit.container": 1500, "unit.tank": 21000}.items():
+                             "prop.wall": 8000, "arena.dressing": 50000, "kit.container": 1500, "unit.tank": 21000}.items():
             self.assertEqual(generate.slot_budget(slot), budget, slot)
 
 

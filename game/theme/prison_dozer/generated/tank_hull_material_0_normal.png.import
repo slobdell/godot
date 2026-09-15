@@ -2,13 +2,13 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bxb7k68f32jed"
+uid="uid://d3bmuipkp65cq"
 path="res://.godot/imported/tank_hull_material_0_normal.png-ba55c4064d02df39ae13b0bf2c7a82f8.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "8e31933f37246f7010e8d77a34afee05"
+"md5": "7cf990a70c078f63b421a669f64949ad"
 }
 
 [deps]
@@ -24,7 +24,7 @@ compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1

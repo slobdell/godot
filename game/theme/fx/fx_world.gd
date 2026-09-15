@@ -10,6 +10,8 @@ extends Node3D
 
 ## Emitted when effect budgets change (FxQuality tier switch).
 signal quality_changed
+## Something the crowd should react to (art X5): weight 1 = a kill, ~0.15 = a hit. The arena's CrowdSystem listens.
+signal spectacle(position: Vector3, weight: float)
 
 static var _instance: FxWorld
 
@@ -198,5 +200,6 @@ func explosion(position: Vector3, big := false) -> void:
 		lights.flash(position + Vector3(0, 1.5, 0), Color(1.0, 0.55, 0.2), 10.0 if big else 6.0,
 				22.0 if big else 12.0, 0.8 if big else 0.4, LightPool.PRIORITY_EXPLOSION, now)
 	sfx.play_at("explosion_big" if big else "explosion_small", position)
+	spectacle.emit(position, 1.0 if big else 0.15)
 	# Kills jolt the view; ordinary hits only register up close.
 	shake.add(0.55 if big else 0.12, position, 30.0 if big else 14.0)

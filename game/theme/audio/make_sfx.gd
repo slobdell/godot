@@ -22,6 +22,13 @@ func _initialize() -> void:
 	_write("ui_blip", _blip(1400.0, 0.06))
 	_write("ui_alert", _alert())
 	_write("ui_tick", _tick())
+	# Art X5 (appended so the seeded sounds above stay byte-identical).
+	_write("crowd_murmur", _crowd_murmur())
+	_write("crowd_cheer", _crowd_cheer())
+	# Engines per unit type (art stretch). Loops exactly 1 s long with whole-cycle frequencies, so they're seamless.
+	_write("engine_diesel", _engine(31.0, 0.55, 0.35, 0.0))
+	_write("engine_v8", _engine(57.0, 0.9, 0.5, 0.0))
+	_write("engine_electric", _engine(29.0, 0.45, 0.25, 0.6))
 	quit()
 
 
@@ -151,6 +158,95 @@ func _flame_loop() -> PackedFloat32Array:
 		var w := float(i) / fade
 		out[i] = out[i] * w + out[out.size() - fade + i] * (1.0 - w)
 	out.resize(out.size() - fade)
+	return out
+
+
+## A stadium's murmur (loops): many voices are noise through two moving vowel-like bands (~500 Hz and ~1.4 kHz),
+## each with slow random swells, over a low room rumble. Crossfaded seam.
+func _crowd_murmur() -> PackedFloat32Array:
+	var out := _buffer(4.08)
+	var bands := [[520.0, 0.0, 0.0], [1400.0, 0.0, 0.0], [900.0, 0.0, 0.0]]  # center Hz, low state, band state
+	var swells := PackedFloat32Array([0.6, 0.5, 0.4])
+	var targets := PackedFloat32Array([0.6, 0.5, 0.4])
+	var rumble := 0.0
+	var soft := 0.0  # voices across a stadium lose their top end: roll off above ~2 kHz
+	for i in out.size():
+		var noise := rng.randf_range(-1.0, 1.0)
+		var sample := 0.0
+		for b in bands.size():
+			if i % 2205 == 0:
+				targets[b] = rng.randf_range(0.25, 1.0)
+			swells[b] += (targets[b] - swells[b]) * 0.0004
+			var band: Array = bands[b]
+			var k := TAU * float(band[0]) * (1.0 + 0.08 * sin(TAU * (0.3 + b * 0.17) * i / RATE)) / RATE
+			band[1] += (noise - float(band[1])) * k          # lowpass at the band center
+			band[2] += (float(band[1]) - float(band[2])) * k * 0.35  # minus a lower lowpass = a band
+			sample += (float(band[1]) - float(band[2])) * swells[b]
+		rumble += (noise - rumble) * 0.004
+		soft += (sample * 1.4 + rumble * 2.0 - soft) * 0.45
+		out[i] = soft
+	var fade := int(0.08 * RATE)
+	for i in fade:
+		var w := float(i) / fade
+		out[i] = out[i] * w + out[out.size() - fade + i] * (1.0 - w)
+	out.resize(out.size() - fade)
+	return out
+
+
+## A roar for a kill: the murmur's bands opened wide with a fast swell and slow decay, whistles sweeping up,
+## and a scatter of claps.
+func _crowd_cheer() -> PackedFloat32Array:
+	var out := _buffer(3.2)
+	var low := 0.0
+	var band := 0.0
+	var whistles := []
+	for w in 3:
+		whistles.append([rng.randf_range(0.2, 1.4), rng.randf_range(1700.0, 2600.0), 0.0])
+	for i in out.size():
+		var t := float(i) / RATE
+		var envelope := minf(t / 0.35, 1.0) * exp(-maxf(t - 0.6, 0.0) * 1.1)
+		var noise := rng.randf_range(-1.0, 1.0)
+		low += (noise - low) * 0.32
+		band += (low - band) * 0.05
+		var roar := (low - band) * envelope * (0.8 + 0.2 * sin(TAU * 3.0 * t))
+		var whistle := 0.0
+		for w in whistles:
+			var start: float = w[0]
+			if t > start and t < start + 0.5:
+				var local := t - start
+				w[2] += TAU * (float(w[1]) + 900.0 * local) / RATE
+				whistle += sin(float(w[2])) * sin(PI * local / 0.5) * 0.12
+		var clap := 0.0
+		if rng.randf() < 0.0022 * envelope:
+			clap = rng.randf_range(0.5, 1.0)
+		out[i] = roar + whistle + clap * noise
+	return out
+
+
+## An engine loop: a firing-pulse train at `firing` Hz (a narrow pulse through a resonant lowpass, saturated so its
+## harmonics carry on phone speakers), a clattering noise layer, and an optional 120 Hz electrical hum with buzz
+## (the Lancer's transformer). `rasp` = exhaust distortion. Exactly 1 s: whole cycles loop without a seam.
+func _engine(firing: float, rasp: float, clatter: float, hum: float) -> PackedFloat32Array:
+	var out := _buffer(1.0)
+	var low := 0.0
+	var band := 0.0
+	var noise_low := 0.0
+	for i in out.size():
+		var t := float(i) / RATE
+		var cycle := fmod(t * firing, 1.0)
+		# Four cylinders of uneven strength per engine cycle: the lope of a big engine.
+		var cylinder := int(fmod(t * firing * 4.0, 4.0))
+		var pulse := (1.0 if fmod(t * firing * 4.0, 1.0) < 0.18 else 0.0) * [1.0, 0.8, 0.95, 0.7][cylinder]
+		low += (pulse - low) * 0.08
+		band += (low - band) * 0.02
+		var body := tanh((low - band) * (3.0 + rasp * 6.0))
+		var noise := rng.randf_range(-1.0, 1.0)
+		noise_low += (noise - noise_low) * 0.25
+		var clank := noise_low * clatter * (0.6 + 0.4 * sin(TAU * firing * 2.0 * t))
+		var electric := 0.0
+		if hum > 0.0:
+			electric = hum * (0.6 * sin(TAU * 120.0 * t) + 0.25 * sin(TAU * 360.0 * t) + 0.12 * signf(sin(TAU * 240.0 * t)))
+		out[i] = body * 0.8 + clank + electric * 0.5 + 0.0 * cycle
 	return out
 
 

@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://assets/runtime/generated_visual.gd" id="1_visual"]
+[ext_resource type="PackedScene" path="res://game/theme/arena_kit/generated/kit_gate.glb" id="2_model"]
+
+[node name="KitGate" type="Node3D"]
+script = ExtResource("1_visual")
+slot = "kit.gate"
+
+[node name="Model" parent="." instance=ExtResource("2_model")]

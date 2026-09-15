@@ -65,13 +65,14 @@ const SLOTS := {
 		"guide": Vector3(0.3, 0.3, 1.0), "fit": "contain", "anchor": "center",
 		"tris": 200, "methods": [], "elongated": "z", "file": "fx_shell",
 	},
+	# Props 2k/3k → 4k/8k (art X6, 2026-09-14): generated props decimated to 2k lost their chains, sandbags and grilles.
 	"prop.crate": {
 		"guide": Vector3(4.5, 3.0, 4.5), "fit": "stretch", "anchor": "ground_center",
-		"tris": 2000, "methods": [], "file": "prop_crate",
+		"tris": 4000, "methods": [], "file": "prop_crate",
 	},
 	"prop.wall": {
 		"guide": Vector3(18.0, 3.0, 1.5), "fit": "stretch", "anchor": "ground_center",
-		"tris": 3000, "methods": [], "elongated": "x", "file": "prop_wall",
+		"tris": 8000, "methods": [], "elongated": "x", "file": "prop_wall",
 	},
 	"arena.dressing": {
 		"guide": Vector3(320.0, 30.0, 320.0), "fit": "none", "anchor": "world",
@@ -87,6 +88,11 @@ const CANDIDATES := {
 	"kit.light_pole": {"guide": Vector3(1.2, 8.0, 3.0), "fit": "contain", "anchor": "ground_center", "tris": 800},
 	"kit.billboard": {"guide": Vector3(8.0, 6.0, 3.0), "fit": "contain", "anchor": "ground_center", "tris": 1000},
 	"kit.scrap_pile": {"guide": Vector3(5.0, 2.0, 5.0), "fit": "contain", "anchor": "ground_center", "tris": 1500},
+	# Gladiator arena dressing (art X5, the lead's approved concepts): modules placed around the perimeter by the dressing.
+	"kit.scrap_heap": {"guide": Vector3(4.5, 3.0, 4.5), "max": Vector3(4.5, 3.4, 4.5), "fit": "contain", "anchor": "ground_center", "tris": 4000},
+	"kit.stands": {"guide": Vector3(24.0, 16.0, 20.0), "fit": "contain", "anchor": "ground_center", "tris": 12000},
+	"kit.gate": {"guide": Vector3(24.0, 12.0, 5.0), "fit": "contain", "anchor": "ground_center", "tris": 10000},
+	"kit.floodlight_tower": {"guide": Vector3(9.0, 24.0, 9.0), "fit": "contain", "anchor": "ground_center", "tris": 8000},
 }
 
 

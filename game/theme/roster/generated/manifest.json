@@ -7,8 +7,8 @@
       "notes": [
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024"
       ],
       "options": {
@@ -39,6 +39,11 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 1.378,
@@ -54,8 +59,8 @@
         "placed as generated, moved (-0.00, -0.39) onto the turret pivot",
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024",
         "stripped 5 texture references (textures come from another slot)"
       ],
@@ -95,6 +100,11 @@
           -0.3869
         ],
         "strip_textures": true,
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "textures_from": "unit.artillery.hull",
         "up": "+y"
       },
@@ -110,8 +120,8 @@
       "notes": [
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024"
       ],
       "options": {
@@ -143,6 +153,11 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 1.867,
@@ -158,8 +173,8 @@
         "placed as generated, moved (0.02, 0.38) onto the turret pivot",
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024",
         "stripped 5 texture references (textures come from another slot)"
       ],
@@ -199,6 +214,11 @@
           0.3795
         ],
         "strip_textures": true,
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "textures_from": "unit.ifv.hull",
         "up": "+y"
       },
@@ -216,8 +236,8 @@
         "barrel stretched ×2.66 from its breech to the muzzle point",
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024",
         "stripped 5 texture references (textures come from another slot)"
       ],
@@ -257,6 +277,11 @@
           0.0
         ],
         "strip_textures": true,
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "textures_from": "unit.ifv.hull",
         "up": "+y"
       },
@@ -272,8 +297,8 @@
       "notes": [
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024"
       ],
       "options": {
@@ -305,6 +330,11 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 2.16,
@@ -320,8 +350,8 @@
         "placed as generated, moved (-0.01, -0.16) onto the turret pivot",
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024",
         "stripped 5 texture references (textures come from another slot)"
       ],
@@ -361,6 +391,11 @@
           -0.1589
         ],
         "strip_textures": true,
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "textures_from": "unit.lancer.hull",
         "up": "+y"
       },
@@ -378,8 +413,8 @@
         "decimated 2103 → 1973 triangles (budget 2000)",
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024",
         "stripped 5 texture references (textures come from another slot)"
       ],
@@ -419,6 +454,11 @@
           0.0
         ],
         "strip_textures": true,
+        "texture_caps": {
+          "metallic_texture": 512,
+          "normal_texture": 512,
+          "roughness_texture": 512
+        },
         "textures_from": "unit.lancer.hull",
         "up": "+y"
       },
@@ -434,8 +474,8 @@
       "notes": [
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024"
       ],
       "options": {
@@ -466,6 +506,11 @@
           0.0,
           0.0
         ],
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 1.483,
@@ -482,8 +527,8 @@
         "barrel stretched ×1.46 from its breech to the muzzle point",
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024",
         "stripped 5 texture references (textures come from another slot)"
       ],
@@ -523,6 +568,11 @@
           0.0
         ],
         "strip_textures": true,
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "textures_from": "unit.scout.hull",
         "up": "+y"
       },

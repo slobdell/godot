@@ -20,6 +20,7 @@ extends SceneTree
 ##             [--emission-energy=<f>]  emission energy for emissive materials (generated maps come in dim)
 ##             [--attach-to=tank.turret]  a barrel from the same model stays where it was attached to that turret
 ##             [--scale-from=<slot>]  reuse the uniform scale another slot got from the same source
+##             [--texture-caps=normal_texture:512,roughness_texture:512,metallic_texture:512]  smaller maps per property
 ##             [--textures-from=<slot>]  export without textures and wear that slot's materials (one texture set per unit)
 ##             [--emissive=glob:energy,..] [--emission-map=<png>[:material glob]] (e.g. Meshy's emission map)
 ##             [--tint=glob,..] [--tint-strength=0..1] [--team-emissive=glob,..] [--heat=glob,..] [--shield=glob,..]
@@ -101,6 +102,10 @@ func _normalize(args: Dictionary) -> int:
 	if args.has("repeat"):
 		var counts := String(args["repeat"]).split("x")
 		options["repeat"] = Vector3i(int(counts[0]), int(counts[1]) if counts.size() > 1 else 1, int(counts[2]) if counts.size() > 2 else 1)
+	if args.has("texture-caps"):  # normal_texture:512,roughness_texture:512
+		options["texture_caps"] = {}
+		for pair in _list(args["texture-caps"]):
+			options["texture_caps"][String(pair).get_slice(":", 0)] = int(String(pair).get_slice(":", 1))
 	if args.has("emission-energy"):
 		options["emission_energy"] = float(args["emission-energy"])
 	if args.has("deck-from"):

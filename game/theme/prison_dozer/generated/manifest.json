@@ -7,8 +7,8 @@
       "notes": [
         "material 'material_0' emission energy ×4.0",
         "texture albedo_texture 2048×2048 → 1024×1024",
-        "texture normal_texture 2048×2048 → 1024×1024",
-        "texture roughness_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
         "texture emission_texture 2048×2048 → 1024×1024"
       ],
       "options": {
@@ -35,6 +35,16 @@
           ]
         },
         "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
         "up": "+y"
       },
       "roof": 1.6,
@@ -78,6 +88,11 @@
         },
         "raise": 0.655,
         "scale": 3.0739586353302,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
         "strip_textures": true,
         "textures_from": "tank.hull",
         "up": "+y"
@@ -129,6 +144,11 @@
           "tint": []
         },
         "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
         "strip_textures": true,
         "textures_from": "tank.hull",
         "up": "+y"

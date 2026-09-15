@@ -1,9 +1,10 @@
 extends "res://game/theme/cyberpunk/cyber_prop.gd"
 ## Cyberpunk arena dressing: a chunked textured floor (asphalt, concrete, hazard paint, drains) lit by painted
-## floodlight pools (FLOODLIGHTS, art X2), blast-barrier perimeter walls with neon
-## light bars, corner floodlight towers throwing fake volumetric beams, and static glow pools
-## under the light bars (painted light, not real lights). Ground 320×320 at y=0; perimeter walls
-## at ±121 (slot contract: arena.dressing).
+## floodlight pools (FLOODLIGHTS, art X2), blast-barrier perimeter walls with neon light bars, and the gladiator
+## venue around them (art X5, the lead's approved Meshy kit, theme arena_kit): grandstands full of a cheering crowd
+## (CrowdSystem) along the long sides, vehicle gates on the short sides, floodlight towers throwing fake volumetric
+## beams at the corners, and static glow pools under the light bars (painted light, not real lights).
+## Ground 320×320 at y=0; perimeter walls at ±121 (slot contract: arena.dressing). Visual only, no collision.
 
 const HALF := 121.0
 const WALL_HEIGHT := 3.0
@@ -16,7 +17,12 @@ const FLOODLIGHTS := [
 	Vector4(0, -62, 60, 0.55), Vector4(0, 62, 60, 0.55), Vector4(-62, 0, 60, 0.55), Vector4(62, 0, 60, 0.55),
 ]
 
+## The generated arena kit (tools/assets/build_arena_kit.sh). Missing scenes fall back to the procedural pieces.
+const KIT := "res://game/theme/arena_kit/generated/%s.tscn"
+const STANDS_ROWS := 5
+
 var ground: ChunkedGround
+var crowd: CrowdSystem
 var _flood_maps := {}
 
 
@@ -32,6 +38,69 @@ func _ready() -> void:
 	for sx in [-1.0, 1.0]:
 		for sz in [-1.0, 1.0]:
 			_build_tower(Vector3(sx * TOWER_INSET, 0.0, sz * TOWER_INSET))
+	_build_venue()
+
+
+## Stands and their crowd along the north and south walls, gates in the middle of the east and west walls.
+func _build_venue() -> void:
+	var stands_scene := _kit("kit_stands")
+	if stands_scene != null:
+		var probe := stands_scene.instantiate() as Node3D
+		var size := _bounds(probe).size
+		probe.free()
+		var modules := int((2.0 * HALF) / size.x)
+		var rows := []
+		for side in [1.0, -1.0]:  # the model's seats face -Z: the south stands as they are, the north ones turned
+			for i in modules:
+				var x := -HALF + size.x * (i + 0.5) + (2.0 * HALF - size.x * modules) / 2.0
+				var z: float = side * (HALF + WALL_THICK / 2.0 + size.z / 2.0 + 0.3)
+				var xform := Transform3D(Basis(Vector3.UP, 0.0 if side > 0.0 else PI), Vector3(x, 0.0, z))
+				var stands := stands_scene.instantiate() as Node3D
+				stands.name = "Stands"
+				stands.transform = xform
+				add_child(stands, true)
+				# Seat rows climb from the front tier (~30% of the height) to the top (~80%), facing the arena.
+				for r in STANDS_ROWS:
+					var f := float(r) / (STANDS_ROWS - 1)
+					var local_z := -size.z / 2.0 + size.z * lerpf(0.16, 0.7, f)
+					var local_y := size.y * lerpf(0.32, 0.8, f)
+					rows.append([xform * Vector3(-size.x / 2.0 + 1.0, local_y, local_z), xform * Vector3(size.x / 2.0 - 1.0, local_y, local_z)])
+		crowd = CrowdSystem.new()
+		add_child(crowd)
+		crowd.seat_rows(rows)
+	var gate_scene := _kit("kit_gate")
+	if gate_scene != null:
+		for side in [1.0, -1.0]:  # gates face -Z: turned to face the center from the east (+X) and west walls
+			var gate := gate_scene.instantiate() as Node3D
+			gate.name = "Gate"
+			var depth := _bounds(gate).size.z
+			gate.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0), Vector3(side * (HALF + WALL_THICK / 2.0 + depth / 2.0), 0.0, 0.0))
+			add_child(gate, true)
+
+
+## FX lab: hide the venue (stands, crowd, gates) to measure what it costs.
+func set_venue_visible(shown: bool) -> void:
+	for child in get_children():
+		if child.name.begins_with("Stands") or child.name.begins_with("Gate") or child == crowd:
+			(child as Node3D).visible = shown
+
+
+func _kit(file: String) -> PackedScene:
+	var path := KIT % file
+	return load(path) as PackedScene if ResourceLoader.exists(path) else null
+
+
+static func _bounds(node: Node3D) -> AABB:
+	var result := AABB()
+	var first := true
+	for child in node.find_children("*", "MeshInstance3D", true, false):
+		var instance := child as MeshInstance3D
+		if instance.mesh == null:
+			continue
+		var box := instance.mesh.get_aabb()
+		result = box if first else result.merge(box)
+		first = false
+	return result
 
 
 ## The floodlight pools baked into a small light map for the ground shader (R = intensity / FLOOD_SCALE over
@@ -148,12 +217,22 @@ func _build_tower(base: Vector3) -> void:
 	var tower := Node3D.new()
 	tower.name = "Tower"
 	add_child(tower)
-	CyberMaterials.box(tower, Vector3(1.2, height, 1.2), base + Vector3(0, height / 2.0, 0), steel)
-	CyberMaterials.box(tower, Vector3(4.0, 0.8, 1.6), base + Vector3(0, height, 0), steel)
-	# Lamp faces: hot white neon.
 	var toward_center := -base.normalized()
-	var lamp_pos := base + Vector3(0, height - 0.3, 0) + toward_center * 0.9
-	CyberMaterials.box(tower, Vector3(3.2, 0.4, 0.3), lamp_pos, CyberMaterials.neon(Color(0.85, 0.95, 1.0), 6.0, 0.02), false)
+	var kit_tower := _kit("kit_floodlight_tower")
+	var lamp_pos: Vector3
+	if kit_tower != null:
+		# The generated tower (lamp bank on top, facing -Z) turned toward the center.
+		var model := kit_tower.instantiate() as Node3D
+		height = _bounds(model).size.y
+		model.transform = Transform3D(Basis(Vector3.UP, atan2(-toward_center.x, -toward_center.z)), base)
+		add_child(model)
+		lamp_pos = base + Vector3(0, height * 0.9, 0) + toward_center * 1.5
+	else:
+		CyberMaterials.box(tower, Vector3(1.2, height, 1.2), base + Vector3(0, height / 2.0, 0), steel)
+		CyberMaterials.box(tower, Vector3(4.0, 0.8, 1.6), base + Vector3(0, height, 0), steel)
+		# Lamp faces: hot white neon.
+		lamp_pos = base + Vector3(0, height - 0.3, 0) + toward_center * 0.9
+		CyberMaterials.box(tower, Vector3(3.2, 0.4, 0.3), lamp_pos, CyberMaterials.neon(Color(0.85, 0.95, 1.0), 6.0, 0.02), false)
 	# Beam: an open cone from the lamp angled down toward the arena.
 	var target := base * 0.78
 	var beam_length := lamp_pos.distance_to(target)

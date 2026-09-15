@@ -42,6 +42,8 @@ const AXES := {
 ##   keep []         material-name globs the palette must not absorb
 ##   repeat (1,1,1)  tile the selection N×M×K times along x/y/z before fitting (a wall from barrier segments)
 ##   emission_maps {} material-name glob → Texture2D: an emission map delivered beside the GLB (Meshy PBR)
+##   texture_caps {}  texture property → max edge, below the slot's cap (e.g. normal and ORM at 512 on a unit: they barely
+##                   show at RTS distance and are half its web download)
 ##   strip_textures (false) export materials without their textures: the part borrows another slot's (--textures-from)
 ##   place {}        turret/weapon of a generated unit: keep the placement the generator gave it relative to the hull.
 ##                   {hull_scale, hull_offset (the hull's fit), pivot (turret node, hull space), turret_scale,
@@ -83,10 +85,12 @@ static func normalize(source: Node, slot: String, options: Dictionary = {}) -> D
 		groups = _palette(groups, options.get("keep", []) + options.get("emissive", {}).keys(), notes)
 	var budget := int(options.get("tris", 0)) if int(options.get("tris", 0)) > 0 else int(contract["tris"])
 	var mesh := _merge_surfaces_by_material(_build_mesh(groups, budget, notes))
+	if String(contract["fit"]) == "stretch" and float(options.get("scale", 0.0)) <= 0.0:
+		_restretch(mesh, contract["guide"], notes)  # decimation can shave a prop's top (beacons, spikes): refit the box
 	if attach.is_empty() and place.is_empty():
 		_reanchor(mesh, contract)  # attached and placed parts keep their generated placement instead
 	_prepare_materials(mesh, int(contract["textures"]), options.get("emissive", {}), notes, options.get("emission_maps", {}),
-			float(options.get("emission_energy", 0.0)))
+			float(options.get("emission_energy", 0.0)), options.get("texture_caps", {}))
 	if options.get("strip_textures", false):
 		_strip_textures(mesh, notes)
 
@@ -509,6 +513,31 @@ static func _compact(arrays: Array) -> Array:
 
 ## Decimation can remove the outermost vertices, so re-apply the slot's anchor to the final geometry
 ## (a translation only; the fitted scale stays).
+static func _restretch(mesh: ArrayMesh, guide: Vector3, notes: PackedStringArray) -> void:
+	var holder := MeshInstance3D.new()
+	holder.mesh = mesh
+	var bounds: AABB = AssetInspector.inspect(holder)["aabb"]
+	holder.free()
+	var safe := Vector3(maxf(bounds.size.x, 1e-6), maxf(bounds.size.y, 1e-6), maxf(bounds.size.z, 1e-6))
+	var factor := guide / safe
+	if (factor - Vector3.ONE).abs().length() < 0.005:
+		return
+	notes.append("refit to the collision box after decimation (×%.3f, ×%.3f, ×%.3f)" % [factor.x, factor.y, factor.z])
+	var surfaces := []
+	for surface in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(surface)
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		for i in vertices.size():
+			vertices[i] = bounds.position * factor + (vertices[i] - bounds.position) * factor
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		surfaces.append([arrays, mesh.surface_get_material(surface), mesh.surface_get_name(surface)])
+	mesh.clear_surfaces()
+	for entry in surfaces:
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, entry[0])
+		mesh.surface_set_material(mesh.get_surface_count() - 1, entry[1])
+		mesh.surface_set_name(mesh.get_surface_count() - 1, entry[2])
+
+
 static func _reanchor(mesh: ArrayMesh, contract: Dictionary) -> void:
 	var holder := MeshInstance3D.new()
 	holder.mesh = mesh
@@ -548,7 +577,7 @@ static func _commit(mesh: ArrayMesh, importer: ImporterMesh, surface: int, array
 
 ## Copies each material, caps its textures, strips unsupported features, applies emissive rules.
 static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dictionary, notes: PackedStringArray,
-		emission_maps: Dictionary = {}, emission_energy := 0.0) -> void:
+		emission_maps: Dictionary = {}, emission_energy := 0.0, texture_caps: Dictionary = {}) -> void:
 	var resized := {}
 	for surface in mesh.get_surface_count():
 		var source := mesh.surface_get_material(surface)
@@ -571,9 +600,10 @@ static func _prepare_materials(mesh: ArrayMesh, max_texture: int, emissive: Dict
 					notes.append("material '%s' uses the supplied emission map" % base.resource_name)
 			for property in AssetInspector.TEXTURE_PROPERTIES:
 				var texture := base.get(property) as Texture2D
-				if texture != null and maxi(texture.get_width(), texture.get_height()) > max_texture:
+				var cap := mini(max_texture, int(texture_caps.get(property, max_texture)))
+				if texture != null and maxi(texture.get_width(), texture.get_height()) > cap:
 					if not resized.has(texture):
-						resized[texture] = _shrink(texture, max_texture)
+						resized[texture] = _shrink(texture, cap)
 						notes.append("texture %s %d×%d → %d×%d" % [property, texture.get_width(), texture.get_height(),
 								resized[texture].get_width(), resized[texture].get_height()])
 					base.set(property, resized[texture])
