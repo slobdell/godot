@@ -152,6 +152,10 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
   read, **tank shells taking ≥ 0.7 s over 30–50 m** (a 14 m/s² hull moves ~2 m off the lead in 0.5 s, under half a hull).
 
 **Known issues:**
+- After merging main 8dbe23e (the icon-flake fix), `make check` fails 1 test that isn't ai's:
+  `test_command_icons::test_unit_icons_skip_positions_a_camera_could_not_project` ("a collinear triangle is not drawn"),
+  2 of 2 runs on builder0. Its files are byte-identical to main's; reported to the orchestrator. The last ai-only commit
+  before that merge (df82296) passed the full check.
 - Heavy tanks can't dodge tank shells (physics); they take them on the front armor.
 - The dodge bar (≥ 35% of tank shells for a light unit) is pending: IFVs reach 6–15%.
 - With combat's weapons single matches swing; 16-match ladders are noisy: on 12 more combined_arms matches (seeds 1–6,
