@@ -1,0 +1,8 @@
+{
+ "catalog": "",
+ "B_ac5_laser22": "autocannon.penetration=5,laser.damage=22,laser.heat_per_shot=18",
+ "C_long_laser": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100",
+ "E_C_tank250": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100,tank.cost=250",
+ "F_C_tank_spread_shield": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100,cannon.spread_deg=1.2,tank.max_shield=100",
+ "G_C_tough_ifv": "autocannon.penetration=5,laser.damage=26,laser.penetration=20,laser.heat_per_shot=18,laser.range=100,laser.preferred_min=85,laser.preferred_max=96,lancer.sight_radius=100,ifv.max_shield=140,ifv.armor.front=6"
+}

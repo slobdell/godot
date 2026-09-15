@@ -48,7 +48,8 @@ func _burn(target_z: float, target_yaw: float, seconds: float, blocker := false)
 
 func test_flamethrower_burns_at_close_range() -> void:
 	var target: Tank = await _burn(10.0, PI / 2.0, 1.0)  # 10 m ahead, side-on
-	var dps := float(Weapons.profile("flamethrower")["damage_per_second"])
+	var flames := Weapons.profile("flamethrower")
+	var dps := float(flames["damage_per_second"]) * Match.armor_multiplier(flames, "tank", "side")
 	assert_near(target.health, target.max_health - dps, 3, "one second in the cone deals ~%d to side armor" % dps)
 
 

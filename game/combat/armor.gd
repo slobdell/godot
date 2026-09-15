@@ -12,6 +12,12 @@ const SHIELD_FACING := {"front": 0.7, "side": 1.0, "rear": 1.4}
 const FACING_NAMES := {Facing.FRONT: "front", Facing.SIDE: "side", Facing.REAR: "rear"}
 ## A hit within this many degrees of dead-ahead counts as front (or dead-behind as rear).
 const ARC_DEG := 45.0
+## X3 (round 3) weak spots: a round arriving within this many degrees of dead astern strikes the engine deck. The deck
+## is armored like WEAK_SPOT_ARMOR_FRACTION of the rear, so light guns get through there (a scout's stream on a tank's
+## engine: 0.63 -> 1.13 of each round) while heavy rounds, already at the penetration cap from behind, don't turn into
+## one-shot kills. The hit is flagged `weak_spot` in Match.projectile_impact for effects and the announcer.
+const WEAK_SPOT_ARC_DEG := 25.0
+const WEAK_SPOT_ARMOR_FRACTION := 0.5
 
 
 ## Which armor face a shell travelling along `shell_direction` strikes on a hull
@@ -27,6 +33,13 @@ static func facing(hull_forward: Vector3, shell_direction: Vector3) -> Facing:
 	if alignment <= -arc:
 		return Facing.REAR
 	return Facing.SIDE
+
+
+## X3: whether a round travelling along `shell_direction` strikes the engine deck of a hull facing `hull_forward`.
+static func is_weak_spot(hull_forward: Vector3, shell_direction: Vector3) -> bool:
+	var forward := Vector3(hull_forward.x, 0.0, hull_forward.z).normalized()
+	var travel := Vector3(shell_direction.x, 0.0, shell_direction.z).normalized()
+	return forward.dot(travel) >= cos(deg_to_rad(WEAK_SPOT_ARC_DEG))
 
 
 static func damage(base_damage: float, hull_forward: Vector3, shell_direction: Vector3) -> int:
