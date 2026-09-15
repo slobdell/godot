@@ -86,10 +86,15 @@ func test_chip_summary_tracks_units_health_and_orders() -> void:
 	map.order_drag(Vector3(-20, 0, 40), Vector3(-20, 0, 40))
 	assert_eq(chip.summary()["state"], "Moving", "after an order the chip says Moving")
 	var victim := game_match.tanks.get_node("Green_Alpha_2") as Tank
+	var squad_max := 0.0
+	for member in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
+		squad_max += (game_match.tanks.get_node(member) as Tank).max_health
 	victim.apply_damage(victim.health)
 	info = chip.summary()
 	assert_eq(info["alive"], [true, false, true], "a lost vehicle shows as lost")
-	assert_near(float(info["health"]), 2.0 / 3.0, 0.01, "squad health counts the loss (%.2f)" % info["health"])
+	# Health is weighted by each unit's max health (squads mix unit types).
+	assert_near(float(info["health"]), 1.0 - victim.max_health / squad_max, 0.01,
+			"squad health counts the loss (%.2f)" % info["health"])
 	for member in ["Green_Alpha_1", "Green_Alpha_3"]:
 		var tank := game_match.tanks.get_node(member) as Tank
 		tank.apply_damage(tank.health)

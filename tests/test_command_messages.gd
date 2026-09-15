@@ -38,22 +38,25 @@ func test_losses_merge_per_squad_and_name_the_unit_type() -> void:
 	var setup: Array = await _setup()
 	var game_match: Match = setup[0]
 	var messages: HudMessages = setup[1]
-	_kill(game_match, "Green_Alpha_2")
+	# Squads mix unit types (catalog v2), so expected names come from the vehicles killed.
+	var second := HudMessages.unit_name(_kill(game_match, "Green_Alpha_2"))
 	messages.advance(0.5)
-	_kill(game_match, "Green_Alpha_3")
+	var third := HudMessages.unit_name(_kill(game_match, "Green_Alpha_3"))
 	assert_eq(_posts.size(), 0, "losses wait a moment to be merged")
 	messages.advance(HudMessages.LOSS_MERGE_SECONDS)
-	assert_eq(_texts(), ["Alpha lost 2 vehicles (Tank, Tank), 1 left"], "two quick losses are one message")
+	assert_eq(_texts(), ["Alpha lost 2 vehicles (%s, %s), 1 left" % [second, third]], "two quick losses are one message")
 	assert_eq(_posts[0][1], Hud.WARNING, "a loss is a warning")
 	_kill(game_match, "Green_Alpha_1")
 	messages.advance(HudMessages.LOSS_MERGE_SECONDS)
 	assert_eq(_texts().back(), "Alpha destroyed", "the last vehicle: the squad is destroyed")
 	assert_eq(_posts.back()[1], Hud.ERROR, "and that is an error-level message")
 	var single := _texts().size()
-	_kill(game_match, "Green_Bravo_1")
+	var bravo := HudMessages.unit_name(_kill(game_match, "Green_Bravo_1"))
 	messages.advance(HudMessages.LOSS_MERGE_SECONDS)
 	assert_eq(_texts().size(), single + 1, "one loss, one message")
-	assert_eq(_texts().back(), "Bravo lost a Tank, 1 left", "naming the unit type and what's left")
+	assert_eq(_texts().back(), "Bravo lost %s, 1 left" % HudMessages.with_article(bravo), "naming the unit type and what's left")
+	assert_eq([HudMessages.with_article("Tank"), HudMessages.with_article("IFV"), HudMessages.with_article("Artillery")],
+			["a Tank", "an IFV", "an Artillery"], "the article fits the unit name")
 
 
 func test_friendly_fire_is_called_out() -> void:

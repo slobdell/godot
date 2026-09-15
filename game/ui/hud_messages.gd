@@ -123,7 +123,7 @@ func _flush(key: String) -> void:
 			_destroyed_squads[key] = true
 			post("%s destroyed" % key, Hud.ERROR)
 		return
-	var lost := "a %s" % units[0] if units.size() == 1 else "%d vehicles (%s)" % [units.size(), ", ".join(units)]
+	var lost := with_article(units[0]) if units.size() == 1 else "%d vehicles (%s)" % [units.size(), ", ".join(units)]
 	post("%s lost %s, %d left" % [key, lost, alive] if alive >= 0 else "%s lost %s" % [key, lost], Hud.WARNING)
 
 
@@ -148,5 +148,10 @@ func _squad(squad_name: String) -> Squad:
 
 
 ## "Tank", "Scout", ...: the catalog's display name for a vehicle.
+## "a Tank", "an IFV", "an Artillery": unit names are proper nouns or initialisms, so the first letter decides.
+static func with_article(name: String) -> String:
+	return ("an %s" if name.substr(0, 1).to_upper() in ["A", "E", "I", "O", "U"] else "a %s") % name
+
+
 static func unit_name(tank: Tank) -> String:
 	return String((Units.PROFILES.get(tank.unit_id, {}) as Dictionary).get("display_name", tank.unit_id.capitalize()))
