@@ -50,6 +50,13 @@ just move that to a different unit type"*).
 | **Artillery** | crane carrier with a mortar battery | indirect arcing fire, minimum range, needs a teammate's sight | slow clumps, units holding still | scouts, anything that closes the distance |
 | **Lancer** (laser) | converted power-utility truck | long hitscan beam, **heat-limited**, strips shields | tanks at range, shielded targets | scouts, IFV rushes |
 
+**Artillery deploys before firing** (proposed 2026-09-15, from the approved crane-carrier concept's outrigger legs):
+a deploy and pack-up time (arms extend, legs lower) during which it can't move or fire, like a siege tank. It makes
+scouts punishing counters and positioning a real decision. Rules owns a `deployed` state and timing; art animates it
+from a slot method (e.g. `set_deployed(ratio 0..1)`) with rigid parts, no skeleton. Today the outriggers are baked
+into the hull mesh in the deployed pose, so art needs them as separate parts (cut from the Meshy mesh, or simple
+hand-built telescoping beams that hide the seams).
+
 The flamethrower becomes a candidate future unit (a close-range "Burner"). Future units are added one at a
 time, each with a clear job and a clear counter.
 
