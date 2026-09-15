@@ -87,6 +87,15 @@ Also verified: `make remote T=skirmish-shots` (the real game, stub path: shell r
 read at desktop and phone aspect) and `make remote T=web-smoke` (boots, tier low, no console errors). Sim baseline
 untouched (feel never changes it).
 
+### CP1 (merged 2026-09-15, `d23eede`)
+- **X5 now runs against control's real K1:** `test_real_k1_orders_are_found_on_the_match_and_drawn` issues through
+  `Orders.issue` (a group move, a shift-queued attack-move, a CPU hold): one marker per group, a waypoint for the queued
+  order, nothing for the CPU; OrderFeedback finds `Match.orders` by itself. `make fx-shots SHOWCASE=orders` issues real
+  commands. **`make remote T=check` green on `0d1f45b` (523 tests).**
+- **Seen in the real game:** `make remote T="control-playtest-shots CONTROL_SIZES=1920x1080"` passes with feel's layer
+  on; frames show the selection pulses on box select, feel's dotted trails and waypoint rings under the queued route,
+  and dust behind moving units. Control's thin 2D waypoint dashes still draw beside feel's trail (request below).
+
 ### Decisions (one line each)
 - Effects are **data families keyed by K2 `fire_model`**, so combat's retuned weapons pick the right look from the event.
 - The burst MultiMesh's **instance basis carries motion** (velocity, drag, gravity, rise): moving smoke, dust, and
@@ -129,8 +138,8 @@ untouched (feel never changes it).
   budget; the 50 vehicles' 886k primitives are the main cost, not effects.
 - Round 2's MG fires 5 rounds/s, so streams look sparse until combat's ~11/s lands. Weak spots in the showcase are
   forced on (round 2 has none).
-- Order markers were checked against a K1 stand-in, not control's real `Orders` (not on this branch yet); control's 2D
-  ack rings will double them until removed.
+- Control's 2D ack rings and waypoint dashes (`RtsControls._draw_acks`, `_draw_waypoints`) still draw beside feel's 3D
+  markers and trails until control removes them.
 - The kill-cam was verified by tests, not seen at a real match end; ArmyLoop's results screen appears a moment later
   (its timer slows too).
 - On networked clients the link stays detached (no `Tank.fired` there): legacy effects only. Netcode is paused.
@@ -143,9 +152,8 @@ untouched (feel never changes it).
 - `make fx-bench FX_CONFIGS=r3_all,r3_tier_low` on the laptop to measure the UHD 620; `make sfx-listen`.
 
 ### Next steps
-- After CP1/CP2 merge: rerun `make fx-shots` and a skirmish with combat's weapons (live K2, weak spots, bursts at real
+- After CP2 merges: rerun `make fx-shots` and a skirmish with combat's weapons (live K2, weak spots, bursts at real
   rates); retune stream density and hit sizes against the real fire rates; delete the stub path once K2 is on `main`.
-- Wire order markers to control's `Orders` in a real skirmish and screenshot them.
 
 ### Merge notes (shared files)
 - `tools/remote.sh`: the Xwayland auth line (reads the running Xwayland's `-auth`, falls back to the newest file).
