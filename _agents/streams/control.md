@@ -88,8 +88,8 @@ field), effects and HUD styling (feel), models (assets).
 ## Status
 
 _Updated 2026-09-15 by the control worker. **Round report: every backlog item is done except X8 (deferred by the
-round's no-new-touch-work constraint). `make remote T=check` is green (470 tests, every smoke) on 72e5b51, the merge of main's
-icon triangulation fixes (8dbe23e, 13685ce); every remote screenshot was re-taken after main's tools/remote.sh fix
+round's no-new-touch-work constraint). `make remote T=check` is green (516 tests, every smoke) on bdc174d, after merging CP2 (combat,
+40aa4aa) and turning the control point on by default; every remote screenshot was re-taken after main's tools/remote.sh fix
 (a39c135), and each was checked to be a distinct frame and looked at.**_
 
 ### Plan (in order) and progress
@@ -185,6 +185,14 @@ the dark floor; the panel's single-unit card is text-heavy.
   other change needed.
 - **ai:** when brains execute K1 orders, add `const EXECUTES_ORDERS := true` to `TankBrain`; `OrderExecutor` then does
   nothing, and control deletes it. Per-unit order fields are listed in `game/control/orders.gd`'s header.
+
+### After CP1 (2026-09-15)
+
+- **Merged into main as CP1** (07e07bf). Then merged main's CP2 (combat: K2 weapon events, K3 locomotion with wheels).
+  All 60 control tests and the headless playtest pass unchanged on the new driving; measured responses are still 1
+  tick. Wheeled units turning to their arrival facing now take a multi-point turn, as combat expects.
+- **Combat X7's request done:** the skirmish control point is on by default (`--no-control` turns it off). Combat
+  measured a 92 s median match (54–113) with it, CPU vs CPU at the skirmish budget.
 
 ### Known issues
 

@@ -70,7 +70,8 @@ mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, que
   pushed unit rejoining; every order's response tick in `build/control-playtest/headless/orders.jsonl`.
 - `make control-playtest-shots` (a display; `make remote T=control-playtest-shots` uses builder0's): the same session
   at 1920×1080 and 1280×720, frames in `build/control-playtest/<size>/`.
-- Launch flags (skirmish): `--touch-map` (round 2's tap grammar), `--control-playtest=DIR`, `--scripted` (the
+- Launch flags (skirmish): the center control point is on by default (`--no-control` turns it off; combat X7 measured
+  a 92 s median match with it), `--touch-map` (round 2's tap grammar), `--control-playtest=DIR`, `--scripted` (the
   desktop script: group 1 attack-moves, group 2 moves with a queued leg).
 
 ## History: v1–v3 (the squad grammar and the mobile tap map)
