@@ -730,7 +730,8 @@ func _draw_arrow(from: Vector3, to: Vector3, color: Color) -> void:
 func _screen(world: Vector3) -> Vector2:
 	if camera.is_position_behind(world):
 		return Vector2(-10000, -10000)  # off screen: perspective views can put points behind the camera
-	return camera.unproject_position(world)
+	var at := camera.unproject_position(world)
+	return at if at.is_finite() else Vector2(-10000, -10000)  # a camera not set up yet (first headless frame) gives NaN
 
 
 # ---- Panels ------------------------------------------------------------------------
