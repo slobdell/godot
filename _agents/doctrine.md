@@ -159,9 +159,30 @@ are only meaningful once combat's **L2 suppression** merges at CP2.
 ## Parity: the same library for both sides (X5)
 
 The CPU commander assigns **tasks** to elements exactly as the player does; everything below that line —
-formation, technique, drills — is this shared library. There is no CPU-only path, and no player-only one. What
-a spectator sees is the point: both sides' elements change shape as the ground and the threat change, and both
-sides run the same reflexes when they are jumped.
+formation, technique, drills — is this shared library. There is no CPU-only path, and no player-only one.
+`ElementCommander` (`game/tactics/element_commander.gd`) is the whole CPU side of it: classify each element
+(line, recon, support), pick an objective, hand out move / attack / screen / support-by-fire, and stop.
+
+**What a spectator sees.** `make tactics-parity` runs a scripted match with a commander on both sides and
+prints every element's shape, technique, drill and reason. From one run (seed 5, combined_arms vs
+anvil_hammer, `build/tactics-parity.log`):
+
+```
+PARITY t=10s score 0:0 alive 5:5
+  GREEN Battery: column, break contact — outgunned here: break contact and bound back | task support by fire
+  GREEN Eyes:    column, break contact — outgunned here: break contact and bound back | task screen
+  GREEN Guns:    line, near ambush — ambushed at 36 m: turn into it and assault through | task attack Rust_Anvil_1
+  RUST  Anvil:   line, react to contact — contact: return fire, take cover, report | task attack Green_Guns_1
+  RUST  Hammer:  line, far ambush — far ambush: pin them by fire, flank with the rest | task support by fire
+PARITY t=40s score 2:4 alive 1:3
+  GREEN Eyes:    column, break contact — outgunned here: break contact and bound back | task screen
+  RUST  Anvil:   herringbone, traveling — halted in cover: herringbone, alternate flanks watched | task move
+```
+
+In one match the two sides between them used the wedge, the column, the line and the herringbone, and ran
+react to contact, near ambush, far ambush, support by fire and break contact — all from the same tables. Every
+line also carries the *reason*, which is what the HUD shows the player: nobody has to know what "echelon" means
+to see that their element is refusing a flank because contact is likely.
 
 ## Faction doctrines (X6)
 
