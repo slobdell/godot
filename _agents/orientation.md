@@ -199,3 +199,7 @@ build/   (gitignored)    exports and screenshots
     file. If captures look identical, check the log for `Invalid MIT-MAGIC-COOKIE` (feel, 2026-09-15).
 66. **One `make remote` per worktree at a time.** Each run rsyncs `--delete` into the same builder0 folder, so a
     screenshot run started during a `check` swaps the files under it (the check then fails on code it never imported).
+67. **GNU make defines `WINDOW = 2` itself.** A Makefile variable defaulted with `$(or $(WINDOW),5)` is silently
+    2, never 5, and a command-line `WINDOW=5` looks like it did nothing. `make -p -f /dev/null | grep '^WINDOW'`
+    lists make's own defaults; take a short knob name from `$(origin VAR)` instead (audio, 2026-09-16: the
+    announcer's repeat-rate audit compared each match only with the one before it and read far too healthy).

@@ -23,6 +23,10 @@ import recording_plan  # noqa: E402
 
 PART_GAP_S = 0.02
 FADE_S = 0.06
+## The rendered mix must be this close to the length the match asked for, or render() raises. A mix that ends with
+## the last clip instead of the match desyncs the demo page's audio from its transcript, and used to happen silently
+## on a loaded builder0 (the orchestrator, 2026-09-16).
+LENGTH_TOLERANCE_S = 0.1
 
 
 def cue_clips(cue: dict, manifest: dict) -> list[str]:
@@ -62,11 +66,16 @@ def schedule(match: dict, manifest: dict) -> list[dict]:
 
 
 def render(placed: list[dict], clips_dir: Path, out: Path, duration_s: float) -> None:
+    """Mixes the scheduled clips into `out`, exactly `duration_s` long. Raises when it isn't."""
     if not placed:
         raise ValueError("nothing to mix")
-    command = ["ffmpeg", "-v", "error", "-y"]
-    filters = []
-    for index, item in enumerate(placed):
+    # Input 0 is generated silence as long as the match. Mixing against it is what makes the output the right
+    # length: `apad` after `amix` plus `-t` did the same job but dropped the padding under load, leaving a mix that
+    # ended with its last clip. Silence we generate ourselves is not load-dependent.
+    command = ["ffmpeg", "-v", "error", "-y",
+               "-f", "lavfi", "-t", "%.3f" % duration_s, "-i", "anullsrc=r=44100:cl=mono"]
+    filters = ["[0:a]aresample=44100[a0]"]
+    for index, item in enumerate(placed, start=1):
         command += ["-i", str(clips_dir / item["file"])]
         chain = "[%d:a]aresample=44100" % index
         if item["max_s"] is not None:
@@ -74,10 +83,9 @@ def render(placed: list[dict], clips_dir: Path, out: Path, duration_s: float) ->
         delay = int(item["t"] * 1000)
         chain += ",adelay=%d|%d[a%d]" % (delay, delay, index)
         filters.append(chain)
-    mix = "".join("[a%d]" % i for i in range(len(placed)))
-    # Pad without end and cut with -t below: `apad=whole_dur` alone left the mix short (it ended with the last clip)
-    # in one loaded builder0 run, which desynced the page's audio from the transcript.
-    filters.append("%samix=inputs=%d:normalize=0:dropout_transition=0,apad[out]" % (mix, len(placed)))
+    inputs = len(placed) + 1
+    mix = "".join("[a%d]" % i for i in range(inputs))
+    filters.append("%samix=inputs=%d:duration=longest:normalize=0:dropout_transition=0[out]" % (mix, inputs))
     script = out.with_suffix(".filter.txt")
     out.parent.mkdir(parents=True, exist_ok=True)
     script.write_text(";\n".join(filters))
@@ -87,6 +95,18 @@ def render(placed: list[dict], clips_dir: Path, out: Path, duration_s: float) ->
         subprocess.run(command, check=True)
     finally:
         script.unlink(missing_ok=True)
+    check_length(out, duration_s)
+
+
+def check_length(out: Path, duration_s: float) -> float:
+    """Fails loudly when a mix came out shorter or longer than the match; returns the measured length."""
+    import voice_client  # here, so importing mixdown never needs the audio tooling
+
+    actual = voice_client.probe_duration(out)
+    if abs(actual - duration_s) > LENGTH_TOLERANCE_S:
+        raise RuntimeError("%s is %.3f s, not the %.3f s the match asked for: the mix would play out of sync with "
+                           "the transcript" % (out, actual, duration_s))
+    return actual
 
 
 def main(argv: list[str]) -> int:
