@@ -162,11 +162,54 @@ func observe(event: Dictionary) -> Array:
 			return _on_control(event, t)
 		"squad_wiped":
 			return [moment("squad_wiped", t, [], {}, event["team"], "%s loses squad %s" % [event["team"], event["squad"]])]
+		"element_formation":
+			return _on_element_formation(event, t)
+		"element_drill":
+			return _on_element_drill(event, t)
 		"momentum":
 			return _on_momentum(event, t)
 		"match_end":
 			return _on_end(event, t)
 	return []
+
+
+## L1 (doctrine): an element changed shape or movement technique. The Veteran explains what the shape is *for*;
+## the element's own `reason` is carried on the moment for the subtitle and the demo page, never spoken (every
+## spoken word has to have been recorded, and reasons change whenever a doctrine table is tuned).
+func _on_element_formation(event: Dictionary, t: float) -> Array:
+	var formation := String(event.get("formation", ""))
+	var technique := String(event.get("technique", ""))
+	var tags: Array = []
+	for pair in [["formation_", formation], ["technique_", technique]]:
+		if pair[1] != "":
+			tags.append(pair[0] + pair[1])
+	for changed in event.get("changed", []):
+		tags.append("changed_" + String(changed))
+	var slots := {}
+	if formation != "":
+		slots["formation"] = formation
+	if technique != "":
+		slots["technique"] = technique
+	var found := moment("formation", t, tags, slots, String(event["team"]),
+			"%s: %s" % [event.get("element", "an element"), event.get("reason", formation)])
+	found["reason"] = String(event.get("reason", ""))
+	return [found]
+
+
+## L1 (doctrine): an element started a battle drill. This is the one the booth most wants — a drill is a decision
+## with a trigger behind it, which is exactly what a color commentator is for.
+func _on_element_drill(event: Dictionary, t: float) -> Array:
+	var drill := String(event.get("drill", ""))
+	var tags: Array = ["drill_" + drill] if drill != "" else []
+	if String(event.get("formation", "")) != "":
+		tags.append("formation_" + String(event["formation"]))
+	var slots := {"drill": drill} if drill != "" else {}
+	if String(event.get("formation", "")) != "":
+		slots["formation"] = event["formation"]
+	var found := moment("drill", t, tags, slots, String(event["team"]),
+			"%s: %s" % [event.get("element", "an element"), event.get("reason", drill)])
+	found["reason"] = String(event.get("reason", ""))
+	return [found]
 
 
 func _on_start(event: Dictionary, t: float) -> Array:

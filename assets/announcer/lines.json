@@ -73,6 +73,31 @@
    "20": "twenty",
    "25": "twenty-five",
    "30": "thirty"
+  },
+  "formation": {
+   "wedge": "a wedge",
+   "column": "a column",
+   "line": "line abreast",
+   "vee": "a vee",
+   "echelon_right": "echelon right",
+   "herringbone": "a herringbone",
+   "coil": "a coil",
+   "swarm": "a swarm"
+  },
+  "technique": {
+   "traveling": "traveling",
+   "traveling_overwatch": "traveling overwatch",
+   "bounding_overwatch": "bounding overwatch"
+  },
+  "drill": {
+   "react_to_contact": "react to contact",
+   "near_ambush": "a near ambush",
+   "assault_through": "assault through",
+   "far_ambush": "a far ambush",
+   "support_by_fire": "support by fire",
+   "break_contact": "break contact",
+   "herringbone": "a herringbone",
+   "bait": "a bait"
   }
  },
  "lines": [
@@ -5721,6 +5746,256 @@
     "after_caller"
    ],
    "text": "Yes, Joseph. For accuracy, the crews are not lost. Their locations are known precisely."
+  },
+  {
+   "id": "color.formation.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "They've gone to {formation}. That tells you what they expect to happen next."
+  },
+  {
+   "id": "color.formation.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation}. Wide frontage, everybody can shoot, nobody's covering anybody."
+  },
+  {
+   "id": "color.formation.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "Watch this: {formation}. Somebody in that crew has done this before."
+  },
+  {
+   "id": "color.formation.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "That's {formation}, and it's the right call for this ground. Probably."
+  },
+  {
+   "id": "color.formation.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation} is what you use when you don't know where they are yet."
+  },
+  {
+   "id": "color.formation.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "They're forming {formation}. Good. Now hold it for more than nine seconds."
+  },
+  {
+   "id": "color.formation.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation}. I've driven that. You can't see anything from the back of it."
+  },
+  {
+   "id": "color.formation.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "Look at the shape. {formation}. Whoever's leading that element is thinking."
+  },
+  {
+   "id": "color.formation.trail.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "The reason you pick {formation} there is the sightlines, and the way the... hm. It's situational."
+  },
+  {
+   "id": "color.formation.flat.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation} keeps the element alive longer. Not the point man. The element."
+  },
+  {
+   "id": "color.technique.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "They're moving by {technique}. Slower, and everybody gets home."
+  },
+  {
+   "id": "color.technique.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{technique}. That's the book answer, and the book is right about this one."
+  },
+  {
+   "id": "color.drill.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "There it is: {drill}. That's trained, not improvised."
+  },
+  {
+   "id": "color.drill.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "{drill}. They practised that until it stopped being a decision."
+  },
+  {
+   "id": "color.drill.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "That's {drill}, and it's about two seconds late."
+  },
+  {
+   "id": "color.drill.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "Watch what they do now. {drill}. Textbook."
+  },
+  {
+   "id": "color.drill.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "{drill}. Every crew says they'll do it. Almost nobody does it under fire."
+  },
+  {
+   "id": "color.drill.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "They're going to {drill}, which is brave, and I want to be clear that brave is not the compliment people think it is."
+  },
+  {
+   "id": "color.drill.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "{drill}. The whole element moves or none of it does."
+  },
+  {
+   "id": "color.drill.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "And that's {drill}. I can tell you exactly how that ends, but I'd rather you watched."
+  },
+  {
+   "id": "caller.formation.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "text": "Look at that formation! Somebody's got a plan!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.formation.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "text": "They are moving as one unit out there!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.formation.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "text": "Oh, they're up to something! Look at the shape of that!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.drill.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "text": "Something just changed out there! They're all moving at once!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.drill.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "text": "Here comes the drill! This is what they train for!",
+   "intensity": 2
+  },
+  {
+   "id": "pa.correct.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Coordinated maneuver of this kind requires a permit outside the arena, which tonight's crews do not hold."
+  },
+  {
+   "id": "pa.correct.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation",
+    "after_caller"
+   ],
+   "text": "Quite so, Joseph. Viewers should note that formation driving on public roads remains an offence."
   }
  ]
 }

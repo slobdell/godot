@@ -33,7 +33,8 @@ SLOT_VOCAB = {"team": "team", "other_team": "team", "team_s": "team_s", "other_t
               "unit": "unit", "killer_unit": "unit", "victim_unit": "unit", "target_unit": "unit", "shooter_unit": "unit",
               "units": "units", "other_units": "units", "arena": "arena",
               "count": "number", "other_count": "number", "streak": "number", "kills": "number",
-              "count_over": "count_over", "other_count_over": "count_over"}
+              "count_over": "count_over", "other_count_over": "count_over",
+              "formation": "formation", "technique": "technique", "drill": "drill"}
 NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
 # The number values a match can produce. Numbers are the most expensive slot there is (eleven values), and at
 # thirty units a side an exact count is wrong as often as it is right: the library's rule is to say "half their

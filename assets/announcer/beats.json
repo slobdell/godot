@@ -1252,6 +1252,102 @@
      ]
     }
    ]
+  },
+  "formation": {
+   "priority": 18,
+   "stale_s": 6.0,
+   "cooldown_s": 22.0,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "the Veteran reads the shape",
+     "weight": 4,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    },
+    {
+     "name": "Joseph notices, the Veteran explains",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.95
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.6
+      }
+     ]
+    }
+   ]
+  },
+  "drill": {
+   "priority": 34,
+   "stale_s": 4.0,
+   "cooldown_s": 14.0,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "the Veteran names the drill",
+     "weight": 4,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    },
+    {
+     "name": "Joseph sees it, the Veteran names it",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.95
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.6
+      }
+     ]
+    }
+   ]
   }
  }
 }
