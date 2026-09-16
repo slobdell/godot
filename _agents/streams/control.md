@@ -73,7 +73,7 @@ Doctrine data and element leaders (doctrine), weapons, suppression and rosters (
 
 ## Status
 
-_Round 4, control stream. Updated 2026-09-15._
+_Round 4, control stream. **All six backlog items and the stretch are done.** Updated 2026-09-16._
 
 ### Plan (backlog in order)
 
@@ -156,10 +156,160 @@ sizes, frames looked at.
 - The radar is now the map: facing ticks on friendly blips, element numbers at each element's middle, the
   selected element ringed, last-known contacts still fading, click to look, right-click to order.
 
+**X3. Tasks, not geometry (L1).** Done, `make remote T=check` green (787 tests after merging CP1+CP2),
+playtest green with all ten checks.
+
+- Skirmish installs `Elements`. **A player element is formed by the first task given to a control group and
+  dissolved by any direct order.** An element with no task still runs its SOP, so pre-forming one per squad had
+  untasked leaders fighting the player for the wheel: it broke K1's response guarantee and ate a shift-queued
+  route before doctrine's per-unit detach could see it. Forming on demand keeps round 3's direct control intact.
+- A whole element selected → right-click, A, H and the command card issue L1 tasks; an ad-hoc handful of units
+  still gets direct K1 orders. Attack-move maps to a `move` task (an element on the move already runs
+  react-to-contact). **E** screens a flank, **R** sets a base of fire; both greyed out without an element.
+- The command card reads back `element.describe()` under the header ("Alpha: wedge, traveling"), and is now 4×2.
+- **G** still overrides the formation, and an override drops that order back to explicit geometry.
+- **K1 gains an optional `source`** (`"player" | "element" | ""`, default `""`, additive). Control tags its own
+  orders; the playtest was otherwise timing doctrine's formation-slot orders against the player-response
+  guarantee. Relayed to the orchestrator for `workstreams.md`.
+- `--no-elements` keeps squads hand-driven; `--element-cpu` runs the CPU on `ElementCommander` (off by default).
+
+**X4. Command at 30+ units a side.** Done, `make remote T=check` green (792 tests), measured, and looked at
+at 28 vs 29.
+
+- The selection panel groups portraits by **type** above ten units, each with a count, plus one strength number
+  in the header ("28 UNITS  IDLE  99%" over ×15 Tanks, ×7 IFVs, ×6 Lancers). Clicking a grouped portrait selects
+  that type; below ten units every unit still gets its own.
+- **ctrl+A** selects the whole army; **F2** goes to the next element with nothing to do.
+- **Measured at 30 a side** (60 units on the field, 30 selected), headless on this laptop:
+  box-select the army **1.38 ms**, right-click → 30 orders **1.87 ms** (all on the click's own frame),
+  `order_selection` **1.65 ms**, and control's per-frame work **1.685 ms** (vision_state 0.355, awareness 0.595,
+  panel summary 0.511, edge markers 0.017, horizon_zoom 1.244 amortised over 6 frames).
+  `tests/test_control_scale.gd` holds these to a 2 ms frame budget and an 8 ms order budget.
+- Two hot spots were found and fixed: the panel's sort comparator did a node lookup per comparison (1.53 → 0.51
+  ms) and `ElementAwareness` scanned the tank list once per member (1.07 → 0.60 ms).
+- `make control-scale-shots` runs the session with ~30 a side. Deliberately not pass/fail: with a faction-sized
+  army nobody is commanding, the player's force loses and steps needing a live group 1 report false.
+
+**X5. Faction pick in skirmish (L3).** Done, playtested headless (44 gangs vs 17 syndicate), menu looked at.
+
+- `--player-faction=` / `--enemy-faction=` turn a side into a faction army. Either raises the default budget to
+  `Units.BASELINE_BUDGET`, so **size falls out of the roster**: Road Gangs **44**, Condemned **27**, Law **24**,
+  Syndicate **17** - the lead's ordering, asserted in the test. `--budget` still wins. (The match runner spells
+  these `--green-faction` / `--rust-faction`; here they follow `--player` / `--enemy`.)
+- `FactionPicker` (`game/ui/faction_picker.gd`): shows what each faction actually fields at the match budget -
+  count, points per vehicle, composition. 1-4 yours, shift+1-4 theirs, click / right-click, Enter fights.
+  Picking restarts the skirmish with the flags, so the armies come from the same code path as the command line.
+- The menu opens on an interactive run that named no faction, and **never** in a headless, scripted, playtest,
+  touch-map or smoke run. `--pick-faction` forces it, `--no-pick-faction` suppresses it.
+- `make skirmish-factions FACTION=gangs ENEMY_FACTION=syndicate`, `make faction-menu-shot`.
+
+**X6. Readability at close zoom.** Done, looked at at 1920×1080 and 1280×720 and at 25 vs 27.
+
+- A thin **hull bar** over our vehicles that are hurt or selected, and nothing else (a bar over every healthy
+  vehicle at 30 a side is noise). Above the hull, sized from the hull's own width on screen (14-62 px), fading
+  towards the enemy colour as it gets serious, with a shield sliver. Measured 62 px close, 16 px far;
+  **0.131 ms** a frame for 30 bars. This is where "which of mine is nearly dead" lives now that X4 grouped the
+  panel's portraits.
+- The doctrine line ran off the bottom of the panel at 1280×720; the panel now reserves a footer strip for it.
+
+### Stretch. Done.
+
+- **A cinematic camera** (`game/camera/cinematic_camera.gd`, `--cinematic`): it works in **shots**, not drift - a
+  camera that chases the best point every frame is a nervous mess. Each shot frames one cluster and is held for
+  6 s; something clearly better interrupts after 2.5 s; a long move is a **cut**, not a glide over dead ground.
+  Scenes score both sides in one place highest, then vehicles just hit, then how many are in frame. It replaces
+  the vision framing and ignores the L4 cap: nobody is earning this view. `make cinematic`, `make cinematic-shots`.
+- **Smart-cast for a mixed selection** already shipped in round 3 (`RtsControls.smart_attack`); X3 keeps it for
+  ad-hoc selections, while a whole element gets an attack task and its leader works out who shoots.
+
+### Decisions (with reasons)
+
+- **`max_zoom_in` is a zoom-out cap** (`RtsCamera.vision_zoom`): `zoom` runs 0 = close to 1 = high here, and the
+  rule the lead asked for is a limit on going *out*. Zooming in past the auto frame stays free - it costs
+  awareness, which is the player's call.
+- **The cap measures seen ground, not a bounding box.** Bounding-boxing the sight discs said a five-unit force
+  could see a 250 m box and earned zoom 0.94, which is no cap at all. `seen_fraction` samples the screen onto the
+  ground and asks the region; the cap is the furthest zoom keeping 70% of the screen over seen ground.
+- **Elements are formed by the first task and dissolved by any direct order.** `Element.update` commands its
+  members even with no task, so pre-forming one per squad had untasked leaders fighting the player for the wheel.
+- **Attack-move maps to a `move` task** for an element: an element on the move already runs react-to-contact.
+- **Faction flags follow `--player` / `--enemy`**, not the match runner's `--green` / `--rust`, so one skirmish
+  command reads consistently. The menu never opens in a headless, scripted, playtest or smoke run.
+
 ### Questions for the lead
 
-- None yet.
+1. **How close is right?** The default frame is ~95 m of ground with the camera 35 m up. That is the Twisted
+   Metal end of the spectrum you asked for, and you cannot scroll out past your force's horizon. If it is still
+   too far or now too close, `VISION_FRAME_INSET` and `VISION_SEEN_FRACTION` in `game/camera/rts_camera.gd` are
+   the two dials, and `--no-vision-camera` gives you round 3's free camera to compare against.
+2. **Is one alert prompt enough,** or do you want the last three on screen? It started as three lines and landed
+   on the HUD's message column, so it is one line plus a count now.
+3. **The faction menu opens on `make skirmish`** when you name no faction. If that gets in the way,
+   `--no-pick-faction` skips it and I will make that the default.
 
 ### Requests to other streams
 
-- None yet.
+- **art / theme (no stream this round) - blocks the scale goal.** At ~30 a side the renderer runs out of
+  per-instance shader uniform slots: *"Too many instances using shader instance variables … Maximum items
+  supported by this hardware is: 4096"*, 339 errors in one `make control-scale-shots` run. Raising `buffer_size`
+  cannot help - 4096 is the hardware maximum - so the vehicle materials need fewer per-instance uniforms
+  (`game/theme/cyberpunk/{unit_skin,weapon_cannon,dozer_part}.gd`,
+  `game/theme/fx/shaders/{unit_body,vehicle_glow,shield}.gdshader`). Reported; the orchestrator has it in HANDOFF
+  and combat hit it independently.
+- **doctrine:** `Element.update` commands its members even when `task == {}`. Control forms elements lazily to
+  work around it; anyone else adopting L1 will hit the same edge. (Relayed - now noted in workstreams.md.)
+- **doctrine (their request (a)):** an optional `facing` in `UnitCommand`, to remove the halt-formation hack where
+  each vehicle drives a few metres along its sector to end up pointing the right way. It is control's file and it
+  is **not done** - a clean next-round item.
+- **ai:** the CPU still runs its squad AI in skirmish; `--element-cpu` wires `ElementCommander` in for
+  experiments. Which commander the CPU runs is ai's call.
+
+### Known issues
+
+- None outstanding. The last check is **fully green: 843 passed, 0 failed, exit 0**, on main as of `06875d5`
+  (ai's avoidance fix and the new sim baseline `d4bd86eee0f96c54`), including `sim-baseline`, `determinism` and
+  every smoke test. Earlier checks on this branch reported `test_ai_scenarios::test_a_unit_ordered_across_a_
+  swept_lane_keeps_out_of_the_fire`; that was ai's, and their fix is merged.
+- The faction menu is the only new screen and it has no gamepad or touch path. Desktop first (pillar 5).
+- `separated_unit_rejoins` in the playtest reports "skipped" when every survivor is in contact or the pushed unit
+  is destroyed on the way home. The playtest uses wall-clock timers, so which units survive varies run to run.
+
+### What to playtest (exact commands)
+
+```bash
+make skirmish                       # the faction menu, then the vision camera, elements and tasks
+make skirmish-factions FACTION=gangs ENEMY_FACTION=syndicate   # 44 vs 17
+make cinematic                      # watch a CPU-vs-CPU match direct itself
+make remote T=control-playtest-shots   # frames at 1920x1080 and 1280x720
+make remote T=control-scale-shots      # ~30 a side
+make remote T=cinematic-shots          # trailer frames
+```
+
+In a match: **1-5** picks an element and the camera goes to it; **right-click** gives it a task and the command
+card tells you what its leader chose; **E** screens a flank, **R** sets a base of fire; **Q** jumps to whoever is
+in trouble; **ctrl+A** takes everything; **F2** finds whoever is idle; **Tab** shows your force's horizon; **G**
+overrides the formation if you disagree with the leader.
+
+### Next steps
+
+1. `facing` in `UnitCommand` (doctrine's request (a)).
+2. The renderer's per-instance uniform limit, once `game/theme/**` has an owner - it is what stops 30 a side from
+   *looking* right.
+3. Touch: the whole round-4 grammar is desktop-only. `--touch-map` still runs round 2's tap grammar unchanged.
+4. The lead's answers to the three questions above are dials, not rewrites.
+
+### Merge notes (shared files)
+
+- `game/modes/skirmish_mode.gd` (control's): new flags `--player-faction`, `--enemy-faction`, `--pick-faction`,
+  `--no-pick-faction`, `--no-vision-camera`, `--no-elements`, `--element-cpu`, `--cinematic`; installs `Elements`
+  and wires the vision camera.
+- `mk/command.mk` (control's): `CONTROL_FLAGS`, `control-scale-shots`, `cinematic`, `cinematic-shots`,
+  `faction-menu-shot`, `skirmish-factions`; the windowed playtest's timeout is 420 s.
+- **K1 additive change:** `UnitCommand` and each stored order gain an optional `"source"`
+  (`"player" | "element" | ""`, default `""`). Doctrine's `Element._issue` needs no change. Documented in
+  workstreams.md by the orchestrator.
+- No shared-file edits outside my paths: `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` and
+  `game/theme/**` are untouched.
+- The **sim baseline is untouched** (control must not change it): nothing here runs in `--match`. Verified, not
+  assumed - the final check reached `sim-baseline passed: d4bd86eee0f96c54 (glibc-2.43)`. (An earlier draft of
+  this report claimed that from a check that had stopped at a failing test before reaching the step.)

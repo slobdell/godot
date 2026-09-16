@@ -5,11 +5,18 @@ extends GameMode
 ##   --player=DOCTRINE (default player_default; must fit --budget, default Units.DEFAULT_BUDGET)
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
 ##   --seed=N (the CPU army's seed; default: the clock)   --no-control (no control point at the center; on by default)
+##   --player-faction=NAME / --enemy-faction=NAME (L3: condemned | gangs | law | syndicate). Either one turns that
+##     side into a faction army whose SIZE falls out of the faction's costs, and raises the default budget to
+##     Units.BASELINE_BUDGET (~30 a side). The match runner spells these --green-faction / --rust-faction; here
+##     they follow --player / --enemy so one skirmish command reads consistently.
+##   --pick-faction / --no-pick-faction  show (or skip) the faction menu before the match. It shows by default on
+##     an interactive run that named no faction, and never in scripted, playtest or smoke runs.
 ##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
 ##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
 ##   --no-elements  the player's squads stay hand-driven (no L1 leaders picking formations and drills)
 ##   --element-cpu  the CPU army is run by doctrine's ElementCommander instead of its squad AI (experimental)
+##   --cinematic  the camera directs itself: it finds the fighting, holds a shot, and cuts (spectating, trailers)
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
@@ -31,21 +38,86 @@ func role_name() -> String:
 	return "SKIRMISH"
 
 
+## X5: what each side fields. A faction flag turns that side into a faction army; the budget follows, unless
+## --budget says otherwise. Pure, so the sizes are testable without starting a match.
+static func lineup_plan(player: String, enemy: String, player_faction: String, enemy_faction: String,
+		explicit_budget: int) -> Dictionary:
+	var any_faction := player_faction != "" or enemy_faction != ""
+	var budget := explicit_budget if explicit_budget > 0 else (Units.BASELINE_BUDGET if any_faction else Units.DEFAULT_BUDGET)
+	return {"budget": budget,
+			Match.Team.GREEN: {"lineup": "cpu" if player_faction != "" and player == "player_default" else player,
+					"faction": player_faction},
+			Match.Team.RUST: {"lineup": enemy, "faction": enemy_faction}}
+
+
+## Whether the faction menu should open: an interactive run that named no faction. Never in a scripted, playtest,
+## smoke or browser-driven run, which must keep starting the same match they always did.
+static func wants_faction_menu(flags: LaunchFlags) -> bool:
+	if flags.has("no-pick-faction") or flags.has("scripted") or flags.has("control-playtest") \
+			or flags.has("command-playtest") or flags.has("touch-map"):
+		return false
+	if flags.has("pick-faction"):
+		return true
+	return flags.text("player-faction") == "" and flags.text("enemy-faction") == "" \
+			and DisplayServer.get_name() != "headless"
+
+
 func start() -> void:
+	if SkirmishMode.wants_faction_menu(flags):
+		_pick_faction()
+		return
+	_start_match()
+
+
+## X5: the faction menu. Picking restarts the skirmish with the flags, so the armies come out of exactly the same
+## code path as --player-faction on the command line.
+func _pick_faction() -> void:
+	var picker := FactionPicker.new()
+	picker.name = "FactionPicker"
+	picker.budget = flags.integer("budget", Units.BASELINE_BUDGET)
+	picker.player_faction = flags.text("player-faction", Units.DEFAULT_FACTION)
+	picker.enemy_faction = flags.text("enemy-faction", Units.DEFAULT_FACTION)
+	main.hud.add_child(picker)
+	main.hud.set_status("Pick a faction: 1-4 yours, shift+1-4 theirs, Enter fights")
+	picker.chosen.connect(func(player_faction: String, enemy_faction: String) -> void:
+		Main.next_flags = SkirmishMode.faction_flags(flags, player_faction, enemy_faction)
+		main.get_tree().paused = false
+		main.get_tree().reload_current_scene())
+
+
+## X5: the flags the skirmish restarts with after the menu - everything it was launched with, plus the two
+## factions, minus the menu itself (or it would open again). Pure, so the restart is testable.
+static func faction_flags(current: LaunchFlags, player_faction: String, enemy_faction: String) -> LaunchFlags:
+	var next := LaunchFlags.new()
+	next.values = current.values.duplicate()
+	next.values.erase("pick-faction")
+	next.values["no-pick-faction"] = ""
+	next.values["player-faction"] = player_faction
+	next.values["enemy-faction"] = enemy_faction
+	return next
+
+
+func _start_match() -> void:
 	var game_match := main.game_match
 	game_match.has_local_player = false
-	var lineups := {Match.Team.GREEN: flags.text("player", "player_default"), Match.Team.RUST: flags.text("enemy", "cpu")}
 	# Directive set 2: armies are bought with a budget. The CPU army is seeded (--seed, else the clock,
-	# printed so a surprising match can be replayed).
-	var budget := flags.integer("budget", Units.DEFAULT_BUDGET)
+	# printed so a surprising match can be replayed). X5: a faction flag decides the side's roster and, with it,
+	# how many vehicles the budget buys.
+	var plan := SkirmishMode.lineup_plan(flags.text("player", "player_default"), flags.text("enemy", "cpu"),
+			flags.text("player-faction"), flags.text("enemy-faction"), flags.integer("budget", 0))
+	var lineups := {Match.Team.GREEN: String(plan[Match.Team.GREEN]["lineup"]),
+			Match.Team.RUST: String(plan[Match.Team.RUST]["lineup"])}
+	var budget := int(plan["budget"])
 	var seed_value := flags.integer("seed", int(Time.get_unix_time_from_system()) % 100000)
 	for team in lineups:
-		var loaded := Army.load_army(lineups[team], seed_value, budget)
+		var faction := String(plan[team]["faction"])
+		var loaded := Army.load_army(lineups[team], seed_value, budget, faction)
 		var error: String = loaded.get("error", "")
-		if error == "" and team == Match.Team.GREEN:
+		if error == "" and team == Match.Team.GREEN and faction == "":
 			error = Army.check_budget(loaded["doctrine"], budget)
 		if error == "":
-			print("SKIRMISH_ARMY %s %s: %s" % [Match.TEAM_NAMES[team], lineups[team], Army.describe(loaded["doctrine"])])
+			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
+					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
 			error = game_match.load_doctrine(team, loaded["doctrine"])
 		if error != "":
 			push_error(error)
@@ -188,9 +260,25 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	edge.controls = controls
 	controls.add_child(edge)
 	controls.markers = edge
-	# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
-	# can collectively see (the lead: "a bird's eye view is just an unearned god view"). --no-vision-camera opts out.
-	if not flags.has("no-vision-camera"):
+	if flags.has("cinematic"):
+		# Stretch: a camera that watches the fight on its own. It replaces the vision framing rather than fighting
+		# it, because nobody is earning this view - it is the spectator's. Everything else (orders, the HUD, the
+		# planning pause) still works, so you can take the wheel back at any point by moving the camera.
+		var director := CinematicCamera.new()
+		director.name = "CinematicCamera"
+		director.rig = rig
+		director.game_match = game_match
+		main.add_child(director)
+		director.start()
+		# A spectator sees both sides. Without this the camera cuts to the best scene on the field and films an
+		# empty floor, because the fog of war has hidden every vehicle in it.
+		controls.reveal_all = true
+		var fog := main.get_node_or_null("FogOfWar")
+		if fog != null:
+			(fog as Node3D).visible = false
+	elif not flags.has("no-vision-camera"):
+		# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
+		# can collectively see (the lead: "a bird's eye view is just an unearned god view").
 		rig.vision = controls.vision_state
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
@@ -204,6 +292,9 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		playtest.run()
 	elif flags.has("scripted"):
 		_play_desktop_script(controls)
+	elif flags.has("cinematic"):
+		# No planning pause for a spectator: the match has to be running for there to be anything to film.
+		controls.recall_group(1)
 	else:
 		controls.recall_group(1)
 		controls.set_paused(true, "PLANNING: select (click, drag, 1-5) and right-click to order; Space starts")

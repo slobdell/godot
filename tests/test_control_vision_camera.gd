@@ -58,6 +58,14 @@ func test_clamping_pulls_a_point_back_to_the_nearest_thing_the_team_can_see() ->
 	assert_near(pulled.z, 0.0, 0.01, "along the line to it")
 	var far := region.clamp_point(Vector3(300, 0, 0))
 	assert_near(far.x, 220.0, 0.01, "the far disc wins when it is the closest vision")
+	# The camera re-clamps its focus every frame, so a clamped point the region then disowns would be nudged for
+	# ever. Landing exactly on the rim is a coin toss across machines (it failed once on a loaded builder0), so
+	# clamp_point lands just inside it and this invariant has to hold for every direction.
+	for i in 16:
+		var angle := TAU * i / 16.0
+		var outside := Vector3(cos(angle), 0.0, sin(angle)) * 500.0
+		assert_true(region.contains(region.clamp_point(outside)), "a point clamped from %.0f deg is seen" % rad_to_deg(angle))
+	assert_true(region.contains(region.clamp_point(Vector3(60.0000001, 0, 0))), "including one a hair outside the rim")
 	assert_eq(VisionRegion.new().clamp_point(Vector3(9, 0, 9)), Vector3(9, 0, 9), "no vision, no clamp")
 
 
@@ -156,7 +164,7 @@ func test_looking_around_stays_over_ground_the_team_can_see() -> void:
 	await _frames(2)
 	rig.pan_world(Vector2(400.0, 0.0))
 	assert_true(region.contains(rig.focus), "panning far east stops at the edge of the team's vision")
-	assert_near(rig.focus.x, 50.0, 0.5, "on the rim of the disc (%s)" % rig.focus)
+	assert_near(rig.focus.x, 50.0, 0.5, "just inside the rim of the disc (%s)" % rig.focus)
 
 
 func test_the_player_takes_the_camera_and_gets_it_back() -> void:

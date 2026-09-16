@@ -12,7 +12,8 @@ extends Control
 ##            S = stop · H = hold · shift queues any order (and keeps A/F/M armed for the next click)
 ##            G cycles the formation (auto by default: the group arranges itself by role and situation)
 ##            right-clicking an enemy with a mixed selection sends only the guns that can hurt it; the rest escort
-##   OTHER    F1 selects idle units · Q jumps to the newest alert · resting the mouse on a unit shows its stats
+##   OTHER    ctrl+A selects the whole army · F1 selects idle units · F2 goes to the next idle element
+##            Q jumps to the newest alert · resting the mouse on a unit shows its stats
 ##            elements you aren't watching sit on the screen edge (EdgeMarkers): click one to go to it
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
@@ -50,6 +51,13 @@ const HOVER_SECONDS := 0.35
 const OFF_SCREEN_PX := 4000.0
 ## How long an order's acknowledgement marker shows (seconds).
 const ACK_SECONDS := 0.7
+## X6: a hull bar floats this far above the top of the hull, is this fraction of the hull's width on screen, and
+## is clamped to this many pixels wide so it neither vanishes at distance nor sits on top of the model up close.
+const BAR_ABOVE_M := 0.9
+const BAR_WIDTH_FACTOR := 0.9
+const BAR_MIN_PX := 14.0
+const BAR_MAX_PX := 62.0
+const BAR_HEIGHT_PX := 3.4
 ## A second tap on the same group number within this long centers the camera on it (seconds, wall time: UI only).
 const DOUBLE_TAP_SECONDS := 0.4
 ## L4 (X1): a queued destination further than this from the element is left out of the camera's frame; the camera
@@ -469,6 +477,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.echo:
 		return
+	# X4: ctrl+A takes the whole army. It sits with the other ctrl keys, before the ctrl guard below.
+	if key.keycode == KEY_A and (key.ctrl_pressed or key.meta_pressed):
+		select_army()
+		get_viewport().set_input_as_handled()
+		return
 	if key.keycode >= KEY_1 and key.keycode <= KEY_9:
 		var number := int(key.keycode - KEY_0)
 		if key.ctrl_pressed or key.meta_pressed:
@@ -505,6 +518,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			cycle_formation()
 		KEY_F1:
 			select_idle()
+		KEY_F2:
+			next_idle_element()
 		KEY_Q:
 			jump_to_alert()
 		KEY_SPACE:
@@ -653,6 +668,49 @@ func smart_attack(target: Tank, queue := false) -> String:
 	return issue(UnitCommand.make(escorts, "follow", {"target": lead, "queue": queue, "source": "player"}))
 
 
+## X4 (ctrl+A): every living unit we have. At 30+ a side this is the fastest way back to "everything", and it is
+## what the player reaches for after a rout.
+func select_army() -> void:
+	var army: Array[String] = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive():
+			army.append(String(tank.name))
+	if army.is_empty():
+		return
+	selection.set_units(army)
+	disarm()
+	_watch_selection()
+
+
+## X4 (F2): go to the next element with nothing to do - no task, and no unit of it under orders - cycling from
+## the one you looked at last. Returns its group number, or 0 when every element is busy.
+func next_idle_element() -> int:
+	var start := _last_group
+	for step in range(1, ControlGroups.COUNT + 1):
+		var number := ((start - 1 + step) % ControlGroups.COUNT) + 1
+		if groups.is_empty(number) or not _is_element_idle(number):
+			continue
+		recall_group(number, true)
+		return number
+	return 0
+
+
+## An element is idle when no living member has orders and its leader has no task.
+func _is_element_idle(number: int) -> bool:
+	var living := 0
+	for unit_name in groups.members(number):
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		living += 1
+		if orders != null and not orders.is_idle(unit_name):
+			return false
+	if living == 0:
+		return false
+	var element := elements.of(groups.members(number)[0]) if elements != null and not groups.is_empty(number) else null
+	return element == null or element.task.is_empty()
+
+
 ## F1: select every one of our units that has no orders (never ordered, or done). Keeps the selection if none.
 func select_idle() -> void:
 	var idle: Array[String] = []
@@ -737,6 +795,39 @@ func screen_to_world(screen: Vector2) -> Variant:
 	return Vector3(clampf(point.x, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), 0.0, clampf(point.z, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
 
 
+# ---- X6: readability at close zoom --------------------------------------------------------------------------
+
+## Hull bars to draw over our vehicles: [{"unit", "at": Vector2 (screen), "width": float, "health": 0..1,
+## "shield": 0..1}]. Only ours, and only when a vehicle is hurt or selected - X4 collapsed the panel's portraits
+## to one per type, so this is where "which of mine is nearly dead" now lives, and a bar over every healthy
+## vehicle at 30 a side would be noise instead of information.
+func health_bars() -> Array:
+	var result: Array = []
+	if game_match == null or camera == null:
+		return result
+	var screen := Rect2(Vector2.ZERO, size)
+	for tank in game_match.sorted_team_tanks(team):
+		if not tank.is_alive():
+			continue
+		var health := clampf(float(tank.health) / maxf(float(tank.max_health), 1.0), 0.0, 1.0)
+		var shield := clampf(tank.shield / tank.max_shield, 0.0, 1.0) if tank.max_shield > 0.0 else 0.0
+		var hurt := health < 0.999 or (tank.max_shield > 0.0 and shield < 0.999)
+		if not hurt and not selection.units.has(String(tank.name)):
+			continue
+		var hull: Array = Units.stat(tank.unit_id, "hull_size")
+		var top := tank.global_position + Vector3.UP * (float(hull[1]) + BAR_ABOVE_M)
+		if camera.is_position_behind(top):
+			continue
+		var at := camera.unproject_position(top)
+		if not at.is_finite() or not screen.has_point(at):
+			continue
+		# The hull's own width on screen, so the bar shrinks with distance exactly as the vehicle does.
+		var edge := camera.unproject_position(top + camera.global_basis.x * float(hull[0]))
+		var width := clampf(edge.distance_to(at) * 2.0 * BAR_WIDTH_FACTOR, BAR_MIN_PX, BAR_MAX_PX)
+		result.append({"unit": String(tank.name), "at": at, "width": width, "health": health, "shield": shield})
+	return result
+
+
 ## The most recent acknowledgement marker ({} when none is showing): {"kind", "position", "left"}.
 func last_ack() -> Dictionary:
 	return _acks.back() if not _acks.is_empty() else {}
@@ -790,6 +881,7 @@ func _acknowledge(command: Dictionary) -> void:
 func _draw() -> void:
 	_draw_waypoints()
 	_draw_acks()
+	_draw_health()
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -807,6 +899,25 @@ func _draw() -> void:
 		var color: Color = GameTheme.ui["friendly"]
 		draw_rect(rect, Color(color, 0.12))
 		draw_rect(rect, Color(color, 0.9), false, 1.5)
+
+
+## X6: a thin hull bar (and a shield sliver above it) over vehicles that are hurt or selected.
+func _draw_health() -> void:
+	var friendly: Color = GameTheme.ui["friendly"]
+	var enemy: Color = GameTheme.ui["enemy"]
+	for bar: Dictionary in health_bars():
+		var width: float = bar["width"]
+		var at: Vector2 = bar["at"]
+		var box := Rect2(at - Vector2(width / 2.0, 0.0), Vector2(width, BAR_HEIGHT_PX))
+		draw_rect(box.grow(1.0), Color(0, 0, 0, 0.65))
+		var health: float = bar["health"]
+		# Red as it gets serious, so a glance across the field finds the vehicle about to die.
+		var ink := friendly.lerp(enemy, clampf(1.0 - health, 0.0, 1.0))
+		draw_rect(Rect2(box.position, Vector2(box.size.x * health, box.size.y)), ink)
+		var shield: float = bar["shield"]
+		if shield > 0.001:
+			var strip := Rect2(box.position - Vector2(0.0, BAR_HEIGHT_PX * 0.75), Vector2(box.size.x * shield, BAR_HEIGHT_PX * 0.55))
+			draw_rect(strip, Color(CyberStyle.CYAN, 0.9))
 
 
 ## Marker colors by verb: moves in the team color, attacks in the enemy color, attack-moves in the commander gold.

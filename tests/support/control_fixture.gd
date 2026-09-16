@@ -70,6 +70,73 @@ func build(with_executor := true) -> void:
 	await test.wait_physics_frames(3)
 
 
+## Control X4: a big match instead of the fixed row - `per_side` units a side, laid out in a grid so they all
+## start on screen, with control groups of five. Everything else (camera, orders, controls) is as in build().
+func build_scale(per_side: int) -> void:
+	var tree := test.tree
+	tree.root.size = Vector2i(1920, 1080)
+	arena = test.add_to_tree(ARENA.instantiate())
+	game_match = MATCH.instantiate()
+	test.add_to_tree(game_match)
+	var types := ["tank", "ifv", "scout", "lancer", "burner"]
+	for team in [Match.Team.GREEN, Match.Team.RUST]:
+		var squads: Array = []
+		var left := per_side
+		var index := 0
+		while left > 0:
+			var size := mini(5, left)
+			var units: Array = []
+			for i in size:
+				units.append({"unit": types[(index + i) % types.size()]})
+			squads.append({"name": "S%d" % (squads.size() + 1), "units": units})
+			left -= size
+			index += size
+		test.assert_eq(game_match.load_doctrine(team, {"name": "Scale", "squads": squads}), "",
+				"setup: %s army of %d" % [Match.TEAM_NAMES[team], per_side])
+	# Two blocks 60 m apart, 6 m spacing, so every unit is in sight of the camera and of the other side.
+	for team in [Match.Team.GREEN, Match.Team.RUST]:
+		var row := 0
+		var column := 0
+		for tank_node in game_match.sorted_team_tanks(team):
+			tank_node.global_position = Vector3(-36.0 + column * 6.0, 0.0, (30.0 if team == Match.Team.GREEN else -30.0) + row * 6.0)
+			column += 1
+			if column >= 12:
+				column = 0
+				row += 1
+	camera = Camera3D.new()
+	test.add_to_tree(camera)
+	camera.make_current()
+	rig = RtsCamera.new()
+	rig.camera = camera
+	rig.edge_pan = false
+	rig.focus = Vector3.ZERO
+	rig.zoom = 0.75
+	test.add_to_tree(rig)
+	rig.snap()
+	orders = Orders.new()
+	Orders.attach(game_match, orders)
+	controls = RtsControls.new()
+	controls.game_match = game_match
+	controls.orders = orders
+	controls.camera = camera
+	controls.rig = rig
+	controls.reveal_all = true
+	controls.elements = Elements.install(game_match, orders)
+	test.add_to_tree(controls)
+	markers = EdgeMarkers.new()
+	markers.controls = controls
+	controls.add_child(markers)
+	controls.markers = markers
+	var number := 1
+	for squad in game_match.team_squads(Match.Team.GREEN):
+		if number > ControlGroups.COUNT:
+			break
+		controls.groups.save(number, Array(squad.roster))
+		controls.groups.label(number, String(squad.squad_name))
+		number += 1
+	await test.wait_physics_frames(3)
+
+
 func tank(unit_name: String) -> Tank:
 	return game_match.tanks.get_node(unit_name) as Tank
 
