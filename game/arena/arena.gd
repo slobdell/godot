@@ -216,8 +216,9 @@ static func validate(data: Variant) -> String:
 		return "'spawns' must be {green: [[x, z], ...], rust: [...]}"
 	for side in ["green", "rust"]:
 		var spots: Variant = spawns.get(side)
-		if typeof(spots) != TYPE_ARRAY or spots.size() < Doctrine.MAX_UNITS or not spots.all(func(v: Variant) -> bool: return _is_point(v)):
-			return "spawns.%s needs at least %d [x, z] points (a full army)" % [side, Doctrine.MAX_UNITS]
+		# X5 (round 4): a full army is Match.SPAWN_SLOTS now, not five squads of five.
+		if typeof(spots) != TYPE_ARRAY or spots.size() < Match.SPAWN_SLOTS or not spots.all(func(v: Variant) -> bool: return _is_point(v)):
+			return "spawns.%s needs at least %d [x, z] points (a full army)" % [side, Match.SPAWN_SLOTS]
 	if spawns["green"].size() != spawns["rust"].size():
 		return "spawns.green and spawns.rust must have the same length"
 	for i in spawns["green"].size():
