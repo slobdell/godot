@@ -27,9 +27,34 @@ func test_the_condemned_fill_every_role_from_todays_roster() -> void:
 			hull.free()
 
 
-func test_new_factions_show_only_the_art_that_exists() -> void:
+func test_every_faction_fills_every_role_with_the_approved_model() -> void:
+	# The lead approved one concept per role on 2026-09-16; tools/assets/build_factions.sh fits them into the K4 slots.
 	for faction in FactionArt.NEW_FACTIONS:
 		for role in FactionArt.ROLES:
-			var expected := ResourceLoader.exists(FactionArt.generated_scene(faction, role, "hull"))
-			assert_eq(FactionArt.has_art(faction, role), expected, "%s %s art is shown iff its model was built" % [faction, role])
+			assert_true(FactionArt.has_art(faction, role), "%s has its %s" % [faction, role])
+			var hull := FactionArt.instantiate(faction, role, "hull")
+			assert_true(hull != null, "%s %s hull loads" % [faction, role])
+			if hull != null:
+				hull.free()
+	# Fixed-mount scouts and the hover units carry their weapon in the body: those slots are deliberately empty.
+	var turreted := {"gangs": ["tank", "ifv", "artillery"], "law": ["tank", "ifv", "artillery", "special"],
+			"syndicate": ["tank", "ifv"]}
+	for faction in turreted:
+		for role: String in turreted[faction]:
+			var turret := FactionArt.instantiate(faction, role, "turret")
+			assert_true(turret != null, "%s %s has a turret that can traverse" % [faction, role])
+			if turret != null:
+				turret.free()
 	assert_eq(FactionArt.instantiate("gangs", "nonexistent_role", "hull"), null, "a missing part is null, not an error")
+
+
+func test_the_wreck_husk_fills_its_slot_in_both_themes() -> void:
+	var previous := GameTheme.theme_name
+	for theme in ["default", "cyberpunk"]:
+		GameTheme.use(theme)
+		var packed := GameTheme.scene("prop.wreck")
+		var wreck := packed.instantiate() if packed != null else null
+		assert_true(wreck != null, "%s fills prop.wreck (the lead approved wreck_a)" % theme)
+		if wreck != null:
+			wreck.free()
+	GameTheme.use(previous)

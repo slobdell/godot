@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://assets/runtime/generated_visual.gd" id="1_visual"]
+[ext_resource type="PackedScene" path="res://game/theme/factions/syndicate/generated/unit_syndicate_ifv_hull.glb" id="2_model"]
+
+[node name="UnitSyndicateIfvHull" type="Node3D"]
+script = ExtResource("1_visual")
+slot = "unit.syndicate.ifv.hull"
+tint_materials = PackedStringArray("material_0")
+tint_strength = 0.2
+
+[node name="Model" parent="." instance=ExtResource("2_model")]

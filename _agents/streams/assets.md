@@ -76,19 +76,21 @@ Layouts, collision, and navigation (combat), effects and sound (feel), brains (a
 
 ## Waiting on the lead
 
-**Faction concept review (X3), published 2026-09-15.** Tap Approve on at most one option per group (add words if you
-like); only approved concepts go to 3D (≈15 credits each, 15 if one per role). Prompts and tradeoffs are on the cards;
-the spec is `assets/review/batches/round3_factions.json`.
+**Faction concept review (X3): answered by the lead 2026-09-16** (read back from each page's `decisions`; every tap was
+Approve or Reject with no words). Exactly one option per role:
 
-| Faction | Page | Groups (options) |
-|---|---|---|
-| Road gangs | https://claude.ai/artifact/7j75ZXkvHiqHoZ4ACTBKqr | tank `gangs_tank_a` semi tanker, `_b` rigid tanker, `_c2` mining haul truck · scout `_a` dune buggy, `_b` rat rod · IFV `_a` 1950s pickup, `_b` muscle-car ute · artillery `_a` logging-truck catapult, `_b` tow-wrecker catapult · special `_a` war-drum truck, `_b` resupply tanker |
-| The Law | https://claude.ai/artifact/TytWFgfoKRpRtbFSu2QazG | tank `law_tank_a` 8×8 assault gun, `_b` airport crash tender, `_c2` heavy transporter · scout `_a` sedan, `_b` pickup · IFV `_a2` 6×6 MRAP, `_b` retired APC · artillery `_a` gas rocket pod truck, `_b2` command van launcher · special `_a2` water cannon, `_b` sonic emitter |
-| The Syndicate | https://claude.ai/artifact/BBfezgVH9zmLmbCcYKtEL8 | tank `syndicate_tank_a` yacht hull, `_b` pebble monocoque, `_c` supercar · scout `_a` teardrop, `_b` manta wing · IFV `_a` pearl gunship, `_b` black-glass limousine · artillery `_a` petal launch cells, `_b` ring with missile wings · special `_a` shield projector, `_b` Lancer laser |
+| Faction | Approved |
+|---|---|
+| Road gangs | tank `gangs_tank_a` semi-truck fuel tanker war rig · scout `gangs_scout_b` chopped rat-rod coupe · IFV `gangs_ifv_a` lifted 1950s pickup · artillery `gangs_artillery_b` tow wrecker catapult · special `gangs_special_b` armored resupply tanker |
+| The Law | tank `law_tank_a` 8×8 wheeled assault gun · scout `law_scout_a` up-armored police sedan · IFV `law_ifv_b` retired 6×6 army carrier · artillery `law_artillery_a` 6×6 gas rocket pod truck · special `law_special_b` sonic emitter truck |
+| The Syndicate | tank `syndicate_tank_c` supercar-styled hover tank · scout `syndicate_scout_a` teardrop skimmer · IFV `syndicate_ifv_b` black-glass executive carrier · artillery `syndicate_artillery_b` ring platform with missile wings · special `syndicate_special_b` Lancer laser platform |
+| Wrecks | both `wreck_a` and `wreck_b` approved; **`wreck_a` built**, `wreck_b` held in reserve (below) |
 
-**Wreck husk review (stretch), published 2026-09-15:** https://claude.ai/artifact/NXAg84GYQ8uUb7QsdghXvF: `wreck_a`
-burned-out armored truck shell, `wreck_b` crushed scrap-heap hulk (one model for every unit, scaled to its hull; spec
-`assets/review/batches/round3_wrecks.json`).
+**The picks decide both undecided special roles** (game_design.md's roster sketches offered two jobs each):
+- **Road gangs' special = the resupply tanker** (field repairs and resupply behind the lines), not the war-drum rally truck.
+- **The Syndicate's special = the Lancer laser** (a long heat-limited beam that strips shields), not the shield projector.
+  So the Lancer moves from the Condemned's roster to the Syndicate as well; both keep a laser unit unless the lead says
+  otherwise. Proposed for game_design.md (orchestrator's file).
 
 Read back with `read_db` (collection `decisions`) per page, then `make art-apply-decisions DIR=… URL=…`.
 

@@ -74,3 +74,19 @@
 | 2026-09-15 08:20 | text-to-image nano-banana-pro | `01a0a426-5b2c-747d-acf1-9f0d8dc09789` | 9 | meshy/gangs_tank_c2 | SUCCEEDED | 346 |
 | 2026-09-15 09:29 | text-to-image nano-banana-pro | `01a0a466-267a-7515-b832-0cb93b811465` | 9 | meshy/wreck_b | SUCCEEDED | 328 |
 | 2026-09-15 09:29 | text-to-image nano-banana-pro | `01a0a466-267c-72b2-b3b8-c8f08cc3c793` | 9 | meshy/wreck_a | SUCCEEDED | 328 |
+| 2026-09-16 02:26 | image-to-3d meshy-t2 smart-topology | `01a0a808-19cf-776a-8c43-10dfcea6edb8` | 15 | gangs_tank_a | SUCCEEDED | 238 |
+| 2026-09-16 02:26 | image-to-3d meshy-t2 smart-topology | `01a0a808-19ed-77c6-b597-bfa86d298fc8` | 15 | gangs_artillery_b | SUCCEEDED | 223 |
+| 2026-09-16 02:26 | image-to-3d meshy-t2 smart-topology | `01a0a808-1a1d-74e0-8ed2-30476c912062` | 15 | gangs_scout_b | SUCCEEDED | 223 |
+| 2026-09-16 02:26 | image-to-3d meshy-t2 smart-topology | `01a0a808-19e6-7154-90c4-9402daeeacf9` | 15 | gangs_special_b | SUCCEEDED | 223 |
+| 2026-09-16 02:26 | image-to-3d meshy-t2 smart-topology | `01a0a808-19e5-7328-898d-8b4dace2282f` | 15 | gangs_ifv_a | SUCCEEDED | 223 |
+| 2026-09-16 02:26 | image-to-3d meshy-t2 smart-topology | `01a0a808-19e8-7186-99e9-18d065ca084a` | 15 | law_tank_a | SUCCEEDED | 223 |
+| 2026-09-16 02:28 | image-to-3d meshy-t2 smart-topology | `01a0a809-a71f-729a-92be-cf1766df9e9e` | 15 | law_scout_a | SUCCEEDED | 148 |
+| 2026-09-16 02:28 | image-to-3d meshy-t2 smart-topology | `01a0a80a-0ad0-750b-9747-e3635303cf29` | 15 | syndicate_scout_a | SUCCEEDED | 133 |
+| 2026-09-16 02:28 | image-to-3d meshy-t2 smart-topology | `01a0a80a-0ca4-77a2-a4f2-9253a116dfca` | 15 | syndicate_ifv_b | SUCCEEDED | 133 |
+| 2026-09-16 02:28 | image-to-3d meshy-t2 smart-topology | `01a0a809-f261-738e-b835-2a7263194866` | 15 | law_ifv_b | SUCCEEDED | 103 |
+| 2026-09-16 02:28 | image-to-3d meshy-t2 smart-topology | `01a0a809-f3cb-766d-a9c5-27c100a160b2` | 15 | law_artillery_a | SUCCEEDED | 103 |
+| 2026-09-16 02:29 | image-to-3d meshy-t2 smart-topology | `01a0a80a-0a28-77e6-888c-fb3412ddb107` | 15 | law_special_b | SUCCEEDED | 88 |
+| 2026-09-16 02:30 | image-to-3d meshy-t2 smart-topology | `01a0a80b-33db-75aa-a17d-b79a65c81960` | 15 | syndicate_tank_c | SUCCEEDED | 88 |
+| 2026-09-16 02:30 | image-to-3d meshy-t2 smart-topology | `01a0a80b-841d-707f-8ee5-16903db5d891` | 15 | syndicate_special_b | SUCCEEDED | 88 |
+| 2026-09-16 02:30 | image-to-3d meshy-t2 smart-topology | `01a0a80b-839d-73af-882f-14b5094a77f3` | 15 | syndicate_artillery_b | SUCCEEDED | 88 |
+| 2026-09-16 02:30 | image-to-3d meshy-t2 smart-topology | `01a0a80b-d1cf-7197-b308-84304fc1c094` | 15 | wreck_a | SUCCEEDED | 88 |

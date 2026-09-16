@@ -36,6 +36,9 @@ const DEFAULT_SLOTS := {
 	"prop.container_40": "res://game/theme/arena_kit/prop_container_40.tscn",
 	# Assets X2: a giant ad screen showing its broadcast channel (arena_kit/ads).
 	"prop.ad_screen": "res://game/theme/arena_kit/prop_ad_screen.tscn",
+	# Assets stretch (the lead approved wreck_a 2026-09-16): the husk a destroyed vehicle leaves, scaled per unit by
+	# whoever places it (feel's wreck effects).
+	"prop.wreck": "res://game/theme/arena_kit/generated/prop_wreck.tscn",
 }
 
 const DEFAULT_TEAM_COLORS := [Color(0.33, 0.4, 0.22), Color(0.55, 0.27, 0.2)]

@@ -1,0 +1,712 @@
+{
+  "slots": {
+    "unit.law.artillery.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_artillery_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          0.0,
+          1.0703,
+          0.0
+        ],
+        "fitted_scale": 4.0,
+        "forward": "+x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 2.133,
+      "scene": "unit_law_artillery_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a809-f3cb-766d-a9c5-27c100a160b2 from review item law_artillery_a",
+      "tris": 11401.0
+    },
+    "unit.law.artillery.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_artillery_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated, moved (-0.00, -0.24) onto the turret pivot",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0027,
+          -0.1382,
+          -0.4237
+        ],
+        "fitted_scale": 3.69230794906616,
+        "forward": "+x",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": true,
+          "from": "unit.law.artillery.hull",
+          "stretch": false,
+          "turn_deg": 0.0,
+          "turret_scale": 1.08333325054911
+        },
+        "scale": 0.0,
+        "shift": [
+          -0.0027,
+          0.0,
+          -0.2391
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.law.artillery.hull",
+        "up": "+y"
+      },
+      "roof": 0.85,
+      "scene": "unit_law_artillery_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a809-f3cb-766d-a9c5-27c100a160b2 from review item law_artillery_a",
+      "tris": 494.0
+    },
+    "unit.law.ifv.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_ifv_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          0.0032,
+          1.08,
+          0.0
+        ],
+        "fitted_scale": 3.29142880439758,
+        "forward": "-x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 2.16,
+      "scene": "unit_law_ifv_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a809-f261-738e-b835-2a7263194866 from review item law_ifv_b",
+      "tris": 13029.0
+    },
+    "unit.law.ifv.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_ifv_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated, moved (0.56, -0.67) onto the turret pivot",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.5641,
+          -0.14,
+          -0.8703
+        ],
+        "fitted_scale": 3.29142880439758,
+        "forward": "-x",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": true,
+          "from": "unit.law.ifv.hull",
+          "stretch": false,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.5609,
+          0.0,
+          -0.6703
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.law.ifv.hull",
+        "up": "+y"
+      },
+      "roof": 0.94,
+      "scene": "unit_law_ifv_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a809-f261-738e-b835-2a7263194866 from review item law_ifv_b",
+      "tris": 524.0
+    },
+    "unit.law.ifv.weapon": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_ifv_weapon.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated relative to the hull",
+        "barrel stretched ×3.04 from its breech to the muzzle point",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.5641,
+          -0.14,
+          -3.4878
+        ],
+        "fitted_scale": 3.29142880439758,
+        "forward": "-x",
+        "include": [
+          "cannon_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": false,
+          "from": "unit.law.ifv.hull",
+          "stretch": true,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.law.ifv.hull",
+        "up": "+y"
+      },
+      "roof": 0.246,
+      "scene": "unit_law_ifv_weapon.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a809-f261-738e-b835-2a7263194866 from review item law_ifv_b",
+      "tris": 154.0
+    },
+    "unit.law.scout.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_scout_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0044,
+          0.5273,
+          0.0
+        ],
+        "fitted_scale": 3.0,
+        "forward": "-x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 1.049,
+      "scene": "unit_law_scout_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a809-a71f-729a-92be-cf1766df9e9e from review item law_scout_a",
+      "tris": 14605.0
+    },
+    "unit.law.special.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_special_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          -0.0035,
+          1.0823,
+          0.0
+        ],
+        "fitted_scale": 2.39895796775818,
+        "forward": "+z",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 2.16,
+      "scene": "unit_law_special_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a80a-0a28-77e6-888c-fb3412ddb107 from review item law_special_b",
+      "tris": 11513.0
+    },
+    "unit.law.special.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_special_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated, moved (-0.03, -0.25) onto the turret pivot",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0305,
+          -0.1377,
+          -0.4533
+        ],
+        "fitted_scale": 2.39895796775818,
+        "forward": "+z",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": true,
+          "from": "unit.law.special.hull",
+          "stretch": false,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          -0.027,
+          0.0,
+          -0.2533
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.law.special.hull",
+        "up": "+y"
+      },
+      "roof": 0.94,
+      "scene": "unit_law_special_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a80a-0a28-77e6-888c-fb3412ddb107 from review item law_special_b",
+      "tris": 2081.0
+    },
+    "unit.law.special.weapon": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_special_weapon.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated relative to the hull",
+        "barrel stretched ×3.97 from its breech to the muzzle point",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0305,
+          -0.1377,
+          -0.6731
+        ],
+        "fitted_scale": 2.39895796775818,
+        "forward": "+z",
+        "include": [
+          "cannon_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": false,
+          "from": "unit.law.special.hull",
+          "stretch": true,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "ao_texture": 512,
+          "metallic_texture": 512,
+          "normal_texture": 512,
+          "roughness_texture": 512
+        },
+        "textures_from": "unit.law.special.hull",
+        "up": "+y"
+      },
+      "roof": -0.153,
+      "scene": "unit_law_special_weapon.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a80a-0a28-77e6-888c-fb3412ddb107 from review item law_special_b",
+      "tris": 30
+    },
+    "unit.law.tank.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_tank_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          -0.0018,
+          1.237,
+          -0.0007
+        ],
+        "fitted_scale": 3.5986647605896,
+        "forward": "-x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 1.87,
+      "scene": "unit_law_tank_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19e8-7186-99e9-18d065ca084a from review item law_tank_a",
+      "tris": 9405.0
+    },
+    "unit.law.tank.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_tank_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated, moved (0.00, -0.17) onto the turret pivot",
+        "decimated 5682 → 3982 triangles (budget 4000)",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0018,
+          0.017,
+          -0.3725
+        ],
+        "fitted_scale": 3.5986647605896,
+        "forward": "-x",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": true,
+          "from": "unit.law.tank.hull",
+          "stretch": false,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          -0.1718
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.law.tank.hull",
+        "up": "+y"
+      },
+      "roof": 1.254,
+      "scene": "unit_law_tank_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19e8-7186-99e9-18d065ca084a from review item law_tank_a",
+      "tris": 3982.0
+    },
+    "unit.law.tank.weapon": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_law_tank_weapon.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated relative to the hull",
+        "barrel stretched ×3.75 from its breech to the muzzle point",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 1024×1024",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0018,
+          0.017,
+          -5.2024
+        ],
+        "fitted_scale": 3.5986647605896,
+        "forward": "-x",
+        "include": [
+          "cannon_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": false,
+          "from": "unit.law.tank.hull",
+          "stretch": true,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "ao_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.law.tank.hull",
+        "up": "+y"
+      },
+      "roof": -0.12,
+      "scene": "unit_law_tank_weapon.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19e8-7186-99e9-18d065ca084a from review item law_tank_a",
+      "tris": 14.0
+    }
+  },
+  "theme": "factions/law"
+}

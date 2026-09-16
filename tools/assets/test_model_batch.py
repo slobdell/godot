@@ -33,6 +33,9 @@ class ModelBatch(unittest.TestCase):
         self.assertEqual([i["id"] for i in todo], ["gangs_tank_a", "law_tank_a", "wreck_a"],
                          "waiting and rejected concepts never go to 3D; one already built isn't paid for twice")
         self.assertEqual([i["id"] for i in model_batch.pending(self.manifest, "Road gangs")], ["gangs_tank_a"])
+        self.assertEqual([i["id"] for i in model_batch.pending(self.manifest, skip={"wreck_a"})], ["gangs_tank_a", "law_tank_a"],
+                         "an approved concept can be held back (a second wreck isn't worth the credits)")
+        self.assertEqual([i["id"] for i in model_batch.pending(self.manifest, only={"wreck_a"})], ["wreck_a"])
 
     def test_the_command_names_the_review_item_and_prefers_the_cut_out_concept(self):
         with tempfile.TemporaryDirectory() as tmp:
