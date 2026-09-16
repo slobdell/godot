@@ -209,3 +209,14 @@ build/   (gitignored)    exports and screenshots
     by a second deliberate run. Check with
     `ssh slobdell@builder0 "ps -eo pid,args | grep slot.sh"`, match each pid to a worktree with
     `readlink /proc/<pid>/cwd`, and kill only your own folder's (audio, 2026-09-16).
+69. **A `.gitignore` pattern ending in `/` does not match a symlink.** In a worktree `.tools` is a *symlink* to the
+    main checkout's shared toolchain, so `.tools/` ignored nothing and `git add -A` committed the link. Merging that
+    branch into `~/projects/godot` checked the symlink out over the real 300 MB directory, leaving a link pointing
+    at itself: every local make target failed with "Too many levels of symbolic links" and the pinned Godot and
+    export templates were gone (repair: `make bootstrap`; builder0 keeps its own `.tools`). `.gitignore` now lists
+    both forms. Two separate streams committed it the same night, so check `git ls-files .tools` before merging
+    (audio, 2026-09-16).
+70. **`git add -A <paths>` is how things you have not looked at get committed.** It carried an unfinished Makefile
+    target into `check` (breaking `main` for five streams) and the `.tools` symlink above, in the same session.
+    Stage deliberately, and read `git status` without filtering lines you have decided are noise — `?? .tools` was
+    visible in every status output for hours.
