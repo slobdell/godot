@@ -82,11 +82,11 @@ _Round 4, ai stream. Updated 2026-09-16. Branch `stream/ai`; `main` merged at 7f
 | # | Item | State |
 |---|---|---|
 | X1 | Execute doctrine (L1) | **done** — `224fd8c`, re-aimed at the real `Elements` in `7fd1f1e` |
-| X2 | The cost of 30 a side | **partly done** — `d2ff1c0`; 60 units cost 5327 µs (x4) / 4293 µs (x4t9) against a 4000 target. See below |
+| X2 | The cost of 30 a side | **partly done** — `d2ff1c0`, `48cbff3`. New champion **x4t9**; the 4 ms target at 60 units is **not met**. See below |
 | X3 | Suppression-aware (L2) | **done** — `c3a9df3` |
-| X4 | The tactics harness | not started |
-| X5 | Faction behavior | not started |
-| X6 | Offline discovery groundwork | not started |
+| X4 | The tactics harness | **not started** — the one other streams are waiting on |
+| X5 | Faction behavior | **not started** |
+| X6 | Offline discovery groundwork | **not started** |
 
 ### X1 — brains execute their element's doctrine
 
@@ -134,9 +134,15 @@ finer laps. All on builder0, two interleaved runs each; the machine swings ±30%
 | After X2's cuts, at 50 units | **3670** | |
 | After X2's cuts, at 60 units | 4529 / 4516 | 3994 / 4070 |
 | After CP2 + X3, at 60 units | 5501 / 5389 | 5058 / 4501 |
-| After caching the L2 source and staggering the route check | **5327** | **4293** |
+| After caching the L2 source and staggering the route check | 5327 | 4293 |
+| Final, champion = x4t9, two runs | | **6179 / 5403** (and 4488 at 50 units) |
 
-What was cut, in the brief's order: a shared per-team contact pass (`AiTickCache.contact_prototypes`, built once per
+The last row is higher than the one above it and that is not a regression being hidden: adopting x4t9, holding the
+suppression aim point and finishing orders every tick all changed *what happens* in the scenario, so it is a
+different battle (160k line-of-sight queries against 150k). Two back-to-back runs of identical code came out 6179 and
+5403, a 14% spread, which is the shared machine. **Treat ~5.4–6.2 ms at 60 units as where this stands.**
+
+What was cut, in the brief's order:What was cut, in the brief's order: a shared per-team contact pass (`AiTickCache.contact_prototypes`, built once per
 intel refresh instead of 30 times over); a **graded** think LOD (6 ticks while either gun can reach, 12 while an enemy
 is within 130 m but nothing is in reach, 18 otherwise, re-rated every intel refresh so coming into range is never
 noticed late); no re-picking a target or re-testing its sight line while the gun is reloading; local avoidance over
@@ -146,16 +152,34 @@ per tick.
 **Measured and rejected:** answering "can I see it" with the memoized 2D cover map instead of a physics ray made
 picking a target *slower* at 60 units (650 µs vs 573) — with a memo that big a hit costs about what the ray saves.
 
-**Honest reading:** the target is not met. Each micro-cut bought ~3%; the one structural lever is how often a brain
-thinks, and CP2 + X3 added about 900 µs back. Where the rest goes at 60 units (µs/tick, DETAIL=1): `move` 1180
-(`move.avoid` 767 before the last two cuts), `situation` 1347 (`s.cover` 532, `s.contacts` 382), `weapon` 837
-(`weapon.scan` 510), `decide` 516, `act` 353. The next levers, in order: gate the cover-fire tactical query to units
-that would actually choose COVER_FIRE (it runs for every brain with a target in reach, and `s.cover` is the largest
-single part), and cheaper target scoring in `decide`.
+**Honest reading: the target is not met, and the gap grew rather than closed.** Every micro-cut bought about 3%; the
+one structural lever is how often a brain thinks, and that is now spent. CP2's suppression and X3's reading of it
+added roughly 900 µs on top of a 4.5 ms starting point. At equal behaviour the work is real — 50 units cost 3670 µs
+where round 3 paid ~4700 — but the round-4 target of 4 ms at 60 units was not reached.
 
-**Note on the measurement:** the perf scenario is 60 identical cannon tanks in one brawl — the worst case, and harsher
-than a faction-sized army of mixed roles. Worth adding a faction-army variant next to it and reporting both, holding
-the headline to the all-tank case.
+Where the time goes at 60 units (µs/tick, `DETAIL=1`, before the last two cuts): `move` 1180 (`move.avoid` 767),
+`situation` 1347 (`s.cover` 532, `s.contacts` 382), `weapon` 837 (`weapon.scan` 510), `decide` 516, `act` 353.
+The next levers, in the order I would take them:
+1. **`s.cover`** is the largest single part and the least gated: `_cover_fire_spot` runs a tactical query for every
+   brain with a target in reach, including ones committed to ENGAGE that will never pick COVER_FIRE. Gate it the way
+   the design already says (COVER_FIRE is for slow guns and cautious crews) and it should mostly disappear.
+2. **`weapon.scan`**: the reload gate helped cannons; fast-firing guns still ray-test their pick every tick.
+3. **`decide`**: typed arrays and a precomputed matchup table, the one item of the brief's list not attempted.
+4. **Measure a faction army too.** The scenario is 60 identical cannon tanks in one brawl — the worst case, and
+   harsher than the mixed roster the lead actually wants. Combat's `make remote T="scale-bench TIME=40"` now measures
+   the simulation the same way; the two should be read together. Report both, hold the headline to the all-tank case.
+
+**Champion changed: `x4t9`** (the same brain thinking every 9 ticks in a fight instead of 6). It won all four armies
+post-CP2 — individuals 13-11, armor 13-11, balanced 13-11, swarm 14-10, pooled **53-43** over 96 matches. The same
+comparison *before* suppression landed was 48-48 with a clear loss on the all-armor army (9-15, 85% accuracy against
+88%), which is why it was measured twice rather than adopted the first time it looked cheaper.
+
+Two things fell out of adopting it, both improvements in their own right: orders now **finish every tick** instead of
+on a think tick (a target dying could sit unreported for 150 ms; control's 3-tick test caught it), and SUPPRESS
+**holds its aim point** rather than tracking — combat measured that a round stamps the cells it flew through, so fire
+held on a place piles into one cell while fire that chases a unit spreads thin. Measured: **138 rounds and 0.81
+density held, against 17 rounds and 0.00 tracking** (a gun told to track also stops firing whenever the target is out
+of reach or sight; one told to hose a place does not).
 
 ### Decisions taken where the brief left a choice
 
@@ -187,11 +211,19 @@ the headline to the all-tank case.
 
 ### Known issues
 
-- **X2's 4 ms target is not met** (above). Nothing regressed: 60 units cost less than they did before this round's
-  work, but CP2 and X3 added cost on top.
-- **X4, X5 and X6 are not started.** The tactics harness (X4) is the one other streams are waiting on: doctrine wants
-  to know which drill wins where, and combat wants faction-vs-faction near 50%.
-- Two test runners silently pass files that don't compile (see requests, 3).
+- **X2's 4 ms target is not met**: ~5.4–6.2 ms at 60 units (above), with the next levers listed in order.
+- **X4, X5 and X6 are not started.** X4 (the tactics harness) is the one other streams are waiting on: doctrine wants
+  to know which drill wins where, and combat wants faction-vs-faction near 50%. `make ai-ladder` already plays brain
+  variants against each other across armies and prints ELO plus head-to-head, and `tools/ai_ladder.py` takes any
+  doctrine file, so X4 is mostly a matter of sweeping *doctrine* variants and arenas alongside brain variants and
+  reporting per-drill rather than per-variant — the machinery is there, the sweep and the report are not.
+- **A pinned enemy doesn't actually pull a unit out of cover.** The 1.5x flank bonus on a pinned target exists, but
+  the printed option counts in `scenario_suppression` show COVER_FIRE winning the choice anyway (1435 ticks of 1440).
+  Suppress-and-flank therefore pays off as "the teammate works on it unmolested" rather than "the teammate goes
+  round it". Whether the bonus should out-score peeking from cover is a tuning question the ladder should settle.
+- **Two test runners silently pass files that don't compile** (see requests, 3). Fixed in ai's own scenario runner.
+- The `x4mw` variant (matchup targets and engine decks) is still opt-in and still blocked on the same question from
+  round 3: what a scout's counter is.
 
 ### What to playtest
 
