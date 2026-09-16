@@ -4,8 +4,8 @@ result: rust by elimination at 2:21.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   CALLER   Ten vehicles on the floor tonight, and every one of them came to fight.
-0:04.8   PA       Good evening. On behalf of the Syndicate, welcome to the Foundry. Please take a moment to locate the—
+0:00.0   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
+0:05.3   PA       Welcome, everyone, to the Foundry. Concessions are open on the upper concourse, and water is available—
 0:11.8   ── first contact: green scout fires on a tank
 0:11.8   CALLER   The scout finds them first! That's the job, and Green is doing it!
 0:17.0   CALLER   Right up the tailpipe! Green caught that tank from behind!
@@ -43,7 +43,7 @@ result: rust by elimination at 2:21.0
 2:21.0   ── green squad Hornets wiped out
 2:21.0   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
 2:21.0   CALLER   Rust finishes it! The last scout is gone!
-2:24.0   CALLER   It's all over! Rust wins it!
-2:26.4   VETERAN  Rust earned that. I didn't see them get lucky once.
-2:31.0   CALLER   What a night!
-2:33.0   PA       That concludes tonight's match. Congratulations to Rust. On behalf of the Syndicate, good night, and please drive safely.
+2:24.0   CALLER   Rust takes it! What a fight, ladies and gentlemen!
+2:27.4   VETERAN  One left. That driver is going to remember every second of that.
+2:32.8   CALLER   What a night!
+2:34.8   PA       Rust takes tonight's match. We thank our participants, and our sponsors, in that order.

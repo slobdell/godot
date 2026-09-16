@@ -1,476 +1,5140 @@
 {
-  "schema": 1,
-  "note": "The announcer line library, text only (no audio yet: lead gate). Humor direction: _agents/game_design.md 'Humor direction'. Format: assets/announcer/README.md. Ids are clip ids: never reuse or renumber one once audio exists.",
-  "speakers": {
-    "caller": {"name": "Caller", "voice": "JR1", "role": "play-by-play: authentic fight-night hype, played straight"},
-    "color": {"name": "The Veteran", "voice": "veteran", "role": "color: a former arena champion; deep, slow, dry, the expert"},
-    "pa": {"name": "Celeste Vance", "voice": "corporate2", "role": "arena PA and sponsor reads: a polished host; one detail slightly off, never a joke"}
+ "schema": 1,
+ "note": "The announcer line library, text only (no audio yet: lead gate). Humor direction: _agents/game_design.md 'Humor direction'. Format: assets/announcer/README.md. Ids are clip ids: never reuse or renumber one once audio exists.",
+ "speakers": {
+  "caller": {
+   "name": "Caller",
+   "voice": "JR1",
+   "role": "play-by-play: authentic fight-night hype, played straight"
   },
-  "vocabulary": {
-    "team": {"green": "Green", "rust": "Rust"},
-    "team_s": {"green": "Green's", "rust": "Rust's"},
-    "unit": {"scout": "scout", "tank": "tank", "ifv": "IFV", "artillery": "artillery", "lancer": "Lancer", "burner": "Burner"},
-    "units": {"scout": "scouts", "tank": "tanks", "ifv": "IFVs", "artillery": "artillery", "lancer": "Lancers", "burner": "Burners"},
-    "arena": {"foundry": "the Foundry", "furnace": "the Furnace", "scrapyard": "the Scrapyard"}
+  "color": {
+   "name": "The Veteran",
+   "voice": "veteran",
+   "role": "color: a former arena champion; deep, slow, dry, the expert"
   },
-  "lines": [
-    {"id": "caller.intro.01", "speaker": "caller", "act": "hype", "tags": ["intro"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "intensity": 3, "text": "Ladies and gentlemen, welcome to {arena}! It is fight night!"},
-    {"id": "caller.intro.02", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 3, "text": "We are live from {arena}, and this place is packed to the rafters!"},
-    {"id": "caller.intro.03", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 2, "text": "Folks, I have been waiting all week for this one. Let's go to work."},
-    {"id": "caller.intro.04", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 3, "text": "Two armies, one floor, and nowhere to hide. Here we go!"},
-    {"id": "caller.intro.05", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 2, "text": "The engines are running, the crowd is on its feet, and we are moments away!"},
-    {"id": "caller.intro.06", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 2, "text": "{count} vehicles on the floor tonight, and every one of them came to fight."},
-    {"id": "caller.intro.07", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 2, "text": "If you're just tuning in, you picked the right night. Green and Rust, live, right now!"},
-    {"id": "caller.intro.08", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 3, "text": "Oh, you can feel it in the building tonight. You can feel it!"},
-    {"id": "caller.intro.09", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 2, "text": "It's a full house here at {arena}, and they came to see a fight!"},
-    {"id": "caller.intro.10", "speaker": "caller", "act": "hype", "tags": ["intro"], "intensity": 2, "text": "Buckle up, folks. This one has all the makings of something special."},
-    {"id": "caller.intro.11", "speaker": "caller", "act": "hype", "tags": ["intro", "control_point"], "intensity": 2, "text": "And the control point is live tonight, so nobody gets to sit back and wait!"},
-    {"id": "caller.intro.12", "speaker": "caller", "act": "hype", "tags": ["intro", "arena_scrapyard"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "intensity": 2, "text": "Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!"},
-
-    {"id": "pa.welcome.01", "speaker": "pa", "act": "welcome", "tags": ["intro"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "text": "Good evening, and welcome to {arena}. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them."},
-    {"id": "pa.welcome.02", "speaker": "pa", "act": "welcome", "tags": ["intro"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "text": "Good evening. On behalf of the Syndicate, welcome to {arena}. Please take a moment to locate the exit nearest your seat. Exits will open after the match."},
-    {"id": "pa.welcome.03", "speaker": "pa", "act": "welcome", "tags": ["intro"], "text": "Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene."},
-    {"id": "pa.welcome.04", "speaker": "pa", "act": "welcome", "tags": ["intro"], "text": "Good evening, and thank you for joining us. Tonight's crews have completed their paperwork, and their families have been sent the broadcast schedule."},
-    {"id": "pa.welcome.05", "speaker": "pa", "act": "welcome", "tags": ["intro"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "text": "Welcome to {arena}. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve."},
-    {"id": "pa.welcome.06", "speaker": "pa", "act": "welcome", "tags": ["intro"], "text": "Good evening. Before we begin, the Syndicate would like to thank the district of Low Harbor for tonight's participants."},
-    {"id": "pa.welcome.07", "speaker": "pa", "act": "welcome", "tags": ["intro"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "text": "Welcome, everyone, to {arena}. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows."},
-    {"id": "pa.welcome.08", "speaker": "pa", "act": "welcome", "tags": ["intro"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "text": "Good evening, and welcome to {arena}, to everyone watching at home, and to our viewers in the detention blocks."},
-    {"id": "pa.welcome.09", "speaker": "pa", "act": "welcome", "tags": ["intro"], "text": "Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season."},
-    {"id": "pa.welcome.10", "speaker": "pa", "act": "welcome", "tags": ["intro", "control_point"], "sets": ["welcomed"], "unless_flags": ["welcomed"], "text": "Welcome to {arena}. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location."},
-
-    {"id": "color.intro.01", "speaker": "color", "act": "analysis", "tags": ["intro"], "text": "Look how slow they're rolling out. Nobody wants to be first."},
-    {"id": "color.intro.02", "speaker": "color", "act": "analysis", "tags": ["intro"], "text": "The lights are the first thing you notice down there. For the first minute you can't see past the smoke."},
-    {"id": "color.intro.03", "speaker": "color", "act": "analysis", "tags": ["intro"], "text": "Stay patient, stay together. That's the whole job. Most crews forget both in the first thirty seconds."},
-    {"id": "color.intro.04", "speaker": "color", "act": "analysis", "tags": ["intro"], "text": "I tell everybody the same thing. Don't watch the guns. Watch who's moving."},
-    {"id": "color.intro.05", "speaker": "color", "act": "analysis", "tags": ["intro"], "text": "The crowd wants it fast. The crews who make it home don't give them fast."},
-    {"id": "color.intro.06", "speaker": "color", "act": "analysis", "tags": ["intro"], "text": "They all look calm from up here. They're not calm."},
-
-    {"id": "caller.army.01", "speaker": "caller", "act": "call", "tags": ["army", "heavy"], "intensity": 2, "text": "{team} rolls out {count} {units} tonight."},
-    {"id": "caller.army.02", "speaker": "caller", "act": "call", "tags": ["army", "all_same"], "intensity": 2, "text": "All {units} for {team}. Every last one."},
-    {"id": "caller.army.03", "speaker": "caller", "act": "call", "tags": ["army", "mixed"], "intensity": 1, "text": "A little bit of everything from {team}. A mixed army with a lot of options."},
-    {"id": "caller.army.04", "speaker": "caller", "act": "call", "tags": ["army", "heavy"], "intensity": 2, "text": "{team} goes heavy on {units} tonight, and I mean heavy."},
-    {"id": "caller.army.05", "speaker": "caller", "act": "call", "tags": ["army", "main_tank", "several"], "intensity": 2, "text": "{team} brings the tanks. Slow, loud, and they hit like a freight train."},
-    {"id": "caller.army.06", "speaker": "caller", "act": "call", "tags": ["army", "heavy_scout"], "intensity": 2, "text": "Scouts, scouts, and more scouts for {team}. They want this one fast."},
-    {"id": "caller.army.07", "speaker": "caller", "act": "call", "tags": ["army", "main_artillery"], "intensity": 2, "text": "{team} has the artillery. Everybody else, stay out of the open."},
-    {"id": "caller.army.08", "speaker": "caller", "act": "call", "tags": ["army", "main_ifv", "several"], "intensity": 2, "text": "IFVs for {team}. Those autocannons are going to be busy tonight."},
-    {"id": "caller.army.09", "speaker": "caller", "act": "call", "tags": ["army", "main_lancer"], "intensity": 2, "text": "{team} is running the Lancers. That beam reaches all the way across the floor, folks."},
-    {"id": "caller.army.10", "speaker": "caller", "act": "call", "tags": ["army", "all_same"], "intensity": 2, "text": "{team} is here with {count} {units} and a whole lot of bad intentions."},
-    {"id": "caller.army.11", "speaker": "caller", "act": "call", "tags": ["army"], "intensity": 1, "text": "And on the other side of the floor, {team} is lined up and ready."},
-
-    {"id": "caller.faction.01", "speaker": "caller", "act": "call", "tags": ["army", "introduce", "faction_condemned"], "intensity": 2, "text": "{team} fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!"},
-    {"id": "caller.faction.02", "speaker": "caller", "act": "call", "tags": ["army", "introduce", "faction_gangs"], "intensity": 3, "text": "Here come the road gangs! Chrome, fire, and not a single shield between them!"},
-    {"id": "caller.faction.03", "speaker": "caller", "act": "call", "tags": ["army", "introduce", "faction_law"], "intensity": 2, "text": "And here comes the Law. Listen to this building. They are not popular in here."},
-    {"id": "caller.faction.04", "speaker": "caller", "act": "call", "tags": ["army", "introduce", "faction_syndicate"], "intensity": 2, "text": "The Syndicate brings the hover machines. Look at that finish. Not a scratch on them."},
-    {"id": "caller.faction.05", "speaker": "caller", "act": "call", "tags": ["army", "introduce", "faction_condemned"], "intensity": 2, "text": "The Condemned are on the floor for {team}, and every one of those crews has something to prove!"},
-    {"id": "pa.faction.01", "speaker": "pa", "act": "notice", "tags": ["army", "introduce", "faction_condemned"], "text": "Tonight's Condemned crews are competing for sentence reductions, which will be applied following review."},
-    {"id": "pa.faction.02", "speaker": "pa", "act": "notice", "tags": ["army", "introduce", "faction_gangs"], "text": "Tonight's road gang crews join us from the eastern waste under a temporary entertainment permit."},
-    {"id": "pa.faction.03", "speaker": "pa", "act": "notice", "tags": ["army", "introduce", "faction_law"], "text": "Please welcome tonight's officers from the Law. Conduct toward officers in the stands is recorded for everyone's safety."},
-    {"id": "pa.faction.04", "speaker": "pa", "act": "notice", "tags": ["army", "introduce", "faction_syndicate"], "text": "Representing the Syndicate tonight, our partners' newest vehicles, available to qualified buyers after the season."},
-    {"id": "color.faction.01", "speaker": "color", "act": "analysis", "tags": ["army", "faction_condemned"], "text": "Those are my people. Every one of those crews is driving for a shorter sentence."},
-    {"id": "color.faction.02", "speaker": "color", "act": "analysis", "tags": ["army", "faction_gangs"], "text": "Gangs don't carry shields. They carry spare parts. You have to respect that."},
-    {"id": "color.faction.03", "speaker": "color", "act": "analysis", "tags": ["army", "faction_law"], "text": "The Law looks good on paper. Then you look at the rust around the bolts."},
-    {"id": "color.faction.04", "speaker": "color", "act": "analysis", "tags": ["army", "faction_syndicate"], "text": "Nobody is inside those. Remember that when they start winning."},
-
-    {"id": "caller.tape.01", "speaker": "caller", "act": "stat", "tags": ["tape", "outnumbers"], "intensity": 2, "text": "Tale of the tape: {team} brings {count} vehicles to {other_count}. They have the numbers."},
-    {"id": "caller.tape.02", "speaker": "caller", "act": "stat", "tags": ["tape", "even_numbers"], "intensity": 2, "text": "Tale of the tape: {count} vehicles a side. Nobody has the numbers tonight."},
-    {"id": "caller.tape.03", "speaker": "caller", "act": "stat", "tags": ["tape", "outnumbers"], "intensity": 1, "text": "By the numbers, it's {count} for {team} and {other_count} for {other_team}."},
-    {"id": "color.tape.01", "speaker": "color", "act": "analysis", "tags": ["tape", "outnumbers"], "text": "More isn't better if they don't work together. {other_team} has fewer to keep track of."},
-    {"id": "color.tape.02", "speaker": "color", "act": "analysis", "tags": ["tape", "even_numbers"], "text": "Even numbers. Then it comes down to who wins the first trade."},
-    {"id": "color.tape.03", "speaker": "color", "act": "analysis", "tags": ["tape"], "text": "Numbers are fine. I'd rather know which of those crews have driven this floor before."},
-
-    {"id": "color.army.01", "speaker": "color", "act": "analysis", "tags": ["army", "main_tank"], "text": "{team} came to hold ground. That army doesn't chase anybody."},
-    {"id": "color.army.02", "speaker": "color", "act": "analysis", "tags": ["army", "heavy_scout"], "text": "Scouts are eyes, not fists. {team} needs to remember that."},
-    {"id": "color.army.03", "speaker": "color", "act": "analysis", "tags": ["army", "heavy"], "text": "That's a lot of {units}. I hope {team} has a plan for whatever beats them."},
-    {"id": "color.army.04", "speaker": "color", "act": "analysis", "tags": ["army", "mixed"], "text": "Mixed army. That's the smart build. It's also the hard one to drive."},
-    {"id": "color.army.05", "speaker": "color", "act": "analysis", "tags": ["army", "main_artillery"], "text": "Artillery needs somebody else's eyes. {team} better keep a scout alive."},
-    {"id": "color.army.06", "speaker": "color", "act": "analysis", "tags": ["army", "main_ifv"], "text": "IFVs are honest work. Nothing fancy. They'll chew up anything light."},
-    {"id": "color.army.07", "speaker": "color", "act": "analysis", "tags": ["army", "main_tank"], "text": "{team_s} army turns slowly. Good if they get set. Bad if they don't."},
-    {"id": "color.army.08", "speaker": "color", "act": "analysis", "tags": ["army"], "text": "I've seen {team} crews in the tunnel. Quiet. That's usually a good sign."},
-
-    {"id": "caller.preview.01", "speaker": "caller", "act": "setup_question", "tags": ["preview", "counter"], "topic": "counter", "text": "{team} brought {units} to face {other_units}. That's the matchup you want, isn't it?"},
-    {"id": "color.preview.01", "speaker": "color", "act": "answer_agree", "tags": ["preview"], "topic": "counter", "text": "It is. If they don't do anything stupid with it, it is."},
-    {"id": "color.preview.02", "speaker": "color", "act": "answer_disagree", "tags": ["preview"], "topic": "counter", "text": "On paper. Then the other side parks behind a wall and waits. Matchups don't shoot."},
-    {"id": "caller.preview.02", "speaker": "caller", "act": "setup_question", "tags": ["preview", "mirror"], "topic": "mirror", "text": "Same armies, same floor. What decides a mirror match?"},
-    {"id": "color.preview.03", "speaker": "color", "act": "answer_agree", "tags": ["preview"], "topic": "mirror", "text": "Who blinks. Somebody always moves before they should."},
-    {"id": "color.preview.04", "speaker": "color", "act": "answer_disagree", "tags": ["preview"], "topic": "mirror", "text": "Nothing that happens today. It's decided by who slept last night."},
-    {"id": "caller.preview.03", "speaker": "caller", "act": "setup_question", "tags": ["preview"], "topic": "early", "text": "What do you need to see from {team} early?"},
-    {"id": "color.preview.05", "speaker": "color", "act": "answer_agree", "tags": ["preview"], "topic": "early", "text": "Stay together. That's all. Stay together for one minute and see what happens."},
-    {"id": "color.preview.06", "speaker": "color", "act": "answer_disagree", "tags": ["preview"], "topic": "early", "text": "I want to see them find cover before they find a target."},
-    {"id": "caller.preview.04", "speaker": "caller", "act": "setup_question", "tags": ["preview"], "topic": "pick", "text": "Before we start, who do you like tonight?"},
-    {"id": "color.preview.07", "speaker": "color", "act": "answer_agree", "tags": ["preview"], "topic": "pick", "text": "I like whoever is still moving in two minutes."},
-    {"id": "color.preview.08", "speaker": "color", "act": "answer_disagree", "tags": ["preview"], "topic": "pick", "text": "I don't pick. I respect both of them. Ask me after."},
-    {"id": "color.preview.09", "speaker": "color", "act": "prediction", "tags": ["preview"], "sets": ["predicted_friendly_fire"], "text": "Somebody's going to get hit by their own side tonight. Too many heavy guns in a small room."},
-    {"id": "color.preview.10", "speaker": "color", "act": "prediction", "tags": ["preview"], "sets": ["predicted_scouts"], "text": "Whoever loses their scouts first is going to be driving blind by the end."},
-    {"id": "color.preview.11", "speaker": "color", "act": "analysis", "tags": ["preview", "counter"], "text": "{team} has the matchup. {other_team} has to be smarter than the matchup. That's a lot to ask."},
-
-    {"id": "caller.contact.01", "speaker": "caller", "act": "call", "tags": ["contact"], "intensity": 2, "text": "And we have contact! {team} opens fire!"},
-    {"id": "caller.contact.02", "speaker": "caller", "act": "call", "tags": ["contact"], "intensity": 2, "text": "Shots fired! {team} takes the first shot!"},
-    {"id": "caller.contact.03", "speaker": "caller", "act": "call", "tags": ["contact"], "intensity": 2, "text": "Here we go! The {team} {unit} lets it rip!"},
-    {"id": "caller.contact.04", "speaker": "caller", "act": "call", "tags": ["contact"], "intensity": 2, "text": "There it is! First shots of the night, and they come from {team}!"},
-    {"id": "caller.contact.05", "speaker": "caller", "act": "call", "tags": ["contact"], "intensity": 2, "text": "Contact, contact! {team} found them first!"},
-    {"id": "caller.contact.06", "speaker": "caller", "act": "call", "tags": ["contact"], "intensity": 2, "text": "{team_s} {unit} spots the {target_unit} and doesn't wait around!"},
-    {"id": "caller.contact.07", "speaker": "caller", "act": "call", "tags": ["contact"], "intensity": 3, "text": "They've found each other! We are underway!"},
-    {"id": "caller.contact.08", "speaker": "caller", "act": "call", "tags": ["contact", "unit_scout"], "intensity": 2, "text": "The scout finds them first! That's the job, and {team} is doing it!"},
-    {"id": "caller.contact.09", "speaker": "caller", "act": "call", "tags": ["contact", "unit_artillery"], "intensity": 2, "text": "Artillery opens the night! {team} is shelling from long range!"},
-    {"id": "caller.contact.10", "speaker": "caller", "act": "call", "tags": ["contact", "unit_tank"], "intensity": 2, "text": "Big gun, first shot! The {team} tank gets things started!"},
-    {"id": "caller.contact.11", "speaker": "caller", "act": "call", "tags": ["contact", "unit_lancer"], "intensity": 2, "text": "There's the beam! The Lancer reaches out across the floor for the {target_unit}!"},
-    {"id": "caller.contact.12", "speaker": "caller", "act": "call", "tags": ["contact", "unit_ifv"], "intensity": 2, "text": "The autocannon opens up! {team_s} IFV is the first to speak!"},
-    {"id": "color.contact.01", "speaker": "color", "act": "analysis", "tags": ["contact"], "text": "First shot isn't the fight. First hit is."},
-    {"id": "color.contact.02", "speaker": "color", "act": "analysis", "tags": ["contact"], "text": "Whoever shot first just told everybody where they are. Now we see if it was worth it."},
-    {"id": "color.contact.03", "speaker": "color", "act": "analysis", "tags": ["contact"], "text": "Now everybody knows where everybody is. This is where it gets honest."},
-    {"id": "color.contact.04", "speaker": "color", "act": "analysis", "tags": ["contact"], "text": "They're shooting a little early for my liking. That's nerves."},
-    {"id": "color.contact.05", "speaker": "color", "act": "analysis", "tags": ["contact", "unit_scout"], "text": "That scout did its job. Now it needs to get out of there."},
-
-    {"id": "caller.button.01", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 3, "text": "Whoa!"},
-    {"id": "caller.button.02", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 3, "text": "Oh, my goodness!"},
-    {"id": "caller.button.03", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 3, "text": "Unbelievable!"},
-    {"id": "caller.button.04", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 2, "text": "What a moment!"},
-    {"id": "caller.button.05", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 2, "text": "Wow. Just wow."},
-    {"id": "caller.button.06", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 3, "text": "Are you kidding me?"},
-    {"id": "caller.button.07", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 2, "text": "Listen to this crowd!"},
-    {"id": "caller.button.08", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 2, "text": "You cannot script this!"},
-    {"id": "caller.button.09", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 2, "text": "That's why we're here, folks!"},
-    {"id": "caller.button.10", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 1, "text": "Oh, that was nasty."},
-    {"id": "caller.button.11", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 2, "text": "This is fight night!"},
-    {"id": "caller.button.12", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 1, "text": "Oh, I felt that one up here."},
-    {"id": "caller.button.13", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 3, "text": "Oh! Oh!"},
-    {"id": "caller.button.14", "speaker": "caller", "act": "button", "tags": ["any"], "intensity": 1, "text": "That's going to leave a mark."},
-    {"id": "caller.button.15", "speaker": "caller", "act": "button", "tags": ["result"], "intensity": 3, "text": "What a night!"},
-    {"id": "caller.button.16", "speaker": "caller", "act": "button", "tags": ["result"], "intensity": 2, "text": "What a fight, folks. What a fight."},
-
-    {"id": "caller.interrupt.01", "speaker": "caller", "act": "interrupt", "tags": ["any"], "text": "Oh, wait, wait!"},
-    {"id": "caller.interrupt.02", "speaker": "caller", "act": "interrupt", "tags": ["any"], "text": "Hold on, hold on!"},
-    {"id": "caller.interrupt.03", "speaker": "caller", "act": "interrupt", "tags": ["any"], "text": "Oh! Look at this!"},
-    {"id": "caller.interrupt.04", "speaker": "caller", "act": "interrupt", "tags": ["any"], "text": "Sorry to cut you off, but look!"},
-    {"id": "caller.interrupt.05", "speaker": "caller", "act": "interrupt", "tags": ["any"], "text": "Whoa, whoa, whoa!"},
-    {"id": "caller.interrupt.06", "speaker": "caller", "act": "interrupt", "tags": ["any"], "text": "Here it comes!"},
-
-    {"id": "caller.hit.01", "speaker": "caller", "act": "call", "tags": ["big_hit"], "intensity": 2, "text": "Big shot! Big shot from {team}!"},
-    {"id": "caller.hit.02", "speaker": "caller", "act": "call", "tags": ["big_hit"], "intensity": 2, "text": "Oh! The {victim_unit} took that one right on the chin!"},
-    {"id": "caller.hit.03", "speaker": "caller", "act": "call", "tags": ["big_hit"], "intensity": 2, "text": "Ohh, that rocked the {victim_unit}!"},
-    {"id": "caller.hit.04", "speaker": "caller", "act": "call", "tags": ["big_hit"], "intensity": 1, "text": "{team} lands a heavy one!"},
-    {"id": "caller.hit.05", "speaker": "caller", "act": "call", "tags": ["big_hit", "hurt"], "intensity": 3, "text": "That {victim_unit} is hurt! That {victim_unit} is hurt!"},
-    {"id": "caller.hit.06", "speaker": "caller", "act": "call", "tags": ["big_hit", "hurt"], "intensity": 2, "text": "The {victim_unit} is smoking, and {team} smells blood!"},
-    {"id": "caller.hit.07", "speaker": "caller", "act": "call", "tags": ["big_hit", "weak_spot"], "intensity": 2, "text": "Right in the weak spot! What a shot!"},
-    {"id": "caller.hit.08", "speaker": "caller", "act": "call", "tags": ["big_hit", "weak_spot"], "intensity": 2, "text": "They found the soft spot on that {victim_unit}!"},
-    {"id": "caller.hit.09", "speaker": "caller", "act": "call", "tags": ["big_hit", "rear"], "intensity": 2, "text": "Right up the tailpipe! {team} caught that {victim_unit} from behind!"},
-    {"id": "caller.hit.10", "speaker": "caller", "act": "call", "tags": ["big_hit", "shooter_tank"], "intensity": 2, "text": "The tank round lands! You felt that one in the seats!"},
-    {"id": "caller.hit.11", "speaker": "caller", "act": "call", "tags": ["big_hit", "shooter_ifv"], "intensity": 2, "text": "The autocannon is chewing right through that {victim_unit}!"},
-    {"id": "caller.hit.12", "speaker": "caller", "act": "call", "tags": ["big_hit", "shooter_lancer"], "intensity": 2, "text": "The Lancer's beam cuts right across the {victim_unit}!"},
-    {"id": "caller.hit.13", "speaker": "caller", "act": "call", "tags": ["big_hit", "shooter_artillery"], "intensity": 2, "text": "The artillery comes down right on top of the {victim_unit}!"},
-    {"id": "caller.hit.14", "speaker": "caller", "act": "call", "tags": ["big_hit", "shooter_scout"], "intensity": 2, "text": "That scout's machine gun is just hosing the {victim_unit}!"},
-    {"id": "caller.hit.15", "speaker": "caller", "act": "call", "tags": ["big_hit"], "intensity": 1, "text": "{team} connects, and the {victim_unit} wobbles!"},
-    {"id": "color.hit.01", "speaker": "color", "act": "analysis", "tags": ["big_hit", "weak_spot"], "text": "That's where you aim. Everybody knows it. Almost nobody does it."},
-    {"id": "color.hit.02", "speaker": "color", "act": "analysis", "tags": ["big_hit", "weak_spot"], "text": "They showed their side. You can't show your side in here."},
-    {"id": "color.hit.03", "speaker": "color", "act": "analysis", "tags": ["big_hit", "rear"], "text": "Nobody was watching the back. Somebody always has to watch the back."},
-
-    {"id": "caller.kill.01", "speaker": "caller", "act": "call", "tags": ["kill"], "without": ["final_kill"], "intensity": 2, "text": "{team} takes out the {victim_unit}!"},
-    {"id": "caller.kill.02", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 2, "text": "The {victim_unit} is done! {team} gets the kill!"},
-    {"id": "caller.kill.03", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 2, "text": "That's it for the {victim_unit}! It is not moving!"},
-    {"id": "caller.kill.04", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 2, "text": "Oh, the {other_team} {victim_unit} is finished!"},
-    {"id": "caller.kill.05", "speaker": "caller", "act": "call", "tags": ["kill"], "without": ["final_kill"], "intensity": 2, "text": "Scratch one {victim_unit}! {team} strikes!"},
-    {"id": "caller.kill.06", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 3, "text": "And the {victim_unit} goes up in flames!"},
-    {"id": "caller.kill.07", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 2, "text": "That {victim_unit} is out of the fight!"},
-    {"id": "caller.kill.08", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 2, "text": "{team_s} {killer_unit} puts the {victim_unit} away!"},
-    {"id": "caller.kill.09", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 3, "text": "Put it away! {team} puts it away!"},
-    {"id": "caller.kill.10", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 2, "text": "It's gone! That {victim_unit} is gone!"},
-    {"id": "caller.kill.11", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 1, "text": "{team} picks off the {victim_unit}. Clean work."},
-    {"id": "caller.kill.12", "speaker": "caller", "act": "call", "tags": ["kill"], "intensity": 3, "text": "Oh, they blew that {victim_unit} wide open!"},
-    {"id": "caller.kill.13", "speaker": "caller", "act": "call", "tags": ["kill", "first_blood"], "intensity": 3, "text": "First blood goes to {team}!"},
-    {"id": "caller.kill.14", "speaker": "caller", "act": "call", "tags": ["kill", "first_blood"], "intensity": 3, "text": "{team} draws first blood, and this crowd is on its feet!"},
-    {"id": "caller.kill.15", "speaker": "caller", "act": "call", "tags": ["kill", "first_blood"], "intensity": 3, "text": "There it is! The first kill of the night belongs to {team}!"},
-    {"id": "caller.kill.16", "speaker": "caller", "act": "call", "tags": ["kill", "first_blood"], "intensity": 3, "text": "And {team} strikes first! The {killer_unit} gets the honors!"},
-    {"id": "caller.kill.17", "speaker": "caller", "act": "call", "tags": ["kill", "first_blood"], "intensity": 2, "text": "First one down! {team} lands the first real blow of the night!"},
-    {"id": "caller.kill.18", "speaker": "caller", "act": "call", "tags": ["kill", "upset"], "intensity": 3, "text": "Are you kidding me? The {killer_unit} takes out the {victim_unit}!"},
-    {"id": "caller.kill.19", "speaker": "caller", "act": "call", "tags": ["kill", "upset"], "intensity": 3, "text": "Nobody saw that coming! The {killer_unit} beats the {victim_unit}!"},
-    {"id": "caller.kill.20", "speaker": "caller", "act": "call", "tags": ["kill", "upset"], "intensity": 3, "text": "That is not supposed to happen! {team_s} {killer_unit} just took down the {victim_unit}!"},
-    {"id": "caller.kill.21", "speaker": "caller", "act": "call", "tags": ["kill", "upset"], "intensity": 3, "text": "Upset! Upset on the floor! The {killer_unit} gets it done!"},
-    {"id": "caller.kill.22", "speaker": "caller", "act": "call", "tags": ["kill", "counter"], "intensity": 2, "text": "That's the matchup! The {killer_unit} does exactly what it was built to do!"},
-    {"id": "caller.kill.23", "speaker": "caller", "act": "call", "tags": ["kill", "counter"], "intensity": 2, "text": "Textbook! The {killer_unit} eats the {victim_unit} alive!"},
-    {"id": "caller.kill.24", "speaker": "caller", "act": "call", "tags": ["kill", "killer_tank"], "intensity": 3, "text": "The tank round lands, and the {victim_unit} just comes apart!"},
-    {"id": "caller.kill.25", "speaker": "caller", "act": "call", "tags": ["kill", "killer_tank"], "intensity": 3, "text": "One shot! One shot from the big gun and it's over for that {victim_unit}!"},
-    {"id": "caller.kill.26", "speaker": "caller", "act": "call", "tags": ["kill", "killer_scout", "victim_tank"], "intensity": 3, "text": "The scout! The scout gets around the back of the tank and takes it down!"},
-    {"id": "caller.kill.27", "speaker": "caller", "act": "call", "tags": ["kill", "killer_ifv", "victim_scout"], "intensity": 2, "text": "The IFV shreds the scout! Too slow to run, too light to take it!"},
-    {"id": "caller.kill.28", "speaker": "caller", "act": "call", "tags": ["kill", "killer_artillery"], "intensity": 2, "text": "The artillery finds its mark! {team} shells the {victim_unit} right out of the fight!"},
-    {"id": "caller.kill.29", "speaker": "caller", "act": "call", "tags": ["kill", "killer_lancer"], "intensity": 2, "text": "The Lancer burns right through the {victim_unit}!"},
-    {"id": "caller.kill.30", "speaker": "caller", "act": "call", "tags": ["kill", "victim_artillery"], "intensity": 3, "text": "They got to the artillery! {team} gets in close and silences the big guns!"},
-    {"id": "caller.kill.31", "speaker": "caller", "act": "call", "tags": ["kill", "victim_tank"], "intensity": 3, "text": "The tank is down! The biggest thing on the floor is down!"},
-    {"id": "caller.kill.32", "speaker": "caller", "act": "call", "tags": ["kill", "victim_scout"], "intensity": 2, "text": "The scout runs out of road!"},
-    {"id": "caller.kill.33", "speaker": "caller", "act": "call", "tags": ["kill", "killer_burner"], "intensity": 3, "text": "The Burner lights up the {victim_unit}!"},
-    {"id": "caller.kill.34", "speaker": "caller", "act": "call", "tags": ["kill", "victim_lancer"], "intensity": 2, "text": "The Lancer goes dark! {team} shuts off the beam!"},
-    {"id": "caller.kill.35", "speaker": "caller", "act": "call", "tags": ["kill", "victim_ifv"], "intensity": 2, "text": "The IFV is finished! {team} cracks it wide open!"},
-    {"id": "caller.kill.36", "speaker": "caller", "act": "call", "tags": ["kill", "killer_scout"], "intensity": 2, "text": "Death by a thousand cuts! The scout's machine gun finally drops the {victim_unit}!"},
-    {"id": "caller.kill.37", "speaker": "caller", "act": "call", "tags": ["kill", "killer_ifv"], "intensity": 2, "text": "Burst after burst, and the {victim_unit} can't take any more!"},
-    {"id": "caller.kill.38", "speaker": "caller", "act": "call", "tags": ["kill", "rear"], "intensity": 3, "text": "Right in the back! {team} finishes the {victim_unit} from behind!"},
-    {"id": "caller.kill.39", "speaker": "caller", "act": "call", "tags": ["kill", "weak_spot"], "intensity": 3, "text": "They hit the weak spot and the {victim_unit} just folds!"},
-    {"id": "caller.kill.40", "speaker": "caller", "act": "call", "tags": ["kill", "streak"], "intensity": 3, "text": "That's {streak} in a row for {team}! They cannot miss!"},
-    {"id": "caller.kill.41", "speaker": "caller", "act": "call", "tags": ["kill", "streak"], "intensity": 3, "text": "{team} is on a tear! That's {streak} straight!"},
-    {"id": "caller.kill.42", "speaker": "caller", "act": "call", "tags": ["kill", "streak"], "intensity": 3, "text": "Another one for {team}! This is a clinic!"},
-    {"id": "caller.kill.43", "speaker": "caller", "act": "call", "tags": ["kill", "another"], "intensity": 3, "text": "And another one! {team} isn't done!"},
-    {"id": "caller.kill.44", "speaker": "caller", "act": "call", "tags": ["kill", "another"], "intensity": 3, "text": "Two in a row! {team} strikes again!"},
-    {"id": "caller.kill.45", "speaker": "caller", "act": "call", "tags": ["kill", "another"], "intensity": 3, "text": "Back to back! {team} takes out the {victim_unit} too!"},
-    {"id": "caller.kill.46", "speaker": "caller", "act": "call", "tags": ["kill", "another"], "intensity": 3, "text": "They got another one! Oh my goodness!"},
-    {"id": "caller.kill.47", "speaker": "caller", "act": "call", "tags": ["kill", "another"], "intensity": 2, "text": "And the {victim_unit} goes down right behind it!"},
-    {"id": "caller.kill.48", "speaker": "caller", "act": "call", "tags": ["kill", "last_unit"], "intensity": 3, "text": "{other_team} is down to its last vehicle!"},
-    {"id": "caller.kill.49", "speaker": "caller", "act": "call", "tags": ["kill", "last_unit"], "intensity": 3, "text": "One left! {other_team} has one left!"},
-    {"id": "caller.kill.50", "speaker": "caller", "act": "call", "tags": ["kill", "last_unit"], "intensity": 3, "text": "It's all on the last {other_team} vehicle now!"},
-    {"id": "caller.kill.51", "speaker": "caller", "act": "call", "tags": ["kill", "last_unit"], "intensity": 3, "text": "That leaves {other_team} with one. One!"},
-    {"id": "caller.kill.52", "speaker": "caller", "act": "call", "tags": ["kill"], "without": ["last_unit", "final_kill"], "intensity": 2, "text": "{other_team} is down to {count}!"},
-    {"id": "caller.kill.53", "speaker": "caller", "act": "call", "tags": ["kill"], "without": ["last_unit", "final_kill"], "intensity": 1, "text": "The {victim_unit} is out, and that's {count} left for {other_team}."},
-    {"id": "caller.kill.54", "speaker": "caller", "act": "call", "tags": ["kill", "even"], "intensity": 3, "text": "And just like that, we're even! {count} a side!"},
-    {"id": "caller.kill.55", "speaker": "caller", "act": "call", "tags": ["kill", "even"], "intensity": 3, "text": "All square! This thing is dead even!"},
-    {"id": "caller.kill.56", "speaker": "caller", "act": "call", "tags": ["kill", "lead_change"], "intensity": 3, "text": "{team} takes the lead!"},
-    {"id": "caller.kill.57", "speaker": "caller", "act": "call", "tags": ["kill", "lead_change"], "intensity": 3, "text": "And now it's {team} with the numbers!"},
-    {"id": "caller.kill.58", "speaker": "caller", "act": "call", "tags": ["kill", "comeback"], "intensity": 3, "text": "{team} has fought all the way back! What a comeback this is turning into!"},
-    {"id": "caller.kill.59", "speaker": "caller", "act": "call", "tags": ["kill", "comeback"], "intensity": 3, "text": "Remember when {team} was finished? Nobody told {team}!"},
-    {"id": "caller.kill.60", "speaker": "caller", "act": "call", "tags": ["kill", "final_kill"], "intensity": 3, "text": "That's the last one! {team} wipes them out!"},
-    {"id": "caller.kill.61", "speaker": "caller", "act": "call", "tags": ["kill", "final_kill"], "intensity": 3, "text": "The last {other_team} vehicle goes down!"},
-    {"id": "caller.kill.62", "speaker": "caller", "act": "call", "tags": ["kill", "final_kill"], "intensity": 3, "text": "And that's it! That's the last one!"},
-    {"id": "caller.kill.63", "speaker": "caller", "act": "call", "tags": ["kill", "final_kill"], "intensity": 3, "text": "{team} finishes it! The last {victim_unit} is gone!"},
-    {"id": "caller.kill.64", "speaker": "caller", "act": "call", "tags": ["kill", "mirror"], "intensity": 2, "text": "{killer_unit} against {victim_unit}, and {team} wins the exchange!"},
-    {"id": "caller.kill.65", "speaker": "caller", "act": "call", "tags": ["kill", "flurry"], "intensity": 3, "text": "Vehicles are going down all over the floor! {kills} in a matter of seconds!"},
-    {"id": "caller.kill.66", "speaker": "caller", "act": "call", "tags": ["kill", "flurry"], "intensity": 3, "text": "It is chaos down there! I can't even keep up!"},
-    {"id": "caller.kill.67", "speaker": "caller", "act": "call", "tags": ["kill", "flurry"], "without": ["trade"], "intensity": 3, "text": "{team} is cleaning house! {kills} down, just like that!"},
-    {"id": "caller.kill.68", "speaker": "caller", "act": "call", "tags": ["kill", "flurry"], "intensity": 3, "text": "Did everybody see that? {kills} vehicles gone in the blink of an eye!"},
-    {"id": "caller.kill.69", "speaker": "caller", "act": "call", "tags": ["kill", "trade"], "intensity": 3, "text": "They're trading! They are trading in the middle of the floor!"},
-    {"id": "caller.kill.70", "speaker": "caller", "act": "call", "tags": ["kill", "trade"], "intensity": 3, "text": "Both sides lose one! Neither army is backing down!"},
-    {"id": "caller.kill.71", "speaker": "caller", "act": "call", "tags": ["kill", "trade"], "intensity": 3, "text": "Blow for blow! Everybody is swinging, and everybody is getting hit!"},
-    {"id": "color.kill.20", "speaker": "color", "act": "analysis", "tags": ["kill", "trade"], "text": "Even trades favor whoever has more left. Count them before you swing."},
-    {"id": "color.kill.21", "speaker": "color", "act": "analysis", "tags": ["kill", "trade"], "text": "That's a brawl. Nobody planned that. Somebody's going to wish they had."},
-    {"id": "caller.kill.72", "speaker": "caller", "act": "call", "tags": ["kill", "faction_gangs"], "without": ["final_kill"], "intensity": 3, "text": "The gang crew goes screaming in and gets it done! Listen to this crowd!"},
-    {"id": "caller.kill.73", "speaker": "caller", "act": "call", "tags": ["kill", "other_faction_law"], "without": ["final_kill"], "intensity": 3, "text": "The Law loses one, and this building absolutely loves it!"},
-    {"id": "caller.kill.74", "speaker": "caller", "act": "call", "tags": ["kill", "faction_law"], "without": ["final_kill"], "intensity": 2, "text": "The Law takes out the {victim_unit}, and the boos are raining down!"},
-    {"id": "caller.kill.75", "speaker": "caller", "act": "call", "tags": ["kill", "faction_syndicate"], "without": ["final_kill"], "intensity": 2, "text": "The Syndicate machine takes it clean. That was surgical."},
-    {"id": "caller.kill.76", "speaker": "caller", "act": "call", "tags": ["kill", "other_faction_syndicate"], "without": ["final_kill"], "intensity": 3, "text": "They put a hole in the Syndicate's pretty paint job!"},
-    {"id": "pa.syndicate.01", "speaker": "pa", "act": "sponsor_read", "tags": ["kill", "faction_syndicate"], "text": "That was the Vesper hover platform, now in limited release for private security contracts."},
-    {"id": "pa.syndicate.02", "speaker": "pa", "act": "sponsor_read", "tags": ["kill", "faction_syndicate"], "text": "The Syndicate congratulates its engineering team on another successful field test."},
-    {"id": "pa.syndicate.03", "speaker": "pa", "act": "sponsor_read", "tags": ["kill", "faction_syndicate"], "text": "Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts."},
-    {"id": "color.faction.05", "speaker": "color", "act": "roast", "tags": ["kill", "other_faction_syndicate"], "text": "They'll build another one. They always build another one."},
-    {"id": "color.faction.06", "speaker": "color", "act": "analysis", "tags": ["kill", "faction_gangs"], "text": "No shields, so they don't wait. Get in close and hit first. It's the only way they know."},
-    {"id": "caller.stat.01", "speaker": "caller", "act": "stat", "tags": ["kill", "streak"], "intensity": 2, "text": "{team} has taken out {streak} in a row without losing one."},
-    {"id": "caller.stat.02", "speaker": "caller", "act": "stat", "tags": ["kill", "streak"], "intensity": 2, "text": "{streak} unanswered for {team}. {other_team} has to do something, and fast."},
-
-    {"id": "color.kill.01", "speaker": "color", "act": "roast", "tags": ["kill", "first_blood"], "text": "{other_team} will want that one back. You don't give up the first one that easy."},
-    {"id": "color.kill.02", "speaker": "color", "act": "analysis", "tags": ["kill", "first_blood"], "text": "First kill doesn't win it. But it's a long way back from being down one."},
-    {"id": "color.kill.03", "speaker": "color", "act": "analysis", "tags": ["kill", "upset"], "text": "That {victim_unit} should have won that. It sat still and let it happen."},
-    {"id": "color.kill.04", "speaker": "color", "act": "analysis", "tags": ["kill", "upset"], "text": "Matchups are a suggestion. That crew didn't take it."},
-    {"id": "color.kill.05", "speaker": "color", "act": "analysis", "tags": ["kill", "counter"], "text": "That's what they built it for. No surprises there."},
-    {"id": "color.kill.06", "speaker": "color", "act": "roast", "tags": ["kill", "counter"], "text": "You don't take the {victim_unit} into that. You just don't."},
-    {"id": "color.kill.07", "speaker": "color", "act": "analysis", "tags": ["kill", "last_unit"], "text": "{other_team} has one left. Now it gets interesting, or it gets short."},
-    {"id": "color.kill.08", "speaker": "color", "act": "analysis", "tags": ["kill", "last_unit"], "text": "That last {other_team} crew has nothing to lose. That's the dangerous one."},
-    {"id": "color.kill.09", "speaker": "color", "act": "roast", "tags": ["kill"], "text": "{other_team} was in the open for too long. You saw it coming from here."},
-    {"id": "color.kill.10", "speaker": "color", "act": "analysis", "tags": ["kill"], "text": "Patience. {team} waited for the shot and took it."},
-    {"id": "color.kill.11", "speaker": "color", "act": "roast", "tags": ["kill"], "text": "That crew stopped moving. You stop moving in here, you stop."},
-    {"id": "color.kill.12", "speaker": "color", "act": "analysis", "tags": ["kill"], "text": "Good trade for {team}. They'll take that all night."},
-    {"id": "color.kill.13", "speaker": "color", "act": "roast", "tags": ["kill"], "text": "He'll want that one back. They all do."},
-    {"id": "color.kill.14", "speaker": "color", "act": "analysis", "tags": ["kill", "rear"], "text": "That's what happens when nobody checks behind them. It's a big floor."},
-    {"id": "color.kill.15", "speaker": "color", "act": "analysis", "tags": ["kill", "comeback"], "text": "{team} didn't panic. That's the whole comeback right there. Nobody panicked."},
-    {"id": "color.kill.16", "speaker": "color", "act": "analysis", "tags": ["kill", "streak"], "text": "{other_team} keeps feeding them one at a time. Regroup. Please regroup."},
-    {"id": "color.kill.17", "speaker": "color", "act": "callback", "tags": ["kill", "victim_scout"], "needs": ["predicted_scouts"], "text": "There go the eyes. I said it before the match. Watch what happens to {other_team} now."},
-    {"id": "color.kill.18", "speaker": "color", "act": "analysis", "tags": ["kill", "victim_artillery"], "text": "Artillery with nobody guarding it. That's a gift."},
-    {"id": "color.kill.19", "speaker": "color", "act": "analysis", "tags": ["kill", "killer_scout", "victim_tank"], "text": "The turret can't turn that fast. The scout knew it. That's a smart driver."},
-
-    {"id": "caller.ownkill.01", "speaker": "caller", "act": "call", "tags": ["friendly_kill"], "intensity": 3, "text": "Oh no! {team} just took out its own {victim_unit}!"},
-    {"id": "caller.ownkill.02", "speaker": "caller", "act": "call", "tags": ["friendly_kill"], "intensity": 3, "text": "Friendly fire, and it's fatal! Oh, that is hard to watch!"},
-    {"id": "caller.ownkill.03", "speaker": "caller", "act": "call", "tags": ["friendly_kill"], "intensity": 3, "text": "They hit their own! {team} loses the {victim_unit} to its own guns!"},
-    {"id": "caller.ownkill.04", "speaker": "caller", "act": "call", "tags": ["friendly_kill"], "intensity": 3, "text": "That's a {team} {killer_unit} destroying a {team} {victim_unit}! Their own teammate!"},
-    {"id": "caller.ownkill.05", "speaker": "caller", "act": "call", "tags": ["friendly_kill", "repeat"], "needs": ["said_friendly_{team}"], "intensity": 3, "text": "Again! {team} has done it again!"},
-    {"id": "caller.ownkill.06", "speaker": "caller", "act": "call", "tags": ["friendly_kill", "killer_artillery"], "intensity": 3, "text": "The {team} artillery drops it right on its own {victim_unit}! It's gone!"},
-    {"id": "color.ownkill.01", "speaker": "color", "act": "roast", "tags": ["friendly_kill"], "text": "Look before you shoot. It's not complicated. It's just hard."},
-    {"id": "color.ownkill.02", "speaker": "color", "act": "roast", "tags": ["friendly_kill"], "text": "Somebody on {team} is going to have a long conversation after this."},
-    {"id": "color.ownkill.03", "speaker": "color", "act": "roast", "tags": ["friendly_kill"], "text": "That's not bad luck. That's where they chose to stand."},
-    {"id": "color.ownkill.04", "speaker": "color", "act": "roast", "tags": ["friendly_kill"], "text": "I've seen it happen. You don't forget the sound of it."},
-    {"id": "color.ownkill.05", "speaker": "color", "act": "roast", "tags": ["friendly_kill", "killer_artillery"], "text": "You shell a crowd, you're going to hit your own. Everybody's in the crowd."},
-    {"id": "color.ownkill.06", "speaker": "color", "act": "callback", "tags": ["friendly_kill"], "needs": ["predicted_friendly_fire"], "text": "I said it before the match. Too many heavy guns in a small room."},
-
-    {"id": "caller.hazard.01", "speaker": "caller", "act": "call", "tags": ["hazard_kill"], "intensity": 3, "text": "The {victim_unit} drives right into the fire!"},
-    {"id": "caller.hazard.02", "speaker": "caller", "act": "call", "tags": ["hazard_kill"], "intensity": 3, "text": "Oh! The arena takes the {victim_unit}! Nobody even touched it!"},
-    {"id": "caller.hazard.03", "speaker": "caller", "act": "call", "tags": ["hazard_kill"], "intensity": 2, "text": "The pit claims one! {team} loses the {victim_unit} to the floor itself!"},
-    {"id": "caller.hazard.04", "speaker": "caller", "act": "call", "tags": ["hazard_kill"], "intensity": 2, "text": "That {victim_unit} was already hurting, and the fire finishes the job!"},
-    {"id": "pa.hazard.01", "speaker": "pa", "act": "notice", "tags": ["hazard_kill"], "text": "A reminder to participants that the fire pits remain active for the duration of the match."},
-    {"id": "pa.hazard.02", "speaker": "pa", "act": "notice", "tags": ["hazard_kill"], "text": "The fire pits were inspected before tonight's match and are operating normally."},
-
-    {"id": "caller.ff.01", "speaker": "caller", "act": "call", "tags": ["friendly_fire"], "intensity": 2, "text": "Whoa, whoa! {team} just hit its own {victim_unit}!"},
-    {"id": "caller.ff.02", "speaker": "caller", "act": "call", "tags": ["friendly_fire"], "intensity": 2, "text": "Friendly fire! The {team} {unit} catches a teammate!"},
-    {"id": "caller.ff.03", "speaker": "caller", "act": "call", "tags": ["friendly_fire"], "intensity": 2, "text": "Oh, that's their own! {team} hits its own {victim_unit}!"},
-    {"id": "caller.ff.04", "speaker": "caller", "act": "call", "tags": ["friendly_fire"], "intensity": 2, "text": "{team_s} {unit} lands one on its own {victim_unit}! Wrong target!"},
-    {"id": "caller.ff.05", "speaker": "caller", "act": "call", "tags": ["friendly_fire", "shooter_artillery"], "intensity": 2, "text": "That artillery shell landed on {team_s} own {victim_unit}!"},
-    {"id": "caller.ff.06", "speaker": "caller", "act": "call", "tags": ["friendly_fire", "repeat"], "needs": ["said_friendly_{team}"], "intensity": 3, "text": "Again! {team} hits its own again!"},
-    {"id": "caller.ff.07", "speaker": "caller", "act": "call", "tags": ["friendly_fire", "repeat"], "intensity": 2, "text": "That's {count} times now {team} has hit its own vehicles!"},
-    {"id": "color.ff.01", "speaker": "color", "act": "roast", "tags": ["friendly_fire"], "text": "Spacing. It's always spacing."},
-    {"id": "color.ff.02", "speaker": "color", "act": "roast", "tags": ["friendly_fire"], "text": "The shell doesn't know what color you are."},
-    {"id": "color.ff.03", "speaker": "color", "act": "roast", "tags": ["friendly_fire", "shooter_artillery"], "text": "You bring artillery, you put it behind your people. Not on top of them."},
-    {"id": "color.ff.04", "speaker": "color", "act": "roast", "tags": ["friendly_fire"], "text": "They'll say the {victim_unit} drifted into the line. It didn't."},
-    {"id": "color.ff.05", "speaker": "color", "act": "callback", "tags": ["friendly_fire"], "needs": ["predicted_friendly_fire"], "text": "I mentioned this before the match. Nobody listens to me."},
-    {"id": "color.ff.06", "speaker": "color", "act": "roast", "tags": ["friendly_fire", "repeat"], "text": "That's not the first time tonight. {team} needs to fix it now."},
-    {"id": "pa.ff.01", "speaker": "pa", "act": "notice", "tags": ["friendly_fire", "repeat"], "needs": ["said_friendly_{team}"], "text": "For viewers just joining us, those were {team} vehicles striking other {team} vehicles. The match continues."},
-    {"id": "pa.ff.02", "speaker": "pa", "act": "notice", "tags": ["friendly_kill"], "text": "For viewers just joining us, that was a {team} vehicle striking another {team} vehicle. The match continues."},
-    {"id": "pa.ff.03", "speaker": "pa", "act": "notice", "tags": ["friendly_kill"], "text": "Officials have reviewed the incident, and the result stands."},
-    {"id": "pa.ff.04", "speaker": "pa", "act": "notice", "tags": ["friendly_kill"], "text": "The Syndicate reminds participants that losses to friendly fire are not deducted from tonight's purse."},
-
-    {"id": "caller.close.01", "speaker": "caller", "act": "call", "tags": ["close_call"], "intensity": 3, "text": "It's still moving! I don't know how, but that {unit} is still moving!"},
-    {"id": "caller.close.02", "speaker": "caller", "act": "call", "tags": ["close_call"], "intensity": 2, "text": "The {team} {unit} is hanging on by a thread!"},
-    {"id": "caller.close.03", "speaker": "caller", "act": "call", "tags": ["close_call"], "intensity": 2, "text": "That {unit} should be scrap, and it is still in the fight!"},
-    {"id": "caller.close.04", "speaker": "caller", "act": "call", "tags": ["close_call"], "intensity": 2, "text": "Look at that {unit}! Smoking, burning, and still going!"},
-    {"id": "caller.close.05", "speaker": "caller", "act": "call", "tags": ["close_call"], "intensity": 2, "text": "They are hurt, but they are not out!"},
-    {"id": "caller.close.06", "speaker": "caller", "act": "call", "tags": ["close_call", "last_unit"], "intensity": 3, "text": "The last {team} vehicle is barely holding together! Barely!"},
-    {"id": "color.close.01", "speaker": "color", "act": "analysis", "tags": ["close_call"], "text": "Hull like that, every bump hurts. They need to get behind something. Now."},
-    {"id": "color.close.02", "speaker": "color", "act": "analysis", "tags": ["close_call"], "text": "I drove a whole match like that once. After a while you stop looking at the gauges."},
-    {"id": "color.close.03", "speaker": "color", "act": "analysis", "tags": ["close_call"], "text": "That crew is praying right now. Maybe it's working."},
-
-    {"id": "caller.control.01", "speaker": "caller", "act": "call", "tags": ["control", "taken"], "intensity": 2, "text": "{team} takes the control point!"},
-    {"id": "caller.control.02", "speaker": "caller", "act": "call", "tags": ["control", "taken"], "intensity": 2, "text": "{team} is on the point, and the clock is ticking for {other_team}!"},
-    {"id": "caller.control.03", "speaker": "caller", "act": "call", "tags": ["control"], "without": ["neutral"], "intensity": 2, "text": "The center belongs to {team}!"},
-    {"id": "caller.control.04", "speaker": "caller", "act": "call", "tags": ["control", "stolen"], "intensity": 3, "text": "{team} steals the point away from {other_team}!"},
-    {"id": "caller.control.05", "speaker": "caller", "act": "call", "tags": ["control", "stolen"], "intensity": 3, "text": "Oh, {team} takes it right back!"},
-    {"id": "caller.control.06", "speaker": "caller", "act": "call", "tags": ["control", "again"], "intensity": 3, "text": "The point changes hands again! What a tug of war!"},
-    {"id": "caller.control.07", "speaker": "caller", "act": "call", "tags": ["control", "neutral"], "intensity": 2, "text": "The point is up for grabs again!"},
-    {"id": "color.control.01", "speaker": "color", "act": "analysis", "tags": ["control"], "without": ["neutral"], "text": "Holding the middle means sitting still in the open. Good for points. Bad for your paint."},
-    {"id": "color.control.02", "speaker": "color", "act": "analysis", "tags": ["control"], "without": ["neutral"], "text": "{other_team} has to go get it now. That means coming out into the open."},
-    {"id": "color.control.03", "speaker": "color", "act": "analysis", "tags": ["control"], "text": "Everybody wants the point until they're standing on it."},
-    {"id": "pa.control.01", "speaker": "pa", "act": "notice", "tags": ["control"], "without": ["neutral"], "text": "{team} now holds the control point. Scoring has been updated."},
-    {"id": "pa.control.02", "speaker": "pa", "act": "notice", "tags": ["control"], "without": ["neutral"], "text": "Control of the center has changed. The scoreboard reflects the change, and the betting windows remain open."},
-
-    {"id": "caller.squad.01", "speaker": "caller", "act": "call", "tags": ["squad_wiped"], "intensity": 2, "text": "{team} has lost an entire squad!"},
-    {"id": "caller.squad.02", "speaker": "caller", "act": "call", "tags": ["squad_wiped"], "intensity": 2, "text": "That whole {team} squad is gone!"},
-    {"id": "caller.squad.03", "speaker": "caller", "act": "call", "tags": ["squad_wiped"], "intensity": 2, "text": "The squad is wiped out! {team} is short a whole group!"},
-
-    {"id": "color.momentum.01", "speaker": "color", "act": "analysis", "tags": ["momentum"], "text": "{team} has the better of it right now. Look at the damage {other_team} is soaking up."},
-    {"id": "color.momentum.02", "speaker": "color", "act": "analysis", "tags": ["momentum", "shift"], "text": "The tide's turning. {team} got patient, and it's paying off."},
-    {"id": "color.momentum.03", "speaker": "color", "act": "analysis", "tags": ["momentum"], "text": "{other_team} is bleeding and doesn't know it yet."},
-    {"id": "color.momentum.04", "speaker": "color", "act": "analysis", "tags": ["momentum", "rout"], "text": "{other_team} is coming apart out there. That's not a fight anymore."},
-    {"id": "caller.momentum.01", "speaker": "caller", "act": "call", "tags": ["momentum"], "intensity": 2, "text": "The momentum is swinging to {team}!"},
-    {"id": "caller.momentum.02", "speaker": "caller", "act": "call", "tags": ["momentum"], "intensity": 2, "text": "{team} is taking over this match!"},
-    {"id": "caller.momentum.03", "speaker": "caller", "act": "call", "tags": ["momentum", "shift"], "intensity": 2, "text": "You can feel it shifting, folks! {team} is in control now!"},
-
-    {"id": "caller.waiting.01", "speaker": "caller", "act": "call", "tags": ["lull", "waiting"], "intensity": 1, "text": "Both armies feeling each other out here. Nobody wants to commit."},
-    {"id": "caller.waiting.02", "speaker": "caller", "act": "call", "tags": ["lull", "waiting"], "intensity": 1, "text": "It's quiet. Somebody is about to get found."},
-    {"id": "caller.waiting.03", "speaker": "caller", "act": "call", "tags": ["lull", "waiting"], "intensity": 1, "text": "They're creeping through the smoke, looking for each other."},
-    {"id": "caller.waiting.04", "speaker": "caller", "act": "call", "tags": ["lull", "waiting"], "intensity": 2, "text": "Not a shot fired yet, and I'm already out of my seat!"},
-    {"id": "caller.waiting.05", "speaker": "caller", "act": "call", "tags": ["lull", "waiting"], "intensity": 1, "text": "The scouts are out there somewhere. Any second now."},
-    {"id": "color.waiting.01", "speaker": "color", "act": "analysis", "tags": ["lull", "waiting"], "text": "This is the part nobody watches, and everybody should."},
-    {"id": "color.waiting.02", "speaker": "color", "act": "analysis", "tags": ["lull", "waiting"], "text": "Find them first, and you choose the fight. That's the only advantage that matters."},
-    {"id": "color.waiting.03", "speaker": "color", "act": "analysis", "tags": ["lull", "waiting"], "text": "Engines idling. In there you can hear your own heart. I promise you."},
-
-    {"id": "caller.banter.01", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "pressure", "text": "What's going through a driver's head right now?"},
-    {"id": "color.banter.01", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "pressure", "text": "Nothing useful. You're counting shells and checking mirrors."},
-    {"id": "color.banter.02", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "pressure", "text": "Less than you'd think. The good ones go quiet inside."},
-    {"id": "caller.banter.02", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "scouts", "text": "How important are the scouts in a fight like this?"},
-    {"id": "color.banter.03", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "scouts", "text": "Everything, early. Nothing, late."},
-    {"id": "color.banter.04", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "scouts", "text": "Nobody thinks about them until they're gone. Then you're driving blind."},
-    {"id": "caller.banter.03", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "tanks", "text": "Is the tank still king on this floor?"},
-    {"id": "color.banter.05", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "tanks", "text": "It's still the biggest. That's not the same thing."},
-    {"id": "color.banter.06", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "tanks", "text": "If it's pointed the right way, yes. If it isn't, it's a very expensive wall."},
-    {"id": "caller.banter.04", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "cover", "text": "You always talk about cover. Why does it matter so much in here?"},
-    {"id": "color.banter.07", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "cover", "text": "Everything in here can reach you from across the room. The wall is the only thing on your side."},
-    {"id": "color.banter.08", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "cover", "text": "You're a big target in a small room. Cover is the only thing that makes you small."},
-    {"id": "caller.banter.05", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "release", "text": "What does it take to earn your release in a place like this?"},
-    {"id": "color.banter.09", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "release", "text": "Luck. And the kind of patience most people lose on the first day."},
-    {"id": "color.banter.10", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "release", "text": "You win enough, and one day they stop calling your number. That's how it happened for me."},
-    {"id": "caller.banter.06", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "crowd", "text": "Can they hear this crowd down there?"},
-    {"id": "color.banter.11", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "crowd", "text": "Not over the engines. You feel it through the floor, though."},
-    {"id": "color.banter.12", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "crowd", "text": "Every word. You don't want to. A crowd changes sides fast."},
-    {"id": "caller.banter.07", "speaker": "caller", "act": "setup_question", "tags": ["lull", "team_leading"], "topic": "trailing", "text": "What does {other_team} have to do to get back into this?"},
-    {"id": "color.banter.13", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "trailing", "text": "Stop trading one for one. They can't afford it anymore."},
-    {"id": "color.banter.14", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "trailing", "text": "Pick one target and all shoot it. They're spreading their fire around."},
-    {"id": "caller.banter.08", "speaker": "caller", "act": "setup_question", "tags": ["lull", "level"], "without": ["waiting"], "topic": "level", "text": "Dead even out there. Who blinks first?"},
-    {"id": "color.banter.15", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "level", "text": "Whoever has been waiting the longest. The waiting gets to you."},
-    {"id": "color.banter.16", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "level", "text": "Nobody blinks. Somebody runs out of cover. It's different."},
-    {"id": "caller.banter.09", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "you", "text": "If you were down there right now, what would you do?"},
-    {"id": "color.banter.17", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "you", "text": "Back up twenty meters and let them come to me."},
-    {"id": "color.banter.18", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "you", "text": "I wouldn't be down there. I did my time. I'm happy up here with you."},
-    {"id": "caller.banter.10", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "artillery", "text": "Artillery in a room this size. Is that smart?"},
-    {"id": "color.banter.19", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "artillery", "text": "Only if your own people know where it's landing."},
-    {"id": "color.banter.20", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "artillery", "text": "It's smart until the fighting gets close. Then it's a coin toss."},
-    {"id": "caller.banter.11", "speaker": "caller", "act": "setup_question", "tags": ["lull", "team_leading"], "without": ["phase_early"], "topic": "over", "text": "Is it over for {other_team}?"},
-    {"id": "color.banter.21", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "over", "text": "Not yet. I've come back from worse. Not much worse."},
-    {"id": "color.banter.22", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "over", "text": "Close to it. But one mistake from {team} and it's a match again."},
-    {"id": "caller.banter.12", "speaker": "caller", "act": "setup_question", "tags": ["lull"], "topic": "fear", "text": "Were you ever scared down there?"},
-    {"id": "color.banter.23", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "fear", "text": "Every match. The day you're not scared is the day they tow you out."},
-    {"id": "color.banter.24", "speaker": "color", "act": "answer_disagree", "tags": ["lull"], "topic": "fear", "text": "Not during. Before, and after. During, there isn't time."},
-    {"id": "color.banter.25", "speaker": "color", "act": "answer_agree", "tags": ["lull"], "topic": "any", "text": "Hard to say. Ask me again in a minute."},
-
-    {"id": "caller.reaction.01", "speaker": "caller", "act": "reaction", "tags": ["lull", "after_color"], "text": "Can't argue with that."},
-    {"id": "caller.reaction.02", "speaker": "caller", "act": "reaction", "tags": ["lull", "after_color"], "text": "Spoken like a man who has been there."},
-    {"id": "caller.reaction.03", "speaker": "caller", "act": "reaction", "tags": ["lull", "after_color"], "text": "And that's why you're in the booth."},
-    {"id": "caller.reaction.04", "speaker": "caller", "act": "reaction", "tags": ["lull", "after_color"], "text": "I'll take your word for it."},
-    {"id": "caller.reaction.05", "speaker": "caller", "act": "reaction", "tags": ["lull", "after_pa"], "text": "Thank you, Celeste. Back down to the floor."},
-    {"id": "caller.reaction.06", "speaker": "caller", "act": "reaction", "tags": ["lull", "after_pa"], "text": "All right! Back to the action!"},
-
-    {"id": "caller.stat.03", "speaker": "caller", "act": "stat", "tags": ["lull", "team_leading"], "text": "{team} has the numbers right now, {count} to {other_count}."},
-    {"id": "caller.stat.04", "speaker": "caller", "act": "stat", "tags": ["lull", "level"], "without": ["waiting"], "text": "It's {count} a side, and neither army is giving an inch."},
-    {"id": "caller.stat.05", "speaker": "caller", "act": "stat", "tags": ["lull", "team_leading"], "text": "{team} leads, and {other_team} needs a big play here."},
-    {"id": "caller.stat.06", "speaker": "caller", "act": "stat", "tags": ["lull", "level"], "without": ["waiting"], "text": "Dead even, {count} apiece. Anybody's match."},
-
-    {"id": "color.lore.01", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "They let me keep my number when I got out. I still turn around when somebody says it."},
-    {"id": "color.lore.02", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "The paperwork says every one of those crews volunteered. I signed the same paperwork."},
-    {"id": "color.lore.03", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "My first season in here, they didn't have the lights yet. You fought by the muzzle flashes."},
-    {"id": "color.lore.04", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "I drove a bus a lot like those, before the plating. It had a route. School route."},
-    {"id": "color.lore.05", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "People ask if I miss it. I don't. I still dream about the floor, though."},
-    {"id": "color.lore.06", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "Best driver I ever saw in here never fired first. Not once. Nine seasons."},
-    {"id": "color.lore.07", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "The crews talk before the match. Not about the match. About food, mostly."},
-    {"id": "color.lore.08", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "You learn the floor by the scorch marks. Every one of them is somebody's bad night."},
-    {"id": "color.lore.09", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "They repaint the walls every season. It never quite covers everything."},
-    {"id": "color.lore.10", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "First thing they teach you is how to reverse. The ones who skipped that lesson aren't around to teach it."},
-    {"id": "color.lore.11", "speaker": "color", "act": "lore", "tags": ["lull"], "text": "My last match was in {arena}. Same lights. I didn't look up once."},
-
-    {"id": "pa.sponsor.01", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Tonight's broadcast is brought to you by AquaCorp. Clean, reliable water, delivered to approved households on a schedule that works for you."},
-    {"id": "pa.sponsor.02", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "This match is sponsored by Syndicate Life. Protecting families across every district, with plans starting at a single month of labor."},
-    {"id": "pa.sponsor.03", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Meridian Transport. Moving workers between districts safely, on time, and with a minimum of paperwork."},
-    {"id": "pa.sponsor.04", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Stay with us after the match for highlights, brought to you by Syndicate Housing, now accepting applications in the eastern districts."},
-    {"id": "pa.sponsor.05", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "The Syndicate Lottery draws tonight at midnight. Winning tickets may be entered into next season's arena draft, or exchanged for ration credits at any district office."},
-    {"id": "pa.sponsor.06", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Tonight's medical coverage is provided by Harbor General, the official hospital of the arena, with beds reserved for tonight's winners."},
-    {"id": "pa.sponsor.07", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "A word from our partners at Syndicate Security. If you see something, report something. Reports made during tonight's broadcast earn double credit."},
-    {"id": "pa.sponsor.08", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "This segment is brought to you by Vireo nutrition bars. Ninety-two percent real food, and approved for all ages."},
-    {"id": "pa.sponsor.09", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Fans at home, tonight's broadcast is fully interactive. Your viewing has been recorded, and we thank you for watching."},
-    {"id": "pa.sponsor.10", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in {arena} and in selected residential areas."},
-
-    {"id": "pa.sponsor.11", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "A message from the Law. Reports about a neighbor now earn ration credits within three business days."},
-    {"id": "pa.sponsor.12", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "AquaCorp reminds residents of the lower districts that tomorrow's water schedule has been posted."},
-    {"id": "pa.sponsor.13", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Tonight's replays are provided by Syndicate Vision. Every angle, every crew, archived permanently."},
-    {"id": "pa.sponsor.14", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Condemned crews who complete tonight's broadcast will be eligible for the Syndicate's work placement program."},
-    {"id": "pa.sponsor.15", "speaker": "pa", "act": "sponsor_read", "tags": ["lull"], "text": "Syndicate Life. Coverage that stays with your family, whatever tonight brings."},
-    {"id": "pa.odds.01", "speaker": "pa", "act": "notice", "tags": ["lull", "team_leading"], "text": "The odds boards on the main concourse now have {team} at three to one. Windows remain open."},
-    {"id": "pa.odds.02", "speaker": "pa", "act": "notice", "tags": ["lull", "level"], "without": ["waiting"], "text": "The odds boards have tonight's match even. Wagers on individual crews are still being accepted."},
-    {"id": "pa.notice.01", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "A reminder that the upper concourse will close during the final minutes of the match, for crowd safety."},
-    {"id": "pa.notice.02", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "Fans in section nine, please remain in your seats. The smoke in your section is part of tonight's production."},
-    {"id": "pa.notice.03", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "The Syndicate would like to remind the audience that cheering is encouraged, and is being noted."},
-    {"id": "pa.notice.04", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "Please do not throw objects onto the arena floor. Anyone who enters the floor to retrieve an object will be considered a participant."},
-    {"id": "pa.notice.05", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "Medical staff are standing by, and will attend to participants following the conclusion of the match."},
-    {"id": "pa.notice.06", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "A child has been found near gate three. The child is safe, and may be collected with valid district papers."},
-    {"id": "pa.notice.07", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "Due to high demand, water service in the lower bowl will resume after the match."},
-    {"id": "pa.notice.08", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "Tonight's attendance is ninety-four thousand, a weeknight record, including four thousand seats reserved for the families of tonight's crews."},
-    {"id": "pa.notice.09", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "The owner of a grey sedan in lot four, please return to your vehicle. It is being relocated."},
-    {"id": "pa.notice.10", "speaker": "pa", "act": "notice", "tags": ["lull"], "text": "Betting windows on the main concourse remain open, and will accept wagers on individual crews until the end of the match."},
-
-    {"id": "caller.result.01", "speaker": "caller", "act": "call", "tags": ["result", "win_elimination"], "intensity": 3, "text": "It's all over! {team} wins it!"},
-    {"id": "caller.result.02", "speaker": "caller", "act": "call", "tags": ["result"], "without": ["draw"], "intensity": 3, "text": "That's the match! {team} is your winner tonight!"},
-    {"id": "caller.result.03", "speaker": "caller", "act": "call", "tags": ["result"], "without": ["draw"], "intensity": 3, "text": "{team} takes it! What a fight, ladies and gentlemen!"},
-    {"id": "caller.result.04", "speaker": "caller", "act": "call", "tags": ["result", "win_elimination"], "intensity": 3, "text": "And {team} is the last army standing! {team} wins!"},
-    {"id": "caller.result.05", "speaker": "caller", "act": "call", "tags": ["result", "flawless"], "intensity": 3, "text": "{team} wins it without losing a single vehicle! Flawless!"},
-    {"id": "caller.result.06", "speaker": "caller", "act": "call", "tags": ["result", "close"], "intensity": 3, "text": "{team} wins it with one vehicle left! One! What a finish!"},
-    {"id": "caller.result.07", "speaker": "caller", "act": "call", "tags": ["result", "comeback"], "intensity": 3, "text": "What a comeback! {team} was down and out, and {team} wins it!"},
-    {"id": "caller.result.08", "speaker": "caller", "act": "call", "tags": ["result", "win_control"], "intensity": 3, "text": "{team} wins it on the control point! They held the middle, and it paid off!"},
-    {"id": "caller.result.09", "speaker": "caller", "act": "call", "tags": ["result", "win_time"], "intensity": 3, "text": "Time is up, and {team} takes it on the damage count!"},
-    {"id": "caller.result.10", "speaker": "caller", "act": "call", "tags": ["result", "draw"], "intensity": 3, "text": "It's a draw! Nobody walks away with it tonight!"},
-    {"id": "caller.result.11", "speaker": "caller", "act": "call", "tags": ["result", "quick"], "without": ["draw"], "intensity": 3, "text": "That was fast! {team} made short work of that one!"},
-    {"id": "caller.result.12", "speaker": "caller", "act": "call", "tags": ["result", "long"], "without": ["draw"], "intensity": 3, "text": "What a war! That one went the distance, and {team} comes out on top!"},
-    {"id": "color.result.01", "speaker": "color", "act": "analysis", "tags": ["result"], "without": ["draw"], "text": "{team} stayed together. That's it. That's the whole secret."},
-    {"id": "color.result.02", "speaker": "color", "act": "analysis", "tags": ["result"], "without": ["draw", "flawless"], "text": "{other_team} traded evenly early and couldn't afford it later. You could see it coming."},
-    {"id": "color.result.03", "speaker": "color", "act": "analysis", "tags": ["result"], "without": ["draw"], "text": "{team} earned that. I didn't see them get lucky once."},
-    {"id": "color.result.04", "speaker": "color", "act": "analysis", "tags": ["result", "flawless"], "text": "Flawless is rare. I never did it. Not once."},
-    {"id": "color.result.05", "speaker": "color", "act": "analysis", "tags": ["result", "close"], "text": "One left. That driver is going to remember every second of that."},
-    {"id": "color.result.06", "speaker": "color", "act": "analysis", "tags": ["result", "comeback"], "text": "That comeback started with one crew deciding not to panic."},
-    {"id": "color.result.07", "speaker": "color", "act": "analysis", "tags": ["result", "win_control"], "text": "Holding the point takes nerve. {team} had it."},
-    {"id": "color.result.08", "speaker": "color", "act": "analysis", "tags": ["result", "draw"], "text": "Nobody wins a draw. Everybody just gets to go back tonight."},
-    {"id": "color.result.09", "speaker": "color", "act": "analysis", "tags": ["result", "quick"], "text": "Quick ones are the worst kind to lose. No time to fix anything."},
-    {"id": "color.result.10", "speaker": "color", "act": "analysis", "tags": ["result", "long"], "text": "Long match. Everybody down there is exhausted. {team} was a little less exhausted."},
-
-    {"id": "pa.result.01", "speaker": "pa", "act": "result", "tags": ["outro"], "without": ["draw"], "text": "{team} wins tonight's match. Thank you for joining us. Please exit by section, and have your papers ready."},
-    {"id": "pa.result.02", "speaker": "pa", "act": "result", "tags": ["outro"], "without": ["draw"], "text": "Tonight's winner is {team}. The surviving crews will be processed shortly. Good night."},
-    {"id": "pa.result.03", "speaker": "pa", "act": "result", "tags": ["outro"], "without": ["draw"], "text": "That concludes tonight's match. Congratulations to {team}. On behalf of the Syndicate, good night, and please drive safely."},
-    {"id": "pa.result.04", "speaker": "pa", "act": "result", "tags": ["outro"], "without": ["draw"], "text": "The match has been decided in favor of {team}. Highlights will air throughout the week on all district screens."},
-    {"id": "pa.result.05", "speaker": "pa", "act": "result", "tags": ["outro", "draw"], "text": "Tonight's match has ended in a draw. Both armies will be rescheduled. Thank you, and good night."},
-    {"id": "pa.result.06", "speaker": "pa", "act": "result", "tags": ["outro", "flawless"], "text": "{team} wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed."}
-  ]
+  "pa": {
+   "name": "Celeste Vance",
+   "voice": "corporate2",
+   "role": "arena PA and sponsor reads: a polished host; one detail slightly off, never a joke"
+  }
+ },
+ "vocabulary": {
+  "team": {
+   "green": "Green",
+   "rust": "Rust"
+  },
+  "team_s": {
+   "green": "Green's",
+   "rust": "Rust's"
+  },
+  "unit": {
+   "scout": "scout",
+   "tank": "tank",
+   "ifv": "IFV",
+   "artillery": "artillery",
+   "lancer": "Lancer",
+   "burner": "Burner"
+  },
+  "units": {
+   "scout": "scouts",
+   "tank": "tanks",
+   "ifv": "IFVs",
+   "artillery": "artillery",
+   "lancer": "Lancers",
+   "burner": "Burners"
+  },
+  "arena": {
+   "foundry": "the Foundry",
+   "furnace": "the Furnace",
+   "scrapyard": "the Scrapyard"
+  }
+ },
+ "lines": [
+  {
+   "id": "caller.intro.01",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "intensity": 3,
+   "text": "Ladies and gentlemen, welcome to {arena}! It is fight night!"
+  },
+  {
+   "id": "caller.intro.02",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "We are live from {arena}, and this place is packed to the rafters!"
+  },
+  {
+   "id": "caller.intro.03",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "Folks, I have been waiting all week for this one. Let's go to work."
+  },
+  {
+   "id": "caller.intro.04",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Two armies, one floor, and nowhere to hide. Here we go!"
+  },
+  {
+   "id": "caller.intro.05",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "The engines are running, the crowd is on its feet, and we are moments away!"
+  },
+  {
+   "id": "caller.intro.06",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "{count} vehicles on the floor tonight, and every one of them came to fight."
+  },
+  {
+   "id": "caller.intro.07",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "If you're just tuning in, you picked the right night. Green and Rust, live, right now!"
+  },
+  {
+   "id": "caller.intro.08",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Oh, you can feel it in the building tonight. You can feel it!"
+  },
+  {
+   "id": "caller.intro.09",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "It's a full house here at {arena}, and they came to see a fight!"
+  },
+  {
+   "id": "caller.intro.10",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "Buckle up, folks. This one has all the makings of something special."
+  },
+  {
+   "id": "caller.intro.11",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro",
+    "control_point"
+   ],
+   "intensity": 2,
+   "text": "And the control point is live tonight, so nobody gets to sit back and wait!"
+  },
+  {
+   "id": "caller.intro.12",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro",
+    "arena_scrapyard"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "intensity": 2,
+   "text": "Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!"
+  },
+  {
+   "id": "pa.welcome.01",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "text": "Good evening, and welcome to {arena}. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them."
+  },
+  {
+   "id": "pa.welcome.02",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "text": "Good evening. On behalf of the Syndicate, welcome to {arena}. Please take a moment to locate the exit nearest your seat. Exits will open after the match."
+  },
+  {
+   "id": "pa.welcome.03",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene."
+  },
+  {
+   "id": "pa.welcome.04",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening, and thank you for joining us. Tonight's crews have completed their paperwork, and their families have been sent the broadcast schedule."
+  },
+  {
+   "id": "pa.welcome.05",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "text": "Welcome to {arena}. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve."
+  },
+  {
+   "id": "pa.welcome.06",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening. Before we begin, the Syndicate would like to thank the district of Low Harbor for tonight's participants."
+  },
+  {
+   "id": "pa.welcome.07",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "text": "Welcome, everyone, to {arena}. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows."
+  },
+  {
+   "id": "pa.welcome.08",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "text": "A warm welcome to {arena}, to everyone watching at home, and to our viewers in the detention blocks."
+  },
+  {
+   "id": "pa.welcome.09",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season."
+  },
+  {
+   "id": "pa.welcome.10",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro",
+    "control_point"
+   ],
+   "sets": [
+    "welcomed"
+   ],
+   "unless_flags": [
+    "welcomed"
+   ],
+   "text": "Welcome to {arena}. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location."
+  },
+  {
+   "id": "color.intro.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "Look how slow they're rolling out. Nobody wants to be first."
+  },
+  {
+   "id": "color.intro.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "The lights are the first thing you notice down there. For the first minute you can't see past the smoke."
+  },
+  {
+   "id": "color.intro.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "Stay patient, stay together. That's the whole job. Most crews forget both in the first thirty seconds."
+  },
+  {
+   "id": "color.intro.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "I tell everybody the same thing. Don't watch the guns. Watch who's moving."
+  },
+  {
+   "id": "color.intro.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "The crowd wants it fast. The crews who make it home don't give them fast."
+  },
+  {
+   "id": "color.intro.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "They all look calm from up here. They're not calm."
+  },
+  {
+   "id": "caller.army.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "heavy"
+   ],
+   "intensity": 2,
+   "text": "{team} rolls out {count} {units} tonight."
+  },
+  {
+   "id": "caller.army.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "all_same"
+   ],
+   "intensity": 2,
+   "text": "All {units} for {team}. Every last one."
+  },
+  {
+   "id": "caller.army.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "mixed"
+   ],
+   "intensity": 1,
+   "text": "A little bit of everything from {team}. A mixed army with a lot of options."
+  },
+  {
+   "id": "caller.army.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "heavy"
+   ],
+   "intensity": 2,
+   "text": "{team} goes heavy on {units} tonight, and I mean heavy."
+  },
+  {
+   "id": "caller.army.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "main_tank",
+    "several"
+   ],
+   "intensity": 2,
+   "text": "{team} brings the tanks. Slow, loud, and they hit like a freight train."
+  },
+  {
+   "id": "caller.army.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "heavy_scout"
+   ],
+   "intensity": 2,
+   "text": "Scouts, scouts, and more scouts for {team}. They want this one fast."
+  },
+  {
+   "id": "caller.army.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "main_artillery"
+   ],
+   "intensity": 2,
+   "text": "{team} has the artillery. Everybody else, stay out of the open."
+  },
+  {
+   "id": "caller.army.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "main_ifv",
+    "several"
+   ],
+   "intensity": 2,
+   "text": "IFVs for {team}. Those autocannons are going to be busy tonight."
+  },
+  {
+   "id": "caller.army.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "main_lancer"
+   ],
+   "intensity": 2,
+   "text": "{team} is running the Lancers. That beam reaches all the way across the floor, folks."
+  },
+  {
+   "id": "caller.army.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "all_same"
+   ],
+   "intensity": 2,
+   "text": "{team} is here with {count} {units} and a whole lot of bad intentions."
+  },
+  {
+   "id": "caller.army.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army"
+   ],
+   "intensity": 1,
+   "text": "And on the other side of the floor, {team} is lined up and ready."
+  },
+  {
+   "id": "caller.faction.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_condemned"
+   ],
+   "intensity": 2,
+   "text": "{team} fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!"
+  },
+  {
+   "id": "caller.faction.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_gangs"
+   ],
+   "intensity": 3,
+   "text": "Here come the road gangs! Chrome, fire, and not a single shield between them!"
+  },
+  {
+   "id": "caller.faction.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_law"
+   ],
+   "intensity": 2,
+   "text": "And here comes the Law. Listen to this building. They are not popular in here."
+  },
+  {
+   "id": "caller.faction.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_syndicate"
+   ],
+   "intensity": 2,
+   "text": "The Syndicate brings the hover machines. Look at that finish. Not a scratch on them."
+  },
+  {
+   "id": "caller.faction.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_condemned"
+   ],
+   "intensity": 2,
+   "text": "The Condemned are on the floor for {team}, and every one of those crews has something to prove!"
+  },
+  {
+   "id": "pa.faction.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_condemned"
+   ],
+   "text": "Tonight's Condemned crews are competing for sentence reductions, which will be applied following review."
+  },
+  {
+   "id": "pa.faction.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_gangs"
+   ],
+   "text": "Tonight's road gang crews join us from the eastern waste under a temporary entertainment permit."
+  },
+  {
+   "id": "pa.faction.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_law"
+   ],
+   "text": "Please welcome tonight's officers from the Law. Conduct toward officers in the stands is recorded for everyone's safety."
+  },
+  {
+   "id": "pa.faction.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "army",
+    "introduce",
+    "faction_syndicate"
+   ],
+   "text": "Representing the Syndicate tonight, our partners' newest vehicles, available to qualified buyers after the season."
+  },
+  {
+   "id": "color.faction.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_condemned"
+   ],
+   "text": "Those are my people. Every one of those crews is driving for a shorter sentence."
+  },
+  {
+   "id": "color.faction.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_gangs"
+   ],
+   "text": "Gangs don't carry shields. They carry spare parts. You have to respect that."
+  },
+  {
+   "id": "color.faction.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_law"
+   ],
+   "text": "The Law looks good on paper. Then you look at the rust around the bolts."
+  },
+  {
+   "id": "color.faction.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "faction_syndicate"
+   ],
+   "text": "Nobody is inside those. Remember that when they start winning."
+  },
+  {
+   "id": "caller.tape.01",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "outnumbers"
+   ],
+   "intensity": 2,
+   "text": "Tale of the tape: {team} brings {count} vehicles to {other_count}. They have the numbers."
+  },
+  {
+   "id": "caller.tape.02",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "even_numbers"
+   ],
+   "intensity": 2,
+   "text": "Tale of the tape: {count} vehicles a side. Nobody has the numbers tonight."
+  },
+  {
+   "id": "caller.tape.03",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "tape",
+    "outnumbers"
+   ],
+   "intensity": 1,
+   "text": "By the numbers, it's {count} for {team} and {other_count} for {other_team}."
+  },
+  {
+   "id": "color.tape.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "tape",
+    "outnumbers"
+   ],
+   "text": "More isn't better if they don't work together. {other_team} has fewer to keep track of."
+  },
+  {
+   "id": "color.tape.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "tape",
+    "even_numbers"
+   ],
+   "text": "Even numbers. Then it comes down to who wins the first trade."
+  },
+  {
+   "id": "color.tape.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "tape"
+   ],
+   "text": "Numbers are fine. I'd rather know which of those crews have driven this floor before."
+  },
+  {
+   "id": "color.army.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_tank"
+   ],
+   "text": "{team} came to hold ground. That army doesn't chase anybody."
+  },
+  {
+   "id": "color.army.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "heavy_scout"
+   ],
+   "text": "Scouts are eyes, not fists. {team} needs to remember that."
+  },
+  {
+   "id": "color.army.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "heavy"
+   ],
+   "text": "That's a lot of {units}. I hope {team} has a plan for whatever beats them."
+  },
+  {
+   "id": "color.army.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "mixed"
+   ],
+   "text": "Mixed army. That's the smart build. It's also the hard one to drive."
+  },
+  {
+   "id": "color.army.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_artillery"
+   ],
+   "text": "Artillery needs somebody else's eyes. {team} better keep a scout alive."
+  },
+  {
+   "id": "color.army.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_ifv"
+   ],
+   "text": "IFVs are honest work. Nothing fancy. They'll chew up anything light."
+  },
+  {
+   "id": "color.army.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army",
+    "main_tank"
+   ],
+   "text": "{team_s} army turns slowly. Good if they get set. Bad if they don't."
+  },
+  {
+   "id": "color.army.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "I've seen {team} crews in the tunnel. Quiet. That's usually a good sign."
+  },
+  {
+   "id": "caller.preview.01",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "preview",
+    "counter"
+   ],
+   "topic": "counter",
+   "text": "{team} brought {units} to face {other_units}. That's the matchup you want, isn't it?"
+  },
+  {
+   "id": "color.preview.01",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "counter",
+   "text": "It is. If they don't do anything stupid with it, it is."
+  },
+  {
+   "id": "color.preview.02",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "counter",
+   "text": "On paper. Then the other side parks behind a wall and waits. Matchups don't shoot."
+  },
+  {
+   "id": "caller.preview.02",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "preview",
+    "mirror"
+   ],
+   "topic": "mirror",
+   "text": "Same armies, same floor. What decides a mirror match?"
+  },
+  {
+   "id": "color.preview.03",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "mirror",
+   "text": "Who blinks. Somebody always moves before they should."
+  },
+  {
+   "id": "color.preview.04",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "mirror",
+   "text": "Nothing that happens today. It's decided by who slept last night."
+  },
+  {
+   "id": "caller.preview.03",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "preview"
+   ],
+   "topic": "early",
+   "text": "What do you need to see from {team} early?"
+  },
+  {
+   "id": "color.preview.05",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "early",
+   "text": "Stay together. That's all. Stay together for one minute and see what happens."
+  },
+  {
+   "id": "color.preview.06",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "early",
+   "text": "I want to see them find cover before they find a target."
+  },
+  {
+   "id": "caller.preview.04",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "preview"
+   ],
+   "topic": "pick",
+   "text": "Before we start, who do you like tonight?"
+  },
+  {
+   "id": "color.preview.07",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "pick",
+   "text": "I like whoever is still moving in two minutes."
+  },
+  {
+   "id": "color.preview.08",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "preview"
+   ],
+   "topic": "pick",
+   "text": "I don't pick. I respect both of them. Ask me after."
+  },
+  {
+   "id": "color.preview.09",
+   "speaker": "color",
+   "act": "prediction",
+   "tags": [
+    "preview"
+   ],
+   "sets": [
+    "predicted_friendly_fire"
+   ],
+   "text": "Somebody's going to get hit by their own side tonight. Too many heavy guns in a small room."
+  },
+  {
+   "id": "color.preview.10",
+   "speaker": "color",
+   "act": "prediction",
+   "tags": [
+    "preview"
+   ],
+   "sets": [
+    "predicted_scouts"
+   ],
+   "text": "Whoever loses their scouts first is going to be driving blind by the end."
+  },
+  {
+   "id": "color.preview.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "preview",
+    "counter"
+   ],
+   "text": "{team} has the matchup. {other_team} has to be smarter than the matchup. That's a lot to ask."
+  },
+  {
+   "id": "caller.contact.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "And we have contact! {team} opens fire!"
+  },
+  {
+   "id": "caller.contact.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "Shots fired! {team} takes the first shot!"
+  },
+  {
+   "id": "caller.contact.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "Here we go! The {team} {unit} lets it rip!"
+  },
+  {
+   "id": "caller.contact.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "There it is! First shots of the night, and they come from {team}!"
+  },
+  {
+   "id": "caller.contact.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "Contact, contact! {team} found them first!"
+  },
+  {
+   "id": "caller.contact.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 2,
+   "text": "{team_s} {unit} spots the {target_unit} and doesn't wait around!"
+  },
+  {
+   "id": "caller.contact.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact"
+   ],
+   "intensity": 3,
+   "text": "They've found each other! We are underway!"
+  },
+  {
+   "id": "caller.contact.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_scout"
+   ],
+   "intensity": 2,
+   "text": "The scout finds them first! That's the job, and {team} is doing it!"
+  },
+  {
+   "id": "caller.contact.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_artillery"
+   ],
+   "intensity": 2,
+   "text": "Artillery opens the night! {team} is shelling from long range!"
+  },
+  {
+   "id": "caller.contact.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_tank"
+   ],
+   "intensity": 2,
+   "text": "Big gun, first shot! The {team} tank gets things started!"
+  },
+  {
+   "id": "caller.contact.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_lancer"
+   ],
+   "intensity": 2,
+   "text": "There's the beam! The Lancer reaches out across the floor for the {target_unit}!"
+  },
+  {
+   "id": "caller.contact.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "contact",
+    "unit_ifv"
+   ],
+   "intensity": 2,
+   "text": "The autocannon opens up! {team_s} IFV is the first to speak!"
+  },
+  {
+   "id": "color.contact.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "First shot isn't the fight. First hit is."
+  },
+  {
+   "id": "color.contact.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Whoever shot first just told everybody where they are. Now we see if it was worth it."
+  },
+  {
+   "id": "color.contact.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Now everybody knows where everybody is. This is where it gets honest."
+  },
+  {
+   "id": "color.contact.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "They're shooting a little early for my liking. That's nerves."
+  },
+  {
+   "id": "color.contact.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact",
+    "unit_scout"
+   ],
+   "text": "That scout did its job. Now it needs to get out of there."
+  },
+  {
+   "id": "caller.button.01",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 3,
+   "text": "Whoa!"
+  },
+  {
+   "id": "caller.button.02",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 3,
+   "text": "Oh, my goodness!"
+  },
+  {
+   "id": "caller.button.03",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 3,
+   "text": "Unbelievable!"
+  },
+  {
+   "id": "caller.button.04",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 2,
+   "text": "What a moment!"
+  },
+  {
+   "id": "caller.button.05",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 2,
+   "text": "Wow. Just wow."
+  },
+  {
+   "id": "caller.button.06",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 3,
+   "text": "Are you kidding me?"
+  },
+  {
+   "id": "caller.button.07",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 2,
+   "text": "Listen to this crowd!"
+  },
+  {
+   "id": "caller.button.08",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 2,
+   "text": "You cannot script this!"
+  },
+  {
+   "id": "caller.button.09",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 2,
+   "text": "That's why we're here, folks!"
+  },
+  {
+   "id": "caller.button.10",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 1,
+   "text": "Oh, that was nasty."
+  },
+  {
+   "id": "caller.button.11",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 2,
+   "text": "This is fight night!"
+  },
+  {
+   "id": "caller.button.12",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 1,
+   "text": "Oh, I felt that one up here."
+  },
+  {
+   "id": "caller.button.13",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 3,
+   "text": "Oh! Oh!"
+  },
+  {
+   "id": "caller.button.14",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "any"
+   ],
+   "intensity": 1,
+   "text": "That's going to leave a mark."
+  },
+  {
+   "id": "caller.button.15",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "What a night!"
+  },
+  {
+   "id": "caller.button.16",
+   "speaker": "caller",
+   "act": "button",
+   "tags": [
+    "result"
+   ],
+   "intensity": 2,
+   "text": "What a fight, folks. What a fight."
+  },
+  {
+   "id": "caller.interrupt.01",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Oh, wait, wait!"
+  },
+  {
+   "id": "caller.interrupt.02",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Hold on, hold on!"
+  },
+  {
+   "id": "caller.interrupt.03",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Oh! Look at this!"
+  },
+  {
+   "id": "caller.interrupt.04",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Sorry to cut you off, but look!"
+  },
+  {
+   "id": "caller.interrupt.05",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Whoa, whoa, whoa!"
+  },
+  {
+   "id": "caller.interrupt.06",
+   "speaker": "caller",
+   "act": "interrupt",
+   "tags": [
+    "any"
+   ],
+   "text": "Here it comes!"
+  },
+  {
+   "id": "caller.hit.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Big shot! Big shot from {team}!"
+  },
+  {
+   "id": "caller.hit.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Oh! The {victim_unit} took that one right on the chin!"
+  },
+  {
+   "id": "caller.hit.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 2,
+   "text": "Ohh, that rocked the {victim_unit}!"
+  },
+  {
+   "id": "caller.hit.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 1,
+   "text": "{team} lands a heavy one!"
+  },
+  {
+   "id": "caller.hit.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "hurt"
+   ],
+   "intensity": 3,
+   "text": "That {victim_unit} is hurt! That {victim_unit} is hurt!"
+  },
+  {
+   "id": "caller.hit.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "hurt"
+   ],
+   "intensity": 2,
+   "text": "The {victim_unit} is smoking, and {team} smells blood!"
+  },
+  {
+   "id": "caller.hit.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "weak_spot"
+   ],
+   "intensity": 2,
+   "text": "Right in the weak spot! What a shot!"
+  },
+  {
+   "id": "caller.hit.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "weak_spot"
+   ],
+   "intensity": 2,
+   "text": "They found the soft spot on that {victim_unit}!"
+  },
+  {
+   "id": "caller.hit.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "rear"
+   ],
+   "intensity": 2,
+   "text": "Right up the tailpipe! {team} caught that {victim_unit} from behind!"
+  },
+  {
+   "id": "caller.hit.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "shooter_tank"
+   ],
+   "intensity": 2,
+   "text": "The tank round lands! You felt that one in the seats!"
+  },
+  {
+   "id": "caller.hit.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "shooter_ifv"
+   ],
+   "intensity": 2,
+   "text": "The autocannon is chewing right through that {victim_unit}!"
+  },
+  {
+   "id": "caller.hit.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "shooter_lancer"
+   ],
+   "intensity": 2,
+   "text": "The Lancer's beam cuts right across the {victim_unit}!"
+  },
+  {
+   "id": "caller.hit.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "shooter_artillery"
+   ],
+   "intensity": 2,
+   "text": "The artillery comes down right on top of the {victim_unit}!"
+  },
+  {
+   "id": "caller.hit.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit",
+    "shooter_scout"
+   ],
+   "intensity": 2,
+   "text": "That scout's machine gun is just hosing the {victim_unit}!"
+  },
+  {
+   "id": "caller.hit.15",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "big_hit"
+   ],
+   "intensity": 1,
+   "text": "{team} connects, and the {victim_unit} wobbles!"
+  },
+  {
+   "id": "color.hit.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "weak_spot"
+   ],
+   "text": "That's where you aim. Everybody knows it. Almost nobody does it."
+  },
+  {
+   "id": "color.hit.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "weak_spot"
+   ],
+   "text": "They showed their side. You can't show your side in here."
+  },
+  {
+   "id": "color.hit.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "rear"
+   ],
+   "text": "Nobody was watching the back. Somebody always has to watch the back."
+  },
+  {
+   "id": "caller.kill.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 2,
+   "text": "{team} takes out the {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "The {victim_unit} is done! {team} gets the kill!"
+  },
+  {
+   "id": "caller.kill.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "That's it for the {victim_unit}! It is not moving!"
+  },
+  {
+   "id": "caller.kill.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "Oh, the {other_team} {victim_unit} is finished!"
+  },
+  {
+   "id": "caller.kill.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 2,
+   "text": "Scratch one {victim_unit}! {team} strikes!"
+  },
+  {
+   "id": "caller.kill.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "And the {victim_unit} goes up in flames!"
+  },
+  {
+   "id": "caller.kill.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "That {victim_unit} is out of the fight!"
+  },
+  {
+   "id": "caller.kill.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "{team_s} {killer_unit} puts the {victim_unit} away!"
+  },
+  {
+   "id": "caller.kill.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Put it away! {team} puts it away!"
+  },
+  {
+   "id": "caller.kill.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 2,
+   "text": "It's gone! That {victim_unit} is gone!"
+  },
+  {
+   "id": "caller.kill.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 1,
+   "text": "{team} picks off the {victim_unit}. Clean work."
+  },
+  {
+   "id": "caller.kill.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "intensity": 3,
+   "text": "Oh, they blew that {victim_unit} wide open!"
+  },
+  {
+   "id": "caller.kill.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "intensity": 3,
+   "text": "First blood goes to {team}!"
+  },
+  {
+   "id": "caller.kill.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "intensity": 3,
+   "text": "{team} draws first blood, and this crowd is on its feet!"
+  },
+  {
+   "id": "caller.kill.15",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "intensity": 3,
+   "text": "There it is! The first kill of the night belongs to {team}!"
+  },
+  {
+   "id": "caller.kill.16",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "intensity": 3,
+   "text": "And {team} strikes first! The {killer_unit} gets the honors!"
+  },
+  {
+   "id": "caller.kill.17",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "intensity": 2,
+   "text": "First one down! {team} lands the first real blow of the night!"
+  },
+  {
+   "id": "caller.kill.18",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "intensity": 3,
+   "text": "Are you kidding me? The {killer_unit} takes out the {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.19",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "intensity": 3,
+   "text": "Nobody saw that coming! The {killer_unit} beats the {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.20",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "intensity": 3,
+   "text": "That is not supposed to happen! {team_s} {killer_unit} just took down the {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.21",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "intensity": 3,
+   "text": "Upset! Upset on the floor! The {killer_unit} gets it done!"
+  },
+  {
+   "id": "caller.kill.22",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "counter"
+   ],
+   "intensity": 2,
+   "text": "That's the matchup! The {killer_unit} does exactly what it was built to do!"
+  },
+  {
+   "id": "caller.kill.23",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "counter"
+   ],
+   "intensity": 2,
+   "text": "Textbook! The {killer_unit} eats the {victim_unit} alive!"
+  },
+  {
+   "id": "caller.kill.24",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_tank"
+   ],
+   "intensity": 3,
+   "text": "The tank round lands, and the {victim_unit} just comes apart!"
+  },
+  {
+   "id": "caller.kill.25",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_tank"
+   ],
+   "intensity": 3,
+   "text": "One shot! One shot from the big gun and it's over for that {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.26",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_scout",
+    "victim_tank"
+   ],
+   "intensity": 3,
+   "text": "The scout! The scout gets around the back of the tank and takes it down!"
+  },
+  {
+   "id": "caller.kill.27",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_ifv",
+    "victim_scout"
+   ],
+   "intensity": 2,
+   "text": "The IFV shreds the scout! Too slow to run, too light to take it!"
+  },
+  {
+   "id": "caller.kill.28",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_artillery"
+   ],
+   "intensity": 2,
+   "text": "The artillery finds its mark! {team} shells the {victim_unit} right out of the fight!"
+  },
+  {
+   "id": "caller.kill.29",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_lancer"
+   ],
+   "intensity": 2,
+   "text": "The Lancer burns right through the {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.30",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "victim_artillery"
+   ],
+   "intensity": 3,
+   "text": "They got to the artillery! {team} gets in close and silences the big guns!"
+  },
+  {
+   "id": "caller.kill.31",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "victim_tank"
+   ],
+   "intensity": 3,
+   "text": "The tank is down! The biggest thing on the floor is down!"
+  },
+  {
+   "id": "caller.kill.32",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "victim_scout"
+   ],
+   "intensity": 2,
+   "text": "The scout runs out of road!"
+  },
+  {
+   "id": "caller.kill.33",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_burner"
+   ],
+   "intensity": 3,
+   "text": "The Burner lights up the {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.34",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "victim_lancer"
+   ],
+   "intensity": 2,
+   "text": "The Lancer goes dark! {team} shuts off the beam!"
+  },
+  {
+   "id": "caller.kill.35",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "victim_ifv"
+   ],
+   "intensity": 2,
+   "text": "The IFV is finished! {team} cracks it wide open!"
+  },
+  {
+   "id": "caller.kill.36",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_scout"
+   ],
+   "intensity": 2,
+   "text": "Death by a thousand cuts! The scout's machine gun finally drops the {victim_unit}!"
+  },
+  {
+   "id": "caller.kill.37",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "killer_ifv"
+   ],
+   "intensity": 2,
+   "text": "Burst after burst, and the {victim_unit} can't take any more!"
+  },
+  {
+   "id": "caller.kill.38",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "rear"
+   ],
+   "intensity": 3,
+   "text": "Right in the back! {team} finishes the {victim_unit} from behind!"
+  },
+  {
+   "id": "caller.kill.39",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "weak_spot"
+   ],
+   "intensity": 3,
+   "text": "They hit the weak spot and the {victim_unit} just folds!"
+  },
+  {
+   "id": "caller.kill.40",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "That's {streak} in a row for {team}! They cannot miss!"
+  },
+  {
+   "id": "caller.kill.41",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "{team} is on a tear! That's {streak} straight!"
+  },
+  {
+   "id": "caller.kill.42",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 3,
+   "text": "Another one for {team}! This is a clinic!"
+  },
+  {
+   "id": "caller.kill.43",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "And another one! {team} isn't done!"
+  },
+  {
+   "id": "caller.kill.44",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Two in a row! {team} strikes again!"
+  },
+  {
+   "id": "caller.kill.45",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "Back to back! {team} takes out the {victim_unit} too!"
+  },
+  {
+   "id": "caller.kill.46",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 3,
+   "text": "They got another one! Oh my goodness!"
+  },
+  {
+   "id": "caller.kill.47",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "another"
+   ],
+   "intensity": 2,
+   "text": "And the {victim_unit} goes down right behind it!"
+  },
+  {
+   "id": "caller.kill.48",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "last_unit"
+   ],
+   "intensity": 3,
+   "text": "{other_team} is down to its last vehicle!"
+  },
+  {
+   "id": "caller.kill.49",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "last_unit"
+   ],
+   "intensity": 3,
+   "text": "One left! {other_team} has one left!"
+  },
+  {
+   "id": "caller.kill.50",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "last_unit"
+   ],
+   "intensity": 3,
+   "text": "It's all on the last {other_team} vehicle now!"
+  },
+  {
+   "id": "caller.kill.51",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "last_unit"
+   ],
+   "intensity": 3,
+   "text": "That leaves {other_team} with one. One!"
+  },
+  {
+   "id": "caller.kill.52",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "last_unit",
+    "final_kill"
+   ],
+   "intensity": 2,
+   "text": "{other_team} is down to {count}!"
+  },
+  {
+   "id": "caller.kill.53",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill"
+   ],
+   "without": [
+    "last_unit",
+    "final_kill"
+   ],
+   "intensity": 1,
+   "text": "The {victim_unit} is out, and that's {count} left for {other_team}."
+  },
+  {
+   "id": "caller.kill.54",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "even"
+   ],
+   "intensity": 3,
+   "text": "And just like that, we're even! {count} a side!"
+  },
+  {
+   "id": "caller.kill.55",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "even"
+   ],
+   "intensity": 3,
+   "text": "All square! This thing is dead even!"
+  },
+  {
+   "id": "caller.kill.56",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "lead_change"
+   ],
+   "intensity": 3,
+   "text": "{team} takes the lead!"
+  },
+  {
+   "id": "caller.kill.57",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "lead_change"
+   ],
+   "intensity": 3,
+   "text": "And now it's {team} with the numbers!"
+  },
+  {
+   "id": "caller.kill.58",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "{team} has fought all the way back! What a comeback this is turning into!"
+  },
+  {
+   "id": "caller.kill.59",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "Remember when {team} was finished? Nobody told {team}!"
+  },
+  {
+   "id": "caller.kill.60",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "That's the last one! {team} wipes them out!"
+  },
+  {
+   "id": "caller.kill.61",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "The last {other_team} vehicle goes down!"
+  },
+  {
+   "id": "caller.kill.62",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "And that's it! That's the last one!"
+  },
+  {
+   "id": "caller.kill.63",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "{team} finishes it! The last {victim_unit} is gone!"
+  },
+  {
+   "id": "caller.kill.64",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "mirror"
+   ],
+   "intensity": 2,
+   "text": "{killer_unit} against {victim_unit}, and {team} wins the exchange!"
+  },
+  {
+   "id": "caller.kill.65",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Vehicles are going down all over the floor! {kills} in a matter of seconds!"
+  },
+  {
+   "id": "caller.kill.66",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "It is chaos down there! I can't even keep up!"
+  },
+  {
+   "id": "caller.kill.67",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "without": [
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "{team} is cleaning house! {kills} down, just like that!"
+  },
+  {
+   "id": "caller.kill.68",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "flurry"
+   ],
+   "intensity": 3,
+   "text": "Did everybody see that? {kills} vehicles gone in the blink of an eye!"
+  },
+  {
+   "id": "caller.kill.69",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "They're trading! They are trading in the middle of the floor!"
+  },
+  {
+   "id": "caller.kill.70",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Both sides lose one! Neither army is backing down!"
+  },
+  {
+   "id": "caller.kill.71",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "intensity": 3,
+   "text": "Blow for blow! Everybody is swinging, and everybody is getting hit!"
+  },
+  {
+   "id": "color.kill.20",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "Even trades favor whoever has more left. Count them before you swing."
+  },
+  {
+   "id": "color.kill.21",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "trade"
+   ],
+   "text": "That's a brawl. Nobody planned that. Somebody's going to wish they had."
+  },
+  {
+   "id": "caller.kill.72",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "faction_gangs"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "The gang crew goes screaming in and gets it done! Listen to this crowd!"
+  },
+  {
+   "id": "caller.kill.73",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "other_faction_law"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "The Law loses one, and this building absolutely loves it!"
+  },
+  {
+   "id": "caller.kill.74",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "faction_law"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 2,
+   "text": "The Law takes out the {victim_unit}, and the boos are raining down!"
+  },
+  {
+   "id": "caller.kill.75",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "faction_syndicate"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 2,
+   "text": "The Syndicate machine takes it clean. That was surgical."
+  },
+  {
+   "id": "caller.kill.76",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "kill",
+    "other_faction_syndicate"
+   ],
+   "without": [
+    "final_kill"
+   ],
+   "intensity": 3,
+   "text": "They put a hole in the Syndicate's pretty paint job!"
+  },
+  {
+   "id": "pa.syndicate.01",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "kill",
+    "faction_syndicate"
+   ],
+   "text": "That was the Vesper hover platform, now in limited release for private security contracts."
+  },
+  {
+   "id": "pa.syndicate.02",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "kill",
+    "faction_syndicate"
+   ],
+   "text": "The Syndicate congratulates its engineering team on another successful field test."
+  },
+  {
+   "id": "pa.syndicate.03",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "kill",
+    "faction_syndicate"
+   ],
+   "text": "Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts."
+  },
+  {
+   "id": "color.faction.05",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill",
+    "other_faction_syndicate"
+   ],
+   "text": "They'll build another one. They always build another one."
+  },
+  {
+   "id": "color.faction.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "faction_gangs"
+   ],
+   "text": "No shields, so they don't wait. Get in close and hit first. It's the only way they know."
+  },
+  {
+   "id": "caller.stat.01",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 2,
+   "text": "{team} has taken out {streak} in a row without losing one."
+  },
+  {
+   "id": "caller.stat.02",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "intensity": 2,
+   "text": "{streak} unanswered for {team}. {other_team} has to do something, and fast."
+  },
+  {
+   "id": "color.kill.01",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "text": "{other_team} will want that one back. You don't give up the first one that easy."
+  },
+  {
+   "id": "color.kill.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "text": "First kill doesn't win it. But it's a long way back from being down one."
+  },
+  {
+   "id": "color.kill.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "text": "That {victim_unit} should have won that. It sat still and let it happen."
+  },
+  {
+   "id": "color.kill.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "text": "Matchups are a suggestion. That crew didn't take it."
+  },
+  {
+   "id": "color.kill.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "counter"
+   ],
+   "text": "That's what they built it for. No surprises there."
+  },
+  {
+   "id": "color.kill.06",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill",
+    "counter"
+   ],
+   "text": "You don't take the {victim_unit} into that. You just don't."
+  },
+  {
+   "id": "color.kill.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "last_unit"
+   ],
+   "text": "{other_team} has one left. Now it gets interesting, or it gets short."
+  },
+  {
+   "id": "color.kill.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "last_unit"
+   ],
+   "text": "That last {other_team} crew has nothing to lose. That's the dangerous one."
+  },
+  {
+   "id": "color.kill.09",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "{other_team} was in the open for too long. You saw it coming from here."
+  },
+  {
+   "id": "color.kill.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "Patience. {team} waited for the shot and took it."
+  },
+  {
+   "id": "color.kill.11",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "That crew stopped moving. You stop moving in here, you stop."
+  },
+  {
+   "id": "color.kill.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "Good trade for {team}. They'll take that all night."
+  },
+  {
+   "id": "color.kill.13",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "He'll want that one back. They all do."
+  },
+  {
+   "id": "color.kill.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "rear"
+   ],
+   "text": "That's what happens when nobody checks behind them. It's a big floor."
+  },
+  {
+   "id": "color.kill.15",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "comeback"
+   ],
+   "text": "{team} didn't panic. That's the whole comeback right there. Nobody panicked."
+  },
+  {
+   "id": "color.kill.16",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "streak"
+   ],
+   "text": "{other_team} keeps feeding them one at a time. Regroup. Please regroup."
+  },
+  {
+   "id": "color.kill.17",
+   "speaker": "color",
+   "act": "callback",
+   "tags": [
+    "kill",
+    "victim_scout"
+   ],
+   "needs": [
+    "predicted_scouts"
+   ],
+   "text": "There go the eyes. I said it before the match. Watch what happens to {other_team} now."
+  },
+  {
+   "id": "color.kill.18",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "victim_artillery"
+   ],
+   "text": "Artillery with nobody guarding it. That's a gift."
+  },
+  {
+   "id": "color.kill.19",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "killer_scout",
+    "victim_tank"
+   ],
+   "text": "The turret can't turn that fast. The scout knew it. That's a smart driver."
+  },
+  {
+   "id": "caller.ownkill.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "Oh no! {team} just took out its own {victim_unit}!"
+  },
+  {
+   "id": "caller.ownkill.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "Friendly fire, and it's fatal! Oh, that is hard to watch!"
+  },
+  {
+   "id": "caller.ownkill.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "They hit their own! {team} loses the {victim_unit} to its own guns!"
+  },
+  {
+   "id": "caller.ownkill.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill"
+   ],
+   "intensity": 3,
+   "text": "That's a {team} {killer_unit} destroying a {team} {victim_unit}! Their own teammate!"
+  },
+  {
+   "id": "caller.ownkill.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill",
+    "repeat"
+   ],
+   "needs": [
+    "said_friendly_{team}"
+   ],
+   "intensity": 3,
+   "text": "Again! {team} has done it again!"
+  },
+  {
+   "id": "caller.ownkill.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_kill",
+    "killer_artillery"
+   ],
+   "intensity": 3,
+   "text": "The {team} artillery drops it right on its own {victim_unit}! It's gone!"
+  },
+  {
+   "id": "color.ownkill.01",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "Look before you shoot. It's not complicated. It's just hard."
+  },
+  {
+   "id": "color.ownkill.02",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "Somebody on {team} is going to have a long conversation after this."
+  },
+  {
+   "id": "color.ownkill.03",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "That's not bad luck. That's where they chose to stand."
+  },
+  {
+   "id": "color.ownkill.04",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "I've seen it happen. You don't forget the sound of it."
+  },
+  {
+   "id": "color.ownkill.05",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_kill",
+    "killer_artillery"
+   ],
+   "text": "You shell a crowd, you're going to hit your own. Everybody's in the crowd."
+  },
+  {
+   "id": "color.ownkill.06",
+   "speaker": "color",
+   "act": "callback",
+   "tags": [
+    "friendly_kill"
+   ],
+   "needs": [
+    "predicted_friendly_fire"
+   ],
+   "text": "I said it before the match. Too many heavy guns in a small room."
+  },
+  {
+   "id": "caller.hazard.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 3,
+   "text": "The {victim_unit} drives right into the fire!"
+  },
+  {
+   "id": "caller.hazard.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 3,
+   "text": "Oh! The arena takes the {victim_unit}! Nobody even touched it!"
+  },
+  {
+   "id": "caller.hazard.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 2,
+   "text": "The pit claims one! {team} loses the {victim_unit} to the floor itself!"
+  },
+  {
+   "id": "caller.hazard.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "hazard_kill"
+   ],
+   "intensity": 2,
+   "text": "That {victim_unit} was already hurting, and the fire finishes the job!"
+  },
+  {
+   "id": "pa.hazard.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill"
+   ],
+   "text": "A reminder to participants that the fire pits remain active for the duration of the match."
+  },
+  {
+   "id": "pa.hazard.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill"
+   ],
+   "text": "The fire pits were inspected before tonight's match and are operating normally."
+  },
+  {
+   "id": "caller.ff.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 2,
+   "text": "Whoa, whoa! {team} just hit its own {victim_unit}!"
+  },
+  {
+   "id": "caller.ff.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 2,
+   "text": "Friendly fire! The {team} {unit} catches a teammate!"
+  },
+  {
+   "id": "caller.ff.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 2,
+   "text": "Oh, that's their own! {team} hits its own {victim_unit}!"
+  },
+  {
+   "id": "caller.ff.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire"
+   ],
+   "intensity": 2,
+   "text": "{team_s} {unit} lands one on its own {victim_unit}! Wrong target!"
+  },
+  {
+   "id": "caller.ff.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire",
+    "shooter_artillery"
+   ],
+   "intensity": 2,
+   "text": "That artillery shell landed on {team_s} own {victim_unit}!"
+  },
+  {
+   "id": "caller.ff.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire",
+    "repeat"
+   ],
+   "needs": [
+    "said_friendly_{team}"
+   ],
+   "intensity": 3,
+   "text": "Again! {team} hits its own again!"
+  },
+  {
+   "id": "caller.ff.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "friendly_fire",
+    "repeat"
+   ],
+   "intensity": 2,
+   "text": "That's {count} times now {team} has hit its own vehicles!"
+  },
+  {
+   "id": "color.ff.01",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "Spacing. It's always spacing."
+  },
+  {
+   "id": "color.ff.02",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "The shell doesn't know what color you are."
+  },
+  {
+   "id": "color.ff.03",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire",
+    "shooter_artillery"
+   ],
+   "text": "You bring artillery, you put it behind your people. Not on top of them."
+  },
+  {
+   "id": "color.ff.04",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "They'll say the {victim_unit} drifted into the line. It didn't."
+  },
+  {
+   "id": "color.ff.05",
+   "speaker": "color",
+   "act": "callback",
+   "tags": [
+    "friendly_fire"
+   ],
+   "needs": [
+    "predicted_friendly_fire"
+   ],
+   "text": "I mentioned this before the match. Nobody listens to me."
+  },
+  {
+   "id": "color.ff.06",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire",
+    "repeat"
+   ],
+   "text": "That's not the first time tonight. {team} needs to fix it now."
+  },
+  {
+   "id": "pa.ff.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire",
+    "repeat"
+   ],
+   "needs": [
+    "said_friendly_{team}"
+   ],
+   "text": "For viewers just joining us, those were {team} vehicles striking other {team} vehicles. The match continues."
+  },
+  {
+   "id": "pa.ff.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "Officials confirm that was a {team} vehicle striking another {team} vehicle. The match continues."
+  },
+  {
+   "id": "pa.ff.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "Officials have reviewed the incident, and the result stands."
+  },
+  {
+   "id": "pa.ff.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "The Syndicate reminds participants that losses to friendly fire are not deducted from tonight's purse."
+  },
+  {
+   "id": "caller.close.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 3,
+   "text": "It's still moving! I don't know how, but that {unit} is still moving!"
+  },
+  {
+   "id": "caller.close.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 2,
+   "text": "The {team} {unit} is hanging on by a thread!"
+  },
+  {
+   "id": "caller.close.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 2,
+   "text": "That {unit} should be scrap, and it is still in the fight!"
+  },
+  {
+   "id": "caller.close.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 2,
+   "text": "Look at that {unit}! Smoking, burning, and still going!"
+  },
+  {
+   "id": "caller.close.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call"
+   ],
+   "intensity": 2,
+   "text": "They are hurt, but they are not out!"
+  },
+  {
+   "id": "caller.close.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "close_call",
+    "last_unit"
+   ],
+   "intensity": 3,
+   "text": "The last {team} vehicle is barely holding together! Barely!"
+  },
+  {
+   "id": "color.close.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "Hull like that, every bump hurts. They need to get behind something. Now."
+  },
+  {
+   "id": "color.close.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "I drove a whole match like that once. After a while you stop looking at the gauges."
+  },
+  {
+   "id": "color.close.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "That crew is praying right now. Maybe it's working."
+  },
+  {
+   "id": "caller.control.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "taken"
+   ],
+   "intensity": 2,
+   "text": "{team} takes the control point!"
+  },
+  {
+   "id": "caller.control.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "taken"
+   ],
+   "intensity": 2,
+   "text": "{team} is on the point, and the clock is ticking for {other_team}!"
+  },
+  {
+   "id": "caller.control.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "intensity": 2,
+   "text": "The center belongs to {team}!"
+  },
+  {
+   "id": "caller.control.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "stolen"
+   ],
+   "intensity": 3,
+   "text": "{team} steals the point away from {other_team}!"
+  },
+  {
+   "id": "caller.control.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "stolen"
+   ],
+   "intensity": 3,
+   "text": "Oh, {team} takes it right back!"
+  },
+  {
+   "id": "caller.control.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "again"
+   ],
+   "intensity": 3,
+   "text": "The point changes hands again! What a tug of war!"
+  },
+  {
+   "id": "caller.control.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "control",
+    "neutral"
+   ],
+   "intensity": 2,
+   "text": "The point is up for grabs again!"
+  },
+  {
+   "id": "color.control.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "Holding the middle means sitting still in the open. Good for points. Bad for your paint."
+  },
+  {
+   "id": "color.control.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "{other_team} has to go get it now. That means coming out into the open."
+  },
+  {
+   "id": "color.control.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "control"
+   ],
+   "text": "Everybody wants the point until they're standing on it."
+  },
+  {
+   "id": "pa.control.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "{team} now holds the control point. Scoring has been updated."
+  },
+  {
+   "id": "pa.control.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control"
+   ],
+   "without": [
+    "neutral"
+   ],
+   "text": "Control of the center has changed. The scoreboard reflects the change, and the betting windows remain open."
+  },
+  {
+   "id": "caller.squad.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 2,
+   "text": "{team} has lost an entire squad!"
+  },
+  {
+   "id": "caller.squad.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 2,
+   "text": "That whole {team} squad is gone!"
+  },
+  {
+   "id": "caller.squad.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "squad_wiped"
+   ],
+   "intensity": 2,
+   "text": "The squad is wiped out! {team} is short a whole group!"
+  },
+  {
+   "id": "color.momentum.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "{team} has the better of it right now. Look at the damage {other_team} is soaking up."
+  },
+  {
+   "id": "color.momentum.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "text": "The tide's turning. {team} got patient, and it's paying off."
+  },
+  {
+   "id": "color.momentum.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "{other_team} is bleeding and doesn't know it yet."
+  },
+  {
+   "id": "color.momentum.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum",
+    "rout"
+   ],
+   "text": "{other_team} is coming apart out there. That's not a fight anymore."
+  },
+  {
+   "id": "caller.momentum.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 2,
+   "text": "The momentum is swinging to {team}!"
+  },
+  {
+   "id": "caller.momentum.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum"
+   ],
+   "intensity": 2,
+   "text": "{team} is taking over this match!"
+  },
+  {
+   "id": "caller.momentum.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "momentum",
+    "shift"
+   ],
+   "intensity": 2,
+   "text": "You can feel it shifting, folks! {team} is in control now!"
+  },
+  {
+   "id": "caller.waiting.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "Both armies feeling each other out here. Nobody wants to commit."
+  },
+  {
+   "id": "caller.waiting.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "It's quiet. Somebody is about to get found."
+  },
+  {
+   "id": "caller.waiting.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "They're creeping through the smoke, looking for each other."
+  },
+  {
+   "id": "caller.waiting.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "intensity": 2,
+   "text": "Not a shot fired yet, and I'm already out of my seat!"
+  },
+  {
+   "id": "caller.waiting.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "intensity": 1,
+   "text": "The scouts are out there somewhere. Any second now."
+  },
+  {
+   "id": "color.waiting.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "This is the part nobody watches, and everybody should."
+  },
+  {
+   "id": "color.waiting.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "Find them first, and you choose the fight. That's the only advantage that matters."
+  },
+  {
+   "id": "color.waiting.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull",
+    "waiting"
+   ],
+   "text": "Engines idling. In there you can hear your own heart. I promise you."
+  },
+  {
+   "id": "caller.banter.01",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "pressure",
+   "text": "What's going through a driver's head right now?"
+  },
+  {
+   "id": "color.banter.01",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "pressure",
+   "text": "Nothing useful. You're counting shells and checking mirrors."
+  },
+  {
+   "id": "color.banter.02",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "pressure",
+   "text": "Less than you'd think. The good ones go quiet inside."
+  },
+  {
+   "id": "caller.banter.02",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "scouts",
+   "text": "How important are the scouts in a fight like this?"
+  },
+  {
+   "id": "color.banter.03",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "scouts",
+   "text": "Everything, early. Nothing, late."
+  },
+  {
+   "id": "color.banter.04",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "scouts",
+   "text": "Nobody thinks about them until they're gone. Then you're driving blind."
+  },
+  {
+   "id": "caller.banter.03",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "tanks",
+   "text": "Is the tank still king on this floor?"
+  },
+  {
+   "id": "color.banter.05",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "tanks",
+   "text": "It's still the biggest. That's not the same thing."
+  },
+  {
+   "id": "color.banter.06",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "tanks",
+   "text": "If it's pointed the right way, yes. If it isn't, it's a very expensive wall."
+  },
+  {
+   "id": "caller.banter.04",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "cover",
+   "text": "You always talk about cover. Why does it matter so much in here?"
+  },
+  {
+   "id": "color.banter.07",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "cover",
+   "text": "Everything in here can reach you from across the room. The wall is the only thing on your side."
+  },
+  {
+   "id": "color.banter.08",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "cover",
+   "text": "You're a big target in a small room. Cover is the only thing that makes you small."
+  },
+  {
+   "id": "caller.banter.05",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "release",
+   "text": "What does it take to earn your release in a place like this?"
+  },
+  {
+   "id": "color.banter.09",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "release",
+   "text": "Luck. And the kind of patience most people lose on the first day."
+  },
+  {
+   "id": "color.banter.10",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "release",
+   "text": "You win enough, and one day they stop calling your number. That's how it happened for me."
+  },
+  {
+   "id": "caller.banter.06",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "crowd",
+   "text": "Can they hear this crowd down there?"
+  },
+  {
+   "id": "color.banter.11",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "crowd",
+   "text": "Not over the engines. You feel it through the floor, though."
+  },
+  {
+   "id": "color.banter.12",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "crowd",
+   "text": "Every word. You don't want to. A crowd changes sides fast."
+  },
+  {
+   "id": "caller.banter.07",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull",
+    "team_leading"
+   ],
+   "topic": "trailing",
+   "text": "What does {other_team} have to do to get back into this?"
+  },
+  {
+   "id": "color.banter.13",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "trailing",
+   "text": "Stop trading one for one. They can't afford it anymore."
+  },
+  {
+   "id": "color.banter.14",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "trailing",
+   "text": "Pick one target and all shoot it. They're spreading their fire around."
+  },
+  {
+   "id": "caller.banter.08",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull",
+    "level"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "topic": "level",
+   "text": "Dead even out there. Who blinks first?"
+  },
+  {
+   "id": "color.banter.15",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "level",
+   "text": "Whoever has been waiting the longest. The waiting gets to you."
+  },
+  {
+   "id": "color.banter.16",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "level",
+   "text": "Nobody blinks. Somebody runs out of cover. It's different."
+  },
+  {
+   "id": "caller.banter.09",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "you",
+   "text": "If you were down there right now, what would you do?"
+  },
+  {
+   "id": "color.banter.17",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "you",
+   "text": "Back up twenty meters and let them come to me."
+  },
+  {
+   "id": "color.banter.18",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "you",
+   "text": "I wouldn't be down there. I did my time. I'm happy up here with you."
+  },
+  {
+   "id": "caller.banter.10",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "artillery",
+   "text": "Artillery in a room this size. Is that smart?"
+  },
+  {
+   "id": "color.banter.19",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "artillery",
+   "text": "Only if your own people know where it's landing."
+  },
+  {
+   "id": "color.banter.20",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "artillery",
+   "text": "It's smart until the fighting gets close. Then it's a coin toss."
+  },
+  {
+   "id": "caller.banter.11",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull",
+    "team_leading"
+   ],
+   "without": [
+    "phase_early"
+   ],
+   "topic": "over",
+   "text": "Is it over for {other_team}?"
+  },
+  {
+   "id": "color.banter.21",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "over",
+   "text": "Not yet. I've come back from worse. Not much worse."
+  },
+  {
+   "id": "color.banter.22",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "over",
+   "text": "Close to it. But one mistake from {team} and it's a match again."
+  },
+  {
+   "id": "caller.banter.12",
+   "speaker": "caller",
+   "act": "setup_question",
+   "tags": [
+    "lull"
+   ],
+   "topic": "fear",
+   "text": "Were you ever scared down there?"
+  },
+  {
+   "id": "color.banter.23",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "fear",
+   "text": "Every match. The day you're not scared is the day they tow you out."
+  },
+  {
+   "id": "color.banter.24",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "fear",
+   "text": "Not during. Before, and after. During, there isn't time."
+  },
+  {
+   "id": "color.banter.25",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "lull"
+   ],
+   "topic": "any",
+   "text": "Hard to say. Ask me again in a minute."
+  },
+  {
+   "id": "caller.reaction.01",
+   "speaker": "caller",
+   "act": "reaction",
+   "tags": [
+    "lull",
+    "after_color"
+   ],
+   "text": "Can't argue with that."
+  },
+  {
+   "id": "caller.reaction.02",
+   "speaker": "caller",
+   "act": "reaction",
+   "tags": [
+    "lull",
+    "after_color"
+   ],
+   "text": "Spoken like a man who has been there."
+  },
+  {
+   "id": "caller.reaction.03",
+   "speaker": "caller",
+   "act": "reaction",
+   "tags": [
+    "lull",
+    "after_color"
+   ],
+   "text": "And that's why you're in the booth."
+  },
+  {
+   "id": "caller.reaction.04",
+   "speaker": "caller",
+   "act": "reaction",
+   "tags": [
+    "lull",
+    "after_color"
+   ],
+   "text": "I'll take your word for it."
+  },
+  {
+   "id": "caller.reaction.05",
+   "speaker": "caller",
+   "act": "reaction",
+   "tags": [
+    "lull",
+    "after_pa"
+   ],
+   "text": "Thank you, Celeste. Back down to the floor."
+  },
+  {
+   "id": "caller.reaction.06",
+   "speaker": "caller",
+   "act": "reaction",
+   "tags": [
+    "lull",
+    "after_pa"
+   ],
+   "text": "All right! Back to the action!"
+  },
+  {
+   "id": "caller.stat.03",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "lull",
+    "team_leading"
+   ],
+   "text": "{team} has the numbers right now, {count} to {other_count}."
+  },
+  {
+   "id": "caller.stat.04",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "lull",
+    "level"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "It's {count} a side, and neither army is giving an inch."
+  },
+  {
+   "id": "caller.stat.05",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "lull",
+    "team_leading"
+   ],
+   "text": "{team} leads, and {other_team} needs a big play here."
+  },
+  {
+   "id": "caller.stat.06",
+   "speaker": "caller",
+   "act": "stat",
+   "tags": [
+    "lull",
+    "level"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "Dead even, {count} apiece. Anybody's match."
+  },
+  {
+   "id": "color.lore.01",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "They let me keep my number when I got out. I still turn around when somebody says it."
+  },
+  {
+   "id": "color.lore.02",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "The paperwork says every one of those crews volunteered. I signed the same paperwork."
+  },
+  {
+   "id": "color.lore.03",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "My first season in here, they didn't have the lights yet. You fought by the muzzle flashes."
+  },
+  {
+   "id": "color.lore.04",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "I drove a bus a lot like those, before the plating. It had a route. School route."
+  },
+  {
+   "id": "color.lore.05",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "People ask if I miss it. I don't. I still dream about the floor, though."
+  },
+  {
+   "id": "color.lore.06",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "Best driver I ever saw in here never fired first. Not once. Nine seasons."
+  },
+  {
+   "id": "color.lore.07",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "The crews talk before the match. Not about the match. About food, mostly."
+  },
+  {
+   "id": "color.lore.08",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "You learn the floor by the scorch marks. Every one of them is somebody's bad night."
+  },
+  {
+   "id": "color.lore.09",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "They repaint the walls every season. It never quite covers everything."
+  },
+  {
+   "id": "color.lore.10",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "First thing they teach you is how to reverse. The ones who skipped that lesson aren't around to teach it."
+  },
+  {
+   "id": "color.lore.11",
+   "speaker": "color",
+   "act": "lore",
+   "tags": [
+    "lull"
+   ],
+   "text": "My last match was in {arena}. Same lights. I didn't look up once."
+  },
+  {
+   "id": "pa.sponsor.01",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Tonight's broadcast is brought to you by AquaCorp. Clean, reliable water, delivered to approved households on a schedule that works for you."
+  },
+  {
+   "id": "pa.sponsor.02",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "This match is sponsored by Syndicate Life. Protecting families across every district, with plans starting at a single month of labor."
+  },
+  {
+   "id": "pa.sponsor.03",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Meridian Transport. Moving workers between districts safely, on time, and with a minimum of paperwork."
+  },
+  {
+   "id": "pa.sponsor.04",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Stay with us after the match for highlights, brought to you by Syndicate Housing, now accepting applications in the eastern districts."
+  },
+  {
+   "id": "pa.sponsor.05",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "The Syndicate Lottery draws tonight at midnight. Winning tickets may be entered into next season's arena draft, or exchanged for ration credits at any district office."
+  },
+  {
+   "id": "pa.sponsor.06",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Tonight's medical coverage is provided by Harbor General, the official hospital of the arena, with beds reserved for tonight's winners."
+  },
+  {
+   "id": "pa.sponsor.07",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "A word from our partners at Syndicate Security. If you see something, report something. Reports made during tonight's broadcast earn double credit."
+  },
+  {
+   "id": "pa.sponsor.08",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "This segment is brought to you by Vireo nutrition bars. Ninety-two percent real food, and approved for all ages."
+  },
+  {
+   "id": "pa.sponsor.09",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Fans at home, tonight's broadcast is fully interactive. Your viewing has been recorded, and we thank you for watching."
+  },
+  {
+   "id": "pa.sponsor.10",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in {arena} and in selected residential areas."
+  },
+  {
+   "id": "pa.sponsor.11",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "A message from the Law. Reports about a neighbor now earn ration credits within three business days."
+  },
+  {
+   "id": "pa.sponsor.12",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "AquaCorp reminds residents of the lower districts that tomorrow's water schedule has been posted."
+  },
+  {
+   "id": "pa.sponsor.13",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Tonight's replays are provided by Syndicate Vision. Every angle, every crew, archived permanently."
+  },
+  {
+   "id": "pa.sponsor.14",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Condemned crews who complete tonight's broadcast will be eligible for the Syndicate's work placement program."
+  },
+  {
+   "id": "pa.sponsor.15",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "lull"
+   ],
+   "text": "Syndicate Life. Coverage that stays with your family, whatever tonight brings."
+  },
+  {
+   "id": "pa.odds.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull",
+    "team_leading"
+   ],
+   "text": "The odds boards on the main concourse now have {team} at three to one. Windows remain open."
+  },
+  {
+   "id": "pa.odds.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull",
+    "level"
+   ],
+   "without": [
+    "waiting"
+   ],
+   "text": "The odds boards have tonight's match even. Wagers on individual crews are still being accepted."
+  },
+  {
+   "id": "pa.notice.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "A reminder that the upper concourse will close during the final minutes of the match, for crowd safety."
+  },
+  {
+   "id": "pa.notice.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Fans in section nine, please remain in your seats. The smoke in your section is part of tonight's production."
+  },
+  {
+   "id": "pa.notice.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The Syndicate would like to remind the audience that cheering is encouraged, and is being noted."
+  },
+  {
+   "id": "pa.notice.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Please do not throw objects onto the arena floor. Anyone who enters the floor to retrieve an object will be considered a participant."
+  },
+  {
+   "id": "pa.notice.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Medical staff are standing by, and will attend to participants following the conclusion of the match."
+  },
+  {
+   "id": "pa.notice.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "A child has been found near gate three. The child is safe, and may be collected with valid district papers."
+  },
+  {
+   "id": "pa.notice.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Due to high demand, water service in the lower bowl will resume after the match."
+  },
+  {
+   "id": "pa.notice.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Tonight's attendance is ninety-four thousand, a weeknight record, including four thousand seats reserved for the families of tonight's crews."
+  },
+  {
+   "id": "pa.notice.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "The owner of a grey sedan in lot four, please return to your vehicle. It is being relocated."
+  },
+  {
+   "id": "pa.notice.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "lull"
+   ],
+   "text": "Betting windows on the main concourse remain open, and will accept wagers on individual crews until the end of the match."
+  },
+  {
+   "id": "caller.result.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "win_elimination"
+   ],
+   "intensity": 3,
+   "text": "It's all over! {team} wins it!"
+  },
+  {
+   "id": "caller.result.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "That's the match! {team} is your winner tonight!"
+  },
+  {
+   "id": "caller.result.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "{team} takes it! What a fight, ladies and gentlemen!"
+  },
+  {
+   "id": "caller.result.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "win_elimination"
+   ],
+   "intensity": 3,
+   "text": "And {team} is the last army standing! {team} wins!"
+  },
+  {
+   "id": "caller.result.05",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "flawless"
+   ],
+   "intensity": 3,
+   "text": "{team} wins it without losing a single vehicle! Flawless!"
+  },
+  {
+   "id": "caller.result.06",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "close"
+   ],
+   "intensity": 3,
+   "text": "{team} wins it with one vehicle left! One! What a finish!"
+  },
+  {
+   "id": "caller.result.07",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "comeback"
+   ],
+   "intensity": 3,
+   "text": "What a comeback! {team} was down and out, and {team} wins it!"
+  },
+  {
+   "id": "caller.result.08",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "win_control"
+   ],
+   "intensity": 3,
+   "text": "{team} wins it on the control point! They held the middle, and it paid off!"
+  },
+  {
+   "id": "caller.result.09",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "win_time"
+   ],
+   "intensity": 3,
+   "text": "Time is up, and {team} takes it on the damage count!"
+  },
+  {
+   "id": "caller.result.10",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "It's a draw! Nobody walks away with it tonight!"
+  },
+  {
+   "id": "caller.result.11",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "quick"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "That was fast! {team} made short work of that one!"
+  },
+  {
+   "id": "caller.result.12",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result",
+    "long"
+   ],
+   "without": [
+    "draw"
+   ],
+   "intensity": 3,
+   "text": "What a war! That one went the distance, and {team} comes out on top!"
+  },
+  {
+   "id": "color.result.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "{team} stayed together. That's it. That's the whole secret."
+  },
+  {
+   "id": "color.result.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw",
+    "flawless"
+   ],
+   "text": "{other_team} traded evenly early and couldn't afford it later. You could see it coming."
+  },
+  {
+   "id": "color.result.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "{team} earned that. I didn't see them get lucky once."
+  },
+  {
+   "id": "color.result.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "flawless"
+   ],
+   "text": "Flawless is rare. I never did it. Not once."
+  },
+  {
+   "id": "color.result.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "close"
+   ],
+   "text": "One left. That driver is going to remember every second of that."
+  },
+  {
+   "id": "color.result.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "comeback"
+   ],
+   "text": "That comeback started with one crew deciding not to panic."
+  },
+  {
+   "id": "color.result.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "win_control"
+   ],
+   "text": "Holding the point takes nerve. {team} had it."
+  },
+  {
+   "id": "color.result.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "draw"
+   ],
+   "text": "Nobody wins a draw. Everybody just gets to go back tonight."
+  },
+  {
+   "id": "color.result.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "quick"
+   ],
+   "text": "Quick ones are the worst kind to lose. No time to fix anything."
+  },
+  {
+   "id": "color.result.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result",
+    "long"
+   ],
+   "text": "Long match. Everybody down there is exhausted. {team} was a little less exhausted."
+  },
+  {
+   "id": "pa.result.01",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "{team} wins tonight's match. Thank you for joining us. Please exit by section, and have your papers ready."
+  },
+  {
+   "id": "pa.result.02",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "Tonight's winner is {team}. The surviving crews will be processed shortly. Good night."
+  },
+  {
+   "id": "pa.result.03",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "That concludes tonight's match. Congratulations to {team}. On behalf of the Syndicate, good night, and please drive safely."
+  },
+  {
+   "id": "pa.result.04",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "without": [
+    "draw"
+   ],
+   "text": "The match has been decided in favor of {team}. Highlights will air throughout the week on all district screens."
+  },
+  {
+   "id": "pa.result.05",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro",
+    "draw"
+   ],
+   "text": "Tonight's match has ended in a draw. Both armies will be rescheduled. Thank you, and good night."
+  },
+  {
+   "id": "pa.result.06",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro",
+    "flawless"
+   ],
+   "text": "{team} wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed."
+  },
+  {
+   "id": "pa.welcome.11",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Thank you for joining us this evening at {arena}. Tonight's broadcast runs until a winner is declared, however long that takes."
+  },
+  {
+   "id": "pa.welcome.12",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "A very good evening to you all. The floor has been swept, the barriers are secure, and the crews have been briefed on the new penalty for stopping."
+  },
+  {
+   "id": "pa.welcome.13",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Hello, and welcome to tonight's coverage from {arena}. We have a full card, a full house, and a full medical wing on standby."
+  },
+  {
+   "id": "pa.welcome.14",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "It is a beautiful night here at {arena}. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out."
+  },
+  {
+   "id": "pa.welcome.15",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "We are live. Tonight's crews have been weighed, their vehicles inspected, and their next of kin notified of the start time."
+  },
+  {
+   "id": "pa.welcome.16",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Evening, everyone. Before the engines start, a reminder that tonight's broadcast is sponsored in full by the district that supplied the crews."
+  },
+  {
+   "id": "pa.welcome.17",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "From all of us here at the arena, welcome. The Syndicate thanks tonight's participants for volunteering, and reminds them that the paperwork is already filed."
+  },
+  {
+   "id": "pa.welcome.18",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Coming to you live from the arena floor. Our crews have spent the last six weeks in preparation, and the last four days here."
+  },
+  {
+   "id": "pa.welcome.19",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "So glad you could join us. The forecast is clear all evening, which the ground crew tells me is good news for visibility and bad news for the crews."
+  },
+  {
+   "id": "pa.welcome.20",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "On behalf of everyone in the booth, thank you for tuning in. Tonight's match is the fourth of the season, and the second with this many entrants."
+  },
+  {
+   "id": "pa.welcome.21",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Here we are again at {arena}. The stands filled early tonight, which usually means the district offices closed early too."
+  },
+  {
+   "id": "pa.welcome.22",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Welcome in. The crews are staged, the gates are down, and we are told the count will begin once the last of the paperwork clears."
+  },
+  {
+   "id": "pa.welcome.23",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Tonight from {arena}, a full programme of arena combat. Our thanks to the maintenance teams, who resurfaced the floor twice this week."
+  },
+  {
+   "id": "pa.welcome.24",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro"
+   ],
+   "text": "Good evening. I am joined in the booth as always, and we are grateful to be indoors."
+  },
+  {
+   "id": "pa.welcome.25",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro",
+    "control_point"
+   ],
+   "text": "Welcome to {arena}. The centre of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on."
+  },
+  {
+   "id": "pa.welcome.26",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro",
+    "control_point"
+   ],
+   "text": "Good evening from the arena. Tonight's match includes the centre marker, which has been repaired since the last time we used it."
+  },
+  {
+   "id": "pa.welcome.27",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro",
+    "control_point"
+   ],
+   "text": "Thank you all for coming. A note on tonight's format: the centre of the floor counts, and the crews have been told roughly where it is."
+  },
+  {
+   "id": "pa.welcome.28",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro",
+    "arena_scrapyard"
+   ],
+   "text": "Welcome to the Scrapyard. Sightlines are poor throughout, which our partners tell us improves the viewing experience."
+  },
+  {
+   "id": "pa.welcome.29",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro",
+    "arena_foundry"
+   ],
+   "text": "Good evening from the Foundry. Floor temperature is within tolerance for the vehicles."
+  },
+  {
+   "id": "pa.welcome.30",
+   "speaker": "pa",
+   "act": "welcome",
+   "tags": [
+    "intro",
+    "arena_furnace"
+   ],
+   "text": "Welcome to the Furnace. Fans in the lower bowl are reminded that the heat is part of the venue and not a fault."
+  },
+  {
+   "id": "caller.intro.13",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "What a night we have for you! I hope you are sitting down, because I am not!"
+  },
+  {
+   "id": "caller.intro.14",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Here we go! The building is shaking and we have not even started!"
+  },
+  {
+   "id": "caller.intro.15",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "Good evening, fight fans. Two armies, and only one of them drives out of here."
+  },
+  {
+   "id": "caller.intro.16",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Oh, this is going to be good. I can feel it in my chest already!"
+  },
+  {
+   "id": "caller.intro.17",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "Welcome in, everybody. Take a look at that floor. That is where this gets decided."
+  },
+  {
+   "id": "caller.intro.18",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "The gates are up! Here they come!"
+  },
+  {
+   "id": "caller.intro.19",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "I have watched both of these crews all week and I still could not tell you how this goes."
+  },
+  {
+   "id": "caller.intro.20",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Listen to this crowd! They have been waiting for this one all season!"
+  },
+  {
+   "id": "caller.intro.21",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "Alright, folks, settle in. Engines are hot, the floor is clear, and we are about to find out."
+  },
+  {
+   "id": "caller.intro.22",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "You are looking live at {arena}, and I promise you nobody here is sitting down tonight!"
+  },
+  {
+   "id": "caller.intro.23",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 2,
+   "text": "Some nights you know inside a minute. I do not think this is one of them."
+  },
+  {
+   "id": "caller.intro.24",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro"
+   ],
+   "intensity": 3,
+   "text": "Here we are! Steel on the floor, {count} of them, and not one crew backing up!"
+  },
+  {
+   "id": "caller.intro.25",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro",
+    "control_point"
+   ],
+   "intensity": 3,
+   "text": "That centre marker is hot tonight, folks, and somebody has to go stand on it!"
+  },
+  {
+   "id": "caller.intro.26",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro",
+    "control_point"
+   ],
+   "intensity": 2,
+   "text": "The middle of that floor is worth points tonight. Watch who goes for it first."
+  },
+  {
+   "id": "caller.intro.27",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro",
+    "arena_scrapyard"
+   ],
+   "intensity": 2,
+   "text": "The Scrapyard tonight, and you cannot see twenty metres in there. Anything can happen."
+  },
+  {
+   "id": "caller.intro.28",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro",
+    "arena_foundry"
+   ],
+   "intensity": 3,
+   "text": "The Foundry! Wide open, nowhere to hide, and that is exactly how I like it!"
+  },
+  {
+   "id": "caller.intro.29",
+   "speaker": "caller",
+   "act": "hype",
+   "tags": [
+    "intro",
+    "arena_furnace"
+   ],
+   "intensity": 2,
+   "text": "We are in the Furnace tonight, and it is already too warm up here in the booth."
+  },
+  {
+   "id": "color.intro.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "Nine seasons I came through that tunnel. The floor always looks smaller from up here."
+  },
+  {
+   "id": "color.intro.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "First thirty seconds tell you everything. Watch who keeps their spacing."
+  },
+  {
+   "id": "color.intro.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "Everybody has a plan until the first round lands near them. Then you find out who trained."
+  },
+  {
+   "id": "color.intro.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "You want to know who wins? Find the crew that is still together at the halfway mark."
+  },
+  {
+   "id": "color.intro.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "The ones who survive are boring to watch. That is the trade."
+  },
+  {
+   "id": "color.intro.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "It is loud down there. You stop hearing the crowd about a minute in."
+  },
+  {
+   "id": "color.intro.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "Nobody down there is thinking about the crowd right now. They are thinking about the vehicle beside them."
+  },
+  {
+   "id": "color.intro.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "intro"
+   ],
+   "text": "Look at the formations while they still have them. Contact takes those apart in a hurry."
+  },
+  {
+   "id": "caller.result.13",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "That is the match! {team} takes it!"
+  },
+  {
+   "id": "caller.result.14",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "{team} has done it! What a performance!"
+  },
+  {
+   "id": "caller.result.15",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 2,
+   "text": "And there it is. {team} closes it out."
+  },
+  {
+   "id": "caller.result.16",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "{team} wins! I did not see that coming and I do not think they did either!"
+  },
+  {
+   "id": "caller.result.17",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 2,
+   "text": "Match to {team}. They earned every bit of that."
+  },
+  {
+   "id": "caller.result.18",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "result"
+   ],
+   "intensity": 3,
+   "text": "It is done! {team} stands alone on that floor!"
+  },
+  {
+   "id": "pa.result.07",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "Tonight's match goes to {team}. Settlement of wagers will begin within the hour."
+  },
+  {
+   "id": "pa.result.08",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "{team} takes tonight's match. We thank our participants, and our sponsors, in that order."
+  },
+  {
+   "id": "pa.result.09",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "The result is final. {team} wins, and the floor will be cleared before the next session."
+  },
+  {
+   "id": "pa.result.10",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "That is the conclusion of tonight's event. Congratulations to {team} from all of us at the arena."
+  },
+  {
+   "id": "pa.result.11",
+   "speaker": "pa",
+   "act": "result",
+   "tags": [
+    "outro"
+   ],
+   "text": "{team} is tonight's winner. Ticket holders may remain seated during the recovery operation."
+  },
+  {
+   "id": "color.result.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "They kept their shape. That is the whole thing, every time."
+  },
+  {
+   "id": "color.result.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "The losing crew split up early. You cannot come back from that in here."
+  },
+  {
+   "id": "color.result.13",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "Good crews down there tonight. One of them was a little better drilled."
+  },
+  {
+   "id": "color.result.14",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "That is what it looks like when everybody does their job and nobody gets clever."
+  },
+  {
+   "id": "color.result.15",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "Both of those crews will drive again. That is more than most nights."
+  }
+ ]
 }

@@ -203,3 +203,9 @@ build/   (gitignored)    exports and screenshots
     2, never 5, and a command-line `WINDOW=5` looks like it did nothing. `make -p -f /dev/null | grep '^WINDOW'`
     lists make's own defaults; take a short knob name from `$(origin VAR)` instead (audio, 2026-09-16: the
     announcer's repeat-rate audit compared each match only with the one before it and read far too healthy).
+68. **Killing `make remote` locally does not stop the build on builder0.** `tools/remote.sh` runs `make` over ssh;
+    killing the local wrapper leaves the remote `make` (and its queued `slot.sh`) running, so the next
+    `make remote` rsyncs `--delete` straight under it — trip-up 66's collision, caused by the cleanup rather than
+    by a second deliberate run. Check with
+    `ssh slobdell@builder0 "ps -eo pid,args | grep slot.sh"`, match each pid to a worktree with
+    `readlink /proc/<pid>/cwd`, and kill only your own folder's (audio, 2026-09-16).

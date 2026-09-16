@@ -4,33 +4,33 @@ result: green by elimination at 0:57.5
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
-0:04.8   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
-0:14.1   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
+0:00.0   CALLER   Here we go! The building is shaking and we have not even started!
+0:04.5   PA       Welcome, everyone, to the Scrapyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
+0:14.7   CALLER   Green fields the Condemned tonight. Prison steel, welded shut—
 0:18.0   ── first contact: rust artillery fires on a ifv
-0:19.1   CALLER   And we have contact! Rust opens fire!
+0:18.1   CALLER   And we have contact! Rust opens fire!
+0:21.4   CALLER   Right in the weak spot! What a shot!
 0:22.2   ── friendly fire: rust artillery hits its own tank
-0:22.4   CALLER   Rust's artillery lands one on its own tank! Wrong target!
+0:25.0   CALLER   That artillery shell landed on Rust's own tank!
 0:25.5   ── friendly fire: rust artillery hits its own ifv
-0:26.6   VETERAN  Rust is bleeding and doesn't—
+0:28.5   VETERAN  Rust—
 0:28.8   ── green ifv destroys rust artillery
-0:28.8   CALLER   Green draws first blood, and this crowd is on its feet!
+0:29.1   CALLER   There it is! The first kill of the night belongs to Green!
 0:31.0   ── green ifv destroys rust artillery
 0:31.0   ── rust squad Battery wiped out
 0:31.0   ── close call: green ifv at 9% hull
-0:33.3   CALLER   They got another one! Oh my goodness!
-0:41.5   PA       The odds boards on the main—
+0:33.9   CALLER   They got another one! Oh my goodness!
+0:36.6   CALLER   What a moment!
+0:42.8   CALLER   Right up the—
 0:44.0   ── green ifv destroyed by its own tank
-0:44.0   CALLER   Oh! Look at this!
-0:45.8   CALLER   Friendly fire, and it's fatal! Oh, that is hard to watch!
-0:49.9   VETERAN  Look—
+0:44.0   CALLER   Oh no! Green just took out its own IFV!
 0:50.5   ── green ifv destroys rust ifv
 0:50.5   CALLER   That leaves Rust with one. One!
-0:53.5   CALLER   They found the soft spot on that tank!
+0:53.5   CALLER   That scout's machine gun is just hosing the tank!
 0:57.5   ── green ifv destroys rust tank
 0:57.5   ── rust squad Front wiped out
 0:57.5   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
 0:57.5   CALLER   That's the last one! Green wipes them out!
-1:00.5   CALLER   That was fast! Green made short work of that one!
-1:04.1   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-1:10.5   PA       That concludes tonight's match. Congratulations to Green. On behalf of the Syndicate, good night, and please drive safely.
+1:00.5   CALLER   Green has done it! What a performance!
+1:03.2   VETERAN  The losing crew split up early. You cannot come back from that in here.
+1:10.0   PA       Tonight's match goes to Green. Settlement of wagers will begin within the hour.

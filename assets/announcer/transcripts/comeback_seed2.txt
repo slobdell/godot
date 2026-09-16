@@ -4,8 +4,8 @@ result: green by elimination at 1:18.5
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   CALLER   Nine vehicles on the floor tonight, and every one of them came to fight.
-0:04.8   PA       Good evening. On behalf of the Syndicate, welcome to the Furnace. Please take a moment to locate the exit nearest your seat. Exits will open after the match.
+0:00.0   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
+0:06.2   PA       Welcome, everyone, to the Furnace. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
 0:16.4   CALLER   Green fields the Condemned tonight. Prison steel, welded—
 0:19.5   ── first contact: rust lancer fires on a scout
 0:19.6   CALLER   And we have contact! Rust opens fire!
