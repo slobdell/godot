@@ -61,7 +61,8 @@ func _run() -> void:
 			if String(method["name"]).begins_with("test_"):
 				test_methods += 1
 		var stem := path.get_file().get_basename()
-		if test_methods == 0 and (filter == "" or stem.contains(filter)):
+		# tests/test_case.gd is the base class every case extends, not a case itself.
+		if test_methods == 0 and stem != "test_case" and (filter == "" or stem.contains(filter)):
 			failed += 1
 			print("  FAIL  ", stem, "::<file>")
 			print("          no test_ methods: a parse error leaves a loadable script with none")
