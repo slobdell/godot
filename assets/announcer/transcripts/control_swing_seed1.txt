@@ -26,7 +26,7 @@ result: rust by control at 2:20.0
 1:13.8   ── close call: rust lancer at 9% hull
 1:15.4   VETERAN  He'll want that one—
 1:17.2   ── green tank destroys rust ifv
-1:17.3   CALLER   Oh! Look at this!
+1:17.3   CALLER   Whoa! Look at this!
 1:19.1   CALLER   It's gone! That IFV is gone!
 1:20.0   ── control point: green
 1:22.1   CALLER   Oh, Green takes it right back!

@@ -22,3 +22,7 @@ override.cfg
 *.tmp
 *.translation
 .DS_Store
+
+# Python bytecode from the announcer and audio tools.
+__pycache__/
+*.pyc

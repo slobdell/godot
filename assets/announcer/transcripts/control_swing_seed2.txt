@@ -15,7 +15,7 @@ result: rust by control at 2:20.0
 0:30.1   CALLER   Rust is on the point, and the clock is ticking for Green!
 0:39.8   PA       The odds boards have tonight's match even. Wagers on individual—
 0:44.0   ── green ifv destroys rust scout
-0:44.0   CALLER   Oh! Look at this!
+0:44.0   CALLER   Whoa! Look at this!
 0:45.8   CALLER   Textbook! The IFV eats the scout alive!
 0:48.5   CALLER   Oh, my goodness!
 0:50.6   CALLER   Green is taking over this match!

@@ -160,13 +160,48 @@ class MockPipelineTest(unittest.TestCase):
         for clip in ["fill.caller.team.rust.mid", "fill.caller.number.2.final", "caller.kill.52#0"]:
             self.assertLess(abs(mean_volume(clip) - sentence), 3.0, "%s vs a whole sentence" % clip)
 
-    def test_speech_to_text_flags_mishearing_and_bad_slices(self):
-        the_plan = sample_plan(["pa.welcome.05"])
-        self.assertEqual(self.run_pipeline(the_plan, mock_client(mishear={"pa.welcome.05-0"}))["stt_failed"], ["pa.welcome.05#0"])
+    def test_a_misheard_fragment_is_reported_for_the_stitch_check_not_silently_passed(self):
+        """A `segment` is a fragment cut from mid-sentence, and speech-to-text mishears those on their own (the
+        pilot heard "is down to" as "This down" and then transcribed it perfectly in context). It must not fail the
+        run, and it must not vanish either: stitch_check.py hears it inside a real line."""
+        report = self.run_pipeline(sample_plan(["pa.welcome.05"]), mock_client(mishear={"pa.welcome.05-0"}))
+        self.assertEqual(report["stt_failed"], [], "a fragment alone does not fail the run")
+        self.assertEqual(report["stt_unverifiable"], ["pa.welcome.05#0"], "but it is reported for the stitch check")
+
+    def test_a_misheard_whole_line_still_fails_the_run(self):
+        """A whole sentence is a complete utterance, so the recogniser can be trusted on it: a mispronunciation or
+        a dropped word there is a real defect and must stop the run."""
+        whole = [line for line in LINES["lines"] if line["id"] == "color.lore.01"] or LINES["lines"][:1]
+        the_plan = sample_plan([whole[0]["id"]])
+        clip_ids = [piece["clip"] for request in the_plan["requests"] for piece in request["slices"]
+                    if piece["kind"] == "line"]
+        self.assertTrue(clip_ids, "the sample plan has a whole-line clip to mishear")
+        report = self.run_pipeline(the_plan, mock_client(mishear={clip_ids[0].replace("#", "-")}))
+        self.assertIn(clip_ids[0], report["stt_failed"], "a misheard whole line is a hard failure")
+
+    def test_a_refused_transcription_does_not_abandon_a_paid_run(self):
+        """The recogniser rejects very short audio outright ("audio_too_short"). That killed a real run at 277 of
+        581 clips - after the audio was recorded and paid for. A failing *check* must never throw away generation."""
+        class Refusing:
+            body = {"detail": {"status": "audio_too_short", "message": "Audio is too short."}}
+
+        def refuse(_path):
+            raise type("ApiError", (Exception,), {"body": Refusing.body})()
+
+        client = mock_client()
+        client.transcribe = refuse
+        report = self.run_pipeline(sample_plan(["caller.kill.52"]), client)
+        self.assertEqual(report["stt_failed"], [], "a refusal is not a failed clip")
+        self.assertTrue(report["stt_unverifiable"], "it is reported as unverifiable instead")
+        self.assertGreater(report["clips"], 0, "and the clips it recorded are still written")
+        manifest = json.loads((self.out / "manifest.json").read_text())
+        self.assertTrue(manifest["clips"], "the manifest is complete enough to play")
+
+    def test_a_slice_that_swallows_its_neighbours_is_caught(self):
         with mock.patch.object(generate, "slice_times", lambda alignment, start, end: (0.0, alignment["character_end_times_seconds"][-1] + 0.3)):
-            the_plan = sample_plan(["caller.kill.08"])
-            failed = self.run_pipeline(the_plan, mock_client())["stt_failed"]
-        self.assertIn("caller.kill.08#0", failed, "a slice that swallows the neighboring words is caught")
+            report = self.run_pipeline(sample_plan(["caller.kill.08"]), mock_client())
+        flagged = report["stt_failed"] + report["stt_unverifiable"]
+        self.assertIn("caller.kill.08#0", flagged, "a slice that swallows the neighboring words is caught")
 
     def test_missing_voices_are_skipped_not_guessed(self):
         client = voice_client.MockClient(voices={"JR1": "id"})

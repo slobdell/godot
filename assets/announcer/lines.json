@@ -1237,7 +1237,7 @@
     "any"
    ],
    "intensity": 1,
-   "text": "That's going to leave a mark."
+   "text": "That's gonna leave a mark."
   },
   {
    "id": "caller.button.15",
@@ -1284,7 +1284,7 @@
    "tags": [
     "any"
    ],
-   "text": "Oh! Look at this!"
+   "text": "Whoa! Look at this!"
   },
   {
    "id": "caller.interrupt.04",

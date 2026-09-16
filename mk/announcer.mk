@@ -2,7 +2,7 @@
 # Owner: announcer (_agents/streams/archive/round3/announcer.md). Included by the root Makefile.
 # No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
-.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
+.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate announcer-stitch-check \
         announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
@@ -77,6 +77,9 @@ announcer-demo: import ## Build the Arena Booth Monitor page (every fixture, see
 	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
 	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html \
 		$(if $(filter command line,$(origin FIXTURE)),--fixture $(FIXTURE))
+
+announcer-stitch-check: ## Hear every slot filler stitched into a real line (speech-to-text; needs the key and recorded clips)
+	$(PYTHON) tools/announcer/stitch_check.py $(if $(DRY_RUN),--dry-run)
 
 ## Real generation needs APPROVED=1 (lead gate 2: the lead has approved the text). The default is the dry run.
 announcer-generate: ## Voice clips from lines.json: DRY_RUN=1 (default) prints requests and credits; APPROVED=1 calls ElevenLabs (key: ELEVENLABS_KEY_ID)

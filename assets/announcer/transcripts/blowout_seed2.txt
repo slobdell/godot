@@ -19,7 +19,7 @@ result: green by elimination at 0:54.0
 0:35.7   CALLER   Look at that artillery! Smoking, burning, and still going!
 0:39.2   VETERAN  Hull like that, every bump hurts. They need—
 0:43.0   ── green tank destroys rust artillery
-0:43.0   CALLER   Oh! Look at this!
+0:43.0   CALLER   Whoa! Look at this!
 0:44.8   CALLER   Are you kidding me? The tank takes out the artillery!
 0:46.8   ── green tank destroys rust scout
 0:48.4   CALLER   Another one for Green! This is a clinic!
