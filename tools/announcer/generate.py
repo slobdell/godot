@@ -59,6 +59,37 @@ STT_UNVERIFIABLE_S = 0.7
 CHARACTERS_PER_SECOND = 15.0
 
 
+## Godot must not import this folder: the booth loads clips from disk at runtime, importing 2,396 files is slow
+## and once crashed the import step outright, and they are excluded from every export anyway. The generator writes
+## the marker itself so that wiping the folder to re-cut cannot silently lose it (it did, 2026-09-16, and 2,396
+## .import files ended up committed).
+GDIGNORE_NOTE = """# Godot deliberately ignores this folder; see README.md. The booth loads these clips from disk
+# at runtime (AnnouncerVoice), they are excluded from both export presets, and importing them all is slow.
+"""
+
+
+def drop_caches(masters: Path) -> int:
+    """Removes the normalized-WAV and level caches beside the masters. They exist only to make re-cutting fast and
+    regenerate from the MP3 in seconds, but they are roughly six times the size of what they cache: after one full
+    run they were 950 MB of a 1.1 GB masters folder, on a laptop sitting at 98% disk. Kept during a run, dropped
+    at the end."""
+    freed = 0
+    for pattern in ("*.norm.wav", "*.level.txt"):
+        for stale in masters.rglob(pattern):
+            freed += stale.stat().st_size
+            stale.unlink()
+    return freed
+
+
+def keep_out_of_godot(folder: Path) -> None:
+    marker = folder / ".gdignore"
+    if not marker.exists():
+        folder.mkdir(parents=True, exist_ok=True)
+        marker.write_text(GDIGNORE_NOTE)
+    for stale in folder.rglob("*.import"):
+        stale.unlink()
+
+
 def clip_file(clip: str) -> str:
     return clip.replace("#", "-") + ".ogg"
 
@@ -205,6 +236,10 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
     clips = {}
     manifest_path = out / "manifest.json"
     previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    keep_out_of_godot(out)
+    freed = drop_caches(masters)
+    if freed:
+        log("cleared %.0f MB of re-cutting caches beside the masters" % (freed / 1e6))
     previous = {part: previous.get(part, {}) for part in ("clips", "lines")}
     credits_before = client.remaining_credits()
     for request in the_plan["requests"]:
