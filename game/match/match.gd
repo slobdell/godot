@@ -1051,6 +1051,32 @@ func friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array[Tank
 	return at_risk
 
 
+## X3 (round 4): a hull counts as screening a unit when it blocks the line from the threat to the unit's turret,
+## the height rounds actually fly at (Units "muzzle_height"). Shells and beams already stop at the first hull they
+## meet, so this query just *reports* the geometry the physics is already using.
+const SCREEN_HEIGHT := 1.27
+
+
+## X3, contract C4: the friendly hull shielding `unit` from fire coming from `from_point`, or null. This is not a
+## buff and grants nothing: heavies shield fragile units because a shell stops at the first hull it hits, and
+## `armor_multiplier` then decides what it costs. A dozer eating a cannon shell on its 8 mm front takes x0.5 where
+## the Lancer behind it would have taken x1.21 on 3 mm, on top of having half again the hull and shield. Brains and
+## drills use this to know whether a unit is covered (or whether a heavy is doing its job) before moving.
+## Wrecks never screen: `Tank._set_alive(false)` disables the collision shape.
+func screen_for(unit: Tank, from_point: Vector3) -> Tank:
+	if unit == null or not unit.is_alive():
+		return null
+	var eye := Vector3(0.0, SCREEN_HEIGHT, 0.0)
+	var target := Vector3(unit.global_position.x, 0.0, unit.global_position.z) + eye
+	var query := PhysicsRayQueryParameters3D.create(Vector3(from_point.x, 0.0, from_point.z) + eye, target,
+			HIT_MASK, [unit.get_rid()])
+	var hit := unit.get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return null
+	var blocker := hit.get("collider") as Tank
+	return blocker if blocker != null and blocker.is_alive() and blocker.team == unit.team else null
+
+
 ## A shell passing within this many meters of a hull's edge counts as incoming (K2 dodging).
 const INCOMING_MARGIN := 1.0
 

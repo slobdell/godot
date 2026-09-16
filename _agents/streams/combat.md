@@ -183,3 +183,20 @@ compensate for unused mechanics. Two fixes for the two streams that own the deci
 
 **New measurement targets (mine):** `make suppression-series`, `make suppression-control` (counterbalanced),
 `make faction-match`, `make faction-series`.
+
+### X3 done (2026-09-16): heavies already shield the fragile, and by a lot
+
+No guard buff, as the brief asked: a shell stops at the first hull it meets and armor facing decides the cost.
+Measured (`make remote T="test FILTER=combat_screening"`, numbers in [balance.md](../balance.md) *X3*): four cannon
+shells at a Lancer from 58 m **destroy it** when it stands alone or with its escort 10 m off the line, and cost it
+**nothing at all** when a dozer is on the line — the dozer soaks 405 of its 450 instead. The trade is 2.8 shells to
+kill the screen against 0.8 to kill what it screens, so a heavy in the right place is worth about three and a half
+times its own body in absorbed fire.
+
+Limits worth knowing before a drill trusts a screen: it doesn't stop arcs (a battery kills the Lancer behind it),
+doesn't stop flame cones, only covers its own width, and **a wreck doesn't screen** (its collision is off) — turning
+that around is this stream's stretch item.
+
+**New query for ai and doctrine:** `Match.screen_for(unit, from_point) -> Tank` — the friendly hull blocking the line
+from a threat to `unit` at rounds' flight height, or null. It reports geometry and grants nothing. Use it to check
+whether a fragile unit is covered, or whether a heavy is actually doing its job.

@@ -92,6 +92,33 @@ an effect through unused mechanics would only distort the matchup matrix.
 - New match stats for this: `suppression_samples`, `suppression_total` and `pinned_samples` per team (sampled over
   living units every `SUPPRESSION_SAMPLE_TICKS`), printed by `tools/match_series.py`.
 
+### X3: heavies shielding the fragile (measured 2026-09-16, builder0)
+
+**No guard buff exists, and none is needed.** A shell or beam stops at the first hull it meets, and armor facing
+then decides what that costs, so interposing is already the strongest defensive play in the game. Reproduce with
+`make remote T="test FILTER=combat_screening"`.
+
+| Setup (enemy dozer firing 4 cannon shells at a Lancer from 58 m) | Lancer loses | Screen loses |
+|---|---|---|
+| Lancer alone | **320 (destroyed)** | — |
+| A friendly dozer on the line, 8 m in front | **0 (survives)** | 405 of its 450 |
+| That dozer 10 m off the line | **320 (destroyed)** | 0 |
+| A battery lobbing instead of a dozer firing | **320 (destroyed)** | 67 splash |
+
+Why the trade is worth making, with numbers rather than a rule: the same cannon shell is ×0.50 against a dozer's
+8 mm front and ×1.21 against a Lancer's 3 mm, and the dozer has 450 hull + shield against the Lancer's 320. That is
+**2.8 shells to kill the screen against 0.8 to kill what it screens** — a heavy in the right place is worth roughly
+three and a half times its own body in absorbed fire.
+
+**What a screen cannot do**, so the drills don't over-trust it: it does not stop arcs (a mortar lands behind it), it
+does not stop flames (the cone touches everything in it), it only covers its own width (10 m off the line is worth
+nothing), and **a wreck does not screen** — `Tank._set_alive(false)` disables the collision shape, so shells fly
+through it. Turning that last one around is the stream's stretch item (*wrecks as cover*).
+
+**New query (C4):** `Match.screen_for(unit, from_point) -> Tank` returns the friendly hull blocking the line from
+`from_point` to `unit` at rounds' flight height, or null. It reports the geometry the physics already uses and grants
+nothing; ai and doctrine use it to know whether a fragile unit is covered, or whether a heavy is doing its job.
+
 ## Round 4: army size and factions (combat X1, contract L3)
 
 Every catalog entry carries a `faction` (`Units.FACTIONS`: condemned, gangs, law, syndicate; missing means
