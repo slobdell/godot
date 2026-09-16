@@ -38,6 +38,9 @@ const HEAT_S := 1.5
 
 var library: AnnouncerLibrary
 var memory: AnnouncerMemory
+## What earlier matches already used, so the booth doesn't open the same way every night (optional; null = a
+## broadcast with no past, which is what the review transcripts and the unit tests want).
+var history: AnnouncerHistory
 var rng := RandomNumberGenerator.new()
 var now := 0.0
 ## Every cue spoken so far, and every decision not to speak (for the demo page's "why").
@@ -62,6 +65,11 @@ func _init(line_library: AnnouncerLibrary, seed_value: int = 1) -> void:
 	library = line_library
 	memory = AnnouncerMemory.new(line_library)
 	rng.seed = seed_value
+
+
+## Every line said this match, for [AnnouncerHistory.remember] when the broadcast ends.
+func used_line_ids() -> Array:
+	return _used.keys()
 
 
 ## True when everything that will be said has been said.
@@ -450,6 +458,8 @@ func _choose_line(speaker: String, acts: Array, found: Dictionary, topic: String
 			continue
 		fresh.append(line)
 		var weight := pow(SPECIFIC_WEIGHT, library.specificity(line)) * (2.0 if line_intensity == intensity else 1.0)
+		if history != null:
+			weight *= history.weight(line["id"])
 		if topic != "" and line.get("topic", "") == "any":
 			weight *= 0.05  # "ask me again in a minute" only when nothing on topic is left
 		weights.append(weight)

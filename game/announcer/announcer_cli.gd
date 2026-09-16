@@ -7,6 +7,8 @@ extends SceneTree
 ##   --all=DIR --seeds=1,2 --out-dir=DIR   every fixture in DIR, for each seed
 ##   --manifest=PATH     a clip manifest: lines last as long as their recorded clips (else estimated)
 ##   --audit             prints library coverage instead (lines per moment kind, speaker, and act)
+##   --variance=DIR      replays every fixture as consecutive broadcasts and reports how much the booth repeats
+##                       itself across matches: --matches=50 --window=5 --history=on|off --hot=N
 ## Prints ANNOUNCER_CLI_EXIT=<code> last, so wrappers can find the result among Godot's own output.
 
 const SPEAKER_LABELS := {"caller": "CALLER", "color": "VETERAN", "pa": "PA"}
@@ -32,12 +34,52 @@ func _run(args: Dictionary) -> int:
 	if args.has("audit"):
 		print(coverage(library))
 		return 0
+	if args.has("variance"):
+		return _run_variance(library, args)
 	if args.has("all"):
 		return _run_all(library, args)
 	if not args.has("fixture"):
 		printerr("usage: --fixture=PATH [--seed=N] [--out=PREFIX] | --all=DIR --seeds=1,2 --out-dir=DIR | --audit")
 		return 2
 	return _run_one(library, args["fixture"], int(args.get("seed", "1")), args.get("out", ""))
+
+
+## Every fixture replayed as consecutive broadcasts: how often the booth opens the same way two nights running.
+func _run_variance(library: AnnouncerLibrary, args: Dictionary) -> int:
+	var folder: String = args["variance"]
+	var names := Array(DirAccess.get_files_at(folder)).filter(func(file: String) -> bool: return file.ends_with(".jsonl"))
+	names.sort()
+	if names.is_empty():
+		printerr("no .jsonl fixtures in %s" % folder)
+		return 1
+	var matches := int(args.get("matches", str(AnnouncerVariance.DEFAULT_MATCHES)))
+	var window := int(args.get("window", str(AnnouncerVariance.DEFAULT_WINDOW)))
+	var with_history := String(args.get("history", "on")) != "off"
+	var results := {}
+	for file in names:
+		var loaded := AnnouncerEvents.load_file(folder.path_join(file))
+		if loaded["error"] != "":
+			printerr(loaded["error"])
+			return 1
+		# Each fixture gets its own history, so one fixture's broadcasts can't mask another's repetition.
+		var history: AnnouncerHistory = AnnouncerHistory.new() if with_history else null
+		results[file.get_basename()] = AnnouncerVariance.measure_fixture(library, loaded["events"], matches, window,
+				history)
+	print("VARIANCE %d matches per fixture, window %d, cross-match history %s" % [matches, window,
+			"on" if with_history else "off"])
+	print(AnnouncerVariance.report(results))
+	var hot := int(args.get("hot", "0"))
+	if hot > 0:
+		print("\nmost-said lines:")
+		for line in AnnouncerVariance.hot_lines(results, hot):
+			print("  %-22s %5d uses  %4.1f%% of all lines  %s" % [line["id"], int(line["uses"]),
+					float(line["share"]) * 100.0, library.by_id.get(line["id"], {}).get("text", "")])
+	var totals := AnnouncerVariance.combine(results)
+	print("VARIANCE_RESULT %s" % JSON.stringify({"in_match_repeats": totals["in_match_repeats"],
+			"opener_repeat_rate": snappedf(totals["opener_repeat_rate"], 0.0001),
+			"welcome_repeat_rate": snappedf(totals["welcome_repeat_rate"], 0.0001),
+			"carryover_rate": snappedf(totals["carryover_rate"], 0.0001)}))
+	return 0
 
 
 ## Every .jsonl in a folder, for each seed: DIR/<fixture>_seed<N>.txt and .json.
