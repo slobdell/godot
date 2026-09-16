@@ -197,5 +197,12 @@ The kickoff prompt is one line; this section is the rest.
 12. **Relay lead gates the day they open.** Round 3's three faction review pages sat unseen for a day because the
     orchestrator never sent the lead their links; the assets stream idled on approvals it had already earned. When a
     worker lists something under *Waiting on the lead*, put the links in front of the lead in your next message.
-13. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+13. **A make target and the code it calls land in the same commit** when the target is in `check`. Round 4: a
+    half-finished `announcer-variance` entered `announcer-check` before its CLI flags existed and broke `main` for five
+    streams. The orchestrator's fix is to cut the target out of `check` on `main` immediately (one line, with a comment),
+    not to wait for the owner.
+14. **"Passes in isolation, fails in a check" is not proof of a load problem.** Round 3 and 4 both blamed a loaded
+    builder0 for a short audio mixdown; the real cause was `apad` after `amix` not padding on ffmpeg 6.1.1. Chase the
+    tool's behavior before blaming the machine.
+15. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.
