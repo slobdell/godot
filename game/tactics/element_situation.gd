@@ -80,10 +80,12 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 		known[contact_name] = first_seen
 		var contact_strength := float(contact.get("health", 0)) + float(contact.get("shield", 0))
 		enemy_strength += contact_strength
+		var velocity: Vector3 = contact.get("velocity", Vector3.ZERO)
 		contacts.append({"name": contact_name, "position": position, "role": String(contact.get("role", "tank")),
 				"unit": String(contact.get("unit", "")), "visible": bool(contact.get("visible", false)),
 				"age": tick - first_seen, "distance": distance,
-				"bearing_deg": bearing_deg(heading, position - center), "strength": contact_strength})
+				"bearing_deg": bearing_deg(heading, position - center), "strength": contact_strength,
+				"speed": Vector2(velocity.x, velocity.z).length()})
 	contacts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if absf(float(a["distance"]) - float(b["distance"])) > 0.001:
 			return float(a["distance"]) < float(b["distance"])

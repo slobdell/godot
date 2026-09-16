@@ -160,6 +160,38 @@ publishes element decisions as K5 events on `Elements.element_reported(event)`: 
 drill, formation, reason, distance, target}. Doctrine rate-limits and filters; audio adds the types to the
 K5 validator and writes the lines."*
 
+### The lead's faction feedback (2026-09-16), answered
+
+*"All of the standard operating procedures for all the factions look quite similar ... the street gangs ...
+should be noticeably less military disciplined ... spreading out their formations wide ... or do circular
+swarms ... I don't know if your doctrines are accounting for how to manage formations with multiple vehicles
+(i.e. heavy armor on the outside of a column, light armor on the inside) ... the street gang would also be
+more likely to create tactics of having a vehicle draw fire to try and lead the opponents into an ambush."*
+
+He was right on all three counts. The tables differed only in numbers, and the shapes all came from the same
+eight military formations. What changed (full numbers in _agents/doctrine.md *Faction doctrines*):
+
+1. **Placement by armour, every faction.** Each slot is scored for exposure (how far out of the middle, how
+   far toward the front) and the best-protected vehicle takes the worst place. Artillery and Lancers go
+   inboard whatever their armour says — a gun being shot at is not shooting.
+2. **A `swarm` shape for the gangs**: wide, ragged, staggered, nearly twice a line's frontage. Kept: it is
+   the character the lead asked for and costs no damage. It does survive worse than military shapes today
+   (0.47 vs 0.62), for the same reason dispersion shows nothing elsewhere — splash and suppression don't yet
+   punish bunching. Re-measure when they do; if it still loses, it goes.
+3. **A `bait` drill**: the fastest non-leader draws and leads them back over the pack. Kept — 0.58 of the
+   pack alive against 0.43 without it (one seed). Its first version baited *dug-in guns*, which is suicide:
+   a lure needs something that will follow, so it now requires a contact that is actually moving and gives up
+   if it doesn't close.
+4. **An `encircle` drill: built, measured, switched off.** Same units, same enemy, same seed: turning it off
+   left survival unchanged (0.47) and took enemy survival from 0.66 to 0.19 — circling stops the pack
+   shooting, and the coverage it was meant to buy was already there (a standard element covers the same seven
+   arcs by fighting). The drill stays in the engine behind its flag with the numbers recorded; no shipped
+   table selects it. Same lesson as bounding overwatch: a drill earns its place by deciding where an element
+   goes and what it points at, not by driving vehicles that already fight well.
+5. **The doctrine page now says what each faction does differently** from standard doctrine, in words, so the
+   character reads without diffing five tables. The page's mirrored constants are checked against the
+   GDScript at build time, so it can't quietly start lying.
+
 ### Questions for the lead
 
 1. **Should an element's shape be visible on the HUD, or only its reason?** Every element carries a

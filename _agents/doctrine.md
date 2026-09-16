@@ -186,6 +186,62 @@ to see that their element is refusing a flank because contact is likely.
 
 ## Faction doctrines (X6)
 
+**The gangs are not a platoon (the lead, 2026-09-16).** Reviewing the doctrine page, the lead said the
+factions read too alike: *"the street gangs for example should be noticeably less military disciplined and
+intuitively I'm thinking they might use tactics of spreading out their formations wide for better
+survivability or do circular swarms ... I suspect the street gang would also be more likely to create tactics
+of having a vehicle draw fire to try and lead the opponents into an ambush."* That was fair: the tables
+differed in *numbers* (spacing, legs, trigger distances) while every faction drew from the same eight
+military formations. Three things came out of it, and one of them failed.
+
+| Added | What it is | Verdict |
+|---|---|---|
+| **`swarm` shape** | Wide, ragged, staggered fore and aft: no line to shoot along, nearly twice a line's frontage. Not a formation any manual would recognise, which is the point | **Kept** — it is the gangs' character, and it costs no damage output (0.185 enemy survival against standard's 0.187) |
+| **`bait` drill** | The fastest non-leader vehicle runs at them and leads them back over the pack, which waits off the line it returns along | **Kept** — against an enemy that chases: 0.58 of the pack alive against 0.43 without it, three survivors against two (one seed) |
+| **`encircle` drill** | The pack rings the target and circles it, to spread incoming fire | **Switched off** — measured strictly worse (below) |
+
+### Why encircle is off, and what it cost to find out
+
+Same four vehicles, same enemy, same seed, only the doctrine differing:
+
+| Doctrine | Pack survived | Enemy left | Arcs covered |
+|---|---|---|---|
+| gangs, swarm + encircle | 0.47 | 0.66 | 7 of 8 |
+| gangs, **encircle off** | 0.47 | **0.19** | 5 of 8 |
+| standard doctrine | **0.62** | 0.19 | 7 of 8 |
+
+Turning encircle off left survival untouched and **tripled the damage the pack dealt**. Circling does not
+protect them; it stops them shooting. And the coverage it was supposed to buy was already there without it —
+the brains flank on their own, so a standard element covered the same seven arcs by simply fighting.
+
+Two fixes were tried before giving up on it: slowing the ring from a turn every 1.5 s to every 4 s (a new
+goal four times a minute throws away what a brain was doing — the round-3 lesson), and leaving any vehicle
+already in range to fight instead of driving it to a place on the ring. Survival improved (0.35 → 0.47); the
+damage loss did not. **The drill stays in the engine behind its table flag, with these numbers, so the
+tactics-discovery harness or a suppression-era re-measure can revisit it — but no shipped table chooses it.**
+
+The deeper lesson is the same one bounding overwatch taught: *doctrine that drives vehicles around fights the
+brains that are already fighting well*. A drill earns its place by deciding **where an element goes and what
+it points at**, not by micromanaging vehicles that have their own tactics.
+
+### What the swarm costs today
+
+The gangs' loose shape survives worse than military shapes in the one scenario measured (0.47 against 0.62)
+while dealing the same damage. That is consistent with everything else here: **dispersion only pays against
+weapons that punish bunching**, and splash does not yet (0.91 spread versus 0.93 bunched) and suppression
+barely does. The shape is kept because it is the faction's character and the mechanic that should reward it
+is being built; it goes back on the bench the day splash and suppression bite and it still loses.
+
+### Who stands where inside a shape
+
+The lead also asked whether formations account for composition: *"heavy armor on the outside of a column,
+light armor on the inside."* They didn't; slots were handed out front-to-back by role. Now every shape scores
+each slot's **exposure** — how far out of the middle it sits, and how far toward the front — and the
+best-protected vehicle takes the most exposed one (`ElementPlan.by_exposure`). Artillery and Lancers are
+pushed inboard whatever their armour says: on paper artillery out-armours a scout, but it is the thing the
+element is out there to keep alive, and a gun being shot at is not shooting. The leader keeps slot 0, because
+a leader that cannot see its element cannot lead it.
+
 Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 
 | Faction | How they move | How they react |

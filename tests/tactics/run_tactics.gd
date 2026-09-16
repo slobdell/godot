@@ -69,6 +69,31 @@ func _drills(filter: String) -> void:
 		var away: Dictionary = await TacticsScenarios.break_contact(case)
 		_record("break_contact", away)
 		_expect(away, "drills", "break contact", (away["drills"] as Array).has("break_contact"))
+	if _wanted("gang_pack", filter):
+		# The same vehicles, the same enemy, the same seed: only the doctrine differs.
+		_begin()
+		var pack: Dictionary = await TacticsScenarios.gang_pack(case, "gangs")
+		_record("gang_pack_gangs", pack)
+		_begin()
+		var loose: Dictionary = await TacticsScenarios.gang_pack(case, "gangs-no-encircle")
+		_record("gang_pack_swarm_only", loose)
+		_begin()
+		var drilled: Dictionary = await TacticsScenarios.gang_pack(case, "standard")
+		_record("gang_pack_standard", drilled)
+		_expect(pack, "drills", "the pack rings them or baits them",
+				(pack["drills"] as Array).has("encircle") or (pack["drills"] as Array).has("bait"))
+		_expect(pack, "arcs_covered", "and comes at them from more than one side",
+				int(pack["arcs_covered"]) >= 3)
+		_expect(pack, "arcs_covered", "from more sides than a standard element would",
+				int(pack["arcs_covered"]) >= int(drilled["arcs_covered"]))
+	if _wanted("bait_chase", filter):
+		# Bait only means anything against something that follows, so measure it against one that does.
+		_begin()
+		var lured: Dictionary = await TacticsScenarios.gang_pack(case, "gangs", 26.0, true)
+		_record("bait_chase_gangs", lured)
+		_begin()
+		var straight: Dictionary = await TacticsScenarios.gang_pack(case, "gangs-no-bait", 26.0, true)
+		_record("bait_chase_no_bait", straight)
 	if _wanted("herringbone", filter):
 		_begin()
 		var halt: Dictionary = await TacticsScenarios.herringbone(case)
