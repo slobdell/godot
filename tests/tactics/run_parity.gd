@@ -12,6 +12,9 @@ extends SceneTree
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 const REPORT_SECONDS := 10
+## Where the element decisions are written, as JSON lines in the announcer's K5 shape: a timeline audio can
+## write lines against, the same way tests/announcer/fixtures holds theirs.
+const EVENTS_OUT := "res://build/tactics/element_events.jsonl"
 
 
 func _initialize() -> void:
@@ -56,6 +59,14 @@ func _run() -> void:
 		commander.form_elements()
 		commanders.append(commander)
 	print("PARITY armies green=%s rust=%s elements=%d" % [armies["green"], armies["rust"], elements.all().size()])
+	# Every decision either side takes, stamped the way MatchEventAdapter stamps a K5 event.
+	var timeline: Array = []
+	elements.element_reported.connect(func(event: Dictionary) -> void:
+		var stamped := {"tick": game_match.tick,
+				"t": snappedf(game_match.tick / float(AnnouncerEvents.TICKS_PER_SECOND), 0.01)}
+		stamped.merge(event)
+		timeline.append(stamped)
+		print("PARITY_EVENT ", JSON.stringify(stamped)))
 
 	var reported := {}
 	for tick in seconds * 60:
@@ -73,6 +84,12 @@ func _run() -> void:
 			if element.drill != "":
 				reported[element.drill] = true
 	print("PARITY shapes and drills seen: %s" % ", ".join(PackedStringArray(reported.keys())))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(EVENTS_OUT.get_base_dir()))
+	var file := FileAccess.open(EVENTS_OUT, FileAccess.WRITE)
+	if file != null:
+		for event: Dictionary in timeline:
+			file.store_line(JSON.stringify(event))
+	print("PARITY events %d -> %s" % [timeline.size(), EVENTS_OUT])
 	print("PARITY_DONE score %d:%d" % [game_match.score_green, game_match.score_rust])
 	case.teardown()
 	quit(0)

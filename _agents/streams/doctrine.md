@@ -131,6 +131,35 @@ combat's L2 suppression, CP2) → X6 faction doctrines → stretch (doctrine vie
   base of fire 4.6 m off the line of contact while the other half swings 24.3 m round; bounding keeps a
   section set 38% of samples; an outgunned pair breaks contact from 76 m to 106 m.
 
+### New since the lead's steer (2026-09-16): doctrine publishes, the booth talks
+
+The lead asked for a hybrid of "keep the doctrine page as a dev tool" and "explain elements in game", with the
+explaining done **by the announcer rather than the HUD**: *"we can use that information to generate scripted
+statements from the announcers about how a squad is lining up in whatever formation for whatever reason.
+Presumably we at least want the structured data publishable."* The plumbing is in:
+
+- `Elements.element_reported(event)` publishes every decision as a **K5-shaped event** — `element_formation`
+  (shape or technique changed, first task taken, drill ended) and `element_drill` (a drill started, with the
+  distance and what set it off). Both carry the doctrine table's own `reason`, so the booth quotes the
+  element's logic rather than inventing one. Full field list in _agents/doctrine.md *Publishing decisions*.
+- `game/tactics/element_report.gd` decides what is worth saying: no task = nothing to say, a reason changing
+  on its own is not a call, a leader change is the HUD's business, the same call is not repeated within 10 s,
+  and `element_drill` always means a drill *started*. That filtering is deliberately on the producing side —
+  an announcer repeating itself is the lead's own complaint about the PA.
+- `make tactics-parity` writes a real timeline to `build/tactics/element_events.jsonl` (36 events from a 45 s
+  five-element match), so audio can write lines against a timeline instead of a guess.
+- Five tests in `tests/test_tactics_reports.gd`, including one that fails if doctrine ever starts writing
+  sentences instead of values.
+
+**Needed from audio (two small things, both in their paths):** add `element_formation` and `element_drill` to
+`AnnouncerEvents.REQUIRED` (and the Python twin in `tools/announcer/events.py`), and have
+`MatchEventAdapter` connect to `Elements.element_reported` and stamp `tick`/`t` the way it already does. Then
+it's line-writing. **Proposed contract wording** for workstreams.md, as an extension of L1: *"L1 also
+publishes element decisions as K5 events on `Elements.element_reported(event)`: `element_formation`
+{team, element, size, formation, technique, reason, changed[]} and `element_drill` {team, element, size,
+drill, formation, reason, distance, target}. Doctrine rate-limits and filters; audio adds the types to the
+K5 validator and writes the lines."*
+
 ### Questions for the lead
 
 1. **Should an element's shape be visible on the HUD, or only its reason?** Every element carries a

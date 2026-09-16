@@ -61,6 +61,16 @@ var _detached := {}
 var _known := {}
 ## Bumped whenever anything the HUD shows changes.
 var revision := 0
+## What changed in the last update ("task", "formation", "technique", "drill", "leader", "roster"): the
+## announcer and the HUD both want to know WHICH, not just that something did.
+var changed_fields: PackedStringArray = []
+## A task was just assigned: the next decision is the element acting on it, which is worth reporting even
+## when the shape it picks happens to be the one it already had.
+var _fresh_task := false
+## How far the element was from what triggered its current drill, in meters, when the drill started.
+var drill_distance := 0.0
+## Living members when the last decision was taken.
+var strength := 0
 
 
 func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: PackedStringArray = [],
@@ -79,6 +89,7 @@ func assign(new_task: Variant) -> String:
 	if error != "":
 		return error
 	task = (new_task as Dictionary).duplicate(true)
+	_fresh_task = true
 	# A new task starts a new movement: forget the leg and any drill we were running.
 	anchor = null
 	arrived = false
@@ -97,12 +108,13 @@ func stand_down() -> void:
 
 ## One decision cycle. Returns true when anything the HUD shows changed.
 func update(game_match: Match, orders: Object) -> bool:
-	var before := _fingerprint()
+	var before := _snapshot()
+	changed_fields = PackedStringArray()
 	_prune(game_match)
 	_adopt(orders)
 	var commanded := _commanded_members()
 	if commanded.is_empty():
-		return before != _fingerprint()
+		return _note_changes(before)
 	var situation := ElementSituation.build(game_match, team, commanded, leader,
 			{"heading": heading, "arrived": arrived, "known": _known})
 	_known = situation["known"]
@@ -112,7 +124,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	_take(plan, situation)
 	_issue(plan, orders, situation)
-	return before != _fingerprint()
+	return _note_changes(before)
 
 
 ## What the HUD reads (L1: read-only).
@@ -220,14 +232,18 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	arrived = bool(plan["arrived"])
 	slots = plan["slots"]
 	sectors = plan["sectors"]
+	strength = (situation["members"] as Array).size()
 	var new_drill := String(plan["drill"])
 	if new_drill != drill:
 		drill = new_drill
 		drill_tick = int(situation["tick"])
 		drill_point = null
+		drill_distance = 0.0
 		if drill != "":
 			drill_point = _drill_focus(plan, situation)
-			drill_target = String(Drills.nearest_contact(situation).get("name", ""))
+			var contact := Drills.nearest_contact(situation)
+			drill_target = String(contact.get("name", ""))
+			drill_distance = float(contact.get("distance", 0.0))
 			_log("drill: %s" % drill.replace("_", " "))
 		revision += 1
 
@@ -291,10 +307,22 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 	return desired["to"] is Vector3 != mine["to"] is Vector3
 
 
-## Everything the HUD shows, as one string: cheap change detection for element_changed.
-func _fingerprint() -> String:
-	return "%d|%s|%s|%s|%s|%s|%s" % [revision, formation, technique, drill, reason, leader,
-			", ".join(Array(roster))]
+## Everything the HUD shows: cheap change detection for element_changed, and the list of what moved, which
+## the announcer uses to decide whether a decision is worth calling (Elements.element_reported).
+func _snapshot() -> Dictionary:
+	return {"formation": formation, "technique": technique, "drill": drill, "reason": reason,
+			"leader": leader, "roster": ", ".join(Array(roster))}
+
+
+func _note_changes(before: Dictionary) -> bool:
+	var now := _snapshot()
+	if _fresh_task:
+		changed_fields.append("task")
+		_fresh_task = false
+	for key: String in now:
+		if now[key] != before[key]:
+			changed_fields.append(key)
+	return not changed_fields.is_empty()
 
 
 func _log(text: String) -> void:

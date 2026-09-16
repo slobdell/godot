@@ -195,6 +195,48 @@ Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 | **The Law** | Bounding overwatch whenever contact is possible or worse, longest bounds with the widest supporting range | Deliberate: react for 1.5 s, flank 48 m, withdraw at 0.6 — the professionals leave a losing fight |
 | **The Syndicate** | Echelon and line, traveling overwatch, stand-off ranges (110 m supporting range) | Only charge an ambush inside 22 m; `break_contact_ratio` 0.75 and a 115 m break distance: they reposition constantly |
 
+## Publishing decisions: doctrine talks to the announcer (the lead, 2026-09-16)
+
+> *"Rather than cluttering the UI, we can use that information to generate scripted statements from the
+> announcers about how a squad is lining up in whatever formation for whatever reason. Presumably we at
+> least want the structured data publishable."*
+
+Every decision an element takes is published as **structured data in the K5 event shape**, on
+`Elements.element_reported(event)`. Doctrine publishes values; the words belong to audio's line library. The
+announcer's `MatchEventAdapter` already works this way for everything else — it only listens to signals and
+never writes to the simulation — so wiring is one `connect`.
+
+**Two event types.** Both carry `team`, `element`, `size` (vehicles alive) and `reason` (the doctrine table's
+own `why`, so the booth can quote the element's logic instead of inventing one):
+
+| Type | When | Extra fields |
+|---|---|---|
+| `element_formation` | The element changed shape or movement technique, took its first task, or came off a drill | `formation`, `technique`, `changed` (which of task/formation/technique moved) |
+| `element_drill` | A battle drill **started** | `drill`, `formation`, `distance` (how far off the trigger was), `target` (what set it off) |
+
+`tick` and `t` are not included: whoever puts an event into a timeline stamps them, exactly as
+`MatchEventAdapter` does today. `make tactics-parity` writes a real one to
+`build/tactics/element_events.jsonl` — 36 events from a 45 s, five-element match — so lines can be written
+against a timeline instead of a guess:
+
+```json
+{"changed":["task","formation","technique"],"element":"Eyes","formation":"line","technique":"traveling_overwatch",
+ "reason":"screening: a line watches the widest frontage","size":1,"t":1.0,"team":"green","type":"element_formation"}
+{"drill":"break_contact","element":"Battery","formation":"column","distance":118.7,"target":"Rust_Anvil_1",
+ "reason":"outgunned here: break contact and bound back","size":1,"t":5.3,"team":"green","type":"element_drill"}
+```
+
+**What doctrine filters out, so the booth doesn't have to.** An announcer that repeats itself is the exact
+complaint the lead made about the PA, so the noise is cut where it is generated:
+- an element with **no task** says nothing (before its first order it is parked, not "halting in cover");
+- a **reason changing on its own** is not a call (the same wedge for a slightly different reason);
+- a **leader change** is the HUD's business, not the booth's;
+- the **same call is not repeated within 10 s** per element (`ElementReport.COOLDOWN_TICKS`), which is what
+  stops an element that halts, moves and halts again from announcing the same herringbone three times;
+- `element_drill` always means a drill **started**; coming off one reports as a shape change.
+
+That took the sample from 43 events to 36 with nothing interesting lost.
+
 ## The code
 
 | File | What it does |
@@ -206,7 +248,8 @@ Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 | `game/tactics/drills.gd` | Drill triggers, aborts and timeouts. Pure |
 | `game/tactics/element_plan.gd` | The leader's decision: formation + technique + drill → one order per vehicle. Pure |
 | `game/tactics/element.gd` | One element: roster, leader succession, task, plan state, issuing K1 orders, `state()` for the HUD |
-| `game/tactics/elements.gd` | All elements of a match: form/of/disband, the update cadence, `element_changed` |
+| `game/tactics/elements.gd` | All elements of a match: form/of/disband, the update cadence, `element_changed`, `element_reported` |
+| `game/tactics/element_report.gd` | A decision as a K5-shaped event for the announcer, and what is not worth saying |
 | `game/tactics/element_commander.gd` | A CPU commander that assigns *tasks* to elements (parity demo, X5) |
 | `doctrines/doctrine_*.json` | The tables: standard plus one per faction |
 
