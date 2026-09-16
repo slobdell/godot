@@ -59,6 +59,16 @@ order combat → doctrine → ai → control → audio, with `make remote T=chec
 
 ## Open questions and follow-ups (not scheduled)
 
+- **The renderer runs out of per-instance shader uniforms at ~30 a side** (found independently by combat and control,
+  2026-09-16). A full-scale battle logs hundreds of `Too many instances using shader instance variables … Maximum items
+  supported by this hardware is: 4096`, then `instance_buffer_pos.has(p_instance)` failures. Raising
+  `rendering/limits/global_shader_variables/buffer_size` won't help: 4096 is the hardware cap. The fix is fewer
+  per-instance uniforms in the vehicle materials — bake per-unit colour into vertex colours, or share a material per
+  team instead of per instance. Users: `game/theme/cyberpunk/{unit_skin,weapon_cannon,dozer_part}.gd` and
+  `game/theme/fx/shaders/{unit_body,vehicle_glow,shield}.gdshader`. **Nobody owned `game/theme/**` in round 4**, so this
+  is unassigned and blocks the "30 a side" goal from looking right. `make control-scale-shots` counts and attributes
+  the errors rather than swallowing them.
+
 - **Factions as gameplay.** The art exists (15 vehicles in `game/theme/factions/`, gallery-only, excluded from the web
   export). Playable factions need catalog entries, per-faction mechanics, and balance. The lead's picks settled the
   specials (game_design.md *Factions*); the Lancer now sits in both the Condemned and Syndicate rosters, which is a
