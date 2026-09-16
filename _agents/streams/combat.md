@@ -200,3 +200,31 @@ that around is this stream's stretch item.
 **New query for ai and doctrine:** `Match.screen_for(unit, from_point) -> Tank` — the friendly hull blocking the line
 from a threat to `unit` at rounds' flight height, or null. It reports geometry and grants nothing. Use it to check
 whether a fragile unit is covered, or whether a heavy is actually doing its job.
+
+### X4 done (2026-09-16): the other three factions are playable
+
+15 vehicles and 11 weapons, all data, out of one shared mechanics vocabulary — no faction-wide bonus anywhere. The
+army size falls out of the costs, exactly as the lead asked, measured at `Units.BASELINE_BUDGET` (5200):
+
+| Faction | Avg cost | Vehicles a side | What makes it itself |
+|---|---|---|---|
+| Road gangs | 131 | **39** | No shields at all; the best suppressor per second in the game (`twin_mg`, 1.26/s); the biggest hull in the game (War Rig, 3.0 × 5.6 m, 12 m turning circle); a Resupply Tanker that mends hulls within 18 m |
+| The Condemned | 183 | **28** | Round 3's roster, untouched |
+| The Law | 215 | **24** | Sight and suppression: a 125 m scout, a Sonic Emitter at **4.0 suppression/s**, gas rockets at **5.0 a burst** over 14 m with 55 damage |
+| The Syndicate | 340 | **15** | Energy and hover: biggest shields, no ammunition, everything heat-limited; a 420-damage railgun that fires twice then waits; missiles with 0.8 m of scatter *when somebody is looking* |
+
+Two new mechanics were all the code it needed: **hover** (swings to face like tracks, keeps its momentum like wheels
+— a Skimmer through a hard turn travels 22° off its own nose) and **field repair** (`repair_radius_m` /
+`repair_hp_per_second`; a gun truck beside a tanker mends 60 → 110 hp in 10 s, one 50 m away mends nothing).
+Every number and every design call: [balance.md](../balance.md) *X4*.
+
+Things I changed on purpose that others should know about:
+- **`ArmyCatalog.from_game()` now offers the default faction only** (`game/garage/`, a paused stream). Its screens,
+  presets and unlock tiers are written for one roster. Whoever unpauses the garage passes the player's faction in.
+- **Plain `cpu` armies stay Condemned**; a faction only comes from `--green-faction=` / `--rust-faction=`.
+- **The Condemned scout's `good_vs` lost "lancer"** (measured 0% in round 3; game_design.md says the claims must be
+  real). Suppression is the mechanic that could earn it back once ai uses it.
+- **Every rear armor value stays ≤ 2.0**, because "everything hurts from behind" is a rule of the game.
+
+Verified: `make remote T=check` green, 697 tests, **sim baseline unchanged** — nothing here alters the seeded
+Condemned-vs-Condemned match the baseline records.

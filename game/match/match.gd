@@ -116,6 +116,10 @@ const SUPPRESSION_PER_HULL_FRACTION := 1.0
 ## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
 ## Tank.shield_recharge_delay. The hull is the lasting cost of a fight; mending it means going home.
 const REPAIR_HP_PER_SECOND := 6.0
+## L3: crews only get out and mend a hull once nothing has hit it for this long. It used to piggyback on the
+## shield's recharge delay, which is 0 for a faction with no shields at all (the road gangs) — so a gang truck
+## mended itself while it was being shot. The longer of the two applies.
+const REPAIR_QUIET_SECONDS := 3.0
 ## G7 resupply: tanks within this distance of their own base center regain one shell every
 ## RESUPPLY_SECONDS_PER_SHELL. A full reload (45 shells) takes 45 s at base.
 const RESUPPLY_RADIUS := 30.0
@@ -457,14 +461,16 @@ func sorted_team_tanks(team: int) -> Array[Tank]:
 	return result
 
 
-## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base.
-## Deterministic: counted in ticks.
+## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base, or in the field beside a
+## unit that carries a repair crew (L3, the gangs' resupply tanker). Deterministic: sorted units, counted in ticks.
 func _resupply() -> void:
 	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * 60.0)
-	var ticks_per_hp := roundi(60.0 / REPAIR_HP_PER_SECOND)
+	var menders := _field_menders()
 	for tank in _sorted_tanks():
-		if tank.is_alive() and tank.health < tank.max_health and in_resupply_zone(tank.team, tank.global_position) \
-				and tank.ticks_since_hit >= roundi(tank.shield_recharge_delay * 60.0):
+		var rate := repair_rate_for(tank, menders)
+		if tank.is_alive() and tank.health < tank.max_health and rate > 0.0 \
+				and tank.ticks_since_hit >= roundi(maxf(tank.shield_recharge_delay, REPAIR_QUIET_SECONDS) * 60.0):
+			var ticks_per_hp := maxi(1, roundi(60.0 / rate))
 			tank.repair_ticks += INTEL_EVERY_TICKS
 			if tank.repair_ticks >= ticks_per_hp:
 				var hp := tank.repair_ticks / ticks_per_hp
@@ -482,6 +488,31 @@ func _resupply() -> void:
 		if tank.resupply_ticks >= ticks_per_shell:
 			tank.resupply_ticks -= ticks_per_shell
 			stats["shells_resupplied"][tank.team] += tank.resupply(1)
+
+
+## L3: living units that mend their neighbours (Units "repair_hp_per_second" / "repair_radius_m"), in sorted order.
+func _field_menders() -> Array:
+	var menders: Array = []
+	for tank in _sorted_tanks():
+		var rate := float(Units.stat(tank.unit_id, "repair_hp_per_second", 0.0))
+		if tank.is_alive() and rate > 0.0:
+			menders.append({"team": tank.team, "position": tank.global_position,
+					"radius": float(Units.stat(tank.unit_id, "repair_radius_m", 0.0)), "rate": rate})
+	return menders
+
+
+## L3: hull points per second `tank` mends at right now — REPAIR_HP_PER_SECOND inside its own base, or the best
+## rate offered by a friendly repair unit standing near it, whichever is higher. A faction with no shields
+## (the road gangs) gets its hit points back this way instead, and the vehicle that does it is easy to kill.
+func repair_rate_for(tank: Tank, menders: Array) -> float:
+	var rate := REPAIR_HP_PER_SECOND if in_resupply_zone(tank.team, tank.global_position) else 0.0
+	for mender: Dictionary in menders:
+		if int(mender["team"]) != tank.team:
+			continue
+		var offset: Vector3 = mender["position"] - tank.global_position
+		if Vector2(offset.x, offset.z).length() <= float(mender["radius"]):
+			rate = maxf(rate, float(mender["rate"]))
+	return rate
 
 
 static func resupply_center(team: int) -> Vector3:

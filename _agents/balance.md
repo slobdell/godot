@@ -133,6 +133,46 @@ Every catalog entry carries a `faction` (`Units.FACTIONS`: condemned, gangs, law
 | `Match.SPAWN_SLOTS` | 27 → **52** (13 columns 11 m apart out to ±66 m, 4 rows 8 m apart from `BASE_Z`). The front row is still at `BASE_Z`, so spawn distance and pace are unchanged; `tools/make_arenas.py` regenerates every layout's spawn list |
 | Spawn jitter | now clamped along z too (`SPAWN_JITTER_MAX_Z` 1.2 m), or a jittered hull in row 2 overlapped one in row 1 |
 
+### X4: the three new rosters (2026-09-16)
+
+15 vehicles and 11 weapons, all data. **Nothing here is a faction-wide bonus**: a faction is a set of costs and
+stats out of one shared mechanics vocabulary, and its army size falls out of the costs
+(`Units.roster_average_cost` → `Army.typical_size`). Measured at `BASELINE_BUDGET` (5200):
+
+| Faction | Avg cost | Vehicles a side | Identity, in mechanics |
+|---|---|---|---|
+| **Road gangs** | 131 | **39** | **No shields anywhere.** Cheapest and fastest, thin armor, short reach. The `twin_mg` is the best suppressor per second in the game (1.26/s); the War Rig is the biggest hull in the game (3.0 × 5.6 m) and turns in 12 m; the Resupply Tanker mends hulls within 18 m, which is how a shieldless faction gets hit points back |
+| **The Condemned** | 183 | **28** | Unchanged from round 3: the mid-point, the lead's "baseline of 30 a side" |
+| **The Law** | 215 | **24** | Sight (a 125 m scout) and suppression. The Sonic Emitter is 18 damage/s and **4.0 suppression/s**; gas rockets are 55 damage and **5.0 suppression** over a 14 m burst. Their guns are reliable rather than fierce; the Retired APC has a 9 mm front and cannot chase anything |
+| **The Syndicate** | 340 | **15** | Energy and hover. Biggest shields, no ammunition, everything heat-limited: the railgun is 420 damage and 16 penetration at 110 m, twice, then it waits. Guided missiles have 0.8 m of scatter at any range **when a teammate is looking**, and the usual ×3 blind penalty wastes the salvo when nobody is |
+
+**Two new mechanics** (the only code the rosters needed):
+- **`hover`** (`TankMotion.step_in_place`): swings to face at `hull_turn_rate_deg` at any speed, like tracks, because
+  nothing needs traction to do it — but nothing grips the ground either, so momentum carries like wheels. Measured: a
+  Skimmer at full speed through a hard turn travels **22° off its own nose**, where a dozer travels exactly where it
+  points and a wheeled Rat Rod needs a multi-point shuffle (28° in half a second against the Skimmer's 80°).
+- **Field repair** (`Units "repair_radius_m"` / `"repair_hp_per_second"`, `Match.repair_rate_for`): a gun truck beside
+  a Resupply Tanker mends 60 → 110 hp over 10 s; one 50 m away mends nothing. Repairs need
+  `REPAIR_QUIET_SECONDS` (3 s) since the last hit — it used to piggyback on the shield recharge delay, which is 0
+  for a faction with no shields, so a gang truck mended itself while being shot.
+
+**Design calls worth knowing**
+- **Every rear stays at or below 2.0 mm.** "Everything hurts from behind" is a rule of the game, not a unit's choice
+  (`test_combat_mechanics`), so the Syndicate's "no strong face" is front and side armor, never a thick back.
+- **The Condemned scout's `good_vs` lost "lancer"**, which round 3 measured at 0%. game_design.md rules those claims
+  must be real in the mechanics. Suppression (L2) is the mechanic that could earn it back — a machine gun is the best
+  suppressor in the game, and a suppressed Lancer tracks at half speed and scatters ×3 — but only once ai suppresses
+  on purpose (X2). Put it back when the matrix shows it.
+- **The Lancer role now appears in two factions**, as `lancer` (Condemned) and `syn_lancer` (Syndicate). That is what
+  *Factions* asks for: the role is shared, the vehicle is not. Flagged for the lead.
+- **Plain `cpu` armies stay Condemned.** A faction is only chosen through `--green-faction=` / `--rust-faction=`, so
+  every round-3 skirmish, garage and match-runner opponent is unchanged.
+- **The garage offers the default faction only** (`ArmyCatalog.from_game`). Its screens, presets and unlock tiers are
+  written for one roster and that stream is paused: a compatibility fix, not a design.
+- **Faction art is not wired up.** `game/theme/factions/` is 47 MB and excluded from the exports, so the new vehicles
+  play as themselves and *look* like the Condemned through the C6 fallback. Shipping the models would take the web
+  pack from 0.8 MB to ~48 MB — a cross-stream call. See the combat brief's *Questions for the lead*.
+
 **Open:** `Doctrine.MAX_SQUADS` is 5 (a player-UI number), but 28 vehicles need six squads or more, so faction armies
 are validated through `Army.parse_scaled`, which runs `Doctrine.parse` over slices of five squads. Requested of the
 doctrine stream: raise `MAX_SQUADS` (or make it a UI-only cap) and this wrapper goes away.

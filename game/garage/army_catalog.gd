@@ -67,6 +67,18 @@ static func from_game(p_budget := -1) -> ArmyCatalog:
 	if stub:
 		profiles = ArmyCatalogStub.PROFILES
 		game_weapons.merge(ArmyCatalogStub.WEAPONS)
+	else:
+		# L3 (round 4, combat): the catalog gained three more factions. The garage is a PAUSED stream and its
+		# screens, presets and unlock tiers are all written for one roster, so it keeps offering the default faction
+		# until picking a faction is designed. Compatibility fix only; whoever unpauses the garage passes the
+		# player's chosen faction in here.
+		var own_faction := String(constants.get("DEFAULT_FACTION", "condemned"))
+		var mine := {}
+		for unit_id: String in profiles:
+			if String(profiles[unit_id].get("faction", own_faction)) == own_faction:
+				mine[unit_id] = profiles[unit_id]
+		if not mine.is_empty():
+			profiles = mine
 	# Limits follow the game's loader (read by shape: v2 may rename or drop them).
 	var loader := (load(DOCTRINE_SCRIPT) as Script).get_script_constant_map()
 	var squads := mini(MAX_SQUADS, int(loader.get("MAX_SQUADS", MAX_SQUADS)))

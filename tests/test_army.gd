@@ -9,12 +9,22 @@ func test_cpu_armies_are_valid_affordable_and_seeded() -> void:
 			var parsed := Doctrine.parse(army)
 			assert_true(parsed.has("doctrine"), "%s at %d is a valid doctrine: %s" % [archetype, budget, parsed.get("error", "")])
 			assert_true(Units.army_cost(army) <= budget, "%s at %d fits the budget (%d)" % [archetype, budget, Units.army_cost(army)])
-			var capped := Doctrine.entries(army).size() == Doctrine.MAX_UNITS
-			assert_true(capped or Units.army_cost(army) >= budget - 150, "%s at %d spends most of it (%d)" % [archetype, budget, Units.army_cost(army)])
+			# A plain cpu army (no faction) stops at Doctrine.MAX_UNITS; Army.MAX_ARMY_UNITS is the faction-army cap.
+			var capped := Doctrine.entries(army).size() >= Doctrine.MAX_UNITS
+			# L3 (round 4): "most of it" has to be measured against what this faction's cheapest vehicle costs. A
+			# Syndicate army cannot spend the last 200 points of a 500 budget, because nothing it fields is that cheap.
+			var cheapest := INF
+			for unit_id: String in Army.ARCHETYPES[archetype]["units"]:
+				cheapest = minf(cheapest, float(Units.cost_of({"unit": unit_id})))
+			assert_true(capped or Units.army_cost(army) > budget - cheapest,
+					"%s at %d spends all it can (%d, cheapest vehicle %d)" % [archetype, budget, Units.army_cost(army), cheapest])
 	assert_eq(Army.cpu_army("cpu", 42), Army.cpu_army("cpu", 42), "the same seed builds the same army")
 	var seen := {}
 	for seed_value in 30:
-		seen[Army.cpu_army("cpu", seed_value)["archetype"]] = true
+		var army := Army.cpu_army("cpu", seed_value)
+		seen[army["archetype"]] = true
+		assert_eq(Units.faction_of(Doctrine.entries(army)[0]["entry"]["unit"]), Units.DEFAULT_FACTION,
+				"a plain cpu army is still the default faction (%s)" % army["archetype"])
 	assert_true(seen.size() >= 4, "different seeds pick different archetypes (%s)" % [seen.keys()])
 
 
@@ -32,7 +42,7 @@ func test_squads_fold_into_five_when_roles_overflow() -> void:
 	for unit_id in ["scout", "scout", "tank", "ifv", "artillery", "lancer", "scout", "scout", "scout", "scout"]:
 		entries.append({"unit": unit_id})
 	var squads := Army.squads_for(entries)
-	assert_true(squads.size() <= Doctrine.MAX_SQUADS, "at most 5 squads (%d)" % squads.size())
+	assert_true(squads.size() <= Doctrine.MAX_SQUADS, "at most %d squads (%d)" % [Doctrine.MAX_SQUADS, squads.size()])
 	var total := 0
 	for squad: Dictionary in squads:
 		total += squad["units"].size()

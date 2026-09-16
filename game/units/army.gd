@@ -20,6 +20,31 @@ const ARCHETYPES := {
 	"swarm": {"units": ["scout", "scout", "ifv", "scout", "scout", "ifv"]},
 	# Stretch: close-range pressure. Burners charge behind a tank's front armor while an IFV screens scouts.
 	"brawl": {"units": ["burner", "tank", "burner", "ifv", "burner", "lancer"]},
+
+	# L3 (round 4). Each faction's armies buy only its own vehicles, and the SIZE falls out of their costs, not out
+	# of the list: at Units.BASELINE_BUDGET these come to roughly 39 gang vehicles, 28 Condemned, 24 Law, 15
+	# Syndicate. The mixes also carry the faction's automated tactics the lead asked for ("while the different
+	# factions might have largely similar vehicle types, we can definitely make them have different automated
+	# tactics"): the gangs travel in packs with a tanker in the middle, the Law advances behind suppression, the
+	# Syndicate fields almost nothing but guns and the eyes to aim them.
+	"gang_pack": {"faction": "gangs",
+			"units": ["gang_scout", "gang_ifv", "gang_scout", "gang_tank", "gang_ifv", "gang_support", "gang_scout"]},
+	"gang_ram": {"faction": "gangs",
+			"units": ["gang_tank", "gang_ifv", "gang_tank", "gang_support", "gang_ifv", "gang_scout"]},
+	"gang_hail": {"faction": "gangs",
+			"units": ["gang_artillery", "gang_scout", "gang_ifv", "gang_artillery", "gang_scout", "gang_support"]},
+	"law_line": {"faction": "law",
+			"units": ["law_tank", "law_ifv", "law_scout", "law_suppressor", "law_tank", "law_ifv"]},
+	"law_cordon": {"faction": "law",
+			"units": ["law_suppressor", "law_ifv", "law_scout", "law_artillery", "law_ifv", "law_tank"]},
+	"law_dragnet": {"faction": "law",
+			"units": ["law_scout", "law_artillery", "law_scout", "law_tank", "law_suppressor", "law_scout"]},
+	"syndicate_demo": {"faction": "syndicate",
+			"units": ["syn_tank", "syn_scout", "syn_lancer", "syn_ifv", "syn_scout"]},
+	"syndicate_standoff": {"faction": "syndicate",
+			"units": ["syn_lancer", "syn_scout", "syn_artillery", "syn_lancer", "syn_scout", "syn_ifv"]},
+	"syndicate_escort": {"faction": "syndicate",
+			"units": ["syn_ifv", "syn_scout", "syn_tank", "syn_ifv", "syn_artillery"]},
 }
 ## L3/X5: how many vehicles one side may field. Doctrine.MAX_UNITS (25) is the cap on a HAND-WRITTEN five-squad
 ## army; a faction army at Units.BASELINE_BUDGET is bigger than that, so it is split over as many five-unit squads
@@ -34,6 +59,9 @@ const SQUADS := {
 	"burner": {"name": "Burners", "directive": {"role": "assault", "aggression": 0.9}},
 	"scout": {"name": "Eyes", "directive": {"role": "scout"}},
 	"artillery": {"name": "Battery", "directive": {"role": "support"}},
+	# L3 (round 4): the two roles the new factions added. Both stay behind the line of contact.
+	"suppressor": {"name": "Sirens", "directive": {"role": "assault", "caution": 0.7}},
+	"support": {"name": "Wrenches", "directive": {"role": "support", "caution": 0.9}},
 }
 
 
@@ -120,7 +148,9 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 		faction: String = "") -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var archetypes: Array = Array(archetypes_for(faction)) if faction != "" else ARCHETYPES.keys()
+	# No faction asked for means the default one: a plain "cpu" army has to stay the Condemned army it was in round
+	# 3, or every skirmish and garage opponent would silently become a different faction (caught by test_army).
+	var archetypes: Array = Array(archetypes_for(faction if faction != "" else Units.DEFAULT_FACTION))
 	archetypes.sort()
 	var archetype := name.trim_prefix("cpu:") if name.begins_with("cpu:") else String(archetypes[rng.randi_range(0, archetypes.size() - 1)])
 	if not ARCHETYPES.has(archetype):
@@ -144,8 +174,11 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 			continue
 		entries.append(entry)
 		spent += cost
+	# Without a faction the army folds into the player's five squads (round-3 behaviour); a faction army takes as
+	# many five-unit squads as it needs.
 	var squads := squads_for(entries) if faction == "" else squads_for_scale(entries)
-	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction, "cost": spent,
+	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype,
+			"faction": String(ARCHETYPES[archetype].get("faction", Units.DEFAULT_FACTION)), "cost": spent,
 			"squads": squads}
 
 
