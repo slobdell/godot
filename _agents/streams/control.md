@@ -156,10 +156,37 @@ sizes, frames looked at.
 - The radar is now the map: facing ticks on friendly blips, element numbers at each element's middle, the
   selected element ringed, last-known contacts still fading, click to look, right-click to order.
 
+**X3. Tasks, not geometry (L1).** Done, `make remote T=check` green (787 tests after merging CP1+CP2),
+playtest green with all ten checks.
+
+- Skirmish installs `Elements`. **A player element is formed by the first task given to a control group and
+  dissolved by any direct order.** An element with no task still runs its SOP, so pre-forming one per squad had
+  untasked leaders fighting the player for the wheel: it broke K1's response guarantee and ate a shift-queued
+  route before doctrine's per-unit detach could see it. Forming on demand keeps round 3's direct control intact.
+- A whole element selected → right-click, A, H and the command card issue L1 tasks; an ad-hoc handful of units
+  still gets direct K1 orders. Attack-move maps to a `move` task (an element on the move already runs
+  react-to-contact). **E** screens a flank, **R** sets a base of fire; both greyed out without an element.
+- The command card reads back `element.describe()` under the header ("Alpha: wedge, traveling"), and is now 4×2.
+- **G** still overrides the formation, and an override drops that order back to explicit geometry.
+- **K1 gains an optional `source`** (`"player" | "element" | ""`, default `""`, additive). Control tags its own
+  orders; the playtest was otherwise timing doctrine's formation-slot orders against the player-response
+  guarantee. Relayed to the orchestrator for `workstreams.md`.
+- `--no-elements` keeps squads hand-driven; `--element-cpu` runs the CPU on `ElementCommander` (off by default).
+
 ### Questions for the lead
 
 - None yet.
 
 ### Requests to other streams
 
-- None yet.
+- **doctrine:** `Element.update` commands its members even when `task == {}`, so an element that exists but has
+  not been given a task will fight the player for the wheel. Control works around it by forming elements only
+  when a task is given, but anyone else adopting L1 will hit the same edge - worth either an explicit
+  "uncommanded" state or a note in the contract.
+- **doctrine (their request (a)):** an optional `facing` in `UnitCommand`, to remove the halt-formation hack
+  where each vehicle drives a few metres along its sector to end up pointing the right way. It is control's file;
+  queued behind X4-X6, and a clean next-round item if it does not fit.
+- **ai:** the CPU still runs its squad AI in skirmish. `--element-cpu` wires `ElementCommander` in for
+  experiments; which commander the CPU runs is ai's call.
+- **orchestrator:** K1's new optional `source` field needs a line in `workstreams.md`.
+
