@@ -1,95 +1,82 @@
 # Workstreams: the current round
 
-> **Round 3 is closed** (merged into `main` 2026-09-15; briefs archived in `streams/archive/round3/`). Round 4 isn't
-> planned yet: see HANDOFF.md. Ownership, contracts (C1–C8, K1–K5), gates, and worktree mechanics below still apply;
-> the stream table is round 3's record.
->
-> **Round 3, planned 2026-09-15.** How rounds work (roles, lifecycle, the worker contract, the kickoff prompt) is in
-> [orchestration.md](orchestration.md): read it first. This file is round 3's streams, ownership, contracts, gates, and
-> invariants. Rounds 1–2 are archived in `streams/archive/round1/` and `streams/archive/round2/`.
+> **Round 4, planned 2026-09-16.** How rounds work (roles, lifecycle, the worker contract, the kickoff prompt) is in
+> [orchestration.md](orchestration.md): read it first. This file is round 4's streams, ownership, contracts, gates, and
+> invariants. Rounds 1–3 are archived in `streams/archive/round1..3/`.
 
-## Round 3 goal
+## Round 4 goal
 
-**Make it fun.** The lead played the round-2 build: *"it's still currently boring and no fun to play … looking like a
-military nerd game."* Round 3 rebuilds control (StarCraft-style, desktop first), makes combat feel alive
-(arcade-tactical: moving while shooting, dodging, weak spots, devastating tank shells, 25 mm bursts, machine-gun
-streams), gives hits real impact, and in parallel fills the arena kit, concepts the three new factions, sets up the
-announcer's script engine, and moves builds to builder0. The lead's full verdict: [game_design.md](game_design.md)
-*Round 3 direction*.
+**Doctrine, vision, and scale.** The lead played round 3 (*"this is for sure much better"*) and set the direction
+([game_design.md](game_design.md) *Round 4 direction*): the camera frames only what your force can see, elements run
+real battle drills chosen by their leader, suppression makes those drills bite, armies grow to ~30 a side with
+faction-sized rosters, and the audio stops sounding like an Atari.
 
-## Round 3 streams
+## Round 4 streams
 
 | Stream | Brief | Outcome |
 |---|---|---|
-| **control** | [streams/control.md](streams/control.md) | StarCraft-style selection and orders (click, box, groups, right-click, attack-move, queue, follow), instant responsiveness, regrouping, automatic formations, selection panel and order feedback, desktop first |
-| **combat** | [streams/combat.md](streams/combat.md) | Weapons rebuilt (tank shells, 25 mm bursts, MG streams), weak spots, arcade driving with momentum and turning circles, artillery deploy, control point default, matchup matrix re-run |
-| **ai** | [streams/ai.md](streams/ai.md) | Units that feel alive: circle-strafing, dodging, flanking for weak spots, cover pops, range keeping, wheeled driving; a CPU opponent that maneuvers and uses formations; orders always win |
-| **feel** | [streams/feel.md](streams/feel.md) | Impact: weapon and hit effects for the new weapons, camera shake, weak-spot hits, wrecks, weapon and engine sound, order and selection feedback visuals |
-| **assets** | [streams/assets.md](streams/assets.md) | Arena kit (stackable 20/40 ft containers, giant ad screens), Meshy concepts and approved 3D for the road gangs, the Law, and the Syndicate, artillery outrigger parts |
-| **announcer** | [streams/announcer.md](streams/announcer.md) | Match-event fixtures, the banter director, and transcripts for the lead to review; the ElevenLabs pipeline built and tested **without API calls** |
+| **control** | [streams/control.md](streams/control.md) | The vision-constrained camera (as close as your force's sight allows), element focus with off-screen markers and alerts, command and readability at 30+ units a side |
+| **doctrine** | [streams/doctrine.md](streams/doctrine.md) | Element leaders: movement formations and techniques, battle drills on contact, all from real doctrine, as data; the same library for the CPU and the player (L1) |
+| **combat** | [streams/combat.md](streams/combat.md) | Suppression and effective fire (L2), heavies shielding fragile units, cost and effectiveness curves that produce faction-sized armies, faction rosters playable (L3) |
+| **ai** | [streams/ai.md](streams/ai.md) | Brains that execute doctrine well, the CPU cost to run 30+ a side, and the tournament harness that measures which drills win (plus the groundwork for offline tactics discovery) |
+| **audio** | [streams/audio.md](streams/audio.md) | Cinematic sound effects, the real ElevenLabs announcer run (repetition fixed first), the booth wired into live matches, and the dynamic music pipeline with per-state prompts |
 
-**Paused:** netcode (relay, lobby, replays, lockstep spike), army and progression (builder, unlocks, match loop), and
-faction *gameplay* (factions get concept art only). No stream owns their paths this round; a stream that breaks one of
-their tests fixes it minimally and says so in its merge notes.
+**Paused:** netcode, army and progression (the garage loop), and new Meshy art (88 credits left: the lead tops up
+before any new generation). Assets have no stream this round; `game/theme/**` changes are minimal and additive.
 
-**Why this split:** each of the lead's complaints is one independent problem with one owner: control (burdensome,
-unresponsive), combat (weapons wrong, dead driving), ai (no intent), feel (no impact). Assets and the announcer are
-independent of gameplay and keep paid generation behind lead gates. Remote builds were set up by the orchestrator
-before launch ([remote_builds.md](remote_builds.md)).
+**Why this split:** the lead's asks divide cleanly by layer. Control owns what the player sees and does, doctrine owns
+the commander layer between orders and brains, combat owns the rules that make formations pay, ai owns the units'
+execution and the cost of running many of them, and audio is independent of all of it.
 
-**Checkpoints** (the orchestrator merges these early and tells every stream to `git merge main`):
-- **CP1, control's K1 Orders API** (control X1): brains, combat, and feel need the order data and signals.
-- **CP2, combat's K2 weapon events and K3 locomotion fields** (combat X1): ai and feel build against them.
+**Checkpoints** (the orchestrator merges early and tells everyone to `git merge main`):
+- **CP1, doctrine's L1 element API** (doctrine X1): control and ai both build on it.
+- **CP2, combat's L2 suppression fields and L3 roster schema** (combat X1): doctrine, ai, and audio read them.
 Until a checkpoint lands, build against the contract with a stub in your own paths.
 
 ## Product constraints every stream designs for (the lead)
 
-1. **Fun first, desktop first** (pillar 5): mouse and keyboard, StarCraft-style. Touch must keep compiling and its
-   existing tests pass or be consciously retired with a note; no new touch-only work this round.
+1. **Fun first, desktop first** (pillar 5): mouse and keyboard. Touch keeps compiling; no new touch work.
 2. **Alive and responsive** (pillar 7): orders obey instantly; units move while fighting.
-3. **The vibe:** over-the-top converted vehicles in a night gladiator arena ([art_direction.md](art_direction.md)).
-4. **Die-hard, no pay-to-win** ([vision.md](vision.md)).
-5. **Performance:** 60 fps on a laptop-class integrated GPU with 50 vehicles; the web build still boots.
+3. **No unearned god view** (round 4): the camera shows what the force can see.
+4. **Parity:** anything the CPU can do tactically, the player's elements do automatically.
+5. **The vibe** ([art_direction.md](art_direction.md)) and **die-hard, no pay-to-win** ([vision.md](vision.md)).
+6. **Performance:** the target is ~30 units a side at 60 fps on this laptop's integrated GPU; measure before assuming.
 
 ## Lead gates this round
 
-1. **Meshy concepts (assets):** every new model's concepts go on the tap-to-approve review page
-   (`make art-review-page`, references/concept_review.md) before any image-to-3D. Batch reviews: roster options per
-   faction on one page.
-2. **Announcer text (announcer):** **no ElevenLabs calls this round**, not even a pilot. The lead reviews generated
-   transcripts first (*"I'd prefer not to run the ingestion yet because I'll want to review what the generated text is
-   for our potential conversations"*).
-3. **Design pillars** and anything that spends money, creates accounts, or is destructive outside your worktree.
+1. **Announcer generation is approved** (the lead, 2026-09-16: *"we can have an agent go ahead and run the full
+   ElevenLabs pipeline"*). Fix the repetition first, run a small pilot, listen, then the full run; log every request and
+   its credits. All three voices exist (`JR1`, `corporate2`, `veteran`).
+2. **No new Meshy art** without the lead: 88 credits remain and a top-up is pending.
+3. **Music tracks:** the lead generates them later in Suno. Build the pipeline and write the per-state prompts
+   (`/tmp/music_prompt.md` has the style he already likes); ship with placeholders.
+4. **Design pillars**, money, accounts, and anything destructive outside your worktree.
 
-## Who owns what (round 3)
+## Who owns what (round 4)
 
 | Path | Owner |
 |---|---|
-| `game/control/` (new: selection, control groups, the Orders API, group moves, automatic formation slots, regrouping), `game/ui/` except `widgets/**` and `hud.tscn`, `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md` (becomes the controls doc) | control |
-| `game/units/`, `game/combat/` except `impact.gd`, `game/match/`, `game/tank/`, `game/arena/` + `arenas/`, `game/ai/doctrine.gd`, `doctrines/`, `tools/match_series.py`, `tools/matchup_matrix.py`, `tools/make_arenas.py`, `mk/match.mk`, `game/modes/match_runner_mode.gd`, `_agents/balance.md` | combat |
-| `game/ai/` except `doctrine.gd` (brains, order execution inside brains, squads, formations geometry, perception, pathing, CPU commander, cover, fire lanes, matchups), `game/agent/`, `tools/agent.py`, `tools/ai_ladder.py`, `mk/ai.mk`, `tests/ai_scenarios/`, `_agents/{tank_brain,squad_ai_design,unit_ai}.md` | ai |
-| `game/theme/fx/**`, `game/theme/audio/`, `assets/audio/`, `game/combat/impact.gd`, the weapon, shell, beam, and tracer effect scenes and scripts in `game/theme/cyberpunk/` (`fx_*`, `tracer_shell.gd`, `laser_beam.gd`), `game/ui/widgets/**`, `game/ui/hud.tscn`, `mk/fx.mk`, `_agents/streams/references/fx_tricks.md` | feel |
-| Models, props, dressing, and galleries in `game/theme/**` not listed for feel (`roster/`, `arena_kit/`, `prison_dozer/`, `gallery/`, new `factions/`, cyberpunk vehicle and prop parts), `assets/**` except `assets/audio/` and `assets/announcer/`, `tools/assets/`, `mk/assets.mk`, `_agents/art_direction.md`, `_agents/streams/references/{asset_*,concept_review}.md` | assets |
-| `game/announcer/`, `assets/announcer/`, `tools/announcer/`, `tests/announcer/`, `mk/announcer.mk` (all new) | announcer |
-| `game/theme/game_theme.gd` (the slot table), `_agents/slot_contracts.md` | combat + feel + assets (additive edits only) |
-| `game/network/`, `server/`, net modes, `tests/net/`, `mk/net.mk`; `game/garage/`, `game/progression/`, `game/modes/garage_mode.gd`, `mk/garage.mk` | **paused**: minimal compatibility fixes only |
+| `game/control/` (selection, groups, the Orders API), `game/ui/` except `widgets/**` and `hud.tscn`, `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md` | control |
+| `game/tactics/` (new: elements, leaders, doctrine tables, drills), `doctrines/`, `game/ai/doctrine.gd`, `_agents/doctrine.md` (new), `mk/tactics.mk` (new) | doctrine |
+| `game/units/`, `game/combat/` except `impact.gd`, `game/match/`, `game/tank/`, `game/arena/` + `arenas/`, `tools/{match_series,matchup_matrix,make_arenas,combat_duel,matchup_search}.py`, `mk/match.mk`, `game/modes/match_runner_mode.gd`, `_agents/balance.md` | combat |
+| `game/ai/` except `doctrine.gd` (brains, perception, pathing, cover, fire lanes, matchups, CPU commander), `game/agent/`, `tools/agent.py`, `tools/ai_ladder.py`, `mk/ai.mk`, `tests/ai_scenarios/`, `_agents/{tank_brain,squad_ai_design,unit_ai}.md` | ai |
+| `game/announcer/`, `game/audio/` (new: the music director and mixer), `assets/announcer/`, `assets/audio/`, `assets/music/` (new), `game/theme/audio/`, `tools/announcer/`, `tools/audio/` (new), `mk/announcer.mk`, `mk/audio.mk` (new), `tests/announcer/` | audio |
+| `game/theme/**` models, props, effects (no stream this round): additive, minimal edits only, listed in merge notes | shared |
+| `game/garage/`, `game/progression/`, `game/network/`, `server/`, net modes, `mk/{garage,net}.mk` | **paused**: minimal compatibility fixes only |
 | `_agents/game_design.md`, `vision.md`, `roadmap.md`, `workstreams.md`, `orchestration.md`, `HANDOFF.md` | orchestrator (streams propose edits in their Status) |
 | **Shared:** `project.godot`, `export_presets.cfg`, `game/main.gd`, `game/main.tscn`, `game/modes/game_mode.gd`, `Makefile`, `mk/core.mk`, `tests/run_tests.gd`, `tools/remote.sh`, `tools/slot.sh`, `CLAUDE.md` | nobody alone: minimal edits, listed in merge notes |
 
-Tests: `test_control_*.gd`, `test_combat_*.gd` (and existing rules tests), `test_ai_*.gd`, `test_fx_*.gd`,
-`test_assets_*.gd`/`test_theme_*.gd`, `test_announcer_*.gd`.
+Tests: `test_control_*.gd`, `test_tactics_*.gd`, `test_combat_*.gd`, `test_ai_*.gd`, `test_announcer_*.gd`/`test_audio_*.gd`.
 
-## New contracts (round 3)
-
-Changing one requires updating this section, and the owning stream announcing it in its Status.
+## New contracts (round 4)
 
 | Contract | Owner, where | Consumers |
 |---|---|---|
-| **K1 Orders API** (CP1). `UnitCommand` data (serializable, for the CPU, the agent bridge, replays, and a future LLM): `{"units": [names], "verb": "move" \| "attack" \| "attack_move" \| "follow" \| "hold" \| "stop", "to"?: [x, z], "target"?: name, "queue": bool, "formation"?: "auto" \| name}`. `Orders` (one per match, reachable as `Match.orders`; combat adds that one field): `issue(command) -> String` (error or ""), `current(unit_name) -> Dictionary` (the active order with its formation slot offset and `issued_tick`), `queue(unit_name) -> Array`, signal `order_changed(unit_name)`, `complete(unit_name)`. **Response guarantee:** a brain receiving `order_changed` starts executing the new order within **3 ticks**, whatever it was doing; tests in both streams. `SquadCommand` (C7) stays for doctrines and the CPU until ai migrates them. | control: `game/control/orders.gd`, `unit_command.gd` | ai (brains execute orders), combat (`Match.orders` field), feel (order markers), announcer (later) |
-| **K2 Weapon profile v3 and weapon events** (CP2). `Weapons.PROFILES[id]` adds `fire_model` (`shell` \| `burst` \| `stream` \| `beam` \| `arc`), `reload_s`, `burst_count`, `burst_interval_s`, `projectile_speed_mps` (0 = hitscan), `spread_deg`, `damage`, `penetration`, `splash_radius`. Signals on `Match`: `weapon_fired(event)` `{tick, shooter, weapon, fire_model, muzzle [x,y,z], direction [x,y,z], projectile_id}` and `projectile_impact(event)` `{tick, projectile_id, position, normal, target?, face?: "front"\|"side"\|"rear", weak_spot: bool, damage, killed: bool}`. `Match.incoming_projectiles(unit) -> Array` of `{position, velocity, eta_ticks, damage_estimate}` for dodging. | combat: `game/combat/weapons.gd`, `game/match/match.gd` | ai (range, dodging, weak spots), feel (effects and sound), announcer (events) |
-| **K3 Locomotion** (CP2). Unit catalog adds `locomotion` (`tracks` \| `wheels`; `hover`, `articulated` reserved), `min_turn_radius_m`, `acceleration_mps2`, `braking_mps2`, `lateral_grip` (0–1, lower drifts); `TankMotion.predict(state, throttle, turn, ticks) -> Array` of poses (pure), so ai plans maneuvers and control previews paths. | combat: `game/units/units.gd`, `game/tank/tank_motion.gd` | ai, control, feel (tire and track effects) |
-| **K4 Faction art slots.** Faction ids `condemned` (today's roster), `gangs`, `law`, `syndicate`; models fill `unit.<faction>.<role>.hull/turret/weapon` and show in `make vehicle-gallery FACTION=<id>`. Gallery only this round: no gameplay units. | assets: `game/theme/factions/` | combat (a later round) |
-| **K5 Match events for the announcer** (C9 in streams/announcer.md): JSON lines, fixtures now; an adapter from K2 and `Match` signals later. | announcer | combat (adapter, later round) |
+| **L1 Elements and doctrine** (CP1). An `Element` is a cluster of units with a leader: `Elements.form(units, name)`, `Elements.of(unit)`, `element.assign(task)` where a task is `{"verb": "move" \| "attack" \| "screen" \| "support_by_fire" \| "hold", "to"?, "target"?}`; the leader picks a **formation** (`column`, `wedge`, `line`, `echelon_left/right`, `herringbone`) and a **movement technique** (`traveling`, `traveling_overwatch`, `bounding_overwatch`) from doctrine data, and runs **battle drills** on triggers (`react_to_contact`, `near_ambush`, `far_ambush`, `break_contact`, `support_by_fire`, `assault_through`). It issues per-unit orders through control's K1 `Orders` (so brains obey one thing). Read-only for UI: `element.state() -> {formation, technique, drill, reason, slots}` and signal `element_changed(id)`. Doctrine data lives in `doctrines/doctrine_<name>.json` with a `faction` field. | doctrine: `game/tactics/` | control (HUD, task issuing), ai (brains execute; CPU commander assigns tasks), combat (none) |
+| **L2 Suppression and effective fire** (CP2). `Tank.suppression` (0–1, decays), raised by near-misses and by rounds passing close; effects: accuracy penalty and a `pinned` state above a threshold. `Match.threat_field(team)` (a cheap grid of incoming-fire density) and `Match.is_beaten_zone(from, to)` for path and target scoring. `projectile_impact` and `weapon_fired` gain `suppression_applied`. | combat: `game/match/`, `game/combat/` | ai (avoid beaten zones, suppress on purpose), doctrine (support-by-fire drills), audio and feel (cues) |
+| **L3 Faction rosters** (CP2). `Units.PROFILES` entries carry `faction` (`condemned` \| `gangs` \| `law` \| `syndicate`) and per-faction costs and stats; `Units.roster(faction)`; army JSON and the match runner take `--green-faction=` / `--rust-faction=`; `Army` builds faction armies to a budget. Art slots already exist (K4). | combat: `game/units/` | doctrine (per-faction doctrine ids), ai (matchups), control (faction pick in skirmish), audio (faction lines) |
+| **L4 Vision-framed camera.** `RtsCamera.frame_vision(element)` and `Camera.max_zoom_in`; `Match.visible_region(team, units)` (what a set of units can currently see) provided by combat if it needs sim data, else computed by control from sight radii. Off-screen markers and alerts come from control. | control: `game/camera/`, `game/control/` | ai (none), audio (none) |
+| **L5 Match mood.** One signal for the announcer, music, crowd and screens: `MatchMood.current() -> {intensity 0..1, state: "lull" \| "skirmish" \| "battle" \| "last_stand" \| "victory" \| "defeat", reasons[]}`, derived from the K5 event stream (contacts, kill rate, losses, control point). | audio: `game/audio/` | announcer (pacing), feel and assets later (crowd, screens) |
 
 ## Standing contracts (from round 2, still in force)
 
@@ -114,7 +101,8 @@ C7 (`SquadCommand`) remains for doctrines and the CPU commander; player control 
 1. **`make remote T=check` passes before merging** (lint, tests, network + relay + lobby smoke, combat, match,
    determinism, sim baseline, garage smoke). Paused areas keep their tests green.
 2. **The sim baseline** (`tests/baselines/sim_state_hash.txt`: one hash per glibc version; builder0's `glibc-2.43
-   c9cfbb1a221f5c94` is canonical on 2026-09-15) changes only on purpose (record with `make remote T=sim-baseline-record`,
+   d7967d8b36d4417b` is canonical on 2026-09-16; **combat, doctrine, and ai** may change it on purpose, control and
+   audio must not) changes only on purpose (record with `make remote T=sim-baseline-record`,
    copy `build/sim_state_hash.txt` over the file, which drops other machines' stale lines), by **combat** and **ai** (and control if order execution changes a doctrine match), updated in the same
    commit with the reason. Feel, assets, and announcer never change it.
 3. The web build still boots (`make remote T=web-smoke`) and the server still exports. Visual slots load headless.
@@ -133,11 +121,10 @@ repository, each on its own branch. One command creates an isolated one:
 ```bash
 cd ~/projects/godot                       # the main checkout, on main: the orchestrator's home
 make worktree STREAM=control OFFSET=1    # → ../godot-control on branch stream/control
-make worktree STREAM=combat OFFSET=2
-make worktree STREAM=ai OFFSET=3
-make worktree STREAM=feel OFFSET=4
-make worktree STREAM=assets OFFSET=5
-make worktree STREAM=announcer OFFSET=6
+make worktree STREAM=doctrine OFFSET=2
+make worktree STREAM=combat OFFSET=3
+make worktree STREAM=ai OFFSET=4
+make worktree STREAM=audio OFFSET=5
 make worktrees                            # status of all of them
 ```
 

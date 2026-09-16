@@ -66,6 +66,106 @@ After playing the merged round-2 build, the lead:
   formation of scouts from the gang coming at you would be scary; I just don't know how to incorporate it well."*
   Decided: formations become **automatic** (see below); the CPU uses them visibly.
 
+## Round 4 direction: doctrine, vision, scale (lead, 2026-09-16)
+
+The lead played the round-3 build: *"this is for sure much better … I can see that the gameplay definitely feels
+smarter"*, and set the next round's direction.
+
+### Camera and vision: the view is earned, not given
+
+> *"the game is still fairly unplayable because the camera doesn't really track the vehicles … we should optimize for
+> the game being more zoomed in in general (i.e. closer to a Twisted Metal versus Starcraft if we put those 2 on a
+> spectrum) … it really should automatically track the entire set of friendly units, and basically always zoom in as
+> close as possible with the constraint can see the same horizon as what all units can collectively see … a bird's eye
+> view is just an unearned god view; we want to actually make the users expend their sentries to be able to see."*
+
+- **The camera frames what your force can see**, as close as that allows: fit to the sight of the element you're
+  commanding (plus its spotted contacts), clamp to a maximum closeness, smooth it, and let manual panning always win.
+- **Scattered forces:** frame the element you're commanding (the lead agreed); the rest get off-screen markers and
+  alerts you can jump to. Switching elements moves the camera.
+- **Consequence, deliberately:** seeing the far side of the arena costs you a scout. Vision is a resource.
+
+### Doctrine: trained crews with standard operating procedures
+
+> *"this game will get its novelty from the use of sophisticated battle drills and formations … I'm certain all military
+> formations and battle drills are on a degree of science for their effectiveness … battle formations should be a
+> tactical advantage - the key is to figure out how to intertwine this with our UX and playability (and also, if the
+> opposing computer player can easily create sophisticated formations all the time while the player can't or the
+> player's units don't automatically do the same formations a computer does, it would be no good) … the problem is just
+> that it's way too much micromanaging to get the units into a specific formation; we should generally treat the game as
+> cases where we're commanding well trained battle squads who operated based on standard operating procedures (like the
+> army does) … if a unit gets ambushed, the standard operating procedure is to face the direction of the ambush and
+> charge forward."*
+
+- **The player commands tasks, never geometry:** move here, take that, screen this flank, support by fire.
+- **Every element has a leader** that picks the movement formation and technique from a doctrine table (terrain, threat,
+  task, composition) and runs **battle drills** on contact: react to contact, near and far ambush, break contact,
+  bounding overwatch, support by fire, assault through, herringbone on halt.
+- **Doctrine comes from the literature** (Army field manuals on movement formations, movement techniques and battle
+  drills), encoded as data. Self-play measures which drill wins where and tunes the triggers.
+- **Parity is architectural:** the CPU and the player's elements run the **same** doctrine library. The player's edge is
+  where, when, and with what composition, never manual micro.
+- **Formations must pay off through mechanics that already exist or are being added** (mutual support, sectors of fire,
+  armor facing, firing lanes, spread versus splash, frontage and spotting), never a "formation bonus" number.
+
+### Suppression and effective fire
+
+> *"This game should have real concepts of suppressive fire and effective fire (i.e. vehicles make decisions to avoid
+> walking into a wall of bullets that will kill them, and opposing forces could concentrate their fire power to create
+> those suppressive fire effects or cut off an avenue) … tanks would probably want to provide protective cover for
+> weaker units."*
+
+Suppression is what makes drills real: without a wall of bullets that units respect, "base of fire plus maneuver" is
+theater. Near-misses build suppression (worse accuracy, pinned units), brains avoid beaten zones, machine guns earn
+their place through volume, and heavies interpose themselves between threats and fragile units.
+
+### Army size and factions
+
+> *"I basically want a lot of units but I don't want to stress the performance of the game … a baseline of 30 units per
+> side … different factions should have different unit sizes based on the effectiveness of each unit (i.e. the gang is
+> diluted with cheaper units, so it should be a bigger swarm, the condemned have more expensive and smaller unit counts
+> from there, then the law has more expensive and smaller unit counts from there, and the syndicate would have the
+> fewest number of units)."* And: *"while the different factions might have largely similar vehicle types, we can
+> definitely make them have different automated tactics."*
+
+- **Baseline ~30 units a side** for the mid faction, if performance allows; measure first (25 / 40 / 60 / 100) and set
+  the budget from what holds 60 fps with headroom.
+- **Counts fall out of cost and effectiveness,** not fixed numbers: gangs swarm (cheapest), then the Condemned, then the
+  Law, and the Syndicate fields the fewest, best units.
+- **Factions differ most in doctrine:** gang packs encircle and circle to spread damage ("like a pack of hyenas"), the
+  Law advances by bounds behind suppression, the Syndicate kites and repositions.
+- **Command stays control groups plus automatic elements** (the lead: a named hierarchy *"doesn't sound much like a game
+  unless there's a sleek way we can figure that out from a UX perspective"*).
+
+### Offline tactics discovery (framework, after doctrine)
+
+> *"another framework we haven't explored yet is to create a local, offline simulation of our game that we could plug
+> into an AI brain (i.e. AI agents play against each other somehow in the game, or have more explicit control of
+> individual unit decisions, and possibly even in slow motion as necessary) not for the purpose of live gameplay, but
+> for the purpose of discovering novel tactics and decision making, and somehow formalizing those discoveries into
+> deterministic heuristics."*
+
+Doctrine from the literature comes first; the harness that plays tactics against each other (seeded, headless, on
+builder0) measures and tunes them. The LLM-plays-the-game layer (through the existing agent bridge, at a slow cadence,
+proposing tactics as data) is the discovery experiment on top, and anything it finds is distilled into deterministic
+rules before it ships. Nothing runs a model during live play.
+
+### Audio: cinematic, and alive
+
+> *"The sound effects for the game also currently completely suck … right now the sound effects make it sound like an
+> atari game rather than a gritty action game … we can have an agent go ahead and run the full ElevenLabs pipeline …
+> some of them were fairly repetitive (i.e. same opening announcement from the syndicate announcer lady across multiple
+> cases) … the best case is a living, breathing music selection with the game."*
+
+- **Cinematic exaggeration** (the lead's choice), not documentary realism: layered sounds, long tails, weight.
+- **Announcer:** fix the repetition (more openers, recency memory across matches, more slot variety), then run the real
+  ElevenLabs generation and wire the booth into live matches.
+- **Music:** a director driven by the same match-mood signal as the announcer and crowd: one track per state (garage,
+  pre-match, maneuver, sustained battle, heavy or last stand, victory, defeat), tempo and loop points recorded,
+  beat-aligned crossfades, stingers, ducking under the announcer. The lead writes the tracks in Suno later
+  (`/tmp/music_prompt.md` holds the style prompts); the pipeline and the per-state prompts come first.
+- One agent owns the whole audio pipeline: announcer, sound effects, and music.
+
 ## Units: fixed types that counter each other
 
 Each unit type is a fixed package: chassis, one weapon, armor, speed, sight, cost. **No loadouts.**

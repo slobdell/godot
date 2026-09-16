@@ -33,10 +33,22 @@ archived stream briefs).
 | | assets: stackable ISO containers, giant ad screens, neon signs, artillery outriggers, 33 faction concepts reviewed by the lead, **15 faction vehicles in 3D** plus a wreck husk | archive/round3/assets.md, art_direction.md |
 | | announcer: match-event contract and fixtures, the banter director, 429 lines, transcripts and the booth page (no audio generated yet) | archive/round3/announcer.md |
 
-## Now: round 4 (not planned yet)
+## Now: Round 4 (planned 2026-09-16)
 
-Round 3 is merged and green. The next round starts from the lead's playtest of the new controls, weapons, AI, and
-effects, plus the open items in HANDOFF.md (the announcer's text review, the faction gameplay, the unit-count bench).
+Goal: **doctrine, vision, and scale.** The lead played round 3 ("this is for sure much better") and asked for a camera
+that shows only what the force can see, elements that run real battle drills chosen by a leader, suppression that makes
+those drills bite, ~30 units a side with faction-sized rosters, and audio that stops sounding like an Atari.
+Streams and briefs: [workstreams.md](workstreams.md).
+
+| Stream | Outcome |
+|---|---|
+| **control** | Vision-framed camera, element focus, off-screen markers and alerts, command at 30+ a side |
+| **doctrine** | Element leaders, formations and movement techniques from real doctrine, battle drills, faction doctrines |
+| **combat** | Suppression and effective fire, protecting fragile units, faction rosters, scale |
+| **ai** | Doctrine execution, ≤ 4 ms per tick at 60 units, suppression-aware behavior, the tactics ladder |
+| **audio** | The real announcer run, cinematic sound effects, match mood, the dynamic music pipeline |
+
+Paused: netcode, army and progression, new Meshy art.
 
 ## Next (after round 4, order to be decided)
 
