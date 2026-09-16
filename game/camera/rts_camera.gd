@@ -38,6 +38,12 @@ const FRAME_MARGIN_M := 8.0
 const TRACK_SMOOTHING := 3.0
 const TRACK_SPEED := 120.0
 const TRACK_ZOOM_SPEED := 0.35
+## L4 (control X1): the vision frame may go this close, and no closer (the auto frame's floor; the player may
+## still scroll in from there, which costs them awareness and is their call).
+const VISION_MIN_ZOOM := 0.10
+## After the player last moved the camera, this many seconds of stillness give the element back to it.
+const HANDBACK_SECONDS := 2.5
+
 ## Order tracking never climbs above this zoom (below TacticalMap.ICON_ZOOM, so models stay models) to fit a far destination: it keeps the squad readable and leans
 ## the view toward where it's going instead (the lead: follow them, don't make me zoom out and in).
 const TRACK_MAX_ZOOM := 0.48
@@ -47,7 +53,7 @@ signal gesture_started
 ## camera), or "replaced" / "stopped" (code).
 signal tracking_ended(reason: String)
 
-enum Track { NONE, ORDER, FOLLOW }
+enum Track { NONE, ORDER, FOLLOW, VISION }
 
 var camera: Camera3D
 ## What we look at (on the ground), which way we face (0 = north up the screen), how far out (0..1).
@@ -57,6 +63,16 @@ var zoom := 0.7
 var follow_target: Node3D
 ## Screen-edge panning: off in tests and when the window isn't focused.
 var edge_pan := true
+## L4: the vision source. Returns {"frame": Array of ground points to keep on screen, "region": VisionRegion (the
+## whole team's sight), "destination": Vector3 or null}. While it is set the camera frames the commanded element
+## by itself, refuses to zoom out past the force's collective horizon, and keeps a free look over seen ground.
+var vision: Callable = Callable()
+## The furthest-out zoom the force's sight earns (1.0 = unconstrained; refreshed from `vision` every frame).
+var vision_zoom := 1.0
+## The ground a free camera may look at (null = anywhere).
+var vision_region: VisionRegion = null
+## How long the camera stays the player's after they move it (seconds; 0 hands back at once).
+var handback_seconds := HANDBACK_SECONDS
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -70,6 +86,11 @@ var _track := Track.NONE
 var _track_points: Callable
 ## While tracking, never zoom in past the zoom the player had when it started.
 var _track_floor_zoom := 0.0
+## UI clock (seconds, advancing while paused) and when the player last moved the camera, for the hand-back.
+var _clock := 0.0
+var _manual_at := -1e9
+## This frame's `vision` reading, so the tracking and the cap agree and it is called once.
+var _vision_state := {}
 
 
 func _ready() -> void:
@@ -91,6 +112,8 @@ func snap() -> void:
 
 
 func _process(delta: float) -> void:
+	_clock += delta
+	_update_vision()
 	var keys := Vector2(float(Input.is_key_pressed(KEY_RIGHT)) - float(Input.is_key_pressed(KEY_LEFT)),
 			float(Input.is_key_pressed(KEY_DOWN)) - float(Input.is_key_pressed(KEY_UP)))
 	if edge_pan and DisplayServer.window_is_focused() and camera.get_viewport() != null:
@@ -153,6 +176,7 @@ func pan_world(amount: Vector2) -> void:
 	focus.x = clampf(focus.x, -FOCUS_LIMIT, FOCUS_LIMIT)
 	focus.z = clampf(focus.z, -FOCUS_LIMIT, FOCUS_LIMIT)
 	focus.y = 0.0
+	focus = look_clamp(focus)
 
 
 ## "Grab the ground": dragging the screen by `pixels` moves the view so the ground under the finger
@@ -168,6 +192,7 @@ func pan_screen(from: Vector2, to: Vector2) -> void:
 	focus += Vector3(shift.x, 0.0, shift.z)
 	focus.x = clampf(focus.x, -FOCUS_LIMIT, FOCUS_LIMIT)
 	focus.z = clampf(focus.z, -FOCUS_LIMIT, FOCUS_LIMIT)
+	focus = look_clamp(focus)
 	# Panning is direct manipulation: no smoothing lag under the finger.
 	_shown_focus = focus
 	_apply()
@@ -180,7 +205,7 @@ func rotate_by(radians: float) -> void:
 
 func zoom_by(amount: float) -> void:
 	_manual()
-	zoom = clampf(zoom + amount, 0.0, 1.0)
+	zoom = clampf(zoom + amount, 0.0, vision_zoom)
 
 
 ## Zoom toward (or away from) a screen point, keeping the ground under it roughly in place.
@@ -196,7 +221,7 @@ func zoom_at(screen: Vector2, amount: float) -> void:
 func focus_on(point: Vector3) -> void:
 	follow_target = null
 	_manual()
-	focus = Vector3(point.x, 0.0, point.z)
+	focus = look_clamp(Vector3(point.x, 0.0, point.z))
 
 
 func follow(target: Node3D) -> void:
@@ -212,9 +237,14 @@ func toggle_overview(team: int) -> void:
 	if _before_overview == null:
 		_before_overview = [focus, yaw, zoom, follow_target]
 		follow_target = null
-		focus = Vector3.ZERO
 		yaw = 0.0 if Match.team_frame(team)["forward"] == Vector3.FORWARD else PI
-		zoom = OVERVIEW_ZOOM
+		# L4: Tab shows everything the force can see, not the whole arena (the lead: no unearned god view).
+		if vision_region != null and not vision_region.is_empty():
+			focus = look_clamp(vision_region.center())
+			zoom = minf(OVERVIEW_ZOOM, vision_zoom)
+		else:
+			focus = Vector3.ZERO
+			zoom = OVERVIEW_ZOOM
 	else:
 		focus = _before_overview[0]
 		yaw = _before_overview[1]
@@ -243,7 +273,7 @@ func frame(points: Array, instant := false, floor_zoom := FRAME_MIN_ZOOM) -> voi
 	follow_target = null
 	var goal := RtsCamera.frame_pose(points, yaw, _aspect(), floor_zoom)
 	focus = goal[0]
-	zoom = goal[1]
+	zoom = minf(float(goal[1]), vision_zoom)
 	if instant:
 		snap()
 
@@ -292,7 +322,7 @@ func track(points: Callable, mode := Track.ORDER) -> void:
 		toggle_overview(0)
 	_track = mode
 	_track_points = points
-	_track_floor_zoom = maxf(zoom, FRAME_MIN_ZOOM)
+	_track_floor_zoom = VISION_MIN_ZOOM if mode == Track.VISION else maxf(zoom, FRAME_MIN_ZOOM)
 	_update_tracking()
 
 
@@ -318,6 +348,9 @@ func tracking_mode() -> Track:
 func _update_tracking() -> void:
 	if _track == Track.NONE:
 		return
+	if _track == Track.VISION:
+		_update_vision_tracking()
+		return
 	var points: Array = _track_points.call() if _track_points.is_valid() else []
 	if points.is_empty():
 		stop_tracking("arrived")
@@ -328,7 +361,7 @@ func _update_tracking() -> void:
 	else:
 		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom)
 	focus = goal[0]
-	zoom = goal[1]
+	zoom = minf(float(goal[1]), vision_zoom)
 
 
 ## [focus, zoom] for order tracking: `units` and `destination` together when that fits under TRACK_MAX_ZOOM
@@ -363,8 +396,64 @@ static func order_pose(units: Array, destination: Vector3, heading: float, aspec
 	return [start + toward * low, level]
 
 
-## The player touched the camera: tracking yields at once.
+# ---- L4: the vision-framed camera (control X1) ----------------------------------------------------------
+
+## Refresh the force's sight region and the zoom-out cap it earns, and take the camera back to the commanded
+## element once the player has left it alone for `handback_seconds`.
+func _update_vision() -> void:
+	if not vision.is_valid():
+		return
+	var reading: Variant = vision.call()
+	_vision_state = reading if reading is Dictionary else {}
+	var region: VisionRegion = _vision_state.get("region") as VisionRegion
+	vision_region = region
+	if region != null and not region.is_empty():
+		vision_zoom = float(RtsCamera.frame_pose(region.bounds(), yaw, _aspect(), VISION_MIN_ZOOM)[1])
+	else:
+		vision_zoom = 1.0
+	zoom = minf(zoom, vision_zoom)
+	if _track == Track.NONE and follow_target == null and _before_overview == null \
+			and _clock - _manual_at >= handback_seconds and not (_vision_state.get("frame", []) as Array).is_empty():
+		track(Callable(), Track.VISION)
+
+
+## Give the camera back to the commanded element right now (switching elements, not waiting out the hand-back).
+func take_vision() -> void:
+	if not vision.is_valid():
+		return
+	_manual_at = -1e9
+	_before_overview = null
+	follow_target = null
+	if _track != Track.VISION:
+		track(Callable(), Track.VISION)
+
+
+## The frame the vision source asks for, right now.
+func _update_vision_tracking() -> void:
+	var points: Array = _vision_state.get("frame", [])
+	if points.is_empty():
+		stop_tracking("arrived")
+		return
+	var destination: Variant = _vision_state.get("destination")
+	var goal: Array
+	if destination is Vector3:
+		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom)
+	else:
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom)
+	focus = look_clamp(goal[0])
+	zoom = minf(float(goal[1]), vision_zoom)
+
+
+## Keep a ground point over what the team can see (L4: the "look" camera peeks only where it has vision).
+func look_clamp(point: Vector3) -> Vector3:
+	if vision_region == null or vision_region.is_empty():
+		return point
+	return vision_region.clamp_point(point)
+
+
+## The player touched the camera: tracking yields at once, and holds off for `handback_seconds`.
 func _manual() -> void:
+	_manual_at = _clock
 	stop_tracking("manual")
 
 

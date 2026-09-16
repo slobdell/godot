@@ -43,6 +43,9 @@ const OFF_SCREEN_PX := 4000.0
 const ACK_SECONDS := 0.7
 ## A second tap on the same group number within this long centers the camera on it (seconds, wall time: UI only).
 const DOUBLE_TAP_SECONDS := 0.4
+## L4 (X1): a queued destination further than this from the element is left out of the camera's frame; the camera
+## leans toward it instead of climbing (RtsCamera.order_pose does the leaning).
+const FRAME_DESTINATION_M := 220.0
 
 var game_match: Match
 var orders: Orders
@@ -130,6 +133,72 @@ func can_see(tank: Tank) -> bool:
 
 func selection_state() -> Dictionary:
 	return {"units": selection.units.duplicate(), "inspected": selection.inspected}
+
+
+# ---- L4: what the camera frames (X1) ----------------------------------------------------------------------
+
+## The element the camera keeps framed: the selection when there is one, else the group last recalled, else the
+## whole force (so an unselected player still watches their army instead of empty ground).
+func commanded_units() -> Array[String]:
+	if not selection.units.is_empty():
+		return selection.units.duplicate()
+	var last := groups.members(_last_group)
+	if not last.is_empty():
+		return last
+	var all_units: Array[String] = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive():
+			all_units.append(String(tank.name))
+	return all_units
+
+
+## L4 for RtsCamera.vision: the ground points it must keep on screen (the commanded element and the contacts that
+## element can see), the element's current destination, and the whole team's sight region (the zoom-out cap and
+## the "look" clamp come from the force's collective horizon, not from one element's).
+func vision_state() -> Dictionary:
+	if game_match == null:
+		return {}
+	var element: Array[String] = commanded_units()
+	var frame: Array = []
+	var eyes: Array = []
+	for unit_name in element:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive():
+			frame.append(Vector3(tank.global_position.x, 0.0, tank.global_position.z))
+			eyes.append(tank)
+	for node in game_match.tanks.get_children():
+		var enemy := node as Tank
+		if enemy == null or enemy.team == team or not enemy.is_alive() or not can_see(enemy):
+			continue
+		for tank: Tank in eyes:
+			if tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius:
+				frame.append(Vector3(enemy.global_position.x, 0.0, enemy.global_position.z))
+				break
+	var friendly: Array = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive():
+			friendly.append(tank)
+	return {"frame": frame, "destination": _element_destination(element, frame),
+			"region": VisionRegion.of(friendly)}
+
+
+## Where the element is headed (the nearest unit's current order goal), or null when it is going nowhere or the
+## goal is too far away to be worth leaning toward.
+func _element_destination(element: Array[String], frame: Array) -> Variant:
+	if frame.is_empty() or orders == null:
+		return null
+	var middle := Vector3.ZERO
+	for at: Vector3 in frame:
+		middle += at
+	middle /= frame.size()
+	for unit_name in element:
+		var route := waypoints(unit_name)
+		if route.is_empty():
+			continue
+		var goal: Vector3 = route[0]["position"]
+		if goal.distance_to(middle) <= FRAME_DESTINATION_M:
+			return goal
+	return null
 
 
 # ---- Mouse ------------------------------------------------------------------------------------------------
@@ -329,6 +398,8 @@ func recall_group(number: int, center := false) -> void:
 	disarm()
 	_last_group = number
 	_last_group_at = _clock
+	if rig != null:
+		rig.take_vision()  # L4: switching elements moves the camera to it, without waiting out the hand-back
 	if double or center:
 		center_on(members)
 
