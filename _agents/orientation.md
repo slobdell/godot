@@ -193,3 +193,9 @@ build/   (gitignored)    exports and screenshots
 62. **The theme's panel colors are translucent** (`GameTheme.ui["garage_panel"]` alpha 0.86). An overlay drawn with them over busy UI makes its text collide with whatever is behind. Overlays need an opaque background (the army screen's `_overlay_style`) and a scrim.
 63. **The sim baseline hash depends on the machine's glibc, not just the Godot binary.** builder0 (glibc 2.43) and the laptop (2.39) disagree while each is repeatable (libm trig). `tests/baselines/sim_state_hash.txt` keys hashes by glibc version; record with `make remote T=sim-baseline-record` ([determinism.md](determinism.md)).
 64. **Heavy runs go to builder0:** `make remote T=check` (6 min 40 s there vs 14–22 min here). See [remote_builds.md](remote_builds.md). Long local background runs can be killed by the session's memory guard: detach with `setsid nohup … &` and poll a log with a unique end marker (Godot prints its own `[ DONE ]` lines).
+65. **Remote screenshots can silently repeat one frame.** With a stale Xwayland cookie Godot falls back to Wayland on
+    builder0, which stops redrawing a hidden window: every capture after the first is the same image, and a second
+    `await RenderingServer.frame_post_draw` never returns. `tools/remote.sh` now reads the running Xwayland's `-auth`
+    file. If captures look identical, check the log for `Invalid MIT-MAGIC-COOKIE` (feel, 2026-09-15).
+66. **One `make remote` per worktree at a time.** Each run rsyncs `--delete` into the same builder0 folder, so a
+    screenshot run started during a `check` swaps the files under it (the check then fails on code it never imported).

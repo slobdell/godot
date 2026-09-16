@@ -52,6 +52,14 @@ const CONFIGS := {
 	"tier_low": {"tier": FxQuality.Tier.LOW},
 	"tier_medium": {"tier": FxQuality.Tier.MEDIUM},
 	"tier_high": {"tier": FxQuality.Tier.HIGH},
+	# Feel X7 (round 3): 50 vehicles fighting with round 3's weapons through WeaponFx, moving (dust, drift marks), with
+	# order markers. r3_no_weapons and r3_no_motion isolate the two costs; the tier configs check the budgets.
+	"r3_all": {"round3": true},
+	"r3_no_weapons": {"round3": true, "fire": false},
+	"r3_no_motion": {"round3": true, "motion": false},
+	"r3_no_haze": {"round3": true, "haze": false},
+	"r3_tier_medium": {"round3": true, "tier": FxQuality.Tier.MEDIUM},
+	"r3_tier_low": {"round3": true, "tier": FxQuality.Tier.LOW},
 }
 
 var flags: LaunchFlags
@@ -86,6 +94,7 @@ var _summary := ""
 var _seconds := 6.0
 var _loop := false
 var _default_slots: Dictionary
+var _round3: Round3Firefight
 var _shield_ratio: PackedFloat32Array = []
 ## Seconds between laser pulses (4 laser tanks).
 const LASER_INTERVAL := 0.35
@@ -137,7 +146,9 @@ func _process(delta: float) -> void:
 		return
 	_time += delta
 	_update_camera()
-	if _config.get("fire", true):
+	if _config.get("round3", false):
+		_round3.step(delta, _camera.global_position)
+	elif _config.get("fire", true):
 		_fire_due()
 	_move_shells(delta)
 	if _config.get("shields", true):
@@ -196,6 +207,7 @@ func _apply(config: Dictionary) -> void:
 		fx.tracers.splats_enabled = config.get("splats", settings["splats"])
 		fx.muzzle_flashes = config.get("muzzle", true)
 		fx.explosion_lights = true
+		fx.haze.enabled = config.get("haze", true)
 	var environment := _find_environment()
 	if environment != null:
 		environment.glow_enabled = config.get("glow", settings["glow"])
@@ -219,6 +231,20 @@ func _apply(config: Dictionary) -> void:
 		var tier_ground := "lite" if int(config.get("tier", FxQuality.Tier.HIGH)) < FxQuality.Tier.HIGH else "textured"
 		dressing.invoke("set_ground_style", [config.get("ground", tier_ground)])
 		dressing.invoke("set_venue_visible", [config.get("venue", true)])
+	var round3: bool = config.get("round3", false)
+	if round3 and _round3 == null:
+		_round3 = Round3Firefight.new()
+		_round3.name = "Round3"
+		add_child(_round3)
+		_round3.build()
+	for tank in _tanks:
+		tank.visible = not round3
+	if _round3 != null:
+		_round3.visible = round3
+		if round3 and fx != null:
+			_round3.weapons_on = config.get("fire", true)
+			_round3.motion_on = config.get("motion", true)
+			_round3.reset(fx)
 	var slots := _default_slots.duplicate()
 	if config.get("naive", false):
 		slots["fx.shell"] = NAIVE_SHELL

@@ -240,3 +240,37 @@ numbers drift by several ms between runs). New configs: `ground_wet` (round 1's 
   900/1,800/4,000): **+0.3 ms at tier high, +0.14 ms at low, +2 draw calls** from the bench's orbit camera.
 - Tier budgets hold: low 6.4 ms / 189 draws, medium 9.1 ms / 189 draws; high +1.9 ms over round 1's floor (borderline
   against 16 ms on a loaded machine; switch high to the lite floor if a desktop GPU struggles).
+
+## Round 3 (feel X7, 2026-09-15): 50 vehicles with round 3's weapons
+
+**How:** `make remote T="fx-bench FX_CONFIGS=r3_all,r3_no_weapons,r3_no_motion,r3_tier_medium,r3_tier_low,all,tier_low
+FX_SECONDS=8"` on **builder0 (Intel Iris Xe, Mesa 26, 1280×720, vsync off)**, a faster GPU than round 1–2's reference
+UHD 620 (round 2's `all` was 14.2 ms there, 6.24 ms here: about 2.3× faster), so compare configs within this run and
+scale by ~2.3 for the laptop. `Round3Firefight`: 25 v 25 (per side 5 tanks firing shells every 5 s, 8 IFVs in 4-round
+bursts, 8 scouts streaming 16 rounds a burst, 2 artillery, 2 Lancers), 30% misses, 12% weak spots, kills that burn,
+every vehicle moving (scouts circle and drift), an order marker every 1.5 s. Effects go through `WeaponFx` exactly as
+K2 events would. Raw numbers: `build/fx-bench.json`; screenshots: `build/screenshots/fx/fx_r3_*.png`.
+
+| Config | Frame avg / p95 ms | GPU ms (median) | CPU render ms | Draw calls | Tracers in flight |
+|---|---|---|---|---|---|
+| `r3_all` (tier high) | **6.88 / 7.14** | 5.85 | 1.07 | **273** | 52 |
+| `r3_no_weapons` (vehicles moving, no fire) | 6.27 / 6.67 | 5.36 | 0.92 | 268 | 0 |
+| `r3_no_motion` (fire, no dust/marks/lurch) | 6.82 / 7.14 | 5.82 | 1.02 | 272 | 51 |
+| `r3_tier_medium` | 4.59 / 5.18 (one 17.8 ms frame) | 2.74 | 0.88 | 140 | 50 |
+| `r3_tier_low` | **4.35 / 5.00** | 2.18 | 0.80 | **140** | 51 |
+| `all` (round 2's 20-tank bench, same run) | 6.24 / 6.67 | 5.21 | 1.03 | 238 | 19 |
+| `tier_low` (round 2's bench) | 2.96 / 3.33 | 1.72 | 0.99 | 148 | 19 |
+
+- **Round 3's weapon effects cost +0.6 ms** at tier high for 50 vehicles fighting (`r3_all` − `r3_no_weapons`): shell
+  blasts, bursts, streams, crits, kills, burning wrecks, order markers. **Motion effects cost ~0.06 ms** (dust in its own
+  pool, drift marks one MultiMesh). New draw calls: +5 (weapon pools, decals, dust, skids, order markers, trail).
+- **Budgets hold:** high 6.9 ms / 273 draws (≈ 16 ms on a UHD 620, at the edge of its 16 ms budget: the 50 vehicles'
+  886k primitives are the big cost, not effects); low 4.4 ms / 140 draws (≈ 10 ms on a UHD 620, under 12 ms).
+- **Rules that kept it cheap:** everything is an instance in an existing MultiMesh (virtual hitscan rounds share the
+  tracer buffer); machine guns are held sound loops for the 4 nearest gunners, not a sound per round; small-round
+  sparks are rate-limited per target (0.07 s) and ricochet sounds globally (0.15 s); dust and marks only for the
+  vehicles nearest the camera (6/12/20 by tier); scorches, dust, and marks have their own pools so a firefight never
+  recycles them.
+- **Heat haze** (stretch, `HeatHaze`: ≤ 8 camera-facing quads over the nearest fires reading the screen texture, tier
+  high only): `r3_all` vs `r3_no_haze`, two passes each: 7.12 / 7.08 ms vs 6.96 / 7.13 ms, the same 273 draws: **within
+  noise** on the Iris Xe. Not measured on web or phones (it's off on low and medium).

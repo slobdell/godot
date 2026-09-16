@@ -13,6 +13,21 @@ fx-bench: import ## FX lab: worst-case firefight per trick config; prints FX_BEN
 		2>&1 | tee $(BUILD_DIR)/fx-bench.log | grep -E 'FX_BENCH|ERROR|FX LAB|^ ' || true
 	@grep -q FX_BENCH_DONE $(BUILD_DIR)/fx-bench.log
 
+SHOWCASE ?=
+
+fx-shots: import ## Weapon FX close-ups (fire, flight, impact per weapon, real Match + Tanks) → build/screenshots/fx-shots/*.png (needs a display; SHOWCASE=tank_hit,tank_kill,...)
+	rm -rf $(BUILD_DIR)/screenshots/fx-shots && mkdir -p $(BUILD_DIR)/screenshots/fx-shots
+	timeout 300 $(GODOT) --path . --resolution 1280x720 res://game/theme/fx/bench/weapon_showcase.tscn -- \
+		--shots=$(CURDIR)/$(BUILD_DIR)/screenshots/fx-shots $(if $(SHOWCASE),--showcase=$(SHOWCASE)) \
+		2>&1 | tee $(BUILD_DIR)/fx-shots.log | grep -E 'FX_SHOT|ERROR|SCRIPT' || true
+	@grep -q FX_SHOTS_DONE $(BUILD_DIR)/fx-shots.log
+	@! grep -E 'SCRIPT ERROR|ERROR:' $(BUILD_DIR)/fx-shots.log | grep -v 'X11 Display'
+
+LISTEN ?= tank_boom shell_whine shell_hit_armor dirt_impact autocannon_shot mg_loop ricochet bullet_hit_metal weak_spot_hit mortar_launch ui_ack_move ui_ack_attack ui_select
+
+sfx-listen: ## Play the round-3 sounds one after another with their names (LISTEN="tank_boom mg_loop" to pick; needs ffplay or aplay)
+	@for s in $(LISTEN); do echo ">> $$s"; ffplay -nodisp -autoexit -loglevel quiet assets/audio/$$s.wav 2>/dev/null || aplay -q assets/audio/$$s.wav; sleep 0.4; done
+
 fx-textures: import ## Regenerate procedural FX textures (explosion flipbook atlas)
 	$(GODOT) --headless --path . --script res://game/theme/fx/tools/make_flipbook.gd
 	$(GODOT) --headless --path . --import

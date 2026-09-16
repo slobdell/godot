@@ -14,6 +14,8 @@ const PRIORITY_VEHICLE := 0.5
 const PRIORITY_TRACER := 1.0
 const PRIORITY_MUZZLE := 2.0
 const PRIORITY_BEAM := 3.0
+## A tank shell in flight: rare, slow, and the thing to watch, so it outranks beams and muzzle flashes.
+const PRIORITY_SHELL := 3.5
 const PRIORITY_EXPLOSION := 4.0
 
 ## Most timed flashes alive at once; the oldest is replaced when full.
@@ -89,6 +91,9 @@ func commit(camera_position: Vector3, now: float) -> void:
 		var age: float = (now - float(entry["start"])) / float(entry["duration"])
 		if age >= 1.0:
 			_flashes.remove_at(i)
+			continue
+		if age < 0.0:
+			i += 1  # scheduled for later (a cook-off a beat after the hit)
 			continue
 		var fade := (1.0 - age) * (1.0 - age)
 		request(entry["position"], entry["color"], float(entry["energy"]) * fade, entry["range"], entry["priority"])

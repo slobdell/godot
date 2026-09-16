@@ -1,7 +1,9 @@
 // Vehicle energy shield: an ellipsoid shell, invisible at rest. Per instance (set from the hull's
 // set_shield while an event is playing): `hit` 1→0 after a hit (rim flare + hex shimmer), `down` 1→0
 // when the shield breaks (red crackle), `recharge` 0..1 while recharging (a sweep band climbing the
-// shell), `strength` = shield ratio (how solid the hexes look). Additive, no textures.
+// shell), `strength` = shield ratio (how solid the hexes look), `ripple` 0→1 after a hit at `ripple_from` (a unit
+// direction in the shell's local space; feel X4): a bright ring of cells spreading out from where it was struck.
+// Additive, no textures.
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_back, fog_disabled;
 
@@ -11,6 +13,8 @@ instance uniform float down = 0.0;
 instance uniform float recharge = 0.0;
 instance uniform float strength = 1.0;
 instance uniform vec3 tint = vec3(0.4, 0.95, 1.0);
+instance uniform float ripple = 0.0;
+instance uniform vec3 ripple_from = vec3(0.0, 0.0, 1.0);
 
 varying vec3 local_pos;
 
@@ -45,5 +49,13 @@ void fragment() {
 	// Down: red-orange crackle in broken cells.
 	float cell = hash(floor(uv * 2.0) + floor(TIME * 20.0));
 	glow += vec3(1.0, 0.25, 0.1) * edge * step(0.72, cell) * down * 2.5 + vec3(1.0, 0.3, 0.15) * rim * down;
+	// Ripple: a ring racing across the shell from the struck point, brightest in the hex edges, with a flash at impact.
+	if (ripple > 0.0) {
+		float along = acos(clamp(dot(normalize(local_pos), normalize(ripple_from)), -1.0, 1.0)) / 3.14159;
+		float front = ripple * 0.85;
+		float ring = exp(-pow((along - front) / 0.06, 2.0)) * (1.0 - ripple);
+		float core = exp(-along * 18.0) * (1.0 - ripple) * (1.0 - ripple);
+		glow += mix(team, vec3(1.0), 0.35) * (ring * (0.6 + edge * 1.6) * 2.2 + core * 4.0);
+	}
 	ALBEDO = glow;
 }

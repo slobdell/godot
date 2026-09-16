@@ -60,6 +60,8 @@ const CYBERPUNK_SLOTS := {
 	# Gameplay G7's slots (contracts in _agents/slot_contracts.md); default placeholders live on stream/gameplay.
 	"weapon.laser": "res://game/theme/cyberpunk/weapon_laser.tscn",
 	"fx.laser_beam": "res://game/theme/cyberpunk/fx_laser_beam.tscn",
+	# Feel X3: the scout's machine-gun rounds as batched tracers (tracer_round.gd).
+	"fx.tracer": "res://game/theme/cyberpunk/fx_tracer.tscn",
 	# Gameplay G1's 3D fog of war (setup(data) contract); default placeholder on stream/gameplay.
 	"fx.fog_of_war": "res://game/theme/cyberpunk/fx_fog_of_war.tscn",
 	# Art X6: the lead's approved Meshy props (theme arena_kit, tools/assets/build_arena_kit.sh) with a neon footprint frame
