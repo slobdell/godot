@@ -37,6 +37,12 @@ REQUIRED: dict[str, dict[str, str]] = {
 EVENT_TYPES = tuple(REQUIRED)
 
 
+# Fields that may legitimately name a unit that is already destroyed: a shell outlives the vehicle that fired it, so
+# a crew can be killed by someone who died first. That has always been possible and became common in round 4, when
+# brains started firing to suppress and machine guns began hosing ground continuously.
+MAY_BE_DEAD = ("shooter", "killer")
+
+
 def _kind_error(value, kind: str) -> str:
     """Returns "" when value is of kind, else a short description of what was expected."""
     is_num = isinstance(value, (int, float)) and not isinstance(value, bool)
@@ -186,7 +192,7 @@ def validate_timeline(events: list) -> list[str]:
                 problems.append("%s: %s %s is not in match_start" % (where, id_field, unit_id))
             elif type_field in event and event[type_field] != type_of[unit_id]:
                 problems.append("%s: %s is a %s, not a %s" % (where, unit_id, type_of[unit_id], event[type_field]))
-            elif unit_id in dead:
+            elif unit_id in dead and id_field not in MAY_BE_DEAD:
                 problems.append("%s: %s %s was already destroyed" % (where, id_field, unit_id))
         if event["type"] == "unit_destroyed":
             if event["victim"] in team_of and team_of[event["victim"]] != event["victim_team"]:

@@ -29,6 +29,9 @@ class ValidatorTest(unittest.TestCase):
         for path in paths:
             self.assertEqual(events.validate_timeline(events.load_timeline(path)), [], path.name)
 
+    def assert_accepted(self, timeline):
+        self.assertEqual(events.validate_timeline(timeline), [])
+
     def assert_rejected(self, timeline, fragment):
         problems = events.validate_timeline(timeline)
         self.assertTrue(any(fragment in p for p in problems), "expected a problem containing %r, got %s" % (fragment, problems))
@@ -81,11 +84,39 @@ class ValidatorTest(unittest.TestCase):
         event["victim_unit"] = "artillery" if event["victim_unit"] != "artillery" else "tank"
         self.assert_rejected(timeline, "not a")
 
-    def test_the_dead_stay_dead(self):
+    def test_the_dead_stay_dead_except_as_a_shooter(self):
+        # A shell outlives the vehicle that fired it (Shell keeps the shooter's NAME and Match looks it up when the
+        # round lands, handling the null), so a crew can be killed by someone who died first. Rare until round 4,
+        # common once brains started firing to suppress. So `shooter` and `killer` may name the dead...
         timeline = fixture()
         death = first(timeline, "unit_destroyed")
         later = [e for e in timeline if e["type"] == "damage" and e["tick"] >= death["tick"]][0]
         later["shooter"], later["shooter_unit"] = death["victim"], death["victim_unit"]
+        self.assert_accepted(timeline)
+
+    def test_a_unit_cannot_die_twice(self):
+        # ...but the relaxation must not go further than that. A victim naming the dead is still a bookkeeping bug.
+        timeline = fixture()
+        death = first(timeline, "unit_destroyed")
+        later = [e for e in timeline if e["type"] == "unit_destroyed" and e["tick"] > death["tick"]][0]
+        later["victim"], later["victim_unit"] = death["victim"], death["victim_unit"]
+        later["victim_team"] = death["victim_team"]
+        self.assert_rejected(timeline, "already destroyed")
+
+    def test_the_dead_cannot_be_spotted(self):
+        # `first_contact` is the only event carrying target_id, and spotting a wreck is a bookkeeping bug, not a
+        # shell in flight — so this side of the rule stays strict. Built by hand because fixtures make first contact
+        # before anything has died.
+        timeline = fixture()
+        death = first(timeline, "unit_destroyed")
+        end = timeline[-1]
+        contact = first(timeline, "first_contact")
+        timeline.remove(contact)  # first_contact happens at most once, so it is moved rather than added
+        contact["tick"] = min(death["tick"] + 60, int(end["tick"]))
+        contact["t"] = min(death["t"] + 1.0, float(end["t"]))
+        contact["target_id"] = death["victim"]
+        contact["target_unit"] = death["victim_unit"]
+        timeline.insert(len(timeline) - 1, contact)
         self.assert_rejected(timeline, "already destroyed")
 
     def test_friendly_flag_matches_teams_and_hazards_have_no_killer(self):

@@ -31,6 +31,10 @@ const REQUIRED := {
 ## Fields that name a unit instance, paired with the field naming its type.
 const ID_FIELDS := [["unit_id", "unit"], ["shooter", "shooter_unit"], ["victim", "victim_unit"],
 		["killer", "killer_unit"], ["target_id", "target_unit"]]
+## Fields that may legitimately name a unit that is already destroyed: a shell outlives the vehicle that fired it, so
+## a crew can be killed by someone who died first. That has always been possible and became common in round 4, when
+## brains started firing to suppress and machine guns began hosing ground continuously.
+const MAY_BE_DEAD := ["shooter", "killer"]
 
 
 ## Parses JSON lines. Returns {"events": Array, "error": String}.
@@ -233,7 +237,7 @@ static func validate_timeline(events: Array) -> PackedStringArray:
 				problems.append("%s: %s %s is not in match_start" % [where, pair[0], unit_id])
 			elif event.has(pair[1]) and event[pair[1]] != type_of[unit_id]:
 				problems.append("%s: %s is a %s, not a %s" % [where, unit_id, type_of[unit_id], event[pair[1]]])
-			elif dead.has(unit_id):
+			elif dead.has(unit_id) and not MAY_BE_DEAD.has(pair[0]):
 				problems.append("%s: %s %s was already destroyed" % [where, pair[0], unit_id])
 		if event["type"] == "unit_destroyed":
 			if team_of.has(event["victim"]) and team_of[event["victim"]] != event["victim_team"]:
