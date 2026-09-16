@@ -172,13 +172,22 @@ class MockPipelineTest(unittest.TestCase):
             {"t": 5.0, "end": 5.2, "line_id": "caller.kill.52", "slots": {"other_team": "green", "count": 2.0}, "cut": True}]}
         self.assertEqual(mixdown.cue_clips(match["cues"][0], manifest),
                          ["fill.caller.team.rust.mid", "caller.kill.52#0", "fill.caller.number.3.final"])
+        # The schedule is pure arithmetic over the manifest's durations: assert it directly rather than by
+        # measuring the rendered audio (a probed duration made this test flaky on a loaded builder0).
         placed = mixdown.schedule(match, manifest)
+        gaps = [round(b["t"] - a["t"], 3) for a, b in zip(placed, placed[1:]) if b["t"] < 5.0]
+        lengths = [round(manifest["clips"][c]["duration_s"] + mixdown.PART_GAP_S, 3)
+                   for c in mixdown.cue_clips(match["cues"][0], manifest)[:-1]]
+        self.assertEqual([p["t"] for p in placed][:1], [1.0], "the first cue starts at its time")
+        self.assertEqual(gaps, lengths, "each part follows the one before it, plus the gap")
+        self.assertEqual([p["max_s"] for p in placed[:3]], [None, None, None], "an uncut cue plays whole clips")
         cut = [p for p in placed if p["t"] >= 5.0]
         self.assertEqual(len(cut), 1, "a cut cue plays only what fits before its end")
         self.assertAlmostEqual(cut[0]["max_s"], 0.2, places=2)
         out = Path(self.folder.name) / "match.ogg"
         mixdown.render(placed, self.out, out, 7.0)
-        self.assertAlmostEqual(voice_client.probe_duration(out), 7.0, delta=0.3)
+        # -t makes the mix exactly as long as the match asked for, whatever the clips do (Vorbis rounds by ~3 ms).
+        self.assertAlmostEqual(voice_client.probe_duration(out), 7.0, delta=0.05)
         with self.assertRaisesRegex(KeyError, "fill.caller.number.9.final|needs clip"):
             broken = dict(match["cues"][0], slots={"other_team": "rust", "count": 99})
             mixdown.cue_clips(broken, manifest)

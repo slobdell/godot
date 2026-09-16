@@ -75,11 +75,14 @@ def render(placed: list[dict], clips_dir: Path, out: Path, duration_s: float) ->
         chain += ",adelay=%d|%d[a%d]" % (delay, delay, index)
         filters.append(chain)
     mix = "".join("[a%d]" % i for i in range(len(placed)))
-    filters.append("%samix=inputs=%d:normalize=0:dropout_transition=0,apad=whole_dur=%.2f[out]" % (mix, len(placed), duration_s))
+    # Pad without end and cut with -t below: `apad=whole_dur` alone left the mix short (it ended with the last clip)
+    # in one loaded builder0 run, which desynced the page's audio from the transcript.
+    filters.append("%samix=inputs=%d:normalize=0:dropout_transition=0,apad[out]" % (mix, len(placed)))
     script = out.with_suffix(".filter.txt")
     out.parent.mkdir(parents=True, exist_ok=True)
     script.write_text(";\n".join(filters))
-    command += ["-filter_complex_script", str(script), "-map", "[out]", "-ac", "1", "-c:a", "libvorbis", "-b:a", "48k", str(out)]
+    command += ["-filter_complex_script", str(script), "-map", "[out]", "-t", "%.3f" % duration_s,
+                "-ac", "1", "-c:a", "libvorbis", "-b:a", "48k", str(out)]
     try:
         subprocess.run(command, check=True)
     finally:
