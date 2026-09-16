@@ -28,6 +28,7 @@ func _ready() -> void:
 		model = model_scene.instantiate() as Node3D
 		model.name = "Model"
 		add_child(model)
+		_prepare_model()
 		bounds = _model_bounds()
 		skinned = UnitSkin.apply(model)
 	if part == "hull":
@@ -42,6 +43,11 @@ func _ready() -> void:
 				fx.engines.add(self, engine_sound)
 	super._ready()
 	_apply_skin()
+
+
+## Subclasses change the instantiated model before it is measured and skinned (artillery_part.gd cuts its legs loose).
+func _prepare_model() -> void:
+	pass
 
 
 func set_team_color(color: Color) -> void:

@@ -19,6 +19,12 @@ var mesh_instance := MeshInstance3D.new()
 var heat := 0.0
 
 
+## A part freed before it entered the tree never adopted its mesh node: free that too (it would leak at exit).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE and is_instance_valid(mesh_instance) and mesh_instance.get_parent() == null:
+		mesh_instance.free()
+
+
 func _ready() -> void:
 	mesh_instance.name = "Mesh"
 	add_child(mesh_instance)

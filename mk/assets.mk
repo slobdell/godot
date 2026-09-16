@@ -136,10 +136,41 @@ assets-arena-kit: ## Rebuild the gladiator arena kit theme (props, stands, gate,
 	tools/assets/build_arena_kit.sh
 
 # ---- The lead's review page (tools/assets/review_page.py; process: _agents/streams/references/concept_review.md) ----
-.PHONY: art-review-page art-apply-decisions
-art-review-page: ## Build the tap-to-approve review page from waiting concepts: TITLE="Concept review #2" [ALL=1] → build/review_page/
-	$(PYTHON) tools/assets/review_page.py build --title "$(or $(TITLE),Concept review)" $(if $(ALL),--all)
+.PHONY: art-review-page art-apply-decisions art-concept-batch
+art-review-page: ## Build the tap-to-approve review page from waiting concepts: TITLE="Concept review #2" [ALL=1 GROUPS=<group prefix> INTRO= OUT=] → build/review_page/
+	$(PYTHON) tools/assets/review_page.py build --title "$(or $(TITLE),Concept review)" $(if $(ALL),--all) \
+		$(if $(GROUPS),--groups "$(GROUPS)") $(if $(INTRO),--intro "$(INTRO)") $(if $(OUT),--out "$(OUT)")
+
+# One batch of concepts from a committed spec (tools/assets/concept_batch.py): LIST=1 prints the prompts without spending.
+art-concept-batch: ## Generate and register a spec's missing concepts: SPEC=assets/review/batches/x.json [ONLY=<faction or id> LIST=1]
+	@test -n "$(SPEC)" || { echo "need SPEC="; exit 2; }
+	$(PYTHON) tools/assets/concept_batch.py $(SPEC) $(foreach o,$(ONLY),--only $(o)) $(if $(LIST),--list)
 
 art-apply-decisions: ## Record the lead's taps from the review page: DIR=<read_db out_dir> URL=<artifact url>
 	@test -n "$(DIR)" || { echo "need DIR= (the folder read_db saved the decisions collection into)"; exit 2; }
 	$(PYTHON) tools/assets/review_page.py apply --decisions "$(DIR)" --url "$(URL)"
+
+# ---- Round 3 (assets X1/X2): the arena kit: stackable containers and giant ad screens ---------------------------
+.PHONY: assets-containers assets-ads arena-kit-gallery arena-kit-measure
+assets-containers: ## Rebuild the containers' shared texture set (tools/assets/build_containers.py; CC0 ambientCG + procedural)
+	$(PYTHON) tools/assets/build_containers.py
+	$(GODOT) --headless --path . --import >/dev/null 2>&1
+
+arena-kit-measure: import ## Draw calls and primitives with the arena kit hidden / containers / containers + screens (ARENA_KIT_MEASURE lines)
+	timeout 120 $(GODOT) --path . --resolution 1600x900 res://game/theme/gallery/arena_kit_gallery.tscn -- --measure | grep ARENA_KIT_MEASURE
+
+assets-ads: ## Rebuild the placeholder ads for the giant screens (tools/assets/build_ads.py → game/theme/arena_kit/ads/)
+	$(PYTHON) tools/assets/build_ads.py
+	$(GODOT) --headless --path . --import >/dev/null 2>&1
+
+arena-kit-gallery: import ## Screenshot the container yard (and ad screens) at night: close, yard, doors, 200 m overview → build/screenshots/arena-kit-*.png [VIEWS=a,b SCREEN=]
+	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
+	timeout 120 $(GODOT) --path . --resolution $(SCREEN) res://game/theme/gallery/arena_kit_gallery.tscn -- \
+		--shots-dir=$(CURDIR)/$(BUILD_DIR)/screenshots $(if $(VIEWS),--views=$(VIEWS))
+
+# ---- Round 3 (assets X5): artillery outriggers as parts, posed by the hull slot's set_deployed(ratio) ---------------
+.PHONY: artillery-deploy-shot
+artillery-deploy-shot: import ## Screenshot three crane carriers stowed / half deployed / braced → build/screenshots/artillery-deploy.png
+	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
+	timeout 90 $(GODOT) --path . --resolution 1600x900 res://game/theme/gallery/vehicle_gallery.tscn -- --gallery-deploy \
+		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/artillery-deploy.png --screenshot-delay=3

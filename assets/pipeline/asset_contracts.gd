@@ -115,18 +115,35 @@ const TURRET_Z := 0.2
 const UNIT_ART_HEIGHT := 1.35
 
 
+## K4 (round 3, assets X4): faction art slots `unit.<faction>.<role>.<part>` (gallery only this round) fit the numbers of
+## the Condemned unit in the same role until factions get catalog entries of their own. Unit key: "<faction>.<role>".
+const FACTIONS := ["gangs", "law", "syndicate"]
+const ROLE_UNITS := {"scout": "scout", "ifv": "ifv", "tank": "tank", "artillery": "artillery", "special": "lancer"}
+
+
+## UNITS numbers for a roster unit ("ifv") or a faction role ("gangs.tank").
+static func unit_info(unit: String) -> Dictionary:
+	if UNITS.has(unit):
+		return UNITS[unit]
+	return UNITS[ROLE_UNITS[unit.get_slice(".", 1)]] if unit.contains(".") else {}
+
+
 ## Where a unit's turret node sits in hull space, and its scale (both from Tank._apply_hull_size on stream/rules).
 static func unit_pivot(unit: String) -> Dictionary:
-	var info: Dictionary = UNITS[unit]
+	var info := unit_info(unit)
 	var size: Vector3 = info["hull_size"]
 	var turret_scale := 1.0 if size.is_equal_approx(STANDARD_HULL) else minf(size.x / STANDARD_HULL.x, size.z / STANDARD_HULL.z)
 	return {"pivot": Vector3(0.0, float(info["muzzle_height"]) - MUZZLE_ABOVE_PIVOT, TURRET_Z), "turret_scale": turret_scale}
 
 
-## "unit.scout.hull" → "scout" (or "" for any other slot).
+## "unit.scout.hull" → "scout", "unit.gangs.tank.hull" → "gangs.tank" (or "" for any other slot).
 static func unit_of(slot: String) -> String:
 	var parts := slot.split(".")
-	return parts[1] if parts.size() == 3 and parts[0] == "unit" and UNITS.has(parts[1]) else ""
+	if parts.size() == 3 and parts[0] == "unit" and UNITS.has(parts[1]):
+		return parts[1]
+	if parts.size() == 4 and parts[0] == "unit" and FACTIONS.has(parts[1]) and ROLE_UNITS.has(parts[2]):
+		return "%s.%s" % [parts[1], parts[2]]
+	return ""
 
 
 static func _unit_contract(slot: String) -> Dictionary:
@@ -134,9 +151,10 @@ static func _unit_contract(slot: String) -> Dictionary:
 	if unit == "":
 		return {}
 	var file := slot.replace(".", "_")
-	match slot.get_slice(".", 2):
+	var info := unit_info(unit)
+	match slot.get_slice(".", slot.get_slice_count(".") - 1):
 		"hull":
-			return {"guide": UNITS[unit]["hull_size"], "max": (UNITS[unit]["hull_size"] as Vector3) * Vector3(1.0, UNIT_ART_HEIGHT, 1.0),
+			return {"guide": info["hull_size"], "max": (info["hull_size"] as Vector3) * Vector3(1.0, UNIT_ART_HEIGHT, 1.0),
 					"fit": "contain", "anchor": "ground_center", "tris": 15000,
 					"methods": ["set_team_color"], "elongated": "z", "file": file}
 		"turret":
@@ -170,4 +188,8 @@ static func all_slots() -> Array:
 	for unit in UNITS:
 		for part in ["hull", "turret", "weapon"]:
 			unit_slots.append("unit.%s.%s" % [unit, part])
+	for faction in FACTIONS:
+		for role in ROLE_UNITS:
+			for part in ["hull", "turret", "weapon"]:
+				unit_slots.append("unit.%s.%s.%s" % [faction, role, part])
 	return SLOTS.keys() + CANDIDATES.keys() + unit_slots

@@ -121,6 +121,26 @@ The lead reviewed 17 concepts on a review page and approved one per slot. They'r
 - The concept images and the lead's decisions are in `assets/review/`; every new concept goes through
   `make art-review` first.
 
+## Round 3: the arena kit (assets stream, 2026-09-15)
+
+Reusable pieces that make an arena a layout, not a download (game_design.md *The arena kit*). Look at them with
+`make arena-kit-gallery` (container yard and screens at night, plus the 200 m overview).
+
+- **Shipping containers** (`prop.container_20`, `prop.container_40`): real ISO sizes, ~314 triangles each, built in
+  code; one shared texture set (CC0 rust and chipped paint, procedural corrugation, a stencil atlas). Every container
+  of a kind is one draw. Paint is a dulled fleet palette (oxide, steel blue, green, orange, grey, cream, teal, brown),
+  rust gathers along the rails and bottoms, and stencils tell who owns the yard: *PRISON TRANSPORT / INMATE CARGO*
+  (the Condemned), *EVIDENCE* and *IMPOUND LOT 7* on navy (the Law), AquaCorp and Organ Futures on ivory or black
+  (the Syndicate, almost no rust), a sprayed *WRECKERS* tag over heavy rust (the road gangs), plus ISO owner codes.
+  Stacks up to three, doors open or ajar.
+- **Giant ad screens** (`prop.ad_screen`): a 7 × 14 m LED wall on legs over a concrete plinth, the brightest thing in
+  the arena; the venue raises four over the short walls on two channels. Ads are graphic art with the copy set in
+  Oswald by the engine (never baked into images), a slow push-in, scanlines, an LED grid up close, glitches between
+  ads and on big kills, and a pool of the ad's color on the ground. A live card shows kills and odds. **Ad art and
+  copy are placeholders until the lead picks them** (humor: believable, slightly off; never a punchline).
+- **Faction vehicle looks** are on the three concept review pages (streams/assets.md *Waiting on the lead*); their
+  rules get written here once the lead picks.
+
 ## Where this is referenced
 
 `HANDOFF.md`, `vision.md` (the vibe), `game_design.md`, `workstreams.md` (product constraint 2), `streams/archive/round2/art.md`,

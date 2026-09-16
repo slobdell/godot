@@ -8,6 +8,10 @@ extends Node3D
 ##        --gallery-focus=N (close-up on tank N)
 ##        --gallery-units: the round-2 roster instead (tank, scout, IFV, artillery, Lancer; both teams), each unit's
 ##        own slots at its own turret pivot and scale, the way Tank places them (catalog v2, C6)
+##        --gallery-faction=<condemned|gangs|law|syndicate>: that faction's five roles (contract K4, FactionArt), a
+##        labeled empty spot for a role whose model isn't built yet; `make vehicle-gallery FACTION=<id>`
+##        --gallery-deploy: three crane carriers side by side, stowed, half deployed, and braced (assets X5,
+##        the hull slot's set_deployed); `make artillery-deploy-shot`
 
 const ORBIT_SPEED := 0.25
 ## Catalog v2 numbers the gallery needs to place per-unit art like Tank does (rules' Units.PROFILES; mirrored in
@@ -51,7 +55,22 @@ func _ready() -> void:
 				tank.rotation.y = 0.5 - i * 0.1
 				tanks.append(tank)
 				i += 1
-	var weapons := [] if _flags.has("gallery-units") else ["weapon.cannon", "weapon.laser", "weapon.flamethrower", "weapon.laser", "weapon.cannon", "weapon.flamethrower"]
+	if _flags.has("gallery-faction"):
+		var faction := _flags.text("gallery-faction", "condemned")
+		for i in FactionArt.ROLES.size():
+			var role: String = FactionArt.ROLES[i]
+			var vehicle := _faction_vehicle(faction, role)
+			vehicle.position = Vector3(-14.0 + i * 7.0, 0, -2.0)
+			vehicle.rotation.y = 0.55
+			tanks.append(vehicle)
+	if _flags.has("gallery-deploy"):
+		for i in 3:
+			var carrier := _unit_tank("artillery", 0)
+			carrier.position = Vector3(-5.2 + i * 5.2, 0, 0)
+			carrier.rotation.y = 0.0
+			(carrier.get_node("Hull") as VisualSlot).invoke("set_deployed", [i * 0.5])
+			tanks.append(carrier)
+	var weapons := [] if _flags.has("gallery-units") or _flags.has("gallery-deploy") or _flags.has("gallery-faction") else ["weapon.cannon", "weapon.laser", "weapon.flamethrower", "weapon.laser", "weapon.cannon", "weapon.flamethrower"]
 	for i in weapons.size():
 		var team := i % 2
 		var tank := _tank(team, weapons[i])
@@ -72,7 +91,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	time += delta
-	if _flags.has("gallery-focus"):
+	if _flags.has("gallery-deploy"):
+		camera.position = Vector3(0.0, 9.0, 7.5)
+		camera.look_at(Vector3(0, 1.0, 0), Vector3.UP)
+	elif _flags.has("gallery-focus"):
 		var focus := tanks[clampi(_flags.integer("gallery-focus", 0), 0, tanks.size() - 1)].global_position
 		camera.position = focus + Vector3(4.5, 4.0, 7.5)
 		camera.look_at(focus + Vector3(0, 1.0, 0), Vector3.UP)
@@ -91,7 +113,8 @@ func _process(delta: float) -> void:
 		(tank.get_node("Hull") as VisualSlot).invoke("set_heat", [heat])
 		if weapon.slot == "weapon.flamethrower":
 			weapon.invoke("set_firing", [fmod(time + i, 3.0) < 2.0])
-		(tank.get_node("Hull") as VisualSlot).invoke("set_shield", [_shield_ratio(fmod(time + i * 0.9, 6.0))])
+		if not _flags.has("gallery-deploy"):
+			(tank.get_node("Hull") as VisualSlot).invoke("set_shield", [_shield_ratio(fmod(time + i * 0.9, 6.0))])
 	# Laser tanks pulse like gameplay does: a fresh fx.laser_beam slot per pulse, freed after 0.2 s.
 	if time >= _next_pulse:
 		_next_pulse = time + 0.3
@@ -180,6 +203,42 @@ func _unit_tank(unit: String, team: int) -> Node3D:
 	for slot in [hull, body, weapon]:
 		slot.invoke("set_team_color", [GameTheme.team_color(team)])
 	return tank
+
+
+## One faction vehicle assembled like _unit_tank, from FactionArt parts; a floating label where no model exists yet.
+func _faction_vehicle(faction: String, role: String) -> Node3D:
+	var info: Dictionary = ROSTER[FactionArt.CONDEMNED[role]]
+	var size: Vector3 = info["hull_size"]
+	var vehicle := Node3D.new()
+	vehicle.name = "Tank%d" % tanks.size()
+	add_child(vehicle)
+	var hull := FactionArt.instantiate(faction, role, "hull")
+	var body := FactionArt.instantiate(faction, role, "turret")
+	var weapon := FactionArt.instantiate(faction, role, "weapon")
+	var turret := Node3D.new()
+	turret.name = "Turret"
+	turret.position = Vector3(0, float(info["muzzle_height"]) - 0.05, 0.2)
+	if not size.is_equal_approx(ROSTER["tank"]["hull_size"]):
+		turret.scale = Vector3.ONE * minf(size.x / 2.4, size.z / 3.6)
+	vehicle.add_child(turret)
+	# _process drives these the way it drives slots: wrap each part in a VisualSlot-like holder.
+	for entry in [["Hull", hull, vehicle], ["Body", body, turret], ["Weapon", weapon, turret]]:
+		var holder := VisualSlot.new()
+		holder.name = entry[0]
+		(entry[2] as Node3D).add_child(holder)
+		if entry[1] != null:
+			holder.visual = entry[1]
+			holder.add_child(entry[1])
+			holder.invoke("set_team_color", [GameTheme.team_color(0)])
+	if hull == null:
+		var label := Label3D.new()
+		label.text = "%s %s\nawaiting the lead's pick" % [faction.to_upper(), role.to_upper()]
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.position = Vector3(0, 1.5, 0)
+		label.font_size = 48
+		label.modulate = Color(1.0, 0.8, 0.3)
+		vehicle.add_child(label)
+	return vehicle
 
 
 func _slot_or(slot: String, fallback: String) -> String:

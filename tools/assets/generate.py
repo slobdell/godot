@@ -93,8 +93,17 @@ class Http:
         raise ProviderError(f"{method} {path}: still rate limited after {self.retries} retries")
 
     def download(self, url: str, dest: Path) -> int:
-        with urllib.request.urlopen(url, timeout=120) as response:
-            payload = response.read()
+        for attempt in range(self.retries + 1):  # a paid result must survive a flaky connection
+            try:
+                with urllib.request.urlopen(url, timeout=120) as response:
+                    payload = response.read()
+                break
+            except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+                if attempt == self.retries:
+                    raise ProviderError(f"download {url}: {error}")
+                print(f"  download failed ({error}); retrying", file=sys.stderr)
+                time.sleep(self.backoff * (2 ** attempt))
+        dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(payload)
         return len(payload)
 
@@ -274,6 +283,8 @@ def main(argv=None) -> int:
     parser.add_argument("--image-model", default="nano-banana-pro", help="meshy text-to-image model for --concept-only")
     parser.add_argument("--reference", action="append", default=[],
                         help="meshy --concept-only: reference image (path/URL) for image-to-image; repeatable")
+    parser.add_argument("--concept-task", default="",
+                        help="meshy --concept-only: download an already finished concept task again (no new task, no ledger row)")
     parser.add_argument("--multi-view", action="store_true", help="meshy --concept-only: generate a multi-view turnaround")
     parser.add_argument("--keep-background", action="store_true",
                         help="meshy --concept-only: don't remove the background (scenes and mood art, not models)")
@@ -347,7 +358,12 @@ def main(argv=None) -> int:
             if args.provider != "meshy":
                 raise ProviderError("--concept-only is meshy-only")
             references = [ref if ref.startswith(("http://", "https://", "data:")) else data_uri(Path(ref)) for ref in args.reference]
-            task = provider.concept(args.prompt, args.image_model, references, args.multi_view, args.keep_background)
+            if args.concept_task:
+                provider.on_finished = None  # the spend was logged when the task first finished
+                family = "/openapi/v1/image-to-image" if references else "/openapi/v1/text-to-image"
+                task = provider._wait(family, args.concept_task)
+            else:
+                task = provider.concept(args.prompt, args.image_model, references, args.multi_view, args.keep_background)
             urls = task.get("image_urls") or []
             if not urls:
                 raise ProviderError("the concept task succeeded but returned no image")

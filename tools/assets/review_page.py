@@ -32,9 +32,9 @@ import review  # noqa: E402
 OUT = review.ROOT / "build" / "review_page"
 
 
-def select(manifest: dict, include_decided: bool = False) -> list:
+def select(manifest: dict, include_decided: bool = False, group_prefix: str = "") -> list:
     wanted = ("waiting", "approved", "rejected") if include_decided else ("waiting",)
-    return [item for item in manifest["items"] if item["status"] in wanted]
+    return [item for item in manifest["items"] if item["status"] in wanted and item["group"].startswith(group_prefix)]
 
 
 def groups_in_order(items: list) -> list:
@@ -45,8 +45,9 @@ def groups_in_order(items: list) -> list:
     return order
 
 
-def build(manifest: dict, out_dir: Path, title: str, include_decided: bool = False, ledger: Path = review.LEDGER) -> Path:
-    items = select(manifest, include_decided)
+def build(manifest: dict, out_dir: Path, title: str, include_decided: bool = False, ledger: Path = review.LEDGER,
+          group_prefix: str = "", intro: str = "") -> Path:
+    items = select(manifest, include_decided, group_prefix)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "images").mkdir(exist_ok=True)
     notes = manifest.get("group_notes", {})
@@ -109,11 +110,12 @@ __CSS__
 <div class="wrap">
   <header class="masthead">
     <div>
-      <p class="eyebrow">Art stream · lead gate before any 3D</p>
+      <p class="eyebrow">Assets stream · lead gate before any 3D</p>
       <h1>{html.escape(title)}</h1>
       <p class="lede">{len(items)} photoreal concepts for Meshy. <b>Nothing here has been built in 3D yet.</b> Approve at
         most one option per group and only those get built; a few words on what you like or want changed go straight
         into the brief.</p>
+      {f'<p class="intro">{html.escape(intro)}</p>' if intro else ''}
     </div>
     <div class="tally" aria-label="Decisions so far">
       <div class="w"><b id="n-waiting">{len(items)}</b><span>waiting</span></div>
@@ -188,6 +190,8 @@ def main(argv=None) -> int:
     p_build.add_argument("--title", default="Concept review")
     p_build.add_argument("--all", action="store_true", help="also show decided items (not superseded)")
     p_build.add_argument("--out", default=str(OUT))
+    p_build.add_argument("--groups", default="", help="only groups whose name starts with this (one page per faction)")
+    p_build.add_argument("--intro", default="", help="a paragraph under the title (the faction's look)")
     p_apply = sub.add_parser("apply", help="record the decisions the lead tapped (read_db out_dir)")
     p_apply.add_argument("--decisions", required=True, help="the folder read_db saved the decisions collection into")
     p_apply.add_argument("--url", default="", help="the review page's Artifact URL (quoted in the recorded words)")
@@ -195,8 +199,8 @@ def main(argv=None) -> int:
     path = Path(args.manifest)
     manifest = review.load(path)
     if args.command == "build":
-        index = build(manifest, Path(args.out), args.title, args.all)
-        shown = len(select(manifest, args.all))
+        index = build(manifest, Path(args.out), args.title, args.all, group_prefix=args.groups, intro=args.intro)
+        shown = len(select(manifest, args.all, args.groups))
         print(f"review page: {index} ({shown} concepts)")
         if shown == 0:
             print("review page: nothing is waiting for review (make art-concept first, or ALL=1)", file=sys.stderr)
@@ -229,6 +233,7 @@ body { margin: 0; font: 15px/1.55 var(--body); padding-inline: 16px; padding-blo
 h1 { font: 700 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 0 0 12px; text-wrap: balance; letter-spacing: .01em; }
 .lede { margin: 0; max-width: 64ch; color: var(--dim); }
 .lede b { color: var(--text); font-weight: 500; }
+.intro { margin: 12px 0 0; max-width: 64ch; color: var(--text); border-left: 3px solid var(--hazard); padding-left: 12px; }
 .tally { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 28px; font-variant-numeric: tabular-nums; }
 .tally div { display: flex; flex-direction: column; }
 .tally b { font: 600 30px/1 var(--mono); }
