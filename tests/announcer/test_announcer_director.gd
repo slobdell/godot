@@ -242,7 +242,12 @@ func test_every_fixture_reads_as_a_broadcast() -> void:
 			var director := run(library, events, seed_value)
 			var label := "%s seed %d" % [name, seed_value]
 			var cues := director.cues
-			assert_true(cues.size() >= 12, "%s: the booth talks (%d lines)" % [label, cues.size()])
+			# Scaled to the match, not a flat number: a 33-second blowout legitimately gets fewer calls than a
+			# two-and-a-half-minute control swing, and a flat floor was really asserting how long the fixtures are.
+			var duration := float(events[-1].get("t", 60.0))
+			var wanted := maxi(8, int(duration / 10.0))
+			assert_true(cues.size() >= wanted, "%s: the booth talks (%d lines in %.0f s, wanted %d)"
+					% [label, cues.size(), duration, wanted])
 			assert_true(float(cues[0]["t"]) < 1.0 and cues[0]["moment"] == "intro", "%s: it opens with the intro" % label)
 			assert_eq(cues[-1]["moment"], "outro", "%s: it closes with the sign-off" % label)
 			assert_true(cues.any(func(cue: Dictionary) -> bool: return cue["moment"] == "result"), "%s: the result is called" % label)

@@ -3,34 +3,40 @@
 {"tick": 600, "t": 10.0, "type": "momentum", "army_health": {"green": 1.0, "rust": 1.0}, "units_left": {"green": 4, "rust": 5}}
 {"tick": 900, "t": 15.0, "type": "momentum", "army_health": {"green": 1.0, "rust": 1.0}, "units_left": {"green": 4, "rust": 5}}
 {"tick": 1200, "t": 20.0, "type": "first_contact", "team": "rust", "unit_id": "Rust_Swarm_2", "unit": "scout", "target_id": "Green_Guns_2", "target_unit": "tank"}
-{"tick": 1200, "t": 20.0, "type": "momentum", "army_health": {"green": 0.997, "rust": 0.995}, "units_left": {"green": 4, "rust": 5}}
-{"tick": 1230, "t": 20.5, "type": "damage", "shooter": "Green_Guns_3", "shooter_unit": "tank", "victim": "Rust_Swarm_3", "victim_unit": "ifv", "hull": 0.849, "shield": 0.503, "critical": false, "amount": 0.151, "weak_spot": false, "face": "front"}
-{"tick": 1305, "t": 21.75, "type": "friendly_fire", "shooter": "Green_Guns_2", "shooter_unit": "tank", "victim": "Green_Guns_3", "victim_unit": "tank", "team": "green", "hull": 0.915, "killed": false}
-{"tick": 1350, "t": 22.5, "type": "damage", "shooter": "Green_Guns_1", "shooter_unit": "tank", "victim": "Rust_Swarm_3", "victim_unit": "ifv", "hull": 0.543, "shield": 0.0, "critical": true, "amount": 0.306, "weak_spot": false, "face": "front"}
-{"tick": 1365, "t": 22.75, "type": "damage", "shooter": "Green_Eyes_1", "shooter_unit": "scout", "victim": "Rust_Battery_1", "victim_unit": "artillery", "hull": 0.89, "shield": 0.588, "critical": true, "amount": 0.056, "weak_spot": true, "face": "front"}
-{"tick": 1440, "t": 24.0, "type": "damage", "shooter": "Rust_Swarm_2", "shooter_unit": "scout", "victim": "Green_Guns_2", "victim_unit": "tank", "hull": 0.96, "shield": 0.879, "critical": true, "amount": 0.018, "weak_spot": true, "face": "rear"}
-{"tick": 1500, "t": 25.0, "type": "momentum", "army_health": {"green": 0.918, "rust": 0.873}, "units_left": {"green": 4, "rust": 5}}
-{"tick": 1515, "t": 25.25, "type": "damage", "shooter": "Green_Guns_2", "shooter_unit": "tank", "victim": "Rust_Swarm_3", "victim_unit": "ifv", "hull": 0.111, "shield": 0.0, "critical": true, "amount": 0.432, "weak_spot": false, "face": "side"}
-{"tick": 1560, "t": 26.0, "type": "unit_destroyed", "victim": "Rust_Swarm_3", "victim_unit": "ifv", "victim_team": "rust", "killer": "Green_Guns_1", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
-{"tick": 1560, "t": 26.0, "type": "damage", "shooter": "Rust_Swarm_1", "shooter_unit": "scout", "victim": "Green_Guns_3", "victim_unit": "tank", "hull": 0.872, "shield": 0.615, "critical": true, "amount": 0.02, "weak_spot": true, "face": "rear"}
-{"tick": 1695, "t": 28.25, "type": "damage", "shooter": "Green_Guns_3", "shooter_unit": "tank", "victim": "Rust_Battery_1", "victim_unit": "artillery", "hull": 0.308, "shield": 0.0, "critical": true, "amount": 0.486, "weak_spot": false, "face": "front"}
-{"tick": 1725, "t": 28.75, "type": "damage", "shooter": "Green_Eyes_1", "shooter_unit": "scout", "victim": "Rust_Battery_1", "victim_unit": "artillery", "hull": 0.204, "shield": 0.0, "critical": true, "amount": 0.103, "weak_spot": true, "face": "side"}
-{"tick": 1770, "t": 29.5, "type": "damage", "shooter": "Green_Guns_1", "shooter_unit": "tank", "victim": "Rust_Swarm_2", "victim_unit": "scout", "hull": 0.658, "shield": 0.101, "critical": true, "amount": 0.342, "weak_spot": false, "face": "side"}
-{"tick": 1800, "t": 30.0, "type": "momentum", "army_health": {"green": 0.894, "rust": 0.56}, "units_left": {"green": 4, "rust": 4}}
-{"tick": 2010, "t": 33.5, "type": "close_call", "unit_id": "Rust_Battery_1", "unit": "artillery", "team": "rust", "hull_left": 0.143}
-{"tick": 2100, "t": 35.0, "type": "momentum", "army_health": {"green": 0.873, "rust": 0.56}, "units_left": {"green": 4, "rust": 4}}
-{"tick": 2400, "t": 40.0, "type": "momentum", "army_health": {"green": 0.873, "rust": 0.56}, "units_left": {"green": 4, "rust": 4}}
-{"tick": 2505, "t": 41.75, "type": "damage", "shooter": "Rust_Swarm_2", "shooter_unit": "scout", "victim": "Green_Guns_3", "victim_unit": "tank", "hull": 0.757, "shield": 0.271, "critical": true, "amount": 0.025, "weak_spot": true, "face": "front"}
-{"tick": 2580, "t": 43.0, "type": "unit_destroyed", "victim": "Rust_Battery_1", "victim_unit": "artillery", "victim_team": "rust", "killer": "Green_Guns_3", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
-{"tick": 2685, "t": 44.75, "type": "damage", "shooter": "Rust_Swarm_2", "shooter_unit": "scout", "victim": "Green_Guns_1", "victim_unit": "tank", "hull": 0.974, "shield": 0.922, "critical": true, "amount": 0.026, "weak_spot": true, "face": "front"}
-{"tick": 2700, "t": 45.0, "type": "momentum", "army_health": {"green": 0.856, "rust": 0.509}, "units_left": {"green": 4, "rust": 3}}
-{"tick": 2790, "t": 46.5, "type": "damage", "shooter": "Green_Guns_3", "shooter_unit": "tank", "victim": "Rust_Swarm_2", "victim_unit": "scout", "hull": 0.019, "shield": 0.0, "critical": true, "amount": 0.638, "weak_spot": false, "face": "front"}
-{"tick": 2805, "t": 46.75, "type": "unit_destroyed", "victim": "Rust_Swarm_2", "victim_unit": "scout", "victim_team": "rust", "killer": "Green_Guns_2", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
-{"tick": 3000, "t": 50.0, "type": "damage", "shooter": "Green_Guns_1", "shooter_unit": "tank", "victim": "Rust_Swarm_1", "victim_unit": "scout", "hull": 0.491, "shield": 0.0, "critical": true, "amount": 0.423, "weak_spot": false, "face": "rear"}
-{"tick": 3000, "t": 50.0, "type": "momentum", "army_health": {"green": 0.846, "rust": 0.274}, "units_left": {"green": 4, "rust": 2}}
-{"tick": 3015, "t": 50.25, "type": "damage", "shooter": "Green_Guns_3", "shooter_unit": "tank", "victim": "Rust_Battery_2", "victim_unit": "artillery", "hull": 0.624, "shield": 0.0, "critical": false, "amount": 0.257, "weak_spot": false, "face": "front"}
-{"tick": 3075, "t": 51.25, "type": "unit_destroyed", "victim": "Rust_Battery_2", "victim_unit": "artillery", "victim_team": "rust", "killer": "Green_Guns_2", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
-{"tick": 3075, "t": 51.25, "type": "squad_wiped", "team": "rust", "squad": "Battery", "units_lost": 2}
-{"tick": 3240, "t": 54.0, "type": "unit_destroyed", "victim": "Rust_Swarm_1", "victim_unit": "scout", "victim_team": "rust", "killer": "Green_Guns_1", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
-{"tick": 3240, "t": 54.0, "type": "squad_wiped", "team": "rust", "squad": "Swarm", "units_lost": 3}
-{"tick": 3240, "t": 54.0, "type": "match_end", "winner": "green", "reason": "elimination", "duration_seconds": 54.0, "units_left": {"green": 4, "rust": 0}, "kills_by_unit": {"green": {"tank": 5}, "rust": {}}}
+{"tick": 1200, "t": 20.0, "type": "element_drill", "team": "rust", "element": "Battery", "size": 5, "drill": "react_to_contact", "formation": "herringbone", "distance": 117.1, "target": "Green_Guns_2", "reason": "react to contact: the table says react to contact here"}
+{"tick": 1200, "t": 20.0, "type": "element_formation", "team": "green", "element": "Anvil", "size": 4, "formation": "coil", "technique": "bounding_overwatch", "changed": ["formation", "technique"], "reason": "moving to contact: the table picks this shape for the ground"}
+{"tick": 1200, "t": 20.0, "type": "momentum", "army_health": {"green": 1.0, "rust": 0.996}, "units_left": {"green": 4, "rust": 5}}
+{"tick": 1305, "t": 21.75, "type": "damage", "shooter": "Green_Guns_2", "shooter_unit": "tank", "victim": "Rust_Swarm_3", "victim_unit": "ifv", "hull": 0.49, "shield": 0.0, "critical": true, "amount": 0.51, "weak_spot": true, "face": "side"}
+{"tick": 1395, "t": 23.25, "type": "damage", "shooter": "Rust_Swarm_3", "shooter_unit": "ifv", "victim": "Green_Eyes_1", "victim_unit": "scout", "hull": 0.838, "shield": 0.573, "critical": true, "amount": 0.09, "weak_spot": true, "face": "side"}
+{"tick": 1425, "t": 23.75, "type": "damage", "shooter": "Rust_Swarm_1", "shooter_unit": "scout", "victim": "Green_Guns_2", "victim_unit": "tank", "hull": 0.955, "shield": 0.864, "critical": true, "amount": 0.018, "weak_spot": true, "face": "side"}
+{"tick": 1500, "t": 25.0, "type": "momentum", "army_health": {"green": 0.932, "rust": 0.874}, "units_left": {"green": 4, "rust": 5}}
+{"tick": 1545, "t": 25.75, "type": "damage", "shooter": "Green_Guns_2", "shooter_unit": "tank", "victim": "Rust_Swarm_3", "victim_unit": "ifv", "hull": 0.013, "shield": 0.0, "critical": true, "amount": 0.477, "weak_spot": false, "face": "front"}
+{"tick": 1545, "t": 25.75, "type": "damage", "shooter": "Green_Eyes_1", "shooter_unit": "scout", "victim": "Rust_Battery_1", "victim_unit": "artillery", "hull": 0.956, "shield": 0.835, "critical": true, "amount": 0.044, "weak_spot": true, "face": "front"}
+{"tick": 1575, "t": 26.25, "type": "unit_destroyed", "victim": "Rust_Swarm_3", "victim_unit": "ifv", "victim_team": "rust", "killer": "Green_Guns_1", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
+{"tick": 1680, "t": 28.0, "type": "damage", "shooter": "Green_Guns_3", "shooter_unit": "tank", "victim": "Rust_Swarm_1", "victim_unit": "scout", "hull": 0.035, "shield": 0.0, "critical": true, "amount": 0.965, "weak_spot": true, "face": "side"}
+{"tick": 1800, "t": 30.0, "type": "momentum", "army_health": {"green": 0.897, "rust": 0.551}, "units_left": {"green": 4, "rust": 4}}
+{"tick": 1920, "t": 32.0, "type": "close_call", "unit_id": "Rust_Swarm_1", "unit": "scout", "team": "rust", "hull_left": 0.035}
+{"tick": 2100, "t": 35.0, "type": "momentum", "army_health": {"green": 0.891, "rust": 0.551}, "units_left": {"green": 4, "rust": 4}}
+{"tick": 2355, "t": 39.25, "type": "damage", "shooter": "Rust_Swarm_2", "shooter_unit": "scout", "victim": "Green_Guns_3", "victim_unit": "tank", "hull": 0.952, "shield": 0.856, "critical": true, "amount": 0.024, "weak_spot": true, "face": "front"}
+{"tick": 2370, "t": 39.5, "type": "unit_destroyed", "victim": "Rust_Swarm_1", "victim_unit": "scout", "victim_team": "rust", "killer": "Green_Guns_2", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
+{"tick": 2370, "t": 39.5, "type": "element_drill", "team": "rust", "element": "Battery", "size": 3, "drill": "break_contact", "formation": "swarm", "distance": 135.2, "target": "Green_Guns_2", "reason": "break contact: the table says break contact here"}
+{"tick": 2400, "t": 40.0, "type": "momentum", "army_health": {"green": 0.884, "rust": 0.523}, "units_left": {"green": 4, "rust": 3}}
+{"tick": 2625, "t": 43.75, "type": "unit_destroyed", "victim": "Rust_Battery_1", "victim_unit": "artillery", "victim_team": "rust", "killer": "Green_Guns_1", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
+{"tick": 2700, "t": 45.0, "type": "momentum", "army_health": {"green": 0.865, "rust": 0.365}, "units_left": {"green": 4, "rust": 2}}
+{"tick": 2835, "t": 47.25, "type": "damage", "shooter": "Green_Guns_2", "shooter_unit": "tank", "victim": "Rust_Swarm_2", "victim_unit": "scout", "hull": 0.69, "shield": 0.186, "critical": true, "amount": 0.31, "weak_spot": false, "face": "front"}
+{"tick": 2865, "t": 47.75, "type": "damage", "shooter": "Green_Eyes_1", "shooter_unit": "scout", "victim": "Rust_Battery_2", "victim_unit": "artillery", "hull": 0.759, "shield": 0.095, "critical": true, "amount": 0.047, "weak_spot": true, "face": "front"}
+{"tick": 3000, "t": 50.0, "type": "momentum", "army_health": {"green": 0.854, "rust": 0.273}, "units_left": {"green": 4, "rust": 2}}
+{"tick": 3150, "t": 52.5, "type": "damage", "shooter": "Green_Eyes_1", "shooter_unit": "scout", "victim": "Rust_Battery_2", "victim_unit": "artillery", "hull": 0.419, "shield": 0.0, "critical": true, "amount": 0.123, "weak_spot": true, "face": "side"}
+{"tick": 3300, "t": 55.0, "type": "momentum", "army_health": {"green": 0.849, "rust": 0.21}, "units_left": {"green": 4, "rust": 2}}
+{"tick": 3600, "t": 60.0, "type": "momentum", "army_health": {"green": 0.849, "rust": 0.21}, "units_left": {"green": 4, "rust": 2}}
+{"tick": 3900, "t": 65.0, "type": "momentum", "army_health": {"green": 0.849, "rust": 0.21}, "units_left": {"green": 4, "rust": 2}}
+{"tick": 4020, "t": 67.0, "type": "damage", "shooter": "Green_Guns_1", "shooter_unit": "tank", "victim": "Rust_Swarm_2", "victim_unit": "scout", "hull": 0.1, "shield": 0.0, "critical": true, "amount": 0.59, "weak_spot": false, "face": "front"}
+{"tick": 4200, "t": 70.0, "type": "momentum", "army_health": {"green": 0.849, "rust": 0.066}, "units_left": {"green": 4, "rust": 2}}
+{"tick": 4260, "t": 71.0, "type": "close_call", "unit_id": "Rust_Swarm_2", "unit": "scout", "team": "rust", "hull_left": 0.1}
+{"tick": 4335, "t": 72.25, "type": "damage", "shooter": "Rust_Swarm_2", "shooter_unit": "scout", "victim": "Green_Guns_1", "victim_unit": "tank", "hull": 0.862, "shield": 0.586, "critical": true, "amount": 0.026, "weak_spot": true, "face": "front"}
+{"tick": 4455, "t": 74.25, "type": "unit_destroyed", "victim": "Rust_Battery_2", "victim_unit": "artillery", "victim_team": "rust", "killer": "Green_Eyes_1", "killer_unit": "scout", "killer_team": "green", "friendly": false, "cause": "weapon"}
+{"tick": 4455, "t": 74.25, "type": "element_drill", "team": "rust", "element": "Lance", "size": 1, "drill": "break_contact", "formation": "herringbone", "distance": 80.1, "target": "Green_Eyes_1", "reason": "break contact: the table says break contact here"}
+{"tick": 4455, "t": 74.25, "type": "squad_wiped", "team": "rust", "squad": "Battery", "units_lost": 2}
+{"tick": 4455, "t": 74.25, "type": "unit_destroyed", "victim": "Rust_Swarm_2", "victim_unit": "scout", "victim_team": "rust", "killer": "Green_Guns_3", "killer_unit": "tank", "killer_team": "green", "friendly": false, "cause": "weapon"}
+{"tick": 4455, "t": 74.25, "type": "squad_wiped", "team": "rust", "squad": "Swarm", "units_lost": 3}
+{"tick": 4455, "t": 74.25, "type": "match_end", "winner": "green", "reason": "elimination", "duration_seconds": 74.2, "units_left": {"green": 4, "rust": 0}, "kills_by_unit": {"green": {"tank": 4, "scout": 1}, "rust": {}}}

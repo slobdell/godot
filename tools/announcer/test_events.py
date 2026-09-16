@@ -45,7 +45,9 @@ class ValidatorTest(unittest.TestCase):
 
     def test_bad_team_and_ratio(self):
         timeline = fixture()
-        first(timeline, "close_call")["team"] = "blue"
+        # first_contact, not close_call: every match has a first shot, but a close call depends on someone
+        # surviving at low hull, which a regenerated fixture may simply not produce.
+        first(timeline, "first_contact")["team"] = "blue"
         self.assert_rejected(timeline, "team must be green or rust")
         timeline = fixture()
         first(timeline, "damage")["hull"] = 1.4
@@ -82,11 +84,22 @@ class ValidatorTest(unittest.TestCase):
         self.assert_rejected(timeline, "not a")
 
     def test_the_dead_stay_dead(self):
+        """A destroyed vehicle can still *kill* — its round was already in the air — but it cannot be hit, spot
+        anything or be spotted. Those fields stay strict (see events.MAY_BE_DEAD)."""
+        timeline = fixture()
+        death = first(timeline, "unit_destroyed")
+        later = [e for e in timeline if e["type"] == "damage" and e["tick"] >= death["tick"]][0]
+        later["victim"], later["victim_unit"] = death["victim"], death["victim_unit"]
+        self.assert_rejected(timeline, "already destroyed")
+
+    def test_a_dead_crew_can_still_land_a_shot(self):
+        """The other half of the same rule: a shell outlives the crew that fired it, so a kill credited to a unit
+        that is already gone is a real thing the match produces, not a bookkeeping error."""
         timeline = fixture()
         death = first(timeline, "unit_destroyed")
         later = [e for e in timeline if e["type"] == "damage" and e["tick"] >= death["tick"]][0]
         later["shooter"], later["shooter_unit"] = death["victim"], death["victim_unit"]
-        self.assert_rejected(timeline, "already destroyed")
+        self.assertEqual(events.validate_timeline(timeline), [], "his round was already in the air")
 
     def test_friendly_flag_matches_teams_and_hazards_have_no_killer(self):
         timeline = fixture()
@@ -144,8 +157,6 @@ class FakeMatchTest(unittest.TestCase):
         self.assertEqual(fixture("control_swing")[-1]["reason"], "control")
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class DeadShooterTest(unittest.TestCase):
@@ -184,3 +195,6 @@ class DeadShooterTest(unittest.TestCase):
                      "target_id": "g1", "target_unit": "tank"}, self.end("rust", 0, 1)]
         self.assertTrue(events.validate_timeline(timeline), "you cannot open fire on something already destroyed")
 
+
+if __name__ == "__main__":
+    unittest.main()
