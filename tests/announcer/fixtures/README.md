@@ -1,6 +1,6 @@
 # K5: match events for the announcer
 
-> Owner: the announcer stream ([_agents/streams/announcer.md](../../../_agents/streams/announcer.md)). Proposed as C9;
+> Owner: the announcer stream ([_agents/streams/archive/round3/announcer.md](../../../_agents/streams/archive/round3/announcer.md)). Proposed as C9;
 > recorded as K5 in [_agents/workstreams.md](../../../_agents/workstreams.md). The announcer only **listens**: nothing
 > here feeds back into the simulation.
 

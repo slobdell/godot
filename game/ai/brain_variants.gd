@@ -54,7 +54,7 @@ const PROFILES := {
 ## runs but is only even with x3 (48-48), is the weakest of the four on the all-armor army (29-43), and sends scouts
 ## onto a tank's engine deck at 3 m, which rules' catalog test says a scout must not do
 ## (test_units_roster::test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range). It stays opt-in until rules and
-## combat settle what a scout's counter is (streams/ai.md "Requests").
+## combat settle what a scout's counter is (streams/archive/round3/ai.md "Requests").
 const CHAMPION := "x4"
 
 static var _from_flags: Array = []

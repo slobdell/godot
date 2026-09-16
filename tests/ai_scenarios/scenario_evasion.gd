@@ -1,5 +1,5 @@
 extends TestCase
-## Round-3 X3 (_agents/streams/ai.md): evasion. A unit fights a cannon tank 50 m away that leads its shots; how many of
+## Round-3 X3 (_agents/streams/archive/round3/ai.md): evasion. A unit fights a cannon tank 50 m away that leads its shots; how many of
 ## the cannon's shells land, per brain variant: a6 (round 2, parks and trades), x2 (fights on the move), x3 (on the move
 ## and dodging). Physics decide who can dodge: a tank shell crosses 50 m in ~0.7 s, so a unit must already be moving
 ## across the line of fire to get out of the way; light units strafe (and dodge), heavy hulls weave with their front on

@@ -1,6 +1,6 @@
 class_name Difficulty
 extends RefCounted
-## A difficulty knob for a team's brains (round-3 stretch, _agents/streams/ai.md): how quickly they react and how well
+## A difficulty knob for a team's brains (round-3 stretch, _agents/streams/archive/round3/ai.md): how quickly they react and how well
 ## they aim. Normal is the brains as they are; the others only slow thinking down or sharpen it and add a deterministic
 ## aim wander (no random numbers: a pattern from the tick and the unit's slot, so seeded matches stay reproducible).
 ##

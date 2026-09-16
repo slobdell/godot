@@ -1,6 +1,6 @@
 # The announcer's text library
 
-Owner: the announcer stream ([_agents/streams/announcer.md](../../_agents/streams/announcer.md)). Design:
+Owner: the announcer stream ([_agents/streams/archive/round3/announcer.md](../../_agents/streams/archive/round3/announcer.md)). Design:
 [_agents/game_design.md](../../_agents/game_design.md) *The arena announcer* and its **humor direction**.
 
 | File | What |

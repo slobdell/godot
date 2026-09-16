@@ -1,5 +1,5 @@
 extends SceneTree
-## `make ai-shots` (round-3 X4, _agents/streams/ai.md): stage AI fights on the real arena in a window, draw every unit's
+## `make ai-shots` (round-3 X4, _agents/streams/archive/round3/ai.md): stage AI fights on the real arena in a window, draw every unit's
 ## last few seconds of driving as a trail, and save frames to build/ai-shots/<stage>_<seconds>s.png, so a behavior can
 ## be judged from stills: does it circle, dodge, run at the rear, break away? Nameplates show each brain's intent, and the
 ## explain overlay (AiExplainOverlay) draws where each brain is driving and what it's shooting.

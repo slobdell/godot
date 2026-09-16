@@ -1,5 +1,5 @@
 extends TestCase
-## Round-3 X1 (_agents/streams/ai.md): orders always win. The lead: *"the units just don't feel controllable right now,
+## Round-3 X1 (_agents/streams/archive/round3/ai.md): orders always win. The lead: *"the units just don't feel controllable right now,
 ## they seem to get stuck in some particular state and then not respond to my clicks; units within the same squad
 ## ended up getting separated and didn't rejoin."* Orders come through K1 (AiScenario.orders()). Open ground west of
 ## the walls (x ≈ -100) unless a scenario needs cover.

@@ -1,5 +1,5 @@
 extends TestCase
-## Round-3 X1 (_agents/streams/ai.md): orders always win. Golden decide() tests over hand-built situations: whatever
+## Round-3 X1 (_agents/streams/archive/round3/ai.md): orders always win. Golden decide() tests over hand-built situations: whatever
 ## the brain was doing, a K1 order (contract K1, read through OrderFeed) decides what it does next; the brain only
 ## decides how. Scenarios on the real arena: tests/ai_scenarios/scenario_orders.gd.
 

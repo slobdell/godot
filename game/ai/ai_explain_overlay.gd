@@ -1,6 +1,6 @@
 class_name AiExplainOverlay
 extends MeshInstance3D
-## Why is that unit doing that? (round-3 stretch, _agents/streams/ai.md): with --ai-explain (or --ai-explain=green /
+## Why is that unit doing that? (round-3 stretch, _agents/streams/archive/round3/ai.md): with --ai-explain (or --ai-explain=green /
 ## =rust for one team) every brain tank draws a line to where it's driving, colored by what it's doing, and a thin line
 ## to what it's shooting. Nameplates already carry the words (tank.intent). Presentation only: it reads brains and never
 ## changes them. Brains add it to their match on their first think when the flag is on (TankBrain.think).

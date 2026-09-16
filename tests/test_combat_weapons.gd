@@ -1,7 +1,7 @@
 extends TestCase
 ## Round 3 combat X2: the weapons rebuilt for feel (the lead: tanks "shoot at very low frequency and … land devastating
 ## hit, but a miss is also quite costly"; the IFV a 25 mm Bradley cannon firing bursts; the scout a machine-gun stream
-## that only fires where the hull points). Targets from _agents/streams/combat.md X2, measured in a real match scene.
+## that only fires where the hull points). Targets from _agents/streams/archive/round3/combat.md X2, measured in a real match scene.
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")

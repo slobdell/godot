@@ -5,7 +5,7 @@ extends RefCounted
 ## and then a cook-off (ammunition popping: a flash, sparks, a small fireball), plus a low-priority pooled light that
 ## flickers with it. No new draw calls or nodes. How many burn at once follows the tier; the oldest goes out first.
 ## Visual only: a site is just where a kill explosion happened. (Keeping a wreck MODEL there needs rules to leave the
-## dead unit visible: requested from combat in streams/feel.md.)
+## dead unit visible: requested from combat in streams/archive/round3/feel.md.)
 
 const BURN_SECONDS := 30.0
 const FLAME_EVERY := 0.25

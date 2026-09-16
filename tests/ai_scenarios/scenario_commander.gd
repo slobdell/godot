@@ -1,5 +1,5 @@
 extends TestCase
-## Round-3 X5 (_agents/streams/ai.md): a CPU that maneuvers where the player can see it. The lead: *"There's no action from
+## Round-3 X5 (_agents/streams/archive/round3/ai.md): a CPU that maneuvers where the player can see it. The lead: *"There's no action from
 ## the computer player to use different formations or flanking maneuvers … a V formation of scouts from the gang coming
 ## at you would be scary."* CpuCommander policy from COMMANDER_POLICY against plain brains.
 

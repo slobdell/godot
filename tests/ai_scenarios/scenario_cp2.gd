@@ -1,5 +1,5 @@
 extends TestCase
-## After CP2 (combat's round-3 weapons, wheels, artillery deploy): combat's requests to ai (_agents/streams/combat.md
+## After CP2 (combat's round-3 weapons, wheels, artillery deploy): combat's requests to ai (_agents/streams/archive/round3/combat.md
 ## "Requests to other streams", balance.md matrix #6). Wheeled units can't turn in place, artillery must stand still to
 ## fire, and scouts should use their machine gun when it pays.
 

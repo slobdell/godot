@@ -1,5 +1,5 @@
 # The arena announcer: match-event fixtures, the line library, the director, transcripts, and the audio pipeline
-# Owner: announcer (_agents/streams/announcer.md). Included by the root Makefile.
+# Owner: announcer (_agents/streams/archive/round3/announcer.md). Included by the root Makefile.
 # No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
 .PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \

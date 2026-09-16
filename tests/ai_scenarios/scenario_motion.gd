@@ -1,5 +1,5 @@
 extends TestCase
-## Round-3 X2 (_agents/streams/ai.md): movement while fighting. The lead: *"Tanks will just sit there stationary and
+## Round-3 X2 (_agents/streams/archive/round3/ai.md): movement while fighting. The lead: *"Tanks will just sit there stationary and
 ## shoot each other … no intent of trying to circle your opponent."* Brain variant x2 (CombatMotion) against a6 (round
 ## 2's champion) as the control. Open ground west of the walls.
 

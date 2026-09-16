@@ -7,7 +7,7 @@
 Errors (exit 1): broken structure, unknown speakers/acts/slots, missing tags, duplicate ids or texts, symbols and
 digits a voice would read badly, "a {unit}" articles, needs-flags nothing sets, questions nobody answers, beats with
 no lines. Warnings: overlong lines for the speaker, near-duplicates, phrases from the rejected tone
-(_agents/streams/announcer.md), and borrowed catchphrases.
+(_agents/streams/archive/round3/announcer.md), and borrowed catchphrases.
 """
 
 from __future__ import annotations
