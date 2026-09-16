@@ -2,7 +2,7 @@
 # Owner: announcer (_agents/streams/archive/round3/announcer.md). Included by the root Makefile.
 # No target here calls ElevenLabs except announcer-generate APPROVED=1 (lead gate 2: the text is approved first).
 
-.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
+.PHONY: announcer-fixtures announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcript announcer-transcripts announcer-demo announcer-demo-audio announcer-generate \
         announcer-transcripts-check announcer-record-smoke announcer-shots announcer-check
 
 ANNOUNCER_FIXTURES := tests/announcer/fixtures
@@ -24,6 +24,30 @@ announcer-pytest: ## The announcer's Python tests (contract, generator, text aud
 
 announcer-audit: ## Audit the line library's text (symbols, slots, tags, duplicates, rejected tone)
 	$(PYTHON) tools/announcer/audit_lines.py
+
+## X1: the lead heard the PA open the same way in several matches. This replays every fixture as MATCHES
+## consecutive broadcasts and fails when the booth repeats itself too much across them.
+## Short names override on the command line: make announcer-variance MATCHES=200 WINDOW=5 HISTORY=off.
+## WINDOW must come from `origin`: GNU make defines WINDOW = 2 itself, so $(or $(WINDOW),5) is silently 2 and the
+## audit compares each match only with the one before it (orientation trip-up 67).
+ANNOUNCER_MATCHES ?= $(or $(MATCHES),50)
+ANNOUNCER_WINDOW ?= $(if $(filter command line,$(origin WINDOW)),$(WINDOW),5)
+ANNOUNCER_HISTORY ?= $(or $(HISTORY),on)
+## Ceilings (fractions): a line said twice in one match is always a bug; an opener heard again within five
+## matches should be rare (the brief's "~10%"); some carryover is unavoidable (the result and sign-off).
+ANNOUNCER_MAX_OPENER ?= 0.10
+ANNOUNCER_MAX_WELCOME ?= 0.10
+ANNOUNCER_MAX_CARRYOVER ?= 0.30
+
+announcer-variance: import ## How much the booth repeats itself across matches: MATCHES=50 WINDOW=5 HISTORY=on HOT=15
+	@mkdir -p $(BUILD_DIR)/announcer
+	@$(ANNOUNCER_CLI) --variance=res://$(ANNOUNCER_FIXTURES) --matches=$(ANNOUNCER_MATCHES) \
+		--window=$(ANNOUNCER_WINDOW) --history=$(ANNOUNCER_HISTORY) --hot=$(or $(HOT),15) 2>&1 \
+		| grep -vE '^(Godot Engine|--- Debug|OpenGL|Vulkan)' | tee $(BUILD_DIR)/announcer/variance.txt
+	@grep -q 'ANNOUNCER_CLI_EXIT=0' $(BUILD_DIR)/announcer/variance.txt || { echo "announcer-variance FAILED"; exit 1; }
+	@$(PYTHON) tools/announcer/check_variance.py $(BUILD_DIR)/announcer/variance.txt \
+		--max-opener $(ANNOUNCER_MAX_OPENER) --max-welcome $(ANNOUNCER_MAX_WELCOME) \
+		--max-carryover $(ANNOUNCER_MAX_CARRYOVER)
 
 announcer-transcript: import ## Print one match as the booth calls it: FIXTURE=comeback SEED=1 (no credits)
 	@mkdir -p $(BUILD_DIR)/announcer/transcripts
@@ -105,4 +129,4 @@ announcer-shots: import ## A scripted skirmish with the announcer's subtitles, d
 	$(GODOT) --path . --resolution 1200x540 -- --skirmish --scripted --enemy=$(ENEMY) --announcer=text --announcer-seed=2 \
 		--screenshot-delay=$(or $(DELAY),24) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/announcer_phone.png >/dev/null 2>&1
 
-announcer-check: announcer-validate announcer-pytest announcer-audit announcer-transcripts-check announcer-record-smoke ## Everything the announcer verifies headless (in make check)
+announcer-check: announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcripts-check announcer-record-smoke ## Everything the announcer verifies headless (in make check)
