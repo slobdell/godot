@@ -202,6 +202,46 @@ class MockPipelineTest(unittest.TestCase):
         report = self.run_pipeline(the_plan, mock_client(mishear={clip_ids[0].replace("#", "-")}))
         self.assertIn(clip_ids[0], report["stt_failed"], "a misheard whole line is a hard failure")
 
+    def test_a_dropped_connection_is_retried_not_fatal(self):
+        """A read timeout killed a real run at 712 of 2,225 recordings. An hour-and-a-half paid run must survive
+        the network hiccuping once."""
+        self.assertTrue(voice_client.worth_retrying(RuntimeError("The read operation timed out")))
+        self.assertTrue(voice_client.worth_retrying(type("E", (Exception,), {"status_code": 503})()))
+        self.assertFalse(voice_client.worth_retrying(type("E", (Exception,), {"status_code": 400})()),
+                         "a refusal cannot be fixed by asking again")
+        self.assertFalse(voice_client.worth_retrying(RuntimeError("invalid_api_key")))
+        calls = []
+
+        def flaky():
+            calls.append(1)
+            if len(calls) < 3:
+                raise RuntimeError("connection reset by peer")
+            return "recorded"
+        self.assertEqual(voice_client.with_retries(flaky, "clip", delays=(0.001, 0.001, 0.001)), "recorded")
+        self.assertEqual(len(calls), 3, "it kept trying")
+
+    def test_one_recording_that_never_comes_does_not_lose_the_others(self):
+        """The run's job is to get audio recorded. Anything that is not recording must not be able to stop it —
+        and every master already written stays written, so re-running costs nothing for them."""
+        client = mock_client()
+        real_speak = client.speak
+        doomed = "the Burner"  # one realization the service never manages to return
+
+        def sometimes(voice_id, text, previous_text=None, next_text=None):
+            if doomed in text:
+                raise RuntimeError("the read operation timed out")
+            return real_speak(voice_id, text, previous_text, next_text)
+        client.speak = sometimes
+        with mock.patch.object(voice_client, "RETRY_DELAYS_S", (0.001,)):
+            report = self.run_pipeline(sample_plan(["caller.kill.01", "color.flat.03"]), client)
+        self.assertTrue(report["failed_requests"], "the ones that never came are reported by name")
+        self.assertTrue(all(doomed in f["id"] or "burner" in f["id"] for f in report["failed_requests"]),
+                        "and only those: %s" % [f["id"] for f in report["failed_requests"]])
+        self.assertGreater(report["clips"], len(report["failed_requests"]),
+                           "every other recording still landed")
+        manifest = json.loads((self.out / "manifest.json").read_text())
+        self.assertTrue(manifest["clips"], "and the manifest was still written")
+
     def test_a_refused_transcription_does_not_abandon_a_paid_run(self):
         """The recogniser rejects very short audio outright ("audio_too_short"). That killed a real run at 277 of
         581 clips - after the audio was recorded and paid for. A failing *check* must never throw away generation."""

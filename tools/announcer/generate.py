@@ -132,6 +132,12 @@ def transcribe_safely(client, path: Path, expected: str, counts_words: bool) -> 
     try:
         heard = client.transcribe(path)
     except Exception as error:  # the SDK raises its own ApiError type; any refusal is handled the same way
+        if voice_client.worth_retrying(error):
+            try:
+                heard = voice_client.with_retries(lambda: client.transcribe(path), "transcribe %s" % path.name)
+                return heard, heard_ok(expected, heard, counts_words), ""
+            except Exception as retried:
+                error = retried
         body = getattr(error, "body", None)
         detail = body.get("detail", {}) if isinstance(body, dict) else {}
         reason = detail.get("status") or detail.get("message") or type(error).__name__
@@ -194,7 +200,7 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
     """Records what's missing, cuts every clip, checks it, and writes out/manifest.json. Returns a report."""
     resolved = client.voice_ids()
     counts_words = getattr(client, "counts_words", isinstance(client, voice_client.MockClient))
-    report = {"requests_sent": 0, "characters": 0, "skipped_existing": 0, "clips": 0, "stt_failed": [], "stt_unverifiable": [], "missing_voices": [],
+    report = {"requests_sent": 0, "characters": 0, "skipped_existing": 0, "clips": 0, "stt_failed": [], "stt_unverifiable": [], "failed_requests": [], "missing_voices": [],
               "alignment_errors": []}
     clips = {}
     manifest_path = out / "manifest.json"
@@ -215,7 +221,17 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
         if meta.get("key") == key:
             report["skipped_existing"] += 1
         else:
-            audio, alignment = client.speak(resolved[voice_name], request["text"], request.get("previous_text"), request.get("next_text"))
+            try:
+                audio, alignment = voice_client.with_retries(
+                    lambda: client.speak(resolved[voice_name], request["text"], request.get("previous_text"),
+                                         request.get("next_text")),
+                    request["id"], log)
+            except Exception as error:
+                # Every recording already made is on disk and this run is idempotent, so the useful thing to do
+                # with one that will not come is note it and keep going. Re-running picks it up for free.
+                report["failed_requests"].append({"id": request["id"], "error": "%s: %s" % (type(error).__name__, error)})
+                log("FAILED %s: %s (the rest of the run continues; re-run to pick it up)" % (request["id"], error))
+                continue
             master.parent.mkdir(parents=True, exist_ok=True)
             master.write_bytes(audio)
             meta = {"key": key, "text": request["text"], "voice": voice_name, "model": model_id,
@@ -336,12 +352,17 @@ def main(argv: list[str]) -> int:
           "voices missing: %s; credits %s → %s" % (
               report["requests_sent"], report["characters"], report["skipped_existing"], report["clips"], len(report["stt_failed"]),
               len(report["alignment_errors"]), ", ".join(report["missing_voices"]) or "none", report["credits_before"], report["credits_after"]))
+    if report.get("failed_requests"):
+        print("  %d recordings did not come back even after retrying; re-run to pick them up:"
+              % len(report["failed_requests"]))
+        for failure in report["failed_requests"][:10]:
+            print("    %s — %s" % (failure["id"], failure["error"][:90]))
     if report.get("stt_unverifiable"):
         print("  %d fragments and one-word clips speech-to-text cannot judge alone; `make announcer-stitch-check` "
               "hears them in context" % len(report["stt_unverifiable"]))
     for clip in report["stt_failed"]:
         print("  check by ear: %s" % clip)
-    return 1 if report["stt_failed"] or report["alignment_errors"] else 0
+    return 1 if report["stt_failed"] or report["alignment_errors"] or report.get("failed_requests") else 0
 
 
 if __name__ == "__main__":
