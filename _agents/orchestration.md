@@ -226,5 +226,10 @@ The kickoff prompt is one line; this section is the rest.
     overwatch keeps a crew alive — the opposite of what it measured, and resting on a mechanic another stream was still
     landing. The working arrangement that saved it: the measuring stream sends numbers **marked stable or resting on an
     unfinished mechanic**, and only stable ones get recorded.
-19. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+19. **A human is a check, and for subjective quality the only one that counts.** Round 4's announcer shipped a version
+    that passed every automated check — transcription, levels, durations all clean — and was obviously wrong to the
+    first person who listened: stitched words sound pasted, which no metric measured. Put a cheap sample in front of
+    the lead *before* the expensive run, not after. The second pilot cost 1,875 credits and saved the 113k run from
+    being wrong the same way.
+20. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.
