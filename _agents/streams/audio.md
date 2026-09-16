@@ -86,4 +86,29 @@ minimal, listed in merge notes).
 
 ## Status
 
-- 2026-09-16: brief written for round 4. Nothing started.
+_Updated 2026-09-16 by the audio worker._
+
+**In progress: X1 (variance).** Plan below; nothing merged yet.
+
+### Plan (in order, smallest foundation first)
+
+1. **X1a measure first.** A variance audit (`make announcer-variance`): run every fixture as N *consecutive*
+   matches through the director sharing one recency history, and report (a) repeats inside a match, (b) the
+   opener repeat rate over sliding windows of five consecutive matches, (c) the share of a match's lines that
+   were also heard in the previous match. This is the number the fix has to move; run it before changing anything.
+2. **X1b cross-match recency** (`AnnouncerHistory`, persisted to `user://`): the director weights a line down by
+   how many matches ago it was last heard. Off by default in the CLI so the checked-in review transcripts stay
+   byte-stable; the live booth loads and saves it; tests point at a scratch path (orientation trip-up 54).
+3. **X1c more variance where it is thin**: the diagnosis from X1a decides where. First suspicion from reading the
+   library: `pow(8, specificity)` makes a single tag-specific line (e.g. the one `control_point` welcome) win ~half
+   the intros, so the PA repeats her opening — more lines at each specificity level plus the recency penalty.
+4. **X1d regenerate transcripts**, re-run the audit, report before/after in Status.
+5. **X2 pilot** (~250 characters), listen, then the full run; ledger and speech-to-text check; report real spend.
+6. **X3 booth live**: real `Match` events, bus ducking, subtitles, volume/off setting; verified in a skirmish.
+7. **X5 MatchMood (L5)** before X4 and X6, because both read it.
+8. **X4 cinematic sound effects** (the largest item): source, process, variation pools, distance filtering, mix.
+9. **X6 music director** with placeholder loops and `assets/music/PROMPTS.md`.
+
+### Where things stand
+
+- Baseline `make remote T=check` started 2026-09-16; builder0 is busy with the other four streams' runs.

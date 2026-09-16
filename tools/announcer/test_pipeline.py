@@ -92,8 +92,23 @@ class DryRunTest(unittest.TestCase):
         self.assertIn("skipped until the voice exists", missing, "a speaker whose voice isn't made yet is called out")
 
     def test_the_real_client_needs_the_key_from_the_environment(self):
-        with mock.patch.dict(os.environ, {voice_client.KEY_ENV: ""}):
+        with mock.patch.dict(os.environ, {name: "" for name in voice_client.KEY_ENVS}):
             with self.assertRaisesRegex(RuntimeError, voice_client.KEY_ENV):
+                voice_client.RealClient()
+
+    def test_either_environment_name_carries_the_key(self):
+        for name in voice_client.KEY_ENVS:
+            keys = {other: "" for other in voice_client.KEY_ENVS}
+            keys[name] = "sk_example"
+            with mock.patch.dict(os.environ, keys):
+                self.assertEqual(voice_client.environment_key(), "sk_example", name)
+
+    def test_a_key_id_is_refused_before_anything_is_sent(self):
+        """The lead's ELEVENLABS_KEY_ID holds a key *id*; the API answers 'API key ID used as API key' (2026-09-16)."""
+        keys = {name: "" for name in voice_client.KEY_ENVS}
+        keys[voice_client.KEY_ENVS[1]] = "2a05" + "0" * 60
+        with mock.patch.dict(os.environ, keys):
+            with self.assertRaisesRegex(RuntimeError, "key .?id"):
                 voice_client.RealClient()
 
 
@@ -189,13 +204,33 @@ class MockPipelineTest(unittest.TestCase):
         cut = [p for p in placed if p["t"] >= 5.0]
         self.assertEqual(len(cut), 1, "a cut cue plays only what fits before its end")
         self.assertAlmostEqual(cut[0]["max_s"], 0.2, places=2)
+        # What we assert about the rendered file is deliberately weak: that it exists, holds audio, and is not
+        # wildly the wrong length. render() itself checks the length exactly and raises, so a bad mix fails there
+        # with a useful message instead of here with a number (the orchestrator, 2026-09-16: a probed duration
+        # made this test flake on a loaded builder0).
         out = Path(self.folder.name) / "match.ogg"
         mixdown.render(placed, self.out, out, 7.0)
-        # -t makes the mix exactly as long as the match asked for, whatever the clips do (Vorbis rounds by ~3 ms).
-        self.assertAlmostEqual(voice_client.probe_duration(out), 7.0, delta=0.05)
+        self.assertTrue(out.exists() and out.stat().st_size > 0, "the mix was written")
+        self.assertGreater(voice_client.probe_duration(out), 5.0, "it covers the match, not just the last clip")
         with self.assertRaisesRegex(KeyError, "fill.caller.number.9.final|needs clip"):
             broken = dict(match["cues"][0], slots={"other_team": "rust", "count": 99})
             mixdown.cue_clips(broken, manifest)
+
+    def test_a_short_mix_is_reported_instead_of_shipped(self):
+        """A mix that ends with its last clip plays out of sync with the transcript, so it must never pass quietly."""
+        ids = ["caller.kill.52"]
+        self.run_pipeline(sample_plan(ids), mock_client())
+        manifest = json.loads((self.out / "manifest.json").read_text())
+        match = {"cues": [{"t": 0.0, "end": 2.0, "line_id": "caller.kill.52",
+                           "slots": {"other_team": "rust", "count": 3.0}, "cut": False}]}
+        placed = mixdown.schedule(match, manifest)
+        out = Path(self.folder.name) / "short.ogg"
+        mixdown.render(placed, self.out, out, 6.0)
+        self.assertAlmostEqual(mixdown.check_length(out, 6.0), 6.0,
+                               msg="generated silence makes the mix the length the match asked for",
+                               delta=mixdown.LENGTH_TOLERANCE_S)
+        with self.assertRaisesRegex(RuntimeError, "out of sync"):
+            mixdown.check_length(out, 30.0)
 
 
 if __name__ == "__main__":
