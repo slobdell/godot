@@ -110,6 +110,9 @@ const SUPPRESSION_SPREAD_FACTOR := 2.0
 ## a lane settles at about 1.4 (1.0 suppression per second against a 1 s half-life), so a single crew IS enough to
 ## make a lane a bad idea — which is the lead's "cut off an avenue". Getting PINNED there takes three times as much.
 const BEATEN_ZONE_DENSITY := 1.0
+## L2: suppression a single hit adds per fraction of the victim's hull it takes off (shield included). 1.0 means a
+## round that costs you half your hull leaves you half-suppressed; a tank shell pins, a machine-gun round doesn't.
+const SUPPRESSION_PER_HULL_FRACTION := 1.0
 ## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
 ## Tank.shield_recharge_delay. The hull is the lasting cost of a fight; mending it means going home.
 const REPAIR_HP_PER_SECOND := 6.0
@@ -144,6 +147,11 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# X3: enemy hits on the engine deck (Armor.is_weak_spot), by the shooter's team.
 		"weak_spot_hits": [0, 0],
+		# L2 (round 4), by the SUPPRESSED team, sampled every SUPPRESSION_SAMPLE_TICKS over living units: how many
+		# samples were taken, their suppression summed, and how many were pinned. Without these, nobody can tell
+		# whether a match had any suppressive fire in it at all (X2: the answer was "almost none", because brains
+		# don't suppress on purpose yet).
+		"suppression_samples": [0, 0], "suppression_total": [0.0, 0.0], "pinned_samples": [0, 0],
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
 		# Simulated seconds at the first shot fired and the first kill (pace of a fight).
@@ -587,11 +595,14 @@ static func shot_spread(weapon: Dictionary, moving: float, suppression: float) -
 
 
 ## L2: mark the ground a direct-fire round swept, and report the suppression it laid down (0 for a weapon that
-## doesn't suppress). Rounds only suppress the side they were fired AT.
-func _suppress_lane(shooter_team: int, from: Vector3, to: Vector3, weapon: Dictionary) -> float:
+## doesn't suppress). Rounds only suppress the side they were fired AT. When the round struck a unit, the lane runs
+## to that unit's CENTRE rather than to the point on its hull: a round stops ~2 m short of centre, which with 6 m
+## cells could leave the crew that was just hit in an unmarked cell (X2: one machine gun on a tank measured 0.08
+## suppression instead of ~0.47 for exactly that reason).
+func _suppress_lane(shooter_team: int, from: Vector3, to: Vector3, weapon: Dictionary, victim: Tank = null) -> float:
 	var weight := Weapons.suppression(weapon)
 	if weight > 0.0:
-		threat_field(1 - shooter_team).stamp_segment(from, to, weight)
+		threat_field(1 - shooter_team).stamp_segment(from, victim.global_position if victim != null else to, weight)
 	return weight
 
 
@@ -613,6 +624,10 @@ func _update_suppression() -> void:
 			continue
 		var density := threat_field(tank.team).at(tank.global_position)
 		tank.settle_suppression(clampf(density / SUPPRESSION_FULL_DENSITY, 0.0, 1.0), seconds)
+		stats["suppression_samples"][tank.team] += 1
+		stats["suppression_total"][tank.team] += tank.suppression
+		if tank.is_pinned():
+			stats["pinned_samples"][tank.team] += 1
 
 
 func _update_intel() -> void:
@@ -941,7 +956,7 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: 
 		else:
 			victim = null
 	# L2: hitscan rounds suppress the corridor they crossed, whether or not they hit (the wall of bullets).
-	var suppression := _suppress_lane(tank.team, from, end, weapon)
+	var suppression := _suppress_lane(tank.team, from, end, weapon, victim)
 	if not hit.is_empty():
 		_emit_impact(projectile_id, hit.position, hit.normal, victim, result, suppression)
 	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
@@ -1128,8 +1143,13 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
 	result["face"] = face
 	result["weak_spot"] = weak
-	# L2: a round that actually connects rattles the crew beyond the fire density where they sit.
-	victim.suppress(Weapons.suppression(weapon) / SUPPRESSION_FULL_DENSITY)
+	# L2: getting HIT HARD rattles a crew beyond the fire density where they sit. Scaled by the fraction of the hull
+	# this one round took off, not by the weapon's suppression weight: a machine-gun round that pings the armor is
+	# nothing (0.01), while a tank shell that strips half your hull pins you on its own. Weighting it by the weapon
+	# instead would double-count volume, which the threat field already measures (X2: one machine gun pinned a tank
+	# on hits alone, which made "concentrate your fire" meaningless).
+	victim.suppress((float(result["hull"]) + float(result["shield"])) / maxf(float(victim.max_health), 1.0)
+			* SUPPRESSION_PER_HULL_FRACTION)
 	if weak and victim.team != team and counts_as_hit:
 		stats["weak_spot_hits"][team] += 1
 	if victim.team == team:
@@ -1184,7 +1204,8 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 	var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
 	# L2: the round suppressed everything along the corridor it flew down before it stopped here.
-	var suppression := _suppress_lane(shell.team, shell.ray_start, point, weapon)
+	var suppression := _suppress_lane(shell.team, shell.ray_start, point, weapon,
+			victim if victim != null and victim.is_alive() else null)
 	if victim != null and victim.is_alive():
 		var hit := _land_hit_result(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
 		killed = hit["killed"]

@@ -49,6 +49,23 @@ matchup-search: import ## Score --tune variants of the matchup matrix against th
 	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANTS) --seeds $(or $(SEEDS),2) \
 		$(if $(UNITS),--units $(UNITS)) $(if $(ESCORT),--escort $(ESCORT))
 
+# ---- X2 (round 4): does suppression change outcomes? ----------------------------
+# Every weapon's "suppression" set to 0 is the control: the threat field stays empty, nobody is ever pinned, and
+# spread loses its suppression term. A volume weapon (the scout's machine gun) should be worth MORE with it on.
+SUPPRESSION_OFF := --tune=machine_gun.suppression=0,autocannon.suppression=0,cannon.suppression=0,laser.suppression=0,mortar.suppression=0,flamethrower.suppression=0
+
+suppression-series: import ## X2: one archetype vs another with suppression on, then off (GREEN_ARCH=swarm RUST_ARCH=armor N=16 BUDGET=1000)
+	@for mode in on off; do 		echo "== suppression $$mode =="; 		$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),16) --jobs $(JOBS) --time-limit 300 --score-limit 0 			--json $(BUILD_DIR)/suppression-$$mode.json 			--extra="--green-doctrine=cpu:$(or $(GREEN_ARCH),swarm) --rust-doctrine=cpu:$(or $(RUST_ARCH),armor) --elimination --budget=$(or $(BUDGET),1000) $$([ $$mode = off ] && echo '$(SUPPRESSION_OFF)')"; 	done
+
+suppression-control: import ## X2: the same pairing counterbalanced (bases and colors swapped), suppression on then off
+	@for mode in on off; do 		for swap in "" "--swap-bases"; do 			echo "== suppression $$mode $$swap =="; 			$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),16) --jobs $(JOBS) --time-limit 300 --score-limit 0 				--extra="--green-doctrine=cpu:$(or $(GREEN_ARCH),swarm) --rust-doctrine=cpu:$(or $(RUST_ARCH),armor) --elimination --budget=$(or $(BUDGET),1000) $$swap $$([ $$mode = off ] && echo '$(SUPPRESSION_OFF)')"; 			echo "== suppression $$mode $$swap, colors swapped =="; 			$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),16) --jobs $(JOBS) --time-limit 300 --score-limit 0 				--extra="--green-doctrine=cpu:$(or $(RUST_ARCH),armor) --rust-doctrine=cpu:$(or $(GREEN_ARCH),swarm) --elimination --budget=$(or $(BUDGET),1000) $$swap $$([ $$mode = off ] && echo '$(SUPPRESSION_OFF)')"; 		done; 	done
+
+faction-match: import ## L3: one full-scale faction battle (GREEN_FACTION=condemned RUST_FACTION=gangs SEED=1), prints MATCH_RESULT
+	$(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination --control 		--green-faction=$(or $(GREEN_FACTION),condemned) --rust-faction=$(or $(RUST_FACTION),condemned) 		--budget=$(or $(BUDGET),5200) --time-limit=$(or $(TIME),300) --seed=$(SEED) | grep MATCH_RESULT
+
+faction-series: import ## L3: N seeded faction battles at the baseline budget (GREEN_FACTION= RUST_FACTION= N=12 BUDGET=5200)
+	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),12) --jobs $(JOBS) --time-limit 300 --score-limit 0 		--json $(BUILD_DIR)/faction-$(or $(GREEN_FACTION),condemned)-vs-$(or $(RUST_FACTION),condemned).json 		--extra="--green-faction=$(or $(GREEN_FACTION),condemned) --rust-faction=$(or $(RUST_FACTION),condemned) --elimination --control --budget=$(or $(BUDGET),5200)"
+
 pace: import ## Match pace with seeded CPU armies like a skirmish (first shot, first kill, length): N=24 BUDGET=1000 CONTROL=1 -> build/pace[-control].json
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),24) --jobs $(JOBS) --time-limit 300 --score-limit 0 \
 		--json $(BUILD_DIR)/pace$(if $(CONTROL),-control).json \

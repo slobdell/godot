@@ -57,8 +57,40 @@ costs them accuracy and turret tracking. Everything the brains and the drills ne
 - Cost: the field decays 2 × 1600 float cells every 3 ticks (~0.05 ms/tick). If that shows up at 30 a side, the fix
   is a global decay scale instead of a full pass (see X5's numbers).
 
-**The sim baseline moved on purpose** with this commit: suppression changes shot spread, so every seeded match
-diverges, and `Match.state_hash` now includes each unit's suppression.
+**The sim baseline moved on purpose** with L2: suppression changes shot spread, so every seeded match diverges, and
+`Match.state_hash` now includes each unit's suppression. It moved a second time with X2's two corrections (a round
+that hits a unit marks that unit's cell, and a hit's suppression scales with the hull fraction it removes):
+`glibc-2.43 763efdb242eeb5bf`.
+
+### X2: does suppression actually bite? (measured 2026-09-16, builder0)
+
+Reproduce with `make remote T="test FILTER=combat_suppression_bite"` (every row is a `MEASURE` line) and
+`make remote T="suppression-series N=16 GREEN_ARCH=swarm RUST_ARCH=armor"` (suppression on, then every weapon's
+`suppression` tuned to 0 as the control).
+
+| Question | Measurement | Verdict |
+|---|---|---|
+| Does a stream shut a lane? | 1 scout streaming across a lane: density 1.17, `is_beaten_zone` **true**, a crossing IFV loses 4.2 HP and peaks at 0.38 suppression. 3 scouts: route exposure 0.12 → 0.37, 18.9 HP, peaks at **0.70 (pinned)** | Yes, and it scales with crews |
+| Does concentrating fire pin? | one machine gun on a tank settles at **0.42**, two at **0.82** (pin at 0.60) | Yes, exactly as designed: one crew rattles, two pin |
+| Is pinning worth doing? | a tank at 60 m hits **13/13** calm and **5/13** pinned; a 90° turret swing takes **105 ticks** calm and **208** pinned | Yes: pin, then flank |
+| Is a machine gun's value volume? | suppression per second: MG **1.00**, 25 mm 0.78, mortar 0.67, laser 0.30, cannon 0.24 — while the MG still does ×0.05 damage through a tank's front | Yes |
+| **Does it change match outcomes today?** | swarm vs armor, 16 seeds, 1000 pts: **Rust 16-0 with suppression and 16-0 without**. Mean suppression per living unit **0.03**, pinned **0.7%** of unit-samples. The only difference is pace: matches run 77.7 s instead of 69.6 s (+12%), because degraded accuracy drags fights out | **No — and that is the finding** |
+
+**Why not:** the scouts that carry the machine guns spend **84% of their time on SPOT** and almost none firing, and no
+brain or drill ever puts fire on a lane to deny it. The mechanics are ready and measurable; the payoff is a
+*decision*, which belongs to ai (suppress on purpose, avoid beaten zones) and doctrine (support-by-fire). Requests are
+in the combat brief's Status. Until then, leaving the numbers alone is the right call: tuning suppression up to force
+an effect through unused mechanics would only distort the matchup matrix.
+
+**Two notes for whoever reads these numbers**
+- A hitscan stream aimed at a fixed point is a curtain only a couple of sigma of spread thick (~3 m at 40 m), so one
+  crew costs a crossing vehicle a burst, not its life. Thickness comes from *more crews on nearby lanes*, which is why
+  three cost 4.5× the damage of one.
+- The `suppression=0` control still reports ~0.01 mean suppression, because a hit also rattles a crew in proportion to
+  the hull fraction it removes (`Match.SUPPRESSION_PER_HULL_FRACTION`), independent of the weapon's suppression
+  weight. That is deliberate: being hit hard is suppressive whatever hit you.
+- New match stats for this: `suppression_samples`, `suppression_total` and `pinned_samples` per team (sampled over
+  living units every `SUPPRESSION_SAMPLE_TICKS`), printed by `tools/match_series.py`.
 
 ## Round 4: army size and factions (combat X1, contract L3)
 

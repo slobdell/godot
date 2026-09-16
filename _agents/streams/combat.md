@@ -148,3 +148,38 @@ spawn jitter, and regenerated `arenas/*.json` spawn lists.
 2. **The Lancer sits in two rosters.** Resolved the way *Factions* asks for ("same roles, wildly different
    trade-offs"): the Condemned keep today's Lancer, and the Syndicate gets its own lancer-role vehicle with its own
    numbers. Say if you wanted one of them to lose it instead.
+
+### X2 done (2026-09-16): suppression measured, and it needs ai and doctrine to pay off
+
+Every number and how to reproduce it: [balance.md](../balance.md) *X2: does suppression actually bite?*. The
+mechanics do what the lead asked for, in isolation:
+
+- one machine gun streaming across a lane makes it a beaten zone; three cost a crossing IFV **4.5× the damage** and
+  **pin** it;
+- one crew settles a tank at **0.42** suppression, two at **0.82** (pin at 0.60): concentrating fire works;
+- a pinned tank hits **5/13** where a calm one hits **13/13**, and takes **208 ticks** instead of 105 to swing its
+  turret 90° — which is exactly why "pin, then flank" is a plan;
+- a machine gun lays down **1.0 suppression/s** against a cannon's 0.24, while still doing ×0.05 damage through a
+  tank's front: volume, not damage.
+
+**But it changes no match outcomes yet.** Swarm vs Armor over 16 seeds is 16-0 to Armor with suppression and 16-0
+without; mean suppression per living unit is **0.03** and units are pinned **0.7%** of the time. The scouts that carry
+the machine guns spend **84% of their time on SPOT**, and nothing in the game deliberately puts fire on a lane. The
+only measurable difference is pace: fights run 12% longer.
+
+I deliberately did **not** tune suppression up to force an effect: that would distort the matchup matrix to
+compensate for unused mechanics. Two fixes for the two streams that own the decisions:
+
+**Requests to other streams (X2)**
+- **ai:** (1) make suppressing a deliberate option — a brain with a volume weapon and a loaded gun should be willing
+  to put fire on a lane or on a pinned target rather than only on what it can kill; (2) score movement with
+  `Match.is_beaten_zone(team, from, to)` / `threat_along(...)` so units stop driving through walls of bullets; (3) a
+  pinned unit is a *worse shooter*, not a worse target — `Tank.is_pinned()` is the cue to flank it.
+- **doctrine:** support-by-fire needs a base of fire that keeps shooting at ground it wants denied, not only at
+  targets. That is what turns the mechanic on.
+- **Both:** `Match.stats` now carries `suppression_samples` / `suppression_total` / `pinned_samples` per team and
+  `tools/match_series.py` prints "suppression (mean per living unit, share pinned)", so you can see whether a change
+  actually produced suppressive fire.
+
+**New measurement targets (mine):** `make suppression-series`, `make suppression-control` (counterbalanced),
+`make faction-match`, `make faction-series`.
