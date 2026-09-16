@@ -173,11 +173,38 @@ playtest green with all ten checks.
   guarantee. Relayed to the orchestrator for `workstreams.md`.
 - `--no-elements` keeps squads hand-driven; `--element-cpu` runs the CPU on `ElementCommander` (off by default).
 
+**X4. Command at 30+ units a side.** Done, `make remote T=check` green (792 tests), measured, and looked at
+at 28 vs 29.
+
+- The selection panel groups portraits by **type** above ten units, each with a count, plus one strength number
+  in the header ("28 UNITS  IDLE  99%" over ×15 Tanks, ×7 IFVs, ×6 Lancers). Clicking a grouped portrait selects
+  that type; below ten units every unit still gets its own.
+- **ctrl+A** selects the whole army; **F2** goes to the next element with nothing to do.
+- **Measured at 30 a side** (60 units on the field, 30 selected), headless on this laptop:
+  box-select the army **1.38 ms**, right-click → 30 orders **1.87 ms** (all on the click's own frame),
+  `order_selection` **1.65 ms**, and control's per-frame work **1.685 ms** (vision_state 0.355, awareness 0.595,
+  panel summary 0.511, edge markers 0.017, horizon_zoom 1.244 amortised over 6 frames).
+  `tests/test_control_scale.gd` holds these to a 2 ms frame budget and an 8 ms order budget.
+- Two hot spots were found and fixed: the panel's sort comparator did a node lookup per comparison (1.53 → 0.51
+  ms) and `ElementAwareness` scanned the tank list once per member (1.07 → 0.60 ms).
+- `make control-scale-shots` runs the session with ~30 a side. Deliberately not pass/fail: with a faction-sized
+  army nobody is commanding, the player's force loses and steps needing a live group 1 report false.
+
 ### Questions for the lead
 
 - None yet.
 
 ### Requests to other streams
+
+- **art / theme (no stream this round) — blocks the scale goal.** At ~30 a side the renderer runs out of
+  per-instance shader uniform slots: *"Too many instances using shader instance variables … Maximum items
+  supported by this hardware is: 4096"*, 339 errors in one `make control-scale-shots` run, followed by
+  `global_shader_uniforms.instance_buffer_pos` failures. Raising `buffer_size` in `project.godot` cannot help -
+  4096 is the hardware maximum - so the vehicle materials need fewer per-instance uniforms (users:
+  `game/theme/cyberpunk/{unit_skin,weapon_cannon,dozer_part}.gd`,
+  `game/theme/fx/shaders/{unit_body,vehicle_glow,shield}.gdshader`). Not touched: `game/theme/**` is additive-only
+  this round. The scale target counts and attributes them rather than swallowing them.
+
 
 - **doctrine:** `Element.update` commands its members even when `task == {}`, so an element that exists but has
   not been given a task will fight the player for the wheel. Control works around it by forming elements only
