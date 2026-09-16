@@ -22,6 +22,8 @@ const HEIGHT := 160.0
 ## Widest at 1080p.
 const MAX_WIDTH := 980.0
 const PAD := 8.0
+## X3: the strip along the bottom of the panel that the element's doctrine line lives in (at 1080p, scaled).
+const FOOTER := 18.0
 const COMMANDS := [["move", "Move", "M"], ["stop", "Stop", "S"], ["hold", "Hold", "H"], ["screen", "Screen", "E"],
 		["attack_move", "Attack-move", "A"], ["follow", "Follow", "F"], ["support_by_fire", "Base of fire", "R"],
 		["formation", "Formation", "G"]]
@@ -77,9 +79,11 @@ func _layout() -> void:
 	for entry: Dictionary in portrait_entries():
 		units.append(String(entry["key"]))
 	if units.size() > 1:
-		# A header line for the group's orders, then the biggest square portraits that fit in 1–3 rows.
+		# A header line for the group's orders, the biggest square portraits that fit in 1–3 rows, and a strip
+		# along the bottom for the element's doctrine line (which is a whole sentence and used to run off the
+		# panel at 1280x720).
 		var header := 22.0 * s
-		var area := Rect2(PAD * s, header, card_left - PAD * s * 2.0, size.y - header - PAD * s)
+		var area := Rect2(PAD * s, header, card_left - PAD * s * 2.0, size.y - header - PAD * s - FOOTER * s)
 		var cell := 0.0
 		var columns := 1
 		for rows in range(1, 4):
@@ -374,8 +378,8 @@ func _draw() -> void:
 	var doctrine := String(info["doctrine"])
 	if doctrine != "":
 		var width: float = (_command_rects["move"] as Rect2).position.x - PAD * s * 2.0
-		draw_string(font, Vector2(PAD * s, size.y - PAD * s * 0.6), doctrine, HORIZONTAL_ALIGNMENT_LEFT, width,
-				13.0 * s, Color(CyberStyle.YELLOW, 0.95))
+		draw_string(font, Vector2(PAD * s, size.y - PAD * s - FOOTER * s * 0.25), doctrine, HORIZONTAL_ALIGNMENT_LEFT,
+				width, 13.0 * s, Color(CyberStyle.YELLOW, 0.95))
 	for command: Dictionary in info["commands"]:
 		var button: Rect2 = _command_rects[command["id"]]
 		var enabled: bool = command["enabled"]
