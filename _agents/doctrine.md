@@ -257,17 +257,25 @@ suppression and splash against `closest_pair_m` when it lands.*
 
 ### Movement techniques: the same advance into the same guns (seed 31, 24 s)
 
-| Technique | Ground taken | Survived |
-|---|---|---|
-| Traveling | 50 m | 0.74 |
-| Traveling overwatch | 97 m | 0.74 |
-| **Bounding overwatch** | 65 m | **0.51** |
+| Technique | Ground taken | Survived (before suppression) | Survived (with L2, 2026-09-16) |
+|---|---|---|---|
+| Traveling | 50–59 m | 0.74 | 0.75 |
+| Traveling overwatch | 96–97 m | 0.74 | 0.74 |
+| **Bounding overwatch** | 63–65 m | **0.51** | **0.60** |
 
-**Bounding does not pay off in today's build, and that is the expected result.** Bounding buys safety by
-having one element *set* and able to cover the other — and covering fire only means something when it makes
-the enemy shoot worse or stop shooting. Suppression is combat's L2 and is not merged yet, so today the
-overwatch element is simply a stationary target that is not advancing. Re-measure at CP2; if bounding still
-loses with suppression in, the doctrine tables should stop choosing it.
+**Bounding buys safety by having one element *set* and able to cover the other — and covering fire only means
+something when it makes the enemy shoot worse or stop shooting.** Before suppression existed, the overwatch
+element was simply a stationary target that was not advancing, and bounding cost a quarter of the element
+against just driving.
+
+**Re-measured with combat's L2 merged (2026-09-16): bounding went from 0.51 to 0.60, closing about a third of
+the gap, while traveling did not move.** So the mechanism works in the direction doctrine says it should —
+but bounding still loses, and the reason is known and specific: nothing deliberately suppresses. Combat
+measures a mean of 0.03 suppression per living unit across 16 matches, with nothing ever pinned, because
+brains only fire at things they can kill. What moved this number is *incidental* near-misses from ordinary
+fire. The rest of the gap is the missing "keep firing into that lane" option (see below). If bounding still
+loses once that exists — especially with a Law element and its sonic emitter behind it — then the honest
+answer is that the tables should stop choosing it, and they will.
 
 ### A halt: jumped from the flank at 45 m (seed 37, 14 s)
 
