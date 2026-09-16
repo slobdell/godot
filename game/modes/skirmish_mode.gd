@@ -166,6 +166,12 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	bar.controls = controls
 	bar.panel = panel
 	controls.add_child(bar)
+	# X2: the elements you aren't watching, pinned to the screen edge, plus the alert strip (Q jumps).
+	var edge := EdgeMarkers.new()
+	edge.name = "EdgeMarkers"
+	edge.controls = controls
+	controls.add_child(edge)
+	controls.markers = edge
 	# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
 	# can collectively see (the lead: "a bird's eye view is just an unearned god view"). --no-vision-camera opts out.
 	if not flags.has("no-vision-camera"):

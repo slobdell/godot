@@ -14,6 +14,7 @@ var game_match: Match
 var orders: Orders
 var executor: OrderExecutor
 var controls: RtsControls
+var markers: EdgeMarkers
 var camera: Camera3D
 var rig: RtsCamera
 var arena: Node
@@ -62,6 +63,10 @@ func build(with_executor := true) -> void:
 	controls.rig = rig
 	controls.reveal_all = true  # no visibility field here: every enemy counts as seen
 	test.add_to_tree(controls)
+	markers = EdgeMarkers.new()
+	markers.controls = controls
+	controls.add_child(markers)
+	controls.markers = markers
 	await test.wait_physics_frames(3)
 
 

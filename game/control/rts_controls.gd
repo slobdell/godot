@@ -11,7 +11,8 @@ extends Control
 ##            S = stop · H = hold · shift queues any order (and keeps A/F/M armed for the next click)
 ##            G cycles the formation (auto by default: the group arranges itself by role and situation)
 ##            right-clicking an enemy with a mixed selection sends only the guns that can hurt it; the rest escort
-##   OTHER    F1 selects idle units · resting the mouse on a unit shows its stats
+##   OTHER    F1 selects idle units · Q jumps to the newest alert · resting the mouse on a unit shows its stats
+##            elements you aren't watching sit on the screen edge (EdgeMarkers): click one to go to it
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
 ##   TIME     Space pauses (orders still work while paused)
@@ -58,6 +59,10 @@ var team := Match.Team.GREEN
 var reveal_all := false
 var selection := Selection.new()
 var groups := ControlGroups.new()
+## X2: how every element is doing, and the alerts Q jumps to.
+var awareness := ElementAwareness.new()
+## X2: the off-screen element chips and the alert strip (set by the mode).
+var markers: EdgeMarkers
 ## The armed order waiting for a click ("" = none): "attack_move", "follow", or "move".
 var mode := ""
 ## The formation move, attack-move, and hold orders ask for (FORMATION_CYCLE; G cycles it).
@@ -96,6 +101,7 @@ func _ready() -> void:
 	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_overlay)
 	_overlay.draw.connect(_draw_overlay)
+	awareness.groups = groups
 
 
 func _process(delta: float) -> void:
@@ -109,6 +115,11 @@ func _process(delta: float) -> void:
 	if selection.prune(game_match) and selection.units.is_empty():
 		disarm()
 	groups.prune(game_match)
+	awareness.game_match = game_match
+	awareness.groups = groups
+	awareness.orders = orders
+	awareness.team = team
+	awareness.update(delta)
 	mouse_default_cursor_shape = Control.CURSOR_CROSS if mode != "" else Control.CURSOR_ARROW
 	_apply_fog_of_war()
 	queue_redraw()
@@ -233,6 +244,10 @@ func _gui_input(event: InputEvent) -> void:
 
 func _left_button(button: InputEventMouseButton) -> void:
 	if button.pressed:
+		# X2: an edge marker is a button, not ground: it takes priority over selecting and box dragging.
+		if markers != null and markers.marker_at(button.position) > 0:
+			recall_group(markers.marker_at(button.position), true)
+			return
 		if mode != "":
 			armed_click_order(button.position, button.shift_pressed)
 			return
@@ -275,6 +290,7 @@ func click_select(at: Vector2, shift := false, ctrl := false, double := false) -
 		selection.toggle(unit_name)
 	else:
 		selection.set_units([unit_name])
+	_watch_selection()
 
 
 ## A box: our units inside it (shift adds them). A box around none of ours keeps the selection.
@@ -286,6 +302,26 @@ func box_select(rect: Rect2, shift := false) -> void:
 		selection.add(inside)
 	else:
 		selection.set_units(inside)
+	_watch_selection()
+
+
+## X2: what you just picked is what you want to watch, even if you panned the camera away a moment ago.
+func _watch_selection() -> void:
+	if rig != null and not selection.units.is_empty():
+		rig.take_vision()
+
+
+## X2: go to the newest alert nobody has looked at: select that element and move the camera. Returns its text.
+func jump_to_alert() -> String:
+	var alert := awareness.take_alert()
+	if alert.is_empty():
+		return ""
+	var number := int(alert["element"])
+	if not groups.is_empty(number):
+		recall_group(number, true)
+	elif rig != null:
+		rig.focus_on(alert["position"])
+	return String(alert["text"])
 
 
 ## The living unit nearest `screen` within reach (ours, or an enemy we can see), or null.
@@ -373,6 +409,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			cycle_formation()
 		KEY_F1:
 			select_idle()
+		KEY_Q:
+			jump_to_alert()
 		KEY_SPACE:
 			set_paused(not get_tree().paused)
 		_:
