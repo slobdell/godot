@@ -202,9 +202,13 @@ func test_k2_events_report_the_suppression_a_round_applied() -> void:
 	var impacts: Array = []
 	game_match.weapon_fired.connect(func(event: Dictionary) -> void: fired.append(event))
 	game_match.projectile_impact.connect(func(event: Dictionary) -> void: impacts.append(event))
-	await _hold_trigger(pair[0], pair[1], 120)
+	# Long enough for a full cannon reload plus flight, whatever state the tank starts in: at 120 ticks (2 s) this
+	# passed alone and failed inside make check, because the shell had not been fired yet.
+	await _hold_trigger(pair[0], pair[1], 420)
 	assert_true(not fired.is_empty(), "the tank fired")
+	assert_true(not impacts.is_empty(), "and something was struck")
+	if fired.is_empty() or impacts.is_empty():
+		return  # the assertions above already recorded the failure; don't index an empty array
 	assert_true(fired[0].has("suppression_applied"), "weapon_fired says how suppressive the round is")
 	assert_true(float(fired[0]["suppression_applied"]) > 0.0, "a tank shell is suppressive")
-	assert_true(not impacts.is_empty(), "and something was struck")
 	assert_true(impacts[0].has("suppression_applied"), "projectile_impact reports what the round laid down")
