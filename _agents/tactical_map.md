@@ -1,24 +1,42 @@
-# Controls: StarCraft-style, desktop first (v4, round 3)
+# Controls: StarCraft-style, desktop first (v5, round 4)
 
-> **The current controls are v4 below** (control stream, round 3, 2026-09-15): select units, control groups,
-> right-click orders, automatic formations. Everything after "History" (v1–v3: squad grammar, drills, the mobile tap
-> map) is kept for reference; v3 still runs behind `--touch-map`. Design: [game_design.md](game_design.md)
-> *Controlling units*; brief: [streams/archive/round3/control.md](streams/archive/round3/control.md).
+> **The current controls are v5 below** (control stream, round 4, 2026-09-16): round 3's v4 grammar, plus a camera
+> that frames what your force can see, elements that run doctrine when you give them tasks, and a HUD that survives
+> 30 units a side. Everything after "History" (v1–v3: squad grammar, drills, the mobile tap map) is kept for
+> reference; v3 still runs behind `--touch-map`. Design: [game_design.md](game_design.md) *Controlling units* and
+> *Round 4 direction*; brief: [streams/control.md](streams/control.md).
 
-## v4: the grammar
+## v5: what changed from v4
+
+| Round 4 | What it means at the keyboard |
+|---|---|
+| **The camera is framed by vision (L4)** | It keeps the element you are commanding framed as close as it can, and you cannot scroll out past what your whole force can see. Tab shows your force's horizon, not the arena. Manual pan/zoom always wins and hands back after 2.5 s; free panning stays over ground the team can see. `--no-vision-camera` opts out. |
+| **The rest of your force is on the screen edge** | Chips for every element you aren't watching (name, survivors, strength, state); click one to go there. One alert prompt above the group chips, **Q** jumps to it. |
+| **The radar is the map** | Facing ticks on friendly blips, element numbers, the selected element ringed, last-known contacts fading. Click looks, right-click orders. |
+| **Tasks, not geometry (L1)** | With a whole element selected, orders become tasks its leader carries out - it picks the formation, the movement technique and the drills. **E** screens a flank, **R** sets a base of fire. The card reads back what it chose. An ad-hoc handful of units still gets direct orders, and any direct order dissolves the element. |
+| **Scale** | Portraits group by type above ten units, with one strength number. **ctrl+A** takes the whole army, **F2** goes to the next idle element. |
+| **Readability** | A hull bar over vehicles that are hurt or selected, sized from the hull on screen. |
+| **Factions** | `--player-faction=` / `--enemy-faction=`, or a menu on an interactive `make skirmish`. Army size falls out of the faction's costs. |
+| **Spectating** | `--cinematic`: the camera finds the fighting, holds a shot, and cuts. |
+
+## v4→v5: the grammar
 
 | Do | Mouse and keys |
 |---|---|
 | **Select** | left-click a unit · drag a box · shift-click or shift-box adds (shift-click a selected unit drops it) · double-click or ctrl-click: every unit of that type on screen · Escape clears · click an enemy to inspect it (panel card, never commanded) |
 | **Order** | right-click the ground = **move** · right-click an enemy = **attack** · right-click a friend = **follow** · **A** then click = attack-move (click an enemy = attack) · **F** then click a friend = follow · **M** then click = move · **S** stop · **H** hold position · **shift** queues any order and keeps A/F/M armed for the next click · right-click or Escape cancels an armed order |
-| **Formation** | automatic (see below) · **G** cycles wedge, line, column, vee, back to auto for the next orders |
+| **Tasks** (round 4) | with a **whole element** selected (a control group, or a doctrine squad) the orders above become L1 **tasks** its leader carries out: right-click ground or **M** = move, right-click an enemy or **A** = attack (A also maps to a move task: an element on the move already reacts to contact), **H** = hold, **E** then click = screen that flank, **R** then click = support by fire. **S** takes the wheel back. The command card reads back the formation, technique and drill the leader chose. |
+| **Formation** | automatic (see below) · **G** cycles wedge, line, column, vee, back to auto for the next orders. An explicit formation is an override: that order goes out as geometry instead of a task. |
 | **Groups** | **ctrl+1–9** saves the selection · **shift+1–9** adds to a group · **1–9** selects (a quick second tap centers the camera) · **Tab** next group · doctrine squads start as groups 1–5 · the group bar (bottom center) shows each group; click a chip to select it |
 | **Camera** | screen edges, arrows, middle-drag pan · wheel zoom · `,` `.` rotate · **C** centers on the selection · radar: left-click or drag looks, right-click moves the selection there, A then a radar click attack-moves there |
 | **Panel** | portraits (hull and shield) for a group: click selects one, shift-click drops it, ctrl-click keeps its type · a card for one unit or an inspected enemy · the command card (Move M, Stop S, Hold H, Attack-move A, Follow F, Formation G) |
-| **Quality of life** | right-click an enemy with a mixed selection: only units whose guns hurt it (≥ 25% through its side armor) attack, the rest escort the nearest attacker · **F1** selects idle units · rest the mouse on any unit for its stats (hull, shield, weapon, range, speed, strong and weak against) |
+| **Awareness** (round 4) | elements you aren't watching sit on the screen edge: click a chip to select that element and go to it · **Q** jumps to the newest alert ("Bravo under fire", "Alpha contact north"), rate-limited to one per element per kind |
+| **Scale** (round 4) | **ctrl+A** selects the whole army · **F2** goes to the next element with nothing to do · above ten selected units the panel's portraits group by type with a count and one strength number |
+| **Quality of life** | right-click an enemy with a mixed selection: only units whose guns hurt it (≥ 25% through its side armor) attack, the rest escort the nearest attacker (a whole element gets an attack task instead, and its leader works that out) · **F1** selects idle units · rest the mouse on any unit for its stats (hull, shield, weapon, range, speed, strong and weak against) |
 | **Time** | Space pauses (orders still land); skirmish starts in a planning pause |
 
-**Feedback:** bright rings under selected units (an inspected enemy's ring is bright red), a ground ring that shrinks
+**Feedback:** a thin hull bar over our vehicles that are hurt or selected (fading towards the enemy color as the
+hull gets serious, with a shield sliver above it), bright rings under selected units (an inspected enemy's ring is bright red), a ground ring that shrinks
 onto every ordered spot (team color = move, red = attack, gold = attack-move), dashed waypoint lines from each selected
 unit through its current and queued stops, a crosshair cursor and a hint while an order is armed, and a HUD line per
 order ("3 units: attack-move"). Sounds are feel's.
@@ -62,17 +80,30 @@ mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, que
 | Selection, control groups | `game/control/selection.gd`, `game/control/control_groups.gd` |
 | Mouse and keyboard | `game/control/rts_controls.gd` (node named `TacticalMap` in skirmish, for the HUD skin) |
 | Panel, group bar, rings, radar | `game/ui/selection_panel.gd`, `game/ui/group_bar.gd`, `game/ui/selection_markers.gd`, `game/ui/radar.gd` |
+| Vision region and the camera (L4) | `game/control/vision_region.gd`, `game/camera/rts_camera.gd` (`vision`, `horizon_zoom`, `Track.VISION`) |
+| Element state and alerts (X2) | `game/control/element_awareness.gd`, `game/ui/edge_markers.gd` |
+| Faction pick (L3) | `game/ui/faction_picker.gd` |
+| Self-directing camera | `game/camera/cinematic_camera.gd` |
 | Scripted playtest | `game/control/control_playtest.gd` |
 
-- Tests: `tests/test_control_{orders,response,selection,commands,groups,group_moves,panel,stretch}.gd` (real mouse and key
-  events through `Viewport.push_input`; shared setup in `tests/support/control_fixture.gd`).
+- Tests: `tests/test_control_{orders,response,selection,commands,groups,group_moves,panel,stretch}.gd` and round 4's
+  `tests/test_control_{vision_camera,awareness,tasks,scale,faction_pick,readability,cinematic}.gd` (real mouse and key
+  events through `Viewport.push_input`; shared setup in `tests/support/control_fixture.gd`, which also builds a
+  30-a-side match with `build_scale`).
 - `make control-playtest` (headless): box select, attack-move across the arena, a queued route, a group swap, a
   pushed unit rejoining; every order's response tick in `build/control-playtest/headless/orders.jsonl`.
 - `make control-playtest-shots` (a display; `make remote T=control-playtest-shots` uses builder0's): the same session
   at 1920×1080 and 1280×720, frames in `build/control-playtest/<size>/`.
+- `make control-scale-shots` (a display): the same session with ~30 a side. Deliberately not pass/fail - with a
+  faction-sized army nobody is commanding, the player's force loses. `make cinematic-shots` for the spectator camera,
+  `make faction-menu-shot` for the faction menu.
 - Launch flags (skirmish): the center control point is on by default (`--no-control` turns it off; combat X7 measured
   a 92 s median match with it), `--touch-map` (round 2's tap grammar), `--control-playtest=DIR`, `--scripted` (the
-  desktop script: group 1 attack-moves, group 2 moves with a queued leg).
+  desktop script: group 1 attack-moves, group 2 moves with a queued leg). Round 4 adds `--no-vision-camera`,
+  `--no-elements`, `--element-cpu`, `--player-faction=` / `--enemy-faction=`, `--pick-faction` / `--no-pick-faction`,
+  and `--cinematic`.
+- **Measured at 30 a side** (60 units, 30 selected): box-select 1.38 ms, right-click → 30 orders 1.87 ms, control's
+  per-frame work 1.685 ms. `tests/test_control_scale.gd` holds these to a budget.
 
 ## History: v1–v3 (the squad grammar and the mobile tap map)
 
