@@ -66,6 +66,28 @@ Every moment also carries `phase_early|mid|late|final|post`, and when it has a t
 `law`, `syndicate`; army moments add `introduce`). While a beat runs, the line after another speaker's also sees
 `after_caller|color|pa` ("Thank you, Celeste" needs `after_pa`).
 
+## What the booth is allowed to claim
+
+**A recorded line outlives the number that justified it.** Everything the announcers say is recorded months before
+it is heard, and a clip cannot be edited — only re-recorded, for credits, and re-shipped. So a line that asserts
+something about *how the game works* is a promise the build has to keep.
+
+The rule (agreed with doctrine, 2026-09-16, after they marked up which of their measurements are safe to quote):
+
+| Safe to record | Don't record |
+|---|---|
+| Geometry and facing: a column watches the whole circle, a line 0.42 of it | Anything resting on a mechanic still being built |
+| Things that follow from the shapes: bunched vehicles shoot *later*, because only the front can bear | Survival numbers that a pending mechanic will invert |
+| What a formation or drill *looks* like | Whether it works, when that is still being tuned |
+
+The trap is subtle, because a measurement can be perfectly accurate today and wrong on purpose next month. "Bounding
+overwatch gets you killed" is true of the build that has no deliberate suppression in it, and combat is landing
+exactly that. Two lines were cut for this after they were written (`color.technique.01` and `.02`), which is cheap;
+cutting them after recording would not have been.
+
+When in doubt, describe rather than evaluate. "Half of them move, half of them watch, and then they swap" is true
+whatever the survival numbers do.
+
 ## Slots
 
 | Slot | Speaks | Example |

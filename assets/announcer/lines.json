@@ -5838,24 +5838,6 @@
    "text": "{formation} keeps the element alive longer. Not the point man. The element."
   },
   {
-   "id": "color.technique.01",
-   "speaker": "color",
-   "act": "analysis",
-   "tags": [
-    "formation"
-   ],
-   "text": "They're moving by {technique}. Slower, and everybody gets home."
-  },
-  {
-   "id": "color.technique.02",
-   "speaker": "color",
-   "act": "analysis",
-   "tags": [
-    "formation"
-   ],
-   "text": "{technique}. That's the book answer, and the book is right about this one."
-  },
-  {
    "id": "color.drill.01",
    "speaker": "color",
    "act": "analysis",
@@ -6068,6 +6050,74 @@
    ],
    "text": "Oh, they're going right back at them! Straight into the guns!",
    "intensity": 3
+  },
+  {
+   "id": "color.technique.bound.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_bounding_overwatch"
+   ],
+   "text": "Bounding. Half of them move, half of them watch, and then they swap. Nobody is ever all moving at once."
+  },
+  {
+   "id": "color.technique.bound.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_bounding_overwatch"
+   ],
+   "text": "Watch the back half there. They don't roll until the front half is set. That's the whole idea."
+  },
+  {
+   "id": "color.technique.over.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_traveling_overwatch"
+   ],
+   "text": "Traveling overwatch. Moving, but with somebody always looking the wrong way on purpose."
+  },
+  {
+   "id": "color.technique.trav.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_traveling"
+   ],
+   "text": "Just traveling. No overwatch, no bounding. They're getting somewhere and hoping."
+  },
+  {
+   "id": "color.formation.herringbone.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_herringbone"
+   ],
+   "text": "Herringbone on the halt. Guns out both ways. Stopping in the column you drove in is how you lose a third of an element."
+  },
+  {
+   "id": "color.teach.bunching.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody."
+  },
+  {
+   "id": "color.teach.circling.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming."
   }
  ]
 }

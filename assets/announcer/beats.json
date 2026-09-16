@@ -46,7 +46,8 @@
   "repeat": 5,
   "stolen": 5,
   "drill_near_ambush": 22,
-  "drill_assault_through": 10
+  "drill_assault_through": 10,
+  "drill_break_contact": 16
  },
  "tag_intensity": {
   "first_blood": 1,

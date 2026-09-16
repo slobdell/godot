@@ -190,6 +190,26 @@ which removes three quarters of the combinations of every line naming both sides
 four factions back to back, so any remaining seam would be obvious, plus both new characters.
 <https://claude.ai/artifact/VnKAEDc9y4TZMHYnHSuiiU>. He approved the full run from it.
 
+## A recorded line outlives the number that justified it (2026-09-16)
+
+The constraint that makes this stream different from every other one: **nothing the booth says can be edited.** A
+clip can only be re-recorded, for credits, and re-shipped. So a line asserting something about how the game works
+is a promise the build has to keep, and the cost of being wrong is paid months later.
+
+Doctrine raised it (they marked up which of their measurements are safe to quote, `_agents/doctrine.md`), and it
+generalises to every stream that measures anything. Geometry and armour facing are safe — a column watches the
+whole circle, a line 0.42 of it, bunched vehicles shoot later because only the front can bear. Survival numbers
+resting on a half-built mechanic are not: "bounding overwatch gets you killed" is true of a build with no
+deliberate suppression, and combat is landing exactly that.
+
+Two lines were cut for this before recording. Cutting them afterwards would have meant a clip that contradicts the
+game. The rule is in `assets/announcer/README.md` so it survives this round: **when in doubt, describe rather than
+evaluate.**
+
+**Standing request to other streams:** if you measure something and it surprises you, send it — the Veteran is the
+only one in the booth who gets to be precise, and a number a player can act on is better material than anything I
+would invent. Say whether it is stable or resting on something you are still building.
+
 ## Status
 
 _Updated 2026-09-16 by the audio worker._
