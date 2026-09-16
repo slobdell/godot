@@ -84,6 +84,69 @@ When effects fire and the visual effects themselves (feel's code from round 3: `
 doctrine, ai), the camera and HUD layout (control). You may add an audio bus and a settings entry (shared files:
 minimal, listed in merge notes).
 
+## The lead's direction (2026-09-16, after hearing the real voices)
+
+> *"basically it's no good. Our madlibs / adlibs style of swapping words into sentences just clearly doesn't work
+> … we either need to generalize the things that can be said or we need to create multiple versions of a given
+> script … but that can quickly blow up so we might want to generally rethink our strategy for announcing teams.
+> Furthermore, the conversations are overwhelmingly dominated by the Caller, we don't have much banter from the
+> Veteran."*
+
+And the creative opening he gave with it:
+
+> *"in sporting events the veteran often educates users about good technique in a sport, or technical reasons why
+> someone has the upper hand or a disadvantage. We can make the veteran provide some technical analysis, but we can
+> add some humor into it by the veteran completely trailing off after incomplete thoughts, never fully making his
+> point (think the humor in The Big Lebowski), or the veteran can just say some factual, straight faced statements
+> that would otherwise be appalling ("when you're driving in that formation, your point man better be sure that
+> he's focused and ready for whatever comes next, because there's about a 90% chance that his life is about to
+> end")."*
+>
+> *"there's opportunities for interjection from the PA where she offers polite factual corrections to the
+> announcers saying things out of bounds in our dystopian state. For example, caller might say something like 'Wow
+> the Gang really stuck it to the Law in that one!' to which the PA might interject 'That's right Joseph … That
+> same maneuver performed outside of the arena would have resulted in an immediate Article 57-8C for the suspect
+> and all of his blood relatives'"*
+
+**Canon:** the caller is **Joseph** (the lead: *"the caller should be referred to as Joseph since it's a parody of
+Joe Rogan"*). The other two may now address him by name. Keep the character original: no real name, catchphrases or
+references (the standing rule in game_design.md *Voices*).
+
+## Why stitching failed, and what replaces it (decided 2026-09-16)
+
+**Diagnosis.** A sentence's intonation spans the whole sentence. Cutting a word out of one recording and dropping it
+into another gives it the wrong pitch, stress and length for its new home — the defect is *prosody*, not level or
+slicing, so no amount of tuning the cuts would have fixed it. The pilot's checks could not catch this: every clip
+transcribed correctly and sat at the right loudness. **It was audible to the first person who listened, and I never
+listened.** That is the lesson, not the credits.
+
+**Replacement: record whole sentences, one per realization.** No slicing, no fillers, no joins. The library stays
+templated for authoring and for the director; the *recording plan* expands each template into the full sentences it
+can become, and a cue plays exactly one clip.
+
+**What that costs, measured over the current library** (227 of 490 lines carry slots; the other 263 are already
+whole sentences, already recorded, and still good):
+
+| | recordings | credits |
+|---|---|---|
+| naive full expansion | 3,560 | ~227,000 |
+| **cap of 12 combinations a line** | **816** | **~51,000** |
+| cap of 6 | 504 | ~32,000 |
+
+The naive number is not a reason to abandon the idea — it is 13 lines out of 227 doing 65% of the damage. One line
+(`caller.tape.03`, *"it's {count} for {team} and {other_count} for {other_team}"*) needs 676 recordings by itself.
+
+**Writing rules that follow** (they are also just better writing):
+1. **One variable thing per sentence.** Never two units, never a count beside a team. Every line in the expensive
+   tail breaks this.
+2. **No exact numbers in speech.** `{count}` is 13 values, and at thirty units a side an exact count is wrong as
+   often as it is right. "Half their force", "a handful left", "most of them" instead.
+3. `{team}` (2 values, in 136 lines), `{arena}` (3, fixed per match) and a *single* `{unit}` (6) are all cheap and
+   stay. Recording both team variants whole is what actually fixes *"Green fields the Condemned tonight"*.
+
+**What survives the change:** the 263 slotless clips, and every master (223 MB, rescued to the main checkout), so
+re-cutting costs nothing. What is thrown away: 423 segment clips and 91 fillers — the stitching machinery.
+
 ## Status
 
 _Updated 2026-09-16 by the audio worker._
