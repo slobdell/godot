@@ -1,0 +1,49 @@
+{
+  "name": "law",
+  "faction": "law",
+  "display_name": "The Law",
+  "summary": "Professional, worn down, and by the book: bound forward behind suppression, never move both elements at once, and withdraw before a losing fight becomes a lost one.",
+  "spacing_m": {"open": 15.0, "lanes": 12.0, "dense": 9.0},
+  "legs": {"bounding_m": 26.0, "overwatch_gap_m": 34.0, "support_range_m": 95.0, "cohesion_m": 16.0},
+  "drills": {
+    "near_ambush_m": 30.0,
+    "react_ticks": 90,
+    "flank_m": 48.0,
+    "break_contact_ratio": 0.6,
+    "disengage_m": 45.0,
+    "rally_back_m": 65.0
+  },
+  "movement": [
+    {"when": {"task": ["hold"], "terrain": ["dense", "lanes"]},
+     "formation": "herringbone", "technique": "traveling",
+     "why": "halted: herringbone, sectors assigned, nothing unwatched"},
+
+    {"when": {"task": ["hold"]},
+     "formation": "coil", "technique": "traveling",
+     "why": "halted in the open: coil, all-round security"},
+
+    {"when": {"task": ["screen"]},
+     "formation": "line", "technique": "bounding_overwatch",
+     "why": "screening by the book: a line, and never both elements moving"},
+
+    {"when": {"task": ["support_by_fire"]},
+     "formation": "line", "technique": "traveling",
+     "why": "base of fire: suppress, then let the others move"},
+
+    {"when": {"threat": ["contact", "likely"]},
+     "formation": "wedge", "technique": "bounding_overwatch",
+     "why": "contact: bound forward behind suppressive fire, one element always set"},
+
+    {"when": {"threat": ["possible"], "terrain": ["dense"]},
+     "formation": "column", "technique": "bounding_overwatch",
+     "why": "close country: column through the lanes, bounding between covered positions"},
+
+    {"when": {"threat": ["possible"]},
+     "formation": "wedge", "technique": "traveling_overwatch",
+     "why": "contact possible: wedge, trail element overwatching"},
+
+    {"when": {},
+     "formation": "column", "technique": "traveling",
+     "why": "route march: column, best control"}
+  ]
+}

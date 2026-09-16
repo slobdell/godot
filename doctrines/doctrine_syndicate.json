@@ -1,0 +1,43 @@
+{
+  "name": "syndicate",
+  "faction": "syndicate",
+  "display_name": "The Syndicate",
+  "summary": "Few, expensive and unmanned: keep the range, shoot from a line, reposition the moment the odds turn. They only charge an ambush sprung at point-blank range.",
+  "spacing_m": {"open": 17.0, "lanes": 13.0, "dense": 10.0},
+  "legs": {"traveling_overwatch_m": 40.0, "overwatch_gap_m": 40.0, "support_range_m": 110.0},
+  "drills": {
+    "near_ambush_m": 22.0,
+    "assault_through_m": 20.0,
+    "react_ticks": 60,
+    "flank_m": 55.0,
+    "break_contact_ratio": 0.75,
+    "disengage_m": 30.0,
+    "rally_back_m": 75.0,
+    "broken_contact_m": 115.0
+  },
+  "movement": [
+    {"when": {"task": ["hold"]},
+     "formation": "line", "technique": "traveling",
+     "why": "holding: a firing line, every weapon on the open ground"},
+
+    {"when": {"task": ["screen"]},
+     "formation": "line", "technique": "traveling_overwatch",
+     "why": "screening at stand-off range"},
+
+    {"when": {"task": ["support_by_fire"]},
+     "formation": "line", "technique": "traveling",
+     "why": "stand off and suppress: their range is the product"},
+
+    {"when": {"threat": ["contact", "likely"]},
+     "formation": "echelon_right", "technique": "traveling_overwatch",
+     "why": "refuse the flank and keep the range: shoot from the angle, never from the front"},
+
+    {"when": {"threat": ["possible"]},
+     "formation": "line", "technique": "traveling_overwatch",
+     "why": "contact possible: a wide firing line, trail element covering"},
+
+    {"when": {},
+     "formation": "wedge", "technique": "traveling",
+     "why": "nothing in sight: wedge, unhurried"}
+  ]
+}
