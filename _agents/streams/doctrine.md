@@ -176,6 +176,8 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
 
 - `tests/test_army.gd`: one line — the army-JSON sweep skips `doctrine_*.json`, which are doctrine TABLES
   (contract L1), a different schema in the same folder. `tests/test_tactics_doctrine.gd` validates those.
+- `Makefile`: one word — `doctrine-page` joins `LIGHT_GOALS` (it is a one-second Python script and should not
+  take a machine-wide heavy-run slot).
 - New paths: `game/tactics/`, `doctrines/doctrine_*.json`, `mk/tactics.mk` (picked up by the root Makefile's
   `mk/*.mk` include, no Makefile edit), `tests/tactics/`, `tests/test_tactics_*.gd`, `_agents/doctrine.md`,
   and `tools/tactics/` (proposed ownership: doctrine).
