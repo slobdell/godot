@@ -55,6 +55,25 @@ var _last_stinger_at := -100.0
 var _clock := 0.0
 
 
+## Adds a music director to the running game if `--music` asks for one, following the booth's mood. Returns it,
+## or null. Mirrors AnnouncerBooth.attach, and is called from the same place in game/main.gd.
+static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
+	var flags: LaunchFlags = main.flags
+	# --mute means silence, the soundtrack included (SfxSystem reads the same flag).
+	if flags.text("music", "off") == "off" or flags.has("mute") or booth == null or booth.mood == null:
+		return null
+	var music := MusicDirector.new()
+	music.name = "Music"
+	music.volume_db = float(flags.text("music-volume", "0"))
+	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
+		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
+		return null
+	main.game_match.add_child(music)
+	music.follow(booth.mood)
+	print("MUSIC on: %d beds, %d stingers, following the match mood" % [music.tracks.size(), music.stingers.size()])
+	return music
+
+
 ## Adds the Music bus and ducks it under the announcer, the way AnnouncerVoice ducks the world.
 static func ensure_bus() -> int:
 	var index := AudioServer.get_bus_index(BUS)
@@ -221,12 +240,18 @@ func _playing() -> bool:
 
 func _crossfade_now() -> void:
 	var next_id := pending
-	pending = ""
-	if next_id == "" or _players.is_empty():
+	if next_id == "":
 		return
+	if _players.is_empty():
+		# _ready hasn't run yet (the node was added to a tree that isn't in the scene yet): keep the request and
+		# let _process pick it up, rather than silently dropping the first bed of the match.
+		return
+	pending = ""
 	var stream := load_stream.call(dir.path_join(tracks[next_id]["file"])) as AudioStream
 	if stream == null:
-		push_warning("music: no file for %s" % next_id)
+		# Not push_warning: a music pack that hasn't downloaded yet is an ordinary state on the web, and the test
+		# runner counts any engine message as a failure (orientation trip-up 16).
+		print("MUSIC no file for %s yet: silence" % next_id)
 		return
 	var outgoing := _players[_current]
 	_current = 1 - _current
@@ -242,6 +267,8 @@ func _crossfade_now() -> void:
 		_fade.tween_property(outgoing, "volume_db", -60.0, FADE_S)
 		_fade.chain().tween_callback(outgoing.stop)
 	track_id = next_id
+	# Marker for make music-smoke: the soundtrack is the one thing here that a headless run can prove.
+	print("MUSIC_TRACK state=%s track=%s t=%.1f" % [state, track_id, _clock])
 	track_changed.emit(state, track_id)
 
 

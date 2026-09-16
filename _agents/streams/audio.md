@@ -88,8 +88,8 @@ minimal, listed in merge notes).
 
 _Updated 2026-09-16 by the audio worker._
 
-**Done: X1 (variance), X5 (MatchMood), most of X6 (music pipeline). X2 is blocked on the lead (the API key).
-In progress: X3 (booth live), then X4 (sound effects).**
+**Done: X1 (variance), X3 (the booth and the music in live matches), X4 (the sound mix), X5 (MatchMood), X6 (the
+music pipeline). X2 is blocked on the lead: the environment has an ElevenLabs key *id*, not an API key.**
 
 ### Waiting on the lead
 
@@ -166,6 +166,42 @@ fixture producing a plausible arc and the reading never leaving its contract.
   **bar lines**, normalises and limits, encodes Ogg, and writes the manifest row without clobbering tuning the lead
   has already done. It nags if the Suno plan wasn't recorded, because commercial rights depend on it.
 
+**X3 — the booth and the music in live matches.** The booth already listened to real `Match` signals through
+`MatchEventAdapter` (round 3, K5). What round 4 adds:
+- The booth keeps the match's **`MatchMood`** up to date from the same events it already polls, so there is one
+  adapter and one mood for everything that reacts to the match. `--music` on its own attaches a *silent* booth, so
+  the music works without the announcer.
+- `MusicDirector.attach()` from `game/main.gd`, beside the booth, on `--music=on` (`--music-volume=DB`,
+  `--music-dir=PATH`). It follows the booth's mood: the bed changes at the next bar line, the result plays its
+  stinger.
+- **The ducking chain is now real.** `AnnouncerVoice` sidechains a compressor onto a `World` bus that nothing
+  previously created; `SfxSystem` now creates it and routes every world voice through it, and `MusicDirector` adds
+  its own `Music` bus ducked under `Announcer` as well. So speech ducks both the battle and the music, and that is
+  wired rather than described.
+- `assets/announcer/*.json` and `assets/music/*.json` are added to `include_filter` in `export_presets.cfg`, or the
+  web and server builds ship without the line library and the music manifest (trip-up 30).
+
+**X4 — the sound effects.** The lead's *"atari"* verdict was about three things, none of them any single sound's
+synthesis, and all three are fixed:
+- **Every shot was the same recording.** A scout's machine gun fires eleven rounds a second and every one was
+  byte-identical; ±12% pitch jitter does not hide that. The most-repeated sounds now come in several **takes**
+  (4 for `mg_round` and `bullet_hit_metal`, 3 for `autocannon_shot`, `ricochet`, `shell_hit_armor`, `dirt_impact`,
+  `explosion_small`, 2 for `weak_spot_hit`, `tank_boom`, `cannon_shot`), each synthesised from its own seed, and
+  `SfxSystem` draws one per shot. Loops keep a single take, because feel's engine and crowd systems duplicate them
+  to set loop points — a contract a test now guards, since those files are feel's and not mine to adapt.
+- **Nothing mixed the battle.** Twenty voices summed straight into the master, so a firefight clipped and turned to
+  mush. World sound now goes through the `World` bus, trimmed 6 dB with a limiter at −1 dB.
+- **Distance only made things quieter.** Sounds now carry a distance filter, so a cannon across the arena is dull
+  as well as quiet (the tank's boom falls to 1.4 kHz and −22 dB at maximum range) while small metallic sounds that
+  are only ever heard close keep their brightness.
+
+**Size:** 48 WAVs, 2.0 MB in git (the takes added 590 KB); every one imports as Quite OK Audio, so the exported pack
+carries roughly a quarter of that. `assets/music` is another 537 KB of placeholder Ogg.
+
+**What X4 did not get** (it needs X2's key): ElevenLabs' sound-effects generation, and CC0 source material layered
+under the synthesised transients. That is the step from "clean, varied and properly mixed" to genuinely cinematic,
+and it is the first thing to do when the key lands.
+
 **The mixdown flake (not in my backlog; the orchestrator asked for it early).** `test_mixdown_places_parts_fillers_and_cuts`
 was failing other streams' checks with 5.197 s instead of 7.0 s. It is **not load**: `apad` after `amix` simply does
 not pad on ffmpeg 6.1.1, so the mix ended with its last clip. `render()` now mixes against a generated `anullsrc`
@@ -209,13 +245,39 @@ Committed as 5ccf56f and reported to the orchestrator for merging to `main`.
 
 ### Next steps
 
-1. **X3**: the booth and the music in a live skirmish — flags, an options entry, and screenshots at both aspects.
-2. **X4**: the sound effects. ElevenLabs' sound-effects generation is blocked with X2, so the plan is layered
-   synthesis (transient, body, tail, reflections), variation pools so nothing repeats, distance filtering, and a real
-   bus mix with headroom — all licence-clean and regenerable, with the ElevenLabs source added when the key lands.
+1. **When the `sk_` key lands:** the pilot (~250 characters), listen to it, tune `VOICE_SETTINGS` and the carrier
+   sentences, then the full run (~28.5k credits), then `--announcer=voice` plays in skirmish. After that, ElevenLabs
+   sound-effects generation layered under X4's transients.
+2. **An options entry** for announcer and music volume. The flags exist; the settings UI is control's file, so it
+   is a request to them rather than something I should edit (below).
+3. **Stretch, not started:** stems so layers build with intensity, an arena PA reading ad copy between rounds, and
+   per-faction announcer flavour (the faction *lines* exist from round 3; the flavour hook does not).
+
+### Requests to other streams
+
+- **control** (skirmish and the options screen): `--announcer=text|voice|off` and `--music=on|off` plus their volume
+  flags are wired and default to off. A settings entry for each (announcer: text / voice / off with a volume; music:
+  a volume) belongs in your options UI. Round 3 also asked for `--announcer=text` by default in skirmish; still
+  worth doing, and subtitles now arrive through `Hud.post_message` as `CALLER: …`.
+- **feel**: the `World` audio bus you asked for in round 3 now exists and every world voice is on it, so the
+  announcer's ducking works. `AnnouncerBooth.line_started` still carries the caller's text, team and intensity for
+  the crowd swell. Nothing for you to change unless you want to route more sounds there.
 
 ### Merge notes (shared files)
 
 - `mk/core.mk`: `audio-check` appended to `check`'s prerequisites (music contract checks, a few seconds).
 - `mk/audio.mk`: new, mine.
+- `mk/announcer.mk`: `announcer-variance` added to `announcer-check` (~90 s). **The orchestrator removed this line on
+  `main`** because my mixdown commit carried the target without its CLI support and broke everyone's check. The CLI
+  support is here (46bf0c0), so take my version of this file on merge and it comes back working.
+- `game/main.gd`: the announcer's attach line now also attaches the music director, plus one header line for the
+  `--music` flags.
+- `export_presets.cfg`: `assets/announcer/*.json` and `assets/music/*.json` added to both presets' `include_filter`.
 - `_agents/orientation.md`: trip-up 67 added (GNU make defines `WINDOW = 2` itself).
+
+### A mistake worth recording
+
+My commit 5ccf56f staged `mk/announcer.mk` with `announcer-variance` already in `announcer-check`, while the CLI that
+implements it was still uncommitted. `make check` on `main` went red for all five streams until the orchestrator took
+the line out. **A make target that is part of `check` and the code it calls belong in the same commit** — `git add -A
+<paths>` is how an in-progress file rides along unnoticed.

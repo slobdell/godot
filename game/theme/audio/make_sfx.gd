@@ -44,7 +44,36 @@ func _initialize() -> void:
 	_seeded("ui_ack_move", _ack_move)
 	_seeded("ui_ack_attack", _ack_attack)
 	_seeded("ui_select", _select_blip)
+	# Audio (round 4, X4): variation pools. A machine gun firing eleven identical cracks a second is the single
+	# most "Atari" thing in the mix, and pitch jitter alone does not hide it. These sounds now come in several
+	# takes; SfxSystem picks one per shot. VARIANTS lists how many, and the pool includes the original file, so
+	# nothing that already exists changes. Short sounds get more takes because they cost almost nothing.
+	for sound in VARIANTS:
+		_takes(sound, VARIANTS[sound])
 	quit()
+
+
+## How many extra takes each varied sound gets (on top of the original). Kept small for the long ones: the tank's
+## boom is 2.8 s and by far the biggest file here.
+const VARIANTS := {
+	"mg_round": 3, "bullet_hit_metal": 3, "autocannon_shot": 2, "ricochet": 2, "shell_hit_armor": 2,
+	"dirt_impact": 2, "explosion_small": 2, "weak_spot_hit": 1, "tank_boom": 1, "cannon_shot": 1,
+}
+
+
+## Extra takes of one sound, each from its own seed so the takes differ but never change run to run, and so adding
+## a take to one sound never moves another.
+func _takes(sound: String, count: int) -> void:
+	var synths := {
+		"mg_round": _mg_round, "bullet_hit_metal": _bullet_hit_metal, "autocannon_shot": _autocannon_shot,
+		"ricochet": _ricochet, "shell_hit_armor": _shell_hit_armor, "dirt_impact": _dirt_impact,
+		"weak_spot_hit": _weak_spot_hit, "tank_boom": _tank_boom, "cannon_shot": _cannon_shot,
+	}
+	for take in range(2, count + 2):
+		rng.seed = hash(sound) + take * 7919
+		var samples: PackedFloat32Array = _explosion(0.7, 0.55, 900.0) if sound == "explosion_small" \
+				else (synths[sound] as Callable).call()
+		_write("%s_%d" % [sound, take], samples)
 
 
 func _seeded(sound: String, synth: Callable) -> void:

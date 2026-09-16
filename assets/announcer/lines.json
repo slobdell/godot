@@ -284,7 +284,7 @@
    "unless_flags": [
     "welcomed"
    ],
-   "text": "Good evening, and welcome to {arena}, to everyone watching at home, and to our viewers in the detention blocks."
+   "text": "A warm welcome to {arena}, to everyone watching at home, and to our viewers in the detention blocks."
   },
   {
    "id": "pa.welcome.09",
@@ -2976,7 +2976,7 @@
    "tags": [
     "friendly_kill"
    ],
-   "text": "For viewers just joining us, that was a {team} vehicle striking another {team} vehicle. The match continues."
+   "text": "Officials confirm that was a {team} vehicle striking another {team} vehicle. The match continues."
   },
   {
    "id": "pa.ff.03",
