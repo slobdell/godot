@@ -33,6 +33,12 @@ REQUIRED: dict[str, dict[str, str]] = {
     "momentum": {"army_health": "team_map_ratio"},
     "match_end": {"winner": "winner", "reason": "reason", "duration_seconds": "num",
                   "units_left": "team_map_int", "kills_by_unit": "special"},
+    # L1, from doctrine (2026-09-16): why an element is lining up the way it is. `reason` is the doctrine table's
+    # own words — a subtitle and the demo page's "why", never spoken, since every spoken word must be recorded.
+    "element_formation": {"team": "team", "element": "str", "size": "int", "reason": "str",
+                          "formation": "str", "technique": "str", "changed": "special"},
+    "element_drill": {"team": "team", "element": "str", "size": "int", "reason": "str",
+                      "drill": "str", "formation": "str", "distance": "num", "target": "str"},
 }
 EVENT_TYPES = tuple(REQUIRED)
 

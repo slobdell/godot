@@ -26,6 +26,13 @@ const REQUIRED := {
 	"momentum": {"army_health": "team_map_ratio"},
 	"match_end": {"winner": "winner", "reason": "reason", "duration_seconds": "num",
 			"units_left": "team_map_int", "kills_by_unit": "special"},
+	# L1, from doctrine (2026-09-16): why an element is lining up the way it is, so the booth can explain the
+	# tactics instead of the HUD having to. `reason` is the doctrine table's own words - useful as a subtitle and
+	# as the demo page's "why", but never spoken, because every spoken word has to have been recorded.
+	"element_formation": {"team": "team", "element": "str", "size": "int", "reason": "str",
+			"formation": "str", "technique": "str", "changed": "special"},
+	"element_drill": {"team": "team", "element": "str", "size": "int", "reason": "str",
+			"drill": "str", "formation": "str", "distance": "num", "target": "str"},
 }
 
 ## Fields that name a unit instance, paired with the field naming its type.

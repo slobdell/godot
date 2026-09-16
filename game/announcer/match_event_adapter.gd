@@ -28,6 +28,37 @@ var _units := {}
 var _last_momentum_t := 0.0
 
 
+## Doctrine (L1) reports why an element is lining up the way it is, and the booth turns that into commentary
+## instead of the HUD having to show it. Found by duck typing rather than by class: doctrine's `Elements` lives on
+## its own branch until the checkpoint merges, and naming the class here would stop this file compiling before then.
+## Still a pure listener — doctrine never hears back from us.
+const ELEMENT_SIGNAL := "element_reported"
+
+
+## True when something is publishing element decisions and we are listening to it (whether we connected just now
+## or on an earlier call), so it is safe to call again after doctrine's nodes appear.
+func listen_for_elements() -> bool:
+	var candidates: Array = []
+	if game_match.is_inside_tree():
+		candidates.append_array(game_match.get_tree().get_nodes_in_group("elements"))
+	candidates.append_array(game_match.get_children())
+	for node in candidates:
+		if not node.has_signal(ELEMENT_SIGNAL):
+			continue
+		if not node.is_connected(ELEMENT_SIGNAL, _on_element_reported):
+			node.connect(ELEMENT_SIGNAL, _on_element_reported)
+		return true
+	return false
+
+
+## Doctrine sends the decision with no clock on it; stamping it is ours, exactly as every other event here.
+func _on_element_reported(event: Dictionary) -> void:
+	var fields := event.duplicate()
+	var type := String(fields.get("type", "element_formation"))
+	fields.erase("type")
+	_emit(type, fields)
+
+
 func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 	game_match = watched
 	arena = arena_name
@@ -35,6 +66,7 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 	game_match.friendly_fire.connect(_on_friendly_fire)
 	game_match.control_changed.connect(_on_control_changed)
 	game_match.finished.connect(_on_finished)
+	listen_for_elements()
 
 
 func seconds() -> float:
