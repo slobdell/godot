@@ -293,9 +293,12 @@ speech — so a *spoken* line can only key on the **enumerated** fields, and `re
 | `drill` | `react_to_contact`, `near_ambush`, `assault_through`, `far_ambush`, `support_by_fire`, `break_contact`, `herringbone`, `bait` (8) |
 
 `ring` and `encircle` exist in the engine but **no shipped table selects them** (see *Why encircle is off*),
-so nothing should be recorded for them; `echelon_left` is in the vocabulary but unused today. A test holds
-these sets closed (`test_every_value_the_booth_has_to_speak_is_from_a_closed_set`), so adding a shape or a
-drill to a table is a deliberate act with a known cost in recordings rather than a silent gap in the booth.
+so nothing should be recorded for them; `echelon_left` is in the vocabulary but unused today. **These sets are FROZEN** by agreement with audio (2026-09-16):
+`test_every_value_the_booth_has_to_speak_is_from_a_closed_set` asserts them exactly, and adding a shape or a
+drill to a shipped table fails the build with an explanation. That is deliberate — the cost is invisible from
+this side (each value is 8-16 recordings across the lines that name it) and the failure is silent (a value
+with no clip doesn't error, it just makes those lines ineligible and the booth says something blander). To
+add one: ask audio, then change the frozen list in the same commit as the table.
 
 **The publisher is found by group, not by class.** `Elements` joins the `elements` group
 (`Elements.GROUP`), because a listener on another branch cannot name a class that doesn't exist there yet.

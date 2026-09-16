@@ -157,7 +157,13 @@ merges), so `Elements` joins that group on `_ready`. Two constraints came back t
 putting in an event: the booth **records every word in advance**, so only the enumerated fields can be
 spoken (`reason` is subtitle-only), and **matches are always between different factions** — nothing in the
 tables assumed otherwise, but the parity fixture uses two Condemned armies and is a doctrine isolation, not
-a matchup. The value sets a shipped table can emit are pinned by a test and listed in _agents/doctrine.md.
+a matchup. The value sets a shipped table can emit are **frozen** at audio's request (8 formations, 3 techniques, 8
+drills): `test_every_value_the_booth_has_to_speak_is_from_a_closed_set` asserts them exactly and fails the
+build with the reason, because an unrecorded value degrades silently rather than erroring. **Adding a shape
+or a drill to a shipped table now needs audio's sign-off**, and the frozen list changes in the same commit as
+the table. The correction was worth real money: they had 6/3/6 from the round-4 brief and would have recorded
+`encircle`, `ring` and `echelon_left` — 24 clips for shapes nothing selects — while missing `vee`, `coil`,
+`swarm` and `bait`, which would have left the gangs mute.
 
 **Originally needed from audio (two small things, both in their paths):** add `element_formation` and `element_drill` to
 `AnnouncerEvents.REQUIRED` (and the Python twin in `tools/announcer/events.py`), and have

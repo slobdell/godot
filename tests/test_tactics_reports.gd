@@ -121,8 +121,18 @@ func test_the_publisher_can_be_found_without_naming_it() -> void:
 
 
 func test_every_value_the_booth_has_to_speak_is_from_a_closed_set() -> void:
-	# The announcer records words in advance: there is no runtime speech, so every spoken field has to come
-	# from a small enumerated set (audio, 2026-09-16). Free text lives in `reason`, which is subtitle-only.
+	# FROZEN by agreement with audio (2026-09-16). The announcer records every word in advance, so each value
+	# below is 8-16 recordings across the lines that name it — and the failure mode is silent: a value with
+	# no clip doesn't error, it just makes those lines ineligible and the booth says something blander
+	# instead. So adding a shape or a drill to a shipped table is not a free edit.
+	#
+	# To add one: ask audio first, then change this list in the same commit as the table. `encircle`/`ring`
+	# and `echelon_left` are deliberately absent — they exist in the engine but no shipped table selects
+	# them, and nothing should be recorded for a shape nobody uses.
+	var spoken_formations := ["coil", "column", "echelon_right", "herringbone", "line", "swarm", "vee", "wedge"]
+	var spoken_techniques := ["bounding_overwatch", "traveling", "traveling_overwatch"]
+	var spoken_drills := ["assault_through", "bait", "break_contact", "far_ambush", "herringbone",
+			"near_ambush", "react_to_contact", "support_by_fire"]
 	DoctrineTable.clear_cache()
 	var formations := {}
 	var techniques := {}
@@ -137,15 +147,25 @@ func test_every_value_the_booth_has_to_speak_is_from_a_closed_set() -> void:
 			techniques[rule["technique"]] = true
 		for drill in table.drills.get("enabled", []):
 			drills[drill] = true
-	for name: String in formations:
-		assert_true(TacticsFormation.NAMES.has(name), "%s is a known formation" % name)
-	for name: String in drills:
-		assert_true(Drills.NAMES.has(name), "%s is a known drill" % name)
-	assert_true(formations.size() <= 10, "the booth has at most ten shapes to record (%d)" % formations.size())
-	assert_eq(techniques.size(), 3, "and three movement techniques")
-	assert_true(drills.size() <= 9, "and at most nine drills (%d)" % drills.size())
-	assert_true(not drills.has("encircle"),
-			"encircle is not in any shipped table, so nobody should record lines for it")
+	var found_formations: Array = formations.keys()
+	var found_techniques: Array = techniques.keys()
+	var found_drills: Array = drills.keys()
+	found_formations.sort()
+	found_techniques.sort()
+	found_drills.sort()
+	assert_eq(found_formations, spoken_formations, _frozen("formation", found_formations, spoken_formations))
+	assert_eq(found_techniques, spoken_techniques, _frozen("technique", found_techniques, spoken_techniques))
+	assert_eq(found_drills, spoken_drills, _frozen("drill", found_drills, spoken_drills))
+
+
+## The message a future tuner reads when a table starts using something the booth cannot say.
+func _frozen(field: String, found: Array, recorded: Array) -> String:
+	var added: Array = found.filter(func(value: Variant) -> bool: return not recorded.has(value))
+	var dropped: Array = recorded.filter(func(value: Variant) -> bool: return not found.has(value))
+	var what := "added %s" % [added] if not added.is_empty() else "stopped using %s" % [dropped]
+	return ("the shipped tables %s: the booth's %s values are frozen (audio, 2026-09-16). Every new value is "
+			+ "8-16 recordings, and an unrecorded one fails silently — the lines naming it just go quiet. "
+			+ "Get audio's sign-off, then update this list in the same commit as the table") % [what, field]
 
 
 func test_doctrine_publishes_values_not_commentary() -> void:
