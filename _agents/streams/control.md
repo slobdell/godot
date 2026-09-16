@@ -73,7 +73,7 @@ Doctrine data and element leaders (doctrine), weapons, suppression and rosters (
 
 ## Status
 
-_Round 4, control stream. Updated 2026-09-15._
+_Round 4, control stream. **All six backlog items and the stretch are done.** Updated 2026-09-16._
 
 ### Plan (backlog in order)
 
@@ -212,30 +212,102 @@ at 28 vs 29.
   panel's portraits.
 - The doctrine line ran off the bottom of the panel at 1280×720; the panel now reserves a footer strip for it.
 
+### Stretch. Done.
+
+- **A cinematic camera** (`game/camera/cinematic_camera.gd`, `--cinematic`): it works in **shots**, not drift - a
+  camera that chases the best point every frame is a nervous mess. Each shot frames one cluster and is held for
+  6 s; something clearly better interrupts after 2.5 s; a long move is a **cut**, not a glide over dead ground.
+  Scenes score both sides in one place highest, then vehicles just hit, then how many are in frame. It replaces
+  the vision framing and ignores the L4 cap: nobody is earning this view. `make cinematic`, `make cinematic-shots`.
+- **Smart-cast for a mixed selection** already shipped in round 3 (`RtsControls.smart_attack`); X3 keeps it for
+  ad-hoc selections, while a whole element gets an attack task and its leader works out who shoots.
+
+### Decisions (with reasons)
+
+- **`max_zoom_in` is a zoom-out cap** (`RtsCamera.vision_zoom`): `zoom` runs 0 = close to 1 = high here, and the
+  rule the lead asked for is a limit on going *out*. Zooming in past the auto frame stays free - it costs
+  awareness, which is the player's call.
+- **The cap measures seen ground, not a bounding box.** Bounding-boxing the sight discs said a five-unit force
+  could see a 250 m box and earned zoom 0.94, which is no cap at all. `seen_fraction` samples the screen onto the
+  ground and asks the region; the cap is the furthest zoom keeping 70% of the screen over seen ground.
+- **Elements are formed by the first task and dissolved by any direct order.** `Element.update` commands its
+  members even with no task, so pre-forming one per squad had untasked leaders fighting the player for the wheel.
+- **Attack-move maps to a `move` task** for an element: an element on the move already runs react-to-contact.
+- **Faction flags follow `--player` / `--enemy`**, not the match runner's `--green` / `--rust`, so one skirmish
+  command reads consistently. The menu never opens in a headless, scripted, playtest or smoke run.
+
 ### Questions for the lead
 
-- None yet.
+1. **How close is right?** The default frame is ~95 m of ground with the camera 35 m up. That is the Twisted
+   Metal end of the spectrum you asked for, and you cannot scroll out past your force's horizon. If it is still
+   too far or now too close, `VISION_FRAME_INSET` and `VISION_SEEN_FRACTION` in `game/camera/rts_camera.gd` are
+   the two dials, and `--no-vision-camera` gives you round 3's free camera to compare against.
+2. **Is one alert prompt enough,** or do you want the last three on screen? It started as three lines and landed
+   on the HUD's message column, so it is one line plus a count now.
+3. **The faction menu opens on `make skirmish`** when you name no faction. If that gets in the way,
+   `--no-pick-faction` skips it and I will make that the default.
 
 ### Requests to other streams
 
-- **art / theme (no stream this round) — blocks the scale goal.** At ~30 a side the renderer runs out of
+- **art / theme (no stream this round) - blocks the scale goal.** At ~30 a side the renderer runs out of
   per-instance shader uniform slots: *"Too many instances using shader instance variables … Maximum items
-  supported by this hardware is: 4096"*, 339 errors in one `make control-scale-shots` run, followed by
-  `global_shader_uniforms.instance_buffer_pos` failures. Raising `buffer_size` in `project.godot` cannot help -
-  4096 is the hardware maximum - so the vehicle materials need fewer per-instance uniforms (users:
-  `game/theme/cyberpunk/{unit_skin,weapon_cannon,dozer_part}.gd`,
-  `game/theme/fx/shaders/{unit_body,vehicle_glow,shield}.gdshader`). Not touched: `game/theme/**` is additive-only
-  this round. The scale target counts and attributes them rather than swallowing them.
+  supported by this hardware is: 4096"*, 339 errors in one `make control-scale-shots` run. Raising `buffer_size`
+  cannot help - 4096 is the hardware maximum - so the vehicle materials need fewer per-instance uniforms
+  (`game/theme/cyberpunk/{unit_skin,weapon_cannon,dozer_part}.gd`,
+  `game/theme/fx/shaders/{unit_body,vehicle_glow,shield}.gdshader`). Reported; the orchestrator has it in HANDOFF
+  and combat hit it independently.
+- **doctrine:** `Element.update` commands its members even when `task == {}`. Control forms elements lazily to
+  work around it; anyone else adopting L1 will hit the same edge. (Relayed - now noted in workstreams.md.)
+- **doctrine (their request (a)):** an optional `facing` in `UnitCommand`, to remove the halt-formation hack where
+  each vehicle drives a few metres along its sector to end up pointing the right way. It is control's file and it
+  is **not done** - a clean next-round item.
+- **ai:** the CPU still runs its squad AI in skirmish; `--element-cpu` wires `ElementCommander` in for
+  experiments. Which commander the CPU runs is ai's call.
 
+### Known issues
 
-- **doctrine:** `Element.update` commands its members even when `task == {}`, so an element that exists but has
-  not been given a task will fight the player for the wheel. Control works around it by forming elements only
-  when a task is given, but anyone else adopting L1 will hit the same edge - worth either an explicit
-  "uncommanded" state or a note in the contract.
-- **doctrine (their request (a)):** an optional `facing` in `UnitCommand`, to remove the halt-formation hack
-  where each vehicle drives a few metres along its sector to end up pointing the right way. It is control's file;
-  queued behind X4-X6, and a clean next-round item if it does not fit.
-- **ai:** the CPU still runs its squad AI in skirmish. `--element-cpu` wires `ElementCommander` in for
-  experiments; which commander the CPU runs is ai's call.
-- **orchestrator:** K1's new optional `source` field needs a line in `workstreams.md`.
+- `test_ai_scenarios::test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire` fails on my last check (both
+  arms of its A/B report identical numbers, 33 vs 33 ticks). It came in with main, is in ai's paths, and reads
+  nothing this branch touches. Everything else is green: **842 passed**.
+- The faction menu is the only new screen and it has no gamepad or touch path. Desktop first (pillar 5).
+- `separated_unit_rejoins` in the playtest reports "skipped" when every survivor is in contact or the pushed unit
+  is destroyed on the way home. The playtest uses wall-clock timers, so which units survive varies run to run.
 
+### What to playtest (exact commands)
+
+```bash
+make skirmish                       # the faction menu, then the vision camera, elements and tasks
+make skirmish-factions FACTION=gangs ENEMY_FACTION=syndicate   # 44 vs 17
+make cinematic                      # watch a CPU-vs-CPU match direct itself
+make remote T=control-playtest-shots   # frames at 1920x1080 and 1280x720
+make remote T=control-scale-shots      # ~30 a side
+make remote T=cinematic-shots          # trailer frames
+```
+
+In a match: **1-5** picks an element and the camera goes to it; **right-click** gives it a task and the command
+card tells you what its leader chose; **E** screens a flank, **R** sets a base of fire; **Q** jumps to whoever is
+in trouble; **ctrl+A** takes everything; **F2** finds whoever is idle; **Tab** shows your force's horizon; **G**
+overrides the formation if you disagree with the leader.
+
+### Next steps
+
+1. `facing` in `UnitCommand` (doctrine's request (a)).
+2. The renderer's per-instance uniform limit, once `game/theme/**` has an owner - it is what stops 30 a side from
+   *looking* right.
+3. Touch: the whole round-4 grammar is desktop-only. `--touch-map` still runs round 2's tap grammar unchanged.
+4. The lead's answers to the three questions above are dials, not rewrites.
+
+### Merge notes (shared files)
+
+- `game/modes/skirmish_mode.gd` (control's): new flags `--player-faction`, `--enemy-faction`, `--pick-faction`,
+  `--no-pick-faction`, `--no-vision-camera`, `--no-elements`, `--element-cpu`, `--cinematic`; installs `Elements`
+  and wires the vision camera.
+- `mk/command.mk` (control's): `CONTROL_FLAGS`, `control-scale-shots`, `cinematic`, `cinematic-shots`,
+  `faction-menu-shot`, `skirmish-factions`; the windowed playtest's timeout is 420 s.
+- **K1 additive change:** `UnitCommand` and each stored order gain an optional `"source"`
+  (`"player" | "element" | ""`, default `""`). Doctrine's `Element._issue` needs no change. Documented in
+  workstreams.md by the orchestrator.
+- No shared-file edits outside my paths: `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` and
+  `game/theme/**` are untouched.
+- The **sim baseline is untouched** (control must not change it): nothing here runs in `--match`, and the last
+  check's `sim-baseline` passed.
