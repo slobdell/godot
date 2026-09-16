@@ -187,3 +187,14 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
 2. A support-element doctrine rule (displace and set up, instead of breaking contact).
 3. Faction tables want a real roster to sit on (combat's L3): today every unit is `condemned`, so
    `Elements._table_for` always loads the Condemned table in a real match.
+
+### Proposed edits to workstreams.md (orchestrator's call)
+
+- **L1, as built:** `element_changed(id)` and `leader_lost(id, fallen, successor)` are signals on **`Elements`**
+  (the per-match registry the HUD holds), not on each `Element`; `Elements.install(match, orders)` /
+  `Elements.of_match(match)` reach it. `element.state()` returns the contract's fields plus `sectors`,
+  `detached`, `leader`, `members`, `task`. Tasks are exactly `{"verb", "to"?, "target"?}` — a task may not name
+  a formation (the leader decides; `ElementTask.validate` rejects it).
+- **Ownership:** add `tools/tactics/` (the read-only doctrine page) to doctrine's paths.
+- **Note for the table:** `doctrines/` now holds two schemas — armies (C2) and doctrine tables (L1,
+  `doctrine_*.json`). Anything that sweeps that folder must filter (two tests did; both fixed).

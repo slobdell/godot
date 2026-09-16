@@ -67,6 +67,9 @@ game/
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
   combat/                Weapons (data: cannon, flamethrower), Shell, Armor, Ballistics, Impact
+  tactics/               ELEMENTS (round 4, L1): Element + Elements (leaders, tasks, formations, movement
+                         techniques), DoctrineTable (doctrines/doctrine_*.json), Drills (battle drills),
+                         ElementPlan (the leader's decision, pure), ElementCommander (a CPU that assigns tasks)
   ai/                    Squad + Formations (commander, drills, slots); TankBrain (utility AI) + Directives + Doctrine;
                          OrderController (orders + reflexes → command),
                          BotController (legacy baseline), Steering, Perception, Pathing
@@ -83,7 +86,8 @@ game/
   camera/                FollowCamera, RtsCamera (the skirmish camera: pan/zoom/rotate/follow, touch gestures)
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
 tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
-doctrines/               armies as JSON (squads, units, directives) for skirmish and the match runner
+doctrines/               armies as JSON (squads, units, directives) for skirmish and the match runner;
+                         doctrine_<name>.json are element DOCTRINE TABLES (a different schema: _agents/doctrine.md)
 mk/                      Makefile targets split by area (core, play, net, match, web); root Makefile includes them
 tests/baselines/         recorded simulation hash (make sim-baseline)
 _agents/streams/         per-workstream briefs (round 3: control, combat, ai, feel, assets, announcer); archive/round1/ and archive/round2/
