@@ -124,8 +124,11 @@ func test_elements_off_screen_get_an_edge_marker_and_those_on_screen_do_not() ->
 	assert_near(float(mark["health"]), 1.0, 0.01, "and carries its strength")
 	var screen := f.controls.get_viewport_rect()
 	assert_true(screen.has_point(mark["at"]), "the marker sits on screen (%s in %s)" % [mark["at"], screen.size])
-	assert_true(Rect2(screen.position, screen.size).grow(-EdgeMarkers.EDGE_PX - 1.0).has_point(mark["at"]) == false,
-			"pinned to the edge, not floating in the middle")
+	var inner := Rect2(screen.position, screen.size).grow(-EdgeMarkers.EDGE_PX)
+	inner.size.y -= screen.size.y * EdgeMarkers.BOTTOM_FRACTION - EdgeMarkers.EDGE_PX
+	assert_true(not inner.grow(-1.0).has_point(mark["at"]), "pinned to the edge, not floating in the middle")
+	assert_true((mark["at"] as Vector2).y <= screen.size.y * (1.0 - EdgeMarkers.BOTTOM_FRACTION) + 1.0,
+			"and clear of the command card (%s of %s)" % [mark["at"], screen.size])
 
 
 func test_clicking_an_edge_marker_takes_you_to_that_element() -> void:

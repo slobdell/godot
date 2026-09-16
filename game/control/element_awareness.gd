@@ -90,6 +90,8 @@ func _describe(number: int) -> Dictionary:
 	var moving := false
 	var contact := false
 	var under_fire := false
+	var contact_at := Vector3.ZERO
+	var contact_range := INF
 	for unit_name in units:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		if tank == null or not tank.is_alive():
@@ -101,8 +103,13 @@ func _describe(number: int) -> Dictionary:
 			under_fire = true
 		if orders != null and not orders.is_idle(unit_name):
 			moving = true
-		if not contact and _sees_an_enemy(tank):
+		var seen: Variant = _nearest_enemy(tank)
+		if seen != null:
 			contact = true
+			var gap: float = tank.global_position.distance_to((seen as Tank).global_position)
+			if gap < contact_range:
+				contact_range = gap
+				contact_at = (seen as Tank).global_position
 	if alive > 0:
 		middle /= float(alive)
 		health /= float(alive)
@@ -114,16 +121,23 @@ func _describe(number: int) -> Dictionary:
 	else:
 		middle = _positions.get(number, middle)
 	return {"number": number, "label": groups.label(number), "units": units, "alive": alive, "total": units.size(),
-			"health": health, "position": middle, "state": state}
+			"health": health, "position": middle, "state": state,
+			"contact_at": contact_at if contact else Vector3.ZERO, "contact": contact}
 
 
-func _sees_an_enemy(tank: Tank) -> bool:
+## The closest living enemy inside this unit's sight, or null.
+func _nearest_enemy(tank: Tank) -> Variant:
+	var best: Tank = null
+	var best_gap := INF
 	for node in game_match.tanks.get_children():
 		var enemy := node as Tank
-		if enemy != null and enemy.team != tank.team and enemy.is_alive() \
-				and enemy.global_position.distance_to(tank.global_position) <= tank.sight_radius:
-			return true
-	return false
+		if enemy == null or enemy.team == tank.team or not enemy.is_alive():
+			continue
+		var gap := enemy.global_position.distance_to(tank.global_position)
+		if gap <= tank.sight_radius and gap < best_gap:
+			best = enemy
+			best_gap = gap
+	return best
 
 
 func _raise(element: Dictionary, state: String) -> void:
@@ -132,8 +146,10 @@ func _raise(element: Dictionary, state: String) -> void:
 		return
 	_fired[key] = _clock
 	var where := ""
-	if state == "contact":
-		where = " " + compass(element["position"], team)
+	if state == "contact" and bool(element.get("contact", false)):
+		# Which way the enemy lies from the element, not where the element is: "Bravo contact north" has to mean
+		# "look north from Bravo" or it sends the player the wrong way.
+		where = " " + compass(element["contact_at"] - (element["position"] as Vector3), team)
 	alerts.append({"text": "%s %s%s" % [element["label"], ALERT_STATES[state], where], "position": element["position"],
 			"kind": state, "element": int(element["number"]), "at": _clock, "seen": false})
 	while alerts.size() > ALERT_KEEP:
@@ -167,13 +183,13 @@ func unseen_count() -> int:
 	return alerts.filter(func(a: Dictionary) -> bool: return not bool(a["seen"])).size()
 
 
-## Which way a spot lies from your base, in words, with the enemy base always "north" (the radar's convention).
-static func compass(point: Vector3, team: int) -> String:
+## Which way an offset points, in words, with the enemy base always "north" (the radar's convention).
+static func compass(offset: Vector3, team: int) -> String:
 	var frame := Match.team_frame(team)
 	var forward: Vector3 = frame["forward"]
 	var flip := 1.0 if forward == Vector3.FORWARD else -1.0
-	var ahead := -point.z * flip
-	var right := point.x * flip
+	var ahead := -offset.z * flip
+	var right := offset.x * flip
 	if absf(ahead) < absf(right) * 0.5:
 		return "east" if right > 0.0 else "west"
 	if absf(right) < absf(ahead) * 0.5:

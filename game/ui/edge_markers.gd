@@ -9,14 +9,18 @@ extends Control
 ##
 ## Drawn above the tactical overlay, so it sits over the panel and the radar but under nothing.
 
-## Chips sit this far in from the edge of the screen, and are this big.
+## Chips sit this far in from the edge of the screen, and are this big…
 const EDGE_PX := 34.0
 const CHIP := Vector2(112.0, 30.0)
+## …except along the bottom, where the command card and the group chips own this fraction of the screen.
+const BOTTOM_FRACTION := 0.22
 ## An element whose middle is further than this outside the screen still only pins to the edge.
 const ARROW_PX := 11.0
-## The alert strip shows this many, and an alert fades out of it after this long (seconds).
-const ALERT_SHOW := 3
+## The alert prompt gives up on an alert nobody jumped to after this long (seconds), and sits this far up the
+## screen: just above the group chips, the one strip of screen the HUD leaves empty (the message column runs down
+## the left, the command card owns the bottom, the announcer's banners the right).
 const ALERT_SECONDS := 12.0
+const ALERT_Y := 0.79
 ## What each element state says about itself.
 const STATE_COLORS := {"under_fire": "enemy", "lost": "enemy", "contact": "commander", "moving": "friendly",
 		"idle": "friendly"}
@@ -47,6 +51,7 @@ func markers() -> Array:
 		return result
 	var screen := Rect2(Vector2.ZERO, size)
 	var inner := screen.grow(-EDGE_PX)
+	inner.size.y -= size.y * BOTTOM_FRACTION - EDGE_PX
 	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
 		return result
 	var middle := screen.get_center()
@@ -60,7 +65,7 @@ func markers() -> Array:
 			continue
 		if behind:
 			at = middle + (middle - at)  # a point behind the camera projects mirrored: flip it back
-		elif inner.has_point(at):
+		elif inner.has_point(at) and screen.has_point(at):
 			continue  # comfortably on screen already: its selection rings and nameplate carry it
 		result.append({"element": int(element["number"]), "label": String(element["label"]), "at": _pin(at, middle, inner),
 				"angle": (at - middle).angle(), "health": float(element["health"]), "state": String(element["state"]),
@@ -77,19 +82,23 @@ func _is_watched(element: Dictionary) -> bool:
 	return not (element["units"] as Array).is_empty()
 
 
-## Where the line from the middle of the screen towards `at` leaves the inner rect.
+## Where the ray from the middle of the screen towards `at` leaves `inner`. The rect is not centred on the middle
+## (the command card eats the bottom), so each edge is solved separately.
 static func _pin(at: Vector2, middle: Vector2, inner: Rect2) -> Vector2:
 	var away := at - middle
 	if away.length() < 0.001:
-		return middle
-	var half := inner.size / 2.0
+		return inner.get_center()
 	var scale := INF
-	if absf(away.x) > 0.001:
-		scale = minf(scale, half.x / absf(away.x))
-	if absf(away.y) > 0.001:
-		scale = minf(scale, half.y / absf(away.y))
-	if scale == INF:
-		return middle
+	if away.x > 0.001:
+		scale = minf(scale, (inner.end.x - middle.x) / away.x)
+	elif away.x < -0.001:
+		scale = minf(scale, (inner.position.x - middle.x) / away.x)
+	if away.y > 0.001:
+		scale = minf(scale, (inner.end.y - middle.y) / away.y)
+	elif away.y < -0.001:
+		scale = minf(scale, (inner.position.y - middle.y) / away.y)
+	if scale == INF or scale < 0.0:
+		return inner.get_center()
 	return middle + away * scale
 
 
@@ -133,22 +142,30 @@ func _draw_chip(mark: Dictionary, font: Font, s: float) -> void:
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(float(mark["health"]), 0.0, 1.0), bar.size.y)), accent)
 
 
+## One line, centred above the group chips: the newest thing you have not looked at, and how many are queued
+## behind it. The HUD message column already narrates the match; this is the part you can act on.
 func _draw_alerts(font: Font, s: float) -> void:
-	var recent := controls.awareness.alerts.filter(func(a: Dictionary) -> bool:
-		return controls.awareness.age_of(a) <= ALERT_SECONDS)
-	if recent.is_empty():
+	var alert := _prompt()
+	if alert.is_empty():
 		return
-	var text_size := roundi(15.0 * s)
-	var y := size.y * 0.22
-	var shown := 0
-	for i in range(recent.size() - 1, -1, -1):
-		if shown >= ALERT_SHOW:
-			break
-		var alert: Dictionary = recent[i]
-		var unseen := not bool(alert["seen"])
-		var text: String = ("> " if unseen else "  ") + String(alert["text"]) + (" [Q]" if unseen and shown == 0 else "")
-		var color: Color = GameTheme.ui["enemy"] if unseen else Color(CyberStyle.TEXT, 0.55)
-		draw_string_outline(font, Vector2(EDGE_PX * s, y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, 4, Color.BLACK)
-		draw_string(font, Vector2(EDGE_PX * s, y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, color)
-		y += text_size * 1.35
-		shown += 1
+	var pending := controls.awareness.unseen_count()
+	var text := "%s%s   [Q]" % [String(alert["text"]), "  (+%d)" % (pending - 1) if pending > 1 else ""]
+	var text_size := roundi(17.0 * s)
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size).x
+	var at := Vector2((size.x - width) / 2.0, size.y * ALERT_Y)
+	var accent: Color = GameTheme.ui[STATE_COLORS.get(alert["kind"], "enemy")]
+	draw_rect(Rect2(at - Vector2(14.0 * s, text_size * 1.1), Vector2(width + 28.0 * s, text_size * 1.6)),
+			Color(CyberStyle.HUD_BACKGROUND, 0.9))
+	draw_rect(Rect2(at - Vector2(14.0 * s, text_size * 1.1), Vector2(width + 28.0 * s, text_size * 1.6)),
+			Color(accent, 0.9), false, 1.5)
+	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, accent)
+
+
+## The newest unseen alert that is still worth showing ({} when there is none).
+func _prompt() -> Dictionary:
+	var alerts: Array = controls.awareness.alerts
+	for i in range(alerts.size() - 1, -1, -1):
+		var alert: Dictionary = alerts[i]
+		if not bool(alert["seen"]) and controls.awareness.age_of(alert) <= ALERT_SECONDS:
+			return alert
+	return {}
