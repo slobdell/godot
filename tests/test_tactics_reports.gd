@@ -107,6 +107,67 @@ func test_an_element_with_no_orders_says_nothing() -> void:
 	assert_true(not ElementReport.of(element).is_empty(), "the same change once it has a job is")
 
 
+func test_the_publisher_can_be_found_without_naming_it() -> void:
+	# Audio's MatchEventAdapter cannot name the Elements class — it doesn't exist on their branch until the
+	# checkpoint merges, and a file that names it would not compile. So it finds the publisher by group.
+	var lab := TacticsLab.create(self, 59)
+	lab.unit(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0.0, 20.0), 0.0)
+	await lab.start()
+	var found := tree.get_nodes_in_group(Elements.GROUP)
+	assert_true(found.has(lab.elements), "the match's Elements is in the '%s' group" % Elements.GROUP)
+	assert_true((found[0] as Node).has_signal("element_reported"),
+			"and it is recognisable by the signal a listener connects to")
+	lab.dispose()
+
+
+func test_every_value_the_booth_has_to_speak_is_from_a_closed_set() -> void:
+	# FROZEN by agreement with audio (2026-09-16). The announcer records every word in advance, so each value
+	# below is 8-16 recordings across the lines that name it — and the failure mode is silent: a value with
+	# no clip doesn't error, it just makes those lines ineligible and the booth says something blander
+	# instead. So adding a shape or a drill to a shipped table is not a free edit.
+	#
+	# To add one: ask audio first, then change this list in the same commit as the table. `encircle`/`ring`
+	# and `echelon_left` are deliberately absent — they exist in the engine but no shipped table selects
+	# them, and nothing should be recorded for a shape nobody uses.
+	var spoken_formations := ["coil", "column", "echelon_right", "herringbone", "line", "swarm", "vee", "wedge"]
+	var spoken_techniques := ["bounding_overwatch", "traveling", "traveling_overwatch"]
+	var spoken_drills := ["assault_through", "bait", "break_contact", "far_ambush", "herringbone",
+			"near_ambush", "react_to_contact", "support_by_fire"]
+	DoctrineTable.clear_cache()
+	var formations := {}
+	var techniques := {}
+	var drills := {}
+	for file_name in DirAccess.get_files_at(DoctrineTable.DIR):
+		if not file_name.begins_with("doctrine_") or not file_name.ends_with(".json"):
+			continue
+		var table: DoctrineTable = DoctrineTable.load_table(
+				file_name.trim_prefix("doctrine_").trim_suffix(".json")).get("table")
+		for rule: Dictionary in table.movement:
+			formations[rule["formation"]] = true
+			techniques[rule["technique"]] = true
+		for drill in table.drills.get("enabled", []):
+			drills[drill] = true
+	var found_formations: Array = formations.keys()
+	var found_techniques: Array = techniques.keys()
+	var found_drills: Array = drills.keys()
+	found_formations.sort()
+	found_techniques.sort()
+	found_drills.sort()
+	assert_eq(found_formations, spoken_formations, _frozen("formation", found_formations, spoken_formations))
+	assert_eq(found_techniques, spoken_techniques, _frozen("technique", found_techniques, spoken_techniques))
+	assert_eq(found_drills, spoken_drills, _frozen("drill", found_drills, spoken_drills))
+
+
+## The message a future tuner reads when a table starts using something the booth cannot say.
+func _frozen(field: String, found: Array, recorded: Array) -> String:
+	var added: Array = found.filter(func(value: Variant) -> bool: return not recorded.has(value))
+	var dropped: Array = recorded.filter(func(value: Variant) -> bool: return not found.has(value))
+	var what := "added %s" % [added] if not added.is_empty() else "stopped using %s" % [dropped]
+	return ("the shipped tables %s: the booth's %s values are frozen (audio, 2026-09-16). Every new value is "
+			+ "8-16 recordings, and an unrecorded one fails silently — the lines naming it just go quiet. "
+			+ "Get audio's sign-off, then update this list in the same commit as the table") % [what, field]
+
+
 func test_doctrine_publishes_values_not_commentary() -> void:
 	# The words are audio's job. If doctrine ever starts writing sentences, this test should fail.
 	var element := Element.new(1, "Alpha", Match.Team.RUST, PackedStringArray(["Rust_A_1"]))

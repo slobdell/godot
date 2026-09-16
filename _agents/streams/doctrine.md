@@ -151,7 +151,21 @@ Presumably we at least want the structured data publishable."* The plumbing is i
 - Five tests in `tests/test_tactics_reports.gd`, including one that fails if doctrine ever starts writing
   sentences instead of values.
 
-**Needed from audio (two small things, both in their paths):** add `element_formation` and `element_drill` to
+**Done by audio (2026-09-16):** both types are in the K5 validators, and `MatchEventAdapter` connects and
+stamps `tick`/`t`. It finds the publisher by the `elements` group (it can't name the class before CP1
+merges), so `Elements` joins that group on `_ready`. Two constraints came back that shape what is worth
+putting in an event: the booth **records every word in advance**, so only the enumerated fields can be
+spoken (`reason` is subtitle-only), and **matches are always between different factions** — nothing in the
+tables assumed otherwise, but the parity fixture uses two Condemned armies and is a doctrine isolation, not
+a matchup. The value sets a shipped table can emit are **frozen** at audio's request (8 formations, 3 techniques, 8
+drills): `test_every_value_the_booth_has_to_speak_is_from_a_closed_set` asserts them exactly and fails the
+build with the reason, because an unrecorded value degrades silently rather than erroring. **Adding a shape
+or a drill to a shipped table now needs audio's sign-off**, and the frozen list changes in the same commit as
+the table. The correction was worth real money: they had 6/3/6 from the round-4 brief and would have recorded
+`encircle`, `ring` and `echelon_left` — 24 clips for shapes nothing selects — while missing `vee`, `coil`,
+`swarm` and `bait`, which would have left the gangs mute.
+
+**Originally needed from audio (two small things, both in their paths):** add `element_formation` and `element_drill` to
 `AnnouncerEvents.REQUIRED` (and the Python twin in `tools/announcer/events.py`), and have
 `MatchEventAdapter` connect to `Elements.element_reported` and stamp `tick`/`t` the way it already does. Then
 it's line-writing. **Proposed contract wording** for workstreams.md, as an extension of L1: *"L1 also
@@ -191,6 +205,15 @@ eight military formations. What changed (full numbers in _agents/doctrine.md *Fa
 5. **The doctrine page now says what each faction does differently** from standard doctrine, in words, so the
    character reads without diffing five tables. The page's mirrored constants are checked against the
    GDScript at build time, so it can't quietly start lying.
+
+### Standing arrangement with audio
+
+Measured facts are the Veteran's material: doctrine sends anything surprising, **marked stable or
+likely-to-move**, and only stable ones get recorded (a recorded line outlives the number that justified it).
+The split is in _agents/doctrine.md *Which of these the booth can quote*. Today: the coverage, first-hit and
+herringbone numbers are stable; everything resting on suppression or splash is not, and nothing depending on
+them should be voiced until combat's L2 is finished. If a measurement ever means "the booth should always say
+this", ask audio for a tag priority rather than more lines.
 
 ### Questions for the lead
 
@@ -280,6 +303,24 @@ from 27 to 52 without another edit here. `Army.parse_scaled` can go.
 2. A support-element doctrine rule (displace and set up, instead of breaking contact).
 3. Faction tables want a real roster to sit on (combat's L3): today every unit is `condemned`, so
    `Elements._table_for` always loads the Condemned table in a real match.
+
+### Proposed lesson for orchestration.md (orchestrator's call)
+
+Round 4 hit the same bug three times in two streams, and in every case the symptom pointed at content while
+the cause was an ordering rule. Suggested wording for the *Lessons* list:
+
+> **A behaviour that looks under-written is usually being starved by a rule above it.** Round 4, three times
+> in two streams: the announcer's Veteran seemed short of material and was actually being silenced by a
+> priority rule; doctrine's react-to-contact restarted every update, so no maneuver that followed it ever
+> finished; and its encircle and bait drills stole the element from each other every tick, so neither
+> completed once. Each time the obvious fix was "write more of it" or "the behaviour isn't good enough", and
+> the real fix was one line of precedence. Before adding content to a behaviour that seems weak or quiet,
+> log what *selected* it each tick and check whether something upstream keeps pre-empting it.
+
+Audio's companion rule, already in their README and brief, generalises past both of us: **a recorded line
+outlives the number that justified it** — nothing the booth says can be edited, only re-recorded for credits,
+so an assertion about how the game works is a promise the build has to keep. When in doubt, describe rather
+than evaluate. It applies to any artefact that is expensive to change after the fact.
 
 ### Proposed edits to workstreams.md (orchestrator's call)
 

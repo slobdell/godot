@@ -282,6 +282,27 @@ against a timeline instead of a guess:
  "reason":"outgunned here: break contact and bound back","size":1,"t":5.3,"team":"green","type":"element_drill"}
 ```
 
+**What the booth can actually say.** The announcer records every word in advance — there is no runtime
+speech — so a *spoken* line can only key on the **enumerated** fields, and `reason` is subtitle-only (audio,
+2026-09-16). The sets a shipped match can produce, which is the recording matrix:
+
+| Field | Values a shipped table can emit |
+|---|---|
+| `formation` | `wedge`, `column`, `line`, `vee`, `echelon_right`, `herringbone`, `coil`, `swarm` (8) |
+| `technique` | `traveling`, `traveling_overwatch`, `bounding_overwatch` (3) |
+| `drill` | `react_to_contact`, `near_ambush`, `assault_through`, `far_ambush`, `support_by_fire`, `break_contact`, `herringbone`, `bait` (8) |
+
+`ring` and `encircle` exist in the engine but **no shipped table selects them** (see *Why encircle is off*),
+so nothing should be recorded for them; `echelon_left` is in the vocabulary but unused today. **These sets are FROZEN** by agreement with audio (2026-09-16):
+`test_every_value_the_booth_has_to_speak_is_from_a_closed_set` asserts them exactly, and adding a shape or a
+drill to a shipped table fails the build with an explanation. That is deliberate — the cost is invisible from
+this side (each value is 8-16 recordings across the lines that name it) and the failure is silent (a value
+with no clip doesn't error, it just makes those lines ineligible and the booth says something blander). To
+add one: ask audio, then change the frozen list in the same commit as the table.
+
+**The publisher is found by group, not by class.** `Elements` joins the `elements` group
+(`Elements.GROUP`), because a listener on another branch cannot name a class that doesn't exist there yet.
+
 **What doctrine filters out, so the booth doesn't have to.** An announcer that repeats itself is the exact
 complaint the lead made about the PA, so the noise is cut where it is generated:
 - an element with **no task** says nothing (before its first order it is parked, not "halting in cover");
@@ -419,6 +440,28 @@ What that means for the drills, in order:
    around "shut it down, then walk in" is where support by fire either pays or visibly doesn't. The Law's
    table already bounds at every threat level; if suppression works, that table should stop being the
    cautious one and start being the effective one.
+
+### Which of these the booth can quote (audio, 2026-09-16)
+
+Audio takes measured facts as the Veteran's material — he is the only one in the booth allowed to be precise,
+and a number a player can act on beats one that merely sounds authoritative. Recording is expensive and
+permanent, so each measurement is marked with whether it is expected to **hold**:
+
+| Measurement | Quote it? | Why |
+|---|---|---|
+| A column watches the whole circle, a line 0.42 of it | **Stable** | Pure geometry: it follows from the shapes, not from any tuning |
+| A column takes ~8 s to hurt anything; a wedge 3.6 s | **Stable** | Frontage and how many guns can bear — mechanics that exist today |
+| Halting in a herringbone keeps 0.93 against 0.69 parked | **Stable** | Armour facing, which is real and measured |
+| Bunching to 3 m shoots later (7.4 s) as well as dying more | **Stable** on the timing | The delay is frontage; the survival half is not (see below) |
+| Circling an enemy deals a third of the damage | **Stable** | It is about interrupting brains, not about a pending mechanic |
+| Bounding overwatch costs survival (0.60 vs 0.75) | **Will move** | Suppression is half-built; nothing deliberately suppresses yet |
+| Dispersion does nothing against splash | **Will move** | Splash and suppression are being changed by combat |
+| The gangs' swarm survives worse than military shapes | **Will move** | Same reason: it is waiting on the mechanic that rewards spreading |
+
+**The standing arrangement:** a measurement that surprises us goes to audio, marked stable or not; only the
+stable ones are worth recording, because a recorded line outlives the number that justified it. If a
+measurement ever says "the booth should *always* mention this", that is a request for a tag priority, not for
+more lines — volume doesn't get a line past the priority queue.
 
 ### Drills (seed per scenario, `make tactics-drills`)
 
