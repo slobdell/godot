@@ -20,6 +20,16 @@ extends RefCounted
 
 ## Front to back: who leads an element. Armour in front, fragile and indirect-fire vehicles behind.
 const ROLE_RANK := {"tank": 0, "burner": 1, "ifv": 2, "scout": 3, "lancer": 4, "artillery": 5}
+## How much being at the FRONT of the shape counts toward a slot's exposure, next to being on its edge.
+## Both matter: the point of a wedge and the outside of a line are where the fire comes from.
+const FRONT_EXPOSURE := 1.5
+## Hull points are worth this much armour thickness when ranking what a vehicle can take.
+const HULL_PER_ARMOUR := 25.0
+## Indirect fire and lasers go in the middle whatever their armour says. Artillery is better protected than a
+## scout on paper, but it is the thing the element exists to protect, and a gun that is being shot at is not
+## shooting (game_design.md: "protecting fragile units (artillery, Lancers)").
+const PROTECTED_ROLES := ["artillery", "lancer"]
+const PROTECTED_PENALTY := 100.0
 ## The element counts as arrived within this far of its task destination (meters)...
 const ARRIVE_M := 12.0
 ## ...and as having reached its current leg's anchor within this far.
@@ -31,6 +41,10 @@ const FACE_LEAD := 5.0
 const COHESION_SLACK := 1.0
 ## A far ambush's maneuver element turns in once it is this close to its flank position (meters).
 const FLANK_ARRIVE := 18.0
+## Encircling: the ring turns this far every ORBIT_TICKS, so the pack keeps moving round its target instead
+## of parking on a circle. Coarse on purpose — a new goal every tick would reset what every brain was doing.
+const ORBIT_STEP_DEG := 30.0
+const ORBIT_TICKS := 240
 ## Attack orders are given to units within this multiple of their weapon range; the rest keep moving up.
 const ENGAGE_RANGE_FACTOR := 1.15
 
@@ -198,8 +212,66 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 			plan["formation"] = "herringbone"
 			plan["technique"] = "traveling"
 			_group(plan, ordered, "herringbone", center, plan["heading"], spacing, "move", "", true)
+		"encircle":
+			_plan_encircle(plan, situation, table, ordered, focus, toward, spacing, contact)
+		"bait":
+			_plan_bait(plan, situation, table, ordered, focus, toward, spacing, contact)
 		_:
 			_engage(plan, ordered, situation, toward, contact)
+
+
+## Encircle (gangs): fan out around them and keep going round, so their fire has to keep re-aiming and the
+## damage is spread across the pack instead of stacked on whoever is in front. The ring is anchored on the
+## ENEMY, not on a heading, and it turns a notch every ORBIT_TICKS.
+static func _plan_encircle(plan: Dictionary, situation: Dictionary, table: DoctrineTable, ordered: Array,
+		focus: Vector3, toward: Vector3, spacing: float, contact: Dictionary) -> void:
+	plan["formation"] = "ring"
+	plan["technique"] = "traveling"
+	plan["heading"] = toward
+	plan["anchor"] = focus
+	# The ring's phase comes from the tick, so every peer computes the same circle at the same moment.
+	var turns := int(situation["tick"]) / ORBIT_TICKS
+	var spun := TacticsFormation.rotate(toward, deg_to_rad(turns * ORBIT_STEP_DEG))
+	# Only the vehicles still closing are driven to a place on the ring. Once one can shoot, it is told to
+	# fight and left alone: its brain already circles, dodges and goes for the weak side, and a drill that
+	# keeps handing it a new patch of ground to stand on just interrupts all of that (measured, 2026-09-16 —
+	# driving the whole ring cost half the pack against a standard element that simply engaged).
+	var closing: Array = []
+	var target := String(contact.get("name", ""))
+	for member: Dictionary in ordered:
+		var in_range: bool = target != "" \
+				and (member["position"] as Vector3).distance_to(focus) <= float(member["range"]) * ENGAGE_RANGE_FACTOR
+		if in_range:
+			_order(plan, String(member["name"]), "attack", null, target)
+		else:
+			closing.append(member)
+	if not closing.is_empty():
+		_group(plan, closing, "ring", focus, spun, spacing, "attack_move", target)
+
+
+## Bait (gangs): the fastest vehicle runs at them and then leads them back over the rest of the pack, which
+## is waiting off the line it returns along. When they follow, the near-ambush drill takes it from there.
+static func _plan_bait(plan: Dictionary, situation: Dictionary, table: DoctrineTable, ordered: Array,
+		focus: Vector3, toward: Vector3, spacing: float, contact: Dictionary) -> void:
+	plan["formation"] = "swarm"
+	plan["technique"] = "traveling"
+	plan["heading"] = toward
+	var runner := Drills.bait_of(situation)
+	var center: Vector3 = situation["center"]
+	var waiting: Array = []
+	for member: Dictionary in ordered:
+		if String(member["name"]) != String(runner.get("name", "")):
+			waiting.append(member)
+	if runner.is_empty() or waiting.is_empty():
+		_engage(plan, ordered, situation, toward, contact)
+		return
+	# The pack waits BEHIND where the bait will come back through, spread wide off the approach.
+	var hide := clamp_to_arena(center - toward * table.drill_number("bait_back_m"))
+	_group(plan, waiting, "swarm", hide, toward, spacing, "hold")
+	# The bait drives at them: close enough to be worth chasing, never close enough to be caught.
+	var lure := clamp_to_arena(focus - toward * table.drill_number("bait_min_m") * 0.8)
+	_order(plan, String(runner["name"]), "attack_move", lure, String(contact.get("name", "")))
+	plan["slots"][String(runner["name"])] = lure
 
 
 ## Far ambush and support by fire: one element pins them by fire, the other maneuvers onto their flank.
@@ -310,8 +382,9 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 		return
 	var slots := TacticsFormation.centered(TacticsFormation.offsets(formation, count, spacing))
 	var sectors := TacticsFormation.sectors(formation, count)
+	var seats := by_exposure(members, slots)
 	for i in count:
-		var name := String(members[i]["name"])
+		var name := String(members[seats[i]]["name"])
 		var spot := TacticsFormation.to_world(anchor, heading, slots[i])
 		if halt:
 			spot += TacticsFormation.rotate(heading, deg_to_rad(sectors[i])) * FACE_LEAD
@@ -358,6 +431,59 @@ static func _cohesive(members: Array, anchor: Variant, formation: String, headin
 		if (members[i]["position"] as Vector3).distance_to(spot) > allowed:
 			return false
 	return true
+
+
+## Which member takes each slot: `result[slot index]` is an index into `members`.
+##
+## The shape says where the exposed places are — the outside of a line, the point of a wedge, the ends of a
+## column — and the vehicle that can take a hit goes there, with the fragile ones inboard. The lead
+## (2026-09-16): *"I don't know if your doctrines are accounting for how to manage formations with multiple
+## vehicles (i.e. heavy armor on the outside of a column, light armor on the inside)."*
+##
+## The leader keeps slot 0, which is its place in the formation's own geometry (the point of the wedge, the
+## head of the column): a leader that cannot see its element cannot lead it.
+static func by_exposure(members: Array, slots: Array) -> Array:
+	var count := members.size()
+	var seats: Array = []
+	seats.resize(count)
+	if count == 0:
+		return seats
+	seats[0] = 0
+	if count == 1:
+		return seats
+	# Slots, most exposed first (ties by index, so the same shape always fills the same way).
+	var order: Array = range(1, count)
+	order.sort_custom(func(a: int, b: int) -> bool:
+		var exposure_a := exposure_of(slots[a])
+		var exposure_b := exposure_of(slots[b])
+		return exposure_a > exposure_b + 0.01 or (absf(exposure_a - exposure_b) <= 0.01 and a < b))
+	# Members, toughest first (ties by name).
+	var toughest: Array = range(1, count)
+	toughest.sort_custom(func(a: int, b: int) -> bool:
+		var hard_a := toughness_of(members[a])
+		var hard_b := toughness_of(members[b])
+		return hard_a > hard_b + 0.01 or (absf(hard_a - hard_b) <= 0.01
+				and String(members[a]["name"]) < String(members[b]["name"])))
+	for i in order.size():
+		seats[order[i]] = toughest[i]
+	return seats
+
+
+## How exposed a slot is: how far out of the middle of the shape it sits, and how far toward the front.
+static func exposure_of(slot: Vector2) -> float:
+	return slot.length() + FRONT_EXPOSURE * maxf(-slot.y, 0.0)
+
+
+## What a vehicle can take, and whether it should have to: front and side armour plus hull, minus a heavy
+## penalty for the roles an element is built to keep alive.
+static func toughness_of(member: Dictionary) -> float:
+	var role := String(member.get("role", "scout"))
+	var protected_penalty := PROTECTED_PENALTY if PROTECTED_ROLES.has(role) else 0.0
+	var unit := String(member.get("unit", ""))
+	if not Units.exists(unit):
+		return -float(ROLE_RANK.get(role, 3)) - protected_penalty
+	return Units.armor(unit, "front") + Units.armor(unit, "side") \
+			+ float(Units.stat(unit, "max_health")) / HULL_PER_ARMOUR - protected_penalty
 
 
 ## Who stands where: the leader first, then armour, then the fragile and indirect-fire vehicles, by name.

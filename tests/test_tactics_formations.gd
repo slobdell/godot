@@ -102,3 +102,69 @@ func test_centering_moves_the_shape_onto_the_anchor_without_changing_it() -> voi
 	assert_near(middle.length(), 0.0, 0.01, "a centered shape has its middle on the anchor")
 	assert_near(centered[1].distance_to(centered[0]), raw[1].distance_to(raw[0]), 0.01,
 			"and the vehicles are still the same distance apart")
+
+
+func test_the_swarm_is_wider_and_raggeder_than_anything_in_a_manual() -> void:
+	# The road gangs' shape (the lead: "noticeably less military disciplined ... spreading out their
+	# formations wide for better survivability").
+	var swarm := TacticsFormation.offsets("swarm", 6, 12.0)
+	assert_true(TacticsFormation.frontage("swarm", 6, 12.0) > TacticsFormation.frontage("line", 6, 12.0) * 1.5,
+			"a swarm spreads far wider than a firing line")
+	var depths := {}
+	for slot in swarm:
+		depths[snappedf(slot.y, 0.1)] = true
+	assert_true(depths.size() >= 3, "and it has no line to shoot along: vehicles sit at different depths")
+	assert_true(TacticsFormation.closest_pair("swarm", 6, 12.0) > TacticsFormation.closest_pair("line", 6, 12.0),
+			"spread wide, one shell can only ever reach one of them")
+
+
+func test_a_ring_surrounds_what_it_is_anchored_on() -> void:
+	var ring := TacticsFormation.offsets("ring", 6, 12.0)
+	var middle := Vector2.ZERO
+	var radius := 0.0
+	for slot in ring:
+		middle += slot
+		radius = maxf(radius, slot.length())
+	assert_near((middle / 6.0).length(), 0.0, 0.5, "a ring is centred on its anchor: the enemy, not a heading")
+	assert_true(radius > 20.0, "and stands off it (%.1f m)" % radius)
+	var behind := 0
+	for slot in ring:
+		if slot.y > 1.0:
+			behind += 1
+	assert_true(behind >= 2, "with vehicles on the far side of the target, not just in front of it")
+
+
+func test_the_exposed_slots_go_to_whatever_can_take_a_hit() -> void:
+	# The lead: "heavy armor on the outside of a column, light armor on the inside."
+	var members: Array = [
+		{"name": "Lead", "unit": "tank", "role": "tank"},
+		{"name": "Gun", "unit": "artillery", "role": "artillery"},
+		{"name": "Heavy", "unit": "tank", "role": "tank"},
+		{"name": "Eyes", "unit": "scout", "role": "scout"}]
+	var line := TacticsFormation.centered(TacticsFormation.offsets("line", 4, 12.0))
+	var seats := ElementPlan.by_exposure(members, line)
+	assert_eq(seats[0], 0, "the leader keeps its place in the shape")
+	var outermost := 0
+	for i in range(1, line.size()):
+		if absf(line[i].x) > absf(line[outermost].x):
+			outermost = i
+	assert_eq(String(members[seats[outermost]]["name"]), "Heavy",
+			"the outside of a line is the armoured vehicle's place")
+	var innermost := 1
+	for i in range(1, line.size()):
+		if ElementPlan.exposure_of(line[i]) < ElementPlan.exposure_of(line[innermost]):
+			innermost = i
+	assert_eq(String(members[seats[innermost]]["name"]), "Gun", "the artillery stands where the least fire goes")
+	assert_true(ElementPlan.toughness_of(members[0]) > ElementPlan.toughness_of(members[3]),
+			"a tank can take more than a scout, which is what decides this")
+	assert_true(ElementPlan.toughness_of(members[3]) > ElementPlan.toughness_of(members[1]),
+			"and artillery goes inboard of even a scout: on paper it has the thicker armour, but it is the "
+			+ "thing the element is out there to keep alive")
+
+
+func test_the_ends_of_a_column_are_the_exposed_places() -> void:
+	var column := TacticsFormation.centered(TacticsFormation.offsets("column", 4, 12.0))
+	var ends := ElementPlan.exposure_of(column[3])
+	var middle := ElementPlan.exposure_of(column[1])
+	assert_true(ends > middle, "the tail of a column is more exposed than its middle (%.1f vs %.1f)"
+			% [ends, middle])

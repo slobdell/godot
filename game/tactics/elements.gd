@@ -15,6 +15,9 @@ extends Node
 
 ## The HUD's cue: this element's formation, technique, drill, reason, leader or roster changed.
 signal element_changed(id: int)
+## A decision worth talking about, as structured data in the announcer's K5 shape (ElementReport): a drill
+## starting, or an element changing shape or movement technique. Doctrine publishes; audio writes the words.
+signal element_reported(event: Dictionary)
 ## A leader was destroyed and `successor` took over (empty when the whole element is gone).
 signal leader_lost(id: int, fallen: String, successor: String)
 
@@ -29,6 +32,8 @@ var by_id := {}
 var _by_unit := {}
 var _next_id := 1
 var _last_tick := -1
+## element id -> {report key: the tick it was last published}, so the booth isn't told the same thing twice.
+var _reported := {}
 
 
 ## The Elements of `game_match`, or null.
@@ -126,6 +131,7 @@ func disband(element: Variant) -> void:
 		if _by_unit.get(unit_name) == found:
 			_by_unit.erase(unit_name)
 	by_id.erase(found.id)
+	_reported.erase(found.id)
 	element_changed.emit(found.id)
 
 
@@ -147,6 +153,20 @@ func _physics_process(_delta: float) -> void:
 			disband(element)
 		elif changed:
 			element_changed.emit(element.id)
+			_publish(element, tick)
+
+
+## Publish an element's decision once, unless the same call was made recently (ElementReport.COOLDOWN_TICKS).
+func _publish(element: Element, tick: int) -> void:
+	var report := ElementReport.of(element)
+	if report.is_empty():
+		return
+	var key := ElementReport.key(report)
+	var seen: Dictionary = _reported.get_or_add(element.id, {})
+	if tick - int(seen.get(key, -ElementReport.COOLDOWN_TICKS * 10)) < ElementReport.COOLDOWN_TICKS:
+		return
+	seen[key] = tick
+	element_reported.emit(report)
 
 
 ## Every element's one-line state, for a spectator or a log.

@@ -30,6 +30,20 @@ const DRILL_DEFAULTS := {
 	# Which drills this doctrine runs at all (X3).
 	"enabled": ["react_to_contact", "near_ambush", "far_ambush", "assault_through", "support_by_fire",
 			"break_contact", "herringbone"],
+	# Encircle and bait are off unless a table asks for them: they are gang behaviour, not doctrine.
+	# How close the pack gets when it rings a target, and how near is too near to keep circling.
+	"encircle_m": 70.0,
+	"encircle_min_m": 22.0,
+	"encircle_min_units": 3.0,
+	# How far away an enemy can be and still be worth leading onto the rest of the pack.
+	"bait_m": 95.0,
+	"bait_min_m": 30.0,
+	# How far behind the pack the bait vehicle runs, drawing them onto it.
+	"bait_back_m": 45.0,
+	# Only something moving at least this fast is worth trying to lure, and this is how long the pack waits
+	# to find out whether it took the bait before giving up on it.
+	"bait_chaser_mps": 2.0,
+	"bait_patience_ticks": 240,
 	# A contact closer than this, appearing suddenly, is a NEAR ambush: turn into it and assault through.
 	"near_ambush_m": 38.0,
 	# How far past the enemy an assault carries before the drill ends.
@@ -193,9 +207,9 @@ static func parse(data: Variant) -> Dictionary:
 			if typeof(enabled) != TYPE_ARRAY:
 				return {"error": "drills.enabled must be a list of drill names"}
 			for drill in (enabled as Array):
-				if not (DRILL_DEFAULTS["enabled"] as Array).has(drill):
+				if not Drills.NAMES.has(drill):
 					return {"error": "drills.enabled: unknown drill '%s' (allowed: %s)" % [drill,
-							", ".join(DRILL_DEFAULTS["enabled"])]}
+							", ".join(Drills.NAMES)]}
 			merged["enabled"] = Array(enabled)
 			continue
 		if not _is_number(drill_values[key]):

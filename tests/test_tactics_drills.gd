@@ -25,7 +25,8 @@ func _situation(contacts: Array, extra: Dictionary = {}) -> Dictionary:
 				"role": String(contact.get("role", "tank")), "unit": "tank",
 				"visible": bool(contact.get("visible", true)), "age": int(contact.get("age", 0)),
 				"distance": float(contact.get("distance", position.length())),
-				"bearing_deg": 0.0, "strength": float(contact.get("strength", 200.0))})
+				"bearing_deg": 0.0, "strength": float(contact.get("strength", 200.0)),
+				"speed": float(contact.get("speed", 0.0))})
 	listed.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["distance"]) < float(b["distance"]))
 	var enemy := 0.0
 	for contact: Dictionary in listed:
@@ -149,3 +150,53 @@ func test_a_faction_without_a_drill_never_runs_it() -> void:
 	var standard := _table()
 	assert_eq(Drills.select(losing, _state(), standard)["drill"], "break_contact",
 			"where a standard element would have withdrawn")
+
+
+## A table that switches a drill on, for testing a mechanism no shipped doctrine currently selects.
+func _table_running(drill: String) -> DoctrineTable:
+	var parsed := DoctrineTable.parse({"name": "with_%s" % drill,
+			"drills": {"enabled": DoctrineTable.DRILL_DEFAULTS["enabled"] + [drill]},
+			"movement": [{"when": {}, "formation": "swarm", "technique": "traveling", "why": "lab"}]})
+	assert_true(parsed.has("table"), "a table can switch on %s: %s" % [drill, parsed.get("error", "")])
+	return parsed.get("table")
+
+
+func test_the_ring_triggers_for_a_pack_that_can_make_one() -> void:
+	# The encircle mechanism, which is switched OFF in every shipped table: it was measured strictly worse
+	# than simply fighting (same survival, a third of the damage — _agents/doctrine.md "Why encircle is off").
+	# It stays testable so the tactics-discovery harness can revisit it.
+	var ringing := _table_running("encircle")
+	var contact := _situation([{"distance": 70.0, "age": 500}], {"members": 4, "taking_fire": true})
+	assert_eq(Drills.select(contact, _state(), ringing)["drill"], "encircle",
+			"a pack that can see them and has the numbers gets around them")
+	var pair := _situation([{"distance": 70.0, "age": 500}], {"members": 2, "taking_fire": true})
+	assert_true(Drills.select(pair, _state(), ringing)["drill"] != "encircle",
+			"two vehicles are not a ring, they are two targets")
+	var knife := _situation([{"distance": 12.0, "age": 500}], {"members": 4, "taking_fire": true})
+	assert_true(Drills.select(knife, _state(), ringing)["drill"] != "encircle",
+			"and nobody circles an enemy already inside knife range")
+	assert_true(not _table("gangs").runs_drill("encircle"),
+			"and no shipped table chooses it: it lost the measurement")
+	assert_true(not _table().runs_drill("encircle"), "least of all standard doctrine")
+
+
+func test_a_gang_sends_its_fastest_to_pull_them_onto_the_pack() -> void:
+	# The lead: "the street gang would also be more likely to create tactics of having a vehicle draw fire to
+	# try and lead the opponents into an ambush."
+	var gangs := _table("gangs")
+	# A contact that is MOVING: a lure only means something against something that will follow.
+	var situation := _situation([{"distance": 85.0, "age": 500, "speed": 7.0}], {"members": 4})
+	# Make one member clearly the fastest, and the leader slow, so the choice is unambiguous.
+	(situation["members"][2] as Dictionary)["speed"] = 18.0
+	var drill := Drills.select(situation, _state(), gangs)
+	assert_eq(drill["drill"], "bait", "at stand-off range the pack baits instead of charging")
+	assert_eq(String(Drills.bait_of(situation)["name"]), "Green_3", "the fastest vehicle draws the fire")
+	assert_true(String(Drills.bait_of(situation)["name"]) != String(situation["leader"]),
+			"and never the leader: the pack still needs somebody deciding")
+	assert_true(Drills.select(situation, _state(), _table())["drill"] != "bait",
+			"standard doctrine does not use its own vehicles as lures")
+	# The lesson that cost three of four vehicles the first time: you cannot lure a gun that never moves.
+	var dug_in := _situation([{"distance": 85.0, "age": 500, "speed": 0.0}], {"members": 4})
+	(dug_in["members"][2] as Dictionary)["speed"] = 18.0
+	assert_true(Drills.select(dug_in, _state(), gangs)["drill"] != "bait",
+			"a dug-in gun will never chase the bait, so nobody is sent to die drawing it")

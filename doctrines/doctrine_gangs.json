@@ -2,16 +2,23 @@
   "name": "gangs",
   "faction": "gangs",
   "display_name": "Road gangs",
-  "summary": "A pack of hyenas: spread wide, come at you from every side at once, never bound and never wait. Fast, cheap and fragile, so they keep moving and spread the damage.",
+  "summary": "A pack of hyenas, not a platoon. They spread wider than anyone, they get around you and keep circling so no single vehicle eats the whole volley, they send one rat rod to pull you onto the rest, and they have no word for withdraw.",
   "spacing_m": {"open": 18.0, "lanes": 14.0, "dense": 10.0},
   "legs": {"traveling_m": 55.0, "traveling_overwatch_m": 45.0, "cohesion_m": 30.0},
   "drills": {
-    "enabled": ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire", "herringbone"],
+    "enabled": ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire",
+                "herringbone", "bait"],
     "near_ambush_m": 55.0,
     "assault_through_m": 34.0,
     "react_ticks": 40,
     "flank_m": 60.0,
-    "break_contact_ratio": 0.0
+    "break_contact_ratio": 0.0,
+    "encircle_m": 80.0,
+    "encircle_min_m": 20.0,
+    "encircle_min_units": 3.0,
+    "bait_m": 100.0,
+    "bait_min_m": 34.0,
+    "bait_back_m": 55.0
   },
   "movement": [
     {"when": {"task": ["hold"]},
@@ -19,23 +26,27 @@
      "why": "the pack circles: guns pointing out, engines running"},
 
     {"when": {"task": ["screen"]},
-     "formation": "line", "technique": "traveling",
-     "why": "strung out across the ground, eyes everywhere"},
+     "formation": "swarm", "technique": "traveling",
+     "why": "strung out across the ground, eyes everywhere, nobody in a line"},
 
     {"when": {"task": ["support_by_fire"]},
-     "formation": "line", "technique": "traveling",
-     "why": "everyone fires, nobody waits"},
+     "formation": "swarm", "technique": "traveling",
+     "why": "everyone fires from wherever they stopped; nobody waits to be told"},
 
-    {"when": {"threat": ["contact", "likely"]},
+    {"when": {"threat": ["contact"]},
+     "formation": "swarm", "technique": "traveling",
+     "why": "spread out and all over them: one shell should only ever get one of us"},
+
+    {"when": {"threat": ["likely"]},
      "formation": "vee", "technique": "traveling",
      "why": "the pack fans out and comes at you head on"},
 
     {"when": {"threat": ["possible"]},
-     "formation": "vee", "technique": "traveling",
-     "why": "spread wide and run them down before they can aim twice"},
+     "formation": "swarm", "technique": "traveling",
+     "why": "loose and wide: harder to shell, harder to guess where the next one comes from"},
 
     {"when": {},
-     "formation": "wedge", "technique": "traveling",
-     "why": "loose and fast, hunting"}
+     "formation": "swarm", "technique": "traveling",
+     "why": "hunting, in no particular order"}
   ]
 }

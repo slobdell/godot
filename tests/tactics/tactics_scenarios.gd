@@ -269,3 +269,72 @@ static func _column(lab: TacticsLab, count: int, front: Vector3, unit_id := "tan
 		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1),
 				front + Vector3(0.0, 0.0, i * 10.0), 0.0, unit_id).name))
 	return names
+
+
+## Does a gang pack's doctrine beat the standard one with the SAME vehicles against the SAME enemy? The
+## lead asked for the gangs to be "noticeably less military disciplined ... circular swarms"; this is whether
+## that is worth anything. `table_name` picks the doctrine; everything else is identical, seed included.
+##
+## The prey is a Lancer and an artillery piece — what scouts are FOR (game_design.md: "scouts counter
+## artillery and Lancers"). Against two dug-in tanks the same pack dies whatever its doctrine, because
+## machine guns do not go through 8/4 armour, and a scenario like that measures the matchup, not the drills.
+## A table by name, or "<name>-no-<drill>" for the same table with one drill switched off, so a drill can be
+## measured on its own instead of being credited with whatever the rest of the doctrine does.
+static func table_for(table_name: String) -> DoctrineTable:
+	if not table_name.contains("-no-"):
+		return DoctrineTable.load_table(table_name).get("table")
+	var parts := table_name.split("-no-")
+	var file := FileAccess.open(DoctrineTable.path_for(parts[0]), FileAccess.READ)
+	var data: Dictionary = JSON.parse_string(file.get_as_text())
+	var drills: Dictionary = data.get("drills", {})
+	var enabled: Array = drills.get("enabled", (DoctrineTable.DRILL_DEFAULTS["enabled"] as Array).duplicate())
+	enabled.erase(parts[1])
+	drills["enabled"] = enabled
+	data["drills"] = drills
+	data["name"] = table_name
+	return DoctrineTable.parse(data).get("table")
+
+
+## `chasers` gives the enemy brains instead of standing orders, so it advances and can be led: the only
+## situation a bait drill is for.
+static func gang_pack(case: TestCase, table_name := "gangs", seconds := 26.0, chasers := false) -> Dictionary:
+	var lab := TacticsLab.create(case, 53)
+	var names: Array = []
+	for i in 4:
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1),
+				Vector3(LANE_X - 12.0 + i * 8.0, 0.0, 45.0), 0.0, "scout" if i > 0 else "ifv").name))
+	var enemy: Array = []
+	for i in 2:
+		var spot := Vector3(LANE_X - 6.0 + i * 12.0, 0.0, -35.0)
+		var unit_id := "lancer" if i == 0 else "artillery"
+		if chasers:
+			# Something that will follow a lure: brain-driven, and able to hurt what it catches.
+			enemy.append(String(lab.unit(Match.Team.RUST, "Rust_Hunt_%d" % (i + 1), spot, PI, "ifv").name))
+		else:
+			enemy.append(String(lab.gun(Match.Team.RUST, "Rust_Gun_%d" % (i + 1), spot, PI, unit_id).name))
+	var alpha := lab.element(names, "Pack", table_for(table_name))
+	await lab.start()
+	var started := lab.strength(names)
+	var enemy_started := lab.strength(enemy)
+	alpha.assign({"verb": "attack", "target": enemy[0]})
+	var enemy_center := lab.center_of(enemy)
+	# How much of the circle the pack covers around the enemy, and how far apart it stays.
+	var arcs := {}
+	var widest_spread := 0.0
+	for tick in int(seconds * 60.0):
+		await lab.step()
+		if tick % 30 != 0:
+			continue
+		widest_spread = maxf(widest_spread, lab.spread_of(names))
+		for unit_name: String in names:
+			var tank := lab.tank_of(unit_name)
+			if tank != null and tank.is_alive() and tank.global_position.distance_to(enemy_center) < 90.0:
+				var bearing := ElementSituation.bearing_deg(Vector3.FORWARD,
+						tank.global_position - enemy_center)
+				arcs[int(floor((bearing + 180.0) / 45.0))] = true
+	var result := {"doctrine": table_name, "drills": Array(lab.drills_of(alpha)), "arcs_covered": arcs.size(),
+			"widest_spread_m": snappedf(widest_spread, 0.1), "survival": snappedf(lab.survival(names, started), 0.001),
+			"survivors": lab.alive(names), "enemy_survival": snappedf(lab.survival(enemy, enemy_started), 0.001),
+			"enemy_left": lab.alive(enemy)}
+	lab.dispose()
+	return result
