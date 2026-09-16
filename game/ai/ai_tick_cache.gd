@@ -120,12 +120,21 @@ static func contact_prototypes(game_match: Match, team: int) -> Dictionary:
 					"gun_ready_in": _gun_ready_in(game_match, contact_name) if reload_windows else 0.0,
 					# Saves a Weapons.PROFILES lookup per brain per contact ("can it reach me").
 					"weapon_range": float(Weapons.profile(weapon_id)["range"]),
+					# L2 (X3): how hard a crew has its head down. Plainly visible behaviour, so it is read live for a
+					# contact we can actually see and left at 0 for one we are only remembering. (Combat's intel
+					# doesn't carry it; ai asked for it there — see the stream's requests.)
+					"suppression": _suppression_of(game_match, contact_name) if bool(known["visible"]) else 0.0,
 					# Filled in per brain (they need the looker's position): age, exposed_face, facing_ally,
 					# aiming_at_me, watching_me, threatens_me.
 					"age": 0,
 				}
 			_contacts[side] = table
 	return _contacts[team]
+
+
+static func _suppression_of(game_match: Match, contact_name: String) -> float:
+	var enemy := tanks_by_name(game_match).get(contact_name) as Tank
+	return 0.0 if enemy == null else SuppressionFeed.of(enemy)
 
 
 static func _gun_ready_in(game_match: Match, contact_name: String) -> float:

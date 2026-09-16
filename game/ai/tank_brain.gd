@@ -95,7 +95,7 @@ const ORBIT_BREAK_RANGE := 5.0
 const ORBIT_LEAD_COS := 0.259
 const ORBIT_LEAD_SIN := 0.966
 const ARENA_LIMIT := Match.DRIVABLE_LIMIT
-const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "ORBIT", "COVER_FIRE", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
+const OPTIONS := ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "SHADOW", "CONTEST", "CLEAR_LANE", "ORBIT", "COVER_FIRE", "SUPPRESS", "ENGAGE", "FLANK", "INVESTIGATE", "REGROUP", "ADVANCE", "KEEP_SLOT", "HOLD"]
 ## Options only a K1 order produces (TankBrain._obey adds them): MOVE (drive to the order's slot), FOLLOW (keep station
 ## on a friend), PURSUE (close in on an ordered target that's out of sight).
 const ORDER_ONLY_OPTIONS := ["MOVE", "FOLLOW", "PURSUE"]
@@ -107,10 +107,10 @@ const ORDER_OPTIONS := {
 	"stop": ["MOVE"],
 	"hold": ["HOLD"],
 	"follow": ["FOLLOW"],
-	"attack": ["ENGAGE", "COVER_FIRE", "FLANK", "ORBIT", "CLEAR_LANE", "BOMBARD", "PURSUE"],
-	"attack_move": ["MOVE", "ENGAGE", "COVER_FIRE", "FLANK", "ORBIT", "CLEAR_LANE", "BOMBARD", "TAKE_COVER", "RECHARGE", "RETREAT"],
+	"attack": ["ENGAGE", "COVER_FIRE", "FLANK", "ORBIT", "CLEAR_LANE", "BOMBARD", "SUPPRESS", "PURSUE"],
+	"attack_move": ["MOVE", "ENGAGE", "COVER_FIRE", "FLANK", "ORBIT", "CLEAR_LANE", "BOMBARD", "SUPPRESS", "TAKE_COVER", "RECHARGE", "RETREAT"],
 	"idle": ["RETREAT", "RESUPPLY", "TAKE_COVER", "RECHARGE", "SPOT", "BOMBARD", "CLEAR_LANE", "ORBIT", "COVER_FIRE",
-			"ENGAGE", "FLANK", "INVESTIGATE", "ADVANCE", "HOLD"],
+			"SUPPRESS", "ENGAGE", "FLANK", "INVESTIGATE", "ADVANCE", "HOLD"],
 }
 ## Attack-move: driving on scores this, so any real fight on the way (ENGAGE ~0.6-0.9) comes first.
 const ATTACK_MOVE_WEIGHT := 0.55
@@ -137,8 +137,9 @@ const FOLLOW_DISTANCE := 10.0
 ## No stuck states: an autonomous option kept this long (ticks) goes on cooldown; for the fighting options the
 ## clock restarts with every shot, so only a fight that stopped producing shots times out.
 const OPTION_TIMEOUT_TICKS := {"COVER_FIRE": 600, "CLEAR_LANE": 300, "TAKE_COVER": 720, "RECHARGE": 720, "ORBIT": 900,
+	"SUPPRESS": SUPPRESS_TIMEOUT_TICKS,
 		"FLANK": 900, "INVESTIGATE": 1200, "RETREAT": 1200, "RESUPPLY": 2400, "BOMBARD": 900, "ENGAGE": 900}
-const FIGHT_OPTIONS := ["COVER_FIRE", "ORBIT", "FLANK", "BOMBARD", "ENGAGE", "CLEAR_LANE"]
+const FIGHT_OPTIONS := ["COVER_FIRE", "ORBIT", "FLANK", "BOMBARD", "ENGAGE", "CLEAR_LANE", "SUPPRESS"]
 ## ...and a move goal with no progress for this many ticks puts the option on cooldown too.
 const STALL_TICKS := 180
 ## X2 combat motion: fight on the move when the target is visible and within weapon range + this (meters)...
@@ -227,6 +228,24 @@ const CRITICAL_HP_MIN := 0.08
 const CRITICAL_HP_MAX := 0.25
 ## A remembered contact's position is extrapolated along its last velocity for at most this long.
 const WATCH_PREDICT_SECONDS := 1.5
+## L2 suppression (round-4 X3). A pinned crew cannot shoot straight (combat measured 5 hits of 13 against 13 of 13),
+## so the answer is to get out of the fire, not to trade: TAKE_COVER scores at least this much while pinned...
+const PINNED_COVER := 0.85
+## ...and RETREAT's health threshold is raised by this much, so a hurt pinned unit leaves earlier than a calm one.
+const PINNED_RETREAT_HP := 0.15
+## An enemy whose crew is pinned is a worse shooter: worth this much more to flank, and counted as this much less of
+## a threat when deciding whether to stay.
+const PINNED_FLANK_BONUS := 1.5
+const PINNED_THREAT_FACTOR := 0.5
+## SUPPRESS: how much of ENGAGE's appetite putting rounds on an enemy I can't kill quickly is worth...
+const SUPPRESS_WEIGHT := 0.78
+## ...and the kill rate (relative to my best target) below which killing isn't the point any more.
+const SUPPRESS_KILL_RATIO := 0.45
+## A suppressing unit holds its fire on a target no longer than this without the target's suppression rising.
+const SUPPRESS_TIMEOUT_TICKS := 420
+## Where fire goes once the target ducks out of sight: its last position, led this many seconds along its last
+## velocity — the ground it is behind, not where it was standing.
+const SUPPRESS_LEAD_SECONDS := 0.6
 ## L1 elements (round-4 X1): a unit fighting from a formation slot manoeuvres inside this far of it (meters). About
 ## one formation spacing: room to circle, jink and take an angle without leaving the formation.
 const SLOT_LEASH := 14.0
@@ -627,6 +646,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	## Squad orders (tactical map): null when this tank's squad has no drill.
 	var squad: Variant = s.get("squad")
 	var commanded: bool = squad != null and squad["slot"] != null
+	## L1: what my element's leader has me doing ({} when I'm not in one).
+	var element_context: Dictionary = s.get("element") if s.get("element") != null else {}
 	## Brain variant switches (BrainVariants): missing = on.
 	var features: Dictionary = s.get("features", {})
 	var tactics: Dictionary = s.get("tactics", {}) if features.get("squad_tactics", true) else {}
@@ -647,17 +668,22 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	for c in contacts:
 		if c["visible"]:
 			visible_threats += 1
+			# L2 (X3): a pinned gun is half a gun — it mostly misses and it tracks slowly — so it weighs less in
+			# "am I outgunned here".
+			var weight := PINNED_THREAT_FACTOR if bool(c.get("pinned", false)) else 1.0
 			if c["aiming_at_me"]:
-				threats_on_me += 1
+				threats_on_me += 1 if weight >= 1.0 else 0
 			if c.get("threatens_me", c["aiming_at_me"]):
-				exposed_to += 1
+				exposed_to += 1 if weight >= 1.0 else 0
 
 	var candidates: Array = []
 	var add := func(option: String, target: String, score: float) -> void:
 		candidates.append({"option": option, "target": target, "score": score})
 
+	# L2 (X3): my crew's own suppression. Pinned, my fire is wasted, so getting out of the beaten zone beats trading.
+	var pinned: bool = me.get("pinned", false)
 	# RETREAT: hurt past the caution-derived threshold with enemies in sight, or badly outnumbered.
-	var retreat_threshold := lerpf(0.15, 0.55, float(d["caution"]))
+	var retreat_threshold := lerpf(0.15, 0.55, float(d["caution"])) + (PINNED_RETREAT_HP if pinned else 0.0)
 	var retreat := 0.0
 	if commanded and String(squad["verb"]) != "assault":
 		# Player intent dominates (G3): a tank under orders only saves itself when it's about to die.
@@ -694,7 +720,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var cover := 0.0
 	if not (s["cover"] as Array).is_empty() and maxi(threats_on_me, exposed_to) > 0:
 		cover = float(d["caution"]) * minf(1.0, maxi(threats_on_me, exposed_to) / 2.0) * (1.0 - toughness) * 1.6
-
+	# Pinned with somewhere to hide: go. Cover is what breaks a beaten zone, and shooting back from inside one is
+	# throwing rounds away.
+	if pinned and not (s["cover"] as Array).is_empty():
+		cover = maxf(cover, PINNED_COVER)
 	add.call("TAKE_COVER", "", cover)
 
 	# RECHARGE (G6): shield gone, a gun on me, hull already worn: break contact for a few seconds (the
@@ -716,6 +745,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	var flanks: Array = []
 	var orbits: Array = []
 	var investigates: Array = []
+	# L2 (X3): whether my gun is a suppressing one at all. Volume and noise hold a crew down, not damage — combat
+	# measured a machine gun laying 1.0 suppression per second against a cannon's 0.24, while doing a twentieth of
+	# the damage through a tank's front. That is the whole case for firing at something I cannot kill.
+	var suppresses: bool = SuppressionFeed.suppresses(weapon) and not out_of_ammo and features.get("avoid_beaten", true)
+	var suppressions: Array = []
 	for c in contacts:
 		var distance := my_position.distance_to(c["position"])
 		var in_leash: bool = objective == null or leash <= 0.0 \
@@ -753,9 +787,26 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				var boosted := engage * squad_bonus
 				engage = minf(boosted, maxf(engage, ORDER_WEIGHT - 0.1)) if commanded else boosted
 			engages.append([c["name"], engage])
+			# SUPPRESS: rounds on an enemy I can't kill quickly, to stop it shooting. Worth it when my gun suppresses,
+			# the target is visible and in reach, and either killing it is slow going or it is already pinned and
+			# worth keeping that way while someone else does the killing.
+			if suppresses and c["visible"] and distance <= float(weapon["range"]):
+				var poor_kill: bool = best_kill_rate > 0.0 and matchups.has(c["name"]) \
+						and float((matchups[c["name"]] as Dictionary)["kill_rate"]) <= best_kill_rate * SUPPRESS_KILL_RATIO
+				var worth_pinning: bool = poor_kill or bool(c.get("pinned", false)) \
+						or c["name"] == tactics.get("flank_target", "") or c["name"] == tactics.get("focus", "")
+				if worth_pinning:
+					var suppress_score := SUPPRESS_WEIGHT * reach * confidence * leash_factor * firepower
+					# Holding down the one a teammate is going round is the point of a base of fire.
+					if c["name"] == tactics.get("flank_target", "") or ElementFeed.is_firing_base(element_context):
+						suppress_score *= 1.25
+					suppressions.append([c["name"], suppress_score])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
 			var flank := float(d["flanking"]) * (1.0 if c["facing_ally"] else 0.55) * confidence * reach * leash_factor * firepower \
 					* minf(matchup_factor, 1.0)
+			# A pinned crew can't track a mover: this is the moment to go round it, not to sit and trade.
+			if bool(c.get("pinned", false)):
+				flank *= PINNED_FLANK_BONUS
 			if c["exposed_face"] != "front":
 				flank *= 0.35
 			elif tactics.get("flank_target", "") == c["name"] and (not commanded or String(squad["verb"]) == "assault"):
@@ -788,6 +839,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			add.call("COVER_FIRE", pair[0], cover_value)
 	for pair in flanks:
 		add.call("FLANK", pair[0], pair[1] * fight_scale)
+	# SUPPRESS (X3): keep a crew's head down. It scores below a fight this unit can actually win, and above hanging
+	# back doing nothing — which is what a machine-gun scout did with 84% of its time before this existed.
+	for pair in suppressions:
+		add.call("SUPPRESS", pair[0], pair[1] * fight_scale)
 	# ORBIT (A5): a fixed gun can't out-shoot a turret head-on, but it can out-turn a slow one: circle it and burst in
 	# when its gun points away. Scores above SPOT, so scouts fight what they counter instead of hanging back.
 	for pair in orbits:
@@ -1148,6 +1203,10 @@ func build_situation() -> Dictionary:
 		# In its weapon's reach with a clear line to me (CoverMap): it can shoot me right now.
 		contact["threatens_me"] = visible and my_position.distance_to(position) <= float(contact["weapon_range"]) + 5.0 \
 				and cover_map.clear_line_coarse(position, my_position)
+		# L2 (X3): a pinned crew is a worse SHOOTER, which makes it the one to go round, not the one to avoid
+		# (combat measured a pinned tank hitting 5 of 13 shells where a calm one hits 13 of 13, and taking twice as
+		# long to swing its turret).
+		contact["pinned"] = float(contact.get("suppression", 0.0)) >= Tank.PINNED_SUPPRESSION
 		contacts.append(contact)
 
 	lap = _lap("s.contacts", lap)
@@ -1198,7 +1257,9 @@ func build_situation() -> Dictionary:
 				"shield": tank.shield, "max_shield": tank.max_shield, "reload": tank.sync_reload,
 				"lane_blocked_ticks": lane_blocked_ticks, "unit": tank.unit_id, "velocity": tank.estimated_velocity,
 				"class": Units.PROFILES.get(tank.unit_id, {}).get("role", "tank"), "sight_radius": tank.sight_radius,
-				"in_resupply_zone": Match.in_resupply_zone(team, my_position)},
+				"in_resupply_zone": Match.in_resupply_zone(team, my_position),
+				# L2 (X3): my own crew's suppression, and whether it is bad enough that my fire is wasted.
+				"suppression": SuppressionFeed.of(tank), "pinned": SuppressionFeed.is_pinned(tank)},
 		"directives": effective_directives,
 		"squad": squad_context if squad_context.get("slot") != null else null,
 		"contacts": contacts,
@@ -1500,6 +1561,27 @@ func _act(s: Dictionary) -> void:
 				var away: Vector3 = my_position + (my_position - contact["position"]).normalized() * 8.0
 				_order_move(_move_to(away, true))
 			else:
+				_order_move({"type": "face", "x": contact["position"].x, "z": contact["position"].z})
+		"SUPPRESS":
+			# X3: keep this crew's head down. Rounds go at the enemy while it is in the open, and at the ground it
+			# went behind the moment it isn't — a beaten zone doesn't stop being one because the target ducked, and
+			# that is what stops it leaning back out. Hold the range that suits the gun; don't chase.
+			var distance := my_position.distance_to(contact["position"])
+			var spot: Vector3 = contact["position"] + (contact["velocity"] as Vector3) * SUPPRESS_LEAD_SECONDS
+			if contact["visible"]:
+				_order_weapon({"type": "target", "name": contact["name"], "fallback": false})
+				why = TankBrain._join(why, "suppressing " + String(contact["name"]))
+			else:
+				_order_weapon({"type": "suppress", "x": spot.x, "z": spot.z})
+				why = TankBrain._join(why, "fire on where it went")
+			if distance > float(weapon["preferred_max"]):
+				_order_move(_move_to(contact["position"]))
+			elif distance < float(weapon["preferred_min"]):
+				var back: Vector3 = my_position + (my_position - contact["position"]).normalized() * 8.0
+				_order_move(_move_to(back, true))
+			else:
+				# Standing still is what makes fire effective (Match.shot_spread charges movement), and a base of
+				# fire is meant to stay put anyway.
 				_order_move({"type": "face", "x": contact["position"].x, "z": contact["position"].z})
 		"FLANK":
 			var side := Vector3(-contact["forward"].z, 0.0, contact["forward"].x)
@@ -1923,6 +2005,12 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	if slot != null:
 		request["leash"] = {"center": slot, "radius": SLOT_LEASH}
 		why = TankBrain._join(why, "in its slot")
+	# X3 (L2): and don't manoeuvre through a beaten zone.
+	var fields := SuppressionFeed.source(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
+	if fields != null:
+		var team := tank.team
+		request["beaten"] = func(from: Vector3, to: Vector3) -> bool:
+			return SuppressionFeed.beaten(fields, team, from, to)
 	_incoming_count = (s.get("incoming", []) as Array).size()
 	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
 	var result := CombatMotion.choose(request)
@@ -1932,6 +2020,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
 	if result.get("dodging", false):
 		why = TankBrain._join(why, "dodging")
+	if result.get("beaten", false):
+		why = TankBrain._join(why, "boxed in by fire")
 	if bool(request["target_busy"]) and style != "run":
 		why = TankBrain._join(why, "going for its side")
 	match style:

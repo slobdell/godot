@@ -23,7 +23,9 @@ extends RefCounted
 ##           "acceleration": m/s², "turn_rate_deg": hull turn rate (the dodge model),
 ##           "threats": [{"position", "weight"}] other guns that can shoot me (front armor toward them too),
 ##           "target_busy": bool (its gun points at someone else: go for its side),
-##           "leash": {"center": Vector3, "radius": float} (X1: fight within your formation slot, not all over the map)}
+##           "leash": {"center": Vector3, "radius": float} (X1: fight within your formation slot, not all over the map),
+##           "beaten": Callable(from, to) -> bool (X3, L2: is that route a wall of bullets? Routes that are get used
+##                     only when every direction is one — the lead's "don't walk into a wall of bullets")}
 ## result:  {"point": Vector3 (steer at it), "reverse": bool, "index": int, "score": float} or {} when every
 ##          direction is blocked.
 
@@ -216,6 +218,8 @@ static func choose(request: Dictionary) -> Dictionary:
 	# target is used only if nothing in the first SIGHT_CHECKS does (circling behind cover loses the fight: a Lancer
 	# circled out of view and wandered off after CP2).
 	var fallback: Dictionary = {}
+	var beaten_fallback: Dictionary = {}
+	var beaten: Callable = request.get("beaten", Callable())
 	var checked := 0
 	for entry: Array in scored:
 		var end: Vector3 = entry[3]
@@ -223,6 +227,14 @@ static func choose(request: Dictionary) -> Dictionary:
 			continue
 		if map != null and (map.path_blocked(Vector2(here.x, here.z), Vector2(end.x, end.z), OBSTACLE_GROW)
 				or map.inside_any(Vector2(end.x, end.z), OBSTACLE_GROW)):
+			continue
+		# X3 (L2): don't drive through a wall of bullets. Checked here, after the cheap filters and best-first, so it
+		# costs one field query for the winner in the common case. Kept as a last resort: a unit boxed in by fire has
+		# to go somewhere, and standing in it is worse than crossing it.
+		if beaten.is_valid() and beaten.call(here, end):
+			if beaten_fallback.is_empty():
+				beaten_fallback = {"point": here + Vector3(RING[entry[1]].x, 0.0, RING[entry[1]].y) * STEER_DISTANCE,
+						"reverse": entry[2], "index": entry[1], "score": -float(entry[0]), "dodging": false, "beaten": true}
 			continue
 		var direction := Vector3(RING[entry[1]].x, 0.0, RING[entry[1]].y)
 		var steer := maxf(STEER_DISTANCE, float(request.get("min_turn_radius", 0.0)) * WHEELS_STEER_RADII) if wheels else STEER_DISTANCE
@@ -241,6 +253,8 @@ static func choose(request: Dictionary) -> Dictionary:
 			break
 	if not fallback.is_empty():
 		return fallback
+	if not beaten_fallback.is_empty():
+		return beaten_fallback
 	# Boxed in: every end was inside an obstacle (or the path to it crossed one). Standing still in a fight is worse
 	# than nudging out of the box, so take the best-scoring direction that stays inside the arena and let the next
 	# plan (from the new spot) find clear ground.

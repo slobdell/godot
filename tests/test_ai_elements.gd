@@ -25,23 +25,23 @@ func test_it_reads_a_slot_with_a_position_a_sector_and_a_role() -> void:
 	var context := _context({"id": "Alpha", "leader": "Green_A_1", "members": ["Green_A_1", "Green_A_2"],
 			"formation": "line", "technique": "bounding_overwatch", "drill": "react_to_contact", "task": "move",
 			"slots": {"Green_A_2": {"position": [-104.0, 20.0], "facing": [-1.0, 0.0], "role": "overwatch"}}})
-	assert_eq(context["id"], "Alpha")
-	assert_eq(context["leader"], "Green_A_1")
+	assert_eq(context["id"], "Alpha", "the element id, as text")
+	assert_eq(context["leader"], "Green_A_1", "who the leader is")
 	assert_true(not bool(context["is_leader"]), "Green_A_2 is not the leader")
-	assert_eq(context["formation"], "line")
-	assert_eq(context["technique"], "bounding_overwatch")
-	assert_eq(context["drill"], "react_to_contact")
-	assert_eq(context["task"], "move")
+	assert_eq(context["formation"], "line", "the formation the leader chose")
+	assert_eq(context["technique"], "bounding_overwatch", "the movement technique")
+	assert_eq(context["drill"], "react_to_contact", "the drill in force")
+	assert_eq(context["task"], "move", "the task the element was assigned")
 	assert_eq(context["slot"], Vector3(-104.0, 0.0, 20.0), "a flat world position")
 	assert_eq(context["facing"], Vector3(-1.0, 0.0, 0.0), "a unit direction")
-	assert_eq(context["role"], "overwatch")
+	assert_eq(context["role"], "overwatch", "and what this unit is doing in it")
 
 
 func test_a_leaner_state_leaves_the_brain_where_it_was() -> void:
 	# No slots, no technique, no drill: nothing for a brain to execute, and nothing it does differently.
 	var context := _context({"id": "Alpha", "leader": "Green_A_1", "members": ["Green_A_1", "Green_A_2"]})
-	assert_eq(context["slot"], null)
-	assert_eq(context["facing"], null)
+	assert_eq(context["slot"], null, "no slot, so nothing to hold")
+	assert_eq(context["facing"], null, "and no sector to cover")
 	assert_eq(context["role"], "", "no role was given and none is invented")
 	assert_true(not ElementFeed.is_firing_base(context), "so it is not held in place")
 	assert_eq(TankBrain.element_slot({"element": context}), null, "and nothing leashes it")
@@ -50,7 +50,7 @@ func test_a_leaner_state_leaves_the_brain_where_it_was() -> void:
 
 func test_a_bare_position_per_unit_is_a_slot_too() -> void:
 	var context := _context({"slots": {"Green_A_2": [10.0, -4.0]}})
-	assert_eq(context["slot"], Vector3(10.0, 0.0, -4.0))
+	assert_eq(context["slot"], Vector3(10.0, 0.0, -4.0), "a bare [x, z] is a world slot")
 	assert_eq(context["facing"], null, "a bare position carries no sector")
 
 
@@ -58,26 +58,26 @@ func test_slots_may_be_a_list_parallel_to_the_members() -> void:
 	var context := _context({"members": ["Green_A_2", "Green_A_1"],
 			"slots": [{"position": [1.0, 2.0]}, {"position": [3.0, 4.0]}]})
 	# members are read in sorted order, so Green_A_1 is first whatever order the source listed them in.
-	assert_eq(context["members"], PackedStringArray(["Green_A_1", "Green_A_2"]))
-	assert_eq(context["slot"], Vector3(3.0, 0.0, 4.0))
+	assert_eq(context["members"], PackedStringArray(["Green_A_1", "Green_A_2"]), "members are sorted, whatever order the source listed them in")
+	assert_eq(context["slot"], Vector3(3.0, 0.0, 4.0), "the entry at my place in the sorted members")
 
 
 func test_a_technique_a_drill_or_a_task_we_dont_know_is_dropped() -> void:
 	var context := _context({"technique": "teleporting", "drill": "vibes", "task": "conquer"})
-	assert_eq(context["technique"], "")
-	assert_eq(context["drill"], "")
-	assert_eq(context["task"], "")
+	assert_eq(context["technique"], "", "an unknown technique is dropped")
+	assert_eq(context["drill"], "", "so is an unknown drill")
+	assert_eq(context["task"], "", "and an unknown task")
 
 
 func test_the_half_that_moves_can_be_named_instead_of_a_role_per_unit() -> void:
 	var bounding := {"technique": "bounding_overwatch", "moving": ["Green_A_1"],
 			"slots": {"Green_A_1": [0.0, 0.0], "Green_A_2": [10.0, 0.0]}}
-	assert_eq(_context(bounding, "Green_A_1")["role"], "bound")
-	assert_eq(_context(bounding, "Green_A_2")["role"], "overwatch")
+	assert_eq(_context(bounding, "Green_A_1")["role"], "bound", "the named moving half is bounding")
+	assert_eq(_context(bounding, "Green_A_2")["role"], "overwatch", "the named moving half is bounding")
 	var sbf := {"drill": "support_by_fire", "moving": ["Green_A_1"],
 			"slots": {"Green_A_1": [0.0, 0.0], "Green_A_2": [10.0, 0.0]}}
-	assert_eq(_context(sbf, "Green_A_1")["role"], "maneuver")
-	assert_eq(_context(sbf, "Green_A_2")["role"], "base_of_fire")
+	assert_eq(_context(sbf, "Green_A_1")["role"], "maneuver", "the moving half of a support-by-fire is the maneuver element")
+	assert_eq(_context(sbf, "Green_A_2")["role"], "base_of_fire", "the moving half of a support-by-fire is the maneuver element")
 
 
 func test_only_the_halves_that_shoot_are_held_in_place() -> void:

@@ -22,6 +22,11 @@ extends Node
 ##   {"type": "fire_at_will"}                   engage the nearest visible enemy
 ##       optional "sector": [x, z] + "sector_cos": float — a sector of fire (X1, contract L1): enemies inside the
 ##       sector are engaged first, and one outside it only when the sector is empty (cover your arc, never idle)
+##   {"type": "suppress", "x": float, "z": float}
+##       L2 (X3): put fire ON A PIECE OF GROUND — a lane, a doorway, the cover an enemy is behind — whether or not
+##       anything is standing there. This is what makes suppression a decision instead of a side effect: a machine gun
+##       holding a crossing stops an advance without killing anyone. Fire discipline still applies (never through a
+##       friendly), and the point must be inside the weapon's range.
 ##   {"type": "target", "name": String, "fallback": bool (optional)}
 ##       engage one specific tank when visible; with fallback, shoot the nearest visible
 ##       enemy meanwhile (brains use this: team intel can pick a target this tank can't see)
@@ -50,7 +55,7 @@ const STUCK_SPEED := 0.8
 const STUCK_SECONDS := 1.0
 const UNSTICK_SECONDS := 0.9
 const MOVE_TYPES := ["stop", "move_to", "drive", "face"]
-const WEAPON_TYPES := ["hold_fire", "aim", "fire_at_will", "target"]
+const WEAPON_TYPES := ["hold_fire", "aim", "fire_at_will", "target", "suppress"]
 const REFLEX_TYPES := ["retreat_below_hp", "halt_on_contact"]
 const MAX_REFLEXES := 4
 const MAX_EVENTS := 8
@@ -89,6 +94,10 @@ var spotter: Callable
 ## Recent notable happenings (reflexes firing), newest last. For observers like the bridge.
 var events: PackedStringArray = []
 
+## X3: the sidestep being driven right now (null = none) and the tick it gives up at.
+var _fire_detour: Variant = null
+var _fire_detour_until := 0
+var _fire_detour_again := 0
 var _reflex_armed: Array[bool] = []
 ## Flat world direction the turret holds when it has nothing to aim at (ZERO = not set yet).
 var _held_aim := Vector3.ZERO
@@ -123,6 +132,20 @@ static var held_for_friends := 0
 ## A blocked lane is re-checked only every this many ticks (a friend doesn't clear a lane in one tick).
 const LANE_RECHECK_TICKS := 3
 ## Local avoidance of friends in the way (see _around_friends), meters.
+## X3 (L2): how far ahead a route is checked for a wall of bullets (meters). Far enough to see one coming: checking
+## only the next navmesh waypoint is a few metres, by which time the unit is already in it.
+const FIRE_LOOKAHEAD := 34.0
+## ...and how far to one side the route steps to get out of it (meters, nearest first).
+const FIRE_DETOUR_STEPS: Array[float] = [12.0, 24.0, 36.0]
+## A sidestep is DRIVEN, not re-decided every tick: re-deciding just wobbles along the edge of the fire (measured: 4 m
+## off the straight line, and longer in the beaten zone than going straight). It is held until it is reached, or the
+## route on is clear, or this many ticks pass.
+const FIRE_DETOUR_TICKS := 120
+const FIRE_DETOUR_REACHED := 5.0
+## ...and then the unit pushes on for this long before it will step aside again. Without it, a wall of bullets across
+## the whole frontage means a unit that steps aside, finds the way still swept, steps aside again, and never arrives
+## (measured: 19 m off the line and it never got there). Orders win in the end: if there is no way round, you go.
+const FIRE_DETOUR_COOLDOWN := 240
 const AVOID_LOOKAHEAD := 10.0
 const AVOID_WIDTH := 3.2
 const AVOID_CLEARANCE := 5.0
@@ -212,6 +235,8 @@ func compute_command(delta: float) -> TankCommand:
 ## A new order from the player: drop the unstick routine, the old path, and stall bookkeeping, so the new order
 ## drives this very tick (K1 response guarantee).
 func interrupt() -> void:
+	_fire_detour = null
+	_fire_detour_again = 0
 	_unstick_left = 0.0
 	_stuck_time = 0.0
 	_repath_left = 0.0
@@ -287,7 +312,7 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var lap := Time.get_ticks_usec() if profile_detail else 0
 			var routed := goal if direct else _next_waypoint(goal, delta)
 			lap = _lap("move.path", lap)
-			var waypoint := _around_friends(routed)
+			var waypoint := _around_friends(_around_fire(routed, goal))
 			lap = _lap("move.avoid", lap)
 			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
 			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
@@ -319,6 +344,57 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				cmd.turn = move_order["turn"]
 			else:
 				move_order = {"type": "stop"}
+
+
+## X3 (L2): a route through a wall of bullets is stepped around. The lead: *"vehicles make decisions to avoid walking
+## into a wall of bullets that will kill them."* Navmesh paths know nothing about fire, and this is where every move
+## passes — an order, an element's bound, a drill — so it is the one place that covers all of them. Sides are tried
+## nearest first; if every way through is swept it goes anyway, because standing still in the open is worse.
+func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
+	var brain := self as TankBrain
+	if brain == null or brain.game_match == null \
+			or not bool(BrainVariants.for_team(tank.team).get("avoid_beaten", true)):
+		return waypoint
+	var fields := SuppressionFeed.source(brain.game_match)
+	if fields == null:
+		return waypoint
+	var here := tank.global_position
+	var to := Vector3(waypoint.x - here.x, 0.0, waypoint.z - here.z)
+	var distance := to.length()
+	if distance < 1.0:
+		return waypoint
+	var direction := to / distance
+	var reach := minf(FIRE_LOOKAHEAD, maxf(_flat_distance(here, goal), 1.0))
+	var tick := brain.game_match.tick
+	var ahead_beaten := SuppressionFeed.beaten(fields, tank.team, here, here + direction * reach)
+	# Already going round: keep going until it's reached, the way on is clear, or it has taken long enough.
+	if _fire_detour != null:
+		var leg: Vector3 = _fire_detour
+		if not ahead_beaten or tick >= _fire_detour_until or _flat_distance(here, leg) <= FIRE_DETOUR_REACHED:
+			_fire_detour = null
+			_fire_detour_again = tick + FIRE_DETOUR_COOLDOWN
+		else:
+			return leg
+	if not ahead_beaten or tick < _fire_detour_again:
+		return waypoint
+	var across := Vector3(-direction.z, 0.0, direction.x)
+	var limit := Match.DRIVABLE_LIMIT - 4.0
+	# The way round is a step SIDEWAYS first, not a shallower line to the same place: a lane swept across your front
+	# is crossed by leaving it, then going on. So each candidate is a pure lateral step, and it only counts if the
+	# step itself is clear AND the route on from there is — otherwise stepping aside just takes longer to die in.
+	for step: float in FIRE_DETOUR_STEPS:
+		for side: float in [1.0, -1.0]:
+			var beside := here + across * (side * step)
+			beside.x = clampf(beside.x, -limit, limit)
+			beside.z = clampf(beside.z, -limit, limit)
+			if SuppressionFeed.beaten(fields, tank.team, here, beside):
+				continue
+			if SuppressionFeed.beaten(fields, tank.team, beside, beside + direction * reach):
+				continue
+			_fire_detour = beside
+			_fire_detour_until = tick + FIRE_DETOUR_TICKS
+			return beside
+	return waypoint
 
 
 ## Local avoidance: a friend parked in the way within AVOID_LOOKAHEAD meters (within AVOID_WIDTH of the line to the
@@ -450,6 +526,9 @@ func _apply_weapon(cmd: TankCommand) -> void:
 		"aim":
 			_cover(Vector3(weapon_order["x"], 0.0, weapon_order["z"]), cmd)
 			return
+		"suppress":
+			_apply_suppress(cmd)
+			return
 		"fire_at_will":
 			if tanks_root != null:
 				target = _scanned_shootable()
@@ -492,6 +571,24 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	lap = _lap("weapon.aim", lap)
 	cmd.fire = _clear_to_fire(in_range and aimed and tank.ready_to_fire(), aim)
 	_lap("weapon.lanes", lap)
+
+
+## L2 (X3): fire at a piece of ground. No target, no lead, no line-of-sight-to-an-enemy check — just the gun on the
+## spot and rounds going down it while it is in range and the lane is clear of friendlies. A fixed mount swings the
+## hull onto it like it would onto a target.
+func _apply_suppress(cmd: TankCommand) -> void:
+	var aim := Vector3(weapon_order["x"], 0.0, weapon_order["z"])
+	aim.y = tank.turret.global_position.y
+	_cover(aim, cmd)
+	if tank.mount == "fixed" and move_order["type"] == "stop":
+		cmd.turn = Steering.drive_toward(tank.global_position, -tank.global_basis.z, aim, 0.0).y
+	var muzzle := tank.turret.global_position
+	var in_range: bool = muzzle.distance_to(aim) <= float(tank.weapon["range"])
+	# Suppressing is worth rounds, not the last of them: a unit low on ammo saves them for something it can kill.
+	if tank.ammo_fraction() >= 0.0 and tank.ammo_fraction() <= LOW_AMMO_FRACTION:
+		in_range = false
+	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(tank.weapon["aim_tolerance_deg"]))
+	cmd.fire = _clear_to_fire(in_range and aimed and tank.ready_to_fire(), aim)
 
 
 ## Direct fire needs a clear line of sight from this tank AND the target being seen: by the team when a
@@ -654,7 +751,8 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 	var type: Variant = order.get("type")
 	if not allowed_types.has(type):
 		return "type must be one of %s" % [allowed_types]
-	var numeric := {"move_to": ["x", "z"], "face": ["x", "z"], "aim": ["x", "z"], "drive": ["throttle", "turn", "seconds"],
+	var numeric := {"move_to": ["x", "z"], "face": ["x", "z"], "aim": ["x", "z"], "suppress": ["x", "z"],
+			"drive": ["throttle", "turn", "seconds"],
 			"retreat_below_hp": ["hp", "x", "z"]}
 	for key in numeric.get(type, []):
 		var value: Variant = order.get(key)

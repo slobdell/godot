@@ -72,7 +72,7 @@ static func along(fields: Object, team: int, from: Vector3, to: Vector3) -> floa
 
 ## Incoming-fire density at one point for `team`, 0 when there is no field.
 static func density(fields: Object, team: int, point: Vector3) -> float:
-	var field := field_for(fields, team)
+	var field: Variant = field_for(fields, team)
 	if field == null:
 		return 0.0
 	if field is Object and (field as Object).has_method("at"):

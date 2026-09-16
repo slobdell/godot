@@ -7,6 +7,7 @@ const FIRE_DISCIPLINE := preload("res://tests/ai_scenarios/scenario_fire_discipl
 const COVER := preload("res://tests/ai_scenarios/scenario_cover.gd")
 const ORDERS := preload("res://tests/ai_scenarios/scenario_orders.gd")
 const ELEMENTS := preload("res://tests/ai_scenarios/scenario_elements.gd")
+const SUPPRESSION := preload("res://tests/ai_scenarios/scenario_suppression.gd")
 
 
 func _delegate(script: GDScript, method: String) -> void:
@@ -51,3 +52,11 @@ func test_each_unit_covers_its_own_sector_of_fire() -> void:
 
 func test_a_bounding_unit_rushes_and_halts_on_the_leaders_call() -> void:
 	await _delegate(ELEMENTS, "test_a_bounding_unit_rushes_and_halts_on_the_leaders_call")
+
+
+func test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire() -> void:
+	await _delegate(SUPPRESSION, "test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire")
+
+
+func test_holding_a_crew_down_lets_a_teammate_go_round_it() -> void:
+	await _delegate(SUPPRESSION, "test_holding_a_crew_down_lets_a_teammate_go_round_it")
