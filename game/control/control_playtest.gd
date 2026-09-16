@@ -6,6 +6,7 @@ extends Node
 ##   2 attack-move it across the arena      5 a unit pushed away from its group drives back to it
 ##   3 queue a route with shift-clicks      6 L4: what the vision camera shows, and that it refuses the god view
 ##                                          7 X3: a screen task reaches the element's leader, and what it decided
+##                                          8 X4: ctrl+A takes the whole army; the panel groups it by type
 ## Every order's response is logged to orders.jsonl: the tick it was issued and the first tick the unit's tracks
 ## steered toward it (the K1 response guarantee: within 3 ticks). Prints CONTROL_PLAYTEST lines and
 ## CONTROL_PLAYTEST_DONE ok=<bool> at the end, then quits (exit 1 when a check failed).
@@ -43,6 +44,7 @@ func run() -> void:
 	await tree.create_timer(1.0).timeout
 	await _capture("0_start")
 	await _box_select()
+	await _whole_army()
 	await _element_task()
 	await _vision_report()
 	await _attack_move()
@@ -301,6 +303,24 @@ func _element_task() -> void:
 				"detached": element.state()["detached"]})
 	await get_tree().create_timer(1.0).timeout
 	await _capture("7_element_task")
+
+
+## Control X4: take the whole army at once and see that the panel stays readable (portraits collapse to one per
+## type above SelectionPanel.GROUP_ABOVE units).
+func _whole_army() -> void:
+	await _key(KEY_A, false, true)
+	var picked := controls.selection.units.size()
+	var alive := 0
+	for tank in controls.game_match.sorted_team_tanks(controls.team):
+		if tank.is_alive():
+			alive += 1
+	_checks["ctrl_a_takes_the_whole_army"] = picked == alive and picked > 0
+	var panel := controls.get_node_or_null("SelectionPanel") as SelectionPanel
+	var portraits: int = (panel.summary()["portraits"] as Array).size() if panel != null else -1
+	_step("whole_army", {"selected": picked, "alive": alive, "portraits": portraits,
+			"grouped": picked > SelectionPanel.GROUP_ABOVE})
+	await get_tree().create_timer(0.8).timeout
+	await _capture("8_whole_army")
 
 
 ## Whether this unit can currently see a living enemy (it is fighting, not travelling).
