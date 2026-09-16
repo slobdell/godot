@@ -46,6 +46,19 @@ control-scale-shots: import ## The control playtest with ~30 units a side, frame
 	test -z "$$real" || { echo "$$real"; exit 1; }
 	@echo "Now LOOK at $(CONTROL_PLAYTEST_DIR)/scale/*.png"
 
+## Control X5: the faction menu, and a faction skirmish you can actually play.
+FACTION ?= gangs
+ENEMY_FACTION ?= syndicate
+
+faction-menu-shot: import ## Screenshot the faction picker in build/screenshots/faction-menu.png (needs a display)
+	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
+	timeout 120 $(GODOT) --path . --resolution 1920x1080 -- --skirmish --seed=3 --pick-faction \
+		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/faction-menu.png --screenshot-delay=4
+	@echo "Now LOOK at $(BUILD_DIR)/screenshots/faction-menu.png"
+
+skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate): size follows the roster
+	$(GODOT) --path . -- --skirmish --player-faction=$(FACTION) --enemy-faction=$(ENEMY_FACTION) $(CONTROL_FLAGS)
+
 COMMAND_PLAYTEST_DIR := $(BUILD_DIR)/command-playtest
 
 command-playtest: import ## Headless: tap each squad, order it off screen via the radar, check the camera frames it (log: build/command-playtest/camera.jsonl)
