@@ -16,7 +16,9 @@ func test_an_element_ambushed_at_close_range_assaults_through_it() -> void:
 
 func test_a_halted_element_watches_both_flanks() -> void:
 	var result: Dictionary = await TacticsScenarios.herringbone(self, 8.0)
-	assert_eq(String(result["formation"]), "herringbone", "a halt with something out there is a herringbone")
+	# Which shape depends on the ground: the herringbone in lanes or cover, the coil in the open.
+	assert_true(["herringbone", "coil"].has(String(result["formation"])),
+			"a halt with something out there forms all-round security (got %s)" % result["formation"])
 	assert_true(int(result["left"]) > 0 and int(result["right"]) > 0,
 			"with vehicles facing out to both sides (bearings %s)" % [result["bearings"]])
 	assert_true(float(result["coverage"]) > 0.8, "so the element watches almost all of the circle")

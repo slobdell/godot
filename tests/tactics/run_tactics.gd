@@ -73,8 +73,10 @@ func _drills(filter: String) -> void:
 		_begin()
 		var halt: Dictionary = await TacticsScenarios.herringbone(case)
 		_record("herringbone", halt)
-		_expect(halt, "formation", "halted in a herringbone", String(halt["formation"]) == "herringbone")
+		_expect(halt, "formation", "halted in all-round security",
+				["herringbone", "coil"].has(String(halt["formation"])))
 		_expect(halt, "left/right", "watching both flanks", int(halt["left"]) > 0 and int(halt["right"]) > 0)
+		_expect(halt, "coverage", "with most of the circle covered", float(halt["coverage"]) > 0.8)
 
 
 func _measure(filter: String) -> void:

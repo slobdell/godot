@@ -69,12 +69,12 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 	var destination: Variant = _task_point(task, situation)
 	if verb == "hold" or destination == null:
 		plan["arrived"] = true
-		_plan_halt(plan, situation, table)
+		_halt(plan, situation, table)
 		return
 	var to_go := center.distance_to(destination)
 	plan["arrived"] = to_go <= ARRIVE_M
 	if plan["arrived"]:
-		_plan_halt(plan, situation, table)
+		_halt(plan, situation, table)
 		return
 	var heading := TacticsFormation.flat(destination - center)
 	plan["heading"] = heading
@@ -87,13 +87,17 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			_plan_bounding(plan, situation, state, table, ordered, destination, heading, spacing, order_verb)
 		"traveling_overwatch":
 			var halves := split(ordered)
-			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
+			# The anchor belongs to the LEAD section: measured from the whole element's centre it stops
+			# advancing, because the trail section is a gap behind on purpose (measured 2026-09-16).
+			var anchor := _advance(plan, situation, state, table, _center_of(halves[0]), destination, heading,
+					halves[0], spacing)
 			_group(plan, halves[0], String(plan["formation"]), anchor, heading, spacing, order_verb)
 			var trail_anchor := anchor - heading * table.leg("overwatch_gap_m")
 			_group(plan, halves[1], "wedge", trail_anchor, heading, spacing, "attack_move")
 		_:
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
 			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
+
 
 
 ## Bounding overwatch: one half moves, the other covers it by fire, then they swap. A bound never goes
@@ -132,15 +136,21 @@ static func _plan_bounding(plan: Dictionary, situation: Dictionary, state: Dicti
 	_hold(plan, overwatch, situation, heading, "overwatch")
 
 
-## A halt: all-round security. The doctrine table normally picks the herringbone (a halt in lanes or cover)
-## or the coil (a halt in the open); either way the crews face their sectors, not the way they drove in.
+## A halt: all-round security. An element that has arrived is no longer on its movement task, so the table is
+## asked what a HALT looks like — normally the herringbone (in lanes or cover) or the coil (in the open) —
+## and the crews face their sectors instead of the way they drove in.
+static func _halt(plan: Dictionary, situation: Dictionary, table: DoctrineTable) -> void:
+	var pick := table.select({"task": "hold", "threat": String(situation["threat"]),
+			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
+	plan["formation"] = pick["formation"]
+	plan["technique"] = pick["technique"]
+	plan["why"] = pick["why"]
+	_plan_halt(plan, situation, table)
+
+
 static func _plan_halt(plan: Dictionary, situation: Dictionary, table: DoctrineTable) -> void:
 	var ordered := slot_order(situation)
 	var formation := String(plan["formation"])
-	if not ["herringbone", "coil", "line"].has(formation):
-		formation = "herringbone"
-		plan["formation"] = formation
-	plan["technique"] = "traveling"
 	var heading: Vector3 = plan["heading"]
 	var spacing := table.spacing(String(situation["terrain"]))
 	_group(plan, ordered, formation, situation["center"], heading, spacing, "move", "", true)
@@ -319,14 +329,16 @@ static func _order(plan: Dictionary, unit_name: String, verb: String, to: Varian
 
 ## Where the element's formation centre should be next: one leg further on, but only once the element has
 ## closed up on the leg it is driving to now.
+## `keyed` is the group whose slots are measured from this anchor (the whole element, or the lead section
+## under traveling overwatch: the trail section is deliberately a gap behind and must not hold the advance up).
 static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
-		center: Vector3, destination: Vector3, heading: Vector3, ordered: Array, spacing: float) -> Vector3:
+		center: Vector3, destination: Vector3, heading: Vector3, keyed: Array, spacing: float) -> Vector3:
 	var anchor: Variant = state.get("anchor")
 	var leg := table.leg("%s_m" % String(plan["technique"]))
 	var reached: bool = anchor == null or center.distance_to(anchor) <= LEG_ARRIVE \
 			or (destination - (anchor as Vector3)).dot(heading) < 0.0 \
 			or (anchor as Vector3).distance_to(destination) > center.distance_to(destination) + leg
-	if reached and _cohesive(ordered, anchor, String(plan["formation"]), heading, spacing, table):
+	if reached and _cohesive(keyed, anchor, String(plan["formation"]), heading, spacing, table):
 		anchor = clamp_to_arena(center + heading * minf(leg, center.distance_to(destination)))
 	elif anchor == null:
 		anchor = clamp_to_arena(center)

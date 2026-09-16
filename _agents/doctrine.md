@@ -189,9 +189,85 @@ Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 | `game/tactics/element_commander.gd` | A CPU commander that assigns *tasks* to elements (parity demo, X5) |
 | `doctrines/doctrine_*.json` | The tables: standard plus one per faction |
 
-## Measurements
+## Sketch: what an offline discovery harness would search (stretch)
 
-_Filled in as they are run (X4). Each entry says the seed, the scenario and the command._
+game_design.md wants a harness that plays tactics against each other and distils what wins into deterministic
+rules. Doctrine is already the right shape for that, because a doctrine is **data**:
+
+- **The search space** is a doctrine table: the order of the movement rules, the formation and technique each
+  one picks, the spacing per terrain, the leg lengths, and the drill numbers (`near_ambush_m`,
+  `break_contact_ratio`, `flank_m`, `react_ticks`, …). A candidate is one JSON file.
+- **The fitness** is the tournament ai already runs: table A against table B, same armies, same seeds, both
+  sides swapped, scored on wins and on what survived.
+- **The moves** are small and safe: change one number, swap one rule's formation, reorder two rules. Every
+  candidate is still a valid table (the parser rejects anything that is not), and every candidate is still
+  *readable* — which is the point, because what the harness finds has to end up as a rule a player can be told
+  ("in close country, bound").
+- **What must not happen:** a search that produces a table nobody can explain, or one that only wins because
+  the CPU can run it and the player's elements can't. Parity is checked by construction: the player's elements
+  use the same tables.
+
+ai owns the harness; doctrine owns the format and will take its findings as new rows with a `why`.
+
+## Measurements (X4)
+
+Every number below comes from `make tactics-measure` (seeded, headless, `build/tactics/measurements.json`)
+and `make tactics-drills`. Same arena strip, same enemy, same seed per trial: only the doctrine changes.
+
+### Formations: four tanks walking into two dug-in guns at 80 m (seed 29, 20 s)
+
+| Shape | Spacing | Survived (hull + shield) | First hit on them | Sector coverage | Frontage |
+|---|---|---|---|---|---|
+| **Wedge** | 14 m | **0.75** | **3.6 s** | 0.63 | 37.8 m |
+| Line | 14 m | 0.63 | 3.8 s | 0.42 | 42.0 m |
+| Column | 14 m | 0.57 | 8.0 s | 1.00 | 0 m |
+| Wedge, bunched | 3 m | 0.67 | 7.4 s | 0.63 | 8.1 m |
+
+The wedge at doctrinal spacing is the best of the four *into contact*: most of its guns bear forward, it is
+still deep enough not to be one target, and it hurt the enemy in half the time the bunched element took. The
+column is the safest shape for *seeing* (it watches the whole circle) and the worst for a fight to the front:
+eight seconds before it did any damage, because only the lead vehicle can shoot. That is the trade the
+doctrine table makes when it picks a column for a road march and a wedge when contact is possible.
+
+**Dispersion versus splash: no effect yet.** Against artillery the same wedge survived 0.91 spread out and
+0.93 bunched — inside the noise. Today's splash and the absence of suppression mean bunching is not punished,
+so "spread out" currently rests on frontage and armour facing alone. *This is combat's L2 (CP2): re-measure
+suppression and splash against `closest_pair_m` when it lands.*
+
+### Movement techniques: the same advance into the same guns (seed 31, 24 s)
+
+| Technique | Ground taken | Survived |
+|---|---|---|
+| Traveling | 50 m | 0.74 |
+| Traveling overwatch | 97 m | 0.74 |
+| **Bounding overwatch** | 65 m | **0.51** |
+
+**Bounding does not pay off in today's build, and that is the expected result.** Bounding buys safety by
+having one element *set* and able to cover the other — and covering fire only means something when it makes
+the enemy shoot worse or stop shooting. Suppression is combat's L2 and is not merged yet, so today the
+overwatch element is simply a stationary target that is not advancing. Re-measure at CP2; if bounding still
+loses with suppression in, the doctrine tables should stop choosing it.
+
+### A halt: jumped from the flank at 45 m (seed 37, 14 s)
+
+| Shape at the halt | Survived | First shot back |
+|---|---|---|
+| **Herringbone** (hulls turned out to their sectors) | **0.93** | 1.62 s |
+| Column (parked as it drove in) | 0.69 | 1.35 s |
+
+Facing your flanks at a halt is worth about a quarter of the element. The parked column got its first shot
+away marginally sooner (its guns were already pointed down the lane the enemy came from) and then paid for
+every second afterwards, because its flank armour was toward the guns.
+
+### Drills (seed per scenario, `make tactics-drills`)
+
+| Drill | What happened |
+|---|---|
+| Near ambush | Sprung at 25 m; the element turned into it, drove through to 1.9 m of the ambush position and out the far side **6.3 s** later; both ambushers destroyed, no losses |
+| Far ambush | React to contact, then fire and maneuver: the base of fire held **4.6 m** off the line of contact while the other half swung **24.3 m** round; both guns destroyed, 3 of 4 alive |
+| Bounding | A section was **set 38%** of samples while the other moved, and the element still made 50 m |
+| Break contact | Outgunned pair broke from 76 m to **106 m**, both alive |
+| Herringbone | Halted, all-round security, **1.0** of the circle watched |
 
 ## Open questions and requests
 
