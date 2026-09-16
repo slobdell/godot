@@ -147,6 +147,49 @@ The naive number is not a reason to abandon the idea — it is 13 lines out of 2
 **What survives the change:** the 263 slotless clips, and every master (223 MB, rescued to the main checkout), so
 re-cutting costs nothing. What is thrown away: 423 segment clips and 91 fillers — the stitching machinery.
 
+## The rebuild (2026-09-16, after the lead heard the stitched build)
+
+**What was wrong and what replaced it** is above under *Why stitching failed*. What the rebuild actually changed:
+
+| | before | after |
+|---|---|---|
+| a cue plays | carrier segments + filler words, joined | **one recording of one whole sentence** |
+| a side is called | "Green", "Rust" | **its faction**: the Condemned, the Wreckers, the Law, the Syndicate |
+| the Veteran's share of the words | 20% | **31%** (the caller 57% → 49%) |
+| library | 490 lines | 550 |
+| recordings | 777 | 2,225 (~137k credits, of which 116.5k new) |
+
+**The gang faction is "the Wreckers"** — from the lead's own shortlist in game_design.md (*the Wreckers / Scrapborn /
+Chrome Cult*). It matches the shape of the other three: a definite-article collective noun naming what the group is,
+and it doubles as salvage-crew slang that fits their tow-wrecker roster. One vocabulary entry, trivially changed.
+
+**Three forms of a faction name, because English needs them.** The plain name carries its own article ("the Law"),
+`{faction_attr}` is the attributive form for after one ("the Law tank"), `{faction_s}` the possessive. The audit
+enforces both traps this exposed, so they cannot come back:
+- an article before a plain faction name ("The last **the Condemned** vehicle") — 3 lines;
+- a **singular verb** after one ("the Wreckers **cracks** it") — 85 lines. A faction is a crew and takes a plural
+  verb, the way sports commentary treats every team name; it is the only rule that works for all four names at once.
+
+**Counts are quantized, not dropped** (the lead's idea): "over {count_over} vehicles" is true at any army size and
+costs six recordings instead of one per possible number. `AnnouncerMemory` stores the bucket — the largest multiple
+of five strictly below the real count — so nothing downstream knows about rounding, and below five the slot is
+unset, which makes those lines ineligible and the booth says something else.
+
+**Why the Veteran was quiet, which was not what it looked like.** He had 147 lines to the caller's 260, but that was
+not the cause: the director skipped every non-caller follow-up for 1.5 seconds after *any* shot, so in a sustained
+firefight he was mute exactly when he had most to explain. That window is now 0.5 s, analysis *of* the moment being
+called is exempt entirely, and he opens beats of his own. The 60 new lines give him the three registers the lead
+asked for — real technique a player can use, thoughts that trail off and never land, and flat statements of
+appalling fact — and give the PA polite legal corrections addressed to **Joseph**, who is now the caller's name.
+
+**Cost discipline.** `MAX_COMBINATIONS` (24) refuses a line that names more than one variable thing instead of
+quietly ordering 676 recordings of it; 16 lines were rewritten to obey it. Opponents are always different factions,
+which removes three quarters of the combinations of every line naming both sides.
+
+**A second pilot went to the lead before the full run** (41 recordings, 1,875 credits): the same kill call for all
+four factions back to back, so any remaining seam would be obvious, plus both new characters.
+<https://claude.ai/artifact/VnKAEDc9y4TZMHYnHSuiiU>. He approved the full run from it.
+
 ## Status
 
 _Updated 2026-09-16 by the audio worker._

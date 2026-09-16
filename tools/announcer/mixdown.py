@@ -133,7 +133,8 @@ def needed_lines(matches: list[Path]) -> list[str]:
 
 
 def missing_lines(manifest_path: Path, matches: list[Path]) -> list[str]:
-    """Lines the matches use that the manifest can't play yet (no line entry, or a clip of it or its fillers missing)."""
+    """Lines the matches use that the manifest can't play yet: no entry at all, or no recording of the exact
+    realization a cue asks for (a faction and unit combination that was never ordered)."""
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {"lines": {}, "clips": {}}
     missing = set()
     for path in matches:
