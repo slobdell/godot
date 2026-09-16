@@ -100,6 +100,9 @@ const CREEP_LEG_TICKS := 30
 ##     in reverse the wheels steer opposite to get it (a driver's inverted steering, done for the brain). Momentum: the
 ##     velocity is split along the new heading, the sideways part keeps sliding and lateral_grip kills that fraction of
 ##     it each tick (1 = carve, lower = drift), and the forward part accelerates or brakes.
+##   hover (L3, round 4, the Syndicate): swings to face at hull_turn_rate_deg at ANY speed, because nothing needs
+##     traction to do it, but nothing grips the ground either, so momentum carries exactly as it does on wheels.
+##     The result is a hull that can face one way and travel another: it strafes, and it drifts through a turn.
 static func step_in_place(state: Dictionary, throttle: float, turn: float, delta: float) -> void:
 	var throttle_c := clampf(throttle, -1.0, 1.0)
 	var turn_c := clampf(turn, -1.0, 1.0)
@@ -127,6 +130,16 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 		var radius := maxf(float(state["min_turn_radius_m"]), 0.1)
 		var yaw_rate := clampf(absf(speed) * turn_c / radius, -max_rate, max_rate)
 		forward = turn_heading(forward, yaw_rate * delta)
+		var right := Vector3(-forward.z, 0.0, forward.x)
+		var carried: Vector3 = state["velocity"]
+		var along := next_speed_braking(carried.dot(forward), throttle_c, float(state["max_forward_speed"]),
+				float(state["max_reverse_speed"]), float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
+		var sideways := carried.dot(right)
+		sideways -= sideways * clampf(float(state["lateral_grip"]) * delta * 60.0, 0.0, 1.0)
+		speed = along
+		velocity = forward * along + right * sideways
+	elif String(state["locomotion"]) == "hover":
+		forward = turn_heading(forward, turn_c * max_rate * delta)
 		var right := Vector3(-forward.z, 0.0, forward.x)
 		var carried: Vector3 = state["velocity"]
 		var along := next_speed_braking(carried.dot(forward), throttle_c, float(state["max_forward_speed"]),

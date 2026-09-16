@@ -85,6 +85,16 @@ def main():
     print(f"  pace: first shot {mean([r['stats'].get('first_shot_seconds') for r in results])}s, "
           f"first kill {mean([r['stats'].get('first_kill_seconds') for r in results])}s; "
           f"loser kills {mean(loser_kills)}; shots/match {shots / n:.0f}")
+    # L2 (round 4): was there any suppressive fire in these matches? Mean suppression per living unit-sample and the
+    # share of those samples that were pinned, by the team UNDER fire. Both near zero means the brains never
+    # deliberately suppressed, whatever the mechanics allow.
+    samples = [sum(r["stats"].get("suppression_samples", [0, 0])[t] for r in results) for t in (0, 1)]
+    if sum(samples):
+        totals = [sum(r["stats"].get("suppression_total", [0, 0])[t] for r in results) for t in (0, 1)]
+        pinned = [sum(r["stats"].get("pinned_samples", [0, 0])[t] for r in results) for t in (0, 1)]
+        print("  suppression (mean per living unit, share pinned): "
+              + "  ".join(f"{name} {totals[t] / max(samples[t], 1):.2f} / {pinned[t] / max(samples[t], 1):.1%}"
+                          for t, name in enumerate(("Green", "Rust"))))
     friendly = [sum(r["stats"].get("friendly_damage", [0, 0])[t] for r in results) for t in (0, 1)]
     if sum(friendly):
         # R4 friendly fire: hull + shield points each team dealt to its own units.

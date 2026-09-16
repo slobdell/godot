@@ -57,8 +57,67 @@ costs them accuracy and turret tracking. Everything the brains and the drills ne
 - Cost: the field decays 2 × 1600 float cells every 3 ticks (~0.05 ms/tick). If that shows up at 30 a side, the fix
   is a global decay scale instead of a full pass (see X5's numbers).
 
-**The sim baseline moved on purpose** with this commit: suppression changes shot spread, so every seeded match
-diverges, and `Match.state_hash` now includes each unit's suppression.
+**The sim baseline moved on purpose** with L2: suppression changes shot spread, so every seeded match diverges, and
+`Match.state_hash` now includes each unit's suppression. It moved a second time with X2's two corrections (a round
+that hits a unit marks that unit's cell, and a hit's suppression scales with the hull fraction it removes):
+`glibc-2.43 763efdb242eeb5bf`.
+
+### X2: does suppression actually bite? (measured 2026-09-16, builder0)
+
+Reproduce with `make remote T="test FILTER=combat_suppression_bite"` (every row is a `MEASURE` line) and
+`make remote T="suppression-series N=16 GREEN_ARCH=swarm RUST_ARCH=armor"` (suppression on, then every weapon's
+`suppression` tuned to 0 as the control).
+
+| Question | Measurement | Verdict |
+|---|---|---|
+| Does a stream shut a lane? | 1 scout streaming across a lane: density 1.17, `is_beaten_zone` **true**, a crossing IFV loses 4.2 HP and peaks at 0.38 suppression. 3 scouts: route exposure 0.12 → 0.37, 18.9 HP, peaks at **0.70 (pinned)** | Yes, and it scales with crews |
+| Does concentrating fire pin? | one machine gun on a tank settles at **0.42**, two at **0.82** (pin at 0.60) | Yes, exactly as designed: one crew rattles, two pin |
+| Is pinning worth doing? | a tank at 60 m hits **13/13** calm and **5/13** pinned; a 90° turret swing takes **105 ticks** calm and **208** pinned | Yes: pin, then flank |
+| Is a machine gun's value volume? | suppression per second: MG **1.00**, 25 mm 0.78, mortar 0.67, laser 0.30, cannon 0.24 — while the MG still does ×0.05 damage through a tank's front | Yes |
+| **Does it change match outcomes today?** | swarm vs armor, 16 seeds, 1000 pts: **Rust 16-0 with suppression and 16-0 without**. Mean suppression per living unit **0.03**, pinned **0.7%** of unit-samples. The only difference is pace: matches run 77.7 s instead of 69.6 s (+12%), because degraded accuracy drags fights out | **No — and that is the finding** |
+
+**Why not:** the scouts that carry the machine guns spend **84% of their time on SPOT** and almost none firing, and no
+brain or drill ever puts fire on a lane to deny it. The mechanics are ready and measurable; the payoff is a
+*decision*, which belongs to ai (suppress on purpose, avoid beaten zones) and doctrine (support-by-fire). Requests are
+in the combat brief's Status. Until then, leaving the numbers alone is the right call: tuning suppression up to force
+an effect through unused mechanics would only distort the matchup matrix.
+
+**Two notes for whoever reads these numbers**
+- A hitscan stream aimed at a fixed point is a curtain only a couple of sigma of spread thick (~3 m at 40 m), so one
+  crew costs a crossing vehicle a burst, not its life. Thickness comes from *more crews on nearby lanes*, which is why
+  three cost 4.5× the damage of one.
+- The `suppression=0` control still reports ~0.01 mean suppression, because a hit also rattles a crew in proportion to
+  the hull fraction it removes (`Match.SUPPRESSION_PER_HULL_FRACTION`), independent of the weapon's suppression
+  weight. That is deliberate: being hit hard is suppressive whatever hit you.
+- New match stats for this: `suppression_samples`, `suppression_total` and `pinned_samples` per team (sampled over
+  living units every `SUPPRESSION_SAMPLE_TICKS`), printed by `tools/match_series.py`.
+
+### X3: heavies shielding the fragile (measured 2026-09-16, builder0)
+
+**No guard buff exists, and none is needed.** A shell or beam stops at the first hull it meets, and armor facing
+then decides what that costs, so interposing is already the strongest defensive play in the game. Reproduce with
+`make remote T="test FILTER=combat_screening"`.
+
+| Setup (enemy dozer firing 4 cannon shells at a Lancer from 58 m) | Lancer loses | Screen loses |
+|---|---|---|
+| Lancer alone | **320 (destroyed)** | — |
+| A friendly dozer on the line, 8 m in front | **0 (survives)** | 405 of its 450 |
+| That dozer 10 m off the line | **320 (destroyed)** | 0 |
+| A battery lobbing instead of a dozer firing | **320 (destroyed)** | 67 splash |
+
+Why the trade is worth making, with numbers rather than a rule: the same cannon shell is ×0.50 against a dozer's
+8 mm front and ×1.21 against a Lancer's 3 mm, and the dozer has 450 hull + shield against the Lancer's 320. That is
+**2.8 shells to kill the screen against 0.8 to kill what it screens** — a heavy in the right place is worth roughly
+three and a half times its own body in absorbed fire.
+
+**What a screen cannot do**, so the drills don't over-trust it: it does not stop arcs (a mortar lands behind it), it
+does not stop flames (the cone touches everything in it), it only covers its own width (10 m off the line is worth
+nothing), and **a wreck does not screen** — `Tank._set_alive(false)` disables the collision shape, so shells fly
+through it. Turning that last one around is the stream's stretch item (*wrecks as cover*).
+
+**New query (C4):** `Match.screen_for(unit, from_point) -> Tank` returns the friendly hull blocking the line from
+`from_point` to `unit` at rounds' flight height, or null. It reports the geometry the physics already uses and grants
+nothing; ai and doctrine use it to know whether a fragile unit is covered, or whether a heavy is doing its job.
 
 ## Round 4: army size and factions (combat X1, contract L3)
 
@@ -73,6 +132,146 @@ Every catalog entry carries a `faction` (`Units.FACTIONS`: condemned, gangs, law
 | `Army.MAX_ARMY_UNITS` | 45 vehicles a side, which is what the spawn grid holds |
 | `Match.SPAWN_SLOTS` | 27 → **52** (13 columns 11 m apart out to ±66 m, 4 rows 8 m apart from `BASE_Z`). The front row is still at `BASE_Z`, so spawn distance and pace are unchanged; `tools/make_arenas.py` regenerates every layout's spawn list |
 | Spawn jitter | now clamped along z too (`SPAWN_JITTER_MAX_Z` 1.2 m), or a jittered hull in row 2 overlapped one in row 1 |
+
+### X4: the three new rosters (2026-09-16)
+
+15 vehicles and 11 weapons, all data. **Nothing here is a faction-wide bonus**: a faction is a set of costs and
+stats out of one shared mechanics vocabulary, and its army size falls out of the costs
+(`Units.roster_average_cost` → `Army.typical_size`). Measured at `BASELINE_BUDGET` (5200):
+
+| Faction | Avg cost | Vehicles a side | Identity, in mechanics |
+|---|---|---|---|
+| **Road gangs** | 131 | **39** | **No shields anywhere.** Cheapest and fastest, thin armor, short reach. The `twin_mg` is the best suppressor per second in the game (1.26/s); the War Rig is the biggest hull in the game (3.0 × 5.6 m) and turns in 12 m; the Resupply Tanker mends hulls within 18 m, which is how a shieldless faction gets hit points back |
+| **The Condemned** | 183 | **28** | Unchanged from round 3: the mid-point, the lead's "baseline of 30 a side" |
+| **The Law** | 215 | **24** | Sight (a 125 m scout) and suppression. The Sonic Emitter is 18 damage/s and **4.0 suppression/s**; gas rockets are 55 damage and **5.0 suppression** over a 14 m burst. Their guns are reliable rather than fierce; the Retired APC has a 9 mm front and cannot chase anything |
+| **The Syndicate** | 340 | **15** | Energy and hover. Biggest shields, no ammunition, everything heat-limited: the railgun is 420 damage and 16 penetration at 110 m, twice, then it waits. Guided missiles have 0.8 m of scatter at any range **when a teammate is looking**, and the usual ×3 blind penalty wastes the salvo when nobody is |
+
+**Two new mechanics** (the only code the rosters needed):
+- **`hover`** (`TankMotion.step_in_place`): swings to face at `hull_turn_rate_deg` at any speed, like tracks, because
+  nothing needs traction to do it — but nothing grips the ground either, so momentum carries like wheels. Measured: a
+  Skimmer at full speed through a hard turn travels **22° off its own nose**, where a dozer travels exactly where it
+  points and a wheeled Rat Rod needs a multi-point shuffle (28° in half a second against the Skimmer's 80°).
+- **Field repair** (`Units "repair_radius_m"` / `"repair_hp_per_second"`, `Match.repair_rate_for`): a gun truck beside
+  a Resupply Tanker mends 60 → 110 hp over 10 s; one 50 m away mends nothing. Repairs need
+  `REPAIR_QUIET_SECONDS` (3 s) since the last hit — it used to piggyback on the shield recharge delay, which is 0
+  for a faction with no shields, so a gang truck mended itself while being shot.
+
+**Design calls worth knowing**
+- **Every rear stays at or below 2.0 mm.** "Everything hurts from behind" is a rule of the game, not a unit's choice
+  (`test_combat_mechanics`), so the Syndicate's "no strong face" is front and side armor, never a thick back.
+- **The Condemned scout's `good_vs` lost "lancer"**, which round 3 measured at 0%. game_design.md rules those claims
+  must be real in the mechanics. Suppression (L2) is the mechanic that could earn it back — a machine gun is the best
+  suppressor in the game, and a suppressed Lancer tracks at half speed and scatters ×3 — but only once ai suppresses
+  on purpose (X2). Put it back when the matrix shows it.
+- **The Lancer role now appears in two factions**, as `lancer` (Condemned) and `syn_lancer` (Syndicate). That is what
+  *Factions* asks for: the role is shared, the vehicle is not. Flagged for the lead.
+- **Plain `cpu` armies stay Condemned.** A faction is only chosen through `--green-faction=` / `--rust-faction=`, so
+  every round-3 skirmish, garage and match-runner opponent is unchanged.
+- **The garage offers the default faction only** (`ArmyCatalog.from_game`). Its screens, presets and unlock tiers are
+  written for one roster and that stream is paused: a compatibility fix, not a design.
+- **Faction art is not wired up.** `game/theme/factions/` is 47 MB and excluded from the exports, so the new vehicles
+  play as themselves and *look* like the Condemned through the C6 fallback. Shipping the models would take the web
+  pack from 0.8 MB to ~48 MB — a cross-stream call. See the combat brief's *Questions for the lead*.
+
+### X5: what the simulation costs at scale (measured 2026-09-16, builder0)
+
+`make remote T="scale-bench TIME=40"` runs a headless match at N vehicles a side and reads `speedup` (simulated
+seconds per real second) out of `MATCH_RESULT`, so **ms/tick = 1000 / (60 × speedup)**. Run without brains for the
+simulation's own cost and with them for the whole picture; the difference is ai's. 60 fps is a **16.7 ms** budget for
+everything including rendering.
+
+| A side (units) | Sim only, before | Sim only, **after** | With brains, before | With brains, **after** |
+|---|---|---|---|---|
+| 25 (50) | 4.39 ms | **3.03** | 12.82 ms | **10.42** |
+| 40 (80) | 7.94 | **5.05** | 23.81 | **18.52** |
+| 60 (120) | 15.15 | **7.58** | 41.67 | **33.33** |
+| 100 (200) | 33.33 | **13.89** | 83.33 | **55.56** |
+
+**Two fixes, 30–58% off the simulation:**
+1. `Match._sorted_tanks()` re-sorted every tank by name, through a GDScript lambda comparator, on **every call** —
+   a dozen call sites, several of them every tick. It is now built at most once per tick (keyed on the tick and the
+   child count; `remove_player` invalidates it by hand, because a freed tank doesn't change the child count until
+   the frame ends). This was the single most expensive thing in the simulation at scale.
+2. The "idle guns" readout (`gun_ready_samples` / `gun_idle_samples`) paid a line-of-sight raycast for every
+   viewer-enemy pair in weapon range on **every** intel pass — the same order of work as team vision itself, for a
+   statistic. Sampled every 10th pass now (`GUN_READY_EVERY_INTELS`); the ratio it reports is unchanged.
+
+The sim baseline did not move, which is the proof that neither changed the simulation.
+
+**Where that leaves the lead's 30 a side (60 units):** about **3.9 ms of simulation** and **~13 ms with brains**,
+headless on builder0. The simulation fits comfortably; the frame does not, once rendering is added. The remaining
+cost is brain time, which is ai's stream (their target is ≤ 4 ms per tick at 60 units). Caveats worth keeping: this
+is builder0, which runs up to three agents' heavy jobs at once, and it is headless, so it excludes rendering
+entirely. The laptop's integrated GPU is the real judge.
+
+**A rendering ceiling found while screenshotting a 31-vs-35 battle** (`make faction-shots`): Godot logs
+`Too many instances using shader instance variables … Maximum items supported by this hardware is: 4096`. Each
+vehicle's visual slots consume shader instance uniforms, and a full-scale battle exhausts the pool. It is an art /
+theme problem, not a simulation one, and no stream owns `game/theme/**` this round — flagged in the combat brief.
+
+**Arena and spawns:** the spawn grid holds 52 a side (13 columns 11 m apart out to ±66 m, 4 rows 8 m apart from
+`BASE_Z`), and the existing 240 × 240 m arenas are not crowded at 35 a side — the screenshots show both armies
+converged on the control point with most of the map empty. No arena needed to grow.
+
+### X6: faction versus faction (measured 2026-09-16, builder0)
+
+`make remote T="faction-matrix SEEDS=5 TIME=150"` (`tools/faction_matrix.py`): every pair at 5200 points,
+elimination, control point on, each pairing **counterbalanced** — the same seeds played from both colours, which
+cancels the side advantage and team identity in one pass. 60 matches, ~25 min.
+
+| Pairing | Win% (first) | Vehicles fielded | Lost | Length | Mean suppression on the loser |
+|---|---|---|---|---|---|
+| condemned vs syndicate | 70% | 32.6 | 17.9 | 91 s | 0.018 |
+| condemned vs law | 60% | 32.6 | 18.0 | 101 s | 0.057 |
+| law vs syndicate | 60% | 24.8 | 16.6 | 90 s | 0.026 |
+| gangs vs syndicate | 40% | 43.0 | 37.4 | 91 s | 0.019 |
+| gangs vs condemned | 20% | 43.0 | 40.8 | 93 s | 0.033 |
+| gangs vs law | 10% | 43.0 | 40.7 | 102 s | 0.065 |
+
+Averaged: **Condemned 70%, Law 63%, Syndicate 47%, road gangs 23%.** Match length is **90–102 s** at 24–43 vehicles
+a side, which is the right order for a full-scale battle (round 3's 5-a-side fights ran 22–60 s).
+
+**The gangs cannot win, and two attempts to fix it moved nothing.** Both attempts were kept, because both were real
+defects rather than tuning:
+1. **They had no answer to armor at all.** Their two most numerous vehicles did **2 dps** through any armor — the
+   ×0.05 penetration floor — so 43 vehicles were decorative. The Rat Rod now carries game_design.md's
+   **explosive spear** (penetration 14, 95 damage, 30 m, 3 s): ×0.74 through a dozer's front. Result: 30% → 40%
+   against the Syndicate, no change against the others.
+2. **Their assault vehicles were being given a spotter's directive.** `Army.SQUADS` is keyed by *role*, so the
+   gangs' spear buggies inherited the Condemned scout's "spotters first" directive and held standoff. `SQUADS` now
+   takes faction-qualified keys (`"gangs/scout"` → Spears, assault, aggression 0.95). It worked — their SPOT share
+   fell from 84% to 34% and ENGAGE/CONTEST rose — and they still lost 0-6 to the Law.
+
+**Why I stopped there.** Both mechanics the gangs are *designed* around are on other branches: suppression that
+changes decisions (ai's SUPPRESS option) and pack tactics (doctrine's drills). The matrix confirms it — mean
+suppression on the loser is 0.02–0.08, i.e. essentially none. 43 fragile short-ranged vehicles lose to 24 armored
+long-ranged ones when volume buys nothing. Inflating gang stats now would have to be taken back out the moment those
+land, which is the lead's own guidance (*"it's also probably not worth trying to balance anything out substantively
+yet"*). **Re-run `make faction-matrix` on `main` once combat, doctrine and ai are all merged**; that is the number
+that means something.
+
+The Condemned at 70% are the other outlier, but they are the reference roster and the gangs' collapse distorts the
+average. Judge that one after the same re-run.
+
+### Stretch, scoped but deliberately NOT shipped: wrecks as cover
+
+Today `Tank._set_alive(false)` disables the collision shape, so a wreck blocks nothing. Making a dead hull stop
+rounds is a genuinely good tactical layer at 30 a side, and the physics half is small:
+
+1. A wreck moves to **collision layer 4** instead of having its shape disabled (`Tank._set_alive`). Nothing masks
+   layer 4 for movement — a Tank's mask is 3 — so wrecks never block driving, which keeps them out of the navmesh
+   problem entirely (the navmesh is baked once at startup).
+2. `Match.HIT_MASK` and `Shell.HIT_MASK` go from 3 to **7**, so shells and beams stop at a wreck.
+3. `Match.screen_for` starts reporting wrecks as well as living teammates (its test currently asserts the opposite,
+   on purpose).
+4. Sight is a separate decision and is **ai's**: `Perception.WORLD_MASK` would go from 1 to 5 for wrecks to block
+   line of sight too.
+
+**Why it is not in this round.** Nothing tells a brain that a wreck is in its line of fire. `has_line_of_sight` uses
+`Perception.WORLD_MASK`, which excludes wrecks, and there is no line-of-fire check against them, so brains would
+believe they had a clear shot and keep putting 320-damage shells into a dead hull — visibly worse play, landing in
+the same week as integration. The physics half and the AI half have to arrive together. Estimated cost once they
+do: an afternoon, plus a sim-baseline re-record and a faction-matrix re-run, because it changes every fight.
 
 **Open:** `Doctrine.MAX_SQUADS` is 5 (a player-UI number), but 28 vehicles need six squads or more, so faction armies
 are validated through `Army.parse_scaled`, which runs `Doctrine.parse` over slices of five squads. Requested of the

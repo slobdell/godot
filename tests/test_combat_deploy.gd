@@ -20,10 +20,13 @@ func _battery() -> Array:
 
 
 func test_only_artillery_deploys() -> void:
+	# L3 (round 4): every faction has a battery, so this is about the ROLE, not one unit id.
 	for unit_id: String in Units.PROFILES:
 		var deploys := float(Units.stat(unit_id, "deploy_seconds", 0.0)) > 0.0
-		assert_eq(deploys, unit_id == "artillery", "%s %s" % [unit_id, "deploys" if deploys else "fires on the move"])
-	assert_true(float(Units.stat("artillery", "pack_seconds", 0.0)) > 0.0, "and packs up again")
+		assert_eq(deploys, Units.role_of(unit_id) == "artillery",
+				"%s %s" % [unit_id, "deploys" if deploys else "fires on the move"])
+		if deploys:
+			assert_true(float(Units.stat(unit_id, "pack_seconds", 0.0)) > 0.0, "%s packs up again" % unit_id)
 
 
 func test_a_battery_fires_only_once_its_legs_are_down() -> void:

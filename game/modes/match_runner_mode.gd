@@ -8,6 +8,11 @@ extends GameMode
 ## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation
 ## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning); --control adds the center control point;
 ## --green-commander / --rust-commander give a team a CpuCommander.
+## X5 (round 4) scale bench: --bench-units=N spawns N vehicles a side from --bench-faction=NAME's roster, spread
+## over each team's half of the arena rather than the spawn grid (100 a side does not fit 52 slots), and
+## --no-brains frees every TankBrain so the run measures the SIMULATION's cost alone (ai owns the brain cost).
+## The match runner's MATCH_RESULT already carries `speedup` = simulated seconds per real second, so
+## ms per tick = 1000 / (60 x speedup). `make scale-bench` runs the ladder.
 ## --combat-log prints COMBAT_EVENT <json> lines: every K2 weapon_fired / projectile_impact, every destroyed unit, and
 ## every living unit's pose each COMBAT_LOG_POSE_TICKS (tools/combat_duel.py turns them into a readable timeline).
 
@@ -39,6 +44,10 @@ func start() -> void:
 	# --rust-first flips spawn (and therefore per-tick processing) order: a fairness probe.
 	var order := [Match.Team.RUST, Match.Team.GREEN] if flags.has("rust-first") else [Match.Team.GREEN, Match.Team.RUST]
 	for team in order:
+		if flags.has("bench-units"):
+			_bench_army(game_match, team, flags.text("bench-faction", Units.DEFAULT_FACTION),
+					flags.integer("bench-units", 30))
+			continue
 		var key := "green" if team == Match.Team.GREEN else "rust"
 		if flags.has(key + "-doctrine") or flags.has(key + "-faction"):
 			# A doctrine path, or "cpu" / "cpu:<archetype>" for a budgeted army seeded from the match seed. L3:
@@ -54,6 +63,9 @@ func start() -> void:
 		else:
 			for i in flags.integer(key, 1):
 				game_match.add_bot(team)
+	if flags.has("no-brains"):
+		for brain in game_match.brains.get_children():
+			brain.queue_free()
 	game_match.elimination = flags.has("elimination")
 	game_match.control_point = flags.has("control")
 	# Stretch: --green-commander / --rust-commander put a CpuCommander in charge of that team's gun squads.
@@ -81,6 +93,38 @@ func start() -> void:
 	main.camera.offset = Vector3(0.0, 105.0, 62.0)
 	main.camera.global_position = main.camera.offset
 	main.camera.look_at(Vector3.ZERO)
+
+
+## X5: `count` vehicles of `faction` for `team`, cycling its roster, laid out over that team's half of the arena.
+## The spawn grid holds one army (Match.SPAWN_SLOTS); a 100-a-side COST bench is not an army, so it gets its own
+## lattice rather than stacking hulls on top of each other and measuring the contact solver instead of the game.
+func _bench_army(game_match: Match, team: int, faction: String, count: int) -> void:
+	var roster := Units.roster(faction)
+	if roster.is_empty():
+		push_error("no units in faction '%s'" % faction)
+		main.get_tree().quit(2)
+		return
+	var entries: Array = []
+	for index in count:
+		entries.append({"unit": roster[index % roster.size()]})
+	var doctrine := {"name": "Bench %s" % faction, "squads": Army.squads_for_scale(entries)}
+	var error := game_match.load_doctrine(team, doctrine)
+	if error != "":
+		push_error(error)
+		main.get_tree().quit(2)
+		return
+	# 8 m apart, filling the team's own half from just short of the middle back to its wall.
+	var spacing := 8.0
+	var columns := maxi(1, int(Match.DRIVABLE_LIMIT * 2.0 / spacing))
+	var toward_own_wall: float = Match.team_frame(team)["forward"].z * -1.0
+	var placed := 0
+	for tank in game_match.sorted_team_tanks(team):
+		var column := placed % columns
+		var row := placed / columns
+		tank.global_position = Vector3(-Match.DRIVABLE_LIMIT + spacing * 0.5 + column * spacing, 0.0,
+				toward_own_wall * (30.0 + row * spacing))
+		tank.rotation.y = Match.spawn_yaw(team)
+		placed += 1
 
 
 func _log_combat(game_match: Match) -> void:
