@@ -59,6 +59,24 @@ STT_UNVERIFIABLE_S = 0.7
 CHARACTERS_PER_SECOND = 15.0
 
 
+## Godot must not import this folder: the booth loads clips from disk at runtime, importing 2,396 files is slow
+## and once crashed the import step outright, and they are excluded from every export anyway. The generator writes
+## the marker itself so that wiping the folder to re-cut cannot silently lose it (it did, 2026-09-16, and 2,396
+## .import files ended up committed).
+GDIGNORE_NOTE = """# Godot deliberately ignores this folder; see README.md. The booth loads these clips from disk
+# at runtime (AnnouncerVoice), they are excluded from both export presets, and importing them all is slow.
+"""
+
+
+def keep_out_of_godot(folder: Path) -> None:
+    marker = folder / ".gdignore"
+    if not marker.exists():
+        folder.mkdir(parents=True, exist_ok=True)
+        marker.write_text(GDIGNORE_NOTE)
+    for stale in folder.rglob("*.import"):
+        stale.unlink()
+
+
 def clip_file(clip: str) -> str:
     return clip.replace("#", "-") + ".ogg"
 
@@ -205,6 +223,7 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
     clips = {}
     manifest_path = out / "manifest.json"
     previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    keep_out_of_godot(out)
     previous = {part: previous.get(part, {}) for part in ("clips", "lines")}
     credits_before = client.remaining_credits()
     for request in the_plan["requests"]:
