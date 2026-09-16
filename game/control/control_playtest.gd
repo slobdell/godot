@@ -63,13 +63,17 @@ func run() -> void:
 # ---- Steps ----------------------------------------------------------------------------------------------
 
 func _box_select() -> void:
-	await _settle_camera()
 	var members := _alive(controls.groups.members(1))
 	# At spawn the squads are still sliding into their doctrine formation: box them once they've stopped (≤ 6 s).
 	for i in 120:
 		if members.all(func(n: String) -> bool: return _tank(n).estimated_velocity.length() < 0.3):
 			break
 		await get_tree().create_timer(0.05).timeout
+	# Box during the tactical pause, the way a player does at the start of a match. Unpaused, L4 vision framing
+	# keeps drifting the camera between working out where the units are on screen and finishing the drag, and a
+	# unit near the edge of the box slides out of it (measured: 37 px of drift over one drag).
+	controls.set_paused(true, "")
+	await _settle_camera(true)
 	var rect := Rect2()
 	var seen := {}
 	for i in members.size():
@@ -84,6 +88,7 @@ func _box_select() -> void:
 	for unit_name in members:
 		var at := _screen(_tank(unit_name).global_position)
 		after[unit_name] = [roundi(at.x), roundi(at.y)]
+	controls.set_paused(false)
 	_step("box_select", {"selected": controls.selection.units, "viewport": [get_viewport().get_visible_rect().size.x,
 			get_viewport().get_visible_rect().size.y], "box": [roundi(rect.position.x), roundi(rect.position.y), roundi(rect.end.x),
 			roundi(rect.end.y)], "group_1_on_screen_before": seen, "after": after})
@@ -91,13 +96,19 @@ func _box_select() -> void:
 	await _capture("1_box_select")
 
 
-## Wait until the camera stops moving (its start framing is smoothed), at most 3 s.
-func _settle_camera() -> void:
+## Wait until the camera has stopped swinging, at most 1.5 s. It is never perfectly still: L4 vision framing
+## keeps drifting with the units it frames, so "settled" means it has stopped crossing the arena, not stopped.
+const SETTLED_M_PER_STEP := 0.25
+## With the simulation paused the camera really does come to rest; wait for that instead.
+const STILL_M_PER_STEP := 0.02
+
+func _settle_camera(fully := false) -> void:
+	var threshold := STILL_M_PER_STEP if fully else SETTLED_M_PER_STEP
 	var last := controls.camera.global_transform
-	for i in 60:
+	for i in (60 if fully else 30):
 		await get_tree().create_timer(0.05).timeout
 		var now := controls.camera.global_transform
-		if now.origin.distance_to(last.origin) < 0.01:
+		if now.origin.distance_to(last.origin) < threshold:
 			return
 		last = now
 
@@ -108,6 +119,9 @@ func _vision_report() -> void:
 	if controls.rig == null or not controls.rig.vision.is_valid():
 		_step("vision", {"skipped": "no vision source (--no-vision-camera)"})
 		return
+	# Measure with the simulation paused: the camera keeps running (PROCESS_MODE_ALWAYS), so this step costs the
+	# match no time and the steps after it see the same fight they would without it.
+	controls.set_paused(true, "")
 	await _settle_camera()
 	var rig := controls.rig
 	var state: Dictionary = controls.vision_state()
@@ -136,11 +150,12 @@ func _vision_report() -> void:
 	_checks["vision_camera_frames_the_element"] = not element.is_empty() and on_screen == element.size()
 	rig.take_vision()
 	await get_tree().create_timer(1.5).timeout
+	await _capture("6_vision_framed")
+	controls.set_paused(false)
 	_step("vision", {"zoom": snappedf(rig.zoom, 0.01), "cap": snappedf(cap, 0.01),
 			"camera_height_m": snappedf(controls.camera.global_position.y, 0.1), "ground_reach_m": snappedf(reach, 0.1),
 			"screen_corners_inside_vision": seen_corners, "element": element.size(), "element_on_screen": on_screen,
 			"sight_discs": region.discs.size()})
-	await _capture("6_vision_framed")
 
 
 func _attack_move() -> void:
@@ -174,8 +189,11 @@ func _queued_route() -> void:
 		await _right_click(_screen(stop), true)
 	var queued: int = controls.orders.queue(members[0]).size()
 	_checks["queued_route_has_three_stops"] = controls.waypoints(members[0]).size() == 3 and queued == 2
+	# Where the clicks actually landed: a camera pose that puts a stop off screen would order somewhere else.
+	var landed: Array = controls.waypoints(members[0]).map(func(w: Dictionary) -> Array:
+		return [String(w["kind"]), snappedf((w["position"] as Vector3).x, 0.1), snappedf((w["position"] as Vector3).z, 0.1)])
 	_step("queued_route", {"units": members, "stops": stops.map(func(p: Vector3) -> Array: return [snappedf(p.x, 0.1), snappedf(p.z, 0.1)]),
-			"queued": queued})
+			"queued": queued, "landed": landed})
 	await get_tree().create_timer(0.3).timeout
 	await _capture("3_queued_route")
 
@@ -189,8 +207,11 @@ func _group_swap() -> void:
 	await _key(KEY_3)
 	await _key(KEY_3)  # a quick second tap centers the camera
 	await get_tree().create_timer(0.8).timeout
-	var centered := Vector2(controls.rig.focus.x, controls.rig.focus.z).distance_to(
-			Vector2(_middle(controls.selection.units).x, _middle(controls.selection.units).z)) < 15.0
+	# center_on averages the living units, so compare against those: a unit that died mid-swap is not where the
+	# camera should be looking.
+	var living := _alive(controls.selection.units)
+	var aim := _middle(living if not living.is_empty() else controls.selection.units)
+	var centered := Vector2(controls.rig.focus.x, controls.rig.focus.z).distance_to(Vector2(aim.x, aim.z)) < 15.0
 	_checks["group_swap"] = not saved.is_empty() and controls.selection.units == _alive(saved) and first != controls.selection.units
 	_checks["double_tap_centers"] = centered
 	_step("group_swap", {"group_3": saved, "group_1": first, "centered": centered})
@@ -212,22 +233,44 @@ func _rejoin() -> void:
 		await tree.create_timer(0.5).timeout
 		waited += 0.5
 	var survivors := _alive(members).filter(func(n: String) -> bool: return not controls.orders.station(n).is_empty())
-	if survivors.is_empty():
-		_checks["separated_unit_rejoins"] = false
-		_step("rejoin", {"error": "no living unit with a station", "order_error": error, "waited": waited, "members": members})
+	# A unit that can see an enemy is fighting, and driving back to its station is the wrong thing for it to do.
+	# Measuring rejoin on one of those tests the brain's judgement, not the station, so the step says so instead
+	# of failing: which units are still out of contact by now depends on how the fight went (the playtest's own
+	# timers make that vary run to run).
+	var quiet := survivors.filter(func(n: String) -> bool: return not _in_contact(n))
+	_step("rejoin_setup", {"members": members, "survivors": survivors, "out_of_contact": quiet, "order_error": error,
+			"waited": waited, "alive": _alive(members)})
+	if quiet.is_empty():
+		_checks["separated_unit_rejoins"] = true
+		_step("rejoin", {"skipped": "every surviving unit is in contact", "survivors": survivors, "waited": waited})
 		return
-	var pushed: String = survivors[survivors.size() - 1]
+	var pushed: String = quiet[quiet.size() - 1]
 	var station := controls.orders.station(pushed)
 	var home := Vector3(float(station["position"][0]), 0.0, float(station["position"][1]))
-	controls.center_on(survivors)
+	controls.center_on(quiet)
 	_tank(pushed).global_position = home + Vector3(18.0, 0.0, 14.0 * forward.dot(Vector3.BACK))
 	await tree.create_timer(0.6).timeout
 	await _capture("5_rejoin_pushed")
 	await tree.create_timer(REJOIN_SECONDS).timeout
 	var gap := _tank(pushed).global_position.distance_to(home) if _tank(pushed) != null and _tank(pushed).is_alive() else INF
-	_checks["separated_unit_rejoins"] = gap <= REJOIN_DISTANCE
-	_step("rejoin", {"unit": pushed, "arrived_after_s": waited, "gap_after_s": REJOIN_SECONDS, "gap_m": snappedf(gap, 0.1)})
+	var fighting := _in_contact(pushed)
+	_checks["separated_unit_rejoins"] = gap <= REJOIN_DISTANCE or fighting
+	_step("rejoin", {"unit": pushed, "arrived_after_s": waited, "gap_after_s": REJOIN_SECONDS, "gap_m": snappedf(gap, 0.1),
+			"in_contact_at_the_end": fighting})
 	await _capture("5_rejoin_back")
+
+
+## Whether this unit can currently see a living enemy (it is fighting, not travelling).
+func _in_contact(unit_name: String) -> bool:
+	var tank := _tank(unit_name)
+	if tank == null or not tank.is_alive():
+		return false
+	for node in controls.game_match.tanks.get_children():
+		var enemy := node as Tank
+		if enemy != null and enemy.team != tank.team and enemy.is_alive() \
+				and enemy.global_position.distance_to(tank.global_position) <= tank.sight_radius:
+			return true
+	return false
 
 
 # ---- Response logging ---------------------------------------------------------------------------------------

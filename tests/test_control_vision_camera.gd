@@ -107,18 +107,34 @@ func test_the_force_cannot_zoom_out_past_what_it_can_see() -> void:
 	await _frames(2)
 	var cap := rig.vision_zoom
 	print("MEASURE control_vision_cap sight_40m=%.2f" % cap)
-	assert_true(cap < 0.65, "a single 40 m sight disc earns only a low view (cap %.2f)" % cap)
-	assert_true(cap < RtsCamera.OVERVIEW_ZOOM, "well short of the old arena overview")
+	assert_true(cap < 0.6, "a single 40 m sight disc earns only a low view (cap %.2f)" % cap)
+	assert_true(cap >= RtsCamera.VISION_CAP_FLOOR, "but never tighter than the floor")
 	for i in 40:
 		rig.zoom_by(0.1)
 	assert_near(rig.zoom, cap, 0.001, "scrolling out stops at the cap: no unearned god view")
 	var seeing := VisionRegion.new()
-	for x in [-100.0, 100.0]:
-		for z in [-100.0, 100.0]:
+	for x in [-60.0, 60.0]:
+		for z in [-60.0, 60.0]:
 			seeing.add(Vector3(x, 0, z), 90.0)
 	rig.vision = _state([Vector3.ZERO], seeing)
-	await _frames(2)
+	await _frames(RtsCamera.VISION_CAP_EVERY + 2)
+	print("MEASURE control_vision_cap spread_force=%.2f" % rig.vision_zoom)
 	assert_true(rig.vision_zoom > cap + 0.2, "a force spread across the arena earns a much wider view (%.2f)" % rig.vision_zoom)
+
+
+func test_the_cap_measures_the_ground_the_screen_shows_not_a_bounding_box() -> void:
+	var region := VisionRegion.new()
+	region.add(Vector3.ZERO, 50.0)
+	var aspect := 16.0 / 9.0
+	var close := RtsCamera.seen_fraction(region, Vector3.ZERO, 0.0, 0.2, aspect)
+	var wide := RtsCamera.seen_fraction(region, Vector3.ZERO, 0.0, 0.95, aspect)
+	assert_true(close > wide, "zoomed in, more of the screen is ground you can see (%.2f vs %.2f)" % [close, wide])
+	assert_true(wide < RtsCamera.VISION_SEEN_FRACTION, "from high up a lone unit's disc cannot fill the screen")
+	assert_eq(RtsCamera.seen_fraction(VisionRegion.new(), Vector3.ZERO, 0.0, 0.5, aspect), 0.0, "no vision, nothing seen")
+	assert_eq(RtsCamera.horizon_zoom(null, Vector3.ZERO, 0.0, aspect), 1.0, "no region, no cap")
+	# A point far outside the region: the screen is mostly ground the force cannot see, so the cap bottoms out.
+	assert_near(RtsCamera.horizon_zoom(region, Vector3(400, 0, 400), 0.0, aspect), RtsCamera.VISION_CAP_FLOOR, 0.001,
+			"looking at ground nobody can see earns only the floor")
 
 
 func test_the_overview_key_shows_what_the_force_sees_not_the_arena() -> void:

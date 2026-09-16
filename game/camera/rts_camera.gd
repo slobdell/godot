@@ -43,6 +43,19 @@ const TRACK_ZOOM_SPEED := 0.35
 const VISION_MIN_ZOOM := 0.10
 ## After the player last moved the camera, this many seconds of stillness give the element back to it.
 const HANDBACK_SECONDS := 2.5
+## L4: the vision frame fills more of the screen than a C4 frame does (the lead: "always zoom in as close as
+## possible"). The HUD's command card eats the bottom strip, so the frame is also nudged up-screen by
+## VISION_FRAME_LIFT of the half-height, which buys the closeness without putting units under the card.
+const VISION_FRAME_INSET := 0.78
+const VISION_FRAME_LIFT := 0.16
+## L4 zoom-out cap: at least this much of the screen's ground must be ground the force can see…
+const VISION_SEEN_FRACTION := 0.7
+## …sampled on this grid of screen points, …
+const VISION_SAMPLES := 5
+## …never forcing the player closer in than this (a hole in your vision must not slam the camera to the floor), …
+const VISION_CAP_FLOOR := 0.35
+## …and re-derived every this many frames, because it moves slowly and costs more than the rest of the camera.
+const VISION_CAP_EVERY := 6
 
 ## Order tracking never climbs above this zoom (below TacticalMap.ICON_ZOOM, so models stay models) to fit a far destination: it keeps the squad readable and leans
 ## the view toward where it's going instead (the lead: follow them, don't make me zoom out and in).
@@ -91,6 +104,8 @@ var _clock := 0.0
 var _manual_at := -1e9
 ## This frame's `vision` reading, so the tracking and the cap agree and it is called once.
 var _vision_state := {}
+## Frames left before the zoom-out cap is re-derived (see VISION_CAP_EVERY).
+var _cap_countdown := 0
 
 
 func _ready() -> void:
@@ -279,7 +294,7 @@ func frame(points: Array, instant := false, floor_zoom := FRAME_MIN_ZOOM) -> voi
 
 
 ## [focus, zoom] that frames `points` (Vector3 on the ground) from `heading`. Pure, for tests.
-static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM) -> Array:
+static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM, inset := FRAME_INSET) -> Array:
 	var bounds := AABB(Vector3(points[0].x, 0.0, points[0].z), Vector3.ZERO)
 	for p in points:
 		bounds = bounds.expand(Vector3(p.x, 0.0, p.z))
@@ -294,7 +309,7 @@ static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom 
 		for z in [grown.position.z, grown.end.z]:
 			corners.append(Vector3(x, 0.0, z))
 	var level := clampf(floor_zoom, 0.0, 1.0)
-	while level < 1.0 and not RtsCamera.shows_all(corners, center, heading, level, aspect):
+	while level < 1.0 and not RtsCamera.shows_all(corners, center, heading, level, aspect, inset):
 		level += 0.01
 	return [center, minf(level, 1.0)]
 
@@ -313,22 +328,45 @@ static func shows_all(points: Array, at: Vector3, heading: float, level: float, 
 	return true
 
 
-## L4: the zoom at which `points` (the force's sight region) exactly fill the screen. Zooming out past this shows
-## more ground than the force can see, which is the unearned god view the lead ruled out, so it is the cap the
-## wheel and Tab both obey. Unlike `frame_pose` it uses the whole screen (no HUD inset) and adds no margin: this
-## is a limit, not a comfortable framing. 1.0 when the region is wider than any level can show. Pure, for tests.
-static func horizon_zoom(points: Array, heading: float, aspect: float) -> float:
-	if points.is_empty():
+## What fraction of the screen's ground a camera at this pose is looking at ground `region` can see, sampled on a
+## VISION_SAMPLES × VISION_SAMPLES grid of screen points. A sample whose ray never reaches the ground counts as
+## unseen: it is pointed at the horizon, which is further than anything the force can see. Pure, for tests.
+static func seen_fraction(region: VisionRegion, at: Vector3, heading: float, level: float, aspect: float) -> float:
+	if region == null or region.is_empty():
+		return 0.0
+	var pose := RtsCamera.pose_for(at, heading, level)
+	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0)
+	var plane := Plane(Vector3.UP, 0.0)
+	var seen := 0
+	for i in VISION_SAMPLES:
+		for j in VISION_SAMPLES:
+			var u := lerpf(-1.0, 1.0, float(i) / float(VISION_SAMPLES - 1))
+			var v := lerpf(-1.0, 1.0, float(j) / float(VISION_SAMPLES - 1))
+			var direction := (pose.basis * Vector3(u * tan_y * aspect, v * tan_y, -1.0)).normalized()
+			var hit: Variant = plane.intersects_ray(pose.origin, direction)
+			if hit != null and region.contains(hit as Vector3):
+				seen += 1
+	return float(seen) / float(VISION_SAMPLES * VISION_SAMPLES)
+
+
+## L4: the furthest-out zoom whose screen is still mostly ground the force can see. Zooming past it is the
+## unearned god view the lead ruled out ("we want to actually make the users expend their sentries to be able to
+## see"), so the wheel, the keyboard, framing and Tab all obey it. Never below VISION_CAP_FLOOR, so looking at the
+## edge of your vision costs you reach without slamming the camera onto the ground. Pure, for tests.
+static func horizon_zoom(region: VisionRegion, at: Vector3, heading: float, aspect: float) -> float:
+	if region == null or region.is_empty():
 		return 1.0
-	var bounds := AABB(Vector3(points[0].x, 0.0, points[0].z), Vector3.ZERO)
-	for p in points:
-		bounds = bounds.expand(Vector3(p.x, 0.0, p.z))
-	var center := bounds.get_center()
-	center.y = 0.0
-	var level := VISION_MIN_ZOOM
-	while level < 1.0 and not RtsCamera.shows_all(points, center, heading, level, aspect, 1.0):
-		level += 0.01
-	return minf(level, 1.0)
+	if RtsCamera.seen_fraction(region, at, heading, 1.0, aspect) >= VISION_SEEN_FRACTION:
+		return 1.0
+	var low := VISION_CAP_FLOOR
+	var high := 1.0
+	for i in 8:
+		var mid := (low + high) / 2.0
+		if RtsCamera.seen_fraction(region, at, heading, mid, aspect) >= VISION_SEEN_FRACTION:
+			low = mid
+		else:
+			high = mid
+	return low
 
 
 ## Keep the points returned by `points` framed every frame until it returns an empty array (then
@@ -386,12 +424,13 @@ func _update_tracking() -> void:
 ## [focus, zoom] for order tracking: `units` and `destination` together when that fits under TRACK_MAX_ZOOM
 ## (or the player's own zoom, if higher); otherwise the units stay framed at that zoom and the view leans as
 ## far toward the destination as it can while keeping them all on screen. Pure, for tests.
-static func order_pose(units: Array, destination: Vector3, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM) -> Array:
-	var both := RtsCamera.frame_pose(units + [destination], heading, aspect, floor_zoom)
+static func order_pose(units: Array, destination: Vector3, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM,
+		inset := FRAME_INSET) -> Array:
+	var both := RtsCamera.frame_pose(units + [destination], heading, aspect, floor_zoom, inset)
 	var ceiling := maxf(TRACK_MAX_ZOOM, floor_zoom)
 	if float(both[1]) <= ceiling:
 		return both
-	var squad := RtsCamera.frame_pose(units, heading, aspect, floor_zoom)
+	var squad := RtsCamera.frame_pose(units, heading, aspect, floor_zoom, inset)
 	var level := maxf(float(squad[1]), ceiling)
 	var start: Vector3 = squad[0]
 	var toward := Vector3(destination.x - start.x, 0.0, destination.z - start.z)
@@ -408,7 +447,7 @@ static func order_pose(units: Array, destination: Vector3, heading: float, aspec
 	var high := 1.0
 	for i in 12:
 		var mid := (low + high) / 2.0
-		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect):
+		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect, inset):
 			low = mid
 		else:
 			high = mid
@@ -426,10 +465,10 @@ func _update_vision() -> void:
 	_vision_state = reading if reading is Dictionary else {}
 	var region: VisionRegion = _vision_state.get("region") as VisionRegion
 	vision_region = region
-	if region != null and not region.is_empty():
-		vision_zoom = RtsCamera.horizon_zoom(region.bounds(), yaw, _aspect())
-	else:
-		vision_zoom = 1.0
+	_cap_countdown -= 1
+	if _cap_countdown <= 0:
+		_cap_countdown = VISION_CAP_EVERY
+		vision_zoom = RtsCamera.horizon_zoom(region, look_clamp(focus), yaw, _aspect())
 	zoom = minf(zoom, vision_zoom)
 	if _track == Track.NONE and follow_target == null and _before_overview == null \
 			and _clock - _manual_at >= handback_seconds and not (_vision_state.get("frame", []) as Array).is_empty():
@@ -456,11 +495,23 @@ func _update_vision_tracking() -> void:
 	var destination: Variant = _vision_state.get("destination")
 	var goal: Array
 	if destination is Vector3:
-		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom)
+		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, VISION_FRAME_INSET)
 	else:
-		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom)
-	focus = look_clamp(goal[0])
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, VISION_FRAME_INSET)
 	zoom = minf(float(goal[1]), vision_zoom)
+	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
+
+
+## Shift a frame centre up the screen by `amount` of the screen's half-height, so the HUD's command card does not
+## sit on top of the element. Pure: the ground moves away from the camera along its own heading.
+static func lift(center: Vector3, forward: Vector3, level: float, amount: float) -> Vector3:
+	var distance := lerpf(MIN_DISTANCE, MAX_DISTANCE, clampf(level, 0.0, 1.0) * clampf(level, 0.0, 1.0))
+	return center + forward * distance * tan(deg_to_rad(FOV_DEG) / 2.0) * amount
+
+
+## The ground direction the camera faces at this yaw (away from the camera, on the screen's up axis).
+static func heading_of(heading: float) -> Vector3:
+	return Vector3.FORWARD.rotated(Vector3.UP, heading)
 
 
 ## Keep a ground point over what the team can see (L4: the "look" camera peeks only where it has vision).
