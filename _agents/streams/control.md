@@ -266,9 +266,10 @@ at 28 vs 29.
 
 ### Known issues
 
-- `test_ai_scenarios::test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire` fails on my last check (both
-  arms of its A/B report identical numbers, 33 vs 33 ticks). It came in with main, is in ai's paths, and reads
-  nothing this branch touches. Everything else is green: **842 passed**.
+- None outstanding. The last check is **fully green: 843 passed, 0 failed, exit 0**, on main as of `06875d5`
+  (ai's avoidance fix and the new sim baseline `d4bd86eee0f96c54`), including `sim-baseline`, `determinism` and
+  every smoke test. Earlier checks on this branch reported `test_ai_scenarios::test_a_unit_ordered_across_a_
+  swept_lane_keeps_out_of_the_fire`; that was ai's, and their fix is merged.
 - The faction menu is the only new screen and it has no gamepad or touch path. Desktop first (pillar 5).
 - `separated_unit_rejoins` in the playtest reports "skipped" when every survivor is in contact or the pushed unit
   is destroyed on the way home. The playtest uses wall-clock timers, so which units survive varies run to run.
@@ -309,5 +310,6 @@ overrides the formation if you disagree with the leader.
   workstreams.md by the orchestrator.
 - No shared-file edits outside my paths: `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` and
   `game/theme/**` are untouched.
-- The **sim baseline is untouched** (control must not change it): nothing here runs in `--match`, and the last
-  check's `sim-baseline` passed.
+- The **sim baseline is untouched** (control must not change it): nothing here runs in `--match`. Verified, not
+  assumed - the final check reached `sim-baseline passed: d4bd86eee0f96c54 (glibc-2.43)`. (An earlier draft of
+  this report claimed that from a check that had stopped at a failing test before reaching the step.)
