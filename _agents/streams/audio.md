@@ -287,8 +287,22 @@ frames in `build/screenshots/announcer_{desktop,phone}.png`, both looked at):
    sound-effects generation layered under X4's transients.
 2. **An options entry** for announcer and music volume. The flags exist; the settings UI is control's file, so it
    is a request to them rather than something I should edit (below).
-3. **Stretch, not started:** stems so layers build with intensity, an arena PA reading ad copy between rounds, and
-   per-faction announcer flavour (the faction *lines* exist from round 3; the flavour hook does not).
+3. **The stretch items, and why none of them are done.** I stopped at the end of the backlog rather than starting
+   these, because the branch was green and ready to merge and reopening it would move the target. Honest status of
+   each, so the next round can pick them up:
+   - **Stems (layers that build with intensity).** *Unblocked* — the pipeline could be built against the
+     placeholder beds today, and it is the one stretch item with no dependency. This is the one I would do first,
+     and the only one I deliberately left rather than could not start. It needs the manifest to carry a layer list
+     per bed and the director to cross-fade layers instead of whole tracks, which is a real change to
+     `MusicDirector`, not an addition.
+   - **An arena PA reading ad copy between rounds.** *Blocked on the lead* — the ad art and copy are lead gate 3 in
+     HANDOFF and the placeholders shipped without copy. The PA's sponsor-read lines exist (`pa.sponsor.*`); what is
+     missing is the copy to read and the screens to read it for.
+   - **Per-faction announcer flavour.** *Mostly already there* and the remaining value is small: round 3 shipped
+     faction introductions for all four factions and the director already tags moments `faction_<id>` and
+     `other_faction_<id>`, so faction-specific lines are selected today. What does not exist is a per-faction
+     *voice treatment* (the Syndicate's broadcast sounding different from the gangs'), which is an audio-processing
+     job that wants X2's real clips first.
 
 ### Requests to other streams
 
