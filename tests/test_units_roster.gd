@@ -48,12 +48,22 @@ func test_v1_armies_are_rejected_with_reasons() -> void:
 		assert_true(error.contains(pair[1]), "%s is rejected mentioning '%s' (got '%s')" % [pair[0], pair[1], error])
 	var v1 := {"name": "Old", "squads": [{"name": "A", "tanks": [{"unit": "tank"}]}]}
 	assert_true(String(Doctrine.parse(v1).get("error", "")).contains("'units'"), "a v1 'tanks' list says to use 'units'")
+	# A faction army is bigger than the five squads a player builds in the garage (round 4): the caps are
+	# Doctrine.MAX_SQUADS squads, MAX_SQUAD_UNITS each, and MAX_UNITS vehicles in total (one per spawn point).
 	var full := {"name": "Big", "squads": []}
-	for i in 5:
-		full["squads"].append({"name": "S%d" % i, "units": [{"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}]})
-	assert_true(Doctrine.parse(full).has("doctrine"), "armies grow to 25 units in 5 squads")
-	full["squads"].append({"name": "S6", "units": [{"unit": "scout"}]})
-	assert_true(Doctrine.parse(full).has("error"), "but not a sixth squad")
+	var placed := 0
+	while placed < Doctrine.MAX_UNITS:
+		var units: Array = []
+		for u in mini(Doctrine.MAX_SQUAD_UNITS, Doctrine.MAX_UNITS - placed):
+			units.append({"unit": "scout"})
+		placed += units.size()
+		full["squads"].append({"name": "S%d" % full["squads"].size(), "units": units})
+	assert_true(full["squads"].size() > Doctrine.PLAYER_MAX_SQUADS,
+			"a full army needs more squads than the garage offers a player")
+	assert_true(Doctrine.parse(full).has("doctrine"), "armies grow to %d units" % Doctrine.MAX_UNITS)
+	full["squads"].append({"name": "S_extra", "units": [{"unit": "scout"}]})
+	assert_true(String(Doctrine.parse(full).get("error", "")).contains("spawn points"),
+			"but not past what the arena can spawn")
 	assert_eq(Units.cost_of({"unit": "ifv"}), int(Units.PROFILES["ifv"]["cost"]), "a unit costs its type's points")
 
 

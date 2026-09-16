@@ -1,6 +1,7 @@
 extends TestCase
-## Rules R5: 5 squads x 5 units per side spawn without overlapping, and Match.finished carries the fields the
-## army stream's progression needs (contract C3).
+## Rules R5: a full army per side (Doctrine.MAX_UNITS, one per spawn slot) spawns without overlapping, and
+## Match.finished carries the fields the army stream's progression needs (contract C3). The sizes come from
+## the caps, not from a number typed here: they grow when armies do.
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
@@ -13,25 +14,28 @@ func _setup() -> Match:
 	return game_match
 
 
+## The biggest army the rules allow: Doctrine.MAX_UNITS vehicles, in squads of MAX_SQUAD_UNITS.
 func _full_army() -> Dictionary:
 	var roster := ["tank", "ifv", "scout", "artillery", "lancer"]
 	var army := {"name": "Full", "squads": []}
-	for s in Doctrine.MAX_SQUADS:
-		var units: Array = []
-		for u in Doctrine.MAX_SQUAD_UNITS:
-			units.append({"unit": roster[(s + u) % roster.size()]})
-		army["squads"].append({"name": "S%d" % s, "formation": "wedge", "verb": "hold", "units": units})
+	for i in Doctrine.MAX_UNITS:
+		var squad_index := i / Doctrine.MAX_SQUAD_UNITS
+		if squad_index >= army["squads"].size():
+			army["squads"].append({"name": "S%d" % squad_index, "formation": "wedge", "verb": "hold", "units": []})
+		army["squads"][squad_index]["units"].append({"unit": roster[i % roster.size()]})
 	return army
 
 
-func test_twenty_five_units_a_side_spawn_clear_of_each_other() -> void:
+func test_a_full_army_a_side_spawns_clear_of_itself() -> void:
 	assert_true(Match.SPAWN_SLOTS >= Doctrine.MAX_UNITS, "the spawn grid has a slot for every unit an army can field")
+	assert_true(Doctrine.MAX_UNITS <= Doctrine.MAX_SQUADS * Doctrine.MAX_SQUAD_UNITS,
+			"and an army that big fits in the squads the rules allow")
 	var game_match := _setup()
 	game_match.seed_spawns(9, 6.0)  # the match runner's jitter
 	for team in [Match.Team.GREEN, Match.Team.RUST]:
-		assert_eq(game_match.load_doctrine(team, _full_army()), "", "a 5 x 5 army loads for team %d" % team)
+		assert_eq(game_match.load_doctrine(team, _full_army()), "", "a full army loads for team %d" % team)
 	var tanks := game_match.tanks_by_name().values()
-	assert_eq(tanks.size(), 50, "setup: 50 units")
+	assert_eq(tanks.size(), 2 * Doctrine.MAX_UNITS, "setup: a full army on both sides")
 	await wait_physics_frames(1)
 	var boxes := {}
 	for tank: Tank in tanks:
