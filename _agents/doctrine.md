@@ -441,6 +441,28 @@ What that means for the drills, in order:
    table already bounds at every threat level; if suppression works, that table should stop being the
    cautious one and start being the effective one.
 
+### Which of these the booth can quote (audio, 2026-09-16)
+
+Audio takes measured facts as the Veteran's material — he is the only one in the booth allowed to be precise,
+and a number a player can act on beats one that merely sounds authoritative. Recording is expensive and
+permanent, so each measurement is marked with whether it is expected to **hold**:
+
+| Measurement | Quote it? | Why |
+|---|---|---|
+| A column watches the whole circle, a line 0.42 of it | **Stable** | Pure geometry: it follows from the shapes, not from any tuning |
+| A column takes ~8 s to hurt anything; a wedge 3.6 s | **Stable** | Frontage and how many guns can bear — mechanics that exist today |
+| Halting in a herringbone keeps 0.93 against 0.69 parked | **Stable** | Armour facing, which is real and measured |
+| Bunching to 3 m shoots later (7.4 s) as well as dying more | **Stable** on the timing | The delay is frontage; the survival half is not (see below) |
+| Circling an enemy deals a third of the damage | **Stable** | It is about interrupting brains, not about a pending mechanic |
+| Bounding overwatch costs survival (0.60 vs 0.75) | **Will move** | Suppression is half-built; nothing deliberately suppresses yet |
+| Dispersion does nothing against splash | **Will move** | Splash and suppression are being changed by combat |
+| The gangs' swarm survives worse than military shapes | **Will move** | Same reason: it is waiting on the mechanic that rewards spreading |
+
+**The standing arrangement:** a measurement that surprises us goes to audio, marked stable or not; only the
+stable ones are worth recording, because a recorded line outlives the number that justified it. If a
+measurement ever says "the booth should *always* mention this", that is a request for a tag priority, not for
+more lines — volume doesn't get a line past the priority queue.
+
 ### Drills (seed per scenario, `make tactics-drills`)
 
 | Drill | What happened |

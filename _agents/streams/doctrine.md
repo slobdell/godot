@@ -206,6 +206,15 @@ eight military formations. What changed (full numbers in _agents/doctrine.md *Fa
    character reads without diffing five tables. The page's mirrored constants are checked against the
    GDScript at build time, so it can't quietly start lying.
 
+### Standing arrangement with audio
+
+Measured facts are the Veteran's material: doctrine sends anything surprising, **marked stable or
+likely-to-move**, and only stable ones get recorded (a recorded line outlives the number that justified it).
+The split is in _agents/doctrine.md *Which of these the booth can quote*. Today: the coverage, first-hit and
+herringbone numbers are stable; everything resting on suppression or splash is not, and nothing depending on
+them should be voiced until combat's L2 is finished. If a measurement ever means "the booth should always say
+this", ask audio for a tag priority rather than more lines.
+
 ### Questions for the lead
 
 1. **Should an element's shape be visible on the HUD, or only its reason?** Every element carries a
