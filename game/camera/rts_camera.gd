@@ -299,10 +299,11 @@ static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom 
 	return [center, minf(level, 1.0)]
 
 
-## Whether a camera at pose_for(at, heading, level) shows every point inside FRAME_INSET of the screen.
-static func shows_all(points: Array, at: Vector3, heading: float, level: float, aspect: float) -> bool:
+## Whether a camera at pose_for(at, heading, level) shows every point inside `inset` of the screen (the default
+## keeps them clear of the HUD; the L4 horizon uses the whole screen).
+static func shows_all(points: Array, at: Vector3, heading: float, level: float, aspect: float, inset := FRAME_INSET) -> bool:
 	var view := RtsCamera.pose_for(at, heading, level).affine_inverse()
-	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0) * FRAME_INSET
+	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0) * inset
 	for p in points:
 		var c: Vector3 = view * (p as Vector3)
 		if c.z >= -0.1:
@@ -310,6 +311,24 @@ static func shows_all(points: Array, at: Vector3, heading: float, level: float, 
 		if absf(c.x / -c.z) > tan_y * aspect or absf(c.y / -c.z) > tan_y:
 			return false
 	return true
+
+
+## L4: the zoom at which `points` (the force's sight region) exactly fill the screen. Zooming out past this shows
+## more ground than the force can see, which is the unearned god view the lead ruled out, so it is the cap the
+## wheel and Tab both obey. Unlike `frame_pose` it uses the whole screen (no HUD inset) and adds no margin: this
+## is a limit, not a comfortable framing. 1.0 when the region is wider than any level can show. Pure, for tests.
+static func horizon_zoom(points: Array, heading: float, aspect: float) -> float:
+	if points.is_empty():
+		return 1.0
+	var bounds := AABB(Vector3(points[0].x, 0.0, points[0].z), Vector3.ZERO)
+	for p in points:
+		bounds = bounds.expand(Vector3(p.x, 0.0, p.z))
+	var center := bounds.get_center()
+	center.y = 0.0
+	var level := VISION_MIN_ZOOM
+	while level < 1.0 and not RtsCamera.shows_all(points, center, heading, level, aspect, 1.0):
+		level += 0.01
+	return minf(level, 1.0)
 
 
 ## Keep the points returned by `points` framed every frame until it returns an empty array (then
@@ -408,7 +427,7 @@ func _update_vision() -> void:
 	var region: VisionRegion = _vision_state.get("region") as VisionRegion
 	vision_region = region
 	if region != null and not region.is_empty():
-		vision_zoom = float(RtsCamera.frame_pose(region.bounds(), yaw, _aspect(), VISION_MIN_ZOOM)[1])
+		vision_zoom = RtsCamera.horizon_zoom(region.bounds(), yaw, _aspect())
 	else:
 		vision_zoom = 1.0
 	zoom = minf(zoom, vision_zoom)

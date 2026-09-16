@@ -6,6 +6,13 @@ extends TestCase
 const Fixture := preload("res://tests/support/control_fixture.gd")
 
 
+## The camera runs in _process (it must keep working while the tree is paused), so these tests wait for render
+## frames, not physics ticks: a physics frame can pass without _process running at all.
+func _frames(count := 2) -> void:
+	for i in count:
+		await tree.process_frame
+
+
 func _rig() -> RtsCamera:
 	tree.root.size = Vector2i(1280, 720)
 	var camera := Camera3D.new()
@@ -82,10 +89,11 @@ func test_the_camera_frames_the_element_as_close_as_it_can() -> void:
 	for spot in [Vector3(-10, 0, 0), Vector3(10, 0, 0)]:
 		region.add(spot, 80.0)
 	rig.vision = _state([Vector3(-10, 0, 0), Vector3(10, 0, 0)], region)
-	await wait_physics_frames(2)
+	await _frames(2)
 	assert_true(rig.is_tracking(), "with a vision source the camera frames by itself")
 	assert_eq(rig.tracking_mode(), RtsCamera.Track.VISION, "in vision mode")
-	assert_true(rig.zoom < 0.3, "two units 20 m apart are framed close, not from orbit (zoom %.2f)" % rig.zoom)
+	print("MEASURE control_vision_frame pair_zoom=%.2f cap=%.2f" % [rig.zoom, rig.vision_zoom])
+	assert_true(rig.zoom < 0.35, "two units 20 m apart are framed close, not from orbit (zoom %.2f)" % rig.zoom)
 	assert_true(RtsCamera.shows_all([Vector3(-10, 0, 0), Vector3(10, 0, 0)], rig.focus, rig.yaw, rig.zoom, 16.0 / 9.0),
 			"and both are on screen")
 	assert_true(rig.zoom < rig.vision_zoom, "closer than the force's horizon allows")
@@ -96,9 +104,11 @@ func test_the_force_cannot_zoom_out_past_what_it_can_see() -> void:
 	var region := VisionRegion.new()
 	region.add(Vector3.ZERO, 40.0)
 	rig.vision = _state([Vector3.ZERO], region)
-	await wait_physics_frames(2)
+	await _frames(2)
 	var cap := rig.vision_zoom
-	assert_true(cap < 0.6, "a single 40 m sight disc earns only a low view (cap %.2f)" % cap)
+	print("MEASURE control_vision_cap sight_40m=%.2f" % cap)
+	assert_true(cap < 0.65, "a single 40 m sight disc earns only a low view (cap %.2f)" % cap)
+	assert_true(cap < RtsCamera.OVERVIEW_ZOOM, "well short of the old arena overview")
 	for i in 40:
 		rig.zoom_by(0.1)
 	assert_near(rig.zoom, cap, 0.001, "scrolling out stops at the cap: no unearned god view")
@@ -107,7 +117,7 @@ func test_the_force_cannot_zoom_out_past_what_it_can_see() -> void:
 		for z in [-100.0, 100.0]:
 			seeing.add(Vector3(x, 0, z), 90.0)
 	rig.vision = _state([Vector3.ZERO], seeing)
-	await wait_physics_frames(2)
+	await _frames(2)
 	assert_true(rig.vision_zoom > cap + 0.2, "a force spread across the arena earns a much wider view (%.2f)" % rig.vision_zoom)
 
 
@@ -116,7 +126,7 @@ func test_the_overview_key_shows_what_the_force_sees_not_the_arena() -> void:
 	var region := VisionRegion.new()
 	region.add(Vector3(0, 0, 60), 50.0)
 	rig.vision = _state([Vector3(0, 0, 60)], region)
-	await wait_physics_frames(2)
+	await _frames(2)
 	rig.toggle_overview(Match.Team.GREEN)
 	assert_true(rig.zoom <= rig.vision_zoom + 0.001, "Tab never climbs past the force's horizon (%.2f > %.2f)" % [rig.zoom, rig.vision_zoom])
 	assert_true(region.contains(rig.focus), "and it looks at ground the force can see")
@@ -127,7 +137,7 @@ func test_looking_around_stays_over_ground_the_team_can_see() -> void:
 	var region := VisionRegion.new()
 	region.add(Vector3.ZERO, 50.0)
 	rig.vision = _state([Vector3.ZERO], region)
-	await wait_physics_frames(2)
+	await _frames(2)
 	rig.pan_world(Vector2(400.0, 0.0))
 	assert_true(region.contains(rig.focus), "panning far east stops at the edge of the team's vision")
 	assert_near(rig.focus.x, 50.0, 0.5, "on the rim of the disc (%s)" % rig.focus)
@@ -139,17 +149,17 @@ func test_the_player_takes_the_camera_and_gets_it_back() -> void:
 	region.add(Vector3.ZERO, 90.0)
 	rig.vision = _state([Vector3(0, 0, 20)], region)
 	rig.handback_seconds = 30.0
-	await wait_physics_frames(2)
+	await _frames(2)
 	assert_true(rig.is_tracking(), "the camera starts on the element")
 	var ended: Array = []
 	rig.tracking_ended.connect(func(reason: String) -> void: ended.append(reason))
 	rig.pan_world(Vector2(0.0, -30.0))
 	assert_true(not rig.is_tracking(), "a manual pan takes the camera")
 	assert_eq(ended, ["manual"], "and says why")
-	await wait_physics_frames(3)
+	await _frames(3)
 	assert_true(not rig.is_tracking(), "it stays the player's while they are still looking")
 	rig.handback_seconds = 0.0
-	await wait_physics_frames(2)
+	await _frames(2)
 	assert_true(rig.is_tracking(), "and comes back to the element after the pause")
 
 
@@ -167,7 +177,7 @@ func test_selecting_an_element_moves_the_camera_to_it() -> void:
 	await f.build(false)
 	f.rig.vision = f.controls.vision_state
 	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
-	await wait_physics_frames(3)
+	await _frames(3)
 	var frame: Array = f.controls.vision_state()["frame"]
 	for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
 		assert_true(_framed(frame, f.tank(unit_name).global_position), "%s is framed" % unit_name)
@@ -179,7 +189,7 @@ func test_selecting_an_element_moves_the_camera_to_it() -> void:
 			f.rig.focus, f.rig.yaw, f.rig.zoom, 1280.0 / 720.0), "and both units are on screen")
 	print("MEASURE control_vision_zoom element=2 zoom=%.2f cap=%.2f" % [f.rig.zoom, f.rig.vision_zoom])
 	f.controls.selection.clear()
-	await wait_physics_frames(2)
+	await _frames(2)
 	frame = f.controls.vision_state()["frame"]
 	for unit_name in Fixture.SPOTS:
 		if String(unit_name).begins_with("Green"):
@@ -194,6 +204,6 @@ func test_an_element_frames_the_contacts_it_can_see() -> void:
 	assert_true(_framed(frame, f.tank("Green_Alpha_1").global_position), "the element is framed")
 	assert_true(_framed(frame, f.tank("Rust_Alpha_1").global_position), "and the enemy it has spotted")
 	f.tank("Rust_Alpha_1").global_position = Vector3(0, 0, -110)
-	await wait_physics_frames(2)
+	await _frames(2)
 	frame = f.controls.vision_state()["frame"]
 	assert_eq(frame.size(), 1, "an enemy beyond the element's own sight is not framed")

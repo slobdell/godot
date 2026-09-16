@@ -8,6 +8,7 @@ extends GameMode
 ##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
 ##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
+##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
@@ -165,6 +166,10 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	bar.controls = controls
 	bar.panel = panel
 	controls.add_child(bar)
+	# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
+	# can collectively see (the lead: "a bird's eye view is just an unearned god view"). --no-vision-camera opts out.
+	if not flags.has("no-vision-camera"):
+		rig.vision = controls.vision_state
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
 	if flags.has("control-playtest"):

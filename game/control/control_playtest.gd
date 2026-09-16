@@ -4,7 +4,7 @@ extends Node
 ## `make control-playtest` (headless, log only) and `make control-playtest-shots` (windowed, screenshots).
 ##   1 box-select the first group          4 save a group, swap groups, double tap to center
 ##   2 attack-move it across the arena      5 a unit pushed away from its group drives back to it
-##   3 queue a route with shift-clicks
+##   3 queue a route with shift-clicks      6 L4: what the vision camera shows, and that it refuses the god view
 ## Every order's response is logged to orders.jsonl: the tick it was issued and the first tick the unit's tracks
 ## steered toward it (the K1 response guarantee: within 3 ticks). Prints CONTROL_PLAYTEST lines and
 ## CONTROL_PLAYTEST_DONE ok=<bool> at the end, then quits (exit 1 when a check failed).
@@ -42,6 +42,7 @@ func run() -> void:
 	await tree.create_timer(1.0).timeout
 	await _capture("0_start")
 	await _box_select()
+	await _vision_report()
 	await _attack_move()
 	await _queued_route()
 	await _group_swap()
@@ -99,6 +100,47 @@ func _settle_camera() -> void:
 		if now.origin.distance_to(last.origin) < 0.01:
 			return
 		last = now
+
+
+## Control X1 (L4): measure the vision-framed camera at its default pose - how much ground it shows, how much of
+## it the force can actually see, and that the wheel cannot climb past the force's collective horizon.
+func _vision_report() -> void:
+	if controls.rig == null or not controls.rig.vision.is_valid():
+		_step("vision", {"skipped": "no vision source (--no-vision-camera)"})
+		return
+	await _settle_camera()
+	var rig := controls.rig
+	var state: Dictionary = controls.vision_state()
+	var region: VisionRegion = state["region"]
+	var screen := get_viewport().get_visible_rect()
+	# The ground under the middle of the bottom and top screen edges: how far the view reaches, near and far.
+	var near: Variant = rig.ground_point(Vector2(screen.size.x / 2.0, screen.size.y - 1.0))
+	var far: Variant = rig.ground_point(Vector2(screen.size.x / 2.0, 1.0))
+	var reach := (far as Vector3).distance_to(near as Vector3) if near != null and far != null else -1.0
+	var seen_corners := 0
+	for corner in [Vector2.ZERO, Vector2(screen.size.x - 1.0, 0.0), Vector2(0.0, screen.size.y - 1.0), screen.size - Vector2.ONE]:
+		var at: Variant = rig.ground_point(corner)
+		if at != null and region.contains(at as Vector3):
+			seen_corners += 1
+	var element := controls.commanded_units()
+	var on_screen := 0
+	for unit_name in element:
+		var tank := _tank(unit_name)
+		if tank != null and tank.is_alive() and screen.has_point(controls.camera.unproject_position(tank.global_position)):
+			on_screen += 1
+	# The wheel must stop at the cap: twenty notches out is still no further than the force can see.
+	var cap := rig.vision_zoom
+	for i in 20:
+		rig.zoom_by(RtsCamera.WHEEL_ZOOM_STEP)
+	_checks["vision_cap_blocks_the_god_view"] = rig.zoom <= cap + 0.001
+	_checks["vision_camera_frames_the_element"] = not element.is_empty() and on_screen == element.size()
+	rig.take_vision()
+	await get_tree().create_timer(1.5).timeout
+	_step("vision", {"zoom": snappedf(rig.zoom, 0.01), "cap": snappedf(cap, 0.01),
+			"camera_height_m": snappedf(controls.camera.global_position.y, 0.1), "ground_reach_m": snappedf(reach, 0.1),
+			"screen_corners_inside_vision": seen_corners, "element": element.size(), "element_on_screen": on_screen,
+			"sight_discs": region.discs.size()})
+	await _capture("6_vision_framed")
 
 
 func _attack_move() -> void:
