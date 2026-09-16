@@ -217,6 +217,15 @@ of reach or sight; one told to hose a place does not).
   variants against each other across armies and prints ELO plus head-to-head, and `tools/ai_ladder.py` takes any
   doctrine file, so X4 is mostly a matter of sweeping *doctrine* variants and arenas alongside brain variants and
   reporting per-drill rather than per-variant — the machinery is there, the sweep and the report are not.
+- **SUPPRESS can't be reached in a duel.** Seen in `build/ai-shots/scout_runs_16s.png`: a machine-gun scout against a
+  durable tank reads `ENGAGE Rust_Tank_1 - breaking away` and keeps making attack runs at a hull its rounds barely
+  mark — the exact case the brief describes ("a machine gun firing at a crossing to stop it, even without kills").
+  The reason is a gate, not a weight: SUPPRESS's "killing this is slow going" test reads `Matchups.kill_rate`, and the
+  champion runs with `matchups: false`, so that clause is always false and only an already-pinned target or a squad
+  focus/flank target can trigger it. That is why SUPPRESS shows 11% of the time on the five-unit `individuals` army
+  (squad tactics name a focus) and never in a 1 v 1. The fix is a matchup-free proxy for "my rounds don't hurt this"
+  — the weapon's penetration against the target's armour, which `Armor`/`Units` already expose. Left undone
+  deliberately: it changes what the champion does, so it wants a ladder run behind it rather than a late edit.
 - **A pinned enemy doesn't actually pull a unit out of cover.** The 1.5x flank bonus on a pinned target exists, but
   the printed option counts in `scenario_suppression` show COVER_FIRE winning the choice anyway (1435 ticks of 1440).
   Suppress-and-flank therefore pays off as "the teammate works on it unmolested" rather than "the teammate goes
@@ -229,11 +238,19 @@ of reach or sight; one told to hose a place does not).
 
 - `make skirmish` — watch a machine-gun unit: it should put fire on a tank it can't hurt while something else goes
   round, and the nameplate reads "Keeping their heads down".
-- `make ai-shots` / `make remote T=ai-shots` — the driving trails.
+- `make ai-shots` / `make remote T=ai-shots` — the driving trails. `scout_runs_16s.png` shows a clean attack-run S-curve
+  ("ENGAGE … - breaking away"), so round 3's fixed-gun behaviour survives the new think cadence; it is also the
+  evidence for the SUPPRESS gate above.
 - `make remote T="ai-scenarios FILTER=scenario_elements"` and `FILTER=scenario_suppression` for the measurements above.
 
 ### Merge notes
 
+- **`make remote T=check` exits 0 on the last commit** (761 passed, sim baseline matched, announcer smoke passed).
+- A narrow relaxation in audio's K5 validator twins (`game/announcer/announcer_events.gd`, `tools/announcer/events.py`):
+  `MAY_BE_DEAD = ("shooter", "killer")`, because a shell outlives the crew that fired it and `announcer-record-smoke`
+  was rejecting a legitimate kill. Diagnosed and reported to audio before touching it; they made the same change on
+  `stream/audio`, so whichever merges first wins and the other is a no-op. Tests on the Python side now say a kill by
+  a dead shooter is accepted while a unit dying twice and a wreck being spotted are still rejected.
 - One additive line in control's `game/ui/command_icons.gd`: `"SUPPRESS": "Keeping their heads down"`. Its own comment
   says unknown options render capitalized so ai can add them freely, but `test_command_icons` requires an entry.
 - The **sim baseline moved twice on purpose** and is now `glibc-2.43 10e95d54f5dd3efe` (recorded twice on builder0,
