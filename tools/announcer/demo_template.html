@@ -1,0 +1,371 @@
+<title>Arena Booth Monitor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=Share+Tech+Mono&display=swap">
+<style>
+  /* One visual world on purpose: the broadcast booth at night. Every color is painted explicitly. */
+  :root {
+    color-scheme: dark;
+    --ground: #0D1114;
+    --panel: #151B1F;
+    --panel-2: #1B2328;
+    --rule: #26313A;
+    --ink: #DCE2DE;
+    --dim: #7A8683;
+    --faint: #4C5755;
+    --tally: #FF4436;
+    --green: #6FE04A;
+    --rust: #E0793A;
+    --caller: #F0B54A;
+    --color: #9DB3C6;
+    --pa: #CDBBE6;
+    --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  html, body { background: var(--ground); color: var(--ink); }
+  body { margin: 0; font: 15px/1.5 var(--body); padding-inline: 16px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-block: 0 48px; }
+
+  header.bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--ground); border-bottom: 1px solid var(--rule);
+    padding-block: 14px 12px; display: grid; gap: 10px;
+  }
+  .title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+  h1 {
+    font: 700 26px/1 var(--display); letter-spacing: 0.04em; text-transform: uppercase; margin: 0;
+  }
+  .gate { font: 13px/1.3 var(--mono); color: var(--dim); }
+  .gate b { color: var(--tally); font-weight: normal; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  .seg button, .transport button, select {
+    font: 600 15px/1 var(--display); letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--dim); background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 7px 10px; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { color: var(--ground); background: var(--ink); border-color: var(--ink); }
+  .seg button:hover, .transport button:hover { color: var(--ink); }
+  button:focus-visible, select:focus-visible, input:focus-visible, .row:focus-visible { outline: 2px solid var(--caller); outline-offset: 2px; }
+  .label { font: 600 12px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  .transport { display: flex; align-items: center; gap: 10px; flex: 1 1 320px; }
+  .transport button.play { min-width: 76px; color: var(--ink); }
+  input[type="range"] { flex: 1; accent-color: var(--tally); min-width: 120px; }
+  .clock { font: 16px/1 var(--mono); font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; }
+  label.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--dim); cursor: pointer; }
+
+  .board {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+    margin-block: 16px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
+  }
+  .team { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .team.rust { justify-content: flex-end; }
+  .team-name { font: 700 30px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
+  .green .team-name { color: var(--green); } .rust .team-name { color: var(--rust); }
+  .pips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pip { width: 9px; height: 18px; border-radius: 1px; background: currentColor; }
+  .green .pip { color: var(--green); } .rust .pip { color: var(--rust); }
+  .pip.lost { color: var(--rule); }
+  .units { font: 12px/1.3 var(--mono); color: var(--dim); }
+  .onair { display: grid; justify-items: center; gap: 4px; min-width: 150px; }
+  .tally {
+    font: 700 13px/1 var(--display); letter-spacing: 0.18em; padding: 5px 9px; border-radius: 2px;
+    color: var(--faint); border: 1px solid var(--rule);
+  }
+  .tally.live { color: #fff; background: var(--tally); border-color: var(--tally); box-shadow: 0 0 18px rgba(255, 68, 54, 0.45); }
+  .speaking { font: 600 15px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); min-height: 15px; }
+  .meta { font: 12px/1.3 var(--mono); color: var(--dim); text-align: center; }
+
+  .desk { display: grid; grid-template-columns: minmax(250px, 0.8fr) 2fr; gap: 16px; }
+  .col { background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; min-width: 0; display: flex; flex-direction: column; }
+  .col h2 {
+    margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--rule);
+    font: 700 15px/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim);
+    display: flex; justify-content: space-between; gap: 8px;
+  }
+  .feed { overflow-y: auto; max-height: calc(100vh - 290px); min-height: 280px; padding-block: 6px; }
+  .row {
+    display: grid; grid-template-columns: 58px 1fr; gap: 10px; padding: 6px 14px; cursor: pointer;
+    border-left: 3px solid transparent; transition: opacity 0.2s;
+  }
+  .row .tc { font: 13px/1.55 var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
+  .row.future { opacity: 0.38; }
+  .row:hover { background: var(--panel-2); }
+  .row.now { background: var(--panel-2); border-left-color: var(--tally); }
+  .event { font-size: 13px; color: var(--dim); }
+  .event .what { color: var(--ink); }
+  .event.kill .what::before { content: "✕ "; color: var(--tally); }
+  .event.end .what { font: 700 15px/1.3 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+  .t-green { color: var(--green); } .t-rust { color: var(--rust); }
+  .row.line { grid-template-columns: 58px 68px 1fr; }
+  .line .who { font: 700 13px/1.9 var(--display); letter-spacing: 0.12em; text-transform: uppercase; }
+  .who.caller { color: var(--caller); } .who.color { color: var(--color); } .who.pa { color: var(--pa); }
+  .line .text { font-size: 16px; line-height: 1.45; max-width: 68ch; }
+  .line.color .text { color: #C9D3DA; }
+  .line.pa .text { color: #DAD0E8; }
+  .line .why { font: 12px/1.4 var(--mono); color: var(--faint); margin-top: 2px; overflow-wrap: anywhere; }
+  .hide-why .why { display: none; }
+  .skip { font: 12px/1.4 var(--mono); color: var(--faint); font-style: italic; }
+  .hide-skips .row.skiprow { display: none; }
+  .note { margin-top: 18px; color: var(--dim); font-size: 13px; max-width: 80ch; }
+  .note code { font-family: var(--mono); color: var(--ink); }
+
+  @media (max-width: 760px) {
+    .desk { grid-template-columns: 1fr; }
+    .feed { max-height: 55vh; }
+    .board { grid-template-columns: 1fr; justify-items: stretch; }
+    .team.rust { justify-content: flex-start; }
+    .onair { justify-items: start; }
+    .team-name { font-size: 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .row { transition: none; } }
+</style>
+
+<div class="wrap" id="app">
+  <header class="bar">
+    <div class="title-row">
+      <h1>Arena Booth Monitor</h1>
+      <span class="gate" id="gate"><b>●</b> Text only. No voice audio has been generated; the lead approves this text first.</span>
+    </div>
+    <div class="controls">
+      <span class="label">Match</span>
+      <div class="seg" id="fixtures" role="group" aria-label="Match"></div>
+    </div>
+    <div class="controls">
+      <span class="label">Director seed</span>
+      <div class="seg" id="seeds" role="group" aria-label="Director seed"></div>
+      <div class="transport">
+        <button class="play" id="play" type="button">Play</button>
+        <select id="speed" aria-label="Playback speed">
+          <option value="1">1×</option><option value="2">2×</option><option value="4" selected>4×</option><option value="8">8×</option>
+        </select>
+        <input type="range" id="scrub" min="0" max="100" step="0.1" value="0" aria-label="Match time">
+        <span class="clock" id="clock">0:00.0</span>
+      </div>
+      <label class="toggle" id="sound-toggle" hidden><input type="checkbox" id="sound" checked> Sound</label>
+      <label class="toggle"><input type="checkbox" id="why" checked> Why</label>
+      <label class="toggle"><input type="checkbox" id="skips"> Skipped</label>
+    </div>
+  </header>
+
+  <section class="board" aria-label="Scoreboard">
+    <div class="team green"><span class="team-name">Green</span><div><div class="pips" id="pips-green"></div><div class="units" id="units-green"></div></div></div>
+    <div class="onair"><span class="tally" id="tally">On air</span><span class="speaking" id="speaking"></span><span class="meta" id="meta"></span></div>
+    <div class="team rust"><div><div class="pips" id="pips-rust"></div><div class="units" id="units-rust"></div></div><span class="team-name">Rust</span></div>
+  </section>
+
+  <main class="desk" id="desk">
+    <section class="col" aria-label="The floor">
+      <h2><span>The floor</span><span id="floor-count"></span></h2>
+      <div class="feed" id="floor"></div>
+    </section>
+    <section class="col" aria-label="The booth">
+      <h2><span>The booth</span><span id="booth-count"></span></h2>
+      <div class="feed" id="booth"></div>
+    </section>
+  </main>
+
+  <p class="note">Fixture matches are fake timelines from <code>tools/announcer/fake_match.py</code>; each seed is the same match
+  called by the director with a different random draw. <b>Why</b> shows the moment the director noticed and the tags a line
+  matched. <b>Skipped</b> shows moments it chose not to call (stale, cooling down, the fight still live). A line ending in — was
+  cut off by something bigger. Rebuild with <code>make announcer-demo</code>.</p>
+</div>
+
+<script id="data" type="application/json">/*__DATA__*/</script>
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById("data").textContent);
+  const SPEAKER = {caller: "Caller", color: "Veteran", pa: "PA"};
+  const $ = (id) => document.getElementById(id);
+  const state = {fixture: null, seed: null, t: 0, playing: false, last: 0, match: null};
+  try {
+    const saved = JSON.parse(localStorage.getItem("booth-monitor") || "{}");
+    Object.assign(state, {fixture: saved.fixture || null, seed: saved.seed || null});
+  } catch (e) { /* storage unavailable: start from the first match */ }
+
+  const fixtures = [...new Set(DATA.matches.map((m) => m.fixture))];
+  const human = (name) => name.replace(/_/g, " ");
+  const clock = (s) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+  const teamSpan = (team) => `<span class="t-${team}">${team === "green" ? "Green" : "Rust"}</span>`;
+
+  function describe(e) {
+    switch (e.type) {
+      case "first_contact": return ["", `First contact: ${teamSpan(e.team)} ${e.unit} fires on a ${e.target_unit}`];
+      case "unit_destroyed":
+        if (!e.killer) return ["kill", `${teamSpan(e.victim_team)} ${e.victim_unit} lost to the arena`];
+        if (e.friendly) return ["kill", `${teamSpan(e.victim_team)} ${e.victim_unit} destroyed by its own ${e.killer_unit}`];
+        return ["kill", `${teamSpan(e.killer_team)} ${e.killer_unit} destroys ${teamSpan(e.victim_team)} ${e.victim_unit}`];
+      case "friendly_fire": return e.killed ? null : ["", `Friendly fire: ${teamSpan(e.team)} ${e.shooter_unit} hits its own ${e.victim_unit}`];
+      case "close_call": return ["", `Close call: ${teamSpan(e.team)} ${e.unit} at ${Math.round(e.hull_left * 100)}% hull`];
+      case "control_changed": return ["", e.owner === "neutral" ? "Control point is neutral" : `Control point: ${teamSpan(e.owner)}`];
+      case "squad_wiped": return ["", `${teamSpan(e.team)} squad ${esc(e.squad)} wiped out`];
+      case "match_end":
+        return ["end", e.winner === "draw" ? "Draw" : `${teamSpan(e.winner)} wins by ${e.reason}`];
+    }
+    return null;
+  }
+
+  function cutText(cue) {
+    if (!cue.cut) return cue.text;
+    const words = cue.text.split(" ");
+    const full = cue.full_seconds || (cue.end - cue.t);
+    const keep = Math.max(1, Math.min(words.length, Math.floor(words.length * (cue.end - cue.t) / Math.max(full, 0.01))));
+    return words.slice(0, keep).join(" ").replace(/[,.!?]+$/, "") + "—";
+  }
+
+  function buildButtons() {
+    $("fixtures").innerHTML = fixtures.map((f) => `<button type="button" data-fixture="${f}">${human(f)}</button>`).join("");
+    $("fixtures").onclick = (ev) => { const b = ev.target.closest("button"); if (b) select(b.dataset.fixture, state.seed); };
+  }
+
+  function select(fixture, seed) {
+    if (!fixtures.includes(fixture)) fixture = fixtures[0];
+    const seeds = DATA.matches.filter((m) => m.fixture === fixture).map((m) => m.seed);
+    if (!seeds.includes(seed)) seed = seeds[0];
+    Object.assign(state, {fixture, seed, match: DATA.matches.find((m) => m.fixture === fixture && m.seed === seed)});
+    try { localStorage.setItem("booth-monitor", JSON.stringify({fixture, seed})); } catch (e) { /* fine */ }
+    $("seeds").innerHTML = seeds.map((s) => `<button type="button" data-seed="${s}" aria-pressed="${s === seed}">${s}</button>`).join("");
+    $("seeds").onclick = (ev) => { const b = ev.target.closest("button"); if (b) select(state.fixture, Number(b.dataset.seed)); };
+    for (const b of $("fixtures").children) b.setAttribute("aria-pressed", String(b.dataset.fixture === fixture));
+    render();
+    setAudio(state.match.audio);
+    const end = state.match.cues.length ? state.match.cues[state.match.cues.length - 1].end : 0;
+    $("scrub").max = end.toFixed(1);
+    seek(state.playing ? 0 : end);
+  }
+
+  function render() {
+    const m = state.match;
+    const start = m.events[0];
+    const final = m.events[m.events.length - 1];
+    $("meta").textContent = `${start.arena} · ${clock(final.duration_seconds)} · ${m.cues.length} lines`;
+    const floorRows = [];
+    for (const e of m.events) {
+      const d = describe(e);
+      if (!d) continue;
+      floorRows.push(`<div class="row event ${d[0]}" data-t="${e.t}" tabindex="0"><span class="tc">${clock(e.t)}</span><span class="what">${d[1]}</span></div>`);
+    }
+    $("floor").innerHTML = floorRows.join("");
+    $("floor-count").textContent = `${floorRows.length} events`;
+    const rows = m.cues.map((c) => ({t: c.t, html:
+      `<div class="row line ${c.speaker}" data-t="${c.t}" data-end="${c.end}" tabindex="0"><span class="tc">${clock(c.t)}</span>` +
+      `<span class="who ${c.speaker}">${SPEAKER[c.speaker]}</span><div><div class="text">${esc(cutText(c))}</div>` +
+      `<div class="why">${esc(c.reason)} · ${esc(c.line_id)}</div></div></div>`}));
+    for (const d of m.decisions || []) {
+      if (!d.text.startsWith("skip")) continue;
+      rows.push({t: d.t + 0.001, html: `<div class="row line skiprow" data-t="${d.t}"><span class="tc">${clock(d.t)}</span><span></span><span class="skip">${esc(d.text)}</span></div>`});
+    }
+    rows.sort((a, b) => a.t - b.t);
+    $("booth").innerHTML = rows.map((r) => r.html).join("");
+    $("booth-count").textContent = `${m.cues.length} lines`;
+  }
+
+  function alive(t) {
+    const m = state.match;
+    const units = {green: [], rust: []};
+    for (const team of m.events[0].teams) for (const u of team.units) units[team.team].push({id: u.id, unit: u.unit, alive: true});
+    for (const e of m.events) {
+      if (e.t > t) break;
+      if (e.type === "unit_destroyed") {
+        const u = units[e.victim_team].find((x) => x.id === e.victim);
+        if (u) u.alive = false;
+      }
+    }
+    return units;
+  }
+
+  function seek(t, fromClock) {
+    state.t = Math.max(0, Math.min(t, Number($("scrub").max)));
+    if (!fromClock && soundOn()) audio.currentTime = state.t;
+    $("scrub").value = state.t;
+    $("clock").textContent = clock(state.t);
+    const units = alive(state.t);
+    for (const team of ["green", "rust"]) {
+      $(`pips-${team}`).innerHTML = units[team].map((u) => `<span class="pip${u.alive ? "" : " lost"}" title="${u.unit}"></span>`).join("");
+      const left = units[team].filter((u) => u.alive).map((u) => u.unit);
+      $(`units-${team}`).textContent = left.length ? left.join(", ") : "none left";
+    }
+    let current = null;
+    for (const feed of ["floor", "booth"]) {
+      for (const row of $(feed).children) {
+        const rt = Number(row.dataset.t);
+        const end = row.dataset.end ? Number(row.dataset.end) : rt;
+        const now = feed === "booth" && row.dataset.end && rt <= state.t && state.t < end + 0.3;
+        row.classList.toggle("future", rt > state.t);
+        row.classList.toggle("now", now);
+        if (now) current = row;
+      }
+    }
+    const cue = state.match.cues.find((c) => c.t <= state.t && state.t < c.end);
+    $("tally").classList.toggle("live", Boolean(cue));
+    $("speaking").textContent = cue ? SPEAKER[cue.speaker] : "";
+    if (state.playing) {
+      const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      const follow = (feed, row) => {
+        if (!row) return;
+        const box = $(feed);
+        const top = row.offsetTop - box.offsetTop - box.clientHeight * 0.45;
+        if (Math.abs(box.scrollTop - top) > 24) box.scrollTo({top, behavior});
+      };
+      follow("booth", current || [...$("booth").children].filter((r) => !r.classList.contains("future")).pop());
+      follow("floor", [...$("floor").children].filter((r) => !r.classList.contains("future")).pop());
+    }
+  }
+
+  // A mixdown (mock tones today, voices once the lead approves) plays in sync when the match has one.
+  const audio = new Audio();
+  audio.preload = "auto";
+  const soundOn = () => Boolean(state.match && state.match.audio) && $("sound").checked;
+  function setAudio(src) {
+    audio.pause();
+    $("sound-toggle").hidden = !src;
+    if (src) audio.src = src; else audio.removeAttribute("src");
+    $("gate").innerHTML = src
+      ? "<b>●</b> Mock audio: tone bursts stand in for words, to check timing and stitching. No voice audio yet."
+      : "<b>●</b> Text only. No voice audio has been generated; the lead approves this text first.";
+  }
+  function syncAudio() {
+    if (!soundOn()) { audio.pause(); return; }
+    audio.playbackRate = Number($("speed").value);
+    if (Math.abs(audio.currentTime - state.t) > 0.25) audio.currentTime = state.t;
+    if (state.playing) audio.play().catch(() => { $("sound").checked = false; });
+    else audio.pause();
+  }
+
+  function tick(now) {
+    if (!state.playing) return;
+    const dt = (now - state.last) / 1000;
+    state.last = now;
+    seek(soundOn() && !audio.paused ? audio.currentTime : state.t + dt * Number($("speed").value), true);
+    if (state.t >= Number($("scrub").max)) { setPlaying(false); return; }
+    requestAnimationFrame(tick);
+  }
+
+  function setPlaying(on) {
+    state.playing = on;
+    $("play").textContent = on ? "Pause" : "Play";
+    if (on) {
+      if (state.t >= Number($("scrub").max) - 0.05) { seek(0); $("booth").scrollTop = 0; $("floor").scrollTop = 0; }
+      state.last = performance.now();
+      requestAnimationFrame(tick);
+    }
+    syncAudio();
+  }
+
+  $("play").onclick = () => setPlaying(!state.playing);
+  $("scrub").oninput = () => seek(Number($("scrub").value));
+  $("sound").onchange = syncAudio;
+  $("speed").onchange = syncAudio;
+  $("why").onchange = () => $("desk").classList.toggle("hide-why", !$("why").checked);
+  $("skips").onchange = () => $("desk").classList.toggle("hide-skips", !$("skips").checked);
+  $("desk").classList.add("hide-skips");
+  const rowSeek = (ev) => { const row = ev.target.closest(".row"); if (row) seek(Number(row.dataset.t) + 0.01); };
+  $("floor").onclick = rowSeek; $("booth").onclick = rowSeek;
+  for (const feed of ["floor", "booth"]) $(feed).onkeydown = (ev) => { if (ev.key === "Enter") rowSeek(ev); };
+  buildButtons();
+  select(state.fixture, state.seed);
+})();
+</script>

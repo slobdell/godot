@@ -1,0 +1,36 @@
+TRANSCRIPT: blowout (director seed 1)
+the Scrapyard | green: tank, tank, tank, scout | rust: scout, scout, ifv, artillery, artillery
+result: green by elimination at 0:54.0
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:08.7   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
+0:14.1   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
+0:19.7   CALLER   The—
+0:20.0   ── first contact: rust scout fires on a tank
+0:20.2   CALLER   The scout finds them first! That's the job, and Rust is doing it!
+0:21.8   ── friendly fire: green tank hits its own tank
+0:25.4   CALLER   Whoa, whoa! Green just hit its own tank!
+0:26.0   ── green tank destroys rust ifv
+0:28.5   CALLER   And Green strikes first! The tank gets the honors!
+0:32.4   CALLER   Green is taking over this match!
+0:33.5   ── close call: rust artillery at 14% hull
+0:35.3   CALLER   Look at that artillery! Smoking, burning, and still going!
+0:41.8   CALLER   Right in the—
+0:43.0   ── green tank destroys rust artillery
+0:43.0   CALLER   That is not supposed to happen! Green's tank just took down the artillery!
+0:46.8   ── green tank destroys rust scout
+0:47.5   CALLER   Another one for Green! This is a clinic!
+0:50.5   CALLER   Three unanswered—
+0:51.2   ── green tank destroys rust artillery
+0:51.2   ── rust squad Battery wiped out
+0:51.3   CALLER   Green is on a tear! That's four straight!
+0:54.0   ── green tank destroys rust scout
+0:54.0   ── rust squad Swarm wiped out
+0:54.0   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
+0:54.3   CALLER   Green finishes it! The last scout is gone!
+0:57.3   CALLER   Green wins it without losing a single vehicle! Flawless!
+1:00.6   VETERAN  Flawless is rare. I never did it. Not once.
+1:04.9   CALLER   Listen to this crowd!
+1:07.2   PA       Green wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.

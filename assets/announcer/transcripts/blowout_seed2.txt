@@ -1,0 +1,35 @@
+TRANSCRIPT: blowout (director seed 2)
+the Scrapyard | green: tank, tank, tank, scout | rust: scout, scout, ifv, artillery, artillery
+result: green by elimination at 0:54.0
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   CALLER   Welcome to the Scrapyard, where there is cover everywhere and nowhere safe to stand!
+0:04.8   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
+0:14.1   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
+0:19.1   PA       Tonight's Condemned—
+0:20.0   ── first contact: rust scout fires on a tank
+0:20.1   CALLER   And we have contact! Rust opens fire!
+0:21.8   ── friendly fire: green tank hits its own tank
+0:23.4   CALLER   Oh, that's their own! Green hits its own tank!
+0:26.0   ── green tank destroys rust ifv
+0:26.8   CALLER   Green draws first blood, and this crowd is on its feet!
+0:31.3   VETERAN  Rust is bleeding and doesn't know it yet.
+0:33.5   ── close call: rust artillery at 14% hull
+0:35.6   CALLER   Look at that artillery! Smoking, burning, and still going!
+0:39.1   VETERAN  Hull like that, every bump hurts. They need—
+0:43.0   ── green tank destroys rust artillery
+0:43.0   CALLER   Oh! Look at this!
+0:44.8   CALLER   Are you kidding me? The tank takes out the artillery!
+0:46.8   ── green tank destroys rust scout
+0:48.4   CALLER   Another one for Green! This is a clinic!
+0:51.2   ── green tank destroys rust artillery
+0:51.2   ── rust squad Battery wiped out
+0:51.4   CALLER   They got another one! Oh my goodness!
+0:54.0   ── green tank destroys rust scout
+0:54.0   ── rust squad Swarm wiped out
+0:54.0   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
+0:54.1   CALLER   And that's it! That's the last one!
+0:56.8   CALLER   It's all over! Green wins it!
+0:59.2   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
+1:05.6   PA       Green wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.

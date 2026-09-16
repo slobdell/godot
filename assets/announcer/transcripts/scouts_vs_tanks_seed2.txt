@@ -1,0 +1,49 @@
+TRANSCRIPT: scouts_vs_tanks (director seed 2)
+the Foundry | green: scout, scout, scout, scout, scout, scout | rust: tank, tank, tank, ifv
+result: rust by elimination at 2:21.0
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   CALLER   Ten vehicles on the floor tonight, and every one of them came to fight.
+0:04.8   PA       Good evening. On behalf of the Syndicate, welcome to the Foundry. Please take a moment to locate the—
+0:11.8   ── first contact: green scout fires on a tank
+0:11.8   CALLER   The scout finds them first! That's the job, and Green is doing it!
+0:17.0   CALLER   Right up the tailpipe! Green caught that tank from behind!
+0:24.5   ── rust ifv destroys green scout
+0:24.5   CALLER   Scratch one scout! Rust strikes!
+0:33.5   PA       A word from our partners at Syndicate Security. If you see something, report something. Reports made during tonight's broadcast earn double credit.
+0:43.0   CALLER   Right in the weak spot! What a shot!
+0:49.0   ── rust tank destroyed by a hazard
+0:49.0   CALLER   Oh! The arena takes the tank! Nobody even touched it!
+0:52.2   ── rust tank destroys green scout
+0:52.7   CALLER   Nobody saw that coming! The tank beats the scout!
+0:55.8   ── close call: rust ifv at 1% hull
+0:56.2   ── rust ifv destroys green scout
+0:56.2   ── green scout destroys rust ifv
+0:56.2   ── rust squad Spotter wiped out
+0:56.6   CALLER   Death by a thousand cuts! The scout's machine gun finally drops the IFV!
+1:02.3   CALLER   That scout's machine gun is just hosing the tank!
+1:12.3   CALLER   Green lands a heavy one!
+1:18.8   ── close call: rust tank at 4% hull
+1:18.8   CALLER   They are hurt, but they are not out!
+1:21.2   ── rust tank destroys green scout
+1:21.8   ── rust tank destroys green scout
+1:21.8   ── green squad Wasps wiped out
+1:21.8   CALLER   Did everybody see that? Two vehicles gone in the blink of an eye!
+1:22.8   ── green scout destroys rust tank
+1:26.3   CALLER   One left! Rust has one left!
+1:28.7   VETERAN  That last Rust crew has nothing to lose. That's the dangerous one.
+1:40.3   CALLER   Artillery in a room this size. Is that smart?
+1:43.6   VETERAN  Only if your own people know where it's landing.
+1:59.0   CALLER   Dead even, one apiece. Anybody's match.
+2:02.1   CALLER   The tank is smoking, and Green smells blood!
+2:05.1   CALLER   What a moment!
+2:11.0   CALLER   It's one a side, and neither army is giving an inch.
+2:21.0   ── rust tank destroys green scout
+2:21.0   ── green squad Hornets wiped out
+2:21.0   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
+2:21.0   CALLER   Rust finishes it! The last scout is gone!
+2:24.0   CALLER   It's all over! Rust wins it!
+2:26.4   VETERAN  Rust earned that. I didn't see them get lucky once.
+2:31.0   CALLER   What a night!
+2:33.0   PA       That concludes tonight's match. Congratulations to Rust. On behalf of the Syndicate, good night, and please drive safely.

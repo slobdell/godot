@@ -1,0 +1,54 @@
+TRANSCRIPT: control_swing (director seed 2)
+the Furnace | green: tank, ifv, scout, ifv | rust: tank, ifv, scout, lancer
+result: rust by control at 2:20.0
+(── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
+ a line ending in — was cut off by something bigger.)
+
+0:00.0   CALLER   And the control point is live tonight, so nobody gets to sit back and wait!
+0:05.1   PA       Good evening, and thank you for joining us. Tonight's crews have completed their paperwork, and their families have been sent the broadcast schedule.
+0:14.8   CALLER   Green fields the Condemned—
+0:16.2   ── first contact: green ifv fires on a scout
+0:16.3   CALLER   And we have contact! Green opens fire!
+0:19.6   CALLER   Big shot! Big shot from Rust!
+0:28.8   CALLER   They found the—
+0:30.0   ── control point: rust
+0:30.1   CALLER   Rust is on the point, and the clock is ticking for Green!
+0:39.8   PA       The odds boards have tonight's match even. Wagers on individual—
+0:44.0   ── green ifv destroys rust scout
+0:44.0   CALLER   Oh! Look at this!
+0:45.8   CALLER   Textbook! The IFV eats the scout alive!
+0:48.5   CALLER   Oh, my goodness!
+0:50.6   CALLER   Green is taking over this match!
+1:01.5   CALLER   Green leads, and Rust needs a big play here.
+1:03.0   ── close call: green ifv at 5% hull
+1:03.5   ── rust ifv destroys green ifv
+1:05.4   CALLER   That IFV is out of the fight!
+1:08.0   CALLER   Oh! Oh!
+1:09.8   CALLER   Green—
+1:10.2   ── rust ifv destroys green scout
+1:10.3   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
+1:13.8   ── close call: rust lancer at 9% hull
+1:15.2   CALLER   What a moment!
+1:17.2   CALLER   That Lancer should be scrap, and it is still in the fight!
+1:17.2   ── green tank destroys rust ifv
+1:20.0   ── control point: green
+1:22.0   CALLER   Oh, Green takes it right back!
+1:24.4   VETERAN  Rust has to go get it now. That means coming out into the open.
+1:31.2   CALLER   The tank round lands! You—
+1:33.0   ── rust tank destroys green ifv
+1:33.0   ── green squad Bravo wiped out
+1:33.0   CALLER   One left! Green has one left!
+1:35.4   VETERAN  Green has one left. Now it gets interesting, or it gets short.
+1:41.0   ── control point: rust
+1:41.5   CALLER   The center belongs to Rust!
+1:49.8   CALLER   What's going through a driver's head right now?
+1:52.7   VETERAN  Nothing useful. You're counting shells and checking mirrors.
+2:09.5   ── green tank destroys rust lancer
+2:09.5   ── rust squad Dart wiped out
+2:09.5   CALLER   Nobody saw that coming! The tank beats the Lancer!
+2:12.8   CALLER   That's why we're here, folks!
+2:20.0   ── MATCH OVER: rust wins by control (1 green, 1 rust left)
+2:20.0   CALLER   Rust wins it on the control point! They held the middle, and it paid off!
+2:25.2   VETERAN  One left. That driver is going to remember every second of that.
+2:30.6   CALLER   What a night!
+2:32.6   PA       The match has been decided in favor of Rust. Highlights will air throughout the week on all district screens.
