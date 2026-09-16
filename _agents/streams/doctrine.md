@@ -82,4 +82,34 @@ rosters (combat), audio (audio).
 
 ## Status
 
-- 2026-09-16: brief written for round 4. Nothing started.
+_Worker report. Updated as items land._
+
+### Plan (ordered)
+
+X1 element API and doctrine data (CP1) → X2 doctrine from the literature → X3 battle drills → X5 parity and
+the CPU (moved ahead of X4 because it needs no other stream) → X4 why formations pay off (partly blocked on
+combat's L2 suppression, CP2) → X6 faction doctrines → stretch (doctrine view, discovery sketches).
+
+### Done
+
+- **X1, the element API (CP1).** `game/tactics/`: `ElementTask` (move, attack, screen, support_by_fire, hold),
+  `TacticsFormation` (geometry, sectors of fire, frontage/depth/dispersion), `DoctrineTable` (the doctrine
+  files, strict validation, rule selection), `ElementSituation` (the only impure step), `Drills` (triggers,
+  aborts, timeouts), `ElementPlan` (the leader's decision, pure), `Element`, `Elements`.
+- **X2, doctrine from the literature.** `_agents/doctrine.md`: sources, formations, movement techniques,
+  selection rules, drills, and what each one is for.
+- **X6, faction tables.** `doctrines/doctrine_{standard,condemned,gangs,law,syndicate}.json`.
+
+### Decisions (and why)
+
+1. **Movement runs in legs, not a sliding destination.** The element's formation anchor jumps one leg forward
+   (45 m traveling, 34 m traveling overwatch, 22 m bounding) and only once everyone has closed up. Re-issuing
+   an order resets a brain's commitment (round-3 lesson), so a sliding goal would nudge units every second.
+2. **Per-unit orders, not group orders.** The leader computes its own slots (K1's group formations are
+   control's automatic ones) and issues one single-unit K1 command each, so doctrine owns the geometry.
+3. **A player order always wins.** A vehicle whose current order id is not the one the element issued is
+   detached until that order finishes; then the element takes it back. No new contract needed.
+4. **Facing comes from travelling.** K1 carries no facing, so halt formations send each vehicle a few metres
+   out along its sector: it arrives pointing the right way (request to control below).
+5. **The herringbone is a halted column's security**: lead watches ahead, middles turn out to alternate
+   flanks, tail watches the rear. What makes it a herringbone is that the hulls physically turn out.

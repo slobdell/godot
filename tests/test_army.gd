@@ -52,6 +52,8 @@ func test_budget_checks_and_descriptions() -> void:
 
 func test_every_doctrine_file_is_army_json_v2() -> void:
 	for file_name in DirAccess.get_files_at("res://doctrines"):
-		if file_name.ends_with(".json"):
+		# doctrine_<name>.json files are the element leaders' doctrine TABLES (contract L1, round 4), a
+		# different schema in the same folder; tests/test_tactics_doctrine.gd checks those.
+		if file_name.ends_with(".json") and not file_name.begins_with("doctrine_"):
 			var loaded := Doctrine.load_file("res://doctrines/" + file_name)
 			assert_true(loaded.has("doctrine"), "%s loads: %s" % [file_name, loaded.get("error", "")])
