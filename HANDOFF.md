@@ -10,7 +10,7 @@ from `main`.**_
 ## Current state (main)
 
 - **Verified:** `make remote T=check` green on builder0 (656 tests, every smoke test, the announcer's Python tests).
-  Sim baseline `glibc-2.43 4bb717e89cb43117` (round 4: suppression, ai's decisions, combat's corrections) (builder0 is canonical; record with `make remote T=sim-baseline-record`).
+  Sim baseline `glibc-2.43 d4bd86eee0f96c54` (round 4 moved it several times on purpose) (builder0 is canonical; record with `make remote T=sim-baseline-record`).
 - **Play it:** `make skirmish` is the round-3 game: StarCraft-style control (click, box, ctrl+1–9 groups, right-click
   orders, attack-move, shift-queued waypoints, follow, stop, hold), slow devastating tank shells, 25 mm bursts, machine-gun
   streams, weak spots, wheeled vehicles with turning circles, brains that strafe, dodge, flank and use cover, a CPU

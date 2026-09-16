@@ -67,6 +67,11 @@ const HELD_AIM_DISTANCE := 1000.0
 ## shootable pick in between: the per-tick scan of every enemy was a top AI cost at 50 units.
 const SCAN_EVERY_TICKS := 6
 
+## Measurement only (scenarios): how many ticks a unit was steered off its route by a wall of bullets, and how often
+## it looked and found no way round. Never read by decisions.
+static var fire_detours := 0
+static var fire_no_way_round := 0
+
 ## Measurement only (make ai-perf): microseconds spent in think + compute_command while `profiling` is on.
 ## Never read by decisions.
 static var profiling := false
@@ -98,6 +103,8 @@ var events: PackedStringArray = []
 var _fire_detour: Variant = null
 var _fire_detour_until := 0
 var _fire_detour_again := 0
+## The tick this unit started going round the current wall of bullets (-1 = it isn't).
+var _fire_since := -1
 ## The L2 source for this match, resolved once (asking "do you answer L2" per move per tick is not free).
 var _fields: Object = null
 var _fields_match := 0
@@ -138,21 +145,39 @@ const LANE_RECHECK_TICKS := 3
 ## X3 (L2): how far ahead a route is checked for a wall of bullets (meters). Far enough to see one coming: checking
 ## only the next navmesh waypoint is a few metres, by which time the unit is already in it.
 const FIRE_LOOKAHEAD := 34.0
-## ...and how far to one side the route steps to get out of it (meters, nearest first).
+## ...and how far to one side the route can step (meters). All of them are scored; the least-swept wins.
 const FIRE_DETOUR_STEPS: Array[float] = [12.0, 24.0, 36.0]
+## A sidestep has to be this much safer than carrying straight on before it is worth taking, so a unit doesn't weave
+## over a rounding error.
+const FIRE_DETOUR_MARGIN := 0.75
 ## A sidestep is DRIVEN, not re-decided every tick: re-deciding just wobbles along the edge of the fire (measured: 4 m
 ## off the straight line, and longer in the beaten zone than going straight). It is held until it is reached, or the
 ## route on is clear, or this many ticks pass.
 const FIRE_DETOUR_TICKS := 120
 const FIRE_DETOUR_REACHED := 5.0
-## ...and then the unit pushes on for this long before it will step aside again. Without it, a wall of bullets across
-## the whole frontage means a unit that steps aside, finds the way still swept, steps aside again, and never arrives
-## (measured: 19 m off the line and it never got there). Orders win in the end: if there is no way round, you go.
-const FIRE_DETOUR_COOLDOWN := 240
-## The route is re-checked against the field this often (ticks, staggered per unit) rather than every tick: the
-## lookahead is 34 m and a unit covers under a metre in that time, and checking it every tick for every moving unit
-## cost ~370 usec per tick at 60 units. A detour already being driven is re-checked every tick.
-const FIRE_CHECK_TICKS := 6
+## Reaching a step is not "I tried and it didn't work" — it is the step working, so the unit looks again and steps
+## again if the way on is still swept. What bounds the whole business is this: once a unit has been going round for
+## this long without the fire lifting, it has spent enough and pushes on. Orders win in the end.
+const FIRE_AVOID_MAX := 300
+## ...and then the unit pushes on for this long before it looks for a way round again. It only has to be long enough
+## to stop the search running on every check tick: FIRE_AVOID_MAX below is what actually guarantees a unit arrives.
+## It used to be 240, which swallowed four seconds of a seven-second crossing and made the whole behaviour measure as
+## nothing (28 ticks in the beaten zone against a control's 33, where a working version manages 14).
+const FIRE_DETOUR_COOLDOWN := 60
+## Going round is ENTERED on `is_beaten_zone` (a hard threshold) but KEPT while the route still carries this share of
+## that much fire on average. Without the hysteresis a unit abandons its detour the moment the field dips under the
+## threshold between two bursts — and a beaten zone pulses, because the field has a ~1 s half-life and guns fire in
+## bursts. That cost the whole behaviour once combat's suppression rework made the field denser and burstier: one
+## attempt, three ticks, then the cooldown below and a walk straight through the fire.
+const FIRE_KEEP_SHARE := 0.4
+## The route is re-checked against the field this often (ticks, staggered per unit) rather than every tick. A detour
+## already being driven is re-checked every tick regardless. This is not only a cost knob — it sets how many chances a
+## unit gets to notice a wall of bullets while there is still room to go round, and it was measured, in the swept-lane
+## scenario (ticks spent in the beaten zone against a control's 33) and with `make ai-perf UNITS=60`:
+##     every tick   21 ticks in the fire, 4740 usec        every 3   10 ticks, 4231 usec        every 6   28 ticks
+## Three is both the best behaviour and cheaper than one. Six was chosen as a pure cost cut during X2 and quietly cost
+## most of the avoidance — a reminder to measure what an optimisation does to behaviour, not just to the clock.
+const FIRE_CHECK_TICKS := 3
 const AVOID_LOOKAHEAD := 10.0
 const AVOID_WIDTH := 3.2
 const AVOID_CLEARANCE := 5.0
@@ -244,6 +269,7 @@ func compute_command(delta: float) -> TankCommand:
 func interrupt() -> void:
 	_fire_detour = null
 	_fire_detour_again = 0
+	_fire_since = -1
 	_unstick_left = 0.0
 	_stuck_time = 0.0
 	_repath_left = 0.0
@@ -362,6 +388,10 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	if brain == null or brain.game_match == null \
 			or not bool(BrainVariants.for_team(tank.team).get("avoid_beaten", true)):
 		return waypoint
+	# A move that IS the escape (running to cover, breaking contact) is driven as given: re-routing it round the fire
+	# is how a hurt tank ends up never reaching the cover it was running to.
+	if bool(move_order.get("to_safety", false)):
+		return waypoint
 	var fields := _suppression_fields(brain.game_match)
 	if fields == null:
 		return waypoint
@@ -375,34 +405,60 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	var tick := brain.game_match.tick
 	if _fire_detour == null and (tick + brain.think_offset) % FIRE_CHECK_TICKS != 0:
 		return waypoint
-	var ahead_beaten := SuppressionFeed.beaten(fields, tank.team, here, here + direction * reach)
-	# Already going round: keep going until it's reached, the way on is clear, or it has taken long enough.
+	var ahead := here + direction * reach
+	var ahead_beaten := SuppressionFeed.beaten(fields, tank.team, here, ahead)
+	# Already going round. Reaching the step, or spending long enough on it, counts as having tried: push on for a
+	# while afterwards so a wall across the whole frontage can't stop a unit forever (orders win in the end). The fire
+	# simply lifting is different — carry straight on, with no cooldown, because nothing was spent.
+	var still_swept := SuppressionFeed.along(fields, tank.team, here, ahead) >= Match.BEATEN_ZONE_DENSITY * FIRE_KEEP_SHARE
 	if _fire_detour != null:
 		var leg: Vector3 = _fire_detour
-		if not ahead_beaten or tick >= _fire_detour_until or _flat_distance(here, leg) <= FIRE_DETOUR_REACHED:
-			_fire_detour = null
+		if not still_swept:
+			_fire_detour = null  # the fire lifted: carry on, nothing spent
+			_fire_since = -1
+		elif _fire_since >= 0 and tick - _fire_since >= FIRE_AVOID_MAX:
+			_fire_detour = null  # long enough: push on
+			_fire_since = -1
 			_fire_detour_again = tick + FIRE_DETOUR_COOLDOWN
+		elif tick >= _fire_detour_until or _flat_distance(here, leg) <= FIRE_DETOUR_REACHED:
+			_fire_detour = null  # that step is done; look again below and take another if it is still needed
 		else:
+			fire_detours += 1
 			return leg
+	if not still_swept:
+		_fire_since = -1
 	if not ahead_beaten or tick < _fire_detour_again:
 		return waypoint
 	var across := Vector3(-direction.z, 0.0, direction.x)
 	var limit := Match.DRIVABLE_LIMIT - 4.0
-	# The way round is a step SIDEWAYS first, not a shallower line to the same place: a lane swept across your front
-	# is crossed by leaving it, then going on. So each candidate is a pure lateral step, and it only counts if the
-	# step itself is clear AND the route on from there is — otherwise stepping aside just takes longer to die in.
+	# The way round is a step SIDEWAYS first, not a shallower line to the same place: a lane swept across your front is
+	# crossed by leaving it, then going on. Every step is SCORED rather than tested for being perfectly clear — a
+	# beaten zone pulses and its edges are soft, so "is this clear" is the wrong question and "which of these is least
+	# swept" is the right one (Match.threat_along exists for exactly this). A route is as dangerous as its worst leg.
+	var straight := SuppressionFeed.along(fields, tank.team, here, ahead)
+	var best: Variant = null
+	var best_threat := straight * FIRE_DETOUR_MARGIN
 	for step: float in FIRE_DETOUR_STEPS:
 		for side: float in [1.0, -1.0]:
 			var beside := here + across * (side * step)
 			beside.x = clampf(beside.x, -limit, limit)
 			beside.z = clampf(beside.z, -limit, limit)
-			if SuppressionFeed.beaten(fields, tank.team, here, beside):
-				continue
-			if SuppressionFeed.beaten(fields, tank.team, beside, beside + direction * reach):
-				continue
-			_fire_detour = beside
-			_fire_detour_until = tick + FIRE_DETOUR_TICKS
-			return beside
+			var threat := maxf(SuppressionFeed.along(fields, tank.team, here, beside),
+					SuppressionFeed.along(fields, tank.team, beside, beside + direction * reach))
+			if threat < best_threat:
+				best_threat = threat
+				best = beside
+	if best != null:
+		_fire_detour = best
+		_fire_detour_until = tick + FIRE_DETOUR_TICKS
+		if _fire_since < 0:
+			_fire_since = tick
+		fire_detours += 1
+		return best
+	# Looked and found nothing: every way round is swept too. Push on rather than looking again every few ticks.
+	fire_no_way_round += 1
+	_fire_since = -1
+	_fire_detour_again = tick + FIRE_DETOUR_COOLDOWN
 	return waypoint
 
 
@@ -782,6 +838,8 @@ static func _validate(order: Variant, allowed_types: Array) -> String:
 		return "'reverse' must be true or false"
 	if order.has("direct") and typeof(order["direct"]) != TYPE_BOOL:
 		return "'direct' must be true or false"
+	if order.has("to_safety") and typeof(order["to_safety"]) != TYPE_BOOL:
+		return "'to_safety' must be true or false"
 	if order.has("fallback") and typeof(order["fallback"]) != TYPE_BOOL:
 		return "'fallback' must be true or false"
 	if order.has("speed") and not (typeof(order["speed"]) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(order["speed"]))):

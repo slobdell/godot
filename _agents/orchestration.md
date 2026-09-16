@@ -231,5 +231,9 @@ The kickoff prompt is one line; this section is the rest.
     first person who listened: stitched words sound pasted, which no metric measured. Put a cheap sample in front of
     the lead *before* the expensive run, not after. The second pilot cost 1,875 credits and saved the 113k run from
     being wrong the same way.
-20. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+20. **Measure an optimisation against behaviour, not just the clock.** Round 4: two cost cuts in the AI passed every
+    test at the time and quietly removed most of a behaviour — a 6-tick check interval saved 370 µs and cost a unit
+    most of its chances to notice a wall of bullets while there was still room to go round (3 ticks turned out to be
+    both better behaved *and* cheaper than 1). The scenario that would have caught it was written after the cut.
+21. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.

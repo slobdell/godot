@@ -1611,7 +1611,8 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"TAKE_COVER":
 			var spot: Vector3 = s["cover"][0]
-			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0))
+			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0,
+					OrderController.ARRIVE_RADIUS, false, true))
 			_order_weapon({"type": "fire_at_will"})
 		"RETREAT":
 			# Break line of sight first (A3): backing 100 m across open ground under fire is how hurt tanks died.
@@ -1619,18 +1620,18 @@ func _act(s: Dictionary) -> void:
 				return c["visible"] and c.get("threatens_me", c["aiming_at_me"]))
 			var cover_spots: Array = s["cover"]
 			if not s.get("features", {}).get("retreat_to_cover", true):
-				_order_move(_move_to(s["rally"], true))
+				_order_move(_move_to(s["rally"], true, 1.0, OrderController.ARRIVE_RADIUS, false, true))
 			elif exposed and not cover_spots.is_empty() and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE:
 				why = TankBrain._join(why, "breaking line of sight")
 				var hide: Vector3 = cover_spots[0]
-				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0, 1.0, SPOT_ARRIVE))
+				_order_move(_move_to(hide, (hide - my_position).dot(me["forward"]) < 0.0, 1.0, SPOT_ARRIVE, false, true))
 			else:
 				# X4: light hulls break away at full speed; only a thick front is worth backing off behind.
 				var back_off: bool = not s.get("features", {}).get("combat_motion", false) \
 						or TankBrain.motion_style(String(me.get("unit", ""))) == "angle"
 				if not back_off:
 					why = TankBrain._join(why, "breaking away")
-				_order_move(_move_to(TankBrain.withdraw_point(s), back_off))
+				_order_move(_move_to(TankBrain.withdraw_point(s), back_off, 1.0, OrderController.ARRIVE_RADIUS, false, true))
 			_order_weapon({"type": "fire_at_will"})
 		"ORBIT":
 			var target_position: Vector3 = contact["position"]
@@ -2146,12 +2147,17 @@ static func withdraw_point(s: Dictionary) -> Vector3:
 
 
 static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := OrderController.ARRIVE_RADIUS,
-		direct := false) -> Dictionary:
+		direct := false, to_safety := false) -> Dictionary:
 	var order := {"type": "move_to", "x": clampf(point.x, -ARENA_LIMIT, ARENA_LIMIT),
 			"z": clampf(point.z, -ARENA_LIMIT, ARENA_LIMIT), "reverse": reverse, "speed": snappedf(speed, 0.05),
 			"arrive": arrive}
 	if direct:
 		order["direct"] = true
+	if to_safety:
+		# X3: this move IS the escape from the fire — don't let route avoidance second-guess it. A tank running for
+		# cover is running through the beaten zone on purpose, and steering it sideways leaves it in the open
+		# (measured: it stopped hiding at all, `ai_hurt_to_cover` first hidden -1 where it used to be 195 ticks).
+		order["to_safety"] = true
 	return order
 
 

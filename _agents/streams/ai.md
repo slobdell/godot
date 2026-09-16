@@ -114,10 +114,24 @@ drills are all covered), and pinned crews read as worse *shooters* — worth fla
 
 | Measured on builder0, each against `x4ns` (the champion with L2 taken away) on the same seed | Result |
 |---|---|
-| Across a swept lane | **14 ticks in the beaten zone vs 33**, peak suppression 0.34 vs 0.38, still arrives |
+| Across a swept lane | **10 ticks in the beaten zone vs 33**, peak suppression 0.33 vs 0.36, still arrives |
 | Two machine guns pinning a tank while a third goes round it | suppression **1.00 vs 0.40**; the target landed **2 of 5 shells vs 5 of 5**; the flanker dealt **1311 vs 279** |
 
-Three things had to be true before avoidance worked, each measured: look ~34 m ahead (the next navmesh waypoint is a
+**It broke once on merged main, and both causes were mine** (`b98630f`). Combat's suppression rework made the field
+denser and burstier (peak 1.27 where it was 1.15), which exposed them:
+- a unit dropped its detour the instant `is_beaten_zone` dipped between two bursts, and that counted as "no way
+  round", so it then pushed straight through for four seconds. A beaten zone pulses by construction (≈1 s half-life,
+  guns fire in bursts), so avoidance is now *entered* on the hard threshold and *kept* while the route still carries
+  40% of it on average (`threat_along`); only spending too long ends the attempt.
+- `FIRE_CHECK_TICKS = 6`, chosen during X2 to save ~370 µs, quietly cost most of the behaviour. It is not only a cost
+  knob — it sets how many chances a unit gets to notice a wall while there is still room to go round. Measured
+  (ticks in the beaten zone against a control's 33, with `make ai-perf UNITS=60` alongside): **every tick 21 / 4740 µs,
+  every 3 ticks 10 / 4231 µs, every 6 ticks 28**. Three is both the best behaviour and cheaper than one.
+- Fixing it exposed a third: a tank running for cover runs *through* the beaten zone on purpose, and avoidance was
+  steering it sideways, so it stopped hiding at all (`ai_hurt_to_cover` first hidden −1, where it had been 195 ticks).
+  A move that IS the escape now carries `to_safety` and is driven as given. Back to 201 ticks, hidden for 154.
+
+Three things had to be true before avoidance worked at all, each measured: look ~34 m ahead (the next navmesh waypoint is a
 few metres — by then you are in it); the way round is a step **sideways**, not a shallower line to the same place; and
 the step must be committed to, or the unit wobbles along the edge of the fire (19 m off the line and it never
 arrived). A cooldown then had to be added so a wall across the whole frontage doesn't stop a unit forever — orders
@@ -245,7 +259,9 @@ of reach or sight; one told to hose a place does not).
 
 ### Merge notes
 
-- **`make remote T=check` exits 0 on the last commit** (761 passed, sim baseline matched, announcer smoke passed).
+- **`make remote T=check` exits 0 on the last commit** (821 passed, sim baseline matched), on top of merged main.
+- The sim baseline moved once more, on purpose, for the avoidance fix: **`glibc-2.43 d4bd86eee0f96c54`**, recorded
+  twice on builder0.
 - A narrow relaxation in audio's K5 validator twins (`game/announcer/announcer_events.gd`, `tools/announcer/events.py`):
   `MAY_BE_DEAD = ("shooter", "killer")`, because a shell outlives the crew that fired it and `announcer-record-smoke`
   was rejecting a legitimate kill. Diagnosed and reported to audio before touching it; they made the same change on
