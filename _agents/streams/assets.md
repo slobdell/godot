@@ -108,7 +108,7 @@ review is the long pole; everything ungated ran while it waits)
 3. X2 giant ad screens → **done** (placeholder ads and copy until the lead picks)
 4. X5 artillery outriggers as parts → **done**
 5. X6 size and draw budget → **done**, with ~0.8 MB of growth rather than none (numbers below)
-6. X4 approved faction vehicles in 3D → **groundwork done** (K4 slots, faction gallery); models wait on the lead's taps
+6. X4 approved faction vehicles in 3D → **done** (the lead answered 2026-09-16; 15 vehicles + the wreck husk)
 7. Stretch → neon signs and scrap barricades **done**; wreck husk concepts **waiting on the lead**
 
 **Done**
@@ -152,6 +152,19 @@ review is the long pole; everything ungated ran while it waits)
 - **Stretch** (3df61be, 06fb861): neon tube signs crown the grandstands (AquaCorp, Organ Futures, Syndicate Life, Live
   from the Pit; one MultiMesh, warm and violet neon only, never team colors); gang-tagged container stacks barricade
   both gates (reusing X1, no new textures); two wreck husk concepts are on their own review page.
+- **X4 faction vehicles** (1b34a42 + 512-map rebuild): the lead's 15 approved concepts through image-to-3D into the K4
+  slots `unit.<faction>.<role>.hull/.turret/.weapon`, one theme per faction, plus `wreck_a` as `prop.wreck`.
+  `tools/assets/build_factions.sh` (`make assets-factions`) records each model's forward axis and whether image-to-3D
+  separated a turret; `assets-check` passes for all three faction themes. Turrets traverse on the gang tank/IFV/artillery,
+  every Law unit but the scout, and the Syndicate tank and IFV; fixed-mount scouts and the hover artillery and Lancer
+  keep their weapon in the body (correct for a fixed mount, and the hover units' emitters are moulded in).
+  **Spend: 240 credits** for 16 models, **balance 88**.
+  - `wreck_b` stays approved but unbuilt: every unit is a converted truck or bus, so `wreck_a`'s truck shell keeps a
+    readable silhouette when scaled per unit, while the crushed hulk reads as generic debris from the RTS camera.
+  - Size: the art first landed at 108 MB (1024 albedo per unit), so every faction map is 512 (47 MB) and
+    `game/theme/factions/*` is excluded from the web and server exports until factions are playable.
+  - Look at them: `make vehicle-gallery FACTION=gangs|law|syndicate`, and per unit
+    `make assets-unit THEME=factions/<faction> UNIT=<faction>.<role>` → `build/screenshots/factions/`.
 - **X4 groundwork** (3df61be, ungated): K4 slot contracts `unit.<faction>.<role>.<part>` in `AssetContracts` (fitted
   to the Condemned unit in the same role), faction themes under `game/theme/factions/<faction>/generated` found by the
   checker, `FactionArt` (which model fills each role), `make vehicle-gallery FACTION=<id>` (a labeled empty spot for
@@ -176,7 +189,8 @@ review is the long pole; everything ungated ran while it waits)
   3600ad0); a remote `arena-kit-gallery` capture afterwards matched the local ones.
 
 **Questions for the lead**
-1. **Meshy balance:** 328 credits left. One 3D model per role is 15 × 15 = 225 credits (+15 for a wreck), which leaves
+1. **Meshy balance: 88 credits left** after building the approved models (240). A top-up is needed before the next
+   round's art. Was: 328 credits left. One 3D model per role is 15 × 15 = 225 credits (+15 for a wreck), which leaves
    ~90 for retries. A top-up may be needed before round 4's assets.
 2. **Ad art and copy** are placeholders (`tools/assets/build_ads.py`, `game/theme/arena_kit/ads/ads.json`): Syndicate Life
    "Coverage that outlives you", AquaCorp "Clean water. Every day you qualify.", Office of the Warden "Safer streets
@@ -242,13 +256,11 @@ review is the long pole; everything ungated ran while it waits)
 - The review pages in *Waiting on the lead*.
 
 **Next steps**
-1. When the lead taps: `read_db` each page → `make art-apply-decisions`, copy the decisions here, then
-   `tools/assets/model_batch.py --list` and run it (≈15 credits per model).
-2. For each model: `make assets-view IN=assets/incoming/meshy/<id>_t2.glb SPLIT=1`, write a recipe
-   (`tools/assets/build_factions.sh`, like build_roster.sh) normalizing into `THEME=factions/<faction>` slots
-   `unit.<faction>.<role>.*`, then `make vehicle-gallery FACTION=<id>` next to the concepts, and add
-   `game/theme/factions/*/generated/*` to the web/server `exclude_filter` (shared file) until factions are playable.
-3. An approved wreck: normalize into a `prop.wreck` scene for feel's wreck effects.
+1. ~~Apply the lead's taps and build the approved models~~ — done 2026-09-16.
+2. When a faction becomes playable: raise its albedo maps back to 1024 for garage close-ups, take it out of
+   `exclude_filter`, and give the hover units and fixed-mount scouts real turret/weapon splits if gameplay needs them
+   to traverse (today their weapons are part of the hull mesh).
+3. `prop.wreck` is filled; feel can place it from a death event and scale it per unit.
 4. After combat adds the obstacle types, an arena layout built from containers (combat owns `arenas/`) and a
    swap-bases fairness run.
 
