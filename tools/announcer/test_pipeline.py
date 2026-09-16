@@ -84,7 +84,12 @@ class DryRunTest(unittest.TestCase):
         total = re.search(r"^total\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)", text, re.M)
         characters = sum(len(r["text"]) for r in recording_plan.plan(LINES)["requests"])
         self.assertEqual(int(total.group(3)), characters)
-        self.assertIn("skipped until the voice exists", text, "the Veteran has no voice yet")
+        self.assertNotIn("skipped until the voice exists", text, "all three voices exist (JR1, veteran, corporate2)")
+        without_voice = {name: (dict(speaker, voice="") if name == "color" else speaker)
+                         for name, speaker in LINES["speakers"].items()}
+        with tempfile.TemporaryDirectory() as folder:
+            missing = generate.dry_run(recording_plan.plan(LINES), without_voice, Path(folder), voice_client.MODEL_ID)
+        self.assertIn("skipped until the voice exists", missing, "a speaker whose voice isn't made yet is called out")
 
     def test_the_real_client_needs_the_key_from_the_environment(self):
         with mock.patch.dict(os.environ, {voice_client.KEY_ENV: ""}):

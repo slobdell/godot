@@ -3,7 +3,7 @@
   "note": "The announcer line library, text only (no audio yet: lead gate). Humor direction: _agents/game_design.md 'Humor direction'. Format: assets/announcer/README.md. Ids are clip ids: never reuse or renumber one once audio exists.",
   "speakers": {
     "caller": {"name": "Caller", "voice": "JR1", "role": "play-by-play: authentic fight-night hype, played straight"},
-    "color": {"name": "The Veteran", "voice": "", "role": "color: a former arena champion; deep, slow, dry, the expert"},
+    "color": {"name": "The Veteran", "voice": "veteran", "role": "color: a former arena champion; deep, slow, dry, the expert"},
     "pa": {"name": "Celeste Vance", "voice": "corporate2", "role": "arena PA and sponsor reads: a polished host; one detail slightly off, never a joke"}
   },
   "vocabulary": {

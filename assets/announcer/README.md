@@ -14,7 +14,7 @@ Owner: the announcer stream ([_agents/streams/announcer.md](../../_agents/stream
 | Speaker | Who | Voice (ElevenLabs) | Writing rule |
 |---|---|---|---|
 | `caller` | play-by-play | `JR1` | authentic fight-night hype, played straight; he's this excited about armored buses |
-| `color` | the Veteran, a former arena champion | not made yet | dry, slow, expert; understated; the dark past comes out flat |
+| `color` | the Veteran, a former arena champion | `veteran` | dry, slow, expert; understated; the dark past comes out flat |
 | `pa` | Celeste Vance, arena PA and sponsor reads | `corporate2` | a believable professional; one detail is slightly off, buried mid-sentence, never a punchline |
 
 ## A line
