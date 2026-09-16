@@ -61,6 +61,18 @@ var lateral_grip := 1.0
 ## Client-side display smoothing toward replicated state. Higher = snappier.
 @export var remote_smoothing := 18.0
 
+## L2: at or above this much suppression a crew counts as PINNED. Brains and drills trigger on it (react to
+## contact, break contact, support by fire); the accuracy cost scales in smoothly below it, so the threshold is a
+## label for decisions, not a cliff in the mechanics.
+const PINNED_SUPPRESSION := 0.6
+## L2: a fully suppressed crew tracks a target with this fraction of its turret speed taken away. Heads down means
+## the gunner loses the target, which is why suppression plus a flank works.
+const SUPPRESSION_TRACKING_PENALTY := 0.5
+## L2: how fast suppression builds under fire and fades once it lifts (per second). Full suppression takes ~1.7 s
+## of heavy fire and ~3.3 s of quiet to shake off.
+const SUPPRESSION_RISE_PER_SECOND := 0.6
+const SUPPRESSION_RECOVER_PER_SECOND := 0.3
+
 ## Set by a controller before this tank's physics tick (controllers run first —
 ## see `process_physics_priority` in the controller scripts).
 var command := TankCommand.new()
@@ -92,6 +104,12 @@ var show_intent := true
 
 var health := 200
 var alive := true
+## L2 (round 4): how hard this crew is being shot at, 0 (calm) .. 1 (heads down). Match raises it from the
+## incoming-fire density where the unit stands (Match.threat_field) and from every hit that lands, and lets it
+## fade; it never reads the wall clock. Effects live in the rules: shots scatter (Match.shot_spread), the turret
+## tracks worse, and a pinned crew can't get a battery's outriggers down. Everything else (breaking contact,
+## going to cover, choosing not to cross a lane) is a DECISION, so it belongs to the brains and the drills.
+var suppression := 0.0
 ## Shield points (0..max_shield). Simulating peer.
 var shield := 0.0
 ## Physics ticks since the last damage landed (shield recharge and base repair wait on it).
@@ -115,6 +133,8 @@ var sync_firing := false
 var sync_intent := ""
 var sync_ammo := -1
 var sync_shield := 0
+## Suppression as replicated state (0..1), for HUD and effects on peers that don't simulate.
+var sync_suppression := 0.0
 ## Match base-service bookkeeping: ticks in the base zone toward the next shell / hull point.
 var resupply_ticks := 0
 var repair_ticks := 0
@@ -248,7 +268,9 @@ func _physics_process(delta: float) -> void:
 	_drive(drive_cmd, delta)
 
 	var local_aim := to_local(cmd.aim_point)
-	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, gun_yaw_toward(local_aim), turret_turn_rate, delta)
+	# L2: a suppressed gunner keeps losing the target.
+	var tracking := turret_turn_rate * (1.0 - SUPPRESSION_TRACKING_PENALTY * suppression)
+	turret.rotation.y = TankMotion.step_yaw(turret.rotation.y, gun_yaw_toward(local_aim), tracking, delta)
 
 	sync_firing = false
 	heat = maxf(0.0, heat - heat_dissipation * delta)
@@ -302,7 +324,8 @@ func _deploy_step(cmd: TankCommand) -> TankCommand:
 		_moving_ticks = 0
 		_still_ticks += 1
 	if cmd.fire or (not wants_to_move and _still_ticks >= DEPLOY_SETTLE_TICKS):
-		if absf(_speed) < DEPLOY_MAX_SPEED:
+		# L2: nobody walks around the vehicle lowering outriggers while rounds are landing on them.
+		if absf(_speed) < DEPLOY_MAX_SPEED and not is_pinned():
 			deploy_ratio = minf(1.0, deploy_ratio + 1.0 / maxf(deploy_seconds * 60.0, 1.0))
 	elif wants_to_move and (_moving_ticks >= PACK_SETTLE_TICKS or deploy_ratio < 1.0):
 		deploy_ratio = maxf(0.0, deploy_ratio - 1.0 / maxf(pack_seconds * 60.0, 1.0))
@@ -401,6 +424,29 @@ func take_hit(raw: float, shield_multiplier: float, armor_multiplier: float) -> 
 	if whole == 0:
 		_publish_state()
 	return {"shield": split.x, "hull": hull, "killed": killed}
+
+
+## L2: add suppression (a hit landing, a near miss). Simulating peer; clamped to 1.
+func suppress(amount: float) -> void:
+	if alive and amount > 0.0:
+		suppression = minf(1.0, suppression + amount)
+
+
+## L2: move suppression toward what the fire around this unit justifies. Rises fast (a wall of bullets works
+## immediately) and fades slower (a rattled crew takes a few seconds to get back on the gun). `seconds` is
+## counted from physics ticks by Match, never from a clock.
+func settle_suppression(target: float, seconds: float) -> void:
+	if target > suppression:
+		suppression = minf(target, suppression + SUPPRESSION_RISE_PER_SECOND * seconds)
+	elif suppression > target:
+		suppression = maxf(target, suppression - SUPPRESSION_RECOVER_PER_SECOND * seconds)
+	if suppression < 0.001:
+		suppression = 0.0
+
+
+## L2: heads down. What brains and battle drills trigger on.
+func is_pinned() -> bool:
+	return alive and suppression >= PINNED_SUPPRESSION
 
 
 ## Hull points back (base repair). Simulating peer.
@@ -537,6 +583,7 @@ func set_paint(color: Color) -> void:
 
 func _set_alive(value: bool) -> void:
 	alive = value
+	suppression = 0.0  # a wreck is not pinned, and a fresh crew starts calm
 	visible = value
 	# Wrecks don't block movement, shells, or sight. Deferred: may run mid physics callback.
 	_collision.set_deferred("disabled", not value)
@@ -554,3 +601,4 @@ func _publish_state() -> void:
 	sync_ammo = ammo
 	sync_shield = roundi(shield)
 	sync_heat = snappedf(heat / heat_capacity, 0.01) if heat_capacity > 0.0 else 0.0
+	sync_suppression = suppression

@@ -16,6 +16,13 @@ enum Kind { PROJECTILE, CONE, BEAM, ARC }
 ## between them), projectile_speed_mps (0 = hitscan), spread_deg, damage (per round), penetration, splash_radius.
 const FIRE_MODELS := ["shell", "burst", "stream", "beam", "arc"]
 
+## L2 (round 4): how much SUPPRESSION one round lays down along its path (`ThreatField` units), independent of the
+## damage it does. This is where "a machine gun's value is volume, not damage" lives: multiply by the weapon's rate
+## of fire to compare. Streams and cones (fire_model "stream" with Kind.CONE) are per SECOND, everything else is per
+## round. Rate of fire at a glance: MG 10/s x 0.10 = 1.0/s, 25 mm 2.2/s x 0.35 = 0.78/s, cannon 0.2/s x 1.2 =
+## 0.24/s, laser 2/s x 0.15 = 0.3/s, mortar 0.22/s x 3.0 over a 9 m splash. Match.SUPPRESSION_FULL_DENSITY (3.0) is
+## what it takes to pin, so one machine gun holds a lane at about half suppression and two crews pin it.
+
 const DEFAULT := "cannon"
 
 const PROFILES := {
@@ -53,6 +60,8 @@ const PROFILES := {
 		# unlimited ammo changed no outcome (Armor vs Balanced 26:6 finite, 25:7 unlimited) and resupply trips
 		# took 0-6% of brain time: it added readouts, not decisions. Artillery keeps its 24 rounds.
 		"heat_per_shot": 0.0,
+		# L2: one shell is terrifying but rare — 0.24 suppression per second of sustained fire.
+		"suppression": 1.2,
 	},
 	# Round 2 (the lead): the IFV's "equivalent of 30 mm cannons" (round 3: a 25 mm Bradley-style gun). Fast fire, low
 	# penetration, modest range:
@@ -82,6 +91,8 @@ const PROFILES := {
 		"spread_deg": 1.0,
 		"shield_multiplier": 0.9,
 		"heat_per_shot": 0.0,
+		# L2: a 4-round burst every 1.8 s is real suppression (0.78/s), second only to the machine gun.
+		"suppression": 0.35,
 	},
 	# G7: the laser never runs out, but every pulse heats the tank, and a tank can't fire past its
 	# heat capacity (a hard cap, no damage). Trade-off vs the cannon: shorter range, less burst, no
@@ -119,6 +130,8 @@ const PROFILES := {
 		# G6: energy weapons strip shields. 1.5 made lasers win 29/40 vs cannons (above the 65% bar);
 		# 1.25 measured 14/24 (58%), swap + team-identity counterbalanced (2026-09-15).
 		"shield_multiplier": 1.25,
+		# L2: a silent beam doesn't make anyone duck; the Lancer suppresses least per second of any gun.
+		"suppression": 0.15,
 	},
 	# Directive set 2: the scout's light machine gun. Hitscan bursts: cheap, fast, and mostly
 	# ineffective against a tank's shield and front armor; fine against other scouts and exposed rears.
@@ -146,6 +159,9 @@ const PROFILES := {
 		"spread_deg": 2.0,
 		"heat_per_shot": 0.0,
 		"shield_multiplier": 0.6,
+		# L2: the wall of bullets. 10 rounds a second at 0.10 each is the best suppression per second in the game,
+		# which is the whole point of a machine gun that can barely scratch a tank's front.
+		"suppression": 0.10,
 	},
 	# Directive set 2: the artillery's mortar. Lobs rounds over cover at a ground point; the burst hurts
 	# every enemy within splash_radius (falling off to 30% at the edge). It can only aim at what the
@@ -188,6 +204,8 @@ const PROFILES := {
 		"ammo": 24,
 		"heat_per_shot": 0.0,
 		"shield_multiplier": 1.0,
+		# L2: a burst covers its whole 9 m splash, so a battery suppresses an AREA rather than a lane.
+		"suppression": 3.0,
 	},
 	"flamethrower": {
 		# K2 (round 3): profile v3.
@@ -216,8 +234,16 @@ const PROFILES := {
 		"aim_tolerance_deg": 12.0,
 		# G6: fire burns through shields quickly (the flamethrower's niche: finish what it reaches).
 		"shield_multiplier": 1.5,
+		# L2: per SECOND (a cone, not rounds). Being on fire is the most suppressive thing in the arena.
+		"suppression": 1.5,
 	},
 }
+
+
+## L2: suppression one round of this weapon lays down (per second for cones). 0 for anything that doesn't
+## suppress.
+static func suppression(weapon: Dictionary) -> float:
+	return float(weapon.get("suppression", 0.0))
 
 
 ## Shells a weapon carries, or -1 when it never runs out.

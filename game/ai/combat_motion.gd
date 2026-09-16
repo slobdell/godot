@@ -22,7 +22,10 @@ extends RefCounted
 ##           "velocity": Vector3 (current), "incoming": IncomingFire.for_unit() entries (X3: dodge them),
 ##           "acceleration": m/s², "turn_rate_deg": hull turn rate (the dodge model),
 ##           "threats": [{"position", "weight"}] other guns that can shoot me (front armor toward them too),
-##           "target_busy": bool (its gun points at someone else: go for its side)}
+##           "target_busy": bool (its gun points at someone else: go for its side),
+##           "leash": {"center": Vector3, "radius": float} (X1: fight within your formation slot, not all over the map),
+##           "beaten": Callable(from, to) -> bool (X3, L2: is that route a wall of bullets? Routes that are get used
+##                     only when every direction is one — the lead's "don't walk into a wall of bullets")}
 ## result:  {"point": Vector3 (steer at it), "reverse": bool, "index": int, "score": float} or {} when every
 ##          direction is blocked.
 
@@ -66,6 +69,10 @@ const PENALTY_SIDE_ON := 1.5
 const PENALTY_RAM := 1.2
 const PENALTY_CROWD := 0.6
 const PENALTY_HIT := 3.0
+## X1: leaving the formation slot a unit was given. Soft, and it grows over LEASH_FALLOFF meters past the radius, so a
+## unit still manoeuvres inside its slot's cell and is pulled back rather than frozen when something pushes it out.
+const PENALTY_LEASH := 1.5
+const LEASH_FALLOFF := 10.0
 const HIT_RADIUS := 2.8
 const DODGE_STEP := 0.1
 ## Turns longer than this (seconds) are pivots in place in the dodge model (≈ Steering.TURN_IN_PLACE_DEG at 90°/s).
@@ -128,6 +135,10 @@ static func choose(request: Dictionary) -> Dictionary:
 	var flank_weight := BUSY_FLANK if busy else float(weights["flank"])
 	var armor_weight := float(weights["armor"]) * (BUSY_ARMOR if busy else 1.0)
 	var velocity_now := _flat(request.get("velocity", Vector3.ZERO))
+	# X1: a unit fighting from a formation slot stays in it (mutual support, sectors of fire, armor facing).
+	var leash: Dictionary = request.get("leash", {})
+	var leash_center := _flat(leash.get("center", Vector3.ZERO))
+	var leash_radius := float(leash.get("radius", 0.0))
 	var scored: Array = []
 	for i in RING.size():
 		var ring := Vector3(RING[i].x, 0.0, RING[i].y)
@@ -184,6 +195,10 @@ static func choose(request: Dictionary) -> Dictionary:
 			var passes := (here + ring * along).distance_to(target_at)
 			if (style != "run" or phase != "run") and minf(gap, passes) < MIN_GAP:
 				score -= PENALTY_RAM
+			if leash_radius > 0.0:
+				var out := leash_center.distance_to(end) - leash_radius
+				if out > 0.0:
+					score -= PENALTY_LEASH * clampf(out / LEASH_FALLOFF, 0.0, 1.0)
 			for friend: Vector3 in friends:
 				if _flat(friend).distance_to(end) < FRIEND_SPACING:
 					score -= PENALTY_CROWD
@@ -203,6 +218,8 @@ static func choose(request: Dictionary) -> Dictionary:
 	# target is used only if nothing in the first SIGHT_CHECKS does (circling behind cover loses the fight: a Lancer
 	# circled out of view and wandered off after CP2).
 	var fallback: Dictionary = {}
+	var beaten_fallback: Dictionary = {}
+	var beaten: Callable = request.get("beaten", Callable())
 	var checked := 0
 	for entry: Array in scored:
 		var end: Vector3 = entry[3]
@@ -210,6 +227,14 @@ static func choose(request: Dictionary) -> Dictionary:
 			continue
 		if map != null and (map.path_blocked(Vector2(here.x, here.z), Vector2(end.x, end.z), OBSTACLE_GROW)
 				or map.inside_any(Vector2(end.x, end.z), OBSTACLE_GROW)):
+			continue
+		# X3 (L2): don't drive through a wall of bullets. Checked here, after the cheap filters and best-first, so it
+		# costs one field query for the winner in the common case. Kept as a last resort: a unit boxed in by fire has
+		# to go somewhere, and standing in it is worse than crossing it.
+		if beaten.is_valid() and beaten.call(here, end):
+			if beaten_fallback.is_empty():
+				beaten_fallback = {"point": here + Vector3(RING[entry[1]].x, 0.0, RING[entry[1]].y) * STEER_DISTANCE,
+						"reverse": entry[2], "index": entry[1], "score": -float(entry[0]), "dodging": false, "beaten": true}
 			continue
 		var direction := Vector3(RING[entry[1]].x, 0.0, RING[entry[1]].y)
 		var steer := maxf(STEER_DISTANCE, float(request.get("min_turn_radius", 0.0)) * WHEELS_STEER_RADII) if wheels else STEER_DISTANCE
@@ -228,6 +253,8 @@ static func choose(request: Dictionary) -> Dictionary:
 			break
 	if not fallback.is_empty():
 		return fallback
+	if not beaten_fallback.is_empty():
+		return beaten_fallback
 	# Boxed in: every end was inside an obstacle (or the path to it crossed one). Standing still in a fight is worse
 	# than nudging out of the box, so take the best-scoring direction that stays inside the arena and let the next
 	# plan (from the new spot) find clear ground.

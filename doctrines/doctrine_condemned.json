@@ -1,0 +1,43 @@
+{
+  "name": "condemned",
+  "faction": "condemned",
+  "display_name": "The Condemned",
+  "summary": "Convicts in welded scrap: hold ground and grind. Tight spacing for mutual support, they assault through an ambush and they almost never break contact.",
+  "spacing_m": {"open": 12.0, "lanes": 10.0, "dense": 7.5},
+  "drills": {
+    "near_ambush_m": 42.0,
+    "assault_through_m": 30.0,
+    "break_contact_ratio": 0.25,
+    "rally_back_m": 40.0,
+    "flank_m": 36.0
+  },
+  "movement": [
+    {"when": {"task": ["hold"], "terrain": ["dense", "lanes"]},
+     "formation": "herringbone", "technique": "traveling",
+     "why": "halted in cover: herringbone, alternate flanks watched"},
+
+    {"when": {"task": ["hold"]},
+     "formation": "coil", "technique": "traveling",
+     "why": "halted in the open: coil, all-round security"},
+
+    {"when": {"task": ["screen"]},
+     "formation": "line", "technique": "traveling_overwatch",
+     "why": "screening: a line watches the widest frontage"},
+
+    {"when": {"task": ["support_by_fire"]},
+     "formation": "line", "technique": "traveling",
+     "why": "support by fire: every gun on the objective"},
+
+    {"when": {"threat": ["contact", "likely"]},
+     "formation": "line", "technique": "traveling",
+     "why": "the Condemned close up and grind: a line of armour, straight at them"},
+
+    {"when": {"threat": ["possible"]},
+     "formation": "wedge", "technique": "traveling_overwatch",
+     "why": "contact possible: wedge, the heaviest hull in front"},
+
+    {"when": {},
+     "formation": "column", "technique": "traveling",
+     "why": "nothing in sight: column, save the fuel"}
+  ]
+}

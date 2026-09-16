@@ -6,10 +6,11 @@ Usage: python3 tools/make_arenas.py arenas   (then run `make test FILTER=arena_l
 import json, sys, os
 
 OUT = sys.argv[1]
-COLUMNS = [0.0, -12.0, 12.0, -24.0, 24.0, -36.0, 36.0, -48.0, 48.0]
+# Must mirror Match.SLOT_X / SPAWN_ROWS / SPAWN_ROW_SPACING (X5, round 4: 65 slots a side for faction-sized armies).
+COLUMNS = [0.0, -11.0, 11.0, -22.0, 22.0, -33.0, 33.0, -44.0, 44.0, -55.0, 55.0, -66.0, 66.0]
 
 
-def spawns(base_z=90.0, rows=3, row_spacing=10.0):
+def spawns(base_z=90.0, rows=4, row_spacing=8.0):
     green = []
     for row in range(rows):
         for x in COLUMNS:

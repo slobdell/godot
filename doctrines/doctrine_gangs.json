@@ -1,0 +1,41 @@
+{
+  "name": "gangs",
+  "faction": "gangs",
+  "display_name": "Road gangs",
+  "summary": "A pack of hyenas: spread wide, come at you from every side at once, never bound and never wait. Fast, cheap and fragile, so they keep moving and spread the damage.",
+  "spacing_m": {"open": 18.0, "lanes": 14.0, "dense": 10.0},
+  "legs": {"traveling_m": 55.0, "traveling_overwatch_m": 45.0, "cohesion_m": 30.0},
+  "drills": {
+    "enabled": ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire", "herringbone"],
+    "near_ambush_m": 55.0,
+    "assault_through_m": 34.0,
+    "react_ticks": 40,
+    "flank_m": 60.0,
+    "break_contact_ratio": 0.0
+  },
+  "movement": [
+    {"when": {"task": ["hold"]},
+     "formation": "coil", "technique": "traveling",
+     "why": "the pack circles: guns pointing out, engines running"},
+
+    {"when": {"task": ["screen"]},
+     "formation": "line", "technique": "traveling",
+     "why": "strung out across the ground, eyes everywhere"},
+
+    {"when": {"task": ["support_by_fire"]},
+     "formation": "line", "technique": "traveling",
+     "why": "everyone fires, nobody waits"},
+
+    {"when": {"threat": ["contact", "likely"]},
+     "formation": "vee", "technique": "traveling",
+     "why": "the pack fans out and comes at you head on"},
+
+    {"when": {"threat": ["possible"]},
+     "formation": "vee", "technique": "traveling",
+     "why": "spread wide and run them down before they can aim twice"},
+
+    {"when": {},
+     "formation": "wedge", "technique": "traveling",
+     "why": "loose and fast, hunting"}
+  ]
+}

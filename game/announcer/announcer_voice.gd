@@ -3,9 +3,10 @@ extends Node
 ## Plays the booth's cues from recorded clips (tools/announcer/generate.py's manifest): each cue's parts in order,
 ## slot values from filler clips, one speaker at a time on the "Announcer" bus. A cut cue fades out fast.
 ##
-## Ducking: the announcer bus is the sidechain of a compressor on the world-sound bus, when one exists
-## (WORLD_BUS; the feel stream routes effects there). Clips load from files at runtime, so voice packs can arrive after
-## the game starts (web).
+## Ducking: the announcer bus is the sidechain of a compressor on the world-sound bus (WORLD_BUS), which SfxSystem
+## routes every battle sound through. Either side may come up first, so both create the bus. MusicDirector ducks its
+## own bus under this one the same way. Clips load from files at runtime, so voice packs can arrive after the game
+## starts (web).
 
 const BUS := "Announcer"
 const WORLD_BUS := "World"
@@ -36,7 +37,9 @@ static func ensure_bus() -> int:
 		index = AudioServer.bus_count - 1
 		AudioServer.set_bus_name(index, BUS)
 		AudioServer.set_bus_send(index, "Master")
-	var world := AudioServer.get_bus_index(WORLD_BUS)
+	# Make the world bus if the sound effects haven't started yet: whichever of the two comes up first, the ducking
+	# gets wired. (FxWorld is added deferred, so the booth's voice can easily be first.)
+	var world := SfxSystem.ensure_world_bus()
 	if world >= 0:
 		var ducked := false
 		for effect_index in AudioServer.get_bus_effect_count(world):

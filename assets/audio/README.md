@@ -41,3 +41,37 @@ another. Share of energy above 200 Hz (what laptop and phone speakers play) meas
 | `bullet_hit_metal.wav` | a bullet or 25 mm round striking steel (at most one per target every 0.09 s) | three inharmonic partials around 900 Hz with a noise click | 100% |
 | `weak_spot_hit.wav` | a weak-spot hit (any weapon; at most one per target and weapon every 0.15 s) | a heavy crunch and 90–180 Hz thump, then a bright two-note chime (E6, B6, each with a detuned partner) ringing out | 63% |
 | `ui_ack_move.wav` / `ui_ack_attack.wav` / `ui_select.wav` | order acknowledgements (move, follow, hold, stop, waypoints / attack, attack-move) and selecting units | a squelch click with two rising tones (880, 1318 Hz) / a click, a hard descending saw buzz, and a 1760 Hz stab / a short 1.5–2 kHz rising blip | — |
+
+## Audio stream (round 4, X4): takes, the bus mix, and distance
+
+The lead's verdict on round 3's sound was *"it sounds like an atari game rather than a gritty action game"*. Three
+things were wrong, none of them about any single sound's synthesis:
+
+**1. Every shot was the same recording.** A scout's machine gun fires eleven rounds a second, and every one was
+byte-identical; a pitch wobble of ±12% does not hide that. The most-repeated sounds now come in several **takes**
+(`mg_round.wav`, `mg_round_2.wav`, …), each synthesised from its own seed, and `SfxSystem` draws one per shot:
+
+| Sound | Takes | Why this many |
+|---|---|---|
+| `mg_round`, `bullet_hit_metal` | 4 | heard many times a second; 5–7 KB each, so takes are nearly free |
+| `autocannon_shot`, `ricochet`, `shell_hit_armor`, `dirt_impact`, `explosion_small` | 3 | heard several times a minute |
+| `weak_spot_hit`, `tank_boom`, `cannon_shot` | 2 | the signature sounds; `tank_boom` is 2.8 s and by far the largest file |
+
+Loops (`mg_loop`, `flame_loop`, the engines, the crowd) keep a single take: they are held down, not re-triggered, and
+feel's `EngineSystem` and `CrowdSystem` duplicate them to set loop points.
+
+**2. Nothing mixed the battle.** Twenty voices summed straight into the master, so a firefight clipped. World sound
+now goes through a **`World` bus**: trimmed 6 dB, with a limiter at −1 dB. That is also the bus the announcer ducks
+(`AnnouncerVoice` sidechains a compressor onto it), so the booth is now audible over a battle without anything else
+changing, and it is the bus feel asked for in round 3.
+
+**3. Distance only made things quieter.** A cannon across the arena sounded like a small cannon nearby. Sounds now
+carry a distance filter (`SfxSystem.DISTANCE_FILTER`): the big low sounds lose their top end with range (the tank's
+boom falls to 1.4 kHz and −22 dB of filtering at maximum distance), while small metallic sounds that are only ever
+heard close keep their brightness.
+
+**Size:** 48 WAVs, 2.0 MB in git (the takes added 590 KB). Every one imports with `compress/mode=2` (Quite OK Audio),
+so the exported pack carries roughly a quarter of that.
+
+**Still to do** (blocked on the lead's ElevenLabs key): layering generated or CC0 source material under the
+synthesised transients, which is what would take these from "clean and mixed" to "cinematic".

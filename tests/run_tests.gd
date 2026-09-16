@@ -7,7 +7,8 @@ extends SceneTree
 ##
 ## A script error aborts the test function WITHOUT recording an assertion
 ## failure, which once let a crashing test print PASS. So every engine/script
-## error logged while a test runs also fails that test.
+## error logged while a test runs also fails that test. For the same reason a file that fails to load, or that has no
+## test_ methods at all (what a parse error leaves behind), is reported as a failure instead of being skipped.
 
 const TEST_ROOT := "res://tests"
 
@@ -48,6 +49,24 @@ func _run() -> void:
 			filter = arg.trim_prefix("--filter=")
 	for path in _discover(TEST_ROOT):
 		var script: GDScript = load(path)
+		# A file that doesn't compile loads as null, and one whose parse failed has no test methods: both used to be
+		# skipped silently, so a broken test file read as "everything passed" (ai, 2026-09-16).
+		if script == null:
+			failed += 1
+			print("  FAIL  ", path.get_file().get_basename(), "::<file>")
+			print("          the file did not load (a parse error, or it isn't a script)")
+			continue
+		var test_methods := 0
+		for method in script.get_script_method_list():
+			if String(method["name"]).begins_with("test_"):
+				test_methods += 1
+		var stem := path.get_file().get_basename()
+		# tests/test_case.gd is the base class every case extends, not a case itself.
+		if test_methods == 0 and stem != "test_case" and (filter == "" or stem.contains(filter)):
+			failed += 1
+			print("  FAIL  ", stem, "::<file>")
+			print("          no test_ methods: a parse error leaves a loadable script with none")
+			continue
 		for method in script.get_script_method_list():
 			var method_name: String = method["name"]
 			if not method_name.begins_with("test_"):

@@ -4,27 +4,29 @@ result: green by elimination at 0:44.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
-0:00.0   PA       Good evening. Conditions on the floor are excellent tonight. Humidity is low, and the medical team has been asked not to intervene.
-0:08.7   CALLER   Eight vehicles on the floor tonight, and every one of them came to fight.
-0:14.1   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
+0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
+0:07.5   CALLER   Oh, this is going to be good. I can feel it in my chest already!
+0:13.3   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
+0:18.9   CALLER   The—
 0:19.2   ── first contact: rust lancer fires on a ifv
-0:19.3   CALLER   Shots fired! Rust takes the first shot!
-0:22.6   CALLER   That scout's machine gun is just hosing the Lancer!
+0:19.4   CALLER   There's the beam! The Lancer reaches out across the floor for the IFV!
+0:24.5   CALLER   Ohh, that rocked the IFV!
 0:27.5   ── rust lancer destroys green ifv
 0:27.5   CALLER   Upset! Upset on the floor! The Lancer gets it done!
 0:31.0   ── green tank destroys rust lancer
-0:31.8   CALLER   The Lancer goes dark! Green shuts off the beam!
-0:35.7   CALLER   The momentum is swinging to Green!
-0:39.0   CALLER   The—
+0:31.8   CALLER   Rust is down to two!
+0:33.8   CALLER   Listen to this crowd!
+0:36.1   VETERAN  Rust is bleeding and doesn't know it yet.
 0:39.2   ── green scout destroys rust artillery
 0:39.2   ── rust squad Halo wiped out
-0:39.5   CALLER   One left! Rust has one left!
+0:39.8   CALLER   One left! Rust has one left!
+0:42.8   CALLER   That—
 0:43.5   ── rust lancer destroys green scout
-0:43.5   CALLER   Green is down to three!
+0:43.5   CALLER   It's gone—
 0:44.2   ── green tank destroys rust lancer
 0:44.2   ── rust squad Vesper wiped out
 0:44.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-0:45.5   CALLER   That's the last one! Green wipes them out!
-0:48.5   CALLER   That was fast! Green made short work of that one!
-0:52.1   VETERAN  Green earned that. I didn't see them get lucky once.
-0:57.3   PA       The match has been decided in favor of Green. Highlights will air throughout the week on all district screens.
+0:44.3   CALLER   And that's it! That's the last one!
+0:47.0   CALLER   That was fast! Green made short work of that one!
+0:50.6   VETERAN  Green earned that. I didn't see them get lucky once.
+0:55.8   PA       Green takes tonight's match. We thank our participants, and our sponsors, in that order.

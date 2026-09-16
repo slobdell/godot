@@ -14,15 +14,23 @@ extends RefCounted
 ## }
 ## Per unit: "unit" (a Units.PROFILES id, required), optional "paint" "#rrggbb" and "directive".
 ## Optional per squad: "formation" (see Formations.NAMES) and "verb": "hold", which starts the squad formed
-## up and waiting for orders; "spacing" in meters. At most MAX_SQUADS squads of MAX_SQUAD_UNITS units.
+## up and waiting for orders; "spacing" in meters. At most MAX_SQUADS squads of MAX_SQUAD_UNITS units
+## (a player's own army is capped lower, at PLAYER_MAX_SQUADS, by the builder).
 ## v1 keys ("tanks", "weapon", "weapons", "components") are rejected with a message saying what changed.
 ## Budgets are checked by the caller (Army.check_budget), which knows the match's budget.
 
 const VERSION := 2
-## The lead (2026-09-15): "a player can have up to some finite number of squads (say 5)."
-const MAX_SQUADS := 5
+## What the GARAGE offers a player. The lead (2026-09-15): "a player can have up to some finite number of
+## squads (say 5)." The army builder caps itself at this (game/garage/army_catalog.gd).
+const PLAYER_MAX_SQUADS := 5
+## What this file will VALIDATE. Round 4 fields faction-sized armies: ~28 vehicles at the baseline budget,
+## which is more than five squads of five, and Match.load_doctrine never cared about the count (combat, X3,
+## 2026-09-16). Player armies stay at PLAYER_MAX_SQUADS because the builder says so, not because parsing does.
+const MAX_SQUADS := 12
 const MAX_SQUAD_UNITS := Formations.MAX_MEMBERS
-const MAX_UNITS := MAX_SQUADS * MAX_SQUAD_UNITS
+## As many units as the arena has places to put them: every layout must list a spawn per unit
+## (Arena.validate), so the spawn grid is the real limit on an army, not squads x squad size.
+const MAX_UNITS := Match.SPAWN_SLOTS
 
 
 ## Returns {"doctrine": Dictionary} or {"error": String}.
@@ -48,6 +56,7 @@ static func parse(data: Variant) -> Dictionary:
 	if typeof(squads) != TYPE_ARRAY or squads.is_empty() or squads.size() > MAX_SQUADS:
 		return {"error": "an army needs 1 to %d squads" % MAX_SQUADS}
 	var names := {}
+	var total := 0
 	for squad in squads:
 		if typeof(squad) != TYPE_DICTIONARY or typeof(squad.get("name")) != TYPE_STRING:
 			return {"error": "every squad needs a string 'name'"}
@@ -71,6 +80,11 @@ static func parse(data: Variant) -> Dictionary:
 			return {"error": "squad %s needs at least one unit in 'units'" % squad["name"]}
 		if units.size() > MAX_SQUAD_UNITS:
 			return {"error": "squad %s has %d units; a squad holds at most %d" % [squad["name"], units.size(), MAX_SQUAD_UNITS]}
+		total += units.size()
+		if total > MAX_UNITS:
+			# The arena has a spawn point per unit and no more (Arena.validate), so an army bigger than the
+			# grid would stack vehicles on top of each other.
+			return {"error": "an army holds at most %d units; the arena has that many spawn points" % MAX_UNITS}
 		for entry in units:
 			if typeof(entry) != TYPE_DICTIONARY:
 				return {"error": "squad %s: units must be objects like {\"unit\": \"tank\"}" % squad["name"]}

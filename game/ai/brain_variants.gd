@@ -23,6 +23,7 @@ extends RefCounted
 ##   weak_spots        seek engine decks (combat's request b): flank astern, and orbit to the stern and burst in while a
 ##                     slow gun reloads, when the deck lets my rounds through (TankBrain.DECK_SEEK_GAIN)
 ##   short_halt_lead   (float) how long (s) before the gun is loaded the halt starts, after braking (default 0.15)
+##   avoid_beaten      steer manoeuvres away from walls of bullets, and suppress on purpose (round-4 X3, L2; default on)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -45,6 +46,12 @@ const PROFILES := {
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
 	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": 9},
+	# Round-4 X3 control: the champion with L2 taken away — it neither avoids beaten zones nor fires to suppress.
+	# The control for every suppression measurement, and the "before" the ladder compares against.
+	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "avoid_beaten": false},
+	# Round-4 X2 probe: the champion thinking every 9 ticks in a fight instead of 6 (round 2 measured -24% CPU for a6;
+	# this is the same lever on today's champion). Adopted only if it doesn't lose to x4 on the ladder.
+	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
 ## 2026-09-15: a6 (beat a4 9-7 in ladder run 1 and r1 7-5 in run 2; see unit_ai.md "AI ladder").

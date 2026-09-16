@@ -38,8 +38,31 @@ const SOUNDS := {
 	"ui_ack_attack": "res://assets/audio/ui_ack_attack.wav",
 	"ui_select": "res://assets/audio/ui_select.wav",
 }
+## Extra takes per sound (game/theme/audio/make_sfx.gd VARIANTS): "mg_round" also loads mg_round_2..4. A sound
+## plays a take at random, so a burst is never the same crack eleven times (X4).
+const TAKES := {
+	"mg_round": 4, "bullet_hit_metal": 4, "autocannon_shot": 3, "ricochet": 3, "shell_hit_armor": 3,
+	"dirt_impact": 3, "explosion_small": 3, "weak_spot_hit": 2, "tank_boom": 2, "cannon_shot": 2,
+}
 const WORLD_VOICES := 20
 const UI_VOICES := 4
+## World sounds go through their own bus so the whole battle can be mixed, limited, and ducked under the announcer
+## in one place (AnnouncerVoice sidechains a compressor onto this bus when the booth is on).
+const WORLD_BUS := "World"
+## Headroom: twenty voices summing in a firefight clip the master and turn to mush. The limiter catches the peaks
+## that survive per-sound gain staging; the trim leaves room for it to work.
+const WORLD_TRIM_DB := -6.0
+const LIMIT_DB := -1.0
+## Distance filtering: a blast heard across the arena is dull, not just quiet. Per sound, the cutoff (Hz) at
+## max_distance and how much of the sound is filtered; the engine interpolates with distance. Sounds not listed keep
+## their full brightness, which is right for the small metallic ones that are only ever heard close.
+const DISTANCE_FILTER := {
+	"tank_boom": [1400.0, -22.0], "cannon_shot": [1500.0, -20.0], "explosion_big": [1100.0, -24.0],
+	"explosion_small": [1600.0, -20.0], "mortar_launch": [2200.0, -14.0], "autocannon_shot": [2400.0, -14.0],
+	"mg_round": [3000.0, -12.0], "mg_loop": [3000.0, -12.0], "shell_hit_armor": [2600.0, -12.0],
+	"dirt_impact": [1800.0, -16.0], "weak_spot_hit": [3000.0, -10.0], "flame_loop": [2600.0, -12.0],
+	"engine_diesel": [1800.0, -16.0], "engine_v8": [1800.0, -16.0], "engine_electric": [2600.0, -12.0],
+}
 ## Per sound: base volume (dB) and random pitch spread, so repeated shots don't sound identical.
 const MIX := {
 	"cannon_shot": [-4.0, 0.08], "explosion_small": [-3.0, 0.1], "explosion_big": [0.0, 0.06],
@@ -52,7 +75,11 @@ const MIX := {
 }
 
 var muted := false
+## key -> the first take, as an AudioStreamWAV. Feel's engine and crowd systems read this directly, so it stays
+## exactly what it always was.
 var streams := {}
+## key -> every take of that sound, first one included. play_at picks from here.
+var takes := {}
 ## Sounds started since load (tests and the bench).
 var played := 0
 
@@ -69,12 +96,20 @@ func _init() -> void:
 	muted = LaunchFlags.from_environment().has("mute")
 	for key in SOUNDS:
 		var stream := load(SOUNDS[key]) as AudioStream
-		if stream != null:
-			streams[key] = stream
+		if stream == null:
+			continue
+		streams[key] = stream
+		var pool: Array[AudioStream] = [stream]
+		for take in range(2, int(TAKES.get(key, 1)) + 1):
+			var extra := load(String(SOUNDS[key]).replace(".wav", "_%d.wav" % take)) as AudioStream
+			if extra != null:
+				pool.append(extra)
+		takes[key] = pool
 	var flame := streams.get("flame_loop") as AudioStreamWAV
 	if flame != null:
 		flame.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		flame.loop_end = flame.data.size() / 2
+	ensure_world_bus()
 	for i in WORLD_VOICES:
 		var voice := AudioStreamPlayer3D.new()
 		voice.name = "Voice%d" % i
@@ -82,6 +117,7 @@ func _init() -> void:
 		voice.unit_size = 55.0
 		voice.max_distance = 600.0
 		voice.max_polyphony = 1
+		voice.bus = WORLD_BUS
 		add_child(voice)
 		_world.append(voice)
 	for i in UI_VOICES:
@@ -91,19 +127,48 @@ func _init() -> void:
 		_ui.append(voice)
 
 
-## A world sound at `position`.
+## Adds the World bus (and its limiter) if it isn't there. Static so anything that wants to route to it can.
+static func ensure_world_bus() -> int:
+	var index := AudioServer.get_bus_index(WORLD_BUS)
+	if index >= 0:
+		return index
+	AudioServer.add_bus()
+	index = AudioServer.bus_count - 1
+	AudioServer.set_bus_name(index, WORLD_BUS)
+	AudioServer.set_bus_send(index, "Master")
+	AudioServer.set_bus_volume_db(index, WORLD_TRIM_DB)
+	var limiter := AudioEffectLimiter.new()
+	limiter.ceiling_db = LIMIT_DB
+	limiter.threshold_db = -4.0
+	limiter.soft_clip_db = 2.0
+	AudioServer.add_bus_effect(index, limiter)
+	return index
+
+
+## A world sound at `position`, in one of its takes.
 func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	# Not in the tree yet (FxWorld is added deferred; the match announcer speaks at spawn): drop it.
 	if muted or not streams.has(sound) or not is_inside_tree():
 		return
 	var voice := _take_world_voice()
-	voice.stream = streams[sound]
+	voice.stream = _a_take(sound)
 	voice.position = position
 	var mix: Array = MIX.get(sound, [0.0, 0.0])
 	voice.volume_db = float(mix[0]) + volume_offset_db
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
+	var filtering: Array = DISTANCE_FILTER.get(sound, [])
+	voice.attenuation_filter_cutoff_hz = float(filtering[0]) if not filtering.is_empty() else 20500.0
+	voice.attenuation_filter_db = float(filtering[1]) if not filtering.is_empty() else 0.0
 	voice.play()
 	played += 1
+
+
+## One take of a sound, chosen from its pool. Presentation randomness: its own generator, never the simulation's.
+func _a_take(sound: String) -> AudioStream:
+	var pool: Array = takes.get(sound, [])
+	if pool.size() < 2:
+		return streams[sound]
+	return pool[_rng.randi_range(0, pool.size() - 1)]
 
 
 ## A UI sound (not positional).
@@ -112,7 +177,7 @@ func play_ui(sound: String) -> void:
 		return
 	var voice := _ui[_next_ui]
 	_next_ui = (_next_ui + 1) % _ui.size()
-	voice.stream = streams[sound]
+	voice.stream = _a_take(sound)
 	var mix: Array = MIX.get(sound, [0.0, 0.0])
 	voice.volume_db = float(mix[0])
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))

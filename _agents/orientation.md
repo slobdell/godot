@@ -67,6 +67,9 @@ game/
   match/                 Match: THE RULES (teams, spawners, shells, damage, respawn, score, bots)
   tank/                  Tank (CharacterBody3D + StateSync; emits fired/died), TankCommand (the seam), TankMotion
   combat/                Weapons (data: cannon, flamethrower), Shell, Armor, Ballistics, Impact
+  tactics/               ELEMENTS (round 4, L1): Element + Elements (leaders, tasks, formations, movement
+                         techniques), DoctrineTable (doctrines/doctrine_*.json), Drills (battle drills),
+                         ElementPlan (the leader's decision, pure), ElementCommander (a CPU that assigns tasks)
   ai/                    Squad + Formations (commander, drills, slots); TankBrain (utility AI) + Directives + Doctrine;
                          OrderController (orders + reflexes → command),
                          BotController (legacy baseline), Steering, Perception, Pathing
@@ -83,7 +86,8 @@ game/
   camera/                FollowCamera, RtsCamera (the skirmish camera: pan/zoom/rotate/follow, touch gestures)
   arena/                 collision layout + navigation (mirrored, fair navmesh); art comes from theme slots
 tests/                   headless runner + TestCase base + test_*.gd; net/ (bot_client_check.gd, lobby_check.gd, det_spike_compare.py)
-doctrines/               armies as JSON (squads, units, directives) for skirmish and the match runner
+doctrines/               armies as JSON (squads, units, directives) for skirmish and the match runner;
+                         doctrine_<name>.json are element DOCTRINE TABLES (a different schema: _agents/doctrine.md)
 mk/                      Makefile targets split by area (core, play, net, match, web); root Makefile includes them
 tests/baselines/         recorded simulation hash (make sim-baseline)
 _agents/streams/         per-workstream briefs (round 3: control, combat, ai, feel, assets, announcer); archive/round1/ and archive/round2/
@@ -199,3 +203,24 @@ build/   (gitignored)    exports and screenshots
     file. If captures look identical, check the log for `Invalid MIT-MAGIC-COOKIE` (feel, 2026-09-15).
 66. **One `make remote` per worktree at a time.** Each run rsyncs `--delete` into the same builder0 folder, so a
     screenshot run started during a `check` swaps the files under it (the check then fails on code it never imported).
+67. **GNU make defines `WINDOW = 2` itself.** A Makefile variable defaulted with `$(or $(WINDOW),5)` is silently
+    2, never 5, and a command-line `WINDOW=5` looks like it did nothing. `make -p -f /dev/null | grep '^WINDOW'`
+    lists make's own defaults; take a short knob name from `$(origin VAR)` instead (audio, 2026-09-16: the
+    announcer's repeat-rate audit compared each match only with the one before it and read far too healthy).
+68. **Killing `make remote` locally does not stop the build on builder0.** `tools/remote.sh` runs `make` over ssh;
+    killing the local wrapper leaves the remote `make` (and its queued `slot.sh`) running, so the next
+    `make remote` rsyncs `--delete` straight under it — trip-up 66's collision, caused by the cleanup rather than
+    by a second deliberate run. Check with
+    `ssh slobdell@builder0 "ps -eo pid,args | grep slot.sh"`, match each pid to a worktree with
+    `readlink /proc/<pid>/cwd`, and kill only your own folder's (audio, 2026-09-16).
+69. **A `.gitignore` pattern ending in `/` does not match a symlink.** In a worktree `.tools` is a *symlink* to the
+    main checkout's shared toolchain, so `.tools/` ignored nothing and `git add -A` committed the link. Merging that
+    branch into `~/projects/godot` checked the symlink out over the real 300 MB directory, leaving a link pointing
+    at itself: every local make target failed with "Too many levels of symbolic links" and the pinned Godot and
+    export templates were gone (repair: `make bootstrap`; builder0 keeps its own `.tools`). `.gitignore` now lists
+    both forms. Two separate streams committed it the same night, so check `git ls-files .tools` before merging
+    (audio, 2026-09-16).
+70. **`git add -A <paths>` is how things you have not looked at get committed.** It carried an unfinished Makefile
+    target into `check` (breaking `main` for five streams) and the `.tools` symlink above, in the same session.
+    Stage deliberately, and read `git status` without filtering lines you have decided are noise — `?? .tools` was
+    visible in every status output for hours.
