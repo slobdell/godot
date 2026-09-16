@@ -209,16 +209,21 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 		return
 	plan["formation"] = "line"
 	_engage(plan, base, situation, toward, contact)
-	# The maneuver element swings off the line of contact, then turns in.
-	var right := Vector3(-toward.z, 0.0, toward.x)
+	# The maneuver element swings off the line of contact, then turns in. The line of contact is measured
+	# from the BASE OF FIRE, which is standing still: taken from the maneuver element instead, it rotates as
+	# that element moves and walks the flank position round and round the enemy (measured, 2026-09-16).
+	var axis := TacticsFormation.flat(focus - _center_of(base))
+	var right := Vector3(-axis.z, 0.0, axis.x)
 	var maneuver_center := _center_of(maneuver)
 	var side := signf((maneuver_center - focus).dot(right))
 	side = 1.0 if side == 0.0 else side
 	var flank := focus + right * side * table.drill_number("flank_m")
 	if maneuver_center.distance_to(flank) <= FLANK_ARRIVE:
+		# On the flank: turn in and roll them up.
 		_group(plan, maneuver, "wedge", focus, TacticsFormation.flat(focus - maneuver_center), spacing, "attack_move")
 	else:
-		_group(plan, maneuver, "wedge", flank, TacticsFormation.flat(flank - maneuver_center), spacing, "attack_move")
+		# On the way there, under the base of fire's protection: move, don't stop to trade shots frontally.
+		_group(plan, maneuver, "wedge", flank, TacticsFormation.flat(flank - maneuver_center), spacing, "move")
 
 
 ## Break contact: bound back, one half moving while the other keeps the enemy's heads down.

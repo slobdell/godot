@@ -57,6 +57,8 @@ var drill_target := ""
 var _issued := {}
 ## Units whose current order came from somewhere else (the player): not ours to command.
 var _detached := {}
+## Contact name -> the tick this element first knew of it, so a drill can tell an ambush from a firefight.
+var _known := {}
 ## Bumped whenever anything the HUD shows changes.
 var revision := 0
 
@@ -102,7 +104,8 @@ func update(game_match: Match, orders: Object) -> bool:
 	if commanded.is_empty():
 		return before != _fingerprint()
 	var situation := ElementSituation.build(game_match, team, commanded, leader,
-			{"heading": heading, "arrived": arrived})
+			{"heading": heading, "arrived": arrived, "known": _known})
+	_known = situation["known"]
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
 			"arrived": arrived, "heading": heading}

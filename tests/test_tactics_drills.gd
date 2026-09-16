@@ -69,6 +69,17 @@ func test_an_enemy_seen_long_ago_at_that_range_is_not_an_ambush() -> void:
 			"and fire from 90 m away is a far ambush, not a near one")
 
 
+func test_an_enemy_we_are_already_fighting_does_not_restart_the_drill_as_an_ambush() -> void:
+	# Otherwise every maneuver collapses into a frontal charge the moment the flankers get close.
+	var table := _table()
+	var close := _situation([{"distance": 30.0, "age": 400}], {"taking_fire": true})
+	var fighting := _state({"drill": "far_ambush", "drill_tick": close["tick"] - 200})
+	assert_eq(Drills.select(close, fighting, table)["drill"], "far_ambush",
+			"an element already fighting keeps maneuvering")
+	assert_eq(Drills.select(close, _state(), table)["drill"], "near_ambush",
+			"but the same enemy opening up on an element that was just driving is an ambush")
+
+
 func test_first_contact_makes_the_element_return_fire_before_it_decides() -> void:
 	var table := _table()
 	var situation := _situation([{"distance": 60.0, "age": 200}], {"taking_fire": true})

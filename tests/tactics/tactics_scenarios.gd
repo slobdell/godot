@@ -60,14 +60,25 @@ static func far_ambush(case: TestCase, seconds := 26.0) -> Dictionary:
 	await lab.start()
 	alpha.assign({"verb": "move", "to": [LANE_X, -60.0]})
 	var widest_lateral := 0.0
+	# Fire and maneuver means the halves do different things: one holds the line of contact and shoots, the
+	# other goes round. So measure each vehicle's own furthest step off the axis, not the element's average.
+	# (Taken once: the guns don't move, and center_of() of a wiped-out element reads as the origin.)
+	var enemy_center := lab.center_of(enemy)
+	var off_axis := {}
+	for unit_name: String in names:
+		off_axis[unit_name] = 0.0
 	for tick in int(seconds * 60.0):
 		await lab.step()
-		var enemy_center := lab.center_of(enemy)
 		for unit_name: String in names:
 			var tank := lab.tank_of(unit_name)
 			if tank != null and tank.is_alive():
-				widest_lateral = maxf(widest_lateral, absf(tank.global_position.x - enemy_center.x))
+				var lateral := absf(tank.global_position.x - enemy_center.x)
+				widest_lateral = maxf(widest_lateral, lateral)
+				off_axis[unit_name] = maxf(float(off_axis[unit_name]), lateral)
+	var swung: Array = off_axis.values()
+	swung.sort()
 	var result := {"drills": Array(lab.drills_of(alpha)), "widest_lateral": widest_lateral,
+			"off_axis_m": swung, "held_the_line_m": float(swung[0]),
 			"survivors": lab.alive(names), "enemy_left": lab.alive(enemy)}
 	lab.dispose()
 	return result

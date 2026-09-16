@@ -42,25 +42,37 @@ func _run() -> void:
 
 func _drills(filter: String) -> void:
 	if _wanted("near_ambush", filter):
-		var near := await _scenario("near_ambush", TacticsScenarios.near_ambush(case))
+		_begin()
+		var near: Dictionary = await TacticsScenarios.near_ambush(case)
+		_record("near_ambush", near)
 		_expect(near, "drills", "near ambush", (near["drills"] as Array).has("near_ambush"))
 		_expect(near, "drills", "assault through", (near["drills"] as Array).has("assault_through"))
 		_expect(near, "through_tick", "the element drove through the ambush", int(near["through_tick"]) > 0)
 	if _wanted("far_ambush", filter):
-		var far := await _scenario("far_ambush", TacticsScenarios.far_ambush(case))
+		_begin()
+		var far: Dictionary = await TacticsScenarios.far_ambush(case)
+		_record("far_ambush", far)
 		_expect(far, "drills", "react to contact", (far["drills"] as Array).has("react_to_contact"))
 		_expect(far, "drills", "far ambush", (far["drills"] as Array).has("far_ambush"))
-		_expect(far, "widest_lateral", "someone maneuvered wide of the guns", float(far["widest_lateral"]) > 25.0)
+		_expect(far, "off_axis_m", "one half went round them", float(far["widest_lateral"]) > 20.0)
+		_expect(far, "held_the_line_m", "while the base of fire held the line of contact",
+				float(far["held_the_line_m"]) < 12.0)
 	if _wanted("bounding", filter):
-		var bound := await _scenario("bounding", TacticsScenarios.bounding(case))
+		_begin()
+		var bound: Dictionary = await TacticsScenarios.bounding(case)
+		_record("bounding", bound)
 		_expect(bound, "set_fraction", "one element was set while the other moved",
 				float(bound["set_fraction"]) > 0.3)
 		_expect(bound, "advanced_m", "and the element still got forward", float(bound["advanced_m"]) > 20.0)
 	if _wanted("break_contact", filter):
-		var away := await _scenario("break_contact", TacticsScenarios.break_contact(case))
+		_begin()
+		var away: Dictionary = await TacticsScenarios.break_contact(case)
+		_record("break_contact", away)
 		_expect(away, "drills", "break contact", (away["drills"] as Array).has("break_contact"))
 	if _wanted("herringbone", filter):
-		var halt := await _scenario("herringbone", TacticsScenarios.herringbone(case))
+		_begin()
+		var halt: Dictionary = await TacticsScenarios.herringbone(case)
+		_record("herringbone", halt)
 		_expect(halt, "formation", "halted in a herringbone", String(halt["formation"]) == "herringbone")
 		_expect(halt, "left/right", "watching both flanks", int(halt["left"]) > 0 and int(halt["right"]) > 0)
 
@@ -69,25 +81,35 @@ func _measure(filter: String) -> void:
 	if _wanted("formation", filter):
 		for trial in [["wedge", 14.0, "tank"], ["line", 14.0, "tank"], ["column", 14.0, "tank"],
 				["wedge", 3.0, "tank"], ["wedge", 14.0, "artillery"], ["wedge", 3.0, "artillery"]]:
-			var label := "formation_%s_%dm_vs_%s" % [trial[0], int(trial[1]), trial[2]]
-			await _scenario(label, TacticsScenarios.formation_trial(case, String(trial[0]), float(trial[1]),
-					20.0 if String(trial[2]) == "tank" else 30.0, String(trial[2])))
+			_begin()
+			var seconds := 20.0 if String(trial[2]) == "tank" else 30.0
+			var values: Dictionary = await TacticsScenarios.formation_trial(case, String(trial[0]),
+					float(trial[1]), seconds, String(trial[2]))
+			_record("formation_%s_%dm_vs_%s" % [trial[0], int(trial[1]), trial[2]], values)
 	if _wanted("technique", filter):
 		for technique in ["traveling", "traveling_overwatch", "bounding_overwatch"]:
-			await _scenario("technique_%s" % technique, TacticsScenarios.technique_trial(case, technique))
+			_begin()
+			var values: Dictionary = await TacticsScenarios.technique_trial(case, String(technique))
+			_record("technique_%s" % technique, values)
 	if _wanted("halt", filter):
 		for formation in ["herringbone", "column"]:
-			await _scenario("halt_%s" % formation, TacticsScenarios.halt_trial(case, formation))
+			_begin()
+			var values: Dictionary = await TacticsScenarios.halt_trial(case, String(formation))
+			_record("halt_%s" % formation, values)
 
 
-func _scenario(label: String, result: Variant) -> Dictionary:
+## A fresh TestCase per scenario (it owns and frees the nodes the scenario adds).
+func _begin() -> void:
+	if case != null:
+		case.teardown()
 	case = TestCase.new()
 	case.tree = self
-	var values: Dictionary = await result
+
+
+func _record(label: String, values: Dictionary) -> void:
 	case.teardown()
 	results[label] = values
 	print("TACTICS %s %s" % [label, JSON.stringify(values)])
-	return values
 
 
 func _expect(values: Dictionary, key: String, what: String, ok: bool) -> void:

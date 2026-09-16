@@ -12,8 +12,11 @@ extends RefCounted
 ##
 ## members: {"name", "position", "forward", "role", "unit", "speed", "range", "sight", "health" (0..1),
 ##           "suppression" (0..1; combat's L2 when it lands, else recent hits), "taking_fire"}
-## contacts: {"name", "position", "role", "unit", "visible", "age" (ticks since seen), "distance" (from the
-##           element's centre), "bearing_deg" (relative to the heading, + = right), "strength"}, nearest first.
+## contacts: {"name", "position", "role", "unit", "visible", "age" (ticks since this element FIRST knew of it:
+##           a small age means it appeared from nowhere, which is what makes an ambush an ambush), "distance"
+##           (from the element's centre), "bearing_deg" (+ = right), "strength"}, nearest first.
+## The situation also carries "known" (contact name -> the tick it was first seen), which the element stores
+## and passes back in next time.
 
 ## A member hit within this many ticks counts as taking fire (1.5 s).
 const FIRE_TICKS := 90
@@ -65,17 +68,21 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 	var contacts: Array = []
 	var enemy_strength := 0.0
 	var tick: int = game_match.tick
+	var was_known: Dictionary = state.get("known", {})
+	var known := {}
 	for contact_name: String in game_match.intel[team]:
 		var contact: Dictionary = game_match.intel[team][contact_name]
 		var position := _flat(contact["position"])
 		var distance := center.distance_to(position)
 		if distance > KNOWN_M:
 			continue
+		var first_seen: int = int(was_known.get(contact_name, tick))
+		known[contact_name] = first_seen
 		var contact_strength := float(contact.get("health", 0)) + float(contact.get("shield", 0))
 		enemy_strength += contact_strength
 		contacts.append({"name": contact_name, "position": position, "role": String(contact.get("role", "tank")),
 				"unit": String(contact.get("unit", "")), "visible": bool(contact.get("visible", false)),
-				"age": tick - int(contact.get("seen_tick", tick)), "distance": distance,
+				"age": tick - first_seen, "distance": distance,
 				"bearing_deg": bearing_deg(heading, position - center), "strength": contact_strength})
 	contacts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if absf(float(a["distance"]) - float(b["distance"])) > 0.001:
@@ -83,7 +90,7 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 		return String(a["name"]) < String(b["name"]))
 
 	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader,
-			"members": members, "contacts": contacts, "terrain": terrain_at(center),
+			"members": members, "contacts": contacts, "known": known, "terrain": terrain_at(center),
 			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
 			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
 			"arrived": bool(state.get("arrived", false))}

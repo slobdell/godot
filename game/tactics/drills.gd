@@ -20,6 +20,8 @@ extends RefCounted
 
 const NAMES := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire",
 		"break_contact", "herringbone"]
+## Drills that mean "we are fighting this contact": react to contact does not restart while one of them runs.
+const CONTACT_DRILLS := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "break_contact"]
 ## A contact first seen within this many ticks counts as sudden (the ambush is sprung, not walked into).
 const SUDDEN_TICKS := 45
 ## How long the element turns into a near ambush before the assault carries it through (ticks).
@@ -42,7 +44,7 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 
 	# 1. Near ambush: close, sudden and deadly. Turn into it and charge; nothing else outranks this.
 	if table.runs_drill("near_ambush") and current != "near_ambush" and current != "assault_through" \
-			and is_near_ambush(situation, table):
+			and is_near_ambush(situation, table, CONTACT_DRILLS.has(previous)):
 		var ambush := nearest_contact(situation)
 		return _drill("near_ambush", "ambushed at %d m: turn into it and assault through"
 				% int(float(ambush.get("distance", 0.0))), ambush)
@@ -55,13 +57,16 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 4. Keep running what we have.
 	if current != "":
 		return _drill(current, String(state.get("drill_why", "")), _remembered(state, situation))
-	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Once that
-	# step is done it is not repeated for the same contact: the leader has to choose something.
-	if table.runs_drill("react_to_contact") and previous != "react_to_contact" \
+	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Actions on
+	# contact happen ONCE per contact: while the element is already fighting this one, it does not go back to
+	# the start of the drill (that flip-flop cost the far-ambush scenario its maneuver, 2026-09-16).
+	if table.runs_drill("react_to_contact") and not CONTACT_DRILLS.has(previous) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("react_to_contact", "contact: return fire, take cover, report", nearest_contact(situation))
-	# 6. Contact has been evaluated: a far ambush is fought by fire and maneuver.
-	if table.runs_drill("far_ambush") and _has_visible(situation):
+	# 6. Contact has been evaluated: a far ambush is fought by fire and maneuver (only while engaged; a
+	# contact watched from 100 m is not an ambush).
+	if table.runs_drill("far_ambush") and _has_visible(situation) \
+			and String(situation.get("threat", "none")) == "contact":
 		return _drill("far_ambush", "far ambush: pin them by fire, flank with the rest", nearest_contact(situation))
 	# 7. The task itself is a base of fire.
 	if table.runs_drill("support_by_fire") and String((state.get("task", {}) as Dictionary).get("verb", "")) == "support_by_fire":
@@ -72,15 +77,20 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	return {"drill": "", "why": "", "point": null, "target": ""}
 
 
-## A near ambush: a contact inside near_ambush_m that we have only just seen, or one that close while we are
-## being hit. Doctrine's immediate action is to assault through it, not to back out of the kill zone.
-static func is_near_ambush(situation: Dictionary, table: DoctrineTable) -> bool:
+## A near ambush: a contact inside near_ambush_m that we have only just seen, or — when we were not already
+## fighting — one that close while we are being hit. Doctrine's immediate action is to assault through it.
+## `engaged` (we are already running a contact drill) raises the bar to a *newly seen* enemy: being shot at by
+## something we have been fighting for ten seconds is not an ambush, and treating it as one turned every
+## flanking maneuver into a frontal charge (measured, 2026-09-16).
+static func is_near_ambush(situation: Dictionary, table: DoctrineTable, engaged := false) -> bool:
 	var contact := nearest_contact(situation)
 	if contact.is_empty() or not bool(contact.get("visible", false)):
 		return false
 	if float(contact["distance"]) > table.drill_number("near_ambush_m"):
 		return false
-	return int(contact.get("age", 1 << 30)) <= SUDDEN_TICKS or bool(situation.get("taking_fire", false))
+	if int(contact.get("age", 1 << 30)) <= SUDDEN_TICKS:
+		return true
+	return not engaged and bool(situation.get("taking_fire", false))
 
 
 ## Break contact when the element is clearly outgunned AND the enemy is still far enough that turning away
@@ -149,7 +159,9 @@ static func _finished(drill: String, situation: Dictionary, state: Dictionary, t
 			return not _has_visible(situation) \
 					or (center - _flat(point)).dot(heading) > table.drill_number("assault_through_m")
 		"far_ambush":
-			return not _has_visible(situation)
+			# Not "nobody is visible this tick": a crew that breaks line of sight for a moment has not
+			# ended the fight. The drill ends when the contact is gone or far behind us.
+			return contact.is_empty() or distance > table.drill_number("broken_contact_m")
 		"break_contact":
 			return distance >= table.drill_number("broken_contact_m") or not should_break_contact(situation, state, table)
 		"support_by_fire":
