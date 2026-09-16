@@ -68,6 +68,19 @@ GDIGNORE_NOTE = """# Godot deliberately ignores this folder; see README.md. The 
 """
 
 
+def drop_caches(masters: Path) -> int:
+    """Removes the normalized-WAV and level caches beside the masters. They exist only to make re-cutting fast and
+    regenerate from the MP3 in seconds, but they are roughly six times the size of what they cache: after one full
+    run they were 950 MB of a 1.1 GB masters folder, on a laptop sitting at 98% disk. Kept during a run, dropped
+    at the end."""
+    freed = 0
+    for pattern in ("*.norm.wav", "*.level.txt"):
+        for stale in masters.rglob(pattern):
+            freed += stale.stat().st_size
+            stale.unlink()
+    return freed
+
+
 def keep_out_of_godot(folder: Path) -> None:
     marker = folder / ".gdignore"
     if not marker.exists():
@@ -224,6 +237,9 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
     manifest_path = out / "manifest.json"
     previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     keep_out_of_godot(out)
+    freed = drop_caches(masters)
+    if freed:
+        log("cleared %.0f MB of re-cutting caches beside the masters" % (freed / 1e6))
     previous = {part: previous.get(part, {}) for part in ("clips", "lines")}
     credits_before = client.remaining_credits()
     for request in the_plan["requests"]:
