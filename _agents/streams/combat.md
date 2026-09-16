@@ -322,3 +322,10 @@ control), stretch `unit_destroyed`. Every step green on `make remote T=check`; l
   creep on the same commit), because Lancer brains "face" threats by turning in place and a wheeled Lancer now rocks on
   the spot instead of circling. Kept on purpose; **request to ai:** drive wheeled units with `TankMotion.predict`
   (circle, back off) instead of the "face" order.
+
+### Standing by (2026-09-15)
+
+CP2 merged into main as 40aa4aa (with everything through 31307f0); the orchestrator relayed the requests to ai and
+control. Remaining stretch items are lead gates: boost/ram (question 3) and wreck husks as cover (question 4). Nothing
+else is queued for combat until the lead answers or ai's maneuvering lands (then re-run `make matchups` /
+`make matchup-search`).
