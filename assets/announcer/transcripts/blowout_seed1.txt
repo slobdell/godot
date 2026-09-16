@@ -6,31 +6,27 @@ result: green by elimination at 0:54.0
 
 0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
 0:07.5   CALLER   Here we go! The building is shaking and we have not even started!
-0:12.6   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
-0:18.2   CALLER   The Condemned are on the—
+0:12.6   CALLER   The Syndicate brings the hover machines. Look at that finish. Not a scratch on them.
+0:18.4   VETERAN  Those are my—
 0:20.0   ── first contact: rust scout fires on a tank
-0:20.1   CALLER   The scout finds them first! That's the job, and Rust is doing it!
+0:20.1   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
 0:21.8   ── friendly fire: green tank hits its own tank
-0:25.3   CALLER   Whoa, whoa! Green just hit its own tank!
 0:26.0   ── green tank destroys rust ifv
-0:28.4   CALLER   And Green strikes first! The tank gets the honors!
-0:32.3   CALLER   Green is taking over this match!
+0:27.9   CALLER   One shot! One shot from the big gun and it's over for that IFV!
+0:33.3   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
 0:33.5   ── close call: rust artillery at 14% hull
-0:35.2   CALLER   Look at that artillery! Smoking, burning, and still going!
-0:41.8   CALLER   Right in the—
+0:41.8   CALLER   They found the—
 0:43.0   ── green tank destroys rust artillery
-0:43.0   CALLER   That is not supposed to happen! Green's tank just took down the artillery!
+0:43.0   CALLER   That is not supposed to happen! The Syndicate's tank just took that down!
 0:46.8   ── green tank destroys rust scout
-0:47.5   CALLER   Another one for Green! This is a clinic!
-0:50.5   CALLER   Three unanswered—
+0:47.5   CALLER   Two in a row! The Syndicate strike again!
 0:51.2   ── green tank destroys rust artillery
 0:51.2   ── rust squad Battery wiped out
-0:51.3   CALLER   Green is on a tear! That's four straight!
+0:51.3   CALLER   The Condemned are down to its last vehicle!
 0:54.0   ── green tank destroys rust scout
 0:54.0   ── rust squad Swarm wiped out
 0:54.0   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-0:54.3   CALLER   Green finishes it! The last scout is gone!
-0:57.3   CALLER   Green wins it without losing a single vehicle! Flawless!
-1:00.6   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-1:06.4   CALLER   Listen to this crowd!
-1:08.7   PA       Green is tonight's winner. Ticket holders may remain seated during the recovery operation.
+0:54.2   CALLER   That's the last one! The Syndicate wipe them out!
+0:57.5   CALLER   That was fast! The Syndicate made short work of that one!
+1:01.4   VETERAN  Flawless is rare. I never did it. Not once.
+1:06.3   PA       The Syndicate win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.

@@ -7,37 +7,35 @@ result: rust by elimination at 1:17.8
 0:00.0   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
 0:05.3   PA       Welcome, everyone, to the Foundry. Concessions are open on the upper concourse, and water is available to ticket holders—
 0:12.8   ── first contact: green tank fires on a lancer
-0:12.8   CALLER   Big gun, first shot! The Green tank gets things started!
+0:12.8   CALLER   Big gun, first shot! The Law tank gets things started!
 0:16.0   ── green tank destroys rust lancer
-0:16.5   CALLER   Nobody saw that coming! The tank beats the Lancer!
-0:20.4   CALLER   Big shot! Big shot from Green!
+0:16.5   CALLER   Nobody saw that coming! The tank wins that one!
+0:19.8   VETERAN  First kill doesn't win it. But—
 0:22.8   ── rust ifv destroys green scout
-0:23.4   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
-0:28.3   CALLER   Listen to this crowd!
-0:37.0   PA       The Syndicate Lottery draws tonight—
+0:22.8   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
+0:27.7   PA       The Syndicate congratulates its engineering team on another successful field test.
+0:38.8   VETERAN  They—
 0:39.2   ── rust tank destroys green ifv
-0:39.3   CALLER   Rust's tank puts the IFV away!
+0:39.3   CALLER   Hold on, hold on!
 0:39.8   ── friendly fire: green tank hits its own artillery
+0:41.1   CALLER   The tank round lands, and the IFV just comes apart!
 0:42.0   ── green ifv destroys rust ifv
-0:42.2   CALLER   Burst after burst, and the IFV can't take any more!
 0:42.8   ── rust scout destroys green artillery
 0:42.8   ── green squad Bravo wiped out
-0:46.4   CALLER   That artillery is out of the fight!
-0:49.0   VETERAN  You don't take the artillery into that. You just don't.
-0:54.2   CALLER   The tank round lands! You felt that one in the seats!
+0:44.7   CALLER   They're trading! They are trading in the middle of the floor!
+0:48.6   VETERAN  That's a brawl. Nobody planned that. Somebody's going to wish they had.
+0:54.7   CALLER   The tank round lands! You felt that one in the seats!
 1:03.0   ── rust tank destroys green tank
-1:03.0   CALLER   That leaves Green with one. One!
+1:03.0   CALLER   One shot! One shot from the big gun and it's over for that tank!
 1:04.2   ── green ifv destroys rust scout
-1:06.0   CALLER   Textbook! The IFV eats the scout alive!
 1:08.2   ── green ifv destroys rust ifv
 1:08.2   ── rust squad Lance wiped out
-1:08.7   CALLER   It's all on the last Rust vehicle now!
-1:16.8   CALLER   Right in—
+1:08.3   CALLER   Did everybody see that? Two vehicles gone in the blink of an eye!
+1:16.8   CALLER   They found—
 1:17.8   ── rust tank destroys green ifv
 1:17.8   ── green squad Alpha wiped out
 1:17.8   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-1:17.8   CALLER   And that's it! That's the last one!
-1:20.5   CALLER   It's all over! Rust wins it!
-1:22.9   VETERAN  That is what it looks like when everybody does their job and nobody gets clever.
-1:29.4   CALLER   Are you kidding me?
-1:31.7   PA       Rust is tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:17.8   CALLER   That's the last one! The Syndicate wipe them out!
+1:21.1   CALLER   And the Syndicate are the last army standing! The Syndicate win!
+1:25.0   VETERAN  The winners get their sentence reduced. The reduction is calculated after the medical review, so it varies.
+1:33.1   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.

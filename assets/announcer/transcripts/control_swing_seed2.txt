@@ -6,49 +6,46 @@ result: rust by control at 2:20.0
 
 0:00.0   CALLER   Some nights you know inside a minute. I do not think this is one of them.
 0:05.4   PA       Welcome to the Furnace. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.
-0:15.0   CALLER   Green fields the—
+0:15.0   VETERAN  Mixed army—
 0:16.2   ── first contact: green ifv fires on a scout
-0:16.3   CALLER   And we have contact! Green opens fire!
-0:19.6   CALLER   Big shot! Big shot from Rust!
-0:28.8   CALLER   They found the—
+0:16.3   CALLER   The autocannon opens up! The Law's IFV is the first to speak!
+0:20.5   VETERAN  First shot isn't the fight. First hit is.
+0:28.5   CALLER   They found the soft spot on that IFV!
 0:30.0   ── control point: rust
-0:30.1   CALLER   Rust is on the point, and the clock is ticking for Green!
-0:39.8   PA       The odds boards have tonight's match even. Wagers on individual—
+0:32.0   CALLER   The Condemned are on the point, and the clock is ticking for the Law!
+0:40.5   CALLER   Right in the weak spot! What a shot!
+0:43.5   VETERAN  That's—
 0:44.0   ── green ifv destroys rust scout
-0:44.0   CALLER   Whoa! Look at this!
-0:45.8   CALLER   Textbook! The IFV eats the scout alive!
-0:48.5   CALLER   Oh, my goodness!
-0:50.6   CALLER   Green is taking over this match!
-1:01.5   CALLER   Green leads, and Rust needs a big play here.
+0:44.0   CALLER   First blood goes to the Law!
+0:46.3   VETERAN  The Condemned will want that one back. You don't give up the first one that easy.
+1:00.5   VETERAN  Most of these crews signed up—
 1:03.0   ── close call: green ifv at 5% hull
 1:03.5   ── rust ifv destroys green ifv
-1:05.4   CALLER   That IFV is out of the fight!
-1:08.0   CALLER   Oh! Oh!
-1:09.8   CALLER   Green—
+1:03.5   CALLER   That IFV is out of the fight!
+1:06.1   PA       Lovely call, Joseph. For our younger viewers, conduct of that—
 1:10.2   ── rust ifv destroys green scout
-1:10.3   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
+1:10.3   VETERAN  You don't take the scout into that. You just don't.
 1:13.8   ── close call: rust lancer at 9% hull
-1:15.2   CALLER   What a moment!
-1:17.2   CALLER   That Lancer should be scrap, and it is still in the fight!
+1:15.5   CALLER   The Condemned Lancer is hanging on by a thread!
 1:17.2   ── green tank destroys rust ifv
+1:19.3   CALLER   The IFV is out, and the Condemned are running short.
 1:20.0   ── control point: green
-1:22.0   CALLER   Oh, Green takes it right back!
-1:24.4   VETERAN  Rust has to go get it now. That means coming out into the open.
-1:31.2   CALLER   The tank round lands! You—
+1:23.5   CALLER   The center belongs to the Law!
+1:28.5   CALLER   The autocannon is chewing right through that tank!
 1:33.0   ── rust tank destroys green ifv
 1:33.0   ── green squad Bravo wiped out
-1:33.0   CALLER   One left! Green has one left!
-1:35.4   VETERAN  Green has one left. Now it gets interesting, or it gets short.
+1:33.0   CALLER   One left! The Law have one left!
+1:35.7   VETERAN  The Law have one left. Now it gets interesting, or it gets short.
 1:41.0   ── control point: rust
-1:41.5   CALLER   The center belongs to Rust!
-1:49.8   CALLER   What's going through a driver's head right now?
-1:52.7   VETERAN  Nothing useful. You're counting shells and checking mirrors.
+1:42.2   CALLER   The point changes hands again! What a tug of war!
+1:51.1   CALLER   Is the tank still king on this floor?
+1:54.0   VETERAN  It's still the biggest. That's not the same thing.
+2:06.1   CALLER   What does the Law have to do to get back into this?
 2:09.5   ── green tank destroys rust lancer
 2:09.5   ── rust squad Dart wiped out
-2:09.5   CALLER   Nobody saw that coming! The tank beats the Lancer!
-2:12.8   CALLER   That's why we're here, folks!
+2:10.2   CALLER   The tank round lands, and the Lancer just comes apart!
+2:13.8   PA       What a moment, Joseph. I'm told the result has already been entered, so there's no need—
 2:20.0   ── MATCH OVER: rust wins by control (1 green, 1 rust left)
-2:20.0   CALLER   Rust wins it on the control point! They held the middle, and it paid off!
-2:25.2   VETERAN  Holding the point takes nerve. Rust had it.
-2:29.0   CALLER   What a night!
-2:31.0   PA       Rust is tonight's winner. Ticket holders may remain seated during the recovery operation.
+2:20.0   CALLER   The Condemned win it on the control point! They held the middle, and it paid off!
+2:25.5   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
+2:34.0   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.

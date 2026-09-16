@@ -6,32 +6,32 @@ result: green by elimination at 1:08.8
 
 0:00.0   CALLER   Here we go! The building is shaking and we have not even started!
 0:04.5   PA       Welcome, everyone, to the Scrapyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
-0:14.7   CALLER   IFVs for Rust. Those autocannons are going to be busy tonight.
+0:14.7   VETERAN  Scouts are eyes, not fists. The Wreckers—
 0:18.0   ── first contact: green scout fires on a ifv
-0:18.6   CALLER   The scout finds them first! That's the job, and Green is doing it!
-0:23.8   CALLER   Big shot! Big shot from Rust!
-0:26.8   CALLER   Green is taking over this match!
+0:18.1   CALLER   The scout finds them first! That's the job, and the Wreckers are doing it!
+0:23.0   VETERAN  First shot isn't the fight. First hit is.
+0:27.4   VETERAN  Backing out—
 0:28.5   ── green scout destroys rust scout
 0:28.5   ── rust squad Spotlight wiped out
-0:29.1   CALLER   Green draws first blood, and this crowd is on its feet!
+0:28.6   CALLER   There it is! The first kill of the night belongs to the Wreckers!
 0:30.0   ── close call: green scout at 0% hull
-0:33.0   VETERAN  Patience. Green waited for the shot and took it.
+0:33.1   VETERAN  First kill doesn't win it. But it's a long—
 0:35.0   ── close call: rust ifv at 12% hull
 0:37.2   ── rust ifv destroys green scout
+0:37.3   CALLER   Textbook! The IFV eats it alive!
 0:37.5   ── friendly fire: green burner hits its own scout
-0:37.8   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
 0:39.0   ── rust ifv destroys green scout
-0:42.7   CALLER   And another one! Rust isn't done!
+0:39.7   CALLER   And another one! The Law isn't done!
+0:42.4   CALLER   Oh, my goodness!
 0:43.0   ── green ifv destroys rust ifv
 0:43.8   ── green burner destroys rust ifv
-0:45.1   CALLER   It's all on the last Rust vehicle now!
-0:48.0   CALLER   Oh, my goodness!
-0:54.6   VETERAN  You learn the floor by the scorch marks. Every one of them is somebody's bad night.
-1:03.3   CALLER   Right in the weak spot! What a shot!
+0:43.9   CALLER   It's all on the last Law vehicle now!
+0:47.4   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
+1:02.2   VETERAN  Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is—
 1:08.8   ── green scout destroys rust tank
 1:08.8   ── rust squad Precinct wiped out
 1:08.8   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:08.8   CALLER   Green finishes it! The last tank is gone!
-1:11.8   CALLER   It is done! Green stands alone on that floor!
-1:15.1   VETERAN  That is what it looks like when everybody does their job and nobody gets clever.
-1:22.2   PA       Tonight's winner is Green. The surviving crews will be processed shortly. Good night.
+1:08.8   VETERAN  Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick.
+1:15.6   CALLER   That is the match! The Wreckers take it!
+1:18.6   VETERAN  The losing crew split up early. You cannot come back from that in here.
+1:25.4   PA       The result is final. The Wreckers win, and the floor will be cleared before the next session.

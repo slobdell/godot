@@ -31,8 +31,8 @@ var seconds_per_word := {}
 ## From a clip manifest, when one is loaded: line id -> {speaker, parts}, and clip id -> seconds.
 var manifest_lines := {}
 var clip_seconds := {}
-## Silence between the clips of one line (tools/announcer/mixdown.py PART_GAP_S).
-const PART_GAP_S := 0.02
+## line id -> {variant key: clip id}, from the manifest: which realizations of a line were actually recorded.
+var recorded_variants := {}
 var kind_tags := PackedStringArray()
 var errors := PackedStringArray()
 
@@ -103,6 +103,16 @@ static func slot_kind(slot: String) -> String:
 		return "team_s"
 	if slot in ["team", "other_team"]:
 		return "team"
+	# The booth names a side by its faction. `_s` is the possessive ("the Law's"), `_attr` the attributive form
+	# used after an article ("the Law tank"), because the plain name already carries its "the".
+	if slot in ["faction_s", "other_faction_s"]:
+		return "faction_s"
+	if slot in ["faction_attr", "other_faction_attr"]:
+		return "faction_attr"
+	if slot in ["faction", "other_faction"]:
+		return "faction"
+	if slot in ["count_over", "other_count_over"]:
+		return "count_over"
 	if slot in ["unit", "killer_unit", "victim_unit", "target_unit", "shooter_unit"]:
 		return "unit"
 	if slot in ["units", "other_units"]:
@@ -112,9 +122,15 @@ static func slot_kind(slot: String) -> String:
 	return slot
 
 
-## The moment slot a text slot reads: {team_s} ("Rust's") reads the team.
+## The moment slot a text slot reads: {faction_s} ("the Law's") and {faction_attr} ("Law") both read the faction.
+const SIDE_SLOTS := ["team", "other_team", "faction", "other_faction"]
+
+
 static func base_slot(slot: String) -> String:
-	return slot.trim_suffix("_s") if slot in ["team_s", "other_team_s"] else slot
+	for suffix in ["_attr", "_s"]:
+		if slot.ends_with(suffix) and slot.trim_suffix(suffix) in SIDE_SLOTS:
+			return slot.trim_suffix(suffix)
+	return slot
 
 
 ## Spoken text for a slot value, or "" when the vocabulary has none.
@@ -123,7 +139,39 @@ func speak(slot: String, value: Variant) -> String:
 	if kind == "count":
 		var n := int(value)
 		return COUNT_WORDS[n] if n >= 0 and n < COUNT_WORDS.size() else ""
-	return String(vocabulary.get(kind, {}).get(str(value), ""))
+	return String(vocabulary.get(kind, {}).get(value_key(value), ""))
+
+
+## A slot value as both sides of the pipeline write it. Numbers are integers, so GDScript's 5.0 and the recording
+## plan's "5" agree on the clip id (tools/announcer/recording_plan.py normalize_value).
+static func value_key(value: Variant) -> String:
+	if typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT:
+		return str(int(value))
+	return str(value)
+
+
+## The distinct underlying slots a line reads, sorted, so every side computes the same clip id.
+static func line_bases(text: String) -> Array:
+	var bases := {}
+	for slot in slots_in(text):
+		bases[base_slot(slot)] = true
+	var sorted_bases: Array = bases.keys()
+	sorted_bases.sort()
+	return sorted_bases
+
+
+## Which recording of a line these slot values call for. Must match recording_plan.variant_key exactly.
+static func variant_key(text: String, slots: Dictionary) -> String:
+	var parts := PackedStringArray()
+	for base in line_bases(text):
+		parts.append(value_key(slots.get(base, "")))
+	return ".".join(parts)
+
+
+## The clip id for a line said with these slot values: the whole sentence, recorded as one piece.
+static func variant_clip(line_id: String, text: String, slots: Dictionary) -> String:
+	var key := variant_key(text, slots)
+	return line_id if key == "" else "%s@%s" % [line_id, key]
 
 
 ## Candidates for one beat step. `moment` = {kind, tags, slots}; `flags` = memory flags; `used` = line id -> true.
@@ -214,28 +262,21 @@ func load_manifest(path: String) -> bool:
 		return false
 	manifest_lines = data.get("lines", {})
 	clip_seconds = {}
+	recorded_variants = {}
+	for line_id in manifest_lines:
+		recorded_variants[line_id] = manifest_lines[line_id].get("variants", {})
 	for clip in data.get("clips", {}):
 		clip_seconds[clip] = float(data["clips"][clip]["duration_s"])
 	return true
 
 
-## How long a line takes to say with these slot values: its clips' durations when recorded, else an estimate.
+## How long a line takes to say with these slot values: its clip's recorded duration when there is one, else an
+## estimate. One clip per line now — nothing is assembled at runtime (see recording_plan.py).
 func line_seconds(line: Dictionary, slots: Dictionary, text: String) -> float:
-	var recorded: Dictionary = manifest_lines.get(line["id"], {})
-	if recorded.is_empty():
-		return estimate_seconds(line["speaker"], text)
-	var total := 0.0
-	for part in recorded["parts"]:
-		var clip := String(part.get("clip", ""))
-		if clip == "":
-			var value: Variant = slots.get(base_slot(part["slot"]), "")
-			if part["vocab"] == "number":
-				value = int(value)
-			clip = "fill.%s.%s.%s.%s" % [line["speaker"], part["vocab"], value, part["intonation"]]
-		if not clip_seconds.has(clip):
-			return estimate_seconds(line["speaker"], text)
-		total += float(clip_seconds[clip]) + PART_GAP_S
-	return total
+	var clip := variant_clip(line["id"], line["text"], slots)
+	if clip_seconds.has(clip):
+		return float(clip_seconds[clip])
+	return estimate_seconds(line["speaker"], text)
 
 
 ## Estimated speaking time for a text (real clip durations replace it once audio exists).

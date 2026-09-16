@@ -53,6 +53,17 @@ func _init(line_library: AnnouncerLibrary) -> void:
 	library = line_library
 
 
+## The rounding behind {count_over}: the largest multiple of STEP strictly below `n`, or 0 when there isn't one.
+const COUNT_STEP := 5
+const COUNT_MAX := 30
+
+
+static func count_bucket(n: int) -> int:
+	if n <= COUNT_STEP:
+		return 0
+	return mini(((n - 1) / COUNT_STEP) * COUNT_STEP, COUNT_MAX)
+
+
 static func other(team: String) -> String:
 	return "rust" if team == "green" else "green"
 
@@ -91,10 +102,23 @@ func moment(kind: String, t: float, tags: Array, slots: Dictionary, team: String
 	if team != "":
 		slots["team"] = team
 		slots["other_team"] = other(team)
+		# The booth names a side by its faction, never by its colour (the lead, 2026-09-16). Matches are always
+		# between different factions, so a faction identifies a side unambiguously.
+		slots["faction"] = factions.get(team, "condemned")
+		slots["other_faction"] = factions.get(other(team), "condemned")
 		all_tags.append("team_" + standing(team))
 		all_tags.append("team_" + team)
 		all_tags.append("faction_" + String(factions.get(team, "condemned")))
 		all_tags.append("other_faction_" + String(factions.get(other(team), "condemned")))
+	# Quantized counts (the lead, 2026-09-16): a line says "over {count_over} vehicles", which stays true at any
+	# army size and needs six recordings instead of one per possible number. The bucket is the largest multiple of
+	# STEP strictly below the real count, so "over twenty" is never a lie; below STEP there is no honest bucket and
+	# the slot is left unset, which makes those lines ineligible and the booth says something else.
+	for source in ["count", "other_count"]:
+		if slots.has(source):
+			var bucket := count_bucket(int(slots[source]))
+			if bucket > 0:
+				slots[source + "_over"] = bucket
 	var tag_set := {}
 	for tag in all_tags:
 		tag_set[tag] = true

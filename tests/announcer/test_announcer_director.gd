@@ -83,17 +83,19 @@ func test_recorded_clips_set_how_long_a_line_takes() -> void:
 	var path := ProjectSettings.globalize_path("res://build/test_announcer_manifest.json")
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var file := FileAccess.open(path, FileAccess.WRITE)
-	file.store_string(JSON.stringify({"lines": {"k": {"speaker": "caller", "parts": [
-			{"slot": "team", "vocab": "team", "intonation": "mid"}, {"clip": "k#0"},
-			{"slot": "count", "vocab": "number", "intonation": "final"}]}},
-			"clips": {"fill.caller.team.rust.mid": {"duration_s": 0.4}, "k#0": {"duration_s": 0.7},
-			"fill.caller.number.2.final": {"duration_s": 0.5}}}))
+	# One recording per realization: the duration is that clip's, with nothing to add up.
+	file.store_string(JSON.stringify({"lines": {"k": {"speaker": "caller",
+			"variants": {"2.rust": "k@2.rust"}}},
+			"clips": {"k@2.rust": {"duration_s": 1.6}}}))
 	file.close()
 	assert_true(library.load_manifest(path), "the manifest loads")
-	assert_near(library.line_seconds(line, {"team": "rust", "count": 2.0}, "Rust is down to two!"), 1.66, 0.001,
-			"the clips it will play, plus the gaps between them")
+	assert_eq(AnnouncerLibrary.variant_key(line["text"], {"team": "rust", "count": 2}), "2.rust",
+			"the key is the slot values in sorted base-slot order, which recording_plan.variant_key must match")
+	assert_near(library.line_seconds(line, {"team": "rust", "count": 2.0}, "Rust is down to two!"), 1.6, 0.001,
+			"the length of the one clip it will play")
 	assert_near(library.line_seconds(line, {"team": "green", "count": 2}, "Green is down to two!"),
-			library.estimate_seconds("caller", "Green is down to two!"), 0.001, "a filler not recorded yet: estimated")
+			library.estimate_seconds("caller", "Green is down to two!"), 0.001,
+			"a realization not recorded yet: estimated")
 	DirAccess.remove_absolute(path)
 
 

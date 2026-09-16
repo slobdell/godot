@@ -82,7 +82,10 @@ class Scenario:
     contact: tuple = (12.0, 20.0)
     control: bool = False
     hazard_rate: float = 0.0  # per second, per badly hurt unit (hull < 30%) during a fight: drives into a fire pit
-    factions: tuple = ("condemned", "condemned")  # green, rust (K4 faction ids)
+    # Opponents are always different factions (the lead, 2026-09-16): a match is the Law against the Wreckers,
+    # never the Law against itself, and the booth names a side by its faction rather than its colour. A fixture
+    # with the same faction on both benches would make every call ambiguous.
+    factions: tuple = ("condemned", "law")  # green, rust (K4 faction ids)
     fits: callable = None  # (events) -> bool
     notes: dict = field(default_factory=dict)
 
@@ -113,6 +116,7 @@ SCENARIOS = {
         "close_match", "Even armies trade all match; decided in the last seconds.", "foundry",
         green=[("Alpha", ["tank", "ifv", "ifv"]), ("Bravo", ["scout", "artillery"])],
         rust=[("Anvil", ["tank", "ifv", "scout"]), ("Lance", ["lancer", "ifv"])],
+        factions=("law", "syndicate"),
         fits=lambda ev: _end(ev)["winner"] != "draw" and sum(_end(ev)["units_left"].values()) <= 2
         and _end(ev)["duration_seconds"] >= 70 and _max_rust_lead(ev) >= 1 and _deaths(ev, "green") >= 3),
     "blowout": Scenario(
@@ -120,6 +124,7 @@ SCENARIOS = {
         green=[("Guns", ["tank", "tank", "tank"]), ("Eyes", ["scout"])],
         rust=[("Swarm", ["scout", "scout", "ifv"]), ("Battery", ["artillery", "artillery"])],
         edge=lambda t, m: {"green": 1.5, "rust": 0.7},
+        factions=("syndicate", "condemned"),
         fits=lambda ev: _end(ev)["winner"] == "green" and _end(ev)["units_left"]["green"] >= 3
         and _end(ev)["duration_seconds"] <= 90),
     "comeback": Scenario(
@@ -127,12 +132,14 @@ SCENARIOS = {
         green=[("Alpha", ["tank", "ifv"]), ("Bravo", ["ifv", "scout", "scout"])],
         rust=[("Hammer", ["tank", "tank"]), ("Needle", ["lancer", "scout"])],
         edge=lambda t, m: {"green": 0.55 if t < m.contact_at + 25 else 1.9, "rust": 1.4 if t < m.contact_at + 25 else 0.6},
+        factions=("condemned", "gangs"),
         fits=lambda ev: _end(ev)["winner"] == "green" and _max_rust_lead(ev) >= 2 and _deaths(ev, "rust") == 4),
     "friendly_fire_disaster": Scenario(
         "friendly_fire_disaster", "An artillery-heavy Rust army shells its own front line.", "scrapyard",
         green=[("Alpha", ["ifv", "ifv", "tank"]), ("Bravo", ["scout", "scout"])],
         rust=[("Front", ["tank", "ifv"]), ("Battery", ["artillery", "artillery"])],
         friendly_scale=5.0,
+        factions=("gangs", "condemned"),
         fits=lambda ev: sum(1 for e in ev if e["type"] == "friendly_fire") >= 3
         and any(e["type"] == "unit_destroyed" and e["friendly"] for e in ev) and _end(ev)["winner"] == "green"),
     "scouts_vs_tanks": Scenario(
@@ -141,6 +148,7 @@ SCENARIOS = {
         rust=[("Wall", ["tank", "tank", "tank"]), ("Spotter", ["ifv"])],
         contact=(8.0, 12.0),
         hazard_rate=0.02,
+        factions=("gangs", "syndicate"),
         fits=lambda ev: any(e["type"] == "unit_destroyed" and e["cause"] == "hazard" for e in ev)
         and _end(ev)["winner"] != "draw" and _end(ev)["kills_by_unit"]["green"].get("scout", 0) >= 2
         and _end(ev)["kills_by_unit"]["rust"].get("tank", 0) >= 2),
@@ -150,6 +158,7 @@ SCENARIOS = {
         rust=[("Anvil", ["tank", "ifv"]), ("Dart", ["scout", "lancer"])],
         edge=lambda t, m: {"green": 0.6, "rust": 0.6},
         control=True,
+        factions=("law", "condemned"),
         fits=lambda ev: _end(ev)["reason"] == "control"
         and sum(1 for e in ev if e["type"] == "control_changed") >= 3),
     # Factions are concept art this round (K4); these two let the booth's faction lines be read before they play.

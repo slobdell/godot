@@ -29,12 +29,32 @@ ACTS = {
 }
 # Slot name -> vocabulary it speaks ("count" kinds are number words the director fills).
 SLOTS = {"team": "team", "other_team": "team", "team_s": "team_s", "other_team_s": "team_s",
+         # The booth names a side by its faction, never by its colour (the lead, 2026-09-16). `_attr` is the
+         # attributive form for after an article: "the Law tank", not "the the Law tank".
+         "faction": "faction", "other_faction": "faction",
+         "faction_s": "faction_s", "other_faction_s": "faction_s",
+         "faction_attr": "faction_attr", "other_faction_attr": "faction_attr",
          "unit": "unit", "killer_unit": "unit", "victim_unit": "unit", "target_unit": "unit", "shooter_unit": "unit",
          "units": "units", "other_units": "units", "arena": "arena",
-         "count": "number", "other_count": "number", "streak": "number", "kills": "number"}
+         "count": "number", "other_count": "number", "streak": "number", "kills": "number",
+         "count_over": "count_over", "other_count_over": "count_over"}
 # Slots whose spoken value can start with a vowel sound ("IFV", "artillery"): never after "a".
 VOWEL_RISK = {"unit", "units"}
-MAX_CHARS = {"caller": 110, "color": 130, "pa": 200}
+# The Veteran carries the technical analysis now, and a thought that trails off needs room to trail (the lead's
+# own example ran 178 characters). The caller stays short because hype is short.
+MAX_CHARS = {"caller": 110, "color": 185, "pa": 220}
+# Used only to tell "the last {faction} vehicle" (wrong) from "a row for {faction}" and "the damage {faction} is
+# soaking up" (both right): a preposition or a following verb means the slot is not inside the noun phrase.
+PREPOSITIONS = {"for", "of", "to", "from", "with", "by", "on", "in", "at", "against", "over", "behind", "under"}
+# A faction is a crew of people and takes a plural verb, the way sports commentary treats every team name: "the
+# Wreckers crack it wide open", "the Law are all over them". It is the only rule that works for all four names —
+# "the Condemned takes it" is simply wrong, and "the Wreckers takes it" doubly so.
+SINGULAR_VERBS = {"is", "has", "takes", "wins", "gets", "keeps", "goes", "does", "brings", "rolls", "fields",
+                  "looks", "needs", "loses", "leads", "holds", "cracks", "shreds", "opens", "comes", "puts",
+                  "finishes", "answers", "wants", "was", "hits", "makes", "drives", "runs", "turns", "knows",
+                  "pays", "sends", "starts", "stops", "catches", "lands", "strikes", "wipes"}
+VERBS = {"is", "are", "was", "were", "has", "have", "had", "takes", "wins", "gets", "keeps", "goes", "does",
+         "will", "can", "brings", "rolls", "fields", "looks", "needs", "loses", "leads", "holds"}
 ALLOWED = re.compile(r"^[A-Za-z .,!?'{}_:;-]+$")
 DIRECTOR_FLAGS = re.compile(r"^said_[a-z_]+_\{team\}$|^said_friendly_\{team\}$")
 # The lead rejected these as "far too overt" (2026-09-15); keep them out of new lines.
@@ -94,6 +114,21 @@ def audit(lines_data: dict, beats_data: dict) -> tuple[list[str], list[str]]:
                 errors.append("%s: slot {%s} has no vocabulary %r" % (where, slot, SLOTS[slot]))
             if slot in SLOTS and SLOTS[slot] in VOWEL_RISK and re.search(r"\b[Aa] \{%s\}" % slot, text):
                 errors.append("%s: 'a {%s}' reads 'a IFV'; use 'the' or 'that'" % (where, slot))
+        # A faction name carries its own article ("the Law"), so an article in front of it doubles up:
+        # "The last {other_faction} vehicle" reads "The last the Condemned vehicle". The attributive form
+        # ({faction_attr} = "Law") belongs there instead. It is only wrong when the faction sits *inside* the noun
+        # phrase: "a row for {faction}" and "the damage {other_faction} is soaking up" are both correct, because a
+        # preposition or a verb ends the phrase before the slot.
+        for match in re.finditer(r"\b(the|a|an)\s+((?:\w+\s+){0,2})\{((?:other_)?faction)\}(\s+\w+)?", text, re.I):
+            between, after = match.group(2).lower().split(), (match.group(4) or "").strip().lower()
+            if any(word in PREPOSITIONS for word in between) or after in VERBS or not after:
+                continue
+            errors.append("%s: %r puts an article before a faction name, which already has one; "
+                          "use {%s_attr}" % (where, match.group(0).strip(), match.group(3)))
+        for match in re.finditer(r"\{(?:other_)?faction\}\s+(\w+)", text):
+            if match.group(1).lower() in SINGULAR_VERBS:
+                errors.append("%s: a faction takes a plural verb (%r): \"the Condemned take it\", not \"takes\""
+                              % (where, match.group(0)))
         key = _norm(text)
         if key in texts:
             errors.append("%s: same text as %s" % (where, texts[key]))

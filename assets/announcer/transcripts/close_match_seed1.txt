@@ -7,36 +7,36 @@ result: rust by elimination at 1:17.8
 0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
 0:07.5   CALLER   Oh, this is going to be good. I can feel it in my chest already!
 0:12.8   ── first contact: green tank fires on a lancer
-0:12.8   CALLER   And we have contact! Green opens fire!
+0:12.8   CALLER   And we have contact! The Law open fire!
+0:15.8   VETERAN  Now—
 0:16.0   ── green tank destroys rust lancer
-0:16.0   CALLER   And Green strikes first! The tank gets the honors!
-0:19.9   CALLER   The autocannon is chewing right through that IFV!
+0:16.3   CALLER   Whoa, whoa, whoa!
+0:17.9   VETERAN  He'll want that one back. They all do.
 0:22.8   ── rust ifv destroys green scout
-0:23.4   CALLER   Burst after burst, and the scout can't take any more!
-0:27.0   CALLER   Oh, that was nasty.
-0:36.3   PA       Tonight's attendance is ninety-four thousand, a weeknight—
+0:22.8   CALLER   The scout runs out of road!
+0:25.1   VETERAN  You don't take the scout into that. You just don't.
+0:37.0   PA       The Syndicate would like to—
 0:39.2   ── rust tank destroys green ifv
-0:39.3   CALLER   Textbook! The tank eats the IFV alive!
+0:39.3   CALLER   Textbook! The tank eats it alive!
 0:39.8   ── friendly fire: green tank hits its own artillery
 0:42.0   ── green ifv destroys rust ifv
-0:42.6   CALLER   They hit the weak spot and the IFV just folds!
+0:42.3   CALLER   What an exchange, and the Law win it!
 0:42.8   ── rust scout destroys green artillery
 0:42.8   ── green squad Bravo wiped out
-0:46.7   CALLER   Put it away! Rust puts it away!
+0:45.9   CALLER   That's the matchup! The scout does exactly what it was built to do!
 0:54.0   CALLER   The tank round lands! You felt that one in the seats!
+1:02.7   VETERAN  Hard—
 1:03.0   ── rust tank destroys green tank
-1:03.0   CALLER   One left! Green has one left!
+1:03.2   CALLER   The tank round lands, and the tank just comes apart!
 1:04.2   ── green ifv destroys rust scout
-1:06.0   CALLER   The scout runs out of road!
+1:07.4   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
 1:08.2   ── green ifv destroys rust ifv
 1:08.2   ── rust squad Lance wiped out
-1:08.3   CALLER   That leaves Rust with one. One!
-1:11.3   CALLER   Ohh, that rocked the IFV!
+1:12.3   VETERAN  Nobody gets out of one of those once it goes up. They don't design the hatch for that.
 1:17.8   ── rust tank destroys green ifv
 1:17.8   ── green squad Alpha wiped out
 1:17.8   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-1:17.8   CALLER   Rust finishes it! The last IFV is gone!
-1:20.8   CALLER   It's all over! Rust wins it!
-1:23.2   VETERAN  One left. That driver is going to remember every second of that.
-1:28.6   CALLER   This is fight night!
-1:30.9   PA       Tonight's match goes to Rust. Settlement of wagers will begin within the hour.
+1:20.1   CALLER   The last Law vehicle goes down!
+1:22.4   CALLER   The Syndicate win it with one vehicle left! One! What a finish!
+1:26.7   VETERAN  That is what it looks like when everybody does their job and nobody gets clever.
+1:33.8   PA       The Syndicate take tonight's match. We thank our participants, and our sponsors, in that order.

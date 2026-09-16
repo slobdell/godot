@@ -34,7 +34,11 @@ const MERGE_WINDOW_S := 4.0
 ## Each tag a line matches beyond the moment kind multiplies its chance: "first blood" lines beat generic kill calls.
 const SPECIFIC_WEIGHT := 8.0
 ## Seconds after the last shot during which follow-ups from the Veteran and the PA are skipped (the fight is live).
-const HEAT_S := 1.5
+## Round 3 set this to 1.5 s to stop the booth talking over the action. In a sustained firefight something is always
+## being shot, so it silenced the Veteran exactly when he had most to explain — he took 19% of the airtime and the
+## lead noticed ("we don't have much banter from the Veteran"). It now only covers the instant of a shot, and
+## analysis *of* the moment being called is exempt entirely (see _speak_step).
+const HEAT_S := 0.5
 
 var library: AnnouncerLibrary
 var memory: AnnouncerMemory
@@ -373,7 +377,10 @@ func _speak_step() -> Dictionary:
 	if not step.get("hard", false) and _queue_outranks(int(_current["priority"]) - SOFT_DISCOUNT):
 		_end_beat()
 		return {}
-	if not step.get("hard", false) and step["speaker"] != "caller" and _is_hot() and not memory.finished:
+	# The Veteran explaining the kill that just happened is not talking over the action, it *is* the coverage. Only
+	# banter unconnected to what is on the floor waits for a gap.
+	if not step.get("hard", false) and step["speaker"] != "caller" and _is_hot() and not memory.finished \
+			and _current["moment"]["kind"] in ["lull", "army", "tape", "preview"]:
 		_note("skip a %s follow-up to %s: the fight is live" % [step["speaker"], _current["moment"]["kind"]])
 		return {}
 	var optional: bool = step.get("optional", false) or step.has("chance")
@@ -401,6 +408,8 @@ func _speak_step() -> Dictionary:
 			"text": text, "act": line["act"], "moment": found["kind"], "event_t": found["t"], "cut": false,
 			"intensity": int(found["intensity"]), "team": found["team"],
 			"slots": _slots_used(line, found["slots"]),
+			# Which recording of this line to play: one whole sentence per combination of slot values.
+			"variant_key": AnnouncerLibrary.variant_key(line["text"], found["slots"]),
 			"reason": _reason(found, line), "_moment": found,
 			"_priority": int(found["priority"]) if step.get("hard", false) else int(found["priority"]) - SOFT_DISCOUNT}
 	_used[line["id"]] = now

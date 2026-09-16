@@ -6,27 +6,25 @@ result: green by elimination at 0:44.2
 
 0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
 0:07.5   CALLER   Oh, this is going to be good. I can feel it in my chest already!
-0:13.3   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
-0:18.9   CALLER   The—
+0:13.3   CALLER   The Condemned are out tonight. Prison steel, welded shut, and driving for their freedom!
+0:18.9   VETERAN  Nobody—
 0:19.2   ── first contact: rust lancer fires on a ifv
-0:19.4   CALLER   There's the beam! The Lancer reaches out across the floor for the IFV!
-0:24.5   CALLER   Ohh, that rocked the IFV!
+0:19.4   VETERAN  The crew that fires first usually lives. That's not a saying. Somebody counted.
+0:25.3   CALLER   There's the beam! The Lancer reaches—
 0:27.5   ── rust lancer destroys green ifv
-0:27.5   CALLER   Upset! Upset on the floor! The Lancer gets it done!
+0:27.6   CALLER   Upset! Upset on the floor! The Lancer gets it done!
 0:31.0   ── green tank destroys rust lancer
-0:31.8   CALLER   Rust is down to two!
-0:33.8   CALLER   Listen to this crowd!
-0:36.1   VETERAN  Rust is bleeding and doesn't know it yet.
+0:31.9   VETERAN  They'll build another one. They always build another one.
+0:36.7   VETERAN  Backing out under fire is the—
 0:39.2   ── green scout destroys rust artillery
 0:39.2   ── rust squad Halo wiped out
-0:39.8   CALLER   One left! Rust has one left!
-0:42.8   CALLER   That—
+0:39.3   CALLER   One left! The Syndicate have one left!
+0:42.0   VETERAN  That last the—
 0:43.5   ── rust lancer destroys green scout
-0:43.5   CALLER   It's gone—
+0:43.5   CALLER   Right in—
 0:44.2   ── green tank destroys rust lancer
 0:44.2   ── rust squad Vesper wiped out
 0:44.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-0:44.3   CALLER   And that's it! That's the last one!
-0:47.0   CALLER   That was fast! Green made short work of that one!
-0:50.6   VETERAN  Green earned that. I didn't see them get lucky once.
-0:55.8   PA       Green takes tonight's match. We thank our participants, and our sponsors, in that order.
+0:44.3   CALLER   The tank round lands, and the Lancer just comes apart!
+0:47.9   CALLER   It's all over! The Condemned win it!
+0:51.2   PA       The Condemned take tonight's match. We thank our participants, and our sponsors, in that order.

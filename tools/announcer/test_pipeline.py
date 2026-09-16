@@ -31,33 +31,67 @@ def mock_client(**kwargs):
 
 
 class PlanTest(unittest.TestCase):
-    def test_every_line_rebuilds_from_its_parts(self):
+    def test_every_line_is_recorded_as_whole_sentences(self):
+        """Nothing is assembled at playback any more: each recording is a complete utterance with no slots left."""
         the_plan = recording_plan.plan(LINES)
-        slices = {s["clip"]: s["text"] for r in the_plan["requests"] for s in r["slices"]}
-        for line in LINES["lines"]:
-            parts = the_plan["lines"][line["id"]]["parts"]
-            spoken = []
-            for part in parts:
-                if "clip" in part:
-                    self.assertIn(part["clip"], slices)
-                    self.assertNotRegex(slices[part["clip"]], r"^[ ,.!?;:]", "%s starts with punctuation" % part["clip"])
-                    spoken.append(slices[part["clip"]])
-                else:
-                    self.assertIn(part["intonation"], ("mid", "final", "rising"))
-                    spoken.append("{%s}" % part["slot"])
-            words = lambda text: re.findall(r"\{[a-z_]+\}|[A-Za-z']+", text)
-            self.assertEqual(words(" ".join(spoken)), words(line["text"]), line["id"])
+        planned = set(the_plan["lines"]) | {r["id"] for r in the_plan["too_many"]}
+        self.assertEqual(planned, {line["id"] for line in LINES["lines"]}, "every line is accounted for")
+        for request in the_plan["requests"]:
+            self.assertNotRegex(request["text"], r"\{[a-z_]+\}", "%s still has a slot in it" % request["id"])
+            self.assertEqual(len(request["slices"]), 1, "%s is one piece" % request["id"])
+            self.assertEqual(request["slices"][0]["kind"], "line")
+            self.assertEqual(request["slices"][0]["text"], request["text"], "the slice is the whole sentence")
 
-    def test_fillers_cover_every_slot_value_and_intonation_used(self):
+    def test_a_line_is_recorded_once_per_thing_it_can_say(self):
         the_plan = recording_plan.plan(LINES)
-        for line_id, line in the_plan["lines"].items():
-            for part in line["parts"]:
-                if "slot" not in part:
-                    continue
-                values = recording_plan.vocabulary_values(LINES["vocabulary"], part["vocab"])
-                for value in values:
-                    clip = recording_plan.filler_clip(line["speaker"], part["vocab"], value, part["intonation"])
-                    self.assertIn(clip, the_plan["fillers"], "%s needs %s" % (line_id, clip))
+        for line in LINES["lines"]:
+            info = the_plan["lines"].get(line["id"])
+            if info is None:
+                continue  # over the cap; covered below
+            bases = recording_plan.line_bases(line["text"])
+            if not bases:
+                self.assertEqual(list(info["variants"]), [""], "%s has no slots, so one recording" % line["id"])
+            else:
+                self.assertGreater(len(info["variants"]), 1, "%s varies" % line["id"])
+            for key, clip in info["variants"].items():
+                self.assertEqual(clip, recording_plan.variant_clip(line["id"], key))
+
+    def test_clip_ids_are_unique_across_the_whole_library(self):
+        the_plan = recording_plan.plan(LINES)
+        ids = [s["clip"] for r in the_plan["requests"] for s in r["slices"]]
+        self.assertEqual(len(ids), len(set(ids)), "two recordings would overwrite each other")
+
+    def test_a_line_naming_two_variable_things_is_refused_not_ordered(self):
+        """676 recordings for one sentence is a writing bug. plan() reports it instead of spending the budget."""
+        greedy = {"vocabulary": LINES["vocabulary"], "speakers": LINES["speakers"], "lines": [
+            {"id": "caller.greedy.01", "speaker": "caller", "act": "call", "tags": ["kill"],
+             "text": "{faction} takes out {other_faction} with the {killer_unit} and the {victim_unit}!"}]}
+        the_plan = recording_plan.plan(greedy)
+        self.assertEqual(the_plan["requests"], [], "nothing is ordered")
+        self.assertEqual(len(the_plan["too_many"]), 1)
+        self.assertGreater(the_plan["too_many"][0]["combinations"], recording_plan.MAX_COMBINATIONS)
+
+    def test_a_match_is_never_a_faction_against_itself(self):
+        """The lead, 2026-09-16: opponents are always different factions. Recording "the Law beats the Law" would
+        be three quarters of the combinations of every line that names both sides."""
+        pairs = {"vocabulary": LINES["vocabulary"], "speakers": LINES["speakers"], "lines": [
+            {"id": "caller.pair.01", "speaker": "caller", "act": "call", "tags": ["kill"],
+             "text": "{faction} beats {other_faction}!"}]}
+        the_plan = recording_plan.plan(pairs)
+        self.assertEqual(len(the_plan["requests"]), 4 * 3, "four factions against the other three")
+        for request in the_plan["requests"]:
+            mine, theirs = request["id"].split("@")[1].split(".")
+            self.assertNotEqual(mine, theirs, request["id"])
+
+    def test_the_variant_key_is_the_slot_values_in_a_fixed_order(self):
+        """AnnouncerLibrary.variant_key in GDScript must agree with this exactly, or the game asks for clips that
+        were never recorded. Sorted base-slot order is the contract."""
+        self.assertEqual(recording_plan.variant_key({"faction": "law", "victim_unit": "tank"},
+                                                    ["faction", "victim_unit"]), "law.tank")
+        self.assertEqual(recording_plan.line_bases("{faction_s} {unit} and {faction_attr}"), ["faction", "unit"],
+                         "possessive and attributive forms read the same underlying slot")
+        self.assertEqual(recording_plan.variant_key({"count_over": 20}, ["count_over"]), "20",
+                         "numbers are integers on both sides of the wire")
 
     def test_intonation_and_request_stitching(self):
         self.assertEqual(recording_plan.intonation_after("Is that {team}?", len("Is that {team}")), "rising")
@@ -147,26 +181,15 @@ class MockPipelineTest(unittest.TestCase):
         edited["requests"][0]["text"] = edited["requests"][0]["text"].replace("away", "away now")
         self.assertEqual(self.run_pipeline(edited, client)["requests_sent"], 1)
 
-    def test_fillers_come_out_as_loud_as_the_sentences_around_them(self):
-        self.run_pipeline(sample_plan(["caller.kill.52", "caller.kill.31"]), mock_client())
+    def test_every_recording_comes_out_at_the_same_level(self):
+        """Clips play back to back, so a quiet one is audible as a dip. They are levelled to their own sentence,
+        which for a whole sentence means they all land together."""
+        ids = ["caller.kill.08", "caller.close.04", "color.army.07"]
+        self.run_pipeline(sample_plan(ids), mock_client())
         manifest = json.loads((self.out / "manifest.json").read_text())
-
-        def mean_volume(clip):
-            log = subprocess.run(["ffmpeg", "-i", str(self.out / manifest["clips"][clip]["file"]), "-af", "volumedetect", "-f", "null", "-"],
-                                 capture_output=True, text=True).stderr
-            return float(re.search(r"mean_volume: (-?[\d.]+) dB", log).group(1))
-
-        sentence = mean_volume("caller.kill.31")
-        for clip in ["fill.caller.team.rust.mid", "fill.caller.number.2.final", "caller.kill.52#0"]:
-            self.assertLess(abs(mean_volume(clip) - sentence), 3.0, "%s vs a whole sentence" % clip)
-
-    def test_a_misheard_fragment_is_reported_for_the_stitch_check_not_silently_passed(self):
-        """A `segment` is a fragment cut from mid-sentence, and speech-to-text mishears those on their own (the
-        pilot heard "is down to" as "This down" and then transcribed it perfectly in context). It must not fail the
-        run, and it must not vanish either: stitch_check.py hears it inside a real line."""
-        report = self.run_pipeline(sample_plan(["pa.welcome.05"]), mock_client(mishear={"pa.welcome.05-0"}))
-        self.assertEqual(report["stt_failed"], [], "a fragment alone does not fail the run")
-        self.assertEqual(report["stt_unverifiable"], ["pa.welcome.05#0"], "but it is reported for the stitch check")
+        levels = [generate.mean_volume_db(self.out / c["file"]) for c in manifest["clips"].values()]
+        self.assertGreater(len(levels), 3, "several clips to compare")
+        self.assertLess(max(levels) - min(levels), 3.0, "levels agree within 3 dB")
 
     def test_a_misheard_whole_line_still_fails_the_run(self):
         """A whole sentence is a complete utterance, so the recogniser can be trusted on it: a mispronunciation or
@@ -197,11 +220,6 @@ class MockPipelineTest(unittest.TestCase):
         manifest = json.loads((self.out / "manifest.json").read_text())
         self.assertTrue(manifest["clips"], "the manifest is complete enough to play")
 
-    def test_a_slice_that_swallows_its_neighbours_is_caught(self):
-        with mock.patch.object(generate, "slice_times", lambda alignment, start, end: (0.0, alignment["character_end_times_seconds"][-1] + 0.3)):
-            report = self.run_pipeline(sample_plan(["caller.kill.08"]), mock_client())
-        flagged = report["stt_failed"] + report["stt_unverifiable"]
-        self.assertIn("caller.kill.08#0", flagged, "a slice that swallows the neighboring words is caught")
 
     def test_missing_voices_are_skipped_not_guessed(self):
         client = voice_client.MockClient(voices={"JR1": "id"})
@@ -217,47 +235,33 @@ class MockPipelineTest(unittest.TestCase):
         generate.append_ledger(ledger, report, "ElevenLabs", voice_client.MODEL_ID, "pilot")
         self.assertIn("| ElevenLabs | eleven_multilingual_v2 | 3 | 120 | 120 | 10 → -110 | pilot |", ledger.read_text())
 
-    def test_mixdown_places_parts_fillers_and_cuts(self):
-        ids = ["caller.kill.52"]
-        the_plan = sample_plan(ids)
-        self.run_pipeline(the_plan, mock_client())
+    def test_mixdown_places_one_whole_sentence_per_cue(self):
+        ids = ["caller.kill.08"]
+        self.run_pipeline(sample_plan(ids), mock_client())
         manifest = json.loads((self.out / "manifest.json").read_text())
+        line = manifest["lines"]["caller.kill.08"]
+        key = sorted(line["variants"])[0]
         match = {"cues": [
-            {"t": 1.0, "end": 3.0, "line_id": "caller.kill.52", "slots": {"other_team": "rust", "count": 3.0}, "cut": False},
-            {"t": 5.0, "end": 5.2, "line_id": "caller.kill.52", "slots": {"other_team": "green", "count": 2.0}, "cut": True}]}
-        self.assertEqual(mixdown.cue_clips(match["cues"][0], manifest),
-                         ["fill.caller.team.rust.mid", "caller.kill.52#0", "fill.caller.number.3.final"])
-        # The schedule is pure arithmetic over the manifest's durations: assert it directly rather than by
-        # measuring the rendered audio (a probed duration made this test flaky on a loaded builder0).
+            {"t": 1.0, "end": 3.0, "line_id": "caller.kill.08", "variant_key": key, "cut": False},
+            {"t": 5.0, "end": 5.2, "line_id": "caller.kill.08", "variant_key": key, "cut": True}]}
+        self.assertEqual(mixdown.cue_clips(match["cues"][0], manifest), [line["variants"][key]],
+                         "a cue is one recording, not a list of pieces to join")
         placed = mixdown.schedule(match, manifest)
-        gaps = [round(b["t"] - a["t"], 3) for a, b in zip(placed, placed[1:]) if b["t"] < 5.0]
-        lengths = [round(manifest["clips"][c]["duration_s"] + mixdown.PART_GAP_S, 3)
-                   for c in mixdown.cue_clips(match["cues"][0], manifest)[:-1]]
-        self.assertEqual([p["t"] for p in placed][:1], [1.0], "the first cue starts at its time")
-        self.assertEqual(gaps, lengths, "each part follows the one before it, plus the gap")
-        self.assertEqual([p["max_s"] for p in placed[:3]], [None, None, None], "an uncut cue plays whole clips")
-        cut = [p for p in placed if p["t"] >= 5.0]
-        self.assertEqual(len(cut), 1, "a cut cue plays only what fits before its end")
-        self.assertAlmostEqual(cut[0]["max_s"], 0.2, places=2)
-        # What we assert about the rendered file is deliberately weak: that it exists, holds audio, and is not
-        # wildly the wrong length. render() itself checks the length exactly and raises, so a bad mix fails there
-        # with a useful message instead of here with a number (the orchestrator, 2026-09-16: a probed duration
-        # made this test flake on a loaded builder0).
+        self.assertEqual([p["t"] for p in placed], [1.0, 5.0], "each cue starts at its own time")
+        self.assertIsNone(placed[0]["max_s"], "an uncut cue plays whole")
+        self.assertAlmostEqual(placed[1]["max_s"], 0.2, places=2, msg="a cut cue stops when it was cut")
         out = Path(self.folder.name) / "match.ogg"
         mixdown.render(placed, self.out, out, 7.0)
         self.assertTrue(out.exists() and out.stat().st_size > 0, "the mix was written")
-        self.assertGreater(voice_client.probe_duration(out), 5.0, "it covers the match, not just the last clip")
-        with self.assertRaisesRegex(KeyError, "fill.caller.number.9.final|needs clip"):
-            broken = dict(match["cues"][0], slots={"other_team": "rust", "count": 99})
-            mixdown.cue_clips(broken, manifest)
+        with self.assertRaisesRegex(KeyError, "no recording for"):
+            mixdown.cue_clips(dict(match["cues"][0], variant_key="not.a.real.key"), manifest)
 
     def test_a_short_mix_is_reported_instead_of_shipped(self):
         """A mix that ends with its last clip plays out of sync with the transcript, so it must never pass quietly."""
-        ids = ["caller.kill.52"]
-        self.run_pipeline(sample_plan(ids), mock_client())
+        self.run_pipeline(sample_plan(["caller.kill.08"]), mock_client())
         manifest = json.loads((self.out / "manifest.json").read_text())
-        match = {"cues": [{"t": 0.0, "end": 2.0, "line_id": "caller.kill.52",
-                           "slots": {"other_team": "rust", "count": 3.0}, "cut": False}]}
+        key = sorted(manifest["lines"]["caller.kill.08"]["variants"])[0]
+        match = {"cues": [{"t": 0.0, "end": 2.0, "line_id": "caller.kill.08", "variant_key": key, "cut": False}]}
         placed = mixdown.schedule(match, manifest)
         out = Path(self.folder.name) / "short.ogg"
         mixdown.render(placed, self.out, out, 6.0)

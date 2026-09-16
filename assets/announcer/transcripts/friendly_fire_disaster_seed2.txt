@@ -6,31 +6,31 @@ result: green by elimination at 0:57.5
 
 0:00.0   CALLER   Here we go! The building is shaking and we have not even started!
 0:04.5   PA       Welcome, everyone, to the Scrapyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
-0:14.7   CALLER   Green fields the Condemned tonight. Prison steel, welded shut—
+0:14.7   VETERAN  Mixed army. That's the smart build. It's—
 0:18.0   ── first contact: rust artillery fires on a ifv
-0:18.1   CALLER   And we have contact! Rust opens fire!
-0:21.4   CALLER   Right in the weak spot! What a shot!
+0:18.1   CALLER   Artillery opens the night! The Condemned are shelling from long range!
+0:22.0   VETERAN  First—
 0:22.2   ── friendly fire: rust artillery hits its own tank
-0:25.0   CALLER   That artillery shell landed on Rust's own tank!
+0:22.6   CALLER   That artillery shell landed on the Condemned's own tank!
 0:25.5   ── friendly fire: rust artillery hits its own ifv
-0:28.5   VETERAN  Rust—
+0:25.8   VETERAN  You bring artillery, you put it—
 0:28.8   ── green ifv destroys rust artillery
-0:29.1   CALLER   There it is! The first kill of the night belongs to Green!
+0:28.8   CALLER   And the Wreckers strike first! The IFV gets the honors!
 0:31.0   ── green ifv destroys rust artillery
 0:31.0   ── rust squad Battery wiped out
 0:31.0   ── close call: green ifv at 9% hull
-0:33.9   CALLER   They got another one! Oh my goodness!
-0:36.6   CALLER   What a moment!
-0:42.8   CALLER   Right up the—
+0:33.0   CALLER   And another one! The Wreckers isn't done!
+0:40.7   PA       A reminder that the upper concourse will close—
 0:44.0   ── green ifv destroyed by its own tank
-0:44.0   CALLER   Oh no! Green just took out its own IFV!
+0:44.0   CALLER   Whoa, whoa, whoa!
+0:45.6   CALLER   They hit their own! The Wreckers lose the IFV to its own guns!
 0:50.5   ── green ifv destroys rust ifv
-0:50.5   CALLER   That leaves Rust with one. One!
-0:53.5   CALLER   That scout's machine gun is just hosing the tank!
+0:50.5   CALLER   That leaves the Condemned with one. One!
+0:53.2   VETERAN  That last the Condemned crew has nothing to lose. That's—
 0:57.5   ── green ifv destroys rust tank
 0:57.5   ── rust squad Front wiped out
 0:57.5   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-0:57.5   CALLER   That's the last one! Green wipes them out!
-1:00.5   CALLER   Green has done it! What a performance!
-1:03.2   VETERAN  The losing crew split up early. You cannot come back from that in here.
-1:10.0   PA       Tonight's match goes to Green. Settlement of wagers will begin within the hour.
+0:57.5   CALLER   The Wreckers finish it! The last tank is gone!
+1:00.8   CALLER   And the Wreckers are the last army standing! The Wreckers win!
+1:04.7   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
+1:11.1   PA       Tonight's match goes to the Wreckers. Settlement of wagers will begin within the hour.

@@ -142,12 +142,9 @@ def transcribe_safely(client, path: Path, expected: str, counts_words: bool) -> 
 def context_dependent(kind: str, expected: str, seconds: float) -> bool:
     """True when speech-to-text cannot fairly judge this clip on its own.
 
-    Only a whole `line` is a complete utterance. A `segment` is a fragment cut out of the middle of one ("is down
-    to") and a `filler` is usually a single short word, and the recogniser mishears both without the sentence
-    around them - in the pilot it heard "is down to" as "This down" and "Rust" as nothing, then transcribed both
-    correctly once stitched. Those are reported and checked by stitch_check.py instead of failing the run."""
-    if kind == "segment":
-        return True
+    Since round 4 every clip is a whole sentence, so this is nearly always False and the check is trustworthy
+    again — that is a real benefit of dropping the stitching, not just a side effect. It stays for the one case
+    left: a line so short it is a single word, which the recogniser still guesses at."""
     words = [w for w in expected.split() if re.search(r"[A-Za-z]", w)]
     return len(words) <= 1 and seconds < STT_UNVERIFIABLE_S
 
@@ -187,7 +184,9 @@ def dry_run(the_plan: dict, speakers: dict, masters: Path, model_id: str) -> str
                % (recorded, pending_chars, pending_chars * rate))
     minutes = totals[2] / CHARACTERS_PER_SECOND / 60
     out.append("Speech-to-text check: %d clips, about %.0f minutes of audio (billed by duration)." % (totals[1], minutes))
-    out.append("Fillers: %d slot clips (team names, units, numbers, arenas) across the intonations the lines use." % len(the_plan["fillers"]))
+    if the_plan.get("too_many"):
+        out.append("NOT ordered, too many combinations (a line naming more than one variable thing): %s"
+                   % ", ".join("%s (%d)" % (r["id"], r["combinations"]) for r in the_plan["too_many"]))
     return "\n".join(out)
 
 
@@ -200,7 +199,7 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
     clips = {}
     manifest_path = out / "manifest.json"
     previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
-    previous = {part: previous.get(part, {}) for part in ("clips", "lines", "fillers")}
+    previous = {part: previous.get(part, {}) for part in ("clips", "lines")}
     credits_before = client.remaining_credits()
     for request in the_plan["requests"]:
         voice_name = speakers.get(request["speaker"], {}).get("voice", "")
@@ -277,7 +276,7 @@ def generate(the_plan: dict, speakers: dict, client, masters: Path, out: Path, m
     # A partial run (--only, --speakers) adds to the manifest instead of replacing it.
     manifest = {"schema": 1, "generated": datetime.date.today().isoformat(), "model": model_id,
                 "client": type(client).__name__, "clips": dict(previous["clips"], **clips),
-                "lines": dict(previous["lines"], **the_plan["lines"]), "fillers": dict(previous["fillers"], **the_plan["fillers"])}
+                "lines": dict(previous["lines"], **the_plan["lines"])}
     out.mkdir(parents=True, exist_ok=True)
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True))
     report["credits_before"] = credits_before
@@ -310,7 +309,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--out", type=Path, help="clips and manifest (default: assets/announcer/clips, or build/announcer/mock with --mock)")
     parser.add_argument("--masters", type=Path, help="masters (default: assets/announcer/masters, or <out>/masters with --mock)")
     parser.add_argument("--speakers", default="", help="comma-separated speakers to include")
-    parser.add_argument("--only", default="", help="comma-separated line ids (their fillers come along)")
+    parser.add_argument("--only", default="", help="comma-separated line ids (every recording of each comes along)")
     parser.add_argument("--model", default=voice_client.MODEL_ID)
     parser.add_argument("--ledger", type=Path, default=LEDGER)
     args = parser.parse_args(argv)

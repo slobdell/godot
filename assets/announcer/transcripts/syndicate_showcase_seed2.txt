@@ -6,24 +6,25 @@ result: green by elimination at 0:44.2
 
 0:00.0   CALLER   Welcome in, everybody. Take a look at that floor. That is where this gets decided.
 0:05.3   PA       Welcome, everyone, to the Foundry. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
-0:15.5   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
+0:15.5   VETERAN  Those are my people. Every one of those—
 0:19.2   ── first contact: rust lancer fires on a ifv
-0:20.5   CALLER   And we have contact! Rust opens fire!
-0:23.8   CALLER   Right in the weak spot! What a shot!
+0:19.3   CALLER   There's the beam! The Lancer reaches out across the floor for the IFV!
+0:23.8   VETERAN  First shot isn't the fight. First hit is.
 0:27.5   ── rust lancer destroys green ifv
-0:27.5   CALLER   The Lancer burns right through the IFV!
-0:30.7   VETERAN  Green has the better of it right now. Look at the damage Rust is soaking up.
+0:27.6   CALLER   Nobody saw that coming! The Lancer wins that one!
 0:31.0   ── green tank destroys rust lancer
-0:39.0   CALLER   The—
+0:31.5   CALLER   The Lancer goes dark! The Condemned shuts off the beam!
+0:35.1   VETERAN  Open ground. In here, open ground is just a—
 0:39.2   ── green scout destroys rust artillery
 0:39.2   ── rust squad Halo wiped out
-0:39.5   CALLER   It's all on the last Rust vehicle now!
-0:42.4   CALLER   Oh, my goodness!
+0:39.3   CALLER   The Syndicate are down to its last vehicle!
+0:42.2   VETERAN  The Syndicate—
 0:43.5   ── rust lancer destroys green scout
+0:43.5   CALLER   It's gone—
 0:44.2   ── green tank destroys rust lancer
 0:44.2   ── rust squad Vesper wiped out
 0:44.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-0:44.3   CALLER   The last Rust vehicle goes down!
-0:46.6   CALLER   It's all over! Green wins it!
-0:49.0   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-0:55.4   PA       That is the conclusion of tonight's event. Congratulations to Green from all of us at the arena.
+0:44.3   CALLER   The last Syndicate vehicle goes down!
+0:46.6   CALLER   The Condemned have done it! What a performance!
+0:49.6   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
+0:57.2   PA       The Condemned take tonight's match. We thank our participants, and our sponsors, in that order.
