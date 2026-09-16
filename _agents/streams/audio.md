@@ -397,7 +397,15 @@ Committed as 5ccf56f and reported to the orchestrator for merging to `main`.
 
 ### Verified
 
-**`make remote T=check` exited 0 on builder0 against `bc49a34`** (the last commit; working tree clean, so the run
+**`make remote T=check` exited 0 on builder0 against the rebuilt booth (128c33b): 696 Godot tests, 0 failed;
+`announcer-variance`, `announcer-record-smoke` and `music-smoke` all green with the sim hash unchanged at
+`d7967d8b36d4417b`; `audio-check passed`.** The three failures that first run found were all tests describing the
+*previous* contract rather than defects — a dead shooter being illegal, a `close_call` the regenerated fixtures no
+longer all produce, and a flat twelve-line floor that was really asserting how long the fixtures happened to be.
+When a contract changes, the tests that break are the old contract's documentation and want rewriting to state the
+new rule, not bending until they pass.
+
+**Earlier run (pre-rebuild), for the record:** `make remote T=check` exited 0 against `bc49a34` (the last commit; working tree clean, so the run
 matches the commit exactly):
 - **691 Godot tests, 0 failed** — 656 on `main` plus the 35 this stream added (7 announcer history, 12 MatchMood,
   10 music director, 6 sound mix).
