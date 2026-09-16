@@ -287,8 +287,22 @@ frames in `build/screenshots/announcer_{desktop,phone}.png`, both looked at):
    sound-effects generation layered under X4's transients.
 2. **An options entry** for announcer and music volume. The flags exist; the settings UI is control's file, so it
    is a request to them rather than something I should edit (below).
-3. **Stretch, not started:** stems so layers build with intensity, an arena PA reading ad copy between rounds, and
-   per-faction announcer flavour (the faction *lines* exist from round 3; the flavour hook does not).
+3. **The stretch items, and why none of them are done.** I stopped at the end of the backlog rather than starting
+   these, because the branch was green and ready to merge and reopening it would move the target. Honest status of
+   each, so the next round can pick them up:
+   - **Stems (layers that build with intensity).** *Unblocked* — the pipeline could be built against the
+     placeholder beds today, and it is the one stretch item with no dependency. This is the one I would do first,
+     and the only one I deliberately left rather than could not start. It needs the manifest to carry a layer list
+     per bed and the director to cross-fade layers instead of whole tracks, which is a real change to
+     `MusicDirector`, not an addition.
+   - **An arena PA reading ad copy between rounds.** *Blocked on the lead* — the ad art and copy are lead gate 3 in
+     HANDOFF and the placeholders shipped without copy. The PA's sponsor-read lines exist (`pa.sponsor.*`); what is
+     missing is the copy to read and the screens to read it for.
+   - **Per-faction announcer flavour.** *Mostly already there* and the remaining value is small: round 3 shipped
+     faction introductions for all four factions and the director already tags moments `faction_<id>` and
+     `other_faction_<id>`, so faction-specific lines are selected today. What does not exist is a per-faction
+     *voice treatment* (the Syndicate's broadcast sounding different from the gangs'), which is an audio-processing
+     job that wants X2's real clips first.
 
 ### Requests to other streams
 
@@ -316,11 +330,28 @@ frames in `build/screenshots/announcer_{desktop,phone}.png`, both looked at):
 - `game/main.gd`: the announcer's attach line now also attaches the music director, plus one header line for the
   `--music` flags.
 - `export_presets.cfg`: `assets/announcer/*.json` and `assets/music/*.json` added to both presets' `include_filter`.
-- `_agents/orientation.md`: trip-up 67 added (GNU make defines `WINDOW = 2` itself).
+- `_agents/orientation.md`: trip-ups 67–70 added (make's own `WINDOW`; killing `make remote` leaves the remote build
+  running; `.gitignore` slashes versus symlinks; `git add -A`).
+- `.gitignore`: `.tools` added without a trailing slash, so the worktree toolchain symlink can never be committed
+  again. One line; take it or the ai stream's equivalent, whichever merges first.
+- **Before merging this branch:** `git ls-files .tools` must be empty (it is, as of e578923).
 
-### A mistake worth recording
+### Mistakes worth recording
 
-My commit 5ccf56f staged `mk/announcer.mk` with `announcer-variance` already in `announcer-check`, while the CLI that
-implements it was still uncommitted. `make check` on `main` went red for all five streams until the orchestrator took
-the line out. **A make target that is part of `check` and the code it calls belong in the same commit** — `git add -A
-<paths>` is how an in-progress file rides along unnoticed.
+Both have the same cause, and it is worth naming once: **`git add -A <paths>` commits things I had not looked at**,
+and in both cases the file was visible in `git status` output I had decided was noise.
+
+1. **A half-finished make target broke `main` for five streams.** Commit 5ccf56f staged `mk/announcer.mk` with
+   `announcer-variance` already in `announcer-check`, while the CLI implementing it was still uncommitted. The
+   orchestrator had to remove the line. *A make target that is part of `check` and the code it calls belong in the
+   same commit.*
+2. **A committed `.tools` symlink destroyed the laptop's Godot toolchain.** Commit 93e2f40 committed `.tools`, which
+   in a worktree is a symlink to the main checkout's shared toolchain. `.gitignore` said `.tools/`, and a pattern
+   ending in a slash never matches a symlink, so it was never ignored — `?? .tools` sat in every `git status` I ran
+   for hours and I filtered it out each time. Merging the branch checked the symlink out over the real 300 MB
+   directory, leaving it pointing at itself; every worktree on the laptop then failed with "Too many levels of
+   symbolic links". The ai stream diagnosed it. Fixed here (e578923): untracked, and `.gitignore` now lists the
+   slashless form too so no stream can repeat it. Repair for the main checkout is `make bootstrap`; builder0 keeps
+   its own `.tools` and the green check there is unaffected.
+
+Orientation trip-ups 69 and 70 record both.
