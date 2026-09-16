@@ -210,6 +210,37 @@ evaluate.**
 only one in the booth who gets to be precise, and a number a player can act on is better material than anything I
 would invent. Say whether it is stable or resting on something you are still building.
 
+## X2 delivered: the booth has a voice (2026-09-16)
+
+| | |
+|---|---|
+| library | **589 lines** (caller 267, Veteran 225, PA 97) |
+| recorded | **2,372 whole sentences**, ~14 MB of Ogg |
+| spend this session | **171,050 credits**; 125,297 left of 300,000 |
+| main run | 2,225 clips, 110,091 characters, 112,717 credits |
+| incremental (element and drill material) | 171 clips, 12,593 characters |
+| listen | <https://claude.ai/artifact/7tZzJRW8BhMcX7dnWfSzUc> — eight full matches |
+
+**What the 36 speech-to-text flags were worth.** All 36 were the caller; none the Veteran or the PA, which fits — he
+delivers short phrases at speed. Most were the recogniser's problem, not the audio's ("Ohh, that rocked" heard as
+"Pull that rock"). **One was a real finding, and only because every combination was recorded rather than sampled:**
+all eight variants of `caller.ff.05` came back misheard *identically* — "{faction_s} own {victim_unit}" elided to
+"the condemned **zone** artillery", "the wrecker **zone** burner", "the law **zone** IFV". A possessive immediately
+followed by "own" runs together at his pace. One flag is noise; eight failing the same way is a cause. Rewritten to
+"their own {victim_unit}": correct, and a quarter of the recordings, because the team was obvious from context —
+which is usually the sign the original had a redundant variable in it.
+
+**The starvation pattern, three times in one round.** The tactical commentary was silent in every transcript. The
+obvious reading was that I had not written enough of it. The director's own decision log said otherwise: **6 of 8
+element moments expired while queued behind kill calls**, against a `stale_s` of 4–6 seconds; one more was dropped
+from a full queue. They were never outranked — they timed out. Formation now waits 20 s and a drill 10 s, because
+that kind of colour is what a booth says in the gap *after* the action. Two of eight element decisions now get
+called in a busy match, which is the right rate.
+
+That is the same shape as the Veteran's airtime problem (a heat rule silencing him) and as two bugs doctrine hit
+independently. Written up for `orchestration.md`: **a behaviour that looks under-written is usually being starved by
+a rule above it — before adding content, log what selected it each tick.**
+
 ## Status
 
 _Updated 2026-09-16 by the audio worker._
