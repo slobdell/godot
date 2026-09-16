@@ -41,6 +41,8 @@ var _clock := 0.0
 var _elements: Array = []
 ## number -> the last place an element was seen alive, so a wiped one can still be pointed at.
 var _positions := {}
+## The living enemies, refreshed once per update.
+var _enemies: Array = []
 
 
 ## One entry per non-empty control group: {"number", "label", "units", "alive", "total", "health" 0..1,
@@ -55,6 +57,13 @@ func update(delta: float) -> void:
 	_elements = []
 	if game_match == null or groups == null:
 		return
+	# X4: one pass over the tank list per update instead of one per member. At 30 a side the per-member scan was
+	# 1800 casts and distance checks a frame, and it was this class's whole cost.
+	_enemies = []
+	for node in game_match.tanks.get_children():
+		var enemy := node as Tank
+		if enemy != null and enemy.is_alive() and enemy.team != team:
+			_enemies.append(enemy)
 	var live := groups.numbers()
 	for number in live:
 		var element := _describe(number)
@@ -129,10 +138,7 @@ func _describe(number: int) -> Dictionary:
 func _nearest_enemy(tank: Tank) -> Variant:
 	var best: Tank = null
 	var best_gap := INF
-	for node in game_match.tanks.get_children():
-		var enemy := node as Tank
-		if enemy == null or enemy.team == tank.team or not enemy.is_alive():
-			continue
+	for enemy: Tank in _enemies:
 		var gap := enemy.global_position.distance_to(tank.global_position)
 		if gap <= tank.sight_radius and gap < best_gap:
 			best = enemy

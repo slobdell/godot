@@ -13,6 +13,10 @@ extends Control
 ## element's leader decided - "Alpha: wedge, bounding overwatch - contact ahead". Screen and support by fire are
 ## tasks only: they are greyed out for an ad-hoc handful of units, which has no leader to carry them out.
 
+## X4: above this many units the portraits collapse to one per TYPE with a count, so a 30-unit element reads as
+## "5 Tanks, 12 Scouts" instead of thirty identical thumbnails nobody can parse.
+const GROUP_ABOVE := 10
+
 ## Height at 1080p (scaled with the window).
 const HEIGHT := 160.0
 ## Widest at 1080p.
@@ -31,7 +35,10 @@ const ORDER_WORDS := {"move": "Moving", "attack": "Attacking", "attack_move": "A
 var controls: RtsControls
 
 var _command_rects := {}  # id -> Rect2 (local)
-var _portrait_rects := {}  # unit name -> Rect2 (local)
+var _portrait_rects := {}  # portrait key -> Rect2 (local)
+## X4: unit name -> Tank for this pass. One node lookup per unit instead of one per question, which at 30+
+## selected was the panel's whole cost (a sort comparator asking for a role does two lookups per comparison).
+var _tanks := {}
 
 
 func _ready() -> void:
@@ -66,7 +73,9 @@ func _layout() -> void:
 		_command_rects[COMMANDS[i][0]] = Rect2(card_left + PAD * s + column * (button + PAD * s), PAD * s + row * (button + PAD * s),
 				button, button)
 	_portrait_rects.clear()
-	var units := _sorted_units()
+	var units: Array[String] = []
+	for entry: Dictionary in portrait_entries():
+		units.append(String(entry["key"]))
 	if units.size() > 1:
 		# A header line for the group's orders, then the biggest square portraits that fit in 1–3 rows.
 		var header := 22.0 * s
@@ -83,20 +92,74 @@ func _layout() -> void:
 			_portrait_rects[units[i]] = Rect2(area.position + Vector2((i % columns) * cell, (i / columns) * cell), Vector2(cell, cell)).grow(-2.0)
 
 
+## X4: one entry per portrait: every unit below GROUP_ABOVE, one per type above it.
+## [{"key", "role", "health", "shield", "count", "label"}] - `key` is what _portrait_rects and clicks use.
+func portrait_entries() -> Array:
+	var units := _sorted_units()
+	if units.size() <= GROUP_ABOVE:
+		var singles: Array = []
+		for unit_name in units:
+			var tank := _tank(unit_name)
+			if tank == null:
+				continue
+			singles.append({"key": unit_name, "role": CommandIcons.role_of(tank), "count": 1, "label": "",
+					"health": float(tank.health) / maxf(tank.max_health, 1.0),
+					"shield": tank.shield / tank.max_shield if tank.max_shield > 0.0 else 0.0})
+		return singles
+	var by_type := {}
+	var order: Array[String] = []
+	for unit_name in units:
+		var tank := _tank(unit_name)
+		if tank == null:
+			continue
+		var id := tank.unit_id
+		if not by_type.has(id):
+			by_type[id] = {"key": "type:%s" % id, "role": CommandIcons.role_of(tank), "count": 0, "health": 0.0,
+					"shield": 0.0, "label": String(Units.stat(id, "display_name", id))}
+			order.append(id)
+		var entry: Dictionary = by_type[id]
+		entry["count"] = int(entry["count"]) + 1
+		entry["health"] = float(entry["health"]) + float(tank.health) / maxf(tank.max_health, 1.0)
+		entry["shield"] = float(entry["shield"]) + (tank.shield / tank.max_shield if tank.max_shield > 0.0 else 0.0)
+	var grouped: Array = []
+	for id in order:
+		var entry: Dictionary = by_type[id]
+		var count := maxf(float(entry["count"]), 1.0)
+		entry["health"] = float(entry["health"]) / count
+		entry["shield"] = float(entry["shield"]) / count
+		grouped.append(entry)
+	return grouped
+
+
 ## Selected units, heavies first (then by name).
 func _sorted_units() -> Array[String]:
 	var result: Array[String] = []
 	if controls == null:
 		return result
+	_refresh_tanks()
 	result = controls.selection.units.duplicate()
+	var ranks := {}
+	for unit_name in result:
+		ranks[unit_name] = GroupFormation.ROLE_RANK.get(_role(unit_name), 2)
 	result.sort_custom(func(a: String, b: String) -> bool:
-		var rank_a: int = GroupFormation.ROLE_RANK.get(_role(a), 2)
-		var rank_b: int = GroupFormation.ROLE_RANK.get(_role(b), 2)
+		var rank_a: int = ranks[a]
+		var rank_b: int = ranks[b]
 		return rank_a < rank_b if rank_a != rank_b else a < b)
 	return result
 
 
+## Look every selected unit up once. Called at the top of each pass that touches more than one of them.
+func _refresh_tanks() -> void:
+	_tanks.clear()
+	if controls == null or controls.game_match == null:
+		return
+	for unit_name in controls.selection.units:
+		_tanks[unit_name] = controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+
+
 func _tank(unit_name: String) -> Tank:
+	if _tanks.has(unit_name):
+		return _tanks[unit_name] as Tank
 	return controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 
 
@@ -111,8 +174,8 @@ func _role(unit_name: String) -> String:
 ##  "card": {"name", "role", "hull", "shield", "weapon", "orders"}, "orders": String (group summary),
 ##  "commands": [{"id", "label", "hotkey", "enabled"}]}
 func summary() -> Dictionary:
-	var result := {"mode": "none", "portraits": [], "card": {}, "orders": "", "commands": [],
-			"doctrine": controls.doctrine_line() if controls != null else ""}
+	var result := {"mode": "none", "portraits": [], "card": {}, "orders": "", "commands": [], "count": 0,
+			"strength": 1.0, "doctrine": controls.doctrine_line() if controls != null else ""}
 	if controls == null:
 		return result
 	var commandable := not controls.selection.units.is_empty()
@@ -136,14 +199,15 @@ func summary() -> Dictionary:
 		result["orders"] = result["card"]["orders"]
 		return result
 	result["mode"] = "group"
+	result["portraits"] = portrait_entries()
+	for portrait: Dictionary in result["portraits"]:
+		portrait["unit"] = String(portrait["key"]) if int(portrait["count"]) == 1 else ""
+	result["count"] = units.size()
+	result["strength"] = _strength(units)
 	var verbs := {}
 	for unit_name in units:
-		var tank := _tank(unit_name)
-		if tank == null:
+		if _tank(unit_name) == null:
 			continue
-		result["portraits"].append({"unit": unit_name, "role": CommandIcons.role_of(tank),
-				"health": float(tank.health) / maxf(tank.max_health, 1.0),
-				"shield": tank.shield / tank.max_shield if tank.max_shield > 0.0 else 0.0})
 		var words := _order_words(unit_name, false)
 		verbs[words] = int(verbs.get(words, 0)) + 1
 	var parts: Array[String] = []
@@ -151,6 +215,19 @@ func summary() -> Dictionary:
 		parts.append("%s ×%d" % [words, verbs[words]] if verbs.size() > 1 else words)
 	result["orders"] = ", ".join(parts)
 	return result
+
+
+## X4: the selection's remaining strength, 0..1 - one number instead of thirty bars.
+func _strength(units: Array) -> float:
+	var total := 0.0
+	var counted := 0
+	for unit_name: String in units:
+		var tank := _tank(unit_name)
+		if tank == null:
+			continue
+		total += clampf(float(tank.health) / maxf(float(tank.max_health), 1.0), 0.0, 1.0)
+		counted += 1
+	return total / maxf(float(counted), 1.0)
 
 
 func _card(unit_name: String) -> Dictionary:
@@ -214,16 +291,31 @@ func _gui_input(event: InputEvent) -> void:
 		if (_command_rects[id] as Rect2).has_point(button.position):
 			press_command(id)
 			return
-	for unit_name in _portrait_rects:
-		if (_portrait_rects[unit_name] as Rect2).has_point(button.position):
-			if button.shift_pressed:
-				controls.selection.remove([unit_name])
-			elif button.ctrl_pressed:
-				var role := _role(unit_name)
-				controls.selection.set_units(controls.selection.units.filter(func(n: String) -> bool: return _role(n) == role))
-			else:
-				controls.selection.set_units([unit_name])
-			return
+	for key in _portrait_rects:
+		if not (_portrait_rects[key] as Rect2).has_point(button.position):
+			continue
+		var members := _members_of(String(key))
+		if button.shift_pressed:
+			controls.selection.remove(members)
+		elif button.ctrl_pressed and members.size() == 1:
+			var role := _role(members[0])
+			controls.selection.set_units(controls.selection.units.filter(func(n: String) -> bool: return _role(n) == role))
+		else:
+			controls.selection.set_units(members)
+		return
+
+
+## The selected units a portrait stands for: one unit, or every unit of that type when portraits are grouped.
+func _members_of(key: String) -> Array[String]:
+	if not key.begins_with("type:"):
+		return [key] as Array[String]
+	var id := key.substr(5)
+	var members: Array[String] = []
+	for unit_name in _sorted_units():
+		var tank := _tank(unit_name)
+		if tank != null and tank.unit_id == id:
+			members.append(unit_name)
+	return members
 
 
 # ---- Drawing ------------------------------------------------------------------------------------------------
@@ -244,7 +336,7 @@ func _draw() -> void:
 	match String(info["mode"]):
 		"group":
 			for portrait: Dictionary in info["portraits"]:
-				var cell: Rect2 = _portrait_rects.get(portrait["unit"], Rect2())
+				var cell: Rect2 = _portrait_rects.get(portrait["key"], Rect2())
 				if cell.size.x <= 0.0:
 					continue
 				draw_rect(cell, Color(CyberStyle.CARD, 0.95))
@@ -253,8 +345,15 @@ func _draw() -> void:
 				var bar_height := clampf(cell.size.y * 0.1, 5.0 * s, 12.0 * s)
 				_bars(Rect2(cell.position + Vector2(4, cell.size.y - bar_height - 4.0), Vector2(cell.size.x - 8, bar_height)),
 						float(portrait["health"]), float(portrait["shield"]), friendly, enemy)
-			_text(font, Vector2(PAD * s, 16.0 * s), "%d UNITS   %s" % [(info["portraits"] as Array).size(), String(info["orders"]).to_upper()],
-					15.0 * s, CyberStyle.CYAN)
+				# X4: a grouped portrait carries how many it stands for, top-right of the cell.
+				if int(portrait["count"]) > 1:
+					var tag := "x%d" % int(portrait["count"])
+					var tag_size := clampf(cell.size.y * 0.3, 11.0 * s, 20.0 * s)
+					var tag_width := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(tag_size)).x
+					_text(font, cell.position + Vector2(cell.size.x - tag_width - 3.0, tag_size + 1.0), tag, tag_size, CyberStyle.YELLOW)
+			# X4: one header for the whole selection - how many, what they are doing, how much of them is left.
+			_text(font, Vector2(PAD * s, 16.0 * s), "%d UNITS   %s   %d%%" % [int(info["count"]),
+					String(info["orders"]).to_upper(), roundi(float(info["strength"]) * 100.0)], 15.0 * s, CyberStyle.CYAN)
 		"unit", "enemy":
 			var card: Dictionary = info["card"]
 			var color := enemy if card.get("enemy", false) else friendly
