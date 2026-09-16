@@ -282,6 +282,24 @@ against a timeline instead of a guess:
  "reason":"outgunned here: break contact and bound back","size":1,"t":5.3,"team":"green","type":"element_drill"}
 ```
 
+**What the booth can actually say.** The announcer records every word in advance — there is no runtime
+speech — so a *spoken* line can only key on the **enumerated** fields, and `reason` is subtitle-only (audio,
+2026-09-16). The sets a shipped match can produce, which is the recording matrix:
+
+| Field | Values a shipped table can emit |
+|---|---|
+| `formation` | `wedge`, `column`, `line`, `vee`, `echelon_right`, `herringbone`, `coil`, `swarm` (8) |
+| `technique` | `traveling`, `traveling_overwatch`, `bounding_overwatch` (3) |
+| `drill` | `react_to_contact`, `near_ambush`, `assault_through`, `far_ambush`, `support_by_fire`, `break_contact`, `herringbone`, `bait` (8) |
+
+`ring` and `encircle` exist in the engine but **no shipped table selects them** (see *Why encircle is off*),
+so nothing should be recorded for them; `echelon_left` is in the vocabulary but unused today. A test holds
+these sets closed (`test_every_value_the_booth_has_to_speak_is_from_a_closed_set`), so adding a shape or a
+drill to a table is a deliberate act with a known cost in recordings rather than a silent gap in the booth.
+
+**The publisher is found by group, not by class.** `Elements` joins the `elements` group
+(`Elements.GROUP`), because a listener on another branch cannot name a class that doesn't exist there yet.
+
 **What doctrine filters out, so the booth doesn't have to.** An announcer that repeats itself is the exact
 complaint the lead made about the PA, so the noise is cut where it is generated:
 - an element with **no task** says nothing (before its first order it is parked, not "halting in cover");

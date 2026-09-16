@@ -24,6 +24,10 @@ signal leader_lost(id: int, fallen: String, successor: String)
 const UPDATE_TICKS := Element.UPDATE_TICKS
 ## Elements run before brains think (they set the orders the brains execute this tick).
 const PRIORITY := -30
+## Anyone who wants the decisions (the announcer's MatchEventAdapter) finds this node by group, so nothing
+## outside game/tactics/ has to name the Elements class to listen — it doesn't exist on their branch until
+## the checkpoint merges, and a file that names it wouldn't compile (audio, 2026-09-16).
+const GROUP := "elements"
 
 var game_match: Match
 var orders: Object
@@ -63,6 +67,7 @@ static func install(p_match: Match, p_orders: Object = null) -> Elements:
 
 func _ready() -> void:
 	process_physics_priority = PRIORITY
+	add_to_group(GROUP)
 
 
 ## Form an element from `units` (all on one team). They leave any element they were in.

@@ -151,7 +151,15 @@ Presumably we at least want the structured data publishable."* The plumbing is i
 - Five tests in `tests/test_tactics_reports.gd`, including one that fails if doctrine ever starts writing
   sentences instead of values.
 
-**Needed from audio (two small things, both in their paths):** add `element_formation` and `element_drill` to
+**Done by audio (2026-09-16):** both types are in the K5 validators, and `MatchEventAdapter` connects and
+stamps `tick`/`t`. It finds the publisher by the `elements` group (it can't name the class before CP1
+merges), so `Elements` joins that group on `_ready`. Two constraints came back that shape what is worth
+putting in an event: the booth **records every word in advance**, so only the enumerated fields can be
+spoken (`reason` is subtitle-only), and **matches are always between different factions** — nothing in the
+tables assumed otherwise, but the parity fixture uses two Condemned armies and is a doctrine isolation, not
+a matchup. The value sets a shipped table can emit are pinned by a test and listed in _agents/doctrine.md.
+
+**Originally needed from audio (two small things, both in their paths):** add `element_formation` and `element_drill` to
 `AnnouncerEvents.REQUIRED` (and the Python twin in `tools/announcer/events.py`), and have
 `MatchEventAdapter` connect to `Elements.element_reported` and stamp `tick`/`t` the way it already does. Then
 it's line-writing. **Proposed contract wording** for workstreams.md, as an extension of L1: *"L1 also

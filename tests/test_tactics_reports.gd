@@ -107,6 +107,47 @@ func test_an_element_with_no_orders_says_nothing() -> void:
 	assert_true(not ElementReport.of(element).is_empty(), "the same change once it has a job is")
 
 
+func test_the_publisher_can_be_found_without_naming_it() -> void:
+	# Audio's MatchEventAdapter cannot name the Elements class — it doesn't exist on their branch until the
+	# checkpoint merges, and a file that names it would not compile. So it finds the publisher by group.
+	var lab := TacticsLab.create(self, 59)
+	lab.unit(Match.Team.GREEN, "Green_A_1", Vector3(TacticsScenarios.LANE_X, 0.0, 20.0), 0.0)
+	await lab.start()
+	var found := tree.get_nodes_in_group(Elements.GROUP)
+	assert_true(found.has(lab.elements), "the match's Elements is in the '%s' group" % Elements.GROUP)
+	assert_true((found[0] as Node).has_signal("element_reported"),
+			"and it is recognisable by the signal a listener connects to")
+	lab.dispose()
+
+
+func test_every_value_the_booth_has_to_speak_is_from_a_closed_set() -> void:
+	# The announcer records words in advance: there is no runtime speech, so every spoken field has to come
+	# from a small enumerated set (audio, 2026-09-16). Free text lives in `reason`, which is subtitle-only.
+	DoctrineTable.clear_cache()
+	var formations := {}
+	var techniques := {}
+	var drills := {}
+	for file_name in DirAccess.get_files_at(DoctrineTable.DIR):
+		if not file_name.begins_with("doctrine_") or not file_name.ends_with(".json"):
+			continue
+		var table: DoctrineTable = DoctrineTable.load_table(
+				file_name.trim_prefix("doctrine_").trim_suffix(".json")).get("table")
+		for rule: Dictionary in table.movement:
+			formations[rule["formation"]] = true
+			techniques[rule["technique"]] = true
+		for drill in table.drills.get("enabled", []):
+			drills[drill] = true
+	for name: String in formations:
+		assert_true(TacticsFormation.NAMES.has(name), "%s is a known formation" % name)
+	for name: String in drills:
+		assert_true(Drills.NAMES.has(name), "%s is a known drill" % name)
+	assert_true(formations.size() <= 10, "the booth has at most ten shapes to record (%d)" % formations.size())
+	assert_eq(techniques.size(), 3, "and three movement techniques")
+	assert_true(drills.size() <= 9, "and at most nine drills (%d)" % drills.size())
+	assert_true(not drills.has("encircle"),
+			"encircle is not in any shipped table, so nobody should record lines for it")
+
+
 func test_doctrine_publishes_values_not_commentary() -> void:
 	# The words are audio's job. If doctrine ever starts writing sentences, this test should fail.
 	var element := Element.new(1, "Alpha", Match.Team.RUST, PackedStringArray(["Rust_A_1"]))
