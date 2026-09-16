@@ -27,7 +27,7 @@ func test_it_reads_a_slot_with_a_position_a_sector_and_a_role() -> void:
 			"slots": {"Green_A_2": {"position": [-104.0, 20.0], "facing": [-1.0, 0.0], "role": "overwatch"}}})
 	assert_eq(context["id"], "Alpha")
 	assert_eq(context["leader"], "Green_A_1")
-	assert_false(context["is_leader"], "Green_A_2 is not the leader")
+	assert_true(not bool(context["is_leader"]), "Green_A_2 is not the leader")
 	assert_eq(context["formation"], "line")
 	assert_eq(context["technique"], "bounding_overwatch")
 	assert_eq(context["drill"], "react_to_contact")
@@ -43,7 +43,7 @@ func test_a_leaner_state_leaves_the_brain_where_it_was() -> void:
 	assert_eq(context["slot"], null)
 	assert_eq(context["facing"], null)
 	assert_eq(context["role"], "", "no role was given and none is invented")
-	assert_false(ElementFeed.is_firing_base(context), "so it is not held in place")
+	assert_true(not ElementFeed.is_firing_base(context), "so it is not held in place")
 	assert_eq(TankBrain.element_slot({"element": context}), null, "and nothing leashes it")
 	assert_true(ElementFeed.in_sector(context, Vector3.ZERO, Vector3(0, 0, -30)), "every bearing is in sector")
 
@@ -84,7 +84,7 @@ func test_only_the_halves_that_shoot_are_held_in_place() -> void:
 	for role: String in ["overwatch", "base_of_fire"]:
 		assert_true(ElementFeed.is_firing_base({"role": role}), "%s holds where it stands and shoots" % role)
 	for role: String in ["bound", "maneuver", ""]:
-		assert_false(ElementFeed.is_firing_base({"role": role}), "%s is meant to be moving" % role)
+		assert_true(not ElementFeed.is_firing_base({"role": role}), "%s is meant to be moving" % role)
 
 
 func test_the_unit_that_is_supposed_to_be_moving_is_not_leashed_to_its_slot() -> void:
@@ -104,9 +104,9 @@ func test_a_sector_of_fire_is_a_cone_around_my_facing() -> void:
 	assert_true(ElementFeed.in_sector(context, me, Vector3(0, 0, -40)), "dead ahead")
 	assert_true(ElementFeed.in_sector(context, me, Vector3(30, 0, -40)), "37 degrees off is inside 60")
 	assert_true(ElementFeed.in_sector(context, me, Vector3(40, 0, -30)), "53 degrees is still inside")
-	assert_false(ElementFeed.in_sector(context, me, Vector3(40, 0, -20)), "63 degrees is outside")
-	assert_false(ElementFeed.in_sector(context, me, Vector3(40, 0, 0)), "abeam is outside")
-	assert_false(ElementFeed.in_sector(context, me, Vector3(0, 0, 40)), "and behind me certainly is")
+	assert_true(not ElementFeed.in_sector(context, me, Vector3(40, 0, -20)), "63 degrees is outside")
+	assert_true(not ElementFeed.in_sector(context, me, Vector3(40, 0, 0)), "abeam is outside")
+	assert_true(not ElementFeed.in_sector(context, me, Vector3(0, 0, 40)), "and behind me certainly is")
 	assert_true(ElementFeed.in_sector(context, me, me), "something on top of me is always in sector")
 
 
@@ -115,7 +115,7 @@ func test_a_brain_re_decides_only_when_the_leaders_call_changes() -> void:
 			"slots": {"Green_A_2": [0.0, 0.0]}})
 	var moved := _context({"technique": "bounding_overwatch", "moving": ["Green_A_2"],
 			"slots": {"Green_A_2": [0.0, 0.0]}})
-	assert_false(ElementFeed.changed(moving, moved), "nothing changed")
+	assert_true(not ElementFeed.changed(moving, moved), "nothing changed")
 	var halted := _context({"technique": "bounding_overwatch", "moving": [],
 			"slots": {"Green_A_2": [0.0, 0.0]}})
 	assert_true(ElementFeed.changed(moving, halted), "the leader called the halt")

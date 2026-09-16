@@ -273,3 +273,46 @@ static func _lane_distance(from: Vector3, to: Vector3, point: Vector3) -> float:
 		return offset.length()
 	var along := clampf(offset.dot(line / length), 0.0, length)
 	return (offset - line / length * along).length()
+
+
+# ---- 4. against doctrine's own Elements --------------------------------------------------------
+
+func test_the_feed_reads_what_doctrine_actually_publishes() -> void:
+	# The scenarios above stage the leader's call with a stub, because they are about how a brain EXECUTES one. This
+	# one runs doctrine's real `Elements` (CP1) and checks the reading itself: doctrine publishes slots as bare world
+	# positions and sectors as DEGREES off the element's heading, and ElementFeed is where that difference lives. If
+	# doctrine changes the shape, this fails here rather than quietly leaving every brain without a sector.
+	var s := AiScenario.create(self, 15)
+	var units: Array[Tank] = []
+	for i in 4:
+		units.append(s.brain_tank(Match.Team.GREEN, "Green_A_%d" % (i + 1), Vector3(-104.0 + i * 8.0, 0, 45), 0.0))
+	var elements := s.real_elements()
+	var element: Element = elements.form(units.map(func(t: Tank) -> String: return String(t.name)), "Alpha")
+	assert_eq(element.assign({"verb": "move", "to": [-104.0, -10.0]}), "", "setup: the element takes a move task")
+	await s.start()
+	for tick in 60 * 3:
+		await s.step()
+	var feed := ElementFeed.source(s.game_match)
+	assert_true(feed != null, "the installed Elements is what brains read")
+	var with_slots := 0
+	var with_sectors := 0
+	for tank in units:
+		var brain := s.brain_of(tank)
+		var context := ElementFeed.context(feed, String(tank.name), String(brain.order.get("verb", "")))
+		assert_true(not context.is_empty(), "%s is in an element" % tank.name)
+		assert_eq(context["formation"], element.formation, "the formation the leader chose")
+		assert_eq(context["technique"], element.technique, "the movement technique it chose")
+		assert_eq(context["leader"], element.leader, "and who the leader is")
+		assert_true(Array(context["members"]).has(String(tank.name)), "the roster includes me")
+		if context["slot"] != null:
+			with_slots += 1
+			assert_true((context["slot"] as Vector3).length() < 400.0, "the slot is a world position, not an offset")
+		if context["facing"] != null:
+			with_sectors += 1
+			assert_true(is_equal_approx((context["facing"] as Vector3).length(), 1.0), "the sector is a unit vector")
+		# What the brain does with it, end to end: the same context reaches its situation.
+		assert_eq(brain.element.get("id", ""), context["id"], "the brain is reading the same element")
+	print("MEASURE element_feed_parity %d of %d with a slot, %d with a sector; formation %s, technique %s" % [
+			with_slots, units.size(), with_sectors, element.formation, element.technique])
+	assert_eq(with_slots, units.size(), "every member got a world slot out of the real Elements")
+	assert_eq(with_sectors, units.size(), "and a sector of fire (degrees off the heading, turned into a direction)")

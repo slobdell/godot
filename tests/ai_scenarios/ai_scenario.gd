@@ -106,21 +106,23 @@ func orders() -> Object:
 	return stub
 
 
-## L1 elements for this match's brains (ElementFeed): the match's own, else doctrine's `Elements` (after CP1), else a
-## StubElements with the contract's shape. Form one with `elements().form([name, ...], "Alpha")`.
-func elements() -> Object:
+## L1 elements for this match's brains, staged by hand: a StubElements the scenario drives itself
+## (`elements().form([name, ...], "Alpha")`, then `bound()` / `support_by_fire()` / `halt()`). These scenarios test how
+## a brain EXECUTES a leader's call, so the call is staged rather than decided — doctrine owns who decides.
+## `real_elements()` is the other half: the same reading against doctrine's own `Elements`.
+func elements() -> StubElements:
 	var existing := ElementFeed.source(game_match)
-	if existing != null:
+	if existing is StubElements:
 		return existing
-	for entry: Dictionary in ProjectSettings.get_global_class_list():
-		if entry["class"] == "Elements":
-			var script: GDScript = load(entry["path"])
-			var real: Object = script.new(game_match)
-			ElementFeed.attach(game_match, real)
-			return real
 	var stub := StubElements.new(game_match, orders())
 	ElementFeed.attach(game_match, stub)
 	return stub
+
+
+## Doctrine's real `Elements` (CP1), installed on this match and wired to its K1 Orders: for checking that ElementFeed
+## reads what doctrine actually publishes.
+func real_elements() -> Elements:
+	return Elements.install(game_match, orders())
 
 
 func brain_of(tank: Tank) -> TankBrain:

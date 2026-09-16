@@ -51,7 +51,13 @@ func _run() -> void:
 			print("  FAIL  %s (does not parse; see the parse errors above)" % file.get_basename())
 			continue
 		var pending: Array = script.get_script_constant_map().get("PENDING", [])
-		for method in script.get_script_method_list():
+		var methods := script.get_script_method_list()
+		if not methods.any(func(m: Dictionary) -> bool: return String(m["name"]).begins_with("test_")):
+			# A file that fails to compile still loads, with no methods: it used to leave the run green.
+			counts["failed"] += 1
+			print("  FAIL  %s (no test_ methods; see the parse errors above)" % file.get_basename())
+			continue
+		for method in methods:
 			var method_name: String = method["name"]
 			var label := "%s::%s" % [file.get_basename(), method_name]
 			if not method_name.begins_with("test_") or (filter != "" and not label.contains(filter)):

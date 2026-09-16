@@ -10,10 +10,11 @@ extends RefCounted
 ## attach() (scenarios before CP1, tools). It needs `of(unit_name) -> Object | null`; each element needs
 ## `state() -> Dictionary` and, ideally, signal `element_changed(id)`.
 ##
-## state() is contract L1's `{formation, technique, drill, reason, slots}`. `slots` is read as
-## unit name -> `{position, facing?, role?}` (also accepted: a bare position per unit, or an array parallel to
-## `members`). Anything missing simply isn't used, so a leaner `Elements` still works: a brain with no slot behaves
-## exactly as it did before elements existed.
+## What doctrine ships (CP1) is `{id, name, team, leader, members, task, formation, technique, drill, reason,
+## slots: {unit: Vector3}, sectors: {unit: degrees clockwise off the element heading}, detached, events}`. This reads
+## that, and also the richer shapes a stub or a later `Elements` might publish: a slot as `{position, facing?, role?}`,
+## a list parallel to `members`, a named moving half. Anything missing simply isn't used, so a brain that learns
+## nothing here behaves exactly as it did before elements existed.
 ##
 ## context() is normalized for brains into
 ##   {"id": String, "leader": String, "is_leader": bool,
@@ -23,6 +24,10 @@ extends RefCounted
 ##    "facing": Vector3 | null    my sector of fire, a flat unit vector,
 ##    "role": "" | "bound" | "overwatch" | "base_of_fire" | "maneuver",
 ##    "members": PackedStringArray (sorted), "key": String}
+## `role` is what a brain executes differently, and doctrine's state() doesn't publish it yet (see the ai stream's
+## *Requests to other streams*). Until it does it is derived: from a named moving half when there is one, else from
+## the movement technique or drill together with the verb of the K1 order the leader issued me — under bounding
+## overwatch the half that was told to move is bounding and the half told to hold is covering it.
 ## `key` changes exactly when something a brain must react to changed, so a brain notices the leader's call even if
 ## the source has no signal.
 
@@ -68,11 +73,11 @@ static func element_of(elements: Object, unit_name: String) -> Object:
 
 
 ## This unit's element context (see the header), or {} when it has no element.
-static func context(elements: Object, unit_name: String) -> Dictionary:
-	return normalize(element_of(elements, unit_name), unit_name)
+static func context(elements: Object, unit_name: String, order_verb := "") -> Dictionary:
+	return normalize(element_of(elements, unit_name), unit_name, order_verb)
 
 
-static func normalize(element: Object, unit_name: String) -> Dictionary:
+static func normalize(element: Object, unit_name: String, order_verb := "") -> Dictionary:
 	if element == null or not element.has_method("state"):
 		return {}
 	var raw: Variant = element.call("state")
@@ -80,24 +85,28 @@ static func normalize(element: Object, unit_name: String) -> Dictionary:
 		return {}
 	var state: Dictionary = raw
 	var members := _members(state, element)
-	var leader := String(state.get("leader", element.get("leader") if "leader" in element else ""))
-	var technique := String(state.get("technique", ""))
-	var drill := String(state.get("drill", ""))
-	var task := String(state.get("task", state.get("verb", "")))
+	var leader := _text(state.get("leader"))
+	if leader == "" and "leader" in element:
+		leader = _text(element.get("leader"))
+	var technique := _text(state.get("technique"))
+	var drill := _text(state.get("drill"))
+	var task := _task_verb(state.get("task", state.get("verb", "")))
 	var mine := _slot_of(state, unit_name, members)
-	var context := {
-		"id": String(state.get("id", element.get("id") if "id" in element else "")),
-		"leader": leader,
-		"is_leader": leader != "" and leader == unit_name,
-		"formation": String(state.get("formation", "")),
-		"technique": technique if TECHNIQUES.has(technique) else "",
-		"drill": drill if DRILLS.has(drill) else "",
-		"task": task if TASKS.has(task) else "",
-		"slot": OrderFeed.point(mine.get("position")),
-		"facing": _direction(mine.get("facing")),
-		"role": _role(mine, state, unit_name, technique, drill, task),
-		"members": members,
-	}
+	var id_value: Variant = state.get("id")
+	if id_value == null and "id" in element:
+		id_value = element.get("id")
+	var context := {}
+	context["id"] = _text(id_value)
+	context["leader"] = leader
+	context["is_leader"] = leader != "" and leader == unit_name
+	context["formation"] = _text(state.get("formation"))
+	context["technique"] = technique if TECHNIQUES.has(technique) else ""
+	context["drill"] = drill if DRILLS.has(drill) else ""
+	context["task"] = task if TASKS.has(task) else ""
+	context["slot"] = OrderFeed.point(mine.get("position"))
+	context["facing"] = _sector(state, element, unit_name, mine)
+	context["role"] = _role(mine, state, unit_name, technique, drill, task, order_verb)
+	context["members"] = members
 	context["key"] = "%s|%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
 			context["role"], context["slot"]]
 	return context
@@ -105,12 +114,12 @@ static func normalize(element: Object, unit_name: String) -> Dictionary:
 
 ## True when a brain must re-decide: the element's call changed (a bound halted, a drill started, my role flipped).
 static func changed(before: Dictionary, after: Dictionary) -> bool:
-	return String(before.get("key", "")) != String(after.get("key", ""))
+	return _text(before.get("key")) != _text(after.get("key"))
 
 
 ## Is this unit one of the ones holding still and shooting so someone else can move?
 static func is_firing_base(context: Dictionary) -> bool:
-	return ["overwatch", "base_of_fire"].has(String(context.get("role", "")))
+	return ["overwatch", "base_of_fire"].has(_text(context.get("role")))
 
 
 ## Is `point` inside my sector of fire (or do I not have one)? `half_width_cos` is a cosine, not an angle.
@@ -124,6 +133,49 @@ static func in_sector(context: Dictionary, from: Vector3, point: Vector3, half_w
 	return to_point.normalized().dot(facing) >= half_width_cos
 
 
+## Text out of a Variant, "" for a missing value. `String(x)` is NOT safe here: on a statically-Variant expression it
+## fails at runtime ("Nonexistent 'String' constructor") for anything that isn't already text, which is exactly what a
+## feed reading someone else's dictionary is full of — doctrine's element id is an int, and that cost an hour.
+static func _text(value: Variant) -> String:
+	if value == null:
+		return ""
+	return str(value)
+
+
+## A task is contract L1's `{"verb": ..., "to"?, "target"?}`; a stub may pass the verb alone.
+static func _task_verb(raw: Variant) -> String:
+	if typeof(raw) == TYPE_DICTIONARY:
+		return _text((raw as Dictionary).get("verb"))
+	return _text(raw)
+
+
+## My sector of fire as a flat unit vector. Doctrine publishes `sectors[unit]` in DEGREES clockwise off the element's
+## heading (TacticsFormation.sectors/rotate), so the heading is needed to turn one into a direction; it comes from
+## state() when it's there, else from the element's own `heading`. A slot that carries its own `facing` wins.
+static func _sector(state: Dictionary, element: Object, unit_name: String, mine: Dictionary) -> Variant:
+	var explicit: Variant = _direction(mine.get("facing"))
+	if explicit != null:
+		return explicit
+	var sectors: Variant = state.get("sectors")
+	if typeof(sectors) != TYPE_DICTIONARY or not (sectors as Dictionary).has(unit_name):
+		return null
+	var value: Variant = (sectors as Dictionary)[unit_name]
+	var as_direction: Variant = _direction(value)
+	if as_direction != null:
+		return as_direction  # a stub may publish the direction itself
+	if typeof(value) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(value)):
+		return null
+	var heading: Variant = _direction(state.get("heading"))
+	if heading == null and "heading" in element:
+		heading = _direction(element.get("heading"))
+	if heading == null:
+		return null
+	var forward: Vector3 = heading
+	var radians := deg_to_rad(float(value))
+	# Clockwise from the heading, toward the element's own right (TacticsFormation.rotate).
+	return (forward * cos(radians) + Vector3(-forward.z, 0.0, forward.x) * sin(radians)).normalized()
+
+
 static func _members(state: Dictionary, element: Object) -> PackedStringArray:
 	var raw: Variant = state.get("members")
 	if raw == null and "members" in element:
@@ -132,7 +184,7 @@ static func _members(state: Dictionary, element: Object) -> PackedStringArray:
 		raw = (state.get("slots") as Dictionary).keys() if typeof(state.get("slots")) == TYPE_DICTIONARY else []
 	var names: PackedStringArray = []
 	for value: Variant in Array(raw):
-		names.append(String(value))
+		names.append(_text(value))
 	names.sort()  # determinism: brains iterate members in one order whatever the source's insertion order was
 	return names
 
@@ -157,21 +209,29 @@ static func _slot_of(state: Dictionary, unit_name: String, members: PackedString
 
 ## My role, from the slot when doctrine names it, else derived from the technique and the drill in force.
 static func _role(mine: Dictionary, state: Dictionary, unit_name: String, technique: String, drill: String,
-		task: String) -> String:
-	var named := String(mine.get("role", ""))
+		task: String, order_verb: String) -> String:
+	var named := _text(mine.get("role"))
 	if ROLES.has(named):
 		return named
+	var roles: Variant = state.get("roles")
+	if typeof(roles) == TYPE_DICTIONARY and ROLES.has(_text((roles as Dictionary).get(unit_name))):
+		return _text((roles as Dictionary)[unit_name])
 	# Doctrine may instead name the element half that is moving; everyone else is covering it.
-	var moving := _names(state.get("moving", state.get("bounding", state.get("maneuver"))))
+	var moving := _names(state.get("moving", state.get("maneuver")))
+	var supporting := drill == "support_by_fire" or task == "support_by_fire"
 	if not moving.is_empty():
 		var i_move := moving.has(unit_name)
-		if drill == "support_by_fire" or task == "support_by_fire":
+		if supporting:
 			return "maneuver" if i_move else "base_of_fire"
 		return "bound" if i_move else "overwatch"
-	if drill == "support_by_fire" or task == "support_by_fire":
-		return "base_of_fire"
-	# Nothing said who is moving and who is covering: no role, and the brain behaves as it did before elements.
-	return ""
+	# Nothing named the halves, so read the leader's own order to me: it told the movers to move and the rest to hold.
+	if not supporting and technique != "bounding_overwatch":
+		return ""
+	if ["move", "attack_move"].has(order_verb):
+		return "maneuver" if supporting else "bound"
+	if ["hold", "stop"].has(order_verb):
+		return "base_of_fire" if supporting else "overwatch"
+	return "base_of_fire" if supporting else ""
 
 
 static func _names(raw: Variant) -> PackedStringArray:
@@ -179,7 +239,7 @@ static func _names(raw: Variant) -> PackedStringArray:
 	if raw == null or typeof(raw) not in [TYPE_ARRAY, TYPE_PACKED_STRING_ARRAY]:
 		return names
 	for value: Variant in Array(raw):
-		names.append(String(value))
+		names.append(_text(value))
 	return names
 
 

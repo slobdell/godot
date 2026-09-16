@@ -422,14 +422,19 @@ func _poll_element(think_tick: bool) -> bool:
 	if feed == null or not (_element_dirty or think_tick or not feed.has_signal("element_changed")):
 		return false
 	_element_dirty = false
-	var now := ElementFeed.context(feed, String(tank.name))
+	# The verb of the order my leader gave me is part of reading the element: under bounding overwatch the half told
+	# to move is the one bounding, and the half told to hold is covering it (ElementFeed._role).
+	var now := ElementFeed.context(feed, String(tank.name), String(order.get("verb", "")))
 	var call_changed := ElementFeed.changed(element, now)
 	element = now
 	return call_changed
 
 
-func _on_element_changed(id: String) -> void:
-	if element.is_empty() or id == String(element.get("id", "")):
+## Elements publishes `element_changed(id: int)`; a stub may name it with a string. Either way it only matters
+## whether it is mine.
+func _on_element_changed(id: Variant) -> void:
+	# str(), not String(): the id arrives as an int from Elements and String() has no Variant constructor.
+	if element.is_empty() or str(id) == str(element.get("id", "")):
 		_element_dirty = true
 
 
