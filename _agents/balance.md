@@ -173,6 +173,46 @@ stats out of one shared mechanics vocabulary, and its army size falls out of the
   play as themselves and *look* like the Condemned through the C6 fallback. Shipping the models would take the web
   pack from 0.8 MB to ~48 MB — a cross-stream call. See the combat brief's *Questions for the lead*.
 
+### X5: what the simulation costs at scale (measured 2026-09-16, builder0)
+
+`make remote T="scale-bench TIME=40"` runs a headless match at N vehicles a side and reads `speedup` (simulated
+seconds per real second) out of `MATCH_RESULT`, so **ms/tick = 1000 / (60 × speedup)**. Run without brains for the
+simulation's own cost and with them for the whole picture; the difference is ai's. 60 fps is a **16.7 ms** budget for
+everything including rendering.
+
+| A side (units) | Sim only, before | Sim only, **after** | With brains, before | With brains, **after** |
+|---|---|---|---|---|
+| 25 (50) | 4.39 ms | **3.03** | 12.82 ms | **10.42** |
+| 40 (80) | 7.94 | **5.05** | 23.81 | **18.52** |
+| 60 (120) | 15.15 | **7.58** | 41.67 | **33.33** |
+| 100 (200) | 33.33 | **13.89** | 83.33 | **55.56** |
+
+**Two fixes, 30–58% off the simulation:**
+1. `Match._sorted_tanks()` re-sorted every tank by name, through a GDScript lambda comparator, on **every call** —
+   a dozen call sites, several of them every tick. It is now built at most once per tick (keyed on the tick and the
+   child count; `remove_player` invalidates it by hand, because a freed tank doesn't change the child count until
+   the frame ends). This was the single most expensive thing in the simulation at scale.
+2. The "idle guns" readout (`gun_ready_samples` / `gun_idle_samples`) paid a line-of-sight raycast for every
+   viewer-enemy pair in weapon range on **every** intel pass — the same order of work as team vision itself, for a
+   statistic. Sampled every 10th pass now (`GUN_READY_EVERY_INTELS`); the ratio it reports is unchanged.
+
+The sim baseline did not move, which is the proof that neither changed the simulation.
+
+**Where that leaves the lead's 30 a side (60 units):** about **3.9 ms of simulation** and **~13 ms with brains**,
+headless on builder0. The simulation fits comfortably; the frame does not, once rendering is added. The remaining
+cost is brain time, which is ai's stream (their target is ≤ 4 ms per tick at 60 units). Caveats worth keeping: this
+is builder0, which runs up to three agents' heavy jobs at once, and it is headless, so it excludes rendering
+entirely. The laptop's integrated GPU is the real judge.
+
+**A rendering ceiling found while screenshotting a 31-vs-35 battle** (`make faction-shots`): Godot logs
+`Too many instances using shader instance variables … Maximum items supported by this hardware is: 4096`. Each
+vehicle's visual slots consume shader instance uniforms, and a full-scale battle exhausts the pool. It is an art /
+theme problem, not a simulation one, and no stream owns `game/theme/**` this round — flagged in the combat brief.
+
+**Arena and spawns:** the spawn grid holds 52 a side (13 columns 11 m apart out to ±66 m, 4 rows 8 m apart from
+`BASE_Z`), and the existing 240 × 240 m arenas are not crowded at 35 a side — the screenshots show both armies
+converged on the control point with most of the map empty. No arena needed to grow.
+
 **Open:** `Doctrine.MAX_SQUADS` is 5 (a player-UI number), but 28 vehicles need six squads or more, so faction armies
 are validated through `Army.parse_scaled`, which runs `Doctrine.parse` over slices of five squads. Requested of the
 doctrine stream: raise `MAX_SQUADS` (or make it a UI-only cap) and this wrapper goes away.

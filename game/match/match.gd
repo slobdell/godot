@@ -61,6 +61,10 @@ const SPAWN_JITTER_MAX_Z := 1.2
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false
 
+## X5: the "idle guns" readout (gun_ready_samples / gun_idle_samples) costs a line-of-sight raycast for every
+## viewer-enemy pair in weapon range, which is the same order of work as team vision itself and buys nothing the
+## simulation needs. Sampled this many INTEL passes apart instead of every one; the ratio it reports is unchanged.
+const GUN_READY_EVERY_INTELS := 10
 ## Shared team vision: refreshed this often, remembered this long. How far each tank sees is its own
 ## Tank.sight_radius (G1); SENSOR_RANGE is the standard tank's, kept for callers that need a default.
 const INTEL_EVERY_TICKS := 6
@@ -296,6 +300,7 @@ func remove_player(peer_id: int) -> void:
 	var tank := tanks.get_node_or_null("Tank_%d" % peer_id)
 	if tank != null:
 		tank.queue_free()  # the spawner removes it on every client too
+		_sorted_cache_tick = -1  # a tank leaving mid-tick must not linger in this tick's cached list
 
 
 ## A server-controlled tank with a BotController brain (team -1 = the smaller team).
@@ -667,7 +672,7 @@ func _update_intel() -> void:
 		for contact in known.values():
 			contact["visible"] = false
 		var viewers := sorted_team_tanks(team)
-		for viewer in viewers:
+		for viewer in (viewers if tick % (INTEL_EVERY_TICKS * GUN_READY_EVERY_INTELS) == 0 else [] as Array[Tank]):
 			if not viewer.is_alive() or not viewer.ready_to_fire():
 				continue
 			for enemy in sorted_team_tanks(1 - team):
@@ -691,7 +696,10 @@ func _update_intel() -> void:
 				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
 						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
 						"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "unit": enemy.unit_id,
-						"role": Units.role_of(enemy.unit_id), "visible": true, "seen_tick": tick}
+						# L2: how suppressed a contact is, for brains that pick a target or a moment to flank (ai asked,
+						# 2026-09-16). It is what you can see from outside: a crew with its head down.
+						"suppression": enemy.suppression, "role": Units.role_of(enemy.unit_id), "visible": true,
+						"seen_tick": tick}
 				break
 		for contact_name in known.keys():
 			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
@@ -1020,14 +1028,31 @@ func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: T
 const CONE_EVENT_TICKS := 6
 
 
+## X5 (round 4): the sorted list is rebuilt at most once per tick. It was being sorted from scratch by a GDScript
+## lambda on every call — a dozen call sites, several of them per tick — which is O(n log n) of interpreted
+## comparisons per call and the single most expensive thing in the simulation at 60 units a side. The cache is
+## keyed on the tick AND the child count, so a spawn inside a tick still rebuilds it. A tank freed mid-tick does not
+## change the child count until the frame ends, so the one place that frees one (remove_player) invalidates the
+## cache by hand.
+var _sorted_cache: Array[Tank] = []
+var _sorted_cache_tick := -1
+var _sorted_cache_children := -1
+
+
 ## Tanks in a stable order (by name): anything that affects decisions or damage
 ## must iterate deterministically.
 func _sorted_tanks() -> Array[Tank]:
+	var children := tanks.get_child_count()
+	if _sorted_cache_tick == tick and _sorted_cache_children == children:
+		return _sorted_cache
 	var result: Array[Tank] = []
 	for node in tanks.get_children():
 		if node is Tank and not node.is_queued_for_deletion():
 			result.append(node)
 	result.sort_custom(func(a: Tank, b: Tank) -> bool: return String(a.name) < String(b.name))
+	_sorted_cache = result
+	_sorted_cache_tick = tick
+	_sorted_cache_children = children
 	return result
 
 

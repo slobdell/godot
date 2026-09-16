@@ -228,3 +228,37 @@ Things I changed on purpose that others should know about:
 
 Verified: `make remote T=check` green, 697 tests, **sim baseline unchanged** — nothing here alters the seeded
 Condemned-vs-Condemned match the baseline records.
+
+### X5 done (2026-09-16): the simulation is 30–58% cheaper, and 30 a side now hinges on brain cost
+
+`make remote T="scale-bench TIME=40"` is the ladder (25 / 40 / 60 / 100 a side, with and without brains). It reads
+`speedup` out of `MATCH_RESULT`, so ms/tick = 1000 / (60 × speedup); 60 fps is a 16.7 ms budget for *everything*.
+
+| A side (units) | Sim only, before → after | With brains, before → after |
+|---|---|---|
+| 25 (50) | 4.39 → **3.03 ms** | 12.82 → **10.42 ms** |
+| 40 (80) | 7.94 → **5.05** | 23.81 → **18.52** |
+| 60 (120) | 15.15 → **7.58** | 41.67 → **33.33** |
+| 100 (200) | 33.33 → **13.89** | 83.33 → **55.56** |
+
+Two fixes did it, both in `Match`: `_sorted_tanks()` was re-sorting every tank by name through a GDScript lambda on
+**every call** (a dozen call sites, several per tick) and is now built at most once per tick; and the "idle guns"
+readout was paying a line-of-sight raycast per viewer-enemy pair on every intel pass, for a statistic, and now
+samples every 10th pass. **The sim baseline did not move**, which is the proof neither touched the simulation.
+
+**At the lead's 30 a side (60 units): ~3.9 ms of simulation, ~13 ms with brains.** The simulation fits; the frame
+does not once rendering is added, and the rest is brain cost — ai's stream, whose own target is ≤ 4 ms at 60 units.
+Caveats: builder0 runs up to three agents' jobs at once, and headless excludes rendering entirely.
+
+**Requests / flags from X5**
+- **ai:** at 60 units the brains are ~26 of the 33 ms. `make remote T="scale-bench TIME=40"` gives you a
+  before-and-after on the same ladder.
+- **No stream owns `game/theme/**` this round, so this one is for the orchestrator or the lead.** Screenshotting a
+  31-vs-35 battle, Godot logs `Too many instances using shader instance variables … Maximum items supported by this
+  hardware is: 4096`. Each vehicle's visual slots consume shader instance uniforms and a full-scale battle exhausts
+  the pool. Art/theme problem, not simulation, but it will be visible the moment anyone renders 30 a side.
+- **control:** in `make faction-shots` at 31-vs-35 the nameplates and intents are an unreadable wall of text over the
+  middle of the map. That is your *readability at 30+ a side* item; the screenshots in `build/screenshots/faction-*`
+  are a ready-made before picture.
+
+New targets (mine): `make scale-bench`, `make faction-shots`, `make faction-matrix` (+ `tools/faction_matrix.py`).
