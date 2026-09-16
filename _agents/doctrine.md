@@ -303,7 +303,15 @@ What that means for the drills, in order:
    the contract wrote `is_beaten_zone(from, to)`, and combat added the team first, because incoming fire has
    to belong to somebody.)
 4. **Then re-measure**, with `make tactics-measure`: bounding overwatch (0.51 today against 0.74 for
-   traveling) is the number that should move, and dispersion against splash is the other.
+   traveling) is the number that should move, and dispersion against splash is the other. Both halves of the
+   trade should flip together — the base of fire starts buying something, and the element that bounds behind
+   it starts surviving.
+5. **The sharpest test will be a Law element** (combat's X4 rosters): the **sonic emitter** applies 4.0
+   suppression per second in a cone, about ten times a machine gun, and the **gas rocket truck** 5.0 a burst
+   over 14 m — both with almost no damage. They are suppression *delivery systems*, so an element built
+   around "shut it down, then walk in" is where support by fire either pays or visibly doesn't. The Law's
+   table already bounds at every threat level; if suppression works, that table should stop being the
+   cautious one and start being the effective one.
 
 ### Drills (seed per scenario, `make tactics-drills`)
 

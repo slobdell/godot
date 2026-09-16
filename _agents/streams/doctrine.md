@@ -176,6 +176,11 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
 
 ### Merge notes (shared files)
 
+- **Known conflict, `tests/test_match_spawns_and_results.gd`:** combat rewrote the same fixture in d916dc2
+  (`test_a_full_faction_army_a_side_spawns_clear_of_itself`, deriving from `Army.MAX_ARMY_UNITS` = 45, and the
+  front-row test from `Match.SLOT_X.size()`). **Take combat's version** — it is the same fix by a better
+  constant — and keep the invariant they named: `Army.MAX_ARMY_UNITS <= Doctrine.MAX_UNITS` (45 <= 52 with
+  their spawn grid). Mine only exists because my branch has to be green before theirs merges.
 - `tests/test_match_spawns_and_results.gd`: the full-army fixture and its assertion now come from
   `Doctrine.MAX_UNITS` instead of a typed-in 50, so the test follows the caps (it was `5 x 5 = 50`, which the
   squad-cap change would have broken, and combat's 52-slot grid would have broken again). The method is now
