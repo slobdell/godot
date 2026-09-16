@@ -73,4 +73,42 @@ Doctrine data and element leaders (doctrine), weapons, suppression and rosters (
 
 ## Status
 
-- 2026-09-16: brief written for round 4. Nothing started.
+_Round 4, control stream. Updated 2026-09-15._
+
+### Plan (backlog in order)
+
+1. **X1 vision-framed camera (L4).** `VisionRegion` (pure math: sight discs, contains/clamp/bounds) →
+   `RtsCamera.frame_vision` + a continuous `Track.VISION` mode reusing the existing speed-limited tracking →
+   the zoom-out cap (`vision_zoom`) the wheel and Tab both obey → manual override with a timed hand-back →
+   "look" panning clamped to the team's vision.
+2. **X2 element focus and awareness.** Off-screen edge markers + a rate-limited alert feed you can jump to; the
+   radar becomes the map (contacts, last-known, element facings, click to look, right-click to order).
+3. **X3 tasks not geometry.** Command card issues tasks; shows the element's formation/technique/drill and a
+   one-line reason, read through an `ElementView` adapter that stubs L1 until CP1 lands.
+4. **X4 command at 30+ a side.** Grouped portraits with counts, per-element health, latency and frame-cost
+   measurements at 60 selected, "select all combat units" and "next idle element".
+5. **X5 faction pick in skirmish** (needs combat's L3; stub `Units.roster` behind an adapter until CP2).
+6. **X6 readability at close zoom.** Re-tune rings, nameplates, bars, markers at the new default zoom, 1920×1080
+   and 1280×720 screenshots.
+
+### Decisions (with reasons)
+
+- **The brief's `max_zoom_in` is implemented as a zoom-out cap** (`RtsCamera.vision_zoom`). In this codebase
+  `zoom` runs 0 = close to 1 = high, and the rule the lead asked for ("a bird's eye view is just an unearned god
+  view") is a limit on how far *out* you may go, not how far in. Zooming in closer than the auto frame stays free:
+  it costs you awareness, which is the player's call.
+- **Two zooms from one region.** The auto frame fits the commanded element's units, its spotted contacts and its
+  destination ("as close as possible"); the cap fits the same units' *sight discs* ("the same horizon as what all
+  units can collectively see"). Both are `frame_pose` on different point sets, so the math is shared and testable.
+
+### Done
+
+- Nothing yet; baseline `make remote T=check` running.
+
+### Questions for the lead
+
+- None yet.
+
+### Requests to other streams
+
+- None yet.
