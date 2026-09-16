@@ -8,10 +8,12 @@ extends Control
 ##            that type · Escape clears (or cancels a pending order) · click an enemy to inspect it
 ##   ORDER    right-click ground = move · right-click an enemy = attack · right-click a friend = follow
 ##            A then click = attack-move · F then click a friend = follow · M then click = move
+##            E then click = screen that flank · R then click = support by fire (X3: L1 tasks, elements only)
 ##            S = stop · H = hold · shift queues any order (and keeps A/F/M armed for the next click)
 ##            G cycles the formation (auto by default: the group arranges itself by role and situation)
 ##            right-clicking an enemy with a mixed selection sends only the guns that can hurt it; the rest escort
-##   OTHER    F1 selects idle units · resting the mouse on a unit shows its stats
+##   OTHER    F1 selects idle units · Q jumps to the newest alert · resting the mouse on a unit shows its stats
+##            elements you aren't watching sit on the screen edge (EdgeMarkers): click one to go to it
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
 ##   TIME     Space pauses (orders still work while paused)
@@ -27,9 +29,16 @@ const PICK_BODY_M := 2.6
 ## Screen positions count as "inside the box" within this margin (hull edges peeking in).
 const BOX_MARGIN_PX := 4.0
 ## Armed orders a key waits for a click to complete (A, F, M), and what each click becomes.
-const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move"}
+const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire"}
 const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy", "follow": "FOLLOW: click a friendly unit",
-		"move": "MOVE: click the ground"}
+		"move": "MOVE: click the ground", "screen": "SCREEN: click the flank to cover",
+		"support_by_fire": "SUPPORT BY FIRE: click the position to fire from"}
+## X3: verbs the player gives an element as an L1 task (its leader picks the formation, technique and drills).
+## attack-move maps onto a move task on purpose: an element on the move already runs react-to-contact, which is
+## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
+## down so its leader stops re-issuing.
+const ELEMENT_TASKS := {"move": "move", "attack_move": "move", "attack": "attack", "hold": "hold",
+		"screen": "screen", "support_by_fire": "support_by_fire"}
 ## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
 const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
 ## A right-clicked enemy is attacked only by selected units whose weapon does at least this fraction of its damage
@@ -43,6 +52,9 @@ const OFF_SCREEN_PX := 4000.0
 const ACK_SECONDS := 0.7
 ## A second tap on the same group number within this long centers the camera on it (seconds, wall time: UI only).
 const DOUBLE_TAP_SECONDS := 0.4
+## L4 (X1): a queued destination further than this from the element is left out of the camera's frame; the camera
+## leans toward it instead of climbing (RtsCamera.order_pose does the leaning).
+const FRAME_DESTINATION_M := 220.0
 
 var game_match: Match
 var orders: Orders
@@ -55,6 +67,12 @@ var team := Match.Team.GREEN
 var reveal_all := false
 var selection := Selection.new()
 var groups := ControlGroups.new()
+## X2: how every element is doing, and the alerts Q jumps to.
+var awareness := ElementAwareness.new()
+## X3 (L1): doctrine's elements, when the mode installed them. Null = every order goes out directly.
+var elements: Elements
+## X2: the off-screen element chips and the alert strip (set by the mode).
+var markers: EdgeMarkers
 ## The armed order waiting for a click ("" = none): "attack_move", "follow", or "move".
 var mode := ""
 ## The formation move, attack-move, and hold orders ask for (FORMATION_CYCLE; G cycles it).
@@ -93,6 +111,7 @@ func _ready() -> void:
 	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_overlay)
 	_overlay.draw.connect(_draw_overlay)
+	awareness.groups = groups
 
 
 func _process(delta: float) -> void:
@@ -106,6 +125,11 @@ func _process(delta: float) -> void:
 	if selection.prune(game_match) and selection.units.is_empty():
 		disarm()
 	groups.prune(game_match)
+	awareness.game_match = game_match
+	awareness.groups = groups
+	awareness.orders = orders
+	awareness.team = team
+	awareness.update(delta)
 	mouse_default_cursor_shape = Control.CURSOR_CROSS if mode != "" else Control.CURSOR_ARROW
 	_apply_fog_of_war()
 	queue_redraw()
@@ -130,6 +154,72 @@ func can_see(tank: Tank) -> bool:
 
 func selection_state() -> Dictionary:
 	return {"units": selection.units.duplicate(), "inspected": selection.inspected}
+
+
+# ---- L4: what the camera frames (X1) ----------------------------------------------------------------------
+
+## The element the camera keeps framed: the selection when there is one, else the group last recalled, else the
+## whole force (so an unselected player still watches their army instead of empty ground).
+func commanded_units() -> Array[String]:
+	if not selection.units.is_empty():
+		return selection.units.duplicate()
+	var last := groups.members(_last_group)
+	if not last.is_empty():
+		return last
+	var all_units: Array[String] = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive():
+			all_units.append(String(tank.name))
+	return all_units
+
+
+## L4 for RtsCamera.vision: the ground points it must keep on screen (the commanded element and the contacts that
+## element can see), the element's current destination, and the whole team's sight region (the zoom-out cap and
+## the "look" clamp come from the force's collective horizon, not from one element's).
+func vision_state() -> Dictionary:
+	if game_match == null:
+		return {}
+	var element: Array[String] = commanded_units()
+	var frame: Array = []
+	var eyes: Array = []
+	for unit_name in element:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive():
+			frame.append(Vector3(tank.global_position.x, 0.0, tank.global_position.z))
+			eyes.append(tank)
+	for node in game_match.tanks.get_children():
+		var enemy := node as Tank
+		if enemy == null or enemy.team == team or not enemy.is_alive() or not can_see(enemy):
+			continue
+		for tank: Tank in eyes:
+			if tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius:
+				frame.append(Vector3(enemy.global_position.x, 0.0, enemy.global_position.z))
+				break
+	var friendly: Array = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive():
+			friendly.append(tank)
+	return {"frame": frame, "destination": _element_destination(element, frame),
+			"region": VisionRegion.of(friendly)}
+
+
+## Where the element is headed (the nearest unit's current order goal), or null when it is going nowhere or the
+## goal is too far away to be worth leaning toward.
+func _element_destination(element: Array[String], frame: Array) -> Variant:
+	if frame.is_empty() or orders == null:
+		return null
+	var middle := Vector3.ZERO
+	for at: Vector3 in frame:
+		middle += at
+	middle /= frame.size()
+	for unit_name in element:
+		var route := waypoints(unit_name)
+		if route.is_empty():
+			continue
+		var goal: Vector3 = route[0]["position"]
+		if goal.distance_to(middle) <= FRAME_DESTINATION_M:
+			return goal
+	return null
 
 
 # ---- Mouse ------------------------------------------------------------------------------------------------
@@ -164,6 +254,10 @@ func _gui_input(event: InputEvent) -> void:
 
 func _left_button(button: InputEventMouseButton) -> void:
 	if button.pressed:
+		# X2: an edge marker is a button, not ground: it takes priority over selecting and box dragging.
+		if markers != null and markers.marker_at(button.position) > 0:
+			recall_group(markers.marker_at(button.position), true)
+			return
 		if mode != "":
 			armed_click_order(button.position, button.shift_pressed)
 			return
@@ -206,6 +300,7 @@ func click_select(at: Vector2, shift := false, ctrl := false, double := false) -
 		selection.toggle(unit_name)
 	else:
 		selection.set_units([unit_name])
+	_watch_selection()
 
 
 ## A box: our units inside it (shift adds them). A box around none of ours keeps the selection.
@@ -217,6 +312,112 @@ func box_select(rect: Rect2, shift := false) -> void:
 		selection.add(inside)
 	else:
 		selection.set_units(inside)
+	_watch_selection()
+
+
+# ---- X3: tasks, not geometry (doctrine's L1) ----------------------------------------------------------------
+
+## The element the selection *is*: every selected unit belongs to it and none of its living members is left out.
+## Null for an ad-hoc handful of units, which keeps direct control (the player's order always wins).
+## The control group the selection exactly is (its living members and nothing else), or 0. That is what the
+## player thinks of as "an element", and it is what a task may be given to.
+func selected_group() -> int:
+	if selection.units.is_empty():
+		return 0
+	for number in groups.numbers():
+		var living: Array[String] = []
+		for unit_name in groups.members(number):
+			var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if tank != null and tank.is_alive():
+				living.append(unit_name)
+		if living.size() == selection.units.size() and living.all(func(n: String) -> bool: return selection.units.has(n)):
+			return number
+	return 0
+
+
+## Whether the selection can be given a task: it is a whole element, or a whole control group ready to become
+## one. The armed task keys and the command card's element-only buttons both ask this.
+func can_task() -> bool:
+	return elements != null and (selected_element() != null or selected_group() > 0)
+
+
+func selected_element() -> Element:
+	if elements == null or selection.units.is_empty():
+		return null
+	var element := elements.of(selection.units[0])
+	if element == null:
+		return null
+	for unit_name in selection.units:
+		if elements.of(unit_name) != element:
+			return null
+	for member in element.members():
+		if not selection.units.has(String(member)):
+			return null
+	return element
+
+
+## Whether this order should go to a leader as a task rather than to the units as geometry. An explicit formation
+## is the player overriding doctrine, so it drops back to direct orders (the brief: let them override, never
+## require it), and a queued order is a route the player is drawing by hand.
+func _is_task(verb: String, extra: Dictionary) -> bool:
+	return elements != null and formation == UnitCommand.AUTO and not bool(extra.get("queue", false)) \
+			and ELEMENT_TASKS.has(verb) and (selected_element() != null or selected_group() > 0)
+
+
+## Give the selected element an L1 task. Returns "" or the reason it was refused.
+func assign_task(verb: String, extra: Dictionary) -> String:
+	var element := selected_element()
+	if element == null:
+		# An element exists only while it has a task: an untasked leader would still run its SOP and fight the
+		# player's own orders for the wheel. The first task forms it; a direct order (below) dissolves it again.
+		var number := selected_group()
+		if number == 0 or elements == null:
+			return "select a whole element to give it a task"
+		element = elements.form(selection.units.duplicate(), groups.label(number))
+	var task := {"verb": String(ELEMENT_TASKS[verb])}
+	if extra.has("to"):
+		task["to"] = [float(extra["to"][0]), float(extra["to"][1])]
+	if extra.has("target"):
+		task["target"] = String(extra["target"])
+	if task["verb"] == "move" and not task.has("to"):
+		return "a move task needs somewhere to go"
+	var error := element.assign(task)
+	var command := UnitCommand.make(selection.units, verb, extra)
+	command_issued.emit(command, error)
+	if error == "":
+		_acknowledge(command)
+	return error
+
+
+## X3 for the HUD: what the selected element's leader has decided ({} when the selection isn't an element).
+func element_state() -> Dictionary:
+	var element := selected_element()
+	return element.state() if element != null else {}
+
+
+## One line for the command card: "Alpha: wedge, bounding overwatch - contact ahead" ("" when not an element).
+func doctrine_line() -> String:
+	var element := selected_element()
+	return element.describe() if element != null else ""
+
+
+## X2: what you just picked is what you want to watch, even if you panned the camera away a moment ago.
+func _watch_selection() -> void:
+	if rig != null and not selection.units.is_empty():
+		rig.take_vision()
+
+
+## X2: go to the newest alert nobody has looked at: select that element and move the camera. Returns its text.
+func jump_to_alert() -> String:
+	var alert := awareness.take_alert()
+	if alert.is_empty():
+		return ""
+	var number := int(alert["element"])
+	if not groups.is_empty(number):
+		recall_group(number, true)
+	elif rig != null:
+		rig.focus_on(alert["position"])
+	return String(alert["text"])
 
 
 ## The living unit nearest `screen` within reach (ours, or an enemy we can see), or null.
@@ -288,7 +489,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				disarm()
 			else:
 				selection.clear()
-		KEY_A, KEY_F, KEY_M:
+		KEY_A, KEY_F, KEY_M, KEY_E, KEY_R:
 			arm(MODES[key.keycode])
 		KEY_S:
 			order_selection("stop")
@@ -304,6 +505,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			cycle_formation()
 		KEY_F1:
 			select_idle()
+		KEY_Q:
+			jump_to_alert()
 		KEY_SPACE:
 			set_paused(not get_tree().paused)
 		_:
@@ -329,6 +532,8 @@ func recall_group(number: int, center := false) -> void:
 	disarm()
 	_last_group = number
 	_last_group_at = _clock
+	if rig != null:
+		rig.take_vision()  # L4: switching elements moves the camera to it, without waiting out the hand-back
 	if double or center:
 		center_on(members)
 
@@ -363,7 +568,16 @@ func issue(command: Dictionary) -> String:
 func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	if selection.units.is_empty():
 		return ""
+	if _is_task(verb, extra):
+		return assign_task(verb, extra)
+	# A direct order is the player taking the wheel: dissolve the element so its leader stops commanding. The
+	# next task re-forms it. (Doctrine detaches per unit too, but only from its next update, which is late
+	# enough to clobber a queued route.)
+	var element := selected_element()
+	if element != null and elements != null:
+		elements.disband(element)
 	var command := UnitCommand.make(selection.units, verb, extra)
+	command["source"] = "player"
 	if formation != UnitCommand.AUTO and verb in ["move", "attack_move", "hold"]:
 		command["formation"] = formation
 	return issue(command)
@@ -379,6 +593,10 @@ func right_click_order(at: Vector2, queue := false) -> String:
 		return ""
 	var tank := pick_unit(at)
 	if tank != null and tank.team != team:
+		# X3: a whole element gets an attack task and its leader works out who shoots and from where; a handful
+		# of units keeps the smart-attack split, which is the player doing that job by hand.
+		if _is_task("attack", {"queue": queue}):
+			return order_selection("attack", {"target": String(tank.name), "queue": queue})
 		return smart_attack(tank, queue)
 	if tank != null and not selection.units.has(String(tank.name)):
 		return order_selection("follow", {"target": String(tank.name), "queue": queue})
@@ -396,12 +614,14 @@ func world_order(world: Vector3, queue := false) -> String:
 	return order_selection("move", {"to": [world.x, world.z], "queue": queue})
 
 
-## A left click on the radar while an order is armed: attack-move or move to that point.
+## A left click on the radar while an order is armed: attack-move, move, or an element task at that point.
 func armed_world_order(world: Vector3, queue := false) -> String:
 	var armed := mode
 	if not queue:
 		disarm()
-	if armed in ["attack_move", "move"]:
+	if armed in ["screen", "support_by_fire"] and not can_task():
+		return "select a whole element to give it a task"
+	if armed in ["attack_move", "move", "screen", "support_by_fire"]:
 		return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
 
@@ -420,7 +640,7 @@ func smart_attack(target: Tank, queue := false) -> String:
 			escorts.append(unit_name)
 	if attackers.is_empty():
 		return order_selection("attack", {"target": String(target.name), "queue": queue})
-	var error := issue(UnitCommand.make(attackers, "attack", {"target": String(target.name), "queue": queue}))
+	var error := issue(UnitCommand.make(attackers, "attack", {"target": String(target.name), "queue": queue, "source": "player"}))
 	if error != "" or escorts.is_empty():
 		return error
 	var lead: String = attackers[0]
@@ -430,7 +650,7 @@ func smart_attack(target: Tank, queue := false) -> String:
 		if candidate.global_position.distance_to(target.global_position) < lead_tank.global_position.distance_to(target.global_position):
 			lead = unit_name
 			lead_tank = candidate
-	return issue(UnitCommand.make(escorts, "follow", {"target": lead, "queue": queue}))
+	return issue(UnitCommand.make(escorts, "follow", {"target": lead, "queue": queue, "source": "player"}))
 
 
 ## F1: select every one of our units that has no orders (never ordered, or done). Keeps the selection if none.
@@ -486,6 +706,11 @@ func armed_click_order(at: Vector2, queue := false) -> String:
 		"move":
 			if world != null:
 				return order_selection("move", {"to": [world.x, world.z], "queue": queue})
+		"screen", "support_by_fire":
+			if not can_task():
+				return "select a whole element to give it a task"
+			if world != null:
+				return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
 
 

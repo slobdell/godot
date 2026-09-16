@@ -17,6 +17,7 @@ extends RefCounted
 ##    "issued_tick": Match.tick at issue, "started_tick": when it became current,
 ##    "to"?: [x, z] (the group's destination, clamped into the arena), "target"?: unit name,
 ##    "slot"?: [right, back] meters in the group's frame (this unit's place in the formation),
+##    "source": who asked for it ("player", "element", or ""): the response guarantee is about the player's,
 ##    "heading"?: [x, z] (the group's direction of travel, and its facing on arrival),
 ##    "goal"?: [x, z] (this unit's own destination: to + slot; for follow, see goal_position()),
 ##    "pace_mps"?: float (the group's slowest member's top speed)}
@@ -98,7 +99,8 @@ func issue(command: Variant, team: int = -1) -> String:
 	var id := _next_id
 	_next_id += 1
 	var base := {"id": id, "verb": verb, "units": names, "queue": queued,
-			"formation": String(command.get("formation", UnitCommand.AUTO)), "issued_tick": _tick()}
+			"formation": String(command.get("formation", UnitCommand.AUTO)), "issued_tick": _tick(),
+			"source": String(command.get("source", ""))}
 	if command.has("to"):
 		base["to"] = [clampf(float(command["to"][0]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT),
 				clampf(float(command["to"][1]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT)]

@@ -68,16 +68,26 @@ func test_command_card_buttons_do_what_the_keys_do() -> void:
 	var panel: SelectionPanel = setup[1]
 	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
 	var commands: Array = panel.summary()["commands"]
-	assert_eq(commands.map(func(c: Dictionary) -> String: return c["id"]), ["move", "stop", "hold", "attack_move", "follow", "formation"],
-			"the command card has Move, Stop, Hold, Attack-move, Follow, Formation")
-	assert_eq(commands.map(func(c: Dictionary) -> String: return c["hotkey"]), ["M", "S", "H", "A", "F", "G"], "each shows its hotkey")
+	assert_eq(commands.map(func(c: Dictionary) -> String: return c["id"]),
+			["move", "stop", "hold", "screen", "attack_move", "follow", "support_by_fire", "formation"],
+			"the command card has the six orders, the two element tasks, and Formation")
+	assert_eq(commands.map(func(c: Dictionary) -> String: return c["hotkey"]), ["M", "S", "H", "E", "A", "F", "R", "G"],
+			"each shows its hotkey")
+	# X3: screen and support by fire need a leader to carry them out, so a handful of units cannot ask for them.
+	for command: Dictionary in commands:
+		var expected := not SelectionPanel.ELEMENT_ONLY.has(command["id"])
+		assert_eq(command["enabled"], expected, "%s enabled without an element" % command["id"])
+	panel.press_command("screen")
+	assert_eq(f.controls.mode, "", "and pressing one does nothing")
 	panel.press_command("attack_move")
 	assert_eq(f.controls.mode, "attack_move", "Attack-move arms attack-move")
 	panel.press_command("hold")
 	assert_eq(f.orders.current("Green_Alpha_1").get("verb", ""), "hold", "Hold holds")
 	panel.press_command("formation")
 	assert_eq(f.controls.formation, RtsControls.FORMATION_CYCLE[1], "Formation cycles the formation")
-	assert_true(String(panel.summary()["commands"][5]["label"]).to_lower().contains(RtsControls.FORMATION_CYCLE[1]),
+	var formation_button: Dictionary = panel.summary()["commands"].filter(
+			func(c: Dictionary) -> bool: return String(c["id"]) == "formation")[0]
+	assert_true(String(formation_button["label"]).to_lower().contains(RtsControls.FORMATION_CYCLE[1]),
 			"the Formation button names the current formation")
 
 

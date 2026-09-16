@@ -9,7 +9,9 @@ extends RefCounted
 ##    "to": [x, z],                          world meters: required for move and attack_move; hold here (optional)
 ##    "target": "Rust_Bravo_2",              required for attack (an enemy) and follow (another unit)
 ##    "queue": false,                        shift: run after the unit's current orders (stop is never queued)
-##    "formation": "auto" | Formations.NAMES} how a group arranges itself (default auto: by role and situation)
+##    "formation": "auto" | Formations.NAMES,  how a group arranges itself (default auto: by role and situation)
+##    "source": "player" | "element" | ""}   who asked (optional): the response guarantee and the playtest's
+##                                           measurements are about the player's orders, not a leader's
 ##
 ## Validation here is structural (types, required keys, no unknown keys, so a typo from a script or an LLM fails
 ## loudly); Orders.issue then checks names, teams, and targets against the match.
@@ -17,7 +19,8 @@ extends RefCounted
 const VERBS := ["move", "attack", "attack_move", "follow", "hold", "stop"]
 const NEEDS_TO := ["move", "attack_move"]
 const NEEDS_TARGET := ["attack", "follow"]
-const KEYS := ["units", "verb", "to", "target", "queue", "formation"]
+const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source"]
+const SOURCES := ["player", "element", ""]
 const AUTO := "auto"
 ## A selection bigger than this is almost certainly a bug in the caller (two full armies are 50 units).
 const MAX_UNITS := 64
@@ -60,6 +63,8 @@ static func validate(command: Variant) -> String:
 		var formation: Variant = command["formation"]
 		if formation != AUTO and not Formations.NAMES.has(formation):
 			return "'formation' must be auto or one of %s" % ", ".join(Formations.NAMES)
+	if command.has("source") and not SOURCES.has(command["source"]):
+		return "'source' must be one of %s" % ", ".join(SOURCES.map(func(s: String) -> String: return "'%s'" % s))
 	return ""
 
 

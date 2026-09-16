@@ -99,15 +99,19 @@ func radar_to_world(local: Vector2) -> Vector3:
 
 
 ## What the radar shows, as data (drawn by _draw, checked by tests):
-## [{"kind": "friendly"|"commander"|"enemy"|"contact"|"destination", "position": Vector3, "fade": float}]
+## [{"kind": "friendly"|"selected"|"commander"|"enemy"|"contact"|"destination", "position": Vector3, "fade": float}]
+## X2: friendly blips also carry "facing" (the hull's heading) and "element" (their control group, 0 for none), so
+## the radar reads as a map of your force and not a scatter of dots.
 func blips() -> Array:
 	var result: Array = []
 	var by_name := game_match.tanks_by_name()
 	if controls != null:
 		for tank in game_match.sorted_team_tanks(team):
 			if tank.is_alive():
-				result.append({"kind": "commander" if controls.selection.units.has(String(tank.name)) else "friendly",
-						"position": tank.global_position, "fade": 1.0})
+				var of := controls.groups.groups_of(String(tank.name))
+				result.append({"kind": "selected" if controls.selection.units.has(String(tank.name)) else "friendly",
+						"position": tank.global_position, "fade": 1.0, "facing": -tank.global_basis.z,
+						"element": of[0] if not of.is_empty() else 0})
 		var destinations := {}
 		for unit_name in controls.selection.units:
 			var goal: Variant = controls.orders.goal_position(unit_name) if controls.orders != null else null
@@ -130,6 +134,21 @@ func blips() -> Array:
 		var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
 		result.append({"kind": "enemy" if contact["visible"] else "contact", "position": contact["position"],
 				"fade": 1.0 if contact["visible"] else clampf(1.0 - age, 0.15, 0.8)})
+	return result
+
+
+## X2: one label per living element, at its middle: [{"text", "position": Vector3, "color": Color}]. The radar is
+## now the main way to read the map, so elements are named on it instead of being anonymous clusters.
+func element_labels() -> Array:
+	var result: Array = []
+	if controls == null or controls.awareness == null:
+		return result
+	for element: Dictionary in controls.awareness.elements():
+		if int(element["alive"]) == 0:
+			continue
+		var key: String = EdgeMarkers.STATE_COLORS.get(element["state"], "friendly")
+		result.append({"text": "%d" % int(element["number"]), "position": element["position"],
+				"color": GameTheme.ui[key]})
 	return result
 
 
@@ -262,11 +281,15 @@ func _draw() -> void:
 	for blip in blips():
 		var at := world_to_radar(blip["position"])
 		match blip["kind"]:
-			"friendly":
+			"friendly", "selected", "commander":
 				draw_circle(at, dot, friendly)
-			"commander":
-				draw_circle(at, dot, friendly)
-				draw_arc(at, dot + 2.5, 0.0, TAU, 16, commander, 1.5)
+				# X2: a tick showing which way the hull points, so you can read a formation's facing at a glance.
+				if blip.has("facing"):
+					var heading: Vector3 = blip["facing"]
+					var tip := world_to_radar(blip["position"] + heading.normalized() * 6.0)
+					draw_line(at, tip, Color(friendly, 0.9), 1.5)
+				if blip["kind"] != "friendly":
+					draw_arc(at, dot + 2.5, 0.0, TAU, 16, commander, 1.5)
 			"enemy":
 				# Diamonds for enemies, circles for us: readable without color (accessibility).
 				var r := dot * 1.3
@@ -278,6 +301,12 @@ func _draw() -> void:
 			"destination":
 				draw_line(at + Vector2(-dot, -dot), at + Vector2(dot, dot), commander, 1.5)
 				draw_line(at + Vector2(-dot, dot), at + Vector2(dot, -dot), commander, 1.5)
+	for label: Dictionary in element_labels():
+		var at := world_to_radar(label["position"]) + Vector2(dot * 1.6, -dot * 1.6)
+		var text := String(label["text"])
+		var text_size := roundi(maxf(9.0, size.x / 16.0))
+		draw_string_outline(CyberStyle.font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, 3, Color.BLACK)
+		draw_string(CyberStyle.font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, Color(label["color"]))
 	if _press != null and _press_moved:
 		draw_arc(_drag_now, dot * 3.0, 0.0, TAU, 20, Color(1, 1, 1, 0.7), 1.5)  # looking here
 

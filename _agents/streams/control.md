@@ -73,4 +73,93 @@ Doctrine data and element leaders (doctrine), weapons, suppression and rosters (
 
 ## Status
 
-- 2026-09-16: brief written for round 4. Nothing started.
+_Round 4, control stream. Updated 2026-09-15._
+
+### Plan (backlog in order)
+
+1. **X1 vision-framed camera (L4).** `VisionRegion` (pure math: sight discs, contains/clamp/bounds) →
+   `RtsCamera.frame_vision` + a continuous `Track.VISION` mode reusing the existing speed-limited tracking →
+   the zoom-out cap (`vision_zoom`) the wheel and Tab both obey → manual override with a timed hand-back →
+   "look" panning clamped to the team's vision.
+2. **X2 element focus and awareness.** Off-screen edge markers + a rate-limited alert feed you can jump to; the
+   radar becomes the map (contacts, last-known, element facings, click to look, right-click to order).
+3. **X3 tasks not geometry.** Command card issues tasks; shows the element's formation/technique/drill and a
+   one-line reason, read through an `ElementView` adapter that stubs L1 until CP1 lands.
+4. **X4 command at 30+ a side.** Grouped portraits with counts, per-element health, latency and frame-cost
+   measurements at 60 selected, "select all combat units" and "next idle element".
+5. **X5 faction pick in skirmish** (needs combat's L3; stub `Units.roster` behind an adapter until CP2).
+6. **X6 readability at close zoom.** Re-tune rings, nameplates, bars, markers at the new default zoom, 1920×1080
+   and 1280×720 screenshots.
+
+### Decisions (with reasons)
+
+- **The brief's `max_zoom_in` is implemented as a zoom-out cap** (`RtsCamera.vision_zoom`). In this codebase
+  `zoom` runs 0 = close to 1 = high, and the rule the lead asked for ("a bird's eye view is just an unearned god
+  view") is a limit on how far *out* you may go, not how far in. Zooming in closer than the auto frame stays free:
+  it costs you awareness, which is the player's call.
+- **Two zooms from one region.** The auto frame fits the commanded element's units, its spotted contacts and its
+  destination ("as close as possible"); the cap fits the same units' *sight discs* ("the same horizon as what all
+  units can collectively see"). Both are `frame_pose` on different point sets, so the math is shared and testable.
+
+### Done
+
+**X1. The vision-framed camera (L4).** Done, `make remote T=check` green (668 tests), playtest green at
+1920×1080 and 1280×720 with all nine checks, frames looked at.
+
+- `VisionRegion` (`game/control/vision_region.gd`): the ground a set of units can see, as the union of their
+  sight discs. `contains`, `clamp_point`, `bounds`, `center` - pure math, no engine state.
+- `RtsCamera.vision` (a `Callable` returning `{frame, destination, region}`) drives a new `Track.VISION` mode
+  that keeps the commanded element framed through the existing speed-limited tracking, so it never whips.
+  `RtsControls.vision_state` / `commanded_units` supply it: the selection, else the group last recalled, else
+  the whole force; plus the contacts that element can see and where it is headed.
+- **The zoom-out cap.** `seen_fraction` samples a 5×5 grid of screen points onto the ground and asks the region
+  how many it can see; `horizon_zoom` binary-searches the furthest zoom keeping 70% of the screen over seen
+  ground, floored at 0.35. The wheel, keyboard zoom, framing and Tab all obey it.
+- Manual pan/zoom/rotate always win, hold the camera for `handback_seconds` (2.5), then it returns; recalling a
+  group takes it back at once. Free panning is clamped to ground the team can see (the "look" mode).
+- **Tab** now shows everything the force can see instead of the whole arena.
+- `--no-vision-camera` opts out (galleries, comparisons); `CONTROL_FLAGS=` passes it to both playtest targets.
+
+**Measurements.** Zoom-out caps: lone 40 m-sight unit **0.35**, two 80 m units **0.58**, the five-unit test force
+**0.62**, a force spread across the arena with 90 m sight **0.81** (1.0 = the old arena overview, 0.92). Auto
+frame for a four-unit element in the skirmish: **zoom 0.33**, camera 35 m up, ~95 m of ground front to back.
+
+**What the player can and can't see at the new default zoom.** Commanding one element, the screen is about
+95 m deep: the element fills the middle, its own vehicles read as models (hull, turret and paint are legible,
+not icons), and the fog boundary is usually just inside the screen edges. You cannot see the other half of the
+arena, your other elements, or anything your force has not spotted. To see more you either switch element
+(instant, free - the camera goes there), scroll out to the cap (which buys maybe 40% more ground and only as
+much as your force already sees), or spend a scout: pushing a 110 m-sight unit forward is what actually moves
+the cap up, because the cap is derived from the force's own sight. That is the intended cost.
+
+**Known issues / notes.**
+- The cap is recomputed every 6 frames; at 60 units its cost still needs measuring (X4).
+- `separated_unit_rejoins` in the playtest is skipped when every survivor is in contact. The playtest uses
+  wall-clock timers, so which units survive varies run to run; the check now says so instead of failing.
+- `relay-smoke` and the announcer's `test_mixdown_places_parts_fillers_and_cuts` both failed once under
+  builder0 load and passed in isolation. Neither is in control's paths; both reported to the orchestrator.
+
+**X2. Element focus and awareness.** Done, `make remote T=check` green (675 tests), playtest green at both
+sizes, frames looked at.
+
+- `ElementAwareness` (`game/control/element_awareness.gd`): one entry per control group - name, survivors,
+  strength, middle, and state (idle / moving / contact / under_fire / lost, worst wins). Bad state changes raise
+  an alert with a place attached, rate-limited per element and kind (8 s). A wiped element lingers 10 s so
+  "Bravo wiped out" has something to point at.
+- `EdgeMarkers` (`game/ui/edge_markers.gd`): every element you aren't watching gets a chip on the screen edge
+  (arrow, name, survivors, strength bar, colour by state); clicking one selects it and takes the camera. The
+  chips stay clear of the command card (the bottom 22% is the HUD's).
+- One centred alert prompt above the group chips: the newest unseen alert plus a count, `[Q]` to jump. **Q**
+  selects that element and moves the camera. Contact bearings are measured element → enemy, not from the base.
+- Clicking or boxing a selection takes the camera to it, so switching elements always moves the view.
+- `ControlGroups` keeps a label per group from the doctrine squad's name ("Bravo", not "Group 2").
+- The radar is now the map: facing ticks on friendly blips, element numbers at each element's middle, the
+  selected element ringed, last-known contacts still fading, click to look, right-click to order.
+
+### Questions for the lead
+
+- None yet.
+
+### Requests to other streams
+
+- None yet.

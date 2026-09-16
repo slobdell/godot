@@ -9,6 +9,15 @@ const COUNT := 9
 
 ## number (1–9) -> Array[String] of unit names (sorted). Missing = empty.
 var _groups := {}
+## number -> the element's name in alerts and edge markers (X2). Missing = "Group N".
+var _labels := {}
+
+
+## Name an element. Doctrine squads bring their names ("Alpha"); a group the player makes keeps "Group N".
+func label(number: int, name := "") -> String:
+	if name != "":
+		_labels[number] = name
+	return String(_labels.get(number, "Group %d" % number))
 
 
 func save(number: int, names: Array) -> void:
@@ -82,5 +91,6 @@ static func from_squads(game_match: Match, team: int) -> ControlGroups:
 		if number > 5:
 			break
 		groups.save(number, Array(squad.roster))
+		groups.label(number, String(squad.squad_name))
 		number += 1
 	return groups
