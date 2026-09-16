@@ -101,7 +101,7 @@ C7 (`SquadCommand`) remains for doctrines and the CPU commander; player control 
 1. **`make remote T=check` passes before merging** (lint, tests, network + relay + lobby smoke, combat, match,
    determinism, sim baseline, garage smoke). Paused areas keep their tests green.
 2. **The sim baseline** (`tests/baselines/sim_state_hash.txt`: one hash per glibc version; builder0's `glibc-2.43
-   e9e5761beebbde59` is canonical on 2026-09-16 (suppression moved it); **combat, doctrine, and ai** may change it on purpose, control and
+   10e95d54f5dd3efe` is canonical on 2026-09-16 (suppression and ai's decisions moved it); **combat, doctrine, and ai** may change it on purpose, control and
    audio must not) changes only on purpose (record with `make remote T=sim-baseline-record`,
    copy `build/sim_state_hash.txt` over the file, which drops other machines' stale lines), by **combat** and **ai** (and control if order execution changes a doctrine match), updated in the same
    commit with the reason. Feel, assets, and announcer never change it.
