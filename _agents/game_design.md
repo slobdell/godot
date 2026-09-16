@@ -162,6 +162,14 @@ builder0) measures and tunes them. The LLM-plays-the-game layer (through the exi
 proposing tactics as data) is the discovery experiment on top, and anything it finds is distilled into deterministic
 rules before it ships. Nothing runs a model during live play.
 
+### Matches are between different factions (lead, 2026-09-16)
+
+From the lead's announcer review: **the booth names a side by its faction, not its colour** (the Condemned, the
+Wreckers, the Law, the Syndicate), and **a match is always between two different factions**. That makes the
+commentary sayable, and it makes faction identity the thing the player reads on the field. Mirror matches would need a
+naming scheme the booth can't speak, so they're out. It binds combat (army generation and the match runner), the
+garage (army building), and audio (lines are recorded per faction). The caller is canonically **Joseph**.
+
 ### Audio: cinematic, and alive
 
 > *"The sound effects for the game also currently completely suck … right now the sound effects make it sound like an
