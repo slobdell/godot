@@ -232,16 +232,53 @@ Committed as 5ccf56f and reported to the orchestrator for merging to `main`.
 - `caller.hit.07/08/14` (the weak-spot calls) are the most-said lines at ~1.5% each: that moment's pool is narrow.
   It is inside every ceiling and no line repeats inside a match, so it is a top-up for later, not a defect.
 - The placeholder beds are exactly that. They are correct, not good.
-- `make remote T=check` has not yet run green on this branch: builder0 has been saturated by the other four streams
-  all session. The baseline run I started at the beginning finally completed and failed on the pre-existing mixdown
-  flake, which is the bug I then fixed.
+- `music-smoke` only sees **two** bed changes in its forty-second match (lull at 0 s, battle at 12.7 s), because
+  that match never goes quiet again or reaches a last stand. It proves the chain end to end; it does not exercise
+  every state. The unit tests cover the rest.
+- The `MUSIC_TRACK` marker also prints during the music director's unit tests, which is a little noisy in the test
+  log. Harmless (the smoke greps its own log), but worth tidying if anyone minds.
+
+### Verified
+
+**`make remote T=check` exited 0 on builder0 against `bc49a34`** (the last commit; working tree clean, so the run
+matches the commit exactly):
+- **691 Godot tests, 0 failed** — 656 on `main` plus the 35 this stream added (7 announcer history, 12 MatchMood,
+  10 music director, 6 sound mix).
+- `announcer-variance passed` — the X1 ceilings are now a gate, not a claim.
+- `announcer-record-smoke passed`, sim hash `d7967d8b36d4417b`, **matching the glibc-2.43 baseline**: the booth, the
+  mood signal and the music read the match and never change it, which is the invariant audio must not break.
+- `music-smoke passed: 2 bed changes across 2 beds` — a real headless match drove the soundtrack from the `lull`
+  bed to the `battle` bed at 12.7 s, and the simulation hash did not move.
+- `audio-check passed` — every bed's loudness, true peak, loop points and seam.
+- The Python side: 43 tests (contract, generator, text audit, the pipeline against the mock client).
+
+**Played like a player** (`make remote T=announcer-shots`, a scripted skirmish with subtitles on builder0's desktop;
+frames in `build/screenshots/announcer_{desktop,phone}.png`, both looked at):
+- The broadcast reads as a broadcast. Seed 2 opened on one of the new caller lines ("Listen to this crowd! They have
+  been waiting for this one all season!"), the PA gave the control-point welcome, the Veteran came in after first
+  contact ("Now everybody knows where everybody is. This is where it gets honest."), and the caller called the
+  first kill, the matchup and the score. No repeats, nothing stale, nothing pasted-sounding.
+- **Desktop (1920×1080):** the newest line renders in full with the typewriter cursor, older ones truncate with an
+  ellipsis. Readable over the arena floor.
+- **Phone aspect (1200×540):** the same, smaller; the newest line still wraps in full.
+- **The one real problem, and it is not mine to fix:** the booth crowds gameplay out of the four-line message log.
+  In the desktop frame three of the four visible lines are the caller; in the phone frame "Destroyed an enemy Tank
+  (4 left)" is sandwiched between two of his. Round 3 asked control and feel for a separate subtitle line in the
+  HUD; the screenshots are now evidence that it matters. Restated under *Requests to other streams*.
 
 ### What to playtest
 
+- **The whole thing, as a player:**
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --announcer=text --music=on`
+  The booth's subtitles come through the HUD message log, the soundtrack follows the fight, and the battle is on a
+  limited bus with distance filtering. `--announcer=voice` does nothing until X2's clips exist.
 - `make announcer-variance` — the numbers above, and `HOT=20` for the most-said lines.
-- `make announcer-transcript FIXTURE=close_match SEED=1` (any fixture, any seed): the PA's new openings.
-- `make music-check` — every bed's loudness, peak, loop points and seam.
+- `make announcer-transcript FIXTURE=close_match SEED=1` (any fixture, any seed): the PA's new openings. Run it
+  twice with different seeds to hear the variance the lead asked for.
+- `make music-check` — every bed's loudness, peak, loop points and seam. `make music-smoke` — the beds changing
+  during a real match.
 - `make music-placeholders` — regenerate the beds; then `make music-import IN=<a Suno file> STATE=battle BPM=110`.
+- `make sfx` — regenerate every sound effect and its takes.
 
 ### Next steps
 
@@ -255,10 +292,16 @@ Committed as 5ccf56f and reported to the orchestrator for merging to `main`.
 
 ### Requests to other streams
 
+- **control / feel** (the HUD message log): **subtitles need their own line.** The booth posts through
+  `Hud.post_message`, so its lines compete with gameplay messages for the same four slots, and in a busy match the
+  caller wins. `build/screenshots/announcer_{desktop,phone}.png` show it: three of four lines are his on the
+  desktop, and a kill message is buried between two of his on the phone. A dedicated subtitle line (or a second,
+  shorter log for the booth) fixes it; `hud.tscn` is feel's and the skirmish HUD layout is control's, so it is
+  yours either way. Round 3 raised this; the frames now make the case.
 - **control** (skirmish and the options screen): `--announcer=text|voice|off` and `--music=on|off` plus their volume
   flags are wired and default to off. A settings entry for each (announcer: text / voice / off with a volume; music:
   a volume) belongs in your options UI. Round 3 also asked for `--announcer=text` by default in skirmish; still
-  worth doing, and subtitles now arrive through `Hud.post_message` as `CALLER: …`.
+  worth doing.
 - **feel**: the `World` audio bus you asked for in round 3 now exists and every world voice is on it, so the
   announcer's ducking works. `AnnouncerBooth.line_started` still carries the caller's text, team and intensity for
   the crowd swell. Nothing for you to change unless you want to route more sounds there.
