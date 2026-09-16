@@ -1,38 +1,33 @@
 TRANSCRIPT: comeback (director seed 1)
 the Furnace | green: tank, ifv, ifv, scout, scout | rust: tank, tank, lancer, scout
-result: green by elimination at 1:18.5
+result: green by elimination at 1:01.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
 0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
 0:07.5   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
 0:14.3   CALLER   The Condemned are out tonight. Prison steel, welded shut, and driving for their freedom!
-0:19.5   ── first contact: rust lancer fires on a scout
-0:19.5   VETERAN  Whoever shot first just told everybody where they are. Now we see if it was worth it.
-0:26.5   ── rust scout destroys green scout
-0:26.9   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
-0:32.5   VETERAN  That's where you aim. Everybody knows it. Almost nobody does it.
-0:36.2   ── rust scout destroys green ifv
-0:37.6   CALLER   The IFV is finished! The Wreckers crack it wide open!
-0:41.2   VETERAN  Reversing out of there was the answer. Turning was not the answer.
-0:45.8   ── green ifv destroys rust scout
-0:47.2   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
-0:52.1   PA       Lovely call, Joseph. For our younger—
-0:52.2   ── close call: green ifv at 12% hull
-0:54.8   ── green ifv destroys rust lancer
-0:54.8   ── rust squad Needle wiped out
-0:54.8   CALLER   That's the matchup! The IFV does exactly what it was built to do!
-0:59.3   VETERAN  Nobody gets out of one of those once it goes up. They don't design the hatch for that.
-1:08.5   ── green tank destroys rust tank
-1:08.5   CALLER   It's all on the last Wrecker vehicle now!
-1:09.8   ── rust tank destroys green tank
-1:09.8   ── green squad Alpha wiped out
-1:12.0   CALLER   What an exchange, and the Wreckers win it!
-1:15.0   VETERAN  He drove into the open to get a—
-1:18.5   ── green ifv destroys rust tank
-1:18.5   ── rust squad Hammer wiped out
-1:18.5   ── MATCH OVER: green wins by elimination (2 green, 0 rust left)
-1:18.5   CALLER   Whoa! Look at this!
-1:20.3   CALLER   Nobody saw that coming! The IFV wins that one!
-1:23.6   CALLER   What a comeback! The Condemned were down and out, and the Condemned win it!
-1:29.1   PA       That concludes tonight's match. Congratulations to the Condemned. On behalf of the Syndicate, good night, and please drive safely.
+0:19.5   ── first contact: green scout fires on a tank
+0:19.5   VETERAN  Now everybody knows where everybody is. This is where it gets honest.
+0:25.5   CALLER   Here comes the drill! This is what they train for!
+0:29.1   VETERAN  React—
+0:29.2   ── rust lancer destroys green scout
+0:29.6   CALLER   Upset! Upset on the floor! The Lancer gets it done!
+0:33.3   VETERAN  That scout should have won that. It sat still—
+0:37.5   ── rust tank destroys green ifv
+0:37.5   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
+0:37.8   ── green scout destroys rust lancer
+0:49.3   CALLER   The tank round lands! You felt that one in the seats!
+0:53.5   ── green tank destroys rust tank
+0:53.8   CALLER   The tank is down! The biggest thing on the floor is down!
+0:58.6   CALLER   Something just changed—
+0:59.8   ── green ifv destroys rust scout
+0:59.8   ── rust squad Needle wiped out
+0:59.8   CALLER   The Wreckers are down to its last vehicle!
+1:01.2   ── green scout destroys rust tank
+1:01.2   ── rust squad Hammer wiped out
+1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
+1:02.7   VETERAN  The Wreckers keep feeding them one at a time. Regroup. Please regroup.
+1:08.2   CALLER   And the Condemned are the last army standing! The Condemned win!
+1:12.1   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
+1:17.3   PA       The Condemned are tonight's winner. Ticket holders may remain seated during the recovery operation.

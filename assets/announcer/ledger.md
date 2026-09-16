@@ -8,3 +8,5 @@ Every paid generation run, appended by tools/announcer/generate.py. Lead gate: t
 | 2026-09-16 | ElevenLabs | eleven_multilingual_v2 | 285 | 17388 | 17388 | 279214 → 261310 |  |
 | 2026-09-16 | ElevenLabs | eleven_multilingual_v2 | 2 | 45 | 45 | 260520 → 260520 |  |
 | 2026-09-16 | ElevenLabs | eleven_multilingual_v2 | 41 | 2317 | 2317 | 260417 → 258542 |  |
+| 2026-09-16 | ElevenLabs | eleven_multilingual_v2 | 1837 | 110091 | 110091 | 251352 → 138635 |  |
+| 2026-09-16 | ElevenLabs | eleven_multilingual_v2 | 171 | 12593 | 12593 | 137923 → 125297 |  |

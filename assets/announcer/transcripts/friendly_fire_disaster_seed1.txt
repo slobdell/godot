@@ -1,37 +1,27 @@
 TRANSCRIPT: friendly_fire_disaster (director seed 1)
 the Scrapyard | green: ifv, ifv, tank, scout, scout | rust: tank, ifv, artillery, artillery
-result: green by elimination at 0:57.5
+result: green by elimination at 0:33.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
 0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
 0:07.5   CALLER   Here we go! The building is shaking and we have not even started!
-0:12.6   CALLER   The Condemned are on the floor, and every one of those crews has something to prove!
-0:18.0   ── first contact: rust artillery fires on a ifv
-0:18.0   VETERAN  Whoever shot first just told everybody where they are. Now we see if it was worth it.
-0:22.2   ── friendly fire: rust artillery hits its own tank
-0:25.5   ── friendly fire: rust artillery hits its own ifv
-0:26.0   CALLER   That's two times now the Condemned have hit its own vehicles!
+0:12.6   CALLER   The Condemned are on the floor, and every one—
+0:15.8   ── first contact: green scout fires on a artillery
+0:15.8   VETERAN  Now everybody knows where everybody is. This is where it gets honest.
+0:17.0   ── friendly fire: rust artillery hits its own ifv
+0:21.8   VETERAN  Once a crew starts losing in here, it goes fast. It's better that way, I'm told.
+0:26.5   ── friendly fire: rust artillery hits its own ifv
+0:26.8   ── close call: rust artillery at 10% hull
 0:28.8   ── green ifv destroys rust artillery
-0:29.8   CALLER   Put it away! The Wreckers put it away!
-0:31.0   ── green ifv destroys rust artillery
-0:31.0   ── rust squad Battery wiped out
-0:31.0   ── close call: green ifv at 9% hull
-0:33.4   CALLER   They got another one! Oh my goodness!
-0:36.1   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
-0:44.0   ── green ifv destroyed by its own tank
-0:44.0   CALLER   Friendly fire, and it's fatal! Oh, that is hard to watch!
-0:48.1   VETERAN  The floor gets cleared between—
-0:50.5   ── green ifv destroys rust ifv
-0:50.5   CALLER   One left! The Condemned have one left!
-0:53.8   CALLER   Right in the weak spot! What a shot!
-0:56.8   VETERAN  Every—
-0:57.5   ── green ifv destroys rust tank
-0:57.5   ── rust squad Front wiped out
-0:57.5   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-0:57.5   CALLER   Oh, wait, wait!
-0:59.1   CALLER   The Wreckers finish it! The last tank is gone!
-1:02.4   CALLER   That was fast! The Wreckers made short work of that one!
-1:06.3   VETERAN  They kept their shape. That is the whole thing, every time.
-1:11.4   CALLER   Listen to this crowd!
-1:13.7   PA       The Wreckers are tonight's winner. Ticket holders may remain seated during the recovery operation.
+0:29.0   ── green scout destroys rust artillery
+0:29.0   ── rust squad Battery wiped out
+0:29.6   CALLER   The Wreckers are cleaning house! Two down, just like that!
+0:32.2   ── rust ifv destroyed by its own tank
+0:33.0   ── green tank destroys rust tank
+0:33.0   ── rust squad Front wiped out
+0:33.0   ── MATCH OVER: green wins by elimination (5 green, 0 rust left)
+0:33.3   CALLER   The last Condemned vehicle goes down!
+0:35.6   CALLER   That was fast! The Wreckers made short work of that one!
+0:39.5   VETERAN  Good crews down there tonight. One of them was a little better drilled.
+0:45.9   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.

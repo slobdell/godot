@@ -1,40 +1,35 @@
 TRANSCRIPT: comeback (director seed 2)
 the Furnace | green: tank, ifv, ifv, scout, scout | rust: tank, tank, lancer, scout
-result: green by elimination at 1:18.5
+result: green by elimination at 1:01.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
 0:00.0   CALLER   I have watched both of these crews all week and I still could not tell you how this goes.
 0:06.2   PA       Welcome, everyone, to the Furnace. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
 0:16.4   VETERAN  Mixed army. That's the smart build. It's—
-0:19.5   ── first contact: rust lancer fires on a scout
-0:19.6   CALLER   There's the beam! The Lancer reaches out across the floor for the scout!
-0:24.1   VETERAN  First shot isn't the fight. First hit is.
-0:26.5   ── rust scout destroys green scout
-0:27.9   CALLER   Right in the back! The Wreckers finish the scout from behind!
-0:31.8   VETERAN  That's what happens when nobody checks behind them. It's a big floor.
-0:36.2   ── rust scout destroys green ifv
-0:37.2   CALLER   That is not supposed to happen! The Wreckers' scout just took that down!
-0:41.7   VETERAN  Matchups are a suggestion. That crew didn't take it.
-0:45.8   ── green ifv destroys rust scout
-0:46.5   CALLER   Textbook! The IFV eats it alive!
-0:48.9   CALLER   Listen to this crowd!
-0:52.2   ── close call: green ifv at 12% hull
-0:52.3   CALLER   The Condemned IFV is hanging on by a thread!
-0:54.8   ── green ifv destroys rust lancer
-0:54.8   ── rust squad Needle wiped out
-0:56.1   CALLER   The Lancer goes dark! The Condemned shuts off the beam!
-1:07.9   VETERAN  You—
-1:08.5   ── green tank destroys rust tank
-1:08.5   CALLER   Here it comes!
-1:09.8   ── rust tank destroys green tank
-1:09.8   ── green squad Alpha wiped out
-1:09.9   CALLER   That leaves the Wreckers with one. One!
-1:13.2   VETERAN  You hear that ringing? Everybody inside those hulls will have that for—
-1:18.5   ── green ifv destroys rust tank
-1:18.5   ── rust squad Hammer wiped out
-1:18.5   ── MATCH OVER: green wins by elimination (2 green, 0 rust left)
-1:18.5   CALLER   That's the last one! The Condemned wipe them out!
-1:21.8   CALLER   And the Condemned are the last army standing! The Condemned win!
-1:25.7   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
-1:31.3   PA       Tonight's match goes to the Condemned. Settlement of wagers will begin within the hour.
+0:19.5   ── first contact: green scout fires on a tank
+0:19.6   CALLER   The scout finds them first! That's the job, and the Condemned are doing it!
+0:24.5   VETERAN  First shot isn't the fight. First hit is.
+0:28.9   CALLER   Here—
+0:29.2   ── rust lancer destroys green scout
+0:29.4   CALLER   Nobody saw that coming! The Lancer wins that one!
+0:32.7   VETERAN  Matchups are a suggestion. That crew didn't take it.
+0:37.5   ── rust tank destroys green ifv
+0:37.5   CALLER   The IFV is finished! The Wreckers crack it wide open!
+0:37.8   ── green scout destroys rust lancer
+0:41.7   CALLER   It's gone! That Lancer is gone!
+0:44.1   CALLER   Listen to this crowd!
+0:49.3   CALLER   That tank is hurt! That tank is hurt!
+0:53.5   ── green tank destroys rust tank
+0:53.5   CALLER   What an exchange, and the Condemned win it!
+0:57.1   CALLER   Something just changed out there! They're all moving at once!
+0:59.8   ── green ifv destroys rust scout
+0:59.8   ── rust squad Needle wiped out
+1:00.7   CALLER   The—
+1:01.2   ── green scout destroys rust tank
+1:01.2   ── rust squad Hammer wiped out
+1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
+1:01.3   CALLER   The last Wrecker vehicle goes down!
+1:03.6   CALLER   It is done! The Condemned stands alone on that floor!
+1:07.2   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
+1:12.4   PA       Tonight's winner is the Condemned. The surviving crews will be processed shortly. Good night.

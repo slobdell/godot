@@ -1259,7 +1259,7 @@
   },
   "formation": {
    "priority": 18,
-   "stale_s": 6.0,
+   "stale_s": 20.0,
    "cooldown_s": 22.0,
    "intensity": 1,
    "beats": [
@@ -1307,7 +1307,7 @@
   },
   "drill": {
    "priority": 34,
-   "stale_s": 4.0,
+   "stale_s": 10.0,
    "cooldown_s": 14.0,
    "intensity": 2,
    "beats": [

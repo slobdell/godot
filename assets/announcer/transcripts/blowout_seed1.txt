@@ -1,6 +1,6 @@
 TRANSCRIPT: blowout (director seed 1)
 the Scrapyard | green: tank, tank, tank, scout | rust: scout, scout, ifv, artillery, artillery
-result: green by elimination at 0:54.0
+result: green by elimination at 1:14.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
@@ -9,24 +9,30 @@ result: green by elimination at 0:54.0
 0:12.6   CALLER   The Syndicate brings the hover machines. Look at that finish. Not a scratch on them.
 0:18.4   VETERAN  Those are my—
 0:20.0   ── first contact: rust scout fires on a tank
-0:20.1   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
-0:21.8   ── friendly fire: green tank hits its own tank
-0:26.0   ── green tank destroys rust ifv
-0:27.9   CALLER   One shot! One shot from the big gun and it's over for that IFV!
-0:33.3   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
-0:33.5   ── close call: rust artillery at 14% hull
-0:41.8   CALLER   They found the—
-0:43.0   ── green tank destroys rust artillery
-0:43.0   CALLER   That is not supposed to happen! The Syndicate's tank just took that down!
-0:46.8   ── green tank destroys rust scout
-0:47.5   CALLER   Two in a row! The Syndicate strike again!
-0:51.2   ── green tank destroys rust artillery
-0:51.2   ── rust squad Battery wiped out
-0:51.3   CALLER   The Condemned are down to its last vehicle!
-0:54.0   ── green tank destroys rust scout
-0:54.0   ── rust squad Swarm wiped out
-0:54.0   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-0:54.2   CALLER   That's the last one! The Syndicate wipe them out!
-0:57.5   CALLER   That was fast! The Syndicate made short work of that one!
-1:01.4   VETERAN  Flawless is rare. I never did it. Not once.
-1:06.3   PA       The Syndicate win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+0:20.1   VETERAN  The floor gets cleared between sessions. It takes about eleven minutes.
+0:25.1   CALLER   The scout finds—
+0:26.2   ── green tank destroys rust ifv
+0:26.3   CALLER   The IFV is finished! The Syndicate crack it wide open!
+0:30.5   CALLER   The momentum is swinging to the Syndicate!
+0:32.0   ── close call: rust scout at 4% hull
+0:33.1   PA       That's right, Joseph, although the Syndicate prefers the word reallocation.
+0:39.3   CALLER   Right—
+0:39.5   ── green tank destroys rust scout
+0:39.8   CALLER   Upset! Upset on the floor! The tank gets it done!
+0:43.8   ── green tank destroys rust artillery
+0:43.8   CALLER   Another one for the Syndicate! This is a clinic!
+0:47.7   CALLER   Something just changed out there! They're all moving at once!
+0:51.3   VETERAN  Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick.
+1:06.6   CALLER   Artillery in a room this size. Is that smart?
+1:09.9   VETERAN  Hard to say. Ask me again in a minute.
+1:11.0   ── close call: rust scout at 10% hull
+1:14.1   CALLER   And—
+1:14.2   ── green scout destroys rust artillery
+1:14.2   ── rust squad Battery wiped out
+1:14.2   ── green tank destroys rust scout
+1:14.2   ── rust squad Swarm wiped out
+1:14.2   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
+1:14.6   CALLER   The Syndicate finish it! The last scout is gone!
+1:17.9   CALLER   It's all over! The Syndicate win it!
+1:20.6   VETERAN  They kept their shape. That is the whole thing, every time.
+1:26.3   PA       The Syndicate win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.

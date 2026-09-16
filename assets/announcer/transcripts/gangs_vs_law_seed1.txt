@@ -1,39 +1,38 @@
 TRANSCRIPT: gangs_vs_law (director seed 1)
 the Scrapyard | green: scout, scout, ifv, burner, scout | rust: tank, ifv, ifv, scout
-result: green by elimination at 1:08.8
+result: green by elimination at 1:20.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
 0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
 0:07.5   CALLER   Here we go! The building is shaking and we have not even started!
-0:12.6   CALLER   And here comes the Law. Listen to this building. They are not popular in here.
-0:18.0   ── first contact: green scout fires on a ifv
-0:18.0   VETERAN  Whoever shot first just told everybody where they are. Now we see if it was worth it.
-0:26.0   VETERAN  You hear that ringing? Everybody—
-0:28.5   ── green scout destroys rust scout
-0:28.5   ── rust squad Spotlight wiped out
-0:28.6   CALLER   Whoa, whoa, whoa!
-0:30.0   ── close call: green scout at 0% hull
-0:30.2   CALLER   What an exchange, and the Wreckers win it!
-0:33.2   VETERAN  My old chief had a saying about this exact—
-0:35.0   ── close call: rust ifv at 12% hull
-0:37.2   ── rust ifv destroys green scout
-0:37.3   CALLER   The scout runs out of road!
-0:37.5   ── friendly fire: green burner hits its own scout
-0:39.0   ── rust ifv destroys green scout
-0:39.6   CALLER   Two in a row! The Law strike again!
-0:43.0   ── green ifv destroys rust ifv
-0:43.2   CALLER   They hit the weak spot and the IFV just folds!
-0:43.8   ── green burner destroys rust ifv
-0:46.7   CALLER   The Law are down to its last vehicle!
-0:55.0   CALLER   They found the soft spot on that tank!
-0:57.9   CALLER   That's gonna leave a mark.
-1:04.5   VETERAN  When they stop, watch which way the guns point. A—
-1:08.8   ── green scout destroys rust tank
-1:08.8   ── rust squad Precinct wiped out
-1:08.8   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
-1:08.8   CALLER   Sorry to cut you off, but look!
-1:11.5   CALLER   The Wreckers finish it! The last tank is gone!
-1:14.8   CALLER   It's all over! The Wreckers win it!
-1:17.5   VETERAN  Both of those crews will drive again. That is more than most nights.
-1:23.9   PA       The result is final. The Wreckers win, and the floor will be cleared before the next session.
+0:12.6   CALLER   And—
+0:12.8   ── first contact: green scout fires on a scout
+0:13.1   VETERAN  Now everybody knows where everybody is. This is where it gets honest.
+0:19.1   CALLER   Here comes the drill! This is what they train for!
+0:19.5   ── friendly fire: green burner hits its own scout
+0:23.3   CALLER   Oh, that's their own! The Wreckers hit its own scout!
+0:27.6   VETERAN  Once a crew—
+0:29.0   ── green ifv destroys rust scout
+0:29.0   ── rust squad Spotlight wiped out
+0:29.1   CALLER   There it is! The first kill of the night belongs to the Wreckers!
+0:29.8   ── rust tank destroys green ifv
+0:31.5   ── close call: rust ifv at 9% hull
+0:31.8   ── green scout destroys rust ifv
+0:33.6   CALLER   They got another one! Oh my goodness!
+0:34.0   ── rust tank destroys green burner
+0:36.9   CALLER   That's the matchup! The tank does exactly what it was built to do!
+0:41.4   VETERAN  You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops.
+0:49.5   ── green scout destroys rust ifv
+0:49.5   CALLER   It's all on the last Law vehicle now!
+0:53.0   CALLER   Something just changed out there! They're all moving at once!
+0:56.6   VETERAN  Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick.
+1:07.8   CALLER   Right up the tailpipe! The Wreckers caught that tank from behind!
+1:17.3   CALLER   Right in the weak spot! What a shot!
+1:20.2   ── green scout destroys rust tank
+1:20.2   ── rust squad Precinct wiped out
+1:20.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
+1:20.3   CALLER   The Wreckers finish it! The last tank is gone!
+1:23.6   CALLER   It's all over! The Wreckers win it!
+1:26.3   VETERAN  Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
+1:36.0   PA       The result is final. The Wreckers win, and the floor will be cleared before the next session.

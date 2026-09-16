@@ -2921,7 +2921,7 @@
     "shooter_artillery"
    ],
    "intensity": 2,
-   "text": "That artillery shell landed on {faction_s} own {victim_unit}!"
+   "text": "That artillery shell landed on their own {victim_unit}!"
   },
   {
    "id": "caller.ff.06",

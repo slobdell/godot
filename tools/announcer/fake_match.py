@@ -177,6 +177,11 @@ SCENARIOS = {
 }
 
 
+
+def other_team(team: str) -> str:
+    return "rust" if team == "green" else "green"
+
+
 class FakeMatch:
     CONTROL_POINTS_TO_WIN = 90
     CONTROL_CAPTURE_SECONDS = 8.0
@@ -190,6 +195,8 @@ class FakeMatch:
         self.t = 0.0
         self.contact_at = self.rng.uniform(*scenario.contact)
         self.first_contact_done = False
+        ## (team, kind) -> when that element decision was last reported, for the same cadence doctrine uses.
+        self.element_reported: dict = {}
         self.kills = {"green": {}, "rust": {}}
         self.control_owner = "neutral"
         self.control_points = {"green": 0.0, "rust": 0.0}
@@ -219,6 +226,37 @@ class FakeMatch:
         return round(sum(max(u.hull, 0) / u.max_hull for u in members) / len(members), 3)
 
     # ---- the match ----
+    ## L1 (doctrine): the shapes and drills a shipped table can actually choose. Frozen on their side behind an
+    ## exact-set test, so a fixture can never ask the booth for a recording that does not exist.
+    FORMATIONS = ("wedge", "column", "line", "vee", "echelon_right", "herringbone", "coil", "swarm")
+    TECHNIQUES = ("traveling", "traveling_overwatch", "bounding_overwatch")
+    DRILLS = ("react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire",
+              "break_contact", "herringbone", "bait")
+    ## Doctrine rate-limits to one report per element per ten seconds; the fixture holds to the same cadence.
+    ELEMENT_GAP_S = 10.0
+
+    def emit_element(self, team: str, kind: str, **fields) -> None:
+        """A plausible element decision, so a fixture exercises the booth's tactical commentary. The `reason` is
+        written the way a doctrine table writes one: it is carried for the subtitle and never spoken."""
+        last = self.element_reported.get((team, kind), -99.0)
+        if self.t - last < self.ELEMENT_GAP_S:
+            return
+        self.element_reported[(team, kind)] = self.t
+        element = self.rng.choice(["Eyes", "Anvil", "Battery", "Dart", "Lance"])
+        alive = len(self.alive(team))
+        if kind == "element_drill":
+            drill = fields.pop("drill", None) or self.rng.choice(self.DRILLS)
+            self.emit("element_drill", team=team, element=element, size=max(alive, 1), drill=drill,
+                      formation=self.rng.choice(self.FORMATIONS),
+                      distance=round(self.rng.uniform(20.0, 140.0), 1),
+                      target=fields.pop("target", ""),
+                      reason="%s: the table says %s here" % (drill.replace("_", " "), drill.replace("_", " ")))
+            return
+        self.emit("element_formation", team=team, element=element, size=max(alive, 1),
+                  formation=self.rng.choice(self.FORMATIONS), technique=self.rng.choice(self.TECHNIQUES),
+                  changed=fields.pop("changed", ["formation"]),
+                  reason="moving to contact: the table picks this shape for the ground")
+
     def run(self) -> list:
         budget = 1000
         teams = []
@@ -307,6 +345,9 @@ class FakeMatch:
                 self.first_contact_done = True
                 self.emit("first_contact", team=shooter.team, unit_id=shooter.id, unit=shooter.unit,
                           target_id=target.id, target_unit=target.unit)
+                # Contact is what makes an element change shape, and what springs a drill.
+                self.emit_element(shooter.team, "element_drill", drill="react_to_contact", target=target.id)
+                self.emit_element(target.team, "element_formation", changed=["formation", "technique"])
             risk = FRIENDLY_RISK.get(shooter.unit, 0.0) * self.scenario.friendly_scale
             friends = [u for u in self.alive(shooter.team) if u is not shooter]
             if friends and self.rng.random() < risk:
@@ -359,6 +400,11 @@ class FakeMatch:
                   killer_team=killer.team if killer else "", friendly=friendly, cause="weapon" if killer else "hazard")
         if killer and not friendly:
             self.kills[killer.team][killer.unit] = self.kills[killer.team].get(killer.unit, 0) + 1
+        # Losing a vehicle is what makes an element decide it is outgunned, or turn and go through whatever hit it.
+        losing = len(self.alive(victim.team)) < len(self.alive(other_team(victim.team)))
+        self.emit_element(victim.team, "element_drill",
+                          drill="break_contact" if losing else self.rng.choice(["react_to_contact", "near_ambush"]),
+                          target=killer.id if killer else "")
         squad = [u for u in self.units if u.team == victim.team and u.squad == victim.squad]
         if all(not u.alive for u in squad):
             self.emit("squad_wiped", team=victim.team, squad=victim.squad, units_lost=len(squad))
