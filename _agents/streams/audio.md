@@ -241,6 +241,25 @@ That is the same shape as the Veteran's airtime problem (a heat rule silencing h
 independently. Written up for `orchestration.md`: **a behaviour that looks under-written is usually being starved by
 a rule above it — before adding content, log what selected it each tick.**
 
+## Housekeeping found two things worth knowing (2026-09-16)
+
+Both came from actually measuring at the end rather than trusting earlier numbers.
+
+**The clips folder's `.gdignore` was gone.** Wiping `assets/announcer/clips` to re-cut the pilot deleted the marker
+with it, so Godot imported all 2,396 clips and **2,396 `.import` files were committed**. Deleting them is the
+cleanup; the fix is that `generate.py` now writes the marker itself and clears stale `.import` files after every
+run, so a wipe cannot lose it again.
+
+**The masters were 1.1 GB, not the 340 MB I had reported.** Only 176 MB were masters; ~950 MB were `.norm.wav` and
+`.level.txt` caches the pipeline writes beside each one — about six times the size of what they cache, on a laptop
+at 98% disk. The pipeline now drops them at the end of a run. With 340 stale master sets from deleted lines also
+pruned: **1.1 GB → 176 MB**, and the laptop went from 2.4 GB free to 3.3 GB.
+
+**For whoever closes the round:** `assets/announcer/masters/` is **176 MB** and must be rescued before this worktree
+is removed — it is worth 171k credits, because everything in `clips/` can be re-cut from it for nothing. The 223 MB
+rescued to `main` earlier is **superseded, not additive**: those masters were recorded against line texts the
+rebuild changed.
+
 ## Status
 
 _Updated 2026-09-16 by the audio worker._
@@ -397,7 +416,9 @@ Committed as 5ccf56f and reported to the orchestrator for merging to `main`.
 
 ### Verified
 
-**`make remote T=check` exited 0 on builder0 against the rebuilt booth (128c33b): 696 Godot tests, 0 failed;
+**`make remote T=check` exited 0 on builder0 against the final tree (459331b), and again against 128c33b before
+the housekeeping commits. Do not treat an older green run as evidence about a newer tree — two commits landed
+between them.** Against the rebuilt booth (128c33b): 696 Godot tests, 0 failed;
 `announcer-variance`, `announcer-record-smoke` and `music-smoke` all green with the sim hash unchanged at
 `d7967d8b36d4417b`; `audio-check passed`.** The three failures that first run found were all tests describing the
 *previous* contract rather than defects — a dead shooter being illegal, a `close_call` the regenerated fixtures no
