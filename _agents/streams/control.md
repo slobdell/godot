@@ -139,6 +139,23 @@ the cap up, because the cap is derived from the force's own sight. That is the i
 - `relay-smoke` and the announcer's `test_mixdown_places_parts_fillers_and_cuts` both failed once under
   builder0 load and passed in isolation. Neither is in control's paths; both reported to the orchestrator.
 
+**X2. Element focus and awareness.** Done, `make remote T=check` green (675 tests), playtest green at both
+sizes, frames looked at.
+
+- `ElementAwareness` (`game/control/element_awareness.gd`): one entry per control group - name, survivors,
+  strength, middle, and state (idle / moving / contact / under_fire / lost, worst wins). Bad state changes raise
+  an alert with a place attached, rate-limited per element and kind (8 s). A wiped element lingers 10 s so
+  "Bravo wiped out" has something to point at.
+- `EdgeMarkers` (`game/ui/edge_markers.gd`): every element you aren't watching gets a chip on the screen edge
+  (arrow, name, survivors, strength bar, colour by state); clicking one selects it and takes the camera. The
+  chips stay clear of the command card (the bottom 22% is the HUD's).
+- One centred alert prompt above the group chips: the newest unseen alert plus a count, `[Q]` to jump. **Q**
+  selects that element and moves the camera. Contact bearings are measured element → enemy, not from the base.
+- Clicking or boxing a selection takes the camera to it, so switching elements always moves the view.
+- `ControlGroups` keeps a label per group from the doctrine squad's name ("Bravo", not "Group 2").
+- The radar is now the map: facing ticks on friendly blips, element numbers at each element's middle, the
+  selected element ringed, last-known contacts still fading, click to look, right-click to order.
+
 ### Questions for the lead
 
 - None yet.
