@@ -1,0 +1,603 @@
+{
+  "slots": {
+    "unit.gangs.artillery.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_artillery_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          0.002,
+          0.9727,
+          0.0
+        ],
+        "fitted_scale": 4.0,
+        "forward": "+x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 1.953,
+      "scene": "unit_gangs_artillery_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19ed-77c6-b597-bfa86d298fc8 from review item gangs_artillery_b",
+      "tris": 13689.0
+    },
+    "unit.gangs.artillery.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_artillery_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated, moved (0.00, 0.78) onto the turret pivot",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.0036,
+          -0.2283,
+          0.5913
+        ],
+        "fitted_scale": 3.69230794906616,
+        "forward": "+x",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": true,
+          "from": "unit.gangs.artillery.hull",
+          "stretch": false,
+          "turn_deg": 0.0,
+          "turret_scale": 1.08333325054911
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0018,
+          0.0,
+          0.7759
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.gangs.artillery.hull",
+        "up": "+y"
+      },
+      "roof": 0.514,
+      "scene": "unit_gangs_artillery_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19ed-77c6-b597-bfa86d298fc8 from review item gangs_artillery_b",
+      "tris": 966.0
+    },
+    "unit.gangs.artillery.weapon": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_artillery_weapon.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated relative to the hull",
+        "barrel stretched ×3.30 from its breech to the muzzle point",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.0036,
+          -0.2283,
+          -2.5402
+        ],
+        "fitted_scale": 3.69230794906616,
+        "forward": "+x",
+        "include": [
+          "cannon_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": false,
+          "from": "unit.gangs.artillery.hull",
+          "stretch": true,
+          "turn_deg": 0.0,
+          "turret_scale": 1.08333325054911
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.gangs.artillery.hull",
+        "up": "+y"
+      },
+      "roof": 0.623,
+      "scene": "unit_gangs_artillery_weapon.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19ed-77c6-b597-bfa86d298fc8 from review item gangs_artillery_b",
+      "tris": 178.0
+    },
+    "unit.gangs.ifv.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_ifv_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "decimated 15208 → 14212 triangles (budget 15000)",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          -0.0017,
+          1.08,
+          0.0
+        ],
+        "fitted_scale": 3.54460954666138,
+        "forward": "-x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 2.16,
+      "scene": "unit_gangs_ifv_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19e5-7328-898d-8b4dace2282f from review item gangs_ifv_a",
+      "tris": 14212.0
+    },
+    "unit.gangs.ifv.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_ifv_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated, moved (-0.00, -0.02) onto the turret pivot",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0017,
+          -0.14,
+          -0.2202
+        ],
+        "fitted_scale": 3.54460954666138,
+        "forward": "-x",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": true,
+          "from": "unit.gangs.ifv.hull",
+          "stretch": false,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          -0.0202
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.gangs.ifv.hull",
+        "up": "+y"
+      },
+      "roof": 0.611,
+      "scene": "unit_gangs_ifv_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19e5-7328-898d-8b4dace2282f from review item gangs_ifv_a",
+      "tris": 194.0
+    },
+    "unit.gangs.ifv.weapon": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_ifv_weapon.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated relative to the hull",
+        "barrel stretched ×2.72 from its breech to the muzzle point",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0017,
+          -0.14,
+          0.1131
+        ],
+        "fitted_scale": 3.54460954666138,
+        "forward": "-x",
+        "include": [
+          "cannon_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": false,
+          "from": "unit.gangs.ifv.hull",
+          "stretch": true,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.gangs.ifv.hull",
+        "up": "+y"
+      },
+      "roof": 0.767,
+      "scene": "unit_gangs_ifv_weapon.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19e5-7328-898d-8b4dace2282f from review item gangs_ifv_a",
+      "tris": 84.0
+    },
+    "unit.gangs.scout.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_scout_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "decimated 15083 → 7541 triangles (budget 15000)",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.0,
+          0.6357,
+          0.0
+        ],
+        "fitted_scale": 3.0,
+        "forward": "+z",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 1.271,
+      "scene": "unit_gangs_scout_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-1a1d-74e0-8ed2-30476c912062 from review item gangs_scout_b",
+      "tris": 7541.0
+    },
+    "unit.gangs.special.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_special_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.0,
+          0.978,
+          0.0112
+        ],
+        "fitted_scale": 3.82239532470703,
+        "forward": "+x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "albedo_texture": 512,
+          "ao_texture": 512,
+          "emission_texture": 512,
+          "metallic_texture": 512,
+          "normal_texture": 512,
+          "roughness_texture": 512
+        },
+        "up": "+y"
+      },
+      "roof": 1.949,
+      "scene": "unit_gangs_special_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19e6-7154-90c4-9402daeeacf9 from review item gangs_special_b",
+      "tris": 14052
+    },
+    "unit.gangs.tank.hull": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_tank_hull.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [
+          "turret_*",
+          "cannon_*"
+        ],
+        "fitted_offset": [
+          0.0026,
+          0.7383,
+          0.0
+        ],
+        "fitted_scale": 3.59999990463257,
+        "forward": "-x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "up": "+y"
+      },
+      "roof": 1.346,
+      "scene": "unit_gangs_tank_hull.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19cf-776a-8c43-10dfcea6edb8 from review item gangs_tank_a",
+      "tris": 13060.0
+    },
+    "unit.gangs.tank.turret": {
+      "credit": "Generated with Meshy",
+      "glb": "unit_gangs_tank_turret.glb",
+      "license": "Meshy Pro (paid plan): customer owns the generated output",
+      "notes": [
+        "placed as generated, moved (0.03, -0.95) onto the turret pivot",
+        "material 'material_0' emission energy ×4.0",
+        "texture albedo_texture 2048×2048 → 512×512",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512",
+        "texture emission_texture 2048×2048 → 512×512",
+        "stripped 5 texture references (textures come from another slot)"
+      ],
+      "options": {
+        "emission_energy": 4.0,
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          0.0356,
+          -0.4817,
+          -1.1549
+        ],
+        "fitted_scale": 3.59999990463257,
+        "forward": "-x",
+        "include": [
+          "turret_*"
+        ],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": [
+            "material_0"
+          ]
+        },
+        "place": {
+          "center_xz": true,
+          "from": "unit.gangs.tank.hull",
+          "stretch": false,
+          "turn_deg": 0.0,
+          "turret_scale": 1.0
+        },
+        "scale": 0.0,
+        "shift": [
+          0.033,
+          0.0,
+          -0.9549
+        ],
+        "strip_textures": true,
+        "texture_caps": {
+          "albedo_texture": 512.0,
+          "ao_texture": 512.0,
+          "emission_texture": 512.0,
+          "metallic_texture": 512.0,
+          "normal_texture": 512.0,
+          "roughness_texture": 512.0
+        },
+        "textures_from": "unit.gangs.tank.hull",
+        "up": "+y"
+      },
+      "roof": 0.253,
+      "scene": "unit_gangs_tank_turret.tscn",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a808-19cf-776a-8c43-10dfcea6edb8 from review item gangs_tank_a",
+      "tris": 792.0
+    }
+  },
+  "theme": "factions/gangs"
+}

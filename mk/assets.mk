@@ -151,6 +151,10 @@ art-apply-decisions: ## Record the lead's taps from the review page: DIR=<read_d
 	$(PYTHON) tools/assets/review_page.py apply --decisions "$(DIR)" --url "$(URL)"
 
 # ---- Round 3 (assets X1/X2): the arena kit: stackable containers and giant ad screens ---------------------------
+.PHONY: assets-factions
+assets-factions: ## Rebuild the faction vehicle themes from the lead's approved concepts (tools/assets/build_factions.sh)
+	tools/assets/build_factions.sh
+
 .PHONY: assets-containers assets-ads arena-kit-gallery arena-kit-measure
 assets-containers: ## Rebuild the containers' shared texture set (tools/assets/build_containers.py; CC0 ambientCG + procedural)
 	$(PYTHON) tools/assets/build_containers.py

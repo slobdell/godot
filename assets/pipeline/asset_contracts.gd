@@ -74,6 +74,12 @@ const SLOTS := {
 		"guide": Vector3(18.0, 3.0, 1.5), "fit": "stretch", "anchor": "ground_center",
 		"tris": 8000, "methods": [], "elongated": "x", "file": "prop_wall",
 	},
+	# The wreck a destroyed vehicle leaves (assets stretch, approved 2026-09-16): one husk scaled per unit, so it is fitted
+	# to the standard tank hull and the wreck effects scale it from there.
+	"prop.wreck": {
+		"guide": Vector3(2.6, 1.7, 4.2), "fit": "contain", "anchor": "ground_center",
+		"tris": 6000, "methods": [], "elongated": "z", "file": "prop_wreck",
+	},
 	"arena.dressing": {
 		"guide": Vector3(320.0, 30.0, 320.0), "fit": "none", "anchor": "world",
 		"tris": 50000, "methods": [], "file": "arena_dressing",

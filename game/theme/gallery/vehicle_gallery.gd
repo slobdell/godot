@@ -113,7 +113,7 @@ func _process(delta: float) -> void:
 		(tank.get_node("Hull") as VisualSlot).invoke("set_heat", [heat])
 		if weapon.slot == "weapon.flamethrower":
 			weapon.invoke("set_firing", [fmod(time + i, 3.0) < 2.0])
-		if not _flags.has("gallery-deploy"):
+		if not _flags.has("gallery-deploy") and not _flags.has("gallery-faction"):
 			(tank.get_node("Hull") as VisualSlot).invoke("set_shield", [_shield_ratio(fmod(time + i * 0.9, 6.0))])
 	# Laser tanks pulse like gameplay does: a fresh fx.laser_beam slot per pulse, freed after 0.2 s.
 	if time >= _next_pulse:

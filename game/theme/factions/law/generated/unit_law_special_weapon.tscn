@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://assets/runtime/generated_visual.gd" id="1_visual"]
+[ext_resource type="PackedScene" path="res://game/theme/factions/law/generated/unit_law_special_weapon.glb" id="2_model"]
+[ext_resource type="PackedScene" path="res://game/theme/factions/law/generated/unit_law_special_hull.glb" id="3_materials"]
+
+[node name="UnitLawSpecialWeapon" type="Node3D"]
+script = ExtResource("1_visual")
+slot = "unit.law.special.weapon"
+tint_materials = PackedStringArray("material_0")
+tint_strength = 0.2
+material_source = ExtResource("3_materials")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]

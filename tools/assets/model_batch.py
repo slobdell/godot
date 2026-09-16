@@ -23,9 +23,10 @@ HERE = Path(__file__).resolve().parent
 POLYCOUNT = 15000
 
 
-def pending(manifest: dict, group_prefix: str = "") -> list:
+def pending(manifest: dict, group_prefix: str = "", only: set = None, skip: set = None) -> list:
     return [i for i in manifest["items"] if i["status"] == "approved" and not i.get("model_task")
-            and int(i.get("est_3d_credits", 15)) > 0 and i["group"].startswith(group_prefix)]  # mood pictures never go to 3D
+            and int(i.get("est_3d_credits", 15)) > 0 and i["group"].startswith(group_prefix)
+            and (not only or i["id"] in only) and i["id"] not in (skip or set())]  # mood pictures never go to 3D
 
 
 def command(item: dict, root: Path = review.ROOT) -> list:
@@ -40,9 +41,11 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--groups", default="", help="only groups whose name starts with this")
     parser.add_argument("--jobs", type=int, default=5)
+    parser.add_argument("--only", action="append", default=[], help="build only these review ids")
+    parser.add_argument("--skip", action="append", default=[], help="leave these approved ids unbuilt (say why in the brief)")
     parser.add_argument("--list", action="store_true")
     args = parser.parse_args(argv)
-    todo = pending(review.load(), args.groups)
+    todo = pending(review.load(), args.groups, set(args.only), set(args.skip))
     credits = sum(int(i.get("est_3d_credits", 15)) for i in todo)
     for item in todo:
         print(f"{item['id']:<22} {item['group']:<26} {item['target']}")
