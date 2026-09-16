@@ -122,8 +122,10 @@ combat's L2 suppression, CP2) → X6 faction doctrines → stretch (doctrine vie
   0.57 (column), and 0.67 for the same wedge bunched to 3 m, which hurt nothing for 7.4 s.
 - **Herringbone at a halt, jumped from the flank:** 0.93 left, against 0.69 for the same element parked in
   the column it drove in.
-- **Bounding overwatch costs survival today** (0.51 against 0.74 traveling). Expected: covering fire that
-  cannot suppress is just a stationary vehicle. **Re-measure at CP2.**
+- **Bounding overwatch, re-measured with CP2 merged: 0.51 → 0.60** against 0.75 for traveling (which did not
+  move). A third of the gap closed on *incidental* near-miss suppression alone; the rest waits on a brain
+  option that fires at ground, since nothing is ever deliberately suppressed (combat measures 0.03 mean).
+  The drills themselves are unchanged by suppression — all five still pass, same numbers.
 - **Dispersion versus splash shows nothing yet** (0.91 spread, 0.93 bunched, against artillery).
 - **Drills:** ambushed at 25 m → through the ambush 6.3 s later, both ambushers dead, no losses; far ambush →
   base of fire 4.6 m off the line of contact while the other half swings 24.3 m round; bounding keeps a
@@ -212,7 +214,8 @@ from 27 to 52 without another edit here. `Army.parse_scaled` can go.
 
 ### Next steps
 
-1. Re-measure bounding and dispersion the day combat's L2 suppression merges (CP2).
+1. ~~Re-measure bounding the day CP2 merges~~ **done 2026-09-16: 0.51 → 0.60.** Re-measure again when brains
+   can fire at ground; dispersion against splash still shows nothing and wants the same option.
 2. A support-element doctrine rule (displace and set up, instead of breaking contact).
 3. Faction tables want a real roster to sit on (combat's L3): today every unit is `condemned`, so
    `Elements._table_for` always loads the Condemned table in a real match.
