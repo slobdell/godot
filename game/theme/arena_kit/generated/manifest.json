@@ -266,10 +266,10 @@
       "notes": [
         "decimated 15125 → 3758 triangles (budget 6000)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -298,7 +298,9 @@
           0.0
         ],
         "texture_caps": {
+          "albedo_texture": 512,
           "ao_texture": 512,
+          "emission_texture": 512,
           "metallic_texture": 512,
           "normal_texture": 512,
           "roughness_texture": 512
@@ -307,7 +309,7 @@
       },
       "roof": 1.049,
       "scene": "prop_wreck.tscn",
-      "source": "assets/incoming/meshy/wreck_a_t2.glb",
+      "source": "Meshy image-to-3D meshy-t2 task 01a0a80b-d1cf-7197-b308-84304fc1c094 from review item wreck_a",
       "tris": 3758
     }
   },

@@ -13,7 +13,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 LICENSE="--license='Meshy Pro (paid plan): customer owns the generated output' --credit='Generated with Meshy'"
-COMMON="--tint=material_0 --tint-strength=0.2 --emission-energy=4 --texture-caps=normal_texture:512,roughness_texture:512,metallic_texture:512,ao_texture:512"
+# Gallery only this round, and 15 vehicles at the roster's 1024 albedo would be ~100 MB in the repo: every map is 512
+# here (assets X6). Raise the albedo when a faction becomes playable and shows up in the garage close-ups.
+COMMON="--tint=material_0 --tint-strength=0.2 --emission-energy=4 --texture-caps=albedo_texture:512,emission_texture:512,normal_texture:512,roughness_texture:512,metallic_texture:512,ao_texture:512"
 
 source_of() {
 	python3 - "$1" <<'PY'

@@ -6,10 +6,10 @@
       "license": "Meshy Pro (paid plan): customer owns the generated output",
       "notes": [
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -38,7 +38,9 @@
           0.0
         ],
         "texture_caps": {
+          "albedo_texture": 512.0,
           "ao_texture": 512.0,
+          "emission_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -56,10 +58,10 @@
       "license": "Meshy Pro (paid plan): customer owns the generated output",
       "notes": [
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -91,7 +93,9 @@
           0.0
         ],
         "texture_caps": {
+          "albedo_texture": 512.0,
           "ao_texture": 512.0,
+          "emission_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -110,10 +114,10 @@
       "notes": [
         "placed as generated, moved (0.00, 0.90) onto the turret pivot",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024",
+        "texture emission_texture 2048×2048 → 512×512",
         "stripped 5 texture references (textures come from another slot)"
       ],
       "options": {
@@ -153,7 +157,9 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "albedo_texture": 512.0,
           "ao_texture": 512.0,
+          "emission_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -173,10 +179,10 @@
       "notes": [
         "decimated 16160 → 8080 triangles (budget 15000)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -205,7 +211,9 @@
           0.0
         ],
         "texture_caps": {
+          "albedo_texture": 512.0,
           "ao_texture": 512.0,
+          "emission_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -224,10 +232,10 @@
       "notes": [
         "decimated 15410 → 7704 triangles (budget 15000)",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -256,7 +264,9 @@
           0.0
         ],
         "texture_caps": {
+          "albedo_texture": 512,
           "ao_texture": 512,
+          "emission_texture": 512,
           "metallic_texture": 512,
           "normal_texture": 512,
           "roughness_texture": 512
@@ -274,10 +284,10 @@
       "license": "Meshy Pro (paid plan): customer owns the generated output",
       "notes": [
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024"
+        "texture emission_texture 2048×2048 → 512×512"
       ],
       "options": {
         "emission_energy": 4.0,
@@ -309,7 +319,9 @@
           0.0
         ],
         "texture_caps": {
+          "albedo_texture": 512.0,
           "ao_texture": 512.0,
+          "emission_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -328,10 +340,10 @@
       "notes": [
         "placed as generated, moved (0.00, -0.02) onto the turret pivot",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024",
+        "texture emission_texture 2048×2048 → 512×512",
         "stripped 5 texture references (textures come from another slot)"
       ],
       "options": {
@@ -371,7 +383,9 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "albedo_texture": 512.0,
           "ao_texture": 512.0,
+          "emission_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
@@ -392,10 +406,10 @@
         "placed as generated relative to the hull",
         "barrel stretched ×1.87 from its breech to the muzzle point",
         "material 'material_0' emission energy ×4.0",
-        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture albedo_texture 2048×2048 → 512×512",
         "texture normal_texture 2048×2048 → 512×512",
         "texture roughness_texture 2048×2048 → 512×512",
-        "texture emission_texture 2048×2048 → 1024×1024",
+        "texture emission_texture 2048×2048 → 512×512",
         "stripped 5 texture references (textures come from another slot)"
       ],
       "options": {
@@ -435,7 +449,9 @@
         ],
         "strip_textures": true,
         "texture_caps": {
+          "albedo_texture": 512.0,
           "ao_texture": 512.0,
+          "emission_texture": 512.0,
           "metallic_texture": 512.0,
           "normal_texture": 512.0,
           "roughness_texture": 512.0
