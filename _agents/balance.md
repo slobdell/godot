@@ -21,10 +21,62 @@
 | Base service, arena, sensing, friendly fire, spawns | `game/match/match.gd` | resupply 1 shell/s and repair 6 HP/s within 30 m of your base; intel every 6 ticks, 12 s memory; blind artillery scatter ×3; friendly fire always on; 9 × 3 spawn grid |
 | Arena layouts | `arenas/*.json` (`Arena`) | `foundry` (round 1's map), `scrapyard` (dense cover, three lanes) |
 | Brain weights | `game/ai/tank_brain.gd` (ai stream) | ORDER_WEIGHT 0.95, SCOUT_STANDOFF 85 m, SCOUT_HUNT 1.6 (floor 0.8), ARTILLERY_SAFE_DISTANCE 80 m, RECHARGED 0.6 |
-| Budget | `Units.DEFAULT_BUDGET` | 1000 |
+| Budget | `Units.DEFAULT_BUDGET` | 1000 (garage/progression); **round 4: `Units.BASELINE_BUDGET` 5200** for full-scale faction battles |
+| Suppression (round 4, L2) | `game/combat/threat_field.gd`, `Weapons "suppression"`, `Match.SUPPRESSION_*`, `Tank.PINNED_SUPPRESSION` | see *Round 4: suppression and effective fire* |
 
 Try a number without editing code: `--tune=tank.turret_turn_rate_deg=70,ifv.armor.front=4,autocannon.penetration=5`
 (match runner, `tools/match_series.py --extra=`, `make matchups TUNE=`).
+
+## Round 4: suppression and effective fire (combat X1, contract L2)
+
+**What it is.** Every round that resolves stamps the ground it swept into a coarse decaying grid, one per team
+(`ThreatField`, `game/combat/threat_field.gd`): 6 m cells, a 1 s half-life, a *segment* for direct fire (muzzle to
+wherever the round stopped), a *disc* for arcs and flame cones. Units standing in that fire get suppressed, which
+costs them accuracy and turret tracking. Everything the brains and the drills need is two queries:
+`Match.threat_field(team)` and `Match.is_beaten_zone(team, from, to)`.
+
+| Number | Where | Value and why |
+|---|---|---|
+| Suppression per round | `Weapons.PROFILES[*]["suppression"]` | MG 0.10 (×10/s = **1.0/s**), 25 mm 0.35 (×2.2/s = 0.78/s), cannon 1.2 (×0.2/s = 0.24/s), laser 0.15 (0.3/s), mortar 3.0 over a 9 m splash, flame 1.5 **per second**. The machine gun is the best suppressor per second and can still barely scratch a tank's front: volume, not damage |
+| Half-life | `ThreatField.HALF_LIFE_SECONDS` | 1.0 s. A steady source settles at rate ÷ 0.693, so one machine gun holds a lane at ~1.4 |
+| Full suppression | `Match.SUPPRESSION_FULL_DENSITY` | 3.0, i.e. about two machine guns or a mortar burst on the same spot |
+| Beaten zone | `Match.BEATEN_ZONE_DENSITY` | 1.0, so **one** crew streaming down a lane is enough to make crossing it a bad idea (the lead's "cut off an avenue") |
+| Pinned | `Tank.PINNED_SUPPRESSION` | 0.6. The accuracy cost scales in smoothly below it: the threshold is a label for decisions, not a cliff |
+| Build / fade | `Tank.SUPPRESSION_RISE_PER_SECOND` 0.6, `..._RECOVER_...` 0.3 | ~1.7 s of heavy fire to go heads-down, ~3.3 s of quiet to come back |
+| Accuracy | `Match.SUPPRESSION_SPREAD_FACTOR` | 2.0: a fully suppressed tank's 0.8° becomes 2.4°. It still shoots, it just stops hitting anything far away (`Match.shot_spread`, which also carries the older `MOVING_SPREAD_FACTOR`) |
+| Turret tracking | `Tank.SUPPRESSION_TRACKING_PENALTY` | 0.5: heads down means the gunner loses the target, which is why suppression **plus a flank** works |
+| Deploying | `Tank._deploy_step` | A pinned crew can't get a battery's outriggers down |
+
+**Deliberate simplifications**
+- **Only the enemy's rounds suppress you.** A team is never scared off its own base of fire, so support-by-fire
+  doesn't need shift-fire discipline to be usable. Friendly-fire *damage* is unchanged (it is still real).
+- **Suppression arrives when the round resolves**, not while it flies: a shell in the air has not frightened anyone
+  yet, and a shell that hits a wall at 20 m marks 20 m of lane, not its full 70 m range.
+- **Decisions stay with the brains.** The rules only make fire *ineffective*; breaking contact, going to cover and
+  refusing to cross a lane belong to ai and doctrine, which read the field.
+- Cost: the field decays 2 × 1600 float cells every 3 ticks (~0.05 ms/tick). If that shows up at 30 a side, the fix
+  is a global decay scale instead of a full pass (see X5's numbers).
+
+**The sim baseline moved on purpose** with this commit: suppression changes shot spread, so every seeded match
+diverges, and `Match.state_hash` now includes each unit's suppression.
+
+## Round 4: army size and factions (combat X1, contract L3)
+
+Every catalog entry carries a `faction` (`Units.FACTIONS`: condemned, gangs, law, syndicate; missing means
+`condemned`, so every round-3 army and doctrine still loads). `Units.roster(faction)`,
+`Units.roster_average_cost(faction)` and `Army.typical_size(faction, budget)` are the L3 queries;
+`--green-faction=` / `--rust-faction=` on the match runner build a faction army.
+
+| Number | Value and why |
+|---|---|
+| `Units.BASELINE_BUDGET` | 5200: the Condemned average 183 points a vehicle, so a full-scale battle is **28 a side** — the lead's "baseline of 30 units per side". `DEFAULT_BUDGET` stays 1000 and the garage keeps its own `Progression.BUDGET_TIERS` while that stream is paused |
+| `Army.MAX_ARMY_UNITS` | 45 vehicles a side, which is what the spawn grid holds |
+| `Match.SPAWN_SLOTS` | 27 → **52** (13 columns 11 m apart out to ±66 m, 4 rows 8 m apart from `BASE_Z`). The front row is still at `BASE_Z`, so spawn distance and pace are unchanged; `tools/make_arenas.py` regenerates every layout's spawn list |
+| Spawn jitter | now clamped along z too (`SPAWN_JITTER_MAX_Z` 1.2 m), or a jittered hull in row 2 overlapped one in row 1 |
+
+**Open:** `Doctrine.MAX_SQUADS` is 5 (a player-UI number), but 28 vehicles need six squads or more, so faction armies
+are validated through `Army.parse_scaled`, which runs `Doctrine.parse` over slices of five squads. Requested of the
+doctrine stream: raise `MAX_SQUADS` (or make it a UI-only cap) and this wrapper goes away.
 
 ## Round 2: the unit-vs-unit matchup matrix (rules R7)
 

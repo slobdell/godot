@@ -3,6 +3,8 @@ extends GameMode
 ## Headless bots-vs-bots, faster than real time under Godot's --fixed-fps; prints
 ## MATCH_RESULT <json> and quits. Options: --green=N --rust=N (BotControllers) or
 ## --green-doctrine=PATH --rust-doctrine=PATH (or cpu / cpu:<archetype> with --budget), --score-limit=K --time-limit=SECONDS
+## --green-faction=NAME / --rust-faction=NAME (L3: condemned | gangs | law | syndicate) make that side's cpu army a
+## faction army, whose SIZE falls out of the faction's costs (Units.BASELINE_BUDGET buys ~30 Condemned vehicles)
 ## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation
 ## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning); --control adds the center control point;
 ## --green-commander / --rust-commander give a team a CpuCommander.
@@ -38,9 +40,12 @@ func start() -> void:
 	var order := [Match.Team.RUST, Match.Team.GREEN] if flags.has("rust-first") else [Match.Team.GREEN, Match.Team.RUST]
 	for team in order:
 		var key := "green" if team == Match.Team.GREEN else "rust"
-		if flags.has(key + "-doctrine"):
-			# A doctrine path, or "cpu" / "cpu:<archetype>" for a budgeted army seeded from the match seed.
-			var loaded := Army.load_army(flags.text(key + "-doctrine"), seed_value * 2 + team, flags.integer("budget", Units.DEFAULT_BUDGET))
+		if flags.has(key + "-doctrine") or flags.has(key + "-faction"):
+			# A doctrine path, or "cpu" / "cpu:<archetype>" for a budgeted army seeded from the match seed. L3:
+			# --<side>-faction= alone means "a cpu army of that faction", and it may field more than five squads.
+			var lineup := flags.text(key + "-doctrine", "cpu")
+			var loaded := Army.load_army(lineup, seed_value * 2 + team, flags.integer("budget", Units.DEFAULT_BUDGET),
+					flags.text(key + "-faction"))
 			if loaded.has("error"):
 				push_error(loaded["error"])
 				main.get_tree().quit(2)
