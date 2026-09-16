@@ -204,5 +204,7 @@ The kickoff prompt is one line; this section is the rest.
 14. **"Passes in isolation, fails in a check" is not proof of a load problem.** Round 3 and 4 both blamed a loaded
     builder0 for a short audio mixdown; the real cause was `apad` after `amix` not padding on ffmpeg 6.1.1. Chase the
     tool's behavior before blaming the machine.
-15. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+15. Killing a local `make remote` leaves the build running on builder0, and the next run rsyncs `--delete` under it
+    (remote_builds.md). Stop the remote process first.
+16. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.

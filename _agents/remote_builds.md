@@ -53,6 +53,10 @@ version; builder0's is canonical. When gameplay changes on purpose: `make remote
 - **"cannot reach builder0":** check `ssh -o BatchMode=yes slobdell@builder0 true`. Fall back to local `make`.
 - **Rendering targets fail with a display error:** nobody is logged into builder0's desktop (no
   `/run/user/1000/.mutter-Xwaylandauth.*`). Run that target locally, or ask the lead to log in.
+- **Killing `make remote` locally does not stop the build on builder0.** `remote.sh` drives make over ssh, so the remote
+  make (and whatever it queued in `slot.sh`) keeps running, and your next `make remote` rsyncs `--delete` underneath it.
+  Stop the remote one first: `ssh slobdell@builder0` and kill only the processes whose
+  `readlink /proc/<pid>/cwd` points at *your* folder (`~/tank_squad/godot-<stream>`).
 - **Two runs from the same worktree at once clobber each other:** the remote folder is per worktree, not per run, so a
   second `make remote` rsyncs over a running one (seen 2026-09-15: a parallel test run broke a check with an rsync
   error). Run one remote command per worktree at a time, or copy the worktree.
