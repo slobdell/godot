@@ -16,6 +16,7 @@ extends GameMode
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
 ##   --no-elements  the player's squads stay hand-driven (no L1 leaders picking formations and drills)
 ##   --element-cpu  the CPU army is run by doctrine's ElementCommander instead of its squad AI (experimental)
+##   --cinematic  the camera directs itself: it finds the fighting, holds a shot, and cuts (spectating, trailers)
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
@@ -259,9 +260,25 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	edge.controls = controls
 	controls.add_child(edge)
 	controls.markers = edge
-	# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
-	# can collectively see (the lead: "a bird's eye view is just an unearned god view"). --no-vision-camera opts out.
-	if not flags.has("no-vision-camera"):
+	if flags.has("cinematic"):
+		# Stretch: a camera that watches the fight on its own. It replaces the vision framing rather than fighting
+		# it, because nobody is earning this view - it is the spectator's. Everything else (orders, the HUD, the
+		# planning pause) still works, so you can take the wheel back at any point by moving the camera.
+		var director := CinematicCamera.new()
+		director.name = "CinematicCamera"
+		director.rig = rig
+		director.game_match = game_match
+		main.add_child(director)
+		director.start()
+		# A spectator sees both sides. Without this the camera cuts to the best scene on the field and films an
+		# empty floor, because the fog of war has hidden every vehicle in it.
+		controls.reveal_all = true
+		var fog := main.get_node_or_null("FogOfWar")
+		if fog != null:
+			(fog as Node3D).visible = false
+	elif not flags.has("no-vision-camera"):
+		# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
+		# can collectively see (the lead: "a bird's eye view is just an unearned god view").
 		rig.vision = controls.vision_state
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
@@ -275,6 +292,9 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		playtest.run()
 	elif flags.has("scripted"):
 		_play_desktop_script(controls)
+	elif flags.has("cinematic"):
+		# No planning pause for a spectator: the match has to be running for there to be anything to film.
+		controls.recall_group(1)
 	else:
 		controls.recall_group(1)
 		controls.set_paused(true, "PLANNING: select (click, drag, 1-5) and right-click to order; Space starts")

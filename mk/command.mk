@@ -56,6 +56,23 @@ faction-menu-shot: import ## Screenshot the faction picker in build/screenshots/
 		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/faction-menu.png --screenshot-delay=4
 	@echo "Now LOOK at $(BUILD_DIR)/screenshots/faction-menu.png"
 
+## Control stretch: the self-directing camera. CINEMATIC_SHOTS frames, CINEMATIC_EVERY seconds apart.
+CINEMATIC_SHOTS ?= 6
+CINEMATIC_EVERY ?= 7
+
+cinematic-shots: import ## Frames from the self-directing camera in build/screenshots/cinematic-*.png (needs a display)
+	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
+	for i in $$(seq 1 $(CINEMATIC_SHOTS)); do \
+		delay=$$(( i * $(CINEMATIC_EVERY) )); \
+		timeout 180 $(GODOT) --path . --resolution 1920x1080 -- --skirmish --cinematic --player=cpu --enemy=cpu \
+			--seed=3 --budget=$(CONTROL_SCALE_BUDGET) --no-pick-faction \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/cinematic-$$i.png --screenshot-delay=$$delay || exit 1; \
+	done
+	@echo "Now LOOK at $(BUILD_DIR)/screenshots/cinematic-*.png"
+
+cinematic: import ## Watch a CPU-vs-CPU match with the self-directing camera
+	$(GODOT) --path . -- --skirmish --cinematic --player=cpu --enemy=cpu --budget=$(CONTROL_SCALE_BUDGET) $(CONTROL_FLAGS)
+
 skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate): size follows the roster
 	$(GODOT) --path . -- --skirmish --player-faction=$(FACTION) --enemy-faction=$(ENEMY_FACTION) $(CONTROL_FLAGS)
 

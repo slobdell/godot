@@ -8,6 +8,12 @@ extends RefCounted
 ## view never to reach past the force's collective horizon (the zoom-out cap that stops the unearned god view),
 ## and `clamp_point` keeps a free "look" camera over ground the team can actually see.
 
+## A clamped point lands this fraction inside the rim rather than exactly on it. Exactly on it is a coin toss:
+## `contains` asks for distance <= radius, and the same arithmetic rounds differently on different machines, so
+## `contains(clamp_point(p))` came out false on a loaded builder0 and true here. The invariant matters - the
+## camera re-clamps its focus every frame, and a focus the region disowns would be nudged for ever.
+const RIM_INSET := 1.0 - 1e-4
+
 ## [{"center": Vector3 (y = 0), "radius": float}], in the order the units were added.
 var discs: Array = []
 
@@ -40,7 +46,8 @@ func contains(point: Vector3) -> bool:
 	return false
 
 
-## `point` when it is seen, else the nearest point on the rim of the disc whose rim is closest to it.
+## `point` when it is seen, else just inside the rim of the disc whose rim is closest to it. `contains` always
+## holds for what this returns.
 func clamp_point(point: Vector3) -> Vector3:
 	var flat := Vector3(point.x, 0.0, point.z)
 	if is_empty() or contains(point):
@@ -55,7 +62,7 @@ func clamp_point(point: Vector3) -> Vector3:
 		if gap < best_gap:
 			best_gap = gap
 			var toward := away.normalized() if away.length() > 0.001 else Vector2.RIGHT
-			best = center + Vector3(toward.x, 0.0, toward.y) * radius
+			best = center + Vector3(toward.x, 0.0, toward.y) * radius * RIM_INSET
 	return best
 
 
