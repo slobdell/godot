@@ -262,3 +262,28 @@ Caveats: builder0 runs up to three agents' jobs at once, and headless excludes r
   are a ready-made before picture.
 
 New targets (mine): `make scale-bench`, `make faction-shots`, `make faction-matrix` (+ `tools/faction_matrix.py`).
+
+### X6 done (2026-09-16): faction vs faction measured; the gangs are the open item
+
+`make remote T="faction-matrix SEEDS=5 TIME=150"` plays every pair at 5200 points, counterbalanced (the same seeds
+from both colours). 60 matches, ~25 min. Full table in [balance.md](../balance.md) *X6*.
+
+**Averaged win rate: Condemned 70%, Law 63%, Syndicate 47%, road gangs 23%.** Match length **90–102 s** at 24–43
+vehicles a side, which is a good length for a full-scale battle.
+
+**The gangs cannot win.** I fixed two real defects and neither moved the number, so I stopped rather than inflate
+their stats:
+1. Their two most numerous vehicles did **2 dps through any armor** (the ×0.05 penetration floor) — 43 decorative
+   vehicles. The Rat Rod now carries game_design.md's **explosive spear** (pen 14, ×0.74 through a dozer front).
+   30% → 40% against the Syndicate, nothing elsewhere.
+2. **`Army.SQUADS` was keyed by role alone**, so the gangs' assault buggies inherited the Condemned scout's
+   "spotters first" directive and sat at standoff. It now takes faction-qualified keys (`"gangs/scout"`). Their SPOT
+   share fell 84% → 34% and they still lost 0-6 to the Law.
+
+Both mechanics the gangs are designed around live on other branches — ai's SUPPRESS option and doctrine's pack
+drills — and the matrix confirms it: mean suppression on the loser is 0.02–0.08, essentially none. 43 fragile
+short-ranged vehicles lose to 24 armored long-ranged ones when volume buys nothing. Inflating their numbers now
+would have to be undone the moment those merge, which is the lead's own guidance.
+
+**Ask of the orchestrator: re-run `make faction-matrix` on `main` once combat, doctrine and ai are merged.** That is
+the number worth acting on, and the gangs are the faction to watch in it.

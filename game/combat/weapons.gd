@@ -266,6 +266,32 @@ const PROFILES := {
 		"shield_multiplier": 0.6,
 		"suppression": 0.09,
 	},
+	"spear_gun": {
+		"fire_model": "shell",
+		# game_design.md's "explosive spears (high penetration, short range)" for the road gangs, and the answer to
+		# X6's first measurement: the gangs' two most numerous vehicles did 2 dps against ANY armor (x0.05, the
+		# penetration floor), so 43 vehicles were harmless and the faction won 10-30% of everything. A faction has to
+		# have an answer to every enemy unit type (game_design.md *Factions*); this is theirs, and it costs them
+		# having to cross 30 m of open ground to use it.
+		"reload_s": 3.0,
+		"burst_count": 1,
+		"burst_interval_s": 0.0,
+		"projectile_speed_mps": 55.0,
+		"penetration": 14.0,
+		"splash_radius": 0.0,
+		"kind": Kind.PROJECTILE,
+		"range": 30.0,
+		"preferred_min": 8.0,
+		"preferred_max": 24.0,
+		"damage": 95.0,
+		"reload": 3.0,
+		"aim_tolerance_deg": 4.0,
+		"spread_deg": 1.5,
+		"heat_per_shot": 0.0,
+		# Scrap iron, not energy: a spear goes through plate and does little to a shield.
+		"shield_multiplier": 0.7,
+		"suppression": 0.5,
+	},
 	"scrap_cannon": {
 		"fire_model": "shell",
 		# A naval gun bolted to a fuel tanker: nearly a dozer's punch, faster to reload, and it cannot hit anything

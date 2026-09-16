@@ -299,7 +299,7 @@ const PROFILES := {
 		"display_name": "Rat Rod",
 		"role": "scout",
 		"faction": "gangs",
-		"blurb": "Stripped hot rod with a bolted-on machine gun. The fastest thing in the arena, and made of nothing.",
+		"blurb": "Stripped hot rod with an explosive spear launcher. The fastest thing in the arena, and made of nothing.",
 		"cost": 70,
 		"unlock_tier": 0,
 		"hull_size": [1.8, 1.4, 2.8],
@@ -316,13 +316,17 @@ const PROFILES := {
 		"acceleration_mps2": 18.0,
 		"braking_mps2": 20.0,
 		"lateral_grip": 0.4,
-		"weapon": "machine_gun",
+		# X6: the spear, not a machine gun. It still spots (105 m of sight) but it can open armor if it gets to 30 m,
+		# which is the gangs' answer to heavies and the reason a swarm of them is frightening rather than decorative.
+		"weapon": "spear_gun",
 		"mount": "fixed",
 		"turret_turn_rate_deg": 200.0,
 		"fire_arc_deg": 18.0,
 		"muzzle_height": 1.05,
 		"armor": {"front": 1.5, "side": 1.0, "rear": 1.0},
-		"good_vs": ["artillery"],
+		# Real in the mechanics: penetration 14 against a dozer's 8 mm front is x0.74, so a pack of these opens a tank
+		# — if it survives crossing 40 m of cannon fire in a 100 hp hot rod.
+		"good_vs": ["tank", "artillery"],
 		"weak_vs": ["ifv"],
 	},
 	"gang_ifv": {

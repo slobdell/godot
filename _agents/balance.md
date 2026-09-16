@@ -213,6 +213,46 @@ theme problem, not a simulation one, and no stream owns `game/theme/**` this rou
 `BASE_Z`), and the existing 240 × 240 m arenas are not crowded at 35 a side — the screenshots show both armies
 converged on the control point with most of the map empty. No arena needed to grow.
 
+### X6: faction versus faction (measured 2026-09-16, builder0)
+
+`make remote T="faction-matrix SEEDS=5 TIME=150"` (`tools/faction_matrix.py`): every pair at 5200 points,
+elimination, control point on, each pairing **counterbalanced** — the same seeds played from both colours, which
+cancels the side advantage and team identity in one pass. 60 matches, ~25 min.
+
+| Pairing | Win% (first) | Vehicles fielded | Lost | Length | Mean suppression on the loser |
+|---|---|---|---|---|---|
+| condemned vs syndicate | 70% | 32.6 | 17.9 | 91 s | 0.018 |
+| condemned vs law | 60% | 32.6 | 18.0 | 101 s | 0.057 |
+| law vs syndicate | 60% | 24.8 | 16.6 | 90 s | 0.026 |
+| gangs vs syndicate | 40% | 43.0 | 37.4 | 91 s | 0.019 |
+| gangs vs condemned | 20% | 43.0 | 40.8 | 93 s | 0.033 |
+| gangs vs law | 10% | 43.0 | 40.7 | 102 s | 0.065 |
+
+Averaged: **Condemned 70%, Law 63%, Syndicate 47%, road gangs 23%.** Match length is **90–102 s** at 24–43 vehicles
+a side, which is the right order for a full-scale battle (round 3's 5-a-side fights ran 22–60 s).
+
+**The gangs cannot win, and two attempts to fix it moved nothing.** Both attempts were kept, because both were real
+defects rather than tuning:
+1. **They had no answer to armor at all.** Their two most numerous vehicles did **2 dps** through any armor — the
+   ×0.05 penetration floor — so 43 vehicles were decorative. The Rat Rod now carries game_design.md's
+   **explosive spear** (penetration 14, 95 damage, 30 m, 3 s): ×0.74 through a dozer's front. Result: 30% → 40%
+   against the Syndicate, no change against the others.
+2. **Their assault vehicles were being given a spotter's directive.** `Army.SQUADS` is keyed by *role*, so the
+   gangs' spear buggies inherited the Condemned scout's "spotters first" directive and held standoff. `SQUADS` now
+   takes faction-qualified keys (`"gangs/scout"` → Spears, assault, aggression 0.95). It worked — their SPOT share
+   fell from 84% to 34% and ENGAGE/CONTEST rose — and they still lost 0-6 to the Law.
+
+**Why I stopped there.** Both mechanics the gangs are *designed* around are on other branches: suppression that
+changes decisions (ai's SUPPRESS option) and pack tactics (doctrine's drills). The matrix confirms it — mean
+suppression on the loser is 0.02–0.08, i.e. essentially none. 43 fragile short-ranged vehicles lose to 24 armored
+long-ranged ones when volume buys nothing. Inflating gang stats now would have to be taken back out the moment those
+land, which is the lead's own guidance (*"it's also probably not worth trying to balance anything out substantively
+yet"*). **Re-run `make faction-matrix` on `main` once combat, doctrine and ai are all merged**; that is the number
+that means something.
+
+The Condemned at 70% are the other outlier, but they are the reference roster and the gangs' collapse distorts the
+average. Judge that one after the same re-run.
+
 **Open:** `Doctrine.MAX_SQUADS` is 5 (a player-UI number), but 28 vehicles need six squads or more, so faction armies
 are validated through `Army.parse_scaled`, which runs `Doctrine.parse` over slices of five squads. Requested of the
 doctrine stream: raise `MAX_SQUADS` (or make it a UI-only cap) and this wrapper goes away.
