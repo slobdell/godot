@@ -48,6 +48,14 @@ builder0 (glibc 2.43) and the laptop (glibc 2.39) produce different `make sim-ba
 version; builder0's is canonical. When gameplay changes on purpose: `make remote T=sim-baseline-record`, then
 `cp build/sim_state_hash.txt tests/baselines/` and commit.
 
+## Paid generation does not take a slot
+
+Targets that wait on a hosted API (ElevenLabs, Meshy) are network-bound and can run for an hour. They belong
+in the root Makefile's `LIGHT_GOALS`, or they hold one of this laptop's two heavy-run slots doing nothing but
+waiting, and everyone else queues behind them for a lint (audio's full announcer run, 2026-09-16).
+`assets-generate`, the `art-*` targets and `announcer-generate` are all light for that reason. They also stay
+local: remote runs don't forward API keys.
+
 ## Troubleshooting
 
 - **"cannot reach builder0":** check `ssh -o BatchMode=yes slobdell@builder0 true`. Fall back to local `make`.

@@ -273,6 +273,11 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
   `test_a_full_army_a_side_spawns_clear_of_itself`.
 - `tests/test_army.gd`: one line — the army-JSON sweep skips `doctrine_*.json`, which are doctrine TABLES
   (contract L1), a different schema in the same folder. `tests/test_tactics_doctrine.gd` validates those.
+- `Makefile`: `announcer-generate` joins `LIGHT_GOALS` too, with the reason in the comment above it. Audio's
+  hour-long ElevenLabs run held one of this laptop's two heavy-run slots the whole time while doing nothing
+  but waiting on a hosted API, and everyone else queued behind it for a lint. `_agents/remote_builds.md` has
+  the rule: paid generation is network-bound and never takes a slot. (Audio's target, their finding, my
+  two-word fix because it was hurting every stream right then.)
 - `Makefile`: one word — `doctrine-page` joins `LIGHT_GOALS` (it is a one-second Python script and should not
   take a machine-wide heavy-run slot).
 - New paths: `game/tactics/`, `doctrines/doctrine_*.json`, `mk/tactics.mk` (picked up by the root Makefile's

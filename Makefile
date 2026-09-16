@@ -80,11 +80,13 @@ help: ## Show this help
 # ---- Machine-wide heavy-run slots ---------------------------------------------------
 # Parallel worktree agents share one machine. Every goal except interactive/long-running ones
 # re-runs itself through tools/slot.sh, which admits TANK_SQUAD_SLOTS (default 2) at a time.
-# New targets are heavy by default; add interactive ones to LIGHT_GOALS.
+# New targets are heavy by default; add interactive ones to LIGHT_GOALS — and PAID GENERATION targets, which
+# wait on a hosted API for minutes to an hour and never need a CPU: audio's full ElevenLabs run held one of
+# the two slots for an hour and made every other agent's lint queue (2026-09-16).
 LIGHT_GOALS := help doctor bootstrap remote broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
                editor run skirmish garage demo play play-relay replay-watch serve-web server client watch-match agent-% \
                assets-generate assets-mock art-concept art-review art-review-status art-decide art-review-page art-apply-decisions art-concept-batch \
-               doctrine-page
+               doctrine-page announcer-generate
 _SLOT_GOALS := $(if $(TANK_SQUAD_SLOT),,$(filter-out $(LIGHT_GOALS),$(MAKECMDGOALS)))
 
 ifneq ($(_SLOT_GOALS),)
