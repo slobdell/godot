@@ -190,6 +190,28 @@ at 28 vs 29.
 - `make control-scale-shots` runs the session with ~30 a side. Deliberately not pass/fail: with a faction-sized
   army nobody is commanding, the player's force loses and steps needing a live group 1 report false.
 
+**X5. Faction pick in skirmish (L3).** Done, playtested headless (44 gangs vs 17 syndicate), menu looked at.
+
+- `--player-faction=` / `--enemy-faction=` turn a side into a faction army. Either raises the default budget to
+  `Units.BASELINE_BUDGET`, so **size falls out of the roster**: Road Gangs **44**, Condemned **27**, Law **24**,
+  Syndicate **17** - the lead's ordering, asserted in the test. `--budget` still wins. (The match runner spells
+  these `--green-faction` / `--rust-faction`; here they follow `--player` / `--enemy`.)
+- `FactionPicker` (`game/ui/faction_picker.gd`): shows what each faction actually fields at the match budget -
+  count, points per vehicle, composition. 1-4 yours, shift+1-4 theirs, click / right-click, Enter fights.
+  Picking restarts the skirmish with the flags, so the armies come from the same code path as the command line.
+- The menu opens on an interactive run that named no faction, and **never** in a headless, scripted, playtest,
+  touch-map or smoke run. `--pick-faction` forces it, `--no-pick-faction` suppresses it.
+- `make skirmish-factions FACTION=gangs ENEMY_FACTION=syndicate`, `make faction-menu-shot`.
+
+**X6. Readability at close zoom.** Done, looked at at 1920×1080 and 1280×720 and at 25 vs 27.
+
+- A thin **hull bar** over our vehicles that are hurt or selected, and nothing else (a bar over every healthy
+  vehicle at 30 a side is noise). Above the hull, sized from the hull's own width on screen (14-62 px), fading
+  towards the enemy colour as it gets serious, with a shield sliver. Measured 62 px close, 16 px far;
+  **0.131 ms** a frame for 30 bars. This is where "which of mine is nearly dead" lives now that X4 grouped the
+  panel's portraits.
+- The doctrine line ran off the bottom of the panel at 1280×720; the panel now reserves a footer strip for it.
+
 ### Questions for the lead
 
 - None yet.
