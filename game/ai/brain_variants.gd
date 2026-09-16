@@ -46,12 +46,11 @@ const PROFILES := {
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
 	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": 9},
+	# Round-4 X2: x4 thinking every 9 ticks in a fight instead of 6. THE CHAMPION since 2026-09-16 (see CHAMPION).
+	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9},
 	# Round-4 X3 control: the champion with L2 taken away — it neither avoids beaten zones nor fires to suppress.
 	# The control for every suppression measurement, and the "before" the ladder compares against.
-	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "avoid_beaten": false},
-	# Round-4 X2 probe: the champion thinking every 9 ticks in a fight instead of 6 (round 2 measured -24% CPU for a6;
-	# this is the same lever on today's champion). Adopted only if it doesn't lose to x4 on the ladder.
-	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9},
+	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "avoid_beaten": false},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
 ## 2026-09-15: a6 (beat a4 9-7 in ladder run 1 and r1 7-5 in run 2; see unit_ai.md "AI ladder").
@@ -62,7 +61,12 @@ const PROFILES := {
 ## onto a tank's engine deck at 3 m, which rules' catalog test says a scout must not do
 ## (test_units_roster::test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range). It stays opt-in until rules and
 ## combat settle what a scout's counter is (streams/archive/round3/ai.md "Requests").
-const CHAMPION := "x4"
+## 2026-09-16 (round 4, X2): x4t9 — the same brain thinking every 9 ticks in a fight instead of 6. It won all four
+## armies of a post-CP2 ladder (individuals 13-11, armor 13-11, balanced 13-11, swarm 14-10; pooled 53-43, 96 matches)
+## and costs about a fifth less CPU at 60 units (4293 usec per tick against 5327). Worth knowing that the same
+## comparison BEFORE suppression landed was 48-48 with a clear loss on the all-armor army (9-15): with L2 in the
+## world, and with fewer decisions each spent on better information, the slower cadence stopped hurting.
+const CHAMPION := "x4t9"
 
 static var _from_flags: Array = []
 

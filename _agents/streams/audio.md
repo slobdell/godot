@@ -84,6 +84,182 @@ When effects fire and the visual effects themselves (feel's code from round 3: `
 doctrine, ai), the camera and HUD layout (control). You may add an audio bus and a settings entry (shared files:
 minimal, listed in merge notes).
 
+## The lead's direction (2026-09-16, after hearing the real voices)
+
+> *"basically it's no good. Our madlibs / adlibs style of swapping words into sentences just clearly doesn't work
+> … we either need to generalize the things that can be said or we need to create multiple versions of a given
+> script … but that can quickly blow up so we might want to generally rethink our strategy for announcing teams.
+> Furthermore, the conversations are overwhelmingly dominated by the Caller, we don't have much banter from the
+> Veteran."*
+
+And the creative opening he gave with it:
+
+> *"in sporting events the veteran often educates users about good technique in a sport, or technical reasons why
+> someone has the upper hand or a disadvantage. We can make the veteran provide some technical analysis, but we can
+> add some humor into it by the veteran completely trailing off after incomplete thoughts, never fully making his
+> point (think the humor in The Big Lebowski), or the veteran can just say some factual, straight faced statements
+> that would otherwise be appalling ("when you're driving in that formation, your point man better be sure that
+> he's focused and ready for whatever comes next, because there's about a 90% chance that his life is about to
+> end")."*
+>
+> *"there's opportunities for interjection from the PA where she offers polite factual corrections to the
+> announcers saying things out of bounds in our dystopian state. For example, caller might say something like 'Wow
+> the Gang really stuck it to the Law in that one!' to which the PA might interject 'That's right Joseph … That
+> same maneuver performed outside of the arena would have resulted in an immediate Article 57-8C for the suspect
+> and all of his blood relatives'"*
+
+**Canon:** the caller is **Joseph** (the lead: *"the caller should be referred to as Joseph since it's a parody of
+Joe Rogan"*). The other two may now address him by name. Keep the character original: no real name, catchphrases or
+references (the standing rule in game_design.md *Voices*).
+
+## Why stitching failed, and what replaces it (decided 2026-09-16)
+
+**Diagnosis.** A sentence's intonation spans the whole sentence. Cutting a word out of one recording and dropping it
+into another gives it the wrong pitch, stress and length for its new home — the defect is *prosody*, not level or
+slicing, so no amount of tuning the cuts would have fixed it. The pilot's checks could not catch this: every clip
+transcribed correctly and sat at the right loudness. **It was audible to the first person who listened, and I never
+listened.** That is the lesson, not the credits.
+
+**Replacement: record whole sentences, one per realization.** No slicing, no fillers, no joins. The library stays
+templated for authoring and for the director; the *recording plan* expands each template into the full sentences it
+can become, and a cue plays exactly one clip.
+
+**What that costs, measured over the current library** (227 of 490 lines carry slots; the other 263 are already
+whole sentences, already recorded, and still good):
+
+| | recordings | credits |
+|---|---|---|
+| naive full expansion | 3,560 | ~227,000 |
+| **cap of 12 combinations a line** | **816** | **~51,000** |
+| cap of 6 | 504 | ~32,000 |
+
+The naive number is not a reason to abandon the idea — it is 13 lines out of 227 doing 65% of the damage. One line
+(`caller.tape.03`, *"it's {count} for {team} and {other_count} for {other_team}"*) needs 676 recordings by itself.
+
+**Writing rules that follow** (they are also just better writing):
+1. **One variable thing per sentence.** Never two units, never a count beside a team. Every line in the expensive
+   tail breaks this.
+2. **No exact numbers in speech.** `{count}` is 13 values, and at thirty units a side an exact count is wrong as
+   often as it is right. "Half their force", "a handful left", "most of them" instead.
+3. `{team}` (2 values, in 136 lines), `{arena}` (3, fixed per match) and a *single* `{unit}` (6) are all cheap and
+   stay. Recording both team variants whole is what actually fixes *"Green fields the Condemned tonight"*.
+
+**What survives the change:** the 263 slotless clips, and every master (223 MB, rescued to the main checkout), so
+re-cutting costs nothing. What is thrown away: 423 segment clips and 91 fillers — the stitching machinery.
+
+## The rebuild (2026-09-16, after the lead heard the stitched build)
+
+**What was wrong and what replaced it** is above under *Why stitching failed*. What the rebuild actually changed:
+
+| | before | after |
+|---|---|---|
+| a cue plays | carrier segments + filler words, joined | **one recording of one whole sentence** |
+| a side is called | "Green", "Rust" | **its faction**: the Condemned, the Wreckers, the Law, the Syndicate |
+| the Veteran's share of the words | 20% | **31%** (the caller 57% → 49%) |
+| library | 490 lines | 550 |
+| recordings | 777 | 2,225 (~137k credits, of which 116.5k new) |
+
+**The gang faction is "the Wreckers"** — from the lead's own shortlist in game_design.md (*the Wreckers / Scrapborn /
+Chrome Cult*). It matches the shape of the other three: a definite-article collective noun naming what the group is,
+and it doubles as salvage-crew slang that fits their tow-wrecker roster. One vocabulary entry, trivially changed.
+
+**Three forms of a faction name, because English needs them.** The plain name carries its own article ("the Law"),
+`{faction_attr}` is the attributive form for after one ("the Law tank"), `{faction_s}` the possessive. The audit
+enforces both traps this exposed, so they cannot come back:
+- an article before a plain faction name ("The last **the Condemned** vehicle") — 3 lines;
+- a **singular verb** after one ("the Wreckers **cracks** it") — 85 lines. A faction is a crew and takes a plural
+  verb, the way sports commentary treats every team name; it is the only rule that works for all four names at once.
+
+**Counts are quantized, not dropped** (the lead's idea): "over {count_over} vehicles" is true at any army size and
+costs six recordings instead of one per possible number. `AnnouncerMemory` stores the bucket — the largest multiple
+of five strictly below the real count — so nothing downstream knows about rounding, and below five the slot is
+unset, which makes those lines ineligible and the booth says something else.
+
+**Why the Veteran was quiet, which was not what it looked like.** He had 147 lines to the caller's 260, but that was
+not the cause: the director skipped every non-caller follow-up for 1.5 seconds after *any* shot, so in a sustained
+firefight he was mute exactly when he had most to explain. That window is now 0.5 s, analysis *of* the moment being
+called is exempt entirely, and he opens beats of his own. The 60 new lines give him the three registers the lead
+asked for — real technique a player can use, thoughts that trail off and never land, and flat statements of
+appalling fact — and give the PA polite legal corrections addressed to **Joseph**, who is now the caller's name.
+
+**Cost discipline.** `MAX_COMBINATIONS` (24) refuses a line that names more than one variable thing instead of
+quietly ordering 676 recordings of it; 16 lines were rewritten to obey it. Opponents are always different factions,
+which removes three quarters of the combinations of every line naming both sides.
+
+**A second pilot went to the lead before the full run** (41 recordings, 1,875 credits): the same kill call for all
+four factions back to back, so any remaining seam would be obvious, plus both new characters.
+<https://claude.ai/artifact/VnKAEDc9y4TZMHYnHSuiiU>. He approved the full run from it.
+
+## A recorded line outlives the number that justified it (2026-09-16)
+
+The constraint that makes this stream different from every other one: **nothing the booth says can be edited.** A
+clip can only be re-recorded, for credits, and re-shipped. So a line asserting something about how the game works
+is a promise the build has to keep, and the cost of being wrong is paid months later.
+
+Doctrine raised it (they marked up which of their measurements are safe to quote, `_agents/doctrine.md`), and it
+generalises to every stream that measures anything. Geometry and armour facing are safe — a column watches the
+whole circle, a line 0.42 of it, bunched vehicles shoot later because only the front can bear. Survival numbers
+resting on a half-built mechanic are not: "bounding overwatch gets you killed" is true of a build with no
+deliberate suppression, and combat is landing exactly that.
+
+Two lines were cut for this before recording. Cutting them afterwards would have meant a clip that contradicts the
+game. The rule is in `assets/announcer/README.md` so it survives this round: **when in doubt, describe rather than
+evaluate.**
+
+**Standing request to other streams:** if you measure something and it surprises you, send it — the Veteran is the
+only one in the booth who gets to be precise, and a number a player can act on is better material than anything I
+would invent. Say whether it is stable or resting on something you are still building.
+
+## X2 delivered: the booth has a voice (2026-09-16)
+
+| | |
+|---|---|
+| library | **589 lines** (caller 267, Veteran 225, PA 97) |
+| recorded | **2,372 whole sentences**, ~14 MB of Ogg |
+| spend this session | **171,050 credits**; 125,297 left of 300,000 |
+| main run | 2,225 clips, 110,091 characters, 112,717 credits |
+| incremental (element and drill material) | 171 clips, 12,593 characters |
+| listen | <https://claude.ai/artifact/7tZzJRW8BhMcX7dnWfSzUc> — eight full matches |
+
+**What the 36 speech-to-text flags were worth.** All 36 were the caller; none the Veteran or the PA, which fits — he
+delivers short phrases at speed. Most were the recogniser's problem, not the audio's ("Ohh, that rocked" heard as
+"Pull that rock"). **One was a real finding, and only because every combination was recorded rather than sampled:**
+all eight variants of `caller.ff.05` came back misheard *identically* — "{faction_s} own {victim_unit}" elided to
+"the condemned **zone** artillery", "the wrecker **zone** burner", "the law **zone** IFV". A possessive immediately
+followed by "own" runs together at his pace. One flag is noise; eight failing the same way is a cause. Rewritten to
+"their own {victim_unit}": correct, and a quarter of the recordings, because the team was obvious from context —
+which is usually the sign the original had a redundant variable in it.
+
+**The starvation pattern, three times in one round.** The tactical commentary was silent in every transcript. The
+obvious reading was that I had not written enough of it. The director's own decision log said otherwise: **6 of 8
+element moments expired while queued behind kill calls**, against a `stale_s` of 4–6 seconds; one more was dropped
+from a full queue. They were never outranked — they timed out. Formation now waits 20 s and a drill 10 s, because
+that kind of colour is what a booth says in the gap *after* the action. Two of eight element decisions now get
+called in a busy match, which is the right rate.
+
+That is the same shape as the Veteran's airtime problem (a heat rule silencing him) and as two bugs doctrine hit
+independently. Written up for `orchestration.md`: **a behaviour that looks under-written is usually being starved by
+a rule above it — before adding content, log what selected it each tick.**
+
+## Housekeeping found two things worth knowing (2026-09-16)
+
+Both came from actually measuring at the end rather than trusting earlier numbers.
+
+**The clips folder's `.gdignore` was gone.** Wiping `assets/announcer/clips` to re-cut the pilot deleted the marker
+with it, so Godot imported all 2,396 clips and **2,396 `.import` files were committed**. Deleting them is the
+cleanup; the fix is that `generate.py` now writes the marker itself and clears stale `.import` files after every
+run, so a wipe cannot lose it again.
+
+**The masters were 1.1 GB, not the 340 MB I had reported.** Only 176 MB were masters; ~950 MB were `.norm.wav` and
+`.level.txt` caches the pipeline writes beside each one — about six times the size of what they cache, on a laptop
+at 98% disk. The pipeline now drops them at the end of a run. With 340 stale master sets from deleted lines also
+pruned: **1.1 GB → 176 MB**, and the laptop went from 2.4 GB free to 3.3 GB.
+
+**For whoever closes the round:** `assets/announcer/masters/` is **176 MB** and must be rescued before this worktree
+is removed — it is worth 171k credits, because everything in `clips/` can be re-cut from it for nothing. The 223 MB
+rescued to `main` earlier is **superseded, not additive**: those masters were recorded against line texts the
+rebuild changed.
+
 ## Status
 
 _Updated 2026-09-16 by the audio worker._
@@ -240,7 +416,17 @@ Committed as 5ccf56f and reported to the orchestrator for merging to `main`.
 
 ### Verified
 
-**`make remote T=check` exited 0 on builder0 against `bc49a34`** (the last commit; working tree clean, so the run
+**`make remote T=check` exited 0 on builder0 against the final tree (459331b), and again against 128c33b before
+the housekeeping commits. Do not treat an older green run as evidence about a newer tree — two commits landed
+between them.** Against the rebuilt booth (128c33b): 696 Godot tests, 0 failed;
+`announcer-variance`, `announcer-record-smoke` and `music-smoke` all green with the sim hash unchanged at
+`d7967d8b36d4417b`; `audio-check passed`.** The three failures that first run found were all tests describing the
+*previous* contract rather than defects — a dead shooter being illegal, a `close_call` the regenerated fixtures no
+longer all produce, and a flat twelve-line floor that was really asserting how long the fixtures happened to be.
+When a contract changes, the tests that break are the old contract's documentation and want rewriting to state the
+new rule, not bending until they pass.
+
+**Earlier run (pre-rebuild), for the record:** `make remote T=check` exited 0 against `bc49a34` (the last commit; working tree clean, so the run
 matches the commit exactly):
 - **691 Godot tests, 0 failed** — 656 on `main` plus the 35 this stream added (7 announcer history, 12 MatchMood,
   10 music director, 6 sound mix).

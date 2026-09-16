@@ -214,5 +214,22 @@ The kickoff prompt is one line; this section is the rest.
     (remote_builds.md). Stop the remote process first.
 16. `git add -A` is how unreviewed files get committed: in round 4 it swept a half-finished make target into `check`
     and a worktree's `.tools` symlink into a merge, both from the same session. Stage paths you looked at.
-17. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+17. **A behaviour that looks under-written is usually being starved by a rule above it.** Round 4, three times in two
+    streams: the announcer's Veteran seemed short of material and was being silenced by a priority rule; doctrine's
+    react-to-contact restarted every update, so no maneuver after it ever finished; and its encircle and bait drills
+    stole the element from each other every tick, so neither completed once. Each time the obvious fix was "write more
+    of it", and the real fix was one line of precedence. Before adding content to a weak or quiet behaviour, log what
+    *selected* it each tick and check whether something upstream keeps pre-empting it.
+18. **Anything expensive to change after the fact should describe, not evaluate.** A recorded announcer line outlives
+    the measurement that justified it: it can't be edited, only re-recorded for credits and re-shipped, so a claim about
+    how the game works is a promise the build has to keep. Round 4 caught two pending lines asserting that bounding
+    overwatch keeps a crew alive — the opposite of what it measured, and resting on a mechanic another stream was still
+    landing. The working arrangement that saved it: the measuring stream sends numbers **marked stable or resting on an
+    unfinished mechanic**, and only stable ones get recorded.
+19. **A human is a check, and for subjective quality the only one that counts.** Round 4's announcer shipped a version
+    that passed every automated check — transcription, levels, durations all clean — and was obviously wrong to the
+    first person who listened: stitched words sound pasted, which no metric measured. Put a cheap sample in front of
+    the lead *before* the expensive run, not after. The second pilot cost 1,875 credits and saved the 113k run from
+    being wrong the same way.
+20. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.

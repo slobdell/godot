@@ -20,8 +20,8 @@ signal died
 @export var max_forward_speed := 9.0
 @export var max_reverse_speed := 4.0
 @export var acceleration := 14.0
-## K3 locomotion (Units.PROFILES): speed shed per second when slowing, "tracks" or "wheels", the tightest turning circle
-## (wheels), and how much sideways slide the tires kill (1 = none, lower drifts).
+## K3 locomotion (Units.PROFILES): speed shed per second when slowing, "tracks", "wheels" or "hover", the tightest
+## turning circle (wheels), and how much sideways slide the tires kill (1 = none, lower drifts).
 @export var braking := 14.0
 var locomotion := "tracks"
 ## X5 (round 3): units with deploy_seconds > 0 (artillery) must stand still and lower their outriggers before firing,
@@ -375,7 +375,9 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 	move_and_slide()
 	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
 	_motion["velocity"] = estimated_velocity
-	if locomotion == "wheels":
+	if locomotion != "tracks":
+		# Wheels and hover both carry momentum, so the speed the next tick starts from is what the hull is actually
+		# doing after the slide and any wall it just hit, not what the model wanted.
 		_speed = estimated_velocity.dot(forward)
 
 

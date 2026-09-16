@@ -58,5 +58,5 @@ func test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire() -> void:
 	await _delegate(SUPPRESSION, "test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire")
 
 
-func test_holding_a_crew_down_lets_a_teammate_go_round_it() -> void:
-	await _delegate(SUPPRESSION, "test_holding_a_crew_down_lets_a_teammate_go_round_it")
+func test_holding_a_crew_down_lets_a_teammate_work_on_it() -> void:
+	await _delegate(SUPPRESSION, "test_holding_a_crew_down_lets_a_teammate_work_on_it")

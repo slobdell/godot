@@ -26,8 +26,15 @@ func test_every_unit_has_the_v2_fields() -> void:
 
 
 func test_the_lead_named_roster_is_there() -> void:
+	# L3 (round 4): every faction fills the same roles, so "one per role" is a statement about ONE roster.
+	var condemned := Units.roster(Units.DEFAULT_FACTION)
 	for role in ["scout", "tank", "ifv", "artillery", "lancer"]:
-		assert_eq(Units.with_role(role).size(), 1, "one %s unit in the starting roster" % role)
+		var in_roster := Units.with_role(role).duplicate()
+		var mine: PackedStringArray = []
+		for unit_id in in_roster:
+			if condemned.has(unit_id):
+				mine.append(unit_id)
+		assert_eq(mine.size(), 1, "one %s unit in the starting roster (%s)" % [role, mine])
 	assert_eq(Units.profile("scout")["mount"], "fixed", "the scout's gun shoots straight forward (no turret)")
 	assert_true(Units.profile("ifv")["turret_turn_rate_deg"] > Units.profile("tank")["turret_turn_rate_deg"],
 			"the IFV's turret outpaces the tank's slow one")

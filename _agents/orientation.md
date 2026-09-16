@@ -224,3 +224,19 @@ build/   (gitignored)    exports and screenshots
     target into `check` (breaking `main` for five streams) and the `.tools` symlink above, in the same session.
     Stage deliberately, and read `git status` without filtering lines you have decided are noise — `?? .tools` was
     visible in every status output for hours.
+71. **`String(x)` fails at RUNTIME when `x` is statically `Variant`** ("Invalid call. Nonexistent 'String' constructor")
+    unless the value already is a String, StringName or NodePath. Every `String(dict.get("k"))` and every handler
+    parameter typed `Variant` is therefore a landmine — doctrine's element id is an `int`, and that cost an hour in an
+    adapter full of `String(state.get(...))`. Use `str(x)` (handle null yourself: `str(null)` is `"<null>"`, not `""`).
+    `make lint` does not catch it; it only shows up when the line runs.
+72. **A ternary inside a dictionary literal can evaluate to something the surrounding call refuses,** and the error is
+    reported against the literal's FIRST line, not the ternary — so the reported line contains no call at all and the
+    hunt goes to the wrong place. Splitting the literal into plain statements finds it in one run
+    (`ElementFeed.normalize`, round 4). More generally: when a reported line looks innocent, suspect the multi-line
+    expression it starts.
+73. **Two test runners pass files that do not compile.** `tests/ai_scenarios/run_scenarios.gd` used to `load()` a broken
+    scenario file as `null`, run nothing and exit 0 (fixed round 4: it now fails, and also fails a file with no
+    `test_` methods, which is what a compile error leaves behind). `tests/run_tests.gd` still looks the same:
+    `tests/test_ai_elements.gd` used 2-argument `assert_eq` throughout, never parsed, and a full `make check` reported
+    "749 passed" without it. A test you just wrote that does not appear in the output has not passed — grep for its
+    name before believing a green run.

@@ -20,7 +20,8 @@ extends RefCounted
 
 ## Formation ids. The L1 contract names column, wedge, line, echelon_left/right and herringbone; vee and coil
 ## are the two other shapes real platoons use (a V of scouts, and the 360-degree halt in the open).
-const NAMES := ["column", "wedge", "vee", "line", "echelon_left", "echelon_right", "herringbone", "coil"]
+const NAMES := ["column", "wedge", "vee", "line", "echelon_left", "echelon_right", "herringbone", "coil",
+		"swarm", "ring"]
 const DEFAULT := "wedge"
 ## Meters between neighbors when the doctrine table doesn't say.
 const DEFAULT_SPACING := 12.0
@@ -33,6 +34,13 @@ const HERRINGBONE_FACING := 90.0
 ## Sector of fire a single vehicle is responsible for (degrees). Overlap between neighbors is deliberate:
 ## interlocking fires are the point of assigning sectors at all.
 const SECTOR_WIDTH := 90.0
+## The swarm: how much wider than a line it spreads, and how far vehicles stagger fore and aft. It is not a
+## formation any manual would recognise, which is the point — a pack that has never drilled doesn't hold a
+## line, it comes at you loose and all at once, and being spread means one shell is one vehicle.
+const SWARM_SPREAD := 1.9
+const SWARM_STAGGER := 0.8
+## The ring (encircle): how far out the pack orbits a target, as a multiple of spacing.
+const RING_RADIUS := 2.4
 
 
 ## Slots for `count` units in `formation`, leader first, at the origin.
@@ -68,6 +76,16 @@ static func offset(formation: String, i: int, count: int, spacing: float) -> Vec
 			var angle := TAU * i / maxi(count, 1)
 			var radius := s * (0.7 if count <= 3 else 0.9) * sqrt(maxf(count, 1.0) / 4.0)
 			return Vector2(sin(angle) * radius, -cos(angle) * radius)
+		"swarm":
+			# Wide and ragged: alternating sides, spreading as it goes out, each vehicle staggered fore or
+			# aft so the pack has no line to shoot along. Deterministic, despite looking unruly.
+			var rank_out := float((i + 1) / 2)
+			var stagger := ((i * 7) % 5) - 2.0
+			return Vector2(side * rank_out * s * SWARM_SPREAD, stagger * s * SWARM_STAGGER)
+		"ring":
+			# Around the enemy, not around a heading: the anchor of a ring is the thing being encircled.
+			var step := TAU * i / maxi(count, 1)
+			return Vector2(sin(step) * s * RING_RADIUS, -cos(step) * s * RING_RADIUS)
 	return Vector2(0.0, 0.0)
 
 
@@ -132,9 +150,14 @@ static func sectors(formation: String, count: int) -> Array[float]:
 					result.append(180.0)
 				else:
 					result.append(HERRINGBONE_FACING if i % 2 == 0 else -HERRINGBONE_FACING)
-		"coil":
+		"coil", "ring":
 			for i in count:
 				result.append(rad_to_deg(TAU * i / count) - (360.0 if TAU * i / count > PI else 0.0))
+		"swarm":
+			# Everyone watches roughly forward, fanned wide: no sectors, no discipline, all eyes on the prey.
+			for i in count:
+				var spread: float = 0.0 if count <= 1 else (float(i) / float(count - 1) - 0.5) * 120.0
+				result.append(spread)
 		_:
 			for i in count:
 				result.append(0.0)

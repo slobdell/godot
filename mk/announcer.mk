@@ -91,17 +91,24 @@ announcer-generate: ## Voice clips from lines.json: DRY_RUN=1 (default) prints r
 # Seed 1 of each fixture is re-called with the recorded clip durations, so voicing the lines it picks can change
 # what it picks: loop until every line it uses has clips (a few passes).
 ANNOUNCER_MOCK := $(BUILD_DIR)/announcer/mock
-announcer-demo-audio: announcer-demo ## The Booth Monitor with mock audio: mock-voice the lines seed 1 of each fixture uses, mix them in sync, rebuild the page
+## Which clips the page plays. The default mock-voices whatever is missing (free, tone bursts); point it at the
+## real pack to hear the actual broadcast: make announcer-demo-audio CLIPS=assets/announcer/clips
+ANNOUNCER_DEMO_CLIPS ?= $(or $(CLIPS),$(ANNOUNCER_MOCK))
+
+announcer-demo-audio: announcer-demo ## The Booth Monitor with audio: CLIPS=assets/announcer/clips for the real voices (default: free mock tones)
 	@for pass in 1 2 3 4 5; do \
-		$(ANNOUNCER_CLI) --all=res://$(ANNOUNCER_FIXTURES) --seeds=1 --manifest=$(CURDIR)/$(ANNOUNCER_MOCK)/manifest.json \
+		$(ANNOUNCER_CLI) --all=res://$(ANNOUNCER_FIXTURES) --seeds=1 --manifest=$(CURDIR)/$(ANNOUNCER_DEMO_CLIPS)/manifest.json \
 			--out-dir=$(BUILD_DIR)/announcer/demo/data 2>&1 | grep -q 'ANNOUNCER_CLI_EXIT=0' || { echo "announcer CLI failed"; exit 1; }; \
-		missing=$$($(PYTHON) tools/announcer/mixdown.py --missing-lines $(ANNOUNCER_MOCK)/manifest.json $(BUILD_DIR)/announcer/demo/data/*_seed1.json); \
+		missing=$$($(PYTHON) tools/announcer/mixdown.py --missing-lines $(ANNOUNCER_DEMO_CLIPS)/manifest.json $(BUILD_DIR)/announcer/demo/data/*_seed1.json); \
 		[ -z "$$missing" ] && break; \
+		if [ "$(ANNOUNCER_DEMO_CLIPS)" != "$(ANNOUNCER_MOCK)" ]; then \
+			echo "the real pack is missing $$(echo $$missing | tr ',' '\n' | wc -l) lines the director wants; run make announcer-generate APPROVED=1"; exit 1; \
+		fi; \
 		echo "pass $$pass: mock-voicing $$(echo $$missing | tr ',' '\n' | wc -l) lines"; \
 		$(PYTHON) tools/announcer/generate.py --mock --out $(ANNOUNCER_MOCK) --only "$$missing" | tail -1; \
 	done
 	@rm -f $(BUILD_DIR)/announcer/demo/data/*.txt
-	$(PYTHON) tools/announcer/mixdown.py --manifest $(ANNOUNCER_MOCK)/manifest.json --match $(BUILD_DIR)/announcer/demo/data/*_seed1.json
+	$(PYTHON) tools/announcer/mixdown.py --manifest $(ANNOUNCER_DEMO_CLIPS)/manifest.json --match $(BUILD_DIR)/announcer/demo/data/*_seed1.json
 	$(PYTHON) tools/announcer/demo_page.py --data $(BUILD_DIR)/announcer/demo/data --out $(BUILD_DIR)/announcer/demo/index.html
 
 # The sim-baseline match (mk/core.mk) again, with the booth recording K5 events: the hash must not move (the announcer

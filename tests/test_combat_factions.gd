@@ -75,16 +75,19 @@ func test_a_faction_army_spends_its_budget_on_its_own_units() -> void:
 func test_unit_counts_fall_out_of_cost_in_the_order_the_lead_asked_for() -> void:
 	# "the gang is diluted with cheaper units, so it should be a bigger swarm, the condemned have more expensive and
 	# smaller unit counts from there, then the law … and the syndicate would have the fewest."
+	# The lead's order, biggest army first. Units.FACTIONS is in catalog order (the default faction leads), which is
+	# deliberately NOT this.
+	var by_size := ["gangs", "condemned", "law", "syndicate"]
 	var playable := _playable()
 	var sizes := {}
 	for faction in playable:
 		sizes[faction] = Army.typical_size(faction, Units.BASELINE_BUDGET)
 		assert_true(sizes[faction] > 0, "%s buys vehicles at the baseline budget" % faction)
 	print("MEASURE faction_sizes at %d points: %s" % [Units.BASELINE_BUDGET, sizes])
-	# Units.FACTIONS is in the lead's order, so each playable faction must field fewer than the one before it.
-	for index in range(1, playable.size()):
-		var bigger: String = playable[index - 1]
-		var smaller: String = playable[index]
+	var ranked: Array = by_size.filter(func(faction: String) -> bool: return sizes.has(faction))
+	for index in range(1, ranked.size()):
+		var bigger: String = ranked[index - 1]
+		var smaller: String = ranked[index]
 		assert_true(sizes[bigger] > sizes[smaller], "%s outnumbers %s (%d vs %d)"
 				% [bigger, smaller, sizes[bigger], sizes[smaller]])
 	assert_true(sizes["condemned"] >= 26 and sizes["condemned"] <= 36,

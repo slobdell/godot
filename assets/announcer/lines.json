@@ -47,6 +47,57 @@
    "foundry": "the Foundry",
    "furnace": "the Furnace",
    "scrapyard": "the Scrapyard"
+  },
+  "faction": {
+   "condemned": "the Condemned",
+   "gangs": "the Wreckers",
+   "law": "the Law",
+   "syndicate": "the Syndicate"
+  },
+  "faction_s": {
+   "condemned": "the Condemned's",
+   "gangs": "the Wreckers'",
+   "law": "the Law's",
+   "syndicate": "the Syndicate's"
+  },
+  "faction_attr": {
+   "condemned": "Condemned",
+   "gangs": "Wrecker",
+   "law": "Law",
+   "syndicate": "Syndicate"
+  },
+  "count_over": {
+   "5": "five",
+   "10": "ten",
+   "15": "fifteen",
+   "20": "twenty",
+   "25": "twenty-five",
+   "30": "thirty"
+  },
+  "formation": {
+   "wedge": "a wedge",
+   "column": "a column",
+   "line": "line abreast",
+   "vee": "a vee",
+   "echelon_right": "echelon right",
+   "herringbone": "a herringbone",
+   "coil": "a coil",
+   "swarm": "a swarm"
+  },
+  "technique": {
+   "traveling": "traveling",
+   "traveling_overwatch": "traveling overwatch",
+   "bounding_overwatch": "bounding overwatch"
+  },
+  "drill": {
+   "react_to_contact": "react to contact",
+   "near_ambush": "a near ambush",
+   "assault_through": "assault through",
+   "far_ambush": "a far ambush",
+   "support_by_fire": "support by fire",
+   "break_contact": "break contact",
+   "herringbone": "a herringbone",
+   "bait": "a bait"
   }
  },
  "lines": [
@@ -374,7 +425,7 @@
     "heavy"
    ],
    "intensity": 2,
-   "text": "{team} rolls out {count} {units} tonight."
+   "text": "{faction} roll out over {count_over} vehicles tonight."
   },
   {
    "id": "caller.army.02",
@@ -385,7 +436,7 @@
     "all_same"
    ],
    "intensity": 2,
-   "text": "All {units} for {team}. Every last one."
+   "text": "All {units} for {faction}. Every last one."
   },
   {
    "id": "caller.army.03",
@@ -396,7 +447,7 @@
     "mixed"
    ],
    "intensity": 1,
-   "text": "A little bit of everything from {team}. A mixed army with a lot of options."
+   "text": "A little bit of everything from {faction}. A mixed army with a lot of options."
   },
   {
    "id": "caller.army.04",
@@ -407,7 +458,7 @@
     "heavy"
    ],
    "intensity": 2,
-   "text": "{team} goes heavy on {units} tonight, and I mean heavy."
+   "text": "{faction} go heavy on {units} tonight, and I mean heavy."
   },
   {
    "id": "caller.army.05",
@@ -419,7 +470,7 @@
     "several"
    ],
    "intensity": 2,
-   "text": "{team} brings the tanks. Slow, loud, and they hit like a freight train."
+   "text": "{faction} bring the tanks. Slow, loud, and they hit like a freight train."
   },
   {
    "id": "caller.army.06",
@@ -430,7 +481,7 @@
     "heavy_scout"
    ],
    "intensity": 2,
-   "text": "Scouts, scouts, and more scouts for {team}. They want this one fast."
+   "text": "Scouts, scouts, and more scouts for {faction}. They want this one fast."
   },
   {
    "id": "caller.army.07",
@@ -441,7 +492,7 @@
     "main_artillery"
    ],
    "intensity": 2,
-   "text": "{team} has the artillery. Everybody else, stay out of the open."
+   "text": "{faction} have the artillery. Everybody else, stay out of the open."
   },
   {
    "id": "caller.army.08",
@@ -453,7 +504,7 @@
     "several"
    ],
    "intensity": 2,
-   "text": "IFVs for {team}. Those autocannons are going to be busy tonight."
+   "text": "IFVs for {faction}. Those autocannons are going to be busy tonight."
   },
   {
    "id": "caller.army.09",
@@ -464,7 +515,7 @@
     "main_lancer"
    ],
    "intensity": 2,
-   "text": "{team} is running the Lancers. That beam reaches all the way across the floor, folks."
+   "text": "{faction} are running the Lancers. That beam reaches all the way across the floor, folks."
   },
   {
    "id": "caller.army.10",
@@ -475,7 +526,7 @@
     "all_same"
    ],
    "intensity": 2,
-   "text": "{team} is here with {count} {units} and a whole lot of bad intentions."
+   "text": "{faction} are here with {units} and a whole lot of bad intentions."
   },
   {
    "id": "caller.army.11",
@@ -485,7 +536,7 @@
     "army"
    ],
    "intensity": 1,
-   "text": "And on the other side of the floor, {team} is lined up and ready."
+   "text": "And on the other side of the floor, {faction} are lined up and ready."
   },
   {
    "id": "caller.faction.01",
@@ -497,7 +548,7 @@
     "faction_condemned"
    ],
    "intensity": 2,
-   "text": "{team} fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!"
+   "text": "The Condemned are out tonight. Prison steel, welded shut, and driving for their freedom!"
   },
   {
    "id": "caller.faction.02",
@@ -545,7 +596,7 @@
     "faction_condemned"
    ],
    "intensity": 2,
-   "text": "The Condemned are on the floor for {team}, and every one of those crews has something to prove!"
+   "text": "The Condemned are on the floor, and every one of those crews has something to prove!"
   },
   {
    "id": "pa.faction.01",
@@ -640,7 +691,7 @@
     "outnumbers"
    ],
    "intensity": 2,
-   "text": "Tale of the tape: {team} brings {count} vehicles to {other_count}. They have the numbers."
+   "text": "Tale of the tape: {faction} bring over {count_over} machines to this floor."
   },
   {
    "id": "caller.tape.02",
@@ -662,7 +713,7 @@
     "outnumbers"
    ],
    "intensity": 1,
-   "text": "By the numbers, it's {count} for {team} and {other_count} for {other_team}."
+   "text": "By the numbers, that's over {count_over} vehicles for {faction}. On paper, anyway."
   },
   {
    "id": "color.tape.01",
@@ -672,7 +723,7 @@
     "tape",
     "outnumbers"
    ],
-   "text": "More isn't better if they don't work together. {other_team} has fewer to keep track of."
+   "text": "More isn't better if they don't work together. {other_faction} have fewer to keep track of."
   },
   {
    "id": "color.tape.02",
@@ -701,7 +752,7 @@
     "army",
     "main_tank"
    ],
-   "text": "{team} came to hold ground. That army doesn't chase anybody."
+   "text": "{faction} came to hold ground. That army doesn't chase anybody."
   },
   {
    "id": "color.army.02",
@@ -711,7 +762,7 @@
     "army",
     "heavy_scout"
    ],
-   "text": "Scouts are eyes, not fists. {team} needs to remember that."
+   "text": "Scouts are eyes, not fists. {faction} need to remember that."
   },
   {
    "id": "color.army.03",
@@ -721,7 +772,7 @@
     "army",
     "heavy"
    ],
-   "text": "That's a lot of {units}. I hope {team} has a plan for whatever beats them."
+   "text": "That's a lot of {units}. I hope {faction} have a plan for whatever beats them."
   },
   {
    "id": "color.army.04",
@@ -741,7 +792,7 @@
     "army",
     "main_artillery"
    ],
-   "text": "Artillery needs somebody else's eyes. {team} better keep a scout alive."
+   "text": "Artillery needs somebody else's eyes. {faction} better keep a scout alive."
   },
   {
    "id": "color.army.06",
@@ -761,7 +812,7 @@
     "army",
     "main_tank"
    ],
-   "text": "{team_s} army turns slowly. Good if they get set. Bad if they don't."
+   "text": "{faction_s} army turns slowly. Good if they get set. Bad if they don't."
   },
   {
    "id": "color.army.08",
@@ -770,7 +821,7 @@
    "tags": [
     "army"
    ],
-   "text": "I've seen {team} crews in the tunnel. Quiet. That's usually a good sign."
+   "text": "I've seen {faction} crews in the tunnel. Quiet. That's usually a good sign."
   },
   {
    "id": "caller.preview.01",
@@ -781,7 +832,7 @@
     "counter"
    ],
    "topic": "counter",
-   "text": "{team} brought {units} to face {other_units}. That's the matchup you want, isn't it?"
+   "text": "{faction} brought {units} tonight. That's the matchup you want, isn't it?"
   },
   {
    "id": "color.preview.01",
@@ -842,7 +893,7 @@
     "preview"
    ],
    "topic": "early",
-   "text": "What do you need to see from {team} early?"
+   "text": "What do you need to see from {faction} early?"
   },
   {
    "id": "color.preview.05",
@@ -926,7 +977,7 @@
     "preview",
     "counter"
    ],
-   "text": "{team} has the matchup. {other_team} has to be smarter than the matchup. That's a lot to ask."
+   "text": "{faction} have the matchup. {other_faction} have to be smarter than the matchup. That's a lot to ask."
   },
   {
    "id": "caller.contact.01",
@@ -936,7 +987,7 @@
     "contact"
    ],
    "intensity": 2,
-   "text": "And we have contact! {team} opens fire!"
+   "text": "And we have contact! {faction} open fire!"
   },
   {
    "id": "caller.contact.02",
@@ -946,7 +997,7 @@
     "contact"
    ],
    "intensity": 2,
-   "text": "Shots fired! {team} takes the first shot!"
+   "text": "Shots fired! {faction} take the first shot!"
   },
   {
    "id": "caller.contact.03",
@@ -956,7 +1007,7 @@
     "contact"
    ],
    "intensity": 2,
-   "text": "Here we go! The {team} {unit} lets it rip!"
+   "text": "Here we go! The {faction_attr} {unit} lets it rip!"
   },
   {
    "id": "caller.contact.04",
@@ -966,7 +1017,7 @@
     "contact"
    ],
    "intensity": 2,
-   "text": "There it is! First shots of the night, and they come from {team}!"
+   "text": "There it is! First shots of the night, and they come from {faction}!"
   },
   {
    "id": "caller.contact.05",
@@ -976,7 +1027,7 @@
     "contact"
    ],
    "intensity": 2,
-   "text": "Contact, contact! {team} found them first!"
+   "text": "Contact, contact! {faction} found them first!"
   },
   {
    "id": "caller.contact.06",
@@ -986,7 +1037,7 @@
     "contact"
    ],
    "intensity": 2,
-   "text": "{team_s} {unit} spots the {target_unit} and doesn't wait around!"
+   "text": "{faction_s} {unit} spots trouble and doesn't wait around!"
   },
   {
    "id": "caller.contact.07",
@@ -1007,7 +1058,7 @@
     "unit_scout"
    ],
    "intensity": 2,
-   "text": "The scout finds them first! That's the job, and {team} is doing it!"
+   "text": "The scout finds them first! That's the job, and {faction} are doing it!"
   },
   {
    "id": "caller.contact.09",
@@ -1018,7 +1069,7 @@
     "unit_artillery"
    ],
    "intensity": 2,
-   "text": "Artillery opens the night! {team} is shelling from long range!"
+   "text": "Artillery opens the night! {faction} are shelling from long range!"
   },
   {
    "id": "caller.contact.10",
@@ -1029,7 +1080,7 @@
     "unit_tank"
    ],
    "intensity": 2,
-   "text": "Big gun, first shot! The {team} tank gets things started!"
+   "text": "Big gun, first shot! The {faction_attr} tank gets things started!"
   },
   {
    "id": "caller.contact.11",
@@ -1051,7 +1102,7 @@
     "unit_ifv"
    ],
    "intensity": 2,
-   "text": "The autocannon opens up! {team_s} IFV is the first to speak!"
+   "text": "The autocannon opens up! {faction_s} IFV is the first to speak!"
   },
   {
    "id": "color.contact.01",
@@ -1237,7 +1288,7 @@
     "any"
    ],
    "intensity": 1,
-   "text": "That's going to leave a mark."
+   "text": "That's gonna leave a mark."
   },
   {
    "id": "caller.button.15",
@@ -1284,7 +1335,7 @@
    "tags": [
     "any"
    ],
-   "text": "Oh! Look at this!"
+   "text": "Whoa! Look at this!"
   },
   {
    "id": "caller.interrupt.04",
@@ -1321,7 +1372,7 @@
     "big_hit"
    ],
    "intensity": 2,
-   "text": "Big shot! Big shot from {team}!"
+   "text": "Big shot! Big shot from {faction}!"
   },
   {
    "id": "caller.hit.02",
@@ -1351,7 +1402,7 @@
     "big_hit"
    ],
    "intensity": 1,
-   "text": "{team} lands a heavy one!"
+   "text": "{faction} land a heavy one!"
   },
   {
    "id": "caller.hit.05",
@@ -1373,7 +1424,7 @@
     "hurt"
    ],
    "intensity": 2,
-   "text": "The {victim_unit} is smoking, and {team} smells blood!"
+   "text": "The {victim_unit} is smoking, and {faction} smells blood!"
   },
   {
    "id": "caller.hit.07",
@@ -1406,7 +1457,7 @@
     "rear"
    ],
    "intensity": 2,
-   "text": "Right up the tailpipe! {team} caught that {victim_unit} from behind!"
+   "text": "Right up the tailpipe! {faction} caught that {victim_unit} from behind!"
   },
   {
    "id": "caller.hit.10",
@@ -1471,7 +1522,7 @@
     "big_hit"
    ],
    "intensity": 1,
-   "text": "{team} connects, and the {victim_unit} wobbles!"
+   "text": "{faction} connects, and the {victim_unit} wobbles!"
   },
   {
    "id": "color.hit.01",
@@ -1514,7 +1565,7 @@
     "final_kill"
    ],
    "intensity": 2,
-   "text": "{team} takes out the {victim_unit}!"
+   "text": "{faction} take out the {victim_unit}!"
   },
   {
    "id": "caller.kill.02",
@@ -1524,7 +1575,7 @@
     "kill"
    ],
    "intensity": 2,
-   "text": "The {victim_unit} is done! {team} gets the kill!"
+   "text": "The {victim_unit} is done! {faction} get the kill!"
   },
   {
    "id": "caller.kill.03",
@@ -1544,7 +1595,7 @@
     "kill"
    ],
    "intensity": 2,
-   "text": "Oh, the {other_team} {victim_unit} is finished!"
+   "text": "Oh, the {other_faction_attr} {victim_unit} is finished!"
   },
   {
    "id": "caller.kill.05",
@@ -1557,7 +1608,7 @@
     "final_kill"
    ],
    "intensity": 2,
-   "text": "Scratch one {victim_unit}! {team} strikes!"
+   "text": "Scratch one {victim_unit}! {faction} strike!"
   },
   {
    "id": "caller.kill.06",
@@ -1587,7 +1638,7 @@
     "kill"
    ],
    "intensity": 2,
-   "text": "{team_s} {killer_unit} puts the {victim_unit} away!"
+   "text": "{faction_s} {killer_unit} puts it away!"
   },
   {
    "id": "caller.kill.09",
@@ -1597,7 +1648,7 @@
     "kill"
    ],
    "intensity": 3,
-   "text": "Put it away! {team} puts it away!"
+   "text": "Put it away! {faction} put it away!"
   },
   {
    "id": "caller.kill.10",
@@ -1617,7 +1668,7 @@
     "kill"
    ],
    "intensity": 1,
-   "text": "{team} picks off the {victim_unit}. Clean work."
+   "text": "{faction} picks off the {victim_unit}. Clean work."
   },
   {
    "id": "caller.kill.12",
@@ -1638,7 +1689,7 @@
     "first_blood"
    ],
    "intensity": 3,
-   "text": "First blood goes to {team}!"
+   "text": "First blood goes to {faction}!"
   },
   {
    "id": "caller.kill.14",
@@ -1649,7 +1700,7 @@
     "first_blood"
    ],
    "intensity": 3,
-   "text": "{team} draws first blood, and this crowd is on its feet!"
+   "text": "{faction} draws first blood, and this crowd is on its feet!"
   },
   {
    "id": "caller.kill.15",
@@ -1660,7 +1711,7 @@
     "first_blood"
    ],
    "intensity": 3,
-   "text": "There it is! The first kill of the night belongs to {team}!"
+   "text": "There it is! The first kill of the night belongs to {faction}!"
   },
   {
    "id": "caller.kill.16",
@@ -1671,7 +1722,7 @@
     "first_blood"
    ],
    "intensity": 3,
-   "text": "And {team} strikes first! The {killer_unit} gets the honors!"
+   "text": "And {faction} strike first! The {killer_unit} gets the honors!"
   },
   {
    "id": "caller.kill.17",
@@ -1682,7 +1733,7 @@
     "first_blood"
    ],
    "intensity": 2,
-   "text": "First one down! {team} lands the first real blow of the night!"
+   "text": "First one down! {faction} land the first real blow of the night!"
   },
   {
    "id": "caller.kill.18",
@@ -1693,7 +1744,7 @@
     "upset"
    ],
    "intensity": 3,
-   "text": "Are you kidding me? The {killer_unit} takes out the {victim_unit}!"
+   "text": "Are you kidding me? The {killer_unit} takes it out!"
   },
   {
    "id": "caller.kill.19",
@@ -1704,7 +1755,7 @@
     "upset"
    ],
    "intensity": 3,
-   "text": "Nobody saw that coming! The {killer_unit} beats the {victim_unit}!"
+   "text": "Nobody saw that coming! The {killer_unit} wins that one!"
   },
   {
    "id": "caller.kill.20",
@@ -1715,7 +1766,7 @@
     "upset"
    ],
    "intensity": 3,
-   "text": "That is not supposed to happen! {team_s} {killer_unit} just took down the {victim_unit}!"
+   "text": "That is not supposed to happen! {faction_s} {killer_unit} just took that down!"
   },
   {
    "id": "caller.kill.21",
@@ -1748,7 +1799,7 @@
     "counter"
    ],
    "intensity": 2,
-   "text": "Textbook! The {killer_unit} eats the {victim_unit} alive!"
+   "text": "Textbook! The {killer_unit} eats it alive!"
   },
   {
    "id": "caller.kill.24",
@@ -1805,7 +1856,7 @@
     "killer_artillery"
    ],
    "intensity": 2,
-   "text": "The artillery finds its mark! {team} shells the {victim_unit} right out of the fight!"
+   "text": "The artillery finds its mark! {faction} shells the {victim_unit} right out of the fight!"
   },
   {
    "id": "caller.kill.29",
@@ -1827,7 +1878,7 @@
     "victim_artillery"
    ],
    "intensity": 3,
-   "text": "They got to the artillery! {team} gets in close and silences the big guns!"
+   "text": "They got to the artillery! {faction} get in close and silences the big guns!"
   },
   {
    "id": "caller.kill.31",
@@ -1871,7 +1922,7 @@
     "victim_lancer"
    ],
    "intensity": 2,
-   "text": "The Lancer goes dark! {team} shuts off the beam!"
+   "text": "The Lancer goes dark! {faction} shuts off the beam!"
   },
   {
    "id": "caller.kill.35",
@@ -1882,7 +1933,7 @@
     "victim_ifv"
    ],
    "intensity": 2,
-   "text": "The IFV is finished! {team} cracks it wide open!"
+   "text": "The IFV is finished! {faction} crack it wide open!"
   },
   {
    "id": "caller.kill.36",
@@ -1915,7 +1966,7 @@
     "rear"
    ],
    "intensity": 3,
-   "text": "Right in the back! {team} finishes the {victim_unit} from behind!"
+   "text": "Right in the back! {faction} finish the {victim_unit} from behind!"
   },
   {
    "id": "caller.kill.39",
@@ -1937,7 +1988,7 @@
     "streak"
    ],
    "intensity": 3,
-   "text": "That's {streak} in a row for {team}! They cannot miss!"
+   "text": "That's {streak} in a row for {faction}! They cannot miss!"
   },
   {
    "id": "caller.kill.41",
@@ -1948,7 +1999,7 @@
     "streak"
    ],
    "intensity": 3,
-   "text": "{team} is on a tear! That's {streak} straight!"
+   "text": "{faction} are on a tear! That's {streak} straight!"
   },
   {
    "id": "caller.kill.42",
@@ -1959,7 +2010,7 @@
     "streak"
    ],
    "intensity": 3,
-   "text": "Another one for {team}! This is a clinic!"
+   "text": "Another one for {faction}! This is a clinic!"
   },
   {
    "id": "caller.kill.43",
@@ -1970,7 +2021,7 @@
     "another"
    ],
    "intensity": 3,
-   "text": "And another one! {team} isn't done!"
+   "text": "And another one! {faction} isn't done!"
   },
   {
    "id": "caller.kill.44",
@@ -1981,7 +2032,7 @@
     "another"
    ],
    "intensity": 3,
-   "text": "Two in a row! {team} strikes again!"
+   "text": "Two in a row! {faction} strike again!"
   },
   {
    "id": "caller.kill.45",
@@ -1992,7 +2043,7 @@
     "another"
    ],
    "intensity": 3,
-   "text": "Back to back! {team} takes out the {victim_unit} too!"
+   "text": "Back to back! {faction} take out the {victim_unit} too!"
   },
   {
    "id": "caller.kill.46",
@@ -2025,7 +2076,7 @@
     "last_unit"
    ],
    "intensity": 3,
-   "text": "{other_team} is down to its last vehicle!"
+   "text": "{other_faction} are down to its last vehicle!"
   },
   {
    "id": "caller.kill.49",
@@ -2036,7 +2087,7 @@
     "last_unit"
    ],
    "intensity": 3,
-   "text": "One left! {other_team} has one left!"
+   "text": "One left! {other_faction} have one left!"
   },
   {
    "id": "caller.kill.50",
@@ -2047,7 +2098,7 @@
     "last_unit"
    ],
    "intensity": 3,
-   "text": "It's all on the last {other_team} vehicle now!"
+   "text": "It's all on the last {other_faction_attr} vehicle now!"
   },
   {
    "id": "caller.kill.51",
@@ -2058,7 +2109,7 @@
     "last_unit"
    ],
    "intensity": 3,
-   "text": "That leaves {other_team} with one. One!"
+   "text": "That leaves {other_faction} with one. One!"
   },
   {
    "id": "caller.kill.52",
@@ -2072,7 +2123,7 @@
     "final_kill"
    ],
    "intensity": 2,
-   "text": "{other_team} is down to {count}!"
+   "text": "{other_faction} are down to {count}!"
   },
   {
    "id": "caller.kill.53",
@@ -2086,7 +2137,7 @@
     "final_kill"
    ],
    "intensity": 1,
-   "text": "The {victim_unit} is out, and that's {count} left for {other_team}."
+   "text": "The {victim_unit} is out, and {other_faction} are running short."
   },
   {
    "id": "caller.kill.54",
@@ -2119,7 +2170,7 @@
     "lead_change"
    ],
    "intensity": 3,
-   "text": "{team} takes the lead!"
+   "text": "{faction} take the lead!"
   },
   {
    "id": "caller.kill.57",
@@ -2130,7 +2181,7 @@
     "lead_change"
    ],
    "intensity": 3,
-   "text": "And now it's {team} with the numbers!"
+   "text": "And now it's {faction} with the numbers!"
   },
   {
    "id": "caller.kill.58",
@@ -2141,7 +2192,7 @@
     "comeback"
    ],
    "intensity": 3,
-   "text": "{team} has fought all the way back! What a comeback this is turning into!"
+   "text": "{faction} have fought all the way back! What a comeback this is turning into!"
   },
   {
    "id": "caller.kill.59",
@@ -2152,7 +2203,7 @@
     "comeback"
    ],
    "intensity": 3,
-   "text": "Remember when {team} was finished? Nobody told {team}!"
+   "text": "Remember when {faction} were finished? Nobody told {faction}!"
   },
   {
    "id": "caller.kill.60",
@@ -2163,7 +2214,7 @@
     "final_kill"
    ],
    "intensity": 3,
-   "text": "That's the last one! {team} wipes them out!"
+   "text": "That's the last one! {faction} wipe them out!"
   },
   {
    "id": "caller.kill.61",
@@ -2174,7 +2225,7 @@
     "final_kill"
    ],
    "intensity": 3,
-   "text": "The last {other_team} vehicle goes down!"
+   "text": "The last {other_faction_attr} vehicle goes down!"
   },
   {
    "id": "caller.kill.62",
@@ -2196,7 +2247,7 @@
     "final_kill"
    ],
    "intensity": 3,
-   "text": "{team} finishes it! The last {victim_unit} is gone!"
+   "text": "{faction} finish it! The last {victim_unit} is gone!"
   },
   {
    "id": "caller.kill.64",
@@ -2207,7 +2258,7 @@
     "mirror"
    ],
    "intensity": 2,
-   "text": "{killer_unit} against {victim_unit}, and {team} wins the exchange!"
+   "text": "What an exchange, and {faction} win it!"
   },
   {
    "id": "caller.kill.65",
@@ -2243,7 +2294,7 @@
     "trade"
    ],
    "intensity": 3,
-   "text": "{team} is cleaning house! {kills} down, just like that!"
+   "text": "{faction} are cleaning house! {kills} down, just like that!"
   },
   {
    "id": "caller.kill.68",
@@ -2438,7 +2489,7 @@
     "streak"
    ],
    "intensity": 2,
-   "text": "{team} has taken out {streak} in a row without losing one."
+   "text": "{faction} have taken out {streak} in a row without losing one."
   },
   {
    "id": "caller.stat.02",
@@ -2449,7 +2500,7 @@
     "streak"
    ],
    "intensity": 2,
-   "text": "{streak} unanswered for {team}. {other_team} has to do something, and fast."
+   "text": "That's a run of unanswered kills for {faction}. {other_faction} have to do something, and fast."
   },
   {
    "id": "color.kill.01",
@@ -2459,7 +2510,7 @@
     "kill",
     "first_blood"
    ],
-   "text": "{other_team} will want that one back. You don't give up the first one that easy."
+   "text": "{other_faction} will want that one back. You don't give up the first one that easy."
   },
   {
    "id": "color.kill.02",
@@ -2519,7 +2570,7 @@
     "kill",
     "last_unit"
    ],
-   "text": "{other_team} has one left. Now it gets interesting, or it gets short."
+   "text": "{other_faction} have one left. Now it gets interesting, or it gets short."
   },
   {
    "id": "color.kill.08",
@@ -2529,7 +2580,7 @@
     "kill",
     "last_unit"
    ],
-   "text": "That last {other_team} crew has nothing to lose. That's the dangerous one."
+   "text": "That last {other_faction} crew has nothing to lose. That's the dangerous one."
   },
   {
    "id": "color.kill.09",
@@ -2538,7 +2589,7 @@
    "tags": [
     "kill"
    ],
-   "text": "{other_team} was in the open for too long. You saw it coming from here."
+   "text": "{other_faction} were in the open for too long. You saw it coming from here."
   },
   {
    "id": "color.kill.10",
@@ -2547,7 +2598,7 @@
    "tags": [
     "kill"
    ],
-   "text": "Patience. {team} waited for the shot and took it."
+   "text": "Patience. {faction} waited for the shot and took it."
   },
   {
    "id": "color.kill.11",
@@ -2565,7 +2616,7 @@
    "tags": [
     "kill"
    ],
-   "text": "Good trade for {team}. They'll take that all night."
+   "text": "Good trade for {faction}. They'll take that all night."
   },
   {
    "id": "color.kill.13",
@@ -2594,7 +2645,7 @@
     "kill",
     "comeback"
    ],
-   "text": "{team} didn't panic. That's the whole comeback right there. Nobody panicked."
+   "text": "{faction} didn't panic. That's the whole comeback right there. Nobody panicked."
   },
   {
    "id": "color.kill.16",
@@ -2604,7 +2655,7 @@
     "kill",
     "streak"
    ],
-   "text": "{other_team} keeps feeding them one at a time. Regroup. Please regroup."
+   "text": "{other_faction} keep feeding them one at a time. Regroup. Please regroup."
   },
   {
    "id": "color.kill.17",
@@ -2617,7 +2668,7 @@
    "needs": [
     "predicted_scouts"
    ],
-   "text": "There go the eyes. I said it before the match. Watch what happens to {other_team} now."
+   "text": "There go the eyes. I said it before the match. Watch what happens to {other_faction} now."
   },
   {
    "id": "color.kill.18",
@@ -2648,7 +2699,7 @@
     "friendly_kill"
    ],
    "intensity": 3,
-   "text": "Oh no! {team} just took out its own {victim_unit}!"
+   "text": "Oh no! {faction} just took out its own {victim_unit}!"
   },
   {
    "id": "caller.ownkill.02",
@@ -2668,7 +2719,7 @@
     "friendly_kill"
    ],
    "intensity": 3,
-   "text": "They hit their own! {team} loses the {victim_unit} to its own guns!"
+   "text": "They hit their own! {faction} lose the {victim_unit} to its own guns!"
   },
   {
    "id": "caller.ownkill.04",
@@ -2678,7 +2729,7 @@
     "friendly_kill"
    ],
    "intensity": 3,
-   "text": "That's a {team} {killer_unit} destroying a {team} {victim_unit}! Their own teammate!"
+   "text": "That's a {faction_attr} crew destroying its own {victim_unit}! Their own teammate!"
   },
   {
    "id": "caller.ownkill.05",
@@ -2692,7 +2743,7 @@
     "said_friendly_{team}"
    ],
    "intensity": 3,
-   "text": "Again! {team} has done it again!"
+   "text": "Again! {faction} have done it again!"
   },
   {
    "id": "caller.ownkill.06",
@@ -2703,7 +2754,7 @@
     "killer_artillery"
    ],
    "intensity": 3,
-   "text": "The {team} artillery drops it right on its own {victim_unit}! It's gone!"
+   "text": "The {faction_attr} artillery drops it right on its own {victim_unit}! It's gone!"
   },
   {
    "id": "color.ownkill.01",
@@ -2721,7 +2772,7 @@
    "tags": [
     "friendly_kill"
    ],
-   "text": "Somebody on {team} is going to have a long conversation after this."
+   "text": "Somebody on {faction} are going to have a long conversation after this."
   },
   {
    "id": "color.ownkill.03",
@@ -2791,7 +2842,7 @@
     "hazard_kill"
    ],
    "intensity": 2,
-   "text": "The pit claims one! {team} loses the {victim_unit} to the floor itself!"
+   "text": "The pit claims one! {faction} lose the {victim_unit} to the floor itself!"
   },
   {
    "id": "caller.hazard.04",
@@ -2829,7 +2880,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "Whoa, whoa! {team} just hit its own {victim_unit}!"
+   "text": "Whoa, whoa! {faction} just hit its own {victim_unit}!"
   },
   {
    "id": "caller.ff.02",
@@ -2839,7 +2890,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "Friendly fire! The {team} {unit} catches a teammate!"
+   "text": "Friendly fire! The {faction_attr} {unit} catches a teammate!"
   },
   {
    "id": "caller.ff.03",
@@ -2849,7 +2900,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "Oh, that's their own! {team} hits its own {victim_unit}!"
+   "text": "Oh, that's their own! {faction} hit its own {victim_unit}!"
   },
   {
    "id": "caller.ff.04",
@@ -2859,7 +2910,7 @@
     "friendly_fire"
    ],
    "intensity": 2,
-   "text": "{team_s} {unit} lands one on its own {victim_unit}! Wrong target!"
+   "text": "{faction_s} {unit} lands one on its own! Wrong target!"
   },
   {
    "id": "caller.ff.05",
@@ -2870,7 +2921,7 @@
     "shooter_artillery"
    ],
    "intensity": 2,
-   "text": "That artillery shell landed on {team_s} own {victim_unit}!"
+   "text": "That artillery shell landed on their own {victim_unit}!"
   },
   {
    "id": "caller.ff.06",
@@ -2884,7 +2935,7 @@
     "said_friendly_{team}"
    ],
    "intensity": 3,
-   "text": "Again! {team} hits its own again!"
+   "text": "Again! {faction} hit its own again!"
   },
   {
    "id": "caller.ff.07",
@@ -2895,7 +2946,7 @@
     "repeat"
    ],
    "intensity": 2,
-   "text": "That's {count} times now {team} has hit its own vehicles!"
+   "text": "That's {count} times now {faction} have hit its own vehicles!"
   },
   {
    "id": "color.ff.01",
@@ -2954,7 +3005,7 @@
     "friendly_fire",
     "repeat"
    ],
-   "text": "That's not the first time tonight. {team} needs to fix it now."
+   "text": "That's not the first time tonight. {faction} need to fix it now."
   },
   {
    "id": "pa.ff.01",
@@ -2967,7 +3018,7 @@
    "needs": [
     "said_friendly_{team}"
    ],
-   "text": "For viewers just joining us, those were {team} vehicles striking other {team} vehicles. The match continues."
+   "text": "For viewers just joining us, those were {faction} vehicles striking other {faction} vehicles. The match continues."
   },
   {
    "id": "pa.ff.02",
@@ -2976,7 +3027,7 @@
    "tags": [
     "friendly_kill"
    ],
-   "text": "Officials confirm that was a {team} vehicle striking another {team} vehicle. The match continues."
+   "text": "Officials confirm that was a {faction_attr} vehicle striking another of its own. The match continues."
   },
   {
    "id": "pa.ff.03",
@@ -3014,7 +3065,7 @@
     "close_call"
    ],
    "intensity": 2,
-   "text": "The {team} {unit} is hanging on by a thread!"
+   "text": "The {faction_attr} {unit} is hanging on by a thread!"
   },
   {
    "id": "caller.close.03",
@@ -3055,7 +3106,7 @@
     "last_unit"
    ],
    "intensity": 3,
-   "text": "The last {team} vehicle is barely holding together! Barely!"
+   "text": "The last {faction_attr} vehicle is barely holding together! Barely!"
   },
   {
    "id": "color.close.01",
@@ -3093,7 +3144,7 @@
     "taken"
    ],
    "intensity": 2,
-   "text": "{team} takes the control point!"
+   "text": "{faction} take the control point!"
   },
   {
    "id": "caller.control.02",
@@ -3104,7 +3155,7 @@
     "taken"
    ],
    "intensity": 2,
-   "text": "{team} is on the point, and the clock is ticking for {other_team}!"
+   "text": "{faction} are on the point, and the clock is ticking for {other_faction}!"
   },
   {
    "id": "caller.control.03",
@@ -3117,7 +3168,7 @@
     "neutral"
    ],
    "intensity": 2,
-   "text": "The center belongs to {team}!"
+   "text": "The center belongs to {faction}!"
   },
   {
    "id": "caller.control.04",
@@ -3128,7 +3179,7 @@
     "stolen"
    ],
    "intensity": 3,
-   "text": "{team} steals the point away from {other_team}!"
+   "text": "{faction} steals the point away from {other_faction}!"
   },
   {
    "id": "caller.control.05",
@@ -3139,7 +3190,7 @@
     "stolen"
    ],
    "intensity": 3,
-   "text": "Oh, {team} takes it right back!"
+   "text": "Oh, {faction} take it right back!"
   },
   {
    "id": "caller.control.06",
@@ -3185,7 +3236,7 @@
    "without": [
     "neutral"
    ],
-   "text": "{other_team} has to go get it now. That means coming out into the open."
+   "text": "{other_faction} have to go get it now. That means coming out into the open."
   },
   {
    "id": "color.control.03",
@@ -3206,7 +3257,7 @@
    "without": [
     "neutral"
    ],
-   "text": "{team} now holds the control point. Scoring has been updated."
+   "text": "{faction} now holds the control point. Scoring has been updated."
   },
   {
    "id": "pa.control.02",
@@ -3228,7 +3279,7 @@
     "squad_wiped"
    ],
    "intensity": 2,
-   "text": "{team} has lost an entire squad!"
+   "text": "{faction} have lost an entire squad!"
   },
   {
    "id": "caller.squad.02",
@@ -3238,7 +3289,7 @@
     "squad_wiped"
    ],
    "intensity": 2,
-   "text": "That whole {team} squad is gone!"
+   "text": "That whole {faction} squad is gone!"
   },
   {
    "id": "caller.squad.03",
@@ -3248,7 +3299,7 @@
     "squad_wiped"
    ],
    "intensity": 2,
-   "text": "The squad is wiped out! {team} is short a whole group!"
+   "text": "The squad is wiped out! {faction} are short a whole group!"
   },
   {
    "id": "color.momentum.01",
@@ -3257,7 +3308,7 @@
    "tags": [
     "momentum"
    ],
-   "text": "{team} has the better of it right now. Look at the damage {other_team} is soaking up."
+   "text": "{faction} have the better of it right now. Look at the damage {other_faction} are soaking up."
   },
   {
    "id": "color.momentum.02",
@@ -3267,7 +3318,7 @@
     "momentum",
     "shift"
    ],
-   "text": "The tide's turning. {team} got patient, and it's paying off."
+   "text": "The tide's turning. {faction} got patient, and it's paying off."
   },
   {
    "id": "color.momentum.03",
@@ -3276,7 +3327,7 @@
    "tags": [
     "momentum"
    ],
-   "text": "{other_team} is bleeding and doesn't know it yet."
+   "text": "{other_faction} are bleeding and doesn't know it yet."
   },
   {
    "id": "color.momentum.04",
@@ -3286,7 +3337,7 @@
     "momentum",
     "rout"
    ],
-   "text": "{other_team} is coming apart out there. That's not a fight anymore."
+   "text": "{other_faction} are coming apart out there. That's not a fight anymore."
   },
   {
    "id": "caller.momentum.01",
@@ -3296,7 +3347,7 @@
     "momentum"
    ],
    "intensity": 2,
-   "text": "The momentum is swinging to {team}!"
+   "text": "The momentum is swinging to {faction}!"
   },
   {
    "id": "caller.momentum.02",
@@ -3306,7 +3357,7 @@
     "momentum"
    ],
    "intensity": 2,
-   "text": "{team} is taking over this match!"
+   "text": "{faction} are taking over this match!"
   },
   {
    "id": "caller.momentum.03",
@@ -3317,7 +3368,7 @@
     "shift"
    ],
    "intensity": 2,
-   "text": "You can feel it shifting, folks! {team} is in control now!"
+   "text": "You can feel it shifting, folks! {faction} are in control now!"
   },
   {
    "id": "caller.waiting.01",
@@ -3593,7 +3644,7 @@
     "team_leading"
    ],
    "topic": "trailing",
-   "text": "What does {other_team} have to do to get back into this?"
+   "text": "What does {other_faction} have to do to get back into this?"
   },
   {
    "id": "color.banter.13",
@@ -3721,7 +3772,7 @@
     "phase_early"
    ],
    "topic": "over",
-   "text": "Is it over for {other_team}?"
+   "text": "Is it over for {other_faction}?"
   },
   {
    "id": "color.banter.21",
@@ -3741,7 +3792,7 @@
     "lull"
    ],
    "topic": "over",
-   "text": "Close to it. But one mistake from {team} and it's a match again."
+   "text": "Close to it. But one mistake from {faction} and it's a match again."
   },
   {
    "id": "caller.banter.12",
@@ -3851,7 +3902,7 @@
     "lull",
     "team_leading"
    ],
-   "text": "{team} has the numbers right now, {count} to {other_count}."
+   "text": "{faction} have the numbers right now. Over {count_over} still running."
   },
   {
    "id": "caller.stat.04",
@@ -3874,7 +3925,7 @@
     "lull",
     "team_leading"
    ],
-   "text": "{team} leads, and {other_team} needs a big play here."
+   "text": "{faction} lead, and {other_faction} need a big play here."
   },
   {
    "id": "caller.stat.06",
@@ -4131,7 +4182,7 @@
     "lull",
     "team_leading"
    ],
-   "text": "The odds boards on the main concourse now have {team} at three to one. Windows remain open."
+   "text": "The odds boards on the main concourse now have {faction} at three to one. Windows remain open."
   },
   {
    "id": "pa.odds.02",
@@ -4245,7 +4296,7 @@
     "win_elimination"
    ],
    "intensity": 3,
-   "text": "It's all over! {team} wins it!"
+   "text": "It's all over! {faction} win it!"
   },
   {
    "id": "caller.result.02",
@@ -4258,7 +4309,7 @@
     "draw"
    ],
    "intensity": 3,
-   "text": "That's the match! {team} is your winner tonight!"
+   "text": "That's the match! {faction} are your winner tonight!"
   },
   {
    "id": "caller.result.03",
@@ -4271,7 +4322,7 @@
     "draw"
    ],
    "intensity": 3,
-   "text": "{team} takes it! What a fight, ladies and gentlemen!"
+   "text": "{faction} take it! What a fight, ladies and gentlemen!"
   },
   {
    "id": "caller.result.04",
@@ -4282,7 +4333,7 @@
     "win_elimination"
    ],
    "intensity": 3,
-   "text": "And {team} is the last army standing! {team} wins!"
+   "text": "And {faction} are the last army standing! {faction} win!"
   },
   {
    "id": "caller.result.05",
@@ -4293,7 +4344,7 @@
     "flawless"
    ],
    "intensity": 3,
-   "text": "{team} wins it without losing a single vehicle! Flawless!"
+   "text": "{faction} win it without losing a single vehicle! Flawless!"
   },
   {
    "id": "caller.result.06",
@@ -4304,7 +4355,7 @@
     "close"
    ],
    "intensity": 3,
-   "text": "{team} wins it with one vehicle left! One! What a finish!"
+   "text": "{faction} win it with one vehicle left! One! What a finish!"
   },
   {
    "id": "caller.result.07",
@@ -4315,7 +4366,7 @@
     "comeback"
    ],
    "intensity": 3,
-   "text": "What a comeback! {team} was down and out, and {team} wins it!"
+   "text": "What a comeback! {faction} were down and out, and {faction} win it!"
   },
   {
    "id": "caller.result.08",
@@ -4326,7 +4377,7 @@
     "win_control"
    ],
    "intensity": 3,
-   "text": "{team} wins it on the control point! They held the middle, and it paid off!"
+   "text": "{faction} win it on the control point! They held the middle, and it paid off!"
   },
   {
    "id": "caller.result.09",
@@ -4337,7 +4388,7 @@
     "win_time"
    ],
    "intensity": 3,
-   "text": "Time is up, and {team} takes it on the damage count!"
+   "text": "Time is up, and {faction} take it on the damage count!"
   },
   {
    "id": "caller.result.10",
@@ -4362,7 +4413,7 @@
     "draw"
    ],
    "intensity": 3,
-   "text": "That was fast! {team} made short work of that one!"
+   "text": "That was fast! {faction} made short work of that one!"
   },
   {
    "id": "caller.result.12",
@@ -4376,7 +4427,7 @@
     "draw"
    ],
    "intensity": 3,
-   "text": "What a war! That one went the distance, and {team} comes out on top!"
+   "text": "What a war! That one went the distance, and {faction} come out on top!"
   },
   {
    "id": "color.result.01",
@@ -4388,7 +4439,7 @@
    "without": [
     "draw"
    ],
-   "text": "{team} stayed together. That's it. That's the whole secret."
+   "text": "{faction} stayed together. That's it. That's the whole secret."
   },
   {
    "id": "color.result.02",
@@ -4401,7 +4452,7 @@
     "draw",
     "flawless"
    ],
-   "text": "{other_team} traded evenly early and couldn't afford it later. You could see it coming."
+   "text": "{other_faction} traded evenly early and couldn't afford it later. You could see it coming."
   },
   {
    "id": "color.result.03",
@@ -4413,7 +4464,7 @@
    "without": [
     "draw"
    ],
-   "text": "{team} earned that. I didn't see them get lucky once."
+   "text": "{faction} earned that. I didn't see them get lucky once."
   },
   {
    "id": "color.result.04",
@@ -4453,7 +4504,7 @@
     "result",
     "win_control"
    ],
-   "text": "Holding the point takes nerve. {team} had it."
+   "text": "Holding the point takes nerve. {faction} had it."
   },
   {
    "id": "color.result.08",
@@ -4483,7 +4534,7 @@
     "result",
     "long"
    ],
-   "text": "Long match. Everybody down there is exhausted. {team} was a little less exhausted."
+   "text": "Long match. Everybody down there is exhausted. {faction} were a little less exhausted."
   },
   {
    "id": "pa.result.01",
@@ -4495,7 +4546,7 @@
    "without": [
     "draw"
    ],
-   "text": "{team} wins tonight's match. Thank you for joining us. Please exit by section, and have your papers ready."
+   "text": "{faction} win tonight's match. Thank you for joining us. Please exit by section, and have your papers ready."
   },
   {
    "id": "pa.result.02",
@@ -4507,7 +4558,7 @@
    "without": [
     "draw"
    ],
-   "text": "Tonight's winner is {team}. The surviving crews will be processed shortly. Good night."
+   "text": "Tonight's winner is {faction}. The surviving crews will be processed shortly. Good night."
   },
   {
    "id": "pa.result.03",
@@ -4519,7 +4570,7 @@
    "without": [
     "draw"
    ],
-   "text": "That concludes tonight's match. Congratulations to {team}. On behalf of the Syndicate, good night, and please drive safely."
+   "text": "That concludes tonight's match. Congratulations to {faction}. On behalf of the Syndicate, good night, and please drive safely."
   },
   {
    "id": "pa.result.04",
@@ -4531,7 +4582,7 @@
    "without": [
     "draw"
    ],
-   "text": "The match has been decided in favor of {team}. Highlights will air throughout the week on all district screens."
+   "text": "The match has been decided in favor of {faction}. Highlights will air throughout the week on all district screens."
   },
   {
    "id": "pa.result.05",
@@ -4551,7 +4602,7 @@
     "outro",
     "flawless"
    ],
-   "text": "{team} wins without a single loss. The Syndicate congratulates the crews, and their families, who have been informed."
+   "text": "{faction} win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed."
   },
   {
    "id": "pa.welcome.11",
@@ -4994,7 +5045,7 @@
     "result"
    ],
    "intensity": 3,
-   "text": "That is the match! {team} takes it!"
+   "text": "That is the match! {faction} take it!"
   },
   {
    "id": "caller.result.14",
@@ -5004,7 +5055,7 @@
     "result"
    ],
    "intensity": 3,
-   "text": "{team} has done it! What a performance!"
+   "text": "{faction} have done it! What a performance!"
   },
   {
    "id": "caller.result.15",
@@ -5014,7 +5065,7 @@
     "result"
    ],
    "intensity": 2,
-   "text": "And there it is. {team} closes it out."
+   "text": "And there it is. {faction} closes it out."
   },
   {
    "id": "caller.result.16",
@@ -5024,7 +5075,7 @@
     "result"
    ],
    "intensity": 3,
-   "text": "{team} wins! I did not see that coming and I do not think they did either!"
+   "text": "{faction} win! I did not see that coming and I do not think they did either!"
   },
   {
    "id": "caller.result.17",
@@ -5034,7 +5085,7 @@
     "result"
    ],
    "intensity": 2,
-   "text": "Match to {team}. They earned every bit of that."
+   "text": "Match to {faction}. They earned every bit of that."
   },
   {
    "id": "caller.result.18",
@@ -5044,7 +5095,7 @@
     "result"
    ],
    "intensity": 3,
-   "text": "It is done! {team} stands alone on that floor!"
+   "text": "It is done! {faction} stands alone on that floor!"
   },
   {
    "id": "pa.result.07",
@@ -5053,7 +5104,7 @@
    "tags": [
     "outro"
    ],
-   "text": "Tonight's match goes to {team}. Settlement of wagers will begin within the hour."
+   "text": "Tonight's match goes to {faction}. Settlement of wagers will begin within the hour."
   },
   {
    "id": "pa.result.08",
@@ -5062,7 +5113,7 @@
    "tags": [
     "outro"
    ],
-   "text": "{team} takes tonight's match. We thank our participants, and our sponsors, in that order."
+   "text": "{faction} take tonight's match. We thank our participants, and our sponsors, in that order."
   },
   {
    "id": "pa.result.09",
@@ -5071,7 +5122,7 @@
    "tags": [
     "outro"
    ],
-   "text": "The result is final. {team} wins, and the floor will be cleared before the next session."
+   "text": "The result is final. {faction} win, and the floor will be cleared before the next session."
   },
   {
    "id": "pa.result.10",
@@ -5080,7 +5131,7 @@
    "tags": [
     "outro"
    ],
-   "text": "That is the conclusion of tonight's event. Congratulations to {team} from all of us at the arena."
+   "text": "That is the conclusion of tonight's event. Congratulations to {faction} from all of us at the arena."
   },
   {
    "id": "pa.result.11",
@@ -5089,7 +5140,7 @@
    "tags": [
     "outro"
    ],
-   "text": "{team} is tonight's winner. Ticket holders may remain seated during the recovery operation."
+   "text": "{faction} are tonight's winner. Ticket holders may remain seated during the recovery operation."
   },
   {
    "id": "color.result.11",
@@ -5135,6 +5186,938 @@
     "result"
    ],
    "text": "Both of those crews will drive again. That is more than most nights."
+  },
+  {
+   "id": "color.teach.spacing01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody."
+  },
+  {
+   "id": "color.teach.spacing02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Watch the gaps between them. That's where the next one dies."
+  },
+  {
+   "id": "color.teach.cover01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "You don't sit in cover. You shoot from behind it and you move. Sitting is how cover kills you."
+  },
+  {
+   "id": "color.teach.cover02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it."
+  },
+  {
+   "id": "color.teach.flank01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "That's why you go around. Front armor is thick everywhere and thin nowhere else."
+  },
+  {
+   "id": "color.teach.flank02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick."
+  },
+  {
+   "id": "color.teach.focus01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Two guns on one target beats one gun on two targets. It sounds obvious. Watch how few crews do it."
+  },
+  {
+   "id": "color.teach.screen01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "You put the heavy where the shooting is and the fragile one behind it. Nobody wants that job. Somebody has it."
+  },
+  {
+   "id": "color.teach.speed01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Fast doesn't mean safe. Fast means you arrive at the problem sooner."
+  },
+  {
+   "id": "color.teach.weakspot01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit",
+    "weak_spot"
+   ],
+   "text": "Every one of those machines has a place where the plate is thin. Usually where somebody had to reach in and fix something."
+  },
+  {
+   "id": "color.teach.arty01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Artillery doesn't kill you. It moves you somewhere that does."
+  },
+  {
+   "id": "color.teach.mg01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "A machine gun won't open armor. It'll keep a crew's heads down while something else does."
+  },
+  {
+   "id": "color.teach.open01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "Open ground. In here, open ground is just a place you haven't been shot yet."
+  },
+  {
+   "id": "color.teach.halt01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "text": "When they stop, watch which way the guns point. A crew that knows what it's doing covers every direction without being told."
+  },
+  {
+   "id": "color.teach.retreat01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Backing out under fire is the hardest thing there is. Most crews learn it once."
+  },
+  {
+   "id": "color.trail.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "You want your heavy on the outside of the turn, because if he's on the inside then the whole... yeah. It's a thing you learn."
+  },
+  {
+   "id": "color.trail.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "Now, the correct answer here is to break contact and reset, unless the ground is... hm. Depends on the ground."
+  },
+  {
+   "id": "color.trail.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "See, that's what happens when you lead with the wrong... well. You saw it."
+  },
+  {
+   "id": "color.trail.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "There's a reason you angle the hull, and it's to do with the plate thickness against the... anyway. Angle the hull."
+  },
+  {
+   "id": "color.trail.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "text": "We used to have a whole system for this. Hand signals, the works. Couldn't tell you a single one of them now."
+  },
+  {
+   "id": "color.trail.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "The old rule was one in three moves while two watch, or maybe it was two in three, and honestly it depends who you ask."
+  },
+  {
+   "id": "color.trail.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "This is the part where you either commit or you don't, and the crews that get it wrong are usually the ones that... sorry, what was the question?"
+  },
+  {
+   "id": "color.trail.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill",
+    "first_blood"
+   ],
+   "text": "First one's always the same. Somebody forgets something simple. I forgot something simple for nine seasons."
+  },
+  {
+   "id": "color.trail.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "My old chief had a saying about this exact situation. It was longer than it needed to be."
+  },
+  {
+   "id": "color.trail.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "Now if he'd taken that hit three feet further left, the whole... no, actually, three feet left is worse. Forget that."
+  },
+  {
+   "id": "color.trail.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "text": "You can tell a lot about a crew from how they sit when nothing's happening. I could, anyway. Once."
+  },
+  {
+   "id": "color.trail.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "The thing about the end of a match is it tells you what they were trying to do the whole time, which is... it's interesting to me."
+  },
+  {
+   "id": "color.flat.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "army"
+   ],
+   "text": "When you're driving in that formation, the point man had better be ready for whatever comes next. There's about a ninety percent chance his life is about to end."
+  },
+  {
+   "id": "color.flat.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "contact"
+   ],
+   "text": "The crew that fires first usually lives. That's not a saying. Somebody counted."
+  },
+  {
+   "id": "color.flat.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "kill"
+   ],
+   "text": "Nobody gets out of one of those once it goes up. They don't design the hatch for that."
+  },
+  {
+   "id": "color.flat.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "The floor gets cleared between sessions. It takes about eleven minutes."
+  },
+  {
+   "id": "color.flat.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "close_call"
+   ],
+   "text": "He'll feel that for the rest of his life. Which, in his case, is being decided right now."
+  },
+  {
+   "id": "color.flat.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "lull"
+   ],
+   "text": "Most of these crews signed up. Not all of them. The paperwork looks identical either way."
+  },
+  {
+   "id": "color.flat.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "friendly_kill"
+   ],
+   "text": "That happens more than you'd think. The Syndicate counts it the same as any other loss, so there's no reason for anyone to be careful about it."
+  },
+  {
+   "id": "color.flat.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "A hit like that doesn't kill the driver. The next one does. He knows that better than we do."
+  },
+  {
+   "id": "color.flat.09",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "result"
+   ],
+   "text": "The winners get their sentence reduced. The reduction is calculated after the medical review, so it varies."
+  },
+  {
+   "id": "color.flat.10",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "You hear that ringing? Everybody inside those hulls will have that for a few years. Then it stops."
+  },
+  {
+   "id": "color.flat.11",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "momentum"
+   ],
+   "text": "Once a crew starts losing in here, it goes fast. It's better that way, I'm told."
+  },
+  {
+   "id": "color.flat.12",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "hazard_kill"
+   ],
+   "text": "The pits were an idea somebody had in an office. Everyone agreed it tested well."
+  },
+  {
+   "id": "color.answer.r4.01",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "any"
+   ],
+   "text": "That's the read, Joseph. That's exactly the read.",
+   "topic": "any"
+  },
+  {
+   "id": "color.answer.r4.02",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "any"
+   ],
+   "text": "No. Well. Partly. The part you're missing is the ground.",
+   "topic": "any"
+  },
+  {
+   "id": "color.answer.r4.03",
+   "speaker": "color",
+   "act": "answer_agree",
+   "tags": [
+    "any"
+   ],
+   "text": "Right, and the reason it works is nobody wants to be the one who turns first.",
+   "topic": "any"
+  },
+  {
+   "id": "color.answer.r4.04",
+   "speaker": "color",
+   "act": "answer_disagree",
+   "tags": [
+    "any"
+   ],
+   "text": "I'd have said the opposite, Joseph, and I'd have been wrong too.",
+   "topic": "any"
+  },
+  {
+   "id": "color.roast.r4.01",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "He drove into the open to get a shot he already had. People do that when they're tired."
+  },
+  {
+   "id": "color.roast.r4.02",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "friendly_fire"
+   ],
+   "text": "That's what happens when you shoot at the gap instead of the target."
+  },
+  {
+   "id": "color.roast.r4.03",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill"
+   ],
+   "text": "Reversing out of there was the answer. Turning was not the answer."
+  },
+  {
+   "id": "color.roast.r4.04",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "big_hit"
+   ],
+   "text": "He gave them the side of the hull. You only do that once."
+  },
+  {
+   "id": "color.roast.r4.05",
+   "speaker": "color",
+   "act": "roast",
+   "tags": [
+    "kill",
+    "upset"
+   ],
+   "text": "Everybody's going to say that was luck. It wasn't. He was in the right place and the other one wasn't."
+  },
+  {
+   "id": "pa.correct.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. I'll note that the same maneuver performed outside the arena would carry an immediate Article fifty-seven dash eight C, for the driver and for all of his blood relatives."
+  },
+  {
+   "id": "pa.correct.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "after_caller"
+   ],
+   "text": "Lovely call, Joseph. For our younger viewers, conduct of that kind is lawful only within the painted lines."
+  },
+  {
+   "id": "pa.correct.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_kill",
+    "after_caller"
+   ],
+   "text": "A small correction, Joseph: within the arena that is recorded as an operational loss, not an offence. Outside, it would be both."
+  },
+  {
+   "id": "pa.correct.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "big_hit",
+    "after_caller"
+   ],
+   "text": "Well described, Joseph. Viewers should be aware that describing a vehicle as stolen property is a reportable statement."
+  },
+  {
+   "id": "pa.correct.05",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "momentum",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph, although the Syndicate prefers the word reallocation."
+  },
+  {
+   "id": "pa.correct.06",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "control",
+    "after_caller"
+   ],
+   "text": "Quite so, Joseph. Holding ground is permitted here and nowhere else in the district."
+  },
+  {
+   "id": "pa.correct.07",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "kill",
+    "upset",
+    "after_caller"
+   ],
+   "text": "What a moment, Joseph. I'm told the result has already been entered, so there's no need for anyone at home to contest it."
+  },
+  {
+   "id": "pa.correct.08",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "friendly_fire",
+    "after_caller"
+   ],
+   "text": "Thank you, Joseph. Officials remind participants that striking one's own crew is discouraged, and is not itself an offence."
+  },
+  {
+   "id": "pa.correct.09",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "result",
+    "after_caller"
+   ],
+   "text": "Beautifully called, Joseph. The losing crews' families have been notified by the usual channel."
+  },
+  {
+   "id": "pa.correct.10",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "contact",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Any viewer wishing to report the language used in that call may do so at the concourse desk."
+  },
+  {
+   "id": "pa.correct.11",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "hazard_kill",
+    "after_caller"
+   ],
+   "text": "Correct, Joseph, though I'd gently note the pits are a safety feature."
+  },
+  {
+   "id": "pa.correct.12",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "squad_wiped",
+    "after_caller"
+   ],
+   "text": "Yes, Joseph. For accuracy, the crews are not lost. Their locations are known precisely."
+  },
+  {
+   "id": "color.formation.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "They've gone to {formation}. That tells you what they expect to happen next."
+  },
+  {
+   "id": "color.formation.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation}. Wide frontage, everybody can shoot, nobody's covering anybody."
+  },
+  {
+   "id": "color.formation.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "Watch this: {formation}. Somebody in that crew has done this before."
+  },
+  {
+   "id": "color.formation.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "That's {formation}, and it's the right call for this ground. Probably."
+  },
+  {
+   "id": "color.formation.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation} is what you use when you don't know where they are yet."
+  },
+  {
+   "id": "color.formation.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "They're forming {formation}. Good. Now hold it for more than nine seconds."
+  },
+  {
+   "id": "color.formation.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation}. I've driven that. You can't see anything from the back of it."
+  },
+  {
+   "id": "color.formation.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "Look at the shape. {formation}. Whoever's leading that element is thinking."
+  },
+  {
+   "id": "color.formation.trail.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "The reason you pick {formation} there is the sightlines, and the way the... hm. It's situational."
+  },
+  {
+   "id": "color.formation.flat.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation"
+   ],
+   "text": "{formation} keeps the element alive longer. Not the point man. The element."
+  },
+  {
+   "id": "color.drill.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "There it is: {drill}. That's trained, not improvised."
+  },
+  {
+   "id": "color.drill.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "{drill}. They practised that until it stopped being a decision."
+  },
+  {
+   "id": "color.drill.03",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "That's {drill}, and it's about two seconds late."
+  },
+  {
+   "id": "color.drill.04",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "Watch what they do now. {drill}. Textbook."
+  },
+  {
+   "id": "color.drill.05",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "{drill}. Every crew says they'll do it. Almost nobody does it under fire."
+  },
+  {
+   "id": "color.drill.06",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "They're going to {drill}, which is brave, and I want to be clear that brave is not the compliment people think it is."
+  },
+  {
+   "id": "color.drill.07",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "{drill}. The whole element moves or none of it does."
+  },
+  {
+   "id": "color.drill.08",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill"
+   ],
+   "text": "And that's {drill}. I can tell you exactly how that ends, but I'd rather you watched."
+  },
+  {
+   "id": "caller.formation.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "text": "Look at that formation! Somebody's got a plan!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.formation.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "text": "They are moving as one unit out there!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.formation.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "formation"
+   ],
+   "text": "Oh, they're up to something! Look at the shape of that!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.drill.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "text": "Something just changed out there! They're all moving at once!",
+   "intensity": 2
+  },
+  {
+   "id": "caller.drill.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill"
+   ],
+   "text": "Here comes the drill! This is what they train for!",
+   "intensity": 2
+  },
+  {
+   "id": "pa.correct.13",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "drill",
+    "after_caller"
+   ],
+   "text": "That's right, Joseph. Coordinated maneuver of this kind requires a permit outside the arena, which tonight's crews do not hold."
+  },
+  {
+   "id": "pa.correct.14",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "formation",
+    "after_caller"
+   ],
+   "text": "Quite so, Joseph. Viewers should note that formation driving on public roads remains an offence."
+  },
+  {
+   "id": "color.formation.column.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_column"
+   ],
+   "text": "A column sees everything and shoots almost nothing. Eight seconds before they hurt anybody. A wedge does it in under four."
+  },
+  {
+   "id": "color.formation.column.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_column"
+   ],
+   "text": "Column's for getting somewhere, not for arriving. If they meet anything now, only the front vehicle has a shot."
+  },
+  {
+   "id": "color.formation.line.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_line"
+   ],
+   "text": "Line abreast covers less than half the circle. That's the trade: everything forward, nothing behind."
+  },
+  {
+   "id": "color.drill.ambush.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other."
+  },
+  {
+   "id": "color.drill.ambush.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there."
+  },
+  {
+   "id": "caller.drill.ambush.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "They're turning into it! They're driving straight at them!",
+   "intensity": 3
+  },
+  {
+   "id": "caller.drill.ambush.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "Oh, they're going right back at them! Straight into the guns!",
+   "intensity": 3
+  },
+  {
+   "id": "color.technique.bound.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_bounding_overwatch"
+   ],
+   "text": "Bounding. Half of them move, half of them watch, and then they swap. Nobody is ever all moving at once."
+  },
+  {
+   "id": "color.technique.bound.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_bounding_overwatch"
+   ],
+   "text": "Watch the back half there. They don't roll until the front half is set. That's the whole idea."
+  },
+  {
+   "id": "color.technique.over.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_traveling_overwatch"
+   ],
+   "text": "Traveling overwatch. Moving, but with somebody always looking the wrong way on purpose."
+  },
+  {
+   "id": "color.technique.trav.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "technique_traveling"
+   ],
+   "text": "Just traveling. No overwatch, no bounding. They're getting somewhere and hoping."
+  },
+  {
+   "id": "color.formation.herringbone.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_herringbone"
+   ],
+   "text": "Herringbone on the halt. Guns out both ways. Stopping in the column you drove in is how you lose a third of an element."
+  },
+  {
+   "id": "color.teach.bunching.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody."
+  },
+  {
+   "id": "color.teach.circling.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "any"
+   ],
+   "text": "Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming."
   }
  ]
 }

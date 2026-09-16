@@ -1,35 +1,37 @@
 TRANSCRIPT: blowout (director seed 2)
 the Scrapyard | green: tank, tank, tank, scout | rust: scout, scout, ifv, artillery, artillery
-result: green by elimination at 0:54.0
+result: green by elimination at 1:14.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
 0:00.0   CALLER   Here we go! The building is shaking and we have not even started!
 0:04.5   PA       Welcome, everyone, to the Scrapyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.
-0:14.7   CALLER   Green fields the Condemned tonight. Prison steel, welded shut, and driving for their freedom!
-0:19.7   PA       Tonight's—
+0:14.7   VETERAN  The Syndicate came to hold ground. That army doesn't chase anybody.
 0:20.0   ── first contact: rust scout fires on a tank
-0:20.2   CALLER   And we have contact! Rust opens fire!
-0:21.8   ── friendly fire: green tank hits its own tank
-0:23.5   CALLER   Oh, that's their own! Green hits its own tank!
-0:26.0   ── green tank destroys rust ifv
-0:26.9   CALLER   Green draws first blood, and this crowd is on its feet!
-0:31.4   VETERAN  Rust is bleeding and doesn't know it yet.
-0:33.5   ── close call: rust artillery at 14% hull
-0:35.7   CALLER   Look at that artillery! Smoking, burning, and still going!
-0:39.2   VETERAN  Hull like that, every bump hurts. They need—
-0:43.0   ── green tank destroys rust artillery
-0:43.0   CALLER   Oh! Look at this!
-0:44.8   CALLER   Are you kidding me? The tank takes out the artillery!
-0:46.8   ── green tank destroys rust scout
-0:48.4   CALLER   Another one for Green! This is a clinic!
-0:51.2   ── green tank destroys rust artillery
-0:51.2   ── rust squad Battery wiped out
-0:51.4   CALLER   They got another one! Oh my goodness!
-0:54.0   ── green tank destroys rust scout
-0:54.0   ── rust squad Swarm wiped out
-0:54.0   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
-0:54.1   CALLER   And that's it! That's the last one!
-0:56.8   CALLER   It's all over! Green wins it!
-0:59.2   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
-1:05.6   PA       Green is tonight's winner. Ticket holders may remain seated during the recovery operation.
+0:20.0   CALLER   The scout finds them first! That's the job, and the Condemned are doing it!
+0:24.9   VETERAN  First shot isn't—
+0:26.2   ── green tank destroys rust ifv
+0:26.3   CALLER   The tank round lands, and the IFV just comes apart!
+0:29.9   PA       The Syndicate congratulates its engineering team on another successful field test.
+0:32.0   ── close call: rust scout at 4% hull
+0:34.9   CALLER   The Condemned scout is hanging on by a thread!
+0:38.1   VETERAN  Turrets turn slower—
+0:39.5   ── green tank destroys rust scout
+0:39.5   CALLER   Whoa! Look at this!
+0:41.3   CALLER   Nobody saw that coming! The tank wins that one!
+0:43.8   ── green tank destroys rust artillery
+0:44.6   CALLER   That's three in a row for the Syndicate! They cannot miss!
+0:49.1   CALLER   Here comes the drill! This is what they train for!
+0:52.7   VETERAN  Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody.
+1:07.0   CALLER   The Syndicate land a heavy one!
+1:09.3   PA       Well described, Joseph. Viewers should be aware that describing a vehicle as—
+1:11.0   ── close call: rust scout at 10% hull
+1:14.2   ── green scout destroys rust artillery
+1:14.2   ── rust squad Battery wiped out
+1:14.2   ── green tank destroys rust scout
+1:14.2   ── rust squad Swarm wiped out
+1:14.2   ── MATCH OVER: green wins by elimination (4 green, 0 rust left)
+1:14.3   VETERAN  Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
+1:22.2   CALLER   That's the match! The Syndicate are your winner tonight!
+1:25.5   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
+1:33.1   PA       The Syndicate win tonight's match. Thank you for joining us. Please exit by section, and have your papers ready.

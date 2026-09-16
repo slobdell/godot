@@ -10,7 +10,7 @@ from `main`.**_
 ## Current state (main)
 
 - **Verified:** `make remote T=check` green on builder0 (656 tests, every smoke test, the announcer's Python tests).
-  Sim baseline `glibc-2.43 10e95d54f5dd3efe` (moved by combat's suppression, then ai's think LOD and decisions) (builder0 is canonical; record with `make remote T=sim-baseline-record`).
+  Sim baseline `glibc-2.43 4bb717e89cb43117` (round 4: suppression, ai's decisions, combat's corrections) (builder0 is canonical; record with `make remote T=sim-baseline-record`).
 - **Play it:** `make skirmish` is the round-3 game: StarCraft-style control (click, box, ctrl+1–9 groups, right-click
   orders, attack-move, shift-queued waypoints, follow, stop, hold), slow devastating tank shells, 25 mm bursts, machine-gun
   streams, weak spots, wheeled vehicles with turning circles, brains that strafe, dodge, flank and use cover, a CPU
@@ -58,6 +58,16 @@ order combat → doctrine → ai → control → audio, with `make remote T=chec
    questions in `streams/archive/round2/` (army unlock pacing, tier names, challenges as a tutorial).
 
 ## Open questions and follow-ups (not scheduled)
+
+- **The renderer runs out of per-instance shader uniforms at ~30 a side** (found independently by combat and control,
+  2026-09-16). A full-scale battle logs hundreds of `Too many instances using shader instance variables … Maximum items
+  supported by this hardware is: 4096`, then `instance_buffer_pos.has(p_instance)` failures. Raising
+  `rendering/limits/global_shader_variables/buffer_size` won't help: 4096 is the hardware cap. The fix is fewer
+  per-instance uniforms in the vehicle materials — bake per-unit colour into vertex colours, or share a material per
+  team instead of per instance. Users: `game/theme/cyberpunk/{unit_skin,weapon_cannon,dozer_part}.gd` and
+  `game/theme/fx/shaders/{unit_body,vehicle_glow,shield}.gdshader`. **Nobody owned `game/theme/**` in round 4**, so this
+  is unassigned and blocks the "30 a side" goal from looking right. `make control-scale-shots` counts and attributes
+  the errors rather than swallowing them.
 
 - **Factions as gameplay.** The art exists (15 vehicles in `game/theme/factions/`, gallery-only, excluded from the web
   export). Playable factions need catalog entries, per-faction mechanics, and balance. The lead's picks settled the

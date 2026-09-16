@@ -16,12 +16,22 @@ extends RefCounted
 ## from somewhere else (Element._adopt), so a drill can never hold a unit against its commander.
 ##
 ## Priority, highest first (a near ambush interrupts everything: it is immediate action, not a decision):
-##   near_ambush -> assault_through -> break_contact -> far_ambush -> react_to_contact -> support_by_fire -> herringbone
+##   near_ambush -> assault_through -> break_contact -> encircle -> bait -> far_ambush -> react_to_contact
+##   -> support_by_fire -> herringbone
+##
+## Two of these are not in any manual, because not every faction has read one. `encircle` (a pack fanning
+## around a target and circling it, so the damage lands on many vehicles instead of one) and `bait` (a fast
+## vehicle drawing fire back onto the rest) belong to the road gangs, and only exist for a doctrine whose
+## table switches them on. The lead (2026-09-16): *"the street gangs ... should be noticeably less military
+## disciplined ... they might use tactics of spreading out their formations wide for better survivability or
+## do circular swarms ... I suspect the street gang would also be more likely to create tactics of having a
+## vehicle draw fire to try and lead the opponents into an ambush."*
 
 const NAMES := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire",
-		"break_contact", "herringbone"]
+		"break_contact", "herringbone", "encircle", "bait"]
 ## Drills that mean "we are fighting this contact": react to contact does not restart while one of them runs.
-const CONTACT_DRILLS := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "break_contact"]
+const CONTACT_DRILLS := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "break_contact",
+		"encircle", "bait"]
 ## A contact first seen within this many ticks counts as sudden (the ambush is sprung, not walked into).
 const SUDDEN_TICKS := 45
 ## How long the element turns into a near ambush before the assault carries it through (ticks).
@@ -54,9 +64,17 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 3. We are losing and can still get out: break contact by bounds.
 	if table.runs_drill("break_contact") and should_break_contact(situation, state, table):
 		return _drill("break_contact", "outgunned here: break contact and bound back", nearest_contact(situation))
-	# 4. Keep running what we have.
+	# 4. Keep running what we have. (The gang drills below are checked only when nothing is running: they
+	# are alternatives to each other, and an element that keeps swapping between them does neither.)
 	if current != "":
 		return _drill(current, String(state.get("drill_why", "")), _remembered(state, situation))
+	# 4b. A pack doesn't line up and trade: it gets around them and keeps moving (gangs).
+	if table.runs_drill("encircle") and should_encircle(situation, table):
+		return _drill("encircle", "get around them and keep circling: spread the damage",
+				nearest_visible(situation))
+	# 4c. Or sends one vehicle to pull them onto the rest (gangs).
+	if table.runs_drill("bait") and should_bait(situation, table):
+		return _drill("bait", "one runs at them and leads them back onto the pack", nearest_visible(situation))
 	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Actions on
 	# contact happen ONCE per contact: while the element is already fighting this one, it does not go back to
 	# the start of the drill (that flip-flop cost the far-ambush scenario its maneuver, 2026-09-16).
@@ -107,6 +125,54 @@ static func should_break_contact(situation: Dictionary, state: Dictionary, table
 	if ratio >= trigger:
 		return false
 	return _nearest_distance(situation) > table.drill_number("disengage_m")
+
+
+## Encircle: enough vehicles to make a ring worth having, an enemy we can see and reach, and nobody so close
+## that turning side-on to them is suicide. A pack of two is not a ring, it is two targets.
+static func should_encircle(situation: Dictionary, table: DoctrineTable) -> bool:
+	if (situation.get("members", []) as Array).size() < int(table.drill_number("encircle_min_units")):
+		return false
+	var contact := nearest_visible(situation)
+	if contact.is_empty():
+		return false
+	var distance := float(contact["distance"])
+	return distance <= table.drill_number("encircle_m") and distance >= table.drill_number("encircle_min_m")
+
+
+## Bait: we can see them, they are far enough away to be led, they are the kind of enemy that FOLLOWS, and we
+## have someone fast enough to do the leading and live. One vehicle draws; the rest wait off the line it
+## comes back along.
+##
+## The "follows" part is the whole drill. Against a dug-in gun that never moves, a lure is not a tactic: the
+## bait drives into range, dies, and the pack sits 55 m back watching (measured, 2026-09-16 — the first
+## version of this drill lost three of four vehicles to two stationary guns without landing a shot).
+static func should_bait(situation: Dictionary, table: DoctrineTable) -> bool:
+	if (situation.get("members", []) as Array).size() < 2:
+		return false
+	var contact := nearest_visible(situation)
+	if contact.is_empty():
+		return false
+	var distance := float(contact["distance"])
+	if distance < table.drill_number("bait_min_m") or distance > table.drill_number("bait_m"):
+		return false
+	if float(contact.get("speed", 0.0)) < table.drill_number("bait_chaser_mps"):
+		return false
+	return not bait_of(situation).is_empty()
+
+
+## Who draws the fire: the fastest vehicle in the element, and never the leader. Speed is what makes the
+## difference between a lure and a casualty.
+static func bait_of(situation: Dictionary) -> Dictionary:
+	var leader := String(situation.get("leader", ""))
+	var best := {}
+	for member: Dictionary in situation.get("members", []):
+		if String(member["name"]) == leader:
+			continue
+		if best.is_empty() or float(member["speed"]) > float(best["speed"]) + 0.01 \
+				or (is_equal_approx(float(member["speed"]), float(best["speed"]))
+						and String(member["name"]) < String(best["name"])):
+			best = member
+	return best
 
 
 ## The element is standing where it was told to stand (or has no destination left to reach).
@@ -168,6 +234,19 @@ static func _finished(drill: String, situation: Dictionary, state: Dictionary, t
 			return String((state.get("task", {}) as Dictionary).get("verb", "")) != "support_by_fire"
 		"herringbone":
 			return String(situation.get("threat", "none")) == "contact" or not is_halted(situation, state)
+		"encircle":
+			# Over when there is nothing left to circle, or they have closed to knife range (then it is an
+			# ambush and the pack charges).
+			return not _has_visible(situation) or distance < table.drill_number("encircle_min_m")
+		"bait":
+			# Over when they take it — the near-ambush and assault drills carry it from there — when the
+			# vehicle doing the drawing is gone, or when whatever we were luring turns out not to be
+			# following (a gun line will sit there all day while the bait burns).
+			if not _has_visible(situation) or distance <= table.drill_number("bait_min_m") \
+					or bait_of(situation).is_empty():
+				return true
+			return elapsed >= table.drill_ticks("bait_patience_ticks") \
+					and float(nearest_visible(situation).get("speed", 0.0)) < table.drill_number("bait_chaser_mps")
 	return true
 
 

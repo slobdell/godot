@@ -186,6 +186,62 @@ to see that their element is refusing a flank because contact is likely.
 
 ## Faction doctrines (X6)
 
+**The gangs are not a platoon (the lead, 2026-09-16).** Reviewing the doctrine page, the lead said the
+factions read too alike: *"the street gangs for example should be noticeably less military disciplined and
+intuitively I'm thinking they might use tactics of spreading out their formations wide for better
+survivability or do circular swarms ... I suspect the street gang would also be more likely to create tactics
+of having a vehicle draw fire to try and lead the opponents into an ambush."* That was fair: the tables
+differed in *numbers* (spacing, legs, trigger distances) while every faction drew from the same eight
+military formations. Three things came out of it, and one of them failed.
+
+| Added | What it is | Verdict |
+|---|---|---|
+| **`swarm` shape** | Wide, ragged, staggered fore and aft: no line to shoot along, nearly twice a line's frontage. Not a formation any manual would recognise, which is the point | **Kept** — it is the gangs' character, and it costs no damage output (0.185 enemy survival against standard's 0.187) |
+| **`bait` drill** | The fastest non-leader vehicle runs at them and leads them back over the pack, which waits off the line it returns along | **Kept** — against an enemy that chases: 0.58 of the pack alive against 0.43 without it, three survivors against two (one seed) |
+| **`encircle` drill** | The pack rings the target and circles it, to spread incoming fire | **Switched off** — measured strictly worse (below) |
+
+### Why encircle is off, and what it cost to find out
+
+Same four vehicles, same enemy, same seed, only the doctrine differing:
+
+| Doctrine | Pack survived | Enemy left | Arcs covered |
+|---|---|---|---|
+| gangs, swarm + encircle | 0.47 | 0.66 | 7 of 8 |
+| gangs, **encircle off** | 0.47 | **0.19** | 5 of 8 |
+| standard doctrine | **0.62** | 0.19 | 7 of 8 |
+
+Turning encircle off left survival untouched and **tripled the damage the pack dealt**. Circling does not
+protect them; it stops them shooting. And the coverage it was supposed to buy was already there without it —
+the brains flank on their own, so a standard element covered the same seven arcs by simply fighting.
+
+Two fixes were tried before giving up on it: slowing the ring from a turn every 1.5 s to every 4 s (a new
+goal four times a minute throws away what a brain was doing — the round-3 lesson), and leaving any vehicle
+already in range to fight instead of driving it to a place on the ring. Survival improved (0.35 → 0.47); the
+damage loss did not. **The drill stays in the engine behind its table flag, with these numbers, so the
+tactics-discovery harness or a suppression-era re-measure can revisit it — but no shipped table chooses it.**
+
+The deeper lesson is the same one bounding overwatch taught: *doctrine that drives vehicles around fights the
+brains that are already fighting well*. A drill earns its place by deciding **where an element goes and what
+it points at**, not by micromanaging vehicles that have their own tactics.
+
+### What the swarm costs today
+
+The gangs' loose shape survives worse than military shapes in the one scenario measured (0.47 against 0.62)
+while dealing the same damage. That is consistent with everything else here: **dispersion only pays against
+weapons that punish bunching**, and splash does not yet (0.91 spread versus 0.93 bunched) and suppression
+barely does. The shape is kept because it is the faction's character and the mechanic that should reward it
+is being built; it goes back on the bench the day splash and suppression bite and it still loses.
+
+### Who stands where inside a shape
+
+The lead also asked whether formations account for composition: *"heavy armor on the outside of a column,
+light armor on the inside."* They didn't; slots were handed out front-to-back by role. Now every shape scores
+each slot's **exposure** — how far out of the middle it sits, and how far toward the front — and the
+best-protected vehicle takes the most exposed one (`ElementPlan.by_exposure`). Artillery and Lancers are
+pushed inboard whatever their armour says: on paper artillery out-armours a scout, but it is the thing the
+element is out there to keep alive, and a gun being shot at is not shooting. The leader keeps slot 0, because
+a leader that cannot see its element cannot lead it.
+
 Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 
 | Faction | How they move | How they react |
@@ -194,6 +250,69 @@ Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 | **Road gangs** | Vee at every threat level, always traveling, widest spacing (18 m), longest legs: a pack that never stops to cover itself | Charge from 55 m, flank 60 m wide, react in 0.7 s, and **no break-contact drill at all** |
 | **The Law** | Bounding overwatch whenever contact is possible or worse, longest bounds with the widest supporting range | Deliberate: react for 1.5 s, flank 48 m, withdraw at 0.6 — the professionals leave a losing fight |
 | **The Syndicate** | Echelon and line, traveling overwatch, stand-off ranges (110 m supporting range) | Only charge an ambush inside 22 m; `break_contact_ratio` 0.75 and a 115 m break distance: they reposition constantly |
+
+## Publishing decisions: doctrine talks to the announcer (the lead, 2026-09-16)
+
+> *"Rather than cluttering the UI, we can use that information to generate scripted statements from the
+> announcers about how a squad is lining up in whatever formation for whatever reason. Presumably we at
+> least want the structured data publishable."*
+
+Every decision an element takes is published as **structured data in the K5 event shape**, on
+`Elements.element_reported(event)`. Doctrine publishes values; the words belong to audio's line library. The
+announcer's `MatchEventAdapter` already works this way for everything else — it only listens to signals and
+never writes to the simulation — so wiring is one `connect`.
+
+**Two event types.** Both carry `team`, `element`, `size` (vehicles alive) and `reason` (the doctrine table's
+own `why`, so the booth can quote the element's logic instead of inventing one):
+
+| Type | When | Extra fields |
+|---|---|---|
+| `element_formation` | The element changed shape or movement technique, took its first task, or came off a drill | `formation`, `technique`, `changed` (which of task/formation/technique moved) |
+| `element_drill` | A battle drill **started** | `drill`, `formation`, `distance` (how far off the trigger was), `target` (what set it off) |
+
+`tick` and `t` are not included: whoever puts an event into a timeline stamps them, exactly as
+`MatchEventAdapter` does today. `make tactics-parity` writes a real one to
+`build/tactics/element_events.jsonl` — 36 events from a 45 s, five-element match — so lines can be written
+against a timeline instead of a guess:
+
+```json
+{"changed":["task","formation","technique"],"element":"Eyes","formation":"line","technique":"traveling_overwatch",
+ "reason":"screening: a line watches the widest frontage","size":1,"t":1.0,"team":"green","type":"element_formation"}
+{"drill":"break_contact","element":"Battery","formation":"column","distance":118.7,"target":"Rust_Anvil_1",
+ "reason":"outgunned here: break contact and bound back","size":1,"t":5.3,"team":"green","type":"element_drill"}
+```
+
+**What the booth can actually say.** The announcer records every word in advance — there is no runtime
+speech — so a *spoken* line can only key on the **enumerated** fields, and `reason` is subtitle-only (audio,
+2026-09-16). The sets a shipped match can produce, which is the recording matrix:
+
+| Field | Values a shipped table can emit |
+|---|---|
+| `formation` | `wedge`, `column`, `line`, `vee`, `echelon_right`, `herringbone`, `coil`, `swarm` (8) |
+| `technique` | `traveling`, `traveling_overwatch`, `bounding_overwatch` (3) |
+| `drill` | `react_to_contact`, `near_ambush`, `assault_through`, `far_ambush`, `support_by_fire`, `break_contact`, `herringbone`, `bait` (8) |
+
+`ring` and `encircle` exist in the engine but **no shipped table selects them** (see *Why encircle is off*),
+so nothing should be recorded for them; `echelon_left` is in the vocabulary but unused today. **These sets are FROZEN** by agreement with audio (2026-09-16):
+`test_every_value_the_booth_has_to_speak_is_from_a_closed_set` asserts them exactly, and adding a shape or a
+drill to a shipped table fails the build with an explanation. That is deliberate — the cost is invisible from
+this side (each value is 8-16 recordings across the lines that name it) and the failure is silent (a value
+with no clip doesn't error, it just makes those lines ineligible and the booth says something blander). To
+add one: ask audio, then change the frozen list in the same commit as the table.
+
+**The publisher is found by group, not by class.** `Elements` joins the `elements` group
+(`Elements.GROUP`), because a listener on another branch cannot name a class that doesn't exist there yet.
+
+**What doctrine filters out, so the booth doesn't have to.** An announcer that repeats itself is the exact
+complaint the lead made about the PA, so the noise is cut where it is generated:
+- an element with **no task** says nothing (before its first order it is parked, not "halting in cover");
+- a **reason changing on its own** is not a call (the same wedge for a slightly different reason);
+- a **leader change** is the HUD's business, not the booth's;
+- the **same call is not repeated within 10 s** per element (`ElementReport.COOLDOWN_TICKS`), which is what
+  stops an element that halts, moves and halts again from announcing the same herringbone three times;
+- `element_drill` always means a drill **started**; coming off one reports as a shape change.
+
+That took the sample from 43 events to 36 with nothing interesting lost.
 
 ## The code
 
@@ -206,7 +325,8 @@ Same engine, different tables (`doctrines/doctrine_<faction>.json`).
 | `game/tactics/drills.gd` | Drill triggers, aborts and timeouts. Pure |
 | `game/tactics/element_plan.gd` | The leader's decision: formation + technique + drill → one order per vehicle. Pure |
 | `game/tactics/element.gd` | One element: roster, leader succession, task, plan state, issuing K1 orders, `state()` for the HUD |
-| `game/tactics/elements.gd` | All elements of a match: form/of/disband, the update cadence, `element_changed` |
+| `game/tactics/elements.gd` | All elements of a match: form/of/disband, the update cadence, `element_changed`, `element_reported` |
+| `game/tactics/element_report.gd` | A decision as a K5-shaped event for the announcer, and what is not worth saying |
 | `game/tactics/element_commander.gd` | A CPU commander that assigns *tasks* to elements (parity demo, X5) |
 | `doctrines/doctrine_*.json` | The tables: standard plus one per faction |
 
@@ -320,6 +440,28 @@ What that means for the drills, in order:
    around "shut it down, then walk in" is where support by fire either pays or visibly doesn't. The Law's
    table already bounds at every threat level; if suppression works, that table should stop being the
    cautious one and start being the effective one.
+
+### Which of these the booth can quote (audio, 2026-09-16)
+
+Audio takes measured facts as the Veteran's material — he is the only one in the booth allowed to be precise,
+and a number a player can act on beats one that merely sounds authoritative. Recording is expensive and
+permanent, so each measurement is marked with whether it is expected to **hold**:
+
+| Measurement | Quote it? | Why |
+|---|---|---|
+| A column watches the whole circle, a line 0.42 of it | **Stable** | Pure geometry: it follows from the shapes, not from any tuning |
+| A column takes ~8 s to hurt anything; a wedge 3.6 s | **Stable** | Frontage and how many guns can bear — mechanics that exist today |
+| Halting in a herringbone keeps 0.93 against 0.69 parked | **Stable** | Armour facing, which is real and measured |
+| Bunching to 3 m shoots later (7.4 s) as well as dying more | **Stable** on the timing | The delay is frontage; the survival half is not (see below) |
+| Circling an enemy deals a third of the damage | **Stable** | It is about interrupting brains, not about a pending mechanic |
+| Bounding overwatch costs survival (0.60 vs 0.75) | **Will move** | Suppression is half-built; nothing deliberately suppresses yet |
+| Dispersion does nothing against splash | **Will move** | Splash and suppression are being changed by combat |
+| The gangs' swarm survives worse than military shapes | **Will move** | Same reason: it is waiting on the mechanic that rewards spreading |
+
+**The standing arrangement:** a measurement that surprises us goes to audio, marked stable or not; only the
+stable ones are worth recording, because a recorded line outlives the number that justified it. If a
+measurement ever says "the booth should *always* mention this", that is a request for a tag priority, not for
+more lines — volume doesn't get a line past the priority queue.
 
 ### Drills (seed per scenario, `make tactics-drills`)
 

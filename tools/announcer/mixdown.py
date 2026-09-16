@@ -30,22 +30,22 @@ LENGTH_TOLERANCE_S = 0.1
 
 
 def cue_clips(cue: dict, manifest: dict) -> list[str]:
-    """The clip ids to play for a cue, in order; raises KeyError naming what's missing."""
+    """The clip to play for a cue — one whole sentence. A list of one, so the schedule below is unchanged.
+
+    Until round 4 this returned carrier segments and filler words to be joined at playback. That is gone: a word
+    lifted out of one recording carries the wrong intonation into another, and it was audible
+    (_agents/streams/audio.md, *Why stitching failed*)."""
     line = manifest["lines"][cue["line_id"]]
-    clips = []
-    for part in line["parts"]:
-        if "clip" in part:
-            clips.append(part["clip"])
-            continue
-        slot = part["slot"]
-        # The director records slots by the name the line uses ({team_s}); older data may carry the base name.
-        raw = cue["slots"][slot] if slot in cue["slots"] else cue["slots"][slot.removesuffix("_s")]
-        value = str(int(raw)) if part["vocab"] == "number" else str(raw)
-        clips.append(recording_plan.filler_clip(line["speaker"], part["vocab"], value, part["intonation"]))
-    for clip in clips:
-        if clip not in manifest["clips"]:
-            raise KeyError("%s needs clip %s, which the manifest doesn't have" % (cue["line_id"], clip))
-    return clips
+    key = cue.get("variant_key")
+    if key is None:
+        key = recording_plan.variant_key(cue.get("slots", {}), line.get("bases", []))
+    clip = line.get("variants", {}).get(key)
+    if clip is None:
+        raise KeyError("%s has no recording for %r (have %s)"
+                       % (cue["line_id"], key, ", ".join(sorted(line.get("variants", {}))) or "none"))
+    if clip not in manifest["clips"]:
+        raise KeyError("%s needs clip %s, which the manifest doesn't have" % (cue["line_id"], clip))
+    return [clip]
 
 
 def schedule(match: dict, manifest: dict) -> list[dict]:
@@ -133,7 +133,8 @@ def needed_lines(matches: list[Path]) -> list[str]:
 
 
 def missing_lines(manifest_path: Path, matches: list[Path]) -> list[str]:
-    """Lines the matches use that the manifest can't play yet (no line entry, or a clip of it or its fillers missing)."""
+    """Lines the matches use that the manifest can't play yet: no entry at all, or no recording of the exact
+    realization a cue asks for (a faction and unit combination that was never ordered)."""
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {"lines": {}, "clips": {}}
     missing = set()
     for path in matches:

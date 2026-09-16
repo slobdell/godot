@@ -83,17 +83,19 @@ func test_recorded_clips_set_how_long_a_line_takes() -> void:
 	var path := ProjectSettings.globalize_path("res://build/test_announcer_manifest.json")
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var file := FileAccess.open(path, FileAccess.WRITE)
-	file.store_string(JSON.stringify({"lines": {"k": {"speaker": "caller", "parts": [
-			{"slot": "team", "vocab": "team", "intonation": "mid"}, {"clip": "k#0"},
-			{"slot": "count", "vocab": "number", "intonation": "final"}]}},
-			"clips": {"fill.caller.team.rust.mid": {"duration_s": 0.4}, "k#0": {"duration_s": 0.7},
-			"fill.caller.number.2.final": {"duration_s": 0.5}}}))
+	# One recording per realization: the duration is that clip's, with nothing to add up.
+	file.store_string(JSON.stringify({"lines": {"k": {"speaker": "caller",
+			"variants": {"2.rust": "k@2.rust"}}},
+			"clips": {"k@2.rust": {"duration_s": 1.6}}}))
 	file.close()
 	assert_true(library.load_manifest(path), "the manifest loads")
-	assert_near(library.line_seconds(line, {"team": "rust", "count": 2.0}, "Rust is down to two!"), 1.66, 0.001,
-			"the clips it will play, plus the gaps between them")
+	assert_eq(AnnouncerLibrary.variant_key(line["text"], {"team": "rust", "count": 2}), "2.rust",
+			"the key is the slot values in sorted base-slot order, which recording_plan.variant_key must match")
+	assert_near(library.line_seconds(line, {"team": "rust", "count": 2.0}, "Rust is down to two!"), 1.6, 0.001,
+			"the length of the one clip it will play")
 	assert_near(library.line_seconds(line, {"team": "green", "count": 2}, "Green is down to two!"),
-			library.estimate_seconds("caller", "Green is down to two!"), 0.001, "a filler not recorded yet: estimated")
+			library.estimate_seconds("caller", "Green is down to two!"), 0.001,
+			"a realization not recorded yet: estimated")
 	DirAccess.remove_absolute(path)
 
 
@@ -240,7 +242,12 @@ func test_every_fixture_reads_as_a_broadcast() -> void:
 			var director := run(library, events, seed_value)
 			var label := "%s seed %d" % [name, seed_value]
 			var cues := director.cues
-			assert_true(cues.size() >= 12, "%s: the booth talks (%d lines)" % [label, cues.size()])
+			# Scaled to the match, not a flat number: a 33-second blowout legitimately gets fewer calls than a
+			# two-and-a-half-minute control swing, and a flat floor was really asserting how long the fixtures are.
+			var duration := float(events[-1].get("t", 60.0))
+			var wanted := maxi(8, int(duration / 10.0))
+			assert_true(cues.size() >= wanted, "%s: the booth talks (%d lines in %.0f s, wanted %d)"
+					% [label, cues.size(), duration, wanted])
 			assert_true(float(cues[0]["t"]) < 1.0 and cues[0]["moment"] == "intro", "%s: it opens with the intro" % label)
 			assert_eq(cues[-1]["moment"], "outro", "%s: it closes with the sign-off" % label)
 			assert_true(cues.any(func(cue: Dictionary) -> bool: return cue["moment"] == "result"), "%s: the result is called" % label)

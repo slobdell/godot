@@ -148,3 +148,259 @@ spawn jitter, and regenerated `arenas/*.json` spawn lists.
 2. **The Lancer sits in two rosters.** Resolved the way *Factions* asks for ("same roles, wildly different
    trade-offs"): the Condemned keep today's Lancer, and the Syndicate gets its own lancer-role vehicle with its own
    numbers. Say if you wanted one of them to lose it instead.
+
+### X2 done (2026-09-16): suppression measured, and it needs ai and doctrine to pay off
+
+Every number and how to reproduce it: [balance.md](../balance.md) *X2: does suppression actually bite?*. The
+mechanics do what the lead asked for, in isolation:
+
+- one machine gun streaming across a lane makes it a beaten zone; three cost a crossing IFV **4.5× the damage** and
+  **pin** it;
+- one crew settles a tank at **0.42** suppression, two at **0.82** (pin at 0.60): concentrating fire works;
+- a pinned tank hits **5/13** where a calm one hits **13/13**, and takes **208 ticks** instead of 105 to swing its
+  turret 90° — which is exactly why "pin, then flank" is a plan;
+- a machine gun lays down **1.0 suppression/s** against a cannon's 0.24, while still doing ×0.05 damage through a
+  tank's front: volume, not damage.
+
+**But it changes no match outcomes yet.** Swarm vs Armor over 16 seeds is 16-0 to Armor with suppression and 16-0
+without; mean suppression per living unit is **0.03** and units are pinned **0.7%** of the time. The scouts that carry
+the machine guns spend **84% of their time on SPOT**, and nothing in the game deliberately puts fire on a lane. The
+only measurable difference is pace: fights run 12% longer.
+
+I deliberately did **not** tune suppression up to force an effect: that would distort the matchup matrix to
+compensate for unused mechanics. Two fixes for the two streams that own the decisions:
+
+**Requests to other streams (X2)**
+- **ai:** (1) make suppressing a deliberate option — a brain with a volume weapon and a loaded gun should be willing
+  to put fire on a lane or on a pinned target rather than only on what it can kill; (2) score movement with
+  `Match.is_beaten_zone(team, from, to)` / `threat_along(...)` so units stop driving through walls of bullets; (3) a
+  pinned unit is a *worse shooter*, not a worse target — `Tank.is_pinned()` is the cue to flank it.
+- **doctrine:** support-by-fire needs a base of fire that keeps shooting at ground it wants denied, not only at
+  targets. That is what turns the mechanic on.
+- **Both:** `Match.stats` now carries `suppression_samples` / `suppression_total` / `pinned_samples` per team and
+  `tools/match_series.py` prints "suppression (mean per living unit, share pinned)", so you can see whether a change
+  actually produced suppressive fire.
+
+**New measurement targets (mine):** `make suppression-series`, `make suppression-control` (counterbalanced),
+`make faction-match`, `make faction-series`.
+
+### X3 done (2026-09-16): heavies already shield the fragile, and by a lot
+
+No guard buff, as the brief asked: a shell stops at the first hull it meets and armor facing decides the cost.
+Measured (`make remote T="test FILTER=combat_screening"`, numbers in [balance.md](../balance.md) *X3*): four cannon
+shells at a Lancer from 58 m **destroy it** when it stands alone or with its escort 10 m off the line, and cost it
+**nothing at all** when a dozer is on the line — the dozer soaks 405 of its 450 instead. The trade is 2.8 shells to
+kill the screen against 0.8 to kill what it screens, so a heavy in the right place is worth about three and a half
+times its own body in absorbed fire.
+
+Limits worth knowing before a drill trusts a screen: it doesn't stop arcs (a battery kills the Lancer behind it),
+doesn't stop flame cones, only covers its own width, and **a wreck doesn't screen** (its collision is off) — turning
+that around is this stream's stretch item.
+
+**New query for ai and doctrine:** `Match.screen_for(unit, from_point) -> Tank` — the friendly hull blocking the line
+from a threat to `unit` at rounds' flight height, or null. It reports geometry and grants nothing. Use it to check
+whether a fragile unit is covered, or whether a heavy is actually doing its job.
+
+### X4 done (2026-09-16): the other three factions are playable
+
+15 vehicles and 11 weapons, all data, out of one shared mechanics vocabulary — no faction-wide bonus anywhere. The
+army size falls out of the costs, exactly as the lead asked, measured at `Units.BASELINE_BUDGET` (5200):
+
+| Faction | Avg cost | Vehicles a side | What makes it itself |
+|---|---|---|---|
+| Road gangs | 131 | **39** | No shields at all; the best suppressor per second in the game (`twin_mg`, 1.26/s); the biggest hull in the game (War Rig, 3.0 × 5.6 m, 12 m turning circle); a Resupply Tanker that mends hulls within 18 m |
+| The Condemned | 183 | **28** | Round 3's roster, untouched |
+| The Law | 215 | **24** | Sight and suppression: a 125 m scout, a Sonic Emitter at **4.0 suppression/s**, gas rockets at **5.0 a burst** over 14 m with 55 damage |
+| The Syndicate | 340 | **15** | Energy and hover: biggest shields, no ammunition, everything heat-limited; a 420-damage railgun that fires twice then waits; missiles with 0.8 m of scatter *when somebody is looking* |
+
+Two new mechanics were all the code it needed: **hover** (swings to face like tracks, keeps its momentum like wheels
+— a Skimmer through a hard turn travels 22° off its own nose) and **field repair** (`repair_radius_m` /
+`repair_hp_per_second`; a gun truck beside a tanker mends 60 → 110 hp in 10 s, one 50 m away mends nothing).
+Every number and every design call: [balance.md](../balance.md) *X4*.
+
+Things I changed on purpose that others should know about:
+- **`ArmyCatalog.from_game()` now offers the default faction only** (`game/garage/`, a paused stream). Its screens,
+  presets and unlock tiers are written for one roster. Whoever unpauses the garage passes the player's faction in.
+- **Plain `cpu` armies stay Condemned**; a faction only comes from `--green-faction=` / `--rust-faction=`.
+- **The Condemned scout's `good_vs` lost "lancer"** (measured 0% in round 3; game_design.md says the claims must be
+  real). Suppression is the mechanic that could earn it back once ai uses it.
+- **Every rear armor value stays ≤ 2.0**, because "everything hurts from behind" is a rule of the game.
+
+Verified: `make remote T=check` green, 697 tests, **sim baseline unchanged** — nothing here alters the seeded
+Condemned-vs-Condemned match the baseline records.
+
+### X5 done (2026-09-16): the simulation is 30–58% cheaper, and 30 a side now hinges on brain cost
+
+`make remote T="scale-bench TIME=40"` is the ladder (25 / 40 / 60 / 100 a side, with and without brains). It reads
+`speedup` out of `MATCH_RESULT`, so ms/tick = 1000 / (60 × speedup); 60 fps is a 16.7 ms budget for *everything*.
+
+| A side (units) | Sim only, before → after | With brains, before → after |
+|---|---|---|
+| 25 (50) | 4.39 → **3.03 ms** | 12.82 → **10.42 ms** |
+| 40 (80) | 7.94 → **5.05** | 23.81 → **18.52** |
+| 60 (120) | 15.15 → **7.58** | 41.67 → **33.33** |
+| 100 (200) | 33.33 → **13.89** | 83.33 → **55.56** |
+
+Two fixes did it, both in `Match`: `_sorted_tanks()` was re-sorting every tank by name through a GDScript lambda on
+**every call** (a dozen call sites, several per tick) and is now built at most once per tick; and the "idle guns"
+readout was paying a line-of-sight raycast per viewer-enemy pair on every intel pass, for a statistic, and now
+samples every 10th pass. **The sim baseline did not move**, which is the proof neither touched the simulation.
+
+**At the lead's 30 a side (60 units): ~3.9 ms of simulation, ~13 ms with brains.** The simulation fits; the frame
+does not once rendering is added, and the rest is brain cost — ai's stream, whose own target is ≤ 4 ms at 60 units.
+Caveats: builder0 runs up to three agents' jobs at once, and headless excludes rendering entirely.
+
+**Requests / flags from X5**
+- **ai:** at 60 units the brains are ~26 of the 33 ms. `make remote T="scale-bench TIME=40"` gives you a
+  before-and-after on the same ladder.
+- **No stream owns `game/theme/**` this round, so this one is for the orchestrator or the lead.** Screenshotting a
+  31-vs-35 battle, Godot logs `Too many instances using shader instance variables … Maximum items supported by this
+  hardware is: 4096`. Each vehicle's visual slots consume shader instance uniforms and a full-scale battle exhausts
+  the pool. Art/theme problem, not simulation, but it will be visible the moment anyone renders 30 a side.
+- **control:** in `make faction-shots` at 31-vs-35 the nameplates and intents are an unreadable wall of text over the
+  middle of the map. That is your *readability at 30+ a side* item; the screenshots in `build/screenshots/faction-*`
+  are a ready-made before picture.
+
+New targets (mine): `make scale-bench`, `make faction-shots`, `make faction-matrix` (+ `tools/faction_matrix.py`).
+
+### X6 done (2026-09-16): faction vs faction measured; the gangs are the open item
+
+`make remote T="faction-matrix SEEDS=5 TIME=150"` plays every pair at 5200 points, counterbalanced (the same seeds
+from both colours). 60 matches, ~25 min. Full table in [balance.md](../balance.md) *X6*.
+
+**Averaged win rate: Condemned 70%, Law 63%, Syndicate 47%, road gangs 23%.** Match length **90–102 s** at 24–43
+vehicles a side, which is a good length for a full-scale battle.
+
+**The gangs cannot win.** I fixed two real defects and neither moved the number, so I stopped rather than inflate
+their stats:
+1. Their two most numerous vehicles did **2 dps through any armor** (the ×0.05 penetration floor) — 43 decorative
+   vehicles. The Rat Rod now carries game_design.md's **explosive spear** (pen 14, ×0.74 through a dozer front).
+   30% → 40% against the Syndicate, nothing elsewhere.
+2. **`Army.SQUADS` was keyed by role alone**, so the gangs' assault buggies inherited the Condemned scout's
+   "spotters first" directive and sat at standoff. It now takes faction-qualified keys (`"gangs/scout"`). Their SPOT
+   share fell 84% → 34% and they still lost 0-6 to the Law.
+
+Both mechanics the gangs are designed around live on other branches — ai's SUPPRESS option and doctrine's pack
+drills — and the matrix confirms it: mean suppression on the loser is 0.02–0.08, essentially none. 43 fragile
+short-ranged vehicles lose to 24 armored long-ranged ones when volume buys nothing. Inflating their numbers now
+would have to be undone the moment those merge, which is the lead's own guidance.
+
+**Ask of the orchestrator: re-run `make faction-matrix` on `main` once combat, doctrine and ai are merged.** That is
+the number worth acting on, and the gangs are the faction to watch in it.
+
+### Stretch: wrecks as cover — scoped, deliberately not shipped
+
+The physics half is four small changes (wrecks to collision layer 4 instead of a disabled shape, `HIT_MASK` 3 → 7,
+`screen_for` reporting wrecks, and — ai's — `Perception.WORLD_MASK` 1 → 5 for sight). Full plan in
+[balance.md](../balance.md) *Stretch*.
+
+**I did not ship it, and the reason is the point:** nothing tells a brain a wreck is in its line of fire.
+`has_line_of_sight` uses `Perception.WORLD_MASK`, which excludes wrecks, so brains would believe they had a clear
+shot and keep putting 320-damage shells into a dead hull. The physics half alone makes the AI visibly worse, in the
+same week as integration. The two halves have to arrive together — an afternoon's work once they do, plus a
+sim-baseline re-record and a faction-matrix re-run, because it changes every fight.
+
+---
+
+## Report (2026-09-16): round 4 combat is complete
+
+**Every backlog item is done** (X1–X6), the stretch item is scoped and deliberately not shipped (above), and
+`make remote T=check` is green on the last commit: 697 tests, every smoke, determinism, sim baseline
+`glibc-2.43 763efdb242eeb5bf`.
+
+| Item | Outcome |
+|---|---|
+| X1 / **CP2** | L2 suppression (`ThreatField`, `Tank.suppression`, `threat_field` / `is_beaten_zone`, K2 `suppression_applied`) and the L3 roster schema. Announced to the orchestrator the day it was green |
+| X2 | Suppression measured: it bites in isolation, changed no outcomes until ai used it. Two real defects fixed along the way |
+| X3 | Heavies already shield the fragile, by ~3.5× their own body in absorbed fire. Added `Match.screen_for` |
+| X4 | The gangs, the Law and the Syndicate: 15 vehicles, 11 weapons, two new mechanics (hover, field repair) |
+| X5 | The simulation is **30–58% cheaper**; the full cost ladder at 25/40/60/100 a side |
+| X6 | Faction-vs-faction matrix, counterbalanced. The gangs are the open balance item |
+
+### Decisions I made, and why
+
+1. **`is_beaten_zone` takes the team first.** The brief's `(from, to)` cannot say whose incoming fire is meant.
+2. **Only the enemy's rounds suppress you.** A team is never scared off its own base of fire, so support-by-fire
+   needs no shift-fire discipline to be usable. Friendly-fire *damage* is unchanged.
+3. **Suppression never takes control away from the player.** It costs accuracy and turret tracking and blocks
+   deploying; breaking contact and refusing a lane stay decisions, which is why they belong to ai and doctrine.
+4. **A hit's suppression scales with the hull fraction it removes**, not with the weapon's suppression weight —
+   otherwise volume is counted twice and one machine gun pins a tank on its own.
+5. **No guard buff for heavies.** Position and armor facing already do the work; X3 measures how much.
+6. **Every rear armor value stays ≤ 2.0.** "Everything hurts from behind" is a rule of the game.
+7. **I stopped tuning the gangs after two real fixes.** The mechanics they are designed around are on other
+   branches; inflating their stats now would have to be undone. The lead's own guidance.
+8. **I did not ship wrecks-as-cover.** The physics half without the AI half makes brains shoot into wrecks.
+
+### Questions for the lead (nothing is blocked on them)
+
+1. **Faction art is 47 MB and excluded from the exports** (`export_presets.cfg` `game/theme/factions/*`), so the new
+   rosters *play* as themselves and *look* like the Condemned via the C6 fallback. Shipping the models takes the web
+   pack from 0.8 MB to ~48 MB. Cross-stream call, not mine.
+2. **The Lancer role sits in two factions** (`lancer` for the Condemned, `syn_lancer` for the Syndicate), which is
+   what *Factions* asks for — the role is shared, the vehicle is not. Say if you wanted one of them to lose it.
+3. **`Units.BASELINE_BUDGET` is 5200** (28 Condemned a side). Free play uses it; the garage keeps its own smaller
+   progression tiers until that stream unpauses.
+
+### Requests to other streams
+
+- **doctrine:** `Army.parse_scaled` is a one-line deletion once your `MAX_SQUADS` change is on `main` and I merge it
+  (agreed with you directly; you already took the test-file conflict resolution).
+- **ai:** you have `threat_field` / `is_beaten_zone` / `threat_along` / `screen_for` / `Tank.is_pinned()` and
+  `intel[...]["suppression"]`. At 60 units the brains are ~26 of the 33 ms; `make scale-bench` gives you a
+  before-and-after ladder.
+- **control:** at 31-vs-35 the nameplates and intents are an unreadable wall of text over the middle of the map —
+  `build/screenshots/faction-*` is a ready-made before picture for your readability item.
+- **Orchestrator / the lead (nobody owns `game/theme/**` this round):** Godot logs
+  `Too many instances using shader instance variables … Maximum items supported by this hardware is: 4096` while
+  rendering a full-scale battle. Each vehicle's visual slots consume shader instance uniforms and 30 a side exhausts
+  the pool. It will be visible the moment anyone renders that many.
+- **Orchestrator at merge:** `HANDOFF.md` and `_agents/workstreams.md` invariant 2 both still name the old sim
+  baseline; it is now `glibc-2.43 763efdb242eeb5bf`.
+
+### Known issues
+
+- **The road gangs win 23% of everything.** Written up in full under X6; re-measure after all three branches merge.
+- **The Condemned win 70%**, but they are the reference roster and the gangs' collapse distorts the average.
+- Suppression rewards firing at a **place** rather than chasing a **target** (a tracking gun spreads its stamps over
+  many cells). That is correct, and ai should make sure a SUPPRESS order holds its aim point.
+- `test_combat_*` fixtures that measure damage must set `elimination`, or a destroyed unit respawns at full health
+  four seconds later and everything reads as zero. Cost me one debugging cycle.
+
+### What to playtest (exact commands)
+
+```bash
+make skirmish                                            # unchanged: the round-3 game, Condemned vs Condemned
+make faction-match GREEN_FACTION=gangs RUST_FACTION=law   # a full-scale faction battle, headless result
+make faction-shots GREEN_FACTION=condemned RUST_FACTION=syndicate   # look at one (needs a display)
+make remote T="faction-matrix SEEDS=5 TIME=150"          # every pair, counterbalanced (~25 min)
+make remote T="scale-bench TIME=40"                      # the cost ladder
+make remote T="test FILTER=combat_suppression_bite"      # every suppression MEASURE line
+make duel GREEN_UNITS=gang_scout,gang_scout RUST_UNITS=tank   # spears against a dozer
+```
+
+### Next steps for whoever picks this up
+
+1. Re-run `make faction-matrix` on `main` with doctrine and ai merged; the gangs are the number to watch.
+2. Delete `Army.parse_scaled` once `Doctrine.MAX_SQUADS` is on `main`.
+3. Wrecks as cover, physics and AI together (scoped above).
+4. The shader-instance ceiling, before anyone ships a 30-a-side fight with art.
+5. Put `scout > lancer` back in `good_vs` if the matrix earns it once suppression is in play.
+
+### Merge notes (shared and other streams' files)
+
+- `game/modes/match_runner_mode.gd` (mine): `--green-faction=` / `--rust-faction=`, `--bench-units=`,
+  `--bench-faction=`, `--no-brains`.
+- `.gitignore`: added a bare `.tools` line. `.tools/` alone does not match the **symlink** `tools/worktree.sh`
+  creates, so every worktree agent sees it as untracked and can commit it (I did, then amended it out).
+  Worth pushing to `main` on its own (lesson 9).
+- `game/garage/army_catalog.gd` (**paused stream**): `from_game()` offers `Units.DEFAULT_FACTION` only. Its screens,
+  presets and unlock tiers are written for one roster; a compatibility fix, not a design.
+- `tests/test_match_spawns_and_results.gd` will conflict with doctrine's copy. Agreed with them directly: take mine
+  (`test_a_full_faction_army_a_side_spawns_clear_of_itself`), keep `Army.MAX_ARMY_UNITS <= Doctrine.MAX_UNITS`.
+- `tests/test_units_catalog.gd`, `tests/test_combat_deploy.gd`, `tests/test_army.gd`: assertions that encoded "one
+  roster" or "the unit called artillery" now derive from the catalog.
+- No edits to `project.godot`, `export_presets.cfg`, `game/main.gd`, `game/main.tscn`, `Makefile`, `mk/core.mk`,
+  `tests/run_tests.gd`, `tools/remote.sh` or `tools/slot.sh`.
+- **The sim baseline moved twice on purpose**, both recorded twice on builder0: `e9e5761beebbde59` (L2 suppression)
+  and then `763efdb242eeb5bf` (X2's two corrections). It is unchanged by X3, X4, X5 and X6.

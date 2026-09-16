@@ -108,6 +108,18 @@ smarter"*, and set the next round's direction.
 - **Formations must pay off through mechanics that already exist or are being added** (mutual support, sectors of fire,
   armor facing, firing lanes, spread versus splash, frontage and spotting), never a "formation bonus" number.
 
+### What earns a place in doctrine (ruled 2026-09-16, from measurements)
+
+Two drills lost to "just let the brains fight" this round, each measured on the same units, enemy and seed:
+- **Bounding overwatch** cost survival (0.51 vs 0.75 traveling) until suppression existed, and even with it only
+  recovered to 0.60, because covering fire that can't pin is a stopped vehicle.
+- **The circular swarm** ("a pack of hyenas") dealt **a third of the damage for identical survival**: circling stops
+  units shooting, and the encirclement it was meant to buy already happens, because the brains flank on their own.
+  It ships switched off behind its table flag, with the numbers kept for the discovery harness to revisit.
+
+**The rule:** a drill earns its place by deciding *where an element goes and what it points at*, not by driving
+vehicles that already fight well. Anything that takes the wheel away from a good brain has to prove it wins.
+
 ### Suppression and effective fire
 
 > *"This game should have real concepts of suppressive fire and effective fire (i.e. vehicles make decisions to avoid
@@ -149,6 +161,14 @@ Doctrine from the literature comes first; the harness that plays tactics against
 builder0) measures and tunes them. The LLM-plays-the-game layer (through the existing agent bridge, at a slow cadence,
 proposing tactics as data) is the discovery experiment on top, and anything it finds is distilled into deterministic
 rules before it ships. Nothing runs a model during live play.
+
+### Matches are between different factions (lead, 2026-09-16)
+
+From the lead's announcer review: **the booth names a side by its faction, not its colour** (the Condemned, the
+Wreckers, the Law, the Syndicate), and **a match is always between two different factions**. That makes the
+commentary sayable, and it makes faction identity the thing the player reads on the field. Mirror matches would need a
+naming scheme the booth can't speak, so they're out. It binds combat (army generation and the match runner), the
+garage (army building), and audio (lines are recorded per faction). The caller is canonically **Joseph**.
 
 ### Audio: cinematic, and alive
 

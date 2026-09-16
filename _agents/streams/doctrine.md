@@ -131,6 +131,90 @@ combat's L2 suppression, CP2) → X6 faction doctrines → stretch (doctrine vie
   base of fire 4.6 m off the line of contact while the other half swings 24.3 m round; bounding keeps a
   section set 38% of samples; an outgunned pair breaks contact from 76 m to 106 m.
 
+### New since the lead's steer (2026-09-16): doctrine publishes, the booth talks
+
+The lead asked for a hybrid of "keep the doctrine page as a dev tool" and "explain elements in game", with the
+explaining done **by the announcer rather than the HUD**: *"we can use that information to generate scripted
+statements from the announcers about how a squad is lining up in whatever formation for whatever reason.
+Presumably we at least want the structured data publishable."* The plumbing is in:
+
+- `Elements.element_reported(event)` publishes every decision as a **K5-shaped event** — `element_formation`
+  (shape or technique changed, first task taken, drill ended) and `element_drill` (a drill started, with the
+  distance and what set it off). Both carry the doctrine table's own `reason`, so the booth quotes the
+  element's logic rather than inventing one. Full field list in _agents/doctrine.md *Publishing decisions*.
+- `game/tactics/element_report.gd` decides what is worth saying: no task = nothing to say, a reason changing
+  on its own is not a call, a leader change is the HUD's business, the same call is not repeated within 10 s,
+  and `element_drill` always means a drill *started*. That filtering is deliberately on the producing side —
+  an announcer repeating itself is the lead's own complaint about the PA.
+- `make tactics-parity` writes a real timeline to `build/tactics/element_events.jsonl` (36 events from a 45 s
+  five-element match), so audio can write lines against a timeline instead of a guess.
+- Five tests in `tests/test_tactics_reports.gd`, including one that fails if doctrine ever starts writing
+  sentences instead of values.
+
+**Done by audio (2026-09-16):** both types are in the K5 validators, and `MatchEventAdapter` connects and
+stamps `tick`/`t`. It finds the publisher by the `elements` group (it can't name the class before CP1
+merges), so `Elements` joins that group on `_ready`. Two constraints came back that shape what is worth
+putting in an event: the booth **records every word in advance**, so only the enumerated fields can be
+spoken (`reason` is subtitle-only), and **matches are always between different factions** — nothing in the
+tables assumed otherwise, but the parity fixture uses two Condemned armies and is a doctrine isolation, not
+a matchup. The value sets a shipped table can emit are **frozen** at audio's request (8 formations, 3 techniques, 8
+drills): `test_every_value_the_booth_has_to_speak_is_from_a_closed_set` asserts them exactly and fails the
+build with the reason, because an unrecorded value degrades silently rather than erroring. **Adding a shape
+or a drill to a shipped table now needs audio's sign-off**, and the frozen list changes in the same commit as
+the table. The correction was worth real money: they had 6/3/6 from the round-4 brief and would have recorded
+`encircle`, `ring` and `echelon_left` — 24 clips for shapes nothing selects — while missing `vee`, `coil`,
+`swarm` and `bait`, which would have left the gangs mute.
+
+**Originally needed from audio (two small things, both in their paths):** add `element_formation` and `element_drill` to
+`AnnouncerEvents.REQUIRED` (and the Python twin in `tools/announcer/events.py`), and have
+`MatchEventAdapter` connect to `Elements.element_reported` and stamp `tick`/`t` the way it already does. Then
+it's line-writing. **Proposed contract wording** for workstreams.md, as an extension of L1: *"L1 also
+publishes element decisions as K5 events on `Elements.element_reported(event)`: `element_formation`
+{team, element, size, formation, technique, reason, changed[]} and `element_drill` {team, element, size,
+drill, formation, reason, distance, target}. Doctrine rate-limits and filters; audio adds the types to the
+K5 validator and writes the lines."*
+
+### The lead's faction feedback (2026-09-16), answered
+
+*"All of the standard operating procedures for all the factions look quite similar ... the street gangs ...
+should be noticeably less military disciplined ... spreading out their formations wide ... or do circular
+swarms ... I don't know if your doctrines are accounting for how to manage formations with multiple vehicles
+(i.e. heavy armor on the outside of a column, light armor on the inside) ... the street gang would also be
+more likely to create tactics of having a vehicle draw fire to try and lead the opponents into an ambush."*
+
+He was right on all three counts. The tables differed only in numbers, and the shapes all came from the same
+eight military formations. What changed (full numbers in _agents/doctrine.md *Faction doctrines*):
+
+1. **Placement by armour, every faction.** Each slot is scored for exposure (how far out of the middle, how
+   far toward the front) and the best-protected vehicle takes the worst place. Artillery and Lancers go
+   inboard whatever their armour says — a gun being shot at is not shooting.
+2. **A `swarm` shape for the gangs**: wide, ragged, staggered, nearly twice a line's frontage. Kept: it is
+   the character the lead asked for and costs no damage. It does survive worse than military shapes today
+   (0.47 vs 0.62), for the same reason dispersion shows nothing elsewhere — splash and suppression don't yet
+   punish bunching. Re-measure when they do; if it still loses, it goes.
+3. **A `bait` drill**: the fastest non-leader draws and leads them back over the pack. Kept — 0.58 of the
+   pack alive against 0.43 without it (one seed). Its first version baited *dug-in guns*, which is suicide:
+   a lure needs something that will follow, so it now requires a contact that is actually moving and gives up
+   if it doesn't close.
+4. **An `encircle` drill: built, measured, switched off.** Same units, same enemy, same seed: turning it off
+   left survival unchanged (0.47) and took enemy survival from 0.66 to 0.19 — circling stops the pack
+   shooting, and the coverage it was meant to buy was already there (a standard element covers the same seven
+   arcs by fighting). The drill stays in the engine behind its flag with the numbers recorded; no shipped
+   table selects it. Same lesson as bounding overwatch: a drill earns its place by deciding where an element
+   goes and what it points at, not by driving vehicles that already fight well.
+5. **The doctrine page now says what each faction does differently** from standard doctrine, in words, so the
+   character reads without diffing five tables. The page's mirrored constants are checked against the
+   GDScript at build time, so it can't quietly start lying.
+
+### Standing arrangement with audio
+
+Measured facts are the Veteran's material: doctrine sends anything surprising, **marked stable or
+likely-to-move**, and only stable ones get recorded (a recorded line outlives the number that justified it).
+The split is in _agents/doctrine.md *Which of these the booth can quote*. Today: the coverage, first-hit and
+herringbone numbers are stable; everything resting on suppression or splash is not, and nothing depending on
+them should be voiced until combat's L2 is finished. If a measurement ever means "the booth should always say
+this", ask audio for a tag priority rather than more lines.
+
 ### Questions for the lead
 
 1. **Should an element's shape be visible on the HUD, or only its reason?** Every element carries a
@@ -219,6 +303,24 @@ from 27 to 52 without another edit here. `Army.parse_scaled` can go.
 2. A support-element doctrine rule (displace and set up, instead of breaking contact).
 3. Faction tables want a real roster to sit on (combat's L3): today every unit is `condemned`, so
    `Elements._table_for` always loads the Condemned table in a real match.
+
+### Proposed lesson for orchestration.md (orchestrator's call)
+
+Round 4 hit the same bug three times in two streams, and in every case the symptom pointed at content while
+the cause was an ordering rule. Suggested wording for the *Lessons* list:
+
+> **A behaviour that looks under-written is usually being starved by a rule above it.** Round 4, three times
+> in two streams: the announcer's Veteran seemed short of material and was actually being silenced by a
+> priority rule; doctrine's react-to-contact restarted every update, so no maneuver that followed it ever
+> finished; and its encircle and bait drills stole the element from each other every tick, so neither
+> completed once. Each time the obvious fix was "write more of it" or "the behaviour isn't good enough", and
+> the real fix was one line of precedence. Before adding content to a behaviour that seems weak or quiet,
+> log what *selected* it each tick and check whether something upstream keeps pre-empting it.
+
+Audio's companion rule, already in their README and brief, generalises past both of us: **a recorded line
+outlives the number that justified it** — nothing the booth says can be edited, only re-recorded for credits,
+so an assertion about how the game works is a promise the build has to keep. When in doubt, describe rather
+than evaluate. It applies to any artefact that is expensive to change after the fact.
 
 ### Proposed edits to workstreams.md (orchestrator's call)
 

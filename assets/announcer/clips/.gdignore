@@ -1,0 +1,2 @@
+# Godot deliberately ignores this folder; see README.md. The booth loads these clips from disk
+# at runtime (AnnouncerVoice), they are excluded from both export presets, and importing them all is slow.

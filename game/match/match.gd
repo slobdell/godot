@@ -61,6 +61,10 @@ const SPAWN_JITTER_MAX_Z := 1.2
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false
 
+## X5: the "idle guns" readout (gun_ready_samples / gun_idle_samples) costs a line-of-sight raycast for every
+## viewer-enemy pair in weapon range, which is the same order of work as team vision itself and buys nothing the
+## simulation needs. Sampled this many INTEL passes apart instead of every one; the ratio it reports is unchanged.
+const GUN_READY_EVERY_INTELS := 10
 ## Shared team vision: refreshed this often, remembered this long. How far each tank sees is its own
 ## Tank.sight_radius (G1); SENSOR_RANGE is the standard tank's, kept for callers that need a default.
 const INTEL_EVERY_TICKS := 6
@@ -110,9 +114,16 @@ const SUPPRESSION_SPREAD_FACTOR := 2.0
 ## a lane settles at about 1.4 (1.0 suppression per second against a 1 s half-life), so a single crew IS enough to
 ## make a lane a bad idea — which is the lead's "cut off an avenue". Getting PINNED there takes three times as much.
 const BEATEN_ZONE_DENSITY := 1.0
+## L2: suppression a single hit adds per fraction of the victim's hull it takes off (shield included). 1.0 means a
+## round that costs you half your hull leaves you half-suppressed; a tank shell pins, a machine-gun round doesn't.
+const SUPPRESSION_PER_HULL_FRACTION := 1.0
 ## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
 ## Tank.shield_recharge_delay. The hull is the lasting cost of a fight; mending it means going home.
 const REPAIR_HP_PER_SECOND := 6.0
+## L3: crews only get out and mend a hull once nothing has hit it for this long. It used to piggyback on the
+## shield's recharge delay, which is 0 for a faction with no shields at all (the road gangs) — so a gang truck
+## mended itself while it was being shot. The longer of the two applies.
+const REPAIR_QUIET_SECONDS := 3.0
 ## G7 resupply: tanks within this distance of their own base center regain one shell every
 ## RESUPPLY_SECONDS_PER_SHELL. A full reload (45 shells) takes 45 s at base.
 const RESUPPLY_RADIUS := 30.0
@@ -144,6 +155,11 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# X3: enemy hits on the engine deck (Armor.is_weak_spot), by the shooter's team.
 		"weak_spot_hits": [0, 0],
+		# L2 (round 4), by the SUPPRESSED team, sampled every SUPPRESSION_SAMPLE_TICKS over living units: how many
+		# samples were taken, their suppression summed, and how many were pinned. Without these, nobody can tell
+		# whether a match had any suppressive fire in it at all (X2: the answer was "almost none", because brains
+		# don't suppress on purpose yet).
+		"suppression_samples": [0, 0], "suppression_total": [0.0, 0.0], "pinned_samples": [0, 0],
 		# Sampled every INTEL_EVERY_TICKS: a loaded weapon with an enemy in the tank's OWN sight and range...
 		"gun_ready_samples": [0, 0],
 		# Simulated seconds at the first shot fired and the first kill (pace of a fight).
@@ -284,6 +300,7 @@ func remove_player(peer_id: int) -> void:
 	var tank := tanks.get_node_or_null("Tank_%d" % peer_id)
 	if tank != null:
 		tank.queue_free()  # the spawner removes it on every client too
+		_sorted_cache_tick = -1  # a tank leaving mid-tick must not linger in this tick's cached list
 
 
 ## A server-controlled tank with a BotController brain (team -1 = the smaller team).
@@ -449,14 +466,16 @@ func sorted_team_tanks(team: int) -> Array[Tank]:
 	return result
 
 
-## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base.
-## Deterministic: counted in ticks.
+## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base, or in the field beside a
+## unit that carries a repair crew (L3, the gangs' resupply tanker). Deterministic: sorted units, counted in ticks.
 func _resupply() -> void:
 	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * 60.0)
-	var ticks_per_hp := roundi(60.0 / REPAIR_HP_PER_SECOND)
+	var menders := _field_menders()
 	for tank in _sorted_tanks():
-		if tank.is_alive() and tank.health < tank.max_health and in_resupply_zone(tank.team, tank.global_position) \
-				and tank.ticks_since_hit >= roundi(tank.shield_recharge_delay * 60.0):
+		var rate := repair_rate_for(tank, menders)
+		if tank.is_alive() and tank.health < tank.max_health and rate > 0.0 \
+				and tank.ticks_since_hit >= roundi(maxf(tank.shield_recharge_delay, REPAIR_QUIET_SECONDS) * 60.0):
+			var ticks_per_hp := maxi(1, roundi(60.0 / rate))
 			tank.repair_ticks += INTEL_EVERY_TICKS
 			if tank.repair_ticks >= ticks_per_hp:
 				var hp := tank.repair_ticks / ticks_per_hp
@@ -474,6 +493,31 @@ func _resupply() -> void:
 		if tank.resupply_ticks >= ticks_per_shell:
 			tank.resupply_ticks -= ticks_per_shell
 			stats["shells_resupplied"][tank.team] += tank.resupply(1)
+
+
+## L3: living units that mend their neighbours (Units "repair_hp_per_second" / "repair_radius_m"), in sorted order.
+func _field_menders() -> Array:
+	var menders: Array = []
+	for tank in _sorted_tanks():
+		var rate := float(Units.stat(tank.unit_id, "repair_hp_per_second", 0.0))
+		if tank.is_alive() and rate > 0.0:
+			menders.append({"team": tank.team, "position": tank.global_position,
+					"radius": float(Units.stat(tank.unit_id, "repair_radius_m", 0.0)), "rate": rate})
+	return menders
+
+
+## L3: hull points per second `tank` mends at right now — REPAIR_HP_PER_SECOND inside its own base, or the best
+## rate offered by a friendly repair unit standing near it, whichever is higher. A faction with no shields
+## (the road gangs) gets its hit points back this way instead, and the vehicle that does it is easy to kill.
+func repair_rate_for(tank: Tank, menders: Array) -> float:
+	var rate := REPAIR_HP_PER_SECOND if in_resupply_zone(tank.team, tank.global_position) else 0.0
+	for mender: Dictionary in menders:
+		if int(mender["team"]) != tank.team:
+			continue
+		var offset: Vector3 = mender["position"] - tank.global_position
+		if Vector2(offset.x, offset.z).length() <= float(mender["radius"]):
+			rate = maxf(rate, float(mender["rate"]))
+	return rate
 
 
 static func resupply_center(team: int) -> Vector3:
@@ -587,11 +631,14 @@ static func shot_spread(weapon: Dictionary, moving: float, suppression: float) -
 
 
 ## L2: mark the ground a direct-fire round swept, and report the suppression it laid down (0 for a weapon that
-## doesn't suppress). Rounds only suppress the side they were fired AT.
-func _suppress_lane(shooter_team: int, from: Vector3, to: Vector3, weapon: Dictionary) -> float:
+## doesn't suppress). Rounds only suppress the side they were fired AT. When the round struck a unit, the lane runs
+## to that unit's CENTRE rather than to the point on its hull: a round stops ~2 m short of centre, which with 6 m
+## cells could leave the crew that was just hit in an unmarked cell (X2: one machine gun on a tank measured 0.08
+## suppression instead of ~0.47 for exactly that reason).
+func _suppress_lane(shooter_team: int, from: Vector3, to: Vector3, weapon: Dictionary, victim: Tank = null) -> float:
 	var weight := Weapons.suppression(weapon)
 	if weight > 0.0:
-		threat_field(1 - shooter_team).stamp_segment(from, to, weight)
+		threat_field(1 - shooter_team).stamp_segment(from, victim.global_position if victim != null else to, weight)
 	return weight
 
 
@@ -613,6 +660,10 @@ func _update_suppression() -> void:
 			continue
 		var density := threat_field(tank.team).at(tank.global_position)
 		tank.settle_suppression(clampf(density / SUPPRESSION_FULL_DENSITY, 0.0, 1.0), seconds)
+		stats["suppression_samples"][tank.team] += 1
+		stats["suppression_total"][tank.team] += tank.suppression
+		if tank.is_pinned():
+			stats["pinned_samples"][tank.team] += 1
 
 
 func _update_intel() -> void:
@@ -621,7 +672,7 @@ func _update_intel() -> void:
 		for contact in known.values():
 			contact["visible"] = false
 		var viewers := sorted_team_tanks(team)
-		for viewer in viewers:
+		for viewer in (viewers if tick % (INTEL_EVERY_TICKS * GUN_READY_EVERY_INTELS) == 0 else [] as Array[Tank]):
 			if not viewer.is_alive() or not viewer.ready_to_fire():
 				continue
 			for enemy in sorted_team_tanks(1 - team):
@@ -645,7 +696,10 @@ func _update_intel() -> void:
 				known[String(enemy.name)] = {"position": enemy.global_position, "velocity": enemy.estimated_velocity,
 						"forward": -enemy.global_basis.z, "turret_forward": enemy.turret_forward(),
 						"health": enemy.health, "shield": enemy.sync_shield, "weapon": enemy.weapon_id, "unit": enemy.unit_id,
-						"role": Units.role_of(enemy.unit_id), "visible": true, "seen_tick": tick}
+						# L2: how suppressed a contact is, for brains that pick a target or a moment to flank (ai asked,
+						# 2026-09-16). It is what you can see from outside: a crew with its head down.
+						"suppression": enemy.suppression, "role": Units.role_of(enemy.unit_id), "visible": true,
+						"seen_tick": tick}
 				break
 		for contact_name in known.keys():
 			if tick - int(known[contact_name]["seen_tick"]) > CONTACT_MEMORY_TICKS:
@@ -941,7 +995,7 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: 
 		else:
 			victim = null
 	# L2: hitscan rounds suppress the corridor they crossed, whether or not they hit (the wall of bullets).
-	var suppression := _suppress_lane(tank.team, from, end, weapon)
+	var suppression := _suppress_lane(tank.team, from, end, weapon, victim)
 	if not hit.is_empty():
 		_emit_impact(projectile_id, hit.position, hit.normal, victim, result, suppression)
 	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
@@ -974,14 +1028,31 @@ func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: T
 const CONE_EVENT_TICKS := 6
 
 
+## X5 (round 4): the sorted list is rebuilt at most once per tick. It was being sorted from scratch by a GDScript
+## lambda on every call — a dozen call sites, several of them per tick — which is O(n log n) of interpreted
+## comparisons per call and the single most expensive thing in the simulation at 60 units a side. The cache is
+## keyed on the tick AND the child count, so a spawn inside a tick still rebuilds it. A tank freed mid-tick does not
+## change the child count until the frame ends, so the one place that frees one (remove_player) invalidates the
+## cache by hand.
+var _sorted_cache: Array[Tank] = []
+var _sorted_cache_tick := -1
+var _sorted_cache_children := -1
+
+
 ## Tanks in a stable order (by name): anything that affects decisions or damage
 ## must iterate deterministically.
 func _sorted_tanks() -> Array[Tank]:
+	var children := tanks.get_child_count()
+	if _sorted_cache_tick == tick and _sorted_cache_children == children:
+		return _sorted_cache
 	var result: Array[Tank] = []
 	for node in tanks.get_children():
 		if node is Tank and not node.is_queued_for_deletion():
 			result.append(node)
 	result.sort_custom(func(a: Tank, b: Tank) -> bool: return String(a.name) < String(b.name))
+	_sorted_cache = result
+	_sorted_cache_tick = tick
+	_sorted_cache_children = children
 	return result
 
 
@@ -1034,6 +1105,32 @@ func friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array[Tank
 			distances[friend] = spot.distance_to(flat_origin)
 	at_risk.sort_custom(func(a: Tank, b: Tank) -> bool: return distances[a] < distances[b])
 	return at_risk
+
+
+## X3 (round 4): a hull counts as screening a unit when it blocks the line from the threat to the unit's turret,
+## the height rounds actually fly at (Units "muzzle_height"). Shells and beams already stop at the first hull they
+## meet, so this query just *reports* the geometry the physics is already using.
+const SCREEN_HEIGHT := 1.27
+
+
+## X3, contract C4: the friendly hull shielding `unit` from fire coming from `from_point`, or null. This is not a
+## buff and grants nothing: heavies shield fragile units because a shell stops at the first hull it hits, and
+## `armor_multiplier` then decides what it costs. A dozer eating a cannon shell on its 8 mm front takes x0.5 where
+## the Lancer behind it would have taken x1.21 on 3 mm, on top of having half again the hull and shield. Brains and
+## drills use this to know whether a unit is covered (or whether a heavy is doing its job) before moving.
+## Wrecks never screen: `Tank._set_alive(false)` disables the collision shape.
+func screen_for(unit: Tank, from_point: Vector3) -> Tank:
+	if unit == null or not unit.is_alive():
+		return null
+	var eye := Vector3(0.0, SCREEN_HEIGHT, 0.0)
+	var target := Vector3(unit.global_position.x, 0.0, unit.global_position.z) + eye
+	var query := PhysicsRayQueryParameters3D.create(Vector3(from_point.x, 0.0, from_point.z) + eye, target,
+			HIT_MASK, [unit.get_rid()])
+	var hit := unit.get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return null
+	var blocker := hit.get("collider") as Tank
+	return blocker if blocker != null and blocker.is_alive() and blocker.team == unit.team else null
 
 
 ## A shell passing within this many meters of a hull's edge counts as incoming (K2 dodging).
@@ -1128,8 +1225,13 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
 	result["face"] = face
 	result["weak_spot"] = weak
-	# L2: a round that actually connects rattles the crew beyond the fire density where they sit.
-	victim.suppress(Weapons.suppression(weapon) / SUPPRESSION_FULL_DENSITY)
+	# L2: getting HIT HARD rattles a crew beyond the fire density where they sit. Scaled by the fraction of the hull
+	# this one round took off, not by the weapon's suppression weight: a machine-gun round that pings the armor is
+	# nothing (0.01), while a tank shell that strips half your hull pins you on its own. Weighting it by the weapon
+	# instead would double-count volume, which the threat field already measures (X2: one machine gun pinned a tank
+	# on hits alone, which made "concentrate your fire" meaningless).
+	victim.suppress((float(result["hull"]) + float(result["shield"])) / maxf(float(victim.max_health), 1.0)
+			* SUPPRESSION_PER_HULL_FRACTION)
 	if weak and victim.team != team and counts_as_hit:
 		stats["weak_spot_hits"][team] += 1
 	if victim.team == team:
@@ -1184,7 +1286,8 @@ func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 	var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
 	# L2: the round suppressed everything along the corridor it flew down before it stopped here.
-	var suppression := _suppress_lane(shell.team, shell.ray_start, point, weapon)
+	var suppression := _suppress_lane(shell.team, shell.ray_start, point, weapon,
+			victim if victim != null and victim.is_alive() else null)
 	if victim != null and victim.is_alive():
 		var hit := _land_hit_result(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
 		killed = hit["killed"]

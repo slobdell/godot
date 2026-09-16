@@ -10,7 +10,6 @@ extends Node
 
 const BUS := "Announcer"
 const WORLD_BUS := "World"
-const PART_GAP_S := 0.02
 const CUT_FADE_S := 0.08
 
 ## Folder holding manifest.json and the clip folders.
@@ -76,24 +75,21 @@ func _ready() -> void:
 	volume_db = volume_db
 
 
-## The clip files for a cue, in order; empty when any part is missing (then the cue is subtitles only).
+## The clip file for a cue: one whole sentence, recorded for exactly these slot values. Empty when this
+## realization was never recorded, and then the cue is subtitles only.
+##
+## Until round 4 a cue was assembled from carrier segments and filler words at playback time. It sounded pasted,
+## because a sentence's intonation spans the whole sentence (_agents/streams/audio.md, *Why stitching failed*).
 func files_for(cue: Dictionary) -> PackedStringArray:
 	var files := PackedStringArray()
 	var line: Dictionary = manifest.get("lines", {}).get(cue["line_id"], {})
-	var clips: Dictionary = manifest.get("clips", {})
 	if line.is_empty():
 		return files
-	for part in line["parts"]:
-		var clip := String(part.get("clip", ""))
-		if clip == "":
-			var slots: Dictionary = cue.get("slots", {})
-			var value: Variant = slots.get(part["slot"], slots.get(AnnouncerLibrary.base_slot(part["slot"]), ""))
-			if part["vocab"] == "number":
-				value = int(value)
-			clip = "fill.%s.%s.%s.%s" % [line["speaker"], part["vocab"], value, part["intonation"]]
-		if not clips.has(clip):
-			return PackedStringArray()
-		files.append(clips_dir.path_join(clips[clip]["file"]))
+	var clip := String(line.get("variants", {}).get(String(cue.get("variant_key", "")), ""))
+	var clips: Dictionary = manifest.get("clips", {})
+	if clip == "" or not clips.has(clip):
+		return files
+	files.append(clips_dir.path_join(clips[clip]["file"]))
 	return files
 
 

@@ -1,23 +1,155 @@
 {
-  "note": "Broken timelines both K5 validators must reject (tools/announcer/test_events.py and tests/announcer/test_announcer_events.gd). Each case edits the first event of `event` type in `fixture`: `set` fields, `delete` a field, or `drop` the first/last event.",
-  "cases": [
-    {"name": "missing field", "fixture": "comeback", "event": "unit_destroyed", "delete": "killer_team"},
-    {"name": "unknown type", "fixture": "comeback", "event": "momentum", "set": {"type": "taunt"}},
-    {"name": "bad team", "fixture": "comeback", "event": "close_call", "set": {"team": "blue"}},
-    {"name": "ratio above one", "fixture": "comeback", "event": "damage", "set": {"hull": 1.4}},
-    {"name": "number as bool", "fixture": "comeback", "event": "damage", "set": {"critical": 1}},
-    {"name": "fractional tick", "fixture": "comeback", "event": "damage", "set": {"tick": 1300.5}},
-    {"name": "time goes backwards", "fixture": "comeback", "event": "damage", "set": {"tick": 0, "t": 0}},
-    {"name": "unknown unit id", "fixture": "comeback", "event": "damage", "set": {"shooter": "Green_Nobody_9"}},
-    {"name": "wrong unit type", "fixture": "blowout", "event": "first_contact", "set": {"unit": "burner"}},
-    {"name": "unknown unit type", "fixture": "blowout", "event": "first_contact", "set": {"target_unit": "zeppelin"}},
-    {"name": "friendly flag lies", "fixture": "comeback", "event": "unit_destroyed", "set": {"friendly": true}},
-    {"name": "hazard with a killer team", "fixture": "comeback", "event": "unit_destroyed", "set": {"killer": ""}},
-    {"name": "bad owner", "fixture": "control_swing", "event": "control_changed", "set": {"owner": "blue"}},
-    {"name": "momentum missing a team", "fixture": "comeback", "event": "momentum", "set": {"army_health": {"green": 1.0}}},
-    {"name": "bad winner", "fixture": "comeback", "event": "match_end", "set": {"winner": "nobody"}},
-    {"name": "no match_start", "fixture": "comeback", "drop": "first"},
-    {"name": "no match_end", "fixture": "comeback", "drop": "last"},
-    {"name": "one team only", "fixture": "comeback", "event": "match_start", "set": {"teams": [{"team": "green", "faction": "condemned", "units": [{"id": "Green_Alpha_1", "unit": "tank"}]}]}}
-  ]
+ "note": "Broken timelines both K5 validators must reject (tools/announcer/test_events.py and tests/announcer/test_announcer_events.gd). Each case edits the first event of `event` type in `fixture`: `set` fields, `delete` a field, or `drop` the first/last event.",
+ "cases": [
+  {
+   "name": "missing field",
+   "fixture": "comeback",
+   "event": "unit_destroyed",
+   "delete": "killer_team"
+  },
+  {
+   "name": "unknown type",
+   "fixture": "comeback",
+   "event": "momentum",
+   "set": {
+    "type": "taunt"
+   }
+  },
+  {
+   "name": "bad team",
+   "fixture": "blowout",
+   "event": "close_call",
+   "set": {
+    "team": "blue"
+   }
+  },
+  {
+   "name": "ratio above one",
+   "fixture": "comeback",
+   "event": "damage",
+   "set": {
+    "hull": 1.4
+   }
+  },
+  {
+   "name": "number as bool",
+   "fixture": "comeback",
+   "event": "damage",
+   "set": {
+    "critical": 1
+   }
+  },
+  {
+   "name": "fractional tick",
+   "fixture": "comeback",
+   "event": "damage",
+   "set": {
+    "tick": 1300.5
+   }
+  },
+  {
+   "name": "time goes backwards",
+   "fixture": "comeback",
+   "event": "damage",
+   "set": {
+    "tick": 0,
+    "t": 0
+   }
+  },
+  {
+   "name": "unknown unit id",
+   "fixture": "comeback",
+   "event": "damage",
+   "set": {
+    "shooter": "Green_Nobody_9"
+   }
+  },
+  {
+   "name": "wrong unit type",
+   "fixture": "blowout",
+   "event": "first_contact",
+   "set": {
+    "unit": "burner"
+   }
+  },
+  {
+   "name": "unknown unit type",
+   "fixture": "blowout",
+   "event": "first_contact",
+   "set": {
+    "target_unit": "zeppelin"
+   }
+  },
+  {
+   "name": "friendly flag lies",
+   "fixture": "comeback",
+   "event": "unit_destroyed",
+   "set": {
+    "friendly": true
+   }
+  },
+  {
+   "name": "hazard with a killer team",
+   "fixture": "comeback",
+   "event": "unit_destroyed",
+   "set": {
+    "killer": ""
+   }
+  },
+  {
+   "name": "bad owner",
+   "fixture": "control_swing",
+   "event": "control_changed",
+   "set": {
+    "owner": "blue"
+   }
+  },
+  {
+   "name": "momentum missing a team",
+   "fixture": "comeback",
+   "event": "momentum",
+   "set": {
+    "army_health": {
+     "green": 1.0
+    }
+   }
+  },
+  {
+   "name": "bad winner",
+   "fixture": "comeback",
+   "event": "match_end",
+   "set": {
+    "winner": "nobody"
+   }
+  },
+  {
+   "name": "no match_start",
+   "fixture": "comeback",
+   "drop": "first"
+  },
+  {
+   "name": "no match_end",
+   "fixture": "comeback",
+   "drop": "last"
+  },
+  {
+   "name": "one team only",
+   "fixture": "comeback",
+   "event": "match_start",
+   "set": {
+    "teams": [
+     {
+      "team": "green",
+      "faction": "condemned",
+      "units": [
+       {
+        "id": "Green_Alpha_1",
+        "unit": "tank"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
 }

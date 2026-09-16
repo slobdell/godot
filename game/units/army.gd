@@ -20,13 +20,44 @@ const ARCHETYPES := {
 	"swarm": {"units": ["scout", "scout", "ifv", "scout", "scout", "ifv"]},
 	# Stretch: close-range pressure. Burners charge behind a tank's front armor while an IFV screens scouts.
 	"brawl": {"units": ["burner", "tank", "burner", "ifv", "burner", "lancer"]},
+
+	# L3 (round 4). Each faction's armies buy only its own vehicles, and the SIZE falls out of their costs, not out
+	# of the list: at Units.BASELINE_BUDGET these come to roughly 39 gang vehicles, 28 Condemned, 24 Law, 15
+	# Syndicate. The mixes also carry the faction's automated tactics the lead asked for ("while the different
+	# factions might have largely similar vehicle types, we can definitely make them have different automated
+	# tactics"): the gangs travel in packs with a tanker in the middle, the Law advances behind suppression, the
+	# Syndicate fields almost nothing but guns and the eyes to aim them.
+	"gang_pack": {"faction": "gangs",
+			"units": ["gang_scout", "gang_ifv", "gang_scout", "gang_tank", "gang_ifv", "gang_support", "gang_scout"]},
+	"gang_ram": {"faction": "gangs",
+			"units": ["gang_tank", "gang_ifv", "gang_tank", "gang_support", "gang_ifv", "gang_scout"]},
+	"gang_hail": {"faction": "gangs",
+			"units": ["gang_artillery", "gang_scout", "gang_ifv", "gang_artillery", "gang_scout", "gang_support"]},
+	"law_line": {"faction": "law",
+			"units": ["law_tank", "law_ifv", "law_scout", "law_suppressor", "law_tank", "law_ifv"]},
+	"law_cordon": {"faction": "law",
+			"units": ["law_suppressor", "law_ifv", "law_scout", "law_artillery", "law_ifv", "law_tank"]},
+	"law_dragnet": {"faction": "law",
+			"units": ["law_scout", "law_artillery", "law_scout", "law_tank", "law_suppressor", "law_scout"]},
+	"syndicate_demo": {"faction": "syndicate",
+			"units": ["syn_tank", "syn_scout", "syn_lancer", "syn_ifv", "syn_scout"]},
+	"syndicate_standoff": {"faction": "syndicate",
+			"units": ["syn_lancer", "syn_scout", "syn_artillery", "syn_lancer", "syn_scout", "syn_ifv"]},
+	"syndicate_escort": {"faction": "syndicate",
+			"units": ["syn_ifv", "syn_scout", "syn_tank", "syn_ifv", "syn_artillery"]},
 }
 ## L3/X5: how many vehicles one side may field. Doctrine.MAX_UNITS (25) is the cap on a HAND-WRITTEN five-squad
 ## army; a faction army at Units.BASELINE_BUDGET is bigger than that, so it is split over as many five-unit squads
 ## as it needs (see squads_for_scale). Sized for the gangs' swarm at the baseline budget, and for the spawn grid
 ## (Match.SPAWN_SLOTS): more units than there are slots would stack hulls on top of each other.
 const MAX_ARMY_UNITS := 45
-## Squad name and directive per role. Squads are formed by role, in this order.
+## Squad name and directive per role, and per "<faction>/<role>" where a faction's vehicle in that role does a
+## different job in its army (looked up faction-first). This is where a faction's *automated tactics* live — the
+## lead: "while the different factions might have largely similar vehicle types, we can definitely make them have
+## different automated tactics" — and X6 found out the hard way why it matters: the road gangs' rat rods were being
+## given the Condemned scout's "spotters first" directive, so 15 assault vehicles sat at standoff range spotting
+## while the rest of the swarm died, and the faction won 10-30% of everything.
+## Squads are formed by role, in this order.
 const SQUADS := {
 	"tank": {"name": "Guns", "directive": {"role": "assault", "cohesion": 0.7}},
 	"ifv": {"name": "Hunters", "directive": {"role": "assault"}},
@@ -34,6 +65,11 @@ const SQUADS := {
 	"burner": {"name": "Burners", "directive": {"role": "assault", "aggression": 0.9}},
 	"scout": {"name": "Eyes", "directive": {"role": "scout"}},
 	"artillery": {"name": "Battery", "directive": {"role": "support"}},
+	# The gangs' scout is a spear buggy: it spots on the way in, but its job is to reach 30 m and open armor.
+	"gangs/scout": {"name": "Spears", "directive": {"role": "assault", "aggression": 0.95, "caution": 0.2}},
+	# L3 (round 4): the two roles the new factions added. Both stay behind the line of contact.
+	"suppressor": {"name": "Sirens", "directive": {"role": "assault", "caution": 0.7}},
+	"support": {"name": "Wrenches", "directive": {"role": "support", "caution": 0.9}},
 }
 
 
@@ -120,7 +156,9 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 		faction: String = "") -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var archetypes: Array = Array(archetypes_for(faction)) if faction != "" else ARCHETYPES.keys()
+	# No faction asked for means the default one: a plain "cpu" army has to stay the Condemned army it was in round
+	# 3, or every skirmish and garage opponent would silently become a different faction (caught by test_army).
+	var archetypes: Array = Array(archetypes_for(faction if faction != "" else Units.DEFAULT_FACTION))
 	archetypes.sort()
 	var archetype := name.trim_prefix("cpu:") if name.begins_with("cpu:") else String(archetypes[rng.randi_range(0, archetypes.size() - 1)])
 	if not ARCHETYPES.has(archetype):
@@ -144,8 +182,11 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 			continue
 		entries.append(entry)
 		spent += cost
+	# Without a faction the army folds into the player's five squads (round-3 behaviour); a faction army takes as
+	# many five-unit squads as it needs.
 	var squads := squads_for(entries) if faction == "" else squads_for_scale(entries)
-	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction, "cost": spent,
+	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype,
+			"faction": String(ARCHETYPES[archetype].get("faction", Units.DEFAULT_FACTION)), "cost": spent,
 			"squads": squads}
 
 
@@ -155,7 +196,7 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 static func squads_for_scale(entries: Array) -> Array:
 	var by_role := {}
 	for entry: Dictionary in entries:
-		var role := Units.role_of(entry["unit"])
+		var role := squad_key(entry["unit"])
 		if not by_role.has(role):
 			by_role[role] = []
 		by_role[role].append(entry)
@@ -180,12 +221,18 @@ static func typical_size(faction: String, budget: int) -> int:
 	return 0 if average <= 0.0 else mini(MAX_ARMY_UNITS, int(floor(float(budget) / average)))
 
 
+## The SQUADS key for a unit: its faction's own entry for that role if there is one, else the role.
+static func squad_key(unit_id: String) -> String:
+	var faction_key := "%s/%s" % [Units.faction_of(unit_id), Units.role_of(unit_id)]
+	return faction_key if SQUADS.has(faction_key) else Units.role_of(unit_id)
+
+
 ## Group entries into at most Doctrine.MAX_SQUADS squads of Doctrine.MAX_SQUAD_UNITS, by role (Guns,
 ## Guns2, ...). When roles need more squads than allowed, the extra units join squads that have room.
 static func squads_for(entries: Array) -> Array:
 	var by_role := {}
 	for entry: Dictionary in entries:
-		var role := Units.role_of(entry["unit"])
+		var role := squad_key(entry["unit"])
 		if not by_role.has(role):
 			by_role[role] = []
 		by_role[role].append(entry)
