@@ -360,7 +360,7 @@ replicating a voice without consent (and blocks prominent voices), and a commerc
 A sports-broadcast trio: a hype play-by-play **caller** (`JR1`), a color commentator **"the Veteran"** (a former
 arena champion: deep, dry, the expert), and **"the Corporate Co-host"** (`corporate2`) for the arena PA and sponsor reads (a Syndicate
 host whose comedy is sincere corporate euphemism over carnage). Casting, the Voice Design prompt, and example lines:
-[streams/announcer.md](streams/announcer.md) *Voices*.
+[streams/archive/round3/announcer.md](streams/archive/round3/announcer.md) *Voices*.
 
 **Pre-generated audio, composed at runtime.** No live text-to-speech in a match (cost, latency, keys, offline play).
 Instead a large tagged clip library is recorded ahead of time, and a runtime **banter graph** stitches clips into

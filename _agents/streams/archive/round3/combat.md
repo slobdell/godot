@@ -1,8 +1,11 @@
 # Stream: combat (weapons, weak spots, arcade driving, rules)
 
-> Read [../orchestration.md](../orchestration.md), [../game_design.md](../game_design.md) (*Round 3 direction*, pillar
-> 7, *Weapons feel*, *Locomotion*, *Match rules*), [../workstreams.md](../workstreams.md) (K2 and K3 are yours; CP2 is
-> your first item), [../balance.md](../balance.md), and [../determinism.md](../determinism.md). You own
+> **Archived 2026-09-15:** round 3 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md), [../game_design.md](../../../game_design.md) (*Round 3 direction*, pillar
+> 7, *Weapons feel*, *Locomotion*, *Match rules*), [../workstreams.md](../../../workstreams.md) (K2 and K3 are yours; CP2 is
+> your first item), [../balance.md](../../../balance.md), and [../determinism.md](../../../determinism.md). You own
 > `game/units/`, `game/combat/` except `impact.gd`, `game/match/`, `game/tank/`, `game/arena/` + `arenas/`,
 > `game/ai/doctrine.gd`, `doctrines/`, `tools/{match_series,matchup_matrix,make_arenas}.py`, `mk/match.mk`,
 > `game/modes/match_runner_mode.gd`, and `_agents/balance.md`.
@@ -26,7 +29,7 @@
 - Friendly fire, armor thickness per face, fixed-mount arcs (`Tank.can_bear_on`), arenas as data with hazards, the
   matchup matrix (`make matchups`), and a Burner unit exist. The lead answered: control point on by default; finite
   ammo only for artillery; scouts are spotters first.
-- The round-2 brief with all measurements: [archive/round2/rules.md](archive/round2/rules.md).
+- The round-2 brief with all measurements: [archive/round2/rules.md](../round2/rules.md).
 
 ## Backlog (in order)
 

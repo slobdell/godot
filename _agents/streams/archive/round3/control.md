@@ -1,7 +1,10 @@
 # Stream: control (StarCraft-style control, responsiveness, desktop first)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 3 direction*, pillars 5 and 7, *Controlling units*), and [../workstreams.md](../workstreams.md) (K1 is yours;
+> **Archived 2026-09-15:** round 3 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
+> (*Round 3 direction*, pillars 5 and 7, *Controlling units*), and [../workstreams.md](../../../workstreams.md) (K1 is yours;
 > CP1 is your first item). You own `game/control/` (new), `game/ui/` except `widgets/**` and `hud.tscn`,
 > `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, `mk/command.mk`, and
 > `_agents/tactical_map.md`.
@@ -29,7 +32,7 @@
   `game/ai/squad.gd`, whose brains (`TankBrain extends OrderController`) decide how to execute them.
 - **Problems the lead hit:** squad switching is burdensome; formations and drills overwhelm; units get stuck in a brain
   state and ignore clicks; squad members drift apart and never rejoin.
-- The round-2 brief and its decisions: [archive/round2/command.md](archive/round2/command.md).
+- The round-2 brief and its decisions: [archive/round2/command.md](../round2/command.md).
 
 ## Backlog (in order)
 

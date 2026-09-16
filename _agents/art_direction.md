@@ -138,7 +138,7 @@ Reusable pieces that make an arena a layout, not a download (game_design.md *The
   Oswald by the engine (never baked into images), a slow push-in, scanlines, an LED grid up close, glitches between
   ads and on big kills, and a pool of the ad's color on the ground. A live card shows kills and odds. **Ad art and
   copy are placeholders until the lead picks them** (humor: believable, slightly off; never a punchline).
-- **Faction vehicle looks** are on the three concept review pages (streams/assets.md *Waiting on the lead*); their
+- **Faction vehicle looks** are on the three concept review pages (streams/archive/round3/assets.md *Waiting on the lead*); their
   rules get written here once the lead picks.
 
 ## Where this is referenced

@@ -1,8 +1,11 @@
 # Stream: announcer (script engine and transcripts; the audio pipeline without API calls)
 
-> **Active in round 3** (2026-09-15). Read [../orchestration.md](../orchestration.md) (the worker contract),
-> [../game_design.md](../game_design.md) *The arena announcer* (voices, the banter graph, **humor direction**, recording
-> tricks, the pipeline), and [../workstreams.md](../workstreams.md) (K5 is this brief's event contract; lead gate 2).
+> **Archived 2026-09-15:** round 3 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> **Active in round 3** (2026-09-15). Read [../orchestration.md](../../../orchestration.md) (the worker contract),
+> [../game_design.md](../../../game_design.md) *The arena announcer* (voices, the banter graph, **humor direction**, recording
+> tricks, the pipeline), and [../workstreams.md](../../../workstreams.md) (K5 is this brief's event contract; lead gate 2).
 > Proposed ownership: `game/announcer/`, `assets/announcer/`, `tools/announcer/`, `mk/announcer.mk`, `tests/announcer/`,
 > and this brief.
 

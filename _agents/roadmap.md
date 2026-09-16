@@ -25,24 +25,20 @@ archived stream briefs).
 | | army: army builder v2, progression and unlocks, match loop with results, challenges | archive/round2/army.md |
 | 2026-09-15 | **Remote builds on builder0** (`make remote T=check`: 6 min 40 s vs 14–22 min) | remote_builds.md |
 
-## Now: Round 3 (planned 2026-09-15)
+| 2026-09-15 | **Round 3: control, combat, ai, feel, assets, announcer**, merged 2026-09-15 | streams/archive/round3/ |
+| | control: StarCraft-style desktop control (select, box, groups, right-click, attack-move, queues, follow), the K1 Orders API, 1-tick response, automatic formations, regrouping, selection panel | archive/round3/control.md |
+| | combat: tank shells (320 dmg / 5 s, 75 m/s), 25 mm bursts, MG streams, weak spots, arcade driving with turning circles, artillery deploy, K2 events, K3 locomotion, matchup matrix | archive/round3/combat.md, balance.md |
+| | ai: orders always win, circle-strafing and attack runs, dodging shells, weak-spot hunting, cover work, a CPU commander that maneuvers, champion x4 | archive/round3/ai.md, unit_ai.md |
+| | feel: tank-shell muzzle/flight/impact/kill effects, burst and stream tracers, weak-spot hits, wrecks, order and selection feedback, motion dust and drift, sound | archive/round3/feel.md, references/fx_tricks.md |
+| | assets: stackable ISO containers, giant ad screens, neon signs, artillery outriggers, 33 faction concepts reviewed by the lead, **15 faction vehicles in 3D** plus a wreck husk | archive/round3/assets.md, art_direction.md |
+| | announcer: match-event contract and fixtures, the banter director, 429 lines, transcripts and the booth page (no audio generated yet) | archive/round3/announcer.md |
 
-Goal: **make it fun.** The lead's verdict on round 2: boring, burdensome to command, lifeless combat. Round 3 rebuilds
-control (StarCraft-style, desktop first), makes combat alive (arcade-tactical), gives hits impact, and in parallel builds
-the arena kit, faction concepts, and the announcer's script engine. Streams and briefs: [workstreams.md](workstreams.md).
+## Now: round 4 (not planned yet)
 
-| Stream | Outcome |
-|---|---|
-| **control** | Select, box, groups, right-click orders, attack-move, queues, follow; instant response; automatic formations |
-| **combat** | Tank shells, 25 mm bursts, MG streams, weak spots, arcade driving with turning circles, artillery deploy |
-| **ai** | Circle-strafing, dodging, flanking for weak spots, cover pops, a CPU that maneuvers |
-| **feel** | Weapon and hit effects, weak-spot hits, wrecks, sound, order feedback |
-| **assets** | Stackable containers, ad screens, concepts and approved 3D for three factions, artillery outriggers |
-| **announcer** | Event fixtures, banter director, transcripts for the lead (no audio calls yet) |
+Round 3 is merged and green. The next round starts from the lead's playtest of the new controls, weapons, AI, and
+effects, plus the open items in HANDOFF.md (the announcer's text review, the faction gameplay, the unit-count bench).
 
-Paused this round: netcode, army/progression, faction gameplay.
-
-## Next (after round 3, order to be decided)
+## Next (after round 4, order to be decided)
 
 - **Play online for real,** within the lead's cost strategy (servers only match players and route packets;
   server_management.md §5): the new rules replicated in player-hosted matches, deploy the broker on one cheap box and
@@ -79,7 +75,7 @@ Paused this round: netcode, army/progression, faction gameplay.
 - **The arena announcer** (stretch, [game_design.md](game_design.md) *The arena announcer*): two original ElevenLabs
   voices; a big tagged clip library stitched at runtime by a banter graph so commentary differs every match; text
   transcripts reviewed by the lead before audio is generated. **A round-3 stream candidate that can run in isolation**
-  against fixture match events: [streams/announcer.md](streams/announcer.md).
+  against fixture match events: [streams/archive/round3/announcer.md](streams/archive/round3/announcer.md).
 - **Ranked with fixed budgets and full rosters,** so progression never affects competitive fairness.
 - **Spectate AI vs AI** as a mode (great for learning counters, and for the lead's son).
 - **Terrain height** for hull-down positions once the cover AI is solid.

@@ -194,5 +194,8 @@ The kickoff prompt is one line; this section is the rest.
     `--script` before encoding an assumption in a test.
 11. Workers announced checkpoints only in their Status, and one sat unmerged: workers now message the orchestrator, and
     the orchestrator skims Status files too.
-12. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+12. **Relay lead gates the day they open.** Round 3's three faction review pages sat unseen for a day because the
+    orchestrator never sent the lead their links; the assets stream idled on approvals it had already earned. When a
+    worker lists something under *Waiting on the lead*, put the links in front of the lead in your next message.
+13. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.

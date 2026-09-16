@@ -39,7 +39,7 @@ deviations.
 | AI ladder | `game/ai/brain_variants.gd`, `tools/ai_ladder.py`, `make ai-ladder` | Variants are feature switches read from `--green-brain/--rust-brain` by the brain itself (no match-runner edits) |
 | Perf ≤ 1 ms at 50 units | ~7–9 ms (see Results) | Not met; think LOD (18 ticks with no enemy within 130 m) and per-tick shared tables built; the rest is listed under Results |
 
-## Round 3: alive and responsive (2026-09-15, [streams/ai.md](streams/ai.md) X1–X6)
+## Round 3: alive and responsive (2026-09-15, [streams/archive/round3/ai.md](streams/archive/round3/ai.md) X1–X6)
 
 The lead after round 2: *"Tanks will just sit there stationary and shoot each other - there's no intent at evasive
 action, no intent of trying to shoot a weak spot, no intent of trying to circle your opponent … the units just don't

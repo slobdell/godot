@@ -3,7 +3,7 @@
 > **The current controls are v4 below** (control stream, round 3, 2026-09-15): select units, control groups,
 > right-click orders, automatic formations. Everything after "History" (v1–v3: squad grammar, drills, the mobile tap
 > map) is kept for reference; v3 still runs behind `--touch-map`. Design: [game_design.md](game_design.md)
-> *Controlling units*; brief: [streams/control.md](streams/control.md).
+> *Controlling units*; brief: [streams/archive/round3/control.md](streams/archive/round3/control.md).
 
 ## v4: the grammar
 

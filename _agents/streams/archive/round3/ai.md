@@ -1,8 +1,11 @@
 # Stream: ai (units that feel alive; a CPU that maneuvers)
 
-> Read [../orchestration.md](../orchestration.md), [../game_design.md](../game_design.md) (*Round 3 direction*, pillar
-> 7, *Unit AI*), [../workstreams.md](../workstreams.md) (you consume K1, K2, K3), [../unit_ai.md](../unit_ai.md) (your
-> round-2 architecture and ladder), and [../determinism.md](../determinism.md). You own `game/ai/` except
+> **Archived 2026-09-15:** round 3 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md), [../game_design.md](../../../game_design.md) (*Round 3 direction*, pillar
+> 7, *Unit AI*), [../workstreams.md](../../../workstreams.md) (you consume K1, K2, K3), [../unit_ai.md](../../../unit_ai.md) (your
+> round-2 architecture and ladder), and [../determinism.md](../../../determinism.md). You own `game/ai/` except
 > `doctrine.gd`, `game/agent/`, `tools/agent.py`, `tools/ai_ladder.py`, `mk/ai.mk`, `tests/ai_scenarios/`, and
 > `_agents/{tank_brain,squad_ai_design,unit_ai}.md`.
 
@@ -21,7 +24,7 @@
 - Utility brains (`TankBrain`), a 2D cover map and tactical queries (A2), peek-and-shoot (`COVER_FIRE`, A3), fire
   lanes and friendly-fire discipline (A4), matchup groundwork and the `a5` variant (A5: target choice by time-to-kill,
   scouts `ORBIT` slow turrets; not the default), squad tactics (A6), the ladder with champion `a6` (A7).
-- **Unfinished from round 2** (close-out in [archive/round2/ai.md](archive/round2/ai.md)): the ladder `a5` vs `a6` on
+- **Unfinished from round 2** (close-out in [archive/round2/ai.md](../round2/ai.md)): the ladder `a5` vs `a6` on
   `combined_arms` and the scout matchup matrix per variant were stopped mid-run.
 - CPU ~7–9 ms per tick at 50 brains (target ≤ 4 ms for phones later). A `CpuCommander` exists but loses to plain brains.
 - Despite the architecture, the lead sees stationary duels: behaviors exist but rarely win the utility contest, or the
@@ -78,7 +81,7 @@ Weapons, movement physics, and `Match` (combat; request changes), selection, gro
 - 2026-09-15 (ai agent, unattended): baseline green at 72cc9f3. CP1 and CP2 were announced ready in control's and combat's
   briefs but not merged to `main` during this run, so ai built against K1/K2/K3 through adapters, then **previewed both
   checkpoints in a throwaway merge** and fixed what broke; both checkpoints have since been merged here for real, and
-  all six of combat's requests to ai are done. Details and tables: [../unit_ai.md](../unit_ai.md) "Round 3".
+  all six of combat's requests to ai are done. Details and tables: [../unit_ai.md](../../../unit_ai.md) "Round 3".
   **X1–X6 and both stretch items are complete**, nothing is blocked, and one design question is open for rules and
   combat (what a scout's counter is). `make remote T=check` green on the last commit (558 tests, scenarios 33 passed +
   1 pending, sim baseline `d7967d8b36d4417b` for glibc-2.43, recorded on purpose).

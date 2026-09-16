@@ -1,9 +1,12 @@
 # Stream: assets (arena kit, faction vehicles, outriggers)
 
-> Read [../orchestration.md](../orchestration.md), [../art_direction.md](../art_direction.md),
-> [../game_design.md](../game_design.md) (*Factions*, the wear spectrum, *The arena kit*, *Artillery deploys before
-> firing*), [../workstreams.md](../workstreams.md) (K4 is yours; lead gate 1), [references/concept_review.md](references/concept_review.md)
-> (the review page), [references/asset_prompts.md](references/asset_prompts.md), and `assets/README.md`. You own models,
+> **Archived 2026-09-15:** round 3 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md), [../art_direction.md](../../../art_direction.md),
+> [../game_design.md](../../../game_design.md) (*Factions*, the wear spectrum, *The arena kit*, *Artillery deploys before
+> firing*), [../workstreams.md](../../../workstreams.md) (K4 is yours; lead gate 1), [references/concept_review.md](../../references/concept_review.md)
+> (the review page), [references/asset_prompts.md](../../references/asset_prompts.md), and `assets/README.md`. You own models,
 > props, dressing, and galleries in `game/theme/**` not owned by feel (`roster/`, `arena_kit/`, `prison_dozer/`,
 > `gallery/`, new `factions/`, cyberpunk vehicle and prop parts), `assets/**` except `assets/audio/` and
 > `assets/announcer/`, `tools/assets/`, `mk/assets.mk`, `art_direction.md`, and the asset references.
@@ -29,7 +32,7 @@
   textured asphalt floor, the tap-to-approve review page (`make art-review-page`), the Meshy ledger.
 - Web `.pck` 20.3 MB; the roster gallery draws ~331k primitives for 10 vehicles plus the arena (phones want far less).
 - The artillery's outrigger legs are baked into its hull, deployed.
-- Round-2 record: [archive/round2/art.md](archive/round2/art.md).
+- Round-2 record: [archive/round2/art.md](../round2/art.md).
 
 ## Backlog (ungated items first; gated items as reviews come back)
 

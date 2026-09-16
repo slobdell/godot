@@ -1,8 +1,11 @@
 # Stream: feel (impact: weapon effects, hits, sound, feedback)
 
-> Read [../orchestration.md](../orchestration.md), [../game_design.md](../game_design.md) (*Round 3 direction*,
-> *Weapons feel*), [../workstreams.md](../workstreams.md) (you consume K1 and K2), [../art_direction.md](../art_direction.md),
-> and [references/fx_tricks.md](references/fx_tricks.md) (pooling, tier budgets, the FX lab). You own
+> **Archived 2026-09-15:** round 3 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md), [../game_design.md](../../../game_design.md) (*Round 3 direction*,
+> *Weapons feel*), [../workstreams.md](../../../workstreams.md) (you consume K1 and K2), [../art_direction.md](../../../art_direction.md),
+> and [references/fx_tricks.md](../../references/fx_tricks.md) (pooling, tier budgets, the FX lab). You own
 > `game/theme/fx/**`, `game/theme/audio/`, `assets/audio/`, `game/combat/impact.gd`, the weapon, shell, beam, and
 > tracer effect scenes and scripts in `game/theme/cyberpunk/` (`fx_*`, `tracer_shell.gd`, `laser_beam.gd`),
 > `game/ui/widgets/**`, `game/ui/hud.tscn`, `mk/fx.mk`, and `fx_tricks.md`.
@@ -19,7 +22,7 @@
 
 - Pooled FX with quality tiers, the FX lab and `make fx-bench`, tracer shells, laser beams, muzzle flashes and hit
   sparks, fake light splats, burning kill sites (`fire_sites.gd`), synthesized engine and crowd sound, cyber HUD widgets.
-- The lead has not heard the synthesized sounds (art's question 2 in [archive/round2/art.md](archive/round2/art.md)).
+- The lead has not heard the synthesized sounds (art's question 2 in [archive/round2/art.md](../round2/art.md)).
 - Today's shots all look similar: small, frequent blasts with little weight.
 
 ## Backlog (in order)
