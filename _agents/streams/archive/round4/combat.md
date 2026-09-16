@@ -1,11 +1,14 @@
 # Stream: combat (suppression, faction rosters, scale)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 4 direction*: suppression, army size and factions; *Factions*), [../workstreams.md](../workstreams.md)
-> (**L2 and L3 are yours and are CP2**), [../balance.md](../balance.md) and [../determinism.md](../determinism.md).
+> **Archived 2026-09-16:** round 4 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
+> (*Round 4 direction*: suppression, army size and factions; *Factions*), [../workstreams.md](../../../workstreams.md)
+> (**L2 and L3 are yours and are CP2**), [../balance.md](../../../balance.md) and [../determinism.md](../../../determinism.md).
 > You own `game/units/`, `game/combat/` except `impact.gd`, `game/match/`, `game/tank/`, `game/arena/` + `arenas/`,
 > `tools/{match_series,matchup_matrix,make_arenas,combat_duel,matchup_search}.py`, `mk/match.mk`,
-> `game/modes/match_runner_mode.gd`, `_agents/balance.md`. Round 3: [archive/round3/combat.md](archive/round3/combat.md).
+> `game/modes/match_runner_mode.gd`, `_agents/balance.md`. Round 3: [archive/round3/combat.md](../round3/combat.md).
 
 ## The lead's direction (2026-09-16)
 
@@ -97,7 +100,7 @@ Elements, formations and drills (doctrine), brains (ai), the camera and HUD (con
 **L2 suppression and effective fire.** Every round that resolves stamps the ground it swept into a coarse decaying
 grid, one per team (`ThreatField`, `game/combat/threat_field.gd`: 6 m cells, 1 s half-life). Units in that fire get
 suppressed, which costs accuracy and turret tracking, and above `Tank.PINNED_SUPPRESSION` (0.6) counts as pinned.
-Numbers, reasons and the deliberate simplifications: [balance.md](../balance.md) *Round 4: suppression and effective
+Numbers, reasons and the deliberate simplifications: [balance.md](../../../balance.md) *Round 4: suppression and effective
 fire*. The API other streams build on:
 
 | Call | Meaning |
@@ -151,7 +154,7 @@ spawn jitter, and regenerated `arenas/*.json` spawn lists.
 
 ### X2 done (2026-09-16): suppression measured, and it needs ai and doctrine to pay off
 
-Every number and how to reproduce it: [balance.md](../balance.md) *X2: does suppression actually bite?*. The
+Every number and how to reproduce it: [balance.md](../../../balance.md) *X2: does suppression actually bite?*. The
 mechanics do what the lead asked for, in isolation:
 
 - one machine gun streaming across a lane makes it a beaten zone; three cost a crossing IFV **4.5× the damage** and
@@ -187,7 +190,7 @@ compensate for unused mechanics. Two fixes for the two streams that own the deci
 ### X3 done (2026-09-16): heavies already shield the fragile, and by a lot
 
 No guard buff, as the brief asked: a shell stops at the first hull it meets and armor facing decides the cost.
-Measured (`make remote T="test FILTER=combat_screening"`, numbers in [balance.md](../balance.md) *X3*): four cannon
+Measured (`make remote T="test FILTER=combat_screening"`, numbers in [balance.md](../../../balance.md) *X3*): four cannon
 shells at a Lancer from 58 m **destroy it** when it stands alone or with its escort 10 m off the line, and cost it
 **nothing at all** when a dozer is on the line — the dozer soaks 405 of its 450 instead. The trade is 2.8 shells to
 kill the screen against 0.8 to kill what it screens, so a heavy in the right place is worth about three and a half
@@ -216,7 +219,7 @@ army size falls out of the costs, exactly as the lead asked, measured at `Units.
 Two new mechanics were all the code it needed: **hover** (swings to face like tracks, keeps its momentum like wheels
 — a Skimmer through a hard turn travels 22° off its own nose) and **field repair** (`repair_radius_m` /
 `repair_hp_per_second`; a gun truck beside a tanker mends 60 → 110 hp in 10 s, one 50 m away mends nothing).
-Every number and every design call: [balance.md](../balance.md) *X4*.
+Every number and every design call: [balance.md](../../../balance.md) *X4*.
 
 Things I changed on purpose that others should know about:
 - **`ArmyCatalog.from_game()` now offers the default faction only** (`game/garage/`, a paused stream). Its screens,
@@ -266,7 +269,7 @@ New targets (mine): `make scale-bench`, `make faction-shots`, `make faction-matr
 ### X6 done (2026-09-16): faction vs faction measured; the gangs are the open item
 
 `make remote T="faction-matrix SEEDS=5 TIME=150"` plays every pair at 5200 points, counterbalanced (the same seeds
-from both colours). 60 matches, ~25 min. Full table in [balance.md](../balance.md) *X6*.
+from both colours). 60 matches, ~25 min. Full table in [balance.md](../../../balance.md) *X6*.
 
 **Averaged win rate: Condemned 70%, Law 63%, Syndicate 47%, road gangs 23%.** Match length **90–102 s** at 24–43
 vehicles a side, which is a good length for a full-scale battle.
@@ -292,7 +295,7 @@ the number worth acting on, and the gangs are the faction to watch in it.
 
 The physics half is four small changes (wrecks to collision layer 4 instead of a disabled shape, `HIT_MASK` 3 → 7,
 `screen_for` reporting wrecks, and — ai's — `Perception.WORLD_MASK` 1 → 5 for sight). Full plan in
-[balance.md](../balance.md) *Stretch*.
+[balance.md](../../../balance.md) *Stretch*.
 
 **I did not ship it, and the reason is the point:** nothing tells a brain a wreck is in its line of fire.
 `has_line_of_sight` uses `Perception.WORLD_MASK`, which excludes wrecks, so brains would believe they had a clear

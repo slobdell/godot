@@ -1,5 +1,9 @@
 # Workstreams: the current round
 
+> **Round 4 is closed** (merged into `main` 2026-09-16; briefs archived in `streams/archive/round4/`). Round 5 isn't
+> planned yet: see HANDOFF.md. Ownership, contracts (C1–C8, K1–K5, L1–L5), gates and worktree mechanics below still
+> apply; the stream table is round 4's record.
+>
 > **Round 4, planned 2026-09-16.** How rounds work (roles, lifecycle, the worker contract, the kickoff prompt) is in
 > [orchestration.md](orchestration.md): read it first. This file is round 4's streams, ownership, contracts, gates, and
 > invariants. Rounds 1–3 are archived in `streams/archive/round1..3/`.

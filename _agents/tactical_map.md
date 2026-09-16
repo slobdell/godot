@@ -4,7 +4,7 @@
 > that frames what your force can see, elements that run doctrine when you give them tasks, and a HUD that survives
 > 30 units a side. Everything after "History" (v1–v3: squad grammar, drills, the mobile tap map) is kept for
 > reference; v3 still runs behind `--touch-map`. Design: [game_design.md](game_design.md) *Controlling units* and
-> *Round 4 direction*; brief: [streams/control.md](streams/control.md).
+> *Round 4 direction*; brief: [streams/archive/round4/control.md](streams/archive/round4/control.md).
 
 ## v5: what changed from v4
 

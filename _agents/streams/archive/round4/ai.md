@@ -1,11 +1,14 @@
 # Stream: ai (execution, cost at scale, the tactics harness)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 4 direction*: doctrine, suppression, army size, offline tactics discovery), [../workstreams.md](../workstreams.md)
-> (you consume doctrine's L1 and combat's L2/L3), [../unit_ai.md](../unit_ai.md) (your architecture and ladder).
+> **Archived 2026-09-16:** round 4 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
+> (*Round 4 direction*: doctrine, suppression, army size, offline tactics discovery), [../workstreams.md](../../../workstreams.md)
+> (you consume doctrine's L1 and combat's L2/L3), [../unit_ai.md](../../../unit_ai.md) (your architecture and ladder).
 > You own `game/ai/` except `doctrine.gd`, `game/agent/`, `tools/agent.py`, `tools/ai_ladder.py`, `mk/ai.mk`,
 > `tests/ai_scenarios/`, and `_agents/{tank_brain,squad_ai_design,unit_ai}.md`.
-> Round 3: [archive/round3/ai.md](archive/round3/ai.md).
+> Round 3: [archive/round3/ai.md](../round3/ai.md).
 
 ## The lead's direction (2026-09-16)
 

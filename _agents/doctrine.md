@@ -475,4 +475,4 @@ more lines — volume doesn't get a line past the priority queue.
 
 ## Open questions and requests
 
-_See the stream's Status in `_agents/streams/doctrine.md`._
+_See the stream's Status in `_agents/streams/archive/round4/doctrine.md`._

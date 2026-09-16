@@ -1,11 +1,14 @@
 # Stream: audio (sound effects, the announcer for real, dynamic music)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
+> **Archived 2026-09-16:** round 4 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
 > (*Round 4 direction*: audio; *The arena announcer* including the **humor direction**), and
-> [../workstreams.md](../workstreams.md) (**L5 is yours**; lead gate 1 is now approved). You own `game/announcer/`,
+> [../workstreams.md](../../../workstreams.md) (**L5 is yours**; lead gate 1 is now approved). You own `game/announcer/`,
 > `game/audio/` (new), `assets/announcer/`, `assets/audio/`, `assets/music/` (new), `game/theme/audio/`,
 > `tools/announcer/`, `tools/audio/` (new), `mk/announcer.mk`, `mk/audio.mk` (new), `tests/announcer/`.
-> Round 3: [archive/round3/announcer.md](archive/round3/announcer.md) and [archive/round3/feel.md](archive/round3/feel.md)
+> Round 3: [archive/round3/announcer.md](../round3/announcer.md) and [archive/round3/feel.md](../round3/feel.md)
 > (feel built the effect *triggers*; you own how they sound).
 
 ## The lead's direction (2026-09-16)

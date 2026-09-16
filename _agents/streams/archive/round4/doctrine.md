@@ -1,8 +1,11 @@
 # Stream: doctrine (elements, formations, battle drills)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 4 direction*: doctrine, suppression, factions), [../workstreams.md](../workstreams.md) (**L1 is yours and is
-> CP1**), [../squad_ai_design.md](../squad_ai_design.md) and [../tank_brain.md](../tank_brain.md) (what exists today).
+> **Archived 2026-09-16:** round 4 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
+> (*Round 4 direction*: doctrine, suppression, factions), [../workstreams.md](../../../workstreams.md) (**L1 is yours and is
+> CP1**), [../squad_ai_design.md](../../../squad_ai_design.md) and [../tank_brain.md](../../../tank_brain.md) (what exists today).
 > You own `game/tactics/` (new), `doctrines/`, `game/ai/doctrine.gd`, `mk/tactics.mk` (new), and a new
 > `_agents/doctrine.md` (your design doc).
 

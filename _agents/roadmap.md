@@ -33,24 +33,20 @@ archived stream briefs).
 | | assets: stackable ISO containers, giant ad screens, neon signs, artillery outriggers, 33 faction concepts reviewed by the lead, **15 faction vehicles in 3D** plus a wreck husk | archive/round3/assets.md, art_direction.md |
 | | announcer: match-event contract and fixtures, the banter director, 429 lines, transcripts and the booth page (no audio generated yet) | archive/round3/announcer.md |
 
-## Now: Round 4 (planned 2026-09-16)
+| 2026-09-16 | **Round 4: control, doctrine, combat, ai, audio**, merged 2026-09-16 | streams/archive/round4/ |
+| | control: the vision-framed camera (zoom capped by ground your force can see), element focus with edge chips and alerts, the radar as the map, tasks not geometry, 30-a-side command measured, faction pick, a cinematic camera | archive/round4/control.md |
+| | doctrine: elements with leaders, formations and movement techniques from Army literature, battle drills, faction tables, parity by construction, the doctrine page | archive/round4/doctrine.md, doctrine.md |
+| | combat: suppression and effective fire, heavies shielding the fragile, three factions playable (15 vehicles, 11 weapons, hover, field repair), the simulation 30–58% cheaper, a faction matrix | archive/round4/combat.md, balance.md |
+| | ai: brains executing doctrine, deliberate suppression (fire at ground), beaten-zone avoidance, champion x4t9 | archive/round4/ai.md, unit_ai.md |
+| | audio: the announcer voiced for real (589 lines, 2,372 recordings, whole sentences after stitching was rejected), variance gated, the booth live, a cinematic sound mix, MatchMood, the music pipeline | archive/round4/audio.md |
 
-Goal: **doctrine, vision, and scale.** The lead played round 3 ("this is for sure much better") and asked for a camera
-that shows only what the force can see, elements that run real battle drills chosen by a leader, suppression that makes
-those drills bite, ~30 units a side with faction-sized rosters, and audio that stops sounding like an Atari.
-Streams and briefs: [workstreams.md](workstreams.md).
+## Now: round 5 (not planned yet)
 
-| Stream | Outcome |
-|---|---|
-| **control** | Vision-framed camera, element focus, off-screen markers and alerts, command at 30+ a side |
-| **doctrine** | Element leaders, formations and movement techniques from real doctrine, battle drills, faction doctrines |
-| **combat** | Suppression and effective fire, protecting fragile units, faction rosters, scale |
-| **ai** | Doctrine execution, ≤ 4 ms per tick at 60 units, suppression-aware behavior, the tactics ladder |
-| **audio** | The real announcer run, cinematic sound effects, match mood, the dynamic music pipeline |
+Round 4 is merged and green (843 tests). The next round starts from the lead's playtest and the open items in
+HANDOFF.md: the renderer's per-instance uniform limit at 30 a side (nobody owns `game/theme/**`), the road gangs' 23%
+win rate, ElevenLabs sound effects, music stems, and the offline tactics-discovery harness.
 
-Paused: netcode, army and progression, new Meshy art.
-
-## Next (after round 4, order to be decided)
+## Next (after round 5, order to be decided)
 
 - **Play online for real,** within the lead's cost strategy (servers only match players and route packets;
   server_management.md §5): the new rules replicated in player-hosted matches, deploy the broker on one cheap box and

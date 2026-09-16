@@ -1,10 +1,13 @@
 # Stream: control (the vision-framed camera, command at scale)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 4 direction*: camera and vision, doctrine, army size), and [../workstreams.md](../workstreams.md) (L4 is
+> **Archived 2026-09-16:** round 4 is merged into `main`. This brief and its Status are the record of what the stream did;
+> the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
+> (*Round 4 direction*: camera and vision, doctrine, army size), and [../workstreams.md](../../../workstreams.md) (L4 is
 > yours; you consume doctrine's L1 and combat's L3). You own `game/control/`, `game/ui/` except `widgets/**` and
 > `hud.tscn`, `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, `mk/command.mk`, and
-> `_agents/tactical_map.md`. Round 3's brief and report: [archive/round3/control.md](archive/round3/control.md).
+> `_agents/tactical_map.md`. Round 3's brief and report: [archive/round3/control.md](../round3/control.md).
 
 ## The lead's direction (2026-09-16)
 
