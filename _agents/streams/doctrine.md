@@ -304,6 +304,24 @@ from 27 to 52 without another edit here. `Army.parse_scaled` can go.
 3. Faction tables want a real roster to sit on (combat's L3): today every unit is `condemned`, so
    `Elements._table_for` always loads the Condemned table in a real match.
 
+### Proposed lesson for orchestration.md (orchestrator's call)
+
+Round 4 hit the same bug three times in two streams, and in every case the symptom pointed at content while
+the cause was an ordering rule. Suggested wording for the *Lessons* list:
+
+> **A behaviour that looks under-written is usually being starved by a rule above it.** Round 4, three times
+> in two streams: the announcer's Veteran seemed short of material and was actually being silenced by a
+> priority rule; doctrine's react-to-contact restarted every update, so no maneuver that followed it ever
+> finished; and its encircle and bait drills stole the element from each other every tick, so neither
+> completed once. Each time the obvious fix was "write more of it" or "the behaviour isn't good enough", and
+> the real fix was one line of precedence. Before adding content to a behaviour that seems weak or quiet,
+> log what *selected* it each tick and check whether something upstream keeps pre-empting it.
+
+Audio's companion rule, already in their README and brief, generalises past both of us: **a recorded line
+outlives the number that justified it** — nothing the booth says can be edited, only re-recorded for credits,
+so an assertion about how the game works is a promise the build has to keep. When in doubt, describe rather
+than evaluate. It applies to any artefact that is expensive to change after the fact.
+
 ### Proposed edits to workstreams.md (orchestrator's call)
 
 - **L1, as built:** `element_changed(id)` and `leader_lost(id, fallen, successor)` are signals on **`Elements`**
