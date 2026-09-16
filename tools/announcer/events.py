@@ -42,6 +42,13 @@ REQUIRED: dict[str, dict[str, str]] = {
 }
 EVENT_TYPES = tuple(REQUIRED)
 
+# Fields that may name a unit that is already gone. A shell outlives the crew that fired it — Shell keeps the
+# shooter's *name* and Match looks it up when the round lands, handling the null — so a vehicle really can be
+# killed by something that died first. Everything else stays strict, so a unit dying twice, or being targeted
+# after death, is still caught. (Diagnosed by the ai stream, 2026-09-16: rare until brains started firing to
+# suppress, which puts far more rounds in the air when a shooter dies.)
+MAY_BE_DEAD = ("shooter", "killer")
+
 
 def _kind_error(value, kind: str) -> str:
     """Returns "" when value is of kind, else a short description of what was expected."""
@@ -192,7 +199,7 @@ def validate_timeline(events: list) -> list[str]:
                 problems.append("%s: %s %s is not in match_start" % (where, id_field, unit_id))
             elif type_field in event and event[type_field] != type_of[unit_id]:
                 problems.append("%s: %s is a %s, not a %s" % (where, unit_id, type_of[unit_id], event[type_field]))
-            elif unit_id in dead:
+            elif unit_id in dead and id_field not in MAY_BE_DEAD:
                 problems.append("%s: %s %s was already destroyed" % (where, id_field, unit_id))
         if event["type"] == "unit_destroyed":
             if event["victim"] in team_of and team_of[event["victim"]] != event["victim_team"]:

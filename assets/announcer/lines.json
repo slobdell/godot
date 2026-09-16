@@ -5996,6 +5996,78 @@
     "after_caller"
    ],
    "text": "Quite so, Joseph. Viewers should note that formation driving on public roads remains an offence."
+  },
+  {
+   "id": "color.formation.column.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_column"
+   ],
+   "text": "A column sees everything and shoots almost nothing. Eight seconds before they hurt anybody. A wedge does it in under four."
+  },
+  {
+   "id": "color.formation.column.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_column"
+   ],
+   "text": "Column's for getting somewhere, not for arriving. If they meet anything now, only the front vehicle has a shot."
+  },
+  {
+   "id": "color.formation.line.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "formation",
+    "formation_line"
+   ],
+   "text": "Line abreast covers less than half the circle. That's the trade: everything forward, nothing behind."
+  },
+  {
+   "id": "color.drill.ambush.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other."
+  },
+  {
+   "id": "color.drill.ambush.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there."
+  },
+  {
+   "id": "caller.drill.ambush.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "They're turning into it! They're driving straight at them!",
+   "intensity": 3
+  },
+  {
+   "id": "caller.drill.ambush.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "drill",
+    "drill_near_ambush"
+   ],
+   "text": "Oh, they're going right back at them! Straight into the guns!",
+   "intensity": 3
   }
  ]
 }

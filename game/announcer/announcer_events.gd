@@ -35,6 +35,13 @@ const REQUIRED := {
 			"drill": "str", "formation": "str", "distance": "num", "target": "str"},
 }
 
+## Fields that may name a unit that is already gone. A shell outlives the crew that fired it — `Shell` keeps the
+## shooter's *name* and `Match` looks it up when the round lands, handling the null — so a vehicle really can be
+## killed by something that died first. Everything else stays strict, so a destroyed unit reported as dying twice,
+## or being targeted after death, is still a bookkeeping bug. (Diagnosed by the ai stream, 2026-09-16: it went from
+## rare to common when brains started firing to suppress, which puts far more rounds in the air.)
+const MAY_BE_DEAD := ["shooter", "killer"]
+
 ## Fields that name a unit instance, paired with the field naming its type.
 const ID_FIELDS := [["unit_id", "unit"], ["shooter", "shooter_unit"], ["victim", "victim_unit"],
 		["killer", "killer_unit"], ["target_id", "target_unit"]]
@@ -240,7 +247,7 @@ static func validate_timeline(events: Array) -> PackedStringArray:
 				problems.append("%s: %s %s is not in match_start" % [where, pair[0], unit_id])
 			elif event.has(pair[1]) and event[pair[1]] != type_of[unit_id]:
 				problems.append("%s: %s is a %s, not a %s" % [where, unit_id, type_of[unit_id], event[pair[1]]])
-			elif dead.has(unit_id):
+			elif dead.has(unit_id) and not pair[0] in MAY_BE_DEAD:
 				problems.append("%s: %s %s was already destroyed" % [where, pair[0], unit_id])
 		if event["type"] == "unit_destroyed":
 			if team_of.has(event["victim"]) and team_of[event["victim"]] != event["victim_team"]:

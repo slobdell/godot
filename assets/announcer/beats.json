@@ -44,7 +44,9 @@
   "weak_spot": 5,
   "another": 5,
   "repeat": 5,
-  "stolen": 5
+  "stolen": 5,
+  "drill_near_ambush": 22,
+  "drill_assault_through": 10
  },
  "tag_intensity": {
   "first_blood": 1,
@@ -55,7 +57,8 @@
   "comeback": 1,
   "rout": 1,
   "hurt": 1,
-  "another": 1
+  "another": 1,
+  "drill_near_ambush": 1
  },
  "moments": {
   "intro": {
