@@ -253,6 +253,26 @@ that means something.
 The Condemned at 70% are the other outlier, but they are the reference roster and the gangs' collapse distorts the
 average. Judge that one after the same re-run.
 
+### Stretch, scoped but deliberately NOT shipped: wrecks as cover
+
+Today `Tank._set_alive(false)` disables the collision shape, so a wreck blocks nothing. Making a dead hull stop
+rounds is a genuinely good tactical layer at 30 a side, and the physics half is small:
+
+1. A wreck moves to **collision layer 4** instead of having its shape disabled (`Tank._set_alive`). Nothing masks
+   layer 4 for movement — a Tank's mask is 3 — so wrecks never block driving, which keeps them out of the navmesh
+   problem entirely (the navmesh is baked once at startup).
+2. `Match.HIT_MASK` and `Shell.HIT_MASK` go from 3 to **7**, so shells and beams stop at a wreck.
+3. `Match.screen_for` starts reporting wrecks as well as living teammates (its test currently asserts the opposite,
+   on purpose).
+4. Sight is a separate decision and is **ai's**: `Perception.WORLD_MASK` would go from 1 to 5 for wrecks to block
+   line of sight too.
+
+**Why it is not in this round.** Nothing tells a brain that a wreck is in its line of fire. `has_line_of_sight` uses
+`Perception.WORLD_MASK`, which excludes wrecks, and there is no line-of-fire check against them, so brains would
+believe they had a clear shot and keep putting 320-damage shells into a dead hull — visibly worse play, landing in
+the same week as integration. The physics half and the AI half have to arrive together. Estimated cost once they
+do: an afternoon, plus a sim-baseline re-record and a faction-matrix re-run, because it changes every fight.
+
 **Open:** `Doctrine.MAX_SQUADS` is 5 (a player-UI number), but 28 vehicles need six squads or more, so faction armies
 are validated through `Army.parse_scaled`, which runs `Doctrine.parse` over slices of five squads. Requested of the
 doctrine stream: raise `MAX_SQUADS` (or make it a UI-only cap) and this wrapper goes away.
