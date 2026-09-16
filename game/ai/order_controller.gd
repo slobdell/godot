@@ -66,6 +66,10 @@ const SCAN_EVERY_TICKS := 6
 ## Never read by decisions.
 static var profiling := false
 static var profile_usec := 0
+## ...and `profile_detail` (--profile-parts) adds the finer laps inside moving and shooting. They cost about 190 usec
+## per tick at 60 units in clock calls alone, so they are off by default: the headline ai_usec_per_tick must measure
+## the AI, not the measuring.
+static var profile_detail := false
 
 @export var tank: Tank
 ## Where to look for other tanks (Match/Tanks).
@@ -215,6 +219,15 @@ func interrupt() -> void:
 	_progress_goal = Vector3.INF
 
 
+## Measurement only (make ai-perf): add the microseconds since `since` to a profile part, and return the clock now.
+static func _lap(part: String, since: int) -> int:
+	if not profile_detail:
+		return 0
+	var now := Time.get_ticks_usec()
+	TankBrain.profile_parts[part] = int(TankBrain.profile_parts.get(part, 0)) + now - since
+	return now
+
+
 func _sense() -> void:
 	visible_enemy_names = PackedStringArray()
 	# Only halt_on_contact reads what this tank sees; skipping the sight rays otherwise was the biggest
@@ -271,9 +284,14 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var goal := Vector3(move_order["x"], 0.0, move_order["z"])
 			# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
 			var direct: bool = move_order.get("direct", false)
-			var waypoint := _around_friends(goal if direct else _next_waypoint(goal, delta))
+			var lap := Time.get_ticks_usec() if profile_detail else 0
+			var routed := goal if direct else _next_waypoint(goal, delta)
+			lap = _lap("move.path", lap)
+			var waypoint := _around_friends(routed)
+			lap = _lap("move.avoid", lap)
 			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
 			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
+			lap = _lap("move.remaining", lap)
 			var drive: Vector2
 			var radius := _wheel_radius()
 			if radius > 0.0:
@@ -285,7 +303,8 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				drive = steer.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
-			_track_progress(goal, drive, direct)
+			_track_progress(goal, drive, remaining)
+			_lap("move.steer", lap)
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
@@ -310,28 +329,38 @@ func _around_friends(waypoint: Vector3) -> Vector3:
 	var brain := self as TankBrain
 	if brain == null or brain.game_match == null:
 		return waypoint
-	var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
-	var to_waypoint := Vector3(waypoint.x, 0.0, waypoint.z) - here
-	var distance := to_waypoint.length()
+	var here_x := tank.global_position.x
+	var here_z := tank.global_position.z
+	var to_x := waypoint.x - here_x
+	var to_z := waypoint.z - here_z
+	var distance := sqrt(to_x * to_x + to_z * to_z)
 	if distance < 1.0:
 		return waypoint
-	var direction := to_waypoint / distance
-	var nearest := INF
+	var dir_x := to_x / distance
+	var dir_z := to_z / distance
+	var nearest := minf(distance + AVOID_WIDTH, AVOID_LOOKAHEAD)
 	var detour := waypoint
-	for ally: Tank in AiTickCache.team_tanks(brain.game_match, tank.team):
-		if ally == tank or not ally.is_alive():
+	# X2: the tick's shared living-ally table (positions already extracted; every controller runs before any tank
+	# moves, so these are this tick's positions), and a squared-distance reject before any of the lane math. At 60
+	# units this loop was the single biggest cost of executing orders.
+	var my_name := String(tank.name)
+	var reach_squared := nearest * nearest + AVOID_WIDTH * AVOID_WIDTH
+	for ally: Dictionary in AiTickCache.allies(brain.game_match, tank.team):
+		var position: Vector3 = ally["position"]
+		var dx := position.x - here_x
+		var dz := position.z - here_z
+		if dx * dx + dz * dz >= reach_squared or ally["name"] == my_name:
 			continue
-		var offset := Vector3(ally.global_position.x - here.x, 0.0, ally.global_position.z - here.z)
-		var along := offset.dot(direction)
-		if along <= 0.0 or along >= minf(distance + AVOID_WIDTH, AVOID_LOOKAHEAD) or along >= nearest:
+		var along := dx * dir_x + dz * dir_z
+		if along <= 0.0 or along >= nearest:
 			continue
-		var lateral := offset.x * direction.z - offset.z * direction.x
+		var lateral := dx * dir_z - dz * dir_x
 		if absf(lateral) >= AVOID_WIDTH:
 			continue
 		nearest = along
 		# Pass on the side away from it (ties: its right).
-		var across := Vector3(direction.z, 0.0, -direction.x)
-		detour = Vector3(ally.global_position.x, 0.0, ally.global_position.z) - across * (AVOID_CLEARANCE if lateral >= 0.0 else -AVOID_CLEARANCE)
+		var clearance := AVOID_CLEARANCE if lateral >= 0.0 else -AVOID_CLEARANCE
+		detour = Vector3(position.x - dir_z * clearance, 0.0, position.z + dir_x * clearance)
 	return detour
 
 
@@ -345,9 +374,10 @@ func _wheel_radius() -> float:
 	return _wheel_radius_value
 
 
-## Counts ticks without getting at least 0.5 m closer (along the path) to the current move goal.
-func _track_progress(goal: Vector3, drive: Vector2, direct := false) -> void:
-	var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
+## Counts ticks without getting at least 0.5 m closer (along the path) to the current move goal. `remaining` is the
+## distance the caller already worked out for steering — computing it again here walked the whole path a second time
+## every tick for every moving unit (X2).
+func _track_progress(goal: Vector3, drive: Vector2, remaining: float) -> void:
 	if _flat_distance(goal, _progress_goal) > 2.0 or drive == Vector2.ZERO:
 		_progress_goal = goal
 		_progress_best = remaining
@@ -411,7 +441,7 @@ func _apply_unstick(cmd: TankCommand, delta: float) -> void:
 
 func _apply_weapon(cmd: TankCommand) -> void:
 	engaged_target = ""
-
+	var lap := Time.get_ticks_usec() if profile_detail else 0
 	var target: Tank = null
 	if tank.weapon["kind"] == Weapons.Kind.ARC:
 		_apply_indirect(cmd)
@@ -430,6 +460,7 @@ func _apply_weapon(cmd: TankCommand) -> void:
 					target = named
 				elif weapon_order.get("fallback", false):
 					target = _scanned_shootable()
+	lap = _lap("weapon.scan", lap)
 	if target == null:
 		if watch_point != null:
 			_cover((watch_point as Vector3), cmd)
@@ -458,7 +489,9 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	if tank.ammo_fraction() <= LOW_AMMO_FRACTION and distance > float(weapon["preferred_max"]):
 		in_range = false
 	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
+	lap = _lap("weapon.aim", lap)
 	cmd.fire = _clear_to_fire(in_range and aimed and tank.ready_to_fire(), aim)
+	_lap("weapon.lanes", lap)
 
 
 ## Direct fire needs a clear line of sight from this tank AND the target being seen: by the team when a
@@ -468,14 +501,27 @@ func _shootable(enemy: Tank) -> bool:
 		return false
 	var seen: bool = spotter.call(enemy) if spotter.is_valid() \
 			else tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius
-	return seen and Perception.has_line_of_sight(tank, enemy)
+	# X2 measured, and rejected: answering this with the memoized 2D cover map instead of a physics ray made picking a
+	# target *slower* at 60 units (650 usec per tick against 573). The two agree (139 of 139 lines, test_ai_cover_map),
+	# but with a memo this big a hit costs about as much as the ray it saves.
+	return Perception.has_line_of_sight(tank, enemy)
 
 
 ## _nearest_shootable(), re-scanned every SCAN_EVERY_TICKS while the last pick is still shootable (a nearer enemy
 ## may have appeared), and every tick while there's nothing to shoot (a delay there leaves loaded guns idle).
 func _scanned_shootable() -> Tank:
 	_scan_left -= 1
-	if _scan_left > 0 and _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive() and _shootable(_scan_pick):
+	var pick_alive := _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive()
+	# X2, order execution at a lower rate for units that aren't firing: a gun that is still reloading cannot shoot
+	# anything, so neither re-picking a target nor re-testing the sight line to the current one buys anything this
+	# tick. The turret keeps tracking the pick meanwhile. The moment the gun IS loaded the line is tested again
+	# below, so a shot is never taken at something this tank cannot see. At 60 tanks on 5 s cannons this was the
+	# single biggest cost of executing orders: a physics ray per unit per tick, plus a full scan every 6.
+	if pick_alive and not tank.ready_to_fire():
+		if _scan_left <= 0:
+			_scan_left = SCAN_EVERY_TICKS
+		return _scan_pick
+	if _scan_left > 0 and pick_alive and _shootable(_scan_pick):
 		return _scan_pick
 	_scan_left = SCAN_EVERY_TICKS
 	_scan_pick = _nearest_shootable()

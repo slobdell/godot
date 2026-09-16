@@ -81,8 +81,8 @@ _Round 4, ai stream. Updated 2026-09-15._
 
 | # | Item | Plan | State |
 |---|---|---|---|
-| X1 | Execute doctrine (L1) | `ElementFeed` adapter + `StubElements` (the L1 shape) so this builds before CP1; brains gain an element context: hold slot **and sector of fire** while fighting, bound fast and halt on the leader's call, support-by-fire keeps firing (shift fire instead of going silent) | planning |
-| X2 | The cost of 30 a side | Profile `make ai-perf` at 60 units, then in order: one shared per-team knowledge pass, extended think LOD, cheaper target scoring (typed arrays, precomputed matchup tables), order execution at a lower rate for units not firing. Target ≤ 4 ms/tick at 60 | not started |
+| X1 | Execute doctrine (L1) | `ElementFeed` adapter + `StubElements` (the L1 shape) so this builds before CP1; brains gain an element context: hold slot **and sector of fire** while fighting, bound fast and halt on the leader's call, support-by-fire keeps firing | **done** (224fd8c) |
+| X2 | The cost of 30 a side | Profile `make ai-perf` at 60 units, then in order: one shared per-team knowledge pass, extended think LOD, cheaper target scoring, order execution at a lower rate for units not firing. Target ≤ 4 ms/tick at 60 | in progress |
 | X3 | Suppression-aware (L2) | `ThreatFeed` adapter over `Tank.suppression` / `Match.threat_field` / `Match.is_beaten_zone` with a stub; avoid beaten zones in CombatMotion + TacticalQuery, break contact when pinned, suppress on purpose | not started |
 | X4 | Tactics harness | `make tactics-ladder`: seeded headless matches across doctrine × brain × matchup × arena × faction, ELO table + "which drill wins where" report | not started |
 | X5 | Faction behavior | Gang encircle/circle, Law bounding behind suppression, Syndicate kiting — as *execution* styles; doctrine picks the tactic | not started |
@@ -95,7 +95,21 @@ _Round 4, ai stream. Updated 2026-09-15._
 
 ### Done
 
-(nothing yet)
+**X1, brains execute their element's doctrine** (commit `224fd8c`). Built against contract L1 with a stub
+(`StubElements`) in ai's own paths, because CP1 hasn't landed; nothing names doctrine's classes, so the same
+scenarios will run against the real `Elements`. `ElementFeed` is the mirror of `OrderFeed`: it normalizes
+`element.state()` into the few things a brain executes — my slot, my sector of fire, and whether I am the half that
+moves or the half that shoots — and degrades to "behave as before" when doctrine publishes less.
+
+| Measured on builder0 (`tests/ai_scenarios/scenario_elements.gd`) | Result |
+|---|---|
+| Fights from its slot: worst drift from the formation slot, same 3 v 2 attack | **14.0 m in an element vs 38.8 m without one**, 12 vs 11 shots |
+| Covers its sector: ticks each of a halted pair spent engaged, and on whom | 955 each, the flank tank on the enemy **10 m farther away** because that one was in its sector |
+| Bounds and halts on the call | rushed at **8.0 m/s of a 9.0 m/s top speed** (overwatch half 0.0), stopped **1 tick** after the leader's halt, with no new order |
+| Base of fire keeps firing while the assault crosses its front | shots in both halves of 24 s, **0** fired through a friendly |
+
+Also: `tests/ai_scenarios/run_scenarios.gd` used to load a scenario file that didn't parse as `null`, run nothing and
+exit 0. It fails now.
 
 ### Questions for the lead
 

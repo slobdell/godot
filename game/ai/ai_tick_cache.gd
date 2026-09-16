@@ -26,6 +26,11 @@ static var _allies: Array = [[], []]
 ## [team] -> intel names sorted, per intel refresh.
 static var _intel_names: Array = [[], []]
 static var _intel_bucket := -1
+## [team] -> {contact name: the shared half of a brain's contact entry}, per intel refresh (X2). Intel itself only
+## changes on a refresh and every brain thinks once per refresh, so these dozen fields were being rebuilt 30 times
+## over for identical data. Shared: brains duplicate before adding their own (offset-dependent) fields.
+static var _contacts: Array = [{}, {}]
+static var _contacts_bucket := -1
 
 
 static func _refresh(game_match: Match) -> void:
@@ -81,6 +86,53 @@ static func intel_names(game_match: Match, team: int) -> Array:
 			names.sort()
 			_intel_names[side] = names
 	return _intel_names[team]
+
+
+## `team`'s intel as the shared half of a brain contact entry, once per intel refresh: everything that doesn't depend
+## on which of our tanks is looking. A brain duplicates its entry and fills in `age` and the five fields that need its
+## own position. `reload_windows` is a per-team brain feature, so `gun_ready_in` belongs here too.
+## Shared: duplicate before modifying.
+static func contact_prototypes(game_match: Match, team: int) -> Dictionary:
+	var bucket := game_match.tick / Match.INTEL_EVERY_TICKS
+	if _contacts_bucket != bucket or _match_id != game_match.get_instance_id():
+		_refresh(game_match)
+		_contacts_bucket = bucket
+		for side in 2:
+			var reload_windows: bool = BrainVariants.for_team(side).get("reload_windows", false)
+			var table := {}
+			var intel: Dictionary = game_match.intel[side]
+			for contact_name: String in intel_names(game_match, side):
+				var known: Dictionary = intel[contact_name]
+				var weapon_id := String(known["weapon"])
+				table[contact_name] = {
+					"name": contact_name,
+					"position": known["position"],
+					"velocity": known["velocity"],
+					"forward": known["forward"],
+					"health": known["health"],
+					"shield": known.get("shield", 0),
+					"weapon": weapon_id,
+					"unit": known.get("unit", ""),
+					"turret_forward": known["turret_forward"],
+					"visible": known["visible"],
+					"seen_tick": int(known["seen_tick"]),
+					# X3 reload windows: seconds until its gun is loaded again (0 when loaded, unknown, or fast).
+					"gun_ready_in": _gun_ready_in(game_match, contact_name) if reload_windows else 0.0,
+					# Saves a Weapons.PROFILES lookup per brain per contact ("can it reach me").
+					"weapon_range": float(Weapons.profile(weapon_id)["range"]),
+					# Filled in per brain (they need the looker's position): age, exposed_face, facing_ally,
+					# aiming_at_me, watching_me, threatens_me.
+					"age": 0,
+				}
+			_contacts[side] = table
+	return _contacts[team]
+
+
+static func _gun_ready_in(game_match: Match, contact_name: String) -> float:
+	var enemy := tanks_by_name(game_match).get(contact_name) as Tank
+	if enemy == null or float(enemy.weapon.get("reload", 0.0)) < TankBrain.SLOW_GUN_RELOAD:
+		return 0.0
+	return gun_ready_in(game_match, enemy)
 
 
 static func _on_fired(_muzzle: Vector3, _direction: Vector3, id: int) -> void:

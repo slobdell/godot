@@ -14,10 +14,19 @@ extends OrderController
 ## K1: brains execute control's orders themselves, so control's stand-in OrderExecutor leaves them alone.
 const EXECUTES_ORDERS := true
 const THINK_EVERY_TICKS := 6
-## Think LOD (_agents/unit_ai.md §8): a brain with no known enemy within LOD_RADIUS thinks this often instead.
-## Squad orders still take effect on the next tick (G3).
+## Think LOD (_agents/unit_ai.md §8, extended in round-4 X2), three rates by how close the fight is:
+##   THINK_EVERY_TICKS       something can shoot me or I can shoot it — the micro that needs 10 Hz,
+##   NEAR_THINK_EVERY_TICKS  an enemy is known within LOD_RADIUS but nothing is in reach: closing, repositioning,
+##                           taking up a position. A decision 200 ms later changes nothing at that distance,
+##   IDLE_THINK_EVERY_TICKS  nothing known within LOD_RADIUS.
+## The rate is recomputed on every intel refresh and a brain that drops to a faster rate thinks that tick, so coming
+## into range is never noticed late. Orders and element calls arrive on their own signals, so none of this delays
+## them (G3, K1, L1).
+const NEAR_THINK_EVERY_TICKS := 12
 const IDLE_THINK_EVERY_TICKS := 18
 const LOD_RADIUS := 130.0
+## "In reach" for the fight rate: either gun's range plus this (meters).
+const FIGHT_MARGIN := 15.0
 ## The current choice gets this multiplier, so near-equal options don't flip-flop...
 const COMMIT_BONUS := 1.15
 ## ...and it's kept at least this long unless something is EMERGENCY_MARGIN× better.
@@ -322,10 +331,13 @@ func think(_delta: float) -> void:
 		var count := IncomingFire.count_for(game_match, tank)
 		think_tick = count > _incoming_count
 		_incoming_count = count
-	# Think LOD wake-up: an idle brain checks each fresh intel refresh for an enemy coming near.
-	if _think_every == IDLE_THINK_EVERY_TICKS and game_match.tick % Match.INTEL_EVERY_TICKS == 0 and _enemy_near():
-		_think_every = _contact_think_ticks(BrainVariants.for_team(tank.team))
-		fresh_order = true
+	# Think LOD wake-up: every intel refresh, re-rate how close the fight is. Dropping to a faster rate (an enemy
+	# came near, or came into reach) means thinking on this very tick, so nothing is noticed late.
+	if game_match.tick % Match.INTEL_EVERY_TICKS == 0:
+		var rate := _think_rate()
+		if rate < _think_every:
+			fresh_order = true
+		_think_every = rate
 	if not fresh_order and not think_tick:
 		return
 	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
@@ -338,11 +350,7 @@ func think(_delta: float) -> void:
 	if OrderController.profiling:
 		profile_parts["situation"] = int(profile_parts.get("situation", 0)) + Time.get_ticks_usec() - clock
 		clock = Time.get_ticks_usec()
-	_think_every = IDLE_THINK_EVERY_TICKS
-	for c: Dictionary in situation["contacts"]:
-		if tank.global_position.distance_to(c["position"]) <= LOD_RADIUS:
-			_think_every = _contact_think_ticks(situation["features"])
-			break
+	_think_every = _think_rate()
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	if OrderController.profiling:
 		profile_parts["decide"] = int(profile_parts.get("decide", 0)) + Time.get_ticks_usec() - clock
@@ -552,7 +560,7 @@ func _faces_someone_else(known: Dictionary, contact_name: String, my_name: Strin
 
 ## Measurement only: adds the time since `since` to profile_parts[part] while profiling; returns now.
 static func _lap(part: String, since: int) -> int:
-	if not OrderController.profiling:
+	if not OrderController.profile_detail:
 		return 0
 	var now := Time.get_ticks_usec()
 	profile_parts[part] = int(profile_parts.get(part, 0)) + now - since
@@ -570,12 +578,21 @@ func _order_arrive() -> float:
 	return ORDER_ARRIVE if radius <= 0.0 else clampf(radius * WHEELS_ARRIVE_RADII, ORDER_ARRIVE, WHEELS_ARRIVE_MAX)
 
 
-## True if team intel knows an enemy within LOD_RADIUS of this tank.
-func _enemy_near() -> bool:
-	for known: Dictionary in (game_match.intel[tank.team] as Dictionary).values():
-		if tank.global_position.distance_to(known["position"]) <= LOD_RADIUS:
-			return true
-	return false
+## How often this brain should think right now (think LOD): the fight rate when either gun can reach the nearest
+## known enemy, the near rate when one is within LOD_RADIUS, the idle rate otherwise. Reads the team's shared contact
+## table (AiTickCache), so a brain's own rate costs a handful of distance checks.
+func _think_rate() -> int:
+	var my_position := tank.global_position
+	var my_reach := float(tank.weapon["range"]) + FIGHT_MARGIN
+	var rate := IDLE_THINK_EVERY_TICKS
+	for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
+		var distance := my_position.distance_to(known["position"])
+		if distance > LOD_RADIUS:
+			continue
+		if distance <= maxf(my_reach, float(known["weapon_range"]) + FIGHT_MARGIN):
+			return _contact_think_ticks(BrainVariants.for_team(tank.team))
+		rate = NEAR_THINK_EVERY_TICKS
+	return rate
 
 
 static func label(option: Dictionary) -> String:
@@ -1106,35 +1123,27 @@ func build_situation() -> Dictionary:
 					or intel[contact_name]["weapon"] == "mortar":
 				keep[contact_name] = true
 	lap = _lap("s.select", lap)
+	# X2: everything that doesn't depend on where I am was built once for the whole team this intel refresh.
+	var prototypes := AiTickCache.contact_prototypes(game_match, team)
 	for contact_name in names:
-		if (not keep.is_empty() and not keep.has(contact_name)) or not intel.has(contact_name):
+		if (not keep.is_empty() and not keep.has(contact_name)) or not prototypes.has(contact_name):
 			continue
 		var known: Dictionary = intel[contact_name]
-		var offset: Vector3 = known["position"] - my_position
-		contacts.append({
-			"name": contact_name,
-			"position": known["position"],
-			"velocity": known["velocity"],
-			"forward": known["forward"],
-			"health": known["health"],
-			"shield": known.get("shield", 0),
-			"weapon": known["weapon"],
-			"unit": known.get("unit", ""),
-			"turret_forward": known["turret_forward"],
-			"visible": known["visible"],
-			"age": game_match.tick - int(known["seen_tick"]),
-			"exposed_face": TankBrain.face_hit(known["forward"], offset),
-			# Only near enough to flank or prioritize matters (reach + 30 m); the check is contacts × allies.
-			"facing_ally": offset.length() <= flank_reach and _faces_someone_else(known, contact_name, my_name),
-			"aiming_at_me": known["visible"] and TankBrain.points_at(known["turret_forward"], -offset, COS_AIMED_AT_ME),
-			# X3 reload windows: seconds until its gun is loaded again (0 when loaded or unknown).
-			"gun_ready_in": _gun_ready_in(contact_name) if features.get("reload_windows", false) else 0.0,
-			# Its gun pointed my way when last seen (within ~20°), visible or not: is it watching the corner?
-			"watching_me": TankBrain.points_at(known["turret_forward"], -offset, COS_WATCHING),
-			# In its weapon's reach with a clear line to me (CoverMap): it can shoot me right now.
-			"threatens_me": known["visible"] and my_position.distance_to(known["position"]) <= float(Weapons.profile(known["weapon"])["range"]) + 5.0
-					and cover_map.clear_line_coarse(known["position"], my_position),
-		})
+		var contact: Dictionary = (prototypes[contact_name] as Dictionary).duplicate()
+		var position: Vector3 = contact["position"]
+		var offset := position - my_position
+		var visible: bool = contact["visible"]
+		contact["age"] = game_match.tick - int(contact["seen_tick"])
+		contact["exposed_face"] = TankBrain.face_hit(contact["forward"], offset)
+		# Only near enough to flank or prioritize matters (reach + 30 m); the check is contacts × allies.
+		contact["facing_ally"] = offset.length() <= flank_reach and _faces_someone_else(known, contact_name, my_name)
+		contact["aiming_at_me"] = visible and TankBrain.points_at(contact["turret_forward"], -offset, COS_AIMED_AT_ME)
+		# Its gun pointed my way when last seen (within ~20°), visible or not: is it watching the corner?
+		contact["watching_me"] = TankBrain.points_at(contact["turret_forward"], -offset, COS_WATCHING)
+		# In its weapon's reach with a clear line to me (CoverMap): it can shoot me right now.
+		contact["threatens_me"] = visible and my_position.distance_to(position) <= float(contact["weapon_range"]) + 5.0 \
+				and cover_map.clear_line_coarse(position, my_position)
+		contacts.append(contact)
 
 	lap = _lap("s.contacts", lap)
 	var objective: Variant = null
