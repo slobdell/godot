@@ -29,6 +29,8 @@ func test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire() -> void:
 			swept["in_zone"], ignored["in_zone"], swept["arrived"], ignored["arrived"],
 			swept["suppression"], ignored["suppression"], swept["rounds"], ignored["rounds"],
 			swept["peak"], ignored["peak"], Match.BEATEN_ZONE_DENSITY])
+	print("      steered off its route on %d / %d ticks, looked and found no way round on %d / %d" % [
+			swept["detours"], ignored["detours"], swept["no_way"], ignored["no_way"]])
 	print("      route ahead beaten on %d / %d ticks; swung %d m / %d m off the straight line to the goal" % [
 			swept["ahead_beaten"], ignored["ahead_beaten"], swept["detoured"], ignored["detoured"]])
 	# How far off the straight line it went is printed, not asserted: a lane is swept in TIME as well as space, and
@@ -78,6 +80,8 @@ func _cross_the_lane(avoid: bool) -> Dictionary:
 	var goal := Vector3(-84, 0, -24)
 	var start := mover.global_position
 	_issue(s.orders(), [mover], "move", {"to": [goal.x, goal.z]})
+	OrderController.fire_detours = 0
+	OrderController.fire_no_way_round = 0
 	await s.start()
 	var in_zone := 0
 	var worst := 0.0
@@ -108,7 +112,8 @@ func _cross_the_lane(avoid: bool) -> Dictionary:
 	for gun in guns:
 		fired += s.shots_by(gun)
 	var result := {"in_zone": in_zone, "arrived": arrived, "suppression": worst, "rounds": fired,
-			"peak": peak_density, "ahead_beaten": ahead_beaten, "detoured": detoured}
+			"peak": peak_density, "ahead_beaten": ahead_beaten, "detoured": detoured,
+			"detours": OrderController.fire_detours, "no_way": OrderController.fire_no_way_round}
 	BrainVariants.reset()
 	s.dispose()
 	return result
