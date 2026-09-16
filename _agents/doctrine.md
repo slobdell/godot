@@ -280,6 +280,39 @@ Facing your flanks at a halt is worth about a quarter of the element. The parked
 away marginally sooner (its guns were already pointed down the lane the enemy came from) and then paid for
 every second afterwards, because its flank armour was toward the guns.
 
+### Next: what suppression changes (combat's L2, measured on their branch)
+
+Combat measured that suppression bites: a pinned tank hits 5 of 13 shells at 60 m where a calm one hits 13 of
+13, and takes 208 ticks instead of 105 to swing its turret 90°; one machine gun settles a tank at 0.42
+suppression, two at 0.82. **But over 16 seeded matches the mean suppression per living unit is 0.03 and
+nothing is ever pinned**, because no unit ever fires at *ground it wants denied* — brains only shoot at
+things they can kill. So the base of fire in a far ambush or a support-by-fire task suppresses nobody.
+
+What that means for the drills, in order:
+
+1. **A base of fire needs an order that means "keep firing into that lane".** K1 has no such verb and the
+   brains have no such option (`fire_at_will`, `target`, `hold_fire`, and `aim` never fires — trip-up 25).
+   ai owns that option; doctrine owns *where* it points, which is the drill's job. Until it exists,
+   `support_by_fire` and the base of fire half of `far_ambush` are engagement orders, not suppression.
+2. **Trigger drills off suppression, not just hits.** `Tank.is_pinned()` (above 0.6) is the honest trigger
+   for react-to-contact and break-contact; `ElementSituation.suppression_of()` already reads `Tank.suppression`
+   when the build has it and falls back to recent hits when it doesn't.
+3. **Route the maneuver element around the beaten zone.** `Match.is_beaten_zone(team, from, to)` and
+   `Match.threat_along(team, from, to)` let the far-ambush flank pick a lane that is not being swept; today it
+   swings a fixed `flank_m` off the line of contact and takes whatever ground is there. (Note the signature:
+   the contract wrote `is_beaten_zone(from, to)`, and combat added the team first, because incoming fire has
+   to belong to somebody.)
+4. **Then re-measure**, with `make tactics-measure`: bounding overwatch (0.51 today against 0.74 for
+   traveling) is the number that should move, and dispersion against splash is the other. Both halves of the
+   trade should flip together — the base of fire starts buying something, and the element that bounds behind
+   it starts surviving.
+5. **The sharpest test will be a Law element** (combat's X4 rosters): the **sonic emitter** applies 4.0
+   suppression per second in a cone, about ten times a machine gun, and the **gas rocket truck** 5.0 a burst
+   over 14 m — both with almost no damage. They are suppression *delivery systems*, so an element built
+   around "shut it down, then walk in" is where support by fire either pays or visibly doesn't. The Law's
+   table already bounds at every threat level; if suppression works, that table should stop being the
+   cautious one and start being the effective one.
+
 ### Drills (seed per scenario, `make tactics-drills`)
 
 | Drill | What happened |

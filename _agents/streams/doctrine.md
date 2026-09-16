@@ -176,6 +176,15 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
 
 ### Merge notes (shared files)
 
+- **Known conflict, `tests/test_match_spawns_and_results.gd`:** combat rewrote the same fixture in d916dc2
+  (`test_a_full_faction_army_a_side_spawns_clear_of_itself`, deriving from `Army.MAX_ARMY_UNITS` = 45, and the
+  front-row test from `Match.SLOT_X.size()`). **Take combat's version** — it is the same fix by a better
+  constant — and keep the invariant they named: `Army.MAX_ARMY_UNITS <= Doctrine.MAX_UNITS` (45 <= 52 with
+  their spawn grid). Mine only exists because my branch has to be green before theirs merges.
+- `tests/test_match_spawns_and_results.gd`: the full-army fixture and its assertion now come from
+  `Doctrine.MAX_UNITS` instead of a typed-in 50, so the test follows the caps (it was `5 x 5 = 50`, which the
+  squad-cap change would have broken, and combat's 52-slot grid would have broken again). The method is now
+  `test_a_full_army_a_side_spawns_clear_of_itself`.
 - `tests/test_army.gd`: one line — the army-JSON sweep skips `doctrine_*.json`, which are doctrine TABLES
   (contract L1), a different schema in the same folder. `tests/test_tactics_doctrine.gd` validates those.
 - `Makefile`: one word — `doctrine-page` joins `LIGHT_GOALS` (it is a one-second Python script and should not
@@ -184,6 +193,22 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
   `mk/*.mk` include, no Makefile edit), `tests/tactics/`, `tests/test_tactics_*.gd`, `_agents/doctrine.md`,
   and `tools/tactics/` (proposed ownership: doctrine).
 - The sim baseline is untouched: nothing installs Elements in the shipped modes yet.
+
+### After CP2 (combat's suppression landed on stream/combat, 2026-09-16)
+
+Combat reports L2 measured and biting — a pinned tank hits 5 of 13 shells where a calm one hits 13 of 13 —
+but **mean suppression per living unit across 16 matches is 0.03 and nothing is ever pinned**, because no unit
+fires at ground it wants denied. The plan, with the API names, is in _agents/doctrine.md *Next: what
+suppression changes*. Short version: a base of fire needs a brain-level "keep firing into that lane" option
+(ai's, requested by combat); doctrine then decides where it points, triggers drills off `Tank.is_pinned()`,
+routes the far-ambush flank around `Match.is_beaten_zone(team, from, to)`, and re-runs `make tactics-measure`.
+
+**Done for combat (their X3 request):** `Doctrine.MAX_SQUADS` is 12, not 5 — a faction army at the baseline
+budget is ~28 vehicles and does not fit in five squads of five, and `Match.load_doctrine` never cared. The
+lead's "say 5" is now `Doctrine.PLAYER_MAX_SQUADS`, which is what the garage offers (`army_catalog.gd` already
+takes the smaller of its own cap and this file's, so the builder is unchanged). `MAX_UNITS` is now
+`Match.SPAWN_SLOTS` — as many units as the arena has places to put them — so it follows combat's spawn grid
+from 27 to 52 without another edit here. `Army.parse_scaled` can go.
 
 ### Next steps
 
