@@ -3,6 +3,10 @@
 
 # Pinned toolchain downloaded by `make bootstrap` (Godot editor + export templates).
 .tools/
+# ...and the same name without a slash: in a worktree .tools is a *symlink* to the main checkout's toolchain, and
+# a pattern ending in "/" never matches a symlink. Without this line `git add -A` commits the link, and checking it
+# out in the main checkout replaces the real 300 MB toolchain with a link to itself (audio, 2026-09-16).
+.tools
 
 # Everything `make` produces: web export, server binary, screenshots.
 build/
