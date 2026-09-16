@@ -7,8 +7,10 @@ Both offer the same four calls:
         alignment = {"characters": [...], "character_start_times_seconds": [...], "character_end_times_seconds": [...]}
     transcribe(path) -> text
 
-The real client reads the key from ELEVENLABS_KEY_ID (the lead's name for it) and never writes it anywhere. It is only
-constructed when someone runs generation for real (lead gate: the text is approved first).
+The real client reads the key from ELEVENLABS_API_KEY, or ELEVENLABS_KEY_ID (the lead's name for it), and never
+writes it anywhere. It is only constructed when someone runs generation for real (lead gate: the text is approved
+first). An ElevenLabs API key starts with "sk_"; the value shown in the dashboard's key list is only the key *id* and
+is rejected by the API, so we say so before sending anything (audio, 2026-09-16).
 
 The mock speaks each word as a short tone burst (silence between words, longer at punctuation) and returns exact
 character timings, so slicing, trimming, loudness, encoding, and the mixdown run on real audio. Its "speech to text"
@@ -27,7 +29,10 @@ import tempfile
 import wave
 from pathlib import Path
 
-KEY_ENV = "ELEVENLABS_KEY_ID"
+# Either name works; the first one that is set wins.
+KEY_ENVS = ("ELEVENLABS_API_KEY", "ELEVENLABS_KEY_ID")
+KEY_ENV = KEY_ENVS[1]
+KEY_PREFIX = "sk_"
 MODEL_ID = "eleven_multilingual_v2"
 STT_MODEL_ID = "scribe_v1"
 OUTPUT_FORMAT = "mp3_44100_128"
@@ -37,11 +42,27 @@ CREDITS_PER_CHARACTER = {"eleven_multilingual_v2": 1.0, "eleven_flash_v2_5": 0.5
 VOICE_SETTINGS = {"stability": 0.45, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": True}
 
 
+## The key from the environment, whichever name it is under ("" when neither is set).
+def environment_key() -> str:
+    for name in KEY_ENVS:
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
+
+
 class RealClient:
     def __init__(self, api_key: str | None = None, model_id: str = MODEL_ID):
-        key = api_key or os.environ.get(KEY_ENV, "")
+        key = api_key or environment_key()
         if not key:
-            raise RuntimeError("%s is not set; the key lives in the environment, never in a file" % KEY_ENV)
+            raise RuntimeError("neither %s is set; the key lives in the environment, never in a file"
+                               % " nor ".join(KEY_ENVS))
+        if not key.startswith(KEY_PREFIX):
+            raise RuntimeError(
+                "that looks like an ElevenLabs key *id*, not an API key: the API rejects it with "
+                "'API key ID used as API key'. Create or rotate a key at elevenlabs.io (Settings -> API Keys); the "
+                "%s... value is shown once. Export it as %s before the interactive guard in ~/.bashrc."
+                % (KEY_PREFIX, KEY_ENVS[0]))
         from elevenlabs.client import ElevenLabs  # imported here so dry runs and tests don't need the SDK
         from elevenlabs.types import VoiceSettings
 

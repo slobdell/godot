@@ -142,7 +142,9 @@ func test_round_one_saves_migrate_to_fixed_units() -> void:
 func test_every_shipped_doctrine_opens_in_the_builder() -> void:
 	var catalog := ArmyCatalog.from_game()
 	for file_name in DirAccess.get_files_at("res://doctrines/"):
-		if not file_name.ends_with(".json"):
+		# doctrine_<name>.json files are element doctrine TABLES (contract L1, round 4), not armies:
+		# tests/test_tactics_doctrine.gd checks those.
+		if not file_name.ends_with(".json") or file_name.begins_with("doctrine_"):
 			continue
 		var loaded := ArmyStore.read("res://doctrines/" + file_name)
 		assert_true(loaded.has("doctrine"), "%s reads" % file_name)

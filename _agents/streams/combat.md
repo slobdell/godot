@@ -80,3 +80,71 @@ Elements, formations and drills (doctrine), brains (ai), the camera and HUD (con
 ## Status
 
 - 2026-09-16: brief written for round 4. Nothing started.
+- 2026-09-16: **plan** (worker contract step 2). Ordered, smallest foundation first:
+  1. **X1a suppression** — `ThreatField` (a coarse decaying grid of where rounds fall), `Tank.suppression`/`pinned`,
+     `Match.threat_field(team)` / `is_beaten_zone(...)`, K2 `suppression_applied`. Tests per field.
+  2. **X1b roster schema** — `faction` on every profile, `Units.FACTIONS`/`roster()`, faction CPU armies,
+     `--green-faction=`/`--rust-faction=`. Then **announce CP2**.
+  3. **X2** tune suppression and measure (lane crossing, hit rate while pinned, pin-then-flank series).
+  4. **X3** heavies shielding the fragile (position does the work, no guard buff).
+  5. **X4** the three new rosters (gangs, law, syndicate) on the existing art.
+  6. **X5** scale: spawn grid, arena sizes, sim cost at 25/40/60/100 a side.
+  7. **X6** re-measure the matrix and faction-vs-faction; write balance.md.
+  8. Stretch: wrecks as cover.
+
+### X1 done (2026-09-16): L2 suppression + L3 roster schema — **CP2 is ready to merge**
+
+**L2 suppression and effective fire.** Every round that resolves stamps the ground it swept into a coarse decaying
+grid, one per team (`ThreatField`, `game/combat/threat_field.gd`: 6 m cells, 1 s half-life). Units in that fire get
+suppressed, which costs accuracy and turret tracking, and above `Tank.PINNED_SUPPRESSION` (0.6) counts as pinned.
+Numbers, reasons and the deliberate simplifications: [balance.md](../balance.md) *Round 4: suppression and effective
+fire*. The API other streams build on:
+
+| Call | Meaning |
+|---|---|
+| `Tank.suppression` (0..1), `Tank.is_pinned()`, `Tank.suppress(amount)` | the crew's state; `sync_suppression` is published for non-simulating peers |
+| `Match.threat_field(team) -> ThreatField` | the fire **coming at** `team`. `at(point)`, `peak_along(from, to)`, `mean_along(from, to)`, `hot_cells()` |
+| `Match.is_beaten_zone(team, from, to) -> bool` | would this move cross a wall of bullets? |
+| `Match.threat_along(team, from, to) -> float` | the same as a score, for ranking routes |
+| `Match.shot_spread(weapon, moving, suppression) -> float` | radians; the one place accuracy penalties live |
+| `Weapons.suppression(weapon) -> float` | per round (per second for cones): MG 0.10, 25 mm 0.35, cannon 1.2, laser 0.15, mortar 3.0, flame 1.5/s |
+| K2 events | `weapon_fired` and `projectile_impact` gained `suppression_applied` |
+
+**Contract deviation, please relay:** the brief wrote `Match.is_beaten_zone(from, to)`, which has no way to say
+*whose* incoming fire is meant. It ships as `is_beaten_zone(team, from, to)` (and `threat_field(team)` exactly as
+specified). ai and doctrine: pass the asking unit's own team.
+
+**L3 roster schema.** `Units.FACTIONS` / `DEFAULT_FACTION` / `FACTION_NAMES`, a `faction` key on every profile,
+`Units.roster(faction)`, `Units.roster_average_cost(faction)`, `Army.archetypes_for(faction)`,
+`Army.typical_size(faction, budget)`, `Army.load_army(name, seed, budget, faction)` and
+`--green-faction=` / `--rust-faction=` on the match runner. Only the Condemned have units so far (X4 adds the other
+three); the faction tests run over whatever factions have a roster and tighten by themselves.
+
+**Scale plumbing that L3 needed** (part of X5, done early because a 28-vehicle army has nowhere to stand otherwise):
+`Units.BASELINE_BUDGET` 5200 (= 28 Condemned a side, the lead's ~30), `Army.MAX_ARMY_UNITS` 45,
+`Match.SPAWN_SLOTS` 27 → 52 (13 columns × 4 rows; the front row stays at `BASE_Z`, so pace is unchanged), z-clamped
+spawn jitter, and regenerated `arenas/*.json` spawn lists.
+
+**Verified:** `make remote T=check` green (681 tests, every smoke, determinism); new tests
+`test_combat_suppression.gd` (13) and `test_combat_factions.gd` (12). **The sim baseline moved on purpose** to
+`glibc-2.43 e9e5761beebbde59` (recorded twice on builder0, identical): suppression changes shot spread, and
+`Match.state_hash` now includes each unit's suppression.
+
+**Requests to other streams**
+- **doctrine:** raise `Doctrine.MAX_SQUADS` (5) or make it a UI-only cap. 28 vehicles need six squads or more, so
+  faction armies are validated through `Army.parse_scaled`, which runs `Doctrine.parse` over slices of five squads.
+  That wrapper exists only to avoid editing your file, and should go away.
+- **ai / doctrine:** `threat_field` / `is_beaten_zone` are live; the signature note above.
+- **orchestrator:** `HANDOFF.md` ("Sim baseline `glibc-2.43 d7967d8b36d4417b`") and `_agents/workstreams.md`
+  (invariant 2, same hash) both name the old baseline and need the new one at merge.
+
+**Merge notes (shared files):** `game/modes/match_runner_mode.gd` (mine) gained the two faction flags; no edits to
+`project.godot`, `export_presets.cfg`, `game/main.gd`, `Makefile` or `mk/core.mk`.
+
+**Questions for the lead** (nothing is blocked on them)
+1. **Faction art is 47 MB and excluded from the exports** (`export_presets.cfg` `game/theme/factions/*`). The new
+   rosters will therefore *play* as their own factions but *look* like the Condemned (the C6 fallback). Shipping the
+   models would grow the web pack from 0.8 MB to ~48 MB, which is a cross-stream call, not mine.
+2. **The Lancer sits in two rosters.** Resolved the way *Factions* asks for ("same roles, wildly different
+   trade-offs"): the Condemned keep today's Lancer, and the Syndicate gets its own lancer-role vehicle with its own
+   numbers. Say if you wanted one of them to lose it instead.
