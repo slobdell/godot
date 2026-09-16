@@ -124,7 +124,8 @@ The announcer never affects gameplay.
   famous podcaster. Keep the *character* original: no real name, catchphrases, or references in lines, and before
   shipping, the lead confirms the voice doesn't imitate a real person (ElevenLabs' policy; sound-alike voices in
   commercial products carry legal risk even as parody). Resolve the voice id by name, as mavlink-hud does.
-- **Color commentator: "the Veteran"** (recommended 2026-09-15, voice not made yet). A former arena champion, an ex-convict
+- **Color commentator: "the Veteran": `veteran`** in the lead's ElevenLabs account (made 2026-09-15 from the Voice Design
+  prompt below). A former arena champion, an ex-convict
   who won his freedom: the expert with scars. Deep, slow, gravelly, dry humor; roasts bad tactics; "I survived that
   arena" callbacks. The classic pairing of a hype caller and an expert. **Casting notes:** if he's voiced as a Black man,
   he is the authority, never a hype-man foil for the caller; describe the voice by timbre and personality (e.g. "deep,
@@ -133,6 +134,29 @@ The announcer never affects gameplay.
 - **Arena PA and sponsor reads: "the Corporate Co-host"** (placeholder name Celeste Vance): **`corporate2`** in the lead's ElevenLabs account (2026-09-15). A polished
   host the Syndicate assigned to the broadcast. A woman, for the most distinct timbre of the three voices. The
   third alternative considered: a stiff, monotone Law liaison (deadpan, booed by the crowd).
+
+### The Veteran: Voice Design prompt (used for `veteran`, 2026-09-15)
+
+**Voice description** (ElevenLabs Voice Design):
+
+> A deep, gravelly male baritone in his late fifties, with a worn, weathered rasp from years of smoke and shouting.
+> Slow, deliberate, unhurried delivery with long pauses between thoughts — a man who has nothing left to prove and
+> never raises his voice. Warm but flat affect, dry and matter-of-fact even when describing violence. Neutral American
+> accent, working-class cadence, slightly rounded consonants from an old injury. The calm, grounded presence of a
+> former fighter turned broadcaster. Clean studio recording, close microphone, no background noise.
+
+**Preview text:**
+
+> I drove that floor for nine seasons. People ask what it's like. It's loud, and then it's very quiet, and you don't
+> remember the part in between. That crew out there is about to learn something about spacing. You can't park a tank in
+> the open like that, not in here. They'll want that one back. They all do.
+
+**What he is for** (the lead asked, 2026-09-15): he is not the comedian. (1) He makes the arena real: the only person in
+the booth who has been on the floor, never performing. (2) He teaches the game — why a scout beat a tank, why standing
+in the open killed someone — which is how a player learns counters, cover, and spacing without a tutorial. (3) He makes
+the caller funny: hype only reads as comedy next to something sober. (4) He carries the dystopia without narrating it
+(he kept his prison number; he signed the same paperwork those crews signed). His humor is dry and incidental; he is
+never trying to be funny and never explains himself. Expect **higher stability** than the caller's when tuning.
 
 ### The Corporate Co-host: Voice Design prompt and examples
 
@@ -172,7 +196,7 @@ graph she carries `sponsor_read`, `answer_disagree` (correcting the caller's lan
 
 ## Waiting on the lead
 
-- The Veteran's voice (ready: the caller `JR1` and the Corporate Co-host `corporate2`, 2026-09-15).
+- Nothing: all three voices exist (`JR1`, `veteran`, `corporate2`, 2026-09-15). The text review is the only gate left.
 - **Environment:** `ELEVENLABS_KEY_ID` and `MESHY_API_KEY` are exported before the interactive guard in `~/.bashrc`
   (fixed 2026-09-15), so agent shells see them. No ElevenLabs calls this round regardless.
 
@@ -214,17 +238,18 @@ Questions for the lead with the review:
    will be processed shortly"). Is the caller's hype authentic, not jokey? Is the Veteran's dark past (`color.lore.*`)
    the right amount?
 2. **Cost:** `make announcer-generate` (dry run) estimates **28,524 characters ≈ 28,500 credits** on
-   eleven_multilingual_v2 for all 701 clips (caller 12.5k, Veteran 9.3k, PA 6.7k; 19.3k for the two voices that exist
-   today), plus ~32 minutes of speech-to-text.
+   eleven_multilingual_v2 for all 701 clips (caller 12.5k, Veteran 9.3k, PA 6.7k — all three voices exist now, so this
+   is the whole bill), plus ~32 minutes of speech-to-text.
    Flash v2.5 would halve it; quality first per your standing direction, so v2 is the default.
 3. **Factions** (stretch): each faction has introductions, and the Law is booed; the Syndicate's kills get a product
    read ("The Syndicate congratulates its engineering team on another successful field test."). Read
    `gangs_vs_law_seed*.txt` and `syndicate_showcase_seed*.txt`. Right direction?
-4. **The Veteran's voice** still needs making in ElevenLabs (casting notes under *Voices*); his lines are skipped until a
-   voice with the name set in `lines.json` → `speakers.color.voice` exists.
+4. **All three voices exist** (`JR1`, `veteran`, `corporate2`); `lines.json` → `speakers` names them, and the pipeline
+   resolves them by name at generation time. Nothing is skipped for a missing voice anymore.
 5. After approval: `pip install -r tools/announcer/requirements.txt`, then `make announcer-generate APPROVED=1` (it
    resolves voices by name, skips what's recorded, prints credits, logs `assets/announcer/ledger.md`). Suggest a pilot
-   first: `make announcer-generate APPROVED=1 ONLY=caller.kill.13,caller.kill.52,pa.welcome.03` (~250 characters) to
+   first: `make announcer-generate APPROVED=1 ONLY=caller.kill.13,caller.kill.52,pa.welcome.03,color.lore.01,color.kill.07`
+   (~400 characters: a plain call, a stitched one with two slots, a sponsor-style read, and two of the Veteran's) to
    hear stitching before the bulk run.
 
 ### Decisions
