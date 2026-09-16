@@ -75,50 +75,135 @@ audio (audio).
 
 ## Status
 
-_Round 4, ai stream. Updated 2026-09-15._
+_Round 4, ai stream. Updated 2026-09-16. Branch `stream/ai`; `main` merged at 7fd1f1e (CP1 + CP2)._
 
-### Plan (backlog in order, smallest foundation first)
+### Where things are
 
-| # | Item | Plan | State |
-|---|---|---|---|
-| X1 | Execute doctrine (L1) | `ElementFeed` adapter + `StubElements` (the L1 shape) so this builds before CP1; brains gain an element context: hold slot **and sector of fire** while fighting, bound fast and halt on the leader's call, support-by-fire keeps firing | **done** (224fd8c) |
-| X2 | The cost of 30 a side | Profile `make ai-perf` at 60 units, then in order: one shared per-team knowledge pass, extended think LOD, cheaper target scoring, order execution at a lower rate for units not firing. Target ≤ 4 ms/tick at 60 | in progress |
-| X3 | Suppression-aware (L2) | `ThreatFeed` adapter over `Tank.suppression` / `Match.threat_field` / `Match.is_beaten_zone` with a stub; avoid beaten zones in CombatMotion + TacticalQuery, break contact when pinned, suppress on purpose | not started |
-| X4 | Tactics harness | `make tactics-ladder`: seeded headless matches across doctrine × brain × matchup × arena × faction, ELO table + "which drill wins where" report | not started |
-| X5 | Faction behavior | Gang encircle/circle, Law bounding behind suppression, Syndicate kiting — as *execution* styles; doctrine picks the tactic | not started |
-| X6 | Offline discovery groundwork | Slow-cadence element-task bridge mode, optional slow motion, `(state, decision, outcome)` log; distillation plan in `unit_ai.md`. No LLM in gameplay | not started |
+| # | Item | State |
+|---|---|---|
+| X1 | Execute doctrine (L1) | **done** — `224fd8c`, re-aimed at the real `Elements` in `7fd1f1e` |
+| X2 | The cost of 30 a side | **partly done** — `d2ff1c0`; 60 units cost 5327 µs (x4) / 4293 µs (x4t9) against a 4000 target. See below |
+| X3 | Suppression-aware (L2) | **done** — `c3a9df3` |
+| X4 | The tactics harness | not started |
+| X5 | Faction behavior | not started |
+| X6 | Offline discovery groundwork | not started |
 
-**Decisions taken where the brief left a choice** (one line each, expanded in `_agents/unit_ai.md` as they land):
-- X1 builds on **K1 orders as the transport** (the L1 contract says elements issue per-unit orders through `Orders`),
-  so the only new seam is the element's *read-only* state: formation, technique, drill, my slot and my sector of fire.
-  That keeps one command path into the brain and nothing to unwind when CP1 lands.
+### X1 — brains execute their element's doctrine
 
-### Done
-
-**X1, brains execute their element's doctrine** (commit `224fd8c`). Built against contract L1 with a stub
-(`StubElements`) in ai's own paths, because CP1 hasn't landed; nothing names doctrine's classes, so the same
-scenarios will run against the real `Elements`. `ElementFeed` is the mirror of `OrderFeed`: it normalizes
-`element.state()` into the few things a brain executes — my slot, my sector of fire, and whether I am the half that
-moves or the half that shoots — and degrades to "behave as before" when doctrine publishes less.
+`ElementFeed` is the mirror of `OrderFeed` for L1: it normalizes `element.state()` into the few things a brain
+executes — my slot, my sector of fire, and whether I am the half that moves or the half that shoots — and degrades to
+"behave as before" when doctrine publishes less. Built against a stub before CP1; when CP1 landed the shapes were
+different (slots are bare positions, sectors are DEGREES off the element heading, and there is no per-unit role) and
+only the adapter changed. A scenario runs doctrine's real `Elements` end to end so the next shape change fails there.
 
 | Measured on builder0 (`tests/ai_scenarios/scenario_elements.gd`) | Result |
 |---|---|
-| Fights from its slot: worst drift from the formation slot, same 3 v 2 attack | **14.0 m in an element vs 38.8 m without one**, 12 vs 11 shots |
-| Covers its sector: ticks each of a halted pair spent engaged, and on whom | 955 each, the flank tank on the enemy **10 m farther away** because that one was in its sector |
-| Bounds and halts on the call | rushed at **8.0 m/s of a 9.0 m/s top speed** (overwatch half 0.0), stopped **1 tick** after the leader's halt, with no new order |
-| Base of fire keeps firing while the assault crosses its front | shots in both halves of 24 s, **0** fired through a friendly |
+| Fights from its slot: worst drift, same 3 v 2 attack | **13.7 m in an element vs 34.9 m without one**, 12 vs 11 shots |
+| Covers its sector: a halted pair, ticks engaged and on whom | 960 each; the flank tank on the enemy **10 m farther away**, because that one was in its sector |
+| Bounds and halts on the call | rushed at **8.0 m/s of a 9.0 m/s top speed** (overwatch half 0.0), stopped **1 tick** after the halt, no new order needed |
+| Base of fire while the assault crosses its front | shots in both halves of 24 s, **0** through a friendly |
+| Against doctrine's real `Elements` | 4 of 4 members got a world slot and a sector of fire |
 
-Also: `tests/ai_scenarios/run_scenarios.gd` used to load a scenario file that didn't parse as `null`, run nothing and
-exit 0. It fails now.
+### X3 — reading a wall of bullets, and making one
+
+Suppression existed after CP2 but changed nothing: combat measured mean suppression 0.03 and units pinned 0.7% of the
+time because nothing suppressed on purpose, and doctrine measured bounding overwatch still *costing* survival because
+covering fire that can't suppress is a stopped vehicle. Now: a `suppress` weapon order that fires at ground, a
+SUPPRESS brain option that chooses to, movement scored against the field in the move executor (so orders, bounds and
+drills are all covered), and pinned crews read as worse *shooters* — worth flanking, not avoiding.
+
+| Measured on builder0, each against `x4ns` (the champion with L2 taken away) on the same seed | Result |
+|---|---|
+| Across a swept lane | **14 ticks in the beaten zone vs 33**, peak suppression 0.34 vs 0.38, still arrives |
+| Two machine guns pinning a tank while a third goes round it | suppression **1.00 vs 0.40**; the target landed **2 of 5 shells vs 5 of 5**; the flanker dealt **1311 vs 279** |
+
+Three things had to be true before avoidance worked, each measured: look ~34 m ahead (the next navmesh waypoint is a
+few metres — by then you are in it); the way round is a step **sideways**, not a shallower line to the same place; and
+the step must be committed to, or the unit wobbles along the edge of the fire (19 m off the line and it never
+arrived). A cooldown then had to be added so a wall across the whole frontage doesn't stop a unit forever — orders
+win in the end.
+
+### X2 — the cost of 30 a side: honest numbers, target not met
+
+`make ai-perf UNITS=n` (default 60, the round-4 target; `UNITS=50` repeats the round-2/3 numbers), `DETAIL=1` for the
+finer laps. All on builder0, two interleaved runs each; the machine swings ±30% with other worktrees' load.
+
+| When | x4 (champion) | x4t9 (thinks every 9 ticks in a fight) |
+|---|---|---|
+| Round 3, at 50 units | ~4700 | |
+| After X2's cuts, at 50 units | **3670** | |
+| After X2's cuts, at 60 units | 4529 / 4516 | 3994 / 4070 |
+| After CP2 + X3, at 60 units | 5501 / 5389 | 5058 / 4501 |
+| After caching the L2 source and staggering the route check | **5327** | **4293** |
+
+What was cut, in the brief's order: a shared per-team contact pass (`AiTickCache.contact_prototypes`, built once per
+intel refresh instead of 30 times over); a **graded** think LOD (6 ticks while either gun can reach, 12 while an enemy
+is within 130 m but nothing is in reach, 18 otherwise, re-rated every intel refresh so coming into range is never
+noticed late); no re-picking a target or re-testing its sight line while the gun is reloading; local avoidance over
+the tick's shared ally table with a squared-distance reject; and the remaining path distance no longer walked twice
+per tick.
+
+**Measured and rejected:** answering "can I see it" with the memoized 2D cover map instead of a physics ray made
+picking a target *slower* at 60 units (650 µs vs 573) — with a memo that big a hit costs about what the ray saves.
+
+**Honest reading:** the target is not met. Each micro-cut bought ~3%; the one structural lever is how often a brain
+thinks, and CP2 + X3 added about 900 µs back. Where the rest goes at 60 units (µs/tick, DETAIL=1): `move` 1180
+(`move.avoid` 767 before the last two cuts), `situation` 1347 (`s.cover` 532, `s.contacts` 382), `weapon` 837
+(`weapon.scan` 510), `decide` 516, `act` 353. The next levers, in order: gate the cover-fire tactical query to units
+that would actually choose COVER_FIRE (it runs for every brain with a target in reach, and `s.cover` is the largest
+single part), and cheaper target scoring in `decide`.
+
+**Note on the measurement:** the perf scenario is 60 identical cannon tanks in one brawl — the worst case, and harsher
+than a faction-sized army of mixed roles. Worth adding a faction-army variant next to it and reporting both, holding
+the headline to the all-tank case.
+
+### Decisions taken where the brief left a choice
+
+- **X1 rides on K1 orders as the transport** (L1 says elements issue per-unit orders through `Orders`), so the only
+  new seam is the element's read-only state. One command path into the brain, nothing to unwind.
+- **The X3 control is a brain variant (`x4ns`), not a changed world**, so every suppression measurement compares two
+  brains in the same fight rather than two different fights.
+- **Suppression is read live for contacts we can see** and left at 0 for remembered ones: a crew keeping its head down
+  is visible behavior. (Requested as an intel field from combat; not blocking.)
 
 ### Questions for the lead
 
-(none yet)
+(none)
 
 ### Requests to other streams
 
-(none yet)
+1. **doctrine** — `Element.state()` publishes no per-unit role and no `heading`. `ElementFeed` derives the role from
+   the movement technique or drill plus the verb of the K1 order the leader issued, and reads `heading` off the
+   element object, which both work but are guesses about intent. Publishing `roles: {unit: "bound"|"overwatch"|
+   "base_of_fire"|"maneuver"}` and `heading` in `state()` would make a bounding unit's "move fast, halt on the call"
+   exact instead of inferred. Not blocking: `tests/test_ai_elements.gd` pins both paths.
+2. **combat** — `Match.intel` entries don't carry `suppression`, so ai reads it off the live Tank in its own shared
+   per-team pass. An intel field next to `health`/`shield` would be cleaner. Also: `is_beaten_zone(team, from, to)`
+   with `from == to` reads as nothing (peak along a zero-length segment); "am I standing in it" needs
+   `threat_field(team).at(point)`. Both reported with numbers.
+3. **orchestrator** — `tests/run_tests.gd` (shared) appears to skip a test file that doesn't compile rather than
+   failing: `tests/test_ai_elements.gd` used 2-argument `assert_eq` throughout, never parsed, and a full `make check`
+   reported 749 passed without it. Fixed the same hole in `tests/ai_scenarios/run_scenarios.gd` (ai's own).
 
 ### Known issues
 
-- CP1 (doctrine's L1) and CP2 (combat's L2/L3) have not landed; X1 and X3 build against stubs in ai's own paths.
+- **X2's 4 ms target is not met** (above). Nothing regressed: 60 units cost less than they did before this round's
+  work, but CP2 and X3 added cost on top.
+- **X4, X5 and X6 are not started.** The tactics harness (X4) is the one other streams are waiting on: doctrine wants
+  to know which drill wins where, and combat wants faction-vs-faction near 50%.
+- Two test runners silently pass files that don't compile (see requests, 3).
+
+### What to playtest
+
+- `make skirmish` — watch a machine-gun unit: it should put fire on a tank it can't hurt while something else goes
+  round, and the nameplate reads "Keeping their heads down".
+- `make ai-shots` / `make remote T=ai-shots` — the driving trails.
+- `make remote T="ai-scenarios FILTER=scenario_elements"` and `FILTER=scenario_suppression` for the measurements above.
+
+### Merge notes
+
+- One additive line in control's `game/ui/command_icons.gd`: `"SUPPRESS": "Keeping their heads down"`. Its own comment
+  says unknown options render capitalized so ai can add them freely, but `test_command_icons` requires an entry.
+- The **sim baseline moved twice on purpose** and is now `glibc-2.43 10e95d54f5dd3efe` (recorded twice on builder0,
+  identical both times): first from X2's graded think LOD and the reload gating, then from X3's decisions.
+- `mk/ai.mk`: `ai-perf` gained `UNITS` and `DETAIL`.
