@@ -98,6 +98,9 @@ var events: PackedStringArray = []
 var _fire_detour: Variant = null
 var _fire_detour_until := 0
 var _fire_detour_again := 0
+## The L2 source for this match, resolved once (asking "do you answer L2" per move per tick is not free).
+var _fields: Object = null
+var _fields_match := 0
 var _reflex_armed: Array[bool] = []
 ## Flat world direction the turret holds when it has nothing to aim at (ZERO = not set yet).
 var _held_aim := Vector3.ZERO
@@ -146,6 +149,10 @@ const FIRE_DETOUR_REACHED := 5.0
 ## the whole frontage means a unit that steps aside, finds the way still swept, steps aside again, and never arrives
 ## (measured: 19 m off the line and it never got there). Orders win in the end: if there is no way round, you go.
 const FIRE_DETOUR_COOLDOWN := 240
+## The route is re-checked against the field this often (ticks, staggered per unit) rather than every tick: the
+## lookahead is 34 m and a unit covers under a metre in that time, and checking it every tick for every moving unit
+## cost ~370 usec per tick at 60 units. A detour already being driven is re-checked every tick.
+const FIRE_CHECK_TICKS := 6
 const AVOID_LOOKAHEAD := 10.0
 const AVOID_WIDTH := 3.2
 const AVOID_CLEARANCE := 5.0
@@ -355,7 +362,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	if brain == null or brain.game_match == null \
 			or not bool(BrainVariants.for_team(tank.team).get("avoid_beaten", true)):
 		return waypoint
-	var fields := SuppressionFeed.source(brain.game_match)
+	var fields := _suppression_fields(brain.game_match)
 	if fields == null:
 		return waypoint
 	var here := tank.global_position
@@ -366,6 +373,8 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	var direction := to / distance
 	var reach := minf(FIRE_LOOKAHEAD, maxf(_flat_distance(here, goal), 1.0))
 	var tick := brain.game_match.tick
+	if _fire_detour == null and (tick + brain.think_offset) % FIRE_CHECK_TICKS != 0:
+		return waypoint
 	var ahead_beaten := SuppressionFeed.beaten(fields, tank.team, here, here + direction * reach)
 	# Already going round: keep going until it's reached, the way on is clear, or it has taken long enough.
 	if _fire_detour != null:
@@ -395,6 +404,15 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 			_fire_detour_until = tick + FIRE_DETOUR_TICKS
 			return beside
 	return waypoint
+
+
+## The object that answers contract L2 for this match, resolved once.
+func _suppression_fields(game_match: Object) -> Object:
+	var id := game_match.get_instance_id()
+	if _fields_match != id:
+		_fields_match = id
+		_fields = SuppressionFeed.source(game_match)
+	return _fields
 
 
 ## Local avoidance: a friend parked in the way within AVOID_LOOKAHEAD meters (within AVOID_WIDTH of the line to the

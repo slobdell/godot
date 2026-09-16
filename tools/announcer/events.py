@@ -50,6 +50,12 @@ EVENT_TYPES = tuple(REQUIRED)
 MAY_BE_DEAD = ("shooter", "killer")
 
 
+# Fields that may legitimately name a unit that is already destroyed: a shell outlives the vehicle that fired it, so
+# a crew can be killed by someone who died first. That has always been possible and became common in round 4, when
+# brains started firing to suppress and machine guns began hosing ground continuously.
+MAY_BE_DEAD = ("shooter", "killer")
+
+
 def _kind_error(value, kind: str) -> str:
     """Returns "" when value is of kind, else a short description of what was expected."""
     is_num = isinstance(value, (int, float)) and not isinstance(value, bool)

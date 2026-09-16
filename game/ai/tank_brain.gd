@@ -246,6 +246,13 @@ const SUPPRESS_TIMEOUT_TICKS := 420
 ## Where fire goes once the target ducks out of sight: its last position, led this many seconds along its last
 ## velocity — the ground it is behind, not where it was standing.
 const SUPPRESS_LEAD_SECONDS := 0.6
+## Suppressing fire holds ONE aim point rather than tracking. Combat measured why (balance.md): a round stamps the
+## cells it flew through, so a gun streaming at a fixed point piles its stamps into one cell — a single machine gun at
+## 39 m reads 1.17 density that way, against 0.78 from two guns chasing a moving unit at 36 m. Chasing a target
+## spreads the fire out and suppresses nobody. The point is re-laid only when the target has left it by this much...
+const SUPPRESS_REAIM := 7.0
+## ...or after this long (ticks), so the fire follows a walking target without following a jinking one.
+const SUPPRESS_REAIM_TICKS := 90
 ## L1 elements (round-4 X1): a unit fighting from a formation slot manoeuvres inside this far of it (meters). About
 ## one formation spacing: room to circle, jink and take an angle without leaving the formation.
 const SLOT_LEASH := 14.0
@@ -282,6 +289,10 @@ var _lane_goal: Variant = null
 var _lane_goal_tick := 0
 ## The last COVER_FIRE query: {"tick", "target" (name), "target_position", "result" ({hide, peek, target} or {})}.
 var _cover_fire_cache := {}
+## X3: the ground SUPPRESS is hosing (null = none), which target it was laid for, and when.
+var _suppress_point: Variant = null
+var _suppress_for := ""
+var _suppress_tick := 0
 ## K1: the unit's current order (OrderFeed.normalize shape, {} = none), its identity, and the post the last
 ## finished order left it at (null = never ordered: doctrine and squad behavior as before).
 var order := {}
@@ -357,6 +368,11 @@ func think(_delta: float) -> void:
 		if rate < _think_every:
 			fresh_order = true
 		_think_every = rate
+	# Finishing an order is not a decision and must not wait for one: a target dying, or arriving at a slot, is an
+	# event, and with the champion thinking every 9 ticks a completion could sit unreported for 150 ms (round-4 X2
+	# made that visible — control's "the attack order completes when the target dies" allows 3 ticks). Cheap: a
+	# distance check and a name lookup.
+	_update_order_progress()
 	if not fresh_order and not think_tick:
 		return
 	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
@@ -382,7 +398,6 @@ func think(_delta: float) -> void:
 	_act(situation)
 	if OrderController.profiling:
 		profile_parts["act"] = int(profile_parts.get("act", 0)) + Time.get_ticks_usec() - clock
-	_update_order_progress()
 	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
 
@@ -1567,13 +1582,10 @@ func _act(s: Dictionary) -> void:
 			# went behind the moment it isn't — a beaten zone doesn't stop being one because the target ducked, and
 			# that is what stops it leaning back out. Hold the range that suits the gun; don't chase.
 			var distance := my_position.distance_to(contact["position"])
-			var spot: Vector3 = contact["position"] + (contact["velocity"] as Vector3) * SUPPRESS_LEAD_SECONDS
-			if contact["visible"]:
-				_order_weapon({"type": "target", "name": contact["name"], "fallback": false})
-				why = TankBrain._join(why, "suppressing " + String(contact["name"]))
-			else:
-				_order_weapon({"type": "suppress", "x": spot.x, "z": spot.z})
-				why = TankBrain._join(why, "fire on where it went")
+			var spot: Vector3 = _suppression_point(contact)
+			_order_weapon({"type": "suppress", "x": spot.x, "z": spot.z})
+			why = TankBrain._join(why, "suppressing " + String(contact["name"]) if contact["visible"]
+					else "fire on where it went")
 			if distance > float(weapon["preferred_max"]):
 				_order_move(_move_to(contact["position"]))
 			elif distance < float(weapon["preferred_min"]):
@@ -1876,6 +1888,21 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 
 
+## X3: the ground to hose to hold `contact` down. Laid on it (led a little, so a unit that is moving is walked into
+## the fire rather than followed from behind) and then KEPT, so the rounds land in the same cells — that is what makes
+## fire suppressive rather than merely aimed. Re-laid when the target has left it by SUPPRESS_REAIM or after
+## SUPPRESS_REAIM_TICKS.
+func _suppression_point(contact: Dictionary) -> Vector3:
+	var predicted: Vector3 = contact["position"] + (contact["velocity"] as Vector3) * SUPPRESS_LEAD_SECONDS
+	if _suppress_point == null or _suppress_for != String(contact["name"]) \
+			or game_match.tick - _suppress_tick > SUPPRESS_REAIM_TICKS \
+			or _flat(_suppress_point).distance_to(_flat(contact["position"])) > SUPPRESS_REAIM:
+		_suppress_point = predicted
+		_suppress_for = String(contact["name"])
+		_suppress_tick = game_match.tick
+	return _suppress_point
+
+
 ## X2: whether this unit keeps moving while it fights (CombatMotion). Not artillery (it deploys), not a squad holding a
 ## position, and only for brain variants with `combat_motion`.
 func _moves_while_fighting(s: Dictionary) -> bool:
@@ -2006,7 +2033,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		request["leash"] = {"center": slot, "radius": SLOT_LEASH}
 		why = TankBrain._join(why, "in its slot")
 	# X3 (L2): and don't manoeuvre through a beaten zone.
-	var fields := SuppressionFeed.source(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
+	var fields := _suppression_fields(game_match) if s.get("features", {}).get("avoid_beaten", true) else null
 	if fields != null:
 		var team := tank.team
 		request["beaten"] = func(from: Vector3, to: Vector3) -> bool:

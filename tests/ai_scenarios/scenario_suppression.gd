@@ -5,9 +5,9 @@ extends TestCase
 ##
 ## Two things are measured, both against a control on the same seed:
 ##   1. a unit ordered across a swept lane does not drive through the wall of bullets,
-##   2. suppressing an enemy lets a teammate go round it — combat measured a pinned tank hitting 5 of 13 shells where
-##      a calm one hits 13 of 13, and taking twice as long to swing its turret, so this should show up as the flanker
-##      taking fewer hits.
+##   2. suppressing an enemy lets a teammate work on it — combat measured a pinned tank hitting 5 of 13 shells where
+##      a calm one hits 13 of 13, and taking twice as long to swing its turret,
+##   3. and suppressive fire is fire held on a PLACE, not fire that chases a unit.
 ##
 ## Open ground west of the walls unless a scenario needs cover.
 
@@ -116,12 +116,13 @@ func _cross_the_lane(avoid: bool) -> Dictionary:
 
 # ---- 2. suppressing enables a flank ------------------------------------------------------------
 
-func test_holding_a_crew_down_lets_a_teammate_go_round_it() -> void:
+func test_holding_a_crew_down_lets_a_teammate_work_on_it() -> void:
 	var suppressed := await _pin_and_flank(true)
 	var quiet := await _pin_and_flank(false)
-	print("MEASURE suppression_enables_flank target suppression %.2f vs %.2f; it landed %d of %d shells vs %d of %d; the flanker dealt %d vs %d" % [
+	print("MEASURE suppression_enables_flank target suppression %.2f vs %.2f; it landed %d of %d shells vs %d of %d; the flanker dealt %d vs %d, spending its time on %s vs %s" % [
 			suppressed["suppression"], quiet["suppression"], suppressed["hits_landed"], suppressed["shots"],
-			quiet["hits_landed"], quiet["shots"], suppressed["damage"], quiet["damage"]])
+			quiet["hits_landed"], quiet["shots"], suppressed["damage"], quiet["damage"],
+			suppressed["options"], quiet["options"]])
 	assert_true(float(suppressed["suppression"]) >= Tank.PINNED_SUPPRESSION,
 			"two machine guns pin the crew (%.2f)" % suppressed["suppression"])
 	assert_true(float(quiet["suppression"]) < Tank.PINNED_SUPPRESSION,
@@ -134,9 +135,13 @@ func test_holding_a_crew_down_lets_a_teammate_go_round_it() -> void:
 	assert_true(pinned_rate < calm_rate * 0.7,
 			"a pinned crew shoots far worse (%.0f%% of shells landed vs %.0f%%)" % [pinned_rate * 100.0, calm_rate * 100.0])
 	assert_true(int(suppressed["damage"]) > int(quiet["damage"]),
-			"and the teammate going round it gets more done (%d vs %d damage)" % [suppressed["damage"], quiet["damage"]])
+			"and the teammate working on it gets more done (%d vs %d damage)" % [suppressed["damage"], quiet["damage"]])
 
 
+## Two machine guns and a third vehicle against one tank. (The third one mostly chooses COVER_FIRE rather than FLANK —
+## the printed option counts say so — so what this measures is "a pinned crew lets a teammate work on it", not a flank
+## specifically. The pinned-target flank bonus exists; whether it should out-score peeking from cover is a tuning
+## question for the ladder, noted in the stream's Status.)
 ## Two machine guns and a flanker against one tank. With `firing` false the guns hold their fire: the control for
 ## "does holding a crew down change anything", same seed, same three vehicles in the same places. What's measured is
 ## the TARGET's shooting — shells landed out of shells fired — because that is what suppression is supposed to ruin,
@@ -163,9 +168,13 @@ func _pin_and_flank(firing: bool) -> Dictionary:
 	var target_health := target.health + target.shield
 	var hits_landed := 0
 	var worst := 0.0
+	var options := {}
+	var brain := s.brain_of(flanker)
 	for tick in 60 * 24:
 		await s.step()
 		worst = maxf(worst, target.suppression)
+		var option := String(brain.choice.get("option", ""))
+		options[option] = int(options.get(option, 0)) + 1
 		var now := 0.0
 		for tank in green:
 			now += tank.health + tank.shield
@@ -173,6 +182,50 @@ func _pin_and_flank(firing: bool) -> Dictionary:
 			hits_landed += 1
 			green_health = now
 	var result := {"hits_landed": hits_landed, "shots": s.shots_by(target), "suppression": worst,
-			"damage": int(target_health - (target.health + target.shield))}
+			"damage": int(target_health - (target.health + target.shield)), "options": options}
+	s.dispose()
+	return result
+
+
+# ---- 3. suppressive fire hoses a place, it doesn't chase a unit ---------------------------------
+
+func test_holding_the_aim_point_suppresses_far_better_than_tracking() -> void:
+	# Combat's measurement of the mechanic (balance.md): a round stamps the cells it FLEW THROUGH, so a gun streaming
+	# at a fixed point piles its fire into one place while a gun tracking a moving unit spreads it thin. That makes
+	# "aim at ground" not a fallback for when the target is hidden but the whole point of suppressive fire — so the
+	# SUPPRESS option holds its aim point instead of following the target, and this is what says it still matters.
+	var held := await _hose(true)
+	var chased := await _hose(false)
+	print("MEASURE suppression_held_aim held point: peak suppression %.2f, peak density %.2f, %d rounds; tracking: %.2f, %.2f, %d rounds" % [
+			held["suppression"], held["density"], held["rounds"], chased["suppression"], chased["density"], chased["rounds"]])
+	assert_true(int(held["rounds"]) > int(chased["rounds"]) * 3,
+			"a gun told to hose a place keeps firing; one told to track a unit stops every time the unit is out of reach or out of sight (%d rounds vs %d)"
+			% [held["rounds"], chased["rounds"]])
+	assert_true(float(held["density"]) >= Match.BEATEN_ZONE_DENSITY * 0.5 and float(chased["density"]) < 0.2,
+			"and it is the held fire that marks the ground: %.2f density against %.2f" % [held["density"], chased["density"]])
+	assert_true(float(held["suppression"]) > float(chased["suppression"]),
+			"so the unit crossing it is the more suppressed (%.2f vs %.2f)" % [held["suppression"], chased["suppression"]])
+
+
+## One machine gun against a unit driving across its front, either hosing the ground the unit is crossing (`held`) or
+## tracking the unit itself. Returns what the fire achieved.
+func _hose(held: bool) -> Dictionary:
+	var s := AiScenario.create(self, 23)
+	var crossing := Vector3(-92, 0, 0)
+	var mover := s.shooter(Match.Team.GREEN, "Green_A_1", Vector3(-92, 0, 24), 0.0,
+			{"type": "move_to", "x": crossing.x, "z": -24.0}, {"type": "hold_fire"})
+	AiScenario.make_durable(mover)
+	var gun := s.shooter(Match.Team.RUST, "Rust_G_1", Vector3(-56, 0, 0), PI / 2.0, {"type": "stop"},
+			{"type": "suppress", "x": crossing.x, "z": crossing.z} if held
+			else {"type": "target", "name": "Green_A_1", "fallback": false}, "scout")
+	AiScenario.make_durable(gun)
+	await s.start()
+	var worst := 0.0
+	var density := 0.0
+	for tick in 60 * 16:
+		await s.step()
+		worst = maxf(worst, mover.suppression)
+		density = maxf(density, s.game_match.threat_field(Match.Team.GREEN).at(crossing))
+	var result := {"suppression": worst, "density": density, "rounds": s.shots_by(gun)}
 	s.dispose()
 	return result
