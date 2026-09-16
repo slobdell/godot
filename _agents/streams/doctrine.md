@@ -82,7 +82,9 @@ rosters (combat), audio (audio).
 
 ## Status
 
-_Worker report. Updated as items land._
+_Worker report, 2026-09-16. **Every backlog item is done**; X4's suppression half is waiting on combat's L2
+(CP2). `make remote T=check` is green on the last commit (687 passed, 0 failed, determinism and the sim
+baseline unchanged), both before and after merging `main` at CP1._
 
 ### Plan (ordered)
 
