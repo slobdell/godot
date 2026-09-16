@@ -82,7 +82,9 @@ rosters (combat), audio (audio).
 
 ## Status
 
-_Worker report. Updated as items land._
+_Worker report, 2026-09-16. **Every backlog item is done**; X4's suppression half is waiting on combat's L2
+(CP2). `make remote T=check` is green on the last commit (687 passed, 0 failed, determinism and the sim
+baseline unchanged), both before and after merging `main` at CP1._
 
 ### Plan (ordered)
 
@@ -176,6 +178,8 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
 
 - `tests/test_army.gd`: one line — the army-JSON sweep skips `doctrine_*.json`, which are doctrine TABLES
   (contract L1), a different schema in the same folder. `tests/test_tactics_doctrine.gd` validates those.
+- `Makefile`: one word — `doctrine-page` joins `LIGHT_GOALS` (it is a one-second Python script and should not
+  take a machine-wide heavy-run slot).
 - New paths: `game/tactics/`, `doctrines/doctrine_*.json`, `mk/tactics.mk` (picked up by the root Makefile's
   `mk/*.mk` include, no Makefile edit), `tests/tactics/`, `tests/test_tactics_*.gd`, `_agents/doctrine.md`,
   and `tools/tactics/` (proposed ownership: doctrine).
@@ -187,3 +191,14 @@ make doctrine-page                   # build/doctrine/index.html: every table, w
 2. A support-element doctrine rule (displace and set up, instead of breaking contact).
 3. Faction tables want a real roster to sit on (combat's L3): today every unit is `condemned`, so
    `Elements._table_for` always loads the Condemned table in a real match.
+
+### Proposed edits to workstreams.md (orchestrator's call)
+
+- **L1, as built:** `element_changed(id)` and `leader_lost(id, fallen, successor)` are signals on **`Elements`**
+  (the per-match registry the HUD holds), not on each `Element`; `Elements.install(match, orders)` /
+  `Elements.of_match(match)` reach it. `element.state()` returns the contract's fields plus `sectors`,
+  `detached`, `leader`, `members`, `task`. Tasks are exactly `{"verb", "to"?, "target"?}` — a task may not name
+  a formation (the leader decides; `ElementTask.validate` rejects it).
+- **Ownership:** add `tools/tactics/` (the read-only doctrine page) to doctrine's paths.
+- **Note for the table:** `doctrines/` now holds two schemas — armies (C2) and doctrine tables (L1,
+  `doctrine_*.json`). Anything that sweeps that folder must filter (two tests did; both fixed).

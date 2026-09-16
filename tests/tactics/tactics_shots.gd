@@ -134,8 +134,8 @@ func _column(count: int, front: Vector3, unit_id := "tank") -> Array:
 
 ## An element crossing open ground in its doctrinal shape: a wedge, trail element overwatching.
 func _stage_wedge_advance() -> void:
-	_setup(Vector3(LANE_X, 0, 10), 120.0)
-	var names := _column(5, Vector3(LANE_X, 0.0, 55.0))
+	_setup(Vector3(LANE_X + 8.0, 0, 12), 150.0)
+	var names := _column(5, Vector3(LANE_X, 0.0, 50.0))
 	lab.gun(Match.Team.RUST, "Rust_Far_1", Vector3(LANE_X + 10.0, 0.0, -75.0), PI)
 	var alpha := lab.element(names, "Alpha")
 	watched = [alpha]
@@ -146,7 +146,7 @@ func _stage_wedge_advance() -> void:
 
 ## Bounding overwatch: half the element is always set, covering the other half's bound.
 func _stage_bounding() -> void:
-	_setup(Vector3(LANE_X, 0, 15), 110.0)
+	_setup(Vector3(LANE_X + 8.0, 0, 15), 140.0)
 	var names := _column(4, Vector3(LANE_X, 0.0, 50.0))
 	lab.gun(Match.Team.RUST, "Rust_Far_1", Vector3(LANE_X, 0.0, -70.0), PI)
 	var alpha := lab.element(names, "Alpha", TacticsLab.table_of("wedge", "bounding_overwatch"))
@@ -158,7 +158,7 @@ func _stage_bounding() -> void:
 
 ## The lead's drill: ambushed at close range, the element turns into it and assaults through.
 func _stage_near_ambush() -> void:
-	_setup(Vector3(LANE_X + 8, 0, 5), 110.0)
+	_setup(Vector3(LANE_X + 14.0, 0, 8), 140.0)
 	var names := _column(4, Vector3(LANE_X, 0.0, 40.0))
 	var alpha := lab.element(names, "Alpha")
 	watched = [alpha]
@@ -179,7 +179,7 @@ func _stage_near_ambush() -> void:
 
 ## A halt: the herringbone, every flank watched.
 func _stage_herringbone() -> void:
-	_setup(Vector3(LANE_X, 0, 18), 70.0)
+	_setup(Vector3(LANE_X + 6.0, 0, 20), 80.0)
 	var names := _column(4, Vector3(LANE_X, 0.0, 20.0))
 	lab.gun(Match.Team.RUST, "Rust_Far_1", Vector3(LANE_X, 0.0, -75.0), PI)
 	var alpha := lab.element(names, "Alpha")
