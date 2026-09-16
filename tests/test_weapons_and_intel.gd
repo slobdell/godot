@@ -91,11 +91,16 @@ func test_brain_engages_a_visible_enemy() -> void:
 	_place(target, -20.0, PI / 2.0)
 	var full := target.health + int(target.shield)
 	var lowest := full
-	for frame in 60 * 8:
+	var fighting := ""
+	# 16 s, not 8: round 3's cannon reloads for 5 s and the brain now hides while it reloads (COVER_FIRE), so a
+	# window of two reloads plus a peek is the shortest one that isn't flaky (it failed 1 run in 5 at 8 s).
+	for frame in 60 * 16:
 		await tree.physics_frame
 		lowest = mini(lowest, target.health + int(target.shield))
-	assert_true(lowest < full, "within 8 s the brain senses (via team intel), engages, and hits (lowest health+shield %d)" % lowest)
-	assert_true(brain_tank.intent.begins_with("ENGAGE") or lowest < full, "its nameplate intent says what it's doing (%s)" % brain_tank.intent)
+		if fighting == "" and (brain_tank.intent.begins_with("ENGAGE") or brain_tank.intent.begins_with("COVER_FIRE")):
+			fighting = brain_tank.intent
+	assert_true(lowest < full, "within 16 s the brain senses (via team intel), engages, and hits (lowest health+shield %d)" % lowest)
+	assert_true(fighting != "", "its nameplate intent says it is fighting (last: %s)" % brain_tank.intent)
 
 
 func test_hurt_brain_backs_away_under_fire() -> void:
