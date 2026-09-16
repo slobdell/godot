@@ -1,48 +1,44 @@
 TRANSCRIPT: scouts_vs_tanks (director seed 1)
 the Foundry | green: scout, scout, scout, scout, scout, scout | rust: tank, tank, tank, ifv
-result: rust by elimination at 2:21.0
+result: rust by elimination at 1:24.2
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
 0:00.0   PA       Good evening. Tonight's match will be played to elimination. The first three rows have been reinforced since last season.
-0:07.5   CALLER   Oh, this is going to be good. I can feel it in my chest already!
-0:11.8   ── first contact: green scout fires on a tank
-0:12.7   CALLER   The scout finds them first! That's the job, and Green is doing it!
-0:17.9   CALLER   They found the soft spot on that tank!
-0:24.5   ── rust ifv destroys green scout
-0:24.5   CALLER   First blood goes to Rust!
-0:35.1   PA       Tonight's attendance is ninety-four thousand, a weeknight record, including four thousand seats reserved for the families of tonight's crews.
-0:43.2   CALLER   That scout's machine gun is just hosing the tank!
-0:49.0   ── rust tank destroyed by a hazard
-0:49.0   CALLER   That tank was already hurting, and the fire finishes the job!
-0:52.2   ── rust tank destroys green scout
-0:52.9   CALLER   Nobody saw that coming! The tank beats the scout!
-0:55.8   ── close call: rust ifv at 1% hull
-0:56.2   ── rust ifv destroys green scout
-0:56.2   ── green scout destroys rust ifv
-0:56.2   ── rust squad Spotter wiped out
-0:56.8   CALLER   Blow for blow! Everybody is swinging, and everybody is getting hit!
-1:02.3   CALLER   Green lands a heavy one!
-1:12.3   CALLER   That tank is hurt! That tank is hurt!
-1:18.8   ── close call: rust tank at 4% hull
-1:18.8   CALLER   The Rust tank is hanging on by a thread!
-1:21.2   ── rust tank destroys green scout
-1:21.8   ── rust tank destroys green scout
-1:21.8   ── green squad Wasps wiped out
-1:22.0   CALLER   Vehicles are going down all over the floor! Two in a matter of seconds!
-1:22.8   ── green scout destroys rust tank
-1:26.8   CALLER   Rust is down to its last vehicle!
-1:35.6   CALLER   Dead even out there. Who blinks first?
-1:38.3   VETERAN  Nobody blinks. Somebody runs out of cover. It's different.
-1:54.0   CALLER   You always talk about cover. Why does it matter so much in here?
-1:58.5   VETERAN  Everything in here can reach you from across the room. The wall is the only thing on your side.
-2:09.5   CALLER   The tank is smoking, and Green smells blood!
-2:12.5   VETERAN  That's where you aim. Everybody knows it. Almost nobody does it.
-2:21.0   ── rust tank destroys green scout
-2:21.0   ── green squad Hornets wiped out
-2:21.0   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
-2:21.0   CALLER   The last Green vehicle goes down!
-2:23.3   CALLER   Rust wins it with one vehicle left! One! What a finish!
-2:27.3   VETERAN  That comeback started with one crew deciding not to panic.
-2:31.8   CALLER   Unbelievable!
-2:33.2   PA       The result is final. Rust wins, and the floor will be cleared before the next session.
+0:07.5   CALLER   Oh, this—
+0:08.5   ── first contact: rust ifv fires on a scout
+0:08.5   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
+0:13.1   CALLER   The autocannon opens up! The Syndicate's IFV is the first to speak!
+0:17.9   CALLER   Something just changed out there! They're all moving at once!
+0:21.5   VETERAN  They're going to react to contact, which is brave, and I want to be clear that brave is not the compliment people think it is.
+0:32.8   VETERAN  Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
+0:42.5   VETERAN  You hear that ringing—
+0:44.2   ── rust ifv destroys green scout
+0:44.3   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
+0:44.8   ── rust tank destroys green scout
+0:46.8   ── friendly fire: rust tank hits its own ifv
+0:48.8   ── rust tank destroys green scout
+0:49.2   CALLER   The Syndicate are cleaning house! Two down, just like that!
+0:50.8   ── rust tank destroys green scout
+0:50.8   ── green squad Hornets wiped out
+0:50.8   ── close call: rust ifv at 8% hull
+0:52.9   CALLER   Another one for the Syndicate! This is a clinic!
+0:56.2   VETERAN  The Wreckers keep feeding them one at a time. Regroup. Please regroup.
+1:02.3   CALLER   They found the soft spot on that tank!
+1:05.2   PA       Well described, Joseph. Viewers should—
+1:06.0   ── close call: rust tank at 3% hull
+1:07.2   ── rust tank destroyed by a hazard
+1:07.3   CALLER   That tank was already hurting, and the fire finishes the job!
+1:09.0   ── green scout destroys rust ifv
+1:09.0   ── rust squad Spotter wiped out
+1:09.0   ── green scout destroys rust tank
+1:09.8   ── rust tank destroys green scout
+1:11.2   CALLER   That leaves the Wreckers with one. One!
+1:14.5   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
+1:24.2   ── rust tank destroys green scout
+1:24.2   ── green squad Wasps wiped out
+1:24.2   ── MATCH OVER: rust wins by elimination (0 green, 1 rust left)
+1:24.3   CALLER   And that's it! That's the last one!
+1:27.0   CALLER   It is done! The Syndicate stands alone on that floor!
+1:30.6   VETERAN  One left. That driver is going to remember every second of that.
+1:36.6   PA       The match has been decided in favor of the Syndicate. Highlights will air throughout the week on all district screens.

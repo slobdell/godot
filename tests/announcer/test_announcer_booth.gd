@@ -94,10 +94,9 @@ func test_the_voice_plays_a_cues_clips_and_ducks_the_world() -> void:
 	AudioServer.set_bus_name(world, AnnouncerVoice.WORLD_BUS)
 	var voice := AnnouncerVoice.new()
 	voice.clips_dir = "/clips"
-	voice.manifest = {"lines": {"k": {"speaker": "caller", "parts": [{"slot": "team_s", "vocab": "team_s", "intonation": "mid"},
-			{"clip": "k#0"}, {"slot": "count", "vocab": "number", "intonation": "final"}]}},
-			"clips": {"fill.caller.team_s.rust.mid": {"file": "caller/rust.ogg"}, "k#0": {"file": "caller/k-0.ogg"},
-			"fill.caller.number.2.final": {"file": "caller/two.ogg"}}}
+	# One whole sentence per realization, chosen by the cue's variant key: nothing is joined at playback.
+	voice.manifest = {"lines": {"k": {"speaker": "caller", "variants": {"law.tank": "k@law.tank", "gangs.scout": "k@gangs.scout"}}},
+			"clips": {"k@law.tank": {"file": "caller/k-law-tank.ogg"}, "k@gangs.scout": {"file": "caller/k-gangs-scout.ogg"}}}
 	var loaded: Array = []
 	voice.load_stream = func(path: String) -> AudioStream:
 		loaded.append(path)
@@ -105,13 +104,13 @@ func test_the_voice_plays_a_cues_clips_and_ducks_the_world() -> void:
 		silence.data = PackedByteArray([0, 0, 0, 0])
 		return silence
 	add_to_tree(voice)
-	var cue := {"line_id": "k", "slots": {"team_s": "rust", "count": 2.0}}
-	assert_eq(voice.files_for(cue), PackedStringArray(["/clips/caller/rust.ogg", "/clips/caller/k-0.ogg", "/clips/caller/two.ogg"]),
-			"slot values pick their filler clips")
+	var cue := {"line_id": "k", "variant_key": "law.tank"}
+	assert_eq(voice.files_for(cue), PackedStringArray(["/clips/caller/k-law-tank.ogg"]),
+			"the cue plays the one recording made for its slot values")
 	assert_true(voice.play(cue), "a recorded cue plays")
-	assert_eq(loaded, ["/clips/caller/rust.ogg"], "starting with the first part")
-	assert_eq(voice.files_for({"line_id": "k", "slots": {"team_s": "rust", "count": 9}}), PackedStringArray(),
-			"a missing filler means subtitles only, never a half-spoken line")
+	assert_eq(loaded, ["/clips/caller/k-law-tank.ogg"], "and only that one")
+	assert_eq(voice.files_for({"line_id": "k", "variant_key": "syndicate.burner"}), PackedStringArray(),
+			"a realization nobody recorded means subtitles only, never the wrong sentence")
 	assert_true(AudioServer.get_bus_index(AnnouncerVoice.BUS) >= 0, "the announcer has its own bus")
 	var ducked := false
 	for index in AudioServer.get_bus_effect_count(world):

@@ -1,209 +1,1357 @@
 {
-  "schema": 1,
-  "note": "The banter grammar: what each kind of moment is worth and the beat shapes it can take. See assets/announcer/README.md. A beat's `when` tags must all be on the moment (more `when` tags = strongly preferred); `unless` tags must not be. Steps: speaker, act (or a list), `chance` (0-1, skipped otherwise), `optional` (skipped when no line fits), `answers` (only lines on the setup's topic).",
-  "seconds_per_word": {"caller": 0.3, "color": 0.4, "pa": 0.36},
-  "counters": {
-    "note": "killer -> victims it is built to beat: the roster's good_vs plus the reverse of weak_vs (game/units/units.gd)",
-    "scout": ["artillery", "lancer", "tank"],
-    "tank": ["ifv", "burner"],
-    "ifv": ["scout", "lancer"],
-    "artillery": ["tank"],
-    "lancer": ["tank", "burner"],
-    "burner": ["ifv", "artillery"]
-  },
-  "tag_priority": {"first_blood": 15, "last_unit": 15, "final_kill": 45, "upset": 10, "streak": 10, "comeback": 10,
-                   "lead_change": 5, "weak_spot": 5, "another": 5, "repeat": 5, "stolen": 5},
-  "tag_intensity": {"first_blood": 1, "last_unit": 1, "final_kill": 1, "upset": 1, "streak": 1, "comeback": 1,
-                    "rout": 1, "hurt": 1, "another": 1},
-  "moments": {
-    "intro": {
-      "priority": 90, "stale_s": 60, "intensity": 2,
-      "beats": [
-        {"name": "full welcome", "weight": 3, "steps": [
-          {"speaker": "pa", "act": "welcome"},
-          {"speaker": "caller", "act": "hype"},
-          {"speaker": "color", "act": "analysis", "chance": 0.5}]},
-        {"name": "caller opens", "weight": 2, "steps": [
-          {"speaker": "caller", "act": "hype"},
-          {"speaker": "pa", "act": "welcome"}]}
-      ]
+ "schema": 1,
+ "note": "The banter grammar: what each kind of moment is worth and the beat shapes it can take. See assets/announcer/README.md. A beat's `when` tags must all be on the moment (more `when` tags = strongly preferred); `unless` tags must not be. Steps: speaker, act (or a list), `chance` (0-1, skipped otherwise), `optional` (skipped when no line fits), `answers` (only lines on the setup's topic).",
+ "seconds_per_word": {
+  "caller": 0.3,
+  "color": 0.4,
+  "pa": 0.36
+ },
+ "counters": {
+  "note": "killer -> victims it is built to beat: the roster's good_vs plus the reverse of weak_vs (game/units/units.gd)",
+  "scout": [
+   "artillery",
+   "lancer",
+   "tank"
+  ],
+  "tank": [
+   "ifv",
+   "burner"
+  ],
+  "ifv": [
+   "scout",
+   "lancer"
+  ],
+  "artillery": [
+   "tank"
+  ],
+  "lancer": [
+   "tank",
+   "burner"
+  ],
+  "burner": [
+   "ifv",
+   "artillery"
+  ]
+ },
+ "tag_priority": {
+  "first_blood": 15,
+  "last_unit": 15,
+  "final_kill": 45,
+  "upset": 10,
+  "streak": 10,
+  "comeback": 10,
+  "lead_change": 5,
+  "weak_spot": 5,
+  "another": 5,
+  "repeat": 5,
+  "stolen": 5,
+  "drill_near_ambush": 22,
+  "drill_assault_through": 10,
+  "drill_break_contact": 16
+ },
+ "tag_intensity": {
+  "first_blood": 1,
+  "last_unit": 1,
+  "final_kill": 1,
+  "upset": 1,
+  "streak": 1,
+  "comeback": 1,
+  "rout": 1,
+  "hurt": 1,
+  "another": 1,
+  "drill_near_ambush": 1
+ },
+ "moments": {
+  "intro": {
+   "priority": 90,
+   "stale_s": 60,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "full welcome",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "welcome"
+      },
+      {
+       "speaker": "caller",
+       "act": "hype"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.5
+      }
+     ]
     },
-    "army": {
-      "priority": 30, "stale_s": 22, "intensity": 1,
-      "beats": [
-        {"name": "caller reads the army", "weight": 2, "steps": [{"speaker": "caller", "act": "call"}]},
-        {"name": "the Veteran reads the army", "weight": 1, "steps": [{"speaker": "color", "act": "analysis"}]},
-        {"name": "faction introduction", "weight": 1, "when": ["introduce"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["introduce"]},
-          {"speaker": "pa", "act": "notice", "chance": 0.6, "require": ["introduce"]}]}
-      ]
-    },
-    "tape": {
-      "priority": 29, "stale_s": 22, "intensity": 1,
-      "beats": [
-        {"name": "tale of the tape", "weight": 2, "steps": [
-          {"speaker": "caller", "act": "stat"},
-          {"speaker": "color", "act": "analysis", "chance": 0.5}]},
-        {"name": "skip the tape", "weight": 1, "steps": [{"speaker": "color", "act": "analysis"}]}
-      ]
-    },
-    "preview": {
-      "priority": 28, "stale_s": 22, "intensity": 1,
-      "beats": [
-        {"name": "matchup question", "weight": 2, "steps": [
-          {"speaker": "caller", "act": "setup_question"},
-          {"speaker": "color", "act": ["answer_agree", "answer_disagree"], "answers": true}]},
-        {"name": "matchup analysis", "weight": 2, "steps": [{"speaker": "color", "act": ["analysis", "prediction"]}]}
-      ]
-    },
-    "contact": {
-      "priority": 70, "stale_s": 5, "intensity": 2,
-      "beats": [
-        {"name": "contact call", "weight": 3, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": "analysis", "chance": 0.4}]}
-      ]
-    },
-    "big_hit": {
-      "priority": 25, "stale_s": 2.5, "cooldown_s": 9, "intensity": 1,
-      "beats": [
-        {"name": "hit call", "weight": 3, "steps": [{"speaker": "caller", "act": "call"}]},
-        {"name": "hit and button", "weight": 1, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "caller", "act": "button", "chance": 0.5}]},
-        {"name": "the Veteran notices", "weight": 1, "when": ["weak_spot"], "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": "analysis", "chance": 0.7}]}
-      ]
-    },
-    "kill": {
-      "priority": 60, "stale_s": 5, "intensity": 2,
-      "beats": [
-        {"name": "call and the Veteran", "weight": 3, "unless": ["final_kill"], "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": ["analysis", "roast"], "chance": 0.5}]},
-        {"name": "call and button", "weight": 2, "unless": ["final_kill"], "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "caller", "act": "button", "chance": 0.7}]},
-        {"name": "first blood", "weight": 3, "when": ["first_blood"], "unless": ["final_kill"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["first_blood"]},
-          {"speaker": "color", "act": ["analysis", "roast"], "chance": 0.7}]},
-        {"name": "upset", "weight": 2, "when": ["upset"], "unless": ["final_kill"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["upset"]},
-          {"speaker": "color", "act": "analysis", "chance": 0.8, "require": ["upset"]}]},
-        {"name": "streak", "weight": 2, "when": ["streak"], "unless": ["final_kill"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["streak"]},
-          {"speaker": "caller", "act": "stat", "optional": true}]},
-        {"name": "and another", "weight": 3, "when": ["another"], "unless": ["final_kill", "flurry"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["another"]}]},
-        {"name": "last one standing", "weight": 2, "when": ["last_unit"], "unless": ["final_kill"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["last_unit"]},
-          {"speaker": "color", "act": "analysis", "chance": 0.5, "require": ["last_unit"]}]},
-        {"name": "flurry", "weight": 3, "when": ["flurry"], "unless": ["final_kill", "trade"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["flurry"]},
-          {"speaker": "caller", "act": "button", "chance": 0.3}]},
-        {"name": "trade", "weight": 3, "when": ["trade"], "unless": ["final_kill"], "steps": [
-          {"speaker": "caller", "act": "call", "require": ["trade"]},
-          {"speaker": "color", "act": "analysis", "chance": 0.4, "require": ["trade"]}]},
-        {"name": "a product demonstration", "weight": 2, "when": ["faction_syndicate"], "unless": ["final_kill", "flurry"], "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "pa", "act": "sponsor_read", "chance": 0.6, "require": ["faction_syndicate"]}]},
-        {"name": "final kill", "weight": 3, "when": ["final_kill"], "steps": [{"speaker": "caller", "act": "call", "require": ["final_kill"]}]}
-      ]
-    },
-    "friendly_kill": {
-      "priority": 85, "stale_s": 5, "intensity": 3,
-      "beats": [
-        {"name": "own goal", "weight": 3, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": ["roast", "callback"], "chance": 0.8},
-          {"speaker": "pa", "act": "notice", "chance": 0.5}]}
-      ]
-    },
-    "hazard_kill": {
-      "priority": 65, "stale_s": 5, "intensity": 2,
-      "beats": [
-        {"name": "the arena takes one", "weight": 3, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "pa", "act": "notice", "chance": 0.6}]}
-      ]
-    },
-    "friendly_fire": {
-      "priority": 55, "stale_s": 4, "cooldown_s": 6, "intensity": 2,
-      "beats": [
-        {"name": "friendly fire", "weight": 3, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": ["roast", "callback"], "chance": 0.6}]},
-        {"name": "again", "weight": 2, "when": ["repeat"], "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": ["roast", "callback"], "chance": 0.8},
-          {"speaker": "pa", "act": "notice", "chance": 0.4}]}
-      ]
-    },
-    "close_call": {
-      "priority": 40, "stale_s": 4, "cooldown_s": 10, "intensity": 2,
-      "beats": [
-        {"name": "still in there", "weight": 3, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": "analysis", "chance": 0.4}]}
-      ]
-    },
-    "control": {
-      "priority": 60, "stale_s": 6, "intensity": 2,
-      "beats": [
-        {"name": "control call", "weight": 3, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": "analysis", "chance": 0.45}]},
-        {"name": "the PA reports", "weight": 1, "unless": ["neutral"], "steps": [
-          {"speaker": "pa", "act": "notice"},
-          {"speaker": "caller", "act": "call", "chance": 0.5}]}
-      ]
-    },
-    "squad_wiped": {
-      "priority": 35, "stale_s": 3, "intensity": 2,
-      "beats": [{"name": "squad gone", "weight": 1, "steps": [{"speaker": "caller", "act": "call"}]}]
-    },
-    "momentum": {
-      "priority": 35, "stale_s": 8, "cooldown_s": 20, "intensity": 1,
-      "beats": [
-        {"name": "the Veteran reads the flow", "weight": 2, "steps": [{"speaker": "color", "act": "analysis"}]},
-        {"name": "caller feels it", "weight": 1, "steps": [{"speaker": "caller", "act": "call"}]}
-      ]
-    },
-    "lull": {
-      "priority": 5, "stale_s": 3, "cooldown_s": 4, "intensity": 1,
-      "beats": [
-        {"name": "banter", "weight": 4, "steps": [
-          {"speaker": "caller", "act": "setup_question"},
-          {"speaker": "color", "act": ["answer_agree", "answer_disagree"], "answers": true},
-          {"speaker": "caller", "act": "reaction", "chance": 0.35}]},
-        {"name": "the Veteran remembers", "weight": 2, "steps": [{"speaker": "color", "act": "lore"}]},
-        {"name": "sponsor read", "weight": 2, "unless": ["phase_final"], "steps": [
-          {"speaker": "pa", "act": "sponsor_read"},
-          {"speaker": "caller", "act": "reaction", "chance": 0.4}]},
-        {"name": "arena notice", "weight": 2, "unless": ["phase_final"], "steps": [{"speaker": "pa", "act": "notice"}]},
-        {"name": "caller on the state of play", "weight": 2, "unless": ["waiting"], "steps": [
-          {"speaker": "caller", "act": "stat"},
-          {"speaker": "color", "act": "analysis", "chance": 0.5}]},
-        {"name": "waiting for contact", "weight": 4, "when": ["waiting"], "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": "analysis", "chance": 0.6}]}
-      ]
-    },
-    "result": {
-      "priority": 100, "stale_s": 999, "intensity": 3,
-      "beats": [
-        {"name": "it's over", "weight": 1, "steps": [
-          {"speaker": "caller", "act": "call"},
-          {"speaker": "color", "act": "analysis"},
-          {"speaker": "caller", "act": "button", "chance": 0.5}]}
-      ]
-    },
-    "outro": {
-      "priority": 1, "stale_s": 999, "intensity": 1,
-      "beats": [
-        {"name": "sign-off", "weight": 1, "steps": [{"speaker": "pa", "act": "result"}]}
-      ]
+    {
+     "name": "caller opens",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "hype"
+      },
+      {
+       "speaker": "pa",
+       "act": "welcome"
+      }
+     ]
     }
+   ]
+  },
+  "army": {
+   "priority": 30,
+   "stale_s": 22,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "caller reads the army",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    },
+    {
+     "name": "the Veteran reads the army",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    },
+    {
+     "name": "faction introduction",
+     "weight": 1,
+     "when": [
+      "introduce"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "introduce"
+       ]
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.6,
+       "require": [
+        "introduce"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "the Veteran sizes them up",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      },
+      {
+       "speaker": "caller",
+       "act": "call",
+       "chance": 0.4
+      }
+     ]
+    }
+   ]
+  },
+  "tape": {
+   "priority": 29,
+   "stale_s": 22,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "tale of the tape",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "stat"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "skip the tape",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    }
+   ]
+  },
+  "preview": {
+   "priority": 28,
+   "stale_s": 22,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "matchup question",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "setup_question"
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "answer_agree",
+        "answer_disagree"
+       ],
+       "answers": true
+      }
+     ]
+    },
+    {
+     "name": "matchup analysis",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": [
+        "analysis",
+        "prediction"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "contact": {
+   "priority": 70,
+   "stale_s": 5,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "contact call",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.4
+      }
+     ]
+    },
+    {
+     "name": "the Veteran reads the ground",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.9
+      }
+     ]
+    },
+    {
+     "name": "the Veteran opens",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      },
+      {
+       "speaker": "caller",
+       "act": "call",
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "the Veteran alone",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    }
+   ]
+  },
+  "big_hit": {
+   "priority": 25,
+   "stale_s": 2.5,
+   "cooldown_s": 9,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "hit call",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    },
+    {
+     "name": "hit and button",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "caller",
+       "act": "button",
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "the Veteran notices",
+     "weight": 1,
+     "when": [
+      "weak_spot"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.7
+      }
+     ]
+    },
+    {
+     "name": "the Veteran on the damage",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.9
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.7
+      }
+     ]
+    },
+    {
+     "name": "the Veteran alone",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    }
+   ]
+  },
+  "kill": {
+   "priority": 60,
+   "stale_s": 5,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "call and the Veteran",
+     "weight": 3,
+     "unless": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "analysis",
+        "roast"
+       ],
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "call and button",
+     "weight": 1,
+     "unless": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "caller",
+       "act": "button",
+       "chance": 0.7
+      }
+     ]
+    },
+    {
+     "name": "first blood",
+     "weight": 3,
+     "when": [
+      "first_blood"
+     ],
+     "unless": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "first_blood"
+       ]
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "analysis",
+        "roast"
+       ],
+       "chance": 0.7
+      }
+     ]
+    },
+    {
+     "name": "upset",
+     "weight": 2,
+     "when": [
+      "upset"
+     ],
+     "unless": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "upset"
+       ]
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.8,
+       "require": [
+        "upset"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "streak",
+     "weight": 1,
+     "when": [
+      "streak"
+     ],
+     "unless": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "streak"
+       ]
+      },
+      {
+       "speaker": "caller",
+       "act": "stat",
+       "optional": true
+      }
+     ]
+    },
+    {
+     "name": "and another",
+     "weight": 2,
+     "when": [
+      "another"
+     ],
+     "unless": [
+      "final_kill",
+      "flurry"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "another"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "last one standing",
+     "weight": 2,
+     "when": [
+      "last_unit"
+     ],
+     "unless": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "last_unit"
+       ]
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.5,
+       "require": [
+        "last_unit"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "flurry",
+     "weight": 2,
+     "when": [
+      "flurry"
+     ],
+     "unless": [
+      "final_kill",
+      "trade"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "flurry"
+       ]
+      },
+      {
+       "speaker": "caller",
+       "act": "button",
+       "chance": 0.3
+      }
+     ]
+    },
+    {
+     "name": "trade",
+     "weight": 3,
+     "when": [
+      "trade"
+     ],
+     "unless": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "trade"
+       ]
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.4,
+       "require": [
+        "trade"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "a product demonstration",
+     "weight": 2,
+     "when": [
+      "faction_syndicate"
+     ],
+     "unless": [
+      "final_kill",
+      "flurry"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "sponsor_read",
+       "chance": 0.6,
+       "require": [
+        "faction_syndicate"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "final kill",
+     "weight": 2,
+     "when": [
+      "final_kill"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call",
+       "require": [
+        "final_kill"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "the Veteran explains it",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "analysis",
+        "roast"
+       ],
+       "chance": 0.9
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.8
+      }
+     ]
+    },
+    {
+     "name": "the Veteran takes it",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": [
+        "analysis",
+        "roast"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "friendly_kill": {
+   "priority": 85,
+   "stale_s": 5,
+   "intensity": 3,
+   "beats": [
+    {
+     "name": "own goal",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "roast",
+        "callback"
+       ],
+       "chance": 0.8
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "the Veteran has seen it",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.9
+      }
+     ]
+    },
+    {
+     "name": "the Veteran alone",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    }
+   ]
+  },
+  "hazard_kill": {
+   "priority": 65,
+   "stale_s": 5,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "the arena takes one",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.6
+      }
+     ]
+    },
+    {
+     "name": "the Veteran on the pits",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.9
+      }
+     ]
+    }
+   ]
+  },
+  "friendly_fire": {
+   "priority": 55,
+   "stale_s": 4,
+   "cooldown_s": 6,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "friendly fire",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "roast",
+        "callback"
+       ],
+       "chance": 0.6
+      }
+     ]
+    },
+    {
+     "name": "again",
+     "weight": 2,
+     "when": [
+      "repeat"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "roast",
+        "callback"
+       ],
+       "chance": 0.8
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.4
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.9
+      }
+     ]
+    }
+   ]
+  },
+  "close_call": {
+   "priority": 40,
+   "stale_s": 4,
+   "cooldown_s": 10,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "still in there",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.4
+      }
+     ]
+    },
+    {
+     "name": "the Veteran on the survivor",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.9
+      }
+     ]
+    },
+    {
+     "name": "the Veteran alone",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    }
+   ]
+  },
+  "control": {
+   "priority": 60,
+   "stale_s": 6,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "control call",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.45
+      }
+     ]
+    },
+    {
+     "name": "the PA reports",
+     "weight": 1,
+     "unless": [
+      "neutral"
+     ],
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "notice"
+      },
+      {
+       "speaker": "caller",
+       "act": "call",
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.8
+      }
+     ]
+    }
+   ]
+  },
+  "squad_wiped": {
+   "priority": 35,
+   "stale_s": 3,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "squad gone",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    },
+    {
+     "name": "the Veteran on a wipe",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.9
+      }
+     ]
+    }
+   ]
+  },
+  "momentum": {
+   "priority": 35,
+   "stale_s": 8,
+   "cooldown_s": 20,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "the Veteran reads the flow",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    },
+    {
+     "name": "caller feels it",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    },
+    {
+     "name": "the Veteran calls the turn",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      },
+      {
+       "speaker": "caller",
+       "act": "call",
+       "chance": 0.4
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.8
+      }
+     ]
+    },
+    {
+     "name": "the Veteran alone",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    }
+   ]
+  },
+  "lull": {
+   "priority": 5,
+   "stale_s": 3,
+   "cooldown_s": 4,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "banter",
+     "weight": 4,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "setup_question"
+      },
+      {
+       "speaker": "color",
+       "act": [
+        "answer_agree",
+        "answer_disagree"
+       ],
+       "answers": true
+      },
+      {
+       "speaker": "caller",
+       "act": "reaction",
+       "chance": 0.35
+      }
+     ]
+    },
+    {
+     "name": "the Veteran remembers",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "lore"
+      }
+     ]
+    },
+    {
+     "name": "sponsor read",
+     "weight": 2,
+     "unless": [
+      "phase_final"
+     ],
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "sponsor_read"
+      },
+      {
+       "speaker": "caller",
+       "act": "reaction",
+       "chance": 0.4
+      }
+     ]
+    },
+    {
+     "name": "arena notice",
+     "weight": 2,
+     "unless": [
+      "phase_final"
+     ],
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "notice"
+      }
+     ]
+    },
+    {
+     "name": "caller on the state of play",
+     "weight": 2,
+     "unless": [
+      "waiting"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "stat"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "waiting for contact",
+     "weight": 4,
+     "when": [
+      "waiting"
+     ],
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.6
+      }
+     ]
+    },
+    {
+     "name": "the Veteran teaches",
+     "weight": 4,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    },
+    {
+     "name": "the Veteran teaches, Joseph bites",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      },
+      {
+       "speaker": "caller",
+       "act": [
+        "reaction",
+        "button"
+       ],
+       "chance": 0.6
+      }
+     ]
+    }
+   ]
+  },
+  "result": {
+   "priority": 100,
+   "stale_s": 999,
+   "intensity": 3,
+   "beats": [
+    {
+     "name": "it's over",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis"
+      },
+      {
+       "speaker": "caller",
+       "act": "button",
+       "chance": 0.5
+      }
+     ]
+    },
+    {
+     "name": "the Veteran sums it up",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.95
+      }
+     ]
+    }
+   ]
+  },
+  "outro": {
+   "priority": 1,
+   "stale_s": 999,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "sign-off",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "result"
+      }
+     ]
+    }
+   ]
+  },
+  "formation": {
+   "priority": 18,
+   "stale_s": 20.0,
+   "cooldown_s": 22.0,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "the Veteran reads the shape",
+     "weight": 4,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    },
+    {
+     "name": "Joseph notices, the Veteran explains",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.95
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.6
+      }
+     ]
+    }
+   ]
+  },
+  "drill": {
+   "priority": 34,
+   "stale_s": 10.0,
+   "cooldown_s": 14.0,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "the Veteran names the drill",
+     "weight": 4,
+     "steps": [
+      {
+       "speaker": "color",
+       "act": "analysis"
+      }
+     ]
+    },
+    {
+     "name": "Joseph sees it, the Veteran names it",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.95
+      }
+     ]
+    },
+    {
+     "name": "Joseph is corrected",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.6
+      }
+     ]
+    }
+   ]
   }
+ }
 }

@@ -25,6 +25,7 @@ import math
 import os
 import re
 import subprocess
+import time
 import tempfile
 import wave
 from pathlib import Path
@@ -40,6 +41,14 @@ OUTPUT_FORMAT = "mp3_44100_128"
 CREDITS_PER_CHARACTER = {"eleven_multilingual_v2": 1.0, "eleven_flash_v2_5": 0.5, "eleven_turbo_v2_5": 0.5}
 # The lead's reference used stability 1.0 for an alert voice; commentary wants more life.
 VOICE_SETTINGS = {"stability": 0.45, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": True}
+## How long to wait for one request, and how hard to try again. A generation run costs real money and takes an
+## hour and a half; a dropped connection in the middle of it must cost a few seconds, not the run.
+REQUEST_TIMEOUT_S = 180.0
+RETRY_DELAYS_S = (2.0, 6.0, 15.0, 40.0)
+## Errors worth retrying: the network gave up, or the service asked us to slow down. A refusal (a bad key, text the
+## service won't say) is not retried, because trying again cannot change the answer.
+RETRY_ON = ("timeout", "timed out", "connection", "temporarily", "too many requests", "429",
+            "500", "502", "503", "504", "internal server error", "bad gateway", "service unavailable")
 
 
 ## The key from the environment, whichever name it is under ("" when neither is set).
@@ -49,6 +58,32 @@ def environment_key() -> str:
         if value:
             return value
     return ""
+
+
+def worth_retrying(error: Exception) -> bool:
+    """Whether this failure might succeed on another attempt."""
+    text = ("%s %s" % (type(error).__name__, error)).lower()
+    status = getattr(error, "status_code", None)
+    if status is not None and (status == 429 or 500 <= int(status) < 600):
+        return True
+    if status is not None:
+        return False
+    return any(needle in text for needle in RETRY_ON)
+
+
+def with_retries(call, describe: str, log=None, delays=None):
+    """Runs `call`, retrying transient failures with a growing pause. Raises the last error if none of them help.
+
+    `delays` is read at call time, not bound as a default, so a test can shorten it."""
+    for attempt, delay in enumerate((RETRY_DELAYS_S if delays is None else delays) + (None,)):
+        try:
+            return call()
+        except Exception as error:
+            if delay is None or not worth_retrying(error):
+                raise
+            if log:
+                log("RETRY %s after %s (attempt %d): waiting %.0f s" % (describe, type(error).__name__, attempt + 1, delay))
+            time.sleep(delay)
 
 
 class RealClient:
@@ -66,7 +101,9 @@ class RealClient:
         from elevenlabs.client import ElevenLabs  # imported here so dry runs and tests don't need the SDK
         from elevenlabs.types import VoiceSettings
 
-        self._client = ElevenLabs(api_key=key)
+        # Generating a long sentence can take a while; the SDK's default read timeout is not sized for it, and a
+        # timeout used to abandon the whole run (2026-09-16, at 712 of 2,225 recordings).
+        self._client = ElevenLabs(api_key=key, timeout=REQUEST_TIMEOUT_S)
         self._settings = VoiceSettings(**VOICE_SETTINGS)
         self.model_id = model_id
 

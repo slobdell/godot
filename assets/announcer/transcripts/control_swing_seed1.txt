@@ -1,49 +1,52 @@
 TRANSCRIPT: control_swing (director seed 1)
 the Furnace | green: tank, ifv, scout, ifv | rust: tank, ifv, scout, lancer
-result: rust by control at 2:20.0
+result: green by control at 2:34.0
 (── lines are what happened on the floor, for context. Only CALLER, VETERAN, and PA lines are spoken;
  a line ending in — was cut off by something bigger.)
 
 0:00.0   PA       Thank you for joining us this evening at the Furnace. Tonight's broadcast runs until a winner is declared, however long that takes.
 0:08.6   CALLER   You are looking live at the Furnace, and I promise you nobody here is sitting down tonight!
-0:14.9   CALLER   Green fields the—
-0:16.2   ── first contact: green ifv fires on a scout
-0:16.3   CALLER   The autocannon opens up! Green's IFV is the first to speak!
-0:20.8   CALLER   That scout's machine gun is just hosing the IFV!
-0:30.0   ── control point: rust
-0:30.0   PA       Rust now holds the control point. Scoring has been updated.
-0:40.5   CALLER   They found the soft spot on that Lancer!
-0:44.0   ── green ifv destroys rust scout
-0:44.0   CALLER   Green draws first blood, and this crowd is on its feet!
-0:47.9   VETERAN  You don't take the scout into that. You just don't.
-0:59.0   VETERAN  My first season in here, they didn't have the lights—
-1:03.0   ── close call: green ifv at 5% hull
-1:03.5   ── rust ifv destroys green ifv
-1:03.5   CALLER   Rust picks off the IFV. Clean work.
-1:06.9   CALLER   Right in the weak spot! What a shot!
-1:10.2   ── rust ifv destroys green scout
-1:10.5   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
-1:13.8   ── close call: rust lancer at 9% hull
-1:15.4   VETERAN  He'll want that one—
-1:17.2   ── green tank destroys rust ifv
-1:17.3   CALLER   Oh! Look at this!
-1:19.1   CALLER   It's gone! That IFV is gone!
-1:20.0   ── control point: green
-1:22.1   CALLER   Oh, Green takes it right back!
-1:28.5   CALLER   The autocannon is chewing right through that tank!
-1:33.0   ── rust tank destroys green ifv
-1:33.0   ── green squad Bravo wiped out
-1:33.0   CALLER   It's all on the last Green vehicle now!
-1:40.8   VETERAN  They—
-1:41.0   ── control point: rust
-1:41.3   CALLER   Rust steals the point away from Green!
-1:52.4   VETERAN  People ask if I miss it. I don't. I still dream about the floor, though.
-2:07.4   CALLER   Is it over for Green?
-2:09.5   ── green tank destroys rust lancer
-2:09.5   ── rust squad Dart wiped out
-2:09.5   CALLER   Nobody saw that coming! The tank beats the Lancer!
-2:18.6   CALLER   Dead even out there. Who blinks first?
-2:20.0   ── MATCH OVER: rust wins by control (1 green, 1 rust left)
-2:21.3   CALLER   Rust wins it with one vehicle left! One! What a finish!
-2:25.3   VETERAN  One left. That driver is going to remember every second of that.
-2:31.3   PA       The match has been decided in favor of Rust. Highlights will air throughout the week on all district screens.
+0:14.9   CALLER   And here comes the Law. Listen to this building. They are not popular in here.
+0:19.2   ── first contact: rust tank fires on a ifv
+0:20.1   VETERAN  My old chief had a saying about this exact situation. It was longer than it needed to be.
+0:27.9   CALLER   Big gun, first shot! The—
+0:30.0   ── control point: green
+0:30.1   PA       Control of the center has changed. The scoreboard reflects the change, and the betting windows remain open.
+0:36.9   CALLER   The Law are on the point, and—
+0:39.2   ── rust ifv destroys green scout
+0:39.3   CALLER   The IFV shreds the scout! Too slow to run, too light to take it!
+0:44.8   CALLER   Here comes the drill! This is what they train for!
+0:45.0   ── rust lancer destroys green ifv
+0:45.0   ── green squad Bravo wiped out
+0:48.4   CALLER   That is not supposed to happen! The Condemned's Lancer just took that down!
+0:49.0   ── close call: rust scout at 8% hull
+0:50.0   ── control point: rust
+0:53.5   CALLER   The Condemned steals the point away from the Law!
+0:56.7   PA       Quite so, Joseph. Holding ground is permitted here and nowhere else in the district.
+1:03.0   VETERAN  You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
+1:06.8   ── green ifv destroys rust scout
+1:07.8   ── friendly fire: green tank hits its own ifv
+1:14.7   VETERAN  Near ambush. They turn into it and drive at it. Six seconds and it's decided, one way or the other.
+1:23.2   ── close call: rust ifv at 6% hull
+1:24.1   CALLER   The Condemned IFV is hanging on by a thread!
+1:25.0   ── control point: green
+1:27.9   PA       The Law now holds the control point. Scoring has been updated.
+1:37.1   VETERAN  We used to—
+1:38.5   ── green ifv destroys rust ifv
+1:38.5   CALLER   Sorry to cut you off, but look!
+1:41.2   CALLER   The Law takes out the IFV, and the boos are raining down!
+1:45.4   VETERAN  The Law didn't panic. That's the whole comeback right there. Nobody panicked.
+1:48.2   ── close call: rust lancer at 6% hull
+1:51.5   CALLER   That Lancer should be scrap, and it is still in the fight!
+2:02.9   CALLER   It's—
+2:03.0   ── green tank destroys rust lancer
+2:03.0   ── rust squad Dart wiped out
+2:03.4   CALLER   The Condemned are down to its last vehicle!
+2:06.9   CALLER   Something just changed out there! They're all moving at once!
+2:09.0   ── rust tank destroys green tank
+2:10.5   CALLER   It's all on the last Law vehicle now!
+2:19.0   VETERAN  My first season in here, they didn't have the lights yet. You fought by the muzzle flashes.
+2:34.0   ── MATCH OVER: green wins by control (1 green, 1 rust left)
+2:34.0   CALLER   What a comeback! The Law were down and out, and the Law win it!
+2:38.9   VETERAN  That comeback started with one crew deciding not to panic.
+2:44.0   PA       The Law take tonight's match. We thank our participants, and our sponsors, in that order.
