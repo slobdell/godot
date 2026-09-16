@@ -90,6 +90,12 @@ Worktrees must be created **after** the docs commit, or workers start without th
 - Watch progress without disturbing workers: `git -C ../godot-<s> log --oneline main..HEAD`, `status --short`.
 
 ### 7. Integrate
+
+**Before each merge, check the branch for infrastructure it shouldn't carry:** `git ls-tree -r --name-only stream/<s> |
+grep -E '^\.tools$'` (a worktree's toolchain symlink; two of five streams committed it on one night in round 4, and
+merging it replaced the real toolchain with a link to itself and deleted the pinned Godot), and skim
+`git diff --stat main...stream/<s>` for paths the stream doesn't own.
+
 Order: foundations first (rules/combat before ai before ui before art), or least-coupled first when nothing depends.
 For each branch:
 ```bash
@@ -206,5 +212,7 @@ The kickoff prompt is one line; this section is the rest.
     tool's behavior before blaming the machine.
 15. Killing a local `make remote` leaves the build running on builder0, and the next run rsyncs `--delete` under it
     (remote_builds.md). Stop the remote process first.
-16. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
+16. `git add -A` is how unreviewed files get committed: in round 4 it swept a half-finished make target into `check`
+    and a worktree's `.tools` symlink into a merge, both from the same session. Stage paths you looked at.
+17. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.

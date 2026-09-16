@@ -42,15 +42,21 @@ const ARENA_HALF_SIZE := 120.0
 ## How close to the perimeter tanks and slots may be sent (walls' inner face minus clearance).
 const DRIVABLE_LIMIT := 116.0
 const BASE_Z := 90.0
-## R5 spawn grid: up to 5 squads x 5 units per side. Slot 0..8 fill the front row (center out), then the rows
-## behind it, SPAWN_ROW_SPACING apart toward the team's own wall. 12 m columns and 10 m rows keep even a
-## jittered 2.6 x 4 m hull clear of its neighbours (SPAWN_JITTER_MAX_X).
-const SLOT_X := [0.0, -12.0, 12.0, -24.0, 24.0, -36.0, 36.0, -48.0, 48.0]
-const SPAWN_ROWS := 3
-const SPAWN_ROW_SPACING := 10.0
-const SPAWN_SLOTS := 27
-## Spawn jitter never moves a unit more than this sideways (half the column gap minus a hull width).
-const SPAWN_JITTER_MAX_X := 4.0
+## Spawn grid. Slot 0 is the middle of the front row, then out to the flanks, then the rows behind it,
+## SPAWN_ROW_SPACING apart toward the team's own wall. 11 m columns and 6 m rows keep even a jittered 2.6 x 4 m
+## hull clear of its neighbours (SPAWN_JITTER_MAX_X).
+## X5 (round 4): 27 slots (5 squads x 5) -> 52, because a faction army at Units.BASELINE_BUDGET is ~30 vehicles and
+## the gangs' swarm is more (Army.MAX_ARMY_UNITS). 13 columns reach +-66 m and the fourth row sits at z = 114, so a
+## jittered hull still stays inside DRIVABLE_LIMIT; the arena layouts' spawn lists are regenerated to match
+## (tools/make_arenas.py). The front row stays at BASE_Z, so spawn distance and pace are unchanged.
+const SLOT_X := [0.0, -11.0, 11.0, -22.0, 22.0, -33.0, 33.0, -44.0, 44.0, -55.0, 55.0, -66.0, 66.0]
+const SPAWN_ROWS := 4
+const SPAWN_ROW_SPACING := 8.0
+const SPAWN_SLOTS := 52
+## Spawn jitter never moves a unit more than this sideways or along z (the column gap and row spacing minus a hull
+## plus clearance, halved): a jittered 2.6 x 4 m hull must still stand clear of every neighbour.
+const SPAWN_JITTER_MAX_X := 3.5
+const SPAWN_JITTER_MAX_Z := 1.2
 
 ## Experiment switch (`--swap-bases`): Green starts north, Rust south. A fairness probe.
 static var swap_bases := false
@@ -85,6 +91,25 @@ var _control_ticks := [0, 0]
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## L2 (round 4, contract L2): suppression and effective fire. Every round that resolves stamps the ground it swept
+## into the enemy team's ThreatField; units standing in that fire get suppressed, which costs them accuracy and
+## turret tracking, and above Tank.PINNED_SUPPRESSION counts as pinned. The field is what the brains and the
+## battle drills read (threat_field / is_beaten_zone), so "don't walk into a wall of bullets" becomes a query
+## instead of a guess. Deliberate simplification: only the ENEMY's rounds suppress, so a team is never scared off
+## its own base of fire (friendly-fire DAMAGE is still real).
+## Fire density that counts as fully suppressing. Sized so one machine gun holds a lane at about half suppression
+## and a second crew on the same lane pins it (see Weapons "suppression").
+const SUPPRESSION_FULL_DENSITY := 3.0
+## Suppression is re-sampled (and the fields decay) every this many ticks: 20 Hz is far finer than a crew's
+## reaction and keeps the grid work off most ticks.
+const SUPPRESSION_SAMPLE_TICKS := 3
+## Being fully suppressed multiplies shot spread by (1 + this). A pinned tank's 0.8 deg becomes 2.4 deg: it still
+## shoots, it just stops hitting anything far away, which is what "effective fire" means.
+const SUPPRESSION_SPREAD_FACTOR := 2.0
+## Fire density at which a patch of ground counts as a beaten zone (is_beaten_zone). One machine gun streaming down
+## a lane settles at about 1.4 (1.0 suppression per second against a 1 s half-life), so a single crew IS enough to
+## make a lane a bad idea — which is the lead's "cut off an avenue". Getting PINNED there takes three times as much.
+const BEATEN_ZONE_DENSITY := 1.0
 ## G6 repair: hull points per second for tanks inside their base zone that haven't been hit for
 ## Tank.shield_recharge_delay. The hull is the lasting cost of a fight; mending it means going home.
 const REPAIR_HP_PER_SECOND := 6.0
@@ -142,6 +167,9 @@ var tick := 0
 ## sees an enemy, every teammate knows). {enemy name: {position, velocity, forward,
 ## turret_forward, health, weapon, visible, seen_tick}}. Simulating peer only.
 var intel: Array[Dictionary] = [{}, {}]
+## L2: incoming-fire density per team (index = the team being shot AT). Built on first use, because the arena's
+## half size comes from the layout and the Match can enter the tree before it.
+var _threat: Array[ThreatField] = []
 ## Tank name → squad name, for brain tanks.
 var _squad_by_tank := {}
 ## "team/squad name" → Squad (runtime squad state; tactical map commands land here).
@@ -181,6 +209,8 @@ func _physics_process(delta: float) -> void:
 		return
 	sim_seconds += delta
 	tick += 1
+	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
+		_update_suppression()
 	if tick % INTEL_EVERY_TICKS == 0:
 		_update_intel()
 		_update_squads()
@@ -282,10 +312,11 @@ func spawn_tank(tank_name: String, owner_peer_id: int, team: int = -1, unit_id: 
 func _jittered(point: Vector3) -> Vector3:
 	if spawn_jitter <= 0.0:
 		return point
-	# Less jitter along z keeps tanks inside their base area, clear of the cover walls.
+	# Less jitter along z keeps tanks inside their base area, clear of the cover walls and of the row behind.
 	var sideways := minf(spawn_jitter, SPAWN_JITTER_MAX_X)
+	var lengthways := minf(spawn_jitter * 0.4, SPAWN_JITTER_MAX_Z)
 	return point + Vector3(_rng.randf_range(-sideways, sideways), 0.0,
-			_rng.randf_range(-spawn_jitter, spawn_jitter) * 0.4)
+			_rng.randf_range(-lengthways, lengthways))
 
 
 ## World-space axes for team-relative coordinates: forward points at the enemy base.
@@ -524,6 +555,66 @@ func _sample_brain_options() -> void:
 		counts[brain.choice["option"]] = int(counts.get(brain.choice["option"], 0)) + 1
 
 
+# ---- L2 suppression and effective fire (simulating peer) -----------------------------
+
+## Contract L2: the incoming-fire density `team` is facing — a coarse grid of where the ENEMY's rounds have been
+## falling, fading with a ~1 s half-life (ThreatField). Read it to avoid beaten zones, to see whether your own
+## suppression is landing, or to drive a support-by-fire drill.
+func threat_field(team: int) -> ThreatField:
+	if _threat.is_empty():
+		var half := float(Arena.active.get("half_size", ARENA_HALF_SIZE))
+		_threat = [ThreatField.new(half), ThreatField.new(half)]
+	return _threat[team]
+
+
+## Contract L2: would moving from `from` to `to` take a unit of `team` through a wall of bullets? The straight
+## path is sampled against that team's incoming fire; BEATEN_ZONE_DENSITY is about one machine gun's worth.
+func is_beaten_zone(team: int, from: Vector3, to: Vector3) -> bool:
+	return threat_field(team).peak_along(from, to) >= BEATEN_ZONE_DENSITY
+
+
+## Contract L2: how exposed a path is for `team` on average (0 = clear), for scoring one route against another.
+func threat_along(team: int, from: Vector3, to: Vector3) -> float:
+	return threat_field(team).mean_along(from, to)
+
+
+## L2: the spread (radians, standard deviation) a shot leaves the barrel with. `moving` is speed as a fraction of
+## the hull's top speed and `suppression` is the crew's (0..1). Both cost accuracy, and they stack: a tank that
+## charges while under fire hits almost nothing.
+static func shot_spread(weapon: Dictionary, moving: float, suppression: float) -> float:
+	var spread_deg := float(weapon.get("spread_deg", 0.0))
+	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression)
+
+
+## L2: mark the ground a direct-fire round swept, and report the suppression it laid down (0 for a weapon that
+## doesn't suppress). Rounds only suppress the side they were fired AT.
+func _suppress_lane(shooter_team: int, from: Vector3, to: Vector3, weapon: Dictionary) -> float:
+	var weight := Weapons.suppression(weapon)
+	if weight > 0.0:
+		threat_field(1 - shooter_team).stamp_segment(from, to, weight)
+	return weight
+
+
+## L2: mark the ground a burst covered (arcs, and the flame cone's reach).
+func _suppress_area(shooter_team: int, center: Vector3, radius: float, weight: float) -> float:
+	if weight > 0.0:
+		threat_field(1 - shooter_team).stamp_burst(center, radius, weight)
+	return weight
+
+
+## L2: fade the fields, then settle every living crew's suppression to the fire falling on it. Deterministic:
+## sorted units, time counted in ticks.
+func _update_suppression() -> void:
+	for team in 2:
+		threat_field(team).decay(SUPPRESSION_SAMPLE_TICKS)
+	var seconds := float(SUPPRESSION_SAMPLE_TICKS) / 60.0
+	for tank in _sorted_tanks():
+		if not tank.is_alive():
+			continue
+		var density := threat_field(tank.team).at(tank.global_position)
+		tank.settle_suppression(clampf(density / SUPPRESSION_FULL_DENSITY, 0.0, 1.0), seconds)
+
+
 func _update_intel() -> void:
 	for team in 2:
 		var known: Dictionary = intel[team]
@@ -577,7 +668,7 @@ func state_hash() -> String:
 	bytes.append_array(var_to_bytes(tick))
 	for tank in _sorted_tanks():
 		bytes.append_array(var_to_bytes([String(tank.name), tank.global_position, tank.rotation.y,
-				tank.turret.rotation.y, tank.health, tank.alive]))
+				tank.turret.rotation.y, tank.health, tank.alive, tank.suppression]))
 	var hashing := HashingContext.new()
 	hashing.start(HashingContext.HASH_SHA256)
 	hashing.update(bytes)
@@ -678,7 +769,7 @@ func _build_shell(data: Dictionary) -> Node:
 		if shooter != null:
 			shell.exclude = [shooter.get_rid()]
 		shell.hit.connect(_on_shell_hit)
-		shell.expired.connect(func(expired_shell: Shell) -> void: expired_shell.queue_free())
+		shell.expired.connect(_on_shell_expired)
 	return shell
 
 
@@ -689,7 +780,8 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	if stats["first_shot_seconds"] < 0.0:
 		stats["first_shot_seconds"] = snappedf(sim_seconds, 0.1)
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
-	var spread := deg_to_rad(float(tank.weapon.get("spread_deg", 0.0))) * (1.0 + MOVING_SPREAD_FACTOR * moving)
+	# L2: a suppressed gunner's rounds go wide (shot_spread), so volume of fire buys accuracy from the other side.
+	var spread := shot_spread(tank.weapon, moving, tank.suppression)
 	var actual := direction.rotated(Vector3.UP, _fire_rng.randfn(0.0, spread)) if spread > 0.0 else direction
 	var projectile_id := _next_shell_id
 	_next_shell_id += 1
@@ -713,7 +805,9 @@ func _emit_fired(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id:
 	weapon_fired.emit({"tick": tick, "shooter": String(tank.name), "weapon": tank.weapon_id,
 			"fire_model": String(weapon.get("fire_model", "shell")), "muzzle": _triple(muzzle), "direction": _triple(direction),
 			"projectile_id": projectile_id, "speed_mps": float(weapon.get("projectile_speed_mps", 0.0)),
-			"range": float(weapon["range"])})
+			"range": float(weapon["range"]),
+			# L2: how suppressive this round is (per second for streams and cones), for cues and readouts.
+			"suppression_applied": Weapons.suppression(weapon)})
 
 
 static func _triple(v: Vector3) -> Array:
@@ -721,9 +815,10 @@ static func _triple(v: Vector3) -> Array:
 
 
 ## K2: announce a round striking something. `hit` is _land_hit_result's dictionary, or empty for a wall.
-func _emit_impact(projectile_id: int, position: Vector3, normal: Vector3, victim: Tank, hit: Dictionary) -> void:
+func _emit_impact(projectile_id: int, position: Vector3, normal: Vector3, victim: Tank, hit: Dictionary,
+		suppression_applied := 0.0) -> void:
 	var event := {"tick": tick, "projectile_id": projectile_id, "position": _triple(position), "normal": _triple(normal),
-			"weak_spot": false, "damage": 0.0, "killed": false}
+			"weak_spot": false, "damage": 0.0, "killed": false, "suppression_applied": suppression_applied}
 	if victim != null and not hit.is_empty():
 		event["target"] = String(victim.name)
 		event["face"] = hit["face"]
@@ -813,8 +908,11 @@ func _land_rounds() -> void:
 			if main_victim == null or dealt > float(main_hit["hull"]) + float(main_hit["shield"]):
 				main_victim = victim
 				main_hit = hit
+		# L2: a burst suppresses everything inside its splash, which is what makes a battery worth having.
+		var suppression := _suppress_area(int(landing["team"]), point, radius, Weapons.suppression(weapon))
 		var burst := {"tick": tick, "projectile_id": int(landing.get("projectile_id", -1)), "position": _triple(point),
-				"normal": [0.0, 1.0, 0.0], "weak_spot": false, "damage": 0.0, "killed": killed_any, "victims": victims}
+				"normal": [0.0, 1.0, 0.0], "weak_spot": false, "damage": 0.0, "killed": killed_any, "victims": victims,
+				"suppression_applied": suppression}
 		if main_victim != null:
 			burst["target"] = String(main_victim.name)
 			burst["face"] = main_hit["face"]
@@ -833,14 +931,19 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: 
 	var query := PhysicsRayQueryParameters3D.create(from, to, HIT_MASK, [tank.get_rid()])
 	var hit := tank.get_world_3d().direct_space_state.intersect_ray(query)
 	var end := to
+	var victim: Tank = null
+	var result := {}
 	if not hit.is_empty():
 		end = hit.position
-		var victim := hit.collider as Tank
+		victim = hit.collider as Tank
 		if victim != null and victim.is_alive():
-			var result := _land_hit_result(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
-			_emit_impact(projectile_id, hit.position, hit.normal, victim, result)
+			result = _land_hit_result(victim, float(weapon["damage"]), weapon, direction, tank.team, String(tank.name), "laser_damage", true)
 		else:
-			_emit_impact(projectile_id, hit.position, hit.normal, null, {})
+			victim = null
+	# L2: hitscan rounds suppress the corridor they crossed, whether or not they hit (the wall of bullets).
+	var suppression := _suppress_lane(tank.team, from, end, weapon)
+	if not hit.is_empty():
+		_emit_impact(projectile_id, hit.position, hit.normal, victim, result, suppression)
 	show_beam.rpc(muzzle, end, String(weapon.get("fx", "fx.laser_beam")))
 
 
@@ -850,6 +953,10 @@ func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: T
 	if tick % CONE_EVENT_TICKS == 0:
 		_emit_fired(tank, origin, direction, _next_shell_id)
 		_next_shell_id += 1
+		# L2: fire suppresses the ground it washes over, a CONE_EVENT_TICKS slice of its per-second weight.
+		var reach := float(weapon["range"])
+		_suppress_area(tank.team, origin + direction * reach * 0.5, reach * 0.5,
+				Weapons.suppression(weapon) * float(CONE_EVENT_TICKS) / 60.0)
 	for victim in _sorted_tanks():
 		if not victim.is_alive() or victim == tank:
 			continue
@@ -920,8 +1027,7 @@ func friendlies_in_line_of_fire(shooter: Tank, aim_point: Vector3) -> Array[Tank
 				if along > 0.0 and along <= reach + radius:
 					var across := absf((spot - flat_origin).cross(direction))
 					var moving := clampf(absf(shooter.speed()) / maxf(shooter.max_forward_speed, 0.1), 0.0, 1.0)
-					var spread_deg := float(weapon.get("spread_deg", 0.0)) * (1.0 + MOVING_SPREAD_FACTOR * moving)
-					var spread := tan(deg_to_rad(spread_deg) * LINE_OF_FIRE_SIGMAS) * along
+					var spread := tan(shot_spread(weapon, moving, shooter.suppression) * LINE_OF_FIRE_SIGMAS) * along
 					risky = across <= radius + spread
 		if risky:
 			at_risk.append(friend)
@@ -1022,6 +1128,8 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	var result := victim.take_hit(raw, float(weapon.get("shield_multiplier", 1.0)) * float(Armor.SHIELD_FACING[face]), through_armor)
 	result["face"] = face
 	result["weak_spot"] = weak
+	# L2: a round that actually connects rattles the crew beyond the fire density where they sit.
+	victim.suppress(Weapons.suppression(weapon) / SUPPRESSION_FULL_DENSITY)
 	if weak and victim.team != team and counts_as_hit:
 		stats["weak_spot_hits"][team] += 1
 	if victim.team == team:
@@ -1073,15 +1181,25 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
+	var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
+	var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
+	# L2: the round suppressed everything along the corridor it flew down before it stopped here.
+	var suppression := _suppress_lane(shell.team, shell.ray_start, point, weapon)
 	if victim != null and victim.is_alive():
-		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
-		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
 		var hit := _land_hit_result(victim, float(weapon["damage"]), weapon, shell.direction, shell.team, shell.shooter_name, "", true)
 		killed = hit["killed"]
-		_emit_impact(shell.projectile_id, point, shell.hit_normal, victim, hit)
+		_emit_impact(shell.projectile_id, point, shell.hit_normal, victim, hit, suppression)
 	else:
-		_emit_impact(shell.projectile_id, point, shell.hit_normal, null, {})
+		_emit_impact(shell.projectile_id, point, shell.hit_normal, null, {}, suppression)
 	show_impact.rpc(point, killed)
+	shell.queue_free()
+
+
+## L2: a round that burned out without hitting anything still swept a lane; mark it, then free the shell.
+func _on_shell_expired(shell: Shell) -> void:
+	var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
+	_suppress_lane(shell.team, shell.ray_start, shell.global_position,
+			shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT))
 	shell.queue_free()
 
 

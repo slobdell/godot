@@ -33,6 +33,15 @@ const SCHEMA_VERSION := 2
 ## armor, good_vs, weak_vs; the IFV and the Lancer.
 
 const ROLES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
+## L3 (round 4, contract L3): the four factions (game_design.md *Factions*). Every faction fields the same core
+## roles with its own costs and stats, so counters stay learnable while army SIZE falls out of cost: the road gangs
+## swarm, then the Condemned, then the Law, and the Syndicate fields the fewest, best vehicles (the lead,
+## 2026-09-16). Art for all four already exists (`game/theme/factions/`, K4 slots).
+const FACTIONS := ["condemned", "gangs", "law", "syndicate"]
+## Units without a `faction` key belong here, so every round-3 army and doctrine keeps working unchanged.
+const DEFAULT_FACTION := "condemned"
+const FACTION_NAMES := {"condemned": "The Condemned", "gangs": "Road Gangs", "law": "The Law",
+		"syndicate": "The Syndicate"}
 const MOUNTS := ["turret", "fixed"]
 ## K3: how a hull moves. Tracks pivot in place; wheels need speed to turn (a turning circle). Hover and articulated
 ## are reserved for later factions.
@@ -43,6 +52,11 @@ const MUZZLE_CLEARANCE := 0.1
 
 ## Points a player spends on an army per match. A standard tank is 200.
 const DEFAULT_BUDGET := 1000
+## L3/X5 (round 4): the budget a full-scale battle is fought at. The lead asked for "a baseline of 30 units per
+## side"; the Condemned average about 176 points a vehicle, so 5200 buys them ~30, the gangs more, and the
+## Syndicate fewer. Free play (skirmish, the match runner's faction matches) uses this; the garage keeps its own
+## smaller progression tiers (Progression.BUDGET_TIERS) until that stream unpauses.
+const BASELINE_BUDGET := 5200
 
 const PROFILES := {
 	# The lead: "the scout vehicles can have no turret, and they just have a machine gun that shoots
@@ -50,6 +64,7 @@ const PROFILES := {
 	"scout": {
 		"display_name": "Scout",
 		"role": "scout",
+		"faction": "condemned",
 		"blurb": "Fast rally truck with a hood-mounted machine gun. Sees far; hunts artillery and Lancers.",
 		"cost": 110,
 		"unlock_tier": 0,
@@ -82,6 +97,7 @@ const PROFILES := {
 	"tank": {
 		"display_name": "Tank",
 		"role": "tank",
+		"faction": "condemned",
 		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
 		"cost": 200,
 		"unlock_tier": 0,
@@ -116,6 +132,7 @@ const PROFILES := {
 	"ifv": {
 		"display_name": "IFV",
 		"role": "ifv",
+		"faction": "condemned",
 		"blurb": "Armored troop bus with a 30 mm autocannon on a fast turret. Shreds scouts; can't crack tank fronts.",
 		"cost": 150,
 		"unlock_tier": 0,
@@ -148,6 +165,7 @@ const PROFILES := {
 	"artillery": {
 		"display_name": "Artillery",
 		"role": "artillery",
+		"faction": "condemned",
 		"blurb": "Crane carrier with a mortar battery. Shells what teammates spot; helpless up close.",
 		"cost": 220,
 		"unlock_tier": 1,
@@ -182,6 +200,7 @@ const PROFILES := {
 	"lancer": {
 		"display_name": "Lancer",
 		"role": "lancer",
+		"faction": "condemned",
 		"blurb": "Converted power-utility truck with a long laser. Strips shields at range; overheats.",
 		"cost": 200,
 		"unlock_tier": 1,
@@ -219,6 +238,7 @@ const PROFILES := {
 	"burner": {
 		"display_name": "Burner",
 		"role": "burner",
+		"faction": "condemned",
 		"blurb": "Plow-nosed fire truck with a flamethrower. Melts light hulls and artillery it reaches; tanks and Lancers stop it first.",
 		# Stretch tuning (2026-09-14, `make matchups ... --focus burner`): at 160 pts, 12 m/s, front armor 7, hull 260
 		# it won
@@ -296,6 +316,34 @@ static func ids() -> PackedStringArray:
 	for unit_id: String in PROFILES:
 		result.append(unit_id)
 	return result
+
+
+## L3: which faction a unit belongs to ("" for an unknown id).
+static func faction_of(unit_id: String) -> String:
+	if not PROFILES.has(unit_id):
+		return ""
+	return String(PROFILES[unit_id].get("faction", DEFAULT_FACTION))
+
+
+## L3: a faction's unit ids in catalog order (empty for a faction that has no units).
+static func roster(faction: String) -> PackedStringArray:
+	var result: PackedStringArray = []
+	for unit_id: String in PROFILES:
+		if faction_of(unit_id) == faction:
+			result.append(unit_id)
+	return result
+
+
+## L3: the average cost of a faction's vehicles. This is what decides how many of them a budget buys, which is the
+## lead's faction identity ("the gang is diluted with cheaper units, so it should be a bigger swarm").
+static func roster_average_cost(faction: String) -> float:
+	var ids := roster(faction)
+	if ids.is_empty():
+		return 0.0
+	var total := 0.0
+	for unit_id in ids:
+		total += float(PROFILES[unit_id]["cost"])
+	return total / ids.size()
 
 
 ## Unit ids with this role.

@@ -129,6 +129,4 @@ announcer-shots: import ## A scripted skirmish with the announcer's subtitles, d
 	$(GODOT) --path . --resolution 1200x540 -- --skirmish --scripted --enemy=$(ENEMY) --announcer=text --announcer-seed=2 \
 		--screenshot-delay=$(or $(DELAY),24) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/announcer_phone.png >/dev/null 2>&1
 
-# announcer-variance is out of announcer-check until its CLI flags land (orchestrator, 2026-09-16: it broke main for
-# every stream). The audio stream puts it back with the implementation.
-announcer-check: announcer-validate announcer-pytest announcer-audit announcer-transcripts-check announcer-record-smoke ## Everything the announcer verifies headless (in make check)
+announcer-check: announcer-validate announcer-pytest announcer-audit announcer-variance announcer-transcripts-check announcer-record-smoke ## Everything the announcer verifies headless (in make check)

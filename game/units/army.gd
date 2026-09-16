@@ -5,8 +5,13 @@ extends RefCounted
 ## loads doctrines (skirmish, the match runner, the garage) can use them.
 ##
 ## CPU army names: "cpu" (a seeded random archetype) or "cpu:<archetype>" (see ARCHETYPES).
+##
+## L3 (round 4): every archetype belongs to a FACTION. `load_army(..., faction)` picks only that faction's
+## archetypes and buys only its units, so a budget turns into the army size the lead asked for (gangs swarm, the
+## Syndicate fields the fewest). Without a faction nothing changes: "cpu" stays a Condemned army.
 
-## Each archetype: the unit mix to buy, in purchase order (repeated while money lasts).
+## Each archetype: the faction it belongs to and the unit mix to buy, in purchase order (repeated while money
+## lasts). Omitting `faction` means Units.DEFAULT_FACTION.
 const ARCHETYPES := {
 	"balanced": {"units": ["tank", "ifv", "scout", "artillery", "tank", "lancer", "ifv"]},
 	"armor": {"units": ["tank", "tank", "lancer", "tank", "ifv"]},
@@ -16,6 +21,11 @@ const ARCHETYPES := {
 	# Stretch: close-range pressure. Burners charge behind a tank's front armor while an IFV screens scouts.
 	"brawl": {"units": ["burner", "tank", "burner", "ifv", "burner", "lancer"]},
 }
+## L3/X5: how many vehicles one side may field. Doctrine.MAX_UNITS (25) is the cap on a HAND-WRITTEN five-squad
+## army; a faction army at Units.BASELINE_BUDGET is bigger than that, so it is split over as many five-unit squads
+## as it needs (see squads_for_scale). Sized for the gangs' swarm at the baseline budget, and for the spawn grid
+## (Match.SPAWN_SLOTS): more units than there are slots would stack hulls on top of each other.
+const MAX_ARMY_UNITS := 45
 ## Squad name and directive per role. Squads are formed by role, in this order.
 const SQUADS := {
 	"tank": {"name": "Guns", "directive": {"role": "assault", "cohesion": 0.7}},
@@ -31,16 +41,68 @@ static func is_cpu(name: String) -> bool:
 	return name == "cpu" or name.begins_with("cpu:")
 
 
+## L3: the archetype names belonging to `faction`, sorted (a deterministic pick order).
+static func archetypes_for(faction: String) -> PackedStringArray:
+	var names: PackedStringArray = []
+	for archetype: String in ARCHETYPES:
+		if String(ARCHETYPES[archetype].get("faction", Units.DEFAULT_FACTION)) == faction:
+			names.append(archetype)
+	names.sort()
+	return names
+
+
 ## Load an army by name: "cpu" / "cpu:<archetype>" (generated from `seed_value` and `budget`), a name in
-## res://doctrines/, or a full path. Returns {"doctrine": Dictionary} or {"error": String}.
-static func load_army(name_or_path: String, seed_value: int, budget: int = Units.DEFAULT_BUDGET) -> Dictionary:
+## res://doctrines/, or a full path. `faction` (L3, optional) restricts a CPU army to one faction's archetypes and
+## units, and lets it grow past Doctrine.MAX_UNITS. Returns {"doctrine": Dictionary} or {"error": String}.
+static func load_army(name_or_path: String, seed_value: int, budget: int = Units.DEFAULT_BUDGET,
+		faction: String = "") -> Dictionary:
 	if is_cpu(name_or_path):
 		var archetype := name_or_path.trim_prefix("cpu:")
 		if name_or_path != "cpu" and not ARCHETYPES.has(archetype):
 			return {"error": "no CPU army archetype '%s' (have %s)" % [archetype, ARCHETYPES.keys()]}
-		return Doctrine.parse(cpu_army(name_or_path, seed_value, budget))
+		if faction == "":
+			return Doctrine.parse(cpu_army(name_or_path, seed_value, budget))
+		if not Units.FACTIONS.has(faction):
+			return {"error": "no faction '%s' (have %s)" % [faction, ", ".join(Units.FACTIONS)]}
+		if archetypes_for(faction).is_empty():
+			return {"error": "faction '%s' has no armies yet" % faction}
+		if name_or_path != "cpu" and not archetypes_for(faction).has(archetype):
+			return {"error": "archetype '%s' is not a %s army (have %s)" % [archetype, faction,
+					", ".join(archetypes_for(faction))]}
+		return parse_scaled(cpu_army(name_or_path, seed_value, budget, faction))
 	var path := name_or_path if name_or_path.contains("://") else "res://doctrines/%s.json" % name_or_path
 	return Doctrine.load_file(path)
+
+
+## L3/X5: validate an army that may hold more than Doctrine.MAX_SQUADS squads. Doctrine.parse owns every rule
+## (names, directives, formations, unit entries) but caps the squad COUNT at five, which is a player-UI number, not
+## a simulation one; a 30-a-side faction army needs six or more. Rather than copy those rules, the squads are
+## validated in slices of Doctrine.MAX_SQUADS and duplicate names are checked across the whole army.
+## Requested of the doctrine stream: raise Doctrine.MAX_SQUADS so this wrapper can go away (see the brief's Status).
+static func parse_scaled(doctrine: Dictionary) -> Dictionary:
+	var squads: Variant = doctrine.get("squads")
+	if typeof(squads) != TYPE_ARRAY or (squads as Array).is_empty():
+		return Doctrine.parse(doctrine)
+	var all_squads: Array = squads
+	if all_squads.size() > MAX_ARMY_UNITS:
+		return {"error": "an army of %d squads is past the %d unit cap" % [all_squads.size(), MAX_ARMY_UNITS]}
+	var seen := {}
+	for squad: Variant in all_squads:
+		var squad_name: Variant = (squad as Dictionary).get("name") if typeof(squad) == TYPE_DICTIONARY else null
+		if typeof(squad_name) == TYPE_STRING:
+			if seen.has(squad_name):
+				return {"error": "duplicate squad name '%s'" % squad_name}
+			seen[squad_name] = true
+	var index := 0
+	while index < all_squads.size():
+		var slice := {"name": doctrine.get("name", ""), "squads": all_squads.slice(index, index + Doctrine.MAX_SQUADS)}
+		var parsed := Doctrine.parse(slice)
+		if parsed.has("error"):
+			return parsed
+		index += Doctrine.MAX_SQUADS
+	if Doctrine.entries(doctrine).size() > MAX_ARMY_UNITS:
+		return {"error": "an army of %d units is past the %d cap" % [Doctrine.entries(doctrine).size(), MAX_ARMY_UNITS]}
+	return {"doctrine": doctrine}
 
 
 ## "" if the doctrine fits the budget, else why not.
@@ -51,15 +113,19 @@ static func check_budget(doctrine: Dictionary, budget: int) -> String:
 	return ""
 
 
-## A seeded CPU army. `name` is "cpu" or "cpu:<archetype>". Deterministic for a given seed and budget.
-static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_BUDGET) -> Dictionary:
+## A seeded CPU army. `name` is "cpu" or "cpu:<archetype>". Deterministic for a given seed and budget. With a
+## `faction` (L3) it buys from that faction's archetypes and may field up to MAX_ARMY_UNITS vehicles; without one it
+## is a five-squad Condemned army exactly as in round 3.
+static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_BUDGET,
+		faction: String = "") -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var archetypes := ARCHETYPES.keys()
+	var archetypes: Array = Array(archetypes_for(faction)) if faction != "" else ARCHETYPES.keys()
 	archetypes.sort()
 	var archetype := name.trim_prefix("cpu:") if name.begins_with("cpu:") else String(archetypes[rng.randi_range(0, archetypes.size() - 1)])
 	if not ARCHETYPES.has(archetype):
 		archetype = "balanced"
+	var unit_cap := MAX_ARMY_UNITS if faction != "" else Doctrine.MAX_UNITS
 	var order: Array = ARCHETYPES[archetype]["units"]
 	var cheapest := INF
 	for unit_id: String in order:
@@ -69,8 +135,8 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 	# Cycle through the purchase order until the budget or the army cap runs out; a seeded rotation of
 	# the starting point varies armies of one archetype.
 	var start := rng.randi_range(0, order.size() - 1)
-	for step in order.size() * Doctrine.MAX_UNITS:
-		if entries.size() >= Doctrine.MAX_UNITS or spent + cheapest > budget:
+	for step in order.size() * unit_cap:
+		if entries.size() >= unit_cap or spent + cheapest > budget:
 			break
 		var entry := {"unit": String(order[(start + step) % order.size()])}
 		var cost := Units.cost_of(entry)
@@ -78,7 +144,40 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 			continue
 		entries.append(entry)
 		spent += cost
-	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "cost": spent, "squads": squads_for(entries)}
+	var squads := squads_for(entries) if faction == "" else squads_for_scale(entries)
+	return {"name": "CPU %s" % archetype.capitalize(), "archetype": archetype, "faction": faction, "cost": spent,
+			"squads": squads}
+
+
+## L3/X5: group a big army into as many five-unit squads as it needs, by role, in role order. Unlike squads_for
+## (which folds everything into Doctrine.MAX_SQUADS for the player's five-squad UI), this keeps every squad pure so
+## elements and formations stay meaningful at 30+ a side: Guns, Guns2, Guns3, ...
+static func squads_for_scale(entries: Array) -> Array:
+	var by_role := {}
+	for entry: Dictionary in entries:
+		var role := Units.role_of(entry["unit"])
+		if not by_role.has(role):
+			by_role[role] = []
+		by_role[role].append(entry)
+	var squads: Array = []
+	for role: String in SQUADS:
+		var members: Array = by_role.get(role, [])
+		var index := 0
+		while index < members.size():
+			var template: Dictionary = SQUADS[role]
+			var number := index / Doctrine.MAX_SQUAD_UNITS + 1
+			squads.append({"name": template["name"] + ("" if number == 1 else str(number)),
+					"directive": template["directive"].duplicate(),
+					"units": members.slice(index, index + Doctrine.MAX_SQUAD_UNITS)})
+			index += Doctrine.MAX_SQUAD_UNITS
+	return squads
+
+
+## L3: roughly how many vehicles `budget` buys a faction, from its roster's average cost. Reporting and design
+## checks: the counts must fall out of cost, not out of a table (the lead, 2026-09-16).
+static func typical_size(faction: String, budget: int) -> int:
+	var average := Units.roster_average_cost(faction)
+	return 0 if average <= 0.0 else mini(MAX_ARMY_UNITS, int(floor(float(budget) / average)))
 
 
 ## Group entries into at most Doctrine.MAX_SQUADS squads of Doctrine.MAX_SQUAD_UNITS, by role (Guns,

@@ -88,27 +88,270 @@ minimal, listed in merge notes).
 
 _Updated 2026-09-16 by the audio worker._
 
-**In progress: X1 (variance).** Plan below; nothing merged yet.
+**Done: X1 (variance), X3 (the booth and the music in live matches), X4 (the sound mix), X5 (MatchMood), X6 (the
+music pipeline). X2 is blocked on the lead: the environment has an ElevenLabs key *id*, not an API key.**
 
-### Plan (in order, smallest foundation first)
+### Waiting on the lead
 
-1. **X1a measure first.** A variance audit (`make announcer-variance`): run every fixture as N *consecutive*
-   matches through the director sharing one recency history, and report (a) repeats inside a match, (b) the
-   opener repeat rate over sliding windows of five consecutive matches, (c) the share of a match's lines that
-   were also heard in the previous match. This is the number the fix has to move; run it before changing anything.
-2. **X1b cross-match recency** (`AnnouncerHistory`, persisted to `user://`): the director weights a line down by
-   how many matches ago it was last heard. Off by default in the CLI so the checked-in review transcripts stay
-   byte-stable; the live booth loads and saves it; tests point at a scratch path (orientation trip-up 54).
-3. **X1c more variance where it is thin**: the diagnosis from X1a decides where. First suspicion from reading the
-   library: `pow(8, specificity)` makes a single tag-specific line (e.g. the one `control_point` welcome) win ~half
-   the intros, so the PA repeats her opening — more lines at each specificity level plus the recency penalty.
-4. **X1d regenerate transcripts**, re-run the audit, report before/after in Status.
-5. **X2 pilot** (~250 characters), listen, then the full run; ledger and speech-to-text check; report real spend.
-6. **X3 booth live**: real `Match` events, bus ducking, subtitles, volume/off setting; verified in a skirmish.
-7. **X5 MatchMood (L5)** before X4 and X6, because both read it.
-8. **X4 cinematic sound effects** (the largest item): source, process, variation pools, distance filtering, mix.
-9. **X6 music director** with placeholder loops and `assets/music/PROMPTS.md`.
+1. **The ElevenLabs API key (blocks X2 entirely, and the ElevenLabs source for X4).** `ELEVENLABS_KEY_ID` in
+   `~/.bashrc` holds a 64-hex-character value, which is a key **id**, not an API key. The API refuses it:
+   *"API key ID used as API key - only valid API keys can be used. API keys start with 'sk_' and are shown when the
+   key is created or rotated."* (verified against the live API with the pinned SDK; nothing was generated, no credits
+   spent.) There is no `sk_` key in the environment or in the mavlink-hud reference project.
+   **What to do:** elevenlabs.io → Settings → API Keys → create or rotate, copy the `sk_…` value shown once, and
+   export it before the interactive guard in `~/.bashrc` (trip-up 59). Either name works now:
+   `ELEVENLABS_API_KEY` is preferred, `ELEVENLABS_KEY_ID` still read. Also confirm the plan is a **paid** one: the
+   free tier is non-commercial with attribution, and the run needs ~28.5k credits.
+   The pipeline now refuses a key id up front with that message instead of sending a doomed request.
+2. **The Suno tracks.** The pipeline, the per-state prompts and placeholder beds all ship now; see
+   `assets/music/PROMPTS.md` and *What to playtest* below.
 
-### Where things stand
+### Done
 
-- Baseline `make remote T=check` started 2026-09-16; builder0 is busy with the other four streams' runs.
+**X1 — variance before generation.** Measured first: `make announcer-variance` replays every fixture as 50
+consecutive broadcasts through one recency memory and reports how often an opener comes back inside five matches.
+The lead's complaint was real and large.
+
+| | before | after | ceiling |
+|---|---|---|---|
+| the opening line repeats within five matches | **32.1%** | **6.9%** | 10% |
+| the PA's welcome repeats within five matches | **49.2%** | **5.6%** | 10% |
+| lines carried over from the previous match | 23.2% | 3.9% | 30% |
+| a line said twice in one match | 0 | 0 | 0 |
+
+Every fixture is under the ceiling individually (2–8% openers, 2–6% welcomes). Three causes, all fixed:
+- **No memory past the final whistle.** `AnnouncerHistory` keeps the last eight matches' line ids in
+  `user://announcer_history.json`; the director multiplies each line's pick weight by how recently it was heard. The
+  penalty table is sized against the director's own 8×-per-matched-tag specificity weighting, so a recent line loses
+  to a slightly less specific fresh one but not to a much less specific one.
+- **Too few lines per opening slot.** Ten PA welcomes over a five-match window repeat about half the time whatever
+  the weighting does. Library **429 → 490**: PA welcomes 10 → 30, the caller's intros 12 → 29, the Veteran's 6 → 14,
+  plus six caller results, five PA sign-offs and five Veteran results (the hot-line report showed those carrying most
+  of the match-to-match carryover; they are out of the top twenty now).
+- **One tag-specific line winning outright.** `pa.welcome.10` was the only welcome tagged `control_point`, so it took
+  roughly half of all intros on the default arena. There are now three, plus per-arena welcomes and intros.
+
+The booth loads and saves the memory around a live match. `--announcer-history=PATH` points it elsewhere and `off`
+disables it; a record-only booth never touches it, so automated runs never write the player's file (trip-up 54).
+The review transcripts are regenerated and the text audit is clean at 490 lines.
+
+**A real bug the new test found:** `JSON.parse_string` pushes an *engine error* on malformed text, which the test
+runner counts as a failure and a player would have seen in their log. A corrupt history file is now read through a
+`JSON` parser instance and simply treated as a booth with no past.
+
+**X5 — the match mood signal (L5).** `game/audio/match_mood.gd`: `current() -> {intensity 0..1, state, reasons[]}`
+over the same K5 event stream the announcer reads, with no clock of its own, so it is deterministic and runs over the
+fixtures. Heat accumulates per event and decays with a seven-second half-life; states are `lull`, `skirmish`,
+`battle`, `last_stand`, `victory`, `defeat` with hysteresis so one stray round can't flap the music.
+**State is from one team's point of view** — the same match is a victory for one bench and a defeat for the other,
+and a last stand is something that happens *to you* (a test covers both benches of the same match). `reasons` are
+plain words the announcer or a log can quote ("green is down to one against four"). 12 tests, including every
+fixture producing a plausible arc and the reading never leaving its contract.
+
+**X6 — the dynamic music pipeline (placeholders now).**
+- `game/audio/music_director.gd`: one bed per mood state, **crossfaded on a bar line** worked out from the manifest's
+  tempo (a fade that lands mid-bar sounds like a mistake), stingers over the top with a cooldown, looping between the
+  manifest's loop points rather than over the whole file, and a `Music` bus sidechain-ducked under `Announcer` (the
+  same trick `AnnouncerVoice` uses for the world bus). Adding a track is a file and a manifest row, never code.
+  10 tests.
+- `assets/music/PROMPTS.md`: the brief for the lead — one Suno **Style of Music** prompt and meta tags per state
+  (garage, pre-match, lull, skirmish, battle, last stand, victory, defeat) in the style he already liked, six
+  stingers, the five rules a bed has to follow to be loopable and duckable, and exactly what the manifest row needs.
+- **Placeholder beds ship now** (`make music-placeholders`, 537 KB): synthesised here, CC0, deliberately plain, but
+  at real tempos with real loop points, normalised to −16 LUFS and limited under −1.5 dBTP so swapping in a real
+  track doesn't change the mix. `make music-check` enforces the whole contract (loudness, true peak, loop points
+  inside the file, and the **loop seam's discontinuity**, which is what makes a bad loop click on every repeat) and
+  is in `make check` through the new `audio-check`.
+- `make music-import IN=… STATE=… BPM=…` turns one Suno download into a bed: trims silence, puts the loop points on
+  **bar lines**, normalises and limits, encodes Ogg, and writes the manifest row without clobbering tuning the lead
+  has already done. It nags if the Suno plan wasn't recorded, because commercial rights depend on it.
+
+**X3 — the booth and the music in live matches.** The booth already listened to real `Match` signals through
+`MatchEventAdapter` (round 3, K5). What round 4 adds:
+- The booth keeps the match's **`MatchMood`** up to date from the same events it already polls, so there is one
+  adapter and one mood for everything that reacts to the match. `--music` on its own attaches a *silent* booth, so
+  the music works without the announcer.
+- `MusicDirector.attach()` from `game/main.gd`, beside the booth, on `--music=on` (`--music-volume=DB`,
+  `--music-dir=PATH`). It follows the booth's mood: the bed changes at the next bar line, the result plays its
+  stinger.
+- **The ducking chain is now real.** `AnnouncerVoice` sidechains a compressor onto a `World` bus that nothing
+  previously created; `SfxSystem` now creates it and routes every world voice through it, and `MusicDirector` adds
+  its own `Music` bus ducked under `Announcer` as well. So speech ducks both the battle and the music, and that is
+  wired rather than described.
+- `assets/announcer/*.json` and `assets/music/*.json` are added to `include_filter` in `export_presets.cfg`, or the
+  web and server builds ship without the line library and the music manifest (trip-up 30).
+
+**X4 — the sound effects.** The lead's *"atari"* verdict was about three things, none of them any single sound's
+synthesis, and all three are fixed:
+- **Every shot was the same recording.** A scout's machine gun fires eleven rounds a second and every one was
+  byte-identical; ±12% pitch jitter does not hide that. The most-repeated sounds now come in several **takes**
+  (4 for `mg_round` and `bullet_hit_metal`, 3 for `autocannon_shot`, `ricochet`, `shell_hit_armor`, `dirt_impact`,
+  `explosion_small`, 2 for `weak_spot_hit`, `tank_boom`, `cannon_shot`), each synthesised from its own seed, and
+  `SfxSystem` draws one per shot. Loops keep a single take, because feel's engine and crowd systems duplicate them
+  to set loop points — a contract a test now guards, since those files are feel's and not mine to adapt.
+- **Nothing mixed the battle.** Twenty voices summed straight into the master, so a firefight clipped and turned to
+  mush. World sound now goes through the `World` bus, trimmed 6 dB with a limiter at −1 dB.
+- **Distance only made things quieter.** Sounds now carry a distance filter, so a cannon across the arena is dull
+  as well as quiet (the tank's boom falls to 1.4 kHz and −22 dB at maximum range) while small metallic sounds that
+  are only ever heard close keep their brightness.
+
+**Size:** 48 WAVs, 2.0 MB in git (the takes added 590 KB); every one imports as Quite OK Audio, so the exported pack
+carries roughly a quarter of that. `assets/music` is another 537 KB of placeholder Ogg.
+
+**What X4 did not get** (it needs X2's key): ElevenLabs' sound-effects generation, and CC0 source material layered
+under the synthesised transients. That is the step from "clean, varied and properly mixed" to genuinely cinematic,
+and it is the first thing to do when the key lands.
+
+**The mixdown flake (not in my backlog; the orchestrator asked for it early).** `test_mixdown_places_parts_fillers_and_cuts`
+was failing other streams' checks with 5.197 s instead of 7.0 s. It is **not load**: `apad` after `amix` simply does
+not pad on ffmpeg 6.1.1, so the mix ended with its last clip. `render()` now mixes against a generated `anullsrc`
+input as long as the match (`amix duration=longest`), which is version- and load-independent, and verifies its own
+output length and raises with both numbers rather than shipping a short mix that would desync the demo page. The test
+no longer proves the schedule by measuring audio. Mutation check: putting `apad` back reproduces 5.197 s exactly.
+Committed as 5ccf56f and reported to the orchestrator for merging to `main`.
+
+### Decisions
+
+- **Measure before fixing.** The first thing X1 shipped was the audit, not a fix; the "before" numbers are what
+  makes the brief's "~10%" target checkable, and they are now a gate in `make check`.
+- **Recency weighting rather than a ban list.** A hard "never repeat within N matches" rule breaks down where a slot
+  has one eligible line (a control-point welcome on a control-point arena). Weighting degrades gracefully: with one
+  candidate it still plays.
+- **Eight matches of memory.** Long enough that a session's worth of matches doesn't repeat, short enough that the
+  file stays tiny and a line the player liked comes back.
+- **MatchMood takes a point of view.** L5's `victory`/`defeat` states are meaningless without one, and the music for
+  a last stand should only play for the side making it.
+- **Placeholder music is synthesised here, not sourced.** No licence question, no download, regenerable, and
+  obviously placeholder — but it carries real tempo, loop and loudness metadata, so the director is exercised
+  end to end and swapping in a Suno track is a file plus a row.
+- **A tolerance, not a target, for loudness.** Placeholders land within 1.5 LU of −16 LUFS; `music-check` allows 2 LU,
+  because Suno's output won't be exact either and re-normalising a finished track twice does it no favours.
+
+### Known issues
+
+- `caller.hit.07/08/14` (the weak-spot calls) are the most-said lines at ~1.5% each: that moment's pool is narrow.
+  It is inside every ceiling and no line repeats inside a match, so it is a top-up for later, not a defect.
+- The placeholder beds are exactly that. They are correct, not good.
+- `music-smoke` only sees **two** bed changes in its forty-second match (lull at 0 s, battle at 12.7 s), because
+  that match never goes quiet again or reaches a last stand. It proves the chain end to end; it does not exercise
+  every state. The unit tests cover the rest.
+- The `MUSIC_TRACK` marker also prints during the music director's unit tests, which is a little noisy in the test
+  log. Harmless (the smoke greps its own log), but worth tidying if anyone minds.
+
+### Verified
+
+**`make remote T=check` exited 0 on builder0 against `bc49a34`** (the last commit; working tree clean, so the run
+matches the commit exactly):
+- **691 Godot tests, 0 failed** — 656 on `main` plus the 35 this stream added (7 announcer history, 12 MatchMood,
+  10 music director, 6 sound mix).
+- `announcer-variance passed` — the X1 ceilings are now a gate, not a claim.
+- `announcer-record-smoke passed`, sim hash `d7967d8b36d4417b`, **matching the glibc-2.43 baseline**: the booth, the
+  mood signal and the music read the match and never change it, which is the invariant audio must not break.
+- `music-smoke passed: 2 bed changes across 2 beds` — a real headless match drove the soundtrack from the `lull`
+  bed to the `battle` bed at 12.7 s, and the simulation hash did not move.
+- `audio-check passed` — every bed's loudness, true peak, loop points and seam.
+- The Python side: 43 tests (contract, generator, text audit, the pipeline against the mock client).
+
+**Played like a player** (`make remote T=announcer-shots`, a scripted skirmish with subtitles on builder0's desktop;
+frames in `build/screenshots/announcer_{desktop,phone}.png`, both looked at):
+- The broadcast reads as a broadcast. Seed 2 opened on one of the new caller lines ("Listen to this crowd! They have
+  been waiting for this one all season!"), the PA gave the control-point welcome, the Veteran came in after first
+  contact ("Now everybody knows where everybody is. This is where it gets honest."), and the caller called the
+  first kill, the matchup and the score. No repeats, nothing stale, nothing pasted-sounding.
+- **Desktop (1920×1080):** the newest line renders in full with the typewriter cursor, older ones truncate with an
+  ellipsis. Readable over the arena floor.
+- **Phone aspect (1200×540):** the same, smaller; the newest line still wraps in full.
+- **The one real problem, and it is not mine to fix:** the booth crowds gameplay out of the four-line message log.
+  In the desktop frame three of the four visible lines are the caller; in the phone frame "Destroyed an enemy Tank
+  (4 left)" is sandwiched between two of his. Round 3 asked control and feel for a separate subtitle line in the
+  HUD; the screenshots are now evidence that it matters. Restated under *Requests to other streams*.
+
+### What to playtest
+
+- **The whole thing, as a player:**
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --announcer=text --music=on`
+  The booth's subtitles come through the HUD message log, the soundtrack follows the fight, and the battle is on a
+  limited bus with distance filtering. `--announcer=voice` does nothing until X2's clips exist.
+- `make announcer-variance` — the numbers above, and `HOT=20` for the most-said lines.
+- `make announcer-transcript FIXTURE=close_match SEED=1` (any fixture, any seed): the PA's new openings. Run it
+  twice with different seeds to hear the variance the lead asked for.
+- `make music-check` — every bed's loudness, peak, loop points and seam. `make music-smoke` — the beds changing
+  during a real match.
+- `make music-placeholders` — regenerate the beds; then `make music-import IN=<a Suno file> STATE=battle BPM=110`.
+- `make sfx` — regenerate every sound effect and its takes.
+
+### Next steps
+
+1. **When the `sk_` key lands:** the pilot (~250 characters), listen to it, tune `VOICE_SETTINGS` and the carrier
+   sentences, then the full run (~28.5k credits), then `--announcer=voice` plays in skirmish. After that, ElevenLabs
+   sound-effects generation layered under X4's transients.
+2. **An options entry** for announcer and music volume. The flags exist; the settings UI is control's file, so it
+   is a request to them rather than something I should edit (below).
+3. **The stretch items, and why none of them are done.** I stopped at the end of the backlog rather than starting
+   these, because the branch was green and ready to merge and reopening it would move the target. Honest status of
+   each, so the next round can pick them up:
+   - **Stems (layers that build with intensity).** *Unblocked* — the pipeline could be built against the
+     placeholder beds today, and it is the one stretch item with no dependency. This is the one I would do first,
+     and the only one I deliberately left rather than could not start. It needs the manifest to carry a layer list
+     per bed and the director to cross-fade layers instead of whole tracks, which is a real change to
+     `MusicDirector`, not an addition.
+   - **An arena PA reading ad copy between rounds.** *Blocked on the lead* — the ad art and copy are lead gate 3 in
+     HANDOFF and the placeholders shipped without copy. The PA's sponsor-read lines exist (`pa.sponsor.*`); what is
+     missing is the copy to read and the screens to read it for.
+   - **Per-faction announcer flavour.** *Mostly already there* and the remaining value is small: round 3 shipped
+     faction introductions for all four factions and the director already tags moments `faction_<id>` and
+     `other_faction_<id>`, so faction-specific lines are selected today. What does not exist is a per-faction
+     *voice treatment* (the Syndicate's broadcast sounding different from the gangs'), which is an audio-processing
+     job that wants X2's real clips first.
+
+### Requests to other streams
+
+- **control / feel** (the HUD message log): **subtitles need their own line.** The booth posts through
+  `Hud.post_message`, so its lines compete with gameplay messages for the same four slots, and in a busy match the
+  caller wins. `build/screenshots/announcer_{desktop,phone}.png` show it: three of four lines are his on the
+  desktop, and a kill message is buried between two of his on the phone. A dedicated subtitle line (or a second,
+  shorter log for the booth) fixes it; `hud.tscn` is feel's and the skirmish HUD layout is control's, so it is
+  yours either way. Round 3 raised this; the frames now make the case.
+- **control** (skirmish and the options screen): `--announcer=text|voice|off` and `--music=on|off` plus their volume
+  flags are wired and default to off. A settings entry for each (announcer: text / voice / off with a volume; music:
+  a volume) belongs in your options UI. Round 3 also asked for `--announcer=text` by default in skirmish; still
+  worth doing.
+- **feel**: the `World` audio bus you asked for in round 3 now exists and every world voice is on it, so the
+  announcer's ducking works. `AnnouncerBooth.line_started` still carries the caller's text, team and intensity for
+  the crowd swell. Nothing for you to change unless you want to route more sounds there.
+
+### Merge notes (shared files)
+
+- `mk/core.mk`: `audio-check` appended to `check`'s prerequisites (music contract checks, a few seconds).
+- `mk/audio.mk`: new, mine.
+- `mk/announcer.mk`: `announcer-variance` added to `announcer-check` (~90 s). **The orchestrator removed this line on
+  `main`** because my mixdown commit carried the target without its CLI support and broke everyone's check. The CLI
+  support is here (46bf0c0), so take my version of this file on merge and it comes back working.
+- `game/main.gd`: the announcer's attach line now also attaches the music director, plus one header line for the
+  `--music` flags.
+- `export_presets.cfg`: `assets/announcer/*.json` and `assets/music/*.json` added to both presets' `include_filter`.
+- `_agents/orientation.md`: trip-ups 67–70 added (make's own `WINDOW`; killing `make remote` leaves the remote build
+  running; `.gitignore` slashes versus symlinks; `git add -A`).
+- `.gitignore`: `.tools` added without a trailing slash, so the worktree toolchain symlink can never be committed
+  again. One line; take it or the ai stream's equivalent, whichever merges first.
+- **Before merging this branch:** `git ls-files .tools` must be empty (it is, as of e578923).
+
+### Mistakes worth recording
+
+Both have the same cause, and it is worth naming once: **`git add -A <paths>` commits things I had not looked at**,
+and in both cases the file was visible in `git status` output I had decided was noise.
+
+1. **A half-finished make target broke `main` for five streams.** Commit 5ccf56f staged `mk/announcer.mk` with
+   `announcer-variance` already in `announcer-check`, while the CLI implementing it was still uncommitted. The
+   orchestrator had to remove the line. *A make target that is part of `check` and the code it calls belong in the
+   same commit.*
+2. **A committed `.tools` symlink destroyed the laptop's Godot toolchain.** Commit 93e2f40 committed `.tools`, which
+   in a worktree is a symlink to the main checkout's shared toolchain. `.gitignore` said `.tools/`, and a pattern
+   ending in a slash never matches a symlink, so it was never ignored — `?? .tools` sat in every `git status` I ran
+   for hours and I filtered it out each time. Merging the branch checked the symlink out over the real 300 MB
+   directory, leaving it pointing at itself; every worktree on the laptop then failed with "Too many levels of
+   symbolic links". The ai stream diagnosed it. Fixed here (e578923): untracked, and `.gitignore` now lists the
+   slashless form too so no stream can repeat it. Repair for the main checkout is `make bootstrap`; builder0 keeps
+   its own `.tools` and the green check there is unaffected.
+
+Orientation trip-ups 69 and 70 record both.

@@ -10,7 +10,11 @@ extends Node
 ##   --announcer-clips=DIR        folder with manifest.json (default res://assets/announcer/clips)
 ##   --announcer-seed=N           the director's seed (default: a new one each match)
 ##   --announcer-record=PATH      also write the match's K5 events to PATH (.jsonl) when it ends
+##   --announcer-history=PATH|off  where the cross-match recency memory lives (default user://announcer_history.json)
 ## Marker: ANNOUNCER_RECORDED path=... events=N problems=N
+##
+## The booth also keeps the match's [MatchMood] (L5) up to date from the same events, because it already polls them
+## and MatchMood costs nothing. That is what the music director follows, so `--music` alone attaches a silent booth.
 
 ## Every line as it starts: {t, end, speaker, text, moment, intensity 1-3, team, ...}. For the crowd (swell on
 ## intensity 3) and the ad screens (show the caller's line, the team that scored).
@@ -24,8 +28,18 @@ var hud: Hud
 var mode := "text"
 var subtitles := true
 var record_path := ""
+var history_path := AnnouncerHistory.PATH
+## Which bench the mood is read from: the player's team.
+var point_of_view := "green"
 var adapter: MatchEventAdapter
 var director: AnnouncerDirector
+## What earlier matches already said, so the PA doesn't open the same way every night (brief X1). Saved when the
+## broadcast ends. Tests and automated runs point it somewhere else with --announcer-history (trip-up 54: a test
+## must never write the player's real user:// files).
+var history: AnnouncerHistory
+var history_saved := false
+## L5: how the match feels, from the player's side. Read by the music director, and later the crowd and the screens.
+var mood: MatchMood
 var voice: AnnouncerVoice
 var recorded: Array = []
 var _last_cue := {}
@@ -34,7 +48,8 @@ var _last_cue := {}
 ## Adds a booth to the running game if the launch flags ask for one. Returns it, or null.
 static func attach(main: Node) -> AnnouncerBooth:
 	var flags: LaunchFlags = main.flags
-	if not flags.has("announcer") and not flags.has("announcer-record"):
+	# --music attaches a silent booth too: the music follows the mood the booth keeps.
+	if not flags.has("announcer") and not flags.has("announcer-record") and flags.text("music", "off") == "off":
 		return null
 	var booth := AnnouncerBooth.new()
 	booth.name = "AnnouncerBooth"
@@ -43,6 +58,7 @@ static func attach(main: Node) -> AnnouncerBooth:
 	booth.mode = flags.text("announcer", "off" if flags.has("announcer-record") else "text")
 	booth.record_path = flags.text("announcer-record")
 	var seed_text := flags.text("announcer-seed")
+	booth.history_path = flags.text("announcer-history", AnnouncerHistory.PATH)
 	booth.setup(flags.text("arena", Arena.DEFAULT_LAYOUT), int(seed_text) if seed_text.is_valid_int() else -1,
 			flags.text("announcer-clips", DEFAULT_CLIPS), float(flags.text("announcer-volume", "0")))
 	main.game_match.add_child(booth)
@@ -58,6 +74,11 @@ func setup(arena: String, seed_value: int = -1, clips_dir: String = DEFAULT_CLIP
 		seed_value = fresh.randi() & 0x7fffffff
 	adapter = MatchEventAdapter.new(game_match, arena)
 	director = AnnouncerDirector.new(library, seed_value)
+	mood = MatchMood.new(point_of_view)
+	# A booth that only records events (--announcer-record) says nothing, so it neither reads nor writes the memory.
+	if history_path != "off" and mode != "off":
+		history = AnnouncerHistory.load_from(history_path)
+		director.history = history
 	if mode == "voice":
 		voice = AnnouncerVoice.new()
 		voice.name = "Voice"
@@ -79,10 +100,12 @@ func _physics_process(_delta: float) -> void:
 		return
 	for event in adapter.poll():
 		recorded.append(event)
+		mood.push_event(event)
 		if mode != "off":
 			director.push_event(event)
 		if event["type"] == "match_end" and record_path != "":
 			_write_record()
+	mood.advance(adapter.seconds())
 	if mode == "off":
 		return
 	if not _last_cue.is_empty() and _last_cue.get("cut", false) and voice != null and not _last_cue.get("_voice_cut", false):
@@ -94,10 +117,28 @@ func _physics_process(_delta: float) -> void:
 
 ## Keeps talking through the result and sign-off after the match stops ticking (skirmish results screen).
 func _process(_delta: float) -> void:
-	if adapter == null or mode == "off" or not director.memory.finished or director.is_done():
+	if adapter == null or mode == "off" or not director.memory.finished:
+		return
+	if director.is_done():
+		_remember_tonight()
 		return
 	for cue in director.advance(director.now + get_process_delta_time()):
 		_say(cue)
+
+
+## Writes what the booth said tonight, once, so the next match opens differently.
+func _remember_tonight() -> void:
+	if history_saved or history == null:
+		return
+	history_saved = true
+	history.remember(director.used_line_ids())
+	history.save()
+
+
+func _exit_tree() -> void:
+	# A match the player quits out of still counts as heard.
+	if director != null and director.memory.finished:
+		_remember_tonight()
 
 
 func _say(cue: Dictionary) -> void:

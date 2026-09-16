@@ -1,7 +1,6 @@
 extends TestCase
-## Rules R5: a full army per side (Doctrine.MAX_UNITS, one per spawn slot) spawns without overlapping, and
-## Match.finished carries the fields the army stream's progression needs (contract C3). The sizes come from
-## the caps, not from a number typed here: they grow when armies do.
+## Rules R5: 5 squads x 5 units per side spawn without overlapping, and Match.finished carries the fields the
+## army stream's progression needs (contract C3).
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
@@ -14,28 +13,32 @@ func _setup() -> Match:
 	return game_match
 
 
-## The biggest army the rules allow: Doctrine.MAX_UNITS vehicles, in squads of MAX_SQUAD_UNITS.
+## The biggest army one side may field (Army.MAX_ARMY_UNITS), in squads of Doctrine.MAX_SQUAD_UNITS.
 func _full_army() -> Dictionary:
 	var roster := ["tank", "ifv", "scout", "artillery", "lancer"]
 	var army := {"name": "Full", "squads": []}
-	for i in Doctrine.MAX_UNITS:
-		var squad_index := i / Doctrine.MAX_SQUAD_UNITS
-		if squad_index >= army["squads"].size():
-			army["squads"].append({"name": "S%d" % squad_index, "formation": "wedge", "verb": "hold", "units": []})
-		army["squads"][squad_index]["units"].append({"unit": roster[i % roster.size()]})
+	var squads := ceili(float(Army.MAX_ARMY_UNITS) / Doctrine.MAX_SQUAD_UNITS)
+	var bought := 0
+	for s in squads:
+		var units: Array = []
+		for u in Doctrine.MAX_SQUAD_UNITS:
+			if bought >= Army.MAX_ARMY_UNITS:
+				break
+			units.append({"unit": roster[(s + u) % roster.size()]})
+			bought += 1
+		army["squads"].append({"name": "S%d" % s, "formation": "wedge", "verb": "hold", "units": units})
 	return army
 
 
-func test_a_full_army_a_side_spawns_clear_of_itself() -> void:
+func test_a_full_faction_army_a_side_spawns_clear_of_itself() -> void:
+	# X5 (round 4): the grid has to hold a faction army, not five squads of five.
 	assert_true(Match.SPAWN_SLOTS >= Doctrine.MAX_UNITS, "the spawn grid has a slot for every unit an army can field")
-	assert_true(Doctrine.MAX_UNITS <= Doctrine.MAX_SQUADS * Doctrine.MAX_SQUAD_UNITS,
-			"and an army that big fits in the squads the rules allow")
 	var game_match := _setup()
 	game_match.seed_spawns(9, 6.0)  # the match runner's jitter
 	for team in [Match.Team.GREEN, Match.Team.RUST]:
 		assert_eq(game_match.load_doctrine(team, _full_army()), "", "a full army loads for team %d" % team)
 	var tanks := game_match.tanks_by_name().values()
-	assert_eq(tanks.size(), 2 * Doctrine.MAX_UNITS, "setup: a full army on both sides")
+	assert_eq(tanks.size(), 2 * Army.MAX_ARMY_UNITS, "setup: %d units" % (2 * Army.MAX_ARMY_UNITS))
 	await wait_physics_frames(1)
 	var boxes := {}
 	for tank: Tank in tanks:
@@ -64,12 +67,16 @@ func test_a_full_army_a_side_spawns_clear_of_itself() -> void:
 	assert_eq(blocked, [], "no unit spawns inside a wall or crate")
 
 
-func test_the_first_five_slots_are_round_ones_front_row() -> void:
-	for slot in 5:
+func test_the_grid_fills_the_front_row_before_the_rows_behind_it() -> void:
+	var columns := Match.SLOT_X.size()
+	for slot in columns:
 		var spot := Match.spawn_position(Match.Team.GREEN, slot)
 		assert_eq(spot.z, Match.BASE_Z, "slot %d stands in the front row" % slot)
-	assert_true(Match.spawn_position(Match.Team.GREEN, 9).z > Match.BASE_Z, "slot 9 starts the second row, behind the first")
-	assert_eq(Match.spawn_position(Match.Team.RUST, 13), -Match.spawn_position(Match.Team.GREEN, 13), "Rust's grid mirrors Green's")
+	assert_true(Match.spawn_position(Match.Team.GREEN, columns).z > Match.BASE_Z,
+			"the next slot starts the second row, behind the first")
+	assert_eq(Match.spawn_position(Match.Team.RUST, columns + 1), -Match.spawn_position(Match.Team.GREEN, columns + 1),
+			"Rust's grid mirrors Green's")
+	assert_true(Match.SPAWN_SLOTS >= Army.MAX_ARMY_UNITS, "and there is a slot for every vehicle an army may field")
 
 
 func test_the_result_carries_what_progression_needs() -> void:
