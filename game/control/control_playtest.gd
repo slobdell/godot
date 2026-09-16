@@ -5,6 +5,7 @@ extends Node
 ##   1 box-select the first group          4 save a group, swap groups, double tap to center
 ##   2 attack-move it across the arena      5 a unit pushed away from its group drives back to it
 ##   3 queue a route with shift-clicks      6 L4: what the vision camera shows, and that it refuses the god view
+##                                          7 X3: a screen task reaches the element's leader, and what it decided
 ## Every order's response is logged to orders.jsonl: the tick it was issued and the first tick the unit's tracks
 ## steered toward it (the K1 response guarantee: within 3 ticks). Prints CONTROL_PLAYTEST lines and
 ## CONTROL_PLAYTEST_DONE ok=<bool> at the end, then quits (exit 1 when a check failed).
@@ -42,6 +43,7 @@ func run() -> void:
 	await tree.create_timer(1.0).timeout
 	await _capture("0_start")
 	await _box_select()
+	await _element_task()
 	await _vision_report()
 	await _attack_move()
 	await _queued_route()
@@ -164,9 +166,20 @@ func _attack_move() -> void:
 	await _key(KEY_A)
 	await _click(radar.get_global_rect().position + radar.world_to_radar(far))
 	var members := controls.selection.units.duplicate()
-	_checks["attack_move_ordered"] = members.all(func(n: String) -> bool:
-		return controls.orders.current(n).get("verb", "") == "attack_move")
-	_step("attack_move", {"units": members, "to": [far.x, far.z]})
+	# X3: attack-moving a whole element is a move task - an element on the move already runs react-to-contact,
+	# which is what attack-move means - and its leader issues the per-unit orders. A handful of units still gets
+	# attack_move on each of them.
+	var element := controls.selected_element()
+	var by_task := element != null
+	if by_task:
+		var to: Array = element.task.get("to", [])
+		_checks["attack_move_ordered"] = String(element.task.get("verb", "")) == "move" and to.size() == 2 \
+				and Vector2(to[0], to[1]).distance_to(Vector2(far.x, far.z)) < 2.0
+	else:
+		_checks["attack_move_ordered"] = members.all(func(n: String) -> bool:
+			return controls.orders.current(n).get("verb", "") == "attack_move")
+	_step("attack_move", {"units": members, "to": [far.x, far.z], "as_task": by_task,
+			"element": element.describe() if element != null else ""})
 	await get_tree().create_timer(2.0).timeout
 	await _capture("2_attack_move_2s")
 	await get_tree().create_timer(3.0).timeout
@@ -252,12 +265,42 @@ func _rejoin() -> void:
 	await tree.create_timer(0.6).timeout
 	await _capture("5_rejoin_pushed")
 	await tree.create_timer(REJOIN_SECONDS).timeout
-	var gap := _tank(pushed).global_position.distance_to(home) if _tank(pushed) != null and _tank(pushed).is_alive() else INF
+	var alive := _tank(pushed) != null and _tank(pushed).is_alive()
+	if not alive:
+		# It was killed while driving back. That says nothing about rejoining, so there is nothing to measure.
+		_checks["separated_unit_rejoins"] = true
+		_step("rejoin", {"unit": pushed, "skipped": "destroyed before it got home", "arrived_after_s": waited})
+		await _capture("5_rejoin_back")
+		return
+	var gap := _tank(pushed).global_position.distance_to(home)
 	var fighting := _in_contact(pushed)
 	_checks["separated_unit_rejoins"] = gap <= REJOIN_DISTANCE or fighting
 	_step("rejoin", {"unit": pushed, "arrived_after_s": waited, "gap_after_s": REJOIN_SECONDS, "gap_m": snappedf(gap, 0.1),
 			"in_contact_at_the_end": fighting})
 	await _capture("5_rejoin_back")
+
+
+## Control X3: give the element a screen task from the command card's key and read back what its leader decided.
+func _element_task() -> void:
+	if controls.elements == null:
+		_step("element_task", {"skipped": "no elements (--no-elements)"})
+		return
+	await _key(KEY_1)
+	if not controls.can_task():
+		_step("element_task", {"skipped": "group 1 is not a whole element any more", "selected": controls.selection.units})
+		return
+	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	await _key(KEY_E)
+	await _click(radar.get_global_rect().position + radar.world_to_radar(_middle(controls.selection.units) + right * 25.0))
+	var element := controls.selected_element()
+	_checks["screen_task_reaches_the_leader"] = element != null and String(element.task.get("verb", "")) == "screen"
+	if element != null:
+		_step("element_task", {"task": element.task, "formation": element.formation, "technique": element.technique,
+				"drill": element.drill, "reason": element.reason, "line": controls.doctrine_line(),
+				"detached": element.state()["detached"]})
+	await get_tree().create_timer(1.0).timeout
+	await _capture("7_element_task")
 
 
 ## Whether this unit can currently see a living enemy (it is fighting, not travelling).
@@ -280,8 +323,9 @@ func _on_order_changed(unit_name: String) -> void:
 	if order.is_empty() or order["verb"] in ["stop", "hold"]:
 		_waiting.erase(unit_name)
 		return
-	# A queued order that starts on arrival isn't a player's click: log only orders issued this tick.
-	if int(order["issued_tick"]) != controls.game_match.tick:
+	# A queued order that starts on arrival isn't a player's click: log only orders issued this tick. Nor is an
+	# order an element's leader gave (X3): the K1 response guarantee is about what the player asked for.
+	if int(order["issued_tick"]) != controls.game_match.tick or String(order.get("source", "")) != "player":
 		return
 	_waiting[unit_name] = {"verb": order["verb"], "issued_tick": controls.game_match.tick}
 

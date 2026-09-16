@@ -5,16 +5,26 @@ extends Control
 ##            shift-click = drop it, ctrl-click = keep only that type
 ##   unit     one unit's card: type, hull and shield numbers, weapon, what it's doing (its order and queue)
 ##   enemy    an inspected enemy's card (enemy colors, no commands)
-## plus the command card: Move (M), Stop (S), Hold (H), Attack-move (A), Follow (F), Formation (G), doing exactly what
-## the keys do. Hidden when nothing is selected. Behavior is control's; colors from GameTheme.ui and CyberStyle (feel).
+## plus the command card: Move (M), Stop (S), Hold (H), Attack-move (A), Follow (F), Screen (E), Support by fire (R)
+## and Formation (G), doing exactly what the keys do. Hidden when nothing is selected. Behavior is control's; colors
+## from GameTheme.ui and CyberStyle (feel).
+##
+## X3: with a whole element selected, the card issues L1 *tasks* and a line under the header reads back what that
+## element's leader decided - "Alpha: wedge, bounding overwatch - contact ahead". Screen and support by fire are
+## tasks only: they are greyed out for an ad-hoc handful of units, which has no leader to carry them out.
 
 ## Height at 1080p (scaled with the window).
 const HEIGHT := 160.0
 ## Widest at 1080p.
 const MAX_WIDTH := 980.0
 const PAD := 8.0
-const COMMANDS := [["move", "Move", "M"], ["stop", "Stop", "S"], ["hold", "Hold", "H"],
-		["attack_move", "Attack-move", "A"], ["follow", "Follow", "F"], ["formation", "Formation", "G"]]
+const COMMANDS := [["move", "Move", "M"], ["stop", "Stop", "S"], ["hold", "Hold", "H"], ["screen", "Screen", "E"],
+		["attack_move", "Attack-move", "A"], ["follow", "Follow", "F"], ["support_by_fire", "Base of fire", "R"],
+		["formation", "Formation", "G"]]
+## Buttons on the card, per row.
+const COLUMNS := 4
+## The card's verbs that only an element can carry out.
+const ELEMENT_ONLY := ["screen", "support_by_fire"]
 const ORDER_WORDS := {"move": "Moving", "attack": "Attacking", "attack_move": "Attack-moving", "follow": "Following",
 		"hold": "Holding", "stop": "Stopping", "": "Idle"}
 
@@ -49,10 +59,10 @@ func _layout() -> void:
 	position = Vector2((screen.x - size.x) / 2.0, screen.y - size.y - PAD * s)
 	_command_rects.clear()
 	var button := (size.y - PAD * s * 3.0) / 2.0
-	var card_left := size.x - (button * 3.0 + PAD * s * 4.0)
+	var card_left := size.x - (button * COLUMNS + PAD * s * (COLUMNS + 1.0))
 	for i in COMMANDS.size():
-		var column := i % 3
-		var row := i / 3
+		var column := i % COLUMNS
+		var row := i / COLUMNS
 		_command_rects[COMMANDS[i][0]] = Rect2(card_left + PAD * s + column * (button + PAD * s), PAD * s + row * (button + PAD * s),
 				button, button)
 	_portrait_rects.clear()
@@ -101,15 +111,18 @@ func _role(unit_name: String) -> String:
 ##  "card": {"name", "role", "hull", "shield", "weapon", "orders"}, "orders": String (group summary),
 ##  "commands": [{"id", "label", "hotkey", "enabled"}]}
 func summary() -> Dictionary:
-	var result := {"mode": "none", "portraits": [], "card": {}, "orders": "", "commands": []}
+	var result := {"mode": "none", "portraits": [], "card": {}, "orders": "", "commands": [],
+			"doctrine": controls.doctrine_line() if controls != null else ""}
 	if controls == null:
 		return result
 	var commandable := not controls.selection.units.is_empty()
+	var is_element := controls.can_task()
 	for command in COMMANDS:
 		var label: String = command[1]
 		if command[0] == "formation":
 			label = "Formation: %s" % String(controls.formation).capitalize()
-		result["commands"].append({"id": command[0], "label": label, "hotkey": command[2], "enabled": commandable})
+		result["commands"].append({"id": command[0], "label": label, "hotkey": command[2],
+				"enabled": commandable and (is_element or not ELEMENT_ONLY.has(command[0]))})
 	if controls.selection.inspected != "":
 		result["mode"] = "enemy"
 		result["card"] = _card(controls.selection.inspected)
@@ -179,8 +192,10 @@ func portrait_rect(unit_name: String) -> Rect2:
 func press_command(id: String) -> void:
 	if controls == null or controls.selection.units.is_empty():
 		return
+	if ELEMENT_ONLY.has(id) and not controls.can_task():
+		return
 	match id:
-		"move", "attack_move", "follow":
+		"move", "attack_move", "follow", "screen", "support_by_fire":
 			controls.arm(id)
 		"stop", "hold":
 			controls.order_selection(id)
@@ -256,6 +271,12 @@ func _draw() -> void:
 				_text(font, Vector2(x, PAD * s + line * 3.7), "Orders: %s" % card["orders"], 16.0 * s, CyberStyle.CYAN)
 			_bars(Rect2(x, size.y - PAD * s - 12.0 * s, minf(260.0 * s, _command_rects["move"].position.x - x - PAD * s), 10.0 * s),
 					float(card["health"]), float(card["shield_fraction"]), color, enemy)
+	# X3: what the element's leader decided, under the header, where the player reads it without looking away.
+	var doctrine := String(info["doctrine"])
+	if doctrine != "":
+		var width: float = (_command_rects["move"] as Rect2).position.x - PAD * s * 2.0
+		draw_string(font, Vector2(PAD * s, size.y - PAD * s * 0.6), doctrine, HORIZONTAL_ALIGNMENT_LEFT, width,
+				13.0 * s, Color(CyberStyle.YELLOW, 0.95))
 	for command: Dictionary in info["commands"]:
 		var button: Rect2 = _command_rects[command["id"]]
 		var enabled: bool = command["enabled"]

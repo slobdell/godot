@@ -8,6 +8,8 @@ extends GameMode
 ##   --commander (a CpuCommander issues the CPU army's squad orders; experimental)
 ##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
+##   --no-elements  the player's squads stay hand-driven (no L1 leaders picking formations and drills)
+##   --element-cpu  the CPU army is run by doctrine's ElementCommander instead of its squad AI (experimental)
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
@@ -55,6 +57,19 @@ func start() -> void:
 	if orders == null:
 		orders = Orders.new()
 		Orders.attach(game_match, orders)
+	# X3 (L1, CP1): every player squad becomes an element with a leader that picks the formation, the movement
+	# technique and the battle drills from doctrine; the player gives it tasks and keeps direct control of any
+	# unit it orders by hand. Doctrine's own note: "elements are not wired into the real game yet".
+	var elements: Elements = null
+	if not flags.has("no-elements"):
+		elements = Elements.install(game_match, orders)
+		# The player's elements are formed on demand, by the first task given to a control group: an element with
+		# no task still runs its SOP, and an untasked leader would fight the player for the wheel.
+		# The CPU keeps its squad AI unless asked: which commander the CPU runs is ai's call, not control's.
+		if flags.has("element-cpu"):
+			for squad in game_match.team_squads(Match.Team.RUST):
+				elements.form(Array(squad.roster), String(squad.squad_name))
+			ElementCommander.install(game_match, Match.Team.RUST, elements)
 	var executor := OrderExecutor.new()
 	executor.name = "OrderExecutor"
 	executor.game_match = game_match
@@ -144,6 +159,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.camera = main.camera
 	controls.rig = rig
 	controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
+	controls.elements = Elements.of_match(game_match)
 	main.hud.add_child(controls)
 	var markers := SelectionMarkers.new()
 	markers.name = "SelectionMarkers"
