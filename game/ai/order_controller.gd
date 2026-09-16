@@ -20,6 +20,8 @@ extends Node
 ##   {"type": "hold_fire"}                      keep the turret where it is
 ##   {"type": "aim", "x": float, "z": float}    point the turret, don't fire
 ##   {"type": "fire_at_will"}                   engage the nearest visible enemy
+##       optional "sector": [x, z] + "sector_cos": float — a sector of fire (X1, contract L1): enemies inside the
+##       sector are engaged first, and one outside it only when the sector is empty (cover your arc, never idle)
 ##   {"type": "target", "name": String, "fallback": bool (optional)}
 ##       engage one specific tank when visible; with fallback, shoot the nearest visible
 ##       enemy meanwhile (brains use this: team intel can pick a target this tank can't see)
@@ -480,15 +482,37 @@ func _scanned_shootable() -> Tank:
 	return _scan_pick
 
 
+## The nearest shootable enemy, preferring the current weapon order's sector of fire (X1) when it has one: a unit in
+## a formation covers its own arc, so the element sees all round instead of every gun swinging onto one target.
 func _nearest_shootable() -> Tank:
 	var best: Tank = null
 	var best_distance := INF
+	var in_sector: Tank = null
+	var in_sector_distance := INF
+	var sector := Vector3.ZERO
+	var sector_cos := -1.0
+	var facing: Variant = weapon_order.get("sector")
+	if facing != null:
+		var point: Variant = OrderFeed.point(facing)
+		if point != null and (point as Vector3).length_squared() > 0.0001:
+			sector = (point as Vector3).normalized()
+			sector_cos = float(weapon_order.get("sector_cos", 0.5))
 	for enemy: Tank in _enemies():
 		var distance := tank.global_position.distance_to(enemy.global_position)
-		if distance < best_distance and _shootable(enemy):
+		if distance >= best_distance and (sector == Vector3.ZERO or distance >= in_sector_distance):
+			continue
+		if not _shootable(enemy):
+			continue
+		if distance < best_distance:
 			best = enemy
 			best_distance = distance
-	return best
+		if sector != Vector3.ZERO and distance < in_sector_distance:
+			var toward := enemy.global_position - tank.global_position
+			toward.y = 0.0
+			if toward.length_squared() > 0.01 and toward.normalized().dot(sector) >= sector_cos:
+				in_sector = enemy
+				in_sector_distance = distance
+	return in_sector if in_sector != null else best
 
 
 ## A tank by name: the brains' shared per-tick table (no NodePath parsing every tick), else a node lookup.

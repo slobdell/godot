@@ -22,7 +22,8 @@ extends RefCounted
 ##           "velocity": Vector3 (current), "incoming": IncomingFire.for_unit() entries (X3: dodge them),
 ##           "acceleration": m/s², "turn_rate_deg": hull turn rate (the dodge model),
 ##           "threats": [{"position", "weight"}] other guns that can shoot me (front armor toward them too),
-##           "target_busy": bool (its gun points at someone else: go for its side)}
+##           "target_busy": bool (its gun points at someone else: go for its side),
+##           "leash": {"center": Vector3, "radius": float} (X1: fight within your formation slot, not all over the map)}
 ## result:  {"point": Vector3 (steer at it), "reverse": bool, "index": int, "score": float} or {} when every
 ##          direction is blocked.
 
@@ -66,6 +67,10 @@ const PENALTY_SIDE_ON := 1.5
 const PENALTY_RAM := 1.2
 const PENALTY_CROWD := 0.6
 const PENALTY_HIT := 3.0
+## X1: leaving the formation slot a unit was given. Soft, and it grows over LEASH_FALLOFF meters past the radius, so a
+## unit still manoeuvres inside its slot's cell and is pulled back rather than frozen when something pushes it out.
+const PENALTY_LEASH := 1.5
+const LEASH_FALLOFF := 10.0
 const HIT_RADIUS := 2.8
 const DODGE_STEP := 0.1
 ## Turns longer than this (seconds) are pivots in place in the dodge model (≈ Steering.TURN_IN_PLACE_DEG at 90°/s).
@@ -128,6 +133,10 @@ static func choose(request: Dictionary) -> Dictionary:
 	var flank_weight := BUSY_FLANK if busy else float(weights["flank"])
 	var armor_weight := float(weights["armor"]) * (BUSY_ARMOR if busy else 1.0)
 	var velocity_now := _flat(request.get("velocity", Vector3.ZERO))
+	# X1: a unit fighting from a formation slot stays in it (mutual support, sectors of fire, armor facing).
+	var leash: Dictionary = request.get("leash", {})
+	var leash_center := _flat(leash.get("center", Vector3.ZERO))
+	var leash_radius := float(leash.get("radius", 0.0))
 	var scored: Array = []
 	for i in RING.size():
 		var ring := Vector3(RING[i].x, 0.0, RING[i].y)
@@ -184,6 +193,10 @@ static func choose(request: Dictionary) -> Dictionary:
 			var passes := (here + ring * along).distance_to(target_at)
 			if (style != "run" or phase != "run") and minf(gap, passes) < MIN_GAP:
 				score -= PENALTY_RAM
+			if leash_radius > 0.0:
+				var out := leash_center.distance_to(end) - leash_radius
+				if out > 0.0:
+					score -= PENALTY_LEASH * clampf(out / LEASH_FALLOFF, 0.0, 1.0)
 			for friend: Vector3 in friends:
 				if _flat(friend).distance_to(end) < FRIEND_SPACING:
 					score -= PENALTY_CROWD

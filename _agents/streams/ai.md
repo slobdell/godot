@@ -75,4 +75,36 @@ audio (audio).
 
 ## Status
 
-- 2026-09-16: brief written for round 4. Nothing started.
+_Round 4, ai stream. Updated 2026-09-15._
+
+### Plan (backlog in order, smallest foundation first)
+
+| # | Item | Plan | State |
+|---|---|---|---|
+| X1 | Execute doctrine (L1) | `ElementFeed` adapter + `StubElements` (the L1 shape) so this builds before CP1; brains gain an element context: hold slot **and sector of fire** while fighting, bound fast and halt on the leader's call, support-by-fire keeps firing (shift fire instead of going silent) | planning |
+| X2 | The cost of 30 a side | Profile `make ai-perf` at 60 units, then in order: one shared per-team knowledge pass, extended think LOD, cheaper target scoring (typed arrays, precomputed matchup tables), order execution at a lower rate for units not firing. Target ≤ 4 ms/tick at 60 | not started |
+| X3 | Suppression-aware (L2) | `ThreatFeed` adapter over `Tank.suppression` / `Match.threat_field` / `Match.is_beaten_zone` with a stub; avoid beaten zones in CombatMotion + TacticalQuery, break contact when pinned, suppress on purpose | not started |
+| X4 | Tactics harness | `make tactics-ladder`: seeded headless matches across doctrine × brain × matchup × arena × faction, ELO table + "which drill wins where" report | not started |
+| X5 | Faction behavior | Gang encircle/circle, Law bounding behind suppression, Syndicate kiting — as *execution* styles; doctrine picks the tactic | not started |
+| X6 | Offline discovery groundwork | Slow-cadence element-task bridge mode, optional slow motion, `(state, decision, outcome)` log; distillation plan in `unit_ai.md`. No LLM in gameplay | not started |
+
+**Decisions taken where the brief left a choice** (one line each, expanded in `_agents/unit_ai.md` as they land):
+- X1 builds on **K1 orders as the transport** (the L1 contract says elements issue per-unit orders through `Orders`),
+  so the only new seam is the element's *read-only* state: formation, technique, drill, my slot and my sector of fire.
+  That keeps one command path into the brain and nothing to unwind when CP1 lands.
+
+### Done
+
+(nothing yet)
+
+### Questions for the lead
+
+(none yet)
+
+### Requests to other streams
+
+(none yet)
+
+### Known issues
+
+- CP1 (doctrine's L1) and CP2 (combat's L2/L3) have not landed; X1 and X3 build against stubs in ai's own paths.

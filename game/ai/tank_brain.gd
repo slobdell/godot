@@ -218,6 +218,11 @@ const CRITICAL_HP_MIN := 0.08
 const CRITICAL_HP_MAX := 0.25
 ## A remembered contact's position is extrapolated along its last velocity for at most this long.
 const WATCH_PREDICT_SECONDS := 1.5
+## L1 elements (round-4 X1): a unit fighting from a formation slot manoeuvres inside this far of it (meters). About
+## one formation spacing: room to circle, jink and take an angle without leaving the formation.
+const SLOT_LEASH := 14.0
+## ...and engages inside its sector of fire first (ElementFeed.SECTOR_COS).
+const SECTOR_COS := ElementFeed.SECTOR_COS
 
 ## Measurement only (make ai-perf, while OrderController.profiling): microseconds per part of thinking. Never read by
 ## decisions.
@@ -258,6 +263,11 @@ var _order_dirty := false
 var _finished_key := ""
 var _order_home: Variant = null
 var _order_source: Object = null
+## L1: this unit's element context (ElementFeed.context shape, {} = no element, so nothing below changes anything for
+## a unit that isn't in one), and its source.
+var element := {}
+var _element_source: Object = null
+var _element_dirty := false
 ## Option name → tick its cooldown ends (stuck-state timeouts).
 var cooldowns := {}
 ## X2 combat motion: which way around the target (+1/-1, 0 = not chosen yet), when the next jink may flip it, and a
@@ -300,6 +310,10 @@ func think(_delta: float) -> void:
 	# K1 response guarantee: a new player order is taken up on this very tick, whatever the brain was doing.
 	var think_tick := (game_match.tick + think_offset) % _think_every == 0
 	if _poll_order(think_tick):
+		fresh_order = true
+		interrupt()
+	# L1 (X1): the element leader's call — a halt, a new drill, a change of role — is acted on the same tick too.
+	if _poll_element(think_tick):
 		fresh_order = true
 		interrupt()
 	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
@@ -385,6 +399,32 @@ func _on_order_changed(unit_name: String) -> void:
 		_order_dirty = true
 
 
+# ---- L1 elements (round-4 X1) -------------------------------------------------------------
+
+## Reads this unit's element context from the match's Elements (ElementFeed). True when the leader's call changed
+## since the last poll (`key`), which is what must reach the hull the same tick. Slot positions move with the leader
+## and are simply refreshed.
+func _poll_element(think_tick: bool) -> bool:
+	var feed := ElementFeed.source(game_match)
+	if feed != _element_source:
+		_element_source = feed
+		_element_dirty = true
+		if feed != null and feed.has_signal("element_changed") and not feed.is_connected("element_changed", _on_element_changed):
+			feed.connect("element_changed", _on_element_changed)
+	if feed == null or not (_element_dirty or think_tick or not feed.has_signal("element_changed")):
+		return false
+	_element_dirty = false
+	var now := ElementFeed.context(feed, String(tank.name))
+	var call_changed := ElementFeed.changed(element, now)
+	element = now
+	return call_changed
+
+
+func _on_element_changed(id: String) -> void:
+	if element.is_empty() or id == String(element.get("id", "")):
+		_element_dirty = true
+
+
 ## The order is done: remember the post it leaves the unit at (idle units regroup there) and tell Orders.
 func _finish_order(home: Vector3) -> void:
 	if _order_key == "" or _finished_key == _order_key:
@@ -457,6 +497,14 @@ func _order_context() -> Variant:
 					if _order_source.has_method("goal_position") else null
 		if _order_source.has_method("pace_factor"):
 			context["speed"] = clampf(float(_order_source.call("pace_factor", String(tank.name))), 0.2, 1.0)
+	# L1 (X1): the leader's call outranks the movement order it issued earlier. Told to stop bounding — to become the
+	# overwatch half or the base of fire — this unit halts where it stands and fights from there, the same tick,
+	# without waiting for a fresh K1 order. Told to bound, it rushes: a bound is a sprint between covered positions.
+	if ElementFeed.is_firing_base(element) and ["move", "attack_move"].has(String(context["verb"])):
+		context["verb"] = "hold"
+		context["goal"] = _flat(tank.global_position)
+	elif String(element.get("role", "")) == "bound":
+		context["speed"] = 1.0
 	var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
 	if other != null and other.is_alive():
 		context["target_alive"] = true
@@ -938,6 +986,15 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 	return result
 
 
+## X1: the formation slot this unit should fight from, or null when it has no element, no slot, or is the half that
+## is meant to be covering ground (a bounding or assaulting unit moves; the rest hold their place in the formation).
+static func element_slot(s: Dictionary) -> Variant:
+	var context: Variant = s.get("element")
+	if context == null or ["bound", "maneuver"].has(String((context as Dictionary).get("role", ""))):
+		return null
+	return (context as Dictionary).get("slot")
+
+
 ## Where the turret covers when nothing is in this tank's own sights (G5): the chosen target,
 ## else the most pressing known contact: visible before remembered, guns on me first, then nearest.
 ## Null with no contacts (the turret holds its heading).
@@ -1146,6 +1203,7 @@ func build_situation() -> Dictionary:
 		"control": {"center": Match.CONTROL_CENTER, "radius": Match.CONTROL_RADIUS, "owner": game_match.control_owner}
 				if game_match.control_point else null,
 		"order": order_context,
+		"element": element if not element.is_empty() else null,
 		"cooldowns": cooldowns,
 		"incoming": incoming,
 	}
@@ -1167,6 +1225,8 @@ func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> 
 			"friends": allies.map(func(ally: Dictionary) -> Vector3: return ally["position"])}
 	if squad_context.get("slot") != null:
 		request["anchor"] = squad_context["slot"]
+	elif element.get("slot") != null and not ["bound", "maneuver"].has(String(element.get("role", ""))):
+		request["anchor"] = element["slot"]  # X1: hide and peek inside my formation slot, not across the map
 		request["anchor_radius"] = COVER_SEARCH_RADIUS * 0.6
 	elif _order_home != null:
 		if order.is_empty():
@@ -1222,6 +1282,8 @@ func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary,
 			"friends": allies.map(func(ally: Dictionary) -> Vector3: return ally["position"])}
 	if squad_context.get("slot") != null:
 		request["anchor"] = squad_context["slot"]
+	elif element.get("slot") != null and not ["bound", "maneuver"].has(String(element.get("role", ""))):
+		request["anchor"] = element["slot"]  # X1: hide and peek inside my formation slot, not across the map
 		request["anchor_radius"] = COVER_SEARCH_RADIUS * 0.6
 	var found := TacticalQuery.find_cover_fire(cover_map, request)
 	if not found.is_empty():
@@ -1245,11 +1307,21 @@ func _tactics(features: Dictionary) -> Dictionary:
 
 ## The squad-plan part of a choice's explanation: "focus", "flanking", "covering a squad-mate", "guarding artillery".
 static func tactics_tag(s: Dictionary, current: Dictionary) -> String:
+	var tags: Array = []
+	# X1: what the element's leader has this unit doing, so a nameplate reads "HOLD - base of fire".
+	var element: Variant = s.get("element")
+	if element != null:
+		var role := String((element as Dictionary).get("role", ""))
+		if role != "":
+			tags.append({"bound": "bounding", "overwatch": "overwatch", "base_of_fire": "base of fire",
+					"maneuver": "assaulting"}.get(role, role))
+		var drill := String((element as Dictionary).get("drill", ""))
+		if drill != "":
+			tags.append(drill.replace("_", " "))
 	var tactics: Dictionary = s.get("tactics", {})
 	var target: String = current.get("target", "")
 	if tactics.is_empty() or target == "":
-		return ""
-	var tags: Array = []
+		return ", ".join(tags)
 	if target == tactics.get("cover_target", ""):
 		tags.append("covering a squad-mate")
 	if target == tactics.get("flank_target", "") and current.get("option", "") == "FLANK":
@@ -1681,12 +1753,25 @@ func _act(s: Dictionary) -> void:
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD":
 			var nearest_visible: Variant = null
+			# X1: what is in my sector of fire comes first, so a halted element covers all round instead of every
+			# hull swinging onto the same contact. Something outside it still gets watched when the sector is empty.
+			var nearest_in_sector: Variant = null
+			var sector: Dictionary = s.get("element") if s.get("element") != null else {}
 			for c in s["contacts"]:
-				if c["visible"] and (nearest_visible == null
-						or my_position.distance_to(c["position"]) < my_position.distance_to(nearest_visible)):
+				if not c["visible"]:
+					continue
+				if nearest_visible == null or my_position.distance_to(c["position"]) < my_position.distance_to(nearest_visible):
 					nearest_visible = c["position"]
-			if nearest_visible != null:
-				_order_move({"type": "face", "x": nearest_visible.x, "z": nearest_visible.z})
+				if not ElementFeed.in_sector(sector, my_position, c["position"]):
+					continue
+				if nearest_in_sector == null or my_position.distance_to(c["position"]) < my_position.distance_to(nearest_in_sector):
+					nearest_in_sector = c["position"]
+			var watch: Variant = nearest_in_sector if nearest_in_sector != null else nearest_visible
+			if watch == null and sector.get("facing") != null:
+				watch = my_position + (sector["facing"] as Vector3) * 20.0  # nothing in sight: keep watching my arc
+				why = TankBrain._join(why, "covering its sector")
+			if watch != null:
+				_order_move({"type": "face", "x": watch.x, "z": watch.z})
 			elif s.get("squad") != null:
 				var look: Vector3 = my_position + (s["squad"]["facing"] as Vector3) * 20.0
 				_order_move({"type": "face", "x": look.x, "z": look.z})
@@ -1819,6 +1904,11 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			"turn_rate_deg": rad_to_deg(tank.hull_turn_rate),
 			"threats": TankBrain.threat_list(s["contacts"], my_position).slice(0, MOTION_THREATS),
 			"target_busy": not bool(contact.get("aiming_at_me", false))}
+	# X1: fight from your place in the formation. Circling 40 m out of the slot wins the duel and loses the element.
+	var slot: Variant = TankBrain.element_slot(s)
+	if slot != null:
+		request["leash"] = {"center": slot, "radius": SLOT_LEASH}
+		why = TankBrain._join(why, "in its slot")
 	_incoming_count = (s.get("incoming", []) as Array).size()
 	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
 	var result := CombatMotion.choose(request)
@@ -1948,5 +2038,11 @@ func _order_move(order: Dictionary) -> void:
 
 
 func _order_weapon(order: Dictionary) -> void:
+	# X1 sectors of fire: a unit holding a formation slot engages inside its own arc first, so the element covers all
+	# round instead of every gun swinging onto whatever is nearest (OrderController._nearest_shootable).
+	if element.get("facing") != null and ["fire_at_will", "target"].has(String(order.get("type", ""))):
+		order = order.duplicate()
+		order["sector"] = element["facing"]
+		order["sector_cos"] = SECTOR_COS
 	if not order.recursive_equal(weapon_order, 2):
 		set_orders(null, order)

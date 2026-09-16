@@ -106,6 +106,23 @@ func orders() -> Object:
 	return stub
 
 
+## L1 elements for this match's brains (ElementFeed): the match's own, else doctrine's `Elements` (after CP1), else a
+## StubElements with the contract's shape. Form one with `elements().form([name, ...], "Alpha")`.
+func elements() -> Object:
+	var existing := ElementFeed.source(game_match)
+	if existing != null:
+		return existing
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		if entry["class"] == "Elements":
+			var script: GDScript = load(entry["path"])
+			var real: Object = script.new(game_match)
+			ElementFeed.attach(game_match, real)
+			return real
+	var stub := StubElements.new(game_match, orders())
+	ElementFeed.attach(game_match, stub)
+	return stub
+
+
 func brain_of(tank: Tank) -> TankBrain:
 	return game_match.brains.get_node_or_null("Brain_" + tank.name) as TankBrain
 

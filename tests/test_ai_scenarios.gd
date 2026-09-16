@@ -6,6 +6,7 @@ extends TestCase
 const FIRE_DISCIPLINE := preload("res://tests/ai_scenarios/scenario_fire_discipline.gd")
 const COVER := preload("res://tests/ai_scenarios/scenario_cover.gd")
 const ORDERS := preload("res://tests/ai_scenarios/scenario_orders.gd")
+const ELEMENTS := preload("res://tests/ai_scenarios/scenario_elements.gd")
 
 
 func _delegate(script: GDScript, method: String) -> void:
@@ -42,3 +43,11 @@ func test_no_option_is_kept_forever() -> void:
 
 func test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane() -> void:
 	await _delegate(FIRE_DISCIPLINE, "test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane")
+
+
+func test_each_unit_covers_its_own_sector_of_fire() -> void:
+	await _delegate(ELEMENTS, "test_each_unit_covers_its_own_sector_of_fire")
+
+
+func test_a_bounding_unit_rushes_and_halts_on_the_leaders_call() -> void:
+	await _delegate(ELEMENTS, "test_a_bounding_unit_rushes_and_halts_on_the_leaders_call")
