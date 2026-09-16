@@ -193,6 +193,13 @@ briefly reveals hidden units); IFV = Cougar-style 6×6 MRAP with a remote autoca
 assault gun** (Stryker-style: big cannon, faster than the dozer, less armor, longer sight); artillery = truck rocket
 launcher firing tear gas and smoke; special = riot truck with water cannon or sonic emitter (knockback).
 
+**The lead's concept picks, 2026-09-15** (approved on the three faction review pages; the picks settle the roles the
+roster sketches left open): gangs = semi tanker (tank), rat rod (scout), 1950s pickup gun truck (IFV), tow-wrecker
+catapult (artillery), **resupply tanker as the special** (not the war-drum truck); the Law = 8×8 assault gun, pursuit
+sedan, retired APC, gas rocket truck, **sonic emitter as the special** (not the water cannon); the Syndicate = supercar
+hull tank, teardrop scout, black-glass limousine IFV, missile-wing ring artillery, **the Lancer laser as the special**
+(not the shield projector). Both wreck husk concepts were approved.
+
 **Syndicate roster sketch:** scout = hover skimmer drone with optical camo; IFV = hover gunship with a heat-limited
 pulse cannon; **tank = curvy hover battle tank with a charge-up railgun** (the conventional tank role, made sci-fi);
 artillery = missile platform that fires only at spotted targets; special = shield projector or the Lancer laser
