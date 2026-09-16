@@ -53,6 +53,9 @@ version; builder0's is canonical. When gameplay changes on purpose: `make remote
 - **"cannot reach builder0":** check `ssh -o BatchMode=yes slobdell@builder0 true`. Fall back to local `make`.
 - **Rendering targets fail with a display error:** nobody is logged into builder0's desktop (no
   `/run/user/1000/.mutter-Xwaylandauth.*`). Run that target locally, or ask the lead to log in.
+- **Two runs from the same worktree at once clobber each other:** the remote folder is per worktree, not per run, so a
+  second `make remote` rsyncs over a running one (seen 2026-09-15: a parallel test run broke a check with an rsync
+  error). Run one remote command per worktree at a time, or copy the worktree.
 - **Stale import cache weirdness:** `ssh slobdell@builder0 rm -rf ~/tank_squad/<folder>/.godot` and rerun.
 - **Disk:** each remote folder holds its own `.godot` cache and `build/`; clean old ones with
   `ssh slobdell@builder0 rm -rf ~/tank_squad/godot-<old stream>` when a round closes.
