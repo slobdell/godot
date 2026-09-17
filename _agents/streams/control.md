@@ -71,7 +71,7 @@ Vehicle art and effects (render), arena layouts (arena), weapons and rules (comb
 
 ## Status
 
-_Round 5, control stream. Written 2026-09-17; merged to main as **eb49ec5a** and closed._
+_Round 5, control stream. Written 2026-09-17; merged to main as **eb49ec5a**, then reopened for the lead's responsiveness complaint (see below)._
 
 ### What this stream did, in short
 
@@ -94,6 +94,41 @@ comes back.
 
 **Every backlog item (X1–X6) is done.** Stretch: spectate done, replay not started. The sections below are the detail:
 what each item was, what was wrong, what changed, and the numbers.
+
+### Reopened 2026-09-17: "the units aren't very responsive to my input"
+
+**Measured before fixing** (`make response-test`, `game/control/response_playtest.gd`): six right-click orders to the
+whole selection in a running battle, each timed from the click to the vehicle *visibly* turning or moving on screen
+(the drawn transform, not the tick's), at two army sizes. Run on **the lead's own laptop** (the machine whose frame
+rate is in question; shared with five other agents, so the frame numbers are pessimistic). builder0 is useless for this:
+its remote desktop draws about 1 frame a second.
+
+| Stage | 30 a side (58 vehicles) | Small army (10 vehicles) | Owner |
+|---|---|---|---|
+| Click reaches the controls | **2.1 ms** | 1.2 ms | control |
+| K1 order issued (34 units in one click) | **2.0 ms** (contract: 100 ms) | 1.2 ms | control |
+| Order marker drawn (next frame) | **12.6 ms** measured, but a frame is ~147 ms apart at this rate | 10.4 ms | control + render |
+| Vehicle visibly starts, median | **202 ms** wall / **8 sim ticks** | 59 ms / 3 ticks | combat (locomotion) |
+| Vehicle visibly starts, slowest of the group | **820 ms** | 159 ms | combat |
+| Frame rate during the order | **6.8 fps**, 6.4 sim ticks a frame | 31.5 fps, 1.8 | combat + ai + render |
+
+**Which of the four it is: the frame rate.** Order latency is 2 ms against a 100 ms contract, and the simulation starts
+the vehicles in 8 ticks (133 ms of sim time) — but at 58 vehicles the game draws **6.8 frames a second** and runs 6.4
+ticks a frame, so the simulation is in slow motion *and* the player sees the result up to a frame (~150 ms) after it
+happens. Everything the player perceives is stretched by that: the same order on a small army answers in 59 ms.
+
+- **Not order latency** (2 ms) and not acknowledgement feedback — the marker is already on the first frame drawn after
+  the click. At 30+ fps that is 10–18 ms, which is instant. Nothing control can add makes a 147 ms frame feel quicker.
+- **Locomotion is a secondary effect:** 8 ticks to start moving at 30 a side vs 3 with ten vehicles. Worth combat
+  knowing, but it is measured in sim ticks, so it is mostly the tick starvation again.
+- **So: this is CP1's wall**, which combat's 30 Hz tick and render's frame targets exist to fix. Re-run
+  `make response-test` after the 30 Hz flip; the harness prints the same six numbers, and the target is the median
+  "vehicle visibly starts" under ~150 ms at 30 a side.
+
+**Also fixed for the second half of the lead's sentence** ("they all also just rush forward right away at the start"):
+ai found that a brain which has never been ordered follows its doctrine's objective, so in a faction skirmish the
+*player's* army marched off before he could command it. `skirmish_mode` now sets `player_team` on the match (ai's
+`OrderFeed.player_team`), and a spectated match deliberately doesn't, so both sides still play themselves.
 
 ### Plan (backlog in order)
 

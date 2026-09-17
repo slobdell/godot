@@ -114,3 +114,19 @@ hud-cost: import ## What each HUD widget costs (canvas draw calls, _process) in 
 		--budget=$(CONTROL_SCALE_BUDGET) --no-pick-faction --mute --hud-cost=$(CURDIR)/$(BUILD_DIR)/hud-cost.json $(HUD_COST_FLAGS) 2>&1 \
 		| tee $(BUILD_DIR)/hud-cost.log | grep -E '^HUD_COST|SCRIPT ERROR' || true
 	grep -q HUD_COST_DONE $(BUILD_DIR)/hud-cost.log
+
+## Round 5 reopened (the lead: "the units aren't very responsive to my input"): the whole path from the click to the
+## vehicle moving, split by stage, at a real army size and at a small one for comparison.
+RESPONSE_DIR := $(BUILD_DIR)/response-test
+RESPONSE_BUDGET ?= 6500
+RESPONSE_SMALL_BUDGET ?= 1200
+
+response-test: import ## Click → order → acknowledgement → first visible movement in ms, at ~30 a side and at a small army → build/response-test/ (needs a display)
+	rm -rf $(RESPONSE_DIR) && mkdir -p $(RESPONSE_DIR)/big $(RESPONSE_DIR)/small
+	for size in big:$(RESPONSE_BUDGET) small:$(RESPONSE_SMALL_BUDGET); do \
+		name=$${size%%:*}; budget=$${size##*:}; \
+		timeout 300 $(GODOT) --path . --resolution 1920x1080 -- --skirmish --player=cpu --enemy=cpu --seed=3 --budget=$$budget \
+			--no-pick-faction --mute --response-test=$(CURDIR)/$(RESPONSE_DIR)/$$name 2>&1 \
+			| tee $(RESPONSE_DIR)/$$name/run.log | grep -E '^RESPONSE_TEST|SCRIPT ERROR' || true; \
+		grep -q RESPONSE_TEST_DONE $(RESPONSE_DIR)/$$name/run.log || exit 1; \
+	done
