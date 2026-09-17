@@ -66,6 +66,36 @@ brains and 2.7 ms without (render, `PROFILE_FLAGS=--no-brains`): ~85%. Thinking 
 is a behaviour decision, not only a cost one. Measure it with `make sim-profile` or `make ai-perf`, never with
 `perf-scene`: that is a live battle, so two runs diverge and equal vehicle counts are not equal fights.
 
+## What the step cap does when the machine can't keep up (and the measurement trap it creates)
+
+`max_physics_steps_per_frame = 3` chooses **slow motion over a death spiral**. When a frame takes longer than a tick,
+the engine runs extra ticks to catch up; with Godot's default of 8 that feeds back (more ticks → longer frame → more
+ticks) and pins the game at a few fps. Capped at 3, the simulation simply stops keeping up: **game time advances at
+most 3 ticks (100 ms) per rendered frame**, and whatever is left over is lost.
+
+The arithmetic, and it matters for reading any timed run:
+
+| Rendered frame | Game time per second of wall time |
+|---|---|
+| 33 ms (30 fps) | 1.0× — real time, with headroom |
+| 100 ms (10 fps) | 1.0× — exactly at the cap (3 ticks × 33 ms) |
+| 300 ms | 0.33× |
+| 1 s | **0.1×** |
+
+Audio measured the extreme on builder0 with a window at 30 a side: the music had played **48.8 s while the match
+clock read 5.0 s**, i.e. about a tenth of real time — a machine rendering that scene at roughly 1 fps, behaving
+exactly as the cap says it should. On the lead's laptop at the sizes that matter the clock stays true (at 65
+vehicles, 3.41 ticks per 100 ms frame ≈ real time).
+
+**The trap:** on an overloaded machine, *anything measured per second of WALL time is measuring a slow-motion match*
+— kills per minute, shells per second, engagements per match minute would be out by up to 10×. Per-tick and
+frame-time measurements are unaffected. Use `sim_seconds` from `MATCH_RESULT`, or count ticks, and never a stopwatch
+against a windowed remote run.
+
+**Open for round 6:** the cap is a trade, not a setting with a right answer. 3 keeps the clock honest and lets frames
+stutter; 1 keeps frames smooth and lets the clock slip; 8 is the spiral. It only bites where the machine is already
+too slow, so it should be decided together with the battle-size question, not before it.
+
 ## The interpolation checklist (render + control, 2026-09-17)
 
 **The core trap.** With physics interpolation on, Godot *draws* a body at its interpolated transform, but

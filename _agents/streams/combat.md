@@ -187,6 +187,15 @@ So the first series of round 6 is a **re-taken baseline**, not a tuning run: `ma
 `make faction-matrix` with army counterbalancing, on a build that has all three fixes. Then gangs-versus-law first, to
 see how much of the gap closes for free.
 
+### Watch out: on an overloaded machine the match runs in slow motion
+
+`max_physics_steps_per_frame = 3` (round 5) chooses slow motion over a death spiral: game time advances at most 3
+ticks per rendered frame, so a machine rendering at 1 fps runs the match at a tenth of real time (audio measured
+exactly that on builder0 with a window at 30 a side: 48.8 s of music against a 5.0 s match clock). **Any metric
+measured per second of wall time on such a run is wrong by up to 10×**; per-tick and frame-time metrics are fine. Use
+`sim_seconds` from `MATCH_RESULT` or count ticks. The arithmetic and the round-6 question (3 vs 1 vs 8) are in
+[../sim_tick_rate.md](../sim_tick_rate.md).
+
 ### Questions for the lead (nothing is blocked)
 
 1. **30 Hz did not reach your target.** A locked 30 fps at 1080p holds ~30 vehicles, not 60 (98 ms a frame at 60).
