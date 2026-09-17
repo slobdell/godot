@@ -81,7 +81,11 @@ Static measures run on the layout alone (fast, in `make test` and `make arena-re
 | **Terrain class along the routes** | Doctrine's own feature count at 10 m steps | The class the character promises (dense / lanes / open) |
 | **Cover within bounding range** | Largest gap between cover clusters along each route | ≤ 85 m |
 
-Dynamic measures come from seeded match series (the match runner with `--arena=`):
+Dynamic measures come from seeded match series (the match runner with `--arena=`). **Counterbalance what isn't the
+map.** Each seed gives each team its own army, and army strength decides most matches, so: swap bases per seed (the
+per-arena fairness control), and when comparing arenas or factions, also swap armies or colours (combat's
+`--swap-armies`/`--same-army`, as `faction_matrix.py` swaps colours), or a per-arena series measures the army draw as
+much as the map. The same seeds on several arenas are the same army pairings repeated, not new samples.
 
 | Measure | Source | What good looks like |
 |---|---|---|
@@ -175,10 +179,11 @@ contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `bu
 1. **Fairness:** no arena shows a base advantage distinguishable from zero (all within 1.4 standard errors; the
    largest, boneyard's −0.05, would favour the NORTH side). All four go in `Arena.ROTATION`. The win rate is useless
    as the control here: each team's army is seeded separately and army strength decides the match; a swap flipped the
-   winner in only 5 of 72 pairs, in both directions. The paired surviving-share margin is the measure.
-   *Side finding for combat:* with bases cancelled, **Green won only 25-28% on every new arena** (seeds 1-18). Either
-   these seeds' armies happen to favour Rust (`Army.load_army` seeds each team `seed * 2 + team`) or team identity
-   matters (processing order); `--rust-first` would tell them apart.
+   winner in only 5 of 72 runs, in both directions. The paired surviving-share margin is the measure.
+   *Side finding for combat:* with bases cancelled, **Green won only 25-28% on every new arena** (seeds 1-18). Careful
+   with the weight of that: armies depend on seed and team, not arena, so it's **18 army pairings seen four times, not
+   72 samples** (13 of 18 to Rust is p ≈ 0.05 by chance). Combat is running the controls (`--swap-armies`,
+   `--same-army`, `make team-fairness`) to separate army luck from a structural team bias.
 2. **The maps change how fights look far more than who wins.** For the same seed and bases, the winner was the same on
    every arena in 26 of 30 cases (seeds 1-6 on all five, seeds 7-18 on the four new ones); only the close seeds (9 and
    17) went different ways on different maps.
@@ -190,6 +195,13 @@ contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `bu
    funnel both armies down the centre toward the control point. The routes exist (arena-report routes them); the CPU
    doesn't choose them. Rule of thumb 3 is delivered in geometry, not yet in behaviour. For ai: the lanes are annotated
    (`Arena.lanes_of`).
+5. **Faction matchups (X6, weak evidence):** gangs (Green) vs syndicate (Rust), seeds 1-6 each way on bases, colours
+   NOT counterbalanced. The syndicate won everywhere, as the round-4 faction matrix predicts. The gangs' surviving
+   margin was least bad on the **boulevard** (−0.54, 4 of 12 wins) and the pit (−0.69, 3 of 12), worst in the **yard**
+   (−0.84, 0 of 12) and the boneyard (−0.82, 2 of 12). That contradicts the brief's guess that a swarm wants lanes: in
+   the yard's lanes the gangs feed in a few at a time, while open avenues let 44 cheap vehicles bring their numbers to
+   bear at once, and they close to 30 m (median hit range on the boulevard 30 m, the shortest of any series). Treat it
+   as a hypothesis to re-test with colours counterbalanced once combat's gangs changes land.
 4. **Match shape does differ:** the boulevard is the fastest and most decisive (elimination 26 of 36); the yard is the
    control-point map (24 of 36), with the most hidden time and the shortest long shots, which is what its character
    promised. The pit sits between them (16 of 36 by control).
