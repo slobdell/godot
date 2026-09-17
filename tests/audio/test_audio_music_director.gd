@@ -185,3 +185,32 @@ func test_a_bar_line_is_counted_once_even_if_the_position_jitters_back() -> void
 	assert_true(MusicDirector.is_new_bar(4, 3), "the next bar is")
 	assert_true(MusicDirector.is_new_bar(0, 3), "the loop wrapping back to the start is")
 	assert_true(MusicDirector.is_new_bar(0, -1), "the first bar of a new track is")
+
+
+func test_stems_loop_by_themselves_and_keep_time_without_a_playback_position() -> void:
+	## AudioStreamSynchronized reports no position, so the director can neither seek it nor read bars from it.
+	var music := MusicDirector.new()
+	assert_true(music.load_tracks(MUSIC), "the manifest loads")
+	music.load_stream = func(path: String) -> AudioStream: return load(path) as AudioStream
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	var synced := music._players[music._current].stream as AudioStreamSynchronized
+	assert_true(synced != null, "the fight plays as one synchronized stream")
+	for index in synced.stream_count:
+		var part := synced.get_sync_stream(index) as AudioStreamOggVorbis
+		assert_true(part != null and part.loop, "stem %d loops by itself" % index)
+	var first := music.position_s()
+	await wait_physics_frames(30)
+	assert_true(music.position_s() > first, "the director's own clock moves (%.3f → %.3f)" % [first, music.position_s()])
+	assert_true(not (load("res://assets/music/fight_pad.ogg") as AudioStreamOggVorbis).loop, "the shared resource isn't changed")
+
+
+func test_a_stem_track_waits_for_its_first_bar_line() -> void:
+	var music := MusicDirector.new()
+	assert_true(music.load_tracks(MUSIC), "the manifest loads")
+	music.load_stream = func(path: String) -> AudioStream: return load(path) as AudioStream
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	assert_true(not music._crossed_bar_line(), "the bar the track starts in is not a bar line")

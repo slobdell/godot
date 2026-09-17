@@ -73,6 +73,7 @@ var _mood: MatchMood
 var _stems: AudioStreamSynchronized
 var _stem_fade: Tween
 var _last_bar := -1
+var _stems_started_usec := 0
 
 
 ## Adds a music director to the running game if `--music` asks for one, following the booth's mood. Returns it,
@@ -173,6 +174,9 @@ func _on_mood_changed(reading: Dictionary) -> void:
 
 func _process(delta: float) -> void:
 	_clock += delta
+	if int(_clock / 5.0) != int((_clock - delta) / 5.0) and _players.size() > 0:
+		print("MUSIC_STATE t=%.1f track=%s playing=%s pos=%.3f stems=%s" % [_clock, track_id, _playing(), position_s(),
+				str(stem_db)])
 	_hold_loop()
 	if pending != "" and _ready_for_bar_line():
 		_crossfade_now()
@@ -298,7 +302,7 @@ func _set_stem_db(db: float, index: int) -> void:
 ## True once per bar, on the first frame after a bar line of the playing track.
 func _crossed_bar_line() -> bool:
 	var bar_s := seconds_per_bar(tracks.get(track_id, {}))
-	if bar_s <= 0.0 or not _playing():
+	if bar_s <= 0.0 or (_stems == null and not _playing()):
 		return true
 	var bar := int(position_s() / bar_s)
 	# Forward only: the playback position is reported per mix chunk and can sit either side of a bar line on
@@ -324,7 +328,15 @@ func is_playing() -> bool:
 
 
 ## Where the playing bed is, in seconds (tests and the bar-line maths).
+## A stem track is timed by its own clock: AudioStreamSynchronized reports no playback position (always 0.0, seen in
+## audio-pass as every MUSIC_LAYERS line at pos=0.000), which silently skipped every bar-line wait and the loop seek.
 func position_s() -> float:
+	if _stems != null and _stems_started_usec > 0:
+		var track: Dictionary = tracks.get(track_id, {})
+		var start := float(track.get("loop_start_s", 0.0))
+		var span := float(track.get("loop_end_s", 0.0)) - start
+		var elapsed := (Time.get_ticks_usec() - _stems_started_usec) / 1000000.0
+		return start + (fmod(elapsed, span) if span > 0.0 else elapsed)
 	var player := _players[_current] if not _players.is_empty() else null
 	return player.get_playback_position() if player != null and player.playing else 0.0
 
@@ -383,6 +395,10 @@ func _crossfade_now() -> void:
 	track_id = next_id
 	_last_bar = -1
 	_stems = stream as AudioStreamSynchronized if tracks[next_id].has("stems") else null
+	_stems_started_usec = Time.get_ticks_usec() if _stems != null else 0
+	if _stems != null:
+		# The bar it starts in has already begun: the first change waits for the next bar line, not the first frame.
+		_last_bar = int(position_s() / maxf(seconds_per_bar(tracks[next_id]), 0.001))
 	if _stems == null:
 		layers = []
 		stem_db = []
@@ -407,6 +423,7 @@ func _stream_for(id: String) -> AudioStream:
 		if part == null:
 			stem_db = []
 			return null
+		part = _looping(part, float(track.get("loop_start_s", 0.0)))
 		synced.set_sync_stream(index, part)
 		var db := 0.0 if index in starting else SILENT_DB
 		synced.set_sync_stream_volume(index, db)
@@ -416,14 +433,29 @@ func _stream_for(id: String) -> AudioStream:
 
 
 ## The mood's intensity when following one, else the track's own manifest intensity (every stem in by default).
+## A looping copy of one stem: every stem loops by itself from the track's loop start, so they stay locked together
+## without the director seeking (it cannot: see position_s).
+static func _looping(part: AudioStream, loop_start_s: float) -> AudioStream:
+	var copy := part.duplicate() as AudioStream
+	if copy is AudioStreamOggVorbis:
+		(copy as AudioStreamOggVorbis).loop = true
+		(copy as AudioStreamOggVorbis).loop_offset = loop_start_s
+	elif copy is AudioStreamWAV:
+		var wav := copy as AudioStreamWAV
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_begin = int(loop_start_s * wav.mix_rate)
+		wav.loop_end = SfxSystem.loop_frames(wav)
+	return copy
+
+
 func current_intensity_for(track: Dictionary) -> float:
 	return _mood.intensity() if _mood != null else float(track.get("intensity", 1.0))
 
 
 ## Beds loop between loop_start_s and loop_end_s, not over the whole file (PROMPTS.md): seek back at the seam.
 func _hold_loop() -> void:
-	if not _playing() or track_id == "":
-		return
+	if not _playing() or track_id == "" or _stems != null:
+		return  # stems loop by themselves (_stream_for), and a synchronized stream can't report where it is
 	var track: Dictionary = tracks.get(track_id, {})
 	var loop_end := float(track.get("loop_end_s", 0.0))
 	if loop_end <= 0.0:
