@@ -157,32 +157,39 @@ boxes merged into one piece of cover (the change suggested to ai).
 | scrapyard | 36 | 63 m | 13% | 50% | 50% |
 | foundry | 19 | **78 m** | 22% | 16% | 16% |
 
-### Dynamic measures (`make arena-series`, seeds 1-6, Condemned vs Condemned at 5200, elimination + control, 180 s)
+### Dynamic measures (`make arena-series`, Condemned vs Condemned at 5200, elimination + control, 180 s)
 
-Each seed is played twice, bases swapped. Ranges are muzzle to impact of rounds that hit a vehicle. Flank share and
-hidden share are unit-seconds inside the contested field spent at |x| > 60 m, and not visible to the enemy.
+Each seed is played twice, bases swapped. New arenas: seeds 1-18 (18 pairs, 36 matches); foundry: seeds 1-6.
+Ranges are muzzle to impact of rounds that hit a vehicle. Flank share and hidden share are unit-seconds inside the
+contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `build/arena-series-seeds*.json`.
 
 | Arena | South advantage (surviving share, mean ± SE) | Winner flips on swap | Median length | Decided by | Median / p90 hit range | Flank share | Hidden share |
 |---|---|---|---|---|---|---|---|
-| yard | −0.03 ± 0.09 | 0 / 6 | 113 s | control 9, elimination 3 | 38 / **57 m** | 4% | **58%** |
-| boulevard | +0.01 ± 0.02 | 0 / 6 | **94 s** | elimination 10, control 2 | **43** / 70 m | 6% | 38% |
-| pit | +0.01 ± 0.04 | 0 / 6 | 113 s | control 7, elimination 5 | 42 / 63 m | **30%** | 40% |
-| boneyard | −0.10 ± 0.08 | 0 / 6 | 106 s | elimination 8, control 4 | 40 / 59 m | 5% | 50% |
-| foundry | −0.00 ± 0.02 | 0 / 6 | 101 s | elimination 9, control 3 | 39 / 74 m | 14% | 36% |
+| yard | −0.04 ± 0.05 | 2 / 18 | 114 s | control 24, elimination 12 | 40 / **64 m** | 4% | **58%** |
+| boulevard | +0.01 ± 0.02 | 0 / 18 | **98 s** | elimination 26, control 10 | **43** / 73 m | 5% | 41% |
+| pit | +0.03 ± 0.04 | 1 / 18 | 108 s | elimination 20, control 16 | 41 / **64 m** | **18%** | 56% |
+| boneyard | −0.05 ± 0.03 | 2 / 18 | 108 s | elimination 19, control 16, time 1 | 41 / 68 m | 5% | 50% |
+| foundry (6 pairs) | −0.00 ± 0.02 | 0 / 6 | 101 s | elimination 9, control 3 | 39 / 74 m | 14% | 36% |
 
 **What this says (honestly):**
-1. **Fairness:** no arena shows a base advantage distinguishable from zero. The win rate is useless as the control
-   here: each team's army is seeded separately, army strength decided every match, and **no seed's winner flipped
-   when the bases swapped, on any arena**. The paired surviving-share margin is the measure. The yard and boneyard have
-   wider spreads (one seed each moved ~0.45), so seeds 7-18 are running to tighten them before the rotation is final.
-2. **The maps change how fights look, not who wins.** Winners were identical across all five arenas for every seed.
-   Hidden time rises from 36% (foundry) to 58% (yard), the long tail of hit ranges shortens from 74 m to 57 m, and the
-   pit pushes 30% of unit-time out around its ring. What they didn't change: **median hit range sits at 38-43 m on every
+1. **Fairness:** no arena shows a base advantage distinguishable from zero (all within 1.4 standard errors; the
+   largest, boneyard's −0.05, would favour the NORTH side). All four go in `Arena.ROTATION`. The win rate is useless
+   as the control here: each team's army is seeded separately and army strength decides the match; a swap flipped the
+   winner in only 5 of 72 pairs, in both directions. The paired surviving-share margin is the measure.
+   *Side finding for combat:* with bases cancelled, **Green won only 25-28% on every new arena** (seeds 1-18). Either
+   these seeds' armies happen to favour Rust (`Army.load_army` seeds each team `seed * 2 + team`) or team identity
+   matters (processing order); `--rust-first` would tell them apart.
+2. **The maps change how fights look far more than who wins.** For the same seed and bases, the winner was the same on
+   every arena in 26 of 30 cases (seeds 1-6 on all five, seeds 7-18 on the four new ones); only the close seeds (9 and
+   17) went different ways on different maps.
+   Hidden time rises from 36% (foundry) to 58% (yard), the long tail of hit ranges shortens from 74 m to 64 m, and the
+   pit pushes 18% of unit-time out around its ring. What they didn't change: **median hit range sits at 39-43 m on every
    map, foundry included**, so "two masses at max range" isn't a sightline problem the map can fix. It's ranges and
    brains (combat and ai this round).
-3. **Flanks are barely used** outside the pit (4-6% on yard, boulevard and boneyard vs 14% on foundry): dense maps
+3. **Flanks are barely used** outside the pit (4-5% on yard, boulevard and boneyard vs 14% on foundry): dense maps
    funnel both armies down the centre toward the control point. The routes exist (arena-report routes them); the CPU
    doesn't choose them. Rule of thumb 3 is delivered in geometry, not yet in behaviour. For ai: the lanes are annotated
    (`Arena.lanes_of`).
-4. **Match shape does differ:** the boulevard is the fastest and most decisive (elimination 10 of 12), the yard and pit
-   are control-point matches (9 and 7 of 12), which is what their characters promised.
+4. **Match shape does differ:** the boulevard is the fastest and most decisive (elimination 26 of 36); the yard is the
+   control-point map (24 of 36), with the most hidden time and the shortest long shots, which is what its character
+   promised. The pit sits between them (16 of 36 by control).
