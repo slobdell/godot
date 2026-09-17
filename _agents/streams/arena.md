@@ -136,8 +136,9 @@ arena_generator}.py`, `mk/arena.mk`, `arenas/{yard,boulevard,pit,boneyard}.json`
 - **The lead's answers:** destructible cover **"Schedule it"** (not this round: the 30 Hz tick refactor comes first;
   the full design is in arenas.md), map generator **"Park it"** (`make arena-candidates` stays as a tool), arena
   selection **"Players pick"** (control's menu row, Random the default), which arena is fun: not played yet.
-- Kit props are `StaticBody3D` boxes with MultiMesh visuals, so Jolt can't settle or drift them. The boneyard
-  fairness series (the closest margin) is re-running under Jolt; its verdict goes here.
+- Kit props are `StaticBody3D` boxes with MultiMesh visuals, so Jolt can't settle or drift them. **The boneyard
+  fairness series under Jolt** (the closest margin): south advantage −0.04 ± 0.03 over 18 pairs (was −0.05 ± 0.03),
+  1 winner flip, fight shape unchanged. **Still fair; the other three arenas carry.**
 - "What I'd build next" and matchup hypotheses: end of arenas.md.
 
 ### Log

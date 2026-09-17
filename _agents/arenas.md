@@ -226,7 +226,9 @@ contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `bu
 
 **What this says (honestly):**
 1. **Fairness:** no arena shows a base advantage distinguishable from zero (all within 1.4 standard errors; the
-   largest, boneyard's −0.05, would favour the NORTH side). All four go in `Arena.ROTATION`. The win rate is useless
+   largest, boneyard's −0.05, would favour the NORTH side). All four go in `Arena.ROTATION`. **Re-checked under Jolt
+   physics** (main 8d975fa) on the boneyard, the closest margin: −0.04 ± 0.03 over the same 18 pairs (1 winner flip;
+   median hit range 40 m, hidden 48%, flank 5%, all as before). Unchanged within noise, so the other three carry. The win rate is useless
    as the control here: each team's army is seeded separately and army strength decides the match; a swap flipped the
    winner in only 5 of 72 runs, in both directions. The paired surviving-share margin is the measure.
    *Side finding for combat:* with bases cancelled, **Green won only 25-28% on every new arena** (seeds 1-18). Careful
