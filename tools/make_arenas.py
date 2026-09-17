@@ -75,6 +75,8 @@ def c40(x, z, rot=0, stack=1, **look):
 
 
 def screen(x, z, rot=0, channel="arena"):
+    """A screen faces -Z at rot 0. Point symmetry turns a south screen's mirror to face the other way, so face each
+    screen toward its own half's base (south: 180, north: 0): each player's nearer screens face their camera."""
     return prop("ad_screen", x, z, rot, channel=channel)
 
 
@@ -259,7 +261,7 @@ boulevard += run("container_40", 80, 10, 80, 46, 2, faction="syndicate")
 boulevard += run("container_40", 80, 62, 80, 74, 1, faction="syndicate")
 boulevard += [
     # The roundabout: four screens facing out around the control point, low barricades ringing it.
-    screen(0, 30, 0, "arena"), screen(30, 0, 90, "sponsor"),
+    screen(0, 30, 180, "arena"), screen(30, 0, 90, "sponsor"),
     barricade(-19, 12, 57), barricade(19, 12, 123),
     # Kiosks and wrecks: sightline breaks down the avenues, staggered.
     c20(-60, 20, 90, 2, faction="gangs", doors="open"), c20(60, 58, 90, 2), c20(-20, 58, 90, 2, faction="law"),
@@ -339,6 +341,7 @@ boneyard = [
     # In front of the base.
     c40(-20, 78, 176, 1, faction="gangs"), c20(24, 80, 8, 1), wreck(-48, 78, 100), wreck(52, 76, 60),
     barricade(-34, 6, 150), barricade(40, 4, 30), barricade(6, 50, 95),
+    screen(66, 70, 180, "sponsor"),
     floodlight(-84, 96), floodlight(-110, 40), sign(-80, 104, 180, "boneyard"), sign(108, 104, 200, "boneyard"),
 ]
 boneyard_walls = [ob("wall", 30, 12, 58), ob("wall", -78, 72, 145, [12.0, 3.0, 1.5])]

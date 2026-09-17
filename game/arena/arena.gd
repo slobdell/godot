@@ -29,6 +29,9 @@ extends Node3D
 signal navigation_ready
 
 const DEFAULT_LAYOUT := "foundry"
+## X6: the arenas `--arena=random` chooses from: only layouts that passed the swap-bases fairness control
+## (_agents/arenas.md). A choice is seeded, so every peer given the same --seed builds the same arena.
+const ROTATION := ["yard", "boulevard", "pit", "boneyard"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
@@ -55,7 +58,9 @@ var decor_root: Node3D
 
 
 func _ready() -> void:
-	var wanted := layout_name if layout_name != "" else LaunchFlags.from_environment().text("arena", DEFAULT_LAYOUT)
+	var flags := LaunchFlags.from_environment()
+	var wanted := layout_name if layout_name != "" else flags.text("arena", DEFAULT_LAYOUT)
+	wanted = resolve_name(wanted, flags.integer("seed", -1) if flags.has("seed") else -1)
 	var loaded := load_layout(wanted)
 	if loaded.has("error"):
 		push_error("arena: %s; using %s" % [loaded["error"], DEFAULT_LAYOUT])
@@ -255,6 +260,19 @@ static func normalize(data: Dictionary) -> Dictionary:
 		obstacles.append(obstacle)
 	runtime["obstacles"] = obstacles
 	return runtime
+
+
+## X6: "random" becomes a ROTATION arena (chosen by `seed`, or at random when it's negative); any other name is itself.
+## Arena owns this roll (orchestrator ruling, 2026-09-17): launchers pass "random" through and read Arena.active["name"]
+## back. A roll without a seed can't be replayed, so every launcher that shows or records a seed passes it as --seed.
+static func resolve_name(name: String, seed_value: int) -> String:
+	if name != "random":
+		return name
+	if seed_value < 0:
+		return ROTATION[randi() % ROTATION.size()]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([seed_value, "arena"])
+	return ROTATION[rng.randi() % ROTATION.size()]
 
 
 ## Names of the layouts in LAYOUT_DIR.

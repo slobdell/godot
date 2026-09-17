@@ -11,8 +11,8 @@ run: import ## Play offline vs BOTS server bots (default 1): WASD/arrows drive, 
 
 # The booth and the soundtrack are on by default here: they only attach when asked, and a playtest without them is
 # not the game (the lead ran `make skirmish` and wondered where the announcer had gone). ANNOUNCER=text|off, MUSIC=off.
-skirmish: import ## Command your squads vs a budgeted CPU army (ENEMY=cpu|cpu:siege|individuals..., SEED=n, CONTROL=1, COMMANDER=1, ANNOUNCER=voice|text|off, MUSIC=on|off)
-	$(GODOT) --path . -- --skirmish --enemy=$(ENEMY) $(if $(filter command line,$(origin SEED)),--seed=$(SEED)) \
+skirmish: import ## Command your squads vs a budgeted CPU army (ENEMY=cpu|cpu:siege|individuals..., SEED=n, ARENA=random|yard|boulevard|pit|boneyard|foundry..., CONTROL=1, COMMANDER=1, ANNOUNCER=voice|text|off, MUSIC=on|off)
+	$(GODOT) --path . -- --skirmish --enemy=$(ENEMY) --seed=$(if $(filter command line,$(origin SEED)),$(SEED),$$(( $$(date +%s) % 100000 ))) --arena=$(or $(ARENA),random) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) \
 		$(if $(CONTROL),--control) $(if $(COMMANDER),--commander)
 
