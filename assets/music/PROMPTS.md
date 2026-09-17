@@ -59,7 +59,9 @@ too slow to sit under a fight. It would make a strong `defeat` alternative, or a
 
 ### The fight (three stem sets)
 Suno gives a stereo mix, not stems. **Split it locally with demucs** (a music source separator), which runs on builder0
-because it needs PyTorch and this laptop has no room. It's tested on this repo's own mix: its drums stem follows the
+because it needs PyTorch (about 2 GB installed; the laptop's disk is at 97%). **Don't `pip install demucs` locally:**
+`make music-stems` sends the track to builder0, where the venv already lives (`~/tank_squad/.tools/demucs-venv`, made
+on first use if missing), and brings the stems back. It's tested on this repo's own mix: its drums stem follows the
 real drums and its bass the bass. The alternative, generating a quiet and a loud take from the same prompt, fails
 because two Suno generations are never the same arrangement at the same bar, so they can't be layered.
 
