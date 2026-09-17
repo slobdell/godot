@@ -1,0 +1,1346 @@
+{
+ "name": "boulevard",
+ "schema": 2,
+ "title": "The Boulevard",
+ "note": "Long fire lanes broken by screens, kiosks and wrecks: the side that spots first and crosses the avenues under cover wins. Artillery and long guns earn their cost; the walled service roads are the slow, hidden flank.",
+ "half_size": 120.0,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    11.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    -11.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    17.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    -17.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    23.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    -23.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    53.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    -53.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    59.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    -59.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    65.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    -65.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    11.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    -11.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    17.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    -17.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    23.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    -23.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    53.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    -53.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    59.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    -59.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    65.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    -65.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    10.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    -10.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    22.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    -22.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    34.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    -34.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    62.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    -62.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    74.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    -74.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    16.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    -16.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    28.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    -28.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    40.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    -40.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    80.0,
+    68.0
+   ],
+   "rotation_deg": -90.0,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -80.0,
+    -68.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "syndicate"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    0.0,
+    30.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    0.0,
+    -30.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    30.0,
+    0.0
+   ],
+   "rotation_deg": 90.0,
+   "channel": "sponsor"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -30.0,
+    0.0
+   ],
+   "rotation_deg": 270.0,
+   "channel": "sponsor"
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -19.0,
+    12.0
+   ],
+   "rotation_deg": 57.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    19.0,
+    -12.0
+   ],
+   "rotation_deg": 237.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    19.0,
+    12.0
+   ],
+   "rotation_deg": 123.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -19.0,
+    -12.0
+   ],
+   "rotation_deg": 303.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -60.0,
+    20.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "gangs",
+   "doors": "open"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    60.0,
+    -20.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "gangs",
+   "doors": "open"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    60.0,
+    58.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -60.0,
+    -58.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -20.0,
+    58.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    20.0,
+    -58.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -58.0,
+    64.0
+   ],
+   "rotation_deg": 10.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    58.0,
+    -64.0
+   ],
+   "rotation_deg": 190.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    98.0,
+    30.0
+   ],
+   "rotation_deg": 80.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -98.0,
+    -30.0
+   ],
+   "rotation_deg": 260.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -98.0,
+    60.0
+   ],
+   "rotation_deg": 90.0,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    98.0,
+    -60.0
+   ],
+   "rotation_deg": 270.0,
+   "faction": "condemned"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -100.0,
+    14.0
+   ],
+   "rotation_deg": 20.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    100.0,
+    -14.0
+   ],
+   "rotation_deg": 200.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -60.0,
+    80.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "sponsor"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    60.0,
+    -80.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "sponsor"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    60.0,
+    -2.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -60.0,
+    2.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -40.0,
+    82.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    40.0,
+    -82.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    40.0,
+    82.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -40.0,
+    -82.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "sign",
+   "position": [
+    -110.0,
+    70.0
+   ],
+   "rotation_deg": 90.0,
+   "sign": "boulevard"
+  },
+  {
+   "type": "sign",
+   "position": [
+    110.0,
+    -70.0
+   ],
+   "rotation_deg": 270.0,
+   "sign": "boulevard"
+  },
+  {
+   "type": "sign",
+   "position": [
+    110.0,
+    20.0
+   ],
+   "rotation_deg": 270.0,
+   "sign": "boulevard"
+  },
+  {
+   "type": "sign",
+   "position": [
+    -110.0,
+    -20.0
+   ],
+   "rotation_deg": 90.0,
+   "sign": "boulevard"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -11.0,
+    90.0
+   ],
+   [
+    11.0,
+    90.0
+   ],
+   [
+    -22.0,
+    90.0
+   ],
+   [
+    22.0,
+    90.0
+   ],
+   [
+    -33.0,
+    90.0
+   ],
+   [
+    33.0,
+    90.0
+   ],
+   [
+    -44.0,
+    90.0
+   ],
+   [
+    44.0,
+    90.0
+   ],
+   [
+    -55.0,
+    90.0
+   ],
+   [
+    55.0,
+    90.0
+   ],
+   [
+    -66.0,
+    90.0
+   ],
+   [
+    66.0,
+    90.0
+   ],
+   [
+    0.0,
+    98.0
+   ],
+   [
+    -11.0,
+    98.0
+   ],
+   [
+    11.0,
+    98.0
+   ],
+   [
+    -22.0,
+    98.0
+   ],
+   [
+    22.0,
+    98.0
+   ],
+   [
+    -33.0,
+    98.0
+   ],
+   [
+    33.0,
+    98.0
+   ],
+   [
+    -44.0,
+    98.0
+   ],
+   [
+    44.0,
+    98.0
+   ],
+   [
+    -55.0,
+    98.0
+   ],
+   [
+    55.0,
+    98.0
+   ],
+   [
+    -66.0,
+    98.0
+   ],
+   [
+    66.0,
+    98.0
+   ],
+   [
+    0.0,
+    106.0
+   ],
+   [
+    -11.0,
+    106.0
+   ],
+   [
+    11.0,
+    106.0
+   ],
+   [
+    -22.0,
+    106.0
+   ],
+   [
+    22.0,
+    106.0
+   ],
+   [
+    -33.0,
+    106.0
+   ],
+   [
+    33.0,
+    106.0
+   ],
+   [
+    -44.0,
+    106.0
+   ],
+   [
+    44.0,
+    106.0
+   ],
+   [
+    -55.0,
+    106.0
+   ],
+   [
+    55.0,
+    106.0
+   ],
+   [
+    -66.0,
+    106.0
+   ],
+   [
+    66.0,
+    106.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -11.0,
+    114.0
+   ],
+   [
+    11.0,
+    114.0
+   ],
+   [
+    -22.0,
+    114.0
+   ],
+   [
+    22.0,
+    114.0
+   ],
+   [
+    -33.0,
+    114.0
+   ],
+   [
+    33.0,
+    114.0
+   ],
+   [
+    -44.0,
+    114.0
+   ],
+   [
+    44.0,
+    114.0
+   ],
+   [
+    -55.0,
+    114.0
+   ],
+   [
+    55.0,
+    114.0
+   ],
+   [
+    -66.0,
+    114.0
+   ],
+   [
+    66.0,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    11.0,
+    -90.0
+   ],
+   [
+    -11.0,
+    -90.0
+   ],
+   [
+    22.0,
+    -90.0
+   ],
+   [
+    -22.0,
+    -90.0
+   ],
+   [
+    33.0,
+    -90.0
+   ],
+   [
+    -33.0,
+    -90.0
+   ],
+   [
+    44.0,
+    -90.0
+   ],
+   [
+    -44.0,
+    -90.0
+   ],
+   [
+    55.0,
+    -90.0
+   ],
+   [
+    -55.0,
+    -90.0
+   ],
+   [
+    66.0,
+    -90.0
+   ],
+   [
+    -66.0,
+    -90.0
+   ],
+   [
+    0.0,
+    -98.0
+   ],
+   [
+    11.0,
+    -98.0
+   ],
+   [
+    -11.0,
+    -98.0
+   ],
+   [
+    22.0,
+    -98.0
+   ],
+   [
+    -22.0,
+    -98.0
+   ],
+   [
+    33.0,
+    -98.0
+   ],
+   [
+    -33.0,
+    -98.0
+   ],
+   [
+    44.0,
+    -98.0
+   ],
+   [
+    -44.0,
+    -98.0
+   ],
+   [
+    55.0,
+    -98.0
+   ],
+   [
+    -55.0,
+    -98.0
+   ],
+   [
+    66.0,
+    -98.0
+   ],
+   [
+    -66.0,
+    -98.0
+   ],
+   [
+    0.0,
+    -106.0
+   ],
+   [
+    11.0,
+    -106.0
+   ],
+   [
+    -11.0,
+    -106.0
+   ],
+   [
+    22.0,
+    -106.0
+   ],
+   [
+    -22.0,
+    -106.0
+   ],
+   [
+    33.0,
+    -106.0
+   ],
+   [
+    -33.0,
+    -106.0
+   ],
+   [
+    44.0,
+    -106.0
+   ],
+   [
+    -44.0,
+    -106.0
+   ],
+   [
+    55.0,
+    -106.0
+   ],
+   [
+    -55.0,
+    -106.0
+   ],
+   [
+    66.0,
+    -106.0
+   ],
+   [
+    -66.0,
+    -106.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    11.0,
+    -114.0
+   ],
+   [
+    -11.0,
+    -114.0
+   ],
+   [
+    22.0,
+    -114.0
+   ],
+   [
+    -22.0,
+    -114.0
+   ],
+   [
+    33.0,
+    -114.0
+   ],
+   [
+    -33.0,
+    -114.0
+   ],
+   [
+    44.0,
+    -114.0
+   ],
+   [
+    -44.0,
+    -114.0
+   ],
+   [
+    55.0,
+    -114.0
+   ],
+   [
+    -55.0,
+    -114.0
+   ],
+   [
+    66.0,
+    -114.0
+   ],
+   [
+    -66.0,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "centre avenue",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     0.0,
+     45.0
+    ],
+    [
+     -12.0,
+     0.0
+    ],
+    [
+     0.0,
+     -45.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 34.0
+  },
+  {
+   "name": "centre avenue (far)",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     0.0,
+     45.0
+    ],
+    [
+     12.0,
+     0.0
+    ],
+    [
+     0.0,
+     -45.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 34.0
+  },
+  {
+   "name": "west avenue",
+   "points": [
+    [
+     -60.0,
+     90.0
+    ],
+    [
+     -60.0,
+     0.0
+    ],
+    [
+     -60.0,
+     -90.0
+    ]
+   ],
+   "width": 34.0
+  },
+  {
+   "name": "west avenue (far)",
+   "points": [
+    [
+     60.0,
+     90.0
+    ],
+    [
+     60.0,
+     0.0
+    ],
+    [
+     60.0,
+     -90.0
+    ]
+   ],
+   "width": 34.0
+  },
+  {
+   "name": "west service road",
+   "points": [
+    [
+     -98.0,
+     90.0
+    ],
+    [
+     -98.0,
+     0.0
+    ],
+    [
+     -98.0,
+     -90.0
+    ]
+   ],
+   "width": 30.0
+  },
+  {
+   "name": "west service road (far)",
+   "points": [
+    [
+     98.0,
+     90.0
+    ],
+    [
+     98.0,
+     0.0
+    ],
+    [
+     98.0,
+     -90.0
+    ]
+   ],
+   "width": 30.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the roundabout",
+   "kind": "centre",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "west avenue",
+   "kind": "open_ground",
+   "position": [
+    -60.0,
+    40.0
+   ],
+   "radius": 18.0
+  },
+  {
+   "name": "west avenue (far)",
+   "kind": "open_ground",
+   "position": [
+    60.0,
+    -40.0
+   ],
+   "radius": 18.0
+  },
+  {
+   "name": "centre avenue",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    60.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "centre avenue (far)",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    -60.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "west crossing",
+   "kind": "chokepoint",
+   "position": [
+    -40.0,
+    44.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west crossing (far)",
+   "kind": "chokepoint",
+   "position": [
+    40.0,
+    -44.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west service road",
+   "kind": "flank",
+   "position": [
+    -98.0,
+    40.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "west service road (far)",
+   "kind": "flank",
+   "position": [
+    98.0,
+    -40.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "screen plinth",
+   "kind": "overlook",
+   "position": [
+    30.0,
+    0.0
+   ],
+   "radius": 8.0
+  },
+  {
+   "name": "screen plinth (far)",
+   "kind": "overlook",
+   "position": [
+    -30.0,
+    0.0
+   ],
+   "radius": 8.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ }
+}

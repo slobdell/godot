@@ -1,0 +1,1164 @@
+{
+ "name": "pit",
+ "schema": 2,
+ "title": "The Pit",
+ "note": "A control-point brawl behind walls: four gates into a ring of stacked containers, open killing ground outside. Hold a gate and you own the approach; go inside and it's knife range. Tanks and burners take the ring; artillery punishes whoever crowds it.",
+ "half_size": 120.0,
+ "obstacles": [],
+ "props": [
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    -12.06
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    12.06
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    -15.09
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    15.09
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    12.06
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    -12.06
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    42.0,
+    15.09
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -42.0,
+    -15.09
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    33.941,
+    25.456
+   ],
+   "rotation_deg": 225.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -33.941,
+    -25.456
+   ],
+   "rotation_deg": 45.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    25.456,
+    33.941
+   ],
+   "rotation_deg": 225.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -25.456,
+    -33.941
+   ],
+   "rotation_deg": 45.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    12.06,
+    42.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -12.06,
+    -42.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    15.09,
+    42.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -15.09,
+    -42.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -12.06,
+    42.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    12.06,
+    -42.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -15.09,
+    42.0
+   ],
+   "rotation_deg": 180.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    15.09,
+    -42.0
+   ],
+   "rotation_deg": 0.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -25.456,
+    33.941
+   ],
+   "rotation_deg": 135.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    25.456,
+    -33.941
+   ],
+   "rotation_deg": 315.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -33.941,
+    25.456
+   ],
+   "rotation_deg": 135.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    33.941,
+    -25.456
+   ],
+   "rotation_deg": 315.0,
+   "stack": 3,
+   "faction": "syndicate"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    22.0
+   ],
+   "rotation_deg": 0.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    -22.0
+   ],
+   "rotation_deg": 180.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    20.0,
+    8.0
+   ],
+   "rotation_deg": 70.0,
+   "doors": "ajar"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -20.0,
+    -8.0
+   ],
+   "rotation_deg": 250.0,
+   "doors": "ajar"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -16.0,
+    16.0
+   ],
+   "rotation_deg": 40.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    16.0,
+    -16.0
+   ],
+   "rotation_deg": 220.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -30.0,
+    66.0
+   ],
+   "rotation_deg": 80.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    30.0,
+    -66.0
+   ],
+   "rotation_deg": 260.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    64.0,
+    56.0
+   ],
+   "rotation_deg": 30.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -64.0,
+    -56.0
+   ],
+   "rotation_deg": 210.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -76.0,
+    44.0
+   ],
+   "rotation_deg": 90.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    76.0,
+    -44.0
+   ],
+   "rotation_deg": 270.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    92.0,
+    10.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -92.0,
+    -10.0
+   ],
+   "rotation_deg": 270.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -50.0,
+    34.0
+   ],
+   "rotation_deg": 45.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    50.0,
+    -34.0
+   ],
+   "rotation_deg": 225.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    28.0,
+    70.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -28.0,
+    -70.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    0.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -50.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    50.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    50.0,
+    80.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -50.0,
+    -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    0.0,
+    52.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "arena"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    0.0,
+    -52.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "arena"
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -104.0,
+    96.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    104.0,
+    -96.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    104.0,
+    96.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -104.0,
+    -96.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "sign",
+   "position": [
+    -60.0,
+    100.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "pit"
+  },
+  {
+   "type": "sign",
+   "position": [
+    60.0,
+    -100.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "pit"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -11.0,
+    90.0
+   ],
+   [
+    11.0,
+    90.0
+   ],
+   [
+    -22.0,
+    90.0
+   ],
+   [
+    22.0,
+    90.0
+   ],
+   [
+    -33.0,
+    90.0
+   ],
+   [
+    33.0,
+    90.0
+   ],
+   [
+    -44.0,
+    90.0
+   ],
+   [
+    44.0,
+    90.0
+   ],
+   [
+    -55.0,
+    90.0
+   ],
+   [
+    55.0,
+    90.0
+   ],
+   [
+    -66.0,
+    90.0
+   ],
+   [
+    66.0,
+    90.0
+   ],
+   [
+    0.0,
+    98.0
+   ],
+   [
+    -11.0,
+    98.0
+   ],
+   [
+    11.0,
+    98.0
+   ],
+   [
+    -22.0,
+    98.0
+   ],
+   [
+    22.0,
+    98.0
+   ],
+   [
+    -33.0,
+    98.0
+   ],
+   [
+    33.0,
+    98.0
+   ],
+   [
+    -44.0,
+    98.0
+   ],
+   [
+    44.0,
+    98.0
+   ],
+   [
+    -55.0,
+    98.0
+   ],
+   [
+    55.0,
+    98.0
+   ],
+   [
+    -66.0,
+    98.0
+   ],
+   [
+    66.0,
+    98.0
+   ],
+   [
+    0.0,
+    106.0
+   ],
+   [
+    -11.0,
+    106.0
+   ],
+   [
+    11.0,
+    106.0
+   ],
+   [
+    -22.0,
+    106.0
+   ],
+   [
+    22.0,
+    106.0
+   ],
+   [
+    -33.0,
+    106.0
+   ],
+   [
+    33.0,
+    106.0
+   ],
+   [
+    -44.0,
+    106.0
+   ],
+   [
+    44.0,
+    106.0
+   ],
+   [
+    -55.0,
+    106.0
+   ],
+   [
+    55.0,
+    106.0
+   ],
+   [
+    -66.0,
+    106.0
+   ],
+   [
+    66.0,
+    106.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -11.0,
+    114.0
+   ],
+   [
+    11.0,
+    114.0
+   ],
+   [
+    -22.0,
+    114.0
+   ],
+   [
+    22.0,
+    114.0
+   ],
+   [
+    -33.0,
+    114.0
+   ],
+   [
+    33.0,
+    114.0
+   ],
+   [
+    -44.0,
+    114.0
+   ],
+   [
+    44.0,
+    114.0
+   ],
+   [
+    -55.0,
+    114.0
+   ],
+   [
+    55.0,
+    114.0
+   ],
+   [
+    -66.0,
+    114.0
+   ],
+   [
+    66.0,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    11.0,
+    -90.0
+   ],
+   [
+    -11.0,
+    -90.0
+   ],
+   [
+    22.0,
+    -90.0
+   ],
+   [
+    -22.0,
+    -90.0
+   ],
+   [
+    33.0,
+    -90.0
+   ],
+   [
+    -33.0,
+    -90.0
+   ],
+   [
+    44.0,
+    -90.0
+   ],
+   [
+    -44.0,
+    -90.0
+   ],
+   [
+    55.0,
+    -90.0
+   ],
+   [
+    -55.0,
+    -90.0
+   ],
+   [
+    66.0,
+    -90.0
+   ],
+   [
+    -66.0,
+    -90.0
+   ],
+   [
+    0.0,
+    -98.0
+   ],
+   [
+    11.0,
+    -98.0
+   ],
+   [
+    -11.0,
+    -98.0
+   ],
+   [
+    22.0,
+    -98.0
+   ],
+   [
+    -22.0,
+    -98.0
+   ],
+   [
+    33.0,
+    -98.0
+   ],
+   [
+    -33.0,
+    -98.0
+   ],
+   [
+    44.0,
+    -98.0
+   ],
+   [
+    -44.0,
+    -98.0
+   ],
+   [
+    55.0,
+    -98.0
+   ],
+   [
+    -55.0,
+    -98.0
+   ],
+   [
+    66.0,
+    -98.0
+   ],
+   [
+    -66.0,
+    -98.0
+   ],
+   [
+    0.0,
+    -106.0
+   ],
+   [
+    11.0,
+    -106.0
+   ],
+   [
+    -11.0,
+    -106.0
+   ],
+   [
+    22.0,
+    -106.0
+   ],
+   [
+    -22.0,
+    -106.0
+   ],
+   [
+    33.0,
+    -106.0
+   ],
+   [
+    -33.0,
+    -106.0
+   ],
+   [
+    44.0,
+    -106.0
+   ],
+   [
+    -44.0,
+    -106.0
+   ],
+   [
+    55.0,
+    -106.0
+   ],
+   [
+    -55.0,
+    -106.0
+   ],
+   [
+    66.0,
+    -106.0
+   ],
+   [
+    -66.0,
+    -106.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    11.0,
+    -114.0
+   ],
+   [
+    -11.0,
+    -114.0
+   ],
+   [
+    22.0,
+    -114.0
+   ],
+   [
+    -22.0,
+    -114.0
+   ],
+   [
+    33.0,
+    -114.0
+   ],
+   [
+    -33.0,
+    -114.0
+   ],
+   [
+    44.0,
+    -114.0
+   ],
+   [
+    -44.0,
+    -114.0
+   ],
+   [
+    55.0,
+    -114.0
+   ],
+   [
+    -55.0,
+    -114.0
+   ],
+   [
+    66.0,
+    -114.0
+   ],
+   [
+    -66.0,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "south gate",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     0.0,
+     42.0
+    ],
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -42.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 12.0
+  },
+  {
+   "name": "west gate",
+   "points": [
+    [
+     -40.0,
+     90.0
+    ],
+    [
+     -70.0,
+     40.0
+    ],
+    [
+     -42.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0
+    ],
+    [
+     42.0,
+     0.0
+    ],
+    [
+     70.0,
+     -40.0
+    ],
+    [
+     40.0,
+     -90.0
+    ]
+   ],
+   "width": 12.0
+  },
+  {
+   "name": "west flank",
+   "points": [
+    [
+     -66.0,
+     90.0
+    ],
+    [
+     -100.0,
+     0.0
+    ],
+    [
+     -66.0,
+     -90.0
+    ]
+   ],
+   "width": 30.0
+  },
+  {
+   "name": "west flank (far)",
+   "points": [
+    [
+     66.0,
+     90.0
+    ],
+    [
+     100.0,
+     0.0
+    ],
+    [
+     66.0,
+     -90.0
+    ]
+   ],
+   "width": 30.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the ring",
+   "kind": "centre",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "south gate",
+   "kind": "chokepoint",
+   "position": [
+    0.0,
+    42.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "south gate (far)",
+   "kind": "chokepoint",
+   "position": [
+    0.0,
+    -42.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west gate",
+   "kind": "chokepoint",
+   "position": [
+    -42.0,
+    0.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "west gate (far)",
+   "kind": "chokepoint",
+   "position": [
+    42.0,
+    0.0
+   ],
+   "radius": 7.0
+  },
+  {
+   "name": "south approach",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    62.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "south approach (far)",
+   "kind": "open_ground",
+   "position": [
+    0.0,
+    -62.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "west approach",
+   "kind": "open_ground",
+   "position": [
+    -66.0,
+    30.0
+   ],
+   "radius": 18.0
+  },
+  {
+   "name": "west approach (far)",
+   "kind": "open_ground",
+   "position": [
+    66.0,
+    -30.0
+   ],
+   "radius": 18.0
+  },
+  {
+   "name": "south-west corner gap",
+   "kind": "overlook",
+   "position": [
+    -30.0,
+    30.0
+   ],
+   "radius": 6.0
+  },
+  {
+   "name": "south-west corner gap (far)",
+   "kind": "overlook",
+   "position": [
+    30.0,
+    -30.0
+   ],
+   "radius": 6.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ }
+}
