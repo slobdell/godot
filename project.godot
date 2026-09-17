@@ -62,3 +62,7 @@ world/region_use_async_iterations=false
 ; so we use it everywhere to avoid "looks different in the browser" surprises.
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"

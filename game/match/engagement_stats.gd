@@ -21,6 +21,14 @@ const SAMPLE_TICKS := 60
 const COVER_RADIUS := 5.0
 ## A team whose living units average less than this (m/s) is standing still.
 const STILL_SPEED := 1.5
+## Army level: a combat second is a HELD LINE when neither team's centre of mass moved more than HELD_LINE_METRES over
+## the last HELD_LINE_WINDOW seconds. Units weave and jink while they trade fire, so hull speed says little about
+## whether the ARMIES are going anywhere; this is the "two masses" measure.
+const HELD_LINE_WINDOW := 5
+const HELD_LINE_METRES := 5.0
+## A kill is OFF AXIS when the killer stood more than this many degrees away from the line between the two armies'
+## centres, seen from the victim (a flank of the army, not just the side of the hull).
+const OFF_AXIS_DEG := 45.0
 
 var obstacles: Array = []
 
@@ -40,6 +48,14 @@ var kills := {"front": 0, "side": 0, "rear": 0, "indirect": 0}
 var _kill_distances: Array[float] = []
 var kills_by_cover_shooters := 0
 var deaths_near_cover := 0
+var held_line_seconds := 0
+var _centroid_history: Array = []
+## Each team's centre of mass at contact and now (net advance = movement toward the other army's contact position).
+var _centroids_at_contact: Array = [null, null]
+var _centroids_now: Array = [null, null]
+var kills_off_axis := 0
+var kills_from_behind_line := 0
+var _axis_kills := 0
 
 
 ## `features`: Arena.cover_features()-shaped dictionaries ({position, size, rotation, ...}).
@@ -101,11 +117,25 @@ func sample(teams: Array, shots_this_second: int) -> void:
 			if centroids[team] != null and _last_centroids[team] != null and second > contact_second:
 				centroid_travel[team] += (centroids[team] as Vector3).distance_to(_last_centroids[team])
 	_last_centroids = centroids
+	_centroids_now = centroids
+	if contact_second == second:
+		_centroids_at_contact = centroids.duplicate()
+	_centroid_history.append(centroids)
+	if _centroid_history.size() > HELD_LINE_WINDOW + 1:
+		_centroid_history.pop_front()
 	if shots_this_second <= 0 or centroids[0] == null or centroids[1] == null:
 		return
 	combat_seconds += 1
 	if speeds[0] < STILL_SPEED and speeds[1] < STILL_SPEED:
 		static_seconds += 1
+	if _centroid_history.size() == HELD_LINE_WINDOW + 1:
+		var oldest: Array = _centroid_history[0]
+		var held := true
+		for team in 2:
+			if oldest[team] == null or (oldest[team] as Vector3).distance_to(centroids[team]) > HELD_LINE_METRES:
+				held = false
+		if held:
+			held_line_seconds += 1
 	var nearest: Array[float] = []
 	for team in 2:
 		for unit: Dictionary in teams[team]:
@@ -114,6 +144,40 @@ func sample(teams: Array, shots_this_second: int) -> void:
 				best = minf(best, (unit["position"] as Vector3).distance_to(enemy["position"]))
 			nearest.append(best)
 	_engaged_distances.append(_median(nearest))
+
+
+## The army-level half of a kill: where the killer stood relative to the line between the two armies' centres (as
+## last sampled), seen from the victim. `victim_team` is the team that lost the unit.
+func record_kill_bearing(victim_team: int, victim: Vector3, killer: Vector3) -> void:
+	var own: Variant = _last_centroids[victim_team]
+	var enemy: Variant = _last_centroids[1 - victim_team]
+	if own == null or enemy == null:
+		return
+	var axis := Vector3((enemy as Vector3).x - (own as Vector3).x, 0.0, (enemy as Vector3).z - (own as Vector3).z)
+	var toward_killer := Vector3(killer.x - victim.x, 0.0, killer.z - victim.z)
+	if axis.length() < 0.01 or toward_killer.length() < 0.01:
+		return
+	_axis_kills += 1
+	var angle := rad_to_deg(axis.angle_to(toward_killer))
+	if angle > OFF_AXIS_DEG:
+		kills_off_axis += 1
+	if angle > 135.0:
+		kills_from_behind_line += 1
+
+
+## Metres each team's centre of mass moved toward where the other army stood at contact (negative = fell back).
+func net_advance() -> Array:
+	var advance := [0.0, 0.0]
+	for team in 2:
+		var start: Variant = _centroids_at_contact[team]
+		var now: Variant = _centroids_now[team]
+		var enemy_start: Variant = _centroids_at_contact[1 - team]
+		if start == null or now == null or enemy_start == null:
+			continue
+		var toward := Vector3((enemy_start as Vector3).x - (start as Vector3).x, 0.0, (enemy_start as Vector3).z - (start as Vector3).z)
+		if toward.length() > 0.01:
+			advance[team] = snappedf(((now as Vector3) - (start as Vector3)).dot(toward.normalized()), 0.1)
+	return advance
 
 
 func record_shot(shooter_near_cover: bool) -> void:
@@ -148,7 +212,11 @@ func summary() -> Dictionary:
 			"unit_seconds_near_cover_share": _share(unit_seconds_near_cover, unit_seconds),
 			"shots_near_cover_share": _share(shots_near_cover, shots),
 			"kills_by_cover_shooters_share": _share(kills_by_cover_shooters, all_kills),
-			"deaths_near_cover_share": _share(deaths_near_cover, all_kills)}
+			"deaths_near_cover_share": _share(deaths_near_cover, all_kills),
+			"held_line_share": _share(held_line_seconds, combat_seconds),
+			"net_advance": net_advance(),
+			"off_axis_kill_share": _share(kills_off_axis, _axis_kills),
+			"behind_line_kill_share": _share(kills_from_behind_line, _axis_kills)}
 
 
 static func _share(part: int, whole: int) -> float:

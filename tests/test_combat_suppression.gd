@@ -212,3 +212,20 @@ func test_k2_events_report_the_suppression_a_round_applied() -> void:
 	assert_true(fired[0].has("suppression_applied"), "weapon_fired says how suppressive the round is")
 	assert_true(float(fired[0]["suppression_applied"]) > 0.0, "a tank shell is suppressive")
 	assert_true(impacts[0].has("suppression_applied"), "projectile_impact reports what the round laid down")
+
+
+func test_shots_past_effective_range_spread_wider_and_inside_it_do_not() -> void:
+	# X1 (round 5): long shots are gambles. effective_range == range (today's data) changes nothing.
+	var weapon: Dictionary = Weapons.profile("cannon").duplicate()
+	var reach := float(weapon["range"])
+	assert_near(Match.range_spread_multiplier(weapon, reach), 1.0, 0.0001, "no falloff while effective_range == range")
+	weapon["effective_range"] = reach * 0.5
+	var inside := Match.shot_spread(weapon, 0.0, 0.0, reach * 0.4)
+	var halfway := Match.shot_spread(weapon, 0.0, 0.0, reach * 0.75)
+	var at_max := Match.shot_spread(weapon, 0.0, 0.0, reach)
+	assert_near(inside, Match.shot_spread(weapon, 0.0, 0.0), 0.00001, "inside effective range, distance costs nothing")
+	assert_near(at_max / inside, 1.0 + Match.RANGE_SPREAD_FACTOR, 0.001, "at full range the spread is 1 + factor wider")
+	assert_true(inside < halfway and halfway < at_max, "and it widens steadily in between")
+	assert_near(Match.shot_spread(weapon, 0.0, 0.0, reach * 3.0), at_max, 0.00001, "and stops widening past range")
+	var no_key := {"spread_deg": 1.0, "range": 50.0}
+	assert_near(Match.range_spread_multiplier(no_key, 50.0), 1.0, 0.0001, "a weapon without effective_range has no falloff")

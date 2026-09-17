@@ -91,3 +91,39 @@ func test_a_real_match_fills_the_engagement_block() -> void:
 	for key in ["static_share", "engaged_distance_median", "kills", "flank_rear_kill_share", "centroid_travel",
 			"shots_near_cover_share", "unit_seconds_near_cover_share"]:
 		assert_true(engagement.has(key), "the summary has %s" % key)
+
+
+func test_two_armies_trading_fire_in_place_read_as_a_held_line_even_while_weaving() -> void:
+	var stats := EngagementStats.new([])
+	for second in 20:
+		# Every hull jinks at 5 m/s, but the armies' centres don't go anywhere.
+		var wobble := 1.0 if second % 2 == 0 else -1.0
+		stats.sample([[{"position": Vector3(wobble, 0, 40), "speed": 5.0, "near_cover": false}],
+				[{"position": Vector3(-wobble, 0, -40), "speed": 5.0, "near_cover": false}]], 5)
+	var summary := stats.summary()
+	assert_near(float(summary["static_share"]), 0.0, 0.001, "by hull speed nobody is standing still")
+	assert_true(float(summary["held_line_share"]) > 0.7, "but the line is held (%s)" % summary["held_line_share"])
+	assert_near(float(summary["net_advance"][0]), 0.0, 1.5, "and neither army advanced")
+
+
+func test_an_army_that_pushes_forward_advances_and_does_not_hold_a_line() -> void:
+	var stats := EngagementStats.new([])
+	for second in 20:
+		stats.sample([[{"position": Vector3(0, 0, 60 - second * 2.0), "speed": 2.0, "near_cover": false}],
+				[{"position": Vector3(0, 0, -60), "speed": 0.0, "near_cover": false}]], 5)
+	var summary := stats.summary()
+	assert_near(float(summary["held_line_share"]), 0.0, 0.001, "2 m/s forward is 10 m in 5 s: not a held line")
+	assert_near(float(summary["net_advance"][0]), 38.0, 0.5, "Green advanced 38 m toward Rust")
+	assert_near(float(summary["net_advance"][1]), 0.0, 0.001, "Rust stayed")
+
+
+func test_a_kill_from_across_the_line_is_on_axis_and_one_from_the_side_is_not() -> void:
+	var stats := EngagementStats.new([])
+	stats.sample([[{"position": Vector3(0, 0, 40), "speed": 0.0, "near_cover": false}],
+			[{"position": Vector3(0, 0, -40), "speed": 0.0, "near_cover": false}]], 1)
+	stats.record_kill_bearing(0, Vector3(0, 0, 40), Vector3(10, 0, -20))  # from in front of Green's line
+	stats.record_kill_bearing(0, Vector3(0, 0, 40), Vector3(60, 0, 40))  # from Green's right flank
+	stats.record_kill_bearing(0, Vector3(0, 0, 40), Vector3(0, 0, 90))  # from behind Green's line
+	var summary := stats.summary()
+	assert_near(float(summary["off_axis_kill_share"]), 2.0 / 3.0, 0.001, "the flank and the rear are off axis")
+	assert_near(float(summary["behind_line_kill_share"]), 1.0 / 3.0, 0.001, "only the rear one is behind the line")
