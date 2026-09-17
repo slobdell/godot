@@ -13,6 +13,7 @@ extends OrderController
 
 ## K1: brains execute control's orders themselves, so control's stand-in OrderExecutor leaves them alone.
 const EXECUTES_ORDERS := true
+const THINK_HZ := 10.0
 const THINK_EVERY_TICKS := SimClock.TICK_RATE / 10
 ## Think LOD (_agents/unit_ai.md §8, extended in round-4 X2), three rates by how close the fight is:
 ##   THINK_EVERY_TICKS       something can shoot me or I can shoot it — the micro that needs 10 Hz,
@@ -24,6 +25,8 @@ const THINK_EVERY_TICKS := SimClock.TICK_RATE / 10
 ## them (G3, K1, L1).
 const NEAR_THINK_EVERY_TICKS := SimClock.TICK_RATE / 5
 const IDLE_THINK_EVERY_TICKS := SimClock.TICK_RATE * 3 / 10
+const NEAR_THINK_HZ := 5.0
+const IDLE_THINK_HZ := 10.0 / 3.0
 const LOD_RADIUS := 130.0
 ## "In reach" for the fight rate: either gun's range plus this (meters).
 const FIGHT_MARGIN := 15.0
@@ -285,8 +288,13 @@ var choice := {}
 var ranked: Array = []
 ## The squad order_serial this brain last acted on.
 var _order_serial := 0
-## THINK_EVERY_TICKS, or IDLE_THINK_EVERY_TICKS while nothing is near (think LOD).
-var _think_every := THINK_EVERY_TICKS
+## How often this brain thinks right now, in thinks per second (think LOD), the tick it is next due, and the fraction of
+## a tick carried over — so a rate the tick rate can't divide (the champion's 6.67/s is 4.5 ticks at 30 Hz) is kept
+## exactly instead of being rounded up into 12% more thinking, which is what integer division did when the simulation
+## moved to 30 Hz.
+var _think_hz := THINK_HZ
+var _next_think_tick := -1
+var _think_debt := 0.0
 ## A few words on why the current choice (phase, squad role), shown after the option on nameplates.
 var why := ""
 ## The last cover query: {"tick", "position", "threats" (count), "result" [Vector3]}.
@@ -371,9 +379,8 @@ func think(_delta: float) -> void:
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
 	# K1 response guarantee: a new player order is taken up on this very tick, whatever the brain was doing.
-	# Under a controller stride only every _stride-th tick runs, so "on a multiple of _think_every" becomes "in the first
-	# _stride ticks of each window": exactly one run falls in any _stride consecutive ticks, so the cadence holds.
-	var think_tick := (game_match.tick + think_offset) % _think_every < _stride
+	# Under a controller stride a brain can only think on a tick that runs, so the next-due tick is at least a stride away.
+	var think_tick := _due_to_think()
 	if _poll_order(think_tick):
 		fresh_order = true
 		interrupt()
@@ -393,9 +400,10 @@ func think(_delta: float) -> void:
 	# came near, or came into reach) means thinking on this very tick, so nothing is noticed late.
 	if game_match.tick % Match.INTEL_EVERY_TICKS < _stride:
 		var rate := _think_rate()
-		if rate < _think_every:
+		if rate > _think_hz:
 			fresh_order = true
-		_think_every = rate
+			think_tick = true
+		_think_hz = rate
 	# Finishing an order is not a decision and must not wait for one: a target dying, or arriving at a slot, is an
 	# event, and with the champion thinking every 9 ticks a completion could sit unreported for 150 ms (round-4 X2
 	# made that visible — control's "the attack order completes when the target dies" allows 3 ticks). Cheap: a
@@ -410,11 +418,13 @@ func think(_delta: float) -> void:
 		cooldowns[timed_out] = game_match.tick + COOLDOWN_TICKS
 		fresh_order = true
 	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
+	if think_tick:
+		_schedule_think()
 	var situation := build_situation()
 	if OrderController.profiling:
 		profile_parts["situation"] = int(profile_parts.get("situation", 0)) + Time.get_ticks_usec() - clock
 		clock = Time.get_ticks_usec()
-	_think_every = _think_rate()
+	_think_hz = _think_rate()
 	var decision := TankBrain.decide(situation, {} if fresh_order else choice)
 	if OrderController.profiling:
 		profile_parts["decide"] = int(profile_parts.get("decide", 0)) + Time.get_ticks_usec() - clock
@@ -657,18 +667,35 @@ func _order_arrive() -> float:
 ## How often this brain should think right now (think LOD): the fight rate when either gun can reach the nearest
 ## known enemy, the near rate when one is within LOD_RADIUS, the idle rate otherwise. Reads the team's shared contact
 ## table (AiTickCache), so a brain's own rate costs a handful of distance checks.
-func _think_rate() -> int:
+func _think_rate() -> float:
 	var my_position := tank.global_position
 	var my_reach := float(tank.weapon["range"]) + FIGHT_MARGIN
-	var rate := IDLE_THINK_EVERY_TICKS
+	var rate := IDLE_THINK_HZ
 	for known: Dictionary in AiTickCache.contact_prototypes(game_match, tank.team).values():
 		var distance := my_position.distance_to(known["position"])
 		if distance > LOD_RADIUS:
 			continue
 		if distance <= maxf(my_reach, float(known["weapon_range"]) + FIGHT_MARGIN):
-			return _contact_think_ticks(BrainVariants.for_team(tank.team))
-		rate = NEAR_THINK_EVERY_TICKS
+			return _contact_think_hz(BrainVariants.for_team(tank.team))
+		rate = NEAR_THINK_HZ
 	return rate
+
+
+## Whether this brain thinks on this tick: its own turn has come round (staggered by think_offset), or it has never
+## thought. Under a controller stride the turn is taken on the first tick of the window that actually runs.
+func _due_to_think() -> bool:
+	if _next_think_tick < 0:
+		_next_think_tick = game_match.tick + think_offset % maxi(1, roundi(SimClock.TICK_RATE / _think_hz))
+	return game_match.tick >= _next_think_tick
+
+
+## Book the next think at the current rate, carrying the fraction of a tick that doesn't divide (6.67/s at 30 Hz is
+## 4 ticks, then 5, then 4...). Deterministic: integers and one float per brain, never a clock.
+func _schedule_think() -> void:
+	_think_debt += SimClock.TICK_RATE / maxf(_think_hz, 0.01)
+	var step := maxi(_stride, int(_think_debt))
+	_think_debt -= step
+	_next_think_tick = game_match.tick + step
 
 
 static func label(option: Dictionary) -> String:
@@ -2000,9 +2027,13 @@ func _window_open(s: Dictionary, contact: Dictionary, exposure: float, waited_ti
 
 
 ## How often this brain thinks with an enemy near: the team's difficulty when it sets one, else the variant's.
-func _contact_think_ticks(features: Dictionary) -> int:
+func _contact_think_hz(features: Dictionary) -> float:
 	var level := int(Difficulty.for_team(tank.team)["think_ticks"])
-	return level if level > 0 else int(features.get("think_ticks", THINK_EVERY_TICKS))
+	if level > 0:
+		return SimClock.TICK_RATE / float(level)
+	if features.has("think_hz"):
+		return float(features["think_hz"])
+	return SimClock.TICK_RATE / float(features.get("think_ticks", THINK_EVERY_TICKS))
 
 
 ## X3: whether this brain variant dodges incoming rounds.

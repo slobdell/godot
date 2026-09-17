@@ -13,7 +13,11 @@ extends RefCounted
 ##   retreat_to_cover  RETREAT breaks line of sight at nearby cover first; withdrawals back away from threats (A3)
 ##   hold_for_friends  never fire through a friend; CLEAR_LANE to fix the lane (A4)
 ##   squad_tactics     focus fire, suppress-and-flank, covering retreats, fragile escorts (A6)
-##   think_ticks       (int) how often a brain in contact thinks (default TankBrain.THINK_EVERY_TICKS = 6)
+##   think_hz          (float) how many times a second a brain in contact thinks (default TankBrain.THINK_HZ = 10).
+##                     Prefer this to think_ticks: a rate in ticks is rounded by integer division when the simulation's
+##                     tick rate changes (the champion's 9 ticks of 60 = 6.67/s became 4 ticks of 30 = 7.5/s, 12% more
+##                     thinking, when round 5 moved to 30 Hz).
+##   think_ticks       (int) the same thing in ticks, kept for the older variants
 ##   matchups          target choice and duel appetite from Matchups; fixed guns ORBIT slow turrets (A5)
 ##   timeouts          stuck-state timeouts: options that stop producing shots or progress go on cooldown (X1; default on)
 ##   combat_motion     fight on the move: circle-strafe, angle the front armor, attack runs (round-3 X2, CombatMotion)
@@ -51,28 +55,30 @@ const PROFILES := {
 	"x4mw": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": true, "combat_motion": true, "dodge": true, "reload_windows": true, "weak_spots": true},
 	# Probe (X1): a6 without stuck-state timeouts, to check they cost nothing.
 	"a6nt": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "timeouts": false},
-	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_ticks": SimClock.TICK_RATE * 3 / 20},
+	"a6t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "think_hz": 20.0 / 3.0},
 	# Round-4 X2: x4 thinking every 9 ticks in a fight instead of 6. THE CHAMPION since 2026-09-16 (see CHAMPION).
-	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20},
+	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0},
 	# Round-4 X3 control: the champion with L2 taken away — it neither avoids beaten zones nor fires to suppress.
 	# The control for every suppression measurement, and the "before" the ladder compares against.
 	# Round-5 X1: the champion running its controller at 30 Hz (every other physics tick, staggered). Half the cost by
 	# construction; it has to prove it costs no behaviour (scenarios, and a ladder against x4t9) before adoption.
-	"x5b2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "brain_stride": 2},
+	"x5b2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "brain_stride": 2},
 	# Round-5 X2: the champion with both suppression gates opened (see the features above).
-	"x5s": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "suppress_proxy": true, "pinned_exposed": true},
+	"x5s": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "suppress_proxy": true, "pinned_exposed": true},
 	# Round-5 X2, split after x5s went 27-37 (the proxy made the swarm army's machine-gun scouts suppress instead of
 	# kill: 36k damage against 42k): x5p is only the flanker fix, x5q only the proxy.
-	"x5p": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "pinned_exposed": true},
+	"x5p": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true},
 	# Round-5 X1 on the new champion: x5p with the half-rate controller.
-	"x5pb2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "pinned_exposed": true, "brain_stride": 2},
+	"x5pb2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "pinned_exposed": true, "brain_stride": 2},
 	# Round-5 reopening (the 30 Hz tick is not enough: ~85% of a 31 ms tick is the controllers). The champion thinks
 	# every TICK_RATE * 3 / 20 ticks — 7.5 times a second. These think 5 and 3.75 times a second: the cost is measured
 	# per second of match time, and what they cost in REACTION is measured in scenario_think_rate.gd.
-	"x6t5": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "pinned_exposed": true, "think_ticks": SimClock.TICK_RATE / 5},
-	"x6t4": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "pinned_exposed": true, "think_ticks": SimClock.TICK_RATE * 4 / 15},
-	"x5q": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "suppress_proxy": true},
-	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "avoid_beaten": false},
+	# The rate the build had by accident after 30 Hz (4 ticks of 30), kept so the restoration can be measured against it.
+	"x6t75": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "pinned_exposed": true, "think_hz": 7.5},
+	"x6t5": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "pinned_exposed": true, "think_hz": 5.0},
+	"x6t4": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "pinned_exposed": true, "think_hz": 3.75},
+	"x5q": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "suppress_proxy": true},
+	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_hz": 20.0 / 3.0, "avoid_beaten": false},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
 ## 2026-09-15: a6 (beat a4 9-7 in ladder run 1 and r1 7-5 in run 2; see unit_ai.md "AI ladder").
