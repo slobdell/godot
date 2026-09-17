@@ -25,7 +25,8 @@ extends Node
 ## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
 ## (a 4-light pool), glow_lite (glow levels 2-3 only), no_fog,
 ## no_spill (the ad screens' light on the floor), scale_085 / scale_075 (3D render scale), glow_wide (glow levels 3+),
-## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer).
+## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer), lod_4 / lod_8 (mesh LOD threshold px),
+## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -211,7 +212,7 @@ func _start_phase(index: int) -> void:
 	_samples.clear()
 	_gpu.clear()
 	_cpu.clear()
-	_sums = {"draw_calls": 0.0, "objects": 0.0, "primitives": 0.0, "pool_lights": 0.0, "tracers": 0.0}
+	_sums = {"draw_calls": 0.0, "objects": 0.0, "primitives": 0.0, "pool_lights": 0.0, "tracers": 0.0, "burst_area": 0.0, "burst_area_max": 0.0}
 	_frames = 0
 	_cpu_sums = {"game_ui_ms": 0.0, "fx_ms": 0.0}
 	_tick_totals = {"ticks": 0, "usec": 0}
@@ -283,6 +284,16 @@ func _apply(phase: String) -> void:
 				if environment != null:
 					for level in [1, 2]:
 						_override(environment, "glow_levels/%d" % level, 0.0)
+		"lod_4", "lod_8":
+			_override(get_viewport(), "mesh_lod_threshold", 4.0 if phase == "lod_4" else 8.0)
+		"no_bursts", "no_tracers", "no_beams", "no_decals":
+			if fx != null:
+				var system: Node3D = {"no_bursts": fx.bursts, "no_tracers": fx.tracers, "no_beams": fx.beams, "no_decals": fx.decals}[phase]
+				_override(system, "visible", false)
+		"sprays_6":
+			if fx != null:
+				fx.bursts.set_spray_count(6)
+				_hidden.append([fx.bursts, "@set_spray_count", FxQuality.value("sprays")])
 		"no_spill":
 			for node in get_tree().root.find_children("Spill", "MeshInstance3D", true, false):
 				_override(node, "visible", false)
@@ -339,6 +350,8 @@ func _sample(delta: float) -> void:
 	if fx != null:
 		_sums["pool_lights"] += fx.lights.lit_count
 		_sums["tracers"] += fx.tracers.active_count()
+		_sums["burst_area"] += fx.bursts.alive_area
+		_sums["burst_area_max"] = maxf(_sums.get("burst_area_max", 0.0), fx.bursts.alive_area)
 	_frames += 1
 
 
@@ -358,6 +371,8 @@ func _finish_phase() -> void:
 		"pool_lights": snappedf(_sums["pool_lights"] / frames, 0.1),
 		"real_lights": _real_lights(),
 		"tracers": snappedf(_sums["tracers"] / frames, 0.1),
+		"burst_area": roundi(_sums["burst_area"] / frames),
+		"burst_area_max": roundi(_sums["burst_area_max"]),
 		"vehicles": _living_tanks().size(),
 		"process_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.01),
 		"physics_max_ms": snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.01),

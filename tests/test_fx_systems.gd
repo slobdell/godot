@@ -262,3 +262,18 @@ func test_render_scale_follows_the_window_so_1080p_costs_what_the_budget_allows(
 	assert_true(FxQuality.render_scale_for(1.0, 2160) >= 0.7, "never below 0.7 on big screens")
 	assert_eq(FxQuality.render_scale_for(0.75, 720), 0.75, "a tier's own lower scale still wins")
 
+
+
+func test_decorative_bursts_thin_out_when_the_overdraw_budget_is_spent() -> void:
+	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 0.0, 500.0), 1.0, "room left: full size")
+	assert_near(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 436.0, 500.0), 0.8, 0.001, "a little room: smaller")
+	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 490.0, 500.0), 0.0, "no room: skipped")
+	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.FIREBALL, 10.0, 5000.0, 500.0), 1.0, "a hit's fireball is information, never thinned")
+	var bursts: BurstSystem = add_to_tree(BurstSystem.new(64))
+	bursts.overdraw_budget = 300.0
+	for i in 10:
+		bursts.spawn(BurstSystem.Kind.GROUND_GLOW, Vector3(i, 0, 0), 10.0, 1.0, Color.ORANGE, 0.0)
+	assert_true(bursts.alive_area <= 300.0 + 0.01, "alive area stays inside the budget (%.0f)" % bursts.alive_area)
+	assert_true(bursts.thinned >= 7, "most of a pile-up of glows is thinned (%d)" % bursts.thinned)
+	bursts.update(2.0)
+	assert_eq(bursts.alive_area, 0.0, "expired effects free the budget")

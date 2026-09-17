@@ -20,11 +20,13 @@ const SAVE_PATH := "user://fx_quality.cfg"
 ## Render X3 (round 5, contract M1 in fx_tricks.md): on the lead's UHD 620 a 30-a-side battle measured moon shadows
 ## +4.6 ms GPU, MSAA 2x +2.5 ms, and 16 pooled lights (most of them vehicle underglow) +1.7 ms. So no tier has dynamic
 ## shadows (vehicles sit on blob shadows) or MSAA, and at most 4 pooled lights go to explosions, shells, beams and
-## muzzle flashes: never to tracers or vehicles.
+## muzzle flashes: never to tracers or vehicles. `overdraw` (X5): m² of additive bursts alive before decorative ones (ground
+## glows, smoke, shockwaves) shrink and drop; a 30-a-side fight averaged ~7,500 m² and peaked at 12,600. `sprays` (X5): the
+## spark and debris loop runs per pixel of every spray; 14 -> 6 saved 1.4 ms GPU of the bursts' 1.65 in that fight.
 const SETTINGS := {
-	Tier.LOW: {"lights": 2, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 0.75, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 128, "decals": 12, "sprays": 6, "haze": false},
-	Tier.MEDIUM: {"lights": 4, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 192, "decals": 24, "sprays": 10, "haze": false},
-	Tier.HIGH: {"lights": 4, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 320, "decals": 48, "sprays": 14, "haze": true},
+	Tier.LOW: {"lights": 2, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 0.75, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 128, "decals": 12, "sprays": 4, "haze": false, "overdraw": 3000.0},
+	Tier.MEDIUM: {"lights": 4, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 192, "decals": 24, "sprays": 6, "haze": false, "overdraw": 4500.0},
+	Tier.HIGH: {"lights": 4, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 320, "decals": 48, "sprays": 6, "haze": true, "overdraw": 6000.0},
 }
 
 static var _tier := -1

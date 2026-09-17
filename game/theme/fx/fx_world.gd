@@ -54,6 +54,7 @@ var explosion_lights := true
 var prewarm_enabled := true
 
 const PREWARM_FRAMES := 3
+const MESH_LOD_THRESHOLD_PX := 4.0
 
 var _rng := RandomNumberGenerator.new()
 var _prewarm_frames := 0
@@ -91,6 +92,7 @@ func _init() -> void:
 	tracers = TracerSystem.new()
 	bursts = BurstSystem.new(FxQuality.value("effects"))
 	bursts.set_spray_count(FxQuality.value("sprays"))
+	bursts.overdraw_budget = FxQuality.value("overdraw")
 	decals = BurstSystem.new(FxQuality.value("decals"))
 	decals.name = "Decals"
 	streaks = StreakSystem.new()
@@ -201,6 +203,7 @@ func apply_quality() -> void:
 	lights.min_priority = FxQuality.value("light_floor")
 	bursts.resize(FxQuality.value("effects"))
 	bursts.set_spray_count(FxQuality.value("sprays"))
+	bursts.overdraw_budget = FxQuality.value("overdraw")
 	decals.resize(FxQuality.value("decals"))
 	motion.resize()
 	tracers.splats_enabled = FxQuality.value("splats")
@@ -216,6 +219,9 @@ func _apply_viewport() -> void:
 	viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 	viewport.scaling_3d_scale = FxQuality.render_scale_for(FxQuality.value("render_scale"), viewport.get_visible_rect().size.y as int)
 	viewport.msaa_3d = FxQuality.value("msaa")
+	# Render X5: switch mesh detail levels when an edge would move less than 4 px (Godot's default is 1). At 60 vehicles
+	# this drew 374k -> 237k primitives and saved ~0.6 ms GPU on the UHD 620 with no visible change at play distance.
+	viewport.mesh_lod_threshold = MESH_LOD_THRESHOLD_PX
 
 
 ## A projectile visual appeared: draw it as a tracer and flash its muzzle.
