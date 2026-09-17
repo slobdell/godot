@@ -354,6 +354,8 @@ func think(_delta: float) -> void:
 		tank.intent = ""
 		return
 	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
+	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
+	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
 	var squad := game_match.squad_for(tank)

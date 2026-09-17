@@ -38,6 +38,9 @@ var _next_id := 1
 var _last_tick := -1
 ## element id -> {report key: the tick it was last published}, so the booth isn't told the same thing twice.
 var _reported := {}
+## Round-5 X3: [green, rust] doctrine table every element that team forms uses instead of its faction's own (null =
+## the faction's table). The tactics ladder sets it to play one doctrine against another (TacticsFlags).
+var team_tables: Array = [null, null]
 
 
 ## The Elements of `game_match`, or null.
@@ -186,6 +189,8 @@ func describe() -> PackedStringArray:
 func _table_for(roster: PackedStringArray) -> DoctrineTable:
 	for unit_name in roster:
 		var tank := _tank(unit_name)
+		if tank != null and team_tables[tank.team] != null:
+			return team_tables[tank.team]
 		if tank != null:
 			return DoctrineTable.for_faction(String(Units.PROFILES.get(tank.unit_id, {}).get("faction", "")))
 	return DoctrineTable.for_faction("")

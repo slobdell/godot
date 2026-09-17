@@ -27,3 +27,10 @@ tactics-parity: import ## X5: a scripted match where BOTH sides run doctrine; pr
 
 doctrine-page: ## The lead's read-only doctrine view: every table, its rules and its drill numbers -> build/doctrine/index.html
 	$(PYTHON) tools/tactics/doctrine_page.py --out $(BUILD_DIR)/doctrine
+
+SIDES ?= brains=x4t9,standard=x4t9:standard,faction=x4t9:
+ARENAS ?= foundry,yard,boulevard,pit,boneyard
+ARMY ?= combined_arms
+tactics-ladder: import ## Round-5 X3: doctrine vs doctrine vs brains, mirror ARMY, every ARENAS, SIDES=label=brain[:table]; ELO and a per-drill exchange report -> build/tactics-ladder.json (RUNS=2 TIME=240; heavy: make remote T=tactics-ladder)
+	$(PYTHON) tools/tactics_ladder.py --godot $(GODOT) --sides $(SIDES) --arenas $(ARENAS) --army $(ARMY) \
+		--runs $(or $(RUNS),2) --jobs $(JOBS) --time-limit $(or $(TIME),240) --json $(BUILD_DIR)/tactics-ladder.json
