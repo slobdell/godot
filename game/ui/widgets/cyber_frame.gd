@@ -73,11 +73,18 @@ func _draw() -> void:
 	if outline.size() >= 3 and fill.a > 0.0:
 		draw_colored_polygon(outline, fill)
 	var arm := clamp_arm(arm_1080 * scale_1080, chamfer, rect.size)
+	# Every bracket's segments in one list, so each layer is a single draw call (X4, CP1: the HUD ≤ 130 draw calls; four
+	# polylines per layer made a frame 17 draws).
+	var segments := PackedVector2Array()
 	for path in bracket_paths(rect, chamfer, arm):
-		# Glow: wide, faint strokes that fall off toward glow_px, then the crisp stroke.
-		for layer in [[stroke_px + glow_px * 2.0, 0.12], [stroke_px + glow_px, 0.22], [stroke_px + glow_px * 0.4, 0.35]]:
-			draw_polyline(path, Color(border, border.a * float(layer[1])), float(layer[0]), true)
-		draw_polyline(path, border, stroke_px, true)
+		for i in path.size() - 1:
+			segments.append_array([path[i], path[i + 1]])
+	if segments.is_empty():
+		return
+	# Glow: wide, faint strokes that fall off toward glow_px, then the crisp stroke.
+	for layer in [[stroke_px + glow_px * 2.0, 0.12], [stroke_px + glow_px, 0.22], [stroke_px + glow_px * 0.4, 0.35]]:
+		draw_multiline(segments, Color(border, border.a * float(layer[1])), float(layer[0]), true)
+	draw_multiline(segments, border, stroke_px, true)
 
 
 ## The box scaled about its fixed center (spec §2: never the top-left).

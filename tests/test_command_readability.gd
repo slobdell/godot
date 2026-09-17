@@ -90,11 +90,10 @@ func test_friend_and_foe_differ_by_shape_not_only_color() -> void:
 	enemy.global_position = (game_match.tanks.get_node("Green_Alpha_1") as Tank).global_position + Vector3(0, 0, -25)
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
 	markers.refresh()
-	var enemy_ring := markers.get_node("Ring_Rust_Near_1") as MeshInstance3D
-	var friend_ring := markers.get_node("Ring_Green_Bravo_1") as MeshInstance3D
-	assert_true(enemy_ring.visible, "setup: the enemy in sight has a ring")
-	var enemy_triangles := (enemy_ring.mesh as ArrayMesh).surface_get_array_len(0)
-	var friend_triangles := (friend_ring.mesh as ArrayMesh).surface_get_array_len(0)
+	assert_true(markers.state()["Rust_Near_1"]["visible"] and markers.state()["Rust_Near_1"]["kind"] == "enemy",
+			"setup: the enemy in sight has a ring")
+	var enemy_triangles := (markers.layer("enemy").multimesh.mesh as ArrayMesh).surface_get_array_len(0)
+	var friend_triangles := (markers.layer("friendly").multimesh.mesh as ArrayMesh).surface_get_array_len(0)
 	assert_true(enemy_triangles < friend_triangles * 0.75, "the enemy ring is dashed (gaps), the friendly ring solid (%d vs %d vertices)" % [enemy_triangles, friend_triangles])
 
 

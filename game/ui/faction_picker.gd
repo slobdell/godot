@@ -166,7 +166,7 @@ func _draw() -> void:
 	var s := CyberStyle.ui_scale(size)
 	var font := CyberStyle.font()
 	var listed := choices()
-	var panel := Rect2(Vector2.ZERO, Vector2(minf(WIDTH * s, size.x - PAD * 2.0), (ROW * (listed.size() + 3.4)) * s))
+	var panel := Rect2(Vector2.ZERO, Vector2(minf(WIDTH * s, size.x - PAD * 2.0), (ROW * (listed.size() + 3.65)) * s))
 	panel.position = (size - panel.size) / 2.0
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.72))
 	draw_rect(panel, Color(CyberStyle.HUD_BACKGROUND, 0.96))
@@ -214,14 +214,14 @@ func _draw() -> void:
 	for option: Dictionary in arena_options():
 		if option["name"] == arena:
 			choice = option
-	_arena_row = Rect2(x, y, panel.size.x - PAD * s * 2.0, ROW * s - 6.0 * s)
+	_arena_row = Rect2(x, y, panel.size.x - PAD * s * 2.0, ROW * 1.25 * s - 6.0 * s)
 	draw_rect(_arena_row, Color(CyberStyle.CARD, 0.95))
 	draw_rect(_arena_row, Color(CyberStyle.CYAN, 0.5), false, 1.0)
 	draw_string(font, _arena_row.position + Vector2(10.0 * s, 24.0 * s), "ARENA   <  %s  >" % choice.get("title", arena),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(19.0 * s), CyberStyle.TEXT)
-	draw_string(font, _arena_row.position + Vector2(10.0 * s, 46.0 * s), String(choice.get("note", "")),
-			HORIZONTAL_ALIGNMENT_LEFT, _arena_row.size.x - 20.0 * s, roundi(13.0 * s), Color(CyberStyle.TEXT, 0.75))
-	y += ROW * s
+	draw_multiline_string(font, _arena_row.position + Vector2(10.0 * s, 46.0 * s), String(choice.get("note", "")),
+			HORIZONTAL_ALIGNMENT_LEFT, _arena_row.size.x - 20.0 * s, roundi(13.0 * s), 2, Color(CyberStyle.TEXT, 0.75))
+	y += ROW * 1.25 * s
 	# Never smaller than a comfortable click target, however small the window.
 	var fight_size := Vector2(maxf(200.0 * s, 160.0), maxf(48.0 * s, 44.0))
 	_fight = Rect2(Vector2(panel.end.x - PAD * s - fight_size.x, y + 6.0 * s), fight_size)

@@ -97,3 +97,19 @@ func test_a_full_army_of_wrecks_still_draws_one_bar_each() -> void:
 	var each := (Time.get_ticks_usec() - started) / 1000.0 / 30.0
 	print("MEASURE control_bars_ms=%.3f bars=%d" % [each, bars.size()])
 	assert_true(each < 0.6, "working them out costs %.3f ms a frame" % each)
+
+
+## X4 (CP1): HUD unit icons are drawn once into textures and shown as batched rects.
+func test_unit_icons_are_cached_textures_with_a_tintable_body_and_dark_ink() -> void:
+	for role in ["tank", "ifv", "scout", "artillery", "lancer", "burner"]:
+		var texture := CommandIcons.unit_texture(role)
+		assert_true(texture != null and texture.get_width() == CommandIcons.UNIT_TEXTURE_PX, "%s has a texture" % role)
+		assert_true(is_same(texture, CommandIcons.unit_texture(role)), "%s's texture is built once" % role)
+		var image := texture.get_image()
+		assert_eq(image.get_pixel(0, 0).a, 0.0, "%s: the corner is transparent" % role)
+	var tank := CommandIcons.unit_texture("tank").get_image()
+	var half := CommandIcons.UNIT_TEXTURE_PX / 2
+	var body := tank.get_pixel(half - 11, half + 14)
+	assert_true(body.a > 0.9 and body.r > 0.9, "the tank's hull is white, so a tint colours it (%s)" % body)
+	var gun := tank.get_pixel(half, half - 20)
+	assert_true(gun.a > 0.5, "its gun reaches up the icon (%s)" % gun)

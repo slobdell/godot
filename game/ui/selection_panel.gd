@@ -334,8 +334,9 @@ func _draw() -> void:
 	var friendly: Color = GameTheme.ui["friendly"]
 	var enemy: Color = GameTheme.ui["enemy"]
 	var rect := Rect2(Vector2.ZERO, size)
-	draw_rect(rect, Color(CyberStyle.HUD_BACKGROUND, 0.9))
-	draw_rect(rect, Color(CyberStyle.CYAN, 0.5), false, 1.5)
+	var batch := DrawBatch.new()  # X4: drawn kind by kind, so the panel is a handful of draw calls
+	batch.fill(rect, Color(CyberStyle.HUD_BACKGROUND, 0.9))
+	batch.outline(rect, Color(CyberStyle.CYAN, 0.5), 1.5)
 	var info := summary()
 	match String(info["mode"]):
 		"group":
@@ -343,73 +344,74 @@ func _draw() -> void:
 				var cell: Rect2 = _portrait_rects.get(portrait["key"], Rect2())
 				if cell.size.x <= 0.0:
 					continue
-				draw_rect(cell, Color(CyberStyle.CARD, 0.95))
-				draw_rect(cell, Color(friendly, 0.35), false, 1.0)
-				CommandIcons.draw_unit(self, portrait["role"], cell.get_center() - Vector2(0, cell.size.y * 0.1), cell.size.y * 0.5, friendly)
+				batch.fill(cell, Color(CyberStyle.CARD, 0.95))
+				batch.outline(cell, Color(friendly, 0.35), 1.0)
+				batch.icon(portrait["role"], cell.get_center() - Vector2(0, cell.size.y * 0.1), cell.size.y * 0.5, friendly)
 				var bar_height := clampf(cell.size.y * 0.1, 5.0 * s, 12.0 * s)
-				_bars(Rect2(cell.position + Vector2(4, cell.size.y - bar_height - 4.0), Vector2(cell.size.x - 8, bar_height)),
+				_bars(batch, Rect2(cell.position + Vector2(4, cell.size.y - bar_height - 4.0), Vector2(cell.size.x - 8, bar_height)),
 						float(portrait["health"]), float(portrait["shield"]), friendly, enemy)
 				# X4: a grouped portrait carries how many it stands for, top-right of the cell.
 				if int(portrait["count"]) > 1:
 					var tag := "x%d" % int(portrait["count"])
 					var tag_size := clampf(cell.size.y * 0.3, 11.0 * s, 20.0 * s)
 					var tag_width := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(tag_size)).x
-					_text(font, cell.position + Vector2(cell.size.x - tag_width - 3.0, tag_size + 1.0), tag, tag_size, CyberStyle.YELLOW)
+					_text(batch, font, cell.position + Vector2(cell.size.x - tag_width - 3.0, tag_size + 1.0), tag, tag_size, CyberStyle.YELLOW)
 			# X4: one header for the whole selection - how many, what they are doing, how much of them is left.
-			_text(font, Vector2(PAD * s, 16.0 * s), "%d UNITS   %s   %d%%" % [int(info["count"]),
+			_text(batch, font, Vector2(PAD * s, 16.0 * s), "%d UNITS   %s   %d%%" % [int(info["count"]),
 					String(info["orders"]).to_upper(), roundi(float(info["strength"]) * 100.0)], 15.0 * s, CyberStyle.CYAN)
 		"unit", "enemy":
 			var card: Dictionary = info["card"]
 			var color := enemy if card.get("enemy", false) else friendly
 			var icon := size.y - PAD * s * 2.0
 			var icon_rect := Rect2(PAD * s, PAD * s, icon, icon)
-			draw_rect(icon_rect, Color(CyberStyle.CARD, 0.95))
-			CommandIcons.draw_unit(self, card["role"], icon_rect.get_center(), icon * 0.6, color)
+			batch.fill(icon_rect, Color(CyberStyle.CARD, 0.95))
+			batch.icon(card["role"], icon_rect.get_center(), icon * 0.6, color)
 			var x := icon_rect.end.x + PAD * s * 2.0
 			var line := 24.0 * s
-			_text(font, Vector2(x, PAD * s + line * 0.9), ("ENEMY " if card["enemy"] else "") + String(card["name"]).to_upper(), 22.0 * s, color)
-			_text(font, Vector2(x, PAD * s + line * 1.9), "%s   %s" % [card["hull"], card["shield"]], 16.0 * s, CyberStyle.TEXT)
-			_text(font, Vector2(x, PAD * s + line * 2.8), "Weapon: %s" % card["weapon"], 16.0 * s, Color(CyberStyle.TEXT, 0.8))
+			_text(batch, font, Vector2(x, PAD * s + line * 0.9), ("ENEMY " if card["enemy"] else "") + String(card["name"]).to_upper(), 22.0 * s, color)
+			_text(batch, font, Vector2(x, PAD * s + line * 1.9), "%s   %s" % [card["hull"], card["shield"]], 16.0 * s, CyberStyle.TEXT)
+			_text(batch, font, Vector2(x, PAD * s + line * 2.8), "Weapon: %s" % card["weapon"], 16.0 * s, Color(CyberStyle.TEXT, 0.8))
 			if not card["enemy"]:
-				_text(font, Vector2(x, PAD * s + line * 3.7), "Orders: %s" % card["orders"], 16.0 * s, CyberStyle.CYAN)
-			_bars(Rect2(x, size.y - PAD * s - 12.0 * s, minf(260.0 * s, _command_rects["move"].position.x - x - PAD * s), 10.0 * s),
+				_text(batch, font, Vector2(x, PAD * s + line * 3.7), "Orders: %s" % card["orders"], 16.0 * s, CyberStyle.CYAN)
+			_bars(batch, Rect2(x, size.y - PAD * s - 12.0 * s, minf(260.0 * s, _command_rects["move"].position.x - x - PAD * s), 10.0 * s),
 					float(card["health"]), float(card["shield_fraction"]), color, enemy)
 	# X3: what the element's leader decided, under the header, where the player reads it without looking away.
 	var doctrine := String(info["doctrine"])
 	if doctrine != "":
 		var width: float = (_command_rects["move"] as Rect2).position.x - PAD * s * 2.0
-		draw_string(font, Vector2(PAD * s, size.y - PAD * s - FOOTER * s * 0.25), doctrine, HORIZONTAL_ALIGNMENT_LEFT,
-				width, 13.0 * s, Color(CyberStyle.YELLOW, 0.95))
+		batch.text(font, Vector2(PAD * s, size.y - PAD * s - FOOTER * s * 0.25), doctrine, roundi(13.0 * s),
+				Color(CyberStyle.YELLOW, 0.95), width)
 	for command: Dictionary in info["commands"]:
 		var button: Rect2 = _command_rects[command["id"]]
 		var enabled: bool = command["enabled"]
 		var armed: bool = controls.mode == command["id"]
-		draw_rect(button, Color(CyberStyle.CARD, 0.95 if enabled else 0.5))
-		draw_rect(button, Color(CyberStyle.YELLOW if armed else CyberStyle.CYAN, 0.9 if enabled else 0.2), false, 2.0 if armed else 1.0)
+		batch.fill(button, Color(CyberStyle.CARD, 0.95 if enabled else 0.5))
+		batch.outline(button, Color(CyberStyle.YELLOW if armed else CyberStyle.CYAN, 0.9 if enabled else 0.2), 2.0 if armed else 1.0)
 		var ink := Color(CyberStyle.TEXT, 1.0 if enabled else 0.3)
-		_text(font, button.position + Vector2(4.0 * s, 16.0 * s), command["hotkey"], 14.0 * s, Color(CyberStyle.YELLOW, 0.9 if enabled else 0.3))
+		_text(batch, font, button.position + Vector2(4.0 * s, 16.0 * s), command["hotkey"], 14.0 * s, Color(CyberStyle.YELLOW, 0.9 if enabled else 0.3))
 		var label: String = command["label"]
 		if command["id"] == "formation":
 			label = String(controls.formation).capitalize()
-		_centered(font, button, label, 13.0 * s, ink)
+		_centered(batch, font, button, label, 13.0 * s, ink)
+	batch.flush(self)
 
 
-func _bars(area: Rect2, health: float, shield: float, friendly: Color, enemy: Color) -> void:
+func _bars(batch: DrawBatch, area: Rect2, health: float, shield: float, friendly: Color, enemy: Color) -> void:
 	var hull := Rect2(area.position + Vector2(0, area.size.y * 0.45), Vector2(area.size.x, area.size.y * 0.55))
-	draw_rect(hull, Color(0, 0, 0, 0.6))
-	draw_rect(Rect2(hull.position, Vector2(hull.size.x * clampf(health, 0.0, 1.0), hull.size.y)),
+	batch.fill(hull, Color(0, 0, 0, 0.6))
+	batch.fill(Rect2(hull.position, Vector2(hull.size.x * clampf(health, 0.0, 1.0), hull.size.y)),
 			friendly if health >= 0.5 else friendly.lerp(enemy, 1.0 - health))
 	var shield_bar := Rect2(area.position, Vector2(area.size.x * clampf(shield, 0.0, 1.0), area.size.y * 0.35))
-	draw_rect(shield_bar, Color(0.75, 0.9, 1.0, 0.85))
+	batch.fill(shield_bar, Color(0.75, 0.9, 1.0, 0.85))
 
 
-func _text(font: Font, at: Vector2, text: String, font_size: float, color: Color) -> void:
-	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, maxi(9, roundi(font_size)), color)
+func _text(batch: DrawBatch, font: Font, at: Vector2, text: String, font_size: float, color: Color) -> void:
+	batch.text(font, at, text, maxi(9, roundi(font_size)), color)
 
 
-func _centered(font: Font, box: Rect2, text: String, font_size: float, color: Color) -> void:
+func _centered(batch: DrawBatch, font: Font, box: Rect2, text: String, font_size: float, color: Color) -> void:
 	var px := maxi(9, roundi(font_size))
 	while px > 8 and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > box.size.x - 6.0:
 		px -= 1
 	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
-	draw_string(font, Vector2(box.get_center().x - width / 2.0, box.end.y - box.size.y * 0.28), text, HORIZONTAL_ALIGNMENT_LEFT, -1, px, color)
+	batch.text(font, Vector2(box.get_center().x - width / 2.0, box.end.y - box.size.y * 0.28), text, px, color)

@@ -131,3 +131,45 @@ the frame rate (combat/ai's simulation tick per CP1) and the renderer's uniform 
 
 To try them: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --camera-frame=close --alert-lines=3`.
 
+### X5. Orders that survive a big army. Done.
+
+**Latency at 30 a side** (`tests/test_control_scale.gd`, builder0, 2026-09-17, main with render/combat/arena merged):
+box-select the army **0.53 ms**, click → 30 orders **1.15 ms**, `order_selection` for 30 **1.83 ms** (round 4: 1.38 /
+1.87 / 1.65 on the laptop), control's per-frame work with 30 selected of 60 **0.865 ms** (awareness 0.32, horizon
+zoom 0.64 amortised, panel summary 0.29, vision state 0.13, edge markers 0.01) against CP1's 1 ms. The element bar is
+read in the X4 frames below.
+
+**`facing` in `UnitCommand`** (doctrine's request from round 4): `move`, `attack_move` and `hold` take an optional
+`facing: [x, z]` (zero or NaN rejected; other verbs rejected). The group still travels and forms up toward `to`; every
+unit's order carries the normalised `facing`, and once the order completes its station's `heading` is the facing. The
+round-4 executor honours it on hold. Nothing issues it yet, so the sim baseline is untouched. On main in K1
+(orchestrator, 0f838c8). **Turning a brain to it is ai's** (requested via the orchestrator, with the halt hack in
+`element_plan.gd` to remove).
+
+### X6. The first two minutes. Done.
+
+**What a first-time player sees, in order** (played with `make shell-playtest`, frames looked at):
+
+1. **The title** (`make title`): TANK SQUAD types itself in over the night arena, four buttons. The mouse is over the
+   button it looks like it's over; SKIRMISH switches to the game in the same window (no restart).
+2. **The faction menu:** four factions with what each fields at the budget (Road Gangs 44 vehicles … Syndicate 17),
+   click for yours, right-click for theirs; an **ARENA** row (Random by default, or The Container Yard, The Boulevard,
+   The Pit, The Boneyard, each with its one-line note: the fight it is built for); a yellow **FIGHT** button.
+3. **Planning:** the army on its start line, the first element selected and ringed, "PLANNING: select … Space starts"
+   across the top, and in the bottom-left corner three hints: `1-5 pick an element`, `RIGHT-CLICK move there / attack
+   it`, `SPACE pause to plan`. The radar shows the whole arena with the fog.
+4. **Space:** the match runs, the SPACE hint retires and `A + CLICK attack-move` moves up. The camera follows the
+   element it frames at zoom ~0.31 on the march.
+5. **Contact (~45 s):** the view widens to take in the enemy while staying centred on your element (~0.8); the caption
+   line carries the booth; kills and losses go to the message column on the right; one alert (`Hunters under fire
+   (+4) [Q]`) sits above the group chips.
+6. **Losing an element:** the camera goes back to your army, not to what killed it.
+
+Hints never take input, show at most three, and each goes for good once used (`user://control_hints.cfg`;
+`--hints=off`, `--hints=fresh`).
+
+**The arena picker** (arena asked, via the orchestrator): `Arena` builds from the command line only, so a match
+restarted with `Main.next_flags` silently kept the old layout. `GameLauncher` (`game/ui/game_launcher.gd`) instances
+`main.tscn` with the arena's `layout_name` set, resolves `--arena=random` by `--seed`, and both the title and the
+faction menu start matches through it. The shell playtest checks the arena you clicked is the one built.
+
