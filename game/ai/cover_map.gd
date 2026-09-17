@@ -45,6 +45,14 @@ static var los_queries := 0
 static var los_computed := 0
 
 var _grid := {}
+## Round-5 X1: the features as typed columns (the same Vector2 values the dictionaries hold, so every answer is
+## bit-identical) and the tactical points bucketed by CELL, so a query looks at the cells around it instead of every
+## point on the map (kit-built arenas carry thousands).
+var _f_center := PackedVector2Array()
+var _f_axis := PackedVector2Array()
+var _f_half := PackedVector2Array()
+var _f_height := PackedFloat64Array()
+var _point_grid := {}
 var _coarse_memo := {}
 var _memo := {}
 var _stamp := PackedInt32Array()
@@ -194,19 +202,17 @@ func clear_line_coarse(a: Vector3, b: Vector3) -> bool:
 ## True if a sight-blocking feature crosses the flat segment a→b.
 func blocked(a: Vector2, b: Vector2) -> bool:
 	for index in _features_along(a, b):
-		var feature: Dictionary = features[index]
-		if float(feature["height"]) >= EYE_HEIGHT and segment_hits(index, a, b, 0.0):
+		if _f_height[index] >= EYE_HEIGHT and segment_hits(index, a, b, 0.0):
 			return true
 	return false
 
 
 ## True if the flat segment a→b crosses feature `index` grown by `grow` meters.
 func segment_hits(index: int, a: Vector2, b: Vector2, grow: float) -> bool:
-	var feature: Dictionary = features[index]
-	var center: Vector2 = feature["center"]
-	var axis: Vector2 = feature["axis"]
+	var center: Vector2 = _f_center[index]
+	var axis: Vector2 = _f_axis[index]
 	var across := Vector2(-axis.y, axis.x)
-	var half: Vector2 = feature["half"]
+	var half: Vector2 = _f_half[index]
 	var pa := a - center
 	var pb := b - center
 	var la := Vector2(pa.dot(axis), pa.dot(across))
@@ -244,10 +250,9 @@ func path_blocked(a: Vector2, b: Vector2, grow: float) -> bool:
 func inside_any(point: Vector2, grow: float) -> bool:
 	var cell := Vector2i(floori(point.x / CELL), floori(point.y / CELL))
 	for index: int in _grid.get(cell, PackedInt32Array()):
-		var feature: Dictionary = features[index]
-		var offset: Vector2 = point - (feature["center"] as Vector2)
-		var axis: Vector2 = feature["axis"]
-		var half: Vector2 = feature["half"]
+		var offset: Vector2 = point - _f_center[index]
+		var axis: Vector2 = _f_axis[index]
+		var half: Vector2 = _f_half[index]
 		if absf(offset.dot(axis)) <= half.x + grow and absf(offset.dot(Vector2(-axis.y, axis.x))) <= half.y + grow:
 			return true
 	return false
@@ -257,10 +262,12 @@ func inside_any(point: Vector2, grow: float) -> bool:
 func points_near(center: Vector2, radius: float) -> PackedInt32Array:
 	var pairs: Array = []
 	var limit := radius * radius
-	for i in points.size():
-		var d := center.distance_squared_to(points[i])
-		if d <= limit:
-			pairs.append([d, i])
+	for cx in range(floori((center.x - radius) / CELL), floori((center.x + radius) / CELL) + 1):
+		for cz in range(floori((center.y - radius) / CELL), floori((center.y + radius) / CELL) + 1):
+			for i: int in _point_grid.get(Vector2i(cx, cz), PackedInt32Array()):
+				var d := center.distance_squared_to(points[i])
+				if d <= limit:
+					pairs.append([d, i])
 	pairs.sort()
 	var result := PackedInt32Array()
 	for pair in pairs:
@@ -282,6 +289,15 @@ func _corners(index: int, grow: float) -> PackedVector2Array:
 
 func _index() -> void:
 	_grid.clear()
+	_f_center.clear()
+	_f_axis.clear()
+	_f_half.clear()
+	_f_height.clear()
+	for feature: Dictionary in features:
+		_f_center.append(feature["center"])
+		_f_axis.append(feature["axis"])
+		_f_half.append(feature["half"])
+		_f_height.append(float(feature["height"]))
 	for index in features.size():
 		var corners := _corners(index, MAX_GROW)
 		var low := corners[0]
@@ -354,5 +370,9 @@ func _add_point(point: Vector2, owner_index: int, seen: Dictionary) -> void:
 	if seen.has(key):
 		return
 	seen[key] = true
+	var cell := Vector2i(floori(point.x / CELL), floori(point.y / CELL))
+	var bucket: PackedInt32Array = _point_grid.get(cell, PackedInt32Array())
+	bucket.append(points.size())
+	_point_grid[cell] = bucket
 	points.append(point)
 	point_feature.append(owner_index)
