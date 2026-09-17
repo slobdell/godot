@@ -34,6 +34,13 @@ arena and audio are green and queued behind a re-verify on Jolt; control, combat
   order they were proposed: objectives that pull play off the centre line (arena), an army-level layer choosing which
   elements take the objective and which shape the fight around it (ai), and engagement ranges that make closing a
   decision (combat X1).
+  **Measured, and it is only half the story** (ai, one snapshot, faction armies at 5200, gangs vs law both ways,
+  three arenas): with the control point ON, brains-only beat faction doctrine 34-14; with it OFF, brains-only still
+  won 27-21. So the objective makes doctrine worse but is not why it loses. Cutting `break_contact` brings doctrine
+  to *parity* with brains (24-24), not above it. The honest statement for round 6 is that the element layer as
+  written does not yet add value at 30 a side, with or without an objective — the army-level plan proposed in
+  `doctrine.md` (main effort, base of fire, shaping, reserve) is a bet on the missing layer being *above* the
+  elements, not a fix for the drills.
 - **Doctrine is NOT the skirmish default.** It wins 52-28 in five-vehicle mirrors with no control point and loses
   32-16 in the setup players actually get (faction armies, 30 a side, control point on). The flip was approved and
   withdrawn the same day; ai is hunting a variant that wins at scale. `break_contact` is the drill to cut (91-29
