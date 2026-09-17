@@ -20,6 +20,7 @@ func _setup(units: Array = ["tank", "tank", "ifv"], enemy := false) -> Array:
 	for i in units.size():
 		var tank := game_match.tanks.get_node("Green_Alpha_%d" % (i + 1)) as Tank
 		tank.global_position = Vector3(LANE_X + i * 10.0, 0.0, 40.0)
+		tank.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 		tanks.append(tank)
 	var orders := Orders.new()
 	Orders.attach(game_match, orders)
@@ -30,6 +31,7 @@ func _setup(units: Array = ["tank", "tank", "ifv"], enemy := false) -> Array:
 	if enemy:
 		var bait := game_match.spawn_tank("Rust_Bait_1", 0, Match.Team.RUST)
 		bait.global_position = Vector3(LANE_X + 10.0, 0.0, 5.0)
+		bait.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 		bait.rotation.y = PI
 	return [game_match, orders, tanks]
 
@@ -163,6 +165,7 @@ func test_attack_closes_on_the_target_and_completes_when_it_dies() -> void:
 	var tank: Tank = setup[2][0]
 	var bait := game_match.tanks.get_node("Rust_Bait_1") as Tank
 	bait.global_position = Vector3(LANE_X, 0.0, -50.0)  # beyond the gun's reach
+	bait.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	var start := tank.global_position.distance_to(bait.global_position)
 	assert_eq(orders.issue(UnitCommand.make([tank.name], "attack", {"target": "Rust_Bait_1"})), "", "attack accepted")
 	await wait_physics_frames(SimClock.TICK_RATE * 4)
@@ -194,6 +197,7 @@ func test_attack_move_stops_to_fight_what_it_meets() -> void:
 	bait.max_health = 100000
 	bait.health = 100000
 	bait.global_position = Vector3(LANE_X + 12.0, 0.0, -10.0)
+	bait.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	assert_eq(orders.issue(UnitCommand.make([tank.name], "attack_move", {"to": [LANE_X, -60.0]})), "", "attack-move accepted")
 	var shots := [0]
 	tank.fired.connect(func(_muzzle: Vector3, _direction: Vector3) -> void: shots[0] += 1)

@@ -57,6 +57,7 @@ func test_double_click_and_ctrl_click_select_every_visible_unit_of_that_type() -
 	assert_eq(f.controls.selection.units, ["Green_Alpha_1", "Green_Alpha_2"], "ctrl-clicking a tank selects both tanks")
 	# Move one tank far off screen: "visible" means on screen.
 	f.tank("Green_Alpha_2").global_position = Vector3(100, 0, -100)
+	f.tank("Green_Alpha_2").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await wait_physics_frames(2)
 	await f.click(f.screen("Green_Alpha_1"), false, true)
 	assert_eq(f.controls.selection.units, ["Green_Alpha_1"], "units off screen aren't picked up")

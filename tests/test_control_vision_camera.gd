@@ -228,6 +228,7 @@ func test_an_element_frames_the_contacts_it_can_see() -> void:
 	assert_true(_framed(frame, f.tank("Green_Alpha_1").global_position), "the element is framed")
 	assert_true(_framed(frame, f.tank("Rust_Alpha_1").global_position), "and the enemy it has spotted")
 	f.tank("Rust_Alpha_1").global_position = Vector3(0, 0, -110)
+	f.tank("Rust_Alpha_1").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await _frames(2)
 	frame = f.controls.vision_state()["frame"]
 	assert_eq(frame.size(), 1, "an enemy beyond the element's own sight is not framed")
@@ -269,3 +270,28 @@ func test_on_screen_followers_read_the_drawn_position_and_the_camera_is_not_inte
 	assert_eq(Shown.ground(tank).y, 0.0, "ground points sit on the ground")
 	assert_eq(f.camera.physics_interpolation_mode, Node.PHYSICS_INTERPOLATION_MODE_OFF,
 			"the rig's camera moves every frame by itself, so physics interpolation stays off it")
+
+
+## Round 5, after combat's 30 Hz tick turned physics interpolation on: a vehicle that is *teleported* keeps being drawn
+## at its old place until `reset_physics_interpolation()`, so everything that follows what the player sees (`Shown`: the
+## camera, rings, bars, picking) aims at where it was. Game code resets on every teleport (`Tank._spawn`, respawn,
+## shells); tests must too, which is what `Fixture.place` is for. This pinned a once-in-a-while camera failure on
+## builder0: the camera's aim landed 79% of the way along the teleport, 40.5 m from the element, just past the test's
+## 40 m tolerance.
+func test_a_teleported_vehicle_is_drawn_where_it_was_put() -> void:
+	var saved := Engine.physics_ticks_per_second
+	Engine.physics_ticks_per_second = 4  # a long tick, so a frame lands mid-interpolation the way a loaded machine does
+	var f := Fixture.new(self)
+	await f.build(false)
+	await wait_physics_frames(1)
+	var away := Vector3(-110, 0, -110)
+	f.tank("Green_Bravo_1").global_position = away  # the wrong way: no reset
+	await tree.process_frame
+	var stale := Shown.ground(f.tank("Green_Bravo_1"))
+	assert_true(stale.distance_to(away) > 10.0,
+			"without a reset the drawn position lags the teleport (this is the trap, %s)" % stale)
+	f.place("Green_Bravo_2", away)
+	await tree.process_frame
+	var placed := Shown.ground(f.tank("Green_Bravo_2"))
+	assert_true(placed.distance_to(away) < 1.0, "Fixture.place resets the interpolation, so it is drawn where it was put (%s)" % placed)
+	Engine.physics_ticks_per_second = saved
