@@ -53,6 +53,32 @@ Layer costs (GPU ms at 720p / 1080p; draw calls): **arena floor + props 7.1 / 11
 3. **On the GPU the floor and the shadows are most of the frame**, not the lights or the vehicles.
 4. **The HUD is a third of the draw calls.**
 
+### After render X2–X5 (2026-09-17, same scene, tier high)
+
+| Vehicles alive | GPU 720p / 1854×1011 | Primitives | Real lights | Draw calls (HUD) | Engine errors per run |
+|---|---|---|---|---|---|
+| 61 → 46 | **8.5–9.6 / 12–13 ms** (was 18–19 / 29–31) | **0.19–0.28 M** (was 0.97–1.1 M) | **5** (was 17) | 640–710 (HUD 210–220) | **0** (was 246 + 93) |
+
+What bought it (GPU ms measured as layer deltas in the same fight; each item's commit has its run):
+
+| Change | Saved |
+|---|---|
+| X2: no instance uniforms on vehicles (shared materials per team/paint/heat step; own material per shield) | the 246 + 93 errors; vehicles now draw correctly |
+| X3: moon shadows off on every tier, blob shadows under vehicles (one MultiMesh) | 4.4–5.5 ms, ~155 draws, half the primitives |
+| X3: MSAA off | 2.5 ms |
+| X3: 4 pooled lights (2 on low) for explosions, shells, beams and muzzles only (`light_floor`); no vehicle lights | 17 → 5 real lights; ~1 ms, and the floor stops paying light passes (arena layer 7 → 2.5 ms) |
+| X5: 3D render scale follows the window (≤ ~918 lines, ≥ 0.7; `FxQuality.render_scale_for`) | 4.8 ms at 1920×1080 |
+| X5: glow on its wide levels only (3 and 5) | 2.1 ms at 1080p |
+| X5: spark/debris loop 14 → 6 per spray | 1.4 ms |
+| X5: mesh LOD threshold 1 → 4 px | ~0.6 ms, primitives 374k → 237k |
+| X5: floor lit in its own shader (flat, no dynamic shadows) | 0.6 ms |
+| Floor tiles subdivided (per-vertex fog), additive spill/signs `fog_disabled` | no cost; removed square artifacts |
+
+**Where the GPU still goes** (720p / 1080p): arena (floor, walls, venue, props) 1.9 / 2.8, glow 1.6 / 1.9, pooled
+lights 0.3–1.8 (noisy), effects 0.2 / 1.5, vehicles 0.4, HUD 0.2–0.35, and a base of ~3 ms (clear, post, tonemap, UI
+composite). **The frame is still 50–133 ms because the simulation tick is 20–24 ms at 60 vehicles**: that line of
+the budget is combat's and ai's, and nothing in rendering moves it.
+
 ### The budget (UHD 620, 60 vehicles in a fight, default desktop tier)
 
 | Line | Budget | Before | Owner |

@@ -10,6 +10,7 @@ const HOLOGRAM_SHADER := preload("res://game/theme/fx/shaders/hologram.gdshader"
 ## The arena floor (art X2/X3): textured asphalt, baked weathering and slabs, hazard paint, drains, floodlight pools.
 ## High tier gets the full shader; low and medium the lite one (arena_ground.gdshaderinc, costs in fx_tricks.md).
 const GROUND_SHADER := preload("res://game/theme/fx/shaders/arena_ground.gdshader")
+const GROUND_UNLIT_SHADER := preload("res://game/theme/fx/shaders/arena_ground_unlit.gdshader")
 const GROUND_LITE_SHADER := preload("res://game/theme/fx/shaders/arena_ground_lite.gdshader")
 const GROUND_TEXTURES := {
 	"asphalt_albedo": preload("res://game/theme/cyberpunk/ground/asphalt_albedo_rough.png"),
@@ -106,12 +107,12 @@ static func top_quad(parent: Node3D, size: Vector2, center: Vector3, material: M
 	return instance
 
 
-## `lite`: the low/medium-tier floor (FxQuality.tier() < HIGH).
-static func ground(lite := false) -> ShaderMaterial:
-	var key := "ground_lite" if lite else "ground"
+## `lite`: the low/medium-tier floor (FxQuality.tier() < HIGH). `unlit`: the high floor lit in its own shader (render X5).
+static func ground(lite := false, unlit := false) -> ShaderMaterial:
+	var key := "ground_lite" if lite else ("ground_unlit" if unlit else "ground")
 	if not _cache.has(key):
 		var material := ShaderMaterial.new()
-		material.shader = GROUND_LITE_SHADER if lite else GROUND_SHADER
+		material.shader = GROUND_LITE_SHADER if lite else (GROUND_UNLIT_SHADER if unlit else GROUND_SHADER)
 		for texture in GROUND_TEXTURES:
 			material.set_shader_parameter(texture, GROUND_TEXTURES[texture])
 		_cache[key] = material
