@@ -100,7 +100,9 @@ Order: foundations first (rules/combat before ai before ui before art), or least
 For each branch:
 ```bash
 git show stream/<s>:_agents/streams/<s>.md | less      # read its report and merge notes first
-git merge --no-ff stream/<s> -m "Merge stream/<s>: <summary>"
+git merge --no-ff <the commit its check went green on> -m "Merge stream/<s>: <summary>"
+# NOT the branch tip unless the worker said the tip is the green commit: a tip that has moved since the
+# check is unverified, and a worker fixing their own breakage can leave a broken pair in between.
 # resolve conflicts: the owner's version wins in its paths; combine docs
 make remote T=check                                     # or make check; fix integration bugs on main
 ```
@@ -282,3 +284,10 @@ The kickoff prompt is one line; this section is the rest.
     so. The signal to read is the wrapper's own line, `>> remote: make check exited <N>`, and the pass/fail summary
     from the runner -- never the shell's status through a pipe, and never the harness's "[exited with code 0]", which
     reports the wrapper, not the build. Run heavy checks unpiped, then grep the saved output.
+29. **Merge at the commit whose own check went green, not at the branch tip.** Round 5: a worker's `Merge main`
+    resolved a conflict wrongly, their own check caught it, and they fixed it in the next commit — but the
+    orchestrator merged the branch *between those two commits*, so main got the broken pair. The branch tip is not a
+    verified state; only the commit a check ran on is. **Workers: say "this commit is green, merge here" with the
+    hash** rather than leaving the orchestrator to infer it, especially when the tip has moved since you reported.
+    **Orchestrators: merge that hash**, and if the tip is ahead of it, either wait for its check or read every commit
+    in between.
