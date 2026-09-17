@@ -186,6 +186,40 @@ garage (army building), and audio (lines are recorded per faction). The caller i
   (`/tmp/music_prompt.md` holds the style prompts); the pipeline and the per-state prompts come first.
 - One agent owns the whole audio pipeline: announcer, sound effects, and music.
 
+## Round 5 direction: the lead's playtest of round 4 (2026-09-17)
+
+> *"right now for this many vehicles the framerate drops substantially. We should fix this one way or another, and I
+> suspect that might be possible without so many wild lighting effects (i.e. I bet we can make the game feel more
+> realistic and get better frame rate at the same time). The sound effects for the guns and stuff are currently lame.
+> Right now the game is still unplayable (mostly because frame rate is bad now) but also because the maps are just too
+> simple. We probably need a dedicated agent to formulate maps. I'm also not seeing the assets I asked for earlier like
+> the big dystopian TV screen in the match or the shipping containers as re-usable components in the arena. As far as I
+> know there's only one map right now and it's boring and doesn't provide any meaningful way to do tactics. Right now
+> the game is also unplayable with the camera, it ends up focusing on the enemy instead of our own friendly units. The
+> startup screen seems stuck, I can't actually click any of the first buttons, and when I do manage to start the game
+> there's a bunch of red error messages in the console log. Also, the accent lights on all the vehicles make those
+> lights the overwhelming thing seen by the game (i.e. I don't see tanks, I see blue lights). Also right now, I can't
+> tell if perhaps the vehicles have too much range, but when I play the game now it's just these 2 masses shooting at
+> each other."*
+
+Decided with the lead: **faction art ships** (desktop first; the web build stays lean), and round 5 **stays on combat
+feel** rather than reopening the garage and progression loop.
+
+### What this means, by area
+
+- **Frame rate is the blocker.** A full-scale battle must hold 60 fps on the lead's laptop (Intel UHD 620). The lead's
+  hypothesis is worth taking seriously: fewer, better-motivated lights and effects should buy both performance *and* a
+  more grounded look. Neon is mood, not the subject.
+- **Vehicles must read as vehicles.** Team accent lights currently dominate: *"I don't see tanks, I see blue lights."*
+  Team identity has to survive at a fraction of the current glow.
+- **Maps are a discipline of their own.** One flat symmetric arena gives tactics nothing to work with. Arenas need
+  lanes, chokepoints, cover that matters, sightline breaks, and the arena kit that already exists (stackable
+  containers, ad screens, barricades, signs) actually placed in them. Several arenas, each with a different character.
+- **Engagement ranges decide whether there's a game.** Two masses trading fire at max range is not maneuver. Weapon
+  ranges, sight, and arena size have to make closing, flanking and cover the way to win.
+- **The shell has to work:** the title screen accepts clicks, the camera frames *your* units, and the console is clean.
+- **Guns must sound dangerous** (the ElevenLabs sound-effect half of round 4's audio work).
+
 ## Units: fixed types that counter each other
 
 Each unit type is a fixed package: chassis, one weapon, armor, speed, sight, cost. **No loadouts.**

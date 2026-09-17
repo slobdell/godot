@@ -1,78 +1,80 @@
 # Workstreams: the current round
 
-> **Round 4 is closed** (merged into `main` 2026-09-16; briefs archived in `streams/archive/round4/`). Round 5 isn't
-> planned yet: see HANDOFF.md. Ownership, contracts (C1–C8, K1–K5, L1–L5), gates and worktree mechanics below still
-> apply; the stream table is round 4's record.
->
-> **Round 4, planned 2026-09-16.** How rounds work (roles, lifecycle, the worker contract, the kickoff prompt) is in
-> [orchestration.md](orchestration.md): read it first. This file is round 4's streams, ownership, contracts, gates, and
-> invariants. Rounds 1–3 are archived in `streams/archive/round1..3/`.
+> **Round 5, planned 2026-09-17.** How rounds work (roles, lifecycle, the worker contract, the kickoff prompt) is in
+> [orchestration.md](orchestration.md): read it first. This file is round 5's streams, ownership, contracts, gates and
+> invariants. Rounds 1–4 are archived in `streams/archive/round1..4/`.
 
-## Round 4 goal
+## Round 5 goal
 
-**Doctrine, vision, and scale.** The lead played round 3 (*"this is for sure much better"*) and set the direction
-([game_design.md](game_design.md) *Round 4 direction*): the camera frames only what your force can see, elements run
-real battle drills chosen by their leader, suppression makes those drills bite, armies grow to ~30 a side with
-faction-sized rosters, and the audio stops sounding like an Atari.
+**Make it playable.** The lead played round 4 and stopped at the frame rate, a camera that frames the enemy, a title
+screen that won't click, one flat boring map, vehicles that read as blue lights, and two masses trading fire at long
+range ([game_design.md](game_design.md) *Round 5 direction*). Faction art ships this round; the garage and progression
+stay paused.
 
-## Round 4 streams
+## Round 5 streams
 
 | Stream | Brief | Outcome |
 |---|---|---|
-| **control** | [streams/control.md](streams/control.md) | The vision-constrained camera (as close as your force's sight allows), element focus with off-screen markers and alerts, command and readability at 30+ units a side |
-| **doctrine** | [streams/doctrine.md](streams/doctrine.md) | Element leaders: movement formations and techniques, battle drills on contact, all from real doctrine, as data; the same library for the CPU and the player (L1) |
-| **combat** | [streams/combat.md](streams/combat.md) | Suppression and effective fire (L2), heavies shielding fragile units, cost and effectiveness curves that produce faction-sized armies, faction rosters playable (L3) |
-| **ai** | [streams/ai.md](streams/ai.md) | Brains that execute doctrine well, the CPU cost to run 30+ a side, and the tournament harness that measures which drills win (plus the groundwork for offline tactics discovery) |
-| **audio** | [streams/audio.md](streams/audio.md) | Cinematic sound effects, the real ElevenLabs announcer run (repetition fixed first), the booth wired into live matches, and the dynamic music pipeline with per-state prompts |
+| **render** | [streams/render.md](streams/render.md) | 60 fps with 30 a side on the lead's laptop: fewer and better-motivated lights, the per-instance uniform limit gone, detail levels, vehicles that read as vehicles rather than glows, faction art shipping |
+| **arena** | [streams/arena.md](streams/arena.md) | Maps as a discipline: several arenas with real tactical shape (lanes, chokepoints, sightline breaks, cover that matters), built from the arena kit that already exists (containers, ad screens, barricades, signs), fairness-validated |
+| **control** | [streams/control.md](streams/control.md) | The shell works: the title screen accepts clicks, the camera frames *your* units, the console is clean, subtitles have their own line, the lead's three dials |
+| **combat** | [streams/combat.md](streams/combat.md) | Engagement ranges that force maneuver instead of two masses at max range; the gangs' 23%; the duplicated Lancer; suppression follow-ups |
+| **ai** | [streams/ai.md](streams/ai.md) | 4 ms per tick at 60 units, the SUPPRESS gate, a pinned enemy actually pulling units out of cover, the tactics ladder, faction behaviour |
+| **audio** | [streams/audio.md](streams/audio.md) | Guns that sound dangerous (ElevenLabs sound effects under the transients), faction naming in the booth, music stems |
 
-**Paused:** netcode, army and progression (the garage loop), and new Meshy art (88 credits left: the lead tops up
-before any new generation). Assets have no stream this round; `game/theme/**` changes are minimal and additive.
+**Paused:** netcode, the garage and progression loop (the lead: stay on combat feel another round), new Meshy *models*
+(88 credits; ElevenLabs has 125k for sound effects).
 
-**Why this split:** the lead's asks divide cleanly by layer. Control owns what the player sees and does, doctrine owns
-the commander layer between orders and brains, combat owns the rules that make formations pay, ai owns the units'
-execution and the cost of running many of them, and audio is independent of all of it.
+**Why this split:** the lead's blockers divide by discipline. Frame rate and the look are one problem (render), maps
+are their own craft (arena, new this round), the shell bugs are control's, fight shape is combat's, brain cost is ai's,
+and guns sounding right is audio's.
 
-**Checkpoints** (the orchestrator merges early and tells everyone to `git merge main`):
-- **CP1, doctrine's L1 element API** (doctrine X1): control and ai both build on it.
-- **CP2, combat's L2 suppression fields and L3 roster schema** (combat X1): doctrine, ai, and audio read them.
-Until a checkpoint lands, build against the contract with a stub in your own paths.
+**Checkpoints:**
+- **CP1, render's performance baseline and light budget** (render X1): every stream needs to know what a frame costs
+  before changing it.
+- **CP2, arena's layout schema v2** (arena X1): combat builds collision and navigation from it; render dresses it.
 
 ## Product constraints every stream designs for (the lead)
 
-1. **Fun first, desktop first** (pillar 5): mouse and keyboard. Touch keeps compiling; no new touch work.
-2. **Alive and responsive** (pillar 7): orders obey instantly; units move while fighting.
-3. **No unearned god view** (round 4): the camera shows what the force can see.
-4. **Parity:** anything the CPU can do tactically, the player's elements do automatically.
+1. **60 fps with 30 a side on the lead's laptop** (Intel UHD 620, Compatibility renderer). Frame rate is the blocker
+   this round; measure before and after anything you add.
+2. **Vehicles read as vehicles**, not as glows. Neon is mood; the machine is the subject.
+3. **Maps must give tactics something to work with**: lanes, cover, chokepoints, sightline breaks.
+4. **Fun first, desktop first**; orders obey instantly; no unearned god view; CPU and player run the same doctrine.
 5. **The vibe** ([art_direction.md](art_direction.md)) and **die-hard, no pay-to-win** ([vision.md](vision.md)).
-6. **Performance:** the target is ~30 units a side at 60 fps on this laptop's integrated GPU; measure before assuming.
 
 ## Lead gates this round
 
-1. **Announcer generation is approved** (the lead, 2026-09-16: *"we can have an agent go ahead and run the full
-   ElevenLabs pipeline"*). Fix the repetition first, run a small pilot, listen, then the full run; log every request and
-   its credits. All three voices exist (`JR1`, `corporate2`, `veteran`).
-2. **No new Meshy art** without the lead: 88 credits remain and a top-up is pending.
-3. **Music tracks:** the lead generates them later in Suno. Build the pipeline and write the per-state prompts
-   (`/tmp/music_prompt.md` has the style he already likes); ship with placeholders.
+1. **ElevenLabs sound effects are approved** (125,297 credits left): pilot a few, listen, then the batch; ledger every
+   request. The lead's standing note: cinematic exaggeration, and guns should sound dangerous.
+2. **No new Meshy models** without the lead (88 credits). Placing and re-dressing existing art is free and expected.
+3. **Faction art ships** (the lead, 2026-09-17): desktop presets include `game/theme/factions/*`; the web build stays
+   lean, so keep it excluded there and say what the web player sees instead.
 4. **Design pillars**, money, accounts, and anything destructive outside your worktree.
 
-## Who owns what (round 4)
+## Who owns what (round 5)
 
 | Path | Owner |
 |---|---|
-| `game/control/` (selection, groups, the Orders API), `game/ui/` except `widgets/**` and `hud.tscn`, `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md` | control |
-| `game/tactics/` (new: elements, leaders, doctrine tables, drills), `doctrines/`, `game/ai/doctrine.gd`, `_agents/doctrine.md` (new), `mk/tactics.mk` (new) | doctrine |
-| `game/units/`, `game/combat/` except `impact.gd`, `game/match/`, `game/tank/`, `game/arena/` + `arenas/`, `tools/{match_series,matchup_matrix,make_arenas,combat_duel,matchup_search}.py`, `mk/match.mk`, `game/modes/match_runner_mode.gd`, `_agents/balance.md` | combat |
-| `game/ai/` except `doctrine.gd` (brains, perception, pathing, cover, fire lanes, matchups, CPU commander), `game/agent/`, `tools/agent.py`, `tools/ai_ladder.py`, `mk/ai.mk`, `tests/ai_scenarios/`, `_agents/{tank_brain,squad_ai_design,unit_ai}.md` | ai |
-| `game/announcer/`, `game/audio/` (new: the music director and mixer), `assets/announcer/`, `assets/audio/`, `assets/music/` (new), `game/theme/audio/`, `tools/announcer/`, `tools/audio/` (new), `mk/announcer.mk`, `mk/audio.mk` (new), `tests/announcer/` | audio |
-| `game/theme/**` models, props, effects (no stream this round): additive, minimal edits only, listed in merge notes | shared |
+| `game/theme/**` (materials, shaders, effects, models, props, galleries), `assets/` art paths, `tools/assets/`, `mk/{fx,assets}.mk`, `export_presets.cfg` art filters, `_agents/{art_direction,slot_contracts}.md`, `_agents/streams/references/fx_tricks.md` | render |
+| `game/arena/`, `arenas/`, `tools/make_arenas.py`, `mk/arena.mk` (new), `_agents/arenas.md` (new) | arena |
+| `game/control/`, `game/ui/` (including `hud.tscn`, widgets and the title screen), `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline,title}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md` | control |
+| `game/units/`, `game/combat/`, `game/match/`, `game/tank/`, `tools/{match_series,matchup_matrix,combat_duel,matchup_search}.py`, `mk/match.mk`, `game/modes/match_runner_mode.gd`, `_agents/balance.md` | combat |
+| `game/ai/` except `doctrine.gd`, `game/tactics/` and `doctrines/` (doctrine had no stream this round: ai inherits it), `game/agent/`, `tools/{agent,ai_ladder}.py`, `mk/{ai,tactics}.mk`, `_agents/{tank_brain,squad_ai_design,unit_ai,doctrine}.md`, `tests/ai_scenarios/` | ai |
+| `game/announcer/`, `game/audio/`, `assets/{announcer,audio,music}/`, `tools/{announcer,audio}/`, `mk/{announcer,audio}.mk`, `tests/announcer/` | audio |
 | `game/garage/`, `game/progression/`, `game/network/`, `server/`, net modes, `mk/{garage,net}.mk` | **paused**: minimal compatibility fixes only |
-| `_agents/game_design.md`, `vision.md`, `roadmap.md`, `workstreams.md`, `orchestration.md`, `HANDOFF.md` | orchestrator (streams propose edits in their Status) |
-| **Shared:** `project.godot`, `export_presets.cfg`, `game/main.gd`, `game/main.tscn`, `game/modes/game_mode.gd`, `Makefile`, `mk/core.mk`, `tests/run_tests.gd`, `tools/remote.sh`, `tools/slot.sh`, `CLAUDE.md` | nobody alone: minimal edits, listed in merge notes |
+| `_agents/game_design.md`, `vision.md`, `roadmap.md`, `workstreams.md`, `orchestration.md`, `backups.md`, `HANDOFF.md` | orchestrator |
+| **Shared:** `project.godot`, `game/main.gd`, `game/main.tscn`, `game/modes/game_mode.gd`, `Makefile`, `mk/core.mk`, `tests/run_tests.gd`, `tools/{remote,slot,backup_assets}.sh`, `CLAUDE.md` | nobody alone: minimal edits, listed in merge notes |
 
-Tests: `test_control_*.gd`, `test_tactics_*.gd`, `test_combat_*.gd`, `test_ai_*.gd`, `test_announcer_*.gd`/`test_audio_*.gd`.
+## New contracts (round 5)
 
-## New contracts (round 4)
+| Contract | Owner, where | Consumers |
+|---|---|---|
+| **M1 Performance budget** (CP1). `make perf-scene` reports frame time, draw calls, primitives and real-light count for a 30-a-side battle on this laptop's GPU class, and a written budget in `fx_tricks.md`: what a frame may spend, how many real lights exist at once, and what every stream must stay inside. Render owns the number; everyone else keeps to it. | render | all |
+| **M2 Arena layout v2** (CP2). `arenas/<name>.json` grows the arena kit: `props` (`container_20`/`container_40` with `stack`, `ad_screen`, `barricade`, `sign`, `wreck`), lanes and cover annotations for the AI, and per-arena spawn zones sized for 30+ a side. Validated point-symmetric; `--arena=<name>`. Arena owns the data and the validator; combat builds collision and navigation; render dresses the props. | arena: `arenas/`, `game/arena/` | combat (collision, nav, spawns), render (props), ai (cover, lanes) |
+| **M3 Team identity without glare.** Vehicles must read as vehicles at play distance: team accent is a *hint*, not the subject. Render owns the look (a smaller emissive area, a rim or trim, per-team paint), control keeps selection marks distinct from it, and both hold at 30 a side. | render + control | all |
+
+## Round 4's contracts (still in force)
 
 | Contract | Owner, where | Consumers |
 |---|---|---|
@@ -129,11 +131,12 @@ repository, each on its own branch. One command creates an isolated one:
 
 ```bash
 cd ~/projects/godot                       # the main checkout, on main: the orchestrator's home
-make worktree STREAM=control OFFSET=1    # → ../godot-control on branch stream/control
-make worktree STREAM=doctrine OFFSET=2
-make worktree STREAM=combat OFFSET=3
-make worktree STREAM=ai OFFSET=4
-make worktree STREAM=audio OFFSET=5
+make worktree STREAM=render OFFSET=1     # → ../godot-render on branch stream/render
+make worktree STREAM=arena OFFSET=2
+make worktree STREAM=control OFFSET=3
+make worktree STREAM=combat OFFSET=4
+make worktree STREAM=ai OFFSET=5
+make worktree STREAM=audio OFFSET=6
 make worktrees                            # status of all of them
 ```
 

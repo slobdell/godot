@@ -20,6 +20,35 @@ lead's playtest.**_
 - **Builds run on builder0:** `make remote T=check`, about 7 minutes ([remote_builds.md](_agents/remote_builds.md)).
   One remote run per worktree at a time.
 
+## Round 5: six streams (planned 2026-09-17)
+
+Goal: **make it playable.** The lead played round 4 and stopped at the frame rate, a camera that frames the enemy, a
+title screen that won't click, one flat map, vehicles that read as blue lights, and two masses trading fire
+([game_design.md](_agents/game_design.md) *Round 5 direction*). Faction art ships; the garage stays paused.
+
+| Stream | Brief | Outcome |
+|---|---|---|
+| render | [streams/render.md](_agents/streams/render.md) | 60 fps at 30 a side: the shader-uniform wall, far fewer lights for a more grounded look, detail levels, vehicles that read as vehicles, faction art shipped (**M1 = CP1**) |
+| arena | [streams/arena.md](_agents/streams/arena.md) | Maps as a discipline: layout schema v2 with the arena kit, four arenas with real tactical shape, fairness-validated and measured (**M2 = CP2**) |
+| control | [streams/control.md](_agents/streams/control.md) | Play it and fix what stops you: camera frames your force, the title screen works, a clean console, subtitles on their own line, the three dials |
+| combat | [streams/combat.md](_agents/streams/combat.md) | Ranges and cover that force maneuver instead of two masses; the gangs' 23%; the duplicated Lancer |
+| ai | [streams/ai.md](_agents/streams/ai.md) | 4 ms at 60 units, the gates blocking SUPPRESS and cover-pulling, the tactics ladder, faction behaviour (inherits doctrine) |
+| audio | [streams/audio.md](_agents/streams/audio.md) | Guns that sound dangerous (ElevenLabs), impacts, colour names out of the booth, music stems |
+
+Ownership, contracts (M1–M3, L1–L5, K1–K5, C1–C8), checkpoints and gates: [`_agents/workstreams.md`](_agents/workstreams.md).
+
+**Start each agent** in its worktree (`cd ~/projects/godot-<stream> && claude --dangerously-skip-permissions`), the
+same text for all six:
+
+> /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
+
+**Orchestrator duties:** merge CP1 (render's frame budget) and CP2 (arena's layout schema) as soon as they're
+announced and tell everyone to `git merge main`; relay anything waiting on the lead the same day; rescue git-ignored
+payload from worktrees before removing them ([backups.md](_agents/backups.md)); final integration order arena → combat
+→ ai → render → control → audio.
+
+## Round 4: closed 2026-09-16
+
 ## Round 4: closed 2026-09-16
 
 All five streams (control, doctrine, combat, ai, audio) are merged and green: **843 tests**, every smoke, sim baseline

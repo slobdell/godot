@@ -70,11 +70,13 @@ cinematic-shots: import ## Frames from the self-directing camera in build/screen
 	done
 	@echo "Now LOOK at $(BUILD_DIR)/screenshots/cinematic-*.png"
 
-cinematic: import ## Watch a CPU-vs-CPU match with the self-directing camera
-	$(GODOT) --path . -- --skirmish --cinematic --player=cpu --enemy=cpu --budget=$(CONTROL_SCALE_BUDGET) $(CONTROL_FLAGS)
+cinematic: import ## Watch a CPU-vs-CPU match with the self-directing camera (ANNOUNCER=, MUSIC= to change)
+	$(GODOT) --path . -- --skirmish --cinematic --player=cpu --enemy=cpu --budget=$(CONTROL_SCALE_BUDGET) \
+		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
 
 skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate): size follows the roster
-	$(GODOT) --path . -- --skirmish --player-faction=$(FACTION) --enemy-faction=$(ENEMY_FACTION) $(CONTROL_FLAGS)
+	$(GODOT) --path . -- --skirmish --player-faction=$(FACTION) --enemy-faction=$(ENEMY_FACTION) \
+		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
 
 COMMAND_PLAYTEST_DIR := $(BUILD_DIR)/command-playtest
 
