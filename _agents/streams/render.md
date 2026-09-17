@@ -73,50 +73,87 @@ Arena layouts and where props go (arena), gameplay (combat), brains (ai), UI and
 
 ## Status
 
-_Updated 2026-09-17._
+_Updated 2026-09-17 (evening)._
 
-**Plan (backlog order, smallest foundation first):** X1 perf-scene + budget (CP1) → X2 instance uniforms off vehicles →
-X3 lights → X4 vehicle read → X5 LOD/instancing → X6 faction art in desktop exports → stretch.
+**Plan (backlog order):** X1 perf-scene + budget (CP1) ✅ → X2 instance uniforms ✅ → X3 lights ✅ → X4 vehicle read ✅
+(first pass) → X5 LOD/instancing/thinning (in progress) → X6 faction art ✅ → arena's kit props (CP2 request) ✅ → stretch.
+
+**Headline numbers** (`make perf-scene`, UHD 620, 61–65 vehicles, tier high; tables in `fx_tricks.md` → M1):
+
+| | Round 5 start | Now |
+|---|---|---|
+| GPU 1280×720 / 1854×1011 | 18–19 / 29–31 ms | **8.5–9.6 / 12–13 ms** |
+| Primitives | 0.97–1.1 M | **0.19–0.28 M** |
+| Real lights | 17 | **5** |
+| Renderer errors per run | 246 + 93 | **0** |
+| Frame | 133 ms (pinned) | 133 ms at 60 vehicles, 40–60 ms at 25–30: **the sim tick (20–24 ms) is the wall** |
 
 ### X1: measured, budget published (CP1 announced 2026-09-17)
-- `make perf-scene` (`game/theme/fx/bench/perf_scene.gd`, `perf_probe.gd`; test `tests/test_render_perf_scene.gd`): a
-  live 34-a-side CPU skirmish on this laptop's UHD 620, layer toggles bracketed by `all` phases, CPU split into sim
-  tick / process (game+UI, FX) / render submission. Numbers, reading and **the budget: `fx_tricks.md` → M1**.
-- **Headline:** 133 ms frames at 60+ vehicles, pinned by Godot's 8-ticks-per-frame cap: the **simulation tick's scripts
-  take ~20 ms at 60 vehicles** (9–15 ms at 20–30). GPU 18 ms at 720p, 30 ms at 1080p: floor+props 7/12, moon shadows
-  4.4/5.5, effects 2/4, 16 pooled lights 1.7/2.8, glow 1.3/3.2, vehicles 1/2. HUD = 200–310 of 800–930 draw calls.
-- **Budget:** frame ≤ 15 ms avg; sim tick ≤ 5 ms at 60 vehicles (combat + ai); GPU ≤ 6.5 ms at 720p / ≤ 10 ms at
-  1080p; ≤ 350 draw calls (3D 220, HUD 130); ≤ 6 real lights, none per vehicle, no dynamic shadows on the default tier;
-  no instance uniforms on anything that scales with units.
-- Caveat: five other agents share this CPU (load ≈ 5), so CPU lines are pessimistic until re-measured quieter.
+- `make perf-scene` (`game/theme/fx/bench/perf_scene.gd`, `perf_probe.gd`): a live 34-a-side CPU skirmish, layer
+  toggles bracketed by `all` phases, CPU split into sim tick / process (game+UI, FX) / render submission. ~20 layers
+  (`PERF_LAYERS=`), `--perf-shot-every-phase` for looking at what a layer changes. Budget: `fx_tricks.md` → M1.
 
-### X2: the instance-uniform wall is gone (2026-09-17)
-- **Cause:** Godot reserves 16 global-buffer slots for every instance whose material declares any `instance uniform`
-  (`MAX_INSTANCE_UNIFORM_INDICES`), whatever it uses; the UHD 620's cap is 4,096 slots, so **256 instances**. Hull,
-  turret, weapon and shield per vehicle ran out at ~30 a side.
-- **Fix:** no instance uniforms on vehicles. `UnitSkin.dress()` picks a shared material per (texture set, team, paint,
-  heat step of 8); `ColorMeshBuilder.set_glow_state()` a shared glow material per (heat step, flash step); each
-  `ShieldEffect` owns its material. Draw calls unchanged (Compatibility draws each instance anyway).
-- **Measured** (`make perf-scene`, 720p, 63 vehicles): instance-uniform errors **246 → 0**, other engine errors
-  **93 → 0**. Vehicles' GPU cost now reads 6.4 ms (was 1.1): the parts past the cap weren't drawing correctly before, so
-  X4/X5 own that number now.
-- Test: `test_no_vehicle_part_uses_instance_uniforms_whatever_it_is_doing` scans every slot and faction part after
-  team, paint, heat, shield and firing calls (mutation-checked: an `instance uniform` put back in the shield shader
-  fails it).
+### X2: the instance-uniform wall is gone
+- **Cause:** Godot reserves 16 global-buffer slots per instance whose material declares any `instance uniform`; the
+  UHD 620's cap is 4,096 slots = **256 instances**. **Fix:** shared materials per (texture set, team, paint, heat step)
+  in `UnitSkin.dress()`, per (heat, flash) step in `ColorMeshBuilder.set_glow_state()`, one material per shield.
+  Errors 246 + 93 → 0. Test scans every vehicle and faction part (mutation-checked).
+
+### X3: fewer lights, grounded look
+- No tier has dynamic shadows or MSAA; blob shadows under vehicles (one MultiMesh); at most 4 pooled lights (2 on low)
+  and a `light_floor` so only explosions, shells, beams and muzzles take one. Underglow is a small dim hint.
+- Look: stronger neutral moon key, less ambient, brighter corner floodlight pools, softer glow. Shots:
+  `build/screenshots/look-before.png` vs `look-after.png`.
+
+### X4: vehicles read as vehicles (first pass)
+- Team neon on the model's light bars 0.6 → 0.35; the team now tints the rim on the silhouette. Shot: `look-x4.png`.
+- Not done: a check with the lead at play distance (tank vs IFV, Wrecker vs Law). See questions.
+
+### X5: detail levels and thinning (in progress)
+- 3D render scale follows the window (0.85 at 1080p: −4.8 ms), glow wide levels only (−2.1 ms at 1080p), mesh LOD
+  4 px (−0.6 ms, 374k → 237k prims), 6 sparks per spray (−1.4 ms), floor lit in its shader (−0.6 ms), an overdraw
+  budget that thins decorative bursts in pile-ups. Remaining GPU: arena 2–3, glow 1.6–1.9, base ~3 ms.
+- Culling: MultiMesh custom AABBs are world-sized for pooled effects (by design); vehicles and props cull normally.
+
+### X6: faction art ships
+- New "Linux Desktop" preset (faction art included; only Linux templates are installed) and `make export-desktop`:
+  pack **23.2 MB → 43.5 MB**. `FactionArt.unit_slots()` gives gangs, Law and Syndicate units their own models in play
+  (wrappers written by `tools/assets/build_faction_parts.py`, `make faction-parts`); missing turret/weapon models are
+  empty parts. **Web and server** still exclude `game/theme/factions/*`: there the slots don't exist and a web player
+  sees every faction in the Condemned's models (web pack unchanged).
+
+### Arena's kit props (CP2 request)
+- `prop.barricade`, `prop.floodlight` (with a painted light pool), `prop.sign` (arena-name neon, `kit_signs.png`),
+  `prop.wreck` (husk fit to 3.2 × 2.0 × 6.4 m): one MultiMesh per kind (`arena_kit/kit/kit_yard.gd`).
+- Fixed two floor artifacts the new maps exposed: the ad-screen spill flooded its 34 m quad (hard light boxes), and
+  40 m floor tiles showed per-vertex fog as blue squares.
 
 ### Decisions
-- perf-scene uses `--cinematic` (no planning pause, fog revealed: every vehicle drawn = the worst case) but its own
-  camera, so runs frame the same fight.
-- The budget keeps ~10% headroom because a frame over 16.7 ms pays for two sim ticks next frame (the spiral).
+- perf-scene uses `--cinematic` (no planning pause, fog revealed: every vehicle drawn = worst case) with its own camera.
+- The budget keeps ~10% headroom: a frame over 16.7 ms pays for two sim ticks next frame (the spiral).
+- Render scale by window height rather than a fixed tier value: 720p keeps full resolution, big windows pay less.
+- Pooled lights no longer light the floor (unlit floor); the effects' ground glows already paint that light.
 
 ### Requests to other streams (sent to the orchestrator)
-- **combat + ai:** the simulation tick is the frame-rate blocker: ~20 ms per tick at 60 vehicles on the lead's laptop;
-  budget 5 ms. Check with `make perf-scene` (`tick_script_ms`, `ticks_per_frame`).
-- **control:** HUD ≤ 130 draw calls (now 200–310) and ≤ 1 ms of `_process`.
-- **arena:** props batched (≤ 2 draws per kind), no lights, no per-prop `_process`.
+- **combat + ai:** the simulation tick is the frame-rate blocker: 20–24 ms per tick at 60 vehicles on the lead's
+  laptop; budget 5 ms. `make perf-scene` reports `tick_script_ms` and `ticks_per_frame`.
+- **control:** HUD ≤ 130 draw calls (measured 210–340) and ≤ 1 ms of `_process`.
+- **arena:** commit `tests/arena/arena_probe.gd.uid` (Godot generated it for your file).
 
 ### Questions for the lead
-- (none yet)
+- **Team read (M3):** is a team-tinted rim plus small light bars enough to tell sides apart at play distance, or do you
+  want per-team paint on the hull too? (`build/screenshots/look-x4.png`, `look-factions.png`)
+- **Windows build:** only Linux export templates are installed; a Windows desktop preset needs `TEMPLATE_FILES` in the
+  shared Makefile to include the Windows templates (~+100 MB in `.tools`). Want it this round?
+
+### Known issues
+- CPU numbers are measured on a laptop shared with five other agents (load ≈ 5): pessimistic.
+- The 720p GPU line (6.5 ms) is not met yet (~9 ms); 1080p (10 ms) not met (~13 ms).
+
+### What to playtest
+- `make skirmish` (feel the look: lights, shadows, team rims), `make skirmish-factions FACTION=law ENEMY_FACTION=gangs`
+  (faction models in play), `--arena=boulevard` / `--arena=boneyard` (kit props), `make perf-scene` (numbers).
 
 ### Merge notes
-- No shared files touched so far (`mk/fx.mk` is render's).
+- `export_presets.cfg`: new preset.2 "Linux Desktop" (render owns the art filters).
+- No other shared files touched. `mk/fx.mk` (perf-scene) and `mk/assets.mk` (faction-parts, export-desktop) are render's.
