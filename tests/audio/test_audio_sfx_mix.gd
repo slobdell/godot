@@ -90,9 +90,13 @@ func test_world_sound_goes_through_one_bus_that_can_be_limited_and_ducked() -> v
 		limited = limited or AudioServer.get_bus_effect(index, effect_index) is AudioEffectLimiter
 	assert_true(limited, "with a limiter, so twenty voices in a firefight do not clip the master")
 	assert_true(AudioServer.get_bus_volume_db(index) < 0.0, "and trimmed, leaving the limiter room to work")
+	sfx.play_at("tank_boom", Vector3.ZERO)
+	sfx.play_at("bullet_hit_metal", Vector3.ZERO)
 	for child in sfx.get_children():
 		if child is AudioStreamPlayer3D:
-			assert_eq((child as AudioStreamPlayer3D).bus, SfxSystem.WORLD_BUS, "%s is on it" % child.name)
+			var bus := (child as AudioStreamPlayer3D).bus
+			var feeds: String = bus if bus == SfxSystem.WORLD_BUS else String(AudioServer.get_bus_send(AudioServer.get_bus_index(bus)))
+			assert_eq(feeds, SfxSystem.WORLD_BUS, "%s reaches it (through %s)" % [child.name, bus])
 	# The announcer ducks whatever is on this bus; that wiring is AnnouncerVoice's and is covered by its own test.
 	assert_eq(AnnouncerVoice.WORLD_BUS, SfxSystem.WORLD_BUS, "the booth ducks the same bus the battle plays on")
 
@@ -146,3 +150,22 @@ func test_the_level_a_sound_is_heard_at_falls_with_distance() -> void:
 	sfx.listener = Vector3.ZERO
 	assert_near(sfx.heard_level_db(0.0, Vector3(10.0, 0, 0)), 0.0, 0.01, "inside unit size it is its own level")
 	assert_near(sfx.heard_level_db(0.0, Vector3(SfxSystem.UNIT_SIZE * 10.0, 0, 0)), -20.0, 0.01, "ten times as far, 20 dB down")
+
+
+func test_a_shell_landing_ducks_the_fight_underneath_it() -> void:
+	## X2: the moment a shell lands is the loudest thing in the mix, then it falls away.
+	var sfx := _sfx()
+	sfx.listener = Vector3.ZERO
+	var bed := AudioServer.get_bus_index(SfxSystem.BED_BUS)
+	assert_true(bed >= 0 and AudioServer.get_bus_index(SfxSystem.IMPACT_BUS) >= 0, "impacts and the bed have buses")
+	var keyed := false
+	for i in AudioServer.get_bus_effect_count(bed):
+		var effect := AudioServer.get_bus_effect(bed, i) as AudioEffectCompressor
+		keyed = keyed or (effect != null and effect.sidechain == SfxSystem.IMPACT_BUS)
+	assert_true(keyed, "the bed is compressed by the impacts")
+	sfx.play_at("tank_boom", Vector3.ZERO)
+	var boom: Array = sfx._world.filter(func(v: AudioStreamPlayer3D) -> bool: return v.playing)
+	assert_eq((boom[0] as AudioStreamPlayer3D).bus, SfxSystem.IMPACT_BUS, "a cannon plays on the impact bus")
+	var engines := EngineSystem.new()
+	add_to_tree(engines)
+	assert_eq((engines.get_child(0) as AudioStreamPlayer3D).bus, SfxSystem.BED_BUS, "engines sit in the bed")

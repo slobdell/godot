@@ -31,8 +31,8 @@ func _init() -> void:
 	_rng.seed = 23
 	murmur.name = "Murmur"
 	roar.name = "Roar"
-	murmur.bus = SfxSystem.WORLD_BUS
-	roar.bus = SfxSystem.WORLD_BUS
+	murmur.bus = SfxSystem.BED_BUS
+	roar.bus = SfxSystem.BED_BUS
 	add_child(murmur)
 	add_child(roar)
 

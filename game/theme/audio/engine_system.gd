@@ -53,7 +53,7 @@ func _voice(voice_name: String, unit_size: float) -> AudioStreamPlayer3D:
 	voice.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
 	voice.unit_size = unit_size
 	voice.max_distance = HEARING * 1.5
-	voice.bus = SfxSystem.WORLD_BUS
+	voice.bus = SfxSystem.BED_BUS
 	add_child(voice)
 	return voice
 

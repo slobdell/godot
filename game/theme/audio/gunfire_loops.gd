@@ -34,6 +34,7 @@ func _init() -> void:
 		voice.unit_size = 45.0
 		voice.max_distance = 500.0
 		voice.volume_db = VOLUME_DB
+		voice.bus = SfxSystem.BED_BUS
 		add_child(voice)
 		_voices.append(voice)
 		_assigned.append("")

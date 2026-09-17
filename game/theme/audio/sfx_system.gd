@@ -63,6 +63,14 @@ const WORLD_BUS := "World"
 ## Headroom: twenty voices summing in a firefight clip the master and turn to mush. The limiter catches the peaks
 ## that survive per-sound gain staging; the trim leaves room for it to work.
 const WORLD_TRIM_DB := -6.0
+## X2 (round 5): the moment a shell lands is the loudest thing in the mix, then it falls away. Heavy impacts play on
+## IMPACT_BUS; everything that runs underneath the fight (engines, gun loops, the crowd, small hits) plays on BED_BUS,
+## which a compressor keyed from the impacts pulls down for a moment and lets back up. Both feed World, so the
+## limiter and the announcer's ducking still see all of it.
+const IMPACT_BUS := "Impacts"
+const BED_BUS := "Bed"
+const IMPACT_SOUNDS := ["tank_boom", "shell_hit_armor", "explosion_big", "explosion_small", "weak_spot_hit",
+		"dirt_impact", "shield_down"]
 const LIMIT_DB := -1.0
 ## Distance filtering: a blast heard across the arena is dull, not just quiet. Per sound, the cutoff (Hz) at
 ## max_distance and how much of the sound is filtered; the engine interpolates with distance. Sounds not listed keep
@@ -186,11 +194,34 @@ static func loop_frames(stream: AudioStreamWAV) -> int:
 	return int(round(stream.get_length() * stream.mix_rate))
 
 
-## Adds the World bus (and its limiter) if it isn't there. Static so anything that wants to route to it can.
+## Adds the World bus (and its limiter) if it isn't there, and the Impacts and Bed buses that feed it. Static so
+## anything that wants to route to them can. Returns World's index.
 static func ensure_world_bus() -> int:
 	var index := AudioServer.get_bus_index(WORLD_BUS)
-	if index >= 0:
-		return index
+	if index < 0:
+		index = _add_world_bus()
+	if AudioServer.get_bus_index(IMPACT_BUS) < 0:
+		AudioServer.add_bus()
+		var impacts := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(impacts, IMPACT_BUS)
+		AudioServer.set_bus_send(impacts, WORLD_BUS)
+	if AudioServer.get_bus_index(BED_BUS) < 0:
+		AudioServer.add_bus()
+		var bed := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(bed, BED_BUS)
+		AudioServer.set_bus_send(bed, WORLD_BUS)
+		var duck := AudioEffectCompressor.new()
+		duck.sidechain = IMPACT_BUS
+		duck.threshold = -26.0
+		duck.ratio = 5.0
+		duck.attack_us = 1000.0  # in before the hit's peak
+		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
+		AudioServer.add_bus_effect(bed, duck)
+	return index
+
+
+static func _add_world_bus() -> int:
+	var index: int
 	AudioServer.add_bus()
 	index = AudioServer.bus_count - 1
 	AudioServer.set_bus_name(index, WORLD_BUS)
@@ -219,6 +250,7 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	_voice_level[index] = level
 	_voice_started[index] = Time.get_ticks_msec() / 1000.0
 	voice.stream = _a_take(sound)
+	voice.bus = IMPACT_BUS if sound in IMPACT_SOUNDS else BED_BUS
 	voice.position = position
 	voice.volume_db = float(mix[0]) + volume_offset_db
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
