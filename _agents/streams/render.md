@@ -73,4 +73,33 @@ Arena layouts and where props go (arena), gameplay (combat), brains (ai), UI and
 
 ## Status
 
-- 2026-09-17: brief written for round 5. Nothing started.
+_Updated 2026-09-17._
+
+**Plan (backlog order, smallest foundation first):** X1 perf-scene + budget (CP1) → X2 instance uniforms off vehicles →
+X3 lights → X4 vehicle read → X5 LOD/instancing → X6 faction art in desktop exports → stretch.
+
+### X1: measured, budget published (CP1 announced 2026-09-17)
+- `make perf-scene` (`game/theme/fx/bench/perf_scene.gd`, `perf_probe.gd`; test `tests/test_render_perf_scene.gd`): a
+  live 34-a-side CPU skirmish on this laptop's UHD 620, layer toggles bracketed by `all` phases, CPU split into sim
+  tick / process (game+UI, FX) / render submission. Numbers, reading and **the budget: `fx_tricks.md` → M1**.
+- **Headline:** 133 ms frames at 60+ vehicles, pinned by Godot's 8-ticks-per-frame cap: the **simulation tick's scripts
+  take ~20 ms at 60 vehicles** (9–15 ms at 20–30). GPU 18 ms at 720p, 30 ms at 1080p: floor+props 7/12, moon shadows
+  4.4/5.5, effects 2/4, 16 pooled lights 1.7/2.8, glow 1.3/3.2, vehicles 1/2. HUD = 200–310 of 800–930 draw calls.
+- **Budget:** frame ≤ 15 ms avg; sim tick ≤ 5 ms at 60 vehicles (combat + ai); GPU ≤ 6.5 ms at 720p / ≤ 10 ms at
+  1080p; ≤ 350 draw calls (3D 220, HUD 130); ≤ 6 real lights, none per vehicle, no dynamic shadows on the default tier;
+  no instance uniforms on anything that scales with units.
+- Caveat: five other agents share this CPU (load ≈ 5), so CPU lines are pessimistic until re-measured quieter.
+
+### Decisions
+- perf-scene uses `--cinematic` (no planning pause, fog revealed: every vehicle drawn = the worst case) but its own
+  camera, so runs frame the same fight.
+- The budget keeps ~10% headroom because a frame over 16.7 ms pays for two sim ticks next frame (the spiral).
+
+### Requests to other streams (sent to the orchestrator)
+- **combat + ai:** the simulation tick is the frame-rate blocker: ~20 ms per tick at 60 vehicles on the lead's laptop;
+  budget 5 ms. Check with `make perf-scene` (`tick_script_ms`, `ticks_per_frame`).
+- **control:** HUD ≤ 130 draw calls (now 200–310) and ≤ 1 ms of `_process`.
+- **arena:** props batched (≤ 2 draws per kind), no lights, no per-prop `_process`.
+
+### Questions for the lead
+- (none yet)
