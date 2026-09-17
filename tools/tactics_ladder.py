@@ -46,10 +46,16 @@ def army_path(army):
     return army if army.startswith(("cpu", "res://")) else f"res://doctrines/{army}.json"
 
 
-def run_match(args, green, rust, arena, seed, swap):
-    doctrine = army_path(args.army)
+def run_match(args, green, rust, arena, seed, swap, factions):
+    if factions[0] is None:
+        doctrine = army_path(args.army)
+        armies = [f"--green-doctrine={doctrine}", f"--rust-doctrine={doctrine}"]
+    else:
+        # Faction armies (X4): each side's army falls out of its faction's costs at the budget, with the control point on
+        # (the way combat's faction matrix plays them).
+        armies = [f"--green-faction={factions[0]}", f"--rust-faction={factions[1]}", f"--budget={args.budget}", "--control"]
     command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination",
-               f"--green-doctrine={doctrine}", f"--rust-doctrine={doctrine}", f"--arena={arena}",
+               *armies, f"--arena={arena}",
                *side_flags("green", green), *side_flags("rust", rust), "--tactics-ledger",
                f"--time-limit={args.time_limit}", f"--seed={seed}"]
     if swap:
@@ -67,6 +73,7 @@ def run_match(args, green, rust, arena, seed, swap):
         raise RuntimeError(f"{green['label']} vs {rust['label']} on {arena} seed {seed} swap {swap}: no MATCH_RESULT "
                            f"(exit {completed.returncode}) {errors}")
     return {"green": green["label"], "rust": rust["label"], "arena": arena, "seed": seed, "swap": swap,
+            "green_faction": factions[0], "rust_faction": factions[1],
             "winner": result["winner"], "sim_seconds": result["sim_seconds"], "ledger": ledger or {"green": {}, "rust": {}}}
 
 
@@ -79,7 +86,7 @@ def score_for(match, label):
 
 def elo(labels, matches):
     ratings = {v: 1000.0 for v in labels}
-    ordered = sorted(matches, key=lambda m: (m["green"], m["rust"], m["arena"], m["seed"], m["swap"]))
+    ordered = sorted(matches, key=lambda m: (m["green"], m["rust"], m["arena"], m["seed"], m["swap"], str(m["green_faction"])))
     history = []
     for _ in range(PASSES):
         for m in ordered:
@@ -154,6 +161,9 @@ def main():
     parser.add_argument("--sides", required=True, help="comma-separated label=brain[:table]")
     parser.add_argument("--arenas", default="foundry")
     parser.add_argument("--army", default="combined_arms")
+    parser.add_argument("--factions", default="", help="two factions, e.g. gangs,law: faction armies instead of a mirror "
+                        "army, every side playing each faction")
+    parser.add_argument("--budget", type=int, default=5200)
     parser.add_argument("--runs", type=int, default=2, help="seeds per pairing per arena (each played 4 ways)")
     parser.add_argument("--first-seed", type=int, default=1)
     parser.add_argument("--jobs", type=int, default=2)
@@ -167,6 +177,8 @@ def main():
     if len(sides) < 2:
         sys.exit("need at least two sides")
 
+    faction_list = [f for f in args.factions.split(",") if f]
+    faction_orders = [(None, None)] if not faction_list else [tuple(faction_list), tuple(reversed(faction_list))]
     started = time.time()
     jobs = []
     for a, b in itertools.combinations(sides, 2):
@@ -174,7 +186,8 @@ def main():
             for seed in range(args.first_seed, args.first_seed + args.runs):
                 for green, rust in ((a, b), (b, a)):
                     for swap in (False, True):
-                        jobs.append((green, rust, arena, seed, swap))
+                        for factions in faction_orders:
+                            jobs.append((green, rust, arena, seed, swap, factions))
     matches, failures = [], []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
         futures = [pool.submit(run_match, args, *job) for job in jobs]
@@ -185,7 +198,8 @@ def main():
                 failures.append(str(err))
 
     ratings = elo(labels, matches)
-    print(f"TACTICS LADDER: {len(matches)} matches ({args.army} mirror; arenas {', '.join(arenas)}; {args.runs} seeds x 4 "
+    army_text = f"{args.army} mirror" if not faction_list else f"{' vs '.join(faction_list)} at {args.budget}, both ways"
+    print(f"TACTICS LADDER: {len(matches)} matches ({army_text}; arenas {', '.join(arenas)}; {args.runs} seeds x 4 "
           f"per pairing per arena), {time.time() - started:.0f}s wall")
     print("| Side | Brain | Doctrine | ELO | W | L | D |")
     print("|---|---|---|---|---|---|---|")
@@ -209,6 +223,17 @@ def main():
                 l = sum(1 for m in pair if score_for(m, a) == 0.0)
                 cells.append(f"{b} {w}-{l}-{len(pair) - w - l}")
             print(f"  {arena:10s} {a}: " + "  ".join(cells))
+    if faction_list:
+        print("By faction (row's wins-losses-draws playing that faction):")
+        for v in labels:
+            cells = []
+            for faction in faction_list:
+                played = [m for m in matches if (m["green"] == v and m["green_faction"] == faction)
+                          or (m["rust"] == v and m["rust_faction"] == faction)]
+                w = sum(1 for m in played if score_for(m, v) == 1.0)
+                l = sum(1 for m in played if score_for(m, v) == 0.0)
+                cells.append(f"{faction} {w}-{l}-{len(played) - w - l}")
+            print(f"  {v}: " + "  ".join(cells))
     print("Per drill (every arena): damage charged to what the units were doing when the round landed")
     report = {}
     for side in sides:
