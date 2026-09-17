@@ -64,6 +64,7 @@ var _hidden: Array = []
 var _shot_taken := false
 var _done := false
 var _capped := false
+var _hitches := 0
 ## Timestamps (µs) from probe nodes placed around FxWorld in the process order: [start, before fx, after fx].
 var _marks := PackedInt64Array([0, 0, 0])
 var _cpu_sums := {"game_ui_ms": 0.0, "fx_ms": 0.0}
@@ -163,6 +164,7 @@ func _process(delta: float) -> void:
 	if _phase_index < 0:
 		_start_phase(0)
 	_phase_time += delta
+	_log_hitch(delta)
 	if _phase_time >= SETTLE_SECONDS:
 		_sample(delta)
 	if not _shot_taken and shot_path != "" and (_phases[_phase_index] == "all" or shot_every_phase) and _phase_time > phase_seconds * 0.5:
@@ -179,6 +181,32 @@ func _process(delta: float) -> void:
 			_start_phase(_phase_index + 1)
 		else:
 			_finish()
+
+
+## A frame far over the target: print what happened in it. A locked rate that hitches is not locked (the lead's
+## sign-off), and the cause is usually visible in what ran that frame rather than in averages.
+func _log_hitch(delta: float) -> void:
+	var target := 1.0 / maxf(float(FrameTarget.value("fps")), 1.0)
+	if delta < target * 1.8 or _hitches >= 40:
+		return
+	_hitches += 1
+	var fx := FxWorld.existing()
+	var feed := LiveFeed.for_node(self)
+	print("PERF_SCENE_HITCH " + JSON.stringify({
+		"ms": snappedf(delta * 1000.0, 0.1),
+		"t": snappedf(_time, 0.1),
+		"phase": _phases[_phase_index] if _phase_index >= 0 else "warmup",
+		"vehicles": _living_tanks().size(),
+		"ticks_this_frame": _ticks,
+		"tick_ms": snappedf(_tick_usec / 1000.0, 0.01),
+		"fx_ms": snappedf((_marks[2] - _marks[1]) / 1000.0, 0.01),
+		"game_ui_ms": snappedf((_marks[1] - _marks[0]) / 1000.0, 0.01),
+		"cpu_render_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.01),
+		"bursts_started": fx.bursts.started if fx != null else -1,
+		"feed_frame": feed.last_render_frame if feed != null else -1,
+		"frame": Engine.get_frames_drawn(),
+		"replaying": feed.replaying if feed != null else false,
+	}))
 
 
 func _update_camera(delta: float) -> void:

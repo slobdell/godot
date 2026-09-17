@@ -272,9 +272,11 @@ and should travel with the number:
 - **p95 versus p99.** Combat quote p95; I quote p99 because the lead's target is a *locked* rate. At 18 vehicles my p95
   is 33.5 ms (locked by that measure) while the p99 catches occasional 40–100 ms frames. **Neither of us has measured
   his machine in the state he plays in**; his own clean `perf-scene` run is the tiebreak.
-- **Open, mine:** those rare single-frame hitches at low vehicle counts. A/B says they are **not** the arena screens'
-  live feed (they appear with it disabled too); cause not yet found. A locked 30 that hitches is not locked, so this is
-  the next thing I chase.
+- **The hitches, chased down:** perf-scene now logs each frame far over the target with what ran in it
+  (`PERF_SCENE_HITCH`). Every one was a frame in which the **simulation ran 2–3 ticks at once** (catching up, 23–44 ms
+  of script), and in two of three a **feed slot rendered in that same already-late frame**. The sim half is combat's;
+  render's half is fixed: LiveFeed now skips a feed frame whose last frame ran more than 1.3× the frame target, so it
+  never adds a scene render to a frame that is already behind. Same scene, capped 30 at 1080p: **3 hitches → 0**.
 
 **Combat's correction to my decomposition, which I accept:** the `segment:controllers` band is `OrderController`
 executing every tick *as well as* `TankBrain` thinking on a wall clock. The executing half halves with the tick rate,

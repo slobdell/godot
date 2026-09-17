@@ -65,3 +65,10 @@ func test_the_shot_picks_the_densest_mixed_scrap_and_recent_violence() -> void:
 func test_empty_ground_is_never_recorded() -> void:
 	assert_true(LiveFeed.worth_recording(3), "three vehicles in shot: record")
 	assert_true(not LiveFeed.worth_recording(1), "a lone vehicle on asphalt: hold the last good frame")
+
+
+func test_the_feed_skips_frames_that_are_already_late() -> void:
+	# A locked rate that hitches is not locked: when the simulation is catching up, a feed render turns a slow frame
+	# into a visible one. LiveFeed.LATE_FRAME is the multiple of the frame target it refuses to render in.
+	assert_true(LiveFeed.LATE_FRAME > 1.0, "a frame has to be over the target to count as late")
+	assert_true(LiveFeed.LATE_FRAME <= 1.5, "but not so far over that the feed only skips catastrophes")
