@@ -20,7 +20,9 @@ extends Node
 ## Flags: --perf-scene=<abs json>  --perf-warmup=S (8)  --perf-seconds=S per phase (2.5)  --perf-cycles=N (2)
 ##        --perf-zoom=0..1 (0.42, RtsCamera's level)  --perf-layers=a,b (a subset)  --perf-shot=<abs png>
 
-## Each layer toggle, in run order. Every one is measured against the `all` phases beside it.
+## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
+## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
+## (a 4-light pool), glow_lite (glow levels 2-3 only).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -242,6 +244,27 @@ func _apply(phase: String) -> void:
 		"no_shadows":
 			for light in get_tree().root.find_children("*", "DirectionalLight3D", true, false):
 				_override(light, "shadow_enabled", false)
+		"no_venue", "ground_lite":
+			var dressing_slot := scene.get_node_or_null("Arena/Dressing") if scene != null else null
+			var dressing: Node = dressing_slot.get("visual") if dressing_slot != null else null
+			if dressing != null and phase == "no_venue":
+				dressing.call("set_venue_visible", false)
+				_hidden.append([dressing, "@set_venue_visible", true])
+			elif dressing != null and dressing.has_method("set_ground_style"):
+				dressing.call("set_ground_style", "lite")
+				_hidden.append([dressing, "@_apply_ground_quality", null])
+		"no_msaa":
+			_override(get_viewport(), "msaa_3d", Viewport.MSAA_DISABLED)
+		"lights_4":
+			if fx != null:
+				_hidden.append([fx.lights, "@resize", fx.lights.lights.size()])
+				fx.lights.resize(4)
+		"glow_lite":
+			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
+				var environment := (world as WorldEnvironment).environment
+				if environment != null:
+					for level in [1, 5]:
+						_override(environment, "glow_levels/%d" % level, 0.0)
 		"no_glow":
 			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
 				var environment := (world as WorldEnvironment).environment
@@ -256,8 +279,17 @@ func _override(target: Object, property: String, value: Variant) -> void:
 
 func _restore() -> void:
 	for entry in _hidden:
-		if is_instance_valid(entry[0]):
-			(entry[0] as Object).set(entry[1], entry[2])
+		if not is_instance_valid(entry[0]):
+			continue
+		var property: String = entry[1]
+		if property.begins_with("@"):
+			# A method that restores the layer: [object, "@method", argument or null].
+			if entry[2] == null:
+				(entry[0] as Object).call(property.substr(1))
+			else:
+				(entry[0] as Object).call(property.substr(1), entry[2])
+		else:
+			(entry[0] as Object).set(property, entry[2])
 	_hidden.clear()
 
 
