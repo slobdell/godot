@@ -20,6 +20,7 @@ extends Node
 ## Flags: --perf-scene=<abs json>  --perf-warmup=S (8)  --perf-seconds=S per phase (2.5)  --perf-cycles=N (2)
 ##        --perf-zoom=0..1 (0.42, RtsCamera's level)  --perf-layers=a,b (a subset)  --perf-shot=<abs png>
 ##        --perf-shot-every-phase (one shot per phase: <shot>-<index>-<phase>.png)
+##        --perf-capped (keep FrameTarget's cap and vsync: does the locked rate hold?)  --frame-target=30|60
 
 ## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
 ## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
@@ -91,8 +92,11 @@ func _ready() -> void:
 	if flags.text("perf-layers") != "":
 		layers = Array(flags.text("perf-layers").split(",", false))
 	_phases = PerfScene.schedule(layers, cycles)
-	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-	Engine.max_fps = 0
+	# Uncapped by default (what a frame costs); --perf-capped keeps the frame target's cap and vsync (whether the target
+	# actually holds: the pacing a player sees).
+	if not flags.has("perf-capped"):
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		Engine.max_fps = 0
 	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
 	_camera.name = "PerfCamera"
 	_camera.fov = RtsCamera.FOV_DEG
@@ -403,6 +407,8 @@ func _finish_phase() -> void:
 		"frames": _frames,
 		"avg_ms": snappedf(PerfScene.mean(_samples), 0.01),
 		"p95_ms": snappedf(PerfScene.percentile(_samples, 0.95), 0.01),
+		"p99_ms": snappedf(PerfScene.percentile(_samples, 0.99), 0.01),
+		"max_ms": snappedf(PerfScene.percentile(_samples, 1.0), 0.01),
 		"gpu_ms": snappedf(PerfScene.percentile(_gpu, 0.5), 0.01),
 		"cpu_render_ms": snappedf(PerfScene.percentile(_cpu, 0.5), 0.01),
 		"draw_calls": roundi(_sums["draw_calls"] / frames),
@@ -503,6 +509,8 @@ func _finish() -> void:
 		"all_avg_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["avg_ms"]))), 0.01),
 		"all_p95_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["p95_ms"]))), 0.01),
 		"all_gpu_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["gpu_ms"]))), 0.01),
+		"holds_60fps_at_vehicles": PerfScene.holds_60fps_at(_results),
+		"holds_30fps_at_vehicles": PerfScene.holds_30fps_at(_results),
 		"layer_cost_ms": PerfScene.layer_costs(_results),
 		"layer_cost_gpu_ms": PerfScene.layer_costs(_results, "gpu_ms"),
 		"layer_draw_calls": PerfScene.layer_costs(_results, "draw_calls"),
@@ -514,6 +522,36 @@ func _finish() -> void:
 			file.store_string(JSON.stringify({"summary": summary, "phases": _results}, "  "))
 	print("PERF_SCENE_DONE")
 	get_tree().quit()
+
+
+## The scoreboard numbers: the most vehicles at which a frame rate held, from the full-scene (`all`) phases grouped by
+## vehicle count. A count holds when its median `key` reading and every smaller count's are within one frame at `fps`
+## (one noisy phase doesn't decide it); 0 if even the fewest didn't. 60 fps is judged on the average frame; the default
+## target, a LOCKED 30 (the lead's sign-off), on the 99th percentile, because a locked rate that drops isn't locked. Pure.
+static func holds_fps_at(phases: Array, fps := 60.0, key := "avg_ms") -> int:
+	var by_count := {}
+	for r: Dictionary in phases:
+		if r["phase"] == "all" and r.has(key):
+			# Packed arrays are values (orientation trip-up 48): append to a copy, then store it back.
+			var frames: PackedFloat32Array = by_count.get(int(r["vehicles"]), PackedFloat32Array())
+			frames.append(float(r[key]))
+			by_count[int(r["vehicles"])] = frames
+	var counts := by_count.keys()
+	counts.sort()
+	var held := 0
+	for count: int in counts:
+		if PerfScene.percentile(by_count[count], 0.5) > 1000.0 / fps:
+			break
+		held = count
+	return held
+
+
+static func holds_60fps_at(phases: Array) -> int:
+	return PerfScene.holds_fps_at(phases, 60.0, "avg_ms")
+
+
+static func holds_30fps_at(phases: Array) -> int:
+	return PerfScene.holds_fps_at(phases, 30.0, "p99_ms")
 
 
 static func mean(values: PackedFloat32Array) -> float:
