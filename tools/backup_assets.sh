@@ -8,6 +8,7 @@
 #   assets/incoming/          raw Meshy downloads + CC0 texture sets: the inputs the asset pipeline turns into models.
 #                             ~600 Meshy credits. Git-ignored on purpose (a GB of binaries).
 #   assets/announcer/masters/ ElevenLabs MP3 masters every shipped clip is cut from. 171k credits. Git-ignored.
+#   assets/audio/elevenlabs/  masters for the generated sound effects (guns, impacts). Paid, git-ignored.
 #   assets/music/             the lead's Suno tracks, when they arrive.
 # Everything else that matters is committed and pushed to GitHub, which is its own backup.
 #
@@ -20,7 +21,7 @@ set -uo pipefail
 host=${BACKUP_HOST:-slobdell@builder0}
 root=${BACKUP_ROOT:-tank_squad_backup}
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-paths=(assets/incoming assets/announcer/masters assets/music)
+paths=(assets/incoming assets/announcer/masters assets/audio/elevenlabs/masters assets/music)
 log="$repo/build/backup.log"
 lock=/tmp/tank_squad_backup.lock
 ssh_opts=(-o BatchMode=yes -o ConnectTimeout=10)
