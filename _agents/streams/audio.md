@@ -69,6 +69,12 @@ owns where subtitles appear).
 
 _Updated 2026-09-17 by the audio worker._
 
+### If you are picking audio up, read this section and the two after it
+They are the whole job: **never skip the whole-match pass** (below, with the engine gotcha), **how to hear and measure
+each part** (the command for every layer), and **the spare music** (what exists and what it might suit). Everything
+else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
+`assets/audio/elevenlabs/sources.json` is every sound-effect recipe with the prompt that made it.
+
 **Where the backlog stands:** X1 and X2 are built end to end and **waiting on the lead** for the batch (the pilot page
 is below). X3 is done. X4 is done except the parts that have nothing to key on yet. X5 is done. X6's tooling is done;
 the pass itself waits for the batch, so the lead hears the real mix. Stretch: solo mode done. Per-faction flavour and
@@ -269,12 +275,6 @@ moved later.
 - **Watch it:** `make cinematic`.
 - **Numbers:** `make audio-bench` (per-frame cost), `make music-check`, `make sfx-generate` (dry run, the batch's cost).
 
-### If you are picking audio up, read this section and the two after it
-They are the whole job: **never skip the whole-match pass** (below, with the engine gotcha), **how to hear and measure
-each part** (the command for every layer), and **the spare music** (what exists and what it might suit). Everything
-else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
-`assets/audio/elevenlabs/sources.json` is every sound-effect recipe with the prompt that made it.
-
 ### Never skip the whole-match pass
 **Everything else was green both times the whole-match recording found a shipped bug.** The booth's lines clipping at
 +0.1 dBFS, and the fight music stopping after 8 seconds in every match (so the whole mix had been balanced against
@@ -348,15 +348,17 @@ import cleanly today. Nothing here is second-rate — his set simply has more co
 - The balance lags the API by minutes: ledger rows show what was read when the run ended, with a note where it moved.
 
 ### Next steps
-1. **When the lead answers the pilot:** `make sfx-generate APPROVED=1` (35 takes, ~520 credits), `make sfx-layer`,
-   look at the numbers, then `make remote T=audio-pass PASS_SECONDS=150` and put the mixdown on a page for the lead
-   (X6). If he asks for changes: remixing is free (`sources.json` → `layer` settings); new prompts cost a few credits.
-2. **X4 leftovers:** the arena PA between rounds and ad screens audible near them need the ad copy (round 4's open
-   lead gate) and the screens' positions (arena's `props` of kind `ad_screen` now exist, so only the copy is missing).
-   Ground-dependent tread sounds need a surface type in the layouts; there isn't one.
-3. **Stretch, not done:** per-faction announcer flavour (a voice treatment per faction's broadcast) wants the lead's
-   view on whether one arena PA should sound different by faction at all. Lines about each map's character from
-   arena's `note` would be new text for the lead to approve before recording.
+1. **Two questions are with the lead** (the page above): whether his music sits at the right level under the battle
+   (`MusicDirector.TRIM_DB`, currently -9 dB) and whether the booth sits above it (`AnnouncerVoice.TRIM_DB`, -4 dB).
+   Both are one constant and a re-measured `audio-pass`; no credits.
+2. **He has no slow, hollow defeat track.** Defeat uses *Mechanical Dread*, which grinds rather than mourns. The
+   *Acid Rain Wasteland* prompt in `assets/music/PROMPTS.md` fills it; import with `make music-import STATE=defeat`.
+3. **`Hud.post_caption(speaker, text)`** is control's new caption line. The booth still posts
+   `post_message("CALLER: …")`, which control routes for now; switch `announcer_booth.gd` once it is on main.
+4. **Spares to spend** if per-faction or per-arena music is wanted: the table above. The director already rotates
+   between equally fitting tracks, so adding a fourth fight set is an import, not code.
+5. **Round 4 leftovers still open:** the arena PA reading between rounds needs the ad screens placed (the copy is
+   approved and recorded); per-faction *voice treatment* for the booth is unexplored.
 
 ### Requests to other streams
 - **control:** when `Hud.post_caption(speaker, text)` reaches main, the booth switches to it from
