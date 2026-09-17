@@ -23,8 +23,14 @@ const REPLAY_DELAY := 0.6
 ## The broadcast camera: height and distance behind its focus (m), how fast the focus follows the action, orbit speed.
 const SHOT := Vector2(42.0, 24.0)
 const FOCUS_RATE := 1.2
-## The shot frames every vehicle this close to where the armies meet (m).
-const CLUSTER_RADIUS := 35.0
+## The shot frames every vehicle this close to its centre (m); a frame needs MIN_IN_SHOT of them to be recorded.
+const CLUSTER_RADIUS := 30.0
+const MIN_IN_SHOT := 3
+## Kills and hits pull the shot for this long (s); a far switch is a cut, at most every CUT_SECONDS; with no frame worth
+## recording for STALE_SECONDS the screens go back to ads.
+const EVENT_SECONDS := 4.0
+const CUT_SECONDS := 3.0
+const STALE_SECONDS := 2.0
 const ORBIT_RAD_PER_S := 0.06
 const FOV_DEG := 50.0
 
@@ -95,11 +101,14 @@ var _orbit := 0.0
 var _since_render := 0.0
 var _match: Node
 var _finished := false
-var _heat := Vector3.ZERO
-var _heat_weight := 0.0
 var _environment: Environment
-var _front := Vector3.ZERO
-var _front_left := 0.0
+var _target := Vector3.ZERO
+var _shot_left := 0.0
+var _in_shot := 0
+var _last_cut := -1000.0
+var _last_recorded := -1000.0
+## Recent kills and hits: [{position, time, weight}], newest last.
+var _events: Array = []
 
 
 ## The feed for `node`'s viewport, created on first use; null where nothing renders.
@@ -130,7 +139,8 @@ func _ready() -> void:
 func is_live() -> bool:
 	if ring == null:
 		return false  # not built yet (the channel asked before the feed entered the tree)
-	return enabled and LiveFeed.should_be_live(_match_running(), _finished, not slots.is_empty()) and ring.recorded > 0
+	return enabled and LiveFeed.should_be_live(_match_running(), _finished, not slots.is_empty()) and ring.recorded > 0 \
+			and (replaying or now - _last_recorded <= STALE_SECONDS)
 
 
 ## The texture screens show: the replay frame while replaying, else the newest slot.
@@ -163,6 +173,9 @@ func _process(delta: float) -> void:
 	if _since_render < 1.0 / FEED_HZ:
 		return
 	_since_render = fmod(_since_render, 1.0 / FEED_HZ)
+	if not LiveFeed.worth_recording(_in_shot):
+		return  # empty ground: the screens hold the last good frame (or go back to ads once it's stale)
+	_last_recorded = now
 	var slot := ring.record()
 	cameras[slot].global_transform = _shot()
 	slots[slot].render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -187,6 +200,8 @@ func _build() -> void:
 		viewport.mesh_lod_threshold = 8.0
 		var camera := Camera3D.new()
 		camera.fov = FOV_DEG
+		# Portrait screens: FOV_DEG across, so the shot is as wide as the scrap rather than a tall sliver.
+		camera.keep_aspect = Camera3D.KEEP_WIDTH
 		camera.far = 260.0
 		camera.environment = _feed_environment()
 		viewport.add_child(camera)
@@ -226,52 +241,62 @@ func _match_running() -> bool:
 
 ## Where the action is: kills and hits pull the focus (weighted, fading), else the middle of the living vehicles.
 func _follow_action(delta: float) -> void:
-	_heat_weight = maxf(0.0, _heat_weight - delta * 0.15)
-	_front_left -= delta
-	if _front_left <= 0.0:
-		_front_left = 0.5
-		_front = _front_line()
-	var target := _heat.lerp(_front, 0.35) if _heat_weight > 0.05 else _front
-	focus = focus.lerp(target, clampf(delta * FOCUS_RATE, 0.0, 1.0))
 	_orbit += delta * ORBIT_RAD_PER_S
-
-
-## Where the armies meet: the middle of the closest pair of opposing living vehicles (the middle of everyone is the empty
-## ground between two armies).
-func _front_line() -> Vector3:
+	_shot_left -= delta
+	if _shot_left > 0.0:
+		focus = focus.lerp(_target, clampf(delta * FOCUS_RATE, 0.0, 1.0))
+		return
+	_shot_left = 0.5
+	var points: Array = []
+	var teams: Array = []
 	var tanks: Node = _match.get("tanks") if _match != null else null
-	if tanks == null:
-		return focus
-	var sides := [[], []]
-	for tank in tanks.get_children():
-		if tank is Node3D and (tank as Node3D).visible and tank.get("team") != null:
-			(sides[clampi(int(tank.get("team")), 0, 1)] as Array).append(FxWorld.visual_transform(tank as Node3D).origin)
-	var meet := LiveFeed.closest_pair_middle(sides[0], sides[1], focus)
-	return LiveFeed.cluster_middle((sides[0] as Array) + (sides[1] as Array), meet, CLUSTER_RADIUS)
+	if tanks != null:
+		for tank in tanks.get_children():
+			if tank is Node3D and (tank as Node3D).visible and tank.get("team") != null:
+				points.append(FxWorld.visual_transform(tank as Node3D).origin)
+				teams.append(int(tank.get("team")))
+	var events: Array = []
+	for event: Dictionary in _events:
+		events.append({"position": event["position"], "age": now - float(event["time"]), "weight": event["weight"]})
+	var shot := LiveFeed.best_shot(points, teams, events)
+	_target = shot["point"]
+	_in_shot = int(shot["count"])
+	# A far switch is a broadcast cut, not a pan across empty ground.
+	if Vector2(_target.x - focus.x, _target.z - focus.z).length() > CLUSTER_RADIUS and now - _last_cut >= CUT_SECONDS:
+		focus = _target
+		_last_cut = now
+	else:
+		focus = focus.lerp(_target, clampf(delta * FOCUS_RATE, 0.0, 1.0))
 
 
-## The centroid of every position within `radius` of `around` (x, z), or `around` when none are. Pure.
-static func cluster_middle(points: Array, around: Vector3, radius: float) -> Vector3:
-	var sum := Vector3.ZERO
-	var count := 0
-	for p: Vector3 in points:
-		if Vector2(p.x - around.x, p.z - around.z).length() <= radius:
-			sum += Vector3(p.x, 0.0, p.z)
-			count += 1
-	return sum / count if count > 0 else around
+## The best shot: the vehicle whose neighbourhood (CLUSTER_RADIUS) scores highest for vehicles in it, both teams being
+## there, and fresh kills and hits nearby; framed on the centroid of that neighbourhood. `events` are
+## {position, age (s), weight}. Returns {point, count, score}. Pure.
+static func best_shot(points: Array, teams: Array, events: Array) -> Dictionary:
+	var best := {"point": Vector3.ZERO, "count": 0, "score": -1.0}
+	for i in points.size():
+		var center: Vector3 = points[i]
+		var count := 0
+		var sides := {}
+		var sum := Vector3.ZERO
+		for j in points.size():
+			var p: Vector3 = points[j]
+			if Vector2(p.x - center.x, p.z - center.z).length() <= CLUSTER_RADIUS:
+				count += 1
+				sides[teams[j]] = true
+				sum += Vector3(p.x, 0.0, p.z)
+		var score := float(count) + (3.0 if sides.size() > 1 else 0.0)
+		for event: Dictionary in events:
+			var at: Vector3 = event["position"]
+			if Vector2(at.x - center.x, at.z - center.z).length() <= CLUSTER_RADIUS:
+				score += 2.5 * float(event["weight"]) * maxf(0.0, 1.0 - float(event["age"]) / EVENT_SECONDS)
+		if score > float(best["score"]):
+			best = {"point": sum / count, "count": count, "score": score}
+	return best
 
 
-## The middle of the closest pair between two sets of positions, or `fallback` when either is empty. Pure.
-static func closest_pair_middle(a: Array, b: Array, fallback: Vector3) -> Vector3:
-	var best := INF
-	var middle := fallback
-	for p: Vector3 in a:
-		for q: Vector3 in b:
-			var d := Vector2(p.x - q.x, p.z - q.z).length_squared()
-			if d < best:
-				best = d
-				middle = Vector3((p.x + q.x) * 0.5, 0.0, (p.z + q.z) * 0.5)
-	return middle
+static func worth_recording(vehicles_in_shot: int) -> bool:
+	return vehicles_in_shot >= MIN_IN_SHOT
 
 
 func _shot() -> Transform3D:
@@ -280,13 +305,13 @@ func _shot() -> Transform3D:
 
 
 func _on_spectacle(position: Vector3, weight: float) -> void:
-	# The feed cuts toward the action; the bigger the moment, the harder it pulls.
+	# Kills and hits pull the shot (best_shot weighs them); the biggest are replayed.
 	var pull := clampf(weight, 0.0, 1.0)
 	var at := Vector3(position.x, 0.0, position.z)
 	if pull >= 0.3:
-		# A cold heat point jumps to the event (blending from wherever it last was would aim between old and new).
-		_heat = at if _heat_weight <= 0.05 else _heat.lerp(at, pull * 0.5)
-		_heat_weight = maxf(_heat_weight, pull)
+		_events.append({"position": at, "time": now, "weight": pull})
+		while not _events.is_empty() and (_events.size() > 24 or now - float(_events[0]["time"]) > EVENT_SECONDS):
+			_events.pop_front()
 	if not replaying and _pending_replay_at < 0.0 \
 			and LiveFeed.wants_replay(weight, Vector2(position.x - focus.x, position.z - focus.z).length(), now - _last_replay):
 		_pending_replay_at = now + REPLAY_DELAY

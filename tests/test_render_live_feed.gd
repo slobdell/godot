@@ -43,14 +43,25 @@ func test_a_kill_near_the_shot_asks_for_a_replay_and_one_far_away_doesnt() -> vo
 	assert_true(not LiveFeed.wants_replay(1.0, 10.0, LiveFeed.REPLAY_COOLDOWN - 1.0), "not twice in a row")
 
 
-func test_the_broadcast_camera_aims_where_the_armies_meet_not_between_them() -> void:
-	var green := [Vector3(0, 0, 80), Vector3(10, 0, 20), Vector3(-10, 0, 90)]
-	var rust := [Vector3(0, 0, -80), Vector3(12, 0, 10), Vector3(40, 0, -60)]
-	assert_eq(LiveFeed.closest_pair_middle(green, rust, Vector3.ZERO), Vector3(11, 0, 15), "the closest opposing pair")
-	assert_eq(LiveFeed.closest_pair_middle([], rust, Vector3(1, 0, 1)), Vector3(1, 0, 1), "one army gone: hold the shot")
+func test_the_shot_picks_the_densest_mixed_scrap_and_recent_violence() -> void:
+	# A lone pair near the centre, a big mixed brawl to the north, a big idle group to the south.
+	var points: Array = [Vector3(0, 0, 0), Vector3(6, 0, 0)]
+	var teams: Array = [0, 1]
+	for i in 6:
+		points.append(Vector3(i * 4.0, 0, -60)); teams.append(i % 2)
+	for i in 6:
+		points.append(Vector3(i * 4.0, 0, 70)); teams.append(0)
+	var shot := LiveFeed.best_shot(points, teams, [])
+	assert_true((shot["point"] as Vector3).z < -40.0, "the mixed brawl beats an idle group of the same size (%s)" % shot)
+	assert_true(int(shot["count"]) >= 6, "and frames all of it")
+	var events := [{"position": Vector3(70, 0, 70), "age": 0.5, "weight": 1.0}]
+	points.append(Vector3(70, 0, 70)); teams.append(1)
+	points.append(Vector3(74, 0, 70)); teams.append(0)
+	points.append(Vector3(70, 0, 74)); teams.append(0)
+	var hot := LiveFeed.best_shot(points, teams, events + events + events + events)
+	assert_true((hot["point"] as Vector3).x > 50.0, "a fresh kill pulls the shot to a smaller scrap (%s)" % hot)
 
 
-func test_the_shot_frames_the_whole_scrap_around_the_meeting_point() -> void:
-	var points := [Vector3(0, 0, 0), Vector3(10, 0, 0), Vector3(20, 0, 10), Vector3(200, 0, 0)]
-	assert_eq(LiveFeed.cluster_middle(points, Vector3(5, 0, 0), 35.0), Vector3(10, 0, 10.0 / 3.0), "the three nearby, not the straggler")
-	assert_eq(LiveFeed.cluster_middle(points, Vector3(-100, 0, 0), 35.0), Vector3(-100, 0, 0), "nobody near: keep the point")
+func test_empty_ground_is_never_recorded() -> void:
+	assert_true(LiveFeed.worth_recording(3), "three vehicles in shot: record")
+	assert_true(not LiveFeed.worth_recording(1), "a lone vehicle on asphalt: hold the last good frame")
