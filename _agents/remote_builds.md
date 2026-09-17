@@ -14,6 +14,13 @@ make remote T=skirmish-shots           # rendering targets use builder0's logged
 tools/remote.sh ai-ladder VARIANTS=a6,a5   # the script directly
 ```
 
+**Read the result from the wrapper's own line, never from a shell exit code.** The last thing `tools/remote.sh`
+prints is `>> remote: make <target> exited <N> (build/ copied back)`, and that `N` is the build's verdict. **Do not
+pipe the command** (`make remote T=check | tail -20`): a pipeline reports the exit status of the *last* command in it,
+so a failed build comes back as 0 and reads as green — that happened on 2026-09-17 and left `main` red for an hour.
+Run it unpiped (or in the background) and then grep the saved output for that line and for the runner's
+`N passed, M failed` summary. A harness line such as `[exited with code 0]` describes the wrapper, not the build.
+
 **Workers: use `make remote T=…` for every heavy target** (check, test, smokes, match series, ladders, exports,
 screenshots). Run light things locally (editing, `make lint`, a single quick test if builder0 is unreachable).
 Interactive targets that open a window for the lead (`make skirmish`, `make editor`) stay local.

@@ -276,3 +276,9 @@ The kickoff prompt is one line; this section is the rest.
     "fixes" for a black rectangle under every vehicle failed, because a `sed` edit silently matched nothing and the
     screenshot after it was trusted. A failed edit and a wrong diagnosis look identical from the outside. Verify the
     edit landed (and the build rebuilt) before reasoning about the renderer, the engine or the data.
+28. **A piped command reports the pipe's exit code, not the command's.** Round 5: the orchestrator ran
+    `make remote T=check 2>&1 | tail -20` and read the 0 that came back as "main is green". The exit code was
+    `tail`'s; the remote build had failed, and main sat red for an hour until a worker ran the suite locally and said
+    so. The signal to read is the wrapper's own line, `>> remote: make check exited <N>`, and the pass/fail summary
+    from the runner -- never the shell's status through a pipe, and never the harness's "[exited with code 0]", which
+    reports the wrapper, not the build. Run heavy checks unpiped, then grep the saved output.
