@@ -28,7 +28,8 @@ extends Node
 ## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer), lod_4 / lod_8 (mesh LOD threshold px),
 ## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count),
 ## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
-## ground_chunked (the floor's tiling flipped), team_paint (hulls in a dulled team color; not restored, run it last).
+## ground_chunked (the floor's tiling flipped), team_paint (hulls in a dulled team color; not restored, run it last),
+## no_live_feed (the arena screens' live match feed and replay ring).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -158,6 +159,10 @@ func _process(delta: float) -> void:
 		_shot_taken = true
 		var path := shot_path.get_basename() + "-%02d-%s.png" % [_phase_index, _phases[_phase_index]] if shot_every_phase else shot_path
 		get_viewport().get_texture().get_image().save_png(path)
+		# The arena screens' live feed as it is right now (a readback: only for these shots).
+		var feed := LiveFeed.for_node(self)
+		if feed != null and feed.texture() != null:
+			feed.texture().get_image().save_png(path.get_basename() + "-feed.png")
 	if _phase_time >= phase_seconds:
 		_finish_phase()
 		if _phase_index + 1 < _phases.size():
@@ -319,6 +324,10 @@ func _apply(phase: String) -> void:
 				var part: Variant = dressing2.get("ground" if phase == "no_ground" else "structures")
 				if part is Node3D:
 					_override(part, "visible", false)
+		"no_live_feed":
+			var feed := LiveFeed.for_node(self)
+			if feed != null:
+				_override(feed, "enabled", false)
 		"team_paint":
 			# A look for the lead's team-read question (M3): hulls coated in a dulled team color. Not restored: run it last.
 			for tank in _living_tanks():
@@ -410,6 +419,8 @@ func _finish_phase() -> void:
 		"process_game_ui_ms": snappedf(_cpu_sums["game_ui_ms"] / frames, 0.01),
 		"process_fx_ms": snappedf(_cpu_sums["fx_ms"] / frames, 0.01),
 		"fx_steps_ms": _fx_steps(frames),
+		"feed_live": LiveFeed.for_node(self).is_live() if LiveFeed.for_node(self) != null else false,
+		"feed_replays": LiveFeed.for_node(self).replays_started if LiveFeed.for_node(self) != null else 0,
 		"ticks_per_frame": snappedf(float(_tick_totals["ticks"]) / frames, 0.01),
 		"tick_script_ms": snappedf(float(_tick_totals["usec"]) / maxf(float(_tick_totals["ticks"]), 1.0) / 1000.0, 0.01),
 	}

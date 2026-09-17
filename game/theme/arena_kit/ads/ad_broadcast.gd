@@ -47,6 +47,9 @@ var _kills := [0, 0]
 var _match_search := 0.0
 var _match_tries := 0
 var _watched: Node
+## Render (round 5): the live match feed every channel shows during a fight (LiveFeed); null where nothing renders.
+var _feed: LiveFeed
+var _showing_live := false
 
 
 ## The channel named `name` in `node`'s viewport, created on first use.
@@ -93,10 +96,35 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	advance(delta)
 	_find_match(delta)
+	if _show_live():
+		return
 	# Phones redraw the feed at half the frame rate; the shader's flicker hides it.
 	if FxQuality.tier() == FxQuality.Tier.LOW:
 		_frame_skip = (_frame_skip + 1) % 2
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE if _frame_skip == 0 else SubViewport.UPDATE_DISABLED
+
+
+## "Live during, ads between" (the lead, round 5): while a match is fought the screens show LiveFeed and the ad layout stops
+## redrawing; between matches, the ads. Returns true while live.
+func _show_live() -> bool:
+	if _feed == null or not is_instance_valid(_feed):
+		_feed = LiveFeed.for_node(self)
+	var live := _feed != null and _feed.is_live()
+	var live_texture: Texture2D = _feed.texture() if live else null
+	live = live and live_texture != null
+	if live:
+		screen_material.set_shader_parameter("feed", live_texture)
+		if not _showing_live:
+			viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	elif _showing_live:
+		screen_material.set_shader_parameter("feed", viewport.get_texture())
+		_apply_quality()
+	_showing_live = live
+	return live
+
+
+func is_showing_live() -> bool:
+	return _showing_live
 
 
 ## Moves the channel `delta` seconds forward (called every frame; tests call it directly).
