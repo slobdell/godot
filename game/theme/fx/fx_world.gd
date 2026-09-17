@@ -289,7 +289,7 @@ func muzzle_flash(position: Vector3, color: Color) -> void:
 ## glow. `source` is the beam visual (removed when it's freed).
 func laser(source: Object, from: Vector3, to: Vector3, color: Color) -> void:
 	beams.add(source, from, to, color, now)
-	sfx.play_at("laser_pulse", from)
+	# The shot's own sound is played by WeaponFx, which knows which weapon fired (a railgun is not a laser).
 	bursts.spawn(BurstSystem.Kind.STAR, from, 1.6, 0.08, color, now)
 	bursts.spawn(BurstSystem.Kind.STAR, to, 2.2, 0.14, color.lightened(0.4), now)
 	bursts.spawn(BurstSystem.Kind.GROUND_GLOW, to, 6.0, 0.35, color * 0.8, now)

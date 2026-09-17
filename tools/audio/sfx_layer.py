@@ -58,6 +58,8 @@ DEFAULTS = {
     "fade_s": 0.25,            # the tail's fade out
     "gain_db": 0.0,            # louder than the synthesised take it replaces
     "tail_lift_db": 0.0,       # raise the decay by up to this much: the rolling tail the lead asked for
+    "sub_db": None,            # a synthesised low body under the take, at this level (None = none)
+    "sub_hz": 55.0,            # where that body sits
 }
 
 
@@ -108,6 +110,21 @@ def harmonics(x: np.ndarray, rate: int = RATE) -> np.ndarray:
         return np.zeros_like(x)
     driven = np.tanh(low / peak * 6.0)
     return bandpass(driven, 150.0, 1500.0, rate)
+
+
+def sub_body(x: np.ndarray, hz: float, rate: int = RATE) -> np.ndarray:
+    """A low body under a sound that has none: a decaying sine at `hz`, shaped by the take's own envelope and
+    pitched down a little as it decays, the way a real impact's body does. Generated energy weapons come back as
+    all crack and hiss (2-4% of their energy below 200 Hz); this is what makes one land in the chest."""
+    env = envelope(x, 0.02)
+    if env.max() <= 0:
+        return np.zeros_like(x)
+    env = env / env.max()
+    t = np.arange(len(x)) / rate
+    decay = np.exp(-t * 2.2)
+    sweep = hz * (1.0 + 0.35 * np.exp(-t * 9.0))  # a touch higher at the strike, settling: weight, not a sweep
+    phase = 2 * np.pi * np.cumsum(sweep) / rate
+    return np.tanh(np.sin(phase) * 1.6) * env * decay
 
 
 def loudness_db(x: np.ndarray, rate: int = RATE) -> float:
@@ -200,6 +217,8 @@ def build_take(master: Path, source: dict, take: int) -> tuple[np.ndarray, dict]
     mixed = body.copy()
     if settings["harmonics_db"] is not None:
         mixed += harmonics(body) * np.abs(body).max() * 10 ** (float(settings["harmonics_db"]) / 20)
+    if settings["sub_db"] is not None:
+        mixed += sub_body(body, float(settings["sub_hz"])) * np.abs(mixed).max() * 10 ** (float(settings["sub_db"]) / 20)
     synth_path = synth_take(source["sound"], take)
     reference = decode(synth_path) if synth_path else None
     if reference is not None and not loop and float(settings["transient_ms"]) > 0:
