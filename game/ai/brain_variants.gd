@@ -24,6 +24,8 @@ extends RefCounted
 ##                     slow gun reloads, when the deck lets my rounds through (TankBrain.DECK_SEEK_GAIN)
 ##   short_halt_lead   (float) how long (s) before the gun is loaded the halt starts, after braking (default 0.15)
 ##   avoid_beaten      steer manoeuvres away from walls of bullets, and suppress on purpose (round-4 X3, L2; default on)
+##   exec_stride       (int) execution LOD (round-5 X1): steer, and aim a reloading gun, every this many ticks, holding the
+##                     last throttle, turn and aim in between; any new order or reflex executes at once (default 1)
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -50,6 +52,9 @@ const PROFILES := {
 	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9},
 	# Round-4 X3 control: the champion with L2 taken away — it neither avoids beaten zones nor fires to suppress.
 	# The control for every suppression measurement, and the "before" the ladder compares against.
+	# Round-5 X1: the champion steering (and aiming while reloading) at 30 Hz instead of 60. A cost cut that has to
+	# prove it costs no behaviour: scenarios and a ladder against x4t9 before it is adopted.
+	"x5e2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "exec_stride": 2},
 	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "avoid_beaten": false},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.

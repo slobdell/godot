@@ -47,6 +47,8 @@ const COVER_QUERY_TOUGHNESS := 0.8
 const MAX_CONTACTS := 8
 ## A retreating tank that's in a gun's sight first breaks line of sight at cover this close (meters), then withdraws.
 const RETREAT_COVER_DISTANCE := 25.0
+## COVER_FIRE is worth nothing to a gun reloading this fast or faster (seconds): decide() scores it 0 there.
+const COVER_FIRE_RELOAD_FLOOR := 0.4
 ## COVER_FIRE (A3): hide and peek spots count as reached within this distance (meters).
 const SPOT_ARRIVE := 1.0
 ## ...peek when the gun will be loaded by the time the tank gets there, driving at about this speed (m/s),
@@ -341,6 +343,7 @@ func think(_delta: float) -> void:
 		choice = {}
 		tank.intent = ""
 		return
+	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("exec_stride", 1)))
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
 	var squad := game_match.squad_for(tank)
@@ -411,7 +414,7 @@ func think(_delta: float) -> void:
 ## Reads this unit's order from the match's Orders (OrderFeed). True when it changed since the last poll. Polled on
 ## every think tick and whenever order_changed named this unit (every tick if the source has no signal).
 func _poll_order(think_tick: bool) -> bool:
-	var feed := OrderFeed.source(game_match)
+	var feed := AiTickCache.order_source(game_match)
 	if feed != _order_source:
 		_order_source = feed
 		_order_dirty = true
@@ -451,7 +454,7 @@ func _on_order_changed(unit_name: String) -> void:
 ## since the last poll (`key`), which is what must reach the hull the same tick. Slot positions move with the leader
 ## and are simply refreshed.
 func _poll_element(think_tick: bool) -> bool:
-	var feed := ElementFeed.source(game_match)
+	var feed := AiTickCache.element_source(game_match)
 	if feed != _element_source:
 		_element_source = feed
 		_element_dirty = true
@@ -852,7 +855,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		# shots); cautious crews like it more. Considerations: fight appetite × reload × caution × spot quality.
 		if features.get("cover_fire", true) and not cover_fire.is_empty() and cover_fire["target"] == pair[0] \
 				and weapon["kind"] != Weapons.Kind.ARC:
-			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), 0.4, 2.0)
+			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), COVER_FIRE_RELOAD_FLOOR, 2.0)
 			var spot_quality := UtilityCurves.floor_at(float(cover_fire.get("score", 0.5)), 0.6)
 			var cover_value := score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality
 			add.call("COVER_FIRE", pair[0], cover_value)
@@ -1342,6 +1345,12 @@ func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> 
 ## while the tank stays near the hide spot, the target stays put, and the hide spot stays hidden from it.
 func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary, cover_map: CoverMap) -> Variant:
 	if tank.weapon["kind"] == Weapons.Kind.ARC:
+		return null
+	# Round-5 X1: decide() scores COVER_FIRE × UtilityCurves.linear(reload, COVER_FIRE_RELOAD_FLOOR, 2.0), which is 0 for a
+	# gun this quick (a machine gun gains nothing ducking between rounds), and a zero never wins: don't search for spots
+	# nobody will use. Same for variants without cover fire.
+	if float(tank.weapon["reload"]) <= COVER_FIRE_RELOAD_FLOOR or not BrainVariants.for_team(tank.team).get("cover_fire", true):
+		_cover_fire_cache = {}
 		return null
 	var reach := float(tank.weapon["range"])
 	var target: Dictionary = {}
