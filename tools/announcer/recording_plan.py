@@ -7,7 +7,7 @@ on. Nothing is sliced and nothing is stitched at runtime: a cue plays exactly on
 That replaces the carrier-and-filler scheme of rounds 3-4. It was cut at word boundaries and levelled carefully and
 it still sounded pasted, because a sentence's intonation spans the whole sentence: a word lifted out of one
 recording carries the wrong pitch, stress and length into another. The lead heard it immediately
-(_agents/streams/audio.md, *Why stitching failed*). No amount of tuning the cuts fixes prosody.
+(_agents/streams/archive/round4/audio.md, *Why stitching failed*). No amount of tuning the cuts fixes prosody.
 
 The cost is combinations, so the library's writing rules keep them small: one variable thing per sentence, no exact
 numbers, and teams (2 values) and arenas (3) are cheap enough to record whole. [constant MAX_COMBINATIONS] is the

@@ -7,7 +7,7 @@ they were cut from are git-ignored (about 1.1 GB) and let anything here be re-cu
 `caller.kill.01@law.tank` is "The Law take out the tank!" recorded as a single utterance. Nothing is assembled at
 playback. Until round 4 clips were carrier fragments joined with recorded filler words at runtime; it sounded
 pasted, because a sentence's intonation spans the whole sentence, and no amount of tuning the cuts fixed it
-(`_agents/streams/audio.md`, *Why stitching failed*).
+(`_agents/streams/archive/round4/audio.md`, *Why stitching failed*).
 
 **Godot deliberately ignores this folder** (`.gdignore`, written by the generator so wiping the folder cannot lose
 it). Nothing here is a Godot resource:

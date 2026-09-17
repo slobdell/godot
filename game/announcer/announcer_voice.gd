@@ -79,7 +79,7 @@ func _ready() -> void:
 ## realization was never recorded, and then the cue is subtitles only.
 ##
 ## Until round 4 a cue was assembled from carrier segments and filler words at playback time. It sounded pasted,
-## because a sentence's intonation spans the whole sentence (_agents/streams/audio.md, *Why stitching failed*).
+## because a sentence's intonation spans the whole sentence (_agents/streams/archive/round4/audio.md, *Why stitching failed*).
 func files_for(cue: Dictionary) -> PackedStringArray:
 	var files := PackedStringArray()
 	var line: Dictionary = manifest.get("lines", {}).get(cue["line_id"], {})

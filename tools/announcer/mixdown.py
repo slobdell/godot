@@ -34,7 +34,7 @@ def cue_clips(cue: dict, manifest: dict) -> list[str]:
 
     Until round 4 this returned carrier segments and filler words to be joined at playback. That is gone: a word
     lifted out of one recording carries the wrong intonation into another, and it was audible
-    (_agents/streams/audio.md, *Why stitching failed*)."""
+    (_agents/streams/archive/round4/audio.md, *Why stitching failed*)."""
     line = manifest["lines"][cue["line_id"]]
     key = cue.get("variant_key")
     if key is None:

@@ -1,6 +1,6 @@
 # The soundtrack: one prompt per state
 
-Owner: the audio stream ([../../_agents/streams/audio.md](../../_agents/streams/audio.md), X6). Design:
+Owner: the audio stream ([../../_agents/streams/audio.md](../../_agents/streams/audio.md)). Design:
 [../../_agents/game_design.md](../../_agents/game_design.md) *Audio: cinematic, and alive*.
 
 The lead writes these tracks in Suno himself. **This file is the brief**: what to generate, in what style, and what

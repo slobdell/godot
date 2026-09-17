@@ -1,5 +1,5 @@
 extends TestCase
-## Round-4 X1 (_agents/streams/ai.md): the L1 seam. ElementFeed normalizes whatever doctrine's `Elements` publishes
+## Round-4 X1 (_agents/streams/archive/round4/ai.md): the L1 seam. ElementFeed normalizes whatever doctrine's `Elements` publishes
 ## into the few things a brain executes — my slot, my sector of fire, and whether I am the half that moves or the half
 ## that shoots. Behavior on the real arena: tests/ai_scenarios/scenario_elements.gd.
 ##
