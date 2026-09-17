@@ -121,9 +121,14 @@ happens. Everything the player perceives is stretched by that: the same order on
   the click. At 30+ fps that is 10–18 ms, which is instant. Nothing control can add makes a 147 ms frame feel quicker.
 - **Locomotion is a secondary effect:** 8 ticks to start moving at 30 a side vs 3 with ten vehicles. Worth combat
   knowing, but it is measured in sim ticks, so it is mostly the tick starvation again.
-- **So: this is CP1's wall**, which combat's 30 Hz tick and render's frame targets exist to fix. Re-run
-  `make response-test` after the 30 Hz flip; the harness prints the same six numbers, and the target is the median
-  "vehicle visibly starts" under ~150 ms at 30 a side.
+- **So: this is CP1's wall**, which combat's 30 Hz tick and render's frame targets exist to fix.
+
+**`make response-test` is a standing gate, not a one-off.** The target: **the median "vehicle visibly starts" under
+~150 ms at 30 a side** (today: 202 ms; 59 ms with ten vehicles). It is the only measurement of how the game *feels* to
+a hand on a mouse rather than how fast it computes, so run it whenever the tick rate, locomotion or the frame budget
+changes — and **run it on a machine that draws frames: builder0's remote desktop draws ~1 fps and makes every number
+here meaningless.** Re-run it immediately after combat's 30 Hz flip, beside render's frame numbers: one says the frame
+holds, the other says the game answers the player's hand.
 
 **Also fixed for the second half of the lead's sentence** ("they all also just rush forward right away at the start"):
 ai found that a brain which has never been ordered follows its doctrine's objective, so in a faction skirmish the
@@ -367,8 +372,9 @@ Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cp
 
 1. Flip `ELEMENT_CPU_DEFAULT` when ai's variant wins at scale.
 2. Touch: the desktop grammar, hints and menus have no touch path yet.
-3. A replay of the last match, once the simulation replays from recorded orders.
-4. Carried from closed streams: `Arena._ready` reads `--arena` / `--seed` from the command line only, so a match started
+3. Re-run `make response-test` after combat's 30 Hz flip (the standing gate above) and report the six numbers.
+4. A replay of the last match, once the simulation replays from recorded orders.
+5. Carried from closed streams: `Arena._ready` reads `--arena` / `--seed` from the command line only, so a match started
    from a menu cannot pass them; `GameLauncher` works around it (see *The arena picker*), so a player sees nothing wrong.
 
 ### Merge notes (shared files)

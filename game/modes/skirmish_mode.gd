@@ -191,6 +191,8 @@ func _start_match() -> void:
 	# enemy base — which in a faction skirmish is the *player's* army leaving before he can command it (the lead: "they
 	# all also just rush forward right away at the start"). This tells the brains which side has a commander; they hold
 	# their spawn until he orders them. A spectated match has no commander, so both sides play themselves.
+	# --cinematic is spectator mode: nobody is commanding, so the meta is deliberately left unset and both sides play
+	# themselves. Don't "tidy" this into an unconditional set_meta, or SPECTATE becomes two armies sitting still.
 	if not flags.has("cinematic"):
 		game_match.set_meta("player_team", Match.Team.GREEN)
 	# The center control point is on by default (the lead: "control point on by default"; combat X7 measured CPU vs CPU

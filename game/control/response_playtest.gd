@@ -10,6 +10,12 @@ extends Node
 ##   frame      the next frame actually drawn            (render + the simulation tick)
 ##   move       the vehicle visibly turning or moving    (combat's locomotion, once the order is in)
 ##
+## **Run this on a machine that actually draws frames** — the lead's laptop, not builder0, whose remote desktop draws
+## about one frame a second and turns every number here into nonsense.
+##
+## The standing target: the median "vehicle visibly starts" under ~150 ms at 30 a side. Nothing else in the project
+## measures how the game *feels* to a hand on a mouse, as opposed to how fast it computes.
+##
 ## Each sample is one right-click ordering the whole selection somewhere, repeated ORDERS times at both army sizes the
 ## run is given. `--response-test=DIR` on a skirmish: prints RESPONSE_TEST lines and a RESPONSE_TEST_SUMMARY JSON,
 ## writes DIR/response.json, then quits. Movement is judged on the *drawn* position (Shown), not the tick's, because

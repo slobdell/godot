@@ -121,7 +121,9 @@ RESPONSE_DIR := $(BUILD_DIR)/response-test
 RESPONSE_BUDGET ?= 6500
 RESPONSE_SMALL_BUDGET ?= 1200
 
-response-test: import ## Click → order → acknowledgement → first visible movement in ms, at ~30 a side and at a small army → build/response-test/ (needs a display)
+## Run it where frames are actually drawn: builder0's remote desktop draws ~1 fps and makes every number meaningless.
+## Standing target: median "vehicle visibly starts" under ~150 ms at 30 a side.
+response-test: import ## Click → order → acknowledgement → first visible movement in ms, at ~30 a side and at a small army → build/response-test/ (a real display, NOT builder0)
 	rm -rf $(RESPONSE_DIR) && mkdir -p $(RESPONSE_DIR)/big $(RESPONSE_DIR)/small
 	for size in big:$(RESPONSE_BUDGET) small:$(RESPONSE_SMALL_BUDGET); do \
 		name=$${size%%:*}; budget=$${size##*:}; \
