@@ -49,6 +49,7 @@ def main(argv: list[str]) -> int:
     report["booth_lines"] = len(re.findall(r"HUD_MESSAGE \[info\] (CALLER|VETERAN|PA):", log))
     report["music_changes"] = len(re.findall(r"^MUSIC_(TRACK|LAYERS)", log, re.M))
     report["silent_windows"] = sum(1 for level in report["rms_dbfs_every_5s"] if level < -50)
+    report["booth_named_arena"] = sorted(set(re.findall(r"\bthe (Foundry|Furnace|Scrapyard|Container Yard|Boulevard|Pit|Boneyard)\b", log)))
     base = wav.with_suffix("")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wav), "-c:a", "libmp3lame", "-b:a", "160k",
                     str(base) + ".mp3"], check=True)
@@ -57,9 +58,10 @@ def main(argv: list[str]) -> int:
                     "[s][w]vstack=inputs=2", str(base) + ".png"], check=False)
     Path(str(base) + ".json").write_text(json.dumps(report, indent=1) + "\n")
     print("audio-pass: %.0f s, %s LUFS integrated, range %s LU, true peak %s dBFS, %d clipped samples, "
-          "%d booth lines, %d music changes, %d silent 5 s windows" % (
+          "%d booth lines, %d music changes, %d silent 5 s windows, arena named %s" % (
               report["seconds"], report["integrated_lufs"], report["range_lu"], report["true_peak_dbfs"],
-              report["clipped_samples"], report["booth_lines"], report["music_changes"], report["silent_windows"]))
+              report["clipped_samples"], report["booth_lines"], report["music_changes"], report["silent_windows"],
+              ",".join(report["booth_named_arena"]) or "never"))
     print("  loudness every 5 s (dBFS RMS): %s" % " ".join("%.0f" % v for v in report["rms_dbfs_every_5s"]))
     print("  listen: %s.mp3   look: %s.png" % (base, base))
     return 0
