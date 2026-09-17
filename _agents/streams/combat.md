@@ -165,7 +165,7 @@ game (below). Nothing is blocked on the lead.
 |---|---|
 | CP1 sim cost | Done: `make sim-profile`, floating hulls, parked hulls, active-cell threat decay, per-frame caching, Jolt (merged), and the 30 Hz tick |
 | X1 ranges and maneuver | **Measured, not tuned.** `make engagement` + `stats.engagement`; `effective_range` falloff is in and inert (`--tune`-able), variants ready in `tools/matchup_variants/x1_range_falloff.json` |
-| X2 cover | Not started (needs a series on arena's merged maps) |
+| X2 cover | **Mechanics half done and measured** (balance.md *Round 5 X2*): a wall stops direct fire completely (0 damage against 113 in the open) and fire on the far side still suppresses (0.27 of a 0.60 pin). The battle half — does cover change where units die — needs the re-taken baseline |
 | X3 the gangs | Not started, and the ground moved: see *Do not tune the gangs yet* below |
 | X4 the Lancer | Recommendation written, evidence not taken: the Syndicate keeps the Lancer (the lead's pick for their special) and the Condemned's special becomes the Burner they already field, which gives every faction exactly five roles. Needs a counterbalanced matrix run first |
 | X5 rules for brains | Done: `Lethality.seconds_to_kill` / `is_slow_kill`, and pinning worth exploiting (sight −40%, hull turn −50% at full suppression) |
