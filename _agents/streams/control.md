@@ -266,16 +266,23 @@ of the tick. Flip the constant when ai reports a variant that wins at scale.
 - **ai:** turn brains to `order["facing"]` on arrival and to the station heading when idle (K1 facing, on main); then
   `element_plan.gd`'s halt can issue facing instead of driving crews along their sectors. Relayed by the orchestrator.
 - **ai:** tell control when a doctrine variant beats brains at skirmish scale; the default flips in one line.
-- **ai:** `tests/ai_scenarios/scenario_orders.gd` still asserts `RESPONSE_TICKS := 3`; K1 is 100 ms now
-  (`Orders.RESPONSE_MS`, `Orders.response_ticks()`).
+- **Carried to round 6 (ai's stream closed, now control's):** `tests/ai_scenarios/scenario_orders.gd` still asserts
+  `RESPONSE_TICKS := 3`; K1 is 100 ms (`Orders.RESPONSE_MS`, `Orders.response_ticks()`). Passes today at 60 Hz (3 ticks
+  = 50 ms is stricter); must switch to `Orders.response_ticks()` with the 30 Hz tick.
 - **combat:** `element_awareness.gd`'s 90-tick and `squad_chip.gd`'s 180-tick constants convert to seconds in your 30 Hz
   branch (agreed, to avoid a conflict); list them in merge notes.
 - **audio:** `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format; audio switches once
   it's on main (`post_message` routes that format meanwhile). *(The booth naming the wrong faction is fixed by audio's
   2b28709, already on this branch: the latest shell playtest has no "Condemned" in a gangs-vs-Law match.)*
-- **arena:** `Arena._ready` reads `--seed` from the command line only, so a match started from a menu (flags in
-  `Main.next_flags`) can't reach it; control works round it by resolving with `Arena.resolve_name` and setting
-  `layout_name`. Reading `Main.next_flags` when set would remove the workaround.
+- **Carried to round 6 (arena's stream closed, now control's):** `Arena._ready` reads `--arena`/`--seed` from the command
+  line only, so a match started from a menu (flags in `Main.next_flags`) can't reach them. `GameLauncher` works round it
+  (resolves with `Arena.resolve_name`, sets `layout_name`), so nothing is wrong for a player today; reading
+  `Main.next_flags` when set would remove the workaround.
+- **Next, after render's `FrameTarget` reaches main (orchestrator's request):** a player-facing QUALITY 30 /
+  PERFORMANCE 60 selector. `FrameTarget` exists only on stream/render (15e048d8), so it can't be built on this branch
+  yet. Plan: a second button beside the FX button in `hud_skin.gd` (where the player already changes how the game
+  runs), showing `FrameTarget.label()` and calling `FrameTarget.apply(other, "player", true)`, plus the same on the
+  title screen so it can be set before a match.
 
 ### Known issues
 
