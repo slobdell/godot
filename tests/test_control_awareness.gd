@@ -81,7 +81,11 @@ func test_contact_raises_one_alert_you_can_jump_to_not_a_stream_of_them() -> voi
 	var raised := f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool: return int(a["element"]) == 2)
 	assert_eq(raised.size(), 1, "entering contact raises exactly one alert (got %s)" % [raised.map(func(a: Dictionary) -> String: return a["text"])])
 	assert_true(String(raised[0]["text"]).begins_with("Bravo"), "named after the element: %s" % raised[0]["text"])
-	await _frames(20)
+	# Held in contact: the enemy stays put (left to its own brain it drives off and back into sight, which is a new
+	# contact and a fair second alert — and it did exactly that once a tick covered more ground).
+	for frame in 20:
+		f.tank("Rust_Alpha_1").global_position = Vector3(90, 0, 90)
+		await tree.process_frame
 	raised = f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool: return int(a["element"]) == 2)
 	assert_eq(raised.size(), 1, "staying in contact does not repeat it")
 

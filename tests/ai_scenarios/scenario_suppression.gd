@@ -38,7 +38,7 @@ func test_a_unit_ordered_across_a_swept_lane_keeps_out_of_the_fire() -> void:
 	# not walking into the wall of bullets; only the time spent in it is the thing worth holding to.
 	assert_true(int(ignored["rounds"]) >= 20, "setup: the machine guns are actually firing (%d rounds)" % ignored["rounds"])
 	assert_true(bool(ignored["arrived"]), "setup: the control gets there at all")
-	assert_true(int(ignored["in_zone"]) >= 30, "setup: the lane really is a wall of bullets (%d ticks)" % ignored["in_zone"])
+	assert_true(int(ignored["in_zone"]) >= SimClock.TICK_RATE / 2, "setup: the lane really is a wall of bullets (%d ticks)" % ignored["in_zone"])
 	assert_true(int(swept["in_zone"]) < int(ignored["in_zone"]) * 0.7,
 			"a unit that reads the field spends far less of the crossing in it (%d vs %d ticks)" % [swept["in_zone"], ignored["in_zone"]])
 	assert_true(float(swept["suppression"]) < float(ignored["suppression"]),
@@ -175,7 +175,9 @@ func _pin_and_flank(firing: bool) -> Dictionary:
 	var worst := 0.0
 	var options := {}
 	var brain := s.brain_of(flanker)
-	for tick in SimClock.TICK_RATE * 24:
+	# Long enough for a slow gun to fire a dozen times: with five shells a single lucky one moves the hit rate 20
+	# points, which is not a measurement (round 5, after guns started firing at their designed rate).
+	for tick in SimClock.TICK_RATE * 60:
 		await s.step()
 		worst = maxf(worst, target.suppression)
 		var option := String(brain.choice.get("option", ""))

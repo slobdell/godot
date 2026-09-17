@@ -126,6 +126,25 @@ never runs doctrine (elements, drills), and doctrine beats brains-only 52–28, 
   flanker gets closer unseen and the hull can't swing its front armor round in time. Tests include a flanker at 80%
   of sight that a calm crew sees and a pinned one doesn't (mutation-checked).
 
+### 30 Hz simulation tick (the lead's call, 2026-09-17; combat owns it)
+
+Plan, inventory and the render/control interpolation checklist: [../sim_tick_rate.md](../sim_tick_rate.md).
+Steps 1–2 are on the branch and green at 60 Hz with the **baseline unchanged**, which is the proof the conversion is
+exact: `SimClock.TICK_RATE` (game/match/sim_clock.gd) drives every tick count in match, tank, combat, ai, tactics,
+control's three constants, the announcer and NetworkInput; `SIM_HZ` in the Makefile drives every `--fixed-fps` and the
+Python tools; ~36 test files count seconds through SimClock. Step 3 (the flip) is measured on a scratch copy of the
+branch on builder0 before it lands.
+
+**Two real defects the 30 Hz run exposed, both fixed at 60 Hz first (each moves the baseline on purpose):**
+1. **Guns fired a tick late.** Controllers run before the tank in a tick and read the reload the tank published
+   *last* tick, so `ready_to_fire()` was always one tick stale: a 0.1 s machine gun fired 8.6 times a second at
+   60 Hz and 7.5 at 30 Hz instead of 10. Every beaten zone in the game was thinner than its data said. Fixed in
+   `Tank.ready_to_fire` (the simulating peer counts a reload that ends this tick as ready), mutation-checked.
+2. **A unit going round a beaten zone thrashed at 30 Hz.** A beaten zone pulses, so a momentary reading below the
+   threshold looked like the fire lifting: the unit dropped its step and picked the other side on the next check,
+   staying in the lane (19 ticks in it against a control's 16). `OrderController.FIRE_LEG_MIN_TICKS` keeps a step for
+   0.25 s. At 30 Hz the avoider now spends **0 ticks** in the beaten zone against the control's 16.
+
 ### Plan (worker contract step 2)
 
 1. **X1a, measure first.** `EngagementStats` (`game/match/engagement_stats.gd`) fills `stats.engagement` in every

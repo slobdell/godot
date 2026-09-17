@@ -107,6 +107,23 @@ func test_a_scout_holding_the_trigger_streams_rounds() -> void:
 	assert_near(float(ticks.size()), expected, 1.0, "one second of trigger = %.0f rounds (%d)" % [expected, ticks.size()])
 
 
+func test_a_gun_fired_by_a_controller_that_waits_for_ready_keeps_its_designed_rate() -> void:
+	# Round 5 (30 Hz): controllers run before the tank in a tick and pull the trigger when ready_to_fire() says so. It
+	# used to read the reload as the tank published it LAST tick, so every trigger pull came a tick late: a 0.1 s
+	# machine gun fired every 7 ticks at 60 Hz (8.6/s) and every 4 at 30 Hz (7.5/s), which thinned every beaten zone.
+	var game_match := _setup()
+	var ticks := _fired_ticks(game_match)
+	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
+	scout.global_position = Vector3(LANE_X, 0.0, 40.0)
+	await wait_physics_frames(2)
+	var aim := scout.global_position + Vector3(0.0, 1.0, -30.0)
+	for tick in SimClock.TICK_RATE * 2:
+		scout.command = TankCommand.new(0.0, 0.0, aim, scout.ready_to_fire())
+		await tree.physics_frame
+	var designed := 2.0 / float(Weapons.profile("machine_gun")["reload_s"])
+	assert_near(float(ticks.size()), designed, 1.0, "two seconds of fire-when-ready = %.0f rounds (%d)" % [designed, ticks.size()])
+
+
 func test_a_missed_tank_shell_costs_the_whole_reload() -> void:
 	var game_match := _setup()
 	var ticks := _fired_ticks(game_match)

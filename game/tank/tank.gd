@@ -611,7 +611,12 @@ func reload_fraction() -> float:
 func ready_to_fire() -> bool:
 	var current_heat := heat if simulate else sync_heat * heat_capacity
 	# Not is_deployed(): a brain asks a packed battery to fire, and the fire command is what digs it in.
-	return sync_reload >= 1.0 and shells_left() != 0 and _heat_allows_shot(current_heat)
+	# Controllers ask before this tick's tank update, which is when the reload counts down: a gun whose reload runs
+	# out THIS tick is ready now. Reading last tick's published sync_reload made every trigger pull a tick late
+	# (round 5: a 0.1 s machine gun fired 7.5 times a second at 30 Hz instead of 10). Peers that don't simulate only
+	# have the published value.
+	var reloaded := _reload_ticks <= 1 if simulate else sync_reload >= 1.0
+	return reloaded and shells_left() != 0 and _heat_allows_shot(current_heat)
 
 
 ## Shells left (-1 = unlimited): exact on the simulating peer, replicated elsewhere.

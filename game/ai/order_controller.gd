@@ -105,6 +105,7 @@ var events: PackedStringArray = []
 ## X3: the sidestep being driven right now (null = none) and the tick it gives up at.
 var _fire_detour: Variant = null
 var _fire_detour_until := 0
+var _fire_detour_since := -1000
 var _fire_detour_again := 0
 ## The tick this unit started going round the current wall of bullets (-1 = it isn't).
 var _fire_since := -1
@@ -181,6 +182,11 @@ const FIRE_KEEP_SHARE := 0.4
 ## Three is both the best behaviour and cheaper than one. Six was chosen as a pure cost cut during X2 and quietly cost
 ## most of the avoidance — a reminder to measure what an optimisation does to behaviour, not just to the clock.
 const FIRE_CHECK_TICKS := maxi(1, (SimClock.TICK_RATE + 10) / 20)  # ~20 Hz, rounded to whole ticks
+## A step round the fire is kept this long even if the fire seems to lift. A beaten zone PULSES — rounds arrive in
+## bursts and the field decays between them — so a momentary reading below the threshold is not the fire ending. Round
+## 5, found at 30 Hz: without this the unit dropped its step every other check and picked the other side next time,
+## thrashing on the spot inside the lane instead of crossing it (19 ticks in the beaten zone against a control's 16).
+const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 const AVOID_LOOKAHEAD := 10.0
 const AVOID_WIDTH := 3.2
 const AVOID_CLEARANCE := 5.0
@@ -465,7 +471,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	var still_swept := SuppressionFeed.along(fields, tank.team, here, ahead) >= Match.BEATEN_ZONE_DENSITY * FIRE_KEEP_SHARE
 	if _fire_detour != null:
 		var leg: Vector3 = _fire_detour
-		if not still_swept:
+		if not still_swept and tick - _fire_detour_since >= FIRE_LEG_MIN_TICKS:
 			_fire_detour = null  # the fire lifted: carry on, nothing spent
 			_fire_since = -1
 		elif _fire_since >= 0 and tick - _fire_since >= FIRE_AVOID_MAX:
@@ -503,6 +509,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	if best != null:
 		_fire_detour = best
 		_fire_detour_until = tick + FIRE_DETOUR_TICKS
+		_fire_detour_since = tick
 		if _fire_since < 0:
 			_fire_since = tick
 		fire_detours += _step
