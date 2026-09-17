@@ -66,6 +66,32 @@ no payoff.
 
 **Avoid:** the drop. If it pays off, the first kill has nothing left to do.
 
+### The fight, in stems (round 5: this replaces sections 3–6 if you can export stems)
+
+The soundtrack no longer has to *step* between `lull`, `skirmish`, `battle` and `last_stand`. One track, exported as
+stems, **builds with the fight**: the director starts with the quiet layers and brings in the next ones on bar lines as
+the match's intensity rises, then drops them again when the floor goes quiet. That's what "a living, breathing music
+selection" asked for. It already plays this way on placeholder stems (`fight_*.ogg`): pad in a lull, a pulse at first
+contact, bass in a skirmish, drums in a battle, and a siren layer only in a last stand.
+
+**How to make it:** generate one full-arrangement track in Suno from the `battle` prompt below (that's the densest
+arrangement, so every layer exists in it), then use Suno's **Get Stems** export (a paid-plan feature; check your plan).
+Keep the tempo steady. Then:
+
+    make music-import IN=~/Downloads/<stems folder> STATE=fight BPM=110 \
+        LAYERS="Synth=0 Percussion=0.2 Bass=0.45 Drums=0.65 Guitar=0.8 FX=last_stand" RIGHTS="Suno <plan>, <date>"
+
+`LAYERS` names each stem file (matched loosely against Suno's file names) and says when it comes in: a number is the
+intensity (0 = always playing), a state name means only in that state. List the quietest first. Every stem gets the
+same cut, the same loop and **one shared gain**, so Suno's own balance is kept and the full arrangement lands on the
+loudness target. `make music-check` then checks that the stems line up, that the full arrangement meets the loudness
+and peak contract, and that the always-on layers alone are still music rather than silence.
+
+**What makes a good stem track:** a pad or synth bed that works alone (it's all a lull hears), drums that aren't the
+only rhythm (they drop out between fights), and nothing in the vocal range that only exists in one stem, because the
+booth talks over the loudest layers. If a Suno stem export is not on your plan, the four single beds below still
+work: the director plays whichever it has, and prefers stems when both exist.
+
 ### 3. `lull` — contact has not started, or the floor has gone quiet
 
 The maneuver bed. Vehicles are repositioning; the player is scouting. Movement without violence.
@@ -192,6 +218,7 @@ Put the files in `assets/music/` and add a row to `assets/music/manifest.json`. 
 | `beats_per_bar` | usually 4 | same |
 | `loop_start_s`, `loop_end_s` | the seamless section, in seconds | the director loops this, not the whole file |
 | `intensity` | 0.0–1.0, what this bed is worth | picks between two tracks for one state, and orders the beds |
+| `stems` | instead of `file`: `[{"file", "from": 0.0–1.0}` or `{"file", "states": [...]}]`, quietest first | a track that builds with the fight (above) |
 | `states` | which `MatchMood` states it may play under | one track can serve `lull` and `skirmish` |
 | `peak_db`, `lufs` | measured, not guessed (`make music-check` prints them) | every bed sits at the same loudness so a crossfade doesn't jump |
 | `rights` | the Suno plan the track was generated under, and the date | commercial use on Steam and Android |

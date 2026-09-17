@@ -23,7 +23,7 @@ result: green by elimination at 1:01.2
 0:58.6   CALLER   Something just changed—
 0:59.8   ── green ifv destroys rust scout
 0:59.8   ── rust squad Needle wiped out
-0:59.8   CALLER   The Wreckers are down to its last vehicle!
+0:59.8   CALLER   The Wreckers are down to their last vehicle!
 1:01.2   ── green scout destroys rust tank
 1:01.2   ── rust squad Hammer wiped out
 1:01.2   ── MATCH OVER: green wins by elimination (3 green, 0 rust left)
