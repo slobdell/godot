@@ -309,6 +309,8 @@ func unit_destroyed(unit: Node3D) -> void:
 	if unit == null or not unit.is_inside_tree():
 		return
 	var position := unit.global_position + Vector3.UP * 0.8
+	_fx.wrecks.add(_fx, unit.global_position, -unit.global_basis.z, Units.PROFILES.get(String(unit.get("unit_id")), {}).get("hull_size"),
+			String(unit.name), _fx.now)
 	if _killed_recently(position, _fx.now, String(unit.name)):
 		return
 	_begin("destroyed")
@@ -320,6 +322,7 @@ func unit_destroyed(unit: Node3D) -> void:
 func destroyed(event: Dictionary) -> void:
 	var unit_name := String(event.get("unit", ""))
 	var position := K2Events.to_vector(event.get("position")) + Vector3.UP * 0.8
+	_fx.wrecks.add(_fx, position, K2Events.to_vector(event.get("forward")), event.get("hull_size"), unit_name, _fx.now)
 	if _killed_recently(position, _fx.now, unit_name):
 		_fx.fires.shape_last(position, K2Events.to_vector(event.get("forward")), event.get("hull_size", []))
 		return

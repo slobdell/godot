@@ -28,6 +28,8 @@ var beams: BeamSystem
 var engines: EngineSystem
 ## Kill sites that keep burning (art stretch).
 var fires := FireSites.new()
+## Husks left where vehicles died (render stretch, round 5).
+var wrecks := WreckField.new()
 var shake := CameraShake.new()
 var sfx: SfxSystem
 ## Machine-gun streams as held loops (a few voices for the nearest gunners).

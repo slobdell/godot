@@ -327,3 +327,20 @@ func test_jolts_skip_vehicles_too_far_from_the_camera_to_see_them() -> void:
 	jolts.kick(near, Vector3.FORWARD, 2.0, 0.1, 0.0)
 	jolts.kick(far, Vector3.FORWARD, 2.0, 0.1, 0.0)
 	assert_eq(jolts.active_count(), 1, "only the vehicle within %d m of the camera rocks" % VehicleJolt.VISIBLE_RANGE)
+
+
+func test_dead_vehicles_leave_capped_wrecks_that_a_new_match_clears() -> void:
+	var yard: KitYard = add_to_tree(KitYard.new())
+	var field := WreckField.new(yard)
+	var owner: Node3D = add_to_tree(Node3D.new())
+	var cap: int = WreckField.PER_TIER[FxQuality.tier()]
+	for i in cap + 5:
+		field.add(owner, Vector3(i, 0, 0), Vector3.FORWARD, [2.4, 1.6, 3.6], "Unit_%d" % i, float(i))
+	assert_eq(field.count(), cap, "the oldest wrecks go past the tier's cap")
+	assert_eq(yard.count("wreck"), cap, "one yard instance per wreck")
+	field.add(owner, Vector3(0, 0, 0), Vector3.FORWARD, [2.4, 1.6, 3.6], "Unit_%d" % (cap + 4), float(cap + 4) + 0.5)
+	assert_eq(field.count(), cap, "a death reported twice leaves one wreck")
+	field.clear()
+	assert_eq(yard.count("wreck"), 0, "a new match starts clean")
+	var fit := WreckField.scale_for([2.4, 1.6, 3.6])
+	assert_true(fit.x / fit.z <= 1.4 + 0.001 and fit.z / fit.x <= 1.4 + 0.001, "a husk is never stretched past 40%% between axes (%s)" % fit)
