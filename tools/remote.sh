@@ -66,7 +66,15 @@ ssh "${ssh_opts[@]}" "$host" "bash -s -- $(printf '%q ' "$@")" <<<"$script"
 status=$?
 
 mkdir -p "$repo_root/build"
-rsync -az -e "ssh ${ssh_opts[*]}" --exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
-	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>/dev/null || true
-echo ">> remote: make $* exited $status (build/ copied back)" >&2
+copy_log=$(rsync -az -e "ssh ${ssh_opts[*]}" --exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
+	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>&1)
+copy_status=$?
+if [ $copy_status -ne 0 ]; then
+	# Silently swallowed, this leaves stale local results wearing a fresh timestamp's name: a full local disk once
+	# left build/audio/pass.* three hours old while the run that wrote them had just passed (audio, 2026-09-17).
+	echo ">> remote: WARNING build/ did NOT come back (rsync exit $copy_status); local build/ is stale" >&2
+	echo "$copy_log" | tail -3 >&2
+	df -h "$repo_root" | tail -1 >&2
+fi
+echo ">> remote: make $* exited $status (build/ copied back$([ $copy_status -ne 0 ] && echo ": FAILED"))" >&2
 exit "$status"
