@@ -34,7 +34,7 @@ garage-e2e: import ## Build a mixed army with the ArmyDraft API, save it to user
 	mkdir -p $(BUILD_DIR)
 	$(GODOT) --headless --path . --script res://tests/garage/build_army.gd 2>&1 | tee $(BUILD_DIR)/garage-e2e-build.log | grep GARAGE_ARMY
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-e2e-build.log
-	$(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination --time-limit=300 --seed=5 \
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --time-limit=300 --seed=5 \
 		--green-doctrine=$$(grep GARAGE_GAME $(BUILD_DIR)/garage-e2e-build.log | grep -o 'user://[^ ]*') --rust-doctrine=res://doctrines/individuals.json \
 		2>&1 | tee $(BUILD_DIR)/garage-e2e.log | grep MATCH_RESULT
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-e2e.log

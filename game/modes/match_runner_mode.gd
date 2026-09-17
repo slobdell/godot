@@ -19,7 +19,7 @@ extends GameMode
 ## --combat-log prints COMBAT_EVENT <json> lines: every K2 weapon_fired / projectile_impact, every destroyed unit, and
 ## every living unit's pose each COMBAT_LOG_POSE_TICKS (tools/combat_duel.py turns them into a readable timeline).
 
-const COMBAT_LOG_POSE_TICKS := 30
+const COMBAT_LOG_POSE_TICKS := SimClock.TICK_RATE / 2
 
 
 func role_name() -> String:
@@ -142,6 +142,7 @@ func _bench_army(game_match: Match, team: int, faction: String, count: int) -> v
 		tank.global_position = Vector3(-Match.DRIVABLE_LIMIT + spacing * 0.5 + column * spacing, 0.0,
 				toward_own_wall * (30.0 + row * spacing))
 		tank.rotation.y = Match.spawn_yaw(team)
+		tank.reset_physics_interpolation()
 		placed += 1
 
 
@@ -152,7 +153,7 @@ func _log_combat(game_match: Match) -> void:
 		_print_event("destroyed", {"tick": game_match.tick, "victim": String(victim.name), "killer": killer}))
 	var ticker := Timer.new()
 	ticker.process_callback = Timer.TIMER_PROCESS_PHYSICS
-	ticker.wait_time = COMBAT_LOG_POSE_TICKS / 60.0
+	ticker.wait_time = SimClock.seconds(COMBAT_LOG_POSE_TICKS)
 	ticker.timeout.connect(func() -> void:
 		var units := []
 		for tank: Tank in game_match._sorted_tanks():

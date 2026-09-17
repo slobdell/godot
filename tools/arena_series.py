@@ -10,10 +10,14 @@ Usage: arena_series.py --godot PATH [--arenas yard,pit] [--seeds 8] [--jobs 3] [
                        [--budget 5200] [--time-limit 180] [--json out.json]
 """
 import argparse, concurrent.futures, json, os, statistics, subprocess, sys, time
+import os
+
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 
 def run(args, arena, seed, swap):
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--script", "res://tests/arena/arena_probe.gd", "--",
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--script", "res://tests/arena/arena_probe.gd", "--",
                "--match", "--elimination", "--control", f"--arena={arena}", f"--seed={seed}",
                f"--green-faction={args.green_faction or args.faction}", f"--rust-faction={args.rust_faction or args.faction}",
                f"--budget={args.budget}", f"--time-limit={args.time_limit}"] + (["--swap-bases"] if swap else [])

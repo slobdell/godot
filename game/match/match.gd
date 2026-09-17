@@ -67,9 +67,9 @@ static var swap_bases := false
 const GUN_READY_EVERY_INTELS := 10
 ## Shared team vision: refreshed this often, remembered this long. How far each tank sees is its own
 ## Tank.sight_radius (G1); SENSOR_RANGE is the standard tank's, kept for callers that need a default.
-const INTEL_EVERY_TICKS := 6
+const INTEL_EVERY_TICKS := SimClock.TICK_RATE / 10
 const SENSOR_RANGE: float = Units.PROFILES["tank"]["sight_radius"]
-const CONTACT_MEMORY_TICKS := 60 * 12
+const CONTACT_MEMORY_TICKS := SimClock.TICK_RATE * 12
 
 @export var respawn_seconds := 4.0
 ## Squad vs squad: destroyed tanks stay destroyed, and the match ends when one team has
@@ -108,7 +108,7 @@ const RANGE_SPREAD_FACTOR := 3.0
 const SUPPRESSION_FULL_DENSITY := 3.0
 ## Suppression is re-sampled (and the fields decay) every this many ticks: 20 Hz is far finer than a crew's
 ## reaction and keeps the grid work off most ticks.
-const SUPPRESSION_SAMPLE_TICKS := 3
+const SUPPRESSION_SAMPLE_TICKS := maxi(1, SimClock.TICK_RATE / 20)
 ## Being fully suppressed multiplies shot spread by (1 + this). A pinned tank's 0.8 deg becomes 2.4 deg: it still
 ## shoots, it just stops hitting anything far away, which is what "effective fire" means.
 const SUPPRESSION_SPREAD_FACTOR := 2.0
@@ -533,13 +533,13 @@ func sorted_team_tanks(team: int) -> Array[Tank]:
 ## Base service: shells trickle back (G7) and hulls mend (G6) inside a team's own base, or in the field beside a
 ## unit that carries a repair crew (L3, the gangs' resupply tanker). Deterministic: sorted units, counted in ticks.
 func _resupply() -> void:
-	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * 60.0)
+	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * SimClock.TICK_RATE)
 	var menders := _field_menders()
 	for tank in _sorted_tanks():
 		var rate := repair_rate_for(tank, menders)
 		if tank.is_alive() and tank.health < tank.max_health and rate > 0.0 \
-				and tank.ticks_since_hit >= roundi(maxf(tank.shield_recharge_delay, REPAIR_QUIET_SECONDS) * 60.0):
-			var ticks_per_hp := maxi(1, roundi(60.0 / rate))
+				and tank.ticks_since_hit >= roundi(maxf(tank.shield_recharge_delay, REPAIR_QUIET_SECONDS) * SimClock.TICK_RATE):
+			var ticks_per_hp := maxi(1, roundi(SimClock.TICK_RATE / rate))
 			tank.repair_ticks += INTEL_EVERY_TICKS
 			if tank.repair_ticks >= ticks_per_hp:
 				var hp := tank.repair_ticks / ticks_per_hp
@@ -604,7 +604,7 @@ func _apply_hazards() -> void:
 	var hazards := Arena.hazards_of(Arena.active)
 	if hazards.is_empty():
 		return
-	var seconds := float(INTEL_EVERY_TICKS) / 60.0
+	var seconds := float(INTEL_EVERY_TICKS) / SimClock.TICK_RATE
 	for tank in _sorted_tanks():
 		for hazard: Dictionary in hazards:
 			if not tank.is_alive():
@@ -635,7 +635,7 @@ static func in_control_zone(point: Vector3) -> bool:
 
 func _update_control() -> void:
 	var present := control_presence()
-	var step := float(INTEL_EVERY_TICKS) / 60.0 / CONTROL_CAPTURE_SECONDS
+	var step := float(INTEL_EVERY_TICKS) / SimClock.TICK_RATE / CONTROL_CAPTURE_SECONDS
 	if present[Team.GREEN] > 0 and present[Team.RUST] == 0:
 		control_progress = minf(1.0, control_progress + step)
 	elif present[Team.RUST] > 0 and present[Team.GREEN] == 0:
@@ -651,7 +651,7 @@ func _update_control() -> void:
 		control_changed.emit(control_owner)
 	if control_owner >= 0:
 		_control_ticks[control_owner] += INTEL_EVERY_TICKS
-		control_score[control_owner] = _control_ticks[control_owner] / 60
+		control_score[control_owner] = _control_ticks[control_owner] / SimClock.TICK_RATE
 
 
 func _sample_brain_options() -> void:
@@ -729,7 +729,7 @@ func _suppress_area(shooter_team: int, center: Vector3, radius: float, weight: f
 func _update_suppression() -> void:
 	for team in 2:
 		threat_field(team).decay(SUPPRESSION_SAMPLE_TICKS)
-	var seconds := float(SUPPRESSION_SAMPLE_TICKS) / 60.0
+	var seconds := float(SUPPRESSION_SAMPLE_TICKS) / SimClock.TICK_RATE
 	for tank in _sorted_tanks():
 		if not tank.is_alive():
 			continue
@@ -980,11 +980,11 @@ func _lob(tank: Tank, muzzle: Vector3, projectile_id: int) -> void:
 	var target := Vector3(muzzle.x, 0.0, muzzle.z) + direction * distance
 	var sigma := arc_scatter(weapon, distance, is_point_spotted(tank.team, target))
 	target += Vector3(_fire_rng.randfn(0.0, sigma), 0.0, _fire_rng.randfn(0.0, sigma))
-	var flight_ticks := maxi(1, roundi(distance / float(weapon["flight_speed"]) * 60.0))
+	var flight_ticks := maxi(1, roundi(distance / float(weapon["flight_speed"]) * SimClock.TICK_RATE))
 	_emit_fired(tank, muzzle, (target - Vector3(muzzle.x, 0.0, muzzle.z)).normalized(), projectile_id)
 	_rounds.append({"from": muzzle, "to": target, "fire_tick": tick, "land_tick": tick + flight_ticks, "team": tank.team,
 			"shooter": String(tank.name), "weapon": weapon, "weapon_id": tank.weapon_id, "projectile_id": projectile_id})
-	show_arc.rpc(muzzle, target, flight_ticks / 60.0)
+	show_arc.rpc(muzzle, target, flight_ticks / float(SimClock.TICK_RATE))
 
 
 ## R2 "artillery needs team sight": rounds at a point no teammate sees land BLIND_SCATTER_FACTOR times wider.
@@ -1100,7 +1100,7 @@ func _spray(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> vo
 		# L2: fire suppresses the ground it washes over, a CONE_EVENT_TICKS slice of its per-second weight.
 		var reach := float(weapon["range"])
 		_suppress_area(tank.team, origin + direction * reach * 0.5, reach * 0.5,
-				Weapons.suppression(weapon) * float(CONE_EVENT_TICKS) / 60.0)
+				Weapons.suppression(weapon) * float(CONE_EVENT_TICKS) / SimClock.TICK_RATE)
 	for victim in _sorted_tanks():
 		if not victim.is_alive() or victim == tank:
 			continue
@@ -1115,7 +1115,7 @@ func _spray(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> vo
 
 
 ## K2: fire weapons (cones) announce a weapon_fired puff this often while the trigger is held, not every tick.
-const CONE_EVENT_TICKS := 6
+const CONE_EVENT_TICKS := SimClock.TICK_RATE / 10
 
 
 ## X5 (round 4): the sorted list is rebuilt at most once per tick. It was being sorted from scratch by a GDScript
@@ -1255,7 +1255,7 @@ func incoming_projectiles(unit: Tank) -> Array:
 		var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank
 		var weapon := shooter.weapon if shooter != null else Weapons.profile(Weapons.DEFAULT)
 		threats.append({"position": shell.global_position, "velocity": shell.direction * shell.speed,
-				"eta_ticks": ceili(maxf(0.0, along - radius) / shell.speed * 60.0), "projectile_id": shell.projectile_id,
+				"eta_ticks": ceili(maxf(0.0, along - radius) / shell.speed * SimClock.TICK_RATE), "projectile_id": shell.projectile_id,
 				"weapon": shooter.weapon_id if shooter != null else Weapons.DEFAULT,
 				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]), weapon, shell.direction, false)})
 	for flying: Dictionary in _rounds:
@@ -1272,7 +1272,7 @@ func incoming_projectiles(unit: Tank) -> Array:
 		var fraction := clampf(float(tick - int(flying["fire_tick"])) / flight, 0.0, 1.0)
 		var falloff := lerpf(1.0, 0.3, clampf(distance / maxf(splash, 0.01), 0.0, 1.0))
 		threats.append({"position": ArcRoundVisual.point_at(from, landing, fraction),
-				"velocity": Vector3(landing.x - from.x, 0.0, landing.z - from.z) / (flight / 60.0),
+				"velocity": Vector3(landing.x - from.x, 0.0, landing.z - from.z) / SimClock.seconds(flight),
 				"eta_ticks": maxi(0, int(flying["land_tick"]) - tick), "projectile_id": int(flying.get("projectile_id", -1)),
 				"weapon": String(flying.get("weapon_id", "")),
 				"damage_estimate": _damage_estimate(unit, float(weapon["damage"]) * falloff, weapon, forward, true)})

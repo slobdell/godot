@@ -40,11 +40,11 @@ func test_concentrated_fire_adds_up_and_decays_away() -> void:
 	for shooter in 3:
 		field.stamp_segment(Vector3(-40, 0, 0), Vector3(40, 0, 0), 1.0)
 	assert_near(field.at(Vector3.ZERO), 3.0, 0.0001, "three guns on one lane is three times the fire")
-	field.decay(60)  # one second of quiet is one half-life
+	field.decay(SimClock.TICK_RATE)  # one second of quiet is one half-life
 	assert_near(field.at(Vector3.ZERO), 1.5, 0.01, "fire halves every second once the guns stop")
-	field.decay(60)
+	field.decay(SimClock.TICK_RATE)
 	assert_near(field.at(Vector3.ZERO), 0.75, 0.01, "and halves again")
-	field.decay(60 * 20)
+	field.decay(SimClock.TICK_RATE * 20)
 	assert_near(field.at(Vector3.ZERO), 0.0, 0.0001, "and is exactly zero after a while, not float dust")
 
 

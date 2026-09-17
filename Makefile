@@ -42,6 +42,10 @@ TEMPLATE_FILES := web_nothreads_debug.zip web_nothreads_release.zip \
                   linux_debug.x86_64 linux_release.x86_64 version.txt
 
 BUILD_DIR      := build
+# Round 5: the simulation's tick rate (SimClock.TICK_RATE and project.godot physics_ticks_per_second must agree; a
+# test checks). Every headless run passes --fixed-fps $(SIM_HZ); Python tools read it from the environment.
+SIM_HZ         := 60
+export SIM_HZ
 WEB_PORT       ?= 8060
 WEB_HOST       ?= 127.0.0.1
 NET_PORT       ?= 9080

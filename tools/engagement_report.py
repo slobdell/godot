@@ -16,10 +16,14 @@ import statistics
 import subprocess
 import sys
 import time
+import os
+
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 
 def run(args, green, rust, seed, tune=None):
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination",
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination",
                "--control", f"--green-faction={green}", f"--rust-faction={rust}", f"--budget={args.budget}",
                f"--time-limit={args.time_limit}", "--score-limit=0", f"--seed={seed}"]
     if args.arena:

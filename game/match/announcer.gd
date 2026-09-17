@@ -8,9 +8,9 @@ extends Node
 signal announced(text: String, severity: int)
 
 ## Don't repeat "contact" more often than this while enemies keep popping in and out of sight.
-const CONTACT_COOLDOWN_TICKS := 60 * 20
+const CONTACT_COOLDOWN_TICKS := SimClock.TICK_RATE * 20
 ## R4: say "friendly fire" at most this often per shooter (flames hurt every tick).
-const FRIENDLY_FIRE_COOLDOWN_TICKS := 60 * 10
+const FRIENDLY_FIRE_COOLDOWN_TICKS := SimClock.TICK_RATE * 10
 
 var game_match: Match
 var team := Match.Team.GREEN

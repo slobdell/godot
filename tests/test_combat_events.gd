@@ -82,7 +82,7 @@ func test_a_cannon_shell_reports_its_shot_and_its_hit() -> void:
 	target.global_position = Vector3(LANE_X, 0.0, -10.0)
 	target.rotation.y = PI / 2.0  # its side toward the gunner
 	await wait_physics_frames(2)
-	await _hold_fire(shooter, target.global_position, [target], 60)
+	await _hold_fire(shooter, target.global_position, [target], SimClock.TICK_RATE)
 	assert_true(events["fired"].size() >= 1, "the shot was announced")
 	assert_true(events["impacts"].size() >= 1, "and its hit")
 	if events["fired"].is_empty() or events["impacts"].is_empty():
@@ -120,7 +120,7 @@ func test_a_rear_hit_is_flagged_as_a_weak_spot() -> void:
 	target.rotation.y = 0.0  # facing north, away from the gunner
 	_unshielded(target)
 	await wait_physics_frames(2)
-	await _hold_fire(shooter, target.global_position, [target], 60)
+	await _hold_fire(shooter, target.global_position, [target], SimClock.TICK_RATE)
 	assert_true(not events["impacts"].is_empty(), "the shell hit")
 	if events["impacts"].is_empty():
 		return
@@ -182,7 +182,7 @@ func test_a_mortar_burst_reports_one_impact_with_its_victims() -> void:
 	_unshielded(target)
 	await wait_physics_frames(2)
 	# Artillery deploys first (combat X5): the legs, then a 60 m flight.
-	var deploy_ticks := roundi((float(Units.stat("artillery", "deploy_seconds", 0.0)) * 60.0)) + Tank.DEPLOY_SETTLE_TICKS
+	var deploy_ticks := roundi((float(Units.stat("artillery", "deploy_seconds", 0.0)) * float(SimClock.TICK_RATE))) + Tank.DEPLOY_SETTLE_TICKS
 	await _hold_fire(battery, target.global_position, [eyes, target], 150 + deploy_ticks)
 	assert_true(not events["fired"].is_empty(), "the round was lobbed")
 	assert_true(not events["impacts"].is_empty(), "and burst")
@@ -207,7 +207,7 @@ func test_a_killing_hit_says_so() -> void:
 	_unshielded(target)
 	target.health = 1
 	await wait_physics_frames(2)
-	await _hold_fire(shooter, target.global_position, [target], 60)
+	await _hold_fire(shooter, target.global_position, [target], SimClock.TICK_RATE)
 	var killing: Array = events["impacts"].filter(func(event: Dictionary) -> bool: return event["killed"])
 	assert_eq(killing.size(), 1, "exactly one impact killed the scout")
 
@@ -223,7 +223,7 @@ func test_a_unit_sees_the_shell_coming_at_it_and_nothing_else() -> void:
 	target.global_position = Vector3(LANE_X, 0.0, -20.0)
 	bystander.global_position = Vector3(LANE_X + 30.0, 0.0, -20.0)
 	await wait_physics_frames(2)
-	for tick in 60:  # the turret starts on target
+	for tick in SimClock.TICK_RATE:  # the turret starts on target
 		shooter.command = TankCommand.new(0.0, 0.0, target.global_position, false)
 		await tree.physics_frame
 	var fired := [false]
@@ -266,7 +266,7 @@ func test_a_unit_sees_a_mortar_round_that_will_land_on_it() -> void:
 	var fired := [false]
 	game_match.weapon_fired.connect(func(_event: Dictionary) -> void: fired[0] = true)
 	var ticks := 0
-	while not fired[0] and ticks < 120 + 60 * 4:  # deploying comes first (combat X5)
+	while not fired[0] and ticks < SimClock.TICK_RATE * 6:  # deploying comes first (combat X5)
 		battery.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 		await tree.physics_frame
 		ticks += 1
@@ -303,7 +303,7 @@ func test_a_destroyed_unit_reports_where_its_wreck_lies() -> void:
 	target.global_position = Vector3(LANE_X, 0.0, -10.0)
 	target.rotation.y = PI / 2.0  # facing west
 	await wait_physics_frames(2)
-	await _hold_fire(shooter, target.global_position, [target], 60)
+	await _hold_fire(shooter, target.global_position, [target], SimClock.TICK_RATE)
 	assert_eq(wrecks.size(), 1, "one wreck")
 	if wrecks.size() != 1:
 		return

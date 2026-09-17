@@ -26,7 +26,7 @@ music-smoke: import ## A real headless match with the music on: the beds change,
 	@mkdir -p $(BUILD_DIR)/audio
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
 	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
-	$(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination \
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
 		--time-limit=40 --seed=3 --music=on 2>/dev/null > $(BUILD_DIR)/audio/music-smoke.log; \
 	grep -q '^MUSIC on:' $(BUILD_DIR)/audio/music-smoke.log \

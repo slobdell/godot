@@ -2,11 +2,11 @@
 # Owner: gameplay (see _agents/workstreams.md). Included by the root Makefile.
 
 # ---- Match runner (headless bots vs bots, faster than real time) ----------------
-# --fixed-fps 60 makes every frame advance exactly 1/60 s of game time without
+# --fixed-fps $(SIM_HZ) makes every frame advance exactly 1/60 s of game time without
 # waiting for the wall clock, so matches run as fast as the CPU allows.
 
 match: import ## One headless match: GREEN=1 RUST=1 SCORE=5 TIME=300 SEED=1; prints MATCH_RESULT JSON
-	$(GODOT) --headless --fixed-fps 60 --path . -- --match --green=$(GREEN) --rust=$(RUST) \
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --green=$(GREEN) --rust=$(RUST) \
 		--score-limit=$(SCORE) --time-limit=$(TIME) --seed=$(SEED) | grep MATCH_RESULT
 
 matches: import ## N seeded matches in parallel with a win-rate summary (N=10 JOBS=4, same knobs as match)
@@ -16,7 +16,7 @@ matches: import ## N seeded matches in parallel with a win-rate summary (N=10 JO
 determinism: import ## Same seed + same doctrines twice → byte-identical match results (experiment T0)
 	mkdir -p $(BUILD_DIR)
 	for run in 1 2; do \
-		$(GODOT) --headless --fixed-fps 60 --path . -- --match --green-doctrine=res://doctrines/anvil_hammer.json \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --green-doctrine=res://doctrines/anvil_hammer.json \
 			--rust-doctrine=res://doctrines/flame_rush.json --score-limit=8 --time-limit=150 --seed=11 2>/dev/null \
 			| grep MATCH_RESULT | $(PYTHON) -c "import json,sys; r=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); [r.pop(k) for k in ('real_seconds','speedup')]; print(json.dumps(r, sort_keys=True))" \
 			> $(BUILD_DIR)/determinism_$$run.json; \
@@ -30,7 +30,7 @@ watch-match: import ## Watch a doctrine match from above in a window (GREEN_DOCT
 
 match-smoke: import ## A short 2v2 match must finish with a result, faster than real time
 	mkdir -p $(BUILD_DIR)
-	$(GODOT) --headless --fixed-fps 60 --path . -- --match --green=2 --rust=2 --score-limit=3 --time-limit=120 --seed=7 \
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --green=2 --rust=2 --score-limit=3 --time-limit=120 --seed=7 \
 		2>&1 | tee $(BUILD_DIR)/match-smoke.log | grep MATCH_RESULT
 	! grep -E 'ERROR' $(BUILD_DIR)/match-smoke.log
 	$(PYTHON) -c "import json,sys; r=json.loads(open('$(BUILD_DIR)/match-smoke.log').read().split('MATCH_RESULT ')[1].splitlines()[0]); \
@@ -61,7 +61,7 @@ suppression-control: import ## X2: the same pairing counterbalanced (bases and c
 	@for mode in on off; do 		for swap in "" "--swap-bases"; do 			echo "== suppression $$mode $$swap =="; 			$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),16) --jobs $(JOBS) --time-limit 300 --score-limit 0 				--extra="--green-doctrine=cpu:$(or $(GREEN_ARCH),swarm) --rust-doctrine=cpu:$(or $(RUST_ARCH),armor) --elimination --budget=$(or $(BUDGET),1000) $$swap $$([ $$mode = off ] && echo '$(SUPPRESSION_OFF)')"; 			echo "== suppression $$mode $$swap, colors swapped =="; 			$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),16) --jobs $(JOBS) --time-limit 300 --score-limit 0 				--extra="--green-doctrine=cpu:$(or $(RUST_ARCH),armor) --rust-doctrine=cpu:$(or $(GREEN_ARCH),swarm) --elimination --budget=$(or $(BUDGET),1000) $$swap $$([ $$mode = off ] && echo '$(SUPPRESSION_OFF)')"; 		done; 	done
 
 faction-match: import ## L3: one full-scale faction battle (GREEN_FACTION=condemned RUST_FACTION=gangs SEED=1), prints MATCH_RESULT
-	$(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination --control 		--green-faction=$(or $(GREEN_FACTION),condemned) --rust-faction=$(or $(RUST_FACTION),condemned) 		--budget=$(or $(BUDGET),5200) --time-limit=$(or $(TIME),300) --seed=$(SEED) | grep MATCH_RESULT
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control 		--green-faction=$(or $(GREEN_FACTION),condemned) --rust-faction=$(or $(RUST_FACTION),condemned) 		--budget=$(or $(BUDGET),5200) --time-limit=$(or $(TIME),300) --seed=$(SEED) | grep MATCH_RESULT
 
 faction-series: import ## L3: N seeded faction battles at the baseline budget (GREEN_FACTION= RUST_FACTION= N=12 BUDGET=5200)
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),12) --jobs $(JOBS) --time-limit 300 --score-limit 0 		--json $(BUILD_DIR)/faction-$(or $(GREEN_FACTION),condemned)-vs-$(or $(RUST_FACTION),condemned).json 		--extra="--green-faction=$(or $(GREEN_FACTION),condemned) --rust-faction=$(or $(RUST_FACTION),condemned) --elimination --control --budget=$(or $(BUDGET),5200)"
@@ -74,7 +74,7 @@ SCALE_SIZES ?= 25 40 60 100
 
 scale-bench: import ## X5: sim cost per tick at SCALE_SIZES vehicles a side, with and without brains (BENCH_FACTION= TIME=60)
 	@printf '%-8s %-8s %-10s %-10s %s\n' "a side" "brains" "speedup" "ms/tick" "budget at 60 fps = 16.7 ms"
-	@for size in $(SCALE_SIZES); do 		for brains in off on; do 			$(GODOT) --headless --fixed-fps 60 --path . -- --match --bench-units=$$size 				--bench-faction=$(or $(BENCH_FACTION),condemned) --time-limit=$(or $(TIME),60) --score-limit=0 --seed=5 				$$([ $$brains = off ] && echo --no-brains) 2>/dev/null | grep MATCH_RESULT 				| $(PYTHON) -c "import json,sys; r=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); 					print('%-8s %-8s %-10.1f %-10.3f' % ('$$size', '$$brains', r['speedup'], 1000.0/(60.0*r['speedup'])))"; 		done; 	done
+	@for size in $(SCALE_SIZES); do 		for brains in off on; do 			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --bench-units=$$size 				--bench-faction=$(or $(BENCH_FACTION),condemned) --time-limit=$(or $(TIME),60) --score-limit=0 --seed=5 				$$([ $$brains = off ] && echo --no-brains) 2>/dev/null | grep MATCH_RESULT 				| $(PYTHON) -c "import json,sys; r=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); 					print('%-8s %-8s %-10.1f %-10.3f' % ('$$size', '$$brains', r['speedup'], 1000.0/($(SIM_HZ).0*r['speedup'])))"; 		done; 	done
 
 faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
@@ -93,7 +93,7 @@ faction-shots: import ## L3/X5: screenshots of a full-scale faction battle from 
 # M1's budget is the WHOLE tick (all _physics_process) <= 5 ms at 60 vehicles on the lead's laptop, shared with ai.
 sim-profile: import ## CP1: one faction battle with SimProfile on: ms per tick by section (GREEN_FACTION= RUST_FACTION= TIME=90 SEED=3 PROFILE_FLAGS=--no-brains) -> build/sim-profile.json
 	mkdir -p $(BUILD_DIR)
-	$(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination --control --sim-profile \
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --sim-profile \
 		--green-faction=$(or $(GREEN_FACTION),condemned) --rust-faction=$(or $(RUST_FACTION),condemned) \
 		--budget=$(or $(BUDGET),5200) --time-limit=$(or $(TIME),90) --seed=$(or $(SEED),3) $(PROFILE_FLAGS) 2>&1 \
 		| tee $(BUILD_DIR)/sim-profile.log | grep -E '^SIM_PROFILE|^MATCH_RESULT' | cut -c1-2000 > $(BUILD_DIR)/sim-profile.lines

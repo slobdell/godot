@@ -62,7 +62,7 @@ func _volley(shooter_unit: String, screen_offset_x: float, seconds: float) -> Di
 	var before := {"protected": protected_unit.health + protected_unit.shield,
 			"screen": (screen.health + screen.shield) if screen != null else 0.0}
 	var screened_at_start := game_match.screen_for(protected_unit, shooter.global_position)
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * float(SimClock.TICK_RATE)):
 		shooter.command = TankCommand.new(0.0, 0.0, protected_unit.global_position, true)
 		protected_unit.command = TankCommand.new(0.0, 0.0, shooter.global_position, false)
 		if screen != null:

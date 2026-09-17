@@ -32,10 +32,10 @@ var deploy_seconds := 0.0
 var pack_seconds := 0.0
 ## A stop order must hold this many ticks before the legs start down (stop-and-go driving never deploys). A fire
 ## command deploys at once: a battery told to shoot stops and digs in.
-const DEPLOY_SETTLE_TICKS := 15
+const DEPLOY_SETTLE_TICKS := SimClock.TICK_RATE / 4
 ## A drive command must hold this many ticks before a deployed battery packs up (a brain nudging its position between
 ## rounds doesn't lift the legs every reload).
-const PACK_SETTLE_TICKS := 30
+const PACK_SETTLE_TICKS := SimClock.TICK_RATE / 2
 ## Below this speed (m/s) a hull counts as stopped for deploying.
 const DEPLOY_MAX_SPEED := 0.3
 var _still_ticks := 0
@@ -164,6 +164,10 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
 func _ready() -> void:
+	if not simulate:
+		# A networked client moves the hull itself every rendered frame (_process smoothing toward snapshots); physics
+		# interpolation on top of that would smooth it twice.
+		physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	# CP1 (round 5): arenas are flat, so hulls move in floating mode (no floor snapping or floor queries) with two
 	# slide iterations: measured 16% cheaper per vehicle than grounded with four, and nothing drives up anything.
 	motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
@@ -171,6 +175,7 @@ func _ready() -> void:
 	apply_unit()
 	_publish_state()
 	_previous_sync_position = sync_position
+	reset_physics_interpolation()  # spawned at its slot: start drawing it there
 
 
 ## Catalog v2: every stat and the one weapon come from Units.PROFILES[unit_id]. Called once in _ready,
@@ -296,7 +301,7 @@ func _tick(delta: float) -> void:
 	sync_firing = false
 	heat = maxf(0.0, heat - heat_dissipation * delta)
 	ticks_since_hit += 1
-	if shield < max_shield and ticks_since_hit >= roundi(shield_recharge_delay * 60.0):
+	if shield < max_shield and ticks_since_hit >= roundi(shield_recharge_delay * SimClock.TICK_RATE):
 		shield = minf(max_shield, shield + shield_recharge_rate * delta)
 	if weapon["kind"] == Weapons.Kind.CONE:
 		if cmd.fire:
@@ -332,7 +337,7 @@ func _fire_round() -> void:
 
 
 static func _ticks_of(seconds: float) -> int:
-	return maxi(1, roundi(seconds * 60.0)) if seconds > 0.0 else 0
+	return SimClock.ticks(seconds)
 
 
 ## X5: advance deploying or packing for this tick's command; returns the command driving may use (throttle and turn
@@ -350,9 +355,9 @@ func _deploy_step(cmd: TankCommand) -> TankCommand:
 	if cmd.fire or (not wants_to_move and _still_ticks >= DEPLOY_SETTLE_TICKS):
 		# L2: nobody walks around the vehicle lowering outriggers while rounds are landing on them.
 		if absf(_speed) < DEPLOY_MAX_SPEED and not is_pinned():
-			deploy_ratio = minf(1.0, deploy_ratio + 1.0 / maxf(deploy_seconds * 60.0, 1.0))
+			deploy_ratio = minf(1.0, deploy_ratio + 1.0 / maxf(deploy_seconds * SimClock.TICK_RATE, 1.0))
 	elif wants_to_move and (_moving_ticks >= PACK_SETTLE_TICKS or deploy_ratio < 1.0):
-		deploy_ratio = maxf(0.0, deploy_ratio - 1.0 / maxf(pack_seconds * 60.0, 1.0))
+		deploy_ratio = maxf(0.0, deploy_ratio - 1.0 / maxf(pack_seconds * SimClock.TICK_RATE, 1.0))
 	# Snap float dust so "fully deployed" and "packed" are exact.
 	if deploy_ratio > 0.9999:
 		deploy_ratio = 1.0
@@ -588,6 +593,7 @@ func respawn(at_position: Vector3, yaw: float) -> void:
 	heat = 0.0
 	_set_alive(true)
 	_publish_state()
+	reset_physics_interpolation()  # a respawn is a teleport: don't draw a streak from where the wreck was
 
 
 # ---- Queries (valid on every peer) -------------------------------------------------
