@@ -266,3 +266,19 @@ The kickoff prompt is one line; this section is the rest.
     were already lost. `break_contact`, cut on the same kind of evidence, really was the problem: without it the army
     went 91-29 and won on every arena. The difference was only visible because ai measured the army **with and
     without** rather than reading the per-drill column. Attribute a cost to a behaviour only by removing it.
+26. **A relayed number becomes a fact: ask the sample size before passing it on.** Round 5: a stream reported dodging
+    falling from 17% to 1% after the 30 Hz change, and the orchestrator relayed it to the lead within minutes as a
+    behaviour cost of his own decision. It was 18 shells — 5.5 percentage points per shell — and the real finding,
+    found an hour later, was that dodging had **never fired at either tick rate** (254 of 254 candidate directions
+    scored "would still be hit"). The orchestrator's job in a relay is to ask *how many samples, over what, against
+    what control* before a stream's number reaches the lead, because the lead cannot ask and will act on it.
+27. **When a fix does not take, check the fix reached the build before theorising.** Round 5: three straight
+    "fixes" for a black rectangle under every vehicle failed, because a `sed` edit silently matched nothing and the
+    screenshot after it was trusted. A failed edit and a wrong diagnosis look identical from the outside. Verify the
+    edit landed (and the build rebuilt) before reasoning about the renderer, the engine or the data.
+28. **A piped command reports the pipe's exit code, not the command's.** Round 5: the orchestrator ran
+    `make remote T=check 2>&1 | tail -20` and read the 0 that came back as "main is green". The exit code was
+    `tail`'s; the remote build had failed, and main sat red for an hour until a worker ran the suite locally and said
+    so. The signal to read is the wrapper's own line, `>> remote: make check exited <N>`, and the pass/fail summary
+    from the runner -- never the shell's status through a pipe, and never the harness's "[exited with code 0]", which
+    reports the wrapper, not the build. Run heavy checks unpiped, then grep the saved output.
