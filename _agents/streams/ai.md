@@ -77,5 +77,12 @@ _Round 5, ai stream. Updated 2026-09-17. Branch `stream/ai`._
 | X4 | Faction behaviour that reads, measured in the ladder | not started |
 | X5 | Offline discovery groundwork (external decision-maker mode, slow motion, `(state, decision, outcome)` log, distillation plan) | not started |
 
+Queued from other streams (after X1, in the doctrine code ai inherits):
+- **arena:** `ElementSituation._arena_features` calls 86–95% of the kit-built maps "dense" (it counts boxes; one container
+  wall is several). Count touching boxes (1.5 m) as one piece of cover and ignore `cover: "low"` barricades; arena
+  measured foundry unchanged at 16% (`make arena-report`).
+- **control:** K1 `UnitCommand.facing` has landed; brains turning to `order["facing"]` on arrival and to
+  `Orders.station(unit)["heading"]` when idle lets `element_plan.gd` drop the `HALT_*`/`_plan_halt` shuffle.
+
 Decision: X1 before X2 because X2 changes what the champion does, and every X2 ladder run is cheaper once the brains are.
 
