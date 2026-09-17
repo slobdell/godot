@@ -114,6 +114,9 @@ func fired(event: Dictionary) -> void:
 	direction = direction.normalized()
 	var shooter_name := String(event.get("shooter", ""))
 	var shooter := _unit(shooter_name)
+	# The event's muzzle is where the barrel was on the simulation tick; with physics interpolation the hull is drawn up to
+	# a tick behind, so muzzle-side effects move by the same offset to stay on the barrel (zero without interpolation).
+	muzzle += WeaponFx.drawn_offset(shooter)
 	var color := _team_glow(shooter)
 	_track(int(event.get("projectile_id", -1)), {"model": model, "shooter": shooter_name, "color": color, "muzzle": muzzle,
 			"direction": direction})
@@ -568,6 +571,14 @@ func _model_of(event: Dictionary) -> String:
 	if model == "" and event.has("weapon"):
 		model = K2Events.fire_model(Weapons.profile(String(event["weapon"])))
 	return model
+
+
+## How far `unit` is drawn from where the simulation has it this frame (render, round 5: 30 Hz with interpolation).
+static func drawn_offset(unit: Node) -> Vector3:
+	if not (unit is Node3D) or not (unit as Node3D).is_inside_tree():
+		return Vector3.ZERO
+	var body := unit as Node3D
+	return FxWorld.visual_transform(body).origin - body.global_position
 
 
 func _unit(unit_name: String) -> Node:

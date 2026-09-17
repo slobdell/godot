@@ -354,3 +354,10 @@ func test_effects_place_themselves_where_a_body_is_drawn() -> void:
 	assert_eq(FxWorld.visual_transform(body), body.global_transform, "no interpolation: exactly the global transform")
 	body.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON
 	assert_eq(FxWorld.visual_transform(body).origin, body.global_position, "still where it is before any tick has moved it")
+
+
+func test_muzzle_effects_follow_the_drawn_hull_not_the_tick() -> void:
+	var body: Node3D = add_to_tree(Node3D.new())
+	body.position = Vector3(4, 0, 2)
+	assert_eq(WeaponFx.drawn_offset(body), Vector3.ZERO, "no interpolation: effects spawn exactly at the event's muzzle")
+	assert_eq(WeaponFx.drawn_offset(null), Vector3.ZERO, "an unknown shooter changes nothing")
