@@ -119,6 +119,8 @@ func _camera_stage() -> void:
 			"rust": controls.game_match.alive_count(Match.Team.RUST)})
 	await _capture("3_planning")
 	_checks["planning_frames_own_army"] = _sample_camera("planning")
+	# The wiring that keeps the player's army from marching off before he commands it (ai's brains read this meta).
+	_checks["the_match_says_the_player_commands_green"] = controls.game_match.get_meta("player_team", -1) == Match.Team.GREEN
 	var hints := controls.get_node_or_null("ControlHints") as ControlHints
 	_checks["planning_shows_control_hints"] = hints != null and hints.visible and hints.shown().has("pause")
 	if paused:

@@ -82,6 +82,14 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
   before killing the server is the probable fix. If it fails with those two PASS lines present, re-run before
   suspecting your change.
 
+- **`ERROR: N RID allocations of type 'RendererDummy::TextureStorage::DummyTexture' / `TextServerAdvanced::ShapedTextDataAdvanced`
+  / `FontAdvanced` were leaked at exit`, at the end of a headless run.** Engine shutdown noise from the *dummy*
+  renderer and the text server, printed after the run has already passed, and **headless only**: checked by control
+  (round 5, 2026-09-17) by playing a real windowed skirmish and quitting cleanly — **zero** `ERROR`, `SCRIPT ERROR` or
+  `WARNING` lines, no leak report. A player never sees these. They do not fail a check on their own (the `WARNING: N
+  RIDs of type "CanvasItem" were leaked` line beside them is the same thing). If you are hunting a real leak, reproduce
+  it in a windowed run first.
+
 ## Known limits
 
 - **`make determinism` and `make sim-baseline` prove same-build determinism only.** Native vs WebAssembly runs of the same seed diverge today; nothing checks cross-build agreement for the real simulation yet (follow-up D1 in [determinism.md](determinism.md)).

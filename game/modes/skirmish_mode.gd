@@ -70,6 +70,16 @@ static func alert_lines(p_flags: LaunchFlags) -> int:
 	return clampi(p_flags.integer("alert-lines", 1), 1, 3)
 
 
+## Which team has a human commander, or -1 when nobody does (ai reads it as `OrderFeed.player_team`). A brain that has
+## never been ordered otherwise follows its doctrine's objective and drives at the enemy base, which in a faction
+## skirmish means the *player's* army leaves before he can command it (the lead, round 5: "they all also just rush
+## forward right away at the start"). With this set, his vehicles hold their spawn until he orders them.
+## `--cinematic` is spectator mode: nobody is commanding, so it returns -1 on purpose and both sides play themselves.
+## Don't "tidy" that away, or SPECTATE becomes two armies sitting still.
+static func commanded_team(p_flags: LaunchFlags) -> int:
+	return -1 if p_flags.has("cinematic") else Match.Team.GREEN
+
+
 ## Whether the CPU army is commanded by doctrine's ElementCommander (elements, formations, drills) rather than by its
 ## brains alone. `--element-cpu` / `--no-element-cpu` decide; otherwise ELEMENT_CPU_DEFAULT. Brains-only stays
 ## reachable for A/B measurement. Off (ai, 2026-09-17): doctrine beat brains 52-28 in small mirrors without the control
@@ -191,10 +201,8 @@ func _start_match() -> void:
 	# enemy base — which in a faction skirmish is the *player's* army leaving before he can command it (the lead: "they
 	# all also just rush forward right away at the start"). This tells the brains which side has a commander; they hold
 	# their spawn until he orders them. A spectated match has no commander, so both sides play themselves.
-	# --cinematic is spectator mode: nobody is commanding, so the meta is deliberately left unset and both sides play
-	# themselves. Don't "tidy" this into an unconditional set_meta, or SPECTATE becomes two armies sitting still.
-	if not flags.has("cinematic"):
-		game_match.set_meta("player_team", Match.Team.GREEN)
+	if SkirmishMode.commanded_team(flags) >= 0:
+		game_match.set_meta("player_team", SkirmishMode.commanded_team(flags))
 	# The center control point is on by default (the lead: "control point on by default"; combat X7 measured CPU vs CPU
 	# at this budget: median match 92 s with it, most fights end under a minute without). --no-control turns it off;
 	# --control is still accepted.
