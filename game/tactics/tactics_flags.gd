@@ -89,8 +89,13 @@ static func install(game_match: Match, tables: Array, ledger: bool) -> Dictionar
 		for side in 2:
 			if tables[side] == null:
 				continue
-			if String(tables[side]) != "":
-				var loaded := DoctrineTable.load_table(String(tables[side]))
+			# "<table>-drill-drill+commander": a table (or "" = each faction's own) with drills switched off and a
+			# commander plan set, e.g. "-far_ambush-bait" or "standard+pin_and_flank".
+			var spec := parse_spec(String(tables[side]))
+			elements.team_variants[side] = {"drop": spec["drop"], "commander": spec["commander"]} \
+					if not (spec["drop"] as PackedStringArray).is_empty() or spec["commander"] != "" else {}
+			if String(spec["table"]) != "":
+				var loaded := DoctrineTable.load_table(String(spec["table"]))
 				if loaded.has("error"):
 					push_error(loaded["error"])
 				else:
@@ -100,6 +105,35 @@ static func install(game_match: Match, tables: Array, ledger: bool) -> Dictionar
 			(result["commanders"] as Array).append(commander)
 	if ledger:
 		result["ledger"] = TacticsLedger.attach(game_match)
+	return result
+
+
+## {"table": String, "drop": PackedStringArray, "commander": String} from "<table>[-drill ...][+commander]". A table
+## given by res:// path keeps its own dashes: changes are only read after the last "/".
+static func parse_spec(text: String) -> Dictionary:
+	var result := {"table": text, "drop": PackedStringArray(), "commander": ""}
+	var slash := text.rfind("/")
+	var head := text.substr(0, slash + 1)
+	var tail := text.substr(slash + 1)
+	# A file path ends its name at ".json"; a plain table name at the first "+" or "-".
+	var cut := tail.find(".json") + 5 if tail.contains(".json") else -1
+	if cut < 0:
+		for i in tail.length():
+			if tail[i] == "+" or tail[i] == "-":
+				cut = i
+				break
+	if cut < 0 or cut >= tail.length():
+		return result
+	result["table"] = head + tail.substr(0, cut)
+	var rest := tail.substr(cut)
+	var regex := RegEx.create_from_string("([+-])([a-z_]+)")
+	var drop := PackedStringArray()  # packed arrays are values: fill a local, then store it
+	for found in regex.search_all(rest):
+		if found.get_string(1) == "-":
+			drop.append(found.get_string(2))
+		else:
+			result["commander"] = found.get_string(2)
+	result["drop"] = drop
 	return result
 
 

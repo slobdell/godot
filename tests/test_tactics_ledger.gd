@@ -52,3 +52,18 @@ func test_a_side_run_by_doctrine_fills_the_ledger() -> void:
 		for activity: String in report[side_name]:
 			dealt += float(report[side_name][activity]["dealt"])
 	assert_true(dealt > 0.0, "the fight's damage is charged to activities (%.0f)" % dealt)
+
+
+func test_a_side_spec_names_a_table_the_drills_it_drops_and_a_commander() -> void:
+	var spec := TacticsFlags.parse_spec("-far_ambush-bait+pin_and_flank")
+	assert_eq(spec["table"], "", "no table: each faction's own")
+	assert_eq(Array(spec["drop"]), ["far_ambush", "bait"], "drills to switch off")
+	assert_eq(spec["commander"], "pin_and_flank", "the commander plan")
+	assert_eq(TacticsFlags.parse_spec("standard")["table"], "standard", "a plain table name is just a table")
+	assert_eq(TacticsFlags.parse_spec("res://tests/tactics/variants/doctrine_standard_nofar.json")["table"],
+			"res://tests/tactics/variants/doctrine_standard_nofar.json", "a path keeps its underscores and dots")
+	var gangs: DoctrineTable = DoctrineTable.load_table("gangs")["table"]
+	var trimmed := DoctrineTable.variant_of(gangs, PackedStringArray(["bait"]), "pin_and_flank")
+	assert_true(gangs.runs_drill("bait") and not trimmed.runs_drill("bait"), "the variant drops the drill, the original keeps it")
+	assert_eq(String(trimmed.traits.get("commander", "")), "pin_and_flank", "and carries the commander")
+	assert_true(not gangs.traits.has("commander"), "without touching the cached original")

@@ -134,6 +134,35 @@ static func for_faction(faction_id: String) -> DoctrineTable:
 	return standard["table"]
 
 
+## Round-5 X3: `base` with changes, for ladder variants of a faction's own table:
+## `drop` drills taken out of `drills.enabled`, and `commander` set as `traits.commander` ("" = unchanged).
+## Cached by name, base, drop and commander.
+static func variant_of(base: DoctrineTable, drop: PackedStringArray, commander: String) -> DoctrineTable:
+	var key := "variant|%s|%s|%s" % [base.name, ",".join(drop), commander]
+	if _cache.has(key):
+		return _cache[key]
+	var table: DoctrineTable = base.duplicate_table()
+	var enabled: Array = (table.drills.get("enabled", DRILL_DEFAULTS["enabled"]) as Array).duplicate()
+	for drill in drop:
+		enabled.erase(drill)
+	table.drills["enabled"] = enabled
+	if commander != "":
+		table.traits["commander"] = commander
+	table.name = "%s%s%s" % [base.name, "".join(Array(drop).map(func(d: String) -> String: return "-" + d)),
+			"+" + commander if commander != "" else ""]
+	_cache[key] = table
+	return table
+
+
+func duplicate_table() -> DoctrineTable:
+	var copy := DoctrineTable.new()
+	for property: Dictionary in get_property_list():
+		if property["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			var value: Variant = get(property["name"])
+			copy.set(property["name"], value.duplicate(true) if value is Dictionary or value is Array else value)
+	return copy
+
+
 ## Forget cached tables (tests that write their own files).
 static func clear_cache() -> void:
 	_cache.clear()

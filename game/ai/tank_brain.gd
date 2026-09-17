@@ -841,7 +841,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				# same as anyone's.
 				var own_flank: bool = c["name"] == tactics.get("flank_target", "")
 				var flanker_fix: bool = features.get("pinned_exposed", false)
-				var worth_pinning: bool = poor_kill or bool(c.get("pinned", false)) \
+				# ...and a crew that is ALREADY pinned is exploited, not re-pinned, by a gun that can kill it: keeping its
+				# head down is the base of fire's job (the guns whose rounds barely mark it), killing it is everyone else's.
+				var keep_pinned: bool = bool(c.get("pinned", false)) \
+						and (not flanker_fix or TankBrain.rounds_barely_mark(weapon, c) or poor_kill)
+				var worth_pinning: bool = poor_kill or keep_pinned \
 						or (own_flank and not flanker_fix) or c["name"] == tactics.get("focus", "")
 				if worth_pinning:
 					var suppress_score := SUPPRESS_WEIGHT * reach * confidence * leash_factor * firepower

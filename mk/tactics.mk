@@ -33,4 +33,4 @@ ARENAS ?= foundry,yard,boulevard,pit,boneyard
 ARMY ?= combined_arms
 tactics-ladder: import ## Round-5 X3: doctrine vs doctrine vs brains, mirror ARMY, every ARENAS, SIDES=label=brain[:table], FACTIONS=gangs,law for faction armies; ELO and a per-drill exchange report -> build/tactics-ladder.json (RUNS=2 TIME=240; heavy: make remote T=tactics-ladder)
 	$(PYTHON) tools/tactics_ladder.py --godot $(GODOT) --sides $(SIDES) --arenas $(ARENAS) --army $(ARMY) \
-		--runs $(or $(RUNS),2) --jobs $(JOBS) --time-limit $(or $(TIME),240) $(if $(FACTIONS),--factions $(FACTIONS)) --json $(BUILD_DIR)/tactics-ladder.json
+		--runs $(or $(RUNS),2) --jobs $(JOBS) --time-limit $(or $(TIME),240) $(if $(FACTIONS),--factions $(FACTIONS)) $(if $(CONTROL),--control $(CONTROL)) --json $(BUILD_DIR)/tactics-ladder.json

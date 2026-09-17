@@ -2,7 +2,8 @@
 """Tactics ladder (round-5 ai X3, _agents/unit_ai.md "Tactics ladder"): doctrine variants, brain variants and arenas,
 played against each other in seeded headless matches, with an ELO table and a report PER DRILL.
 
-A side is "<label>=<brain>[:<doctrine table>]":
+A side is "<label>=<brain>[:<doctrine table>[-drill...][+commander]]" (e.g. "trim=x4t9:-far_ambush-bait", each
+faction's own table without those drills; "flank=x4t9:+pin_and_flank"):
     brains=x4t9           the brains alone (no elements: the round-4 CPU)
     standard=x4t9:standard  the army formed into elements under an ElementCommander, fighting by doctrine_standard.json
     faction=x4t9:          elements with each faction's own table
@@ -53,7 +54,9 @@ def run_match(args, green, rust, arena, seed, swap, factions):
     else:
         # Faction armies (X4): each side's army falls out of its faction's costs at the budget, with the control point on
         # (the way combat's faction matrix plays them).
-        armies = [f"--green-faction={factions[0]}", f"--rust-faction={factions[1]}", f"--budget={args.budget}", "--control"]
+        armies = [f"--green-faction={factions[0]}", f"--rust-faction={factions[1]}", f"--budget={args.budget}"]
+        if args.control == "on":
+            armies.append("--control")
     command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination",
                *armies, f"--arena={arena}",
                *side_flags("green", green), *side_flags("rust", rust), "--tactics-ledger",
@@ -164,6 +167,7 @@ def main():
     parser.add_argument("--factions", default="", help="two factions, e.g. gangs,law: faction armies instead of a mirror "
                         "army, every side playing each faction")
     parser.add_argument("--budget", type=int, default=5200)
+    parser.add_argument("--control", default="on", choices=["on", "off"], help="faction armies: the centre control point")
     parser.add_argument("--runs", type=int, default=2, help="seeds per pairing per arena (each played 4 ways)")
     parser.add_argument("--first-seed", type=int, default=1)
     parser.add_argument("--jobs", type=int, default=2)
@@ -198,7 +202,8 @@ def main():
                 failures.append(str(err))
 
     ratings = elo(labels, matches)
-    army_text = f"{args.army} mirror" if not faction_list else f"{' vs '.join(faction_list)} at {args.budget}, both ways"
+    army_text = f"{args.army} mirror" if not faction_list else \
+        f"{' vs '.join(faction_list)} at {args.budget}, both ways, control point {args.control}"
     print(f"TACTICS LADDER: {len(matches)} matches ({army_text}; arenas {', '.join(arenas)}; {args.runs} seeds x 4 "
           f"per pairing per arena), {time.time() - started:.0f}s wall")
     print("| Side | Brain | Doctrine | ELO | W | L | D |")

@@ -41,6 +41,9 @@ var _reported := {}
 ## Round-5 X3: [green, rust] doctrine table every element that team forms uses instead of its faction's own (null =
 ## the faction's table). The tactics ladder sets it to play one doctrine against another (TacticsFlags).
 var team_tables: Array = [null, null]
+## ...and changes applied on top of whichever table a team's element gets (its faction's own, or the one above):
+## [green, rust] = {"drop": PackedStringArray of drills to switch off, "commander": String} or {}.
+var team_variants: Array = [{}, {}]
 
 
 ## The Elements of `game_match`, or null.
@@ -194,10 +197,14 @@ func describe() -> PackedStringArray:
 func _table_for(roster: PackedStringArray) -> DoctrineTable:
 	for unit_name in roster:
 		var tank := _tank(unit_name)
-		if tank != null and team_tables[tank.team] != null:
-			return team_tables[tank.team]
-		if tank != null:
-			return DoctrineTable.for_faction(String(Units.PROFILES.get(tank.unit_id, {}).get("faction", "")))
+		if tank == null:
+			continue
+		var table: DoctrineTable = team_tables[tank.team] if team_tables[tank.team] != null \
+				else DoctrineTable.for_faction(String(Units.PROFILES.get(tank.unit_id, {}).get("faction", "")))
+		var variant: Dictionary = team_variants[tank.team]
+		if not variant.is_empty():
+			table = DoctrineTable.variant_of(table, variant.get("drop", PackedStringArray()), String(variant.get("commander", "")))
+		return table
 	return DoctrineTable.for_faction("")
 
 
