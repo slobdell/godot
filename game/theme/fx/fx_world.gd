@@ -124,6 +124,8 @@ func _init() -> void:
 	add_child(shake)
 	if LaunchFlags.from_environment().has("perf"):
 		add_child(PerfOverlay.new())
+	if LaunchFlags.from_environment().has("perf-scene"):
+		add_child(PerfScene.new())
 
 
 func _ready() -> void:

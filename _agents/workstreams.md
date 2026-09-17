@@ -56,12 +56,12 @@ and guns sounding right is audio's.
 
 | Path | Owner |
 |---|---|
-| `game/theme/**` **except `game/theme/audio/`** (materials, shaders, effects, models, props, galleries), `assets/` art paths, `tools/assets/`, `mk/{fx,assets}.mk`, `export_presets.cfg` art filters, `_agents/{art_direction,slot_contracts}.md`, `_agents/streams/references/fx_tricks.md` | render |
+| `game/theme/**` **except `game/theme/audio/`** (materials, shaders, effects, models, props, galleries; the crowd's MultiMesh and animation stay here, its voice does not), `assets/` art paths, `tools/assets/`, `mk/{fx,assets}.mk`, `export_presets.cfg` art filters, `_agents/{art_direction,slot_contracts}.md`, `_agents/streams/references/fx_tricks.md` | render |
 | `game/arena/`, `arenas/`, `tools/make_arenas.py`, `mk/arena.mk` (new), `_agents/arenas.md` (new) | arena |
 | `game/control/`, `game/ui/` (including `hud.tscn`, widgets and the title screen), `game/camera/`, `game/controllers/`, `game/modes/{skirmish,offline,title}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md` | control |
 | `game/units/`, `game/combat/`, `game/match/`, `game/tank/`, `tools/{match_series,matchup_matrix,combat_duel,matchup_search}.py`, `mk/match.mk`, `game/modes/match_runner_mode.gd`, `_agents/balance.md` | combat |
 | `game/ai/` except `doctrine.gd`, `game/tactics/` and `doctrines/` (doctrine had no stream this round: ai inherits it), `game/agent/`, `tools/{agent,ai_ladder}.py`, `mk/{ai,tactics}.mk`, `_agents/{tank_brain,squad_ai_design,unit_ai,doctrine}.md`, `tests/ai_scenarios/` | ai |
-| `game/announcer/`, `game/audio/`, `game/theme/audio/` (`SfxSystem`, gunfire loops, `make_sfx.gd`: audio's since round 4), `assets/{announcer,audio,music}/`, `tools/{announcer,audio}/`, `mk/{announcer,audio}.mk`, `tests/announcer/` | audio |
+| `game/announcer/`, `game/audio/`, `game/theme/audio/` (`SfxSystem`, gunfire loops, `make_sfx.gd`; **plus `engine_system.gd` and the crowd's voice, moved here 2026-09-17**: anything that only makes sound belongs to audio), `assets/{announcer,audio,music}/`, `tools/{announcer,audio}/`, `mk/{announcer,audio}.mk`, `tests/announcer/` | audio |
 | `game/garage/`, `game/progression/`, `game/network/`, `server/`, net modes, `mk/{garage,net}.mk` | **paused**: minimal compatibility fixes only |
 | `_agents/game_design.md`, `vision.md`, `roadmap.md`, `workstreams.md`, `orchestration.md`, `backups.md`, `HANDOFF.md` | orchestrator |
 | **Shared:** `project.godot`, `game/main.gd`, `game/main.tscn`, `game/modes/game_mode.gd`, `Makefile`, `mk/core.mk`, `tests/run_tests.gd`, `tools/{remote,slot,backup_assets}.sh`, `CLAUDE.md` | nobody alone: minimal edits, listed in merge notes |

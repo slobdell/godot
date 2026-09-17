@@ -10,6 +10,7 @@
 | Source, docs, scenes, the shipped faction models, the shipped voice clips | ~135 MB of binaries | **Yes** | the laptop, GitHub (`git@github.com:slobdell/godot.git`) |
 | `assets/incoming/` — raw Meshy downloads and CC0 texture sets (~600 Meshy credits) | 968 MB | No (ignored) | the laptop, builder0 (this timer), the cache drive |
 | `assets/announcer/masters/` — ElevenLabs MP3 masters (171k credits) | 176 MB | No (ignored) | the laptop, builder0 (this timer), the cache drive |
+| `assets/audio/elevenlabs/masters/` — masters for the generated sound effects | small | No (ignored) | the same three |
 | `assets/music/` — the lead's Suno tracks, when they land | — | No (ignored) | the same three |
 
 **Why the ignored ones matter:** they're the *inputs*. With them, re-running the asset pipeline or re-cutting announcer
