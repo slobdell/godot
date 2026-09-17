@@ -201,16 +201,23 @@ _Updated 2026-09-17 (evening)._
   scuffed spawn zones, in the flood map's alpha (256 texels, still one fetch, zero per frame). Kept light so lanes
   don't darken the ground under vehicles. `build/screenshots/wear-grid.png`.
 
-### Thinking ahead: screens with live match content (orchestrator's heads-up; waiting on the lead)
-- **What it costs:** a live feed is a second camera rendering the match into the screens' channel SubViewport
-  (AdBroadcast already has one, 320×640 on high, frame-skipped). Its GPU fill is small at that size (~1/7 of 720p's
-  pixels, glow off in the feed), but draw submission repeats per scene draw: ~+1.5–2 ms CPU render and ~+1–1.5 ms GPU
-  per feed frame at 60 vehicles. Rendered every 4th frame (15 Hz) with a reduced cull mask (no floor detail, no HUD,
-  no decorative effects), that averages ~+0.5 ms CPU, ~+0.3 ms GPU. **One feed shared by every screen**, never one
-  per screen.
-- **Replay** needs no simulation rewind: record that 15 Hz feed into a ring of textures (~3 s at 256×512 ≈ 45 frames,
-  ~23 MB of VRAM) and play it back after a kill; the CinematicCamera's shot choice aims the feed camera at the fight
-  before the kill happens. Measure with a `live_feed` perf-scene layer before committing to it.
+### Live screens: "Live during, ads between" (built 2026-09-17)
+- `LiveFeed` (`game/theme/arena_kit/ads/live_feed.gd`): a broadcast camera renders at 15 Hz into a ring of
+  SubViewports sharing the arena's world (high 30 × 256×512, medium 16 × 192×384; low/web keeps the ads). The newest
+  slot is live on every AdBroadcast channel while a match is fought (the ad layout stops redrawing); after the match,
+  ads. A kill within 45 m of the shot replays the ring at half speed, at most every 9 s; no readback, no rewind.
+- The shot: centroid of the vehicles within 35 m of where the armies meet (closest opposing pair), pulled toward
+  kills, 42 m up and 24 m back, slow orbit. Feed frames: `build/screenshots/live-look5-feeds.png`.
+- **Cost, measured:** at 13 vehicles (frame not sim-bound), `no_live_feed` × 4 cycles: frame time within noise
+  (−0.3 ms). Caveat: perf-scene's GPU timer and draw monitors only see the main viewport, so the feed's own GPU time
+  isn't isolated; the frame-time delta is the honest number. At 60 vehicles: 2 replays in 16 s, still live.
+- Estimated VRAM on high: 30 × (256×512 color + depth) ≈ 30–45 MB.
+
+### Ready for 30 Hz with physics interpolation (combat's refactor)
+- 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b).
+- `FxWorld.visual_transform()` for everything that follows a body per frame; `WeaponFx.drawn_offset()` keeps muzzle
+  effects on the drawn barrel. Combat confirmed: shells interpolated, `reset_physics_interpolation()` on spawns,
+  `shooter` stays in `weapon_fired`. Re-take perf-scene on their flip commit.
 
 ### Next steps
 1. The lead's answers on glow and team read (M3); then per-team hull paint if the rim isn't enough.
