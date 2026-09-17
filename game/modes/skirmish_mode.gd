@@ -247,8 +247,11 @@ func _start_match() -> void:
 	main.add_child(messages)
 	announcer.announced.connect(messages.relay)
 	messages.posted.connect(main.hud.post_message)
-	main.hud.set_status("Skirmish vs %s%s" % [lineups[Match.Team.RUST],
-			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else ""])
+	# Which arena this is (the lead picks it, or Arena rolls it from the seed): the name Arena built, not the flag.
+	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
+	main.hud.set_status("Skirmish vs %s%s%s" % [lineups[Match.Team.RUST],
+			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else "",
+			"  |  %s" % arena_title if arena_title != "" else ""])
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
 	if flags.has("touch-map") or flags.has("command-playtest"):

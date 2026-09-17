@@ -197,10 +197,15 @@ round-4 executor honours it on hold. Nothing issues it yet, so the sim baseline 
 Hints never take input, show at most three, and each goes for good once used (`user://control_hints.cfg`;
 `--hints=off`, `--hints=fresh`).
 
-**The arena picker** (arena asked, via the orchestrator): `Arena` builds from the command line only, so a match
-restarted with `Main.next_flags` silently kept the old layout. `GameLauncher` (`game/ui/game_launcher.gd`) instances
-`main.tscn` with the arena's `layout_name` set, resolves `--arena=random` by `--seed`, and both the title and the
-faction menu start matches through it. The shell playtest checks the arena you clicked is the one built.
+**The arena picker** (the lead chose "players pick", Random stays the default): the ARENA row offers Random first,
+then Arena's proven rotation (The Container Yard, The Boulevard, The Pit, The Boneyard) with each one's note. It is
+reachable from the title (SKIRMISH opens the menu); SPECTATE skips the menu and rolls random. `Arena` builds from the
+command line only, so a match restarted with `Main.next_flags` silently kept the old layout: `GameLauncher`
+(`game/ui/game_launcher.gd`) instances `main.tscn` with the arena's `layout_name` set and switches to it, and both the
+title and the menu start matches through it. **Arena owns the random roll**: the launcher calls `Arena.resolve_name`
+with the match's `--seed`, adding the skirmish's clock seed when a launch has none, so the seed in the HUD replays the
+arena too. The HUD's status line names the arena that was built (`Arena.active`). The shell playtest checks the arena
+you clicked is the one built.
 
 ### Ahead of combat's 30 Hz tick (the lead approved it mid-round)
 
@@ -268,13 +273,12 @@ of the tick. Flip the constant when ai reports a variant that wins at scale.
 - **audio:** the booth calls the player's side "the Condemned" when the player picked the Road Gangs (seen in the shell
   playtest, gangs vs law). And `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format
   whenever convenient. Relayed by the orchestrator.
-- **arena:** when `--arena=random` lands in `Arena` itself (stream/arena 3b1377c), control switches `GameLauncher` to pass
-  "random" through with `--seed` and reads `Arena.active["name"]` back (the orchestrator's ruling: Arena owns the roll).
-  Until then `GameLauncher.resolve_arena` rolls from `--seed` and hands Arena a real name, so nothing logs an error.
+- **arena:** `Arena._ready` reads `--seed` from the command line only, so a match started from a menu (flags in
+  `Main.next_flags`) can't reach it; control works round it by resolving with `Arena.resolve_name` and setting
+  `layout_name`. Reading `Main.next_flags` when set would remove the workaround.
 
 ### Known issues
 
-- `GameLauncher` resolves `random` itself until arena's resolver is on main (above): two implementations for a while.
 - Hints are desktop only (keys and right-click), like the rest of the round-4 grammar.
 - `make hud-cost` measures during a pause, so messages and captions (0–4 draws each when showing) aren't in the 84.
 
@@ -292,10 +296,9 @@ Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cp
 
 ### Next steps
 
-1. Switch `GameLauncher` to arena's resolver when it merges (above).
-2. Flip `ELEMENT_CPU_DEFAULT` when ai's variant wins at scale.
-3. Touch: the desktop grammar, hints and menus have no touch path yet.
-4. A replay of the last match, once the simulation replays from recorded orders.
+1. Flip `ELEMENT_CPU_DEFAULT` when ai's variant wins at scale.
+2. Touch: the desktop grammar, hints and menus have no touch path yet.
+3. A replay of the last match, once the simulation replays from recorded orders.
 
 ### Merge notes (shared files)
 

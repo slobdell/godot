@@ -195,6 +195,10 @@ func test_the_arena_choice_reaches_the_restarted_match() -> void:
 	var next := SkirmishMode.faction_flags(launched, "law", "gangs", "pit")
 	assert_eq(next.text("arena"), "pit", "the arena goes on the flags")
 	var random := GameLauncher.resolve_arena(SkirmishMode.faction_flags(launched, "law", "gangs", GameLauncher.RANDOM))
+	assert_eq(random.text("arena"), Arena.resolve_name(GameLauncher.RANDOM, 7), "Arena's own roll decides, from the match's seed")
+	var seeded := GameLauncher.with_seed(_flags({"skirmish": ""}))
+	assert_true(seeded.text("seed").is_valid_int(), "a launch without a seed gets one, so the roll can be replayed")
+	assert_eq(GameLauncher.with_seed(launched).text("seed"), "7", "and keeps the one it has")
 	var names: Array = GameLauncher.arena_choices().map(func(c: Dictionary) -> String: return c["name"])
 	assert_true(names.has(random.text("arena")), "random resolves to a real arena (%s)" % random.text("arena"))
 	assert_eq(GameLauncher.resolve_arena(SkirmishMode.faction_flags(launched, "law", "gangs", GameLauncher.RANDOM)).text("arena"),

@@ -144,8 +144,7 @@ func start(flag: String) -> void:
 		fx.sfx.play_ui("ui_blip")
 	print("TITLE_START %s" % (flag.get_slice(" ", 0) if flag != "" else "offline"))
 	if OS.has_feature("web"):
-		# The page reload builds the arena from the URL, which knows no "random" (GameLauncher resolves it on desktop).
-		var query := "&".join(Array(flag.split(" ", false)).filter(func(p: String) -> bool: return p != "arena=" + GameLauncher.RANDOM))
+		var query := "&".join(flag.split(" ", false))
 		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + query) if query != "" else ""))
 		return
 	GameLauncher.start(get_tree(), flags_for(flag, LaunchFlags.from_environment()))
