@@ -38,11 +38,17 @@ func test_the_takes_are_actually_different_recordings() -> void:
 
 func test_a_burst_does_not_play_one_take_over_and_over() -> void:
 	var sfx := _sfx()
+	var busiest := "mg_round"
+	for sound in sfx.takes:
+		if (sfx.takes[sound] as Array).size() > (sfx.takes[busiest] as Array).size():
+			busiest = sound
+	var pool := (sfx.takes[busiest] as Array).size()
+	assert_true(pool >= 3, "some rapid sound has at least three takes (%s has %d)" % [busiest, pool])
 	var heard := {}
 	for shot in 40:
-		sfx.play_at("mg_round", Vector3.ZERO)
-		heard[sfx._a_take("mg_round")] = true
-	assert_true(heard.size() >= 3, "forty rounds drew at least three different takes (%d)" % heard.size())
+		sfx.play_at(busiest, Vector3.ZERO)
+		heard[sfx._a_take(busiest)] = true
+	assert_true(heard.size() >= 3, "forty %s drew at least three different takes (%d)" % [busiest, heard.size()])
 	assert_eq(sfx.played, 40, "and every one of them played")
 
 

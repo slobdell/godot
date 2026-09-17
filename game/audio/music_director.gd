@@ -40,6 +40,10 @@ const STEM_FADE_S := 1.2
 ## A stem stays in until the intensity is this far under its `from`.
 const STEM_HYSTERESIS := 0.08
 const SILENT_DB := -60.0
+## The soundtrack's level under --music-volume. Until the stems looped (bc1ce8f) the fight music stopped after 8 s,
+## so the whole mix was balanced against silence; the first full match with it playing measured -15.2 LUFS and a
+## battle that was mostly music (-11 dB RMS). The battle leads; the music sits under it.
+const TRIM_DB := -9.0
 
 signal track_changed(state: String, track_id: String)
 
@@ -48,10 +52,12 @@ var volume_db := 0.0:
 		volume_db = value
 		var index := AudioServer.get_bus_index(BUS)
 		if index >= 0:
-			AudioServer.set_bus_volume_db(index, value)
+			AudioServer.set_bus_volume_db(index, value + TRIM_DB)
 ## Replaceable for tests: path -> AudioStream (or null when there is no file).
 var load_stream: Callable = func(path: String) -> AudioStream: return _load_any(path)
 
+## Which of several equally fitting tracks this match plays (attach() picks one per match; 0 in tests).
+var rotation := 0
 var tracks := {}
 var stingers := {}
 var dir := ""
@@ -73,6 +79,7 @@ var _mood: MatchMood
 var _stems: AudioStreamSynchronized
 var _stem_fade: Tween
 var _last_bar := -1
+var _stems_started_usec := 0
 
 
 ## Adds a music director to the running game if `--music` asks for one, following the booth's mood. Returns it,
@@ -85,6 +92,10 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 		return null
 	var music := MusicDirector.new()
 	music.name = "Music"
+	# Presentation randomness from its own generator, never the simulation's.
+	var dice := RandomNumberGenerator.new()
+	dice.randomize()
+	music.rotation = dice.randi() & 0xffff
 	music.volume_db = float(flags.text("music-volume", "0"))
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
 		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
@@ -173,11 +184,14 @@ func _on_mood_changed(reading: Dictionary) -> void:
 
 func _process(delta: float) -> void:
 	_clock += delta
+	if int(_clock / 5.0) != int((_clock - delta) / 5.0) and _players.size() > 0:
+		print("MUSIC_STATE t=%.1f track=%s playing=%s pos=%.3f stems=%s" % [_clock, track_id, _playing(), position_s(),
+				str(stem_db)])
 	_hold_loop()
 	if pending != "" and _ready_for_bar_line():
 		_crossfade_now()
 	elif pending == "" and _stems != null and _crossed_bar_line():
-		update_layers(current_intensity(), state)
+		update_layers(current_intensity(), state, true)
 
 
 ## Asks for a state. The bed changes at the next bar line; asking for the state that is already playing does nothing.
@@ -197,10 +211,10 @@ func set_state(next: String) -> void:
 ## The best track for a state: the one whose `states` list it in, a stem set first, then the highest intensity;
 ## "" when none fits.
 func track_for(wanted: String) -> String:
-	var best := ""
+	var tied: Array = []
 	var best_intensity := -1.0
 	var ids: Array = tracks.keys()
-	ids.sort()  # deterministic when two tracks tie
+	ids.sort()  # deterministic order for the rotation below
 	for id in ids:
 		var track: Dictionary = tracks[id]
 		if not wanted in track.get("states", []):
@@ -208,9 +222,14 @@ func track_for(wanted: String) -> String:
 		# A stem set outranks a single bed for the same state: it follows the fight instead of stepping.
 		var intensity := float(track.get("intensity", 0.0)) + (10.0 if track.has("stems") else 0.0)
 		if intensity > best_intensity:
-			best = id
+			tied = [id]
 			best_intensity = intensity
-	return best
+		elif is_equal_approx(intensity, best_intensity):
+			tied.append(id)
+	if tied.is_empty():
+		return ""
+	# Several tracks that fit equally (the lead's three fight tracks): this match's pick, the same all match long.
+	return tied[posmod(rotation, tied.size())]
 
 
 ## A one-shot over the bed (a kill, a comeback, the result). Rate-limited so a flurry gets one hit, not five.
@@ -245,14 +264,18 @@ static func layers_for(track: Dictionary, intensity: float, mood_state: String, 
 	return wanted
 
 
-## Brings stems in or out for this reading. True when the arrangement changed. The director calls it on bar lines;
-## calling it directly applies at once (tests, or a hard cut on a result).
-func update_layers(intensity: float, mood_state: String) -> bool:
+## Brings stems in or out for this reading. True when the arrangement changed. The director calls it on bar lines
+## with `one_step`, so it moves at most one layer per bar: at thirty a side, first contact takes the intensity from
+## 0.4 to 0.9 in under a second (audio-pass on the Pit and the Boulevard), and applying that at once was a jump
+## from pad to full band, not a build. Called directly without it, the whole change applies at once.
+func update_layers(intensity: float, mood_state: String, one_step := false) -> bool:
 	if _stems == null or not tracks.has(track_id):
 		return false
 	var wanted := layers_for(tracks[track_id], intensity, mood_state, layers)
 	if wanted == layers:
 		return false
+	if one_step:
+		wanted = _one_layer_toward(wanted)
 	layers = wanted
 	if _stem_fade != null and _stem_fade.is_valid():
 		_stem_fade.kill()
@@ -260,14 +283,29 @@ func update_layers(intensity: float, mood_state: String) -> bool:
 	for index in stem_db.size():
 		var target := 0.0 if index in layers else SILENT_DB
 		_stem_fade.tween_method(_set_stem_db.bind(index), stem_db[index], target, STEM_FADE_S)
-	print("MUSIC_LAYERS track=%s layers=%s intensity=%.2f state=%s t=%.1f" % [track_id, str(layers), intensity,
-			mood_state, _clock])
+	print("MUSIC_LAYERS track=%s layers=%s intensity=%.2f state=%s t=%.1f pos=%.3f bar=%d" % [track_id, str(layers),
+			intensity, mood_state, _clock, position_s(), _last_bar])
 	return true
 
 
 ## The match's intensity (the mood signal's), or the playing track's own when nothing is being followed.
 func current_intensity() -> float:
 	return current_intensity_for(tracks.get(track_id, {}))
+
+
+## The current layers with one change toward `wanted`: the first missing layer added, else the last extra removed.
+func _one_layer_toward(wanted: Array[int]) -> Array[int]:
+	var next: Array[int] = layers.duplicate()
+	for index in wanted:
+		if not index in next:
+			next.append(index)
+			next.sort()
+			return next
+	for i in range(next.size() - 1, -1, -1):
+		if not next[i] in wanted:
+			next.remove_at(i)
+			return next
+	return next
 
 
 func _set_stem_db(db: float, index: int) -> void:
@@ -279,13 +317,21 @@ func _set_stem_db(db: float, index: int) -> void:
 ## True once per bar, on the first frame after a bar line of the playing track.
 func _crossed_bar_line() -> bool:
 	var bar_s := seconds_per_bar(tracks.get(track_id, {}))
-	if bar_s <= 0.0 or not _playing():
+	if bar_s <= 0.0 or (_stems == null and not _playing()):
 		return true
 	var bar := int(position_s() / bar_s)
-	if bar == _last_bar:
+	# Forward only: the playback position is reported per mix chunk and can sit either side of a bar line on
+	# consecutive frames, which counted one bar line twice (two layer changes 0.1 s apart on the Boulevard). A jump
+	# back of more than one bar is the loop wrapping, which is a real bar line.
+	if not is_new_bar(bar, _last_bar):
 		return false
 	_last_bar = bar
 	return true
+
+
+## Whether reaching `bar` is a bar line after `last_bar` (forward, or the loop wrapping back by more than one bar).
+static func is_new_bar(bar: int, last_bar: int) -> bool:
+	return bar != last_bar and bar != last_bar - 1
 
 
 func current_track() -> String:
@@ -297,7 +343,15 @@ func is_playing() -> bool:
 
 
 ## Where the playing bed is, in seconds (tests and the bar-line maths).
+## A stem track is timed by its own clock: AudioStreamSynchronized reports no playback position (always 0.0, seen in
+## audio-pass as every MUSIC_LAYERS line at pos=0.000), which silently skipped every bar-line wait and the loop seek.
 func position_s() -> float:
+	if _stems != null and _stems_started_usec > 0:
+		var track: Dictionary = tracks.get(track_id, {})
+		var start := float(track.get("loop_start_s", 0.0))
+		var span := float(track.get("loop_end_s", 0.0)) - start
+		var elapsed := (Time.get_ticks_usec() - _stems_started_usec) / 1000000.0
+		return start + (fmod(elapsed, span) if span > 0.0 else elapsed)
 	var player := _players[_current] if not _players.is_empty() else null
 	return player.get_playback_position() if player != null and player.playing else 0.0
 
@@ -356,6 +410,10 @@ func _crossfade_now() -> void:
 	track_id = next_id
 	_last_bar = -1
 	_stems = stream as AudioStreamSynchronized if tracks[next_id].has("stems") else null
+	_stems_started_usec = Time.get_ticks_usec() if _stems != null else 0
+	if _stems != null:
+		# The bar it starts in has already begun: the first change waits for the next bar line, not the first frame.
+		_last_bar = int(position_s() / maxf(seconds_per_bar(tracks[next_id]), 0.001))
 	if _stems == null:
 		layers = []
 		stem_db = []
@@ -380,6 +438,7 @@ func _stream_for(id: String) -> AudioStream:
 		if part == null:
 			stem_db = []
 			return null
+		part = _looping(part, float(track.get("loop_start_s", 0.0)))
 		synced.set_sync_stream(index, part)
 		var db := 0.0 if index in starting else SILENT_DB
 		synced.set_sync_stream_volume(index, db)
@@ -389,14 +448,29 @@ func _stream_for(id: String) -> AudioStream:
 
 
 ## The mood's intensity when following one, else the track's own manifest intensity (every stem in by default).
+## A looping copy of one stem: every stem loops by itself from the track's loop start, so they stay locked together
+## without the director seeking (it cannot: see position_s).
+static func _looping(part: AudioStream, loop_start_s: float) -> AudioStream:
+	var copy := part.duplicate() as AudioStream
+	if copy is AudioStreamOggVorbis:
+		(copy as AudioStreamOggVorbis).loop = true
+		(copy as AudioStreamOggVorbis).loop_offset = loop_start_s
+	elif copy is AudioStreamWAV:
+		var wav := copy as AudioStreamWAV
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_begin = int(loop_start_s * wav.mix_rate)
+		wav.loop_end = SfxSystem.loop_frames(wav)
+	return copy
+
+
 func current_intensity_for(track: Dictionary) -> float:
 	return _mood.intensity() if _mood != null else float(track.get("intensity", 1.0))
 
 
 ## Beds loop between loop_start_s and loop_end_s, not over the whole file (PROMPTS.md): seek back at the seam.
 func _hold_loop() -> void:
-	if not _playing() or track_id == "":
-		return
+	if not _playing() or track_id == "" or _stems != null:
+		return  # stems loop by themselves (_stream_for), and a synchronized stream can't report where it is
 	var track: Dictionary = tracks.get(track_id, {})
 	var loop_end := float(track.get("loop_end_s", 0.0))
 	if loop_end <= 0.0:

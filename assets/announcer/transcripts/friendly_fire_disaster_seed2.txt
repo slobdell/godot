@@ -29,3 +29,4 @@ result: green by elimination at 0:33.0
 0:42.3   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
 0:48.1   CALLER   Unbelievable!
 0:49.5   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+0:57.2   PA       Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.

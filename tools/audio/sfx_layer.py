@@ -43,6 +43,10 @@ LAYERED = AUDIO / "layered"
 MANIFEST = ROOT / "game" / "theme" / "audio" / "sfx_layers.gd"
 RATE = 44100
 CEILING_DB = -1.0
+## A master whose own peak is under this is a failed generation, not a quiet sound: levelling it up ships amplified
+## MP3 noise. The batch had two (bullet_on_steel take 3 at -25 dBFS, mg_single take 3 at -32 with half the file
+## "active", i.e. noise). They are refused, and `make sfx-generate` re-rolls a take whose master is deleted.
+MIN_MASTER_PEAK_DB = -20.0
 
 ## Per-source defaults; a source's "layer" object overrides any of them.
 DEFAULTS = {
@@ -184,6 +188,10 @@ def build_take(master: Path, source: dict, take: int) -> tuple[np.ndarray, dict]
     settings = dict(DEFAULTS, **source.get("layer", {}))
     loop = bool(source.get("loop", False))
     body = decode(master)
+    raw_peak_db = 20 * np.log10(max(np.abs(body).max(), 1e-9))
+    if raw_peak_db < MIN_MASTER_PEAK_DB:
+        raise ValueError("%s peaks at %.1f dBFS: a failed generation (delete it and make sfx-generate re-rolls it)"
+                         % (master.name, raw_peak_db))
     if not loop:
         body = trim_onset(body)
     if settings["max_s"]:
@@ -304,12 +312,21 @@ def main(argv: list[str]) -> int:
     data = sfx_generate.load_sources(args.sources)
     only = {s for s in args.only.split(",") if s} or None
     reports = []
+    refusals = 0
     for request in sfx_generate.requests(data, only):
         source, take = request["source"], request["take"]
         master = sfx_generate.master_path(args.masters, source, take)
         if not master.exists():
             continue
-        mixed, report = build_take(master, source, take)
+        try:
+            mixed, report = build_take(master, source, take)
+        except ValueError as refused:
+            print("REFUSED " + str(refused))
+            refusals += 1
+            # A take built earlier from this master must not keep shipping.
+            for stale in args.out.glob("%s_%d.*" % (source["sound"], take)):
+                stale.unlink()
+            continue
         written = write_take(mixed, source["sound"], take, bool(source.get("loop", False)), args.out)
         report["file"] = written.name
         report["bytes"] = written.stat().st_size
@@ -324,7 +341,7 @@ def main(argv: list[str]) -> int:
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(reports, indent=1))
     print("%d takes layered; manifest %s" % (len(reports), args.manifest.relative_to(ROOT) if args.manifest.is_relative_to(ROOT) else args.manifest))
-    return 0
+    return 1 if refusals else 0
 
 
 if __name__ == "__main__":

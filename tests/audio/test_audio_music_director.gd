@@ -160,3 +160,72 @@ func test_missing_files_are_silence_not_a_crash() -> void:
 	await wait_physics_frames(1)
 	broken.set_state("battle")
 	assert_eq(broken.current_track(), "", "a manifest row whose file is missing does not become the current bed")
+
+
+func test_on_a_bar_line_the_fight_builds_one_layer_at_a_time() -> void:
+	## At thirty a side first contact takes the intensity from 0.4 to 0.9 in under a second; on bar lines that must
+	## be a build over several bars, not a cut from pad to full band.
+	var music := _director()
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	music.update_layers(0.05, "lull")
+	var quiet := music.layers.size()
+	assert_true(music.update_layers(0.95, "battle", true), "a bar line in a battle changes the arrangement")
+	assert_eq(music.layers.size(), quiet + 1, "by one layer")
+	music.update_layers(0.95, "battle", true)
+	assert_eq(music.layers.size(), quiet + 2, "and one more on the next bar line")
+	music.update_layers(0.05, "lull", true)
+	assert_eq(music.layers.size(), quiet + 1, "and it comes down one at a time too")
+
+
+func test_a_bar_line_is_counted_once_even_if_the_position_jitters_back() -> void:
+	assert_true(not MusicDirector.is_new_bar(3, 3), "the same bar is not a bar line")
+	assert_true(not MusicDirector.is_new_bar(2, 3), "a position reported just before the line again is not one")
+	assert_true(MusicDirector.is_new_bar(4, 3), "the next bar is")
+	assert_true(MusicDirector.is_new_bar(0, 3), "the loop wrapping back to the start is")
+	assert_true(MusicDirector.is_new_bar(0, -1), "the first bar of a new track is")
+
+
+func test_stems_loop_by_themselves_and_keep_time_without_a_playback_position() -> void:
+	## AudioStreamSynchronized reports no position, so the director can neither seek it nor read bars from it.
+	var music := MusicDirector.new()
+	assert_true(music.load_tracks(MUSIC), "the manifest loads")
+	music.load_stream = func(path: String) -> AudioStream: return load(path) as AudioStream
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	var synced := music._players[music._current].stream as AudioStreamSynchronized
+	assert_true(synced != null, "the fight plays as one synchronized stream")
+	for index in synced.stream_count:
+		var part := synced.get_sync_stream(index) as AudioStreamOggVorbis
+		assert_true(part != null and part.loop, "stem %d loops by itself" % index)
+	var first := music.position_s()
+	await wait_physics_frames(30)
+	assert_true(music.position_s() > first, "the director's own clock moves (%.3f → %.3f)" % [first, music.position_s()])
+	assert_true(not (load("res://assets/music/fight_pad.ogg") as AudioStreamOggVorbis).loop, "the shared resource isn't changed")
+
+
+func test_a_stem_track_waits_for_its_first_bar_line() -> void:
+	var music := MusicDirector.new()
+	assert_true(music.load_tracks(MUSIC), "the manifest loads")
+	music.load_stream = func(path: String) -> AudioStream: return load(path) as AudioStream
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	assert_true(not music._crossed_bar_line(), "the bar the track starts in is not a bar line")
+
+
+func test_equally_fitting_tracks_rotate_by_match_not_by_moment() -> void:
+	var music := _director()
+	music.tracks = {
+		"treadmill": {"stems": [{"file": "a.ogg", "from": 0.0}], "states": ["battle"], "intensity": 0.6},
+		"foundry": {"stems": [{"file": "b.ogg", "from": 0.0}], "states": ["battle"], "intensity": 0.6},
+		"bed": {"file": "c.ogg", "states": ["battle"], "intensity": 0.9},
+	}
+	var seen := {}
+	for match_pick in 4:
+		music.rotation = match_pick
+		seen[music.track_for("battle")] = true
+		assert_eq(music.track_for("battle"), music.track_for("battle"), "one match keeps its pick")
+	assert_eq(seen.keys().size(), 2, "both fight tracks get played across matches, the single bed never")

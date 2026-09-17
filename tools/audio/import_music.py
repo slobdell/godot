@@ -53,6 +53,42 @@ def bar_aligned(start_s: float, end_s: float, bpm: float, beats_per_bar: int) ->
     return round(first_bar, 3), round(first_bar + bars * bar, 3)
 
 
+def seconds(text: str) -> float:
+    """"1:32" or "92" or "92.5" -> seconds."""
+    if not text:
+        return 0.0
+    if ":" in text:
+        minutes, rest = text.split(":", 1)
+        return int(minutes) * 60 + float(rest)
+    return float(text)
+
+
+def section(start_s: float, end_s: float, cut_from: float, cut_to: float) -> tuple[float, float]:
+    """The part of the audible track to use: FROM/TO when given (a Suno track's intro and outro fade, which is not
+    a loop), else all of it."""
+    lo = max(start_s, cut_from) if cut_from > 0 else start_s
+    hi = min(end_s, cut_to) if cut_to > 0 else end_s
+    if hi - lo < 1.0:
+        raise SystemExit("FROM/TO leave less than a second of audio (%.1f-%.1f of %.1f-%.1f)" % (cut_from, cut_to, start_s, end_s))
+    return lo, hi
+
+
+def retire_placeholders(manifest: dict, kept: str, states: list[str]) -> list[str]:
+    """A real track takes its states away from every placeholder, and a placeholder left with none is dropped.
+    Without this a placeholder stem set (which outranks any single bed) keeps playing over the lead's real lull bed,
+    and a placeholder fight set ties with a real one and rotates back in. Returns what it dropped."""
+    dropped = []
+    for track_id in list(manifest.get("tracks", {})):
+        track = manifest["tracks"][track_id]
+        if track_id == kept or not track.get("placeholder"):
+            continue
+        track["states"] = [state for state in track.get("states", []) if state not in states]
+        if not track["states"]:
+            del manifest["tracks"][track_id]
+            dropped.append(track_id)
+    return dropped
+
+
 def parse_layers(spec: str) -> list[tuple[str, dict]]:
     """"Synth=0 Drums=0.35 Bass=0.5 FX=last_stand" -> [(name, {"from": 0.0}), ..., ("FX", {"states": [...]})]."""
     layers = []
@@ -76,7 +112,7 @@ def find_stem(folder: Path, name: str) -> Path:
 
 
 def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_per_bar: int, out: Path,
-                 rights: str, states: list[str]) -> dict:
+                 rights: str, states: list[str], cut_from: float = 0.0, cut_to: float = 0.0) -> dict:
     """X5 (round 5): one Suno track split into stems becomes a stem set that builds with the fight.
 
     Every stem is cut at the same offset and to the same loop, and they share **one** gain worked out from their sum,
@@ -90,7 +126,7 @@ def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_pe
     mix = sum(x[:count] for x in decoded)
     threshold = 10 ** (SILENCE_DB / 20.0)
     audible = np.nonzero(np.abs(mix) > threshold)[0]
-    start_s, end_s = audible[0] / rate, (audible[-1] + 1) / rate
+    start_s, end_s = section(audible[0] / rate, (audible[-1] + 1) / rate, cut_from, cut_to)
     loop_start, loop_end = bar_aligned(0.0, end_s - start_s, bpm, beats_per_bar)
     with tempfile.TemporaryDirectory() as scratch:
         summed = Path(scratch) / "sum.wav"
@@ -126,16 +162,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rights", default="", help="the Suno plan it was generated under, and the date")
     parser.add_argument("--layers", default="", help="stems mode: SOURCE is a folder of Suno stems, e.g. "
                         "\"Synth=0 Drums=0.35 Bass=0.5 Guitar=0.65 FX=last_stand\" (quietest first)")
+    parser.add_argument("--states", default="", help="which MatchMood states it plays under, comma-separated "
+                        "(default: the STATE itself for a bed, skirmish,battle for stems)")
+    parser.add_argument("--from", dest="cut_from", default="", help="use the track from here (m:ss or seconds): skip Suno's intro")
+    parser.add_argument("--to", dest="cut_to", default="", help="and up to here: skip its outro and fade")
     args = parser.parse_args(argv)
     if args.layers:
         manifest_path = args.out / "manifest.json"
         manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else \
             {"schema": 1, "target_lufs": TARGET_LUFS, "tracks": {}, "stingers": {}}
         existing = manifest["tracks"].get(args.state, {})
-        states = existing.get("states", ["lull", "skirmish", "battle", "last_stand"])
+        states = [x for x in args.states.split(",") if x] or existing.get("states", ["skirmish", "battle"])
         track = import_stems(args.source, args.state, parse_layers(args.layers), args.bpm, args.beats_per_bar,
-                             args.out, args.rights or existing.get("rights", ""), states)
+                             args.out, args.rights or existing.get("rights", ""), states,
+                             seconds(args.cut_from), seconds(args.cut_to))
         manifest["tracks"][args.state] = track
+        for gone in retire_placeholders(manifest, args.state, states):
+            print("retired placeholder track %s" % gone)
         manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
         print("imported %d stems as %s: loop %.3f-%.3f s; now run: make music-check" % (
             len(track["stems"]), args.state, track["loop_start_s"], track["loop_end_s"]))
@@ -144,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("%s is not there" % args.source)
     args.out.mkdir(parents=True, exist_ok=True)
 
-    start_s, end_s = trimmed_length(args.source)
+    start_s, end_s = section(*trimmed_length(args.source), seconds(args.cut_from), seconds(args.cut_to))
     loop_start, loop_end = bar_aligned(0.0, end_s - start_s, args.bpm, args.beats_per_bar)
     destination = args.out / ("bed_%s.ogg" % args.state)
     with tempfile.TemporaryDirectory() as scratch:
@@ -167,10 +210,12 @@ def main(argv: list[str] | None = None) -> int:
         "file": destination.name, "bpm": args.bpm, "beats_per_bar": args.beats_per_bar,
         "loop_start_s": loop_start, "loop_end_s": loop_end,
         "intensity": existing.get("intensity", DEFAULT_INTENSITY.get(args.state, 0.5)),
-        "states": existing.get("states", [args.state]),
+        "states": [x for x in args.states.split(",") if x] or existing.get("states", [args.state]),
         "lufs": round(final_lufs, 1), "peak_db": round(peak, 1),
         "rights": args.rights or existing.get("rights", "UNRECORDED: which Suno plan was this generated under?"),
     }
+    for gone in retire_placeholders(manifest, args.state, manifest["tracks"][args.state]["states"]):
+        print("retired placeholder track %s" % gone)
     manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
     print("imported %s -> %s" % (args.source.name, destination))
     print("  %.1f LUFS, peak %.1f dB, loop %.3f-%.3f s (%d bars at %g bpm), %.0f KB"
