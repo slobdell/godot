@@ -195,7 +195,10 @@ _Updated 2026-09-17 (evening)._
   now (cool tower light, warm sodium pools thrown by each layout's own floodlight props), an overhead rig lights the
   middle of the field where fights happen, and the unlit floor's moonlight is ~30% stronger, so hulls read as
   silhouettes on lit mid-grey ground. Same fetch count: no frame cost. `build/screenshots/floor2-grid.png` (left
-  before, right after, yard and boulevard). Baked wear (lanes, oil) not done.
+  before, right after, yard and boulevard).
+- **Baked wear** from each layout: tyre tracks and a faint polish along lanes, oil and grime under wrecks and stacks,
+  scuffed spawn zones, in the flood map's alpha (256 texels, still one fetch, zero per frame). Kept light so lanes
+  don't darken the ground under vehicles. `build/screenshots/wear-grid.png`.
 
 ### Thinking ahead: screens with live match content (orchestrator's heads-up; waiting on the lead)
 - **What it costs:** a live feed is a second camera rendering the match into the screens' channel SubViewport
