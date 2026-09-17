@@ -68,4 +68,17 @@ Vehicle art, props' materials and the frame budget (render), weapons and rules (
 
 ## Status
 
-- 2026-09-17: brief written for round 5. Nothing started.
+- 2026-09-17: brief written for round 5.
+- 2026-09-17 (worker started): plan, in order, smallest foundation first:
+  1. **X1 schema v2 (CP2)**: `ArenaKit` (game/arena/arena_kit.gd) as the gameplay truth of each kit prop; `props`,
+     `spawn_zones`, `lanes`, `regions` in the layout; the loader normalizes colliding props into `obstacles` so every
+     current consumer (CoverMap, radar, ElementSituation, navmesh) sees them with no change on their side. Tests first
+     (`tests/test_arena_kit.gd`). *Decision:* v1 layouts stay valid and unchanged, so the sim baseline doesn't move.
+  2. **X2 `_agents/arenas.md`**: the vocabulary grounded in measured mechanics (eye 1.3 m, muzzles 1.05-1.27 m,
+     doctrine's 45 m terrain count, 85 m support range), rules of thumb, and the measures.
+  3. **X3 four arenas** (yard, boulevard, pit, boneyard) authored in `tools/make_arenas.py`, iterated against
+     `tools/arena_report.py` (static views, routes, exposure, plots). *Decision:* new names; foundry/scrapyard/furnace
+     keep their names and content (the announcer and tests reference them).
+  4. **X4 proof**: swap-bases fairness and seeded series per arena, dynamic measures into arenas.md.
+  5. **X5 dressing** with render's M1 budget, **X6 selection** (random-but-fair default; the sim baseline pinned to
+     foundry so a new default doesn't move the hash).
