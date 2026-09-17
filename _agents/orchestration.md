@@ -291,3 +291,13 @@ The kickoff prompt is one line; this section is the rest.
     hash** rather than leaving the orchestrator to infer it, especially when the tip has moved since you reported.
     **Orchestrators: merge that hash**, and if the tip is ahead of it, either wait for its check or read every commit
     in between.
+30. **Changing the tick rate re-times everything counted in ticks, frames or interpolation — three instances in one
+    day.** Round 5's 30 Hz move: (a) K1's response contract said "within 3 ticks", which silently meant 50 ms and
+    would have meant 100 ms — a guarantee about what a player's hand feels belongs in milliseconds; (b) a brain's
+    think cadence was `TICK_RATE * 3 / 20`, which integer-divided to 12% *more* thinking at 30 Hz — rates must be
+    booked in Hz with the leftover fraction carried, not in whole ticks; (c) physics interpolation arrived with the
+    tick change, so a test that assigned `global_position` read the *drawn* (interpolated) position and aimed a
+    camera 79% of the way along the teleport — every teleport needs `reset_physics_interpolation()`. The
+    generalisation: **before changing a rate, grep for every constant and assertion expressed in ticks or frames, and
+    ask what each one means in seconds at both rates.** Audio, which had already converted everything to seconds,
+    needed no changes at all.
