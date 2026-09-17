@@ -69,12 +69,23 @@ owns where subtitles appear).
 
 _Updated 2026-09-17 by the audio worker._
 
-**Where the backlog stands:** X1 and X2 are built end to end and **waiting on the lead** for the batch (the pilot page
-is below). X3 is done. X4 is done except the parts that have nothing to key on yet. X5 is done. X6's tooling is done;
-the pass itself waits for the batch, so the lead hears the real mix. Stretch: solo mode done. Per-faction flavour and
-the PA reading ad copy are written up under *Next steps*.
+### If you are picking audio up, read these four things
+1. **Never skip the whole-match pass** — why, and the `AudioStreamSynchronized` gotcha.
+2. **How to hear and measure each part** — the exact command for every layer, and what "clean" means.
+3. **The lead's spare music** — what exists beyond the nine tracks in, and what each might suit.
+4. **Next steps** — what is open, and what is one constant away.
 
-### Plan (in order)
+Everything else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
+`assets/audio/elevenlabs/sources.json` is every sound-effect recipe with the prompt that made it.
+
+**Where the backlog stands: every item is done.** X1 (guns) and X2 (impacts) shipped after the lead heard the pilot
+and approved the batch — *"the new sound effects sound awesome"*. X3 (colour names) is done and enforced by the audit.
+X4 (the world underneath) is done apart from the arena PA between rounds, which needs the ad screens placed; its copy
+is approved and recorded. X5 (music stems) is done and the lead's own tracks are in. X6 (listen to it whole) is done,
+and it found three shipped bugs. Stretch: `--audio-solo` and the PA's ad reads shipped; per-faction *voice treatment*
+is unexplored. What is left is two questions with the lead and one track he may want to generate (*Next steps*).
+
+### Plan, as it was written at the start of the round
 1. **X1 guns:** pilot generation tool, layering/mastering tool, SfxSystem wiring, A/B page → **lead gate** → batch.
 2. **X3 colour names:** audit rule first (fails on today's library), fix the text, re-record only changed lines.
 3. **X2 impacts and death:** recipes are written and ride the same batch as X1 (one gate, not two); the mix side
@@ -305,6 +316,24 @@ change shape this round): the music director's layer thresholds are the stems' `
 `assets/music/manifest.json`, and `MatchMood`'s heat and hysteresis decide when the states move. Run `audio-pass` and
 read `MUSIC_LAYERS` against the booth's lines before retuning either.
 
+### The lead's spare music (14 of his 23 tracks, in `assets/incoming/music/`, git-ignored and backed up)
+Sorted by `tools/audio/survey_tracks.py`; "seam" is what a loop over the steadiest window would cost, so the low ones
+import cleanly today. Nothing here is second-rate — his set simply has more combat material than eight beds need.
+
+| Track | BPM | Character | What it might suit |
+|---|---|---|---|
+| Neon Wasteland Blues | 71 | the darkest of the blues takes, 86% low end | a second garage bed, or a quiet results screen |
+| Wasteland Blues | 82 | the brightest blues take | the garage, if he tires of the one in |
+| Machine Combat | 106 | brightest of the combat group, seam 0.00 | a fourth fight set; the cleanest import of the spares |
+| Post-Apocalyptic Convoy | 110 | mid, sparse, seam 0.01 | a `lull` alternative with more motion than Subterranean Anvil |
+| Mechanical Predator, Mechanical Predator (1) | 110, 126 | two takes of one prompt | per-faction fight music (the Syndicate reads as the colder one) |
+| Apocalyptic Machine Hymn, Factory Silence, Ragnarok's Engine | 112 | the same tempo as the Hydraulic fight set | per-arena fight music: the same grid, so they can share bar lines |
+| Warzone Brass | 112 | brightest centroid of the set (3229) | a brass-led fight set, if the booth needs more room it isn't taking |
+| Mechanical Momentum | 120 | seam 0.01, steady | a fourth fight set at Ritual of Iron's tempo |
+| Neon Outrun | 126 | least low end (45%), most synthwave | the title screen or the garage, where there is no battle to sit under |
+| Predatory Hunt | 126 | driving, seam 0.18 | a `last_stand` alternative |
+| Rusted Steel Sky | 178 (89 doubled) | fastest, thin low end | a `last_stand` alternative with more panic |
+
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
@@ -324,15 +353,17 @@ read `MUSIC_LAYERS` against the booth's lines before retuning either.
 - The balance lags the API by minutes: ledger rows show what was read when the run ended, with a note where it moved.
 
 ### Next steps
-1. **When the lead answers the pilot:** `make sfx-generate APPROVED=1` (35 takes, ~520 credits), `make sfx-layer`,
-   look at the numbers, then `make remote T=audio-pass PASS_SECONDS=150` and put the mixdown on a page for the lead
-   (X6). If he asks for changes: remixing is free (`sources.json` → `layer` settings); new prompts cost a few credits.
-2. **X4 leftovers:** the arena PA between rounds and ad screens audible near them need the ad copy (round 4's open
-   lead gate) and the screens' positions (arena's `props` of kind `ad_screen` now exist, so only the copy is missing).
-   Ground-dependent tread sounds need a surface type in the layouts; there isn't one.
-3. **Stretch, not done:** per-faction announcer flavour (a voice treatment per faction's broadcast) wants the lead's
-   view on whether one arena PA should sound different by faction at all. Lines about each map's character from
-   arena's `note` would be new text for the lead to approve before recording.
+1. **Two questions are with the lead** (the page above): whether his music sits at the right level under the battle
+   (`MusicDirector.TRIM_DB`, currently -9 dB) and whether the booth sits above it (`AnnouncerVoice.TRIM_DB`, -4 dB).
+   Both are one constant and a re-measured `audio-pass`; no credits.
+2. **He has no slow, hollow defeat track.** Defeat uses *Mechanical Dread*, which grinds rather than mourns. The
+   *Acid Rain Wasteland* prompt in `assets/music/PROMPTS.md` fills it; import with `make music-import STATE=defeat`.
+3. **`Hud.post_caption(speaker, text)`** is control's new caption line. The booth still posts
+   `post_message("CALLER: …")`, which control routes for now; switch `announcer_booth.gd` once it is on main.
+4. **Spares to spend** if per-faction or per-arena music is wanted: the table above. The director already rotates
+   between equally fitting tracks, so adding a fourth fight set is an import, not code.
+5. **Round 4 leftovers still open:** the arena PA reading between rounds needs the ad screens placed (the copy is
+   approved and recorded); per-faction *voice treatment* for the booth is unexplored.
 
 ### Requests to other streams
 - **control:** when `Hud.post_caption(speaker, text)` reaches main, the booth switches to it from
