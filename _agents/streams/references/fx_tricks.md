@@ -9,6 +9,80 @@
 > on *our* renderer still has to be proven in the FX lab (L0 in look_and_feel.md). Turn **[verify]**
 > into measured facts; don't build on it blindly.
 
+## M1: the frame budget every stream designs to (round 5, render X1, 2026-09-17)
+
+> **This is contract M1 (CP1).** Owner: render. The target is the lead's: **60 fps with 30 a side on the lead's laptop**
+> (this machine: Intel UHD 620, Mesa, Compatibility renderer). Measure with `make perf-scene` (below), on this laptop,
+> before and after anything that adds per-frame work. Builder0's Iris Xe is ~2.3× faster on the GPU: don't budget
+> from it.
+
+### How it's measured: `make perf-scene`
+
+A **live skirmish**, not a staged bench: `--skirmish --player=cpu --enemy=cpu --seed=3 --budget=6500 --cinematic`
+(34 a side at the start), every brain, the HUD, the arena and the whole theme, with vsync off. `PerfScene`
+(`game/theme/fx/bench/perf_scene.gd`) holds its own camera at the default play zoom (0.42) over the middle of every
+living vehicle, waits 8 s, then alternates 2.5 s phases `all, no_<layer>, all, …` twice. A layer's cost is the mean of
+the `all` phases either side minus the layer's phase (cancels the battle's drift). Per phase: frame avg/p95, **GPU ms**
+(median), CPU render ms, **`tick_script_ms`** (every `_physics_process` in one tick: simulation + brains),
+**`ticks_per_frame`**, `process_game_ui_ms` / `process_fx_ms` (probes around `FxWorld` in the process order), draw
+calls, primitives, pooled lights, real lights. Output: `build/perf-scene.json`, `PERF_SCENE` lines, a screenshot, and
+counts of the instance-uniform errors. Knobs: `PERF_RES=1920x1080`, `PERF_FLAGS=--fx-quality=low`, `PERF_LAYERS=`,
+`PERF_CYCLES`, `PERF_NAME`. It opens a window for ~2 minutes.
+
+### Before (2026-09-17, main at round 5 start, tier high)
+
+Laptop shared with five other agents (load ≈ 5), so CPU numbers are pessimistic; GPU numbers are the GPU's.
+
+| Vehicles alive | Frame avg | GPU (720p / 1080p) | Sim tick (script) | Ticks per frame | CPU render | Process: game+UI / FX | Draw calls | Primitives |
+|---|---|---|---|---|---|---|---|---|
+| 65 → 46 | **133 ms (7.5 fps, pinned)** | 18–19 / 29–31 ms | **17–23 ms** | 9 (the cap: the sim falls behind) | 2.1–2.5 | 2.3–3.5 / 1.3–1.5 | 810–930 | 0.97–1.02 M |
+| 30 → 19 | 42–85 ms | 16–19 / 28–31 ms | 9–15 ms | 3–6 | 2.2–2.6 | 2.3–2.8 / 1.2–1.5 | 560–680 | 0.71–0.88 M |
+| 12 → 10 | 21–34 ms | 15–17 ms | 4–7.5 ms | 2.3–2.8 | 1.8–2.3 | 2.9–3.1 / 1.4–1.8 | 450–500 | 0.65–0.69 M |
+
+Layer costs (GPU ms at 720p / 1080p; draw calls): **arena floor + props 7.1 / 11.8** (35 draws); **moon shadows 4.4 /
+5.5** (155 draws, halves the primitives); effects 2.1 / 4.3; pooled lights (16) 1.7 / 2.8; glow 1.3 / 3.2; vehicles
+1.1 / 2.1 (60–155 draws); underglow ~0.4; **HUD 0.5 / 0.9 GPU but 200–310 draw calls and ~1 ms CPU render**. 246
+`Too many instances using shader instance variables` errors and 93 `instance_buffer_pos` errors per run.
+
+**What this says:**
+1. **The simulation tick is the wall.** At 60+ vehicles one tick's scripts take ~20 ms on this laptop. A 60 Hz sim that
+   needs more than a frame per tick runs several ticks every frame (Godot caps it at 8), each frame gets longer, and
+   the game pins at 133 ms. Nothing in rendering can fix that; rendering only decides how early the spiral starts.
+2. **The spiral makes every cost non-linear.** Once a frame exceeds 16.7 ms, it pays for 2+ ticks. So the budget below
+   keeps ~10% headroom: a frame that averages 16 ms but spikes to 20 ms still spirals.
+3. **On the GPU the floor and the shadows are most of the frame**, not the lights or the vehicles.
+4. **The HUD is a third of the draw calls.**
+
+### The budget (UHD 620, 60 vehicles in a fight, default desktop tier)
+
+| Line | Budget | Before | Owner |
+|---|---|---|---|
+| **Whole frame** | **≤ 15 ms average, p95 ≤ 16.7 ms** (60 fps with headroom; `ticks_per_frame` ≈ 1.0) | 133 ms | everyone |
+| **Simulation tick** (all `_physics_process`: Match, combat, brains, elements, orders, visibility) | **≤ 5 ms** at 60 vehicles (`tick_script_ms`); brains inside that keep ai's 4 ms | 17–23 ms | combat + ai (control's order execution inside it) |
+| **GPU** | **≤ 6.5 ms at 1280×720, ≤ 10 ms at 1920×1080** | 18 / 30 ms | render (arena props must stay inside render's numbers: see below) |
+| CPU render (draw submission) | ≤ 1.5 ms | 2.1–2.6 ms | render + control |
+| **Draw calls** | **≤ 350 total: 3D ≤ 220, HUD/UI ≤ 130** | 810–930 (HUD 200–310) | render (3D), control (HUD) |
+| Primitives drawn (all passes) | ≤ 450 k | 0.7–1.0 M | render |
+| `_process` scripts: game + UI | ≤ 1.5 ms | 2.3–3.5 ms | control (UI), audio (booth, music, crowd), combat/ai (anything in `_process`) |
+| `_process` scripts: effects (`FxWorld`) | ≤ 1.0 ms | 1.2–1.8 ms | render |
+| **Real lights alive at once** | **≤ 6: the moon (no shadow) + ≤ 4 pooled omni lights** for the moments that matter (explosions, a tank shell, a kill); **no per-vehicle lights**; no omni shadows ever | 17 (moon with shadow + 16 pooled, most of them on vehicles as underglow) | render |
+| Dynamic shadows | **off on the default desktop tier** (fake with blob shadows); high tier only when the GPU line holds with them | moon shadows on | render |
+| Instance uniforms (`instance uniform` in a shader) | **none on anything that scales with unit count** (each instance reserves 16 of the 4,096 buffer slots: 256 instances total) | vehicles, weapons and shields used them | render |
+
+**Rules for every stream:**
+- **Arena (props):** static props go through `StaticBatcher`/MultiMesh (one draw per prop kind and material, not per
+  prop); a new prop kind costs ≤ 2 draws; **no real lights and no per-prop `_process`**; props cast no dynamic shadows
+  on the default tier. Tell render when a layout adds a kind.
+- **Control (HUD):** the HUD and tactical overlays together ≤ 130 draw calls and ≤ 1 ms of `_process` at 60 vehicles:
+  panels that don't change don't redraw; per-unit widgets (cards, markers, rings) are pooled or batched, not one node
+  tree per unit per frame. 3D selection marks count against render's 3D line, so keep them one MultiMesh.
+- **Combat and ai (simulation):** the whole tick ≤ 5 ms at 60 vehicles on this laptop, checked with `make perf-scene`
+  (`tick_script_ms`) as well as `make ai-perf`; nothing per tick that scales with units² without a spatial index or a
+  staggered schedule.
+- **Audio:** booth, music director and crowd scripts ≤ 0.3 ms per frame together; players are pooled.
+- **Everyone:** a feature that adds per-frame work runs `make perf-scene` before and after and puts both numbers in its
+  commit or Status. Over budget = not done.
+
 ## The constraints we're designing inside
 
 | Fact | Source |
@@ -197,6 +271,8 @@ does), shield hits/recharge on every hit, and wet-floor streaks. `build/fx-bench
 - Lasers and shields cost nothing measurable: beams are one MultiMesh, shields draw only during events.
 
 ### Frame budgets per quality tier (set from these numbers)
+
+> **Superseded for the full game by M1 above (round 5):** these were effects-only budgets on a staged bench.
 
 Worst case = the bench firefight. Native UHD 620 numbers are the reference; a mid-range phone GPU is
 roughly this class or slower, so phones start **low**.
