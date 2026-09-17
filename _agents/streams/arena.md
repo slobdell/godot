@@ -68,6 +68,67 @@ Vehicle art, props' materials and the frame budget (render), weapons and rules (
 
 ## Status
 
+### Report (2026-09-17, end of the worker's run)
+
+**Done** (all on `stream/arena`; design and every measurement in [../arenas.md](../arenas.md)):
+- **X1 (M2, CP2, merged by the orchestrator):** layout schema v2: `props` (containers stacking 1-3, ad screens,
+  barricades, wrecks, floodlights, signs; `ArenaKit.PROPS`), `spawn_zones`, `lanes`, `regions`; loud validation,
+  point symmetry for everything that collides, spawns 6 m clear of cover; props normalized into `obstacles`, so no
+  consumer had to change. `tests/test_arena_kit.gd` (8 tests, mutation-checked).
+- **X2:** `_agents/arenas.md`: the vocabulary grounded in the mechanics as measured, rules of thumb, the test method.
+- **X3:** four arenas built from the kit, each with its one-line fight: **yard** (the Container Yard), **boulevard**,
+  **pit**, **boneyard**. `make arenas` regenerates them; `make arena-report` measures and plots them.
+- **X4:** `make arena-series` (swap-bases pairs through `tests/arena/arena_probe.gd`). 18 seed pairs per arena: no base
+  advantage distinguishable from zero on any of them (largest −0.05 ± 0.03 surviving share). Maps change hidden time
+  (36% → 58%), the long tail of hit ranges (p90 74 → 64 m), flank use (pit 18%) and match shape (the boulevard is
+  decided by elimination 26/36, the yard by control 24/36). **They don't change median hit range (39-43 m everywhere)**,
+  which is combat's and ai's to move.
+- **X5:** screens on every arena facing their own half's base, stacked containers as the main cover, floodlights,
+  signs, wrecks; render fitted the slots and measured the busiest map (boulevard) inside M1 (8.7-10.7 ms GPU).
+  `make remote T=arena-shots` screenshots looked at: fog of war bends around the cover, screens read.
+- **X6:** `--arena=<name>` everywhere; `--arena=random` picks from `Arena.ROTATION` (the four proven arenas), seeded;
+  `make skirmish` plays a random arena by default. Faction note below.
+- **Stretch:** `make arena-candidates` (generated layouts for a human to approve, never shipped automatically);
+  destructible cover written up as a cross-stream proposal (arenas.md).
+
+**Which arena suits which matchup** (weak evidence: gangs vs syndicate, 6 seeds, colours not counterbalanced): the
+syndicate won everywhere; the gangs did least badly on the **boulevard** (open avenues let the swarm close to 30 m at
+once) and worst in the **yard** (lanes feed them in piecemeal). That's the opposite of the brief's guess, so re-test
+once combat's gangs work lands. Expected from the static numbers, not yet measured: long guns and artillery want the
+boulevard, burners and scouts the yard, tanks the pit.
+
+**Decisions:** v1 layouts unchanged and `Arena.DEFAULT_LAYOUT` stays foundry, so tests and the sim baseline never
+moved (only the player's entry point is random). New arenas get new names; foundry, scrapyard and furnace are kept
+(the announcer and tests use them). Low cover is 0.9 m (below every muzzle) because the eye ray is at 1.3 m and
+muzzles at 1.05-1.27 m: there's no height that blocks fire but not sight. Fairness is a paired margin, not a win
+rate, because army strength decides the winner.
+
+**Questions for the lead** (none blocking):
+1. Play `make skirmish` a few times (a random arena each time), or name one: `make skirmish ARENA=yard`
+   (`boulevard`, `pit`, `boneyard`). Which fight is fun, and which is boring?
+2. Should a player pick the arena (a menu), or is random the right default?
+3. Generated layouts: worth growing (`make arena-candidates CHARACTER=yard`, open build/arena-candidates/index.html),
+   or are hand-built arenas enough?
+4. Destructible cover (container stacks that lose levels): worth scheduling? The proposal is in arenas.md.
+
+**Known issues:** the title screen and `make skirmish-factions` don't pass `--arena=random` yet (control's, requested),
+so they play foundry. The announcer has no names for the new arenas and would name "random" (audio's, requested; it
+falls back to silence). Doctrine reads every kit map as "dense" (ai's call, evidence sent). Flanks are rarely used on
+dense maps: the CPU funnels to the control point.
+
+**What to playtest:** `make skirmish` (random arena), `make skirmish ARENA=pit`; pictures: `make remote
+T=arena-shots`; numbers: `make arena-report` (plots in build/arenas/).
+
+**Next steps:** re-run `make arena-series` with combat's `--swap-armies` counterbalance once it merges; re-test the
+faction matchups with colours counterbalanced; an arena menu with control; a fifth, open arena as the long-range
+contrast if the lead wants one (`make arena-candidates CHARACTER=open` is a start).
+
+**Merge notes (shared files):** `mk/play.mk` `skirmish` adds `--arena=$(or $(ARENA),random)`. New files only elsewhere:
+`game/arena/arena_kit.gd`, `tests/test_arena_kit.gd`, `tests/arena/arena_probe.gd`, `tools/{arena_report,arena_series,
+arena_generator}.py`, `mk/arena.mk`, `arenas/{yard,boulevard,pit,boneyard}.json`, `_agents/arenas.md`.
+
+### Log
+
 - 2026-09-17: brief written for round 5.
 - 2026-09-17 (worker started): plan, in order, smallest foundation first:
   1. **X1 schema v2 (CP2)**: `ArenaKit` (game/arena/arena_kit.gd) as the gameplay truth of each kit prop; `props`,
