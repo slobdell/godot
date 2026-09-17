@@ -56,6 +56,8 @@ var volume_db := 0.0:
 ## Replaceable for tests: path -> AudioStream (or null when there is no file).
 var load_stream: Callable = func(path: String) -> AudioStream: return _load_any(path)
 
+## Which of several equally fitting tracks this match plays (attach() picks one per match; 0 in tests).
+var rotation := 0
 var tracks := {}
 var stingers := {}
 var dir := ""
@@ -90,6 +92,10 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 		return null
 	var music := MusicDirector.new()
 	music.name = "Music"
+	# Presentation randomness from its own generator, never the simulation's.
+	var dice := RandomNumberGenerator.new()
+	dice.randomize()
+	music.rotation = dice.randi() & 0xffff
 	music.volume_db = float(flags.text("music-volume", "0"))
 	if not music.load_tracks(flags.text("music-dir", DEFAULT_DIR)):
 		print("MUSIC no tracks in %s yet: silence" % flags.text("music-dir", DEFAULT_DIR))
@@ -205,10 +211,10 @@ func set_state(next: String) -> void:
 ## The best track for a state: the one whose `states` list it in, a stem set first, then the highest intensity;
 ## "" when none fits.
 func track_for(wanted: String) -> String:
-	var best := ""
+	var tied: Array = []
 	var best_intensity := -1.0
 	var ids: Array = tracks.keys()
-	ids.sort()  # deterministic when two tracks tie
+	ids.sort()  # deterministic order for the rotation below
 	for id in ids:
 		var track: Dictionary = tracks[id]
 		if not wanted in track.get("states", []):
@@ -216,9 +222,14 @@ func track_for(wanted: String) -> String:
 		# A stem set outranks a single bed for the same state: it follows the fight instead of stepping.
 		var intensity := float(track.get("intensity", 0.0)) + (10.0 if track.has("stems") else 0.0)
 		if intensity > best_intensity:
-			best = id
+			tied = [id]
 			best_intensity = intensity
-	return best
+		elif is_equal_approx(intensity, best_intensity):
+			tied.append(id)
+	if tied.is_empty():
+		return ""
+	# Several tracks that fit equally (the lead's three fight tracks): this match's pick, the same all match long.
+	return tied[posmod(rotation, tied.size())]
 
 
 ## A one-shot over the bed (a kill, a comeback, the result). Rate-limited so a flurry gets one hit, not five.

@@ -1,211 +1,224 @@
-# The soundtrack: one prompt per state
+# The soundtrack: the lead's prompts, one per bed
 
 Owner: the audio stream ([../../_agents/streams/audio.md](../../_agents/streams/audio.md)). Design:
 [../../_agents/game_design.md](../../_agents/game_design.md) *Audio: cinematic, and alive*.
 
-The lead writes these tracks in Suno himself. **This file is the brief**: what to generate, in what style, and what
-the file has to look like when it comes back so the music director can use it. The style below extends the prompts
-the lead already liked (`/tmp/music_prompt.md`: *"heavy metal gaming music combined with synthwave combined with
-heavy grit"*, Death Race meets Mad Max meets Blade Runner) to every state the match can be in.
+> **Every track in the repo today is a placeholder,** synthesised to exercise the music director. The lead's verdict
+> on them (2026-09-17): *"the music is not matching the vibe I wanted."* The prompts below are **his own**, ones he
+> has already generated and marked, copied verbatim from his notes. When his tracks land, the mix balance measured with
+> the placeholders (music 9 dB under the battle) **has to be re-checked**: `make remote T="audio-pass PASS_SECONDS=90"`
+> and `PASS_FLAGS=--audio-solo=music`, then listen (the brief's *Never skip the whole-match pass*).
 
-> **Rights:** Suno's commercial rights depend on the plan the track was generated under. Before any of these ship in
-> the paid Android build or on Steam, the lead confirms the plan allows commercial use, and we record the plan and the
-> generation date in `manifest.json` (`rights` and `generated`). Placeholder loops in the repo today are ours.
+The direction, in his words: *"a cyberpunk tank video game meant to exist in some futuristic world (Death Race meets
+Mad Max meets Blade Runner) … heavy metal gaming music combined with synthwave combined with heavy grit."*
 
-## How the director uses them
+> **Rights:** Suno's commercial rights depend on the plan a track was generated under. Record the plan and the date
+> with `RIGHTS="Suno <plan>, <date>"` on import; the manifest keeps it for Steam and Android.
 
-One track per state. `MusicDirector` picks the track for `MatchMood.current().state` (L5), crossfades **on the beat**
-using the tempo and loop points in `manifest.json`, plays a stinger over the top on kills and at the end, and ducks
-everything under the announcer. So each track must:
+## The plan in one table
 
-1. **Loop seamlessly.** The director loops between `loop_start_s` and `loop_end_s`, not the whole file. Generate a bit
-   more than you need at each end and put the loop points inside the steady part.
-2. **Hold one tempo.** The crossfade lands on a bar line computed from `bpm` and `beats_per_bar`; a track that
-   accelerates will drift out of the grid. Ask Suno for a steady tempo and no rallentando.
-3. **Leave the middle clear.** The caller, the Veteran and the PA live in roughly 200 Hz – 4 kHz. Tracks that park a
-   lead synth there get chewed up by the ducking compressor. Prefer low-end weight and high-end air over busy mids.
-4. **Not resolve.** These are beds, not songs: no big ending, no long silence, no signature hook that gets old in the
-   fortieth match.
-5. **Be instrumental.** Toggle Suno's **Instrumental** switch on. Vocals compete with the booth.
+| Bed (MatchMood state) | His prompt | BPM | His note | How it plays |
+|---|---|---|---|---|
+| `garage` | Victory Pit / Scrapyard Smuggler | 80 | *"good for mech equipping and stuff"* | one track, loops |
+| `pre_match` | Hangar / Pre-Match Tank Customization | 95 | noir synthwave, tactical preparation | one track, loops |
+| `lull` (before contact, quiet spells) | Lockdown Protocol | 98 | *"good but slow"*, which suits a lull | one track, loops |
+| **the fight** (`skirmish` and `battle`) | The Grinding Treadmill | 100 | **GOOD** | **stems that build** |
+| **the fight**, second set | The Scrap Foundry | 105 | **GOOD** | stems that build |
+| **the fight**, third set | High-Tech Grime & Dystopian Sludge | 110 | **GOOD** | stems that build |
+| `last_stand` | Cyber Metal / Dark Techno, "lethal John Wick club combat" | 115 | relentless momentum | one track, a deliberate change |
+| `victory` | Victory Pit / Scrapyard Smuggler | 80 | written for a results screen | the same track as `garage` |
+| `defeat` | Acid Rain Wasteland | 85 | sludge / doom, rusted steel | one track, loops |
+| stingers | his percussion palette (below) | — | anvils, brake drums, iron pipe | short one-shots |
 
-## The states
+**Why the fight is three stem sets instead of a skirmish bed and a battle bed.** The director doesn't swap tracks as
+the fight grows; it brings layers of one track in and out on bar lines (round 5, X5), because swapping between two
+different songs at the moment the fight gets serious sounds like a DJ changing records. So `skirmish` and `battle` are
+one track split into stems. You marked three battle tracks **GOOD**; all three become fight sets, and the director
+picks one per match, so matches don't all sound alike. `lull` and `last_stand` stay whole tracks: the crossfade into
+the fight at first contact and into a last stand are moments where a change of song is the point.
 
-Each entry is: when it plays → the **Style of Music** box → the meta tags → what to avoid.
+**One unassigned prompt** of yours (*Instrumental Industrial Sludge Doom, 60 BPM, monolithic wall of sound…*, below):
+too slow to sit under a fight. It would make a strong `defeat` alternative, or a pre-match build at a boss arena later.
 
-### 1. `garage` — the army builder, between matches
+## Step by step
 
-Not a match. The player is reading unit cards and spending credits; this plays for minutes at a time.
+### Whole tracks (garage, pre_match, lull, last_stand, victory, defeat)
+1. In Suno: paste **Style of Music** into the style box and the meta tags into the lyrics box; toggle **Instrumental**
+   on. Generate until one feels right. Download the MP3.
+2. Find a steady stretch: at least 30 seconds, ideally a minute or more, after the intro has finished and before the
+   outro starts. Note its start and end as `m:ss`. The meta tags ask Suno for an intro and an outro, and neither loops,
+   so don't use them.
+3. Import it:
 
-**Style of Music**
-> Instrumental Blade Runner noir synthwave, mid-tempo ninety-five BPM, brooding analog pads, gritty muted bass groove,
-> sparse industrial guitar pulses, oily metallic ambience, tactical preparation, dark dystopian, minimal melody,
-> steady driving rhythm, game loop soundtrack
+       make music-import IN=~/Downloads/lockdown.mp3 STATE=lull BPM=98 FROM=0:24 TO=2:08 RIGHTS="Suno Pro, 2026-09-18"
 
-**Meta tags**
-> [Instrumental]
-> [Slow steady industrial beat]
-> [Low warm synth pads, gritty bassline]
-> [Sparse muted electric guitar accents]
+   It trims to your section, puts the loop points on whole bars inside it, normalises to -16 LUFS, encodes Ogg and
+   writes the manifest row. For `victory`, import the Victory Pit track a second time with `STATE=victory`.
+4. `make music-check`: it measures loudness and peak and prints the **loop seam**. Over the limit, the loop clicks
+   every time it repeats: move `FROM`/`TO` by a bar or two and import again.
 
-**Avoid:** anything that builds. This one has to survive twenty minutes of menu.
+### The fight (three stem sets)
+Suno gives a stereo mix, not stems. **Split it locally with demucs** (a music source separator), which runs on builder0
+because it needs PyTorch and this laptop has no room. It's tested on this repo's own mix: its drums stem follows the
+real drums and its bass the bass. The alternative, generating a quiet and a loud take from the same prompt, fails
+because two Suno generations are never the same arrangement at the same bar, so they can't be layered.
 
-### 2. `pre_match` — the arena, before the first shot
+1. Generate the track in Suno as above and download the MP3.
+2. Split it (about a minute per 2-minute track):
 
-The crews are on the floor, the PA is welcoming ninety-four thousand people, nothing has happened yet. Tension with
-no payoff.
+       make music-stems IN=~/Downloads/grinding_treadmill.mp3 OUT=build/audio/stems/treadmill
 
-**Style of Music**
-> Instrumental darksynth, one hundred BPM, slow rising arpeggiated bass, distant stadium crowd ambience, low brass
-> swells, tense held drones, sparse tom hits, Carpenter Brut style, ominous anticipation, no drop, minimal melody
+   You get `drums.wav`, `bass.wav`, `other.wav` (guitars, synths, pads) and `vocals.wav` (near-empty for an
+   instrumental; anything vocal-like Suno added lands here, and it isn't used).
+3. Import the stems as a fight set, quietest layer first:
 
-**Meta tags**
-> [Instrumental]
-> [Intro: distant crowd, low drone]
-> [Slow rising arpeggio, sparse toms]
-> [No drop, sustained tension]
+       make music-import IN=build/audio/stems/treadmill STATE=fight_treadmill BPM=100 \
+           LAYERS="other=0 bass=0.4 drums=0.6" FROM=0:20 TO=2:00 RIGHTS="Suno Pro, 2026-09-18"
 
-**Avoid:** the drop. If it pays off, the first kill has nothing left to do.
+   `other=0` plays from first contact, the bass comes in as the skirmish heats up, and the drums arrive with the
+   battle. The numbers are MatchMood intensity (0 to 1) and can be tuned in `manifest.json` afterwards without
+   re-importing. The first real fight set retires the placeholder for those states automatically.
+4. Repeat with `STATE=fight_foundry BPM=105` and `STATE=fight_grime BPM=110`.
+5. `make music-check` checks the stems line up, the full arrangement's loudness and peak, and that `other` on its
+   own is still music rather than silence.
 
-### The fight, in stems (round 5: this replaces sections 3–6 if you can export stems)
+### Stingers
+Two to four seconds, one-shot. Use your percussion palette as the Style of Music, one line each, and import them the
+way the placeholders are listed in `manifest.json` (`sting.first_blood`, `sting.kill`, `sting.comeback`,
+`sting.last_unit`, `sting.victory`, `sting.defeat`).
 
-The soundtrack no longer has to *step* between `lull`, `skirmish`, `battle` and `last_stand`. One track, exported as
-stems, **builds with the fight**: the director starts with the quiet layers and brings in the next ones on bar lines as
-the match's intensity rises, then drops them again when the floor goes quiet. That's what "a living, breathing music
-selection" asked for. It already plays this way on placeholder stems (`fight_*.ogg`): pad in a lull, a pulse at first
-contact, bass in a skirmish, drums in a battle, and a siren layer only in a last stand.
+---
 
-**How to make it:** generate one full-arrangement track in Suno from the `battle` prompt below (that's the densest
-arrangement, so every layer exists in it), then use Suno's **Get Stems** export (a paid-plan feature; check your plan).
-Keep the tempo steady. Then:
+## The lead's prompts (verbatim)
 
-    make music-import IN=~/Downloads/<stems folder> STATE=fight BPM=110 \
-        LAYERS="Synth=0 Percussion=0.2 Bass=0.45 Drums=0.65 Guitar=0.8 FX=last_stand" RIGHTS="Suno <plan>, <date>"
+### Tips for Best Results in Suno
 
-`LAYERS` names each stem file (matched loosely against Suno's file names) and says when it comes in: a number is the
-intensity (0 = always playing), a state name means only in that state. List the quietest first. Every stem gets the
-same cut, the same loop and **one shared gain**, so Suno's own balance is kept and the full arrangement lands on the
-loudness target. `make music-check` then checks that the stems line up, that the full arrangement meets the loudness
-and peak contract, and that the always-on layers alone are still music rather than silence.
+1. **Keywords to mix & match:** Words like `Mick Gordon style`, `Carpenter Brut style`, `Darksynth`, `Industrial Metal`, `8-string guitars`, `analog distortion`, and `gritty` tell Suno exactly how much dirt and crunch to apply.
+2. **Instrumental Switch:** Toggle Suno's **Instrumental** switch to "On" unless you specifically want robotic/vocoded callouts or aggressive death-growl battle chants.
+3. **Looping / Background Suitability:** Suno often likes to add vocal-like synth leads; if it gets too melodically busy to loop behind gameplay, add tags like `minimal melody`, `steady driving rhythm`, or `game loop soundtrack` to keep the focus on the rhythm and atmosphere.
 
-**What makes a good stem track:** a pad or synth bed that works alone (it's all a lull hears), drums that aren't the
-only rhythm (they drop out between fights), and nothing in the vocal range that only exists in one stem, because the
-booth talks over the loudest layers. If a Suno stem export is not on your plan, the four single beds below still
-work: the director plays whichever it has, and prefers stems when both exist.
+### `garage` and `victory`: Victory Pit / Scrapyard Smuggler (Dark Bluesy Cyber-Garage) (good for mech equipping and stuff)
 
-### 3. `lull` — contact has not started, or the floor has gone quiet
+*Best for: Results screen, black market dealer screens, or tuning specialized heavy artillery.*
 
-The maneuver bed. Vehicles are repositioning; the player is scouting. Movement without violence.
+**Style of Music:**
+Instrumental Dark Cyberpunk Blues, Heavy Industrial Downtempo, 80 BPM, gritty slide guitar over deep analog synth bass, Mad Max desert wasteland, greasy mechanical atmosphere, slow dragging drum beat, smoky Blade Runner noir, low-frequency rumble
 
-**Style of Music**
-> Instrumental industrial synthwave, one hundred five BPM, steady eighth-note bass pulse, muted palm-muted guitar
-> chugs low in the mix, mechanical percussion, hydraulic clanks, cold analog pads, patrolling and searching, restrained,
-> minimal melody, game loop soundtrack
+**Custom Meta Tags (Lyrics Box):**
 
-**Meta tags**
-> [Instrumental]
-> [Steady driving pulse, restrained]
-> [Muted low guitar chugs, mechanical percussion]
-> [No lead melody]
+    [Instrumental]
+    [Intro: Resonant acoustic metal clank, deep pulsing synth]
+    [Main: Slow dragged drum groove, dirty distorted slide guitar]
+    [Atmosphere: Warm vintage synth chords, distant radio static]
+    [Outro: Slow fadeout over low bass hum]
 
-**Avoid:** drums that sound like a fight. This is the floor the battle track has to feel bigger than.
+### `pre_match`: Hangar / Pre-Match Tank Customization / Garage
 
-### 4. `skirmish` — shots exchanged, nobody down
+*Best for: The garage menu, mounting railguns, upgrading treads, and selecting armor plating before dropping into the arena.*
 
-Half the band. It has to sit clearly between `lull` and `battle`, because the director crossfades between all three.
+**Style of Music:**
+Mid-tempo 95 BPM, atmospheric Cyberpunk, Blade Runner noir synthwave, heavy distorted bass groove, muted industrial guitar pulses, oily metallic grit, dark dystopian ambient, brooding, tactical preparation
 
-**Style of Music**
-> Instrumental cyber metal, one hundred twenty BPM, low-tuned syncopated guitar riff, driving industrial drums,
-> dirty Moog bassline, analog distortion, Mick Gordon style, gritty and urgent, steady driving rhythm, minimal melody,
-> game loop soundtrack
+**Optional Meta Tags:**
 
-**Meta tags**
-> [Instrumental]
-> [Main riff: syncopated low guitars, driving drums]
-> [Dirty analog bass]
-> [Steady, no breakdown]
+    [Instrumental]
+    [Slow steady industrial beat]
+    [Low warm synth pads, gritty bassline]
+    [Sparse muted electric guitar accents]
 
-**Avoid:** the full wall of sound. Leave headroom above this.
+### `lull`: Lockdown Protocol (Tension-Building Mid-Match Shift) (good but slow)
 
-### 5. `battle` — sustained fighting, units dying
+*Best for: Mid-round hazard phases (collapsing arena walls, toxic gas release, supply drops).*
 
-The one the lead's second prompt already described: the heavy armor track.
+**Style of Music:**
+Instrumental Dark Electro-Industrial, slow burn 98 BPM, heavy syncopated guitar stabs, ominous Blade Runner brass synth, distorted sub-bass rumble, tactical dread, mechanical grit, brooding cinematic tension, dystopian sci-fi tank warfare
 
-**Style of Music**
-> Instrumental cyber metal, sludge industrial, heavy low-tuned chug riffs, dirty Moog basslines, hydraulic and
-> mechanical SFX, crushing mid-tempo one hundred ten BPM, Mad Max post-apocalyptic atmosphere, gritty, distorted,
-> ominous Blade Runner brass, relentless groove, eight-string guitars, game loop soundtrack
+**Custom Meta Tags (Lyrics Box):**
 
-**Meta tags**
-> [Instrumental]
-> [Intro: low droning sub-bass, heavy mechanical clangs]
-> [Buildup: rising industrial synths, slow tribal metal drums]
-> [Main Riff: heavy syncopated djent guitars with dirty analog fuzz]
-> [Outro: decaying distortion and warning sirens]
+    [Instrumental]
+    [Intro: Pulsing warning synth, low sub-bass sweep]
+    [Rhythm Enter: Punchy industrial kick and low, rhythmic guitar hits]
+    [Mid Section: Ominous low synth horn, tense metallic hats]
+    [Climax: Heavy distorted wall of sound, pulsing darksynth]
+    [Outro: Abrupt mechanical cut]
 
-**Avoid:** a busy lead in the vocal range; the booth is loudest here.
+### The fight, set 1: The Grinding Treadmill (Sustained Mid-Tempo Battle Groove) (GOOD)
 
-### 6. `last_stand` — your force is down to its last third and losing
+*Best for: Protracted slugfests where heavy tanks are trading cannon fire at medium range; focuses on hypnotic, crushing rhythm over frantic speed.*
 
-Not louder than `battle` — *desperate*. Heroic and doomed at once. This is the track a player remembers.
+**Style of Music:**
+Instrumental Mid-tempo Industrial Groove Metal, heavy 100 BPM, slow mechanical swing, brutal down-tuned 8-string chugs, fat overdriven Moog bass, hydraulic piston soundscapes, dark cinematic synth pads, oily grit, apocalyptic demolition arena, dystopian combat soundtrack
 
-**Style of Music**
-> Instrumental darksynth metal, one hundred twenty eight BPM, driving relentless kick, soaring distorted lead synth
-> over crushing guitars, tragic minor-key brass, air-raid siren pads, last stand, heroic and doomed, Carpenter Brut
-> style, huge and desperate, steady driving rhythm
+**Custom Meta Tags (Lyrics Box):**
 
-**Meta tags**
-> [Instrumental]
-> [Relentless driving kick and bass]
-> [Soaring tragic lead synth over heavy guitars]
-> [Rising siren pads]
-> [No resolution]
+    [Instrumental]
+    [Intro: Low droning sub-bass and heavy hydraulic clanks]
+    [Main Groove: Crushing syncopated guitar chug, fat industrial snare]
+    [Layered: Gritty analog synth lead, dirty saw wave]
+    [Heavy Breakdown: Pure bass fuzz and slow drum stomp]
+    [Outro: Engine idle and dying distortion]
 
-**Avoid:** resolving. The player might still lose.
+### The fight, set 2: The Scrap Foundry (Percussive & Mechanical Metal) (GOOD)
 
-### 7. `victory` — the match is over and you won
+*Best for: An arena set inside an active smelting facility or automated weapons plant. Heavy emphasis on metallic impacts and relentless thumping rhythm.*
 
-Plays over the results screen, so it may resolve. Still loops (the player reads their credits).
+**Style of Music:**
+Instrumental Industrial Cyber Metal, EBM crossover, 105 BPM, heavy syncopated rhythm, metallic anvil hits, distorted 303 acid bassline layered with low tuned metal guitars, dark mechanical chug, raw machine energy, Nine Inch Nails grit meets heavy arena combat
 
-**Style of Music**
-> Instrumental triumphant darksynth, one hundred twenty BPM, major-key distorted lead synth, heavy victorious guitars,
-> stadium crowd roar, big gated drums, industrial fanfare, celebratory but gritty and dirty, retro arcade victory,
-> game loop soundtrack
+**Custom Meta Tags (Lyrics Box):**
 
-**Meta tags**
-> [Instrumental]
-> [Fanfare: distorted brass and lead synth]
-> [Big gated drums, crowd roar]
-> [Settles into a steady victorious loop]
+    [Instrumental]
+    [Intro: Factory rhythmic clatter, distorted bass sequence]
+    [Groove: Heavy drum kick and low guitar chug locking into sync]
+    [Section: Acid synth squeal weaving through industrial noise]
+    [Bridge: Distorted sub drops and heavy metal clangs]
+    [Outro: Fading machine hum]
 
-**Avoid:** clean and polished. This is a prison arena, not a sports network.
+### The fight, set 3: High-Tech Grime & Dystopian Sludge (Heavy Armor / Boss Fight) (GOOD)
 
-### 8. `defeat` — the match is over and you lost (or drew)
+*Best for: Encounters with massive, slow-moving super-tanks, irradiated wasteland arenas, and grinding metal treadplates.*
 
-**Style of Music**
-> Instrumental dark ambient industrial, seventy BPM, slow decaying distorted guitar drone, hollow sub-bass, distant
-> crowd, broken machinery, cold empty reverb, mournful minor pads, sparse, Blade Runner noir, resigned
+**Style of Music:**
+Instrumental Cyber metal, Sludge Industrial, heavy low-tuned chug riffs, dirty Moog basslines, hydraulic and mechanical SFX, crushing mid-tempo 110 BPM, Mad Max post-apocalyptic atmosphere, gritty, distorted, ominous Blade Runner brass, relentless groove
 
-**Meta tags**
-> [Instrumental]
-> [Slow decaying distortion]
-> [Hollow sub-bass, distant crowd]
-> [Sparse mournful pads]
+**Optional Meta Tags:**
 
-**Avoid:** punishing the player. Sad, not sarcastic.
+    [Instrumental]
+    [Intro: Low droning sub-bass, heavy mechanical clangs]
+    [Buildup: Rising industrial synths, slow tribal metal drums]
+    [Main Riff: Heavy syncopated djent guitars with dirty analog fuzz]
+    [Outro: Decaying distortion and warning sirens]
 
-## Stingers (short, one-shot, over the top of the bed)
+### `last_stand`: Cyber Metal / Dark Techno
 
-Two to four seconds each, generated the same way, mono or stereo, **no tail that outlasts the moment**. The director
-plays them without changing the bed.
+**Style of Music:**
+Instrumental Cyber Metal, Sludge Industrial meets Dark Techno, 115 BPM, lethal John Wick club combat vibe, driving four-on-the-floor kick, tight staccato 8-string chugs, distorted overdriven Moog bassline, metallic anvil strikes, slick cinematic noir strings, gritty tactical electronic groove, relentless momentum
 
-| Id | When | Style of Music |
-|---|---|---|
-| `sting.first_blood` | the first kill of the match | Instrumental, two seconds, single crushing industrial guitar stab with a sub-bass drop and a short metallic ring |
-| `sting.kill` | a kill during `battle` (rate-limited) | Instrumental, one and a half seconds, short distorted percussive hit, dirty analog, no tail |
-| `sting.comeback` | the losing side takes the lead back | Instrumental, three seconds, rising distorted synth swell into a bright major stab, hopeful and gritty |
-| `sting.last_unit` | your force is down to one vehicle | Instrumental, three seconds, descending air-raid siren with a low tragic brass hit |
-| `sting.victory` | the match ends in a win | Instrumental, four seconds, triumphant industrial brass fanfare with gated drums and a crowd roar |
-| `sting.defeat` | the match ends in a loss | Instrumental, four seconds, collapsing distorted drone into silence, hollow and final |
+### `defeat`: Acid Rain Wasteland (Sludge / Doom Cyberpunk)
+
+*Best for: Outdoor, rain-slicked industrial scrapyards or toxic mud arenas where moving feels sluggish and dangerous.*
+
+**Style of Music:**
+Instrumental Cyberpunk Doom Metal, Sludge Metal combined with Darksynth, 85 BPM, crushing monolithic guitar riffs, gritty analog fuzz, eerie retro synth textures, Blade Runner rain ambience, heavy thunderous drums, dark dystopian oppression, rusted steel atmosphere
+
+**Custom Meta Tags (Lyrics Box):**
+
+    [Instrumental]
+    [Intro: Dark atmospheric rain soundscape, mournful synth swell]
+    [Drop: Massive monolithic fuzz-distorted riff, heavy slow beat]
+    [Verse: Sparse low synth bassline, metallic percussion clangs]
+    [Build: Screaming feedback and low war horn synth]
+    [Outro: Heavy decaying guitar drone]
+
+### Unassigned (a `defeat` alternative, or a boss-arena build later)
+
+Instrumental Industrial Sludge Doom, 60 BPM, monolithic wall of sound, crushing down-tuned 8-string guitars, rhythmic anvil strikes, mechanical hydraulic hiss, subterranean sub-bass drone, apocalyptic brass synth, slow devastating groove, cinematic dark metal, unrelenting scale
+
+### Stingers: the percussion palette
+
+`anvil strikes on downbeat` · `heavy industrial steel clanks` · `distorted brake drum percussion` · `metallic bell impacts` · `harsh iron pipe hits` · `Mick Gordon killer instinct style industrial hits`
+
+---
 
 ## What a finished file has to look like
 
@@ -227,8 +240,5 @@ Loudness target: **−16 LUFS integrated, true peak below −1.5 dBTP.** `make m
 anything more than 2 LU off the target or over the peak ceiling, and prints the loop seam's discontinuity so a bad
 loop point is caught before it is heard.
 
-**Converting what Suno gives you** (it returns MP3 or WAV):
-
-    make music-import IN=~/Downloads/battle.mp3 STATE=battle BPM=110
-    # decodes, trims, finds the nearest bar lines for the loop, encodes Ogg, measures loudness,
-    # and writes the manifest row for you to check.
+**Converting what Suno gives you** is the step-by-step above (`make music-import`, `make music-stems`,
+`make music-check`).

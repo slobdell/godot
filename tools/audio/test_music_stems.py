@@ -40,6 +40,27 @@ class StemTest(unittest.TestCase):
             self.assertEqual(check_music.check_stems(tmp / "out", "fight", track, -16.0), [],
                              "one shared gain brings a quiet export up to the target without clipping the sum")
 
+    def test_from_and_to_cut_a_section_and_refuse_nonsense(self):
+        self.assertEqual(import_music.seconds("1:32"), 92.0)
+        self.assertEqual(import_music.seconds("12.5"), 12.5)
+        self.assertEqual(import_music.section(0.2, 130.0, 30.0, 110.0), (30.0, 110.0))
+        self.assertEqual(import_music.section(0.2, 130.0, 0.0, 0.0), (0.2, 130.0), "no FROM/TO: the whole audible track")
+        with self.assertRaises(SystemExit):
+            import_music.section(0.2, 130.0, 100.0, 100.5)
+
+    def test_a_real_track_retires_the_placeholders_it_replaces(self):
+        manifest = {"tracks": {
+            "fight": {"stems": [], "states": ["lull", "skirmish", "battle", "last_stand"], "placeholder": True},
+            "garage": {"file": "g.ogg", "states": ["garage"], "placeholder": True},
+            "treadmill": {"stems": [], "states": ["skirmish", "battle"]},
+        }}
+        self.assertEqual(import_music.retire_placeholders(manifest, "treadmill", ["skirmish", "battle"]), [])
+        self.assertEqual(manifest["tracks"]["fight"]["states"], ["lull", "last_stand"], "the placeholder keeps the rest")
+        self.assertEqual(import_music.retire_placeholders(manifest, "lull", ["lull"]), [])
+        self.assertEqual(import_music.retire_placeholders(manifest, "last_stand", ["last_stand"]), ["fight"],
+                         "and goes once a real track covers everything it did")
+        self.assertIn("treadmill", manifest["tracks"], "a real track is never retired")
+
     def test_stems_that_do_not_line_up_are_refused(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)

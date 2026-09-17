@@ -214,3 +214,18 @@ func test_a_stem_track_waits_for_its_first_bar_line() -> void:
 	await wait_physics_frames(1)
 	music.set_state("lull")
 	assert_true(not music._crossed_bar_line(), "the bar the track starts in is not a bar line")
+
+
+func test_equally_fitting_tracks_rotate_by_match_not_by_moment() -> void:
+	var music := _director()
+	music.tracks = {
+		"treadmill": {"stems": [{"file": "a.ogg", "from": 0.0}], "states": ["battle"], "intensity": 0.6},
+		"foundry": {"stems": [{"file": "b.ogg", "from": 0.0}], "states": ["battle"], "intensity": 0.6},
+		"bed": {"file": "c.ogg", "states": ["battle"], "intensity": 0.9},
+	}
+	var seen := {}
+	for match_pick in 4:
+		music.rotation = match_pick
+		seen[music.track_for("battle")] = true
+		assert_eq(music.track_for("battle"), music.track_for("battle"), "one match keeps its pick")
+	assert_eq(seen.keys().size(), 2, "both fight tracks get played across matches, the single bed never")
