@@ -80,6 +80,8 @@ func _build_structures() -> void:
 		for sz in [-1.0, 1.0]:
 			_build_tower(Vector3(sx * inset, 0.0, sz * inset))
 	_build_venue()
+	# Render X5: repeated kit models (stands, towers, gates) draw as one MultiMesh per mesh.
+	StaticInstancer.instance_repeats(structures)
 
 
 ## Stands and their crowd along the north and south walls, gates in the middle of the east and west walls.
@@ -144,7 +146,7 @@ func _build_venue() -> void:
 func set_venue_visible(shown: bool) -> void:
 	for child in structures.get_children():
 		if child.name.begins_with("Stands") or child.name.begins_with("Gate") or child.name.begins_with("AdScreen") \
-				or child.name == "NeonSigns" or child == crowd:
+				or child.name == "NeonSigns" or child == crowd or child.name.begins_with("Instanced_"):
 			(child as Node3D).visible = shown
 
 
@@ -222,8 +224,11 @@ func set_ground_style(style: String) -> void:
 			(material as StandardMaterial3D).albedo_color = Color(0.2, 0.2, 0.22)
 		_:
 			push_warning("unknown ground style '%s'" % style)
-	if material != ground.material:
+	# Render X5: the unlit floor takes no light passes, so tiles only cost draw calls: one plane instead.
+	var chunked := style != "unlit"
+	if material != ground.material or chunked != ground.chunked:
 		ground.material = material
+		ground.chunked = chunked
 		ground.build()
 
 

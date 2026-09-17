@@ -26,7 +26,9 @@ extends Node
 ## (a 4-light pool), glow_lite (glow levels 2-3 only), no_fog,
 ## no_spill (the ad screens' light on the floor), scale_085 / scale_075 (3D render scale), glow_wide (glow levels 3+),
 ## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer), lod_4 / lod_8 (mesh LOD threshold px),
-## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count).
+## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count),
+## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
+## ground_chunked (the floor's tiling flipped).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -294,6 +296,25 @@ func _apply(phase: String) -> void:
 			if fx != null:
 				fx.bursts.set_spray_count(6)
 				_hidden.append([fx.bursts, "@set_spray_count", FxQuality.value("sprays")])
+		"ground_chunked":
+			var dressing_slot3 := scene.get_node_or_null("Arena/Dressing") if scene != null else null
+			var ground: Variant = (dressing_slot3.get("visual") as Node).get("ground") if dressing_slot3 != null and dressing_slot3.get("visual") != null else null
+			if ground is ChunkedGround:
+				(ground as ChunkedGround).chunked = not (ground as ChunkedGround).chunked
+				(ground as ChunkedGround).build()
+				_hidden.append([ground, "@toggle_chunked", null])
+		"glow_one":
+			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
+				var environment := (world as WorldEnvironment).environment
+				if environment != null:
+					_override(environment, "glow_levels/5", 0.0)
+		"no_ground", "no_structures":
+			var dressing_slot2 := scene.get_node_or_null("Arena/Dressing") if scene != null else null
+			var dressing2: Node = dressing_slot2.get("visual") if dressing_slot2 != null else null
+			if dressing2 != null:
+				var part: Variant = dressing2.get("ground" if phase == "no_ground" else "structures")
+				if part is Node3D:
+					_override(part, "visible", false)
 		"no_spill":
 			for node in get_tree().root.find_children("Spill", "MeshInstance3D", true, false):
 				_override(node, "visible", false)
@@ -383,6 +404,49 @@ func _finish_phase() -> void:
 	}
 	_results.append(result)
 	print("PERF_SCENE " + JSON.stringify(result))
+	if _phase_index == 0 and LaunchFlags.from_environment().has("perf-census"):
+		print("PERF_SCENE_CENSUS " + JSON.stringify(_census()))
+
+
+## What is drawing, for finding draw calls (--perf-census): visible 3D instances grouped by their nearest named owner
+## under the scene (e.g. "Match/Tanks", "Arena/Dressing") and class, plus visible CanvasItems per CanvasLayer.
+func _census() -> Dictionary:
+	var counts := {}
+	for node in get_tree().root.find_children("*", "VisualInstance3D", true, false):
+		var visual := node as VisualInstance3D
+		if not visual.is_visible_in_tree():
+			continue
+		var path := str(visual.get_path()).split("/")
+		var owner_name := "/".join(path.slice(2, mini(5, path.size() - 1)))
+		var key := "%s [%s]" % [owner_name, visual.get_class()]
+		counts[key] = int(counts.get(key, 0)) + 1
+	for layer in get_tree().root.find_children("*", "CanvasLayer", true, false):
+		if not (layer as CanvasLayer).visible:
+			continue
+		var items := 0
+		for item in layer.find_children("*", "CanvasItem", true, false):
+			if (item as CanvasItem).is_visible_in_tree():
+				items += 1
+		counts["2D %s" % layer.get_path()] = items
+	var scene := get_tree().current_scene
+	var dressing := scene.get_node_or_null("Arena/Dressing") if scene != null else null
+	if dressing != null:
+		for node in dressing.find_children("*", "MeshInstance3D", true, false):
+			var instance := node as MeshInstance3D
+			if instance.is_visible_in_tree() and instance.mesh != null:
+				var key := "dressing mesh: %s x%d surfaces" % [instance.mesh.resource_path if instance.mesh.resource_path != "" else instance.name.rstrip("0123456789"), instance.mesh.get_surface_count()]
+				counts[key] = int(counts.get(key, 0)) + 1
+	var root := _tanks_root()
+	if root != null and root.get_child_count() > 0:
+		var tank := root.get_child(0)
+		for node in tank.find_children("*", "VisualInstance3D", true, false):
+			var visual := node as VisualInstance3D
+			if visual.is_visible_in_tree():
+				var mesh_surfaces := -1
+				if visual is MeshInstance3D and (visual as MeshInstance3D).mesh != null:
+					mesh_surfaces = (visual as MeshInstance3D).mesh.get_surface_count()
+				counts["one tank: %s [%s] surfaces=%d" % [str(tank.get_path_to(visual)), visual.get_class(), mesh_surfaces]] = 1
+	return counts
 
 
 ## Real lights switched on anywhere in the scene (pooled, fixtures, the moon).

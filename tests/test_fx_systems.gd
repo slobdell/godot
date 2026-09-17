@@ -277,3 +277,39 @@ func test_decorative_bursts_thin_out_when_the_overdraw_budget_is_spent() -> void
 	assert_true(bursts.thinned >= 7, "most of a pile-up of glows is thinned (%d)" % bursts.thinned)
 	bursts.update(2.0)
 	assert_eq(bursts.alive_area, 0.0, "expired effects free the budget")
+
+
+func test_repeated_static_models_draw_as_one_multimesh() -> void:
+	var root: Node3D = add_to_tree(Node3D.new())
+	var shared := BoxMesh.new()
+	for i in 5:
+		var holder := Node3D.new()
+		holder.position = Vector3(i * 10.0, 0, 0)
+		var model := MeshInstance3D.new()
+		model.mesh = shared
+		model.position = Vector3(0, 1, 0)
+		holder.add_child(model)
+		root.add_child(holder)
+	var lone := MeshInstance3D.new()
+	lone.mesh = SphereMesh.new()
+	root.add_child(lone)
+	var removed := StaticInstancer.instance_repeats(root)
+	assert_eq(removed, 4, "five copies become one draw")
+	var draws := root.find_children("*", "MultiMeshInstance3D", false, false)
+	assert_eq(draws.size(), 1, "one MultiMesh for the repeated mesh; the lone sphere is left alone")
+	var multimesh := (draws[0] as MultiMeshInstance3D).multimesh
+	assert_eq(multimesh.instance_count, 5, "every copy is an instance")
+	# Headless renderers don't keep MultiMesh instance data: the instancer records the transforms for tests.
+	var placed: Array = (draws[0] as MultiMeshInstance3D).get_meta("transforms")
+	assert_eq((placed[3] as Transform3D).origin, Vector3(30, 1, 0), "placed where the copy was")
+	assert_true(lone.visible, "a single model keeps its own node")
+
+
+func test_the_unlit_floor_is_one_plane_and_lit_floors_stay_tiled() -> void:
+	var ground: ChunkedGround = add_to_tree(ChunkedGround.new())
+	assert_eq(ground.tile_count(), 64, "lit floors: 8 x 8 tiles so a light re-draws only what it reaches")
+	ground.chunked = false
+	ground.build()
+	assert_eq(ground.tile_count(), 1, "unlit floor: one draw")
+	var plane := (ground.get_child(0) as MeshInstance3D).mesh as PlaneMesh
+	assert_true(plane.subdivide_width >= 40, "still ~5 m between vertices for per-vertex fog (%d)" % plane.subdivide_width)
