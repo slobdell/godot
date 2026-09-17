@@ -38,7 +38,12 @@ const DEFAULT_SLOTS := {
 	"prop.ad_screen": "res://game/theme/arena_kit/prop_ad_screen.tscn",
 	# Assets stretch (the lead approved wreck_a 2026-09-16): the husk a destroyed vehicle leaves, scaled per unit by
 	# whoever places it (feel's wreck effects).
-	"prop.wreck": "res://game/theme/arena_kit/generated/prop_wreck.tscn",
+	"prop.wreck": "res://game/theme/arena_kit/kit/prop_wreck.tscn",
+	# Render (round 5): arena's M2 kit props, each kind one MultiMesh (arena_kit/kit/kit_yard.gd). The wreck above now
+	# batches the approved husk too, fit to ArenaKit's 3.2 x 2.0 x 6.4 m box.
+	"prop.barricade": "res://game/theme/arena_kit/kit/prop_barricade.tscn",
+	"prop.floodlight": "res://game/theme/arena_kit/kit/prop_floodlight.tscn",
+	"prop.sign": "res://game/theme/arena_kit/kit/prop_sign.tscn",
 }
 
 const DEFAULT_TEAM_COLORS := [Color(0.33, 0.4, 0.22), Color(0.55, 0.27, 0.2)]

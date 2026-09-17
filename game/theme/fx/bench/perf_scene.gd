@@ -19,10 +19,12 @@ extends Node
 ##
 ## Flags: --perf-scene=<abs json>  --perf-warmup=S (8)  --perf-seconds=S per phase (2.5)  --perf-cycles=N (2)
 ##        --perf-zoom=0..1 (0.42, RtsCamera's level)  --perf-layers=a,b (a subset)  --perf-shot=<abs png>
+##        --perf-shot-every-phase (one shot per phase: <shot>-<index>-<phase>.png)
 
 ## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
 ## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
-## (a 4-light pool), glow_lite (glow levels 2-3 only).
+## (a 4-light pool), glow_lite (glow levels 2-3 only), no_fog,
+## no_spill (the ad screens' light on the floor).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -31,6 +33,8 @@ const PROBE := preload("res://game/theme/fx/bench/perf_probe.gd")
 
 var out_path := ""
 var shot_path := ""
+## Screenshot every phase (<shot>-<index>-<phase>.png), for looking at what a layer changes.
+var shot_every_phase := false
 var warmup := 8.0
 var phase_seconds := 2.5
 var cycles := 2
@@ -74,6 +78,7 @@ func _ready() -> void:
 	var flags := LaunchFlags.from_environment()
 	out_path = flags.text("perf-scene")
 	shot_path = flags.text("perf-shot")
+	shot_every_phase = flags.has("perf-shot-every-phase")
 	warmup = float(flags.text("perf-warmup", str(warmup)))
 	phase_seconds = float(flags.text("perf-seconds", str(phase_seconds)))
 	cycles = flags.integer("perf-cycles", cycles)
@@ -145,9 +150,10 @@ func _process(delta: float) -> void:
 	_phase_time += delta
 	if _phase_time >= SETTLE_SECONDS:
 		_sample(delta)
-	if not _shot_taken and shot_path != "" and _phases[_phase_index] == "all" and _phase_time > phase_seconds * 0.5:
+	if not _shot_taken and shot_path != "" and (_phases[_phase_index] == "all" or shot_every_phase) and _phase_time > phase_seconds * 0.5:
 		_shot_taken = true
-		get_viewport().get_texture().get_image().save_png(shot_path)
+		var path := shot_path.get_basename() + "-%02d-%s.png" % [_phase_index, _phases[_phase_index]] if shot_every_phase else shot_path
+		get_viewport().get_texture().get_image().save_png(path)
 	if _phase_time >= phase_seconds:
 		_finish_phase()
 		if _phase_index + 1 < _phases.size():
@@ -199,6 +205,8 @@ func _start_phase(index: int) -> void:
 	_tick_usec = 0
 	_phase_index = index
 	_phase_time = 0.0
+	if shot_every_phase:
+		_shot_taken = false
 	_samples.clear()
 	_gpu.clear()
 	_cpu.clear()
@@ -265,6 +273,14 @@ func _apply(phase: String) -> void:
 				if environment != null:
 					for level in [1, 5]:
 						_override(environment, "glow_levels/%d" % level, 0.0)
+		"no_spill":
+			for node in get_tree().root.find_children("Spill", "MeshInstance3D", true, false):
+				_override(node, "visible", false)
+		"no_fog":
+			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
+				var environment := (world as WorldEnvironment).environment
+				if environment != null:
+					_override(environment, "fog_enabled", false)
 		"no_glow":
 			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
 				var environment := (world as WorldEnvironment).environment
