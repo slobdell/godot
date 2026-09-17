@@ -135,6 +135,32 @@ ai found that a brain which has never been ordered follows its doctrine's object
 *player's* army marched off before he could command it. `skirmish_mode` now sets `player_team` on the match (ai's
 `OrderFeed.player_team`), and a spectated match deliberately doesn't, so both sides still play themselves.
 
+### The camera failure on main: a teleport racing physics interpolation (2026-09-17)
+
+`test_clicking_an_edge_marker_takes_you_to_that_element` failed on builder0 on two different branches after combat's
+30 Hz merge. **Nothing a player sees was wrong: this was tests only**, because game code already resets interpolation on
+every teleport (`Tank._spawn`, respawn, shells).
+
+The failure text carried its own proof. The camera's reported aim — `(-84.07, -78.89)` on one run, `(-82.06, -76.48)` on
+another machine — is **79% of the way along the teleport** the test performs, from Bravo's start `(15, 40)` to
+`(-110, -110)`. A load-dependent race does not land twice at the same fraction of the same path; interpolation does.
+With `common/physics_interpolation` on, a body assigned a new `global_position` is still *drawn* at its old one until
+`reset_physics_interpolation()`, and `Shown` (the camera, rings, bars, picking) correctly reads the drawn transform.
+
+Reproduced deterministically rather than by re-running: `Engine.physics_ticks_per_second = 4` makes the interpolation
+window long enough that the next process frame lands inside it — without the reset the drawn position is the *old* spot
+while the simulation is 160 m away. **Making time slow beats running the test more often.**
+
+Fixed with `Fixture.place(unit, at)`, a reset after every teleport in control's and command's tests, and
+`test_a_teleported_vehicle_is_drawn_where_it_was_put` to pin the rule. Recorded in
+[verification.md](../verification.md) as the round's **third tick-rate trap**, after K1's `RESPONSE_TICKS` and ai's
+think cadence.
+
+**Process note for round 6:** this was the second red `main` of the day caused by a test and its fix arriving
+separately (combat's booth clock was the first). Both were correct on their own branch. The rule that prevents it is
+the one we already have, seen from the other side: *a branch that adds a test must not be merged at a commit where that
+test fails.*
+
 ### Plan (backlog in order)
 
 1. **X1** play it through real input (`make shell-playtest`: title → SKIRMISH → faction menu → planning → two minutes
