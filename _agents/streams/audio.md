@@ -101,7 +101,10 @@ moved later.
 **Answered 2026-09-17:** "Run the batch", "All of them work" (the ad copy), "Record them" (the PA lines), and screens
 "live during, ads between". All three runs are done (below).
 
-0. **The whole-match listen** with the new guns: a page for the lead (link below when published).
+0. **The whole-match listen** with the new guns: <https://claude.ai/artifact/1tgMvTnnNHpvxczSi9KDpm>. A real match on
+   the Boulevard recorded off the game (battle excerpt, opening, the full 90 s) plus the before/after firefight, and
+   three questions: do the guns sound dangerous; does the announcer sit above the battle (the spectrogram says his
+   line sits inside it, so that's flagged); does the music follow the fight and stay under it. Tuning is levels only.
 1. ~~**The gun pilot** (lead gate 1)~~: <https://claude.ai/artifact/E1hxqREgGsPMB74oUPkC4N>. A scripted ten-second firefight,
    before and after, and each pilot sound raw and as it ships. Reply: run the batch / run it with changes / not yet.
 2. **Ad copy for the screens and the PA between matches** (draft, text only):
@@ -200,6 +203,19 @@ moved later.
   second, which was a cut from pad to full band. On a bar line the director now moves one layer, so a battle
   arrives over three bars (6 s at 120 bpm). `MUSIC_LAYERS` logs `pos=`/`bar=` because `t=` is the game clock, not the
   music's (a headless match read t=14.5 with the music at 2.0 s).
+- **The fight music stopped after 8 seconds in every match, since X5 (bc1ce8f), and the mix was balanced against that
+  silence (the music trim commit).** `AudioStreamSynchronized` reports no playback position (every `MUSIC_LAYERS`
+  line in the passes read `pos=0.000`), so the director could neither seek the stems back to their loop start nor
+  find a bar line. A music-only pass (`PASS_FLAGS=--audio-solo=music`) proved it: sound for 8 s, digital silence
+  from 10 s. Each stem is now a looping copy of its resource, and a stem track's position comes from the director's
+  own clock wrapped to the loop; the same pass afterwards had music for the whole 40 s. With the music actually
+  playing, a full match measured -15.2 LUFS and was mostly music, so the soundtrack sits 9 dB under the battle
+  (`MusicDirector.TRIM_DB`): -20.6 LUFS, true peak -2.9 dBFS, building from about -25 dB before contact to -15 in the
+  battle. Lesson for the next owner: **solo each layer in a real match before judging the mix** — a layer that has
+  silently stopped makes every other level look right.
+- **Locked 30 fps (the lead's new target).** `make audio-bench` reports each system's worst frame and frames over 1 ms.
+  Nothing in audio spikes periodically; the slow frames move between runs and hit several systems at once (machine
+  scheduling), and the one repeatable one is the bench reloading its fixture.
 - **Bug from control (2b28709): the booth called every side the Condemned outside the match runner.** The event
   adapter gave both teams one default faction. Each side's faction is now read from the vehicles the match fielded.
   Test, mutation-checked. The same class of fix as `--arena=random` (50bde77, the booth names the arena that was
