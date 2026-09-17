@@ -12,13 +12,19 @@ enum Tier { LOW, MEDIUM, HIGH }
 const NAMES := {Tier.LOW: "low", Tier.MEDIUM: "medium", Tier.HIGH: "high"}
 const SAVE_PATH := "user://fx_quality.cfg"
 
-## Per tier: real lights in the pool, projectile ground splats, Environment glow, 3D render scale,
-## MSAA, moon shadows, capacity of the transient effect buffer (explosions, flashes, glows, smoke), the long-lived
-## scorch-mark pool, sparks/debris chunks per spray (a per-pixel loop), and heat haze over fires (a screen copy).
+## Per tier: real lights in the pool, the lowest LightPool priority that may take one, projectile ground splats,
+## Environment glow, 3D render scale, MSAA, moon shadows, capacity of the transient effect buffer (explosions, flashes,
+## glows, smoke), the long-lived scorch-mark pool, sparks/debris chunks per spray (a per-pixel loop), and heat haze over
+## fires (a screen copy).
+##
+## Render X3 (round 5, contract M1 in fx_tricks.md): on the lead's UHD 620 a 30-a-side battle measured moon shadows
+## +4.6 ms GPU, MSAA 2x +2.5 ms, and 16 pooled lights (most of them vehicle underglow) +1.7 ms. So no tier has dynamic
+## shadows (vehicles sit on blob shadows) or MSAA, and at most 4 pooled lights go to explosions, shells, beams and
+## muzzle flashes: never to tracers or vehicles.
 const SETTINGS := {
-	Tier.LOW: {"lights": 4, "splats": true, "glow": true, "render_scale": 0.75, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 128, "decals": 12, "sprays": 6, "haze": false},
-	Tier.MEDIUM: {"lights": 8, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 192, "decals": 24, "sprays": 10, "haze": false},
-	Tier.HIGH: {"lights": 16, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_2X, "shadows": true, "effects": 320, "decals": 48, "sprays": 14, "haze": true},
+	Tier.LOW: {"lights": 2, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 0.75, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 128, "decals": 12, "sprays": 6, "haze": false},
+	Tier.MEDIUM: {"lights": 4, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 192, "decals": 24, "sprays": 10, "haze": false},
+	Tier.HIGH: {"lights": 4, "light_floor": LightPool.PRIORITY_MUZZLE, "splats": true, "glow": true, "render_scale": 1.0, "msaa": Viewport.MSAA_DISABLED, "shadows": false, "effects": 320, "decals": 48, "sprays": 14, "haze": true},
 }
 
 static var _tier := -1

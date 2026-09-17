@@ -10,6 +10,8 @@ extends Node3D
 @export var material: Material
 ## false = one big plane (the FX lab's comparison case).
 @export var chunked := true
+## Vertices per tile edge minus one: ~5 m between vertices keeps per-vertex fog smooth (render, round 5).
+const SUBDIVISIONS := 7
 
 
 func _ready() -> void:
@@ -23,6 +25,9 @@ func build() -> void:
 	var step := size / tiles
 	var mesh := PlaneMesh.new()
 	mesh.size = Vector2(step, step)
+	# The Compatibility renderer evaluates fog per vertex: an unsubdivided 40 m tile showed its fog as flat squares.
+	mesh.subdivide_width = SUBDIVISIONS
+	mesh.subdivide_depth = SUBDIVISIONS
 	mesh.material = material
 	for x in tiles:
 		for z in tiles:

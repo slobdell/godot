@@ -5,7 +5,8 @@ extends MeshInstance3D
 ##   ratio drops      → hit shimmer (0.45 s)
 ##   ratio hits 0     → shield-down crackle (0.9 s), then the shell stays off
 ##   ratio rises      → recharge sweep while it keeps rising (and 0.6 s after)
-## The effect is per instance (instance uniforms), all shields share one material.
+## Each shield owns its material (plain uniforms, one shader): instance uniforms reserve 16 of the renderer's 4,096
+## slots per instance and ran out at 30 a side (render X2, round 5).
 
 const SHADER := preload("res://game/theme/fx/shaders/shield.gdshader")
 const HIT_SECONDS := 0.45
@@ -13,7 +14,7 @@ const DOWN_SECONDS := 0.9
 const RECHARGE_LINGER := 0.6
 const RIPPLE_SECONDS := 0.5
 
-static var _material: ShaderMaterial
+var _material := ShaderMaterial.new()
 
 var ratio := 1.0
 var _hit := 0.0
@@ -28,9 +29,7 @@ var _hit_sound_cooldown := 0.0
 
 func _init(size := Vector3(2.9, 2.2, 4.3)) -> void:
 	name = "Shield"
-	if _material == null:
-		_material = ShaderMaterial.new()
-		_material.shader = SHADER
+	_material.shader = SHADER
 	var sphere := SphereMesh.new()
 	sphere.radius = 0.5
 	sphere.height = 1.0
@@ -46,7 +45,7 @@ func _init(size := Vector3(2.9, 2.2, 4.3)) -> void:
 
 
 func set_tint(color: Color) -> void:
-	set_instance_shader_parameter("tint", Vector3(color.r, color.g, color.b).lerp(Vector3.ONE, 0.25))
+	_material.set_shader_parameter("tint", Vector3(color.r, color.g, color.b).lerp(Vector3.ONE, 0.25))
 
 
 func set_shield(new_ratio: float) -> void:
@@ -64,7 +63,7 @@ func set_shield(new_ratio: float) -> void:
 	elif new_ratio > ratio + 0.0001:
 		_recharge_left = RECHARGE_LINGER
 	ratio = new_ratio
-	set_instance_shader_parameter("strength", ratio)
+	_material.set_shader_parameter("strength", ratio)
 	if _hit > 0.0 or _down > 0.0 or _recharge_left > 0.0:
 		visible = true
 		set_process(true)
@@ -73,7 +72,7 @@ func set_shield(new_ratio: float) -> void:
 ## A round struck the shield at `world_point` (feel X4): a ring spreads across the shell from there.
 func hit_at(world_point: Vector3) -> void:
 	var local := (global_transform.affine_inverse() * world_point)
-	set_instance_shader_parameter("ripple_from", local.normalized() if local.length() > 0.001 else Vector3.BACK)
+	_material.set_shader_parameter("ripple_from", local.normalized() if local.length() > 0.001 else Vector3.BACK)
 	_ripple = 0.001
 	_hit = maxf(_hit, 0.6)
 	visible = true
@@ -95,10 +94,10 @@ func _process(delta: float) -> void:
 		_ripple += delta / RIPPLE_SECONDS
 		if _ripple >= 1.0:
 			_ripple = 0.0
-	set_instance_shader_parameter("ripple", _ripple)
-	set_instance_shader_parameter("hit", _hit * _hit)
-	set_instance_shader_parameter("down", _down)
-	set_instance_shader_parameter("recharge", maxf(_sweep, 0.001) if _recharge_left > 0.0 else 0.0)
+	_material.set_shader_parameter("ripple", _ripple)
+	_material.set_shader_parameter("hit", _hit * _hit)
+	_material.set_shader_parameter("down", _down)
+	_material.set_shader_parameter("recharge", maxf(_sweep, 0.001) if _recharge_left > 0.0 else 0.0)
 	if _hit <= 0.0 and _down <= 0.0 and _recharge_left <= 0.0 and _ripple <= 0.0:
 		visible = false
 		set_process(false)

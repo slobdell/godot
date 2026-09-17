@@ -59,17 +59,22 @@ func setup(_weapon: Dictionary) -> void:
 	pass
 
 
-## Heat 0..1: barrels and vents glow from their color to orange-white (per instance, no new material).
+## Heat 0..1: barrels and vents glow from their color to orange-white (a shared material per heat step).
 func set_heat(ratio: float) -> void:
 	heat = clampf(ratio, 0.0, 1.0)
-	mesh_instance.set_instance_shader_parameter("heat", heat)
+	_apply_glow()
 
 
 func rebuild() -> void:
 	var builder := ColorMeshBuilder.new()
 	build(builder)
 	mesh_instance.mesh = builder.commit()
-	mesh_instance.set_instance_shader_parameter("heat", heat)
+	_apply_glow()
+
+
+## Subclasses that flash (the laser) override this to pass their flash too.
+func _apply_glow() -> void:
+	ColorMeshBuilder.set_glow_state(mesh_instance, heat)
 
 
 ## Override: add boxes to the builder.
