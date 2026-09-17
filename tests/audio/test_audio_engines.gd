@@ -120,3 +120,21 @@ func test_sixty_vehicles_still_only_use_the_pooled_voices() -> void:
 		var owner: Node3D = engines._owner_of[i]
 		nearest = maxi(nearest, int(owner.global_position.length()))
 	assert_true(nearest <= 10, "and they are the nearest ones (farthest voiced %d m)" % nearest)
+
+
+func test_the_engine_reads_the_same_at_any_frame_rate() -> void:
+	## Smoothing is in seconds, so 30 fps and 120 fps agree on how revved-up a vehicle is after the same drive.
+	var revs := []
+	for fps in [30.0, 120.0]:
+		var engines := EngineSystem.new()
+		add_to_tree(engines)
+		engines.use_streams(_streams())
+		var tank := _vehicle(Vector3(0, 0, 10))
+		engines.add(tank, "engine_diesel")
+		var dt: float = 1.0 / float(fps)
+		for i in int(0.4 * float(fps)):  # 0.4 s at 10 m/s
+			tank.global_position += Vector3(10.0 * dt, 0, 0)
+			engines.update(Vector3.ZERO, dt)
+		revs.append(float(engines._sources[tank]["speed"]))
+		engines.queue_free()
+	assert_near(revs[0], revs[1], 0.6, "30 fps %.2f m/s against 120 fps %.2f m/s" % [revs[0], revs[1]])
