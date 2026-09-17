@@ -144,14 +144,14 @@ func test_each_side_is_called_by_the_faction_it_fielded() -> void:
 	assert_eq(events[0]["teams"][1]["faction"], "law", "rust fielded the Law")
 
 
-func test_match_time_follows_the_physics_tick_rate() -> void:
-	## Round 5's 30 Hz tick: thirty ticks must be one second to the booth, not half of one.
+func test_match_time_follows_the_simulation_tick_rate() -> void:
+	## The booth's clock divided ticks by a hard 60 before round 5; at 30 Hz that would have run the booth, MatchMood
+	## and the music at half speed. It reads SimClock now, which is where the rate lives (combat's, merged from main).
 	var game_match := _match()
 	var adapter := MatchEventAdapter.new(game_match, "yard")
-	var saved := Engine.physics_ticks_per_second
-	game_match.tick = 30
-	Engine.physics_ticks_per_second = 30
-	assert_near(adapter.seconds(), 1.0, 0.0001, "30 ticks at 30 Hz is a second")
-	Engine.physics_ticks_per_second = 60
-	assert_near(adapter.seconds(), 0.5, 0.0001, "and half of one at 60 Hz")
-	Engine.physics_ticks_per_second = saved
+	game_match.tick = SimClock.TICK_RATE
+	assert_near(adapter.seconds(), 1.0, 0.0001, "a tick rate's worth of ticks is one second, whatever the rate is")
+	game_match.tick = SimClock.TICK_RATE / 2
+	assert_near(adapter.seconds(), 0.5, 0.0001, "and half of them is half a second")
+	assert_eq(SimClock.TICK_RATE, int(ProjectSettings.get_setting("physics/common/physics_ticks_per_second")),
+			"the booth's seconds are the engine's seconds")
