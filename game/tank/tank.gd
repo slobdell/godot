@@ -159,6 +159,10 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
 func _ready() -> void:
+	# CP1 (round 5): arenas are flat, so hulls move in floating mode (no floor snapping or floor queries) with two
+	# slide iterations: measured 16% cheaper per vehicle than grounded with four, and nothing drives up anything.
+	motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
+	max_slides = 2
 	apply_unit()
 	_publish_state()
 	_previous_sync_position = sync_position
@@ -247,6 +251,15 @@ static func first_drawable_slot(candidates: Array) -> String:
 
 
 func _physics_process(delta: float) -> void:
+	if SimProfile.enabled:
+		var started := Time.get_ticks_usec()
+		_tick(delta)
+		SimProfile.add("tank", started)
+	else:
+		_tick(delta)
+
+
+func _tick(delta: float) -> void:
 	if not simulate:
 		# Snapshots arrive every other tick or so; average the jumps into a velocity estimate.
 		var snapshot_velocity := (sync_position - _previous_sync_position) / delta
@@ -258,14 +271,17 @@ func _physics_process(delta: float) -> void:
 		estimated_velocity = Vector3.ZERO
 		_publish_state()
 		return
-	var cmd := command.sanitized()
+	var cmd := command.sanitize_into(_sanitized)
 	aim_point = cmd.aim_point
 
 	# X4 (K3): drive through the same pure model ai plans with (TankMotion.step_in_place): tracks pivot, wheels need
 	# speed to turn and slide on low grip. Collisions stay with the physics body: the velocity after the slide feeds the
 	# next tick, so a wall eats a wheeled unit's momentum.
 	var drive_cmd := _deploy_step(cmd)
+	var drive_started := Time.get_ticks_usec() if SimProfile.enabled else 0
 	_drive(drive_cmd, delta)
+	if drive_started > 0:
+		SimProfile.add("tank/drive", drive_started)
 
 	var local_aim := to_local(cmd.aim_point)
 	# L2: a suppressed gunner keeps losing the target.
@@ -296,7 +312,10 @@ func _physics_process(delta: float) -> void:
 			_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
 			heat += float(weapon.get("heat_per_shot", 0.0))
 			_fire_round()
+	var publish_started := Time.get_ticks_usec() if SimProfile.enabled else 0
 	_publish_state()
+	if publish_started > 0:
+		SimProfile.add("tank/publish_state", publish_started)
 
 
 ## One round leaves the gun (a shell, a beam pulse, a burst round, a lobbed round).
@@ -336,7 +355,9 @@ func _deploy_step(cmd: TankCommand) -> TankCommand:
 		deploy_ratio = 0.0
 	# Firing overrides driving (brake, then dig in); legs that aren't fully up hold the hull still.
 	if cmd.fire or deploy_ratio > 0.0:
-		return TankCommand.new(0.0, 0.0, cmd.aim_point, cmd.fire)
+		_held.aim_point = cmd.aim_point
+		_held.fire = cmd.fire
+		return _held
 	return cmd
 
 
@@ -347,14 +368,30 @@ func is_deployed() -> bool:
 
 ## The motion state this tank steps every physics tick (TankMotion's K3 dictionary), built once per unit.
 var _motion := {}
+## CP1: this tick's clamped command, and the "hold still" command deploying units drive with, reused every tick
+## rather than allocated (two RefCounted objects per vehicle per tick at 60 vehicles).
+var _sanitized := TankCommand.new()
+var _held := TankCommand.new()
 
 
 func _drive(cmd: TankCommand, delta: float) -> void:
 	if _motion.is_empty():
 		_motion = TankMotion.state_for(unit_id, global_position, -global_basis.z, _speed)
+	elif is_parked(cmd):
+		if SimProfile.enabled:
+			SimProfile.add("tank/drive_parked", Time.get_ticks_usec())  # a count; its time is ~0
+		# CP1: a hull that is stopped, told to stay stopped, and resting on the floor would step the motion model to the
+		# same zeros and slide by nothing (~12% of hulls in a 30-a-side firefight), and move_and_slide is the biggest thing
+		# a tank costs. Whatever pushes into it resolves the contact from its own move.
+		_motion["position"] = global_position
+		if _motion.has("creep_dir"):
+			_motion["creep_dir"] = 0
+			_motion["creep_ticks"] = 0
+		return
 	_motion["position"] = global_position
 	var facing := -global_basis.z  # re-read: spawns, respawns, and tests place hulls by setting rotation
-	_motion["forward"] = Vector3(facing.x, 0.0, facing.z).normalized()
+	var facing_flat := Vector3(facing.x, 0.0, facing.z).normalized()
+	_motion["forward"] = facing_flat
 	_motion["speed"] = _speed
 	_motion["max_forward_speed"] = max_forward_speed
 	_motion["max_reverse_speed"] = max_reverse_speed
@@ -366,12 +403,14 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 	_motion["lateral_grip"] = lateral_grip
 	TankMotion.step_in_place(_motion, cmd.throttle, cmd.turn, delta)
 	var forward: Vector3 = _motion["forward"]
-	global_basis = Basis.looking_at(forward, Vector3.UP)
+	if forward != facing_flat:
+		# CP1: only a hull that turned needs a new basis (setting one re-sends the transform to physics and rendering).
+		global_basis = Basis.looking_at(forward, Vector3.UP)
 	_speed = float(_motion["speed"])
 	var planar: Vector3 = _motion["velocity"]
 	velocity.x = planar.x
 	velocity.z = planar.z
-	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
+	velocity.y = 0.0  # floating on a flat arena (see _ready)
 	move_and_slide()
 	estimated_velocity = Vector3(velocity.x, 0.0, velocity.z)
 	_motion["velocity"] = estimated_velocity
@@ -379,6 +418,22 @@ func _drive(cmd: TankCommand, delta: float) -> void:
 		# Wheels and hover both carry momentum, so the speed the next tick starts from is what the hull is actually
 		# doing after the slide and any wall it just hit, not what the model wanted.
 		_speed = estimated_velocity.dot(forward)
+
+
+## CP1: nothing to integrate this tick (see _drive).
+func is_parked(cmd: TankCommand) -> bool:
+	return cmd.throttle == 0.0 and cmd.turn == 0.0 and _speed == 0.0 and velocity == Vector3.ZERO \
+			and estimated_velocity == Vector3.ZERO
+
+
+## CP1: what _process last pushed to the nameplate and the visuals (NAN / -1 = nothing yet).
+var _shown_health := -1
+var _shown_shield := -1
+var _shown_intent := ""
+var _shown_name := ""
+var _shown_firing := false
+var _shown_heat := NAN
+var _shown_deploy := NAN
 
 
 func _process(delta: float) -> void:
@@ -392,15 +447,32 @@ func _process(delta: float) -> void:
 		global_position = global_position.lerp(sync_position, weight)
 		rotation.y = lerp_angle(rotation.y, sync_yaw, weight)
 		turret.rotation.y = lerp_angle(turret.rotation.y, sync_turret_yaw, weight)
-	nameplate.text = "%s  %d" % [display_name, sync_health]
-	if max_shield > 0.0:
-		nameplate.text += " +%d" % sync_shield
-	_hull_visual.invoke("set_shield", [float(sync_shield) / max_shield if max_shield > 0.0 else 0.0])
-	if sync_intent != "" and show_intent:
-		nameplate.text += "\n" + sync_intent
-	_weapon_visual.invoke("set_firing", [sync_firing and alive])
-	_weapon_visual.invoke("set_heat", [sync_heat])
-	if deploy_seconds > 0.0:
+	# CP1 (round 5): every vehicle runs this every rendered frame, so only what changed is rebuilt or pushed to the
+	# visuals. The nameplate string and the idempotent setters (shield, heat, deploy) skip repeats; set_firing is
+	# still sent every frame it is true, because a beam's flash re-triggers on it.
+	var intent_shown := sync_intent if show_intent else ""
+	if sync_health != _shown_health or sync_shield != _shown_shield or intent_shown != _shown_intent \
+			or display_name != _shown_name:
+		_shown_health = sync_health
+		_shown_shield = sync_shield
+		_shown_intent = intent_shown
+		_shown_name = display_name
+		var text := "%s  %d" % [display_name, sync_health]
+		if max_shield > 0.0:
+			text += " +%d" % sync_shield
+		if intent_shown != "":
+			text += "\n" + intent_shown
+		nameplate.text = text
+		_hull_visual.invoke("set_shield", [float(sync_shield) / max_shield if max_shield > 0.0 else 0.0])
+	var firing := sync_firing and alive
+	if firing or firing != _shown_firing:
+		_shown_firing = firing
+		_weapon_visual.invoke("set_firing", [firing])
+	if sync_heat != _shown_heat:
+		_shown_heat = sync_heat
+		_weapon_visual.invoke("set_heat", [sync_heat])
+	if deploy_seconds > 0.0 and deploy_ratio != _shown_deploy:
+		_shown_deploy = deploy_ratio
 		for visual: VisualSlot in [_hull_visual, _turret_visual, _weapon_visual]:
 			visual.invoke("set_deployed", [deploy_ratio])
 
@@ -587,6 +659,9 @@ func _set_alive(value: bool) -> void:
 	alive = value
 	suppression = 0.0  # a wreck is not pinned, and a fresh crew starts calm
 	visible = value
+	_shown_health = -1  # push everything to the visuals again on the next frame
+	_shown_heat = NAN
+	_shown_deploy = NAN
 	# Wrecks don't block movement, shells, or sight. Deferred: may run mid physics callback.
 	_collision.set_deferred("disabled", not value)
 

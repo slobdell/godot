@@ -64,6 +64,8 @@ func test_a_wreck_fits_arena_kits_box() -> void:
 	assert_true(box.size.x <= KitYard.WRECK.x + 0.01 and box.size.z <= KitYard.WRECK.z + 0.01, "inside the 3.2 x 6.4 m footprint")
 	assert_true(maxf(box.size.x / KitYard.WRECK.x, box.size.z / KitYard.WRECK.z) > 0.98, "and filling it on one axis")
 	assert_near(box.position.y, 0.0, 0.01, "sitting on the ground")
+	var triangles := (mesh.surface_get_arrays(0)[Mesh.ARRAY_INDEX] as PackedInt32Array).size() / 3
+	assert_true(triangles >= KitYard.WRECK_MIN_TRIANGLES and triangles < 2000, "a light husk for a MultiMesh of dozens (%d triangles)" % triangles)
 
 
 func test_props_leaving_the_tree_leave_the_yard() -> void:

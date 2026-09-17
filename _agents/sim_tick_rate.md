@@ -1,0 +1,89 @@
+# Proposal: run the simulation at 30 Hz with physics interpolation
+
+> **Status: proposal, not started** (combat stream, 2026-09-17, asked for by the orchestrator after CP1). A decision for
+> the lead: halve the simulation's cost everywhere, in exchange for one coordinated refactor across four streams.
+> Inventory made with a full-repo survey; line numbers are as of `stream/combat` on 2026-09-17.
+
+## Why
+
+CP1 ([streams/references/fx_tricks.md](streams/references/fx_tricks.md), M1) made the simulation tick the frame-rate
+blocker: every `_physics_process` together must fit **5 ms at 60 vehicles** on the lead's laptop, and a tick costs
+~12–20 ms there today. `make sim-profile` splits it (laptop, Condemned 31 v 27):
+
+| Band | ms per tick | Owner |
+|---|---|---|
+| Unit controllers (OrderController + TankBrain, priority −10) | ~9.3 | ai |
+| Tanks (driving, turret, gun) | ~1.7 → ~1.3 after CP1 cuts | combat |
+| Match (suppression, intel, rules) | ~0.5 | combat |
+| Elements, order executor, shells | < 0.1 | tactics, control, combat |
+
+Every line of that table is paid **per tick**. Trimming each band buys tens of percent. Halving the tick rate buys
+50% of all of it at once, including ai's four-fifths. There's no other single change that does this: the vehicles'
+own cost is mostly `move_and_slide` (engine code), and the brains are already thinking every 6–18 ticks.
+
+## What 30 Hz means
+
+- `physics/common/physics_ticks_per_second=30` in `project.godot`.
+- **`physics/common/physics_interpolation=true`** so rendering stays smooth at 60+ fps: Godot 4.4+ interpolates
+  `Node3D` transforms between ticks. Nothing in the project uses it today (no `reset_physics_interpolation` anywhere).
+- Every tick-count that means a *duration* is halved, or better, derived from one constant
+  (`Match.TICKS_PER_SECOND`, read from `Engine.physics_ticks_per_second`), so the game plays the same in seconds.
+- Match-runner and smoke targets pass `--fixed-fps 30` instead of 60.
+
+## Where the 60s live (inventory)
+
+Legend: **hard** = a literal 60 (or `60 * n`) meaning one second, which silently changes behaviour at 30 Hz;
+**cadence** = "every N ticks", whose real-time meaning doubles; **fine** = already scaled by `delta` or read from the
+engine.
+
+| Area | hard | cadence | Notes |
+|---|---|---|---|
+| `game/match/` | 16 | 6 | contact memory `60 * 12`, resupply / repair / control-capture seconds, artillery flight ticks, threat-field decay `ticks / 60.0`, `EngagementStats.SAMPLE_TICKS`, the announcer's cooldowns; cadences `INTEL_EVERY_TICKS` 6, `SUPPRESSION_SAMPLE_TICKS` 3, `CONE_EVENT_TICKS` 6, `VisibilityField.REFRESH_TICKS` 30 |
+| `game/tank/`, `game/combat/` | 8 | 4 | `TankMotion.TICK_SECONDS = 1/60` (ai's `predict()` uses it), reload / burst `_ticks_of(seconds * 60)`, shield delay, deploy rates; `lateral_grip * delta * 60` is a linearisation tuned at 60 Hz (use `1 - pow(1 - grip, delta * 60)`); cadences `DEPLOY_SETTLE` 15, `PACK_SETTLE` 30, `CREEP_LEG` 30, and `ticks_since_hit` read in ticks by tactics, control, camera and UI |
+| `game/ai/` | 9 | ~41 | think rates (`THINK_EVERY_TICKS` 6/12/18, `think_ticks` 9 in the champion variant), commit, stall, jink, peek, bait and suppress timers, `OPTION_TIMEOUT_TICKS`, order-controller lane / fire checks (`FIRE_CHECK_TICKS` 3 is a **measured behaviour tuning**: round 4 lesson 20), `IncomingFire.HORIZON_TICKS`, CPU commander think / muster / freshness |
+| `game/tactics/` (+ `doctrines/doctrine_*.json`) | 0 | 11 (+3 JSON) | element `UPDATE_TICKS` 6, report cooldown 600, drills' sudden / turn ticks, orbit 240, `react_ticks` / `bait_patience_ticks` / `timeout_ticks` in the doctrine tables |
+| `game/control/`, `camera/`, `ui/` | 0 | 4 | mostly `_process(delta)` already; `RESPONSE_TICKS` 3 (the **K1 3-tick response guarantee**), element awareness 90, cinematic camera 120, squad chip 180 |
+| `game/announcer/` + `tools/announcer/events.py` | 2 | 0 | `TICKS_PER_SECOND := 60` in GDScript and its Python twin: event `t` = tick / 60 |
+| `game/network/`, `modes/`, `main.gd` | 1 | 1 | the combat-log pose timer; `detcore` already runs at 30 Hz; `main.gd` reads the engine rate |
+| `tests/` | ~240 lines in ~60 files | a handful | exact per-tick assertions (locomotion accel/tick, reload ticks, heat per second, shield recharge, control point, deploy, `decay(60)`), and "N seconds" loops written as `60 * n` frames |
+| `tools/*.py`, `mk/*.mk` | 9 + 19 | — | `--fixed-fps 60` in every headless target, `1000/(60 × speedup)` ms-per-tick maths |
+
+## What breaks with interpolation on, and what to do
+
+| Thing | What happens | Fix |
+|---|---|---|
+| **Teleports** (spawns, respawns, bench placement, tests that set `global_position`) | The hull visibly slides from its old pose for one tick | `reset_physics_interpolation()` after every teleport (`Match._build_tank`, `Tank.respawn`, `_bench_army`) |
+| **Cameras** that follow a hull in `_process` | Follow the interpolated transform: smooth, as long as they read `global_transform` in `_process`, not in `_physics_process` | Audit `FollowCamera`, `RtsCamera.follow`, `CinematicCamera` |
+| **Effects spawned at a muzzle / impact** in a signal during the tick | Spawn at the tick's pose while the hull renders up to one tick behind (≤ 0.33 m at 20 m/s): a flash can sit ahead of the barrel | Spawn effects as children of the weapon node, or accept it; render's pools own this |
+| **Shells** (`Node3D` moved in `_physics_process`) | Interpolate for free | None |
+| **Beams, arcs, tracers** drawn from two points | Endpoints come from tick positions | Negligible at 30 Hz |
+| **Turret yaw** set in `_physics_process` | Interpolated with the node | None |
+| **Order latency / the K1 3-tick response guarantee** | 3 ticks becomes 100 ms instead of 50 ms | Restate the guarantee in ms (≤ 100 ms still feels instant for RTS orders) or make it 2 ticks. **Control decides** |
+| **Brain reaction time** | Thinks every 6 ticks become 200 ms instead of 100 ms, unless halved to 3 | Convert every cadence to seconds through one constant, then re-tune only what measures worse (lesson 20: measure behaviour, not only the clock) |
+| **Fast rounds** | Shells sweep a ray per tick, so there's no tunnelling, just longer rays | None |
+| **Collision** | `move_and_slide` steps twice as far per tick (≤ 0.67 m at 20 m/s). Hulls still stop at walls; contact jitter may rise a little | Watch `test_combat_sim_cost` and the ramming tests |
+| **Determinism and the sim baseline** | Every baseline hash, every `MEASURE` in ai scenarios and tactics parity moves | Re-record once, on purpose, on builder0 (twice), in the same commit that flips the rate |
+| **Networking** | `Replication.TANK_SYNC_INTERVAL` 0.033 s ≈ every tick; client smoothing already runs on `_process` delta | None expected; run `net-smoke`, `relay-smoke` |
+| **Web export** | No threads; interpolation is main-thread | None expected; `web-smoke` |
+
+## What it would cost to do properly
+
+1. **One stream owns it** (combat is the natural owner: `Match`, `Tank`, `TankMotion`, the runner and `mk/match.mk`),
+   and the others merge it the day it lands.
+2. **Step 1 (no behaviour change, ~half a day):** add `Match.TICKS_PER_SECOND` (from the engine) and `Ticks.of(seconds)`,
+   and convert every *hard* 60 in every stream to it, with the rate still 60. The sim baseline must not move: that
+   proves the conversion is exact. Each stream reviews its own files. Tools and make targets read the rate from one
+   variable (`SIM_HZ`).
+3. **Step 2 (~half a day):** convert every *cadence* to seconds (`THINK_EVERY_SECONDS := 0.1`), still at 60 Hz. The
+   baseline still must not move.
+4. **Step 3 (a day, mostly measuring):** flip to 30 Hz with interpolation on, add `reset_physics_interpolation()` at
+   teleports, re-record the baseline, then re-run the behaviour gates that were tuned in ticks: ai scenarios, tactics
+   parity, `make faction-matrix`, `make engagement`, control's response playtest and a windowed look at the camera
+   and effects.
+5. **Tests:** ~60 files assert per-tick numbers. Steps 1–2 rewrite them in seconds, so step 3 only changes the rate.
+
+**Expected result:** ~50% off the whole tick (by the table above, ~12 ms → ~6 ms on the laptop, in reach of M1's
+5 ms together with ai's own work). The risk is concentrated in step 3's behaviour re-measurement, not in the code.
+
+**Not recommended:** flipping the rate without steps 1–2. About 70 durations would quietly double: reloads, shield
+delays, contact memory, brain reaction times.

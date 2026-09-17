@@ -54,8 +54,8 @@ func _ready() -> void:
 func setup(layout: Dictionary) -> void:
 	var wanted := float(layout.get("half_size", HALF - 1.0)) + 1.0
 	var ring := float((layout["control_point"] as Dictionary).get("radius", 16.0)) if layout.get("control_point") is Dictionary else 0.0
-	for lite in [false, true]:
-		var material := CyberMaterials.ground(lite)
+	for variant in [[false, false], [true, false], [false, true]]:
+		var material := CyberMaterials.ground(variant[0], variant[1])
 		material.set_shader_parameter("band_inner", wanted - 13.0)
 		material.set_shader_parameter("ring_radius", ring)
 		material.set_shader_parameter("ring_width", 1.4 if ring > 0.0 else 0.0)
@@ -80,6 +80,8 @@ func _build_structures() -> void:
 		for sz in [-1.0, 1.0]:
 			_build_tower(Vector3(sx * inset, 0.0, sz * inset))
 	_build_venue()
+	# Render X5: repeated kit models (stands, towers, gates) draw as one MultiMesh per mesh.
+	StaticInstancer.instance_repeats(structures)
 
 
 ## Stands and their crowd along the north and south walls, gates in the middle of the east and west walls.
@@ -144,7 +146,7 @@ func _build_venue() -> void:
 func set_venue_visible(shown: bool) -> void:
 	for child in structures.get_children():
 		if child.name.begins_with("Stands") or child.name.begins_with("Gate") or child.name.begins_with("AdScreen") \
-				or child.name == "NeonSigns" or child == crowd:
+				or child.name == "NeonSigns" or child == crowd or child.name.begins_with("Instanced_"):
 			(child as Node3D).visible = shown
 
 
@@ -198,9 +200,10 @@ func set_chunked(chunked: bool) -> void:
 	ground.build()
 
 
-## The floor shader follows the FX tier: full on high, lite on low and medium.
+## The floor shader follows the FX tier: full detail lit in its own shader on high (render X5: -0.6 ms GPU at 720p), lite
+## on low and medium.
 func _apply_ground_quality() -> void:
-	set_ground_style("lite" if FxQuality.tier() < FxQuality.Tier.HIGH else "textured")
+	set_ground_style("lite" if FxQuality.tier() < FxQuality.Tier.HIGH else "unlit")
 
 
 ## FX lab comparisons: "textured" (the high-tier floor), "lite" (low/medium), "wet" (round 1's procedural asphalt),
@@ -208,8 +211,8 @@ func _apply_ground_quality() -> void:
 func set_ground_style(style: String) -> void:
 	var material: Material = ground.material
 	match style:
-		"lite", "textured":
-			material = CyberMaterials.ground(style == "lite")
+		"lite", "textured", "unlit":
+			material = CyberMaterials.ground(style == "lite", style == "unlit")
 			if not _flood_maps.has("map"):
 				_flood_maps["map"] = flood_map(_scaled_floodlights())
 			(material as ShaderMaterial).set_shader_parameter("flood_map", _flood_maps["map"])
@@ -221,8 +224,11 @@ func set_ground_style(style: String) -> void:
 			(material as StandardMaterial3D).albedo_color = Color(0.2, 0.2, 0.22)
 		_:
 			push_warning("unknown ground style '%s'" % style)
-	if material != ground.material:
+	# Render X5: the unlit floor takes no light passes, so tiles only cost draw calls: one plane instead.
+	var chunked := style != "unlit"
+	if material != ground.material or chunked != ground.chunked:
 		ground.material = material
+		ground.chunked = chunked
 		ground.build()
 
 

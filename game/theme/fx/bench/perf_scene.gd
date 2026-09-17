@@ -24,7 +24,11 @@ extends Node
 ## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
 ## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
 ## (a 4-light pool), glow_lite (glow levels 2-3 only), no_fog,
-## no_spill (the ad screens' light on the floor).
+## no_spill (the ad screens' light on the floor), scale_085 / scale_075 (3D render scale), glow_wide (glow levels 3+),
+## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer), lod_4 / lod_8 (mesh LOD threshold px),
+## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count),
+## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
+## ground_chunked (the floor's tiling flipped).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -210,9 +214,13 @@ func _start_phase(index: int) -> void:
 	_samples.clear()
 	_gpu.clear()
 	_cpu.clear()
-	_sums = {"draw_calls": 0.0, "objects": 0.0, "primitives": 0.0, "pool_lights": 0.0, "tracers": 0.0}
+	_sums = {"draw_calls": 0.0, "objects": 0.0, "primitives": 0.0, "pool_lights": 0.0, "tracers": 0.0, "burst_area": 0.0, "burst_area_max": 0.0}
 	_frames = 0
 	_cpu_sums = {"game_ui_ms": 0.0, "fx_ms": 0.0}
+	var fx_world := FxWorld.existing()
+	if fx_world != null:
+		fx_world.profile = true
+		fx_world.profile_usec.clear()
 	_tick_totals = {"ticks": 0, "usec": 0}
 	_apply(_phases[index])
 
@@ -252,14 +260,14 @@ func _apply(phase: String) -> void:
 		"no_shadows":
 			for light in get_tree().root.find_children("*", "DirectionalLight3D", true, false):
 				_override(light, "shadow_enabled", false)
-		"no_venue", "ground_lite":
+		"no_venue", "ground_lite", "ground_unlit", "ground_lit":
 			var dressing_slot := scene.get_node_or_null("Arena/Dressing") if scene != null else null
 			var dressing: Node = dressing_slot.get("visual") if dressing_slot != null else null
 			if dressing != null and phase == "no_venue":
 				dressing.call("set_venue_visible", false)
 				_hidden.append([dressing, "@set_venue_visible", true])
 			elif dressing != null and dressing.has_method("set_ground_style"):
-				dressing.call("set_ground_style", "lite")
+				dressing.call("set_ground_style", {"ground_lite": "lite", "ground_unlit": "unlit", "ground_lit": "textured"}[phase])
 				_hidden.append([dressing, "@_apply_ground_quality", null])
 		"no_msaa":
 			_override(get_viewport(), "msaa_3d", Viewport.MSAA_DISABLED)
@@ -273,6 +281,44 @@ func _apply(phase: String) -> void:
 				if environment != null:
 					for level in [1, 5]:
 						_override(environment, "glow_levels/%d" % level, 0.0)
+		"scale_085", "scale_075":
+			_override(get_viewport(), "scaling_3d_scale", 0.85 if phase == "scale_085" else 0.75)
+		"glow_wide":
+			# Only the wide (low-resolution, cheap) glow levels.
+			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
+				var environment := (world as WorldEnvironment).environment
+				if environment != null:
+					for level in [1, 2]:
+						_override(environment, "glow_levels/%d" % level, 0.0)
+		"lod_4", "lod_8":
+			_override(get_viewport(), "mesh_lod_threshold", 4.0 if phase == "lod_4" else 8.0)
+		"no_bursts", "no_tracers", "no_beams", "no_decals":
+			if fx != null:
+				var system: Node3D = {"no_bursts": fx.bursts, "no_tracers": fx.tracers, "no_beams": fx.beams, "no_decals": fx.decals}[phase]
+				_override(system, "visible", false)
+		"sprays_6":
+			if fx != null:
+				fx.bursts.set_spray_count(6)
+				_hidden.append([fx.bursts, "@set_spray_count", FxQuality.value("sprays")])
+		"ground_chunked":
+			var dressing_slot3 := scene.get_node_or_null("Arena/Dressing") if scene != null else null
+			var ground: Variant = (dressing_slot3.get("visual") as Node).get("ground") if dressing_slot3 != null and dressing_slot3.get("visual") != null else null
+			if ground is ChunkedGround:
+				(ground as ChunkedGround).chunked = not (ground as ChunkedGround).chunked
+				(ground as ChunkedGround).build()
+				_hidden.append([ground, "@toggle_chunked", null])
+		"glow_one":
+			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
+				var environment := (world as WorldEnvironment).environment
+				if environment != null:
+					_override(environment, "glow_levels/5", 0.0)
+		"no_ground", "no_structures":
+			var dressing_slot2 := scene.get_node_or_null("Arena/Dressing") if scene != null else null
+			var dressing2: Node = dressing_slot2.get("visual") if dressing_slot2 != null else null
+			if dressing2 != null:
+				var part: Variant = dressing2.get("ground" if phase == "no_ground" else "structures")
+				if part is Node3D:
+					_override(part, "visible", false)
 		"no_spill":
 			for node in get_tree().root.find_children("Spill", "MeshInstance3D", true, false):
 				_override(node, "visible", false)
@@ -329,6 +375,8 @@ func _sample(delta: float) -> void:
 	if fx != null:
 		_sums["pool_lights"] += fx.lights.lit_count
 		_sums["tracers"] += fx.tracers.active_count()
+		_sums["burst_area"] += fx.bursts.alive_area
+		_sums["burst_area_max"] = maxf(_sums.get("burst_area_max", 0.0), fx.bursts.alive_area)
 	_frames += 1
 
 
@@ -348,16 +396,74 @@ func _finish_phase() -> void:
 		"pool_lights": snappedf(_sums["pool_lights"] / frames, 0.1),
 		"real_lights": _real_lights(),
 		"tracers": snappedf(_sums["tracers"] / frames, 0.1),
+		"burst_area": roundi(_sums["burst_area"] / frames),
+		"burst_area_max": roundi(_sums["burst_area_max"]),
 		"vehicles": _living_tanks().size(),
 		"process_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.01),
 		"physics_max_ms": snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.01),
 		"process_game_ui_ms": snappedf(_cpu_sums["game_ui_ms"] / frames, 0.01),
 		"process_fx_ms": snappedf(_cpu_sums["fx_ms"] / frames, 0.01),
+		"fx_steps_ms": _fx_steps(frames),
 		"ticks_per_frame": snappedf(float(_tick_totals["ticks"]) / frames, 0.01),
 		"tick_script_ms": snappedf(float(_tick_totals["usec"]) / maxf(float(_tick_totals["ticks"]), 1.0) / 1000.0, 0.01),
 	}
 	_results.append(result)
 	print("PERF_SCENE " + JSON.stringify(result))
+	if _phase_index == 0 and LaunchFlags.from_environment().has("perf-census"):
+		print("PERF_SCENE_CENSUS " + JSON.stringify(_census()))
+
+
+## What is drawing, for finding draw calls (--perf-census): visible 3D instances grouped by their nearest named owner
+## under the scene (e.g. "Match/Tanks", "Arena/Dressing") and class, plus visible CanvasItems per CanvasLayer.
+func _census() -> Dictionary:
+	var counts := {}
+	for node in get_tree().root.find_children("*", "VisualInstance3D", true, false):
+		var visual := node as VisualInstance3D
+		if not visual.is_visible_in_tree():
+			continue
+		var path := str(visual.get_path()).split("/")
+		var owner_name := "/".join(path.slice(2, mini(5, path.size() - 1)))
+		var key := "%s [%s]" % [owner_name, visual.get_class()]
+		counts[key] = int(counts.get(key, 0)) + 1
+	for layer in get_tree().root.find_children("*", "CanvasLayer", true, false):
+		if not (layer as CanvasLayer).visible:
+			continue
+		var items := 0
+		for item in layer.find_children("*", "CanvasItem", true, false):
+			if (item as CanvasItem).is_visible_in_tree():
+				items += 1
+		counts["2D %s" % layer.get_path()] = items
+	var scene := get_tree().current_scene
+	var dressing := scene.get_node_or_null("Arena/Dressing") if scene != null else null
+	if dressing != null:
+		for node in dressing.find_children("*", "MeshInstance3D", true, false):
+			var instance := node as MeshInstance3D
+			if instance.is_visible_in_tree() and instance.mesh != null:
+				var key := "dressing mesh: %s x%d surfaces" % [instance.mesh.resource_path if instance.mesh.resource_path != "" else instance.name.rstrip("0123456789"), instance.mesh.get_surface_count()]
+				counts[key] = int(counts.get(key, 0)) + 1
+	var root := _tanks_root()
+	if root != null and root.get_child_count() > 0:
+		var tank := root.get_child(0)
+		for node in tank.find_children("*", "VisualInstance3D", true, false):
+			var visual := node as VisualInstance3D
+			if visual.is_visible_in_tree():
+				var mesh_surfaces := -1
+				if visual is MeshInstance3D and (visual as MeshInstance3D).mesh != null:
+					mesh_surfaces = (visual as MeshInstance3D).mesh.get_surface_count()
+				counts["one tank: %s [%s] surfaces=%d" % [str(tank.get_path_to(visual)), visual.get_class(), mesh_surfaces]] = 1
+	return counts
+
+
+## FxWorld's per-step CPU time this phase (ms per frame, over every frame of the phase).
+func _fx_steps(frames: int) -> Dictionary:
+	var fx := FxWorld.existing()
+	var result := {}
+	if fx != null:
+		var counted := maxf(float(fx.profile_usec.get("frames", frames)), 1.0)
+		for step in fx.profile_usec:
+			if step != "frames":
+				result[step] = snappedf(float(fx.profile_usec[step]) / 1000.0 / counted, 0.001)
+	return result
 
 
 ## Real lights switched on anywhere in the scene (pooled, fixtures, the moon).

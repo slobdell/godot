@@ -42,6 +42,10 @@ func _ready() -> void:
 			if engine_sound != "":
 				fx.engines.add(self, engine_sound)
 	super._ready()
+	# The base class's accent mesh is empty on a generated part: hidden, it isn't culled or counted every frame
+	# (render X5: 3 objects per vehicle, 180 at 60 vehicles).
+	if mesh_instance.mesh == null or mesh_instance.mesh.get_surface_count() == 0:
+		mesh_instance.visible = false
 	_apply_skin()
 
 

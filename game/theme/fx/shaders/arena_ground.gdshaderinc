@@ -35,6 +35,14 @@ uniform float ring_width = 1.4;
 uniform float drain_spacing = 26.0;
 uniform float drain_size = 1.6;
 
+#ifdef GROUND_UNLIT
+// The light the renderer would have added (arena_environment.tscn): ambient color × energy, and the moon's color ×
+// energy × N·L / π (Lambert) for a flat floor, raised to stand in for the lit floor's soft specular sheen; matched by eye
+// against the lit floor (make perf-scene layer ground_lit).
+uniform vec3 ambient_light = vec3(0.275, 0.29, 0.35);
+uniform vec3 key_light = vec3(0.62, 0.63, 0.67);
+#endif
+
 varying vec3 world_pos;
 
 void vertex() {
@@ -90,5 +98,10 @@ void fragment() {
 	ROUGHNESS = max(rough, 0.45);
 	METALLIC = 0.0;
 	SPECULAR = 0.3;
+#ifdef GROUND_UNLIT
+	vec3 flood = albedo * brightness * tint * flood_color * (flood_base + texture(flood_map, arena_uv).r * flood_scale);
+	ALBEDO = albedo * brightness * tint * (ambient_light + key_light) + flood;
+#else
 	EMISSION = ALBEDO * flood_color * (flood_base + texture(flood_map, arena_uv).r * flood_scale);
+#endif
 }
