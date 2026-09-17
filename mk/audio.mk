@@ -62,6 +62,10 @@ sfx-generate: ## ElevenLabs sound-effect masters: DRY_RUN by default; APPROVED=1
 sfx-layer: audio-deps ## Masters -> the shipped takes in assets/audio/layered + game/theme/audio/sfx_layers.gd (free; needs the masters) [ONLY=...]
 	$(AUDIO_PYTHON) tools/audio/sfx_layer.py $(if $(ONLY),--only $(ONLY)) --report $(BUILD_DIR)/audio/sfx_layer.json
 	$(GODOT) --headless --path . --import >/dev/null 2>&1 || true
+	@# A new loop's .import only exists after that first import, with Godot's compressed default: set it to PCM and
+	@# import again, or the loop plays a fifth of itself (orientation trip-up 74).
+	$(AUDIO_PYTHON) -c "import sys; sys.path.insert(0, 'tools/audio'); import sfx_layer; [print('loop import set to PCM:', p.name) for p in sfx_layer.keep_loops_uncompressed(sfx_layer.LAYERED)]"
+	$(GODOT) --headless --path . --import >/dev/null 2>&1 || true
 
 ## M1 (fx_tricks.md): booth, music and crowd <= 0.3 ms of script per frame. perf-scene runs --mute, so it cannot see
 ## audio; this times each audio system under a battle busier than a real one. Informational, not in check.
