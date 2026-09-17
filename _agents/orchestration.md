@@ -272,3 +272,7 @@ The kickoff prompt is one line; this section is the rest.
     found an hour later, was that dodging had **never fired at either tick rate** (254 of 254 candidate directions
     scored "would still be hit"). The orchestrator's job in a relay is to ask *how many samples, over what, against
     what control* before a stream's number reaches the lead, because the lead cannot ask and will act on it.
+27. **When a fix does not take, check the fix reached the build before theorising.** Round 5: three straight
+    "fixes" for a black rectangle under every vehicle failed, because a `sed` edit silently matched nothing and the
+    screenshot after it was trusted. A failed edit and a wrong diagnosis look identical from the outside. Verify the
+    edit landed (and the build rebuilt) before reasoning about the renderer, the engine or the data.
