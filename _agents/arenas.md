@@ -195,6 +195,9 @@ contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `bu
    funnel both armies down the centre toward the control point. The routes exist (arena-report routes them); the CPU
    doesn't choose them. Rule of thumb 3 is delivered in geometry, not yet in behaviour. For ai: the lanes are annotated
    (`Arena.lanes_of`).
+4. **Match shape does differ:** the boulevard is the fastest and most decisive (elimination 26 of 36); the yard is the
+   control-point map (24 of 36), with the most hidden time and the shortest long shots, which is what its character
+   promised. The pit sits between them (16 of 36 by control).
 5. **Faction matchups (X6, weak evidence):** gangs (Green) vs syndicate (Rust), seeds 1-6 each way on bases, colours
    NOT counterbalanced. The syndicate won everywhere, as the round-4 faction matrix predicts. The gangs' surviving
    margin was least bad on the **boulevard** (−0.54, 4 of 12 wins) and the pit (−0.69, 3 of 12), worst in the **yard**
@@ -202,6 +205,3 @@ contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `bu
    the yard's lanes the gangs feed in a few at a time, while open avenues let 44 cheap vehicles bring their numbers to
    bear at once, and they close to 30 m (median hit range on the boulevard 30 m, the shortest of any series). Treat it
    as a hypothesis to re-test with colours counterbalanced once combat's gangs changes land.
-4. **Match shape does differ:** the boulevard is the fastest and most decisive (elimination 26 of 36); the yard is the
-   control-point map (24 of 36), with the most hidden time and the shortest long shots, which is what its character
-   promised. The pit sits between them (16 of 36 by control).
