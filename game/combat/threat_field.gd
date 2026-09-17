@@ -33,6 +33,10 @@ var rows := 0
 var origin := Vector3.ZERO
 ## Fire density per cell, row-major (index = row * cols + col). Float32: this is a heat map, not an accountant.
 var density := PackedFloat32Array()
+## CP1 (round 5): the cells holding any fire, so decay() touches those instead of all ~1,700 cells of both teams'
+## grids every 3 ticks. Same arithmetic per cell, so the field (and the sim) is bit-identical to the full sweep.
+var _active := PackedInt32Array()
+var _is_active := PackedByteArray()
 
 
 func _init(half_size: float, p_cell_size: float = CELL_SIZE) -> void:
@@ -42,6 +46,7 @@ func _init(half_size: float, p_cell_size: float = CELL_SIZE) -> void:
 	rows = cols
 	origin = Vector3(-half_size - cell_size, 0.0, -half_size - cell_size)
 	density.resize(cols * rows)
+	_is_active.resize(cols * rows)
 
 
 ## The cell holding `point`, or -1 when it lies outside the grid.
@@ -64,6 +69,7 @@ func stamp_point(point: Vector3, weight: float) -> void:
 	var index := index_of(point)
 	if index >= 0:
 		density[index] += weight
+		_mark(index)
 
 
 ## The beaten zone of one direct-fire round: every cell between the muzzle and where the round stopped.
@@ -82,6 +88,7 @@ func stamp_segment(from: Vector3, to: Vector3, weight: float) -> void:
 		var index := index_of(spot)
 		if index >= 0 and index != last:
 			density[index] += weight
+			_mark(index)
 		last = index
 
 
@@ -96,6 +103,7 @@ func stamp_burst(center: Vector3, radius: float, weight: float) -> void:
 			var spot := cell_center(col, row)
 			if Vector2(spot.x - center.x, spot.z - center.z).length() <= radius:
 				density[row * cols + col] += weight
+				_mark(row * cols + col)
 
 
 func cell_center(col: int, row: int) -> Vector3:
@@ -107,9 +115,24 @@ func decay(ticks: int) -> void:
 	if ticks <= 0:
 		return
 	var factor := pow(0.5, float(ticks) / 60.0 / HALF_LIFE_SECONDS)
-	for i in density.size():
+	var kept := 0
+	for n in _active.size():
+		var i := _active[n]
 		var value := density[i] * factor
-		density[i] = value if value > EPSILON else 0.0
+		if value > EPSILON:
+			density[i] = value
+			_active[kept] = i
+			kept += 1
+		else:
+			density[i] = 0.0
+			_is_active[i] = 0
+	_active.resize(kept)
+
+
+func _mark(index: int) -> void:
+	if _is_active[index] == 0:
+		_is_active[index] = 1
+		_active.append(index)
 
 
 ## The worst fire anywhere along a path: "would this move take me through a wall of bullets?".

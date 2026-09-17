@@ -52,6 +52,9 @@ func is_attached() -> bool:
 func attach(game_match: Node) -> void:
 	detach()
 	_match = game_match
+	# A new match starts on a clean floor: the last one's wrecks go.
+	if weapons != null and weapons.get("_fx") != null:
+		(weapons.get("_fx") as FxWorld).wrecks.clear()
 	live = game_match.has_signal("weapon_fired") and game_match.has_signal("projectile_impact") and _simulating()
 	if live:
 		game_match.connect("weapon_fired", _on_weapon_fired)

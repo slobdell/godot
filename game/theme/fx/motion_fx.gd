@@ -33,6 +33,9 @@ const MAX_SPEED := 40.0
 var dust: BurstSystem
 ## Totals since load (tests and the bench).
 var puffs_started := 0
+## How many vehicles spent the budget on the last update, and the most at once since load (tests, the bench).
+var emitters_last := 0
+var emitters_peak := 0
 var lurches := 0
 var last_lurch_at := -10.0
 ## A vehicle must be watched this long before it can lurch (its first frames read as a launch from standstill).
@@ -44,6 +47,11 @@ var _state := {}
 var _skids := MultiMeshInstance3D.new()
 var _skid_material := ShaderMaterial.new()
 var _next_skid := 0
+## Render X5: vehicles ranked by distance to the camera, refreshed every RANK_SECONDS (sorting 60 every frame cost more
+## than the effects it chose).
+var _ranked: Array = []
+var _ranked_at := -1000.0
+const RANK_SECONDS := 0.2
 
 
 func _init(fx: FxWorld = null) -> void:
@@ -95,6 +103,20 @@ func update(vehicles: Array, camera_position: Vector3, now: float, delta: float)
 	_skid_material.set_shader_parameter("now", now)
 	if delta <= 0.0:
 		return
+	if now - _ranked_at >= RANK_SECONDS or now < _ranked_at:
+		_ranked_at = now
+		_rank(vehicles, camera_position)
+	var budget := int(EMITTERS[FxQuality.tier()])
+	emitters_last = 0
+	for rank in _ranked.size():
+		var vehicle := _ranked[rank] as Node3D
+		if is_instance_valid(vehicle) and vehicle.is_inside_tree() and vehicle.is_visible_in_tree():
+			_watch(vehicle, rank < budget, now, delta)
+			emitters_last += 1 if rank < budget else 0
+	emitters_peak = maxi(emitters_peak, emitters_last)
+
+
+func _rank(vehicles: Array, camera_position: Vector3) -> void:
 	var live := {}
 	var ranked: Array = []
 	for node in vehicles:
@@ -107,9 +129,7 @@ func update(vehicles: Array, camera_position: Vector3, now: float, delta: float)
 		if not live.has(vehicle):
 			_state.erase(vehicle)
 	ranked.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
-	var budget := int(EMITTERS[FxQuality.tier()])
-	for rank in ranked.size():
-		_watch(ranked[rank][1], rank < budget, now, delta)
+	_ranked = ranked.map(func(entry: Array) -> Node3D: return entry[1])
 
 
 func _watch(vehicle: Node3D, emits: bool, now: float, delta: float) -> void:
@@ -118,6 +138,13 @@ func _watch(vehicle: Node3D, emits: bool, now: float, delta: float) -> void:
 	if state.is_empty():
 		_state[vehicle] = {"position": position, "speed": 0.0, "accel": 0.0, "travelled": 0.0, "skid_travelled": 0.0,
 				"wheels": [], "dust": 0, "skids": 0, "last_lurch": -10.0, "since": now}
+		return
+	if not emits:
+		# Far from the camera: nothing to show, so only remember where it is (and restart its warm-up, so becoming an
+		# emitter again can't read the gap as a launch).
+		state["position"] = position
+		state["since"] = now
+		state["wheels"] = []
 		return
 	var moved := position - (state["position"] as Vector3)
 	moved.y = 0.0
@@ -135,9 +162,6 @@ func _watch(vehicle: Node3D, emits: bool, now: float, delta: float) -> void:
 	var smoothed := lerpf(previous, forward_speed, 0.35)
 	state["accel"] = lerpf(float(state["accel"]), (smoothed - previous) / delta, 0.35)
 	state["speed"] = smoothed
-	if not emits:
-		state["wheels"] = []
-		return
 	if speed > DUST_SPEED:
 		_raise_dust(vehicle, state, speed * delta, speed, forward, right, now)
 	var unit_id := _unit_id(vehicle)

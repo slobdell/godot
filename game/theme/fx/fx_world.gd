@@ -28,6 +28,8 @@ var beams: BeamSystem
 var engines: EngineSystem
 ## Kill sites that keep burning (art stretch).
 var fires := FireSites.new()
+## Husks left where vehicles died (render stretch, round 5).
+var wrecks := WreckField.new()
 var shake := CameraShake.new()
 var sfx: SfxSystem
 ## Machine-gun streams as held loops (a few voices for the nearest gunners).
@@ -54,6 +56,7 @@ var explosion_lights := true
 var prewarm_enabled := true
 
 const PREWARM_FRAMES := 3
+const MESH_LOD_THRESHOLD_PX := 4.0
 
 var _rng := RandomNumberGenerator.new()
 var _prewarm_frames := 0
@@ -91,6 +94,7 @@ func _init() -> void:
 	tracers = TracerSystem.new()
 	bursts = BurstSystem.new(FxQuality.value("effects"))
 	bursts.set_spray_count(FxQuality.value("sprays"))
+	bursts.overdraw_budget = FxQuality.value("overdraw")
 	decals = BurstSystem.new(FxQuality.value("decals"))
 	decals.name = "Decals"
 	streaks = StreakSystem.new()
@@ -131,29 +135,60 @@ func _init() -> void:
 
 func _ready() -> void:
 	_apply_viewport()
+	get_viewport().size_changed.connect(_apply_viewport)
 
 
 func _process(delta: float) -> void:
 	now += delta
 	var camera := get_viewport().get_camera_3d()
+	var eye := camera.global_position if camera != null else Vector3.ZERO
 	if _prewarm_frames < PREWARM_FRAMES and prewarm_enabled and camera != null:
 		_prewarm(camera)
+	_mark("start")
 	bursts.update(now)
 	decals.update(now)
+	_mark("bursts")
+	jolts.camera_position = eye if camera != null else null
 	jolts.update(now)
+	_mark("jolts")
 	order_feedback.update(now)
+	_mark("orders")
 	if link.is_attached():
-		motion.update(link.unit_nodes(), camera.global_position if camera != null else Vector3.ZERO, now, delta)
+		motion.update(link.unit_nodes(), eye, now, delta)
+	_mark("motion")
 	weapons.flush(now)
+	_mark("weapons")
 	tracers.update(lights, now)
+	_mark("tracers")
 	underglow.update(lights)
+	_mark("underglow")
 	beams.update(lights, now)
 	fires.update(now, bursts, lights)
-	haze.update(fires.sites, camera.global_position if camera != null else Vector3.ZERO, now)
-	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
+	haze.update(fires.sites, eye, now)
+	_mark("beams_fires_haze")
+	lights.commit(eye, now)
+	_mark("lights")
 	if camera != null:
-		engines.update(camera.global_position, delta)
-	gunfire.update(camera.global_position if camera != null else Vector3.ZERO, now)
+		engines.update(eye, delta)
+	gunfire.update(eye, now)
+	_mark("engines_gunfire")
+
+
+## Per-system CPU time for perf-scene (`profile` on): µs spent in each step of _process, summed until read.
+var profile := false
+var profile_usec := {}
+var _profile_last := 0
+
+
+func _mark(step: String) -> void:
+	if not profile:
+		return
+	var t := Time.get_ticks_usec()
+	if step == "start":
+		profile_usec["frames"] = int(profile_usec.get("frames", 0)) + 1
+	else:
+		profile_usec[step] = int(profile_usec.get(step, 0)) + t - _profile_last
+	_profile_last = t
 
 
 ## Put one of each effect (near-invisible) and every pooled light just in front of the camera, so
@@ -200,6 +235,7 @@ func apply_quality() -> void:
 	lights.min_priority = FxQuality.value("light_floor")
 	bursts.resize(FxQuality.value("effects"))
 	bursts.set_spray_count(FxQuality.value("sprays"))
+	bursts.overdraw_budget = FxQuality.value("overdraw")
 	decals.resize(FxQuality.value("decals"))
 	motion.resize()
 	tracers.splats_enabled = FxQuality.value("splats")
@@ -213,8 +249,11 @@ func _apply_viewport() -> void:
 	if viewport == null:
 		return
 	viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-	viewport.scaling_3d_scale = FxQuality.value("render_scale")
+	viewport.scaling_3d_scale = FxQuality.render_scale_for(FxQuality.value("render_scale"), viewport.get_visible_rect().size.y as int)
 	viewport.msaa_3d = FxQuality.value("msaa")
+	# Render X5: switch mesh detail levels when an edge would move less than 4 px (Godot's default is 1). At 60 vehicles
+	# this drew 374k -> 237k primitives and saved ~0.6 ms GPU on the UHD 620 with no visible change at play distance.
+	viewport.mesh_lod_threshold = MESH_LOD_THRESHOLD_PX
 
 
 ## A projectile visual appeared: draw it as a tracer and flash its muzzle.

@@ -65,3 +65,51 @@ camera (control), audio (audio).
 ## Status
 
 - 2026-09-17: brief written for round 5. Nothing started.
+- 2026-09-17: **started.** Baseline `make remote T=check` green on builder0 (`stream/combat` at `faaaac2`).
+
+- 2026-09-17: **re-prioritised by the orchestrator after CP1:** the simulation tick is the frame-rate blocker, so its
+  cost comes before X1's engagement ranges (M1: the whole tick <= 5 ms at 60 vehicles on the laptop, shared with ai).
+
+### CP1: simulation cost (in progress)
+
+**Measured.** `make sim-profile` (new: `SimProfile` marker nodes split a tick by process-priority band, plus sections
+inside Match / Tank / Shell; `PROFILE_FLAGS=--no-brains`) on the laptop, Condemned 31 v 27, 60 s: **11.6 ms a tick,
+9.3 ms of it the priority -10 band = ai's OrderController + TankBrain**; combat's own share ~2.2 ms (Tank 1.67, of
+which driving 1.05; Match 0.47; shells 0.02). builder0 runs about 2x faster than the laptop: halve laptop budgets
+when reading builder0 numbers. Merged to `main` early for ai (cc9a01e).
+
+**What worked** (same-load A/B on builder0: two copies side by side, twice; tank section per vehicle):
+
+| Change | Effect | Sim baseline |
+|---|---|---|
+| Floating motion mode, `max_slides` 2 (flat arenas) | tank cost **-16%** | moves (the only change that does) |
+| Parked hulls skip the motion step; basis only when turning; no per-tick `TankCommand` allocation | tank cost -8% | parked skip is exact |
+| `ThreatField.decay` over active cells only | suppression pass ~-30% | bit-identical |
+| `Tank._process`: nameplate and visual setters only on change | per-frame, not per tick | none |
+
+**What didn't:** skipping `move_and_slide` for hulls with nothing in reach (`MotionClearance`, a static grid from the
+arena's collision boxes plus a per-tick hull bucket hash). It skipped half the slides and cut drive cost 27%, but
+building the grid in GDScript cost 0.17-0.24 ms a tick, so it was net zero. Removed, not shipped.
+
+**Proposed, for the orchestrator and the lead:**
+- **Jolt physics** (`project.godot`, shared): with floating mode, tank cost **-28%** and the whole tick **-17%**
+  including ai's band (cheaper raycasts). A full `make check` on a Jolt scratch copy reports what breaks.
+- **A 30 Hz simulation tick with physics interpolation** halves everything per tick, ai included:
+  [../sim_tick_rate.md](../sim_tick_rate.md) (inventory of every 60-per-second assumption, what interpolation breaks,
+  a three-step plan). A cross-stream refactor, so a proposal, not started.
+
+### Plan (worker contract step 2)
+
+1. **X1a, measure first.** `EngagementStats` (`game/match/engagement_stats.gd`) fills `stats.engagement` in every
+   `MATCH_RESULT`: contact distance, engaged distance (median nearest-enemy distance while shots fly), kill distance,
+   `static_share` (seconds of fire where both armies stand still), centroid travel after contact, kills by face
+   (front / side / rear / indirect), and cover use (time, shots, kills, deaths within 5 m of an obstacle).
+   `make engagement PAIRS=… SEEDS=…` averages it over counterbalanced faction battles. Read-only: no sim change.
+2. **X1b, tune the levers** against those numbers (weapon range, accuracy falloff with range, sight vs range, time to
+   kill), with the target written in balance.md: a majority of direct-fire kills from the flank or rear, and armies
+   that move after contact.
+3. **X2 cover**, once arena's M2 layouts land (CP2); before then, on today's `scrapyard`.
+4. **X3 the gangs**: re-run the faction matrix on today's code first, then fix what it shows.
+5. **X4 the Lancer**: decide with the matrix and write it down.
+6. **X5 rules for brains**: a matchup-free "can I kill this quickly" query; pinned worth exploiting.
+7. **X6 re-measure** after arena's maps, and the balance.md story.

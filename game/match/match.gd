@@ -95,6 +95,8 @@ var _control_ticks := [0, 0]
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## X1 (round 5): at a weapon's full range its spread is (1 + this) times what it is inside effective_range.
+const RANGE_SPREAD_FACTOR := 3.0
 ## L2 (round 4, contract L2): suppression and effective fire. Every round that resolves stamps the ground it swept
 ## into the enemy team's ThreatField; units standing in that fire get suppressed, which costs them accuracy and
 ## turret tracking, and above Tank.PINNED_SUPPRESSION counts as pinned. The field is what the brains and the
@@ -191,6 +193,11 @@ var _squad_by_tank := {}
 ## "team/squad name" → Squad (runtime squad state; tactical map commands land here).
 var squads := {}
 var _next_brain_index := 0
+## Round 5 X1: the shape of the fight (EngagementStats), built on first use from the arena that is loaded. Read-only:
+## it never touches the RNG or a unit. `_near_cover` caches each living unit's "by cover" flag from the last sample.
+var _engagement: EngagementStats = null
+var _near_cover := {}
+var _shots_since_sample := 0
 
 var _rng := RandomNumberGenerator.new()
 ## Shot spread. Seeded with the match seed, so seeded matches stay deterministic.
@@ -223,19 +230,49 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not simulate:
 		return
+	var started := _profile_start()
 	sim_seconds += delta
 	tick += 1
 	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
+		var t := _profile_start()
 		_update_suppression()
+		_profile("match/suppression", t)
 	if tick % INTEL_EVERY_TICKS == 0:
+		var t := _profile_start()
 		_update_intel()
+		_profile("match/intel", t)
+		t = _profile_start()
 		_update_squads()
+		_profile("match/squads", t)
+		t = _profile_start()
 		_resupply()
 		_apply_hazards()
 		_sample_brain_options()
 		if control_point and not _finished:
 			_update_control()
+		_profile("match/resupply_hazards_options_control", t)
+	if tick % EngagementStats.SAMPLE_TICKS == 0:
+		var t := _profile_start()
+		_sample_engagement()
+		_profile("match/engagement", t)
+	var t_rounds := _profile_start()
 	_land_rounds()
+	_profile("match/land_rounds", t_rounds)
+	_profile("match", started)
+	_check_finished()
+
+
+## SimProfile hooks: free when profiling is off (one static read).
+static func _profile_start() -> int:
+	return Time.get_ticks_usec() if SimProfile.enabled else 0
+
+
+static func _profile(section: String, started: int) -> void:
+	if started > 0:
+		SimProfile.add(section, started)
+
+
+func _check_finished() -> void:
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination and not control_point):
 		return
 	var reason := ""
@@ -287,7 +324,34 @@ func result(reason: String) -> Dictionary:
 			"score": {"green": score_green, "rust": score_rust},
 			"control": {"green": control_score[0], "rust": control_score[1]} if control_point else null,
 			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
-			"rust": team_tanks(Team.RUST).size()}, "stats": stats.duplicate(true)}
+			"rust": team_tanks(Team.RUST).size()}, "stats": _stats_with_engagement()}
+
+
+func _stats_with_engagement() -> Dictionary:
+	var copy := stats.duplicate(true)
+	copy["engagement"] = engagement().summary()
+	return copy
+
+
+## Round 5 X1: the fight's shape so far (see EngagementStats).
+func engagement() -> EngagementStats:
+	if _engagement == null:
+		_engagement = EngagementStats.new(EngagementStats.features_of(Arena.active))
+	return _engagement
+
+
+func _sample_engagement() -> void:
+	var stats_now := engagement()
+	var teams: Array = [[], []]
+	_near_cover.clear()
+	for tank in _sorted_tanks():
+		if not tank.is_alive():
+			continue
+		var by_cover := stats_now.near_cover(tank.global_position)
+		_near_cover[tank.name] = by_cover
+		teams[tank.team].append({"position": tank.global_position, "speed": tank.speed(), "near_cover": by_cover})
+	stats_now.sample(teams, _shots_since_sample)
+	_shots_since_sample = 0
 
 
 # ---- Joining and leaving (simulating peer only) ---------------------------------------
@@ -625,9 +689,20 @@ func threat_along(team: int, from: Vector3, to: Vector3) -> float:
 ## L2: the spread (radians, standard deviation) a shot leaves the barrel with. `moving` is speed as a fraction of
 ## the hull's top speed and `suppression` is the crew's (0..1). Both cost accuracy, and they stack: a tank that
 ## charges while under fire hits almost nothing.
-static func shot_spread(weapon: Dictionary, moving: float, suppression: float) -> float:
+## X1 (round 5): `distance` (m, 0 = unknown) past the weapon's effective_range widens it too (see Weapons).
+static func shot_spread(weapon: Dictionary, moving: float, suppression: float, distance := 0.0) -> float:
 	var spread_deg := float(weapon.get("spread_deg", 0.0))
-	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression)
+	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
+			* range_spread_multiplier(weapon, distance)
+
+
+## X1: how much wider a shot at `distance` spreads than one inside the weapon's effective range (1 = no change).
+static func range_spread_multiplier(weapon: Dictionary, distance: float) -> float:
+	var reach := float(weapon.get("range", 0.0))
+	var effective := float(weapon.get("effective_range", reach))
+	if distance <= effective or reach <= effective:
+		return 1.0
+	return 1.0 + RANGE_SPREAD_FACTOR * clampf((distance - effective) / (reach - effective), 0.0, 1.0)
 
 
 ## L2: mark the ground a direct-fire round swept, and report the suppression it laid down (0 for a weapon that
@@ -830,12 +905,21 @@ func _build_shell(data: Dictionary) -> Node:
 # ---- Rules (simulating peer only) ----------------------------------------------------
 
 func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
+	var started := _profile_start()
+	_fire(muzzle, direction, tank)
+	_profile("tank/fire", started)
+
+
+func _fire(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	stats["shots"][tank.team] += 1
+	_shots_since_sample += 1
+	engagement().record_shot(bool(_near_cover.get(tank.name, false)))
 	if stats["first_shot_seconds"] < 0.0:
 		stats["first_shot_seconds"] = snappedf(sim_seconds, 0.1)
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
 	# L2: a suppressed gunner's rounds go wide (shot_spread), so volume of fire buys accuracy from the other side.
-	var spread := shot_spread(tank.weapon, moving, tank.suppression)
+	var spread := shot_spread(tank.weapon, moving, tank.suppression,
+			Vector2(tank.aim_point.x - muzzle.x, tank.aim_point.z - muzzle.z).length())
 	var actual := direction.rotated(Vector3.UP, _fire_rng.randfn(0.0, spread)) if spread > 0.0 else direction
 	var projectile_id := _next_shell_id
 	_next_shell_id += 1
@@ -1003,6 +1087,12 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: 
 
 ## Cone weapons: every tank inside the cone with line of sight burns this tick, teammates included (R4).
 func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> void:
+	var started := _profile_start()
+	_spray(origin, direction, delta, tank)
+	_profile("tank/spray", started)
+
+
+func _spray(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> void:
 	var weapon := tank.weapon
 	if tick % CONE_EVENT_TICKS == 0:
 		_emit_fired(tank, origin, direction, _next_shell_id)
@@ -1251,8 +1341,19 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	if weapon_stat != "":
 		stats[weapon_stat][team] += int(result["hull"])
 	if result["killed"]:
+		_record_engagement_kill(victim, shooter, face, weapon)
 		_score_kill(team, shooter, victim)
 	return result
+
+
+func _record_engagement_kill(victim: Tank, shooter: String, face: String, weapon: Dictionary) -> void:
+	var killer := tanks.get_node_or_null(NodePath(shooter)) as Tank
+	var stats_now := engagement()
+	var distance := killer.global_position.distance_to(victim.global_position) if killer != null else -1.0
+	stats_now.record_kill(victim.team, face, weapon["kind"] == Weapons.Kind.ARC, distance,
+			killer != null and stats_now.near_cover(killer.global_position), stats_now.near_cover(victim.global_position))
+	if killer != null:
+		stats_now.record_kill_bearing(victim.team, victim.global_position, killer.global_position)
 
 
 ## X3 weak spots: a direct round (shell or beam; not a lobbed burst or a flame) into the engine deck.
@@ -1281,6 +1382,12 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 
 
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
+	var started := _profile_start()
+	_shell_hit(shell, collider, point)
+	_profile("shell/hit", started)
+
+
+func _shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
 	var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank

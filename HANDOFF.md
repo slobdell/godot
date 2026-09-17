@@ -4,14 +4,23 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-09-16. **Round 4 is merged, verified and closed. Round 5 isn't planned yet: it starts from the
-lead's playtest.**_
+_Last updated: 2026-09-17. **Round 5 is in flight.** render is merged and closed; combat's Jolt physics is merged;
+arena and audio are green and queued behind a re-verify on Jolt; control, combat and ai are still working._
 
 ## Current state (main)
 
-- **Verified:** `make remote T=check` green on builder0 (843 tests, every smoke, the announcer's Python tests, the
-  variance gate, music smoke). Sim baseline `glibc-2.43 d4bd86eee0f96c54` (builder0 canonical;
+- **Verified:** `make remote T=check` green on builder0 at `8d975fa` (every smoke, the announcer's Python tests, the
+  variance gate, music smoke). Sim baseline `glibc-2.43 83f1272ade466282` (builder0 canonical;
   `make remote T=sim-baseline-record`).
+- **Physics is Jolt** as of 8d975fa: vehicle simulation cost -28%, the whole tick -17% (raycasts got cheaper, which
+  helps the AI band most). Any measurement taken before that commit is not comparable with one taken after.
+- **The frame rate is bound by the simulation tick, not the GPU**: 11.6 ms a tick, 9.3 ms of it the AI's brains.
+  A 30 Hz tick with physics interpolation is written up in [`_agents/sim_tick_rate.md`](_agents/sim_tick_rate.md) and
+  is with the lead; the orchestrator's recommendation is to make it the first item of round 6 under one owner, because
+  doing it mid-round invalidates every other stream's in-flight measurements.
+- **Open lead decisions** are collected on one page: https://claude.ai/artifact/CWhVvcNj7BQBigp5N27kDW (the gun-sound
+  pilot, ad copy and the PA recording, 30 Hz, render's glow and team-read, arena's four questions). Answers are stored
+  on the page itself and read back with the Artifact tool's `read_db` on `decisions/<id>`.
 - **The game today:** StarCraft-style control with a camera that only shows what your force can see; elements that pick
   formations and run battle drills from real doctrine, the same library for you and the CPU; suppression that makes
   base-of-fire-and-maneuver real; four playable factions with their own rosters and doctrine (44 gang vehicles to 17

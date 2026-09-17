@@ -13,6 +13,8 @@ extends GameMode
 ## --no-brains frees every TankBrain so the run measures the SIMULATION's cost alone (ai owns the brain cost).
 ## The match runner's MATCH_RESULT already carries `speedup` = simulated seconds per real second, so
 ## ms per tick = 1000 / (60 x speedup). `make scale-bench` runs the ladder.
+## --sim-profile (round 5, CP1) prints SIM_PROFILE <json> before the result: ms per physics tick, whole and by section
+## (SimProfile; `make sim-profile`).
 ## --combat-log prints COMBAT_EVENT <json> lines: every K2 weapon_fired / projectile_impact, every destroyed unit, and
 ## every living unit's pose each COMBAT_LOG_POSE_TICKS (tools/combat_duel.py turns them into a readable timeline).
 
@@ -80,12 +82,16 @@ func start() -> void:
 			float(flags.integer("time-limit", 300)))
 	if flags.has("combat-log"):
 		_log_combat(game_match)
+	if flags.has("sim-profile"):
+		SimProfile.install(game_match)
 	var started_msec := Time.get_ticks_msec()
 	game_match.finished.connect(func(result: Dictionary) -> void:
 		var real_seconds := (Time.get_ticks_msec() - started_msec) / 1000.0
 		result["seed"] = seed_value
 		result["real_seconds"] = snappedf(real_seconds, 0.01)
 		result["speedup"] = snappedf(result["sim_seconds"] / maxf(real_seconds, 0.001), 0.1)
+		if SimProfile.enabled:
+			print("SIM_PROFILE " + JSON.stringify(SimProfile.report()))
 		print("MATCH_RESULT " + JSON.stringify(result))
 		main.get_tree().quit())
 	main.hud.set_status("Match runner")
