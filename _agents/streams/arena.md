@@ -100,6 +100,15 @@ Vehicle art, props' materials and the frame budget (render), weapons and rules (
   as dense on 86-95% of the field; `make arena-report` shows the share as counted today, sight-blocking only, and
   with touching boxes merged (boulevard 92% -> 46% dense). Sent to the orchestrator.
 
+- 2026-09-17: **X4 first series** (5 arenas × seeds 1-6 × both bases, Condemned mirror at 5200; numbers in
+  arenas.md). No arena shows a base advantage distinguishable from zero. The win rate can't show one: each team's
+  army is seeded separately, army strength decided every match, and no winner flipped on a base swap. So the fairness
+  measure is now the paired surviving-share margin. The maps change how fights look (hidden time 36% → 58%, p90 hit
+  range 74 → 57 m, the pit sends 30% of unit-time around its ring) but not who wins, and median hit range is 38-43 m on
+  every map, foundry included. Seeds 7-18 on the four new arenas are queued on builder0 to tighten the yard and
+  boneyard.
+- 2026-09-17: **stretch** `make arena-candidates` (generated layouts for a human to approve; see arenas.md).
+
 ### Requests to other streams
 - **render (done 2026-09-17):** visual slots for the new kit types: `prop.barricade` (6 × 0.9 × 0.8 m jersey barrier run; a scaled
   `prop.wall` stands in), `prop.floodlight` (2.4 m footing of a floodlight tower; a scaled `prop.crate` stands in),
