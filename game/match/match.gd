@@ -228,21 +228,49 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not simulate:
 		return
+	var started := _profile_start()
 	sim_seconds += delta
 	tick += 1
 	if tick % SUPPRESSION_SAMPLE_TICKS == 0:
+		var t := _profile_start()
 		_update_suppression()
+		_profile("match/suppression", t)
 	if tick % INTEL_EVERY_TICKS == 0:
+		var t := _profile_start()
 		_update_intel()
+		_profile("match/intel", t)
+		t = _profile_start()
 		_update_squads()
+		_profile("match/squads", t)
+		t = _profile_start()
 		_resupply()
 		_apply_hazards()
 		_sample_brain_options()
 		if control_point and not _finished:
 			_update_control()
+		_profile("match/resupply_hazards_options_control", t)
 	if tick % EngagementStats.SAMPLE_TICKS == 0:
+		var t := _profile_start()
 		_sample_engagement()
+		_profile("match/engagement", t)
+	var t_rounds := _profile_start()
 	_land_rounds()
+	_profile("match/land_rounds", t_rounds)
+	_profile("match", started)
+	_check_finished()
+
+
+## SimProfile hooks: free when profiling is off (one static read).
+static func _profile_start() -> int:
+	return Time.get_ticks_usec() if SimProfile.enabled else 0
+
+
+static func _profile(section: String, started: int) -> void:
+	if started > 0:
+		SimProfile.add(section, started)
+
+
+func _check_finished() -> void:
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination and not control_point):
 		return
 	var reason := ""
@@ -864,6 +892,12 @@ func _build_shell(data: Dictionary) -> Node:
 # ---- Rules (simulating peer only) ----------------------------------------------------
 
 func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
+	var started := _profile_start()
+	_fire(muzzle, direction, tank)
+	_profile("tank/fire", started)
+
+
+func _fire(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	stats["shots"][tank.team] += 1
 	_shots_since_sample += 1
 	engagement().record_shot(bool(_near_cover.get(tank.name, false)))
@@ -1039,6 +1073,12 @@ func _fire_beam(tank: Tank, muzzle: Vector3, direction: Vector3, projectile_id: 
 
 ## Cone weapons: every tank inside the cone with line of sight burns this tick, teammates included (R4).
 func _on_tank_sprayed(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> void:
+	var started := _profile_start()
+	_spray(origin, direction, delta, tank)
+	_profile("tank/spray", started)
+
+
+func _spray(origin: Vector3, direction: Vector3, delta: float, tank: Tank) -> void:
 	var weapon := tank.weapon
 	if tick % CONE_EVENT_TICKS == 0:
 		_emit_fired(tank, origin, direction, _next_shell_id)
@@ -1326,6 +1366,12 @@ func _score_kill(team: int, killer: String, victim: Tank) -> void:
 
 
 func _on_shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
+	var started := _profile_start()
+	_shell_hit(shell, collider, point)
+	_profile("shell/hit", started)
+
+
+func _shell_hit(shell: Shell, collider: Object, point: Vector3) -> void:
 	var killed := false
 	var victim := collider as Tank
 	var shooter := tanks.get_node_or_null(NodePath(shell.shooter_name)) as Tank

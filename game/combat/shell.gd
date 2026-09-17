@@ -44,6 +44,15 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if SimProfile.enabled:
+		var started := Time.get_ticks_usec()
+		_fly(delta)
+		SimProfile.add("shell", started)
+	else:
+		_fly(delta)
+
+
+func _fly(delta: float) -> void:
 	var step := direction * speed * delta
 	var from := ray_start if _first_step else global_position
 	_first_step = false

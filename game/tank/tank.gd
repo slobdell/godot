@@ -247,6 +247,15 @@ static func first_drawable_slot(candidates: Array) -> String:
 
 
 func _physics_process(delta: float) -> void:
+	if SimProfile.enabled:
+		var started := Time.get_ticks_usec()
+		_tick(delta)
+		SimProfile.add("tank", started)
+	else:
+		_tick(delta)
+
+
+func _tick(delta: float) -> void:
 	if not simulate:
 		# Snapshots arrive every other tick or so; average the jumps into a velocity estimate.
 		var snapshot_velocity := (sync_position - _previous_sync_position) / delta
@@ -265,7 +274,10 @@ func _physics_process(delta: float) -> void:
 	# speed to turn and slide on low grip. Collisions stay with the physics body: the velocity after the slide feeds the
 	# next tick, so a wall eats a wheeled unit's momentum.
 	var drive_cmd := _deploy_step(cmd)
+	var drive_started := Time.get_ticks_usec() if SimProfile.enabled else 0
 	_drive(drive_cmd, delta)
+	if drive_started > 0:
+		SimProfile.add("tank/drive", drive_started)
 
 	var local_aim := to_local(cmd.aim_point)
 	# L2: a suppressed gunner keeps losing the target.
@@ -296,7 +308,10 @@ func _physics_process(delta: float) -> void:
 			_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
 			heat += float(weapon.get("heat_per_shot", 0.0))
 			_fire_round()
+	var publish_started := Time.get_ticks_usec() if SimProfile.enabled else 0
 	_publish_state()
+	if publish_started > 0:
+		SimProfile.add("tank/publish_state", publish_started)
 
 
 ## One round leaves the gun (a shell, a beam pulse, a burst round, a lobbed round).
