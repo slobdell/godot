@@ -30,6 +30,23 @@ LAYERS = ROOT / "game" / "theme" / "audio" / "sfx_layers.gd"
 GUNFIRE_VOLUME_DB = -9.0
 WORLD_TRIM_DB = -6.0
 
+## Two scripts: the Condemned's guns (the original A/B), and the Syndicate's, which the lead heard as a cartoon
+## because every weapon borrowed another faction's sound. "before" plays what each Syndicate weapon used to make.
+SYNDICATE = [
+    (0.00, "railgun_shot", 30, 0, 0), (0.55, "energy_hit", 55, 0, 0),
+    (1.60, "pulse_shot", 25, 0, 0), (1.95, "pulse_shot", 25, 1, 0), (2.30, "energy_hit", 45, 1, 0),
+    (3.20, "plasma_loop", 20, 0, 1.6),
+    (3.60, "energy_hit", 40, 2, 0), (4.10, "energy_hit", 40, 0, 0),
+    (5.20, "energy_beam", 22, 0, 0), (5.70, "energy_hit", 50, 1, 0),
+    (6.60, "missile_launch", 35, 0, 0), (8.20, "explosion_small", 60, 0, 0),
+    (9.00, "railgun_shot", 80, 1, 0), (9.60, "energy_beam", 28, 1, 0),
+    (10.4, "plasma_loop", 70, 0, 1.2),
+]
+## What the lead actually heard playing the Syndicate: every weapon took its fire model's family sound, so both
+## beams were the ray-gun zap, the repeater was the machine gun, and the missiles were a mortar tube.
+WAS = {"railgun_shot": "laser_pulse", "energy_beam": "laser_pulse", "plasma_loop": "mg_loop",
+       "pulse_shot": "autocannon_shot", "missile_launch": "mortar_launch", "energy_hit": "bullet_hit_metal"}
+
 ## (time s, sound, distance m, take index or None for random, hold s for loops)
 SCRIPT = [
     (0.00, "tank_boom", 30, 0, 0),
@@ -71,6 +88,14 @@ def layered_table() -> dict:
             for m in re.finditer(r'"([a-z_]+)": \[([^\]]*)\]', LAYERS.read_text())}
 
 
+def alias_table() -> dict:
+    """SfxSystem.ALIAS: what a sound falls back to while it has no takes of its own."""
+    text = SFX_SYSTEM.read_text()
+    block = text[text.index("const ALIAS := {"):]
+    block = block[: block.index("}")]
+    return dict(re.findall(r'"([a-z_]+)": "([a-z_]+)"', block))
+
+
 def synth_files(sound: str) -> list[Path]:
     audio = ROOT / "assets" / "audio"
     return [audio / ("%s.wav" % sound)] + sorted(audio.glob("%s_[0-9].wav" % sound))
@@ -96,12 +121,17 @@ def at_distance(x: np.ndarray, sound: str, distance: float, filters: dict) -> np
     return x * gain
 
 
-def render(use_layered: bool) -> np.ndarray:
+def render(use_layered: bool, script: list | None = None, substitute: dict | None = None) -> np.ndarray:
     mix, filters, layers = mix_table(), distance_filter_table(), layered_table() if use_layered else {}
-    bed = np.zeros(int(LENGTH_S * RATE))
+    script = script if script is not None else SCRIPT
+    bed = np.zeros(int(max(t for t, *_ in script) + 4.0) * RATE)
     cache: dict = {}
-    for when, sound, distance, take, hold in SCRIPT:
+    for when, sound, distance, take, hold in script:
+        sound = (substitute or {}).get(sound, sound)
         pool = layers.get(sound) or synth_files(sound)
+        if not any(p.exists() for p in pool):  # not generated yet: what it stands in for (SfxSystem.ALIAS)
+            stand_in = alias_table().get(sound, sound)
+            pool = layers.get(stand_in) or synth_files(stand_in)
         path = pool[take % len(pool)]
         if path not in cache:
             cache[path] = sfx_layer.decode(path)
@@ -127,9 +157,11 @@ def write_mp3(x: np.ndarray, path: Path) -> None:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, default=ROOT / "build" / "audio" / "montage")
+    parser.add_argument("--syndicate", action="store_true", help="the Syndicate's weapons, before and after")
     args = parser.parse_args(argv)
-    for name, layered in (("synth", False), ("layered", True)):
-        x = render(layered)
+    renders = [("syndicate_before", render(True, SYNDICATE, WAS)), ("syndicate_after", render(True, SYNDICATE))] \
+        if args.syndicate else [("synth", render(False)), ("layered", render(True))]
+    for name, x in renders:
         write_mp3(x, args.out / ("%s.mp3" % name))
         print("%s.mp3: loudest 400 ms %.1f dB, peak %.1f dBFS" % (name, sfx_layer.loudness_db(x),
                                                               20 * np.log10(max(np.abs(x).max(), 1e-9))))

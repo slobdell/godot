@@ -22,6 +22,8 @@ var _voices: Array[AudioStreamPlayer3D] = []
 ## voice index -> gunner key ("" = free)
 var _assigned: PackedStringArray = []
 var _rng := RandomNumberGenerator.new()
+## sound key -> a looping copy of it.
+var _loops := {}
 
 
 func _init() -> void:
@@ -40,20 +42,24 @@ func _init() -> void:
 		_assigned.append("")
 
 
-## Share the loop stream with SfxSystem's loaded sounds (loops forward over its whole length).
+## Looping copies of every stream weapon's sound (SfxWeapons), so a voice can play whichever its gunner fires.
 func use_streams(streams: Dictionary) -> void:
-	var loop := streams.get(SOUND) as AudioStreamWAV
-	if loop == null:
-		return
-	loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	loop.loop_end = SfxSystem.loop_frames(loop)
+	for key in [SOUND] + SfxWeapons.named_sounds():
+		var source := streams.get(key) as AudioStreamWAV
+		if source == null:
+			continue
+		var loop := source.duplicate() as AudioStreamWAV
+		loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		loop.loop_end = SfxSystem.loop_frames(loop)
+		_loops[key] = loop
 	for voice in _voices:
-		voice.stream = loop
+		voice.stream = _loops.get(SOUND)
 
 
-## A round left `key`'s gun at `position`.
-func trigger(key: String, position: Vector3, now: float) -> void:
-	_gunners[key] = {"position": position, "last": now}
+## A round left `key`'s gun at `position`. `sound` is the loop it streams (SfxWeapons: a plasma repeater is not a
+## machine gun); "" keeps the default.
+func trigger(key: String, position: Vector3, now: float, sound := "") -> void:
+	_gunners[key] = {"position": position, "last": now, "sound": sound if sound != "" else SOUND}
 
 
 ## Muzzle positions of every gunner still firing (for the flickering muzzle light).
@@ -95,6 +101,9 @@ func update(listener: Vector3, now: float) -> void:
 		if index < 0:
 			index = _assigned.find("")
 			_assigned[index] = key
+			var loop: AudioStream = _loops.get(String(_gunners[key].get("sound", SOUND)))
+			if loop != null:
+				_voices[index].stream = loop
 			if not muted and _voices[index].stream != null and _voices[index].is_inside_tree():
 				_voices[index].pitch_scale = 1.0 + _rng.randf_range(-0.06, 0.06)
 				_voices[index].play(_rng.randf_range(0.0, 0.9))

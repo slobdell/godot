@@ -108,6 +108,43 @@ is unexplored. What is left is two questions with the lead and one track he may 
 The balance reads unsettled for minutes after a run; `assets/{audio/elevenlabs,announcer}/ledger.md` note where it
 moved later.
 
+### 30 Hz: verified, and two things worth knowing about remote measurements
+`make remote T=check` green on the merge (991 tests, sim hash `16dc0de84f1c29b6`). Nothing in audio needed changing:
+the smoothing and clocks were already in seconds, and main's `SimClock` is where the tick rate lives now. The one
+failure was **my own test**, which set `Engine.physics_ticks_per_second` and measured — that tests the engine, not the
+booth, and it passed at 60 Hz and failed at 30. It asserts the behaviour now.
+- **`make remote` used to claim "build/ copied back" when it hadn't** (fixed in `tools/remote.sh`): the rsync threw
+  its errors away, so with the laptop's disk full my local `build/audio/pass.*` sat three hours stale from a different
+  match while the run that wrote them had just passed. **Check timestamps before reading remote results.**
+- **On builder0 at 30 a side, game time runs ~10x slower than wall time.** In one recording the music had played
+  48.8 s of audio while the director's clock read 5.0 s. So `audio-pass` captures about 10 s of match per 100 s of
+  audio: the mix numbers are true (they are what a player at that frame rate hears) but the *match* in them is brief,
+  which is why layer changes look rare. Told the orchestrator; the cause is combat's to judge.
+- **The mix holds at 30 Hz:** -20.8 LUFS, true peak -4.6 dBFS, 0 clipped, and a music-only pass has music throughout.
+
+### Reopened 2026-09-17: the Syndicate sounded like somebody else's army
+The lead played the Syndicate: *"the sound effects were no good they sounded like a cheesy cartoon"* — hours after
+calling the same batch awesome as the Condemned. **The bug was not the laser, it was the mapping.** `WeaponFx.FAMILIES`
+picks sounds by *fire model*, so every Syndicate weapon borrowed the faction whose weapon shares its model: the pulse
+repeater fired the machine-gun loop, the pulse cannon the 25 mm thump, guided missiles the mortar tube, and the
+railgun and the laser shared one ray-gun zap. (The Law's sonic emitter was a machine gun too.) He did not hear bad
+lasers; he heard the Condemned's guns coming out of his own army.
+
+- **`SfxWeapons`** (`game/theme/audio/`) maps weapon id → `{fire, hit, loop}`; `WeaponFx` asks it for the id already in
+  the K2 event, and an unlisted weapon keeps its family's sound, so the Condemned are untouched. Beams play through
+  `WeaponFx` (which knows the weapon) instead of `FxWorld.laser` (which does not). `GunfireLoops` streams whichever
+  loop the gunner's weapon names.
+- **Prompt the physical event, never the word.** "Laser" returns the 1950s ray gun: the old clip had **91% of its
+  energy in 1–4 kHz and nothing under 200 Hz**. The new recipes describe a capacitor bank discharging, an arc flash,
+  superheated air tearing, a rocket motor igniting — and never a pitch sweep, which is the cartoon.
+- **Generated energy takes come back all crack and no weight** (2–4% below 200 Hz). `sfx_layer` gained `sub_db`/`sub_hz`:
+  a synthesised low body shaped by the take's own envelope. The beam is 53% below 200 Hz now, the railgun 63%.
+- **`SfxSystem.ALIAS`** keeps a weapon that has no takes yet audible with the sound it replaces: a wrong sound is a
+  complaint, a silent gun is a broken game. A test asserts every sound a weapon names can actually play.
+- Pilot: railgun, energy beam, plasma stream — 7 takes, **106 credits** (balance 111,868). The page:
+  <https://claude.ai/artifact/RY6mYLNmNsrwPJoJmBUPSn>, asking whether they sound expensive and frightening, and
+  whether to record the remaining four (pulse cannon, guided missiles, the energy hit, the sonic emitter; ~120 credits).
+
 ### Waiting on the lead
 **Answered 2026-09-17:** "Run the batch", "All of them work" (the ad copy), "Record them" (the PA lines), and screens
 "live during, ads between". All three runs are done (below).
@@ -337,9 +374,9 @@ import cleanly today. Nothing here is second-rate — his set simply has more co
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
-  **Final: `make remote T=check` exited 0 against 7cadd8d7** (everything in this report, the lead's music included):
-  946 tests, sim hash `32f665bc60306e8f` matching main's baseline, announcer-variance, announcer-record-smoke,
-  music-smoke and audio-check all passed. Later commits touch only this brief.
+  **Final: `make remote T=check` exited 0 against ad4fc97a** (30 Hz, the Syndicate's weapons, the lead's music):
+  991 tests, sim hash `16dc0de84f1c29b6` matching main's baseline, every announcer and audio check green. Later
+  commits are this brief and the `tools/remote.sh` copy-back fix.
 - Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
   initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
   builder0 has no numpy or scipy (`make audio-deps`, 181f6ca).
@@ -353,16 +390,19 @@ import cleanly today. Nothing here is second-rate — his set simply has more co
 - The balance lags the API by minutes: ledger rows show what was read when the run ended, with a note where it moved.
 
 ### Next steps
-1. **Two questions are with the lead** (the page above): whether his music sits at the right level under the battle
+1. **The Syndicate pilot** (page above): do they sound right, and record the remaining four? They are written in
+   `sources.json` and priced; `make sfx-generate APPROVED=1 --only pulse_cannon_shot,missile_away,energy_on_armour,sonic_emitter_stream`
+   then `make sfx-layer`.
+2. **Two questions are with the lead** (the listening page): whether his music sits at the right level under the battle
    (`MusicDirector.TRIM_DB`, currently -9 dB) and whether the booth sits above it (`AnnouncerVoice.TRIM_DB`, -4 dB).
    Both are one constant and a re-measured `audio-pass`; no credits.
-2. **He has no slow, hollow defeat track.** Defeat uses *Mechanical Dread*, which grinds rather than mourns. The
+3. **He has no slow, hollow defeat track.** Defeat uses *Mechanical Dread*, which grinds rather than mourns. The
    *Acid Rain Wasteland* prompt in `assets/music/PROMPTS.md` fills it; import with `make music-import STATE=defeat`.
-3. **`Hud.post_caption(speaker, text)`** is control's new caption line. The booth still posts
+4. **`Hud.post_caption(speaker, text)`** is control's new caption line. The booth still posts
    `post_message("CALLER: …")`, which control routes for now; switch `announcer_booth.gd` once it is on main.
-4. **Spares to spend** if per-faction or per-arena music is wanted: the table above. The director already rotates
+5. **Spares to spend** if per-faction or per-arena music is wanted: the table above. The director already rotates
    between equally fitting tracks, so adding a fourth fight set is an import, not code.
-5. **Round 4 leftovers still open:** the arena PA reading between rounds needs the ad screens placed (the copy is
+6. **Round 4 leftovers still open:** the arena PA reading between rounds needs the ad screens placed (the copy is
    approved and recorded); per-faction *voice treatment* for the booth is unexplored.
 
 ### Requests to other streams

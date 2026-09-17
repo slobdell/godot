@@ -74,6 +74,8 @@ var _rng := RandomNumberGenerator.new()
 var showcase_weak_spots := false
 ## Hitscan rounds fired this frame, waiting for their impact (same tick) to know where they end: id -> shot.
 var _pending_hitscan := {}
+## The weapon whose impact is being drawn right now, so its hit can sound like it (set in impact()).
+var _shot_weapon := ""
 ## Budgets for small rounds pouring into one hull: last spark and clank time per target, last ricochet sound.
 var _last_spark := {}
 var _last_clank := {}
@@ -118,8 +120,10 @@ func fired(event: Dictionary) -> void:
 	# a tick behind, so muzzle-side effects move by the same offset to stay on the barrel (zero without interpolation).
 	muzzle += WeaponFx.drawn_offset(shooter)
 	var color := _team_glow(shooter)
+	# The weapon id travels with the shot so its impact can sound like what fired it (SfxWeapons).
+	var weapon_id := String(event.get("weapon", ""))
 	_track(int(event.get("projectile_id", -1)), {"model": model, "shooter": shooter_name, "color": color, "muzzle": muzzle,
-			"direction": direction})
+			"direction": direction, "weapon": weapon_id})
 	var speed := float(event.get("speed_mps", K2Events.projectile_speed(weapon)))
 	if (model == "stream" or model == "burst") and speed <= 0.0:
 		_pending_hitscan[int(event.get("projectile_id", -1))] = {"muzzle": muzzle, "direction": direction,
@@ -138,10 +142,12 @@ func fired(event: Dictionary) -> void:
 		_fx.shake.add(float(family["fire_shake"]), muzzle, float(family["shake_radius"]) * 0.8)
 	if model == "stream":
 		# Held loops, not a click per round: the nearest few gunners get a brrrt that lasts as long as their trigger.
-		_fx.gunfire.trigger(shooter_name if shooter_name != "" else str(muzzle.snapped(Vector3.ONE)), muzzle, _fx.now)
-		_piece("sound:mg_loop")
-	elif model != "beam":
-		_sound(String(family["fire_sound"]), muzzle)
+		var loop := SfxWeapons.sound_for(weapon_id, "loop", "mg_loop")
+		_fx.gunfire.trigger(shooter_name if shooter_name != "" else str(muzzle.snapped(Vector3.ONE)), muzzle, _fx.now, loop)
+		_piece("sound:" + loop)
+	else:
+		# Beams included: a railgun and a laser are not the same weapon, and neither is a ray gun (audio, round 5).
+		_sound(SfxWeapons.sound_for(weapon_id, "fire", String(family["fire_sound"])), muzzle)
 
 
 ## Hitscan rounds that got no impact this frame hit nothing: they fly their full range. FxWorld calls it once per frame.
@@ -169,6 +175,7 @@ func impact(event: Dictionary) -> void:
 	var model := String(shot.get("model", event.get("fire_model", "shell")))
 	if not FAMILIES.has(model):
 		model = "shell"
+	_shot_weapon = String(shot.get("weapon", ""))
 	_forget(id)
 	_begin(model)
 	var family: Dictionary = FAMILIES[model]
@@ -267,7 +274,7 @@ func _shell_hit(family: Dictionary, position: Vector3, direction: Vector3, kille
 	if not killed:
 		_fx.lights.flash(position + Vector3.UP * 1.5, Color(1.0, 0.6, 0.25), 6.0, 14.0, 0.35, LightPool.PRIORITY_EXPLOSION, now)
 		_fx.shake.add(float(family["hit_shake"]), position, float(family["shake_radius"]))
-		_sound(String(family["hit_sound"]), position)
+		_sound(SfxWeapons.sound_for(_shot_weapon, "hit", String(family["hit_sound"])), position)
 		_fx.spectacle.emit(position, 0.3)
 
 
@@ -523,9 +530,10 @@ func _small_hit(model: String, family: Dictionary, position: Vector3, direction:
 		if now - _last_ricochet_sound >= RICOCHET_SOUND_EVERY:
 			_last_ricochet_sound = now
 			_sound("ricochet", position)
-	if String(family["hit_sound"]) != "" and now - float(_last_clank.get(key, -1.0)) >= CLANK_EVERY:
+	var hit_sound := SfxWeapons.sound_for(_shot_weapon, "hit", String(family["hit_sound"]))
+	if hit_sound != "" and now - float(_last_clank.get(key, -1.0)) >= CLANK_EVERY:
 		_last_clank[key] = now
-		_sound(String(family["hit_sound"]), position)
+		_sound(hit_sound, position)
 	if _last_spark.size() > 64:
 		_last_spark.clear()
 		_last_clank.clear()
