@@ -10,7 +10,7 @@ lead's playtest.**_
 ## Current state (main)
 
 - **Verified:** `make remote T=check` green on builder0 (843 tests, every smoke, the announcer's Python tests, the
-  variance gate, music smoke). Sim baseline `glibc-2.43 d4bd86eee0f96c54` (builder0 canonical;
+  variance gate, music smoke). Sim baseline `glibc-2.43 7b1bb7c20063e5a0` (builder0 canonical;
   `make remote T=sim-baseline-record`).
 - **The game today:** StarCraft-style control with a camera that only shows what your force can see; elements that pick
   formations and run battle drills from real doctrine, the same library for you and the CPU; suppression that makes

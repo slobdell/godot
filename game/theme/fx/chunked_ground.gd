@@ -26,8 +26,9 @@ func build() -> void:
 	var mesh := PlaneMesh.new()
 	mesh.size = Vector2(step, step)
 	# The Compatibility renderer evaluates fog per vertex: an unsubdivided 40 m tile showed its fog as flat squares.
-	mesh.subdivide_width = SUBDIVISIONS
-	mesh.subdivide_depth = SUBDIVISIONS
+	var subdivisions := SUBDIVISIONS if chunked else SUBDIVISIONS * tiles_per_side()
+	mesh.subdivide_width = subdivisions
+	mesh.subdivide_depth = subdivisions
 	mesh.material = material
 	for x in tiles:
 		for z in tiles:
@@ -37,6 +38,17 @@ func build() -> void:
 			piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			piece.position = Vector3(-size / 2.0 + step * (x + 0.5), 0.0, -size / 2.0 + step * (z + 0.5))
 			add_child(piece)
+
+
+## The FX lab and perf-scene flip tiling to compare.
+func toggle_chunked() -> void:
+	chunked = not chunked
+	build()
+
+
+## Tiles along one side when chunked.
+func tiles_per_side() -> int:
+	return int(ceil(size / tile))
 
 
 func tile_count() -> int:

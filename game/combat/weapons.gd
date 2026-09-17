@@ -23,6 +23,10 @@ const FIRE_MODELS := ["shell", "burst", "stream", "beam", "arc"]
 ## 0.24/s, laser 2/s x 0.15 = 0.3/s, mortar 0.22/s x 3.0 over a 9 m splash. Match.SUPPRESSION_FULL_DENSITY (3.0) is
 ## what it takes to pin, so one machine gun holds a lane at about half suppression and two crews pin it.
 
+## X1 (round 5): direct-fire weapons (shells and beams) carry `effective_range`, the distance out to which their
+## spread_deg holds. Past it the spread widens linearly, reaching (1 + Match.RANGE_SPREAD_FACTOR) times at `range`, so a
+## long shot is a gamble and closing the distance is how you make fire count. effective_range == range: no falloff.
+
 const DEFAULT := "cannon"
 
 const PROFILES := {
@@ -43,6 +47,7 @@ const PROFILES := {
 		"kind": Kind.PROJECTILE,
 		# Shorter than the 84 m between bases, so contact is something you maneuver into.
 		"range": 70.0,
+		"effective_range": 70.0,
 		"preferred_min": 20.0,
 		"preferred_max": 45.0,
 		"damage": 320.0,
@@ -83,6 +88,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 60.0,
+		"effective_range": 60.0,
 		"preferred_min": 15.0,
 		"preferred_max": 45.0,
 		"damage": 15.0,
@@ -113,6 +119,7 @@ const PROFILES := {
 		# with a 72-82 m preferred band outranges the cannon (70 m) and the tank's 75 m sight, so a Lancer duels
 		# tanks from where they can't answer: Lancer vs tank 33% -> 67%.
 		"range": 90.0,
+		"effective_range": 90.0,
 		"preferred_min": 76.0,
 		"preferred_max": 86.0,
 		# R7: 9 dmg / 12 heat -> 12 / 16: burstier, so it wins against a few big hulls but overheats against a
@@ -151,6 +158,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.tracer",
 		"range": 45.0,
+		"effective_range": 45.0,
 		"preferred_min": 12.0,
 		"preferred_max": 35.0,
 		"damage": 3.5,
@@ -256,6 +264,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.tracer",
 		"range": 35.0,
+		"effective_range": 35.0,
 		"preferred_min": 10.0,
 		"preferred_max": 28.0,
 		"damage": 3.0,
@@ -281,6 +290,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 30.0,
+		"effective_range": 30.0,
 		"preferred_min": 8.0,
 		"preferred_max": 24.0,
 		"damage": 95.0,
@@ -304,6 +314,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 50.0,
+		"effective_range": 50.0,
 		"preferred_min": 14.0,
 		"preferred_max": 36.0,
 		"damage": 260.0,
@@ -378,6 +389,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 80.0,
+		"effective_range": 80.0,
 		"preferred_min": 26.0,
 		"preferred_max": 62.0,
 		"damage": 200.0,
@@ -453,6 +465,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.laser_beam",
 		"range": 110.0,
+		"effective_range": 110.0,
 		"preferred_min": 60.0,
 		"preferred_max": 104.0,
 		"damage": 420.0,
@@ -475,6 +488,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 70.0,
+		"effective_range": 70.0,
 		"preferred_min": 18.0,
 		"preferred_max": 55.0,
 		"damage": 26.0,
@@ -498,6 +512,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.tracer",
 		"range": 55.0,
+		"effective_range": 55.0,
 		"preferred_min": 15.0,
 		"preferred_max": 45.0,
 		"damage": 4.5,

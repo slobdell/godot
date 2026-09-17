@@ -212,6 +212,40 @@ static func sign_post_mesh() -> ArrayMesh:
 	return b.commit()
 
 
+## The husk's material, burned: darker and duller than the approved model's showroom finish (a copy; the model's own
+## material is untouched).
+static func charred(material: Material) -> Material:
+	var base := material as BaseMaterial3D
+	if base == null:
+		return material
+	var copy := base.duplicate() as BaseMaterial3D
+	copy.albedo_color = base.albedo_color * Color(0.42, 0.4, 0.38)
+	copy.roughness = maxf(base.roughness, 0.85)
+	copy.metallic = minf(base.metallic, 0.3)
+	return copy
+
+
+## A MultiMesh draws every instance at the mesh's base detail, so the husk takes the coarsest generated LOD with at least
+## this many triangles (3,758 -> ~800: 48 wrecks were ~180k primitives a frame).
+const WRECK_MIN_TRIANGLES := 600
+
+
+## `arrays`' index buffer simplified by Godot's LOD generator: the coarsest LOD with at least `min_triangles`.
+static func reduced_indices(arrays: Array, min_triangles: int) -> PackedInt32Array:
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
+	if indices.size() / 3 <= min_triangles:
+		return indices
+	var importer := ImporterMesh.new()
+	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	importer.generate_lods(25.0, 60.0, [])
+	var best := indices
+	for lod in importer.get_surface_lod_count(0):
+		var candidate := importer.get_surface_lod_indices(0, lod)
+		if candidate.size() / 3 >= min_triangles and candidate.size() < best.size():
+			best = candidate
+	return best
+
+
 ## The approved wreck model's mesh, turned so its long axis is z and scaled to WRECK (render fits the husk to its box).
 static func wreck_mesh() -> ArrayMesh:
 	if not ResourceLoader.exists(WRECK_MODEL):
@@ -249,7 +283,8 @@ static func wreck_mesh() -> ArrayMesh:
 			arrays[Mesh.ARRAY_NORMAL] = normals
 		# Tangents would need re-deriving under a non-uniform scale; the husk reads fine on its normals alone.
 		arrays[Mesh.ARRAY_TANGENT] = null
+		arrays[Mesh.ARRAY_INDEX] = KitYard.reduced_indices(arrays, WRECK_MIN_TRIANGLES)
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-		mesh.surface_set_material(surface, source.get_active_material(surface))
+		mesh.surface_set_material(surface, KitYard.charred(source.get_active_material(surface)))
 	scene.free()
 	return mesh

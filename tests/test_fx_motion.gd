@@ -84,7 +84,9 @@ func test_only_the_nearest_vehicles_spend_the_motion_budget() -> void:
 	var emitting := 0
 	for node in fleet:
 		emitting += 1 if fx.motion.dust_from(node) > 0 else 0
-	assert_true(emitting <= MotionFx.EMITTERS[FxQuality.tier()], "50 vehicles on the move: only the nearest %d kick up dust (%d did)" % [MotionFx.EMITTERS[FxQuality.tier()], emitting])
+	var budget: int = MotionFx.EMITTERS[FxQuality.tier()]
+	assert_true(fx.motion.emitters_peak <= budget, "50 vehicles on the move: at most the nearest %d spend the budget at once (%d)" % [budget, fx.motion.emitters_peak])
+	assert_true(emitting > 0 and emitting < 50 / 2, "and most of the fleet never does (%d raised dust)" % emitting)
 	assert_true(fx.motion.puffs_started - before < 50 * 12, "a bounded number of puffs (%d)" % (fx.motion.puffs_started - before))
 	assert_eq(fx.get_child_count(), nodes, "no nodes added")
 
