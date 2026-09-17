@@ -65,4 +65,17 @@ camera (control), audio (audio).
 
 ## Status
 
-- 2026-09-17: brief written for round 5. Nothing started.
+_Round 5, ai stream. Updated 2026-09-17. Branch `stream/ai`._
+
+### Plan (in order, smallest foundation first)
+
+| # | Item | State |
+|---|---|---|
+| X1 | 4 ms at 60 units: profile first (`make ai-perf DETAIL=1`), then cut the biggest parts, each cut measured against behaviour (scenarios) as well as the clock | in progress |
+| X2 | SUPPRESS reachable without matchups (penetration vs armour proxy); a pinned enemy pulls units out of cover; both through the ladder | not started |
+| X3 | `make tactics-ladder`: doctrine variants x arenas x brains, per-drill report, ELO | not started |
+| X4 | Faction behaviour that reads, measured in the ladder | not started |
+| X5 | Offline discovery groundwork (external decision-maker mode, slow motion, `(state, decision, outcome)` log, distillation plan) | not started |
+
+Decision: X1 before X2 because X2 changes what the champion does, and every X2 ladder run is cheaper once the brains are.
+
