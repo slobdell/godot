@@ -166,6 +166,71 @@ gone** — a stutter a player feels even when the mean frame time looks fine. Br
 tank shells vs 17% of 30, tank 17% vs 17%; crossing a swept lane 10 ticks in the beaten zone vs 10, both arrive.
 Brain ladder (4 armies × 16): 31-33 head to head. More seeds (5-12) running before any proposal.
 
+### Decisions taken where the brief left a choice
+
+- **X1 measured by thread CPU time per living unit, interleaved** (band_probe.gd): wall time on a shared machine
+  hid every cut under 10%, and variants fight different battles.
+- **x5b2 held, not proposed:** -20% per unit for a 31-33 ladder and no measurable loss in dodging or the beaten
+  zone, but the lead chose the 30 Hz simulation, where a half-rate controller would think at 15 Hz.
+- **x5p adopted as champion** (53-43), **x5q not**: the SUPPRESS proxy cost the swarm army; combat's `Lethality`
+  query is the better gate and is on its way.
+- **Doctrine is not the skirmish CPU default** despite the first 52-28: in the real setup it loses (above).
+- **break_contact cut, far_ambush kept**: removal measured, not exchange ratios.
+- **The discovery harness is lockstep over stdin** rather than HTTP: a slow decider is never late and a seed replays.
+
+### Questions for the lead
+
+1. **An army-level plan above the elements** (doctrine.md, round-6 proposal): which elements take the objective, which
+   shape the fight on the lanes, which stay in reserve. Doctrine wins at squad scale and loses at 30 a side, and this is
+   the layer that's missing. Worth a round-6 stream?
+2. With the control point on, everything funnels to one circle (arena: flank lanes 4-5% of unit-time). Should the
+   control point stay on by default, or become one objective among several?
+
+### Requests to other streams
+
+1. **combat:** the match runner still runs brains only. `--green-elements` / `--rust-elements` (TacticsFlags) opt in;
+   turning it on by default is your re-baseline to call, once a doctrine beats brains at scale.
+2. **combat:** when `Lethality` merges, ai wires SUPPRESS's "slow kill" gate to it (x5q's replacement).
+3. **control:** keep `ELEMENT_CPU_DEFAULT` false; the switch is right, the doctrine isn't ready.
+4. **combat:** the gangs lose whether brains or doctrine command them (18-30 / 10-38 in the faction ladder).
+
+### Known issues
+
+- **4 ms at 60 units on the laptop is not met** at 60 Hz (~7.3 ms thread CPU in ai-perf). The 30 Hz simulation is
+  the lead's answer; re-measure per second of match time after it lands.
+- `drills.gd` turns near_ambush into assault_through without checking the table, so "-assault_through" in a ladder
+  spec only removes half of it.
+- The doctrine elements band costs ~1.5-1.8 ms/tick at 30 a side (now flat instead of a spike every 6th tick); the
+  situation build (0.61 ms) is the next thing to cut if doctrine becomes the default.
+- `OrderController._shootable` never used team spotting (found in X1, left as it always behaved).
+- net-smoke failed once on builder0 with a WebSocket server shutdown error while both clients passed (not ai code).
+
+### What to playtest
+
+- `make skirmish` — the CPU now fights with x5p: a unit peeking at a tank that two machine guns have pinned comes out
+  of cover and presses it.
+- `make skirmish ARGS=--element-cpu` (or control's flag) — the CPU under doctrine, to see the difference yourself.
+- `make tactics-ladder SIDES=brains=x5p,faction=x5p: FACTIONS=gangs,law` (on builder0) — the doctrine question.
+- `python3 tools/discovery.py --godot .tools/godot-*/Godot_v4*.x86_64 --policy pin_and_flank --time-limit 90` —
+  the offline discovery loop, logging to build/discovery/run.jsonl.
+
+### Next steps
+
+1. After 30 Hz: re-measure ai-perf per second of match time; re-run scenario_stride's checks; decide x5b2's fate.
+2. Wire SUPPRESS to combat's `Lethality` and re-ladder (x5q's replacement).
+3. The army-level plan (round-6 proposal), proven in the faction ladder at scale before any default flips.
+4. `facing` from K1 when control's change reaches main (the herringbone shuffle in element_plan.gd).
+
+### Merge notes
+
+- **Sim baseline moves on purpose: `glibc-2.43 32f665bc60306e8f`** (champion x5p, recorded twice on builder0), in its
+  own commit. No other commit on the branch moves it (the doctrine and element changes don't run in the baseline
+  match). Merge before combat's 30 Hz change so the two moves stay separate.
+- Shared files: none. `tests/test_tactics_reports.gd`'s frozen booth drill list lost `break_contact` (audio told).
+- New make targets: `tactics-ladder` (mk/tactics.mk); `ai-ladder` gained `FIRST_SEED`; `ai-perf` prints thread CPU.
+- New flags (all opt-in, headless tooling): `--green/rust-elements[=table-drill+commander]`, `--tactics-ledger`,
+  `--green/rust-discovery[=seconds]`, `--discovery-log`, `--slow-motion`.
+
 Queued from other streams (after X1, in the doctrine code ai inherits):
 - **arena:** `ElementSituation._arena_features` calls 86–95% of the kit-built maps "dense" (it counts boxes; one container
   wall is several). Count touching boxes (1.5 m) as one piece of cover and ignore `cover: "low"` barricades; arena
