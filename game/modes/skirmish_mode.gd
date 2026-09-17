@@ -251,7 +251,7 @@ func _start_match() -> void:
 	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
 	main.hud.set_status("Skirmish vs %s%s%s" % [lineups[Match.Team.RUST],
 			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else "",
-			"  |  %s" % arena_title if arena_title != "" else ""])
+			"\n%s" % arena_title if arena_title != "" else ""])
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
 	if flags.has("touch-map") or flags.has("command-playtest"):

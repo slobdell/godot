@@ -71,7 +71,7 @@ Vehicle art and effects (render), arena layouts (arena), weapons and rules (comb
 
 ## Status
 
-_Round 5, control stream. **Every backlog item (X1–X6) is done; stretch: spectate done, replay not started.** Updated 2026-09-17._
+_Round 5, control stream. **Every backlog item (X1–X6) is done; stretch: spectate done, replay not started.** Last verification on the merge with main (851f7b1): `make remote T=check` **931 passed, 0 failed, exit 0**; `shell-playtest` 15/15 with a silent console; `hud-cost` 86. Updated 2026-09-17._
 
 ### Plan (backlog in order)
 
@@ -133,7 +133,7 @@ To try them: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path 
 
 ### X4. Readability at 30 a side (M3, with render). Done.
 
-**The HUD's draw calls: 369 → 84** at 1920×1080 with 68 vehicles (CP1 budget ≤ 130). `make hud-cost` measures each
+**The HUD's draw calls: 369 → 84** at 1920×1080 with 68 vehicles (86 on the final merge with main) (CP1 budget ≤ 130). `make hud-cost` measures each
 widget during a tactical pause (hidden vs shown, the picture holding still) and writes `build/hud-cost.json`; render
 can hold the line with it.
 
@@ -145,7 +145,7 @@ can hold the line with it.
 | HUD skin (status + banner frames) | 52 | 5 | `CyberFrame` draws each glow layer's brackets as one multiline, not four polylines |
 | Selection rings (3D) | 61 meshes | 3 draws | one MultiMesh per ring kind |
 | Everything else (messages, captions, hints, edge markers, status, score) | | ~18 | |
-| **Whole HUD** | **369** | **84** | |
+| **Whole HUD** | **369** | **84–86** | |
 
 HUD `_process` with 30 selected of 60: **0.865 ms** (`test_control_scale`), inside CP1's 1 ms.
 
