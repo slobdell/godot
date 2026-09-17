@@ -360,7 +360,7 @@ import cleanly today. Nothing here is second-rate — his set simply has more co
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
-  **Final: `make remote T=check` exited 0 against d75b6694** (the Syndicate's weapons included): 951 tests, sim hash
+  **Final: `make remote T=check` exited 0 against d75b6694** (the Syndicate's weapons included): 977 tests, sim hash
   `32f665bc60306e8f` matching main's baseline, every announcer and audio check green.
 - Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
   initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
