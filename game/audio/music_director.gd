@@ -177,7 +177,7 @@ func _process(delta: float) -> void:
 	if pending != "" and _ready_for_bar_line():
 		_crossfade_now()
 	elif pending == "" and _stems != null and _crossed_bar_line():
-		update_layers(current_intensity(), state)
+		update_layers(current_intensity(), state, true)
 
 
 ## Asks for a state. The bed changes at the next bar line; asking for the state that is already playing does nothing.
@@ -245,14 +245,18 @@ static func layers_for(track: Dictionary, intensity: float, mood_state: String, 
 	return wanted
 
 
-## Brings stems in or out for this reading. True when the arrangement changed. The director calls it on bar lines;
-## calling it directly applies at once (tests, or a hard cut on a result).
-func update_layers(intensity: float, mood_state: String) -> bool:
+## Brings stems in or out for this reading. True when the arrangement changed. The director calls it on bar lines
+## with `one_step`, so it moves at most one layer per bar: at thirty a side, first contact takes the intensity from
+## 0.4 to 0.9 in under a second (audio-pass on the Pit and the Boulevard), and applying that at once was a jump
+## from pad to full band, not a build. Called directly without it, the whole change applies at once.
+func update_layers(intensity: float, mood_state: String, one_step := false) -> bool:
 	if _stems == null or not tracks.has(track_id):
 		return false
 	var wanted := layers_for(tracks[track_id], intensity, mood_state, layers)
 	if wanted == layers:
 		return false
+	if one_step:
+		wanted = _one_layer_toward(wanted)
 	layers = wanted
 	if _stem_fade != null and _stem_fade.is_valid():
 		_stem_fade.kill()
@@ -270,6 +274,21 @@ func current_intensity() -> float:
 	return current_intensity_for(tracks.get(track_id, {}))
 
 
+## The current layers with one change toward `wanted`: the first missing layer added, else the last extra removed.
+func _one_layer_toward(wanted: Array[int]) -> Array[int]:
+	var next: Array[int] = layers.duplicate()
+	for index in wanted:
+		if not index in next:
+			next.append(index)
+			next.sort()
+			return next
+	for i in range(next.size() - 1, -1, -1):
+		if not next[i] in wanted:
+			next.remove_at(i)
+			return next
+	return next
+
+
 func _set_stem_db(db: float, index: int) -> void:
 	stem_db[index] = db
 	if _stems != null and index < _stems.stream_count:
@@ -282,10 +301,18 @@ func _crossed_bar_line() -> bool:
 	if bar_s <= 0.0 or not _playing():
 		return true
 	var bar := int(position_s() / bar_s)
-	if bar == _last_bar:
+	# Forward only: the playback position is reported per mix chunk and can sit either side of a bar line on
+	# consecutive frames, which counted one bar line twice (two layer changes 0.1 s apart on the Boulevard). A jump
+	# back of more than one bar is the loop wrapping, which is a real bar line.
+	if not is_new_bar(bar, _last_bar):
 		return false
 	_last_bar = bar
 	return true
+
+
+## Whether reaching `bar` is a bar line after `last_bar` (forward, or the loop wrapping back by more than one bar).
+static func is_new_bar(bar: int, last_bar: int) -> bool:
+	return bar != last_bar and bar != last_bar - 1
 
 
 func current_track() -> String:

@@ -160,3 +160,28 @@ func test_missing_files_are_silence_not_a_crash() -> void:
 	await wait_physics_frames(1)
 	broken.set_state("battle")
 	assert_eq(broken.current_track(), "", "a manifest row whose file is missing does not become the current bed")
+
+
+func test_on_a_bar_line_the_fight_builds_one_layer_at_a_time() -> void:
+	## At thirty a side first contact takes the intensity from 0.4 to 0.9 in under a second; on bar lines that must
+	## be a build over several bars, not a cut from pad to full band.
+	var music := _director()
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	music.update_layers(0.05, "lull")
+	var quiet := music.layers.size()
+	assert_true(music.update_layers(0.95, "battle", true), "a bar line in a battle changes the arrangement")
+	assert_eq(music.layers.size(), quiet + 1, "by one layer")
+	music.update_layers(0.95, "battle", true)
+	assert_eq(music.layers.size(), quiet + 2, "and one more on the next bar line")
+	music.update_layers(0.05, "lull", true)
+	assert_eq(music.layers.size(), quiet + 1, "and it comes down one at a time too")
+
+
+func test_a_bar_line_is_counted_once_even_if_the_position_jitters_back() -> void:
+	assert_true(not MusicDirector.is_new_bar(3, 3), "the same bar is not a bar line")
+	assert_true(not MusicDirector.is_new_bar(2, 3), "a position reported just before the line again is not one")
+	assert_true(MusicDirector.is_new_bar(4, 3), "the next bar is")
+	assert_true(MusicDirector.is_new_bar(0, 3), "the loop wrapping back to the start is")
+	assert_true(MusicDirector.is_new_bar(0, -1), "the first bar of a new track is")
