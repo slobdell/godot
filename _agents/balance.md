@@ -27,6 +27,29 @@
 Try a number without editing code: `--tune=tank.turret_turn_rate_deg=70,ifv.armor.front=4,autocannon.penetration=5`
 (match runner, `tools/match_series.py --extra=`, `make matchups TUNE=`).
 
+## Round 5: read this before trusting any win rate in this file
+
+**Counterbalance ARMIES, not only bases and colours.** A seeded CPU army is drawn from `seed * 2 + team`, so in a
+mirror match the two teams field *different* armies, and over a fixed seed range (every series here starts at seed 1)
+one side can simply draw the stronger ones. Measured 2026-09-17 (`make team-fairness`, Condemned mirror, seeds 1–16,
+Jolt): Green won 5 of 16; with the same seeds and the armies swapped between the teams, Green won 12 of 16. The winner
+followed the army in 15 of 16 seeds, and Rust's draw won 11 of those 15 (its seeds happened to buy Armor and Balanced
+where Green's bought Swarm and Recon Strike; Armor beat Swarm 16–0 in round 4). The RNG has no parity bias (2,000 seeds
+checked), so this is luck in a fixed seed range, not team identity. **Rule:** every win-rate series runs each seed
+twice, normal and `--swap-armies` (or uses `--same-army` for a true mirror), on top of the existing base and colour
+swaps. What that means for the numbers below: **mirror series and any series run from one colour only** (archetype
+series, suppression series, pace, doctrine measurements, arena fairness runs) carry an unknown army-draw bias; re-run
+them with the rule before acting on them. The **faction matrix** (`make faction-matrix`, round 4 X6, the gangs' 23%)
+already plays every seed from both colours, so each faction draws from both of a seed's armies; its army-draw bias is
+small, and its numbers stand as measured.
+
+**Team identity and base position are neutral.** Processing order: Rust-first moved a true mirror from 5–11 to 6–10
+(nothing). Base position: on seeds 1–16 the north base won 31 of 48 mirror matches, which looked like a lean, so it
+was re-measured on 48 fresh seeds (17–64): the north base won 24 of 48 in the mirror and 25 of 48 with bases swapped.
+Borderline on a small sample, re-measured, within noise. Mirror outcomes are chaotic: flipping processing order alone
+changes the winner in 7 of 16 seeds, which is why a single series decides nothing. Reproduce: `make team-fairness`
+(`FAIR_MODES`, `N`, `FIRST_SEED`, `FAIR_FACTION`).
+
 ## Round 4: suppression and effective fire (combat X1, contract L2)
 
 **What it is.** Every round that resolves stamps the ground it swept into a coarse decaying grid, one per team

@@ -68,6 +68,11 @@ const PINNED_SUPPRESSION := 0.6
 ## L2: a fully suppressed crew tracks a target with this fraction of its turret speed taken away. Heads down means
 ## the gunner loses the target, which is why suppression plus a flank works.
 const SUPPRESSION_TRACKING_PENALTY := 0.5
+## X5 (round 5): what makes a pinned crew worth going round. Heads down, it watches less of the field (sight shrinks
+## by up to this fraction, so a flanker gets closer unseen) and its driver swings the hull slower (turn rate loses up to
+## this fraction, so it can't bring its front armor round onto the flanker in time). Both scale in with suppression.
+const SUPPRESSION_SIGHT_PENALTY := 0.4
+const SUPPRESSION_HULL_TURN_PENALTY := 0.5
 ## L2: how fast suppression builds under fire and fades once it lifts (per second). Full suppression takes ~1.7 s
 ## of heavy fire and ~3.3 s of quiet to shake off.
 const SUPPRESSION_RISE_PER_SECOND := 0.6
@@ -516,6 +521,26 @@ func settle_suppression(target: float, seconds: float) -> void:
 		suppression = maxf(target, suppression - SUPPRESSION_RECOVER_PER_SECOND * seconds)
 	if suppression < 0.001:
 		suppression = 0.0
+	_apply_suppression_effects()
+
+
+## X5: sight and hull turn follow suppression. The calm values are whatever was last set from outside (the catalog at
+## spawn, or a test), so these never fight a deliberate change.
+var _calm_sight := -1.0
+var _calm_hull_turn := -1.0
+var _shown_sight := -1.0
+var _shown_hull_turn := -1.0
+
+
+func _apply_suppression_effects() -> void:
+	if sight_radius != _shown_sight:
+		_calm_sight = sight_radius
+	if hull_turn_rate != _shown_hull_turn:
+		_calm_hull_turn = hull_turn_rate
+	sight_radius = _calm_sight * (1.0 - SUPPRESSION_SIGHT_PENALTY * suppression)
+	hull_turn_rate = _calm_hull_turn * (1.0 - SUPPRESSION_HULL_TURN_PENALTY * suppression)
+	_shown_sight = sight_radius
+	_shown_hull_turn = hull_turn_rate
 
 
 ## L2: heads down. What brains and battle drills trigger on.
@@ -658,6 +683,7 @@ func set_paint(color: Color) -> void:
 func _set_alive(value: bool) -> void:
 	alive = value
 	suppression = 0.0  # a wreck is not pinned, and a fresh crew starts calm
+	_apply_suppression_effects()
 	visible = value
 	_shown_health = -1  # push everything to the visuals again on the next frame
 	_shown_heat = NAN

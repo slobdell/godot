@@ -98,6 +98,34 @@ building the grid in GDScript cost 0.17-0.24 ms a tick, so it was net zero. Remo
   [../sim_tick_rate.md](../sim_tick_rate.md) (inventory of every 60-per-second assumption, what interpolation breaks,
   a three-step plan). A cross-stream refactor, so a proposal, not started.
 
+**Landed:** Jolt (b52e8b9, orchestrator-approved; merged to `main` as 8d975fa, baseline `83f1272ade466282`).
+
+### Fairness: the "Green wins 25%" lean was army luck (2026-09-17)
+
+Arena measured Green winning 25–28% of seeded mirrors on every map. `make team-fairness` (new: `--swap-armies`,
+`--same-army` on the match runner) says: the winner follows the **army draw** (swapping armies flips 15 of 16 seeds;
+seeds 1–16 gave Rust Armor/Balanced and Green Swarm/Recon); **team identity** (processing order) and **base position**
+are neutral (fresh seeds 17–64: north base 24/48 and 25/48). The RNG has no parity bias. Rule written into
+balance.md: counterbalance armies in every series.
+
+### X1: measured, tuning on hold
+
+`make engagement` (Jolt, brains only, 15 matches): contact 4 s in at 108 m, fighting at ~71 m, kills at a median 52 m;
+hull-level numbers look lively (2% standing still, 61% side+rear hull hits) but the army view is the lead's "two
+masses": only 13% held line, **73% of kills straight across the line between the armies, 4% from behind it**, and
+the pushing army gains 26 m. A range-falloff mechanic is in (`effective_range` per direct-fire weapon, inert at
+= range) with variants ready (`tools/matchup_variants/x1_range_falloff.json`). **On hold:** ai found the match runner
+never runs doctrine (elements, drills), and doctrine beats brains-only 52–28, so tuning waits for `TacticsFlags` on
+`main` and a deliberate doctrine-on re-baseline of the balance series (orchestrator's call, 2026-09-17).
+
+### X5: rules for brains (in progress)
+
+- `Lethality.seconds_to_kill(shooter_unit, target_unit, face, health, shield)` and `is_slow_kill` (> 20 s): the
+  matchup-free "I can't kill this quickly" for ai's SUPPRESS gate. Relayed to ai.
+- Pinned is worth exploiting: suppression shrinks a crew's sight (up to 40%) and its hull turn rate (up to 50%), so a
+  flanker gets closer unseen and the hull can't swing its front armor round in time. Tests include a flanker at 80%
+  of sight that a calm crew sees and a pinned one doesn't (mutation-checked).
+
 ### Plan (worker contract step 2)
 
 1. **X1a, measure first.** `EngagementStats` (`game/match/engagement_stats.gd`) fills `stats.engagement` in every

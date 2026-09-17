@@ -229,3 +229,51 @@ func test_shots_past_effective_range_spread_wider_and_inside_it_do_not() -> void
 	assert_near(Match.shot_spread(weapon, 0.0, 0.0, reach * 3.0), at_max, 0.00001, "and stops widening past range")
 	var no_key := {"spread_deg": 1.0, "range": 50.0}
 	assert_near(Match.range_spread_multiplier(no_key, 50.0), 1.0, 0.0001, "a weapon without effective_range has no falloff")
+
+
+func test_a_pinned_crew_sees_less_and_turns_its_hull_slower_then_recovers() -> void:
+	# X5 (round 5): what makes pinning worth exploiting. A flanker gets closer unseen, and the hull can't swing its
+	# front armor round in time.
+	var game_match := _setup()
+	var pair: Array = await _duel(game_match, "scout", 30.0)
+	var victim: Tank = pair[1]
+	victim.max_health = 100000
+	victim.health = 100000
+	var calm_sight := victim.sight_radius
+	var calm_turn := victim.hull_turn_rate
+	victim.suppression = 1.0
+	victim.settle_suppression(1.0, 0.05)
+	assert_near(victim.sight_radius, calm_sight * (1.0 - Tank.SUPPRESSION_SIGHT_PENALTY), 0.01, "heads down, it sees less")
+	assert_near(victim.hull_turn_rate, calm_turn * (1.0 - Tank.SUPPRESSION_HULL_TURN_PENALTY), 0.0001,
+			"and its hull swings slower")
+	for tick in 20:
+		victim.settle_suppression(0.0, 1.0)
+	assert_near(victim.sight_radius, calm_sight, 0.01, "once the fire stops it sees as far as before")
+	assert_near(victim.hull_turn_rate, calm_turn, 0.0001, "and turns as fast")
+	victim.sight_radius = 30.0
+	victim.settle_suppression(0.0, 0.05)
+	assert_near(victim.sight_radius, 30.0, 0.001, "a deliberate change to sight is respected, not overwritten")
+
+
+func test_a_pinned_crew_really_fails_to_see_a_flanker_it_would_have_seen_calm() -> void:
+	var game_match := _setup()
+	var pair: Array = await _duel(game_match, "scout", 30.0)
+	var watcher: Tank = pair[1]  # the tank
+	var flanker: Tank = pair[0]
+	watcher.max_health = 100000
+	watcher.health = 100000
+	var calm_sight := watcher.sight_radius
+	flanker.global_position = watcher.global_position + Vector3(calm_sight * 0.8, 0.0, 0.0)
+	for tick in Match.INTEL_EVERY_TICKS * 2:
+		flanker.command = TankCommand.new()
+		watcher.command = TankCommand.new()
+		await wait_physics_frames(1)
+	assert_true(game_match.is_visible_to(watcher.team, flanker), "calm, it sees a flanker at 80% of its sight")
+	watcher.suppress(1.0)
+	for tick in Match.INTEL_EVERY_TICKS * 2:
+		watcher.suppression = 1.0
+		flanker.command = TankCommand.new()
+		watcher.command = TankCommand.new()
+		await wait_physics_frames(1)
+	assert_true(not game_match.is_visible_to(watcher.team, flanker), "pinned, the same flanker goes unseen (sight %.0f m)"
+			% watcher.sight_radius)
