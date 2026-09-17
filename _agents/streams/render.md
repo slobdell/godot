@@ -333,6 +333,21 @@ frame while measuring uncapped, and `holds_*_at_vehicles` allows 1 ms over the t
   effects on the drawn barrel. Combat confirmed: shells interpolated, `reset_physics_interpolation()` on spawns,
   `shooter` stays in `weapon_fired`. Re-take perf-scene on their flip commit.
 
+### Round 6, for the lead: catch-up steps, or a clock that falls behind?
+
+`max_physics_steps_per_frame` is **3** (combat's round-5 choice, down from Godot's default 8, which is the spiral). It
+decides what a slow machine does when a frame runs long, and the two outcomes are genuinely different games rather than
+better and worse:
+- **3 steps (today):** after a slow frame the simulation catches up in the next one. That catch-up frame carries 2–3
+  ticks, 23–44 ms of script — every hitch in `PERF_SCENE_HITCH` was one of these. The clock stays true; the picture
+  stutters.
+- **1 step:** the frame stays smooth and the *simulation clock* falls behind instead, so under load the game plays in
+  slight slow motion. Nothing stutters; everything is a little slower than real time.
+
+For a locked 30 on the lead's laptop, smooth-but-slightly-slow may be the better experience, and it is his call, not
+ours. Combat owns the setting; render has the instrument (`make perf-scene --perf-capped`, hitch log, p99 and worst
+frame) and can measure both in an hour. **Not changed now:** it would move behaviour under a build he has just measured.
+
 ### Next steps
 1. The lead's answers on glow and team read (M3); then per-team hull paint if the rim isn't enough.
 2. Re-measure `make perf-scene` when combat and ai land sim-tick work: once ticks_per_frame is ~1, the GPU line starts
