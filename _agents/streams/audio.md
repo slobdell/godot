@@ -289,9 +289,9 @@ read `MUSIC_LAYERS` against the booth's lines before retuning either.
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
-  **Final: `make remote T=check` exited 0 against 6519bfa** (everything in this report, merged with main after Jolt):
-  908 tests, sim hash `83f1272ade466282` matching main's baseline, announcer-variance, announcer-record-smoke,
-  music-smoke and audio-check all passed. Later commits touch only this brief.
+  **Final: `make remote T=check` exited 0 against afdec9cf** (everything in this report): 946 tests, sim hash
+  `32f665bc60306e8f` matching the baseline main carries after Jolt and the 30 Hz work, announcer-variance,
+  announcer-record-smoke, music-smoke and audio-check all passed.
 - Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
   initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
   builder0 has no numpy or scipy (`make audio-deps`, 181f6ca).
