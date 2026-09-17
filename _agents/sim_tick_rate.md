@@ -1,10 +1,32 @@
-# Proposal: run the simulation at 30 Hz with physics interpolation
+# The 30 Hz simulation tick: what it cost and what it bought
 
-> **Status: approved by the lead and in progress on `stream/combat`** (2026-09-17; combat owns it). Steps 1–2 (every
-> tick count derived from `SimClock.TICK_RATE`, still 60 Hz, sim baseline unchanged) are done for match, tank, combat,
-> ai, tactics, control's three constants and the announcer; step 3 (the flip) is being measured on a scratch copy.
-> Not merged to `main` until the orchestrator clears it. The original proposal follows, then the checklist that
-> render and control worked out.
+> **Done and merged, round 5 (2026-09-17).** The simulation runs at 30 Hz with physics interpolation; the lead asked
+> for it the day it was proposed. This file is the record: the numbers, the two latent defects the refactor exposed,
+> how tick counts are written now, and what is still on the table. Combat owned the work; render, control and audio
+> each converted what they draw or hear. If you are changing the tick rate again, read *How tick counts are written*
+> and *The interpolation checklist* first — everything else here is history and evidence.
+>
+> **In one line:** script cost per simulated second fell 27%, a locked 30 fps at 1080p went from never to about 29
+> vehicles on a quiet laptop, the lead's 60-vehicle target is still roughly 2× away, and ~85% of what is left is the
+> brains — whose cost per second the tick rate cannot touch.
+
+## What it cost (so the next refactor of this size can be estimated)
+
+One agent-day, in three steps, each verified before the next: **(1)** every hard "60 per second" rewritten in terms
+of `SimClock.TICK_RATE`, rate unchanged, **sim baseline unchanged** — which is the proof the conversion was exact;
+**(2)** the same for ~70 per-tick cadences and ~40 test files, again with the baseline unchanged; **(3)** the flip,
+with the baseline re-recorded on purpose. About 40 files of code and 40 of tests, across every stream's paths.
+
+Two **latent defects** surfaced, both wrong at 60 Hz too, neither found by a year of play (details in
+[balance.md](balance.md) *Round 5*):
+- **Guns fired a tick late** — controllers ask `ready_to_fire()` before the tank counts its reload down, so every
+  trigger pull waited an extra tick. A 0.1 s machine gun fired 8.6 rounds a second instead of 10, a tank cannon lost
+  under 0.5%: a handicap **differential by archetype**, worst for the swarm.
+- **Going round a beaten zone thrashed** — a pulsing threat reading looked like the fire lifting, so a unit dropped
+  its step round and picked the other side on the next check.
+
+The lesson worth keeping: *a refactor that forces every timing assumption into the open pays for itself in what it
+finds, independently of the change it was for.*
 
 ## What it bought (measured 2026-09-17, the lead's laptop; settled with render)
 
@@ -44,7 +66,7 @@ brains and 2.7 ms without (render, `PROFILE_FLAGS=--no-brains`): ~85%. Thinking 
 is a behaviour decision, not only a cost one. Measure it with `make sim-profile` or `make ai-perf`, never with
 `perf-scene`: that is a live battle, so two runs diverge and equal vehicle counts are not equal fights.
 
-## Start here: the interpolation checklist (render + control, 2026-09-17)
+## The interpolation checklist (render + control, 2026-09-17)
 
 **The core trap.** With physics interpolation on, Godot *draws* a body at its interpolated transform, but
 `global_transform` / `global_position` read in `_process` still return the **last physics tick's** value. Anything
@@ -75,7 +97,7 @@ and the Python tools; `tests/test_sim_clock.gd` checks it matches `project.godot
 ---
 
 
-## Why
+## Why it was proposed (the state before, kept as history)
 
 CP1 ([streams/references/fx_tricks.md](streams/references/fx_tricks.md), M1) made the simulation tick the frame-rate
 blocker: every `_physics_process` together must fit **5 ms at 60 vehicles** on the lead's laptop, and a tick costs
@@ -92,14 +114,25 @@ Every line of that table is paid **per tick**. Trimming each band buys tens of p
 50% of all of it at once, including ai's four-fifths. There's no other single change that does this: the vehicles'
 own cost is mostly `move_and_slide` (engine code), and the brains are already thinking every 6–18 ticks.
 
-## What 30 Hz means
+## How tick counts are written now (read this before changing the rate again)
 
-- `physics/common/physics_ticks_per_second=30` in `project.godot`.
-- **`physics/common/physics_interpolation=true`** so rendering stays smooth at 60+ fps: Godot 4.4+ interpolates
-  `Node3D` transforms between ticks. Nothing in the project uses it today (no `reset_physics_interpolation` anywhere).
-- Every tick-count that means a *duration* is halved, or better, derived from one constant
-  (`Match.TICKS_PER_SECOND`, read from `Engine.physics_ticks_per_second`), so the game plays the same in seconds.
-- Match-runner and smoke targets pass `--fixed-fps 30` instead of 60.
+`game/match/sim_clock.gd` is the one source: `SimClock.TICK_RATE`, `TICK_SECONDS`, `ticks(seconds)`,
+`seconds(ticks)`. In shipped code:
+
+- **Durations:** `SimClock.TICK_RATE * 12` for twelve seconds, `SimClock.ticks(0.75)` at runtime.
+- **Cadences:** `SimClock.TICK_RATE / 10` for ten times a second (constant expressions can't call functions, but
+  `maxi` works), and `maxi(1, (SimClock.TICK_RATE + 10) / 20)` for ~20 Hz so it rounds to whole ticks rather than
+  running every tick at 30 Hz.
+- **Doctrine tables** keep drill timings in sixtieths of a second; `DoctrineTable.drill_ticks` converts.
+- **Announcer fixtures** keep their timelines in sixtieths of a second (recorded data must not move when the rate
+  does); `MatchEventAdapter` divides live ticks by `Engine.physics_ticks_per_second` — the *runtime* rate, because
+  tests change it.
+- **Tools and make targets** read `SIM_HZ` from the Makefile (exported), which every `--fixed-fps` uses.
+- `tests/test_sim_clock.gd` fails if `SimClock.TICK_RATE`, `project.godot` and `SIM_HZ` ever disagree.
+
+Settings that ship with it (`project.godot`): `physics_ticks_per_second=30`, `physics_interpolation=true`,
+`physics_jitter_fix=0.0`, and **`max_physics_steps_per_frame=3`** — Godot's default of 8 is the catch-up spiral that
+pinned a full battle at 7.5 fps, and at 30 Hz a slow frame can now cost at most three ticks.
 
 ## Where the 60s live (inventory)
 
@@ -137,7 +170,7 @@ engine.
 | **Networking** | `Replication.TANK_SYNC_INTERVAL` 0.033 s ≈ every tick; client smoothing already runs on `_process` delta | None expected; run `net-smoke`, `relay-smoke` |
 | **Web export** | No threads; interpolation is main-thread | None expected; `web-smoke` |
 
-## What it would cost to do properly
+## The plan as written before the work (kept: the estimate was right)
 
 1. **One stream owns it** (combat is the natural owner: `Match`, `Tank`, `TankMotion`, the runner and `mk/match.mk`),
    and the others merge it the day it lands.
