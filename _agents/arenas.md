@@ -49,7 +49,7 @@ wall) blocks all three. A "pit" or "overlook" has to be built from walls around 
 
 ## Rules of thumb (to test, not to trust)
 
-1. **Break every sightline longer than ~100 m** somewhere between the bases. With sight to 135 m and ranges to 170 m,
+1. **Break long sightlines** between the bases: the mean eye-level view should sit well under sight radii (55-135 m). With sight to 135 m and ranges to 170 m,
    an unbroken 180 m axis is the "two masses" fight the lead saw.
 2. **Every crossing of open ground has cover on the far side within bounding range** (≤ 85 m), or doctrine's bounds
    become a charge.
@@ -62,8 +62,12 @@ wall) blocks all three. A "pit" or "overlook" has to be built from walls around 
 6. **Symmetry of value, not only of shape:** everything that collides is point-symmetric (the validator enforces it);
    decoration isn't. Navigation is symmetric by construction (half bake + mirror), but the swap-bases control still
    runs on every arena.
-7. **Props are cheap per kind, not per instance:** containers are one MultiMesh draw per kind; screens and wrecks are
-   real draws. Stay inside render's M1 budget (`_agents/streams/references/fx_tricks.md`).
+7. **Props are cheap per kind, not per instance:** every kit kind is one MultiMesh (1-2 draws for a whole map, render,
+   2026-09-17) with no real lights, so stacked containers and barricade runs are nearly free; unique lit props are what
+   breaks M1 (≤ 350 draws, ≤ 6 real lights a frame; `_agents/streams/references/fx_tricks.md`). The boulevard, the
+   busiest map, measured 8.7-10.7 ms GPU in a battle.
+8. **Screens face their own half's base.** A screen faces -Z at rotation 0 and point symmetry turns its mirror around,
+   so each player sees the fronts of the screens on their side and the backs of the far ones.
 
 ## How we test that a map delivers (X4)
 
@@ -71,7 +75,7 @@ Static measures run on the layout alone (fast, in `make test` and `make arena-re
 
 | Measure | How | What good looks like |
 |---|---|---|
-| **Longest open sightline** between the halves | Eye-level rays on a grid across the centre line against `CoverMap` | Per character: yard < 60 m, boulevard long lanes but broken, pit open flanks |
+| **View distance** | Eye-level rays from drivable points every 12 m, 16 directions, clipped at 170 m: mean, and share ≥ 120 m. (The single longest line was tried first and dropped: one diagonal through a 4 m gap survives even a 96-container yard, so it says nothing about the map) | Per character: yard ≈ half of foundry's 78 m; boulevard the longest of the new maps |
 | **Exposure of a crossing** | Share of the navmesh route base-to-base that's visible from the enemy's covered positions | Centre route more exposed than flank routes |
 | **Route count** | Distinct lanes (authored) and their length ratio to the shortest | ≥ 3 routes; flanks 1.1–1.4× the centre |
 | **Terrain class along the routes** | Doctrine's own feature count at 10 m steps | The class the character promises (dense / lanes / open) |
