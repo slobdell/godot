@@ -71,6 +71,17 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
 - `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
+## Known flakes
+
+- **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on
+  builder0 in round 5 (ai stream, 2026-09-17): one of two full `make remote T=check` runs on the same branch failed on
+  it, and the next passed. What it is: the WebSocket server logging an error while it shuts down, which fails
+  `net-smoke` through its `grep -E 'ERROR' build/net-smoke-server.log`. What it isn't: a networking regression —
+  both bot clients printed `NET_CHECK PASS` (tanks 2/2, travel ≥ 3 m, first motion 353 ms). It predates round 5's
+  gameplay changes. Most likely a teardown race (the clients disconnect while the server exits); closing the clients
+  before killing the server is the probable fix. If it fails with those two PASS lines present, re-run before
+  suspecting your change.
+
 ## Known limits
 
 - **`make determinism` and `make sim-baseline` prove same-build determinism only.** Native vs WebAssembly runs of the same seed diverge today; nothing checks cross-build agreement for the real simulation yet (follow-up D1 in [determinism.md](determinism.md)).
