@@ -172,7 +172,7 @@ func _update_camera(delta: float) -> void:
 		return
 	var middle := Vector3.ZERO
 	for tank in tanks:
-		middle += tank.global_position
+		middle += FxWorld.visual_transform(tank).origin
 	middle /= tanks.size()
 	middle.y = 0.0
 	if not _focus_set:

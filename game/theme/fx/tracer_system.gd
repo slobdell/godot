@@ -151,7 +151,7 @@ func update(pool: LightPool, now := 0.0) -> void:
 			continue
 		var source := key as Node3D
 		var entry: Array = _sources[key]
-		var xform := source.global_transform.orthonormalized()
+		var xform := FxWorld.visual_transform(source).orthonormalized()
 		var style: Dictionary = entry[1]
 		_write(n, xform, entry[0], style, float(style["tail"]), pool)
 		n += 1
