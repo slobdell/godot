@@ -41,9 +41,13 @@ func test_a_vehicle_taking_hits_is_the_moment_inside_the_fight() -> void:
 	var f := Fixture.new(self)
 	await f.build(false)
 	var director := _director(f)
+	# Nobody has been hit yet: the fixture's opening frames can already land a hitscan round (more game time passes
+	# in them at a 30 Hz tick), which would leave nothing for this test to raise.
+	for node in f.game_match.tanks.get_children():
+		(node as Tank).ticks_since_hit = 1_000_000
 	var before := float(director.best_scene()["score"])
-	for unit_name in ["Green_Alpha_1", "Green_Alpha_2"]:
-		f.tank(unit_name).ticks_since_hit = 1
+	for node in f.game_match.tanks.get_children():
+		(node as Tank).ticks_since_hit = 1
 	await _frames(1)
 	assert_true(float(director.best_scene()["score"]) > before, "rounds landing raises the scene's score")
 

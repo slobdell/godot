@@ -9,7 +9,7 @@ extends Button
 ## press opens quick commands for this squad without selecting it).
 
 ## A squad counts as in contact for this long after a hit (3 s).
-const CONTACT_TICKS := 180
+const CONTACT_TICKS := SimClock.TICK_RATE * 3
 
 ## Held for TacticalMap.LONG_PRESS_SECONDS: the map opens this squad's quick commands.
 signal long_pressed

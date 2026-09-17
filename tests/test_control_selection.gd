@@ -102,3 +102,23 @@ func test_dead_units_drop_out_of_the_selection() -> void:
 	await tree.process_frame
 	await tree.process_frame
 	assert_eq(f.controls.selection.units, ["Green_Alpha_2"], "a destroyed unit leaves the selection")
+
+
+## X4 (CP1): every ring of a kind is one MultiMesh instance, so 60 vehicles cost a handful of draws, not 60.
+func test_rings_are_batched_one_multimesh_per_kind() -> void:
+	var f := await _setup()
+	var markers := SelectionMarkers.new()
+	markers.game_match = f.game_match
+	markers.selection = f.controls.selection
+	markers.reveal_all = true
+	add_to_tree(markers)
+	await f.click(f.screen("Green_Alpha_2"))
+	markers.refresh()
+	assert_eq(markers.find_children("*", "MeshInstance3D", false, false).size(), 0, "no mesh per vehicle")
+	assert_eq(markers.layer("friendly").multimesh.visible_instance_count, 4, "four friendly rings in one batch")
+	assert_eq(markers.layer("selected").multimesh.visible_instance_count, 1, "one selected")
+	assert_eq(markers.layer("enemy").multimesh.visible_instance_count, 1, "one enemy")
+	# Not multimesh.get_instance_transform: the headless renderer keeps no instance buffer and reads back zeros.
+	var at: Vector3 = markers.state()["Green_Alpha_2"]["position"]
+	var tank := f.tank("Green_Alpha_2").global_position
+	assert_true(Vector2(at.x - tank.x, at.z - tank.z).length() < 0.01, "the ring sits under its vehicle (%s vs %s)" % [at, tank])

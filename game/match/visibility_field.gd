@@ -21,7 +21,7 @@ enum State { NEVER, SEEN, VISIBLE }
 const CELL_SIZE := 2.0
 const ORIGIN := Vector2(-Match.ARENA_HALF_SIZE, -Match.ARENA_HALF_SIZE)
 ## A full refresh this often (ticks); viewers are spread across the interval to keep frames smooth.
-const REFRESH_TICKS := 30
+const REFRESH_TICKS := SimClock.TICK_RATE / 2
 const SEEN_VALUE := 90
 
 var game_match: Match

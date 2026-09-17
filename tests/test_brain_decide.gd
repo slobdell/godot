@@ -123,7 +123,7 @@ func test_decide_is_deterministic() -> void:
 
 
 func test_the_turret_watches_the_most_pressing_known_threat() -> void:
-	var near_hidden := _enemy("Rust_A_1", Vector3(0, 0, -20), {"visible": false, "age": 90})
+	var near_hidden := _enemy("Rust_A_1", Vector3(0, 0, -20), {"visible": false, "age": SimClock.TICK_RATE * 3 / 2})
 	var far_visible := _enemy("Rust_A_2", Vector3(30, 0, -60))
 	var gun_on_me := _enemy("Rust_A_3", Vector3(-40, 0, -50), {"aiming_at_me": true})
 	var s := _situation({"contacts": [near_hidden, far_visible, gun_on_me]})
@@ -132,7 +132,7 @@ func test_the_turret_watches_the_most_pressing_known_threat() -> void:
 			"something in sight now beats a nearer memory")
 	assert_eq(TankBrain.watch_for(s, {"option": "ENGAGE", "target": "Rust_A_2"}), far_visible["position"],
 			"the chosen target always wins")
-	var moving := _enemy("Rust_A_4", Vector3(0, 0, -30), {"visible": false, "age": 60, "velocity": Vector3(4, 0, 0)})
+	var moving := _enemy("Rust_A_4", Vector3(0, 0, -30), {"visible": false, "age": SimClock.TICK_RATE, "velocity": Vector3(4, 0, 0)})
 	assert_eq(TankBrain.watch_for(_situation({"contacts": [moving]}), {}), Vector3(4, 0, -30),
 			"a remembered contact is expected where it was heading (1 s of dead reckoning)")
 	assert_eq(TankBrain.watch_for(_situation(), {}), null, "nothing known: no watch point (hold the turret's heading)")

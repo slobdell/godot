@@ -253,3 +253,12 @@ build/   (gitignored)    exports and screenshots
     the audio systems (audio, 2026-09-17).
 77. **Starting an Ogg Vorbis one-shot costs a decoder per play** (0.29 ms against 0.045 for a QOA WAV in
     `make audio-bench`). Ship sounds that start many times a second as WAV; Ogg is for music (audio, 2026-09-17).
+78. **`AudioStreamSynchronized` reports no playback position** (`get_playback_position()` is always 0.0), so a
+    director that seeks it back to a loop start or reads bar lines from it silently does neither: the round-5 fight
+    music played its 8-second stems once and went quiet in every match, and every unit test passed. Loop each
+    sub-stream by itself and keep your own clock (`MusicDirector.position_s()`). Found only by recording a real match
+    with the music soloed (audio, 2026-09-17).
+79. **`pkill -f PATTERN -P $(pgrep -f OTHER | head -1)` is not scoped to your worktree.** On a shared machine the first
+    match can be another stream's process; and a `pkill -f` whose pattern appears in your own command line kills your
+    shell (trip-up 19, exit 144). Find your own PIDs with `readlink /proc/<pid>/cwd` first (audio, 2026-09-17: nothing
+    of anyone else's was hit, but only by luck).

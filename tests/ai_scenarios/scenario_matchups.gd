@@ -17,7 +17,7 @@ func test_a_scout_circles_a_tank_instead_of_trading_frontally() -> void:
 	var swept := 0.0
 	var last_bearing := NAN
 	await s.start()
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 		if not scout.is_alive():
 			continue
@@ -30,12 +30,12 @@ func test_a_scout_circles_a_tank_instead_of_trading_frontally() -> void:
 		if not is_nan(last_bearing):
 			swept += absf(angle_difference(last_bearing, bearing))
 		last_bearing = bearing
-	var degrees_per_second := rad_to_deg(swept) / maxf(close_ticks / 60.0, 0.01)
+	var degrees_per_second := rad_to_deg(swept) / maxf(close_ticks / float(SimClock.TICK_RATE), 0.01)
 	var turret := rad_to_deg(tank.turret_turn_rate)
 	print("MEASURE ai_scout_orbit %.0f deg/s around the tank over %.1f s close (turret %.0f deg/s), scout alive %s, tank hull %d shield %d, scout shots %d" % [
-			degrees_per_second, close_ticks / 60.0, turret, scout.is_alive(), tank.health, int(tank.shield), s.shots_by(scout)])
+			degrees_per_second, close_ticks / float(SimClock.TICK_RATE), turret, scout.is_alive(), tank.health, int(tank.shield), s.shots_by(scout)])
 	assert_true(String(Units.profile("scout").get("mount", "")) == "fixed", "needs rules' catalog v2: a fixed-mount scout")
-	assert_true(close_ticks >= 60 * 5, "the scout closes in to fight (%.1f s within 50 m)" % (close_ticks / 60.0))
+	assert_true(close_ticks >= SimClock.TICK_RATE * 5, "the scout closes in to fight (%.1f s within 50 m)" % (close_ticks / float(SimClock.TICK_RATE)))
 	assert_true(degrees_per_second >= 0.6 * turret, "it circles faster than the turret can comfortably track (%.0f vs %.0f deg/s)" % [degrees_per_second, turret])
 	BrainVariants.reset()
 
@@ -55,7 +55,7 @@ func test_an_ifv_prioritizes_scouts() -> void:
 	var on_tank := 0
 	var orders := s.controller_of(ifv)
 	await s.start()
-	for tick in 60 * 6:
+	for tick in SimClock.TICK_RATE * 6:
 		await s.step()
 		if orders.engaged_target == enemy_scout.name:
 			on_scout += 1

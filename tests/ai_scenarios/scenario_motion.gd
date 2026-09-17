@@ -19,7 +19,7 @@ func _duel(variant: String, seed_value: int) -> Dictionary:
 	var flanked := [0, 0]
 	var counted := 0
 	await s.start()
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 		if not green.is_alive() or not rust.is_alive():
 			break
@@ -32,8 +32,8 @@ func _duel(variant: String, seed_value: int) -> Dictionary:
 	var faces: Dictionary = s.game_match.stats["hits_by_face"]
 	var hits := maxi(int(faces["front"]) + int(faces["side"]) + int(faces["rear"]), 1)
 	var result := {"moving": [float(moving[0]) / maxf(counted, 1), float(moving[1]) / maxf(counted, 1)],
-			"flank_seconds": [flanked[0] / 60.0, flanked[1] / 60.0], "shots": [s.shots_by(green), s.shots_by(rust)],
-			"front_share": float(faces["front"]) / hits, "seconds": counted / 60.0}
+			"flank_seconds": [flanked[0] / float(SimClock.TICK_RATE), flanked[1] / float(SimClock.TICK_RATE)], "shots": [s.shots_by(green), s.shots_by(rust)],
+			"front_share": float(faces["front"]) / hits, "seconds": counted / float(SimClock.TICK_RATE)}
 	s.dispose()
 	BrainVariants.reset()
 	return result
@@ -75,14 +75,14 @@ func test_two_tanks_on_one_work_round_to_its_side() -> void:
 	var flank_ticks := 0
 	var first := -1
 	await s.start()
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 		if pair.any(func(t: Tank) -> bool: return _sees_side_or_rear(t, enemy)):
 			flank_ticks += 1
 			first = tick if first < 0 else first
-	print("MEASURE ai_pair_flank a tank sees the enemy's side or rear %.1f s of 20 (first after %.1f s)" % [flank_ticks / 60.0, first / 60.0])
-	assert_true(flank_ticks >= 60 * 3 and first >= 0 and first <= 60 * 10,
-			"one of the pair gets an angle on it within 10 s, for 3 s+ (%.1f s, first after %.1f s)" % [flank_ticks / 60.0, first / 60.0])
+	print("MEASURE ai_pair_flank a tank sees the enemy's side or rear %.1f s of 20 (first after %.1f s)" % [flank_ticks / float(SimClock.TICK_RATE), first / float(SimClock.TICK_RATE)])
+	assert_true(flank_ticks >= SimClock.TICK_RATE * 3 and first >= 0 and first <= SimClock.TICK_RATE * 10,
+			"one of the pair gets an angle on it within 10 s, for 3 s+ (%.1f s, first after %.1f s)" % [flank_ticks / float(SimClock.TICK_RATE), first / float(SimClock.TICK_RATE)])
 	BrainVariants.reset()
 
 
@@ -101,7 +101,7 @@ func test_a_scout_makes_attack_runs_on_a_tank() -> void:
 	var last_phase := "run"
 	var behind_shots := 0
 	var last_shots := 0
-	for tick in 60 * 25:
+	for tick in SimClock.TICK_RATE * 25:
 		await s.step()
 		if brain._run_phase != last_phase:
 			if brain._run_phase == "extend":
@@ -134,7 +134,7 @@ func _switches_per_minute(variant: String) -> float:
 	var switches := 0
 	var unit_ticks := 0
 	await s.start()
-	for tick in 60 * 30:
+	for tick in SimClock.TICK_RATE * 30:
 		await s.step()
 		for brain in brains:
 			if not brain.tank.is_alive() or brain.choice.is_empty():

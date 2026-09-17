@@ -31,3 +31,4 @@ result: green by elimination at 1:01.2
 1:08.2   CALLER   And the Condemned are the last army standing! The Condemned win!
 1:12.1   VETERAN  Artillery doesn't kill you. It moves you somewhere that does.
 1:17.3   PA       The Condemned are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:22.9   PA       The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so.

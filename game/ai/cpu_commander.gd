@@ -35,7 +35,7 @@ extends Node
 ##             point until the odds recover (REENGAGE_RATIO) or the enemy comes close
 ## Selected with --green-commander=v3 / --rust-commander=v3 (read here, like brain variants).
 
-const THINK_TICKS := 120
+const THINK_TICKS := SimClock.TICK_RATE * 2
 const ASSAULT_RATIO := 1.25
 const WITHDRAW_RATIO := 0.6
 const BOUND_RANGE := 110.0
@@ -44,7 +44,7 @@ const ASSAULT_REISSUE_METERS := 30.0
 ## Don't break contact once the nearest enemy is this close (meters).
 const DISENGAGE_RANGE := 45.0
 ## A contact seen within this many ticks is chased with ASSAULT rather than MOVE.
-const FRESH_TICKS := 60 * 10
+const FRESH_TICKS := SimClock.TICK_RATE * 10
 ## How far ahead of the squad a movement leg goes when there's nothing to go for.
 const LEG := 50.0
 
@@ -55,7 +55,7 @@ const DEFAULT_POLICY := "v6"
 const THINK_TICKS_V3 := 60
 const RALLY_AHEAD := 40.0
 const MUSTER_RADIUS := 25.0
-const MUSTER_MAX_TICKS := 60 * 12
+const MUSTER_MAX_TICKS := SimClock.TICK_RATE * 12
 const FLANK_OFFSET := 45.0
 const FLANK_ARRIVE := 18.0
 ## A flanker still on its way assaults anyway when an enemy is this close to it (meters).

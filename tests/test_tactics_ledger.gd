@@ -34,7 +34,7 @@ func test_a_side_run_by_doctrine_fills_the_ledger() -> void:
 	var gang_table: DoctrineTable = DoctrineTable.load_table("gangs")["table"]
 	for element: Element in elements.of_team(Match.Team.RUST):
 		assert_true(element.table == gang_table, "rust's elements fight by the table the flag named (%s)" % element.element_name)
-	await wait_physics_frames(60 * 45)
+	await wait_physics_frames(SimClock.TICK_RATE * 45)
 	var report: Dictionary = (installed["ledger"] as TacticsLedger).report()
 	print("MEASURE tactics_ledger %s" % JSON.stringify(report))
 	for side_name in ["green", "rust"]:

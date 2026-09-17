@@ -36,12 +36,10 @@ control-scale-shots: import ## The control playtest with ~30 units a side, frame
 	# player's force loses, and steps that depend on a live group 1 legitimately report false. What must not
 	# happen is a crash or a session that never finishes.
 	grep -q 'CONTROL_PLAYTEST_DONE' $(CONTROL_PLAYTEST_DIR)/scale/run.log
-	# The renderer runs out of per-instance shader uniform slots with ~60 vehicles on the field (hardware max
-	# 4096 items): "Too many instances using shader instance variables" and the instance_buffer_pos condition it
-	# trips afterwards. That is the vehicle materials' doing, not this session, and game/theme/** has no stream
-	# this round - so it is counted and reported here rather than swallowed or treated as a control failure.
+	# Round 4 counted the renderer's instance-uniform errors here; render removed the uniforms in round 5 (0 errors).
+	# The count stays, so a regression shows up in this session's output.
 	@noise=$$(grep -cE 'shader instance variables|instance_buffer_pos' $(CONTROL_PLAYTEST_DIR)/scale/run.log || true); \
-	test "$$noise" -eq 0 || echo ">> $$noise renderer errors: per-instance shader uniforms exhausted at this army size (art, not control)"; \
+	test "$$noise" -eq 0 || echo ">> $$noise renderer errors: per-instance shader uniforms exhausted at this army size (render's)"; \
 	real=$$(grep -E 'SCRIPT ERROR|^ERROR' $(CONTROL_PLAYTEST_DIR)/scale/run.log | grep -vE 'shader instance variables|instance_buffer_pos' || true); \
 	test -z "$$real" || { echo "$$real"; exit 1; }
 	@echo "Now LOOK at $(CONTROL_PLAYTEST_DIR)/scale/*.png"
@@ -74,8 +72,8 @@ cinematic: import ## Watch a CPU-vs-CPU match with the self-directing camera (AN
 	$(GODOT) --path . -- --skirmish --cinematic --player=cpu --enemy=cpu --budget=$(CONTROL_SCALE_BUDGET) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
 
-skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate): size follows the roster
-	$(GODOT) --path . -- --skirmish --player-faction=$(FACTION) --enemy-faction=$(ENEMY_FACTION) \
+skirmish-factions: import ## Play a faction match (FACTION=gangs ENEMY_FACTION=syndicate [ARENA=pit]): size follows the roster
+	$(GODOT) --path . -- --skirmish --player-faction=$(FACTION) --enemy-faction=$(ENEMY_FACTION) $(if $(ARENA),--arena=$(ARENA)) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) $(CONTROL_FLAGS)
 
 COMMAND_PLAYTEST_DIR := $(BUILD_DIR)/command-playtest
@@ -92,3 +90,27 @@ command-playtest-shots: import ## The same playtest in a phone-sized window, sav
 	$(GODOT) --path . --resolution 1200x540 -- --skirmish --enemy=cpu --seed=3 --command-playtest=$(CURDIR)/$(COMMAND_PLAYTEST_DIR) 2>&1 \
 		| tee $(COMMAND_PLAYTEST_DIR)/run.log | grep -E 'COMMAND_PLAYTEST|SCRIPT ERROR' || true
 	grep -q 'COMMAND_PLAYTEST_DONE ok=true' $(COMMAND_PLAYTEST_DIR)/run.log
+
+## Control round 5 X1/X6: the first minutes as a player meets them, through real input events (needs a display).
+SHELL_PLAYTEST_DIR := $(BUILD_DIR)/shell-playtest
+SHELL_SIZE ?= 1920x1080
+
+shell-playtest: import ## Title → SKIRMISH → faction menu → planning → a minute of battle, through real clicks; readings and frames in build/shell-playtest/ (needs a display)
+	rm -rf $(SHELL_PLAYTEST_DIR) && mkdir -p $(SHELL_PLAYTEST_DIR)
+	timeout 360 $(GODOT) --path . --resolution $(SHELL_SIZE) -- --title --announcer=text --hints=fresh --shell-playtest=$(CURDIR)/$(SHELL_PLAYTEST_DIR) 2>&1 \
+		| tee $(SHELL_PLAYTEST_DIR)/run.log | grep -E 'SHELL_PLAYTEST|TITLE_START|SCRIPT ERROR|^ERROR' || true
+	grep -q 'SHELL_PLAYTEST_DONE ok=true' $(SHELL_PLAYTEST_DIR)/run.log
+	@# The lead launched the game and saw "a bunch of red error messages": a player's session must log none at all.
+	@errors=$$(grep -E 'SCRIPT ERROR|^ERROR|^WARNING' $(SHELL_PLAYTEST_DIR)/run.log | grep -v 'ObjectDB instances were leaked at exit' || true); \
+	test -z "$$errors" || { echo ">> the console is not clean:"; echo "$$errors" | sort | uniq -c | sort -rn | head -20; exit 1; }
+	@echo "clean console: $(SHELL_PLAYTEST_DIR)/run.log"
+
+## Control X4 (CP1: the HUD ≤ 130 draw calls and ≤ 1 ms of _process at 60 vehicles), measured per widget.
+HUD_COST_RES ?= 1920x1080
+HUD_COST_FLAGS ?=
+
+hud-cost: import ## What each HUD widget costs (canvas draw calls, _process) in a ~30-a-side skirmish → build/hud-cost.json (needs a display; HUD_COST_RES, HUD_COST_FLAGS)
+	timeout 900 $(GODOT) --path . --resolution $(HUD_COST_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+		--budget=$(CONTROL_SCALE_BUDGET) --no-pick-faction --mute --hud-cost=$(CURDIR)/$(BUILD_DIR)/hud-cost.json $(HUD_COST_FLAGS) 2>&1 \
+		| tee $(BUILD_DIR)/hud-cost.log | grep -E '^HUD_COST|SCRIPT ERROR' || true
+	grep -q HUD_COST_DONE $(BUILD_DIR)/hud-cost.log

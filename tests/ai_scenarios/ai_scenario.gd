@@ -7,7 +7,7 @@ extends RefCounted
 ##   var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", Vector3(-20, 0, -12), 0.0)
 ##   var gun := s.shooter(Match.Team.RUST, "Rust_Gun_1", Vector3(-40, 0, -65), PI)
 ##   await s.start()
-##   for tick in 60 * 10:
+##   for tick in SimClock.TICK_RATE * 10:
 ##       await s.step()
 ##       ...sample...
 ##
@@ -137,7 +137,7 @@ func controller_of(tank: Tank) -> OrderController:
 
 
 ## Wait for the navigation mesh (a few ticks) so brains path around obstacles from the start. Then drive
-## the battle tick by tick: `for tick in 60 * 10: await s.step()` and sample state in the loop body.
+## the battle tick by tick: `for tick in SimClock.TICK_RATE * 10: await s.step()` and sample state in the loop body.
 ## (Loops, not callbacks: GDScript lambdas capture local variables by value, so a sampler lambda can't
 ## count into the test's locals.)
 func start() -> void:

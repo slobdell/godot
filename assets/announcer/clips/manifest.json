@@ -28105,6 +28105,150 @@
    "text": "The Syndicate are tonight's winner. Ticket holders may remain seated during the recovery operation.",
    "voice": "corporate2"
   },
+  "pa.screen.01": {
+   "duration_s": 8.08,
+   "file": "pa/pa.screen.01.ogg",
+   "kind": "line",
+   "request": "pa.screen.01",
+   "request_key": "a1aa0b87511e6a0f4127a245941ce95cc6a90d6e",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Before tonight's match, please direct your attention to the screens above the north stand, where Aquacorp has posted tomorrow's water schedule",
+   "text": "Before tonight's match, please direct your attention to the screens above the north stand, where AquaCorp has posted tomorrow's water schedule.",
+   "voice": "corporate2"
+  },
+  "pa.screen.02": {
+   "duration_s": 7.647,
+   "file": "pa/pa.screen.02.ogg",
+   "kind": "line",
+   "request": "pa.screen.02",
+   "request_key": "c93290b0006e027cbd871fe1e79dec46c33d3a04",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Our thanks to Syndicate Life, whose representatives will be available on the lower concourse after the match to speak with Cruz families",
+   "text": "Our thanks to Syndicate Life, whose representatives will be available on the lower concourse after the match to speak with crews' families.",
+   "voice": "corporate2"
+  },
+  "pa.screen.03": {
+   "duration_s": 8.357,
+   "file": "pa/pa.screen.03.ogg",
+   "kind": "line",
+   "request": "pa.screen.03",
+   "request_key": "791e72e063d50b32f6406dd3afa1152d2a2c5dc0",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Meridian Transport would like to remind everyone that the final train to the outer districts leaves forty minutes after the match and will not wait",
+   "text": "Meridian Transport would like to remind everyone that the final train to the outer districts leaves forty minutes after the match, and will not wait.",
+   "voice": "corporate2"
+  },
+  "pa.screen.04": {
+   "duration_s": 7.841,
+   "file": "pa/pa.screen.04.ogg",
+   "kind": "line",
+   "request": "pa.screen.04",
+   "request_key": "35c4bc63ce779891fccccaf3a363fac00c47bf77",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight's screens are powered by North Grid, keeping the arena bright while the eastern districts observe their scheduled quiet hours",
+   "text": "Tonight's screens are powered by Northgrid, keeping the arena bright while the eastern districts observe their scheduled quiet hours.",
+   "voice": "corporate2"
+  },
+  "pa.screen.05": {
+   "duration_s": 7.951,
+   "file": "pa/pa.screen.05.ogg",
+   "kind": "line",
+   "request": "pa.screen.05",
+   "request_key": "fc9f14ac38408ec3ca3cdb719ca9988e2b2c242f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The replays you see on tonight's screens are provided by Syndicate Vision. If you appear in a replay, no further action is required",
+   "text": "The replays you see on tonight's screens are provided by Syndicate Vision. If you appear in a replay, no further action is required.",
+   "voice": "corporate2"
+  },
+  "pa.screen.06": {
+   "duration_s": 7.809,
+   "file": "pa/pa.screen.06.ogg",
+   "kind": "line",
+   "request": "pa.screen.06",
+   "request_key": "3778e55c4209412664bd506728f3a14529f9afeb",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Virio bars are available at every concession stand this evening. Fans in the upper bowl will receive theirs at the end of the match",
+   "text": "Vireo bars are available at every concession stand this evening. Fans in the upper bowl will receive theirs at the end of the match.",
+   "voice": "corporate2"
+  },
+  "pa.screen.07": {
+   "duration_s": 5.024,
+   "file": "pa/pa.screen.07.ogg",
+   "kind": "line",
+   "request": "pa.screen.07",
+   "request_key": "cde9bd16ce24a4db47542989d5383c71c9891103",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Harbor General thanks tonight's crews for their continued support of the arena's medical wing",
+   "text": "Harbor General thanks tonight's crews for their continued support of the arena's medical wing.",
+   "voice": "corporate2"
+  },
+  "pa.screen.08": {
+   "duration_s": 7.268,
+   "file": "pa/pa.screen.08.ogg",
+   "kind": "line",
+   "request": "pa.screen.08",
+   "request_key": "fdd66b441847675e725b6008c0745b73dc8d7b2d",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Syndicate Housing is now accepting applications in the Eastern Districts. Tonight's winning crew has been entered automatically",
+   "text": "Syndicate Housing is now accepting applications in the eastern districts. Tonight's winning crew has been entered automatically.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.01": {
+   "duration_s": 5.954,
+   "file": "pa/pa.signoff.01.ogg",
+   "kind": "line",
+   "request": "pa.signoff.01",
+   "request_key": "474b17ef47fdcb7a72bec5436b990f280400cb04",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "That concludes this evening's program. Please take a moment to enjoy the screens while the floor is cleared",
+   "text": "That concludes this evening's programme. Please take a moment to enjoy the screens while the floor is cleared.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.02": {
+   "duration_s": 7.666,
+   "file": "pa/pa.signoff.02.ogg",
+   "kind": "line",
+   "request": "pa.signoff.02",
+   "request_key": "7cf8abc92aaaba5029f3cab60bff4cccad6048da",
+   "speaker": "pa",
+   "stt_ok": false,
+   "stt_text": "[outro jingle]",
+   "text": "While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.03": {
+   "duration_s": 6.023,
+   "file": "pa/pa.signoff.03.ogg",
+   "kind": "line",
+   "request": "pa.signoff.03",
+   "request_key": "95548ee235bb350c8a931c5e2727acf95ee2a758",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so",
+   "text": "The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so.",
+   "voice": "corporate2"
+  },
+  "pa.signoff.04": {
+   "duration_s": 5.093,
+   "file": "pa/pa.signoff.04.ogg",
+   "kind": "line",
+   "request": "pa.signoff.04",
+   "request_key": "c9c2a34927ad3409a1c44f5bf86326b1023f364c",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Thank you for joining us. Your attendance tonight has been recorded and is appreciated",
+   "text": "Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.",
+   "voice": "corporate2"
+  },
   "pa.sponsor.01": {
    "duration_s": 8.287,
    "file": "pa/pa.sponsor.01.ogg",
@@ -35691,6 +35835,90 @@
     "gangs": "pa.result.11@gangs",
     "law": "pa.result.11@law",
     "syndicate": "pa.result.11@syndicate"
+   }
+  },
+  "pa.screen.01": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.01"
+   }
+  },
+  "pa.screen.02": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.02"
+   }
+  },
+  "pa.screen.03": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.03"
+   }
+  },
+  "pa.screen.04": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.04"
+   }
+  },
+  "pa.screen.05": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.05"
+   }
+  },
+  "pa.screen.06": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.06"
+   }
+  },
+  "pa.screen.07": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.07"
+   }
+  },
+  "pa.screen.08": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.screen.08"
+   }
+  },
+  "pa.signoff.01": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.01"
+   }
+  },
+  "pa.signoff.02": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.02"
+   }
+  },
+  "pa.signoff.03": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.03"
+   }
+  },
+  "pa.signoff.04": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.signoff.04"
    }
   },
   "pa.sponsor.01": {

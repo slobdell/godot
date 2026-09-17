@@ -26,8 +26,8 @@ func test_a_hurt_tank_under_fire_gets_out_of_sight() -> void:
 	await _delegate(COVER, "test_a_hurt_tank_under_fire_gets_out_of_sight")
 
 
-func test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing() -> void:
-	await _delegate(ORDERS, "test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing")
+func test_a_move_order_is_executed_within_100_ms_whatever_the_brain_was_doing() -> void:
+	await _delegate(ORDERS, "test_a_move_order_is_executed_within_100_ms_whatever_the_brain_was_doing")
 
 
 func test_attack_move_fights_on_the_way_then_arrives() -> void:

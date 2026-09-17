@@ -6114,6 +6114,114 @@
     "any"
    ],
    "text": "Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming."
+  },
+  {
+   "id": "pa.screen.01",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "Before tonight's match, please direct your attention to the screens above the north stand, where AquaCorp has posted tomorrow's water schedule."
+  },
+  {
+   "id": "pa.screen.02",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "Our thanks to Syndicate Life, whose representatives will be available on the lower concourse after the match to speak with crews' families."
+  },
+  {
+   "id": "pa.screen.03",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "Meridian Transport would like to remind everyone that the final train to the outer districts leaves forty minutes after the match, and will not wait."
+  },
+  {
+   "id": "pa.screen.04",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "Tonight's screens are powered by Northgrid, keeping the arena bright while the eastern districts observe their scheduled quiet hours."
+  },
+  {
+   "id": "pa.screen.05",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "The replays you see on tonight's screens are provided by Syndicate Vision. If you appear in a replay, no further action is required."
+  },
+  {
+   "id": "pa.screen.06",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "Vireo bars are available at every concession stand this evening. Fans in the upper bowl will receive theirs at the end of the match."
+  },
+  {
+   "id": "pa.screen.07",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "Harbor General thanks tonight's crews for their continued support of the arena's medical wing."
+  },
+  {
+   "id": "pa.screen.08",
+   "speaker": "pa",
+   "act": "sponsor_read",
+   "tags": [
+    "intro"
+   ],
+   "text": "Syndicate Housing is now accepting applications in the eastern districts. Tonight's winning crew has been entered automatically."
+  },
+  {
+   "id": "pa.signoff.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "That concludes this evening's programme. Please take a moment to enjoy the screens while the floor is cleared."
+  },
+  {
+   "id": "pa.signoff.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning."
+  },
+  {
+   "id": "pa.signoff.03",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so."
+  },
+  {
+   "id": "pa.signoff.04",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "outro"
+   ],
+   "text": "Thank you for joining us. Your attendance tonight has been recorded, and is appreciated."
   }
  ]
 }

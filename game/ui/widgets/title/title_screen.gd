@@ -2,13 +2,16 @@ extends Node3D
 ## Animated title screen in the HUD style (`make title`, browser `?title`): the cyberpunk arena at
 ## night behind a glitching "TANK SQUAD" title, breathing conductors wiring a chamfered menu, and a
 ## small skirmish (tanks trading tracers and laser pulses) under a slow orbiting camera.
-## Menu buttons start a mode: on the web by reloading with that URL query, on desktop by relaunching
-## with that flag. (Not the default entry scene: that's a shared-file decision for the lead.)
+## Menu buttons start a mode: on the web by reloading with that URL query, on desktop by switching to the game
+## scene with that flag. (Not the default entry scene: that's a shared-file decision for the lead.)
 ## Flags: --screenshot=<abs png> [--screenshot-delay=S]
 
 const ARENA := preload("res://game/arena/arena.tscn")
+## Flags that describe the session, not the mode, and so survive choosing a mode.
+const SESSION_FLAGS := ["ui-touch", "shell-playtest", "announcer", "music", "hints"]
 const MENU := [
 	["SKIRMISH", "skirmish", "Command your squads vs the CPU"],
+	["SPECTATE", "skirmish cinematic player=cpu enemy=cpu no-pick-faction arena=random", "Watch two CPU armies fight; the camera directs itself"],
 	["MULTIPLAYER", "connect", "Join the game server"],
 	["FX LAB", "fx-bench", "Lighting and effects benchmark"],
 	["PLAY TEST DRIVE", "", "Drive one tank vs a bot"],
@@ -20,6 +23,7 @@ var title := GlitchTitle.new()
 var subtitle: Label
 var conductors := Conductors.new()
 var menu := VBoxContainer.new()
+var frame_button := Button.new()
 var hint: Label
 var _frames: Array[CyberFrame] = []
 var _time := 0.0
@@ -45,6 +49,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 	var flags := LaunchFlags.from_environment()
+	if flags.has("shell-playtest"):
+		ShellPlaytest.ensure(get_tree(), flags.text("shell-playtest"))
 	if flags.has("screenshot"):
 		_capture(flags.text("screenshot"), float(flags.text("screenshot-delay", "4")))
 
@@ -81,6 +87,13 @@ func _build_ui() -> void:
 		button.focus_mode = Control.FOCUS_NONE
 		button.pressed.connect(start.bind(entry[1]))
 		menu.add_child(button)
+	# Round 5: the frame-rate choice (render's FrameTarget), set before a match as well as from the HUD.
+	frame_button.name = "FrameButton"
+	frame_button.focus_mode = Control.FOCUS_NONE
+	frame_button.tooltip_text = "QUALITY 30: a steady 30 fps at full resolution. PERFORMANCE 60: 60 fps at a lower 3D resolution."
+	frame_button.pressed.connect(toggle_frame_target)
+	menu.add_child(frame_button)
+	_refresh_frame_button()
 	hint = CyberStyle.label("", 18.0, Color(CyberStyle.TEXT, 0.6))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ui.add_child(hint)
@@ -104,13 +117,13 @@ func _layout() -> void:
 	var top := subtitle.position.y + 80.0 * s
 	var bottom := screen.y - 70.0 * s - 30.0 * s  # footer + the frame's padding
 	var gap := 14.0 * s
-	var button_height := clampf((bottom - top - (MENU.size() - 1) * gap) / MENU.size(), 48.0 * s, 64.0 * s)
+	var button_height := clampf((bottom - top - (_rows() - 1) * gap) / _rows(), 48.0 * s, 64.0 * s)
 	var button_size := Vector2(420.0 * s, button_height)
 	menu.add_theme_constant_override("separation", roundi(gap))
 	for button in menu.get_children():
 		(button as Button).custom_minimum_size = button_size
 		(button as Button).add_theme_font_size_override("font_size", roundi(button_height * 0.44))
-	var menu_height := MENU.size() * button_size.y + (MENU.size() - 1) * gap
+	var menu_height := _rows() * button_size.y + (_rows() - 1) * gap
 	menu.position = Vector2((screen.x - button_size.x) / 2.0, clampf(screen.y * 0.5, top, bottom - menu_height))
 	menu.size = Vector2(button_size.x, menu_height)
 	var frame := _frames[0]
@@ -130,29 +143,51 @@ func _layout() -> void:
 	conductors.add_bus(Vector2(right, frame.position.y + 20.0 * s), Vector2.RIGHT, Vector2(screen.x * 0.8, subtitle.position.y + 20.0 * s), Vector2.UP, 2)
 
 
-## Start a mode: reload the page with its query on the web, relaunch with its flag on desktop.
+## Menu rows: the modes plus the frame-rate button.
+func _rows() -> int:
+	return MENU.size() + 1
+
+
+func toggle_frame_target() -> void:
+	var next := FrameTarget.Target.PERFORMANCE_60 if FrameTarget.target() == FrameTarget.Target.LOCKED_30 \
+			else FrameTarget.Target.LOCKED_30
+	FrameTarget.apply(next, "player", true)
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui("ui_blip")
+	_refresh_frame_button()
+
+
+func _refresh_frame_button() -> void:
+	frame_button.text = "FRAME RATE: %s" % FrameTarget.label()
+
+
+## Start a mode: reload the page with its query on the web; on desktop, switch to the game scene in this process with
+## that flag. (It used to quit and relaunch the executable, which dropped every flag the session was started with and,
+## launched from a terminal or `make`, could leave the player looking at a closed window.)
 func start(flag: String) -> void:
 	var fx := FxWorld.existing()
 	if fx != null:
 		fx.sfx.play_ui("ui_blip")
-	print("TITLE_START %s" % (flag if flag != "" else "offline"))
+	print("TITLE_START %s" % (flag.get_slice(" ", 0) if flag != "" else "offline"))
 	if OS.has_feature("web"):
-		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + flag) if flag != "" else ""))
+		var query := "&".join(flag.split(" ", false))
+		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + query) if query != "" else ""))
 		return
-	OS.set_restart_on_exit(true, relaunch_args(OS.get_cmdline_args(), OS.get_cmdline_user_args(), flag))
-	get_tree().quit()
+	GameLauncher.start(get_tree(), flags_for(flag, LaunchFlags.from_environment()))
 
 
-## Engine args to relaunch with (dropping a scene path and the old user args) plus `-- --flag`.
-static func relaunch_args(engine_args: PackedStringArray, user_args: PackedStringArray, flag: String) -> PackedStringArray:
-	var args := PackedStringArray()
-	for arg in engine_args:
-		if arg.ends_with(".tscn") or arg == "--" or user_args.has(arg):
-			continue
-		args.append(arg)
-	if flag != "":
-		args.append_array(["--", "--" + flag])
-	return args
+## The flags the chosen mode starts with: its own flags ("skirmish cinematic arena=random"), plus the few that belong to the session rather than to a
+## mode (the touch UI, a playtest driving this run). "" is the offline test drive.
+static func flags_for(flag: String, current: LaunchFlags) -> LaunchFlags:
+	var next := LaunchFlags.new()
+	for part in flag.split(" ", false):
+		var pair := part.split("=", true, 1)
+		next.values[pair[0]] = pair[1] if pair.size() > 1 else ""
+	for kept: String in SESSION_FLAGS:
+		if current.has(kept):
+			next.values[kept] = current.values[kept]
+	return next
 
 
 func _tank(team: int, weapon_slot: String) -> Node3D:

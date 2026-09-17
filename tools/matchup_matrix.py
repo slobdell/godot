@@ -20,6 +20,9 @@ import subprocess
 import sys
 import time
 
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(ROOT, "build", "matchups")
 BALANCE = os.path.join(ROOT, "_agents", "balance.md")
@@ -62,7 +65,7 @@ def army(unit_id, cost, budget, escort=""):
 
 
 def run_match(args, green_file, rust_file, seed, swap):
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ROOT, "--", "--match", "--elimination",
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ROOT, "--", "--match", "--elimination",
                f"--green-doctrine=res://build/matchups/{green_file}", f"--rust-doctrine=res://build/matchups/{rust_file}",
                f"--time-limit={args.time_limit}", f"--seed={seed}", f"--budget={args.budget * 2}"]
     if swap:

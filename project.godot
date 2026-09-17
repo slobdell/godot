@@ -65,4 +65,14 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 [physics]
 
+; Round 5 (_agents/sim_tick_rate.md): the simulation runs at 30 Hz. Every per-tick cost in the game — brains, orders,
+; driving, the rules — is paid half as often, which is what makes 60 vehicles playable on the lead's laptop.
+; Interpolation keeps motion smooth on screen between ticks (anything that follows a body per frame must read
+; get_global_transform_interpolated(); teleports call reset_physics_interpolation()). The step cap stops a slow frame
+; from running ticks to catch up and spiralling: Godot's default of 8 is what pinned the game at 7.5 fps.
+common/physics_ticks_per_second=30
+common/physics_interpolation=true
+common/physics_jitter_fix=0.0
+common/max_physics_steps_per_frame=3
+
 3d/physics_engine="Jolt Physics"

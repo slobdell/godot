@@ -13,7 +13,7 @@ extends OrderController
 
 ## K1: brains execute control's orders themselves, so control's stand-in OrderExecutor leaves them alone.
 const EXECUTES_ORDERS := true
-const THINK_EVERY_TICKS := 6
+const THINK_EVERY_TICKS := SimClock.TICK_RATE / 10
 ## Think LOD (_agents/unit_ai.md §8, extended in round-4 X2), three rates by how close the fight is:
 ##   THINK_EVERY_TICKS       something can shoot me or I can shoot it — the micro that needs 10 Hz,
 ##   NEAR_THINK_EVERY_TICKS  an enemy is known within LOD_RADIUS but nothing is in reach: closing, repositioning,
@@ -22,20 +22,20 @@ const THINK_EVERY_TICKS := 6
 ## The rate is recomputed on every intel refresh and a brain that drops to a faster rate thinks that tick, so coming
 ## into range is never noticed late. Orders and element calls arrive on their own signals, so none of this delays
 ## them (G3, K1, L1).
-const NEAR_THINK_EVERY_TICKS := 12
-const IDLE_THINK_EVERY_TICKS := 18
+const NEAR_THINK_EVERY_TICKS := SimClock.TICK_RATE / 5
+const IDLE_THINK_EVERY_TICKS := SimClock.TICK_RATE * 3 / 10
 const LOD_RADIUS := 130.0
 ## "In reach" for the fight rate: either gun's range plus this (meters).
 const FIGHT_MARGIN := 15.0
 ## The current choice gets this multiplier, so near-equal options don't flip-flop...
 const COMMIT_BONUS := 1.15
 ## ...and it's kept at least this long unless something is EMERGENCY_MARGIN× better.
-const MIN_COMMIT_TICKS := 45
+const MIN_COMMIT_TICKS := SimClock.TICK_RATE * 3 / 4
 const EMERGENCY_MARGIN := 1.6
 ## Contacts older than this are investigated rather than engaged.
-const CONTACT_FRESH_TICKS := 120
+const CONTACT_FRESH_TICKS := SimClock.TICK_RATE * 2
 ## Tactical queries (TacticalQuery) are re-run at most this often per tank unless the situation changed.
-const QUERY_EVERY_TICKS := 30
+const QUERY_EVERY_TICKS := SimClock.TICK_RATE / 2
 ## ...or this far from where the last one was asked (meters).
 const QUERY_MOVED := 6.0
 ## Hiding places are searched this far around a tank (meters)...
@@ -59,7 +59,7 @@ const PEEK_SHIELD := 0.35
 ## where it was (meters), and the target still can't see the hide spot.
 const COVER_FIRE_KEEP := 12.0
 ## A4: a gun held this many ticks for a friend in the line of fire makes the brain move to clear the lane.
-const LANE_BLOCKED_TICKS := 20
+const LANE_BLOCKED_TICKS := SimClock.TICK_RATE / 3
 ## How far CLEAR_LANE looks for a new firing spot (meters).
 const LANE_SEARCH := 10.0
 ## A6 squad tactics: how much more a brain wants the squad's focus, an enemy shooting a retreating squad-mate
@@ -129,7 +129,7 @@ const WHEELS_ARRIVE_MAX := 6.0
 ## A stop order is done once the unit is slower than this (m/s).
 const STOPPED_SPEED := 0.5
 ## ...no sooner than this many ticks after it was issued.
-const STOP_SETTLE_TICKS := 20
+const STOP_SETTLE_TICKS := SimClock.TICK_RATE / 3
 ## A hold order keeps the unit this close to its spot (meters).
 const HOLD_TOLERANCE := 3.0
 ## An idle unit fights near its post and returns when it drifts farther than this (regroup).
@@ -138,12 +138,14 @@ const IDLE_LEASH := 30.0
 const FOLLOW_DISTANCE := 10.0
 ## No stuck states: an autonomous option kept this long (ticks) goes on cooldown; for the fighting options the
 ## clock restarts with every shot, so only a fight that stopped producing shots times out.
-const OPTION_TIMEOUT_TICKS := {"COVER_FIRE": 600, "CLEAR_LANE": 300, "TAKE_COVER": 720, "RECHARGE": 720, "ORBIT": 900,
+const OPTION_TIMEOUT_TICKS := {"COVER_FIRE": SimClock.TICK_RATE * 10, "CLEAR_LANE": SimClock.TICK_RATE * 5,
+	"TAKE_COVER": SimClock.TICK_RATE * 12, "RECHARGE": SimClock.TICK_RATE * 12, "ORBIT": SimClock.TICK_RATE * 15,
 	"SUPPRESS": SUPPRESS_TIMEOUT_TICKS,
-		"FLANK": 900, "INVESTIGATE": 1200, "RETREAT": 1200, "RESUPPLY": 2400, "BOMBARD": 900, "ENGAGE": 900}
+		"FLANK": SimClock.TICK_RATE * 15, "INVESTIGATE": SimClock.TICK_RATE * 20, "RETREAT": SimClock.TICK_RATE * 20,
+		"RESUPPLY": SimClock.TICK_RATE * 40, "BOMBARD": SimClock.TICK_RATE * 15, "ENGAGE": SimClock.TICK_RATE * 15}
 const FIGHT_OPTIONS := ["COVER_FIRE", "ORBIT", "FLANK", "BOMBARD", "ENGAGE", "CLEAR_LANE", "SUPPRESS"]
 ## ...and a move goal with no progress for this many ticks puts the option on cooldown too.
-const STALL_TICKS := 180
+const STALL_TICKS := SimClock.TICK_RATE * 3
 ## X2 combat motion: fight on the move when the target is visible and within weapon range + this (meters)...
 const MOTION_REACH_MARGIN := 15.0
 ## ...hulls with at least this much front armor angle it toward the target instead of circling side-on...
@@ -159,11 +161,11 @@ const COS_WATCHING := 0.9396926
 const FLANK_WIDE_COS := 0.5
 const FLANK_WIDE_EXTRA := 20.0
 ## ...and re-plans the move at most this often (ticks) while nothing changed.
-const MOTION_REPLAN_TICKS := 15
+const MOTION_REPLAN_TICKS := SimClock.TICK_RATE / 4
 ## ...and a jink flips the circling side no sooner than JINK_MIN_TICKS after the last, and no later than
 ## JINK_MIN_TICKS + JINK_SPREAD_TICKS (per unit, so a group doesn't jink in step).
-const JINK_MIN_TICKS := 90
-const JINK_SPREAD_TICKS := 150
+const JINK_MIN_TICKS := SimClock.TICK_RATE * 3 / 2
+const JINK_SPREAD_TICKS := SimClock.TICK_RATE * 5 / 2
 ## Circling units jink only within this distance of their target (meters).
 const JINK_RANGE := 50.0
 ## A unit this far outside its target's weapon range (and inside its own) holds still and shoots (meters).
@@ -176,24 +178,24 @@ const RUN_AIMED_COS := 0.94
 ## loaded, and a halt lasts at most SHORT_HALT_MAX_TICKS after it is (a gun that can't get a shot off moves on).
 const SHORT_HALT_RELOAD := 1.5
 const SHORT_HALT_LEAD := 0.15
-const SHORT_HALT_MAX_TICKS := 60
+const SHORT_HALT_MAX_TICKS := SimClock.TICK_RATE
 ## X3 reload windows: guns reloading at least this long (seconds) are worth timing; a peek or a halt shows the unit for
 ## about PEEK_EXPOSURE / SHORT_HALT_EXPOSURE seconds, so it waits (at most PEEK_PATIENCE_TICKS) for a reload that long.
 const SLOW_GUN_RELOAD := 1.5
 const PEEK_EXPOSURE := 1.5
 const SHORT_HALT_EXPOSURE := 0.8
-const PEEK_PATIENCE_TICKS := 240
+const PEEK_PATIENCE_TICKS := SimClock.TICK_RATE * 4
 ## A target fought from cover stays fresh this long out of sight (a slow reload plus a margin).
-const COVER_FIRE_MEMORY_TICKS := 60 * 8
+const COVER_FIRE_MEMORY_TICKS := SimClock.TICK_RATE * 8
 ## A bait shows the unit for at most BAIT_OUT_TICKS (or until the target can see it), then ducks back for BAIT_BACK_TICKS
 ## (a shell's flight plus a margin), at most MAX_BAITS times before a real peek.
-const BAIT_OUT_TICKS := 50
+const BAIT_OUT_TICKS := SimClock.TICK_RATE * 5 / 6
 ## ...staying in view this long once it sees the target (long enough for a watching gun to take the shot).
-const BAIT_SEEN_TICKS := 10
-const BAIT_BACK_TICKS := 60
+const BAIT_SEEN_TICKS := SimClock.TICK_RATE / 6
+const BAIT_BACK_TICKS := SimClock.TICK_RATE
 const MAX_BAITS := 2
 ## Cooldown length (ticks) and what an option on cooldown scores (× its score).
-const COOLDOWN_TICKS := 300
+const COOLDOWN_TICKS := SimClock.TICK_RATE * 5
 const COOLDOWN_FACTOR := 0.25
 ## Within this distance of its formation slot a tank counts as "in position".
 const SLOT_TOLERANCE := 4.0
@@ -251,7 +253,7 @@ const SUPPRESS_WEIGHT := 0.78
 ## ...and the kill rate (relative to my best target) below which killing isn't the point any more.
 const SUPPRESS_KILL_RATIO := 0.45
 ## A suppressing unit holds its fire on a target no longer than this without the target's suppression rising.
-const SUPPRESS_TIMEOUT_TICKS := 420
+const SUPPRESS_TIMEOUT_TICKS := SimClock.TICK_RATE * 7
 ## Where fire goes once the target ducks out of sight: its last position, led this many seconds along its last
 ## velocity — the ground it is behind, not where it was standing.
 const SUPPRESS_LEAD_SECONDS := 0.6
@@ -261,7 +263,7 @@ const SUPPRESS_LEAD_SECONDS := 0.6
 ## spreads the fire out and suppresses nobody. The point is re-laid only when the target has left it by this much...
 const SUPPRESS_REAIM := 7.0
 ## ...or after this long (ticks), so the fire follows a walking target without following a jinking one.
-const SUPPRESS_REAIM_TICKS := 90
+const SUPPRESS_REAIM_TICKS := SimClock.TICK_RATE * 3 / 2
 ## L1 elements (round-4 X1): a unit fighting from a formation slot manoeuvres inside this far of it (meters). About
 ## one formation spacing: room to circle, jink and take an angle without leaving the formation.
 const SLOT_LEASH := 14.0
@@ -357,6 +359,12 @@ func think(_delta: float) -> void:
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	# The player's own units wait for orders (round 5). A brain that has never been given one normally falls back on its
+	# doctrine directives, which send it at the enemy base — so the lead's army left before he could command it. Taking
+	# its spawn as the post it was left at makes it behave exactly like a unit whose order finished here: it holds,
+	# fights what comes to it, and returns to its place, until the player says otherwise. The CPU is unaffected.
+	if _order_home == null and tank.team == OrderFeed.player_team(game_match):
+		_order_home = _flat(tank.global_position)
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
 	var squad := game_match.squad_for(tank)
 	var serial := squad.order_serial if squad != null else 0
@@ -1137,7 +1145,7 @@ static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
 	var best_score := INF
 	for c in s["contacts"]:
 		# Where it probably is now: last known position plus a short dead-reckoning.
-		var seconds := minf(float(c["age"]) / 60.0, WATCH_PREDICT_SECONDS)
+		var seconds := minf(float(c["age"]) / SimClock.TICK_RATE, WATCH_PREDICT_SECONDS)
 		var predicted: Vector3 = c["position"] + (c["velocity"] as Vector3) * seconds
 		if c["name"] == current.get("target", ""):
 			return predicted
@@ -1730,7 +1738,7 @@ func _act(s: Dictionary) -> void:
 				_order_move(_move_to(point, false, 1.0, 2.0))
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"CLEAR_LANE":
-			if _lane_goal == null or game_match.tick - _lane_goal_tick > 120:
+			if _lane_goal == null or game_match.tick - _lane_goal_tick > SimClock.TICK_RATE * 2:
 				_lane_goal = _lane_spot(s, contact)
 				_lane_goal_tick = game_match.tick
 			var spot: Vector3 = _lane_goal

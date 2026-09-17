@@ -155,3 +155,15 @@ func test_faction_units_spawn_and_fight() -> void:
 		assert_eq(Units.faction_of(unit.unit_id), faction, "%s is a %s vehicle" % [unit.unit_id, faction])
 		assert_true(unit.max_health > 0 and unit.max_forward_speed > 0.0, "%s has real stats" % unit.unit_id)
 		assert_true(Weapons.exists(unit.weapon_id), "%s carries a real weapon (%s)" % [unit.unit_id, unit.weapon_id])
+
+
+func test_fairness_controls_choose_which_army_each_team_draws() -> void:
+	# Round 5: normal runs give the two teams different armies; the controls swap them or mirror one.
+	assert_eq(MatchRunnerMode.army_seed(7, Match.Team.GREEN, false, false), 14, "Green draws seed*2")
+	assert_eq(MatchRunnerMode.army_seed(7, Match.Team.RUST, false, false), 15, "Rust draws seed*2+1")
+	assert_eq(MatchRunnerMode.army_seed(7, Match.Team.GREEN, true, false), 15, "--swap-armies: Green gets Rust's army")
+	assert_eq(MatchRunnerMode.army_seed(7, Match.Team.RUST, true, false), 14, "and Rust gets Green's")
+	assert_eq(MatchRunnerMode.army_seed(7, Match.Team.RUST, false, true), 14, "--same-army: both field Green's army")
+	var green := Army.load_army("cpu", MatchRunnerMode.army_seed(3, Match.Team.GREEN, false, true), Units.BASELINE_BUDGET, "gangs")
+	var rust := Army.load_army("cpu", MatchRunnerMode.army_seed(3, Match.Team.RUST, false, true), Units.BASELINE_BUDGET, "gangs")
+	assert_eq(JSON.stringify(green), JSON.stringify(rust), "a mirrored army is the same army")

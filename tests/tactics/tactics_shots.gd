@@ -83,13 +83,13 @@ static func _line_material(color: Color) -> StandardMaterial3D:
 func _play(stage: String, seconds: float, shots: Array, on_tick: Callable = Callable()) -> void:
 	var next_shot := 0
 	RenderingServer.render_loop_enabled = false
-	for tick in roundi(seconds * 60.0) + 1:
+	for tick in roundi(seconds * SimClock.TICK_RATE) + 1:
 		await lab.step()
 		if on_tick.is_valid():
 			on_tick.call(tick)
 		if tick % TRAIL_EVERY_TICKS == 0:
 			_sample_trails()
-		if next_shot < shots.size() and tick >= roundi(float(shots[next_shot]) * 60.0):
+		if next_shot < shots.size() and tick >= roundi(float(shots[next_shot]) * SimClock.TICK_RATE):
 			_sample_trails()
 			RenderingServer.render_loop_enabled = true
 			await process_frame

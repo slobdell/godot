@@ -114,7 +114,7 @@ func cell_center(col: int, row: int) -> Vector3:
 func decay(ticks: int) -> void:
 	if ticks <= 0:
 		return
-	var factor := pow(0.5, float(ticks) / 60.0 / HALF_LIFE_SECONDS)
+	var factor := pow(0.5, float(ticks) / SimClock.TICK_RATE / HALF_LIFE_SECONDS)
 	var kept := 0
 	for n in _active.size():
 		var i := _active[n]

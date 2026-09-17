@@ -44,10 +44,10 @@ one whole sentence or two, recorded whole, so none carries a slot.
 - `pa.screen.06` Vireo bars are available at every concession stand this evening. Fans in the upper bowl will receive theirs at the end of the match.
 - `pa.screen.07` Harbor General thanks tonight's crews for their continued support of the arena's medical wing.
 - `pa.screen.08` Syndicate Housing is now accepting applications in the eastern districts. Tonight's winning crew has been entered automatically.
-- `pa.results.01` That concludes this evening's programme. Please take a moment to enjoy the screens while the floor is cleared.
-- `pa.results.02` While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.
-- `pa.results.03` The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so.
-- `pa.results.04` Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.
+- `pa.signoff.01` That concludes this evening's programme. Please take a moment to enjoy the screens while the floor is cleared.
+- `pa.signoff.02` While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.
+- `pa.signoff.03` The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so.
+- `pa.signoff.04` Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.
 
 ## What the lead is asked
 

@@ -33,9 +33,9 @@ const NAMES := ["react_to_contact", "near_ambush", "assault_through", "far_ambus
 const CONTACT_DRILLS := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "break_contact",
 		"encircle", "bait"]
 ## A contact first seen within this many ticks counts as sudden (the ambush is sprung, not walked into).
-const SUDDEN_TICKS := 45
+const SUDDEN_TICKS := SimClock.TICK_RATE * 3 / 4
 ## How long the element turns into a near ambush before the assault carries it through (ticks).
-const TURN_TICKS := 30
+const TURN_TICKS := SimClock.TICK_RATE / 2
 ## Break contact is re-checked with hysteresis: this much better than the trigger ratio ends it.
 const RECOVER_FACTOR := 1.25
 ## A halt counts as halted when the element is within this far of where it was told to stop (meters).

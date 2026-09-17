@@ -66,14 +66,14 @@ func test_an_ifv_burst_fires_its_rounds_then_waits_for_the_reload() -> void:
 	ifv.global_position = Vector3(LANE_X, 0.0, 40.0)
 	await wait_physics_frames(2)
 	var gun := Weapons.profile("autocannon")
-	var cycle := roundi(float(gun["reload_s"]) * 60.0)
+	var cycle := roundi(float(gun["reload_s"]) * float(SimClock.TICK_RATE))
 	for tick in cycle + 30:  # trigger held for one full cycle and a bit
 		ifv.command = TankCommand.new(0.0, 0.0, ifv.global_position + Vector3(0.0, 1.0, -40.0), true)
 		await tree.physics_frame
 	var burst := int(gun["burst_count"])
 	assert_eq(ticks.size(), 2 * burst, "two bursts of %d in one cycle + half a second (%s)" % [burst, ticks])
 	if ticks.size() >= burst + 1:
-		var interval := roundi(float(gun["burst_interval_s"]) * 60.0)
+		var interval := roundi(float(gun["burst_interval_s"]) * float(SimClock.TICK_RATE))
 		for i in range(1, burst):
 			assert_eq(ticks[i] - ticks[i - 1], interval, "rounds %d apart inside a burst" % interval)
 		assert_eq(ticks[burst] - ticks[0], cycle, "the next burst starts one reload after the first")
@@ -88,7 +88,7 @@ func test_a_burst_finishes_after_the_trigger_is_released() -> void:
 	var aim := ifv.global_position + Vector3(0.0, 1.0, -40.0)
 	ifv.command = TankCommand.new(0.0, 0.0, aim, true)
 	await tree.physics_frame
-	for tick in 60:
+	for tick in SimClock.TICK_RATE:
 		ifv.command = TankCommand.new(0.0, 0.0, aim, false)
 		await tree.physics_frame
 	assert_eq(ticks.size(), int(Weapons.profile("autocannon")["burst_count"]), "a started burst is committed")
@@ -100,11 +100,28 @@ func test_a_scout_holding_the_trigger_streams_rounds() -> void:
 	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
 	scout.global_position = Vector3(LANE_X, 0.0, 40.0)
 	await wait_physics_frames(2)
-	for tick in 60:
+	for tick in SimClock.TICK_RATE:
 		scout.command = TankCommand.new(0.0, 0.0, scout.global_position + Vector3(0.0, 1.0, -30.0), true)
 		await tree.physics_frame
-	var expected := 60.0 / roundi(float(Weapons.profile("machine_gun")["reload_s"]) * 60.0)
+	var expected := float(SimClock.TICK_RATE) / roundi(float(Weapons.profile("machine_gun")["reload_s"]) * float(SimClock.TICK_RATE))
 	assert_near(float(ticks.size()), expected, 1.0, "one second of trigger = %.0f rounds (%d)" % [expected, ticks.size()])
+
+
+func test_a_gun_fired_by_a_controller_that_waits_for_ready_keeps_its_designed_rate() -> void:
+	# Round 5 (30 Hz): controllers run before the tank in a tick and pull the trigger when ready_to_fire() says so. It
+	# used to read the reload as the tank published it LAST tick, so every trigger pull came a tick late: a 0.1 s
+	# machine gun fired every 7 ticks at 60 Hz (8.6/s) and every 4 at 30 Hz (7.5/s), which thinned every beaten zone.
+	var game_match := _setup()
+	var ticks := _fired_ticks(game_match)
+	var scout := game_match.spawn_tank("Scout", 0, Match.Team.GREEN, "scout")
+	scout.global_position = Vector3(LANE_X, 0.0, 40.0)
+	await wait_physics_frames(2)
+	var aim := scout.global_position + Vector3(0.0, 1.0, -30.0)
+	for tick in SimClock.TICK_RATE * 2:
+		scout.command = TankCommand.new(0.0, 0.0, aim, scout.ready_to_fire())
+		await tree.physics_frame
+	var designed := 2.0 / float(Weapons.profile("machine_gun")["reload_s"])
+	assert_near(float(ticks.size()), designed, 1.0, "two seconds of fire-when-ready = %.0f rounds (%d)" % [designed, ticks.size()])
 
 
 func test_a_missed_tank_shell_costs_the_whole_reload() -> void:
@@ -114,7 +131,7 @@ func test_a_missed_tank_shell_costs_the_whole_reload() -> void:
 	tank.global_position = Vector3(LANE_X, 0.0, 40.0)
 	await wait_physics_frames(2)
 	var aim := tank.global_position + Vector3(0.0, 1.0, -40.0)
-	var reload := roundi(float(Weapons.profile("cannon")["reload_s"]) * 60.0)
+	var reload := roundi(float(Weapons.profile("cannon")["reload_s"]) * float(SimClock.TICK_RATE))
 	for tick in reload - 5:
 		tank.command = TankCommand.new(0.0, 0.0, aim, true)
 		await tree.physics_frame
@@ -141,7 +158,7 @@ func _shells_to_kill(unit_id: String, target_yaw: float) -> Dictionary:
 	await wait_physics_frames(2)
 	var effective := float(target.max_health) + target.max_shield
 	var ticks := 0
-	while target.is_alive() and ticks < 60 * 30:
+	while target.is_alive() and ticks < SimClock.TICK_RATE * 30:
 		gunner.command = TankCommand.new(0.0, 0.0, target.global_position + Vector3.UP, true)
 		target.command = TankCommand.new()
 		await tree.physics_frame

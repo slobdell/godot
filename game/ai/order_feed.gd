@@ -39,6 +39,16 @@ static func attach(game_match: Object, orders: Object) -> void:
 	game_match.set_meta("orders", orders)
 
 
+## The team a PLAYER commands in this match, or -1 when nobody does (every CPU match). Set by the mode that gives a
+## human the orders — `game_match.set_meta("player_team", Match.Team.GREEN)` in skirmish — and read by brains: a unit
+## of that team holds its ground until it is told to do something (round 5, the lead: *"they all also just rush forward
+## right away at the start of the game"*). An army that moves without being told isn't an army.
+static func player_team(game_match: Object) -> int:
+	if game_match == null or not game_match.has_meta("player_team"):
+		return -1
+	return int(game_match.get_meta("player_team"))
+
+
 static func current(orders: Object, unit_name: String) -> Dictionary:
 	if orders == null:
 		return {}

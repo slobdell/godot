@@ -30,7 +30,7 @@ func test_a_laser_through_a_teammate_hurts_it_and_scores_nothing() -> void:
 	var friend := _at(game_match.spawn_tank("Green_Guns_1", 0, Match.Team.GREEN, "tank"), 0.0, 10.0, PI / 2.0)
 	var enemy := _at(game_match.spawn_tank("Rust_Guns_1", 0, Match.Team.RUST, "tank"), 0.0, -20.0)
 	await wait_physics_frames(2)
-	for tick in 60 * 2:
+	for tick in SimClock.TICK_RATE * 2:
 		lancer.command = TankCommand.new(0.0, 0.0, enemy.global_position, true)
 		await tree.physics_frame
 	assert_true(friend.health + friend.shield < friend.max_health + friend.max_shield, "the teammate in the beam's path takes the pulses")

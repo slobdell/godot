@@ -37,7 +37,7 @@ func test_the_explain_overlay_draws_what_brains_are_doing() -> void:
 	overlay.game_match = s.game_match
 	s.game_match.add_child(overlay)
 	await s.start()
-	for tick in 60 * 3:
+	for tick in SimClock.TICK_RATE * 3:
 		await s.step()
 	var drawn := overlay.redraw()
 	assert_eq(drawn, 1, "one brain drawn (dummies have no brain)")

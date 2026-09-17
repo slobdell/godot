@@ -5,8 +5,8 @@ extends TestCase
 ## the walls (x ≈ -100) unless a scenario needs cover.
 
 const PENDING := []
-## K1 response guarantee: a brain starts executing a new order within this many ticks.
-const RESPONSE_TICKS := 3
+## K1 response guarantee: a brain starts executing a new order within Orders.RESPONSE_MS (100 ms), as ticks at the
+## current rate (Orders.response_ticks(): 6 at 60 Hz, 3 at 30 Hz), so the check stays right when the tick rate changes.
 
 
 func _issue(orders: Object, units: Array, verb: String, extra := {}) -> void:
@@ -26,7 +26,7 @@ static func _executing_move(brain: TankBrain, goal: Vector3) -> bool:
 	return move.get("type") == "move_to" and Vector2(float(move["x"]) - goal.x, float(move["z"]) - goal.z).length() < 0.5
 
 
-func test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing() -> void:
+func test_a_move_order_is_executed_within_100_ms_whatever_the_brain_was_doing() -> void:
 	# A 4 v 4 brawl in the open: brains on both sides pick all sorts of options. Every 1.5 s one Green unit gets a move
 	# order to a fresh spot; the response time and the option it interrupted are recorded.
 	var s := AiScenario.create(self, 3)
@@ -75,8 +75,8 @@ func test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing()
 	print("MEASURE ai_order_response worst %d ticks over %d orders (%d missed); interrupted options (worst ticks, -1 = missed) %s" % [
 			worst, issued, missed, interrupted])
 	assert_true(issued >= 6, "enough orders landed on living units (%d)" % issued)
-	assert_true(missed == 0 and worst <= RESPONSE_TICKS, "every order executed within %d ticks (worst %d, missed %d: %s)" % [
-			RESPONSE_TICKS, worst, missed, interrupted])
+	assert_true(missed == 0 and worst <= Orders.response_ticks(), "every order executed within %d ticks = %d ms (worst %d, missed %d: %s)" % [
+			Orders.response_ticks(), Orders.RESPONSE_MS, worst, missed, interrupted])
 
 
 func test_a_moved_unit_arrives_and_its_order_completes() -> void:
@@ -86,13 +86,13 @@ func test_a_moved_unit_arrives_and_its_order_completes() -> void:
 	await s.start()
 	_issue(orders, [me], "move", {"to": [-80.0, 10.0]})
 	var arrived := -1
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 		if (orders.call("current", String(me.name)) as Dictionary).is_empty():
 			arrived = tick
 			break
 	var gap := Vector2(me.global_position.x + 80.0, me.global_position.z - 10.0).length()
-	print("MEASURE ai_order_arrival completed after %.1f s, %.1f m from the spot" % [arrived / 60.0, gap])
+	print("MEASURE ai_order_arrival completed after %.1f s, %.1f m from the spot" % [arrived / float(SimClock.TICK_RATE), gap])
 	assert_true(arrived > 0, "the move completed")
 	assert_true(gap <= TankBrain.ORDER_ARRIVE + 0.5, "it stopped on its spot (%.1f m off)" % gap)
 
@@ -107,14 +107,14 @@ func test_attack_move_fights_on_the_way_then_arrives() -> void:
 	await s.start()
 	_issue(orders, [me], "attack_move", {"to": [-100.0, -60.0]})
 	var done := -1
-	for tick in 60 * 45:
+	for tick in SimClock.TICK_RATE * 45:
 		await s.step()
 		if (orders.call("current", String(me.name)) as Dictionary).is_empty():
 			done = tick
 			break
 	var gap := Vector2(me.global_position.x + 100.0, me.global_position.z + 60.0).length()
 	print("MEASURE ai_attack_move shots %d, prey alive %s (hull %d), arrived after %.1f s, %.1f m off" % [s.shots_by(me),
-			prey.is_alive(), prey.health, done / 60.0, gap])
+			prey.is_alive(), prey.health, done / float(SimClock.TICK_RATE), gap])
 	assert_true(not prey.is_alive(), "the enemy met on the way was destroyed")
 	assert_true(done > 0 and gap <= TankBrain.ORDER_ARRIVE + 0.5, "then it carried on and arrived (%.1f m off)" % gap)
 
@@ -132,7 +132,7 @@ func test_attack_fights_only_the_ordered_target() -> void:
 	var controller := s.controller_of(me)
 	var on_far := 0
 	var on_near := 0
-	for tick in 60 * 8:
+	for tick in SimClock.TICK_RATE * 8:
 		await s.step()
 		if controller.engaged_target == far.name:
 			on_far += 1
@@ -156,7 +156,7 @@ func test_hold_stays_put_but_still_turns_and_shoots() -> void:
 	var behind := s.shooter(Match.Team.RUST, "Rust_Gun_1", Vector3(-100, 0, 70), PI)
 	AiScenario.make_durable(behind)
 	var worst_drift := 0.0
-	for tick in 60 * 12:
+	for tick in SimClock.TICK_RATE * 12:
 		await s.step()
 		worst_drift = maxf(worst_drift, Vector2(me.global_position.x - spot.x, me.global_position.z - spot.z).length())
 	var facing := -me.global_basis.z
@@ -176,9 +176,9 @@ func test_follow_keeps_station_on_a_moving_friend() -> void:
 	var close_ticks := 0
 	var counted := 0
 	var worst := 0.0
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
-		if tick < 60 * 6:
+		if tick < SimClock.TICK_RATE * 6:
 			continue  # catching up
 		counted += 1
 		var gap := Vector2(me.global_position.x - lead.global_position.x, me.global_position.z - lead.global_position.z).length()
@@ -196,18 +196,18 @@ func test_an_idle_unit_pushed_off_its_post_regroups() -> void:
 	var orders := s.orders()
 	await s.start()
 	_issue(orders, [me], "move", {"to": [-100.0, 40.0]})
-	for tick in 60 * 8:
+	for tick in SimClock.TICK_RATE * 8:
 		await s.step()
 	assert_true((orders.call("current", String(me.name)) as Dictionary).is_empty(), "setup: the move finished")
 	# Separated from its post (as if it chased something), no personal order: it goes back on its own.
 	me.global_position = Vector3(-60, 0, 0)
 	var back := -1
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 		if Vector2(me.global_position.x + 100.0, me.global_position.z - 40.0).length() <= 6.0:
 			back = tick
 			break
-	print("MEASURE ai_regroup back at its post after %.1f s" % (back / 60.0))
+	print("MEASURE ai_regroup back at its post after %.1f s" % (back / float(SimClock.TICK_RATE)))
 	assert_true(back > 0, "it rejoined its post")
 
 
@@ -239,7 +239,7 @@ func test_queued_orders_run_in_order() -> void:
 	_issue(orders, [me], "move", {"to": [-100.0, 30.0]})
 	_issue(orders, [me], "move", {"to": [-80.0, 30.0], "queue": true})
 	var passed_first := false
-	for tick in 60 * 25:
+	for tick in SimClock.TICK_RATE * 25:
 		await s.step()
 		if Vector2(me.global_position.x + 100.0, me.global_position.z - 30.0).length() <= 5.0:
 			passed_first = true

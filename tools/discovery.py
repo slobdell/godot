@@ -24,6 +24,9 @@ import shlex
 import subprocess
 import sys
 
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
+
 
 def nearest(point, items):
     best = None
@@ -98,7 +101,7 @@ def main():
     brain, colon, table = args.opponent.partition(":")
     army = args.army if args.army.startswith(("cpu", "res://")) else f"res://doctrines/{args.army}.json"
     os.makedirs(os.path.dirname(os.path.abspath(args.log)), exist_ok=True)
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination",
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination",
                f"--green-doctrine={army}", f"--rust-doctrine={army}", f"--arena={args.arena}", f"--seed={args.seed}",
                f"--time-limit={args.time_limit}", f"--{args.side}-brain={args.brain}", f"--{other}-brain={brain}",
                f"--{args.side}-discovery={args.every}", f"--discovery-log={os.path.abspath(args.log)}", "--tactics-ledger"]

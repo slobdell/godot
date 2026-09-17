@@ -79,7 +79,7 @@ func test_turret_watches_a_known_threat_it_cannot_shoot_yet() -> void:
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": squad.squad_name, "verb": "move", "to": [LANE_X - 10.0, 100.0]}), "",
 			"move order accepted")
 	var worst := 0.0
-	for frame in 60 * 5:
+	for frame in SimClock.TICK_RATE * 5:
 		await tree.physics_frame
 		if frame > 150:  # after the first swing onto the threat (it starts 90 deg away)
 			var to_enemy := enemy.global_position - tank.global_position
@@ -108,7 +108,7 @@ func _retreat_under_pursuit(verb: String, destination: Vector2) -> Dictionary:
 	var shots_before: int = game_match.stats["shots"][Match.Team.GREEN]
 	var front_samples := 0
 	var samples := 0
-	for frame in 60 * 10:
+	for frame in SimClock.TICK_RATE * 10:
 		_push(pursuers, 0.35)
 		await tree.physics_frame
 		if frame % 30 == 0 and frame > 120:

@@ -153,10 +153,9 @@ func test_ground_rings_mark_the_selected_squad_and_respect_fog() -> void:
 	rings = markers.state()
 	assert_eq(rings["Green_Alpha_2"]["kind"], "friendly", "selecting Bravo moves the rings")
 	assert_eq(rings["Green_Bravo_2"]["kind"], "selected", "to Bravo")
-	var ring := markers.get_node("Ring_Green_Bravo_2") as MeshInstance3D
-	var material := ring.material_override as StandardMaterial3D
+	var material := markers.layer("selected").material_override as StandardMaterial3D
 	assert_true(not material.no_depth_test, "rings are depth-tested, so a vehicle covers its own ring")
-	assert_true(ring.global_position.y < 0.5, "the ring lies on the ground")
+	assert_true((rings["Green_Bravo_2"]["position"] as Vector3).y < 0.5, "the ring lies on the ground")
 
 
 func test_close_up_the_map_leaves_vehicles_to_their_models() -> void:

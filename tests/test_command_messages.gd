@@ -101,7 +101,9 @@ func test_duplicates_and_bursts_are_limited_but_warnings_get_through() -> void:
 	assert_eq(_posts.size(), HudMessages.WINDOW_MAX, "at most %d info messages at once" % HudMessages.WINDOW_MAX)
 	assert_true(messages.post("Contact!", Hud.WARNING), "a warning still gets through")
 	assert_true(not messages.post("Contact!", Hud.WARNING), "but not the same text twice in a row")
-	messages.advance(HudMessages.DUPLICATE_SECONDS)
+	# A hair past the window: the clock sums frame deltas, so "exactly DUPLICATE_SECONDS later" can land short of it
+	# (it did once the tick rate changed what had been summed before this point).
+	messages.advance(HudMessages.DUPLICATE_SECONDS + 0.01)
 	assert_true(messages.post("Contact!", Hud.WARNING), "later it can repeat")
 
 

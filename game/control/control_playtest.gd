@@ -8,10 +8,9 @@ extends Node
 ##                                          7 X3: a screen task reaches the element's leader, and what it decided
 ##                                          8 X4: ctrl+A takes the whole army; the panel groups it by type
 ## Every order's response is logged to orders.jsonl: the tick it was issued and the first tick the unit's tracks
-## steered toward it (the K1 response guarantee: within 3 ticks). Prints CONTROL_PLAYTEST lines and
+## steered toward it (the K1 response guarantee: within Orders.RESPONSE_MS, 100 ms). Prints CONTROL_PLAYTEST lines and
 ## CONTROL_PLAYTEST_DONE ok=<bool> at the end, then quits (exit 1 when a check failed).
 
-const RESPONSE_TICKS := 3
 ## A pushed unit must be back within this distance of its station after REJOIN_SECONDS.
 const REJOIN_DISTANCE := 6.0
 const REJOIN_SECONDS := 10.0
@@ -51,8 +50,8 @@ func run() -> void:
 	await _queued_route()
 	await _group_swap()
 	await _rejoin()
-	var slow := _responses.filter(func(r: Dictionary) -> bool: return int(r["ticks"]) < 0 or int(r["ticks"]) > RESPONSE_TICKS)
-	_checks["every_order_responded_within_3_ticks"] = slow.is_empty() and not _responses.is_empty()
+	var slow := _responses.filter(func(r: Dictionary) -> bool: return int(r["ticks"]) < 0 or int(r["ticks"]) > Orders.response_ticks())
+	_checks["every_order_responded_within_100_ms"] = slow.is_empty() and not _responses.is_empty()
 	var worst := 0
 	for response: Dictionary in _responses:
 		worst = maxi(worst, int(response["ticks"]))

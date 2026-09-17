@@ -74,6 +74,20 @@ class GenerateAndLayerTest(unittest.TestCase):
             path = sfx_layer.write_take(mixed, "tank_boom", 1, False, tmp / "layered")
             self.assertEqual(path.suffix, ".wav", "WAV, not Ogg: an Ogg one-shot costs a decoder per shot")
 
+    def test_a_near_silent_master_is_refused_not_levelled_into_noise(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            data = recipe(takes=1)
+            source = data["sources"][0]
+            path = sfx_generate.master_path(tmp, source, 1)
+            quiet = np.random.default_rng(1).standard_normal(sfx_layer.RATE) * 0.01  # peaks near -30 dBFS
+            wav = tmp / "quiet.wav"
+            sfx_layer.write_wav(wav, quiet)
+            import subprocess
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wav), str(path)], check=True)
+            with self.assertRaises(ValueError):
+                sfx_layer.build_take(path, source, 1)
+
     def test_a_loop_is_a_wav_with_a_quiet_seam(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
