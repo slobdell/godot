@@ -30,7 +30,7 @@ extends Node
 ## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count),
 ## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
 ## ground_chunked (the floor's tiling flipped), team_paint (hulls in a dulled team color; not restored, run it last),
-## no_live_feed (the arena screens' live match feed and replay ring).
+## no_live_feed (the arena screens' live match feed and replay ring), no_blob_shadow (the marks under vehicles).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -63,6 +63,8 @@ var _results: Array = []
 var _hidden: Array = []
 var _shot_taken := false
 var _done := false
+var _capped := false
+var _hitches := 0
 ## Timestamps (µs) from probe nodes placed around FxWorld in the process order: [start, before fx, after fx].
 var _marks := PackedInt64Array([0, 0, 0])
 var _cpu_sums := {"game_ui_ms": 0.0, "fx_ms": 0.0}
@@ -94,7 +96,8 @@ func _ready() -> void:
 	_phases = PerfScene.schedule(layers, cycles)
 	# Uncapped by default (what a frame costs); --perf-capped keeps the frame target's cap and vsync (whether the target
 	# actually holds: the pacing a player sees).
-	if not flags.has("perf-capped"):
+	_capped = flags.has("perf-capped")
+	if not _capped:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 		Engine.max_fps = 0
 	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
@@ -150,6 +153,10 @@ static func layer_costs(phases: Array, key := "avg_ms") -> Dictionary:
 func _process(delta: float) -> void:
 	if _done:
 		return
+	# FxWorld applies the frame target's cap in its own _ready, which runs after this node's (children first), so an
+	# uncapped measurement has to keep clearing it.
+	if not _capped and Engine.max_fps != 0:
+		Engine.max_fps = 0
 	_time += delta
 	_update_camera(delta)
 	if _time < warmup:
@@ -157,6 +164,7 @@ func _process(delta: float) -> void:
 	if _phase_index < 0:
 		_start_phase(0)
 	_phase_time += delta
+	_log_hitch(delta)
 	if _phase_time >= SETTLE_SECONDS:
 		_sample(delta)
 	if not _shot_taken and shot_path != "" and (_phases[_phase_index] == "all" or shot_every_phase) and _phase_time > phase_seconds * 0.5:
@@ -173,6 +181,32 @@ func _process(delta: float) -> void:
 			_start_phase(_phase_index + 1)
 		else:
 			_finish()
+
+
+## A frame far over the target: print what happened in it. A locked rate that hitches is not locked (the lead's
+## sign-off), and the cause is usually visible in what ran that frame rather than in averages.
+func _log_hitch(delta: float) -> void:
+	var target := 1.0 / maxf(float(FrameTarget.value("fps")), 1.0)
+	if delta < target * 1.8 or _hitches >= 40:
+		return
+	_hitches += 1
+	var fx := FxWorld.existing()
+	var feed := LiveFeed.for_node(self)
+	print("PERF_SCENE_HITCH " + JSON.stringify({
+		"ms": snappedf(delta * 1000.0, 0.1),
+		"t": snappedf(_time, 0.1),
+		"phase": _phases[_phase_index] if _phase_index >= 0 else "warmup",
+		"vehicles": _living_tanks().size(),
+		"ticks_this_frame": _ticks,
+		"tick_ms": snappedf(_tick_usec / 1000.0, 0.01),
+		"fx_ms": snappedf((_marks[2] - _marks[1]) / 1000.0, 0.01),
+		"game_ui_ms": snappedf((_marks[1] - _marks[0]) / 1000.0, 0.01),
+		"cpu_render_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.01),
+		"bursts_started": fx.bursts.started if fx != null else -1,
+		"feed_frame": feed.last_render_frame if feed != null else -1,
+		"frame": Engine.get_frames_drawn(),
+		"replaying": feed.replaying if feed != null else false,
+	}))
 
 
 func _update_camera(delta: float) -> void:
@@ -253,6 +287,11 @@ func _apply(phase: String) -> void:
 		"no_pool_lights":
 			if fx != null:
 				_override(fx.lights, "enabled", false)
+		"no_blob_shadow":
+			if fx != null:
+				var shadows := fx.underglow.get_node_or_null("BlobShadows")
+				if shadows != null:
+					_override(shadows, "visible", false)
 		"no_underglow":
 			if fx != null:
 				_override(fx.underglow, "visible", false)
@@ -464,6 +503,20 @@ func _census() -> Dictionary:
 			if instance.is_visible_in_tree() and instance.mesh != null:
 				var key := "dressing mesh: %s x%d surfaces" % [instance.mesh.resource_path if instance.mesh.resource_path != "" else instance.name.rstrip("0123456789"), instance.mesh.get_surface_count()]
 				counts[key] = int(counts.get(key, 0)) + 1
+	var fx_now := FxWorld.existing()
+	if fx_now != null:
+		var shadows := fx_now.underglow.get_node_or_null("BlobShadows") as MultiMeshInstance3D
+		if shadows != null and shadows.multimesh != null:
+			var mm := shadows.multimesh
+			var material := mm.mesh.surface_get_material(0) as ShaderMaterial
+			counts["blobshadow: shader=%s colors=%s custom=%s override=%s shown=%d color0=%s xform0=%s" % [
+					material.shader.resource_path if material != null else "none", mm.use_colors, mm.use_custom_data,
+					shadows.material_override, mm.visible_instance_count, mm.get_instance_color(0), mm.get_instance_transform(0)]] = 1
+	for node in get_tree().root.find_children("*", "MultiMeshInstance3D", true, false):
+		var mm := node as MultiMeshInstance3D
+		if mm.is_visible_in_tree() and mm.multimesh != null and mm.multimesh.visible_instance_count != 0:
+			var shown := mm.multimesh.visible_instance_count
+			counts["multimesh %s: %d shown of %d" % [str(mm.get_path()).replace("/root/", ""), shown, mm.multimesh.instance_count]] = 1
 	var root := _tanks_root()
 	if root != null and root.get_child_count() > 0:
 		var tank := root.get_child(0)
@@ -528,6 +581,11 @@ func _finish() -> void:
 ## vehicle count. A count holds when its median `key` reading and every smaller count's are within one frame at `fps`
 ## (one noisy phase doesn't decide it); 0 if even the fewest didn't. 60 fps is judged on the average frame; the default
 ## target, a LOCKED 30 (the lead's sign-off), on the 99th percentile, because a locked rate that drops isn't locked. Pure.
+## A capped frame lands a hair over its target (a 30 fps cap measures 33.4 ms, not 33.33), so a count holds within this
+## much of the frame time.
+const FPS_TOLERANCE_MS := 1.0
+
+
 static func holds_fps_at(phases: Array, fps := 60.0, key := "avg_ms") -> int:
 	var by_count := {}
 	for r: Dictionary in phases:
@@ -540,7 +598,7 @@ static func holds_fps_at(phases: Array, fps := 60.0, key := "avg_ms") -> int:
 	counts.sort()
 	var held := 0
 	for count: int in counts:
-		if PerfScene.percentile(by_count[count], 0.5) > 1000.0 / fps:
+		if PerfScene.percentile(by_count[count], 0.5) > 1000.0 / fps + FPS_TOLERANCE_MS:
 			break
 		held = count
 	return held

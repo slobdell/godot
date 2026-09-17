@@ -33,7 +33,7 @@ func test_sixty_fps_holds_at_the_most_vehicles_whose_median_frame_stayed_under_6
 	var phases := [
 		{"phase": "all", "vehicles": 60, "avg_ms": 133.0}, {"phase": "all", "vehicles": 30, "avg_ms": 40.0},
 		{"phase": "all", "vehicles": 14, "avg_ms": 16.2}, {"phase": "no_hud", "vehicles": 12, "avg_ms": 12.0},
-		{"phase": "all", "vehicles": 12, "avg_ms": 17.4}, {"phase": "all", "vehicles": 12, "avg_ms": 17.9},
+		{"phase": "all", "vehicles": 12, "avg_ms": 19.4}, {"phase": "all", "vehicles": 12, "avg_ms": 19.9},
 		{"phase": "all", "vehicles": 10, "avg_ms": 14.0}, {"phase": "all", "vehicles": 10, "avg_ms": 18.9},
 		{"phase": "all", "vehicles": 10, "avg_ms": 13.0},
 	]

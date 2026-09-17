@@ -253,6 +253,68 @@ up glow, resolution and the venue *and* the tick falls further. **A locked, stab
 reachable with 30 Hz alone** and may be the better game than an unstable 60: that's a design decision, not an
 engineering failure.
 
+### Measured on 30 Hz (main 84376839, 2026-09-17): the tick rate bought much less than projected
+
+`make perf-scene`, UHD 620, same scene as every other run. Files: `_agents/streams/references/perf/hz30-*.json`.
+
+| | 60 Hz baseline | 30 Hz now |
+|---|---|---|
+| 60 fps holds at (720p / 1080p) | 13 / never | **14 / 8 vehicles** |
+| Locked 30 at 1080p, **p95**, quiet laptop | never | **~18 (mine) to ~29 (combat's)** |
+| Locked 30 at 1080p, p99 (rare hitches counted) | never | **8–14** |
+| Locked 30 at 720p | never | 18 |
+| GPU | 10 / 14 ms | 9 / 15 ms (unchanged) |
+
+**The agreed picture (with combat, 2026-09-17).** A locked 30 fps at 1080p holds **~29 vehicles on a quiet laptop and
+12–15 while five agents share the CPU**; my quiet run gives ~18 by p95. Two measurement notes that explain the spread
+and should travel with the number:
+- **Machine load moves it more than anything we build.** Same tool, same build: 12–15 under load, 18–29 quiet.
+- **p95 versus p99.** Combat quote p95; I quote p99 because the lead's target is a *locked* rate. At 18 vehicles my p95
+  is 33.5 ms (locked by that measure) while the p99 catches occasional 40–100 ms frames. **Neither of us has measured
+  his machine in the state he plays in**; his own clean `perf-scene` run is the tiebreak.
+- **The hitches, chased down:** perf-scene now logs each frame far over the target with what ran in it
+  (`PERF_SCENE_HITCH`). Every one was a frame in which the **simulation ran 2–3 ticks at once** (catching up, 23–44 ms
+  of script), and in two of three a **feed slot rendered in that same already-late frame**. The sim half is combat's;
+  render's half is fixed: LiveFeed now skips a feed frame whose last frame ran more than 1.3× the frame target, so it
+  never adds a scene render to a frame that is already behind. Same scene, capped 30 at 1080p: **3 hitches → 0**.
+
+**Combat's correction to my decomposition, which I accept:** the `segment:controllers` band is `OrderController`
+executing every tick *as well as* `TankBrain` thinking on a wall clock. The executing half halves with the tick rate,
+the thinking half does not — so the ceiling is not my ~13% but their measured **27%** (513 → 377 ms of script per
+simulated second, same seed, same 60 simulated seconds, same laptop). Their earlier 47% is withdrawn.
+
+**Reconciled with combat (2026-09-17).** Two separate factors, and their headless number and mine are consistent:
+- **Machine:** combat's own `make sim-profile TIME=60` run on the lead's laptop gives **tick 18.42 ms at 58 vehicles**
+  against **6.68 ms on builder0**: the laptop is **~2.75× slower** for the identical headless workload. In game on the
+  laptop it is ~32 ms: rendering shares the main thread in Compatibility, plus other agents' load. Same thing measured
+  in three places; only the last is what the lead gets.
+- **Why 30 Hz can only save ~13%:** the same profile with `PROFILE_FLAGS=--no-brains` gives **tick 2.69 ms**, so brains
+  are **85% of a tick** (15.69 ms of 18.42). Brains think at a fixed 10/s wall clock, so their cost *per second* does
+  not change with tick rate; only the non-brain 2.7 ms per tick halves (~81 ms/s of ~630). That is the ~13-18% measured,
+  and combat's `ready_to_fire` fix (~14% more shells) accounts for the rest.
+- The doctrine default was **withdrawn**, so it is not part of this (an earlier note here said otherwise).
+**The arithmetic that settles the strategy:** the tick is 18.42 ms at 58 vehicles on the laptop. With `--no-brains` it is
+2.69 ms. **Brains are 85% of a tick.** They think on a wall-clock schedule, so their cost per second is *independent of
+tick rate*; only the non-brain 2.7 ms halves. That is ~81 ms/s out of ~630: **30 Hz could never have saved more than
+~13%.** The tick change was sound engineering aimed at the wrong 15% of the problem, and the decomposition above is what
+shows it.
+
+**No reactivity regression, and a small surprise** (checked in the code, not inferred): think intervals are tick-rate
+relative (`TankBrain.THINK_EVERY_TICKS = SimClock.TICK_RATE / 10`, the champion's `think_ticks = TICK_RATE * 3 / 20`).
+At 60 Hz that was every 9 ticks = 6.67 thinks/s; at 30 Hz integer division gives every 4 ticks = **7.5 thinks/s, ~12%
+MORE often**. So brains did not become less reactive — they became slightly more so, and that extra thinking is part of
+why the per-second saving came out below even the 13% ceiling.
+
+**The lever is brain cost per second, not tick rate: 30 Hz has already given what it can.**
+
+**Against the lead's target** (locked 30 at 1080p with 30 a side): not met. It needs a tick of ~21 ms at 60 vehicles
+(frame = R / (1 − tick/33.3), R ≈ 12.5 ms at 1080p); measured is 32–42 ms. The tick has to come down ~40–50%, and
+that is the whole gap: GPU, draw calls and effects are all inside budget.
+
+**Measurement fix in the same commit:** perf-scene's "uncapped" runs were silently capped at 30 fps, because FxWorld
+applies the frame target in its own `_ready`, which runs after this node's (children first). It now clears the cap every
+frame while measuring uncapped, and `holds_*_at_vehicles` allows 1 ms over the target (a 30 fps cap measures 33.4 ms).
+
 ### The lead's decision: a locked 30 fps at 1080p with 30 a side, plus a 720p 60 fps option
 - `FrameTarget` (`game/theme/fx/frame_target.gd`): **LOCKED_30** (default: `Engine.max_fps` 30, 3D native up to 1080
   lines) or **PERFORMANCE_60** (60 fps, ~720 lines of 3D, UI full resolution). `--frame-target=30|60`, or the player's
@@ -270,6 +332,21 @@ engineering failure.
 - `FxWorld.visual_transform()` for everything that follows a body per frame; `WeaponFx.drawn_offset()` keeps muzzle
   effects on the drawn barrel. Combat confirmed: shells interpolated, `reset_physics_interpolation()` on spawns,
   `shooter` stays in `weapon_fired`. Re-take perf-scene on their flip commit.
+
+### Round 6, for the lead: catch-up steps, or a clock that falls behind?
+
+`max_physics_steps_per_frame` is **3** (combat's round-5 choice, down from Godot's default 8, which is the spiral). It
+decides what a slow machine does when a frame runs long, and the two outcomes are genuinely different games rather than
+better and worse:
+- **3 steps (today):** after a slow frame the simulation catches up in the next one. That catch-up frame carries 2–3
+  ticks, 23–44 ms of script — every hitch in `PERF_SCENE_HITCH` was one of these. The clock stays true; the picture
+  stutters.
+- **1 step:** the frame stays smooth and the *simulation clock* falls behind instead, so under load the game plays in
+  slight slow motion. Nothing stutters; everything is a little slower than real time.
+
+For a locked 30 on the lead's laptop, smooth-but-slightly-slow may be the better experience, and it is his call, not
+ours. Combat owns the setting; render has the instrument (`make perf-scene --perf-capped`, hitch log, p99 and worst
+frame) and can measure both in an hour. **Not changed now:** it would move behaviour under a build he has just measured.
 
 ### Next steps
 1. The lead's answers on glow and team read (M3); then per-team hull paint if the rim isn't enough.
