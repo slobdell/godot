@@ -156,14 +156,15 @@ _Updated 2026-09-17 (evening)._
 - **control:** HUD ≤ 130 draw calls (measured 210–340) and ≤ 1 ms of `_process`.
 - **arena:** commit `tests/arena/arena_probe.gd.uid` (Godot generated it for your file).
 
-### Questions for the lead
-- **Glow:** it costs 1.6–1.9 ms of the GPU budget. Without it, vehicles read even more clearly and explosions look
-  flatter (`build/screenshots/x5-glowlook-compare.png`, top with, bottom without). Keep the neon bloom, or go more
-  grounded?
-- **Team read (M3):** is a team-tinted rim plus small light bars enough to tell sides apart at play distance, or do you
-  want per-team paint on the hull too? (`build/screenshots/look-x4.png`, `look-factions.png`)
-- **Windows build:** only Linux export templates are installed; a Windows desktop preset needs `TEMPLATE_FILES` in the
-  shared Makefile to include the Windows templates (~+100 MB in `.tools`). Want it this round?
+### The lead's answers (2026-09-17, via the orchestrator)
+- **Glow: keep it** (the frame is sim-bound; switching it off buys nothing today).
+- **Team read: "Rim tint is enough."** No hull paint; `team_paint` stays a perf-scene layer for reference only.
+- **Windows build: skipped this round.** Don't install the templates.
+- **Arena screens: "Live during, ads between."** Live match content on the screens during the fight (shared 15 Hz feed
+  camera, ring-buffer replay after kills), the approved ad copy (`assets/announcer/drafts/ad_copy.md`) between
+  matches. Prove the cost with a `live_feed` perf-scene layer first; the measured number decides replay quality.
+- **30 Hz simulation starts this round** (combat owns the refactor): take a "60 Hz, pre-interpolation" perf-scene
+  baseline first, and flag anything that reads a body's transform in `_process`.
 
 ### Known issues
 - CPU numbers are measured on a laptop shared with five other agents (load ≈ 5): pessimistic.
