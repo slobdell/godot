@@ -37,6 +37,8 @@ var structures: Node3D
 ## The perimeter's half size in use (walls at ±half).
 var half := HALF
 var _flood_maps := {}
+## The last layout setup() received (its floodlight props light the floor).
+var _layout := {}
 
 
 func _ready() -> void:
@@ -52,6 +54,8 @@ func _ready() -> void:
 
 ## C5: fit the dressing to an arena layout {half_size, control_point?, …} (rules' Arena calls this after building it).
 func setup(layout: Dictionary) -> void:
+	_layout = layout
+	_flood_maps.clear()
 	var wanted := float(layout.get("half_size", HALF - 1.0)) + 1.0
 	var ring := float((layout["control_point"] as Dictionary).get("radius", 16.0)) if layout.get("control_point") is Dictionary else 0.0
 	for variant in [[false, false], [true, false], [false, true]]:
@@ -61,9 +65,8 @@ func setup(layout: Dictionary) -> void:
 		material.set_shader_parameter("ring_width", 1.4 if ring > 0.0 else 0.0)
 	if not is_equal_approx(wanted, half):
 		half = wanted
-		_flood_maps.clear()
-		_apply_ground_quality()
 		_build_structures()
+	_apply_ground_quality()
 
 
 func _build_structures() -> void:
@@ -168,31 +171,54 @@ static func _bounds(node: Node3D) -> AABB:
 	return result
 
 
-## The floodlight pools baked into a small light map for the ground shader (R = intensity / FLOOD_SCALE over
-## ±FLOOD_HALF m): one texture fetch per pixel instead of a loop over lamps in every light pass.
+## The floodlight pools baked into a small light map for the ground shader (RGB = light / FLOOD_SCALE over ±FLOOD_HALF m):
+## one texture fetch per pixel instead of a loop over lamps in every light pass. Render (round 5): in color, so the
+## venue's cool towers and the layout's sodium floodlights read as different light, and the floor has a sense of place.
 const FLOOD_HALF := 160.0
 const FLOOD_SCALE := 2.0
 const FLOOD_MAP_SIZE := 64
+## The venue towers' cool metal-halide white, and a layout floodlight's warm sodium.
+const TOWER_LIGHT := Color(0.86, 0.92, 1.0)
+const SODIUM_LIGHT := Color(1.0, 0.72, 0.4)
+## A layout floodlight's pool: this far ahead of the tower (m), this radius, this bright.
+const LAYOUT_POOL := Vector3(16.0, 34.0, 1.1)
 
 
+## `lamps`: Vector4(x, z, radius, intensity) for white light, or [Vector4, Color].
 static func flood_map(lamps: Array) -> ImageTexture:
-	var image := Image.create(FLOOD_MAP_SIZE, FLOOD_MAP_SIZE, false, Image.FORMAT_L8)
+	var image := Image.create(FLOOD_MAP_SIZE, FLOOD_MAP_SIZE, false, Image.FORMAT_RGB8)
 	for y in FLOOD_MAP_SIZE:
 		for x in FLOOD_MAP_SIZE:
 			var world := (Vector2(x, y) + Vector2(0.5, 0.5)) / FLOOD_MAP_SIZE * 2.0 * FLOOD_HALF - Vector2(FLOOD_HALF, FLOOD_HALF)
-			var light := 0.0
-			for lamp: Vector4 in lamps:
+			var light := Color(0, 0, 0)
+			for entry in lamps:
+				var lamp: Vector4 = entry[0] if entry is Array else entry
+				var tint: Color = entry[1] if entry is Array else Color.WHITE
 				var falloff := 1.0 - clampf(world.distance_to(Vector2(lamp.x, lamp.y)) / lamp.z, 0.0, 1.0)
-				light += falloff * falloff * (3.0 - 2.0 * falloff) * lamp.w
-			var v := clampf(light / FLOOD_SCALE, 0.0, 1.0)
-			image.set_pixel(x, y, Color(v, v, v))
+				light += tint * (falloff * falloff * (3.0 - 2.0 * falloff) * lamp.w)
+			image.set_pixel(x, y, Color(clampf(light.r / FLOOD_SCALE, 0.0, 1.0), clampf(light.g / FLOOD_SCALE, 0.0, 1.0),
+					clampf(light.b / FLOOD_SCALE, 0.0, 1.0)))
 	return ImageTexture.create_from_image(image)
 
 
-## FLOODLIGHTS moved with the arena's size.
+## Pools thrown by a layout's own floodlight towers (M2 `props` of type floodlight; their lamps face the prop's -Z).
+static func layout_lamps(layout: Dictionary) -> Array:
+	var result := []
+	for prop: Dictionary in layout.get("props", []):
+		if String(prop.get("type", "")) != "floodlight":
+			continue
+		var at := Vector2(float(prop["position"][0]), float(prop["position"][1]))
+		var ahead := Vector2(0.0, -1.0).rotated(-deg_to_rad(float(prop.get("rotation_deg", 0.0))))
+		var center := at + ahead * LAYOUT_POOL.x
+		result.append([Vector4(center.x, center.y, LAYOUT_POOL.y, LAYOUT_POOL.z), SODIUM_LIGHT])
+	return result
+
+
+## FLOODLIGHTS moved with the arena's size (cool tower light), plus the layout's own floodlights (sodium).
 func _scaled_floodlights() -> Array:
 	var k := half / HALF
-	return FLOODLIGHTS.map(func(lamp: Vector4) -> Vector4: return Vector4(lamp.x * k, lamp.y * k, lamp.z * k, lamp.w))
+	var lamps: Array = FLOODLIGHTS.map(func(lamp: Vector4) -> Array: return [Vector4(lamp.x * k, lamp.y * k, lamp.z * k, lamp.w), TOWER_LIGHT])
+	return lamps + layout_lamps(_layout)
 
 
 func set_chunked(chunked: bool) -> void:

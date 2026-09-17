@@ -191,8 +191,11 @@ _Updated 2026-09-17 (evening)._
 - Ad screens seen from behind: lighter housing, ribs, amber service lights (no longer a black slab).
 - **Team read evidence for the lead:** perf-scene layer `team_paint` coats hulls in a dulled team color;
   `build/screenshots/team-read-crop.png` (left today's rim tint, right painted). Not the default: the lead's call.
-- Not addressed: "the floor reads dark and flat" (subjective; the next lever is brighter, more varied floodlight pools
-  and floor wear in the baked maps, both free per frame).
+- **The floor** (the orchestrator: vehicles were dark shapes on a dark flat surface): the baked light map is in color
+  now (cool tower light, warm sodium pools thrown by each layout's own floodlight props), an overhead rig lights the
+  middle of the field where fights happen, and the unlit floor's moonlight is ~30% stronger, so hulls read as
+  silhouettes on lit mid-grey ground. Same fetch count: no frame cost. `build/screenshots/floor2-grid.png` (left
+  before, right after, yard and boulevard). Baked wear (lanes, oil) not done.
 
 ### Thinking ahead: screens with live match content (orchestrator's heads-up; waiting on the lead)
 - **What it costs:** a live feed is a second camera rendering the match into the screens' channel SubViewport
