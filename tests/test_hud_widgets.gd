@@ -192,10 +192,14 @@ func test_banners_move_beside_the_tactical_map_and_wrap() -> void:
 	assert_true(skin.fx_button.position.x < 1600.0 * 0.2 and skin.fx_button.position.y < 720.0 * 0.3, "the FX button stays top-left, away from the radar and command bar")
 
 
-func test_title_menu_relaunches_into_the_chosen_mode() -> void:
+func test_title_menu_starts_the_chosen_mode_in_this_process() -> void:
 	var title_script: GDScript = load("res://game/ui/widgets/title/title_screen.gd")
-	var args: PackedStringArray = title_script.call("relaunch_args",
-			PackedStringArray(["--path", ".", "res://game/ui/widgets/title/title_screen.tscn", "--", "--ui-touch"]),
-			PackedStringArray(["--ui-touch"]), "skirmish")
-	assert_eq(args, PackedStringArray(["--path", ".", "--", "--skirmish"]), "keeps the project path, drops the title scene and old flags, adds the mode")
+	var carried := LaunchFlags.parse(PackedStringArray(["--title", "--ui-touch", "--shell-playtest=/tmp/x"]))
+	var skirmish: LaunchFlags = title_script.call("flags_for", "skirmish", carried)
+	assert_eq(skirmish.values, {"skirmish": "", "ui-touch": "", "shell-playtest": "/tmp/x"},
+			"the mode's flag, plus what the whole session keeps (touch UI, a playtest), and never --title again")
+	var drive: LaunchFlags = title_script.call("flags_for", "", LaunchFlags.new())
+	assert_eq(drive.values, {}, "PLAY TEST DRIVE is the offline mode: no flags at all")
+	assert_eq(GameMode.choose(skirmish).role_name(), GameMode.choose(LaunchFlags.parse(PackedStringArray(["--skirmish"]))).role_name(),
+			"the flags route to the mode the button names")
 	assert_eq(GameMode.choose(LaunchFlags.parse(PackedStringArray(["--title"]))).role_name(), "TITLE", "--title routes to the title screen")

@@ -231,3 +231,30 @@ func test_an_element_frames_the_contacts_it_can_see() -> void:
 	await _frames(2)
 	frame = f.controls.vision_state()["frame"]
 	assert_eq(frame.size(), 1, "an enemy beyond the element's own sight is not framed")
+
+
+## Round 5 (the lead: "it ends up focusing on the enemy instead of our own friendly units"): a big enemy army in sight
+## may widen the frame, but the camera stays centred on the element it is framing, and the element stays on screen.
+func test_a_mass_of_contacts_never_pulls_the_camera_off_your_element() -> void:
+	var f := Fixture.new(self)
+	await f.build_scale(30)
+	f.rig.vision = f.controls.vision_state
+	f.controls.recall_group(1)
+	await _frames(40)
+	var element: Array = []
+	var middle := Vector3.ZERO
+	for unit_name in f.controls.groups.members(1):
+		element.append(f.tank(unit_name).global_position)
+		middle += f.tank(unit_name).global_position
+	middle /= element.size()
+	var enemy := Vector3.ZERO
+	var enemies := f.game_match.sorted_team_tanks(Match.Team.RUST)
+	for tank in enemies:
+		enemy += tank.global_position
+	enemy /= enemies.size()
+	var aim := f.rig.focus
+	var to_element := Vector2(aim.x - middle.x, aim.z - middle.z).length()
+	var to_enemy := Vector2(aim.x - enemy.x, aim.z - enemy.z).length()
+	assert_true(to_element < to_enemy, "the screen's centre is nearer your element than the enemy (%.0f m vs %.0f m)" % [to_element, to_enemy])
+	assert_true(RtsCamera.shows_all(element, f.rig.focus, f.rig.yaw, f.rig.zoom, 1920.0 / 1080.0, 1.0),
+			"every vehicle of the element is on screen (focus %s zoom %.2f)" % [f.rig.focus, f.rig.zoom])

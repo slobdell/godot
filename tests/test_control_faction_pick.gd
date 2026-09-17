@@ -123,3 +123,38 @@ func test_clicking_a_row_picks_that_side() -> void:
 	tree.root.push_input(right)
 	await _frames(1)
 	assert_eq(picker.enemy_faction, "syndicate", "right-clicking the other half gives it to the enemy")
+
+
+## Round 5 (the lead: "I can't actually click any of the first buttons"): the menu starts the match with a click, not
+## only with a key the player has to read about first.
+func test_clicking_fight_starts_the_match() -> void:
+	tree.root.size = Vector2i(1280, 720)
+	var picker := FactionPicker.new()
+	add_to_tree(picker)
+	await _frames(3)
+	var got: Array = []
+	picker.chosen.connect(func(mine: String, theirs: String) -> void: got.append([mine, theirs]))
+	var fight := picker.fight_rect()
+	assert_true(fight.size.x >= 120.0 and fight.size.y >= 36.0, "FIGHT is a real button, big enough to hit (%s)" % fight)
+	assert_true(Rect2(Vector2.ZERO, picker.size).encloses(fight), "and on screen")
+	for pressed in [true, false]:
+		var event := InputEventMouseButton.new()
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.pressed = pressed
+		event.position = fight.get_center()
+		event.global_position = fight.get_center()
+		tree.root.push_input(event)
+		await _frames(1)
+	assert_eq(got, [[Units.DEFAULT_FACTION, Units.DEFAULT_FACTION]], "clicking FIGHT confirms once")
+
+
+## Drawing the menu must not rebuild four armies: that is what made every click on it hitch.
+func test_the_menu_builds_its_options_once() -> void:
+	tree.root.size = Vector2i(1280, 720)
+	var picker := FactionPicker.new()
+	add_to_tree(picker)
+	await _frames(2)
+	var first: Array = picker.choices()
+	picker.set_side("gangs", false)
+	await _frames(2)
+	assert_true(is_same(first, picker.choices()), "the options are computed once and reused across redraws")

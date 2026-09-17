@@ -92,3 +92,13 @@ command-playtest-shots: import ## The same playtest in a phone-sized window, sav
 	$(GODOT) --path . --resolution 1200x540 -- --skirmish --enemy=cpu --seed=3 --command-playtest=$(CURDIR)/$(COMMAND_PLAYTEST_DIR) 2>&1 \
 		| tee $(COMMAND_PLAYTEST_DIR)/run.log | grep -E 'COMMAND_PLAYTEST|SCRIPT ERROR' || true
 	grep -q 'COMMAND_PLAYTEST_DONE ok=true' $(COMMAND_PLAYTEST_DIR)/run.log
+
+## Control round 5 X1/X6: the first minutes as a player meets them, through real input events (needs a display).
+SHELL_PLAYTEST_DIR := $(BUILD_DIR)/shell-playtest
+SHELL_SIZE ?= 1920x1080
+
+shell-playtest: import ## Title → SKIRMISH → faction menu → planning → a minute of battle, through real clicks; readings and frames in build/shell-playtest/ (needs a display)
+	rm -rf $(SHELL_PLAYTEST_DIR) && mkdir -p $(SHELL_PLAYTEST_DIR)
+	timeout 240 $(GODOT) --path . --resolution $(SHELL_SIZE) -- --title --shell-playtest=$(CURDIR)/$(SHELL_PLAYTEST_DIR) 2>&1 \
+		| tee $(SHELL_PLAYTEST_DIR)/run.log | grep -E 'SHELL_PLAYTEST|TITLE_START|SCRIPT ERROR|^ERROR' || true
+	grep -q 'SHELL_PLAYTEST_DONE ok=true' $(SHELL_PLAYTEST_DIR)/run.log

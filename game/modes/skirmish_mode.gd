@@ -20,6 +20,7 @@ extends GameMode
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
+##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
 ##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
 ##   --touch-map  round 2's tap grammar (squad bar, drill and formation pickers) instead of the desktop controls
 ## Round 3 (control stream): the default is StarCraft-style desktop control (RtsControls, _agents/tactical_map.md "v4").
@@ -63,6 +64,8 @@ static func wants_faction_menu(flags: LaunchFlags) -> bool:
 
 
 func start() -> void:
+	if flags.has("shell-playtest"):
+		ShellPlaytest.ensure(main.get_tree(), flags.text("shell-playtest"))
 	if SkirmishMode.wants_faction_menu(flags):
 		_pick_faction()
 		return
