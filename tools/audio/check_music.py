@@ -66,6 +66,69 @@ def measure_lufs_peak(path: Path) -> tuple[float, float]:
     return (float(lufs.group(1)) if lufs else 0.0, float(peak.group(1)) if peak else 0.0)
 
 
+def check_stems(folder: Path, name: str, track: dict, target: float) -> list[str]:
+    """A stem set (X5, round 5): every stem there and the same length, the full arrangement meets the loudness and
+    peak contract (so any subset of it stays under the ceiling), the quietest arrangement is still music, and the
+    summed loop seam is clean. Stems are summed sample by sample, the way AudioStreamSynchronized plays them."""
+    problems: list[str] = []
+    for field in REQUIRED:
+        if field != "file" and field not in track:
+            problems.append("%s: missing %s" % (name, field))
+    if problems:
+        return problems
+    decoded, rate = [], 44100
+    for stem in track["stems"]:
+        path = folder / stem.get("file", "")
+        if not path.exists():
+            problems.append("%s: stem %s is not there" % (name, stem.get("file")))
+            continue
+        if "from" not in stem and "states" not in stem:
+            problems.append("%s: stem %s needs a `from` intensity or `states`" % (name, stem["file"]))
+        samples, rate = decode(path)
+        decoded.append((stem, samples))
+    if problems or not decoded:
+        return problems or ["%s: no stems" % name]
+    lengths = [len(samples) / rate for _, samples in decoded]
+    if max(lengths) - min(lengths) > 0.03:
+        problems.append("%s: stems differ in length (%.2f-%.2f s); they must line up sample for sample"
+                        % (name, min(lengths), max(lengths)))
+    count = min(len(samples) for _, samples in decoded)
+
+    def mixed(parts):
+        return [sum(samples[i] for _, samples in parts) for i in range(count)]
+
+    def loudness(samples):
+        with tempfile.TemporaryDirectory() as scratch:
+            wav = Path(scratch) / "mix.wav"
+            with wave.open(str(wav), "wb") as handle:
+                handle.setnchannels(1)
+                handle.setsampwidth(2)
+                handle.setframerate(rate)
+                handle.writeframes(struct.pack("<%dh" % len(samples), *(int(max(-1.0, min(1.0, x)) * 32767) for x in samples)))
+            return measure_lufs_peak(wav)
+
+    full = mixed(decoded)
+    lufs, _ = loudness(full)
+    peak = 20 * math.log10(max(max(abs(x) for x in full), 1e-9))
+    if abs(lufs - target) > TOLERANCE_LU:
+        problems.append("%s: the full arrangement is %.1f LUFS, %.1f LU off the %.1f target" % (name, lufs, lufs - target, target))
+    if peak > PEAK_CEILING_DB:
+        problems.append("%s: the full arrangement peaks at %.1f dB, over the %.1f ceiling" % (name, peak, PEAK_CEILING_DB))
+    floor = [part for part in decoded if "from" in part[0] and float(part[0]["from"]) <= 0.0]
+    quiet = loudness(mixed(floor))[0] if floor else -70.0
+    if quiet < target - 18.0:
+        problems.append("%s: with only the always-on stems it is %.1f LUFS, which is silence, not a lull" % (name, quiet))
+    if not 0.0 <= track["loop_start_s"] < track["loop_end_s"] <= count / rate + 0.05:
+        problems.append("%s: loop does not fit the stems" % name)
+    else:
+        jump = seam_jump(full, rate, track["loop_start_s"], track["loop_end_s"])
+        if jump > SEAM_JUMP:
+            problems.append("%s: the summed loop seam jumps %.2f of the peak" % (name, jump))
+    print("  %-12s %d stems  full %5.1f LUFS  peak %5.1f dB  floor %5.1f LUFS  loop %5.2f s  %s"
+          % (name, len(decoded), lufs, peak, quiet, track["loop_end_s"], ",".join(track["states"])))
+    return problems
+
+
 def check(folder: Path, target_lufs: float | None = None) -> list[str]:
     manifest_path = folder / "manifest.json"
     if not manifest_path.exists():
@@ -74,6 +137,9 @@ def check(folder: Path, target_lufs: float | None = None) -> list[str]:
     target = target_lufs if target_lufs is not None else float(manifest.get("target_lufs", -16.0))
     problems: list[str] = []
     for name, track in sorted(manifest.get("tracks", {}).items()):
+        if "stems" in track:
+            problems += check_stems(folder, name, track, target)
+            continue
         for field in REQUIRED:
             if field not in track:
                 problems.append("%s: missing %s" % (name, field))

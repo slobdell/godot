@@ -13,12 +13,12 @@ music-check: ## Every track against the contract in assets/music/PROMPTS.md: lou
 	$(PYTHON) tools/audio/check_music.py $(MUSIC_DIR)
 
 ## The lead's own workflow: turn one Suno download into a bed the director can use.
-music-import: ## Import a Suno track: IN=~/Downloads/battle.mp3 STATE=battle BPM=110 [RIGHTS="Suno Pro, 2026-09-16"]
+music-import: ## Import a Suno track: IN=~/Downloads/battle.mp3 STATE=battle BPM=110 [RIGHTS=...]; stems: IN=<folder> STATE=fight LAYERS="Synth=0 Drums=0.35 Bass=0.5 FX=last_stand"
 	@test -n "$(IN)" || { echo "usage: make music-import IN=<file> STATE=<state> BPM=<tempo>"; exit 2; }
 	@test -n "$(STATE)" || { echo "STATE is required (garage, pre_match, lull, skirmish, battle, last_stand, victory, defeat)"; exit 2; }
 	@test -n "$(BPM)" || { echo "BPM is required: the crossfade lands on a bar line"; exit 2; }
 	$(PYTHON) tools/audio/import_music.py "$(IN)" --state $(STATE) --bpm $(BPM) --out $(MUSIC_DIR) \
-		$(if $(RIGHTS),--rights "$(RIGHTS)")
+		$(if $(RIGHTS),--rights "$(RIGHTS)") $(if $(LAYERS),--layers "$(LAYERS)")
 
 # The sim-baseline match again (mk/core.mk), with the soundtrack following it: the music must change with the match
 # and must not change the match. Same shape as announcer-record-smoke, and the same guarantee.
@@ -33,13 +33,14 @@ music-smoke: import ## A real headless match with the music on: the beds change,
 		|| { echo "music-smoke FAILED: the director never attached"; grep -i music $(BUILD_DIR)/audio/music-smoke.log; exit 1; }; \
 	beds=$$(grep -c '^MUSIC_TRACK' $(BUILD_DIR)/audio/music-smoke.log); \
 	distinct=$$(grep '^MUSIC_TRACK' $(BUILD_DIR)/audio/music-smoke.log | sed 's/.*track=//;s/ .*//' | sort -u | wc -l); \
-	[ "$$distinct" -ge 2 ] \
-		|| { echo "music-smoke FAILED: the soundtrack never changed ($$beds cues, $$distinct beds)"; \
-		     grep '^MUSIC_TRACK' $(BUILD_DIR)/audio/music-smoke.log; exit 1; }; \
+	layers=$$(grep -c '^MUSIC_LAYERS' $(BUILD_DIR)/audio/music-smoke.log || true); \
+	[ "$$distinct" -ge 2 ] || [ "$$layers" -ge 1 ] \
+		|| { echo "music-smoke FAILED: the soundtrack never changed ($$beds cues, $$distinct beds, $$layers layer changes)"; \
+		     grep '^MUSIC' $(BUILD_DIR)/audio/music-smoke.log; exit 1; }; \
 	actual=$$(grep MATCH_RESULT $(BUILD_DIR)/audio/music-smoke.log | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	if [ -n "$$expected" ] && [ "$$actual" != "$$expected" ]; then echo "music-smoke FAILED: the soundtrack changed the simulation ($$actual, baseline $$expected)"; exit 1; fi; \
-	echo "music-smoke passed: $$beds bed changes across $$distinct beds, hash $$actual$${expected:+ (matches the $$key baseline)}"; \
-	grep '^MUSIC_TRACK' $(BUILD_DIR)/audio/music-smoke.log | sed 's/^/  /'
+	echo "music-smoke passed: $$beds bed changes across $$distinct beds, $$layers layer changes, hash $$actual$${expected:+ (matches the $$key baseline)}"; \
+	grep -E '^MUSIC_(TRACK|LAYERS)' $(BUILD_DIR)/audio/music-smoke.log | sed 's/^/  /'
 
 ## Round 5 X1-X2: sound effects from ElevenLabs, layered under the synthesised transients.
 ## Lead gate 1 (approved round 5): pilot first (PILOT=1), the lead listens, then the batch. Every real run is ledgered.
