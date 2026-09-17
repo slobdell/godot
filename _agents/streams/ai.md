@@ -188,6 +188,18 @@ The mode says whose team the player has: `game_match.set_meta("player_team", tea
 Measured (`tests/test_ai_player_holds.gd`): with it set the player's tank moves **0.0 m in 12 s** while the CPU's moves
 **100.9 m**; without it both move ~85 m. `make command-playtest` still passes, so ordered squads move at once.
 
+**Why code review would have missed it: the player's army is built by the CPU army generator, so it inherited the
+CPU's objectives.** Reading `player_default.json` says the player holds, and that file is right; the lineup choice
+bypasses it. Don't "fix" `player_default.json` — it was never the problem. This is the third time in round 5 that the
+game a player gets differed from the game we test (doctrine off for the CPU, faction art excluded from exports, this).
+
+**The round-6 experiment, with its prediction written first.** Re-run the faction ladder (brains vs faction doctrine,
+gangs vs law, control point on and off) once both this fix and the 30 Hz tick are on main — not before, or two changes
+in flight muddy it. **Prediction: doctrine gains, and may pass brains-only with the control point off.** Reasoning: the
+element layer decides where to go and what to point at, and both need an approach phase; the ladders above measured
+armies in contact by second ten, where a leader has nothing left to decide. If doctrine still loses with an approach
+phase, the round-6 army-level proposal is the remaining explanation and the drills are exonerated.
+
 **What it means for the round's measurements:** every ladder above was played by armies that charge from the first
 second, on both sides, counterbalanced — so the doctrine verdict stands, but "the fight is decided before any tactic
 applies" is now measured rather than suspected. Re-running the faction ladder after control's line lands is the first
