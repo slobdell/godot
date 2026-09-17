@@ -15,7 +15,7 @@ extends GameMode
 ##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
 ##   --no-elements  the player's squads stay hand-driven (no L1 leaders picking formations and drills)
-##   --element-cpu  the CPU army is run by doctrine's ElementCommander instead of its squad AI (experimental)
+##   --element-cpu / --no-element-cpu  the CPU army is (or isn't) run by doctrine's ElementCommander; default ELEMENT_CPU_DEFAULT
 ##   --cinematic  the camera directs itself: it finds the fighting, holds a shot, and cuts (spectating, trailers)
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
@@ -67,6 +67,19 @@ static func camera_frame_inset(p_flags: LaunchFlags) -> float:
 ## X3: how many unseen alerts show above the group chips at once (1 by default, at most 3).
 static func alert_lines(p_flags: LaunchFlags) -> int:
 	return clampi(p_flags.integer("alert-lines", 1), 1, 3)
+
+
+## Whether the CPU army is commanded by doctrine's ElementCommander (elements, formations, drills) rather than by its
+## brains alone. `--element-cpu` / `--no-element-cpu` decide; otherwise ELEMENT_CPU_DEFAULT. Brains-only stays
+## reachable for A/B measurement. Off (ai, 2026-09-17): doctrine beat brains 52-28 in small mirrors without the control
+## point, but lost 32-16 in the setup skirmish plays (faction armies at 5200, control point on). Flip when a variant wins.
+const ELEMENT_CPU_DEFAULT := false
+
+
+static func cpu_runs_elements(p_flags: LaunchFlags) -> bool:
+	if p_flags.has("no-element-cpu") or p_flags.has("no-elements"):
+		return false
+	return p_flags.has("element-cpu") or ELEMENT_CPU_DEFAULT
 
 
 ## Whether the faction menu should open: an interactive run that named no faction. Never in a scripted, playtest,
@@ -159,11 +172,14 @@ func _start_match() -> void:
 		elements = Elements.install(game_match, orders)
 		# The player's elements are formed on demand, by the first task given to a control group: an element with
 		# no task still runs its SOP, and an untasked leader would fight the player for the wheel.
-		# The CPU keeps its squad AI unless asked: which commander the CPU runs is ai's call, not control's.
-		if flags.has("element-cpu"):
-			for squad in game_match.team_squads(Match.Team.RUST):
-				elements.form(Array(squad.roster), String(squad.squad_name))
-			ElementCommander.install(game_match, Match.Team.RUST, elements)
+		# Round 5: the switch for the CPU running doctrine (elements, formations, drills); off until a doctrine variant beats
+		# brains at skirmish scale. A spectated match runs both sides that way. ai owns the commander; this is the flag.
+		if SkirmishMode.cpu_runs_elements(flags):
+			var cpu_teams := [Match.Team.RUST, Match.Team.GREEN] if flags.has("cinematic") else [Match.Team.RUST]
+			for cpu_team: int in cpu_teams:
+				for squad in game_match.team_squads(cpu_team):
+					elements.form(Array(squad.roster), String(squad.squad_name))
+				ElementCommander.install(game_match, cpu_team, elements)
 	var executor := OrderExecutor.new()
 	executor.name = "OrderExecutor"
 	executor.game_match = game_match

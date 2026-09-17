@@ -11,6 +11,7 @@ const ARENA := preload("res://game/arena/arena.tscn")
 const SESSION_FLAGS := ["ui-touch", "shell-playtest", "announcer", "music", "hints"]
 const MENU := [
 	["SKIRMISH", "skirmish", "Command your squads vs the CPU"],
+	["SPECTATE", "skirmish cinematic player=cpu enemy=cpu no-pick-faction arena=random", "Watch two CPU armies fight; the camera directs itself"],
 	["MULTIPLAYER", "connect", "Join the game server"],
 	["FX LAB", "fx-bench", "Lighting and effects benchmark"],
 	["PLAY TEST DRIVE", "", "Drive one tank vs a bot"],
@@ -141,19 +142,22 @@ func start(flag: String) -> void:
 	var fx := FxWorld.existing()
 	if fx != null:
 		fx.sfx.play_ui("ui_blip")
-	print("TITLE_START %s" % (flag if flag != "" else "offline"))
+	print("TITLE_START %s" % (flag.get_slice(" ", 0) if flag != "" else "offline"))
 	if OS.has_feature("web"):
-		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + flag) if flag != "" else ""))
+		# The page reload builds the arena from the URL, which knows no "random" (GameLauncher resolves it on desktop).
+		var query := "&".join(Array(flag.split(" ", false)).filter(func(p: String) -> bool: return p != "arena=" + GameLauncher.RANDOM))
+		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + query) if query != "" else ""))
 		return
 	GameLauncher.start(get_tree(), flags_for(flag, LaunchFlags.from_environment()))
 
 
-## The flags the chosen mode starts with: its own flag, plus the few that belong to the session rather than to a
+## The flags the chosen mode starts with: its own flags ("skirmish cinematic arena=random"), plus the few that belong to the session rather than to a
 ## mode (the touch UI, a playtest driving this run). "" is the offline test drive.
 static func flags_for(flag: String, current: LaunchFlags) -> LaunchFlags:
 	var next := LaunchFlags.new()
-	if flag != "":
-		next.values[flag] = ""
+	for part in flag.split(" ", false):
+		var pair := part.split("=", true, 1)
+		next.values[pair[0]] = pair[1] if pair.size() > 1 else ""
 	for kept: String in SESSION_FLAGS:
 		if current.has(kept):
 			next.values[kept] = current.values[kept]

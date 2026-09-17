@@ -71,7 +71,7 @@ Vehicle art and effects (render), arena layouts (arena), weapons and rules (comb
 
 ## Status
 
-_Round 5, control stream. Updated 2026-09-17._
+_Round 5, control stream. **Every backlog item (X1–X6) is done; stretch: spectate done, replay not started.** Updated 2026-09-17._
 
 ### Plan (backlog in order)
 
@@ -131,6 +131,35 @@ the frame rate (combat/ai's simulation tick per CP1) and the renderer's uniform 
 
 To try them: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --camera-frame=close --alert-lines=3`.
 
+### X4. Readability at 30 a side (M3, with render). Done.
+
+**The HUD's draw calls: 369 → 84** at 1920×1080 with 68 vehicles (CP1 budget ≤ 130). `make hud-cost` measures each
+widget during a tactical pause (hidden vs shown, the picture holding still) and writes `build/hud-cost.json`; render
+can hold the line with it.
+
+| Widget | Before | After | What changed |
+|---|---|---|---|
+| Group bar | 120 | 8 | unit icons drawn once into textures (`IconRaster`, `CommandIcons.unit_texture`), and a `DrawBatch` that draws every fill, then outline, icon, text |
+| Selection panel | 71 | 33 | the same |
+| Radar | ~104 | 20 | blips are cached disc / diamond / ring textures drawn kind by kind; prop footprints are batched primitives |
+| HUD skin (status + banner frames) | 52 | 5 | `CyberFrame` draws each glow layer's brackets as one multiline, not four polylines |
+| Selection rings (3D) | 61 meshes | 3 draws | one MultiMesh per ring kind |
+| Everything else (messages, captions, hints, edge markers, status, score) | | ~18 | |
+| **Whole HUD** | **369** | **84** | |
+
+HUD `_process` with 30 selected of 60: **0.865 ms** (`test_control_scale`), inside CP1's 1 ms.
+
+**Legibility on render's darker scene** (frames `build/control-playtest/scale/*.png` and the shell playtest, looked at,
+after render's merge): the selected element's thick bright rings read at a glance against idle friendlies' thin
+ones and against render's cyan team rim, which is a faint tint on the hull, not a ring on the ground; hull bars sit
+over the selected and the hurt only; order markers and the dashed attack-move line stay visible over the asphalt.
+**Enemies' dashed rings were too faint to find in a crowd** at 0.45 alpha: raised to 0.7. Friend and foe still
+differ by shape (solid vs dashed rings, circles vs diamonds on the radar), not only colour.
+
+**Console:** a whole played session (title → menu → 2 minutes of battle, 64 vehicles) and the 30-a-side scale session
+now log **zero** `ERROR`, `SCRIPT ERROR` or `WARNING` lines, after render removed the instance uniforms.
+`make shell-playtest` now **fails on any red line**, so it stays that way.
+
 ### X5. Orders that survive a big army. Done.
 
 **Latency at 30 a side** (`tests/test_control_scale.gd`, builder0, 2026-09-17, main with render/combat/arena merged):
@@ -173,3 +202,92 @@ restarted with `Main.next_flags` silently kept the old layout. `GameLauncher` (`
 `main.tscn` with the arena's `layout_name` set, resolves `--arena=random` by `--seed`, and both the title and the
 faction menu start matches through it. The shell playtest checks the arena you clicked is the one built.
 
+### Stretch
+
+- **Spectate from the title.** SPECTATE starts a CPU-vs-CPU skirmish under round 4's self-directing cinematic camera
+  on a random arena (`skirmish cinematic player=cpu enemy=cpu no-pick-faction arena=random`). A title entry can carry
+  several flags now.
+- **A replay of the last match:** not started. It needs the simulation to be replayable from recorded orders on the
+  current Jolt physics, which is combat's determinism work first.
+
+### The CPU's commander (orchestrator's request, then withdrawn)
+
+`SkirmishMode.cpu_runs_elements(flags)`: `--element-cpu` / `--no-element-cpu`, default `ELEMENT_CPU_DEFAULT`. When on,
+each CPU squad becomes an element under `ElementCommander` (both sides under `--cinematic`), sharing the one
+`Elements` with the player's lazily formed elements. **It stays off:** ai's faction ladder in skirmish's real setup
+(faction armies at 5200, control point on) has brains-only beating doctrine 32–16; the earlier 52–28 was small mirrors
+without the control point. Cost when on (ai, Jolt, laptop): elements +1.7 ms a tick flat after ai's stagger, about +15%
+of the tick. Flip the constant when ai reports a variant that wins at scale.
+
+### Decisions (with reasons)
+
+- **Contacts frame symmetrically about the element** rather than being dropped: the lead wants to see the fight
+  coming, and the element must stay the centre. Mirroring keeps both.
+- **Captions at the top centre**, not the bottom: the bottom fifth is the command card, chips and alert; the sides are
+  the message columns.
+- **The faction menu stays on by default** and gained the arena: it was "stuck" only because nothing on it was clickable.
+- **Menus start matches in-process through `GameLauncher`**, never by relaunching the executable (lost flags, a
+  closing window) or by `reload_current_scene` (the arena ignored the new flags).
+- **HUD icons are rasterised once in GDScript** (`IconRaster`) rather than baked in a SubViewport: synchronous,
+  headless-safe, testable, and the vector `draw_unit` stays the single source of the shapes.
+- **The shell playtest fails on any console error or warning.** The lead's "red error messages" are a player-facing
+  bug, so the check is the player's console, not a filtered one.
+
+### Questions for the lead
+
+1. **Is the view in a fight wide enough?** On the march the camera sits close (zoom ~0.31); when the enemy is in sight
+   it widens to keep them in frame (~0.8). `--camera-frame=close|default|wide` changes how tightly the element fills the
+   screen if either feels wrong.
+2. **Arena choice:** the menu offers Random (default) plus each named arena with its note. If you'd rather the game
+   always rolls it, the row can go; if you want the choice, it's there.
+
+### Requests to other streams
+
+- **ai:** turn brains to `order["facing"]` on arrival and to the station heading when idle (K1 facing, on main); then
+  `element_plan.gd`'s halt can issue facing instead of driving crews along their sectors. Relayed by the orchestrator.
+- **ai:** tell control when a doctrine variant beats brains at skirmish scale; the default flips in one line.
+- **audio:** the booth calls the player's side "the Condemned" when the player picked the Road Gangs (seen in the shell
+  playtest, gangs vs law). And `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format
+  whenever convenient. Relayed by the orchestrator.
+- **arena:** when `--arena=random` lands in `Arena` itself (stream/arena 3b1377c), control switches `GameLauncher` to pass
+  "random" through with `--seed` and reads `Arena.active["name"]` back (the orchestrator's ruling: Arena owns the roll).
+  Until then `GameLauncher.resolve_arena` rolls from `--seed` and hands Arena a real name, so nothing logs an error.
+
+### Known issues
+
+- `GameLauncher` resolves `random` itself until arena's resolver is on main (above): two implementations for a while.
+- Hints are desktop only (keys and right-click), like the rest of the round-4 grammar.
+- `make hud-cost` measures during a pause, so messages and captions (0–4 draws each when showing) aren't in the 84.
+
+### What to playtest (exact commands)
+
+```bash
+make title                          # SKIRMISH → faction + arena menu → FIGHT → planning (Space) → battle; or SPECTATE
+make skirmish                       # straight to the faction + arena menu
+make skirmish-factions FACTION=gangs ENEMY_FACTION=law ARENA=pit
+make remote T=shell-playtest        # the whole first two minutes through real input; fails on any console error
+make remote T=hud-cost              # the HUD's draw calls, per widget
+make remote T=control-scale-shots   # 30 a side, frames in build/control-playtest/scale/
+```
+Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cpu` on the Godot command line.
+
+### Next steps
+
+1. Switch `GameLauncher` to arena's resolver when it merges (above).
+2. Flip `ELEMENT_CPU_DEFAULT` when ai's variant wins at scale.
+3. Touch: the desktop grammar, hints and menus have no touch path yet.
+4. A replay of the last match, once the simulation replays from recorded orders.
+
+### Merge notes (shared files)
+
+- **No shared files edited.** `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` untouched. Everything is in
+  control's paths: `game/control/`, `game/ui/` (including `widgets/` and `widgets/title/`), `game/camera/`,
+  `game/modes/skirmish_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md`, control's tests.
+- **K1:** `UnitCommand` gains optional `facing` (already documented on main, 0f838c8).
+- **Hud:** new `post_caption(speaker, text)` and signal `caption_posted`; `post_message` routes the booth's
+  `"SPEAKER: …"` lines to it and still prints `HUD_MESSAGE`.
+- **Title screen:** starts modes in-process through `GameLauncher`; a menu entry may carry several flags.
+- **New flags** (skirmish): `--camera-frame`, `--alert-lines`, `--hints=off|fresh`, `--no-element-cpu`,
+  `--hud-cost=PATH`, `--shell-playtest=DIR`. **New make targets:** `shell-playtest`, `hud-cost`; `skirmish-factions`
+  takes `ARENA=`.
+- The sim baseline is untouched (nothing here runs in `--match`).

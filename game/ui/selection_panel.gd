@@ -362,7 +362,8 @@ func _draw() -> void:
 		"unit", "enemy":
 			var card: Dictionary = info["card"]
 			var color := enemy if card.get("enemy", false) else friendly
-			var icon := size.y - PAD * s * 2.0
+			# The footer strip belongs to the doctrine line (X3), so the card stops above it.
+			var icon := size.y - PAD * s * 2.0 - FOOTER * s
 			var icon_rect := Rect2(PAD * s, PAD * s, icon, icon)
 			batch.fill(icon_rect, Color(CyberStyle.CARD, 0.95))
 			batch.icon(card["role"], icon_rect.get_center(), icon * 0.6, color)
@@ -373,7 +374,7 @@ func _draw() -> void:
 			_text(batch, font, Vector2(x, PAD * s + line * 2.8), "Weapon: %s" % card["weapon"], 16.0 * s, Color(CyberStyle.TEXT, 0.8))
 			if not card["enemy"]:
 				_text(batch, font, Vector2(x, PAD * s + line * 3.7), "Orders: %s" % card["orders"], 16.0 * s, CyberStyle.CYAN)
-			_bars(batch, Rect2(x, size.y - PAD * s - 12.0 * s, minf(260.0 * s, _command_rects["move"].position.x - x - PAD * s), 10.0 * s),
+			_bars(batch, Rect2(x, size.y - PAD * s - FOOTER * s - 12.0 * s, minf(260.0 * s, _command_rects["move"].position.x - x - PAD * s), 10.0 * s),
 					float(card["health"]), float(card["shield_fraction"]), color, enemy)
 	# X3: what the element's leader decided, under the header, where the player reads it without looking away.
 	var doctrine := String(info["doctrine"])

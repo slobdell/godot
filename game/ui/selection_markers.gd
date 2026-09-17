@@ -17,7 +17,7 @@ const RADIUS_FACTOR := 0.75
 const HEIGHT := 0.12
 const SELECTED_ALPHA := 0.95
 const IDLE_ALPHA := 0.4
-const ENEMY_ALPHA := 0.45
+const ENEMY_ALPHA := 0.7
 
 var game_match: Match
 var map: TacticalMap

@@ -62,3 +62,11 @@ func test_the_faction_menu_opens_by_default_and_a_flag_turns_it_off() -> void:
 	assert_true(not SkirmishMode.wants_faction_menu(_flags({"skirmish": "", "pick-faction": "", "no-pick-faction": ""})),
 			"--no-pick-faction skips it")
 	assert_true(SkirmishMode.wants_faction_menu(_flags({"skirmish": "", "pick-faction": ""})), "--pick-faction forces it")
+
+
+## Round 5 (orchestrator's ruling): the CPU runs doctrine by default once ai has costed it; a flag keeps brains-only.
+func test_which_commander_the_cpu_runs_is_a_flag() -> void:
+	assert_eq(SkirmishMode.cpu_runs_elements(_flags({})), SkirmishMode.ELEMENT_CPU_DEFAULT, "the default")
+	assert_true(SkirmishMode.cpu_runs_elements(_flags({"element-cpu": ""})), "--element-cpu turns it on")
+	assert_true(not SkirmishMode.cpu_runs_elements(_flags({"element-cpu": "", "no-element-cpu": ""})), "--no-element-cpu wins")
+	assert_true(not SkirmishMode.cpu_runs_elements(_flags({"element-cpu": "", "no-elements": ""})), "no elements, no element CPU")
