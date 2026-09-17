@@ -80,6 +80,9 @@ static var profile_usec := 0
 ## per tick at 60 units in clock calls alone, so they are off by default: the headline ai_usec_per_tick must measure
 ## the AI, not the measuring.
 static var profile_detail := false
+## Measurement only: controller ticks that steered from scratch vs held last tick's steering (execution LOD).
+static var executed_full := 0
+static var executed_held := 0
 
 @export var tank: Tank
 ## Where to look for other tanks (Match/Tanks).
@@ -270,6 +273,11 @@ func compute_command(delta: float) -> TankCommand:
 	clock = _lap("c.reflexes", clock)
 	clock = Time.get_ticks_usec() if profiling else 0
 	var full := _full_execution_tick()
+	if profiling:
+		if full:
+			executed_full += 1
+		else:
+			executed_held += 1
 	if full:
 		_apply_move(cmd, delta + _owed_delta)
 		_owed_delta = 0.0

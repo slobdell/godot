@@ -59,6 +59,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var parts: Array = TankBrain.profile_parts.keys().map(func(part: String) -> String:
 		return "%s %.0f" % [part, float(TankBrain.profile_parts[part]) / ticks])
 	parts.sort()
+	print("MEASURE ai_execution full %d held %d" % [OrderController.executed_full, OrderController.executed_held])
 	print("MEASURE ai_usec_per_tick_parts %s (the rest: executing orders, aiming, firing)" % ", ".join(parts))
 	if not OS.get_cmdline_user_args().has("--profile-parts"):
 		print("      (--profile-parts, i.e. make ai-perf DETAIL=1, adds the finer laps inside moving and shooting)")

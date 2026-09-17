@@ -239,6 +239,13 @@ const PINNED_RETREAT_HP := 0.15
 ## a threat when deciding whether to stay.
 const PINNED_FLANK_BONUS := 1.5
 const PINNED_THREAT_FACTOR := 0.5
+## X2 (round 5, BrainVariants "suppress_proxy"): without matchups, a target counts as "killing this is slow going" when
+## my weapon's penetration against the armour it shows me gets this share of the damage through or less
+## (Matchups.penetration_multiplier, the Armor rule): a machine gun on a tank's front is x0.05, on its side x0.13, on a
+## scout's plate x0.6; a cannon on a tank's front x0.5.
+const SUPPRESS_PENETRATION := 0.25
+## X2 ("pinned_exposed"): COVER_FIRE against a pinned target is worth this share of its usual score.
+const PINNED_COVER_FIRE := 0.6
 ## SUPPRESS: how much of ENGAGE's appetite putting rounds on an enemy I can't kill quickly is worth...
 const SUPPRESS_WEIGHT := 0.78
 ## ...and the kill rate (relative to my best target) below which killing isn't the point any more.
@@ -810,12 +817,21 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			if suppresses and c["visible"] and distance <= float(weapon["range"]):
 				var poor_kill: bool = best_kill_rate > 0.0 and matchups.has(c["name"]) \
 						and float((matchups[c["name"]] as Dictionary)["kill_rate"]) <= best_kill_rate * SUPPRESS_KILL_RATIO
+				# X2 (round 5): without matchups, "killing this is slow going" is read off the armour it shows me.
+				if not poor_kill and not matchups.has(c["name"]) and features.get("suppress_proxy", false):
+					poor_kill = TankBrain.rounds_barely_mark(weapon, c)
+				# X2 (round 5, "pinned_exposed"): `flank_target` is only ever set for the squad's FLANKER — the unit sent
+				# round — so round 4 was telling the flanker itself to stay and hose its own target (x1.25), and it did.
+				# Holding the target down is the rest of the squad's job; with the fix the flanker's pin reasons are the
+				# same as anyone's.
+				var own_flank: bool = c["name"] == tactics.get("flank_target", "")
+				var flanker_fix: bool = features.get("pinned_exposed", false)
 				var worth_pinning: bool = poor_kill or bool(c.get("pinned", false)) \
-						or c["name"] == tactics.get("flank_target", "") or c["name"] == tactics.get("focus", "")
+						or (own_flank and not flanker_fix) or c["name"] == tactics.get("focus", "")
 				if worth_pinning:
 					var suppress_score := SUPPRESS_WEIGHT * reach * confidence * leash_factor * firepower
 					# Holding down the one a teammate is going round is the point of a base of fire.
-					if c["name"] == tactics.get("flank_target", "") or ElementFeed.is_firing_base(element_context):
+					if (own_flank and not flanker_fix) or ElementFeed.is_firing_base(element_context):
 						suppress_score *= 1.25
 					suppressions.append([c["name"], suppress_score])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
@@ -829,6 +845,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			elif tactics.get("flank_target", "") == c["name"] and (not commanded or String(squad["verb"]) == "assault"):
 				# A6 suppress-and-flank: the squad sent me to its focus's side while the others keep it busy.
 				flank = maxf(flank, FLANKER_APPETITE * confidence * firepower * leash_factor)
+				# X2 ("pinned_exposed"): and once they have its head down, that is the moment to go.
+				if features.get("pinned_exposed", false) and bool(c.get("pinned", false)):
+					flank = maxf(flank, FLANKER_APPETITE * PINNED_FLANK_BONUS * confidence * firepower * leash_factor)
 			flanks.append([c["name"], flank])
 		else:
 			var staleness := clampf(float(c["age"]) / float(s["memory_ticks"]), 0.0, 1.0)
@@ -837,6 +856,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# Artillery never brawls: it shells what the team spots (BOMBARD) and stays behind (SHADOW).
 	var fight_scale := 0.0 if is_artillery else (SCOUT_FIGHT if is_scout else 1.0)
 	var cover_fire: Dictionary = s.get("cover_fire", {}) if s.get("cover_fire") != null else {}
+	var pinned_targets := {}
+	for c in contacts:
+		if bool(c.get("pinned", false)):
+			pinned_targets[c["name"]] = true
 	for pair in engages:
 		var score: float = pair[1] * fight_scale
 		if is_scout and TankBrain._is_prey_contact(contacts, pair[0], String(me.get("unit", ""))):
@@ -853,6 +876,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), COVER_FIRE_RELOAD_FLOOR, 2.0)
 			var spot_quality := UtilityCurves.floor_at(float(cover_fire.get("score", 0.5)), 0.6)
 			var cover_value := score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality
+			# X2 (round 5): cover buys safety from a gun that can hit me, and a pinned crew mostly can't. Fighting it
+			# from cover is worth less than going round it or pressing it while its head is down.
+			if features.get("pinned_exposed", false) and pinned_targets.has(pair[0]):
+				cover_value *= PINNED_COVER_FIRE
 			candidates.append({"option": "COVER_FIRE", "target": pair[0], "score": float(cover_value)})
 	for pair in flanks:
 		candidates.append({"option": "FLANK", "target": pair[0], "score": float(pair[1] * fight_scale)})
@@ -1102,6 +1129,18 @@ static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
 			best_score = score
 			best = predicted
 	return best
+
+
+## X2: whether `weapon`'s rounds barely mark `contact` through the armour face it shows me (SUPPRESS_PENETRATION). False
+## when either side carries no armour data (hand-built situations, old profiles).
+static func rounds_barely_mark(weapon: Dictionary, contact: Dictionary) -> bool:
+	if not weapon.has("penetration"):
+		return false
+	var armor: Variant = Units.profile(String(contact.get("unit", ""))).get("armor")
+	if not armor is Dictionary:
+		return false
+	var thickness := float((armor as Dictionary).get(String(contact.get("exposed_face", "front")), 0.0))
+	return thickness > 0.0 and Matchups.penetration_multiplier(float(weapon["penetration"]), thickness) <= SUPPRESS_PENETRATION
 
 
 ## A scout's prey: artillery (it can't fire up close) and the roles its catalog entry is good against (the Lancer's
