@@ -110,10 +110,13 @@ func _camera_stage() -> void:
 			"rust": controls.game_match.alive_count(Match.Team.RUST)})
 	await _capture("3_planning")
 	_checks["planning_frames_own_army"] = _sample_camera("planning")
+	var hints := controls.get_node_or_null("ControlHints") as ControlHints
+	_checks["planning_shows_control_hints"] = hints != null and hints.visible and hints.shown().has("pause")
 	if paused:
 		await _key(KEY_SPACE)
 		await _seconds(0.2)
 		_checks["space_starts_the_match"] = not get_tree().paused
+		_checks["a_used_control_retires_its_hint"] = hints != null and not hints.shown().has("pause")
 	var hud := get_tree().current_scene.get_node("HUD") as Hud
 	var captions: Array = []
 	var logged: Array = []

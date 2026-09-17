@@ -22,6 +22,8 @@ extends GameMode
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
 ##   --camera-frame=close|default|wide  how much of the screen the commanded element fills (X3 dial)
 ##   --alert-lines=1..3  unseen alerts shown at once above the group chips (X3 dial; default 1)
+##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
+##   --hud-cost=PATH  X4: what each HUD widget costs in draw calls and _process at ~30 a side (HudCostProbe)
 ##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
 ##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
 ##   --touch-map  round 2's tap grammar (squad bar, drill and formation pickers) instead of the desktop controls
@@ -280,6 +282,12 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.add_child(edge)
 	controls.markers = edge
 	edge.alert_lines = SkirmishMode.alert_lines(flags)
+	# X6: the controls a new player can discover, retired one by one as they're used (--hints=off hides them).
+	if flags.text("hints", "on") != "off" and not (flags.has("scripted") or flags.has("control-playtest") or flags.has("cinematic")):
+		var hints := ControlHints.new()
+		if flags.text("hints") == "fresh":
+			hints.store_path = ""
+		controls.add_child(hints)
 	if flags.has("cinematic"):
 		# Stretch: a camera that watches the fight on its own. It replaces the vision framing rather than fighting
 		# it, because nobody is earning this view - it is the spectator's. Everything else (orders, the HUD, the
@@ -303,6 +311,12 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
+	if flags.has("hud-cost"):
+		var probe := HudCostProbe.new()
+		probe.name = "HudCostProbe"
+		probe.main = main
+		probe.out_path = flags.text("hud-cost")
+		main.add_child(probe)
 	if flags.has("control-playtest"):
 		var playtest := ControlPlaytest.new()
 		playtest.name = "ControlPlaytest"

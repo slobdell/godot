@@ -9,7 +9,7 @@ extends Node3D
 const ARENA := preload("res://game/arena/arena.tscn")
 const MAIN_SCENE := "res://game/main.tscn"
 ## Flags that describe the session, not the mode, and so survive choosing a mode.
-const SESSION_FLAGS := ["ui-touch", "shell-playtest", "announcer", "music"]
+const SESSION_FLAGS := ["ui-touch", "shell-playtest", "announcer", "music", "hints"]
 const MENU := [
 	["SKIRMISH", "skirmish", "Command your squads vs the CPU"],
 	["MULTIPLAYER", "connect", "Join the game server"],

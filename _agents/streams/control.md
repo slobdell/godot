@@ -71,4 +71,63 @@ Vehicle art and effects (render), arena layouts (arena), weapons and rules (comb
 
 ## Status
 
-- 2026-09-17: brief written for round 5. Nothing started.
+_Round 5, control stream. Updated 2026-09-17._
+
+### Plan (backlog in order)
+
+1. **X1** play it through real input (`make shell-playtest`: title → SKIRMISH → faction menu → planning → two minutes
+   of battle), fix what stops a player, triage the console.
+2. **X2** booth subtitles on a caption line of their own (`Hud.post_caption`), the message log for gameplay.
+3. **X3** the three dials as flags with defaults.
+4. **X4** readability at 30 a side with render's toned-down glows; HUD ≤ 130 draw calls and ≤ 1 ms `_process` (CP1).
+5. **X5** orders at scale re-measured; optional `facing` in `UnitCommand`.
+6. **X6** the first two minutes, written down in order.
+
+### X1. Play it, then fix what stops you. Done.
+
+**How it was played.** No input injector exists on builder0, so `ShellPlaytest` (`game/ui/shell_playtest.gd`,
+`make shell-playtest`, needs a display) plays through `Viewport.push_input`: it moves the mouse over each button and
+records what Godot says is under it, clicks, and samples the camera through two minutes of battle. Frames were looked at.
+
+**Where it stopped being usable, and what changed:**
+
+| What the lead hit | What it was | Fix |
+|---|---|---|
+| "The startup screen seems stuck, I can't click the first buttons" | `make skirmish` opens the faction menu. Clicks *did* reach it (the playtest shows the row under the mouse and the picks change), but nothing on it was a button that started anything: the only way on was Enter, written as a line of text ("ENTER fight"). Clicking a row changes a highlight and nothing else, which reads as stuck. | A real **FIGHT** button (min 160×44 px; confirms on release), hint text that says click / right-click. |
+| (the title screen, `make title`) | Its buttons did work, but on desktop they **quit and relaunched the executable**, dropping every launch flag. From a terminal that is a window closing and another opening seconds later. | Switches to the game scene in-process with `Main.next_flags`; carries `--ui-touch`, `--announcer`, `--music` and the playtest flag. |
+| "It ends up focusing on the enemy instead of our own friendly units" | The vision frame included every enemy the commanded element could see. Once the armies met, 26 contacts outweighed 5 of yours: the frame's centre moved to the enemy, the zoom cap stopped it widening, and your element slid off the bottom. Unit test on the old code: **centre 44 m from your element, 17 m from the enemy**. | Contacts are framed together with their mirror image about the element: they widen the view, never move its centre. A wiped last group falls back to the whole army. After: the element stays **1–15 m from screen centre** at every sample through 120 s of battle, all its vehicles on screen. |
+| "A bunch of red error messages" | In a full session the **only** errors are render's: `Too many instances using shader instance variables … 4096` (217) and `instance_buffer_pos.has(p_instance)` (94) with 45 vs 26 vehicles. Nothing from control, combat or audio. | Render owns it (their X2); nothing to file beyond what CP1 already tracks. |
+
+The brief's clue (a headless `--title` printing `TITLE_START offline` at once) did not reproduce: locally the title sat
+for 40 s without printing it.
+
+**Playable now?** Up to the edge of render's and combat's work, yes: a click on SKIRMISH opens the faction menu, clicks
+pick both sides, FIGHT starts the match, the planning pause says what to do, Space starts it, and the camera stays
+on your element through contact with the enemy visible beyond it. What still stops a real session is not control's:
+the frame rate (combat/ai's simulation tick per CP1) and the renderer's uniform errors.
+
+### X2. Subtitles get their own line. Done.
+
+- `Hud.post_caption(speaker, text)` shows one caption at a time on a **caption line** (`CaptionLine`,
+  `game/ui/widgets/caption_line.gd`): top centre, 56% of the screen wide, the speaker in their colour (CALLER yellow,
+  VETERAN cyan, PA pink), white text on a dark strip, at most two lines, held for reading time (2.5 s + 55 ms a
+  character, up to 7 s) and faded. A new line replaces the last at once.
+- Until the booth calls `post_caption` itself, `Hud.post_message` recognises its `"CALLER: …"` format and routes it
+  there. The `HUD_MESSAGE [info] CALLER: …` console line is unchanged, so `announcer-shots` still finds it.
+- **Why the top:** the bottom fifth belongs to the command card, group chips and alert prompt; the message banners
+  run down the sides. The caption strip ends at 12% of the height at 1080p and never crosses a message column
+  (tested at 1920×1080 and 1280×720; text ≥ 18 px).
+- Played: in the shell playtest's two minutes, **4 booth lines on the caption line, 0 in the log, 12 gameplay
+  messages in the log**; frame `build/shell-playtest/4_caption.png` looked at (VETERAN's two-line caption over the
+  battle, readable, clear of the status block and the log).
+
+### X3. The lead's three dials. Done.
+
+| Dial | Flag | Default | Why |
+|---|---|---|---|
+| How close the default frame sits | `--camera-frame=close\|default\|wide` (`RtsCamera.vision_inset` 0.9 / 0.78 / 0.6) | `default` (round 4's frame) | With contacts now framed symmetrically the view already widens when a fight starts (zoom 0.31 on the march, ~0.8 in contact in the playtest). Closer would lose the enemy the moment it matters. |
+| One alert line or three | `--alert-lines=1..3` | 1 | The message log already narrates; the prompt is the one thing to act on (Q). Three lines stack upward and dim. |
+| Faction menu by default | `--pick-faction` / `--no-pick-faction` | on | It was the "stuck" screen only because it couldn't be clicked through; with FIGHT it is one click, and it is where the army size is explained. |
+
+To try them: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --camera-frame=close --alert-lines=3`.
+
