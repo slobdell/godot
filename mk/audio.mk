@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: audio (_agents/streams/audio.md). Included by the root Makefile.
 
-.PHONY: music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench
+.PHONY: music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass
 
 MUSIC_DIR ?= assets/music
 
@@ -66,6 +66,19 @@ audio-bench: import ## Per-frame script cost of every audio system at 60 vehicle
 	$(GODOT) --headless --path . --script res://game/audio/audio_bench.gd -- $(CURDIR)/$(BUILD_DIR)/audio/bench.json 2>&1 \
 		| tee $(BUILD_DIR)/audio/bench.log | grep -E '^AUDIO_BENCH|SCRIPT ERROR|^ERROR' || true
 	@grep -q AUDIO_BENCH_DONE $(BUILD_DIR)/audio/bench.log
+
+## X6: listen to it whole. A CPU-vs-CPU match at 30+ a side with everything on, recorded from the Master bus, then
+## measured (loudness, true peak, clipping) and turned into an MP3 and a spectrogram to look at. Needs a display
+## (FxWorld, the sound effects, only exists with one): make remote T=audio-pass.
+PASS_SECONDS ?= 150
+audio-pass: import ## The whole mix of a 30-a-side match → build/audio/pass.{wav,mp3,png,json} (needs a display; PASS_SECONDS=150)
+	@mkdir -p $(BUILD_DIR)/audio
+	timeout $$(( $(PASS_SECONDS) + 120 )) $(GODOT) --path . --resolution 1280x720 -- --skirmish --cinematic --player=cpu --enemy=cpu \
+		--seed=3 --budget=6500 --no-pick-faction --announcer=voice --music=on --announcer-history=off \
+		--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/pass.wav --audio-record-seconds=$(PASS_SECONDS) 2>&1 \
+		| tee $(BUILD_DIR)/audio/pass.log | grep -E '^AUDIO_RECORD|SCRIPT ERROR' || true
+	@grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/pass.log || { echo "audio-pass FAILED: no recording"; exit 1; }
+	$(PYTHON) tools/audio/pass_report.py $(BUILD_DIR)/audio/pass.wav $(BUILD_DIR)/audio/pass.log
 
 audio-pytest: ## The audio tools' Python tests (music contract, the sound-effect pipeline against a mock client)
 	$(PYTHON) -m unittest discover -s tools/audio -p 'test_*.py'
