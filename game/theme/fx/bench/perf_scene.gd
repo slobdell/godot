@@ -503,6 +503,7 @@ func _finish() -> void:
 		"all_avg_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["avg_ms"]))), 0.01),
 		"all_p95_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["p95_ms"]))), 0.01),
 		"all_gpu_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["gpu_ms"]))), 0.01),
+		"holds_60fps_at_vehicles": PerfScene.holds_60fps_at(_results),
 		"layer_cost_ms": PerfScene.layer_costs(_results),
 		"layer_cost_gpu_ms": PerfScene.layer_costs(_results, "gpu_ms"),
 		"layer_draw_calls": PerfScene.layer_costs(_results, "draw_calls"),
@@ -514,6 +515,27 @@ func _finish() -> void:
 			file.store_string(JSON.stringify({"summary": summary, "phases": _results}, "  "))
 	print("PERF_SCENE_DONE")
 	get_tree().quit()
+
+
+## The lead's number: the most vehicles at which 60 fps held, from the full-scene (`all`) phases. Phases are grouped by
+## vehicle count and each count's MEDIAN frame is used (one noisy phase shouldn't decide it); a count holds when its
+## median and every smaller count's median are under a 60 Hz frame (16.7 ms). 0 if even the fewest didn't. Pure.
+static func holds_60fps_at(phases: Array) -> int:
+	var by_count := {}
+	for r: Dictionary in phases:
+		if r["phase"] == "all":
+			# Packed arrays are values (orientation trip-up 48): append to a copy, then store it back.
+			var frames: PackedFloat32Array = by_count.get(int(r["vehicles"]), PackedFloat32Array())
+			frames.append(float(r["avg_ms"]))
+			by_count[int(r["vehicles"])] = frames
+	var counts := by_count.keys()
+	counts.sort()
+	var held := 0
+	for count: int in counts:
+		if PerfScene.percentile(by_count[count], 0.5) > 1000.0 / 60.0:
+			break
+		held = count
+	return held
 
 
 static func mean(values: PackedFloat32Array) -> float:

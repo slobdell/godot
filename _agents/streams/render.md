@@ -225,7 +225,10 @@ _Updated 2026-09-17 (evening)._
 - Estimated VRAM on high: 30 × (256×512 color + depth) ≈ 30–45 MB.
 
 ### Ready for 30 Hz with physics interpolation (combat's refactor)
-- 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b).
+- 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b). **The lead's
+  number, before 30 Hz: 60 fps held at 13 vehicles at 720p, and never at 1080p** (median frame at 10 vehicles 18.8 ms).
+  perf-scene now reports it as `holds_60fps_at_vehicles` (median frame per vehicle count, every smaller count under
+  16.7 ms).
 - `FxWorld.visual_transform()` for everything that follows a body per frame; `WeaponFx.drawn_offset()` keeps muzzle
   effects on the drawn barrel. Combat confirmed: shells interpolated, `reset_physics_interpolation()` on spawns,
   `shooter` stays in `weapon_fired`. Re-take perf-scene on their flip commit.
