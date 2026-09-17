@@ -260,12 +260,27 @@ engineering failure.
 | | 60 Hz baseline | 30 Hz now |
 |---|---|---|
 | 60 fps holds at (720p / 1080p) | 13 / never | **14 / 8 vehicles** |
-| Locked 30 holds at, capped, p99 (720p / 1080p) | never | **18 / 12–15 vehicles** |
+| Locked 30 at 1080p, **p95**, quiet laptop | never | **~18 (mine) to ~29 (combat's)** |
+| Locked 30 at 1080p, p99 (rare hitches counted) | never | **8–14** |
+| Locked 30 at 720p | never | 18 |
 | GPU | 10 / 14 ms | 9 / 15 ms (unchanged) |
 
-**Why so little: one tick now costs roughly twice what it did, so the simulation's cost per second barely moved.**
-Script time in one tick, at matched vehicle counts (60 Hz → 30 Hz): 14 vehicles 7.9 → 13.2 ms, 23 → 20.4, 33 → 23.4,
-39 → 27.4, 60+ 34.8 → 32–42. Per second that is ~850 ms/s → ~700 ms/s at 33 vehicles: **~18% less work, not half**.
+**The agreed picture (with combat, 2026-09-17).** A locked 30 fps at 1080p holds **~29 vehicles on a quiet laptop and
+12–15 while five agents share the CPU**; my quiet run gives ~18 by p95. Two measurement notes that explain the spread
+and should travel with the number:
+- **Machine load moves it more than anything we build.** Same tool, same build: 12–15 under load, 18–29 quiet.
+- **p95 versus p99.** Combat quote p95; I quote p99 because the lead's target is a *locked* rate. At 18 vehicles my p95
+  is 33.5 ms (locked by that measure) while the p99 catches occasional 40–100 ms frames. **Neither of us has measured
+  his machine in the state he plays in**; his own clean `perf-scene` run is the tiebreak.
+- **Open, mine:** those rare single-frame hitches at low vehicle counts. A/B says they are **not** the arena screens'
+  live feed (they appear with it disabled too); cause not yet found. A locked 30 that hitches is not locked, so this is
+  the next thing I chase.
+
+**Combat's correction to my decomposition, which I accept:** the `segment:controllers` band is `OrderController`
+executing every tick *as well as* `TankBrain` thinking on a wall clock. The executing half halves with the tick rate,
+the thinking half does not — so the ceiling is not my ~13% but their measured **27%** (513 → 377 ms of script per
+simulated second, same seed, same 60 simulated seconds, same laptop). Their earlier 47% is withdrawn.
+
 **Reconciled with combat (2026-09-17).** Two separate factors, and their headless number and mine are consistent:
 - **Machine:** combat's own `make sim-profile TIME=60` run on the lead's laptop gives **tick 18.42 ms at 58 vehicles**
   against **6.68 ms on builder0**: the laptop is **~2.75× slower** for the identical headless workload. In game on the
