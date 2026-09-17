@@ -197,6 +197,7 @@ static func loop_frames(stream: AudioStreamWAV) -> int:
 ## Adds the World bus (and its limiter) if it isn't there, and the Impacts and Bed buses that feed it. Static so
 ## anything that wants to route to them can. Returns World's index.
 static func ensure_world_bus() -> int:
+	ensure_master_limiter()
 	var index := AudioServer.get_bus_index(WORLD_BUS)
 	if index < 0:
 		index = _add_world_bus()
@@ -218,6 +219,21 @@ static func ensure_world_bus() -> int:
 		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
 		AudioServer.add_bus_effect(bed, duck)
 	return index
+
+
+## X6 (round 5): a limiter on Master. World had one, but the booth and the music summed into Master unlimited, and the
+## first full-match recording peaked at +0.1 dBFS with 485 clipped samples, all on the booth's lines. Idempotent;
+## everything that makes a bus calls it.
+const MASTER_CEILING_DB := -1.0
+
+static func ensure_master_limiter() -> void:
+	var master := AudioServer.get_bus_index("Master")
+	for i in AudioServer.get_bus_effect_count(master):
+		if AudioServer.get_bus_effect(master, i) is AudioEffectHardLimiter:
+			return
+	var limiter := AudioEffectHardLimiter.new()
+	limiter.ceiling_db = MASTER_CEILING_DB
+	AudioServer.add_bus_effect(master, limiter)
 
 
 static func _add_world_bus() -> int:

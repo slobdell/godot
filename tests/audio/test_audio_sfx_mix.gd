@@ -169,3 +169,19 @@ func test_a_shell_landing_ducks_the_fight_underneath_it() -> void:
 	var engines := EngineSystem.new()
 	add_to_tree(engines)
 	assert_eq((engines.get_child(0) as AudioStreamPlayer3D).bus, SfxSystem.BED_BUS, "engines sit in the bed")
+
+
+func test_nothing_reaches_the_speakers_unlimited() -> void:
+	## X6: the booth and the music summed into Master past 0 dBFS in a full match. Master is limited now.
+	_sfx()
+	var master := AudioServer.get_bus_index("Master")
+	var limited := 0
+	for i in AudioServer.get_bus_effect_count(master):
+		limited += 1 if AudioServer.get_bus_effect(master, i) is AudioEffectHardLimiter else 0
+	assert_eq(limited, 1, "exactly one limiter on Master, however many systems asked for it")
+	MusicDirector.ensure_bus()
+	SfxSystem.ensure_master_limiter()
+	limited = 0
+	for i in AudioServer.get_bus_effect_count(master):
+		limited += 1 if AudioServer.get_bus_effect(master, i) is AudioEffectHardLimiter else 0
+	assert_eq(limited, 1, "still one after the music and a second call")

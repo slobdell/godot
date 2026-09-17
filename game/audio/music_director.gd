@@ -97,6 +97,7 @@ static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 
 ## Adds the Music bus and ducks it under the announcer, the way AnnouncerVoice ducks the world.
 static func ensure_bus() -> int:
+	SfxSystem.ensure_master_limiter()
 	var index := AudioServer.get_bus_index(BUS)
 	if index < 0:
 		AudioServer.add_bus()
