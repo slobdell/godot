@@ -74,7 +74,10 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 ## and the music at half speed the moment the tick becomes 30 Hz (round 5): stale windows twice as long, heat
 ## decaying half as fast.
 func seconds() -> float:
-	return SimClock.seconds(game_match.tick)
+	# Engine.physics_ticks_per_second, not SimClock.TICK_RATE: the booth's clock must follow the rate the physics is
+	# ACTUALLY running at (tests change it at runtime, and the two agree in every shipped configuration —
+	# tests/test_sim_clock.gd checks that).
+	return game_match.tick / float(Engine.physics_ticks_per_second)
 
 
 func _emit(type: String, fields: Dictionary) -> void:
