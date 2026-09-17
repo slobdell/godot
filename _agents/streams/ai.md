@@ -227,6 +227,28 @@ you — and the reactive half is worth keeping only where flight times are long.
 **Lesson for whoever reports a number next:** a sample of 18 shells cannot resolve a 10-point difference, and a number
 passed to someone else becomes a fact. Say the sample size in the same sentence as the result.
 
+### A tick-relative cadence was rounded by the 30 Hz move (render's catch)
+
+`think_ticks` was `TICK_RATE * 3 / 20`: **9 ticks of 60 = 6.67 thinks a second, 4 ticks of 30 = 7.5**, so the tick
+change quietly bought the champion 12% more thinking. 4.5 ticks can't be written, so instead of rounding the other way,
+**a brain now books its next think from a rate in Hz and carries the fraction of a tick that doesn't divide** (4, then
+5, then 4...). Rates are exact at any tick rate; variants carry `think_hz` (the rule is written where the next person
+will meet it, in `brain_variants.gd`).
+
+| Thinks per second | usec CPU per living unit per second | vs the accidental rate |
+|---|---|---|
+| 7.5 (`x6t75`, what the build had) | 7 820 | |
+| **6.67 (`x5p`, restored)** | **7 427** | **-5%** |
+| 5 (`x6t5`) | 6 791 | -13% |
+
+Audited the rest of ai's tick-relative constants: **only this one moved.** Every other `TICK_RATE * a / b` divides
+exactly at both rates; the one near-miss is the fire-avoidance check (20/s → 15/s), which is cheaper and measured
+behaviourally intact. Two instances, not a pattern. Sim baseline moves with the restoration:
+**`glibc-2.43 da8c9de5be518309`** (recorded twice on builder0).
+
+A deliberate cut to 5/s is left **unproposed**: it is a trade for the lead (13% of the brains is ~11% of the tick, which
+does not change the army size he can field), and the case for it is weaker now that the accidental 12% is gone.
+
 ### Decisions taken where the brief left a choice
 
 - **X1 measured by thread CPU time per living unit, interleaved** (band_probe.gd): wall time on a shared machine

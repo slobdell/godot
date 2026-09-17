@@ -148,10 +148,86 @@ branch on builder0 before it lands.
 **Landed (ae58286c):** the simulation runs at 30 Hz with physics interpolation, `max_physics_steps_per_frame` 3, and
 the sim baseline `glibc-2.43 16dc0de84f1c29b6` (recorded twice). `make remote T=check` green at 30 Hz: 935 passed,
 every smoke. What it bought, and what it did not: [../sim_tick_rate.md](../sim_tick_rate.md) *What it bought*.
-Short version: **simulation CPU per second roughly halved** (200 ms/s against 378 on builder0), the laptop's frame at
-59 vehicles went **134 ms → 101 ms**, and at 1080p a locked 30 fps now holds to **~30 vehicles** (was: 60 fps at 13
-vehicles at 720p, never at 1080p). At the lead's 60 vehicles it is 98 ms a frame, so **the target is not met by the
-tick change alone**; ~85% of the remaining tick is the unit controllers.
+Short version, settled with render: **simulation script cost per simulated second fell 27%** (513 → 377 ms on the
+laptop, same seed and workload; only per-tick work halves, and thinking is on a wall-clock cadence). At 1080p a locked
+30 fps holds **~29 vehicles on a quiet laptop** and **12–15 while agents are working on it** (render's measurement of
+the same build); before the round it was 60 fps at 13 vehicles at 720p and never at 1080p. At the lead's 60 vehicles
+it is ~100 ms a frame, so **the target is not met by the tick change alone**, and ~85% of what is left is the brains.
+
+## Report (2026-09-17)
+
+**Done:** CP1's simulation-cost work (profiler, cuts, Jolt), the 30 Hz tick with everything it exposed, X1's
+measurement half, X5 in full, and the fairness answer. **Not done: the tuning half of X1, X2, X3, X4, X6** — every one
+of them is a balance series, and three separate findings landed today saying the series would have measured the wrong
+game (below). Nothing is blocked on the lead.
+
+| Item | State |
+|---|---|
+| CP1 sim cost | Done: `make sim-profile`, floating hulls, parked hulls, active-cell threat decay, per-frame caching, Jolt (merged), and the 30 Hz tick |
+| X1 ranges and maneuver | **Measured, not tuned.** `make engagement` + `stats.engagement`; `effective_range` falloff is in and inert (`--tune`-able), variants ready in `tools/matchup_variants/x1_range_falloff.json` |
+| X2 cover | Not started (needs a series on arena's merged maps) |
+| X3 the gangs | Not started, and the ground moved: see *Do not tune the gangs yet* below |
+| X4 the Lancer | Recommendation written, evidence not taken: the Syndicate keeps the Lancer (the lead's pick for their special) and the Condemned's special becomes the Burner they already field, which gives every faction exactly five roles. Needs a counterbalanced matrix run first |
+| X5 rules for brains | Done: `Lethality.seconds_to_kill` / `is_slow_kill`, and pinning worth exploiting (sight −40%, hull turn −50% at full suppression) |
+| X6 re-measure | Not started (same reason as X3) |
+
+### Do not tune the gangs yet (three findings from today, in order of size)
+
+1. **Guns fired a tick late, which hit fast weapons hardest** (balance.md, Round 5): a fixed tick lost per shot is 14%
+   of a machine gun's rate and under 0.5% of a tank cannon's. Every rapid-fire weapon has been running at ~85-90% of
+   its data sheet. The swarm is the archetype built out of fast cheap guns, so the gangs' 23% and `Armor beat Swarm
+   16-0` were measured under a handicap that hit one side of each comparison hardest.
+2. **Both armies charged from second one in every match a player plays** (ai, merged): the player's faction army was
+   built by the CPU generator and never held. Engagement ranges, the 39-43 m median hit range, `static_share` and
+   centroid travel were all measured in collisions, not battles with an approach.
+3. **Army draw, not team identity, explains the "Green wins 25%" lean** (`make team-fairness`): counterbalance armies
+   in every series from now on.
+
+So the first series of round 6 is a **re-taken baseline**, not a tuning run: `make engagement` and
+`make faction-matrix` with army counterbalancing, on a build that has all three fixes. Then gangs-versus-law first, to
+see how much of the gap closes for free.
+
+### Questions for the lead (nothing is blocked)
+
+1. **30 Hz did not reach your target.** A locked 30 fps at 1080p holds ~30 vehicles, not 60 (98 ms a frame at 60).
+   ~85% of what is left is the brains. Do you want the next round to spend itself on brain cost (thinking less often
+   is the obvious lever and it changes how units behave), or to cap the battle size and keep the current behaviour?
+2. **The Lancer** (X4): the recommendation above is mine to take with evidence, unless you would rather rule on it.
+
+### Requests to other streams
+
+- **ai (round 6):** `Lethality.seconds_to_kill(shooter, target, face, health, shield)` is the matchup-free gate you
+  asked for. Brain cost per second is now the frame-rate blocker, and it did **not** halve with the tick: thinking is
+  on a real-time cadence by design. `make sim-profile` splits a tick by band; `perf-scene` is a live battle and
+  diverges, so it cannot A/B a brain change.
+- **render:** `build/perf-30hz-{720,1080}.json` are mine at 30 Hz on the lead's laptop; p99 and worst frame are in
+  them, and interpolation is on, so a pass looking for effects drifting from their vehicles is worth it.
+
+### What to playtest (exact commands)
+
+```bash
+make skirmish                                   # 30 Hz, interpolation on: motion should be as smooth as before
+make skirmish-factions FACTION=gangs ENEMY_FACTION=law
+make perf-scene PERF_RES=1920x1080              # a window for ~2 min; frame, p95, ticks per frame by vehicle count
+make remote T="sim-profile TIME=60"             # where a tick goes, by band
+make remote T="engagement PAIRS=condemned:condemned SEEDS=3"   # the shape of a fight
+make team-fairness N=16                         # army / team / base controls
+make duel GREEN_UNITS=scout RUST_UNITS=tank     # a machine gun at its real rate of fire
+```
+
+### Merge notes (shared files and other streams' paths)
+
+- `project.godot`: `[physics]` — Jolt, 30 Hz, interpolation on, jitter fix off, `max_physics_steps_per_frame` 3.
+- `Makefile`: `SIM_HZ` (exported); every `--fixed-fps` in `mk/*.mk` and the Python tools reads it.
+- Other streams' files, all part of the tick refactor the orchestrator assigned to combat: `game/ai/*` (tick
+  constants; plus `OrderController.FIRE_LEG_MIN_TICKS`, a behaviour fix), `game/tactics/*`, `game/announcer/*`,
+  `game/network/network_input.gd`, `game/camera/cinematic_camera.gd`, `game/ui/squad_chip.gd`,
+  `game/control/element_awareness.gd`, `tools/announcer/events.py`, and ~40 test files.
+- Four tests changed because they measured in frame counts rather than seconds, one because a second alert at 30 Hz
+  was a different *kind* (under fire, not contact), one because a clock that sums frame deltas can land a hair short.
+- **The sim baseline moved four times on purpose**, each in its own commit with its reason: Jolt
+  `83f1272ade466282`, pinned-crew effects `fc4e4247b7158e01`, the two latent defects `0c64debc427725c6`, the tick rate
+  `16dc0de84f1c29b6`. Each recorded twice on builder0.
 
 ### Plan (worker contract step 2)
 

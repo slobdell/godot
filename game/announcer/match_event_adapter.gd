@@ -76,8 +76,8 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 func seconds() -> float:
 	# Engine.physics_ticks_per_second, not SimClock.TICK_RATE: the booth's clock must follow the rate the physics is
 	# ACTUALLY running at (tests change it at runtime, and the two agree in every shipped configuration —
-	# tests/test_sim_clock.gd checks that). Restored on main: a "Merge main" on stream/combat resolved this hunk to
-	# the old constant while keeping the test that asserts the new behaviour, so main arrived red.
+	# tests/test_sim_clock.gd checks that). Restored on main once already: a "Merge main" on stream/combat resolved
+	# this hunk back to the old constant while keeping the test that asserts the new behaviour, so main arrived red.
 	return game_match.tick / float(Engine.physics_ticks_per_second)
 
 
