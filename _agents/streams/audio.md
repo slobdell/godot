@@ -82,8 +82,27 @@ the PA reading ad copy are written up under *Next steps*.
 4. **X5 music stems** (no dependency), **X4 the world underneath** (voice caps and culling measured against M1),
    **X6 the full pass**, then the stretch items.
 
+### ElevenLabs spend this round (balance 125,297 at the start)
+
+| Run | Credits | Balance after |
+|---|---|---|
+| X1 pilot: cannon, 25 mm, MG stream, shell on armour (10 takes) | 230 | 124,733 |
+| X3: colour names out of four lines (30 clips) | 1,899 | 122,834 |
+| Arena CP2: the four new map names (72 clips) | 8,758 | 114,076 |
+| X1+X2 batch: every other gun and impact (35 takes) | 518 | 113,558 |
+| PA lines between matches (12 clips) | 1,523 | 112,035 |
+| Re-rolls of four failed sound generations | 61 | 111,974 |
+| **Total** | **12,989** | **111,974** |
+
+The balance reads unsettled for minutes after a run; `assets/{audio/elevenlabs,announcer}/ledger.md` note where it
+moved later.
+
 ### Waiting on the lead
-1. **The gun pilot** (lead gate 1): <https://claude.ai/artifact/E1hxqREgGsPMB74oUPkC4N>. A scripted ten-second firefight,
+**Answered 2026-09-17:** "Run the batch", "All of them work" (the ad copy), "Record them" (the PA lines), and screens
+"live during, ads between". All three runs are done (below).
+
+0. **The whole-match listen** with the new guns: a page for the lead (link below when published).
+1. ~~**The gun pilot** (lead gate 1)~~: <https://claude.ai/artifact/E1hxqREgGsPMB74oUPkC4N>. A scripted ten-second firefight,
    before and after, and each pilot sound raw and as it ships. Reply: run the batch / run it with changes / not yet.
 2. **Ad copy for the screens and the PA between matches** (draft, text only):
    `assets/announcer/drafts/ad_copy.md`. Twelve screen ads in the existing brand world (AquaCorp, Syndicate Life,
@@ -164,6 +183,23 @@ the PA reading ad copy are written up under *Next steps*.
   says was heard: "The Foundry! Wide open, nowhere to hide", the PA's control-point welcome, and the Veteran on "the
   Wreckers" by name; the music changed 3 times. What I can't tell from numbers is whether it *sounds* good: that is
   the lead's (build/audio/pass.mp3 on builder0 runs).
+- **The batch, the PA lines, and what the guard caught (a59f331, 5e3e6de).** Every gun and impact is now layered (44
+  takes). `sfx_layer` refuses a master whose own peak is under -20 dBFS: that's a failed generation, not a quiet sound.
+  Pointed at everything, including what had shipped, it caught `autocannon_round` take 2 from the pilot the lead had
+  approved, `bullet_on_steel` take 3, and `mg_single` take 3 three times running (so `mg_round`, which no weapon plays,
+  keeps two takes). It also caught the flamethrower's new loop importing compressed, the loop bug again; `make
+  sfx-layer` now fixes a new loop's import after Godot creates it. The twelve approved PA lines are recorded, with an
+  intro beat (welcome, then a word from the screens) and an outro beat (result, then a sign-off). Speech-to-text heard
+  `pa.signoff.02` as "[outro jingle]": the spectrogram is plain speech, and two fresh transcriptions match the text
+  exactly.
+- **Frame-rate and tick-rate assumptions, ahead of the 30 Hz tick (35ba8dd, 0cbcafc).** Engines read the interpolated
+  transform, and their speed and load smoothing is in seconds (a test fails with the old per-frame lerp at 30 vs
+  120 fps). The booth's match clock divided ticks by a constant 60, which would have run the booth, mood and music at
+  half speed; it reads `Engine.physics_ticks_per_second` now. Everything else in audio's paths was already in seconds.
+- **Music at 30 a side (d16fe38, and the pass logs).** First contact takes the intensity from 0.4 to 0.9 in under a
+  second, which was a cut from pad to full band. On a bar line the director now moves one layer, so a battle
+  arrives over three bars (6 s at 120 bpm). `MUSIC_LAYERS` logs `pos=`/`bar=` because `t=` is the game clock, not the
+  music's (a headless match read t=14.5 with the music at 2.0 s).
 - **Bug from control (2b28709): the booth called every side the Condemned outside the match runner.** The event
   adapter gave both teams one default faction. Each side's faction is now read from the vehicles the match fielded.
   Test, mutation-checked. The same class of fix as `--arena=random` (50bde77, the booth names the arena that was
