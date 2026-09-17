@@ -7,7 +7,6 @@ extends Node3D
 ## Flags: --screenshot=<abs png> [--screenshot-delay=S]
 
 const ARENA := preload("res://game/arena/arena.tscn")
-const MAIN_SCENE := "res://game/main.tscn"
 ## Flags that describe the session, not the mode, and so survive choosing a mode.
 const SESSION_FLAGS := ["ui-touch", "shell-playtest", "announcer", "music", "hints"]
 const MENU := [
@@ -146,8 +145,7 @@ func start(flag: String) -> void:
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + flag) if flag != "" else ""))
 		return
-	Main.next_flags = flags_for(flag, LaunchFlags.from_environment())
-	get_tree().change_scene_to_file(MAIN_SCENE)
+	GameLauncher.start(get_tree(), flags_for(flag, LaunchFlags.from_environment()))
 
 
 ## The flags the chosen mode starts with: its own flag, plus the few that belong to the session rather than to a

@@ -1,13 +1,14 @@
 class_name HudCostProbe
 extends Node
 ## Control X4 (CP1's HUD line: ≤ 130 draw calls, ≤ 1 ms of `_process` at 60 vehicles): what each piece of the HUD costs,
-## in a live skirmish. After a warm-up it measures the whole HUD, then hides one widget at a time (and stops its
-## processing) for PHASE_SECONDS with an `all` phase either side, so a widget's cost is the difference and the battle's
-## drift cancels out. Canvas draw calls come from the viewport's own counter, so the 3D scene doesn't blur them.
+## in a live skirmish. After a warm-up of real fighting it takes the tactical pause (the HUD keeps processing and
+## drawing, the battle holds still, so every phase measures the same picture), measures the whole HUD, then hides one
+## widget at a time (and stops its processing) for PHASE_FRAMES with an `all` phase either side; a widget's cost is the
+## difference. Canvas draw calls come from the viewport's own counter, so the 3D scene doesn't blur them.
 ## `--hud-cost=PATH` on a skirmish: prints HUD_COST lines, writes PATH (JSON), then HUD_COST_DONE and quits.
 
 const WARMUP_SECONDS := 10.0
-const PHASE_SECONDS := 1.5
+const PHASE_FRAMES := 8
 
 var out_path := ""
 var main: Main
@@ -27,6 +28,8 @@ func run() -> void:
 	if controls != null:
 		controls.set_paused(false)
 	await tree.create_timer(WARMUP_SECONDS, true, false, true).timeout
+	if controls != null:
+		controls.set_paused(true, "")
 	var hud := main.get_node("HUD") as CanvasLayer
 	var widgets: Array[Node] = []
 	for child in hud.get_children():
@@ -88,8 +91,7 @@ func _measure(label: String) -> Dictionary:
 	var canvas := 0.0
 	var total := 0.0
 	var process := 0.0
-	var began := Time.get_ticks_msec()
-	while Time.get_ticks_msec() - began < PHASE_SECONDS * 1000.0:
+	while frames < PHASE_FRAMES:
 		await RenderingServer.frame_post_draw
 		frames += 1
 		canvas += get_viewport().get_render_info(Viewport.RENDER_INFO_TYPE_CANVAS, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME)

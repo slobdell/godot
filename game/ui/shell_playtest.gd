@@ -89,6 +89,13 @@ func _faction_stage() -> void:
 	await _click(_picker_point(picker, "law", true), MOUSE_BUTTON_RIGHT)
 	_checks["faction_click_picks_yours"] = picker.player_faction == "gangs"
 	_checks["faction_right_click_picks_theirs"] = picker.enemy_faction == "law"
+	var arena_row := picker.arena_rect()
+	var chosen_arena := ""
+	if arena_row.has_area():
+		await _click(picker.get_global_transform() * arena_row.get_center())
+		await _click(picker.get_global_transform() * arena_row.get_center())
+		chosen_arena = picker.arena
+	_checks["arena_row_takes_clicks"] = chosen_arena != "" and chosen_arena != GameLauncher.RANDOM
 	await _seconds(0.3)
 	await _capture("2_factions_picked")
 	var fight: Rect2 = picker.call("fight_rect") if picker.has_method("fight_rect") else Rect2()
@@ -99,7 +106,9 @@ func _faction_stage() -> void:
 		await _key(KEY_ENTER)
 	var begin_load := Time.get_ticks_msec()
 	var loaded := await _wait_for(func() -> bool: return _controls() != null)
-	_step("faction_fight", {"match_loaded": loaded, "load_ms": Time.get_ticks_msec() - begin_load})
+	_step("faction_fight", {"match_loaded": loaded, "load_ms": Time.get_ticks_msec() - begin_load,
+			"arena_chosen": chosen_arena, "arena_built": String(Arena.active.get("name", ""))})
+	_checks["the_chosen_arena_is_built"] = loaded and chosen_arena != "" and String(Arena.active.get("name", "")) == chosen_arena
 
 
 func _camera_stage() -> void:

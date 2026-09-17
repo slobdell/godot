@@ -25,9 +25,13 @@ const PREVIEW_SEED := 3
 var player_faction := Units.DEFAULT_FACTION
 var enemy_faction := Units.DEFAULT_FACTION
 var budget := Units.BASELINE_BUDGET
+## An Arena layout name, or GameLauncher.RANDOM.
+var arena := GameLauncher.RANDOM
 
 var _rows := {}  # "<faction>:<side>" -> Rect2 (local)
 var _fight := Rect2()
+var _arena_row := Rect2()
+var _arenas: Array = []
 var _choices: Array = []
 var _hover_fight := false
 
@@ -65,6 +69,26 @@ func choices() -> Array:
 	return _choices
 
 
+## The arena row, in local coordinates: click for the next arena, right-click for the previous one.
+func arena_rect() -> Rect2:
+	return _arena_row
+
+
+## Random first, then every arena with a title (GameLauncher.arena_choices).
+func arena_options() -> Array:
+	if _arenas.is_empty():
+		_arenas = [{"name": GameLauncher.RANDOM, "title": "Random arena", "note": "A different fight each match."}]
+		_arenas.append_array(GameLauncher.arena_choices())
+	return _arenas
+
+
+func step_arena(step: int) -> void:
+	var names: Array = arena_options().map(func(a: Dictionary) -> String: return a["name"])
+	var at := maxi(names.find(arena), 0)
+	arena = names[posmod(at + step, names.size())]
+	queue_redraw()
+
+
 ## The FIGHT button, in local coordinates (empty until the menu has been drawn once).
 func fight_rect() -> Rect2:
 	return _fight
@@ -99,6 +123,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			set_side(String(choices()[index]["faction"]), key.shift_pressed)
 			get_viewport().set_input_as_handled()
 		return
+	if key.keycode in [KEY_LEFT, KEY_RIGHT]:
+		step_arena(-1 if key.keycode == KEY_LEFT else 1)
+		get_viewport().set_input_as_handled()
+		return
 	if key.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_ESCAPE]:
 		confirm()
 		get_viewport().set_input_as_handled()
@@ -124,6 +152,9 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if not button.pressed:
 		return
+	if _arena_row.has_point(button.position):
+		step_arena(-1 if button.button_index == MOUSE_BUTTON_RIGHT else 1)
+		return
 	var enemy := button.button_index == MOUSE_BUTTON_RIGHT
 	for key: String in _rows:
 		if (_rows[key] as Rect2).has_point(button.position):
@@ -135,7 +166,7 @@ func _draw() -> void:
 	var s := CyberStyle.ui_scale(size)
 	var font := CyberStyle.font()
 	var listed := choices()
-	var panel := Rect2(Vector2.ZERO, Vector2(minf(WIDTH * s, size.x - PAD * 2.0), (ROW * (listed.size() + 2.2)) * s))
+	var panel := Rect2(Vector2.ZERO, Vector2(minf(WIDTH * s, size.x - PAD * 2.0), (ROW * (listed.size() + 3.4)) * s))
 	panel.position = (size - panel.size) / 2.0
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0, 0, 0, 0.72))
 	draw_rect(panel, Color(CyberStyle.HUD_BACKGROUND, 0.96))
@@ -147,7 +178,7 @@ func _draw() -> void:
 	draw_string(font, Vector2(x, y + 24.0 * s), "CHOOSE YOUR FACTION", HORIZONTAL_ALIGNMENT_LEFT, -1,
 			roundi(24.0 * s), CyberStyle.CYAN)
 	draw_string(font, Vector2(x, y + 46.0 * s),
-			"click yours, right-click theirs (or 1-4, shift+1-4)   budget %d: size is the faction's, not a setting" % budget,
+			"click yours, right-click theirs (1-4, shift+1-4); arena: click / arrows   budget %d" % budget,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(14.0 * s), Color(CyberStyle.TEXT, 0.75))
 	y += ROW * 0.9 * s
 	_rows.clear()
@@ -178,6 +209,19 @@ func _draw() -> void:
 			draw_string(font, row.position + Vector2(row.size.x - 62.0 * s, 24.0 * s), "ENEMY",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(15.0 * s), enemy_color)
 		y += ROW * s
+	# The arena: what the fight will be about, not just a name.
+	var choice: Dictionary = {}
+	for option: Dictionary in arena_options():
+		if option["name"] == arena:
+			choice = option
+	_arena_row = Rect2(x, y, panel.size.x - PAD * s * 2.0, ROW * s - 6.0 * s)
+	draw_rect(_arena_row, Color(CyberStyle.CARD, 0.95))
+	draw_rect(_arena_row, Color(CyberStyle.CYAN, 0.5), false, 1.0)
+	draw_string(font, _arena_row.position + Vector2(10.0 * s, 24.0 * s), "ARENA   <  %s  >" % choice.get("title", arena),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(19.0 * s), CyberStyle.TEXT)
+	draw_string(font, _arena_row.position + Vector2(10.0 * s, 46.0 * s), String(choice.get("note", "")),
+			HORIZONTAL_ALIGNMENT_LEFT, _arena_row.size.x - 20.0 * s, roundi(13.0 * s), Color(CyberStyle.TEXT, 0.75))
+	y += ROW * s
 	# Never smaller than a comfortable click target, however small the window.
 	var fight_size := Vector2(maxf(200.0 * s, 160.0), maxf(48.0 * s, 44.0))
 	_fight = Rect2(Vector2(panel.end.x - PAD * s - fight_size.x, y + 6.0 * s), fight_size)

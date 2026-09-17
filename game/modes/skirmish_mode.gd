@@ -100,21 +100,22 @@ func _pick_faction() -> void:
 	picker.enemy_faction = flags.text("enemy-faction", Units.DEFAULT_FACTION)
 	main.hud.add_child(picker)
 	main.hud.set_status("Pick a faction, then FIGHT")
+	picker.arena = flags.text("arena", GameLauncher.RANDOM)
 	picker.chosen.connect(func(player_faction: String, enemy_faction: String) -> void:
-		Main.next_flags = SkirmishMode.faction_flags(flags, player_faction, enemy_faction)
-		main.get_tree().paused = false
-		main.get_tree().reload_current_scene())
+		GameLauncher.start(main.get_tree(), SkirmishMode.faction_flags(flags, player_faction, enemy_faction, picker.arena)))
 
 
 ## X5: the flags the skirmish restarts with after the menu - everything it was launched with, plus the two
 ## factions, minus the menu itself (or it would open again). Pure, so the restart is testable.
-static func faction_flags(current: LaunchFlags, player_faction: String, enemy_faction: String) -> LaunchFlags:
+static func faction_flags(current: LaunchFlags, player_faction: String, enemy_faction: String, arena := "") -> LaunchFlags:
 	var next := LaunchFlags.new()
 	next.values = current.values.duplicate()
 	next.values.erase("pick-faction")
 	next.values["no-pick-faction"] = ""
 	next.values["player-faction"] = player_faction
 	next.values["enemy-faction"] = enemy_faction
+	if arena != "":
+		next.values["arena"] = arena
 	return next
 
 
