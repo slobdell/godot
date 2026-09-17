@@ -5,6 +5,23 @@
 > `game/arena/arena.gd`. Doctrine's terrain needs: [doctrine.md](doctrine.md). Measurements for each shipped arena are
 > at the end and are filled from runs, never from intent.
 
+## Start here
+
+- **What maps are:** `arenas/<name>.json` layouts (schema v2: kit `props`, `spawn_zones`, `lanes`, `regions`), authored
+  as half a layout plus its 180° mirror in `tools/make_arenas.py`, validated and built by `game/arena/arena.gd` from
+  the physical truth of each prop in `game/arena/arena_kit.gd`.
+- **Commands:** `make arenas` (regenerate), `make arena-report` (static measures and top-down plots, no Godot),
+  `make arena-test`, `make arena-series` (fairness and fight shape; **counterbalance armies**), `make remote
+  T=arena-shots` (pictures), `make arena-candidates` (parked generator). Play: `make skirmish ARENA=<name>`.
+- **What we know (round 5):** all four new arenas are fair (paired base-swap margin, re-checked under Jolt); maps change
+  hidden time, the long tail of hit ranges and how matches end, but not median hit range (39-43 m everywhere) and not
+  much who wins; flank routes go unused while the control point funnels brains-only CPUs down the middle.
+- **Read in order:** mechanics → vocabulary → rules of thumb → how we test → shipped arenas and their numbers →
+  destructible cover design (approved, not built) → the generator → what to build next.
+- **Invariants not to break:** everything that collides is point-symmetric; spawns stay 6 m clear of cover; the
+  loader refuses unknown names including `random` (only `Arena.resolve_name` knows it); the random roll comes from
+  `--seed`; `Arena.DEFAULT_LAYOUT` (foundry) keeps headless runs and the sim baseline stable.
+
 ## The lead's direction (2026-09-17)
 
 > *"the maps are just too simple. We probably need a dedicated agent to formulate maps. I'm also not seeing the assets
@@ -95,85 +112,6 @@ much as the map. The same seeds on several arenas are the same army pairings rep
 | **Time hidden** | Share of unit-seconds not visible to any enemy | Higher in dense arenas |
 | **Match shape** | Duration, first contact time, share decided by the control point | Different per arena, and never a stalemate by default |
 
-## Proposing layouts (stretch: `make arena-candidates`)
-
-`tools/arena_generator.py` hill-climbs random symmetric kit layouts toward a character's measured targets, inside hard
-constraints: pieces in the field and 6 m clear of spawns, no overlaps, the control ring drivable, bases, centre and
-both flank strips in one drivable region. Candidates land in `build/arena-candidates/` with plots and an `index.html`;
-**nothing ships until a human picks one**, copies it into `tools/make_arenas.py` with a name and a fight, and proves it
-with `make arena-series`.
-
-Targets are view distance (mean, share ≥ 120 m) plus **structure**: sight-blocking pieces per merged cover group.
-The structure term exists because view distance alone was met by confetti: the first yard candidate hit 45 m and 6%
-exactly with 84 scattered boxes and no lanes at all. With the term and an "extend a container end to end" move, the
-candidates grow walls and L-shaped corners. They read as organic yards, not the hand-built yard's staggered lanes; the
-generator proposes, the designer decides.
-
-## Destructible cover: design (approved by the lead 2026-09-17, "Schedule it"; not this round)
-
-Not in round 5 because the 30 Hz simulation tick refactor (combat) touches every per-tick assumption, and two
-cross-stream changes in flight at once couldn't be told apart when something breaks. Written so another agent can pick
-it up cold.
-
-### What it is
-
-**Container stacks lose levels under heavy fire. A stack never falls below one level.** A 3-high stack that blocks
-sight at every height becomes 2-high, then 1-high, and stops there. That one rule is what makes it affordable:
-
-| Property | Before a level falls | After | Why it matters |
-|---|---|---|---|
-| Blocks hulls and driving | yes | **yes, unchanged** (1 level is 2.59 m) | **Navigation never changes**: no rebake, no broken mirror symmetry, no frames waiting on the nav server (trip-up 57) |
-| Blocks eye-level sight (1.3 m) and flat fire | yes | yes | A 1-high container still blocks both, so the *first* collapses change only arcs and tall-target lines |
-| Height | 7.8 / 5.2 m | 5.2 / 2.6 m | What changes: artillery arcs clear it sooner, splash reaches over, and the stack stops hiding the ad screen or a tall target behind it |
-
-So in the first version collapse is **mostly spectacle plus arc-fire tactics**. The tactically big version, where a
-1-high container is **knocked open** into low cover (0.9 m, a hull stopper that no longer blocks sight), changes sight
-and fire lines. It still never changes drivable space, because low cover blocks hulls too. Ship v1 (levels), measure,
-then decide on v2 (open) with the lead.
-
-### Rules
-
-- **Which props:** `container_20` / `container_40` with `stack` ≥ 2 (v1); v2 adds the last level turning to low cover.
-  Walls, crates, wrecks, barricades, screens and floodlights stay indestructible (layout-authored permanence is a
-  design lever).
-- **Hit points per level:** by kind in `ArenaKit.PROPS` (proposed: 600 for a 20 ft level, 900 for a 40 ft, about 3-5
-  heavy-cannon hits). Only weapons with `penetration` ≥ a threshold or `splash_radius` > 0 damage props: machine guns
-  and flamers don't, so "hose the container" isn't a strategy.
-- **Symmetry:** layouts stay symmetric; damage is play. Nothing needs mirroring at runtime.
-- **Determinism:** damage accumulates on the simulation tick from hit events only; a level falls on the tick its HP
-  reaches zero. Prop levels join `Match.state_hash()`, or two builds that disagree about a collapse would hash the same.
-- **Networking (paused):** prop levels are replicated state, one small int per destructible prop.
-
-### Who owns which half
-
-| Stream | Work |
-|---|---|
-| **combat** | Damage to props: route shell/beam/splash hits on a `StaticBody3D` prop into `Arena.damage_prop(index, amount, weapon)`; the penetration/splash threshold; `prop_level_lost(event)` K2-style signal `{tick, prop, type, position, levels_left, by}`; prop levels in `state_hash` |
-| **arena** | `Arena.damage_prop` and per-prop HP from `ArenaKit.PROPS`; shrinking the collision box by one level on the tick (a `BoxShape3D` size change plus re-centring, no new nodes); `cover_features()` reporting current height and stack; the rule "never below 1" enforced and tested; `destructible` flag in layout v2 (default true for stacks ≥ 2) |
-| **ai** | `CoverMap` is built once and memoizes line of sight: add `CoverMap.feature_changed(index)` that updates one feature's height and drops memo entries touching its broadphase cells; brains stop treating a fallen level as cover the same tick |
-| **render** | Container MultiMesh already draws one instance per level: remove the top instance, play a fall and dust effect (pooled), leave a debris decal. No real light |
-| **audio** | A metal-collapse cue on `prop_level_lost` |
-
-### Cost per frame (estimates to verify with `make perf-scene`)
-
-- Collision: one shape resize per fallen level (rare, event-driven). Zero steady-state cost.
-- CoverMap: one feature update plus memo invalidation per event, O(cells touched).
-- Render: one MultiMesh instance removed (a buffer update on that frame), one pooled effect. Nothing per frame.
-- Simulation: a damage lookup only when a hit lands on a prop (hits on walls are already detected; they currently
-  emit an empty `projectile_impact`).
-
-### How to test that it matters
-
-1. **Unit (arena):** a stack at 3 levels takes enough damage → collision height 5.18 m on that tick → 2.59 m later,
-   never below; `cover_features` agrees; a navmesh path across the prop's footprint is unchanged before and after.
-2. **Scenario (combat):** a cannon firing at a 2-high stack drops it to 1 level after N hits; a mortar that couldn't
-   reach a unit behind a 3-high stack reaches it after the collapse.
-3. **Determinism:** same seed twice → same collapse ticks and state hash; `make sim-baseline` moves once, on purpose.
-4. **Does it change where units die?** A series (`make arena-series`, counterbalanced armies) with destructible on vs
-   off on the yard (the densest stacks): compare the share of deaths within 8 m of a stack, the time units spend
-   hidden, and match length. If deaths near stacks don't move, v1 is spectacle only: ship it for the look, and take v2
-   (knock-open to low cover) to the lead with those numbers.
-
 ## Shipped arenas
 
 Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (yard, boulevard, pit,
@@ -261,6 +199,89 @@ contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `bu
    the yard's lanes the gangs feed in a few at a time, while open avenues let 44 cheap vehicles bring their numbers to
    bear at once, and they close to 30 m (median hit range on the boulevard 30 m, the shortest of any series). Treat it
    as a hypothesis to re-test with colours counterbalanced once combat's gangs changes land.
+   **For whoever tunes the gangs next:** this sits alongside combat's round-5 findings (the gangs lose under every
+   commander; Armor beats Swarm 16-0). A swarm's edge is numbers firing at once. Lanes and chokepoints take that away,
+   so terrain built "for a swarm" is where the swarm does worst. Test gang changes on the yard and the boulevard both,
+   and don't assume tight terrain helps them.
+
+## Destructible cover: design (approved by the lead 2026-09-17, "Schedule it"; not this round)
+
+Not in round 5 because the 30 Hz simulation tick refactor (combat) touches every per-tick assumption, and two
+cross-stream changes in flight at once couldn't be told apart when something breaks. Written so another agent can pick
+it up cold.
+
+### What it is
+
+**Container stacks lose levels under heavy fire. A stack never falls below one level.** A 3-high stack that blocks
+sight at every height becomes 2-high, then 1-high, and stops there. That one rule is what makes it affordable:
+
+| Property | Before a level falls | After | Why it matters |
+|---|---|---|---|
+| Blocks hulls and driving | yes | **yes, unchanged** (1 level is 2.59 m) | **Navigation never changes**: no rebake, no broken mirror symmetry, no frames waiting on the nav server (trip-up 57) |
+| Blocks eye-level sight (1.3 m) and flat fire | yes | yes | A 1-high container still blocks both, so the *first* collapses change only arcs and tall-target lines |
+| Height | 7.8 / 5.2 m | 5.2 / 2.6 m | What changes: artillery arcs clear it sooner, splash reaches over, and the stack stops hiding the ad screen or a tall target behind it |
+
+So in the first version collapse is **mostly spectacle plus arc-fire tactics**. The tactically big version, where a
+1-high container is **knocked open** into low cover (0.9 m, a hull stopper that no longer blocks sight), changes sight
+and fire lines. It still never changes drivable space, because low cover blocks hulls too. Ship v1 (levels), measure,
+then decide on v2 (open) with the lead.
+
+### Rules
+
+- **Which props:** `container_20` / `container_40` with `stack` ≥ 2 (v1); v2 adds the last level turning to low cover.
+  Walls, crates, wrecks, barricades, screens and floodlights stay indestructible (layout-authored permanence is a
+  design lever).
+- **Hit points per level:** by kind in `ArenaKit.PROPS` (proposed: 600 for a 20 ft level, 900 for a 40 ft, about 3-5
+  heavy-cannon hits). Only weapons with `penetration` ≥ a threshold or `splash_radius` > 0 damage props: machine guns
+  and flamers don't, so "hose the container" isn't a strategy.
+- **Symmetry:** layouts stay symmetric; damage is play. Nothing needs mirroring at runtime.
+- **Determinism:** damage accumulates on the simulation tick from hit events only; a level falls on the tick its HP
+  reaches zero. Prop levels join `Match.state_hash()`, or two builds that disagree about a collapse would hash the same.
+- **Networking (paused):** prop levels are replicated state, one small int per destructible prop.
+
+### Who owns which half
+
+| Stream | Work |
+|---|---|
+| **combat** | Damage to props: route shell/beam/splash hits on a `StaticBody3D` prop into `Arena.damage_prop(index, amount, weapon)`; the penetration/splash threshold; `prop_level_lost(event)` K2-style signal `{tick, prop, type, position, levels_left, by}`; prop levels in `state_hash` |
+| **arena** | `Arena.damage_prop` and per-prop HP from `ArenaKit.PROPS`; shrinking the collision box by one level on the tick (a `BoxShape3D` size change plus re-centring, no new nodes); `cover_features()` reporting current height and stack; the rule "never below 1" enforced and tested; `destructible` flag in layout v2 (default true for stacks ≥ 2) |
+| **ai** | `CoverMap` is built once and memoizes line of sight: add `CoverMap.feature_changed(index)` that updates one feature's height and drops memo entries touching its broadphase cells; brains stop treating a fallen level as cover the same tick |
+| **render** | Container MultiMesh already draws one instance per level: remove the top instance, play a fall and dust effect (pooled), leave a debris decal. No real light |
+| **audio** | A metal-collapse cue on `prop_level_lost` |
+
+### Cost per frame (estimates to verify with `make perf-scene`)
+
+- Collision: one shape resize per fallen level (rare, event-driven). Zero steady-state cost.
+- CoverMap: one feature update plus memo invalidation per event, O(cells touched).
+- Render: one MultiMesh instance removed (a buffer update on that frame), one pooled effect. Nothing per frame.
+- Simulation: a damage lookup only when a hit lands on a prop (hits on walls are already detected; they currently
+  emit an empty `projectile_impact`).
+
+### How to test that it matters
+
+1. **Unit (arena):** a stack at 3 levels takes enough damage → collision height 5.18 m on that tick → 2.59 m later,
+   never below; `cover_features` agrees; a navmesh path across the prop's footprint is unchanged before and after.
+2. **Scenario (combat):** a cannon firing at a 2-high stack drops it to 1 level after N hits; a mortar that couldn't
+   reach a unit behind a 3-high stack reaches it after the collapse.
+3. **Determinism:** same seed twice → same collapse ticks and state hash; `make sim-baseline` moves once, on purpose.
+4. **Does it change where units die?** A series (`make arena-series`, counterbalanced armies) with destructible on vs
+   off on the yard (the densest stacks): compare the share of deaths within 8 m of a stack, the time units spend
+   hidden, and match length. If deaths near stacks don't move, v1 is spectacle only: ship it for the look, and take v2
+   (knock-open to low cover) to the lead with those numbers.
+
+## Proposing layouts (stretch: `make arena-candidates`)
+
+`tools/arena_generator.py` hill-climbs random symmetric kit layouts toward a character's measured targets, inside hard
+constraints: pieces in the field and 6 m clear of spawns, no overlaps, the control ring drivable, bases, centre and
+both flank strips in one drivable region. Candidates land in `build/arena-candidates/` with plots and an `index.html`;
+**nothing ships until a human picks one**, copies it into `tools/make_arenas.py` with a name and a fight, and proves it
+with `make arena-series`.
+
+Targets are view distance (mean, share ≥ 120 m) plus **structure**: sight-blocking pieces per merged cover group.
+The structure term exists because view distance alone was met by confetti: the first yard candidate hit 45 m and 6%
+exactly with 84 scattered boxes and no lanes at all. With the term and an "extend a container end to end" move, the
+candidates grow walls and L-shaped corners. They read as organic yards, not the hand-built yard's staggered lanes; the
+generator proposes, the designer decides.
 
 ## What I'd build next (the arena worker's judgement, end of round 5)
 
