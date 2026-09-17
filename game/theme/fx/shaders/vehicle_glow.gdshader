@@ -1,12 +1,13 @@
 // Emissive parts of procedural vehicles (ColorMeshBuilder's glow surface): vertex color × energy,
-// shared by every tank. Vertex alpha is a heat mask: `heat` (per instance, set_heat) pushes masked
-// parts from their color toward orange-white. `flash` (per instance) brightens everything briefly.
+// shared by every tank. Vertex alpha is a heat mask: `heat` pushes masked parts from their color toward orange-white;
+// `flash` brightens everything briefly. Both are plain uniforms on a few shared materials, one per quantized
+// (heat, flash) step (ColorMeshBuilder.glow_material): no instance uniforms (render X2, round 5).
 shader_type spatial;
 render_mode unshaded, fog_disabled, cull_back;
 
 uniform float energy = 1.7;
-instance uniform float heat = 0.0;
-instance uniform float flash = 0.0;
+uniform float heat = 0.0;
+uniform float flash = 0.0;
 
 void fragment() {
 	float mask = COLOR.a;

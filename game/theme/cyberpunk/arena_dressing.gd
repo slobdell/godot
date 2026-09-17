@@ -18,8 +18,8 @@ const TOWER_INSET := 112.0
 ## Painted floodlight pools on the floor: [x, z, radius, intensity]. The corner towers throw theirs toward the
 ## center; the side pools stand in for the stands' lamps (X5). Emission only: no light passes (fx_tricks.md).
 const FLOODLIGHTS := [
-	Vector4(-80, -80, 75, 0.75), Vector4(80, -80, 75, 0.75), Vector4(-80, 80, 75, 0.75), Vector4(80, 80, 75, 0.75),
-	Vector4(0, -62, 60, 0.55), Vector4(0, 62, 60, 0.55), Vector4(-62, 0, 60, 0.55), Vector4(62, 0, 60, 0.55),
+	Vector4(-80, -80, 75, 1.05), Vector4(80, -80, 75, 1.05), Vector4(-80, 80, 75, 1.05), Vector4(80, 80, 75, 1.05),
+	Vector4(0, -62, 60, 0.6), Vector4(0, 62, 60, 0.6), Vector4(-62, 0, 60, 0.6), Vector4(62, 0, 60, 0.6),
 ]
 
 ## The generated arena kit (tools/assets/build_arena_kit.sh). Missing scenes fall back to the procedural pieces.

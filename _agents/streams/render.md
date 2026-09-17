@@ -90,6 +90,20 @@ X3 lights → X4 vehicle read → X5 LOD/instancing → X6 faction art in deskto
   no instance uniforms on anything that scales with units.
 - Caveat: five other agents share this CPU (load ≈ 5), so CPU lines are pessimistic until re-measured quieter.
 
+### X2: the instance-uniform wall is gone (2026-09-17)
+- **Cause:** Godot reserves 16 global-buffer slots for every instance whose material declares any `instance uniform`
+  (`MAX_INSTANCE_UNIFORM_INDICES`), whatever it uses; the UHD 620's cap is 4,096 slots, so **256 instances**. Hull,
+  turret, weapon and shield per vehicle ran out at ~30 a side.
+- **Fix:** no instance uniforms on vehicles. `UnitSkin.dress()` picks a shared material per (texture set, team, paint,
+  heat step of 8); `ColorMeshBuilder.set_glow_state()` a shared glow material per (heat step, flash step); each
+  `ShieldEffect` owns its material. Draw calls unchanged (Compatibility draws each instance anyway).
+- **Measured** (`make perf-scene`, 720p, 63 vehicles): instance-uniform errors **246 → 0**, other engine errors
+  **93 → 0**. Vehicles' GPU cost now reads 6.4 ms (was 1.1): the parts past the cap weren't drawing correctly before, so
+  X4/X5 own that number now.
+- Test: `test_no_vehicle_part_uses_instance_uniforms_whatever_it_is_doing` scans every slot and faction part after
+  team, paint, heat, shield and firing calls (mutation-checked: an `instance uniform` put back in the shield shader
+  fails it).
+
 ### Decisions
 - perf-scene uses `--cinematic` (no planning pause, fog revealed: every vehicle drawn = the worst case) but its own
   camera, so runs frame the same fight.
@@ -103,3 +117,6 @@ X3 lights → X4 vehicle read → X5 LOD/instancing → X6 faction art in deskto
 
 ### Questions for the lead
 - (none yet)
+
+### Merge notes
+- No shared files touched so far (`mk/fx.mk` is render's).
