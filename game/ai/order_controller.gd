@@ -323,7 +323,12 @@ func _sense() -> void:
 	visible_enemy_names = PackedStringArray()
 	# Only halt_on_contact reads what this tank sees; skipping the sight rays otherwise was the biggest
 	# single AI cost at 50 units (_agents/unit_ai.md "Results").
-	if tanks_root == null or not reflexes.any(func(r: Dictionary) -> bool: return r["type"] == "halt_on_contact"):
+	if tanks_root == null or reflexes.is_empty():
+		return
+	var halts := false
+	for reflex: Dictionary in reflexes:
+		halts = halts or reflex["type"] == "halt_on_contact"
+	if not halts:
 		return
 	for enemy in Perception.enemies_of(tank, tanks_root):
 		# G1: a tank sees within its sight radius, and only with a clear line of sight.
@@ -389,11 +394,15 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var radius := _wheel_radius()
 			if radius > 0.0:
 				# K3 wheels drive like cars: pure pursuit, three-point turns (Steering.drive_toward_wheels).
-				var wheels := Steering.reverse_toward_wheels if move_order.get("reverse", false) else Steering.drive_toward_wheels
-				drive = wheels.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+				# Direct calls rather than a Callable picked every tick (round-5 X1).
+				if move_order.get("reverse", false):
+					drive = Steering.reverse_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+				else:
+					drive = Steering.drive_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+			elif move_order.get("reverse", false):
+				drive = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 			else:
-				var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
-				drive = steer.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
+				drive = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
 			_track_progress(goal, drive, remaining)

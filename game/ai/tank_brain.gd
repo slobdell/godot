@@ -316,6 +316,9 @@ var _order_source: Object = null
 var element := {}
 var _element_source: Object = null
 var _element_dirty := false
+## Whether the order and element sources publish their change signals (asked once per source, not every tick).
+var _order_signals := false
+var _element_signals := false
 ## Option name → tick its cooldown ends (stuck-state timeouts).
 var cooldowns := {}
 ## X2 combat motion: which way around the target (+1/-1, 0 = not chosen yet), when the next jink may flip it, and a
@@ -427,9 +430,10 @@ func _poll_order(think_tick: bool) -> bool:
 	if feed != _order_source:
 		_order_source = feed
 		_order_dirty = true
-		if feed != null and feed.has_signal("order_changed") and not feed.is_connected("order_changed", _on_order_changed):
+		_order_signals = feed != null and feed.has_signal("order_changed")
+		if _order_signals and not feed.is_connected("order_changed", _on_order_changed):
 			feed.connect("order_changed", _on_order_changed)
-	if feed == null or not (_order_dirty or think_tick or not feed.has_signal("order_changed")):
+	if feed == null or not (_order_dirty or think_tick or not _order_signals):
 		return false
 	_order_dirty = false
 	var now := OrderFeed.current(feed, String(tank.name))
@@ -473,9 +477,10 @@ func _poll_element(think_tick: bool) -> bool:
 	if feed != _element_source:
 		_element_source = feed
 		_element_dirty = true
-		if feed != null and feed.has_signal("element_changed") and not feed.is_connected("element_changed", _on_element_changed):
+		_element_signals = feed != null and feed.has_signal("element_changed")
+		if _element_signals and not feed.is_connected("element_changed", _on_element_changed):
 			feed.connect("element_changed", _on_element_changed)
-	if feed == null or not (_element_dirty or think_tick or not feed.has_signal("element_changed")):
+	if feed == null or not (_element_dirty or think_tick or not _element_signals):
 		return false
 	_element_dirty = false
 	# The verb of the order my leader gave me is part of reading the element: under bounding overwatch the half told
