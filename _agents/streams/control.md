@@ -71,7 +71,7 @@ Vehicle art and effects (render), arena layouts (arena), weapons and rules (comb
 
 ## Status
 
-_Round 5, control stream. **Every backlog item (X1–X6) is done; stretch: spectate done, replay not started.** Last verification on 4d98235 (merged with main): `make remote T=check` **931 passed, 0 failed, exit 0**; `shell-playtest` 15/15 with a silent console; `hud-cost` 86. Updated 2026-09-17._
+_Round 5, control stream. **Every backlog item (X1–X6) is done; stretch: spectate done, replay not started.** Last verification on e81bdbe6 (merged with main): `make remote T=check` **965 passed, 0 failed, exit 0**, `shell-playtest` 15/15 with a silent console. (Earlier, on 4d98235): `make remote T=check` **931 passed, 0 failed, exit 0**; `shell-playtest` 15/15 with a silent console; `hud-cost` 86. Updated 2026-09-17._
 
 ### Plan (backlog in order)
 
