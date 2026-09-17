@@ -78,6 +78,14 @@ static func get_instance() -> FxWorld:
 	return _instance
 
 
+## Where `node` is DRAWN this frame (render, round 5, ahead of the 30 Hz simulation): with physics interpolation on,
+## Godot renders a body at its interpolated transform while `global_transform` still returns the last physics tick's, so
+## anything an effect places from a body in `_process` (underglow, blob shadows, tracers, order markers, dust) must use
+## this or it jitters against the vehicle it belongs to. Identical to `global_transform` without interpolation.
+static func visual_transform(node: Node3D) -> Transform3D:
+	return node.get_global_transform_interpolated() if node.is_physics_interpolated_and_enabled() else node.global_transform
+
+
 ## The shared FX systems if they already exist; never creates them (use while tearing down).
 static func existing() -> FxWorld:
 	return _instance if is_instance_valid(_instance) else null

@@ -95,7 +95,7 @@ func update(pool: LightPool) -> void:
 			continue
 		var source := key as Node3D
 		var color: Color = _sources[key]
-		var xform := source.global_transform
+		var xform := FxWorld.visual_transform(source)
 		var yaw_basis := Basis(Vector3.UP, xform.basis.get_euler().y) * Basis.from_scale(Vector3(size.x, 1.0, size.y))
 		multimesh.set_instance_transform(n, Transform3D(yaw_basis, Vector3(xform.origin.x, 0.04, xform.origin.z)))
 		multimesh.set_instance_color(n, color)

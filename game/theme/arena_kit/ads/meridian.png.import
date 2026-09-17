@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ua5bgabwonh3"
-path="res://.godot/imported/freedom_program.png-2e1475d6feaaaa1229a6cc79f1e925ac.ctex"
+uid="uid://b2nr5hkk2805i"
+path="res://.godot/imported/meridian.png-6160d1a1c3f98bb11f2f30d9e50ce6a2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://game/theme/arena_kit/ads/freedom_program.png"
-dest_files=["res://.godot/imported/freedom_program.png-2e1475d6feaaaa1229a6cc79f1e925ac.ctex"]
+source_file="res://game/theme/arena_kit/ads/meridian.png"
+dest_files=["res://.godot/imported/meridian.png-6160d1a1c3f98bb11f2f30d9e50ce6a2.ctex"]
 
 [params]
 
-compress/mode=4
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -37,4 +37,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

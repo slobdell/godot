@@ -141,7 +141,7 @@ func _note_order(order: Dictionary, unit_name: String, queued: bool, now: float,
 	elif order.has("target"):
 		anchor = _unit(String(order["target"]))
 		if anchor != null:
-			at = Vector3(anchor.global_position.x, 0.0, anchor.global_position.z)
+			at = Vector3(FxWorld.visual_transform(anchor).origin.x, 0.0, FxWorld.visual_transform(anchor).origin.z)
 	else:
 		at = _middle(order.get("units", [unit_name]))
 	if at == null:
@@ -160,7 +160,7 @@ func _show_selection(now: float) -> void:
 		if not _selected.has(unit_name):
 			var unit := _unit(unit_name)
 			if unit != null:
-				var index := _start("select", Vector3(unit.global_position.x, 0.0, unit.global_position.z), _color("select"), now)
+				var index := _start("select", Vector3(FxWorld.visual_transform(unit).origin.x, 0.0, FxWorld.visual_transform(unit).origin.z), _color("select"), now)
 				_anchors.append({"index": index, "node": unit})
 	var added := current.keys().any(func(unit_name: String) -> bool: return not _selected.has(unit_name))
 	_selected = current
@@ -179,7 +179,7 @@ func _follow_anchors() -> void:
 		if not is_instance_valid(node) or data.g <= 0.01 or float(_material.get_shader_parameter("now")) > data.r + data.g:
 			_anchors.remove_at(i)
 			continue
-		multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY, Vector3(node.global_position.x, 0.0, node.global_position.z)))
+		multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY, Vector3(FxWorld.visual_transform(node).origin.x, 0.0, FxWorld.visual_transform(node).origin.z)))
 
 
 ## Selected units with queued orders: dots from the unit through its current destination and every queued one.
@@ -191,7 +191,7 @@ func _draw_trail(now: float) -> void:
 		var unit := _unit(unit_name)
 		if waiting.is_empty() or unit == null:
 			continue
-		var points: Array[Vector3] = [Vector3(unit.global_position.x, 0.0, unit.global_position.z)]
+		var points: Array[Vector3] = [Vector3(FxWorld.visual_transform(unit).origin.x, 0.0, FxWorld.visual_transform(unit).origin.z)]
 		for order: Dictionary in [_orders.call("current", unit_name)] + waiting:
 			var stop: Variant = order.get("goal", order.get("to"))
 			if stop is Array:
@@ -330,6 +330,6 @@ func _middle(names: Array) -> Variant:
 	for unit_name in names:
 		var unit := _unit(String(unit_name))
 		if unit != null:
-			sum += Vector3(unit.global_position.x, 0.0, unit.global_position.z)
+			sum += Vector3(FxWorld.visual_transform(unit).origin.x, 0.0, FxWorld.visual_transform(unit).origin.z)
 			count += 1
 	return sum / count if count > 0 else null
