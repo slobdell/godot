@@ -186,3 +186,14 @@ func test_random_picks_a_proven_arena_the_same_way_for_the_same_seed() -> void:
 		seen[picked] = true
 	assert_eq(seen.size(), Arena.ROTATION.size(), "40 seeds visit every arena in the rotation")
 	assert_eq(Arena.resolve_name("yard", 3), "yard", "a named arena is itself")
+
+
+func test_a_random_arena_records_the_arena_it_built_and_unknown_names_stay_loud() -> void:
+	var arena: Arena = ARENA.instantiate()
+	arena.layout_name = "random"
+	add_to_tree(arena)
+	assert_true(String(Arena.active.get("name", "")) in Arena.ROTATION,
+			"Arena.active names the arena actually built, never 'random' (%s)" % Arena.active.get("name", ""))
+	assert_eq(arena.layout.get("name"), Arena.active.get("name"), "and the arena agrees")
+	assert_true(String(Arena.load_layout("random").get("error", "")).contains("no arena layout"),
+			"'random' is not a layout: only resolve_name understands it, the loader still refuses unknown names")

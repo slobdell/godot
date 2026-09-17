@@ -263,6 +263,8 @@ static func normalize(data: Dictionary) -> Dictionary:
 
 
 ## X6: "random" becomes a ROTATION arena (chosen by `seed`, or at random when it's negative); any other name is itself.
+## Arena owns this roll (orchestrator ruling, 2026-09-17): launchers pass "random" through and read Arena.active["name"]
+## back. A roll without a seed can't be replayed, so every launcher that shows or records a seed passes it as --seed.
 static func resolve_name(name: String, seed_value: int) -> String:
 	if name != "random":
 		return name
