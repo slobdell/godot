@@ -58,7 +58,7 @@ static func options(match_budget: int) -> Array:
 	return result
 
 
-## `options(budget)`, built once: each one assembles four armies, far too much work for every redraw.
+## `options(budget)`, built once and reused by every redraw and key press (it assembles four armies).
 func choices() -> Array:
 	if _choices.is_empty():
 		_choices = options(budget)
@@ -178,7 +178,9 @@ func _draw() -> void:
 			draw_string(font, row.position + Vector2(row.size.x - 62.0 * s, 24.0 * s), "ENEMY",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(15.0 * s), enemy_color)
 		y += ROW * s
-	_fight = Rect2(Vector2(panel.end.x - PAD * s - 200.0 * s, y + 6.0 * s), Vector2(200.0 * s, 48.0 * s))
+	# Never smaller than a comfortable click target, however small the window.
+	var fight_size := Vector2(maxf(200.0 * s, 160.0), maxf(48.0 * s, 44.0))
+	_fight = Rect2(Vector2(panel.end.x - PAD * s - fight_size.x, y + 6.0 * s), fight_size)
 	var fight_color := CyberStyle.YELLOW
 	draw_rect(_fight, Color(fight_color, 0.35 if _hover_fight else 0.18))
 	draw_rect(_fight, Color(fight_color, 1.0 if _hover_fight else 0.8), false, 2.0)

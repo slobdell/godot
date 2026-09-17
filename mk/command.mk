@@ -99,6 +99,6 @@ SHELL_SIZE ?= 1920x1080
 
 shell-playtest: import ## Title → SKIRMISH → faction menu → planning → a minute of battle, through real clicks; readings and frames in build/shell-playtest/ (needs a display)
 	rm -rf $(SHELL_PLAYTEST_DIR) && mkdir -p $(SHELL_PLAYTEST_DIR)
-	timeout 240 $(GODOT) --path . --resolution $(SHELL_SIZE) -- --title --shell-playtest=$(CURDIR)/$(SHELL_PLAYTEST_DIR) 2>&1 \
+	timeout 360 $(GODOT) --path . --resolution $(SHELL_SIZE) -- --title --shell-playtest=$(CURDIR)/$(SHELL_PLAYTEST_DIR) 2>&1 \
 		| tee $(SHELL_PLAYTEST_DIR)/run.log | grep -E 'SHELL_PLAYTEST|TITLE_START|SCRIPT ERROR|^ERROR' || true
 	grep -q 'SHELL_PLAYTEST_DONE ok=true' $(SHELL_PLAYTEST_DIR)/run.log

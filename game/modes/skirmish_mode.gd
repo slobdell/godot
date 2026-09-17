@@ -81,7 +81,7 @@ func _pick_faction() -> void:
 	picker.player_faction = flags.text("player-faction", Units.DEFAULT_FACTION)
 	picker.enemy_faction = flags.text("enemy-faction", Units.DEFAULT_FACTION)
 	main.hud.add_child(picker)
-	main.hud.set_status("Pick a faction: 1-4 yours, shift+1-4 theirs, Enter fights")
+	main.hud.set_status("Pick a faction, then FIGHT")
 	picker.chosen.connect(func(player_faction: String, enemy_faction: String) -> void:
 		Main.next_flags = SkirmishMode.faction_flags(flags, player_faction, enemy_faction)
 		main.get_tree().paused = false

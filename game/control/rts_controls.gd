@@ -171,7 +171,7 @@ func selection_state() -> Dictionary:
 func commanded_units() -> Array[String]:
 	if not selection.units.is_empty():
 		return selection.units.duplicate()
-	var last := groups.members(_last_group)
+	var last := _living(groups.members(_last_group))
 	if not last.is_empty():
 		return last
 	var all_units: Array[String] = []
@@ -179,6 +179,15 @@ func commanded_units() -> Array[String]:
 		if tank.is_alive():
 			all_units.append(String(tank.name))
 	return all_units
+
+
+func _living(names: Array[String]) -> Array[String]:
+	var alive: Array[String] = []
+	for unit_name in names:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive():
+			alive.append(unit_name)
+	return alive
 
 
 ## L4 for RtsCamera.vision: the ground points it must keep on screen (the commanded element and the contacts that
@@ -190,18 +199,27 @@ func vision_state() -> Dictionary:
 	var element: Array[String] = commanded_units()
 	var frame: Array = []
 	var eyes: Array = []
+	var middle := Vector3.ZERO
 	for unit_name in element:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		if tank != null and tank.is_alive():
 			frame.append(Vector3(tank.global_position.x, 0.0, tank.global_position.z))
+			middle += frame[-1]
 			eyes.append(tank)
+	middle /= maxf(frame.size(), 1.0)
+	# Contacts the element can see widen the frame, but only symmetrically about the element: each one is framed
+	# together with its mirror image, so the frame stays centred on your own vehicles. Framing contacts as they are
+	# let a mass of enemies drag the centre across to them, and with the zoom capped your own element slid off the
+	# bottom of the screen (the lead, round 5: "it ends up focusing on the enemy instead of our own friendly units").
 	for node in game_match.tanks.get_children():
 		var enemy := node as Tank
 		if enemy == null or enemy.team == team or not enemy.is_alive() or not can_see(enemy):
 			continue
 		for tank: Tank in eyes:
 			if tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius:
-				frame.append(Vector3(enemy.global_position.x, 0.0, enemy.global_position.z))
+				var at := Vector3(enemy.global_position.x, 0.0, enemy.global_position.z)
+				frame.append(at)
+				frame.append(middle * 2.0 - at)
 				break
 	var friendly: Array = []
 	for tank in game_match.sorted_team_tanks(team):

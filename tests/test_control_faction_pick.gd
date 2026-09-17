@@ -135,7 +135,7 @@ func test_clicking_fight_starts_the_match() -> void:
 	var got: Array = []
 	picker.chosen.connect(func(mine: String, theirs: String) -> void: got.append([mine, theirs]))
 	var fight := picker.fight_rect()
-	assert_true(fight.size.x >= 120.0 and fight.size.y >= 36.0, "FIGHT is a real button, big enough to hit (%s)" % fight)
+	assert_true(fight.size.x >= 150.0 and fight.size.y >= 44.0, "FIGHT is a real button, big enough to hit (%s)" % fight)
 	assert_true(Rect2(Vector2.ZERO, picker.size).encloses(fight), "and on screen")
 	for pressed in [true, false]:
 		var event := InputEventMouseButton.new()
@@ -148,7 +148,7 @@ func test_clicking_fight_starts_the_match() -> void:
 	assert_eq(got, [[Units.DEFAULT_FACTION, Units.DEFAULT_FACTION]], "clicking FIGHT confirms once")
 
 
-## Drawing the menu must not rebuild four armies: that is what made every click on it hitch.
+## Drawing the menu reuses its options instead of assembling four armies per redraw (measured 1.1 ms on builder0).
 func test_the_menu_builds_its_options_once() -> void:
 	tree.root.size = Vector2i(1280, 720)
 	var picker := FactionPicker.new()

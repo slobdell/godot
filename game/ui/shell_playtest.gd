@@ -4,8 +4,8 @@ extends Node
 ## pipeline (Viewport.push_input) so a click that a person can't make fails here too.
 ##   1 title      the menu buttons are what the mouse is over, and SKIRMISH starts a skirmish in this process
 ##   2 factions   the faction menu takes clicks for both sides, and FIGHT starts the match it shows
-##   3 camera     from the planning pause through a minute of battle, the camera keeps the player's own army in
-##                view and centred nearer to it than to the enemy
+##   3 camera     from the planning pause through two minutes of battle, the camera keeps the element it frames
+##                on screen and centred nearer to it than to the enemy
 ## `--shell-playtest=DIR` on `--title` starts at 1, on `--skirmish` at 2. The node lives on the tree root so it survives
 ## the scene changes it is testing. Prints SHELL_PLAYTEST lines, SHELL_PLAYTEST_DONE ok=<bool>, then quits.
 
@@ -13,8 +13,8 @@ const NODE_NAME := "ShellPlaytest"
 ## A stage that never shows up fails instead of hanging the run.
 const WAIT_SECONDS := 25.0
 ## Seconds into the running battle when the camera is sampled.
-const CAMERA_SAMPLES := [1.0, 3.0, 6.0, 10.0, 15.0, 20.0, 30.0, 45.0, 60.0]
-const CAMERA_SHOTS := [3.0, 20.0, 60.0]
+const CAMERA_SAMPLES := [1.0, 3.0, 6.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 75.0, 90.0, 105.0, 120.0]
+const CAMERA_SHOTS := [3.0, 50.0, 75.0, 120.0]
 
 var out_dir := ""
 
@@ -127,8 +127,8 @@ func _camera_stage() -> void:
 	_checks["battle_frames_own_army"] = framed
 
 
-## One reading of what the camera shows. True when the player's army is on screen and the view is centred nearer
-## to it than to the enemy (or the player has nothing left to frame).
+## One reading of what the camera shows. True when the element the camera is framing (the selection, the last group,
+## else the whole army) has a vehicle on screen and the view is centred nearer to it than to the enemy's army.
 func _sample_camera(label: String) -> bool:
 	var controls := _controls()
 	var game_match := controls.game_match
@@ -136,34 +136,43 @@ func _sample_camera(label: String) -> bool:
 	var rect := get_viewport().get_visible_rect()
 	var center: Variant = controls.rig.ground_point(rect.size / 2.0)
 	var reading := {"label": label}
-	var ok := true
+	var element: Array[Tank] = []
+	for unit_name in controls.commanded_units():
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive():
+			element.append(tank)
+	reading["element"] = _group_reading(element, camera, rect, center)
 	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
-		var middle := Vector3.ZERO
-		var alive := 0
-		var on_screen := 0
+		var alive: Array[Tank] = []
 		for tank in game_match.sorted_team_tanks(team):
-			if not tank.is_alive():
-				continue
-			alive += 1
-			middle += tank.global_position
-			if not camera.is_position_behind(tank.global_position) and rect.has_point(camera.unproject_position(tank.global_position)):
-				on_screen += 1
-		middle /= maxf(alive, 1.0)
-		var key := "green" if team == Match.Team.GREEN else "rust"
-		reading[key] = {"alive": alive, "on_screen": on_screen, "middle": [roundi(middle.x), roundi(middle.z)],
-				"from_center_m": roundi(Vector2(middle.x, middle.z).distance_to(Vector2(center.x, center.z))) if center is Vector3 else -1}
-	var green: Dictionary = reading["green"]
+			if tank.is_alive():
+				alive.append(tank)
+		reading["green" if team == Match.Team.GREEN else "rust"] = _group_reading(alive, camera, rect, center)
+	var mine: Dictionary = reading["element"]
 	var rust: Dictionary = reading["rust"]
-	if int(green["alive"]) > 0:
-		ok = int(green["on_screen"]) > 0
+	var ok := true
+	if int(mine["alive"]) > 0:
+		ok = int(mine["on_screen"]) > 0
 		if int(rust["alive"]) > 0:
-			ok = ok and int(green["from_center_m"]) <= int(rust["from_center_m"])
+			ok = ok and int(mine["from_center_m"]) <= int(rust["from_center_m"])
 	reading["selected"] = controls.selection.units.size()
 	reading["inspected"] = controls.selection.inspected
 	reading["zoom"] = snappedf(controls.rig.zoom, 0.01)
 	reading["ok"] = ok
 	_step("camera", reading)
 	return ok
+
+
+static func _group_reading(tanks: Array[Tank], camera: Camera3D, rect: Rect2, center: Variant) -> Dictionary:
+	var middle := Vector3.ZERO
+	var on_screen := 0
+	for tank in tanks:
+		middle += tank.global_position
+		if not camera.is_position_behind(tank.global_position) and rect.has_point(camera.unproject_position(tank.global_position)):
+			on_screen += 1
+	middle /= maxf(tanks.size(), 1.0)
+	return {"alive": tanks.size(), "on_screen": on_screen, "middle": [roundi(middle.x), roundi(middle.z)],
+			"from_center_m": roundi(Vector2(middle.x, middle.z).distance_to(Vector2(center.x, center.z))) if center is Vector3 else -1}
 
 
 # ---- Finding things -------------------------------------------------------------------------------------------
