@@ -76,14 +76,17 @@ Arena layouts and where props go (arena), gameplay (combat), brains (ai), UI and
 _Updated 2026-09-17 (evening)._
 
 **Plan (backlog order):** X1 perf-scene + budget (CP1) ✅ → X2 instance uniforms ✅ → X3 lights ✅ → X4 vehicle read ✅
-(first pass) → X5 LOD/instancing/thinning (in progress) → X6 faction art ✅ → arena's kit props (CP2 request) ✅ → stretch.
+(first pass; team-read question for the lead) → X5 LOD/instancing/thinning ✅ → X6 faction art ✅ → arena's kit props
+(CP2 request) ✅ → stretch: wrecks left burning ✅; "desktop high" renderer and weather not started (see below).
 
 **Headline numbers** (`make perf-scene`, UHD 620, 61–65 vehicles, tier high; tables in `fx_tricks.md` → M1):
 
 | | Round 5 start | Now |
 |---|---|---|
-| GPU 1280×720 / 1854×1011 | 18–19 / 29–31 ms | **8.5–9.6 / 12–13 ms** |
-| Primitives | 0.97–1.1 M | **0.19–0.28 M** |
+| GPU 1280×720 / 1854×1011 | 18–19 / 29–31 ms | **8.5–10 / 12–14 ms** |
+| Primitives | 0.97–1.1 M | **0.19–0.39 M** (rises with wrecks) |
+| Draw calls (HUD inside) | 810–930 (200–310) | **430–700** (HUD 200–245; 3D ≈ 230–460) |
+| Effects `_process` | 1.3–1.8 ms | **~1.05 ms** (0.18 of it audio's engines/gunfire) |
 | Real lights | 17 | **5** |
 | Renderer errors per run | 246 + 93 | **0** |
 | Frame | 133 ms (pinned) | 133 ms at 60 vehicles, 40–60 ms at 25–30: **the sim tick (20–24 ms) is the wall** |
@@ -109,11 +112,17 @@ _Updated 2026-09-17 (evening)._
 - Team neon on the model's light bars 0.6 → 0.35; the team now tints the rim on the silhouette. Shot: `look-x4.png`.
 - Not done: a check with the lead at play distance (tank vs IFV, Wrecker vs Law). See questions.
 
-### X5: detail levels and thinning (in progress)
-- 3D render scale follows the window (0.85 at 1080p: −4.8 ms), glow wide levels only (−2.1 ms at 1080p), mesh LOD
-  4 px (−0.6 ms, 374k → 237k prims), 6 sparks per spray (−1.4 ms), floor lit in its shader (−0.6 ms), an overdraw
-  budget that thins decorative bursts in pile-ups. Remaining GPU: arena 2–3, glow 1.6–1.9, base ~3 ms.
-- Culling: MultiMesh custom AABBs are world-sized for pooled effects (by design); vehicles and props cull normally.
+### X5: detail levels, instancing, thinning
+- **GPU:** 3D render scale follows the window (0.85 at 1080p: −4.8 ms), glow wide levels only (−2.1 ms at 1080p), mesh
+  LOD threshold 4 px (−0.6 ms, 374k → 237k prims), 6 sparks per spray (−1.4 ms), floor lit in its own shader (−0.6 ms),
+  an overdraw budget that thins decorative bursts in pile-ups.
+- **Draw calls:** the venue's repeated models (20 stands, 4 towers, 2 gates) are one MultiMesh per mesh
+  (`StaticInstancer`), the unlit floor is one plane instead of 64 tiles: arena 45 → 5 draws. Generated parts' empty
+  accent meshes are hidden (180 fewer culled objects).
+- **CPU:** `MotionFx` ranks vehicles every 0.2 s and only fully watches the 20 nearest; recoil jolts skip vehicles past
+  75 m from the camera. perf-scene times every FxWorld step (`fx_steps_ms`) and has a census (`--perf-census`).
+- Remaining GPU at 720p: arena ~2–3 ms (floor 2.3), glow 1.6–1.9, effects 1.3–2.7, base ~3 ms. Remaining draws: HUD
+  200–245 (control), vehicles 3 per vehicle, control's selection markers (61 MeshInstance3Ds at 60 units).
 
 ### X6: faction art ships
 - New "Linux Desktop" preset (faction art included; only Linux templates are installed) and `make export-desktop`:
@@ -128,6 +137,13 @@ _Updated 2026-09-17 (evening)._
 - Fixed two floor artifacts the new maps exposed: the ad-screen spill flooded its 34 m quad (hard light boxes), and
   40 m floor tiles showed per-vertex fog as blue squares.
 
+### Stretch
+- **Wrecks left burning:** `WreckField` leaves a charred husk where each vehicle died (one MultiMesh, an ~800-triangle
+  LOD, 48/24/12 per tier, cleared by a new match); the fire sites already burn on them.
+- **"Desktop high" with a better renderer:** not started. On the lead's UHD 620 Forward+/Mobile would cost more, not
+  less, and web must stay Compatibility; worth it only for a Steam build on real GPUs.
+- **Weather or smoke:** not started: the GPU line isn't met yet.
+
 ### Decisions
 - perf-scene uses `--cinematic` (no planning pause, fog revealed: every vehicle drawn = worst case) with its own camera.
 - The budget keeps ~10% headroom: a frame over 16.7 ms pays for two sim ticks next frame (the spiral).
@@ -141,6 +157,9 @@ _Updated 2026-09-17 (evening)._
 - **arena:** commit `tests/arena/arena_probe.gd.uid` (Godot generated it for your file).
 
 ### Questions for the lead
+- **Glow:** it costs 1.6–1.9 ms of the GPU budget. Without it, vehicles read even more clearly and explosions look
+  flatter (`build/screenshots/x5-glowlook-compare.png`, top with, bottom without). Keep the neon bloom, or go more
+  grounded?
 - **Team read (M3):** is a team-tinted rim plus small light bars enough to tell sides apart at play distance, or do you
   want per-team paint on the hull too? (`build/screenshots/look-x4.png`, `look-factions.png`)
 - **Windows build:** only Linux export templates are installed; a Windows desktop preset needs `TEMPLATE_FILES` in the
@@ -148,11 +167,22 @@ _Updated 2026-09-17 (evening)._
 
 ### Known issues
 - CPU numbers are measured on a laptop shared with five other agents (load ≈ 5): pessimistic.
-- The 720p GPU line (6.5 ms) is not met yet (~9 ms); 1080p (10 ms) not met (~13 ms).
+- The GPU lines aren't met: ~9–10 ms at 720p (budget 6.5), ~13–14 ms at 1080p-class windows (budget 10). Glow off
+  would bring 720p to ~8; the rest is the floor and the base cost. Even so, the frame is bound by the sim tick.
+- `make fx-bench` still runs (its `all` config: 185 draws, was 401).
 
 ### What to playtest
-- `make skirmish` (feel the look: lights, shadows, team rims), `make skirmish-factions FACTION=law ENEMY_FACTION=gangs`
-  (faction models in play), `--arena=boulevard` / `--arena=boneyard` (kit props), `make perf-scene` (numbers).
+- `make skirmish` (the look: lights, blob shadows, team rims, wrecks after kills),
+  `make skirmish-factions FACTION=law ENEMY_FACTION=gangs` (faction models in play), `--arena=boulevard` and
+  `--arena=boneyard` (kit props: barricades, towers, signs, wrecks), `make perf-scene` (the numbers; opens a window
+  for ~2 minutes), `make export-desktop` (43.5 MB desktop pack).
+
+### Next steps
+1. The lead's answers on glow and team read (M3); then per-team hull paint if the rim isn't enough.
+2. Re-measure `make perf-scene` when combat and ai land sim-tick work: once ticks_per_frame is ~1, the GPU line starts
+   to matter and the next cuts are the floor (a cheaper unlit variant), glow, and the effects' base.
+3. A Windows desktop preset once the templates are installed (shared Makefile edit).
+4. Control: HUD draw calls and one MultiMesh for selection markers (M1/M3).
 
 ### Merge notes
 - `export_presets.cfg`: new preset.2 "Linux Desktop" (render owns the art filters).
