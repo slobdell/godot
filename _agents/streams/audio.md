@@ -134,6 +134,14 @@ _Updated 2026-09-17 by the audio worker._
   - Not done in X4, and why: *the arena PA between rounds* and *ad screens audible near them* wait on the lead's ad copy
     (round 4's open gate), and the screens' positions come from arena's layout v2. *Different ground* has nothing to
     key on yet: every arena floor is one surface.
+- **X2 without new sounds (f8fb167): a shell landing is the loudest thing, then falls away.** Heavy impacts play on
+  an `Impacts` bus; engines, gun loops, the crowd and small hits play on a `Bed` bus that a compressor keyed from
+  `Impacts` pulls down (1 ms attack, 420 ms release). Both feed `World`. The recorded impact sounds themselves are in
+  the gated batch.
+- **Arena's four maps in the booth (bcff889, arena CP2's request).** `yard`, `boulevard`, `pit` and `boneyard` speak as
+  the Container Yard, the Boulevard, the Pit and the Boneyard. Only the 18 `{arena}` lines were recorded for them: 72
+  clips, speech-to-text flagged none, 122,834 → 116,573 (the balance may still settle a little lower).
+- **Stretch: `--audio-solo=guns|impacts|engines|crowd|booth|music|ui` (e953586)** plays one layer of the mix, for tuning.
 - **X6 tooling (8ae6404).** `AudioRecorder` (`--audio-record=PATH`) records the Master bus, and `make audio-pass`
   records a 30-a-side CPU match with the booth voiced and the music on, then reports loudness, range, true peak,
   clipping, loudness every 5 s, booth lines and music changes, plus an MP3 and a spectrogram. The full pass waits for
