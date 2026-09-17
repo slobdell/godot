@@ -8,7 +8,10 @@ extends RefCounted
 
 const TEAMS := ["green", "rust"]
 const UNIT_TYPES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
-const TICKS_PER_SECOND := SimClock.TICK_RATE
+## K5 event files (tests/announcer/fixtures) write `tick` in SIXTIETHS of a second, whatever rate the simulation
+## runs at: a fixture is recorded data, and its timeline must not change when the tick rate does. Live streams carry
+## the engine's own tick (MatchEventAdapter converts through SimClock) and every consumer reads `t`, the seconds.
+const TICKS_PER_SECOND := 60
 
 ## type -> {field: kind}; kinds match events.py.
 const REQUIRED := {

@@ -50,6 +50,28 @@ Borderline on a small sample, re-measured, within noise. Mirror outcomes are cha
 changes the winner in 7 of 16 seeds, which is why a single series decides nothing. Reproduce: `make team-fairness`
 (`FAIR_MODES`, `N`, `FIRST_SEED`, `FAIR_FACTION`).
 
+## Round 5: two defects in how fire is delivered (2026-09-17)
+
+**Guns fired a tick late.** Unit controllers run before the tank in a physics tick, and `Tank.ready_to_fire()` read
+the reload the tank had published at the end of the *previous* tick, so every trigger pull waited one extra tick. A
+0.1 s machine gun fired **8.6 rounds a second instead of 10** (7.5 at a 30 Hz tick). Every beaten zone in the game was
+thinner than its weapon data said, which flattered every "suppression doesn't bite" measurement taken before this.
+Fixed in `Tank.ready_to_fire` (`tests/test_combat_weapons.gd`, mutation-checked).
+
+**It cost a fixed tick per shot, so it hit fast weapons hardest.** One tick out of a 0.1 s cycle is 14%; one tick out
+of a tank cannon's 5 s is under 0.5%. Every rapid-fire weapon in the game has been running at ~85–90% of its data
+sheet while the heavy guns ran at ~100% — a handicap that is **differential by archetype**, and the swarm is the
+archetype built out of many cheap fast guns. So the gangs' 23%, `Armor beat Swarm 16–0`, and every "suppression
+doesn't bite" reading were all measured with a bug that hit one side of each comparison harder than the other.
+**Nobody should tune the gangs against those numbers.** Re-run gangs-versus-law first, with army counterbalancing,
+and see how much of the gap the fix closes before changing a single stat: the faction may never have been as weak as
+it measured.
+
+**Suppression's accuracy cost is an angle, so it depends on range.** A pinned crew loses ~60% of its hits at 58 m
+(`test_combat_suppression` MEASURE) and only ~15-20% at the 20-40 m of ai's pin-and-flank scenario. Pinning at
+knife-fighting range buys a little accuracy and a lot of *tempo* (the teammate working on it dealt 7,410 damage
+against 977 in the control); pinning at range is what ruins a crew's shooting.
+
 ## Round 4: suppression and effective fire (combat X1, contract L2)
 
 **What it is.** Every round that resolves stamps the ground it swept into a coarse decaying grid, one per team

@@ -10,14 +10,14 @@ Exits non-zero and prints every problem when a timeline breaks the contract. The
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
 TEAMS = ("green", "rust")
 UNIT_TYPES = ("scout", "tank", "ifv", "artillery", "lancer", "burner")
-# The simulation tick rate: the Makefile exports SIM_HZ (GDScript twin: AnnouncerEvents.TICKS_PER_SECOND = SimClock.TICK_RATE).
-TICKS_PER_SECOND = int(os.environ.get("SIM_HZ", "60"))
+# Fixture timelines are written in sixtieths of a second, whatever rate the simulation runs at: a fixture is recorded
+# data and must not change when the tick rate does (GDScript twin: AnnouncerEvents.TICKS_PER_SECOND).
+TICKS_PER_SECOND = 60
 
 # type -> {field: kind}. Kinds: int, num, str, bool, team, unit, ratio, id, team_map_ratio, team_map_int, special.
 REQUIRED: dict[str, dict[str, str]] = {

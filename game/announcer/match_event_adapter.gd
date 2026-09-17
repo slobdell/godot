@@ -71,7 +71,7 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 
 
 func seconds() -> float:
-	return game_match.tick / float(AnnouncerEvents.TICKS_PER_SECOND)
+	return SimClock.seconds(game_match.tick)
 
 
 func _emit(type: String, fields: Dictionary) -> void:

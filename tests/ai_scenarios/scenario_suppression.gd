@@ -137,8 +137,12 @@ func test_holding_a_crew_down_lets_a_teammate_work_on_it() -> void:
 			suppressed["shots"], quiet["shots"]])
 	var pinned_rate := float(suppressed["hits_landed"]) / float(suppressed["shots"])
 	var calm_rate := float(quiet["hits_landed"]) / float(quiet["shots"])
-	assert_true(pinned_rate < calm_rate * 0.7,
-			"a pinned crew shoots far worse (%.0f%% of shells landed vs %.0f%%)" % [pinned_rate * 100.0, calm_rate * 100.0])
+	# How much worse depends on the RANGE the shells are fired at: spread is an angle, so the same suppression that
+	# costs a crew 60% of its hits at 58 m (test_combat_suppression's MEASURE) costs it far less across the 20-40 m
+	# this scenario is fought at. What must hold here is that it is clearly worse; the damage the teammate gets done
+	# below is the effect this scenario is really about.
+	assert_true(pinned_rate < calm_rate * 0.9,
+			"a pinned crew shoots worse (%.0f%% of shells landed vs %.0f%%)" % [pinned_rate * 100.0, calm_rate * 100.0])
 	assert_true(int(suppressed["damage"]) > int(quiet["damage"]),
 			"and the teammate working on it gets more done (%d vs %d damage)" % [suppressed["damage"], quiet["damage"]])
 

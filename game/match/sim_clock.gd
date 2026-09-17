@@ -9,8 +9,12 @@ extends RefCounted
 ## TICK_RATE (a test checks), and every headless target runs `--fixed-fps` at it (make's SIM_HZ).
 ##
 ## Decisions never read the wall clock (trip-up 28): durations are counted in ticks, and this is only the exchange rate.
+##
+## Round 5: 30 Hz, with `physics_interpolation` on so motion still renders smoothly, and
+## `max_physics_steps_per_frame` at 3 so a slow frame can never spiral into running eight ticks to catch up. 30 Hz is
+## the FLOOR, not a waypoint: control's K1 guarantee ("an order takes effect within 100 ms") is exactly 3 ticks here.
 
-const TICK_RATE := 60
+const TICK_RATE := 30
 const TICK_SECONDS := 1.0 / TICK_RATE
 
 
