@@ -24,6 +24,14 @@ const SCREEN_AHEAD_M := 45.0
 const SUPPORT_BEHIND_M := 45.0
 ## An element attacks a contact this close to the axis of advance rather than driving past it.
 const ENGAGE_M := 110.0
+## Pin and flank: how far off the base of fire's line the flanking elements swing, when they count as there, how far
+## a lane may pull that point sideways, which lanes count as flanks (not the centre), and when a lane-bound element is
+## level enough with the objective to turn in.
+const FLANK_M := 45.0
+const FLANK_ARRIVED_M := 20.0
+const LANE_SNAP_M := 25.0
+const LANE_MIN_OFFSET_M := 20.0
+const LANE_LEVEL_M := 30.0
 
 var game_match: Match
 var team := Match.Team.RUST
@@ -105,6 +113,10 @@ func think() -> void:
 				line.append(element)
 	var axis := _axis(mine, objective)
 	var focus: Dictionary = contacts[0] if not contacts.is_empty() else {}
+	# Round-5 X3/X5: a table can ask for the pin-and-flank plan the offline discovery harness found (traits.commander).
+	if String(mine[0].table.traits.get("commander", "direct")) == "pin_and_flank" if mine[0].table != null else false:
+		_pin_and_flank(line, focus, objective)
+		line = []
 
 	for i in line.size():
 		var element: Element = line[i]
@@ -124,6 +136,75 @@ func think() -> void:
 			_give(element, {"verb": "move", "to": _xz(objective - axis * SUPPORT_BEHIND_M)})
 		else:
 			_give(element, {"verb": "support_by_fire", "to": _xz(focus["position"])})
+
+
+## Pin and flank (round 5, first distilled from tools/discovery.py's `pin_and_flank` policy, which beat standard
+## doctrine's direct plan in its first run): with a known enemy, the biggest line element becomes the base of fire on it
+## and every other line element swings wide round it — to a point FLANK_M off the line of fire, on alternate sides,
+## pulled onto the nearest annotated lane when the arena has them (arena's lanes were used 4-5% of unit-time) — and only
+## then attacks. With nothing known, one element takes the direct route and the others take the outer lanes.
+func _pin_and_flank(line: Array, focus: Dictionary, objective: Vector3) -> void:
+	if line.is_empty():
+		return
+	var ordered := line.duplicate()
+	ordered.sort_custom(func(a: Element, b: Element) -> bool:
+		return a.members().size() > b.members().size() or (a.members().size() == b.members().size() and a.id < b.id))
+	var lanes := _lane_offsets()
+	if focus.is_empty():
+		for i in ordered.size():
+			var element: Element = ordered[i]
+			if i == 0 or lanes.is_empty():
+				_give(element, {"verb": "move", "to": _xz(objective)})
+				continue
+			# Outer lanes first, alternating sides, then in toward the objective once level with it.
+			var lateral: float = lanes[(i - 1) % lanes.size()] * (1.0 if i % 2 == 1 else -1.0)
+			var here := _center(element)
+			var along := Vector3(objective.x + lateral, 0.0, objective.z)
+			var level := absf(here.z - objective.z) < LANE_LEVEL_M
+			_give(element, {"verb": "move", "to": _xz(ElementPlan.clamp_to_arena(objective if level else along))})
+		return
+	var target: Vector3 = focus["position"]
+	var base: Element = ordered[0]
+	var base_at := _center(base)
+	_give(base, {"verb": "support_by_fire", "to": _xz(target), "target": String(focus["name"])})
+	var line_of_fire := TacticsFormation.flat(target - base_at)
+	var across := Vector3(-line_of_fire.z, 0.0, line_of_fire.x)
+	for i in range(1, ordered.size()):
+		var element: Element = ordered[i]
+		var side := 1.0 if i % 2 == 1 else -1.0
+		var wide: Vector3 = target + across * FLANK_M * side
+		if not lanes.is_empty():
+			wide.x = _snap_to_lane(wide.x, lanes)
+		wide = ElementPlan.clamp_to_arena(wide)
+		if _center(element).distance_to(wide) > FLANK_ARRIVED_M and String(element.task.get("verb", "")) != "attack":
+			_give(element, {"verb": "move", "to": _xz(wide)})
+		else:
+			_give(element, {"verb": "attack", "target": String(focus["name"])})
+
+
+## The arena's lanes as absolute lateral offsets from the centre line (x at the lane's midpoint), outermost first.
+func _lane_offsets() -> Array:
+	var offsets: Array = []
+	for lane: Dictionary in Arena.lanes_of(Arena.active):
+		var points: PackedVector3Array = lane["points"]
+		var middle: Vector3 = points[points.size() / 2]
+		var offset := absf(middle.x)
+		if offset >= LANE_MIN_OFFSET_M and not offsets.has(offset):
+			offsets.append(offset)
+	offsets.sort()
+	offsets.reverse()
+	return offsets
+
+
+static func _snap_to_lane(x: float, lanes: Array) -> float:
+	var best := x
+	var best_gap := INF
+	for offset: float in lanes:
+		for signed: float in [offset, -offset]:
+			if absf(signed - x) < best_gap:
+				best_gap = absf(signed - x)
+				best = signed
+	return best if best_gap <= LANE_SNAP_M else x
 
 
 ## Give an element a task, unless it is already doing that.
