@@ -61,9 +61,17 @@ func layer(kind: String) -> MultiMeshInstance3D:
 	var instance := MultiMeshInstance3D.new()
 	instance.name = "Rings_" + kind
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# The rings are placed every rendered frame at where the vehicles are drawn (Shown), so physics interpolation must
+	# be off on the instance *and* its MultiMesh: interpolating them again would lag them a tick behind the vehicles,
+	# and writing instance transforms outside _physics_process warns when the MultiMesh is interpolated (30 Hz tick).
+	instance.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	instance.material_override = _material(kind)
 	var multimesh := MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	if "physics_interpolation_quality" in multimesh:
+		multimesh.physics_interpolation_quality = MultiMesh.INTERP_QUALITY_FAST
+	if "physics_interpolated" in multimesh:
+		multimesh.physics_interpolated = false
 	multimesh.mesh = _dashed_mesh() if kind == "enemy" else (_thin_mesh() if kind == "friendly" else _thick_mesh())
 	instance.multimesh = multimesh
 	add_child(instance)
