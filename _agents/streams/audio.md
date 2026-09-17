@@ -85,6 +85,11 @@ the PA reading ad copy are written up under *Next steps*.
 ### Waiting on the lead
 1. **The gun pilot** (lead gate 1): <https://claude.ai/artifact/E1hxqREgGsPMB74oUPkC4N>. A scripted ten-second firefight,
    before and after, and each pilot sound raw and as it ships. Reply: run the batch / run it with changes / not yet.
+2. **Ad copy for the screens and the PA between matches** (draft, text only):
+   `assets/announcer/drafts/ad_copy.md`. Twelve screen ads in the existing brand world (AquaCorp, Syndicate Life,
+   Meridian, Harbor General, Vireo, Northgrid, ...) and twelve PA lines, each ordinary advertising with one detail
+   slightly off. Asked: which read as jokes, and whether screens carry ads or live match content. Recording the PA
+   lines is about 1,500 credits.
 
 ### Done so far
 - **X1 pilot (5281440, f696544).** `make sfx-generate` (dry run by default; `APPROVED=1 PILOT=1`) turns
@@ -151,7 +156,9 @@ the PA reading ad copy are written up under *Next steps*.
   `make remote T="audio-pass PASS_SECONDS=90"`, CPU against CPU at about 30 a side, the gangs against the Law, booth
   voiced, music on. The first recording found the mix clipping: **true peak +0.1 dBFS, 485 clipped samples**, all
   during the booth's lines, which sat 15–20 dB over the battle with the music summing underneath into an unlimited
-  Master. Master now has a hard limiter at -1 dB and the booth sits 4 dB lower. Second recording: **-20.6 LUFS,
+  Master. Master now has a hard limiter at -1 dB (`SfxSystem.MASTER_CEILING_DB`, an `AudioEffectHardLimiter` made once by
+  whichever system builds a bus first) and the booth sits 4 dB lower (`AnnouncerVoice.TRIM_DB = -4`, applied under
+  `--announcer-volume`). Second recording: **-20.6 LUFS,
   true peak -4.7 dBFS, 0 clipped samples**, loudness range 22.4 → 16.9 LU. In the spectrogram the booth's lines now sit
   level with the heavy hits, the pre-contact lull is a quiet bed, and the fight builds from about 35 s. What the log
   says was heard: "The Foundry! Wide open, nowhere to hide", the PA's control-point welcome, and the Veteran on "the
