@@ -178,3 +178,11 @@ artillery-deploy-shot: import ## Screenshot three crane carriers stowed / half d
 	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
 	timeout 90 $(GODOT) --path . --resolution 1600x900 res://game/theme/gallery/vehicle_gallery.tscn -- --gallery-deploy \
 		--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/artillery-deploy.png --screenshot-delay=3
+
+faction-parts: ## Wrap every generated faction part for play (game/theme/factions/<faction>/parts/*.tscn; render X6)
+	python3 tools/assets/build_faction_parts.py
+
+export-desktop: import $(TEMPLATES_OK) ## Export the Linux desktop build (faction art included) to build/desktop; prints the pack size
+	mkdir -p $(BUILD_DIR)/desktop
+	$(GODOT) --headless --path . --export-release "Linux Desktop" $(BUILD_DIR)/desktop/tank_squad.x86_64
+	@ls -l $(BUILD_DIR)/desktop/tank_squad.pck | awk '{printf "desktop pack: %.1f MB\n", $$5 / 1048576}'

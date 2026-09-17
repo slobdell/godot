@@ -149,6 +149,9 @@ static func use(name: String) -> bool:
 	# Any slot a theme doesn't define falls back to the default scene, so a slot another stream adds
 	# to DEFAULT_SLOTS works in every theme the moment it lands.
 	slots = DEFAULT_SLOTS.merged(theme["slots"], true)
+	if name == "cyberpunk":
+		# Render X6: the faction rosters wear their own art wherever this build ships it.
+		slots.merge(FactionArt.unit_slots(), true)
 	team_colors = theme["team_colors"]
 	team_glows = theme["team_glows"]
 	ui = (theme["ui"] as Dictionary).duplicate()
