@@ -38,6 +38,12 @@ var _next_id := 1
 var _last_tick := -1
 ## element id -> {report key: the tick it was last published}, so the booth isn't told the same thing twice.
 var _reported := {}
+## Round-5 X3: [green, rust] doctrine table every element that team forms uses instead of its faction's own (null =
+## the faction's table). The tactics ladder sets it to play one doctrine against another (TacticsFlags).
+var team_tables: Array = [null, null]
+## ...and changes applied on top of whichever table a team's element gets (its faction's own, or the one above):
+## [green, rust] = {"drop": PackedStringArray of drills to switch off, "commander": String} or {}.
+var team_variants: Array = [{}, {}]
 
 
 ## The Elements of `game_match`, or null.
@@ -144,12 +150,17 @@ func _physics_process(_delta: float) -> void:
 	if game_match == null or not game_match.simulate:
 		return
 	var tick: int = game_match.tick
-	if tick == _last_tick or tick % UPDATE_TICKS != 0:
+	if tick == _last_tick:
 		return
 	_last_tick = tick
 	if orders == null:
 		orders = OrderFeed.source(game_match)
 	for element: Element in all():
+		# Round 5 (ai): each element decides on its own tick in the cycle (by id), so a 30-a-side battle pays
+		# for one or two leaders every tick instead of all of them every sixth tick (a ~9 ms spike on the laptop).
+		# Still every UPDATE_TICKS for each element, still in id order, still deterministic.
+		if (tick + element.id) % UPDATE_TICKS != 0:
+			continue
 		var leader_before := element.leader
 		var changed := element.update(game_match, orders)
 		if element.leader != leader_before:
@@ -186,8 +197,14 @@ func describe() -> PackedStringArray:
 func _table_for(roster: PackedStringArray) -> DoctrineTable:
 	for unit_name in roster:
 		var tank := _tank(unit_name)
-		if tank != null:
-			return DoctrineTable.for_faction(String(Units.PROFILES.get(tank.unit_id, {}).get("faction", "")))
+		if tank == null:
+			continue
+		var table: DoctrineTable = team_tables[tank.team] if team_tables[tank.team] != null \
+				else DoctrineTable.for_faction(String(Units.PROFILES.get(tank.unit_id, {}).get("faction", "")))
+		var variant: Dictionary = team_variants[tank.team]
+		if not variant.is_empty():
+			table = DoctrineTable.variant_of(table, variant.get("drop", PackedStringArray()), String(variant.get("commander", "")))
+		return table
 	return DoctrineTable.for_faction("")
 
 

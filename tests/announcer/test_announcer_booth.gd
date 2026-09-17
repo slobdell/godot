@@ -120,3 +120,25 @@ func test_the_voice_plays_a_cues_clips_and_ducks_the_world() -> void:
 	voice.free()
 	AudioServer.remove_bus(AudioServer.get_bus_index(AnnouncerVoice.WORLD_BUS))
 	AudioServer.remove_bus(AudioServer.get_bus_index(AnnouncerVoice.BUS))
+
+
+func test_each_side_is_called_by_the_faction_it_fielded() -> void:
+	## Control (round 5): from the faction menu, gangs against the Law, the booth called both sides the Condemned,
+	## because the adapter gave every side one default faction. It reads the units the match actually built now.
+	add_to_tree(ARENA.instantiate())
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	var gangs := Units.roster("gangs")
+	var law := Units.roster("law")
+	var green := {"name": "Us", "squads": [{"name": "Alpha", "units": [{"unit": gangs[0]}, {"unit": gangs[1]}]}]}
+	var rust := {"name": "Them", "squads": [{"name": "X", "units": [{"unit": law[0]}, {"unit": law[1]}]}]}
+	assert_eq(game_match.load_doctrine(Match.Team.GREEN, green), "", "setup: a gang army")
+	assert_eq(game_match.load_doctrine(Match.Team.RUST, rust), "", "setup: a Law army")
+	var adapter := MatchEventAdapter.new(game_match, "yard")
+	var events: Array = []
+	for i in 3:
+		await wait_physics_frames(1)
+		events.append_array(adapter.poll())
+	assert_true(not events.is_empty() and events[0]["type"] == "match_start", "the match started")
+	assert_eq(events[0]["teams"][0]["faction"], "gangs", "green fielded the gangs, and is called that")
+	assert_eq(events[0]["teams"][1]["faction"], "law", "rust fielded the Law")

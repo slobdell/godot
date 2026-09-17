@@ -24,6 +24,12 @@ extends RefCounted
 ##                     slow gun reloads, when the deck lets my rounds through (TankBrain.DECK_SEEK_GAIN)
 ##   short_halt_lead   (float) how long (s) before the gun is loaded the halt starts, after braking (default 0.15)
 ##   avoid_beaten      steer manoeuvres away from walls of bullets, and suppress on purpose (round-4 X3, L2; default on)
+##   suppress_proxy    SUPPRESS without matchups: "my rounds barely mark it" from penetration vs the armour it shows (round-5 X2)
+##   pinned_exposed    fighting a pinned enemy from cover is worth less than going round it (round-5 X2)
+##   brain_stride      (int) controller stride (round-5 X1): the whole controller, thinking and executing, runs every this
+##                     many physics ticks, staggered per unit, and the tank keeps its last command in between; a new
+##                     order or element call runs at once (default 1). Measured before it: holding only the steering at
+##                     30 Hz ("exec_stride") saved 6% per unit and was removed.
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -50,6 +56,17 @@ const PROFILES := {
 	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9},
 	# Round-4 X3 control: the champion with L2 taken away — it neither avoids beaten zones nor fires to suppress.
 	# The control for every suppression measurement, and the "before" the ladder compares against.
+	# Round-5 X1: the champion running its controller at 30 Hz (every other physics tick, staggered). Half the cost by
+	# construction; it has to prove it costs no behaviour (scenarios, and a ladder against x4t9) before adoption.
+	"x5b2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "brain_stride": 2},
+	# Round-5 X2: the champion with both suppression gates opened (see the features above).
+	"x5s": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "suppress_proxy": true, "pinned_exposed": true},
+	# Round-5 X2, split after x5s went 27-37 (the proxy made the swarm army's machine-gun scouts suppress instead of
+	# kill: 36k damage against 42k): x5p is only the flanker fix, x5q only the proxy.
+	"x5p": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "pinned_exposed": true},
+	# Round-5 X1 on the new champion: x5p with the half-rate controller.
+	"x5pb2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "pinned_exposed": true, "brain_stride": 2},
+	"x5q": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "suppress_proxy": true},
 	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "avoid_beaten": false},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
@@ -66,7 +83,12 @@ const PROFILES := {
 ## and costs about a fifth less CPU at 60 units (4293 usec per tick against 5327). Worth knowing that the same
 ## comparison BEFORE suppression landed was 48-48 with a clear loss on the all-armor army (9-15): with L2 in the
 ## world, and with fewer decisions each spent on better information, the slower cadence stopped hurting.
-const CHAMPION := "x4t9"
+## 2026-09-17 (round 5, X2): x5p — x4t9 whose flanker goes round a pinned enemy instead of hosing it, and which keeps a
+## crew it just saw pinned counted as pinned while it ducks out of sight (so a pin pulls units out of cover). It beat
+## x4t9 53-43 over 96 matches on the same armies and seeds (individuals 15-9, armor 14-10, balanced 12-12, swarm 12-12):
+## it wins or ties every army. The suppression proxy (x5q) was split off after x5s lost 27-37 and waits for combat's
+## Lethality query.
+const CHAMPION := "x5p"
 
 static var _from_flags: Array = []
 

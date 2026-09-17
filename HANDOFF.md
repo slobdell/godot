@@ -18,9 +18,33 @@ arena and audio are green and queued behind a re-verify on Jolt; control, combat
   A 30 Hz tick with physics interpolation is written up in [`_agents/sim_tick_rate.md`](_agents/sim_tick_rate.md) and
   is with the lead; the orchestrator's recommendation is to make it the first item of round 6 under one owner, because
   doing it mid-round invalidates every other stream's in-flight measurements.
-- **Open lead decisions** are collected on one page: https://claude.ai/artifact/CWhVvcNj7BQBigp5N27kDW (the gun-sound
-  pilot, ad copy and the PA recording, 30 Hz, render's glow and team-read, arena's four questions). Answers are stored
-  on the page itself and read back with the Artifact tool's `read_db` on `decisions/<id>`.
+- **The lead's round-5 sign-off is answered** — all eleven decisions, in `game_design.md` (*The lead's round-5
+  sign-off*). The page is https://claude.ai/artifact/CWhVvcNj7BQBigp5N27kDW and its answers live in `decisions/<id>`,
+  read back with the Artifact tool's `read_db`. The three that overruled the orchestrator's recommendation, so nobody
+  reverts them by accident: **30 Hz starts now** (not round 6), **players pick the arena** (not random-only), and
+  **destructible cover is scheduled** (not parked).
+- **In flight: the 30 Hz simulation tick**, owned by combat on `stream/combat`
+  ([`sim_tick_rate.md`](_agents/sim_tick_rate.md)). It does not merge to main until ai's queued doctrine ladders
+  finish, or the one clean comparison we have is destroyed.
+- **Round 6's leading candidate, found by three streams independently: the control point funnels the whole fight.**
+  arena measured it as the strongest effect on any map (flanking routes used 4-5% of unit-time on dense layouts
+  against 14% on foundry); ai measured doctrine winning at squad scale and losing at 30 a side *with a control point*;
+  combat measured median hit range at 39-43 m on every map. The shared explanation is that a single central objective
+  overrides every tactical choice, so terrain, formations and drills have nothing to decide. Candidate fixes, in the
+  order they were proposed: objectives that pull play off the centre line (arena), an army-level layer choosing which
+  elements take the objective and which shape the fight around it (ai), and engagement ranges that make closing a
+  decision (combat X1).
+  **Measured, and it is only half the story** (ai, one snapshot, faction armies at 5200, gangs vs law both ways,
+  three arenas): with the control point ON, brains-only beat faction doctrine 34-14; with it OFF, brains-only still
+  won 27-21. So the objective makes doctrine worse but is not why it loses. Cutting `break_contact` brings doctrine
+  to *parity* with brains (24-24), not above it. The honest statement for round 6 is that the element layer as
+  written does not yet add value at 30 a side, with or without an objective — the army-level plan proposed in
+  `doctrine.md` (main effort, base of fire, shaping, reserve) is a bet on the missing layer being *above* the
+  elements, not a fix for the drills.
+- **Doctrine is NOT the skirmish default.** It wins 52-28 in five-vehicle mirrors with no control point and loses
+  32-16 in the setup players actually get (faction armies, 30 a side, control point on). The flip was approved and
+  withdrawn the same day; ai is hunting a variant that wins at scale. `break_contact` is the drill to cut (91-29
+  without it); `far_ambush` looked worse and was innocent — its ratio was selection bias.
 - **The game today:** StarCraft-style control with a camera that only shows what your force can see; elements that pick
   formations and run battle drills from real doctrine, the same library for you and the CPU; suppression that makes
   base-of-fire-and-maneuver real; four playable factions with their own rosters and doctrine (44 gang vehicles to 17

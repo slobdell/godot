@@ -37,6 +37,9 @@ const SOUNDS := {
 	"ui_ack_move": "res://assets/audio/ui_ack_move.wav",
 	"ui_ack_attack": "res://assets/audio/ui_ack_attack.wav",
 	"ui_select": "res://assets/audio/ui_select.wav",
+	# Audio (round 5, X4): running gear under the engines (tools/audio/make_world_loops.py).
+	"tread_loop": "res://assets/audio/tread_loop.wav",
+	"tire_loop": "res://assets/audio/tire_loop.wav",
 }
 ## Extra takes per sound (game/theme/audio/make_sfx.gd VARIANTS): "mg_round" also loads mg_round_2..4. A sound
 ## plays a take at random, so a burst is never the same crack eleven times (X4).
@@ -45,6 +48,14 @@ const TAKES := {
 	"dirt_impact": 3, "explosion_small": 3, "weak_spot_hit": 2, "tank_boom": 2, "cannon_shot": 2,
 }
 const WORLD_VOICES := 20
+## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
+## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
+## steals the one that is quietest *now* (its start level less TAIL_DECAY_DB_PER_S for every second it has played),
+## and only if it is louder than that: a ping across the arena must never cut a nearby cannon's tail.
+const CULL_DB := -46.0
+const TAIL_DECAY_DB_PER_S := 14.0
+const UNIT_SIZE := 55.0
+const MAX_DISTANCE := 600.0
 const UI_VOICES := 4
 ## World sounds go through their own bus so the whole battle can be mixed, limited, and ducked under the announcer
 ## in one place (AnnouncerVoice sidechains a compressor onto this bus when the booth is on).
@@ -52,6 +63,14 @@ const WORLD_BUS := "World"
 ## Headroom: twenty voices summing in a firefight clip the master and turn to mush. The limiter catches the peaks
 ## that survive per-sound gain staging; the trim leaves room for it to work.
 const WORLD_TRIM_DB := -6.0
+## X2 (round 5): the moment a shell lands is the loudest thing in the mix, then it falls away. Heavy impacts play on
+## IMPACT_BUS; everything that runs underneath the fight (engines, gun loops, the crowd, small hits) plays on BED_BUS,
+## which a compressor keyed from the impacts pulls down for a moment and lets back up. Both feed World, so the
+## limiter and the announcer's ducking still see all of it.
+const IMPACT_BUS := "Impacts"
+const BED_BUS := "Bed"
+const IMPACT_SOUNDS := ["tank_boom", "shell_hit_armor", "explosion_big", "explosion_small", "weak_spot_hit",
+		"dirt_impact", "shield_down"]
 const LIMIT_DB := -1.0
 ## Distance filtering: a blast heard across the arena is dull, not just quiet. Per sound, the cutoff (Hz) at
 ## max_distance and how much of the sound is filtered; the engine interpolates with distance. Sounds not listed keep
@@ -82,10 +101,22 @@ var streams := {}
 var takes := {}
 ## Sounds started since load (tests and the bench).
 var played := 0
+## Sounds not started because they would be inaudible, or quieter than everything already playing.
+var culled := 0
+## Where loudness is judged from; null = the viewport's camera (tests set a point).
+var listener: Variant = null
+## Sounds --audio-solo keeps quiet.
+var silenced := {}
+## key -> how many synthesised takes loaded (make_sfx.gd), whether or not layered ones replaced them.
+var synth_takes := {}
+## Sounds playing ElevenLabs-layered takes (SfxLayers, round 5 X1) rather than the synthesised ones.
+var layered := {}
 
 var _world: Array[AudioStreamPlayer3D] = []
 var _ui: Array[AudioStreamPlayer] = []
 var _next_world := 0
+var _voice_level: Array[float] = []
+var _voice_started: Array[float] = []
 var _next_ui := 0
 var _rng := RandomNumberGenerator.new()
 
@@ -94,7 +125,11 @@ func _init() -> void:
 	name = "Sfx"
 	_rng.seed = 7
 	muted = LaunchFlags.from_environment().has("mute")
+	var soloed := AudioSolo.solo()
 	for key in SOUNDS:
+		# --audio-solo keeps the stream (engine, crowd and flame code read it) but never plays it.
+		if not AudioSolo.allows(AudioSolo.layer_of(key), soloed):
+			silenced[key] = true
 		var stream := load(SOUNDS[key]) as AudioStream
 		if stream == null:
 			continue
@@ -105,21 +140,26 @@ func _init() -> void:
 			if extra != null:
 				pool.append(extra)
 		takes[key] = pool
+		synth_takes[key] = pool.size()
+	if not LaunchFlags.from_environment().has("sfx-synth"):
+		_use_layered_takes()
 	var flame := streams.get("flame_loop") as AudioStreamWAV
 	if flame != null:
 		flame.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		flame.loop_end = flame.data.size() / 2
+		flame.loop_end = loop_frames(flame)
 	ensure_world_bus()
 	for i in WORLD_VOICES:
 		var voice := AudioStreamPlayer3D.new()
 		voice.name = "Voice%d" % i
 		voice.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
-		voice.unit_size = 55.0
-		voice.max_distance = 600.0
+		voice.unit_size = UNIT_SIZE
+		voice.max_distance = MAX_DISTANCE
 		voice.max_polyphony = 1
 		voice.bus = WORLD_BUS
 		add_child(voice)
 		_world.append(voice)
+		_voice_level.append(-INF)
+		_voice_started.append(0.0)
 	for i in UI_VOICES:
 		var voice := AudioStreamPlayer.new()
 		voice.name = "UiVoice%d" % i
@@ -127,11 +167,77 @@ func _init() -> void:
 		_ui.append(voice)
 
 
-## Adds the World bus (and its limiter) if it isn't there. Static so anything that wants to route to it can.
+## Round 5 (X1): sounds with ElevenLabs source material layered under their transients (tools/audio/sfx_layer.py)
+## play those takes instead. A loop's layered take is a WAV, so it also replaces `streams[key]`, which the engine,
+## crowd, flame and gunfire code duplicate and set loop points on; a one-shot's is Ogg and only changes the pool.
+## `--sfx-synth` keeps the synthesised set, for A/B listening.
+func _use_layered_takes() -> void:
+	for key in SfxLayers.TAKES:
+		if not streams.has(key):
+			continue
+		var pool: Array[AudioStream] = []
+		for path in SfxLayers.TAKES[key]:
+			var stream := load(String(path)) as AudioStream
+			if stream != null:
+				pool.append(stream)
+		if pool.is_empty():
+			continue
+		takes[key] = pool
+		layered[key] = pool.size()
+		if pool[0] is AudioStreamWAV:
+			streams[key] = pool[0]
+
+
+## A WAV's length in frames, whatever its import compression. `data.size() / 2` is only right for 16-bit PCM: on a
+## QOA import it is a fifth of the sound, which is how every loop came to repeat its first 0.2 s (round 5).
+static func loop_frames(stream: AudioStreamWAV) -> int:
+	return int(round(stream.get_length() * stream.mix_rate))
+
+
+## Adds the World bus (and its limiter) if it isn't there, and the Impacts and Bed buses that feed it. Static so
+## anything that wants to route to them can. Returns World's index.
 static func ensure_world_bus() -> int:
+	ensure_master_limiter()
 	var index := AudioServer.get_bus_index(WORLD_BUS)
-	if index >= 0:
-		return index
+	if index < 0:
+		index = _add_world_bus()
+	if AudioServer.get_bus_index(IMPACT_BUS) < 0:
+		AudioServer.add_bus()
+		var impacts := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(impacts, IMPACT_BUS)
+		AudioServer.set_bus_send(impacts, WORLD_BUS)
+	if AudioServer.get_bus_index(BED_BUS) < 0:
+		AudioServer.add_bus()
+		var bed := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(bed, BED_BUS)
+		AudioServer.set_bus_send(bed, WORLD_BUS)
+		var duck := AudioEffectCompressor.new()
+		duck.sidechain = IMPACT_BUS
+		duck.threshold = -26.0
+		duck.ratio = 5.0
+		duck.attack_us = 1000.0  # in before the hit's peak
+		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
+		AudioServer.add_bus_effect(bed, duck)
+	return index
+
+
+## X6 (round 5): a limiter on Master. World had one, but the booth and the music summed into Master unlimited, and the
+## first full-match recording peaked at +0.1 dBFS with 485 clipped samples, all on the booth's lines. Idempotent;
+## everything that makes a bus calls it.
+const MASTER_CEILING_DB := -1.0
+
+static func ensure_master_limiter() -> void:
+	var master := AudioServer.get_bus_index("Master")
+	for i in AudioServer.get_bus_effect_count(master):
+		if AudioServer.get_bus_effect(master, i) is AudioEffectHardLimiter:
+			return
+	var limiter := AudioEffectHardLimiter.new()
+	limiter.ceiling_db = MASTER_CEILING_DB
+	AudioServer.add_bus_effect(master, limiter)
+
+
+static func _add_world_bus() -> int:
+	var index: int
 	AudioServer.add_bus()
 	index = AudioServer.bus_count - 1
 	AudioServer.set_bus_name(index, WORLD_BUS)
@@ -148,12 +254,20 @@ static func ensure_world_bus() -> int:
 ## A world sound at `position`, in one of its takes.
 func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	# Not in the tree yet (FxWorld is added deferred; the match announcer speaks at spawn): drop it.
-	if muted or not streams.has(sound) or not is_inside_tree():
+	if muted or not streams.has(sound) or not is_inside_tree() or silenced.has(sound):
 		return
-	var voice := _take_world_voice()
-	voice.stream = _a_take(sound)
-	voice.position = position
 	var mix: Array = MIX.get(sound, [0.0, 0.0])
+	var level := heard_level_db(float(mix[0]) + volume_offset_db, position)
+	var index := _voice_for(level)
+	if index < 0:
+		culled += 1
+		return
+	var voice := _world[index]
+	_voice_level[index] = level
+	_voice_started[index] = Time.get_ticks_msec() / 1000.0
+	voice.stream = _a_take(sound)
+	voice.bus = IMPACT_BUS if sound in IMPACT_SOUNDS else BED_BUS
+	voice.position = position
 	voice.volume_db = float(mix[0]) + volume_offset_db
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
 	var filtering: Array = DISTANCE_FILTER.get(sound, [])
@@ -173,7 +287,7 @@ func _a_take(sound: String) -> AudioStream:
 
 ## A UI sound (not positional).
 func play_ui(sound: String) -> void:
-	if muted or not streams.has(sound) or not is_inside_tree():
+	if muted or not streams.has(sound) or not is_inside_tree() or silenced.has(sound):
 		return
 	var voice := _ui[_next_ui]
 	_next_ui = (_next_ui + 1) % _ui.size()
@@ -201,13 +315,37 @@ func voice_count() -> int:
 	return _world.size() + _ui.size()
 
 
-## A free voice, or the one started longest ago.
-func _take_world_voice() -> AudioStreamPlayer3D:
+## How loud a sound of `volume_db` at `position` will be at the listener (inverse distance, as the players do it).
+func heard_level_db(volume_db: float, position: Vector3) -> float:
+	var at: Variant = listener
+	if at == null:
+		var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+		if camera == null:
+			return volume_db
+		at = camera.global_position
+	var distance := maxf((at as Vector3).distance_to(position), UNIT_SIZE)
+	if distance > MAX_DISTANCE:
+		return -INF  # the player itself would be silent out there
+	return volume_db - 20.0 * log(distance / UNIT_SIZE) / log(10.0)
+
+
+## A voice for a sound this loud: a free one, else the quietest playing one if this is louder; -1 = don't play.
+## (Wall-clock time here is presentation only: nothing in the simulation reads a sound.)
+func _voice_for(level: float) -> int:
+	if level < CULL_DB:
+		return -1
 	for i in _world.size():
 		var index := (_next_world + i) % _world.size()
 		if not _world[index].playing:
 			_next_world = (index + 1) % _world.size()
-			return _world[index]
-	var stolen := _world[_next_world]
-	_next_world = (_next_world + 1) % _world.size()
-	return stolen
+			return index
+	var now := Time.get_ticks_msec() / 1000.0
+	var quietest := -1
+	var quietest_level := INF
+	for i in _world.size():
+		var current := _voice_level[i] - (now - _voice_started[i]) * TAIL_DECAY_DB_PER_S
+		if current < quietest_level:
+			quietest_level = current
+			quietest = i
+	# Equal counts: the same round fired again takes over its own oldest voice rather than being dropped.
+	return quietest if level >= quietest_level else -1

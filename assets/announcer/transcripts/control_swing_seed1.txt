@@ -41,7 +41,7 @@ result: green by control at 2:34.0
 2:02.9   CALLER   It's—
 2:03.0   ── green tank destroys rust lancer
 2:03.0   ── rust squad Dart wiped out
-2:03.4   CALLER   The Condemned are down to its last vehicle!
+2:03.4   CALLER   The Condemned are down to their last vehicle!
 2:06.9   CALLER   Something just changed out there! They're all moving at once!
 2:09.0   ── rust tank destroys green tank
 2:10.5   CALLER   It's all on the last Law vehicle now!

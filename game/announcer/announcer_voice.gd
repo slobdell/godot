@@ -11,6 +11,9 @@ extends Node
 const BUS := "Announcer"
 const WORLD_BUS := "World"
 const CUT_FADE_S := 0.08
+## The booth's level under --announcer-volume. X6's first full-match recording had the booth's lines 15-20 dB over the
+## battle, clipping with the music underneath: it already ducks everything else, so it doesn't also need to be hot.
+const TRIM_DB := -4.0
 
 ## Folder holding manifest.json and the clip folders.
 var clips_dir := ""
@@ -18,7 +21,7 @@ var volume_db := 0.0:
 	set(value):
 		volume_db = value
 		if AudioServer.get_bus_index(BUS) >= 0:
-			AudioServer.set_bus_volume_db(AudioServer.get_bus_index(BUS), value)
+			AudioServer.set_bus_volume_db(AudioServer.get_bus_index(BUS), value + TRIM_DB)
 ## Replaceable for tests: path -> AudioStream (or null).
 var load_stream: Callable = func(path: String) -> AudioStream: return AudioStreamOggVorbis.load_from_file(path)
 

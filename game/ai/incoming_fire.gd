@@ -56,6 +56,8 @@ static func _from_shells(game_match: Node, unit: Node3D) -> Array:
 ## How many rounds are on their way at `unit` (the for_unit() filter) without building the list: the cheap per-tick
 ## trigger for a dodge think.
 static func count_for(game_match: Node, unit: Node3D) -> int:
+	if game_match is Match and unit is Tank:
+		return _count_in_flight(game_match as Match, unit as Tank)
 	if game_match.has_method("incoming_projectiles"):
 		return for_unit(game_match, unit).size()
 	var here := Vector3(unit.global_position.x, 0.0, unit.global_position.z)
@@ -70,6 +72,61 @@ static func count_for(game_match: Node, unit: Node3D) -> int:
 		var seconds := offset.dot(flat_velocity) / maxf(flat_velocity.length_squared(), 1.0)
 		if seconds > 0.0 and seconds * 60.0 <= HORIZON_TICKS and (offset - flat_velocity * seconds).length() <= DANGER_RADIUS:
 			count += 1
+	return count
+
+
+## count_for on a real match without building any dictionaries (round-5 X1): Match.incoming_projectiles' filter (not my
+## own round, ahead of the round within its remaining range plus my hull, passing within the hull's half-diagonal plus
+## Match.INCOMING_MARGIN) followed by for_unit's (HORIZON_TICKS, DANGER_RADIUS), over the tick's shared shell columns.
+## Must count exactly what for_unit(...).size() counts: tests/test_ai_perf_equivalence.gd holds it to that.
+static var _radius_by_unit := {}
+
+
+static func _count_in_flight(game_match: Match, unit: Tank) -> int:
+	if not unit.is_alive():
+		return 0
+	var shells := AiTickCache.flight(game_match)
+	var xs: PackedFloat32Array = shells["x"]
+	if xs.is_empty():
+		return 0
+	var zs: PackedFloat32Array = shells["z"]
+	var dir_x: PackedFloat32Array = shells["dir_x"]
+	var dir_z: PackedFloat32Array = shells["dir_z"]
+	var vxs: PackedFloat32Array = shells["vx"]
+	var vzs: PackedFloat32Array = shells["vz"]
+	var reach: PackedFloat64Array = shells["reach"]
+	var shooters: PackedStringArray = shells["shooter"]
+	var radius: float = _radius_by_unit.get(unit.unit_id, -1.0)
+	if radius < 0.0:
+		var size: Array = Units.stat(unit.unit_id, "hull_size")
+		radius = Vector2(float(size[0]), float(size[2])).length() / 2.0
+		_radius_by_unit[unit.unit_id] = radius
+	var name := String(unit.name)
+	var here_x := unit.global_position.x
+	var here_z := unit.global_position.z
+	var side_limit := radius + Match.INCOMING_MARGIN
+	var count := 0
+	for i in xs.size():
+		# Match.incoming_projectiles, in Vector2 math on the same float values.
+		var offset := Vector2(here_x, here_z) - Vector2(xs[i], zs[i])
+		var direction := Vector2(dir_x[i], dir_z[i])
+		var along := offset.dot(direction)
+		if along <= 0.0 or along > reach[i] + radius:
+			continue
+		if absf(direction.cross(offset)) > side_limit or shooters[i] == name:
+			continue
+		# for_unit's own filter, on the round's flat velocity.
+		var flat := Vector3(vxs[i], 0.0, vzs[i])
+		var speed_squared := flat.length_squared()
+		if speed_squared < 1.0:
+			continue
+		var offset3 := Vector3(here_x - xs[i], 0.0, here_z - zs[i])
+		var seconds := offset3.dot(flat) / speed_squared
+		if seconds <= 0.0 or seconds * 60.0 > HORIZON_TICKS:
+			continue
+		if (offset3 - flat * seconds).length() > DANGER_RADIUS:
+			continue
+		count += 1
 	return count
 
 

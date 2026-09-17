@@ -125,7 +125,11 @@ static func break_contact(case: TestCase, seconds := 20.0) -> Dictionary:
 	for i in 3:
 		enemy.append(String(lab.gun(Match.Team.RUST, "Rust_Wall_%d" % (i + 1),
 				Vector3(LANE_X - 12.0 + i * 12.0, 0.0, -50.0), PI).name))
-	var bravo := lab.element(names, "Bravo")
+	# break_contact is off in every shipped table since round 5: this measures the drill itself, switched on.
+	var parsed := DoctrineTable.parse({"name": "with_break_contact",
+			"drills": {"enabled": DoctrineTable.DRILL_DEFAULTS["enabled"] + ["break_contact"]},
+			"movement": (DoctrineTable.load_table("standard")["table"] as DoctrineTable).movement})
+	var bravo := lab.element(names, "Bravo", parsed["table"])
 	await lab.start()
 	var started := lab.center_of(names).distance_to(lab.center_of(enemy))
 	bravo.assign({"verb": "move", "to": [LANE_X, -20.0]})

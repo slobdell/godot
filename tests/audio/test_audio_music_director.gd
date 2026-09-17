@@ -27,13 +27,60 @@ func test_every_mood_state_has_a_bed() -> void:
 	assert_eq(music.track_for("not_a_state"), "", "and an unknown state asks for nothing rather than guessing")
 
 
-func test_the_beds_are_ordered_by_how_hard_they_hit() -> void:
+func test_the_fight_builds_in_layers_instead_of_swapping_beds() -> void:
+	## X5: one stem set covers lull, skirmish, battle and last stand, so the soundtrack grows with the fight.
 	var music := _director()
-	var lull: Dictionary = music.tracks[music.track_for("lull")]
-	var battle: Dictionary = music.tracks[music.track_for("battle")]
-	var last_stand: Dictionary = music.tracks[music.track_for("last_stand")]
-	assert_true(float(lull["intensity"]) < float(battle["intensity"]), "a battle is heavier than a lull")
-	assert_true(float(battle["intensity"]) < float(last_stand["intensity"]), "a last stand is heavier still")
+	var fight := music.track_for("lull")
+	for state in ["skirmish", "battle", "last_stand"]:
+		assert_eq(music.track_for(state), fight, "%s plays the same track as a lull" % state)
+	var track: Dictionary = music.tracks[fight]
+	assert_true(track.has("stems"), "and that track is stems")
+	var quiet := MusicDirector.layers_for(track, 0.05, "lull")
+	var busy := MusicDirector.layers_for(track, 0.5, "skirmish")
+	var battle := MusicDirector.layers_for(track, 0.9, "battle")
+	assert_true(quiet.size() >= 1, "a lull still has music under it")
+	assert_true(quiet.size() < busy.size() and busy.size() < battle.size(), "more layers as it heats up: %d, %d, %d"
+			% [quiet.size(), busy.size(), battle.size()])
+	var last := MusicDirector.layers_for(track, 0.9, "last_stand")
+	assert_true(last.size() > battle.size(), "a last stand adds something a battle never has")
+
+
+func test_a_layer_holds_through_a_short_dip() -> void:
+	var track := {"stems": [{"file": "a.ogg", "from": 0.0}, {"file": "b.ogg", "from": 0.5}]}
+	var on := MusicDirector.layers_for(track, 0.55, "battle")
+	assert_eq(on, [0, 1] as Array[int], "the second layer comes in at 0.5")
+	assert_eq(MusicDirector.layers_for(track, 0.46, "battle", on), [0, 1] as Array[int], "and stays through a dip")
+	assert_eq(MusicDirector.layers_for(track, 0.40, "battle", on), [0] as Array[int], "but not a real drop")
+	assert_eq(MusicDirector.layers_for(track, 0.46, "battle"), [0] as Array[int], "coming up, it waits for 0.5")
+
+
+func test_stems_play_locked_together_and_fade_on_change() -> void:
+	var music := _director()
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	var stems: Array = music.tracks[music.current_track()]["stems"]
+	assert_eq(_loaded.size(), stems.size(), "every stem loaded")
+	assert_eq(music.stem_db.size(), stems.size(), "one level per stem")
+	var before := music.layers.size()
+	assert_true(music.update_layers(0.95, "battle"), "a battle changes the arrangement")
+	assert_true(music.layers.size() > before, "by adding layers")
+	assert_true(not music.update_layers(0.95, "battle"), "and the same reading changes nothing")
+	await wait_physics_frames(int((MusicDirector.STEM_FADE_S + 0.4) * 60.0))
+	for index in music.layers:
+		assert_near(music.stem_db[index], 0.0, 0.5, "layer %d faded up" % index)
+
+
+func test_moving_between_fight_states_never_reloads_the_track() -> void:
+	var music := _director()
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	var loaded := _loaded.size()
+	music.set_state("battle")
+	music.set_state("last_stand")
+	assert_eq(_loaded.size(), loaded, "no crossfade, no reload: the layers do the work")
+	assert_eq(music.pending, "", "nothing queued")
 
 
 func test_a_bar_line_is_worked_out_from_the_tempo() -> void:
@@ -50,7 +97,8 @@ func test_the_first_bed_starts_at_once() -> void:
 	await wait_physics_frames(1)
 	music.set_state("lull")
 	assert_eq(music.current_track(), music.track_for("lull"), "nothing was playing, so it does not wait for a bar")
-	assert_eq(_loaded.size(), 1, "one file was loaded")
+	var track: Dictionary = music.tracks[music.current_track()]
+	assert_eq(_loaded.size(), (track["stems"] as Array).size() if track.has("stems") else 1, "its files were loaded once")
 	assert_eq(music.pending, "", "and nothing is queued behind it")
 
 
@@ -69,9 +117,9 @@ func test_a_new_state_waits_for_a_bar_line() -> void:
 	add_to_tree(music)
 	await wait_physics_frames(1)
 	music.set_state("lull")
-	music.set_state("battle")
-	assert_eq(music.pending, music.track_for("battle"), "the battle bed is queued, not cut in")
-	assert_eq(music.current_track(), music.track_for("lull"), "the lull bed keeps playing until the bar ends")
+	music.set_state("victory")
+	assert_eq(music.pending, music.track_for("victory"), "the victory bed is queued, not cut in")
+	assert_eq(music.current_track(), music.track_for("lull"), "the fight keeps playing until the bar ends")
 
 
 func test_it_follows_a_mood_signal() -> void:
@@ -86,7 +134,8 @@ func test_it_follows_a_mood_signal() -> void:
 		{"team": "rust", "faction": "condemned", "units": [{"id": "r1", "unit": "tank"}]}]})
 	mood.push_event({"tick": 60, "t": 1.0, "type": "first_contact", "team": "green", "unit": "tank",
 			"target_unit": "tank"})
-	assert_eq(music.pending, music.track_for("skirmish"), "contact queues the skirmish bed")
+	assert_eq(music.current_track(), music.track_for("skirmish"), "contact keeps the fight track playing")
+	assert_true(music.current_intensity() > 0.0, "and the layers now read the match's intensity")
 
 
 func test_a_stinger_plays_once_and_then_holds_off() -> void:

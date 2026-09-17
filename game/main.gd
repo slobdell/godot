@@ -18,6 +18,7 @@ extends Node3D
 ##   --agent-port=PORT          Claude commands your tank over localhost HTTP (_agents/agent_bridge.md)
 ##   --screenshot=<abs path>    save a PNG after --screenshot-delay seconds (default 3), then quit
 ##   --announcer=text|voice     the arena announcer calls the match (subtitles; voice once clips exist); --announcer-record=PATH
+##   --audio-record=<abs .wav>  record everything the player hears; --audio-record-seconds=N, then quit
 ##   --music=on                 the dynamic soundtrack follows the match mood; --music-volume=DB, --music-dir=PATH
 ## An exported server binary (feature tag "server") is a server unless told otherwise.
 ##
@@ -55,6 +56,7 @@ func _ready() -> void:
 	# The arena announcer only listens to the match (--announcer=text|voice, --announcer-record=PATH; announcer_booth.gd).
 	# The music follows the mood the booth keeps (--music=on, --music-volume=DB; game/audio/music_director.gd).
 	MusicDirector.attach(self, AnnouncerBooth.attach(self))
+	AudioRecorder.attach(self)  # --audio-record=PATH: the whole mix to a WAV (make audio-pass)
 	if flags.has("screenshot"):
 		_capture_after(flags.text("screenshot"), float(flags.text("screenshot-delay", str(SCREENSHOT_DELAY_SEC))))
 	print("TANK_SQUAD_READY role=%s flags=%s" % [mode.role_name(), flags.values])

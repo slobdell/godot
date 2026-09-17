@@ -1,0 +1,4 @@
+# The audio tools' numeric side (sfx layering, stem import and checks, placeholders, the pass report).
+# make audio-deps installs these into .tools/audio-venv only when the system Python lacks them (builder0 does).
+numpy>=2.3
+scipy>=1.16

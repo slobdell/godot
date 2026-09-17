@@ -38,6 +38,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 					70 if team == Match.Team.GREEN else -70)
 			tank.rotation.y = 0.0 if team == Match.Team.GREEN else PI
 	await s.start()
+	BandProbe.install(s.game_match)
 	OrderController.profile_usec = 0
 	TankBrain.profile_parts = {}
 	OrderController.profiling = true
@@ -59,6 +60,10 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var parts: Array = TankBrain.profile_parts.keys().map(func(part: String) -> String:
 		return "%s %.0f" % [part, float(TankBrain.profile_parts[part]) / ticks])
 	parts.sort()
+	print("MEASURE ai_band_per_tick wall %.0f usec, thread cpu %.0f usec; per living unit per tick %.1f usec cpu (the -10 priority band: brains and orders; cpu time doesn't grow with other load, and per unit compares variants that fight different battles)" % [
+			float(BandProbe.wall_usec) / maxi(BandProbe.ticks, 1), float(BandProbe.cpu_usec) / maxi(BandProbe.ticks, 1),
+			float(BandProbe.cpu_usec) / maxi(BandProbe.unit_ticks, 1)])
+	print("MEASURE ai_execution full %d held %d" % [OrderController.executed_full, OrderController.executed_held])
 	print("MEASURE ai_usec_per_tick_parts %s (the rest: executing orders, aiming, firing)" % ", ".join(parts))
 	if not OS.get_cmdline_user_args().has("--profile-parts"):
 		print("      (--profile-parts, i.e. make ai-perf DETAIL=1, adds the finer laps inside moving and shooting)")
