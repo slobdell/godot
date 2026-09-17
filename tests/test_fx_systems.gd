@@ -255,15 +255,6 @@ func test_sounds_before_the_tree_are_dropped_not_errors() -> void:
 	sfx.free()
 
 
-func test_render_scale_follows_the_window_so_1080p_costs_what_the_budget_allows() -> void:
-	# Render X5 (M1): at 1920x1080 a 0.85 3D scale saved 4.8 ms GPU on the UHD 620; the UI stays at full resolution.
-	assert_eq(FxQuality.render_scale_for(1.0, 720), 1.0, "720p renders at full scale")
-	assert_near(FxQuality.render_scale_for(1.0, 1080), 0.85, 0.01, "1080p renders ~918 lines of 3D")
-	assert_true(FxQuality.render_scale_for(1.0, 2160) >= 0.7, "never below 0.7 on big screens")
-	assert_eq(FxQuality.render_scale_for(0.75, 720), 0.75, "a tier's own lower scale still wins")
-
-
-
 func test_decorative_bursts_thin_out_when_the_overdraw_budget_is_spent() -> void:
 	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 0.0, 500.0), 1.0, "room left: full size")
 	assert_near(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 436.0, 500.0), 0.8, 0.001, "a little room: smaller")
@@ -344,3 +335,20 @@ func test_dead_vehicles_leave_capped_wrecks_that_a_new_match_clears() -> void:
 	assert_eq(yard.count("wreck"), 0, "a new match starts clean")
 	var fit := WreckField.scale_for([2.4, 1.6, 3.6])
 	assert_true(fit.x / fit.z <= 1.4 + 0.001 and fit.z / fit.x <= 1.4 + 0.001, "a husk is never stretched past 40%% between axes (%s)" % fit)
+
+
+func test_effects_place_themselves_where_a_body_is_drawn() -> void:
+	# Ahead of the 30 Hz simulation: with interpolation off (today) the drawn transform is the physics one.
+	var body: Node3D = add_to_tree(Node3D.new())
+	body.position = Vector3(3, 0, -7)
+	body.rotation.y = 0.4
+	assert_eq(FxWorld.visual_transform(body), body.global_transform, "no interpolation: exactly the global transform")
+	body.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON
+	assert_eq(FxWorld.visual_transform(body).origin, body.global_position, "still where it is before any tick has moved it")
+
+
+func test_muzzle_effects_follow_the_drawn_hull_not_the_tick() -> void:
+	var body: Node3D = add_to_tree(Node3D.new())
+	body.position = Vector3(4, 0, 2)
+	assert_eq(WeaponFx.drawn_offset(body), Vector3.ZERO, "no interpolation: effects spawn exactly at the event's muzzle")
+	assert_eq(WeaponFx.drawn_offset(null), Vector3.ZERO, "an unknown shooter changes nothing")

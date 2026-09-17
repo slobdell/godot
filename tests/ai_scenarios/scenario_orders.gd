@@ -5,8 +5,8 @@ extends TestCase
 ## the walls (x ≈ -100) unless a scenario needs cover.
 
 const PENDING := []
-## K1 response guarantee: a brain starts executing a new order within this many ticks.
-const RESPONSE_TICKS := 3
+## K1 response guarantee: a brain starts executing a new order within Orders.RESPONSE_MS (100 ms), as ticks at the
+## current rate (Orders.response_ticks(): 6 at 60 Hz, 3 at 30 Hz), so the check stays right when the tick rate changes.
 
 
 func _issue(orders: Object, units: Array, verb: String, extra := {}) -> void:
@@ -26,7 +26,7 @@ static func _executing_move(brain: TankBrain, goal: Vector3) -> bool:
 	return move.get("type") == "move_to" and Vector2(float(move["x"]) - goal.x, float(move["z"]) - goal.z).length() < 0.5
 
 
-func test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing() -> void:
+func test_a_move_order_is_executed_within_100_ms_whatever_the_brain_was_doing() -> void:
 	# A 4 v 4 brawl in the open: brains on both sides pick all sorts of options. Every 1.5 s one Green unit gets a move
 	# order to a fresh spot; the response time and the option it interrupted are recorded.
 	var s := AiScenario.create(self, 3)
@@ -75,8 +75,8 @@ func test_a_move_order_is_executed_within_3_ticks_whatever_the_brain_was_doing()
 	print("MEASURE ai_order_response worst %d ticks over %d orders (%d missed); interrupted options (worst ticks, -1 = missed) %s" % [
 			worst, issued, missed, interrupted])
 	assert_true(issued >= 6, "enough orders landed on living units (%d)" % issued)
-	assert_true(missed == 0 and worst <= RESPONSE_TICKS, "every order executed within %d ticks (worst %d, missed %d: %s)" % [
-			RESPONSE_TICKS, worst, missed, interrupted])
+	assert_true(missed == 0 and worst <= Orders.response_ticks(), "every order executed within %d ticks = %d ms (worst %d, missed %d: %s)" % [
+			Orders.response_ticks(), Orders.RESPONSE_MS, worst, missed, interrupted])
 
 
 func test_a_moved_unit_arrives_and_its_order_completes() -> void:

@@ -18,7 +18,8 @@ extends RefCounted
 ##    "to"?: [x, z] (the group's destination, clamped into the arena), "target"?: unit name,
 ##    "slot"?: [right, back] meters in the group's frame (this unit's place in the formation),
 ##    "source": who asked for it ("player", "element", or ""): the response guarantee is about the player's,
-##    "heading"?: [x, z] (the group's direction of travel, and its facing on arrival),
+##    "heading"?: [x, z] (the group's direction of travel, and its facing on arrival unless "facing" says otherwise),
+##    "facing"?: [x, z] (normalised; from the command: which way to face once there, and the station's heading),
 ##    "goal"?: [x, z] (this unit's own destination: to + slot; for follow, see goal_position()),
 ##    "pace_mps"?: float (the group's slowest member's top speed)}
 ##   pace_factor(unit_name) -> float           arrive together: the fraction of its top speed a unit drives at now
@@ -29,6 +30,11 @@ extends RefCounted
 signal order_changed(unit_name: String)
 ## A unit's queue changed without its current order changing (a shift-queued waypoint): for waypoint markers.
 signal queue_changed(unit_name: String)
+
+## K1's response guarantee, in wall-clock time (round 5, the orchestrator's ruling ahead of combat's 30 Hz tick): an order
+## takes effect within this many milliseconds of the input. A player feels milliseconds, not ticks: "3 ticks" meant 50 ms
+## at 60 Hz and would silently have meant 100 ms at 30. At 30 Hz this is exactly 3 ticks, with nothing to spare.
+const RESPONSE_MS := 100.0
 
 ## A move counts as arrived within this distance of its goal (meters).
 const ARRIVE_RADIUS := 3.0
@@ -45,6 +51,11 @@ func _init(p_match: Match = null) -> void:
 
 
 ## The Orders of a match: `Match.orders` once combat adds the field (K1), else the one attach() stored.
+## RESPONSE_MS as whole physics ticks at the current tick rate (6 at 60 Hz, 3 at 30 Hz).
+static func response_ticks() -> int:
+	return floori(RESPONSE_MS * Engine.physics_ticks_per_second / 1000.0 + 0.0001)
+
+
 static func of(p_match: Match) -> Orders:
 	if p_match == null:
 		return null
@@ -106,6 +117,8 @@ func issue(command: Variant, team: int = -1) -> String:
 				clampf(float(command["to"][1]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT)]
 	if target != null:
 		base["target"] = String(target.name)
+	if command.has("facing"):
+		base["facing"] = command["facing"]
 	var per_unit := _resolve_group(base, names, queued)
 	for unit_name: String in names:
 		var order: Dictionary = per_unit[unit_name]
@@ -254,10 +267,16 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 	elif verb == "follow":
 		slots = GroupFormation.follow_slots(tanks)
 		formation = "rows" if tanks.size() > 1 else "single"
+	var facing: Array = []
+	if base.has("facing"):
+		var direction := Vector2(float(base["facing"][0]), float(base["facing"][1])).normalized()
+		facing = [direction.x, direction.y]
 	for i in tanks.size():
 		var unit_name: String = names[i]
 		var order := base.duplicate()
 		order["formation"] = formation
+		if not facing.is_empty():
+			order["facing"] = facing.duplicate()
 		if slots.has(unit_name):
 			var slot: Vector2 = slots[unit_name]
 			order["slot"] = [slot.x, slot.y]
@@ -290,7 +309,7 @@ func _last_destination(unit_name: String) -> Variant:
 func _remember_station(unit_name: String, order: Dictionary) -> void:
 	var tank := _tank(unit_name)
 	var position: Array = order.get("goal", [])
-	var heading: Array = order.get("heading", [])
+	var heading: Array = order.get("facing", order.get("heading", []))
 	if tank != null:
 		if position.is_empty():
 			position = [tank.global_position.x, tank.global_position.z]

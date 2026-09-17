@@ -28,3 +28,4 @@ result: green by elimination at 0:54.0
 0:58.0   CALLER   That was fast! The Condemned made short work of that one!
 1:01.9   VETERAN  Quick ones are the worst kind to lose. No time to fix anything.
 1:08.3   PA       The Condemned are tonight's winner. Ticket holders may remain seated during the recovery operation.
+1:13.9   PA       Thank you for joining us. Your attendance tonight has been recorded, and is appreciated.

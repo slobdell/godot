@@ -22,6 +22,10 @@ const LOAD_DB := 5.0
 const LOAD_PITCH := 0.12
 const TOP_SPEED := 14.0  # m/s that counts as full revs
 const FULL_LOAD_ACCEL := 5.0  # m/s² that counts as working flat out
+## Smoothing as time constants (seconds), not per-frame factors: the old lerps of 0.15 and 0.1 a frame were tuned at
+## 60 fps and would have meant different engines at any other frame rate. These equal them at 60 fps.
+const SPEED_TAU_S := 0.10
+const LOAD_TAU_S := 0.16
 ## Running gear per engine: the diesel hulls run on tracks, the rest on tyres.
 const RUNNING_GEAR := {"engine_diesel": "tread_loop", "engine_v8": "tire_loop", "engine_electric": "tire_loop"}
 const GEAR_DB := Vector2(-34.0, -13.0)  # crawling → full speed
@@ -104,14 +108,17 @@ func update(camera_position: Vector3, delta: float) -> void:
 			continue
 		var source := key as Node3D
 		var state: Dictionary = _sources[key]
-		var position := source.global_position
+		# Where the player sees it: with physics interpolation a plain global_position is the last physics tick's, so
+		# at a 30 Hz tick speed (and pitch) would step twice a second. Identical when interpolation is off.
+		var position := source.get_global_transform_interpolated().origin
 		if delta > 0.0:
 			var speed := float(state["speed"])
 			var measured := position.distance_to(state["last"]) / delta
-			var next_speed := lerpf(speed, measured, 0.15)
+			var next_speed := lerpf(speed, measured, 1.0 - exp(-delta / SPEED_TAU_S))
 			var accel := (next_speed - speed) / delta
 			state["speed"] = next_speed
-			state["load"] = lerpf(float(state["load"]), clampf(accel / FULL_LOAD_ACCEL, 0.0, 1.0), 0.1)
+			state["load"] = lerpf(float(state["load"]), clampf(accel / FULL_LOAD_ACCEL, 0.0, 1.0),
+					1.0 - exp(-delta / LOAD_TAU_S))
 		state["last"] = position
 		var distance_sq := position.distance_squared_to(camera_position)
 		if distance_sq > hearing_sq or (near.size() == VOICES and distance_sq >= near_d[VOICES - 1]):
@@ -152,7 +159,7 @@ func update(camera_position: Vector3, delta: float) -> void:
 		var revs := clampf(float(state["speed"]) / TOP_SPEED, 0.0, 1.0)
 		var working := float(state["load"])
 		var voice := _voices[index]
-		voice.global_position = source.global_position
+		voice.global_position = position_of(source)
 		voice.pitch_scale = lerpf(0.8, 1.7, revs) + LOAD_PITCH * working
 		voice.volume_db = lerpf(IDLE_DB, REV_DB, revs) + LOAD_DB * working
 		var gear_voice := _gear[index]
@@ -161,6 +168,10 @@ func update(camera_position: Vector3, delta: float) -> void:
 			gear_voice.pitch_scale = lerpf(GEAR_PITCH.x, GEAR_PITCH.y, revs)
 			# At a crawl the gear fades out entirely rather than clanking slowly forever at a standstill.
 			gear_voice.volume_db = lerpf(GEAR_DB.x, GEAR_DB.y, revs) if revs > 0.03 else SILENT_DB
+
+
+static func position_of(source: Node3D) -> Vector3:
+	return source.get_global_transform_interpolated().origin
 
 
 func _release(index: int) -> void:

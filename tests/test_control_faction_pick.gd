@@ -123,3 +123,87 @@ func test_clicking_a_row_picks_that_side() -> void:
 	tree.root.push_input(right)
 	await _frames(1)
 	assert_eq(picker.enemy_faction, "syndicate", "right-clicking the other half gives it to the enemy")
+
+
+## Round 5 (the lead: "I can't actually click any of the first buttons"): the menu starts the match with a click, not
+## only with a key the player has to read about first.
+func test_clicking_fight_starts_the_match() -> void:
+	tree.root.size = Vector2i(1280, 720)
+	var picker := FactionPicker.new()
+	add_to_tree(picker)
+	await _frames(3)
+	var got: Array = []
+	picker.chosen.connect(func(mine: String, theirs: String) -> void: got.append([mine, theirs]))
+	var fight := picker.fight_rect()
+	assert_true(fight.size.x >= 150.0 and fight.size.y >= 44.0, "FIGHT is a real button, big enough to hit (%s)" % fight)
+	assert_true(Rect2(Vector2.ZERO, picker.size).encloses(fight), "and on screen")
+	for pressed in [true, false]:
+		var event := InputEventMouseButton.new()
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.pressed = pressed
+		event.position = fight.get_center()
+		event.global_position = fight.get_center()
+		tree.root.push_input(event)
+		await _frames(1)
+	assert_eq(got, [[Units.DEFAULT_FACTION, Units.DEFAULT_FACTION]], "clicking FIGHT confirms once")
+
+
+## Drawing the menu reuses its options instead of assembling four armies per redraw (measured 1.1 ms on builder0).
+func test_the_menu_builds_its_options_once() -> void:
+	tree.root.size = Vector2i(1280, 720)
+	var picker := FactionPicker.new()
+	add_to_tree(picker)
+	await _frames(2)
+	var first: Array = picker.choices()
+	picker.set_side("gangs", false)
+	await _frames(2)
+	assert_true(is_same(first, picker.choices()), "the options are computed once and reused across redraws")
+
+
+## X6 (arena's request): the menu picks the arena too, and says what fight each one is for.
+func test_the_menu_offers_the_arenas_with_what_each_is_for() -> void:
+	var choices := GameLauncher.arena_choices()
+	var names: Array = choices.map(func(c: Dictionary) -> String: return c["name"])
+	for kit_built in ["yard", "boulevard", "pit", "boneyard"]:
+		assert_true(names.has(kit_built), "%s is offered (%s)" % [kit_built, names])
+	for choice: Dictionary in choices:
+		assert_true(String(choice["title"]) != "" and String(choice["note"]) != "", "%s has a title and a note" % choice["name"])
+	tree.root.size = Vector2i(1280, 720)
+	var picker := FactionPicker.new()
+	add_to_tree(picker)
+	await _frames(3)
+	assert_eq(picker.arena, GameLauncher.RANDOM, "random by default")
+	var row := picker.arena_rect()
+	assert_true(row.has_area() and Rect2(Vector2.ZERO, picker.size).encloses(row), "the arena row is on screen (%s)" % row)
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	event.position = row.get_center()
+	event.global_position = row.get_center()
+	tree.root.push_input(event)
+	await _frames(1)
+	assert_eq(picker.arena, names[0], "a click steps to the first arena")
+	var right := event.duplicate() as InputEventMouseButton
+	right.button_index = MOUSE_BUTTON_RIGHT
+	tree.root.push_input(right)
+	await _frames(1)
+	assert_eq(picker.arena, GameLauncher.RANDOM, "a right-click steps back")
+
+
+func test_the_arena_choice_reaches_the_restarted_match() -> void:
+	var launched := _flags({"skirmish": "", "pick-faction": "", "seed": "7"})
+	var next := SkirmishMode.faction_flags(launched, "law", "gangs", "pit")
+	assert_eq(next.text("arena"), "pit", "the arena goes on the flags")
+	var random := GameLauncher.resolve_arena(SkirmishMode.faction_flags(launched, "law", "gangs", GameLauncher.RANDOM))
+	assert_eq(random.text("arena"), Arena.resolve_name(GameLauncher.RANDOM, 7), "Arena's own roll decides, from the match's seed")
+	var seeded := GameLauncher.with_seed(_flags({"skirmish": ""}))
+	assert_true(seeded.text("seed").is_valid_int(), "a launch without a seed gets one, so the roll can be replayed")
+	assert_eq(GameLauncher.with_seed(launched).text("seed"), "7", "and keeps the one it has")
+	var names: Array = GameLauncher.arena_choices().map(func(c: Dictionary) -> String: return c["name"])
+	assert_true(names.has(random.text("arena")), "random resolves to a real arena (%s)" % random.text("arena"))
+	assert_eq(GameLauncher.resolve_arena(SkirmishMode.faction_flags(launched, "law", "gangs", GameLauncher.RANDOM)).text("arena"),
+			random.text("arena"), "the same seed picks the same arena")
+	assert_eq(GameLauncher.resolve_arena(_flags({"skirmish": ""})).values, {"skirmish": ""}, "no arena flag, nothing changes")
+	var main := GameLauncher.instantiate(next)
+	assert_eq(String(main.get_node("Arena").get("layout_name")), "pit", "the new scene's arena builds the chosen layout")
+	main.free()

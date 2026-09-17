@@ -359,6 +359,12 @@ func think(_delta: float) -> void:
 	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
 	TacticsFlags.ensure(game_match)
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
+	# The player's own units wait for orders (round 5). A brain that has never been given one normally falls back on its
+	# doctrine directives, which send it at the enemy base — so the lead's army left before he could command it. Taking
+	# its spawn as the post it was left at makes it behave exactly like a unit whose order finished here: it holds,
+	# fights what comes to it, and returns to its place, until the player says otherwise. The CPU is unaffected.
+	if _order_home == null and tank.team == OrderFeed.player_team(game_match):
+		_order_home = _flat(tank.global_position)
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
 	var squad := game_match.squad_for(tank)
 	var serial := squad.order_serial if squad != null else 0

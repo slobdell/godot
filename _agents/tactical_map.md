@@ -44,7 +44,7 @@ order ("3 units: attack-move"). Sounds are feel's.
 ## v4: how orders work (K1)
 
 ```
-mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, queue, formation?}
+mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, queue, formation?, source?, facing?}
                                   │ Orders.issue(command, team)       (game/control/orders.gd, one per match)
                                   ▼
              per-unit order: group, slot, goal, heading, pace ──▶ order_changed(unit)
@@ -52,7 +52,8 @@ mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, que
                    brains execute it (ai X1)  ·  until then OrderExecutor (game/control/order_executor.gd)
 ```
 
-- **The response guarantee:** a unit steers toward a new order within 3 ticks whatever it was doing. Measured: 1 tick
+- **The response guarantee:** a unit steers toward a new order within **100 ms** of the input (`Orders.RESPONSE_MS`; round 5
+  restated it in wall-clock time ahead of the 30 Hz tick, where it is exactly 3 ticks), whatever it was doing. Measured: 1 tick
   from fighting, driving elsewhere, holding, and hurt (`tests/test_control_response.gd`, `make control-playtest`).
 - **Automatic formations** (`GroupFormation`): heavies in front, fragile and artillery behind; a wedge for up to five
   units, rows beyond; a line when holding; a group of only fast units (≥ 12 m/s) attack-moving spreads into a wide
@@ -61,7 +62,11 @@ mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, que
 - **Arriving together:** each unit paces itself so its group arrives at once (`Orders.pace_factor`: the slowest
   member's time to arrive sets everyone's speed, never below 35%; a laggard drives flat out).
 - **Regrouping:** when a unit's orders run out it keeps a **station** (`Orders.station`: its slot in its group,
-  facing the group's heading). Pushed or drawn away, it drives back; a unit given its own order gets its own station.
+  facing the group's heading, or the order's `facing` when it gave one). Pushed or drawn away, it drives back; a unit
+  given its own order gets its own station.
+- **Facing (round 5, for doctrine's halts):** `move`, `attack_move` and `hold` take an optional `facing: [x, z]`. The
+  group still travels and forms its slots toward `to`; the facing is where each unit looks once there (`order.facing`,
+  normalised, and the station's `heading`). Turning to it is the brain's job (ai).
 - **Stop** clears the queue and halts; **hold** stays on the spot but turns and shoots; **attack-move** halts to
   fight what it meets, then carries on; **follow** keeps a slot behind the target; **attack** closes to 80% of the
   weapon's range and completes when the target dies.

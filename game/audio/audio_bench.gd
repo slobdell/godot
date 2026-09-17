@@ -102,16 +102,28 @@ func _initialize() -> void:
 	var report := {"frames": FRAMES, "vehicles": VEHICLES, "gunners": GUNNERS, "cues": cues, "systems": {}}
 	var total_mean := 0.0
 	for system in _times:
-		var samples: Array = _times[system]
+		var in_order: Array = _times[system]
+		var worst_frame := 0
+		var slow_frames := []
+		for i in in_order.size():
+			if float(in_order[i]) > float(in_order[worst_frame]):
+				worst_frame = i
+			if float(in_order[i]) > 1.0:
+				slow_frames.append(i)
+		print("AUDIO_BENCH %-15s worst on frame %d; frames over 1 ms: %s" % [system, worst_frame, str(slow_frames)])
+		var samples: Array = in_order.duplicate()
 		samples.sort()
 		var mean := 0.0
 		for value in samples:
 			mean += float(value)
 		mean /= samples.size()
 		var p95 := float(samples[int(samples.size() * 0.95)])
+		var worst := float(samples[-1])
 		total_mean += mean
-		report["systems"][system] = {"mean_ms": snappedf(mean, 0.0001), "p95_ms": snappedf(p95, 0.0001)}
-		print("AUDIO_BENCH %-15s mean %.4f ms  p95 %.4f ms" % [system, mean, p95])
+		report["systems"][system] = {"mean_ms": snappedf(mean, 0.0001), "p95_ms": snappedf(p95, 0.0001),
+				"max_ms": snappedf(worst, 0.0001)}
+		# The worst frame matters as much as the mean at a locked 30 fps: a periodic spike is a visible drop.
+		print("AUDIO_BENCH %-15s mean %.4f ms  p95 %.4f ms  max %.4f ms" % [system, mean, p95, worst])
 	report["total_mean_ms"] = snappedf(total_mean, 0.0001)
 	report["budget_ms"] = BUDGET_MS
 	print("AUDIO_BENCH total mean %.4f ms per frame (budget %.1f ms for booth, music and crowd), %d cues spoken, %d world voices" % [

@@ -142,3 +142,16 @@ func test_each_side_is_called_by_the_faction_it_fielded() -> void:
 	assert_true(not events.is_empty() and events[0]["type"] == "match_start", "the match started")
 	assert_eq(events[0]["teams"][0]["faction"], "gangs", "green fielded the gangs, and is called that")
 	assert_eq(events[0]["teams"][1]["faction"], "law", "rust fielded the Law")
+
+
+func test_match_time_follows_the_physics_tick_rate() -> void:
+	## Round 5's 30 Hz tick: thirty ticks must be one second to the booth, not half of one.
+	var game_match := _match()
+	var adapter := MatchEventAdapter.new(game_match, "yard")
+	var saved := Engine.physics_ticks_per_second
+	game_match.tick = 30
+	Engine.physics_ticks_per_second = 30
+	assert_near(adapter.seconds(), 1.0, 0.0001, "30 ticks at 30 Hz is a second")
+	Engine.physics_ticks_per_second = 60
+	assert_near(adapter.seconds(), 0.5, 0.0001, "and half of one at 60 Hz")
+	Engine.physics_ticks_per_second = saved

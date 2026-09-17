@@ -93,20 +93,22 @@ func _draw() -> void:
 	var friendly: Color = GameTheme.ui["friendly"]
 	var enemy: Color = GameTheme.ui["enemy"]
 	var x := 0.0
+	var batch := DrawBatch.new()  # X4: kind by kind, so five chips are a few draw calls, not five times as many
 	for group: Dictionary in summary():
 		var roles: Array = group["roles"]
 		var rect := Rect2(x, 0.0, _chip_width(roles.size(), s), CHIP_HEIGHT * s)
 		_rects[group["number"]] = rect
 		var lit: bool = group["selected"]
-		draw_rect(rect, Color(CyberStyle.CARD, 0.92))
-		draw_rect(rect, Color(CyberStyle.CYAN, 0.95 if lit else 0.35), false, 2.0 if lit else 1.0)
-		draw_string(font, rect.position + Vector2(6.0 * s, rect.size.y * 0.62), str(group["number"]), HORIZONTAL_ALIGNMENT_LEFT,
-				-1, roundi(16.0 * s), CyberStyle.WHITE if lit else CyberStyle.TEXT)
+		batch.fill(rect, Color(CyberStyle.CARD, 0.92))
+		batch.outline(rect, Color(CyberStyle.CYAN, 0.95 if lit else 0.35), 2.0 if lit else 1.0)
+		batch.text(font, rect.position + Vector2(6.0 * s, rect.size.y * 0.62), str(group["number"]), roundi(16.0 * s),
+				CyberStyle.WHITE if lit else CyberStyle.TEXT)
 		for i in roles.size():
 			var at := rect.position + Vector2((26.0 + i * (GLYPH + 3.0) + GLYPH * 0.5) * s, rect.size.y * 0.42)
-			CommandIcons.draw_unit(self, roles[i], at, GLYPH * s, friendly)
+			batch.icon(roles[i], at, GLYPH * s, friendly)
 		var health := float(group["health"])
 		var bar := Rect2(rect.position + Vector2(24.0 * s, rect.size.y - 7.0 * s), Vector2(rect.size.x - 30.0 * s, 3.0 * s))
-		draw_rect(bar, Color(0, 0, 0, 0.6))
-		draw_rect(Rect2(bar.position, Vector2(bar.size.x * health, bar.size.y)), friendly if health >= 0.5 else friendly.lerp(enemy, 1.0 - health))
+		batch.fill(bar, Color(0, 0, 0, 0.6))
+		batch.fill(Rect2(bar.position, Vector2(bar.size.x * health, bar.size.y)), friendly if health >= 0.5 else friendly.lerp(enemy, 1.0 - health))
 		x += rect.size.x + GAP * s
+	batch.flush(self)

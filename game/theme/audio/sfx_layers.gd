@@ -5,7 +5,20 @@ class_name SfxLayers
 
 const TAKES := {
 	"autocannon_shot": ["res://assets/audio/layered/autocannon_shot_1.wav", "res://assets/audio/layered/autocannon_shot_2.wav", "res://assets/audio/layered/autocannon_shot_3.wav"],
+	"bullet_hit_metal": ["res://assets/audio/layered/bullet_hit_metal_1.wav", "res://assets/audio/layered/bullet_hit_metal_2.wav", "res://assets/audio/layered/bullet_hit_metal_3.wav", "res://assets/audio/layered/bullet_hit_metal_4.wav"],
+	"dirt_impact": ["res://assets/audio/layered/dirt_impact_1.wav", "res://assets/audio/layered/dirt_impact_2.wav", "res://assets/audio/layered/dirt_impact_3.wav"],
+	"explosion_big": ["res://assets/audio/layered/explosion_big_1.wav", "res://assets/audio/layered/explosion_big_2.wav", "res://assets/audio/layered/explosion_big_3.wav"],
+	"explosion_small": ["res://assets/audio/layered/explosion_small_1.wav", "res://assets/audio/layered/explosion_small_2.wav", "res://assets/audio/layered/explosion_small_3.wav"],
+	"flame_loop": ["res://assets/audio/layered/flame_loop_1.wav"],
+	"laser_pulse": ["res://assets/audio/layered/laser_pulse_1.wav", "res://assets/audio/layered/laser_pulse_2.wav", "res://assets/audio/layered/laser_pulse_3.wav"],
 	"mg_loop": ["res://assets/audio/layered/mg_loop_1.wav"],
+	"mg_round": ["res://assets/audio/layered/mg_round_1.wav", "res://assets/audio/layered/mg_round_2.wav"],
+	"mortar_launch": ["res://assets/audio/layered/mortar_launch_1.wav", "res://assets/audio/layered/mortar_launch_2.wav", "res://assets/audio/layered/mortar_launch_3.wav"],
+	"ricochet": ["res://assets/audio/layered/ricochet_1.wav", "res://assets/audio/layered/ricochet_2.wav", "res://assets/audio/layered/ricochet_3.wav"],
 	"shell_hit_armor": ["res://assets/audio/layered/shell_hit_armor_1.wav", "res://assets/audio/layered/shell_hit_armor_2.wav", "res://assets/audio/layered/shell_hit_armor_3.wav"],
+	"shell_whine": ["res://assets/audio/layered/shell_whine_1.wav", "res://assets/audio/layered/shell_whine_2.wav"],
+	"shield_down": ["res://assets/audio/layered/shield_down_1.wav", "res://assets/audio/layered/shield_down_2.wav"],
+	"shield_hit": ["res://assets/audio/layered/shield_hit_1.wav", "res://assets/audio/layered/shield_hit_2.wav", "res://assets/audio/layered/shield_hit_3.wav"],
 	"tank_boom": ["res://assets/audio/layered/tank_boom_1.wav", "res://assets/audio/layered/tank_boom_2.wav", "res://assets/audio/layered/tank_boom_3.wav"],
+	"weak_spot_hit": ["res://assets/audio/layered/weak_spot_hit_1.wav", "res://assets/audio/layered/weak_spot_hit_2.wav"],
 }

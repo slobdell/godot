@@ -5,7 +5,6 @@ extends TestCase
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
-const RESPONSE_TICKS := 3
 ## Open ground on the west side of the default arena (no obstacles between x -110..-80, z -40..60).
 const LANE_X := -100.0
 
@@ -95,8 +94,9 @@ func test_units_respond_within_three_ticks_whatever_their_brain_was_doing() -> v
 	results["hurt, just stopped"] = await _ticks_to_respond(orders, tanks, UnitCommand.make(names, "move", {"to": [LANE_X, 80.0]}))
 	print("MEASURE control_response_ticks %s" % [results])
 	for state in results:
-		assert_true(results[state] > 0 and results[state] <= RESPONSE_TICKS,
-				"every unit steers toward a new order within %d ticks when %s (took %d)" % [RESPONSE_TICKS, state, results[state]])
+		var ms: float = float(results[state]) * 1000.0 / Engine.physics_ticks_per_second
+		assert_true(results[state] > 0 and ms <= Orders.RESPONSE_MS,
+				"every unit steers toward a new order within %d ms when %s (took %d ticks, %.0f ms)" % [Orders.RESPONSE_MS, state, results[state], ms])
 
 
 func test_a_group_move_arrives_and_completes() -> void:

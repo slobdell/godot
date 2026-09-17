@@ -25,3 +25,4 @@ result: green by elimination at 0:33.0
 0:35.6   CALLER   That was fast! The Wreckers made short work of that one!
 0:39.5   VETERAN  Good crews down there tonight. One of them was a little better drilled.
 0:45.9   PA       The Wreckers win without a single loss. The Syndicate congratulates the crews, and their families, who have been informed.
+0:53.6   PA       While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.

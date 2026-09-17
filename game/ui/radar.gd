@@ -16,6 +16,10 @@ extends Control
 ## Behavior and data are gameplay's; the frame and palette are look & feel's: a StyleBox under
 ## GameTheme.ui["radar_frame"] replaces the placeholder frame, and GameTheme.ui colors tint the blips.
 
+## Blip textures are drawn at this size and scaled down (they're 5-12 px on screen).
+const BLIP_TEXTURE_PX := 32
+static var _blip_textures := {}
+
 ## The radar shows this many meters edge to edge (the arena plus a margin).
 const SPAN := Match.ARENA_HALF_SIZE * 2.0 + 12.0
 ## Side length as a fraction of the viewport height, clamped to [MIN_SIZE, MAX_SIZE] pixels.
@@ -241,6 +245,24 @@ func drag_order(from_local: Vector2, to_local: Vector2) -> String:
 
 # ---- Drawing -----------------------------------------------------------------------------
 
+## A white blip shape, drawn once and tinted per use: "disc", "ring", "diamond" or "diamond_outline".
+static func blip_texture(shape: String) -> Texture2D:
+	if not _blip_textures.has(shape):
+		var image := Image.create(BLIP_TEXTURE_PX, BLIP_TEXTURE_PX, false, Image.FORMAT_RGBA8)
+		var half := BLIP_TEXTURE_PX / 2.0
+		for y in BLIP_TEXTURE_PX:
+			for x in BLIP_TEXTURE_PX:
+				var offset := (Vector2(x, y) + Vector2(0.5, 0.5) - Vector2(half, half)) / half
+				var reach := offset.length() if shape in ["disc", "ring"] else absf(offset.x) + absf(offset.y)
+				var inside := 1.0 - clampf((reach - 1.0) * half + 0.5, 0.0, 1.0)
+				if shape in ["ring", "diamond_outline"]:
+					var inner := 1.0 - 1.5 / half * (2.0 if shape == "ring" else 1.4)
+					inside = minf(inside, clampf((reach - inner) * half + 0.5, 0.0, 1.0))
+				image.set_pixel(x, y, Color(1, 1, 1, inside))
+		_blip_textures[shape] = ImageTexture.create_from_image(image)
+	return _blip_textures[shape]
+
+
 func _draw() -> void:
 	if game_match == null:
 		return
@@ -264,11 +286,17 @@ func _draw() -> void:
 	for corner in [Vector3(-1, 0, -1), Vector3(1, 0, -1), Vector3(1, 0, 1), Vector3(-1, 0, 1), Vector3(-1, 0, -1)]:
 		outline.append(world_to_radar(corner * Match.ARENA_HALF_SIZE))
 	draw_polyline(outline, Color(0.6, 0.8, 0.9, 0.9), 1.5)
+	var prop_color := Color(0.75, 0.8, 0.85, 0.85)
+	var prop_colors := PackedColorArray([prop_color, prop_color, prop_color, prop_color])
 	for corners in obstacles:
 		var shape := PackedVector2Array()
 		for c in corners:
 			shape.append(world_to_radar(Vector3(c.x, 0, c.y)))
-		draw_colored_polygon(shape, Color(0.75, 0.8, 0.85, 0.85))
+		# A four-cornered footprint (almost every prop) is a primitive, which batches; anything else is a polygon.
+		if shape.size() == 4:
+			draw_primitive(shape, prop_colors, PackedVector2Array())
+		else:
+			draw_colored_polygon(shape, prop_color)
 	if game_match.control_point:
 		var owner_color: Color = Color(1, 1, 1, 0.7) if game_match.control_owner < 0 else (GameTheme.ui["friendly"] if game_match.control_owner == team else GameTheme.ui["enemy"])
 		var zone_radius := Match.CONTROL_RADIUS / SPAN * size.x
@@ -278,29 +306,39 @@ func _draw() -> void:
 	var enemy: Color = GameTheme.ui["enemy"]
 	var commander: Color = GameTheme.ui["commander"]
 	var dot := maxf(2.5, size.x / 70.0)
+	# X4 (CP1: the HUD ≤ 130 draw calls): the Compatibility renderer batches textured rects but gives every polygon,
+	# circle and arc a draw call of its own, and 60 vehicles made the radar ~100 of them. Blips are small textures now,
+	# drawn one kind at a time so each kind is one batch.
+	var ticks := PackedVector2Array()
+	var crosses := PackedVector2Array()
+	var by_shape := {"disc": [], "ring": [], "diamond": [], "diamond_outline": []}
 	for blip in blips():
 		var at := world_to_radar(blip["position"])
 		match blip["kind"]:
 			"friendly", "selected", "commander":
-				draw_circle(at, dot, friendly)
+				by_shape["disc"].append([at, dot, friendly])
 				# X2: a tick showing which way the hull points, so you can read a formation's facing at a glance.
 				if blip.has("facing"):
 					var heading: Vector3 = blip["facing"]
-					var tip := world_to_radar(blip["position"] + heading.normalized() * 6.0)
-					draw_line(at, tip, Color(friendly, 0.9), 1.5)
+					ticks.append_array([at, world_to_radar(blip["position"] + heading.normalized() * 6.0)])
 				if blip["kind"] != "friendly":
-					draw_arc(at, dot + 2.5, 0.0, TAU, 16, commander, 1.5)
+					by_shape["ring"].append([at, dot + 3.25, commander])
 			"enemy":
 				# Diamonds for enemies, circles for us: readable without color (accessibility).
-				var r := dot * 1.3
-				draw_colored_polygon(PackedVector2Array([at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(0, r), at + Vector2(-r, 0)]), enemy)
+				by_shape["diamond"].append([at, dot * 1.3, enemy])
 			"contact":
-				var r := dot * 1.3
-				draw_polyline(PackedVector2Array([at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(0, r), at + Vector2(-r, 0),
-						at + Vector2(0, -r)]), Color(enemy, blip["fade"]), 1.5)
+				by_shape["diamond_outline"].append([at, dot * 1.3 + 0.75, Color(enemy, blip["fade"])])
 			"destination":
-				draw_line(at + Vector2(-dot, -dot), at + Vector2(dot, dot), commander, 1.5)
-				draw_line(at + Vector2(-dot, dot), at + Vector2(dot, -dot), commander, 1.5)
+				crosses.append_array([at + Vector2(-dot, -dot), at + Vector2(dot, dot), at + Vector2(-dot, dot), at + Vector2(dot, -dot)])
+	for shape: String in ["disc", "diamond", "diamond_outline", "ring"]:
+		var texture := Radar.blip_texture(shape)
+		for mark: Array in by_shape[shape]:
+			var radius: float = mark[1]
+			draw_texture_rect(texture, Rect2(mark[0] - Vector2(radius, radius), Vector2(radius, radius) * 2.0), false, mark[2])
+	if not ticks.is_empty():
+		draw_multiline(ticks, Color(friendly, 0.9), 1.5)
+	if not crosses.is_empty():
+		draw_multiline(crosses, commander, 1.5)
 	for label: Dictionary in element_labels():
 		var at := world_to_radar(label["position"]) + Vector2(dot * 1.6, -dot * 1.6)
 		var text := String(label["text"])

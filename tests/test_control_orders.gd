@@ -180,3 +180,33 @@ func test_orders_is_reachable_from_the_match() -> void:
 	var orders: Orders = setup[1]
 	Orders.attach(game_match, orders)
 	assert_eq(Orders.of(game_match), orders, "Orders.of(match) finds the match's Orders")
+
+
+## X5 (doctrine's request (a), round 4): an optional facing, so a halted crew can be told which way to look instead of
+## driving a few metres along its sector to end up pointing there.
+func test_an_order_can_say_which_way_to_face_on_arrival() -> void:
+	assert_eq(UnitCommand.validate({"units": ["A"], "verb": "move", "to": [0, 0], "facing": [1, 0]}), "", "move with a facing")
+	assert_eq(UnitCommand.validate({"units": ["A"], "verb": "hold", "facing": [0, -1]}), "", "hold with a facing")
+	assert_true(UnitCommand.validate({"units": ["A"], "verb": "move", "to": [0, 0], "facing": [0, 0]}).contains("facing"),
+			"a zero facing points nowhere")
+	assert_true(UnitCommand.validate({"units": ["A"], "verb": "move", "to": [0, 0], "facing": [NAN, 1]}).contains("facing"),
+			"NaN is rejected")
+	assert_true(UnitCommand.validate({"units": ["A"], "verb": "attack", "target": "B", "facing": [1, 0]}).contains("facing"),
+			"only verbs that end standing somewhere take a facing")
+	var setup: Array = _setup()
+	var game_match: Match = setup[0]
+	var orders: Orders = setup[1]
+	var names := ["Green_Alpha_1", "Green_Alpha_2"]
+	for i in names.size():
+		(game_match.tanks.get_node(names[i]) as Tank).global_position = Vector3(-5.0 + i * 10.0, 0.0, 80.0)
+	assert_eq(orders.issue({"units": names, "verb": "move", "to": [0, 20], "facing": [3, 0]}), "", "accepted")
+	for unit_name in names:
+		var order := orders.current(unit_name)
+		assert_eq(order["facing"], [1.0, 0.0], "%s carries the facing, normalised" % unit_name)
+		assert_near(Vector2(order["heading"][0], order["heading"][1]).dot(Vector2(0, -1)), 1.0, 0.05,
+				"the group still travels (and lays out its slots) toward the destination")
+		orders.complete(unit_name)
+		assert_eq(orders.station(unit_name)["heading"], [1.0, 0.0], "arrived, %s's station faces where it was told" % unit_name)
+	orders.issue({"units": ["Green_Alpha_1"], "verb": "move", "to": [0, 0]})
+	orders.complete("Green_Alpha_1")
+	assert_true(orders.station("Green_Alpha_1")["heading"] != [1.0, 0.0], "without a facing, the direction of travel as before")

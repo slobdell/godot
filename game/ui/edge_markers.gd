@@ -26,6 +26,8 @@ const STATE_COLORS := {"under_fire": "enemy", "lost": "enemy", "contact": "comma
 		"idle": "friendly"}
 
 var controls: RtsControls
+## Control X3 (the lead's dial): how many unseen alerts show at once, newest at the bottom (1–3, `--alert-lines`).
+var alert_lines := 1
 
 var _clock := 0.0
 
@@ -142,30 +144,41 @@ func _draw_chip(mark: Dictionary, font: Font, s: float) -> void:
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(float(mark["health"]), 0.0, 1.0), bar.size.y)), accent)
 
 
-## One line, centred above the group chips: the newest thing you have not looked at, and how many are queued
-## behind it. The HUD message column already narrates the match; this is the part you can act on.
+## Centred above the group chips: the newest things you have not looked at (one line by default, up to three with
+## `alert_lines`), and how many are queued behind them. The HUD message column already narrates the match; this is
+## the part you can act on. Older lines stack upward and dim.
 func _draw_alerts(font: Font, s: float) -> void:
-	var alert := _prompt()
-	if alert.is_empty():
+	var shown := prompts()
+	if shown.is_empty():
 		return
 	var pending := controls.awareness.unseen_count()
-	var text := "%s%s   [Q]" % [String(alert["text"]), "  (+%d)" % (pending - 1) if pending > 1 else ""]
 	var text_size := roundi(17.0 * s)
-	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size).x
-	var at := Vector2((size.x - width) / 2.0, size.y * ALERT_Y)
-	var accent: Color = GameTheme.ui[STATE_COLORS.get(alert["kind"], "enemy")]
-	draw_rect(Rect2(at - Vector2(14.0 * s, text_size * 1.1), Vector2(width + 28.0 * s, text_size * 1.6)),
-			Color(CyberStyle.HUD_BACKGROUND, 0.9))
-	draw_rect(Rect2(at - Vector2(14.0 * s, text_size * 1.1), Vector2(width + 28.0 * s, text_size * 1.6)),
-			Color(accent, 0.9), false, 1.5)
-	draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, accent)
+	var y := size.y * ALERT_Y
+	for i in shown.size():
+		var alert: Dictionary = shown[i]
+		var text := String(alert["text"])
+		if i == 0:
+			var behind := pending - shown.size()
+			text = "%s%s   [Q]" % [text, "  (+%d)" % behind if behind > 0 else ""]
+		var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size).x
+		var at := Vector2((size.x - width) / 2.0, y)
+		var accent: Color = GameTheme.ui[STATE_COLORS.get(alert["kind"], "enemy")]
+		var fade := 1.0 if i == 0 else 0.7
+		var box := Rect2(at - Vector2(14.0 * s, text_size * 1.1), Vector2(width + 28.0 * s, text_size * 1.6))
+		draw_rect(box, Color(CyberStyle.HUD_BACKGROUND, 0.9 * fade))
+		draw_rect(box, Color(accent, 0.9 * fade), false, 1.5)
+		draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, Color(accent, fade))
+		y -= text_size * 1.8
 
 
-## The newest unseen alert that is still worth showing ({} when there is none).
-func _prompt() -> Dictionary:
+## The newest unseen alerts still worth showing, newest first, at most `alert_lines` of them.
+func prompts() -> Array:
+	var result: Array = []
 	var alerts: Array = controls.awareness.alerts
 	for i in range(alerts.size() - 1, -1, -1):
 		var alert: Dictionary = alerts[i]
 		if not bool(alert["seen"]) and controls.awareness.age_of(alert) <= ALERT_SECONDS:
-			return alert
-	return {}
+			result.append(alert)
+			if result.size() >= clampi(alert_lines, 1, 3):
+				break
+	return result

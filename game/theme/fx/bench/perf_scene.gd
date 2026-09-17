@@ -20,6 +20,7 @@ extends Node
 ## Flags: --perf-scene=<abs json>  --perf-warmup=S (8)  --perf-seconds=S per phase (2.5)  --perf-cycles=N (2)
 ##        --perf-zoom=0..1 (0.42, RtsCamera's level)  --perf-layers=a,b (a subset)  --perf-shot=<abs png>
 ##        --perf-shot-every-phase (one shot per phase: <shot>-<index>-<phase>.png)
+##        --perf-capped (keep FrameTarget's cap and vsync: does the locked rate hold?)  --frame-target=30|60
 
 ## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
 ## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
@@ -28,7 +29,8 @@ extends Node
 ## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer), lod_4 / lod_8 (mesh LOD threshold px),
 ## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count),
 ## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
-## ground_chunked (the floor's tiling flipped).
+## ground_chunked (the floor's tiling flipped), team_paint (hulls in a dulled team color; not restored, run it last),
+## no_live_feed (the arena screens' live match feed and replay ring).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -90,8 +92,11 @@ func _ready() -> void:
 	if flags.text("perf-layers") != "":
 		layers = Array(flags.text("perf-layers").split(",", false))
 	_phases = PerfScene.schedule(layers, cycles)
-	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-	Engine.max_fps = 0
+	# Uncapped by default (what a frame costs); --perf-capped keeps the frame target's cap and vsync (whether the target
+	# actually holds: the pacing a player sees).
+	if not flags.has("perf-capped"):
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		Engine.max_fps = 0
 	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
 	_camera.name = "PerfCamera"
 	_camera.fov = RtsCamera.FOV_DEG
@@ -158,6 +163,10 @@ func _process(delta: float) -> void:
 		_shot_taken = true
 		var path := shot_path.get_basename() + "-%02d-%s.png" % [_phase_index, _phases[_phase_index]] if shot_every_phase else shot_path
 		get_viewport().get_texture().get_image().save_png(path)
+		# The arena screens' live feed as it is right now (a readback: only for these shots).
+		var feed := LiveFeed.for_node(self)
+		if feed != null and feed.texture() != null:
+			feed.texture().get_image().save_png(path.get_basename() + "-feed.png")
 	if _phase_time >= phase_seconds:
 		_finish_phase()
 		if _phase_index + 1 < _phases.size():
@@ -172,7 +181,7 @@ func _update_camera(delta: float) -> void:
 		return
 	var middle := Vector3.ZERO
 	for tank in tanks:
-		middle += tank.global_position
+		middle += FxWorld.visual_transform(tank).origin
 	middle /= tanks.size()
 	middle.y = 0.0
 	if not _focus_set:
@@ -319,6 +328,16 @@ func _apply(phase: String) -> void:
 				var part: Variant = dressing2.get("ground" if phase == "no_ground" else "structures")
 				if part is Node3D:
 					_override(part, "visible", false)
+		"no_live_feed":
+			var feed := LiveFeed.for_node(self)
+			if feed != null:
+				_override(feed, "enabled", false)
+		"team_paint":
+			# A look for the lead's team-read question (M3): hulls coated in a dulled team color. Not restored: run it last.
+			for tank in _living_tanks():
+				var team := int(tank.get("team"))
+				var neon := GameTheme.team_color(team)
+				tank.call("set_paint", Color.from_hsv(neon.h, 0.55, 0.42))
 		"no_spill":
 			for node in get_tree().root.find_children("Spill", "MeshInstance3D", true, false):
 				_override(node, "visible", false)
@@ -388,6 +407,8 @@ func _finish_phase() -> void:
 		"frames": _frames,
 		"avg_ms": snappedf(PerfScene.mean(_samples), 0.01),
 		"p95_ms": snappedf(PerfScene.percentile(_samples, 0.95), 0.01),
+		"p99_ms": snappedf(PerfScene.percentile(_samples, 0.99), 0.01),
+		"max_ms": snappedf(PerfScene.percentile(_samples, 1.0), 0.01),
 		"gpu_ms": snappedf(PerfScene.percentile(_gpu, 0.5), 0.01),
 		"cpu_render_ms": snappedf(PerfScene.percentile(_cpu, 0.5), 0.01),
 		"draw_calls": roundi(_sums["draw_calls"] / frames),
@@ -404,6 +425,8 @@ func _finish_phase() -> void:
 		"process_game_ui_ms": snappedf(_cpu_sums["game_ui_ms"] / frames, 0.01),
 		"process_fx_ms": snappedf(_cpu_sums["fx_ms"] / frames, 0.01),
 		"fx_steps_ms": _fx_steps(frames),
+		"feed_live": LiveFeed.for_node(self).is_live() if LiveFeed.for_node(self) != null else false,
+		"feed_replays": LiveFeed.for_node(self).replays_started if LiveFeed.for_node(self) != null else 0,
 		"ticks_per_frame": snappedf(float(_tick_totals["ticks"]) / frames, 0.01),
 		"tick_script_ms": snappedf(float(_tick_totals["usec"]) / maxf(float(_tick_totals["ticks"]), 1.0) / 1000.0, 0.01),
 	}
@@ -486,6 +509,8 @@ func _finish() -> void:
 		"all_avg_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["avg_ms"]))), 0.01),
 		"all_p95_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["p95_ms"]))), 0.01),
 		"all_gpu_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["gpu_ms"]))), 0.01),
+		"holds_60fps_at_vehicles": PerfScene.holds_60fps_at(_results),
+		"holds_30fps_at_vehicles": PerfScene.holds_30fps_at(_results),
 		"layer_cost_ms": PerfScene.layer_costs(_results),
 		"layer_cost_gpu_ms": PerfScene.layer_costs(_results, "gpu_ms"),
 		"layer_draw_calls": PerfScene.layer_costs(_results, "draw_calls"),
@@ -497,6 +522,36 @@ func _finish() -> void:
 			file.store_string(JSON.stringify({"summary": summary, "phases": _results}, "  "))
 	print("PERF_SCENE_DONE")
 	get_tree().quit()
+
+
+## The scoreboard numbers: the most vehicles at which a frame rate held, from the full-scene (`all`) phases grouped by
+## vehicle count. A count holds when its median `key` reading and every smaller count's are within one frame at `fps`
+## (one noisy phase doesn't decide it); 0 if even the fewest didn't. 60 fps is judged on the average frame; the default
+## target, a LOCKED 30 (the lead's sign-off), on the 99th percentile, because a locked rate that drops isn't locked. Pure.
+static func holds_fps_at(phases: Array, fps := 60.0, key := "avg_ms") -> int:
+	var by_count := {}
+	for r: Dictionary in phases:
+		if r["phase"] == "all" and r.has(key):
+			# Packed arrays are values (orientation trip-up 48): append to a copy, then store it back.
+			var frames: PackedFloat32Array = by_count.get(int(r["vehicles"]), PackedFloat32Array())
+			frames.append(float(r[key]))
+			by_count[int(r["vehicles"])] = frames
+	var counts := by_count.keys()
+	counts.sort()
+	var held := 0
+	for count: int in counts:
+		if PerfScene.percentile(by_count[count], 0.5) > 1000.0 / fps:
+			break
+		held = count
+	return held
+
+
+static func holds_60fps_at(phases: Array) -> int:
+	return PerfScene.holds_fps_at(phases, 60.0, "avg_ms")
+
+
+static func holds_30fps_at(phases: Array) -> int:
+	return PerfScene.holds_fps_at(phases, 30.0, "p99_ms")
 
 
 static func mean(values: PackedFloat32Array) -> float:

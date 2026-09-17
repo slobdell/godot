@@ -43,3 +43,4 @@ result: rust by elimination at 1:24.2
 1:27.6   CALLER   The Syndicate take it! What a fight, ladies and gentlemen!
 1:31.3   VETERAN  Turrets turn slower than vehicles do. That's the whole trick. That's it, that's the trick.
 1:38.7   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
+1:44.3   PA       While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.

@@ -99,6 +99,25 @@
        "act": "welcome"
       }
      ]
+    },
+    {
+     "name": "welcome and a word from the screens",
+     "weight": 2,
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "welcome"
+      },
+      {
+       "speaker": "pa",
+       "act": "sponsor_read"
+      },
+      {
+       "speaker": "caller",
+       "act": "hype",
+       "chance": 0.6
+      }
+     ]
     }
    ]
   },
@@ -1252,6 +1271,21 @@
       {
        "speaker": "pa",
        "act": "result"
+      }
+     ]
+    },
+    {
+     "name": "sign-off while the floor is cleared",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "result"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "optional": true
       }
      ]
     }

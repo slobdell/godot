@@ -59,9 +59,33 @@ static func role_of(tank: Tank) -> String:
 	return role
 
 
+## Unit pictograms drawn once into textures (X4): IconRaster paints draw_unit at UNIT_TEXTURE_PX, the glyph filling
+## UNIT_TEXTURE_GLYPH of it, in white with dark ink, so a tint colours the body and leaves the ink dark.
+const UNIT_TEXTURE_PX := 64
+const UNIT_TEXTURE_GLYPH := 50.0
+static var _unit_textures := {}
+
+
+static func unit_texture(role: String) -> Texture2D:
+	if not _unit_textures.has(role):
+		var raster := IconRaster.new(UNIT_TEXTURE_PX)
+		draw_unit(raster, role, Vector2.ONE * UNIT_TEXTURE_PX / 2.0, UNIT_TEXTURE_GLYPH, Color.WHITE)
+		_unit_textures[role] = raster.texture()
+	return _unit_textures[role]
+
+
+## draw_unit for a HUD widget: the cached texture as one rect, which the renderer batches with every other icon.
+## Pointing up the screen only (no heading), at `size` px tall like draw_unit.
+static func draw_unit_icon(canvas: CanvasItem, role: String, at: Vector2, size: float, color: Color) -> void:
+	if not (_drawable(at) and size >= 1.0):
+		return
+	var side := size * UNIT_TEXTURE_PX / UNIT_TEXTURE_GLYPH
+	canvas.draw_texture_rect(unit_texture(role), Rect2(at - Vector2(side, side) / 2.0, Vector2(side, side)), false, color)
+
+
 ## A unit pictogram (top-down silhouette) centered at `at`, `size` px tall, pointing along `heading`
 ## (radians, 0 = up the screen, positive = clockwise).
-static func draw_unit(canvas: CanvasItem, role: String, at: Vector2, size: float, color: Color, heading := 0.0,
+static func draw_unit(canvas: Object, role: String, at: Vector2, size: float, color: Color, heading := 0.0,
 		outline := Color(0, 0, 0, 0.75)) -> void:
 	# A camera that isn't set up yet (headless runs, the first frame after a mode switch) unprojects to NaN, and a
 	# degenerate polygon makes the renderer log a triangulation error: draw nothing instead.
@@ -140,7 +164,7 @@ static func _drawable(at: Vector2) -> bool:
 ## 1 of 3 headless army-loop runs a far-zoom icon for a unit near the camera plane lands 30k–100k px off screen, where a
 ## perfectly shaped 20 px quad fails triangulation on precision. The first skipped polygon is printed once.
 static var _reported_degenerate := false
-static func _fill(canvas: CanvasItem, polygon: PackedVector2Array, color: Color) -> bool:
+static func _fill(canvas: Object, polygon: PackedVector2Array, color: Color) -> bool:
 	if _area(polygon) < 0.5 or Geometry2D.triangulate_polygon(polygon).is_empty():
 		if not _reported_degenerate:
 			_reported_degenerate = true

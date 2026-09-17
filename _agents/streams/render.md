@@ -156,14 +156,15 @@ _Updated 2026-09-17 (evening)._
 - **control:** HUD ≤ 130 draw calls (measured 210–340) and ≤ 1 ms of `_process`.
 - **arena:** commit `tests/arena/arena_probe.gd.uid` (Godot generated it for your file).
 
-### Questions for the lead
-- **Glow:** it costs 1.6–1.9 ms of the GPU budget. Without it, vehicles read even more clearly and explosions look
-  flatter (`build/screenshots/x5-glowlook-compare.png`, top with, bottom without). Keep the neon bloom, or go more
-  grounded?
-- **Team read (M3):** is a team-tinted rim plus small light bars enough to tell sides apart at play distance, or do you
-  want per-team paint on the hull too? (`build/screenshots/look-x4.png`, `look-factions.png`)
-- **Windows build:** only Linux export templates are installed; a Windows desktop preset needs `TEMPLATE_FILES` in the
-  shared Makefile to include the Windows templates (~+100 MB in `.tools`). Want it this round?
+### The lead's answers (2026-09-17, via the orchestrator)
+- **Glow: keep it** (the frame is sim-bound; switching it off buys nothing today).
+- **Team read: "Rim tint is enough."** No hull paint; `team_paint` stays a perf-scene layer for reference only.
+- **Windows build: skipped this round.** Don't install the templates.
+- **Arena screens: "Live during, ads between."** Live match content on the screens during the fight (shared 15 Hz feed
+  camera, ring-buffer replay after kills), the approved ad copy (`assets/announcer/drafts/ad_copy.md`) between
+  matches. Prove the cost with a `live_feed` perf-scene layer first; the measured number decides replay quality.
+- **30 Hz simulation starts this round** (combat owns the refactor): take a "60 Hz, pre-interpolation" perf-scene
+  baseline first, and flag anything that reads a body's transform in `_process`.
 
 ### Known issues
 - CPU numbers are measured on a laptop shared with five other agents (load ≈ 5): pessimistic.
@@ -176,6 +177,99 @@ _Updated 2026-09-17 (evening)._
   `make skirmish-factions FACTION=law ENEMY_FACTION=gangs` (faction models in play), `--arena=boulevard` and
   `--arena=boneyard` (kit props: barricades, towers, signs, wrecks), `make perf-scene` (the numbers; opens a window
   for ~2 minutes), `make export-desktop` (43.5 MB desktop pack).
+
+### After main's Jolt physics (re-measured 2026-09-17, main 8d975fa)
+- `make perf-scene`, 720p: sim tick **21.5 ms at 66 vehicles** (still 9 ticks per frame), 14 ms at 43, 10 ms at 20;
+  GPU **9.5–10.7 ms**; draws 460–700; 0 engine errors. The frame first holds 60 fps at **~8–10 vehicles**
+  (12–14 ms, ticks_per_frame ≈ 1). 1080p-class: GPU 13–15 ms (this run's layer deltas are spoiled by one 28 ms sample).
+- The four kit arenas (yard, boulevard, pit, boneyard) at gameplay zoom read well at the new light levels
+  (`build/screenshots/arenas-grid.png`). Only nit: an ad screen seen from behind is a flat black slab.
+
+### Tracers moved into the gap (orchestrator's review of the arenas grid, 2026-09-17)
+- With the accent lights fixed, saturated, heavily-blooming tracers became the loudest thing on screen. Now: hdr boost
+  3.0 → 1.5, warm incandescent with a 45% team tint, width/tail/floor splat roughly halved per style. Before/after:
+  `build/screenshots/comets-before-after.png` (left before, right after).
+- Ad screens seen from behind: lighter housing, ribs, amber service lights (no longer a black slab).
+- **Team read evidence for the lead:** perf-scene layer `team_paint` coats hulls in a dulled team color;
+  `build/screenshots/team-read-crop.png` (left today's rim tint, right painted). Not the default: the lead's call.
+- **The floor** (the orchestrator: vehicles were dark shapes on a dark flat surface): the baked light map is in color
+  now (cool tower light, warm sodium pools thrown by each layout's own floodlight props), an overhead rig lights the
+  middle of the field where fights happen, and the unlit floor's moonlight is ~30% stronger, so hulls read as
+  silhouettes on lit mid-grey ground. Same fetch count: no frame cost. `build/screenshots/floor2-grid.png` (left
+  before, right after, yard and boulevard).
+- **Baked wear** from each layout: tyre tracks and a faint polish along lanes, oil and grime under wrecks and stacks,
+  scuffed spawn zones, in the flood map's alpha (256 texels, still one fetch, zero per frame). Kept light so lanes
+  don't darken the ground under vehicles. `build/screenshots/wear-grid.png`.
+
+### Live screens: "Live during, ads between" (built 2026-09-17)
+- `LiveFeed` (`game/theme/arena_kit/ads/live_feed.gd`): a broadcast camera renders at 15 Hz into a ring of
+  SubViewports sharing the arena's world (high 30 × 256×512, medium 16 × 192×384; low/web keeps the ads). The newest
+  slot is live on every AdBroadcast channel while a match is fought (the ad layout stops redrawing); after the match,
+  ads. A kill within 45 m of the shot replays the ring at half speed, at most every 9 s; no readback, no rewind.
+- The shot (reworked after the orchestrator's review, which found two of three frames empty): `best_shot` scores every
+  vehicle's 30 m neighbourhood for vehicles, both teams present, and fresh kills/hits, and frames its centroid; far
+  switches are cuts (≤ 1 per 3 s); a frame is recorded only with 3+ vehicles in shot, screens hold the last good frame
+  and fall back to ads after 2 s without one; the portrait camera keeps its width. 18 sampled frames on yard and
+  boulevard all show vehicles: `build/screenshots/shot-feeds.png`.
+- **Between matches:** the lead's twelve approved ads (`ad_copy.md`, as written) plus the live score card; each brand
+  has a procedural motif (`tools/assets/build_ads.py`); headlines break at 13 characters. `build/screenshots/ads-grid.png`.
+- **Live score card names factions, never colours** ("CONDEMNED  2 / LAW  0"; HOME / AWAY when unreadable or the
+  same faction); a test fails if GREEN or RUST reaches a screen.
+- **A test that passed while asserting nothing:** a screen test showed an ad by a stale id; `index_of` returned -1 and
+  `show_ad` clamped it to the first ad, so the assertion passed against the wrong ad. `show_ad` now raises an engine
+  error on an unknown index (mutation-checked: the stale id fails the test). Siblings checked: every other
+  `index_of` in the tests names a real ad.
+- **Cost, measured:** at 13 vehicles (frame not sim-bound), `no_live_feed` × 4 cycles: frame time within noise
+  (−0.3 ms; +0.02 ms after the framing rework). Caveat: perf-scene's GPU timer and draw monitors only see the main viewport, so the feed's own GPU time
+  isn't isolated; the frame-time delta is the honest number. At 60 vehicles: 2 replays in 16 s, still live.
+- Estimated VRAM on high: 30 × (256×512 color + depth) ≈ 30–45 MB.
+
+### What 30 Hz can and can't fix: projections from the 60 Hz baseline (to be replaced by the measurement)
+
+**Model.** The simulation runs as many ticks as the frame took, so a frame is `R / (1 − tick / tick_period)`, where
+`tick` is one tick's script time and `R` everything else a frame does (render submission, GPU wait, `_process`),
+calibrated from the uncapped baseline phases: **R ≈ 10.1 ms at 720p, ≈ 12.5 ms at 1080p** (it predicts 15.0 ms at
+13 vehicles, measured 15.7). 60 fps needs `tick ≤ tick_period × (1 − R / 16.7)`; 30 fps needs `tick ≤ tick_period ×
+(1 − R / 33.3)`. Assumes one 30 Hz tick costs what a 60 Hz tick does (the brains and Match don't do less per tick).
+
+Baseline tick by vehicles (720p run): 13 → 5.5 ms, 23 → 10.8, 27–39 → 14.2, 44 → 16.1, 54 → 22.4, 65 → 34.8.
+
+| Target | Tick must be ≤ at 60 Hz | at 30 Hz | Holds to (30 Hz, projected) | 30 a side (60 vehicles, tick ≈ 22–35 ms) |
+|---|---|---|---|---|
+| 60 fps, 720p (R 10.1) | 6.6 ms | **13.2 ms** | **~25 vehicles** (was 13) | no: the tick must fall another 40–60% |
+| 60 fps, 1080p (R 12.5) | 4.2 ms | **8.4 ms** | **~12 vehicles** (was never) | no |
+| 60 fps, 1080p with every GPU cut below (R ≈ 8.5) | 8.2 ms | 16.4 ms | ~40 vehicles | no |
+| **locked 30 fps, 1080p (R 12.5)** | 20.8 ms | **41.6 ms** | **~60 vehicles: 30 a side** | **yes** |
+| locked 30 fps, 720p (R 10.1) | 23.2 ms | 46.4 ms | 60+ | yes |
+
+**The 1080p GPU floor** (measured, `floor-1080-options`, 60+ vehicles, window 1854×1011): GPU 14.8 ms. Cuts available:
+3D render scale 0.75 (−2.8 ms; softer image), glow off (−1.7 ms; the lead chose to keep it), venue off (−1.35 ms;
+stands, crowd, screens), the lite floor (+1.6 ms: worse, it's lit; the unlit floor is already the cheap one). All of
+them together leave ~9 ms of GPU, still most of a 16.7 ms frame.
+
+**What that means, for the lead:** 30 Hz roughly doubles how many vehicles hold 60 fps at 720p (13 → ~25) but doesn't
+reach 30 a side there, and at 1080p 60 fps stays out of reach this round whatever the tick does, unless the look gives
+up glow, resolution and the venue *and* the tick falls further. **A locked, stable 30 fps at 1080p with 30 a side is
+reachable with 30 Hz alone** and may be the better game than an unstable 60: that's a design decision, not an
+engineering failure.
+
+### The lead's decision: a locked 30 fps at 1080p with 30 a side, plus a 720p 60 fps option
+- `FrameTarget` (`game/theme/fx/frame_target.gd`): **LOCKED_30** (default: `Engine.max_fps` 30, 3D native up to 1080
+  lines) or **PERFORMANCE_60** (60 fps, ~720 lines of 3D, UI full resolution). `--frame-target=30|60`, or the player's
+  saved choice via `FrameTarget.apply(target, "player", true)` (control's menu: requested); the web gets no cap.
+- perf-scene: `p99_ms` and `max_ms` per phase; **`holds_30fps_at_vehicles`** judged on the 99th percentile (a locked rate
+  that drops isn't locked) next to `holds_60fps_at_vehicles`; `--perf-capped` measures with the cap and vsync on.
+- **Before 30 Hz, capped at 30, 1080p:** it never holds (36–64 vehicles: p99 94–144 ms, the 60 Hz spiral).
+  `_agents/streams/references/perf/locked30-capped-60hz-1080.json`. The 60-vehicle line is the one to clear.
+
+### Ready for 30 Hz with physics interpolation (combat's refactor)
+- 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b). **The lead's
+  number, before 30 Hz: 60 fps held at 13 vehicles at 720p, and never at 1080p** (median frame at 10 vehicles 18.8 ms).
+  perf-scene now reports it as `holds_60fps_at_vehicles` (median frame per vehicle count, every smaller count under
+  16.7 ms).
+- `FxWorld.visual_transform()` for everything that follows a body per frame; `WeaponFx.drawn_offset()` keeps muzzle
+  effects on the drawn barrel. Combat confirmed: shells interpolated, `reset_physics_interpolation()` on spawns,
+  `shooter` stays in `weapon_fired`. Re-take perf-scene on their flip commit.
 
 ### Next steps
 1. The lead's answers on glow and team read (M3); then per-team hull paint if the rim isn't enough.

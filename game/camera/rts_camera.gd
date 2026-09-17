@@ -86,6 +86,8 @@ var vision_zoom := 1.0
 var vision_region: VisionRegion = null
 ## How long the camera stays the player's after they move it (seconds; 0 hands back at once).
 var handback_seconds := HANDBACK_SECONDS
+## Control X3 (the lead's dial): how much of the screen the commanded element fills (`--camera-frame`).
+var vision_inset := VISION_FRAME_INSET
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -115,6 +117,9 @@ func _ready() -> void:
 	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
 	camera.fov = FOV_DEG
 	camera.far = 1200.0
+	# The rig moves the camera every rendered frame from where vehicles are drawn (Shown): physics interpolation
+	# (combat's 30 Hz tick) must not also smooth it, or it trails a tick behind its own targets.
+	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	snap()
 
 
@@ -148,7 +153,7 @@ func _process(delta: float) -> void:
 	if zoom_keys != 0.0:
 		zoom_by(zoom_keys * KEY_ZOOM_SPEED * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
-		focus = Vector3(follow_target.global_position.x, 0.0, follow_target.global_position.z)
+		focus = Shown.ground(follow_target)
 	_update_tracking()
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	if _track != Track.NONE:
@@ -495,9 +500,9 @@ func _update_vision_tracking() -> void:
 	var destination: Variant = _vision_state.get("destination")
 	var goal: Array
 	if destination is Vector3:
-		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, VISION_FRAME_INSET)
+		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset)
 	else:
-		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, VISION_FRAME_INSET)
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset)
 	zoom = minf(float(goal[1]), vision_zoom)
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
 

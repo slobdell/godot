@@ -5,8 +5,13 @@
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, skip_vertex_transform, fog_disabled;
 
-// Values above 1 feed the Environment glow.
-uniform float hdr_boost = 3.0;
+// Values above 1 feed the Environment glow. Render (round 5): 3.0 bloomed every shell into a comet that outshone the
+// vehicles at 30 a side (the lead's "I see blue lights", moved from the accents to the effects); now the white-hot core
+// still crosses the glow threshold and the body mostly doesn't.
+uniform float hdr_boost = 1.5;
+// How much of the team color a tracer carries over an incandescent warm white: a hint of who fired, not a neon stripe.
+uniform float team_tint = 0.45;
+uniform vec3 incandescent : source_color = vec3(1.0, 0.72, 0.42);
 
 varying vec3 v_color;
 varying float v_intensity;
@@ -31,6 +36,7 @@ void fragment() {
 	float head = 1.0 - UV.y;
 	float body = across * across * (0.1 + 0.9 * head * head);
 	float core = pow(across, 6.0) * head;
-	vec3 color = mix(v_color, vec3(1.0), core);
+	vec3 tint = mix(incandescent, v_color, team_tint);
+	vec3 color = mix(tint, vec3(1.0), core);
 	ALBEDO = color * body * v_intensity * hdr_boost;
 }

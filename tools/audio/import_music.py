@@ -53,6 +53,42 @@ def bar_aligned(start_s: float, end_s: float, bpm: float, beats_per_bar: int) ->
     return round(first_bar, 3), round(first_bar + bars * bar, 3)
 
 
+def seconds(text: str) -> float:
+    """"1:32" or "92" or "92.5" -> seconds."""
+    if not text:
+        return 0.0
+    if ":" in text:
+        minutes, rest = text.split(":", 1)
+        return int(minutes) * 60 + float(rest)
+    return float(text)
+
+
+def section(start_s: float, end_s: float, cut_from: float, cut_to: float) -> tuple[float, float]:
+    """The part of the audible track to use: FROM/TO when given (a Suno track's intro and outro fade, which is not
+    a loop), else all of it."""
+    lo = max(start_s, cut_from) if cut_from > 0 else start_s
+    hi = min(end_s, cut_to) if cut_to > 0 else end_s
+    if hi - lo < 1.0:
+        raise SystemExit("FROM/TO leave less than a second of audio (%.1f-%.1f of %.1f-%.1f)" % (cut_from, cut_to, start_s, end_s))
+    return lo, hi
+
+
+def retire_placeholders(manifest: dict, kept: str, states: list[str]) -> list[str]:
+    """A real track takes its states away from every placeholder, and a placeholder left with none is dropped.
+    Without this a placeholder stem set (which outranks any single bed) keeps playing over the lead's real lull bed,
+    and a placeholder fight set ties with a real one and rotates back in. Returns what it dropped."""
+    dropped = []
+    for track_id in list(manifest.get("tracks", {})):
+        track = manifest["tracks"][track_id]
+        if track_id == kept or not track.get("placeholder"):
+            continue
+        track["states"] = [state for state in track.get("states", []) if state not in states]
+        if not track["states"]:
+            del manifest["tracks"][track_id]
+            dropped.append(track_id)
+    return dropped
+
+
 def parse_layers(spec: str) -> list[tuple[str, dict]]:
     """"Synth=0 Drums=0.35 Bass=0.5 FX=last_stand" -> [(name, {"from": 0.0}), ..., ("FX", {"states": [...]})]."""
     layers = []
@@ -76,7 +112,7 @@ def find_stem(folder: Path, name: str) -> Path:
 
 
 def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_per_bar: int, out: Path,
-                 rights: str, states: list[str]) -> dict:
+                 rights: str, states: list[str], cut_from: float = 0.0, cut_to: float = 0.0) -> dict:
     """X5 (round 5): one Suno track split into stems becomes a stem set that builds with the fight.
 
     Every stem is cut at the same offset and to the same loop, and they share **one** gain worked out from their sum,
@@ -90,8 +126,8 @@ def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_pe
     mix = sum(x[:count] for x in decoded)
     threshold = 10 ** (SILENCE_DB / 20.0)
     audible = np.nonzero(np.abs(mix) > threshold)[0]
-    start_s, end_s = audible[0] / rate, (audible[-1] + 1) / rate
-    loop_start, loop_end = bar_aligned(0.0, end_s - start_s, bpm, beats_per_bar)
+    start_s, end_s = section(audible[0] / rate, (audible[-1] + 1) / rate, cut_from, cut_to)
+    loop_start, loop_end, seam = 0.0, round(end_s - start_s, 3), 0.0  # replaced below, on the encoded stems
     with tempfile.TemporaryDirectory() as scratch:
         summed = Path(scratch) / "sum.wav"
         segment = mix[int(start_s * rate):int(end_s * rate)]
@@ -111,9 +147,41 @@ def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_pe
                             "-t", "%.3f" % (end_s - start_s), "-af", "volume=%.2fdB" % gain,
                             "-c:a", "libvorbis", "-b:a", BITRATE, str(destination)], check=True)
             stems.append(dict({"file": destination.name}, **when))
+    summed = None
+    for stem in stems:
+        part, rate = check_music.decode(out / stem["file"])
+        summed = np.array(part) if summed is None else summed + np.array(part[:len(summed)])[:len(summed)]
+    loop_start, loop_end, seam = best_loop(list(summed), rate, bpm, beats_per_bar)
+    print("  loop %.3f-%.3f s, seam %.3f (measured on the encoded stems)" % (loop_start, loop_end, seam))
     return {"stems": stems, "bpm": bpm, "beats_per_bar": beats_per_bar, "loop_start_s": loop_start,
             "loop_end_s": loop_end, "intensity": 0.6, "states": states,
             "rights": rights or "UNRECORDED: which Suno plan was this generated under?"}
+
+
+def best_loop(samples: list[float], rate: int, bpm: float, beats_per_bar: int,
+              search_bars: int = 6) -> tuple[float, float, float]:
+    """(loop_start, loop_end, seam): whole bars, chosen for the quietest seam.
+
+    Snapping a hand-picked section to whole bars moves its end, and a loop point is only clean where the music
+    happens to line up (the first garage import measured a seam of 0.46, six times the limit). This tries every
+    whole-bar start in the first `search_bars` bars against every length down to `search_bars` bars shorter, and
+    keeps the quietest join, so nobody has to hunt for it by ear."""
+    bar = beats_per_bar * 60.0 / bpm
+    total_bars = int(len(samples) / rate / bar)
+    if total_bars < 4:
+        return 0.0, round(total_bars * bar, 3), check_music.seam_jump(samples, rate, 0.0, total_bars * bar)
+    best = None
+    for start_bar in range(min(search_bars, total_bars - 4)):
+        for length in range(total_bars - start_bar, max(3, total_bars - start_bar - search_bars), -1):
+            start, end = start_bar * bar, (start_bar + length) * bar
+            seam = check_music.seam_jump(samples, rate, start, end)
+            # Prefer the quietest seam, and among close seams the longest loop.
+            score = seam - 0.002 * length
+            if best is None or score < best[0]:
+                best = (score, start, end, seam)
+    if best is None:  # too short to search: the whole thing, on bars
+        return 0.0, round(total_bars * bar, 3), check_music.seam_jump(samples, rate, 0.0, total_bars * bar)
+    return round(best[1], 3), round(best[2], 3), best[3]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -126,16 +194,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rights", default="", help="the Suno plan it was generated under, and the date")
     parser.add_argument("--layers", default="", help="stems mode: SOURCE is a folder of Suno stems, e.g. "
                         "\"Synth=0 Drums=0.35 Bass=0.5 Guitar=0.65 FX=last_stand\" (quietest first)")
+    parser.add_argument("--states", default="", help="which MatchMood states it plays under, comma-separated "
+                        "(default: the STATE itself for a bed, skirmish,battle for stems)")
+    parser.add_argument("--from", dest="cut_from", default="", help="use the track from here (m:ss or seconds): skip Suno's intro")
+    parser.add_argument("--to", dest="cut_to", default="", help="and up to here: skip its outro and fade")
     args = parser.parse_args(argv)
     if args.layers:
         manifest_path = args.out / "manifest.json"
         manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else \
             {"schema": 1, "target_lufs": TARGET_LUFS, "tracks": {}, "stingers": {}}
         existing = manifest["tracks"].get(args.state, {})
-        states = existing.get("states", ["lull", "skirmish", "battle", "last_stand"])
+        states = [x for x in args.states.split(",") if x] or existing.get("states", ["skirmish", "battle"])
         track = import_stems(args.source, args.state, parse_layers(args.layers), args.bpm, args.beats_per_bar,
-                             args.out, args.rights or existing.get("rights", ""), states)
+                             args.out, args.rights or existing.get("rights", ""), states,
+                             seconds(args.cut_from), seconds(args.cut_to))
         manifest["tracks"][args.state] = track
+        for gone in retire_placeholders(manifest, args.state, states):
+            print("retired placeholder track %s" % gone)
         manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
         print("imported %d stems as %s: loop %.3f-%.3f s; now run: make music-check" % (
             len(track["stems"]), args.state, track["loop_start_s"], track["loop_end_s"]))
@@ -144,8 +219,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("%s is not there" % args.source)
     args.out.mkdir(parents=True, exist_ok=True)
 
-    start_s, end_s = trimmed_length(args.source)
-    loop_start, loop_end = bar_aligned(0.0, end_s - start_s, args.bpm, args.beats_per_bar)
+    start_s, end_s = section(*trimmed_length(args.source), seconds(args.cut_from), seconds(args.cut_to))
     destination = args.out / ("bed_%s.ogg" % args.state)
     with tempfile.TemporaryDirectory() as scratch:
         trimmed = Path(scratch) / "trimmed.wav"
@@ -158,6 +232,11 @@ def main(argv: list[str] | None = None) -> int:
                         % (TARGET_LUFS - lufs, limit),
                         "-c:a", "libvorbis", "-b:a", BITRATE, str(destination)], check=True)
     final_lufs, peak = check_music.measure_lufs_peak(destination)
+    # The loop points are searched on the *encoded* file: normalising, limiting and the Vorbis encoder all move the
+    # waveform a little, and a seam measured before them disagreed with make music-check afterwards (0.098 against
+    # 0.347 on the first real import).
+    encoded, rate = check_music.decode(destination)
+    loop_start, loop_end, seam = best_loop(encoded, rate, args.bpm, args.beats_per_bar)
 
     manifest_path = args.out / "manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else \
@@ -167,15 +246,17 @@ def main(argv: list[str] | None = None) -> int:
         "file": destination.name, "bpm": args.bpm, "beats_per_bar": args.beats_per_bar,
         "loop_start_s": loop_start, "loop_end_s": loop_end,
         "intensity": existing.get("intensity", DEFAULT_INTENSITY.get(args.state, 0.5)),
-        "states": existing.get("states", [args.state]),
+        "states": [x for x in args.states.split(",") if x] or existing.get("states", [args.state]),
         "lufs": round(final_lufs, 1), "peak_db": round(peak, 1),
         "rights": args.rights or existing.get("rights", "UNRECORDED: which Suno plan was this generated under?"),
     }
+    for gone in retire_placeholders(manifest, args.state, manifest["tracks"][args.state]["states"]):
+        print("retired placeholder track %s" % gone)
     manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
     print("imported %s -> %s" % (args.source.name, destination))
-    print("  %.1f LUFS, peak %.1f dB, loop %.3f-%.3f s (%d bars at %g bpm), %.0f KB"
+    print("  %.1f LUFS, peak %.1f dB, loop %.3f-%.3f s (%d bars at %g bpm), seam %.3f, %.0f KB"
           % (final_lufs, peak, loop_start, loop_end,
-             round((loop_end - loop_start) / (args.beats_per_bar * 60.0 / args.bpm)), args.bpm,
+             round((loop_end - loop_start) / (args.beats_per_bar * 60.0 / args.bpm)), args.bpm, seam,
              destination.stat().st_size / 1024))
     if not args.rights and "UNRECORDED" in manifest["tracks"][args.state]["rights"]:
         print("  NOTE: pass --rights \"Suno <plan>, <date>\" before this ships (PROMPTS.md, Rights)")

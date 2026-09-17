@@ -133,7 +133,9 @@ func _rank(vehicles: Array, camera_position: Vector3) -> void:
 
 
 func _watch(vehicle: Node3D, emits: bool, now: float, delta: float) -> void:
-	var position := vehicle.global_position
+	# Where the vehicle is drawn, so speed and acceleration are smooth under physics interpolation (30 Hz simulation).
+	var drawn := FxWorld.visual_transform(vehicle)
+	var position := drawn.origin
 	var state: Dictionary = _state.get(vehicle, {})
 	if state.is_empty():
 		_state[vehicle] = {"position": position, "speed": 0.0, "accel": 0.0, "travelled": 0.0, "skid_travelled": 0.0,
@@ -152,8 +154,8 @@ func _watch(vehicle: Node3D, emits: bool, now: float, delta: float) -> void:
 	if moved.length() > MAX_SPEED * maxf(delta, 1.0 / 30.0):
 		return  # a respawn, a teleport, or network smoothing catching up: not driving
 	var velocity := moved / delta
-	var forward := -vehicle.global_basis.z
-	var right := vehicle.global_basis.x
+	var forward := -drawn.basis.z
+	var right := drawn.basis.x
 	var forward_speed := velocity.dot(forward)
 	var slide := absf(velocity.dot(right))
 	var speed := velocity.length()
@@ -180,7 +182,7 @@ func _raise_dust(vehicle: Node3D, state: Dictionary, moved: float, speed: float,
 		return
 	state["travelled"] = 0.0
 	var size := _hull_size(_unit_id(vehicle))
-	var rear := vehicle.global_position - forward * size.z * 0.5
+	var rear := FxWorld.visual_transform(vehicle).origin - forward * size.z * 0.5
 	var sides := [0.0] if low else [-0.4, 0.4]
 	for side: float in sides:
 		var at := rear + right * size.x * side + Vector3.UP * 0.4
@@ -192,7 +194,7 @@ func _raise_dust(vehicle: Node3D, state: Dictionary, moved: float, speed: float,
 
 func _lay_marks(vehicle: Node3D, state: Dictionary, moved: float, forward: Vector3, right: Vector3, now: float) -> void:
 	var size := _hull_size(_unit_id(vehicle))
-	var rear := vehicle.global_position - forward * size.z * 0.38
+	var rear := FxWorld.visual_transform(vehicle).origin - forward * size.z * 0.38
 	var wheels := [rear - right * size.x * 0.42, rear + right * size.x * 0.42]
 	var last: Array = state["wheels"]
 	state["skid_travelled"] = float(state["skid_travelled"]) + moved
