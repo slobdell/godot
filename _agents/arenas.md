@@ -91,6 +91,20 @@ Dynamic measures come from seeded match series (the match runner with `--arena=`
 | **Time hidden** | Share of unit-seconds not visible to any enemy | Higher in dense arenas |
 | **Match shape** | Duration, first contact time, share decided by the control point | Different per arena, and never a stalemate by default |
 
+## Proposing layouts (stretch: `make arena-candidates`)
+
+`tools/arena_generator.py` hill-climbs random symmetric kit layouts toward a character's measured targets, inside hard
+constraints: pieces in the field and 6 m clear of spawns, no overlaps, the control ring drivable, bases, centre and
+both flank strips in one drivable region. Candidates land in `build/arena-candidates/` with plots and an `index.html`;
+**nothing ships until a human picks one**, copies it into `tools/make_arenas.py` with a name and a fight, and proves it
+with `make arena-series`.
+
+Targets are view distance (mean, share ≥ 120 m) plus **structure**: sight-blocking pieces per merged cover group.
+The structure term exists because view distance alone was met by confetti: the first yard candidate hit 45 m and 6%
+exactly with 84 scattered boxes and no lanes at all. With the term and an "extend a container end to end" move, the
+candidates grow walls and L-shaped corners. They read as organic yards, not the hand-built yard's staggered lanes; the
+generator proposes, the designer decides.
+
 ## Shipped arenas
 
 Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (yard, boulevard, pit,

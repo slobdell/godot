@@ -33,3 +33,8 @@ arena-shots: import ## Every arena in pictures: the match runner's whole-arena v
 			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/arena-$$arena-skirmish.png 2>&1 | grep -E "ERROR|SCRIPT" || true; \
 	done
 	ls $(BUILD_DIR)/screenshots/arena-*.png
+
+.PHONY: arena-candidates
+arena-candidates: ## Stretch: propose generated layouts for a human to approve (CHARACTER=yard|boneyard|boulevard|open COUNT=3 STEPS=400) -> build/arena-candidates/index.html (never shipped automatically)
+	$(PYTHON) tools/arena_generator.py --character $(or $(CHARACTER),yard) --count $(or $(COUNT),3) --steps $(or $(STEPS),400) \
+		--out $(BUILD_DIR)/arena-candidates 2>&1 | grep ARENA_CANDIDATE
