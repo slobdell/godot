@@ -82,6 +82,10 @@ var streams := {}
 var takes := {}
 ## Sounds started since load (tests and the bench).
 var played := 0
+## key -> how many synthesised takes loaded (make_sfx.gd), whether or not layered ones replaced them.
+var synth_takes := {}
+## Sounds playing ElevenLabs-layered takes (SfxLayers, round 5 X1) rather than the synthesised ones.
+var layered := {}
 
 var _world: Array[AudioStreamPlayer3D] = []
 var _ui: Array[AudioStreamPlayer] = []
@@ -105,10 +109,13 @@ func _init() -> void:
 			if extra != null:
 				pool.append(extra)
 		takes[key] = pool
+		synth_takes[key] = pool.size()
+	if not LaunchFlags.from_environment().has("sfx-synth"):
+		_use_layered_takes()
 	var flame := streams.get("flame_loop") as AudioStreamWAV
 	if flame != null:
 		flame.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		flame.loop_end = flame.data.size() / 2
+		flame.loop_end = loop_frames(flame)
 	ensure_world_bus()
 	for i in WORLD_VOICES:
 		var voice := AudioStreamPlayer3D.new()
@@ -125,6 +132,33 @@ func _init() -> void:
 		voice.name = "UiVoice%d" % i
 		add_child(voice)
 		_ui.append(voice)
+
+
+## Round 5 (X1): sounds with ElevenLabs source material layered under their transients (tools/audio/sfx_layer.py)
+## play those takes instead. A loop's layered take is a WAV, so it also replaces `streams[key]`, which the engine,
+## crowd, flame and gunfire code duplicate and set loop points on; a one-shot's is Ogg and only changes the pool.
+## `--sfx-synth` keeps the synthesised set, for A/B listening.
+func _use_layered_takes() -> void:
+	for key in SfxLayers.TAKES:
+		if not streams.has(key):
+			continue
+		var pool: Array[AudioStream] = []
+		for path in SfxLayers.TAKES[key]:
+			var stream := load(String(path)) as AudioStream
+			if stream != null:
+				pool.append(stream)
+		if pool.is_empty():
+			continue
+		takes[key] = pool
+		layered[key] = pool.size()
+		if pool[0] is AudioStreamWAV:
+			streams[key] = pool[0]
+
+
+## A WAV's length in frames, whatever its import compression. `data.size() / 2` is only right for 16-bit PCM: on a
+## QOA import it is a fifth of the sound, which is how every loop came to repeat its first 0.2 s (round 5).
+static func loop_frames(stream: AudioStreamWAV) -> int:
+	return int(round(stream.get_length() * stream.mix_rate))
 
 
 ## Adds the World bus (and its limiter) if it isn't there. Static so anything that wants to route to it can.

@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: audio (_agents/streams/audio.md). Included by the root Makefile.
 
-.PHONY: music-placeholders music-check music-import music-smoke audio-check
+.PHONY: music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer
 
 MUSIC_DIR ?= assets/music
 
@@ -41,5 +41,25 @@ music-smoke: import ## A real headless match with the music on: the beds change,
 	echo "music-smoke passed: $$beds bed changes across $$distinct beds, hash $$actual$${expected:+ (matches the $$key baseline)}"; \
 	grep '^MUSIC_TRACK' $(BUILD_DIR)/audio/music-smoke.log | sed 's/^/  /'
 
-audio-check: music-check music-smoke ## Everything the audio stream verifies headless beyond the announcer's own checks
+## Round 5 X1-X2: sound effects from ElevenLabs, layered under the synthesised transients.
+## Lead gate 1 (approved round 5): pilot first (PILOT=1), the lead listens, then the batch. Every real run is ledgered.
+SFX_VENV_PYTHON ?= $(if $(wildcard $(HOME)/.venvs/tank-squad-audio/bin/python),$(HOME)/.venvs/tank-squad-audio/bin/python,$(PYTHON))
+
+sfx-generate: ## ElevenLabs sound-effect masters: DRY_RUN by default; APPROVED=1 spends credits [PILOT=1] [ONLY=tank_boom,mg_loop]
+	@if [ "$(APPROVED)" = "1" ]; then \
+		$(SFX_VENV_PYTHON) -c "import elevenlabs" 2>/dev/null || { echo "pip install elevenlabs==2.24.0 (tools/announcer/requirements.txt), or a venv at ~/.venvs/tank-squad-audio"; exit 1; }; \
+		$(SFX_VENV_PYTHON) tools/audio/sfx_generate.py --approved $(if $(PILOT),--pilot) $(if $(ONLY),--only $(ONLY)); \
+	else \
+		$(PYTHON) tools/audio/sfx_generate.py --dry-run $(if $(PILOT),--pilot) $(if $(ONLY),--only $(ONLY)); \
+		echo; echo "(dry run: nothing was sent; APPROVED=1 spends credits)"; \
+	fi
+
+sfx-layer: ## Masters -> the shipped takes in assets/audio/layered + game/theme/audio/sfx_layers.gd (free; needs the masters) [ONLY=...]
+	$(PYTHON) tools/audio/sfx_layer.py $(if $(ONLY),--only $(ONLY)) --report $(BUILD_DIR)/audio/sfx_layer.json
+	$(GODOT) --headless --path . --import >/dev/null 2>&1 || true
+
+audio-pytest: ## The audio tools' Python tests (music contract, the sound-effect pipeline against a mock client)
+	$(PYTHON) -m unittest discover -s tools/audio -p 'test_*.py'
+
+audio-check: audio-pytest music-check music-smoke ## Everything the audio stream verifies headless beyond the announcer's own checks
 	@echo "audio-check passed"

@@ -42,7 +42,7 @@ func use_streams(streams: Dictionary) -> void:
 	if loop == null:
 		return
 	loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	loop.loop_end = loop.data.size() / 2
+	loop.loop_end = SfxSystem.loop_frames(loop)
 	for voice in _voices:
 		voice.stream = loop
 
