@@ -147,6 +147,16 @@ the PA reading ad copy are written up under *Next steps*.
 - **Arena's four maps in the booth (bcff889, arena CP2's request).** `yard`, `boulevard`, `pit` and `boneyard` speak as
   the Container Yard, the Boulevard, the Pit and the Boneyard. Only the 18 `{arena}` lines were recorded for them: 72
   clips, speech-to-text flagged none, 122,834 → 116,573 (the balance may still settle a little lower).
+- **X6, the first whole-match recordings (with the pilot guns; the full pass waits for the batch).**
+  `make remote T="audio-pass PASS_SECONDS=90"`, CPU against CPU at about 30 a side, the gangs against the Law, booth
+  voiced, music on. The first recording found the mix clipping: **true peak +0.1 dBFS, 485 clipped samples**, all
+  during the booth's lines, which sat 15–20 dB over the battle with the music summing underneath into an unlimited
+  Master. Master now has a hard limiter at -1 dB and the booth sits 4 dB lower. Second recording: **-20.6 LUFS,
+  true peak -4.7 dBFS, 0 clipped samples**, loudness range 22.4 → 16.9 LU. In the spectrogram the booth's lines now sit
+  level with the heavy hits, the pre-contact lull is a quiet bed, and the fight builds from about 35 s. What the log
+  says was heard: "The Foundry! Wide open, nowhere to hide", the PA's control-point welcome, and the Veteran on "the
+  Wreckers" by name; the music changed 3 times. What I can't tell from numbers is whether it *sounds* good: that is
+  the lead's (build/audio/pass.mp3 on builder0 runs).
 - **Bug from control (2b28709): the booth called every side the Condemned outside the match runner.** The event
   adapter gave both teams one default faction. Each side's faction is now read from the vehicles the match fielded.
   Test, mutation-checked. The same class of fix as `--arena=random` (50bde77, the booth names the arena that was
