@@ -105,6 +105,26 @@ exactly with 84 scattered boxes and no lanes at all. With the term and an "exten
 candidates grow walls and L-shaped corners. They read as organic yards, not the hand-built yard's staggered lanes; the
 generator proposes, the designer decides.
 
+## Destructible cover (stretch: written up, not built)
+
+*A container stack that collapses* would make cover a resource, not a fixture. What it needs, and why arena didn't
+build it alone this round:
+- **Damage to props is combat's** (`Match` owns every hit). Props need hit points by kind (a container stack: its
+  levels, one lost per heavy hit; barricades and wrecks: indestructible), and a `prop_destroyed(event)` K2-style signal.
+- **Collision changes mid-match.** The arena would own swapping a 3-high stack's box for a 1-high one (and a rubble
+  footprint that still blocks hulls). Deterministic if it happens on a tick from sim data only.
+- **Navigation is the hard part.** The navmesh is baked once as half + 180° mirror (fairness). Rebaking after one
+  side's stack falls breaks the mirror, and rebakes take frames (trip-up 57). Workable designs: (a) collapse only
+  *lowers* a stack, and stacks 2+ high never change drivable space, since a 1-high container still blocks hulls, so
+  **no rebake at all**, only sight lines change; (b) navigation obstacles (NavigationObstacle3D) carved at runtime.
+  (a) is the recommended first step: it is pure sight and fire, the part that matters tactically.
+- **AI:** `CoverMap` is built once per arena and memoizes line of sight; it needs an invalidation hook
+  (`CoverMap.feature_changed(index)`), which is ai's.
+- **Art:** render's container MultiMesh already draws per level, so removing a level is an instance removal plus an
+  effect.
+Proposed split for a later round: combat (prop damage and the event), arena (the collision swap and the rule that
+collapse never changes drivable space), ai (CoverMap invalidation), render (the collapse effect).
+
 ## Shipped arenas
 
 Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (yard, boulevard, pit,
