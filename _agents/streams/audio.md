@@ -269,6 +269,12 @@ moved later.
 - **Watch it:** `make cinematic`.
 - **Numbers:** `make audio-bench` (per-frame cost), `make music-check`, `make sfx-generate` (dry run, the batch's cost).
 
+### If you are picking audio up, read this section and the two after it
+They are the whole job: **never skip the whole-match pass** (below, with the engine gotcha), **how to hear and measure
+each part** (the command for every layer), and **the spare music** (what exists and what it might suit). Everything
+else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
+`assets/audio/elevenlabs/sources.json` is every sound-effect recipe with the prompt that made it.
+
 ### Never skip the whole-match pass
 **Everything else was green both times the whole-match recording found a shipped bug.** The booth's lines clipping at
 +0.1 dBFS, and the fight music stopping after 8 seconds in every match (so the whole mix had been balanced against
@@ -304,6 +310,24 @@ Every command runs from the repo root. `GODOT=.tools/godot-4.7.2-stable/Godot_v4
 change shape this round): the music director's layer thresholds are the stems' `from` values in
 `assets/music/manifest.json`, and `MatchMood`'s heat and hysteresis decide when the states move. Run `audio-pass` and
 read `MUSIC_LAYERS` against the booth's lines before retuning either.
+
+### The lead's spare music (14 of his 23 tracks, in `assets/incoming/music/`, git-ignored and backed up)
+Sorted by `tools/audio/survey_tracks.py`; "seam" is what a loop over the steadiest window would cost, so the low ones
+import cleanly today. Nothing here is second-rate — his set simply has more combat material than eight beds need.
+
+| Track | BPM | Character | What it might suit |
+|---|---|---|---|
+| Neon Wasteland Blues | 71 | the darkest of the blues takes, 86% low end | a second garage bed, or a quiet results screen |
+| Wasteland Blues | 82 | the brightest blues take | the garage, if he tires of the one in |
+| Machine Combat | 106 | brightest of the combat group, seam 0.00 | a fourth fight set; the cleanest import of the spares |
+| Post-Apocalyptic Convoy | 110 | mid, sparse, seam 0.01 | a `lull` alternative with more motion than Subterranean Anvil |
+| Mechanical Predator, Mechanical Predator (1) | 110, 126 | two takes of one prompt | per-faction fight music (the Syndicate reads as the colder one) |
+| Apocalyptic Machine Hymn, Factory Silence, Ragnarok's Engine | 112 | the same tempo as the Hydraulic fight set | per-arena fight music: the same grid, so they can share bar lines |
+| Warzone Brass | 112 | brightest centroid of the set (3229) | a brass-led fight set, if the booth needs more room it isn't taking |
+| Mechanical Momentum | 120 | seam 0.01, steady | a fourth fight set at Ritual of Iron's tempo |
+| Neon Outrun | 126 | least low end (45%), most synthwave | the title screen or the garage, where there is no battle to sit under |
+| Predatory Hunt | 126 | driving, seam 0.18 | a `last_stand` alternative |
+| Rusted Steel Sky | 178 (89 doubled) | fastest, thin low end | a `last_stand` alternative with more panic |
 
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
