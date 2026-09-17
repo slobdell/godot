@@ -266,9 +266,9 @@ of the tick. Flip the constant when ai reports a variant that wins at scale.
 - **ai:** turn brains to `order["facing"]` on arrival and to the station heading when idle (K1 facing, on main); then
   `element_plan.gd`'s halt can issue facing instead of driving crews along their sectors. Relayed by the orchestrator.
 - **ai:** tell control when a doctrine variant beats brains at skirmish scale; the default flips in one line.
-- **Carried to round 6 (ai's stream closed, now control's):** `tests/ai_scenarios/scenario_orders.gd` still asserts
-  `RESPONSE_TICKS := 3`; K1 is 100 ms (`Orders.RESPONSE_MS`, `Orders.response_ticks()`). Passes today at 60 Hz (3 ticks
-  = 50 ms is stricter); must switch to `Orders.response_ticks()` with the 30 Hz tick.
+- **Done (ai's stream closed, so control took it):** `tests/ai_scenarios/scenario_orders.gd` asserts K1's 100 ms through
+  `Orders.response_ticks()` instead of a hard-coded 3 ticks, so combat's 30 Hz flip can't quietly turn a stricter check
+  into a wrong one.
 - **combat:** `element_awareness.gd`'s 90-tick and `squad_chip.gd`'s 180-tick constants convert to seconds in your 30 Hz
   branch (agreed, to avoid a conflict); list them in merge notes.
 - **audio:** `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format; audio switches once
@@ -278,11 +278,10 @@ of the tick. Flip the constant when ai reports a variant that wins at scale.
   line only, so a match started from a menu (flags in `Main.next_flags`) can't reach them. `GameLauncher` works round it
   (resolves with `Arena.resolve_name`, sets `layout_name`), so nothing is wrong for a player today; reading
   `Main.next_flags` when set would remove the workaround.
-- **Next, after render's `FrameTarget` reaches main (orchestrator's request):** a player-facing QUALITY 30 /
-  PERFORMANCE 60 selector. `FrameTarget` exists only on stream/render (15e048d8), so it can't be built on this branch
-  yet. Plan: a second button beside the FX button in `hud_skin.gd` (where the player already changes how the game
-  runs), showing `FrameTarget.label()` and calling `FrameTarget.apply(other, "player", true)`, plus the same on the
-  title screen so it can be set before a match.
+- **Done after render's `FrameTarget` reached main:** the frame-rate selector. A button beside the FX button
+  ("QUALITY 30" / "PERFORMANCE 60", `hud_skin.gd`) and a "FRAME RATE: …" row under the title menu, both switching live
+  through `FrameTarget.apply(other, "player", true)` and saving the choice; each picks up a change made by the other.
+  Looked at on the title and in the planning frame.
 
 ### Known issues
 

@@ -23,6 +23,7 @@ var title := GlitchTitle.new()
 var subtitle: Label
 var conductors := Conductors.new()
 var menu := VBoxContainer.new()
+var frame_button := Button.new()
 var hint: Label
 var _frames: Array[CyberFrame] = []
 var _time := 0.0
@@ -86,6 +87,13 @@ func _build_ui() -> void:
 		button.focus_mode = Control.FOCUS_NONE
 		button.pressed.connect(start.bind(entry[1]))
 		menu.add_child(button)
+	# Round 5: the frame-rate choice (render's FrameTarget), set before a match as well as from the HUD.
+	frame_button.name = "FrameButton"
+	frame_button.focus_mode = Control.FOCUS_NONE
+	frame_button.tooltip_text = "QUALITY 30: a steady 30 fps at full resolution. PERFORMANCE 60: 60 fps at a lower 3D resolution."
+	frame_button.pressed.connect(toggle_frame_target)
+	menu.add_child(frame_button)
+	_refresh_frame_button()
 	hint = CyberStyle.label("", 18.0, Color(CyberStyle.TEXT, 0.6))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ui.add_child(hint)
@@ -109,13 +117,13 @@ func _layout() -> void:
 	var top := subtitle.position.y + 80.0 * s
 	var bottom := screen.y - 70.0 * s - 30.0 * s  # footer + the frame's padding
 	var gap := 14.0 * s
-	var button_height := clampf((bottom - top - (MENU.size() - 1) * gap) / MENU.size(), 48.0 * s, 64.0 * s)
+	var button_height := clampf((bottom - top - (_rows() - 1) * gap) / _rows(), 48.0 * s, 64.0 * s)
 	var button_size := Vector2(420.0 * s, button_height)
 	menu.add_theme_constant_override("separation", roundi(gap))
 	for button in menu.get_children():
 		(button as Button).custom_minimum_size = button_size
 		(button as Button).add_theme_font_size_override("font_size", roundi(button_height * 0.44))
-	var menu_height := MENU.size() * button_size.y + (MENU.size() - 1) * gap
+	var menu_height := _rows() * button_size.y + (_rows() - 1) * gap
 	menu.position = Vector2((screen.x - button_size.x) / 2.0, clampf(screen.y * 0.5, top, bottom - menu_height))
 	menu.size = Vector2(button_size.x, menu_height)
 	var frame := _frames[0]
@@ -133,6 +141,25 @@ func _layout() -> void:
 	conductors.add_bus(Vector2(right, mid_y), Vector2.RIGHT, Vector2(screen.x * 0.88, screen.y), Vector2.DOWN, 3)
 	conductors.add_bus(Vector2(left, frame.position.y + 20.0 * s), Vector2.LEFT, Vector2(screen.x * 0.2, subtitle.position.y + 20.0 * s), Vector2.UP, 2)
 	conductors.add_bus(Vector2(right, frame.position.y + 20.0 * s), Vector2.RIGHT, Vector2(screen.x * 0.8, subtitle.position.y + 20.0 * s), Vector2.UP, 2)
+
+
+## Menu rows: the modes plus the frame-rate button.
+func _rows() -> int:
+	return MENU.size() + 1
+
+
+func toggle_frame_target() -> void:
+	var next := FrameTarget.Target.PERFORMANCE_60 if FrameTarget.target() == FrameTarget.Target.LOCKED_30 \
+			else FrameTarget.Target.LOCKED_30
+	FrameTarget.apply(next, "player", true)
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui("ui_blip")
+	_refresh_frame_button()
+
+
+func _refresh_frame_button() -> void:
+	frame_button.text = "FRAME RATE: %s" % FrameTarget.label()
 
 
 ## Start a mode: reload the page with its query on the web; on desktop, switch to the game scene in this process with
