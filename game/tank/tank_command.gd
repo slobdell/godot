@@ -33,6 +33,15 @@ func sanitized() -> TankCommand:
 			aim_point if aim_point.is_finite() else Vector3.ZERO, fire)
 
 
+## sanitized(), written into `target` instead of a new object (CP1: the tank's own per-tick copy, no allocation).
+func sanitize_into(target: TankCommand) -> TankCommand:
+	target.throttle = _finite_unit(throttle)
+	target.turn = _finite_unit(turn)
+	target.aim_point = aim_point if aim_point.is_finite() else Vector3.ZERO
+	target.fire = fire
+	return target
+
+
 func is_finite_command() -> bool:
 	return is_finite(throttle) and is_finite(turn) and aim_point.is_finite()
 
