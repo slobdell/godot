@@ -101,7 +101,7 @@ moved later.
 **Answered 2026-09-17:** "Run the batch", "All of them work" (the ad copy), "Record them" (the PA lines), and screens
 "live during, ads between". All three runs are done (below).
 
-0. **The whole-match listen** with the new guns: <https://claude.ai/artifact/1tgMvTnnNHpvxczSi9KDpm>. A real match on
+0. **The whole-match listen**, now with his music: <https://claude.ai/artifact/1tgMvTnnNHpvxczSi9KDpm>. A real match on
    the Boulevard recorded off the game (battle excerpt, opening, the full 90 s) plus the before/after firefight, and
    three questions: do the guns sound dangerous; does the announcer sit above the battle (the spectrogram says his
    line sits inside it, so that's flagged); does the music follow the fight and stay under it. Tuning is levels only.
@@ -203,6 +203,25 @@ moved later.
   second, which was a cut from pad to full band. On a bar line the director now moves one layer, so a battle
   arrives over three bars (6 s at 120 bpm). `MUSIC_LAYERS` logs `pos=`/`bar=` because `t=` is the game clock, not the
   music's (a headless match read t=14.5 with the music at 2.0 s).
+- **The lead's music is in (190dea27 and the drop of the placeholder stems).** He generated 23 Suno tracks
+  (`assets/incoming/music/`, git-ignored, backed up). Sorted with `tools/audio/survey_tracks.py` (tempo, tone, and the
+  steadiest window in each), **9 are used**: garage and victory from the two cleanest *Wasteland Blues* takes,
+  pre_match from *Anvil of Doom* (his 60 BPM intro), lull from *Subterranean Anvil*, last_stand from *Anvil Protocol*,
+  defeat from *Mechanical Dread*; the fight is three stem sets at different tempos so the rotation reads as variety —
+  *Hydraulic Wasteland* (112), *Ritual of Iron* (120), *Rust & Hydraulic Pressure* (129), each split with demucs on
+  builder0 (their vocals stems are 13–18 dB down: bleed, as expected from instrumental tracks). **14 spares** remain
+  for per-faction or per-arena music: Machine Combat, Warzone Brass, Factory Silence, Ragnarok's Engine, Mechanical
+  Predator ×2, Apocalyptic Machine Hymn, Mechanical Momentum, Predatory Hunt, Neon Outrun, Post-Apocalyptic Convoy,
+  Rusted Steel Sky, Wasteland Blues, Neon Wasteland Blues. Nothing he sent was unusable.
+  **Two fixes the real tracks forced:** the importer searches whole-bar loop points for the quietest seam instead of
+  taking the first (the first garage import seamed at 0.46, six times the limit), and it searches on the **encoded**
+  file, because normalising, limiting and Vorbis move the waveform enough that a seam measured before them read 0.098
+  where `music-check` measured 0.347. Everything now seams under 0.02.
+  **Measured in a real match with his music:** -19.8 LUFS, true peak -3.7 dBFS, 0 clipped, the lull track handing over
+  to the fight track at contact and the layers building; a second match drew a different fight track.
+  **The one gap, for him:** his set has no slow, hollow defeat track (he made three kinds: garage calm, the 60 BPM
+  intro, and combat). Defeat uses *Mechanical Dread*, which grinds rather than mourns. The *Acid Rain Wasteland*
+  prompt in PROMPTS.md fills it in minutes if he wants one.
 - **The lead heard the whole match (2026-09-17): "the new sound effects sound awesome"**, and the music "is not matching
   the vibe I wanted". He supplied his own proven Suno prompts. `assets/music/PROMPTS.md` is rewritten around them
   (verbatim, checked line by line), one per bed, with exact steps (01b9fae4). Decisions: the fight (skirmish into
@@ -289,9 +308,9 @@ read `MUSIC_LAYERS` against the booth's lines before retuning either.
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
-  **Final: `make remote T=check` exited 0 against afdec9cf** (everything in this report): 946 tests, sim hash
-  `32f665bc60306e8f` matching the baseline main carries after Jolt and the 30 Hz work, announcer-variance,
-  announcer-record-smoke, music-smoke and audio-check all passed.
+  **Final: `make remote T=check` exited 0 against 7cadd8d7** (everything in this report, the lead's music included):
+  946 tests, sim hash `32f665bc60306e8f` matching main's baseline, announcer-variance, announcer-record-smoke,
+  music-smoke and audio-check all passed. Later commits touch only this brief.
 - Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
   initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
   builder0 has no numpy or scipy (`make audio-deps`, 181f6ca).
