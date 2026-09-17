@@ -260,3 +260,9 @@ The kickoff prompt is one line; this section is the rest.
     orchestrator told arena to check whether Jolt made container stacks settle or drift; they are StaticBody3D boxes
     drawn by a MultiMesh and cannot move under any engine. Half a minute of reading would have produced the right
     request instead (vehicle contact against them). A confident wrong instruction costs a worker more than silence.
+25. **A per-behaviour outcome ratio measures selection, not causation.** Round 5: `far_ambush` showed a 0.16-0.26
+    exchange over 44 deaths, and the orchestrator told ai to cut it. Removing it from the army changed nothing
+    (55-65, and 20-20 head to head against standard doctrine) — the drill was being *selected* in situations that
+    were already lost. `break_contact`, cut on the same kind of evidence, really was the problem: without it the army
+    went 91-29 and won on every arena. The difference was only visible because ai measured the army **with and
+    without** rather than reading the per-drill column. Attribute a cost to a behaviour only by removing it.
