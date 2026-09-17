@@ -26,6 +26,14 @@ arena and audio are green and queued behind a re-verify on Jolt; control, combat
 - **In flight: the 30 Hz simulation tick**, owned by combat on `stream/combat`
   ([`sim_tick_rate.md`](_agents/sim_tick_rate.md)). It does not merge to main until ai's queued doctrine ladders
   finish, or the one clean comparison we have is destroyed.
+- **Round 6's leading candidate, found by three streams independently: the control point funnels the whole fight.**
+  arena measured it as the strongest effect on any map (flanking routes used 4-5% of unit-time on dense layouts
+  against 14% on foundry); ai measured doctrine winning at squad scale and losing at 30 a side *with a control point*;
+  combat measured median hit range at 39-43 m on every map. The shared explanation is that a single central objective
+  overrides every tactical choice, so terrain, formations and drills have nothing to decide. Candidate fixes, in the
+  order they were proposed: objectives that pull play off the centre line (arena), an army-level layer choosing which
+  elements take the objective and which shape the fight around it (ai), and engagement ranges that make closing a
+  decision (combat X1).
 - **Doctrine is NOT the skirmish default.** It wins 52-28 in five-vehicle mirrors with no control point and loses
   32-16 in the setup players actually get (faction armies, 30 a side, control point on). The flip was approved and
   withdrawn the same day; ai is hunting a variant that wins at scale. `break_contact` is the drill to cut (91-29
