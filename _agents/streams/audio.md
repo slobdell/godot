@@ -67,4 +67,42 @@ owns where subtitles appear).
 
 ## Status
 
-- 2026-09-17: brief written for round 5. Nothing started.
+_Updated 2026-09-17 by the audio worker._
+
+### Plan (in order)
+1. **X1 guns:** pilot generation tool, layering/mastering tool, SfxSystem wiring, A/B page → **lead gate** → batch.
+2. **X3 colour names:** audit rule first (fails on today's library), fix the text, re-record only changed lines.
+3. **X2 impacts and death:** recipes are written and ride the same batch as X1 (one gate, not two).
+4. **X5 music stems** (no dependency), **X4 the world underneath** (voice caps and culling measured against M1),
+   **X6 the full pass**, then the stretch items.
+
+### Waiting on the lead
+1. **The gun pilot** (lead gate 1): <https://claude.ai/artifact/E1hxqREgGsPMB74oUPkC4N>. A scripted ten-second firefight,
+   before and after, and each pilot sound raw and as it ships. Reply: run the batch / run it with changes / not yet.
+
+### Done so far
+- **X1 pilot (5281440).** `make sfx-generate` (dry run by default; `APPROVED=1 PILOT=1`) turns
+  `assets/audio/elevenlabs/sources.json` into git-ignored MP3 masters, and `make sfx-layer` turns those into the takes
+  that ship (`assets/audio/layered/`, manifest `game/theme/audio/sfx_layers.gd`). `SfxSystem` plays layered takes where
+  they exist; `--sfx-synth` gives the old set back for A/B. Pilot: tank cannon, 25 mm round, MG stream, shell on armour,
+  10 takes, **230 credits** (about 10 credits per generated second; the balance updates minutes late, so the ledger
+  now waits for it).
+- **What "listening" meant here, honestly:** I can't hear. I read spectra, envelopes and levels, and the lead's ears
+  are the check that counts (the gate). What the numbers showed and what I changed because of them: the generated
+  cannons put **97% of their energy under 200 Hz**, which laptop and phone speakers don't play, so the layer step
+  saturates that band into 150–1500 Hz harmonics. Matching loudness unweighted made the new cannon quieter on a small
+  speaker than the old one, so loudness is measured above 120 Hz. The raw boom fell 30 dB in 0.4 s, so the tail is
+  lifted by up to 14 dB. Raw 25 mm takes differed by 30 dB and are levelled. The MG recording is a real ~13 rounds a
+  second, not a click track.
+- **A loop bug that was probably half the "lame" (5281440).** Every looped sound set `loop_end = data.size() / 2`,
+  which counts frames only for PCM, but the WAVs imported QOA-compressed: the machine gun, flamethrower, engines and
+  crowd each repeated **their first fifth** (0.2 s of a 1 s MG loop). Loops now import as PCM. The engine and crowd code
+  is render's and needed no change. There's a test, and it was mutation-checked (it fails with `compress/mode=2`).
+
+### Requests to other streams
+- **render:** keep `assets/audio/{mg_loop,flame_loop,engine_*,crowd_murmur}.wav` importing as PCM
+  (`compress/mode=0`); `SfxSystem.loop_frames(stream)` is the safe way to set a loop end if you touch that code.
+- **orchestrator:** back up `assets/audio/elevenlabs/masters/` (paid sources, git-ignored).
+
+### Merge notes (shared files)
+- None yet.
