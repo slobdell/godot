@@ -240,3 +240,16 @@ build/   (gitignored)    exports and screenshots
     `tests/test_ai_elements.gd` used 2-argument `assert_eq` throughout, never parsed, and a full `make check` reported
     "749 passed" without it. A test you just wrote that does not appear in the output has not passed — grep for its
     name before believing a green run.
+74. **`loop_end = data.size() / 2` counts frames only for 16-bit PCM.** On a QOA-compressed WAV (Godot's default
+    import, `compress/mode=2`) it lands a fifth of the way in, and every looped sound in the game (machine gun,
+    flamethrower, engines, crowd) repeated its first 0.2 s for three rounds. Loops import as PCM now, and
+    `SfxSystem.loop_frames(stream)` is right for either (audio, 2026-09-17).
+75. **A Node made in a field initializer (`var x := SomeNode.new()`) leaks if it is only added to the tree
+    conditionally.** On a headless peer with no FxWorld the crowd's voice was never added: "8 ObjectDB instances
+    leaked" is only a warning, but a leaked *script* instance also leaves "1 resources still in use", an ERROR, and
+    the relay and net smokes fail their clients on any ERROR. Create conditional children where you add them
+    (audio, 2026-09-17).
+76. **`make perf-scene` runs with `--mute`**, so its frame numbers contain no audio at all. `make audio-bench` times
+    the audio systems (audio, 2026-09-17).
+77. **Starting an Ogg Vorbis one-shot costs a decoder per play** (0.29 ms against 0.045 for a QOA WAV in
+    `make audio-bench`). Ship sounds that start many times a second as WAV; Ogg is for music (audio, 2026-09-17).
