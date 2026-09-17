@@ -55,6 +55,32 @@ class AuditTest(unittest.TestCase):
         data["lines"] = [line for line in data["lines"] if not (line["speaker"] == "pa" and line["act"] == "welcome")]
         self.assert_error(data, "no pa line for welcome")
 
+    def test_sides_are_named_by_faction_never_by_colour(self):
+        """X3 (round 5): the lead heard "Green and Rust, live, right now!". Matches are always cross-faction, so a
+        side has a sayable name and a colour is never it."""
+        self.assert_error(with_line(tags=["intro"], act="hype", text="Green and Rust, live, right now!"), "colour")
+        self.assert_error(with_line(text="The blue team takes it!"), "colour")
+        self.assert_error(with_line(text="{team} take it!"), "colour")
+        self.assert_error(with_line(text="That is {other_team_s} last one!"), "colour")
+        errors, _ = audit_lines.audit(with_line(text="You can see the rust around the bolts."), BEATS)
+        self.assertFalse([e for e in errors if "test.line" in e], "rust the substance is not a team")
+
+    def test_a_named_faction_only_plays_when_that_faction_is_on_the_floor(self):
+        """Line tags are requirements: a line that calls the Wreckers by name must carry faction_gangs or
+        other_faction_gangs, or it can play in a Law-Syndicate match. The Syndicate and the Law also exist as the
+        arena's owner and the state, so only their crews and machines count as naming a side."""
+        self.assert_error(with_line(text="The Wreckers crack it wide open!"), "gangs")
+        self.assert_error(with_line(text="The Condemned crew gets it done!"), "condemned")
+        self.assert_error(with_line(text="The Syndicate machine takes it clean."), "syndicate")
+        for fine in (with_line(tags=["kill", "faction_gangs"], text="The Wreckers crack it wide open!"),
+                     with_line(tags=["kill", "other_faction_condemned"], text="The Condemned crew loses one!"),
+                     with_line(speaker="pa", act="notice", tags=["lull"], text="The Syndicate thanks you for watching.")):
+            errors, _ = audit_lines.audit(fine, BEATS)
+            self.assertFalse([e for e in errors if "test.line" in e], errors)
+
+    def test_a_faction_is_plural_all_the_way_through_the_sentence(self):
+        self.assert_error(with_line(text="{other_faction} are down to its last vehicle!"), "plural")
+
     def test_warns_about_the_rejected_tone(self):
         _, warnings = audit_lines.audit(with_line(speaker="pa", act="notice", tags=["lull"],
                                                   text="He has been retired. Terms and conditions apply."), BEATS)

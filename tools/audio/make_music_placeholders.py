@@ -38,20 +38,23 @@ LIMITER_DB = -3.5
 BEDS = {
     "garage":     (95, 4, 4, 55.00, "brood"),
     "pre_match":  (100, 4, 4, 49.00, "tension"),
-    "lull":       (105, 4, 4, 58.27, "patrol"),
-    "skirmish":   (120, 4, 4, 65.41, "drive"),
-    "battle":     (110, 4, 4, 43.65, "crush"),
-    "last_stand": (128, 4, 4, 61.74, "desperate"),
     "victory":    (120, 4, 4, 65.41, "triumph"),
     "defeat":     (70, 4, 2, 41.20, "hollow"),
 }
+## X5 (round 5): the match itself is one track in stems that build with the fight, not four beds that swap. Each
+## stem: (file stem, `from` intensity or None, `states` or None, voice). Everything else about the track: FIGHT.
+FIGHT = {"bpm": 120, "beats_per_bar": 4, "bars": 4, "root": 55.0,
+         "states": ["lull", "skirmish", "battle", "last_stand"], "intensity": 0.6}
+FIGHT_STEMS = [
+    ("fight_pad", 0.0, None, "pad"),         # always: the floor under a lull
+    ("fight_pulse", 0.2, None, "pulse"),     # first contact: a heartbeat kick
+    ("fight_bass", 0.45, None, "bass"),      # a real fight: the driving bass
+    ("fight_drums", 0.65, None, "drums"),    # a battle: snare and hats
+    ("fight_alarm", None, ["last_stand"], "alarm"),  # only when it is happening to you
+]
 # Which MatchMood states each bed may play under (L5 names; `garage` and `pre_match` are outside a match).
-STATES = {
-    "garage": ["garage"], "pre_match": ["pre_match"], "lull": ["lull"], "skirmish": ["skirmish"],
-    "battle": ["battle"], "last_stand": ["last_stand"], "victory": ["victory"], "defeat": ["defeat"],
-}
-INTENSITY = {"garage": 0.1, "pre_match": 0.25, "lull": 0.3, "skirmish": 0.55, "battle": 0.8,
-             "last_stand": 0.95, "victory": 0.7, "defeat": 0.2}
+STATES = {"garage": ["garage"], "pre_match": ["pre_match"], "victory": ["victory"], "defeat": ["defeat"]}
+INTENSITY = {"garage": 0.1, "pre_match": 0.25, "victory": 0.7, "defeat": 0.2}
 # id -> (seconds, character)
 STINGERS = {
     "sting.first_blood": (2.0, "stab"),
@@ -100,6 +103,88 @@ def _bed(bpm: int, beats_per_bar: int, bars: int, root: float, character: str, r
         out[index] = sample
     _seam(out, int(RATE * 0.02))
     return out
+
+
+def _fight_stems() -> dict:
+    """The fight track's stems as numpy arrays of one length, voiced so each layer is audible on its own."""
+    import numpy as np
+    bpm, bars, per_bar, root = FIGHT["bpm"], FIGHT["bars"], FIGHT["beats_per_bar"], FIGHT["root"]
+    beat_s = 60.0 / bpm
+    total = int(RATE * beat_s * per_bar * bars)
+    t = np.arange(total) / RATE
+    beat = t / beat_s
+    into_beat = (beat % 1.0) * beat_s
+    bar = (beat // per_bar).astype(int)
+    notes = np.where(bar % 4 == 3, root * 1.2, np.where(bar % 2 == 1, root * 1.5, root))
+    rng = np.random.default_rng(55)
+    out = {}
+    for name, _from, _states, voice in FIGHT_STEMS:
+        if voice == "pad":
+            x = sum(np.sin(2 * np.pi * notes * k * t + np.sin(t * 0.5) * 0.8) * w for k, w in ((2, 0.4), (3, 0.2), (4, 0.1)))
+            x = x * 0.8
+        elif voice == "pulse":
+            env = np.exp(-into_beat * 16.0)
+            x = np.tanh(np.sin(2 * np.pi * (110.0 * np.exp(-into_beat * 10.0) + 40.0) * into_beat) * env * 3.0) * 0.55
+        elif voice == "bass":
+            eighth = (beat * 2 + 0.5) % 1.0  # off the kick, so their peaks never stack
+            env = np.exp(-eighth * beat_s * 0.5 * 9.0)
+            x = np.tanh(np.sin(2 * np.pi * notes * t) * 2.5) * env * 0.8
+        elif voice == "drums":
+            backbeat = (np.floor(beat) % 2 == 1)
+            snare = rng.standard_normal(total) * np.exp(-into_beat * 22.0) * backbeat * 0.7
+            sixteenth = ((beat * 4) % 1.0) * beat_s / 4
+            hats = np.diff(rng.standard_normal(total + 1)) * np.exp(-sixteenth * 90.0) * 0.18
+            x = np.tanh((snare + hats) * 2.0) * 0.45  # noise spikes would set the whole track's level
+        else:  # alarm: a slow two-note siren an octave up
+            half = (beat // 2) % 2
+            x = np.sin(2 * np.pi * np.where(half == 0, root * 8, root * 8 * 1.335) * t) * 0.35 * (0.6 + 0.4 * np.sin(2 * np.pi * t / beat_s))
+        fade = int(RATE * 0.02)
+        x = np.asarray(x, dtype=float)
+        x[:fade] = x[:fade] * np.linspace(0, 1, fade) + x[-fade:] * np.linspace(1, 0, fade)
+        out[name] = x
+    return out
+
+
+def _write_np_wav(x, path: Path, scale: float) -> None:
+    import numpy as np
+    pcm = (np.clip(x * scale, -1, 1) * 32767).astype("<i2")
+    with wave.open(str(path), "wb") as handle:
+        handle.setnchannels(1)
+        handle.setsampwidth(2)
+        handle.setframerate(RATE)
+        handle.writeframes(pcm.tobytes())
+
+
+def build_fight(out_dir: Path, scratch: Path) -> dict:
+    """Stems scaled together: the full arrangement (every stem, the alarm included) meets the loudness target and
+    stays under the ceiling, so any subset of it does too."""
+    import numpy as np
+    stems = _fight_stems()
+    mix = sum(stems.values())
+    full = scratch / "fight_full.wav"
+    scale = 0.89 / np.abs(mix).max()
+    _write_np_wav(mix, full, scale)
+    gain = TARGET_LUFS - measure(full)["lufs"]
+    # No limiter can sit on a sum of stems, so the summed peak is kept under the ceiling by the gain itself (Vorbis
+    # decodes a touch hot, hence the margin under the ceiling).
+    gain = min(gain, PEAK_CEILING_DB - 0.7 - 20 * math.log10(0.89))
+    entries = []
+    for name, from_, states, _voice in FIGHT_STEMS:
+        wav = scratch / (name + ".wav")
+        _write_np_wav(stems[name], wav, scale)
+        ogg = out_dir / (name + ".ogg")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wav), "-af", "volume=%.2fdB" % gain,
+                        "-ac", "1", "-c:a", "libvorbis", "-b:a", BITRATE, str(ogg)], check=True)
+        entry = {"file": ogg.name}
+        if from_ is not None:
+            entry["from"] = from_
+        if states is not None:
+            entry["states"] = states
+        entries.append(entry)
+    length = len(mix) / RATE
+    return {"stems": entries, "bpm": FIGHT["bpm"], "beats_per_bar": FIGHT["beats_per_bar"],
+            "loop_start_s": 0.0, "loop_end_s": round(length - 0.02, 3), "intensity": FIGHT["intensity"],
+            "states": FIGHT["states"], "rights": "placeholder, generated by this repo (CC0)", "placeholder": True}
 
 
 def _stinger(seconds: float, character: str, rng: random.Random) -> list[float]:
@@ -204,6 +289,7 @@ def build(out_dir: Path) -> dict:
                 "lufs": round(measured["lufs"], 1), "peak_db": round(measured["peak_db"], 1),
                 "rights": "placeholder, generated by this repo (CC0)", "placeholder": True,
             }
+        manifest["tracks"]["fight"] = build_fight(out_dir, Path(scratch))
         for id_, (seconds, character) in STINGERS.items():
             rng = random.Random(hash(id_) & 0xffff)
             wav = Path(scratch) / (id_.replace(".", "_") + ".wav")
@@ -229,6 +315,9 @@ def main(argv: list[str] | None = None) -> int:
     print("wrote %d beds and %d stingers to %s (%.0f KB)"
           % (len(manifest["tracks"]), len(manifest["stingers"]), args.out, total / 1024))
     for name, track in manifest["tracks"].items():
+        if "stems" in track:
+            print("  %-11s %3d bpm  loop %.2f s  %d stems" % (name, track["bpm"], track["loop_end_s"], len(track["stems"])))
+            continue
         print("  %-11s %3d bpm  loop %.2f s  %5.1f LUFS  peak %5.1f dB" % (name, track["bpm"], track["loop_end_s"],
                                                                           track["lufs"], track["peak_db"]))
     return 0

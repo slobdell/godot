@@ -18,7 +18,8 @@ const DAMAGE_REPORT_GAP_S := 3.0
 
 var game_match: Match
 var arena := Arena.DEFAULT_LAYOUT
-var faction := "condemned"
+## Only a fallback now: each side's faction is read from the units the match actually fielded (team_faction).
+var faction := Units.DEFAULT_FACTION
 
 var _pending: Array = []
 var _started := false
@@ -94,6 +95,24 @@ func poll() -> Array:
 	return out
 
 
+## The faction a side fields: the most common faction among its vehicles (control, round 5: a skirmish started from
+## the faction menu had the booth calling the gangs "the Condemned", because every side was given this adapter's
+## single default). Read from what the match built, not from any launch flag. Ties go to the first found.
+func team_faction(team: int) -> String:
+	var counts := {}
+	var best := faction
+	var best_count := 0
+	for tank in game_match.sorted_team_tanks(team):
+		var id := Units.faction_of(String(tank.unit_id))
+		if id == "":
+			continue
+		counts[id] = int(counts.get(id, 0)) + 1
+		if int(counts[id]) > best_count:
+			best = id
+			best_count = int(counts[id])
+	return best
+
+
 func _try_start() -> void:
 	if game_match.team_tanks(0).is_empty() or game_match.team_tanks(1).is_empty():
 		return
@@ -108,7 +127,7 @@ func _try_start() -> void:
 			_units[id] = {"tank": tank, "team": team, "unit": tank.unit_id, "alive": tank.is_alive(), "hull": _hull(tank),
 					"low_since": -1.0, "close_call": false, "reported": -100.0}
 			tank.fired.connect(_on_fired.bind(id))
-		teams.append({"team": TEAM_KEYS[team], "faction": faction, "units": units})
+		teams.append({"team": TEAM_KEYS[team], "faction": team_faction(team), "units": units})
 	# match_start carries the whole roster; events before it in this poll would break the contract's order.
 	var earlier := _pending
 	_pending = []

@@ -11,7 +11,10 @@ const HOLD_SECONDS := 0.16
 const SOUND := "mg_loop"
 const VOLUME_DB := -9.0
 
-var muted := false
+## FxWorld copies SfxSystem's --mute onto this; --audio-solo for another layer keeps it silent regardless.
+var muted := false:
+	set(value):
+		muted = value or not AudioSolo.allows("guns")
 
 ## gunner key -> {"position": Vector3, "last": float}
 var _gunners := {}
@@ -31,6 +34,7 @@ func _init() -> void:
 		voice.unit_size = 45.0
 		voice.max_distance = 500.0
 		voice.volume_db = VOLUME_DB
+		voice.bus = SfxSystem.BED_BUS
 		add_child(voice)
 		_voices.append(voice)
 		_assigned.append("")
@@ -42,7 +46,7 @@ func use_streams(streams: Dictionary) -> void:
 	if loop == null:
 		return
 	loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	loop.loop_end = loop.data.size() / 2
+	loop.loop_end = SfxSystem.loop_frames(loop)
 	for voice in _voices:
 		voice.stream = loop
 

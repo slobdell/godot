@@ -19,14 +19,6 @@
   }
  },
  "vocabulary": {
-  "team": {
-   "green": "Green",
-   "rust": "Rust"
-  },
-  "team_s": {
-   "green": "Green's",
-   "rust": "Rust's"
-  },
   "unit": {
    "scout": "scout",
    "tank": "tank",
@@ -46,7 +38,11 @@
   "arena": {
    "foundry": "the Foundry",
    "furnace": "the Furnace",
-   "scrapyard": "the Scrapyard"
+   "scrapyard": "the Scrapyard",
+   "yard": "the Container Yard",
+   "boulevard": "the Boulevard",
+   "pit": "the Pit",
+   "boneyard": "the Boneyard"
   },
   "faction": {
    "condemned": "the Condemned",
@@ -175,7 +171,7 @@
     "intro"
    ],
    "intensity": 2,
-   "text": "If you're just tuning in, you picked the right night. Green and Rust, live, right now!"
+   "text": "If you're just tuning in, you picked the right night. Two crews, one floor, live, right now!"
   },
   {
    "id": "caller.intro.08",
@@ -2076,7 +2072,7 @@
     "last_unit"
    ],
    "intensity": 3,
-   "text": "{other_faction} are down to its last vehicle!"
+   "text": "{other_faction} are down to their last vehicle!"
   },
   {
    "id": "caller.kill.49",
@@ -2946,7 +2942,7 @@
     "repeat"
    ],
    "intensity": 2,
-   "text": "That's {count} times now {faction} have hit its own vehicles!"
+   "text": "That's {count} times now {faction} have hit their own vehicles!"
   },
   {
    "id": "color.ff.01",
@@ -4163,7 +4159,7 @@
    "tags": [
     "lull"
    ],
-   "text": "Condemned crews who complete tonight's broadcast will be eligible for the Syndicate's work placement program."
+   "text": "Crews who complete a full season of broadcasts will be eligible for the Syndicate's work placement program."
   },
   {
    "id": "pa.sponsor.15",
