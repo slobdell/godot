@@ -81,12 +81,13 @@ _Updated 2026-09-17 by the audio worker._
    before and after, and each pilot sound raw and as it ships. Reply: run the batch / run it with changes / not yet.
 
 ### Done so far
-- **X1 pilot (5281440).** `make sfx-generate` (dry run by default; `APPROVED=1 PILOT=1`) turns
+- **X1 pilot (5281440, f696544).** `make sfx-generate` (dry run by default; `APPROVED=1 PILOT=1`) turns
   `assets/audio/elevenlabs/sources.json` into git-ignored MP3 masters, and `make sfx-layer` turns those into the takes
   that ship (`assets/audio/layered/`, manifest `game/theme/audio/sfx_layers.gd`). `SfxSystem` plays layered takes where
   they exist; `--sfx-synth` gives the old set back for A/B. Pilot: tank cannon, 25 mm round, MG stream, shell on armour,
   10 takes, **230 credits** (about 10 credits per generated second; the balance updates minutes late, so the ledger
-  now waits for it).
+  now waits for it). The batch (X1's other guns plus all of X2's impacts, 35 takes) is **about 520 credits** and waits
+  on the lead.
 - **What "listening" meant here, honestly:** I can't hear. I read spectra, envelopes and levels, and the lead's ears
   are the check that counts (the gate). What the numbers showed and what I changed because of them: the generated
   cannons put **97% of their energy under 200 Hz**, which laptop and phone speakers don't play, so the layer step
@@ -98,11 +99,56 @@ _Updated 2026-09-17 by the audio worker._
   which counts frames only for PCM, but the WAVs imported QOA-compressed: the machine gun, flamethrower, engines and
   crowd each repeated **their first fifth** (0.2 s of a 1 s MG loop). Loops now import as PCM. The engine and crowd code
   is render's and needed no change. There's a test, and it was mutation-checked (it fails with `compress/mode=2`).
+- **X3 colour names (db15512).** Only one spoken line named colours (`caller.intro.07`, "Green and Rust, live"), but
+  nothing stopped the next one. The line audit now fails a capitalised colour or a colour team, any `{team}` slot (its
+  Green/Rust vocabulary is deleted too, so nothing could fill one), a literal faction named **as a side** without its
+  faction tag (tags are requirements, so an untagged Wreckers line could play in a Law-Syndicate match; the Syndicate
+  and the Law as institutions stay legal), and "{faction} are ... its". The new rules found three more lines:
+  `caller.kill.48` and `caller.ff.07` ("are down to its"), and `pa.sponsor.14` (tonight's Condemned crews, in any
+  match). Four lines rewritten, **30 clips re-recorded, speech-to-text flagged none, 1,899 credits**. Balance 122,834.
+- **X5 music stems (0bc1db3).** A manifest track can be stems: `{file, from}` (comes in at that intensity) or
+  `{file, states}`. They play sample-locked in one `AudioStreamSynchronized`, layers change on bar lines with a 1.2 s
+  fade, and a layer holds through a 0.08 dip so a pause between kills doesn't strip the arrangement. One placeholder
+  `fight` track (pad, pulse, bass, drums, and a siren that only plays in a last stand) replaces the four in-match beds,
+  so lull → skirmish → battle never crossfades or reloads. In a real headless match: pad only at 0 s, the pulse at first
+  contact (10.2 s), the full band in the battle (18.7 s). `make music-import IN=<Suno stems folder> STATE=fight
+  LAYERS="Synth=0 Drums=0.35 ..."` imports stems with one shared gain; `music-check` checks they line up, the full
+  arrangement's loudness and peak, and that the always-on layers aren't silence. `PROMPTS.md` tells the lead how.
+- **X4 the world underneath (f696544, 7b9d467, and the voice-priority commit).**
+  - `make audio-bench`: `perf-scene` runs `--mute`, so **its numbers include no audio at all**. The bench times each
+    audio system headless under a battle busier than a real one (60 vehicles, 16 machine gunners, a shot every frame,
+    a busy booth, the music following the mood). It caught a real cost: **an Ogg one-shot cost 0.29 ms per frame
+    against 0.045 for a WAV** (a Vorbis decoder built per shot), so layered takes ship as WAV/QOA.
+  - Engines (`EngineSystem` moved to `game/theme/audio/` with render's agreement): **speed and load**, so a tank pulling
+    away roars before it is fast, plus a running-gear voice per engine (tracks under diesel hulls, tyres under the
+    rest) pitched with speed and silent at rest. Nearest vehicles by insertion rather than a lambda sort: 0.17 ms at
+    60 vehicles for twice the work (was 0.2–0.3). Engines now sit on the World bus, so the booth ducks them.
+  - `CrowdVoice`: the murmur and roar left render's `CrowdSystem` (the visuals didn't change). The murmur sits on a
+    floor set by `MatchMood` intensity, so a long firefight stays loud between kills, and the result gets a roar.
+    Mutation-checked.
+  - Voice priority in `SfxSystem`: a sound is weighed by how loud it will be at the camera. Past 600 m or under -46 dB
+    it never starts. With the pool full it takes the quietest voice (start level less 14 dB per second of play), and
+    only if it's at least as loud, so a distant ping can't cut a nearby cannon's tail.
+  - Bench at 60 vehicles, mean per frame on the loaded laptop: booth and mood 0.05–0.07 ms, music 0.03–0.04, engines
+    0.17, gunfire 0.09–0.14, one-shots 0.045. **Booth, music and crowd (the M1 line) are ~0.1 ms of their 0.3.**
+  - Not done in X4, and why: *the arena PA between rounds* and *ad screens audible near them* wait on the lead's ad copy
+    (round 4's open gate), and the screens' positions come from arena's layout v2. *Different ground* has nothing to
+    key on yet: every arena floor is one surface.
+- **X6 tooling (8ae6404).** `AudioRecorder` (`--audio-record=PATH`) records the Master bus, and `make audio-pass`
+  records a 30-a-side CPU match with the booth voiced and the music on, then reports loudness, range, true peak,
+  clipping, loudness every 5 s, booth lines and music changes, plus an MP3 and a spectrogram. The full pass waits for
+  the batch sounds, so it's the mix the lead will actually hear.
 
 ### Requests to other streams
+- **render:** `make audio-bench` exists for the unmuted perf-scene variant. `perf-scene` numbers so far include no audio.
 - **render:** keep `assets/audio/{mg_loop,flame_loop,engine_*,crowd_murmur}.wav` importing as PCM
   (`compress/mode=0`); `SfxSystem.loop_frames(stream)` is the safe way to set a loop end if you touch that code.
 - **orchestrator:** back up `assets/audio/elevenlabs/masters/` (paid sources, git-ignored).
 
 ### Merge notes (shared files)
-- None yet.
+- `game/main.gd`: one line `AudioRecorder.attach(self)` after the booth and music attach, and one header line for
+  `--audio-record`.
+- `game/theme/fx/crowd_system.gd` (render's; agreed): the murmur and roar players and their ~12 lines removed, one
+  `add_child(voice)` of a `CrowdVoice` added. `game/theme/fx/engine_system.gd` moved to `game/theme/audio/` (same
+  class name), and its test moved to `tests/audio/test_audio_engines.gd`.
+- Commit db15512 (X3) also carries X5's four deleted in-match beds (staged before it); X5's own commit has the rest.
