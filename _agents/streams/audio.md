@@ -78,12 +78,14 @@ _Updated 2026-09-17 by the audio worker._
 Everything else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
 `assets/audio/elevenlabs/sources.json` is every sound-effect recipe with the prompt that made it.
 
-**Where the backlog stands:** X1 and X2 are built end to end and **waiting on the lead** for the batch (the pilot page
-is below). X3 is done. X4 is done except the parts that have nothing to key on yet. X5 is done. X6's tooling is done;
-the pass itself waits for the batch, so the lead hears the real mix. Stretch: solo mode done. Per-faction flavour and
-the PA reading ad copy are written up under *Next steps*.
+**Where the backlog stands: every item is done.** X1 (guns) and X2 (impacts) shipped after the lead heard the pilot
+and approved the batch — *"the new sound effects sound awesome"*. X3 (colour names) is done and enforced by the audit.
+X4 (the world underneath) is done apart from the arena PA between rounds, which needs the ad screens placed; its copy
+is approved and recorded. X5 (music stems) is done and the lead's own tracks are in. X6 (listen to it whole) is done,
+and it found three shipped bugs. Stretch: `--audio-solo` and the PA's ad reads shipped; per-faction *voice treatment*
+is unexplored. What is left is two questions with the lead and one track he may want to generate (*Next steps*).
 
-### Plan (in order)
+### Plan, as it was written at the start of the round
 1. **X1 guns:** pilot generation tool, layering/mastering tool, SfxSystem wiring, A/B page → **lead gate** → batch.
 2. **X3 colour names:** audit rule first (fails on today's library), fix the text, re-record only changed lines.
 3. **X2 impacts and death:** recipes are written and ride the same batch as X1 (one gate, not two); the mix side
