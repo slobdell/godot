@@ -68,4 +68,36 @@ Vehicle art, props' materials and the frame budget (render), weapons and rules (
 
 ## Status
 
-- 2026-09-17: brief written for round 5. Nothing started.
+- 2026-09-17: brief written for round 5.
+- 2026-09-17 (worker started): plan, in order, smallest foundation first:
+  1. **X1 schema v2 (CP2)**: `ArenaKit` (game/arena/arena_kit.gd) as the gameplay truth of each kit prop; `props`,
+     `spawn_zones`, `lanes`, `regions` in the layout; the loader normalizes colliding props into `obstacles` so every
+     current consumer (CoverMap, radar, ElementSituation, navmesh) sees them with no change on their side. Tests first
+     (`tests/test_arena_kit.gd`). *Decision:* v1 layouts stay valid and unchanged, so the sim baseline doesn't move.
+  2. **X2 `_agents/arenas.md`**: the vocabulary grounded in measured mechanics (eye 1.3 m, muzzles 1.05-1.27 m,
+     doctrine's 45 m terrain count, 85 m support range), rules of thumb, and the measures.
+  3. **X3 four arenas** (yard, boulevard, pit, boneyard) authored in `tools/make_arenas.py`, iterated against
+     `tools/arena_report.py` (static views, routes, exposure, plots). *Decision:* new names; foundry/scrapyard/furnace
+     keep their names and content (the announcer and tests reference them).
+  4. **X4 proof**: swap-bases fairness and seeded series per arena, dynamic measures into arenas.md.
+  5. **X5 dressing** with render's M1 budget, **X6 selection** (random-but-fair default; the sim baseline pinned to
+     foundry so a new default doesn't move the hash).
+- 2026-09-17: **X1 done, CP2 announced** (commit 56dd411; `make remote T=check` green, 850 passed, sim baseline
+  unchanged). Mutation-checked: without the spawn-clearance rule the buried-spawn test fails. Merged CP1 from main.
+- 2026-09-17: X2 drafted (`_agents/arenas.md`), X3 four draft arenas (yard, boulevard, pit, boneyard) with
+  `make arena-report` (static views and routes, plots in build/arenas/), X4 tooling (`make arena-series`: swap-bases
+  mirror matches through `tests/arena/arena_probe.gd`). First probe (yard, 40 s): median hit range 44 m, 57% of
+  unit-time hidden.
+
+### Requests to other streams
+- **render:** visual slots for the new kit types: `prop.barricade` (6 × 0.9 × 0.8 m jersey barrier run; a scaled
+  `prop.wall` stands in), `prop.floodlight` (2.4 m footing of a floodlight tower; a scaled `prop.crate` stands in),
+  `prop.sign` (decoration on a post, `setup(prop)` gets `sign`; shows nothing today). `prop.wreck` placed by a layout is
+  a 3.2 × 2.0 × 6.4 m box. Every prop visual gets `setup(prop)` with its look keys.
+- **audio:** display names for the new arenas in `assets/announcer/lines.json` → `arena` (the Container Yard, the
+  Boulevard, the Pit, the Boneyard).
+- **ai:** lanes and regions are readable (`Arena.lanes_of`, `Arena.regions_of`); nothing required.
+
+### Merge notes (shared files)
+- None yet. Planned at X6: `mk/core.mk` sim-baseline/sim-baseline-record get `--arena=foundry` so a new default arena
+  doesn't move the hash.
