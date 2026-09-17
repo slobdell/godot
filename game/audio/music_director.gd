@@ -264,8 +264,8 @@ func update_layers(intensity: float, mood_state: String, one_step := false) -> b
 	for index in stem_db.size():
 		var target := 0.0 if index in layers else SILENT_DB
 		_stem_fade.tween_method(_set_stem_db.bind(index), stem_db[index], target, STEM_FADE_S)
-	print("MUSIC_LAYERS track=%s layers=%s intensity=%.2f state=%s t=%.1f" % [track_id, str(layers), intensity,
-			mood_state, _clock])
+	print("MUSIC_LAYERS track=%s layers=%s intensity=%.2f state=%s t=%.1f pos=%.3f bar=%d" % [track_id, str(layers),
+			intensity, mood_state, _clock, position_s(), _last_bar])
 	return true
 
 

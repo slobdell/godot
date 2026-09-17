@@ -42,7 +42,12 @@ def main(argv: list[str]) -> int:
     rate = sfx_layer.RATE
     report = ebur128(wav)
     report["seconds"] = round(len(x) / rate, 1)
-    report["clipped_samples"] = int(np.sum(np.abs(x) >= 0.999))
+    # Clipping is counted on the recorded samples themselves: after a mono downmix and a resample (decode) the same
+    # file showed 11 "clipped" samples at a true peak of -2.3 dBFS.
+    import wave
+    with wave.open(str(wav)) as handle:
+        raw = np.frombuffer(handle.readframes(handle.getnframes()), dtype="<i2")
+    report["clipped_samples"] = int(np.sum(np.abs(raw.astype(np.int32)) >= 32766))
     window = 5 * rate
     report["rms_dbfs_every_5s"] = [round(20 * np.log10(max(np.sqrt(np.mean(x[i:i + window] ** 2)), 1e-9)), 1)
                                    for i in range(0, len(x) - window + 1, window)]
