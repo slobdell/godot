@@ -84,7 +84,7 @@ def main():
     parser.add_argument("--side", default="rust", choices=["green", "rust"])
     parser.add_argument("--policy", default="pin_and_flank")
     parser.add_argument("--opponent", default="x4t9:standard", help="brain[:doctrine table] for the other side")
-    parser.add_argument("--brain", default="x4t9", help="brain variant for the discovery side")
+    parser.add_argument("--brain", default="x5p", help="brain variant for the discovery side")
     parser.add_argument("--army", default="combined_arms")
     parser.add_argument("--arena", default="foundry")
     parser.add_argument("--seed", type=int, default=1)
