@@ -142,6 +142,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	FrameTarget.apply_frame_cap()
 	_apply_viewport()
 	get_viewport().size_changed.connect(_apply_viewport)
 
@@ -257,7 +258,9 @@ func _apply_viewport() -> void:
 	if viewport == null:
 		return
 	viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-	viewport.scaling_3d_scale = FxQuality.render_scale_for(FxQuality.value("render_scale"), viewport.get_visible_rect().size.y as int)
+	# The frame target decides how many lines of 3D a window renders (locked 30: native to 1080p; performance 60: ~720).
+	viewport.scaling_3d_scale = FrameTarget.render_scale_for(FrameTarget.target(), FxQuality.value("render_scale"),
+			viewport.get_visible_rect().size.y as int)
 	viewport.msaa_3d = FxQuality.value("msaa")
 	# Render X5: switch mesh detail levels when an edge would move less than 4 px (Godot's default is 1). At 60 vehicles
 	# this drew 374k -> 237k primitives and saved ~0.6 ms GPU on the UHD 620 with no visible change at play distance.

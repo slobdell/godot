@@ -255,15 +255,6 @@ func test_sounds_before_the_tree_are_dropped_not_errors() -> void:
 	sfx.free()
 
 
-func test_render_scale_follows_the_window_so_1080p_costs_what_the_budget_allows() -> void:
-	# Render X5 (M1): at 1920x1080 a 0.85 3D scale saved 4.8 ms GPU on the UHD 620; the UI stays at full resolution.
-	assert_eq(FxQuality.render_scale_for(1.0, 720), 1.0, "720p renders at full scale")
-	assert_near(FxQuality.render_scale_for(1.0, 1080), 0.85, 0.01, "1080p renders ~918 lines of 3D")
-	assert_true(FxQuality.render_scale_for(1.0, 2160) >= 0.7, "never below 0.7 on big screens")
-	assert_eq(FxQuality.render_scale_for(0.75, 720), 0.75, "a tier's own lower scale still wins")
-
-
-
 func test_decorative_bursts_thin_out_when_the_overdraw_budget_is_spent() -> void:
 	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 0.0, 500.0), 1.0, "room left: full size")
 	assert_near(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 436.0, 500.0), 0.8, 0.001, "a little room: smaller")

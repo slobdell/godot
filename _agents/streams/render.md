@@ -253,6 +253,15 @@ up glow, resolution and the venue *and* the tick falls further. **A locked, stab
 reachable with 30 Hz alone** and may be the better game than an unstable 60: that's a design decision, not an
 engineering failure.
 
+### The lead's decision: a locked 30 fps at 1080p with 30 a side, plus a 720p 60 fps option
+- `FrameTarget` (`game/theme/fx/frame_target.gd`): **LOCKED_30** (default: `Engine.max_fps` 30, 3D native up to 1080
+  lines) or **PERFORMANCE_60** (60 fps, ~720 lines of 3D, UI full resolution). `--frame-target=30|60`, or the player's
+  saved choice via `FrameTarget.apply(target, "player", true)` (control's menu: requested); the web gets no cap.
+- perf-scene: `p99_ms` and `max_ms` per phase; **`holds_30fps_at_vehicles`** judged on the 99th percentile (a locked rate
+  that drops isn't locked) next to `holds_60fps_at_vehicles`; `--perf-capped` measures with the cap and vsync on.
+- **Before 30 Hz, capped at 30, 1080p:** it never holds (36–64 vehicles: p99 94–144 ms, the 60 Hz spiral).
+  `_agents/streams/references/perf/locked30-capped-60hz-1080.json`. The 60-vehicle line is the one to clear.
+
 ### Ready for 30 Hz with physics interpolation (combat's refactor)
 - 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b). **The lead's
   number, before 30 Hz: 60 fps held at 13 vehicles at 720p, and never at 1080p** (median frame at 10 vehicles 18.8 ms).

@@ -39,3 +39,13 @@ func test_sixty_fps_holds_at_the_most_vehicles_whose_median_frame_stayed_under_6
 	]
 	assert_eq(PerfScene.holds_60fps_at(phases), 10, "one noisy phase at 10 doesn't sink it; 12 didn't hold, so 14 doesn't count")
 	assert_eq(PerfScene.holds_60fps_at([{"phase": "all", "vehicles": 60, "avg_ms": 30.0}]), 0, "never held")
+
+
+func test_a_locked_30_is_judged_on_its_worst_frames_not_its_median() -> void:
+	var phases := [
+		{"phase": "all", "vehicles": 60, "avg_ms": 28.0, "p99_ms": 58.0},
+		{"phase": "all", "vehicles": 40, "avg_ms": 25.0, "p99_ms": 31.0},
+		{"phase": "all", "vehicles": 20, "avg_ms": 18.0, "p99_ms": 24.0},
+	]
+	assert_eq(PerfScene.holds_30fps_at(phases), 40, "60 vehicles average 28 ms but drop to 58: not locked")
+	assert_eq(PerfScene.holds_60fps_at(phases), 0, "and none of it is 60")
