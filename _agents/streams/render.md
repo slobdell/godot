@@ -276,6 +276,18 @@ Script time in one tick, at matched vehicle counts (60 Hz → 30 Hz): 14 vehicle
   not change with tick rate; only the non-brain 2.7 ms per tick halves (~81 ms/s of ~630). That is the ~13-18% measured,
   and combat's `ready_to_fire` fix (~14% more shells) accounts for the rest.
 - The doctrine default was **withdrawn**, so it is not part of this (an earlier note here said otherwise).
+**The arithmetic that settles the strategy:** the tick is 18.42 ms at 58 vehicles on the laptop. With `--no-brains` it is
+2.69 ms. **Brains are 85% of a tick.** They think on a wall-clock schedule, so their cost per second is *independent of
+tick rate*; only the non-brain 2.7 ms halves. That is ~81 ms/s out of ~630: **30 Hz could never have saved more than
+~13%.** The tick change was sound engineering aimed at the wrong 15% of the problem, and the decomposition above is what
+shows it.
+
+**No reactivity regression, and a small surprise** (checked in the code, not inferred): think intervals are tick-rate
+relative (`TankBrain.THINK_EVERY_TICKS = SimClock.TICK_RATE / 10`, the champion's `think_ticks = TICK_RATE * 3 / 20`).
+At 60 Hz that was every 9 ticks = 6.67 thinks/s; at 30 Hz integer division gives every 4 ticks = **7.5 thinks/s, ~12%
+MORE often**. So brains did not become less reactive — they became slightly more so, and that extra thinking is part of
+why the per-second saving came out below even the 13% ceiling.
+
 **The lever is brain cost per second, not tick rate: 30 Hz has already given what it can.**
 
 **Against the lead's target** (locked 30 at 1080p with 30 a side): not met. It needs a tick of ~21 ms at 60 vehicles

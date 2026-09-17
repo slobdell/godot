@@ -16,6 +16,16 @@
 > before and after anything that adds per-frame work. Builder0's Iris Xe is ~2.3× faster on the GPU: don't budget
 > from it.
 
+### Two facts every stream should quote numbers against (measured 2026-09-17)
+
+1. **The lead's laptop is ~2.75× slower than builder0** for an identical headless workload (`make sim-profile TIME=60`,
+   58 vehicles: **18.42 ms a tick on the laptop, 6.68 ms on builder0**). A number measured on builder0 is not a number
+   about the game he plays. In game on the laptop the same tick is ~32 ms, because the Compatibility renderer shares the
+   main thread.
+2. **Brains are 85% of a simulation tick** (`PROFILE_FLAGS=--no-brains`: 2.69 ms of 18.42) and think on a wall-clock
+   schedule, so their cost per second does not change with the tick rate. Halving the tick rate could only ever save the
+   other 15%: ~13% per second, which is what 30 Hz delivered.
+
 ### How it's measured: `make perf-scene`
 
 A **live skirmish**, not a staged bench: `--skirmish --player=cpu --enemy=cpu --seed=3 --budget=6500 --cinematic`
