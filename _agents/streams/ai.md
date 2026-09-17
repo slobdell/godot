@@ -65,7 +65,7 @@ camera (control), audio (audio).
 
 ## Status
 
-_Round 5, ai stream. Updated 2026-09-17. Branch `stream/ai`._
+_Round 5, ai stream. Updated 2026-09-17. Branch `stream/ai`. **`make remote T=check` green on 9231c6f: 900 passed, sim baseline `glibc-2.43 32f665bc60306e8f` matched** (later commits are docs only)._
 
 ### Plan (in order, smallest foundation first)
 
@@ -203,7 +203,7 @@ Brain ladder (4 armies × 16): 31-33 head to head. More seeds (5-12) running bef
 - The doctrine elements band costs ~1.5-1.8 ms/tick at 30 a side (now flat instead of a spike every 6th tick); the
   situation build (0.61 ms) is the next thing to cut if doctrine becomes the default.
 - `OrderController._shootable` never used team spotting (found in X1, left as it always behaved).
-- net-smoke failed once on builder0 with a WebSocket server shutdown error while both clients passed (not ai code).
+- **net-smoke is flaky on builder0:** one of two full checks on this branch failed it with `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log while both bot clients printed NET_CHECK PASS (a WebSocket teardown race, not ai code); the next check passed. Characterised here so nobody blames their own change for it.
 
 ### What to playtest
 
