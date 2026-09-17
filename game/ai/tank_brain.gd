@@ -245,7 +245,7 @@ const PINNED_THREAT_FACTOR := 0.5
 ## scout's plate x0.6; a cannon on a tank's front x0.5.
 const SUPPRESS_PENETRATION := 0.25
 ## X2 ("pinned_exposed"): COVER_FIRE against a pinned target is worth this share of its usual score.
-const PINNED_COVER_FIRE := 0.6
+const PINNED_COVER_FIRE := 0.5
 ## SUPPRESS: how much of ENGAGE's appetite putting rounds on an enemy I can't kill quickly is worth...
 const SUPPRESS_WEIGHT := 0.78
 ## ...and the kill rate (relative to my best target) below which killing isn't the point any more.

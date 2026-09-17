@@ -242,13 +242,40 @@ static func contact_prototypes(game_match: Match, team: int) -> Dictionary:
 					# L2 (X3): how hard a crew has its head down. Plainly visible behaviour, so it is read live for a
 					# contact we can actually see and left at 0 for one we are only remembering. (Combat's intel
 					# doesn't carry it; ai asked for it there — see the stream's requests.)
-					"suppression": _suppression_of(game_match, contact_name) if bool(known["visible"]) else 0.0,
+					"suppression": _suppression_seen(game_match, side, contact_name, known),
 					# Filled in per brain (they need the looker's position): age, exposed_face, facing_ally,
 					# aiming_at_me, watching_me, threatens_me.
 					"age": 0,
 				}
 			_contacts[side] = table
 	return _contacts[team]
+
+
+## [team] -> {contact name: [suppression when last seen, tick]} (round-5 X2).
+static var _seen_suppression: Array = [{}, {}]
+static var _seen_match := 0
+
+
+## A contact's suppression as this team knows it: read live while it is in sight. Round 5 (x5p, "pinned_exposed"): a
+## crew that ducked out of sight a moment ago is still pinned, and the team knows roughly how fast a crew shakes it off
+## (Tank.SUPPRESSION_RECOVER_PER_SECOND), so a remembered contact carries its last seen suppression, fading at that
+## rate. Without it a pinned enemy stopped counting as pinned the instant a unit hid from it to peek — which is the
+## moment the bonus for going round it mattered. Other variants read 0 for anything out of sight, as before.
+static func _suppression_seen(game_match: Match, side: int, contact_name: String, known: Dictionary) -> float:
+	if _seen_match != game_match.get_instance_id():
+		_seen_match = game_match.get_instance_id()
+		_seen_suppression = [{}, {}]
+	if bool(known["visible"]):
+		var live := _suppression_of(game_match, contact_name)
+		(_seen_suppression[side] as Dictionary)[contact_name] = [live, game_match.tick]
+		return live
+	if not bool(BrainVariants.for_team(side).get("pinned_exposed", false)):
+		return 0.0
+	var seen: Variant = (_seen_suppression[side] as Dictionary).get(contact_name)
+	if seen == null:
+		return 0.0
+	var faded := float(seen[0]) - Tank.SUPPRESSION_RECOVER_PER_SECOND * float(game_match.tick - int(seen[1])) / 60.0
+	return maxf(faded, 0.0)
 
 
 static func _suppression_of(game_match: Match, contact_name: String) -> float:
