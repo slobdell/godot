@@ -75,8 +75,17 @@ Arena layouts and where props go (arena), gameplay (combat), brains (ai), UI and
 
 _Updated 2026-09-17 (evening)._
 
-**Checks:** `make remote T=check` green on **404152fe** (the main merge with the 30 Hz simulation): 987 passed, 0 failed.
-A check on the tip (`265dbcfc`: the feed's late-frame skip and the round-6 write-up) was running when this was written.
+**Closed for round 5, merged at `265dbcfc`.** `make remote T=check` green on both merge points: **404152fe** (main merge
+with the 30 Hz simulation, contains the blob-shadow fix) 987 passed, 0 failed; **265dbcfc** (the feed's late-frame skip,
+the hitch log, the round-6 write-up) 988 passed, 0 failed.
+
+**Open for round 6, in order of what the lead is waiting on:**
+1. His own clean `perf-scene` run: nobody has measured his laptop in the state he plays in (ours: ~29 vehicles quiet,
+   12–15 under load, locked 30 at 1080p).
+2. The catch-up-steps comparison above, if he wants it measured (render has the instrument, combat owns the setting).
+3. The GPU lines are still unmet on paper (9–10 ms at 720p against 6.5; 15 at 1080p against 10), which only matters once
+   the tick stops being the wall. The cuts left, priced: render scale 0.75 −2.8 ms, glow off −1.7 (he kept glow),
+   venue off −1.35.
 
 **Plan (backlog order):** X1 perf-scene + budget (CP1) ✅ → X2 instance uniforms ✅ → X3 lights ✅ → X4 vehicle read ✅
 (first pass; team-read question for the lead) → X5 LOD/instancing/thinning ✅ → X6 faction art ✅ → arena's kit props
