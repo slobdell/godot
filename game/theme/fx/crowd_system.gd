@@ -24,8 +24,9 @@ var material := ShaderMaterial.new()
 var seats := PackedVector3Array()
 var _event := Vector4(0.0, 0.0, EVENT_RADIUS, 0.0)
 var _rng := RandomNumberGenerator.new()
-## Sound: the crowd's murmur and roar are the audio stream's CrowdVoice (game/theme/audio/crowd_voice.gd, round 5).
-var voice := CrowdVoice.new()
+## Sound: the crowd's murmur and roar are the audio stream's CrowdVoice (game/theme/audio/crowd_voice.gd, round 5),
+## made only when there is an FxWorld to play it: built unconditionally, it leaked on headless peers (relay-smoke).
+var voice: CrowdVoice
 
 
 func _init() -> void:
@@ -42,6 +43,7 @@ func _ready() -> void:
 	if fx != null:
 		fx.spectacle.connect(react)
 		fx.quality_changed.connect(apply_quality)
+		voice = CrowdVoice.new()
 		add_child(voice)
 
 

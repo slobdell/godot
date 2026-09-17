@@ -55,3 +55,13 @@ func test_the_result_gets_a_roar() -> void:
 	voice._process(0.1)
 	assert_true(voice.roar.playing, "the final whistle gets a roar")
 	assert_eq(voice.roar.volume_db, CrowdVoice.RESULT_ROAR_DB, "louder than a kill's")
+
+
+func test_a_crowd_with_no_fx_world_makes_no_voice() -> void:
+	## A CrowdVoice built in a field initializer was never added to the tree on headless peers, and leaked there
+	## ("8 ObjectDB instances leaked", "1 resources still in use"), which failed relay-smoke's clients.
+	var crowd := CrowdSystem.new()
+	add_to_tree(crowd)
+	await wait_physics_frames(1)
+	assert_true(FxWorld.get_instance() == null, "no FxWorld in this test")
+	assert_true(crowd.voice == null, "so no voice was made to leak")
