@@ -80,7 +80,7 @@ func _on_finished(result: Dictionary) -> void:
 		"swap_bases": Match.swap_bases, "sim_seconds": result.get("sim_seconds", 0.0),
 		"hits": ranges.size(), "range_median_m": median, "range_mean_m": snappedf(mean, 0.1),
 		"range_p90_m": ranges[int(ranges.size() * 0.9)] if not ranges.is_empty() else 0.0,
-		"first_hit_seconds": snappedf(first_hit_tick / 60.0, 0.1) if first_hit_tick >= 0 else -1.0,
+		"first_hit_seconds": snappedf(first_hit_tick / float(SimClock.TICK_RATE), 0.1) if first_hit_tick >= 0 else -1.0,
 		"unit_seconds": unit_seconds,
 		"flank_share": snappedf(float(flank_seconds) / maxi(unit_seconds, 1), 0.001),
 		"hidden_share": snappedf(float(hidden_seconds) / maxi(unit_seconds, 1), 0.001)}))

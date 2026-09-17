@@ -13,7 +13,7 @@ func _setup() -> Array:
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	# The navigation map syncs a few physics frames after baking; the count varies.
-	for frame in 60:
+	for frame in SimClock.TICK_RATE:
 		if Pathing.is_ready(arena):
 			break
 		await tree.physics_frame
@@ -49,7 +49,7 @@ func test_bot_reaches_target_hidden_behind_wall() -> void:
 	await wait_physics_frames(2)
 	assert_true(not Perception.has_line_of_sight(bot, target), "setup: the wall hides the target")
 	var lowest_health := target.health
-	for frame in 60 * 20:
+	for frame in SimClock.TICK_RATE * 20:
 		await tree.physics_frame
 		lowest_health = mini(lowest_health, target.health)
 		if lowest_health < target.max_health:

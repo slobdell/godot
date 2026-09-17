@@ -40,7 +40,7 @@ func _burn(target_z: float, target_yaw: float, seconds: float, blocker := false)
 		crate.position = Vector3(LANE_X, 0.0, 14.0)
 		add_to_tree(crate)
 	await wait_physics_frames(2)
-	for frame in int(seconds * 60):
+	for frame in int(seconds * SimClock.TICK_RATE):
 		burner.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 		await tree.physics_frame
 	return target
@@ -94,7 +94,7 @@ func test_brain_engages_a_visible_enemy() -> void:
 	var fighting := ""
 	# 16 s, not 8: round 3's cannon reloads for 5 s and the brain now hides while it reloads (COVER_FIRE), so a
 	# window of two reloads plus a peek is the shortest one that isn't flaky (it failed 1 run in 5 at 8 s).
-	for frame in 60 * 16:
+	for frame in SimClock.TICK_RATE * 16:
 		await tree.physics_frame
 		lowest = mini(lowest, target.health + int(target.shield))
 		if fighting == "" and (brain_tank.intent.begins_with("ENGAGE") or brain_tank.intent.begins_with("COVER_FIRE")):
@@ -136,7 +136,7 @@ func test_brain_shoots_what_it_can_see_while_its_target_is_hidden() -> void:
 	brain.set_orders({"type": "stop"}, {"type": "target", "name": "Hidden", "fallback": true})
 	var full := exposed.health + int(exposed.shield)
 	var lowest := full
-	for frame in 60 * 6:
+	for frame in SimClock.TICK_RATE * 6:
 		await tree.physics_frame
 		lowest = mini(lowest, exposed.health + int(exposed.shield))
 	assert_true(not Perception.has_line_of_sight(brain_tank, hidden), "setup: the named target is hidden")

@@ -78,7 +78,7 @@ func _slot_drift(in_element: bool) -> Dictionary:
 	await s.start()
 	var worst := 0.0
 	var worst_name := ""
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 		for tank in line:
 			if not tank.is_alive():
@@ -121,7 +121,7 @@ func test_each_unit_covers_its_own_sector_of_fire() -> void:
 			> flank.global_position.distance_to(ahead.global_position) + 5.0,
 			"setup: the enemy in the flank tank's sector is the FARTHER one")
 	var engaged := {}
-	for tick in 60 * 16:
+	for tick in SimClock.TICK_RATE * 16:
 		await s.step()
 		for tank in [lead, flank]:
 			var controller := s.controller_of(tank)
@@ -172,7 +172,7 @@ func test_a_bounding_unit_rushes_and_halts_on_the_leaders_call() -> void:
 	var rush_speed := 0.0
 	var watcher_speed := 0.0
 	var samples := 0
-	for tick in 60 * 6:
+	for tick in SimClock.TICK_RATE * 6:
 		await s.step()
 		samples += 1
 		for tank in bounding:
@@ -185,7 +185,7 @@ func test_a_bounding_unit_rushes_and_halts_on_the_leaders_call() -> void:
 	# The leader calls the halt. Nothing else changes: no new K1 order, just the element's state.
 	element.halt()
 	var stopped_after := -1
-	for tick in 60 * 4:
+	for tick in SimClock.TICK_RATE * 4:
 		await s.step()
 		var still_driving := bounding.any(func(t: Tank) -> bool:
 			return s.controller_of(t).move_order.get("type") == "move_to")
@@ -237,7 +237,7 @@ func test_the_base_of_fire_keeps_firing_while_the_others_move() -> void:
 	var late := 0
 	var through_a_friend := 0
 	var fired_before := {}
-	var ticks := 60 * 24
+	var ticks := SimClock.TICK_RATE * 24
 	for tick in ticks:
 		await s.step()
 		for tank in base:
@@ -290,7 +290,7 @@ func test_the_feed_reads_what_doctrine_actually_publishes() -> void:
 	var element: Element = elements.form(units.map(func(t: Tank) -> String: return String(t.name)), "Alpha")
 	assert_eq(element.assign({"verb": "move", "to": [-104.0, -10.0]}), "", "setup: the element takes a move task")
 	await s.start()
-	for tick in 60 * 3:
+	for tick in SimClock.TICK_RATE * 3:
 		await s.step()
 	var feed := ElementFeed.source(s.game_match)
 	assert_true(feed != null, "the installed Elements is what brains read")

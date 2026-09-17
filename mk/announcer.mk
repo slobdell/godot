@@ -117,7 +117,7 @@ announcer-record-smoke: import ## A real headless match with the announcer recor
 	@mkdir -p $(BUILD_DIR)/announcer
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
 	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
-	$(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination \
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
 		--time-limit=40 --seed=3 --announcer-record=$(CURDIR)/$(BUILD_DIR)/announcer/recorded.jsonl 2>/dev/null \
 		> $(BUILD_DIR)/announcer/record-smoke.log; \

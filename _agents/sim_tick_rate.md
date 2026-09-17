@@ -1,8 +1,67 @@
 # Proposal: run the simulation at 30 Hz with physics interpolation
 
-> **Status: proposal, not started** (combat stream, 2026-09-17, asked for by the orchestrator after CP1). A decision for
-> the lead: halve the simulation's cost everywhere, in exchange for one coordinated refactor across four streams.
-> Inventory made with a full-repo survey; line numbers are as of `stream/combat` on 2026-09-17.
+> **Status: approved by the lead and in progress on `stream/combat`** (2026-09-17; combat owns it). Steps 1–2 (every
+> tick count derived from `SimClock.TICK_RATE`, still 60 Hz, sim baseline unchanged) are done for match, tank, combat,
+> ai, tactics, control's three constants and the announcer; step 3 (the flip) is being measured on a scratch copy.
+> Not merged to `main` until the orchestrator clears it. The original proposal follows, then the checklist that
+> render and control worked out.
+
+## What it bought (measured 2026-09-17, the lead's laptop and builder0)
+
+**The simulation's CPU per second roughly halved, as designed.** `make remote T="sim-profile TIME=60"` on builder0,
+Condemned 31 v 27: the whole tick costs 6.68 ms at 30 Hz against 5.7-6.4 ms at 60 Hz on the same machine, so per-tick
+cost is about the same and there are half as many ticks: **200 ms of simulation per second against 378**.
+
+**On the lead's laptop the frame improves everywhere, by less than half**, because the GPU and the renderer don't
+care about the tick rate (`make perf-scene`, same build, same seed, 30 Hz vs 60 Hz at 720p):
+
+| Vehicles | 60 Hz frame | 30 Hz frame |
+|---|---|---|
+| 59 | 134 ms (7.5 fps) | 101 ms (10 fps) |
+| 41 | 80 ms | 38 ms (26 fps) |
+| 34 | 33 ms | 27 ms (37 fps) |
+
+**Against the lead's target** (a locked 30 fps at 1080p with 60 vehicles; before: 60 fps held at 13 vehicles at 720p
+and never at 1080p): at 1080p, 30 Hz holds **30 fps to about 30 vehicles** (29 ms at 30, 34 ms at 34) and **10 fps at
+60** (98 ms). 60 fps at 720p now holds to about 22 vehicles. So the tick change is a large step and **not enough on
+its own**: at 60 vehicles a tick still costs ~31 ms on the laptop, of which **~85% is the unit controllers** (brains).
+The next lever is brain cost per second, not the tick rate. A think rate of 5/s instead of 10/s was tried and the
+measurement was inconclusive — `perf-scene` is a live battle, so two runs diverge and equal vehicle counts are not
+equal fights; it needs `make sim-profile` or `make ai-perf`, which measure a fixed workload.
+
+Caveat: the laptop was running this agent's own jobs; the numbers are pessimistic, and the 30 Hz and 60 Hz runs were
+taken back to back under the same load.
+
+## Start here: the interpolation checklist (render + control, 2026-09-17)
+
+**The core trap.** With physics interpolation on, Godot *draws* a body at its interpolated transform, but
+`global_transform` / `global_position` read in `_process` still return the **last physics tick's** value. Anything
+positioned from a body every rendered frame jitters against the vehicle the player sees unless it reads
+`get_global_transform_interpolated()`.
+
+| Who | What reads a body per frame | How it's handled |
+|---|---|---|
+| render | underglow, blob shadows, tracers (follow shell nodes), order markers, motion dust, perf-scene camera | `FxWorld.visual_transform(node)` (interpolated when interpolation is on; identical at 60 Hz) |
+| render | muzzle flashes, shell blasts spawned from `weapon_fired` at tick positions | shifted by the shooter's (interpolated − physics) offset; needs `shooter` in `weapon_fired` (K2 keeps it) |
+| render | impacts, kills, wrecks at event positions | correct as is: they're world positions of what happened |
+| control | RtsCamera follow and vision framing, selection rings, hull bars, picking and box select, center-on, route lines | `Shown` helper → `get_global_transform_interpolated()`; the rig's Camera3D and ring MultiMeshes are `PHYSICS_INTERPOLATION_MODE_OFF` (moved every frame already) |
+| control | orders, sight checks, EdgeMarkers/ElementAwareness, Radar, CinematicCamera | stay on tick positions (the simulation never sees the smoothed world) |
+| audio | `engine_system.gd` reads `source.global_position` per frame for voice placement and speed | flagged to audio: the speed estimate steps at 30 Hz |
+| combat | tank spawn, respawn, bench placement; shell spawn | `reset_physics_interpolation()` after placing (or a one-frame streak from the old place); shells interpolate like bodies so tracers are smooth |
+| combat | networked clients' tanks (smoothed toward snapshots in `_process`) | `PHYSICS_INTERPOLATION_MODE_OFF` on non-simulating tanks (no double smoothing) |
+
+**K1 is a wall-clock contract now** (orchestrator, 2026-09-17): "an order takes effect within 100 ms of the input".
+At 30 Hz that's exactly 3 ticks, so **30 Hz is the floor**: a 20 Hz tick would break the feel even if it were free.
+
+**How tick counts are written** (`game/match/sim_clock.gd`): seconds of ticks as `SimClock.TICK_RATE * 12`, cadences as
+`SimClock.TICK_RATE / 10` (constant expressions can't call functions; `maxi` works), ~20 Hz cadences as
+`maxi(1, (SimClock.TICK_RATE + 10) / 20)` so they round to whole ticks at 30 Hz instead of running every tick, runtime
+conversions with `SimClock.ticks(seconds)` / `SimClock.seconds(ticks)`. Doctrine tables keep drill timings in
+sixtieths of a second and `DoctrineTable.drill_ticks` converts. The Makefile's `SIM_HZ` drives every `--fixed-fps`
+and the Python tools; `tests/test_sim_clock.gd` checks it matches `project.godot` and `SimClock`.
+
+---
+
 
 ## Why
 

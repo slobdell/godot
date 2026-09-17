@@ -21,7 +21,7 @@ func _spawn_tank() -> Tank:
 func test_full_throttle_drives_forward() -> void:
 	var tank := _spawn_tank()
 	tank.command = TankCommand.new(1.0, 0.0, LANE + Vector3(0, 0, -50))
-	await wait_physics_frames(60)
+	await wait_physics_frames(SimClock.TICK_RATE)
 	assert_true(tank.global_position.z < LANE.z - 4.0,
 			"1 s at full throttle moves >4 m along -Z (got z=%.2f)" % tank.global_position.z)
 	assert_near(tank.global_position.x, LANE.x, 0.05, "driving straight does not drift sideways")

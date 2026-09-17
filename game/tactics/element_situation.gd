@@ -19,7 +19,7 @@ extends RefCounted
 ## and passes back in next time.
 
 ## A member hit within this many ticks counts as taking fire (1.5 s).
-const FIRE_TICKS := 90
+const FIRE_TICKS := SimClock.TICK_RATE * 3 / 2
 ## Threat bands, in meters from the element's centre.
 const CONTACT_M := 75.0
 const LIKELY_M := 130.0

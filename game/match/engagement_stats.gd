@@ -15,7 +15,7 @@ extends RefCounted
 ## any one vehicle drove.
 
 ## Sample once a second.
-const SAMPLE_TICKS := 60
+const SAMPLE_TICKS := SimClock.TICK_RATE
 ## "By cover": within this many metres of an obstacle's footprint (a hull is ~2.5-3 m wide, so this is "tucked in
 ## beside it", not "somewhere near").
 const COVER_RADIUS := 5.0

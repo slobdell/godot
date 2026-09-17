@@ -17,7 +17,7 @@ class Car:
 	var turn_rate_deg := 100.0
 	var reversed_ticks := 0
 
-	func step(throttle: float, turn: float, delta := 1.0 / 60.0) -> void:
+	func step(throttle: float, turn: float, delta := SimClock.TICK_SECONDS) -> void:
 		if absf(throttle) < 0.5 * absf(turn):
 			throttle = 0.5 * absf(turn) * (-1.0 if throttle < 0.0 or (throttle == 0.0 and speed < -0.5) else 1.0)
 		var goal := throttle * (max_forward if throttle >= 0.0 else max_reverse)
@@ -32,7 +32,7 @@ class Car:
 
 ## Drive `car` at `target` with the wheel steering for up to `seconds`; returns the tick it arrived or -1.
 func _drive(car: Car, target: Vector3, seconds: float, reverse := false) -> int:
-	for tick in roundi(seconds * 60.0):
+	for tick in roundi(seconds * SimClock.TICK_RATE):
 		var steer := Steering.reverse_toward_wheels if reverse else Steering.drive_toward_wheels
 		var drive: Vector2 = steer.call(car.position, car.forward, target, 2.0, car.radius, car.speed)
 		if drive == Vector2.ZERO:
@@ -50,7 +50,7 @@ func test_a_car_reaches_a_point_ahead_and_to_the_side() -> void:
 func test_a_car_loops_round_to_a_point_far_behind() -> void:
 	var car := Car.new()
 	var arrived := _drive(car, Vector3(5, 0, 60), 20.0)
-	print("MEASURE ai_wheels_far_behind arrived after %.1f s, reversed %.1f s" % [arrived / 60.0, car.reversed_ticks / 60.0])
+	print("MEASURE ai_wheels_far_behind arrived after %.1f s, reversed %.1f s" % [arrived / float(SimClock.TICK_RATE), car.reversed_ticks / float(SimClock.TICK_RATE)])
 	assert_true(arrived > 0, "arrives by looping round (ends at %s)" % car.position)
 	assert_true(car.reversed_ticks < 60, "without backing up much when there's room (%d ticks)" % car.reversed_ticks)
 
@@ -58,16 +58,16 @@ func test_a_car_loops_round_to_a_point_far_behind() -> void:
 func test_a_car_loops_to_a_point_close_behind() -> void:
 	var car := Car.new()
 	var arrived := _drive(car, Vector3(0, 0, 9), 20.0)
-	print("MEASURE ai_wheels_close_behind arrived after %.1f s, reversed %.1f s" % [arrived / 60.0, car.reversed_ticks / 60.0])
-	assert_true(arrived > 0 and arrived <= 60 * 8, "arrives within 8 s (%.1f s, ends at %s)" % [arrived / 60.0, car.position])
+	print("MEASURE ai_wheels_close_behind arrived after %.1f s, reversed %.1f s" % [arrived / float(SimClock.TICK_RATE), car.reversed_ticks / float(SimClock.TICK_RATE)])
+	assert_true(arrived > 0 and arrived <= SimClock.TICK_RATE * 8, "arrives within 8 s (%.1f s, ends at %s)" % [arrived / float(SimClock.TICK_RATE), car.position])
 
 
 func test_a_car_backs_up_for_a_point_inside_its_turning_circle() -> void:
 	# 4 m right and 1 m back: inside the right-hand 7 m turning circle, so no forward turn reaches it.
 	var car := Car.new()
 	var arrived := _drive(car, Vector3(4, 0, 1), 20.0)
-	print("MEASURE ai_wheels_three_point arrived after %.1f s, reversed %.1f s" % [arrived / 60.0, car.reversed_ticks / 60.0])
-	assert_true(arrived > 0 and arrived <= 60 * 10, "arrives within 10 s (%.1f s, ends at %s facing %s)" % [arrived / 60.0, car.position, car.forward])
+	print("MEASURE ai_wheels_three_point arrived after %.1f s, reversed %.1f s" % [arrived / float(SimClock.TICK_RATE), car.reversed_ticks / float(SimClock.TICK_RATE)])
+	assert_true(arrived > 0 and arrived <= SimClock.TICK_RATE * 10, "arrives within 10 s (%.1f s, ends at %s facing %s)" % [arrived / float(SimClock.TICK_RATE), car.position, car.forward])
 	assert_true(car.reversed_ticks > 20, "backing up on the way (a three-point turn: %d ticks in reverse)" % car.reversed_ticks)
 
 
@@ -76,7 +76,7 @@ func test_a_car_backs_to_a_point_keeping_its_nose_away() -> void:
 	var nose_away := 0
 	var ticks := 0
 	var target := Vector3(8, 0, 25)
-	for tick in 60 * 15:
+	for tick in SimClock.TICK_RATE * 15:
 		var drive := Steering.reverse_toward_wheels(car.position, car.forward, target, 2.0, car.radius, car.speed)
 		if drive == Vector2.ZERO:
 			break

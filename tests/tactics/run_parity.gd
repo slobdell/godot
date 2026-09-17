@@ -63,7 +63,7 @@ func _run() -> void:
 	var timeline: Array = []
 	elements.element_reported.connect(func(event: Dictionary) -> void:
 		var stamped := {"tick": game_match.tick,
-				"t": snappedf(game_match.tick / float(AnnouncerEvents.TICKS_PER_SECOND), 0.01)}
+				"t": snappedf(SimClock.seconds(game_match.tick), 0.01)}
 		stamped.merge(event)
 		timeline.append(stamped)
 		print("PARITY_EVENT ", JSON.stringify(stamped)))

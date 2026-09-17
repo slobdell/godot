@@ -61,7 +61,7 @@ func _stream_from(bearing_deg: float) -> Dictionary:
 	scout.global_position = target.global_position + offset
 	scout.look_at(target.global_position, Vector3.UP)
 	await wait_physics_frames(2)
-	for tick in 60:
+	for tick in SimClock.TICK_RATE:
 		scout.command = TankCommand.new(0.0, 0.0, target.global_position + Vector3.UP, true)
 		target.command = TankCommand.new()
 		await tree.physics_frame
@@ -95,7 +95,7 @@ func test_two_rear_shells_still_needed_for_a_full_tank() -> void:
 	var weak := [false]
 	game_match.projectile_impact.connect(func(event: Dictionary) -> void: weak[0] = weak[0] or bool(event["weak_spot"]))
 	await wait_physics_frames(2)
-	for tick in 60:
+	for tick in SimClock.TICK_RATE:
 		gunner.command = TankCommand.new(0.0, 0.0, target.global_position + Vector3.UP, tick == 0)
 		target.command = TankCommand.new()
 		await tree.physics_frame

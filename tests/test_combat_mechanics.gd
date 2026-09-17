@@ -78,7 +78,7 @@ func test_an_ifv_cannot_crack_a_tank_front_in_a_real_fight() -> void:
 	_unshielded(scout)
 	await wait_physics_frames(2)
 	for target: Tank in [tank, scout]:
-		for tick in 60 * 3:
+		for tick in SimClock.TICK_RATE * 3:
 			ifv.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 			tank.command = TankCommand.new()
 			scout.command = TankCommand.new()
@@ -100,7 +100,7 @@ func test_a_fixed_gun_swings_only_inside_its_arc() -> void:
 	await wait_physics_frames(2)
 	var right_of_scout := scout.global_position + Vector3(30.0, 0.0, 0.0)
 	var right_of_tank := tank.global_position + Vector3(30.0, 0.0, 0.0)
-	for tick in 60 * 3:
+	for tick in SimClock.TICK_RATE * 3:
 		scout.command = TankCommand.new(0.0, 0.0, right_of_scout, false)
 		tank.command = TankCommand.new(0.0, 0.0, right_of_tank, false)
 		await tree.physics_frame
@@ -121,7 +121,7 @@ func test_a_scout_only_hits_what_it_points_at() -> void:
 		scout.global_position = Vector3(LANE_X, 0.0, 20.0)
 		target.global_position = scout.global_position + offset
 		await wait_physics_frames(2)
-		for tick in 60 * 2:
+		for tick in SimClock.TICK_RATE * 2:
 			scout.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 			target.command = TankCommand.new()
 			await tree.physics_frame
@@ -144,13 +144,13 @@ func _worst_tracking_error(unit_id: String) -> float:
 	gunner.global_position = Vector3(LANE_X, 0.0, 20.0)
 	var start := Vector3(LANE_X - 14.0, 0.0, 10.0)
 	runner.global_position = start
-	for tick in 60 * 2:  # line up on the start point first
+	for tick in SimClock.TICK_RATE * 2:  # line up on the start point first
 		gunner.command = TankCommand.new(0.0, 0.0, runner.global_position, false)
 		await tree.physics_frame
 	var worst := 0.0
 	var speed := float(Units.profile("scout")["max_forward_speed"])
-	for tick in 120:  # 2 s: 28 m across the nose, closest at 1 s
-		runner.global_position = start + Vector3(speed * tick / 60.0, 0.0, 0.0)
+	for tick in SimClock.TICK_RATE * 2:  # 2 s: 28 m across the nose, closest at 1 s
+		runner.global_position = start + Vector3(speed * tick / float(SimClock.TICK_RATE), 0.0, 0.0)
 		gunner.command = TankCommand.new(0.0, 0.0, runner.global_position, false)
 		await tree.physics_frame
 		worst = maxf(worst, rad_to_deg(Ballistics.aim_error(gunner.turret.global_position, gunner.turret_forward(), runner.global_position)))
@@ -179,7 +179,7 @@ func test_autocannon_rounds_fall_short_past_its_range() -> void:
 		target.rotation.y = PI / 2.0
 		_unshielded(target)
 		await wait_physics_frames(2)
-		for tick in 60 * 3:
+		for tick in SimClock.TICK_RATE * 3:
 			ifv.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 			target.command = TankCommand.new()
 			await tree.physics_frame

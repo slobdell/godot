@@ -42,7 +42,7 @@ func _pair(game_match: Match, green_unit: String, rust_unit: String) -> Array:
 
 ## How long the guns interdict the lane before the crosser sets off. A stream reaches its steady density in about
 ## three half-lives, and "is the lane shut?" is a question you ask about fire that is already falling.
-const ESTABLISH_TICKS := 60 * 3
+const ESTABLISH_TICKS := SimClock.TICK_RATE * 3
 
 
 ## Run `crews` machine guns down the lane, then drive `crosser` across it. Returns what the crossing cost.
@@ -69,7 +69,7 @@ func _cross_the_lane(game_match: Match, gunners: Array[Tank], crosser: Tank, cre
 	var start_health := crosser.health + crosser.shield
 	var crossed_tick := -1
 	var peak := 0.0
-	for tick in 60 * 12:
+	for tick in SimClock.TICK_RATE * 12:
 		for index in gunners.size():
 			gunners[index].command = TankCommand.new(0.0, 0.0, aim + Vector3(0.0, 0.0, (index - 1) * 4.0), index < crews)
 		crosser.command = TankCommand.new(1.0, 0.0, crosser.global_position + Vector3(0.0, 0.0, 10.0), false)
@@ -149,7 +149,7 @@ func test_two_crews_on_one_target_pin_it_where_one_cannot() -> void:
 		for index in gunners.size():
 			gunners[index].global_position = Vector3(-60.0 + (index * 6.0 - 3.0), 0.0, -30.0)
 			gunners[index].rotation.y = PI  # facing +z, at the target: a fixed mount only swings 8 degrees
-		for tick in 60 * 5:
+		for tick in SimClock.TICK_RATE * 5:
 			for index in gunners.size():
 				gunners[index].command = TankCommand.new(0.0, 0.0, target.global_position, index < crews)
 			target.command = TankCommand.new(0.0, 0.0, gunners[0].global_position, false)
@@ -177,7 +177,7 @@ func test_a_pinned_gunner_misses_what_it_would_otherwise_hit() -> void:
 		target.health = 1_000_000
 		target.max_shield = 0.0
 		target.shield = 0.0
-		for tick in 60 * 62:  # 5 s reload: about a dozen shells
+		for tick in SimClock.TICK_RATE * 62:  # 5 s reload: about a dozen shells
 			gunner.suppression = suppression  # held there: this measures the accuracy cost alone
 			gunner.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 			target.command = TankCommand.new(0.0, 0.0, gunner.global_position, false)
@@ -213,7 +213,7 @@ func test_pinning_buys_a_flanker_time_to_get_round() -> void:
 		gunner.turret.rotation.y = 0.0
 		flanker.global_position = Vector3(-20.0, 0.0, 0.0)  # dead on the gunner's flank
 		var ticks := -1
-		for tick in 60 * 8:
+		for tick in SimClock.TICK_RATE * 8:
 			gunner.suppression = suppression
 			gunner.command = TankCommand.new(0.0, 0.0, flanker.global_position, false)
 			flanker.command = TankCommand.new()
@@ -239,7 +239,7 @@ func test_volume_beats_damage_at_suppressing() -> void:
 	var per_second := {}
 	for weapon_id in ["machine_gun", "autocannon", "cannon", "laser", "mortar"]:
 		var weapon := Weapons.profile(weapon_id)
-		var reload: float = maxf(float(weapon.get("reload_s", weapon["reload"])), 1.0 / 60.0)
+		var reload: float = maxf(float(weapon.get("reload_s", weapon["reload"])), SimClock.TICK_SECONDS)
 		var rounds := maxi(1, int(weapon.get("burst_count", 1)))
 		per_second[weapon_id] = snappedf(Weapons.suppression(weapon) * rounds / reload, 0.01)
 	print("MEASURE suppression_per_second %s" % [per_second])

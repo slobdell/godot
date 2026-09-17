@@ -43,13 +43,13 @@ func test_a_spotted_target_behind_cover_gets_shelled() -> void:
 		add_to_tree(crate)
 	await wait_physics_frames(3)
 	assert_true(not Perception.has_line_of_sight(gun, target), "setup: the battery can't see its target")
-	await wait_physics_frames(60 * 3)
+	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "with nobody spotting, it doesn't fire")
 	var spotter := game_match.spawn_tank("Green_Eyes_1", 0, Match.Team.GREEN, "scout")
 	spotter.global_position = Vector3(-80, 0, 40)  # 63 m from the target, clear view
 	var before := _toughness(target)
 	var lowest := before
-	for i in 60 * 20:
+	for i in SimClock.TICK_RATE * 20:
 		target.command = TankCommand.new()
 		await tree.physics_frame
 		lowest = minf(lowest, _toughness(target))  # the shield recharges between rounds: track the lowest
@@ -65,7 +65,7 @@ func test_no_firing_inside_the_minimum_range() -> void:
 	var setup: Array = _battery(game_match, Vector3(-100, 0, 40))
 	var target := game_match.spawn_tank("Rust_Close_1", 0, Match.Team.RUST)
 	target.global_position = Vector3(-100, 0, 20)  # 20 m: inside the 35 m minimum
-	await wait_physics_frames(60 * 6)
+	await wait_physics_frames(SimClock.TICK_RATE * 6)
 	assert_true(game_match.is_visible_to(Match.Team.GREEN, target), "setup: it's visible")
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "a mortar can't hit something that close")
 

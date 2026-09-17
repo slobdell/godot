@@ -16,7 +16,7 @@ const CATEGORY := {"MOVE": "order", "FOLLOW": "order", "PURSUE": "order", "KEEP_
 		"ENGAGE": "fight", "FLANK": "fight", "ORBIT": "fight", "BOMBARD": "fight", "CLEAR_LANE": "fight",
 		"COVER_FIRE": "cover", "TAKE_COVER": "cover", "RECHARGE": "cover", "RETREAT": "away", "RESUPPLY": "away"}
 ## Redraw this often (ticks).
-const EVERY_TICKS := 6
+const EVERY_TICKS := SimClock.TICK_RATE / 10
 const LINE_HEIGHT := 0.6
 
 var game_match: Match

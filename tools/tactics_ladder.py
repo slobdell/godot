@@ -25,6 +25,10 @@ import json
 import subprocess
 import sys
 import time
+import os
+
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 K = 16
 PASSES = 20
@@ -57,7 +61,7 @@ def run_match(args, green, rust, arena, seed, swap, factions):
         armies = [f"--green-faction={factions[0]}", f"--rust-faction={factions[1]}", f"--budget={args.budget}"]
         if args.control == "on":
             armies.append("--control")
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination",
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination",
                *armies, f"--arena={arena}",
                *side_flags("green", green), *side_flags("rust", rust), "--tactics-ledger",
                f"--time-limit={args.time_limit}", f"--seed={seed}"]

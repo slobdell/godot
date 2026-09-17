@@ -24,7 +24,7 @@ func test_a_brain_fires_at_a_visible_enemy_with_a_clear_lane() -> void:
 	AiScenario.make_durable(target)
 	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", SHOOTER_AT, 0.0)
 	await s.start()
-	for tick in 60 * 8:
+	for tick in SimClock.TICK_RATE * 8:
 		await s.step()
 	print("MEASURE ai_clear_lane shots %d in 8 s" % s.shots_by(me))
 	assert_true(s.shots_by(me) >= 2, "a brain tank shoots a visible enemy 40 m away (%d shots in 8 s)" % s.shots_by(me))
@@ -46,7 +46,7 @@ func test_holds_fire_while_a_friendly_crosses_the_line() -> void:
 	var lane_blocked_ticks := 0
 	var shots_before := 0
 	await s.start()
-	for tick in 60 * 16:
+	for tick in SimClock.TICK_RATE * 16:
 		await s.step()
 		if friend.global_position.distance_to(ends[going]) < 4.0:
 			going = 1 - going
@@ -74,7 +74,7 @@ func test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane() -> void:
 	var shots_before := 0
 	var first_shot := -1
 	await s.start()
-	for tick in 60 * 12:
+	for tick in SimClock.TICK_RATE * 12:
 		await s.step()
 		if s.shots_by(me) > shots_before:
 			shots_before = s.shots_by(me)
@@ -86,7 +86,7 @@ func test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane() -> void:
 			first_shot, s.shots_by(me), fired_through, me.global_position.distance_to(SHOOTER_AT), s.brain_of(me).tank.intent,
 			s.brain_of(me).lane_blocked_ticks])
 	assert_eq(fired_through, 0, "it never fires through the parked friend")
-	assert_true(first_shot >= 0 and first_shot <= 60 * 6, "it finds a clear lane and fires within 6 s (first shot at tick %d)" % first_shot)
+	assert_true(first_shot >= 0 and first_shot <= SimClock.TICK_RATE * 6, "it finds a clear lane and fires within 6 s (first shot at tick %d)" % first_shot)
 	assert_true(s.shots_by(me) >= 2, "and keeps firing from there (%d shots)" % s.shots_by(me))
 
 
@@ -98,7 +98,7 @@ func _artillery_shots(friend_at: Vector3) -> int:
 	AiScenario.make_durable(friend)
 	var battery := s.brain_tank(Match.Team.GREEN, "Green_Battery_1", Vector3(-100, 0, 60), 0.0, {}, "artillery")
 	await s.start()
-	for tick in 60 * 15:
+	for tick in SimClock.TICK_RATE * 15:
 		await s.step()
 	var shots := s.shots_by(battery)
 	s.dispose()

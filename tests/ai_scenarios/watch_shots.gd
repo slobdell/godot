@@ -87,11 +87,11 @@ func _play(stage: String, seconds: float, shots: Array) -> void:
 	var next_shot := 0
 	# Draw only the frames we save: the arena at full quality renders slowly on builder0's integrated GPU.
 	RenderingServer.render_loop_enabled = false
-	for tick in roundi(seconds * 60.0) + 1:
+	for tick in roundi(seconds * SimClock.TICK_RATE) + 1:
 		await scenario.step()
 		if tick % TRAIL_EVERY_TICKS == 0:
 			_sample_trails()
-		if next_shot < shots.size() and tick >= roundi(float(shots[next_shot]) * 60.0):
+		if next_shot < shots.size() and tick >= roundi(float(shots[next_shot]) * SimClock.TICK_RATE):
 			_sample_trails()
 			RenderingServer.render_loop_enabled = true
 			await process_frame

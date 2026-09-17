@@ -103,7 +103,7 @@ func test_it_steers_out_of_the_path_of_an_incoming_shell() -> void:
 	var aim := wanted * 1.0
 	var from := Vector3(0, 0, -60)
 	var velocity := (aim - from).normalized() * 70.0
-	var shell := {"position": from, "velocity": velocity, "eta_ticks": roundi(from.distance_to(aim) / 70.0 * 60.0)}
+	var shell := {"position": from, "velocity": velocity, "eta_ticks": roundi(from.distance_to(aim) / 70.0 * SimClock.TICK_RATE)}
 	var dodged := CombatMotion.choose(_request("strafe", Vector3(0, 0, -30), {"incoming": [shell], "velocity": Vector3.ZERO}))
 	assert_true(bool(dodged["dodging"]), "it knows it's dodging")
 	assert_true((dodged["point"] as Vector3).distance_to(calm["point"]) > 3.0, "it picks another way (%s, calm %s)" % [dodged["point"], calm["point"]])

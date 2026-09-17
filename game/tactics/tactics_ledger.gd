@@ -11,7 +11,7 @@ extends Node
 ##
 ##   TACTICS_LEDGER {"green": {activity: {"seconds", "dealt", "taken", "kills", "deaths"}}, "rust": {...}}
 
-const SAMPLE_TICKS := 30
+const SAMPLE_TICKS := SimClock.TICK_RATE / 2
 
 var game_match: Match
 ## [green, rust]: activity -> {"seconds", "dealt", "taken", "kills", "deaths"}
@@ -48,7 +48,7 @@ func _physics_process(_delta: float) -> void:
 			continue
 		var activity := activity_of(elements.of(String(tank.name)) if elements != null else null)
 		_activity[String(tank.name)] = activity
-		_row(tank.team, activity)["seconds"] += SAMPLE_TICKS / 60.0
+		_row(tank.team, activity)["seconds"] += SAMPLE_TICKS / float(SimClock.TICK_RATE)
 
 
 ## What an element (or null: no element) has its units doing, as the ledger names it.

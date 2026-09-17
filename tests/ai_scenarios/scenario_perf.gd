@@ -45,7 +45,7 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	OrderController.profile_detail = OS.get_cmdline_user_args().has("--profile-parts")
 	var los_before := CoverMap.los_computed
 	var queries_before := CoverMap.los_queries
-	var ticks := 60 * 30
+	var ticks := SimClock.TICK_RATE * 30
 	var fighting_ticks := 0
 	for tick in ticks:
 		await s.step()
@@ -67,5 +67,5 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	print("MEASURE ai_usec_per_tick_parts %s (the rest: executing orders, aiming, firing)" % ", ".join(parts))
 	if not OS.get_cmdline_user_args().has("--profile-parts"):
 		print("      (--profile-parts, i.e. make ai-perf DETAIL=1, adds the finer laps inside moving and shooting)")
-	assert_true(fighting_ticks > 60 * 5, "the armies actually fight during the measurement (%d ticks)" % fighting_ticks)
+	assert_true(fighting_ticks > SimClock.TICK_RATE * 5, "the armies actually fight during the measurement (%d ticks)" % fighting_ticks)
 	assert_true(per_tick < FAIL_USEC, "AI cost stays near budget (%.0f usec per tick)" % per_tick)

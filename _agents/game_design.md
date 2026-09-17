@@ -220,6 +220,30 @@ feel** rather than reopening the garage and progression loop.
 - **The shell has to work:** the title screen accepts clicks, the camera frames *your* units, and the console is clean.
 - **Guns must sound dangerous** (the ElevenLabs sound-effect half of round 4's audio work).
 
+### The lead's playtest during round 5 (2026-09-17, after the merges)
+
+> *"The game is still unplayable because of the framerate, the units aren't very responsive to my input (they all also
+> just rush forward right away at the start of the game), and on the visual side every vehicle currently has an ugly
+> dark rectangle below it. I played as the Syndicate and the sound effects were no good they sounded like a cheesy
+> cartoon."*
+
+Dispatched the same hour, and these are the round's carry-over into round 6 if they don't land first:
+
+- **Frame rate** — combat's 30 Hz, in flight. Still the blocker; nothing else he lists makes the game playable on its own.
+- **Responsiveness** — control, to *measure* click-to-visible-movement at 30 a side and split it into input lag,
+  order latency, acknowledgement feedback and vehicle response before anyone fixes anything. A unit that acknowledges
+  instantly feels responsive even when it takes a second to move.
+- **His own army charges at match start**, before he gives an order — ai with control. The ruling: **the player's units
+  hold until ordered**; a player's army that moves without being told isn't an army. This may also explain measurements
+  that have puzzled three streams: if both armies sprint into contact by second ten, the fight is decided before any
+  tactic applies, which is consistent with median hit range being 39-43 m on every map regardless of terrain.
+- **A dark rectangle under every vehicle** — render. The blob shadow; a *rectangle* means the texture, the alpha
+  falloff or the ground conform is wrong. Possibly newly visible now that the floor is lit.
+- **The Syndicate's weapons sound cartoonish** — audio. Specific to the energy/laser family, not the pipeline: he
+  called the same batch "awesome" on the Condemned. "Laser" is the most cliché prompt in sound design and reaches
+  straight for the 1950s ray-gun; prompt for the physical event instead (a capacitor bank discharging, an arc flash, a
+  transformer failing) and avoid pitch sweeps entirely.
+
 ### The lead's round-5 sign-off (2026-09-17)
 
 Eleven decisions, answered on the sign-off page (https://claude.ai/artifact/CWhVvcNj7BQBigp5N27kDW; answers live in

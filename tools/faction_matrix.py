@@ -20,12 +20,16 @@ import json
 import subprocess
 import sys
 import time
+import os
+
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 FACTIONS = ["gangs", "condemned", "law", "syndicate"]
 
 
 def run_match(godot, green, rust, seed, budget, time_limit):
-    command = [godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination", "--control",
+    command = [godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination", "--control",
                f"--green-faction={green}", f"--rust-faction={rust}", f"--budget={budget}",
                f"--time-limit={time_limit}", "--score-limit=0", f"--seed={seed}"]
     done = subprocess.run(command, capture_output=True, text=True, timeout=time_limit + 300)
