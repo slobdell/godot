@@ -239,6 +239,17 @@ moved later.
 - **Watch it:** `make cinematic`.
 - **Numbers:** `make audio-bench` (per-frame cost), `make music-check`, `make sfx-generate` (dry run, the batch's cost).
 
+### Never skip the whole-match pass
+**Everything else was green both times the whole-match recording found a shipped bug.** The booth's lines clipping at
++0.1 dBFS, and the fight music stopping after 8 seconds in every match (so the whole mix had been balanced against
+silence), both passed every unit test, level check, contract check and smoke. No per-clip check could see either.
+Before calling any audio change done: `make remote T="audio-pass PASS_SECONDS=90"`, and at least once per round each
+layer alone (`PASS_FLAGS=--audio-solo=music`, `=guns`, …), then look at the PNG and listen to the MP3.
+
+**Engine gotcha, `AudioStreamSynchronized`:** it reports no playback position (`get_playback_position()` is always
+0.0), so you can't seek it or read bars from it. Loop each sub-stream by itself (`loop`/`loop_offset` on a copy of
+the resource) and keep your own clock for position, as `MusicDirector.position_s()` does for stems.
+
 ### How to hear and measure each part (for whoever owns audio next)
 Every command runs from the repo root. `GODOT=.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64`.
 
