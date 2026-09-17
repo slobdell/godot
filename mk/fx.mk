@@ -61,10 +61,10 @@ PERF_CYCLES ?= 2
 PERF_FLAGS ?=
 PERF_NAME ?= perf-scene
 
-perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer → build/$(PERF_NAME).json, PERF_SCENE lines, build/screenshots/$(PERF_NAME).png (needs a display; PERF_RES, PERF_FLAGS="--fx-quality=low", PERF_LAYERS=)
+perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer → build/$(PERF_NAME).json, PERF_SCENE lines, build/screenshots/$(PERF_NAME).png (needs a display; PERF_RES, PERF_FLAGS="--fx-quality=low", PERF_LAYERS=, PERF_SOUND=1 unmuted)
 	mkdir -p $(BUILD_DIR)/screenshots
 	timeout 600 $(GODOT) --path . --resolution $(PERF_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
-		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic --mute \
+		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic $(if $(PERF_SOUND),,--mute) \
 		--perf-scene=$(CURDIR)/$(BUILD_DIR)/$(PERF_NAME).json --perf-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/$(PERF_NAME).png \
 		--perf-warmup=$(PERF_WARMUP) --perf-seconds=$(PERF_SECONDS) --perf-cycles=$(PERF_CYCLES) \
 		$(if $(PERF_LAYERS),--perf-layers=$(PERF_LAYERS)) $(PERF_FLAGS) \

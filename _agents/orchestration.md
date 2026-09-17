@@ -238,3 +238,9 @@ The kickoff prompt is one line; this section is the rest.
     both better behaved *and* cheaper than 1). The scenario that would have caught it was written after the cut.
 21. Unwatched scope creep: when the lead adds ideas mid-round, record them in docs and queue them; don't retarget
    running workers unless the change is small and inside their paths.
+22. **The same measurement repeated across variants is not more samples.** Round 5: arena ran 18 seeds on each of four
+    arenas and read 72 results, but the seeded armies depend on seed and team, not on the arena — so it was 18 army
+    pairings measured four times, and the 13/18 lean it found was p ≈ 0.05 on its own. The fix for a suspected bias is
+    never more repetitions; it is a **control that cancels the suspected cause** (here: swap the armies between teams
+    and pair the runs, or mirror them outright). Before running a bigger series, name the thing that varies between
+    samples and check it actually varies.

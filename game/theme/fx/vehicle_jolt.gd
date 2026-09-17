@@ -9,6 +9,12 @@ extends RefCounted
 const MAX_PER_UNIT := 3
 ## A jolt is over (and its art restored) after this many seconds.
 const SETTLE_SECONDS := 1.4
+## Render X5: a rock of a few degrees can't be seen past this far from the camera (m), so those kicks are skipped.
+## Every firing vehicle jolting cost ~0.2-0.3 ms a frame at 60 vehicles.
+const VISIBLE_RANGE := 75.0
+
+## Where the camera is (FxWorld sets it each frame); null = cull nothing (tests, galleries without FxWorld).
+var camera_position: Variant = null
 
 ## vehicle (Node3D) -> {"jolts": [{axis, angle, shift, start, frequency, decay}], "bases": {slot node: Transform3D}}
 var _active := {}
@@ -22,6 +28,8 @@ func active_count() -> int:
 ## with it, oscillating at `frequency` rad/s and dying out at `decay` 1/s.
 func kick(unit: Node3D, world_push: Vector3, angle_deg: float, shift_m: float, now: float, frequency := 17.0, decay := 5.5) -> void:
 	if unit == null or not is_instance_valid(unit) or not unit.is_inside_tree():
+		return
+	if camera_position is Vector3 and unit.global_position.distance_squared_to(camera_position) > VISIBLE_RANGE * VISIBLE_RANGE:
 		return
 	var local := unit.global_basis.inverse() * Vector3(world_push.x, 0.0, world_push.z)
 	local.y = 0.0

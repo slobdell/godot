@@ -254,3 +254,93 @@ func test_sounds_before_the_tree_are_dropped_not_errors() -> void:
 	assert_eq(sfx.played, 0, "nothing plays outside the tree")
 	sfx.free()
 
+
+func test_render_scale_follows_the_window_so_1080p_costs_what_the_budget_allows() -> void:
+	# Render X5 (M1): at 1920x1080 a 0.85 3D scale saved 4.8 ms GPU on the UHD 620; the UI stays at full resolution.
+	assert_eq(FxQuality.render_scale_for(1.0, 720), 1.0, "720p renders at full scale")
+	assert_near(FxQuality.render_scale_for(1.0, 1080), 0.85, 0.01, "1080p renders ~918 lines of 3D")
+	assert_true(FxQuality.render_scale_for(1.0, 2160) >= 0.7, "never below 0.7 on big screens")
+	assert_eq(FxQuality.render_scale_for(0.75, 720), 0.75, "a tier's own lower scale still wins")
+
+
+
+func test_decorative_bursts_thin_out_when_the_overdraw_budget_is_spent() -> void:
+	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 0.0, 500.0), 1.0, "room left: full size")
+	assert_near(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 436.0, 500.0), 0.8, 0.001, "a little room: smaller")
+	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.GROUND_GLOW, 10.0, 490.0, 500.0), 0.0, "no room: skipped")
+	assert_eq(BurstSystem.budget_scale(BurstSystem.Kind.FIREBALL, 10.0, 5000.0, 500.0), 1.0, "a hit's fireball is information, never thinned")
+	var bursts: BurstSystem = add_to_tree(BurstSystem.new(64))
+	bursts.overdraw_budget = 300.0
+	for i in 10:
+		bursts.spawn(BurstSystem.Kind.GROUND_GLOW, Vector3(i, 0, 0), 10.0, 1.0, Color.ORANGE, 0.0)
+	assert_true(bursts.alive_area <= 300.0 + 0.01, "alive area stays inside the budget (%.0f)" % bursts.alive_area)
+	assert_true(bursts.thinned >= 7, "most of a pile-up of glows is thinned (%d)" % bursts.thinned)
+	bursts.update(2.0)
+	assert_eq(bursts.alive_area, 0.0, "expired effects free the budget")
+
+
+func test_repeated_static_models_draw_as_one_multimesh() -> void:
+	var root: Node3D = add_to_tree(Node3D.new())
+	var shared := BoxMesh.new()
+	for i in 5:
+		var holder := Node3D.new()
+		holder.position = Vector3(i * 10.0, 0, 0)
+		var model := MeshInstance3D.new()
+		model.mesh = shared
+		model.position = Vector3(0, 1, 0)
+		holder.add_child(model)
+		root.add_child(holder)
+	var lone := MeshInstance3D.new()
+	lone.mesh = SphereMesh.new()
+	root.add_child(lone)
+	var removed := StaticInstancer.instance_repeats(root)
+	assert_eq(removed, 4, "five copies become one draw")
+	var draws := root.find_children("*", "MultiMeshInstance3D", false, false)
+	assert_eq(draws.size(), 1, "one MultiMesh for the repeated mesh; the lone sphere is left alone")
+	var multimesh := (draws[0] as MultiMeshInstance3D).multimesh
+	assert_eq(multimesh.instance_count, 5, "every copy is an instance")
+	# Headless renderers don't keep MultiMesh instance data: the instancer records the transforms for tests.
+	var placed: Array = (draws[0] as MultiMeshInstance3D).get_meta("transforms")
+	assert_eq((placed[3] as Transform3D).origin, Vector3(30, 1, 0), "placed where the copy was")
+	assert_true(lone.visible, "a single model keeps its own node")
+
+
+func test_the_unlit_floor_is_one_plane_and_lit_floors_stay_tiled() -> void:
+	var ground: ChunkedGround = add_to_tree(ChunkedGround.new())
+	assert_eq(ground.tile_count(), 64, "lit floors: 8 x 8 tiles so a light re-draws only what it reaches")
+	ground.chunked = false
+	ground.build()
+	assert_eq(ground.tile_count(), 1, "unlit floor: one draw")
+	var plane := (ground.get_child(0) as MeshInstance3D).mesh as PlaneMesh
+	assert_true(plane.subdivide_width >= 40, "still ~5 m between vertices for per-vertex fog (%d)" % plane.subdivide_width)
+
+
+func test_jolts_skip_vehicles_too_far_from_the_camera_to_see_them() -> void:
+	var jolts := VehicleJolt.new()
+	var near: Node3D = add_to_tree(Node3D.new())
+	var far: Node3D = add_to_tree(Node3D.new())
+	far.position = Vector3(0, 0, -200)
+	for unit in [near, far]:
+		var slot := VisualSlot.new()
+		unit.add_child(slot)
+	jolts.camera_position = Vector3(0, 40, 30)
+	jolts.kick(near, Vector3.FORWARD, 2.0, 0.1, 0.0)
+	jolts.kick(far, Vector3.FORWARD, 2.0, 0.1, 0.0)
+	assert_eq(jolts.active_count(), 1, "only the vehicle within %d m of the camera rocks" % VehicleJolt.VISIBLE_RANGE)
+
+
+func test_dead_vehicles_leave_capped_wrecks_that_a_new_match_clears() -> void:
+	var yard: KitYard = add_to_tree(KitYard.new())
+	var field := WreckField.new(yard)
+	var owner: Node3D = add_to_tree(Node3D.new())
+	var cap: int = WreckField.PER_TIER[FxQuality.tier()]
+	for i in cap + 5:
+		field.add(owner, Vector3(i, 0, 0), Vector3.FORWARD, [2.4, 1.6, 3.6], "Unit_%d" % i, float(i))
+	assert_eq(field.count(), cap, "the oldest wrecks go past the tier's cap")
+	assert_eq(yard.count("wreck"), cap, "one yard instance per wreck")
+	field.add(owner, Vector3(0, 0, 0), Vector3.FORWARD, [2.4, 1.6, 3.6], "Unit_%d" % (cap + 4), float(cap + 4) + 0.5)
+	assert_eq(field.count(), cap, "a death reported twice leaves one wreck")
+	field.clear()
+	assert_eq(yard.count("wreck"), 0, "a new match starts clean")
+	var fit := WreckField.scale_for([2.4, 1.6, 3.6])
+	assert_true(fit.x / fit.z <= 1.4 + 0.001 and fit.z / fit.x <= 1.4 + 0.001, "a husk is never stretched past 40%% between axes (%s)" % fit)

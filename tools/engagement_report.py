@@ -36,8 +36,9 @@ def run(args, green, rust, seed):
     raise RuntimeError(f"{green} vs {rust} seed {seed}: no MATCH_RESULT (exit {completed.returncode}) {errors}")
 
 
-def mean(values):
-    values = [v for v in values if v is not None and v >= 0]
+def mean(values, signed=False):
+    """Average, skipping None and (unless signed) the -1 "no data" marker EngagementStats uses."""
+    values = [v for v in values if v is not None and (signed or v >= 0)]
     return statistics.fmean(values) if values else float("nan")
 
 
@@ -53,6 +54,10 @@ def summarize(results):
         "engaged_distance_m": mean([e["engaged_distance_median"] for e in engagement]),
         "kill_distance_m": mean([e["kill_distance_median"] for e in engagement]),
         "static_share": mean([e["static_share"] for e in engagement]),
+        "held_line_share": mean([e.get("held_line_share") for e in engagement]),
+        "net_advance_m": mean([max(e.get("net_advance", [0, 0])) for e in engagement], signed=True),  # the side that pushed
+        "off_axis_kill_share": mean([e.get("off_axis_kill_share") for e in engagement]),
+        "behind_line_kill_share": mean([e.get("behind_line_kill_share") for e in engagement]),
         "centroid_travel_m": mean([sum(e["centroid_travel"]) / 2.0 for e in engagement]),
         "kills": kills,
         "flank_rear_kill_share": (kills["side"] + kills["rear"]) / direct if direct else float("nan"),
@@ -69,7 +74,8 @@ def summarize(results):
 def print_row(label, s):
     print(f"{label:<24} n={s['matches']:<3} len {s['duration_s']:5.0f}s  contact {s['contact_s']:4.0f}s "
           f"@{s['separation_at_contact_m']:4.0f}m  engaged {s['engaged_distance_m']:4.0f}m  kill {s['kill_distance_m']:4.0f}m  "
-          f"static {s['static_share']:4.0%}  moved {s['centroid_travel_m']:4.0f}m  "
+          f"static {s['static_share']:4.0%} held-line {s['held_line_share']:4.0%}  moved {s['centroid_travel_m']:4.0f}m "
+          f"push {s['net_advance_m']:4.0f}m  off-axis kills {s['off_axis_kill_share']:4.0%} (behind line {s['behind_line_kill_share']:3.0%})  "
           f"flank+rear {s['flank_rear_kill_share']:4.0%} (rear {s['rear_kill_share']:3.0%})  indirect {s['indirect_kill_share']:3.0%}  "
           f"cover: time {s['unit_seconds_near_cover']:3.0%} shots {s['shots_near_cover']:3.0%} "
           f"deaths {s['deaths_near_cover']:3.0%}  {s['reasons']}")
