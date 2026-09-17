@@ -70,6 +70,8 @@ Vehicle art, props' materials and the frame budget (render), weapons and rules (
 
 ### Report (2026-09-17, end of the worker's run)
 
+`make remote T=check` green on the report commit: **868 passed, 0 failed**, sim baseline `d4bd86eee0f96c54` unchanged.
+
 **Done** (all on `stream/arena`; design and every measurement in [../arenas.md](../arenas.md)):
 - **X1 (M2, CP2, merged by the orchestrator):** layout schema v2: `props` (containers stacking 1-3, ad screens,
   barricades, wrecks, floodlights, signs; `ArenaKit.PROPS`), `spawn_zones`, `lanes`, `regions`; loud validation,
