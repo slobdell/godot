@@ -147,6 +147,10 @@ the PA reading ad copy are written up under *Next steps*.
 - **Arena's four maps in the booth (bcff889, arena CP2's request).** `yard`, `boulevard`, `pit` and `boneyard` speak as
   the Container Yard, the Boulevard, the Pit and the Boneyard. Only the 18 `{arena}` lines were recorded for them: 72
   clips, speech-to-text flagged none, 122,834 → 116,573 (the balance may still settle a little lower).
+- **Bug from control (2b28709): the booth called every side the Condemned outside the match runner.** The event
+  adapter gave both teams one default faction. Each side's faction is now read from the vehicles the match fielded.
+  Test, mutation-checked. The same class of fix as `--arena=random` (50bde77, the booth names the arena that was
+  built): read what the match built, never what a flag said.
 - **Stretch: `--audio-solo=guns|impacts|engines|crowd|booth|music|ui` (e953586)** plays one layer of the mix, for tuning.
 - **X6 tooling (8ae6404).** `AudioRecorder` (`--audio-record=PATH`) records the Master bus, and `make audio-pass`
   records a 30-a-side CPU match with the booth voiced and the music on, then reports loudness, range, true peak,
@@ -196,6 +200,8 @@ the PA reading ad copy are written up under *Next steps*.
    arena's `note` would be new text for the lead to approve before recording.
 
 ### Requests to other streams
+- **control:** when `Hud.post_caption(speaker, text)` reaches main, the booth switches to it from
+  `post_message("CALLER: ...")` (not done yet: it isn't on main).
 - **render:** `make audio-bench` exists for the unmuted perf-scene variant. `perf-scene` numbers so far include no audio.
 - **render:** keep `assets/audio/{mg_loop,flame_loop,engine_*,crowd_murmur}.wav` importing as PCM
   (`compress/mode=0`); `SfxSystem.loop_frames(stream)` is the safe way to set a loop end if you touch that code.
