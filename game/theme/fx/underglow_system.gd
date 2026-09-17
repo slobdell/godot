@@ -18,8 +18,8 @@ var light_range := 7.0
 ## Off: vehicles don't take pooled lights (the tier's light floor drops these requests anyway).
 var lights_enabled := false
 ## The shadow ellipse against the glow's footprint, and how dark its middle is (0..1).
-var shadow_scale := Vector2(0.95, 0.95)
-var shadow_darkness := 0.7
+var shadow_scale := Vector2(0.88, 0.88)
+var shadow_darkness := 0.55
 
 var _sources: Dictionary = {}  # Node3D -> Color
 var _mesh := MultiMeshInstance3D.new()
@@ -56,7 +56,9 @@ func _init() -> void:
 	shadow_mesh.surface_set_material(0, shadow_material)
 	var shadow_multimesh := MultiMesh.new()
 	shadow_multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	shadow_multimesh.use_custom_data = true
+	# Darkness rides in the instance COLOR: a MultiMesh with custom data but no colors fed the shader garbage in the
+	# Compatibility renderer, which is what drew the blob as a flat dark rectangle (the lead saw it under every vehicle).
+	shadow_multimesh.use_colors = true
 	shadow_multimesh.mesh = shadow_mesh
 	shadow_multimesh.instance_count = 32
 	shadow_multimesh.visible_instance_count = 0
@@ -102,7 +104,7 @@ func update(pool: LightPool) -> void:
 		multimesh.set_instance_custom_data(n, Color(intensity, 0, 0, 0))
 		var shadow_basis := Basis(Vector3.UP, xform.basis.get_euler().y) * Basis.from_scale(Vector3(size.x * shadow_scale.x, 1.0, size.y * shadow_scale.y))
 		shadows.set_instance_transform(n, Transform3D(shadow_basis, Vector3(xform.origin.x, 0.03, xform.origin.z)))
-		shadows.set_instance_custom_data(n, Color(shadow_darkness, 0, 0, 0))
+		shadows.set_instance_color(n, Color(shadow_darkness, shadow_darkness, shadow_darkness, 1.0))
 		if lights_enabled:
 			pool.request(xform.origin + Vector3(0, 1.2, 0), color, light_energy, light_range, LightPool.PRIORITY_VEHICLE)
 		n += 1

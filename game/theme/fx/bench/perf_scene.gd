@@ -30,7 +30,7 @@ extends Node
 ## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count),
 ## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
 ## ground_chunked (the floor's tiling flipped), team_paint (hulls in a dulled team color; not restored, run it last),
-## no_live_feed (the arena screens' live match feed and replay ring).
+## no_live_feed (the arena screens' live match feed and replay ring), no_blob_shadow (the marks under vehicles).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -253,6 +253,11 @@ func _apply(phase: String) -> void:
 		"no_pool_lights":
 			if fx != null:
 				_override(fx.lights, "enabled", false)
+		"no_blob_shadow":
+			if fx != null:
+				var shadows := fx.underglow.get_node_or_null("BlobShadows")
+				if shadows != null:
+					_override(shadows, "visible", false)
 		"no_underglow":
 			if fx != null:
 				_override(fx.underglow, "visible", false)
@@ -464,6 +469,20 @@ func _census() -> Dictionary:
 			if instance.is_visible_in_tree() and instance.mesh != null:
 				var key := "dressing mesh: %s x%d surfaces" % [instance.mesh.resource_path if instance.mesh.resource_path != "" else instance.name.rstrip("0123456789"), instance.mesh.get_surface_count()]
 				counts[key] = int(counts.get(key, 0)) + 1
+	var fx_now := FxWorld.existing()
+	if fx_now != null:
+		var shadows := fx_now.underglow.get_node_or_null("BlobShadows") as MultiMeshInstance3D
+		if shadows != null and shadows.multimesh != null:
+			var mm := shadows.multimesh
+			var material := mm.mesh.surface_get_material(0) as ShaderMaterial
+			counts["blobshadow: shader=%s colors=%s custom=%s override=%s shown=%d color0=%s xform0=%s" % [
+					material.shader.resource_path if material != null else "none", mm.use_colors, mm.use_custom_data,
+					shadows.material_override, mm.visible_instance_count, mm.get_instance_color(0), mm.get_instance_transform(0)]] = 1
+	for node in get_tree().root.find_children("*", "MultiMeshInstance3D", true, false):
+		var mm := node as MultiMeshInstance3D
+		if mm.is_visible_in_tree() and mm.multimesh != null and mm.multimesh.visible_instance_count != 0:
+			var shown := mm.multimesh.visible_instance_count
+			counts["multimesh %s: %d shown of %d" % [str(mm.get_path()).replace("/root/", ""), shown, mm.multimesh.instance_count]] = 1
 	var root := _tanks_root()
 	if root != null and root.get_child_count() > 0:
 		var tank := root.get_child(0)
