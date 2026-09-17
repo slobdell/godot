@@ -63,6 +63,7 @@ var _results: Array = []
 var _hidden: Array = []
 var _shot_taken := false
 var _done := false
+var _capped := false
 ## Timestamps (µs) from probe nodes placed around FxWorld in the process order: [start, before fx, after fx].
 var _marks := PackedInt64Array([0, 0, 0])
 var _cpu_sums := {"game_ui_ms": 0.0, "fx_ms": 0.0}
@@ -94,7 +95,8 @@ func _ready() -> void:
 	_phases = PerfScene.schedule(layers, cycles)
 	# Uncapped by default (what a frame costs); --perf-capped keeps the frame target's cap and vsync (whether the target
 	# actually holds: the pacing a player sees).
-	if not flags.has("perf-capped"):
+	_capped = flags.has("perf-capped")
+	if not _capped:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 		Engine.max_fps = 0
 	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
@@ -150,6 +152,10 @@ static func layer_costs(phases: Array, key := "avg_ms") -> Dictionary:
 func _process(delta: float) -> void:
 	if _done:
 		return
+	# FxWorld applies the frame target's cap in its own _ready, which runs after this node's (children first), so an
+	# uncapped measurement has to keep clearing it.
+	if not _capped and Engine.max_fps != 0:
+		Engine.max_fps = 0
 	_time += delta
 	_update_camera(delta)
 	if _time < warmup:
@@ -547,6 +553,11 @@ func _finish() -> void:
 ## vehicle count. A count holds when its median `key` reading and every smaller count's are within one frame at `fps`
 ## (one noisy phase doesn't decide it); 0 if even the fewest didn't. 60 fps is judged on the average frame; the default
 ## target, a LOCKED 30 (the lead's sign-off), on the 99th percentile, because a locked rate that drops isn't locked. Pure.
+## A capped frame lands a hair over its target (a 30 fps cap measures 33.4 ms, not 33.33), so a count holds within this
+## much of the frame time.
+const FPS_TOLERANCE_MS := 1.0
+
+
 static func holds_fps_at(phases: Array, fps := 60.0, key := "avg_ms") -> int:
 	var by_count := {}
 	for r: Dictionary in phases:
@@ -559,7 +570,7 @@ static func holds_fps_at(phases: Array, fps := 60.0, key := "avg_ms") -> int:
 	counts.sort()
 	var held := 0
 	for count: int in counts:
-		if PerfScene.percentile(by_count[count], 0.5) > 1000.0 / fps:
+		if PerfScene.percentile(by_count[count], 0.5) > 1000.0 / fps + FPS_TOLERANCE_MS:
 			break
 		held = count
 	return held

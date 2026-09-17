@@ -253,6 +253,31 @@ up glow, resolution and the venue *and* the tick falls further. **A locked, stab
 reachable with 30 Hz alone** and may be the better game than an unstable 60: that's a design decision, not an
 engineering failure.
 
+### Measured on 30 Hz (main 84376839, 2026-09-17): the tick rate bought much less than projected
+
+`make perf-scene`, UHD 620, same scene as every other run. Files: `_agents/streams/references/perf/hz30-*.json`.
+
+| | 60 Hz baseline | 30 Hz now |
+|---|---|---|
+| 60 fps holds at (720p / 1080p) | 13 / never | **14 / 8 vehicles** |
+| Locked 30 holds at, capped, p99 (720p / 1080p) | never | **18 / 12–15 vehicles** |
+| GPU | 10 / 14 ms | 9 / 15 ms (unchanged) |
+
+**Why so little: one tick now costs roughly twice what it did, so the simulation's cost per second barely moved.**
+Script time in one tick, at matched vehicle counts (60 Hz → 30 Hz): 14 vehicles 7.9 → 13.2 ms, 23 → 20.4, 33 → 23.4,
+39 → 27.4, 60+ 34.8 → 32–42. Per second that is ~850 ms/s → ~700 ms/s at 33 vehicles: **~18% less work, not half**.
+Half the ticks doing twice the work each is what a per-tick scheduler does when it was staggering work *across* ticks
+(each tick now handles what two used to), plus the doctrine default that landed with it. **This is combat's and ai's
+number to explain; render only measured it.**
+
+**Against the lead's target** (locked 30 at 1080p with 30 a side): not met. It needs a tick of ~21 ms at 60 vehicles
+(frame = R / (1 − tick/33.3), R ≈ 12.5 ms at 1080p); measured is 32–42 ms. The tick has to come down ~40–50%, and
+that is the whole gap: GPU, draw calls and effects are all inside budget.
+
+**Measurement fix in the same commit:** perf-scene's "uncapped" runs were silently capped at 30 fps, because FxWorld
+applies the frame target in its own `_ready`, which runs after this node's (children first). It now clears the cap every
+frame while measuring uncapped, and `holds_*_at_vehicles` allows 1 ms over the target (a 30 fps cap measures 33.4 ms).
+
 ### The lead's decision: a locked 30 fps at 1080p with 30 a side, plus a 720p 60 fps option
 - `FrameTarget` (`game/theme/fx/frame_target.gd`): **LOCKED_30** (default: `Engine.max_fps` 30, 3D native up to 1080
   lines) or **PERFORMANCE_60** (60 fps, ~720 lines of 3D, UI full resolution). `--frame-target=30|60`, or the player's
