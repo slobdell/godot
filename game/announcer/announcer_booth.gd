@@ -60,10 +60,19 @@ static func attach(main: Node) -> AnnouncerBooth:
 	booth.record_path = flags.text("announcer-record")
 	var seed_text := flags.text("announcer-seed")
 	booth.history_path = flags.text("announcer-history", AnnouncerHistory.PATH)
-	booth.setup(flags.text("arena", Arena.DEFAULT_LAYOUT), int(seed_text) if seed_text.is_valid_int() else -1,
+	booth.setup(arena_key(flags.text("arena", Arena.DEFAULT_LAYOUT)), int(seed_text) if seed_text.is_valid_int() else -1,
 			flags.text("announcer-clips", DEFAULT_CLIPS), float(flags.text("announcer-volume", "0")))
 	main.game_match.add_child(booth)
 	return booth
+
+
+## The map the booth names: the arena actually built (Arena.active), because `--arena=random` (the skirmish default)
+## names no map. "" when nothing is built and the flag doesn't name one, which just keeps {arena} lines quiet.
+static func arena_key(flag_value: String) -> String:
+	var built := str(Arena.active.get("name", ""))
+	if built != "":
+		return built
+	return "" if flag_value == "random" else flag_value
 
 
 func setup(arena: String, seed_value: int = -1, clips_dir: String = DEFAULT_CLIPS, volume_db: float = 0.0) -> void:
