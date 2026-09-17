@@ -3,6 +3,8 @@
 
 .PHONY: arenas arena-test arena-report
 
+ARENA_COMMA := ,
+
 arenas: ## Regenerate arenas/*.json from tools/make_arenas.py (every layout is authored as half + its 180° mirror)
 	$(PYTHON) tools/make_arenas.py arenas
 
@@ -19,9 +21,9 @@ arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) a
 		--json $(BUILD_DIR)/arena-series.json
 
 .PHONY: arena-shots
-arena-shots: import ## Every arena in pictures: the match runner's whole-arena view and the player's skirmish view, at 1920x1080 (ARENAS="yard pit" DELAY=20) -> build/screenshots/arena-*.png (needs a display: make remote T=arena-shots)
+arena-shots: import ## Every arena in pictures: the match runner's whole-arena view and the player's skirmish view, at 1920x1080 (ARENAS=yard,pit DELAY=20) -> build/screenshots/arena-*.png (needs a display: make remote T=arena-shots)
 	mkdir -p $(BUILD_DIR)/screenshots
-	for arena in $(or $(ARENAS),$(basename $(notdir $(wildcard arenas/*.json)))); do \
+	for arena in $(or $(subst $(ARENA_COMMA), ,$(ARENAS)),$(basename $(notdir $(wildcard arenas/*.json)))); do \
 		$(GODOT) --path . --resolution 1920x1080 -- --match --elimination --control --arena=$$arena \
 			--green-faction=condemned --rust-faction=condemned --budget=5200 --time-limit=300 --seed=1 \
 			--screenshot-delay=$(or $(DELAY),20) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/arena-$$arena-overview.png \
