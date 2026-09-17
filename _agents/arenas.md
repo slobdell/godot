@@ -132,7 +132,11 @@ collapse never changes drivable space), ai (CoverMap invalidation), render (the 
 ## Shipped arenas
 
 Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (yard, boulevard, pit,
-boneyard), and `make skirmish` does that by default. Headless runs, tests and the sim baseline keep `foundry`
+boneyard), and `make skirmish` does that by default. **Invariants:** Arena owns the roll (launchers pass `random` through and read
+`Arena.active["name"]` back, which is always the resolved name); the roll comes from `--seed`, so every launcher that
+shows or records a seed passes it; and **the loader refuses `random`: only `Arena.resolve_name` understands it**. That
+separation is what keeps "unknown names fail loudly" true while random stays the default. Don't make the loader
+forgiving. Headless runs, tests and the sim baseline keep `foundry`
 (`Arena.DEFAULT_LAYOUT`). Regenerate with `make arenas`, analyse with `make arena-report`, prove with
 `make arena-series`, look with `make remote T=arena-shots`.
 
@@ -193,7 +197,10 @@ contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `bu
    brains (combat and ai this round).
 3. **Flanks are barely used** outside the pit (4-5% on yard, boulevard and boneyard vs 14% on foundry): dense maps
    funnel both armies down the centre toward the control point. The routes exist (arena-report routes them); the CPU
-   doesn't choose them. Rule of thumb 3 is delivered in geometry, not yet in behaviour. For ai: the lanes are annotated
+   doesn't choose them. Rule of thumb 3 is delivered in geometry, not yet in behaviour. *Caveat (ai, 2026-09-17):
+   the CPU in these runs may never have run doctrine (brains only, no elements or drills; doctrine wins 52-28 when on).
+   Re-take flank share, hit ranges and hidden time once that flip lands: these numbers may measure brains that can't
+   flank, not maps that don't allow it. For ai: the lanes are annotated
    (`Arena.lanes_of`).
 4. **Match shape does differ:** the boulevard is the fastest and most decisive (elimination 26 of 36); the yard is the
    control-point map (24 of 36), with the most hidden time and the shortest long shots, which is what its character
