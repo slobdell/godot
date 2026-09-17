@@ -75,6 +75,9 @@ Arena layouts and where props go (arena), gameplay (combat), brains (ai), UI and
 
 _Updated 2026-09-17 (evening)._
 
+**Checks:** `make remote T=check` green on **404152fe** (the main merge with the 30 Hz simulation): 987 passed, 0 failed.
+A check on the tip (`265dbcfc`: the feed's late-frame skip and the round-6 write-up) was running when this was written.
+
 **Plan (backlog order):** X1 perf-scene + budget (CP1) ✅ → X2 instance uniforms ✅ → X3 lights ✅ → X4 vehicle read ✅
 (first pass; team-read question for the lead) → X5 LOD/instancing/thinning ✅ → X6 faction art ✅ → arena's kit props
 (CP2 request) ✅ → stretch: wrecks left burning ✅; "desktop high" renderer and weather not started (see below).
