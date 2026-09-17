@@ -53,15 +53,93 @@ def bar_aligned(start_s: float, end_s: float, bpm: float, beats_per_bar: int) ->
     return round(first_bar, 3), round(first_bar + bars * bar, 3)
 
 
+def parse_layers(spec: str) -> list[tuple[str, dict]]:
+    """"Synth=0 Drums=0.35 Bass=0.5 FX=last_stand" -> [(name, {"from": 0.0}), ..., ("FX", {"states": [...]})]."""
+    layers = []
+    for part in spec.split():
+        name, _, when = part.partition("=")
+        if not name or not when:
+            raise SystemExit("--layers wants NAME=FROM or NAME=state[,state]: %r" % part)
+        try:
+            layers.append((name, {"from": float(when)}))
+        except ValueError:
+            layers.append((name, {"states": when.split(",")}))
+    return layers
+
+
+def find_stem(folder: Path, name: str) -> Path:
+    """Suno names stem files after the instrument ("... (Drums).wav"); match the name loosely."""
+    hits = [p for p in sorted(folder.iterdir()) if p.is_file() and name.lower() in p.stem.lower()]
+    if len(hits) != 1:
+        raise SystemExit("stem %r matches %d files in %s: %s" % (name, len(hits), folder, [h.name for h in hits]))
+    return hits[0]
+
+
+def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_per_bar: int, out: Path,
+                 rights: str, states: list[str]) -> dict:
+    """X5 (round 5): one Suno track split into stems becomes a stem set that builds with the fight.
+
+    Every stem is cut at the same offset and to the same loop, and they share **one** gain worked out from their sum,
+    so the full arrangement meets the loudness target and the relative balance Suno mixed is kept. There is no
+    limiter (a limiter per stem would change the balance), so the gain is also held under the summed peak ceiling."""
+    import numpy as np
+    sources = [(name, find_stem(folder, name), when) for name, when in layers]
+    decoded = [np.array(check_music.decode(path)[0]) for _, path, _ in sources]
+    rate = check_music.decode(sources[0][1])[1]
+    count = min(len(x) for x in decoded)
+    mix = sum(x[:count] for x in decoded)
+    threshold = 10 ** (SILENCE_DB / 20.0)
+    audible = np.nonzero(np.abs(mix) > threshold)[0]
+    start_s, end_s = audible[0] / rate, (audible[-1] + 1) / rate
+    loop_start, loop_end = bar_aligned(0.0, end_s - start_s, bpm, beats_per_bar)
+    with tempfile.TemporaryDirectory() as scratch:
+        summed = Path(scratch) / "sum.wav"
+        segment = mix[int(start_s * rate):int(end_s * rate)]
+        import wave
+        with wave.open(str(summed), "wb") as handle:
+            handle.setnchannels(1)
+            handle.setsampwidth(2)
+            handle.setframerate(rate)
+            handle.writeframes((np.clip(segment, -1, 1) * 32767).astype("<i2").tobytes())
+        lufs, _ = check_music.measure_lufs_peak(summed)
+        peak_db = 20 * np.log10(max(np.abs(segment).max(), 1e-9))
+        gain = min(TARGET_LUFS - lufs, check_music.PEAK_CEILING_DB - 0.7 - peak_db)
+        stems = []
+        for name, path, when in sources:
+            destination = out / ("%s_%s.ogg" % (track_id, name.lower().replace(" ", "_")))
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", "%.3f" % start_s, "-i", str(path),
+                            "-t", "%.3f" % (end_s - start_s), "-af", "volume=%.2fdB" % gain,
+                            "-c:a", "libvorbis", "-b:a", BITRATE, str(destination)], check=True)
+            stems.append(dict({"file": destination.name}, **when))
+    return {"stems": stems, "bpm": bpm, "beats_per_bar": beats_per_bar, "loop_start_s": loop_start,
+            "loop_end_s": loop_end, "intensity": 0.6, "states": states,
+            "rights": rights or "UNRECORDED: which Suno plan was this generated under?"}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("source", type=Path, help="what Suno gave you (mp3, wav, anything ffmpeg reads)")
-    parser.add_argument("--state", required=True, help="which MatchMood state this bed is for")
+    parser.add_argument("--state", required=True, help="which MatchMood state this bed is for (stems: the track id, e.g. fight)")
     parser.add_argument("--bpm", type=float, required=True, help="the tempo you asked Suno for")
     parser.add_argument("--beats-per-bar", type=int, default=4)
     parser.add_argument("--out", type=Path, default=Path("assets/music"))
     parser.add_argument("--rights", default="", help="the Suno plan it was generated under, and the date")
+    parser.add_argument("--layers", default="", help="stems mode: SOURCE is a folder of Suno stems, e.g. "
+                        "\"Synth=0 Drums=0.35 Bass=0.5 Guitar=0.65 FX=last_stand\" (quietest first)")
     args = parser.parse_args(argv)
+    if args.layers:
+        manifest_path = args.out / "manifest.json"
+        manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else \
+            {"schema": 1, "target_lufs": TARGET_LUFS, "tracks": {}, "stingers": {}}
+        existing = manifest["tracks"].get(args.state, {})
+        states = existing.get("states", ["lull", "skirmish", "battle", "last_stand"])
+        track = import_stems(args.source, args.state, parse_layers(args.layers), args.bpm, args.beats_per_bar,
+                             args.out, args.rights or existing.get("rights", ""), states)
+        manifest["tracks"][args.state] = track
+        manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
+        print("imported %d stems as %s: loop %.3f-%.3f s; now run: make music-check" % (
+            len(track["stems"]), args.state, track["loop_start_s"], track["loop_end_s"]))
+        return 0
     if not args.source.exists():
         raise SystemExit("%s is not there" % args.source)
     args.out.mkdir(parents=True, exist_ok=True)

@@ -560,6 +560,24 @@
    "rotation_deg": 275.0
   },
   {
+   "type": "ad_screen",
+   "position": [
+    66.0,
+    70.0
+   ],
+   "rotation_deg": 180.0,
+   "channel": "sponsor"
+  },
+  {
+   "type": "ad_screen",
+   "position": [
+    -66.0,
+    -70.0
+   ],
+   "rotation_deg": 0.0,
+   "channel": "sponsor"
+  },
+  {
    "type": "floodlight",
    "position": [
     -84.0,

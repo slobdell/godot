@@ -56,6 +56,21 @@ SINGULAR_VERBS = {"is", "has", "takes", "wins", "gets", "keeps", "goes", "does",
                   "pays", "sends", "starts", "stops", "catches", "lands", "strikes", "wipes"}
 VERBS = {"is", "are", "was", "were", "has", "have", "had", "takes", "wins", "gets", "keeps", "goes", "does",
          "will", "can", "brings", "rolls", "fields", "looks", "needs", "loses", "leads", "holds"}
+# X3 (round 5): the booth names a side by its faction, never by its colour. Capitalised, a colour is a team name
+# ("Green and Rust, live"); "the rust around the bolts" is the substance and stays legal. The team slots speak
+# colours by construction, so they are banned outright (and their vocabulary is gone, so nothing could fill one).
+COLOUR_NAMES = re.compile(r"\b(?:green|rust|red|blue|orange)\s+(?:team|side|squads?|crews?)\b|\b(Green|Rust|Red|Blue)\b", re.I)
+COLOUR_SLOTS = {"team", "other_team", "team_s", "other_team_s"}
+# A literal faction name as a *side* must be tagged with that faction, because tags are requirements: untagged, a
+# line about the Wreckers can play in a match between the Law and the Syndicate. The Syndicate owns the arena and
+# the Law is the state, so those two only count as a side when their crews or machines are the subject.
+SIDE_NOUNS = r"(?:crews?|machines?|vehicles?|tanks?|officers?|units?|drivers?|hover machines?)"
+FACTION_AS_SIDE = {
+    "condemned": re.compile(r"\bCondemned\b"),
+    "gangs": re.compile(r"\bWreckers?\b|\broad gangs?\b|\bgang crews?\b|\bGangs\b"),
+    "law": re.compile(r"\bthe Law\s+%s\b|\bLaw\s+%s\b" % (SIDE_NOUNS, SIDE_NOUNS)),
+    "syndicate": re.compile(r"\bSyndicate\s+%s\b" % SIDE_NOUNS),
+}
 ALLOWED = re.compile(r"^[A-Za-z .,!?'{}_:;-]+$")
 DIRECTOR_FLAGS = re.compile(r"^said_[a-z_]+_\{team\}$|^said_friendly_\{team\}$")
 # The lead rejected these as "far too overt" (2026-09-15); keep them out of new lines.
@@ -130,6 +145,20 @@ def audit(lines_data: dict, beats_data: dict) -> tuple[list[str], list[str]]:
             if match.group(1).lower() in SINGULAR_VERBS:
                 errors.append("%s: a faction takes a plural verb (%r): \"the Condemned take it\", not \"takes\""
                               % (where, match.group(0)))
+        for match in COLOUR_NAMES.finditer(re.sub(r"\{[a-z_]+\}", "", text)):
+            if match.group(1) and match.group(1).islower():
+                continue  # "rust" the substance, "red" the colour of something
+            errors.append("%s: %r names a side by colour; the booth names sides by faction (X3)" % (where, match.group(0)))
+        for slot in re.findall(r"\{([a-z_]+)\}", text):
+            if slot in COLOUR_SLOTS:
+                errors.append("%s: {%s} speaks a colour; use {%s} (sides are named by faction)"
+                              % (where, slot, slot.replace("team", "faction")))
+        for faction, pattern in FACTION_AS_SIDE.items():
+            if pattern.search(text) and not {"faction_" + faction, "other_faction_" + faction} & set(tags):
+                errors.append("%s: names %s as a side without a faction_%s or other_faction_%s tag, so it can play "
+                              "in a match they are not in" % (where, faction, faction, faction))
+        if re.search(r"\{(?:other_)?faction\}\s+(?:are|have|were)\b[^.!?]*\bits\b", text):
+            errors.append("%s: a faction is plural all the way through the sentence (\"are ... its\" -> \"their\")" % where)
         key = _norm(text)
         if key in texts:
             errors.append("%s: same text as %s" % (where, texts[key]))
