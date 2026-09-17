@@ -1,0 +1,10 @@
+[Unit]
+Description=Back up Tank Squad's generated assets (not in git) to builder0
+Documentation=file://%h/projects/godot/_agents/backups.md
+
+[Service]
+Type=oneshot
+ExecStart=%h/projects/godot/tools/backup_assets.sh
+# Never let a backup slow down an agent's build.
+Nice=10
+IOSchedulingClass=idle

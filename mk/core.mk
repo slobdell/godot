@@ -99,6 +99,8 @@ backup-status: ## When the backup last ran, what's on builder0, and how much roo
 	@tools/backup_assets.sh --status
 
 backup-install: ## Install and start the 30-minute systemd user timer that runs the backup
+	mkdir -p $(HOME)/.config/systemd/user
+	cp tools/systemd/tank-squad-backup.service tools/systemd/tank-squad-backup.timer $(HOME)/.config/systemd/user/
 	systemctl --user daemon-reload
 	systemctl --user enable --now tank-squad-backup.timer
 	@systemctl --user list-timers tank-squad-backup.timer --no-pager

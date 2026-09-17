@@ -35,9 +35,13 @@ make backup-install   # install and start the timer (already done on the lead's 
   first copy can't overlap the next tick.
 - **Being offline isn't a failure:** if builder0 is unreachable it logs "skipped" and exits 0.
 - **Log:** `build/backup.log`, plus `journalctl --user -u tank-squad-backup`.
-- **The timer:** `~/.config/systemd/user/tank-squad-backup.{service,timer}`, every 30 minutes, `Persistent=true` so a
-  missed window runs after a reboot. It runs while the lead is logged in; `loginctl enable-linger slobdell` would make
+- **The timer:** the unit files live in the repo (`tools/systemd/tank-squad-backup.{service,timer}`, `%h`-relative so
+  they work for any user); `make backup-install` copies them into `~/.config/systemd/user/` and starts them. Every 30
+  minutes, `Persistent=true` so a missed window runs after a reboot. It runs while the lead is logged in; `loginctl enable-linger slobdell` would make
   it run when logged out too.
+
+**Verified 2026-09-17:** first full copy 1.2 GB on builder0, file counts equal on both sides, and the timer correctly
+skipped a tick that fired while the first copy was still running.
 
 ## The manual copy (cache drive → Google Drive)
 

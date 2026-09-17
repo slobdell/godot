@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up Tank Squad's generated assets every 30 minutes
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=30min
+AccuracySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
