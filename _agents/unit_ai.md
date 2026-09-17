@@ -518,3 +518,61 @@ tactical queries ~1.1 ms. **The 1 ms target is not met.** Next steps, in order o
 (units with no contact within 120 m think every 18 ticks), orders at 30 Hz for units not firing, a
 per-team shared contact table built once per intel refresh (brains add only their per-tank fields), and
 typed arrays in place of dictionaries in `decide()`.
+
+## Round 5: cost at 60 units, the tactics ladder, offline discovery (2026-09-17, [streams/ai.md](streams/ai.md))
+
+### Measuring cost honestly
+
+`make ai-perf` prints three numbers: the old wall-clock `ai_usec_per_tick`, the **thread CPU time** of the
+priority -10 band (`tests/ai_scenarios/band_probe.gd`, from `/proc/thread-self/schedstat`), and that CPU time **per
+living unit per tick**. Use the last one to compare brain variants (they fight different battles) and only ever
+compare **interleaved** runs: even CPU time drifts ~20% over minutes with frequency scaling, and builder0's wall
+time swings ±25% between its P- and E-cores. Round 5 numbers and what they mean are in the ai brief's Status; the
+short version: 60 brains are ~180 µs each per tick of GDScript spread over hundreds of operations, so the only large
+levers left are running less often (`brain_stride`, the 30 Hz simulation) or doing less per unit.
+
+### Tactics ladder (`make tactics-ladder`)
+
+A **side** is `label=brain[:table]`: `brains=x4t9` (no elements), `standard=x4t9:standard`, `faction=x4t9:` (each
+faction's own table), or a variant table by path (`x4t9:res://tests/tactics/variants/doctrine_standard_nofar.json`).
+Sides play a mirror army (`ARMY`) or faction armies both ways (`FACTIONS=gangs,law`) on every arena (`ARENAS`), each
+seed four ways. `TacticsFlags` puts a side under an `ElementCommander` from the command line
+(`--green-elements[=table]`), so the match runner needs nothing, and `TacticsLedger` (`--tactics-ledger`) charges every
+landed round to what its shooter and its target were doing — `drill:<name>`, `<verb>:<formation>/<technique>`, or
+`brain` — which gives the per-drill table: seconds, damage dealt and taken, **exchange** (dealt / taken), kills, deaths.
+
+Read the exchange column as evidence, not as a verdict: a drill that runs when an element is already losing
+(`break_contact`, `far_ambush`) collects the deaths of fights it didn't start. The verdict is a variant table without
+the drill, played head to head (the rule in game_design.md: a drill earns its place by winning).
+
+### Offline discovery (`tools/discovery.py`, `DiscoveryBridge`)
+
+The lead's framework from round 4, built as groundwork. **Nothing runs in live play**: it exists only behind
+`--<side>-discovery`.
+
+- **Lockstep.** Every N simulated seconds the side prints `DISCOVERY_STATE` (its elements, its team's intel — never the
+  enemy's true state — the arena's lanes and regions, the control point) and blocks until one JSON line of element
+  tasks arrives on stdin. A slow thinker is never late, and a seed plus its decisions replays the same match.
+  `--slow-motion=<factor>` slows a windowed run for a person to follow.
+- **The log** (`--discovery-log`): one `{state, decision, outcome}` line per decision, where outcome is what the next
+  window did — hull and shield lost on each side, units lost, the control point, each element's own loss.
+- **Deciders**: scripted policies in `tools/discovery.py` (`hold`, `push`, `pin_and_flank`) or any process speaking
+  the protocol (`cmd:<command>`): a search, a script, or a language model behind a wrapper, offline.
+
+**The distillation plan** (how a logged policy becomes a deterministic rule):
+1. **Discover.** Run a decider over many seeds, arenas and factions against the current doctrine; keep every log.
+2. **Label.** Score each decision by its window's outcome (exchange = their loss / our loss, control gained) and by
+   the match result; keep the decisions from winning matches whose windows beat the side's median exchange.
+3. **Describe.** Reduce each kept decision to the vocabulary doctrine already speaks: the element's composition,
+   terrain class and threat (ElementSituation), the relation of its task to the nearest contact (on the line of
+   fire, off it by how far, on which lane), and the verb. Fit a shallow decision tree (depth ≤ 4, sklearn or by hand)
+   from situation features to verb + placement; a tree is readable and becomes code.
+4. **Encode.** Write the tree as an ElementCommander plan or a doctrine table rule (`traits.commander`, movement
+   rules, drill numbers) — data or a few named branches, never a model.
+5. **Prove.** A variant table carrying the rule plays the current doctrine in `make tactics-ladder` across arenas and
+   factions. It ships only if it wins head to head (the same bar as a brain variant), and its scenario joins
+   `make ai-scenarios` so a later change can't quietly remove it.
+
+The first pass of this loop, by hand: `pin_and_flank` (one element supports by fire, the others swing wide on
+alternate sides) beat standard doctrine in its first discovery run, and became `ElementCommander._pin_and_flank`
+behind `traits.commander`, snapped onto arena's annotated lanes; the ladder decides whether it stays.

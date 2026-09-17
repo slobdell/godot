@@ -94,7 +94,7 @@ func test_first_contact_makes_the_element_return_fire_before_it_decides() -> voi
 
 
 func test_an_element_that_is_losing_breaks_contact_but_not_nose_to_nose() -> void:
-	var table := _table()
+	var table := _table_running("break_contact")
 	var far := _situation([{"distance": 80.0, "strength": 900.0}], {"strength": 200.0, "taking_fire": true})
 	assert_eq(Drills.select(far, _state(), table)["drill"], "break_contact",
 			"outgunned four to one at 80 m: bound out")
@@ -113,7 +113,7 @@ func test_a_drill_stops_when_its_reason_is_gone() -> void:
 	assert_eq(Drills.select(clear, running, table)["drill"], "",
 			"with nothing left to see, fire and maneuver is over")
 	var withdrawing := _state({"drill": "break_contact", "drill_tick": clear["tick"] - 60})
-	assert_eq(Drills.select(clear, withdrawing, table)["drill"], "", "and so is breaking contact")
+	assert_eq(Drills.select(clear, withdrawing, _table_running("break_contact"))["drill"], "", "and so is breaking contact")
 
 
 func test_no_drill_runs_forever() -> void:
@@ -142,14 +142,14 @@ func test_a_halted_element_watches_its_flanks() -> void:
 
 
 func test_a_faction_without_a_drill_never_runs_it() -> void:
-	var gangs := _table("gangs")
 	var losing := _situation([{"distance": 80.0, "strength": 900.0}], {"strength": 150.0, "taking_fire": true})
-	assert_true(not gangs.runs_drill("break_contact"), "the gangs' table switches break contact off")
-	assert_true(Drills.select(losing, _state(), gangs)["drill"] != "break_contact",
-			"so a losing gang element never bounds away: it keeps coming")
-	var standard := _table()
-	assert_eq(Drills.select(losing, _state(), standard)["drill"], "break_contact",
-			"where a standard element would have withdrawn")
+	for table_name: String in ["gangs", "standard"]:
+		var table := _table(table_name)
+		assert_true(not table.runs_drill("break_contact"), "%s doesn't run break contact (cut in round 5)" % table_name)
+		assert_true(Drills.select(losing, _state(), table)["drill"] != "break_contact",
+				"so a losing %s element never bounds away: it keeps fighting" % table_name)
+	assert_eq(Drills.select(losing, _state(), _table_running("break_contact"))["drill"], "break_contact",
+			"where a table that switches it on would have withdrawn")
 
 
 ## A table that switches a drill on, for testing a mechanism no shipped doctrine currently selects.

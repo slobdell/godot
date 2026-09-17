@@ -47,6 +47,8 @@ const COVER_QUERY_TOUGHNESS := 0.8
 const MAX_CONTACTS := 8
 ## A retreating tank that's in a gun's sight first breaks line of sight at cover this close (meters), then withdraws.
 const RETREAT_COVER_DISTANCE := 25.0
+## COVER_FIRE is worth nothing to a gun reloading this fast or faster (seconds): decide() scores it 0 there.
+const COVER_FIRE_RELOAD_FLOOR := 0.4
 ## COVER_FIRE (A3): hide and peek spots count as reached within this distance (meters).
 const SPOT_ARRIVE := 1.0
 ## ...peek when the gun will be loaded by the time the tank gets there, driving at about this speed (m/s),
@@ -237,6 +239,13 @@ const PINNED_RETREAT_HP := 0.15
 ## a threat when deciding whether to stay.
 const PINNED_FLANK_BONUS := 1.5
 const PINNED_THREAT_FACTOR := 0.5
+## X2 (round 5, BrainVariants "suppress_proxy"): without matchups, a target counts as "killing this is slow going" when
+## my weapon's penetration against the armour it shows me gets this share of the damage through or less
+## (Matchups.penetration_multiplier, the Armor rule): a machine gun on a tank's front is x0.05, on its side x0.13, on a
+## scout's plate x0.6; a cannon on a tank's front x0.5.
+const SUPPRESS_PENETRATION := 0.25
+## X2 ("pinned_exposed"): COVER_FIRE against a pinned target is worth this share of its usual score.
+const PINNED_COVER_FIRE := 0.5
 ## SUPPRESS: how much of ENGAGE's appetite putting rounds on an enemy I can't kill quickly is worth...
 const SUPPRESS_WEIGHT := 0.78
 ## ...and the kill rate (relative to my best target) below which killing isn't the point any more.
@@ -307,6 +316,9 @@ var _order_source: Object = null
 var element := {}
 var _element_source: Object = null
 var _element_dirty := false
+## Whether the order and element sources publish their change signals (asked once per source, not every tick).
+var _order_signals := false
+var _element_signals := false
 ## Option name → tick its cooldown ends (stuck-state timeouts).
 var cooldowns := {}
 ## X2 combat motion: which way around the target (+1/-1, 0 = not chosen yet), when the next jink may flip it, and a
@@ -341,13 +353,19 @@ func think(_delta: float) -> void:
 		choice = {}
 		tank.intent = ""
 		return
+	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
+	# X3: a side run by doctrine from the command line (--green-elements / --rust-elements, TacticsFlags).
+	TacticsFlags.ensure(game_match)
+	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
 	var squad := game_match.squad_for(tank)
 	var serial := squad.order_serial if squad != null else 0
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
 	# K1 response guarantee: a new player order is taken up on this very tick, whatever the brain was doing.
-	var think_tick := (game_match.tick + think_offset) % _think_every == 0
+	# Under a controller stride only every _stride-th tick runs, so "on a multiple of _think_every" becomes "in the first
+	# _stride ticks of each window": exactly one run falls in any _stride consecutive ticks, so the cadence holds.
+	var think_tick := (game_match.tick + think_offset) % _think_every < _stride
 	if _poll_order(think_tick):
 		fresh_order = true
 		interrupt()
@@ -355,15 +373,17 @@ func think(_delta: float) -> void:
 	if _poll_element(think_tick):
 		fresh_order = true
 		interrupt()
+	pre = _lap("t.poll", pre)
 	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
 	# arrives in 43 ticks; waiting up to 6 for the next think wastes the dodge).
 	if not think_tick and not fresh_order and _dodges() and FIGHT_OPTIONS.has(choice.get("option", "")):
 		var count := IncomingFire.count_for(game_match, tank)
 		think_tick = count > _incoming_count
 		_incoming_count = count
+	pre = _lap("t.incoming", pre)
 	# Think LOD wake-up: every intel refresh, re-rate how close the fight is. Dropping to a faster rate (an enemy
 	# came near, or came into reach) means thinking on this very tick, so nothing is noticed late.
-	if game_match.tick % Match.INTEL_EVERY_TICKS == 0:
+	if game_match.tick % Match.INTEL_EVERY_TICKS < _stride:
 		var rate := _think_rate()
 		if rate < _think_every:
 			fresh_order = true
@@ -373,6 +393,7 @@ func think(_delta: float) -> void:
 	# made that visible — control's "the attack order completes when the target dies" allows 3 ticks). Cheap: a
 	# distance check and a name lookup.
 	_update_order_progress()
+	pre = _lap("t.rate_progress", pre)
 	if not fresh_order and not think_tick:
 		return
 	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
@@ -407,13 +428,14 @@ func think(_delta: float) -> void:
 ## Reads this unit's order from the match's Orders (OrderFeed). True when it changed since the last poll. Polled on
 ## every think tick and whenever order_changed named this unit (every tick if the source has no signal).
 func _poll_order(think_tick: bool) -> bool:
-	var feed := OrderFeed.source(game_match)
+	var feed := AiTickCache.order_source(game_match)
 	if feed != _order_source:
 		_order_source = feed
 		_order_dirty = true
-		if feed != null and feed.has_signal("order_changed") and not feed.is_connected("order_changed", _on_order_changed):
+		_order_signals = feed != null and feed.has_signal("order_changed")
+		if _order_signals and not feed.is_connected("order_changed", _on_order_changed):
 			feed.connect("order_changed", _on_order_changed)
-	if feed == null or not (_order_dirty or think_tick or not feed.has_signal("order_changed")):
+	if feed == null or not (_order_dirty or think_tick or not _order_signals):
 		return false
 	_order_dirty = false
 	var now := OrderFeed.current(feed, String(tank.name))
@@ -436,6 +458,12 @@ func _poll_order(think_tick: bool) -> bool:
 	return true
 
 
+## Controller stride: whether something arrived that must be acted on this very tick rather than on this unit's next
+## turn (a new K1 order or an element call; both arrive on signals).
+func wants_to_run() -> bool:
+	return _order_dirty or _element_dirty
+
+
 func _on_order_changed(unit_name: String) -> void:
 	if tank != null and unit_name == String(tank.name):
 		_order_dirty = true
@@ -447,13 +475,14 @@ func _on_order_changed(unit_name: String) -> void:
 ## since the last poll (`key`), which is what must reach the hull the same tick. Slot positions move with the leader
 ## and are simply refreshed.
 func _poll_element(think_tick: bool) -> bool:
-	var feed := ElementFeed.source(game_match)
+	var feed := AiTickCache.element_source(game_match)
 	if feed != _element_source:
 		_element_source = feed
 		_element_dirty = true
-		if feed != null and feed.has_signal("element_changed") and not feed.is_connected("element_changed", _on_element_changed):
+		_element_signals = feed != null and feed.has_signal("element_changed")
+		if _element_signals and not feed.is_connected("element_changed", _on_element_changed):
 			feed.connect("element_changed", _on_element_changed)
-	if feed == null or not (_element_dirty or think_tick or not feed.has_signal("element_changed")):
+	if feed == null or not (_element_dirty or think_tick or not _element_signals):
 		return false
 	_element_dirty = false
 	# The verb of the order my leader gave me is part of reading the element: under bounding overwatch the half told
@@ -691,9 +720,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			if c.get("threatens_me", c["aiming_at_me"]):
 				exposed_to += 1 if weight >= 1.0 else 0
 
+	# Round-5 X1: candidates are appended directly (a lambda call per option was measurable at 60 brains).
 	var candidates: Array = []
-	var add := func(option: String, target: String, score: float) -> void:
-		candidates.append({"option": option, "target": target, "score": score})
 
 	# L2 (X3): my crew's own suppression. Pinned, my fire is wasted, so getting out of the beaten zone beats trading.
 	var pinned: bool = me.get("pinned", false)
@@ -709,8 +737,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	elif visible_threats >= 3 and hp < 0.6:
 		retreat = 0.45 * float(d["caution"])
 
-	add.call("RETREAT", "", retreat)
-
+	candidates.append({"option": "RETREAT", "target": "", "score": float(retreat)})
 	# RESUPPLY (G7): empty guns go home; tanks already at base top up; low tanks refill in quiet moments.
 	# Under a player order it stays below ORDER_WEIGHT: the player sees ammo and decides.
 	var resupply := 0.0
@@ -729,8 +756,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		resupply = maxf(resupply, 0.85)
 	elif hp < retreat_threshold and visible_threats == 0 and not commanded:
 		resupply = maxf(resupply, 0.6)
-	add.call("RESUPPLY", "", resupply)
-
+	candidates.append({"option": "RESUPPLY", "target": "", "score": float(resupply)})
 	# TAKE_COVER: guns on me, hurt, cautious, and somewhere hidden is close by.
 	var cover := 0.0
 	if not (s["cover"] as Array).is_empty() and maxi(threats_on_me, exposed_to) > 0:
@@ -739,8 +765,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# throwing rounds away.
 	if pinned and not (s["cover"] as Array).is_empty():
 		cover = maxf(cover, PINNED_COVER)
-	add.call("TAKE_COVER", "", cover)
-
+	candidates.append({"option": "TAKE_COVER", "target": "", "score": float(cover)})
 	# RECHARGE (G6): shield gone, a gun on me, hull already worn: break contact for a few seconds (the
 	# nearest cover, or back off out of the line of fire) and come back when the shield is up. A short
 	# hop, not a trip home: RETREAT to base (2026-09-14 first cut) cost the fight and lost T1 22 of 24.
@@ -749,8 +774,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		recharge = 0.4 + 0.3 * float(d["caution"])
 	elif max_shield > 0.0 and current.get("option", "") == "RECHARGE" and shield < max_shield * RECHARGED and visible_threats > 0:
 		recharge = 0.5  # keep ducking until the shield is mostly back
-	add.call("RECHARGE", "", recharge)
-
+	candidates.append({"option": "RECHARGE", "target": "", "score": float(recharge)})
 	# A5: how fast my weapon kills each fresh contact (mechanics + catalog prior), and how the duel goes.
 	var matchups: Dictionary = TankBrain.matchups_for(s) if features.get("matchups", true) else {}
 	var best_kill_rate := 0.0
@@ -808,12 +832,25 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			if suppresses and c["visible"] and distance <= float(weapon["range"]):
 				var poor_kill: bool = best_kill_rate > 0.0 and matchups.has(c["name"]) \
 						and float((matchups[c["name"]] as Dictionary)["kill_rate"]) <= best_kill_rate * SUPPRESS_KILL_RATIO
-				var worth_pinning: bool = poor_kill or bool(c.get("pinned", false)) \
-						or c["name"] == tactics.get("flank_target", "") or c["name"] == tactics.get("focus", "")
+				# X2 (round 5): without matchups, "killing this is slow going" is read off the armour it shows me.
+				if not poor_kill and not matchups.has(c["name"]) and features.get("suppress_proxy", false):
+					poor_kill = TankBrain.rounds_barely_mark(weapon, c)
+				# X2 (round 5, "pinned_exposed"): `flank_target` is only ever set for the squad's FLANKER — the unit sent
+				# round — so round 4 was telling the flanker itself to stay and hose its own target (x1.25), and it did.
+				# Holding the target down is the rest of the squad's job; with the fix the flanker's pin reasons are the
+				# same as anyone's.
+				var own_flank: bool = c["name"] == tactics.get("flank_target", "")
+				var flanker_fix: bool = features.get("pinned_exposed", false)
+				# ...and a crew that is ALREADY pinned is exploited, not re-pinned, by a gun that can kill it: keeping its
+				# head down is the base of fire's job (the guns whose rounds barely mark it), killing it is everyone else's.
+				var keep_pinned: bool = bool(c.get("pinned", false)) \
+						and (not flanker_fix or TankBrain.rounds_barely_mark(weapon, c) or poor_kill)
+				var worth_pinning: bool = poor_kill or keep_pinned \
+						or (own_flank and not flanker_fix) or c["name"] == tactics.get("focus", "")
 				if worth_pinning:
 					var suppress_score := SUPPRESS_WEIGHT * reach * confidence * leash_factor * firepower
 					# Holding down the one a teammate is going round is the point of a base of fire.
-					if c["name"] == tactics.get("flank_target", "") or ElementFeed.is_firing_base(element_context):
+					if (own_flank and not flanker_fix) or ElementFeed.is_firing_base(element_context):
 						suppress_score *= 1.25
 					suppressions.append([c["name"], suppress_score])
 			# FLANK pays when the target is busy facing a teammate; pointless if I already see its side.
@@ -827,6 +864,9 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			elif tactics.get("flank_target", "") == c["name"] and (not commanded or String(squad["verb"]) == "assault"):
 				# A6 suppress-and-flank: the squad sent me to its focus's side while the others keep it busy.
 				flank = maxf(flank, FLANKER_APPETITE * confidence * firepower * leash_factor)
+				# X2 ("pinned_exposed"): and once they have its head down, that is the moment to go.
+				if features.get("pinned_exposed", false) and bool(c.get("pinned", false)):
+					flank = maxf(flank, FLANKER_APPETITE * PINNED_FLANK_BONUS * confidence * firepower * leash_factor)
 			flanks.append([c["name"], flank])
 		else:
 			var staleness := clampf(float(c["age"]) / float(s["memory_ticks"]), 0.0, 1.0)
@@ -835,6 +875,10 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# Artillery never brawls: it shells what the team spots (BOMBARD) and stays behind (SHADOW).
 	var fight_scale := 0.0 if is_artillery else (SCOUT_FIGHT if is_scout else 1.0)
 	var cover_fire: Dictionary = s.get("cover_fire", {}) if s.get("cover_fire") != null else {}
+	var pinned_targets := {}
+	for c in contacts:
+		if bool(c.get("pinned", false)):
+			pinned_targets[c["name"]] = true
 	for pair in engages:
 		var score: float = pair[1] * fight_scale
 		if is_scout and TankBrain._is_prey_contact(contacts, pair[0], String(me.get("unit", ""))):
@@ -842,26 +886,30 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			# fire inside 35 m, and is fragile; a scout closing fast on it is its nightmare. Even a
 			# cautious scout goes for it.
 			score = maxf(pair[1] * SCOUT_HUNT, SCOUT_HUNT_FLOOR * confidence)
-		add.call("ENGAGE", pair[0], score)
+		candidates.append({"option": "ENGAGE", "target": pair[0], "score": float(score)})
 		# COVER_FIRE (A3): the same fight, from a hide/peek pair: hide while reloading, peek to shoot. Worth it
 		# for slow-reloading direct-fire guns (a machine gun or laser gains little from ducking between
 		# shots); cautious crews like it more. Considerations: fight appetite × reload × caution × spot quality.
 		if features.get("cover_fire", true) and not cover_fire.is_empty() and cover_fire["target"] == pair[0] \
 				and weapon["kind"] != Weapons.Kind.ARC:
-			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), 0.4, 2.0)
+			var slow_reload := UtilityCurves.linear(float(weapon["reload"]), COVER_FIRE_RELOAD_FLOOR, 2.0)
 			var spot_quality := UtilityCurves.floor_at(float(cover_fire.get("score", 0.5)), 0.6)
 			var cover_value := score * slow_reload * (1.08 + 0.3 * float(d["caution"])) * spot_quality
-			add.call("COVER_FIRE", pair[0], cover_value)
+			# X2 (round 5): cover buys safety from a gun that can hit me, and a pinned crew mostly can't. Fighting it
+			# from cover is worth less than going round it or pressing it while its head is down.
+			if features.get("pinned_exposed", false) and pinned_targets.has(pair[0]):
+				cover_value *= PINNED_COVER_FIRE
+			candidates.append({"option": "COVER_FIRE", "target": pair[0], "score": float(cover_value)})
 	for pair in flanks:
-		add.call("FLANK", pair[0], pair[1] * fight_scale)
+		candidates.append({"option": "FLANK", "target": pair[0], "score": float(pair[1] * fight_scale)})
 	# SUPPRESS (X3): keep a crew's head down. It scores below a fight this unit can actually win, and above hanging
 	# back doing nothing — which is what a machine-gun scout did with 84% of its time before this existed.
 	for pair in suppressions:
-		add.call("SUPPRESS", pair[0], pair[1] * fight_scale)
+		candidates.append({"option": "SUPPRESS", "target": pair[0], "score": float(pair[1] * fight_scale)})
 	# ORBIT (A5): a fixed gun can't out-shoot a turret head-on, but it can out-turn a slow one: circle it and burst in
 	# when its gun points away. Scores above SPOT, so scouts fight what they counter instead of hanging back.
 	for pair in orbits:
-		add.call("ORBIT", pair[0], pair[1])
+		candidates.append({"option": "ORBIT", "target": pair[0], "score": float(pair[1])})
 	# CLEAR_LANE (A4): my gun is ready and aimed but a friend is in the way: step aside to a spot with a clear
 	# line to the target instead of waiting (or shooting through it). Above the fight it serves, even when
 	# that fight is committed (×COMMIT_BONUS).
@@ -869,7 +917,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			and current.get("target", "") != "":
 		for pair in engages:
 			if pair[0] == current["target"]:
-				add.call("CLEAR_LANE", pair[0], maxf(float(pair[1]) * fight_scale, 0.3) * COMMIT_BONUS * 1.15)
+				candidates.append({"option": "CLEAR_LANE", "target": pair[0], "score": float(maxf(float(pair[1]) * fight_scale, 0.3) * COMMIT_BONUS * 1.15)})
 	if is_artillery:
 		for c in contacts:
 			if not c["visible"]:
@@ -878,12 +926,11 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			if reach > float(weapon["range"]) + 40.0:
 				continue
 			var bombard := (0.6 + 0.3 * TankBrain._priority(String(d["target_priority"]), c, reach)) * confidence * firepower
-			add.call("BOMBARD", c["name"], bombard)
+			candidates.append({"option": "BOMBARD", "target": c["name"], "score": float(bombard)})
 		var trail := 0.0
 		if not (s["allies"] as Array).is_empty():
 			trail = 0.55 if visible_threats == 0 else 0.3
-		add.call("SHADOW", "", trail)
-
+		candidates.append({"option": "SHADOW", "target": "", "score": float(trail)})
 	# SPOT (scouts, directive set 2): be the team's eyes. Keep the nearest visible enemy at SCOUT_STANDOFF
 	# (outside its guns, inside our sight); with nothing in sight, scout ahead.
 	var spot := 0.0
@@ -901,17 +948,15 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 			spot = 0.7
 		else:
 			spot = 0.62
-	add.call("SPOT", "", spot)
+	candidates.append({"option": "SPOT", "target": "", "score": float(spot)})
 	for pair in investigates:
-		add.call("INVESTIGATE", pair[0], pair[1] * (0.0 if is_artillery else 1.0))
-
+		candidates.append({"option": "INVESTIGATE", "target": pair[0], "score": float(pair[1] * (0.0 if is_artillery else 1.0))})
 	# REGROUP: drifted away from the squad, weighted by cohesion (formations do this job when commanded).
 	var regroup := 0.0
 	if s["squad_center"] != null and not commanded:
 		var gap := my_position.distance_to(s["squad_center"])
 		regroup = float(d["cohesion"]) * clampf((gap - 15.0) / 30.0, 0.0, 1.0) * 0.8
-	add.call("REGROUP", "", regroup)
-
+	candidates.append({"option": "REGROUP", "target": "", "score": float(regroup)})
 	# ADVANCE toward the objective (or, with none, toward the enemy base so matches progress).
 	var advance := 0.0
 	var at_objective := false
@@ -930,8 +975,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		advance = 0.3
 	if commanded:
 		advance = 0.0  # the squad's destination replaces free advancing
-	add.call("ADVANCE", "", advance)
-
+	candidates.append({"option": "ADVANCE", "target": "", "score": float(advance)})
 	# CONTEST (stretch, control point): take and hold the center when it isn't ours. Holding tanks stay
 	# inside and fight from there. Artillery doesn't contest (it can't hold ground).
 	var contest := 0.0
@@ -945,8 +989,7 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		else:
 			contest = 0.45 if visible_threats == 0 else 0.2
 		contest *= 0.8 if is_scout else 1.0
-	add.call("CONTEST", "", contest)
-
+	candidates.append({"option": "CONTEST", "target": "", "score": float(contest)})
 	# KEEP_SLOT: be where the squad's formation and drill want me. The player's order dominates
 	# (G3): it beats even a committed ENGAGE (~0.8 x COMMIT_BONUS), and only a tank about to die
 	# (RETREAT 0.99) overrides it. "Move" means return fire on the move (the turret tracks threats,
@@ -970,16 +1013,14 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				keep_slot = 0.0 if in_position else (0.5 if visible_threats == 0 else 0.15)
 			"break_contact":
 				keep_slot = 0.0 if gap <= SLOT_TOLERANCE else 0.97
-	add.call("KEEP_SLOT", "", keep_slot)
-
+	candidates.append({"option": "KEEP_SLOT", "target": "", "score": float(keep_slot)})
 	# HOLD: the fallback, and the anchor's job once at its objective.
 	var hold := 0.1
 	if at_objective:
 		hold = 0.3 + 0.35 * (1.0 - float(d["aggression"]))
 	if in_position:
 		hold = maxf(hold, 0.72)  # in formation and halted: fight from here
-	add.call("HOLD", "", hold)
-
+	candidates.append({"option": "HOLD", "target": "", "score": float(hold)})
 	# No stuck states (X1): an option on cooldown after timing out scores much less, so something else gets a turn.
 	var cooldowns: Dictionary = s.get("cooldowns", {})
 	if not cooldowns.is_empty():
@@ -1107,6 +1148,18 @@ static func watch_for(s: Dictionary, current: Dictionary) -> Variant:
 			best_score = score
 			best = predicted
 	return best
+
+
+## X2: whether `weapon`'s rounds barely mark `contact` through the armour face it shows me (SUPPRESS_PENETRATION). False
+## when either side carries no armour data (hand-built situations, old profiles).
+static func rounds_barely_mark(weapon: Dictionary, contact: Dictionary) -> bool:
+	if not weapon.has("penetration"):
+		return false
+	var armor: Variant = Units.profile(String(contact.get("unit", ""))).get("armor")
+	if not armor is Dictionary:
+		return false
+	var thickness := float((armor as Dictionary).get(String(contact.get("exposed_face", "front")), 0.0))
+	return thickness > 0.0 and Matchups.penetration_multiplier(float(weapon["penetration"]), thickness) <= SUPPRESS_PENETRATION
 
 
 ## A scout's prey: artillery (it can't fire up close) and the roles its catalog entry is good against (the Lancer's
@@ -1259,8 +1312,9 @@ func build_situation() -> Dictionary:
 	var tactics := _tactics(features)
 	lap = _lap("s.tactics", lap)
 	var cover := _cover_spots(contacts, allies, squad_context)
+	lap = _lap("s.cover_spots", lap)
 	var cover_fire: Variant = _cover_fire_spot(contacts, allies, squad_context, cover_map)
-	lap = _lap("s.cover", lap)
+	lap = _lap("s.cover_fire", lap)
 	var incoming: Array = IncomingFire.for_unit(game_match, tank) if _dodges() else []
 	lap = _lap("s.incoming", lap)
 
@@ -1337,6 +1391,12 @@ func _cover_spots(contacts: Array, allies: Array, squad_context: Dictionary) -> 
 ## while the tank stays near the hide spot, the target stays put, and the hide spot stays hidden from it.
 func _cover_fire_spot(contacts: Array, allies: Array, squad_context: Dictionary, cover_map: CoverMap) -> Variant:
 	if tank.weapon["kind"] == Weapons.Kind.ARC:
+		return null
+	# Round-5 X1: decide() scores COVER_FIRE × UtilityCurves.linear(reload, COVER_FIRE_RELOAD_FLOOR, 2.0), which is 0 for a
+	# gun this quick (a machine gun gains nothing ducking between rounds), and a zero never wins: don't search for spots
+	# nobody will use. Same for variants without cover fire.
+	if float(tank.weapon["reload"]) <= COVER_FIRE_RELOAD_FLOOR or not BrainVariants.for_team(tank.team).get("cover_fire", true):
+		_cover_fire_cache = {}
 		return null
 	var reach := float(tank.weapon["range"])
 	var target: Dictionary = {}

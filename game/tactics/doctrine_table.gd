@@ -28,8 +28,12 @@ const TABLE_KEYS := ["name", "faction", "display_name", "summary", "spacing_m", 
 ## Every number a drill runs on, with the doctrine-standard value. A table overrides only what it changes.
 const DRILL_DEFAULTS := {
 	# Which drills this doctrine runs at all (X3).
+	# break_contact is off by default since round 5: the army was better without it, in mirrors (standard without it
+	# 91-29 overall, 30-10 head to head across five arenas) and at scale (faction doctrine without it 27-21 against
+	# faction doctrine, and even with brains alone where the full table lost 14-34). The drill still exists for a
+	# table that switches it on (doctrine.md "Round 5").
 	"enabled": ["react_to_contact", "near_ambush", "far_ambush", "assault_through", "support_by_fire",
-			"break_contact", "herringbone"],
+			"herringbone"],
 	# Encircle and bait are off unless a table asks for them: they are gang behaviour, not doctrine.
 	# How close the pack gets when it rings a target, and how near is too near to keep circling.
 	"encircle_m": 70.0,
@@ -96,6 +100,9 @@ var traits: Dictionary = {}
 
 
 static func path_for(table_name: String) -> String:
+	# Round-5 X3: the tactics ladder names variant tables by path (tests/tactics/variants/).
+	if table_name.begins_with("res://"):
+		return table_name
 	return "%s/doctrine_%s.json" % [DIR, table_name]
 
 
@@ -129,6 +136,35 @@ static func for_faction(faction_id: String) -> DoctrineTable:
 		push_error(standard["error"])
 		return DoctrineTable.new()
 	return standard["table"]
+
+
+## Round-5 X3: `base` with changes, for ladder variants of a faction's own table:
+## `drop` drills taken out of `drills.enabled`, and `commander` set as `traits.commander` ("" = unchanged).
+## Cached by name, base, drop and commander.
+static func variant_of(base: DoctrineTable, drop: PackedStringArray, commander: String) -> DoctrineTable:
+	var key := "variant|%s|%s|%s" % [base.name, ",".join(drop), commander]
+	if _cache.has(key):
+		return _cache[key]
+	var table: DoctrineTable = base.duplicate_table()
+	var enabled: Array = (table.drills.get("enabled", DRILL_DEFAULTS["enabled"]) as Array).duplicate()
+	for drill in drop:
+		enabled.erase(drill)
+	table.drills["enabled"] = enabled
+	if commander != "":
+		table.traits["commander"] = commander
+	table.name = "%s%s%s" % [base.name, "".join(Array(drop).map(func(d: String) -> String: return "-" + d)),
+			"+" + commander if commander != "" else ""]
+	_cache[key] = table
+	return table
+
+
+func duplicate_table() -> DoctrineTable:
+	var copy := DoctrineTable.new()
+	for property: Dictionary in get_property_list():
+		if property["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			var value: Variant = get(property["name"])
+			copy.set(property["name"], value.duplicate(true) if value is Dictionary or value is Array else value)
+	return copy
 
 
 ## Forget cached tables (tests that write their own files).

@@ -473,6 +473,60 @@ more lines — volume doesn't get a line past the priority queue.
 | Break contact | Outgunned pair broke from 76 m to **106 m**, both alive |
 | Herringbone | Halted, all-round security, **1.0** of the circle watched |
 
+## Round 5: what the tactics ladder says doctrine is worth (ai, 2026-09-17)
+
+`make tactics-ladder` (unit_ai.md) plays doctrine variants, brains and arenas against each other and charges every
+landed round to what the units were doing. Three results, in the order they changed what we believed:
+
+1. **Doctrine wins small and loses large.** In five-vehicle `combined_arms` mirrors with no objective, armies under
+   doctrine beat the same army on brains alone 52-28 (120 matches, five arenas). In faction armies at the 5200 budget
+   with the control point on — the game the lead plays — brains alone beat faction doctrine 32-16 (48 matches, gangs vs
+   law both ways; gangs under doctrine 6-18). These are two different games, and the second is the one that counts.
+   Whether the control-point objective or the drills at scale is to blame is being isolated (control point off, and
+   trimmed tables, all from one snapshot) — see the ai brief's Status for the answer. The skirmish CPU stays on brains
+   until a doctrine beats them in that setup.
+2. **An exchange ratio attributes an outcome to whatever was selected, not to what caused it.** far_ambush traded
+   0.16-0.26 over 44 deaths and looked like the worst drill in the book. Removing it changed nothing (standard without
+   far_ambush 55-65 overall, 20-20 head to head against standard): it is chosen in fights that are already going badly.
+   **The only way to know what a behaviour costs is to remove it and measure the army with and without.**
+3. **break_contact is a net loss** in the mirror ladder: standard without it went 91-29, and beat standard on every
+   arena (30-10 head to head). Cut pending the faction runs at scale, where it traded 1.27.
+
+**The discovery loop produced a candidate, and the ladder rejected it.** The scripted `pin_and_flank` policy
+(tools/discovery.py) beat standard doctrine in its first exploratory run, was distilled into
+`ElementCommander._pin_and_flank` (behind `traits.commander`), and then lost 43-77 across 240 matches. That is the loop
+working: it finds candidates, not answers, and a candidate ships only if it wins the ladder.
+
+### Proposal for round 6: an army-level decision above the elements
+
+**Why.** Doctrine was written for, and wins at, the scale of a platoon: a few elements with one task each. At 30 a
+side every element runs the same `ElementCommander` plan — line elements attack the nearest contact or move on the
+objective, the rest support by fire — so a whole army converges on one point, and the drills that decide *where an
+element goes* (the round-4 rule) all decide the same place. Arena measured the symptom from the map side: flanking
+lanes used 4-5% of unit-time on the dense maps. What's missing is not a better drill; it's the decision a company
+commander makes before any drill runs: **which elements take the objective, which shape the fight around it, and
+which stay back.**
+
+**What it would be.** An `ArmyPlan` (pure, like `ElementPlan`) that the `ElementCommander` consults every
+THINK_TICKS, over the army's elements and the arena's annotations (`Arena.lanes_of`, `regions_of`: centre,
+chokepoint, flank, overlook, cover_cluster):
+- **Main effort:** the strongest one or two elements take the objective (the control point, or the enemy's mass).
+- **Supporting effort / base of fire:** elements with long reach take overlooks or cover clusters with a line on the
+  main effort's objective (`support_by_fire` there, not at the nearest contact).
+- **Shaping:** one element per annotated flank lane, sized by composition (light and fast first), with a timing
+  rule — it moves before the main effort commits, and attacks only once the base of fire has the enemy pinned
+  (the pinned signal x5p now keeps).
+- **Reserve:** whatever is left holds back and is committed where the exchange is going best.
+- **Faction flavour lives here,** not in drills: gangs put most elements on the lanes (the pack gets around you),
+  the Law keeps a large base of fire and bounds the main effort, the Syndicate trades main effort for overlooks and
+  standoff.
+
+**How it would be proven.** The same bar as everything else: a table trait (`traits.army`) the tactics ladder turns
+on, played in faction armies at the 5200 budget with the control point on, against brains-only and against the
+current commander, counterbalanced both ways, and adopted only if it wins. The discovery harness is the right tool
+to explore allocations first (`tools/discovery.py` commands whole elements; the pin-and-flank result is a reminder
+that its candidates must be ladder-proven, not trusted).
+
 ## Open questions and requests
 
 _See the stream's Status in `_agents/streams/archive/round4/doctrine.md`._
