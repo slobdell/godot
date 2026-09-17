@@ -177,6 +177,24 @@ _Updated 2026-09-17 (evening)._
   `--arena=boneyard` (kit props: barricades, towers, signs, wrecks), `make perf-scene` (the numbers; opens a window
   for ~2 minutes), `make export-desktop` (43.5 MB desktop pack).
 
+### After main's Jolt physics (re-measured 2026-09-17, main 8d975fa)
+- `make perf-scene`, 720p: sim tick **21.5 ms at 66 vehicles** (still 9 ticks per frame), 14 ms at 43, 10 ms at 20;
+  GPU **9.5–10.7 ms**; draws 460–700; 0 engine errors. The frame first holds 60 fps at **~8–10 vehicles**
+  (12–14 ms, ticks_per_frame ≈ 1). 1080p-class: GPU 13–15 ms (this run's layer deltas are spoiled by one 28 ms sample).
+- The four kit arenas (yard, boulevard, pit, boneyard) at gameplay zoom read well at the new light levels
+  (`build/screenshots/arenas-grid.png`). Only nit: an ad screen seen from behind is a flat black slab.
+
+### Thinking ahead: screens with live match content (orchestrator's heads-up; waiting on the lead)
+- **What it costs:** a live feed is a second camera rendering the match into the screens' channel SubViewport
+  (AdBroadcast already has one, 320×640 on high, frame-skipped). Its GPU fill is small at that size (~1/7 of 720p's
+  pixels, glow off in the feed), but draw submission repeats per scene draw: ~+1.5–2 ms CPU render and ~+1–1.5 ms GPU
+  per feed frame at 60 vehicles. Rendered every 4th frame (15 Hz) with a reduced cull mask (no floor detail, no HUD,
+  no decorative effects), that averages ~+0.5 ms CPU, ~+0.3 ms GPU. **One feed shared by every screen**, never one
+  per screen.
+- **Replay** needs no simulation rewind: record that 15 Hz feed into a ring of textures (~3 s at 256×512 ≈ 45 frames,
+  ~23 MB of VRAM) and play it back after a kill; the CinematicCamera's shot choice aims the feed camera at the fight
+  before the kill happens. Measure with a `live_feed` perf-scene layer before committing to it.
+
 ### Next steps
 1. The lead's answers on glow and team read (M3); then per-team hull paint if the rim isn't enough.
 2. Re-measure `make perf-scene` when combat and ai land sim-tick work: once ticks_per_frame is ~1, the GPU line starts
