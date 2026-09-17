@@ -266,9 +266,17 @@ engineering failure.
 **Why so little: one tick now costs roughly twice what it did, so the simulation's cost per second barely moved.**
 Script time in one tick, at matched vehicle counts (60 Hz → 30 Hz): 14 vehicles 7.9 → 13.2 ms, 23 → 20.4, 33 → 23.4,
 39 → 27.4, 60+ 34.8 → 32–42. Per second that is ~850 ms/s → ~700 ms/s at 33 vehicles: **~18% less work, not half**.
-Half the ticks doing twice the work each is what a per-tick scheduler does when it was staggering work *across* ticks
-(each tick now handles what two used to), plus the doctrine default that landed with it. **This is combat's and ai's
-number to explain; render only measured it.**
+**Reconciled with combat (2026-09-17).** Two separate factors, and their headless number and mine are consistent:
+- **Machine:** combat's own `make sim-profile TIME=60` run on the lead's laptop gives **tick 18.42 ms at 58 vehicles**
+  against **6.68 ms on builder0**: the laptop is **~2.75× slower** for the identical headless workload. In game on the
+  laptop it is ~32 ms: rendering shares the main thread in Compatibility, plus other agents' load. Same thing measured
+  in three places; only the last is what the lead gets.
+- **Why 30 Hz can only save ~13%:** the same profile with `PROFILE_FLAGS=--no-brains` gives **tick 2.69 ms**, so brains
+  are **85% of a tick** (15.69 ms of 18.42). Brains think at a fixed 10/s wall clock, so their cost *per second* does
+  not change with tick rate; only the non-brain 2.7 ms per tick halves (~81 ms/s of ~630). That is the ~13-18% measured,
+  and combat's `ready_to_fire` fix (~14% more shells) accounts for the rest.
+- The doctrine default was **withdrawn**, so it is not part of this (an earlier note here said otherwise).
+**The lever is brain cost per second, not tick rate: 30 Hz has already given what it can.**
 
 **Against the lead's target** (locked 30 at 1080p with 30 a side): not met. It needs a tick of ~21 ms at 60 vehicles
 (frame = R / (1 − tick/33.3), R ≈ 12.5 ms at 1080p); measured is 32–42 ms. The tick has to come down ~40–50%, and
