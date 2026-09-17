@@ -89,10 +89,62 @@ Dynamic measures come from seeded match series (the match runner with `--arena=`
 
 ## Shipped arenas
 
-_Filled in by X3/X4 with each arena's one-line fight and its measured numbers._
+Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (yard, boulevard, pit,
+boneyard), and `make skirmish` does that by default. Headless runs, tests and the sim baseline keep `foundry`
+(`Arena.DEFAULT_LAYOUT`). Regenerate with `make arenas`, analyse with `make arena-report`, prove with
+`make arena-series`, look with `make remote T=arena-shots`.
 
 | Arena | Character | The fight it wants |
 |---|---|---|
-| foundry | Round 1's arena (v1 layout) | Mid-range with a little cover: the baseline everything else is compared to |
+| **yard** (the Container Yard) | Six staggered container walls base to base, alleys that never line up, a walled plaza | Dense lanes and short sightlines: fights at corners and alley mouths; whoever scouts the next lane gets the ambush. Scouts, IFVs, burners |
+| **boulevard** (the Boulevard) | Three avenues with low barricade medians, a roundabout of screens, walled service roads on the flanks | Long fire lanes broken by screens, kiosks and wrecks: spot first, cross the avenues under cover. Artillery and long guns |
+| **pit** (the Pit) | A ring of stacked containers around the control point with four gates; open ground outside | A control-point brawl behind walls: hold a gate and own the approach; inside is knife range |
+| **boneyard** (the Boneyard) | Wrecks and tipped containers at odd angles, no pattern of shape, symmetric in value | Local fights that read differently every match; small elements and spotting win |
+| foundry | Round 1's arena (v1), the default for headless runs | Mid-range with a little cover: the baseline the others are compared to |
 | scrapyard | Round 2's dense layout (v1) | Short fights at corners |
 | furnace | Foundry plus fire pits (v1) | Route around the pits |
+
+### Static measures (`make arena-report`, 2026-09-17)
+
+Views are eye-level rays from drivable points every 12 m in the contested field (|z| ≤ 84), 16 directions, clipped at
+170 m. Doctrine terrain is the share of the field that `ElementSituation` would call dense today, and with touching
+boxes merged into one piece of cover (the change suggested to ai).
+
+| Arena | Pieces (low) | Mean view | Views ≥ 120 m | Dense today | Dense, merged |
+|---|---|---|---|---|---|
+| yard | 96 (4) | **44 m** | 6% | 95% | 86% |
+| boneyard | 69 (6) | 61 m | 13% | 88% | 88% |
+| pit | 54 (4) | 70 m | 17% | 56% | 45% |
+| boulevard | 72 (28) | 72 m | 21% | 92% | 46% |
+| scrapyard | 36 | 63 m | 13% | 50% | 50% |
+| foundry | 19 | **78 m** | 22% | 16% | 16% |
+
+### Dynamic measures (`make arena-series`, seeds 1-6, Condemned vs Condemned at 5200, elimination + control, 180 s)
+
+Each seed is played twice, bases swapped. Ranges are muzzle to impact of rounds that hit a vehicle. Flank share and
+hidden share are unit-seconds inside the contested field spent at |x| > 60 m, and not visible to the enemy.
+
+| Arena | South advantage (surviving share, mean ± SE) | Winner flips on swap | Median length | Decided by | Median / p90 hit range | Flank share | Hidden share |
+|---|---|---|---|---|---|---|---|
+| yard | −0.03 ± 0.09 | 0 / 6 | 113 s | control 9, elimination 3 | 38 / **57 m** | 4% | **58%** |
+| boulevard | +0.01 ± 0.02 | 0 / 6 | **94 s** | elimination 10, control 2 | **43** / 70 m | 6% | 38% |
+| pit | +0.01 ± 0.04 | 0 / 6 | 113 s | control 7, elimination 5 | 42 / 63 m | **30%** | 40% |
+| boneyard | −0.10 ± 0.08 | 0 / 6 | 106 s | elimination 8, control 4 | 40 / 59 m | 5% | 50% |
+| foundry | −0.00 ± 0.02 | 0 / 6 | 101 s | elimination 9, control 3 | 39 / 74 m | 14% | 36% |
+
+**What this says (honestly):**
+1. **Fairness:** no arena shows a base advantage distinguishable from zero. The win rate is useless as the control
+   here: each team's army is seeded separately, army strength decided every match, and **no seed's winner flipped
+   when the bases swapped, on any arena**. The paired surviving-share margin is the measure. The yard and boneyard have
+   wider spreads (one seed each moved ~0.45), so seeds 7-18 are running to tighten them before the rotation is final.
+2. **The maps change how fights look, not who wins.** Winners were identical across all five arenas for every seed.
+   Hidden time rises from 36% (foundry) to 58% (yard), the long tail of hit ranges shortens from 74 m to 57 m, and the
+   pit pushes 30% of unit-time out around its ring. What they didn't change: **median hit range sits at 38-43 m on every
+   map, foundry included**, so "two masses at max range" isn't a sightline problem the map can fix. It's ranges and
+   brains (combat and ai this round).
+3. **Flanks are barely used** outside the pit (4-6% on yard, boulevard and boneyard vs 14% on foundry): dense maps
+   funnel both armies down the centre toward the control point. The routes exist (arena-report routes them); the CPU
+   doesn't choose them. Rule of thumb 3 is delivered in geometry, not yet in behaviour. For ai: the lanes are annotated
+   (`Arena.lanes_of`).
+4. **Match shape does differ:** the boulevard is the fastest and most decisive (elimination 10 of 12), the yard and pit
+   are control-point matches (9 and 7 of 12), which is what their characters promised.
