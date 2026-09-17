@@ -1,5 +1,5 @@
-// Generated vehicle bodies (Meshy PBR: albedo, normal, glTF ORM, emission) in the cyberpunk theme. One material
-// per unit is shared by every instance; everything per-vehicle is an instance uniform (streams/archive/round2/art.md X1):
+// Generated vehicle bodies (Meshy PBR: albedo, normal, glTF ORM, emission) in the cyberpunk theme. One shared material
+// per (texture set, team, paint, heat step): no instance uniforms, which cap the renderer at ~256 instances (render X2, round 5):
 //   team_color  the model's own neon light bars (the cyan/magenta emission) glow in the TEAM color, so friend or
 //               foe reads without extra geometry; red and amber warning lights keep their generated color
 //   paint       rgb = the garage's body color, a = how strongly it shows through the grime (0 = none)
@@ -15,17 +15,20 @@ uniform sampler2D orm_texture : hint_default_white, filter_linear_mipmap, repeat
 uniform sampler2D emission_texture : source_color, hint_default_black, filter_linear_mipmap, repeat_enable;
 uniform float emission_energy = 4.0;
 // ACES tonemapping bleaches over-bright cyan to white: keep the team neon moderate (still over the glow threshold).
-uniform float team_neon_energy = 0.6;
+uniform float team_neon_energy = 0.35;
 // Glossy dark metal under a black sky renders black blotches (orientation trip-up 43): keep a roughness floor.
 uniform float roughness_floor = 0.5;
 uniform float metallic_scale = 0.85;
 uniform vec3 rim_color : source_color = vec3(0.5, 0.6, 1.0);
-uniform float rim_strength = 0.22;
+uniform float rim_strength = 0.3;
+// Render X4 (round 5, M3): the rim carries the team as a hint on the silhouette, so identity survives at distance while
+// the emissive light bars stay small (the lead: "I don't see tanks, I see blue lights").
+uniform float rim_team = 0.55;
 uniform float rim_power = 3.0;
 
-instance uniform vec4 team_color : source_color = vec4(0.75, 0.75, 0.8, 1.0);
-instance uniform vec4 paint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
-instance uniform float heat = 0.0;
+uniform vec4 team_color : source_color = vec4(0.75, 0.75, 0.8, 1.0);
+uniform vec4 paint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
+uniform float heat = 0.0;
 
 vec3 rgb_to_hsv(vec3 c) {
 	vec4 k = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -54,5 +57,6 @@ void fragment() {
 	float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), rim_power);
 	// Heat: a dull red glow that turns orange-white only near the top (cubic, so warm barrels stay dark).
 	vec3 hot = mix(vec3(0.9, 0.12, 0.01), vec3(1.0, 0.7, 0.35), heat * heat) * heat * heat * heat * 2.5;
-	EMISSION = neon * emission_energy + rim_color * rim * rim_strength + hot;
+	vec3 rim_tint = mix(rim_color, team_color.rgb, rim_team);
+	EMISSION = neon * emission_energy + rim_tint * rim * rim_strength + hot;
 }

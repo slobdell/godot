@@ -25,6 +25,9 @@ var lights: Array[OmniLight3D] = []
 ## Lights lit by the last commit() (for the perf overlay and tests).
 var lit_count := 0
 var enabled := true
+## Requests and flashes below this priority are dropped (render X3: the tier's `light_floor`, so tracers and vehicles
+## never take a real light and the few lights left go to the moments that matter). 0 = accept everything.
+var min_priority := 0.0
 
 # This frame's continuous requests (parallel arrays, reused).
 var _positions := PackedVector3Array()
@@ -59,6 +62,8 @@ func resize(size: int) -> void:
 
 ## A light wanted for this frame only.
 func request(position: Vector3, color: Color, energy: float, light_range: float, priority: float) -> void:
+	if priority < min_priority:
+		return
 	if _count >= _positions.size():
 		var grow := maxi(16, _positions.size())
 		_positions.resize(_positions.size() + grow)
@@ -76,6 +81,8 @@ func request(position: Vector3, color: Color, energy: float, light_range: float,
 
 ## A light that decays from `energy` to 0 over `duration` seconds (quadratic falloff).
 func flash(position: Vector3, color: Color, energy: float, light_range: float, duration: float, priority: float, now: float) -> void:
+	if priority < min_priority:
+		return
 	var entry := {"position": position, "color": color, "energy": energy, "range": light_range,
 			"start": now, "duration": maxf(duration, 0.001), "priority": priority}
 	if _flashes.size() >= MAX_FLASHES:
