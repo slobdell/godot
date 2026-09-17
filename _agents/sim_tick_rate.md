@@ -6,31 +6,43 @@
 > Not merged to `main` until the orchestrator clears it. The original proposal follows, then the checklist that
 > render and control worked out.
 
-## What it bought (measured 2026-09-17, the lead's laptop and builder0)
+## What it bought (measured 2026-09-17, the lead's laptop; settled with render)
 
-**The simulation's CPU per second roughly halved, as designed.** `make remote T="sim-profile TIME=60"` on builder0,
-Condemned 31 v 27: the whole tick costs 6.68 ms at 30 Hz against 5.7-6.4 ms at 60 Hz on the same machine, so per-tick
-cost is about the same and there are half as many ticks: **200 ms of simulation per second against 378**.
+**Per simulated second, the simulation's script cost fell 27%.** Same laptop, same build, same seed, same 60
+simulated seconds, `make sim-profile`:
 
-**On the lead's laptop the frame improves everywhere, by less than half**, because the GPU and the renderer don't
-care about the tick rate (`make perf-scene`, same build, same seed, 30 Hz vs 60 Hz at 720p):
-
-| Vehicles | 60 Hz frame | 30 Hz frame |
+| | 60 Hz | 30 Hz |
 |---|---|---|
-| 59 | 134 ms (7.5 fps) | 101 ms (10 fps) |
-| 41 | 80 ms | 38 ms (26 fps) |
-| 34 | 33 ms | 27 ms (37 fps) |
+| per tick | 8.56 ms | 12.56 ms |
+| **per simulated second** | **513 ms** | **377 ms (−27%)** |
+| controllers (OrderController executing + TankBrain thinking) | 417 ms/s | 318 ms/s |
+| tanks (driving, turret, gun) | 66 ms/s | 34 ms/s (halved) |
+| match rules (intel, suppression, control) | 20 ms/s | 20 ms/s (unchanged) |
 
-**Against the lead's target** (a locked 30 fps at 1080p with 60 vehicles; before: 60 fps held at 13 vehicles at 720p
-and never at 1080p): at 1080p, 30 Hz holds **30 fps to about 30 vehicles** (29 ms at 30, 34 ms at 34) and **10 fps at
-60** (98 ms). 60 fps at 720p now holds to about 22 vehicles. So the tick change is a large step and **not enough on
-its own**: at 60 vehicles a tick still costs ~31 ms on the laptop, of which **~85% is the unit controllers** (brains).
-The next lever is brain cost per second, not the tick rate. A think rate of 5/s instead of 10/s was tried and the
-measurement was inconclusive — `perf-scene` is a live battle, so two runs diverge and equal vehicle counts are not
-equal fights; it needs `make sim-profile` or `make ai-perf`, which measure a fixed workload.
+**Why it is 27% and not 50%:** only work that happens *per tick* halves. Anything on a wall-clock cadence — brains
+thinking 10 times a second, intel 10/s, suppression 20/s — costs the same per second by construction, and it is most
+of the tick. The controllers band is both: executing every tick (halves) and thinking on a cadence (doesn't).
+An earlier note here said 47%; that compared two builder0 runs of different fights and was wrong.
 
-Caveat: the laptop was running this agent's own jobs; the numbers are pessimistic, and the 30 Hz and 60 Hz runs were
-taken back to back under the same load.
+**In the game, on the lead's laptop, at 1080p** (`make perf-scene`, merged build: armies hold until ordered, guns at
+their real rate of fire). **The answer depends on what else is running on the machine, and that is worth more than
+the average:**
+
+| Vehicles | Frame (quiet laptop) | |
+|---|---|---|
+| 19–29 | **33.3 ms, p95 33.5** | a genuinely locked 30 fps |
+| 33–35 | 37.8 ms (26.5 fps) | just misses |
+| 41 | 55 ms | |
+| 65 | 100 ms (10 fps) | |
+
+With five agents sharing the CPU, render measured the same build holding a locked 30 at **12–15 vehicles**. Both
+numbers are real; the lead's own machine will be quiet when he plays, and **nobody has yet measured it truly idle**.
+Before this round: 60 fps held at 13 vehicles at 720p and never at 1080p.
+
+**The remaining gap is brains, not the tick rate.** At 58 vehicles headless on the laptop a tick costs 18.4 ms with
+brains and 2.7 ms without (render, `PROFILE_FLAGS=--no-brains`): ~85%. Thinking less often is the obvious lever and it
+is a behaviour decision, not only a cost one. Measure it with `make sim-profile` or `make ai-perf`, never with
+`perf-scene`: that is a live battle, so two runs diverge and equal vehicle counts are not equal fights.
 
 ## Start here: the interpolation checklist (render + control, 2026-09-17)
 
