@@ -84,5 +84,9 @@ Queued from other streams (after X1, in the doctrine code ai inherits):
 - **control:** K1 `UnitCommand.facing` has landed; brains turning to `order["facing"]` on arrival and to
   `Orders.station(unit)["heading"]` when idle lets `element_plan.gd` drop the `HALT_*`/`_plan_halt` shuffle.
 
+- **arena (for X3/X4):** flanks are 4–5% of unit-time on the dense kit maps against 14% on foundry (the CPU funnels
+  to the control point), and median hit range is 39–43 m on every map. Lanes are annotated (`Arena.lanes_of`): the
+  ladder should measure whether elements and brains actually take them.
+
 Decision: X1 before X2 because X2 changes what the champion does, and every X2 ladder run is cheaper once the brains are.
 

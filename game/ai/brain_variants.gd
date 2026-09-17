@@ -26,8 +26,10 @@ extends RefCounted
 ##   avoid_beaten      steer manoeuvres away from walls of bullets, and suppress on purpose (round-4 X3, L2; default on)
 ##   suppress_proxy    SUPPRESS without matchups: "my rounds barely mark it" from penetration vs the armour it shows (round-5 X2)
 ##   pinned_exposed    fighting a pinned enemy from cover is worth less than going round it (round-5 X2)
-##   exec_stride       (int) execution LOD (round-5 X1): steer, and aim a reloading gun, every this many ticks, holding the
-##                     last throttle, turn and aim in between; any new order or reflex executes at once (default 1)
+##   brain_stride      (int) controller stride (round-5 X1): the whole controller, thinking and executing, runs every this
+##                     many physics ticks, staggered per unit, and the tank keeps its last command in between; a new
+##                     order or element call runs at once (default 1). Measured before it: holding only the steering at
+##                     30 Hz ("exec_stride") saved 6% per unit and was removed.
 const PROFILES := {
 	# Round 1's behaviors on today's sensing (tactical cover spots, contact cap): the reference point.
 	"r1": {"cover_fire": false, "retreat_to_cover": false, "hold_for_friends": false, "squad_tactics": false, "matchups": false},
@@ -54,9 +56,9 @@ const PROFILES := {
 	"x4t9": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9},
 	# Round-4 X3 control: the champion with L2 taken away — it neither avoids beaten zones nor fires to suppress.
 	# The control for every suppression measurement, and the "before" the ladder compares against.
-	# Round-5 X1: the champion steering (and aiming while reloading) at 30 Hz instead of 60. A cost cut that has to
-	# prove it costs no behaviour: scenarios and a ladder against x4t9 before it is adopted.
-	"x5e2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "exec_stride": 2},
+	# Round-5 X1: the champion running its controller at 30 Hz (every other physics tick, staggered). Half the cost by
+	# construction; it has to prove it costs no behaviour (scenarios, and a ladder against x4t9) before adoption.
+	"x5b2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "brain_stride": 2},
 	# Round-5 X2: the champion with both suppression gates opened (see the features above).
 	"x5s": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "suppress_proxy": true, "pinned_exposed": true},
 	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "avoid_beaten": false},

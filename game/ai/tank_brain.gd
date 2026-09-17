@@ -350,7 +350,7 @@ func think(_delta: float) -> void:
 		choice = {}
 		tank.intent = ""
 		return
-	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("exec_stride", 1)))
+	_stride = maxi(1, int(BrainVariants.for_team(tank.team).get("brain_stride", 1)))
 	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
 	var squad := game_match.squad_for(tank)
@@ -358,7 +358,9 @@ func think(_delta: float) -> void:
 	var fresh_order := serial != _order_serial
 	_order_serial = serial
 	# K1 response guarantee: a new player order is taken up on this very tick, whatever the brain was doing.
-	var think_tick := (game_match.tick + think_offset) % _think_every == 0
+	# Under a controller stride only every _stride-th tick runs, so "on a multiple of _think_every" becomes "in the first
+	# _stride ticks of each window": exactly one run falls in any _stride consecutive ticks, so the cadence holds.
+	var think_tick := (game_match.tick + think_offset) % _think_every < _stride
 	if _poll_order(think_tick):
 		fresh_order = true
 		interrupt()
@@ -376,7 +378,7 @@ func think(_delta: float) -> void:
 	pre = _lap("t.incoming", pre)
 	# Think LOD wake-up: every intel refresh, re-rate how close the fight is. Dropping to a faster rate (an enemy
 	# came near, or came into reach) means thinking on this very tick, so nothing is noticed late.
-	if game_match.tick % Match.INTEL_EVERY_TICKS == 0:
+	if game_match.tick % Match.INTEL_EVERY_TICKS < _stride:
 		var rate := _think_rate()
 		if rate < _think_every:
 			fresh_order = true
@@ -448,6 +450,12 @@ func _poll_order(think_tick: bool) -> bool:
 		if order["verb"] == "move" or order["verb"] == "attack_move":
 			order["verb"] = "hold"
 	return true
+
+
+## Controller stride: whether something arrived that must be acted on this very tick rather than on this unit's next
+## turn (a new K1 order or an element call; both arrive on signals).
+func wants_to_run() -> bool:
+	return _order_dirty or _element_dirty
 
 
 func _on_order_changed(unit_name: String) -> void:

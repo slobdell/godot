@@ -187,16 +187,14 @@ const AVOID_CLEARANCE := 5.0
 ## Wheels move on to the next path waypoint within this share of their turning radius (at least WAYPOINT_RADIUS).
 const WHEELS_WAYPOINT_RADII := 0.8
 var _lane_hold_left := 0
-## Round-5 X1, execution LOD (BrainVariants "exec_stride"): a brain may steer on every Nth tick and hold the throttle and
-## turn in between. The last steering, the tick the fire-avoidance check last ran, whether the last progress check
-## was a stall, and the time owed to the path timer. `_execute_now` forces a full tick (a new order, K1).
-var _held_throttle := 0.0
-var _held_turn := 0.0
-var _held_aim_point := Vector3.ZERO
-var _held_valid := false
-var _last_stalled := false
-var _owed_delta := 0.0
-var _execute_now := false
+## Round-5 X1, controller stride (BrainVariants "brain_stride"): a brain runs its whole controller — thinking and
+## executing — on every Nth physics tick, staggered by think_offset, and hands the tank its last command in between.
+## `_step` is how many ticks the current run covers (counters that count ticks add it), `_last_run_tick` when it last
+## ran, `_last_command` what it handed over, and `_fire_checked_tick` when the fire-avoidance check last looked.
+var _stride := 1
+var _step := 1
+var _last_run_tick := -1
+var _last_command: TankCommand = null
 var _fire_checked_tick := -1000
 
 
@@ -209,8 +207,27 @@ func _physics_process(delta: float) -> void:
 	if tank == null or not is_instance_valid(tank):
 		return
 	var started := Time.get_ticks_usec() if profiling else 0
+	var brain := self as TankBrain
+	if _stride > 1 and brain != null and brain.game_match != null:
+		var tick := brain.game_match.tick
+		if _last_command != null and _last_run_tick >= 0 and not brain.wants_to_run() \
+				and (tick + brain.think_offset) % _stride != 0:
+			# Controller stride (round-5 X1): not this unit's tick. The tank keeps its last command — throttle, turn, aim
+			# and trigger — for one more tick; anything that must not wait (a new order, the element leader's call) runs
+			# it at once instead (TankBrain.wants_to_run).
+			tank.command = _last_command
+			if profiling:
+				executed_held += 1
+				profile_usec += Time.get_ticks_usec() - started
+			return
+		_step = clampi(tick - _last_run_tick, 1, _stride) if _last_run_tick >= 0 else 1
+		_last_run_tick = tick
+		delta *= _step
+	if profiling:
+		executed_full += 1
 	think(delta)
 	tank.command = compute_command(delta)
+	_last_command = tank.command
 	if profiling:
 		profile_usec += Time.get_ticks_usec() - started
 
@@ -247,10 +264,8 @@ func set_orders(new_move: Variant, new_weapon: Variant, new_reflexes: Variant = 
 		move_order = new_move
 		_drive_elapsed = 0.0
 		_repath_left = 0.0
-		_execute_now = true
 	if new_weapon != null:
 		weapon_order = new_weapon
-		_execute_now = true
 	return ""
 
 
@@ -263,40 +278,18 @@ func compute_command(delta: float) -> TankCommand:
 		_held_aim = tank.turret_forward()
 	# Far away, so the tank's own movement doesn't swing the aim (parallax).
 	var cmd := TankCommand.new(0.0, 0.0, tank.global_position + _held_aim * HELD_AIM_DISTANCE)
-	ticks_since_fire += 1
+	ticks_since_fire += _step
 	var clock := Time.get_ticks_usec() if profile_detail else 0
 	_sense()
-	var reflex_move: Dictionary = move_order
 	_apply_reflexes()
-	if _stride > 1 and move_order != reflex_move:
-		_execute_now = true
 	clock = _lap("c.reflexes", clock)
 	clock = Time.get_ticks_usec() if profiling else 0
-	var full := _full_execution_tick()
-	if profiling:
-		if full:
-			executed_full += 1
-		else:
-			executed_held += 1
-	if full:
-		_apply_move(cmd, delta + _owed_delta)
-		_owed_delta = 0.0
-		_held_throttle = cmd.throttle
-		_held_turn = cmd.turn
-	else:
-		_hold_move(cmd, delta)
+	_apply_move(cmd, delta)
 	_apply_unstick(cmd, delta)
 	if profiling:
 		TankBrain.profile_parts["move"] = int(TankBrain.profile_parts.get("move", 0)) + Time.get_ticks_usec() - clock
 		clock = Time.get_ticks_usec()
-	# A loaded gun always runs the whole weapon path (the shot is taken on the tick it can be); one that is still
-	# reloading keeps last tick's aim on off ticks, since it cannot fire anyway.
-	if full or not _held_valid or tank.weapon["kind"] == Weapons.Kind.ARC or tank.ready_to_fire():
-		_apply_weapon(cmd)
-		_held_aim_point = cmd.aim_point
-		_held_valid = true
-	else:
-		cmd.aim_point = _held_aim_point
+	_apply_weapon(cmd)
 	if profiling:
 		TankBrain.profile_parts["weapon"] = int(TankBrain.profile_parts.get("weapon", 0)) + Time.get_ticks_usec() - clock
 	if cmd.fire:
@@ -304,44 +297,9 @@ func compute_command(delta: float) -> TankCommand:
 	return cmd
 
 
-## Execution LOD (round-5 X1): whether this tick steers and aims from scratch. Always, unless this is a brain whose
-## variant sets "exec_stride" > 1 — then on every stride-th tick (staggered by think_offset), and on any tick where
-## something changed the orders (a think that re-ordered, a reflex, a K1 interrupt).
-func _full_execution_tick() -> bool:
-	var brain := self as TankBrain
-	if brain == null or brain.game_match == null or _stride == 1:
-		_execute_now = false
-		return true
-	if _execute_now or (brain.game_match.tick + brain.think_offset) % _stride == 0 or move_order["type"] == "drive":
-		_execute_now = false
-		return true
-	return false
-
-
-## An off tick under execution LOD: keep steering as last tick decided, and keep the bookkeeping that counts ticks
-## (the path timer, stall detection) honest.
-func _hold_move(cmd: TankCommand, delta: float) -> void:
-	if move_order["type"] == "move_to":
-		cmd.throttle = _held_throttle
-		cmd.turn = _held_turn
-		_owed_delta += delta
-		stalled_ticks = stalled_ticks + 1 if _last_stalled else stalled_ticks
-	elif move_order["type"] == "face":
-		cmd.throttle = _held_throttle
-		cmd.turn = _held_turn
-		stalled_ticks = 0
-	else:
-		stalled_ticks = 0
-
-
-## The brain variant's execution stride, 1 for everything else (set by TankBrain when it reads its features).
-var _stride := 1
-
-
 ## A new order from the player: drop the unstick routine, the old path, and stall bookkeeping, so the new order
 ## drives this very tick (K1 response guarantee).
 func interrupt() -> void:
-	_execute_now = true
 	_fire_detour = null
 	_fire_detour_again = 0
 	_fire_since = -1
@@ -485,7 +443,9 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 		# it runs on the first executed tick at least FIRE_CHECK_TICKS - 1 after the last one instead.
 		if _stride == 1 and (tick + brain.think_offset) % FIRE_CHECK_TICKS != 0:
 			return waypoint
-		if _stride > 1 and tick - _fire_checked_tick < FIRE_CHECK_TICKS - 1:
+		# Under a controller stride the check can't wait for an exact multiple (that tick may not run): it looks on the
+		# first run at least FIRE_CHECK_TICKS after the last look.
+		if _stride > 1 and tick - _fire_checked_tick < FIRE_CHECK_TICKS:
 			return waypoint
 		_fire_checked_tick = tick
 	var ahead := here + direction * reach
@@ -506,7 +466,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 		elif tick >= _fire_detour_until or _flat_distance(here, leg) <= FIRE_DETOUR_REACHED:
 			_fire_detour = null  # that step is done; look again below and take another if it is still needed
 		else:
-			fire_detours += 1
+			fire_detours += _step
 			return leg
 	if not still_swept:
 		_fire_since = -1
@@ -536,7 +496,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 		_fire_detour_until = tick + FIRE_DETOUR_TICKS
 		if _fire_since < 0:
 			_fire_since = tick
-		fire_detours += 1
+		fire_detours += _step
 		return best
 	# Looked and found nothing: every way round is swept too. Push on rather than looking again every few ticks.
 	fire_no_way_round += 1
@@ -624,8 +584,7 @@ func _track_progress(goal: Vector3, drive: Vector2, remaining: float) -> void:
 		_progress_best = remaining
 		stalled_ticks = 0
 	else:
-		stalled_ticks += 1
-	_last_stalled = stalled_ticks > 0
+		stalled_ticks += _step
 
 
 ## The point to steer at now: the next navmesh waypoint toward `goal`, or `goal`
@@ -772,7 +731,7 @@ func _shootable(enemy: Tank) -> bool:
 ## _nearest_shootable(), re-scanned every SCAN_EVERY_TICKS while the last pick is still shootable (a nearer enemy
 ## may have appeared), and every tick while there's nothing to shoot (a delay there leaves loaded guns idle).
 func _scanned_shootable() -> Tank:
-	_scan_left -= 1
+	_scan_left -= _step
 	var pick_alive := _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive()
 	# X2, order execution at a lower rate for units that aren't firing: a gun that is still reloading cannot shoot
 	# anything, so neither re-picking a target nor re-testing the sight line to the current one buys anything this
@@ -897,8 +856,8 @@ func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
 	if not hold_for_friends:
 		return true
 	if _lane_hold_left > 0:
-		_lane_hold_left -= 1
-		lane_blocked_ticks += 1
+		_lane_hold_left -= _step
+		lane_blocked_ticks += _step
 		held_for_friends += 1
 		return false
 	var blockers := FireLanes.for_shot(tanks_root, tank, aim)
@@ -906,7 +865,7 @@ func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
 		lane_blocked_ticks = 0
 		lane_blocker = ""
 		return true
-	lane_blocked_ticks += 1
+	lane_blocked_ticks += _step
 	lane_blocker = String(blockers[0])
 	held_for_friends += 1
 	_lane_hold_left = LANE_RECHECK_TICKS - 1
