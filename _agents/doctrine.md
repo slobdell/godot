@@ -473,6 +473,30 @@ more lines — volume doesn't get a line past the priority queue.
 | Break contact | Outgunned pair broke from 76 m to **106 m**, both alive |
 | Herringbone | Halted, all-round security, **1.0** of the circle watched |
 
+## Round 5: what the tactics ladder says doctrine is worth (ai, 2026-09-17)
+
+`make tactics-ladder` (unit_ai.md) plays doctrine variants, brains and arenas against each other and charges every
+landed round to what the units were doing. Three results, in the order they changed what we believed:
+
+1. **Doctrine wins small and loses large.** In five-vehicle `combined_arms` mirrors with no objective, armies under
+   doctrine beat the same army on brains alone 52-28 (120 matches, five arenas). In faction armies at the 5200 budget
+   with the control point on — the game the lead plays — brains alone beat faction doctrine 32-16 (48 matches, gangs vs
+   law both ways; gangs under doctrine 6-18). These are two different games, and the second is the one that counts.
+   Whether the control-point objective or the drills at scale is to blame is being isolated (control point off, and
+   trimmed tables, all from one snapshot) — see the ai brief's Status for the answer. The skirmish CPU stays on brains
+   until a doctrine beats them in that setup.
+2. **An exchange ratio attributes an outcome to whatever was selected, not to what caused it.** far_ambush traded
+   0.16-0.26 over 44 deaths and looked like the worst drill in the book. Removing it changed nothing (standard without
+   far_ambush 55-65 overall, 20-20 head to head against standard): it is chosen in fights that are already going badly.
+   **The only way to know what a behaviour costs is to remove it and measure the army with and without.**
+3. **break_contact is a net loss** in the mirror ladder: standard without it went 91-29, and beat standard on every
+   arena (30-10 head to head). Cut pending the faction runs at scale, where it traded 1.27.
+
+**The discovery loop produced a candidate, and the ladder rejected it.** The scripted `pin_and_flank` policy
+(tools/discovery.py) beat standard doctrine in its first exploratory run, was distilled into
+`ElementCommander._pin_and_flank` (behind `traits.commander`), and then lost 43-77 across 240 matches. That is the loop
+working: it finds candidates, not answers, and a candidate ships only if it wins the ladder.
+
 ## Open questions and requests
 
 _See the stream's Status in `_agents/streams/archive/round4/doctrine.md`._
