@@ -34,7 +34,7 @@ const REPORTABLE := ["task", "formation", "technique", "drill"]
 ## The same call is not made twice inside this many ticks (10 s). An element that halts, moves and halts
 ## again forms the same herringbone each time, and a booth that says so every time is the PA repeating
 ## itself — the thing the lead complained about.
-const COOLDOWN_TICKS := 600
+const COOLDOWN_TICKS := SimClock.TICK_RATE * 10
 
 
 ## The event for an element's latest decision, or {} when nothing worth reporting changed.

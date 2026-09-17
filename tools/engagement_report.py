@@ -16,16 +16,21 @@ import statistics
 import subprocess
 import sys
 import time
+import os
+
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 
-def run(args, green, rust, seed):
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--", "--match", "--elimination",
+def run(args, green, rust, seed, tune=None):
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination",
                "--control", f"--green-faction={green}", f"--rust-faction={rust}", f"--budget={args.budget}",
                f"--time-limit={args.time_limit}", "--score-limit=0", f"--seed={seed}"]
     if args.arena:
         command.append(f"--arena={args.arena}")
-    if args.tune:
-        command.append(f"--tune={args.tune}")
+    tune = args.tune if tune is None else tune
+    if tune:
+        command.append(f"--tune={tune}")
     completed = subprocess.run(command, capture_output=True, text=True, timeout=args.time_limit * 4 + 240)
     for line in completed.stdout.splitlines():
         if line.startswith("MATCH_RESULT "):
@@ -93,7 +98,10 @@ def main():
     parser.add_argument("--arena", default="")
     parser.add_argument("--tune", default="")
     parser.add_argument("--json")
+    parser.add_argument("--variants", default="", help="JSON file {name: tune string}: run every variant, one row each")
     args = parser.parse_args()
+    if args.variants:
+        return run_variants(args)
 
     pairs = [tuple(p.split(":")) for p in args.pairs.split(",") if p]
     jobs = []
@@ -130,6 +138,51 @@ def main():
             json.dump({"args": vars(args), "overall": overall,
                        "pairs": {k: summarize(v) for k, v in by_pair.items()}, "results": results}, handle, indent=1)
     return 1 if failures else 0
+
+
+def run_variants(args):
+    """Every variant plays the same pairings and seeds; one ALL row per variant, for A/B tuning."""
+    variants = json.load(open(args.variants))
+    pairs = [tuple(p.split(":")) for p in args.pairs.split(",") if p]
+    jobs = []
+    for name, tune in variants.items():
+        for green, rust in pairs:
+            for seed in range(args.first_seed, args.first_seed + args.seeds):
+                jobs.append((name, tune, green, rust, seed))
+                if green != rust:
+                    jobs.append((name, tune, rust, green, seed))
+    started = time.time()
+    by_variant, failures = {name: [] for name in variants}, []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        futures = {pool.submit(run, args, g, r, s, tune): name for name, tune, g, r, s in jobs}
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                by_variant[futures[future]].append(future.result())
+            except Exception as err:
+                failures.append(str(err))
+    print(f"ENGAGEMENT VARIANTS pairs {args.pairs}, seeds {args.seeds}, {len(jobs)} matches in {time.time() - started:.0f}s")
+    summaries = {}
+    for name in variants:
+        if by_variant[name]:
+            summaries[name] = summarize(by_variant[name])
+            summaries[name]["wins"] = wins_by_faction(by_variant[name])
+            print_row(name, summaries[name])
+            print(f"{'':<24} wins {summaries[name]['wins']}")
+    for failure in failures:
+        print("FAILED", failure, file=sys.stderr)
+    if args.json:
+        with open(args.json, "w") as handle:
+            json.dump({"args": vars(args), "variants": variants, "summaries": summaries}, handle, indent=1)
+    return 1 if failures else 0
+
+
+def wins_by_faction(results):
+    wins = {}
+    for r in results:
+        side = {"Green": "green", "Rust": "rust"}.get(r["winner"])
+        name = r["pairing"][side] if side else "draw"
+        wins[name] = wins.get(name, 0) + 1
+    return wins
 
 
 if __name__ == "__main__":

@@ -50,7 +50,7 @@ func test_a_battle_drill_is_published_with_what_set_it_off() -> void:
 	await lab.start()
 	alpha.assign({"verb": "move", "to": [TacticsScenarios.LANE_X, -40.0]})
 	var sprung := false
-	for tick in 60 * 16:
+	for tick in SimClock.TICK_RATE * 16:
 		await lab.step()
 		if not sprung and lab.center_of(names).z < 12.0:
 			sprung = true
@@ -86,7 +86,7 @@ func test_the_same_decision_is_not_announced_twice() -> void:
 	var alpha := _element(lab, names)
 	await lab.start()
 	alpha.assign({"verb": "move", "to": [TacticsScenarios.LANE_X, 0.0]})
-	for tick in 60 * 8:
+	for tick in SimClock.TICK_RATE * 8:
 		await lab.step()
 	var seen := {}
 	for event: Dictionary in reports:

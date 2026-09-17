@@ -16,7 +16,7 @@ extends RefCounted
 ## per squad per planning bucket (deterministic: every brain in a bucket reads the same plan, computed from the
 ## state at the bucket's first query).
 
-const PLAN_EVERY_TICKS := 30
+const PLAN_EVERY_TICKS := SimClock.TICK_RATE / 2
 ## A focus needs at least this many members able to shoot it (otherwise everyone just fights).
 const FOCUS_MIN_SHOOTERS := 2
 ## Suppress-and-flank needs this many living members, and the focus moving slower than FLANK_MAX_SPEED.

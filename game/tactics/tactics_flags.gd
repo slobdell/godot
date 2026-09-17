@@ -15,7 +15,7 @@ extends RefCounted
 
 ## Wait this many ticks after the match starts before forming elements (squads and navigation settle first; the same
 ## wait tactics-parity uses).
-const SETTLE_TICKS := 12
+const SETTLE_TICKS := SimClock.TICK_RATE / 5
 
 static var _match_id := 0
 static var _done := false

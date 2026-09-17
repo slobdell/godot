@@ -22,7 +22,7 @@ const SCORE_MARGIN := 1.6
 ## Scenes are clustered on a grid this many meters across.
 const CELL_M := 40.0
 ## A vehicle hit within this many ticks counts as "in the action".
-const HIT_TICKS := 120
+const HIT_TICKS := SimClock.TICK_RATE * 2
 ## Further than this and the camera cuts instead of gliding.
 const CUT_DISTANCE_M := 70.0
 ## Shots frame no closer than this, so a lone duel doesn't jam the lens into a hull.

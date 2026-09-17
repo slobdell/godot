@@ -9,14 +9,14 @@ extends RefCounted
 
 const LEVELS := {
 	# Reacts in about a third of a second, and its aim wanders up to ~2 m around the lead point: most long shots miss.
-	"easy": {"think_ticks": 18, "aim_wander_m": 2.0},
+	"easy": {"think_ticks": SimClock.TICK_RATE * 3 / 10, "aim_wander_m": 2.0},
 	"normal": {"think_ticks": 0, "aim_wander_m": 0.0},
 	# Reacts every 4 ticks (the default is 6) and aims true.
-	"hard": {"think_ticks": 4, "aim_wander_m": 0.0},
+	"hard": {"think_ticks": SimClock.TICK_RATE / 15, "aim_wander_m": 0.0},
 }
 const DEFAULT := "normal"
 ## The wander pattern changes every this many ticks (a crew re-laying the gun).
-const WANDER_PERIOD_TICKS := 20
+const WANDER_PERIOD_TICKS := SimClock.TICK_RATE / 3
 
 static var _levels: Array = []
 

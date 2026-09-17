@@ -66,7 +66,7 @@ func test_stems_play_locked_together_and_fade_on_change() -> void:
 	assert_true(music.update_layers(0.95, "battle"), "a battle changes the arrangement")
 	assert_true(music.layers.size() > before, "by adding layers")
 	assert_true(not music.update_layers(0.95, "battle"), "and the same reading changes nothing")
-	await wait_physics_frames(int((MusicDirector.STEM_FADE_S + 0.4) * 60.0))
+	await wait_physics_frames(int((MusicDirector.STEM_FADE_S + 0.4) * SimClock.TICK_RATE))
 	for index in music.layers:
 		assert_near(music.stem_db[index], 0.0, 0.5, "layer %d faded up" % index)
 

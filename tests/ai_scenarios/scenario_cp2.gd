@@ -28,7 +28,7 @@ func test_a_lancer_holds_steady_and_lases_a_tank() -> void:
 	AiScenario.make_durable(lancer)
 	var speeds: Array = []
 	await s.start()
-	for tick in 60 * 15:
+	for tick in SimClock.TICK_RATE * 15:
 		await s.step()
 		speeds.append(lancer.speed())
 	var flips := _count_flips(speeds)
@@ -48,11 +48,11 @@ func test_artillery_digs_in_and_shells_a_spotted_target() -> void:
 	AiScenario.make_durable(battery)
 	var deployed := 0
 	await s.start()
-	for tick in 60 * 25:
+	for tick in SimClock.TICK_RATE * 25:
 		await s.step()
 		if battery.deploy_ratio >= 1.0:
 			deployed += 1
-	print("MEASURE ai_cp2_artillery deployed %.1f s of 25, %d rounds" % [deployed / 60.0, s.shots_by(battery)])
+	print("MEASURE ai_cp2_artillery deployed %.1f s of 25, %d rounds" % [deployed / float(SimClock.TICK_RATE), s.shots_by(battery)])
 	assert_true(s.shots_by(battery) >= 3, "the battery digs in and fires (%d rounds)" % s.shots_by(battery))
 
 
@@ -70,7 +70,7 @@ func test_artillery_stays_dug_in_on_a_moving_target() -> void:
 	var packs := 0
 	var was_deployed := false
 	await s.start()
-	for tick in 60 * 25:
+	for tick in SimClock.TICK_RATE * 25:
 		await s.step()
 		if was_deployed and battery.deploy_ratio < 1.0:
 			packs += 1
@@ -88,7 +88,7 @@ func test_a_scout_guns_down_a_lancer() -> void:
 	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-100, 0, 50), 0.0, {}, "scout")
 	AiScenario.make_durable(scout)
 	await s.start()
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 	print("MEASURE ai_cp2_scout_vs_lancer scout shots %d (%d hits, %d on the deck), lancer lost %d" % [s.shots_by(scout),
 			s.game_match.stats["hits"][Match.Team.GREEN], s.game_match.stats["weak_spot_hits"][Match.Team.GREEN],
@@ -107,7 +107,7 @@ func test_a_scout_works_onto_a_tanks_engine_deck() -> void:
 	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-70, 0, 20), 0.0, {}, "scout")
 	AiScenario.make_durable(scout)
 	await s.start()
-	for tick in 60 * 25:
+	for tick in SimClock.TICK_RATE * 25:
 		await s.step()
 	var deck: int = s.game_match.stats["weak_spot_hits"][Match.Team.GREEN]
 	var hits: int = s.game_match.stats["hits"][Match.Team.GREEN]
@@ -131,7 +131,7 @@ func test_lone_tanks_without_objectives_find_each_other() -> void:
 	var seen_at := -1
 	var closest_unseen := INF
 	await s.start()
-	for tick in 60 * 40:
+	for tick in SimClock.TICK_RATE * 40:
 		await s.step()
 		if seen_at >= 0:
 			continue
@@ -139,8 +139,8 @@ func test_lone_tanks_without_objectives_find_each_other() -> void:
 			seen_at = tick
 		else:
 			closest_unseen = minf(closest_unseen, green.global_position.distance_to(rust.global_position))
-	print("MEASURE ai_cp2_lone_tanks first sighting after %.1f s, closest unseen %.0f m, shots %d + %d" % [seen_at / 60.0,
+	print("MEASURE ai_cp2_lone_tanks first sighting after %.1f s, closest unseen %.0f m, shots %d + %d" % [seen_at / float(SimClock.TICK_RATE),
 			closest_unseen, s.shots_by(green), s.shots_by(rust)])
 	assert_true(seen_at >= 0 and closest_unseen >= 25.0, "they spot each other before passing close (%.1f s, %.0f m)" % [
-			seen_at / 60.0, closest_unseen])
+			seen_at / float(SimClock.TICK_RATE), closest_unseen])
 	assert_true(s.shots_by(green) + s.shots_by(rust) >= 2, "and fight")

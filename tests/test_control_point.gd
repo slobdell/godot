@@ -17,11 +17,11 @@ func test_one_tank_captures_the_center_and_scores() -> void:
 	var game_match := _setup()
 	var green := game_match.spawn_tank("Green_1", 0, Match.Team.GREEN)
 	green.global_position = Vector3(5, 0, 5)
-	await wait_physics_frames(roundi(Match.CONTROL_CAPTURE_SECONDS * 60.0) - 30)
+	await wait_physics_frames(roundi(Match.CONTROL_CAPTURE_SECONDS * float(SimClock.TICK_RATE)) - SimClock.TICK_RATE / 2)
 	assert_eq(game_match.control_owner, -1, "not captured before %.0f s" % Match.CONTROL_CAPTURE_SECONDS)
-	await wait_physics_frames(60)
+	await wait_physics_frames(SimClock.TICK_RATE)
 	assert_eq(game_match.control_owner, Match.Team.GREEN, "captured after %.0f s" % Match.CONTROL_CAPTURE_SECONDS)
-	await wait_physics_frames(60 * 3)
+	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	assert_true(game_match.control_score[Match.Team.GREEN] >= 2, "the holder scores a point a second (%d)" % game_match.control_score[0])
 
 
@@ -30,13 +30,13 @@ func test_a_bigger_army_does_not_capture_faster_and_contesting_freezes_it() -> v
 	for i in 4:
 		var tank := game_match.spawn_tank("Green_%d" % i, 0, Match.Team.GREEN)
 		tank.global_position = Vector3(-8 + i * 5, 0, 6)
-	await wait_physics_frames(roundi(Match.CONTROL_CAPTURE_SECONDS * 60.0) / 2)
+	await wait_physics_frames(roundi(Match.CONTROL_CAPTURE_SECONDS * float(SimClock.TICK_RATE)) / 2)
 	assert_true(game_match.control_owner == -1, "four tanks still take the full capture time (flat rate: anti-snowball)")
 	var rust := game_match.spawn_tank("Rust_1", 0, Match.Team.RUST)
 	rust.global_position = Vector3(0, 0, -8)
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS)
 	var frozen := game_match.control_progress
-	await wait_physics_frames(60 * 4)
+	await wait_physics_frames(SimClock.TICK_RATE * 4)
 	assert_near(game_match.control_progress, frozen, 0.001, "with both teams inside, capture stops")
 
 
@@ -48,8 +48,8 @@ func test_holding_to_the_limit_wins_the_match() -> void:
 	game_match.spawn_tank("Green_1", 0, Match.Team.GREEN)
 	game_match.control_owner = Match.Team.RUST
 	game_match.control_progress = -1.0
-	game_match._control_ticks = [0, (Match.CONTROL_POINTS_TO_WIN - 1) * 60]
-	await wait_physics_frames(90)
+	game_match._control_ticks = [0, (Match.CONTROL_POINTS_TO_WIN - 1) * SimClock.TICK_RATE]
+	await wait_physics_frames(SimClock.TICK_RATE * 3 / 2)
 	assert_eq(results.size(), 1, "the match ends")
 	assert_eq(results[0]["winner"], "Rust", "the holder wins")
 	assert_eq(results[0]["reason"], "control", "by control")

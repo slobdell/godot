@@ -79,7 +79,7 @@ func test_the_burner_is_the_flamethrowers_unit() -> void:
 	target.global_position = Vector3(-100, 0, 8)
 	target.rotation.y = PI / 2.0
 	var full: float = target.health + target.shield
-	for tick in 60 * 2:
+	for tick in SimClock.TICK_RATE * 2:
 		burner.command = TankCommand.new(0.0, 0.0, target.global_position, true)
 		target.command = TankCommand.new()
 		await tree.physics_frame
@@ -126,12 +126,12 @@ func test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range() -> void:
 	enemy.rotation.y = PI
 	var closest := INF
 	var seen_ticks := 0
-	for tick in 60 * 10:
+	for tick in SimClock.TICK_RATE * 10:
 		enemy.command = TankCommand.new(0.0, 0.0, scout.global_position, false)  # holds still, gun silent
 		await tree.physics_frame
-		if tick > 60 * 4:
+		if tick > SimClock.TICK_RATE * 4:
 			closest = minf(closest, scout.global_position.distance_to(enemy.global_position))
 			if game_match.is_visible_to(Match.Team.GREEN, enemy):
 				seen_ticks += 1
 	assert_true(closest > 70.0, "after backing off, the scout stays outside cannon range (closest %.0f m)" % closest)
-	assert_true(seen_ticks > 60 * 5 * 0.9, "while keeping the enemy spotted for the team (%d of %d ticks)" % [seen_ticks, 60 * 6])
+	assert_true(seen_ticks > SimClock.TICK_RATE * 5 * 0.9, "while keeping the enemy spotted for the team (%d of %d ticks)" % [seen_ticks, SimClock.TICK_RATE * 6])

@@ -16,6 +16,9 @@ import os
 import subprocess
 import sys
 
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(ROOT, "build", "duel")
 
@@ -54,7 +57,7 @@ def main():
         with open(os.path.join(BUILD, f"{side}.json"), "w") as handle:
             json.dump(army(side, [u for u in units.split(",") if u], args.role,
                            [float(v) for v in args.meet.split(",")]), handle)
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ROOT, "--", "--match", "--elimination", "--combat-log",
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ROOT, "--", "--match", "--elimination", "--combat-log",
                "--green-doctrine=res://build/duel/green.json", "--rust-doctrine=res://build/duel/rust.json",
                f"--time-limit={args.time_limit}", f"--seed={args.seed}", "--budget=100000"]
     if args.arena:
@@ -80,7 +83,7 @@ def main():
     next_pose = 0.0
     shots, hits = {}, {}
     for event in events:
-        seconds = event["tick"] / 60.0
+        seconds = event["tick"] / float(SIM_HZ)
         stamp = f"{seconds:6.2f}s"
         kind = event["event"]
         if kind == "poses":

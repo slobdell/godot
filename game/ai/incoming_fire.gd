@@ -9,7 +9,7 @@ extends RefCounted
 ## order), which is the same on every run.
 
 ## Rounds arriving later than this aren't worth reacting to yet (ticks).
-const HORIZON_TICKS := 75
+const HORIZON_TICKS := SimClock.TICK_RATE * 5 / 4
 ## ...nor rounds that would pass farther than this from where the unit is now (meters).
 const DANGER_RADIUS := 6.0
 
@@ -31,13 +31,13 @@ static func for_unit(game_match: Node, unit: Node3D) -> Array:
 			continue
 		var offset := here - Vector3(position.x, 0.0, position.z)
 		var seconds := offset.dot(flat_velocity) / speed_squared
-		if seconds <= 0.0 or seconds * 60.0 > HORIZON_TICKS:
+		if seconds <= 0.0 or seconds * SimClock.TICK_RATE > HORIZON_TICKS:
 			continue
 		var miss := (offset - flat_velocity * seconds).length()
 		if miss > DANGER_RADIUS:
 			continue
 		var copy := entry.duplicate()
-		copy["eta_ticks"] = int(entry.get("eta_ticks", roundi(seconds * 60.0)))
+		copy["eta_ticks"] = int(entry.get("eta_ticks", roundi(seconds * SimClock.TICK_RATE)))
 		copy["miss"] = miss
 		result.append(copy)
 	return result
@@ -70,7 +70,7 @@ static func count_for(game_match: Node, unit: Node3D) -> int:
 		var flat_velocity := Vector3(velocity.x, 0.0, velocity.z)
 		var offset := here - Vector3((entry[0] as Vector3).x, 0.0, (entry[0] as Vector3).z)
 		var seconds := offset.dot(flat_velocity) / maxf(flat_velocity.length_squared(), 1.0)
-		if seconds > 0.0 and seconds * 60.0 <= HORIZON_TICKS and (offset - flat_velocity * seconds).length() <= DANGER_RADIUS:
+		if seconds > 0.0 and seconds * SimClock.TICK_RATE <= HORIZON_TICKS and (offset - flat_velocity * seconds).length() <= DANGER_RADIUS:
 			count += 1
 	return count
 
@@ -122,7 +122,7 @@ static func _count_in_flight(game_match: Match, unit: Tank) -> int:
 			continue
 		var offset3 := Vector3(here_x - xs[i], 0.0, here_z - zs[i])
 		var seconds := offset3.dot(flat) / speed_squared
-		if seconds <= 0.0 or seconds * 60.0 > HORIZON_TICKS:
+		if seconds <= 0.0 or seconds * SimClock.TICK_RATE > HORIZON_TICKS:
 			continue
 		if (offset3 - flat * seconds).length() > DANGER_RADIUS:
 			continue

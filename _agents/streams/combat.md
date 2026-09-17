@@ -98,6 +98,61 @@ building the grid in GDScript cost 0.17-0.24 ms a tick, so it was net zero. Remo
   [../sim_tick_rate.md](../sim_tick_rate.md) (inventory of every 60-per-second assumption, what interpolation breaks,
   a three-step plan). A cross-stream refactor, so a proposal, not started.
 
+**Landed:** Jolt (b52e8b9, orchestrator-approved; merged to `main` as 8d975fa, baseline `83f1272ade466282`).
+
+### Fairness: the "Green wins 25%" lean was army luck (2026-09-17)
+
+Arena measured Green winning 25–28% of seeded mirrors on every map. `make team-fairness` (new: `--swap-armies`,
+`--same-army` on the match runner) says: the winner follows the **army draw** (swapping armies flips 15 of 16 seeds;
+seeds 1–16 gave Rust Armor/Balanced and Green Swarm/Recon); **team identity** (processing order) and **base position**
+are neutral (fresh seeds 17–64: north base 24/48 and 25/48). The RNG has no parity bias. Rule written into
+balance.md: counterbalance armies in every series.
+
+### X1: measured, tuning on hold
+
+`make engagement` (Jolt, brains only, 15 matches): contact 4 s in at 108 m, fighting at ~71 m, kills at a median 52 m;
+hull-level numbers look lively (2% standing still, 61% side+rear hull hits) but the army view is the lead's "two
+masses": only 13% held line, **73% of kills straight across the line between the armies, 4% from behind it**, and
+the pushing army gains 26 m. A range-falloff mechanic is in (`effective_range` per direct-fire weapon, inert at
+= range) with variants ready (`tools/matchup_variants/x1_range_falloff.json`). **On hold:** ai found the match runner
+never runs doctrine (elements, drills), and doctrine beats brains-only 52–28, so tuning waits for `TacticsFlags` on
+`main` and a deliberate doctrine-on re-baseline of the balance series (orchestrator's call, 2026-09-17).
+
+### X5: rules for brains (in progress)
+
+- `Lethality.seconds_to_kill(shooter_unit, target_unit, face, health, shield)` and `is_slow_kill` (> 20 s): the
+  matchup-free "I can't kill this quickly" for ai's SUPPRESS gate. Relayed to ai.
+- Pinned is worth exploiting: suppression shrinks a crew's sight (up to 40%) and its hull turn rate (up to 50%), so a
+  flanker gets closer unseen and the hull can't swing its front armor round in time. Tests include a flanker at 80%
+  of sight that a calm crew sees and a pinned one doesn't (mutation-checked).
+
+### 30 Hz simulation tick (the lead's call, 2026-09-17; combat owns it)
+
+Plan, inventory and the render/control interpolation checklist: [../sim_tick_rate.md](../sim_tick_rate.md).
+Steps 1–2 are on the branch and green at 60 Hz with the **baseline unchanged**, which is the proof the conversion is
+exact: `SimClock.TICK_RATE` (game/match/sim_clock.gd) drives every tick count in match, tank, combat, ai, tactics,
+control's three constants, the announcer and NetworkInput; `SIM_HZ` in the Makefile drives every `--fixed-fps` and the
+Python tools; ~36 test files count seconds through SimClock. Step 3 (the flip) is measured on a scratch copy of the
+branch on builder0 before it lands.
+
+**Two real defects the 30 Hz run exposed, both fixed at 60 Hz first (each moves the baseline on purpose):**
+1. **Guns fired a tick late.** Controllers run before the tank in a tick and read the reload the tank published
+   *last* tick, so `ready_to_fire()` was always one tick stale: a 0.1 s machine gun fired 8.6 times a second at
+   60 Hz and 7.5 at 30 Hz instead of 10. Every beaten zone in the game was thinner than its data said. Fixed in
+   `Tank.ready_to_fire` (the simulating peer counts a reload that ends this tick as ready), mutation-checked.
+2. **A unit going round a beaten zone thrashed at 30 Hz.** A beaten zone pulses, so a momentary reading below the
+   threshold looked like the fire lifting: the unit dropped its step and picked the other side on the next check,
+   staying in the lane (19 ticks in it against a control's 16). `OrderController.FIRE_LEG_MIN_TICKS` keeps a step for
+   0.25 s. At 30 Hz the avoider now spends **0 ticks** in the beaten zone against the control's 16.
+
+**Landed (ae58286c):** the simulation runs at 30 Hz with physics interpolation, `max_physics_steps_per_frame` 3, and
+the sim baseline `glibc-2.43 16dc0de84f1c29b6` (recorded twice). `make remote T=check` green at 30 Hz: 935 passed,
+every smoke. What it bought, and what it did not: [../sim_tick_rate.md](../sim_tick_rate.md) *What it bought*.
+Short version: **simulation CPU per second roughly halved** (200 ms/s against 378 on builder0), the laptop's frame at
+59 vehicles went **134 ms → 101 ms**, and at 1080p a locked 30 fps now holds to **~30 vehicles** (was: 60 fps at 13
+vehicles at 720p, never at 1080p). At the lead's 60 vehicles it is 98 ms a frame, so **the target is not met by the
+tick change alone**; ~85% of the remaining tick is the unit controllers.
+
 ### Plan (worker contract step 2)
 
 1. **X1a, measure first.** `EngagementStats` (`game/match/engagement_stats.gd`) fills `stats.engagement` in every

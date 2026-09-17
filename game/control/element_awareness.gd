@@ -11,7 +11,7 @@ extends RefCounted
 ## from a god view: the edge markers (EdgeMarkers) and the radar draw it, and the HUD messages read it.
 
 ## A unit hit within this many ticks counts as under fire (1.5 s at 60 Hz).
-const UNDER_FIRE_TICKS := 90
+const UNDER_FIRE_TICKS := SimClock.TICK_RATE * 3 / 2
 ## The same element cannot raise the same kind of alert again for this long (seconds).
 const ALERT_COOLDOWN := 8.0
 ## How many alerts are kept; older ones fall off.

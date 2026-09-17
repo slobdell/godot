@@ -9,7 +9,7 @@ extends RefCounted
 ## small-angle steps and renormalized (`√` only, no per-tick trig: _agents/determinism.md guideline 4).
 
 ## The physics tick length the simulation runs at (`--fixed-fps 60`).
-const TICK_SECONDS := 1.0 / 60.0
+const TICK_SECONDS := SimClock.TICK_SECONDS
 
 
 ## Next hull speed (m/s) after one tick. Forward and reverse have separate caps.
@@ -90,7 +90,7 @@ static func step(state: Dictionary, throttle: float, turn: float, delta: float) 
 ## faster than CREEP_REVERSE_SPEED). State keys: creep_dir (-1, 0, 1) and creep_ticks.
 const WHEEL_CREEP_THROTTLE := 0.5
 const CREEP_REVERSE_SPEED := 0.5
-const CREEP_LEG_TICKS := 30
+const CREEP_LEG_TICKS := SimClock.TICK_RATE / 2
 
 
 ## One tick of driving, updating `state` in place (the Tank keeps one state and steps it every physics tick).
@@ -135,7 +135,9 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 		var along := next_speed_braking(carried.dot(forward), throttle_c, float(state["max_forward_speed"]),
 				float(state["max_reverse_speed"]), float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
 		var sideways := carried.dot(right)
-		sideways -= sideways * clampf(float(state["lateral_grip"]) * delta * 60.0, 0.0, 1.0)
+		# Grip is written as the share of sideways speed killed in a sixtieth of a second; compounding it over the
+		# tick keeps a hull's drift the same at any tick rate (a linear step would kill twice as much per 30 Hz tick).
+		sideways *= pow(1.0 - clampf(float(state["lateral_grip"]), 0.0, 1.0), delta * 60.0)
 		speed = along
 		velocity = forward * along + right * sideways
 	elif String(state["locomotion"]) == "hover":
@@ -145,7 +147,9 @@ static func step_in_place(state: Dictionary, throttle: float, turn: float, delta
 		var along := next_speed_braking(carried.dot(forward), throttle_c, float(state["max_forward_speed"]),
 				float(state["max_reverse_speed"]), float(state["acceleration_mps2"]), float(state["braking_mps2"]), delta)
 		var sideways := carried.dot(right)
-		sideways -= sideways * clampf(float(state["lateral_grip"]) * delta * 60.0, 0.0, 1.0)
+		# Grip is written as the share of sideways speed killed in a sixtieth of a second; compounding it over the
+		# tick keeps a hull's drift the same at any tick rate (a linear step would kill twice as much per 30 Hz tick).
+		sideways *= pow(1.0 - clampf(float(state["lateral_grip"]), 0.0, 1.0), delta * 60.0)
 		speed = along
 		velocity = forward * along + right * sideways
 	else:

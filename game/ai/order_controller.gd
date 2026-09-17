@@ -65,7 +65,7 @@ const LOW_AMMO_FRACTION := 0.3
 const HELD_AIM_DISTANCE := 1000.0
 ## fire_at_will (and target fallbacks) look for the nearest shootable enemy this often, keeping a still
 ## shootable pick in between: the per-tick scan of every enemy was a top AI cost at 50 units.
-const SCAN_EVERY_TICKS := 6
+const SCAN_EVERY_TICKS := SimClock.TICK_RATE / 10
 
 ## Measurement only (scenarios): how many ticks a unit was steered off its route by a wall of bullets, and how often
 ## it looked and found no way round. Never read by decisions.
@@ -105,6 +105,7 @@ var events: PackedStringArray = []
 ## X3: the sidestep being driven right now (null = none) and the tick it gives up at.
 var _fire_detour: Variant = null
 var _fire_detour_until := 0
+var _fire_detour_since := -1000
 var _fire_detour_again := 0
 ## The tick this unit started going round the current wall of bullets (-1 = it isn't).
 var _fire_since := -1
@@ -143,7 +144,7 @@ var hold_for_friends := true
 ## Measurement (not decisions): shots held for friends, by every controller since the process started.
 static var held_for_friends := 0
 ## A blocked lane is re-checked only every this many ticks (a friend doesn't clear a lane in one tick).
-const LANE_RECHECK_TICKS := 3
+const LANE_RECHECK_TICKS := maxi(1, (SimClock.TICK_RATE + 10) / 20)  # ~20 Hz, rounded to whole ticks
 ## Local avoidance of friends in the way (see _around_friends), meters.
 ## X3 (L2): how far ahead a route is checked for a wall of bullets (meters). Far enough to see one coming: checking
 ## only the next navmesh waypoint is a few metres, by which time the unit is already in it.
@@ -156,17 +157,17 @@ const FIRE_DETOUR_MARGIN := 0.75
 ## A sidestep is DRIVEN, not re-decided every tick: re-deciding just wobbles along the edge of the fire (measured: 4 m
 ## off the straight line, and longer in the beaten zone than going straight). It is held until it is reached, or the
 ## route on is clear, or this many ticks pass.
-const FIRE_DETOUR_TICKS := 120
+const FIRE_DETOUR_TICKS := SimClock.TICK_RATE * 2
 const FIRE_DETOUR_REACHED := 5.0
 ## Reaching a step is not "I tried and it didn't work" — it is the step working, so the unit looks again and steps
 ## again if the way on is still swept. What bounds the whole business is this: once a unit has been going round for
 ## this long without the fire lifting, it has spent enough and pushes on. Orders win in the end.
-const FIRE_AVOID_MAX := 300
+const FIRE_AVOID_MAX := SimClock.TICK_RATE * 5
 ## ...and then the unit pushes on for this long before it looks for a way round again. It only has to be long enough
 ## to stop the search running on every check tick: FIRE_AVOID_MAX below is what actually guarantees a unit arrives.
 ## It used to be 240, which swallowed four seconds of a seven-second crossing and made the whole behaviour measure as
 ## nothing (28 ticks in the beaten zone against a control's 33, where a working version manages 14).
-const FIRE_DETOUR_COOLDOWN := 60
+const FIRE_DETOUR_COOLDOWN := SimClock.TICK_RATE
 ## Going round is ENTERED on `is_beaten_zone` (a hard threshold) but KEPT while the route still carries this share of
 ## that much fire on average. Without the hysteresis a unit abandons its detour the moment the field dips under the
 ## threshold between two bursts — and a beaten zone pulses, because the field has a ~1 s half-life and guns fire in
@@ -180,7 +181,12 @@ const FIRE_KEEP_SHARE := 0.4
 ##     every tick   21 ticks in the fire, 4740 usec        every 3   10 ticks, 4231 usec        every 6   28 ticks
 ## Three is both the best behaviour and cheaper than one. Six was chosen as a pure cost cut during X2 and quietly cost
 ## most of the avoidance — a reminder to measure what an optimisation does to behaviour, not just to the clock.
-const FIRE_CHECK_TICKS := 3
+const FIRE_CHECK_TICKS := maxi(1, (SimClock.TICK_RATE + 10) / 20)  # ~20 Hz, rounded to whole ticks
+## A step round the fire is kept this long even if the fire seems to lift. A beaten zone PULSES — rounds arrive in
+## bursts and the field decays between them — so a momentary reading below the threshold is not the fire ending. Round
+## 5, found at 30 Hz: without this the unit dropped its step every other check and picked the other side next time,
+## thrashing on the spot inside the lane instead of crossing it (19 ticks in the beaten zone against a control's 16).
+const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 const AVOID_LOOKAHEAD := 10.0
 const AVOID_WIDTH := 3.2
 const AVOID_CLEARANCE := 5.0
@@ -465,7 +471,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	var still_swept := SuppressionFeed.along(fields, tank.team, here, ahead) >= Match.BEATEN_ZONE_DENSITY * FIRE_KEEP_SHARE
 	if _fire_detour != null:
 		var leg: Vector3 = _fire_detour
-		if not still_swept:
+		if not still_swept and tick - _fire_detour_since >= FIRE_LEG_MIN_TICKS:
 			_fire_detour = null  # the fire lifted: carry on, nothing spent
 			_fire_since = -1
 		elif _fire_since >= 0 and tick - _fire_since >= FIRE_AVOID_MAX:
@@ -503,6 +509,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	if best != null:
 		_fire_detour = best
 		_fire_detour_until = tick + FIRE_DETOUR_TICKS
+		_fire_detour_since = tick
 		if _fire_since < 0:
 			_fire_since = tick
 		fire_detours += _step

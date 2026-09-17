@@ -15,6 +15,8 @@ from pathlib import Path
 
 TEAMS = ("green", "rust")
 UNIT_TYPES = ("scout", "tank", "ifv", "artillery", "lancer", "burner")
+# Fixture timelines are written in sixtieths of a second, whatever rate the simulation runs at: a fixture is recorded
+# data and must not change when the tick rate does (GDScript twin: AnnouncerEvents.TICKS_PER_SECOND).
 TICKS_PER_SECOND = 60
 
 # type -> {field: kind}. Kinds: int, num, str, bool, team, unit, ratio, id, team_map_ratio, team_map_int, special.

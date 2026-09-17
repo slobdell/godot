@@ -97,7 +97,7 @@ func test_a_real_battery_lowers_its_legs_as_combat_deploys_it() -> void:
 	var packed_y := (legs[0] as MeshInstance3D).position.y
 	assert_true(packed_y > 0.2, "a battery that hasn't deployed drives with its legs up (%.2f)" % packed_y)
 	var aim := gun.global_position + Vector3(0.0, 0.0, -90.0)
-	for tick in roundi(float(Units.stat("artillery", "deploy_seconds")) * 60.0) + 10:
+	for tick in roundi(float(Units.stat("artillery", "deploy_seconds")) * SimClock.TICK_RATE) + 10:
 		gun.command = TankCommand.new(0.0, 0.0, aim, true)
 		await tree.physics_frame
 	for i in 3:

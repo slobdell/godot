@@ -74,7 +74,7 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 ## and the music at half speed the moment the tick becomes 30 Hz (round 5): stale windows twice as long, heat
 ## decaying half as fast.
 func seconds() -> float:
-	return game_match.tick / float(Engine.physics_ticks_per_second)
+	return SimClock.seconds(game_match.tick)
 
 
 func _emit(type: String, fields: Dictionary) -> void:

@@ -14,10 +14,14 @@ import json
 import subprocess
 import sys
 import time
+import os
+
+# The simulation tick rate (the Makefile exports SIM_HZ; SimClock.TICK_RATE in game/match/sim_clock.gd).
+SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 
 def run_match(args, seed):
-    command = [args.godot, "--headless", "--fixed-fps", "60", "--path", ".", "--",
+    command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--",
                "--match", f"--green={args.green}", f"--rust={args.rust}",
                f"--score-limit={args.score_limit}", f"--time-limit={args.time_limit}", f"--seed={seed}"] + args.extra.split()
     completed = subprocess.run(command, capture_output=True, text=True, timeout=args.time_limit + 120)

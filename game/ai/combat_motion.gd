@@ -279,7 +279,7 @@ static func would_be_hit(here: Vector3, now: Vector3, planned: Vector3, incoming
 	for entry: Dictionary in incoming:
 		var round_at: Vector3 = entry["position"]
 		var round_velocity: Vector3 = entry["velocity"]
-		var seconds := float(entry.get("eta_ticks", 30)) / 60.0 + 0.25
+		var seconds := float(entry.get("eta_ticks", SimClock.TICK_RATE / 2)) / SimClock.TICK_RATE + 0.25
 		var t := 0.0
 		var position := here
 		var velocity := now

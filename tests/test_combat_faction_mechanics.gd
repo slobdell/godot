@@ -35,7 +35,7 @@ func test_a_hover_hull_turns_standing_still_where_wheels_cannot() -> void:
 	for unit_id in ["syn_scout", "gang_scout", "tank"]:
 		var state := TankMotion.state_for(unit_id, Vector3.ZERO, Vector3.FORWARD, 0.0)
 		for tick in 30:
-			TankMotion.step_in_place(state, 0.0, 1.0, 1.0 / 60.0)
+			TankMotion.step_in_place(state, 0.0, 1.0, SimClock.TICK_SECONDS)
 		var forward: Vector3 = state["forward"]
 		turned[unit_id] = snappedf(rad_to_deg(absf(Vector3.FORWARD.signed_angle_to(forward, Vector3.UP))), 0.1)
 	print("MEASURE yaw_from_a_standstill_over_half_a_second %s" % [turned])
@@ -51,10 +51,10 @@ func test_a_hover_hull_keeps_its_momentum_through_a_turn() -> void:
 	# Drive a skimmer up to speed, then swing it hard: it should end up facing one way and still travelling another.
 	var state := TankMotion.state_for("syn_scout", Vector3.ZERO, Vector3.FORWARD, 0.0)
 	for tick in 120:
-		TankMotion.step_in_place(state, 1.0, 0.0, 1.0 / 60.0)
+		TankMotion.step_in_place(state, 1.0, 0.0, SimClock.TICK_SECONDS)
 	var straight_line: Vector3 = state["velocity"]
 	for tick in 30:
-		TankMotion.step_in_place(state, 1.0, 1.0, 1.0 / 60.0)
+		TankMotion.step_in_place(state, 1.0, 1.0, SimClock.TICK_SECONDS)
 	var forward: Vector3 = state["forward"]
 	var velocity: Vector3 = state["velocity"]
 	var drift := absf(velocity.normalized().dot(Vector3(-forward.z, 0.0, forward.x)))
@@ -66,9 +66,9 @@ func test_a_hover_hull_keeps_its_momentum_through_a_turn() -> void:
 	# Tracks, by contrast, only ever go where they point.
 	var tracked := TankMotion.state_for("tank", Vector3.ZERO, Vector3.FORWARD, 0.0)
 	for tick in 120:
-		TankMotion.step_in_place(tracked, 1.0, 0.0, 1.0 / 60.0)
+		TankMotion.step_in_place(tracked, 1.0, 0.0, SimClock.TICK_SECONDS)
 	for tick in 30:
-		TankMotion.step_in_place(tracked, 1.0, 1.0, 1.0 / 60.0)
+		TankMotion.step_in_place(tracked, 1.0, 1.0, SimClock.TICK_SECONDS)
 	var tracked_forward: Vector3 = tracked["forward"]
 	var tracked_velocity: Vector3 = tracked["velocity"]
 	assert_near(absf(tracked_velocity.normalized().dot(Vector3(-tracked_forward.z, 0.0, tracked_forward.x))), 0.0, 0.001,
@@ -117,7 +117,7 @@ func test_a_resupply_tanker_mends_the_pack_around_it() -> void:
 		unit.health = 60
 	await wait_physics_frames(1)
 	assert_true(not Match.in_resupply_zone(Match.Team.GREEN, tanker.global_position), "setup: nowhere near a base")
-	for tick in 60 * 10:
+	for tick in SimClock.TICK_RATE * 10:
 		for unit in [near_unit, tanker, far_unit]:
 			unit.command = TankCommand.new()
 		await wait_physics_frames(1)
@@ -143,7 +143,7 @@ func test_field_repair_stops_while_the_fire_is_landing() -> void:
 	hurt.global_position = Vector3(-80.0, 0.0, 0.0)
 	hurt.health = 60
 	await wait_physics_frames(1)
-	for tick in 60 * 6:
+	for tick in SimClock.TICK_RATE * 6:
 		hurt.command = TankCommand.new()
 		tanker.command = TankCommand.new()
 		if tick % 30 == 0:

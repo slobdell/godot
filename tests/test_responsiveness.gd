@@ -6,8 +6,8 @@ extends TestCase
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 const LANE_X := -100.0
-## "Units visibly start moving within ~0.25 s" (the brief) at 60 ticks per second.
-const RESPONSE_BUDGET_TICKS := 15
+## "Units visibly start moving within ~0.25 s" (the brief).
+const RESPONSE_BUDGET_TICKS := SimClock.TICK_RATE / 4
 
 
 func _setup(count: int, formation := "wedge") -> Array:
@@ -39,7 +39,7 @@ func test_every_tank_reacts_to_a_move_order_within_a_quarter_second() -> void:
 		tanks[i].global_position = Vector3(LANE_X + (i - 1) * 12.0, 0.0, 40.0 + absf(i - 1) * 12.0)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "hold", "to": [LANE_X, 40.0], "facing": [0, -1]}), "",
 			"setup: hold here")
-	await wait_physics_frames(60 * 4)  # settle into the hold
+	await wait_physics_frames(SimClock.TICK_RATE * 4)  # settle into the hold
 	var start_positions := tanks.map(func(t: Tank) -> Vector3: return t.global_position)
 	var start_yaws := tanks.map(func(t: Tank) -> float: return t.rotation.y)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "move", "to": [LANE_X, -20.0]}), "", "order accepted")
@@ -48,7 +48,7 @@ func test_every_tank_reacts_to_a_move_order_within_a_quarter_second() -> void:
 	var lead_start := lead.global_position
 	var lead_going := -1
 	var lead_20 := -1
-	for tick in 60 * 6:
+	for tick in SimClock.TICK_RATE * 6:
 		await tree.physics_frame
 		for i in tanks.size():
 			if reacted[i] < 0 and (tanks[i].global_position.distance_to(start_positions[i]) > 0.25
@@ -62,7 +62,7 @@ func test_every_tank_reacts_to_a_move_order_within_a_quarter_second() -> void:
 	print("MEASURE g3_ticks_to_react per tank %s, slowest %d; commander 5 m after %d ticks, 20 m after %d" % [reacted, slowest, lead_going, lead_20])
 	assert_true(not reacted.has(-1), "every tank in the squad reacts (%s)" % [reacted])
 	assert_true(slowest <= RESPONSE_BUDGET_TICKS, "the slowest tank reacts within %d ticks (%s)" % [RESPONSE_BUDGET_TICKS, reacted])
-	assert_true(lead_going > 0 and lead_going <= 90, "the commander is 5 m on its way within 1.5 s (%d ticks)" % lead_going)
+	assert_true(lead_going > 0 and lead_going <= SimClock.TICK_RATE * 3 / 2, "the commander is 5 m on its way within 1.5 s (%d ticks)" % lead_going)
 
 
 func test_ordered_tanks_follow_the_order_instead_of_chasing_a_fight() -> void:
@@ -81,7 +81,7 @@ func test_ordered_tanks_follow_the_order_instead_of_chasing_a_fight() -> void:
 	# The player sent them in (assault), and they're fighting.
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "assault", "to": [LANE_X + 6.0, 20.0]}), "",
 			"setup: assault")
-	await wait_physics_frames(60 * 3)
+	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	var brains: Array[TankBrain] = []
 	for tank in tanks:
 		brains.append(game_match.brains.get_node("Brain_" + tank.name) as TankBrain)
@@ -90,7 +90,7 @@ func test_ordered_tanks_follow_the_order_instead_of_chasing_a_fight() -> void:
 	var first_follow := [-1, -1]
 	var followed := 0
 	var thinks := 0
-	for tick in 60 * 5:
+	for tick in SimClock.TICK_RATE * 5:
 		await tree.physics_frame
 		for i in brains.size():
 			var option: String = brains[i].choice.get("option", "")

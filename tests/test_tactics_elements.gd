@@ -54,7 +54,7 @@ func test_the_leader_issues_one_order_per_vehicle_and_they_drive_to_their_slots(
 		assert_true(["move", "attack_move"].has(String(order["verb"])), "%s is moving" % member)
 	assert_eq(seen, 4, "every vehicle in the element has an order")
 	var before := _spread(alpha, scenario)
-	for i in 60 * 6:
+	for i in SimClock.TICK_RATE * 6:
 		await scenario.step()
 	assert_true((scenario.game_match.tanks.get_node("Green_A_1") as Tank).global_position.z < 45.0,
 			"the element actually drove north toward its objective")
