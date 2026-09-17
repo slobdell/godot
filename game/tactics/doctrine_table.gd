@@ -96,6 +96,9 @@ var traits: Dictionary = {}
 
 
 static func path_for(table_name: String) -> String:
+	# Round-5 X3: the tactics ladder names variant tables by path (tests/tactics/variants/).
+	if table_name.begins_with("res://"):
+		return table_name
 	return "%s/doctrine_%s.json" % [DIR, table_name]
 
 

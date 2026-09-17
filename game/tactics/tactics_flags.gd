@@ -6,6 +6,9 @@ extends RefCounted
 ##   --green-elements[=<table>]   green's squads become elements under an ElementCommander; <table> picks
 ##   --rust-elements[=<table>]    doctrines/doctrine_<table>.json instead of each faction's own table
 ##   --tactics-ledger             print TACTICS_LEDGER <json> when the match finishes (TacticsLedger)
+##   --green-discovery[=seconds]  X5, offline only: that side's elements take tasks from stdin every `seconds`
+##   --rust-discovery[=seconds]   (DiscoveryBridge; default 5), with --discovery-log=<path> for (state, decision,
+##                                outcome) lines and --slow-motion=<factor> for a windowed run a person can follow
 ##
 ## Skirmish still wires its own elements (control); this is for the CPU-vs-CPU runs that measure doctrine. Brains call
 ## ensure() on every think; after the first look it is one integer comparison.
@@ -19,6 +22,8 @@ static var _done := false
 static var _parsed := false
 static var _tables: Array = [null, null]
 static var _ledger := false
+static var _discovery: Array = [null, null]
+static var _discovery_log := ""
 
 
 static func _parse() -> void:
@@ -34,12 +39,22 @@ static func _parse() -> void:
 				_tables[side] = arg.trim_prefix(key + "=")
 		if arg == "--tactics-ledger":
 			_ledger = true
+		for side in 2:
+			var key := "--%s-discovery" % ["green", "rust"][side]
+			if arg == key:
+				_discovery[side] = DiscoveryBridge.DEFAULT_EVERY_SECONDS
+			elif arg.begins_with(key + "="):
+				_discovery[side] = maxf(0.1, float(arg.trim_prefix(key + "=")))
+		if arg.begins_with("--discovery-log="):
+			_discovery_log = arg.trim_prefix("--discovery-log=")
+		if arg.begins_with("--slow-motion="):
+			Engine.time_scale = clampf(float(arg.trim_prefix("--slow-motion=")), 0.05, 1.0)
 
 
 ## Whether any flag asks for this at all (tests use it to skip the work).
 static func requested() -> bool:
 	_parse()
-	return _tables[0] != null or _tables[1] != null or _ledger
+	return _tables[0] != null or _tables[1] != null or _ledger or _discovery[0] != null or _discovery[1] != null
 
 
 ## Install what the flags ask for into `game_match`, once per match, after SETTLE_TICKS.
@@ -55,18 +70,21 @@ static func ensure(game_match: Match) -> void:
 	if game_match.tick < SETTLE_TICKS:
 		return
 	_done = true
-	install(game_match, _tables, _ledger)
+	var installed := install(game_match, _tables, _ledger)
+	for side in 2:
+		if _discovery[side] == null:
+			continue
+		var elements: Elements = installed["elements"] if installed["elements"] != null \
+				else Elements.install(game_match, _orders_for(game_match))
+		DiscoveryBridge.install(game_match, side, elements, float(_discovery[side]),
+				_discovery_log.replace("{team}", ["green", "rust"][side]))
 
 
 ## `tables`: [green, rust], each null (not by doctrine), "" (the faction's own table) or a table name.
 static func install(game_match: Match, tables: Array, ledger: bool) -> Dictionary:
 	var result := {"elements": null, "commanders": [], "ledger": null}
 	if tables[0] != null or tables[1] != null:
-		var orders := Orders.of(game_match)
-		if orders == null:
-			orders = Orders.new(game_match)
-			Orders.attach(game_match, orders)
-		var elements := Elements.install(game_match, orders)
+		var elements := Elements.install(game_match, _orders_for(game_match))
 		result["elements"] = elements
 		for side in 2:
 			if tables[side] == null:
@@ -85,6 +103,14 @@ static func install(game_match: Match, tables: Array, ledger: bool) -> Dictionar
 	return result
 
 
+static func _orders_for(game_match: Match) -> Orders:
+	var orders := Orders.of(game_match)
+	if orders == null:
+		orders = Orders.new(game_match)
+		Orders.attach(game_match, orders)
+	return orders
+
+
 ## Tests: forget the flags and the match.
 static func reset() -> void:
 	_match_id = 0
@@ -92,3 +118,5 @@ static func reset() -> void:
 	_parsed = false
 	_tables = [null, null]
 	_ledger = false
+	_discovery = [null, null]
+	_discovery_log = ""

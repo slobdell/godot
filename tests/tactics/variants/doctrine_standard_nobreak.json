@@ -1,0 +1,152 @@
+{
+  "name": "standard_nobreak",
+  "faction": "condemned",
+  "display_name": "Standard doctrine",
+  "summary": "Movement formations and techniques after US Army practice: wedge to move into possible contact, bound when contact is likely, herringbone at a halt. See _agents/doctrine.md. [ladder variant: without break_contact]",
+  "spacing_m": {
+    "open": 14.0,
+    "lanes": 11.0,
+    "dense": 8.0
+  },
+  "movement": [
+    {
+      "when": {
+        "task": [
+          "hold"
+        ],
+        "terrain": [
+          "dense",
+          "lanes"
+        ]
+      },
+      "formation": "herringbone",
+      "technique": "traveling",
+      "why": "halted in cover: herringbone, alternate flanks watched"
+    },
+    {
+      "when": {
+        "task": [
+          "hold"
+        ]
+      },
+      "formation": "coil",
+      "technique": "traveling",
+      "why": "halted in the open: coil, all-round security"
+    },
+    {
+      "when": {
+        "task": [
+          "screen"
+        ]
+      },
+      "formation": "line",
+      "technique": "traveling_overwatch",
+      "why": "screening: a line watches the widest frontage"
+    },
+    {
+      "when": {
+        "task": [
+          "support_by_fire"
+        ]
+      },
+      "formation": "line",
+      "technique": "traveling",
+      "why": "support by fire: every gun on the objective, nobody advancing"
+    },
+    {
+      "when": {
+        "threat": [
+          "contact"
+        ]
+      },
+      "formation": "line",
+      "technique": "traveling",
+      "why": "in contact: get every gun into the fight"
+    },
+    {
+      "when": {
+        "threat": [
+          "likely"
+        ],
+        "terrain": [
+          "dense"
+        ]
+      },
+      "formation": "column",
+      "technique": "bounding_overwatch",
+      "why": "contact likely in close country: column through the lanes, bounding, one element always covering"
+    },
+    {
+      "when": {
+        "threat": [
+          "likely"
+        ]
+      },
+      "formation": "wedge",
+      "technique": "bounding_overwatch",
+      "why": "contact likely: bound forward, one element always overwatching the other"
+    },
+    {
+      "when": {
+        "threat": [
+          "possible"
+        ],
+        "composition": [
+          "light"
+        ]
+      },
+      "formation": "vee",
+      "technique": "traveling_overwatch",
+      "why": "scouts forward in a V: two sets of eyes up front, the leader behind them"
+    },
+    {
+      "when": {
+        "threat": [
+          "possible"
+        ],
+        "composition": [
+          "support"
+        ]
+      },
+      "formation": "column",
+      "technique": "traveling_overwatch",
+      "why": "artillery and lasers move in column behind the guns"
+    },
+    {
+      "when": {
+        "threat": [
+          "possible"
+        ]
+      },
+      "formation": "wedge",
+      "technique": "traveling_overwatch",
+      "why": "contact possible: wedge, fire to the front and both flanks covered, trail element overwatching"
+    },
+    {
+      "when": {
+        "terrain": [
+          "dense"
+        ]
+      },
+      "formation": "column",
+      "technique": "traveling",
+      "why": "nothing out there and tight lanes: column is the fastest shape to control"
+    },
+    {
+      "when": {},
+      "formation": "wedge",
+      "technique": "traveling",
+      "why": "open ground, nothing in sight: wedge, and keep moving"
+    }
+  ],
+  "drills": {
+    "enabled": [
+      "react_to_contact",
+      "near_ambush",
+      "far_ambush",
+      "assault_through",
+      "support_by_fire",
+      "herringbone"
+    ]
+  }
+}
