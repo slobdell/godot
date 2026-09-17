@@ -270,9 +270,9 @@ of the tick. Flip the constant when ai reports a variant that wins at scale.
   (`Orders.RESPONSE_MS`, `Orders.response_ticks()`).
 - **combat:** `element_awareness.gd`'s 90-tick and `squad_chip.gd`'s 180-tick constants convert to seconds in your 30 Hz
   branch (agreed, to avoid a conflict); list them in merge notes.
-- **audio:** the booth calls the player's side "the Condemned" when the player picked the Road Gangs (seen in the shell
-  playtest, gangs vs law). And `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format
-  whenever convenient. Relayed by the orchestrator.
+- **audio:** `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format; audio switches once
+  it's on main (`post_message` routes that format meanwhile). *(The booth naming the wrong faction is fixed by audio's
+  2b28709, already on this branch: the latest shell playtest has no "Condemned" in a gangs-vs-Law match.)*
 - **arena:** `Arena._ready` reads `--seed` from the command line only, so a match started from a menu (flags in
   `Main.next_flags`) can't reach it; control works round it by resolving with `Arena.resolve_name` and setting
   `layout_name`. Reading `Main.next_flags` when set would remove the workaround.
