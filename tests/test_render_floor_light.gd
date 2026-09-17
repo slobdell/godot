@@ -26,3 +26,25 @@ func test_a_layouts_floodlight_towers_throw_pools_ahead_of_them() -> void:
 	var pool: Vector4 = lamps[0][0]
 	assert_true(pool.y < 82.0, "thrown toward -Z, the way the tower's lamps face (%s)" % pool)
 	assert_true((lamps[0][1] as Color).r > (lamps[0][1] as Color).b, "sodium warm")
+
+
+func test_lanes_wrecks_and_spawns_wear_the_floor_where_the_layout_puts_them() -> void:
+	var layout := {
+		"lanes": [{"name": "avenue", "points": [[0.0, 90.0], [0.0, -90.0]], "width": 30.0}],
+		"props": [{"type": "wreck", "position": [60.0, 20.0]}],
+		"spawn_zones": {"green": {"center": [-80.0, 100.0], "size": [40.0, 20.0]}},
+	}
+	var wear := DRESSING.wear_map(layout)
+	assert_eq(wear.size(), DRESSING.WEAR_MAP_SIZE * DRESSING.WEAR_MAP_SIZE, "one value per texel")
+	assert_true(DRESSING.wear_at(wear, Vector2(0, 0)) > 0.1, "a driven lane is worn (%.2f)" % DRESSING.wear_at(wear, Vector2(0, 0)))
+	assert_true(DRESSING.wear_at(wear, Vector2(60, 20)) > 0.1, "oil under a wreck")
+	assert_true(DRESSING.wear_at(wear, Vector2(-80, 100)) > 0.05, "a spawn zone is scuffed")
+	assert_eq(DRESSING.wear_at(wear, Vector2(-100, -60)), 0.0, "open ground nobody drives stays clean")
+
+
+func test_the_flood_map_carries_wear_in_alpha_at_higher_resolution() -> void:
+	var wear := DRESSING.wear_map({"lanes": [{"points": [[0.0, 90.0], [0.0, -90.0]], "width": 30.0}]})
+	var image := DRESSING.flood_map([Vector4(0, 0, 40, 1.0)], wear).get_image()
+	assert_eq(image.get_width(), DRESSING.WEAR_MAP_SIZE, "wear resolution")
+	var centre := image.get_pixel(DRESSING.WEAR_MAP_SIZE / 2, DRESSING.WEAR_MAP_SIZE / 2)
+	assert_true(centre.a > 0.1 and centre.r > 0.2, "light and wear in one fetch (%s)" % centre)

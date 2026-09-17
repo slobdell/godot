@@ -184,8 +184,9 @@ const SODIUM_LIGHT := Color(1.0, 0.72, 0.4)
 const LAYOUT_POOL := Vector3(16.0, 34.0, 1.1)
 
 
-## `lamps`: Vector4(x, z, radius, intensity) for white light, or [Vector4, Color].
-static func flood_map(lamps: Array) -> ImageTexture:
+## `lamps`: Vector4(x, z, radius, intensity) for white light, or [Vector4, Color]. `wear` (wear_map()) goes in alpha, and
+## the light is upscaled to its resolution: still one fetch.
+static func flood_map(lamps: Array, wear := PackedFloat32Array()) -> ImageTexture:
 	var image := Image.create(FLOOD_MAP_SIZE, FLOOD_MAP_SIZE, false, Image.FORMAT_RGB8)
 	for y in FLOOD_MAP_SIZE:
 		for x in FLOOD_MAP_SIZE:
@@ -198,7 +199,99 @@ static func flood_map(lamps: Array) -> ImageTexture:
 				light += tint * (falloff * falloff * (3.0 - 2.0 * falloff) * lamp.w)
 			image.set_pixel(x, y, Color(clampf(light.r / FLOOD_SCALE, 0.0, 1.0), clampf(light.g / FLOOD_SCALE, 0.0, 1.0),
 					clampf(light.b / FLOOD_SCALE, 0.0, 1.0)))
+	if wear.size() == WEAR_MAP_SIZE * WEAR_MAP_SIZE:
+		image.convert(Image.FORMAT_RGBA8)
+		image.resize(WEAR_MAP_SIZE, WEAR_MAP_SIZE, Image.INTERPOLATE_BILINEAR)
+		for y in WEAR_MAP_SIZE:
+			for x in WEAR_MAP_SIZE:
+				var pixel := image.get_pixel(x, y)
+				pixel.a = wear[y * WEAR_MAP_SIZE + x]
+				image.set_pixel(x, y, pixel)
 	return ImageTexture.create_from_image(image)
+
+
+## Render (round 5): wear baked from the layout, so each arena's floor shows how it's driven. 256 texels over ±160 m
+## (1.25 m each): tyre tracks and a polished band along every lane, oil and grime under wrecks and container stacks,
+## scuffing across the spawn zones. Values 0..1 (how worn), row-major from -x/-z.
+const WEAR_MAP_SIZE := 256
+
+
+static func wear_map(layout: Dictionary) -> PackedFloat32Array:
+	var wear := PackedFloat32Array()
+	wear.resize(WEAR_MAP_SIZE * WEAR_MAP_SIZE)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(str(layout.get("name", "arena")))
+	for lane: Dictionary in layout.get("lanes", []):
+		var points: Array = lane.get("points", [])
+		var width := float(lane.get("width", 20.0))
+		# Tyre tracks: a few pairs of wheel lines spread across the lane, each wandering a little.
+		var tracks := clampi(int(width / 8.0), 2, 5)
+		for t in tracks:
+			var offset := (float(t) + 0.5) / tracks - 0.5
+			var drift := rng.randf_range(-1.5, 1.5)
+			for side in [-1.0, 1.0]:
+				_stamp_polyline(wear, points, offset * width * 0.8 + drift + side * 1.1, 0.9, 0.45)
+		# The lane's polished middle.
+		_stamp_polyline(wear, points, 0.0, width * 0.35, 0.05)
+	for prop: Dictionary in layout.get("props", []):
+		var type := String(prop.get("type", ""))
+		if type in ["wreck", "container_20", "container_40"]:
+			var at := Vector2(float(prop["position"][0]), float(prop["position"][1]))
+			for i in 3:
+				_stamp(wear, at + Vector2(rng.randf_range(-3.0, 3.0), rng.randf_range(-3.0, 3.0)), rng.randf_range(2.0, 4.5), 0.35)
+	var zones: Variant = layout.get("spawn_zones", {})
+	if zones is Dictionary:
+		for team in zones:
+			var zone: Dictionary = zones[team]
+			var center := Vector2(float(zone["center"][0]), float(zone["center"][1]))
+			var size := Vector2(float(zone["size"][0]), float(zone["size"][1]))
+			# An even film of grime where armies form up, then random scuffs over it.
+			for gx in range(int(size.x / 5.0) + 1):
+				for gy in range(int(size.y / 5.0) + 1):
+					_stamp(wear, center - size / 2.0 + Vector2(gx, gy) * 5.0, 4.0, 0.08)
+			for i in 24:
+				_stamp(wear, center + Vector2(rng.randf_range(-0.5, 0.5) * size.x, rng.randf_range(-0.5, 0.5) * size.y), rng.randf_range(2.0, 5.0), 0.12)
+	return wear
+
+
+static func wear_at(wear: PackedFloat32Array, world: Vector2) -> float:
+	var texel := ((world + Vector2(FLOOD_HALF, FLOOD_HALF)) / (2.0 * FLOOD_HALF) * WEAR_MAP_SIZE).floor()
+	var x := clampi(int(texel.x), 0, WEAR_MAP_SIZE - 1)
+	var y := clampi(int(texel.y), 0, WEAR_MAP_SIZE - 1)
+	return wear[y * WEAR_MAP_SIZE + x]
+
+
+static func _stamp_polyline(wear: PackedFloat32Array, points: Array, offset: float, radius: float, amount: float) -> void:
+	var step := (2.0 * FLOOD_HALF / WEAR_MAP_SIZE) * 0.75
+	for i in points.size() - 1:
+		var a := Vector2(float(points[i][0]), float(points[i][1]))
+		var b := Vector2(float(points[i + 1][0]), float(points[i + 1][1]))
+		var along := b - a
+		if along.length() < 0.01:
+			continue
+		var side := Vector2(-along.y, along.x).normalized() * offset
+		var count := int(along.length() / step)
+		for k in count + 1:
+			_stamp(wear, a + along * (float(k) / maxf(count, 1)) + side, radius, amount * 0.35)
+
+
+## Add a soft disc of wear (max, so overlapping marks don't burn to black).
+static func _stamp(wear: PackedFloat32Array, world: Vector2, radius: float, amount: float) -> void:
+	var texel_m := 2.0 * FLOOD_HALF / WEAR_MAP_SIZE
+	var center := (world + Vector2(FLOOD_HALF, FLOOD_HALF)) / texel_m
+	var reach := int(ceil(radius / texel_m)) + 1
+	for dy in range(-reach, reach + 1):
+		for dx in range(-reach, reach + 1):
+			var x := int(center.x) + dx
+			var y := int(center.y) + dy
+			if x < 0 or y < 0 or x >= WEAR_MAP_SIZE or y >= WEAR_MAP_SIZE:
+				continue
+			var distance := (Vector2(x + 0.5, y + 0.5) - center).length() * texel_m
+			var falloff := clampf(1.0 - distance / maxf(radius, texel_m), 0.0, 1.0)
+			if falloff <= 0.0:
+				continue
+			var index := y * WEAR_MAP_SIZE + x
+			wear[index] = minf(1.0, wear[index] + amount * falloff * falloff)
 
 
 ## Pools thrown by a layout's own floodlight towers (M2 `props` of type floodlight; their lamps face the prop's -Z).
@@ -240,7 +333,7 @@ func set_ground_style(style: String) -> void:
 		"lite", "textured", "unlit":
 			material = CyberMaterials.ground(style == "lite", style == "unlit")
 			if not _flood_maps.has("map"):
-				_flood_maps["map"] = flood_map(_scaled_floodlights())
+				_flood_maps["map"] = flood_map(_scaled_floodlights(), wear_map(_layout))
 			(material as ShaderMaterial).set_shader_parameter("flood_map", _flood_maps["map"])
 		"wet":
 			material = ShaderMaterial.new()

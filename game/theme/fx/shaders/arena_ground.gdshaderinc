@@ -9,7 +9,7 @@
 
 uniform sampler2D asphalt_albedo : source_color, filter_linear_mipmap, repeat_enable;  // A = roughness
 uniform sampler2D arena_macro : source_color, filter_linear, repeat_disable;           // RGB ×1.5 multiplier, A gloss
-uniform sampler2D flood_map : hint_default_black, filter_linear, repeat_disable;       // RGB × flood_scale
+uniform sampler2D flood_map : hint_default_black, filter_linear, repeat_disable;       // RGB × flood_scale, A wear
 #ifdef GROUND_HIGH
 uniform sampler2D detail_masks : hint_default_black, filter_linear_mipmap, repeat_enable;  // R tire, A fine noise
 uniform sampler2D drain_texture : source_color, filter_linear_mipmap, repeat_disable;     // A = coverage
@@ -61,6 +61,9 @@ void fragment() {
 	asphalt = mix(asphalt, asphalt_b, smoothstep(0.5, 0.62, macro.g));
 #endif
 	vec3 albedo = asphalt.rgb * macro.rgb * 1.5;
+	// Wear baked from the layout (flood_map.a): rubbered lanes, oil under wrecks and stacks, scuffed spawns (render, round 5).
+	float wear = texture(flood_map, arena_uv).a;
+	albedo *= 1.0 - wear * 0.32;
 	float rough = mix(asphalt.a, 0.3, macro.a);
 
 #ifdef GROUND_HIGH
