@@ -53,6 +53,7 @@ static func attach(main: Node) -> AnnouncerBooth:
 		return null
 	var booth := AnnouncerBooth.new()
 	booth.name = "AnnouncerBooth"
+	booth.add_to_group(CrowdVoice.BOOTH_GROUP)  # the crowd follows the same mood the booth keeps
 	booth.game_match = main.game_match
 	booth.hud = main.hud
 	booth.mode = flags.text("announcer", "off" if flags.has("announcer-record") else "text")

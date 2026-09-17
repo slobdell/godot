@@ -37,6 +37,9 @@ const SOUNDS := {
 	"ui_ack_move": "res://assets/audio/ui_ack_move.wav",
 	"ui_ack_attack": "res://assets/audio/ui_ack_attack.wav",
 	"ui_select": "res://assets/audio/ui_select.wav",
+	# Audio (round 5, X4): running gear under the engines (tools/audio/make_world_loops.py).
+	"tread_loop": "res://assets/audio/tread_loop.wav",
+	"tire_loop": "res://assets/audio/tire_loop.wav",
 }
 ## Extra takes per sound (game/theme/audio/make_sfx.gd VARIANTS): "mg_round" also loads mg_round_2..4. A sound
 ## plays a take at random, so a burst is never the same crack eleven times (X4).

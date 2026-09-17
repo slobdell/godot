@@ -24,12 +24,8 @@ var material := ShaderMaterial.new()
 var seats := PackedVector3Array()
 var _event := Vector4(0.0, 0.0, EVENT_RADIUS, 0.0)
 var _rng := RandomNumberGenerator.new()
-## Sound: the murmur loops under everything and swells with the mood; kills set off a roar (not positional: the
-## crowd surrounds the camera). Silent with --mute and on headless peers (no FxWorld).
-var murmur := AudioStreamPlayer.new()
-var roar := AudioStreamPlayer.new()
-const MURMUR_DB := Vector2(-30.0, -15.0)  # calm → roaring
-const ROAR_DB := -9.0
+## Sound: the crowd's murmur and roar are the audio stream's CrowdVoice (game/theme/audio/crowd_voice.gd, round 5).
+var voice := CrowdVoice.new()
 
 
 func _init() -> void:
@@ -46,17 +42,7 @@ func _ready() -> void:
 	if fx != null:
 		fx.spectacle.connect(react)
 		fx.quality_changed.connect(apply_quality)
-		if not fx.sfx.muted and fx.sfx.streams.has("crowd_murmur"):
-			var loop := (fx.sfx.streams["crowd_murmur"] as AudioStreamWAV).duplicate() as AudioStreamWAV
-			loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
-			loop.loop_end = loop.data.size() / 2
-			murmur.stream = loop
-			murmur.volume_db = MURMUR_DB.x
-			add_child(murmur)
-			murmur.play()
-			roar.stream = fx.sfx.streams.get("crowd_cheer")
-			roar.volume_db = ROAR_DB
-			add_child(roar)
+		add_child(voice)
 
 
 ## Seats along rows: each row is [from: Vector3, to: Vector3] (world space, feet height). `spacing` meters between
@@ -120,9 +106,6 @@ func apply_quality() -> void:
 
 ## A hit or kill at `position`: the whole crowd lifts a little, the stands nearby erupt.
 func react(position: Vector3, weight: float) -> void:
-	if weight >= 0.9 and roar.stream != null and roar.is_inside_tree() and (not roar.playing or roar.get_playback_position() > 1.2):
-		roar.pitch_scale = _rng.randf_range(0.92, 1.08)
-		roar.play()
 	excitement = clampf(maxf(excitement, CALM + weight * 0.75), 0.0, 1.0)
 	if weight >= _event.w * 0.6:
 		_event = Vector4(position.x, position.z, EVENT_RADIUS, clampf(weight, 0.0, 1.0))
@@ -133,8 +116,6 @@ func _process(delta: float) -> void:
 	_event.w = move_toward(_event.w, 0.0, SETTLE * 0.8 * delta)
 	material.set_shader_parameter("excitement", excitement)
 	material.set_shader_parameter("event_position", _event)
-	if murmur.playing:
-		murmur.volume_db = lerpf(MURMUR_DB.x, MURMUR_DB.y, clampf((excitement - CALM) / (1.0 - CALM), 0.0, 1.0))
 
 
 func drawn_count() -> int:

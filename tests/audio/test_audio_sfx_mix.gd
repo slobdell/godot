@@ -74,7 +74,7 @@ func test_every_loop_loops_over_its_whole_length() -> void:
 	## Engine, crowd, flame and gunfire code set loop_end = data.size() / 2 on these streams. That counts frames only
 	## for 16-bit PCM; on a QOA import every loop repeated its first fifth (0.2 s of a 1 s machine gun) until round 5.
 	var sfx := _sfx()
-	for key in ["engine_diesel", "engine_v8", "engine_electric", "crowd_murmur", "mg_loop", "flame_loop"]:
+	for key in ["engine_diesel", "engine_v8", "engine_electric", "crowd_murmur", "mg_loop", "flame_loop", "tread_loop", "tire_loop"]:
 		var stream := sfx.streams[key] as AudioStreamWAV
 		assert_eq(stream.format, AudioStreamWAV.FORMAT_16_BITS, "%s imports as 16-bit PCM (compress/mode=0)" % key)
 		assert_true(not stream.stereo, "%s is mono" % key)
