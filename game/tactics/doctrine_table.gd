@@ -28,8 +28,12 @@ const TABLE_KEYS := ["name", "faction", "display_name", "summary", "spacing_m", 
 ## Every number a drill runs on, with the doctrine-standard value. A table overrides only what it changes.
 const DRILL_DEFAULTS := {
 	# Which drills this doctrine runs at all (X3).
+	# break_contact is off by default since round 5: the army was better without it, in mirrors (standard without it
+	# 91-29 overall, 30-10 head to head across five arenas) and at scale (faction doctrine without it 27-21 against
+	# faction doctrine, and even with brains alone where the full table lost 14-34). The drill still exists for a
+	# table that switches it on (doctrine.md "Round 5").
 	"enabled": ["react_to_contact", "near_ambush", "far_ambush", "assault_through", "support_by_fire",
-			"break_contact", "herringbone"],
+			"herringbone"],
 	# Encircle and bait are off unless a table asks for them: they are gang behaviour, not doctrine.
 	# How close the pack gets when it rings a target, and how near is too near to keep circling.
 	"encircle_m": 70.0,

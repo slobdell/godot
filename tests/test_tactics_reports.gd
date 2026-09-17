@@ -131,7 +131,9 @@ func test_every_value_the_booth_has_to_speak_is_from_a_closed_set() -> void:
 	# them, and nothing should be recorded for a shape nobody uses.
 	var spoken_formations := ["coil", "column", "echelon_right", "herringbone", "line", "swarm", "vee", "wedge"]
 	var spoken_techniques := ["bounding_overwatch", "traveling", "traveling_overwatch"]
-	var spoken_drills := ["assault_through", "bait", "break_contact", "far_ambush", "herringbone",
+	# break_contact left the shipped tables in round 5 (ai, ladder evidence in doctrine.md): its recorded lines stay
+	# valid but unused; audio was told.
+	var spoken_drills := ["assault_through", "bait", "far_ambush", "herringbone",
 			"near_ambush", "react_to_contact", "support_by_fire"]
 	DoctrineTable.clear_cache()
 	var formations := {}
