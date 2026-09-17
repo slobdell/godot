@@ -576,3 +576,50 @@ The lead's framework from round 4, built as groundwork. **Nothing runs in live p
 The first pass of this loop, by hand: `pin_and_flank` (one element supports by fire, the others swing wide on
 alternate sides) beat standard doctrine in its first discovery run, and became `ElementCommander._pin_and_flank`
 behind `traits.commander`, snapped onto arena's annotated lanes; the ladder decides whether it stays.
+
+
+## Round 5 reopened: the think rate, and dodging that never existed (ai, 2026-09-17, after the 30 Hz move)
+
+### Think rate is a real lever and an insufficient one
+
+`make ai-perf UNITS=60` now reports **cost per second of match time** as well as per tick, because a tick-rate change
+moves the per-tick figure without changing what the brains cost a player. Laptop, 30 Hz, fixed workload, interleaved
+runs (thread CPU per living unit per second of match):
+
+| A brain in contact thinks | Variant | usec per unit per second | Against the champion |
+|---|---|---|---|
+| 7.5 times a second | `x5p` (champion) | ~9 800 | |
+| 5 times a second | `x6t5` | ~8 300 | -15% |
+| 3.75 times a second | `x6t4` | ~7 000 | -29% |
+
+**Halving how often a brain thinks buys about 29% of the brains, which is about 25% of the tick, and that does not take
+the lead from 30 vehicles to 60.** Closing his gap needs structural work on what a brain does per think, not only on how
+often it thinks.
+
+### Dodging has never fired
+
+Round 3 added dodging and every measurement since has quoted "dodge rate" as the share of a leading cannon's shells
+that missed. `tests/ai_scenarios/scenario_dodge_rate.gd` counts what the unit actually *tried*: ticks with a round
+inbound, and ticks whose driving plan was chosen *because* of that round.
+
+| | ticks with a round inbound | of them dodging | shells that missed |
+|---|---|---|---|
+| 30 Hz (champion, 8 seeds) | 502 (tank) / 514 (IFV) | **0 / 8** | 6% / 9% |
+| 60 Hz, pre-30 Hz snapshot | 893 / 953 | **0 / 0** | 17% / 12% |
+
+Inside `CombatMotion`, **every candidate direction scores "would still be hit"** (254 of 254 candidate evaluations at
+30 Hz, 248 of 248 at 60), so no direction beats any other and nothing is marked as a dodge. The physics say the model is
+right: a shell crosses 50 m in **~0.7 s**, and a hull turning at 100°/s needs **~0.8 s** to swing onto a perpendicular
+heading. **The behaviour as designed is impossible.** What we have been calling a dodge rate is a unit weaving for other
+reasons while shells miss — and the differences between tick rates and variants are inside the noise of a 45-shell
+sample (one shell is about 2 points).
+
+### Proposal (round 6): dodging must begin before the shot, not after it
+
+A reaction cannot beat the flight time; being a hard target can. The behaviour to build is **anticipation**: while a
+loaded gun is pointed at me and I am inside its reach, keep lateral speed up and keep changing it — never present a
+constant velocity to a gunner who leads his shot. The inputs already exist: `reload_windows` knows when an enemy gun is
+loaded (`gun_ready_in`), `watching_me` knows it is pointed this way, and `CombatMotion` already scores headings.
+The measurement is the same scenario: shells that miss, with the attempt counter proving the behaviour is the cause.
+The cheap reactive half is worth keeping only where it can work — a slow arcing round, or a gun firing from far enough
+away that 0.7 s becomes 2 s.

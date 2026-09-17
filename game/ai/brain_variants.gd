@@ -66,6 +66,11 @@ const PROFILES := {
 	"x5p": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "pinned_exposed": true},
 	# Round-5 X1 on the new champion: x5p with the half-rate controller.
 	"x5pb2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "pinned_exposed": true, "brain_stride": 2},
+	# Round-5 reopening (the 30 Hz tick is not enough: ~85% of a 31 ms tick is the controllers). The champion thinks
+	# every TICK_RATE * 3 / 20 ticks — 7.5 times a second. These think 5 and 3.75 times a second: the cost is measured
+	# per second of match time, and what they cost in REACTION is measured in scenario_think_rate.gd.
+	"x6t5": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "pinned_exposed": true, "think_ticks": SimClock.TICK_RATE / 5},
+	"x6t4": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "pinned_exposed": true, "think_ticks": SimClock.TICK_RATE * 4 / 15},
 	"x5q": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "suppress_proxy": true},
 	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": SimClock.TICK_RATE * 3 / 20, "avoid_beaten": false},
 }
