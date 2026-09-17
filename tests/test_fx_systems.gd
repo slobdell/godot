@@ -313,3 +313,17 @@ func test_the_unlit_floor_is_one_plane_and_lit_floors_stay_tiled() -> void:
 	assert_eq(ground.tile_count(), 1, "unlit floor: one draw")
 	var plane := (ground.get_child(0) as MeshInstance3D).mesh as PlaneMesh
 	assert_true(plane.subdivide_width >= 40, "still ~5 m between vertices for per-vertex fog (%d)" % plane.subdivide_width)
+
+
+func test_jolts_skip_vehicles_too_far_from_the_camera_to_see_them() -> void:
+	var jolts := VehicleJolt.new()
+	var near: Node3D = add_to_tree(Node3D.new())
+	var far: Node3D = add_to_tree(Node3D.new())
+	far.position = Vector3(0, 0, -200)
+	for unit in [near, far]:
+		var slot := VisualSlot.new()
+		unit.add_child(slot)
+	jolts.camera_position = Vector3(0, 40, 30)
+	jolts.kick(near, Vector3.FORWARD, 2.0, 0.1, 0.0)
+	jolts.kick(far, Vector3.FORWARD, 2.0, 0.1, 0.0)
+	assert_eq(jolts.active_count(), 1, "only the vehicle within %d m of the camera rocks" % VehicleJolt.VISIBLE_RANGE)

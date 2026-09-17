@@ -139,24 +139,54 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	now += delta
 	var camera := get_viewport().get_camera_3d()
+	var eye := camera.global_position if camera != null else Vector3.ZERO
 	if _prewarm_frames < PREWARM_FRAMES and prewarm_enabled and camera != null:
 		_prewarm(camera)
+	_mark("start")
 	bursts.update(now)
 	decals.update(now)
+	_mark("bursts")
+	jolts.camera_position = eye if camera != null else null
 	jolts.update(now)
+	_mark("jolts")
 	order_feedback.update(now)
+	_mark("orders")
 	if link.is_attached():
-		motion.update(link.unit_nodes(), camera.global_position if camera != null else Vector3.ZERO, now, delta)
+		motion.update(link.unit_nodes(), eye, now, delta)
+	_mark("motion")
 	weapons.flush(now)
+	_mark("weapons")
 	tracers.update(lights, now)
+	_mark("tracers")
 	underglow.update(lights)
+	_mark("underglow")
 	beams.update(lights, now)
 	fires.update(now, bursts, lights)
-	haze.update(fires.sites, camera.global_position if camera != null else Vector3.ZERO, now)
-	lights.commit(camera.global_position if camera != null else Vector3.ZERO, now)
+	haze.update(fires.sites, eye, now)
+	_mark("beams_fires_haze")
+	lights.commit(eye, now)
+	_mark("lights")
 	if camera != null:
-		engines.update(camera.global_position, delta)
-	gunfire.update(camera.global_position if camera != null else Vector3.ZERO, now)
+		engines.update(eye, delta)
+	gunfire.update(eye, now)
+	_mark("engines_gunfire")
+
+
+## Per-system CPU time for perf-scene (`profile` on): µs spent in each step of _process, summed until read.
+var profile := false
+var profile_usec := {}
+var _profile_last := 0
+
+
+func _mark(step: String) -> void:
+	if not profile:
+		return
+	var t := Time.get_ticks_usec()
+	if step == "start":
+		profile_usec["frames"] = int(profile_usec.get("frames", 0)) + 1
+	else:
+		profile_usec[step] = int(profile_usec.get(step, 0)) + t - _profile_last
+	_profile_last = t
 
 
 ## Put one of each effect (near-invisible) and every pooled light just in front of the camera, so

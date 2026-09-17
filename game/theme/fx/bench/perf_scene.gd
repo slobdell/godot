@@ -217,6 +217,10 @@ func _start_phase(index: int) -> void:
 	_sums = {"draw_calls": 0.0, "objects": 0.0, "primitives": 0.0, "pool_lights": 0.0, "tracers": 0.0, "burst_area": 0.0, "burst_area_max": 0.0}
 	_frames = 0
 	_cpu_sums = {"game_ui_ms": 0.0, "fx_ms": 0.0}
+	var fx_world := FxWorld.existing()
+	if fx_world != null:
+		fx_world.profile = true
+		fx_world.profile_usec.clear()
 	_tick_totals = {"ticks": 0, "usec": 0}
 	_apply(_phases[index])
 
@@ -399,6 +403,7 @@ func _finish_phase() -> void:
 		"physics_max_ms": snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.01),
 		"process_game_ui_ms": snappedf(_cpu_sums["game_ui_ms"] / frames, 0.01),
 		"process_fx_ms": snappedf(_cpu_sums["fx_ms"] / frames, 0.01),
+		"fx_steps_ms": _fx_steps(frames),
 		"ticks_per_frame": snappedf(float(_tick_totals["ticks"]) / frames, 0.01),
 		"tick_script_ms": snappedf(float(_tick_totals["usec"]) / maxf(float(_tick_totals["ticks"]), 1.0) / 1000.0, 0.01),
 	}
@@ -447,6 +452,18 @@ func _census() -> Dictionary:
 					mesh_surfaces = (visual as MeshInstance3D).mesh.get_surface_count()
 				counts["one tank: %s [%s] surfaces=%d" % [str(tank.get_path_to(visual)), visual.get_class(), mesh_surfaces]] = 1
 	return counts
+
+
+## FxWorld's per-step CPU time this phase (ms per frame, over every frame of the phase).
+func _fx_steps(frames: int) -> Dictionary:
+	var fx := FxWorld.existing()
+	var result := {}
+	if fx != null:
+		var counted := maxf(float(fx.profile_usec.get("frames", frames)), 1.0)
+		for step in fx.profile_usec:
+			if step != "frames":
+				result[step] = snappedf(float(fx.profile_usec[step]) / 1000.0 / counted, 0.001)
+	return result
 
 
 ## Real lights switched on anywhere in the scene (pooled, fixtures, the moon).
