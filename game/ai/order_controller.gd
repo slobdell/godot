@@ -248,9 +248,11 @@ func compute_command(delta: float) -> TankCommand:
 	# Far away, so the tank's own movement doesn't swing the aim (parallax).
 	var cmd := TankCommand.new(0.0, 0.0, tank.global_position + _held_aim * HELD_AIM_DISTANCE)
 	ticks_since_fire += 1
+	var clock := Time.get_ticks_usec() if profile_detail else 0
 	_sense()
 	_apply_reflexes()
-	var clock := Time.get_ticks_usec() if profiling else 0
+	clock = _lap("c.reflexes", clock)
+	clock = Time.get_ticks_usec() if profiling else 0
 	_apply_move(cmd, delta)
 	_apply_unstick(cmd, delta)
 	if profiling:
@@ -345,8 +347,10 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var lap := Time.get_ticks_usec() if profile_detail else 0
 			var routed := goal if direct else _next_waypoint(goal, delta)
 			lap = _lap("move.path", lap)
-			var waypoint := _around_friends(_around_fire(routed, goal))
-			lap = _lap("move.avoid", lap)
+			var around_fire := _around_fire(routed, goal)
+			lap = _lap("move.fire", lap)
+			var waypoint := _around_friends(around_fire)
+			lap = _lap("move.friends", lap)
 			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
 			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
 			lap = _lap("move.remaining", lap)

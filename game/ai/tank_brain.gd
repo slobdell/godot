@@ -341,6 +341,7 @@ func think(_delta: float) -> void:
 		choice = {}
 		tank.intent = ""
 		return
+	var pre := Time.get_ticks_usec() if OrderController.profile_detail else 0
 	# A new squad order is thought about on the very next tick and breaks commitment (G3).
 	var squad := game_match.squad_for(tank)
 	var serial := squad.order_serial if squad != null else 0
@@ -355,12 +356,14 @@ func think(_delta: float) -> void:
 	if _poll_element(think_tick):
 		fresh_order = true
 		interrupt()
+	pre = _lap("t.poll", pre)
 	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
 	# arrives in 43 ticks; waiting up to 6 for the next think wastes the dodge).
 	if not think_tick and not fresh_order and _dodges() and FIGHT_OPTIONS.has(choice.get("option", "")):
 		var count := IncomingFire.count_for(game_match, tank)
 		think_tick = count > _incoming_count
 		_incoming_count = count
+	pre = _lap("t.incoming", pre)
 	# Think LOD wake-up: every intel refresh, re-rate how close the fight is. Dropping to a faster rate (an enemy
 	# came near, or came into reach) means thinking on this very tick, so nothing is noticed late.
 	if game_match.tick % Match.INTEL_EVERY_TICKS == 0:
@@ -373,6 +376,7 @@ func think(_delta: float) -> void:
 	# made that visible — control's "the attack order completes when the target dies" allows 3 ticks). Cheap: a
 	# distance check and a name lookup.
 	_update_order_progress()
+	pre = _lap("t.rate_progress", pre)
 	if not fresh_order and not think_tick:
 		return
 	# No stuck states: an option that stopped producing shots or progress goes on cooldown, and commitment to it ends.
@@ -1259,8 +1263,9 @@ func build_situation() -> Dictionary:
 	var tactics := _tactics(features)
 	lap = _lap("s.tactics", lap)
 	var cover := _cover_spots(contacts, allies, squad_context)
+	lap = _lap("s.cover_spots", lap)
 	var cover_fire: Variant = _cover_fire_spot(contacts, allies, squad_context, cover_map)
-	lap = _lap("s.cover", lap)
+	lap = _lap("s.cover_fire", lap)
 	var incoming: Array = IncomingFire.for_unit(game_match, tank) if _dodges() else []
 	lap = _lap("s.incoming", lap)
 
