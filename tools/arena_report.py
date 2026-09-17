@@ -251,8 +251,34 @@ def length(path):
     return sum(math.dist(path[i - 1], path[i]) for i in range(1, len(path))) if path else 0.0
 
 
-def terrain_class(boxes, x, z):
-    count = sum(1 for b in boxes if math.hypot(b.x - x, b.z - z) <= TERRAIN_RADIUS)
+def cover_groups(boxes, touch=1.5):
+    """Sight-blocking boxes merged when their footprints come within `touch` m: a wall of containers is one piece."""
+    hard = [b for b in boxes if b.h >= EYE_HEIGHT]
+    parent = list(range(len(hard)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+    for i, a in enumerate(hard):
+        for j in range(i + 1, len(hard)):
+            b = hard[j]
+            if math.hypot(a.x - b.x, a.z - b.z) > (max(a.w, a.d) + max(b.w, b.d)) / 2 + touch:
+                continue
+            if min(b.distance(*c) for c in a.corners()) <= touch or min(a.distance(*c) for c in b.corners()) <= touch:
+                parent[find(i)] = find(j)
+    groups = {}
+    for i, b in enumerate(hard):
+        groups.setdefault(find(i), []).append(b)
+    return list(groups.values())
+
+
+def terrain_class(boxes, x, z, hard_only=False, groups=None):
+    if groups is not None:
+        count = sum(1 for g in groups if any(math.hypot(b.x - x, b.z - z) <= TERRAIN_RADIUS for b in g))
+    else:
+        count = sum(1 for b in boxes if math.hypot(b.x - x, b.z - z) <= TERRAIN_RADIUS and (not hard_only or b.h >= EYE_HEIGHT))
     return "open" if count <= 1 else ("lanes" if count <= 4 else "dense")
 
 
@@ -323,6 +349,21 @@ def analyze(layout):
                           "longest_uncovered_m": round(cover_gap(boxes, path), 1)})
         lanes.append(entry)
     report["lanes"] = lanes
+    # How doctrine would classify the field (ElementSituation: every obstacle counts), and how it would with only
+    # sight-blocking cover counted: drivable points every 8 m in the contested field.
+    groups = cover_groups(boxes)
+    report["cover_groups"] = len(groups)
+    for key, hard_only, grouped in (("doctrine_terrain_share", False, None), ("doctrine_terrain_share_hard_only", True, None),
+                                    ("doctrine_terrain_share_grouped", True, groups)):
+        shares = {"open": 0, "lanes": 0, "dense": 0}
+        total = 0
+        for gz in range(int(-FIELD_Z), int(FIELD_Z) + 1, 8):
+            for gx in range(int(-DRIVABLE), int(DRIVABLE) + 1, 8):
+                if blocked[int((gz + HALF) / GRID) * n + int((gx + HALF) / GRID)]:
+                    continue
+                shares[terrain_class(boxes, gx, gz, hard_only, grouped)] += 1
+                total += 1
+        report[key] = {k: round(v / total, 2) for k, v in shares.items()}
     free = n * n - sum(blocked)
     report["open_ground_share"] = round(sum(1 for gz in range(4, n, 8) for gx in range(4, n, 8)
                                             if terrain_class(boxes, gx * GRID - HALF, gz * GRID - HALF) == "open")

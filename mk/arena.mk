@@ -17,3 +17,16 @@ arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) a
 	$(PYTHON) tools/arena_series.py --godot $(GODOT) --jobs $(or $(JOBS),3) --seeds $(or $(SEEDS),8) \
 		--faction $(or $(FACTION),condemned) --time-limit $(or $(TIME),180) $(if $(ARENAS),--arenas $(ARENAS)) \
 		--json $(BUILD_DIR)/arena-series.json
+
+.PHONY: arena-shots
+arena-shots: import ## Every arena in pictures: the match runner's whole-arena view and the player's skirmish view, at 1920x1080 (ARENAS="yard pit" DELAY=20) -> build/screenshots/arena-*.png (needs a display: make remote T=arena-shots)
+	mkdir -p $(BUILD_DIR)/screenshots
+	for arena in $(or $(ARENAS),$(basename $(notdir $(wildcard arenas/*.json)))); do \
+		$(GODOT) --path . --resolution 1920x1080 -- --match --elimination --control --arena=$$arena \
+			--green-faction=condemned --rust-faction=condemned --budget=5200 --time-limit=300 --seed=1 \
+			--screenshot-delay=$(or $(DELAY),20) --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/arena-$$arena-overview.png \
+			2>&1 | grep -E "ERROR|SCRIPT" || true; \
+		$(GODOT) --path . --resolution 1920x1080 -- --skirmish --scripted --arena=$$arena --screenshot-delay=$(or $(DELAY),20) \
+			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/arena-$$arena-skirmish.png 2>&1 | grep -E "ERROR|SCRIPT" || true; \
+	done
+	ls $(BUILD_DIR)/screenshots/arena-*.png
