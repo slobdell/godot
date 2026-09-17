@@ -114,6 +114,11 @@ func _camera_stage() -> void:
 		await _key(KEY_SPACE)
 		await _seconds(0.2)
 		_checks["space_starts_the_match"] = not get_tree().paused
+	var hud := get_tree().current_scene.get_node("HUD") as Hud
+	var captions: Array = []
+	var logged: Array = []
+	hud.caption_posted.connect(func(speaker: String, text: String) -> void: captions.append("%s: %s" % [speaker, text]))
+	hud.message_posted.connect(func(text: String, _severity: int) -> void: logged.append(text))
 	var clock := 0.0
 	var framed := true
 	for at: float in CAMERA_SAMPLES:
@@ -125,6 +130,12 @@ func _camera_stage() -> void:
 		if CAMERA_SHOTS.has(at):
 			await _capture("3_battle_%02ds" % roundi(at))
 	_checks["battle_frames_own_army"] = framed
+	var leaked := logged.filter(func(text: String) -> bool: return Hud.CAPTION_SPEAKERS.any(func(who: String) -> bool: return text.begins_with(who + ": ")))
+	_step("captions", {"captions": captions.size(), "log_messages": logged.size(), "booth_lines_in_log": leaked.size(),
+			"first": captions.slice(0, 3)})
+	if hud.caption_line.visible:
+		await _capture("4_caption")
+	_checks["booth_lines_stay_out_of_the_log"] = leaked.is_empty()
 
 
 ## One reading of what the camera shows. True when the element the camera is framing (the selection, the last group,

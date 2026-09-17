@@ -194,10 +194,10 @@ func test_banners_move_beside_the_tactical_map_and_wrap() -> void:
 
 func test_title_menu_starts_the_chosen_mode_in_this_process() -> void:
 	var title_script: GDScript = load("res://game/ui/widgets/title/title_screen.gd")
-	var carried := LaunchFlags.parse(PackedStringArray(["--title", "--ui-touch", "--shell-playtest=/tmp/x"]))
+	var carried := LaunchFlags.parse(PackedStringArray(["--title", "--ui-touch", "--shell-playtest=/tmp/x", "--announcer=voice"]))
 	var skirmish: LaunchFlags = title_script.call("flags_for", "skirmish", carried)
-	assert_eq(skirmish.values, {"skirmish": "", "ui-touch": "", "shell-playtest": "/tmp/x"},
-			"the mode's flag, plus what the whole session keeps (touch UI, a playtest), and never --title again")
+	assert_eq(skirmish.values, {"skirmish": "", "ui-touch": "", "shell-playtest": "/tmp/x", "announcer": "voice"},
+			"the mode's flag, plus what the whole session keeps (touch UI, a playtest, the booth), and never --title again")
 	var drive: LaunchFlags = title_script.call("flags_for", "", LaunchFlags.new())
 	assert_eq(drive.values, {}, "PLAY TEST DRIVE is the offline mode: no flags at all")
 	assert_eq(GameMode.choose(skirmish).role_name(), GameMode.choose(LaunchFlags.parse(PackedStringArray(["--skirmish"]))).role_name(),
