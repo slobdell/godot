@@ -210,3 +210,26 @@ func test_title_menu_starts_the_chosen_mode_in_this_process() -> void:
 			"arena": "random"}, "a menu entry can carry several flags")
 	var entries: Array = (title_script.get_script_constant_map()["MENU"] as Array).map(func(e: Array) -> String: return e[0])
 	assert_true(entries.has("SPECTATE"), "the title offers SPECTATE (%s)" % [entries])
+
+
+## Round 5 (the lead's frame-rate choice): QUALITY 30 / PERFORMANCE 60 beside the FX button, switching live.
+func test_the_frame_rate_button_switches_the_target_and_says_which() -> void:
+	tree.root.size = Vector2i(1600, 720)
+	var before := FrameTarget.target()
+	var hud: Hud = add_to_tree(HUD_SCENE.instantiate())
+	var skin := hud.get_node("HudSkin") as HudSkin
+	skin.persist_frame_target = false
+	await tree.process_frame
+	await tree.process_frame
+	FrameTarget.set_target(FrameTarget.Target.LOCKED_30)
+	skin._refresh_frame_button()
+	assert_eq(skin.frame_button.text, "QUALITY 30", "it names the current target")
+	skin.toggle_frame_target()
+	assert_eq(FrameTarget.target(), FrameTarget.Target.PERFORMANCE_60, "a press switches to 60")
+	assert_eq(skin.frame_button.text, "PERFORMANCE 60", "and says so")
+	skin.toggle_frame_target()
+	assert_eq(FrameTarget.target(), FrameTarget.Target.LOCKED_30, "and back")
+	assert_true(skin.frame_button.position.x >= skin.fx_button.position.x + skin.fx_button.size.x,
+			"it sits right of the FX button (%s vs %s)" % [skin.frame_button.position, skin.fx_button.position])
+	assert_true(absf(skin.frame_button.position.y - skin.fx_button.position.y) < 1.0, "on the same row")
+	FrameTarget.set_target(before)

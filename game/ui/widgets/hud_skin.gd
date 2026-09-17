@@ -13,6 +13,11 @@ var status_frame := CyberFrame.new()
 var banner_frame := CyberFrame.new()
 ## Bottom-right: tap to cycle the FX quality tier (saved per device). Hidden where nothing renders.
 var fx_button := Button.new()
+## Round 5 (the lead's frame-rate choice, render's FrameTarget): QUALITY 30 / PERFORMANCE 60, beside the FX button. It
+## changes how the game feels rather than how it looks, so it sits where a player already changes how the game runs.
+var frame_button := Button.new()
+## Save the player's frame-target choice (tests turn this off so they don't write the profile).
+var persist_frame_target := true
 
 var _hud: CanvasLayer
 var _status: Label
@@ -54,6 +59,14 @@ func _ready() -> void:
 	fx_button.visible = DisplayServer.get_name() != "headless"
 	add_child(fx_button)
 	_refresh_fx_button()
+	frame_button.name = "FrameButton"
+	frame_button.focus_mode = Control.FOCUS_NONE
+	frame_button.theme = CyberUiTheme.get_theme()
+	frame_button.tooltip_text = "QUALITY 30: a steady 30 fps at full resolution. PERFORMANCE 60: 60 fps at a lower 3D resolution."
+	frame_button.pressed.connect(toggle_frame_target)
+	frame_button.visible = fx_button.visible
+	add_child(frame_button)
+	_refresh_frame_button()
 	for label in [_status, _scoreboard, _banner]:
 		if label != null:
 			label.add_theme_font_override("font", CyberStyle.font())
@@ -89,6 +102,21 @@ func _refresh_fx_button() -> void:
 	fx_button.text = "FX %s" % FxQuality.tier_name().to_upper()
 
 
+## Switch between the two frame targets, live, and remember it for this device.
+func toggle_frame_target() -> void:
+	var next := FrameTarget.Target.PERFORMANCE_60 if FrameTarget.target() == FrameTarget.Target.LOCKED_30 \
+			else FrameTarget.Target.LOCKED_30
+	FrameTarget.apply(next, "player", persist_frame_target)
+	var fx := FxWorld.existing()
+	if fx != null:
+		fx.sfx.play_ui("ui_blip")
+	_refresh_frame_button()
+
+
+func _refresh_frame_button() -> void:
+	frame_button.text = FrameTarget.label()
+
+
 ## Window-wide styling is undone when the HUD goes away (tests build many HUDs in one process).
 func _exit_tree() -> void:
 	if get_window() != null and get_window().theme == CyberUiTheme.get_theme():
@@ -101,6 +129,8 @@ func _process(_delta: float) -> void:
 	var screen := get_viewport_rect().size
 	if fx_button.visible and not fx_button.text.ends_with(FxQuality.tier_name().to_upper()):
 		_refresh_fx_button()  # the tier changed elsewhere (auto step-down, a flag)
+	if frame_button.visible and frame_button.text != FrameTarget.label():
+		_refresh_frame_button()  # changed elsewhere (the title screen, a flag)
 	if screen != _last_screen:
 		_last_screen = screen
 		_layout(screen)
@@ -142,6 +172,9 @@ func _layout(screen: Vector2) -> void:
 	fx_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
 	fx_button.custom_minimum_size = Vector2(130.0 * s, 52.0 * s)
 	fx_button.size = fx_button.custom_minimum_size
+	frame_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
+	frame_button.custom_minimum_size = Vector2(230.0 * s, 52.0 * s)
+	frame_button.size = frame_button.custom_minimum_size
 	var width := screen.x * BLOCK_FRACTION - pad * 2.0
 	if _status != null:
 		_status.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
@@ -165,9 +198,11 @@ func _fit_status_frame(screen: Vector2) -> void:
 	if _status == null or _scoreboard == null or (_status.text == "" and _scoreboard.text == ""):
 		status_frame.visible = false
 		fx_button.position = Vector2(10.0, 10.0) * maxf(s0, 1.0)
+		frame_button.position = fx_button.position + Vector2(fx_button.size.x + 8.0 * s0, 0.0)
 		return
 	status_frame.visible = true
 	fx_button.position = Vector2(status_frame.position.x + 6.0 * s0, status_frame.position.y + status_frame.size.y + 8.0 * s0)
+	frame_button.position = fx_button.position + Vector2(fx_button.size.x + 8.0 * s0, 0.0)
 	var s := CyberStyle.ui_scale(screen)
 	var pad := 14.0 * s
 	# Labels outside containers grow to fit their text when it changes; pin the width every frame
