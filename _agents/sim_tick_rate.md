@@ -29,6 +29,24 @@ The next lever is brain cost per second, not the tick rate. A think rate of 5/s 
 measurement was inconclusive — `perf-scene` is a live battle, so two runs diverge and equal vehicle counts are not
 equal fights; it needs `make sim-profile` or `make ai-perf`, which measure a fixed workload.
 
+**What the think rate is worth** (ai, `make ai-perf UNITS=60`, fixed workload, interleaved runs, thread CPU per living
+unit per second of match time): the champion thinks 7.5 times a second and costs ~9 800 µs; 5 times a second costs
+~8 300 (-15%); 3.75 times a second costs ~7 000 (-29%). **Halving how often a brain thinks buys ~29% of the brains,
+about 25% of the tick** — a real lever, and not enough to take 30 vehicles to 60. Closing that gap needs structural
+work on what a brain does per think. Variants `x6t5` and `x6t4` carry the two lower rates; neither is adopted, because
+the trade (fewer units that react, or more units that react late) is the lead's to make.
+
+**What the tick change cost in behaviour: nothing measurable, and the checking found something else.** Dodging was the
+behaviour most at risk, since a brain in contact now thinks every 133 ms. Counting dodge *attempts* rather than shells
+that missed (`tests/ai_scenarios/scenario_dodge_rate.gd`, 8 seeds): a tank spent **0 of 502 inbound ticks dodging at
+30 Hz — and 0 of 893 at 60 Hz** on a pre-30 Hz snapshot of the same code. Inside `CombatMotion` every candidate
+direction scores "would still be hit" (254 of 254 evaluations at 30 Hz, 248 of 248 at 60). A shell crosses 50 m in
+~0.7 s; a hull needs ~0.8 s to swing perpendicular. **Dodging as designed has never worked at either tick rate**, and
+the "dodge rates" quoted since round 3 are shells missing for other reasons (the differences between rates are inside
+the noise of a 45-shell sample). Avoidance of a beaten zone, which reacts over seconds rather than tenths, is intact:
+0 ticks in the zone against a control's 16, under denser fire than before. The fix is a round-6 design item in
+[unit_ai.md](unit_ai.md): dodging has to begin before the shot is fired, not after.
+
 Caveat: the laptop was running this agent's own jobs; the numbers are pessimistic, and the 30 Hz and 60 Hz runs were
 taken back to back under the same load.
 
