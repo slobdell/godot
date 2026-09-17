@@ -52,3 +52,23 @@ title-shot: import ## Screenshot the title screen → build/screenshots/title.pn
 	mkdir -p $(BUILD_DIR)/screenshots
 	$(GODOT) --path . res://game/ui/widgets/title/title_screen.tscn -- --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/title.png --screenshot-delay=5
 	$(GODOT) --path . --resolution 1600x720 res://game/ui/widgets/title/title_screen.tscn -- --ui-touch --screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/title-phone.png --screenshot-delay=5
+
+PERF_BUDGET ?= 6500
+PERF_RES ?= 1280x720
+PERF_WARMUP ?= 8
+PERF_SECONDS ?= 2.5
+PERF_CYCLES ?= 2
+PERF_FLAGS ?=
+PERF_NAME ?= perf-scene
+
+perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer → build/$(PERF_NAME).json, PERF_SCENE lines, build/screenshots/$(PERF_NAME).png (needs a display; PERF_RES, PERF_FLAGS="--fx-quality=low", PERF_LAYERS=)
+	mkdir -p $(BUILD_DIR)/screenshots
+	timeout 600 $(GODOT) --path . --resolution $(PERF_RES) -- --skirmish --player=cpu --enemy=cpu --seed=3 \
+		--budget=$(PERF_BUDGET) --no-pick-faction --cinematic --mute \
+		--perf-scene=$(CURDIR)/$(BUILD_DIR)/$(PERF_NAME).json --perf-shot=$(CURDIR)/$(BUILD_DIR)/screenshots/$(PERF_NAME).png \
+		--perf-warmup=$(PERF_WARMUP) --perf-seconds=$(PERF_SECONDS) --perf-cycles=$(PERF_CYCLES) \
+		$(if $(PERF_LAYERS),--perf-layers=$(PERF_LAYERS)) $(PERF_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/$(PERF_NAME).log | grep -E '^PERF_SCENE|SCRIPT ERROR' || true
+	@echo "instance-uniform errors: $$(grep -c 'Too many instances using shader instance variables' $(BUILD_DIR)/$(PERF_NAME).log || true)"
+	@echo "other engine errors:     $$(grep -E '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/$(PERF_NAME).log | grep -vc 'Too many instances using shader instance variables' || true)"
+	@grep -q PERF_SCENE_DONE $(BUILD_DIR)/$(PERF_NAME).log
