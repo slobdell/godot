@@ -69,10 +69,13 @@ owns where subtitles appear).
 
 _Updated 2026-09-17 by the audio worker._
 
-### If you are picking audio up, read this section and the two after it
-They are the whole job: **never skip the whole-match pass** (below, with the engine gotcha), **how to hear and measure
-each part** (the command for every layer), and **the spare music** (what exists and what it might suit). Everything
-else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
+### If you are picking audio up, read these four things
+1. **Never skip the whole-match pass** — why, and the `AudioStreamSynchronized` gotcha.
+2. **How to hear and measure each part** — the exact command for every layer, and what "clean" means.
+3. **The lead's spare music** — what exists beyond the nine tracks in, and what each might suit.
+4. **Next steps** — what is open, and what is one constant away.
+
+Everything else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
 `assets/audio/elevenlabs/sources.json` is every sound-effect recipe with the prompt that made it.
 
 **Where the backlog stands:** X1 and X2 are built end to end and **waiting on the lead** for the batch (the pilot page
