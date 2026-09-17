@@ -38,7 +38,11 @@
   "arena": {
    "foundry": "the Foundry",
    "furnace": "the Furnace",
-   "scrapyard": "the Scrapyard"
+   "scrapyard": "the Scrapyard",
+   "yard": "the Container Yard",
+   "boulevard": "the Boulevard",
+   "pit": "the Pit",
+   "boneyard": "the Boneyard"
   },
   "faction": {
    "condemned": "the Condemned",
