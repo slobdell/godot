@@ -40,7 +40,7 @@ func test_predict_is_pure_and_returns_one_pose_per_tick() -> void:
 
 func test_full_throttle_accelerates_to_top_speed_in_a_straight_line() -> void:
 	var unit := Units.profile("tank")
-	var poses := TankMotion.predict(_state("tank"), 1.0, 0.0, 120)
+	var poses := TankMotion.predict(_state("tank"), 1.0, 0.0, SimClock.TICK_RATE * 2)
 	var last: Dictionary = poses[-1]
 	assert_near(float(last["speed"]), float(unit["max_forward_speed"]), 0.001, "top speed after 2 s")
 	var seconds_to_top := float(unit["max_forward_speed"]) / float(unit["acceleration_mps2"])
@@ -61,7 +61,7 @@ func test_tracks_pivot_in_place_and_turn_right_for_positive_turn() -> void:
 	var unit := Units.profile("tank")
 	var tracked := _state("tank")
 	tracked["locomotion"] = "tracks"
-	var poses := TankMotion.predict(tracked, 0.0, 1.0, 30)
+	var poses := TankMotion.predict(tracked, 0.0, 1.0, SimClock.TICK_RATE / 2)
 	var last: Dictionary = poses[-1]
 	assert_true((last["position"] as Vector3).is_equal_approx(Vector3(10.0, 0.0, 5.0)), "a pivot stays put")
 	var turned := rad_to_deg(Vector3.FORWARD.signed_angle_to(last["forward"], Vector3.UP))
@@ -154,10 +154,10 @@ func test_a_full_lock_circle_has_the_minimum_radius() -> void:
 func test_turn_is_the_hulls_yaw_in_either_gear() -> void:
 	# A driver steers the wheels the other way in reverse; TankCommand.turn names the yaw the hull should make, so
 	# brains that swing a reversing hull's back like its front (Steering.reverse_toward) still work on wheels.
-	var poses := TankMotion.predict(_car(-4.0), -4.0 / 7.0, 1.0, 30)
+	var poses := TankMotion.predict(_car(-4.0), -4.0 / 7.0, 1.0, SimClock.TICK_RATE / 2)
 	var yawed := _yaw_deg(poses[-1]["forward"])
 	assert_near(yawed, rad_to_deg(4.0 / 6.0) * 0.5, 1.5, "turn right while reversing at 4 m/s on a 6 m circle: 19° right (%.1f°)" % yawed)
-	var creeping_back := TankMotion.predict(_car(-4.0), 0.0, 1.0, 20)
+	var creeping_back := TankMotion.predict(_car(-4.0), 0.0, 1.0, SimClock.TICK_RATE / 3)
 	assert_true(float(creeping_back[-1]["speed"]) < 0.0, "a turn with no throttle while reversing keeps backing around the circle")
 
 
@@ -182,7 +182,7 @@ func test_a_turn_command_at_a_standstill_is_a_multi_point_turn() -> void:
 
 func test_low_grip_drifts_and_high_grip_carves() -> void:
 	var slide := func(grip: float) -> float:
-		var poses := TankMotion.predict(_car(14.0, grip), 1.0, 1.0, 30)
+		var poses := TankMotion.predict(_car(14.0, grip), 1.0, 1.0, SimClock.TICK_RATE / 2)
 		var last: Dictionary = poses[-1]
 		var velocity: Vector3 = last["velocity"]
 		var forward: Vector3 = last["forward"]

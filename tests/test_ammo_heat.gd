@@ -29,7 +29,7 @@ func test_a_cannon_runs_out_of_shells() -> void:
 	assert_eq(Weapons.max_ammo(Weapons.profile("mortar")), 24, "the mortar still carries a load")
 	tank.max_ammo = 45  # the mechanism, on a weapon given a load
 	tank.ammo = 2
-	await _hold_trigger(tank, Vector3(LANE_X, 0.0, -40.0), 60 * 8)  # three reloads' worth of trigger
+	await _hold_trigger(tank, Vector3(LANE_X, 0.0, -40.0), SimClock.TICK_RATE * 8)  # three reloads' worth of trigger
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 2, "two shells, two shots, then the gun is dry")
 	assert_eq(tank.sync_ammo, 0, "the replicated count shows empty")
 	assert_true(not tank.ready_to_fire(), "an empty gun is not ready to fire")
@@ -113,8 +113,8 @@ func test_low_on_shells_it_skips_long_shots() -> void:
 	orders.tanks_root = game_match.tanks
 	add_to_tree(orders)
 	orders.set_orders({"type": "stop"}, {"type": "fire_at_will"})
-	await wait_physics_frames(60 * 4)
+	await wait_physics_frames(SimClock.TICK_RATE * 4)
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "with 5 shells left it holds fire at 60 m")
 	far.global_position = Vector3(LANE_X, 0.0, -5.0)  # 35 m
-	await wait_physics_frames(60 * 3)
+	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	assert_true(game_match.stats["shots"][Match.Team.GREEN] > 0, "and shoots once the target is inside 45 m")

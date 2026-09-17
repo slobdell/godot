@@ -77,7 +77,7 @@ func test_the_booth_calls_a_live_match_in_text_mode() -> void:
 	await wait_physics_frames(3)
 	assert_true(not said.is_empty() and said[0]["moment"] == "intro", "the booth opens the match: %s" % [said])
 	# Skip past the welcome (the booth's clock is the match tick), then a kill gets called within a few frames.
-	game_match.tick += 60 * 25
+	game_match.tick += SimClock.TICK_RATE * 25
 	await wait_physics_frames(2)
 	_kill(game_match, "Rust_X_1", "Green_Alpha_1")
 	for jump in 4:  # the rest of the intro is spoken first: let a few seconds pass

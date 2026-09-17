@@ -25,7 +25,7 @@ func test_the_cpu_scouts_charge_in_a_v() -> void:
 	var v_ticks := 0
 	var best_spread := 0.0
 	await s.start()
-	for tick in 60 * 45:
+	for tick in SimClock.TICK_RATE * 45:
 		await s.step()
 		var last: Dictionary = commander.last_commands.get("Eyes", {})
 		if last.get("verb", "") != "move" or last.get("formation", "") != "vee":
@@ -51,5 +51,5 @@ func test_the_cpu_scouts_charge_in_a_v() -> void:
 		if highest - lowest >= 12.0 and all_fast:
 			v_ticks += 1
 	print("MEASURE ai_scout_v commander %s: charging orders %.1f s, spread V at speed %.1f s (widest %.0f m)" % [COMMANDER_POLICY,
-			charging / 60.0, v_ticks / 60.0, best_spread])
-	assert_true(v_ticks >= 60 * 2, "the scouts charge in a visible V for 2 s+ (%.1f s)" % (v_ticks / 60.0))
+			charging / float(SimClock.TICK_RATE), v_ticks / float(SimClock.TICK_RATE), best_spread])
+	assert_true(v_ticks >= SimClock.TICK_RATE * 2, "the scouts charge in a visible V for 2 s+ (%.1f s)" % (v_ticks / float(SimClock.TICK_RATE)))

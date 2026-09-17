@@ -90,7 +90,7 @@ func _cross_the_lane(avoid: bool) -> Dictionary:
 	var detoured := 0
 	var arrived := false
 	var controller := s.controller_of(mover)
-	for tick in 60 * 26:
+	for tick in SimClock.TICK_RATE * 26:
 		await s.step()
 		# The predicate the brain itself uses: is the ground it is about to drive over a wall of bullets?
 		var nose := -mover.global_basis.z
@@ -175,7 +175,7 @@ func _pin_and_flank(firing: bool) -> Dictionary:
 	var worst := 0.0
 	var options := {}
 	var brain := s.brain_of(flanker)
-	for tick in 60 * 24:
+	for tick in SimClock.TICK_RATE * 24:
 		await s.step()
 		worst = maxf(worst, target.suppression)
 		var option := String(brain.choice.get("option", ""))
@@ -227,7 +227,7 @@ func _hose(held: bool) -> Dictionary:
 	await s.start()
 	var worst := 0.0
 	var density := 0.0
-	for tick in 60 * 16:
+	for tick in SimClock.TICK_RATE * 16:
 		await s.step()
 		worst = maxf(worst, mover.suppression)
 		density = maxf(density, s.game_match.threat_field(Match.Team.GREEN).at(crossing))

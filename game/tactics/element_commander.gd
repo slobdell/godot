@@ -13,7 +13,7 @@ extends Node
 ## is deliberately small — the interesting decisions belong to the leaders.
 
 ## How often the commander re-thinks (ticks). Elements re-plan far more often than this on their own.
-const THINK_TICKS := 60
+const THINK_TICKS := SimClock.TICK_RATE
 ## A task is only re-assigned when the verb changes or its destination moves this far (meters): re-assigning
 ## resets the element's movement leg and any drill it was running.
 const REASSIGN_M := 25.0

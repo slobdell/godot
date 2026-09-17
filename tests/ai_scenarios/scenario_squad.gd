@@ -22,7 +22,7 @@ func _focus_share(variant: String) -> Array:
 		members.append(s.brain_tank(Match.Team.GREEN, "Green_Alpha_%d" % (members.size() + 1), Vector3(x, 0, 42), 0.0, {}, "tank", "", "Alpha"))
 	s.form_squad(Match.Team.GREEN, "Alpha", members)
 	await s.start()
-	for tick in 60 * 15:
+	for tick in SimClock.TICK_RATE * 15:
 		await s.step()
 	var damage: Array = targets.map(func(t: Tank) -> float: return _damage(t))
 	var total: float = damage.reduce(func(a: float, b: float) -> float: return a + b, 0.0)
@@ -61,14 +61,14 @@ func _overwatch_hidden_share(variant: String) -> Array:
 	var samples := 0
 	var hidden := 0
 	# The first leg: element 1 bounds while element 0 (with Alpha_1) watches.
-	for tick in 60 * 6:
+	for tick in SimClock.TICK_RATE * 6:
 		await s.step()
 		if squad.bounding_element != 1:
 			break
 		samples += 1
 		hidden += 0 if AiScenario.sees(gun, watcher) else 1
 	var share := float(hidden) / maxf(samples, 1)
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await s.step()
 		if squad.arrived:
 			break

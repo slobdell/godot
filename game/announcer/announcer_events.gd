@@ -8,7 +8,7 @@ extends RefCounted
 
 const TEAMS := ["green", "rust"]
 const UNIT_TYPES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
-const TICKS_PER_SECOND := 60
+const TICKS_PER_SECOND := SimClock.TICK_RATE
 
 ## type -> {field: kind}; kinds match events.py.
 const REQUIRED := {

@@ -1,8 +1,41 @@
 # Proposal: run the simulation at 30 Hz with physics interpolation
 
-> **Status: proposal, not started** (combat stream, 2026-09-17, asked for by the orchestrator after CP1). A decision for
-> the lead: halve the simulation's cost everywhere, in exchange for one coordinated refactor across four streams.
-> Inventory made with a full-repo survey; line numbers are as of `stream/combat` on 2026-09-17.
+> **Status: approved by the lead and in progress on `stream/combat`** (2026-09-17; combat owns it). Steps 1–2 (every
+> tick count derived from `SimClock.TICK_RATE`, still 60 Hz, sim baseline unchanged) are done for match, tank, combat,
+> ai, tactics, control's three constants and the announcer; step 3 (the flip) is being measured on a scratch copy.
+> Not merged to `main` until the orchestrator clears it. The original proposal follows, then the checklist that
+> render and control worked out.
+
+## Start here: the interpolation checklist (render + control, 2026-09-17)
+
+**The core trap.** With physics interpolation on, Godot *draws* a body at its interpolated transform, but
+`global_transform` / `global_position` read in `_process` still return the **last physics tick's** value. Anything
+positioned from a body every rendered frame jitters against the vehicle the player sees unless it reads
+`get_global_transform_interpolated()`.
+
+| Who | What reads a body per frame | How it's handled |
+|---|---|---|
+| render | underglow, blob shadows, tracers (follow shell nodes), order markers, motion dust, perf-scene camera | `FxWorld.visual_transform(node)` (interpolated when interpolation is on; identical at 60 Hz) |
+| render | muzzle flashes, shell blasts spawned from `weapon_fired` at tick positions | shifted by the shooter's (interpolated − physics) offset; needs `shooter` in `weapon_fired` (K2 keeps it) |
+| render | impacts, kills, wrecks at event positions | correct as is: they're world positions of what happened |
+| control | RtsCamera follow and vision framing, selection rings, hull bars, picking and box select, center-on, route lines | `Shown` helper → `get_global_transform_interpolated()`; the rig's Camera3D and ring MultiMeshes are `PHYSICS_INTERPOLATION_MODE_OFF` (moved every frame already) |
+| control | orders, sight checks, EdgeMarkers/ElementAwareness, Radar, CinematicCamera | stay on tick positions (the simulation never sees the smoothed world) |
+| audio | `engine_system.gd` reads `source.global_position` per frame for voice placement and speed | flagged to audio: the speed estimate steps at 30 Hz |
+| combat | tank spawn, respawn, bench placement; shell spawn | `reset_physics_interpolation()` after placing (or a one-frame streak from the old place); shells interpolate like bodies so tracers are smooth |
+| combat | networked clients' tanks (smoothed toward snapshots in `_process`) | `PHYSICS_INTERPOLATION_MODE_OFF` on non-simulating tanks (no double smoothing) |
+
+**K1 is a wall-clock contract now** (orchestrator, 2026-09-17): "an order takes effect within 100 ms of the input".
+At 30 Hz that's exactly 3 ticks, so **30 Hz is the floor**: a 20 Hz tick would break the feel even if it were free.
+
+**How tick counts are written** (`game/match/sim_clock.gd`): seconds of ticks as `SimClock.TICK_RATE * 12`, cadences as
+`SimClock.TICK_RATE / 10` (constant expressions can't call functions; `maxi` works), ~20 Hz cadences as
+`maxi(1, (SimClock.TICK_RATE + 10) / 20)` so they round to whole ticks at 30 Hz instead of running every tick, runtime
+conversions with `SimClock.ticks(seconds)` / `SimClock.seconds(ticks)`. Doctrine tables keep drill timings in
+sixtieths of a second and `DoctrineTable.drill_ticks` converts. The Makefile's `SIM_HZ` drives every `--fixed-fps`
+and the Python tools; `tests/test_sim_clock.gd` checks it matches `project.godot` and `SimClock`.
+
+---
+
 
 ## Why
 

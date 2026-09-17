@@ -202,7 +202,7 @@ func test_orders_work_while_paused() -> void:
 	assert_true(lead.global_position.distance_to(before) < 0.01, "nothing moves while paused")
 	_push_key(KEY_SPACE)
 	assert_true(not tree.paused, "Space resumes")
-	await wait_physics_frames(60)
+	await wait_physics_frames(SimClock.TICK_RATE)
 	assert_true(lead.global_position.distance_to(before) > 1.0, "and the squad starts executing (moved %.1f m)" % lead.global_position.distance_to(before))
 
 

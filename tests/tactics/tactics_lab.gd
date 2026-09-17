@@ -9,7 +9,7 @@ extends RefCounted
 ##   var alpha := lab.element([...], "Alpha", table)
 ##   alpha.assign({"verb": "move", "to": [0, -60]})
 ##   await lab.start()
-##   for tick in 60 * 20: await lab.step()
+##   for tick in SimClock.TICK_RATE * 20: await lab.step()
 ##
 ## Everything here is seeded and ordered by unit name: two runs of the same scenario are identical.
 

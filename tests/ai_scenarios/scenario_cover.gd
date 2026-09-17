@@ -41,7 +41,7 @@ func test_a_hurt_tank_under_fire_gets_out_of_sight() -> void:
 	var first_hidden := -1
 	var visible_at_start := false
 	await s.start()
-	for tick in range(1, 60 * 7 + 1):
+	for tick in range(1, SimClock.TICK_RATE * 7 + 1):
 		await s.step()
 		if not me.is_alive():
 			continue
@@ -57,7 +57,7 @@ func test_a_hurt_tank_under_fire_gets_out_of_sight() -> void:
 	print("MEASURE ai_hurt_to_cover first hidden after %d ticks, longest hidden %d ticks, alive %s" % [first_hidden, longest_hidden, me.is_alive()])
 	assert_true(visible_at_start, "setup: both guns can see the tank at the start")
 	assert_true(me.is_alive(), "the tank survives 7 s under two guns")
-	assert_true(first_hidden > 0 and first_hidden <= 60 * 5, "it is out of both guns' sight within 5 s (first hidden at tick %d)" % first_hidden)
+	assert_true(first_hidden > 0 and first_hidden <= SimClock.TICK_RATE * 5, "it is out of both guns' sight within 5 s (first hidden at tick %d)" % first_hidden)
 	assert_true(longest_hidden >= 60, "and stays hidden for at least a second (%d ticks)" % longest_hidden)
 
 
@@ -73,9 +73,9 @@ func test_a_healthy_tank_near_a_wall_fights_from_cover() -> void:
 	var shots_seen := 0
 	var was_hidden := false
 	await s.start()
-	for tick in range(1, 60 * 25 + 1):
+	for tick in range(1, SimClock.TICK_RATE * 25 + 1):
 		await s.step()
-		if tick < 60 * 5 or not me.is_alive():
+		if tick < SimClock.TICK_RATE * 5 or not me.is_alive():
 			continue
 		samples += 1
 		var now_hidden := _hidden_from_all(me, guns)
@@ -107,7 +107,7 @@ func _cover_duel(variant: String) -> Array:
 	var hits := 0
 	var last := me.health + me.shield
 	await s.start()
-	for tick in 60 * 30:
+	for tick in SimClock.TICK_RATE * 30:
 		await s.step()
 		var now := me.health + me.shield
 		if now < last - 5.0:

@@ -134,4 +134,4 @@ func test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range() -> void:
 			if game_match.is_visible_to(Match.Team.GREEN, enemy):
 				seen_ticks += 1
 	assert_true(closest > 70.0, "after backing off, the scout stays outside cannon range (closest %.0f m)" % closest)
-	assert_true(seen_ticks > 60 * 5 * 0.9, "while keeping the enemy spotted for the team (%d of %d ticks)" % [seen_ticks, 60 * 6])
+	assert_true(seen_ticks > SimClock.TICK_RATE * 5 * 0.9, "while keeping the enemy spotted for the team (%d of %d ticks)" % [seen_ticks, SimClock.TICK_RATE * 6])

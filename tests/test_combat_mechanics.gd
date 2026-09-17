@@ -149,8 +149,8 @@ func _worst_tracking_error(unit_id: String) -> float:
 		await tree.physics_frame
 	var worst := 0.0
 	var speed := float(Units.profile("scout")["max_forward_speed"])
-	for tick in 120:  # 2 s: 28 m across the nose, closest at 1 s
-		runner.global_position = start + Vector3(speed * tick / 60.0, 0.0, 0.0)
+	for tick in SimClock.TICK_RATE * 2:  # 2 s: 28 m across the nose, closest at 1 s
+		runner.global_position = start + Vector3(speed * tick / float(SimClock.TICK_RATE), 0.0, 0.0)
 		gunner.command = TankCommand.new(0.0, 0.0, runner.global_position, false)
 		await tree.physics_frame
 		worst = maxf(worst, rad_to_deg(Ballistics.aim_error(gunner.turret.global_position, gunner.turret_forward(), runner.global_position)))

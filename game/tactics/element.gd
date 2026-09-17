@@ -19,7 +19,7 @@ extends RefCounted
 
 ## Members are re-planned this often (ticks). Matches Match.INTEL_EVERY_TICKS: a leader can't react to
 ## intelligence it doesn't have yet.
-const UPDATE_TICKS := 6
+const UPDATE_TICKS := SimClock.TICK_RATE / 10
 ## A unit's goal has to move this far before its order is re-issued: every new order resets what its brain
 ## was doing (round-3 lesson), so the leader does not nudge people around.
 const REISSUE_M := 8.0

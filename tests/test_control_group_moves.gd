@@ -101,7 +101,7 @@ func test_a_mixed_group_arrives_together() -> void:
 	assert_eq(orders.issue(UnitCommand.make(_names(tanks), "move", {"to": [LANE_X + 3.0, -40.0]})), "", "move accepted")
 	var arrived := {}
 	var scout_top := 0.0
-	for tick in 60 * 20:
+	for tick in SimClock.TICK_RATE * 20:
 		await tree.physics_frame
 		scout_top = maxf(scout_top, scout.estimated_velocity.length())
 		for unit in tanks:
@@ -125,7 +125,7 @@ func test_a_laggard_catches_up_while_the_leader_waits() -> void:
 	assert_eq(orders.issue(UnitCommand.make(_names(tanks), "move", {"to": [LANE_X + 3.0, -10.0]})), "", "move accepted")
 	var arrived := {}
 	var laggard_top := 0.0
-	for tick in 60 * 25:
+	for tick in SimClock.TICK_RATE * 25:
 		await tree.physics_frame
 		laggard_top = maxf(laggard_top, tanks[1].estimated_velocity.length())
 		for unit in tanks:
@@ -147,7 +147,7 @@ func test_the_group_faces_its_direction_of_travel_on_arrival() -> void:
 	var tanks: Array[Tank] = setup[2]
 	# Travel east: every hull starts pointing north.
 	assert_eq(orders.issue(UnitCommand.make(_names(tanks), "move", {"to": [LANE_X + 45.0, 50.0]})), "", "move accepted")
-	await wait_physics_frames(60 * 12)
+	await wait_physics_frames(SimClock.TICK_RATE * 12)
 	for tank in tanks:
 		assert_true(orders.is_idle(String(tank.name)), "%s arrived" % tank.name)
 		var forward := -tank.global_basis.z
@@ -159,17 +159,17 @@ func test_a_unit_pushed_away_rejoins_its_group_unless_it_has_its_own_order() -> 
 	var orders: Orders = setup[1]
 	var tanks: Array[Tank] = setup[2]
 	assert_eq(orders.issue(UnitCommand.make(_names(tanks), "move", {"to": [LANE_X + 10.0, 10.0]})), "", "move accepted")
-	await wait_physics_frames(60 * 10)
+	await wait_physics_frames(SimClock.TICK_RATE * 10)
 	var station := orders.station(String(tanks[1].name))
 	assert_true(not station.is_empty(), "an arrived unit has a station with its group")
 	assert_eq(station.get("units", []), _names(tanks), "the station remembers the group")
 	var slot := Vector3(float(station["position"][0]), 0.0, float(station["position"][1]))
 	tanks[1].global_position = slot + Vector3(12.0, 0.0, 22.0)
-	await wait_physics_frames(60 * 8)
+	await wait_physics_frames(SimClock.TICK_RATE * 8)
 	assert_true(tanks[1].global_position.distance_to(slot) <= 5.0, "the pushed unit drove back to its slot (%.1f m away)" %
 			tanks[1].global_position.distance_to(slot))
 	assert_eq(orders.issue(UnitCommand.make([tanks[2].name], "move", {"to": [LANE_X - 5.0, -20.0]})), "", "own order accepted")
-	await wait_physics_frames(60 * 8)
+	await wait_physics_frames(SimClock.TICK_RATE * 8)
 	var own := Vector3(LANE_X - 5.0, 0.0, -20.0)
 	assert_true(tanks[2].global_position.distance_to(own) <= 5.0, "a unit given its own order stays where it was sent (%.1f m)" %
 			tanks[2].global_position.distance_to(own))

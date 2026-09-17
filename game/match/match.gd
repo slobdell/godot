@@ -108,7 +108,7 @@ const RANGE_SPREAD_FACTOR := 3.0
 const SUPPRESSION_FULL_DENSITY := 3.0
 ## Suppression is re-sampled (and the fields decay) every this many ticks: 20 Hz is far finer than a crew's
 ## reaction and keeps the grid work off most ticks.
-const SUPPRESSION_SAMPLE_TICKS := maxi(1, SimClock.TICK_RATE / 20)
+const SUPPRESSION_SAMPLE_TICKS := maxi(1, (SimClock.TICK_RATE + 10) / 20)  # ~20 Hz, rounded to whole ticks
 ## Being fully suppressed multiplies shot spread by (1 + this). A pinned tank's 0.8 deg becomes 2.4 deg: it still
 ## shoots, it just stops hitting anything far away, which is what "effective fire" means.
 const SUPPRESSION_SPREAD_FACTOR := 2.0
