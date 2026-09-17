@@ -123,7 +123,7 @@ func test_bot_engages_a_visible_enemy() -> void:
 	# Health + shield (G6): the first hits land on the shield.
 	var full := target.health + int(target.shield)
 	var lowest_health := full
-	for frame in 60 * 5:
+	for frame in SimClock.TICK_RATE * 5:
 		await tree.physics_frame
 		lowest_health = mini(lowest_health, target.health + int(target.shield))
 	assert_true(lowest_health < full, "within 5 s the bot turns its turret, leads, and hits (lowest health+shield %d)" % lowest_health)

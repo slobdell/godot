@@ -75,7 +75,7 @@ distclean: clean ## Also remove the downloaded toolchain
 sim-baseline: import ## The simulation matches the recorded baseline hash for this machine's libm (art must never change gameplay)
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
 	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
-	actual=$$($(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination \
+	actual=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	if [ -z "$$expected" ]; then echo "sim-baseline SKIPPED: no baseline for $$key (got $$actual). The canonical one is builder0's (make remote T=check); see _agents/determinism.md"; \
@@ -84,7 +84,7 @@ sim-baseline: import ## The simulation matches the recorded baseline hash for th
 
 sim-baseline-record: import ## Write this machine's sim baseline line to build/sim_state_hash.txt (copy it over tests/baselines/ when gameplay changed on purpose)
 	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
-	actual=$$($(GODOT) --headless --fixed-fps 60 --path . -- --match --elimination \
+	actual=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
 		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	test -n "$$actual" || { echo "no MATCH_RESULT"; exit 1; }; \

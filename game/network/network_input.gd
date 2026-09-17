@@ -16,7 +16,7 @@ const MAX_COMMANDS_PER_SEC := 120
 ## Owning client send policy (measured 2026-09-14: one command per 60 Hz tick was 3.0 KB/s up
 ## per player): send when the command changes, at most every MIN_SEND_TICKS ticks, a trigger
 ## pull at once, and otherwise a keepalive every KEEPALIVE_MSEC so the server's stale check holds.
-const MIN_SEND_TICKS := 2
+const MIN_SEND_TICKS := maxi(1, SimClock.TICK_RATE / 30)  # at most ~30 sends a second at any tick rate
 const KEEPALIVE_MSEC := 100
 ## Aim movement smaller than this (meters) isn't worth a packet on its own.
 const AIM_EPSILON := 0.1

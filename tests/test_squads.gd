@@ -103,11 +103,11 @@ func test_move_in_wedge_arrives_in_formation() -> void:
 		tank.global_position = Vector3(-100 + (tank.slot - 1) * 5.0, 0, 40)
 	await wait_physics_frames(3)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "move", "to": [-100, 5]}), "", "order accepted")
-	for frame in 60 * 14:
+	for frame in SimClock.TICK_RATE * 14:
 		await tree.physics_frame
 		if squad.arrived:
 			break
-	await wait_physics_frames(60 * 3)  # let the wings settle
+	await wait_physics_frames(SimClock.TICK_RATE * 3)  # let the wings settle
 	var lead := game_match.tanks.get_node(NodePath(squad.commander)) as Tank
 	assert_true(squad.arrived, "the commander reaches the destination (at %s)" % lead.global_position)
 	var errors := _slot_errors(game_match, squad)
@@ -123,7 +123,7 @@ func test_hold_faces_the_ordered_direction() -> void:
 	await wait_physics_frames(3)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "hold", "to": [-96, 30], "facing": [1, 0]}), "",
 			"hold facing east")
-	await wait_physics_frames(60 * 8)
+	await wait_physics_frames(SimClock.TICK_RATE * 8)
 	for tank: Tank in game_match.tanks.get_children():
 		var forward := -tank.global_basis.z
 		assert_true(forward.dot(EAST) > 0.9, "%s faces east when holding (forward %s)" % [tank.name, forward])
@@ -138,7 +138,7 @@ func test_break_contact_withdraws_front_first() -> void:
 	await wait_physics_frames(3)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "break_contact", "to": [-97, 30]}), "",
 			"break contact toward the south")
-	await wait_physics_frames(60 * 3)
+	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	var brain: TankBrain = game_match.brains.get_child(0)
 	assert_eq(brain.move_order.get("reverse"), true, "withdrawing in reverse (front armor still toward the enemy)")
 	var lead := game_match.tanks.get_child(0) as Tank
@@ -155,7 +155,7 @@ func test_bounding_overwatch_leapfrogs_to_the_destination() -> void:
 	await wait_physics_frames(3)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": "Alpha", "verb": "bound", "to": [-96, -10]}), "", "bound north")
 	var halted_while_other_moved := false
-	for frame in 60 * 60:
+	for frame in SimClock.TICK_RATE * 60:
 		await tree.physics_frame
 		if frame % 30 == 0:
 			var by_name := game_match.tanks_by_name()

@@ -81,9 +81,16 @@ func test_contact_raises_one_alert_you_can_jump_to_not_a_stream_of_them() -> voi
 	var raised := f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool: return int(a["element"]) == 2)
 	assert_eq(raised.size(), 1, "entering contact raises exactly one alert (got %s)" % [raised.map(func(a: Dictionary) -> String: return a["text"])])
 	assert_true(String(raised[0]["text"]).begins_with("Bravo"), "named after the element: %s" % raised[0]["text"])
-	await _frames(20)
-	raised = f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool: return int(a["element"]) == 2)
-	assert_eq(raised.size(), 1, "staying in contact does not repeat it")
+	# Held in contact: the enemy stays put (left to its own brain it drives off and back into sight, which is a new
+	# contact and a fair second alert). Count CONTACT alerts only — the same enemy shooting back raises an
+	# "under fire" alert, which is a different thing to say and has its own cooldown.
+	for frame in 20:
+		f.tank("Rust_Alpha_1").global_position = Vector3(90, 0, 90)
+		await tree.process_frame
+	raised = f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool:
+			return int(a["element"]) == 2 and String(a["kind"]) == "contact")
+	assert_eq(raised.size(), 1, "staying in contact does not repeat it (%s)"
+			% [f.controls.awareness.alerts.map(func(a: Dictionary) -> String: return a["text"])])
 
 
 func test_jumping_to_an_alert_selects_that_element_and_moves_the_camera() -> void:

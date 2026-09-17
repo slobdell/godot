@@ -29,7 +29,7 @@ func test_a_cannon_runs_out_of_shells() -> void:
 	assert_eq(Weapons.max_ammo(Weapons.profile("mortar")), 24, "the mortar still carries a load")
 	tank.max_ammo = 45  # the mechanism, on a weapon given a load
 	tank.ammo = 2
-	await _hold_trigger(tank, Vector3(LANE_X, 0.0, -40.0), 60 * 8)  # three reloads' worth of trigger
+	await _hold_trigger(tank, Vector3(LANE_X, 0.0, -40.0), SimClock.TICK_RATE * 8)  # three reloads' worth of trigger
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 2, "two shells, two shots, then the gun is dry")
 	assert_eq(tank.sync_ammo, 0, "the replicated count shows empty")
 	assert_true(not tank.ready_to_fire(), "an empty gun is not ready to fire")
@@ -45,7 +45,7 @@ func test_the_base_resupplies_shells_slowly_and_only_at_base() -> void:
 	for tank: Tank in [home, away]:
 		tank.max_ammo = 45
 		tank.ammo = 0
-	await wait_physics_frames(roundi(Match.RESUPPLY_SECONDS_PER_SHELL * 60.0 * 2.0) + Match.INTEL_EVERY_TICKS)
+	await wait_physics_frames(roundi(Match.RESUPPLY_SECONDS_PER_SHELL * float(SimClock.TICK_RATE) * 2.0) + Match.INTEL_EVERY_TICKS)
 	assert_eq(home.ammo, 2, "at base: one shell every %.1f s" % Match.RESUPPLY_SECONDS_PER_SHELL)
 	assert_eq(away.ammo, 0, "away from base: nothing")
 
@@ -78,13 +78,13 @@ func test_a_shot_that_would_overheat_is_refused_until_the_tank_cools() -> void:
 	var per_shot := float(Weapons.profile("laser")["heat_per_shot"])
 	shooter.heat = shooter.heat_capacity - per_shot + 2.0  # 2 over what one more pulse allows
 	var first_shot := -1
-	for i in 60:
+	for i in SimClock.TICK_RATE:
 		shooter.command = TankCommand.new(0.0, 0.0, Vector3(LANE_X, 0.0, -40.0), true)
 		await tree.physics_frame
 		assert_true(shooter.heat <= shooter.heat_capacity + 0.01, "a tank can never go past its heat capacity (%.1f)" % shooter.heat)
 		if first_shot < 0 and game_match.stats["shots"][Match.Team.GREEN] > 0:
 			first_shot = i
-	var cooling_ticks := ceili(2.0 / shooter.heat_dissipation * 60.0)
+	var cooling_ticks := ceili(2.0 / shooter.heat_dissipation * float(SimClock.TICK_RATE))
 	assert_true(first_shot >= cooling_ticks - 1, "the trigger is refused until 2 heat dissipates (~%d ticks; fired at %d)" % [cooling_ticks, first_shot])
 	assert_true(first_shot >= 0 and first_shot <= cooling_ticks + 3, "then it fires straight away (tick %d)" % first_shot)
 
@@ -95,7 +95,7 @@ func test_heat_dissipates_over_time() -> void:
 	tank.global_position = Vector3(LANE_X, 0.0, 20.0)
 	await wait_physics_frames(2)
 	tank.heat = 60.0
-	await wait_physics_frames(60)
+	await wait_physics_frames(SimClock.TICK_RATE)
 	assert_near(tank.heat, 60.0 - tank.heat_dissipation, 0.5, "one second sheds heat_dissipation heat")
 	assert_near(tank.sync_heat, tank.heat / tank.heat_capacity, 0.011, "heat replicates as a 0..1 ratio")
 
@@ -113,8 +113,8 @@ func test_low_on_shells_it_skips_long_shots() -> void:
 	orders.tanks_root = game_match.tanks
 	add_to_tree(orders)
 	orders.set_orders({"type": "stop"}, {"type": "fire_at_will"})
-	await wait_physics_frames(60 * 4)
+	await wait_physics_frames(SimClock.TICK_RATE * 4)
 	assert_eq(game_match.stats["shots"][Match.Team.GREEN], 0, "with 5 shells left it holds fire at 60 m")
 	far.global_position = Vector3(LANE_X, 0.0, -5.0)  # 35 m
-	await wait_physics_frames(60 * 3)
+	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	assert_true(game_match.stats["shots"][Match.Team.GREEN] > 0, "and shoots once the target is inside 45 m")

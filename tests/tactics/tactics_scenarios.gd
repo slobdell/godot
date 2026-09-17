@@ -25,7 +25,7 @@ static func near_ambush(case: TestCase, seconds := 22.0) -> Dictionary:
 	var through_tick := -1
 	var closest := INF
 	var ambush_point := Vector3.ZERO
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		var center := lab.center_of(names)
 		if sprung < 0 and center.z < 12.0:
@@ -42,7 +42,7 @@ static func near_ambush(case: TestCase, seconds := 22.0) -> Dictionary:
 			closest = minf(closest, center.distance_to(ambush_point))
 	var result := {"drills": Array(lab.drills_of(alpha)), "sprung_tick": sprung, "through_tick": through_tick,
 			"closest_m": closest if is_finite(closest) else -1.0,
-			"assault_seconds": (through_tick - sprung) / 60.0 if through_tick > 0 and sprung > 0 else -1.0,
+			"assault_seconds": (through_tick - sprung) / float(SimClock.TICK_RATE) if through_tick > 0 and sprung > 0 else -1.0,
 			"survivors": lab.alive(names), "enemy_left": lab.alive(ambush)}
 	lab.dispose()
 	return result
@@ -67,7 +67,7 @@ static func far_ambush(case: TestCase, seconds := 26.0) -> Dictionary:
 	var off_axis := {}
 	for unit_name: String in names:
 		off_axis[unit_name] = 0.0
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		for unit_name: String in names:
 			var tank := lab.tank_of(unit_name)
@@ -96,7 +96,7 @@ static func bounding(case: TestCase, seconds := 18.0, technique := "bounding_ove
 	var both_moving := 0
 	var one_set := 0
 	var samples := 0
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		if tick % 6 != 0 or tick < 60:
 			continue
@@ -134,7 +134,7 @@ static func break_contact(case: TestCase, seconds := 20.0) -> Dictionary:
 	var started := lab.center_of(names).distance_to(lab.center_of(enemy))
 	bravo.assign({"verb": "move", "to": [LANE_X, -20.0]})
 	var closest := started
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		if lab.alive(names) > 0:
 			closest = minf(closest, lab.center_of(names).distance_to(lab.center_of(enemy)))
@@ -153,7 +153,7 @@ static func herringbone(case: TestCase, seconds := 10.0) -> Dictionary:
 	var alpha := lab.element(names, "Alpha")
 	await lab.start()
 	alpha.assign({"verb": "hold"})
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 	var bearings: Array = []
 	for unit_name: String in names:
@@ -198,14 +198,14 @@ static func formation_trial(case: TestCase, formation: String, spacing: float, s
 	var enemy_started := lab.strength(enemy)
 	alpha.assign({"verb": "move", "to": [LANE_X, -55.0]})
 	var first_shot := -1
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		if first_shot < 0 and lab.strength(enemy) < enemy_started - 1.0:
 			first_shot = tick
 	var result := {"formation": formation, "spacing": spacing, "enemy_unit": enemy_unit,
 			"survival": lab.survival(names, started), "alive": lab.alive(names),
 			"enemy_survival": lab.survival(enemy, enemy_started),
-			"first_hit_seconds": first_shot / 60.0 if first_shot >= 0 else -1.0,
+			"first_hit_seconds": first_shot / float(SimClock.TICK_RATE) if first_shot >= 0 else -1.0,
 			"spread_m": lab.spread_of(names),
 			"closest_pair_m": TacticsFormation.closest_pair(formation, 4, spacing),
 			"coverage": TacticsFormation.coverage(formation, 4),
@@ -228,7 +228,7 @@ static func technique_trial(case: TestCase, technique: String, seconds := 24.0) 
 	var started := lab.strength(names)
 	var enemy_started := lab.strength(enemy)
 	alpha.assign({"verb": "move", "to": [LANE_X, -60.0]})
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 	var result := {"technique": technique, "survival": lab.survival(names, started), "alive": lab.alive(names),
 			"enemy_survival": lab.survival(enemy, enemy_started), "enemy_alive": lab.alive(enemy),
@@ -255,13 +255,13 @@ static func halt_trial(case: TestCase, formation: String, seconds := 14.0) -> Di
 				Vector3(LANE_X + 45.0, 0.0, 4.0 + i * 10.0), -PI * 0.5).name))
 	var enemy_started := lab.strength(enemy)
 	var first_reply := -1
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		if first_reply < 0 and lab.strength(enemy) < enemy_started - 1.0:
 			first_reply = tick
 	var result := {"formation": formation, "survival": lab.survival(names, started),
 			"enemy_survival": lab.survival(enemy, enemy_started),
-			"reply_seconds": first_reply / 60.0 if first_reply >= 0 else -1.0,
+			"reply_seconds": first_reply / float(SimClock.TICK_RATE) if first_reply >= 0 else -1.0,
 			"coverage": TacticsFormation.coverage(formation, 4)}
 	lab.dispose()
 	return result
@@ -325,7 +325,7 @@ static func gang_pack(case: TestCase, table_name := "gangs", seconds := 26.0, ch
 	# How much of the circle the pack covers around the enemy, and how far apart it stays.
 	var arcs := {}
 	var widest_spread := 0.0
-	for tick in int(seconds * 60.0):
+	for tick in int(seconds * SimClock.TICK_RATE):
 		await lab.step()
 		if tick % 30 != 0:
 			continue

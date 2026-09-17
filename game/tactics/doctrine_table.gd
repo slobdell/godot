@@ -279,8 +279,10 @@ func drill_number(key: String) -> float:
 	return float(drills.get(key, DRILL_DEFAULTS.get(key, 0.0)))
 
 
+## Drill timings in doctrine tables (and DRILL_DEFAULTS) are written in sixtieths of a second, the tick rate they were
+## tuned at; the simulation counts in its own ticks (SimClock, round 5's 30 Hz move), so they're converted here.
 func drill_ticks(key: String) -> int:
-	return int(drills.get(key, DRILL_DEFAULTS.get(key, 0)))
+	return roundi(float(drills.get(key, DRILL_DEFAULTS.get(key, 0))) * SimClock.TICK_RATE / 60.0)
 
 
 func runs_drill(drill: String) -> bool:

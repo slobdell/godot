@@ -120,7 +120,7 @@ func test_a_right_click_order_reaches_the_tracks_within_three_ticks() -> void:
 	f.button(f.ground(goal), true, MOUSE_BUTTON_RIGHT)
 	f.button(f.ground(goal), false, MOUSE_BUTTON_RIGHT)
 	var first := {}
-	for tick in 60:
+	for tick in SimClock.TICK_RATE:
 		await tree.physics_frame
 		for unit_name in start_positions:
 			var tank := f.tank(unit_name)

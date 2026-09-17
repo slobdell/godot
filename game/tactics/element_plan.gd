@@ -44,7 +44,7 @@ const FLANK_ARRIVE := 18.0
 ## Encircling: the ring turns this far every ORBIT_TICKS, so the pack keeps moving round its target instead
 ## of parking on a circle. Coarse on purpose — a new goal every tick would reset what every brain was doing.
 const ORBIT_STEP_DEG := 30.0
-const ORBIT_TICKS := 240
+const ORBIT_TICKS := SimClock.TICK_RATE * 4
 ## Attack orders are given to units within this multiple of their weapon range; the rest keep moving up.
 const ENGAGE_RANGE_FACTOR := 1.15
 

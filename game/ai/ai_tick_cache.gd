@@ -274,7 +274,7 @@ static func _suppression_seen(game_match: Match, side: int, contact_name: String
 	var seen: Variant = (_seen_suppression[side] as Dictionary).get(contact_name)
 	if seen == null:
 		return 0.0
-	var faded := float(seen[0]) - Tank.SUPPRESSION_RECOVER_PER_SECOND * float(game_match.tick - int(seen[1])) / 60.0
+	var faded := float(seen[0]) - Tank.SUPPRESSION_RECOVER_PER_SECOND * float(game_match.tick - int(seen[1])) / SimClock.TICK_RATE
 	return maxf(faded, 0.0)
 
 
@@ -302,7 +302,7 @@ static func gun_ready_in(game_match: Match, tank: Tank) -> float:
 	if fired == null:
 		return 0.0
 	var reload := float(tank.weapon.get("reload", 0.0))
-	return maxf(0.0, reload - float(Engine.get_physics_frames() - int(fired)) / 60.0)
+	return maxf(0.0, reload - float(Engine.get_physics_frames() - int(fired)) / SimClock.TICK_RATE)
 
 
 ## Shells in flight this tick: [[position, velocity, team, name]] (IncomingFire's source before K2).

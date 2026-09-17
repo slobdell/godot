@@ -9,7 +9,7 @@ func _arena(layout_name: String) -> Arena:
 	var arena: Arena = ARENA.instantiate()
 	arena.layout_name = layout_name
 	add_to_tree(arena)
-	for frame in 60:
+	for frame in SimClock.TICK_RATE:
 		if Pathing.is_ready(arena):
 			break
 		await tree.physics_frame
@@ -120,7 +120,7 @@ func test_fire_pits_burn_whoever_stands_in_them() -> void:
 	burning.global_position = pit["position"] + Vector3(1.5, 0, 0)
 	enemy.global_position = pit["position"] + Vector3(-3.0, 0, 0)
 	safe.global_position = pit["position"] + Vector3(float(pit["radius"]) + 6.0, 0, 0)
-	await wait_physics_frames(60 * 3)
+	await wait_physics_frames(SimClock.TICK_RATE * 3)
 	var toughness := func(tank: Tank) -> float: return tank.health + tank.shield
 	assert_true(toughness.call(burning) < burning.max_health + burning.max_shield - 60.0,
 			"3 s in a %.0f dps pit burns a tank (%.0f left)" % [pit["damage_per_second"], toughness.call(burning)])

@@ -41,6 +41,7 @@ var _first_step := true
 func _ready() -> void:
 	if direction.length_squared() > 0.0:
 		look_at(global_position + direction, Vector3.UP)
+	reset_physics_interpolation()  # interpolated like every body (render's tracers follow it), from the muzzle
 
 
 func _physics_process(delta: float) -> void:

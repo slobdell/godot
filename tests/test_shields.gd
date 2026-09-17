@@ -71,14 +71,14 @@ func test_the_shield_recharges_after_a_quiet_spell() -> void:
 	await wait_physics_frames(2)
 	tank.take_hit(1000.0, 1.0, 0.0)  # shield gone, armor multiplier 0: the hull is untouched
 	assert_eq(tank.shield, 0.0, "setup: shield broken")
-	await wait_physics_frames(roundi(tank.shield_recharge_delay * 60.0) - 10)
+	await wait_physics_frames(roundi(tank.shield_recharge_delay * float(SimClock.TICK_RATE)) - 10)
 	assert_eq(tank.shield, 0.0, "nothing comes back during the delay")
 	tank.take_hit(1.0, 1.0, 0.0)  # a new hit restarts the delay
-	await wait_physics_frames(roundi(tank.shield_recharge_delay * 60.0) - 10)
+	await wait_physics_frames(roundi(tank.shield_recharge_delay * float(SimClock.TICK_RATE)) - 10)
 	assert_eq(tank.shield, 0.0, "a hit during the delay restarts it")
-	await wait_physics_frames(10 + 60)
+	await wait_physics_frames(10 + SimClock.TICK_RATE)
 	assert_near(tank.shield, tank.shield_recharge_rate, 2.0, "then it refills at %.0f per second" % tank.shield_recharge_rate)
-	await wait_physics_frames(roundi(tank.max_shield / tank.shield_recharge_rate * 60.0))
+	await wait_physics_frames(roundi(tank.max_shield / tank.shield_recharge_rate * float(SimClock.TICK_RATE)))
 	assert_eq(tank.shield, tank.max_shield, "all the way to full")
 	assert_eq(tank.sync_shield, roundi(tank.max_shield), "and replicates")
 
@@ -94,7 +94,7 @@ func test_the_hull_only_mends_at_base() -> void:
 		tank.shield = 0.0
 		tank.take_hit(100.0, 1.0, 1.0)
 	var worn := home.health
-	await wait_physics_frames(roundi(home.shield_recharge_delay * 60.0) + 60 * 2 + Match.INTEL_EVERY_TICKS)
+	await wait_physics_frames(roundi(home.shield_recharge_delay * float(SimClock.TICK_RATE)) + SimClock.TICK_RATE * 2 + Match.INTEL_EVERY_TICKS)
 	assert_eq(field.health, worn, "out in the field the hull stays damaged")
 	assert_true(home.health > worn and home.health <= worn + roundi(Match.REPAIR_HP_PER_SECOND * 2.0) + 1,
 			"at base it mends slowly once the shooting stops (%d -> %d)" % [worn, home.health])
