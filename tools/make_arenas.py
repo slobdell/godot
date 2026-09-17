@@ -75,6 +75,8 @@ def c40(x, z, rot=0, stack=1, **look):
 
 
 def screen(x, z, rot=0, channel="arena"):
+    """A screen faces -Z at rot 0. Point symmetry turns a south screen's mirror to face the other way, so face each
+    screen toward its own half's base (south: 180, north: 0): each player's nearer screens face their camera."""
     return prop("ad_screen", x, z, rot, channel=channel)
 
 
@@ -259,7 +261,7 @@ boulevard += run("container_40", 80, 10, 80, 46, 2, faction="syndicate")
 boulevard += run("container_40", 80, 62, 80, 74, 1, faction="syndicate")
 boulevard += [
     # The roundabout: four screens facing out around the control point, low barricades ringing it.
-    screen(0, 30, 0, "arena"), screen(30, 0, 90, "sponsor"),
+    screen(0, 30, 180, "arena"), screen(30, 0, 90, "sponsor"),
     barricade(-19, 12, 57), barricade(19, 12, 123),
     # Kiosks and wrecks: sightline breaks down the avenues, staggered.
     c20(-60, 20, 90, 2, faction="gangs", doors="open"), c20(60, 58, 90, 2), c20(-20, 58, 90, 2, faction="law"),
