@@ -341,6 +341,7 @@ boneyard = [
     # In front of the base.
     c40(-20, 78, 176, 1, faction="gangs"), c20(24, 80, 8, 1), wreck(-48, 78, 100), wreck(52, 76, 60),
     barricade(-34, 6, 150), barricade(40, 4, 30), barricade(6, 50, 95),
+    screen(66, 70, 180, "sponsor"),
     floodlight(-84, 96), floodlight(-110, 40), sign(-80, 104, 180, "boneyard"), sign(108, 104, 200, "boneyard"),
 ]
 boneyard_walls = [ob("wall", 30, 12, 58), ob("wall", -78, 72, 145, [12.0, 3.0, 1.5])]
