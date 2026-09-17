@@ -15,10 +15,10 @@ arena-report: ## Static analysis of every layout (views, routes, exposure) + a t
 	$(PYTHON) tools/arena_report.py --plot $(BUILD_DIR)/arenas --json $(BUILD_DIR)/arenas/report.json arenas/*.json | cut -c1-240
 
 .PHONY: arena-series
-arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) and fight shape (ARENAS=yard,pit SEEDS=8 ARENA_FACTION=condemned TIME=180) -> build/arena-series.json
+arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) and fight shape (ARENAS=yard,pit SEEDS=8 FIRST_SEED=1 ARENA_FACTION=condemned TIME=180 OUT=arena-series) -> build/$(OUT).json
 	$(PYTHON) tools/arena_series.py --godot $(GODOT) --jobs $(or $(JOBS),3) --seeds $(or $(SEEDS),8) \
 		--faction $(or $(ARENA_FACTION),condemned) --time-limit $(or $(TIME),180) $(if $(ARENAS),--arenas $(ARENAS)) \
-		--json $(BUILD_DIR)/arena-series.json
+		--first-seed $(or $(FIRST_SEED),1) --json $(BUILD_DIR)/$(or $(OUT),arena-series).json
 
 .PHONY: arena-shots
 arena-shots: import ## Every arena in pictures: the match runner's whole-arena view and the player's skirmish view, at 1920x1080 (ARENAS=yard,pit DELAY=20) -> build/screenshots/arena-*.png (needs a display: make remote T=arena-shots)

@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Arena X4: prove each arena is fair and measure the fight it produces (_agents/arenas.md).
 
-For every arena and seed, runs the same full-scale mirror match twice: normally, and with --swap-bases (Green starts
-north). Same armies, same seed, only the bases change, so the SOUTH side's win rate over both runs is the fairness
-control (verification.md). Each match runs under tests/arena/arena_probe.gd, which adds engagement ranges, flank use
+For every arena and seed, runs the same full-scale match twice: normally, and with --swap-bases (Green starts north).
+Same seed, so the same two armies; only the bases change. The two armies are NOT alike (each team's army is seeded on
+its own), and that difference decides most matches: measured 2026-09-17, no seed's winner flipped when the bases
+swapped on any arena. So the fairness control is the paired `south_advantage` (see its docstring), with the south win
+rate kept for reference (verification.md). Each match runs under tests/arena/arena_probe.gd, which adds engagement ranges, flank use
 and time hidden to the runner's MATCH_RESULT.
 
 Usage: arena_series.py --godot PATH [--arenas yard,pit] [--seeds 8] [--jobs 3] [--faction condemned]
                        [--budget 5200] [--time-limit 180] [--json out.json]
 """
-import argparse, concurrent.futures, json, os, statistics, subprocess, sys, time
+import argparse, concurrent.futures, json, math, os, statistics, subprocess, sys, time
 
 
 def run(args, arena, seed, swap):
@@ -32,6 +34,25 @@ def run(args, arena, seed, swap):
     return out
 
 
+def south_advantage(runs):
+    """The paired base effect. Each seed gives each team its own army, and army strength decides most matches, so a
+    win rate can't see a small base advantage. For each seed played both ways: Green's margin in surviving share
+    (Green's share left minus Rust's) with Green south, minus the same with Green north, halved = what being south is
+    worth in surviving share. Also counts the seeds whose winner flipped when the bases swapped."""
+    pairs = {}
+    for r in runs:
+        res = r["result"]
+        share = lambda team: res["units_left"][team] / max(1, res["units_left"][team] + res["units_lost"][team])
+        pairs.setdefault(r["seed"], {})[r["swap"]] = (share("green") - share("rust"), res["winner"])
+    effects = [(v[False][0] - v[True][0]) / 2 for v in pairs.values() if len(v) == 2]
+    flips = sum(1 for v in pairs.values() if len(v) == 2 and v[False][1] != v[True][1])
+    if not effects:
+        return {}
+    sd = statistics.stdev(effects) if len(effects) > 1 else 0.0
+    return {"south_advantage": round(statistics.mean(effects), 3), "south_advantage_se": round(sd / math.sqrt(len(effects)), 3),
+            "pairs": len(effects), "winner_flips": flips}
+
+
 def summarize(runs):
     south_wins = draws = 0
     for r in runs:
@@ -49,7 +70,7 @@ def summarize(runs):
     return {"matches": len(runs), "south_win_rate": round(south_wins / decided, 3) if decided else None, "draws": draws,
             "reasons": reasons, "duration_s": median("sim_seconds"), "first_hit_s": median("first_hit_seconds"),
             "range_median_m": median("range_median_m"), "range_p90_m": median("range_p90_m"),
-            "flank_share": median("flank_share"), "hidden_share": median("hidden_share")}
+            "flank_share": median("flank_share"), "hidden_share": median("hidden_share"), **south_advantage(runs)}
 
 
 def main():
