@@ -238,6 +238,7 @@ its `decisions/<id>` documents). Where the orchestrator recommended otherwise, t
 | Which arena is fun | **Not played yet** | Still open |
 | Arena selection | **Players pick** (*overruled*: the recommendation was random-only for now) | control's faction-menu ARENA row, with Random kept as the default option |
 | Map generator | **Park it** | `make arena-candidates` stays a tool, not a direction |
+| **Frame-rate target** (asked later the same day, once render had modelled it) | **A locked 30 fps at 1080p with the full 30 a side, plus a 720p 60 fps performance option** | 60 fps at 1080p is unreachable this round whatever the tick rate does: the GPU alone is 14.8 ms there, and every available cut together still leaves ~9 ms of a 16.7 ms frame. A locked 30 fps holds 60 vehicles with the tick change alone. The army size the lead has asked for twice is preserved; a stable 30 reads as smooth where an unstable 60 reads as broken. Baseline for comparison: 60 fps used to hold at **13 vehicles** at 720p and **never** at 1080p |
 | Destructible cover | **Schedule it** (*overruled*: the recommendation was to park it) | Approved as designed — a stack collapses to a lower stack, never changing drivable space. Not landed in round 5: two cross-stream changes at once (with 30 Hz) would make failures unattributable |
 
 ## Units: fixed types that counter each other
