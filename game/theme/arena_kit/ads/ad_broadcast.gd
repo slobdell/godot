@@ -8,7 +8,8 @@ extends Node
 ##
 ## The playlist is ads.json (tools/assets/build_ads.py; placeholders until the lead picks real art and copy). The "live"
 ## card shows whatever the match posts with `post_live({headline, fine_print})`; on its own the channel finds the
-## running Match once and posts confirmed kills and the odds (it only listens to `tank_destroyed`).
+## running Match once and posts confirmed kills and the odds (it only listens to `tank_destroyed`). Sides are named by
+## the faction each fielded, never by team colour (game_design.md; round 5).
 
 const PLAYLIST := "res://game/theme/arena_kit/ads/ads.json"
 const SCREEN_SHADER := preload("res://game/theme/arena_kit/ads/ad_screen.gdshader")
@@ -44,6 +45,8 @@ var _fine := Label.new()
 var _ticker := Label.new()
 var _frame_skip := 0
 var _kills := [0, 0]
+## Each side's screen name (side_names), set when the channel starts watching a match.
+var _sides: Array = ["HOME", "AWAY"]
 var _match_search := 0.0
 var _match_tries := 0
 var _watched: Node
@@ -223,21 +226,58 @@ func watch_match(game_match: Node) -> void:
 		return
 	_watched = game_match
 	game_match.connect("tank_destroyed", _on_tank_destroyed)
-	post_live({"headline": "GREEN  0\nRUST  0", "fine_print": "Odds even. Wagers close at the first kill."})
+	_sides = AdBroadcast.side_names(AdBroadcast.fielded_faction(game_match, 0), AdBroadcast.fielded_faction(game_match, 1))
+	post_live({"headline": "%s  0\n%s  0" % _sides, "fine_print": "Odds even. Wagers close at the first kill."})
+
+
+## Screen names for the two sides: short faction names ("CONDEMNED", "LAW"), or a neutral HOME / AWAY when a faction
+## can't be read or both sides field the same one (a test build; never a colour). Pure.
+static func side_names(faction_a: String, faction_b: String) -> Array:
+	if faction_a == "" or faction_b == "" or faction_a == faction_b:
+		return ["HOME", "AWAY"]
+	return [AdBroadcast.short_faction(faction_a), AdBroadcast.short_faction(faction_b)]
+
+
+static func short_faction(faction: String) -> String:
+	var name := String(Units.FACTION_NAMES.get(faction, faction))
+	return name.trim_prefix("The ").to_upper()
+
+
+## The faction `team` fields in `game_match`: the most common among its vehicles ("" when none can be read).
+static func fielded_faction(game_match: Node, team: int) -> String:
+	var tanks: Variant = game_match.get("tanks")
+	if not (tanks is Node):
+		return ""
+	var counts := {}
+	for tank in (tanks as Node).get_children():
+		if tank.get("team") == null or int(tank.get("team")) != team or tank.get("unit_id") == null:
+			continue
+		var faction := Units.faction_of(String(tank.get("unit_id")))
+		if faction != "":
+			counts[faction] = int(counts.get(faction, 0)) + 1
+	var best := ""
+	for faction in counts:
+		if best == "" or int(counts[faction]) > int(counts[best]):
+			best = faction
+	return best
 
 
 func _on_tank_destroyed(victim: Node, _killer: String) -> void:
-	var team := int(victim.get("team"))
-	var winner := 1 - clampi(team, 0, 1)
+	var team := clampi(int(victim.get("team")), 0, 1)
+	var winner := 1 - team
 	_kills[winner] += 1
-	var names := ["GREEN", "RUST"]
+	var names: Array = _sides
 	var leader := 0 if _kills[0] >= _kills[1] else 1
 	var odds := "Odds even." if _kills[0] == _kills[1] else "%s %d:1." % [names[leader], maxi(2, roundi(float(_kills[leader] + 1) / float(_kills[1 - leader] + 1)))]
 	var profile: Dictionary = Units.PROFILES.get(String(victim.get("unit_id")), {})
 	var unit := String(profile.get("display_name", "vehicle"))
 	unit = unit if unit == unit.to_upper() else unit.to_lower()  # "an IFV", "a scout"
 	var article := "an" if "AEIOUaeiou".contains(unit.left(1)) else "a"
-	post_live({"headline": "GREEN  %d\nRUST  %d" % _kills, "fine_print": "%s lost %s %s. %s" % [names[team % 2].capitalize(), article, unit, odds]})
+	var loser := String(Units.FACTION_NAMES.get(Units.faction_of(String(victim.get("unit_id"))), ""))
+	if loser == "" or names[0] == "HOME":
+		loser = String(names[team]).capitalize()
+	post_live({"headline": "%s  %d\n%s  %d" % [names[0], _kills[0], names[1], _kills[1]],
+			"fine_print": "%s lost %s %s. %s" % [loser, article, unit, odds]})
 
 
 ## Looks for the running Match a few times after the channel appears (skirmish builds it after the dressing).

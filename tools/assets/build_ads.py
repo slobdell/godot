@@ -69,7 +69,7 @@ ADS = [
      **({"frames": [4, 2], "fps": 6} if art == "aquacorp" else {})}
     for ad_id, brand, text, line, accent, art in APPROVED
 ] + [
-    {"id": "arena_live", "kind": "live", "brand": "LIVE FROM THE PIT", "headline": "GREEN\nvs\nRUST",
+    {"id": "arena_live", "kind": "live", "brand": "LIVE FROM THE PIT", "headline": "TONIGHT'S\nMATCH",
      "fine_print": "Odds update after every confirmed kill.", "accent": "#ffffff", "art": "arena_live", "seconds": 7},
 ]
 
