@@ -68,7 +68,7 @@ func test_screens_on_a_channel_share_one_feed_and_one_material() -> void:
 func test_the_spill_follows_the_channel_light() -> void:
 	var screen := _screen(Vector3(0, 0, 60), {})
 	var channel := AdBroadcast.channel(screen, "arena")
-	channel.show_ad(channel.index_of("freedom_program"))
+	channel.show_ad(channel.index_of("vireo"))
 	for i in 60:
 		channel.advance(0.05)
 	var spill := (screen.get_node("Spill") as MeshInstance3D).material_override as ShaderMaterial
@@ -183,3 +183,22 @@ func test_the_gates_are_barricaded_with_tagged_containers() -> void:
 	for node: Node3D in barricades:
 		assert_true(absf(node.position.x) > 121.0, "barricades stay outside the walls, out of the fight (x %.1f)" % node.position.x)
 		assert_eq(String(node.get("options").get("faction", "")), "gangs", "and wear the road gangs' tags and rust")
+
+
+func test_the_playlist_is_the_leads_approved_copy() -> void:
+	# The lead approved the twelve screen ads in assets/announcer/drafts/ad_copy.md as written (round 5): a headline of at
+	# most four words over a small line, readable across the arena. Plus the live card between matches.
+	var ads := AdBroadcast.load_playlist()
+	var stills := ads.filter(func(ad: Dictionary) -> bool: return ad.get("kind", "still") != "live")
+	assert_eq(stills.size(), 12, "twelve approved ads")
+	var headlines := {}
+	for ad: Dictionary in stills:
+		var words := String(ad["headline"]).replace("\n", " ").split(" ", false)
+		# The copy's rule is four words; the lead approved one five-word line as written ("THEY'LL BE TAKEN CARE OF").
+		assert_true(words.size() <= 5, "%s: a headline short enough to read across the arena (%s)" % [ad["id"], ad["headline"]])
+		assert_true(ResourceLoader.exists(String(ad["image"])), "%s has its art" % ad["id"])
+		headlines[String(ad["headline"]).replace("\n", " ")] = true
+	assert_true(headlines.has("CLEAN WATER. EVERY WEEK."), "AquaCorp's approved headline, not the placeholder")
+	assert_true(headlines.has("ORDER IS A PUBLIC GOOD"), "The Law's")
+	assert_eq(ads.filter(func(ad: Dictionary) -> bool: return ad.get("kind", "") == "live").size(), 1, "and the live card")
+

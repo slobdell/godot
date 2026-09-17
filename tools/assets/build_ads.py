@@ -3,9 +3,9 @@
 
     make assets-ads
 
-The lead decides the real ad art and copy (the brief: "ad art and copy are the lead's call"). These placeholders prove
-the screen: graphic backgrounds drawn here (no text baked in: text is overlaid in the engine, art_direction.md), and
-the copy in ads.json written to the humor direction in game_design.md (believable, slightly off, never a punchline).
+The copy is the lead's approved set (round 5): the twelve screen ads in assets/announcer/drafts/ad_copy.md, as written
+(headline, small line). Art is procedural backgrounds drawn here, one motif per brand (no text baked in: text is
+overlaid in the engine, art_direction.md). Between matches the screens rotate these; during a match they show LiveFeed.
 
 Outputs (game/theme/arena_kit/ads/):
     <id>.png       256 × 512 portrait still (drawn at 512 × 1024), or a flipbook sheet (frames laid out left to right, top to bottom)
@@ -27,19 +27,50 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "game" / "theme" / "arena_kit" / "ads"
 W, H = 512, 1024
 
+LINE_CHARS = 13
+
+
+def headline(text: str) -> str:
+    """Break an approved headline (at most four words) into the screen's lines: sentences first, then at LINE_CHARS (what fits the 46 px Oswald headline across the 320 px layout)."""
+    lines, current = [], ""
+    for word in text.split():
+        if current and (len(current) + 1 + len(word) > LINE_CHARS or current.endswith(".")):
+            lines.append(current)
+            current = word
+        else:
+            current = f"{current} {word}".strip()
+    lines.append(current)
+    # Never strand a short word on its own line ("TAKEN CARE / OF"): pull it up.
+    if len(lines) > 1 and len(lines[-1]) <= 3 and len(lines[-2]) + 1 + len(lines[-1]) <= LINE_CHARS:
+        last = lines.pop()
+        lines[-1] = f"{lines[-1]} {last}"
+    return "\n".join(lines)
+
+
+# The lead's approved screen copy (ad_copy.md, round 5): [id, brand, headline, small line, accent, art]. `art` names the
+# painter (brands share one motif); AquaCorp's water drop is a flipbook.
+APPROVED = [
+    ["aquacorp_week", "AQUACORP", "CLEAN WATER. EVERY WEEK.", "For approved households. Schedules posted Mondays.", "#7fe3ff", "aquacorp"],
+    ["aquacorp_health", "AQUACORP", "HYDRATION IS HEALTH", "Your allocation has been reviewed.", "#7fe3ff", "aquacorp"],
+    ["syndicate_life_protect", "SYNDICATE LIFE", "PROTECT WHAT MATTERS", "Plans from one month of labor.", "#d8b86a", "syndicate_life"],
+    ["syndicate_life_care", "SYNDICATE LIFE", "THEY'LL BE TAKEN CARE OF", "Beneficiaries notified automatically.", "#d8b86a", "syndicate_life"],
+    ["meridian", "MERIDIAN TRANSPORT", "GET THERE TOGETHER", "District passes checked at every stop.", "#9fd4a8", "meridian"],
+    ["harbor_general", "HARBOR GENERAL", "WE'RE HERE FOR YOU", "Official hospital of the arena. Winners first.", "#ff8a8a", "harbor_general"],
+    ["vireo", "VIREO", "REAL FOOD. REAL ENERGY.", "Now 92% food.", "#b8e05a", "vireo"],
+    ["northgrid", "NORTHGRID POWER", "KEEPING THE LIGHTS ON", "In selected residential areas.", "#ffd34a", "northgrid"],
+    ["syndicate_vision", "SYNDICATE VISION", "EVERY ANGLE. FOREVER.", "All broadcasts archived permanently.", "#c7a6ff", "syndicate_vision"],
+    ["syndicate_housing", "SYNDICATE HOUSING", "A HOME IN THE EAST", "Applications reviewed by lottery.", "#e8c9a0", "syndicate_housing"],
+    ["syndicate_security", "SYNDICATE SECURITY", "SEE SOMETHING. REPORT IT.", "Reports during tonight's match earn double credit.", "#e8ecf2", "warden"],
+    ["the_law", "THE LAW", "ORDER IS A PUBLIC GOOD", "Tip lines open around the clock.", "#8fb4ff", "warden"],
+]
+
 ADS = [
-    {"id": "syndicate_life", "brand": "SYNDICATE LIFE", "headline": "COVERAGE THAT\nOUTLIVES YOU",
-     "fine_print": "Beneficiary payouts processed within 90 business days of confirmed loss.", "accent": "#d8b86a", "seconds": 9},
-    {"id": "aquacorp", "brand": "AQUACORP", "headline": "CLEAN WATER.\nEVERY DAY\nYOU QUALIFY.",
-     "fine_print": "Ration tier verified at point of sale.", "accent": "#7fe3ff", "seconds": 8, "frames": [4, 2], "fps": 6},
-    {"id": "warden", "brand": "OFFICE OF THE WARDEN", "headline": "SAFER STREETS\nSTART WITH\nA REPORT",
-     "fine_print": "Verified tips earn ration credit. Reports cannot be withdrawn.", "accent": "#e8ecf2", "seconds": 8},
-    {"id": "organ_futures", "brand": "ORGAN FUTURES", "headline": "INVEST IN\nTONIGHT'S\nCHAMPIONS",
-     "fine_print": "Contracts settle at the final bell.", "accent": "#e2c27a", "seconds": 8},
-    {"id": "freedom_program", "brand": "THE FREEDOM PROGRAM", "headline": "WIN YOUR\nFREEDOM\nTONIGHT",
-     "fine_print": "Release subject to review by the Board. Terms apply.", "accent": "#ffb13b", "seconds": 8},
+    {"id": ad_id, "brand": brand, "headline": headline(text), "fine_print": line, "accent": accent, "art": art, "seconds": 8,
+     **({"frames": [4, 2], "fps": 6} if art == "aquacorp" else {})}
+    for ad_id, brand, text, line, accent, art in APPROVED
+] + [
     {"id": "arena_live", "kind": "live", "brand": "LIVE FROM THE PIT", "headline": "GREEN\nvs\nRUST",
-     "fine_print": "Odds update after every confirmed kill.", "accent": "#ffffff", "seconds": 7},
+     "fine_print": "Odds update after every confirmed kill.", "accent": "#ffffff", "art": "arena_live", "seconds": 7},
 ]
 
 
@@ -120,39 +151,90 @@ def warden() -> Image.Image:
     return to_image(rgb + noise(3, 0.04))
 
 
-def organ_futures() -> Image.Image:
-    rgb = gradient((0.02, 0.02, 0.02), (0.05, 0.03, 0.02))
+def meridian() -> Image.Image:
+    rgb = gradient((0.02, 0.05, 0.04), (0.0, 0.01, 0.01))
     layer = Image.new("RGB", (W, H))
     d = ImageDraw.Draw(layer)
-    for gx in range(0, W, 48):
-        d.line([(gx, 120), (gx, 600)], fill=(40, 34, 24), width=1)
-    for gy in range(120, 601, 48):
-        d.line([(0, gy), (W, gy)], fill=(40, 34, 24), width=1)
-    points, value = [], 520.0
-    rng = np.random.default_rng(4)
-    for i, px in enumerate(range(20, W - 19, 24)):
-        value -= rng.normal(14, 22)  # a line that mostly goes up
-        points.append((px, max(150.0, min(580.0, value))))
-    d.line(points, fill=(226, 194, 122), width=4, joint="curve")
-    d.ellipse([points[-1][0] - 8, points[-1][1] - 8, points[-1][0] + 8, points[-1][1] + 8], fill=(255, 230, 160))
-    rgb = rgb + glow(layer, 12, 0.9) * 0.9
-    return to_image(rgb + noise(5, 0.03))
+    for side in (-1, 1):  # rails running to a vanishing point, sleepers across them
+        d.line([(W / 2 + side * 20, 300), (W / 2 + side * 230, H)], fill=(159, 212, 168), width=6)
+    for k in range(12):
+        t = (k / 12.0) ** 1.8
+        y = 300 + t * (H - 300)
+        half = 20 + t * 230
+        d.line([(W / 2 - half, y), (W / 2 + half, y)], fill=(60, 90, 70), width=max(2, int(2 + t * 8)))
+    d.ellipse([W / 2 - 18, 270, W / 2 + 18, 306], fill=(230, 255, 220))
+    rgb = rgb + glow(layer, 14, 0.9) * 0.85
+    return to_image(rgb + noise(11, 0.03))
 
 
-def freedom_program() -> Image.Image:
-    rgb = gradient((0.06, 0.03, 0.01), (0.01, 0.01, 0.01))
+def harbor_general() -> Image.Image:
+    rgb = gradient((0.06, 0.02, 0.03), (0.01, 0.0, 0.01))
     layer = Image.new("RGB", (W, H))
     d = ImageDraw.Draw(layer)
-    d.rectangle([176, 170, 336, 560], fill=(255, 196, 110))  # an open gate, light pouring through
-    for bar in range(6):
-        bx = 176 + bar * 32
-        d.rectangle([bx - 3, 170, bx + 3, 560], fill=(30, 18, 8))
-    d.polygon([(176, 560), (336, 560), (470, 700), (42, 700)], fill=(120, 80, 36))
-    for stripe in range(-2, 16):
-        sx = stripe * 40
-        d.polygon([(sx, 1024), (sx + 20, 1024), (sx + 70, 950), (sx + 50, 950)], fill=(60, 40, 8))
-    rgb = rgb + glow(layer, 26, 1.1) * 0.85
-    return to_image(rgb + noise(6, 0.04))
+    d.rectangle([W / 2 - 40, 150, W / 2 + 40, 390], fill=(255, 138, 138))  # a cross
+    d.rectangle([W / 2 - 120, 230, W / 2 + 120, 310], fill=(255, 138, 138))
+    points = [(0, 520)]
+    for x in range(0, W + 1, 16):  # a pulse line that settles flat
+        beat = 0 if x < 180 or x > 300 else (-120 if 220 < x < 240 else (60 if 240 <= x < 260 else 0))
+        points.append((x, 520 + beat))
+    d.line(points, fill=(255, 190, 190), width=4)
+    rgb = rgb + glow(layer, 16, 1.0) * 0.8
+    return to_image(rgb + noise(12, 0.03))
+
+
+def vireo() -> Image.Image:
+    rgb = gradient((0.04, 0.06, 0.02), (0.01, 0.02, 0.0))
+    layer = Image.new("RGB", (W, H))
+    d = ImageDraw.Draw(layer)
+    d.rounded_rectangle([120, 260, 392, 380], radius=24, fill=(150, 120, 70))  # a ration bar
+    for k in range(5):
+        d.line([(150 + k * 50, 270), (150 + k * 50, 370)], fill=(110, 86, 48), width=5)
+    d.ellipse([300, 150, 420, 250], fill=(184, 224, 90))  # a leaf beside it
+    d.line([(310, 240), (410, 160)], fill=(90, 130, 40), width=4)
+    rgb = rgb + glow(layer, 12, 0.8) * 0.85
+    return to_image(rgb + noise(13, 0.03))
+
+
+def northgrid() -> Image.Image:
+    rgb = gradient((0.02, 0.02, 0.05), (0.05, 0.04, 0.0))
+    layer = Image.new("RGB", (W, H))
+    d = ImageDraw.Draw(layer)
+    for px, scale in ((150, 1.0), (380, 0.7)):  # pylons and their sagging lines
+        top, base = 200 + (1 - scale) * 150, 620
+        d.polygon([(px, top), (px - 70 * scale, base), (px + 70 * scale, base)], outline=(255, 211, 74), width=4)
+        d.line([(px - 60 * scale, top + 60), (px + 60 * scale, top + 60)], fill=(255, 211, 74), width=4)
+    d.line([(90, 260), (330, 320)], fill=(200, 170, 60), width=2)
+    for k in range(40):  # lit windows in one district only
+        x, y = 20 + (k * 53) % 240, 700 + (k * 37) % 120
+        d.rectangle([x, y, x + 8, y + 12], fill=(255, 220, 120))
+    rgb = rgb + glow(layer, 12, 0.9) * 0.85
+    return to_image(rgb + noise(14, 0.03))
+
+
+def syndicate_vision() -> Image.Image:
+    rgb = gradient((0.03, 0.02, 0.06), (0.0, 0.0, 0.01))
+    layer = Image.new("RGB", (W, H))
+    d = ImageDraw.Draw(layer)
+    for r, width in ((210, 4), (150, 6), (90, 10)):  # a camera lens
+        d.ellipse([W / 2 - r, 330 - r, W / 2 + r, 330 + r], outline=(199, 166, 255), width=width)
+    d.ellipse([W / 2 - 40, 290, W / 2 + 40, 370], fill=(240, 230, 255))
+    d.ellipse([W / 2 - 70, 250, W / 2 - 40, 280], fill=(255, 255, 255))
+    rgb = rgb + glow(layer, 18, 1.0) * 0.85
+    return to_image(rgb + noise(15, 0.03))
+
+
+def syndicate_housing() -> Image.Image:
+    rgb = gradient((0.06, 0.04, 0.03), (0.01, 0.01, 0.01))
+    layer = Image.new("RGB", (W, H))
+    d = ImageDraw.Draw(layer)
+    for bx, top in ((40, 260), (190, 160), (340, 300)):  # identical towers, one window lit each
+        d.rectangle([bx, top, bx + 130, 700], outline=(232, 201, 160), width=3)
+        for wy in range(top + 20, 690, 40):
+            for wx in range(bx + 15, bx + 120, 35):
+                d.rectangle([wx, wy, wx + 14, wy + 18], fill=(60, 46, 34))
+        d.rectangle([bx + 50, top + 140, bx + 64, top + 158], fill=(255, 220, 160))
+    rgb = rgb + glow(layer, 10, 0.8) * 0.85
+    return to_image(rgb + noise(16, 0.03))
 
 
 def arena_live() -> Image.Image:
@@ -165,8 +247,9 @@ def arena_live() -> Image.Image:
     return to_image(rgb + noise(7, 0.03))
 
 
-PAINTERS = {"syndicate_life": syndicate_life, "aquacorp": aquacorp, "warden": warden, "organ_futures": organ_futures,
-            "freedom_program": freedom_program, "arena_live": arena_live}
+PAINTERS = {"syndicate_life": syndicate_life, "aquacorp": aquacorp, "warden": warden, "meridian": meridian,
+            "harbor_general": harbor_general, "vireo": vireo, "northgrid": northgrid, "syndicate_vision": syndicate_vision,
+            "syndicate_housing": syndicate_housing, "arena_live": arena_live}
 
 
 def average_color(image: Image.Image, frames) -> str:
@@ -215,21 +298,25 @@ def neon_atlas() -> Image.Image:
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     playlist = []
+    painted = {}
     for ad in ADS:
-        image = PAINTERS[ad["id"]]()
-        # Stills ship at half size (256 × 512): the feed is 320 × 640 at most and the screen blurs them anyway (X6).
-        shipped = image if ad.get("frames") else image.resize((W // 2, H // 2), Image.LANCZOS)
-        shipped.save(OUT / f"{ad['id']}.png", optimize=True)
-        entry = {"id": ad["id"], "kind": ad.get("kind", "still"), "image": f"res://game/theme/arena_kit/ads/{ad['id']}.png",
+        art = ad["art"]
+        if art not in painted:
+            painted[art] = PAINTERS[art]()
+            # Stills ship at half size (256 × 512): the feed is 320 × 640 at most and the screen blurs them anyway (X6).
+            shipped = painted[art] if ad.get("frames") else painted[art].resize((W // 2, H // 2), Image.LANCZOS)
+            shipped.save(OUT / f"{art}.png", optimize=True)
+        image = painted[art]
+        entry = {"id": ad["id"], "kind": ad.get("kind", "still"), "image": f"res://game/theme/arena_kit/ads/{art}.png",
                  "frames": ad.get("frames", [1, 1]), "fps": ad.get("fps", 0), "seconds": ad["seconds"],
                  "brand": ad["brand"], "headline": ad["headline"], "fine_print": ad["fine_print"], "accent": ad["accent"],
                  "average_color": average_color(image, ad.get("frames"))}
         playlist.append(entry)
-        print(f"ads: {ad['id']:<16} {(OUT / (ad['id'] + '.png')).stat().st_size / 1024:.0f} KB  light {entry['average_color']}")
+        print(f"ads: {ad['id']:<24} {(OUT / (art + '.png')).stat().st_size / 1024:.0f} KB  light {entry['average_color']}")
     neon_atlas().save(OUT / "neon_signs.png", optimize=True)
     print(f"ads: neon_signs       {(OUT / 'neon_signs.png').stat().st_size / 1024:.0f} KB")
-    (OUT / "ads.json").write_text(json.dumps({"placeholder": True, "note": "Art and copy are the lead's call; see "
-                                              "tools/assets/build_ads.py.", "ads": playlist}, indent=2) + "\n")
+    (OUT / "ads.json").write_text(json.dumps({"placeholder": False, "note": "Copy: the lead's approved screen ads "
+                                              "(assets/announcer/drafts/ad_copy.md). Art: tools/assets/build_ads.py.", "ads": playlist}, indent=2) + "\n")
     return 0
 
 
