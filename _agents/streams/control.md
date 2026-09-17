@@ -71,7 +71,29 @@ Vehicle art and effects (render), arena layouts (arena), weapons and rules (comb
 
 ## Status
 
-_Round 5, control stream. **Every backlog item (X1–X6) is done; stretch: spectate done, replay not started.** Last verification on e81bdbe6 (merged with main): `make remote T=check` **965 passed, 0 failed, exit 0**, `shell-playtest` 15/15 with a silent console. (Earlier, on 4d98235): `make remote T=check` **931 passed, 0 failed, exit 0**; `shell-playtest` 15/15 with a silent console; `hud-cost` 86. Updated 2026-09-17._
+_Round 5, control stream. Written 2026-09-17; merged to main as **eb49ec5a** and closed._
+
+### What this stream did, in short
+
+The lead could not start the game. The title screen's buttons quit and relaunched the executable; the faction menu had
+nothing on it you could click to begin; the camera framed the enemy army instead of his own; the console filled with
+red errors. All four are fixed, and the fixes are held in place by a scripted playthrough that fails if any of them
+comes back.
+
+| The lead's words | Now | Held by |
+|---|---|---|
+| "The startup screen seems stuck, I can't actually click any of the first buttons" | The title starts a match in the same window; the faction + arena menu has a **FIGHT** button | `make shell-playtest` clicks its way from the title to a running battle |
+| "It ends up focusing on the enemy instead of our own friendly units" | The camera keeps the element it frames **1–15 m from screen centre** through two minutes of battle (the old code: 44 m off, the enemy 17 m from centre) | a unit test that fails on the old framing, plus every playtest sample |
+| "A bunch of red error messages in the console log" | A whole played session logs **zero** errors and warnings | the playtest target fails on any `ERROR`, `SCRIPT ERROR` or `WARNING` line |
+| (the frame rate, and the maps) | A **QUALITY 30 / PERFORMANCE 60** button in the HUD and on the title; an **arena picker** with what each map is for; the HUD from **369 to 86 draw calls** | `make hud-cost`, `make shell-playtest` |
+
+**Try it:** `make title` (SKIRMISH, or SPECTATE to watch), or `make skirmish` to go straight to the menu.
+
+**Verified** on e81bdbe6 (this branch merged with main): `make remote T=check` **965 passed, 0 failed, exit 0**;
+`make shell-playtest` 15/15 checks with a silent console; `make hud-cost` 86 canvas draw calls.
+
+**Every backlog item (X1–X6) is done.** Stretch: spectate done, replay not started. The sections below are the detail:
+what each item was, what was wrong, what changed, and the numbers.
 
 ### Plan (backlog in order)
 
@@ -96,15 +118,15 @@ records what Godot says is under it, clicks, and samples the camera through two 
 | "The startup screen seems stuck, I can't click the first buttons" | `make skirmish` opens the faction menu. Clicks *did* reach it (the playtest shows the row under the mouse and the picks change), but nothing on it was a button that started anything: the only way on was Enter, written as a line of text ("ENTER fight"). Clicking a row changes a highlight and nothing else, which reads as stuck. | A real **FIGHT** button (min 160×44 px; confirms on release), hint text that says click / right-click. |
 | (the title screen, `make title`) | Its buttons did work, but on desktop they **quit and relaunched the executable**, dropping every launch flag. From a terminal that is a window closing and another opening seconds later. | Switches to the game scene in-process with `Main.next_flags`; carries `--ui-touch`, `--announcer`, `--music` and the playtest flag. |
 | "It ends up focusing on the enemy instead of our own friendly units" | The vision frame included every enemy the commanded element could see. Once the armies met, 26 contacts outweighed 5 of yours: the frame's centre moved to the enemy, the zoom cap stopped it widening, and your element slid off the bottom. Unit test on the old code: **centre 44 m from your element, 17 m from the enemy**. | Contacts are framed together with their mirror image about the element: they widen the view, never move its centre. A wiped last group falls back to the whole army. After: the element stays **1–15 m from screen centre** at every sample through 120 s of battle, all its vehicles on screen. |
-| "A bunch of red error messages" | In a full session the **only** errors are render's: `Too many instances using shader instance variables … 4096` (217) and `instance_buffer_pos.has(p_instance)` (94) with 45 vs 26 vehicles. Nothing from control, combat or audio. | Render owns it (their X2); nothing to file beyond what CP1 already tracks. |
+| "A bunch of red error messages" | In a full session the **only** errors were render's: `Too many instances using shader instance variables … 4096` (217) and `instance_buffer_pos.has(p_instance)` (94) with 45 vs 26 vehicles. Nothing from control, combat or audio. | Render removed the instance uniforms later the same day, so a played session now logs nothing at all; `make shell-playtest` fails on any error or warning line, which is what keeps it that way. |
 
 The brief's clue (a headless `--title` printing `TITLE_START offline` at once) did not reproduce: locally the title sat
 for 40 s without printing it.
 
-**Playable now?** Up to the edge of render's and combat's work, yes: a click on SKIRMISH opens the faction menu, clicks
-pick both sides, FIGHT starts the match, the planning pause says what to do, Space starts it, and the camera stays
-on your element through contact with the enemy visible beyond it. What still stops a real session is not control's:
-the frame rate (combat/ai's simulation tick per CP1) and the renderer's uniform errors.
+**Playable now?** Yes, as far as the shell goes: a click on SKIRMISH opens the faction and arena menu, clicks pick both
+sides and the map, FIGHT starts the match, the planning pause says what to do, Space starts it, and the camera stays on
+your element through contact with the enemy visible beyond it. What is left is not the shell's: the frame rate at 30 a
+side, which is the simulation tick (combat and ai, CP1), and how the fight itself reads.
 
 ### X2. Subtitles get their own line. Done.
 
@@ -230,7 +252,10 @@ you clicked is the one built.
 - **A replay of the last match:** not started. It needs the simulation to be replayable from recorded orders on the
   current Jolt physics, which is combat's determinism work first.
 
-### The CPU's commander (orchestrator's request, then withdrawn)
+### The CPU's commander: a switch that is built, tested, and deliberately off
+
+Round 4 built elements, formations and battle drills, but the skirmish CPU never ran them: it fought on brains alone
+unless someone passed a flag. Round 5 built the switch to change that, and then measurement said not to throw it yet.
 
 `SkirmishMode.cpu_runs_elements(flags)`: `--element-cpu` / `--no-element-cpu`, default `ELEMENT_CPU_DEFAULT`. When on,
 each CPU squad becomes an element under `ElementCommander` (both sides under `--cinematic`), sharing the one
@@ -286,7 +311,10 @@ of the tick. Flip the constant when ai reports a variant that wins at scale.
 ### Known issues
 
 - Hints are desktop only (keys and right-click), like the rest of the round-4 grammar.
-- `make hud-cost` measures during a pause, so messages and captions (0–4 draws each when showing) aren't in the 84.
+- `make hud-cost` measures during a tactical pause, so messages and captions (0–4 draws each while they show) are not
+  in the 84–86.
+- The frame-rate and FX buttons are HUD chrome: on a phone-shaped window they sit in the same top-left corner as the
+  status block, which has not been re-checked at touch sizes (nothing here has a touch path yet).
 
 ### What to playtest (exact commands)
 
@@ -305,6 +333,8 @@ Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cp
 1. Flip `ELEMENT_CPU_DEFAULT` when ai's variant wins at scale.
 2. Touch: the desktop grammar, hints and menus have no touch path yet.
 3. A replay of the last match, once the simulation replays from recorded orders.
+4. Carried from closed streams: `Arena._ready` reads `--arena` / `--seed` from the command line only, so a match started
+   from a menu cannot pass them; `GameLauncher` works around it (see *The arena picker*), so a player sees nothing wrong.
 
 ### Merge notes (shared files)
 
