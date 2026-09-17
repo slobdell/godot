@@ -8,6 +8,7 @@ extends RefCounted
 
 const TEAMS := ["green", "rust"]
 const UNIT_TYPES := ["scout", "tank", "ifv", "artillery", "lancer", "burner"]
+## The fixtures' tick rate (they were recorded at 60 Hz). Live matches use Engine.physics_ticks_per_second instead.
 const TICKS_PER_SECOND := 60
 
 ## type -> {field: kind}; kinds match events.py.

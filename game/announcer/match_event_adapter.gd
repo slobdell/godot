@@ -70,8 +70,11 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 	listen_for_elements()
 
 
+## Match time: ticks at the rate the physics actually runs. A constant 60 here would put the booth, the match mood
+## and the music at half speed the moment the tick becomes 30 Hz (round 5): stale windows twice as long, heat
+## decaying half as fast.
 func seconds() -> float:
-	return game_match.tick / float(AnnouncerEvents.TICKS_PER_SECOND)
+	return game_match.tick / float(Engine.physics_ticks_per_second)
 
 
 func _emit(type: String, fields: Dictionary) -> void:
