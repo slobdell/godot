@@ -40,6 +40,10 @@ const STEM_FADE_S := 1.2
 ## A stem stays in until the intensity is this far under its `from`.
 const STEM_HYSTERESIS := 0.08
 const SILENT_DB := -60.0
+## The soundtrack's level under --music-volume. Until the stems looped (bc1ce8f) the fight music stopped after 8 s,
+## so the whole mix was balanced against silence; the first full match with it playing measured -15.2 LUFS and a
+## battle that was mostly music (-11 dB RMS). The battle leads; the music sits under it.
+const TRIM_DB := -9.0
 
 signal track_changed(state: String, track_id: String)
 
@@ -48,7 +52,7 @@ var volume_db := 0.0:
 		volume_db = value
 		var index := AudioServer.get_bus_index(BUS)
 		if index >= 0:
-			AudioServer.set_bus_volume_db(index, value)
+			AudioServer.set_bus_volume_db(index, value + TRIM_DB)
 ## Replaceable for tests: path -> AudioStream (or null when there is no file).
 var load_stream: Callable = func(path: String) -> AudioStream: return _load_any(path)
 
