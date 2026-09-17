@@ -205,6 +205,28 @@ second, on both sides, counterbalanced — so the doctrine verdict stands, but "
 applies" is now measured rather than suspected. Re-running the faction ladder after control's line lands is the first
 thing worth doing: an element told to bound and cover has something to decide only if contact isn't immediate.
 
+### Reopened again: the think rate after 30 Hz, and a behaviour that never existed
+
+**Think rate** (`make ai-perf UNITS=60`, fixed workload, interleaved, thread CPU **per second of match time** —
+the figure a tick-rate change doesn't distort): champion 7.5 thinks/s ~9 800 µs per living unit per second; 5/s
+~8 300 (-15%); 3.75/s ~7 000 (-29%), as variants `x6t5` and `x6t4`. **Halving how often a brain thinks buys ~29% of
+the brains, ~25% of the tick, which does not take the lead from 30 vehicles to 60.** Not adopted: the trade (fewer
+units that react, or more units that react late) is the lead's. Closing his gap needs structural work on what a brain
+does per think.
+
+**Dodging has never fired.** I first reported that 30 Hz had broken it (17% of shells dodged before, 1-9% after) — that
+was an 18-shell sample, 5.5 points per shell, and it is **retracted**. Counting *attempts* instead
+(`scenario_dodge_rate.gd`, 8 seeds): a tank spent **0 of 502 inbound ticks dodging at 30 Hz and 0 of 893 at 60 Hz** on a
+pre-30 Hz snapshot; inside `CombatMotion` every candidate direction scores "would still be hit" (254/254, 248/248). A
+shell crosses 50 m in ~0.7 s and a hull needs ~0.8 s to swing perpendicular, so **the behaviour as designed is
+impossible** and every "dodge rate" quoted since round 3 is shells missing for other reasons. Beaten-zone avoidance,
+which reacts over seconds, is intact (0 ticks in the zone against a control's 16, under denser fire than before).
+Round-6 proposal in unit_ai.md: **dodging has to begin before the shot** — stay a hard target while a loaded gun is on
+you — and the reactive half is worth keeping only where flight times are long.
+
+**Lesson for whoever reports a number next:** a sample of 18 shells cannot resolve a 10-point difference, and a number
+passed to someone else becomes a fact. Say the sample size in the same sentence as the result.
+
 ### Decisions taken where the brief left a choice
 
 - **X1 measured by thread CPU time per living unit, interleaved** (band_probe.gd): wall time on a shared machine
