@@ -74,19 +74,6 @@ static func value(key: String) -> Variant:
 	return SETTINGS[tier()][key]
 
 
-## Render X5 (round 5, M1): the 3D resolution a window of `window_height` pixels renders at. Past ~918 lines the GPU
-## cost grows with pixels the RTS camera doesn't show more of (1080p at 0.85 saved 4.8 ms on the lead's UHD 620); the UI
-## keeps the full resolution. Never below 0.7, and never above the tier's own scale.
-const MAX_3D_LINES := 918.0
-const MIN_AUTO_SCALE := 0.7
-
-
-static func render_scale_for(tier_scale: float, window_height: int) -> float:
-	if window_height <= 0:
-		return tier_scale
-	return minf(tier_scale, clampf(MAX_3D_LINES / float(window_height), MIN_AUTO_SCALE, 1.0))
-
-
 static func tier_name() -> String:
 	return NAMES[tier()]
 

@@ -27,3 +27,25 @@ func test_percentile_and_mean() -> void:
 	assert_eq(PerfScene.mean(values), 22.0, "mean")
 	assert_eq(PerfScene.percentile(values, 0.5), 3.0, "median of the sorted samples")
 	assert_eq(PerfScene.percentile(PackedFloat32Array(), 0.95), 0.0, "empty is 0")
+
+
+func test_sixty_fps_holds_at_the_most_vehicles_whose_median_frame_stayed_under_60_hz() -> void:
+	var phases := [
+		{"phase": "all", "vehicles": 60, "avg_ms": 133.0}, {"phase": "all", "vehicles": 30, "avg_ms": 40.0},
+		{"phase": "all", "vehicles": 14, "avg_ms": 16.2}, {"phase": "no_hud", "vehicles": 12, "avg_ms": 12.0},
+		{"phase": "all", "vehicles": 12, "avg_ms": 17.4}, {"phase": "all", "vehicles": 12, "avg_ms": 17.9},
+		{"phase": "all", "vehicles": 10, "avg_ms": 14.0}, {"phase": "all", "vehicles": 10, "avg_ms": 18.9},
+		{"phase": "all", "vehicles": 10, "avg_ms": 13.0},
+	]
+	assert_eq(PerfScene.holds_60fps_at(phases), 10, "one noisy phase at 10 doesn't sink it; 12 didn't hold, so 14 doesn't count")
+	assert_eq(PerfScene.holds_60fps_at([{"phase": "all", "vehicles": 60, "avg_ms": 30.0}]), 0, "never held")
+
+
+func test_a_locked_30_is_judged_on_its_worst_frames_not_its_median() -> void:
+	var phases := [
+		{"phase": "all", "vehicles": 60, "avg_ms": 28.0, "p99_ms": 58.0},
+		{"phase": "all", "vehicles": 40, "avg_ms": 25.0, "p99_ms": 31.0},
+		{"phase": "all", "vehicles": 20, "avg_ms": 18.0, "p99_ms": 24.0},
+	]
+	assert_eq(PerfScene.holds_30fps_at(phases), 40, "60 vehicles average 28 ms but drop to 58: not locked")
+	assert_eq(PerfScene.holds_60fps_at(phases), 0, "and none of it is 60")

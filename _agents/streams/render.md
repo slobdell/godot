@@ -224,8 +224,49 @@ _Updated 2026-09-17 (evening)._
   isn't isolated; the frame-time delta is the honest number. At 60 vehicles: 2 replays in 16 s, still live.
 - Estimated VRAM on high: 30 × (256×512 color + depth) ≈ 30–45 MB.
 
+### What 30 Hz can and can't fix: projections from the 60 Hz baseline (to be replaced by the measurement)
+
+**Model.** The simulation runs as many ticks as the frame took, so a frame is `R / (1 − tick / tick_period)`, where
+`tick` is one tick's script time and `R` everything else a frame does (render submission, GPU wait, `_process`),
+calibrated from the uncapped baseline phases: **R ≈ 10.1 ms at 720p, ≈ 12.5 ms at 1080p** (it predicts 15.0 ms at
+13 vehicles, measured 15.7). 60 fps needs `tick ≤ tick_period × (1 − R / 16.7)`; 30 fps needs `tick ≤ tick_period ×
+(1 − R / 33.3)`. Assumes one 30 Hz tick costs what a 60 Hz tick does (the brains and Match don't do less per tick).
+
+Baseline tick by vehicles (720p run): 13 → 5.5 ms, 23 → 10.8, 27–39 → 14.2, 44 → 16.1, 54 → 22.4, 65 → 34.8.
+
+| Target | Tick must be ≤ at 60 Hz | at 30 Hz | Holds to (30 Hz, projected) | 30 a side (60 vehicles, tick ≈ 22–35 ms) |
+|---|---|---|---|---|
+| 60 fps, 720p (R 10.1) | 6.6 ms | **13.2 ms** | **~25 vehicles** (was 13) | no: the tick must fall another 40–60% |
+| 60 fps, 1080p (R 12.5) | 4.2 ms | **8.4 ms** | **~12 vehicles** (was never) | no |
+| 60 fps, 1080p with every GPU cut below (R ≈ 8.5) | 8.2 ms | 16.4 ms | ~40 vehicles | no |
+| **locked 30 fps, 1080p (R 12.5)** | 20.8 ms | **41.6 ms** | **~60 vehicles: 30 a side** | **yes** |
+| locked 30 fps, 720p (R 10.1) | 23.2 ms | 46.4 ms | 60+ | yes |
+
+**The 1080p GPU floor** (measured, `floor-1080-options`, 60+ vehicles, window 1854×1011): GPU 14.8 ms. Cuts available:
+3D render scale 0.75 (−2.8 ms; softer image), glow off (−1.7 ms; the lead chose to keep it), venue off (−1.35 ms;
+stands, crowd, screens), the lite floor (+1.6 ms: worse, it's lit; the unlit floor is already the cheap one). All of
+them together leave ~9 ms of GPU, still most of a 16.7 ms frame.
+
+**What that means, for the lead:** 30 Hz roughly doubles how many vehicles hold 60 fps at 720p (13 → ~25) but doesn't
+reach 30 a side there, and at 1080p 60 fps stays out of reach this round whatever the tick does, unless the look gives
+up glow, resolution and the venue *and* the tick falls further. **A locked, stable 30 fps at 1080p with 30 a side is
+reachable with 30 Hz alone** and may be the better game than an unstable 60: that's a design decision, not an
+engineering failure.
+
+### The lead's decision: a locked 30 fps at 1080p with 30 a side, plus a 720p 60 fps option
+- `FrameTarget` (`game/theme/fx/frame_target.gd`): **LOCKED_30** (default: `Engine.max_fps` 30, 3D native up to 1080
+  lines) or **PERFORMANCE_60** (60 fps, ~720 lines of 3D, UI full resolution). `--frame-target=30|60`, or the player's
+  saved choice via `FrameTarget.apply(target, "player", true)` (control's menu: requested); the web gets no cap.
+- perf-scene: `p99_ms` and `max_ms` per phase; **`holds_30fps_at_vehicles`** judged on the 99th percentile (a locked rate
+  that drops isn't locked) next to `holds_60fps_at_vehicles`; `--perf-capped` measures with the cap and vsync on.
+- **Before 30 Hz, capped at 30, 1080p:** it never holds (36–64 vehicles: p99 94–144 ms, the 60 Hz spiral).
+  `_agents/streams/references/perf/locked30-capped-60hz-1080.json`. The 60-vehicle line is the one to clear.
+
 ### Ready for 30 Hz with physics interpolation (combat's refactor)
-- 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b).
+- 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b). **The lead's
+  number, before 30 Hz: 60 fps held at 13 vehicles at 720p, and never at 1080p** (median frame at 10 vehicles 18.8 ms).
+  perf-scene now reports it as `holds_60fps_at_vehicles` (median frame per vehicle count, every smaller count under
+  16.7 ms).
 - `FxWorld.visual_transform()` for everything that follows a body per frame; `WeaponFx.drawn_offset()` keeps muzzle
   effects on the drawn barrel. Combat confirmed: shells interpolated, `reset_physics_interpolation()` on spawns,
   `shooter` stays in `weapon_fired`. Re-take perf-scene on their flip commit.
