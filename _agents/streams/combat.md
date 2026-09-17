@@ -65,3 +65,20 @@ camera (control), audio (audio).
 ## Status
 
 - 2026-09-17: brief written for round 5. Nothing started.
+- 2026-09-17: **started.** Baseline `make remote T=check` green on builder0 (`stream/combat` at `faaaac2`).
+
+### Plan (worker contract step 2)
+
+1. **X1a, measure first.** `EngagementStats` (`game/match/engagement_stats.gd`) fills `stats.engagement` in every
+   `MATCH_RESULT`: contact distance, engaged distance (median nearest-enemy distance while shots fly), kill distance,
+   `static_share` (seconds of fire where both armies stand still), centroid travel after contact, kills by face
+   (front / side / rear / indirect), and cover use (time, shots, kills, deaths within 5 m of an obstacle).
+   `make engagement PAIRS=… SEEDS=…` averages it over counterbalanced faction battles. Read-only: no sim change.
+2. **X1b, tune the levers** against those numbers (weapon range, accuracy falloff with range, sight vs range, time to
+   kill), with the target written in balance.md: a majority of direct-fire kills from the flank or rear, and armies
+   that move after contact.
+3. **X2 cover**, once arena's M2 layouts land (CP2); before then, on today's `scrapyard`.
+4. **X3 the gangs**: re-run the faction matrix on today's code first, then fix what it shows.
+5. **X4 the Lancer**: decide with the matrix and write it down.
+6. **X5 rules for brains**: a matchup-free "can I kill this quickly" query; pinned worth exploiting.
+7. **X6 re-measure** after arena's maps, and the balance.md story.

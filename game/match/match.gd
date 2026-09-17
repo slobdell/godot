@@ -191,6 +191,11 @@ var _squad_by_tank := {}
 ## "team/squad name" → Squad (runtime squad state; tactical map commands land here).
 var squads := {}
 var _next_brain_index := 0
+## Round 5 X1: the shape of the fight (EngagementStats), built on first use from the arena that is loaded. Read-only:
+## it never touches the RNG or a unit. `_near_cover` caches each living unit's "by cover" flag from the last sample.
+var _engagement: EngagementStats = null
+var _near_cover := {}
+var _shots_since_sample := 0
 
 var _rng := RandomNumberGenerator.new()
 ## Shot spread. Seeded with the match seed, so seeded matches stay deterministic.
@@ -235,6 +240,8 @@ func _physics_process(delta: float) -> void:
 		_sample_brain_options()
 		if control_point and not _finished:
 			_update_control()
+	if tick % EngagementStats.SAMPLE_TICKS == 0:
+		_sample_engagement()
 	_land_rounds()
 	if _finished or (_score_limit <= 0 and _time_limit <= 0.0 and not elimination and not control_point):
 		return
@@ -287,7 +294,34 @@ func result(reason: String) -> Dictionary:
 			"score": {"green": score_green, "rust": score_rust},
 			"control": {"green": control_score[0], "rust": control_score[1]} if control_point else null,
 			"sim_seconds": snappedf(sim_seconds, 0.1), "tanks": {"green": team_tanks(Team.GREEN).size(),
-			"rust": team_tanks(Team.RUST).size()}, "stats": stats.duplicate(true)}
+			"rust": team_tanks(Team.RUST).size()}, "stats": _stats_with_engagement()}
+
+
+func _stats_with_engagement() -> Dictionary:
+	var copy := stats.duplicate(true)
+	copy["engagement"] = engagement().summary()
+	return copy
+
+
+## Round 5 X1: the fight's shape so far (see EngagementStats).
+func engagement() -> EngagementStats:
+	if _engagement == null:
+		_engagement = EngagementStats.new(EngagementStats.features_of(Arena.active))
+	return _engagement
+
+
+func _sample_engagement() -> void:
+	var stats_now := engagement()
+	var teams: Array = [[], []]
+	_near_cover.clear()
+	for tank in _sorted_tanks():
+		if not tank.is_alive():
+			continue
+		var by_cover := stats_now.near_cover(tank.global_position)
+		_near_cover[tank.name] = by_cover
+		teams[tank.team].append({"position": tank.global_position, "speed": tank.speed(), "near_cover": by_cover})
+	stats_now.sample(teams, _shots_since_sample)
+	_shots_since_sample = 0
 
 
 # ---- Joining and leaving (simulating peer only) ---------------------------------------
@@ -831,6 +865,8 @@ func _build_shell(data: Dictionary) -> Node:
 
 func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	stats["shots"][tank.team] += 1
+	_shots_since_sample += 1
+	engagement().record_shot(bool(_near_cover.get(tank.name, false)))
 	if stats["first_shot_seconds"] < 0.0:
 		stats["first_shot_seconds"] = snappedf(sim_seconds, 0.1)
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
@@ -1251,8 +1287,17 @@ func _land_hit_result(victim: Tank, raw: float, weapon: Dictionary, direction: V
 	if weapon_stat != "":
 		stats[weapon_stat][team] += int(result["hull"])
 	if result["killed"]:
+		_record_engagement_kill(victim, shooter, face, weapon)
 		_score_kill(team, shooter, victim)
 	return result
+
+
+func _record_engagement_kill(victim: Tank, shooter: String, face: String, weapon: Dictionary) -> void:
+	var killer := tanks.get_node_or_null(NodePath(shooter)) as Tank
+	var stats_now := engagement()
+	var distance := killer.global_position.distance_to(victim.global_position) if killer != null else -1.0
+	stats_now.record_kill(victim.team, face, weapon["kind"] == Weapons.Kind.ARC, distance,
+			killer != null and stats_now.near_cover(killer.global_position), stats_now.near_cover(victim.global_position))
 
 
 ## X3 weak spots: a direct round (shell or beam; not a lobbed burst or a flame) into the engine deck.

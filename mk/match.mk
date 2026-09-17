@@ -89,6 +89,12 @@ faction-shots: import ## L3/X5: screenshots of a full-scale faction battle from 
 			--screenshot=$(CURDIR)/$(BUILD_DIR)/screenshots/faction-$(or $(GREEN_FACTION),condemned)-vs-$(or $(RUST_FACTION),condemned)-$$delay\s.png; \
 	done
 
+# ---- X1 (round 5): the shape of a full-scale fight ----------------------------------
+engagement: import ## X1: engagement ranges, standing exchanges, kill faces, cover use in faction battles (PAIRS=condemned:condemned SEEDS=4 TIME=240 ARENA= TUNE=) -> build/engagement.json
+	$(PYTHON) tools/engagement_report.py --godot $(GODOT) --jobs $(JOBS) --pairs $(or $(PAIRS),condemned:condemned) \
+		--seeds $(or $(SEEDS),4) --budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),240) \
+		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) --json $(BUILD_DIR)/engagement.json
+
 pace: import ## Match pace with seeded CPU armies like a skirmish (first shot, first kill, length): N=24 BUDGET=1000 CONTROL=1 -> build/pace[-control].json
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),24) --jobs $(JOBS) --time-limit 300 --score-limit 0 \
 		--json $(BUILD_DIR)/pace$(if $(CONTROL),-control).json \
