@@ -251,6 +251,11 @@ The kickoff prompt is one line; this section is the rest.
     when it is switched on. Every test passed the whole time, because the tests passed the flag. So when a round ships
     a behaviour, closing it includes **playing the default path and confirming the behaviour is visible there** — and
     any series used for balance must run the configuration players actually get, or it measures a game nobody plays.
+    *The same trap caught the fix an hour later:* the orchestrator approved switching doctrine on by default on a
+    52-28 result measured in five-vehicle mirrors with no control point. Re-measured in the setup `make skirmish`
+    actually plays — faction armies, 30 a side, control point on — brains-only beat doctrine 32-16, and the flip was
+    withdrawn. Before acting on any number, ask in which configuration it was taken, and whether that is the one
+    players get.
 24. **Check how a thing is built before asking someone to investigate a failure it cannot have.** Round 5: the
     orchestrator told arena to check whether Jolt made container stacks settle or drift; they are StaticBody3D boxes
     drawn by a MultiMesh and cannot move under any engine. Half a minute of reading would have produced the right
