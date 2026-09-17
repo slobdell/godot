@@ -11,7 +11,10 @@ const HOLD_SECONDS := 0.16
 const SOUND := "mg_loop"
 const VOLUME_DB := -9.0
 
-var muted := false
+## FxWorld copies SfxSystem's --mute onto this; --audio-solo for another layer keeps it silent regardless.
+var muted := false:
+	set(value):
+		muted = value or not AudioSolo.allows("guns")
 
 ## gunner key -> {"position": Vector3, "last": float}
 var _gunners := {}

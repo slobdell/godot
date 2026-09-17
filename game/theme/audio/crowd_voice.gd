@@ -42,7 +42,7 @@ func _ready() -> void:
 	if fx == null:
 		return
 	fx.spectacle.connect(react)
-	if not fx.sfx.muted:
+	if not fx.sfx.muted and AudioSolo.allows("crowd"):
 		use_streams(fx.sfx.streams)
 
 

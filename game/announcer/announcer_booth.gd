@@ -80,7 +80,7 @@ func setup(arena: String, seed_value: int = -1, clips_dir: String = DEFAULT_CLIP
 	if history_path != "off" and mode != "off":
 		history = AnnouncerHistory.load_from(history_path)
 		director.history = history
-	if mode == "voice":
+	if mode == "voice" and AudioSolo.allows("booth"):
 		voice = AnnouncerVoice.new()
 		voice.name = "Voice"
 		voice.volume_db = volume_db

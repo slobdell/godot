@@ -80,7 +80,8 @@ var _last_bar := -1
 static func attach(main: Node, booth: AnnouncerBooth) -> MusicDirector:
 	var flags: LaunchFlags = main.flags
 	# --mute means silence, the soundtrack included (SfxSystem reads the same flag).
-	if flags.text("music", "off") == "off" or flags.has("mute") or booth == null or booth.mood == null:
+	if flags.text("music", "off") == "off" or flags.has("mute") or booth == null or booth.mood == null \
+			or not AudioSolo.allows("music"):
 		return null
 	var music := MusicDirector.new()
 	music.name = "Music"

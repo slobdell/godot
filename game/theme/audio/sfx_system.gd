@@ -97,6 +97,8 @@ var played := 0
 var culled := 0
 ## Where loudness is judged from; null = the viewport's camera (tests set a point).
 var listener: Variant = null
+## Sounds --audio-solo keeps quiet.
+var silenced := {}
 ## key -> how many synthesised takes loaded (make_sfx.gd), whether or not layered ones replaced them.
 var synth_takes := {}
 ## Sounds playing ElevenLabs-layered takes (SfxLayers, round 5 X1) rather than the synthesised ones.
@@ -115,7 +117,11 @@ func _init() -> void:
 	name = "Sfx"
 	_rng.seed = 7
 	muted = LaunchFlags.from_environment().has("mute")
+	var soloed := AudioSolo.solo()
 	for key in SOUNDS:
+		# --audio-solo keeps the stream (engine, crowd and flame code read it) but never plays it.
+		if not AudioSolo.allows(AudioSolo.layer_of(key), soloed):
+			silenced[key] = true
 		var stream := load(SOUNDS[key]) as AudioStream
 		if stream == null:
 			continue
@@ -201,7 +207,7 @@ static func ensure_world_bus() -> int:
 ## A world sound at `position`, in one of its takes.
 func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	# Not in the tree yet (FxWorld is added deferred; the match announcer speaks at spawn): drop it.
-	if muted or not streams.has(sound) or not is_inside_tree():
+	if muted or not streams.has(sound) or not is_inside_tree() or silenced.has(sound):
 		return
 	var mix: Array = MIX.get(sound, [0.0, 0.0])
 	var level := heard_level_db(float(mix[0]) + volume_offset_db, position)
@@ -233,7 +239,7 @@ func _a_take(sound: String) -> AudioStream:
 
 ## A UI sound (not positional).
 func play_ui(sound: String) -> void:
-	if muted or not streams.has(sound) or not is_inside_tree():
+	if muted or not streams.has(sound) or not is_inside_tree() or silenced.has(sound):
 		return
 	var voice := _ui[_next_ui]
 	_next_ui = (_next_ui + 1) % _ui.size()

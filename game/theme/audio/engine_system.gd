@@ -28,7 +28,10 @@ const GEAR_DB := Vector2(-34.0, -13.0)  # crawling → full speed
 const GEAR_PITCH := Vector2(0.55, 1.5)
 const SILENT_DB := -80.0
 
-var muted := false
+## FxWorld copies SfxSystem's --mute onto this; --audio-solo for another layer keeps it silent regardless.
+var muted := false:
+	set(value):
+		muted = value or not AudioSolo.allows("engines")
 var _sources: Dictionary = {}  # Node3D → {sound, last: Vector3, speed: float, load: float}
 var _voices: Array[AudioStreamPlayer3D] = []
 var _gear: Array[AudioStreamPlayer3D] = []
