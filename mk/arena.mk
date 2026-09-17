@@ -15,9 +15,10 @@ arena-report: ## Static analysis of every layout (views, routes, exposure) + a t
 	$(PYTHON) tools/arena_report.py --plot $(BUILD_DIR)/arenas --json $(BUILD_DIR)/arenas/report.json arenas/*.json | cut -c1-240
 
 .PHONY: arena-series
-arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) and fight shape (ARENAS=yard,pit SEEDS=8 FIRST_SEED=1 ARENA_FACTION=condemned TIME=180 OUT=arena-series) -> build/$(OUT).json
+arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) and fight shape (ARENAS=yard,pit SEEDS=8 FIRST_SEED=1 ARENA_FACTION=condemned or ARENA_GREEN=gangs ARENA_RUST=syndicate, ARENA_TIME=180 OUT=arena-series) -> build/$(OUT).json
 	$(PYTHON) tools/arena_series.py --godot $(GODOT) --jobs $(or $(JOBS),3) --seeds $(or $(SEEDS),8) \
-		--faction $(or $(ARENA_FACTION),condemned) --time-limit $(or $(TIME),180) $(if $(ARENAS),--arenas $(ARENAS)) \
+		--faction $(or $(ARENA_FACTION),condemned) --time-limit $(or $(ARENA_TIME),180) $(if $(ARENAS),--arenas $(ARENAS)) \
+		$(if $(ARENA_GREEN),--green-faction $(ARENA_GREEN)) $(if $(ARENA_RUST),--rust-faction $(ARENA_RUST)) \
 		--first-seed $(or $(FIRST_SEED),1) --json $(BUILD_DIR)/$(or $(OUT),arena-series).json
 
 .PHONY: arena-shots

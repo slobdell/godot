@@ -53,6 +53,19 @@ def south_advantage(runs):
             "pairs": len(effects), "winner_flips": flips}
 
 
+def green_margin(runs):
+    """Green's surviving-share margin over Rust averaged over both base assignments (bases cancel): with different
+    factions on each side, how an arena tilts the matchup."""
+    margins = []
+    for r in runs:
+        res = r["result"]
+        share = lambda team: res["units_left"][team] / max(1, res["units_left"][team] + res["units_lost"][team])
+        margins.append(share("green") - share("rust"))
+    wins = sum(1 for r in runs if r["result"]["winner"] == "Green")
+    return {"green_margin": round(statistics.mean(margins), 3) if margins else None,
+            "green_win_rate": round(wins / len(runs), 3) if runs else None}
+
+
 def summarize(runs):
     south_wins = draws = 0
     for r in runs:
@@ -70,7 +83,7 @@ def summarize(runs):
     return {"matches": len(runs), "south_win_rate": round(south_wins / decided, 3) if decided else None, "draws": draws,
             "reasons": reasons, "duration_s": median("sim_seconds"), "first_hit_s": median("first_hit_seconds"),
             "range_median_m": median("range_median_m"), "range_p90_m": median("range_p90_m"),
-            "flank_share": median("flank_share"), "hidden_share": median("hidden_share"), **south_advantage(runs)}
+            "flank_share": median("flank_share"), "hidden_share": median("hidden_share"), **south_advantage(runs), **green_margin(runs)}
 
 
 def main():
