@@ -86,6 +86,8 @@ var vision_zoom := 1.0
 var vision_region: VisionRegion = null
 ## How long the camera stays the player's after they move it (seconds; 0 hands back at once).
 var handback_seconds := HANDBACK_SECONDS
+## Control X3 (the lead's dial): how much of the screen the commanded element fills (`--camera-frame`).
+var vision_inset := VISION_FRAME_INSET
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -495,9 +497,9 @@ func _update_vision_tracking() -> void:
 	var destination: Variant = _vision_state.get("destination")
 	var goal: Array
 	if destination is Vector3:
-		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, VISION_FRAME_INSET)
+		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset)
 	else:
-		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, VISION_FRAME_INSET)
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset)
 	zoom = minf(float(goal[1]), vision_zoom)
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
 

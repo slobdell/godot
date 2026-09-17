@@ -20,6 +20,8 @@ extends GameMode
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
+##   --camera-frame=close|default|wide  how much of the screen the commanded element fills (X3 dial)
+##   --alert-lines=1..3  unseen alerts shown at once above the group chips (X3 dial; default 1)
 ##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
 ##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
 ##   --touch-map  round 2's tap grammar (squad bar, drill and formation pickers) instead of the desktop controls
@@ -49,6 +51,20 @@ static func lineup_plan(player: String, enemy: String, player_faction: String, e
 			Match.Team.GREEN: {"lineup": "cpu" if player_faction != "" and player == "player_default" else player,
 					"faction": player_faction},
 			Match.Team.RUST: {"lineup": enemy, "faction": enemy_faction}}
+
+
+## X3 (the lead's dials): how much of the screen the commanded element fills. `close` is the Twisted Metal end,
+## `wide` shows more ground around it (still inside the force's horizon cap).
+const CAMERA_FRAMES := {"close": 0.9, "default": RtsCamera.VISION_FRAME_INSET, "wide": 0.6}
+
+
+static func camera_frame_inset(p_flags: LaunchFlags) -> float:
+	return float(CAMERA_FRAMES.get(p_flags.text("camera-frame", "default"), RtsCamera.VISION_FRAME_INSET))
+
+
+## X3: how many unseen alerts show above the group chips at once (1 by default, at most 3).
+static func alert_lines(p_flags: LaunchFlags) -> int:
+	return clampi(p_flags.integer("alert-lines", 1), 1, 3)
 
 
 ## Whether the faction menu should open: an interactive run that named no faction. Never in a scripted, playtest,
@@ -263,6 +279,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	edge.controls = controls
 	controls.add_child(edge)
 	controls.markers = edge
+	edge.alert_lines = SkirmishMode.alert_lines(flags)
 	if flags.has("cinematic"):
 		# Stretch: a camera that watches the fight on its own. It replaces the vision framing rather than fighting
 		# it, because nobody is earning this view - it is the spectator's. Everything else (orders, the HUD, the
@@ -283,6 +300,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
 		# can collectively see (the lead: "a bird's eye view is just an unearned god view").
 		rig.vision = controls.vision_state
+		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
 	if flags.has("control-playtest"):
