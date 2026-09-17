@@ -244,3 +244,14 @@ The kickoff prompt is one line; this section is the rest.
     never more repetitions; it is a **control that cancels the suspected cause** (here: swap the armies between teams
     and pair the runs, or mirror them outright). Before running a bigger series, name the thing that varies between
     samples and check it actually varies.
+23. **A feature behind a flag the default path never passes has not shipped.** Round 5: the lead played several
+    matches and reported *"it's just these 2 masses shooting at each other"*. The cause was that the skirmish CPU ran
+    individual brains only — elements, formations and battle drills, the entire output of round 4, sat behind
+    `--element-cpu`, which `make skirmish` never passed and the match runner never passed at all. Doctrine wins 52-28
+    when it is switched on. Every test passed the whole time, because the tests passed the flag. So when a round ships
+    a behaviour, closing it includes **playing the default path and confirming the behaviour is visible there** — and
+    any series used for balance must run the configuration players actually get, or it measures a game nobody plays.
+24. **Check how a thing is built before asking someone to investigate a failure it cannot have.** Round 5: the
+    orchestrator told arena to check whether Jolt made container stacks settle or drift; they are StaticBody3D boxes
+    drawn by a MultiMesh and cannot move under any engine. Half a minute of reading would have produced the right
+    request instead (vehicle contact against them). A confident wrong instruction costs a worker more than silence.
