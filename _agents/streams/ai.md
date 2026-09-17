@@ -72,10 +72,10 @@ _Round 5, ai stream. Updated 2026-09-17. Branch `stream/ai`._
 | # | Item | State |
 |---|---|---|
 | X1 | 4 ms at 60 units | **exact cuts done; the rest is structural** — opt-in `x5b2` (half-rate controllers) in the ladder; the 30 Hz simulation is the lead's call (below) |
-| X2 | SUPPRESS reachable without matchups; a pinned enemy pulls units out of cover | **built as opt-in `x5s`** (golden tests), ladder running |
-| X3 | `make tactics-ladder`: doctrine variants x arenas x brains, per-drill report, ELO | not started |
-| X4 | Faction behaviour that reads, measured in the ladder | not started |
-| X5 | Offline discovery groundwork (external decision-maker mode, slow motion, `(state, decision, outcome)` log, distillation plan) | not started |
+| X2 | SUPPRESS reachable without matchups; a pinned enemy pulls units out of cover | **built as opt-in `x5s`**; first ladder 27-37 against x4t9 (the proxy costs the swarm army): to split and re-run, and to rewire onto combat's `Lethality` when it merges |
+| X3 | `make tactics-ladder` | **done** — doctrine beats brains-only 52-28; the skirmish CPU gets doctrine by default (orchestrator ruling, control flips it); drill-variant ladder running |
+| X4 | Faction behaviour that reads, measured in the ladder | **in progress** — faction ladder (brains vs faction doctrine, gangs vs law) running on builder0 |
+| X5 | Offline discovery groundwork | **done** — `DiscoveryBridge` + `tools/discovery.py`, distillation plan in unit_ai.md; its first policy became the `pin_and_flank` commander variant (in the ladder) |
 
 ### X1 — the cost of 60 brains: what was measured
 
@@ -114,6 +114,41 @@ spread over a few hundred operations. Round 4 already spent the think-rate lever
 **Found on the way:** `OrderController._shootable` computed "does my team see it" and never used the answer, so a gun
 has always fired at anything in range with a clear line. The dead call is gone; whether it should hold fire on things
 nobody spotted is a behaviour question for the ladder.
+
+### X3 — the tactics ladder, and what it found
+
+`make tactics-ladder` (unit_ai.md "Tactics ladder"). First full run: 120 matches, combined_arms mirror, foundry, yard,
+boulevard, pit and boneyard, 2 seeds × 4 ways per pairing per arena, x4t9 brains throughout.
+
+| Side | W-L | vs brains-only |
+|---|---|---|
+| faction's own doctrine | 49-31 | 26-14 |
+| standard doctrine | 43-37 | 26-14 |
+| brains only (what the skirmish CPU ran) | 28-52 | |
+
+**The skirmish CPU had never run doctrine** (brains only unless `--element-cpu`), and the match runner never ran it at
+all, so round 4's formations and drills were in no game the lead played: "two masses shooting at each other" is what
+armies of brains with no element above them look like. Ruled by the orchestrator: doctrine becomes the skirmish CPU's
+default this round (control owns the flag); the match runner stays opt-in (`--green-elements`) until combat
+re-baselines deliberately.
+
+Per drill (damage charged to what the units were doing), standard / faction: **support_by_fire 9.4 / 12.1 exchange**,
+react_to_contact 1.08 / 1.12, near_ambush 1.16 / 1.18, assault_through 1.22 / 1.08, **break_contact 0.75 / 0.73 over
+40% / 15% of drill time**, **far_ambush 0.26 / 0.16 with 16 / 44 deaths**. Exchange is evidence, not a verdict (a drill
+that starts when an element is already losing collects its deaths): variants without each drill are in the ladder now.
+
+**Cost of doctrine at 30 a side** (laptop, Jolt, condemned 31 v 27, `make sim-profile`, interleaved, normalised by
+the tank band): the elements band averages **1.5-1.8 ms/tick**, about **+15% of the whole tick** with brains running
+under orders. It used to arrive as a **~9 ms spike every 6th tick** (every leader decided on the same tick); since
+611b380 each element decides on its own tick in the cycle, so the **average is unchanged but the periodic hitch is
+gone** — a stutter a player feels even when the mean frame time looks fine. Breakdown of an element update: situation
+0.61 ms, plan 0.34, issuing orders 0.24 (per tick).
+
+### X1 — x5b2's behaviour check
+
+`tests/ai_scenarios/scenario_stride.gd`, x5b2 against x4t9 on the same seeds (laptop, Jolt): IFV dodges 14% of 35
+tank shells vs 17% of 30, tank 17% vs 17%; crossing a swept lane 10 ticks in the beaten zone vs 10, both arrive.
+Brain ladder (4 armies × 16): 31-33 head to head. More seeds (5-12) running before any proposal.
 
 Queued from other streams (after X1, in the doctrine code ai inherits):
 - **arena:** `ElementSituation._arena_features` calls 86–95% of the kit-built maps "dense" (it counts boxes; one container
