@@ -127,7 +127,7 @@ def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_pe
     threshold = 10 ** (SILENCE_DB / 20.0)
     audible = np.nonzero(np.abs(mix) > threshold)[0]
     start_s, end_s = section(audible[0] / rate, (audible[-1] + 1) / rate, cut_from, cut_to)
-    loop_start, loop_end = bar_aligned(0.0, end_s - start_s, bpm, beats_per_bar)
+    loop_start, loop_end, seam = 0.0, round(end_s - start_s, 3), 0.0  # replaced below, on the encoded stems
     with tempfile.TemporaryDirectory() as scratch:
         summed = Path(scratch) / "sum.wav"
         segment = mix[int(start_s * rate):int(end_s * rate)]
@@ -147,9 +147,41 @@ def import_stems(folder: Path, track_id: str, layers: list, bpm: float, beats_pe
                             "-t", "%.3f" % (end_s - start_s), "-af", "volume=%.2fdB" % gain,
                             "-c:a", "libvorbis", "-b:a", BITRATE, str(destination)], check=True)
             stems.append(dict({"file": destination.name}, **when))
+    summed = None
+    for stem in stems:
+        part, rate = check_music.decode(out / stem["file"])
+        summed = np.array(part) if summed is None else summed + np.array(part[:len(summed)])[:len(summed)]
+    loop_start, loop_end, seam = best_loop(list(summed), rate, bpm, beats_per_bar)
+    print("  loop %.3f-%.3f s, seam %.3f (measured on the encoded stems)" % (loop_start, loop_end, seam))
     return {"stems": stems, "bpm": bpm, "beats_per_bar": beats_per_bar, "loop_start_s": loop_start,
             "loop_end_s": loop_end, "intensity": 0.6, "states": states,
             "rights": rights or "UNRECORDED: which Suno plan was this generated under?"}
+
+
+def best_loop(samples: list[float], rate: int, bpm: float, beats_per_bar: int,
+              search_bars: int = 6) -> tuple[float, float, float]:
+    """(loop_start, loop_end, seam): whole bars, chosen for the quietest seam.
+
+    Snapping a hand-picked section to whole bars moves its end, and a loop point is only clean where the music
+    happens to line up (the first garage import measured a seam of 0.46, six times the limit). This tries every
+    whole-bar start in the first `search_bars` bars against every length down to `search_bars` bars shorter, and
+    keeps the quietest join, so nobody has to hunt for it by ear."""
+    bar = beats_per_bar * 60.0 / bpm
+    total_bars = int(len(samples) / rate / bar)
+    if total_bars < 4:
+        return 0.0, round(total_bars * bar, 3), check_music.seam_jump(samples, rate, 0.0, total_bars * bar)
+    best = None
+    for start_bar in range(min(search_bars, total_bars - 4)):
+        for length in range(total_bars - start_bar, max(3, total_bars - start_bar - search_bars), -1):
+            start, end = start_bar * bar, (start_bar + length) * bar
+            seam = check_music.seam_jump(samples, rate, start, end)
+            # Prefer the quietest seam, and among close seams the longest loop.
+            score = seam - 0.002 * length
+            if best is None or score < best[0]:
+                best = (score, start, end, seam)
+    if best is None:  # too short to search: the whole thing, on bars
+        return 0.0, round(total_bars * bar, 3), check_music.seam_jump(samples, rate, 0.0, total_bars * bar)
+    return round(best[1], 3), round(best[2], 3), best[3]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -188,7 +220,6 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
 
     start_s, end_s = section(*trimmed_length(args.source), seconds(args.cut_from), seconds(args.cut_to))
-    loop_start, loop_end = bar_aligned(0.0, end_s - start_s, args.bpm, args.beats_per_bar)
     destination = args.out / ("bed_%s.ogg" % args.state)
     with tempfile.TemporaryDirectory() as scratch:
         trimmed = Path(scratch) / "trimmed.wav"
@@ -201,6 +232,11 @@ def main(argv: list[str] | None = None) -> int:
                         % (TARGET_LUFS - lufs, limit),
                         "-c:a", "libvorbis", "-b:a", BITRATE, str(destination)], check=True)
     final_lufs, peak = check_music.measure_lufs_peak(destination)
+    # The loop points are searched on the *encoded* file: normalising, limiting and the Vorbis encoder all move the
+    # waveform a little, and a seam measured before them disagreed with make music-check afterwards (0.098 against
+    # 0.347 on the first real import).
+    encoded, rate = check_music.decode(destination)
+    loop_start, loop_end, seam = best_loop(encoded, rate, args.bpm, args.beats_per_bar)
 
     manifest_path = args.out / "manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else \
@@ -218,9 +254,9 @@ def main(argv: list[str] | None = None) -> int:
         print("retired placeholder track %s" % gone)
     manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
     print("imported %s -> %s" % (args.source.name, destination))
-    print("  %.1f LUFS, peak %.1f dB, loop %.3f-%.3f s (%d bars at %g bpm), %.0f KB"
+    print("  %.1f LUFS, peak %.1f dB, loop %.3f-%.3f s (%d bars at %g bpm), seam %.3f, %.0f KB"
           % (final_lufs, peak, loop_start, loop_end,
-             round((loop_end - loop_start) / (args.beats_per_bar * 60.0 / args.bpm)), args.bpm,
+             round((loop_end - loop_start) / (args.beats_per_bar * 60.0 / args.bpm)), args.bpm, seam,
              destination.stat().st_size / 1024))
     if not args.rights and "UNRECORDED" in manifest["tracks"][args.state]["rights"]:
         print("  NOTE: pass --rights \"Suno <plan>, <date>\" before this ships (PROMPTS.md, Rights)")
