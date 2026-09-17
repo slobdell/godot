@@ -68,10 +68,9 @@ func layer(kind: String) -> MultiMeshInstance3D:
 	instance.material_override = _material(kind)
 	var multimesh := MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	if "physics_interpolation_quality" in multimesh:
-		multimesh.physics_interpolation_quality = MultiMesh.INTERP_QUALITY_FAST
-	if "physics_interpolated" in multimesh:
-		multimesh.physics_interpolated = false
+	# The MultiMesh's own interpolation lives on the server (there is no property for it): without this, setting instance
+	# transforms from _process logs "MultiMesh interpolation is being triggered from outside physics process" every frame.
+	RenderingServer.multimesh_set_physics_interpolated(multimesh.get_rid(), false)
 	multimesh.mesh = _dashed_mesh() if kind == "enemy" else (_thin_mesh() if kind == "friendly" else _thick_mesh())
 	instance.multimesh = multimesh
 	add_child(instance)
