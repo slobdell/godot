@@ -2,7 +2,7 @@
 // (neon_signs.png: R = tube core, G = glow). Per instance: COLOR = neon color, INSTANCE_CUSTOM.r = atlas row / CELLS,
 // .g = flicker seed. Tubes buzz, and now and then one sign stutters like a failing transformer. Visual only.
 shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 
 uniform sampler2D atlas : filter_linear_mipmap, repeat_disable;
 uniform float cells = 4.0;

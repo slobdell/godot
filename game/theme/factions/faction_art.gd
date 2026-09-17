@@ -1,7 +1,9 @@
 class_name FactionArt
 extends RefCounted
-## Contract K4 (round 3, assets X4): which model fills `unit.<faction>.<role>.hull/turret/weapon`. Gallery only this
-## round (`make vehicle-gallery FACTION=<id>`); factions aren't playable yet. The Condemned are today's roster; the new
+## Contract K4 (round 3, assets X4): which model fills `unit.<faction>.<role>.hull/turret/weapon`
+## (`make vehicle-gallery FACTION=<id>`). Round 5 (render X6): the art ships and plays: `unit_slots()` gives gameplay's
+## `unit.<unit id>.*` slots for every faction unit whose parts exist (wrappers in factions/<faction>/parts/, written by
+## tools/assets/build_faction_parts.py). The Condemned are today's roster; the new
 ## factions' models are built from the lead's approved concepts into game/theme/factions/<faction>/generated/ and
 ## worn in the cyberpunk look (dozer_part.gd: team neon, paint, underglow).
 
@@ -11,6 +13,37 @@ const ROLES := ["scout", "ifv", "tank", "artillery", "special"]
 ## The Condemned's unit in each role (catalog v2 ids; the Lancer is their special).
 const CONDEMNED := {"scout": "scout", "ifv": "ifv", "tank": "tank", "artillery": "artillery", "special": "lancer"}
 const PART_WRAPPER := preload("res://game/theme/cyberpunk/dozer_part.gd")
+const NO_PART := "res://game/theme/cyberpunk/units/no_part.tscn"
+## The catalog roles that have their own art role; any other role (support, suppressor, lancer) is the faction's special.
+const ART_ROLES := ["scout", "ifv", "tank", "artillery"]
+
+
+static func part_scene(faction: String, role: String, part: String) -> String:
+	return "res://game/theme/factions/%s/parts/%s_%s.tscn" % [faction, role, part]
+
+
+## The art role a catalog unit wears.
+static func art_role(catalog_role: String) -> String:
+	return catalog_role if ART_ROLES.has(catalog_role) else "special"
+
+
+## Visual slots for the new factions' units: `unit.<id>.hull/turret/weapon` → wrapper scenes, for every unit whose hull
+## art is in this build. A hull without its own turret or weapon model carries them in its mesh, so those slots are
+## deliberately empty (no_part) rather than falling back to the Condemned dozer's. Builds without the faction art (the
+## web export) get no entries and draw the Condemned through C6's fallback.
+static func unit_slots() -> Dictionary:
+	var result := {}
+	for faction in NEW_FACTIONS:
+		for unit_id in Units.roster(faction):
+			var role := art_role(Units.role_of(unit_id))
+			var hull := part_scene(faction, role, "hull")
+			if not ResourceLoader.exists(hull):
+				continue
+			result["unit.%s.hull" % unit_id] = hull
+			for part in ["turret", "weapon"]:
+				var scene := part_scene(faction, role, part)
+				result["unit.%s.%s" % [unit_id, part]] = scene if ResourceLoader.exists(scene) else NO_PART
+	return result
 
 
 static func generated_scene(faction: String, role: String, part: String) -> String:

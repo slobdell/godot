@@ -3,6 +3,15 @@ extends Node3D
 ## The static battlefield, built from a LAYOUT (rules R6, contract C5): `arenas/<name>.json` =
 ## {name, half_size, obstacles: [{type, position [x, z], rotation_deg, size?}], spawns: {green, rust}, control_point?,
 ## hazards?: [{type, position [x, z], radius, damage_per_second}]} (stretch: fire pits hurt whatever stands in them).
+##
+## LAYOUT v2 (arena X1, round 5, contract M2; `"schema": 2`) adds, all optional except spawn_zones:
+##   props: [{type, position [x, z], rotation_deg?, stack?, <look keys>}]  the arena kit (ArenaKit.PROPS: containers
+##     that stack 1-3 high, ad screens, barricades, wrecks, floodlights, signs). Fixed sizes; unknown types are errors.
+##   spawn_zones: {green: {center [x, z], size [width, depth]}, rust: ...}  every spawn inside, clear of cover.
+##   lanes: [{name, points [[x, z], ...] (green's end first), width}]    routes between the bases, for the AI.
+##   regions: [{name, kind (ArenaKit.REGION_KINDS), position [x, z], radius}]  centre, open ground, cover clusters...
+## load_layout() returns the NORMALIZED layout: colliding props are appended to `obstacles` (with `size` resolved and
+## `kit: true`), so every C4/C5 consumer that reads obstacles or the Obstacles node sees the kit unchanged.
 ## Pick one with `--arena=<name>` (default DEFAULT_LAYOUT). Obstacles become collision boxes under the
 ## "Obstacles" node (the radar reads them there) with a `prop.<type>` visual slot each; `arena.dressing` gets
 ## `setup(layout)` so stands and crowds can fit it.
@@ -29,6 +38,8 @@ const SEAM_BORDER := 2.5
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
+## A spawn point must be this far from every obstacle's footprint: the widest spawn jitter plus half a hull.
+const SPAWN_CLEARANCE := Match.SPAWN_JITTER_MAX_X + 2.5
 
 ## The layout the most recent Arena built. Match reads its spawns (static: spawn positions are static queries).
 static var active: Dictionary = {}
@@ -39,6 +50,8 @@ var layout: Dictionary = {}
 
 @onready var navigation: NavigationRegion3D = $Navigation
 @onready var obstacles_root: Node3D = $Obstacles
+## Props with no collision (signs): visual only, never a navigation source.
+var decor_root: Node3D
 
 
 func _ready() -> void:
@@ -50,6 +63,7 @@ func _ready() -> void:
 	layout = loaded["layout"]
 	active = layout
 	_build_obstacles()
+	_build_decor()
 	_build_hazards()
 	var dressing := get_node_or_null("Dressing") as VisualSlot
 	if dressing != null:
@@ -95,14 +109,45 @@ func _build_obstacles() -> void:
 		collision.shape = box
 		collision.position.y = size.y / 2.0
 		body.add_child(collision)
-		var visual := VisualSlot.new()
-		visual.name = "Visual"
-		visual.slot = "prop." + String(obstacle["type"])
-		if OBSTACLE_SIZES.has(obstacle["type"]):
-			var standard: Array = OBSTACLE_SIZES[obstacle["type"]]
-			visual.scale = Vector3(size.x / standard[0], size.y / standard[1], size.z / standard[2])
-		body.add_child(visual)
+		body.add_child(_prop_visual(obstacle, size))
 		obstacles_root.add_child(body)
+		(body.get_node("Visual") as VisualSlot).invoke("setup", [obstacle])
+
+
+## A `prop.<type>` slot for an obstacle or prop. Legacy sized obstacles scale their standard art; a kit prop the theme
+## doesn't have yet borrows its fallback slot scaled to the prop's box, so collision is never invisible.
+func _prop_visual(obstacle: Dictionary, size: Vector3) -> VisualSlot:
+	var type := String(obstacle["type"])
+	var visual := VisualSlot.new()
+	visual.name = "Visual"
+	visual.slot = "prop." + type
+	var standard: Variant = OBSTACLE_SIZES.get(type)
+	if ArenaKit.is_kit(type) and not GameTheme.slots.has(visual.slot):
+		# Render dresses new kit slots (M2); until then a stand-in, or nothing for pure decoration.
+		visual.slot = String(ArenaKit.PROPS[type].get("fallback", ""))
+		standard = OBSTACLE_SIZES.get(visual.slot.trim_prefix("prop."))
+	if standard != null:
+		visual.scale = Vector3(size.x / standard[0], size.y / standard[1], size.z / standard[2])
+	return visual
+
+
+func _build_decor() -> void:
+	if decor_root == null:
+		decor_root = Node3D.new()
+		decor_root.name = "Decor"
+		add_child(decor_root)
+	for child in decor_root.get_children():
+		child.free()
+	for prop: Dictionary in layout.get("props", []):
+		if ArenaKit.collides(prop["type"]):
+			continue
+		var holder := Node3D.new()
+		holder.name = "%s_%d" % [String(prop["type"]).capitalize().replace(" ", ""), decor_root.get_child_count()]
+		holder.position = Vector3(prop["position"][0], 0.0, prop["position"][1])
+		holder.rotation.y = deg_to_rad(float(prop.get("rotation_deg", 0.0)))
+		holder.add_child(_prop_visual(prop, ArenaKit.size_of(prop)))
+		decor_root.add_child(holder)
+		(holder.get_node("Visual") as VisualSlot).invoke("setup", [prop])
 
 
 ## Hazards get a `prop.<type>` visual only when the theme has one (art's request list in slot_contracts.md);
@@ -136,13 +181,17 @@ static func hazards_of(data: Dictionary) -> Array:
 
 
 ## C4: every obstacle as cover for the AI: [{position: Vector3 (ground center), size: Vector3 (before rotation),
-## rotation: float (radians about +Y), height: float, type: String}].
+## rotation: float (radians about +Y), height: float, type: String}]; M2 adds cover ("hard" | "low"), blocks_sight
+## (taller than Perception.EYE_HEIGHT) and stack (1 for anything that isn't a container stack).
 func cover_features() -> Array:
 	var features: Array = []
 	for obstacle: Dictionary in layout.get("obstacles", []):
 		var size := obstacle_size(obstacle)
+		var type := String(obstacle["type"])
 		features.append({"position": Vector3(obstacle["position"][0], 0.0, obstacle["position"][1]), "size": size,
-				"rotation": deg_to_rad(float(obstacle.get("rotation_deg", 0.0))), "height": size.y, "type": obstacle["type"]})
+				"rotation": deg_to_rad(float(obstacle.get("rotation_deg", 0.0))), "height": size.y, "type": type,
+				"cover": ArenaKit.cover_of(type) if ArenaKit.is_kit(type) else ("hard" if size.y >= Perception.EYE_HEIGHT else "low"),
+				"blocks_sight": size.y >= Perception.EYE_HEIGHT, "stack": int(obstacle.get("stack", 1))})
 	return features
 
 
@@ -158,6 +207,54 @@ static func spawn_spot(south: bool, slot: int) -> Variant:
 		return null
 	var spot: Array = spots[slot % spots.size()]
 	return Vector3(spot[0], 0.0, spot[1])
+
+
+## M2: a layout's lanes as [{name, points: PackedVector3Array (green's end first), width}] (Arena.active for the live one).
+static func lanes_of(data: Dictionary) -> Array:
+	var result: Array = []
+	for lane: Dictionary in data.get("lanes", []):
+		var points := PackedVector3Array()
+		for point: Array in lane["points"]:
+			points.append(Vector3(point[0], 0.0, point[1]))
+		result.append({"name": String(lane["name"]), "points": points, "width": float(lane["width"])})
+	return result
+
+
+## M2: a layout's regions as [{name, kind, position: Vector3, radius}], only those of `kind` unless it's "".
+static func regions_of(data: Dictionary, kind: String = "") -> Array:
+	var result: Array = []
+	for region: Dictionary in data.get("regions", []):
+		if kind == "" or region["kind"] == kind:
+			result.append({"name": String(region["name"]), "kind": String(region["kind"]),
+					"position": Vector3(region["position"][0], 0.0, region["position"][1]), "radius": float(region["radius"])})
+	return result
+
+
+## M2: the spawn zone of the south (green) or north side: {center: Vector3, size: Vector2 (x width, z depth)}, or {}
+## for a v1 layout.
+static func spawn_zone_of(data: Dictionary, south: bool) -> Dictionary:
+	var zone: Variant = data.get("spawn_zones", {}).get("green" if south else "rust")
+	if not zone is Dictionary:
+		return {}
+	return {"center": Vector3(zone["center"][0], 0.0, zone["center"][1]), "size": Vector2(zone["size"][0], zone["size"][1])}
+
+
+## The layout as the game runs it: v1 unchanged; v2's colliding props appended to `obstacles` with their size
+## resolved and `kit: true`. Idempotent.
+static func normalize(data: Dictionary) -> Dictionary:
+	var runtime := data.duplicate(true)
+	runtime["schema"] = int(data.get("schema", 1))
+	var obstacles: Array = runtime["obstacles"].filter(func(o: Dictionary) -> bool: return not o.has("kit"))
+	for prop: Dictionary in runtime.get("props", []):
+		if not ArenaKit.collides(prop["type"]):
+			continue
+		var obstacle := prop.duplicate(true)
+		var size := ArenaKit.size_of(prop)
+		obstacle["size"] = [size.x, size.y, size.z]
+		obstacle["kit"] = true
+		obstacles.append(obstacle)
+	runtime["obstacles"] = obstacles
+	return runtime
 
 
 ## Names of the layouts in LAYOUT_DIR.
@@ -180,7 +277,7 @@ static func load_layout(name: String) -> Dictionary:
 	var error := validate(data)
 	if error != "":
 		return {"error": "arena %s: %s" % [name, error]}
-	return {"layout": data}
+	return {"layout": normalize(data)}
 
 
 ## "" or why `data` isn't a valid, point-symmetric layout.
@@ -205,7 +302,9 @@ static func validate(data: Variant) -> String:
 			var size: Variant = obstacle["size"]
 			if typeof(size) != TYPE_ARRAY or size.size() != 3 or not size.all(func(v: Variant) -> bool: return _is_number(v) and float(v) > 0.0):
 				return "size must be [x, height, z] in meters"
-		elif not OBSTACLE_SIZES.has(obstacle["type"]):
+		if ArenaKit.is_kit(obstacle["type"]) and not obstacle.has("kit"):
+			return "'%s' is an arena kit prop: place it under 'props'" % obstacle["type"]
+		if not obstacle.has("size") and not OBSTACLE_SIZES.has(obstacle["type"]):
 			return "obstacle type '%s' has no built-in size: give it 'size'" % obstacle["type"]
 	for obstacle: Dictionary in obstacles:
 		if not obstacles.any(func(other: Dictionary) -> bool: return _mirrors(obstacle, other)):
@@ -246,7 +345,136 @@ static func validate(data: Variant) -> String:
 			return "not point-symmetric: hazard %s at %s has no 180° mirror" % [hazard["type"], hazard["position"]]
 	if data.has("control_point") and typeof(data["control_point"]) != TYPE_DICTIONARY:
 		return "control_point must be an object like {\"radius\": 16}"
+	var v2_error := _validate_v2(data)
+	if v2_error != "":
+		return v2_error
+	return _validate_spawn_clearance(data)
+
+
+## Layout v2's keys: props, spawn zones, lanes, regions.
+static func _validate_v2(data: Dictionary) -> String:
+	if data.has("schema") and (not _is_number(data["schema"]) or not int(data["schema"]) in [1, 2]):
+		return "schema must be 1 or 2"
+	var props: Variant = data.get("props", [])
+	if typeof(props) != TYPE_ARRAY:
+		return "'props' must be a list"
+	for prop in props:
+		if typeof(prop) != TYPE_DICTIONARY or typeof(prop.get("type")) != TYPE_STRING:
+			return "every prop needs a string 'type'"
+		if not ArenaKit.is_kit(prop["type"]):
+			return "unknown prop type '%s' (the kit has %s)" % [prop["type"], ", ".join(PackedStringArray(ArenaKit.PROPS.keys()))]
+		if not _is_point(prop.get("position")):
+			return "prop %s needs 'position' [x, z]" % prop["type"]
+		if absf(float(prop["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(prop["position"][1])) > Match.DRIVABLE_LIMIT:
+			return "prop %s at %s is outside the arena" % [prop["type"], prop["position"]]
+		if prop.has("rotation_deg") and not _is_number(prop["rotation_deg"]):
+			return "rotation_deg must be a number"
+		if prop.has("size"):
+			return "prop %s has a fixed size (ArenaKit.PROPS); drop 'size' or use an obstacle" % prop["type"]
+		if prop.has("stack"):
+			var most := ArenaKit.max_stack(prop["type"])
+			if typeof(prop["stack"]) not in [TYPE_INT, TYPE_FLOAT] or float(prop["stack"]) != floorf(float(prop["stack"])) \
+					or int(prop["stack"]) < 1 or int(prop["stack"]) > most:
+				return "prop %s: stack must be a whole number from 1 to %d" % [prop["type"], most]
+	for prop: Dictionary in props:
+		if not ArenaKit.collides(prop["type"]):
+			continue
+		var twin: bool = props.any(func(other: Dictionary) -> bool:
+			return ArenaKit.collides(other["type"]) and int(other.get("stack", 1)) == int(prop.get("stack", 1)) \
+					and _mirrors(_as_obstacle(prop), _as_obstacle(other)))
+		if not twin:
+			return "not point-symmetric: prop %s at %s has no 180° mirror at %s" % [prop["type"], prop["position"],
+					[-float(prop["position"][0]), -float(prop["position"][1])]]
+	var schema := int(data.get("schema", 1)) if _is_number(data.get("schema", 1)) else 1
+	if data.has("spawn_zones") or schema >= 2:
+		var zones: Variant = data.get("spawn_zones")
+		if typeof(zones) != TYPE_DICTIONARY:
+			return "schema 2 needs spawn_zones {green: {center [x, z], size [width, depth]}, rust: ...}"
+		for side in ["green", "rust"]:
+			var zone: Variant = zones.get(side)
+			if typeof(zone) != TYPE_DICTIONARY or not _is_point(zone.get("center")) or not _is_point(zone.get("size")) \
+					or float(zone["size"][0]) <= 0.0 or float(zone["size"][1]) <= 0.0:
+				return "spawn_zones.%s needs center [x, z] and a positive size [width, depth]" % side
+		if absf(float(zones["green"]["center"][0]) + float(zones["rust"]["center"][0])) > SYMMETRY_TOLERANCE \
+				or absf(float(zones["green"]["center"][1]) + float(zones["rust"]["center"][1])) > SYMMETRY_TOLERANCE \
+				or not is_equal_approx(float(zones["green"]["size"][0]), float(zones["rust"]["size"][0])) \
+				or not is_equal_approx(float(zones["green"]["size"][1]), float(zones["rust"]["size"][1])):
+			return "not point-symmetric: spawn_zones.rust must mirror spawn_zones.green"
+		for side in ["green", "rust"]:
+			var zone: Dictionary = zones[side]
+			for spot: Array in data["spawns"][side]:
+				if absf(float(spot[0]) - float(zone["center"][0])) > float(zone["size"][0]) / 2.0 + SYMMETRY_TOLERANCE \
+						or absf(float(spot[1]) - float(zone["center"][1])) > float(zone["size"][1]) / 2.0 + SYMMETRY_TOLERANCE:
+					return "spawns.%s point %s is outside its spawn zone" % [side, spot]
+	var lanes: Variant = data.get("lanes", [])
+	if typeof(lanes) != TYPE_ARRAY:
+		return "'lanes' must be a list"
+	for lane in lanes:
+		if typeof(lane) != TYPE_DICTIONARY or typeof(lane.get("name")) != TYPE_STRING or typeof(lane.get("points")) != TYPE_ARRAY \
+				or lane["points"].size() < 2 or not lane["points"].all(func(v: Variant) -> bool: return _is_point(v)):
+			return "every lane needs a string 'name' and at least two 'points' [x, z]"
+		if not _is_number(lane.get("width")) or float(lane["width"]) <= 0.0:
+			return "lane %s needs a positive 'width'" % lane["name"]
+	for lane: Dictionary in lanes:
+		if not lanes.any(func(other: Dictionary) -> bool: return _lane_mirrors(lane, other)):
+			return "not point-symmetric: lane %s has no 180° mirror (the same route seen from the other base)" % lane["name"]
+	var regions: Variant = data.get("regions", [])
+	if typeof(regions) != TYPE_ARRAY:
+		return "'regions' must be a list"
+	for region in regions:
+		if typeof(region) != TYPE_DICTIONARY or typeof(region.get("name")) != TYPE_STRING or not _is_point(region.get("position")):
+			return "every region needs a string 'name' and a 'position' [x, z]"
+		if not String(region.get("kind", "")) in ArenaKit.REGION_KINDS:
+			return "region %s: unknown kind '%s' (have %s)" % [region["name"], region.get("kind", ""), ", ".join(PackedStringArray(ArenaKit.REGION_KINDS))]
+		if not _is_number(region.get("radius")) or float(region["radius"]) <= 0.0:
+			return "region %s needs a positive 'radius'" % region["name"]
+	for region: Dictionary in regions:
+		var mirrored: bool = regions.any(func(other: Dictionary) -> bool:
+			return other["kind"] == region["kind"] and is_equal_approx(float(other["radius"]), float(region["radius"])) \
+					and absf(float(other["position"][0]) + float(region["position"][0])) <= SYMMETRY_TOLERANCE \
+					and absf(float(other["position"][1]) + float(region["position"][1])) <= SYMMETRY_TOLERANCE)
+		if not mirrored:
+			return "not point-symmetric: region %s (%s) has no 180° mirror" % [region["name"], region["kind"]]
 	return ""
+
+
+## No spawn point may sit in or against cover: a vehicle spawned inside a container is stuck for the match.
+static func _validate_spawn_clearance(data: Dictionary) -> String:
+	var blockers: Array = data["obstacles"].filter(func(o: Dictionary) -> bool: return not o.has("kit"))
+	for prop: Dictionary in data.get("props", []):
+		if ArenaKit.collides(prop["type"]):
+			blockers.append(_as_obstacle(prop))
+	for side in ["green", "rust"]:
+		for spot: Array in data["spawns"][side]:
+			var point := Vector2(float(spot[0]), float(spot[1]))
+			for obstacle: Dictionary in blockers:
+				var clearance := ArenaKit.distance_to_footprint(point, Vector2(float(obstacle["position"][0]), float(obstacle["position"][1])),
+						obstacle_size(obstacle), float(obstacle.get("rotation_deg", 0.0)))
+				if clearance < SPAWN_CLEARANCE:
+					return "spawns.%s point %s is %.1f m from %s at %s (spawns need %.1f m clear)" % [side, spot, clearance,
+							obstacle["type"], obstacle["position"], SPAWN_CLEARANCE]
+	return ""
+
+
+## A prop as an obstacle dictionary with its size resolved (for symmetry and clearance checks).
+static func _as_obstacle(prop: Dictionary) -> Dictionary:
+	var obstacle := prop.duplicate()
+	var size := ArenaKit.size_of(prop)
+	obstacle["size"] = [size.x, size.y, size.z]
+	return obstacle
+
+
+## Whether `b` is lane `a` seen from the other base: every point negated, in reverse order, the same width.
+static func _lane_mirrors(a: Dictionary, b: Dictionary) -> bool:
+	var count: int = a["points"].size()
+	if b["points"].size() != count or not is_equal_approx(float(a["width"]), float(b["width"])):
+		return false
+	for i in count:
+		var p: Array = a["points"][i]
+		var q: Array = b["points"][count - 1 - i]
+		if absf(float(p[0]) + float(q[0])) > SYMMETRY_TOLERANCE or absf(float(p[1]) + float(q[1])) > SYMMETRY_TOLERANCE:
+			return false
+	return true
 
 
 ## Whether `b` is `a` rotated 180° about the arena center (a box looks the same turned 180°).

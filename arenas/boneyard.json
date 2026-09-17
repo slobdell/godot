@@ -1,0 +1,1217 @@
+{
+ "name": "boneyard",
+ "schema": 2,
+ "title": "The Boneyard",
+ "note": "Irregular cover at odd angles: no two positions look alike, so fights are local and read differently every match. Small elements, patience and spotting win; a big formation breaks apart on the first wreck.",
+ "half_size": 120.0,
+ "obstacles": [
+  {
+   "type": "wall",
+   "position": [
+    30.0,
+    12.0
+   ],
+   "rotation_deg": 58.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -30.0,
+    -12.0
+   ],
+   "rotation_deg": 58.0
+  },
+  {
+   "type": "wall",
+   "position": [
+    -78.0,
+    72.0
+   ],
+   "rotation_deg": 145.0,
+   "size": [
+    12.0,
+    3.0,
+    1.5
+   ]
+  },
+  {
+   "type": "wall",
+   "position": [
+    78.0,
+    -72.0
+   ],
+   "rotation_deg": 145.0,
+   "size": [
+    12.0,
+    3.0,
+    1.5
+   ]
+  }
+ ],
+ "props": [
+  {
+   "type": "container_40",
+   "position": [
+    -62.0,
+    28.0
+   ],
+   "rotation_deg": 104.0,
+   "stack": 2,
+   "faction": "gangs",
+   "rust": 0.9
+  },
+  {
+   "type": "container_40",
+   "position": [
+    62.0,
+    -28.0
+   ],
+   "rotation_deg": 284.0,
+   "stack": 2,
+   "faction": "gangs",
+   "rust": 0.9
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -50.0,
+    40.0
+   ],
+   "rotation_deg": 12.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    50.0,
+    -40.0
+   ],
+   "rotation_deg": 192.0,
+   "faction": "mixed"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -44.0,
+    24.0
+   ],
+   "rotation_deg": 70.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    44.0,
+    -24.0
+   ],
+   "rotation_deg": 250.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -68.0,
+    48.0
+   ],
+   "rotation_deg": 150.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    68.0,
+    -48.0
+   ],
+   "rotation_deg": 330.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -56.0,
+    54.0
+   ],
+   "rotation_deg": 40.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    56.0,
+    -54.0
+   ],
+   "rotation_deg": 220.0,
+   "stack": 2,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    54.0,
+    34.0
+   ],
+   "rotation_deg": 37.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -54.0,
+    -34.0
+   ],
+   "rotation_deg": 217.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    68.0,
+    50.0
+   ],
+   "rotation_deg": 110.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -68.0,
+    -50.0
+   ],
+   "rotation_deg": 290.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    72.0,
+    26.0
+   ],
+   "rotation_deg": 80.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -72.0,
+    -26.0
+   ],
+   "rotation_deg": 260.0,
+   "stack": 2
+  },
+  {
+   "type": "wreck",
+   "position": [
+    44.0,
+    56.0
+   ],
+   "rotation_deg": 20.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -44.0,
+    -56.0
+   ],
+   "rotation_deg": 200.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -10.0,
+    18.0
+   ],
+   "rotation_deg": 23.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    10.0,
+    -18.0
+   ],
+   "rotation_deg": 203.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    16.0,
+    28.0
+   ],
+   "rotation_deg": 71.0,
+   "stack": 2,
+   "faction": "gangs",
+   "doors": "open"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -16.0,
+    -28.0
+   ],
+   "rotation_deg": 251.0,
+   "stack": 2,
+   "faction": "gangs",
+   "doors": "open"
+  },
+  {
+   "type": "wreck",
+   "position": [
+    3.0,
+    42.0
+   ],
+   "rotation_deg": 12.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -3.0,
+    -42.0
+   ],
+   "rotation_deg": 192.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -26.0,
+    40.0
+   ],
+   "rotation_deg": 130.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    26.0,
+    -40.0
+   ],
+   "rotation_deg": 310.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -4.0,
+    60.0
+   ],
+   "rotation_deg": 95.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    4.0,
+    -60.0
+   ],
+   "rotation_deg": 275.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    10.0,
+    68.0
+   ],
+   "rotation_deg": 170.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -10.0,
+    -68.0
+   ],
+   "rotation_deg": 350.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    34.0,
+    34.0
+   ],
+   "rotation_deg": 45.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -34.0,
+    -34.0
+   ],
+   "rotation_deg": 225.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -28.0,
+    12.0
+   ],
+   "rotation_deg": 60.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    28.0,
+    -12.0
+   ],
+   "rotation_deg": 240.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -98.0,
+    12.0
+   ],
+   "rotation_deg": 5.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    98.0,
+    -12.0
+   ],
+   "rotation_deg": 185.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -92.0,
+    62.0
+   ],
+   "rotation_deg": 66.0,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    92.0,
+    -62.0
+   ],
+   "rotation_deg": 246.0,
+   "faction": "condemned"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    100.0,
+    64.0
+   ],
+   "rotation_deg": 20.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -100.0,
+    -64.0
+   ],
+   "rotation_deg": 200.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    96.0,
+    88.0
+   ],
+   "rotation_deg": 80.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -96.0,
+    -88.0
+   ],
+   "rotation_deg": 260.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -104.0,
+    36.0
+   ],
+   "rotation_deg": 135.0,
+   "stack": 2
+  },
+  {
+   "type": "container_20",
+   "position": [
+    104.0,
+    -36.0
+   ],
+   "rotation_deg": 315.0,
+   "stack": 2
+  },
+  {
+   "type": "wreck",
+   "position": [
+    88.0,
+    14.0
+   ],
+   "rotation_deg": 160.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -88.0,
+    -14.0
+   ],
+   "rotation_deg": 340.0
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -20.0,
+    78.0
+   ],
+   "rotation_deg": 176.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    20.0,
+    -78.0
+   ],
+   "rotation_deg": 356.0,
+   "faction": "gangs"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    24.0,
+    80.0
+   ],
+   "rotation_deg": 8.0
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -24.0,
+    -80.0
+   ],
+   "rotation_deg": 188.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -48.0,
+    78.0
+   ],
+   "rotation_deg": 100.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    48.0,
+    -78.0
+   ],
+   "rotation_deg": 280.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    52.0,
+    76.0
+   ],
+   "rotation_deg": 60.0
+  },
+  {
+   "type": "wreck",
+   "position": [
+    -52.0,
+    -76.0
+   ],
+   "rotation_deg": 240.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -34.0,
+    6.0
+   ],
+   "rotation_deg": 150.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    34.0,
+    -6.0
+   ],
+   "rotation_deg": 330.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    40.0,
+    4.0
+   ],
+   "rotation_deg": 30.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -40.0,
+    -4.0
+   ],
+   "rotation_deg": 210.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    6.0,
+    50.0
+   ],
+   "rotation_deg": 95.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -6.0,
+    -50.0
+   ],
+   "rotation_deg": 275.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -84.0,
+    96.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    84.0,
+    -96.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    -110.0,
+    40.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "floodlight",
+   "position": [
+    110.0,
+    -40.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "sign",
+   "position": [
+    -80.0,
+    104.0
+   ],
+   "rotation_deg": 180.0,
+   "sign": "boneyard"
+  },
+  {
+   "type": "sign",
+   "position": [
+    80.0,
+    -104.0
+   ],
+   "rotation_deg": 0.0,
+   "sign": "boneyard"
+  },
+  {
+   "type": "sign",
+   "position": [
+    108.0,
+    104.0
+   ],
+   "rotation_deg": 200.0,
+   "sign": "boneyard"
+  },
+  {
+   "type": "sign",
+   "position": [
+    -108.0,
+    -104.0
+   ],
+   "rotation_deg": 20.0,
+   "sign": "boneyard"
+  }
+ ],
+ "spawns": {
+  "green": [
+   [
+    0.0,
+    90.0
+   ],
+   [
+    -11.0,
+    90.0
+   ],
+   [
+    11.0,
+    90.0
+   ],
+   [
+    -22.0,
+    90.0
+   ],
+   [
+    22.0,
+    90.0
+   ],
+   [
+    -33.0,
+    90.0
+   ],
+   [
+    33.0,
+    90.0
+   ],
+   [
+    -44.0,
+    90.0
+   ],
+   [
+    44.0,
+    90.0
+   ],
+   [
+    -55.0,
+    90.0
+   ],
+   [
+    55.0,
+    90.0
+   ],
+   [
+    -66.0,
+    90.0
+   ],
+   [
+    66.0,
+    90.0
+   ],
+   [
+    0.0,
+    98.0
+   ],
+   [
+    -11.0,
+    98.0
+   ],
+   [
+    11.0,
+    98.0
+   ],
+   [
+    -22.0,
+    98.0
+   ],
+   [
+    22.0,
+    98.0
+   ],
+   [
+    -33.0,
+    98.0
+   ],
+   [
+    33.0,
+    98.0
+   ],
+   [
+    -44.0,
+    98.0
+   ],
+   [
+    44.0,
+    98.0
+   ],
+   [
+    -55.0,
+    98.0
+   ],
+   [
+    55.0,
+    98.0
+   ],
+   [
+    -66.0,
+    98.0
+   ],
+   [
+    66.0,
+    98.0
+   ],
+   [
+    0.0,
+    106.0
+   ],
+   [
+    -11.0,
+    106.0
+   ],
+   [
+    11.0,
+    106.0
+   ],
+   [
+    -22.0,
+    106.0
+   ],
+   [
+    22.0,
+    106.0
+   ],
+   [
+    -33.0,
+    106.0
+   ],
+   [
+    33.0,
+    106.0
+   ],
+   [
+    -44.0,
+    106.0
+   ],
+   [
+    44.0,
+    106.0
+   ],
+   [
+    -55.0,
+    106.0
+   ],
+   [
+    55.0,
+    106.0
+   ],
+   [
+    -66.0,
+    106.0
+   ],
+   [
+    66.0,
+    106.0
+   ],
+   [
+    0.0,
+    114.0
+   ],
+   [
+    -11.0,
+    114.0
+   ],
+   [
+    11.0,
+    114.0
+   ],
+   [
+    -22.0,
+    114.0
+   ],
+   [
+    22.0,
+    114.0
+   ],
+   [
+    -33.0,
+    114.0
+   ],
+   [
+    33.0,
+    114.0
+   ],
+   [
+    -44.0,
+    114.0
+   ],
+   [
+    44.0,
+    114.0
+   ],
+   [
+    -55.0,
+    114.0
+   ],
+   [
+    55.0,
+    114.0
+   ],
+   [
+    -66.0,
+    114.0
+   ],
+   [
+    66.0,
+    114.0
+   ]
+  ],
+  "rust": [
+   [
+    0.0,
+    -90.0
+   ],
+   [
+    11.0,
+    -90.0
+   ],
+   [
+    -11.0,
+    -90.0
+   ],
+   [
+    22.0,
+    -90.0
+   ],
+   [
+    -22.0,
+    -90.0
+   ],
+   [
+    33.0,
+    -90.0
+   ],
+   [
+    -33.0,
+    -90.0
+   ],
+   [
+    44.0,
+    -90.0
+   ],
+   [
+    -44.0,
+    -90.0
+   ],
+   [
+    55.0,
+    -90.0
+   ],
+   [
+    -55.0,
+    -90.0
+   ],
+   [
+    66.0,
+    -90.0
+   ],
+   [
+    -66.0,
+    -90.0
+   ],
+   [
+    0.0,
+    -98.0
+   ],
+   [
+    11.0,
+    -98.0
+   ],
+   [
+    -11.0,
+    -98.0
+   ],
+   [
+    22.0,
+    -98.0
+   ],
+   [
+    -22.0,
+    -98.0
+   ],
+   [
+    33.0,
+    -98.0
+   ],
+   [
+    -33.0,
+    -98.0
+   ],
+   [
+    44.0,
+    -98.0
+   ],
+   [
+    -44.0,
+    -98.0
+   ],
+   [
+    55.0,
+    -98.0
+   ],
+   [
+    -55.0,
+    -98.0
+   ],
+   [
+    66.0,
+    -98.0
+   ],
+   [
+    -66.0,
+    -98.0
+   ],
+   [
+    0.0,
+    -106.0
+   ],
+   [
+    11.0,
+    -106.0
+   ],
+   [
+    -11.0,
+    -106.0
+   ],
+   [
+    22.0,
+    -106.0
+   ],
+   [
+    -22.0,
+    -106.0
+   ],
+   [
+    33.0,
+    -106.0
+   ],
+   [
+    -33.0,
+    -106.0
+   ],
+   [
+    44.0,
+    -106.0
+   ],
+   [
+    -44.0,
+    -106.0
+   ],
+   [
+    55.0,
+    -106.0
+   ],
+   [
+    -55.0,
+    -106.0
+   ],
+   [
+    66.0,
+    -106.0
+   ],
+   [
+    -66.0,
+    -106.0
+   ],
+   [
+    0.0,
+    -114.0
+   ],
+   [
+    11.0,
+    -114.0
+   ],
+   [
+    -11.0,
+    -114.0
+   ],
+   [
+    22.0,
+    -114.0
+   ],
+   [
+    -22.0,
+    -114.0
+   ],
+   [
+    33.0,
+    -114.0
+   ],
+   [
+    -33.0,
+    -114.0
+   ],
+   [
+    44.0,
+    -114.0
+   ],
+   [
+    -44.0,
+    -114.0
+   ],
+   [
+    55.0,
+    -114.0
+   ],
+   [
+    -55.0,
+    -114.0
+   ],
+   [
+    66.0,
+    -114.0
+   ],
+   [
+    -66.0,
+    -114.0
+   ]
+  ]
+ },
+ "spawn_zones": {
+  "green": {
+   "center": [
+    0.0,
+    102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  },
+  "rust": {
+   "center": [
+    0.0,
+    -102.0
+   ],
+   "size": [
+    150.0,
+    32.0
+   ]
+  }
+ },
+ "lanes": [
+  {
+   "name": "centre",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     8.0,
+     0.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 24.0
+  },
+  {
+   "name": "centre (far)",
+   "points": [
+    [
+     0.0,
+     90.0
+    ],
+    [
+     -8.0,
+     0.0
+    ],
+    [
+     0.0,
+     -90.0
+    ]
+   ],
+   "width": 24.0
+  },
+  {
+   "name": "west",
+   "points": [
+    [
+     -66.0,
+     90.0
+    ],
+    [
+     -70.0,
+     0.0
+    ],
+    [
+     -66.0,
+     -90.0
+    ]
+   ],
+   "width": 24.0
+  },
+  {
+   "name": "west (far)",
+   "points": [
+    [
+     66.0,
+     90.0
+    ],
+    [
+     70.0,
+     0.0
+    ],
+    [
+     66.0,
+     -90.0
+    ]
+   ],
+   "width": 24.0
+  }
+ ],
+ "regions": [
+  {
+   "name": "the heap",
+   "kind": "centre",
+   "position": [
+    0.0,
+    0.0
+   ],
+   "radius": 16.0
+  },
+  {
+   "name": "west pile",
+   "kind": "cover_cluster",
+   "position": [
+    -56.0,
+    38.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "west pile (far)",
+   "kind": "cover_cluster",
+   "position": [
+    56.0,
+    -38.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "east scrap",
+   "kind": "cover_cluster",
+   "position": [
+    58.0,
+    40.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "east scrap (far)",
+   "kind": "cover_cluster",
+   "position": [
+    -58.0,
+    -40.0
+   ],
+   "radius": 20.0
+  },
+  {
+   "name": "the flats",
+   "kind": "open_ground",
+   "position": [
+    -100.0,
+    -30.0
+   ],
+   "radius": 14.0
+  },
+  {
+   "name": "the flats (far)",
+   "kind": "open_ground",
+   "position": [
+    100.0,
+    30.0
+   ],
+   "radius": 14.0
+  }
+ ],
+ "control_point": {
+  "radius": 16.0
+ }
+}

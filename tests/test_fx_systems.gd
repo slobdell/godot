@@ -183,9 +183,33 @@ func test_underglow_follows_visible_vehicles_only() -> void:
 	tanks[0].visible = false  # destroyed or hidden by fog of war
 	glow.update(pool)
 	assert_eq(glow.active_count(), 5, "hidden vehicles don't glow (no fog-of-war leaks)")
+	assert_eq(glow.shadow_count(), 5, "every visible vehicle sits on a blob shadow (render X3: no dynamic shadows)")
 	pool.request(Vector3.ZERO, Color.WHITE, 1.0, 5.0, LightPool.PRIORITY_EXPLOSION)
 	pool.commit(Vector3.ZERO, 0.0)
-	assert_eq(pool.lit_count, 4, "vehicles only take pooled lights nobody more important needs")
+	assert_eq(pool.lit_count, 1, "vehicles carry no real lights (render X3, M1): only the explosion is lit")
+
+
+func test_light_pool_ignores_requests_below_its_floor() -> void:
+	var pool: LightPool = add_to_tree(LightPool.new(4))
+	pool.min_priority = LightPool.PRIORITY_MUZZLE
+	for i in 6:
+		pool.request(Vector3(i, 0, 0), Color.WHITE, 1.0, 5.0, LightPool.PRIORITY_TRACER)
+	pool.flash(Vector3.ZERO, Color.WHITE, 1.0, 5.0, 1.0, LightPool.PRIORITY_VEHICLE, 0.0)
+	pool.commit(Vector3.ZERO, 0.1)
+	assert_eq(pool.lit_count, 0, "tracers and vehicle lights never take a real light")
+	pool.flash(Vector3.ZERO, Color.WHITE, 1.0, 5.0, 1.0, LightPool.PRIORITY_EXPLOSION, 0.0)
+	pool.request(Vector3.ZERO, Color.WHITE, 1.0, 5.0, LightPool.PRIORITY_SHELL)
+	pool.commit(Vector3.ZERO, 0.1)
+	assert_eq(pool.lit_count, 2, "explosions and tank shells still do")
+
+
+func test_every_tier_keeps_the_m1_light_budget() -> void:
+	for tier in FxQuality.SETTINGS:
+		var settings: Dictionary = FxQuality.SETTINGS[tier]
+		assert_true(int(settings["lights"]) <= 4, "%s: at most 4 pooled lights (M1: <= 6 real lights with the moon)" % FxQuality.NAMES[tier])
+		assert_true(not settings["shadows"], "%s: no dynamic shadows (M1; +4.6 ms GPU in perf-scene)" % FxQuality.NAMES[tier])
+		assert_eq(settings["msaa"], Viewport.MSAA_DISABLED, "%s: no MSAA (+2.5 ms GPU in perf-scene)" % FxQuality.NAMES[tier])
+		assert_true(float(settings["light_floor"]) >= LightPool.PRIORITY_MUZZLE, "%s: tracers and vehicles never take a light" % FxQuality.NAMES[tier])
 
 
 func test_auto_quality_only_steps_down_when_slow_and_nobody_chose() -> void:
@@ -197,7 +221,7 @@ func test_auto_quality_only_steps_down_when_slow_and_nobody_chose() -> void:
 
 
 func test_every_tier_budget_is_complete_and_ordered() -> void:
-	var keys := ["lights", "splats", "glow", "render_scale", "msaa", "shadows", "effects"]
+	var keys := ["lights", "light_floor", "splats", "glow", "render_scale", "msaa", "shadows", "effects"]
 	for tier in FxQuality.SETTINGS:
 		for key in keys:
 			assert_true(FxQuality.SETTINGS[tier].has(key), "tier %s sets %s" % [FxQuality.NAMES[tier], key])
