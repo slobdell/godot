@@ -54,8 +54,8 @@ func _ready() -> void:
 func setup(layout: Dictionary) -> void:
 	var wanted := float(layout.get("half_size", HALF - 1.0)) + 1.0
 	var ring := float((layout["control_point"] as Dictionary).get("radius", 16.0)) if layout.get("control_point") is Dictionary else 0.0
-	for lite in [false, true]:
-		var material := CyberMaterials.ground(lite)
+	for variant in [[false, false], [true, false], [false, true]]:
+		var material := CyberMaterials.ground(variant[0], variant[1])
 		material.set_shader_parameter("band_inner", wanted - 13.0)
 		material.set_shader_parameter("ring_radius", ring)
 		material.set_shader_parameter("ring_width", 1.4 if ring > 0.0 else 0.0)
@@ -198,9 +198,10 @@ func set_chunked(chunked: bool) -> void:
 	ground.build()
 
 
-## The floor shader follows the FX tier: full on high, lite on low and medium.
+## The floor shader follows the FX tier: full detail lit in its own shader on high (render X5: -0.6 ms GPU at 720p), lite
+## on low and medium.
 func _apply_ground_quality() -> void:
-	set_ground_style("lite" if FxQuality.tier() < FxQuality.Tier.HIGH else "textured")
+	set_ground_style("lite" if FxQuality.tier() < FxQuality.Tier.HIGH else "unlit")
 
 
 ## FX lab comparisons: "textured" (the high-tier floor), "lite" (low/medium), "wet" (round 1's procedural asphalt),
@@ -208,8 +209,8 @@ func _apply_ground_quality() -> void:
 func set_ground_style(style: String) -> void:
 	var material: Material = ground.material
 	match style:
-		"lite", "textured":
-			material = CyberMaterials.ground(style == "lite")
+		"lite", "textured", "unlit":
+			material = CyberMaterials.ground(style == "lite", style == "unlit")
 			if not _flood_maps.has("map"):
 				_flood_maps["map"] = flood_map(_scaled_floodlights())
 			(material as ShaderMaterial).set_shader_parameter("flood_map", _flood_maps["map"])

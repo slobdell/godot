@@ -24,7 +24,8 @@ extends Node
 ## Each layer toggle, in run order. Every one is measured against the `all` phases beside it. More on request
 ## (--perf-layers): no_venue (stands, gates, screens, crowd), ground_lite (the low-tier floor shader), no_msaa, lights_4
 ## (a 4-light pool), glow_lite (glow levels 2-3 only), no_fog,
-## no_spill (the ad screens' light on the floor).
+## no_spill (the ad screens' light on the floor), scale_085 / scale_075 (3D render scale), glow_wide (glow levels 3+),
+## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -252,14 +253,14 @@ func _apply(phase: String) -> void:
 		"no_shadows":
 			for light in get_tree().root.find_children("*", "DirectionalLight3D", true, false):
 				_override(light, "shadow_enabled", false)
-		"no_venue", "ground_lite":
+		"no_venue", "ground_lite", "ground_unlit", "ground_lit":
 			var dressing_slot := scene.get_node_or_null("Arena/Dressing") if scene != null else null
 			var dressing: Node = dressing_slot.get("visual") if dressing_slot != null else null
 			if dressing != null and phase == "no_venue":
 				dressing.call("set_venue_visible", false)
 				_hidden.append([dressing, "@set_venue_visible", true])
 			elif dressing != null and dressing.has_method("set_ground_style"):
-				dressing.call("set_ground_style", "lite")
+				dressing.call("set_ground_style", {"ground_lite": "lite", "ground_unlit": "unlit", "ground_lit": "textured"}[phase])
 				_hidden.append([dressing, "@_apply_ground_quality", null])
 		"no_msaa":
 			_override(get_viewport(), "msaa_3d", Viewport.MSAA_DISABLED)
@@ -272,6 +273,15 @@ func _apply(phase: String) -> void:
 				var environment := (world as WorldEnvironment).environment
 				if environment != null:
 					for level in [1, 5]:
+						_override(environment, "glow_levels/%d" % level, 0.0)
+		"scale_085", "scale_075":
+			_override(get_viewport(), "scaling_3d_scale", 0.85 if phase == "scale_085" else 0.75)
+		"glow_wide":
+			# Only the wide (low-resolution, cheap) glow levels.
+			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
+				var environment := (world as WorldEnvironment).environment
+				if environment != null:
+					for level in [1, 2]:
 						_override(environment, "glow_levels/%d" % level, 0.0)
 		"no_spill":
 			for node in get_tree().root.find_children("Spill", "MeshInstance3D", true, false):

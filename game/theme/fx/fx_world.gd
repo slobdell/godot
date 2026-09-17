@@ -131,6 +131,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	_apply_viewport()
+	get_viewport().size_changed.connect(_apply_viewport)
 
 
 func _process(delta: float) -> void:
@@ -213,7 +214,7 @@ func _apply_viewport() -> void:
 	if viewport == null:
 		return
 	viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-	viewport.scaling_3d_scale = FxQuality.value("render_scale")
+	viewport.scaling_3d_scale = FxQuality.render_scale_for(FxQuality.value("render_scale"), viewport.get_visible_rect().size.y as int)
 	viewport.msaa_3d = FxQuality.value("msaa")
 
 
