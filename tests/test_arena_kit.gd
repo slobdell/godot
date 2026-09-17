@@ -172,3 +172,17 @@ func test_every_shipped_layout_connects_both_bases_and_the_centre() -> void:
 					"%s: green's base reaches %s" % [layout_name, goal[0]])
 		arena.queue_free()
 		await tree.process_frame
+
+
+func test_random_picks_a_proven_arena_the_same_way_for_the_same_seed() -> void:
+	assert_true(not Arena.ROTATION.is_empty(), "there is a rotation")
+	for layout_name in Arena.ROTATION:
+		assert_true(Arena.load_layout(layout_name).has("layout"), "rotation arena %s loads" % layout_name)
+	var seen := {}
+	for seed_value in 40:
+		var picked := Arena.resolve_name("random", seed_value)
+		assert_true(picked in Arena.ROTATION, "random picks from the rotation (%s)" % picked)
+		assert_eq(Arena.resolve_name("random", seed_value), picked, "the same seed picks the same arena")
+		seen[picked] = true
+	assert_eq(seen.size(), Arena.ROTATION.size(), "40 seeds visit every arena in the rotation")
+	assert_eq(Arena.resolve_name("yard", 3), "yard", "a named arena is itself")
