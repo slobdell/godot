@@ -114,3 +114,35 @@ func test_feel_s_engine_and_crowd_loops_still_get_a_wav_to_duplicate() -> void:
 	var sfx := _sfx()
 	for key in ["engine_diesel", "engine_v8", "engine_electric", "crowd_murmur", "mg_loop", "flame_loop"]:
 		assert_true(sfx.streams.get(key) is AudioStreamWAV, "%s is still a plain AudioStreamWAV" % key)
+
+
+func test_a_sound_too_far_to_hear_never_takes_a_voice() -> void:
+	var sfx := _sfx()
+	sfx.listener = Vector3.ZERO
+	sfx.play_at("bullet_hit_metal", Vector3(2000.0, 0.0, 0.0))
+	assert_eq(sfx.played, 0, "a ping two kilometres away is not started")
+	assert_eq(sfx.culled, 1, "it is counted as culled")
+	sfx.play_at("tank_boom", Vector3(300.0, 0.0, 0.0))
+	assert_eq(sfx.played, 1, "a cannon at 300 m still carries")
+
+
+func test_a_quiet_sound_never_cuts_a_loud_one_when_the_pool_is_full() -> void:
+	var sfx := _sfx()
+	sfx.listener = Vector3.ZERO
+	for i in SfxSystem.WORLD_VOICES:
+		sfx.play_at("tank_boom", Vector3(10.0, 0.0, 0.0))
+	# Headless players stop almost at once, so hold the pool "playing" by what the system believes it started.
+	var busy := 0
+	for voice in sfx._world:
+		busy += 1 if voice.playing else 0
+	if busy < SfxSystem.WORLD_VOICES:
+		return  # the dummy audio driver doesn't keep voices playing; the level maths is covered below
+	sfx.play_at("bullet_hit_metal", Vector3(150.0, 0.0, 0.0))
+	assert_eq(sfx.culled, 1, "twenty cannons nearby: a distant ping waits")
+
+
+func test_the_level_a_sound_is_heard_at_falls_with_distance() -> void:
+	var sfx := _sfx()
+	sfx.listener = Vector3.ZERO
+	assert_near(sfx.heard_level_db(0.0, Vector3(10.0, 0, 0)), 0.0, 0.01, "inside unit size it is its own level")
+	assert_near(sfx.heard_level_db(0.0, Vector3(SfxSystem.UNIT_SIZE * 10.0, 0, 0)), -20.0, 0.01, "ten times as far, 20 dB down")

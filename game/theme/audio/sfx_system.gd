@@ -48,6 +48,14 @@ const TAKES := {
 	"dirt_impact": 3, "explosion_small": 3, "weak_spot_hit": 2, "tank_boom": 2, "cannon_shot": 2,
 }
 const WORLD_VOICES := 20
+## Voice priority (round 5, X4). A sound is judged by how loud it will be where the camera is: its MIX level less the
+## inverse-distance fall-off the players use. Quieter than CULL_DB, it never takes a voice. With every voice busy it
+## steals the one that is quietest *now* (its start level less TAIL_DECAY_DB_PER_S for every second it has played),
+## and only if it is louder than that: a ping across the arena must never cut a nearby cannon's tail.
+const CULL_DB := -46.0
+const TAIL_DECAY_DB_PER_S := 14.0
+const UNIT_SIZE := 55.0
+const MAX_DISTANCE := 600.0
 const UI_VOICES := 4
 ## World sounds go through their own bus so the whole battle can be mixed, limited, and ducked under the announcer
 ## in one place (AnnouncerVoice sidechains a compressor onto this bus when the booth is on).
@@ -85,6 +93,10 @@ var streams := {}
 var takes := {}
 ## Sounds started since load (tests and the bench).
 var played := 0
+## Sounds not started because they would be inaudible, or quieter than everything already playing.
+var culled := 0
+## Where loudness is judged from; null = the viewport's camera (tests set a point).
+var listener: Variant = null
 ## key -> how many synthesised takes loaded (make_sfx.gd), whether or not layered ones replaced them.
 var synth_takes := {}
 ## Sounds playing ElevenLabs-layered takes (SfxLayers, round 5 X1) rather than the synthesised ones.
@@ -93,6 +105,8 @@ var layered := {}
 var _world: Array[AudioStreamPlayer3D] = []
 var _ui: Array[AudioStreamPlayer] = []
 var _next_world := 0
+var _voice_level: Array[float] = []
+var _voice_started: Array[float] = []
 var _next_ui := 0
 var _rng := RandomNumberGenerator.new()
 
@@ -124,12 +138,14 @@ func _init() -> void:
 		var voice := AudioStreamPlayer3D.new()
 		voice.name = "Voice%d" % i
 		voice.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
-		voice.unit_size = 55.0
-		voice.max_distance = 600.0
+		voice.unit_size = UNIT_SIZE
+		voice.max_distance = MAX_DISTANCE
 		voice.max_polyphony = 1
 		voice.bus = WORLD_BUS
 		add_child(voice)
 		_world.append(voice)
+		_voice_level.append(-INF)
+		_voice_started.append(0.0)
 	for i in UI_VOICES:
 		var voice := AudioStreamPlayer.new()
 		voice.name = "UiVoice%d" % i
@@ -187,10 +203,17 @@ func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	# Not in the tree yet (FxWorld is added deferred; the match announcer speaks at spawn): drop it.
 	if muted or not streams.has(sound) or not is_inside_tree():
 		return
-	var voice := _take_world_voice()
+	var mix: Array = MIX.get(sound, [0.0, 0.0])
+	var level := heard_level_db(float(mix[0]) + volume_offset_db, position)
+	var index := _voice_for(level)
+	if index < 0:
+		culled += 1
+		return
+	var voice := _world[index]
+	_voice_level[index] = level
+	_voice_started[index] = Time.get_ticks_msec() / 1000.0
 	voice.stream = _a_take(sound)
 	voice.position = position
-	var mix: Array = MIX.get(sound, [0.0, 0.0])
 	voice.volume_db = float(mix[0]) + volume_offset_db
 	voice.pitch_scale = 1.0 + _rng.randf_range(-float(mix[1]), float(mix[1]))
 	var filtering: Array = DISTANCE_FILTER.get(sound, [])
@@ -238,13 +261,37 @@ func voice_count() -> int:
 	return _world.size() + _ui.size()
 
 
-## A free voice, or the one started longest ago.
-func _take_world_voice() -> AudioStreamPlayer3D:
+## How loud a sound of `volume_db` at `position` will be at the listener (inverse distance, as the players do it).
+func heard_level_db(volume_db: float, position: Vector3) -> float:
+	var at: Variant = listener
+	if at == null:
+		var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+		if camera == null:
+			return volume_db
+		at = camera.global_position
+	var distance := maxf((at as Vector3).distance_to(position), UNIT_SIZE)
+	if distance > MAX_DISTANCE:
+		return -INF  # the player itself would be silent out there
+	return volume_db - 20.0 * log(distance / UNIT_SIZE) / log(10.0)
+
+
+## A voice for a sound this loud: a free one, else the quietest playing one if this is louder; -1 = don't play.
+## (Wall-clock time here is presentation only: nothing in the simulation reads a sound.)
+func _voice_for(level: float) -> int:
+	if level < CULL_DB:
+		return -1
 	for i in _world.size():
 		var index := (_next_world + i) % _world.size()
 		if not _world[index].playing:
 			_next_world = (index + 1) % _world.size()
-			return _world[index]
-	var stolen := _world[_next_world]
-	_next_world = (_next_world + 1) % _world.size()
-	return stolen
+			return index
+	var now := Time.get_ticks_msec() / 1000.0
+	var quietest := -1
+	var quietest_level := INF
+	for i in _world.size():
+		var current := _voice_level[i] - (now - _voice_started[i]) * TAIL_DECAY_DB_PER_S
+		if current < quietest_level:
+			quietest_level = current
+			quietest = i
+	# Equal counts: the same round fired again takes over its own oldest voice rather than being dropped.
+	return quietest if level >= quietest_level else -1
