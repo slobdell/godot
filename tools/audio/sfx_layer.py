@@ -15,10 +15,10 @@ For each take of each source in assets/audio/elevenlabs/sources.json:
    keeps the family resemblance with the sounds the lead already knows;
 5. match loudness to the synthesised take the mix was tuned against, plus a per-source `gain_db` for the cinematic
    exaggeration the lead asked for, so SfxSystem.MIX still means what it meant;
-6. peak-limit to -1 dBFS, fade the tail, and write mono Ogg Vorbis (one-shots) or 16-bit WAV (loops: engine, crowd
-   and flame code reads loops as AudioStreamWAV).
+6. peak-limit to -1 dBFS, fade the tail, and write 16-bit mono WAV (QOA-imported one-shots are the cheapest thing to
+   start in a battle; loops import as PCM so their loop points are right).
 
-Writes assets/audio/layered/<sound>_<n>.{ogg,wav} and game/theme/audio/sfx_layers.gd, the manifest SfxSystem loads
+Writes assets/audio/layered/<sound>_<n>.wav and game/theme/audio/sfx_layers.gd, the manifest SfxSystem loads
 (a script constant, so exports need no include_filter entry and nothing is probed on disk at runtime).
 """
 
@@ -43,7 +43,6 @@ LAYERED = AUDIO / "layered"
 MANIFEST = ROOT / "game" / "theme" / "audio" / "sfx_layers.gd"
 RATE = 44100
 CEILING_DB = -1.0
-OGG_QUALITY = "4"
 
 ## Per-source defaults; a source's "layer" object overrides any of them.
 DEFAULTS = {
@@ -236,15 +235,17 @@ def write_wav(path: Path, x: np.ndarray, rate: int = RATE) -> None:
 
 
 def write_take(x: np.ndarray, sound: str, take: int, loop: bool, out: Path) -> Path:
+    """Every take is a 16-bit mono WAV. One-shots import as QOA (cheap to start), loops as PCM (see
+    keep_loops_uncompressed). Ogg Vorbis was tried first and measured: starting an Ogg one-shot cost ~0.2 ms more
+    script time per shot than a WAV (make audio-bench), because each play builds a Vorbis decoder, and a battle
+    starts several a frame."""
     out.mkdir(parents=True, exist_ok=True)
-    if loop:
-        path = out / ("%s_%d.wav" % (sound, take))
-        write_wav(path, x)
-        return path
-    path = out / ("%s_%d.ogg" % (sound, take))
-    pcm = (np.clip(x, -1, 1) * 32767).astype("<i2").tobytes()
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "s16le", "-ar", str(RATE), "-ac", "1", "-i", "pipe:0",
-                    "-c:a", "libvorbis", "-q:a", OGG_QUALITY, str(path)], input=pcm, check=True)
+    path = out / ("%s_%d.wav" % (sound, take))
+    write_wav(path, x)
+    stale = out / ("%s_%d.ogg" % (sound, take))
+    for old in (stale, stale.with_name(stale.name + ".import")):
+        if old.exists():
+            old.unlink()
     return path
 
 
@@ -254,7 +255,7 @@ def keep_loops_uncompressed(folder: Path) -> list[Path]:
     it lands a fifth of the way in, and every loop in the game was repeating its first 0.2 s (found round 5).
     Returns the .import files it changed; Godot reimports them on the next `make import`."""
     changed = []
-    for wav in sorted(folder.glob("*.wav")):
+    for wav in sorted(folder.glob("*loop*.wav")):
         settings = wav.with_name(wav.name + ".import")
         if not settings.exists():
             continue

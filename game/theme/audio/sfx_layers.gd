@@ -4,8 +4,8 @@ class_name SfxLayers
 ## A sound listed here plays these takes instead of its synthesised ones.
 
 const TAKES := {
-	"autocannon_shot": ["res://assets/audio/layered/autocannon_shot_1.ogg", "res://assets/audio/layered/autocannon_shot_2.ogg", "res://assets/audio/layered/autocannon_shot_3.ogg"],
+	"autocannon_shot": ["res://assets/audio/layered/autocannon_shot_1.wav", "res://assets/audio/layered/autocannon_shot_2.wav", "res://assets/audio/layered/autocannon_shot_3.wav"],
 	"mg_loop": ["res://assets/audio/layered/mg_loop_1.wav"],
-	"shell_hit_armor": ["res://assets/audio/layered/shell_hit_armor_1.ogg", "res://assets/audio/layered/shell_hit_armor_2.ogg", "res://assets/audio/layered/shell_hit_armor_3.ogg"],
-	"tank_boom": ["res://assets/audio/layered/tank_boom_1.ogg", "res://assets/audio/layered/tank_boom_2.ogg", "res://assets/audio/layered/tank_boom_3.ogg"],
+	"shell_hit_armor": ["res://assets/audio/layered/shell_hit_armor_1.wav", "res://assets/audio/layered/shell_hit_armor_2.wav", "res://assets/audio/layered/shell_hit_armor_3.wav"],
+	"tank_boom": ["res://assets/audio/layered/tank_boom_1.wav", "res://assets/audio/layered/tank_boom_2.wav", "res://assets/audio/layered/tank_boom_3.wav"],
 }

@@ -2,7 +2,7 @@
 # Suno tracks, and the match-mood signal's tests.
 # Owner: audio (_agents/streams/audio.md). Included by the root Makefile.
 
-.PHONY: music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer
+.PHONY: music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench
 
 MUSIC_DIR ?= assets/music
 
@@ -58,6 +58,14 @@ sfx-generate: ## ElevenLabs sound-effect masters: DRY_RUN by default; APPROVED=1
 sfx-layer: ## Masters -> the shipped takes in assets/audio/layered + game/theme/audio/sfx_layers.gd (free; needs the masters) [ONLY=...]
 	$(PYTHON) tools/audio/sfx_layer.py $(if $(ONLY),--only $(ONLY)) --report $(BUILD_DIR)/audio/sfx_layer.json
 	$(GODOT) --headless --path . --import >/dev/null 2>&1 || true
+
+## M1 (fx_tricks.md): booth, music and crowd <= 0.3 ms of script per frame. perf-scene runs --mute, so it cannot see
+## audio; this times each audio system under a battle busier than a real one. Informational, not in check.
+audio-bench: import ## Per-frame script cost of every audio system at 60 vehicles, headless → build/audio/bench.json
+	@mkdir -p $(BUILD_DIR)/audio
+	$(GODOT) --headless --path . --script res://game/audio/audio_bench.gd -- $(CURDIR)/$(BUILD_DIR)/audio/bench.json 2>&1 \
+		| tee $(BUILD_DIR)/audio/bench.log | grep -E '^AUDIO_BENCH|SCRIPT ERROR|^ERROR' || true
+	@grep -q AUDIO_BENCH_DONE $(BUILD_DIR)/audio/bench.log
 
 audio-pytest: ## The audio tools' Python tests (music contract, the sound-effect pipeline against a mock client)
 	$(PYTHON) -m unittest discover -s tools/audio -p 'test_*.py'

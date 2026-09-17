@@ -72,7 +72,7 @@ class GenerateAndLayerTest(unittest.TestCase):
             self.assertLess(onset, 0.02, "starts on the muzzle flash, not 30 ms after it (%.3f s)" % onset)
             self.assertLess(abs(mixed[-50:]).max(), 0.01, "the tail fades out rather than stopping dead")
             path = sfx_layer.write_take(mixed, "tank_boom", 1, False, tmp / "layered")
-            self.assertEqual(path.suffix, ".ogg")
+            self.assertEqual(path.suffix, ".wav", "WAV, not Ogg: an Ogg one-shot costs a decoder per shot")
 
     def test_a_loop_is_a_wav_with_a_quiet_seam(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -87,10 +87,12 @@ class GenerateAndLayerTest(unittest.TestCase):
     def test_loops_are_forced_to_import_uncompressed(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
-            (tmp / "x_1.wav").write_bytes(b"")
-            (tmp / "x_1.wav.import").write_text("[params]\ncompress/mode=2\n")
+            for name in ("mg_loop_1.wav", "tank_boom_1.wav"):
+                (tmp / name).write_bytes(b"")
+                (tmp / (name + ".import")).write_text("[params]\ncompress/mode=2\n")
             self.assertEqual(len(sfx_layer.keep_loops_uncompressed(tmp)), 1)
-            self.assertIn("compress/mode=0", (tmp / "x_1.wav.import").read_text())
+            self.assertIn("compress/mode=0", (tmp / "mg_loop_1.wav.import").read_text())
+            self.assertIn("compress/mode=2", (tmp / "tank_boom_1.wav.import").read_text(), "one-shots stay QOA")
 
     def test_the_tail_lift_raises_the_decay_and_not_the_hit(self):
         rate = sfx_layer.RATE
