@@ -99,11 +99,29 @@ sim-profile: import ## CP1: one faction battle with SimProfile on: ms per tick b
 		| tee $(BUILD_DIR)/sim-profile.log | grep -E '^SIM_PROFILE|^MATCH_RESULT' | cut -c1-2000 > $(BUILD_DIR)/sim-profile.lines
 	$(PYTHON) tools/sim_profile_report.py $(BUILD_DIR)/sim-profile.log $(BUILD_DIR)/sim-profile.json
 
+# ---- Round 5: is team identity worth wins? --------------------------------------------
+# Arena measured Green winning 25-28% of seeded mirror battles on every map, bases swapped. The controls: the normal
+# run, the same seeds with the ARMIES swapped between the teams (pairs cancel army strength), a true mirror (both teams
+# field one army), and the mirror again with Rust processed first and with bases swapped.
+team-fairness: import ## Green's win rate under army/base/order controls (FAIR_FACTION=condemned N=16 FIRST_SEED=1 TIME=240 FAIR_MODES="normal|--swap-armies|--same-army|--same-army --rust-first|--same-army --swap-bases")
+	@modes='$(or $(FAIR_MODES),normal|--swap-armies|--same-army|--same-army --rust-first|--same-army --swap-bases)'; \
+	IFS='|'; for mode in $$modes; do \
+		unset IFS; flags=$$([ "$$mode" = normal ] || echo "$$mode"); \
+		echo "== team fairness: $(or $(FAIR_FACTION),condemned) mirror, controls '$$mode', seeds $(or $(FIRST_SEED),1)+ =="; \
+		$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),16) --first-seed $(or $(FIRST_SEED),1) --jobs $(JOBS) \
+			--time-limit $(or $(TIME),240) --score-limit 0 \
+			--json $(BUILD_DIR)/team-fairness-$$(echo "$$mode" | tr -d ' -')-$(or $(FIRST_SEED),1).json \
+			--extra="--green-faction=$(or $(FAIR_FACTION),condemned) --rust-faction=$(or $(FAIR_FACTION),condemned) --elimination --control --budget=$(or $(BUDGET),5200) $$flags" \
+			| grep -E "matches|wins:"; \
+		IFS='|'; \
+	done
+
 # ---- X1 (round 5): the shape of a full-scale fight ----------------------------------
-engagement: import ## X1: engagement ranges, standing exchanges, kill faces, cover use in faction battles (PAIRS=condemned:condemned SEEDS=4 TIME=240 ARENA= TUNE=) -> build/engagement.json
+engagement: import ## X1: engagement ranges, standing exchanges, kill faces, cover use in faction battles (PAIRS=condemned:condemned SEEDS=4 TIME=240 ARENA= TUNE= VARIANTS=tools/matchup_variants/<file>.json) -> build/engagement[-variants].json
 	$(PYTHON) tools/engagement_report.py --godot $(GODOT) --jobs $(JOBS) --pairs $(or $(PAIRS),condemned:condemned) \
 		--seeds $(or $(SEEDS),4) --budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),240) \
-		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) --json $(BUILD_DIR)/engagement.json
+		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) $(if $(VARIANTS),--variants $(VARIANTS)) \
+		--json $(BUILD_DIR)/engagement$(if $(VARIANTS),-variants).json
 
 pace: import ## Match pace with seeded CPU armies like a skirmish (first shot, first kill, length): N=24 BUDGET=1000 CONTROL=1 -> build/pace[-control].json
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),24) --jobs $(JOBS) --time-limit 300 --score-limit 0 \

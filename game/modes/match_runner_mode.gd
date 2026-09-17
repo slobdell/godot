@@ -5,7 +5,8 @@ extends GameMode
 ## --green-doctrine=PATH --rust-doctrine=PATH (or cpu / cpu:<archetype> with --budget), --score-limit=K --time-limit=SECONDS
 ## --green-faction=NAME / --rust-faction=NAME (L3: condemned | gangs | law | syndicate) make that side's cpu army a
 ## faction army, whose SIZE falls out of the faction's costs (Units.BASELINE_BUDGET buys ~30 Condemned vehicles)
-## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation
+## --seed=S --elimination; experiment controls --swap-bases --rust-first --no-navigation, and (round 5) --swap-armies /
+## --same-army for which cpu army each team draws (see army_seed)
 ## --tune=unit_or_weapon.stat=value,... (see Units.apply_tuning); --control adds the center control point;
 ## --green-commander / --rust-commander give a team a CpuCommander.
 ## X5 (round 4) scale bench: --bench-units=N spawns N vehicles a side from --bench-faction=NAME's roster, spread
@@ -55,8 +56,8 @@ func start() -> void:
 			# A doctrine path, or "cpu" / "cpu:<archetype>" for a budgeted army seeded from the match seed. L3:
 			# --<side>-faction= alone means "a cpu army of that faction", and it may field more than five squads.
 			var lineup := flags.text(key + "-doctrine", "cpu")
-			var loaded := Army.load_army(lineup, seed_value * 2 + team, flags.integer("budget", Units.DEFAULT_BUDGET),
-					flags.text(key + "-faction"))
+			var loaded := Army.load_army(lineup, army_seed(seed_value, team, flags.has("swap-armies"), flags.has("same-army")),
+					flags.integer("budget", Units.DEFAULT_BUDGET), flags.text(key + "-faction"))
 			if loaded.has("error"):
 				push_error(loaded["error"])
 				main.get_tree().quit(2)
@@ -104,6 +105,17 @@ func start() -> void:
 ## X5: `count` vehicles of `faction` for `team`, cycling its roster, laid out over that team's half of the arena.
 ## The spawn grid holds one army (Match.SPAWN_SLOTS); a 100-a-side COST bench is not an army, so it gets its own
 ## lattice rather than stacking hulls on top of each other and measuring the contact solver instead of the game.
+## Round 5 fairness controls: which seed a team's cpu army is drawn from. Normally Green gets seed*2 and Rust
+## seed*2+1, so two teams of the same faction field DIFFERENT armies and a series measures army luck as much as
+## anything. --swap-armies hands each team the other's army (pair it with the normal run to cancel army strength);
+## --same-army gives both teams Green's army (a true mirror: any win-rate gap left is team identity).
+static func army_seed(seed_value: int, team: int, swap_armies: bool, same_army: bool) -> int:
+	if same_army:
+		return seed_value * 2
+	var drawn_for := (1 - team) if swap_armies else team
+	return seed_value * 2 + drawn_for
+
+
 func _bench_army(game_match: Match, team: int, faction: String, count: int) -> void:
 	var roster := Units.roster(faction)
 	if roster.is_empty():
