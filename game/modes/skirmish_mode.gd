@@ -15,11 +15,16 @@ extends GameMode
 ##   --ui-scale=1.25  bigger buttons, chips, and text (accessibility; 0.75..2)
 ##   --zoom=0..1  the starting camera height (default: frame the army, no lower than START_ZOOM)
 ##   --no-elements  the player's squads stay hand-driven (no L1 leaders picking formations and drills)
-##   --element-cpu  the CPU army is run by doctrine's ElementCommander instead of its squad AI (experimental)
+##   --element-cpu / --no-element-cpu  the CPU army is (or isn't) run by doctrine's ElementCommander; default ELEMENT_CPU_DEFAULT
 ##   --cinematic  the camera directs itself: it finds the fighting, holds a shot, and cuts (spectating, trailers)
 ##   --no-vision-camera  turn off L4 vision framing (a free camera with no zoom-out cap; galleries and comparisons)
 ##   --command-playtest=DIR  tap through every squad with off-screen radar orders; log the camera (CommandPlaytest)
 ##   --scripted   skip the planning pause and play a fixed order sequence (smoke tests, screenshots)
+##   --camera-frame=close|default|wide  how much of the screen the commanded element fills (X3 dial)
+##   --alert-lines=1..3  unseen alerts shown at once above the group chips (X3 dial; default 1)
+##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
+##   --hud-cost=PATH  X4: what each HUD widget costs in draw calls and _process at ~30 a side (HudCostProbe)
+##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
 ##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
 ##   --touch-map  round 2's tap grammar (squad bar, drill and formation pickers) instead of the desktop controls
 ## Round 3 (control stream): the default is StarCraft-style desktop control (RtsControls, _agents/tactical_map.md "v4").
@@ -50,6 +55,33 @@ static func lineup_plan(player: String, enemy: String, player_faction: String, e
 			Match.Team.RUST: {"lineup": enemy, "faction": enemy_faction}}
 
 
+## X3 (the lead's dials): how much of the screen the commanded element fills. `close` is the Twisted Metal end,
+## `wide` shows more ground around it (still inside the force's horizon cap).
+const CAMERA_FRAMES := {"close": 0.9, "default": RtsCamera.VISION_FRAME_INSET, "wide": 0.6}
+
+
+static func camera_frame_inset(p_flags: LaunchFlags) -> float:
+	return float(CAMERA_FRAMES.get(p_flags.text("camera-frame", "default"), RtsCamera.VISION_FRAME_INSET))
+
+
+## X3: how many unseen alerts show above the group chips at once (1 by default, at most 3).
+static func alert_lines(p_flags: LaunchFlags) -> int:
+	return clampi(p_flags.integer("alert-lines", 1), 1, 3)
+
+
+## Whether the CPU army is commanded by doctrine's ElementCommander (elements, formations, drills) rather than by its
+## brains alone. `--element-cpu` / `--no-element-cpu` decide; otherwise ELEMENT_CPU_DEFAULT. Brains-only stays
+## reachable for A/B measurement. Off (ai, 2026-09-17): doctrine beat brains 52-28 in small mirrors without the control
+## point, but lost 32-16 in the setup skirmish plays (faction armies at 5200, control point on). Flip when a variant wins.
+const ELEMENT_CPU_DEFAULT := false
+
+
+static func cpu_runs_elements(p_flags: LaunchFlags) -> bool:
+	if p_flags.has("no-element-cpu") or p_flags.has("no-elements"):
+		return false
+	return p_flags.has("element-cpu") or ELEMENT_CPU_DEFAULT
+
+
 ## Whether the faction menu should open: an interactive run that named no faction. Never in a scripted, playtest,
 ## smoke or browser-driven run, which must keep starting the same match they always did.
 static func wants_faction_menu(flags: LaunchFlags) -> bool:
@@ -63,6 +95,8 @@ static func wants_faction_menu(flags: LaunchFlags) -> bool:
 
 
 func start() -> void:
+	if flags.has("shell-playtest"):
+		ShellPlaytest.ensure(main.get_tree(), flags.text("shell-playtest"))
 	if SkirmishMode.wants_faction_menu(flags):
 		_pick_faction()
 		return
@@ -78,22 +112,23 @@ func _pick_faction() -> void:
 	picker.player_faction = flags.text("player-faction", Units.DEFAULT_FACTION)
 	picker.enemy_faction = flags.text("enemy-faction", Units.DEFAULT_FACTION)
 	main.hud.add_child(picker)
-	main.hud.set_status("Pick a faction: 1-4 yours, shift+1-4 theirs, Enter fights")
+	main.hud.set_status("Pick a faction, then FIGHT")
+	picker.arena = flags.text("arena", GameLauncher.RANDOM)
 	picker.chosen.connect(func(player_faction: String, enemy_faction: String) -> void:
-		Main.next_flags = SkirmishMode.faction_flags(flags, player_faction, enemy_faction)
-		main.get_tree().paused = false
-		main.get_tree().reload_current_scene())
+		GameLauncher.start(main.get_tree(), SkirmishMode.faction_flags(flags, player_faction, enemy_faction, picker.arena)))
 
 
 ## X5: the flags the skirmish restarts with after the menu - everything it was launched with, plus the two
 ## factions, minus the menu itself (or it would open again). Pure, so the restart is testable.
-static func faction_flags(current: LaunchFlags, player_faction: String, enemy_faction: String) -> LaunchFlags:
+static func faction_flags(current: LaunchFlags, player_faction: String, enemy_faction: String, arena := "") -> LaunchFlags:
 	var next := LaunchFlags.new()
 	next.values = current.values.duplicate()
 	next.values.erase("pick-faction")
 	next.values["no-pick-faction"] = ""
 	next.values["player-faction"] = player_faction
 	next.values["enemy-faction"] = enemy_faction
+	if arena != "":
+		next.values["arena"] = arena
 	return next
 
 
@@ -137,11 +172,14 @@ func _start_match() -> void:
 		elements = Elements.install(game_match, orders)
 		# The player's elements are formed on demand, by the first task given to a control group: an element with
 		# no task still runs its SOP, and an untasked leader would fight the player for the wheel.
-		# The CPU keeps its squad AI unless asked: which commander the CPU runs is ai's call, not control's.
-		if flags.has("element-cpu"):
-			for squad in game_match.team_squads(Match.Team.RUST):
-				elements.form(Array(squad.roster), String(squad.squad_name))
-			ElementCommander.install(game_match, Match.Team.RUST, elements)
+		# Round 5: the switch for the CPU running doctrine (elements, formations, drills); off until a doctrine variant beats
+		# brains at skirmish scale. A spectated match runs both sides that way. ai owns the commander; this is the flag.
+		if SkirmishMode.cpu_runs_elements(flags):
+			var cpu_teams := [Match.Team.RUST, Match.Team.GREEN] if flags.has("cinematic") else [Match.Team.RUST]
+			for cpu_team: int in cpu_teams:
+				for squad in game_match.team_squads(cpu_team):
+					elements.form(Array(squad.roster), String(squad.squad_name))
+				ElementCommander.install(game_match, cpu_team, elements)
 	var executor := OrderExecutor.new()
 	executor.name = "OrderExecutor"
 	executor.game_match = game_match
@@ -209,8 +247,11 @@ func _start_match() -> void:
 	main.add_child(messages)
 	announcer.announced.connect(messages.relay)
 	messages.posted.connect(main.hud.post_message)
-	main.hud.set_status("Skirmish vs %s%s" % [lineups[Match.Team.RUST],
-			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else ""])
+	# Which arena this is (the lead picks it, or Arena rolls it from the seed): the name Arena built, not the flag.
+	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
+	main.hud.set_status("Skirmish vs %s%s%s" % [lineups[Match.Team.RUST],
+			" (seed %d)" % seed_value if Army.is_cpu(lineups[Match.Team.RUST]) else "",
+			"\n%s" % arena_title if arena_title != "" else ""])
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
 	if flags.has("touch-map") or flags.has("command-playtest"):
@@ -260,6 +301,13 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	edge.controls = controls
 	controls.add_child(edge)
 	controls.markers = edge
+	edge.alert_lines = SkirmishMode.alert_lines(flags)
+	# X6: the controls a new player can discover, retired one by one as they're used (--hints=off hides them).
+	if flags.text("hints", "on") != "off" and not (flags.has("scripted") or flags.has("control-playtest") or flags.has("cinematic")):
+		var hints := ControlHints.new()
+		if flags.text("hints") == "fresh":
+			hints.store_path = ""
+		controls.add_child(hints)
 	if flags.has("cinematic"):
 		# Stretch: a camera that watches the fight on its own. It replaces the vision framing rather than fighting
 		# it, because nobody is earning this view - it is the spectator's. Everything else (orders, the HUD, the
@@ -280,8 +328,15 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
 		# can collectively see (the lead: "a bird's eye view is just an unearned god view").
 		rig.vision = controls.vision_state
+		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
+	if flags.has("hud-cost"):
+		var probe := HudCostProbe.new()
+		probe.name = "HudCostProbe"
+		probe.main = main
+		probe.out_path = flags.text("hud-cost")
+		main.add_child(probe)
 	if flags.has("control-playtest"):
 		var playtest := ControlPlaytest.new()
 		playtest.name = "ControlPlaytest"

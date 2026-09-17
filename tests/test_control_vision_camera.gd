@@ -231,3 +231,41 @@ func test_an_element_frames_the_contacts_it_can_see() -> void:
 	await _frames(2)
 	frame = f.controls.vision_state()["frame"]
 	assert_eq(frame.size(), 1, "an enemy beyond the element's own sight is not framed")
+
+
+## Round 5 (the lead: "it ends up focusing on the enemy instead of our own friendly units"): a big enemy army in sight
+## may widen the frame, but the camera stays centred on the element it is framing, and the element stays on screen.
+func test_a_mass_of_contacts_never_pulls_the_camera_off_your_element() -> void:
+	var f := Fixture.new(self)
+	await f.build_scale(30)
+	f.rig.vision = f.controls.vision_state
+	f.controls.recall_group(1)
+	await _frames(40)
+	var element: Array = []
+	var middle := Vector3.ZERO
+	for unit_name in f.controls.groups.members(1):
+		element.append(f.tank(unit_name).global_position)
+		middle += f.tank(unit_name).global_position
+	middle /= element.size()
+	var enemy := Vector3.ZERO
+	var enemies := f.game_match.sorted_team_tanks(Match.Team.RUST)
+	for tank in enemies:
+		enemy += tank.global_position
+	enemy /= enemies.size()
+	var aim := f.rig.focus
+	var to_element := Vector2(aim.x - middle.x, aim.z - middle.z).length()
+	var to_enemy := Vector2(aim.x - enemy.x, aim.z - enemy.z).length()
+	assert_true(to_element < to_enemy, "the screen's centre is nearer your element than the enemy (%.0f m vs %.0f m)" % [to_element, to_enemy])
+	assert_true(RtsCamera.shows_all(element, f.rig.focus, f.rig.yaw, f.rig.zoom, 1920.0 / 1080.0, 1.0),
+			"every vehicle of the element is on screen (focus %s zoom %.2f)" % [f.rig.focus, f.rig.zoom])
+
+
+## Round 5 (combat's 30 Hz tick with physics interpolation): what follows a vehicle on screen reads where it is drawn.
+func test_on_screen_followers_read_the_drawn_position_and_the_camera_is_not_interpolated_twice() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var tank := f.tank("Green_Alpha_1")
+	assert_eq(Shown.at(tank), tank.get_global_transform_interpolated().origin, "Shown reads the interpolated transform")
+	assert_eq(Shown.ground(tank).y, 0.0, "ground points sit on the ground")
+	assert_eq(f.camera.physics_interpolation_mode, Node.PHYSICS_INTERPOLATION_MODE_OFF,
+			"the rig's camera moves every frame by itself, so physics interpolation stays off it")

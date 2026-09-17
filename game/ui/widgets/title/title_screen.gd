@@ -2,13 +2,16 @@ extends Node3D
 ## Animated title screen in the HUD style (`make title`, browser `?title`): the cyberpunk arena at
 ## night behind a glitching "TANK SQUAD" title, breathing conductors wiring a chamfered menu, and a
 ## small skirmish (tanks trading tracers and laser pulses) under a slow orbiting camera.
-## Menu buttons start a mode: on the web by reloading with that URL query, on desktop by relaunching
-## with that flag. (Not the default entry scene: that's a shared-file decision for the lead.)
+## Menu buttons start a mode: on the web by reloading with that URL query, on desktop by switching to the game
+## scene with that flag. (Not the default entry scene: that's a shared-file decision for the lead.)
 ## Flags: --screenshot=<abs png> [--screenshot-delay=S]
 
 const ARENA := preload("res://game/arena/arena.tscn")
+## Flags that describe the session, not the mode, and so survive choosing a mode.
+const SESSION_FLAGS := ["ui-touch", "shell-playtest", "announcer", "music", "hints"]
 const MENU := [
 	["SKIRMISH", "skirmish", "Command your squads vs the CPU"],
+	["SPECTATE", "skirmish cinematic player=cpu enemy=cpu no-pick-faction arena=random", "Watch two CPU armies fight; the camera directs itself"],
 	["MULTIPLAYER", "connect", "Join the game server"],
 	["FX LAB", "fx-bench", "Lighting and effects benchmark"],
 	["PLAY TEST DRIVE", "", "Drive one tank vs a bot"],
@@ -45,6 +48,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 	var flags := LaunchFlags.from_environment()
+	if flags.has("shell-playtest"):
+		ShellPlaytest.ensure(get_tree(), flags.text("shell-playtest"))
 	if flags.has("screenshot"):
 		_capture(flags.text("screenshot"), float(flags.text("screenshot-delay", "4")))
 
@@ -130,29 +135,32 @@ func _layout() -> void:
 	conductors.add_bus(Vector2(right, frame.position.y + 20.0 * s), Vector2.RIGHT, Vector2(screen.x * 0.8, subtitle.position.y + 20.0 * s), Vector2.UP, 2)
 
 
-## Start a mode: reload the page with its query on the web, relaunch with its flag on desktop.
+## Start a mode: reload the page with its query on the web; on desktop, switch to the game scene in this process with
+## that flag. (It used to quit and relaunch the executable, which dropped every flag the session was started with and,
+## launched from a terminal or `make`, could leave the player looking at a closed window.)
 func start(flag: String) -> void:
 	var fx := FxWorld.existing()
 	if fx != null:
 		fx.sfx.play_ui("ui_blip")
-	print("TITLE_START %s" % (flag if flag != "" else "offline"))
+	print("TITLE_START %s" % (flag.get_slice(" ", 0) if flag != "" else "offline"))
 	if OS.has_feature("web"):
-		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + flag) if flag != "" else ""))
+		var query := "&".join(flag.split(" ", false))
+		JavaScriptBridge.eval("window.location.search = '%s'" % (("?" + query) if query != "" else ""))
 		return
-	OS.set_restart_on_exit(true, relaunch_args(OS.get_cmdline_args(), OS.get_cmdline_user_args(), flag))
-	get_tree().quit()
+	GameLauncher.start(get_tree(), flags_for(flag, LaunchFlags.from_environment()))
 
 
-## Engine args to relaunch with (dropping a scene path and the old user args) plus `-- --flag`.
-static func relaunch_args(engine_args: PackedStringArray, user_args: PackedStringArray, flag: String) -> PackedStringArray:
-	var args := PackedStringArray()
-	for arg in engine_args:
-		if arg.ends_with(".tscn") or arg == "--" or user_args.has(arg):
-			continue
-		args.append(arg)
-	if flag != "":
-		args.append_array(["--", "--" + flag])
-	return args
+## The flags the chosen mode starts with: its own flags ("skirmish cinematic arena=random"), plus the few that belong to the session rather than to a
+## mode (the touch UI, a playtest driving this run). "" is the offline test drive.
+static func flags_for(flag: String, current: LaunchFlags) -> LaunchFlags:
+	var next := LaunchFlags.new()
+	for part in flag.split(" ", false):
+		var pair := part.split("=", true, 1)
+		next.values[pair[0]] = pair[1] if pair.size() > 1 else ""
+	for kept: String in SESSION_FLAGS:
+		if current.has(kept):
+			next.values[kept] = current.values[kept]
+	return next
 
 
 func _tank(team: int, weapon_slot: String) -> Node3D:

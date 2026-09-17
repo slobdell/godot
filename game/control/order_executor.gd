@@ -128,7 +128,7 @@ func _drive(tank: Tank, controller: OrderController, order: Dictionary) -> void:
 			var spot: Variant = orders.goal_position(unit_name)
 			_order(controller, {"type": "stop"} if spot == null else _move_to(spot, 1.0, 4.0), {"type": "fire_at_will"})
 		"hold":
-			_keep_spot(tank, controller, orders.goal_position(unit_name), _heading(order.get("heading", [])))
+			_keep_spot(tank, controller, orders.goal_position(unit_name), _heading(order.get("facing", order.get("heading", []))))
 		"stop":
 			_order(controller, {"type": "stop"}, {"type": "fire_at_will"})
 		_:

@@ -10,6 +10,8 @@ extends RefCounted
 ##    "target": "Rust_Bravo_2",              required for attack (an enemy) and follow (another unit)
 ##    "queue": false,                        shift: run after the unit's current orders (stop is never queued)
 ##    "formation": "auto" | Formations.NAMES,  how a group arranges itself (default auto: by role and situation)
+##    "facing": [x, z],                      optional, move / attack_move / hold: which way to face once there (round 5,
+##                                           for doctrine's halts); the group still travels and forms up toward `to`
 ##    "source": "player" | "element" | ""}   who asked (optional): the response guarantee and the playtest's
 ##                                           measurements are about the player's orders, not a leader's
 ##
@@ -19,7 +21,8 @@ extends RefCounted
 const VERBS := ["move", "attack", "attack_move", "follow", "hold", "stop"]
 const NEEDS_TO := ["move", "attack_move"]
 const NEEDS_TARGET := ["attack", "follow"]
-const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source"]
+const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source", "facing"]
+const TAKES_FACING := ["move", "attack_move", "hold"]
 const SOURCES := ["player", "element", ""]
 const AUTO := "auto"
 ## A selection bigger than this is almost certainly a bug in the caller (two full armies are 50 units).
@@ -63,6 +66,13 @@ static func validate(command: Variant) -> String:
 		var formation: Variant = command["formation"]
 		if formation != AUTO and not Formations.NAMES.has(formation):
 			return "'formation' must be auto or one of %s" % ", ".join(Formations.NAMES)
+	if command.has("facing"):
+		var facing: Variant = command["facing"]
+		if not TAKES_FACING.has(verb):
+			return "'facing' only goes with %s" % ", ".join(TAKES_FACING)
+		if typeof(facing) != TYPE_ARRAY or (facing as Array).size() != 2 or not _finite(facing[0]) or not _finite(facing[1]) \
+				or Vector2(float(facing[0]), float(facing[1])).length() < 0.001:
+			return "'facing' must be a direction [x, z] that isn't zero"
 	if command.has("source") and not SOURCES.has(command["source"]):
 		return "'source' must be one of %s" % ", ".join(SOURCES.map(func(s: String) -> String: return "'%s'" % s))
 	return ""

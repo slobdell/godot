@@ -17,7 +17,7 @@ const RADIUS_FACTOR := 0.75
 const HEIGHT := 0.12
 const SELECTED_ALPHA := 0.95
 const IDLE_ALPHA := 0.4
-const ENEMY_ALPHA := 0.45
+const ENEMY_ALPHA := 0.7
 
 var game_match: Match
 var map: TacticalMap
@@ -27,7 +27,11 @@ var selection: Selection
 var reveal_all := false
 var team := Match.Team.GREEN
 
-var _rings := {}  # tank name → MeshInstance3D
+## Round 5 (X4, CP1): one MultiMesh per ring kind, not a mesh per vehicle (render counted 61 separate draws at 30 a side).
+const KINDS := ["selected", "friendly", "enemy", "inspected", "commander", "focused"]
+
+var _layers := {}  # kind → MultiMeshInstance3D
+var _rings := {}  # tank name → {"kind", "visible", "position"}
 var _materials := {}  # key → StandardMaterial3D
 static var _mesh_thick: ArrayMesh
 static var _mesh_thin: ArrayMesh
@@ -36,25 +40,42 @@ static var _mesh_dashed: ArrayMesh
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Placed every rendered frame at where vehicles are drawn (Shown), so not interpolated again.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 
 
 func _process(_delta: float) -> void:
 	refresh()
 
 
-## What each ring shows, as data (tests read this): tank name → {"kind", "visible"}.
+## What each ring shows, as data (tests read this): tank name → {"kind", "visible", "position"}. A ring that is hidden
+## keeps the last kind it showed.
 func state() -> Dictionary:
-	var result := {}
-	for tank_name in _rings:
-		var ring := _rings[tank_name] as MeshInstance3D
-		result[tank_name] = {"kind": ring.get_meta("kind", ""), "visible": ring.visible}
-	return result
+	return _rings.duplicate(true)
+
+
+## The MultiMeshInstance3D that draws every ring of `kind` (created on first use).
+func layer(kind: String) -> MultiMeshInstance3D:
+	if _layers.has(kind):
+		return _layers[kind]
+	var instance := MultiMeshInstance3D.new()
+	instance.name = "Rings_" + kind
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	instance.material_override = _material(kind)
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.mesh = _dashed_mesh() if kind == "enemy" else (_thin_mesh() if kind == "friendly" else _thick_mesh())
+	instance.multimesh = multimesh
+	add_child(instance)
+	_layers[kind] = instance
+	return instance
 
 
 func refresh() -> void:
 	if game_match == null:
 		return
 	var seen := {}
+	var placed := {}  # kind → Array[Transform3D]
 	var selected: Squad = map.selected() if map != null else null
 	for node in game_match.tanks.get_children():
 		var tank := node as Tank
@@ -62,7 +83,6 @@ func refresh() -> void:
 			continue
 		var tank_name := String(tank.name)
 		seen[tank_name] = true
-		var ring := _ring_for(tank)
 		var kind := ""
 		if tank.is_alive():
 			if selection != null:
@@ -81,33 +101,29 @@ func refresh() -> void:
 					kind = "friendly"
 			elif game_match.is_visible_to(team, tank):
 				kind = "enemy"
-		ring.visible = kind != ""
+		var ring: Dictionary = _rings.get_or_add(tank_name, {"kind": "", "visible": false, "position": Vector3.ZERO})
+		ring["visible"] = kind != ""
 		if kind == "":
 			continue
-		if ring.get_meta("kind", "") != kind:
-			ring.set_meta("kind", kind)
-			ring.mesh = _dashed_mesh() if kind == "enemy" else (_thin_mesh() if kind == "friendly" else _thick_mesh())
-			ring.material_override = _material(kind)
+		ring["kind"] = kind
 		var hull: Array = Units.stat(tank.unit_id, "hull_size")
 		var radius := maxf(float(hull[0]), float(hull[2])) * RADIUS_FACTOR
-		ring.global_position = Vector3(tank.global_position.x, HEIGHT, tank.global_position.z)
-		ring.scale = Vector3(radius, 1.0, radius)
+		var at := Shown.ground(tank) + Vector3.UP * HEIGHT
+		ring["position"] = at
+		(placed.get_or_add(kind, []) as Array).append(Transform3D(Basis.from_scale(Vector3(radius, 1.0, radius)), at))
 	for tank_name in _rings.keys():
 		if not seen.has(tank_name):
-			(_rings[tank_name] as Node).queue_free()
 			_rings.erase(tank_name)
-
-
-func _ring_for(tank: Tank) -> MeshInstance3D:
-	var tank_name := String(tank.name)
-	if _rings.has(tank_name):
-		return _rings[tank_name]
-	var ring := MeshInstance3D.new()
-	ring.name = "Ring_" + tank_name
-	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(ring)
-	_rings[tank_name] = ring
-	return ring
+	for kind: String in KINDS:
+		var transforms: Array = placed.get(kind, [])
+		if transforms.is_empty() and not _layers.has(kind):
+			continue
+		var multimesh := layer(kind).multimesh
+		if multimesh.instance_count < transforms.size():
+			multimesh.instance_count = transforms.size() + 8  # grow in steps: resizing reallocates the buffer
+		multimesh.visible_instance_count = transforms.size()
+		for i in transforms.size():
+			multimesh.set_instance_transform(i, transforms[i])
 
 
 func _material(kind: String) -> StandardMaterial3D:
