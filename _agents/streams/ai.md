@@ -138,6 +138,10 @@ playing both factions, foundry / yard / boulevard:
 | fac1b, control point on (144 matches) | **34-14** | **24-24** | **27-21** |
 | fac2, control point off (48 matches) | 27-21 | | |
 
+fac3 (same snapshot, control point on, 144 matches): faction doctrine without far_ambush, assault_through and bait
+**drew brains 24-24** (gangs under it 24-24, the best any side did playing the gangs); the pin-and-flank commander lost
+to brains 20-28 and to the trimmed table 20-28. Trimming drills buys parity, never superiority, whichever drills go.
+
 So the control point makes doctrine worse (it funnels every element to one circle) but is not the whole story: doctrine
 still loses without it. break_contact is a net loss at both scales and is now off in every shipped table
 (875462f). Playing the gangs loses however they're commanded (brains 18-30, doctrine 10-38): that part of the 23% is
