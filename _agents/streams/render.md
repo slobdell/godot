@@ -206,10 +206,15 @@ _Updated 2026-09-17 (evening)._
   SubViewports sharing the arena's world (high 30 × 256×512, medium 16 × 192×384; low/web keeps the ads). The newest
   slot is live on every AdBroadcast channel while a match is fought (the ad layout stops redrawing); after the match,
   ads. A kill within 45 m of the shot replays the ring at half speed, at most every 9 s; no readback, no rewind.
-- The shot: centroid of the vehicles within 35 m of where the armies meet (closest opposing pair), pulled toward
-  kills, 42 m up and 24 m back, slow orbit. Feed frames: `build/screenshots/live-look5-feeds.png`.
+- The shot (reworked after the orchestrator's review, which found two of three frames empty): `best_shot` scores every
+  vehicle's 30 m neighbourhood for vehicles, both teams present, and fresh kills/hits, and frames its centroid; far
+  switches are cuts (≤ 1 per 3 s); a frame is recorded only with 3+ vehicles in shot, screens hold the last good frame
+  and fall back to ads after 2 s without one; the portrait camera keeps its width. 18 sampled frames on yard and
+  boulevard all show vehicles: `build/screenshots/shot-feeds.png`.
+- **Between matches:** the lead's twelve approved ads (`ad_copy.md`, as written) plus the live score card; each brand
+  has a procedural motif (`tools/assets/build_ads.py`); headlines break at 13 characters. `build/screenshots/ads-grid.png`.
 - **Cost, measured:** at 13 vehicles (frame not sim-bound), `no_live_feed` × 4 cycles: frame time within noise
-  (−0.3 ms). Caveat: perf-scene's GPU timer and draw monitors only see the main viewport, so the feed's own GPU time
+  (−0.3 ms; +0.02 ms after the framing rework). Caveat: perf-scene's GPU timer and draw monitors only see the main viewport, so the feed's own GPU time
   isn't isolated; the frame-time delta is the honest number. At 60 vehicles: 2 replays in 16 s, still live.
 - Estimated VRAM on high: 30 × (256×512 color + depth) ≈ 30–45 MB.
 
