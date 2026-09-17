@@ -11,10 +11,12 @@ set -euo pipefail
 IN="${1:?usage: split_stems.sh <track.mp3|wav> [out-folder]}"
 [ -f "$IN" ] || { echo "no such file: $IN"; exit 2; }
 NAME="$(basename "${IN%.*}")"
-OUT="${2:-build/audio/stems/$NAME}"
+# Suno file names have spaces and & in them; the remote paths and the demucs output folder use a safe form.
+SAFE="$(printf '%s' "$NAME" | tr -c 'A-Za-z0-9._-' '_')"
+OUT="${2:-build/audio/stems/$SAFE}"
 HOST="${REMOTE_HOST:-slobdell@builder0}"
 TOOLS="tank_squad/.tools"
-WORK="tank_squad/stems-work/$NAME"
+WORK="tank_squad/stems-work/$SAFE"
 
 ssh "$HOST" "mkdir -p $WORK && cd $TOOLS && if ! demucs-venv/bin/python -c 'import demucs' 2>/dev/null; then
   echo '>> split_stems: installing demucs on builder0 (first use, ~2 minutes)';
