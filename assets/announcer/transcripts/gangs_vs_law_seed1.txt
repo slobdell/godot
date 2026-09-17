@@ -36,3 +36,4 @@ result: green by elimination at 1:20.2
 1:23.6   CALLER   It's all over! The Wreckers win it!
 1:26.3   VETERAN  Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
 1:36.0   PA       The result is final. The Wreckers win, and the floor will be cleared before the next session.
+1:42.8   PA       The next match begins shortly. Fans who have been asked to remain in their seats should continue to do so.

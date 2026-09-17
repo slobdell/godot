@@ -41,3 +41,4 @@ result: rust by elimination at 1:21.8
 1:25.1   CALLER   It's all over! The Syndicate win it!
 1:27.8   VETERAN  A machine gun won't open armor. It'll keep a crew's heads down while something else does.
 1:35.4   PA       Tonight's match goes to the Syndicate. Settlement of wagers will begin within the hour.
+1:41.0   PA       While the floor is prepared for the next match, a reminder that Syndicate Security reports made tonight will be credited by morning.
