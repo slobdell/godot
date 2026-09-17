@@ -95,6 +95,8 @@ var _control_ticks := [0, 0]
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
+## X1 (round 5): at a weapon's full range its spread is (1 + this) times what it is inside effective_range.
+const RANGE_SPREAD_FACTOR := 3.0
 ## L2 (round 4, contract L2): suppression and effective fire. Every round that resolves stamps the ground it swept
 ## into the enemy team's ThreatField; units standing in that fire get suppressed, which costs them accuracy and
 ## turret tracking, and above Tank.PINNED_SUPPRESSION counts as pinned. The field is what the brains and the
@@ -687,9 +689,20 @@ func threat_along(team: int, from: Vector3, to: Vector3) -> float:
 ## L2: the spread (radians, standard deviation) a shot leaves the barrel with. `moving` is speed as a fraction of
 ## the hull's top speed and `suppression` is the crew's (0..1). Both cost accuracy, and they stack: a tank that
 ## charges while under fire hits almost nothing.
-static func shot_spread(weapon: Dictionary, moving: float, suppression: float) -> float:
+## X1 (round 5): `distance` (m, 0 = unknown) past the weapon's effective_range widens it too (see Weapons).
+static func shot_spread(weapon: Dictionary, moving: float, suppression: float, distance := 0.0) -> float:
 	var spread_deg := float(weapon.get("spread_deg", 0.0))
-	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression)
+	return deg_to_rad(spread_deg) * (1.0 + MOVING_SPREAD_FACTOR * moving + SUPPRESSION_SPREAD_FACTOR * suppression) \
+			* range_spread_multiplier(weapon, distance)
+
+
+## X1: how much wider a shot at `distance` spreads than one inside the weapon's effective range (1 = no change).
+static func range_spread_multiplier(weapon: Dictionary, distance: float) -> float:
+	var reach := float(weapon.get("range", 0.0))
+	var effective := float(weapon.get("effective_range", reach))
+	if distance <= effective or reach <= effective:
+		return 1.0
+	return 1.0 + RANGE_SPREAD_FACTOR * clampf((distance - effective) / (reach - effective), 0.0, 1.0)
 
 
 ## L2: mark the ground a direct-fire round swept, and report the suppression it laid down (0 for a weapon that
@@ -905,7 +918,8 @@ func _fire(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 		stats["first_shot_seconds"] = snappedf(sim_seconds, 0.1)
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
 	# L2: a suppressed gunner's rounds go wide (shot_spread), so volume of fire buys accuracy from the other side.
-	var spread := shot_spread(tank.weapon, moving, tank.suppression)
+	var spread := shot_spread(tank.weapon, moving, tank.suppression,
+			Vector2(tank.aim_point.x - muzzle.x, tank.aim_point.z - muzzle.z).length())
 	var actual := direction.rotated(Vector3.UP, _fire_rng.randfn(0.0, spread)) if spread > 0.0 else direction
 	var projectile_id := _next_shell_id
 	_next_shell_id += 1
@@ -1338,6 +1352,8 @@ func _record_engagement_kill(victim: Tank, shooter: String, face: String, weapon
 	var distance := killer.global_position.distance_to(victim.global_position) if killer != null else -1.0
 	stats_now.record_kill(victim.team, face, weapon["kind"] == Weapons.Kind.ARC, distance,
 			killer != null and stats_now.near_cover(killer.global_position), stats_now.near_cover(victim.global_position))
+	if killer != null:
+		stats_now.record_kill_bearing(victim.team, victim.global_position, killer.global_position)
 
 
 ## X3 weak spots: a direct round (shell or beam; not a lobbed burst or a flame) into the engine deck.
