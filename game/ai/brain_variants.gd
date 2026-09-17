@@ -61,6 +61,10 @@ const PROFILES := {
 	"x5b2": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "brain_stride": 2},
 	# Round-5 X2: the champion with both suppression gates opened (see the features above).
 	"x5s": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "suppress_proxy": true, "pinned_exposed": true},
+	# Round-5 X2, split after x5s went 27-37 (the proxy made the swarm army's machine-gun scouts suppress instead of
+	# kill: 36k damage against 42k): x5p is only the flanker fix, x5q only the proxy.
+	"x5p": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "pinned_exposed": true},
+	"x5q": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "suppress_proxy": true},
 	"x4ns": {"cover_fire": true, "retreat_to_cover": true, "hold_for_friends": true, "squad_tactics": true, "matchups": false, "combat_motion": true, "dodge": true, "reload_windows": true, "think_ticks": 9, "avoid_beaten": false},
 }
 ## The variant brains use unless a flag picks another. Changed only when a ladder run says so.
