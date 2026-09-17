@@ -184,6 +184,16 @@ _Updated 2026-09-17 (evening)._
 - The four kit arenas (yard, boulevard, pit, boneyard) at gameplay zoom read well at the new light levels
   (`build/screenshots/arenas-grid.png`). Only nit: an ad screen seen from behind is a flat black slab.
 
+### Tracers moved into the gap (orchestrator's review of the arenas grid, 2026-09-17)
+- With the accent lights fixed, saturated, heavily-blooming tracers became the loudest thing on screen. Now: hdr boost
+  3.0 → 1.5, warm incandescent with a 45% team tint, width/tail/floor splat roughly halved per style. Before/after:
+  `build/screenshots/comets-before-after.png` (left before, right after).
+- Ad screens seen from behind: lighter housing, ribs, amber service lights (no longer a black slab).
+- **Team read evidence for the lead:** perf-scene layer `team_paint` coats hulls in a dulled team color;
+  `build/screenshots/team-read-crop.png` (left today's rim tint, right painted). Not the default: the lead's call.
+- Not addressed: "the floor reads dark and flat" (subjective; the next lever is brighter, more varied floodlight pools
+  and floor wear in the baked maps, both free per frame).
+
 ### Thinking ahead: screens with live match content (orchestrator's heads-up; waiting on the lead)
 - **What it costs:** a live feed is a second camera rendering the match into the screens' channel SubViewport
   (AdBroadcast already has one, 320×640 on high, frame-skipped). Its GPU fill is small at that size (~1/7 of 720p's
