@@ -266,3 +266,9 @@ The kickoff prompt is one line; this section is the rest.
     were already lost. `break_contact`, cut on the same kind of evidence, really was the problem: without it the army
     went 91-29 and won on every arena. The difference was only visible because ai measured the army **with and
     without** rather than reading the per-drill column. Attribute a cost to a behaviour only by removing it.
+26. **A relayed number becomes a fact: ask the sample size before passing it on.** Round 5: a stream reported dodging
+    falling from 17% to 1% after the 30 Hz change, and the orchestrator relayed it to the lead within minutes as a
+    behaviour cost of his own decision. It was 18 shells — 5.5 percentage points per shell — and the real finding,
+    found an hour later, was that dodging had **never fired at either tick rate** (254 of 254 candidate directions
+    scored "would still be hit"). The orchestrator's job in a relay is to ask *how many samples, over what, against
+    what control* before a stream's number reaches the lead, because the lead cannot ask and will act on it.
