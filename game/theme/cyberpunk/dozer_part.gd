@@ -19,7 +19,7 @@ var model: Node3D
 ## The model's bounds in this node's space (the shield is sized from it).
 var bounds := AABB(Vector3(-1.2, 0, -1.8), Vector3(2.4, 1.6, 3.6))
 var shield: ShieldEffect
-## The model's meshes wearing the shared unit material (they carry the per-vehicle instance uniforms).
+## The model's meshes wearing the shared unit materials (UnitSkin swaps them when team, paint or heat change).
 var skinned: Array[MeshInstance3D] = []
 
 
@@ -69,7 +69,7 @@ func set_heat(ratio: float) -> void:
 	if not is_equal_approx(ratio, heat):
 		super.set_heat(ratio)
 		if part == "cannon":  # barrels heat up; hull and turret stay cold
-			UnitSkin.set_heat(skinned, heat)
+			_apply_skin()
 		if model != null and model.has_method("set_heat"):
 			model.call("set_heat", ratio)
 
@@ -103,8 +103,8 @@ func build(_builder: ColorMeshBuilder) -> void:
 
 
 func _apply_skin() -> void:
-	UnitSkin.set_team(skinned, team_color)
-	UnitSkin.set_paint(skinned, paint_color, paint_strength if paint_color.a > 0.0 else 0.0)
+	var paint := Color(paint_color, paint_strength) if paint_color.a > 0.0 else Color(1, 1, 1, 0)
+	UnitSkin.dress(skinned, team_color, paint, heat if part == "cannon" else 0.0)
 
 
 ## Union of the model's mesh AABBs, in this node's space.

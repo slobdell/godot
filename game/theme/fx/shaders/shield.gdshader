@@ -1,20 +1,21 @@
-// Vehicle energy shield: an ellipsoid shell, invisible at rest. Per instance (set from the hull's
+// Vehicle energy shield: an ellipsoid shell, invisible at rest. Per shield (set from the hull's
 // set_shield while an event is playing): `hit` 1→0 after a hit (rim flare + hex shimmer), `down` 1→0
 // when the shield breaks (red crackle), `recharge` 0..1 while recharging (a sweep band climbing the
 // shell), `strength` = shield ratio (how solid the hexes look), `ripple` 0→1 after a hit at `ripple_from` (a unit
 // direction in the shell's local space; feel X4): a bright ring of cells spreading out from where it was struck.
-// Additive, no textures.
+// Additive, no textures. Plain uniforms on each shield's own material (render X2, round 5: uniforms reserve 16
+// of 4,096 renderer slots per instance and ran out at 30 a side).
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_back, fog_disabled;
 
 uniform vec3 color : source_color = vec3(0.4, 0.95, 1.0);
-instance uniform float hit = 0.0;
-instance uniform float down = 0.0;
-instance uniform float recharge = 0.0;
-instance uniform float strength = 1.0;
-instance uniform vec3 tint = vec3(0.4, 0.95, 1.0);
-instance uniform float ripple = 0.0;
-instance uniform vec3 ripple_from = vec3(0.0, 0.0, 1.0);
+uniform float hit = 0.0;
+uniform float down = 0.0;
+uniform float recharge = 0.0;
+uniform float strength = 1.0;
+uniform vec3 tint = vec3(0.4, 0.95, 1.0);
+uniform float ripple = 0.0;
+uniform vec3 ripple_from = vec3(0.0, 0.0, 1.0);
 
 varying vec3 local_pos;
 

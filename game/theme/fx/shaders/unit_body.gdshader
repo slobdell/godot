@@ -1,5 +1,5 @@
-// Generated vehicle bodies (Meshy PBR: albedo, normal, glTF ORM, emission) in the cyberpunk theme. One material
-// per unit is shared by every instance; everything per-vehicle is an instance uniform (streams/archive/round2/art.md X1):
+// Generated vehicle bodies (Meshy PBR: albedo, normal, glTF ORM, emission) in the cyberpunk theme. One shared material
+// per (texture set, team, paint, heat step): no instance uniforms, which cap the renderer at ~256 instances (render X2, round 5):
 //   team_color  the model's own neon light bars (the cyan/magenta emission) glow in the TEAM color, so friend or
 //               foe reads without extra geometry; red and amber warning lights keep their generated color
 //   paint       rgb = the garage's body color, a = how strongly it shows through the grime (0 = none)
@@ -23,9 +23,9 @@ uniform vec3 rim_color : source_color = vec3(0.5, 0.6, 1.0);
 uniform float rim_strength = 0.22;
 uniform float rim_power = 3.0;
 
-instance uniform vec4 team_color : source_color = vec4(0.75, 0.75, 0.8, 1.0);
-instance uniform vec4 paint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
-instance uniform float heat = 0.0;
+uniform vec4 team_color : source_color = vec4(0.75, 0.75, 0.8, 1.0);
+uniform vec4 paint : source_color = vec4(1.0, 1.0, 1.0, 0.0);
+uniform float heat = 0.0;
 
 vec3 rgb_to_hsv(vec3 c) {
 	vec4 k = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);

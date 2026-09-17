@@ -39,13 +39,77 @@ func test_team_color_rebuilds_vertex_colors_not_materials() -> void:
 	assert_true(colors_a != colors_b, "team colors live in the vertex colors")
 
 
-func test_cannon_heat_is_a_per_instance_parameter() -> void:
-	var cannon := _part("weapon.cannon")
-	var other := _part("weapon.cannon")
+func test_cannon_heat_swaps_a_shared_material_not_an_instance_uniform() -> void:
+	# Render X2 (round 5): an instance uniform reserves 16 of the renderer's 4,096 slots per instance, so vehicles use
+	# shared materials per heat level instead.
+	# The procedural cannon (the generated one is covered by the dozer test below).
+	var scene := preload("res://game/theme/cyberpunk/weapon_cannon.tscn")
+	var cannon: Node3D = add_to_tree(scene.instantiate())
+	var other: Node3D = add_to_tree(scene.instantiate())
+	var third: Node3D = add_to_tree(scene.instantiate())
 	cannon.call("set_heat", 0.8)
-	var mesh_instance := cannon.get_node("Mesh") as MeshInstance3D
-	assert_near(float(mesh_instance.get_instance_shader_parameter("heat")), 0.8, 0.001, "set_heat writes the instance uniform")
-	assert_near(float((other.get_node("Mesh") as MeshInstance3D).get_instance_shader_parameter("heat")), 0.0, 0.001, "other cannons stay cold")
+	third.call("set_heat", 0.81)
+	var hot := _glow_material_of(cannon)
+	assert_true(hot != null, "the cannon's neon surface has a material")
+	assert_near(float(hot.get_shader_parameter("heat")), 0.8, 1.0 / ColorMeshBuilder.HEAT_LEVELS, "set_heat picks the hot material")
+	assert_near(float(_glow_material_of(other).get_shader_parameter("heat")), 0.0, 0.001, "other cannons stay cold")
+	assert_eq(_glow_material_of(third), hot, "nearly the same heat shares one material")
+	cannon.call("set_heat", 0.0)
+	assert_eq(_glow_material_of(cannon), _glow_material_of(other), "cooled down, it shares the cold material again")
+
+
+func _glow_material_of(part: Node3D) -> ShaderMaterial:
+	var mesh_instance := part.get_node("Mesh") as MeshInstance3D
+	for surface in mesh_instance.mesh.get_surface_count():
+		var material := mesh_instance.get_active_material(surface) as ShaderMaterial
+		if material != null and material.shader == ColorMeshBuilder.GLOW_SHADER:
+			return material
+	return null
+
+
+func test_no_vehicle_part_uses_instance_uniforms_whatever_it_is_doing() -> void:
+	var parts: Array[Node3D] = []
+	for slot_name in PARTS + ["weapon.laser", "unit.scout.hull", "unit.scout.weapon", "unit.ifv.hull", "unit.ifv.turret",
+			"unit.ifv.weapon", "unit.artillery.hull", "unit.lancer.hull", "unit.lancer.weapon"]:
+		parts.append(_part(slot_name))
+	for faction in FactionArt.NEW_FACTIONS:
+		for part_name in ["hull", "turret", "weapon"]:
+			var node := FactionArt.instantiate(faction, "tank", part_name)
+			if node != null:
+				parts.append(add_to_tree(node))
+	var checked := 0
+	for part in parts:
+		for method in [["set_team_color", [Color("#FF0099")]], ["set_paint", [Color.HOT_PINK]], ["set_heat", [0.7]],
+				["set_shield", [0.4]], ["set_firing", [true]]]:
+			if part.has_method(method[0]):
+				part.callv(method[0], method[1])
+		for node in [part] + part.find_children("*", "GeometryInstance3D", true, false):
+			if not node is GeometryInstance3D:
+				continue
+			for material in _materials_of(node as GeometryInstance3D):
+				checked += 1
+				var shader := (material as ShaderMaterial).shader if material is ShaderMaterial else null
+				assert_true(shader == null or not _declares_instance_uniforms(shader),
+						"%s/%s draws with %s, which uses instance uniforms" % [part.name, node.name, shader.resource_path if shader else ""])
+	assert_true(checked > 20, "the scan saw the parts' materials (%d)" % checked)
+
+
+func _declares_instance_uniforms(shader: Shader) -> bool:
+	var regex := RegEx.create_from_string("(?m)^\\s*instance\\s+uniform\\b")
+	return regex.search(shader.code) != null
+
+
+func _materials_of(node: GeometryInstance3D) -> Array:
+	var result := []
+	if node.material_override != null:
+		result.append(node.material_override)
+	if node is MeshInstance3D and (node as MeshInstance3D).mesh != null:
+		var mesh_instance := node as MeshInstance3D
+		for surface in mesh_instance.mesh.get_surface_count():
+			var material := mesh_instance.get_active_material(surface)
+			if material != null:
+				result.append(material)
+	return result
 
 
 func test_flamethrower_shows_its_flame_only_while_firing() -> void:
@@ -81,7 +145,7 @@ func test_laser_parts_and_beams_follow_the_gameplay_contract() -> void:
 	for method in ["set_team_color", "setup", "set_firing", "set_heat"]:
 		assert_true(laser.has_method(method), "weapon.laser implements %s" % method)
 	laser.call("set_heat", 0.7)
-	assert_near(float((laser.get_node("Mesh") as MeshInstance3D).get_instance_shader_parameter("heat")), 0.7, 0.001, "laser coils take heat")
+	assert_near(float(_glow_material_of(laser).get_shader_parameter("heat")), 0.7, 1.0 / ColorMeshBuilder.HEAT_LEVELS, "laser coils take heat")
 	var beam := _part("fx.laser_beam")
 	assert_true(beam.has_method("setup"), "fx.laser_beam implements setup(from, to)")
 	beam.call("setup", Vector3.ZERO, Vector3(0, 1, -20))  # headless: no FxWorld, must not error
@@ -144,24 +208,28 @@ func test_the_generated_dozer_wears_team_neon_paint_heat_and_a_shield() -> void:
 	assert_true(skinned.size() > 0, "the model's meshes wear the unit shader")
 	var material := (skinned[0] as MeshInstance3D).get_active_material(0) as ShaderMaterial
 	assert_true(material != null and material.shader == UnitSkin.SHADER, "a ShaderMaterial with unit_body.gdshader")
-	for part in [turret, cannon, other_hull]:
+	for part in [turret, other_hull]:
 		var worn := ((part.get("skinned") as Array)[0] as MeshInstance3D).get_active_material(0)
-		assert_eq(worn, material, "%s shares the unit's one material (one texture set)" % part.name)
+		assert_eq(worn, material, "%s shares the unit's one material (one texture set, same team, cold)" % part.name)
 	hull.call("set_team_color", Color("#FF0099"))
 	var mesh := skinned[0] as MeshInstance3D
-	assert_eq(mesh.get_instance_shader_parameter("team_color"), Color("#FF0099"), "set_team_color lights the neon in the team color")
+	var pink := mesh.get_active_material(0) as ShaderMaterial
+	assert_eq(pink.get_shader_parameter("team_color"), Color("#FF0099"), "set_team_color lights the neon in the team color")
+	other_hull.call("set_team_color", Color("#FF0099"))
+	var other_mesh := (other_hull.get("skinned") as Array)[0] as MeshInstance3D
+	assert_eq(other_mesh.get_active_material(0), pink, "vehicles of one team share one material (no per-instance state)")
 	hull.call("set_paint", Color.HOT_PINK)
-	var paint: Color = mesh.get_instance_shader_parameter("paint")
+	var painted := mesh.get_active_material(0) as ShaderMaterial
+	var paint: Color = painted.get_shader_parameter("paint")
 	assert_true(paint.a > 0.0 and paint.r > paint.g, "set_paint coats the body")
-	assert_eq(mesh.get_instance_shader_parameter("team_color"), Color("#FF0099"), "paint leaves the team neon alone")
-	var other_paint: Color = ((other_hull.get("skinned") as Array)[0] as MeshInstance3D).get_instance_shader_parameter("paint")
-	assert_near(other_paint.a, 0.0, 0.001, "other vehicles keep their own paint (per instance, not per material)")
+	assert_eq(painted.get_shader_parameter("team_color"), Color("#FF0099"), "paint leaves the team neon alone")
+	var other_paint: Color = (other_mesh.get_active_material(0) as ShaderMaterial).get_shader_parameter("paint")
+	assert_near(other_paint.a, 0.0, 0.001, "other vehicles keep their own paint")
 	cannon.call("set_heat", 0.9)
 	hull.call("set_heat", 0.9)
-	assert_near(float(((cannon.get("skinned") as Array)[0] as MeshInstance3D).get_instance_shader_parameter("heat")), 0.9, 0.001, "the barrel heats")
-	var hull_heat = mesh.get_instance_shader_parameter("heat")  # never set on a hull: null (the shader's 0)
-	assert_true(hull_heat == null or float(hull_heat) < 0.001, "the hull stays cold")
-
+	var barrel := ((cannon.get("skinned") as Array)[0] as MeshInstance3D).get_active_material(0) as ShaderMaterial
+	assert_near(float(barrel.get_shader_parameter("heat")), 0.9, 1.0 / UnitSkin.HEAT_LEVELS, "the barrel heats")
+	assert_near(float((mesh.get_active_material(0) as ShaderMaterial).get_shader_parameter("heat")), 0.0, 0.001, "the hull stays cold")
 
 
 func test_the_round_2_roster_fills_every_unit_slot_with_one_material_per_unit() -> void:

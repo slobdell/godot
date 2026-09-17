@@ -4,13 +4,18 @@ extends RefCounted
 ## two surfaces: `lit` (StandardMaterial3D reading vertex color) and `glow` (unshaded neon reading
 ## vertex color × energy). Every tank part then costs two draw calls whatever its detail, and all
 ## tanks share the same two materials: team colors live in the vertex colors, not in materials.
-## Vertex alpha on glow boxes is a heat mask: `instance uniform float heat` on the MeshInstance3D
-## (see vehicle_glow.gdshader) makes those parts glow hotter.
+## Vertex alpha on glow boxes is a heat mask: the glow material for a heat step (`glow_material(level)`,
+## vehicle_glow.gdshader) makes those parts glow hotter. Shared materials per step, never instance uniforms (render X2).
 
 const GLOW_SHADER := preload("res://game/theme/fx/shaders/vehicle_glow.gdshader")
 
+## Heat and flash are shown in this many steps (one shared glow material per combination).
+const HEAT_LEVELS := 8
+const FLASH_LEVELS := 4
+
 static var _lit_material: StandardMaterial3D
-static var _glow_material: ShaderMaterial
+## heat level * (FLASH_LEVELS + 1) + flash level → ShaderMaterial (at most 45; index 0 is the cold, unflashed one).
+static var _glow_materials: Dictionary = {}
 
 var _lit := SurfaceTool.new()
 var _glow := SurfaceTool.new()
@@ -76,11 +81,31 @@ static func lit_material() -> StandardMaterial3D:
 	return _lit_material
 
 
-static func glow_material() -> ShaderMaterial:
-	if _glow_material == null:
-		_glow_material = ShaderMaterial.new()
-		_glow_material.shader = GLOW_SHADER
-	return _glow_material
+static func glow_material(heat_level := 0, flash_level := 0) -> ShaderMaterial:
+	var key := heat_level * (FLASH_LEVELS + 1) + flash_level
+	if not _glow_materials.has(key):
+		var material := ShaderMaterial.new()
+		material.shader = GLOW_SHADER
+		material.set_shader_parameter("heat", float(heat_level) / HEAT_LEVELS)
+		material.set_shader_parameter("flash", float(flash_level) / FLASH_LEVELS)
+		_glow_materials[key] = material
+	return _glow_materials[key]
+
+
+## Point a built part's glow surface at the material for this heat (0..1) and flash (0..1).
+static func set_glow_state(mesh_instance: MeshInstance3D, heat: float, flash := 0.0) -> void:
+	var mesh := mesh_instance.mesh
+	if mesh == null or mesh.get_surface_count() == 0:
+		return
+	var surface := mesh.get_surface_count() - 1
+	var base := mesh.surface_get_material(surface) as ShaderMaterial
+	if base == null or base.shader != GLOW_SHADER:
+		return
+	var heat_level := clampi(roundi(heat * HEAT_LEVELS), 0, HEAT_LEVELS)
+	var flash_level := clampi(ceili(flash * FLASH_LEVELS), 0, FLASH_LEVELS)
+	var wanted: ShaderMaterial = null if heat_level == 0 and flash_level == 0 else glow_material(heat_level, flash_level)
+	if mesh_instance.get_surface_override_material(surface) != wanted:
+		mesh_instance.set_surface_override_material(surface, wanted)
 
 
 static func _add_box(tool: SurfaceTool, size: Vector3, xform: Transform3D, color: Color) -> void:

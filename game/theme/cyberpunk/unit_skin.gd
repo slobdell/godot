@@ -1,39 +1,67 @@
 class_name UnitSkin
 extends RefCounted
-## Dresses a generated vehicle model (Meshy PBR materials) in the cyberpunk unit shader (unit_body.gdshader):
-## team-colored neon, paint, heat, and a rim light, all as instance uniforms on one material that every
-## instance of the unit shares. Parts that share a texture set (hull, turret, weapon of one unit) share the
-## material too, so the unit's textures are uploaded once.
+## Dresses a generated vehicle model (Meshy PBR materials) in the cyberpunk unit shader (unit_body.gdshader): team-colored
+## neon, paint, heat, and a rim light.
+##
+## Render X2 (round 5): there are NO instance uniforms. An instance uniform reserves 16 of the renderer's 4,096 global
+## buffer slots per instance, so ~256 vehicle parts filled it and 30 a side logged hundreds of errors. Instead every
+## (texture set, team color, paint, heat level) combination is one shared ShaderMaterial: a battle has a handful of
+## teams and paints, and heat is quantized to HEAT_LEVELS steps, so the cache stays small. The Compatibility renderer
+## draws each instance separately anyway, so sharing fewer materials costs no draw calls.
 
 const SHADER := preload("res://game/theme/fx/shaders/unit_body.gdshader")
+## Heat is shown in this many steps above cold (the shader's curve is cubic, so steps don't read as jumps).
+const HEAT_LEVELS := 8
+const DEFAULT_TEAM := Color(0.75, 0.75, 0.8)
+const SOURCES_META := &"unit_skin_sources"
 
-## albedo texture instance id → WeakRef(ShaderMaterial): every part using that texture shares one material, and
-## the material is freed with the last vehicle wearing it (a strong static cache leaks at exit).
+## key → WeakRef(ShaderMaterial): a material is freed with the last vehicle wearing it (a strong static cache leaks at exit).
 static var _materials: Dictionary = {}
 
 
-## Replaces every textured surface's material under `model` with the shared unit material.
-## Returns the MeshInstance3Ds that now carry the instance uniforms.
+## Replaces every textured surface's material under `model` with the shared unit material (default team, no paint, cold).
+## Returns the MeshInstance3Ds it dressed; pass them to `dress()` whenever team, paint or heat change.
 static func apply(model: Node) -> Array[MeshInstance3D]:
 	var dressed: Array[MeshInstance3D] = []
 	for node in model.find_children("*", "MeshInstance3D", true, false):
 		var instance := node as MeshInstance3D
 		if instance.mesh == null:
 			continue
-		var changed := false
+		var sources := []
+		var any := false
 		for surface in instance.mesh.get_surface_count():
 			var source := instance.get_active_material(surface) as BaseMaterial3D
 			if source == null or source.albedo_texture == null:
+				sources.append(null)
 				continue
-			instance.set_surface_override_material(surface, material_for(source))
-			changed = true
-		if changed:
+			sources.append(source)
+			any = true
+		if any:
+			instance.set_meta(SOURCES_META, sources)
 			dressed.append(instance)
+	dress(dressed, DEFAULT_TEAM, Color(1, 1, 1, 0), 0.0)
 	return dressed
 
 
-static func material_for(source: BaseMaterial3D) -> ShaderMaterial:
-	var key := source.albedo_texture.get_instance_id()
+## Put every dressed surface in the shared material for this team, paint (`paint.a` = strength, 0 = none) and heat (0..1).
+static func dress(instances: Array[MeshInstance3D], team: Color, paint: Color, heat: float) -> void:
+	var level := heat_level(heat)
+	for instance in instances:
+		var sources: Array = instance.get_meta(SOURCES_META, [])
+		for surface in sources.size():
+			if sources[surface] == null:
+				continue
+			var material := material_for(sources[surface] as BaseMaterial3D, team, paint, level)
+			if instance.get_surface_override_material(surface) != material:
+				instance.set_surface_override_material(surface, material)
+
+
+static func heat_level(heat: float) -> int:
+	return clampi(roundi(heat * HEAT_LEVELS), 0, HEAT_LEVELS)
+
+
+static func material_for(source: BaseMaterial3D, team := DEFAULT_TEAM, paint := Color(1, 1, 1, 0), level := 0) -> ShaderMaterial:
+	var key := "%d|%s|%s|%d" % [source.albedo_texture.get_instance_id(), team.to_html(), paint.to_html(), level]
 	if _materials.has(key):
 		var cached := (_materials[key] as WeakRef).get_ref() as ShaderMaterial
 		if cached != null:
@@ -53,21 +81,8 @@ static func material_for(source: BaseMaterial3D) -> ShaderMaterial:
 		material.set_shader_parameter("emission_energy", source.emission_energy_multiplier)
 	else:
 		material.set_shader_parameter("emission_energy", 0.0)
+	material.set_shader_parameter("team_color", team)
+	material.set_shader_parameter("paint", paint)
+	material.set_shader_parameter("heat", float(level) / HEAT_LEVELS)
 	_materials[key] = weakref(material)
 	return material
-
-
-static func set_team(instances: Array[MeshInstance3D], color: Color) -> void:
-	for instance in instances:
-		instance.set_instance_shader_parameter("team_color", color)
-
-
-## `strength` 0 leaves the generated body as it is.
-static func set_paint(instances: Array[MeshInstance3D], color: Color, strength: float) -> void:
-	for instance in instances:
-		instance.set_instance_shader_parameter("paint", Color(color, strength))
-
-
-static func set_heat(instances: Array[MeshInstance3D], ratio: float) -> void:
-	for instance in instances:
-		instance.set_instance_shader_parameter("heat", ratio)
