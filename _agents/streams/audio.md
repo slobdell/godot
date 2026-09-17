@@ -187,6 +187,31 @@ the PA reading ad copy are written up under *Next steps*.
 - **Watch it:** `make cinematic`.
 - **Numbers:** `make audio-bench` (per-frame cost), `make music-check`, `make sfx-generate` (dry run, the batch's cost).
 
+### How to hear and measure each part (for whoever owns audio next)
+Every command runs from the repo root. `GODOT=.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64`.
+
+| To hear or measure | Run |
+|---|---|
+| The whole game, everything on | `make skirmish` (or `make cinematic` to watch CPU against CPU) |
+| **Only the guns firing** | `$GODOT --path . -- --skirmish --announcer=voice --music=on --audio-solo=guns` |
+| Only impacts and explosions | the same with `--audio-solo=impacts` |
+| Only engines and running gear | `--audio-solo=engines` |
+| Only the crowd | `--audio-solo=crowd` |
+| Only the booth | `--audio-solo=booth` |
+| Only the music | `--audio-solo=music` |
+| Only UI blips and acknowledgements | `--audio-solo=ui` |
+| The old synthesised sound effects, for A/B | add `--sfx-synth` (combines with `--audio-solo`) |
+| A whole match's mix, measured | `make remote T="audio-pass PASS_SECONDS=150"` → `build/audio/pass.{mp3,png,json}`: integrated loudness, true peak, clipped samples, loudness every 5 s, booth lines, music changes. Look at the PNG (the booth's lines are the dense striped blocks) and keep true peak under -1 dBFS with 0 clipped samples. It's gangs against the Law at about 30 a side, booth voiced, music on. It needs builder0's display because the sound effects only exist with one |
+| What audio costs a frame | `make audio-bench` (headless): booth and mood, music, engines, gunfire, one-shots, mean and p95. `make perf-scene` is muted and shows no audio |
+| The music contract | `make music-check`; the layers changing in a real match: `make music-smoke` (`MUSIC_LAYERS` lines) |
+| The gun and impact recipes, and what the batch costs | `make sfx-generate` (dry run); remix for free after editing `layer` settings in `assets/audio/elevenlabs/sources.json`: `make sfx-layer` |
+| A scripted firefight mixed both ways, as files | `python3 tools/audio/sfx_montage.py` → `build/audio/montage/{synth,layered}.mp3` |
+
+**If the match's pacing changes** (ai reported doctrine losing at 30 a side with a control point, so the fight may
+change shape this round): the music director's layer thresholds are the stems' `from` values in
+`assets/music/manifest.json`, and `MatchMood`'s heat and hysteresis decide when the states move. Run `audio-pass` and
+read `MUSIC_LAYERS` against the booth's lines before retuning either.
+
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
