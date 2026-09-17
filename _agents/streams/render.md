@@ -213,6 +213,12 @@ _Updated 2026-09-17 (evening)._
   boulevard all show vehicles: `build/screenshots/shot-feeds.png`.
 - **Between matches:** the lead's twelve approved ads (`ad_copy.md`, as written) plus the live score card; each brand
   has a procedural motif (`tools/assets/build_ads.py`); headlines break at 13 characters. `build/screenshots/ads-grid.png`.
+- **Live score card names factions, never colours** ("CONDEMNED  2 / LAW  0"; HOME / AWAY when unreadable or the
+  same faction); a test fails if GREEN or RUST reaches a screen.
+- **A test that passed while asserting nothing:** a screen test showed an ad by a stale id; `index_of` returned -1 and
+  `show_ad` clamped it to the first ad, so the assertion passed against the wrong ad. `show_ad` now raises an engine
+  error on an unknown index (mutation-checked: the stale id fails the test). Siblings checked: every other
+  `index_of` in the tests names a real ad.
 - **Cost, measured:** at 13 vehicles (frame not sim-bound), `no_live_feed` × 4 cycles: frame time within noise
   (−0.3 ms; +0.02 ms after the framing rework). Caveat: perf-scene's GPU timer and draw monitors only see the main viewport, so the feed's own GPU time
   isn't isolated; the frame-time delta is the honest number. At 60 vehicles: 2 replays in 16 s, still live.

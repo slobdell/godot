@@ -165,7 +165,11 @@ func advance(delta: float) -> void:
 
 
 func show_ad(new_index: int) -> void:
-	index = clampi(new_index, 0, ads.size() - 1)
+	# An unknown ad is a bug, not "the first ad": a test once passed on a stale id because -1 was clamped to 0.
+	if new_index < 0 or new_index >= ads.size():
+		push_error("AdBroadcast.show_ad: no ad at index %d (have %d)" % [new_index, ads.size()])
+		return
+	index = new_index
 	_clock = 0.0
 	var ad := current()
 	var texture := load(ad["image"]) as Texture2D
