@@ -89,15 +89,30 @@ Vehicle art, props' materials and the frame budget (render), weapons and rules (
   mirror matches through `tests/arena/arena_probe.gd`). First probe (yard, 40 s): median hit range 44 m, 57% of
   unit-time hidden.
 
+- 2026-09-17: render shipped the kit slots (barricade, floodlight, sign, wreck fit) and two floor fixes; merged main.
+  `make arena-shots` screenshots of yard, boulevard, pit, boneyard, foundry looked at: containers and screens read, the
+  fog of war bends around cover in the skirmish view. Fixed from them: the boulevard's south screen showed green its
+  back (screens now face their own half's base); the boneyard had no screen.
+- 2026-09-17: **X6** `--arena=random` (seeded pick from `Arena.ROTATION`), `make skirmish` defaults to it.
+  Decision: `Arena.DEFAULT_LAYOUT` stays foundry, so headless runs, tests and the sim baseline never change; only
+  the player's entry point is random.
+- 2026-09-17: finding for ai: doctrine's terrain count (every obstacle within 45 m, 5+ = dense) reads kit-built maps
+  as dense on 86-95% of the field; `make arena-report` shows the share as counted today, sight-blocking only, and
+  with touching boxes merged (boulevard 92% -> 46% dense). Sent to the orchestrator.
+
 ### Requests to other streams
-- **render:** visual slots for the new kit types: `prop.barricade` (6 × 0.9 × 0.8 m jersey barrier run; a scaled
+- **render (done 2026-09-17):** visual slots for the new kit types: `prop.barricade` (6 × 0.9 × 0.8 m jersey barrier run; a scaled
   `prop.wall` stands in), `prop.floodlight` (2.4 m footing of a floodlight tower; a scaled `prop.crate` stands in),
   `prop.sign` (decoration on a post, `setup(prop)` gets `sign`; shows nothing today). `prop.wreck` placed by a layout is
   a 3.2 × 2.0 × 6.4 m box. Every prop visual gets `setup(prop)` with its look keys.
 - **audio:** display names for the new arenas in `assets/announcer/lines.json` → `arena` (the Container Yard, the
   Boulevard, the Pit, the Boneyard).
-- **ai:** lanes and regions are readable (`Arena.lanes_of`, `Arena.regions_of`); nothing required.
+- **ai:** lanes and regions are readable (`Arena.lanes_of`, `Arena.regions_of`). Suggested: doctrine's terrain class
+  counts touching boxes as one piece of cover and skips low cover (evidence: `make arena-report`).
+- **control:** pass `--arena=random` when the title screen starts a skirmish and in `make skirmish-factions`, or offer
+  an arena pick (`Arena.layout_names()`; layouts carry `title` and `note`).
+- **audio:** the booth should name `Arena.active["name"]`, not the `--arena` flag (which can be `random`).
 
 ### Merge notes (shared files)
-- None yet. Planned at X6: `mk/core.mk` sim-baseline/sim-baseline-record get `--arena=foundry` so a new default arena
-  doesn't move the hash.
+- `mk/play.mk` `skirmish`: adds `--arena=$(or $(ARENA),random)`. That's the only shared-file edit. The sim-baseline
+  pin isn't needed: the default layout didn't change.
