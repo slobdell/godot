@@ -170,6 +170,41 @@ gone** — a stutter a player feels even when the mean frame time looks fine. Br
 tank shells vs 17% of 30, tank 17% vs 17%; crossing a swept lane 10 ticks in the beaten zone vs 10, both arrive.
 Brain ladder (4 armies × 16): 31-33 head to head. More seeds (5-12) running before any proposal.
 
+### Reopened: the player's army charged before he could command it (the lead's playtest, 2026-09-17)
+
+> *"the units aren't very responsive to my input (they all also just rush forward right away at the start of the game)"*
+
+A brain with no K1 order falls back on its doctrine directives, which send it at the enemy base. `player_default.json`
+says `verb: hold`, so this never showed in a default skirmish — but **a faction skirmish builds the PLAYER's army with
+the CPU army generator** (`lineup: "cpu"` once a player faction is picked), and those squads carry objectives and no
+hold verb. So in every game the lead actually plays, his army left before he could give it an order.
+
+Fixed in the brain (fe6d3e2e): a unit on the player's team that has never been ordered takes its **spawn** as the post
+its last order left it at, which is the behaviour a finished order already produces — hold, fight what comes, return to
+place, obey the next order instantly. The CPU is untouched and still advances.
+
+The mode says whose team the player has: `game_match.set_meta("player_team", team)`, read by `OrderFeed.player_team`.
+**Control must add that line** in `skirmish_mode.gd` (requested), and deliberately not set it for `--cinematic`.
+Measured (`tests/test_ai_player_holds.gd`): with it set the player's tank moves **0.0 m in 12 s** while the CPU's moves
+**100.9 m**; without it both move ~85 m. `make command-playtest` still passes, so ordered squads move at once.
+
+**Why code review would have missed it: the player's army is built by the CPU army generator, so it inherited the
+CPU's objectives.** Reading `player_default.json` says the player holds, and that file is right; the lineup choice
+bypasses it. Don't "fix" `player_default.json` — it was never the problem. This is the third time in round 5 that the
+game a player gets differed from the game we test (doctrine off for the CPU, faction art excluded from exports, this).
+
+**The round-6 experiment, with its prediction written first.** Re-run the faction ladder (brains vs faction doctrine,
+gangs vs law, control point on and off) once both this fix and the 30 Hz tick are on main — not before, or two changes
+in flight muddy it. **Prediction: doctrine gains, and may pass brains-only with the control point off.** Reasoning: the
+element layer decides where to go and what to point at, and both need an approach phase; the ladders above measured
+armies in contact by second ten, where a leader has nothing left to decide. If doctrine still loses with an approach
+phase, the round-6 army-level proposal is the remaining explanation and the drills are exonerated.
+
+**What it means for the round's measurements:** every ladder above was played by armies that charge from the first
+second, on both sides, counterbalanced — so the doctrine verdict stands, but "the fight is decided before any tactic
+applies" is now measured rather than suspected. Re-running the faction ladder after control's line lands is the first
+thing worth doing: an element told to bound and cover has something to decide only if contact isn't immediate.
+
 ### Decisions taken where the brief left a choice
 
 - **X1 measured by thread CPU time per living unit, interleaved** (band_probe.gd): wall time on a shared machine
