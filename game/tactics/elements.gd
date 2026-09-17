@@ -147,12 +147,17 @@ func _physics_process(_delta: float) -> void:
 	if game_match == null or not game_match.simulate:
 		return
 	var tick: int = game_match.tick
-	if tick == _last_tick or tick % UPDATE_TICKS != 0:
+	if tick == _last_tick:
 		return
 	_last_tick = tick
 	if orders == null:
 		orders = OrderFeed.source(game_match)
 	for element: Element in all():
+		# Round 5 (ai): each element decides on its own tick in the cycle (by id), so a 30-a-side battle pays
+		# for one or two leaders every tick instead of all of them every sixth tick (a ~9 ms spike on the laptop).
+		# Still every UPDATE_TICKS for each element, still in id order, still deterministic.
+		if (tick + element.id) % UPDATE_TICKS != 0:
+			continue
 		var leader_before := element.leader
 		var changed := element.update(game_match, orders)
 		if element.leader != leader_before:

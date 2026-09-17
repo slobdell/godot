@@ -72,8 +72,9 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 	var tick: int = game_match.tick
 	var was_known: Dictionary = state.get("known", {})
 	var known := {}
-	for contact_name: String in game_match.intel[team]:
-		var contact: Dictionary = game_match.intel[team][contact_name]
+	var intel: Dictionary = game_match.intel[team]
+	for contact_name: String in intel:
+		var contact: Dictionary = intel[contact_name]
 		var position := _flat(contact["position"])
 		var distance := center.distance_to(position)
 		if distance > KNOWN_M:
