@@ -202,6 +202,21 @@ restarted with `Main.next_flags` silently kept the old layout. `GameLauncher` (`
 `main.tscn` with the arena's `layout_name` set, resolves `--arena=random` by `--seed`, and both the title and the
 faction menu start matches through it. The shell playtest checks the arena you clicked is the one built.
 
+### Ahead of combat's 30 Hz tick (the lead approved it mid-round)
+
+- **K1's response guarantee is now wall-clock: an order takes effect within 100 ms of the input** (`Orders.RESPONSE_MS`,
+  `Orders.response_ticks()` = 6 at 60 Hz, 3 at 30 Hz; the orchestrator's ruling). A player feels milliseconds, not
+  ticks: "3 ticks" meant 50 ms at 60 Hz and would silently have become 100 ms. At 30 Hz it holds with nothing to spare,
+  which also says a 20 Hz tick would break the feel. Measured today at 60 Hz: 1 tick (17 ms) from fighting, driving,
+  holding and hurt. **If 30 Hz measures above 100 ms, that's a finding about the tick rate, not a reason to move the
+  number.** control_playtest and test_control_response assert it; ai's `scenario_orders.gd` still says 3 ticks.
+- **Everything that follows a vehicle on screen reads where it is drawn** (`Shown`, `get_global_transform_interpolated`):
+  the RTS camera's follow and vision frame, selection rings, hull bars, unit picking and box select, center-on, route
+  lines. With interpolation on, `global_position` in `_process` is the last tick's, so a camera reading it would trail
+  what the player sees by a tick. Orders and sight checks keep the tick's position (the simulation must never see the
+  smoothed world). The rig's camera and the ring MultiMeshes are `PHYSICS_INTERPOLATION_MODE_OFF`: they're placed
+  every rendered frame, and interpolating them again would lag them. Identical behaviour at 60 Hz without interpolation.
+
 ### Stretch
 
 - **Spectate from the title.** SPECTATE starts a CPU-vs-CPU skirmish under round 4's self-directing cinematic camera
@@ -246,6 +261,10 @@ of the tick. Flip the constant when ai reports a variant that wins at scale.
 - **ai:** turn brains to `order["facing"]` on arrival and to the station heading when idle (K1 facing, on main); then
   `element_plan.gd`'s halt can issue facing instead of driving crews along their sectors. Relayed by the orchestrator.
 - **ai:** tell control when a doctrine variant beats brains at skirmish scale; the default flips in one line.
+- **ai:** `tests/ai_scenarios/scenario_orders.gd` still asserts `RESPONSE_TICKS := 3`; K1 is 100 ms now
+  (`Orders.RESPONSE_MS`, `Orders.response_ticks()`).
+- **combat:** `element_awareness.gd`'s 90-tick and `squad_chip.gd`'s 180-tick constants convert to seconds in your 30 Hz
+  branch (agreed, to avoid a conflict); list them in merge notes.
 - **audio:** the booth calls the player's side "the Condemned" when the player picked the Road Gangs (seen in the shell
   playtest, gangs vs law). And `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format
   whenever convenient. Relayed by the orchestrator.
@@ -283,7 +302,8 @@ Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cp
 - **No shared files edited.** `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` untouched. Everything is in
   control's paths: `game/control/`, `game/ui/` (including `widgets/` and `widgets/title/`), `game/camera/`,
   `game/modes/skirmish_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md`, control's tests.
-- **K1:** `UnitCommand` gains optional `facing` (already documented on main, 0f838c8).
+- **K1:** `UnitCommand` gains optional `facing` (already documented on main, 0f838c8). The response guarantee is
+  `Orders.RESPONSE_MS` = 100 ms (orchestrator to update workstreams.md).
 - **Hud:** new `post_caption(speaker, text)` and signal `caption_posted`; `post_message` routes the booth's
   `"SPEAKER: …"` lines to it and still prints `HUD_MESSAGE`.
 - **Title screen:** starts modes in-process through `GameLauncher`; a menu entry may carry several flags.

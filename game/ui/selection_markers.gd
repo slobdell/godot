@@ -40,6 +40,8 @@ static var _mesh_dashed: ArrayMesh
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Placed every rendered frame at where vehicles are drawn (Shown), so not interpolated again.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 
 
 func _process(_delta: float) -> void:
@@ -106,7 +108,7 @@ func refresh() -> void:
 		ring["kind"] = kind
 		var hull: Array = Units.stat(tank.unit_id, "hull_size")
 		var radius := maxf(float(hull[0]), float(hull[2])) * RADIUS_FACTOR
-		var at := Vector3(tank.global_position.x, HEIGHT, tank.global_position.z)
+		var at := Shown.ground(tank) + Vector3.UP * HEIGHT
 		ring["position"] = at
 		(placed.get_or_add(kind, []) as Array).append(Transform3D(Basis.from_scale(Vector3(radius, 1.0, radius)), at))
 	for tank_name in _rings.keys():

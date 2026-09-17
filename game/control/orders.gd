@@ -31,6 +31,11 @@ signal order_changed(unit_name: String)
 ## A unit's queue changed without its current order changing (a shift-queued waypoint): for waypoint markers.
 signal queue_changed(unit_name: String)
 
+## K1's response guarantee, in wall-clock time (round 5, the orchestrator's ruling ahead of combat's 30 Hz tick): an order
+## takes effect within this many milliseconds of the input. A player feels milliseconds, not ticks: "3 ticks" meant 50 ms
+## at 60 Hz and would silently have meant 100 ms at 30. At 30 Hz this is exactly 3 ticks, with nothing to spare.
+const RESPONSE_MS := 100.0
+
 ## A move counts as arrived within this distance of its goal (meters).
 const ARRIVE_RADIUS := 3.0
 
@@ -46,6 +51,11 @@ func _init(p_match: Match = null) -> void:
 
 
 ## The Orders of a match: `Match.orders` once combat adds the field (K1), else the one attach() stored.
+## RESPONSE_MS as whole physics ticks at the current tick rate (6 at 60 Hz, 3 at 30 Hz).
+static func response_ticks() -> int:
+	return floori(RESPONSE_MS * Engine.physics_ticks_per_second / 1000.0 + 0.0001)
+
+
 static func of(p_match: Match) -> Orders:
 	if p_match == null:
 		return null

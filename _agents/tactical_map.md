@@ -52,7 +52,8 @@ mouse/keys ─▶ RtsControls ─▶ UnitCommand {units, verb, to?, target?, que
                    brains execute it (ai X1)  ·  until then OrderExecutor (game/control/order_executor.gd)
 ```
 
-- **The response guarantee:** a unit steers toward a new order within 3 ticks whatever it was doing. Measured: 1 tick
+- **The response guarantee:** a unit steers toward a new order within **100 ms** of the input (`Orders.RESPONSE_MS`; round 5
+  restated it in wall-clock time ahead of the 30 Hz tick, where it is exactly 3 ticks), whatever it was doing. Measured: 1 tick
   from fighting, driving elsewhere, holding, and hurt (`tests/test_control_response.gd`, `make control-playtest`).
 - **Automatic formations** (`GroupFormation`): heavies in front, fragile and artillery behind; a wedge for up to five
   units, rows beyond; a line when holding; a group of only fast units (≥ 12 m/s) attack-moving spreads into a wide

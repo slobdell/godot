@@ -117,6 +117,9 @@ func _ready() -> void:
 	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
 	camera.fov = FOV_DEG
 	camera.far = 1200.0
+	# The rig moves the camera every rendered frame from where vehicles are drawn (Shown): physics interpolation
+	# (combat's 30 Hz tick) must not also smooth it, or it trails a tick behind its own targets.
+	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	snap()
 
 
@@ -150,7 +153,7 @@ func _process(delta: float) -> void:
 	if zoom_keys != 0.0:
 		zoom_by(zoom_keys * KEY_ZOOM_SPEED * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
-		focus = Vector3(follow_target.global_position.x, 0.0, follow_target.global_position.z)
+		focus = Shown.ground(follow_target)
 	_update_tracking()
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	if _track != Track.NONE:

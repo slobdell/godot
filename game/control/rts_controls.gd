@@ -203,7 +203,7 @@ func vision_state() -> Dictionary:
 	for unit_name in element:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		if tank != null and tank.is_alive():
-			frame.append(Vector3(tank.global_position.x, 0.0, tank.global_position.z))
+			frame.append(Shown.ground(tank))
 			middle += frame[-1]
 			eyes.append(tank)
 	middle /= maxf(frame.size(), 1.0)
@@ -217,7 +217,7 @@ func vision_state() -> Dictionary:
 			continue
 		for tank: Tank in eyes:
 			if tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius:
-				var at := Vector3(enemy.global_position.x, 0.0, enemy.global_position.z)
+				var at := Shown.ground(enemy)
 				frame.append(at)
 				frame.append(middle * 2.0 - at)
 				break
@@ -452,13 +452,13 @@ func pick_unit(screen: Vector2) -> Tank:
 	var best_distance := INF
 	for node in game_match.tanks.get_children():
 		var tank := node as Tank
-		if tank == null or not tank.is_alive() or camera.is_position_behind(tank.global_position):
+		if tank == null or not tank.is_alive() or camera.is_position_behind(Shown.at(tank)):
 			continue
 		if tank.team != team and not can_see(tank):
 			continue
-		var at := camera.unproject_position(tank.global_position)
+		var at := camera.unproject_position(Shown.at(tank))
 		var distance := at.distance_to(screen)
-		var body := camera.unproject_position(tank.global_position + camera.global_basis.x * PICK_BODY_M).distance_to(at)
+		var body := camera.unproject_position(Shown.at(tank) + camera.global_basis.x * PICK_BODY_M).distance_to(at)
 		# Ties (overlapping units) go to ours, then to the nearer one on screen.
 		var score := distance - (0.5 if tank.team == team else 0.0)
 		if distance <= maxf(PICK_RADIUS_PX, body) and score < best_distance:
@@ -472,8 +472,8 @@ func units_in_box(rect: Rect2) -> Array[String]:
 	var grown := rect.grow(BOX_MARGIN_PX)
 	var result: Array[String] = []
 	for tank in game_match.sorted_team_tanks(team):
-		if tank.is_alive() and not camera.is_position_behind(tank.global_position) \
-				and grown.has_point(camera.unproject_position(tank.global_position)):
+		if tank.is_alive() and not camera.is_position_behind(Shown.at(tank)) \
+				and grown.has_point(camera.unproject_position(Shown.at(tank))):
 			result.append(String(tank.name))
 	return result
 
@@ -483,8 +483,8 @@ func visible_of_type(unit_id: String) -> Array[String]:
 	var screen := get_viewport_rect()
 	var result: Array[String] = []
 	for tank in game_match.sorted_team_tanks(team):
-		if tank.is_alive() and tank.unit_id == unit_id and not camera.is_position_behind(tank.global_position) \
-				and screen.has_point(camera.unproject_position(tank.global_position)):
+		if tank.is_alive() and tank.unit_id == unit_id and not camera.is_position_behind(Shown.at(tank)) \
+				and screen.has_point(camera.unproject_position(Shown.at(tank))):
 			result.append(String(tank.name))
 	return result
 
@@ -580,7 +580,7 @@ func center_on(names: Array) -> void:
 	for unit_name: String in names:
 		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
 		if tank != null and tank.is_alive():
-			middle += tank.global_position
+			middle += Shown.at(tank)
 			count += 1
 	if count > 0:
 		rig.focus_on(middle / count)
@@ -833,7 +833,7 @@ func health_bars() -> Array:
 		if not hurt and not selection.units.has(String(tank.name)):
 			continue
 		var hull: Array = Units.stat(tank.unit_id, "hull_size")
-		var top := tank.global_position + Vector3.UP * (float(hull[1]) + BAR_ABOVE_M)
+		var top := Shown.at(tank) + Vector3.UP * (float(hull[1]) + BAR_ABOVE_M)
 		if camera.is_position_behind(top):
 			continue
 		var at := camera.unproject_position(top)
@@ -864,7 +864,7 @@ func waypoints(unit_name: String) -> Array:
 		if order.has("target"):
 			var target := game_match.tanks.get_node_or_null(NodePath(String(order["target"]))) as Tank
 			if target != null and target.is_alive():
-				at = Vector3(target.global_position.x, 0.0, target.global_position.z)
+				at = Shown.ground(target)
 		elif order.has("goal") and order["verb"] != "hold":
 			at = Vector3(float(order["goal"][0]), 0.0, float(order["goal"][1]))
 		if at != null:
@@ -955,7 +955,7 @@ func _draw_waypoints() -> void:
 		var route := waypoints(unit_name)
 		if tank == null or route.is_empty():
 			continue
-		var from := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+		var from := Shown.ground(tank)
 		for stop: Dictionary in route:
 			var to: Vector3 = stop["position"]
 			var color := _order_color(stop["kind"])

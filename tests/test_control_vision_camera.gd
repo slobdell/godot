@@ -258,3 +258,14 @@ func test_a_mass_of_contacts_never_pulls_the_camera_off_your_element() -> void:
 	assert_true(to_element < to_enemy, "the screen's centre is nearer your element than the enemy (%.0f m vs %.0f m)" % [to_element, to_enemy])
 	assert_true(RtsCamera.shows_all(element, f.rig.focus, f.rig.yaw, f.rig.zoom, 1920.0 / 1080.0, 1.0),
 			"every vehicle of the element is on screen (focus %s zoom %.2f)" % [f.rig.focus, f.rig.zoom])
+
+
+## Round 5 (combat's 30 Hz tick with physics interpolation): what follows a vehicle on screen reads where it is drawn.
+func test_on_screen_followers_read_the_drawn_position_and_the_camera_is_not_interpolated_twice() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	var tank := f.tank("Green_Alpha_1")
+	assert_eq(Shown.at(tank), tank.get_global_transform_interpolated().origin, "Shown reads the interpolated transform")
+	assert_eq(Shown.ground(tank).y, 0.0, "ground points sit on the ground")
+	assert_eq(f.camera.physics_interpolation_mode, Node.PHYSICS_INTERPOLATION_MODE_OFF,
+			"the rig's camera moves every frame by itself, so physics interpolation stays off it")
