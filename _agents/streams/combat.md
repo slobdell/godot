@@ -145,6 +145,14 @@ branch on builder0 before it lands.
    staying in the lane (19 ticks in it against a control's 16). `OrderController.FIRE_LEG_MIN_TICKS` keeps a step for
    0.25 s. At 30 Hz the avoider now spends **0 ticks** in the beaten zone against the control's 16.
 
+**Landed (ae58286c):** the simulation runs at 30 Hz with physics interpolation, `max_physics_steps_per_frame` 3, and
+the sim baseline `glibc-2.43 16dc0de84f1c29b6` (recorded twice). `make remote T=check` green at 30 Hz: 935 passed,
+every smoke. What it bought, and what it did not: [../sim_tick_rate.md](../sim_tick_rate.md) *What it bought*.
+Short version: **simulation CPU per second roughly halved** (200 ms/s against 378 on builder0), the laptop's frame at
+59 vehicles went **134 ms → 101 ms**, and at 1080p a locked 30 fps now holds to **~30 vehicles** (was: 60 fps at 13
+vehicles at 720p, never at 1080p). At the lead's 60 vehicles it is 98 ms a frame, so **the target is not met by the
+tick change alone**; ~85% of the remaining tick is the unit controllers.
+
 ### Plan (worker contract step 2)
 
 1. **X1a, measure first.** `EngagementStats` (`game/match/engagement_stats.gd`) fills `stats.engagement` in every

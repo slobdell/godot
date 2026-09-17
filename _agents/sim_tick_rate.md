@@ -6,6 +6,32 @@
 > Not merged to `main` until the orchestrator clears it. The original proposal follows, then the checklist that
 > render and control worked out.
 
+## What it bought (measured 2026-09-17, the lead's laptop and builder0)
+
+**The simulation's CPU per second roughly halved, as designed.** `make remote T="sim-profile TIME=60"` on builder0,
+Condemned 31 v 27: the whole tick costs 6.68 ms at 30 Hz against 5.7-6.4 ms at 60 Hz on the same machine, so per-tick
+cost is about the same and there are half as many ticks: **200 ms of simulation per second against 378**.
+
+**On the lead's laptop the frame improves everywhere, by less than half**, because the GPU and the renderer don't
+care about the tick rate (`make perf-scene`, same build, same seed, 30 Hz vs 60 Hz at 720p):
+
+| Vehicles | 60 Hz frame | 30 Hz frame |
+|---|---|---|
+| 59 | 134 ms (7.5 fps) | 101 ms (10 fps) |
+| 41 | 80 ms | 38 ms (26 fps) |
+| 34 | 33 ms | 27 ms (37 fps) |
+
+**Against the lead's target** (a locked 30 fps at 1080p with 60 vehicles; before: 60 fps held at 13 vehicles at 720p
+and never at 1080p): at 1080p, 30 Hz holds **30 fps to about 30 vehicles** (29 ms at 30, 34 ms at 34) and **10 fps at
+60** (98 ms). 60 fps at 720p now holds to about 22 vehicles. So the tick change is a large step and **not enough on
+its own**: at 60 vehicles a tick still costs ~31 ms on the laptop, of which **~85% is the unit controllers** (brains).
+The next lever is brain cost per second, not the tick rate. A think rate of 5/s instead of 10/s was tried and the
+measurement was inconclusive — `perf-scene` is a live battle, so two runs diverge and equal vehicle counts are not
+equal fights; it needs `make sim-profile` or `make ai-perf`, which measure a fixed workload.
+
+Caveat: the laptop was running this agent's own jobs; the numbers are pessimistic, and the 30 Hz and 60 Hz runs were
+taken back to back under the same load.
+
 ## Start here: the interpolation checklist (render + control, 2026-09-17)
 
 **The core trap.** With physics interpolation on, Godot *draws* a body at its interpolated transform, but
