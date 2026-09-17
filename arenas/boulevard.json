@@ -376,7 +376,7 @@
     0.0,
     30.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 180.0,
    "channel": "arena"
   },
   {
@@ -385,7 +385,7 @@
     0.0,
     -30.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 0.0,
    "channel": "arena"
   },
   {

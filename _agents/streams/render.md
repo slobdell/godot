@@ -156,14 +156,15 @@ _Updated 2026-09-17 (evening)._
 - **control:** HUD ≤ 130 draw calls (measured 210–340) and ≤ 1 ms of `_process`.
 - **arena:** commit `tests/arena/arena_probe.gd.uid` (Godot generated it for your file).
 
-### Questions for the lead
-- **Glow:** it costs 1.6–1.9 ms of the GPU budget. Without it, vehicles read even more clearly and explosions look
-  flatter (`build/screenshots/x5-glowlook-compare.png`, top with, bottom without). Keep the neon bloom, or go more
-  grounded?
-- **Team read (M3):** is a team-tinted rim plus small light bars enough to tell sides apart at play distance, or do you
-  want per-team paint on the hull too? (`build/screenshots/look-x4.png`, `look-factions.png`)
-- **Windows build:** only Linux export templates are installed; a Windows desktop preset needs `TEMPLATE_FILES` in the
-  shared Makefile to include the Windows templates (~+100 MB in `.tools`). Want it this round?
+### The lead's answers (2026-09-17, via the orchestrator)
+- **Glow: keep it** (the frame is sim-bound; switching it off buys nothing today).
+- **Team read: "Rim tint is enough."** No hull paint; `team_paint` stays a perf-scene layer for reference only.
+- **Windows build: skipped this round.** Don't install the templates.
+- **Arena screens: "Live during, ads between."** Live match content on the screens during the fight (shared 15 Hz feed
+  camera, ring-buffer replay after kills), the approved ad copy (`assets/announcer/drafts/ad_copy.md`) between
+  matches. Prove the cost with a `live_feed` perf-scene layer first; the measured number decides replay quality.
+- **30 Hz simulation starts this round** (combat owns the refactor): take a "60 Hz, pre-interpolation" perf-scene
+  baseline first, and flag anything that reads a body's transform in `_process`.
 
 ### Known issues
 - CPU numbers are measured on a laptop shared with five other agents (load ≈ 5): pessimistic.
@@ -176,6 +177,58 @@ _Updated 2026-09-17 (evening)._
   `make skirmish-factions FACTION=law ENEMY_FACTION=gangs` (faction models in play), `--arena=boulevard` and
   `--arena=boneyard` (kit props: barricades, towers, signs, wrecks), `make perf-scene` (the numbers; opens a window
   for ~2 minutes), `make export-desktop` (43.5 MB desktop pack).
+
+### After main's Jolt physics (re-measured 2026-09-17, main 8d975fa)
+- `make perf-scene`, 720p: sim tick **21.5 ms at 66 vehicles** (still 9 ticks per frame), 14 ms at 43, 10 ms at 20;
+  GPU **9.5–10.7 ms**; draws 460–700; 0 engine errors. The frame first holds 60 fps at **~8–10 vehicles**
+  (12–14 ms, ticks_per_frame ≈ 1). 1080p-class: GPU 13–15 ms (this run's layer deltas are spoiled by one 28 ms sample).
+- The four kit arenas (yard, boulevard, pit, boneyard) at gameplay zoom read well at the new light levels
+  (`build/screenshots/arenas-grid.png`). Only nit: an ad screen seen from behind is a flat black slab.
+
+### Tracers moved into the gap (orchestrator's review of the arenas grid, 2026-09-17)
+- With the accent lights fixed, saturated, heavily-blooming tracers became the loudest thing on screen. Now: hdr boost
+  3.0 → 1.5, warm incandescent with a 45% team tint, width/tail/floor splat roughly halved per style. Before/after:
+  `build/screenshots/comets-before-after.png` (left before, right after).
+- Ad screens seen from behind: lighter housing, ribs, amber service lights (no longer a black slab).
+- **Team read evidence for the lead:** perf-scene layer `team_paint` coats hulls in a dulled team color;
+  `build/screenshots/team-read-crop.png` (left today's rim tint, right painted). Not the default: the lead's call.
+- **The floor** (the orchestrator: vehicles were dark shapes on a dark flat surface): the baked light map is in color
+  now (cool tower light, warm sodium pools thrown by each layout's own floodlight props), an overhead rig lights the
+  middle of the field where fights happen, and the unlit floor's moonlight is ~30% stronger, so hulls read as
+  silhouettes on lit mid-grey ground. Same fetch count: no frame cost. `build/screenshots/floor2-grid.png` (left
+  before, right after, yard and boulevard).
+- **Baked wear** from each layout: tyre tracks and a faint polish along lanes, oil and grime under wrecks and stacks,
+  scuffed spawn zones, in the flood map's alpha (256 texels, still one fetch, zero per frame). Kept light so lanes
+  don't darken the ground under vehicles. `build/screenshots/wear-grid.png`.
+
+### Live screens: "Live during, ads between" (built 2026-09-17)
+- `LiveFeed` (`game/theme/arena_kit/ads/live_feed.gd`): a broadcast camera renders at 15 Hz into a ring of
+  SubViewports sharing the arena's world (high 30 × 256×512, medium 16 × 192×384; low/web keeps the ads). The newest
+  slot is live on every AdBroadcast channel while a match is fought (the ad layout stops redrawing); after the match,
+  ads. A kill within 45 m of the shot replays the ring at half speed, at most every 9 s; no readback, no rewind.
+- The shot (reworked after the orchestrator's review, which found two of three frames empty): `best_shot` scores every
+  vehicle's 30 m neighbourhood for vehicles, both teams present, and fresh kills/hits, and frames its centroid; far
+  switches are cuts (≤ 1 per 3 s); a frame is recorded only with 3+ vehicles in shot, screens hold the last good frame
+  and fall back to ads after 2 s without one; the portrait camera keeps its width. 18 sampled frames on yard and
+  boulevard all show vehicles: `build/screenshots/shot-feeds.png`.
+- **Between matches:** the lead's twelve approved ads (`ad_copy.md`, as written) plus the live score card; each brand
+  has a procedural motif (`tools/assets/build_ads.py`); headlines break at 13 characters. `build/screenshots/ads-grid.png`.
+- **Live score card names factions, never colours** ("CONDEMNED  2 / LAW  0"; HOME / AWAY when unreadable or the
+  same faction); a test fails if GREEN or RUST reaches a screen.
+- **A test that passed while asserting nothing:** a screen test showed an ad by a stale id; `index_of` returned -1 and
+  `show_ad` clamped it to the first ad, so the assertion passed against the wrong ad. `show_ad` now raises an engine
+  error on an unknown index (mutation-checked: the stale id fails the test). Siblings checked: every other
+  `index_of` in the tests names a real ad.
+- **Cost, measured:** at 13 vehicles (frame not sim-bound), `no_live_feed` × 4 cycles: frame time within noise
+  (−0.3 ms; +0.02 ms after the framing rework). Caveat: perf-scene's GPU timer and draw monitors only see the main viewport, so the feed's own GPU time
+  isn't isolated; the frame-time delta is the honest number. At 60 vehicles: 2 replays in 16 s, still live.
+- Estimated VRAM on high: 30 × (256×512 color + depth) ≈ 30–45 MB.
+
+### Ready for 30 Hz with physics interpolation (combat's refactor)
+- 60 Hz baseline: `_agents/streams/references/perf/baseline-60hz-preinterp{,-1080}.json` (main 328b67b).
+- `FxWorld.visual_transform()` for everything that follows a body per frame; `WeaponFx.drawn_offset()` keeps muzzle
+  effects on the drawn barrel. Combat confirmed: shells interpolated, `reset_physics_interpolation()` on spawns,
+  `shooter` stays in `weapon_fired`. Re-take perf-scene on their flip commit.
 
 ### Next steps
 1. The lead's answers on glow and team read (M3); then per-team hull paint if the rim isn't enough.

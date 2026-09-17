@@ -1,25 +1,9 @@
 {
-  "placeholder": true,
-  "note": "Art and copy are the lead's call; see tools/assets/build_ads.py.",
+  "placeholder": false,
+  "note": "Copy: the lead's approved screen ads (assets/announcer/drafts/ad_copy.md). Art: tools/assets/build_ads.py.",
   "ads": [
     {
-      "id": "syndicate_life",
-      "kind": "still",
-      "image": "res://game/theme/arena_kit/ads/syndicate_life.png",
-      "frames": [
-        1,
-        1
-      ],
-      "fps": 0,
-      "seconds": 9,
-      "brand": "SYNDICATE LIFE",
-      "headline": "COVERAGE THAT\nOUTLIVES YOU",
-      "fine_print": "Beneficiary payouts processed within 90 business days of confirmed loss.",
-      "accent": "#d8b86a",
-      "average_color": "#40392b"
-    },
-    {
-      "id": "aquacorp",
+      "id": "aquacorp_week",
       "kind": "still",
       "image": "res://game/theme/arena_kit/ads/aquacorp.png",
       "frames": [
@@ -29,13 +13,157 @@
       "fps": 6,
       "seconds": 8,
       "brand": "AQUACORP",
-      "headline": "CLEAN WATER.\nEVERY DAY\nYOU QUALIFY.",
-      "fine_print": "Ration tier verified at point of sale.",
+      "headline": "CLEAN WATER.\nEVERY WEEK.",
+      "fine_print": "For approved households. Schedules posted Mondays.",
       "accent": "#7fe3ff",
       "average_color": "#1e4555"
     },
     {
-      "id": "warden",
+      "id": "aquacorp_health",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/aquacorp.png",
+      "frames": [
+        4,
+        2
+      ],
+      "fps": 6,
+      "seconds": 8,
+      "brand": "AQUACORP",
+      "headline": "HYDRATION IS\nHEALTH",
+      "fine_print": "Your allocation has been reviewed.",
+      "accent": "#7fe3ff",
+      "average_color": "#1e4555"
+    },
+    {
+      "id": "syndicate_life_protect",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/syndicate_life.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "SYNDICATE LIFE",
+      "headline": "PROTECT WHAT\nMATTERS",
+      "fine_print": "Plans from one month of labor.",
+      "accent": "#d8b86a",
+      "average_color": "#40392b"
+    },
+    {
+      "id": "syndicate_life_care",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/syndicate_life.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "SYNDICATE LIFE",
+      "headline": "THEY'LL BE\nTAKEN CARE OF",
+      "fine_print": "Beneficiaries notified automatically.",
+      "accent": "#d8b86a",
+      "average_color": "#40392b"
+    },
+    {
+      "id": "meridian",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/meridian.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "MERIDIAN TRANSPORT",
+      "headline": "GET THERE\nTOGETHER",
+      "fine_print": "District passes checked at every stop.",
+      "accent": "#9fd4a8",
+      "average_color": "#34493c"
+    },
+    {
+      "id": "harbor_general",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/harbor_general.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "HARBOR GENERAL",
+      "headline": "WE'RE HERE\nFOR YOU",
+      "fine_print": "Official hospital of the arena. Winners first.",
+      "accent": "#ff8a8a",
+      "average_color": "#a07c7e"
+    },
+    {
+      "id": "vireo",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/vireo.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "VIREO",
+      "headline": "REAL FOOD.\nREAL ENERGY.",
+      "fine_print": "Now 92% food.",
+      "accent": "#b8e05a",
+      "average_color": "#938446"
+    },
+    {
+      "id": "northgrid",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/northgrid.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "NORTHGRID POWER",
+      "headline": "KEEPING THE\nLIGHTS ON",
+      "fine_print": "In selected residential areas.",
+      "accent": "#ffd34a",
+      "average_color": "#564921"
+    },
+    {
+      "id": "syndicate_vision",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/syndicate_vision.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "SYNDICATE VISION",
+      "headline": "EVERY ANGLE.\nFOREVER.",
+      "fine_print": "All broadcasts archived permanently.",
+      "accent": "#c7a6ff",
+      "average_color": "#615575"
+    },
+    {
+      "id": "syndicate_housing",
+      "kind": "still",
+      "image": "res://game/theme/arena_kit/ads/syndicate_housing.png",
+      "frames": [
+        1,
+        1
+      ],
+      "fps": 0,
+      "seconds": 8,
+      "brand": "SYNDICATE HOUSING",
+      "headline": "A HOME IN THE\nEAST",
+      "fine_print": "Applications reviewed by lottery.",
+      "accent": "#e8c9a0",
+      "average_color": "#4b3e30"
+    },
+    {
+      "id": "syndicate_security",
       "kind": "still",
       "image": "res://game/theme/arena_kit/ads/warden.png",
       "frames": [
@@ -44,43 +172,27 @@
       ],
       "fps": 0,
       "seconds": 8,
-      "brand": "OFFICE OF THE WARDEN",
-      "headline": "SAFER STREETS\nSTART WITH\nA REPORT",
-      "fine_print": "Verified tips earn ration credit. Reports cannot be withdrawn.",
+      "brand": "SYNDICATE SECURITY",
+      "headline": "SEE\nSOMETHING.\nREPORT IT.",
+      "fine_print": "Reports during tonight's match earn double credit.",
       "accent": "#e8ecf2",
       "average_color": "#2d2845"
     },
     {
-      "id": "organ_futures",
+      "id": "the_law",
       "kind": "still",
-      "image": "res://game/theme/arena_kit/ads/organ_futures.png",
+      "image": "res://game/theme/arena_kit/ads/warden.png",
       "frames": [
         1,
         1
       ],
       "fps": 0,
       "seconds": 8,
-      "brand": "ORGAN FUTURES",
-      "headline": "INVEST IN\nTONIGHT'S\nCHAMPIONS",
-      "fine_print": "Contracts settle at the final bell.",
-      "accent": "#e2c27a",
-      "average_color": "#251e14"
-    },
-    {
-      "id": "freedom_program",
-      "kind": "still",
-      "image": "res://game/theme/arena_kit/ads/freedom_program.png",
-      "frames": [
-        1,
-        1
-      ],
-      "fps": 0,
-      "seconds": 8,
-      "brand": "THE FREEDOM PROGRAM",
-      "headline": "WIN YOUR\nFREEDOM\nTONIGHT",
-      "fine_print": "Release subject to review by the Board. Terms apply.",
-      "accent": "#ffb13b",
-      "average_color": "#b39959"
+      "brand": "THE LAW",
+      "headline": "ORDER IS A\nPUBLIC GOOD",
+      "fine_print": "Tip lines open around the clock.",
+      "accent": "#8fb4ff",
+      "average_color": "#2d2845"
     },
     {
       "id": "arena_live",
@@ -93,7 +205,7 @@
       "fps": 0,
       "seconds": 7,
       "brand": "LIVE FROM THE PIT",
-      "headline": "GREEN\nvs\nRUST",
+      "headline": "TONIGHT'S\nMATCH",
       "fine_print": "Odds update after every confirmed kill.",
       "accent": "#ffffff",
       "average_color": "#2f2f52"

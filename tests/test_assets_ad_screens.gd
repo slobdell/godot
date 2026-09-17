@@ -42,11 +42,11 @@ func test_a_channel_cycles_ads_with_a_glitch_between_them() -> void:
 
 func test_the_live_card_shows_what_the_match_posts() -> void:
 	var channel: AdBroadcast = add_to_tree(AdBroadcast.new())
-	channel.post_live({"headline": "RUST\n3 : 1", "fine_print": "GREEN lost a dozer"})
+	channel.post_live({"headline": "LAW\n3 : 1", "fine_print": "The Condemned lost a dozer"})
 	channel.show_ad(channel.index_of("arena_live"))
-	assert_eq(channel.headline_text(), "RUST\n3 : 1", "live content replaces the card's placeholder headline")
-	assert_eq(channel.fine_print_text(), "GREEN lost a dozer", "and its fine print")
-	channel.show_ad(channel.index_of("aquacorp"))
+	assert_eq(channel.headline_text(), "LAW\n3 : 1", "live content replaces the card's placeholder headline")
+	assert_eq(channel.fine_print_text(), "The Condemned lost a dozer", "and its fine print")
+	channel.show_ad(channel.index_of("aquacorp_week"))
 	assert_true(channel.headline_text().begins_with("CLEAN WATER"), "sponsor ads keep their own copy")
 
 
@@ -68,7 +68,7 @@ func test_screens_on_a_channel_share_one_feed_and_one_material() -> void:
 func test_the_spill_follows_the_channel_light() -> void:
 	var screen := _screen(Vector3(0, 0, 60), {})
 	var channel := AdBroadcast.channel(screen, "arena")
-	channel.show_ad(channel.index_of("freedom_program"))
+	channel.show_ad(channel.index_of("vireo"))
 	for i in 60:
 		channel.advance(0.05)
 	var spill := (screen.get_node("Spill") as MeshInstance3D).material_override as ShaderMaterial
@@ -123,23 +123,47 @@ func test_the_arena_venue_raises_screens_over_the_short_walls() -> void:
 					"screens move in with a smaller arena's walls")
 
 
-func test_the_live_card_follows_kills_in_a_match() -> void:
+func test_the_live_card_names_sides_by_faction_never_by_colour() -> void:
+	# Standing rule (game_design.md): sides are factions, matches are cross-faction; "GREEN vs RUST" was the booth's bug.
 	var channel: AdBroadcast = add_to_tree(AdBroadcast.new())
 	var fake := FakeMatch.new()
 	add_to_tree(fake)
+	fake.tanks.add_child(Vehicle.new(0, "scout"))
+	fake.tanks.add_child(Vehicle.new(1, "law_scout"))
 	channel.watch_match(fake)
-	var rust_scout := RustScout.new()
-	add_to_tree(rust_scout)
-	fake.tank_destroyed.emit(rust_scout, "Green_Alpha_0")
-	fake.tank_destroyed.emit(rust_scout, "Green_Alpha_1")
+	var law_scout := Vehicle.new(1, "law_scout")
+	add_to_tree(law_scout)
+	fake.tank_destroyed.emit(law_scout, "Green_Alpha_0")
+	fake.tank_destroyed.emit(law_scout, "Green_Alpha_1")
 	channel.show_ad(channel.index_of("arena_live"))
-	assert_eq(channel.headline_text(), "GREEN  2\nRUST  0", "the card counts confirmed kills per team")
-	assert_true(channel.fine_print_text().begins_with("Rust lost a scout"), "and says who just lost what (%s)" % channel.fine_print_text())
-	assert_true(channel.fine_print_text().contains("GREEN 3:1"), "and the odds that follow (%s)" % channel.fine_print_text())
+	assert_eq(channel.headline_text(), "CONDEMNED  2\nLAW  0", "the card counts confirmed kills per faction")
+	assert_true(channel.fine_print_text().begins_with("The Law lost a "), "and says which faction lost what (%s)" % channel.fine_print_text())
+	assert_true(channel.fine_print_text().contains("CONDEMNED 3:1"), "and the odds that follow (%s)" % channel.fine_print_text())
+	for text in [channel.headline_text(), channel.fine_print_text()]:
+		assert_true(not text.to_upper().contains("GREEN") and not text.to_upper().contains("RUST"), "no team colours on a screen (%s)" % text)
+
+
+func test_a_side_with_no_readable_faction_is_neutral_not_a_colour() -> void:
+	assert_eq(AdBroadcast.side_names("condemned", "condemned"), ["HOME", "AWAY"], "same faction twice: neutral")
+	assert_eq(AdBroadcast.side_names("", "law"), ["HOME", "AWAY"], "unknown faction: neutral")
+	assert_eq(AdBroadcast.side_names("gangs", "syndicate"), ["ROAD GANGS", "SYNDICATE"], "short screen names")
 
 
 class FakeMatch extends Node:
 	signal tank_destroyed(victim: Node, killer: String)
+	var tanks := Node.new()
+
+	func _init() -> void:
+		add_child(tanks)
+
+
+class Vehicle extends Node:
+	var team := 0
+	var unit_id := ""
+
+	func _init(side := 0, id := "") -> void:
+		team = side
+		unit_id = id
 
 
 class RustScout extends Node:
@@ -183,3 +207,22 @@ func test_the_gates_are_barricaded_with_tagged_containers() -> void:
 	for node: Node3D in barricades:
 		assert_true(absf(node.position.x) > 121.0, "barricades stay outside the walls, out of the fight (x %.1f)" % node.position.x)
 		assert_eq(String(node.get("options").get("faction", "")), "gangs", "and wear the road gangs' tags and rust")
+
+
+func test_the_playlist_is_the_leads_approved_copy() -> void:
+	# The lead approved the twelve screen ads in assets/announcer/drafts/ad_copy.md as written (round 5): a headline of at
+	# most four words over a small line, readable across the arena. Plus the live card between matches.
+	var ads := AdBroadcast.load_playlist()
+	var stills := ads.filter(func(ad: Dictionary) -> bool: return ad.get("kind", "still") != "live")
+	assert_eq(stills.size(), 12, "twelve approved ads")
+	var headlines := {}
+	for ad: Dictionary in stills:
+		var words := String(ad["headline"]).replace("\n", " ").split(" ", false)
+		# The copy's rule is four words; the lead approved one five-word line as written ("THEY'LL BE TAKEN CARE OF").
+		assert_true(words.size() <= 5, "%s: a headline short enough to read across the arena (%s)" % [ad["id"], ad["headline"]])
+		assert_true(ResourceLoader.exists(String(ad["image"])), "%s has its art" % ad["id"])
+		headlines[String(ad["headline"]).replace("\n", " ")] = true
+	assert_true(headlines.has("CLEAN WATER. EVERY WEEK."), "AquaCorp's approved headline, not the placeholder")
+	assert_true(headlines.has("ORDER IS A PUBLIC GOOD"), "The Law's")
+	assert_eq(ads.filter(func(ad: Dictionary) -> bool: return ad.get("kind", "") == "live").size(), 1, "and the live card")
+

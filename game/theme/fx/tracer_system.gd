@@ -15,17 +15,18 @@ const WORLD_AABB := AABB(Vector3(-200, -20, -200), Vector3(400, 80, 400))
 
 ## How each kind of round draws (feel X2/X3), by K2 fire model: tracer tail and width (m), brightness, the ground
 ## splat under it (m, brightness at ground level), and the light it asks the pool for. "default" is round 2's look.
+## Render (round 5): every style roughly halved in width, splat and brightness so rounds read as fire, not as the subject.
 const STYLES := {
-	"default": {"tail": 6.0, "width": 0.45, "intensity": 1.0, "splat_width": 3.2, "splat_length": 9.0, "splat_intensity": 0.55,
+	"default": {"tail": 5.0, "width": 0.3, "intensity": 1.0, "splat_width": 2.2, "splat_length": 6.0, "splat_intensity": 0.3,
 			"light_energy": 2.5, "light_range": 9.0, "priority": LightPool.PRIORITY_TRACER},
-	# The tank shell: a fat white-hot slug you can follow, dragging a long pool of light along the floor.
-	"shell": {"tail": 11.0, "width": 1.1, "intensity": 1.8, "splat_width": 6.0, "splat_length": 16.0, "splat_intensity": 1.0,
+	# The tank shell: a white-hot slug you can follow, dragging a pool of light along the floor.
+	"shell": {"tail": 7.0, "width": 0.55, "intensity": 1.5, "splat_width": 3.5, "splat_length": 9.0, "splat_intensity": 0.5,
 			"light_energy": 6.0, "light_range": 15.0, "priority": LightPool.PRIORITY_SHELL},
-	"burst": {"tail": 5.0, "width": 0.32, "intensity": 1.3, "splat_width": 2.2, "splat_length": 6.5, "splat_intensity": 0.5,
+	"burst": {"tail": 4.0, "width": 0.22, "intensity": 1.1, "splat_width": 1.6, "splat_length": 4.5, "splat_intensity": 0.28,
 			"light_energy": 1.8, "light_range": 6.0, "priority": LightPool.PRIORITY_TRACER},
-	"stream": {"tail": 5.0, "width": 0.26, "intensity": 1.5, "splat_width": 1.6, "splat_length": 5.5, "splat_intensity": 0.4,
+	"stream": {"tail": 4.0, "width": 0.18, "intensity": 1.2, "splat_width": 1.2, "splat_length": 4.0, "splat_intensity": 0.22,
 			"light_energy": 1.2, "light_range": 4.5, "priority": LightPool.PRIORITY_TRACER - 0.3},
-	"arc": {"tail": 6.0, "width": 0.7, "intensity": 1.4, "splat_width": 4.0, "splat_length": 8.0, "splat_intensity": 0.7,
+	"arc": {"tail": 5.0, "width": 0.45, "intensity": 1.2, "splat_width": 2.8, "splat_length": 6.0, "splat_intensity": 0.4,
 			"light_energy": 3.0, "light_range": 10.0, "priority": LightPool.PRIORITY_TRACER + 0.5},
 	# A round glancing off armor: a short hot streak, no light of its own.
 	"ricochet": {"tail": 2.2, "width": 0.12, "intensity": 1.6, "splat_width": 0.0, "splat_length": 0.0, "splat_intensity": 0.0,
@@ -150,7 +151,7 @@ func update(pool: LightPool, now := 0.0) -> void:
 			continue
 		var source := key as Node3D
 		var entry: Array = _sources[key]
-		var xform := source.global_transform.orthonormalized()
+		var xform := FxWorld.visual_transform(source).orthonormalized()
 		var style: Dictionary = entry[1]
 		_write(n, xform, entry[0], style, float(style["tail"]), pool)
 		n += 1

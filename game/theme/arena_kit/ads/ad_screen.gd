@@ -41,7 +41,9 @@ func _build() -> void:
 	add_child(structure)
 	var concrete := CyberMaterials.surface(Color(0.2, 0.2, 0.21), 0.85, 0.0)
 	var steel := CyberMaterials.surface(Color(0.1, 0.1, 0.11), 0.55, 0.7)
-	var housing := CyberMaterials.surface(Color(0.05, 0.05, 0.06), 0.6, 0.5)
+	# Render (round 5): the housing was near-black, so a screen seen from behind read as a flat black slab.
+	var housing := CyberMaterials.surface(Color(0.16, 0.16, 0.17), 0.7, 0.45)
+	var rib := CyberMaterials.surface(Color(0.24, 0.23, 0.22), 0.65, 0.5)
 	var top := PANEL_BOTTOM + PANEL.y
 	CyberMaterials.box(structure, PLINTH, Vector3(0, PLINTH.y / 2.0, 0.2), concrete)
 	for sx in [-1.0, 1.0]:
@@ -49,6 +51,13 @@ func _build() -> void:
 	for y in [PLINTH.y + 1.6, PANEL_BOTTOM - 0.6]:
 		CyberMaterials.box(structure, Vector3(5.7, 0.3, 0.3), Vector3(0, y, 0.6), steel)
 	CyberMaterials.box(structure, Vector3(PANEL.x + 0.5, PANEL.y + 0.5, 0.7), Vector3(0, PANEL_BOTTOM + PANEL.y / 2.0, 0.42), housing)
+	# The back: structural ribs and a row of small amber service lights, so the rear reads as machinery.
+	for i in 6:
+		var y := PANEL_BOTTOM + 1.0 + i * (PANEL.y - 2.0) / 5.0
+		CyberMaterials.box(structure, Vector3(PANEL.x + 0.3, 0.22, 0.18), Vector3(0, y, 0.84), rib)
+	for x in [-2.6, 0.0, 2.6]:
+		CyberMaterials.box(structure, Vector3(0.22, PANEL.y, 0.2), Vector3(x, PANEL_BOTTOM + PANEL.y / 2.0, 0.86), rib)
+		CyberMaterials.box(structure, Vector3(0.18, 0.18, 0.08), Vector3(x, PANEL_BOTTOM + 0.6, 0.98), CyberMaterials.neon(Color(1.0, 0.6, 0.15), 3.0, 0.2), false)
 	# A service catwalk under the panel and the beacon on top.
 	CyberMaterials.box(structure, Vector3(PANEL.x + 0.8, 0.12, 1.1), Vector3(0, PANEL_BOTTOM - 0.35, -0.1), steel)
 	CyberMaterials.box(structure, Vector3(0.35, 0.35, 0.35), Vector3(0, top + 0.5, 0.42), CyberMaterials.neon(CyberMaterials.RED, 5.0, 0.6), false)

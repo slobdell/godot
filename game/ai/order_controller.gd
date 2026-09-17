@@ -80,6 +80,9 @@ static var profile_usec := 0
 ## per tick at 60 units in clock calls alone, so they are off by default: the headline ai_usec_per_tick must measure
 ## the AI, not the measuring.
 static var profile_detail := false
+## Measurement only: controller ticks that steered from scratch vs held last tick's steering (execution LOD).
+static var executed_full := 0
+static var executed_held := 0
 
 @export var tank: Tank
 ## Where to look for other tanks (Match/Tanks).
@@ -184,6 +187,15 @@ const AVOID_CLEARANCE := 5.0
 ## Wheels move on to the next path waypoint within this share of their turning radius (at least WAYPOINT_RADIUS).
 const WHEELS_WAYPOINT_RADII := 0.8
 var _lane_hold_left := 0
+## Round-5 X1, controller stride (BrainVariants "brain_stride"): a brain runs its whole controller — thinking and
+## executing — on every Nth physics tick, staggered by think_offset, and hands the tank its last command in between.
+## `_step` is how many ticks the current run covers (counters that count ticks add it), `_last_run_tick` when it last
+## ran, `_last_command` what it handed over, and `_fire_checked_tick` when the fire-avoidance check last looked.
+var _stride := 1
+var _step := 1
+var _last_run_tick := -1
+var _last_command: TankCommand = null
+var _fire_checked_tick := -1000
 
 
 func _ready() -> void:
@@ -195,8 +207,27 @@ func _physics_process(delta: float) -> void:
 	if tank == null or not is_instance_valid(tank):
 		return
 	var started := Time.get_ticks_usec() if profiling else 0
+	var brain := self as TankBrain
+	if _stride > 1 and brain != null and brain.game_match != null:
+		var tick := brain.game_match.tick
+		if _last_command != null and _last_run_tick >= 0 and not brain.wants_to_run() \
+				and (tick + brain.think_offset) % _stride != 0:
+			# Controller stride (round-5 X1): not this unit's tick. The tank keeps its last command — throttle, turn, aim
+			# and trigger — for one more tick; anything that must not wait (a new order, the element leader's call) runs
+			# it at once instead (TankBrain.wants_to_run).
+			tank.command = _last_command
+			if profiling:
+				executed_held += 1
+				profile_usec += Time.get_ticks_usec() - started
+			return
+		_step = clampi(tick - _last_run_tick, 1, _stride) if _last_run_tick >= 0 else 1
+		_last_run_tick = tick
+		delta *= _step
+	if profiling:
+		executed_full += 1
 	think(delta)
 	tank.command = compute_command(delta)
+	_last_command = tank.command
 	if profiling:
 		profile_usec += Time.get_ticks_usec() - started
 
@@ -247,10 +278,12 @@ func compute_command(delta: float) -> TankCommand:
 		_held_aim = tank.turret_forward()
 	# Far away, so the tank's own movement doesn't swing the aim (parallax).
 	var cmd := TankCommand.new(0.0, 0.0, tank.global_position + _held_aim * HELD_AIM_DISTANCE)
-	ticks_since_fire += 1
+	ticks_since_fire += _step
+	var clock := Time.get_ticks_usec() if profile_detail else 0
 	_sense()
 	_apply_reflexes()
-	var clock := Time.get_ticks_usec() if profiling else 0
+	clock = _lap("c.reflexes", clock)
+	clock = Time.get_ticks_usec() if profiling else 0
 	_apply_move(cmd, delta)
 	_apply_unstick(cmd, delta)
 	if profiling:
@@ -290,7 +323,12 @@ func _sense() -> void:
 	visible_enemy_names = PackedStringArray()
 	# Only halt_on_contact reads what this tank sees; skipping the sight rays otherwise was the biggest
 	# single AI cost at 50 units (_agents/unit_ai.md "Results").
-	if tanks_root == null or not reflexes.any(func(r: Dictionary) -> bool: return r["type"] == "halt_on_contact"):
+	if tanks_root == null or reflexes.is_empty():
+		return
+	var halts := false
+	for reflex: Dictionary in reflexes:
+		halts = halts or reflex["type"] == "halt_on_contact"
+	if not halts:
 		return
 	for enemy in Perception.enemies_of(tank, tanks_root):
 		# G1: a tank sees within its sight radius, and only with a clear line of sight.
@@ -345,8 +383,10 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var lap := Time.get_ticks_usec() if profile_detail else 0
 			var routed := goal if direct else _next_waypoint(goal, delta)
 			lap = _lap("move.path", lap)
-			var waypoint := _around_friends(_around_fire(routed, goal))
-			lap = _lap("move.avoid", lap)
+			var around_fire := _around_fire(routed, goal)
+			lap = _lap("move.fire", lap)
+			var waypoint := _around_friends(around_fire)
+			lap = _lap("move.friends", lap)
 			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
 			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
 			lap = _lap("move.remaining", lap)
@@ -354,11 +394,15 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 			var radius := _wheel_radius()
 			if radius > 0.0:
 				# K3 wheels drive like cars: pure pursuit, three-point turns (Steering.drive_toward_wheels).
-				var wheels := Steering.reverse_toward_wheels if move_order.get("reverse", false) else Steering.drive_toward_wheels
-				drive = wheels.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+				# Direct calls rather than a Callable picked every tick (round-5 X1).
+				if move_order.get("reverse", false):
+					drive = Steering.reverse_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+				else:
+					drive = Steering.drive_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+			elif move_order.get("reverse", false):
+				drive = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 			else:
-				var steer := Steering.reverse_toward if move_order.get("reverse", false) else Steering.drive_toward
-				drive = steer.call(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
+				drive = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
 			cmd.turn = drive.y
 			_track_progress(goal, drive, remaining)
@@ -403,8 +447,16 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 	var direction := to / distance
 	var reach := minf(FIRE_LOOKAHEAD, maxf(_flat_distance(here, goal), 1.0))
 	var tick := brain.game_match.tick
-	if _fire_detour == null and (tick + brain.think_offset) % FIRE_CHECK_TICKS != 0:
-		return waypoint
+	if _fire_detour == null:
+		# Under execution LOD the check can't wait for an exact multiple of FIRE_CHECK_TICKS (it may be an off tick):
+		# it runs on the first executed tick at least FIRE_CHECK_TICKS - 1 after the last one instead.
+		if _stride == 1 and (tick + brain.think_offset) % FIRE_CHECK_TICKS != 0:
+			return waypoint
+		# Under a controller stride the check can't wait for an exact multiple (that tick may not run): it looks on the
+		# first run at least FIRE_CHECK_TICKS after the last look.
+		if _stride > 1 and tick - _fire_checked_tick < FIRE_CHECK_TICKS:
+			return waypoint
+		_fire_checked_tick = tick
 	var ahead := here + direction * reach
 	var ahead_beaten := SuppressionFeed.beaten(fields, tank.team, here, ahead)
 	# Already going round. Reaching the step, or spending long enough on it, counts as having tried: push on for a
@@ -423,7 +475,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 		elif tick >= _fire_detour_until or _flat_distance(here, leg) <= FIRE_DETOUR_REACHED:
 			_fire_detour = null  # that step is done; look again below and take another if it is still needed
 		else:
-			fire_detours += 1
+			fire_detours += _step
 			return leg
 	if not still_swept:
 		_fire_since = -1
@@ -453,7 +505,7 @@ func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
 		_fire_detour_until = tick + FIRE_DETOUR_TICKS
 		if _fire_since < 0:
 			_fire_since = tick
-		fire_detours += 1
+		fire_detours += _step
 		return best
 	# Looked and found nothing: every way round is swept too. Push on rather than looking again every few ticks.
 	fire_no_way_round += 1
@@ -495,11 +547,16 @@ func _around_friends(waypoint: Vector3) -> Vector3:
 	# units this loop was the single biggest cost of executing orders.
 	var my_name := String(tank.name)
 	var reach_squared := nearest * nearest + AVOID_WIDTH * AVOID_WIDTH
-	for ally: Dictionary in AiTickCache.allies(brain.game_match, tank.team):
-		var position: Vector3 = ally["position"]
+	# Round-5 X1: typed columns instead of a dictionary per ally (same tanks, same order, same float values).
+	var columns := AiTickCache.ally_columns(brain.game_match, tank.team)
+	var xs: PackedFloat32Array = columns[0]
+	var zs: PackedFloat32Array = columns[1]
+	var names: PackedStringArray = columns[2]
+	for i in xs.size():
+		var position := Vector3(xs[i], 0.0, zs[i])
 		var dx := position.x - here_x
 		var dz := position.z - here_z
-		if dx * dx + dz * dz >= reach_squared or ally["name"] == my_name:
+		if dx * dx + dz * dz >= reach_squared or names[i] == my_name:
 			continue
 		var along := dx * dir_x + dz * dir_z
 		if along <= 0.0 or along >= nearest:
@@ -536,7 +593,7 @@ func _track_progress(goal: Vector3, drive: Vector2, remaining: float) -> void:
 		_progress_best = remaining
 		stalled_ticks = 0
 	else:
-		stalled_ticks += 1
+		stalled_ticks += _step
 
 
 ## The point to steer at now: the next navmesh waypoint toward `goal`, or `goal`
@@ -670,8 +727,10 @@ func _apply_suppress(cmd: TankCommand) -> void:
 func _shootable(enemy: Tank) -> bool:
 	if tank.global_position.distance_to(enemy.global_position) > float(tank.weapon["range"]):
 		return false
-	var seen: bool = spotter.call(enemy) if spotter.is_valid() \
-			else tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius
+	# Round-5 X1 found: a `seen` test (team spotting, else own sight radius) was computed here and never used, so this
+	# has only ever meant "in range with a clear line". The unused call is gone (it cost a dictionary walk per enemy per
+	# scan); whether a gun should hold fire on something nobody sees is a behaviour question for the ladder
+	# (_agents/streams/ai.md, known issues).
 	# X2 measured, and rejected: answering this with the memoized 2D cover map instead of a physics ray made picking a
 	# target *slower* at 60 units (650 usec per tick against 573). The two agree (139 of 139 lines, test_ai_cover_map),
 	# but with a memo this big a hit costs about as much as the ray it saves.
@@ -681,7 +740,7 @@ func _shootable(enemy: Tank) -> bool:
 ## _nearest_shootable(), re-scanned every SCAN_EVERY_TICKS while the last pick is still shootable (a nearer enemy
 ## may have appeared), and every tick while there's nothing to shoot (a delay there leaves loaded guns idle).
 func _scanned_shootable() -> Tank:
-	_scan_left -= 1
+	_scan_left -= _step
 	var pick_alive := _scan_pick != null and is_instance_valid(_scan_pick) and _scan_pick.is_alive()
 	# X2, order execution at a lower rate for units that aren't firing: a gun that is still reloading cannot shoot
 	# anything, so neither re-picking a target nor re-testing the sight line to the current one buys anything this
@@ -714,17 +773,28 @@ func _nearest_shootable() -> Tank:
 		if point != null and (point as Vector3).length_squared() > 0.0001:
 			sector = (point as Vector3).normalized()
 			sector_cos = float(weapon_order.get("sector_cos", 0.5))
-	for enemy: Tank in _enemies():
-		var distance := tank.global_position.distance_to(enemy.global_position)
+	var brain := self as TankBrain
+	var columns: Array = AiTickCache.enemy_columns(brain.game_match, tank.team) \
+			if brain != null and brain.game_match != null and brain.game_match.tanks == tanks_root else []
+	var enemies: Array = columns[0] if not columns.is_empty() else _enemies()
+	var here := tank.global_position
+	var reach := float(tank.weapon["range"])
+	for index in enemies.size():
+		var enemy: Tank = enemies[index]
+		# Round-5 X1: positions from the tick's typed columns (the same values), and nothing out of range is looked at
+		# further (_shootable's own first test, answered without touching the node).
+		var there := Vector3((columns[1] as PackedFloat32Array)[index], (columns[2] as PackedFloat32Array)[index],
+				(columns[3] as PackedFloat32Array)[index]) if not columns.is_empty() else enemy.global_position
+		var distance := here.distance_to(there)
 		if distance >= best_distance and (sector == Vector3.ZERO or distance >= in_sector_distance):
 			continue
-		if not _shootable(enemy):
+		if distance > reach or not _shootable(enemy):
 			continue
 		if distance < best_distance:
 			best = enemy
 			best_distance = distance
 		if sector != Vector3.ZERO and distance < in_sector_distance:
-			var toward := enemy.global_position - tank.global_position
+			var toward := there - here
 			toward.y = 0.0
 			if toward.length_squared() > 0.01 and toward.normalized().dot(sector) >= sector_cos:
 				in_sector = enemy
@@ -795,8 +865,8 @@ func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
 	if not hold_for_friends:
 		return true
 	if _lane_hold_left > 0:
-		_lane_hold_left -= 1
-		lane_blocked_ticks += 1
+		_lane_hold_left -= _step
+		lane_blocked_ticks += _step
 		held_for_friends += 1
 		return false
 	var blockers := FireLanes.for_shot(tanks_root, tank, aim)
@@ -804,7 +874,7 @@ func _clear_to_fire(would_fire: bool, aim: Vector3) -> bool:
 		lane_blocked_ticks = 0
 		lane_blocker = ""
 		return true
-	lane_blocked_ticks += 1
+	lane_blocked_ticks += _step
 	lane_blocker = String(blockers[0])
 	held_for_friends += 1
 	_lane_hold_left = LANE_RECHECK_TICKS - 1

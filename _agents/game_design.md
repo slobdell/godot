@@ -220,6 +220,27 @@ feel** rather than reopening the garage and progression loop.
 - **The shell has to work:** the title screen accepts clicks, the camera frames *your* units, and the console is clean.
 - **Guns must sound dangerous** (the ElevenLabs sound-effect half of round 4's audio work).
 
+### The lead's round-5 sign-off (2026-09-17)
+
+Eleven decisions, answered on the sign-off page (https://claude.ai/artifact/CWhVvcNj7BQBigp5N27kDW; answers live in
+its `decisions/<id>` documents). Where the orchestrator recommended otherwise, the lead's answer is marked
+**overruled** — those are the ones a future agent must not quietly revert to the "sensible" option.
+
+| Decision | Answer | Notes |
+|---|---|---|
+| Gun sound batch (~520 credits) | **Run the batch** | The pilot shipped as-is, no changes |
+| Ad copy (12 screen ads) | **All of them work** | No cuts, including the two the orchestrator flagged as near-punchlines |
+| Arena screens | **Live match content during the fight, ads between** | render draws it; audio's PA reads pair with the between-match state |
+| PA lines (~1,500 credits) | **Record them** | Unblocked by the copy approval in the same pass |
+| 30 Hz simulation tick | **Start now** (*overruled*: the recommendation was round 6) | combat owns it; the frame rate is what stands between the lead and playing his own game |
+| Neon glow (1.6-1.9 ms GPU) | **Keep it** | The frame is simulation-bound; switching it off buys nothing today |
+| Team identity | **Rim tint is enough** | No per-team hull paint. The tracer fix and the lit floor solved the read; colour was never the problem |
+| Which arena is fun | **Not played yet** | Still open |
+| Arena selection | **Players pick** (*overruled*: the recommendation was random-only for now) | control's faction-menu ARENA row, with Random kept as the default option |
+| Map generator | **Park it** | `make arena-candidates` stays a tool, not a direction |
+| **Frame-rate target** (asked later the same day, once render had modelled it) | **A locked 30 fps at 1080p with the full 30 a side, plus a 720p 60 fps performance option** | 60 fps at 1080p is unreachable this round whatever the tick rate does: the GPU alone is 14.8 ms there, and every available cut together still leaves ~9 ms of a 16.7 ms frame. A locked 30 fps holds 60 vehicles with the tick change alone. The army size the lead has asked for twice is preserved; a stable 30 reads as smooth where an unstable 60 reads as broken. Baseline for comparison: 60 fps used to hold at **13 vehicles** at 720p and **never** at 1080p |
+| Destructible cover | **Schedule it** (*overruled*: the recommendation was to park it) | Approved as designed — a stack collapses to a lower stack, never changing drivable space. Not landed in round 5: two cross-stream changes at once (with 30 Hz) would make failures unattributable |
+
 ## Units: fixed types that counter each other
 
 Each unit type is a fixed package: chassis, one weapon, armor, speed, sight, cost. **No loadouts.**
