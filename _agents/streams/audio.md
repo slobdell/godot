@@ -203,6 +203,17 @@ moved later.
   second, which was a cut from pad to full band. On a bar line the director now moves one layer, so a battle
   arrives over three bars (6 s at 120 bpm). `MUSIC_LAYERS` logs `pos=`/`bar=` because `t=` is the game clock, not the
   music's (a headless match read t=14.5 with the music at 2.0 s).
+- **The lead heard the whole match (2026-09-17): "the new sound effects sound awesome"**, and the music "is not matching
+  the vibe I wanted". He supplied his own proven Suno prompts. `assets/music/PROMPTS.md` is rewritten around them
+  (verbatim, checked line by line), one per bed, with exact steps (01b9fae4). Decisions: the fight (skirmish into
+  battle) is **his three GOOD battle tracks as stem sets** that rotate per match, split locally with **demucs on
+  builder0** (`make music-stems`; PyTorch has no room on the laptop; tested on the repo's own mix, and the drums and
+  bass stems follow the real parts), because two Suno generations never share an arrangement to layer. `lull`
+  (Lockdown Protocol, "good but slow") and `last_stand` (Cyber Metal / Dark Techno) stay whole tracks, where a change
+  of song is the point. `music-import` gained `FROM`/`TO` (Suno's intros and outros don't loop) and `STATES`, and a
+  real track retires the placeholder states it covers: a placeholder stem set outranks any single bed and would
+  otherwise keep playing over his lull. The whole workflow ran end to end on a scratch copy, and `music-check`
+  correctly refused a split whose "other" stem was silent.
 - **The fight music stopped after 8 seconds in every match, since X5 (bc1ce8f), and the mix was balanced against that
   silence (the music trim commit).** `AudioStreamSynchronized` reports no playback position (every `MUSIC_LAYERS`
   line in the passes read `pos=0.000`), so the director could neither seek the stems back to their loop start nor
