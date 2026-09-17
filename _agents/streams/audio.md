@@ -108,6 +108,20 @@ is unexplored. What is left is two questions with the lead and one track he may 
 The balance reads unsettled for minutes after a run; `assets/{audio/elevenlabs,announcer}/ledger.md` note where it
 moved later.
 
+### 30 Hz: verified, and two things worth knowing about remote measurements
+`make remote T=check` green on the merge (991 tests, sim hash `16dc0de84f1c29b6`). Nothing in audio needed changing:
+the smoothing and clocks were already in seconds, and main's `SimClock` is where the tick rate lives now. The one
+failure was **my own test**, which set `Engine.physics_ticks_per_second` and measured — that tests the engine, not the
+booth, and it passed at 60 Hz and failed at 30. It asserts the behaviour now.
+- **`make remote` used to claim "build/ copied back" when it hadn't** (fixed in `tools/remote.sh`): the rsync threw
+  its errors away, so with the laptop's disk full my local `build/audio/pass.*` sat three hours stale from a different
+  match while the run that wrote them had just passed. **Check timestamps before reading remote results.**
+- **On builder0 at 30 a side, game time runs ~10x slower than wall time.** In one recording the music had played
+  48.8 s of audio while the director's clock read 5.0 s. So `audio-pass` captures about 10 s of match per 100 s of
+  audio: the mix numbers are true (they are what a player at that frame rate hears) but the *match* in them is brief,
+  which is why layer changes look rare. Told the orchestrator; the cause is combat's to judge.
+- **The mix holds at 30 Hz:** -20.8 LUFS, true peak -4.6 dBFS, 0 clipped, and a music-only pass has music throughout.
+
 ### Reopened 2026-09-17: the Syndicate sounded like somebody else's army
 The lead played the Syndicate: *"the sound effects were no good they sounded like a cheesy cartoon"* — hours after
 calling the same batch awesome as the Condemned. **The bug was not the laser, it was the mapping.** `WeaponFx.FAMILIES`
@@ -360,8 +374,9 @@ import cleanly today. Nothing here is second-rate — his set simply has more co
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
-  **Final: `make remote T=check` exited 0 against d75b6694** (the Syndicate's weapons included): 977 tests, sim hash
-  `32f665bc60306e8f` matching main's baseline, every announcer and audio check green.
+  **Final: `make remote T=check` exited 0 against ad4fc97a** (30 Hz, the Syndicate's weapons, the lead's music):
+  991 tests, sim hash `16dc0de84f1c29b6` matching main's baseline, every announcer and audio check green. Later
+  commits are this brief and the `tools/remote.sh` copy-back fix.
 - Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
   initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
   builder0 has no numpy or scipy (`make audio-deps`, 181f6ca).
