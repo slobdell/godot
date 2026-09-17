@@ -77,8 +77,8 @@ audio-bench: import ## Per-frame script cost of every audio system at 60 vehicle
 PASS_SECONDS ?= 150
 audio-pass: import audio-deps ## The whole mix of a 30-a-side match → build/audio/pass.{wav,mp3,png,json} (needs a display; PASS_SECONDS=150)
 	@mkdir -p $(BUILD_DIR)/audio
-	timeout $$(( $(PASS_SECONDS) + 120 )) $(GODOT) --path . --resolution 1280x720 -- --skirmish --cinematic --player=cpu --enemy=cpu \
-		--seed=3 --budget=6500 --no-pick-faction --announcer=voice --music=on --announcer-history=off \
+	timeout $$(( $(PASS_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 -- --skirmish --cinematic --player=cpu --enemy=cpu \
+		--seed=3 --budget=6500 --no-pick-faction --player-faction=gangs --enemy-faction=law --announcer=voice --music=on --announcer-history=off \
 		--audio-record=$(CURDIR)/$(BUILD_DIR)/audio/pass.wav --audio-record-seconds=$(PASS_SECONDS) 2>&1 \
 		| tee $(BUILD_DIR)/audio/pass.log | grep -E '^AUDIO_RECORD|SCRIPT ERROR' || true
 	@grep -q 'AUDIO_RECORDED .*error=0' $(BUILD_DIR)/audio/pass.log || { echo "audio-pass FAILED: no recording"; exit 1; }
