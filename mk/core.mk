@@ -91,6 +91,18 @@ sim-baseline-record: import ## Write this machine's sim baseline line to build/s
 	mkdir -p $(BUILD_DIR); printf '%s %s\n' "$$key" "$$actual" > $(BUILD_DIR)/sim_state_hash.txt; \
 	echo "recorded $$key $$actual in $(BUILD_DIR)/sim_state_hash.txt: cp it to tests/baselines/sim_state_hash.txt (other machines' lines go stale)"
 
+# ---- Backups of generated assets (tools/backup_assets.sh; _agents/backups.md) -----------------------------
+backup: ## Back up the generated assets that aren't in git (Meshy downloads, announcer masters) to builder0 now
+	tools/backup_assets.sh
+
+backup-status: ## When the backup last ran, what's on builder0, and how much room is left there
+	@tools/backup_assets.sh --status
+
+backup-install: ## Install and start the 30-minute systemd user timer that runs the backup
+	systemctl --user daemon-reload
+	systemctl --user enable --now tank-squad-backup.timer
+	@systemctl --user list-timers tank-squad-backup.timer --no-pager
+
 # ---- Remote builds on builder0 (tools/remote.sh; _agents/remote_builds.md) --------------------------------
 remote: ## Run a make target on builder0 and copy build/ back: T="check" or T="test FILTER=combat"
 	@test -n "$(T)" || { echo 'usage: make remote T="check"'; exit 2; }

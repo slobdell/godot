@@ -17,6 +17,7 @@ that way: a note that only says "do X" teaches nothing.
 - **[orchestration.md](orchestration.md)**: **How we work.** The reusable orchestrator/worker pattern: roles, the round lifecycle, the worker contract, integration and closing checklists, the kickoff prompt, and lessons.
 - **[workstreams.md](workstreams.md)**: **The current round.** Streams, lead gates, path ownership, contracts, checkpoints, invariants, and worktree mechanics. Briefs are in `streams/`; rounds 1–2 are archived in `streams/archive/`.
 - **[remote_builds.md](remote_builds.md)**: Run heavy make targets on builder0 (`make remote T=check`).
+- **[backups.md](backups.md)**: What's protected and where: git and GitHub for the shipped files, a 30-minute timer copying the generated sources to builder0, and the cache drive for Google Drive.
 - **[roadmap.md](roadmap.md)**: What's done, the current round, what's next, and the idea backlog.
 
 **How the systems work**

@@ -36,9 +36,10 @@ frame should sit, one alert line or three, and whether the faction menu should o
 ## Waiting on the lead
 
 1. **Playtest round 4** and say what's fun and what isn't: that's round 5's direction.
-2. **Git LFS, and where generated source material lives.** The laptop sits at 95% (about 6 GB free): `assets/incoming/`
-   is 968 MB of raw Meshy art, `assets/announcer/masters/` 176 MB of MP3 masters worth 171k credits, and
-   `assets/announcer/clips/` is 57 MB of committed Ogg excluded from the exports.
+2. **Git LFS, eventually.** Not urgent for safety any more (see backups below), but `.git` is 353 MB and grows with
+   every regeneration. The rule to adopt when it starts to hurt: generated binaries that *ship* (voice clips, faction
+   models) go in LFS; generated *sources* stay out of git and live in backups. GitHub's free tier is 1 GB storage and
+   1 GB/month bandwidth; a data pack is about $5/month per 50 GB (confirm on the billing page).
 3. **Meshy credits: 88 left** (round 3 spent 600). Any new art needs a top-up. ElevenLabs has 125,297 left.
 4. **Faction art is excluded from the exports** (47 MB): the three new rosters *play* as themselves but *look* like the
    Condemned. Wiring it up takes the web pack from 0.8 MB to ~48 MB.
@@ -49,6 +50,11 @@ frame should sit, one alert line or three, and whether the faction menu should o
 7. **Carried over:** rotate the Meshy API key; the round-2 questions in `streams/archive/round2/`.
 
 ## Open questions and follow-ups (not scheduled)
+
+- **Backups are automatic now** ([backups.md](_agents/backups.md)): a systemd user timer rsyncs the git-ignored
+  generated assets (Meshy downloads, announcer masters, Suno tracks later) to `builder0:~/tank_squad_backup/` every 30
+  minutes, never deleting. `make backup`, `make backup-status`. The cache drive holds a dated snapshot for Google Drive.
+  **A worktree's ignored payload is still only in one place until it's copied into the main checkout.**
 
 - **The road gangs win 23%** (Condemned 70%, Law 63%, Syndicate 47%, averaged over 5 seeds). Combat fixed two real
   defects behind it and neither moved the number, then stopped rather than inflate stats the moment drills and

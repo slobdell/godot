@@ -83,7 +83,7 @@ help: ## Show this help
 # New targets are heavy by default; add interactive ones to LIGHT_GOALS — and PAID GENERATION targets, which
 # wait on a hosted API for minutes to an hour and never need a CPU: audio's full ElevenLabs run held one of
 # the two slots for an hour and made every other agent's lint queue (2026-09-16).
-LIGHT_GOALS := help doctor bootstrap remote broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
+LIGHT_GOALS := help doctor bootstrap remote backup backup-status backup-install broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
                editor run skirmish garage demo play play-relay replay-watch serve-web server client watch-match agent-% \
                assets-generate assets-mock art-concept art-review art-review-status art-decide art-review-page art-apply-decisions art-concept-batch \
                doctrine-page announcer-generate

@@ -115,9 +115,10 @@ make remote T=check                                     # or make check; fix int
 
 ### 8. Close the round
 1. Every `stream/*` branch is an ancestor of `main` (`git merge-base --is-ancestor`), and `make check` is green.
-2. **Preserve git-ignored work** before removing a worktree: raw Meshy downloads, CC0 sources, anything under
-   `assets/incoming/` (`rsync -a --ignore-existing` into the main checkout). Check with
-   `git status --ignored` in each worktree.
+2. **Preserve git-ignored work** before removing a worktree: raw Meshy downloads, announcer masters, CC0 sources —
+   anything under `assets/` a worker generated (`rsync -a` into the main checkout; check `git status --ignored` in each
+   worktree). The 30-minute backup timer only watches the main checkout, so until you copy it in, a worktree's payload
+   exists **once** ([backups.md](backups.md)).
 3. `make worktree-remove STREAM=<s>`, then delete merged branches (`git branch -D` after the ancestor check; `-d`
    refuses when the remote branch is behind).
 4. Archive briefs: `git mv _agents/streams/<s>.md _agents/streams/archive/roundN/`, add an archive banner, fix links
