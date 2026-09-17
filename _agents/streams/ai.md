@@ -71,10 +71,10 @@ _Round 5, ai stream. Updated 2026-09-17. Branch `stream/ai`._
 
 | # | Item | State |
 |---|---|---|
-| X1 | 4 ms at 60 units | **exact cuts done; the rest is structural** — opt-in `x5b2` (half-rate controllers) in the ladder; the 30 Hz simulation is the lead's call (below) |
-| X2 | SUPPRESS reachable without matchups; a pinned enemy pulls units out of cover | **built as opt-in `x5s`**; first ladder 27-37 against x4t9 (the proxy costs the swarm army): to split and re-run, and to rewire onto combat's `Lethality` when it merges |
-| X3 | `make tactics-ladder` | **done** — doctrine beats brains-only 52-28; the skirmish CPU gets doctrine by default (orchestrator ruling, control flips it); drill-variant ladder running |
-| X4 | Faction behaviour that reads, measured in the ladder | **in progress** — faction ladder (brains vs faction doctrine, gangs vs law) running on builder0 |
+| X1 | 4 ms at 60 units | **exact cuts done; the rest is structural.** The lead chose the 30 Hz simulation (combat, landing after this branch). `x5b2`/`x5pb2` (half-rate controllers) held: at 30 Hz they would think at 15 Hz |
+| X2 | SUPPRESS reachable without matchups; a pinned enemy pulls units out of cover | **pinned half done: champion `x5p`** (53-43 over x4t9); the SUPPRESS proxy (`x5q`) lost with the swarm and waits for combat's `Lethality` |
+| X3 | `make tactics-ladder` | **done** — doctrine wins small and loses large; `break_contact` cut; skirmish CPU stays on brains until a doctrine beats them at scale |
+| X4 | Faction behaviour that reads, measured in the ladder | **measured, not solved**: faction doctrine loses to brains at scale; the gangs lose however they're run; the fix is an army-level plan (round-6 proposal in doctrine.md) |
 | X5 | Offline discovery groundwork | **done** — `DiscoveryBridge` + `tools/discovery.py`, distillation plan in unit_ai.md; its first policy became the `pin_and_flank` commander variant (in the ladder) |
 
 ### X1 — the cost of 60 brains: what was measured
@@ -127,15 +127,31 @@ boulevard, pit and boneyard, 2 seeds × 4 ways per pairing per arena, x4t9 brain
 | brains only (what the skirmish CPU ran) | 28-52 | |
 
 **The skirmish CPU had never run doctrine** (brains only unless `--element-cpu`), and the match runner never ran it at
-all, so round 4's formations and drills were in no game the lead played: "two masses shooting at each other" is what
-armies of brains with no element above them look like. Ruled by the orchestrator: doctrine becomes the skirmish CPU's
-default this round (control owns the flag); the match runner stays opt-in (`--green-elements`) until combat
-re-baselines deliberately.
+all, so round 4's formations and drills were in no game the lead played.
+
+**But doctrine wins small and loses large.** The mirror above is five-vehicle squads with no objective. In the game the
+lead plays — faction armies at the 5200 budget, control point on — one snapshot (fc88c24), gangs vs law with every side
+playing both factions, foundry / yard / boulevard:
+
+| Ladder | brains only vs faction doctrine | brains vs faction doctrine without break_contact | faction doctrine without vs with break_contact |
+|---|---|---|---|
+| fac1b, control point on (144 matches) | **34-14** | **24-24** | **27-21** |
+| fac2, control point off (48 matches) | 27-21 | | |
+
+So the control point makes doctrine worse (it funnels every element to one circle) but is not the whole story: doctrine
+still loses without it. break_contact is a net loss at both scales and is now off in every shipped table
+(875462f). Playing the gangs loses however they're commanded (brains 18-30, doctrine 10-38): that part of the 23% is
+combat's. The skirmish CPU default **stays on brains** (the orchestrator's approval was withdrawn when this landed);
+control has the switch ready (`ELEMENT_CPU_DEFAULT`). What's missing is a decision above the elements about which of
+them take the objective and which shape the fight: a round-6 proposal in doctrine.md. Caveat: every ladder here used
+x4t9 as the brains; the champion is now x5p, which only makes brains-only stronger.
 
 Per drill (damage charged to what the units were doing), standard / faction: **support_by_fire 9.4 / 12.1 exchange**,
 react_to_contact 1.08 / 1.12, near_ambush 1.16 / 1.18, assault_through 1.22 / 1.08, **break_contact 0.75 / 0.73 over
-40% / 15% of drill time**, **far_ambush 0.26 / 0.16 with 16 / 44 deaths**. Exchange is evidence, not a verdict (a drill
-that starts when an element is already losing collects its deaths): variants without each drill are in the ladder now.
+40% / 15% of drill time**, **far_ambush 0.26 / 0.16 with 16 / 44 deaths**. Exchange is evidence, not a verdict: **removing far_ambush changed
+nothing** (55-65 overall, 20-20 head to head with standard) — it is chosen in fights already going badly. The only way
+to know what a behaviour costs is to remove it and measure the army with and without. The discovery harness's
+`pin_and_flank`, distilled into the commander, lost 43-77: the loop produces candidates, the ladder decides.
 
 **Cost of doctrine at 30 a side** (laptop, Jolt, condemned 31 v 27, `make sim-profile`, interleaved, normalised by
 the tank band): the elements band averages **1.5-1.8 ms/tick**, about **+15% of the whole tick** with brains running
