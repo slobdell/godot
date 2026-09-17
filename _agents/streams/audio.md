@@ -169,7 +169,9 @@ the PA reading ad copy are written up under *Next steps*.
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
-  The final check against the merge of main is recorded below when it lands.
+  **Final: `make remote T=check` exited 0 against 03b07d8 (the merge of main after render): 896 tests, sim hash
+  `7b1bb7c20063e5a0` matching the baseline main now carries, music-smoke 2 bed changes and 1 layer change.** Later
+  commits touch only this brief.
 - Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
   initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
   builder0 has no numpy or scipy (`make audio-deps`, 181f6ca).
