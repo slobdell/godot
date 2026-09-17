@@ -69,10 +69,16 @@ owns where subtitles appear).
 
 _Updated 2026-09-17 by the audio worker._
 
+**Where the backlog stands:** X1 and X2 are built end to end and **waiting on the lead** for the batch (the pilot page
+is below). X3 is done. X4 is done except the parts that have nothing to key on yet. X5 is done. X6's tooling is done;
+the pass itself waits for the batch, so the lead hears the real mix. Stretch: solo mode done. Per-faction flavour and
+the PA reading ad copy are written up under *Next steps*.
+
 ### Plan (in order)
 1. **X1 guns:** pilot generation tool, layering/mastering tool, SfxSystem wiring, A/B page → **lead gate** → batch.
 2. **X3 colour names:** audit rule first (fails on today's library), fix the text, re-record only changed lines.
-3. **X2 impacts and death:** recipes are written and ride the same batch as X1 (one gate, not two).
+3. **X2 impacts and death:** recipes are written and ride the same batch as X1 (one gate, not two); the mix side
+   (impacts duck the fight) needs no new sound.
 4. **X5 music stems** (no dependency), **X4 the world underneath** (voice caps and culling measured against M1),
    **X6 the full pass**, then the stretch items.
 
@@ -146,6 +152,46 @@ _Updated 2026-09-17 by the audio worker._
   records a 30-a-side CPU match with the booth voiced and the music on, then reports loudness, range, true peak,
   clipping, loudness every 5 s, booth lines and music changes, plus an MP3 and a spectrogram. The full pass waits for
   the batch sounds, so it's the mix the lead will actually hear.
+
+### What to playtest (exact commands)
+- **The game with everything on:** `make skirmish` (announcer voiced, music on). What's new: the four pilot guns
+  (cannon, 25 mm, MG stream, shell on armour) layered with ElevenLabs; loops that loop their whole length; engines that
+  roar pulling away, with tracks or tyres under them; a crowd that stays loud through a long firefight and roars at the
+  result; the fight music building in layers instead of swapping tracks; big hits ducking everything underneath; the
+  booth naming the map.
+- **A/B the old sound effects:** `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish
+  --announcer=voice --music=on --sfx-synth`.
+- **One layer at a time:** the same command with `--audio-solo=guns` (or `impacts`, `engines`, `crowd`, `booth`,
+  `music`, `ui`).
+- **Watch it:** `make cinematic`.
+- **Numbers:** `make audio-bench` (per-frame cost), `make music-check`, `make sfx-generate` (dry run, the batch's cost).
+
+### Verified
+- `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
+  announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
+  The final check against the merge of main is recorded below when it lands.
+- Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
+  initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
+  builder0 has no numpy or scipy (`make audio-deps`, 181f6ca).
+
+### Known issues
+- Music-smoke's 40-second match only reaches one layer change on builder0 (two on the laptop): the match is short, and
+  the smoke asserts the soundtrack changes, not how much.
+- `make audio-bench` prints "resources still in use at exit" from its own teardown; the numbers are unaffected.
+- `make_music_placeholders.py` seeds beds with Python's salted `hash()`, so regenerating rewrites the unchanged beds
+  and stingers. The committed ones were restored by hand; the fight stems use a fixed seed.
+- The balance lags the API by minutes: ledger rows show what was read when the run ended, with a note where it moved.
+
+### Next steps
+1. **When the lead answers the pilot:** `make sfx-generate APPROVED=1` (35 takes, ~520 credits), `make sfx-layer`,
+   look at the numbers, then `make remote T=audio-pass PASS_SECONDS=150` and put the mixdown on a page for the lead
+   (X6). If he asks for changes: remixing is free (`sources.json` → `layer` settings); new prompts cost a few credits.
+2. **X4 leftovers:** the arena PA between rounds and ad screens audible near them need the ad copy (round 4's open
+   lead gate) and the screens' positions (arena's `props` of kind `ad_screen` now exist, so only the copy is missing).
+   Ground-dependent tread sounds need a surface type in the layouts; there isn't one.
+3. **Stretch, not done:** per-faction announcer flavour (a voice treatment per faction's broadcast) wants the lead's
+   view on whether one arena PA should sound different by faction at all. Lines about each map's character from
+   arena's `note` would be new text for the lead to approve before recording.
 
 ### Requests to other streams
 - **render:** `make audio-bench` exists for the unmuted perf-scene variant. `perf-scene` numbers so far include no audio.
