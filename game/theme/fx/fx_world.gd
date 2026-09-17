@@ -87,6 +87,7 @@ func _init() -> void:
 	process_priority = 1000
 	_rng.seed = 1
 	lights = LightPool.new(FxQuality.value("lights"))
+	lights.min_priority = FxQuality.value("light_floor")
 	tracers = TracerSystem.new()
 	bursts = BurstSystem.new(FxQuality.value("effects"))
 	bursts.set_spray_count(FxQuality.value("sprays"))
@@ -196,6 +197,7 @@ func _prewarm(camera: Camera3D) -> void:
 ## own tier-dependent settings (the environment's glow and shadows) listen to quality_changed.
 func apply_quality() -> void:
 	lights.resize(FxQuality.value("lights"))
+	lights.min_priority = FxQuality.value("light_floor")
 	bursts.resize(FxQuality.value("effects"))
 	bursts.set_spray_count(FxQuality.value("sprays"))
 	decals.resize(FxQuality.value("decals"))

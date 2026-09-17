@@ -26,6 +26,10 @@ func set_heat(ratio: float) -> void:
 		super.set_heat(ratio)
 
 
+func _apply_glow() -> void:
+	ColorMeshBuilder.set_glow_state(mesh_instance, heat, _flash)
+
+
 func set_firing(firing: bool) -> void:
 	if firing:
 		_flash = 1.0
@@ -34,6 +38,6 @@ func set_firing(firing: bool) -> void:
 
 func _process(delta: float) -> void:
 	_flash = maxf(0.0, _flash - delta / FLASH_SECONDS)
-	mesh_instance.set_instance_shader_parameter("flash", _flash)
+	_apply_glow()
 	if _flash <= 0.0:
 		set_process(false)

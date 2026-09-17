@@ -14,7 +14,7 @@ func build(b: ColorMeshBuilder) -> void:
 	b.glow_box(Vector3(0.2, 0.08, 0.05), Vector3(0, 0.05, -3.24), team_color * 0.6, 1.0)
 
 
-## Called every frame by gameplay (G7): only touch the instance uniform when it changes.
+## Called every frame by gameplay (G7): only touch the material when it changes.
 func set_heat(ratio: float) -> void:
 	if not is_equal_approx(ratio, heat):
 		super.set_heat(ratio)
