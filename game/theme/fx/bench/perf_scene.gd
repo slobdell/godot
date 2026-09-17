@@ -28,7 +28,7 @@ extends Node
 ## ground_unlit / ground_lit (the high floor lit in its shader, or by the renderer), lod_4 / lod_8 (mesh LOD threshold px),
 ## no_bursts / no_tracers / no_beams / no_decals (one effect system each), sprays_6 (low tier's spark count),
 ## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
-## ground_chunked (the floor's tiling flipped).
+## ground_chunked (the floor's tiling flipped), team_paint (hulls in a dulled team color; not restored, run it last).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
 const SETTLE_SECONDS := 0.4
@@ -319,6 +319,12 @@ func _apply(phase: String) -> void:
 				var part: Variant = dressing2.get("ground" if phase == "no_ground" else "structures")
 				if part is Node3D:
 					_override(part, "visible", false)
+		"team_paint":
+			# A look for the lead's team-read question (M3): hulls coated in a dulled team color. Not restored: run it last.
+			for tank in _living_tanks():
+				var team := int(tank.get("team"))
+				var neon := GameTheme.team_color(team)
+				tank.call("set_paint", Color.from_hsv(neon.h, 0.55, 0.42))
 		"no_spill":
 			for node in get_tree().root.find_children("Spill", "MeshInstance3D", true, false):
 				_override(node, "visible", false)
