@@ -97,24 +97,34 @@ same text for all six:
    orchestrator endorsed: **series → final bands → record the baseline twice on builder0 → one commit.** Until that
    commit exists, **no stream re-runs a determinism-sensitive measurement**, or it will be comparing against a hash
    that is about to be replaced.
-3. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
+3. **CP4 does not merge alone: it merges paired with squad's brain-range fix.** combat's evidence, which the
+   orchestrator accepted: `TankBrain._combat_move()` decides where to stand from `weapon["range"]` (full reach) while
+   N5 decides firing from the *effective* band, so the outranging and short-halt branches park a unit exactly where it
+   may not shoot — measured at **61 m for 45 s, 0 shots, 0 metres, never arrives**. Landing CP4 alone would trade the
+   lead's *"everyone just starts firing"* for *"everyone stands still"*, which is a worse game and breaks product
+   constraint #1. combat has committed a two-token proposal **in squad's file** (`5478fa61` on `stream/combat`,
+   explicitly to take, replace or revert) which makes the scenario finish in **14.9 s — faster than the 20.8 s it
+   measured before N5 existed**. squad owns the judgement and the remaining cases; **`scenario_motion::test_brains_dont_dither`
+   at 17.7 and 15.6 option switches per minute against a bar of 12 is the blocking one**, because "no element
+   flip-flopping" is the round's legibility bar.
+4. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
    five tests passing on the laptop; its `make remote T=check` is queued behind the other worktrees and arena will
    send the hash.
-4. **TWO merges re-time other streams' measurements this round, not one.** CP4 is the known one. The second, found by
+5. **TWO merges re-time other streams' measurements this round, not one.** CP4 is the known one. The second, found by
    control: **`perf_scene.gd` calls `RtsCamera.pose_for(focus, 0, zoom)`**, so when control's pitch decoupling merges,
    `make perf-scene`'s camera drops from the welded pose to **38°** — a lower camera that sees more of the far arena,
    so feel's **M1** frame numbers move at that merge through no change of feel's own. Relayed to feel; the rule is the
    same as CP4's: **re-baseline after the merge, and never publish a frame number measured across it.** This is the
    generalisable shape — a shared harness that derives its own configuration from another stream's code silently
    inherits that stream's changes.
-5. **An ElevenLabs request is coming from feel (X3, crowd beds), and it must not be approved until the mix is
+6. **An ElevenLabs request is coming from feel (X3, crowd beds), and it must not be approved until the mix is
    eliminated as the cause.** feel measured the existing crowd murmur as procedural filtered noise at **~43 dB below
    full scale on a Bed bus that is ducked under impacts** — inaudible in a firefight whatever the source material is.
    Recording a better bed and playing it 43 dB down buys an inaudible better bed. The order the orchestrator set:
    solo the crowd, record a real match, fix the mix (bed level, duck depth and release, a ceiling on how far impacts
    may duck the bed), re-listen — *then* ask for credits if it is still thin. Paid generation is irreversible in a way
    a gain change is not (lesson 18), and the standing gate is text → cheap pilot → listen → batch (lesson 19).
-6. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
+7. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
    so it starts with the target number rather than rediscovering it; squad has been told to take its two independent
    items first and explicitly *not* to build its own avoidance to fill the gap.
 

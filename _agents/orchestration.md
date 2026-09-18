@@ -382,3 +382,22 @@ The kickoff prompt is one line; this section is the rest.
     table would have been quoted. Two rules: **a magic number inside a metric is a finding waiting to be wrong** — ask
     which stream owns the quantity and get it derived from the data — and when a correction inverts a published
     conclusion, replace the text, never append to it.
+38. **Baseline the suite before you attribute its failures to your change — especially a suite that is not in
+    `make check`.** Round 6, combat landing CP4: `make ai-scenarios` came back 37 passed, 9 failed. The tempting
+    reading is nine regressions. combat instead ran the same suite on a **pristine tree first** and found the honest
+    split: **5 failures pre-existed**, **1 was fixed** by its change, and **4 were genuinely new**. Without that
+    baseline it would have spent a day on five failures that were never its own, or — worse — reported nine
+    regressions to the orchestrator and had another stream spend the day. The reason the baseline was missing in the
+    first place is the part to fix: **`ai-scenarios` is not in `make check`**, so nobody had a known-good number for
+    it, and a suite nobody baselines drifts until the next person to touch it inherits the whole backlog. Either put
+    a behavioural suite in the gate, or record its expected pass count somewhere a stream will find it.
+39. **A rule and a heuristic that reason about the same quantity in different units will deadlock.** Round 6: N5 made
+    firing depend on *effective* range while `TankBrain._combat_move()` still decided where to stand from
+    `weapon["range"]` — full reach. The outranging branch therefore parked a tank **61 m** from a scout it could not
+    shoot at, for the whole 45 s: 0 shots, 0 metres, never arrived, with the brain printing the cause every tick
+    (`opt=ENGAGE why="outranging it" move={"type":"stop"}`). The fix was two tokens, and the result was *faster* than
+    before the rule existed (14.9 s against 20.8 s) because the unit stopped trying to snipe. The general form:
+    **when you narrow a quantity, grep for every consumer of the old one** — a rule about "may I fire" and a
+    heuristic about "where should I stand" have to share a definition or the unit freezes between them. Note this is
+    lesson 17 seen from the other side: the starved behaviour and the starving rule were written by different streams
+    a round apart, which is exactly when nobody notices.
