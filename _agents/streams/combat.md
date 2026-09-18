@@ -577,6 +577,16 @@ baseline that suite before attributing anything to a change (it is not in `check
 
 ### Merge notes (shared files)
 
+- **The gunnery seam now has a shape to copy.** nav's CP1 landed `game/ai/movement.gd` as *one `Movement` instance
+  per `OrderController`*, which is exactly the shape I asked for on the gunnery side — so `Gunnery` should mirror
+  `Movement` rather than invent a second pattern: an instance on the controller, `gunnery.apply(cmd, seconds)` after
+  the movement half, reading the controller for `tank`, `tanks_root`, `weapon_order` and `move_order["type"]` (the
+  last only so a fixed-mount hull can swing onto its target when halted). **Seconds, not ticks** — the acquisition
+  timer is booked in seconds and must stay that way at any tick rate (lesson 30). The ten methods and eight pieces of
+  state to move are listed verbatim in `_agents/streams/nav.md`.
+  *Merging CP1 was a live test of this:* nav restructured `order_controller.gd` around my edits (moving
+  `_apply_unstick` into `Movement`, adding `movement.idle()` next to my `engagement_lay.forget()`), and all 25
+  envelope tests still passed — including the four wiring tests that exist to fail if the gates are dropped.
 - `game/ai/order_controller.gd` (nav's): five call sites, all in the **direct-fire** path — the `seen` gate in
   `_shootable`, one member, the trigger line and the lost-lay line in `_apply_weapon`, and `forget()` on death, plus a
   `_seconds_step()` helper. **No movement code touched.** `_apply_indirect` (artillery) and `_apply_suppress` (L2 fire
