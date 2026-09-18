@@ -239,7 +239,7 @@ by N5 (`scenario_squad::test_a_squad_focuses_its_fire`), 4 mine*:
 
 | Scenario | What it says | Read |
 |---|---|---|
-| `scenario_motion::test_brains_dont_dither` | 17.7 / 15.6 option switches per minute against a bar of 12 | **The blocker.** Legibility is product constraint #1 |
+| `scenario_motion::test_brains_dont_dither` | ~~17.7 / 15.6 switches per minute against a bar of 12~~ — **the counter was double-counting.** Real: 7.8 → 6.2 | **Resolved by squad**, and my alarm was louder than the evidence. I measured a metric and did not check the metric |
 | `scenario_suppression::test_holding_a_crew_down…` | pinned crew 91% vs calm 100%, wants a wider gap | In the `check` subset, so it blocks a green check. Likely a threshold to re-derive from the band |
 | `scenario_cover::test_a_healthy_tank_near_a_wall…` | hidden 42% of the fight, 3 shots | The peek position is now outside the band |
 | `scenario_motion::test_a_scout_makes_attack_runs…` | 1 run, but 20 shots all into side/rear and **the tank took 0** | May be *better* behaviour (it commits). The test may be what is wrong |
