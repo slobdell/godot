@@ -79,6 +79,27 @@ _Updated 2026-09-17 (evening)._
 with the 30 Hz simulation, contains the blob-shadow fix) 987 passed, 0 failed; **265dbcfc** (the feed's late-frame skip,
 the hitch log, the round-6 write-up) 988 passed, 0 failed.
 
+**Reopened and closed again, 2026-09-17: the MultiMesh interpolation warnings** (orchestrator's request, commit
+`8168e158`). The 30 Hz tick turned physics interpolation on, so the renderer interpolates MultiMesh transforms between
+ticks and every `_process` write logged `[Physics interpolation] MultiMesh interpolation is being triggered from
+outside physics process`. None of these meshes should be interpolated — their transforms already come from
+`FxWorld.visual_transform()`, i.e. from where things are drawn, so the renderer would interpolate an interpolation and
+smear every effect a frame behind.
+
+There are **two switches and both matter**, which is worth knowing in any stream that owns a MultiMesh:
+- the **node's** `physics_interpolation_mode`: a MultiMeshInstance3D pushes its own state to the server whenever that
+  state changes, *entering the tree included*, which silently undoes a server flag set in `_init`. Measured: with the
+  server call alone the node still reports `is_physics_interpolated_and_enabled() == true`, and a burst spawn still
+  warned in a playtest.
+- the **server's** flag on the multimesh, which is reset by any `instance_count` change, because that rebuilds the
+  buffers.
+
+`game/theme/fx/fx_multimesh.gd` holds both (`never_interpolated()` per mesh node, `resize()` for every count change)
+rather than 21 one-liners the next resize would undo, and `tests/test_render_multimesh_interpolation.gd` fails if
+anyone sets `instance_count` directly or adds a mesh node without the switch (mutation-checked). A 6 s playtest:
+**0 interpolation warnings, 0 warnings or errors of any kind** (was 1, from a burst spawn), screenshot still has its
+bursts, tracers, blob shadows and arena kit. `game/ui/selection_markers.gd` is control's and fixed on their side.
+
 **Open for round 6, in order of what the lead is waiting on:**
 1. His own clean `perf-scene` run: nobody has measured his laptop in the state he plays in (ours: ~29 vehicles quiet,
    12–15 under load, locked 30 at 1080p).
