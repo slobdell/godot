@@ -351,6 +351,26 @@ He chose from control's page (https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL 
 every pose): **pitch 25° · 50 m out · FOV 60°**, no note. Applied as `DEFAULT_PITCH_DEG 25`, `FOV_DEG 60` (was 55),
 start 50 m out; the player tilts freely 22°–50°, and `O` is the deliberate 77° top-down.
 
+**FINAL, 2026-09-18 18:01 UTC — he went lower again: `pitch 12° · 50 m · FOV 60°`.** Asked a second time on a page
+offering 12/16/20/25°, he took **the floor of that grid too** (`picks/lead` on
+https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7, no note). Two pages, two floors: this settles the long-open
+question of where *"somewhere in the middle between StarCraft 2 and Twisted Metal"* actually sits, and the answer is
+**much nearer Twisted Metal than this project has ever assumed**. Treat 12° as the intended look, not an experiment —
+and do not let a later agent "correct" it upward toward a conventional RTS pitch because the tactical read is easier
+there. If a lower band is ever offered again, expect him to take it.
+
+Consequences that follow from 12° and are now design facts rather than open questions:
+- **`MIN_PITCH_DEG` moves down with it**, so the player's whole tilt range shifts toward the ground.
+- **The wall cutaway stops being occasional and becomes constant.** A 12° camera crosses arena walls most of the time
+  on most maps, so the near-plane cutaway is load-bearing, not a nicety. It is cheap (one perimeter ray and a dot
+  product per frame, setting `Camera3D.near`), but everything that assumes a camera mostly clearing the walls needs
+  re-checking at this pitch.
+- **The crowd becomes about a third of the frame.** At 12°/70 m the far stands sit across the middle third of the
+  screen, so the venue is no longer background dressing — it is a third of the image, for the whole match.
+- **Off-screen edge markers fire less often**, because more of the army is genuinely in view. Correct, not a bug.
+
+His earlier pick, superseded: 25° · 50 m · FOV 60°.
+
 **He picked the lowest angle on the page**, which is worth recording as a *direction* and not just a value: the grid
 offered 25/35/45/60° and he took the floor of it. The honest reading is that the range may not have gone low enough,
 and that "between StarCraft 2 and Twisted Metal" sits nearer the Twisted Metal end than this project had assumed.

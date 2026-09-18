@@ -518,3 +518,71 @@ The kickoff prompt is one line; this section is the rest.
     singleton, an import cache), deliberately run it *after* its noisiest neighbours before believing it. Only
     lesson 29 (merge the commit whose own check went green) kept this to a 25-minute round trip instead of a red
     `main` for six streams.
+46. **A harness that runs the game slower than real time silently invalidates every *time-domain* conclusion drawn
+    from it — and only those.** Round 6: `audio-pass` on builder0 recorded **3.1 seconds of match per 30 seconds of
+    wall clock**, because a vsync'd window on an idle desktop presents at a crawl (`--disable-vsync` gives 25.6 s).
+    Round 5 had already *noticed* the 10× discrepancy and left the cause open, then published mix conclusions taken
+    through it. The discipline that makes this recoverable rather than a wholesale retraction is the one feel applied:
+    **sort the affected numbers into those that describe what was recorded and those that describe the game.** Loudness,
+    peak and clipping stand — they are properties of the file. Battle density, ducking behaviour and "layer changes
+    look rare" do not — they are properties of events per second, and slow motion is the most flattering possible case
+    for anything being ducked *under*. So: **when you find an instrument was running at the wrong rate, do not ask
+    "are the numbers wrong", ask "which of these numbers is about time"** — and re-take only those. See also lesson 30,
+    where three of six tick-rate bugs lied to a reader rather than breaking a test.
+47. **A product guarantee that no test isolates can be held up by a coincidence — and it will look fine until
+    something unrelated moves.** Round 6, the sharpest finding of the round. Product constraint #4 is the lead's own
+    ruling: *"the player's units hold until ordered — an army that moves without being told is not an army."* CP4 broke
+    it, and the reason it had ever worked is worse than the bug: **before N5, a held unit that entered ENGAGE hit the
+    *outranging* branch** — `distance <= weapon["range"]` was true at that range — **and `_combat_move` returned
+    `{"type": "stop"}`.** The player's units held still because an unrelated range heuristic happened to return "stand
+    still", not because any hold logic said so. Narrow the range and the coincidence stops happening: the unit holds
+    for 21.5 s and then **decides on its own to flank**, weaving for the enemy's side with its front armour on.
+    The test had passed for rounds. **It asserted the outcome (the unit ended up near where it started) and never the
+    mechanism (a held unit issues no move order)**, so nothing could ever reveal that the mechanism was absent.
+    Three instructions, and the third is the one that is new:
+    - **For every guarantee you have promised a human, write the test that isolates the mechanism**, not the one that
+      observes the happy outcome. An outcome test cannot distinguish "enforced" from "lucky".
+    - **When a guarantee breaks under an unrelated change, do not restore the unrelated thing.** Restoring the old
+      range comparison here would put the guarantee back to being luck. Find out what was actually enforcing it —
+      often nothing.
+    - This is lesson 17 for the third time in one round, but in a worse form. Twice it was a rule **starving** a
+      behaviour (the announcer silenced by a priority; a tank frozen at 61 m). Here it is a rule **sustaining a
+      guarantee it knows nothing about**. Starvation shows up as something missing; a load-bearing coincidence shows
+      up as nothing at all, until the day it does.
+    Method worth copying: the stream **bisected and sent the table rather than the conclusion** — N5 ~8 m, the brain
+    fix ~5 m, X6 **nothing** — and said the X6 row was the one that would have been easy to assume the other way. It
+    also corrected its own earlier report that the failure was machine variance, having set out to prove it rather
+    than assume it.
+48. **A wait with no heartbeat is indistinguishable from a hang — and a queue without ageing is a race that starves.**
+    Round 6, found by combat after its pilot run sat **41 minutes without ever starting a single process**, while
+    builder0's load average was **1.35 on 8 cores** and two of the three slots were held by *rendering* jobs that
+    barely touch the CPU. `tools/slot.sh` had no queue at all: every waiter woke each 5 s and raced for whichever lock
+    happened to be free, so a job queuing for 41 minutes had exactly the same chance as one that arrived 5 seconds ago.
+    **That is starvation, not contention, and it gets worse the more streams are live** — precisely when fairness
+    matters most. It also printed its "waiting" banner **once** and then went silent forever, so a starved job and a
+    running job looked identical in a log; that is most of why an hour went into diagnosing "builder0 is slow", and
+    why the orchestrator had to `ssh` in to tell a stream whether its own build was running.
+    Three instructions:
+    - **Any wait longer than a minute must report itself periodically**, with its age and its position. A one-shot
+      "waiting…" line is worse than nothing, because it looks like progress information and is not.
+    - **A shared resource needs a queue, not a lock.** Ageing or ticketing turns "random" into "first come, first
+      served"; without it, adding contenders does not slow everyone down evenly, it starves someone completely.
+    - **When the fix is to a primitive every agent depends on, the orchestrator writes it, not the finder** — a
+      deadlock in a locking script stops six streams at once. combat proposed the fix, declined to commit it to a
+      shared file, and was right to. The counterpart obligation is to *test it*: an isolated queue directory, a
+      three-waiter ordering check, and a SIGKILLed waiter whose trap never runs, before it goes anywhere near `main`.
+49. **An aggregate that mixes two mechanisms measures the louder one, and its name will not warn you.** Round 6,
+    combat, before running its 60-match series: `contact_second` is the first second with **any** shots and
+    `engaged_distance_median` averages nearest-enemy distance over **seconds with shots in them** — and neither
+    separates direct fire from indirect. N5 governs direct fire only (artillery is deliberately outside it: ARC
+    already needs a spotter, and reach is its job). So in a Condemned mirror where 13% of kills were indirect, **a
+    battery lobbing at a spotted contact across the map set "contact" and then held "engaged distance" at the
+    separation of two armies that were not yet fighting.** `kill_distance` moved 45 → 35 m (the rule working) while
+    `engaged_distance` barely moved, 79 → 75 m, and `contact` did not move at all.
+    **The dangerous part is the conclusion that invites: "the bands are not binding, tighten them further"** — when
+    they were binding all along, and tightening would have pushed the game into the too-quiet failure the round was
+    already watching for. Same family as the metric whose value was fine but whose *printed label* hid what it was.
+    So: **before running a series, ask which mechanisms each aggregate is summing over, and split the ones that mix
+    a governed mechanism with an ungoverned one** — reporting the split *alongside* the old figure, never instead of
+    it, so the existing baseline stays comparable. Twenty minutes on the metric beats sixty matches through a
+    contaminated one.
