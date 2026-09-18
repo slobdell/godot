@@ -135,27 +135,36 @@ stale thresholds in squad's scenario files whose underlying behaviour is now cor
 actually say*). **Do not make them pass by weakening anything**; the geometry needs deriving from the band, the way
 this stream re-derived its own tests when the bands moved.
 
-**What N5 bought, measured with the old world in the same run** (builder0, n = 2 per row on a Condemned mirror; the
-60-match counterbalanced series supersedes these — see [../balance.md](../balance.md)):
+**What fire discipline at the shipped bands is worth** (builder0 `c765275f`, **n = 15 per row**, three
+counterbalanced pairings, SEEDS=3 — [../balance.md](../balance.md) has the full table):
 
-| | old world | **shipped bands** |
+| | control | **shipped bands** |
 |---|---|---|
-| **kill distance** | 47 m | **34 m** (−28%) |
-| off-axis kills | 32% | **40%** |
-| fire rate | 7.6 /unit/min | **9.7 /unit/min** |
+| engaged distance | 68 m | **60 m** (−12%) |
+| kill distance | 43 m | **40 m** (−7%) |
+| flank+rear kills | 63% | **69%** |
+| fire rate | 16.9 /unit/min | 15.2 (−10%) |
+| matches ended by | 11 elim / 4 control | 11 elim / 4 control |
 
-**The headline is that the fight is decided 28% closer, with more flanking — and it got LOUDER, not quieter.** That
-inverts the assumption two rounds of briefs were written on. The lead's *"units see each other and then everyone just
-starts firing"* was never about the volume of fire; it was about fire from a distance where nothing else was
-possible. Units now close to where their fire counts instead of trading gambles at maximum range, so more rounds are
-worth firing. **0.55 of reach is the overshoot** — fire falls *below* the old world, matches stretch 40%, and neither
-side can finish one.
+**Every metric moves the right way. All of them move modestly.** That is the honest state.
 
-**Read `kill_distance`, never `engaged_distance`.** The latter is 72–77 m in *every* configuration including the old
-world, because it is dominated by the Lancer's 86 m band and measures the outlier rather than the line.
+**Three earlier claims of mine are RETRACTED — if you have seen them anywhere, they are wrong:**
+~~"decided 28% closer"~~ (really 7%), ~~"fire goes UP so the complaint was never about volume"~~ (it goes down), and
+~~"`engaged_distance` does not discriminate, read `kill_distance`"~~ (inverted — engaged distance moves *most*). All
+three came from **two matches on a single Condemned mirror**, the pairing most exposed to the army draw. I argued the
+fire-rate one hardest *because* it was surprising and had a tidy mechanism, which is exactly when a result deserves
+least trust: **the more a finding reframes something, the smaller the sample you should accept for it.**
 
-**Still owed:** the 60-match series (running), then the sim baseline recorded twice — **in that order**, because
-recording it before the bands are final means recording it twice.
+**And a caveat the table above still carries:** the control tunes `effective_range` back to `range`, which disables
+**fire discipline only**. Sight, acquisition and X6's crossing penalty are *code*, not data, so `--variants` could not
+switch them off and they were in **both** arms. **That measures fire discipline, not N5.** I had built a control out
+of the knobs that happened to be reachable rather than out of what the question needed — it looked like a control and
+was not one. Fixed at `fa4e7077`: a variant may now carry runner flags, and a genuine round-5 arm
+(`--no-acquisition --no-crossing`) runs beside a discipline-off-only arm so the two are separated rather than
+conflated.
+
+**Still owed:** the 75-match true before/after (running). **The sim baseline is NOT combat's to record** — round 6
+made that invariant 2; the orchestrator records it once on `main` after the last simulation-changing merge.
 
 | Commit | What |
 |---|---|
