@@ -28,6 +28,10 @@ extends GameMode
 ##   --hud-cost=PATH  X4: what each HUD widget costs in draw calls and _process at ~30 a side (HudCostProbe)
 ##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
 ##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
+##   --camera-looks=DIR  round 6 X3: both sides CPU; freeze the first fight and photograph it from a grid of camera poses
+##     (pitch x distance x FOV), then write DIR/index.html for the lead to pick from (CameraLooks)
+##     --camera-looks-grid=arena  three frames only (round 5's start pose, the new default, the overview): the arena tour
+##     --camera-looks-pitches=15,20,25 / -distances=35,50 / -fovs=60  a follow-up grid around a pick (no round-5 row)
 ##   --touch-map  round 2's tap grammar (squad bar, drill and formation pickers) instead of the desktop controls
 ## Round 3 (control stream): the default is StarCraft-style desktop control (RtsControls, _agents/tactical_map.md "v4").
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
@@ -35,7 +39,8 @@ extends GameMode
 
 const SCRIPT_BREAK_CONTACT_SECONDS := 30.0
 ## The closest the RTS camera starts (0 = close behind a tank, 1 = high over the arena); it frames the army.
-const START_ZOOM := 0.36
+## Round 6: the lead's pick on the camera page was 50 m out; RtsCamera.level_for(50.0) = 0.373 (was 0.36, 48 m).
+const START_ZOOM := 0.373
 ## The camera starts looking this far ahead of the player's base (tanks sit in the lower third).
 const START_AHEAD := 25.0
 const SCRIPT_FOLLOW_ZOOM := 0.42
@@ -78,7 +83,12 @@ static func alert_lines(p_flags: LaunchFlags) -> int:
 ## `--cinematic` is spectator mode: nobody is commanding, so it returns -1 on purpose and both sides play themselves.
 ## Don't "tidy" that away, or SPECTATE becomes two armies sitting still.
 static func commanded_team(p_flags: LaunchFlags) -> int:
-	return -1 if p_flags.has("cinematic") else Match.Team.GREEN
+	return -1 if SkirmishMode.spectated(p_flags) else Match.Team.GREEN
+
+
+## Nobody commands either side: spectating (--cinematic), or photographing a fight for the camera page (--camera-looks).
+static func spectated(p_flags: LaunchFlags) -> bool:
+	return p_flags.has("cinematic") or p_flags.has("camera-looks")
 
 
 ## Whether the CPU army is commanded by doctrine's ElementCommander (elements, formations, drills) rather than by its
@@ -98,7 +108,7 @@ static func cpu_runs_elements(p_flags: LaunchFlags) -> bool:
 ## smoke or browser-driven run, which must keep starting the same match they always did.
 static func wants_faction_menu(flags: LaunchFlags) -> bool:
 	if flags.has("no-pick-faction") or flags.has("scripted") or flags.has("control-playtest") \
-			or flags.has("command-playtest") or flags.has("touch-map"):
+			or flags.has("command-playtest") or flags.has("touch-map") or flags.has("camera-looks"):
 		return false
 	if flags.has("pick-faction"):
 		return true
@@ -145,6 +155,7 @@ static func faction_flags(current: LaunchFlags, player_faction: String, enemy_fa
 
 
 func _start_match() -> void:
+	LoadingScreen.mark("mode_start")  # X4: where a FIGHT load's time goes (printed with LOAD_TIMING)
 	var game_match := main.game_match
 	game_match.has_local_player = false
 	# Directive set 2: armies are bought with a budget. The CPU army is seeded (--seed, else the clock,
@@ -159,6 +170,7 @@ func _start_match() -> void:
 	for team in lineups:
 		var faction := String(plan[team]["faction"])
 		var loaded := Army.load_army(lineups[team], seed_value, budget, faction)
+		LoadingScreen.mark("army_%d_rolled" % team)
 		var error: String = loaded.get("error", "")
 		if error == "" and team == Match.Team.GREEN and faction == "":
 			error = Army.check_budget(loaded["doctrine"], budget)
@@ -166,10 +178,12 @@ func _start_match() -> void:
 			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
 					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
 			error = game_match.load_doctrine(team, loaded["doctrine"])
+			LoadingScreen.mark("army_%d_spawned" % team)
 		if error != "":
 			push_error(error)
 			main.hud.set_status("Can't start skirmish: " + error)
 			return
+	LoadingScreen.mark("armies_built")
 	# K1: the match's Orders (Match.orders once combat adds the field) and, until brains execute orders themselves
 	# (ai X1), the adapter that makes ordered units obey.
 	var orders := Orders.of(game_match)
@@ -187,11 +201,12 @@ func _start_match() -> void:
 		# Round 5: the switch for the CPU running doctrine (elements, formations, drills); off until a doctrine variant beats
 		# brains at skirmish scale. A spectated match runs both sides that way. ai owns the commander; this is the flag.
 		if SkirmishMode.cpu_runs_elements(flags):
-			var cpu_teams := [Match.Team.RUST, Match.Team.GREEN] if flags.has("cinematic") else [Match.Team.RUST]
+			var cpu_teams := [Match.Team.RUST, Match.Team.GREEN] if SkirmishMode.spectated(flags) else [Match.Team.RUST]
 			for cpu_team: int in cpu_teams:
 				for squad in game_match.team_squads(cpu_team):
 					elements.form(Array(squad.roster), String(squad.squad_name))
 				ElementCommander.install(game_match, cpu_team, elements)
+	LoadingScreen.mark("elements")
 	var executor := OrderExecutor.new()
 	executor.name = "OrderExecutor"
 	executor.game_match = game_match
@@ -231,6 +246,7 @@ func _start_match() -> void:
 	fog.invoke("setup", [{"texture": field.texture, "origin": VisibilityField.ORIGIN,
 			"size": field.cells * VisibilityField.CELL_SIZE}])
 	field.refresh_all.call_deferred()
+	LoadingScreen.mark("fog")
 	# G4: an RTS camera over the player's base, looking toward the enemy.
 	var rig := RtsCamera.new()
 	rig.name = "RtsCamera"
@@ -272,10 +288,12 @@ func _start_match() -> void:
 			"\n%s" % arena_title if arena_title != "" else ""])
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
+	LoadingScreen.mark("camera_hud")
 	if flags.has("touch-map") or flags.has("command-playtest"):
 		_start_touch_map(field, rig, messages)
 	else:
 		_start_desktop_controls(field, rig, messages, orders)
+	LoadingScreen.mark("controls")
 
 
 ## Round 3's desktop controls: RtsControls (named "TacticalMap" so the HUD skin lays out around it), selection rings,
@@ -291,6 +309,8 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.rig = rig
 	controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
 	controls.elements = Elements.of_match(game_match)
+	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
+	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"
 	main.hud.add_child(controls)
 	var markers := SelectionMarkers.new()
 	markers.name = "SelectionMarkers"
@@ -321,7 +341,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.markers = edge
 	edge.alert_lines = SkirmishMode.alert_lines(flags)
 	# X6: the controls a new player can discover, retired one by one as they're used (--hints=off hides them).
-	if flags.text("hints", "on") != "off" and not (flags.has("scripted") or flags.has("control-playtest") or flags.has("cinematic")):
+	if flags.text("hints", "on") != "off" and not (flags.has("scripted") or flags.has("control-playtest") or SkirmishMode.spectated(flags)):
 		var hints := ControlHints.new()
 		if flags.text("hints") == "fresh":
 			hints.store_path = ""
@@ -342,7 +362,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		var fog := main.get_node_or_null("FogOfWar")
 		if fog != null:
 			(fog as Node3D).visible = false
-	elif not flags.has("no-vision-camera"):
+	elif not flags.has("no-vision-camera") and not flags.has("camera-looks"):
 		# L4 (control X1): the camera frames the element you are commanding and never zooms out past what the force
 		# can collectively see (the lead: "a bird's eye view is just an unearned god view").
 		rig.vision = controls.vision_state
@@ -369,7 +389,22 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		probe.main = main
 		probe.out_path = flags.text("hud-cost")
 		main.add_child(probe)
-	if flags.has("control-playtest"):
+	if flags.has("camera-looks"):
+		var looks := CameraLooks.new()
+		looks.name = "CameraLooks"
+		looks.game_match = game_match
+		looks.rig = rig
+		looks.camera = main.camera
+		looks.out_dir = flags.text("camera-looks")
+		looks.seed_value = flags.integer("seed", -1)
+		looks.grid = flags.text("camera-looks-grid", "full")
+		for axis in ["pitches", "distances", "fovs"]:
+			if flags.has("camera-looks-" + axis):
+				looks.set(axis, Array(flags.text("camera-looks-" + axis).split(",")).map(func(v: String) -> float: return float(v)))
+				looks.show_today = false
+		main.add_child(looks)
+		looks.run()
+	elif flags.has("control-playtest"):
 		var playtest := ControlPlaytest.new()
 		playtest.name = "ControlPlaytest"
 		playtest.controls = controls

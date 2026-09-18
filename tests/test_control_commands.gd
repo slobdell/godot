@@ -160,3 +160,24 @@ func test_a_right_click_move_is_a_direct_order_and_the_other_verbs_stay_tasks() 
 	await f.key(KEY_E)
 	await f.click(f.ground(Vector3(30, 0, -20)))
 	assert_true(f.controls.selected_element() != null, "E still gives the element a screening task")
+
+
+## Round 6: a direct order to PART of an element releases those units from it, so its leader stops re-slotting them;
+## the rest stay the element, and re-selecting the whole group re-forms it with the next task.
+func test_a_direct_order_to_part_of_an_element_releases_only_those_units() -> void:
+	var f := await _setup()
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
+	f.controls.recall_group(1)
+	await f.key(KEY_H)
+	var element := f.controls.selected_element()
+	assert_true(element != null, "setup: a hold task forms the element")
+	await f.select(["Green_Alpha_1"])
+	await f.right_click(f.ground(Vector3(-10, 0, -20)))
+	assert_eq(f.controls.elements.of("Green_Alpha_1"), null, "the unit given its own order leaves the element")
+	assert_true(f.controls.elements.of("Green_Alpha_2") == element and f.controls.elements.of("Green_Alpha_3") == element,
+			"the rest stay the element")
+	f.controls.recall_group(1)
+	await f.key(KEY_H)
+	var again := f.controls.selected_element()
+	assert_true(again != null and again.members().size() == 3, "re-selecting the group and tasking it re-forms all three")

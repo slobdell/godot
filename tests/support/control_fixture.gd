@@ -49,6 +49,10 @@ func build(with_executor := true) -> void:
 	rig.edge_pan = false
 	rig.focus = Vector3(0, 0, 35)
 	rig.zoom = 0.3
+	# Round 6 X3: pitch is its own axis, and the lead's default (25°, FOV 60°) shows most of the arena at once. These
+	# tests are about which points are on screen and when the camera tracks, written against round 5's tilt at this
+	# zoom (42°), so they pin it instead of inheriting whatever the default look is.
+	rig.pitch = 42.0
 	test.add_to_tree(rig)
 	rig.snap()
 	orders = Orders.new()

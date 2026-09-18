@@ -13,18 +13,46 @@ const MAIN_SCENE := "res://game/main.tscn"
 const RANDOM := "random"
 
 
+## Round 6 X4: staged, behind a LoadingScreen that stays up (on the root) until the match has drawn its first frame.
+## Each stage yields frames first, so the screen that names it is actually on the monitor while the engine is busy.
 static func start(tree: SceneTree, flags: LaunchFlags) -> void:
 	var resolved := resolve_arena(with_seed(flags))
-	var main := instantiate(resolved)
+	var screen := LoadingScreen.show_for(tree, resolved)
+	screen.enter("scene")
+	await _drawn(tree)
+	ResourceLoader.load_threaded_request(MAIN_SCENE)
+	var progress := [0.0]
+	while ResourceLoader.load_threaded_get_status(MAIN_SCENE, progress) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		screen.report(float(progress[0]))
+		await tree.process_frame
+	var packed := ResourceLoader.load_threaded_get(MAIN_SCENE) as PackedScene
+	var main := instantiate(resolved, packed)
+	screen.enter("arena")
+	await _drawn(tree)
+	# The arena builds (venue, navmesh) when the scene enters the tree, then Main starts the mode (armies, controls):
+	# both inside the scene switch, so their split comes from signals rather than from frames.
+	var arena := main.get_node_or_null("Arena")
+	if arena != null:
+		arena.ready.connect(screen.enter.bind("armies"), CONNECT_ONE_SHOT)
+	main.ready.connect(screen.enter.bind("first_frame"), CONNECT_ONE_SHOT)
 	Main.next_flags = resolved
 	tree.paused = false
 	tree.change_scene_to_node(main)
+	await main.ready
+	await _drawn(tree)
+	screen.done()
+
+
+## Two process frames: the first draws what the last one queued, the second is on screen when the next stall begins.
+static func _drawn(tree: SceneTree) -> void:
+	await tree.process_frame
+	await tree.process_frame
 
 
 ## The game scene, not yet in the tree, with its arena set to the flags' layout.
-static func instantiate(flags: LaunchFlags) -> Node:
+static func instantiate(flags: LaunchFlags, packed: PackedScene = null) -> Node:
 	var resolved := resolve_arena(flags)
-	var main := (load(MAIN_SCENE) as PackedScene).instantiate()
+	var main := (packed if packed != null else load(MAIN_SCENE) as PackedScene).instantiate()
 	var arena := main.get_node_or_null("Arena")
 	if arena != null and resolved.has("arena"):
 		arena.set("layout_name", resolved.text("arena"))
