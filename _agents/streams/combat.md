@@ -547,11 +547,13 @@ make remote T="engagement PAIRS=condemned:condemned SEEDS=3 TIME=240"           
 make remote T="engagement PAIRS=condemned:condemned SEEDS=3 TIME=240 TUNE=<bands=reach>"   # discipline off
 #    ...and --no-acquisition / --no-crossing through the match runner for gates 1-2 and X6 separately.
 
-# 3. Only after the bands are settled: move the sim baseline (it WILL move; ranges are the simulation).
-make remote T=sim-baseline-record    # twice, confirm the two agree
-cp build/sim_state_hash.txt tests/baselines/sim_state_hash.txt   # builder0's glibc line is the canonical one
-#    The laptop is glibc 2.39 and has no line in that file, so `sim-baseline` SKIPS locally and only the
-#    remote check ever tests it. Do not be reassured by a green local check.
+# 3. DO NOT record the sim baseline. Round 6 made this invariant 2 (workstreams.md): no stream records it;
+#    the orchestrator records it ONCE on main after the last simulation-changing merge. Three streams moved it
+#    this round (combat's ranges, squad's brain fixes, nav's ORCA/PID), so every per-stream hash is stale by the
+#    next merge. Say in your green report that your change moves it, and stop there.
+#    Why it has to be a rule rather than care: the file is keyed per glibc, the laptop is 2.39 and has NO 2.39
+#    line, so `sim-baseline` SILENTLY SKIPS locally. A check that skips is not a check that passes, and all
+#    three of us could have committed a stale hash behind a green local check.
 
 # 4. X4's re-measure, which must come after all of the above and never across it.
 make remote T="faction-matrix SEEDS=5 TIME=150"
@@ -613,7 +615,8 @@ baseline that suite before attributing anything to a change (it is not in `check
 1. **squad lands the precedence fixes**; CP4 merges as a pair.
 2. Run the series (runbook above). Report median hit range, first shot, **shots per unit per minute**, duration,
    flanking-route unit-time, with n, commit and machine.
-3. Settle the bands, **then** `make remote T=sim-baseline-record` twice and commit the hash with the reason.
+3. Settle the bands. **Do not record the sim baseline** — say in the green report that N5 moves it and leave the
+   record to the orchestrator (invariant 2).
 4. X4's `faction-matrix` re-measure — after everything above, never across it.
 5. **N7** (arena's objectives read-through in `match.gd`) — scheduled after CP4 so two contracts are never in flight
    in that file at once.
@@ -641,6 +644,7 @@ baseline that suite before attributing anything to a change (it is not in `check
 - `game/modes/match_runner_mode.gd` (mine): `--no-acquisition` and `--no-crossing`, measurement controls.
 - `mk/match.mk` (mine): `VARIANT_FILE` / `SEARCH_UNITS` renames. **`9f798368` and `fd5ac1af` have no dependency on the
   envelope and can go to `main` on their own** (lesson 9).
-- **The sim baseline moves** (invariant 2 says combat may): ranges *are* the simulation. Not recorded yet — see *Next
-  steps*. The laptop is glibc 2.39 and has no line in `tests/baselines/sim_state_hash.txt`, so `sim-baseline` **skips
+- **The sim baseline moves, and combat deliberately does NOT record it.** Ranges *are* the simulation, so N5 changes
+  the hash — but round 6 made this invariant 2: the orchestrator records it once on `main` after the last
+  simulation-changing merge. Three streams moved it this round. The laptop is glibc 2.39 and has no line in `tests/baselines/sim_state_hash.txt`, so `sim-baseline` **skips
   locally** and only the remote check ever tests it. Do not read a green local check as covering it.
