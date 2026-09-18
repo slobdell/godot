@@ -256,6 +256,58 @@ correctly hold their fire, the subject is never under fire, and a test about *ta
 has nothing to do with cover. The scenario's geometry silently encoded the old ranges — orchestration.md lesson 3 in
 new clothes. **That file is squad's**, so the fix is theirs to choose (see *Requests to other streams*).
 
+### X6 — `scout > lancer` now has a mechanic (`a493d4b5`, `f1c1a903`)
+
+The roster has claimed `lancer.weak_vs = ["scout"]` since round 2 with nothing behind it, and ai asked for this in
+round 4. **A contact CROSSING the gunner's field is harder to acquire than one driving straight at him** — the
+component of its velocity perpendicular to the line of sight, over the range, against a 20°/s reference, capped at 3×.
+A 14 m/s scout at 86 m crosses at 9.3°/s and costs a Lancer **2.25 s to acquire instead of 1.54 s**: 31 m of closing,
+bought by moving across rather than at him.
+
+Why this rather than a number in the counters table: **it pays for the right behaviour.** A scout that charges down
+the sight line gets no protection at all (asserted in the tests); only the attack run does. And it is a rule about
+gunnery, not a special case about scouts — a tank crossing an IFV's front is just as hard to lay on.
+
+**The risk it creates, and the control that measures it.** N5's discipline delays the *start* of a fight; X6 delays
+each *engagement* within it. Stacked, they are the one combination that could make fights too **quiet** — the opposite
+of the lead's complaint and much easier to ship without noticing. Two scenarios already read it (a moving duel drops
+to `[3, 2]` shots; the dodge champion finds nothing worth dodging), both outside the `check` gate and both X6 working
+as intended. `--no-crossing` isolates it from the rest of acquisition, because `--no-acquisition` would switch off
+gates 1, 2 *and* X6 together. If the series says it is too much, `CROSSING_ACQUIRE_PENALTY` is one number.
+
+### X3 — the arena is no longer sized for the old ranges (geometry, pending the series)
+
+This is arithmetic, not a measurement, and it is flagged as such. `arenas/foundry.json` (and every shipped layout) has
+`half_size` **120** with spawn rows at z **±90** — the two armies start **180 m** apart.
+
+| | before N5 | after N5 |
+|---|---|---|
+| Approach, in cannon-lengths | 180 / 70 = **2.6 reaches** | 180 / 45 = **4.0 bands** |
+| Measured separation at first contact (round 5) | **~108 m** | should fall toward the band |
+
+So the brief's premise — *"half-size 121 m with 70 m cannons means two spawns are barely two engagements apart"* —
+**inverts**: in engagement terms the same map is now about **1.5× larger**, and the approach is the part of the match
+that grows. My reading is that the maps should **not** shrink, and that the round-5 complaint about a single central
+control point funnelling everything matters *more* now, not less: a longer approach is only interesting if there is
+somewhere worth approaching other than the middle. That is arena's X3 and N7, and it is the strongest argument I have
+for doing N7 promptly after CP4.
+
+**What would change my mind:** if the series shows contact still happening at ~100 m (because team spotting plus the
+`long_shot` override keep long-range fire alive), then the bands are not binding and the map question is untouched.
+That is exactly what `separation_at_contact_m` and `engaged_distance_m` measure, so X3 resolves itself out of the CP4
+series rather than needing its own run.
+
+### Infra: `make engagement` was broken, and `make matchup-search` silently wrong (`9f798368`)
+
+`mk/ai.mk` sets `VARIANTS ?= r1,a4,a6` (brain-variant *names*). **A make variable set in any `mk/*.mk` is global**, and
+`mk/match.mk` used the same name for a *path to a JSON file*, so `$(if $(VARIANTS),…)` was always true and always
+wrong — `make engagement` died on `FileNotFoundError: 'r1,a4,a6'`, which is the exact command
+[references/combat/README.md](references/combat/README.md) gives for reproducing the round-5 baseline. *A "reproduce
+with" line nobody re-runs is a claim, not a reproduction.* `matchup-search` took the same collision **silently** and
+would have searched three brain names instead of the file you meant. Both now take `VARIANT_FILE=`. `mk/ai.mk` is
+untouched: the bug is two makefiles claiming one name, so the newcomer moves. **Name make knobs after the target that
+owns them.** No dependency on the envelope — cherry-pick to `main` on its own (lesson 9).
+
 ### X5 — the duplicated Lancer (proposal, for the orchestrator to relay)
 
 **The Syndicate should lose `syn_lancer`; the Condemned keep `lancer`.** The reasoning is the engagement envelope
