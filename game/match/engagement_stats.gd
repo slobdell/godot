@@ -209,6 +209,12 @@ func summary() -> Dictionary:
 			"kill_distance_median": snappedf(_median(_kill_distances), 0.1),
 			"kill_distance_p25": snappedf(_percentile(_kill_distances, 0.25), 0.1),
 			"kill_distance_p75": snappedf(_percentile(_kill_distances, 0.75), 0.1),
+			# N5 (round 6): is anyone actually SHOOTING? Fire discipline and the crossing penalty both delay fire, and
+			# nothing else here would notice if they overshot into a quiet fight — the opposite of the lead's
+			# complaint and far easier to ship without seeing. `contact_second` is already time-to-first-shot; this is
+			# the rate once it starts, per living unit so armies of different sizes compare.
+			"shots": shots,
+			"shots_per_unit_minute": snappedf(60.0 * float(shots) / maxf(float(unit_seconds), 1.0), 0.01),
 			"unit_seconds_near_cover_share": _share(unit_seconds_near_cover, unit_seconds),
 			"shots_near_cover_share": _share(shots_near_cover, shots),
 			"kills_by_cover_shooters_share": _share(kills_by_cover_shooters, all_kills),

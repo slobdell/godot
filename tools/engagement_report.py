@@ -58,6 +58,9 @@ def summarize(results):
         "separation_at_contact_m": mean([e["separation_at_contact"] for e in engagement]),
         "engaged_distance_m": mean([e["engaged_distance_median"] for e in engagement]),
         "kill_distance_m": mean([e["kill_distance_median"] for e in engagement]),
+        # N5 (round 6): the two figures that would catch the envelope overshooting into a QUIET fight. Reported in
+        # every configuration including the old-world control, because "quieter than before" is only visible against it.
+        "shots_per_unit_minute": mean([e.get("shots_per_unit_minute") for e in engagement]),
         "static_share": mean([e["static_share"] for e in engagement]),
         "held_line_share": mean([e.get("held_line_share") for e in engagement]),
         "net_advance_m": mean([max(e.get("net_advance", [0, 0])) for e in engagement], signed=True),  # the side that pushed
@@ -77,7 +80,8 @@ def summarize(results):
 
 
 def print_row(label, s):
-    print(f"{label:<24} n={s['matches']:<3} len {s['duration_s']:5.0f}s  contact {s['contact_s']:4.0f}s "
+    print(f"{label:<24} n={s['matches']:<3} len {s['duration_s']:5.0f}s  1st shot {s['contact_s']:4.0f}s "
+          f"fire {s['shots_per_unit_minute']:5.1f}/unit/min  "
           f"@{s['separation_at_contact_m']:4.0f}m  engaged {s['engaged_distance_m']:4.0f}m  kill {s['kill_distance_m']:4.0f}m  "
           f"static {s['static_share']:4.0%} held-line {s['held_line_share']:4.0%}  moved {s['centroid_travel_m']:4.0f}m "
           f"push {s['net_advance_m']:4.0f}m  off-axis kills {s['off_axis_kill_share']:4.0%} (behind line {s['behind_line_kill_share']:3.0%})  "
