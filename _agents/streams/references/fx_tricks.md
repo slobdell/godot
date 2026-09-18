@@ -53,7 +53,7 @@ by owner — for hunting draw calls), `--perf-shot-every-phase` (a screenshot pe
 actually removed), and `PERF_SCENE_HITCH` lines, which print the frames that ran long with `ticks_this_frame` beside
 them — that is how the hitches were traced to frames running 2–3 simulation ticks at once.
 
-**Labelled baselines live in `references/perf/`** with a README giving each one's provenance (what build, what
+**Labelled baselines live beside this file in `perf/`** (`_agents/streams/references/perf/`) with a README giving each one's provenance (what build, what
 resolution, capped or not, and which were taken while the laptop was loaded). Compare a new run against the file, not
 against a number in an old commit message.
 
