@@ -159,11 +159,15 @@ li.plain { color:var(--dim); }
 .q { margin:14px 0 0; padding-top:12px; border-top:1px solid var(--line); font-weight:600; }
 footer { color:var(--dim); font-size:.9rem; border-top:1px solid var(--line); padding-top:18px; margin-top:8px; }
 code { background:#0d0f15; padding:1px 5px; border-radius:4px; font-size:.9em; }
-@media (max-width:600px){ .wrap{padding:16px 12px 48px;} h1{font-size:1.35rem;} }
+@media (max-width:600px){ .wrap{padding-block:16px 48px; padding-inline:16px;} h1{font-size:1.35rem;} }
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
 """
 
 
-def render(report, order, shots):
+## The page commits to one dark look on purpose: it is a page of screenshots of a night-time arena game, and a light
+## ground would fight every image on it. So no light/dark token swap -- but every colour is declared explicitly on
+## :root and the body paints its own background, so the page holds whatever ground it is composited over.
+def render(report, order, shots, fragment=False):
     cards = []
     for name in order:
         entry = read(report, name)
@@ -179,9 +183,10 @@ def render(report, order, shots):
             % (picture, html.escape(entry.get("title", name.title())), tone,
                {"good": "worth keeping", "mixed": "middling", "bad": "too open"}[tone],
                html.escape(verdict), bullets))
-    return """<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tank Squad arenas</title><style>%s</style></head><body><div class="wrap">
+    head = "" if fragment else ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+                                '<meta name="viewport" content="width=device-width,initial-scale=1">')
+    tail = "" if fragment else "</body></html>"
+    return """%s<title>Tank Squad Arenas</title><style>%s</style>%s<div class="wrap">
 <h1>The seven arenas</h1>
 <p class="sub">Each one as the match runner sees it, and what it measures. Round 6, arena stream.</p>
 <div class="warn"><b>Nobody has played these.</b> Everything below is what the <i>shape</i> of each map measures —
@@ -204,7 +209,7 @@ Measurements: <code>make arena-report</code> — static geometry, no match playe
 a squad you <i>order</i> to watch a lane reaches further, so &ldquo;covered&rdquo; is never a guarantee.
 The Furnace shares the Foundry's card — same shape, different hazards. The Maze is not here: it is a nav test
 fixture, not a map.
-</footer></div></body></html>""" % (CSS, "".join(cards))
+</footer></div>%s""" % (head, CSS, "" if fragment else "</head><body>", "".join(cards), tail)
 
 
 def main():
@@ -212,6 +217,8 @@ def main():
     parser.add_argument("--report", default="build/arenas/report.json")
     parser.add_argument("--out", default="build/arena-page/index.html")
     parser.add_argument("--view", default="overview", choices=["overview", "skirmish"])
+    parser.add_argument("--fragment", action="store_true",
+                        help="omit the document wrapper (the Artifact platform supplies its own head/body)")
     args = parser.parse_args()
     report = json.loads((ROOT / args.report).read_text())
     # Worst first: the lead's time goes on the maps this stream is asking about, not on the ones that measure fine.
@@ -226,7 +233,7 @@ def main():
             missing.append(name)
     out = ROOT / args.out
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(render(report, order, shots))
+    out.write_text(render(report, order, shots, fragment=args.fragment))
     size = out.stat().st_size
     if missing:
         print("ARENA_PAGE_MISSING_SHOTS %s (run: make remote T=arena-shots)" % ",".join(missing))
