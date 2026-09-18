@@ -201,6 +201,19 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
+  laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of
+  142/143: leaked 5460 bytes` lines, absent in all seven pre-merge runs. Likely feel's `night_sky`/skyline shaders or
+  `arena_environment` crossing the **title → skirmish scene switch** — control's inference, not a proof; routed to
+  feel. **Why it matters beyond two console lines:** `shell-playtest` is **not in `make check`**, so `main` goes green
+  with it; a leaked resource is an **ERROR**, and the relay and net smokes fail their clients on any ERROR
+  (trip-up 75), so this may be one scene switch from breaking a gated smoke; and it happens on the transition every
+  player crosses. **Round-7 candidate regardless of this fix: `shell-playtest`'s console gate belongs in `check`, or
+  its expected state belongs in a committed baseline** (lesson 42 — do not simply add a red suite to the gate).
+- **The void below the near wall.** The ground plane ends at the stands, so any camera outside the venue looks down
+  into black — the bottom 15–40% of a far frame, **seen every match at the lead's 12°**. feel's to fill (a dark plaza,
+  car park or road out toward the new skyline).
+
 - **FIGHT → playable is 7.6 s → 1.4 s** (laptop, `make shell-playtest` gangs vs law on Boulevard: 7,563 ms at
   `a975e262` against 1,398/1,406 ms on two runs of `8d9c59af`'s tree). feel's strong-reference fix did the shortening —
   `make spawn-cost` went from ~63 ms per vehicle to **0.8 ms** after the first of each type — and control's loading
