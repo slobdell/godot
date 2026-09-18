@@ -708,3 +708,19 @@ The kickoff prompt is one line; this section is the rest.
       call site disappears.** Rule tests cannot see an unwired rule.
     - **Before resolving a conflict by picking a side, say out loud what each side does.** If the answer is two
       different verbs, the resolution is *both*, and the fact that they occupy one line is a coincidence of layout.
+56. **Repetitions of a deterministic process are not samples — check that the thing you are varying actually varies.**
+    Round 6, nav: its movement suite ran five seeds and got **five identical results**, because a hold-fire drive
+    contains no randomness. It defaulted the suite to one seed rather than keeping a reassuring-looking five. This is
+    lesson 22 seen from the other side — that one says the fix for a *suspected bias* is a control that cancels the
+    cause, never more repetitions; this one says repetitions of a deterministic process are not evidence at all, they
+    are the same measurement written down five times. Before a series, **name the thing that differs between samples
+    and confirm it differs**; and be suspicious of a set of results that agree *too* well, because identical is not a
+    strong signal, it is usually the absence of one.
+57. **A measurement's outliers deserve as much suspicion as its headline, because they are where the bugs hide.**
+    Same run: **8 of every 60 units in the previous baseline were stragglers**, and the cause was not congestion at
+    all — **60 units on 52 spawn points places pairs exactly on top of each other, and coincident hulls never moved
+    at any point in round 5.** So part of a published arrival baseline was measuring two vehicles occupying one
+    position, not vehicles getting in each other's way. The stream found it because it looked at *which* units failed
+    rather than at how many. **When a measurement has a tail, identify the members of the tail before you accept the
+    number** — a stable minority failing the same way is a defect, not variance, and it will otherwise be absorbed
+    into the baseline everyone improves against.
