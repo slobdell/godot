@@ -314,7 +314,38 @@ the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on r
 
 **4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
 
-### The shipped bands measured against the old world (builder0, `e548375d`, **n = 2 per row**)
+### THE DEFINITIVE SERIES (builder0, `c765275f`, **n = 15 per row**, 3 counterbalanced pairings, SEEDS=3)
+
+**This supersedes both small runs below, and it contradicts them. Read this row set and no other.**
+
+| bands | length | fire /unit/min | engaged (direct) | **kill** | flank+rear | off-axis | ended |
+|---|---|---|---|---|---|---|---|
+| reach ("old world") | 101 s | **16.9** | 68 m (67) | **43 m** | 63% | 43% | 11 elim / 4 control |
+| **shipped (`preferred_max`)** | 99 s | **15.2** | **60 m** (59) | **40 m** | 69% | 45% | 11 elim / 4 control |
+| 0.65 of reach | 109 s | 13.5 | 63 m (62) | 40 m | 67% | 47% | 10 / 5 |
+| 0.55 of reach | 110 s | 11.4 | 59 m (58) | **34 m** | 65% | 49% | 10 / 5 |
+
+**What fire discipline at the shipped bands is worth: engaged distance 68 → 60 m (−12%), kill distance 43 → 40 m
+(−7%), flank+rear 63% → 69%, fire rate 16.9 → 15.2 (−10%), and no change in how matches end.** Every metric moves the
+right way. All of them move modestly.
+
+**Three claims from the n=2 runs are retracted, and they were mine:**
+1. ~~"the fight is decided 28% closer"~~ — that was **two matches on one Condemned mirror**, the pairing most exposed
+   to the army draw (the winner follows the army in 15 of 16 seeds). The real figure is **7%**.
+2. ~~"fire goes UP, so the complaint was never about volume"~~ — **it goes down**, 16.9 → 15.2. A tidy reframing built
+   on a two-match sample. I argued it hardest *because* it was surprising, which is when it deserved least trust.
+3. ~~"`engaged_distance` does not discriminate, read `kill_distance`"~~ — **inverted.** At n=15 engaged distance moves
+   most (12%) and kill distance least (7%). The "it only measures the Lancer's 86 m band" story was an artefact of
+   four matches.
+
+**A limit on all of the above that no sample size fixes.** The `reach` row tunes `effective_range` back to `range`, so
+it disables **fire discipline only**. Gates 1 and 2 (sight, acquisition) and X6's crossing penalty are in **both**
+arms, because they are code and `--variants` only tunes data. **So this measures what fire discipline alone is worth,
+not what N5 is worth.** A true before/after needs `--no-acquisition` in the control arm, which `make engagement`
+cannot pass today (it has `TUNE=` but no flag passthrough). Until that runs, every row here carries the label *"with
+acquisition and crossing already on"*.
+
+### (superseded, kept for the record) The shipped bands at **n = 2 per row** — do not quote
 
 Same command with the shipped bands added as a row (they were missing from the first run — `--variants` runs only
 what is in the file). **Condemned mirror only, two matches per row, pre-merge build. Directional, not final.**
