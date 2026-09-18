@@ -153,15 +153,24 @@ _Updated 2026-09-18 by the squad worker._
 | Item | State |
 |---|---|
 | **X1** one formation system (N2, **CP3**) | **merged to main** at `df736a8e` (builder0 green, 1030 passed) |
-| **X5** support by fire / screen / halts | in CP3; control told to flip `earned` on SBF and screen |
-| **X4** plain move keeps the squad | my side in CP3 (`"drills": false` task); control applies its 2 lines in `rts_controls.gd` |
+| **X5** support by fire / screen / halts | in CP3; control flipped `earned` on SBF and screen |
+| **X5** attack / hold postures (+ herringbone ↔ react-to-contact flip fix) | `16d23375` |
+| **X4** a plain move keeps the squad | `4d734b1e`: one formation fixed on the click, no idle re-issue (47/45 → 0/0 idle orders, five-squad repro); control re-lands its 2 lines on merge |
 | **X2** standable slots | in CP3 (`SlotGround` over the navmesh's closest point) |
-| **X3** form-up ETA + pacing | in CP3, behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** (nav has no session yet) |
-| **X6** `make squad-coherence` | probe + runner in CP3; attribution + two thrash fixes in `824aa258`; **baseline waits for CP4 on main** (no numbers across it) |
-| **X7** covered flanks + ambush task | `a8048028`; in the check running on `e6adf3bc` |
-| CP4 pairing: brain uses the fire band; dither | `1fc83daf` + `5521f741` |
-| X5 attack / hold postures (+ herringbone flip-flop fix) | `16d23375`; full check running on builder0 |
+| **X3** form-up ETA + pacing | in CP3 behind `FormUp.eta`; nav's `Movement.eta` exists on stream/nav (`30e3250d`) — the seam becomes one line when it merges; **PID station-keeping waits on nav's N6** |
+| **X6** `make squad-coherence` | probe + runner in CP3; attribution + two thrash fixes `824aa258`; **baseline waits for CP4 on main** |
+| **X7** covered flanks + ambush task | `a8048028` |
+| **CP4 pairing** (fire band, dither, cover timing, suppression threshold) | `1fc83daf`, `5521f741` |
+| **Player units hold until ordered** (lesson 47) | `fbf1650a`: a rule, tested as a mechanism |
+| Sim baseline | `9ba36681` (8ebbed52, stream/squad pre-CP4; combat's post-CP4 record supersedes it) |
 | X8 army layer (stretch) | not started: its measurement needs CP4 on main and N7 (movable objectives) |
+
+**Which instrument caught what (worth knowing before choosing between writing a test and building an instrument):**
+`make squad-coherence` (X6) found support by fire and near ambush taking an element from each other every update in a
+30-a-side fight — before any scenario did, and hours before combat's CP4 run of the SBF scenario hit the same thing
+from the other side (128 orders in 10 s). Scenario tests with four vehicles never put an enemy that close to a firing
+line. The posture scenarios (X5) found the herringbone ↔ react-to-contact flip-flop. control's five-squad playtest
+found the X4 idle re-issue; the headless five-squad repro now guards it in `make check`.
 
 **Measured (laptop, uncommitted tree on `a975e262`/`df736a8e`, seeded single runs in TacticsLab — posture, not balance):**
 support by fire forms a 30 m line 54-56 m off the point, all 4 facing it, 15 shots, no other drill; screen: a 42 m
