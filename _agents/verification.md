@@ -82,6 +82,25 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
   before killing the server is the probable fix. If it fails with those two PASS lines present, re-run before
   suspecting your change.
 
+- **`ERROR: N RID allocations of type 'RendererDummy::TextureStorage::DummyTexture' / `TextServerAdvanced::ShapedTextDataAdvanced`
+  / `FontAdvanced` were leaked at exit`, at the end of a headless run.** Engine shutdown noise from the *dummy*
+  renderer and the text server, printed after the run has already passed, and **headless only**: checked by control
+  (round 5, 2026-09-17) by playing a real windowed skirmish and quitting cleanly — **zero** `ERROR`, `SCRIPT ERROR` or
+  `WARNING` lines, no leak report. A player never sees these. They do not fail a check on their own (the `WARNING: N
+  RIDs of type "CanvasItem" were leaked` line beside them is the same thing). If you are hunting a real leak, reproduce
+  it in a windowed run first.
+
+- **A test that teleports a vehicle must call `reset_physics_interpolation()`** (or `Fixture.place`). Since combat's
+  30 Hz tick turned physics interpolation on, a body assigned a new `global_position` is still *drawn* at its old one
+  until the interpolation is reset, so anything reading what the player sees (`Shown`: the camera, selection rings, hull
+  bars, unit picking) aims at where it was. Round 5 (control, 2026-09-17): `test_clicking_an_edge_marker_takes_you_to_that_element`
+  failed once on builder0 with the camera 40.5 m from the element against a 40 m tolerance — the reported focus
+  `(-84.07, -78.89)` is **79% of the way along the teleport**, which is interpolation, not load. Reproduced on demand by
+  setting `Engine.physics_ticks_per_second = 4` and reading on the next process frame:
+  `test_a_teleported_vehicle_is_drawn_where_it_was_put`. This was the **third** tick-rate trap of the round, after K1's
+  `RESPONSE_TICKS` and ai's think cadence: anything measured in ticks, frames or interpolation quietly changes meaning
+  when the tick rate does.
+
 ## Known limits
 
 - **`make determinism` and `make sim-baseline` prove same-build determinism only.** Native vs WebAssembly runs of the same seed diverge today; nothing checks cross-build agreement for the real simulation yet (follow-up D1 in [determinism.md](determinism.md)).

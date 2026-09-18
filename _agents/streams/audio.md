@@ -374,9 +374,9 @@ import cleanly today. Nothing here is second-rate — his set simply has more co
 ### Verified
 - `make remote T=check` exited 0 against 181f6ca: 872 Godot tests, sim hash `d4bd86eee0f96c54` unchanged,
   announcer-variance, announcer-record-smoke, music-smoke (1 layer change in its 40 s match) and audio-check all passed.
-  **Final: `make remote T=check` exited 0 against ad4fc97a** (30 Hz, the Syndicate's weapons, the lead's music):
-  991 tests, sim hash `16dc0de84f1c29b6` matching main's baseline, every announcer and audio check green. Later
-  commits are this brief and the `tools/remote.sh` copy-back fix.
+  **Final: `make remote T=check` exited 0 against f4756f4e** (30 Hz, the Syndicate's weapons, the lead's music, and
+  the copy-back fix): 991 tests, sim hash `16dc0de84f1c29b6` matching main's baseline, every announcer and audio
+  check green. Only this brief changes after it.
 - Two things the check found on the way, both mine and both fixed: `CrowdSystem` built its `CrowdVoice` in a field
   initializer, which leaked on relay-smoke's headless clients (a77d9e3, reproduced with a probe, regression test); and
   builder0 has no numpy or scipy (`make audio-deps`, 181f6ca).

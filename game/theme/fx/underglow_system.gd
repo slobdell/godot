@@ -42,6 +42,10 @@ func _init() -> void:
 	multimesh.mesh = mesh
 	FxMultiMesh.resize(multimesh, 32)
 	multimesh.visible_instance_count = 0
+	# Placed every rendered frame from FxWorld.visual_transform (`update` runs in _process), so the MultiMesh must not be
+	# interpolated as well: it would lag the vehicles by a tick and it logs "MultiMesh interpolation is being triggered
+	# from outside physics process" every few seconds at 30 Hz. The flag only exists on the server.
+	RenderingServer.multimesh_set_physics_interpolated(multimesh.get_rid(), false)
 	_mesh.name = "UnderglowMesh"
 	_mesh.multimesh = multimesh
 	FxMultiMesh.never_interpolated(_mesh)
@@ -63,6 +67,7 @@ func _init() -> void:
 	shadow_multimesh.mesh = shadow_mesh
 	FxMultiMesh.resize(shadow_multimesh, 32)
 	shadow_multimesh.visible_instance_count = 0
+	RenderingServer.multimesh_set_physics_interpolated(shadow_multimesh.get_rid(), false)
 	_shadows.name = "BlobShadows"
 	_shadows.multimesh = shadow_multimesh
 	FxMultiMesh.never_interpolated(_shadows)

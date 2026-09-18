@@ -141,6 +141,7 @@ func test_ground_rings_mark_the_selected_squad_and_respect_fog() -> void:
 	var markers: SelectionMarkers = setup[3]
 	var hidden := game_match.spawn_tank("Rust_Far_1", 0, Match.Team.RUST)
 	hidden.global_position = Vector3(100, 0, -100)
+	hidden.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await wait_physics_frames(Match.INTEL_EVERY_TICKS + 1)
 	markers.refresh()
 	var rings := markers.state()

@@ -119,6 +119,22 @@ func _camera_stage() -> void:
 			"rust": controls.game_match.alive_count(Match.Team.RUST)})
 	await _capture("3_planning")
 	_checks["planning_frames_own_army"] = _sample_camera("planning")
+	# The wiring that keeps the player's army from marching off before he commands it (ai's brains read this meta).
+	_checks["the_match_says_the_player_commands_green"] = controls.game_match.get_meta("player_team", -1) == Match.Team.GREEN
+	# Round 5 reopened: a right-click on ground occupied by your own vehicles must be a MOVE. It used to be a FOLLOW, so
+	# with an army packed on the start line the player's "go there" became "trail that one" (game_design.md: right-click
+	# ground = move, F + click = follow).
+	var mine := controls.game_match.sorted_team_tanks(Match.Team.GREEN).filter(func(t: Tank) -> bool: return t.is_alive())
+	if not mine.is_empty() and not controls.selection.units.is_empty():
+		var crowd: Tank = mine[mine.size() / 2]
+		var on_a_friendly := controls.camera.unproject_position(crowd.global_position)
+		await _click(on_a_friendly, MOUSE_BUTTON_RIGHT)
+		await _seconds(0.3)
+		var verbs := []
+		for unit_name in controls.selection.units:
+			verbs.append(String(controls.orders.current(unit_name).get("verb", "")))
+		_step("right_click_on_our_own", {"verbs": verbs, "clicked": String(crowd.name)})
+		_checks["right_clicking_our_own_units_is_a_move"] = not verbs.has("follow")
 	var hints := controls.get_node_or_null("ControlHints") as ControlHints
 	_checks["planning_shows_control_hints"] = hints != null and hints.visible and hints.shown().has("pause")
 	if paused:

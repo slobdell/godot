@@ -1,7 +1,9 @@
 extends TestCase
-## Control X3: the player commands tasks, not geometry. With a whole element selected, the command card and the
-## mouse issue L1 tasks and the element's leader decides the formation, the technique and the drills; an ad-hoc
-## selection still gets direct K1 orders. The HUD reads back what the leader chose, and G overrides it.
+## Control X3: the player commands tasks, not geometry — for the verbs that ask a leader to handle something. Round 5
+## (reopened) took a plain **move** back out of that set: a right-click destination is the player saying "go there", and
+## routing it through a leader left his squads being re-slotted and manoeuvred 20-90 m away. Attack-move, attacks,
+## screen, base of fire and hold are still tasks, the leader still decides formation, technique and drills, an ad-hoc
+## selection still gets direct K1 orders, the HUD reads back what the leader chose, and G overrides it.
 
 const Fixture := preload("res://tests/support/control_fixture.gd")
 
@@ -30,9 +32,10 @@ func test_a_whole_element_is_recognised_and_a_handful_of_units_is_not() -> void:
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	assert_eq(f.controls.selected_group(), 1, "selecting every member of a group selects that element")
 	assert_true(f.controls.selected_element() == null, "which has no leader until it is given a task")
-	await f.right_click(f.ground(Vector3(-20, 0, -20)))
+	await f.key(KEY_A)
+	await f.click(f.ground(Vector3(-20, 0, -20)))
 	var element := f.controls.selected_element()
-	assert_true(element != null, "the first task forms it")
+	assert_true(element != null, "the first task forms it (attack-move: fight what you meet on the way)")
 	assert_eq(element.element_name, "Alpha", "under the group's name")
 	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
 	assert_true(f.controls.selected_element() == null, "part of an element is not the element")
@@ -41,12 +44,17 @@ func test_a_whole_element_is_recognised_and_a_handful_of_units_is_not() -> void:
 	assert_true(f.controls.selected_element() == null, "units from two groups are not one element")
 
 
-func test_right_clicking_the_ground_with_an_element_gives_its_leader_a_task() -> void:
+func test_attack_move_and_attacks_give_the_leader_a_task_but_a_plain_move_does_not() -> void:
 	var f := await _setup()
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	await f.right_click(f.ground(Vector3(-20, 0, -20)))
+	assert_true(f.controls.elements.of("Green_Alpha_1") == null, "a plain move is the player's own order, not a task")
+	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
+		assert_eq(f.orders.current(unit_name).get("source", ""), "player", "%s carries out what the player asked" % unit_name)
+	await f.key(KEY_A)
+	await f.click(f.ground(Vector3(-20, 0, -20)))
 	var element := f.controls.elements.of("Green_Alpha_1")
-	assert_eq(element.task.get("verb", ""), "move", "the element is given a move task")
+	assert_eq(element.task.get("verb", ""), "move", "attack-move is a move task: an element on the move reacts to contact")
 	var to: Array = element.task.get("to", [])
 	assert_true(Vector2(to[0], to[1]).distance_to(Vector2(-20, -20)) < 1.5, "at the clicked spot (%s)" % [to])
 	await f.right_click(f.screen("Rust_Alpha_1"))
@@ -87,19 +95,22 @@ func test_screen_and_support_by_fire_are_tasks_you_can_actually_give() -> void:
 func test_a_direct_order_dissolves_the_element_so_its_leader_stops_fighting_the_player() -> void:
 	var f := await _setup()
 	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
-	await f.right_click(f.ground(Vector3(10, 0, 20)))
+	await f.key(KEY_E)
+	await f.click(f.ground(Vector3(10, 0, 20)))
 	assert_true(not f.controls.elements.of("Green_Bravo_1").task.is_empty(), "it has a task")
 	await f.key(KEY_S)
 	assert_true(f.controls.elements.of("Green_Bravo_1") == null,
 			"S takes the wheel back: the element is dissolved so its leader stops re-issuing orders")
-	await f.right_click(f.ground(Vector3(10, 0, 20)))
+	await f.key(KEY_E)
+	await f.click(f.ground(Vector3(10, 0, 20)))
 	assert_true(f.controls.elements.of("Green_Bravo_1") != null, "and the next task forms it again")
 
 
 func test_the_hud_reads_back_what_the_leader_decided() -> void:
 	var f := await _setup()
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
-	await f.right_click(f.ground(Vector3(-20, 0, -20)))
+	await f.key(KEY_A)
+	await f.click(f.ground(Vector3(-20, 0, -20)))
 	await wait_physics_frames(Element.UPDATE_TICKS + 2)
 	var doctrine := f.controls.element_state()
 	assert_eq(doctrine.get("name", ""), "Alpha", "the panel knows which element it is showing")
@@ -115,10 +126,12 @@ func test_the_player_can_override_the_formation_and_hand_it_back() -> void:
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	assert_eq(f.controls.formation, UnitCommand.AUTO, "elements run on doctrine by default")
 	f.controls.formation = "line"
-	await f.right_click(f.ground(Vector3(-20, 0, -20)))
+	await f.key(KEY_A)
+	await f.click(f.ground(Vector3(-20, 0, -20)))
 	assert_true(f.controls.elements.of("Green_Alpha_1") == null, "an overridden formation is geometry, not a task")
-	assert_eq(f.orders.current("Green_Alpha_1").get("verb", ""), "move", "so the units are ordered directly")
+	assert_eq(f.orders.current("Green_Alpha_1").get("verb", ""), "attack_move", "so the units are ordered directly")
 	assert_eq(f.orders.current("Green_Alpha_1").get("formation", ""), "line", "in the formation the player asked for")
 	f.controls.formation = UnitCommand.AUTO
-	await f.right_click(f.ground(Vector3(-25, 0, -25)))
+	await f.key(KEY_A)
+	await f.click(f.ground(Vector3(-25, 0, -25)))
 	assert_eq(f.controls.elements.of("Green_Alpha_1").task.get("verb", ""), "move", "back to auto, back to doctrine")

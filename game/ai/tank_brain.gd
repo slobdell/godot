@@ -135,8 +135,15 @@ const STOPPED_SPEED := 0.5
 const STOP_SETTLE_TICKS := SimClock.TICK_RATE / 3
 ## A hold order keeps the unit this close to its spot (meters).
 const HOLD_TOLERANCE := 3.0
-## An idle unit fights near its post and returns when it drifts farther than this (regroup).
+## An idle unit fights near its post and returns when it drifts farther than this (regroup)...
 const IDLE_LEASH := 30.0
+## ...and a unit a PLAYER put somewhere never drives further than this from that post on its own (the lead, 2026-09-17:
+## *"if they get sucked into combat I have no control whatsoever"*). It fights, circles, peeks and takes cover inside the
+## circle; only the player moves it out of it. A move that IS an escape (running to cover, breaking contact) is exempt,
+## and so is everything the player orders — a player's order has no leash at all.
+const PLAYER_POST_LEASH := 18.0
+## ...with this much more rope for a move that IS the escape (running to cover, breaking contact).
+const ESCAPE_LEASH_FACTOR := 2.0
 ## Follow: station this far behind the friend (meters).
 const FOLLOW_DISTANCE := 10.0
 ## No stuck states: an autonomous option kept this long (ticks) goes on cooldown; for the fighting options the
@@ -320,6 +327,9 @@ var _order_dirty := false
 ## The key of the order this brain reported complete (so it reports it once).
 var _finished_key := ""
 var _order_home: Variant = null
+## Where a player left this unit (null = no player commands this side, or it has never been ordered): the centre of the
+## circle it keeps to while it has no order of its own.
+var _player_post: Variant = null
 var _order_source: Object = null
 ## L1: this unit's element context (ElementFeed.context shape, {} = no element, so nothing below changes anything for
 ## a unit that isn't in one), and its source.
@@ -388,6 +398,14 @@ func think(_delta: float) -> void:
 	if _poll_element(think_tick):
 		fresh_order = true
 		interrupt()
+	# ...and once it is standing where the player put it, that place is its post until the player says otherwise. Decided
+	# AFTER this tick's order has been read: deciding it before would leash the player's own order to the post it is
+	# meant to replace.
+	if tank.team == OrderFeed.player_team(game_match) and order.is_empty():
+		var station: Variant = OrderFeed.station(_order_source, String(tank.name))
+		_player_post = station if station != null else _order_home
+	else:
+		_player_post = null
 	pre = _lap("t.poll", pre)
 	# X3: a new round on its way at a unit fighting on the move gets a look right away (a 70 m/s shell from 50 m
 	# arrives in 43 ticks; waiting up to 6 for the next think wastes the dodge).
@@ -2260,8 +2278,31 @@ static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := O
 	return order
 
 
+## A point this unit may drive to on its own: inside PLAYER_POST_LEASH of where the player left it. Anything further is
+## pulled back onto the edge of that circle, so a unit fights from the ground it was given instead of being drawn across
+## the map by whatever it can see.
+func _within_post(point: Vector3, lead := PLAYER_POST_LEASH) -> Vector3:
+	if _player_post == null:
+		return point
+	var post: Vector3 = _player_post
+	var offset := Vector3(point.x - post.x, 0.0, point.z - post.z)
+	var distance := offset.length()
+	if distance <= lead or distance < 0.01:
+		return point
+	return post + offset / distance * lead
+
+
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
 func _order_move(order: Dictionary) -> void:
+	# The player's post leashes everything this unit decides for itself. An escape (cover, breaking contact) gets a
+	# longer lead but not a free one: a unit that runs all the way home has left the ground the player gave it, which is
+	# what "I have no control" looks like from the outside.
+	if _player_post != null and order["type"] == "move_to":
+		var lead := PLAYER_POST_LEASH * (ESCAPE_LEASH_FACTOR if bool(order.get("to_safety", false)) else 1.0)
+		var inside := _within_post(Vector3(order["x"], 0.0, order["z"]), lead)
+		order = order.duplicate()
+		order["x"] = inside.x
+		order["z"] = inside.z
 	if order["type"] == move_order.get("type") and order.get("reverse", false) == move_order.get("reverse", false) \
 			and order.get("direct", false) == move_order.get("direct", false) \
 			and absf(float(order.get("speed", 1.0)) - float(move_order.get("speed", 1.0))) < 0.1 \

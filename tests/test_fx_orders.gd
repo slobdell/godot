@@ -42,9 +42,11 @@ func _setup() -> Dictionary:
 	return {"fx": fx, "match": game_match, "orders": orders, "controls": controls, "green": green, "rust": rust}
 
 
+## Round 5 reopened: order feedback confirms what the PLAYER asked for (K1's `source`), because an element re-slotting
+## its members issued ~35 orders a second and each one drew a marker and played a cue. These fixtures are the player.
 func _order(orders: RefCounted, units: Array, id: int, verb: String, extra := {}) -> void:
 	for unit_name: String in units:
-		var order := {"id": id, "verb": verb, "units": units, "queue": false}
+		var order := {"id": id, "verb": verb, "units": units, "queue": false, "source": "player"}
 		order.merge(extra)
 		orders.current_orders[unit_name] = order
 		orders.order_changed.emit(unit_name)
@@ -103,13 +105,13 @@ func test_queued_orders_draw_a_waypoint_trail_for_selected_units() -> void:
 	var green: Array = s["green"]
 	(green[0] as Tank).global_position = Vector3(0, 0, 0)
 	_order(orders, ["G0"], 5, "move", {"to": [0.0, -20.0], "goal": [0.0, -20.0]})
-	orders.queues["G0"] = [{"id": 6, "verb": "move", "units": ["G0"], "queue": true, "to": [20.0, -20.0], "goal": [20.0, -20.0]}]
+	orders.queues["G0"] = [{"id": 6, "verb": "move", "units": ["G0"], "queue": true, "source": "player", "to": [20.0, -20.0], "goal": [20.0, -20.0]}]
 	orders.queue_changed.emit("G0")
 	fx.order_feedback.update(fx.now)
 	assert_eq(fx.order_feedback.last_marker_kind, "waypoint", "a shift-queued order drops a waypoint marker")
 	var markers := fx.order_feedback.markers_started
-	orders.queues["G0"].append({"id": 7, "verb": "move", "units": ["G0"], "queue": true, "to": [30.0, 0.0], "goal": [30.0, 0.0]})
-	orders.queues["G0"].append({"id": 8, "verb": "move", "units": ["G0"], "queue": true, "to": [30.0, 20.0], "goal": [30.0, 20.0]})
+	orders.queues["G0"].append({"id": 7, "verb": "move", "units": ["G0"], "queue": true, "source": "player", "to": [30.0, 0.0], "goal": [30.0, 0.0]})
+	orders.queues["G0"].append({"id": 8, "verb": "move", "units": ["G0"], "queue": true, "source": "player", "to": [30.0, 20.0], "goal": [30.0, 20.0]})
 	orders.queue_changed.emit("G0")
 	fx.order_feedback.update(fx.now)
 	assert_eq(fx.order_feedback.markers_started - markers, 2, "two waypoints queued at once get two markers")
@@ -166,16 +168,23 @@ func test_real_k1_orders_are_found_on_the_match_and_drawn() -> void:
 	await wait_physics_frames(1)
 	fx.order_feedback.update(fx.now)  # finds Match.orders (or the "orders" meta) through FxWorld's link
 	var before := fx.order_feedback.markers_started
-	assert_eq(orders.issue({"units": names, "verb": "move", "to": [10.0, -20.0]}, Match.Team.GREEN), "", "the move is valid")
+	assert_eq(orders.issue({"units": names, "verb": "move", "to": [10.0, -20.0], "source": "player"}, Match.Team.GREEN), "",
+			"the move is valid")
 	fx.order_feedback.update(fx.now)
 	assert_eq(fx.order_feedback.markers_started - before, 1, "control's Orders: one marker for the group's move")
 	assert_eq(fx.order_feedback.last_marker_kind, "move", "a move marker")
 	assert_near(fx.order_feedback.last_marker_position.z, -20.0, 0.01, "at the destination")
-	assert_eq(orders.issue({"units": names, "verb": "attack_move", "to": [30.0, -40.0], "queue": true}, Match.Team.GREEN), "",
-			"a shift-queued attack-move is valid")
+	assert_eq(orders.issue({"units": names, "verb": "attack_move", "to": [30.0, -40.0], "queue": true, "source": "player"},
+			Match.Team.GREEN), "", "a shift-queued attack-move is valid")
 	fx.order_feedback.update(fx.now)
 	assert_eq(fx.order_feedback.last_marker_kind, "waypoint", "a queued order drops a waypoint marker")
 	before = fx.order_feedback.markers_started
 	assert_eq(orders.issue({"units": [String(enemy.name)], "verb": "hold"}, Match.Team.RUST), "", "the CPU's order is valid")
 	fx.order_feedback.update(fx.now)
 	assert_eq(fx.order_feedback.markers_started, before, "the CPU's orders draw nothing")
+	before = fx.order_feedback.markers_started
+	assert_eq(orders.issue({"units": names, "verb": "move", "to": [55.0, 5.0]}, Match.Team.GREEN), "",
+			"an order our own units get from something other than the player is valid")
+	fx.order_feedback.update(fx.now)
+	assert_eq(fx.order_feedback.markers_started, before,
+			"but it draws nothing: a marker and a cue answer the player's click, not a leader re-slotting its element")

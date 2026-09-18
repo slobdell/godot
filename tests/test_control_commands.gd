@@ -30,7 +30,10 @@ func test_right_click_ground_moves_the_selection() -> void:
 	assert_true((ack["position"] as Vector3).distance_to(Vector3(-15, 0, 15)) < 1.0, "at the clicked spot")
 
 
-func test_right_click_an_enemy_attacks_it_and_a_friend_follows_it() -> void:
+## Round 5 reopened: right-clicking a friend is a MOVE to that spot, not a follow (game_design.md: "right-click ground
+## = move ... F + click a friendly = follow/escort"). With an army packed together, follow-on-right-click meant half the
+## player's "go there" clicks made a squad chase one of its own.
+func test_right_click_an_enemy_attacks_it_and_a_friend_is_just_ground() -> void:
 	var f := await _setup()
 	await f.select(["Green_Alpha_1"])
 	await f.right_click(f.screen("Rust_Alpha_1"))
@@ -40,7 +43,12 @@ func test_right_click_an_enemy_attacks_it_and_a_friend_follows_it() -> void:
 	assert_eq(f.controls.last_ack().get("kind", ""), "attack", "an attack marker acknowledges it")
 	await f.right_click(f.screen("Green_Bravo_2"))
 	order = f.orders.current("Green_Alpha_1")
-	assert_eq(order.get("verb", ""), "follow", "right-clicking a friend follows it")
+	assert_eq(order.get("verb", ""), "move", "right-clicking a friend moves to that spot")
+	assert_eq(order.get("target", ""), "", "and takes nobody as a target")
+	await f.key(KEY_F)
+	await f.click(f.screen("Green_Bravo_2"))
+	order = f.orders.current("Green_Alpha_1")
+	assert_eq(order.get("verb", ""), "follow", "F then a click is how you follow a friend")
 	assert_eq(order.get("target", ""), "Green_Bravo_2", "that friend")
 
 
@@ -132,3 +140,23 @@ func test_a_right_click_order_reaches_the_tracks_within_three_ticks() -> void:
 		assert_true(first.has(unit_name) and first[unit_name] <= 3, "%s drives within 3 ticks of the click (%s)" % [unit_name, first.get(unit_name)])
 		var closer: float = (start_positions[unit_name] as Vector3).distance_to(goal) - f.tank(unit_name).global_position.distance_to(goal)
 		assert_true(closer > 1.0, "%s is on its way a second later (%.1f m closer)" % [unit_name, closer])
+
+
+## Round 5 reopened (the lead: "I select squad 1, having them go somewhere ... the units do not re-arrange as intended",
+## and later "it's as though their behavior is overridden by a higher priority"). A plain move is a DIRECT order now:
+## the player said where, and that is where they go. The leader's own judgement stays on the verbs that ask for it -
+## attack-move (fight what you meet), screen, base of fire - and on attacks.
+func test_a_right_click_move_is_a_direct_order_and_the_other_verbs_stay_tasks() -> void:
+	var f := await _setup()
+	f.controls.elements = Elements.install(f.game_match, f.orders)  # the skirmish installs these; the plain fixture doesn't
+	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
+	f.controls.recall_group(1)
+	await f.right_click(f.ground(Vector3(-30, 0, -20)))
+	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
+		var order := f.orders.current(unit_name)
+		assert_eq(String(order.get("verb", "")), "move", "%s has the player's own move order" % unit_name)
+		assert_eq(String(order.get("source", "")), "player", "%s knows the player asked for it" % unit_name)
+	assert_eq(f.controls.selected_element(), null, "a direct order stands the element down, so no leader re-issues")
+	await f.key(KEY_E)
+	await f.click(f.ground(Vector3(30, 0, -20)))
+	assert_true(f.controls.selected_element() != null, "E still gives the element a screening task")

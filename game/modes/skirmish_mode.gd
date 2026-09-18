@@ -23,6 +23,8 @@ extends GameMode
 ##   --camera-frame=close|default|wide  how much of the screen the commanded element fills (X3 dial)
 ##   --alert-lines=1..3  unseen alerts shown at once above the group chips (X3 dial; default 1)
 ##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
+##   --squad-orders-test=DIR  the lead's sequence: order every squad in turn, then where each unit actually ends up
+##   --response-test=DIR  click → order → ack → first visible movement, in ms, at this army size (ResponsePlaytest)
 ##   --hud-cost=PATH  X4: what each HUD widget costs in draw calls and _process at ~30 a side (HudCostProbe)
 ##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
 ##   --control-playtest=DIR  a scripted session through real input events, screenshots and orders.jsonl (ControlPlaytest)
@@ -67,6 +69,16 @@ static func camera_frame_inset(p_flags: LaunchFlags) -> float:
 ## X3: how many unseen alerts show above the group chips at once (1 by default, at most 3).
 static func alert_lines(p_flags: LaunchFlags) -> int:
 	return clampi(p_flags.integer("alert-lines", 1), 1, 3)
+
+
+## Which team has a human commander, or -1 when nobody does (ai reads it as `OrderFeed.player_team`). A brain that has
+## never been ordered otherwise follows its doctrine's objective and drives at the enemy base, which in a faction
+## skirmish means the *player's* army leaves before he can command it (the lead, round 5: "they all also just rush
+## forward right away at the start"). With this set, his vehicles hold their spawn until he orders them.
+## `--cinematic` is spectator mode: nobody is commanding, so it returns -1 on purpose and both sides play themselves.
+## Don't "tidy" that away, or SPECTATE becomes two armies sitting still.
+static func commanded_team(p_flags: LaunchFlags) -> int:
+	return -1 if p_flags.has("cinematic") else Match.Team.GREEN
 
 
 ## Whether the CPU army is commanded by doctrine's ElementCommander (elements, formations, drills) rather than by its
@@ -186,6 +198,12 @@ func _start_match() -> void:
 	executor.orders = orders
 	main.add_child(executor)
 	game_match.elimination = true
+	# ai (round 5, reopened): a brain that has never been ordered falls back on its doctrine's objective and drives at the
+	# enemy base — which in a faction skirmish is the *player's* army leaving before he can command it (the lead: "they
+	# all also just rush forward right away at the start"). This tells the brains which side has a commander; they hold
+	# their spawn until he orders them. A spectated match has no commander, so both sides play themselves.
+	if SkirmishMode.commanded_team(flags) >= 0:
+		game_match.set_meta("player_team", SkirmishMode.commanded_team(flags))
 	# The center control point is on by default (the lead: "control point on by default"; combat X7 measured CPU vs CPU
 	# at this budget: median match 92 s with it, most fights end under a minute without). --no-control turns it off;
 	# --control is still accepted.
@@ -331,6 +349,20 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
+	if flags.has("squad-orders-test"):
+		var squads := SquadOrdersPlaytest.new()
+		squads.name = "SquadOrdersPlaytest"
+		squads.controls = controls
+		squads.out_dir = flags.text("squad-orders-test")
+		main.add_child(squads)
+		squads.run()
+	if flags.has("response-test"):
+		var response := ResponsePlaytest.new()
+		response.name = "ResponsePlaytest"
+		response.controls = controls
+		response.out_dir = flags.text("response-test")
+		main.add_child(response)
+		response.run()
 	if flags.has("hud-cost"):
 		var probe := HudCostProbe.new()
 		probe.name = "HudCostProbe"

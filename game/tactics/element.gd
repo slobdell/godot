@@ -23,6 +23,9 @@ const UPDATE_TICKS := SimClock.TICK_RATE / 10
 ## A unit's goal has to move this far before its order is re-issued: every new order resets what its brain
 ## was doing (round-3 lesson), so the leader does not nudge people around.
 const REISSUE_M := 8.0
+## The same intention is not handed to the same unit again inside this many ticks (2 s): a standing order already
+## follows a moving target, and re-giving it only redraws the player's markers and costs frames.
+const RE_ISSUE_TICKS := SimClock.TICK_RATE * 2
 ## A unit already this close to the goal of an order it has finished is left standing.
 const SETTLED_M := 6.0
 const MAX_EVENTS := 12
@@ -123,7 +126,7 @@ func update(game_match: Match, orders: Object) -> bool:
 			"arrived": arrived, "heading": heading}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	_take(plan, situation)
-	_issue(plan, orders, situation)
+	_issue(plan, orders, situation, game_match)
 	return _note_changes(before)
 
 
@@ -256,7 +259,7 @@ static func _drill_focus(plan: Dictionary, situation: Dictionary) -> Variant:
 
 
 ## Turn the plan into K1 commands, issuing only what actually changed.
-func _issue(plan: Dictionary, orders: Object, situation: Dictionary) -> void:
+func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match: Match = null) -> void:
 	if orders == null:
 		return
 	var positions := {}
@@ -264,14 +267,25 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary) -> void:
 		positions[String(member["name"])] = member["position"]
 	var names: Array = (plan["orders"] as Dictionary).keys()
 	names.sort()
+	var player_team := OrderFeed.player_team(game_match)
 	for unit_name: String in names:
 		if _detached.has(unit_name):
 			continue
 		var desired: Dictionary = plan["orders"][unit_name]
 		var current: Dictionary = orders.call("current", unit_name)
-		if not _should_issue(unit_name, desired, current, positions.get(unit_name, Vector3.ZERO)):
+		# The player's authority is absolute (the lead, 2026-09-17: *"if they get sucked into combat I have no control
+		# whatsoever"*). A unit carrying an order the PLAYER gave is not taken off it by its leader, and on the player's
+		# own team a leader that has been given no task commands nobody at all — an untasked element running its SOP
+		# over the player's army is the oldest version of this bug (L1's sharp edge, round 4).
+		if String(current.get("source", "")) == "player":
 			continue
-		var command := {"units": [unit_name], "verb": String(desired["verb"])}
+		if team == player_team and task.is_empty():
+			continue
+		if not _should_issue(unit_name, desired, current, positions.get(unit_name, Vector3.ZERO), int(situation["tick"])):
+			continue
+		# K1's `source`: the player's own orders are the ones the response guarantee is about, and the only ones render
+		# confirms with a marker and a cue. An element's are its own.
+		var command := {"units": [unit_name], "verb": String(desired["verb"]), "source": "element"}
 		if desired["to"] is Vector3:
 			var point: Vector3 = desired["to"]
 			command["to"] = [point.x, point.z]
@@ -285,26 +299,52 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary) -> void:
 			# A target that just died, or a unit that did: try again next update with fresh facts.
 			continue
 		var issued: Dictionary = orders.call("current", unit_name)
-		_issued[unit_name] = {"id": int(issued.get("id", -1)), "verb": command["verb"],
+		_issued[unit_name] = {"id": int(issued.get("id", -1)), "verb": command["verb"], "tick": int(situation["tick"]),
 				"to": desired["to"], "target": String(desired.get("target", ""))}
 
 
-func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, position: Vector3) -> bool:
+func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, position: Vector3, tick: int) -> bool:
 	var mine: Dictionary = _issued.get(unit_name, {})
 	if current.is_empty():
-		# Idle: only wake it up if there is somewhere else to be, or something new to do.
+		# Idle, having just finished what we gave it. The trap (round 5): a fight order's destination is a MOVING enemy,
+		# so "there is somewhere else to be" is true on every update, and the leader re-gave the same intention five
+		# times a second for as long as the fight lasted. A standing attack already follows its target, so the same
+		# intention is not re-issued until RE_ISSUE_TICKS have passed or something real changes.
+		var again: bool = not mine.is_empty() and String(mine.get("verb", "")) == String(desired["verb"]) \
+				and String(mine.get("target", "")) == String(desired.get("target", ""))
+		if again and tick - int(mine.get("tick", -RE_ISSUE_TICKS)) < RE_ISSUE_TICKS and _same_place(mine, desired, REISSUE_M):
+			return false
 		if desired["to"] is Vector3 and position.distance_to(desired["to"]) > SETTLED_M:
 			return true
 		if String(desired["verb"]) in ["attack", "attack_move"] and String(desired.get("target", "")) != "":
-			return String(mine.get("target", "")) != String(desired["target"])
+			return String(mine.get("target", "")) != String(desired["target"]) \
+					or tick - int(mine.get("tick", -RE_ISSUE_TICKS)) >= RE_ISSUE_TICKS
 		return mine.is_empty() and String(desired["verb"]) != "hold"
 	if mine.is_empty() or int(current.get("id", -1)) != int(mine.get("id", -2)):
 		return false  # not ours to change
-	if String(mine["verb"]) != String(desired["verb"]) or String(mine.get("target", "")) != String(desired.get("target", "")):
+	# Round 5 (the lead's playtest): a leader re-issues only when the INTENTION changed. Two verbs that mean "fight that
+	# one" (attack, attack_move) are the same intention while the target is the same, and "go there" and "stay there"
+	# are the same intention while the place is the same. Without this the plan's verb flapped between them every
+	# update, and every flap was a new order id: a marker drawn and a cue played on the player's screen, ~35 a second
+	# across an army, which is what he saw as blue dots repeating and heard as beeping.
+	var same_target := String(mine.get("target", "")) == String(desired.get("target", ""))
+	var fight := ["attack", "attack_move"]
+	var stay := ["move", "hold"]
+	var same_intention: bool = String(mine["verb"]) == String(desired["verb"]) \
+			or (fight.has(String(mine["verb"])) and fight.has(String(desired["verb"])) and same_target) \
+			or (stay.has(String(mine["verb"])) and stay.has(String(desired["verb"])) and _same_place(mine, desired, SETTLED_M))
+	if not same_intention or not same_target:
 		return true
 	if desired["to"] is Vector3 and mine["to"] is Vector3:
-		return (mine["to"] as Vector3).distance_to(desired["to"]) > REISSUE_M
+		return not _same_place(mine, desired, REISSUE_M)
 	return desired["to"] is Vector3 != mine["to"] is Vector3
+
+
+## Whether two orders point at the same place, within `slack` metres (a destination either may not have).
+static func _same_place(mine: Dictionary, desired: Dictionary, slack: float) -> bool:
+	if not (desired["to"] is Vector3 and mine["to"] is Vector3):
+		return desired["to"] is Vector3 == mine["to"] is Vector3
+	return (mine["to"] as Vector3).distance_to(desired["to"]) <= slack
 
 
 ## Everything the HUD shows: cheap change detection for element_changed, and the list of what moved, which

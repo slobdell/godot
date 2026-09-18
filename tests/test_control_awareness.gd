@@ -22,7 +22,9 @@ func _setup(bravo_away := false) -> Fixture:
 	f.controls.groups.label(2, "Bravo")
 	if bravo_away:
 		f.tank("Green_Bravo_1").global_position = Vector3(90, 0, 100)
+		f.tank("Green_Bravo_1").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 		f.tank("Green_Bravo_2").global_position = Vector3(96, 0, 100)
+		f.tank("Green_Bravo_2").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	f.rig.vision = f.controls.vision_state
 	await _frames(2)
 	return f
@@ -59,6 +61,7 @@ func test_an_element_is_idle_then_moving_then_in_contact_then_under_fire() -> vo
 	await _frames(2)
 	assert_eq(_element(f, 2).get("state", ""), "moving", "an order it is still working on")
 	f.tank("Rust_Alpha_1").global_position = Vector3(90, 0, 90)
+	f.tank("Rust_Alpha_1").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await _frames(2)
 	assert_eq(_element(f, 2).get("state", ""), "contact", "an enemy inside its sight outranks moving")
 	f.tank("Green_Bravo_1").ticks_since_hit = 1
@@ -77,6 +80,7 @@ func test_contact_raises_one_alert_you_can_jump_to_not_a_stream_of_them() -> voi
 	assert_true(f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool: return int(a["element"]) == 2).is_empty(),
 			"an element that has seen nothing has nothing to say")
 	f.tank("Rust_Alpha_1").global_position = Vector3(90, 0, 90)
+	f.tank("Rust_Alpha_1").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await _frames(3)
 	var raised := f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool: return int(a["element"]) == 2)
 	assert_eq(raised.size(), 1, "entering contact raises exactly one alert (got %s)" % [raised.map(func(a: Dictionary) -> String: return a["text"])])
@@ -86,6 +90,7 @@ func test_contact_raises_one_alert_you_can_jump_to_not_a_stream_of_them() -> voi
 	# "under fire" alert, which is a different thing to say and has its own cooldown.
 	for frame in 20:
 		f.tank("Rust_Alpha_1").global_position = Vector3(90, 0, 90)
+		f.tank("Rust_Alpha_1").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 		await tree.process_frame
 	raised = f.controls.awareness.alerts.filter(func(a: Dictionary) -> bool:
 			return int(a["element"]) == 2 and String(a["kind"]) == "contact")
@@ -120,6 +125,7 @@ func test_elements_off_screen_get_an_edge_marker_and_those_on_screen_do_not() ->
 	var f := await _setup()
 	for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
 		f.tank(unit_name).global_position = Vector3(-110, 0, -110)
+		f.tank(unit_name).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	f.controls.selection.set_units(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	await _frames(4)
 	var marks := f.controls.markers.markers()
@@ -142,6 +148,7 @@ func test_clicking_an_edge_marker_takes_you_to_that_element() -> void:
 	var f := await _setup()
 	for unit_name in ["Green_Bravo_1", "Green_Bravo_2"]:
 		f.tank(unit_name).global_position = Vector3(-110, 0, -110)
+		f.tank(unit_name).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	f.controls.selection.set_units(["Green_Alpha_1"])
 	await _frames(4)
 	var marks := f.controls.markers.markers()

@@ -84,6 +84,9 @@ func form_elements() -> Array:
 func _physics_process(_delta: float) -> void:
 	if game_match == null or not game_match.simulate or elements == null:
 		return
+	# A CPU commander never commands the side a human is commanding: that army takes its orders from the player alone.
+	if team == OrderFeed.player_team(game_match):
+		return
 	var tick: int = game_match.tick
 	if tick == _last_tick or tick % THINK_TICKS != 0:
 		return

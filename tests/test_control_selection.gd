@@ -57,6 +57,7 @@ func test_double_click_and_ctrl_click_select_every_visible_unit_of_that_type() -
 	assert_eq(f.controls.selection.units, ["Green_Alpha_1", "Green_Alpha_2"], "ctrl-clicking a tank selects both tanks")
 	# Move one tank far off screen: "visible" means on screen.
 	f.tank("Green_Alpha_2").global_position = Vector3(100, 0, -100)
+	f.tank("Green_Alpha_2").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await wait_physics_frames(2)
 	await f.click(f.screen("Green_Alpha_1"), false, true)
 	assert_eq(f.controls.selection.units, ["Green_Alpha_1"], "units off screen aren't picked up")
@@ -120,5 +121,35 @@ func test_rings_are_batched_one_multimesh_per_kind() -> void:
 	assert_eq(markers.layer("enemy").multimesh.visible_instance_count, 1, "one enemy")
 	# Not multimesh.get_instance_transform: the headless renderer keeps no instance buffer and reads back zeros.
 	var at: Vector3 = markers.state()["Green_Alpha_2"]["position"]
-	var tank := f.tank("Green_Alpha_2").global_position
-	assert_true(Vector2(at.x - tank.x, at.z - tank.z).length() < 0.01, "the ring sits under its vehicle (%s vs %s)" % [at, tank])
+	# Against the DRAWN position, not the simulation's. A ring must sit under the hull the player sees, so it is placed
+	# from `Shown` (the interpolated transform); at 30 Hz that is up to a tick of travel away from `global_position`,
+	# which is how this assertion first failed (17 mm of it, along the direction of travel). Comparing a drawn position
+	# with a tick position measures the interpolation, not the rings.
+	var drawn := Shown.ground(f.tank("Green_Alpha_2"))
+	assert_true(Vector2(at.x - drawn.x, at.z - drawn.z).length() < 0.01,
+			"the ring sits under the vehicle as drawn (%s vs %s)" % [at, drawn])
+	var ticked := f.tank("Green_Alpha_2").global_position
+	assert_true(Vector2(at.x - ticked.x, at.z - ticked.z).length() < 1.0,
+			"and within a tick's travel of where the simulation has it (%s vs %s)" % [at, ticked])
+
+
+## Round 5 reopened (the lead: "I select squad 1, having them go somewhere ... the units do not re-arrange as intended").
+## Right-clicking your own vehicles used to order a FOLLOW, so with an army packed on the start line half of "go there"
+## became "trail that one". game_design.md is explicit: right-click ground = move, and follow is F + click a friendly.
+func test_right_clicking_your_own_units_moves_there_and_follow_needs_f() -> void:
+	var f := await _setup()
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	var friend := f.tank("Green_Bravo_1")
+	await f.right_click(f.screen("Green_Bravo_1"))
+	var order := f.orders.current("Green_Alpha_1")
+	assert_eq(String(order.get("verb", "")), "move", "right-clicking a friendly is a move to that spot, not a follow")
+	var goal: Variant = f.orders.goal_position("Green_Alpha_1")
+	assert_true(goal is Vector3 and Vector2(goal.x - friend.global_position.x, goal.z - friend.global_position.z).length() < 20.0,
+			"and the spot is where the click landed (%s vs %s)" % [goal, friend.global_position])
+	f.controls.arm("follow")
+	await f.right_click(f.screen("Green_Bravo_1"))
+	assert_eq(String(f.orders.current("Green_Alpha_1").get("verb", "")), "move", "a right-click cancels the armed mode, as before")
+	f.controls.arm("follow")
+	await f.click(f.screen("Green_Bravo_1"))
+	assert_eq(String(f.orders.current("Green_Alpha_1").get("verb", "")), "follow", "F then a left click still follows a friendly")
+	assert_eq(String(f.orders.current("Green_Alpha_1").get("target", "")), "Green_Bravo_1", "the one that was clicked")
