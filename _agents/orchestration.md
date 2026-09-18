@@ -666,3 +666,26 @@ The kickoff prompt is one line; this section is the rest.
     - **When relaying a frame or a number that depends on another stream's system, say which parts of it that stream
       owns and get their read first** — especially before it goes to the lead, who cannot tell a stand-in from the
       build. The cheap version of this is one message: *"does your implementation already handle this?"*
+54. **A good experiment run against a broken instrument produces a confident wrong answer, and it is indistinguishable
+    from a good experiment against a good one.** Round 6, arena establishing what slope the game supports. The answer
+    was wrong three times before it was right, and **each wrong version looked like a clean engine limit**:
+    1. The "ramp" was a 1 m slab — at 10° that is a *bridge*. The tank drove **underneath** and arrived at the goal's
+       x/z at y=0.3. Read as "cannot climb above 5°".
+    2. Made solid but 24 m wide, the tank drove **around** it. **A vehicle that goes around is indistinguishable in the
+       output from one that cannot climb**, unless the geometry forbids the detour.
+    3. Pathing to a point 1 m from the crest measured the navmesh's **agent-radius erosion along the drop edge**; the
+       tolerance scaled with the rise, so it worsened with angle and read as a slope limit.
+    Three geometries, three confident limits: 25°, 25°, 5°.
+    **The tell was not in the data.** It was that *a tank that cannot climb 10° is not believable* — a real one manages
+    30°. The fix was to stop pathing to a point and measure **coverage along the ramp's own centreline**, a quantity
+    with no edges in it.
+    **And the part that generalises furthest:** arena ran the decisive knob test (`agent_max_climb`) **against the
+    broken measure first, and it came back negative** — the ceiling did not move, which looked like clean falsification
+    and nearly retired the hypothesis that turned out to be correct. So:
+    - **Check the instrument against a known quantity *before* the experiment, not after it surprises you.** Pick a
+      case whose answer you already know independently (here: a tank climbs 30°, so a measured 5° ceiling is the
+      instrument failing, not the engine).
+    - **Implausibility is evidence.** When a result contradicts something you know about the world, suspect the
+      measurement before you believe the finding — and say which known quantity you are testing it against.
+    - This is the same failure as a filtered test run establishing correctness (lesson 45), and the same family as
+      lessons 34, 44, 46 and 49: **this round found more broken instruments than broken game code.**
