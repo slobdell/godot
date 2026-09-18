@@ -50,16 +50,10 @@ extends Node
 ## world-space heading, so turning or retreating never drags the gun off the fight.
 
 const ARRIVE_RADIUS := 3.0
-## Advance to the next path waypoint within this distance of the current one.
-const WAYPOINT_RADIUS := 2.5
-## Recompute the path this often even if the goal hasn't moved (other tanks move).
-const REPATH_SECONDS := 1.0
+## Kept for readers of the old name: the route's look-ahead for a wall of bullets lives in Movement now.
+const FIRE_LOOKAHEAD := Movement.FIRE_LOOKAHEAD
 ## Fire only when the turret is within this angle of the lead point.
 const AIM_TOLERANCE_DEG := 2.5
-## Driving at >50% throttle but moving slower than this for STUCK_SECONDS = stuck.
-const STUCK_SPEED := 0.8
-const STUCK_SECONDS := 1.0
-const UNSTICK_SECONDS := 0.9
 const MOVE_TYPES := ["stop", "move_to", "drive", "face"]
 const WEAPON_TYPES := ["hold_fire", "aim", "fire_at_will", "target", "suppress"]
 const REFLEX_TYPES := ["retreat_below_hp", "halt_on_contact"]
@@ -113,13 +107,6 @@ var engagement_lay := Engagement.Lay.new()
 ## Recent notable happenings (reflexes firing), newest last. For observers like the bridge.
 var events: PackedStringArray = []
 
-## X3: the sidestep being driven right now (null = none) and the tick it gives up at.
-var _fire_detour: Variant = null
-var _fire_detour_until := 0
-var _fire_detour_since := -1000
-var _fire_detour_again := 0
-## The tick this unit started going round the current wall of bullets (-1 = it isn't).
-var _fire_since := -1
 ## The L2 source for this match, resolved once (asking "do you answer L2" per move per tick is not free).
 var _fields: Object = null
 var _fields_match := 0
@@ -128,23 +115,9 @@ var _reflex_armed: Array[bool] = []
 var _held_aim := Vector3.ZERO
 
 var _drive_elapsed := 0.0
-var _path := PackedVector3Array()
-var _path_index := 0
-var _path_goal := Vector3.INF
-var _repath_left := 0.0
-var _stuck_time := 0.0
-var _unstick_left := 0.0
 var _scan_pick: Tank = null
 var _scan_left := 0
-## Stuck detection (round-3 X1): consecutive ticks a move_to made no progress toward its goal (0 while arrived or not
-## driving to a point), and ticks since this unit last pulled the trigger. Brains time out options with them.
-var stalled_ticks := 0
-## _wheel_radius() per unit type (the catalog doesn't change mid-match).
-var _wheel_radius_unit := ""
-var _wheel_radius_value := 0.0
 var ticks_since_fire := 0
-var _progress_goal := Vector3.INF
-var _progress_best := INF
 
 ## A4 fire discipline: consecutive ticks the gun was ready and aimed but held because a friend was in the line
 ## of fire (or the splash), and which friend. Brains read it to move and clear the lane.
@@ -156,63 +129,28 @@ var hold_for_friends := true
 static var held_for_friends := 0
 ## A blocked lane is re-checked only every this many ticks (a friend doesn't clear a lane in one tick).
 const LANE_RECHECK_TICKS := maxi(1, (SimClock.TICK_RATE + 10) / 20)  # ~20 Hz, rounded to whole ticks
-## Local avoidance of friends in the way (see _around_friends), meters.
-## X3 (L2): how far ahead a route is checked for a wall of bullets (meters). Far enough to see one coming: checking
-## only the next navmesh waypoint is a few metres, by which time the unit is already in it.
-const FIRE_LOOKAHEAD := 34.0
-## ...and how far to one side the route can step (meters). All of them are scored; the least-swept wins.
-const FIRE_DETOUR_STEPS: Array[float] = [12.0, 24.0, 36.0]
-## A sidestep has to be this much safer than carrying straight on before it is worth taking, so a unit doesn't weave
-## over a rounding error.
-const FIRE_DETOUR_MARGIN := 0.75
-## A sidestep is DRIVEN, not re-decided every tick: re-deciding just wobbles along the edge of the fire (measured: 4 m
-## off the straight line, and longer in the beaten zone than going straight). It is held until it is reached, or the
-## route on is clear, or this many ticks pass.
-const FIRE_DETOUR_TICKS := SimClock.TICK_RATE * 2
-const FIRE_DETOUR_REACHED := 5.0
-## Reaching a step is not "I tried and it didn't work" — it is the step working, so the unit looks again and steps
-## again if the way on is still swept. What bounds the whole business is this: once a unit has been going round for
-## this long without the fire lifting, it has spent enough and pushes on. Orders win in the end.
-const FIRE_AVOID_MAX := SimClock.TICK_RATE * 5
-## ...and then the unit pushes on for this long before it looks for a way round again. It only has to be long enough
-## to stop the search running on every check tick: FIRE_AVOID_MAX below is what actually guarantees a unit arrives.
-## It used to be 240, which swallowed four seconds of a seven-second crossing and made the whole behaviour measure as
-## nothing (28 ticks in the beaten zone against a control's 33, where a working version manages 14).
-const FIRE_DETOUR_COOLDOWN := SimClock.TICK_RATE
-## Going round is ENTERED on `is_beaten_zone` (a hard threshold) but KEPT while the route still carries this share of
-## that much fire on average. Without the hysteresis a unit abandons its detour the moment the field dips under the
-## threshold between two bursts — and a beaten zone pulses, because the field has a ~1 s half-life and guns fire in
-## bursts. That cost the whole behaviour once combat's suppression rework made the field denser and burstier: one
-## attempt, three ticks, then the cooldown below and a walk straight through the fire.
-const FIRE_KEEP_SHARE := 0.4
-## The route is re-checked against the field this often (ticks, staggered per unit) rather than every tick. A detour
-## already being driven is re-checked every tick regardless. This is not only a cost knob — it sets how many chances a
-## unit gets to notice a wall of bullets while there is still room to go round, and it was measured, in the swept-lane
-## scenario (ticks spent in the beaten zone against a control's 33) and with `make ai-perf UNITS=60`:
-##     every tick   21 ticks in the fire, 4740 usec        every 3   10 ticks, 4231 usec        every 6   28 ticks
-## Three is both the best behaviour and cheaper than one. Six was chosen as a pure cost cut during X2 and quietly cost
-## most of the avoidance — a reminder to measure what an optimisation does to behaviour, not just to the clock.
-const FIRE_CHECK_TICKS := maxi(1, (SimClock.TICK_RATE + 10) / 20)  # ~20 Hz, rounded to whole ticks
-## A step round the fire is kept this long even if the fire seems to lift. A beaten zone PULSES — rounds arrive in
-## bursts and the field decays between them — so a momentary reading below the threshold is not the fire ending. Round
-## 5, found at 30 Hz: without this the unit dropped its step every other check and picked the other side next time,
-## thrashing on the spot inside the lane instead of crossing it (19 ticks in the beaten zone against a control's 16).
-const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
-const AVOID_LOOKAHEAD := 10.0
-const AVOID_WIDTH := 3.2
-const AVOID_CLEARANCE := 5.0
-## Wheels move on to the next path waypoint within this share of their turning radius (at least WAYPOINT_RADIUS).
-const WHEELS_WAYPOINT_RADII := 0.8
 var _lane_hold_left := 0
 ## Round-5 X1, controller stride (BrainVariants "brain_stride"): a brain runs its whole controller — thinking and
 ## executing — on every Nth physics tick, staggered by think_offset, and hands the tank its last command in between.
 ## `_step` is how many ticks the current run covers (counters that count ticks add it), `_last_run_tick` when it last
-## ran, `_last_command` what it handed over, and `_fire_checked_tick` when the fire-avoidance check last looked.
+## ran, and `_last_command` what it handed over.
 var _stride := 1
 var _step := 1
 var _last_run_tick := -1
 var _last_command: TankCommand = null
-var _fire_checked_tick := -1000
+
+## N1 (round 6): the path-following, avoidance and unsticking half of this controller (game/ai/movement.gd).
+var movement: Movement
+## Stuck detection (round-3 X1), kept here for the brains that read it: Movement.stalled_ticks.
+var stalled_ticks: int:
+	get:
+		return movement.stalled_ticks
+	set(value):
+		movement.stalled_ticks = value
+
+
+func _init() -> void:
+	movement = Movement.new(self)
 
 
 func _ready() -> void:
@@ -280,17 +218,19 @@ func set_orders(new_move: Variant, new_weapon: Variant, new_reflexes: Variant = 
 	if new_move != null:
 		move_order = new_move
 		_drive_elapsed = 0.0
-		_repath_left = 0.0
+		movement.new_order()
 	if new_weapon != null:
 		weapon_order = new_weapon
 	return ""
 
 
 func compute_command(delta: float) -> TankCommand:
+	movement.bind()
 	if not tank.is_alive():
 		engaged_target = ""
 		_held_aim = Vector3.ZERO
 		engagement_lay.forget()  # N5: a respawned crew starts its lay from scratch
+		movement.idle()
 		return TankCommand.new(0.0, 0.0, tank.global_position + tank.turret_forward() * HELD_AIM_DISTANCE)
 	if _held_aim == Vector3.ZERO:
 		_held_aim = tank.turret_forward()
@@ -303,7 +243,7 @@ func compute_command(delta: float) -> TankCommand:
 	clock = _lap("c.reflexes", clock)
 	clock = Time.get_ticks_usec() if profiling else 0
 	_apply_move(cmd, delta)
-	_apply_unstick(cmd, delta)
+	movement.unstick(cmd, move_order, delta)
 	if profiling:
 		TankBrain.profile_parts["move"] = int(TankBrain.profile_parts.get("move", 0)) + Time.get_ticks_usec() - clock
 		clock = Time.get_ticks_usec()
@@ -318,14 +258,7 @@ func compute_command(delta: float) -> TankCommand:
 ## A new order from the player: drop the unstick routine, the old path, and stall bookkeeping, so the new order
 ## drives this very tick (K1 response guarantee).
 func interrupt() -> void:
-	_fire_detour = null
-	_fire_detour_again = 0
-	_fire_since = -1
-	_unstick_left = 0.0
-	_stuck_time = 0.0
-	_repath_left = 0.0
-	stalled_ticks = 0
-	_progress_goal = Vector3.INF
+	movement.reset()
 
 
 ## Measurement only (make ai-perf): add the microseconds since `since` to a profile part, and return the clock now.
@@ -374,7 +307,7 @@ func _apply_reflexes() -> void:
 			"retreat_below_hp":
 				var reverse: bool = reflex.get("reverse", true)
 				move_order = {"type": "move_to", "x": reflex["x"], "z": reflex["z"], "reverse": reverse}
-				_repath_left = 0.0
+				movement.new_order()
 				_log_event("retreat_below_hp: HP %d < %d, %s to (%.0f, %.0f)" % [tank.sync_health,
 						int(reflex["hp"]), "backing away" if reverse else "turning to run", reflex["x"], reflex["z"]])
 			"halt_on_contact":
@@ -392,44 +325,15 @@ func _log_event(text: String) -> void:
 
 func _apply_move(cmd: TankCommand, delta: float) -> void:
 	if move_order["type"] != "move_to":
-		stalled_ticks = 0
+		movement.idle()
 	match move_order["type"]:
 		"move_to":
-			var goal := Vector3(move_order["x"], 0.0, move_order["z"])
-			# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
-			var direct: bool = move_order.get("direct", false)
-			var lap := Time.get_ticks_usec() if profile_detail else 0
-			var routed := goal if direct else _next_waypoint(goal, delta)
-			lap = _lap("move.path", lap)
-			var around_fire := _around_fire(routed, goal)
-			lap = _lap("move.fire", lap)
-			var waypoint := _around_friends(around_fire)
-			lap = _lap("move.friends", lap)
-			var arrive := clampf(float(move_order.get("arrive", ARRIVE_RADIUS)), 0.5, 10.0) if waypoint == goal else 0.5
-			var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
-			lap = _lap("move.remaining", lap)
-			var drive: Vector2
-			var radius := _wheel_radius()
-			if radius > 0.0:
-				# K3 wheels drive like cars: pure pursuit, three-point turns (Steering.drive_toward_wheels).
-				# Direct calls rather than a Callable picked every tick (round-5 X1).
-				if move_order.get("reverse", false):
-					drive = Steering.reverse_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
-				else:
-					drive = Steering.drive_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
-			elif move_order.get("reverse", false):
-				drive = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
-			else:
-				drive = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
-			cmd.throttle = drive.x * clampf(float(move_order.get("speed", 1.0)), 0.2, 1.0)
-			cmd.turn = drive.y
-			_track_progress(goal, drive, remaining)
-			_lap("move.steer", lap)
+			movement.drive(cmd, move_order, delta)
 		"face":
 			var spot := Vector3(move_order["x"], 0.0, move_order["z"])
 			var turn_only := Steering.drive_toward(tank.global_position, -tank.global_basis.z, spot, 0.0)
 			cmd.turn = turn_only.y if absf(turn_only.y) > 0.08 else 0.0
-			if _wheel_radius() > 0.0 and cmd.turn != 0.0 and absf(turn_only.y) >= 1.0:
+			if movement.wheel_radius() > 0.0 and cmd.turn != 0.0 and absf(turn_only.y) >= 1.0:
 				# Wheels can't turn standing still: creep round (combat's wheels roll along the arc on a pure turn command).
 				cmd.throttle = Steering.WHEELS_MIN_THROTTLE
 		"drive":
@@ -441,98 +345,6 @@ func _apply_move(cmd: TankCommand, delta: float) -> void:
 				move_order = {"type": "stop"}
 
 
-## X3 (L2): a route through a wall of bullets is stepped around. The lead: *"vehicles make decisions to avoid walking
-## into a wall of bullets that will kill them."* Navmesh paths know nothing about fire, and this is where every move
-## passes — an order, an element's bound, a drill — so it is the one place that covers all of them. Sides are tried
-## nearest first; if every way through is swept it goes anyway, because standing still in the open is worse.
-func _around_fire(waypoint: Vector3, goal: Vector3) -> Vector3:
-	var brain := self as TankBrain
-	if brain == null or brain.game_match == null \
-			or not bool(BrainVariants.for_team(tank.team).get("avoid_beaten", true)):
-		return waypoint
-	# A move that IS the escape (running to cover, breaking contact) is driven as given: re-routing it round the fire
-	# is how a hurt tank ends up never reaching the cover it was running to.
-	if bool(move_order.get("to_safety", false)):
-		return waypoint
-	var fields := _suppression_fields(brain.game_match)
-	if fields == null:
-		return waypoint
-	var here := tank.global_position
-	var to := Vector3(waypoint.x - here.x, 0.0, waypoint.z - here.z)
-	var distance := to.length()
-	if distance < 1.0:
-		return waypoint
-	var direction := to / distance
-	var reach := minf(FIRE_LOOKAHEAD, maxf(_flat_distance(here, goal), 1.0))
-	var tick := brain.game_match.tick
-	if _fire_detour == null:
-		# Under execution LOD the check can't wait for an exact multiple of FIRE_CHECK_TICKS (it may be an off tick):
-		# it runs on the first executed tick at least FIRE_CHECK_TICKS - 1 after the last one instead.
-		if _stride == 1 and (tick + brain.think_offset) % FIRE_CHECK_TICKS != 0:
-			return waypoint
-		# Under a controller stride the check can't wait for an exact multiple (that tick may not run): it looks on the
-		# first run at least FIRE_CHECK_TICKS after the last look.
-		if _stride > 1 and tick - _fire_checked_tick < FIRE_CHECK_TICKS:
-			return waypoint
-		_fire_checked_tick = tick
-	var ahead := here + direction * reach
-	var ahead_beaten := SuppressionFeed.beaten(fields, tank.team, here, ahead)
-	# Already going round. Reaching the step, or spending long enough on it, counts as having tried: push on for a
-	# while afterwards so a wall across the whole frontage can't stop a unit forever (orders win in the end). The fire
-	# simply lifting is different — carry straight on, with no cooldown, because nothing was spent.
-	var still_swept := SuppressionFeed.along(fields, tank.team, here, ahead) >= Match.BEATEN_ZONE_DENSITY * FIRE_KEEP_SHARE
-	if _fire_detour != null:
-		var leg: Vector3 = _fire_detour
-		if not still_swept and tick - _fire_detour_since >= FIRE_LEG_MIN_TICKS:
-			_fire_detour = null  # the fire lifted: carry on, nothing spent
-			_fire_since = -1
-		elif _fire_since >= 0 and tick - _fire_since >= FIRE_AVOID_MAX:
-			_fire_detour = null  # long enough: push on
-			_fire_since = -1
-			_fire_detour_again = tick + FIRE_DETOUR_COOLDOWN
-		elif tick >= _fire_detour_until or _flat_distance(here, leg) <= FIRE_DETOUR_REACHED:
-			_fire_detour = null  # that step is done; look again below and take another if it is still needed
-		else:
-			fire_detours += _step
-			return leg
-	if not still_swept:
-		_fire_since = -1
-	if not ahead_beaten or tick < _fire_detour_again:
-		return waypoint
-	var across := Vector3(-direction.z, 0.0, direction.x)
-	var limit := Match.DRIVABLE_LIMIT - 4.0
-	# The way round is a step SIDEWAYS first, not a shallower line to the same place: a lane swept across your front is
-	# crossed by leaving it, then going on. Every step is SCORED rather than tested for being perfectly clear — a
-	# beaten zone pulses and its edges are soft, so "is this clear" is the wrong question and "which of these is least
-	# swept" is the right one (Match.threat_along exists for exactly this). A route is as dangerous as its worst leg.
-	var straight := SuppressionFeed.along(fields, tank.team, here, ahead)
-	var best: Variant = null
-	var best_threat := straight * FIRE_DETOUR_MARGIN
-	for step: float in FIRE_DETOUR_STEPS:
-		for side: float in [1.0, -1.0]:
-			var beside := here + across * (side * step)
-			beside.x = clampf(beside.x, -limit, limit)
-			beside.z = clampf(beside.z, -limit, limit)
-			var threat := maxf(SuppressionFeed.along(fields, tank.team, here, beside),
-					SuppressionFeed.along(fields, tank.team, beside, beside + direction * reach))
-			if threat < best_threat:
-				best_threat = threat
-				best = beside
-	if best != null:
-		_fire_detour = best
-		_fire_detour_until = tick + FIRE_DETOUR_TICKS
-		_fire_detour_since = tick
-		if _fire_since < 0:
-			_fire_since = tick
-		fire_detours += _step
-		return best
-	# Looked and found nothing: every way round is swept too. Push on rather than looking again every few ticks.
-	fire_no_way_round += 1
-	_fire_since = -1
-	_fire_detour_again = tick + FIRE_DETOUR_COOLDOWN
-	return waypoint
-
-
 ## The object that answers contract L2 for this match, resolved once.
 func _suppression_fields(game_match: Object) -> Object:
 	var id := game_match.get_instance_id()
@@ -542,106 +354,9 @@ func _suppression_fields(game_match: Object) -> Object:
 	return _fields
 
 
-## Local avoidance: a friend parked in the way within AVOID_LOOKAHEAD meters (within AVOID_WIDTH of the line to the
-## waypoint) is passed beside, AVOID_CLEARANCE meters off its center on the side the line already leans to. Navmesh paths
-## ignore units, move_and_slide stops a hull against another, and wheels can't pivot round one (a wheeled IFV looped its
-## unstick routine against a parked tank for 8 s). Brains only (they share the per-tick tank table).
-func _around_friends(waypoint: Vector3) -> Vector3:
-	var brain := self as TankBrain
-	if brain == null or brain.game_match == null:
-		return waypoint
-	var here_x := tank.global_position.x
-	var here_z := tank.global_position.z
-	var to_x := waypoint.x - here_x
-	var to_z := waypoint.z - here_z
-	var distance := sqrt(to_x * to_x + to_z * to_z)
-	if distance < 1.0:
-		return waypoint
-	var dir_x := to_x / distance
-	var dir_z := to_z / distance
-	var nearest := minf(distance + AVOID_WIDTH, AVOID_LOOKAHEAD)
-	var detour := waypoint
-	# X2: the tick's shared living-ally table (positions already extracted; every controller runs before any tank
-	# moves, so these are this tick's positions), and a squared-distance reject before any of the lane math. At 60
-	# units this loop was the single biggest cost of executing orders.
-	var my_name := String(tank.name)
-	var reach_squared := nearest * nearest + AVOID_WIDTH * AVOID_WIDTH
-	# Round-5 X1: typed columns instead of a dictionary per ally (same tanks, same order, same float values).
-	var columns := AiTickCache.ally_columns(brain.game_match, tank.team)
-	var xs: PackedFloat32Array = columns[0]
-	var zs: PackedFloat32Array = columns[1]
-	var names: PackedStringArray = columns[2]
-	for i in xs.size():
-		var position := Vector3(xs[i], 0.0, zs[i])
-		var dx := position.x - here_x
-		var dz := position.z - here_z
-		if dx * dx + dz * dz >= reach_squared or names[i] == my_name:
-			continue
-		var along := dx * dir_x + dz * dir_z
-		if along <= 0.0 or along >= nearest:
-			continue
-		var lateral := dx * dir_z - dz * dir_x
-		if absf(lateral) >= AVOID_WIDTH:
-			continue
-		nearest = along
-		# Pass on the side away from it (ties: its right).
-		var clearance := AVOID_CLEARANCE if lateral >= 0.0 else -AVOID_CLEARANCE
-		detour = Vector3(position.x - dir_z * clearance, 0.0, position.z + dir_x * clearance)
-	return detour
-
-
-## The minimum turning radius when this unit rolls on wheels (K3 `locomotion` "wheels", `min_turn_radius_m`), else 0.
+## The minimum turning radius when this unit rolls on wheels, else 0 (Movement.wheel_radius; brains read it).
 func _wheel_radius() -> float:
-	if _wheel_radius_unit != tank.unit_id:
-		_wheel_radius_unit = tank.unit_id
-		_wheel_radius_value = 0.0
-		if String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels":
-			_wheel_radius_value = maxf(float(Units.stat(tank.unit_id, "min_turn_radius_m", 0.0)), 0.5)
-	return _wheel_radius_value
-
-
-## Counts ticks without getting at least 0.5 m closer (along the path) to the current move goal. `remaining` is the
-## distance the caller already worked out for steering — computing it again here walked the whole path a second time
-## every tick for every moving unit (X2).
-func _track_progress(goal: Vector3, drive: Vector2, remaining: float) -> void:
-	if _flat_distance(goal, _progress_goal) > 2.0 or drive == Vector2.ZERO:
-		_progress_goal = goal
-		_progress_best = remaining
-		stalled_ticks = 0
-	elif remaining < _progress_best - 0.5:
-		_progress_best = remaining
-		stalled_ticks = 0
-	else:
-		stalled_ticks += _step
-
-
-## The point to steer at now: the next navmesh waypoint toward `goal`, or `goal`
-## itself when there's no path (navigation not baked yet, or already close).
-func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
-	_repath_left -= delta
-	if _repath_left <= 0.0 or _flat_distance(goal, _path_goal) > 1.0:
-		_repath_left = REPATH_SECONDS
-		_path_goal = goal
-		_path = Pathing.find_path(tank, tank.global_position, goal)
-		_path_index = 0
-	# Wheels can't thread a waypoint the way tracks pivot onto one: they move on to the next one a turning radius out.
-	var reach := maxf(WAYPOINT_RADIUS, _wheel_radius() * WHEELS_WAYPOINT_RADII)
-	while _path_index < _path.size() \
-			and _flat_distance(tank.global_position, _path[_path_index]) < reach:
-		_path_index += 1
-	if _path_index >= _path.size():
-		return goal
-	var waypoint := _path[_path_index]
-	return Vector3(waypoint.x, 0.0, waypoint.z)
-
-
-func _remaining_path_distance(goal: Vector3) -> float:
-	if _path_index >= _path.size():
-		return _flat_distance(tank.global_position, goal)
-	var total := _flat_distance(tank.global_position, _path[_path_index])
-	for i in range(_path_index, _path.size() - 1):
-		total += _flat_distance(_path[i], _path[i + 1])
-	return total
+	return movement.wheel_radius()
 
 
 static func _flat_distance(a: Vector3, b: Vector3) -> float:
@@ -652,21 +367,6 @@ static func _flat_distance(a: Vector3, b: Vector3) -> float:
 ## Booked in seconds, never in ticks (orchestration.md lesson 30), and never from the wall clock (determinism.md).
 func _seconds_step() -> float:
 	return float(_step) / float(SimClock.TICK_RATE)
-
-
-func _apply_unstick(cmd: TankCommand, delta: float) -> void:
-	if _unstick_left > 0.0:
-		_unstick_left -= delta
-		cmd.throttle = 1.0 if move_order.get("reverse", false) else -1.0  # back off the way you were NOT going
-		cmd.turn = 1.0
-		return
-	if absf(cmd.throttle) > 0.5 and tank.estimated_velocity.length() < STUCK_SPEED:
-		_stuck_time += delta
-		if _stuck_time >= STUCK_SECONDS:
-			_stuck_time = 0.0
-			_unstick_left = UNSTICK_SECONDS
-	else:
-		_stuck_time = 0.0
 
 
 # ---- Weapon --------------------------------------------------------------------------

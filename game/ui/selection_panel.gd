@@ -5,8 +5,12 @@ extends Control
 ##            shift-click = drop it, ctrl-click = keep only that type
 ##   unit     one unit's card: type, hull and shield numbers, weapon, what it's doing (its order and queue)
 ##   enemy    an inspected enemy's card (enemy colors, no commands)
-## plus the command card: Move (M), Stop (S), Hold (H), Attack-move (A), Follow (F), Screen (E), Support by fire (R)
-## and Formation (G), doing exactly what the keys do. Hidden when nothing is selected. Behavior is control's; colors
+## plus the command card: the rows of TaskPalette.card() (N4) - Stop (S), Hold (H), Attack-move (A), Screen (E),
+## Support by Fire (R) and Formation (G) - doing exactly what the keys do. Round 6 X1: no Move or Follow buttons -
+## right-click already does both (the lead: "buttons like move and follow are already accessible via mouse click, so we
+## shouldn't have buttons for them"); M and F stay as keys because they cost nothing. X2: each button's primary read is
+## its tactical task graphic (CommandIcons.draw_task), with its doctrinal name under it and a one-sentence tooltip on
+## hover. Hidden when nothing is selected. Behavior is control's; colors
 ## from GameTheme.ui and CyberStyle (feel).
 ##
 ## X3: with a whole element selected, the card issues L1 *tasks* and a line under the header reads back what that
@@ -24,19 +28,23 @@ const MAX_WIDTH := 980.0
 const PAD := 8.0
 ## X3: the strip along the bottom of the panel that the element's doctrine line lives in (at 1080p, scaled).
 const FOOTER := 18.0
-const COMMANDS := [["move", "Move", "M"], ["stop", "Stop", "S"], ["hold", "Hold", "H"], ["screen", "Screen", "E"],
-		["attack_move", "Attack-move", "A"], ["follow", "Follow", "F"], ["support_by_fire", "Base of fire", "R"],
-		["formation", "Formation", "G"]]
-## Buttons on the card, per row.
-const COLUMNS := 4
+## [id, name, hotkey] per button, from the N4 palette.
+static var COMMANDS: Array = TaskPalette.card().map(func(row: Dictionary) -> Array:
+	return [String(row["id"]), String(row["name"]), String(row["hotkey"])])
+## Buttons on the card, per row: two rows, as many columns as the palette needs (at least 3).
+static var COLUMNS: int = maxi(3, ceili(COMMANDS.size() / 2.0))
+## X2: a button is this much wider than tall, so the doctrinal name fits under the symbol.
+const BUTTON_ASPECT := 1.35
 ## The card's verbs that only an element can carry out.
-const ELEMENT_ONLY := ["screen", "support_by_fire"]
+static var ELEMENT_ONLY: Array = TaskPalette.element_only()
 const ORDER_WORDS := {"move": "Moving", "attack": "Attacking", "attack_move": "Attack-moving", "follow": "Following",
 		"hold": "Holding", "stop": "Stopping", "": "Idle"}
 
 var controls: RtsControls
 
 var _command_rects := {}  # id -> Rect2 (local)
+## X2: the button under the mouse ("" = none), for its tooltip.
+var _hovered := ""
 var _portrait_rects := {}  # portrait key -> Rect2 (local)
 ## X4: unit name -> Tank for this pass. One node lookup per unit instead of one per question, which at 30+
 ## selected was the panel's whole cost (a sort comparator asking for a role does two lookups per comparison).
@@ -68,12 +76,13 @@ func _layout() -> void:
 	position = Vector2((screen.x - size.x) / 2.0, screen.y - size.y - PAD * s)
 	_command_rects.clear()
 	var button := (size.y - PAD * s * 3.0) / 2.0
-	var card_left := size.x - (button * COLUMNS + PAD * s * (COLUMNS + 1.0))
+	var wide := button * BUTTON_ASPECT
+	var card_left := size.x - (wide * COLUMNS + PAD * s * (COLUMNS + 1.0))
 	for i in COMMANDS.size():
 		var column := i % COLUMNS
 		var row := i / COLUMNS
-		_command_rects[COMMANDS[i][0]] = Rect2(card_left + PAD * s + column * (button + PAD * s), PAD * s + row * (button + PAD * s),
-				button, button)
+		_command_rects[COMMANDS[i][0]] = Rect2(card_left + PAD * s + column * (wide + PAD * s), PAD * s + row * (button + PAD * s),
+				wide, button)
 	_portrait_rects.clear()
 	var units: Array[String] = []
 	for entry: Dictionary in portrait_entries():
@@ -189,6 +198,7 @@ func summary() -> Dictionary:
 		if command[0] == "formation":
 			label = "Formation: %s" % String(controls.formation).capitalize()
 		result["commands"].append({"id": command[0], "label": label, "hotkey": command[2],
+				"line": String(TaskPalette.row(command[0]).get("line", "")),
 				"enabled": commandable and (is_element or not ELEMENT_ONLY.has(command[0]))})
 	if controls.selection.inspected != "":
 		result["mode"] = "enemy"
@@ -256,10 +266,27 @@ func _order_words(unit_name: String, with_queue: bool) -> String:
 	var waiting := controls.orders.queue(unit_name).size()
 	if with_queue and waiting > 0:
 		words += " (+%d queued)" % waiting
+	# X5: what nav says about getting there - blocked, giving way, or when it arrives.
+	var landing := controls.movement.card_line(unit_name, controls._unit_label) if with_queue else ""
+	if landing != "":
+		words += " - " + landing
 	return words
 
 
 # ---- Input --------------------------------------------------------------------------------------------------
+
+## Where the command card starts (local x): the portraits, the unit card and the doctrine line stop short of it.
+func _card_left() -> float:
+	return (_command_rects[COMMANDS[0][0]] as Rect2).position.x
+
+
+## X7: the strip the element's doctrine line is drawn in (local).
+func doctrine_rect() -> Rect2:
+	if _command_rects.is_empty():
+		return Rect2()
+	var s := _scale()
+	return Rect2(PAD * s, size.y - PAD * s - FOOTER * s * 1.25, _card_left() - PAD * s * 2.0, FOOTER * s * 1.25)
+
 
 func command_rect(id: String) -> Rect2:
 	return _command_rects.get(id, Rect2())
@@ -276,7 +303,7 @@ func press_command(id: String) -> void:
 	if ELEMENT_ONLY.has(id) and not controls.can_task():
 		return
 	match id:
-		"move", "attack_move", "follow", "screen", "support_by_fire":
+		"attack_move", "screen", "support_by_fire":
 			controls.arm(id)
 		"stop", "hold":
 			controls.order_selection(id)
@@ -284,7 +311,44 @@ func press_command(id: String) -> void:
 			controls.cycle_formation()
 
 
+## X2: the tooltip for the button under the mouse: {"id", "title", "line"} or {}. X7: over the doctrine line, the
+## element's recent decisions instead: {"id": "doctrine", "title", "line": "", "lines": [...]}.
+func tooltip() -> Dictionary:
+	if _hovered == "" or not visible:
+		return {}
+	if _hovered == "doctrine":
+		var element := controls.selected_element() if controls != null else null
+		if element == null:
+			return {}
+		var recent := controls.element_log.lines(element.id)
+		if recent.is_empty():
+			return {}
+		return {"id": "doctrine", "title": "%s: why it did that" % element.element_name, "line": "", "lines": recent}
+	var row := TaskPalette.row(_hovered)
+	var title := String(row.get("name", _hovered))
+	if String(row.get("hotkey", "")) != "":
+		title += "  [%s]" % row["hotkey"]
+	var line := String(row.get("line", ""))
+	if ELEMENT_ONLY.has(_hovered) and controls != null and not controls.can_task():
+		line += " Select a whole squad (1-5) first."
+	return {"id": _hovered, "title": title, "line": line}
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_MOUSE_EXIT:
+		_hovered = ""
+
+
 func _gui_input(event: InputEvent) -> void:
+	var motion := event as InputEventMouseMotion
+	if motion != null:
+		_hovered = ""
+		for id in _command_rects:
+			if (_command_rects[id] as Rect2).has_point(motion.position):
+				_hovered = id
+		if _hovered == "" and doctrine_rect().has_point(motion.position):
+			_hovered = "doctrine"
+		return
 	var button := event as InputEventMouseButton
 	if button == null:
 		return
@@ -374,12 +438,12 @@ func _draw() -> void:
 			_text(batch, font, Vector2(x, PAD * s + line * 2.8), "Weapon: %s" % card["weapon"], 16.0 * s, Color(CyberStyle.TEXT, 0.8))
 			if not card["enemy"]:
 				_text(batch, font, Vector2(x, PAD * s + line * 3.7), "Orders: %s" % card["orders"], 16.0 * s, CyberStyle.CYAN)
-			_bars(batch, Rect2(x, size.y - PAD * s - FOOTER * s - 12.0 * s, minf(260.0 * s, _command_rects["move"].position.x - x - PAD * s), 10.0 * s),
+			_bars(batch, Rect2(x, size.y - PAD * s - FOOTER * s - 12.0 * s, minf(260.0 * s, _card_left() - x - PAD * s), 10.0 * s),
 					float(card["health"]), float(card["shield_fraction"]), color, enemy)
 	# X3: what the element's leader decided, under the header, where the player reads it without looking away.
 	var doctrine := String(info["doctrine"])
 	if doctrine != "":
-		var width: float = (_command_rects["move"] as Rect2).position.x - PAD * s * 2.0
+		var width: float = _card_left() - PAD * s * 2.0
 		batch.text(font, Vector2(PAD * s, size.y - PAD * s - FOOTER * s * 0.25), doctrine, roundi(13.0 * s),
 				Color(CyberStyle.YELLOW, 0.95), width)
 	for command: Dictionary in info["commands"]:
@@ -389,12 +453,78 @@ func _draw() -> void:
 		batch.fill(button, Color(CyberStyle.CARD, 0.95 if enabled else 0.5))
 		batch.outline(button, Color(CyberStyle.YELLOW if armed else CyberStyle.CYAN, 0.9 if enabled else 0.2), 2.0 if armed else 1.0)
 		var ink := Color(CyberStyle.TEXT, 1.0 if enabled else 0.3)
-		_text(batch, font, button.position + Vector2(4.0 * s, 16.0 * s), command["hotkey"], 14.0 * s, Color(CyberStyle.YELLOW, 0.9 if enabled else 0.3))
+		_text(batch, font, button.position + Vector2(4.0 * s, 15.0 * s), command["hotkey"], 13.0 * s, Color(CyberStyle.YELLOW, 0.9 if enabled else 0.3))
+		# X2: the symbol is the primary read; the doctrinal name sits under it.
 		var label: String = command["label"]
+		var glyph := Rect2(button.position + Vector2((button.size.x - button.size.y * 0.62) / 2.0, button.size.y * 0.06),
+				Vector2.ONE * button.size.y * 0.62)
+		var tint := Color(CyberStyle.CYAN if not armed else CyberStyle.YELLOW, 1.0 if enabled else 0.3)
 		if command["id"] == "formation":
 			label = String(controls.formation).capitalize()
-		_centered(batch, font, button, label, 13.0 * s, ink)
+			batch.texture(CommandIcons.formation_texture(String(controls.formation)), glyph, tint)
+		else:
+			batch.texture(CommandIcons.task_texture(command["id"]), glyph, tint)
+		_label(batch, font, button, label, 12.0 * s, ink)
+	var tip := tooltip()
+	if not tip.is_empty():
+		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)
 	batch.flush(self)
+
+
+## X2: the name under a button's symbol - one line if it fits, else two ("Support / by Fire"), shrinking only if a
+## single word is too long.
+func _label(batch: DrawBatch, font: Font, box: Rect2, text: String, font_size: float, color: Color) -> void:
+	var px := maxi(9, roundi(font_size))
+	var lines: Array[String] = [text]
+	if font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > box.size.x - 6.0 and text.contains(" "):
+		var cut := text.find(" ")
+		lines = [text.substr(0, cut), text.substr(cut + 1)]
+	for line in lines:
+		while px > 8 and font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > box.size.x - 6.0:
+			px -= 1
+	var bottom := box.end.y - box.size.y * 0.07
+	for i in lines.size():
+		var width := font.get_string_size(lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+		var y := bottom - (lines.size() - 1 - i) * px * 1.05
+		batch.text(font, Vector2(box.get_center().x - width / 2.0, y), lines[i], px, color)
+
+
+## X2: the hovered button's name and its one sentence, in a box above the card.
+func _tooltip(batch: DrawBatch, font: Font, button: Rect2, tip: Dictionary, s: float) -> void:
+	var title_px := roundi(15.0 * s)
+	var line_px := roundi(13.0 * s)
+	var width := 360.0 * s
+	var lines: Array[String] = []
+	if String(tip["line"]) != "":
+		lines = _wrap(font, String(tip["line"]), line_px, width - 16.0 * s)
+	for extra: String in tip.get("lines", []):
+		lines.append(extra)
+	if tip.has("lines"):
+		width = 520.0 * s
+	var height := (title_px + 8.0 * s) + lines.size() * line_px * 1.3 + 10.0 * s
+	var box := Rect2(Vector2(clampf(button.get_center().x - width / 2.0, -position.x + 4.0, size.x - width), -height - 6.0 * s),
+			Vector2(width, height))
+	batch.fill(box, Color(CyberStyle.HUD_BACKGROUND, 0.97))
+	batch.outline(box, Color(CyberStyle.YELLOW, 0.8), 1.5)
+	batch.text(font, box.position + Vector2(8.0 * s, 6.0 * s + title_px), String(tip["title"]), title_px, CyberStyle.YELLOW)
+	for i in lines.size():
+		batch.text(font, box.position + Vector2(8.0 * s, title_px + 14.0 * s + line_px * (1.0 + i * 1.3)), lines[i], line_px,
+				CyberStyle.TEXT)
+
+
+func _wrap(font: Font, text: String, px: int, width: float) -> Array[String]:
+	var lines: Array[String] = []
+	var current := ""
+	for word in text.split(" "):
+		var trial := word if current == "" else current + " " + word
+		if current != "" and font.get_string_size(trial, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > width:
+			lines.append(current)
+			current = word
+		else:
+			current = trial
+	if current != "":
+		lines.append(current)
+	return lines
 
 
 func _bars(batch: DrawBatch, area: Rect2, health: float, shield: float, friendly: Color, enemy: Color) -> void:

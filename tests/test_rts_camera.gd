@@ -20,13 +20,19 @@ func _rig() -> RtsCamera:
 	return rig
 
 
-func test_zoom_runs_from_close_behind_to_high_above() -> void:
+func test_zoom_sets_the_distance_and_never_the_tilt() -> void:
 	var near := RtsCamera.pose_for(Vector3.ZERO, 0.0, 0.0)
 	var far := RtsCamera.pose_for(Vector3.ZERO, 0.0, 1.0)
 	assert_near(near.origin.length(), RtsCamera.MIN_DISTANCE, 0.01, "zoomed in: close to the ground point")
-	assert_near(far.origin.length(), RtsCamera.MAX_DISTANCE, 0.01, "zoomed out: high over the arena")
-	assert_true(near.origin.y < near.origin.z, "zoomed in the camera is low and behind (a tank's-eye angle)")
-	assert_true(far.origin.y > far.origin.z * 5.0, "zoomed out it looks almost straight down")
+	assert_near(far.origin.length(), RtsCamera.MAX_DISTANCE, 0.01, "zoomed out: far from it")
+	# Round 6 X3: round 5 tilted from 25° to 82° as you zoomed out, so seeing your army cost you a top-down view.
+	for pose: Transform3D in [near, far, RtsCamera.pose_for(Vector3.ZERO, 0.0, 0.5)]:
+		assert_near(rad_to_deg(asin(pose.origin.y / pose.origin.length())), RtsCamera.DEFAULT_PITCH_DEG, 0.01,
+				"every zoom looks down at the same default tilt")
+	assert_true(RtsCamera.DEFAULT_PITCH_DEG <= 50.0, "and the default sees vehicles from the side, not from above")
+	var steep := RtsCamera.pose_for(Vector3.ZERO, 0.0, 0.5, 70.0)
+	assert_true(steep.origin.y > steep.origin.z * 2.5, "a pitch asked for is the pitch you get")
+	assert_near(RtsCamera.level_for(RtsCamera.distance_for(0.37)), 0.37, 0.001, "level_for inverts distance_for")
 	assert_true((-near.basis.z).dot((Vector3.ZERO - near.origin).normalized()) > 0.999, "it always looks at the focus")
 	assert_true(near.origin.z > 0.0, "yaw 0: the camera sits south of the focus, so north is up the screen")
 	var turned := RtsCamera.pose_for(Vector3.ZERO, PI / 2.0, 0.5)
@@ -184,3 +190,62 @@ func test_a_one_finger_drag_on_open_ground_pans_instead_of_ordering() -> void:
 	map._gui_input(release)
 	assert_eq(game_match.squads["0/Alpha"].verb, "hold", "no order from a finger drag on open ground")
 	assert_true(rig.focus.x > focus_before.x + 5.0, "it panned the view (%s -> %s)" % [focus_before, rig.focus])
+
+
+## Round 6 X3: tilt is its own axis. Zooming leaves it alone; Page Up/Down and ctrl+wheel move it within the player's
+## range; the overview is the one deliberate top-down view, and gives the tilt back when it closes.
+func test_tilt_is_its_own_axis() -> void:
+	var rig := _rig()
+	await wait_physics_frames(2)
+	assert_eq(rig.pitch, RtsCamera.DEFAULT_PITCH_DEG, "the camera starts at the default tilt")
+	rig.zoom_by(0.3)
+	assert_eq(rig.pitch, RtsCamera.DEFAULT_PITCH_DEG, "zooming out does not tilt the camera")
+	rig.zoom_by(-0.5)
+	assert_eq(rig.pitch, RtsCamera.DEFAULT_PITCH_DEG, "nor does zooming in")
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+	wheel.pressed = true
+	wheel.ctrl_pressed = true
+	wheel.position = Vector2(640, 360)
+	var zoom_before := rig.zoom
+	rig.handle_mouse(wheel)
+	assert_near(rig.pitch, RtsCamera.DEFAULT_PITCH_DEG + RtsCamera.WHEEL_TILT_DEG, 0.01, "ctrl+wheel down tilts steeper")
+	assert_eq(rig.zoom, zoom_before, "and does not zoom")
+	rig.tilt_by(90.0)
+	assert_eq(rig.pitch, RtsCamera.MAX_PITCH_DEG, "the player's tilt stops at MAX_PITCH_DEG")
+	rig.tilt_by(-90.0)
+	assert_eq(rig.pitch, RtsCamera.MIN_PITCH_DEG, "and at MIN_PITCH_DEG")
+	rig.toggle_overview(Match.Team.GREEN)
+	assert_eq(rig.pitch, RtsCamera.OVERVIEW_PITCH_DEG, "the overview looks down on the map")
+	rig.toggle_overview(Match.Team.GREEN)
+	assert_eq(rig.pitch, RtsCamera.MIN_PITCH_DEG, "and closing it gives the player's tilt back")
+	rig.reset_tilt()
+	assert_eq(rig.pitch, RtsCamera.DEFAULT_PITCH_DEG, "Home resets the tilt")
+	rig.snap()
+	var shown := rig.camera.global_transform.origin - rig.focus
+	assert_near(rad_to_deg(asin(shown.y / shown.length())), rig.pitch, 0.1, "the camera is drawn at that tilt")
+
+
+## Round 6 X3: at the lead's low camera, a squad near the wall is framed from a camera that sits past the wall, inside
+## the grandstand, and the railing and crowd hide the squad (seen in `make shell-playtest` at 50 s). The camera cuts
+## away whatever stands between it and the wall: its near plane sits just short of where the wall meets the floor.
+func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
+	var half := 121.0
+	# In the middle of the arena, nothing to cut: the default near plane.
+	assert_eq(RtsCamera.cutaway_near(Vector3.ZERO, 0.0, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "mid-arena: no cutaway")
+	# Ten metres from the south wall, looking north: the camera is ~35 m past the wall, in the stands.
+	var focus := Vector3(0, 0, half - 10.0)
+	var near := RtsCamera.cutaway_near(focus, 0.0, 50.0, 25.0, half)
+	var pose := RtsCamera.pose_at(focus, 0.0, 50.0, 25.0)
+	assert_true(pose.origin.z > half + 10.0, "setup: the camera is outside the wall (%.1f)" % pose.origin.z)
+	var view := pose.affine_inverse()
+	var depth := func(p: Vector3) -> float: return -(view * p).z
+	var rail := Vector3(0, 5.0, half + 1.0)  # the stands' front rail, just outside the wall
+	var seat := Vector3(0, 12.0, half + 12.0)  # a crowd row between the camera and the arena
+	var wall_foot := Vector3(0, 0, half)
+	var squad := Vector3(0, 1.0, half - 4.0)  # a vehicle hugging the wall
+	assert_true(depth.call(rail) < near and depth.call(seat) < near, "the rail and the seats are cut away (near %.1f; rail %.1f, seat %.1f)" %
+			[near, depth.call(rail), depth.call(seat)])
+	assert_true(depth.call(wall_foot) > near and depth.call(squad) > near, "the floor at the wall and a vehicle on it are drawn")
+	# Looking the other way from the same spot (camera over the arena), nothing is cut.
+	assert_eq(RtsCamera.cutaway_near(focus, PI, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "a camera over the arena cuts nothing")

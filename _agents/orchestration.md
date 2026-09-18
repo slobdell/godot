@@ -586,3 +586,83 @@ The kickoff prompt is one line; this section is the rest.
     a governed mechanism with an ungoverned one** — reporting the split *alongside* the old figure, never instead of
     it, so the existing baseline stays comparable. Twenty minutes on the metric beats sixty matches through a
     contaminated one.
+50. **When two independently-owned numbers must stay ordered, the code has to say so — nothing will tell you the day
+    they cross.** Round 6 found **three** load-bearing coincidences, each holding up something we believed was
+    engineered, and each discovered only because an unrelated change moved one number:
+    1. **The player's units held until ordered** because an outranging heuristic happened to return `{"type": "stop"}`
+       at that distance — no hold logic existed (lesson 47).
+    2. **A support-by-fire standoff stayed outside the near-ambush radius** because `standoff = min(effective_range) ×
+       0.8` came to ~56 m while `near_ambush_m` was 38–42 m. Two numbers chosen independently, in different files, by
+       different streams, for different reasons. Narrow the bands and the standoff lands at **28–36 m — inside the
+       trigger** — so the element drives to its firing line, `near_ambush` pre-empts `support_by_fire`, the plan
+       re-selects, and the two drills take the element off each other **every tick**: 128 orders in 10 s, the drill
+       list alternating without a single completion. That is round 4's trip-up 17 reached by a new road.
+    3. **`effective_range == range` for every weapon**, which is what made (2) hold and what several positioning
+       heuristics silently depended on (lesson 39).
+    The instruction: **an invariant that matters must be written as an invariant** — not left to two constants that
+    happen to be ordered today.
+    **But check that your belt does not undo your trousers.** The obvious spelling here,
+    `standoff = max(reach × 0.8, near_ambush_m + margin, floor)`, was proposed by one stream, endorsed by the
+    orchestrator as harmless insurance, and **correctly refused by the owner**: with a 45 m band it puts the firing
+    line at ~47 m — *outside* the effective band, which is exactly the 50%-of-shells trade the same conversation had
+    just rejected. The real invariant was the **precedence** (a deliberate support-by-fire task outranks a reaction
+    drill), and once that is stated and tested, the distance floor is not insurance but a reintroduction of the bug at
+    a different address. **A defensive constraint that re-creates the failure it guards against is worse than none** —
+    and the person who can see that is usually the path's owner, which is why an orchestrator's "take both" deserves
+    the same scrutiny as a stream's "take one". And when you find one, ask which *other* pair the same change moved: all three of these came out of
+    one range narrowing, and the second and third were found days apart only because different streams tripped over
+    them.
+    **The corollary for reviewers:** a behaviour that has worked for four rounds is *not* evidence that anything
+    enforces it. Ask what would have to be true for it to break, and check whether the code says that anywhere.
+51. **"No fix at this level feels clean" is a diagnostic signal, not an aesthetic complaint — it usually means the
+    defect is a level up.** Round 6, and the stream diagnosed itself better than a reviewer could have. Having found
+    the support-by-fire standoff colliding with the near-ambush radius (lesson 50), it produced two candidate fixes,
+    disliked both, and then **promoted the residue to a design feature**: *"support-by-fire must now choose between
+    effective fire and not triggering an assault drill."* That reads like a considered trade. It was a rule fighting
+    itself. Its own account of the error: *"I was reasoning inside the layer I had been looking at. The tell was right
+    there and I walked past it — no distance tweak felt satisfying, which is what it feels like when the defect is a
+    level up."* The real defect was one line of missing precedence a layer above the distances.
+    Three instructions:
+    - **When every candidate fix at your layer feels unsatisfying, stop tuning and go up a layer** before choosing the
+      least-bad option. Dissatisfaction with all available fixes is evidence about where the bug is.
+    - **Never turn an unexplained residue into a feature.** A self-interruption is not a cost the player can reason
+      about; it is a bug wearing a trade's clothes. The test: can you state the cost in a sentence the lead would
+      accept? "Posting an element buys less on a dense map" passes. "Your firing line triggers your own assault drill"
+      does not.
+    - **A withdrawn recommendation must be withdrawn in the document, not only in the conversation.** The stream
+      committed the retraction and the reasoning so the brief carries the corrected answer rather than its first one —
+      otherwise the next reader finds a confident wrong recommendation with no note on it.
+    Also worth keeping: a **filtered** run cannot establish that a new test is *correct* (lesson 45), but it **can**
+    establish that a failure is not an artefact of suite ordering. The stream ran one for exactly that, and said so.
+52. **The orchestrator is not exempt from the trip-ups, and two of them bite hardest when you are relaying fast.**
+    Round 6, in one five-minute stretch, the orchestrator committed both:
+    - **Three concurrent `make remote` runs from the same worktree** (trip-up 66/68). Each rsyncs `--delete` into the
+      *same* builder0 folder, so they swap files under each other and the one already executing is testing a tree that
+      no longer exists. The cleanup is worse than the waste: every one of the three had to be stopped remotely and
+      then locally, and the run that had held a slot for 30 minutes was void. **One remote run per worktree, and if you
+      want a newer tree tested, stop the old run first rather than launching beside it.**
+    - **`pkill -f "tools/remote.sh check"` from a shell whose own command line contained that string** (trip-up 19/79),
+      which matched and killed the shell: exit 144. Collect pids (`ps | grep '[r]emote.sh' | awk '{print $1}'`), check
+      each one's `readlink /proc/<pid>/cwd` to confirm it is **yours**, and kill by pid. Doing that here revealed that
+      three of the candidate pids belonged to *other streams* (feel's `crowd-look`, nav's `test FILTER=`) and would have
+      been killed by a broad pattern.
+    The general point for whoever holds this role: **the orchestrator runs more infrastructure commands than anyone
+    else and reads the docs least often**, because it is busy relaying. The trip-up list is not just for workers, and
+    "I am only doing this quickly" is the condition under which it applies.
+53. **A stream's approximation of another stream's system produces findings about the approximation.** Round 6, and it
+    reached the lead before it was caught. feel needed camera poses to judge the crowd, so it approximated control's
+    wall cutaway as *near plane = where the sight line to the focus crosses the wall, minus 1 m*. Its report frame at
+    the lead's 12° showed the grandstand fascia filling the bottom third below the vehicles, and feel flagged it
+    honestly as *"control's camera, not the crowd"* — the right instinct. But the real cutaway handles that case:
+    with the camera 6 m past the wall it is **among the seats**, where control's rule always cuts, and the plane sits
+    0.2 m past the wall's top edge so the fascia and the ground behind the wall go while the floor and a vehicle
+    against the wall stay. control had **played that exact moment** and had a mutation-checked regression test for the
+    earlier version that got it wrong. So the finding was real about feel's stand-in and false about the game — and
+    the orchestrator had already sent the frame to the lead.
+    Two instructions:
+    - **When you need another stream's behaviour to judge your own work, call their code, do not model it.** control's
+      `make camera-looks` applies the real cutaway per pose; using it would have cost nothing and produced frames that
+      match the game.
+    - **When relaying a frame or a number that depends on another stream's system, say which parts of it that stream
+      owns and get their read first** — especially before it goes to the lead, who cannot tell a stand-in from the
+      build. The cheap version of this is one message: *"does your implementation already handle this?"*
