@@ -282,7 +282,39 @@ Both come from tests that recompute their own bar rather than pinning today's ou
   derived 45 m the same geometry and the same code price it at **1.0–1.1×**. Same maps, opposite conclusion, the whole
   finding resting on one number nobody had derived.
 
-> **Measurements: the before/after series is pending.** It has not been run yet. Nothing in this section below the design is a measured
+### First directional read, and two things it taught about the METRICS (builder0, `6377c202`, **n = 1 per row**)
+
+`make engagement PAIRS=condemned:condemned SEEDS=1 TIME=240 VARIANT_FILE=…/engagement_bands.json`. **One match per
+configuration. Directional only — do not tune on this, and do not quote it to the lead.** It is here because what it
+says about the *metrics* is solid regardless of sample size.
+
+| bands | length | fire /unit/min | engaged (direct) | **kill** | flank+rear | off-axis | indirect |
+|---|---|---|---|---|---|---|---|
+| reach (the old world) | 73 s | 6.4 | 72 m (70 m) | **42 m** | 28% | 27% | 3% |
+| 0.65 of reach | 92 s | 6.3 | 75 m (76 m) | **40 m** | 57% | 26% | 8% |
+| 0.55 of reach | 125 s | 4.2 | 68 m (67 m) | **31 m** | 53% | 55% | 11% |
+
+**1. My artillery-contamination hypothesis was wrong at this scale, and the split is what showed it.** I built the
+direct-only figures expecting artillery to be inflating `engaged_distance`. It is not: direct and all-shots agree
+within 2 m on every row, and indirect is only 3–11% of kills in a Condemned mirror. The split was still worth
+building — it *disproved* the hypothesis instead of leaving it as a plausible story — but the contamination I
+predicted is not there. Keep the columns; drop the theory.
+
+**2. `engaged_distance` does not discriminate, and now I know why.** It sits at ~70 m in *every* configuration
+including the old world, because it is dominated by the **longest-band unit in the army**: the Condemned Lancer's
+laser band is **86 m by design**, so it is engaging while the line is still closing. That is `covering_range`'s lesson
+again — an army-level average is set by its outlier. **`kill_distance` is the headline** (42 → 40 → 31), because it
+says where fights are *decided* rather than where the first gun can speak. `1st shot 6 s @ 103 m` is identical across
+all three rows for the same reason: neither artillery nor a Lancer is bound by discipline at that range.
+
+**3. The quiet-fight risk is real and visible at 0.55.** Fire rate falls 6.4 → 6.3 → **4.2** per unit per minute while
+match length climbs 73 → 92 → **125 s**. This is exactly what the shots-per-unit-minute column was added to catch, and
+it caught it on its first run. Whatever the definitive series says, **0.55 of reach looks like the overshoot** — and
+the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on reach, not at the tight end.
+
+**4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
+
+> **The before/after series is still pending.** The rows above are one match each. Nothing in this section below the design is a measured
 > claim, and **no number taken across CP4 may be published by any stream** (workstreams.md invariant 9). When the
 > series lands, its results go here with n, commit and machine, and the per-match file goes in
 > `streams/references/combat/`.
