@@ -143,9 +143,9 @@ the "why did my element do that" view, if the camera and loading work lands earl
    note. Applied: `RtsCamera.DEFAULT_PITCH_DEG = 25`, `FOV_DEG = 60`, `SkirmishMode.START_ZOOM = 0.373` (50 m). The
    player's tilt range stays 22°–50°.
 2. **Which arena is fun** — the same page has a Fun box per arena (all seven, three frames each). Unticked so far.
-3. **Lower than 25°?** He chose the floor of the range offered, so a follow-up page offers 12°/16°/20°/25° ×
-   35/50/70 m at FOV 60 (with the cutaway): https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7 (db `picks/lead`). If he
-   goes lower, `MIN_PITCH_DEG` moves with `DEFAULT_PITCH_DEG`.
+3. ~~**Lower than 25°?**~~ **Answered 18:01 UTC: "pitch 12° · 50 m · FOV 60°"** (the follow-up page,
+   https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7, db `picks/lead`) — the floor again. Applied: default 12°, player
+   range 8°–50°. Treat it as direction, not an experiment (game_design.md).
 
 ## Status
 
@@ -169,14 +169,14 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | Item | State | Evidence |
 |---|---|---|
 | X1 no Move/Follow buttons | done | `test_control_panel` (card has neither; M and F still arm) |
-| X3 pitch decoupled | done; **the lead's pick applied** (25° · 50 m · FOV 60); wall cutaway | `test_rts_camera::test_tilt_is_its_own_axis`, `test_zoom_sets_the_distance_and_never_the_tilt`, `test_a_camera_past_the_wall_cuts_away_the_stands_between` |
+| X3 pitch decoupled | done; **the lead's pick applied: 12° · 50 m · FOV 60** (his second pick, again the floor offered); wall cutaway; far-range soft floor | `test_rts_camera::test_tilt_is_its_own_axis`, `test_zoom_sets_the_distance_and_never_the_tilt`, `test_a_camera_past_the_wall_cuts_away_the_stands_between` |
 | X3 camera pages | answered: https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL; follow-up below 25°: https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7 | `make camera-looks`; laptop render, 1920×1080, frames in the scratchpad (not committed: 26 MB of JPEG) |
 | X2 palette + symbols | done; Screen / Support by Fire held off the card until squad's X5 | `TaskPalette`, `CommandIcons.draw_task`, table in `tactical_map.md` "Task palette (N4)", `test_control_panel` |
 | X4 loading screen | done; FIGHT → playable 7.6 s → 1.4 s with feel's fix (below) | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen`, shell-playtest `loading_screen_shows` + frame `2b_loading` |
 | X5 orders you see landing | built against N1 with a fake provider; **lights up when nav's CP1 is on `main`** (wire `MovementReadout.from_movement` to the real call shape then) | `test_control_movement_readout` |
 | X7 (stretch) "why did my element do that" | done: `ElementLog` keeps each element's last 6 decisions with match time; hover the card's doctrine line | `test_control_element_log` |
 | X6 a plain move keeps the squad a squad | **HELD** (landed in `8d9c59af`, reverted before merge: see the next row). What stays: a direct order to part of a squad releases only those units, and re-selecting the group re-forms it | `test_control_commands::test_a_direct_order_to_part_of_an_element_releases_only_those_units` |
-| X6 plain move, **played — why it is held** | Held by the orchestrator, 2026-09-18, until squad explains the re-issuing; do NOT re-add `"move"` to `ELEMENT_TASKS` without this A/B coming back at 0 idle commands on five squads (the lead's sequence, not a single-squad lab). Question to squad: in the lead's sequence (`make squad-orders-test`, 5 squads from the spawn) elements re-issue in the idle window. Laptop, seed 3, one run each, same tree: X4 on → 31 idle commands (all element moves), 7.0 changes/s, 3/21 never_arrived, slot error mean 14.5 / worst 28 m; X4 off → 0, 1.0/s, 0 never_arrived, 14.1 / 20 m. Station-keeping by design or thrash? If thrash, X4 is a one-line revert (`"move"` out of `ELEMENT_TASKS`) | `build/squad-orders/run.log` |
+| X6 plain move, **played — why it is held** | Held by the orchestrator, 2026-09-18, until squad explains the re-issuing; do NOT re-add `"move"` to `ELEMENT_TASKS` without this A/B coming back at 0 idle commands on five squads (the lead's sequence, not a single-squad lab). Question to squad: in the lead's sequence (`make squad-orders-test`, 5 squads from the spawn) elements re-issue in the idle window. Laptop, seed 3, one run each, same tree: X4 on → 31 idle commands (all element moves), 7.0 changes/s, 3/21 never_arrived, slot error mean 14.5 / worst 28 m; X4 off → 0, 1.0/s, 0 never_arrived, 14.1 / 20 m. Station-keeping by design or thrash? If thrash, X4 is a one-line revert (`"move"` out of `ELEMENT_TASKS`). **Second reading** (new `element_slot_m`: distance from the slot the element holds *now*; X4 on, one more run): element units are on their current slots (mean 5.8 m over 17, worst 30) but the slots drift 15–22 m from where the first orders put them, with 38 idle commands (8.5/s) — the formation keeps its shape but leaves the clicked spot. Sent to squad | `build/squad-orders/run.log`, `squad_orders.json` `element_slot_m` |
 | CP3 adapter review | `group_formation.gd` as squad's shim over `TacticsFormation`: pacing identical (`PACE_NEAR` 8, `PACE_FLOOR` 0.35, same formula), seating through `place(..., {"policy": "front"})`; all control formation tests pass on the merge | — |
 | X6 squad chips | chips say IDLE / MOVING / CONTACT / UNDER FIRE; lit by living members in any order. Plain move keeping the element: agreed with squad, waits on their green | `test_control_groups::test_group_chips_say_what_each_squad_is_doing` |
 
@@ -220,7 +220,16 @@ awaits returned, by which time the whole stall had happened, so it read 0 ms bef
 
 ### Decisions
 
-- **Default pitch 25°, FOV 60°, start 50 m out — the lead's pick.** Player range 22°–50°, Page Up/Down or ctrl+wheel
+- **Default pitch 12° (was 25°, both the lead's), FOV 60°, start 50 m out; player floor 8°** (room below his default;
+  below 8° the frame is mostly horizon, so don't widen it on the theory that lower is always what he wants).
+- **Played at 12°, three things changed** (all found in `make shell-playtest` frames, all in `rts_camera.gd`, tested):
+  (1) the cutaway must clear the 3 m wall's top edge too, or it hides every vehicle parked against it; (2) cut only when
+  the stands would hide something (always when the camera is among the seats; from beyond their back only when the
+  sight line to a vehicle inside the wall runs through their measured profile), otherwise a far camera showed a black
+  void below the wall; (3) **a soft tilt floor past 70 m** (to 40° at full zoom-out), because a 12° camera framing a
+  whole army at ~150 m showed the arena as a strip between sky and void. Up to 70 m the tilt is exactly his. This is
+  the one place the camera overrides his tilt: flag it to him, don't hide it.
+- (superseded) **Default pitch 25°, FOV 60°, start 50 m out — the lead's first pick.** Player range 22°–50°, Page Up/Down or ctrl+wheel
   to tilt, Home resets, **O** = the overview (77°, the one deliberate top-down).
 - **The wall cutaway, not a pitch floor near walls** (do not "simplify" this away). Played at the lead's 25°, a squad
   near the wall (every army's spawn) is framed from a camera that sits past the wall inside the grandstand: in
@@ -242,9 +251,55 @@ awaits returned, by which time the whole stall had happened, so it read 0 ms bef
 - **The loading screen lives on the tree root**, so it survives the scene switch; the arena's venue build and
   navmesh bake stay synchronous (trip-up 57) — the screen names the stage and stays drawn through the stall.
 
+### What to playtest (exact commands)
+
+- `make skirmish` → pick factions and an arena → FIGHT: the loading screen names the matchup, the arena and one task
+  by its symbol (~1.4 s on the laptop). In play: the camera starts at his 12° · 50 m; **Page Up/Down** or
+  **ctrl+wheel** tilts (8°–50°), **Home** resets, **O** is the top-down map view. Zoom far out: past 70 m the tilt
+  lifts (to 40° by 160 m). Near the spawn wall the stands between camera and arena are cut away.
+- The command card: Stop, Hold, Attack-move, **Screen**, **Support by Fire** (symbols, names under them, hover for the
+  one-sentence tooltip; Screen and Support by Fire need a whole squad), Formation. No Move or Follow buttons (right-click).
+- The group chips over the card: IDLE (yellow) / MOVING / CONTACT / UNDER FIRE per squad.
+- Hover the yellow doctrine line on the card with a squad selected: its last six decisions with the match time.
+- Once nav's N1 is on `main`: YIELDING / BLOCKED / STUCK over vehicles, "Blocked by Tank" / "Stuck for 4 s" / "Arrives
+  in 4 s" on a unit's card, and a faint line for the route a selected unit means to take.
+- Instruments: `make camera-looks` (the page; `--camera-looks-pitches=…` for a follow-up grid), `make spawn-cost`,
+  `make shell-playtest` (prints `LOAD_TIMING`), `make squad-orders-test` (now with `element_slot_m`), `make hud-cost`.
+
+### Known issues
+
+- **The floor ends at the stands** (feel's): a camera outside the venue (far framing, the free camera after a defeat)
+  sees black void below the stands; the far-range tilt floor keeps it to the bottom strip in normal play.
+- **X4 (a plain move keeps the squad a squad) is held** until squad's `4d734b1e` is on `main` and the five-squad A/B
+  comes back at 0 idle commands (see the X6 rows).
+- `shell-playtest`'s `faction_row_under_mouse` failed once in seven windowed runs on the shared laptop desktop (a real
+  mouse can move the hover; trip-up 32); it passed on the immediate re-run.
+- **Touch needs its own framing — a debt, not a resolution.** At the lead's 12° / FOV 60° a start-view vehicle is
+  23.7 px on a 1200×540 phone, 40.0 px at 1920×1080 (headless projection, one fixture, laptop). He chose that camera for
+  desktop; the phone inherits it. The phone bar moved 24 → 22 px provisionally (desktop got its own, 36 px); when touch
+  gets its pass, give it a closer start or its own pitch rather than moving the bar again. Reported to the lead.
+- **Constants fitted at the old camera (25-45° / FOV 55), checked after the 12° / FOV 60 change.** Zoom- or
+  distance-based, unaffected: `ICON_ZOOM`, `TRACK_MAX_ZOOM`, `FOLLOW_ZOOM`, `OVERVIEW_ZOOM`, the cinematic `MIN_ZOOM`.
+  Pixel/projection-based, fine: edge-marker sizes, pick radii, hull bars (sized from the projected hull).
+  Pitch-dependent: **`VISION_FRAME_LIFT`** moves the focus a fixed ground distance, and at 12° the foreshortened ground
+  turns that into ~0.3x the intended up-screen nudge (it should scale by ~1/sin(pitch)); in played 12° frames the
+  element still sits clear of the card, so it is recorded, not changed late. `VISION_SEEN_FRACTION` (the zoom-out cap)
+  is pitch-sensitive too; sky is now excluded from it. The phone readability bar was the third (above).
+- The loading screen's stage bar is weighted equally; at 1.4 s it barely shows, so it was left as is.
+- The camera pages' frames (26 MB of JPEG) live in the artifacts, not the repo; `make camera-looks` regenerates them.
+
+### Merge notes (shared files)
+
+None edited: `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` and `tests/run_tests.gd` are untouched.
+Outside control's paths: `tests/test_ai_player_holds.gd` (one line, seconds instead of frames, agreed with the
+orchestrator). `perf_scene.gd` (feel's) reads `RtsCamera.pose_for` / `FOV_DEG`, so perf-scene's camera is now the lead's
+12° / FOV 60 with the far-range floor.
+
 ### Questions for the lead
 
-- (the camera look: the page, when it exists — see *Waiting on the lead*)
+- **The far-range tilt floor** (the one place the camera overrides his 12°): at army-wide zoom it lifts to ~30–40°,
+  because at 12° from that far the fight is a sliver. Keep it, or would he rather stay at 12° and zoom less?
+- **Which arena is fun** (still unticked on the first camera page).
 
 ### Requests to other streams
 

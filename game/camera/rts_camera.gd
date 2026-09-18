@@ -20,23 +20,48 @@ extends Node
 
 const MIN_DISTANCE := 16.0
 const MAX_DISTANCE := 260.0
-## X3: the tilt the player can choose (degrees below the horizon), and where it starts. **The lead's pick** (round 6,
-## 2026-09-18, on the camera page from `make camera-looks`): "pitch 25° · 50 m · FOV 60°" - the lowest angle offered.
-## The player can still tilt from 22° (nearly Twisted Metal) to 50° (nearly StarCraft).
-const MIN_PITCH_DEG := 22.0
+## X3: the tilt the player can choose (degrees below the horizon), and where it starts. **The lead's pick, twice at the
+## floor of what he was offered** (round 6, 2026-09-18, the camera pages from `make camera-looks`): first "25° · 50 m ·
+## FOV 60°" (of 25/35/45/60), then "12° · 50 m · FOV 60°" (of 12/16/20/25). "Between StarCraft 2 and Twisted Metal"
+## sits much nearer Twisted Metal than anyone assumed; do NOT correct it upward because the tactical read is easier
+## from a conventional RTS pitch (game_design.md). The player can go a little lower (8°) and up to 50° (the StarCraft
+## end); O is the top-down map view.
+const MIN_PITCH_DEG := 8.0
 const MAX_PITCH_DEG := 50.0
-const DEFAULT_PITCH_DEG := 25.0
+const DEFAULT_PITCH_DEG := 12.0
+## Round 6, after playing the lead's 12°: a very low camera pulled back to frame a whole army (~150 m) showed the arena
+## as a thin strip between sky and cut-away stands, with units as specks (shell-playtest, 50 s). So past FAR_TILT_FROM_M
+## a soft floor lifts the tilt, from MIN_PITCH_DEG there to FAR_TILT_MAX_DEG at FAR_TILT_FULL_M. Up to that distance -
+## including the lead's own 50 m - the tilt is exactly the player's; a tilt already above the floor is untouched. This
+## is not round 5's weld (25°-82° across the whole range): it only engages far out and stops well short of top-down.
+## The ramp reaches ~30° by 130 m: from there out the sight line clears the stands' back, so they stay as foreground
+## instead of being cut to a void (a gentler ramp - 21° at 150 m - left the bottom 40% of the frame black).
+const FAR_TILT_FROM_M := 70.0
+const FAR_TILT_FULL_M := 160.0
+const FAR_TILT_MAX_DEG := 40.0
 ## The deliberate top-down read of the map (toggle_overview): the one place the camera still looks nearly straight down.
 const OVERVIEW_PITCH_DEG := 77.0
 ## Tilt speed: degrees per second for held keys, degrees per wheel notch.
 const TILT_SPEED_DEG := 40.0
 const WHEEL_TILT_DEG := 3.0
-## The lead's pick (see DEFAULT_PITCH_DEG); was 55°.
+## The lead's pick, both times (see DEFAULT_PITCH_DEG); was 55°.
 const FOV_DEG := 60.0
 ## X3 cutaway: the camera's near plane when there is nothing to cut (Camera3D's default), and how far short of the
 ## wall's foot the plane stops when there is.
 const NEAR_DEFAULT := 0.05
-const CUTAWAY_MARGIN_M := 1.0
+## The perimeter wall's height (ArenaDressing.WALL_HEIGHT, feel's): the cut must clear its top edge too, or at a low
+## pitch that edge hides every vehicle parked against it (the lead's 12°, shell-playtest).
+const WALL_HEIGHT_M := 3.0
+## The grandstand's profile outside the wall, as (metres out from the wall's inner face, height): the wall's top, the
+## stands' front rail, their middle and their back. Measured from feel's kit_stands (15.7 m high, 19.9 m deep, set
+## 0.3 m past the 2 m wall); if the venue changes shape, these follow it.
+const STANDS_PROFILE := [Vector2(2.0, 3.0), Vector2(2.3, 5.0), Vector2(12.3, 10.3), Vector2(22.2, 15.7)]
+## Whether the stands hide the arena is judged for a vehicle this far inside the wall, this high.
+const OCCLUSION_PROBE := Vector2(4.0, 1.0)
+## A camera less than this far behind the stands' back still counts as among them (their back rail and lights).
+const STANDS_CLEARANCE_M := 4.0
+## How far past the wall's top edge the near plane sits (a vehicle against the wall is further away than that edge).
+const CUTAWAY_PAST_WALL_M := 0.2
 ## Keyboard pan speed in meters per second at zoom 1 (scales down as you zoom in).
 const PAN_SPEED := 160.0
 const ROTATE_SPEED := deg_to_rad(100.0)
@@ -202,15 +227,17 @@ func _process(delta: float) -> void:
 func _apply() -> void:
 	if camera != null:
 		camera.global_transform = RtsCamera.pose_for(_shown_focus, _shown_yaw, _shown_zoom, _shown_pitch)
-		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, RtsCamera.distance_for(_shown_zoom), _shown_pitch,
+		var distance := RtsCamera.distance_for(_shown_zoom)
+		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, distance, RtsCamera.tilt_at(_shown_pitch, distance),
 				RtsCamera.perimeter_half())
 
 
 ## X3 cutaway. At the lead's low camera a squad near the wall is framed from a camera that sits past the wall, inside
 ## the grandstand, and the railing and the crowd hide it (`make shell-playtest`, 50 s). Tilting up to stay inside the
 ## arena would bring back the top-down view exactly where every army starts, so instead the camera does not draw what
-## stands between it and the wall: its near plane sits CUTAWAY_MARGIN_M short of where its line of sight crosses the
-## wall at the floor. A camera over the arena gets NEAR_DEFAULT. Pure, for tests.
+## stands between it and the wall: its near plane sits just past the wall's top edge where its line of sight crosses
+## the wall (the stands and the wall go, the floor and a vehicle against the wall stay). A camera over the arena gets
+## NEAR_DEFAULT. Pure, for tests.
 static func cutaway_near(at: Vector3, heading: float, distance: float, pitch_deg: float, half: float) -> float:
 	var back := Vector3(sin(heading), 0.0, cos(heading))  # from the focus toward the camera, on the ground
 	var reach := INF  # how far from the focus, along `back`, the perimeter square is
@@ -221,10 +248,27 @@ static func cutaway_near(at: Vector3, heading: float, distance: float, pitch_deg
 	var tilt := deg_to_rad(clampf(pitch_deg, 1.0, 89.0))
 	if reach < 0.0 or distance * cos(tilt) <= reach:
 		return NEAR_DEFAULT
+	# Past the wall - but only cut what is actually in the way. From far out and high up the sight line to a vehicle
+	# just inside the wall clears the stands, and they stay (crowd and all) instead of leaving a black void.
+	var outside := distance * cos(tilt) - reach  # the camera's horizontal distance past the wall's inner face
+	var height := distance * sin(tilt)
+	var span := outside + OCCLUSION_PROBE.x  # camera to the probe vehicle, horizontally
+	# Inside the stands' footprint (or just behind it) the camera is among the seats and railings: always cut.
+	var hidden := outside <= (STANDS_PROFILE.back() as Vector2).x + STANDS_CLEARANCE_M
+	for point: Vector2 in STANDS_PROFILE:
+		if point.x >= outside:
+			continue  # this part of the stands is behind the camera
+		var sight := OCCLUSION_PROBE.y + (height - OCCLUSION_PROBE.y) * (point.x + OCCLUSION_PROBE.x) / span
+		if sight < point.y:
+			hidden = true
+	if not hidden:
+		return NEAR_DEFAULT
 	var pose := RtsCamera.pose_at(at, heading, distance, pitch_deg)
 	var wall_foot := Vector3(at.x, 0.0, at.z) + back * reach
-	var depth := (wall_foot - pose.origin).dot(-pose.basis.z)
-	return maxf(NEAR_DEFAULT, depth - CUTAWAY_MARGIN_M)
+	var forward := -pose.basis.z
+	# The wall's top edge is nearer the camera than its foot by WALL_HEIGHT_M * sin(pitch): cut just past it.
+	var wall_top := wall_foot + Vector3.UP * WALL_HEIGHT_M
+	return maxf(NEAR_DEFAULT, (wall_top - pose.origin).dot(forward) + CUTAWAY_PAST_WALL_M)
 
 
 ## The arena perimeter's half size: the walls stand one metre outside the layout's half size (ArenaDressing.setup).
@@ -235,7 +279,15 @@ static func perimeter_half() -> float:
 ## Camera transform looking at `at` from `yaw` (0 = camera south of the focus, looking north), `level` (0 = close,
 ## 1 = far) and `pitch_deg` below the horizon. X3: the two are independent - zoom never tilts the camera.
 static func pose_for(at: Vector3, heading: float, level: float, pitch_deg := DEFAULT_PITCH_DEG) -> Transform3D:
-	return RtsCamera.pose_at(at, heading, RtsCamera.distance_for(level), pitch_deg)
+	var distance := RtsCamera.distance_for(level)
+	return RtsCamera.pose_at(at, heading, distance, RtsCamera.tilt_at(pitch_deg, distance))
+
+
+## The tilt a camera `distance` metres out actually uses: the player's, lifted by the far-range floor (see
+## FAR_TILT_FROM_M). Every pose goes through this, so framing, the vision cap and the drawn camera agree.
+static func tilt_at(pitch_deg: float, distance: float) -> float:
+	var t := clampf((distance - FAR_TILT_FROM_M) / (FAR_TILT_FULL_M - FAR_TILT_FROM_M), 0.0, 1.0)
+	return maxf(pitch_deg, lerpf(MIN_PITCH_DEG, FAR_TILT_MAX_DEG, t))
 
 
 ## The camera `distance` metres from `at`, `pitch_deg` below the horizon. `make camera-looks` poses with this directly.
