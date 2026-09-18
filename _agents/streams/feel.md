@@ -187,6 +187,8 @@ weak-spot hit and roar a kill. Listen: `build/crowd-listen/*.mp3`. Look: `make r
 2. **Round 5's Syndicate pilot** (X7): do the three energy weapons sound right, and record the other four (~120)?
 
 ### Green commits (merge here)
+- **`3040ccd9`** — `make remote T=check` on builder0: **1081 passed, 0 failed, `make check exited 0`**; shell-playtest on
+  builder0: 0 leak lines, 0 ERROR lines. The sky leak fix and the ground under the near wall.
 - **`dae54f8f`** — `make remote T=check` on builder0: **1066 passed, 0 failed, `make check exited 0`**. Everything since
   `e817194a`: X3 real-pace levels, vsync-off audio-pass, X4 sky/skyline/side stands/screens, X5 LoadingVoice, X6
   baseline, X8 cheer, crowd-look on control's camera. Commits after it are Status/docs only.
@@ -238,6 +240,18 @@ not).
   cutaway, not the game — control's real rule cuts it. crowd-look now calls `RtsCamera.pose_at`/`cutaway_near`
   itself; lesson 53.)
 - Not yet: the ad screens' legibility from the playing angle.
+
+### After the merge: the sky's texture leak and the void under the near wall (fixed, `3040ccd9`)
+- **Leak (mine).** control's `make shell-playtest` (not in `check`) ended with `Texture with GL ID … leaked 5460 bytes`
+  ×2 after my X4 merged. 5,460 bytes = one 32×32 RGBA mip chain: the Environment `Sky`'s radiance maps. Confirmed on
+  builder0 by toggling only the sky (leak with it, none without). Fix: no `Sky` resource at all; the night sky is an
+  unshaded dome mesh (`NightSky`). Verified: no leak lines with the fix. (builder0's shell-playtest also reports
+  `ok=false` from control's faction-click checks in every variant, with or without my changes.)
+- **Void (mine).** control's cutaway near plane clips every real surface between a camera past the wall and the
+  wall, so no mesh can fill that band: it showed the dome's below-horizon colour, which ACES crushed to pure (0,0,0).
+  Proved with a red debug colour. The dome now draws the city's ground where each ray meets y = 0 (a floodlit
+  concourse, streets, sodium lamps), shared through `city_ground.gdshaderinc` with a new `CityGround` plane out to the
+  skyline for cameras that see past the stands.
 
 ### X5 — the loading screen's voice (done on my side, `1badf779`)
 `LoadingVoice`: murmur fades up at FIGHT, a roar as the lights come up, hands over to the match's crowd. **Request to
