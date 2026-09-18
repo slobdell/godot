@@ -414,3 +414,24 @@ The kickoff prompt is one line; this section is the rest.
     per-instance work *or* a cache being evicted between them** — and the way to tell them apart is a node/resource
     trace showing *where the time sits*, not a per-call profile showing how much. Look for the cost in the gaps
     between the functions you suspect, and look for the population that is unexpectedly cheap.
+41. **"The asymmetry is obviously wrong" is a hypothesis, not a result — and a negative result is worth relaying.**
+    Round 6, hunting the dither that CP4 exposed: combat found a real structural leak of its own making. It had
+    exempted `suppress` orders from fire discipline, which made suppressive fire **strictly more available than
+    engaging** beyond the band — a crew that could not legally shoot *at* a contact at 48 m could still put rounds on
+    the ground under it, and the utility scorer could see exactly that. It watched a unit flip
+    `ENGAGE → SUPPRESS → ENGAGE` in 1.4 s at 47–50 m, right at the band edge. The mechanism was visible in the log,
+    the reasoning was sound, and the write-up's line — *"an exemption only the optimiser can see is not a design, it
+    is a leak"* — is still true. **Closing it moved the dither not at all** (17.7 / 15.6 per minute, identical) **and
+    broke two more behaviours** (9 scenario failures to 11). Reverted.
+    Two instructions. **(a)** This is lesson 20 again from a new angle: measure an optimisation *or a correctness fix*
+    against behaviour, not against the mechanism you can see. A leak you can explain is not thereby the cause of the
+    symptom next to it. **(b) Tell the orchestrator your negative results, and the orchestrator must relay them.** The
+    stream that owned the dither would otherwise have spent an afternoon rediscovering the same dead end, and the
+    finding that the real driver is upstream in option scoring **and is not the suppress exemption** is worth nearly
+    as much as a fix would have been.
+42. **Do not fix an un-baselined suite by adding it to the gate.** Round 6: `ai-scenarios` had drifted because nothing
+    baselined it (lesson 38), and the obvious fix — put it in `make check` — would have turned the gate **red for six
+    streams** over its 6 pre-existing failures, which nobody had triaged and which belong to several owners. That is
+    how a suite gets excluded from a gate in the first place. The honest sequence: **record the expected pass count in
+    a committed baseline file** (the way `tests/baselines/sim_state_hash.txt` works), fail only on a *change* in that
+    count, and let each owner decide whether their failure is a bug or a stale expectation. Then tighten.
