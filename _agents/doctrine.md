@@ -473,6 +473,28 @@ more lines — volume doesn't get a line past the priority queue.
 | Break contact | Outgunned pair broke from 76 m to **106 m**, both alive |
 | Herringbone | Halted, all-round security, **1.0** of the circle watched |
 
+## Who may command the player's army (ruled 2026-09-17, enforced in code)
+
+The lead, after playing: *"if they get sucked into combat I have no control whatsoever."* Three rules, each with a test:
+
+1. **An `ElementCommander` never runs on the player's team.** It is the CPU's commander; the player's army takes its
+   orders from the player (`ElementCommander._physics_process`, `OrderFeed.player_team`).
+2. **An element never takes a unit off an order whose `source` is `"player"`,** and on the player's team a leader with
+   no task commands nobody at all. This is L1's round-4 sharp edge — *"an element with no task still runs its SOP, so
+   forming one before it has a task makes its leader fight the player for the wheel"* — which was written down for a
+   round and broken anyway. A rule that isn't enforced by code is a rule that will be broken.
+3. **A leader re-issues only when the intention changed.** "Attack" and "attack-move" at one target, and "move" and
+   "hold" at one place, are the same intention; a standing order already follows a moving target, so the same intention
+   is not handed over again inside `Element.RE_ISSUE_TICKS` (2 s). Everything an element issues carries
+   `source: "element"`. Before this, an army with nobody touching the controls produced ~35 order changes a second,
+   each one a marker redrawn and a cue played on the player's screen (*"these blue dots ... they just keep repeating"*)
+   — and the frames to draw them.
+
+Tests: `tests/test_tactics_reissue.gd` (nothing but the player orders the player's squad; no repeat of an intention a
+unit is already carrying), `tests/test_ai_player_orders.gd` (ordered across contact and arrives; squads land on their
+slots and stay). The other half of that bug was control's: a plain right-click on a squad was an element task by
+construction, so the invariant had nothing to protect until they made it a direct player order.
+
 ## Round 5: what the tactics ladder says doctrine is worth (ai, 2026-09-17)
 
 `make tactics-ladder` (unit_ai.md) plays doctrine variants, brains and arenas against each other and charges every

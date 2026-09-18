@@ -8,6 +8,57 @@
 The lead's ask: *"all of the vehicles on the board should behave smartly, i.e. taking advantage of cover,
 going in and out of cover to shoot … avoid shooting their own friendlies … really sophisticated."*
 
+## Start here (picking up ai cold, after round 5)
+
+**What the stream owns:** `game/ai/` (brains and order execution), `game/tactics/` and `doctrines/` (elements, drills,
+doctrine tables — inherited from the round-4 doctrine stream), `game/agent/`, `tools/{agent,ai_ladder,tactics_ladder,
+discovery}.py`, `mk/{ai,tactics}.mk`, `tests/ai_scenarios/`, `tests/tactics/`, and these docs.
+
+**The state of the machine, end of round 5:**
+
+| Thing | Where | Now |
+|---|---|---|
+| The brain | `game/ai/tank_brain.gd` | utility AI, pure `decide()`; champion **`x5p`** (`BrainVariants.CHAMPION`) |
+| How often it thinks | `BrainVariants` `think_hz` | 6.67/s in contact, 5/s near, 3.33/s idle — **always in Hz, never in ticks** (below) |
+| Order execution | `game/ai/order_controller.gd` | standing orders → one `TankCommand` a tick |
+| Elements and drills | `game/tactics/` | the player's and the CPU's shared doctrine library |
+| Who may command the player's army | `Element._issue`, `ElementCommander` | **only the player** (the invariant below) |
+| Cost at 60 units | `make ai-perf UNITS=60` | ~7 400 µs of CPU per living unit per second of match; the 4 ms/tick target is not met |
+
+**The make targets that matter:** `ai-perf` (cost, fixed workload), `ai-scenarios` (behaviour, `FILTER=` a file),
+`ai-ladder` (brain variants, ELO), `tactics-ladder` (doctrine variants, per-drill exchange), `tactics-drills`,
+`tactics-parity`, `sim-profile` (whole-tick bands, combat's), `squad-orders-test` (control's, the player-orders
+harness). Heavy ones go to builder0: `make remote T=…`.
+
+**Flags this stream reads** (all opt-in, all headless tooling): `--green-brain=` / `--rust-brain=` (a `BrainVariants`
+id), `--green-elements[=<table>[-drill…][+commander]]` / `--rust-elements=…` (put a side under doctrine),
+`--tactics-ledger`, `--green-discovery[=seconds]` / `--rust-discovery`, `--discovery-log=`, `--slow-motion=`,
+`--green-difficulty=` / `--rust-difficulty=`.
+
+## How this stream measures things (the rules that cost a day to learn)
+
+1. **One snapshot per comparison.** Everything in a comparison must come from the same commit. Jolt, the 30 Hz tick and
+   a champion change each landed mid-comparison during round 5 and invalidated runs. For a frozen run:
+   `git archive <rev> | ssh builder0 "mkdir -p ~/tank_squad/godot-ai-<name> && tar -x -C ~/tank_squad/godot-ai-<name>"`,
+   copy `local.mk` and `override.cfg` beside it, symlink `.tools`, and run there.
+2. **Interleave A and B.** Never "A now, B in ten minutes": this laptop's own CPU time drifts ~20% over minutes, and
+   builder0's wall time swings ±25% between its P- and E-cores and with five agents' load. Run A, B, A, B.
+3. **Cost is thread CPU time per living unit per second of match** (`ai-perf` prints all three forms). Per-tick figures
+   move when the tick rate moves; per-unit lets variants that fight different battles compare.
+4. **Counterbalance every ladder.** Mirror armies (the same army both sides) or faction armies played **both ways**;
+   each seed played four ways ({A green, A rust} × {normal, `--swap-bases`}). Combat's fairness work found the army
+   draw flips 15 of 16 seeds — an uncounterbalanced ladder measures the draw, not the change.
+5. **A behaviour claim needs the behaviour counted, not the outcome.** "Dodge rate" was shells that missed for years;
+   counting dodge *attempts* showed the behaviour never fired. Exchange ratios attribute an outcome to whatever was
+   selected: `far_ambush` looked like the worst drill in the book and removing it changed nothing. **To know what a
+   behaviour costs, remove it and measure the army with and without.**
+6. **Sample size travels with the number.** 18 shells cannot resolve a 10-point difference; say the size in the same
+   sentence as the result, and the commit and machine with it.
+7. **Cadences in Hz, never in ticks.** `TICK_RATE * a / b` is rounded by integer division: the champion's 9 ticks of 60
+   (6.67/s) silently became 4 ticks of 30 (7.5/s) when the simulation moved to 30 Hz. Brains book the next think from a
+   rate in Hz and carry the fraction of a tick that doesn't divide (`TankBrain._schedule_think`). Only that one constant
+   had actually moved — the rest of ai's tick-relative constants divide exactly at both rates.
+
 ## Summary: what we build and why
 
 | Layer | Literature | What we adopt | What we skip, and why |
@@ -544,6 +595,26 @@ landed round to what its shooter and its target were doing — `drill:<name>`, `
 Read the exchange column as evidence, not as a verdict: a drill that runs when an element is already losing
 (`break_contact`, `far_ambush`) collects the deaths of fights it didn't start. The verdict is a variant table without
 the drill, played head to head (the rule in game_design.md: a drill earns its place by winning).
+
+#### Running one, and reading it
+
+```bash
+# doctrine against brains, mirror army, every arena (heavy: builder0)
+make remote T="tactics-ladder SIDES=brains=x5p,faction=x5p: ARENAS=foundry,yard,boulevard,pit,boneyard RUNS=2"
+# the game the lead plays: faction armies at the budget, control point on (CONTROL=off to isolate the objective)
+make remote T="tactics-ladder SIDES=brains=x5p,faction=x5p: FACTIONS=gangs,law ARENAS=foundry,yard,boulevard RUNS=2"
+# a variant table: each faction's own minus drills, or with a commander plan
+make remote T="tactics-ladder SIDES=brains=x5p,trim=x5p:-far_ambush-bait,flank=x5p:+pin_and_flank FACTIONS=gangs,law"
+# brain variants (not doctrine): ELO over four mirror armies
+make remote T="ai-ladder VARIANTS=x5p,x6t5 CHAMPION=x5p RUNS=6 LADDER_DOCTRINE=individuals"
+```
+
+**Reading it.** The ELO column is a summary; the head-to-head counts are the evidence, and a challenger is adopted only
+if it beats the champion head to head **and** out-rates it (round-4 precedent: 53-43 over 96 matches, winning or tying
+every army). Per-arena rows tell you whether a result is one map's quirk. The per-drill table is evidence about where
+damage happened, **not** a verdict about what caused it — a drill chosen when an element is already losing collects
+those deaths (see `far_ambush`, below). One ladder run is ~40 minutes of builder0 for 144 matches, and builder0 queues
+behind the other worktrees.
 
 ### Offline discovery (`tools/discovery.py`, `DiscoveryBridge`)
 

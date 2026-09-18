@@ -1,5 +1,11 @@
 # Tank Brain: the Deterministic CPU Middle Layer
 
+> **Round-1/2 design doc; still true about the shape of the brain (utility scoring, the determinism contract, the
+> options), stale about everything measured.** For what the brain is TODAY — the champion and what it does, how often it
+> thinks, the player-order invariant and the post leash, what cost what, and how this stream measures anything — read
+> [unit_ai.md](unit_ai.md) first (its "Start here" and round-5 sections).
+
+
 > **Round 2 note (2026-09-15):** still accurate for how brains work today. Superseded parts: per-tank weapon choice and loadouts (units are now fixed types, [game_design.md](game_design.md)). Round 2's AI stream added options COVER_FIRE and CLEAR_LANE, tactical cover spots, fire discipline, squad tactics, think LOD, brain variants, and the AI ladder: see [unit_ai.md](unit_ai.md) (design, "As built", results) before changing a brain.
 
 > **Status: v1 implemented and measured (2026-09-13).** Results are at the bottom. The squad-command UI is the open question for the lead.
