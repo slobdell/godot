@@ -320,6 +320,11 @@ make nav-maze ARENA=yard OUT=nav-yard  # the same probe against a shipping arena
 make remote T=nav-maze                 # on builder0 (the laptop is ~2.75x slower)
 ```
 
+> **Ask for more units than the layout has spawn points and they land on top of each other.** A layout has 52
+> (`Arena.spawn_spot` wraps with `slot % spots.size()`), so `NAV_UNITS=60` put eight pairs of hulls in eight
+> positions, and those never moved at all — 8 phantom stragglers in every 60-unit run until nav fixed it on
+> 2026-09-18. Any probe that spawns by slot has this; check N against the layout before reading its tail.
+
 `tests/arena/maze_probe.gd` spawns N vehicles on the green side, orders each to the **180° mirror of its own spawn
 point** (one shared goal would measure a pile-up at the destination, not the crossing), holds fire so a firefight
 can't end the run early, and reports:

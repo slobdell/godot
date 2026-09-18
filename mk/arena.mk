@@ -59,3 +59,7 @@ nav-maze: import ## N3/CP2: send NAV_UNITS vehicles across The Maze and report a
 slope-probe: import ## X4: what slope the navmesh bakes over and a vehicle can climb (a measurement, nothing ships) -> build/slopes.json
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/slope_probe.gd -- \
 		--json=$(CURDIR)/$(BUILD_DIR)/slopes.json
+
+.PHONY: arena-page
+arena-page: ## X5: the lead's arena review page -- every shipping arena as a picture plus what it measures, one self-contained file (needs make arena-report and make remote T=arena-shots first) -> build/arena-page/index.html
+	$(PYTHON) tools/arena_page.py --report $(BUILD_DIR)/arenas/report.json --out $(BUILD_DIR)/arena-page/index.html
