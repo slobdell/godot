@@ -111,10 +111,12 @@ VERDICTS = {
     "boulevard": ("Its middle sees 64% of the battlefield and the best firing position on it can only be approached "
                   "unseen from 12% of directions: it dominates the map and cannot be flanked back. Every fight here "
                   "funnels to the centre. This is the one we would change first.", "bad"),
+    # One card, because they are the same map with different hazards. Two near-identical cards would cost a
+    # judgement and tell him nothing; saying they are twins is itself the useful fact.
     "foundry": ("Round 1's arena, and still the default for every headless test. One spot beside the centre crate "
-                "can see the whole crossing, so whoever holds the middle has already won the ground.", "bad"),
-    "furnace": ("Foundry plus fire pits — the same open shape, with hazards that punish crowding down the middle. "
-                "If foundry goes, this probably goes with it.", "bad"),
+                "can see the whole crossing, so whoever holds the middle has already won the ground. "
+                "<b>The Furnace is this same map with burning pits added</b> — a verdict on one is probably a "
+                "verdict on both, unless you want to split them.", "bad"),
     "boneyard": ("Wrecks and tipped containers at odd angles. Middling on every measure, and no two fights in it "
                  "look the same.", "mixed"),
     "pit": ("A walled ring around the middle with four gates. The gates are the map: hold one and you own an "
@@ -135,6 +137,9 @@ h1 { font-size:1.6rem; margin:0 0 6px; letter-spacing:-.01em; }
 .ask { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--good);
        border-radius:10px; padding:16px 18px; margin:0 0 32px; }
 .ask b { color:var(--good); }
+.warn { background:rgba(226,104,95,.08); border:1px solid rgba(226,104,95,.35); border-radius:10px;
+        padding:14px 18px; margin:0 0 16px; }
+.warn b { color:var(--bad); }
 .card { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:0 0 28px; }
 .card img { width:100%; display:block; background:#000; }
 .body { padding:16px 18px 18px; }
@@ -170,7 +175,7 @@ def render(report, order, shots):
         bullets = "".join('<li class="%s">%s</li>' % (tone_, text) for tone_, text in plain_english(entry))
         cards.append(
             '<div class="card">%s<div class="body"><div class="name">%s<span class="tag %s">%s</span></div>'
-            '<p class="verdict">%s</p><ul>%s</ul><p class="q">Keep it, fix it, or cut it?</p></div></div>'
+            '<p class="verdict">%s</p><ul>%s</ul><p class="q">Keep it &nbsp;·&nbsp; Fix it &nbsp;·&nbsp; Cut it &nbsp;·&nbsp; I\'d rather just play it first</p></div></div>'
             % (picture, html.escape(entry.get("title", name.title())), tone,
                {"good": "worth keeping", "mixed": "middling", "bad": "too open"}[tone],
                html.escape(verdict), bullets))
@@ -179,18 +184,26 @@ def render(report, order, shots):
 <title>Tank Squad arenas</title><style>%s</style></head><body><div class="wrap">
 <h1>The seven arenas</h1>
 <p class="sub">Each one as the match runner sees it, and what it measures. Round 6, arena stream.</p>
-<div class="ask"><b>For each map: keep it, fix it, or cut it?</b> That is the whole ask — one word each, and
-&ldquo;cut&rdquo; is a real answer we would act on, because cutting a map is far cheaper than fixing one.<br><br>
-Each card says what we think is wrong with it. Disagreeing is more useful than ranking them, and you do not have to
-have played them to tell us a diagnosis sounds wrong.<br><br>
-The three marked <b style="color:var(--bad)">too open</b> are the measured version of
-&ldquo;the game is just this big open brawl&rdquo;: their middles see most of the battlefield, so there is nowhere
-to set up an ambush and nothing a flank can take. <b>Boulevard is the worst and is first.</b></div>
+<div class="warn"><b>Nobody has played these.</b> Everything below is what the <i>shape</i> of each map measures —
+sightlines and routes, with no match run. You are the only one who can say how any of them actually plays, which is
+exactly what makes your answer worth more than the numbers.</div>
+<div class="ask"><b>For each map: keep it, fix it, cut it — or say you would rather play it first.</b> One answer
+each. <br><br>
+&ldquo;Cut&rdquo; is a real answer we would act on: cutting a map is far cheaper than fixing one.
+&ldquo;Play it first&rdquo; is equally real — you have never driven any of these, and if the honest answer is
+&ldquo;I\'ll tell you after a match&rdquo;, say that rather than guess.<br><br>
+Each card states what we think is wrong with it, so you can disagree with something concrete instead of ranking
+seven pictures cold.<br><br>
+The ones marked <b style="color:var(--bad)">too open</b> are the measured version of &ldquo;the game is just this
+big open brawl&rdquo;: their middles see most of the battlefield, so there is nowhere to set up an ambush and
+nothing a flank can take. <b>Boulevard is the worst, and it is first.</b></div>
 %s
 <footer>Pictures: <code>make arena-shots</code>, the match runner's own camera, 30 a side.
 Measurements: <code>make arena-report</code> — static geometry, no match played.
 &ldquo;Seen&rdquo; assumes a defender covers 45 m, which is what an ordinary crew manages on its own judgement;
-a squad you <i>order</i> to watch a lane reaches further. The maze is not here: it is a nav test fixture, not a map.
+a squad you <i>order</i> to watch a lane reaches further, so &ldquo;covered&rdquo; is never a guarantee.
+The Furnace shares the Foundry's card — same shape, different hazards. The Maze is not here: it is a nav test
+fixture, not a map.
 </footer></div></body></html>""" % (CSS, "".join(cards))
 
 
@@ -202,8 +215,8 @@ def main():
     args = parser.parse_args()
     report = json.loads((ROOT / args.report).read_text())
     # Worst first: the lead's time goes on the maps this stream is asking about, not on the ones that measure fine.
-    order = [n for n in ("boulevard", "foundry", "furnace", "boneyard", "pit", "scrapyard", "yard")
-             if read(report, n)]
+    # Worst first, and furnace folded into foundry's card (they are the same shape). Six judgements, not seven.
+    order = [n for n in ("boulevard", "foundry", "boneyard", "pit", "scrapyard", "yard") if read(report, n)]
     shots, missing = {}, []
     for name in order:
         data = shrink(ROOT / (SHOT % (name, args.view)))
