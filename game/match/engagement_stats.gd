@@ -38,11 +38,16 @@ var combat_seconds := 0
 var static_seconds := 0
 var separation_at_contact := -1.0
 var _engaged_distances: Array[float] = []
+var _engaged_distances_direct: Array[float] = []
 var _last_centroids: Array = [null, null]
 var centroid_travel: Array[float] = [0.0, 0.0]
 var unit_seconds := 0
 var unit_seconds_near_cover := 0
 var shots := 0
+## N5 (round 6): the same counts for DIRECT fire only. The envelope governs direct fire; artillery is deliberately
+## outside it, so an all-shots figure describes the artillery as much as the fight.
+var shots_direct := 0
+var direct_contact_second := -1
 var shots_near_cover := 0
 var kills := {"front": 0, "side": 0, "rear": 0, "indirect": 0}
 var _kill_distances: Array[float] = []
@@ -90,8 +95,10 @@ func near_cover(point: Vector3) -> bool:
 
 
 ## One second of the fight. `teams[t]` = the living units of team t as [{position, speed, near_cover}];
-## `shots_this_second` = rounds fired by anyone since the last sample.
-func sample(teams: Array, shots_this_second: int) -> void:
+## `shots_this_second` = rounds fired by anyone since the last sample; `direct_this_second` is the DIRECT-fire
+## subset of them (-1 = "not told", which counts them all as direct, for callers that predate N5).
+func sample(teams: Array, shots_this_second: int, direct_this_second: int = -1) -> void:
+	var direct_shots := shots_this_second if direct_this_second < 0 else direct_this_second
 	var second := samples
 	samples += 1
 	var centroids: Array = [null, null]
@@ -108,6 +115,8 @@ func sample(teams: Array, shots_this_second: int) -> void:
 			unit_seconds_near_cover += 1 if unit["near_cover"] else 0
 		centroids[team] = sum / units.size()
 		speeds[team] /= units.size()
+	if direct_shots > 0 and direct_contact_second < 0:
+		direct_contact_second = second
 	if shots_this_second > 0 and contact_second < 0:
 		contact_second = second
 		if centroids[0] != null and centroids[1] != null:
@@ -144,6 +153,8 @@ func sample(teams: Array, shots_this_second: int) -> void:
 				best = minf(best, (unit["position"] as Vector3).distance_to(enemy["position"]))
 			nearest.append(best)
 	_engaged_distances.append(_median(nearest))
+	if direct_shots > 0:
+		_engaged_distances_direct.append(_median(nearest))
 
 
 ## The army-level half of a kill: where the killer stood relative to the line between the two armies' centres (as
@@ -180,7 +191,7 @@ func net_advance() -> Array:
 	return advance
 
 
-func record_shot(shooter_near_cover: bool) -> void:
+func record_shot(shooter_near_cover: bool, indirect: bool = false) -> void:
 	shots += 1
 	shots_near_cover += 1 if shooter_near_cover else 0
 
@@ -214,6 +225,9 @@ func summary() -> Dictionary:
 			# complaint and far easier to ship without seeing. `contact_second` is already time-to-first-shot; this is
 			# the rate once it starts, per living unit so armies of different sizes compare.
 			"shots": shots,
+			"shots_direct": shots_direct,
+			"direct_contact_second": direct_contact_second,
+			"engaged_distance_direct_median": snappedf(_median(_engaged_distances_direct), 0.1),
 			"shots_per_unit_minute": snappedf(60.0 * float(shots) / maxf(float(unit_seconds), 1.0), 0.01),
 			"unit_seconds_near_cover_share": _share(unit_seconds_near_cover, unit_seconds),
 			"shots_near_cover_share": _share(shots_near_cover, shots),

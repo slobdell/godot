@@ -215,10 +215,18 @@ func test_k2_events_report_the_suppression_a_round_applied() -> void:
 
 
 func test_shots_past_effective_range_spread_wider_and_inside_it_do_not() -> void:
-	# X1 (round 5): long shots are gambles. effective_range == range (today's data) changes nothing.
+	# X1 (round 5): long shots are gambles. N5 (round 6) is what finally made them so — round 5 shipped this mechanism
+	# with effective_range == range on every weapon, so it never fired once, and this test asserted that non-effect
+	# against the live cannon. It now builds the no-falloff case explicitly instead of assuming a shipping weapon is
+	# one, because the shipping weapons all have real bands now (orchestration.md lesson 3: derive the expectation,
+	# don't encode today's content).
 	var weapon: Dictionary = Weapons.profile("cannon").duplicate()
 	var reach := float(weapon["range"])
-	assert_near(Match.range_spread_multiplier(weapon, reach), 1.0, 0.0001, "no falloff while effective_range == range")
+	var no_falloff := weapon.duplicate()
+	no_falloff["effective_range"] = reach
+	assert_near(Match.range_spread_multiplier(no_falloff, reach), 1.0, 0.0001, "no falloff when effective_range == range")
+	assert_true(Match.range_spread_multiplier(weapon, reach) > 1.0,
+			"and the shipping cannon is NOT that case: N5 gave it a band shorter than its reach")
 	weapon["effective_range"] = reach * 0.5
 	var inside := Match.shot_spread(weapon, 0.0, 0.0, reach * 0.4)
 	var halfway := Match.shot_spread(weapon, 0.0, 0.0, reach * 0.75)

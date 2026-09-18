@@ -26,6 +26,14 @@ const FIRE_MODELS := ["shell", "burst", "stream", "beam", "arc"]
 ## X1 (round 5): direct-fire weapons (shells and beams) carry `effective_range`, the distance out to which their
 ## spread_deg holds. Past it the spread widens linearly, reaching (1 + Match.RANGE_SPREAD_FACTOR) times at `range`, so a
 ## long shot is a gamble and closing the distance is how you make fire count. effective_range == range: no falloff.
+##
+## N5 (round 6, CP4): round 5 shipped that mechanism with `effective_range == range` on EVERY weapon, so no shot was
+## ever a gamble and the falloff never fired once. It is now each weapon's `preferred_max` — the band the weapon was
+## designed to work in — and it is also the FIRE DISCIPLINE threshold: a crew holds its fire until it is inside the
+## band (game/combat/engagement.gd). That is what makes closing a decision rather than a formality, and it is why the
+## two numbers are deliberately the same: one band per weapon, used by the spread, by the brain's positioning, and by
+## the trigger. The gap between it and `range` is the leash a commander gets when they designate a target by name.
+## The alternatives were measured, not assumed: see _agents/balance.md "Round 6: the engagement envelope".
 
 const DEFAULT := "cannon"
 
@@ -47,7 +55,7 @@ const PROFILES := {
 		"kind": Kind.PROJECTILE,
 		# Shorter than the 84 m between bases, so contact is something you maneuver into.
 		"range": 70.0,
-		"effective_range": 70.0,
+		"effective_range": 45.0,
 		"preferred_min": 20.0,
 		"preferred_max": 45.0,
 		"damage": 320.0,
@@ -88,7 +96,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 60.0,
-		"effective_range": 60.0,
+		"effective_range": 45.0,
 		"preferred_min": 15.0,
 		"preferred_max": 45.0,
 		"damage": 15.0,
@@ -119,7 +127,7 @@ const PROFILES := {
 		# with a 72-82 m preferred band outranges the cannon (70 m) and the tank's 75 m sight, so a Lancer duels
 		# tanks from where they can't answer: Lancer vs tank 33% -> 67%.
 		"range": 90.0,
-		"effective_range": 90.0,
+		"effective_range": 86.0,
 		"preferred_min": 76.0,
 		"preferred_max": 86.0,
 		# R7: 9 dmg / 12 heat -> 12 / 16: burstier, so it wins against a few big hulls but overheats against a
@@ -158,7 +166,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.tracer",
 		"range": 45.0,
-		"effective_range": 45.0,
+		"effective_range": 35.0,
 		"preferred_min": 12.0,
 		"preferred_max": 35.0,
 		"damage": 3.5,
@@ -264,7 +272,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.tracer",
 		"range": 35.0,
-		"effective_range": 35.0,
+		"effective_range": 28.0,
 		"preferred_min": 10.0,
 		"preferred_max": 28.0,
 		"damage": 3.0,
@@ -290,7 +298,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 30.0,
-		"effective_range": 30.0,
+		"effective_range": 24.0,
 		"preferred_min": 8.0,
 		"preferred_max": 24.0,
 		"damage": 95.0,
@@ -314,7 +322,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 50.0,
-		"effective_range": 50.0,
+		"effective_range": 36.0,
 		"preferred_min": 14.0,
 		"preferred_max": 36.0,
 		"damage": 260.0,
@@ -389,7 +397,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 80.0,
-		"effective_range": 80.0,
+		"effective_range": 62.0,
 		"preferred_min": 26.0,
 		"preferred_max": 62.0,
 		"damage": 200.0,
@@ -465,7 +473,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.laser_beam",
 		"range": 110.0,
-		"effective_range": 110.0,
+		"effective_range": 104.0,
 		"preferred_min": 60.0,
 		"preferred_max": 104.0,
 		"damage": 420.0,
@@ -488,7 +496,7 @@ const PROFILES := {
 		"splash_radius": 0.0,
 		"kind": Kind.PROJECTILE,
 		"range": 70.0,
-		"effective_range": 70.0,
+		"effective_range": 55.0,
 		"preferred_min": 18.0,
 		"preferred_max": 55.0,
 		"damage": 26.0,
@@ -512,7 +520,7 @@ const PROFILES := {
 		"kind": Kind.BEAM,
 		"fx": "fx.tracer",
 		"range": 55.0,
-		"effective_range": 55.0,
+		"effective_range": 45.0,
 		"preferred_min": 15.0,
 		"preferred_max": 45.0,
 		"damage": 4.5,

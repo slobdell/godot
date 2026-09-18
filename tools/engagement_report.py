@@ -22,7 +22,7 @@ import os
 SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 
-def run(args, green, rust, seed, tune=None):
+def run(args, green, rust, seed, tune=None, flags=None):
     command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination",
                "--control", f"--green-faction={green}", f"--rust-faction={rust}", f"--budget={args.budget}",
                f"--time-limit={args.time_limit}", "--score-limit=0", f"--seed={seed}"]
@@ -31,6 +31,10 @@ def run(args, green, rust, seed, tune=None):
     tune = args.tune if tune is None else tune
     if tune:
         command.append(f"--tune={tune}")
+    # N5: a variant may carry RUNNER FLAGS as well as tuning. Gates 1 and 2 of the engagement envelope (sight,
+    # acquisition) and X6's crossing penalty are CODE, not data, so `--tune` cannot switch them off -- which meant the
+    # "old world" control arm still had them in it and the series measured fire discipline alone rather than N5.
+    command.extend(flags or [])
     completed = subprocess.run(command, capture_output=True, text=True, timeout=args.time_limit * 4 + 240)
     for line in completed.stdout.splitlines():
         if line.startswith("MATCH_RESULT "):
@@ -61,6 +65,11 @@ def summarize(results):
         # N5 (round 6): the two figures that would catch the envelope overshooting into a QUIET fight. Reported in
         # every configuration including the old-world control, because "quieter than before" is only visible against it.
         "shots_per_unit_minute": mean([e.get("shots_per_unit_minute") for e in engagement]),
+        # N5: direct-fire only, alongside the all-shots figures rather than instead of them, so round 5's baseline
+        # stays comparable. The envelope governs direct fire; artillery is outside it and would otherwise set
+        # "contact" from 160 m and hold "engaged" at the separation of two armies that are not yet fighting.
+        "direct_contact_s": mean([e.get("direct_contact_second") for e in engagement]),
+        "engaged_distance_direct_m": mean([e.get("engaged_distance_direct_median") for e in engagement]),
         "static_share": mean([e["static_share"] for e in engagement]),
         "held_line_share": mean([e.get("held_line_share") for e in engagement]),
         "net_advance_m": mean([max(e.get("net_advance", [0, 0])) for e in engagement], signed=True),  # the side that pushed
@@ -82,7 +91,8 @@ def summarize(results):
 def print_row(label, s):
     print(f"{label:<24} n={s['matches']:<3} len {s['duration_s']:5.0f}s  1st shot {s['contact_s']:4.0f}s "
           f"fire {s['shots_per_unit_minute']:5.1f}/unit/min  "
-          f"@{s['separation_at_contact_m']:4.0f}m  engaged {s['engaged_distance_m']:4.0f}m  kill {s['kill_distance_m']:4.0f}m  "
+          f"@{s['separation_at_contact_m']:4.0f}m  engaged {s['engaged_distance_m']:4.0f}m "
+          f"(direct {s['engaged_distance_direct_m']:4.0f}m @{s['direct_contact_s']:3.0f}s)  kill {s['kill_distance_m']:4.0f}m  "
           f"static {s['static_share']:4.0%} held-line {s['held_line_share']:4.0%}  moved {s['centroid_travel_m']:4.0f}m "
           f"push {s['net_advance_m']:4.0f}m  off-axis kills {s['off_axis_kill_share']:4.0%} (behind line {s['behind_line_kill_share']:3.0%})  "
           f"flank+rear {s['flank_rear_kill_share']:4.0%} (rear {s['rear_kill_share']:3.0%})  indirect {s['indirect_kill_share']:3.0%}  "
@@ -149,16 +159,20 @@ def run_variants(args):
     variants = json.load(open(args.variants))
     pairs = [tuple(p.split(":")) for p in args.pairs.split(",") if p]
     jobs = []
-    for name, tune in variants.items():
+    for name, spec in variants.items():
+        # A variant is either a tune string (the common case) or {"tune": …, "flags": […]} when it needs to switch
+        # off something that lives in code rather than in data.
+        tune = spec if isinstance(spec, str) else str(spec.get("tune", ""))
+        flags = [] if isinstance(spec, str) else list(spec.get("flags", []))
         for green, rust in pairs:
             for seed in range(args.first_seed, args.first_seed + args.seeds):
-                jobs.append((name, tune, green, rust, seed))
+                jobs.append((name, tune, flags, green, rust, seed))
                 if green != rust:
-                    jobs.append((name, tune, rust, green, seed))
+                    jobs.append((name, tune, flags, rust, green, seed))
     started = time.time()
     by_variant, failures = {name: [] for name in variants}, []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {pool.submit(run, args, g, r, s, tune): name for name, tune, g, r, s in jobs}
+        futures = {pool.submit(run, args, g, r, s, tune, flags): name for name, tune, flags, g, r, s in jobs}
         for future in concurrent.futures.as_completed(futures):
             try:
                 by_variant[futures[future]].append(future.result())
