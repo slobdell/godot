@@ -30,8 +30,13 @@ finds, independently of the change it was for.*
 
 ## What it bought (measured 2026-09-17, the lead's laptop; settled with render)
 
-**Per simulated second, the simulation's script cost fell 27%.** Same laptop, same build, same seed, same 60
-simulated seconds, `make sim-profile`:
+**Per simulated second, the simulation's script cost fell by a quarter to a third.** Two A/B pairs, each the same
+laptop, build, seed and 60 simulated seconds with only the tick rate flipped (`make sim-profile`): **513 → 377 ms/s
+(−27%)** on the round-5 branch, and **490 → 329 ms/s (−33%)** repeated on the tip with a quieter machine. Compare
+within a pair only — `perf-scene` and `sim-profile` both run a live battle, so two runs diverge and that spread is
+where the 6 points come from. Both pairs, with their band breakdowns, are in
+[streams/references/combat/tick-rate-ab-2026-09-17.json](streams/references/combat/tick-rate-ab-2026-09-17.json).
+The first pair, by band:
 
 | | 60 Hz | 30 Hz |
 |---|---|---|
@@ -44,7 +49,8 @@ simulated seconds, `make sim-profile`:
 **The ceiling, and why it was always going to be one:** only work that happens *per tick* halves. Anything on a wall-clock cadence — brains
 thinking 10 times a second, intel 10/s, suppression 20/s — costs the same per second by construction, and it is most
 of the tick. The controllers band is both: executing every tick (halves) and thinking on a cadence (doesn't).
-An earlier note here said 47%; that compared two builder0 runs of different fights and was wrong.
+An earlier note here said 47%; that compared two builder0 runs of *different fights* and was wrong — the same trap
+the pair discipline above exists to avoid.
 
 Put the other way round: **of a 60 Hz tick's cost, only the per-tick part could ever have been halved.** On the
 laptop that part was ~96 ms/s of the 513 (tanks 66, match rules are cadence-bound, the controllers' *executing* half
@@ -62,6 +68,9 @@ the average:**
 | 33–35 | 37.8 ms (26.5 fps) | just misses |
 | 41 | 55 ms | |
 | 65 | 100 ms (10 fps) | |
+
+Every phase of both runs (720p and 1080p, vehicles against frame, p95, GPU, tick cost and ticks per frame):
+[streams/references/combat/perf-30hz-laptop-2026-09-17.json](streams/references/combat/perf-30hz-laptop-2026-09-17.json).
 
 With five agents sharing the CPU, render measured the same build holding a locked 30 at **12–15 vehicles**. Both
 numbers are real; the lead's own machine will be quiet when he plays, and **nobody has yet measured it truly idle**.

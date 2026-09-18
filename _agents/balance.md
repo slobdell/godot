@@ -25,7 +25,9 @@ free before changing a single stat.
 
 A seeded CPU army comes from `seed * 2 + team`, so **in a mirror match the two teams field different armies**, and
 over a fixed seed range one side can simply draw the stronger ones. Measured over 16 seeds: Green won 5, and with the
-same seeds and the armies swapped Green won 12 — **the winner followed the army in 15 of 16 seeds**.
+same seeds and the armies swapped Green won 12 — **the winner followed the army in 15 of 16 seeds**. Every
+configuration, per seed:
+[streams/references/combat/team-fairness-2026-09-17.json](streams/references/combat/team-fairness-2026-09-17.json).
 
 - `--swap-armies` hands each team the other's army. **Run every seed both ways and pair them**; that cancels army
   strength the way `--swap-bases` cancels position.
@@ -48,8 +50,9 @@ same seeds and the armies swapped Green won 12 — **the winner followed the arm
 - **Suppression's accuracy cost is an angle, so it depends on range**: ~60% of hits lost at 58 m, ~15-20% at 20-40 m.
   Pinning at range ruins a crew's shooting; pinning up close buys tempo, not accuracy.
 - **The frame-rate lever is brain cost per second, not the tick rate** — brains are ~85% of a simulation tick and
-  think on a wall clock, so halving the tick rate cannot touch that half. The whole 30 Hz story, what it bought and
-  what it could never have bought, is in [sim_tick_rate.md](sim_tick_rate.md).
+  think on a wall clock, so halving the tick rate cannot touch that half. The 30 Hz change bought a quarter to a
+  third of the simulation's cost per second and could never have bought much more; the whole story, with the
+  measurements, is in [sim_tick_rate.md](sim_tick_rate.md).
 
 ### Open, with a recommendation but no evidence yet
 
@@ -165,6 +168,9 @@ a hull), and **cover use** (unit-seconds, shots, killers and victims within 5 m 
 | Held line | 13% of combat seconds; the pushing army gained 26 m |
 | Where kills came from | **73% straight across the line**, 4% from behind it; by hull face 61% side or rear |
 | Cover | 11% of unit-seconds near it, 12% of deaths near it — i.e. no effect |
+
+Per-match results:
+[streams/references/combat/engagement-baseline-2026-09-17.json](streams/references/combat/engagement-baseline-2026-09-17.json).
 
 **The target to measure against** (the brief's, worth keeping): *a majority of direct-fire kills come from the flank
 or the rear, and the armies' centres of mass move during the fight.* Read `off_axis_kill_share` and

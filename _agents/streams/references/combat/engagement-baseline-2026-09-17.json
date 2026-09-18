@@ -1,0 +1,547 @@
+{
+ "what": "make engagement PAIRS=condemned:condemned,gangs:law,condemned:syndicate SEEDS=3 TIME=240",
+ "measured": "2026-09-17 on builder0, Jolt, 60 Hz, BEFORE the ready_to_fire fix and before armies held until ordered",
+ "warning": "stale by construction: kept so a re-taken baseline can be compared against the old world",
+ "matches": [
+  {
+   "green": "condemned",
+   "rust": "condemned",
+   "seed": 1,
+   "winner": "Rust",
+   "reason": "control",
+   "duration_s": 111.8,
+   "engagement": {
+    "contact_second": 6,
+    "separation_at_contact": 103.7,
+    "engaged_distance_median": 80.8,
+    "kill_distance_median": 50.5,
+    "static_share": 0.016,
+    "held_line_share": 0.125,
+    "net_advance": [
+     -30.5,
+     53.3
+    ],
+    "centroid_travel": [
+     351.1,
+     141.0
+    ],
+    "kills": {
+     "front": 17,
+     "indirect": 1,
+     "rear": 1,
+     "side": 14
+    },
+    "flank_rear_kill_share": 0.469,
+    "off_axis_kill_share": 0.152,
+    "behind_line_kill_share": 0.0,
+    "unit_seconds_near_cover_share": 0.22,
+    "shots_near_cover_share": 0.18,
+    "deaths_near_cover_share": 0.03
+   }
+  },
+  {
+   "green": "condemned",
+   "rust": "condemned",
+   "seed": 2,
+   "winner": "Green",
+   "reason": "elimination",
+   "duration_s": 101.3,
+   "engagement": {
+    "contact_second": 6,
+    "separation_at_contact": 92.6,
+    "engaged_distance_median": 79.4,
+    "kill_distance_median": 45.1,
+    "static_share": 0.0,
+    "held_line_share": 0.132,
+    "net_advance": [
+     81.2,
+     -66.4
+    ],
+    "centroid_travel": [
+     195.2,
+     304.5
+    ],
+    "kills": {
+     "front": 22,
+     "indirect": 0,
+     "rear": 1,
+     "side": 21
+    },
+    "flank_rear_kill_share": 0.5,
+    "off_axis_kill_share": 0.364,
+    "behind_line_kill_share": 0.068,
+    "unit_seconds_near_cover_share": 0.09,
+    "shots_near_cover_share": 0.079,
+    "deaths_near_cover_share": 0.091
+   }
+  },
+  {
+   "green": "gangs",
+   "rust": "law",
+   "seed": 1,
+   "winner": "Rust",
+   "reason": "elimination",
+   "duration_s": 77.3,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 110.7,
+    "engaged_distance_median": 46.9,
+    "kill_distance_median": 36.5,
+    "static_share": 0.0,
+    "held_line_share": 0.206,
+    "net_advance": [
+     -36.3,
+     61.1
+    ],
+    "centroid_travel": [
+     366.1,
+     112.8
+    ],
+    "kills": {
+     "front": 12,
+     "indirect": 1,
+     "rear": 6,
+     "side": 34
+    },
+    "flank_rear_kill_share": 0.769,
+    "off_axis_kill_share": 0.358,
+    "behind_line_kill_share": 0.0,
+    "unit_seconds_near_cover_share": 0.101,
+    "shots_near_cover_share": 0.133,
+    "deaths_near_cover_share": 0.151
+   }
+  },
+  {
+   "green": "condemned",
+   "rust": "condemned",
+   "seed": 3,
+   "winner": "Green",
+   "reason": "elimination",
+   "duration_s": 145.5,
+   "engagement": {
+    "contact_second": 6,
+    "separation_at_contact": 105.7,
+    "engaged_distance_median": 43.9,
+    "kill_distance_median": 33.5,
+    "static_share": 0.036,
+    "held_line_share": 0.17,
+    "net_advance": [
+     56.6,
+     -63.3
+    ],
+    "centroid_travel": [
+     186.9,
+     543.9
+    ],
+    "kills": {
+     "front": 10,
+     "indirect": 5,
+     "rear": 10,
+     "side": 26
+    },
+    "flank_rear_kill_share": 0.783,
+    "off_axis_kill_share": 0.686,
+    "behind_line_kill_share": 0.314,
+    "unit_seconds_near_cover_share": 0.077,
+    "shots_near_cover_share": 0.118,
+    "deaths_near_cover_share": 0.157
+   }
+  },
+  {
+   "green": "law",
+   "rust": "gangs",
+   "seed": 1,
+   "winner": "Green",
+   "reason": "elimination",
+   "duration_s": 66.0,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 115.6,
+    "engaged_distance_median": 59.9,
+    "kill_distance_median": 38.3,
+    "static_share": 0.0,
+    "held_line_share": 0.018,
+    "net_advance": [
+     116.1,
+     -58.1
+    ],
+    "centroid_travel": [
+     171.7,
+     247.7
+    ],
+    "kills": {
+     "front": 18,
+     "indirect": 1,
+     "rear": 9,
+     "side": 16
+    },
+    "flank_rear_kill_share": 0.581,
+    "off_axis_kill_share": 0.25,
+    "behind_line_kill_share": 0.045,
+    "unit_seconds_near_cover_share": 0.092,
+    "shots_near_cover_share": 0.085,
+    "deaths_near_cover_share": 0.182
+   }
+  },
+  {
+   "green": "gangs",
+   "rust": "law",
+   "seed": 2,
+   "winner": "Rust",
+   "reason": "elimination",
+   "duration_s": 50.0,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 112.6,
+    "engaged_distance_median": 67.6,
+    "kill_distance_median": 44.4,
+    "static_share": 0.0,
+    "held_line_share": 0.045,
+    "net_advance": [
+     -29.5,
+     78.0
+    ],
+    "centroid_travel": [
+     151.3,
+     90.7
+    ],
+    "kills": {
+     "front": 21,
+     "indirect": 0,
+     "rear": 4,
+     "side": 19
+    },
+    "flank_rear_kill_share": 0.523,
+    "off_axis_kill_share": 0.159,
+    "behind_line_kill_share": 0.0,
+    "unit_seconds_near_cover_share": 0.123,
+    "shots_near_cover_share": 0.257,
+    "deaths_near_cover_share": 0.159
+   }
+  },
+  {
+   "green": "gangs",
+   "rust": "law",
+   "seed": 3,
+   "winner": "Rust",
+   "reason": "elimination",
+   "duration_s": 73.9,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 103.0,
+    "engaged_distance_median": 63.4,
+    "kill_distance_median": 44.3,
+    "static_share": 0.0,
+    "held_line_share": 0.115,
+    "net_advance": [
+     -70.0,
+     72.7
+    ],
+    "centroid_travel": [
+     390.0,
+     116.8
+    ],
+    "kills": {
+     "front": 22,
+     "indirect": 0,
+     "rear": 6,
+     "side": 20
+    },
+    "flank_rear_kill_share": 0.542,
+    "off_axis_kill_share": 0.104,
+    "behind_line_kill_share": 0.0,
+    "unit_seconds_near_cover_share": 0.158,
+    "shots_near_cover_share": 0.143,
+    "deaths_near_cover_share": 0.125
+   }
+  },
+  {
+   "green": "law",
+   "rust": "gangs",
+   "seed": 2,
+   "winner": "Rust",
+   "reason": "control",
+   "duration_s": 175.0,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 114.4,
+    "engaged_distance_median": 52.9,
+    "kill_distance_median": 28.0,
+    "static_share": 0.0,
+    "held_line_share": 0.363,
+    "net_advance": [
+     94.2,
+     58.5
+    ],
+    "centroid_travel": [
+     431.7,
+     330.4
+    ],
+    "kills": {
+     "front": 12,
+     "indirect": 0,
+     "rear": 10,
+     "side": 31
+    },
+    "flank_rear_kill_share": 0.774,
+    "off_axis_kill_share": 0.34,
+    "behind_line_kill_share": 0.038,
+    "unit_seconds_near_cover_share": 0.13,
+    "shots_near_cover_share": 0.09,
+    "deaths_near_cover_share": 0.245
+   }
+  },
+  {
+   "green": "condemned",
+   "rust": "syndicate",
+   "seed": 1,
+   "winner": "Rust",
+   "reason": "elimination",
+   "duration_s": 78.5,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 110.7,
+    "engaged_distance_median": 79.9,
+    "kill_distance_median": 86.1,
+    "static_share": 0.041,
+    "held_line_share": 0.054,
+    "net_advance": [
+     -39.6,
+     88.6
+    ],
+    "centroid_travel": [
+     189.9,
+     227.1
+    ],
+    "kills": {
+     "front": 23,
+     "indirect": 3,
+     "rear": 3,
+     "side": 11
+    },
+    "flank_rear_kill_share": 0.378,
+    "off_axis_kill_share": 0.125,
+    "behind_line_kill_share": 0.025,
+    "unit_seconds_near_cover_share": 0.078,
+    "shots_near_cover_share": 0.052,
+    "deaths_near_cover_share": 0.075
+   }
+  },
+  {
+   "green": "law",
+   "rust": "gangs",
+   "seed": 3,
+   "winner": "Rust",
+   "reason": "control",
+   "duration_s": 116.8,
+   "engagement": {
+    "contact_second": 5,
+    "separation_at_contact": 102.9,
+    "engaged_distance_median": 64.7,
+    "kill_distance_median": 31.5,
+    "static_share": 0.0,
+    "held_line_share": 0.091,
+    "net_advance": [
+     138.0,
+     50.0
+    ],
+    "centroid_travel": [
+     482.3,
+     176.2
+    ],
+    "kills": {
+     "front": 6,
+     "indirect": 1,
+     "rear": 12,
+     "side": 17
+    },
+    "flank_rear_kill_share": 0.829,
+    "off_axis_kill_share": 0.639,
+    "behind_line_kill_share": 0.083,
+    "unit_seconds_near_cover_share": 0.126,
+    "shots_near_cover_share": 0.028,
+    "deaths_near_cover_share": 0.111
+   }
+  },
+  {
+   "green": "syndicate",
+   "rust": "condemned",
+   "seed": 1,
+   "winner": "Rust",
+   "reason": "control",
+   "duration_s": 116.4,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 108.6,
+    "engaged_distance_median": 87.5,
+    "kill_distance_median": 61.3,
+    "static_share": 0.0,
+    "held_line_share": 0.0,
+    "net_advance": [
+     -54.0,
+     59.9
+    ],
+    "centroid_travel": [
+     657.8,
+     222.1
+    ],
+    "kills": {
+     "front": 9,
+     "indirect": 1,
+     "rear": 2,
+     "side": 11
+    },
+    "flank_rear_kill_share": 0.591,
+    "off_axis_kill_share": 0.261,
+    "behind_line_kill_share": 0.043,
+    "unit_seconds_near_cover_share": 0.195,
+    "shots_near_cover_share": 0.027,
+    "deaths_near_cover_share": 0.043
+   }
+  },
+  {
+   "green": "condemned",
+   "rust": "syndicate",
+   "seed": 2,
+   "winner": "Green",
+   "reason": "elimination",
+   "duration_s": 60.0,
+   "engagement": {
+    "contact_second": 5,
+    "separation_at_contact": 97.6,
+    "engaged_distance_median": 87.5,
+    "kill_distance_median": 54.8,
+    "static_share": 0.0,
+    "held_line_share": 0.0,
+    "net_advance": [
+     109.3,
+     -76.6
+    ],
+    "centroid_travel": [
+     153.1,
+     276.2
+    ],
+    "kills": {
+     "front": 6,
+     "indirect": 3,
+     "rear": 3,
+     "side": 9
+    },
+    "flank_rear_kill_share": 0.667,
+    "off_axis_kill_share": 0.095,
+    "behind_line_kill_share": 0.0,
+    "unit_seconds_near_cover_share": 0.096,
+    "shots_near_cover_share": 0.039,
+    "deaths_near_cover_share": 0.048
+   }
+  },
+  {
+   "green": "syndicate",
+   "rust": "condemned",
+   "seed": 2,
+   "winner": "Green",
+   "reason": "elimination",
+   "duration_s": 112.9,
+   "engagement": {
+    "contact_second": 3,
+    "separation_at_contact": 111.6,
+    "engaged_distance_median": 80.3,
+    "kill_distance_median": 83.3,
+    "static_share": 0.103,
+    "held_line_share": 0.161,
+    "net_advance": [
+     89.3,
+     -41.5
+    ],
+    "centroid_travel": [
+     242.6,
+     278.5
+    ],
+    "kills": {
+     "front": 23,
+     "indirect": 0,
+     "rear": 1,
+     "side": 20
+    },
+    "flank_rear_kill_share": 0.477,
+    "off_axis_kill_share": 0.136,
+    "behind_line_kill_share": 0.023,
+    "unit_seconds_near_cover_share": 0.083,
+    "shots_near_cover_share": 0.078,
+    "deaths_near_cover_share": 0.114
+   }
+  },
+  {
+   "green": "condemned",
+   "rust": "syndicate",
+   "seed": 3,
+   "winner": "Rust",
+   "reason": "control",
+   "duration_s": 183.5,
+   "engagement": {
+    "contact_second": 4,
+    "separation_at_contact": 114.5,
+    "engaged_distance_median": 87.4,
+    "kill_distance_median": 81.1,
+    "static_share": 0.077,
+    "held_line_share": 0.183,
+    "net_advance": [
+     -38.5,
+     -4.9
+    ],
+    "centroid_travel": [
+     256.4,
+     357.2
+    ],
+    "kills": {
+     "front": 10,
+     "indirect": 18,
+     "rear": 1,
+     "side": 9
+    },
+    "flank_rear_kill_share": 0.5,
+    "off_axis_kill_share": 0.132,
+    "behind_line_kill_share": 0.0,
+    "unit_seconds_near_cover_share": 0.084,
+    "shots_near_cover_share": 0.097,
+    "deaths_near_cover_share": 0.211
+   }
+  },
+  {
+   "green": "syndicate",
+   "rust": "condemned",
+   "seed": 3,
+   "winner": "Green",
+   "reason": "elimination",
+   "duration_s": 94.2,
+   "engagement": {
+    "contact_second": 3,
+    "separation_at_contact": 118.3,
+    "engaged_distance_median": 77.4,
+    "kill_distance_median": 60.3,
+    "static_share": 0.035,
+    "held_line_share": 0.267,
+    "net_advance": [
+     80.0,
+     -55.8
+    ],
+    "centroid_travel": [
+     149.8,
+     229.1
+    ],
+    "kills": {
+     "front": 17,
+     "indirect": 1,
+     "rear": 4,
+     "side": 22
+    },
+    "flank_rear_kill_share": 0.605,
+    "off_axis_kill_share": 0.25,
+    "behind_line_kill_share": 0.0,
+    "unit_seconds_near_cover_share": 0.071,
+    "shots_near_cover_share": 0.106,
+    "deaths_near_cover_share": 0.068
+   }
+  }
+ ]
+}

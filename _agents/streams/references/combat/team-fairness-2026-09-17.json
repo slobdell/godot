@@ -1,0 +1,1654 @@
+{
+ "what": "make team-fairness, Condemned mirror at Units.BASELINE_BUDGET (5200), elimination + control point, on Jolt at the 60 Hz tick (before the 30 Hz flip)",
+ "measured": "2026-09-17 on builder0",
+ "fields": "per configuration: seed -> winner, units left, duration, reason",
+ "configs": {
+  "normal": {
+   "matches": 16,
+   "wins": {
+    "Rust": 11,
+    "Green": 5
+   },
+   "per_seed": {
+    "1": {
+     "winner": "Rust",
+     "left": [
+      4,
+      21
+     ],
+     "s": 109.0,
+     "why": "control"
+    },
+    "2": {
+     "winner": "Green",
+     "left": [
+      32,
+      0
+     ],
+     "s": 83.5,
+     "why": "elimination"
+    },
+    "3": {
+     "winner": "Green",
+     "left": [
+      29,
+      0
+     ],
+     "s": 97.9,
+     "why": "elimination"
+    },
+    "4": {
+     "winner": "Rust",
+     "left": [
+      0,
+      19
+     ],
+     "s": 43.2,
+     "why": "elimination"
+    },
+    "5": {
+     "winner": "Rust",
+     "left": [
+      0,
+      22
+     ],
+     "s": 76.7,
+     "why": "elimination"
+    },
+    "6": {
+     "winner": "Rust",
+     "left": [
+      0,
+      32
+     ],
+     "s": 97.1,
+     "why": "elimination"
+    },
+    "7": {
+     "winner": "Rust",
+     "left": [
+      0,
+      26
+     ],
+     "s": 64.2,
+     "why": "elimination"
+    },
+    "8": {
+     "winner": "Rust",
+     "left": [
+      2,
+      16
+     ],
+     "s": 113.8,
+     "why": "control"
+    },
+    "9": {
+     "winner": "Green",
+     "left": [
+      6,
+      0
+     ],
+     "s": 72.9,
+     "why": "elimination"
+    },
+    "10": {
+     "winner": "Rust",
+     "left": [
+      0,
+      22
+     ],
+     "s": 88.8,
+     "why": "elimination"
+    },
+    "11": {
+     "winner": "Green",
+     "left": [
+      26,
+      0
+     ],
+     "s": 74.2,
+     "why": "elimination"
+    },
+    "12": {
+     "winner": "Green",
+     "left": [
+      25,
+      0
+     ],
+     "s": 83.3,
+     "why": "elimination"
+    },
+    "13": {
+     "winner": "Rust",
+     "left": [
+      3,
+      18
+     ],
+     "s": 116.7,
+     "why": "control"
+    },
+    "14": {
+     "winner": "Rust",
+     "left": [
+      0,
+      27
+     ],
+     "s": 88.9,
+     "why": "elimination"
+    },
+    "15": {
+     "winner": "Rust",
+     "left": [
+      0,
+      25
+     ],
+     "s": 127.8,
+     "why": "elimination"
+    },
+    "16": {
+     "winner": "Rust",
+     "left": [
+      0,
+      27
+     ],
+     "s": 66.4,
+     "why": "elimination"
+    }
+   }
+  },
+  "swap-armies": {
+   "matches": 16,
+   "wins": {
+    "Green": 12,
+    "Rust": 4
+   },
+   "per_seed": {
+    "1": {
+     "winner": "Green",
+     "left": [
+      21,
+      3
+     ],
+     "s": 118.9,
+     "why": "control"
+    },
+    "2": {
+     "winner": "Rust",
+     "left": [
+      0,
+      34
+     ],
+     "s": 109.5,
+     "why": "elimination"
+    },
+    "3": {
+     "winner": "Rust",
+     "left": [
+      0,
+      27
+     ],
+     "s": 102.8,
+     "why": "elimination"
+    },
+    "4": {
+     "winner": "Green",
+     "left": [
+      17,
+      0
+     ],
+     "s": 44.7,
+     "why": "elimination"
+    },
+    "5": {
+     "winner": "Green",
+     "left": [
+      21,
+      0
+     ],
+     "s": 82.8,
+     "why": "elimination"
+    },
+    "6": {
+     "winner": "Green",
+     "left": [
+      31,
+      0
+     ],
+     "s": 84.5,
+     "why": "elimination"
+    },
+    "7": {
+     "winner": "Green",
+     "left": [
+      26,
+      0
+     ],
+     "s": 116.5,
+     "why": "elimination"
+    },
+    "8": {
+     "winner": "Green",
+     "left": [
+      19,
+      0
+     ],
+     "s": 100.7,
+     "why": "elimination"
+    },
+    "9": {
+     "winner": "Green",
+     "left": [
+      6,
+      0
+     ],
+     "s": 80.9,
+     "why": "elimination"
+    },
+    "10": {
+     "winner": "Green",
+     "left": [
+      20,
+      0
+     ],
+     "s": 84.7,
+     "why": "elimination"
+    },
+    "11": {
+     "winner": "Rust",
+     "left": [
+      0,
+      26
+     ],
+     "s": 75.6,
+     "why": "elimination"
+    },
+    "12": {
+     "winner": "Rust",
+     "left": [
+      0,
+      26
+     ],
+     "s": 102.4,
+     "why": "elimination"
+    },
+    "13": {
+     "winner": "Green",
+     "left": [
+      20,
+      0
+     ],
+     "s": 78.1,
+     "why": "elimination"
+    },
+    "14": {
+     "winner": "Green",
+     "left": [
+      28,
+      0
+     ],
+     "s": 83.6,
+     "why": "elimination"
+    },
+    "15": {
+     "winner": "Green",
+     "left": [
+      27,
+      0
+     ],
+     "s": 108.9,
+     "why": "elimination"
+    },
+    "16": {
+     "winner": "Green",
+     "left": [
+      26,
+      0
+     ],
+     "s": 80.4,
+     "why": "elimination"
+    }
+   }
+  },
+  "same-army": {
+   "matches": 16,
+   "wins": {
+    "Green": 5,
+    "Rust": 11
+   },
+   "per_seed": {
+    "1": {
+     "winner": "Rust",
+     "left": [
+      4,
+      11
+     ],
+     "s": 150.5,
+     "why": "control"
+    },
+    "2": {
+     "winner": "Green",
+     "left": [
+      26,
+      0
+     ],
+     "s": 94.2,
+     "why": "elimination"
+    },
+    "3": {
+     "winner": "Green",
+     "left": [
+      18,
+      2
+     ],
+     "s": 114.6,
+     "why": "control"
+    },
+    "4": {
+     "winner": "Green",
+     "left": [
+      10,
+      0
+     ],
+     "s": 60.8,
+     "why": "elimination"
+    },
+    "5": {
+     "winner": "Rust",
+     "left": [
+      0,
+      31
+     ],
+     "s": 85.9,
+     "why": "elimination"
+    },
+    "6": {
+     "winner": "Rust",
+     "left": [
+      16,
+      32
+     ],
+     "s": 145.5,
+     "why": "control"
+    },
+    "7": {
+     "winner": "Rust",
+     "left": [
+      24,
+      31
+     ],
+     "s": 124.9,
+     "why": "control"
+    },
+    "8": {
+     "winner": "Rust",
+     "left": [
+      7,
+      18
+     ],
+     "s": 138.5,
+     "why": "control"
+    },
+    "9": {
+     "winner": "Rust",
+     "left": [
+      0,
+      7
+     ],
+     "s": 68.2,
+     "why": "elimination"
+    },
+    "10": {
+     "winner": "Rust",
+     "left": [
+      6,
+      25
+     ],
+     "s": 120.0,
+     "why": "control"
+    },
+    "11": {
+     "winner": "Rust",
+     "left": [
+      0,
+      7
+     ],
+     "s": 78.4,
+     "why": "elimination"
+    },
+    "12": {
+     "winner": "Green",
+     "left": [
+      12,
+      0
+     ],
+     "s": 51.8,
+     "why": "elimination"
+    },
+    "13": {
+     "winner": "Green",
+     "left": [
+      20,
+      2
+     ],
+     "s": 115.0,
+     "why": "control"
+    },
+    "14": {
+     "winner": "Rust",
+     "left": [
+      3,
+      38
+     ],
+     "s": 124.2,
+     "why": "control"
+    },
+    "15": {
+     "winner": "Rust",
+     "left": [
+      25,
+      30
+     ],
+     "s": 133.0,
+     "why": "control"
+    },
+    "16": {
+     "winner": "Rust",
+     "left": [
+      0,
+      37
+     ],
+     "s": 128.1,
+     "why": "elimination"
+    }
+   }
+  },
+  "same-army+rust-first": {
+   "matches": 16,
+   "wins": {
+    "Rust": 10,
+    "Green": 6
+   },
+   "per_seed": {
+    "1": {
+     "winner": "Rust",
+     "left": [
+      14,
+      4
+     ],
+     "s": 136.0,
+     "why": "control"
+    },
+    "2": {
+     "winner": "Rust",
+     "left": [
+      1,
+      25
+     ],
+     "s": 129.6,
+     "why": "control"
+    },
+    "3": {
+     "winner": "Green",
+     "left": [
+      9,
+      7
+     ],
+     "s": 300.0,
+     "why": "time_limit"
+    },
+    "4": {
+     "winner": "Green",
+     "left": [
+      3,
+      0
+     ],
+     "s": 92.2,
+     "why": "elimination"
+    },
+    "5": {
+     "winner": "Green",
+     "left": [
+      27,
+      0
+     ],
+     "s": 102.1,
+     "why": "elimination"
+    },
+    "6": {
+     "winner": "Rust",
+     "left": [
+      5,
+      33
+     ],
+     "s": 139.1,
+     "why": "control"
+    },
+    "7": {
+     "winner": "Green",
+     "left": [
+      33,
+      10
+     ],
+     "s": 117.2,
+     "why": "control"
+    },
+    "8": {
+     "winner": "Rust",
+     "left": [
+      0,
+      14
+     ],
+     "s": 173.1,
+     "why": "elimination"
+    },
+    "9": {
+     "winner": "Rust",
+     "left": [
+      0,
+      9
+     ],
+     "s": 98.6,
+     "why": "elimination"
+    },
+    "10": {
+     "winner": "Rust",
+     "left": [
+      0,
+      25
+     ],
+     "s": 101.6,
+     "why": "elimination"
+    },
+    "11": {
+     "winner": "Rust",
+     "left": [
+      0,
+      16
+     ],
+     "s": 48.6,
+     "why": "elimination"
+    },
+    "12": {
+     "winner": "Rust",
+     "left": [
+      0,
+      11
+     ],
+     "s": 51.0,
+     "why": "elimination"
+    },
+    "13": {
+     "winner": "Rust",
+     "left": [
+      4,
+      8
+     ],
+     "s": 112.3,
+     "why": "control"
+    },
+    "14": {
+     "winner": "Green",
+     "left": [
+      33,
+      12
+     ],
+     "s": 172.2,
+     "why": "control"
+    },
+    "15": {
+     "winner": "Rust",
+     "left": [
+      10,
+      34
+     ],
+     "s": 117.9,
+     "why": "control"
+    },
+    "16": {
+     "winner": "Green",
+     "left": [
+      32,
+      13
+     ],
+     "s": 182.5,
+     "why": "control"
+    }
+   }
+  },
+  "same-army+swap-bases": {
+   "matches": 16,
+   "wins": {
+    "Green": 10,
+    "Rust": 6
+   },
+   "per_seed": {
+    "1": {
+     "winner": "Green",
+     "left": [
+      4,
+      14
+     ],
+     "s": 136.0,
+     "why": "control"
+    },
+    "2": {
+     "winner": "Green",
+     "left": [
+      25,
+      1
+     ],
+     "s": 129.6,
+     "why": "control"
+    },
+    "3": {
+     "winner": "Rust",
+     "left": [
+      7,
+      9
+     ],
+     "s": 300.0,
+     "why": "time_limit"
+    },
+    "4": {
+     "winner": "Rust",
+     "left": [
+      0,
+      3
+     ],
+     "s": 92.2,
+     "why": "elimination"
+    },
+    "5": {
+     "winner": "Rust",
+     "left": [
+      0,
+      27
+     ],
+     "s": 102.1,
+     "why": "elimination"
+    },
+    "6": {
+     "winner": "Green",
+     "left": [
+      33,
+      5
+     ],
+     "s": 139.1,
+     "why": "control"
+    },
+    "7": {
+     "winner": "Rust",
+     "left": [
+      10,
+      33
+     ],
+     "s": 117.2,
+     "why": "control"
+    },
+    "8": {
+     "winner": "Green",
+     "left": [
+      14,
+      0
+     ],
+     "s": 173.1,
+     "why": "elimination"
+    },
+    "9": {
+     "winner": "Green",
+     "left": [
+      9,
+      0
+     ],
+     "s": 98.6,
+     "why": "elimination"
+    },
+    "10": {
+     "winner": "Green",
+     "left": [
+      25,
+      0
+     ],
+     "s": 101.6,
+     "why": "elimination"
+    },
+    "11": {
+     "winner": "Green",
+     "left": [
+      16,
+      0
+     ],
+     "s": 48.6,
+     "why": "elimination"
+    },
+    "12": {
+     "winner": "Green",
+     "left": [
+      11,
+      0
+     ],
+     "s": 51.0,
+     "why": "elimination"
+    },
+    "13": {
+     "winner": "Green",
+     "left": [
+      8,
+      4
+     ],
+     "s": 112.3,
+     "why": "control"
+    },
+    "14": {
+     "winner": "Rust",
+     "left": [
+      12,
+      33
+     ],
+     "s": 172.2,
+     "why": "control"
+    },
+    "15": {
+     "winner": "Green",
+     "left": [
+      34,
+      10
+     ],
+     "s": 117.9,
+     "why": "control"
+    },
+    "16": {
+     "winner": "Rust",
+     "left": [
+      13,
+      32
+     ],
+     "s": 182.5,
+     "why": "control"
+    }
+   }
+  },
+  "same-army seeds17-64": {
+   "matches": 48,
+   "wins": {
+    "Green": 24,
+    "Rust": 24
+   },
+   "per_seed": {
+    "17": {
+     "winner": "Green",
+     "left": [
+      9,
+      0
+     ],
+     "s": 50.2,
+     "why": "elimination"
+    },
+    "18": {
+     "winner": "Rust",
+     "left": [
+      0,
+      12
+     ],
+     "s": 104.7,
+     "why": "elimination"
+    },
+    "19": {
+     "winner": "Rust",
+     "left": [
+      0,
+      7
+     ],
+     "s": 63.9,
+     "why": "elimination"
+    },
+    "20": {
+     "winner": "Green",
+     "left": [
+      5,
+      0
+     ],
+     "s": 73.4,
+     "why": "elimination"
+    },
+    "21": {
+     "winner": "Rust",
+     "left": [
+      28,
+      33
+     ],
+     "s": 169.3,
+     "why": "control"
+    },
+    "22": {
+     "winner": "Rust",
+     "left": [
+      6,
+      13
+     ],
+     "s": 139.1,
+     "why": "control"
+    },
+    "23": {
+     "winner": "Green",
+     "left": [
+      20,
+      5
+     ],
+     "s": 115.2,
+     "why": "control"
+    },
+    "24": {
+     "winner": "Green",
+     "left": [
+      22,
+      7
+     ],
+     "s": 127.2,
+     "why": "control"
+    },
+    "25": {
+     "winner": "Rust",
+     "left": [
+      0,
+      6
+     ],
+     "s": 74.7,
+     "why": "elimination"
+    },
+    "26": {
+     "winner": "Rust",
+     "left": [
+      8,
+      37
+     ],
+     "s": 128.0,
+     "why": "control"
+    },
+    "27": {
+     "winner": "Green",
+     "left": [
+      28,
+      0
+     ],
+     "s": 105.7,
+     "why": "elimination"
+    },
+    "28": {
+     "winner": "Green",
+     "left": [
+      17,
+      0
+     ],
+     "s": 93.5,
+     "why": "elimination"
+    },
+    "29": {
+     "winner": "Green",
+     "left": [
+      12,
+      0
+     ],
+     "s": 50.3,
+     "why": "elimination"
+    },
+    "30": {
+     "winner": "Rust",
+     "left": [
+      0,
+      13
+     ],
+     "s": 159.9,
+     "why": "elimination"
+    },
+    "31": {
+     "winner": "Rust",
+     "left": [
+      2,
+      20
+     ],
+     "s": 108.6,
+     "why": "control"
+    },
+    "32": {
+     "winner": "Green",
+     "left": [
+      32,
+      6
+     ],
+     "s": 169.0,
+     "why": "control"
+    },
+    "33": {
+     "winner": "Green",
+     "left": [
+      19,
+      7
+     ],
+     "s": 111.3,
+     "why": "control"
+    },
+    "34": {
+     "winner": "Rust",
+     "left": [
+      0,
+      7
+     ],
+     "s": 68.6,
+     "why": "elimination"
+    },
+    "35": {
+     "winner": "Rust",
+     "left": [
+      0,
+      10
+     ],
+     "s": 55.1,
+     "why": "elimination"
+    },
+    "36": {
+     "winner": "Green",
+     "left": [
+      36,
+      2
+     ],
+     "s": 118.2,
+     "why": "control"
+    },
+    "37": {
+     "winner": "Green",
+     "left": [
+      35,
+      1
+     ],
+     "s": 137.4,
+     "why": "control"
+    },
+    "38": {
+     "winner": "Rust",
+     "left": [
+      0,
+      25
+     ],
+     "s": 116.4,
+     "why": "elimination"
+    },
+    "39": {
+     "winner": "Rust",
+     "left": [
+      0,
+      16
+     ],
+     "s": 92.1,
+     "why": "elimination"
+    },
+    "40": {
+     "winner": "Rust",
+     "left": [
+      4,
+      22
+     ],
+     "s": 127.7,
+     "why": "control"
+    },
+    "41": {
+     "winner": "Rust",
+     "left": [
+      0,
+      10
+     ],
+     "s": 108.9,
+     "why": "elimination"
+    },
+    "42": {
+     "winner": "Rust",
+     "left": [
+      14,
+      18
+     ],
+     "s": 109.4,
+     "why": "control"
+    },
+    "43": {
+     "winner": "Green",
+     "left": [
+      24,
+      3
+     ],
+     "s": 125.2,
+     "why": "control"
+    },
+    "44": {
+     "winner": "Green",
+     "left": [
+      8,
+      0
+     ],
+     "s": 66.8,
+     "why": "elimination"
+    },
+    "45": {
+     "winner": "Rust",
+     "left": [
+      5,
+      20
+     ],
+     "s": 116.9,
+     "why": "control"
+    },
+    "46": {
+     "winner": "Green",
+     "left": [
+      9,
+      10
+     ],
+     "s": 153.2,
+     "why": "control"
+    },
+    "47": {
+     "winner": "Green",
+     "left": [
+      5,
+      0
+     ],
+     "s": 84.0,
+     "why": "elimination"
+    },
+    "48": {
+     "winner": "Green",
+     "left": [
+      35,
+      3
+     ],
+     "s": 149.3,
+     "why": "control"
+    },
+    "49": {
+     "winner": "Green",
+     "left": [
+      20,
+      10
+     ],
+     "s": 181.3,
+     "why": "control"
+    },
+    "50": {
+     "winner": "Rust",
+     "left": [
+      0,
+      20
+     ],
+     "s": 120.4,
+     "why": "elimination"
+    },
+    "51": {
+     "winner": "Rust",
+     "left": [
+      0,
+      5
+     ],
+     "s": 74.6,
+     "why": "elimination"
+    },
+    "52": {
+     "winner": "Green",
+     "left": [
+      14,
+      1
+     ],
+     "s": 129.4,
+     "why": "control"
+    },
+    "53": {
+     "winner": "Green",
+     "left": [
+      14,
+      5
+     ],
+     "s": 153.4,
+     "why": "control"
+    },
+    "54": {
+     "winner": "Green",
+     "left": [
+      37,
+      7
+     ],
+     "s": 116.5,
+     "why": "control"
+    },
+    "55": {
+     "winner": "Rust",
+     "left": [
+      1,
+      14
+     ],
+     "s": 113.3,
+     "why": "control"
+    },
+    "56": {
+     "winner": "Rust",
+     "left": [
+      2,
+      25
+     ],
+     "s": 132.0,
+     "why": "control"
+    },
+    "57": {
+     "winner": "Rust",
+     "left": [
+      13,
+      36
+     ],
+     "s": 105.5,
+     "why": "control"
+    },
+    "58": {
+     "winner": "Green",
+     "left": [
+      8,
+      0
+     ],
+     "s": 63.3,
+     "why": "elimination"
+    },
+    "59": {
+     "winner": "Green",
+     "left": [
+      14,
+      0
+     ],
+     "s": 87.8,
+     "why": "elimination"
+    },
+    "60": {
+     "winner": "Rust",
+     "left": [
+      0,
+      12
+     ],
+     "s": 98.8,
+     "why": "elimination"
+    },
+    "61": {
+     "winner": "Green",
+     "left": [
+      7,
+      0
+     ],
+     "s": 74.9,
+     "why": "elimination"
+    },
+    "62": {
+     "winner": "Green",
+     "left": [
+      27,
+      0
+     ],
+     "s": 95.0,
+     "why": "elimination"
+    },
+    "63": {
+     "winner": "Rust",
+     "left": [
+      23,
+      31
+     ],
+     "s": 114.2,
+     "why": "control"
+    },
+    "64": {
+     "winner": "Rust",
+     "left": [
+      0,
+      7
+     ],
+     "s": 71.7,
+     "why": "elimination"
+    }
+   }
+  },
+  "same-army+swap-bases seeds17-64": {
+   "matches": 48,
+   "wins": {
+    "Green": 25,
+    "Rust": 23
+   },
+   "per_seed": {
+    "17": {
+     "winner": "Green",
+     "left": [
+      6,
+      0
+     ],
+     "s": 75.6,
+     "why": "elimination"
+    },
+    "18": {
+     "winner": "Rust",
+     "left": [
+      3,
+      6
+     ],
+     "s": 144.0,
+     "why": "control"
+    },
+    "19": {
+     "winner": "Rust",
+     "left": [
+      0,
+      6
+     ],
+     "s": 70.1,
+     "why": "elimination"
+    },
+    "20": {
+     "winner": "Green",
+     "left": [
+      11,
+      0
+     ],
+     "s": 53.3,
+     "why": "elimination"
+    },
+    "21": {
+     "winner": "Rust",
+     "left": [
+      14,
+      32
+     ],
+     "s": 106.2,
+     "why": "control"
+    },
+    "22": {
+     "winner": "Green",
+     "left": [
+      23,
+      1
+     ],
+     "s": 118.4,
+     "why": "control"
+    },
+    "23": {
+     "winner": "Green",
+     "left": [
+      12,
+      11
+     ],
+     "s": 144.0,
+     "why": "control"
+    },
+    "24": {
+     "winner": "Rust",
+     "left": [
+      0,
+      25
+     ],
+     "s": 98.1,
+     "why": "elimination"
+    },
+    "25": {
+     "winner": "Green",
+     "left": [
+      9,
+      0
+     ],
+     "s": 59.1,
+     "why": "elimination"
+    },
+    "26": {
+     "winner": "Rust",
+     "left": [
+      27,
+      26
+     ],
+     "s": 145.0,
+     "why": "control"
+    },
+    "27": {
+     "winner": "Rust",
+     "left": [
+      9,
+      21
+     ],
+     "s": 223.7,
+     "why": "control"
+    },
+    "28": {
+     "winner": "Green",
+     "left": [
+      1,
+      6
+     ],
+     "s": 173.4,
+     "why": "control"
+    },
+    "29": {
+     "winner": "Rust",
+     "left": [
+      0,
+      9
+     ],
+     "s": 72.8,
+     "why": "elimination"
+    },
+    "30": {
+     "winner": "Green",
+     "left": [
+      20,
+      1
+     ],
+     "s": 120.8,
+     "why": "control"
+    },
+    "31": {
+     "winner": "Green",
+     "left": [
+      20,
+      5
+     ],
+     "s": 120.6,
+     "why": "control"
+    },
+    "32": {
+     "winner": "Rust",
+     "left": [
+      27,
+      30
+     ],
+     "s": 117.0,
+     "why": "control"
+    },
+    "33": {
+     "winner": "Green",
+     "left": [
+      10,
+      8
+     ],
+     "s": 137.2,
+     "why": "control"
+    },
+    "34": {
+     "winner": "Rust",
+     "left": [
+      0,
+      7
+     ],
+     "s": 98.9,
+     "why": "elimination"
+    },
+    "35": {
+     "winner": "Rust",
+     "left": [
+      0,
+      9
+     ],
+     "s": 57.8,
+     "why": "elimination"
+    },
+    "36": {
+     "winner": "Rust",
+     "left": [
+      20,
+      31
+     ],
+     "s": 158.5,
+     "why": "control"
+    },
+    "37": {
+     "winner": "Rust",
+     "left": [
+      16,
+      34
+     ],
+     "s": 143.8,
+     "why": "control"
+    },
+    "38": {
+     "winner": "Rust",
+     "left": [
+      8,
+      23
+     ],
+     "s": 119.7,
+     "why": "control"
+    },
+    "39": {
+     "winner": "Green",
+     "left": [
+      15,
+      0
+     ],
+     "s": 102.8,
+     "why": "elimination"
+    },
+    "40": {
+     "winner": "Rust",
+     "left": [
+      1,
+      15
+     ],
+     "s": 149.0,
+     "why": "control"
+    },
+    "41": {
+     "winner": "Rust",
+     "left": [
+      0,
+      12
+     ],
+     "s": 116.5,
+     "why": "elimination"
+    },
+    "42": {
+     "winner": "Green",
+     "left": [
+      23,
+      7
+     ],
+     "s": 120.0,
+     "why": "control"
+    },
+    "43": {
+     "winner": "Rust",
+     "left": [
+      7,
+      23
+     ],
+     "s": 110.1,
+     "why": "control"
+    },
+    "44": {
+     "winner": "Rust",
+     "left": [
+      0,
+      2
+     ],
+     "s": 79.2,
+     "why": "elimination"
+    },
+    "45": {
+     "winner": "Green",
+     "left": [
+      16,
+      12
+     ],
+     "s": 127.3,
+     "why": "control"
+    },
+    "46": {
+     "winner": "Rust",
+     "left": [
+      1,
+      20
+     ],
+     "s": 109.4,
+     "why": "control"
+    },
+    "47": {
+     "winner": "Green",
+     "left": [
+      4,
+      0
+     ],
+     "s": 110.6,
+     "why": "elimination"
+    },
+    "48": {
+     "winner": "Green",
+     "left": [
+      37,
+      0
+     ],
+     "s": 116.1,
+     "why": "elimination"
+    },
+    "49": {
+     "winner": "Rust",
+     "left": [
+      0,
+      27
+     ],
+     "s": 103.9,
+     "why": "elimination"
+    },
+    "50": {
+     "winner": "Rust",
+     "left": [
+      12,
+      16
+     ],
+     "s": 107.6,
+     "why": "control"
+    },
+    "51": {
+     "winner": "Rust",
+     "left": [
+      0,
+      11
+     ],
+     "s": 57.0,
+     "why": "elimination"
+    },
+    "52": {
+     "winner": "Green",
+     "left": [
+      4,
+      7
+     ],
+     "s": 114.7,
+     "why": "control"
+    },
+    "53": {
+     "winner": "Green",
+     "left": [
+      6,
+      11
+     ],
+     "s": 171.1,
+     "why": "control"
+    },
+    "54": {
+     "winner": "Green",
+     "left": [
+      36,
+      8
+     ],
+     "s": 142.7,
+     "why": "control"
+    },
+    "55": {
+     "winner": "Green",
+     "left": [
+      8,
+      5
+     ],
+     "s": 108.5,
+     "why": "control"
+    },
+    "56": {
+     "winner": "Rust",
+     "left": [
+      0,
+      28
+     ],
+     "s": 72.6,
+     "why": "elimination"
+    },
+    "57": {
+     "winner": "Green",
+     "left": [
+      30,
+      22
+     ],
+     "s": 167.4,
+     "why": "control"
+    },
+    "58": {
+     "winner": "Green",
+     "left": [
+      10,
+      0
+     ],
+     "s": 46.7,
+     "why": "elimination"
+    },
+    "59": {
+     "winner": "Green",
+     "left": [
+      11,
+      0
+     ],
+     "s": 100.3,
+     "why": "elimination"
+    },
+    "60": {
+     "winner": "Green",
+     "left": [
+      19,
+      0
+     ],
+     "s": 75.8,
+     "why": "elimination"
+    },
+    "61": {
+     "winner": "Green",
+     "left": [
+      11,
+      0
+     ],
+     "s": 52.8,
+     "why": "elimination"
+    },
+    "62": {
+     "winner": "Green",
+     "left": [
+      11,
+      10
+     ],
+     "s": 160.5,
+     "why": "control"
+    },
+    "63": {
+     "winner": "Rust",
+     "left": [
+      25,
+      33
+     ],
+     "s": 105.6,
+     "why": "control"
+    },
+    "64": {
+     "winner": "Green",
+     "left": [
+      10,
+      0
+     ],
+     "s": 50.1,
+     "why": "elimination"
+    }
+   }
+  }
+ }
+}

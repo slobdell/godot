@@ -1,0 +1,317 @@
+{
+ "what": "make perf-scene on the lead's laptop (Intel UHD 620, gl_compatibility), 30 Hz, merged round-5 build",
+ "measured": "2026-09-17",
+ "note": "the laptop was running this agent's own jobs; render measured 12-15 vehicles for a locked 30 under five agents",
+ "runs": {
+  "720p": [
+   {
+    "vehicles": 60,
+    "avg_ms": 100.6,
+    "p95_ms": 117.17,
+    "gpu_ms": 12.94,
+    "tick_script_ms": 37.75,
+    "ticks_per_frame": 3.26,
+    "draw_calls": 676
+   },
+   {
+    "vehicles": 57,
+    "avg_ms": 101.14,
+    "p95_ms": 118.17,
+    "gpu_ms": 11.55,
+    "tick_script_ms": 34.62,
+    "ticks_per_frame": 3.57,
+    "draw_calls": 669
+   },
+   {
+    "vehicles": 53,
+    "avg_ms": 99.57,
+    "p95_ms": 116.0,
+    "gpu_ms": 10.68,
+    "tick_script_ms": 40.93,
+    "ticks_per_frame": 3.55,
+    "draw_calls": 707
+   },
+   {
+    "vehicles": 49,
+    "avg_ms": 100.09,
+    "p95_ms": 111.04,
+    "gpu_ms": 9.27,
+    "tick_script_ms": 31.77,
+    "ticks_per_frame": 3.55,
+    "draw_calls": 650
+   },
+   {
+    "vehicles": 46,
+    "avg_ms": 82.27,
+    "p95_ms": 106.21,
+    "gpu_ms": 10.06,
+    "tick_script_ms": 28.0,
+    "ticks_per_frame": 2.92,
+    "draw_calls": 644
+   },
+   {
+    "vehicles": 40,
+    "avg_ms": 37.68,
+    "p95_ms": 67.22,
+    "gpu_ms": 9.79,
+    "tick_script_ms": 24.24,
+    "ticks_per_frame": 1.32,
+    "draw_calls": 632
+   },
+   {
+    "vehicles": 38,
+    "avg_ms": 38.62,
+    "p95_ms": 77.94,
+    "gpu_ms": 9.95,
+    "tick_script_ms": 24.16,
+    "ticks_per_frame": 1.38,
+    "draw_calls": 628
+   },
+   {
+    "vehicles": 33,
+    "avg_ms": 26.55,
+    "p95_ms": 47.15,
+    "gpu_ms": 9.67,
+    "tick_script_ms": 21.93,
+    "ticks_per_frame": 0.94,
+    "draw_calls": 577
+   },
+   {
+    "vehicles": 29,
+    "avg_ms": 21.5,
+    "p95_ms": 31.39,
+    "gpu_ms": 9.58,
+    "tick_script_ms": 18.67,
+    "ticks_per_frame": 0.76,
+    "draw_calls": 542
+   },
+   {
+    "vehicles": 27,
+    "avg_ms": 18.81,
+    "p95_ms": 30.75,
+    "gpu_ms": 6.72,
+    "tick_script_ms": 17.56,
+    "ticks_per_frame": 0.68,
+    "draw_calls": 499
+   },
+   {
+    "vehicles": 25,
+    "avg_ms": 19.33,
+    "p95_ms": 30.42,
+    "gpu_ms": 9.54,
+    "tick_script_ms": 16.51,
+    "ticks_per_frame": 0.68,
+    "draw_calls": 509
+   },
+   {
+    "vehicles": 22,
+    "avg_ms": 14.94,
+    "p95_ms": 23.16,
+    "gpu_ms": 9.29,
+    "tick_script_ms": 15.5,
+    "ticks_per_frame": 0.53,
+    "draw_calls": 206
+   },
+   {
+    "vehicles": 21,
+    "avg_ms": 15.88,
+    "p95_ms": 25.88,
+    "gpu_ms": 9.12,
+    "tick_script_ms": 14.43,
+    "ticks_per_frame": 0.56,
+    "draw_calls": 475
+   },
+   {
+    "vehicles": 19,
+    "avg_ms": 15.4,
+    "p95_ms": 24.61,
+    "gpu_ms": 9.08,
+    "tick_script_ms": 13.28,
+    "ticks_per_frame": 0.55,
+    "draw_calls": 462
+   },
+   {
+    "vehicles": 16,
+    "avg_ms": 14.8,
+    "p95_ms": 23.68,
+    "gpu_ms": 9.07,
+    "tick_script_ms": 12.94,
+    "ticks_per_frame": 0.53,
+    "draw_calls": 403
+   },
+   {
+    "vehicles": 16,
+    "avg_ms": 10.89,
+    "p95_ms": 19.08,
+    "gpu_ms": 6.93,
+    "tick_script_ms": 9.85,
+    "ticks_per_frame": 0.39,
+    "draw_calls": 384
+   },
+   {
+    "vehicles": 15,
+    "avg_ms": 12.46,
+    "p95_ms": 19.06,
+    "gpu_ms": 8.48,
+    "tick_script_ms": 10.3,
+    "ticks_per_frame": 0.44,
+    "draw_calls": 384
+   }
+  ],
+  "1080p": [
+   {
+    "vehicles": 65,
+    "avg_ms": 100.41,
+    "p95_ms": 118.46,
+    "gpu_ms": 15.91,
+    "tick_script_ms": 34.72,
+    "ticks_per_frame": 3.41,
+    "draw_calls": 315
+   },
+   {
+    "vehicles": 62,
+    "avg_ms": 99.04,
+    "p95_ms": 119.63,
+    "gpu_ms": 15.91,
+    "tick_script_ms": 32.32,
+    "ticks_per_frame": 3.5,
+    "draw_calls": 284
+   },
+   {
+    "vehicles": 55,
+    "avg_ms": 100.54,
+    "p95_ms": 117.21,
+    "gpu_ms": 16.32,
+    "tick_script_ms": 32.57,
+    "ticks_per_frame": 3.55,
+    "draw_calls": 479
+   },
+   {
+    "vehicles": 54,
+    "avg_ms": 96.58,
+    "p95_ms": 113.35,
+    "gpu_ms": 13.62,
+    "tick_script_ms": 29.47,
+    "ticks_per_frame": 3.35,
+    "draw_calls": 425
+   },
+   {
+    "vehicles": 48,
+    "avg_ms": 84.94,
+    "p95_ms": 105.35,
+    "gpu_ms": 16.74,
+    "tick_script_ms": 28.89,
+    "ticks_per_frame": 2.92,
+    "draw_calls": 359
+   },
+   {
+    "vehicles": 45,
+    "avg_ms": 57.24,
+    "p95_ms": 74.33,
+    "gpu_ms": 24.01,
+    "tick_script_ms": 28.09,
+    "ticks_per_frame": 2.03,
+    "draw_calls": 312
+   },
+   {
+    "vehicles": 41,
+    "avg_ms": 55.0,
+    "p95_ms": 75.51,
+    "gpu_ms": 16.65,
+    "tick_script_ms": 27.3,
+    "ticks_per_frame": 1.97,
+    "draw_calls": 429
+   },
+   {
+    "vehicles": 35,
+    "avg_ms": 37.55,
+    "p95_ms": 55.18,
+    "gpu_ms": 16.72,
+    "tick_script_ms": 26.16,
+    "ticks_per_frame": 1.32,
+    "draw_calls": 337
+   },
+   {
+    "vehicles": 33,
+    "avg_ms": 37.8,
+    "p95_ms": 56.1,
+    "gpu_ms": 16.39,
+    "tick_script_ms": 25.24,
+    "ticks_per_frame": 1.34,
+    "draw_calls": 321
+   },
+   {
+    "vehicles": 29,
+    "avg_ms": 33.33,
+    "p95_ms": 33.43,
+    "gpu_ms": 11.94,
+    "tick_script_ms": 17.86,
+    "ticks_per_frame": 1.17,
+    "draw_calls": 244
+   },
+   {
+    "vehicles": 27,
+    "avg_ms": 33.46,
+    "p95_ms": 43.87,
+    "gpu_ms": 15.97,
+    "tick_script_ms": 20.39,
+    "ticks_per_frame": 1.21,
+    "draw_calls": 330
+   },
+   {
+    "vehicles": 26,
+    "avg_ms": 32.88,
+    "p95_ms": 33.48,
+    "gpu_ms": 15.49,
+    "tick_script_ms": 17.6,
+    "ticks_per_frame": 1.15,
+    "draw_calls": 288
+   },
+   {
+    "vehicles": 24,
+    "avg_ms": 34.2,
+    "p95_ms": 37.2,
+    "gpu_ms": 15.96,
+    "tick_script_ms": 15.82,
+    "ticks_per_frame": 1.21,
+    "draw_calls": 319
+   },
+   {
+    "vehicles": 22,
+    "avg_ms": 33.33,
+    "p95_ms": 33.51,
+    "gpu_ms": 15.84,
+    "tick_script_ms": 10.92,
+    "ticks_per_frame": 1.19,
+    "draw_calls": 255
+   },
+   {
+    "vehicles": 20,
+    "avg_ms": 33.33,
+    "p95_ms": 33.51,
+    "gpu_ms": 15.38,
+    "tick_script_ms": 8.62,
+    "ticks_per_frame": 1.17,
+    "draw_calls": 312
+   },
+   {
+    "vehicles": 19,
+    "avg_ms": 33.33,
+    "p95_ms": 33.47,
+    "gpu_ms": 10.97,
+    "tick_script_ms": 7.89,
+    "ticks_per_frame": 1.17,
+    "draw_calls": 336
+   },
+   {
+    "vehicles": 18,
+    "avg_ms": 20.22,
+    "p95_ms": 33.4,
+    "gpu_ms": 14.42,
+    "tick_script_ms": 8.0,
+    "ticks_per_frame": 1.11,
+    "draw_calls": 282
+   }
+  ]
+ }
+}
