@@ -172,6 +172,34 @@ separately (combat's booth clock was the first). Both were correct on their own 
 the one we already have, seen from the other side: *a branch that adds a test must not be merged at a commit where that
 test fails.*
 
+### Reopened again 2026-09-17 (evening): "my orders don't stick"
+
+> *"I select squad 1, having them go somewhere, select squad 2, move them, and I do that for all squads. And in just
+> that simple action, the units do not re-arrange as intended."* … *"it's as though their behavior is overridden by a
+> higher priority … these blue dots … they just keep repeating or re-orienting … and the frame rate noticeably drops
+> because there's so many repeating blue dots beeping."*
+
+**The reproduction is a target:** `make squad-orders-test` (`game/control/squad_orders_playtest.gd`) plays that exact
+sequence through real input — press 1, right-click, press 2, right-click, … — then tables **per unit: where it was sent,
+where it is 6 s later, where it is 26 s later**, what its current order is, and everything `Orders` accepted while
+nobody touched the controls. Run it on a machine that draws frames, not builder0.
+
+| What the table showed | Owner | Fixed by |
+|---|---|---|
+| **Right-clicking his own vehicles ordered a FOLLOW**, not a move. With an army packed on the start line, a large share of "go there" became "chase that one" — which reads exactly like units ignoring him. game_design.md is explicit: right-click ground = move, F + click = follow. | control | the follow-on-right-click path is gone; `test_control_commands`, `test_control_selection` and a live `shell-playtest` check pin it |
+| **~200 commands accepted and ~35 order changes a second across 21 units** while nobody touched anything, verbs flapping between move / hold / attack_move, all `source: ""`. Render's OrderFeedback draws a marker and plays a cue per new order id: the "blue dots … repeating … beeping" and a real frame cost. | ai (the re-issue) | ai tags `source: "element"` and only re-issues a changed intention; control made K1 idempotent and limited feedback to player-sourced orders |
+| **4 of 21 units "arrived then left", 4 "never arrived"**, their order at that point being attack or attack_move. | ai | ai: no element order ever overrides a player-sourced one; after a player's order a unit is leashed to 18 m of where he left it |
+
+**Control's three changes.** `Orders.issue` is idempotent — an order identical to the one in progress (same verb and
+target, destination inside `ARRIVE_RADIUS`) no longer restarts it. `Orders.issued` is a new signal: the instrument that
+counted the thrash, deliberately counting *attempts*, so a future thrash is still visible. Order feedback confirms only
+`source: "player"` orders — a marker and a cue answer *his* click; an element re-slotting its members is not something
+he asked for. An element task still gets control's own acknowledgement ring and the HUD toast, so every click is
+confirmed exactly once. **Measured: idle confirmation cues 35/s → 0, with his own clicks still cueing.**
+
+**Re-run `make squad-orders-test` once ai's fixes are on main** and send them any rows that still say "arrived then
+left" or "never arrived".
+
 ### Plan (backlog in order)
 
 1. **X1** play it through real input (`make shell-playtest`: title → SKIRMISH → faction menu → planning → two minutes
