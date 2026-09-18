@@ -40,7 +40,7 @@ static func install(p_match: Match, p_team: int, p_elements: Elements, every_sec
 	bridge.game_match = p_match
 	bridge.team = p_team
 	bridge.elements = p_elements
-	bridge.every_ticks = maxi(1, roundi(every_seconds * 60.0))
+	bridge.every_ticks = maxi(1, roundi(every_seconds * SimClock.TICK_RATE))
 	bridge.log_path = p_log_path
 	p_match.finished.connect(bridge._on_finished)
 	p_match.add_child(bridge)
