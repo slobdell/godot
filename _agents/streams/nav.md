@@ -73,6 +73,46 @@ The honest summary: **the path planner is fine and everything around it is thin.
 **The existing regression harness you inherit:** `tests/test_navigation.gd`, `test_tank_drive.gd`,
 `test_tank_motion.gd`, and the player-order measurement in the check (`MEASURE player_orders worst gap …`).
 
+## CP2 has already landed, and it came with your baseline (arena, 2026-09-18)
+
+arena delivered the maze on day one and **measured the problem before you got here**. Relayed verbatim, because the
+numbers are the point:
+
+> `arenas/maze.json` — four container bands (z = 74, 52, 30, 10) plus their mirrors, so a gap at +x mirrors to -x and
+> crossing is a serpentine: 424 m of navmesh route against a 204 m crow flight. Tight gate is 7 m physical =
+> **3 m of drivable corridor** after the 2 m nav agent radius, narrower than two hulls, and it sits on the shorter of
+> the two routes so a horde picks it. One dead end. Not in `Arena.ROTATION`; `--arena=maze` only.
+>
+> `make nav-maze` (`NAV_UNITS=30 ARENA=maze NAV_TIME=180 SEED=1 NAV_BOTH=1`) → `build/nav-maze.json`: arrivals,
+> t50/t90/t100, unit-seconds under 0.5 m/s, stuck events, units left off the navmesh, and the five that got least far.
+> It measures only positions over time, so nav can rewrite path planning/avoidance/the control law and the numbers
+> keep meaning the same thing.
+>
+> `NAV_BOTH=1` splits the force between both bases so the two streams meet head-on in the shared corridor — the
+> peer-to-peer right-of-way case the lead described. One-way traffic never exercises it.
+
+**The baseline. Laptop, `38c15f77`, one-way, 180 s, seed 1, hold-fire (driving only):**
+
+| run | arrived | t50 | t90 | units that ever stalled 3 s | route actually travelled |
+|---|---|---|---|---|---|
+| maze, 30 units | 15/30 | 60 s | never | 30 of 30 | 47% |
+| maze, 60 units | 36/60 | 56 s | never | 60 of 60 | 49% |
+| **yard, 60 units (control)** | 33/60 | 31 s | never | 27 of 60 | 91% |
+
+arena's own reading, and the orchestrator agrees it is the important line: **this is not a maze-specific cruelty.**
+On a *shipping* arena, with no enemy and nothing to do but drive, **45% of a 60-vehicle force never reaches its
+destination in three minutes and 27 of them stall outright.** That is the lead's *"a bunch of cars just get stuck or
+blocked by other cars"*, reproduced headlessly without a shot fired. The maze sharpens it; `yard` already shows it.
+
+**arena's caveats, which travel with the number:** single seed, laptop (~2.75× slower than builder0, though nothing
+here is frame-rate sensitive — it is `--fixed-fps 30`), one-way traffic, all tanks, hold-fire. **It is a floor to
+improve on, not a balance claim.** The head-on (`NAV_BOTH=1`) pair was running when this was written; ask arena or the
+orchestrator for it.
+
+This changes your X2: **arena has already built most of your instrument.** Do not build a second one. Read
+`make nav-maze`, add what it lacks (your own `make nav-jam` gap case if it is genuinely different), and spend the time
+you saved on X3 and X4 instead.
+
 ## Backlog (in order)
 
 **X1 — the N1 Movement seam, and a truthful stuck report (CP1; land this first, before any cleverness).**

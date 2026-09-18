@@ -337,3 +337,12 @@ The kickoff prompt is one line; this section is the rest.
     round splits work by discipline, **name the concept each stream owns, not just the paths** — and when an item's
     first step is "collapse these into one", say so in the brief, because a worker will otherwise extend whichever
     copy it finds first.
+34. **A measurement's own bugs reach the next stream as facts about the game.** Round 6, day one: arena built nav's
+    acceptance harness and caught two defects in it before relaying anything. (a) `off_navmesh` was computed as a 3D
+    distance, so a hull centre sitting 0.7 m *above* the mesh was charged to every unit — it reported **17 of 60 units
+    "off the map"** where the flat x/z distance reports **0**, and that was one relay away from being filed as a
+    navigation bug for another stream to hunt. (b) The target read a bare `UNITS`, and `mk/ai.mk` sets `UNITS ?= 60`
+    globally, so a run whose help text *and* output both said "30 units" was silently running 60 — cf. trip-up 67,
+    where GNU make's own `WINDOW = 2` did the same thing. The general rules: **a new instrument gets checked against a
+    case whose answer you already know before its first number leaves the stream**, and **never give a shared
+    Makefile a bare, guessable variable name** — prefix it (`NAV_UNITS`, not `UNITS`) and print what it resolved to.
