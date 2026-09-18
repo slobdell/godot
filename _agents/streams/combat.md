@@ -129,29 +129,41 @@ _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
 ### Read this first
 
-**This branch is red on purpose, and it must not be made green by weakening the tests that are telling the truth.**
-`make test` on the tree merged with all three checkpoints (`3c03299c`: nav CP1, squad CP3, arena CP2):
-**1087 passed, 2 failed** — down from 3, since the player-hold guarantee is now enforced as a rule on `main`. Two of the three failures are real behaviour findings that belong
-to squad, and one of them (`scenario_suppression::test_holding_a_crew_down…`) sits inside the `check` subset. So
-**combat cannot go green alone, by construction.** The right response is to land squad's precedence fixes, not to
-move a threshold.
+**CP4 is done, measured, and merged with all three checkpoints.** On `c765275f` (nav CP1 + squad CP3 + arena CP2 +
+squad's precedence fixes): `make test` is **1106 passed, 2 failed**, and **neither failure is combat's** — both are
+stale thresholds in squad's scenario files whose underlying behaviour is now correct (see *What the last two failures
+actually say*). **Do not make them pass by weakening anything**; the geometry needs deriving from the band, the way
+this stream re-derived its own tests when the bands moved.
 
-**CP4 is code-complete and must not merge alone.** N5 is a rule about *when a gun may speak*; `TankBrain` decides
-*where to stand* from a weapon's **maximum** range, and two independent guarantees were resting on that. Landing N5
-by itself trades the lead's last complaint for his first one. The orchestrator has recorded CP4 as merging **paired**
-with squad's fix.
+**What N5 bought, measured with the old world in the same run** (builder0, n = 2 per row on a Condemned mirror; the
+60-match counterbalanced series supersedes these — see [../balance.md](../balance.md)):
 
-**The measurement has deliberately not been taken.** On a build where units halt at 61 m and stare, a series measures
-a game nobody plays (lesson 23). The runbook is below; the numbers go in [../balance.md](../balance.md), whose
-*Round 6 N5* section is marked **pending** so nobody quotes a design decision as a result.
+| | old world | **shipped bands** |
+|---|---|---|
+| **kill distance** | 47 m | **34 m** (−28%) |
+| off-axis kills | 32% | **40%** |
+| fire rate | 7.6 /unit/min | **9.7 /unit/min** |
+
+**The headline is that the fight is decided 28% closer, with more flanking — and it got LOUDER, not quieter.** That
+inverts the assumption two rounds of briefs were written on. The lead's *"units see each other and then everyone just
+starts firing"* was never about the volume of fire; it was about fire from a distance where nothing else was
+possible. Units now close to where their fire counts instead of trading gambles at maximum range, so more rounds are
+worth firing. **0.55 of reach is the overshoot** — fire falls *below* the old world, matches stretch 40%, and neither
+side can finish one.
+
+**Read `kill_distance`, never `engaged_distance`.** The latter is 72–77 m in *every* configuration including the old
+world, because it is dominated by the Lancer's 86 m band and measures the outlier rather than the line.
+
+**Still owed:** the 60-match series (running), then the sim baseline recorded twice — **in that order**, because
+recording it before the bands are final means recording it twice.
 
 | Commit | What |
 |---|---|
 | `14a1a29b` | **N5, the engagement envelope** (CP4) — sight, acquisition, fire discipline |
-| `5478fa61` | The brain-range fix — **squad's file, squad's call**, committed only so CP4 is testable end to end |
 | `a493d4b5` `f1c1a903` | **X6** — a crossing contact is harder to lay on, plus a `--no-crossing` control |
-| `9f798368` `fd5ac1af` | **Infra** — the `VARIANTS`/`UNITS` makefile collisions; shots-per-unit-per-minute |
-| `7f996fcf` `0ec30c10` `2411cd5e` `e1fdc070` | This brief: findings, risks recorded before the fact, and the runbook |
+| `82128d85` `fd5ac1af` | The metrics that made the above sayable: direct-fire split, shots per unit per minute |
+| `9f798368` | **Infra** — the `VARIANTS`/`UNITS` make-variable collisions |
+| `5478fa61` | The brain-range fix — superseded by squad's `fire_band`, which found a third call site I missed |
 
 ### The plan (ordered)
 
