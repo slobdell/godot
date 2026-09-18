@@ -24,6 +24,7 @@ func _tank(unit_id := "tank", team := 0) -> Tank:
 ## Every test runs on a fresh case but the switches it moves are STATIC: put them back or the next file inherits them.
 func teardown() -> void:
 	Engagement.acquisition_enabled = true
+	Engagement.crossing_enabled = true
 	Units.tuning.clear()
 	Weapons.tuning.clear()
 	super.teardown()
@@ -376,3 +377,18 @@ func test_the_crossing_penalty_is_capped_so_a_contact_is_never_unlayable() -> vo
 	assert_near(Engagement.acquire_seconds(gunner, blurring, 6.0),
 			Engagement.acquire_seconds(gunner, still, 6.0) * worst, 0.0001,
 			"the penalty saturates rather than running away")
+
+
+func test_the_crossing_penalty_has_its_own_control() -> void:
+	# --no-acquisition would switch off gates 1 and 2 AND X6 together. The series needs to tell "a contact takes time
+	# to resolve" from "a contact moving across takes longer", because stacking discipline on the crossing penalty is
+	# the combination that could make fights too quiet.
+	var gunner := _tank("lancer")
+	gunner.global_position = Vector3.ZERO
+	var crossing := _moving("scout", Vector3(0.0, 0.0, 60.0), Vector3(14.0, 0.0, 0.0))
+	var with_it := Engagement.acquire_seconds(gunner, crossing, 60.0)
+	Engagement.crossing_enabled = false
+	var without := Engagement.acquire_seconds(gunner, crossing, 60.0)
+	assert_true(with_it > without, "the control actually removes the penalty (%.2f s vs %.2f s)" % [with_it, without])
+	assert_near(without, Engagement.acquire_seconds(gunner, null, 60.0), 0.0001,
+			"and leaves the rest of acquisition exactly as it was")

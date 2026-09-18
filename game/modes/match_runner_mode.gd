@@ -16,8 +16,8 @@ extends GameMode
 ## ms per tick = 1000 / (60 x speedup). `make scale-bench` runs the ladder.
 ## --sim-profile (round 5, CP1) prints SIM_PROFILE <json> before the result: ms per physics tick, whole and by section
 ## (SimProfile; `make sim-profile`).
-## --no-acquisition (round 6, N5) drops the engagement envelope's sight and acquisition gates: a measurement control,
-## never normal play (see game/combat/engagement.gd).
+## --no-acquisition (round 6, N5) drops the engagement envelope's sight and acquisition gates, and --no-crossing drops
+## X6's crossing penalty alone: measurement controls, never normal play (see game/combat/engagement.gd).
 ## --combat-log prints COMBAT_EVENT <json> lines: every K2 weapon_fired / projectile_impact, every destroyed unit, and
 ## every living unit's pose each COMBAT_LOG_POSE_TICKS (tools/combat_duel.py turns them into a readable timeline).
 
@@ -42,6 +42,7 @@ func start() -> void:
 	# its own control and needs no flag: `--tune=cannon.effective_range=70,...` puts a weapon's band back at its
 	# maximum range, which is exactly the world before this contract.
 	Engagement.acquisition_enabled = not flags.has("no-acquisition")
+	Engagement.crossing_enabled = not flags.has("no-crossing")
 	Engagement.reset_counters()
 	# Experiments: --tune=tank.max_shield=0,cannon.ammo=60 overrides catalog stats for this run.
 	var tune_error := Units.apply_tuning(flags.text("tune"))

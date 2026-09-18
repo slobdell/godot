@@ -74,6 +74,13 @@ const RETURN_FIRE_SUPPRESSION := 0.25
 ## `effective_range` up to its `range`, which is exactly the world before this contract.
 static var acquisition_enabled := true
 
+## Measurement switch (`--no-crossing`, match runner only): drops X6's crossing penalty while leaving the rest of
+## acquisition alone. `--no-acquisition` would switch off gates 1 and 2 *and* X6 together, which cannot tell "a
+## contact takes time to resolve" from "a contact that is moving across takes longer" — and those two are worth
+## separating, because stacking N5's discipline on X6's crossing penalty is the one combination that could make
+## fights too QUIET rather than too loud. Never set in normal play.
+static var crossing_enabled := true
+
 ## Measurement only: how many ticks a gun with a target in front of it was held by each gate. Never read by decisions.
 static var held_by_acquisition := 0
 static var held_by_discipline := 0
@@ -118,7 +125,7 @@ static func acquire_seconds(tank: Tank, target: Tank, distance: float) -> float:
 	var reach := clampf(distance / sight, 0.0, 1.0)
 	var seconds := lerpf(ACQUIRE_NEAR_SECONDS, ACQUIRE_FAR_SECONDS, reach)
 	seconds *= 1.0 + SUPPRESSION_ACQUIRE_PENALTY * clampf(tank.suppression, 0.0, 1.0)
-	if target != null:
+	if target != null and crossing_enabled:
 		var crossing := crossing_rate(tank, target, distance) / CROSSING_REFERENCE_RATE
 		seconds *= 1.0 + CROSSING_ACQUIRE_PENALTY * clampf(crossing, 0.0, CROSSING_ACQUIRE_MAX)
 	if Units.role_of(tank.unit_id) == "scout":
