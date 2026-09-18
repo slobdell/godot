@@ -355,3 +355,6 @@ The kickoff prompt is one line; this section is the rest.
     exception, go and count who takes it in the default configuration**, exactly as you would go and check who passes
     a new flag. The general form of lessons 23 and 35 together: a behaviour's reach is decided by the callers, not by
     the code you are looking at, so read the callers before believing either a feature or an exemption is rare.
+    **The instruction, in the stream's own sharpening of it: when you add an exception to a rule, grep for every
+    caller that would take it *before* you write the test that proves the rule works.** The passing test was written
+    first and told them nothing — it exercised the rule while the callers decided the outcome.

@@ -87,10 +87,15 @@ same text for all six:
    exposure/sightline numbers are *mostly* CP4-proof (eye-level rays against box footprints, no weapons involved),
    with one exception it flagged rather than buried: `exposure()` hard-codes a **110 m watcher range**, which is a
    weapon-range assumption wearing a sightline's clothes.
-2. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
+2. **The sim baseline WILL move with CP4, and combat owns the move.** It is not a perturbation: N5 changes when the
+   trigger is pulled, so a different battle happens from first contact onward. The order combat set, which the
+   orchestrator endorsed: **series → final bands → record the baseline twice on builder0 → one commit.** Until that
+   commit exists, **no stream re-runs a determinism-sensitive measurement**, or it will be comparing against a hash
+   that is about to be replaced.
+3. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
    five tests passing on the laptop; its `make remote T=check` is queued behind the other worktrees and arena will
    send the hash.
-3. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
+4. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
    so it starts with the target number rather than rediscovering it; squad has been told to take its two independent
    items first and explicitly *not* to build its own avoidance to fill the gap.
 
