@@ -75,6 +75,15 @@ Arena layouts and where props go (arena), gameplay (combat), brains (ai), UI and
 
 _Updated 2026-09-17 (evening)._
 
+**Picking render up fresh?** Nothing below needs a previous session's memory. In order: `references/fx_tricks.md` is
+the stream's reference — the M1 frame budget every stream designs to, the two facts to quote numbers against (the
+laptop is ~2.75× slower than builder0; brains are 85% of a tick), how `make perf-scene` measures and how to read its
+capacity numbers, the priced GPU cuts, and the catalog of effect → trick. `references/perf/README.md` says what each
+saved baseline was taken on and which ones are capped (capacity numbers are meaningless in those).
+`game/theme/fx/fx_multimesh.gd` carries the two interpolation switches and why FX meshes must never be interpolated;
+`tests/test_render_multimesh_interpolation.gd` enforces it. The measuring instrument itself is
+`game/theme/fx/bench/perf_scene.gd`.
+
 **Closed for round 5, merged at `265dbcfc`.** `make remote T=check` green on both merge points: **404152fe** (main merge
 with the 30 Hz simulation, contains the blob-shadow fix) 987 passed, 0 failed; **265dbcfc** (the feed's late-frame skip,
 the hitch log, the round-6 write-up) 988 passed, 0 failed.
@@ -115,7 +124,8 @@ one being that test, and `check` stops at `test`, so the smokes after it did not
 **Open for round 6, in order of what the lead is waiting on:**
 1. His own clean `perf-scene` run: nobody has measured his laptop in the state he plays in (ours: ~29 vehicles quiet,
    12–15 under load, locked 30 at 1080p).
-2. The catch-up-steps comparison above, if he wants it measured (render has the instrument, combat owns the setting).
+2. The catch-up-steps comparison — **"Round 6, for the lead: catch-up steps, or a clock that falls behind?" below** —
+   if he wants it measured (render has the instrument, combat owns the setting).
 3. The GPU lines are still unmet on paper (9–10 ms at 720p against 6.5; 15 at 1080p against 10), which only matters once
    the tick stops being the wall. The cuts left, priced: render scale 0.75 −2.8 ms, glow off −1.7 (he kept glow),
    venue off −1.35.
