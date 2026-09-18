@@ -19,9 +19,14 @@ _Last updated: 2026-09-18. **Round 5 is closed and merged; round 6 is planned an
   pick formations and run battle drills from real doctrine, the same library for you and the CPU; suppression that
   makes base-of-fire-and-maneuver real; four playable factions with their own rosters and doctrine; tank shells you
   can watch fly; a voiced announcer trio; layered sound and a music director; seven arenas.
-- **Builds run on builder0:** `make remote T=check`, about 7 minutes ([remote_builds.md](_agents/remote_builds.md)).
-  One remote run per worktree at a time. **Read the result from the wrapper's own `>> remote: make check exited <N>`
-  line and the runner's `N passed, M failed` — never a shell exit code through a pipe.**
+- **Builds run on builder0:** `make remote T=check`. **Budget 30–50 minutes during an active round, not the 7 minutes
+  the docs used to claim** — measured ~50 min for 1010 tests on `main` at `5c68a03e` with six streams live, because
+  builder0 runs two slots and four concurrent checks both queue *and* slow each other
+  ([remote_builds.md](_agents/remote_builds.md)). So: **iterate with a local `make check`, spend a remote slot only on
+  a merge candidate**, and ask the orchestrator to clear a window for a big measurement series. **Read the result from
+  the wrapper's own `>> remote: make check exited <N>` line and the runner's `N passed, M failed` — never a shell exit
+  code through a pipe, and never the `waiting for a heavy-run slot` line, which is printed on enqueue and never
+  retracted.**
 
 ## Round 6: six streams (planned 2026-09-18)
 
