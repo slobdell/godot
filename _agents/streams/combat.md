@@ -130,7 +130,7 @@ _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 ### Read this first
 
 **This branch is red on purpose, and it must not be made green by weakening the tests that are telling the truth.**
-`make test` on the laptop: **1034 passed, 3 failed**. Two of the three failures are real behaviour findings that belong
+`make test` on the merged tree (`82128d85`): **1068 passed, 3 failed**. Two of the three failures are real behaviour findings that belong
 to squad, and one of them (`scenario_suppression::test_holding_a_crew_down…`) sits inside the `check` subset. So
 **combat cannot go green alone, by construction.** The right response is to land squad's precedence fixes, not to
 move a threshold.
@@ -282,6 +282,37 @@ look fine until something unrelated moves.**
 has no move order must not *initiate* movement from a fight option. It may shoot, turn, and take cover under fire —
 it may not decide to flank. My branch cannot go green alone while this stands, which is a third independent reason
 CP4 merges paired rather than first.
+
+### The CP3 × CP4 collision: a support-by-fire line inside the near-ambush radius
+
+Found on the merged tree (`82128d85`, 1068 passed / 3 failed).
+`test_tactics_scenarios::test_support_by_fire_forms_a_firing_line_at_a_standoff_and_fires_from_it` fails with
+*"nobody advances onto the point (closest 31 m)"*, and its MEASURE line shows the real damage:
+
+```
+verb support_by_fire  closest_m 30.7  center_to_point_m 30.8  shots 19  orders_last_10s 128
+drills: support_by_fire, near_ambush, support_by_fire, near_ambush, ...   (every tick)
+```
+
+**Cause.** `ElementPlan._plan_support_by_fire` picks `standoff = max(min(member effective_range) * 0.8, 25)`. It is
+keyed on **`effective_range`**, which was `== range` for every weapon until this round. The standoff used to come from
+a 70 m cannon (**56 m**) and sat comfortably outside `near_ambush_m` (**38 m** default, **42 m** Condemned). Narrowed
+bands make it **28–36 m — inside the trigger.** So the element drives to its firing line, the line is inside
+near-ambush, `near_ambush` pre-empts `support_by_fire`, the plan re-selects, and the two drills take the element off
+each other forever. **Round 4's trip-up 17 reached by a new road.**
+
+**This is the third load-bearing coincidence of the round**, after the player-hold guarantee resting on the outrange
+branch and this standoff resting on `effective_range == range`. Nothing anywhere says *"an SBF standoff must be
+outside the near-ambush radius"*; it held for four rounds because 56 happened to exceed 42, two numbers chosen
+independently in different files by different streams. **When two independently-owned numbers must stay ordered, the
+code has to say so — nothing will tell you the day they cross.**
+
+**Squad's call, and the two options encode different doctrine:** key the standoff on `range` (back to ~56 m,
+consistent with SBF carrying `long_shot`, but my measurement says 56 m lands ~50% of shells against ~100% at 36 m);
+or state the invariant, `max(reach * 0.8, near_ambush_m + margin, 25)`, which is robust to any future band change. I
+would take the invariant *regardless* of which the doctrine answer is, because it is the part that stops this
+recurring. The trade underneath it is real and worth choosing on purpose: **support-by-fire now has to choose between
+effective fire and not triggering an assault drill.**
 
 ### X2, second finding: breaking contact just got much cheaper, which is round 5's problem drill
 
@@ -479,6 +510,7 @@ round by reading a "waiting for a slot" line as a queue when I had in fact been 
 |---|---|---|
 | `test_ai_player_holds::test_the_players_units_wait_for_orders…` | **squad** | Product constraint #4. A held unit picks ENGAGE and flanks; the rule was previously upheld by the outrange heuristic returning `stop` |
 | `scenario_suppression::test_holding_a_crew_down…` (**in `check`**) | **squad** | Pinned crew lands 10 of 11 vs a calm 11 of 11. Suppression's penalty is angular, so closer fights soften it — a threshold to re-derive, or evidence for raising `SUPPRESSION_SPREAD_FACTOR` (mine) once the series says |
+| `test_tactics_scenarios::test_support_by_fire_forms_a_firing_line…` (**in `check`**) | **squad** | CP3×CP4: the SBF standoff is keyed on `effective_range`, so narrowed bands put the firing line inside `near_ambush_m` and the two drills alternate every tick (see above) |
 | `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. **Dither (15.6–17.7/min against a bar of 12) is the blocking one** |
 
 Five further `make ai-scenarios` failures are **pre-existing on `a975e262`** and nothing to do with this work —
