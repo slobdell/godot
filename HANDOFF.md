@@ -159,6 +159,13 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **FIGHT → playable is 7.6 s → 1.4 s** (laptop, `make shell-playtest` gangs vs law on Boulevard: 7,563 ms at
+  `a975e262` against 1,398/1,406 ms on two runs of `8d9c59af`'s tree). feel's strong-reference fix did the shortening —
+  `make spawn-cost` went from ~63 ms per vehicle to **0.8 ms** after the first of each type — and control's loading
+  screen makes the remaining beat legible rather than shorter. **What is left is the arena build + navmesh bake, ~690 ms
+  of the 1.4 s**, which is synchronous on purpose for determinism (trip-up 57: async navigation iterations made the same
+  seed simulate differently). Not scheduled: it belongs to arena or nav, it is a ~0.7 s win, and it must not be bought
+  by making navigation async.
 - **Round-3 `matchup-search` numbers in `balance.md` may be unreliable and cannot be re-derived.** A make-namespace
   collision (`UNITS ?= 60` in `mk/ai.mk` reaching `mk/match.mk`) meant **every `matchup-search` run silently passed
   `--units 60` whatever the caller asked for**, and the tool never recorded the value it used
