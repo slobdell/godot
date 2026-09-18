@@ -16,7 +16,7 @@
         │    ├─ right-of-way   ask / give way, peer to peer (in movement.gd)
         │    ├─ Pid            station-keeping on a moving goal (game/ai/pid.gd, gains in control_gains.gd)
         │    └─ Steering       heading error → throttle, turn (tracks; wheels by pure pursuit)
-        └─ firing half                      combat         moves to game/ai/gunnery.gd after CP4 lands on main
+        └─ Gunnery (game/ai/gunnery.gd)     combat         when a gun may speak (N5); apply(cmd, seconds) after Movement
    Tank._drive → TankMotion (the plant) → move_and_slide
 ```
 
@@ -51,7 +51,8 @@ go to the first in that order — which is the same on every run of one build. N
 | `game/ai/movement.gd` | N1, and the per-unit mover: `_next_waypoint` (repath every 1 s or when the goal moves 1 m), `_around_fire` (step round a beaten zone), `_avoid` (ORCA), right-of-way (`_negotiate`, `ask`, `right_of_way`), `_keep_station` (PID), `unstick` (blind reverse), progress and phase. |
 | `game/ai/avoidance.gd` | ORCA (RVO2's linear programs, ported), the per-tick neighbour table (grid-hashed, one per tick for the whole match), hull radii. |
 | `game/ai/pid.gd`, `game/ai/control_gains.gd` | N6: the regulator and its gains as data (per-faction overrides are X8). |
-| `game/ai/order_controller.gd` | The composer: orders, reflexes, the controller stride, and (until the gunnery split) the firing half. Keeps `stalled_ticks`, `_wheel_radius()`, `FIRE_LOOKAHEAD` as forwarders for the brains and tests that read them. |
+| `game/ai/order_controller.gd` | The composer: orders, reflexes, the controller stride; one `Movement` and one `Gunnery` per controller. Forwards `stalled_ticks`, `_wheel_radius()`, `FIRE_LOOKAHEAD` (Movement) and `engaged_target`, `watch_point`, `spotter`, `engagement_lay`, `ticks_since_fire`, `lane_blocked_ticks`, `lane_blocker`, `hold_for_friends`, `_nearest_shootable()` (Gunnery) for the brains, bridge, HUD and tests that read them there. |
+| `game/ai/gunnery.gd` | **combat's**: the firing rules, split out of the controller at CP4. Reads the controller for `tank`, `tanks_root`, `weapon_order`, `move_order`; handed seconds, not ticks. combat's three wiring tests in `test_combat_envelope.gd` go red if its call is cut (checked at the split). |
 | `game/ai/pathing.gd` | `find_path`, `is_ready`. |
 | `game/ai/steering.gd` | The P controller for tracks and pure pursuit for wheels. |
 

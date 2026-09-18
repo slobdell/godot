@@ -263,7 +263,7 @@ and a stuck unit that reported success from 12 m away. That is what this stream 
 
 | Item | State |
 |---|---|
-| **X1 / CP1** Movement seam | **Merged to main** (`30e3250d` → `f03a795c`). Gunnery split waits for CP4 on main (agreed). `ORDER_STALL_ARRIVE` deletion waits for squad's precedence fixes, as its own measured commit (orchestrator's ruling). |
+| **X1 / CP1** Movement seam | **Merged to main** (`30e3250d` → `f03a795c`). **Gunnery split done** after CP4 (`game/ai/gunnery.gd`, combat's file, combat's seam); cutting its envelope call turns exactly combat's three wiring tests red (22 rule tests stay green). `ORDER_STALL_ARRIVE` deletion waits for squad's precedence fixes, as its own measured commit (orchestrator's ruling). |
 | **X2** measure the jam | `make nav-suite` (arena's probe × configs, parallel on builder0) + `make nav-where` (who didn't arrive, where, and what their Movement says). Baseline saved: `references/nav/nav_suite_30e3250d_baseline.json`. |
 | **X3** ORCA | Done: `game/ai/avoidance.gd`. |
 | **X4** right-of-way | Done: ask / give way in `movement.gd`, visible as `phase: yielding`. |
