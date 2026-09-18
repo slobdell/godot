@@ -16,10 +16,14 @@ extends Node
 ## in magenta over a darkened frame. Then `CROWD_LOOK_DONE` and quit.
 ##
 ## Flags: --crowd-look=<abs dir>  --crowd-look-warmup=S (6)  --crowd-look-zooms=0.1,0.3 (ZOOMS)
+##        --crowd-look-only=behind-p35,ahead-p22 (only poses whose name contains one of these)
 
 const ZOOMS := [0.08, 0.2, 0.35, 0.5, 0.7, 0.9]
-## Control X3 is taking pitch off the zoom slider (roughly 22-50 degrees): [pitch degrees, distance m] poses for that camera.
-const LOW_POSES := [[22.0, 40.0], [22.0, 90.0], [35.0, 60.0], [35.0, 120.0], [50.0, 80.0], [50.0, 160.0]]
+## Control X3 took pitch off the zoom slider. The lead picked 25 degrees, 50 m, FOV 60 (2026-09-18) and keeps a 22-50
+## degree tilt; 15 is here because he picked the floor of the range he was offered. [pitch degrees, distance m].
+const LOW_POSES := [[15.0, 50.0], [25.0, 50.0], [25.0, 90.0], [35.0, 60.0], [35.0, 120.0], [50.0, 80.0], [50.0, 160.0]]
+## The low poses' field of view (the lead's pick); the zoom-slider poses keep RtsCamera's own.
+const LOW_FOV_DEG := 60.0
 ## A pixel is the crowd's when its luminance moves by more than this with the crowd hidden.
 const CHANGED := 0.04
 const PAUSE_FRAMES := 3
@@ -27,6 +31,7 @@ const PAUSE_FRAMES := 3
 var out_dir := ""
 var warmup := 6.0
 var zooms: Array = ZOOMS.duplicate()
+var only: Array = []
 var _camera := Camera3D.new()
 
 
@@ -41,6 +46,7 @@ func _ready() -> void:
 	warmup = float(flags.text("crowd-look-warmup", str(warmup)))
 	if flags.text("crowd-look-zooms") != "":
 		zooms = Array(flags.text("crowd-look-zooms").split(",", false)).map(func(z: String) -> float: return float(z))
+	only = Array(flags.text("crowd-look-only").split(",", false))
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	_camera.name = "CrowdLookCamera"
 	_camera.fov = RtsCamera.FOV_DEG
@@ -64,11 +70,16 @@ func _run() -> void:
 	var rig := get_tree().current_scene.get_node_or_null("RtsCamera") if get_tree().current_scene != null else null
 	var focus: Vector3 = rig.get("focus") if rig != null else Vector3.ZERO
 	var heading: float = rig.get("yaw") if rig != null else 0.0
+	if rig != null:
+		rig.process_mode = Node.PROCESS_MODE_DISABLED  # the rig runs while paused and would move the player's shots
 	_camera.current = true
 	for turn in [0.0, PI]:
 		for level: float in zooms:
 			var pose := "%s-z%02d" % ["ahead" if turn == 0.0 else "behind", int(round(level * 100.0))]
+			if not _wanted(pose):
+				continue
 			_camera.global_transform = RtsCamera.pose_for(focus, heading + turn, level)
+			_camera.fov = RtsCamera.FOV_DEG
 			await _frames(PAUSE_FRAMES)
 			if crowd != null:
 				print("CROWD_LOOK " + JSON.stringify(await _measure(pose, _camera, crowd, environment)))
@@ -76,12 +87,19 @@ func _run() -> void:
 				_save(_grab(), pose)
 		for low: Array in LOW_POSES:
 			var pose := "%s-p%02d-d%03d" % ["ahead" if turn == 0.0 else "behind", int(low[0]), int(low[1])]
+			if not _wanted(pose):
+				continue
 			_camera.global_transform = CrowdLook.pitched_pose(focus, heading + turn, deg_to_rad(low[0]), low[1])
+			_camera.fov = LOW_FOV_DEG
 			await _frames(PAUSE_FRAMES)
 			if crowd != null:
 				print("CROWD_LOOK " + JSON.stringify(await _measure(pose, _camera, crowd, environment)))
 	print("CROWD_LOOK_DONE")
 	get_tree().quit()
+
+
+func _wanted(pose: String) -> bool:
+	return only.is_empty() or only.any(func(part: String) -> bool: return pose.contains(part))
 
 
 ## RtsCamera.pose_for with pitch and distance as separate axes (control X3's direction).
@@ -114,7 +132,7 @@ func _measure(pose: String, camera: Camera3D, crowd: CrowdSystem, environment: E
 		environment.fog_enabled = true
 	crowd.multimesh_instance.visible = true
 	tree.paused = was_paused
-	var result := CrowdLook.compare(with_crowd, without, true)
+	var result := CrowdLook.compare(with_crowd, without, true, again)
 	_save(with_crowd, pose)
 	(result["marked"] as Image).save_png(out_dir.path_join(pose + "-crowd.png"))
 	var sizes := _figure_sizes(camera, crowd)
@@ -125,14 +143,20 @@ func _measure(pose: String, camera: Camera3D, crowd: CrowdSystem, environment: E
 
 
 ## Pixels whose luminance differs by more than CHANGED, their mean change, and (if `mark`) the frame darkened with
-## those pixels in magenta. Pure, for tests.
-static func compare(a: Image, b: Image, mark := false) -> Dictionary:
+## those pixels in magenta. With `noise` (a second shot of `a`), pixels that also change between `a` and `noise` are
+## animation, not the crowd, and are left out. Pure, for tests.
+static func compare(a: Image, b: Image, mark := false, noise: Image = null) -> Dictionary:
 	var first := a.duplicate() as Image
 	var second := b.duplicate() as Image
 	first.convert(Image.FORMAT_RGB8)
 	second.convert(Image.FORMAT_RGB8)
 	var da := first.get_data()
 	var db := second.get_data()
+	var dn := PackedByteArray()
+	if noise != null:
+		var third := noise.duplicate() as Image
+		third.convert(Image.FORMAT_RGB8)
+		dn = third.get_data()
 	var out := PackedByteArray()
 	if mark:
 		out.resize(da.size())
@@ -143,6 +167,9 @@ static func compare(a: Image, b: Image, mark := false) -> Dictionary:
 		var la := (0.2126 * da[i] + 0.7152 * da[i + 1] + 0.0722 * da[i + 2]) / 255.0
 		var lb := (0.2126 * db[i] + 0.7152 * db[i + 1] + 0.0722 * db[i + 2]) / 255.0
 		var hit := absf(la - lb) > CHANGED
+		if hit and i + 2 < dn.size():
+			var ln := (0.2126 * dn[i] + 0.7152 * dn[i + 1] + 0.0722 * dn[i + 2]) / 255.0
+			hit = absf(la - ln) <= CHANGED
 		if hit:
 			changed += 1
 			total += absf(la - lb)

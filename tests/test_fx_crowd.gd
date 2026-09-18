@@ -12,7 +12,7 @@ func _crowd(rows: Array) -> CrowdSystem:
 
 func test_the_crowd_fills_its_rows_as_one_multimesh() -> void:
 	var crowd := _crowd([[Vector3(-10, 3, 130), Vector3(10, 3, 130)], [Vector3(-10, 5, 134), Vector3(10, 5, 134)]])
-	var per_row := int(20.0 / 0.85)
+	var per_row := int(20.0 / 0.75)
 	assert_true(crowd.seats.size() > per_row and crowd.seats.size() <= per_row * 2, "two 20 m rows seat most of %d places (%d)" % [per_row * 2, crowd.seats.size()])
 	assert_eq(crowd.find_children("*", "MultiMeshInstance3D", true, false).size(), 1, "the whole crowd is one draw")
 	for seat in crowd.seats:

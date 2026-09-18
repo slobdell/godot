@@ -21,6 +21,9 @@ func test_compare_counts_only_pixels_the_crowd_changed() -> void:
 	assert_eq(marked.get_pixel(1, 1), Color(1, 0, 1), "the crowd's pixels are marked magenta")
 	assert_true(marked.get_pixel(0, 0).r < 0.05, "everything else is darkened")
 	assert_eq(CrowdLook.compare(without, without)["changed"], 0, "identical frames change nothing")
+	var flicker := with_crowd.duplicate() as Image
+	flicker.set_pixel(1, 1, Color(0.9, 0.9, 0.9))  # this pixel animates on its own: not the crowd's
+	assert_eq(CrowdLook.compare(with_crowd, without, false, flicker)["changed"], 1, "animation is left out")
 
 
 func test_pitched_pose_keeps_pitch_and_distance_apart() -> void:
