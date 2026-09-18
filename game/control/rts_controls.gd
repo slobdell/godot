@@ -88,6 +88,8 @@ var awareness := ElementAwareness.new()
 var elements: Elements
 ## Round 6 X5: what nav's Movement says each unit is doing (yielding, blocked, its ETA). Silent until N1 is wired in.
 var movement := MovementReadout.new()
+## Round 6 X7: each element's recent decisions, for "why did my element do that" (the card's doctrine line tooltip).
+var element_log := ElementLog.new()
 ## X2: the off-screen element chips and the alert strip (set by the mode).
 var markers: EdgeMarkers
 ## The armed order waiting for a click ("" = none): "attack_move", "follow", or "move".

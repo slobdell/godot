@@ -24,13 +24,18 @@ const ROWS := [
 		"line": "Stay on this ground and fight from it. Nobody chases."},
 	{"id": "attack_move", "name": "Attack-move", "hotkey": "A", "kind": "order", "earned": true,
 		"line": "Click a spot: go there, fighting anything met on the way."},
-	# Screen and Support by Fire are real verbs (E and R work) but squad has not yet shown the behaviour: with no enemy in
-	# sight a support-by-fire task holds every unit where it stands, and in contact the drills outrank it (squad's
-	# diagnosis, 2026-09-18). The button must not promise a posture the player will not see; squad's X5 earns them back.
-	{"id": "screen", "name": "Screen", "hotkey": "E", "kind": "task", "earned": false,
+	# Screen and Support by Fire were held off the card until squad showed the behaviour (with no enemy in sight a
+	# support-by-fire task used to hold every unit where it stood). Earned 2026-09-18, squad `df736a8e`: SBF → a 30 m
+	# line 54-56 m off the point, all facing it, firing, no contact drill selected; screen → a 42 m line across its point.
+	# Posture tests: tests/test_tactics_tasks.gd, test_tactics_scenarios.gd (squad's, in make check).
+	{"id": "screen", "name": "Screen", "hotkey": "E", "kind": "task", "earned": true,
 		"line": "Click a spot: spread into a line across it, watch, and fight only what comes to you."},
-	{"id": "support_by_fire", "name": "Support by Fire", "hotkey": "R", "kind": "task", "earned": false,
+	{"id": "support_by_fire", "name": "Support by Fire", "hotkey": "R", "kind": "task", "earned": true,
 		"line": "Click a target area: take firing positions facing it, suppress it, and don't advance."},
+	# squad's new verb (a8048028): a line facing the kill zone, holding fire until an enemy is in it. Earned once squad
+	# confirms it green and it is on main; B is free.
+	{"id": "ambush", "name": "Ambush", "hotkey": "B", "kind": "task", "earned": false,
+		"line": "Click a kill zone: hide in a line facing it and hold fire until the enemy is in it."},
 	{"id": "attack_by_fire", "name": "Attack by Fire", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a target: destroy it with fire from a distance, without closing."},
 	{"id": "guard", "name": "Guard", "hotkey": "", "kind": "task", "earned": false,

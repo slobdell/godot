@@ -169,15 +169,19 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | Item | State | Evidence |
 |---|---|---|
 | X1 no Move/Follow buttons | done | `test_control_panel` (card has neither; M and F still arm) |
-| X3 pitch decoupled | done, **defaults wait on the lead** | `test_rts_camera::test_tilt_is_its_own_axis`, `test_zoom_sets_the_distance_and_never_the_tilt` |
-| X3 camera page | **live, sent to the orchestrator**: https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL | `make camera-looks`; laptop render, 1920×1080, frames in the scratchpad (not committed: 26 MB of JPEG) |
+| X3 pitch decoupled | done; **the lead's pick applied** (25° · 50 m · FOV 60); wall cutaway | `test_rts_camera::test_tilt_is_its_own_axis`, `test_zoom_sets_the_distance_and_never_the_tilt`, `test_a_camera_past_the_wall_cuts_away_the_stands_between` |
+| X3 camera pages | answered: https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL; follow-up below 25°: https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7 | `make camera-looks`; laptop render, 1920×1080, frames in the scratchpad (not committed: 26 MB of JPEG) |
 | X2 palette + symbols | done; Screen / Support by Fire held off the card until squad's X5 | `TaskPalette`, `CommandIcons.draw_task`, table in `tactical_map.md` "Task palette (N4)", `test_control_panel` |
 | X4 loading screen | done; the load's length is feel's (below) | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen`, shell-playtest `loading_screen_shows` + frame `2b_loading` |
-| X5 orders you see landing | **blocked on nav CP1** (`Movement.state` not on `main`) | — |
+| X5 orders you see landing | built against N1 with a fake provider; **lights up when nav's CP1 is on `main`** (wire `MovementReadout.from_movement` to the real call shape then) | `test_control_movement_readout` |
+| X7 (stretch) "why did my element do that" | done: `ElementLog` keeps each element's last 6 decisions with match time; hover the card's doctrine line | `test_control_element_log` |
 | X6 squad chips | chips say IDLE / MOVING / CONTACT / UNDER FIRE; lit by living members in any order. Plain move keeping the element: agreed with squad, waits on their green | `test_control_groups::test_group_chips_say_what_each_squad_is_doing` |
 
 **The diagnosis the brief asked to verify, verified** (the page's first row): round 5's start pose (zoom 0.36 → 45°)
 was fine; zoom 0.75 → 68° is a top-down view where 30 vehicles are dots. The complaint was the weld, not the start.
+
+**HUD cost after the card rework:** 90 canvas draw calls for the whole HUD (budget 130; round 5 measured 84–86).
+Laptop, 1854×1011 window, 68 vehicles, `make hud-cost`, `32fd2abc` + tree, one run.
 
 ### X4: FIGHT → playable, measured
 

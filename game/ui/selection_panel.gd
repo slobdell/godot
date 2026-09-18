@@ -31,8 +31,8 @@ const FOOTER := 18.0
 ## [id, name, hotkey] per button, from the N4 palette.
 static var COMMANDS: Array = TaskPalette.card().map(func(row: Dictionary) -> Array:
 	return [String(row["id"]), String(row["name"]), String(row["hotkey"])])
-## Buttons on the card, per row.
-const COLUMNS := 3
+## Buttons on the card, per row: two rows, as many columns as the palette needs (at least 3).
+static var COLUMNS: int = maxi(3, ceili(COMMANDS.size() / 2.0))
 ## X2: a button is this much wider than tall, so the doctrinal name fits under the symbol.
 const BUTTON_ASPECT := 1.35
 ## The card's verbs that only an element can carry out.
@@ -280,6 +280,14 @@ func _card_left() -> float:
 	return (_command_rects[COMMANDS[0][0]] as Rect2).position.x
 
 
+## X7: the strip the element's doctrine line is drawn in (local).
+func doctrine_rect() -> Rect2:
+	if _command_rects.is_empty():
+		return Rect2()
+	var s := _scale()
+	return Rect2(PAD * s, size.y - PAD * s - FOOTER * s * 1.25, _card_left() - PAD * s * 2.0, FOOTER * s * 1.25)
+
+
 func command_rect(id: String) -> Rect2:
 	return _command_rects.get(id, Rect2())
 
@@ -303,10 +311,19 @@ func press_command(id: String) -> void:
 			controls.cycle_formation()
 
 
-## X2: the tooltip for the button under the mouse: {"id", "title", "line"} or {}.
+## X2: the tooltip for the button under the mouse: {"id", "title", "line"} or {}. X7: over the doctrine line, the
+## element's recent decisions instead: {"id": "doctrine", "title", "line": "", "lines": [...]}.
 func tooltip() -> Dictionary:
 	if _hovered == "" or not visible:
 		return {}
+	if _hovered == "doctrine":
+		var element := controls.selected_element() if controls != null else null
+		if element == null:
+			return {}
+		var recent := controls.element_log.lines(element.id)
+		if recent.is_empty():
+			return {}
+		return {"id": "doctrine", "title": "%s: why it did that" % element.element_name, "line": "", "lines": recent}
 	var row := TaskPalette.row(_hovered)
 	var title := String(row.get("name", _hovered))
 	if String(row.get("hotkey", "")) != "":
@@ -329,6 +346,8 @@ func _gui_input(event: InputEvent) -> void:
 		for id in _command_rects:
 			if (_command_rects[id] as Rect2).has_point(motion.position):
 				_hovered = id
+		if _hovered == "" and doctrine_rect().has_point(motion.position):
+			_hovered = "doctrine"
 		return
 	var button := event as InputEventMouseButton
 	if button == null:
@@ -448,7 +467,7 @@ func _draw() -> void:
 		_label(batch, font, button, label, 12.0 * s, ink)
 	var tip := tooltip()
 	if not tip.is_empty():
-		_tooltip(batch, font, _command_rects[tip["id"]], tip, s)
+		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)
 	batch.flush(self)
 
 
@@ -475,7 +494,13 @@ func _tooltip(batch: DrawBatch, font: Font, button: Rect2, tip: Dictionary, s: f
 	var title_px := roundi(15.0 * s)
 	var line_px := roundi(13.0 * s)
 	var width := 360.0 * s
-	var lines := _wrap(font, String(tip["line"]), line_px, width - 16.0 * s)
+	var lines: Array[String] = []
+	if String(tip["line"]) != "":
+		lines = _wrap(font, String(tip["line"]), line_px, width - 16.0 * s)
+	for extra: String in tip.get("lines", []):
+		lines.append(extra)
+	if tip.has("lines"):
+		width = 520.0 * s
 	var height := (title_px + 8.0 * s) + lines.size() * line_px * 1.3 + 10.0 * s
 	var box := Rect2(Vector2(clampf(button.get_center().x - width / 2.0, -position.x + 4.0, size.x - width), -height - 6.0 * s),
 			Vector2(width, height))

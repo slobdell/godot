@@ -310,6 +310,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
 	controls.elements = Elements.of_match(game_match)
 	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
+	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"
 	main.hud.add_child(controls)
 	var markers := SelectionMarkers.new()
 	markers.name = "SelectionMarkers"

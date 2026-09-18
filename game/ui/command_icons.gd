@@ -274,6 +274,7 @@ static func _arrow(canvas: Object, from: Vector2, to: Vector2, color: Color, wid
 ##   attack_by_fire   one arrow from a short base line with feet
 ##   screen / guard / cover   the security line with outward arrows, broken by the task's letter (S, G, C)
 ##   fix              a zig-zag arrow and F        block   a T across the route and B
+##   ambush           a curved line (the ambush position) with three arrows into the kill zone
 ##   stop             a stop square                hold    a line held from behind
 ##   attack_move      an arrow ending in crosshairs
 const TASK_TEXTURE_PX := 96
@@ -308,7 +309,7 @@ static func task_texture(verb: String) -> Texture2D:
 ## Whether draw_task has a graphic for `verb` (the palette's test asks this of every row).
 static func has_task_graphic(verb: String) -> bool:
 	return verb in ["support_by_fire", "attack_by_fire", "screen", "guard", "cover", "fix", "block", "stop", "hold",
-			"attack_move"]
+			"attack_move", "ambush"]
 
 
 ## A task graphic centred at `at`, `size` px across. `canvas` is a CanvasItem or an IconRaster.
@@ -345,6 +346,15 @@ static func draw_task(canvas: Object, verb: String, at: Vector2, size: float, co
 			canvas.draw_line(p.call(-0.25, 0.85), p.call(-0.25, -0.55), color, w)
 			canvas.draw_line(p.call(-0.9, -0.55), p.call(0.4, -0.55), color, w * 1.3)
 			_letter(canvas, "B", at + Vector2(0.4, 0.25) * s, s * 1.0, color, w)
+		"ambush":
+			var arc := PackedVector2Array()
+			for i in 13:
+				var t := lerpf(-1.0, 1.0, i / 12.0)
+				arc.append(p.call(t * 0.9, 0.35 + 0.45 * (1.0 - t * t)))  # bows away from the kill zone (up)
+			canvas.draw_polyline(arc, color, w)
+			for x: float in [-0.6, 0.0, 0.6]:
+				var foot := 0.35 + 0.45 * (1.0 - x * x / 0.81)
+				_arrow(canvas, p.call(x, foot - 0.08), p.call(x * 0.75, -0.85), color, w * 0.85, s * 0.3)
 		"stop":
 			var box := PackedVector2Array([p.call(-0.55, -0.55), p.call(0.55, -0.55), p.call(0.55, 0.55), p.call(-0.55, 0.55)])
 			_fill(canvas, box, color)
