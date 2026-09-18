@@ -117,8 +117,18 @@ same text for all six:
    same as CP4's: **re-baseline after the merge, and never publish a frame number measured across it.** This is the
    generalisable shape — a shared harness that derives its own configuration from another stream's code silently
    inherits that stream's changes.
-6. **An ElevenLabs request is coming from feel (X3, crowd beds), and it must not be approved until the mix is
-   eliminated as the cause.** feel measured the existing crowd murmur as procedural filtered noise at **~43 dB below
+6. **RESOLVED, and now with the lead: the mix was the cause, and the crowd question costs nothing to answer.** Two
+   recordings were sent to him 2026-09-18 while he was away — `build/crowd-listen/full_mix_real_pace.mp3` (the match as
+   a player hears it) and `crowd_only_real_pace.mp3`, builder0 vsync-off at tree `1badf779`, Yard, Gangs vs Law, same
+   seed. **The one question: is the crowd audible, and does it sound like people or like hiss?** The murmur is still
+   round 3's procedural filtered noise. **If hiss**, the ElevenLabs text is drafted in feel's brief under *Waiting on
+   the lead*: 5 sources (bed, tense lull, roar, near-miss "oooh", last-stand stomping), **pilot first** —
+   `crowd_bed` + `crowd_roar`, ~25 s ≈ **250 credits**, full set ~900 (lesson 19). **If fine, nothing is spent.**
+   The mix itself was settled by measurement: at +13 dB the crowd was the loudest bed in the game (~4 dB under the whole
+   mix); at **+8 dB** it sits a median **7.5 dB** under (min 5.6), impacts dipping it 2:1 on top; −17.5 LUFS, true peak
+   −3.6 dBFS, 0 clipped.
+   *The rule that produced this, kept for next time:* an ElevenLabs request must never be approved while the mix could
+   be the cause — feel measured the existing crowd murmur as procedural filtered noise at **~43 dB below
    full scale on a Bed bus that is ducked under impacts** — inaudible in a firefight whatever the source material is.
    Recording a better bed and playing it 43 dB down buys an inaudible better bed. The order the orchestrator set:
    solo the crowd, record a real match, fix the mix (bed level, duck depth and release, a ceiling on how far impacts
