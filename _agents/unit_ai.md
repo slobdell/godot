@@ -630,6 +630,10 @@ make remote T="tactics-ladder SIDES=brains=x5p,trim=x5p:-far_ambush-bait,flank=x
 make remote T="ai-ladder VARIANTS=x5p,x6t5 CHAMPION=x5p RUNS=6 LADDER_DOCTRINE=individuals"
 ```
 
+**The interleaved cost runs and the dodge-attempt counts are kept too**, in
+[streams/references/round5_ai_costs.md](streams/references/round5_ai_costs.md): they were measured A-B-A-B on one
+machine within minutes and cannot be compared against a later run unless the raw numbers survive.
+
 **Round 5's own results are kept as rows** in [streams/references/round5_ai_ladders.json](streams/references/round5_ai_ladders.json)
 (one line per match for five ladders, 696 matches) — compare a new run against those rather than re-running them.
 
