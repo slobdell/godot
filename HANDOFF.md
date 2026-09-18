@@ -19,9 +19,14 @@ _Last updated: 2026-09-18. **Round 5 is closed and merged; round 6 is planned an
   pick formations and run battle drills from real doctrine, the same library for you and the CPU; suppression that
   makes base-of-fire-and-maneuver real; four playable factions with their own rosters and doctrine; tank shells you
   can watch fly; a voiced announcer trio; layered sound and a music director; seven arenas.
-- **Builds run on builder0:** `make remote T=check`, about 7 minutes ([remote_builds.md](_agents/remote_builds.md)).
-  One remote run per worktree at a time. **Read the result from the wrapper's own `>> remote: make check exited <N>`
-  line and the runner's `N passed, M failed` — never a shell exit code through a pipe.**
+- **Builds run on builder0:** `make remote T=check`. **Budget 30–50 minutes during an active round, not the 7 minutes
+  the docs used to claim** — measured ~50 min for 1010 tests on `main` at `5c68a03e` with six streams live, because
+  builder0 runs two slots and four concurrent checks both queue *and* slow each other
+  ([remote_builds.md](_agents/remote_builds.md)). So: **iterate with a local `make check`, spend a remote slot only on
+  a merge candidate**, and ask the orchestrator to clear a window for a big measurement series. **Read the result from
+  the wrapper's own `>> remote: make check exited <N>` line and the runner's `N passed, M failed` — never a shell exit
+  code through a pipe, and never the `waiting for a heavy-run slot` line, which is printed on enqueue and never
+  retracted.**
 
 ## Round 6: six streams (planned 2026-09-18)
 
@@ -79,6 +84,50 @@ same text for all six:
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
+**Open orchestrator obligations (round 6):**
+
+1. **Ping arena the moment CP4 merges.** arena is holding X3 (objectives off the centre line) until then, because it
+   is a tactical claim that would straddle the range change. At the same ping it re-derives X2's exposure numbers at
+   the new effective range — one cheap Python re-run, not machine time. arena found that its static
+   exposure/sightline numbers are *mostly* CP4-proof (eye-level rays against box footprints, no weapons involved),
+   with one exception it flagged rather than buried: `exposure()` hard-codes a **110 m watcher range**, which is a
+   weapon-range assumption wearing a sightline's clothes.
+2. **The sim baseline WILL move with CP4, and combat owns the move.** It is not a perturbation: N5 changes when the
+   trigger is pulled, so a different battle happens from first contact onward. The order combat set, which the
+   orchestrator endorsed: **series → final bands → record the baseline twice on builder0 → one commit.** Until that
+   commit exists, **no stream re-runs a determinism-sensitive measurement**, or it will be comparing against a hash
+   that is about to be replaced.
+3. **CP4 does not merge alone: it merges paired with squad's brain-range fix.** combat's evidence, which the
+   orchestrator accepted: `TankBrain._combat_move()` decides where to stand from `weapon["range"]` (full reach) while
+   N5 decides firing from the *effective* band, so the outranging and short-halt branches park a unit exactly where it
+   may not shoot — measured at **61 m for 45 s, 0 shots, 0 metres, never arrives**. Landing CP4 alone would trade the
+   lead's *"everyone just starts firing"* for *"everyone stands still"*, which is a worse game and breaks product
+   constraint #1. combat has committed a two-token proposal **in squad's file** (`5478fa61` on `stream/combat`,
+   explicitly to take, replace or revert) which makes the scenario finish in **14.9 s — faster than the 20.8 s it
+   measured before N5 existed**. squad owns the judgement and the remaining cases; **`scenario_motion::test_brains_dont_dither`
+   at 17.7 and 15.6 option switches per minute against a bar of 12 is the blocking one**, because "no element
+   flip-flopping" is the round's legibility bar.
+4. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
+   five tests passing on the laptop; its `make remote T=check` is queued behind the other worktrees and arena will
+   send the hash.
+5. **TWO merges re-time other streams' measurements this round, not one.** CP4 is the known one. The second, found by
+   control: **`perf_scene.gd` calls `RtsCamera.pose_for(focus, 0, zoom)`**, so when control's pitch decoupling merges,
+   `make perf-scene`'s camera drops from the welded pose to **38°** — a lower camera that sees more of the far arena,
+   so feel's **M1** frame numbers move at that merge through no change of feel's own. Relayed to feel; the rule is the
+   same as CP4's: **re-baseline after the merge, and never publish a frame number measured across it.** This is the
+   generalisable shape — a shared harness that derives its own configuration from another stream's code silently
+   inherits that stream's changes.
+6. **An ElevenLabs request is coming from feel (X3, crowd beds), and it must not be approved until the mix is
+   eliminated as the cause.** feel measured the existing crowd murmur as procedural filtered noise at **~43 dB below
+   full scale on a Bed bus that is ducked under impacts** — inaudible in a firefight whatever the source material is.
+   Recording a better bed and playing it 43 dB down buys an inaudible better bed. The order the orchestrator set:
+   solo the crowd, record a real match, fix the mix (bed level, duck depth and release, a ceiling on how far impacts
+   may duck the bed), re-listen — *then* ask for credits if it is still thin. Paid generation is irreversible in a way
+   a gain change is not (lesson 18), and the standing gate is text → cheap pilot → listen → batch (lesson 19).
+7. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
+   so it starts with the target number rather than rediscovering it; squad has been told to take its two independent
+   items first and explicitly *not* to build its own avoidance to fill the gap.
+
 **Orchestrator duties this round:** merge CP1 (nav's Movement API) and CP2 (arena's maze) as soon as they're announced
 and tell everyone to `git merge main`; **CP4 (combat's engagement envelope) lands once and early, and every stream
 re-runs its measurements after it — nobody publishes a number that straddles it**; get control's camera page in front
@@ -88,9 +137,17 @@ feel.
 
 ## Waiting on the lead
 
-1. **The camera look** (round 6's main gate): control produces `make camera-looks`, a page of the same fight at a grid
-   of pitch × distance × FOV. "Between StarCraft 2 and Twisted Metal" needs a picture he points at.
-2. **Which arena is fun** — unanswered since round 5; he has still never played them.
+1. **The camera look AND which arena is fun — both are on one page, live since 2026-09-18:**
+   **https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL** (private to the lead's account). One frozen 30-a-side fight
+   (Condemned vs Syndicate, Container Yard, seed 3, ~6 s after the first shot): row 1 is round 5's four welded poses
+   (zoom 0.20/0.36/0.55/0.75 = 34°/45°/56°/68°, the last being the "bird's eye" he disliked); then a grid of
+   pitch 25/35/45/60° × distance 28/50/90 m × FOV 45/60°; then an arena tour, all seven arenas at three poses each
+   with a **Fun** checkbox. He taps a frame to pick it (optional note) and ticks the fun arenas.
+   **His answers are saved in the page's own database at `picks/lead`** — read them back with the Artifact tool's
+   `read_db` on that URL, then tell control, which sets the defaults from his pick.
+   Provenance: rendered on the **laptop** at 1920×1080 from `stream/control`'s working tree at `a975e262`
+   (uncommitted at the time). Frames are camera poses only, so machine and commit do not change what they show.
+   **The diagnosis is confirmed by row 1:** the start pose was fine; zooming out is what tilted him to top-down.
 3. **The Lancer sits in two factions** (Condemned `lancer`, Syndicate `syn_lancer`): the role is shared, the vehicle
    isn't. One of them may want to lose it.
 4. **Meshy credits: 88 left.** Any new 3D art needs a top-up. ElevenLabs has ~123k.

@@ -73,17 +73,94 @@ The honest summary: **the path planner is fine and everything around it is thin.
 **The existing regression harness you inherit:** `tests/test_navigation.gd`, `test_tank_drive.gd`,
 `test_tank_motion.gd`, and the player-order measurement in the check (`MEASURE player_orders worst gap …`).
 
+## CP2 has already landed, and it came with your baseline (arena, 2026-09-18)
+
+arena delivered the maze on day one and **measured the problem before you got here**. Relayed verbatim, because the
+numbers are the point:
+
+> `arenas/maze.json` — four container bands (z = 74, 52, 30, 10) plus their mirrors, so a gap at +x mirrors to -x and
+> crossing is a serpentine: 424 m of navmesh route against a 204 m crow flight. Tight gate is 7 m physical =
+> **3 m of drivable corridor** after the 2 m nav agent radius, narrower than two hulls, and it sits on the shorter of
+> the two routes so a horde picks it. One dead end. Not in `Arena.ROTATION`; `--arena=maze` only.
+>
+> `make nav-maze` (`NAV_UNITS=30 ARENA=maze NAV_TIME=180 SEED=1 NAV_BOTH=1`) → `build/nav-maze.json`: arrivals,
+> t50/t90/t100, unit-seconds under 0.5 m/s, stuck events, units left off the navmesh, and the five that got least far.
+> It measures only positions over time, so nav can rewrite path planning/avoidance/the control law and the numbers
+> keep meaning the same thing.
+>
+> `NAV_BOTH=1` splits the force between both bases so the two streams meet head-on in the shared corridor — the
+> peer-to-peer right-of-way case the lead described. One-way traffic never exercises it.
+
+**The baseline. Laptop, `38c15f77`, one-way, 180 s, seed 1, hold-fire (driving only):**
+
+| run | arrived | t50 | t90 | units that ever stalled 3 s | route actually travelled |
+|---|---|---|---|---|---|
+| maze, 30 units | 15/30 | 60 s | never | 30 of 30 | 47% |
+| maze, 60 units | 36/60 | 56 s | never | 60 of 60 | 49% |
+| **yard, 60 units (control)** | 33/60 | 31 s | never | 27 of 60 | 91% |
+
+arena's own reading, and the orchestrator agrees it is the important line: **this is not a maze-specific cruelty.**
+On a *shipping* arena, with no enemy and nothing to do but drive, **45% of a 60-vehicle force never reaches its
+destination in three minutes and 27 of them stall outright.** That is the lead's *"a bunch of cars just get stuck or
+blocked by other cars"*, reproduced headlessly without a shot fired. The maze sharpens it; `yard` already shows it.
+
+**arena's caveats, which travel with the number:** single seed, laptop (~2.75× slower than builder0, though nothing
+here is frame-rate sensitive — it is `--fixed-fps 30`), one-way traffic, all tanks, hold-fire. **It is a floor to
+improve on, not a balance claim.**
+
+**The head-on pair (`NAV_BOTH=1`), same conditions — this is the one your X4 has to answer:**
+
+| run | arrived | t50 | units that ever stalled 3 s | route travelled |
+|---|---|---|---|---|
+| maze, 60, head-on | 23/60 (38%) | **never** | 60 of 60 | 39% |
+| yard, 60, head-on (control) | 35/60 (58%) | 37 s | 30 of 60 | 93% |
+
+Against the one-way runs: head-on traffic **barely moves `yard`** (55% → 58%, inside noise on one seed) and
+**collapses the maze** (60% → 38%, and t50 stops being reached at all). arena's reading, which the orchestrator
+endorses: narrow corridors are where two streams meeting actually costs something. That is the case for the maze's two
+gates sharing one corridor rather than running as separate pipes, and it is precisely the situation your peer-to-peer
+right-of-way (X4) exists to resolve. A yard-only measurement would have told you avoidance barely matters; it does,
+but only where there is no room to be sloppy.
+
+**arena's caveat on the last column, which you must not misread:** *do not* read "39% vs 93% of route travelled" as
+maze-vs-yard difficulty. The maze route is ~409 m per unit against yard's ~223 m, so that column is about jamming, not
+speed. **The columns that compare cleanly are arrivals, whether t90 is ever reached, and how many units stall at all.**
+
+All five runs are saved with provenance in `_agents/streams/references/arena/` — the README carries one row per file
+with its conditions, and both of arena's wrong-number stories (lesson 34).
+
+This changes your X2: **arena has already built most of your instrument.** Do not build a second one. Read
+`make nav-maze`, add what it lacks (your own `make nav-jam` gap case if it is genuinely different), and spend the time
+you saved on X3 and X4 instead.
+
 ## Backlog (in order)
 
 **X1 — the N1 Movement seam, and a truthful stuck report (CP1; land this first, before any cleverness).**
 Create `game/ai/movement.gd` as the single entry point between "be here" and "drive there":
 `Movement.request(unit, to, opts)`, `Movement.state(unit)`, `Movement.eta(unit, to)`, `Movement.cancel(unit)`, with
 `state().phase` in `pathing | driving | yielding | blocked | arrived` and `blocked_by` naming the cause. **Split `order_controller.gd` while you are in there**, because today it is one file doing two crafts and two streams
-need it: path-following, avoidance and unsticking move into `movement.gd` (**yours**); the firing decision
-(`_apply_weapon`, `_shootable`, `_apply_suppress`, `_apply_indirect`, `_clear_to_fire`) moves into a new
-`game/ai/gunnery.gd` that becomes **combat's file** — they own the rule about when a gun may speak (N5), you own
-where the vehicle is. `order_controller.gd` stays yours as the thin composer that calls both. Agree the seam with
-combat in writing before either of you edits it, and land the split early so they are not blocked. Two rules that are
+need it: path-following, avoidance and unsticking move into `movement.gd` (**yours**); the firing decision moves into a
+new `game/ai/gunnery.gd` that becomes **combat's file** — they own the rule about when a gun may speak (N5), you own
+where the vehicle is. `order_controller.gd` stays yours as the thin composer that calls both.
+
+**Read this before you open the file: combat has already edited it, and has specified the seam for you.** nav had no
+session when CP4 became the round's early checkpoint and two other streams were holding for it, so the orchestrator
+accepted four surgical edits into `order_controller.gd` rather than park the round behind a stream that did not exist
+(recorded as an exception below). Every *rule* lives in `game/combat/engagement.gd` (combat's); the controller only
+carries state and calls it. The four edits: an `engagement_lay` member beside `spotter`; an `Engagement.is_seen(...)`
+early-out at the top of `_shootable()` *before* the line-of-sight raycast (a dict lookup, so a rejected contact now
+saves a ray); an `envelope` term in `_apply_weapon()`'s trigger line; and a `_seconds_step()` helper with
+`engagement_lay.lose(...)`/`.forget()` on the no-target and death branches. **None of them reads a path, a waypoint or
+a throttle**, so they move across the seam untouched.
+
+**The seam combat asked for, so you build it rather than guess it.** `gunnery.gd` takes `_apply_weapon`,
+`_apply_suppress`, `_apply_indirect`, `_shootable`, `_scanned_shootable`, `_nearest_shootable`, `_named_tank`,
+`_cover`, `_clear_to_fire`, `_enemies`, and the state `engaged_target`, `watch_point`, `spotter`, `engagement_lay`,
+`_scan_pick`, `_scan_left`, `_lane_hold_left`, `lane_blocked_ticks`, `ticks_since_fire`. The composer calls
+`gunnery.apply(cmd, seconds)` **after** the movement half. Gunnery needs exactly four things from your side: `tank`,
+`tanks_root`, `weapon_order`, and `move_order["type"]` (only so a fixed-mount hull can swing onto its target when
+halted). **Pass it seconds, not a tick count** — lesson 30: the acquisition timer is booked in seconds and must stay
+that way at any tick rate. Two rules that are
 the point of the item:
 - **A unit never silently stands still.** If it cannot make progress it reports `blocked` with a reason, and something
   above it can act.
