@@ -435,3 +435,20 @@ The kickoff prompt is one line; this section is the rest.
     how a suite gets excluded from a gate in the first place. The honest sequence: **record the expected pass count in
     a committed baseline file** (the way `tests/baselines/sim_state_hash.txt` works), fail only on a *change* in that
     count, and let each owner decide whether their failure is a bug or a stale expectation. Then tighten.
+43. **Adding a member to a shared list is not an additive change: grep every consumer of the list.** Round 6, arena,
+    twice in one day, and both failures were the same bug wearing different clothes.
+    **(a) The lucky kind, which failed loudly.** `arenas/` grew a *test fixture* (the maze), and the announcer's
+    `test_arena_names.py` asserts that every layout in `arenas/` has a spoken name **and a recorded clip**. Adding one
+    would have been wrong three ways — the booth should not name a map nobody plays, and the recording is paid
+    ElevenLabs time behind a lead gate. The right fix was to give the new member a *kind*: `"fixture": true`, with
+    `Arena.is_fixture()` and `Arena.shipping_layout_names()` for anything that offers arenas to a human.
+    **(b) The dangerous kind, which had been failing silently for an unknown length of time.** The same list grew an
+    arena whose *wrong* answer is visible — a maze where a straight-line path base-to-base is obviously bogus — and
+    that is what exposed `Pathing.is_ready()` answering for the *previous* arena (lesson 36). The connectivity test
+    that claims every layout connects had never failed because it had never been testing what it claimed.
+    So: when you add to a list other code iterates, **the question is not "does my member work" but "what does every
+    consumer assume about members"** — and if your member is of a genuinely new kind, say so in the data rather than
+    making it pass as the old kind.
+    **Corollary, learned on a 25-minute build queue:** *run the full check before claiming green, not the tests your
+    change touches.* The thing that broke was a different stream's check, and no amount of testing the changed file
+    would have found it.
