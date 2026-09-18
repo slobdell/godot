@@ -1,0 +1,150 @@
+{
+ "what": "make sim-profile TIME=60 \u2014 Condemned 31 v 27, seed 1, the same build flipped between 30 Hz and 60 Hz, run back to back on one machine",
+ "measured": "2026-09-17",
+ "how_to_read": "cost per simulated second = tick_ms x tick_rate. Compare PAIRS only: the two runs in a pair share a machine, a build and a load. Between pairs the battle diverges (a live match, not a fixed workload), which is where the spread comes from.",
+ "headline": "a quarter to a third off the simulation's script cost per simulated second: -27% in pair A, -33% in pair B",
+ "runs": {
+  "pair_B_60Hz": {
+   "tick_rate": 60,
+   "machine": "the lead's laptop",
+   "build": "round-5 tip (ai's player-holds fix merged)",
+   "note": "quieter machine",
+   "ticks": 3600,
+   "tick_ms": 8.16,
+   "ms_per_simulated_second": 489.6,
+   "sections": {
+    "match": 0.324,
+    "match/engagement": 0.014,
+    "match/intel": 0.115,
+    "match/land_rounds": 0.007,
+    "match/resupply_hazards_options_control": 0.057,
+    "match/squads": 0.014,
+    "match/suppression": 0.114,
+    "segment:controllers": 6.637,
+    "segment:elements": 0.001,
+    "segment:order_executor+commanders": 0.004,
+    "shell": 0.015,
+    "shell/hit": 0.005,
+    "tank": 1.057,
+    "tank/drive": 0.621,
+    "tank/drive_parked": 0.002,
+    "tank/fire": 0.024,
+    "tank/publish_state": 0.084
+   },
+   "unattributed_ms": 0.122,
+   "result": {
+    "winner": "Rust",
+    "reason": "time_limit",
+    "units_left": {
+     "green": 5,
+     "rust": 26
+    },
+    "duration_seconds": 60.0,
+    "speedup": 1.8
+   }
+  },
+  "pair_B_30Hz": {
+   "tick_rate": 30,
+   "machine": "the lead's laptop",
+   "build": "round-5 tip (ai's player-holds fix merged)",
+   "note": "quieter machine",
+   "ticks": 1800,
+   "tick_ms": 10.968,
+   "ms_per_simulated_second": 329.0,
+   "sections": {
+    "match": 0.632,
+    "match/engagement": 0.03,
+    "match/intel": 0.269,
+    "match/land_rounds": 0.012,
+    "match/resupply_hazards_options_control": 0.116,
+    "match/squads": 0.027,
+    "match/suppression": 0.173,
+    "segment:controllers": 9.082,
+    "segment:elements": 0.001,
+    "segment:order_executor+commanders": 0.004,
+    "shell": 0.018,
+    "shell/hit": 0.009,
+    "tank": 1.115,
+    "tank/drive": 0.628,
+    "tank/drive_parked": 0.004,
+    "tank/fire": 0.048,
+    "tank/publish_state": 0.084
+   },
+   "unattributed_ms": 0.116,
+   "result": {
+    "winner": "Rust",
+    "reason": "time_limit",
+    "units_left": {
+     "green": 16,
+     "rust": 16
+    },
+    "duration_seconds": 60.0,
+    "speedup": 2.7
+   }
+  },
+  "builder0_30Hz": {
+   "tick_rate": 30,
+   "machine": "builder0",
+   "build": "round-5 branch",
+   "note": "for the band breakdown; builder0 is ~2.75x faster than the laptop headless",
+   "ticks": 1800,
+   "tick_ms": 6.677,
+   "ms_per_simulated_second": 200.3,
+   "sections": {
+    "match": 0.346,
+    "match/engagement": 0.015,
+    "match/intel": 0.142,
+    "match/land_rounds": 0.005,
+    "match/resupply_hazards_options_control": 0.065,
+    "match/squads": 0.017,
+    "match/suppression": 0.098,
+    "segment:controllers": 5.698,
+    "segment:elements": 0.001,
+    "segment:order_executor+commanders": 0.002,
+    "shell": 0.02,
+    "shell/hit": 0.011,
+    "tank": 0.549,
+    "tank/drive": 0.298,
+    "tank/drive_parked": 0.001,
+    "tank/fire": 0.047,
+    "tank/publish_state": 0.038
+   },
+   "unattributed_ms": 0.061,
+   "result": {
+    "winner": "Rust",
+    "reason": "time_limit",
+    "units_left": {
+     "green": 2,
+     "rust": 21
+    },
+    "duration_seconds": 60.0,
+    "speedup": 4.6
+   }
+  },
+  "pair_B_saving": "33%"
+ },
+ "pair_A_recorded_from_run_output": {
+  "note": "the JSON files were overwritten by later runs; these are the printed values",
+  "60Hz": {
+   "ticks": 3600,
+   "tick_ms": 8.558,
+   "ms_per_simulated_second": 513.5,
+   "sections": {
+    "segment:controllers": 6.955,
+    "tank": 1.098,
+    "match": 0.338
+   }
+  },
+  "30Hz": {
+   "ticks": 1800,
+   "tick_ms": 12.56,
+   "ms_per_simulated_second": 376.8,
+   "sections": {
+    "segment:controllers": 10.592,
+    "tank": 1.145,
+    "match": 0.659
+   }
+  },
+  "saving": "-27%"
+ }
+}

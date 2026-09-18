@@ -7,6 +7,13 @@
 > `game/tank/`, `tools/{match_series,matchup_matrix,combat_duel,matchup_search}.py`, `mk/match.mk`,
 > `game/modes/match_runner_mode.gd`, `_agents/balance.md`.
 
+> **Picking combat up fresh? Three files, in this order.** (1) [../balance.md](../balance.md) **START HERE** — why no
+> balance series may run until the baseline is re-taken, and how to run a fair one; (2)
+> [../sim_tick_rate.md](../sim_tick_rate.md) — the 30 Hz tick: what it bought, what it cannot buy, and how tick counts
+> are written now; (3) this brief's **Status** for what round 5 actually did. The tools:
+> `make sim-profile` (where a tick goes), `make engagement` (the shape of a fight), `make team-fairness` (army, team
+> and base controls), `make duel`, `make faction-matrix`, `make matchups`, `make scale-bench` — all in `make help`.
+
 ## The lead's direction (2026-09-17)
 
 > *"right now, I can't tell if perhaps the vehicles have too much range, but when I play the game now it's just these 2
@@ -15,8 +22,13 @@
 That's the whole brief in one sentence: **if both armies can hurt each other from where they start, there is no
 maneuver, no flanking, no reason for cover, and doctrine has nothing to decide.** Everything else here is secondary.
 
-## Where things stand
+## Where things stand (updated at the close of round 5)
 
+- **The fight's shape is measured but untuned**, and it must be re-measured before it is tuned: see the Status and
+  balance.md's START HERE. The engagement numbers below are pre-round-5 and were taken on collisions, not battles.
+- **The simulation runs at 30 Hz** (interpolation on, catch-up capped at 3). Brains are ~85% of a tick and are the
+  frame-rate lever now; the tick rate cannot reduce their thinking half.
+- **Jolt is the physics engine**; hulls move in floating mode; `Lethality` answers "can I kill this quickly".
 - Round 4 landed suppression, three playable factions, heavies shielding the fragile, and a 30–58% cheaper simulation.
 - **Ranges were never re-tuned for 30 a side on a 240 m map.** A tank's shell reaches 70 m, a Lancer 90 m, artillery
   160 m; with 30 vehicles a side the front is wide and everything is in range of everything at contact.
@@ -148,8 +160,9 @@ branch on builder0 before it lands.
 **Landed (ae58286c):** the simulation runs at 30 Hz with physics interpolation, `max_physics_steps_per_frame` 3, and
 the sim baseline `glibc-2.43 16dc0de84f1c29b6` (recorded twice). `make remote T=check` green at 30 Hz: 935 passed,
 every smoke. What it bought, and what it did not: [../sim_tick_rate.md](../sim_tick_rate.md) *What it bought*.
-Short version, settled with render: **simulation script cost per simulated second fell 27%** (513 → 377 ms on the
-laptop, same seed and workload; only per-tick work halves, and thinking is on a wall-clock cadence). At 1080p a locked
+Short version, settled with render: **simulation script cost per simulated second fell a quarter to a third**
+(513 → 377 ms and, repeated on the tip, 490 → 329 ms on the laptop; only per-tick work halves, and thinking is on a
+wall-clock cadence). At 1080p a locked
 30 fps holds **~29 vehicles on a quiet laptop** and **12–15 while agents are working on it** (render's measurement of
 the same build); before the round it was 60 fps at 13 vehicles at 720p and never at 1080p. At the lead's 60 vehicles
 it is ~100 ms a frame, so **the target is not met by the tick change alone**, and ~85% of what is left is the brains.
