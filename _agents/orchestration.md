@@ -599,9 +599,17 @@ The kickoff prompt is one line; this section is the rest.
        list alternating without a single completion. That is round 4's trip-up 17 reached by a new road.
     3. **`effective_range == range` for every weapon**, which is what made (2) hold and what several positioning
        heuristics silently depended on (lesson 39).
-    The instruction: **an invariant that matters must be written as an invariant** —
-    `standoff = max(reach × 0.8, near_ambush_m + margin, floor)` — not left to two constants that happen to be
-    ordered today. And when you find one, ask which *other* pair the same change moved: all three of these came out of
+    The instruction: **an invariant that matters must be written as an invariant** — not left to two constants that
+    happen to be ordered today.
+    **But check that your belt does not undo your trousers.** The obvious spelling here,
+    `standoff = max(reach × 0.8, near_ambush_m + margin, floor)`, was proposed by one stream, endorsed by the
+    orchestrator as harmless insurance, and **correctly refused by the owner**: with a 45 m band it puts the firing
+    line at ~47 m — *outside* the effective band, which is exactly the 50%-of-shells trade the same conversation had
+    just rejected. The real invariant was the **precedence** (a deliberate support-by-fire task outranks a reaction
+    drill), and once that is stated and tested, the distance floor is not insurance but a reintroduction of the bug at
+    a different address. **A defensive constraint that re-creates the failure it guards against is worse than none** —
+    and the person who can see that is usually the path's owner, which is why an orchestrator's "take both" deserves
+    the same scrutiny as a stream's "take one". And when you find one, ask which *other* pair the same change moved: all three of these came out of
     one range narrowing, and the second and third were found days apart only because different streams tripped over
     them.
     **The corollary for reviewers:** a behaviour that has worked for four rounds is *not* evidence that anything
