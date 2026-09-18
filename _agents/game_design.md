@@ -342,16 +342,28 @@ stack first, then the layer that commands it, then how the player reads and issu
   top-down and too far. Lower the default pitch, get the vehicles in profile, keep the tactical read. The standing
   guidance is unchanged: **somewhere between StarCraft 2 and Twisted Metal**.
 - **The stands are empty.** Ambient crowd — visible in the stands and audible — is missing entirely.
-- **What the range complaint actually was** (established by measurement, 2026-09-18, and it corrects how two rounds of
-  briefs had read it). Everyone — including this document — had been treating *"units see each other and then everyone
-  just starts firing"* as **too much shooting**. It is not. When engagement discipline was added and measured, the fire
-  rate went **up**, not down: units close to where their fire actually counts instead of trading gambles at maximum
-  range, so more rounds are worth firing. **His complaint was never the volume of fire — it was fire from a distance
-  where nothing else was possible.** A denser, closer fight is the *fix*, not a side effect to be tolerated.
-  The corollary, which protects the design from the obvious over-correction: **there is a point where tightening goes
-  too far, and it is recognisable.** At 0.55 of weapon reach the fire rate fell *below* the old world, matches stretched
-  by 40%, and both test matches ended on the control point rather than by elimination — **neither side could finish**.
-  That is "a fight the player can never close", and nobody should tune toward it. The shipped bands are nowhere near it.
+- **RETRACTED 2026-09-18, and left here as a warning rather than deleted.** For a few hours this section claimed
+  *"what the range complaint actually was: not volume of fire but distance — adding discipline makes the fire rate go
+  UP"*, and drew a design conclusion from it. **That rested on two matches of a single Condemned mirror and does not
+  replicate.** At **n = 15** (three counterbalanced pairings, SEEDS=3) the fire rate goes **down**, 16.9 → 15.2 per
+  unit per minute. The reframing is unsupported and must not be quoted.
+  **Why it got in here is the part worth keeping:** combat sent the number labelled *directional, n = 2, not for the
+  lead*, and the orchestrator held it back from him correctly — then wrote the *conclusion* into this document as
+  established design understanding, where the caveat did not survive. **A caveat that travels with a number in a
+  message does not travel with the idea into a doc.** Lesson 26 says a relayed number becomes a fact; this is the same
+  failure committed against oneself, in writing, in the file that briefs every future stream. **Nothing goes into this
+  document from a sample that could not support a claim to the lead.**
+- **What the measurement at n = 15 actually supports**, stated at the strength the evidence allows (builder0,
+  `c765275f`, three counterbalanced pairings, SEEDS=3, **with acquisition and the crossing penalty on in both arms** —
+  the control tunes `effective_range` back up, so it isolates *fire discipline alone*, not all of N5):
+  fire discipline at the shipped bands moves the fight **modestly** closer — **engaged distance 68 → 60 m (12%)**,
+  **kill distance 43 → 40 m (7%)**, **flank+rear 63% → 69%** — with a **small reduction** in fire rate and **no change**
+  in how matches end. **Every metric moves the right way; none moves dramatically.** A true before/after needs the
+  control arm to disable acquisition too, which the harness cannot yet pass; until then these numbers are about
+  discipline, not about the whole envelope.
+  The over-correction is still real and still recognisable: at **0.55 of reach** kill distance falls to 34 m but the
+  fire rate drops to 11.4 and matches lengthen — tune toward it and the fight becomes one the player cannot close.
+  **The shipped bands are nowhere near it.**
 - **Weapon ranges are still too long.** *"Units see each other and then everyone just starts firing."* This was round
   5's combat brief too, and the lead still sees it: the first contact should not be the whole fight.
 
