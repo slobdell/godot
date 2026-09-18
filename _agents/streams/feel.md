@@ -165,13 +165,32 @@ with `--audio-solo=crowd`): the crowd alone measured **−46.5 dBFS until contac
 murmur is procedural filtered noise (`crowd_murmur.wav`, 4 s). Inaudible regardless of source: **the mix is the
 first cause**, fixed and measured before any source-material request.
 
+### Merge notes
+No shared files touched. Mine only: `game/theme/**`, `game/audio/loading_voice.gd`, `mk/fx.mk` (`crowd-look`),
+`mk/audio.mk` (`PASS_GODOT_FLAGS ?= --disable-vsync`), `perf_scene.gd` layers (`no_sky`, `no_crowd`), tests, docs
+(`references/audio/README.md`, `references/perf/`, `fx_tricks.md`).
+
+### What to playtest
+`make skirmish` at the default camera: the stands on all four sides should read as a packed, colourful, moving
+crowd; the horizon should be a lit city under a smoggy sky; the crowd should murmur under the fight, cheer a
+weak-spot hit and roar a kill. Listen: `build/crowd-listen/*.mp3`. Look: `make remote T=crowd-look`.
+
+### Next steps (for whoever picks this up)
+- The lead's listen decides the crowd source material (text drafted, pilot ~250 credits).
+- If the GPU line starts to matter (the frame is CPU-bound today): the unlit-stands material (priced in fx_tricks).
+- When combat's `face` lands on impact events: weight rear hits up so the room cheers a flank.
+- Control's two `LoadingVoice` calls.
+
 ### Questions for the lead
 1. **The crowd recordings** (with him via the orchestrator): is the crowd audible, and does it sound like people or
    hiss? Hiss → the ElevenLabs pilot drafted under *Waiting on the lead* (~250 credits); people → nothing to spend.
 2. **Round 5's Syndicate pilot** (X7): do the three energy weapons sound right, and record the other four (~120)?
 
 ### Green commits (merge here)
-- **`e817194a`** — `make remote T=check` on builder0: **1014 passed, 0 failed, `make check exited 0`**. Holds X1, X2,
+- **`dae54f8f`** — `make remote T=check` on builder0: **1066 passed, 0 failed, `make check exited 0`**. Everything since
+  `e817194a`: X3 real-pace levels, vsync-off audio-pass, X4 sky/skyline/side stands/screens, X5 LoadingVoice, X6
+  baseline, X8 cheer, crowd-look on control's camera. Commits after it are Status/docs only.
+- `e817194a` — `make remote T=check` on builder0: **1014 passed, 0 failed, `make check exited 0`**. Holds X1, X2,
   X3 (provisional levels) and the spawn-cost fix. Sent to the orchestrator.
 
 ### Spawn cost — control's FIGHT-lag profile (done, `90b3cfb9`)
