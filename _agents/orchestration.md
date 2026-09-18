@@ -634,3 +634,18 @@ The kickoff prompt is one line; this section is the rest.
       otherwise the next reader finds a confident wrong recommendation with no note on it.
     Also worth keeping: a **filtered** run cannot establish that a new test is *correct* (lesson 45), but it **can**
     establish that a failure is not an artefact of suite ordering. The stream ran one for exactly that, and said so.
+52. **The orchestrator is not exempt from the trip-ups, and two of them bite hardest when you are relaying fast.**
+    Round 6, in one five-minute stretch, the orchestrator committed both:
+    - **Three concurrent `make remote` runs from the same worktree** (trip-up 66/68). Each rsyncs `--delete` into the
+      *same* builder0 folder, so they swap files under each other and the one already executing is testing a tree that
+      no longer exists. The cleanup is worse than the waste: every one of the three had to be stopped remotely and
+      then locally, and the run that had held a slot for 30 minutes was void. **One remote run per worktree, and if you
+      want a newer tree tested, stop the old run first rather than launching beside it.**
+    - **`pkill -f "tools/remote.sh check"` from a shell whose own command line contained that string** (trip-up 19/79),
+      which matched and killed the shell: exit 144. Collect pids (`ps | grep '[r]emote.sh' | awk '{print $1}'`), check
+      each one's `readlink /proc/<pid>/cwd` to confirm it is **yours**, and kill by pid. Doing that here revealed that
+      three of the candidate pids belonged to *other streams* (feel's `crowd-look`, nav's `test FILTER=`) and would have
+      been killed by a broad pattern.
+    The general point for whoever holds this role: **the orchestrator runs more infrastructure commands than anyone
+    else and reads the docs least often**, because it is busy relaying. The trip-up list is not just for workers, and
+    "I am only doing this quickly" is the condition under which it applies.
