@@ -12,18 +12,8 @@ const GATE_TIGHT := Vector2(11.5, 74.0)
 const GATE_WEST := Vector2(-55.5, 74.0)
 ## Inside the dead-end pocket behind the z = 52 band's westmost gap.
 const DEAD_END := Vector2(-99.0, 41.0)
-
-
 func _maze() -> Arena:
-	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = "maze"
-	add_to_tree(arena)
-	for frame in SimClock.TICK_RATE:
-		if Pathing.is_ready(arena):
-			break
-		await tree.physics_frame
-	assert_true(Pathing.is_ready(arena), "setup: the maze's navigation synced within 1 s")
-	return arena
+	return await ArenaFixture.build(self, "maze")
 
 
 func _length(path: PackedVector3Array) -> float:
@@ -106,3 +96,52 @@ func test_the_two_serpentines_are_different_lengths() -> void:
 	assert_true(via_tight > 0.0 and via_west > 0.0, "both gates lead somewhere (%.0f m, %.0f m)" % [via_tight, via_west])
 	assert_true(absf(via_tight - via_west) > 20.0,
 			"and they are genuinely different routes, not two mouths of one (%.0f m vs %.0f m)" % [via_tight, via_west])
+
+
+## X3 (round 6): objectives are data, and an off-centre one must come in a mirrored pair.
+##
+## `Match` does not read these yet -- it hard-codes CONTROL_CENTER / CONTROL_RADIUS, and a layout's `control_point`
+## reaches only the dressing. These tests pin the shape of the data and, above all, the fallback: a layout with no
+## `objectives` list must report exactly the single central zone Match already hard-codes, so combat's change is a
+## read-through that cannot move any existing arena.
+func test_a_layout_without_objectives_reports_the_one_match_already_hard_codes() -> void:
+	for layout_name in Arena.layout_names():
+		var layout: Dictionary = Arena.load_layout(layout_name)["layout"]
+		if layout.has("objectives"):
+			continue
+		var objectives := Arena.objectives_of(layout)
+		assert_eq(objectives.size(), 1, "%s reports exactly one objective" % layout_name)
+		assert_eq(objectives[0]["position"], Match.CONTROL_CENTER, "%s: at the centre Match already uses" % layout_name)
+		assert_true(objectives[0]["radius"] > 0.0, "%s: with a positive radius" % layout_name)
+
+
+func test_an_off_centre_objective_needs_its_mirror() -> void:
+	var layout: Dictionary = Arena.load_layout("yard")["layout"].duplicate(true)
+	layout["objectives"] = [{"name": "west gate", "position": [-40.0, 20.0], "radius": 14.0}]
+	assert_true(String(Arena.validate(layout)).contains("mirror"),
+			"a lone off-centre objective is refused: %s" % Arena.validate(layout))
+	layout["objectives"].append({"name": "east gate", "position": [40.0, -20.0], "radius": 14.0})
+	assert_eq(Arena.validate(layout), "", "its mirrored pair validates")
+	var read := Arena.objectives_of(layout)
+	assert_eq(read.size(), 2, "and both are read back")
+	assert_eq(read[0]["position"], Vector3(-40.0, 0.0, 20.0), "as world positions")
+	# The fairness invariant this pairing exists to protect: the pair is the same distance from both bases.
+	# Read the spawn from the LAYOUT, not Arena.spawn_spot: this test builds no arena, so the static Arena.active is
+	# whatever the previous test left behind (or nothing at all, which is how this first failed).
+	var green_spawn: Array = layout["spawns"]["green"][0]
+	var green := Vector3(green_spawn[0], 0.0, green_spawn[1])
+	var to_green := [green.distance_to(read[0]["position"]), green.distance_to(read[1]["position"])]
+	to_green.sort()
+	var to_rust := [(-green).distance_to(read[0]["position"]), (-green).distance_to(read[1]["position"])]
+	to_rust.sort()
+	assert_near(to_green[0], to_rust[0], 0.01, "the nearer objective is equally near to each base")
+	assert_near(to_green[1], to_rust[1], 0.01, "and so is the farther one")
+
+
+func test_a_bad_objective_is_refused() -> void:
+	var layout: Dictionary = Arena.load_layout("yard")["layout"].duplicate(true)
+	layout["objectives"] = [{"name": "nowhere", "position": [0.0, 0.0]}]
+	assert_true(String(Arena.validate(layout)).contains("radius"), "an objective needs a radius")
+	layout["objectives"] = [{"name": "offmap", "position": [400.0, 0.0], "radius": 10.0},
+			{"name": "offmap mirror", "position": [-400.0, 0.0], "radius": 10.0}]
+	assert_true(String(Arena.validate(layout)).contains("outside the arena"), "and must be inside the arena")

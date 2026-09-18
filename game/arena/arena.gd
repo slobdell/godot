@@ -10,6 +10,8 @@ extends Node3D
 ##   spawn_zones: {green: {center [x, z], size [width, depth]}, rust: ...}  every spawn inside, clear of cover.
 ##   lanes: [{name, points [[x, z], ...] (green's end first), width}]    routes between the bases, for the AI.
 ##   regions: [{name, kind (ArenaKit.REGION_KINDS), position [x, z], radius}]  centre, open ground, cover clusters...
+##   objectives: [{name, position [x, z], radius}]  (X3, round 6) what the match is fought over. Off-centre ones must
+##     come in mirrored PAIRS. Absent = the single central control point, which is what Match hard-codes today.
 ## load_layout() returns the NORMALIZED layout: colliding props are appended to `obstacles` (with `size` resolved and
 ## `kit: true`), so every C4/C5 consumer that reads obstacles or the Obstacles node sees the kit unchanged.
 ## Pick one with `--arena=<name>` (default DEFAULT_LAYOUT). Obstacles become collision boxes under the
@@ -212,6 +214,28 @@ static func spawn_spot(south: bool, slot: int) -> Variant:
 		return null
 	var spot: Array = spots[slot % spots.size()]
 	return Vector3(spot[0], 0.0, spot[1])
+
+
+## X3 (round 6): the layout's objectives as [{name, position: Vector3, radius: float}].
+##
+## **`Match` does not read this yet** -- it hard-codes `CONTROL_CENTER = Vector3.ZERO` and `CONTROL_RADIUS = 16.0`,
+## and a layout's `control_point` reaches only the *dressing*, so today it is decorative. This helper exists so that
+## change is a pure read-through with no behaviour change on any existing arena: a layout with no `objectives` list
+## reports exactly the single central zone Match already hard-codes. See arena's request to combat in
+## _agents/workstreams.md.
+##
+## Off-centre objectives must come in mirrored pairs (validate() enforces it): a single one off the centre line is
+## owned by whichever base is nearer, which is the fairness invariant this whole file exists to protect.
+static func objectives_of(data: Dictionary) -> Array:
+	var result: Array = []
+	for objective: Dictionary in data.get("objectives", []):
+		result.append({"name": String(objective["name"]),
+				"position": Vector3(objective["position"][0], 0.0, objective["position"][1]),
+				"radius": float(objective["radius"])})
+	if result.is_empty() and data.get("control_point") is Dictionary:
+		result.append({"name": "control point", "position": Match.CONTROL_CENTER,
+				"radius": float((data["control_point"] as Dictionary).get("radius", Match.CONTROL_RADIUS))})
+	return result
 
 
 ## M2: a layout's lanes as [{name, points: PackedVector3Array (green's end first), width}] (Arena.active for the live one).
@@ -424,6 +448,27 @@ static func _validate_v2(data: Dictionary) -> String:
 				if absf(float(spot[0]) - float(zone["center"][0])) > float(zone["size"][0]) / 2.0 + SYMMETRY_TOLERANCE \
 						or absf(float(spot[1]) - float(zone["center"][1])) > float(zone["size"][1]) / 2.0 + SYMMETRY_TOLERANCE:
 					return "spawns.%s point %s is outside its spawn zone" % [side, spot]
+	var objectives: Variant = data.get("objectives", [])
+	if typeof(objectives) != TYPE_ARRAY:
+		return "'objectives' must be a list"
+	for objective in objectives:
+		if typeof(objective) != TYPE_DICTIONARY or typeof(objective.get("name")) != TYPE_STRING or not _is_point(objective.get("position")):
+			return "every objective needs a string 'name' and a 'position' [x, z]"
+		if absf(float(objective["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(objective["position"][1])) > Match.DRIVABLE_LIMIT:
+			return "objective %s at %s is outside the arena" % [objective["name"], objective["position"]]
+		if not _is_number(objective.get("radius")) or float(objective["radius"]) <= 0.0:
+			return "objective %s needs a positive 'radius'" % objective["name"]
+	# An off-centre objective is unfair on its own -- whichever base is nearer owns it -- so they come in mirrored
+	# PAIRS, or sit on the centre. This is the whole reason the schema is a list and not a position.
+	for objective: Dictionary in objectives:
+		var twin: bool = objectives.any(func(other: Dictionary) -> bool:
+			return is_equal_approx(float(other["radius"]), float(objective["radius"])) \
+					and absf(float(other["position"][0]) + float(objective["position"][0])) <= SYMMETRY_TOLERANCE \
+					and absf(float(other["position"][1]) + float(objective["position"][1])) <= SYMMETRY_TOLERANCE)
+		if not twin:
+			return "not point-symmetric: objective %s at %s has no 180° mirror at %s (an off-centre objective must " \
+					% [objective["name"], objective["position"], [-float(objective["position"][0]), -float(objective["position"][1])]] \
+					+ "come in a mirrored pair, or the nearer base owns it)"
 	var lanes: Variant = data.get("lanes", [])
 	if typeof(lanes) != TYPE_ARRAY:
 		return "'lanes' must be a list"

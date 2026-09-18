@@ -110,7 +110,7 @@ class TestTheRouteOptimiserAndTheReportMeasureTheSameThing(unittest.TestCase):
     def test_a_bigger_cover_penalty_never_reports_a_more_exposed_route(self):
         p = Prepared("yard")
         watchers = ar.defending_positions(p.boxes, p.layout)
-        field = ar.exposure_cost_field(p.grid, p.gn, p.blocked, p.n, watchers)
+        field = ar.exposure_cost_field(p.grid, p.gn, p.blocked, p.n, watchers, ar.WATCHER_REACH_M)["idle"]
         green = tuple(p.layout["spawns"]["green"][0])
         rust = tuple(p.layout["spawns"]["rust"][0])
         last = None
@@ -123,6 +123,38 @@ class TestTheRouteOptimiserAndTheReportMeasureTheSameThing(unittest.TestCase):
                                      "penalty %.1f reported MORE exposure (%.3f) than the penalty below it (%.3f)"
                                      % (penalty, value, last))
             last = value
+
+
+class TestTheTwoReachesAskDifferentQuestions(unittest.TestCase):
+    """idle (a crew's own judgement) vs posted (a commander spent a support-by-fire task). The gap between them is
+    the point: a map where they agree has no positions worth posting."""
+
+    def fields(self, name):
+        p = Prepared(name)
+        watchers = ar.defending_positions(p.boxes, p.layout)
+        return p, ar.exposure_cost_field(p.grid, p.gn, p.blocked, p.n, watchers, ar.WATCHER_REACH_M)
+
+    def test_a_posted_element_never_covers_less_than_an_idle_one(self):
+        """Same positions, same sightlines, strictly more reach. If posted < idle anywhere, the reach filter is
+        inverted -- which is a one-character bug that would read as a map fact."""
+        for name in ("yard", "foundry"):
+            _, fields = self.fields(name)
+            for key, idle in fields["idle"].items():
+                self.assertLessEqual(idle, fields["posted"][key] + 1e-9,
+                                     "%s at %s: idle %.3f exceeds posted %.3f" % (name, key, idle, fields["posted"][key]))
+
+    def test_an_open_arena_rewards_posting_more_than_a_dense_one(self):
+        """foundry is open ground with a little cover; yard is container walls. Posting an element on foundry should
+        buy far more than posting one in the yard, or the measure is not about terrain at all."""
+        gains = {}
+        for name in ("foundry", "yard"):
+            p, fields = self.fields(name)
+            green = tuple(p.layout["spawns"]["green"][0])
+            rust = tuple(p.layout["spawns"]["rust"][0])
+            path = ar.covered_route(p.blocked, p.n, fields["idle"], green, rust, 0.0)
+            gains[name] = ar.route_exposure(fields["posted"], path) - ar.route_exposure(fields["idle"], path)
+        self.assertGreater(gains["foundry"], gains["yard"] * 2.0,
+                           "posting buys %.3f on open foundry and %.3f in the dense yard" % (gains["foundry"], gains["yard"]))
 
 
 class TestTheFixtureIsNotTreatedAsAMap(unittest.TestCase):

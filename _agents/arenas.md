@@ -115,73 +115,94 @@ much as the map. The same seeds on several arenas are the same army pairings rep
 ## Can this map host an ambush? (X2, round 6; `make arena-report`)
 
 The lead wants ambush and flanking to be *possible*. That is a property of **sightlines, not of prop count**, and it
-is measurable before anyone plays the map. `make arena-report` now answers it per arena; `make arena-pytest` guards
-the instrument itself.
+is measurable before anyone plays the map. `make arena-report` answers it per arena; `make arena-pytest` guards the
+instrument itself.
 
-| Measure | What it is | Why it matters |
+### Two reaches, because they are two tactical situations
+
+Every exposure number below is reported twice, and **the difference between them is the interesting figure**:
+
+| Reach | Who | The question |
 |---|---|---|
-| `centre_sees_share` | share of the contested field an eye at the centre can see | **A map where the centre sees everything cannot host an ambush.** This is the headline |
-| `approach_routes` | the crossing at three cover penalties: `direct` (shortest), `flanking`, `covered` — each with length, exposure, and its longest stretch unseen from the centre | The *curve* is the answer: what a unit buys for a longer drive |
-| `flank_gain` / `flank_detour` | exposure bought off by taking the covered route, and what it costs in distance | **The price of flanking.** Terrain that offers cover nobody can afford offers nothing |
-| `overwatch` | up to three positions that dominate the crossing, each with `hidden_approach` (share of directions it can be approached from unseen) | A position that sees the route *and* every way up to it is a fortress, not an overwatch |
-| `longest_sightline_m` | unchanged from round 5 | — |
+| **idle, 45 m** | a defender acting on its **own judgement** — combat's median of `min(effective_range, sight_radius)` over all four rosters (n = 14, mean 52, range 24–104) | **The ambush question.** Can an element cross unpunished if the enemy has not specifically set up to cover this approach? |
+| **posted, 70 m** | an element the commander has **spent a support-by-fire task on** — squad's `TankBrain._order_weapon` sets `long_shot: true` for an SBF task, lifting fire discipline to the weapon's full range | **The overwatch question.** Which positions are worth posting, and therefore which approaches a competent opponent can deny? |
 
-### What the shipping arenas measure (2026-09-18, commit `69a67f03`; static geometry, no match run)
+A map where the two agree has **no positions worth posting**. A map where they diverge makes the defender choose and
+lets the attacker read the choice. An approach denied at 45 m by anyone standing nearby is just bad terrain.
 
-| Arena | centre sees | longest sightline | exposure direct → covered | price of the flank | best overwatch (sees / can be approached unseen) |
-|---|---|---|---|---|---|
-| **boulevard** | **0.64** | 236 m | 0.289 → 0.002 | **1.96×** | (4, −36) sees **90%** / only 0.12 unseen |
-| **foundry** / **furnace** | **0.56** | 236 m | 0.378 → 0.004 | **1.95×** | (4, −4) sees **100%** / 0.25 unseen |
-| boneyard | 0.40 | 216 m | 0.250 → 0.005 | 1.95× | (4, −20) sees 74% / 0.42 |
-| pit | 0.30 | 230 m | 0.188 → 0.000 | 2.10× | (4, −28) sees 90% / 0.50 |
-| scrapyard | 0.29 | 198 m | 0.266 → 0.007 | 1.81× | (28, −44) sees 77% / 0.15 |
-| **yard** | **0.20** | 184 m | 0.097 → 0.039 | **1.10×** | (12, 20) sees 87% / 0.40 |
-| *maze* (fixture) | *0.15* | *52 m* | *0.070 → 0.041* | *1.06×* | *(12, 4) sees 32% / 0.69* |
+> **An approach that is safe at 45 m is not absolutely safe.** It is safe from crews using their own judgement. A
+> commander who spends a support-by-fire task reaches further. That caveat travels with every "covered approach"
+> number here, or it reads as a guarantee.
+
+**Neither number is settled.** They mirror combat's `Engagement.covering_range()`, which derives the median from
+`Units.PROFILES` + `Weapons.PROFILES` and ships with **CP4**. Until this tool can call it, `--reach idle=45,posted=70`
+overrides them without an edit — that is how these numbers get re-derived after CP4, and it is one `make
+arena-report`, not machine time. Nothing else in the analysis depends on weapon range.
+
+### What the shipping arenas measure (2026-09-18, commit `1e7b03ce`; static geometry, no match run)
+
+| Arena | centre sees | longest sightline | crossing exposure idle → posted | **posting buys** | covered route | best overwatch: unseen approach |
+|---|---|---|---|---|---|---|
+| **boulevard** | **0.64** | 236 m | 0.070 → 0.177 | **+0.107** | 0.069 at 1.00× | **0.12** |
+| **foundry** / **furnace** | **0.56** | 236 m | 0.118 → 0.245 | **+0.127** | 0.070 at 1.07× | 0.21 |
+| boneyard | 0.40 | 216 m | 0.069 → 0.145 | +0.076 | 0.045 at 1.05× | 0.42 |
+| pit | 0.30 | 230 m | 0.092 → 0.153 | +0.061 | 0.073 at 1.02× | 0.43 |
+| scrapyard | 0.29 | 198 m | 0.081 → 0.159 | +0.078 | 0.060 at 1.06× | 0.33 |
+| **yard** | **0.20** | 184 m | 0.052 → 0.076 | **+0.024** | 0.019 at 1.10× | 0.40 |
+| *maze* (fixture) | *0.15* | *52 m* | *0.036 → 0.054* | *+0.018* | *0.021 at 1.02×* | *0.69* |
 
 ### What it says
 
-**Three findings, and they all point the same way.**
+1. **At realistic ranges, the crossing is not very exposed, and flanking buys almost nothing.** Exposure on the
+   direct route is 0.05–0.12 idle, and the most covered route the map allows only takes it to 0.02–0.07 for a
+   1.0–1.1× detour. **This reverses the picture at 110 m**, where flanking looked like it bought a lot and cost a
+   1.8–2.1× detour (see *A number that changed when its assumption did*, below). The honest reading: at 45 m most of
+   a 200 m crossing is simply out of anyone's reach, so terrain is not what decides whether you get across.
+2. **Posting an element is what actually covers ground, and open maps reward it most.** foundry +0.127 and boulevard
+   +0.107, against yard +0.024 and the maze +0.018. On foundry a support-by-fire task roughly **doubles** the
+   crossing's exposure; in the yard it buys almost nothing, because the containers stop the extra 25 m from
+   reaching anything. That is a concrete answer to "what should the support-by-fire button do for me" — it depends
+   on the map, and today only the open ones pay for it.
+3. **boulevard is the one to change.** The centre sees **64%** of the field, and its best overwatch position can be
+   approached unseen from only **0.12** of directions — it dominates and cannot be flanked back. foundry is second
+   on both counts. These are the two maps where the lead's *"one big open brawl"* is a property of the geometry.
+4. **The centre is still the best place to stand on every arena.** Every top overwatch position sits within ~40 m of
+   the centre. Combined with the control point being *at* the centre, a unit that flanks arrives late to the only
+   thing worth holding. **Terrain is not what is missing — a reason to be anywhere else is**, which is what X3 tests.
 
-1. **The best position on every arena is the middle.** Every top overwatch position above sits within ~40 m of the
-   centre, and on foundry a single spot beside the centre crate — (4, −4) — **sees 100% of the crossing**. This is
-   the lead's *"one big open brawl"* as geometry rather than as a feeling.
-2. **Flanking is possible everywhere and affordable almost nowhere.** Exposure can be bought down to near zero on
-   every shipping arena, but on six of seven it costs a **1.8–2.1× longer drive**. Terrain that offers cover nobody
-   can afford to take offers nothing. Only **yard** prices a flank sanely (1.10×) — and only because its direct
-   route is already the least exposed in the game (0.097), i.e. yard is the one map that doesn't need a flank.
-3. **Together those are the mechanism behind the round-5 finding.** The control point is at the centre; the centre
-   is the dominant position; and the alternative to the centre costs double the drive. A unit that flanks arrives
-   late to the only thing worth holding. Terrain is not what's missing — **a reason to be anywhere else is**, which
-   is exactly what X3 (objectives off the centre line) tests.
+### A number that changed when its assumption did
 
-**boulevard and foundry are the two to change**: the centre sees over half the field, and the position that sees
-everything cannot itself be approached unseen (boulevard's best is 0.12).
+The first version of this table used a **110 m** watcher reach, inherited from `exposure()`. It reported that
+flanking cost a **1.8–2.1× detour** on six of seven arenas and concluded that cover was priced out of reach. At the
+45 m a defender actually covers, the same maps price a flank at **1.0–1.1×**. Same geometry, same code, opposite
+conclusion — the whole finding lived in one constant nobody had derived. This is why `WATCHER_REACH_M` is named,
+documented, overridable from the command line, and marked as the one thing CP4 changes.
 
-### Assumptions in these numbers
+### Other assumptions
 
-- **`WATCHER_REACH_M = 110 m`** — how far a defending position is taken to *matter*, not just to see. This is a
-  weapon-range assumption wearing a sightline's clothes, and it is **the one thing here that combat's CP4 (the
-  engagement envelope, N5) changes**. Re-derive after CP4 lands: it is one `make arena-report`, not machine time.
-  Nothing else in the analysis depends on weapon range.
 - Defending positions are 4 m out from each piece of hard cover on the enemy half plus its front spawn row,
   **subsampled to 24** evenly by position so the pass stays a few seconds and does not shift when a prop is added
-  elsewhere. Exposure is therefore optimistic in absolute terms; compare arenas with each other, not against 1.0.
-- `seen_share` in the JSON is a *second*, independent measure (the box test used for lanes). It is **not** what the
-  routes optimise and is **not** monotone in the penalty. Read `exposure`.
+  elsewhere. Exposure is therefore optimistic in absolute terms: compare arenas with each other, not against 1.0.
+- Overwatch reports **two different things** and they must not be conflated. `covers_*` is the share of the *whole*
+  crossing a position denies — bounded by `2 × reach / route length`, so at 45 m over a 200 m crossing nothing can
+  exceed ~0.45 however well placed. `commands_*` is, of the samples *inside* its reach, the share it can see: the
+  geometry alone. Reading the first as "how good is this spot" scored four different arenas at exactly 0.48.
 
-### Two bugs this instrument had, and the discipline that caught them
+### Three bugs this instrument had, and the discipline that caught them
 
-Both produced plausible-looking JSON and were caught only by checking the tool against maps whose character was
-already written down in this file:
+All three produced plausible-looking JSON. None survives checking the tool against maps whose character was already
+written down in this file:
 
 1. **`centre_sees_share` was 0.000 for foundry** — the most open arena in the game. Foundry has a crate on the exact
-   centre, and the observer was standing *inside* it, so every ray was blocked at the first step. An eye has to be
-   somewhere a vehicle could be (`standing_point`).
+   centre and the observer stood *inside* it, so every ray was blocked at the first step. An eye has to be somewhere
+   a vehicle could be (`standing_point`).
 2. **The route optimiser and the report measured different things.** A* minimised the grid-marched exposure field
-   while the report printed the independent box test, so the `flanking` route came out *more* exposed than the
-   direct one — arithmetically impossible for the quantity being optimised.
+   while the report printed the independent box test, so the middle route came out *more* exposed than the direct
+   one — arithmetically impossible for the quantity being optimised.
+3. **Overwatch dominance was measuring route length.** Four arenas scored exactly 0.48 because at a 45 m reach no
+   position can cover more than ~45% of a 200 m crossing. Split into `covers` and `commands`.
 
-A third was cut rather than fixed: a `can_cross_unseen` boolean that came out **True for all eight arenas**. A
+A fourth was cut rather than fixed: a `can_cross_unseen` boolean that came out **True for all eight arenas**. A
 measure that never varies is not a measure. `tools/test_arena_report.py` now encodes the map rankings this file
 documents, so the instrument cannot silently invert itself again.
 

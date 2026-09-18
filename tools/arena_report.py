@@ -414,20 +414,42 @@ def defending_positions(boxes, layout):
     return [spots[int(i * stride)] for i in range(WATCHER_SAMPLE)]
 
 
-## How far a defending position is taken to MATTER, not just to see. This is a weapon-range assumption wearing a
-## sightline's clothes, and combat's CP4 (the engagement envelope, N5) is exactly what changes it: re-derive the
-## exposure numbers at the new effective range when CP4 lands. Nothing else in this file depends on weapon range.
-WATCHER_REACH_M = 110.0
+## How far a defending position is taken to MATTER, not merely to see. Two reaches, because they are two different
+## tactical situations rather than two kinds of unit (combat derived the numbers, squad the distinction):
+##
+##   idle   ~45 m  a defender acting on its OWN judgement. combat's median of min(effective_range, sight_radius)
+##                 across all four rosters (n=14, mean 52, range 24-104). **This is the ambush question:** can an
+##                 element cross unpunished if the enemy has not specifically set up to cover this approach?
+##   posted ~70 m  a cannon's full range, reached when a commander SPENDS a support-by-fire task on an element
+##                 (squad: TankBrain._order_weapon sets `long_shot: true` for an SBF task, lifting fire discipline
+##                 to the weapon's full range). **This is the overwatch question:** which positions are worth
+##                 posting, and therefore which approaches a competent opponent can deny.
+##
+## THE DIFFERENCE BETWEEN THEM IS THE INTERESTING NUMBER. A map where the two agree has no positions worth posting;
+## a map where they diverge makes the defender choose and lets the attacker read the choice. An approach denied at
+## 45 m by anyone standing nearby is just bad terrain.
+##
+## An approach that is safe at 45 m is therefore NOT absolutely safe -- it is safe from crews using their own
+## judgement. That caveat must travel with any "covered approach" number, or it reads as a guarantee.
+##
+## **Do not treat these as settled.** They mirror combat's `Engagement.covering_range()`, which computes the median
+## from Units.PROFILES + Weapons.PROFILES and ships with CP4; until this tool can call it, `--reach` overrides them
+## without an edit. Nothing else in this file depends on weapon range.
+WATCHER_REACH_M = {"idle": 45.0, "posted": 70.0}
 
 
-def exposure_cost_field(grid, gn, blocked, n, watchers):
-    """cell -> share of defending positions that can see it. The raw material for 'is there a covered way across?'."""
-    field = {}
+def exposure_cost_field(grid, gn, blocked, n, watchers, reach):
+    """cell -> share of defending positions that can both see it and reach it. The raw material for 'is there a
+    covered way across?'. Sight is computed once per (cell, watcher) pair and reused for every reach."""
+    fields = {key: {} for key in reach}
     for p in field_points(blocked, n):
-        seen = sum(1 for w in watchers
-                   if math.dist(p, w) <= WATCHER_REACH_M and sees(grid, gn, w[0], w[1], p[0], p[1]))
-        field[(int(p[0]), int(p[1]))] = seen / max(1, len(watchers))
-    return field
+        distances = [math.dist(p, w) for w in watchers]
+        visible = [d <= max(reach.values()) and sees(grid, gn, w[0], w[1], p[0], p[1])
+                   for w, d in zip(watchers, distances)]
+        for key, limit in reach.items():
+            seen = sum(1 for d, v in zip(distances, visible) if v and d <= limit)
+            fields[key][(int(p[0]), int(p[1]))] = seen / max(1, len(watchers))
+    return fields
 
 
 def route_exposure(field, path):
@@ -516,8 +538,19 @@ def overwatch_positions(grid, gn, blocked, n, boxes, path, top=3):
     for spot in field_points(blocked, n, 8.0):
         if not any(b.h >= EYE_HEIGHT and b.distance(spot[0], spot[1]) <= 6.0 for b in boxes):
             continue  # an overwatch position is one with cover to shoot from
-        dominates = sum(1 for p in samples
-                        if math.dist(spot, p) <= 110.0 and sees(grid, gn, spot[0], spot[1], p[0], p[1])) / len(samples)
+        lines = [(math.dist(spot, p), sees(grid, gn, spot[0], spot[1], p[0], p[1])) for p in samples]
+        # Two different questions, and conflating them made every arena's best position score 0.48:
+        #   covers  -- share of the WHOLE crossing this position denies. Bounded by 2 * reach / route length, so at
+        #              45 m over a ~200 m crossing nothing can exceed ~0.45 however well placed it is. Read it as
+        #              "how much of the route", never as "how good is this spot".
+        #   commands -- of the samples INSIDE its reach, the share it can actually see. This is the geometry alone,
+        #              and it is the number that separates a position overlooking a lane from one behind a wall.
+        seen_at, commands_at = {}, {}
+        for key, limit in WATCHER_REACH_M.items():
+            within = [v for d, v in lines if d <= limit]
+            seen_at[key] = sum(1 for d, v in lines if v and d <= limit) / len(samples)
+            commands_at[key] = (sum(1 for v in within if v) / len(within)) if within else 0.0
+        dominates = seen_at["posted"]
         if dominates < 0.15:
             continue
         approaches = [(spot[0] + dx * OVERWATCH_APPROACH_M, spot[1] + dz * OVERWATCH_APPROACH_M) for dx, dz in ring]
@@ -525,6 +558,8 @@ def overwatch_positions(grid, gn, blocked, n, boxes, path, top=3):
                       and not blocked[int((a[1] + HALF) / GRID) * n + int((a[0] + HALF) / GRID)]]
         hidden = sum(1 for a in approaches if not sees(grid, gn, spot[0], spot[1], a[0], a[1]))
         found.append({"at": [round(spot[0], 1), round(spot[1], 1)], "dominates": round(dominates, 2),
+                      "covers_idle": round(seen_at["idle"], 2), "covers_posted": round(seen_at["posted"], 2),
+                      "commands_idle": round(commands_at["idle"], 2), "commands_posted": round(commands_at["posted"], 2),
                       "hidden_approach": round(hidden / len(approaches), 2) if approaches else None})
     found.sort(key=lambda o: -o["dominates"])
     # One per neighbourhood: 40 positions on the same container wall are one overwatch, not forty.
@@ -542,7 +577,11 @@ def ambush_report(layout, boxes, blocked, n):
     grid, gn = sight_grid(boxes)
     points = field_points(blocked, n, 6.0)
     watchers = defending_positions(boxes, layout)
-    field = exposure_cost_field(grid, gn, blocked, n, watchers)
+    fields = exposure_cost_field(grid, gn, blocked, n, watchers, WATCHER_REACH_M)
+    # Routes are planned against the IDLE field: a unit picks its approach expecting crews using their own judgement,
+    # not expecting to be personally targeted by a posted element. What it then costs if the enemy HAS posted one is
+    # reported alongside, which is the decision the map is really offering.
+    field = fields["idle"]
     green_front = tuple(layout["spawns"]["green"][0])
     rust_front = tuple(layout["spawns"]["rust"][0])
     centre = standing_point(blocked, n, (0.0, 0.0))
@@ -554,10 +593,15 @@ def ambush_report(layout, boxes, blocked, n):
         if path is None:
             routes.append({"route": label, "reachable": False})
             continue
-        routes.append({"route": label, "reachable": True, "length_m": round(length(path), 1),
-                       "exposure": round(route_exposure(field, path), 3),
-                       "seen_share": round(exposure(boxes, path, watchers), 3),
-                       "hidden_from_centre_m": round(longest_hidden_run(grid, gn, path[::2], centre), 1)})
+        entry = {"route": label, "reachable": True, "length_m": round(length(path), 1),
+                 "exposure": round(route_exposure(field, path), 3),
+                 "hidden_from_centre_m": round(longest_hidden_run(grid, gn, path[::2], centre), 1)}
+        for key in WATCHER_REACH_M:
+            entry["exposure_" + key] = round(route_exposure(fields[key], path), 3)
+        # What a posted element adds over crews acting on their own judgement. A map where this is ~0 has no
+        # positions worth spending a support-by-fire task on.
+        entry["posting_gain"] = round(entry["exposure_posted"] - entry["exposure_idle"], 3)
+        routes.append(entry)
     out["approach_routes"] = routes
     covered = next((r for r in routes if r["route"] == "covered" and r.get("reachable")), None)
     direct = next((r for r in routes if r["route"] == "direct" and r.get("reachable")), None)
@@ -691,7 +735,14 @@ def main():
     parser.add_argument("layouts", nargs="+")
     parser.add_argument("--plot", help="write a PNG per layout into this folder")
     parser.add_argument("--json", help="write every report to this file")
+    parser.add_argument("--reach", help="override the watcher reaches, e.g. idle=45,posted=70 (see WATCHER_REACH_M); "
+                                        "this is how the exposure numbers get re-derived after combat's CP4")
     args = parser.parse_args()
+    if args.reach:
+        WATCHER_REACH_M.clear()
+        for part in args.reach.split(","):
+            key, _, value = part.partition("=")
+            WATCHER_REACH_M[key.strip()] = float(value)
     reports = []
     for file in args.layouts:
         with open(file) as f:
@@ -703,11 +754,13 @@ def main():
         reports.append(clean)
         a = clean["ambush"]
         by = {r["route"]: r for r in a["approach_routes"]}
-        print("AMBUSH %-10s centre_sees=%.2f  longest_sightline=%3.0fm  exposure direct=%.3f covered=%.3f "
-              "(gain %.3f at %.2fx detour)  overwatch=%d"
+        best = a["overwatch"][0] if a["overwatch"] else {}
+        print("AMBUSH %-10s centre_sees=%.2f sightline=%3.0fm | crossing idle=%.3f posted=%.3f (posting +%.3f) | "
+              "covered=%.3f at %.2fx | best overwatch commands %.2f idle / %.2f posted, %.2f unseen approach"
               % (clean["name"], a["centre_sees_share"], clean["longest_sightline_m"],
-                 by["direct"].get("exposure", -1), by["covered"].get("exposure", -1),
-                 a.get("flank_gain", -1), a.get("flank_detour", -1), len(a["overwatch"])))
+                 by["direct"].get("exposure_idle", -1), by["direct"].get("exposure_posted", -1),
+                 by["direct"].get("posting_gain", -1), by["covered"].get("exposure", -1), a.get("flank_detour", -1),
+                 best.get("commands_idle", -1), best.get("commands_posted", -1), best.get("hidden_approach", -1)))
         print("ARENA_REPORT " + json.dumps(clean))
     if args.json:
         os.makedirs(os.path.dirname(args.json) or ".", exist_ok=True)
