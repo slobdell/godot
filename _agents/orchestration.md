@@ -724,3 +724,16 @@ The kickoff prompt is one line; this section is the rest.
     rather than at how many. **When a measurement has a tail, identify the members of the tail before you accept the
     number** — a stable minority failing the same way is a defect, not variance, and it will otherwise be absorbed
     into the baseline everyone improves against.
+58. **A shared recorded artefact belongs to whoever is last, so it belongs to the orchestrator.** Round 6: three
+    streams each changed how the simulation evolves, and each was about to record `sim_state_hash.txt`. "Whoever
+    merges second re-records" works for two and is undefined for three — nobody can know at record time whether they
+    are last, and all three hashes would have been stale. The rule now: **no stream records it; the orchestrator
+    records once on `main` after the last simulation-changing merge**, and a stream whose change moves it says so in
+    its green report instead.
+    The generalisable test for any artefact like this: **is it a property of the tree rather than of the change?** A
+    recorded hash, a golden output, a committed baseline count, a perf baseline — all are properties of the whole
+    tree, so a per-stream copy is a snapshot of a world that stops existing at the next merge.
+    And the detail that made it dangerous rather than merely untidy: **nothing local could catch it.** The file is
+    keyed per glibc, the laptop's glibc has no line in it, so `sim-baseline` *silently skips* locally — every stream
+    could commit a stale hash and see a green local check. **A check that skips is not a check that passes**, and a
+    skip that is invisible is worse than a failure.
