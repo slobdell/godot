@@ -156,7 +156,16 @@ The kickoff prompt is one line; this section is the rest.
    `setsid nohup … > log 2>&1 &` and poll the log.
 8. **No new money, accounts, or secrets** beyond what your brief allows. Never commit keys.
 9. **Time-box:** ~90 minutes without progress on one item → write down what you learned, move on.
-10. **Done** = every backlog item complete, waiting on a lead gate, or written up as blocked; `make check` green on
+10. **Every number carries its commit and its machine.** "The tick costs 6.7 ms" is not a fact; "6.7 ms at
+    `d781ed05`, builder0, `sim-profile` 31 v 27" is. Round 5 lost hours to two streams comparing builder0 numbers
+    with laptop numbers (the laptop is ~2.75x slower for identical work), to a comparison of two runs that were
+    different fights, and to an 18-shell sample read as a behaviour regression. State the commit, the machine, the
+    workload and the sample size, every time — the stream that suggested this rule caught both of its own wrong
+    numbers by re-running, and neither would have survived the rule in the first place.
+11. **Say which commit is green.** When you report a branch ready, name the hash the check actually ran on
+    (`this commit is green, merge here: <sha>`), not "the branch". A tip that has moved since the check is unverified,
+    and round 5 put a broken pair on `main` exactly that way.
+12. **Done** = every backlog item complete, waiting on a lead gate, or written up as blocked; `make check` green on
     your last commit; Status holds the report: done (with measurements), decisions, questions for the lead, requests
     to other streams, known issues, what to playtest (exact commands), next steps, merge notes (shared-file edits).
 
@@ -291,3 +300,13 @@ The kickoff prompt is one line; this section is the rest.
     hash** rather than leaving the orchestrator to infer it, especially when the tip has moved since you reported.
     **Orchestrators: merge that hash**, and if the tip is ahead of it, either wait for its check or read every commit
     in between.
+30. **Changing the tick rate re-times everything counted in ticks, frames or interpolation — three instances in one
+    day.** Round 5's 30 Hz move: (a) K1's response contract said "within 3 ticks", which silently meant 50 ms and
+    would have meant 100 ms — a guarantee about what a player's hand feels belongs in milliseconds; (b) a brain's
+    think cadence was `TICK_RATE * 3 / 20`, which integer-divided to 12% *more* thinking at 30 Hz — rates must be
+    booked in Hz with the leftover fraction carried, not in whole ticks; (c) physics interpolation arrived with the
+    tick change, so a test that assigned `global_position` read the *drawn* (interpolated) position and aimed a
+    camera 79% of the way along the teleport — every teleport needs `reset_physics_interpolation()`. The
+    generalisation: **before changing a rate, grep for every constant and assertion expressed in ticks or frames, and
+    ask what each one means in seconds at both rates.** Audio, which had already converted everything to seconds,
+    needed no changes at all.

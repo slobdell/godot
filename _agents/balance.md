@@ -72,6 +72,23 @@ it measured.
 knife-fighting range buys a little accuracy and a lot of *tempo* (the teammate working on it dealt 7,410 damage
 against 977 in the control); pinning at range is what ruins a crew's shooting.
 
+## Round 5 X2: is hard cover worth using? (the mechanics half, measured 2026-09-17)
+
+`tests/test_combat_cover.gd`, on the default arena's 18 x 1.5 m walls:
+
+- **A wall stops direct fire completely.** Two tanks 24 m apart with a wall between them, 6 s of autocannon: **0
+  damage through the wall against 113 in the open** beside it. Cover is not a modifier here, it is line of sight,
+  and a hull whose centre is behind a wall cannot be hit by anything that flies flat.
+- **Fire stopped by your cover still suppresses you** (0.27 of the 0.60 needed to pin, from one machine gun 15 m
+  away). Rounds stamp the ground they flew over, and a 6 m threat cell is wider than a 1.5 m wall, so the crew on
+  the far side sits in the beaten zone their own wall is in. That is right — being shot at through cover is
+  suppressive in life — and it means cover buys safety from *damage*, not from *suppression*.
+
+What is still unmeasured is the part that needs a series, and therefore waits for the re-taken baseline: whether
+cover changes **where units actually die** in a full battle, which is `stats.engagement`'s
+`deaths_near_cover_share` against `unit_seconds_near_cover_share` (today: 12% of deaths against 11% of time, i.e.
+no effect — measured before the three fixes above, on maps that have since been replaced).
+
 ## Round 4: suppression and effective fire (combat X1, contract L2)
 
 **What it is.** Every round that resolves stamps the ground it swept into a coarse decaying grid, one per team

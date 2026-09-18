@@ -109,8 +109,9 @@ func update(camera_position: Vector3, delta: float) -> void:
 		var source := key as Node3D
 		var state: Dictionary = _sources[key]
 		# Where the player sees it: with physics interpolation a plain global_position is the last physics tick's, so
-		# at a 30 Hz tick speed (and pitch) would step twice a second. Identical when interpolation is off.
-		var position := source.get_global_transform_interpolated().origin
+		# at a 30 Hz tick speed (and pitch) would step twice a second. FxWorld.visual_transform is the one way to ask
+		# (it falls back to global_transform wherever interpolation is off: galleries, benches, headless).
+		var position := FxWorld.visual_transform(source).origin
 		if delta > 0.0:
 			var speed := float(state["speed"])
 			var measured := position.distance_to(state["last"]) / delta
@@ -171,7 +172,7 @@ func update(camera_position: Vector3, delta: float) -> void:
 
 
 static func position_of(source: Node3D) -> Vector3:
-	return source.get_global_transform_interpolated().origin
+	return FxWorld.visual_transform(source).origin
 
 
 func _release(index: int) -> void:

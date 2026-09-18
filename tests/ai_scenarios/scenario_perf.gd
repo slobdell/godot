@@ -60,9 +60,14 @@ func test_the_brains_stay_inside_the_cpu_budget() -> void:
 	var parts: Array = TankBrain.profile_parts.keys().map(func(part: String) -> String:
 		return "%s %.0f" % [part, float(TankBrain.profile_parts[part]) / ticks])
 	parts.sort()
+	# Per SECOND of match time as well as per tick: a tick-rate change moves the per-tick figure without changing what
+	# the brains cost a player (round 5, the 30 Hz move).
 	print("MEASURE ai_band_per_tick wall %.0f usec, thread cpu %.0f usec; per living unit per tick %.1f usec cpu (the -10 priority band: brains and orders; cpu time doesn't grow with other load, and per unit compares variants that fight different battles)" % [
 			float(BandProbe.wall_usec) / maxi(BandProbe.ticks, 1), float(BandProbe.cpu_usec) / maxi(BandProbe.ticks, 1),
 			float(BandProbe.cpu_usec) / maxi(BandProbe.unit_ticks, 1)])
+	print("MEASURE ai_band_per_second %.1f ms cpu per second of match time, %.1f usec per living unit per second (at %d Hz)" % [
+			float(BandProbe.cpu_usec) / maxi(BandProbe.ticks, 1) * SimClock.TICK_RATE / 1000.0,
+			float(BandProbe.cpu_usec) / maxf(float(BandProbe.unit_ticks) / SimClock.TICK_RATE, 1.0), SimClock.TICK_RATE])
 	print("MEASURE ai_execution full %d held %d" % [OrderController.executed_full, OrderController.executed_held])
 	print("MEASURE ai_usec_per_tick_parts %s (the rest: executing orders, aiming, firing)" % ", ".join(parts))
 	if not OS.get_cmdline_user_args().has("--profile-parts"):
