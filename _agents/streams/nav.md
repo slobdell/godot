@@ -283,6 +283,10 @@ and a stuck unit that reported success from 12 m away. That is what this stream 
 | yard-60 head-on | 33 | **60** (t90 37 s) |
 | foundry-60 | 40 | **60** (t90 38 s) |
 
+At `1923059c` (after the K1 and wheels fixes): the same 60/60 and 30/30 everywhere; t90 maze-60 120 s, head-on 144 s,
+yard 55 s / 42 s, foundry 40 s. **Cost** (`make ai-perf`, 60 brains): the `move` part 1119 → 1688 usec per tick
+(+0.57 ms), inside the brief's ~1 ms.
+
 Caveats: one seed (the probe has no randomness, so five seeds are five copies; defaulting to 1 is the honest
 setting), all `tank` units, hold-fire, no brains (the probe drives plain `OrderController`s).
 

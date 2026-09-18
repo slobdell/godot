@@ -126,5 +126,8 @@ measuring switches (read once from the command line).
 | `e291a35a` (X3+X4+X6) | builder0 | same | **60/60 everywhere, 30/30 on maze-30**; t90 maze-60 129 s, head-on 145 s, yard 47 s, foundry 38 s |
 | `e291a35a` | builder0 | `test_station_keeping` | a slot at 5 m/s: mean gap 0.35 m (PID) vs 4.58 m (P law) |
 
+| `30e3250d` vs `1923059c` | builder0 | `make ai-perf` (60 brains fighting, `--profile-parts`) | `move` part 1119 → **1688 usec per tick** (+0.57 ms: ORCA, right-of-way, carrot); AI band per living unit 150.4 → 165.9 usec. Different battles (21 vs 19 alive at the end), so the per-part number is the comparable one. |
+| `1923059c` | builder0 | `make nav-suite` | 60/60 on maze-60 (t90 120 s), maze-60 head-on (144 s), yard-60 (55 s), yard-60 head-on (42 s), foundry-60 (40 s); maze-30 30/30 (74 s) |
+
 The probe spawns 60 units on 52 spawn points, so 8 pairs start on top of each other; at `30e3250d` those pairs never
 moved at all. That is part of the baseline's failure, and a real case (respawns can overlap too).
