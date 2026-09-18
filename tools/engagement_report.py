@@ -22,7 +22,7 @@ import os
 SIM_HZ = os.environ.get("SIM_HZ", "60")
 
 
-def run(args, green, rust, seed, tune=None):
+def run(args, green, rust, seed, tune=None, flags=None):
     command = [args.godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination",
                "--control", f"--green-faction={green}", f"--rust-faction={rust}", f"--budget={args.budget}",
                f"--time-limit={args.time_limit}", "--score-limit=0", f"--seed={seed}"]
@@ -31,6 +31,10 @@ def run(args, green, rust, seed, tune=None):
     tune = args.tune if tune is None else tune
     if tune:
         command.append(f"--tune={tune}")
+    # N5: a variant may carry RUNNER FLAGS as well as tuning. Gates 1 and 2 of the engagement envelope (sight,
+    # acquisition) and X6's crossing penalty are CODE, not data, so `--tune` cannot switch them off -- which meant the
+    # "old world" control arm still had them in it and the series measured fire discipline alone rather than N5.
+    command.extend(flags or [])
     completed = subprocess.run(command, capture_output=True, text=True, timeout=args.time_limit * 4 + 240)
     for line in completed.stdout.splitlines():
         if line.startswith("MATCH_RESULT "):
@@ -155,16 +159,20 @@ def run_variants(args):
     variants = json.load(open(args.variants))
     pairs = [tuple(p.split(":")) for p in args.pairs.split(",") if p]
     jobs = []
-    for name, tune in variants.items():
+    for name, spec in variants.items():
+        # A variant is either a tune string (the common case) or {"tune": …, "flags": […]} when it needs to switch
+        # off something that lives in code rather than in data.
+        tune = spec if isinstance(spec, str) else str(spec.get("tune", ""))
+        flags = [] if isinstance(spec, str) else list(spec.get("flags", []))
         for green, rust in pairs:
             for seed in range(args.first_seed, args.first_seed + args.seeds):
-                jobs.append((name, tune, green, rust, seed))
+                jobs.append((name, tune, flags, green, rust, seed))
                 if green != rust:
-                    jobs.append((name, tune, rust, green, seed))
+                    jobs.append((name, tune, flags, rust, green, seed))
     started = time.time()
     by_variant, failures = {name: [] for name in variants}, []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {pool.submit(run, args, g, r, s, tune): name for name, tune, g, r, s in jobs}
+        futures = {pool.submit(run, args, g, r, s, tune, flags): name for name, tune, flags, g, r, s in jobs}
         for future in concurrent.futures.as_completed(futures):
             try:
                 by_variant[futures[future]].append(future.result())

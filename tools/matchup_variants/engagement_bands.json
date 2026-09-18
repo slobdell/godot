@@ -1,6 +1,13 @@
 {
  "shipped (preferred_max)": "assault_gun.effective_range=62,autocannon.effective_range=45,cannon.effective_range=45,laser.effective_range=86,machine_gun.effective_range=35,pulse_cannon.effective_range=55,pulse_repeater.effective_range=45,railgun.effective_range=104,scrap_cannon.effective_range=36,spear_gun.effective_range=24,twin_mg.effective_range=28",
- "reach (the old world)": "assault_gun.effective_range=80,autocannon.effective_range=60,cannon.effective_range=70,laser.effective_range=90,machine_gun.effective_range=45,pulse_cannon.effective_range=70,pulse_repeater.effective_range=55,railgun.effective_range=110,scrap_cannon.effective_range=50,spear_gun.effective_range=30,twin_mg.effective_range=35",
+ "ROUND 5 (bands at reach, no acquisition, no crossing)": {
+  "tune": "assault_gun.effective_range=80,autocannon.effective_range=60,cannon.effective_range=70,laser.effective_range=90,machine_gun.effective_range=45,pulse_cannon.effective_range=70,pulse_repeater.effective_range=55,railgun.effective_range=110,scrap_cannon.effective_range=50,spear_gun.effective_range=30,twin_mg.effective_range=35",
+  "flags": [
+   "--no-acquisition",
+   "--no-crossing"
+  ]
+ },
+ "discipline off only (bands at reach)": "assault_gun.effective_range=80,autocannon.effective_range=60,cannon.effective_range=70,laser.effective_range=90,machine_gun.effective_range=45,pulse_cannon.effective_range=70,pulse_repeater.effective_range=55,railgun.effective_range=110,scrap_cannon.effective_range=50,spear_gun.effective_range=30,twin_mg.effective_range=35",
  "0.65 of reach": "assault_gun.effective_range=52,autocannon.effective_range=39,cannon.effective_range=45.5,laser.effective_range=58.5,machine_gun.effective_range=29.25,pulse_cannon.effective_range=45.5,pulse_repeater.effective_range=35.75,railgun.effective_range=71.5,scrap_cannon.effective_range=32.5,spear_gun.effective_range=19.5,twin_mg.effective_range=22.75",
  "0.55 of reach": "assault_gun.effective_range=44,autocannon.effective_range=33,cannon.effective_range=38.5,laser.effective_range=49.5,machine_gun.effective_range=24.75,pulse_cannon.effective_range=38.5,pulse_repeater.effective_range=30.25,railgun.effective_range=60.5,scrap_cannon.effective_range=27.5,spear_gun.effective_range=16.5,twin_mg.effective_range=19.25"
 }
