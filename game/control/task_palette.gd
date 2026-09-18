@@ -35,7 +35,7 @@ const ROWS := [
 	# squad's new verb (a8048028): a line facing the kill zone, holding fire until an enemy is in it. Earned once squad
 	# confirms it green and it is on main; B is free.
 	{"id": "ambush", "name": "Ambush", "hotkey": "B", "kind": "task", "earned": false,
-		"line": "Click a kill zone: hide in a line facing it and hold fire until the enemy is in it."},
+		"line": "Click a kill zone: hide in a line facing it and hold fire until the enemy is in it, or they are found."},
 	{"id": "attack_by_fire", "name": "Attack by Fire", "hotkey": "", "kind": "task", "earned": false,
 		"line": "Click a target: destroy it with fire from a distance, without closing."},
 	{"id": "guard", "name": "Guard", "hotkey": "", "kind": "task", "earned": false,

@@ -142,21 +142,25 @@ func test_a_right_click_order_reaches_the_tracks_within_three_ticks() -> void:
 		assert_true(closer > 1.0, "%s is on its way a second later (%.1f m closer)" % [unit_name, closer])
 
 
-## Round 5 reopened (the lead: "I select squad 1, having them go somewhere ... the units do not re-arrange as intended",
-## and later "it's as though their behavior is overridden by a higher priority"). A plain move is a DIRECT order now:
-## the player said where, and that is where they go. The leader's own judgement stays on the verbs that ask for it -
-## attack-move (fight what you meet), screen, base of fire - and on attacks.
-func test_a_right_click_move_is_a_direct_order_and_the_other_verbs_stay_tasks() -> void:
+## Round 5 reopened made a plain move a DIRECT order, because a leader holding a move task kept re-slotting and
+## manoeuvring (the lead: "it's as though their behavior is overridden by a higher priority"). Round 6 (squad X4)
+## gave the move task a plain form - formed up, no contact drills, halting ON the clicked spot - so a move to a whole
+## squad keeps it a squad again. A move to PART of a squad is still the player's own order, and releases those units.
+func test_a_right_click_move_keeps_a_whole_squad_a_squad_and_part_of_one_goes_direct() -> void:
 	var f := await _setup()
 	f.controls.elements = Elements.install(f.game_match, f.orders)  # the skirmish installs these; the plain fixture doesn't
 	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	f.controls.recall_group(1)
 	await f.right_click(f.ground(Vector3(-30, 0, -20)))
-	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
-		var order := f.orders.current(unit_name)
-		assert_eq(String(order.get("verb", "")), "move", "%s has the player's own move order" % unit_name)
-		assert_eq(String(order.get("source", "")), "player", "%s knows the player asked for it" % unit_name)
-	assert_eq(f.controls.selected_element(), null, "a direct order stands the element down, so no leader re-issues")
+	var element := f.controls.selected_element()
+	assert_true(element != null, "the squad is still an element")
+	assert_eq(element.task.get("verb", ""), "move", "moving to the spot")
+	assert_eq(element.task.get("drills", true), false, "as a plain move")
+	await f.select(["Green_Alpha_1"])
+	await f.right_click(f.ground(Vector3(-10, 0, -20)))
+	assert_eq(String(f.orders.current("Green_Alpha_1").get("source", "")), "player", "one unit of it takes a direct order")
+	assert_eq(f.controls.elements.of("Green_Alpha_1"), null, "and leaves its element, whose leader would otherwise re-slot it")
+	f.controls.recall_group(1)
 	await f.key(KEY_E)
 	await f.click(f.ground(Vector3(30, 0, -20)))
 	assert_true(f.controls.selected_element() != null, "E still gives the element a screening task")

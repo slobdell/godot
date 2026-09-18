@@ -40,12 +40,13 @@ const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy",
 ## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
 ## down so its leader stops re-issuing.
 ##
-## A plain `move` is NOT here (round 5, reopened): a right-click destination is the player saying where he wants them,
-## and handing it to a leader as a task meant the leader kept re-slotting and manoeuvring afterwards - measured at 20
-## order changes a second, with units ending 20-90 m from the spot he clicked (the lead: "the units do not re-arrange
-## as intended ... their behavior is overridden by a higher priority"). Drills stay on the verbs that ask for them:
-## attack-move (fight what you meet on the way), screen, base of fire, and attacks.
-const ELEMENT_TASKS := {"attack_move": "move", "attack": "attack", "hold": "hold",
+## A plain `move` IS here again (round 6, with squad's X4). Round 5 took it out because a leader holding a move task kept
+## re-slotting and manoeuvring - 20 order changes a second, units ending 20-90 m from the click (the lead: "their
+## behavior is overridden by a higher priority"). Squad gave the task a plain form, `"drills": false` (formed up, no
+## contact drills, halting ON the clicked spot: measured 0.3 m from the click, worst member 4 m off its slot, 0 orders
+## in the last 10 s), so a move to a whole squad keeps it a squad - the lead: "if I select an entire squad and I tell
+## them to move somewhere ... there's a target formation for the squad". attack-move stays a move task WITH drills.
+const ELEMENT_TASKS := {"move": "move", "attack_move": "move", "attack": "attack", "hold": "hold",
 		"screen": "screen", "support_by_fire": "support_by_fire"}
 ## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
 const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
@@ -418,6 +419,8 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		task["target"] = String(extra["target"])
 	if task["verb"] == "move" and not task.has("to"):
 		return "a move task needs somewhere to go"
+	if verb == "move":
+		task["drills"] = false  # a plain move: formed up to the spot, no contact drills (squad X4)
 	var error := element.assign(task)
 	var command := UnitCommand.make(selection.units, verb, extra)
 	command_issued.emit(command, error)
@@ -627,6 +630,15 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	var element := selected_element()
 	if element != null and elements != null:
 		elements.disband(element)
+	elif elements != null:
+		# Part of a squad (round 6): those units leave their element, whose leader would otherwise re-slot them.
+		for unit_name in selection.units:
+			var owner := elements.of(unit_name)
+			if owner == null:
+				continue
+			owner.remove(unit_name)
+			if owner.members().is_empty():
+				elements.disband(owner)
 	var command := UnitCommand.make(selection.units, verb, extra)
 	command["source"] = "player"
 	if formation != UnitCommand.AUTO and verb in ["move", "attack_move", "hold"]:
