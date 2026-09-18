@@ -79,8 +79,10 @@ _Updated 2026-09-17 (evening)._
 with the 30 Hz simulation, contains the blob-shadow fix) 987 passed, 0 failed; **265dbcfc** (the feed's late-frame skip,
 the hitch log, the round-6 write-up) 988 passed, 0 failed.
 
-**Reopened and closed again, 2026-09-17: the MultiMesh interpolation warnings** (orchestrator's request, commit
-`8168e158`). The 30 Hz tick turned physics interpolation on, so the renderer interpolates MultiMesh transforms between
+**Reopened and closed again, 2026-09-17: the MultiMesh interpolation warnings** (orchestrator's request, commits
+`8168e158` + `4e0efc2e`, **merged to main at `4e0efc2e`**; the one conflict was in `underglow_system.gd`, where control
+had applied the inline one-liner — the orchestrator took the helper, since that is the version the next resize does not
+undo). The 30 Hz tick turned physics interpolation on, so the renderer interpolates MultiMesh transforms between
 ticks and every `_process` write logged `[Physics interpolation] MultiMesh interpolation is being triggered from
 outside physics process`. None of these meshes should be interpolated — their transforms already come from
 `FxWorld.visual_transform()`, i.e. from where things are drawn, so the renderer would interpolate an interpolation and
@@ -98,7 +100,17 @@ There are **two switches and both matter**, which is worth knowing in any stream
 rather than 21 one-liners the next resize would undo, and `tests/test_render_multimesh_interpolation.gd` fails if
 anyone sets `instance_count` directly or adds a mesh node without the switch (mutation-checked). A 6 s playtest:
 **0 interpolation warnings, 0 warnings or errors of any kind** (was 1, from a burst spawn), screenshot still has its
-bursts, tracers, blob shadows and arena kit. `game/ui/selection_markers.gd` is control's and fixed on their side.
+bursts, tracers, blob shadows and arena kit. `game/ui/selection_markers.gd` is control's and fixed on their side; it
+already carries the node-level switch, which is independent confirmation that that is the durable one.
+
+The only red in `make remote T=check` at my tip was **control's** `test_control_selection::
+test_rings_are_batched_one_multimesh_per_kind` (fails on builder0, passes on the laptop): it compared the ring's DRAWN
+position against the tank's SIMULATION position with a 1 cm tolerance, and one 30 Hz tick of travel at ~0.6 m/s is
+2.1 cm, so it fails wherever a frame lands further into the tick. Reported to control, who had found the same cause;
+they now compare like with like plus a tick-of-travel bound so a genuine desync still fails (their `9dce12d0`). Not
+reproducible on my branch tip, which predates that fix: `make remote T=check` there ends **998 passed, 1 failed**, the
+one being that test, and `check` stops at `test`, so the smokes after it did not run on this tip — they were green at
+`265dbcfc` and nothing since touches them (theme FX and docs only). Main's own check is the orchestrator's gate.
 
 **Open for round 6, in order of what the lead is waiting on:**
 1. His own clean `perf-scene` run: nobody has measured his laptop in the state he plays in (ours: ~29 vehicles quiet,
