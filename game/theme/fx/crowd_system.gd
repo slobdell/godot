@@ -79,7 +79,7 @@ func _build() -> void:
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = quad
-	multimesh.instance_count = seats.size()
+	FxMultiMesh.resize(multimesh, seats.size())
 	# Shuffle draw order so a thinner tier drops people evenly instead of whole stands.
 	var order := range(seats.size())
 	for i in range(order.size() - 1, 0, -1):
@@ -97,6 +97,7 @@ func _build() -> void:
 		multimesh.set_instance_custom_data(n, Color(_rng.randf(), _rng.randf(), (seat.x + 500.0) / 1000.0, (seat.z + 500.0) / 1000.0))
 		bounds = AABB(seat, Vector3.ONE) if n == 0 else bounds.expand(seat)
 	multimesh_instance.multimesh = multimesh
+	FxMultiMesh.never_interpolated(multimesh_instance)
 	multimesh_instance.custom_aabb = bounds.grow(3.0)
 	apply_quality()
 

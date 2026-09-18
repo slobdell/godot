@@ -109,7 +109,7 @@ func flush() -> void:
 			add_child(draw)
 			_draws[kind] = draw
 		var multimesh := draw.multimesh
-		multimesh.instance_count = entries.size()
+		FxMultiMesh.resize(multimesh, entries.size())
 		var bounds := AABB()
 		var local := multimesh.mesh.get_aabb().grow(1.0)
 		for i in entries.size():
@@ -167,6 +167,7 @@ func _new_draw(kind: String) -> MultiMeshInstance3D:
 				return null
 			multimesh.mesh = mesh
 	draw.multimesh = multimesh
+	FxMultiMesh.never_interpolated(draw)
 	return draw
 
 

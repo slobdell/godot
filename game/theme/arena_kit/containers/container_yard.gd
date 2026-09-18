@@ -119,10 +119,11 @@ func flush() -> void:
 			mesh.surface_set_material(0, _material)
 			multimesh.mesh = mesh
 			draw.multimesh = multimesh
+			FxMultiMesh.never_interpolated(draw)
 			add_child(draw)
 			_draws[kind] = draw
 		var multimesh := draw.multimesh
-		multimesh.instance_count = entries.size()
+		FxMultiMesh.resize(multimesh, entries.size())
 		var bounds := AABB()
 		for i in entries.size():
 			var xform: Transform3D = entries[i][1]

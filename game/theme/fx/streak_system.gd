@@ -34,6 +34,7 @@ func _init() -> void:
 	multimesh.mesh = mesh
 	_mesh.name = "StreakMesh"
 	_mesh.multimesh = multimesh
+	FxMultiMesh.never_interpolated(_mesh)
 	_mesh.custom_aabb = WORLD_AABB
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_mesh)
@@ -65,7 +66,7 @@ func _process(_delta: float) -> void:
 func _rebuild() -> void:
 	_dirty = false
 	var multimesh := _mesh.multimesh
-	multimesh.instance_count = _entries.size()
+	FxMultiMesh.resize(multimesh, _entries.size())
 	var i := 0
 	for id in _entries:
 		var entry: Array = _entries[id]
