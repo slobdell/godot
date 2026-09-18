@@ -146,4 +146,62 @@ Nothing blocking. The task palette (N4) goes to him through control's page, not 
 
 ## Status
 
-_The worker keeps this current._
+_Updated 2026-09-18 by the squad worker._
+
+### Plan and progress (smallest foundation first)
+
+| Item | State |
+|---|---|
+| **X1** one formation system (N2) | written; builder0 check queued (baseline `a975e262` green: 1010 passed, builder0) |
+| **X5** support by fire / screen / halts | written + pure posture tests + real-physics posture scenarios; verifying |
+| **X4** plain move keeps the squad (element side) | written (`"drills": false` task); control agreed the 2-line seam, applies after I confirm |
+| **X2** standable slots | written (`SlotGround` over the navmesh's closest point); verifying |
+| **X3** form-up ETA + pacing | ETA/pace written behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** — nav has no session yet |
+| **X6** `make squad-coherence` | probe + runner written; baseline not yet measured (waits for CP4, see below) |
+| X7 ambush/flank, X8 army layer | not started |
+
+### Decisions
+
+- **Seating rule (N2)**, one for everyone, in precedence order: (1) a named leader keeps slot 0 (the point);
+  (2) toughness tiers: whatever can take a hit goes where the fire comes from — policy `front` for a group on the
+  move (game_design: heavies in front), `exposure` for an element (the lead: heavy armour on the outside);
+  (3) within a tier, **minimum total driving** (Hungarian method; a min-total-distance matching provably has no
+  crossing paths, so units keep their relative places); (4) the previous seating is kept unless a new one saves
+  half a spacing of driving (no tick-to-tick swapping). Why tiers instead of a weighted sum: a weight either lets
+  distance override "the tank leads" or lets role override non-crossing among identical vehicles; tiers do neither.
+- **`Formations.NAMES` stays the player-pickable subset** (garage, G key, army JSON validation); herringbone, swarm
+  and ring are leader choices, not orders. `Formations.MAX_MEMBERS = 5` stays: it is C2's squad-size rule, not
+  geometry.
+- **The squad wedge changed shape slightly**: one table means the old squad wedge (wing 1.0 × spacing to the side)
+  is now the element's (0.9 ×), and the coil radius is the element's. Tests updated to say so.
+
+- **Support by fire's `to` is the point to COVER**; the leader picks the firing line: a line at 0.8 × the element's
+  shortest effective range from the point, on the element's side of it, facing it, chosen once and kept. A crew on
+  its place holds it; the task outranks react-to-contact and far-ambush (the two rules that used to starve it).
+  Control's hint now reads "click what to cover".
+- **Base of fire spends `long_shot`** (combat's CP4 override): a support-by-fire element's fire orders carry it, so
+  it reaches past the effective band. Only the commander's task spends it, never a crew's judgement.
+- **Scenario shooters are props** (`AiScenario.shooter()` defaults to `long_shot`; the orchestrator's option (b));
+  a scenario whose subject is fire discipline passes its own weapon order.
+- **A plain move is `{"verb": "move", "drills": false}`**: formed-up travel, crews shoot what they pass, no contact
+  drill. attack-move stays a move task with drills. (X4; control maps right-click on a whole element to it.)
+- **Halts stand on the ordered spot and keep their heading** (round 5's "units end 20-90 m from the click" was the
+  halt re-anchoring on the element's drifting centre every update).
+- **Cohesion is judged in time** (the form-up estimate): allowed = cohesion distance / slowest member's speed.
+
+### Questions for the lead
+
+_None yet._
+
+### Requests to other streams
+
+- **nav:** X2 asks the navmesh directly (`NavigationServer3D.map_get_closest_point`) behind `SlotGround.standable()`;
+  when N1 exists I'd like `Movement`/`Pathing` to own a "nearest standable point" query and will switch the seam.
+  X3's `FormUp.eta()` becomes `Movement.eta()` at CP1; station-keeping waits on `Pid` (N6).
+- **control:** X1 rewrote `game/control/group_formation.gd` into an adapter over `TacticsFormation` (its public
+  functions and constants are unchanged; `ROLE_RANK` is now TacticsFormation's, where `ifv` ranks one behind
+  `burner`). X4 needs the `move` rule in `rts_controls.gd:42-46` changed — see X4 when it lands.
+
+### Merge notes (shared / other streams' files)
+
+- `game/control/group_formation.gd` (control's): adapter over TacticsFormation, same API.

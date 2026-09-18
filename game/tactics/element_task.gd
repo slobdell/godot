@@ -6,7 +6,10 @@ extends RefCounted
 ##
 ##   {"verb": "move" | "attack" | "screen" | "support_by_fire" | "hold",
 ##    "to": [x, z],        world meters: required for move, screen and support_by_fire; optional for hold
-##    "target": "Rust_1"}  an enemy unit: required for attack, optional for support_by_fire
+##    "target": "Rust_1",  an enemy unit: required for attack, optional for support_by_fire
+##    "drills": false}     optional (default true): false = a plain move. The element travels formed up and its crews
+##                         shoot what they meet, but the leader runs NO contact drill (no react to contact, no flank,
+##                         no assault): the player said where, not how to fight (round 6, X4: right-click to a squad)
 ##
 ## What each verb means to the leader (_agents/doctrine.md "Tasks"):
 ##   move             get there as a formed element; fight only what stops you (react to contact)
@@ -18,7 +21,7 @@ extends RefCounted
 const VERBS := ["move", "attack", "screen", "support_by_fire", "hold"]
 const NEEDS_TO := ["move", "screen", "support_by_fire"]
 const NEEDS_TARGET := ["attack"]
-const KEYS := ["verb", "to", "target"]
+const KEYS := ["verb", "to", "target", "drills"]
 
 
 ## "" when `task` is well formed, else a human-readable reason (a typo from a script or an LLM fails loudly).
@@ -42,7 +45,14 @@ static func validate(task: Variant) -> String:
 			return "'target' must be a unit name"
 	elif NEEDS_TARGET.has(verb):
 		return "'%s' needs a 'target' unit" % verb
+	if task.has("drills") and typeof(task["drills"]) != TYPE_BOOL:
+		return "'drills' must be true or false"
 	return ""
+
+
+## Whether the leader may run contact drills on this task (false for a plain move).
+static func runs_drills(task: Dictionary) -> bool:
+	return bool(task.get("drills", true))
 
 
 static func make(verb: String, extra: Dictionary = {}) -> Dictionary:

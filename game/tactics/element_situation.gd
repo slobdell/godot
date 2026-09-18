@@ -53,6 +53,7 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 		members.append({"name": unit_name, "position": _flat(tank.global_position),
 				"forward": TacticsFormation.flat(-tank.global_basis.z), "role": Units.role_of(tank.unit_id),
 				"unit": tank.unit_id, "speed": tank.max_forward_speed, "range": float(tank.weapon.get("range", 60.0)),
+				"effective_range": float(tank.weapon.get("effective_range", tank.weapon.get("range", 60.0))),
 				"sight": tank.sight_radius, "health": clampf((hull + shield) * 0.5 + hull * 0.5, 0.0, 1.0),
 				"suppression": suppression_of(tank), "taking_fire": hit_recently})
 		center += _flat(tank.global_position)

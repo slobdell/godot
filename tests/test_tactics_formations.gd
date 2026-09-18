@@ -142,7 +142,13 @@ func test_the_exposed_slots_go_to_whatever_can_take_a_hit() -> void:
 		{"name": "Heavy", "unit": "tank", "role": "tank"},
 		{"name": "Eyes", "unit": "scout", "role": "scout"}]
 	var line := TacticsFormation.centered(TacticsFormation.offsets("line", 4, 12.0))
-	var seats := ElementPlan.by_exposure(members, line)
+	var seating := TacticsFormation.seat(members, line, Vector3.ZERO, Vector3.FORWARD,
+			{"leader": "Lead", "policy": "exposure"})
+	# seats[slot] = member index, as the pre-N2 by_exposure returned it.
+	var seats: Array = []
+	seats.resize(members.size())
+	for i in members.size():
+		seats[int(seating[String(members[i]["name"])])] = i
 	assert_eq(seats[0], 0, "the leader keeps its place in the shape")
 	var outermost := 0
 	for i in range(1, line.size()):
@@ -152,19 +158,19 @@ func test_the_exposed_slots_go_to_whatever_can_take_a_hit() -> void:
 			"the outside of a line is the armoured vehicle's place")
 	var innermost := 1
 	for i in range(1, line.size()):
-		if ElementPlan.exposure_of(line[i]) < ElementPlan.exposure_of(line[innermost]):
+		if TacticsFormation.exposure_of(line[i]) < TacticsFormation.exposure_of(line[innermost]):
 			innermost = i
 	assert_eq(String(members[seats[innermost]]["name"]), "Gun", "the artillery stands where the least fire goes")
-	assert_true(ElementPlan.toughness_of(members[0]) > ElementPlan.toughness_of(members[3]),
+	assert_true(TacticsFormation.toughness_of(members[0]) > TacticsFormation.toughness_of(members[3]),
 			"a tank can take more than a scout, which is what decides this")
-	assert_true(ElementPlan.toughness_of(members[3]) > ElementPlan.toughness_of(members[1]),
+	assert_true(TacticsFormation.toughness_of(members[3]) > TacticsFormation.toughness_of(members[1]),
 			"and artillery goes inboard of even a scout: on paper it has the thicker armour, but it is the "
 			+ "thing the element is out there to keep alive")
 
 
 func test_the_ends_of_a_column_are_the_exposed_places() -> void:
 	var column := TacticsFormation.centered(TacticsFormation.offsets("column", 4, 12.0))
-	var ends := ElementPlan.exposure_of(column[3])
-	var middle := ElementPlan.exposure_of(column[1])
+	var ends := TacticsFormation.exposure_of(column[3])
+	var middle := TacticsFormation.exposure_of(column[1])
 	assert_true(ends > middle, "the tail of a column is more exposed than its middle (%.1f vs %.1f)"
 			% [ends, middle])

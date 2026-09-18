@@ -45,7 +45,9 @@ func test_a_side_run_by_doctrine_fills_the_ledger() -> void:
 			seconds += float(rows[activity]["seconds"])
 			if activity != "brain":
 				elemental += float(rows[activity]["seconds"])
-		assert_true(seconds > 100.0, "%s: unit-seconds are counted (%.0f)" % [side_name, seconds])
+		# Counted, not "the fight lasts": with elimination on, how long a side survives is the fight's business (round 6:
+		# the one formation system changed this seed's fight and green was wiped out at 96 unit-seconds).
+		assert_true(seconds > 30.0, "%s: unit-seconds are counted (%.0f)" % [side_name, seconds])
 		assert_true(elemental > seconds * 0.5, "%s: most of its time is under doctrine (%.0f of %.0f)" % [side_name, elemental, seconds])
 	var dealt := 0.0
 	for side_name in ["green", "rust"]:

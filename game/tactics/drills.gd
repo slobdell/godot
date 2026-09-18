@@ -16,8 +16,8 @@ extends RefCounted
 ## from somewhere else (Element._adopt), so a drill can never hold a unit against its commander.
 ##
 ## Priority, highest first (a near ambush interrupts everything: it is immediate action, not a decision):
-##   near_ambush -> assault_through -> break_contact -> encircle -> bait -> far_ambush -> react_to_contact
-##   -> support_by_fire -> herringbone
+##   near_ambush -> assault_through -> break_contact -> a support-by-fire TASK (a screen on its line: no drill)
+##   -> encircle -> bait -> react_to_contact -> far_ambush -> herringbone
 ##
 ## Two of these are not in any manual, because not every faction has read one. `encircle` (a pack fanning
 ## around a target and circling it, so the damage lands on many vehicles instead of one) and `bait` (a fast
@@ -40,6 +40,8 @@ const TURN_TICKS := SimClock.TICK_RATE / 2
 const RECOVER_FACTOR := 1.25
 ## A halt counts as halted when the element is within this far of where it was told to stop (meters).
 const HALTED_M := 12.0
+## A screen counts as on its line when the element's centre is this close to the point it was sent to (meters).
+const SCREEN_REACHED_M := 30.0
 
 
 ## The drill the element should be running now, and why (a string the player reads). "" = no drill:
@@ -51,6 +53,9 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	var timed_out := current != "" and elapsed >= table.drill_ticks("timeout_ticks")
 	if timed_out or (current != "" and _finished(current, situation, state, table, elapsed)):
 		current = ""
+	# A plain move (the player's right-click, X4): the player said where, not how to fight. No drill at all.
+	if not ElementTask.runs_drills(state.get("task", {})):
+		return {"drill": "", "why": "", "point": null, "target": ""}
 
 	# 1. Near ambush: close, sudden and deadly. Turn into it and charge; nothing else outranks this.
 	if table.runs_drill("near_ambush") and current != "near_ambush" and current != "assault_through" \
@@ -64,6 +69,15 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# 3. We are losing and can still get out: break contact by bounds.
 	if table.runs_drill("break_contact") and should_break_contact(situation, state, table):
 		return _drill("break_contact", "outgunned here: break contact and bound back", nearest_contact(situation))
+	# 3b. A base-of-fire TASK is the drill. The commander has said where the element fights from; contact must not turn
+	# it into an advance (react_to_contact) or a flank (far_ambush), which used to outrank it (round 6: the lead pressed
+	# support-by-fire, watched nothing form up, and lesson 17 found the rules above it starving it).
+	var task_verb := String((state.get("task", {}) as Dictionary).get("verb", ""))
+	if task_verb == "support_by_fire" and table.runs_drill("support_by_fire"):
+		return _drill("support_by_fire", "support by fire: suppress from here, don't advance", nearest_contact(situation))
+	# 3c. A screen that is on its line fights only what comes to it: no drill takes it forward or round a flank.
+	if task_verb == "screen" and on_screen_line(situation, state):
+		return {"drill": "", "why": "", "point": null, "target": ""}
 	# 4. Keep running what we have. (The gang drills below are checked only when nothing is running: they
 	# are alternatives to each other, and an element that keeps swapping between them does neither.)
 	if current != "":
@@ -86,13 +100,19 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	if table.runs_drill("far_ambush") and _has_visible(situation) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("far_ambush", "far ambush: pin them by fire, flank with the rest", nearest_contact(situation))
-	# 7. The task itself is a base of fire.
-	if table.runs_drill("support_by_fire") and String((state.get("task", {}) as Dictionary).get("verb", "")) == "support_by_fire":
-		return _drill("support_by_fire", "support by fire: suppress from here, don't advance", nearest_contact(situation))
 	# 8. Halted with something out there: herringbone, all-round security.
 	if table.runs_drill("herringbone") and is_halted(situation, state) and String(situation.get("threat", "none")) != "none":
 		return _drill("herringbone", "halted: herringbone, watch the flanks", {})
 	return {"drill": "", "why": "", "point": null, "target": ""}
+
+
+## Whether a screening element has reached the line it was sent to hold (its centre within SCREEN_REACHED_M of the
+## task's point).
+static func on_screen_line(situation: Dictionary, state: Dictionary) -> bool:
+	var point: Variant = ElementTask.destination(state.get("task", {}))
+	if point == null:
+		return false
+	return _flat(situation.get("center", Vector3.ZERO)).distance_to(_flat(point)) <= SCREEN_REACHED_M
 
 
 ## A near ambush: a contact inside near_ambush_m that we have only just seen, or — when we were not already

@@ -43,8 +43,13 @@ func brain_tank(team: int, tank_name: String, position: Vector3, yaw: float, dir
 
 
 ## A tank on standing orders (OrderController): by default it stays put and shoots anything it sees.
+##
+## A shooter is a PROP whose job is to deliver fire at the scenario's subject, so its default weapon order carries
+## `long_shot` (combat's CP4 fire discipline would otherwise hold its fire outside the effective band, and a cover or
+## evasion scenario whose guns sit at 46 m would silently test nothing). This does NOT mean scenarios ignore fire
+## discipline: a scenario whose subject IS fire discipline must pass its own weapon order without `long_shot`.
 func shooter(team: int, tank_name: String, position: Vector3, yaw: float, move := {"type": "stop"},
-		weapon_order := {"type": "fire_at_will"}, unit := "tank", weapon := "") -> Tank:
+		weapon_order := {"type": "fire_at_will", "long_shot": true}, unit := "tank", weapon := "") -> Tank:
 	var tank := game_match.spawn_tank(tank_name, 0, team, unit_for(unit, weapon))
 	_place(tank, position, yaw)
 	var controller := OrderController.new()
