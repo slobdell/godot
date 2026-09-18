@@ -439,6 +439,29 @@ would have searched three brain names instead of the file you meant. Both now ta
 untouched: the bug is two makefiles claiming one name, so the newcomer moves. **Name make knobs after the target that
 owns them.** No dependency on the envelope — cherry-pick to `main` on its own (lesson 9).
 
+### X6 cleared of the dodge regression (squad's A/B, 2026-09-18)
+
+`scenario_dodge_rate` reads ~0 dodge attempts under CP4, and X6 was the obvious suspect: a dodging unit is by
+definition moving across, so the crossing penalty makes it harder to lay on, fewer shells arrive, and a unit with
+nothing inbound has nothing to dodge. Squad ran the A/B in the real pair state (combat `29eab0d8` + squad `9ba36681`,
+laptop, the scenario's own seeds, `Engagement.crossing_enabled` flipped directly since `--no-crossing` is
+match-runner only). Attempts / inbound ticks:
+
+| | crossing ON | crossing OFF |
+|---|---|---|
+| ifv x5p / x6t5 / x6t4 | 0/484, 10/474, 19/489 | 0/495, 0/483, 0/478 |
+| tank x5p / x6t5 / x6t4 | 0/530, 0/551, 0/557 | 15/552, 32/547, 0/556 |
+
+**It is not X6.** The champion's IFV is at 0 either way, and the handful of attempts simply move between variants from
+run to run. **`CROSSING_ACQUIRE_PENALTY` stays where it is** — I am not tuning a mechanic on single-digit counts out
+of ~500 ticks, which is the 18-shell mistake (lesson 26) wearing a different hat.
+
+The tidy-looking flip (every attempt on the IFV with crossing on, every attempt on the tank with it off) is the sort
+of pattern that invites a story, and it should not get one: total attempts are 0–32, the sim diverges chaotically from
+any change, and **the real finding underneath is round 5's** — dodging has *never* fired at either tick rate (254 of
+254 candidate directions scored "would still be hit"). A behaviour that does not fire cannot regress. That is a live
+open issue with no owner, not a CP4 consequence.
+
 ### X7 (stretch) — the event half is already done; what is left is one number
 
 Checked rather than assumed. `projectile_impact` already carries `weak_spot` (K2), feel's `game/theme/fx/k2_events.gd`
