@@ -101,6 +101,9 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
 	var to_go := center.distance_to(destination)
+	if not ElementTask.runs_drills(task):
+		_plan_form_up(plan, situation, state, table, destination)
+		return
 	if verb == "attack":
 		# X5: an attack closes until its guns count, then fights; it does not "arrive" and halt on the enemy's spot.
 		var band := INF
@@ -147,6 +150,32 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
 			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
 
+
+
+## A plain move (X4: the player's right-click to a whole element) is the lead's form-up formula taken literally: ONE
+## target formation anchored on the clicked spot, its heading and shape fixed when the order is given, and every vehicle
+## sent once, straight to its own slot from wherever it is — paced by FormUp so they arrive together. No legs (a leg
+## re-anchors and re-orders everyone), no halt re-shape on arrival (the shape the player saw going in is the shape that
+## stands), no heading that turns with the element's moving centre. Round 5 took plain moves away from elements because a
+## leader re-slotting after a move is what the lead saw as "overridden by a higher priority"; control's five-squad
+## playtest measured this path at 31-38 orders in the idle window before it was made to stand still (round 6).
+static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		destination: Vector3) -> void:
+	var kept: Variant = state.get("anchor")
+	var holding: bool = kept is Vector3 and (kept as Vector3).distance_to(destination) < 0.5
+	var center: Vector3 = situation["center"]
+	if holding and state.get("heading") is Vector3 and String(state.get("formation", "")) != "":
+		plan["heading"] = state["heading"]
+		plan["formation"] = String(state["formation"])
+	else:
+		plan["heading"] = TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
+				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
+	plan["anchor"] = destination
+	plan["technique"] = "traveling"
+	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
+	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
+	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
+			table.spacing(String(situation["terrain"])), "move")
 
 
 ## Bounding overwatch: one half moves, the other covers it by fire, then they swap. A bound never goes

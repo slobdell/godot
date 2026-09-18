@@ -87,3 +87,25 @@ func test_a_hold_stays_where_it_was_told_in_an_all_round_halt() -> void:
 	assert_true(float(result["center_to_point_m"]) <= 8.0, "on the spot it stood on when told (%.1f m off)"
 			% result["center_to_point_m"])
 	assert_true(int(result["orders_last_10s"]) <= 2, "and settled (%d orders in the last 10 s)" % result["orders_last_10s"])
+
+
+func test_five_squads_moved_in_quick_succession_go_quiet_on_their_spots() -> void:
+	# The lead's sequence (control's squad_orders_playtest, headless): press 1, right-click, press 2, right-click...
+	var result: Dictionary = await TacticsScenarios.five_squads(self, true)
+	print("MEASURE five_squads players %s" % result)
+	assert_true(int(result["idle_orders"]) <= 2, "nobody touching anything, the leaders stop ordering (%d orders in the last 10 s)"
+			% result["idle_orders"])
+	for off: float in result["anchor_off_m"]:
+		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)
+	assert_true(float(result["mean_off_slot_m"]) <= 8.0, "and its vehicles are in their slots (mean %.1f m)"
+			% result["mean_off_slot_m"])
+
+
+func test_a_cpu_army_under_the_same_orders_is_not_re_ordered_for_fighting_from_its_slots() -> void:
+	# Its idle units fight from within their slot's leash (round 4 X1); before round 6's fix the leaders re-sent every
+	# one that stopped short, over and over: 43 orders in the last 10 s of this scenario.
+	var result: Dictionary = await TacticsScenarios.five_squads(self, false)
+	print("MEASURE five_squads cpu %s" % result)
+	assert_true(int(result["idle_orders"]) <= 2, "the leaders leave them to it (%d orders in the last 10 s)" % result["idle_orders"])
+	for off: float in result["anchor_off_m"]:
+		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)

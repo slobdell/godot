@@ -461,3 +461,77 @@ static func ambush(case: TestCase, wait_s := 10.0, seconds := 24.0) -> Dictionar
 			"formation": alpha.formation}
 	lab.dispose()
 	return result
+
+
+## Round 6 (X4): the lead's own sequence — five squads, crowded together where they spawned, each given a plain move
+## (a right-click) half a second after the last, to five points across the arena. After `seconds`, nobody touching
+## anything, the last `idle_s` must be quiet: control's five-squad playtest measured 31-38 element orders in that window
+## before plain moves stood still. Returns the orders issued in the idle window, each unit's distance from the slot its
+## element holds for it now, and how far each element's anchor ended from where it was sent.
+## `players` = green is the PLAYER's army, as in the lead's sequence (its units hold where they are put, lesson 47);
+## false = a CPU army under the same orders, whose idle units fight from their slots and must not be re-ordered for it.
+static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s := 10.0) -> Dictionary:
+	var lab := TacticsLab.create(case, 23)
+	if players:
+		lab.game_match.set_meta("player_team", Match.Team.GREEN)
+	var groups: Array = []
+	for g in 5:
+		var names: Array = []
+		for i in 4:
+			var at := Vector3(-30.0 + g * 12.0, 0.0, 70.0 + i * 8.0)
+			var tank := lab.unit(Match.Team.GREEN, "Green_S%d_%d" % [g + 1, i + 1], at, 0.0)
+			AiScenario.make_durable(tank)
+			names.append(String(tank.name))
+		groups.append(names)
+	# The enemy is in sight across the arena (control's run was 30 a side): with a threat about, a leader's doctrine picks
+	# another formation and technique (bounding overwatch swaps halves), which is where re-slotting comes from. They hold
+	# their fire, so the measurement is of the leaders, not of a fight.
+	for e in 4:
+		var enemy := lab.gun(Match.Team.RUST, "Rust_Watch_%d" % (e + 1), Vector3(-60.0 + e * 40.0, 0.0, -45.0), PI)
+		AiScenario.make_durable(enemy)
+		(lab.game_match.brains.get_node("Orders_Rust_Watch_%d" % (e + 1)) as OrderController).set_orders(
+				{"type": "stop"}, {"type": "hold_fire"})
+	var elements: Array = []
+	for g in 5:
+		elements.append(lab.element(groups[g], "S%d" % (g + 1)))
+	await lab.start()
+	var goals := [Vector3(-80, 0, 20), Vector3(-40, 0, 0), Vector3(0, 0, 10), Vector3(40, 0, 0), Vector3(80, 0, 20)]
+	var total := int(seconds * SimClock.TICK_RATE)
+	var ticks := {"now": 0, "idle": 0}
+	var on_issued := func(_command: Dictionary) -> void:
+		if int(ticks["now"]) >= total - int(idle_s * SimClock.TICK_RATE):
+			ticks["idle"] = int(ticks["idle"]) + 1
+	(lab.orders as Orders).issued.connect(on_issued)
+	for tick in total:
+		ticks["now"] = tick
+		var g := tick / (SimClock.TICK_RATE / 2)
+		if tick % (SimClock.TICK_RATE / 2) == 0 and g < 5:
+			(elements[g] as Element).assign({"verb": "move", "to": [goals[g].x, goals[g].z], "drills": false})
+		await lab.step()
+	(lab.orders as Orders).issued.disconnect(on_issued)
+	var off_slot: Array = []
+	var anchor_off: Array = []
+	var far: Array = []
+	for g in 5:
+		var element: Element = elements[g]
+		anchor_off.append(snappedf((element.anchor as Vector3).distance_to(goals[g]) if element.anchor is Vector3 else -1.0, 0.1))
+		for unit_name: String in groups[g]:
+			var slot: Variant = element.slots.get(unit_name)
+			if slot is Vector3:
+				var off := lab.tank_of(unit_name).global_position.distance_to(slot)
+				off_slot.append(snappedf(off, 0.1))
+				if off > 8.0:
+					var order: Dictionary = (lab.orders as Orders).current(unit_name)
+					var goal: Variant = Orders.goal_of(order, lab.game_match)
+					var brain: TankBrain = lab.game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
+					far.append("%s off %.0f m: order %s goal-to-slot %s, brain %s (%s)" % [unit_name, off,
+							order.get("verb", "none"), "%.0f" % (goal as Vector3).distance_to(slot) if goal is Vector3 else "-",
+							TankBrain.label(brain.choice) if brain != null else "?", brain.why if brain != null else ""])
+	off_slot.sort()
+	var mean := 0.0
+	for value: float in off_slot:
+		mean += value
+	var result := {"idle_orders": int(ticks["idle"]), "anchor_off_m": anchor_off, "off_slot_m": off_slot,
+			"mean_off_slot_m": snappedf(mean / maxf(off_slot.size(), 1.0), 0.1), "far": far}
+	lab.dispose()
+	return result

@@ -156,7 +156,7 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
-			"arrived": arrived, "heading": heading, "seats": seats,
+			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation,
 			"route": route, "route_index": route_index}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
@@ -392,6 +392,12 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		var again: bool = not mine.is_empty() and String(mine.get("verb", "")) == String(desired["verb"]) \
 				and String(mine.get("target", "")) == String(desired.get("target", ""))
 		if again and tick - int(mine.get("tick", -RE_ISSUE_TICKS)) < RE_ISSUE_TICKS and _same_place(mine, desired, REISSUE_M):
+			return false
+		# It finished our order to THIS place and stopped short (a brain completes a stalled move up to 12 m out): it got
+		# as close as it could. Sending it again every RE_ISSUE_TICKS is the idle-window thrash control measured (31-38
+		# orders with nobody touching the controls, five squads crowded at the spawn). Getting it the rest of the way is
+		# navigation's job (N1: arrive or report blocked), not a re-order's.
+		if again and String(desired["verb"]) in ["move", "hold"] and _same_place(mine, desired, REISSUE_M):
 			return false
 		if desired["to"] is Vector3 and position.distance_to(desired["to"]) > SETTLED_M:
 			return true
