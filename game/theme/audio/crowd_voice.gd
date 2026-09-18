@@ -12,6 +12,10 @@ extends Node
 const MURMUR_DB := Vector2(-22.0, -11.0)  # calm → on its feet
 const ROAR_DB := -6.0
 const RESULT_ROAR_DB := -3.0
+## Feel X8 (round 6): a hit worth watching (a weak spot: FxWorld.spectacle weight 0.5, where a plain hit is 0.3) gets
+## a smaller cheer from the stands, so a flank that reaches the rear armour is rewarded by the room as well as the flare.
+const CHEER_WEIGHT := 0.45
+const CHEER_DB := -14.0
 const CALM := 0.12
 ## How fast the crowd settles after a kill (excitement per second), and how much of the match's intensity it holds.
 const SETTLE := 0.35
@@ -72,6 +76,8 @@ func use_streams(streams: Dictionary) -> void:
 func react(_position: Vector3, weight: float) -> void:
 	if weight >= 0.9:
 		_roar(ROAR_DB)
+	elif weight >= CHEER_WEIGHT:
+		_roar(CHEER_DB, 1.12)
 	excitement = clampf(maxf(excitement, CALM + weight * 0.75), 0.0, 1.0)
 
 
@@ -119,13 +125,15 @@ func _measure(delta: float, reading: MatchMood) -> void:
 	_meter_sums = Vector3.ZERO
 
 
-func _roar(volume_db: float) -> void:
+func _roar(volume_db: float, pitch := 1.0) -> void:
 	if roar.stream == null or not roar.is_inside_tree():
 		return
 	if roar.playing and roar.get_playback_position() < ROAR_GAP_S:
 		return
+	if roar.playing and volume_db < roar.volume_db:
+		return  # a cheer never cuts a louder roar short
 	roar.volume_db = volume_db
-	roar.pitch_scale = _rng.randf_range(0.92, 1.08)
+	roar.pitch_scale = pitch * _rng.randf_range(0.92, 1.08)
 	roar.play()
 
 

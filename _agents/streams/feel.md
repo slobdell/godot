@@ -161,6 +161,11 @@ with `--audio-solo=crowd`): the crowd alone measured **−46.5 dBFS until contac
 murmur is procedural filtered noise (`crowd_murmur.wav`, 4 s). Inaudible regardless of source: **the mix is the
 first cause**, fixed and measured before any source-material request.
 
+### Questions for the lead
+1. **The crowd recordings** (with him via the orchestrator): is the crowd audible, and does it sound like people or
+   hiss? Hiss → the ElevenLabs pilot drafted under *Waiting on the lead* (~250 credits); people → nothing to spend.
+2. **Round 5's Syndicate pilot** (X7): do the three energy weapons sound right, and record the other four (~120)?
+
 ### Green commits (merge here)
 - **`e817194a`** — `make remote T=check` on builder0: **1014 passed, 0 failed, `make check exited 0`**. Holds X1, X2,
   X3 (provisional levels) and the spawn-cost fix. Sent to the orchestrator.
@@ -215,6 +220,20 @@ not).
 `LoadingVoice`: murmur fades up at FIGHT, a roar as the lights come up, hands over to the match's crowd. **Request to
 control** (relayed by the orchestrator): `LoadingVoice.start(tree)` in `LoadingScreen.show_for`,
 `LoadingVoice.finish()` when the match is up. FIGHT → playable is ~1.4 s now, so this is a beat, not a bed.
+
+### X7 (stretch) — the Syndicate's weapons: waiting on the lead since round 5
+Round 5 already did the work this item describes (`archive/round5/audio.md`, *Reopened 2026-09-17*): the cause was the
+mapping (every Syndicate weapon borrowed another faction's sound), fixed with `SfxWeapons`; the energy family re-prompted
+as physical events with no pitch sweeps; a 3-weapon pilot (106 credits) on
+<https://claude.ai/artifact/RY6mYLNmNsrwPJoJmBUPSn>. **The lead has not answered** whether they sound right and whether to
+record the remaining four (pulse cannon, guided missiles, energy hit, sonic emitter; ~120 credits). Carried under
+*Questions for the lead*; nothing to spend until he does.
+
+### X8 (stretch) — payoff cues (done on my side)
+The weak-spot flare and sting shipped in round 5 (`WeaponFx._weak_spot`: gold flare, sparks, a jet of fire on a shell,
+`weak_spot_hit`). Round 6 adds the room: a spectacle of weight ≥ 0.45 (a weak spot is 0.5, a plain hit 0.3) gets a
+smaller cheer from the stands (−14 dB, pitched up), and a cheer never cuts a louder roar short. When combat's `face`
+(front/side/rear) lands on events, a rear hit can be weighted up the same way.
 
 ### X6 — keep the frame (measured at the new camera)
 Laptop (the lead's UHD 620), `cf6b079a` (control's low camera merged), 1854×1011, HIGH, 30 a side CPU v CPU, 2 cycles,
