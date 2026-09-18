@@ -140,6 +140,10 @@ _Last updated 2026-09-18 by the feel worker._
 4. X4 horizon/sky once control's camera lands; X5 with control's loading screen; X6 perf re-baselined **after**
    control's camera merge and combat's CP4 (both move perf-scene's numbers); X7/X8 stretch.
 
+**Headline (builder0, crowd-look, tree `cf6b079a`+, control's camera merged): the game's own default frame now has
+3,011 spectators in view — at round 5's default it was 0 of 2,040.** 12° frame with control's real cutaway:
+`build/crowd-look-report/x4_12deg_real_cutaway.png`.
+
 ### X1 — why the lead saw no crowd (done)
 Instrument: `make crowd-look` (`game/theme/fx/bench/crowd_look.gd`, `b80f3161`): a real skirmish, the player's own
 frame plus today's zoom slider and control's 22–50° pitch × distance grid, each shot with/without the crowd and fog
