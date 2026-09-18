@@ -136,6 +136,7 @@ func test_group_moves_give_each_unit_its_own_slot_around_the_destination() -> vo
 	var names := ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]
 	for i in names.size():
 		(game_match.tanks.get_node(names[i]) as Tank).global_position = Vector3(-10.0 + i * 10.0, 0.0, 80.0)
+		(game_match.tanks.get_node(names[i]) as Tank).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	assert_eq(orders.issue({"units": names, "verb": "move", "to": [0, 20]}), "", "group move accepted")
 	var goals: Array[Vector2] = []
 	for unit_name in names:
@@ -199,6 +200,7 @@ func test_an_order_can_say_which_way_to_face_on_arrival() -> void:
 	var names := ["Green_Alpha_1", "Green_Alpha_2"]
 	for i in names.size():
 		(game_match.tanks.get_node(names[i]) as Tank).global_position = Vector3(-5.0 + i * 10.0, 0.0, 80.0)
+		(game_match.tanks.get_node(names[i]) as Tank).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	assert_eq(orders.issue({"units": names, "verb": "move", "to": [0, 20], "facing": [3, 0]}), "", "accepted")
 	for unit_name in names:
 		var order := orders.current(unit_name)
