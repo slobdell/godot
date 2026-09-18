@@ -146,6 +146,11 @@ const IDLE_LEASH := 30.0
 ## circle; only the player moves it out of it. A move that IS an escape (running to cover, breaking contact) is exempt,
 ## and so is everything the player orders — a player's order has no leash at all.
 const PLAYER_POST_LEASH := 18.0
+## Lesson 47: options that move a held player unit back where it belongs, options that may move it only under fire, and
+## how recently it must have been hit (or have a round inbound) to count as under fire.
+const HELD_RETURNS := ["REGROUP", "HOLD", "KEEP_SLOT"]
+const HELD_UNDER_FIRE_MOVES := ["TAKE_COVER", "COVER_FIRE", "RETREAT", "RECHARGE", "RESUPPLY"]
+const HELD_UNDER_FIRE_TICKS := SimClock.TICK_RATE * 3
 ## ...with this much more rope for a move that IS the escape (running to cover, breaking contact).
 const ESCAPE_LEASH_FACTOR := 2.0
 ## Follow: station this far behind the friend (meters).
@@ -322,6 +327,11 @@ var _lane_goal_tick := 0
 var _cover_fire_cache := {}
 ## N5: the tick the current real peek began (-1 = not peeking); a peek is held until the gun fires (PEEK_COMMIT_TICKS).
 var _peek_tick := -1
+## Lesson 47: the in-place alternative for a held player unit this think (face the nearest threat, or stop), whether it
+## counts as under fire, and how many move orders the hold rule has refused (tests assert the MECHANISM with this).
+var _held_face := {"type": "stop"}
+var _held_under_fire := false
+var held_moves_refused := 0
 ## X3: the ground SUPPRESS is hosing (null = none), which target it was laid for, and when.
 var _suppress_point: Variant = null
 var _suppress_for := ""
@@ -1658,6 +1668,9 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 
 func _act(s: Dictionary) -> void:
 	why = TankBrain.tactics_tag(s, choice)
+	# Round 6 (lesson 47): what a held player unit may do instead of moving, and whether it is under fire.
+	_held_face = TankBrain._face_threat_or(s, {"type": "stop"})
+	_held_under_fire = tank.ticks_since_hit < HELD_UNDER_FIRE_TICKS or not (s.get("incoming", []) as Array).is_empty()
 	if choice["option"] != "CLEAR_LANE":
 		_lane_goal = null
 	var me: Dictionary = s["self"]
@@ -2322,6 +2335,15 @@ static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := O
 	return order
 
 
+## Whether a unit holding a player's post may start moving for `option`: back to its post (REGROUP/HOLD), with its
+## element (KEEP_SLOT), or — under fire — into cover or away (TAKE_COVER, COVER_FIRE, RETREAT, RECHARGE, RESUPPLY, and any
+## escape the brain marks `to_safety`). Never for a fight of its own choosing.
+static func held_may_move(option: String, under_fire: bool, to_safety: bool) -> bool:
+	if HELD_RETURNS.has(option):
+		return true
+	return under_fire and (to_safety or HELD_UNDER_FIRE_MOVES.has(option))
+
+
 ## A point this unit may drive to on its own: inside PLAYER_POST_LEASH of where the player left it. Anything further is
 ## pulled back onto the edge of that circle, so a unit fights from the ground it was given instead of being drawn across
 ## the map by whatever it can see.
@@ -2338,6 +2360,16 @@ func _within_post(point: Vector3, lead := PLAYER_POST_LEASH) -> Vector3:
 
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
 func _order_move(order: Dictionary) -> void:
+	# The player's units hold until ordered (round-5 ruling; product constraint #4). A unit holding the post the player
+	# left it at may shoot, turn and — under fire — take cover or escape, and it goes back to its post; it may NOT start
+	# moving on its own judgement (a flank, an advance, a circle). Until round 6 nothing enforced this: a held unit sat
+	# still only because a range heuristic in _combat_move happened to return "stop", and when CP4 changed the ranges it
+	# held 21 s and then flanked (lesson 47). This is the rule, stated where every move order passes.
+	if _player_post != null and String(order.get("type", "")) == "move_to" and not held_may_move(
+			String(choice.get("option", "")), _held_under_fire, bool(order.get("to_safety", false))):
+		held_moves_refused += 1
+		order = _held_face
+
 	# The player's post leashes everything this unit decides for itself. An escape (cover, breaking contact) gets a
 	# longer lead but not a free one: a unit that runs all the way home has left the ground the player gave it, which is
 	# what "I have no control" looks like from the outside.
