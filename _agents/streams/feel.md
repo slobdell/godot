@@ -111,6 +111,20 @@ place, you do not place).
 
 1. **Crowd bed audio text**, if X3 needs new ElevenLabs material: approve the text, then a cheap pilot before any
    batch. Route it through the orchestrator the day it is ready.
+   **Drafted (feel, 2026-09-18), not sent yet.** Order agreed with the orchestrator: the mix fix lands first and the
+   lead listens to it; only if the procedural murmur (filtered noise) still sounds like hiss rather than people does
+   this go to him. Proposed sources (ElevenLabs sound effects, `eleven_text_to_sound_v2`, ~10 credits a second):
+
+   | id | sound | s × takes | prompt |
+   |---|---|---|---|
+   | `crowd_bed` | `crowd_murmur` (loop) | 20 × 2 | *A packed open-air stadium crowd of thousands at night, heard from the middle of the arena floor: a dense steady murmur of many overlapping voices, no words intelligible, scattered distant shouts and whistles, a few claps, a big hard concrete bowl. Constant level, no swells, no music, no announcer.* |
+   | `crowd_tense` | new lull bed (loop) | 15 × 1 | *A huge stadium crowd holding its breath: a low restless anxious hum of thousands of people, shuffling feet on metal bleachers, a few nervous calls far away. Quiet and constant, no cheering, no music.* |
+   | `crowd_roar` | `crowd_cheer` | 5 × 3 | *A packed stadium crowd erupting at a huge hit: thousands of voices rising into a roar within a second, yells and cheers, feet stamping on metal bleachers, then slowly falling back. Real voices only: no whistle sweeps, no music, no horns.* |
+   | `crowd_ooh` | new near-miss reaction | 3 × 2 | *A big stadium crowd reacting to a near miss: a collective rising "oooh" from thousands of people that breaks into scattered groans and laughter. Real voices, no music.* |
+   | `crowd_stomp` | new last-stand bed (loop) | 6 × 1 | *Thousands of fans stamping on metal bleachers and clapping in a steady rhythm that slowly builds, with a low chanting roar under it and no words. Constant tempo, no music.* |
+
+   Pilot (listen first): `crowd_bed` 1 take + `crowd_roar` 1 take ≈ 25 s ≈ 250 credits. Full set ≈ 90 s ≈ 900
+   credits.
 2. **No new Meshy models** (88 credits left). Placing and re-dressing existing art is free and expected.
 
 ## Status
@@ -146,3 +160,38 @@ with `--audio-solo=crowd`): the crowd alone measured **−46.5 dBFS until contac
 −32 to −36 dBFS after contact (still 10–16 dB under) — *before* the 5:1 impact ducking on the Bed bus it also rode. The
 murmur is procedural filtered noise (`crowd_murmur.wav`, 4 s). Inaudible regardless of source: **the mix is the
 first cause**, fixed and measured before any source-material request.
+
+### Green commits (merge here)
+- **`e817194a`** — `make remote T=check` on builder0: **1014 passed, 0 failed, `make check exited 0`**. Holds X1, X2,
+  X3 (provisional levels) and the spawn-cost fix. Sent to the orchestrator.
+
+### Spawn cost — control's FIGHT-lag profile (done, `90b3cfb9`)
+Not per-instance work in `dozer_part` (< 1 ms a part, measured). Every new-faction vehicle's hull VisualSlot first
+fills the default `tank.hull` (the Condemned dozer), then swaps in its own art; the dozer is freed, nothing references
+its glb, the engine unloads it, and the next vehicle re-reads it from disk (a node trace showed a 70–90 ms gap before
+`HullVisual/TankHullDozer` on every law_tank). Fix: `GameTheme.scene()` holds every slot scene it loads.
+Laptop, headless, `build/bench/tank_bench.gd` (not committed: build/ is ignored), tree at `b80f3161`, steady state
+(instances 2–4): law_tank 106–128 → 0.9 ms, gang_tank 104–125 → 0.8, syn_ifv 104–114 → 1.1, Condemned tank 2 → 0.7.
+Request to combat (not urgent): set a new-faction unit's hull slot before its VisualSlot readies, so the dozer is never
+built and thrown away (~0.5 ms a vehicle now).
+
+### X2 — the crowd reads (first pass done, `e447c6e5`)
+Palette across the whole value range (was all darks), skin-toned heads and hands (atlas G mask), `lamp` 1.8,
+9 rows per module at 0.75 m (2,040 → 4,287 seats), tiers LOW/MEDIUM/HIGH 1800/3600/6000, still one draw call.
+Frames (builder0, crowd-look, working tree on `b80f3161`): the home stands at 35°/60 m read as a packed, speckled
+crowd; the far stands at 22°/90 m (7 px figures) read as a bright mass instead of empty metal. Tuned across the band,
+not for one pose: the lead picked 25°/50 m/FOV 60 and control may go to 12°; crowd-look now shoots FOV-60 poses at
+15–50°. Perf: not yet measured — X6 re-baselines after control's camera merge (perf-scene inherits its pose).
+
+### X3 — audible crowd (mix half done, levels provisional, `85a4ab70`)
+Crowd bus → World, dipped 2:1 by impacts (the Bed bus ducks 5:1); murmur −17…−6 dB (was −30…−14), roars −3/0.
+`--crowd-meter` prints the crowd's and World's levels each second with the match clock. First metered reading
+(builder0): crowd ≈ World in the lull, 6–10 dB under World in battle. **Caveat:** `audio-pass` on builder0 runs the
+game ~10× slower than wall time (round 5 saw it too): 8.2 s of match per 90 s recorded. **Muted it is just as slow**
+(3.1 s per 30 s), so audio is not the cause; testing vsync (`PASS_GODOT_FLAGS=--disable-vsync`). Until then any
+battle-level comparison is against a fight ~10× thinner than a real one.
+
+### X4 — sky and skyline (in progress)
+`night_sky.gdshader` (static smog glow over the horizon, clouds lit from below; no TIME so it never re-renders) and
+`CitySkyline` (one open ring at 640 m: two layers of towers, lit windows that fade to their average under ~2 px so the
+far city doesn't shimmer, neon signs, aviation lamps; unshaded, own haze). perf-scene gained a `no_sky` layer.
