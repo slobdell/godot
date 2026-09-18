@@ -42,6 +42,12 @@ func _duel(variant: String, unit: String, seed_value: int) -> Dictionary:
 	return {"fired": fired, "hits": hits, "inbound_ticks": inbound_ticks, "dodging_ticks": dodging_ticks}
 
 
+## KNOWN-FAILING since CP4 (round 6), and why — so nobody re-derives it: dodging has never really fired (round 5: 254 of
+## 254 candidate directions scored "would still be hit"), so "the champion still tries to dodge" tests an aspiration.
+## squad and combat A/B'd it in the CP4 pair (2026-09-18, laptop): the champion's IFV made 0 attempts in ~490 inbound
+## ticks with X6's crossing penalty on AND off. Which variant happens to collect the few attempts (0-32 of ~500 ticks)
+## reshuffles with any change at all — it looked like a pattern (IFVs with crossing on, tanks with it off) and is NOT
+## one. Not in make check. Fix dodging itself before tuning anything to this number.
 func test_who_dodges_and_how_often_they_try() -> void:
 	var tried := {}
 	for unit: String in ["ifv", "tank"]:
