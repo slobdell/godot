@@ -151,3 +151,40 @@ func test_the_fight_reports_how_hard_it_is_actually_shooting() -> void:
 	assert_true(float(busy.summary()["shots_per_unit_minute"]) > float(quiet.summary()["shots_per_unit_minute"]) * 5.0,
 			"and a quiet fight reads as a quiet fight")
 	assert_eq(busy.summary()["shots"], 60, "the raw count is there too, for a sanity check against MATCH_RESULT")
+
+
+func test_engagement_distance_separates_direct_fire_from_artillery() -> void:
+	# Lesson 49: an aggregate that mixes two mechanisms measures the louder one, and its name will not warn you.
+	# N5 governs DIRECT fire only — artillery is deliberately outside it — so a battery lobbing at a spotted contact
+	# across the map used to set "contact" and hold "engaged distance" at the separation of two armies that were not
+	# yet fighting. The direct-only figures sit ALONGSIDE the all-shots ones so round 5's baseline stays comparable.
+	var stats := EngagementStats.new([])
+	var far_apart := [[{"position": Vector3(0, 0, 80), "speed": 0.0, "near_cover": false}],
+			[{"position": Vector3(0, 0, -80), "speed": 0.0, "near_cover": false}]]
+	var close := [[{"position": Vector3(0, 0, 15), "speed": 0.0, "near_cover": false}],
+			[{"position": Vector3(0, 0, -15), "speed": 0.0, "near_cover": false}]]
+	for second in 6:
+		stats.sample(far_apart, 2, 0)   # only the battery is firing, 160 m apart
+	for second in 6:
+		stats.sample(close, 2, 2)       # now the direct-fire guns are in it, 30 m apart
+	var summary := stats.summary()
+	assert_eq(summary["contact_second"], 0, "the all-shots contact is still the first round of any kind")
+	assert_eq(summary["direct_contact_second"], 6, "but direct fire did not start until the guns closed")
+	assert_near(float(summary["engaged_distance_median"]), 95.0, 0.1,
+			"the all-shots median is dragged out by the artillery seconds (160 and 30)")
+	assert_near(float(summary["engaged_distance_direct_median"]), 30.0, 0.1,
+			"while the direct-fire median describes the fight the envelope actually governs")
+
+
+func test_a_caller_that_does_not_split_its_shots_still_works() -> void:
+	# Round 5's callers pass one count. They must keep meaning what they meant, or the old baseline stops comparing.
+	var stats := EngagementStats.new([])
+	var pair := [[{"position": Vector3(0, 0, 20), "speed": 0.0, "near_cover": false}],
+			[{"position": Vector3(0, 0, -20), "speed": 0.0, "near_cover": false}]]
+	for second in 4:
+		stats.sample(pair, 3)
+	var summary := stats.summary()
+	assert_eq(summary["direct_contact_second"], summary["contact_second"],
+			"untold, every shot counts as direct")
+	assert_near(float(summary["engaged_distance_direct_median"]), float(summary["engaged_distance_median"]), 0.1,
+			"and the two medians agree")

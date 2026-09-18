@@ -79,3 +79,17 @@ func test_the_crowd_plays_on_its_own_bus_that_impacts_only_dip() -> void:
 	var bed := AudioServer.get_bus_effect(AudioServer.get_bus_index(SfxSystem.BED_BUS), 0) as AudioEffectCompressor
 	assert_true(dip != null and dip.sidechain == StringName(SfxSystem.IMPACT_BUS), "impacts still dip the stands")
 	assert_true(dip.ratio < bed.ratio, "but more gently than the bed under the guns (%.1f:1 < %.1f:1)" % [dip.ratio, bed.ratio])
+
+
+func test_a_weak_spot_hit_gets_a_smaller_cheer_and_a_plain_hit_none() -> void:
+	## Feel X8 (round 6): FxWorld.spectacle weighs a plain hit 0.3, a weak spot 0.5 and a kill 1.0.
+	var voice := _voice()
+	await wait_physics_frames(1)
+	voice.react(Vector3.ZERO, 0.3)
+	assert_true(not voice.roar.playing, "a plain hit only lifts the murmur")
+	voice.react(Vector3.ZERO, 0.5)
+	assert_true(voice.roar.playing, "a weak spot gets a cheer")
+	assert_eq(voice.roar.volume_db, CrowdVoice.CHEER_DB, "quieter than a kill's roar")
+	voice.roar.stop()
+	voice.react(Vector3.ZERO, 1.0)
+	assert_eq(voice.roar.volume_db, CrowdVoice.ROAR_DB, "a kill still roars")

@@ -32,8 +32,9 @@ extends RefCounted
 ## the source has no signal.
 
 const TECHNIQUES := ["traveling", "traveling_overwatch", "bounding_overwatch"]
-const DRILLS := ["react_to_contact", "near_ambush", "far_ambush", "break_contact", "support_by_fire", "assault_through"]
-const TASKS := ["move", "attack", "screen", "support_by_fire", "hold"]
+const DRILLS := ["react_to_contact", "near_ambush", "far_ambush", "break_contact", "support_by_fire", "assault_through",
+		"ambush", "spring_ambush"]
+const TASKS := ["move", "attack", "screen", "support_by_fire", "ambush", "hold"]
 ## Roles a brain executes differently. "bound" moves (it is the one being covered), "overwatch" and "base_of_fire"
 ## stay and shoot, "maneuver" is the element moving under someone else's fire.
 const ROLES := ["bound", "overwatch", "base_of_fire", "maneuver"]
@@ -123,6 +124,11 @@ static func changed(before: Dictionary, after: Dictionary) -> bool:
 
 
 ## Is this unit one of the ones holding still and shooting so someone else can move?
+## X7: an element lying in ambush that has not been sprung: its crews hold their fire, whatever they can see.
+static func holds_fire(context: Dictionary) -> bool:
+	return _text(context.get("task")) == "ambush" and _text(context.get("drill")) != "spring_ambush"
+
+
 static func is_firing_base(context: Dictionary) -> bool:
 	return ["overwatch", "base_of_fire"].has(_text(context.get("role")))
 

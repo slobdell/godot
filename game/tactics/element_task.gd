@@ -4,8 +4,8 @@ extends RefCounted
 ## WHAT and WHERE; the element's leader decides the formation, the movement technique and the drills
 ## (_agents/doctrine.md). Nobody commands geometry.
 ##
-##   {"verb": "move" | "attack" | "screen" | "support_by_fire" | "hold",
-##    "to": [x, z],        world meters: required for move, screen and support_by_fire; optional for hold
+##   {"verb": "move" | "attack" | "screen" | "support_by_fire" | "ambush" | "hold",
+##    "to": [x, z],        world meters: required for move, screen, support_by_fire and ambush; optional for hold
 ##    "target": "Rust_1",  an enemy unit: required for attack, optional for support_by_fire
 ##    "drills": false}     optional (default true): false = a plain move. The element travels formed up and its crews
 ##                         shoot what they meet, but the leader runs NO contact drill (no react to contact, no flank,
@@ -16,10 +16,12 @@ extends RefCounted
 ##   attack           close with that enemy (or where it was last seen) and destroy it
 ##   screen           occupy a line across that point, observe, report, fight only what comes to you
 ##   support_by_fire  take a firing position covering that point (or target) and suppress from it; don't advance
+##   ambush           (round 6, X7) take positions covering that point (the kill zone), HOLD FIRE, and open up all at
+##                    once when an enemy enters it or the element is found (Drills: "ambush", then "spring_ambush")
 ##   hold             stay here, all-round security (herringbone at a halt)
 
-const VERBS := ["move", "attack", "screen", "support_by_fire", "hold"]
-const NEEDS_TO := ["move", "screen", "support_by_fire"]
+const VERBS := ["move", "attack", "screen", "support_by_fire", "ambush", "hold"]
+const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
 const KEYS := ["verb", "to", "target", "drills"]
 
@@ -72,7 +74,7 @@ static func destination(task: Dictionary) -> Variant:
 static func describe(task: Dictionary) -> String:
 	var verb := String(task.get("verb", ""))
 	var words: String = {"move": "move", "attack": "attack", "screen": "screen",
-			"support_by_fire": "support by fire", "hold": "hold"}.get(verb, "?")
+			"support_by_fire": "support by fire", "ambush": "ambush", "hold": "hold"}.get(verb, "?")
 	if task.has("target"):
 		words += " " + String(task["target"])
 	elif task.has("to"):

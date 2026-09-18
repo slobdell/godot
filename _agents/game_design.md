@@ -342,6 +342,50 @@ stack first, then the layer that commands it, then how the player reads and issu
   top-down and too far. Lower the default pitch, get the vehicles in profile, keep the tactical read. The standing
   guidance is unchanged: **somewhere between StarCraft 2 and Twisted Metal**.
 - **The stands are empty.** Ambient crowd — visible in the stands and audible — is missing entirely.
+- **RETRACTED 2026-09-18, and left here as a warning rather than deleted.** For a few hours this section claimed
+  *"what the range complaint actually was: not volume of fire but distance — adding discipline makes the fire rate go
+  UP"*, and drew a design conclusion from it. **That rested on two matches of a single Condemned mirror and does not
+  replicate.** At **n = 15** (three counterbalanced pairings, SEEDS=3) the fire rate goes **down**, 16.9 → 15.2 per
+  unit per minute. The reframing is unsupported and must not be quoted.
+  **Why it got in here is the part worth keeping:** combat sent the number labelled *directional, n = 2, not for the
+  lead*, and the orchestrator held it back from him correctly — then wrote the *conclusion* into this document as
+  established design understanding, where the caveat did not survive. **A caveat that travels with a number in a
+  message does not travel with the idea into a doc.** Lesson 26 says a relayed number becomes a fact; this is the same
+  failure committed against oneself, in writing, in the file that briefs every future stream. **Nothing goes into this
+  document from a sample that could not support a claim to the lead.**
+- **SETTLED (75 matches, 15 per configuration across three counterbalanced faction pairings, builder0, `996a25fd`),
+  against a genuine round-5 control** — bands at reach **plus `--no-acquisition --no-crossing`**, so the gates are off
+  and not merely the bands:
+  **kill distance 54 → 40 m (−26%)**, engaged distance 72 → 60 m (−17%), **off-axis kills 26% → 45%**, rear-armour
+  kills 11% → 21%, fire rate 17.8 → 15.2 (−15%). The round-6 acceptance target — *a majority of direct-fire kills come
+  from the flank or the rear* — is **met at 69%**, up from 55%.
+- **THE DECOMPOSITION, and it is the most important thing round 6 learned about combat:**
+
+  | | kill distance | engaged distance | off-axis kills |
+  |---|---|---|---|
+  | **sight + acquisition + the crossing penalty** | **−11 m** | −4 m | **+17 pts** |
+  | **fire discipline (the effective bands)** | −3 m | **−8 m** | +2 pts |
+
+  **The gates do the heavy lifting; the bands mostly pull the armies closer.** Making a crew *find and hold* a target
+  before it may shoot is what moves where the fight is decided and who dies from the flank. The effective bands — the
+  part that took by far the most design argument this round, the whole `preferred_max` decision, the 0.65-vs-0.55
+  sweep, the standoff negotiation — are the **smaller** contributor to both headline metrics.
+  **If anyone tunes this later: acquisition first, bands second.** This was only visible once the control disabled the
+  gates rather than just the bands; a control that is not a real "before" hides which half of a change did the work.
+- **0.55 of reach is confirmed as the overshoot**: lowest fire rate, longest matches, fewest eliminations of any arm.
+  A fight the player cannot close. The shipped bands are nowhere near it.
+- **Superseded, kept for the method:** an earlier n = 15 pass
+, stated at the strength the evidence allows (builder0,
+  `c765275f`, three counterbalanced pairings, SEEDS=3, **with acquisition and the crossing penalty on in both arms** —
+  the control tunes `effective_range` back up, so it isolates *fire discipline alone*, not all of N5):
+  fire discipline at the shipped bands moves the fight **modestly** closer — **engaged distance 68 → 60 m (12%)**,
+  **kill distance 43 → 40 m (7%)**, **flank+rear 63% → 69%** — with a **small reduction** in fire rate and **no change**
+  in how matches end. **Every metric moves the right way; none moves dramatically.** A true before/after needs the
+  control arm to disable acquisition too, which the harness cannot yet pass; until then these numbers are about
+  discipline, not about the whole envelope.
+  The over-correction is still real and still recognisable: at **0.55 of reach** kill distance falls to 34 m but the
+  fire rate drops to 11.4 and matches lengthen — tune toward it and the fight becomes one the player cannot close.
+  **The shipped bands are nowhere near it.**
 - **Weapon ranges are still too long.** *"Units see each other and then everyone just starts firing."* This was round
   5's combat brief too, and the lead still sees it: the first contact should not be the whole fight.
 
@@ -350,6 +394,49 @@ stack first, then the layer that commands it, then how the player reads and issu
 He chose from control's page (https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL — one frozen 30-a-side fight shown at
 every pose): **pitch 25° · 50 m out · FOV 60°**, no note. Applied as `DEFAULT_PITCH_DEG 25`, `FOV_DEG 60` (was 55),
 start 50 m out; the player tilts freely 22°–50°, and `O` is the deliberate 77° top-down.
+
+**FINAL, 2026-09-18 18:01 UTC — he went lower again: `pitch 12° · 50 m · FOV 60°`.** Asked a second time on a page
+offering 12/16/20/25°, he took **the floor of that grid too** (`picks/lead` on
+https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7, no note). Two pages, two floors: this settles the long-open
+question of where *"somewhere in the middle between StarCraft 2 and Twisted Metal"* actually sits, and the answer is
+**much nearer Twisted Metal than this project has ever assumed**. Treat 12° as the intended look, not an experiment —
+and do not let a later agent "correct" it upward toward a conventional RTS pitch because the tactical read is easier
+there. If a lower band is ever offered again, expect him to take it.
+
+**THE ONE PLACE THE CAMERA OVERRIDES HIS PICK, and he has been told:** past **70 m** the tilt lifts on a soft floor —
+about **30° by 130 m, 40° at 160 m and beyond**. Up to 70 m, *including his 50 m default*, the tilt is exactly his 12°.
+The reason, found by playing it: when the vision camera pulls back to frame a whole army (~150 m), 12° turns the arena
+into a thin strip between sky and a black void with units as specks. **It is two constants if he would rather have it
+otherwise** (`rts_camera.gd`). Nobody may widen this floor into the ≤70 m band without asking him — that band is his
+pick and the whole point of it.
+
+What 12° cost, and what was done (all played and tested, `rts_camera.gd`):
+- The cutaway had to clear the **3 m wall's top edge** as well; at 12° that edge survived the cut and hid every vehicle
+  parked against it.
+- The cutaway now cuts **only when the stands would actually hide something** — always when the camera is among the
+  seats, otherwise only if the sight line to a vehicle inside the wall runs through their measured profile. Far and
+  high, the stands and crowd stay as foreground. Mutation-checked: the first version left the railings standing across
+  the whole view.
+- **No popping.** The cut starts at the wall top's depth, which is ~zero as the camera crosses the wall, so it is
+  continuous.
+- **Close up it is excellent**, and commanding is no harder than at 25° — if anything picking out individual vehicles
+  is easier. Vehicles read in profile with the stands and crowd behind them, and feel's skyline shows above the far
+  stands.
+- **Open, and now seen every match: the ground plane ends at the stands.** Any camera outside the venue (far framing,
+  and the free camera after a defeat) looks down past the stands into black void — the bottom 15–40% of a far frame.
+  A dark plaza, car park or road out toward the new skyline would fill it. feel's to take.
+
+Consequences that follow from 12° and are now design facts rather than open questions:
+- **`MIN_PITCH_DEG` moves down with it**, so the player's whole tilt range shifts toward the ground.
+- **The wall cutaway stops being occasional and becomes constant.** A 12° camera crosses arena walls most of the time
+  on most maps, so the near-plane cutaway is load-bearing, not a nicety. It is cheap (one perimeter ray and a dot
+  product per frame, setting `Camera3D.near`), but everything that assumes a camera mostly clearing the walls needs
+  re-checking at this pitch.
+- **The crowd becomes about a third of the frame.** At 12°/70 m the far stands sit across the middle third of the
+  screen, so the venue is no longer background dressing — it is a third of the image, for the whole match.
+- **Off-screen edge markers fire less often**, because more of the army is genuinely in view. Correct, not a bug.
+
+His earlier pick, superseded: 25° · 50 m · FOV 60°.
 
 **He picked the lowest angle on the page**, which is worth recording as a *direction* and not just a value: the grid
 offered 25/35/45/60° and he took the floor of it. The honest reading is that the range may not have gone low enough,

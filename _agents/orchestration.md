@@ -586,3 +586,276 @@ The kickoff prompt is one line; this section is the rest.
     a governed mechanism with an ungoverned one** — reporting the split *alongside* the old figure, never instead of
     it, so the existing baseline stays comparable. Twenty minutes on the metric beats sixty matches through a
     contaminated one.
+50. **When two independently-owned numbers must stay ordered, the code has to say so — nothing will tell you the day
+    they cross.** Round 6 found **three** load-bearing coincidences, each holding up something we believed was
+    engineered, and each discovered only because an unrelated change moved one number:
+    1. **The player's units held until ordered** because an outranging heuristic happened to return `{"type": "stop"}`
+       at that distance — no hold logic existed (lesson 47).
+    2. **A support-by-fire standoff stayed outside the near-ambush radius** because `standoff = min(effective_range) ×
+       0.8` came to ~56 m while `near_ambush_m` was 38–42 m. Two numbers chosen independently, in different files, by
+       different streams, for different reasons. Narrow the bands and the standoff lands at **28–36 m — inside the
+       trigger** — so the element drives to its firing line, `near_ambush` pre-empts `support_by_fire`, the plan
+       re-selects, and the two drills take the element off each other **every tick**: 128 orders in 10 s, the drill
+       list alternating without a single completion. That is round 4's trip-up 17 reached by a new road.
+    3. **`effective_range == range` for every weapon**, which is what made (2) hold and what several positioning
+       heuristics silently depended on (lesson 39).
+    The instruction: **an invariant that matters must be written as an invariant** — not left to two constants that
+    happen to be ordered today.
+    **But check that your belt does not undo your trousers.** The obvious spelling here,
+    `standoff = max(reach × 0.8, near_ambush_m + margin, floor)`, was proposed by one stream, endorsed by the
+    orchestrator as harmless insurance, and **correctly refused by the owner**: with a 45 m band it puts the firing
+    line at ~47 m — *outside* the effective band, which is exactly the 50%-of-shells trade the same conversation had
+    just rejected. The real invariant was the **precedence** (a deliberate support-by-fire task outranks a reaction
+    drill), and once that is stated and tested, the distance floor is not insurance but a reintroduction of the bug at
+    a different address. **A defensive constraint that re-creates the failure it guards against is worse than none** —
+    and the person who can see that is usually the path's owner, which is why an orchestrator's "take both" deserves
+    the same scrutiny as a stream's "take one". And when you find one, ask which *other* pair the same change moved: all three of these came out of
+    one range narrowing, and the second and third were found days apart only because different streams tripped over
+    them.
+    **The corollary for reviewers:** a behaviour that has worked for four rounds is *not* evidence that anything
+    enforces it. Ask what would have to be true for it to break, and check whether the code says that anywhere.
+51. **"No fix at this level feels clean" is a diagnostic signal, not an aesthetic complaint — it usually means the
+    defect is a level up.** Round 6, and the stream diagnosed itself better than a reviewer could have. Having found
+    the support-by-fire standoff colliding with the near-ambush radius (lesson 50), it produced two candidate fixes,
+    disliked both, and then **promoted the residue to a design feature**: *"support-by-fire must now choose between
+    effective fire and not triggering an assault drill."* That reads like a considered trade. It was a rule fighting
+    itself. Its own account of the error: *"I was reasoning inside the layer I had been looking at. The tell was right
+    there and I walked past it — no distance tweak felt satisfying, which is what it feels like when the defect is a
+    level up."* The real defect was one line of missing precedence a layer above the distances.
+    Three instructions:
+    - **When every candidate fix at your layer feels unsatisfying, stop tuning and go up a layer** before choosing the
+      least-bad option. Dissatisfaction with all available fixes is evidence about where the bug is.
+    - **Never turn an unexplained residue into a feature.** A self-interruption is not a cost the player can reason
+      about; it is a bug wearing a trade's clothes. The test: can you state the cost in a sentence the lead would
+      accept? "Posting an element buys less on a dense map" passes. "Your firing line triggers your own assault drill"
+      does not.
+    - **A withdrawn recommendation must be withdrawn in the document, not only in the conversation.** The stream
+      committed the retraction and the reasoning so the brief carries the corrected answer rather than its first one —
+      otherwise the next reader finds a confident wrong recommendation with no note on it.
+    Also worth keeping: a **filtered** run cannot establish that a new test is *correct* (lesson 45), but it **can**
+    establish that a failure is not an artefact of suite ordering. The stream ran one for exactly that, and said so.
+52. **The orchestrator is not exempt from the trip-ups, and two of them bite hardest when you are relaying fast.**
+    Round 6, in one five-minute stretch, the orchestrator committed both:
+    - **Three concurrent `make remote` runs from the same worktree** (trip-up 66/68). Each rsyncs `--delete` into the
+      *same* builder0 folder, so they swap files under each other and the one already executing is testing a tree that
+      no longer exists. The cleanup is worse than the waste: every one of the three had to be stopped remotely and
+      then locally, and the run that had held a slot for 30 minutes was void. **One remote run per worktree, and if you
+      want a newer tree tested, stop the old run first rather than launching beside it.**
+    - **`pkill -f "tools/remote.sh check"` from a shell whose own command line contained that string** (trip-up 19/79),
+      which matched and killed the shell: exit 144. Collect pids (`ps | grep '[r]emote.sh' | awk '{print $1}'`), check
+      each one's `readlink /proc/<pid>/cwd` to confirm it is **yours**, and kill by pid. Doing that here revealed that
+      three of the candidate pids belonged to *other streams* (feel's `crowd-look`, nav's `test FILTER=`) and would have
+      been killed by a broad pattern.
+    The general point for whoever holds this role: **the orchestrator runs more infrastructure commands than anyone
+    else and reads the docs least often**, because it is busy relaying. The trip-up list is not just for workers, and
+    "I am only doing this quickly" is the condition under which it applies.
+53. **A stream's approximation of another stream's system produces findings about the approximation.** Round 6, and it
+    reached the lead before it was caught. feel needed camera poses to judge the crowd, so it approximated control's
+    wall cutaway as *near plane = where the sight line to the focus crosses the wall, minus 1 m*. Its report frame at
+    the lead's 12° showed the grandstand fascia filling the bottom third below the vehicles, and feel flagged it
+    honestly as *"control's camera, not the crowd"* — the right instinct. But the real cutaway handles that case:
+    with the camera 6 m past the wall it is **among the seats**, where control's rule always cuts, and the plane sits
+    0.2 m past the wall's top edge so the fascia and the ground behind the wall go while the floor and a vehicle
+    against the wall stay. control had **played that exact moment** and had a mutation-checked regression test for the
+    earlier version that got it wrong. So the finding was real about feel's stand-in and false about the game — and
+    the orchestrator had already sent the frame to the lead.
+    Two instructions:
+    - **When you need another stream's behaviour to judge your own work, call their code, do not model it.** control's
+      `make camera-looks` applies the real cutaway per pose; using it would have cost nothing and produced frames that
+      match the game.
+    - **When relaying a frame or a number that depends on another stream's system, say which parts of it that stream
+      owns and get their read first** — especially before it goes to the lead, who cannot tell a stand-in from the
+      build. The cheap version of this is one message: *"does your implementation already handle this?"*
+54. **A good experiment run against a broken instrument produces a confident wrong answer, and it is indistinguishable
+    from a good experiment against a good one.** Round 6, arena establishing what slope the game supports. The answer
+    was wrong three times before it was right, and **each wrong version looked like a clean engine limit**:
+    1. The "ramp" was a 1 m slab — at 10° that is a *bridge*. The tank drove **underneath** and arrived at the goal's
+       x/z at y=0.3. Read as "cannot climb above 5°".
+    2. Made solid but 24 m wide, the tank drove **around** it. **A vehicle that goes around is indistinguishable in the
+       output from one that cannot climb**, unless the geometry forbids the detour.
+    3. Pathing to a point 1 m from the crest measured the navmesh's **agent-radius erosion along the drop edge**; the
+       tolerance scaled with the rise, so it worsened with angle and read as a slope limit.
+    Three geometries, three confident limits: 25°, 25°, 5°.
+    **The tell was not in the data.** It was that *a tank that cannot climb 10° is not believable* — a real one manages
+    30°. The fix was to stop pathing to a point and measure **coverage along the ramp's own centreline**, a quantity
+    with no edges in it.
+    **And the part that generalises furthest:** arena ran the decisive knob test (`agent_max_climb`) **against the
+    broken measure first, and it came back negative** — the ceiling did not move, which looked like clean falsification
+    and nearly retired the hypothesis that turned out to be correct. So:
+    - **Check the instrument against a known quantity *before* the experiment, not after it surprises you.** Pick a
+      case whose answer you already know independently (here: a tank climbs 30°, so a measured 5° ceiling is the
+      instrument failing, not the engine).
+    - **Implausibility is evidence.** When a result contradicts something you know about the world, suspect the
+      measurement before you believe the finding — and say which known quantity you are testing it against.
+    - This is the same failure as a filtered test run establishing correctness (lesson 45), and the same family as
+      lessons 34, 44, 46 and 49: **this round found more broken instruments than broken game code.**
+55. **Test the wire, not only the rule — and a conflict that looks like a duplicate may be two concerns on one line.**
+    Round 6, and the first time this round a precaution actually paid out. combat's engagement envelope is a *rule*
+    in `game/combat/engagement.gd` and a handful of *call sites* in nav's `order_controller.gd`. When it wrote the
+    tests it added four that drive a **real `OrderController` through a real match** and exist solely to go red if the
+    wiring is cut, justifying them as insurance against a bad merge or a failed edit (lesson 27). Then nav
+    restructured that very file around those call sites — moving `_apply_unstick` out into `Movement`, and landing
+    `movement.idle()` on the **same dead-code branch** as combat's `engagement_lay.forget()`. **The sixteen rule tests
+    would have passed either way**, because `engagement.gd` was never touched; only the four wiring tests could have
+    caught a dropped gate. That is the difference between shipping fire discipline and shipping a series that measures
+    a game with no fire discipline in it.
+    **And the conflict was the good kind: both sides were needed, not either/or.** `engagement_lay.forget()` resets the
+    gun's lay; `movement.idle()` stops the driving. Two different concerns that happened to collide on one line.
+    **Resolving it as "ours" or "theirs" would have silently broken one of them** — which is the standard move when a
+    conflict looks like a duplicate, and the standard move is wrong here.
+    Two instructions, the second aimed at whoever merges:
+    - **When your feature is a rule plus call sites in someone else's file, write at least one test that fails if the
+      call site disappears.** Rule tests cannot see an unwired rule.
+    - **Before resolving a conflict by picking a side, say out loud what each side does.** If the answer is two
+      different verbs, the resolution is *both*, and the fact that they occupy one line is a coincidence of layout.
+56. **Repetitions of a deterministic process are not samples — check that the thing you are varying actually varies.**
+    Round 6, nav: its movement suite ran five seeds and got **five identical results**, because a hold-fire drive
+    contains no randomness. It defaulted the suite to one seed rather than keeping a reassuring-looking five. This is
+    lesson 22 seen from the other side — that one says the fix for a *suspected bias* is a control that cancels the
+    cause, never more repetitions; this one says repetitions of a deterministic process are not evidence at all, they
+    are the same measurement written down five times. Before a series, **name the thing that differs between samples
+    and confirm it differs**; and be suspicious of a set of results that agree *too* well, because identical is not a
+    strong signal, it is usually the absence of one.
+57. **A measurement's outliers deserve as much suspicion as its headline, because they are where the bugs hide.**
+    Same run: **8 of every 60 units in the previous baseline were stragglers**, and the cause was not congestion at
+    all — **60 units on 52 spawn points places pairs exactly on top of each other, and coincident hulls never moved
+    at any point in round 5.** So part of a published arrival baseline was measuring two vehicles occupying one
+    position, not vehicles getting in each other's way. The stream found it because it looked at *which* units failed
+    rather than at how many. **When a measurement has a tail, identify the members of the tail before you accept the
+    number** — a stable minority failing the same way is a defect, not variance, and it will otherwise be absorbed
+    into the baseline everyone improves against.
+58. **A shared recorded artefact belongs to whoever is last, so it belongs to the orchestrator.** Round 6: three
+    streams each changed how the simulation evolves, and each was about to record `sim_state_hash.txt`. "Whoever
+    merges second re-records" works for two and is undefined for three — nobody can know at record time whether they
+    are last, and all three hashes would have been stale. The rule now: **no stream records it; the orchestrator
+    records once on `main` after the last simulation-changing merge**, and a stream whose change moves it says so in
+    its green report instead.
+    The generalisable test for any artefact like this: **is it a property of the tree rather than of the change?** A
+    recorded hash, a golden output, a committed baseline count, a perf baseline — all are properties of the whole
+    tree, so a per-stream copy is a snapshot of a world that stops existing at the next merge.
+    And the detail that made it dangerous rather than merely untidy: **nothing local could catch it.** The file is
+    keyed per glibc, the laptop's glibc has no line in it, so `sim-baseline` *silently skips* locally — every stream
+    could commit a stale hash and see a green local check. **A check that skips is not a check that passes**, and a
+    skip that is invisible is worse than a failure.
+59. **When a shared input changes, the instruments that read it are as stale as the code — and nobody owns an
+    instrument.** Round 6 changed the camera once, and **four** separately-owned constants turned out to have been
+    calibrated against the old one:
+    1. arena's `exposure()` watcher range (a weapon-range assumption wearing a sightline's clothes);
+    2. the dither metric's 60 Hz divisor, reporting double the true rate for four rounds;
+    3. control's phone readability bar, set at 25°/FOV 55;
+    4. **`squad-orders-test` clicking at screen fractions set for a 45° camera** — so at the lead's 12° one squad's
+       target point was **sky**, no order was issued at all, and 6-7 units per run silently went uncommanded.
+    The fourth is the instructive one because **it was inside the instrument that measured the round's most contested
+    change.** It appeared in *both* arms of the A/B, so the comparison survived and the conclusion held — but the
+    absolute numbers were wrong, and a reader would have had no way to know.
+    Two instructions:
+    - **After changing a shared input (a camera, a tick rate, a range band), grep the *test and tool* code for
+      constants that read it, not only the game code.** Instruments are written once and inherited; they have no
+      owner and no reason to be revisited.
+    - **A defect present in both arms of a comparison protects the comparison and corrupts the measurement.** When you
+      find one, say which of the two you are claiming — "the A/B still holds, the absolute numbers were wrong" is a
+      complete and honest sentence, and it is what control said.
+60. **A caveat travels with a number in a message and does not travel with the idea into a document.** Round 6, and the
+    orchestrator did this to itself. combat sent a result labelled *directional, n = 2, one mirror pairing, not for the
+    lead*. The orchestrator **held the number back from the lead correctly** — and then wrote the *conclusion drawn
+    from it* into `game_design.md` as established design understanding, where "n = 2" did not survive. At n = 15 the
+    finding **inverted**: the fire rate went down, not up, and the reframing built on it was unsupported.
+    This is lesson 26 committed against oneself, in the file that briefs every future stream. Three instructions:
+    - **Nothing enters a design document from a sample that could not support a claim to the lead.** The bar for
+      "written down as how the game works" is the same bar as "told to the human", because a doc outlives the
+      conversation that qualified it.
+    - **The more a result reframes something, the smaller the sample you should accept for it.** The stream's own
+      account: *"I argued it confidently because it was surprising and had a tidy mechanism behind it, which is exactly
+      when I should have trusted it least."* A surprising result with a satisfying mechanism is the most seductive
+      possible combination, and n = 2.
+    - **Retract in place, not by deletion.** The wrong claim is left in `game_design.md` marked RETRACTED with why it
+      got in, because a future agent who half-remembers the idea needs to find the retraction rather than the silence.
+    Also recorded from the same run: a **pilot's job is to validate the pipeline, not to answer the question**. This
+    one found two real defects in the harness (a `--variants` run that omits the shipped configuration; a metric
+    contaminated in theory) and was then asked to answer a question it was never large enough to answer — twice in one
+    afternoon, by a stream that knew better and said so afterwards.
+61. **A number that lands near the truth from the wrong comparison on an inadequate sample is a coincidence, not a
+    result — and saying so is worth more than the credit.** Round 6: a retracted figure said the fight was decided
+    **28%** closer; the final, properly controlled 75-match answer was **26%**. The stream that had retracted it
+    volunteered that the near-agreement was luck and insisted the retraction had still been right, because against
+    the control actually used at the time the honest figure was **7%** — the two matches had been compared with the
+    wrong baseline *and* were too few. **The lesson a reader would otherwise draw — "trust the small sample, it was
+    nearly right" — is precisely wrong and would cost someone a round.**
+    So: **when a retracted number turns out close to the truth, record why it was still wrong.** A result is a
+    measurement *plus its comparison*; a right-looking number from the wrong control is not a partial success, it is
+    two errors that happened to cancel.
+62. **A control that is not a real "before" hides which half of a change did the work.** Same run. The first series'
+    control disabled only the tuned *data* (the effective bands) while leaving the *code* gates (sight, acquisition,
+    the crossing penalty) on in both arms — so it measured fire discipline alone and silently attributed the whole
+    effect to it. With a genuine control (`--no-acquisition --no-crossing` as well), the decomposition inverted the
+    round's priorities: **the gates moved kill distance −11 m and off-axis kills +17 points; the bands moved them −3 m
+    and +2 points.** The bands had absorbed nearly all of the round's design argument and were the smaller half.
+    **Before running a comparison, ask what your control actually turns off** — and if a change spans data and code,
+    a data-only control is not a before, it is a different experiment.
+63. **A result arriving is not the change arriving — and the orchestrator is the only one who can confuse them.**
+    Round 6, caught at close by accident: the orchestrator had told two streams that CP4 was landed and their work
+    unblocked, and written its conclusions into `game_design.md` as settled design understanding, **while
+    `game/combat/engagement.gd` did not exist on `main` and 33 commits sat unmerged on the branch.** The sequence that
+    produced it: two of the stream's infra commits were cherry-picked early; the branch then sat *deliberately* red
+    waiting on another stream; and when its measurement series came back and it reported *"my outstanding work is
+    done"*, that was read as the stream being finished and the search for a merge hash stopped. **The number produced
+    *by* a branch was taken as evidence that the branch was *in*.**
+    This is the mirror image of the rule the same orchestrator spent the day enforcing (never publish a number
+    measured across a merge), and only the orchestrator can make it, because only the orchestrator holds both the
+    merge state and the relay.
+    Three instructions:
+    - **Track checkpoints by merge state, not by conversation.** A checkpoint is landed when `git log main --merges`
+      says so. *"Its result is settled"*, *"the stream is done"* and *"it went green"* are all compatible with nothing
+      being merged.
+    - **A branch that is red on purpose is the dangerous kind**, because the usual prompt to merge — a green report —
+      never arrives, and the stream has a good reason not to send one. Put an explicit note against any deliberately
+      red branch saying what it is waiting for and who clears it.
+    - **When a stream says a dependency of its own is still blocked, verify rather than reassure.** This was found only
+      because a stream mentioned waiting on "CP4 *on main*" and the orchestrator checked instead of correcting it.
+
+    **And the stream's half, which is the sharper diagnosis of the two** (its own words): *"a stream's status is the
+    hash, not the narrative."* It had reported findings, retractions, measurements, cross-stream diagnoses and a
+    sentence for the lead — at length, repeatedly — and **never once sent "combat is green, merge here: `<sha>`"**,
+    which is rule 11 of the worker contract. Because it was narrating everything else in detail, *the silence about the
+    merge looked like there was nothing to say*. The mechanism was not carelessness: **the branch was legitimately red
+    for most of the round, and "red by construction, waiting on <stream>" is a status it reported clearly and often.
+    What neither side had was the transition.** Nothing fires when the last blocker clears — it went straight from
+    *waiting* to *running the series*, because the series was the interesting thing and the merge was never an item on
+    anything.
+    So, for workers: **a blocked branch needs an owner for the moment it stops being blocked, and that owner is the
+    stream.** A stream that reports only what it has *learned* looks finished when its findings stop; report what is
+    *mergeable* as a separate, explicit thing, every time it changes.
+64. **"Nothing drawn" and "drawn too dark" look identical: paint it red.** Round 6, the black band under the arena
+    wall that the lead's 12° camera showed every match. Everyone — including the orchestrator, in writing, twice —
+    described it as *the ground plane ends at the stands*, i.e. missing geometry, and handed it over as "a dark plaza
+    would fill it". **Geometry could never have fixed it:** the camera's near-plane cutaway clips every real surface
+    between a camera past the wall and the wall itself, so no mesh can occupy that band. What showed through was the
+    **sky dome's below-horizon colour**, which ACES tonemapping with white 6 crushes to exactly `(0, 0, 0)`.
+    The stream proved it by **painting the suspect surface red** — a two-minute test that distinguishes the two
+    hypotheses absolutely, where staring at a black region distinguishes nothing.
+    The general instruction: **under a tonemapper, an unlit surface much darker than its surroundings rounds to pure
+    black, so "absent" and "present but crushed" are visually identical.** Before concluding something is not being
+    drawn, give it an impossible colour. And the wider form, which this round hit repeatedly: when two hypotheses
+    predict the same observation, **stop looking harder at the observation and find the cheap test that separates
+    them** (cf. lesson 54 — a probe consistently measuring a bridge, broken open by implausibility rather than by
+    repetition).
+65. **A differential question implemented as an absolute comparison produces a confident false accusation.** Round 6,
+    found by combat while verifying CP4: with the sim baseline legitimately stale, **three** targets failed on the same
+    pair of hashes — and only one of them said anything true.
+    ```
+    sim-baseline FAILED: expected 8ebbed52… got 91db2388…
+    announcer-record-smoke FAILED: the booth changed the simulation (91db2388…, baseline 8ebbed52…)
+    music-smoke FAILED: the soundtrack changed the simulation (91db2388…, baseline 8ebbed52…)
+    ```
+    **The booth changed nothing and the soundtrack changed nothing** — each computed *exactly* the hash `sim-baseline`
+    computed, which is the proof. Both targets want to answer *"does this subsystem perturb the simulation?"*, a
+    question about the **difference between two runs**, and both answer it by comparing one run against the **global
+    baseline file**. So they fail whenever anything else legitimately moves that baseline — which invariant 2 now
+    guarantees happens once per round — and each time they name an innocent subsystem in their own owner's code.
+    **The fix:** run the match twice in one invocation, with and without the subsystem, and compare **the two hashes to
+    each other**. That tests what the target claims, is immune to the baseline moving, and needs no coordination with
+    invariant 2 at all.
+    The general instruction: **when a target's message names a culprit, check that its comparison can actually
+    implicate that culprit.** A test that asks "did X change this?" by consulting a global constant is not asking about
+    X — it is asking "is the world as it was", and will blame X for everyone else's changes. And for anyone reading a
+    red check: **three failures reporting the same number are one failure**, not three.

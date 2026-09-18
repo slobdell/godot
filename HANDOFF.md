@@ -84,7 +84,35 @@ same text for all six:
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
-**Open orchestrator obligations (round 6):**
+### Where round 6 actually stands (2026-09-18 evening, the lead away)
+
+**Four streams have finished: feel, control, combat, squad.** arena has delivered its review page and holds one item;
+nav is the only stream with work in flight.
+
+**Merged and green on `main`** (every merge at the commit whose own full check went green):
+one formation system instead of three · support-by-fire that forms a real firing line · the player's units holding
+until ordered, *enforced by a rule rather than by a coincidence* · a plain move keeping a squad a squad without order
+thrash · form-up paced by a real navigation ETA · loading **7.6 s → 1.4 s** · **3,011 spectators in the default frame**
+(round 5's default showed 0 of 2,040) · stands on all four sides, a city skyline, crowd audible through a proper mix ·
+the lead's **12°** camera with the wall cutaway · the task palette with APP-6 symbology, `move`/`follow` off the card,
+Support by Fire / Screen / Ambush earned · a loading screen and "why did my element do that" · the maze and
+`make nav-maze` · terrain authoring rules · the **N1 Movement API** · engagement ranges: **fights decided at 40 m
+instead of 54, off-axis kills 26% → 45%**.
+
+**Held deliberately, and it is the lead's call:** nav's ORCA avoidance + right-of-way + PID reaches **100% arrival in
+every configuration** (maze-60 head-on went **0 → 60/60**; `yard`-60 34 → 60/60) but costs a tick of order-response
+latency — **4 ticks where K1 guarantees 3 (100 ms)**. Arrival bought with responsiveness is a trade he has not
+approved, and *"the units aren't very responsive to my input"* is his own round-5 complaint. **Do not merge it, and do
+not let anyone weaken the K1 test, without him.**
+
+**What the round actually taught, and it is not what anyone expected:** it found **more broken instruments than broken
+game code**. Three load-bearing coincidences (lesson 50), four constants calibrated against a camera that had changed
+(lesson 59), six tick-rate leftovers of which three lied to a reader rather than failing a test (lesson 30), a build
+queue that starved rather than being slow (lesson 48), an audio harness recording at 1/10 speed (lesson 46), a
+measurement whose outliers were a spawn bug (lesson 57), and a series whose control was not a real "before" and so
+hid which half of the change did the work (lesson 62). Lessons 32–62 are all round 6.
+
+**Open orchestrator obligations (round 6):****Open orchestrator obligations (round 6):**
 
 1. **Ping arena the moment CP4 merges.** arena is holding X3 (objectives off the centre line) until then, because it
    is a tactical claim that would straddle the range change. At the same ping it re-derives X2's exposure numbers at
@@ -107,24 +135,50 @@ same text for all six:
    measured before N5 existed**. squad owns the judgement and the remaining cases; **`scenario_motion::test_brains_dont_dither`
    at 17.7 and 15.6 option switches per minute against a bar of 12 is the blocking one**, because "no element
    flip-flopping" is the round's legibility bar.
-4. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
-   five tests passing on the laptop; its `make remote T=check` is queued behind the other worktrees and arena will
-   send the hash.
+4. **DONE — CP2 merged** at arena's green `5590c465` (1018 passed, exited 0). Note for the record: arena first
+   reported `38c15f77` ready on a *filtered* run showing 5/5; the full check found 2 failures, and `38c15f77` and
+   `13add85d` are both **red**. Merging the commit whose own full check went green (lesson 29) is the only reason that
+   never reached `main` — and lesson 45 is the filtered-run half of it.
 5. **TWO merges re-time other streams' measurements this round, not one.** CP4 is the known one. The second, found by
    control: **`perf_scene.gd` calls `RtsCamera.pose_for(focus, 0, zoom)`**, so when control's pitch decoupling merges,
-   `make perf-scene`'s camera drops from the welded pose to **38°** — a lower camera that sees more of the far arena,
+   `make perf-scene`'s camera drops from the welded pose to the lead's **12°/FOV 60** — a far lower, wider camera that sees the whole venue to the far stands,
    so feel's **M1** frame numbers move at that merge through no change of feel's own. Relayed to feel; the rule is the
    same as CP4's: **re-baseline after the merge, and never publish a frame number measured across it.** This is the
    generalisable shape — a shared harness that derives its own configuration from another stream's code silently
    inherits that stream's changes.
-6. **An ElevenLabs request is coming from feel (X3, crowd beds), and it must not be approved until the mix is
-   eliminated as the cause.** feel measured the existing crowd murmur as procedural filtered noise at **~43 dB below
+6. **RESOLVED, and now with the lead: the mix was the cause, and the crowd question costs nothing to answer.** Two
+   recordings were sent to him 2026-09-18 while he was away — `build/crowd-listen/full_mix_real_pace.mp3` (the match as
+   a player hears it) and `crowd_only_real_pace.mp3`, builder0 vsync-off at tree `1badf779`, Yard, Gangs vs Law, same
+   seed. **The one question: is the crowd audible, and does it sound like people or like hiss?** The murmur is still
+   round 3's procedural filtered noise. **If hiss**, the ElevenLabs text is drafted in feel's brief under *Waiting on
+   the lead*: 5 sources (bed, tense lull, roar, near-miss "oooh", last-stand stomping), **pilot first** —
+   `crowd_bed` + `crowd_roar`, ~25 s ≈ **250 credits**, full set ~900 (lesson 19). **If fine, nothing is spent.**
+   The mix itself was settled by measurement: at +13 dB the crowd was the loudest bed in the game (~4 dB under the whole
+   mix); at **+8 dB** it sits a median **7.5 dB** under (min 5.6), impacts dipping it 2:1 on top; −17.5 LUFS, true peak
+   −3.6 dBFS, 0 clipped.
+   *The rule that produced this, kept for next time:* an ElevenLabs request must never be approved while the mix could
+   be the cause — feel measured the existing crowd murmur as procedural filtered noise at **~43 dB below
    full scale on a Bed bus that is ducked under impacts** — inaudible in a firefight whatever the source material is.
    Recording a better bed and playing it 43 dB down buys an inaudible better bed. The order the orchestrator set:
    solo the crowd, record a real match, fix the mix (bed level, duck depth and release, a ceiling on how far impacts
    may duck the bed), re-listen — *then* ask for credits if it is still thin. Paid generation is irreversible in a way
    a gain change is not (lesson 18), and the standing gate is text → cheap pilot → listen → batch (lesson 19).
-7. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
+7. **Tell nav the hour CP4 merges.** It is doing `movement.gd` first (combat's four edits are all in the gunnery half)
+   and the `gunnery.gd` split *after* CP4, so combat's edits move across once instead of conflicting. Its plan, endorsed.
+8. **nav must NOT delete `ORDER_STALL_ARRIVE` (the 12 m lie) yet, and knows it.** It is one line in squad's
+   `tank_brain.gd` — the file squad has two gating fixes in flight in — and removing it makes arrival numbers look
+   **worse** before avoidance makes them better. With three streams measuring, we would lose the attribution on all
+   three. It lands later as its own commit with a before/after from arena's harness attached. Its entire value is the
+   measurement that comes with it.
+9. **X4 is held, not lost, and the bar for re-adding it is written into `rts_controls.gd`:** *0 idle commands on five
+   squads in the lead's own sequence.* control measured 31 idle commands and `never_arrived` 0 → 3 of 21 with it on
+   (round 5's healthy value was 0) — and "units never arrive" is the lead's *headline* complaint, so it must not ship
+   on a hope. **squad owes the answer: designed station-keeping, or thrash?** When it re-lands, the A/B must be re-run
+   **on the merged tree** — CP3 changed the formation system underneath the exact path X4 exercises, so 31-against-0
+   was measured against a world that no longer exists.
+10. **Which arenas are fun is still unanswered** (`fun: []` on both pages, 2026-09-18). arena is spending the round on
+   map shape without it. Nothing is blocked; ask again on whatever page he sees next.
+11. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
    so it starts with the target number rather than rediscovering it; squad has been told to take its two independent
    items first and explicitly *not* to build its own avoidance to fill the gap.
 
@@ -158,6 +212,19 @@ feel.
 7. **Carried over:** rotate the Meshy API key; the round-2 questions in `streams/archive/round2/`.
 
 ## Open questions and follow-ups (not scheduled)
+
+- **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
+  laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of
+  142/143: leaked 5460 bytes` lines, absent in all seven pre-merge runs. Likely feel's `night_sky`/skyline shaders or
+  `arena_environment` crossing the **title → skirmish scene switch** — control's inference, not a proof; routed to
+  feel. **Why it matters beyond two console lines:** `shell-playtest` is **not in `make check`**, so `main` goes green
+  with it; a leaked resource is an **ERROR**, and the relay and net smokes fail their clients on any ERROR
+  (trip-up 75), so this may be one scene switch from breaking a gated smoke; and it happens on the transition every
+  player crosses. **Round-7 candidate regardless of this fix: `shell-playtest`'s console gate belongs in `check`, or
+  its expected state belongs in a committed baseline** (lesson 42 — do not simply add a red suite to the gate).
+- **The void below the near wall.** The ground plane ends at the stands, so any camera outside the venue looks down
+  into black — the bottom 15–40% of a far frame, **seen every match at the lead's 12°**. feel's to fill (a dark plaza,
+  car park or road out toward the new skyline).
 
 - **FIGHT → playable is 7.6 s → 1.4 s** (laptop, `make shell-playtest` gangs vs law on Boulevard: 7,563 ms at
   `a975e262` against 1,398/1,406 ms on two runs of `8d9c59af`'s tree). feel's strong-reference fix did the shortening —

@@ -17,6 +17,7 @@ extends Control
 ##            elements you aren't watching sit on the screen edge (EdgeMarkers): click one to go to it
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
+##            Page Up / Page Down or ctrl+wheel tilt (Home resets it) · O the overview and back (round 6 X3)
 ##   TIME     Space pauses (orders still work while paused)
 ## The node is named "TacticalMap" in skirmish so the HUD skin lays its message columns out around it.
 
@@ -30,22 +31,27 @@ const PICK_BODY_M := 2.6
 ## Screen positions count as "inside the box" within this margin (hull edges peeking in).
 const BOX_MARGIN_PX := 4.0
 ## Armed orders a key waits for a click to complete (A, F, M), and what each click becomes.
-const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire"}
+const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire",
+		KEY_B: "ambush"}
 const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy", "follow": "FOLLOW: click a friendly unit",
 		"move": "MOVE: click the ground", "screen": "SCREEN: click the flank to cover",
-		"support_by_fire": "SUPPORT BY FIRE: click the position to fire from"}
+		"support_by_fire": "SUPPORT BY FIRE: click what to cover (the leader picks the firing line)",
+		"ambush": "AMBUSH: click the kill zone"}
 ## X3: verbs the player gives an element as an L1 task (its leader picks the formation, technique and drills).
 ## attack-move maps onto a move task on purpose: an element on the move already runs react-to-contact, which is
 ## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
 ## down so its leader stops re-issuing.
 ##
-## A plain `move` is NOT here (round 5, reopened): a right-click destination is the player saying where he wants them,
-## and handing it to a leader as a task meant the leader kept re-slotting and manoeuvring afterwards - measured at 20
-## order changes a second, with units ending 20-90 m from the spot he clicked (the lead: "the units do not re-arrange
-## as intended ... their behavior is overridden by a higher priority"). Drills stay on the verbs that ask for them:
-## attack-move (fight what you meet on the way), screen, base of fire, and attacks.
-const ELEMENT_TASKS := {"attack_move": "move", "attack": "attack", "hold": "hold",
-		"screen": "screen", "support_by_fire": "support_by_fire"}
+## A plain `move` is here again (round 6, with squad's X4). Round 5 took it out because a leader holding a move task
+## kept re-slotting and manoeuvring (20 order changes a second, units ending 20-90 m from the click; the lead: "their
+## behavior is overridden by a higher priority"). Round 6 put it back as a plain move (`"drills": false`: formed up, no
+## contact drills, one formation anchored on the click) - and the first attempt was HELD: in the lead's own sequence
+## (`make squad-orders-test`, five squads from the spawn) elements re-issued 31-38 commands while nobody touched the
+## controls, against 0 for direct moves. Squad found two re-send rules (fix 4d734b1e). Re-admitted on the same test on
+## the merged tree (laptop, seed 3, one run each): X4 on 0 idle commands, 14 arrived and stayed, 1 never arrived,
+## mean 5.9 m from the given slot; direct 0, 12, 1, 5.6 m. If you touch this, re-run that A/B first.
+const ELEMENT_TASKS := {"move": "move", "attack_move": "move", "attack": "attack", "hold": "hold",
+		"screen": "screen", "support_by_fire": "support_by_fire", "ambush": "ambush"}
 ## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
 const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
 ## A right-clicked enemy is attacked only by selected units whose weapon does at least this fraction of its damage
@@ -85,6 +91,10 @@ var groups := ControlGroups.new()
 var awareness := ElementAwareness.new()
 ## X3 (L1): doctrine's elements, when the mode installed them. Null = every order goes out directly.
 var elements: Elements
+## Round 6 X5: what nav's Movement says each unit is doing (yielding, blocked, its ETA). Silent until N1 is wired in.
+var movement := MovementReadout.new()
+## Round 6 X7: each element's recent decisions, for "why did my element do that" (the card's doctrine line tooltip).
+var element_log := ElementLog.new()
 ## X2: the off-screen element chips and the alert strip (set by the mode).
 var markers: EdgeMarkers
 ## The armed order waiting for a click ("" = none): "attack_move", "follow", or "move".
@@ -413,6 +423,8 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		task["target"] = String(extra["target"])
 	if task["verb"] == "move" and not task.has("to"):
 		return "a move task needs somewhere to go"
+	if verb == "move":
+		task["drills"] = false  # a plain move: formed up to the spot, no contact drills (squad X4)
 	var error := element.assign(task)
 	var command := UnitCommand.make(selection.units, verb, extra)
 	command_issued.emit(command, error)
@@ -526,7 +538,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				disarm()
 			else:
 				selection.clear()
-		KEY_A, KEY_F, KEY_M, KEY_E, KEY_R:
+		KEY_A, KEY_F, KEY_M, KEY_E, KEY_R, KEY_B:
 			arm(MODES[key.keycode])
 		KEY_S:
 			order_selection("stop")
@@ -538,6 +550,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				recall_group(next, true)
 		KEY_C:
 			center_on(selection.units)
+		KEY_O:
+			# X3: the deliberate top-down read of the map (and back). Tab cycles groups on desktop, so it needed a key.
+			if rig != null:
+				rig.toggle_overview(team)
+		KEY_HOME:
+			if rig != null:
+				rig.reset_tilt()
 		KEY_G:
 			cycle_formation()
 		KEY_F1:
@@ -615,6 +634,15 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	var element := selected_element()
 	if element != null and elements != null:
 		elements.disband(element)
+	elif elements != null:
+		# Part of a squad (round 6): those units leave their element, whose leader would otherwise re-slot them.
+		for unit_name in selection.units:
+			var owner := elements.of(unit_name)
+			if owner == null:
+				continue
+			owner.remove(unit_name)
+			if owner.members().is_empty():
+				elements.disband(owner)
 	var command := UnitCommand.make(selection.units, verb, extra)
 	command["source"] = "player"
 	if formation != UnitCommand.AUTO and verb in ["move", "attack_move", "hold"]:
@@ -659,9 +687,9 @@ func armed_world_order(world: Vector3, queue := false) -> String:
 	var armed := mode
 	if not queue:
 		disarm()
-	if armed in ["screen", "support_by_fire"] and not can_task():
+	if armed in ["screen", "support_by_fire", "ambush"] and not can_task():
 		return "select a whole element to give it a task"
-	if armed in ["attack_move", "move", "screen", "support_by_fire"]:
+	if armed in ["attack_move", "move", "screen", "support_by_fire", "ambush"]:
 		return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
 
@@ -789,7 +817,7 @@ func armed_click_order(at: Vector2, queue := false) -> String:
 		"move":
 			if world != null:
 				return order_selection("move", {"to": [world.x, world.z], "queue": queue})
-		"screen", "support_by_fire":
+		"screen", "support_by_fire", "ambush":
 			if not can_task():
 				return "select a whole element to give it a task"
 			if world != null:
@@ -907,6 +935,7 @@ func _draw() -> void:
 	_draw_waypoints()
 	_draw_acks()
 	_draw_health()
+	_draw_callouts()
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -924,6 +953,40 @@ func _draw() -> void:
 		var color: Color = GameTheme.ui["friendly"]
 		draw_rect(rect, Color(color, 0.12))
 		draw_rect(rect, Color(color, 0.9), false, 1.5)
+
+
+## X5: words over our vehicles that nav reports as yielding or blocked, so a unit waiting its turn reads as waiting,
+## not as ignoring the order: [{"unit", "at": Vector2 (screen), "word"}].
+func callouts() -> Array:
+	var result: Array = []
+	if game_match == null or camera == null or not movement.provider.is_valid():
+		return result
+	var screen := Rect2(Vector2.ZERO, size)
+	for tank in game_match.sorted_team_tanks(team):
+		if not tank.is_alive():
+			continue
+		var word := movement.callout(String(tank.name))
+		if word == "":
+			continue
+		var hull: Array = Units.stat(tank.unit_id, "hull_size")
+		var top := Shown.at(tank) + Vector3.UP * (float(hull[1]) + BAR_ABOVE_M * 2.2)
+		if camera.is_position_behind(top):
+			continue
+		var at := camera.unproject_position(top)
+		if at.is_finite() and screen.has_point(at):
+			result.append({"unit": String(tank.name), "at": at, "word": word})
+	return result
+
+
+func _draw_callouts() -> void:
+	var font := CyberStyle.font()
+	var px := roundi(12.0 * CyberStyle.ui_scale(size))
+	for callout: Dictionary in callouts():
+		var word := String(callout["word"])
+		var width := font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+		var at: Vector2 = callout["at"] - Vector2(width / 2.0, 0.0)
+		draw_string_outline(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, 3, Color.BLACK)
+		draw_string(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.YELLOW if word == "YIELDING" else GameTheme.ui["enemy"])
 
 
 ## X6: a thin hull bar (and a shield sliver above it) over vehicles that are hurt or selected.
@@ -963,6 +1026,16 @@ func _draw_waypoints() -> void:
 		if tank == null or route.is_empty():
 			continue
 		var from := Shown.ground(tank)
+		# X5: the way nav means to drive there (N1 `path_points`), faint under the order line, so "why is it going
+		# that way" has an answer on screen. Absent until nav's Movement is wired in.
+		var path := movement.route(unit_name)
+		if path.size() >= 1:
+			var at: Variant = _screen_point(from)
+			for point: Vector3 in path:
+				var next: Variant = _screen_point(point)
+				if at != null and next != null:
+					draw_line(at, next, Color(_order_color(String(route[0]["kind"])), 0.3), 1.0)
+				at = next
 		for stop: Dictionary in route:
 			var to: Vector3 = stop["position"]
 			var color := _order_color(stop["kind"])

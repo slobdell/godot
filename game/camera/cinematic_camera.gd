@@ -98,7 +98,7 @@ func _frame(scene: Dictionary) -> void:
 	var points: Array = scene["points"]
 	if points.is_empty():
 		return
-	var goal := RtsCamera.frame_pose(points, rig.yaw, _aspect(), MIN_ZOOM)
+	var goal := RtsCamera.frame_pose(points, rig.yaw, _aspect(), MIN_ZOOM, RtsCamera.FRAME_INSET, rig.pitch)
 	rig.focus = goal[0]
 	rig.zoom = float(goal[1])
 

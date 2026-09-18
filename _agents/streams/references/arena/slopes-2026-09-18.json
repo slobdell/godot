@@ -1,0 +1,142 @@
+{
+	"angles": [
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 5.0,
+			"climbed_m": 2.14,
+			"closest_to_top_m": 0.5,
+			"ended_at": [
+				0.5,
+				2.1,
+				15.8
+			],
+			"navmesh_connects": true,
+			"path_top_y": 2.5,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 1.0,
+			"rise_m": 2.1,
+			"vehicle_climbs": true
+		},
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 8.0,
+			"climbed_m": 3.27,
+			"closest_to_top_m": 13.8,
+			"ended_at": [
+				0.2,
+				3.3,
+				29.8
+			],
+			"navmesh_connects": true,
+			"path_top_y": 3.5,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 0.95,
+			"rise_m": 3.37,
+			"vehicle_climbs": true
+		},
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 10.0,
+			"climbed_m": 4.05,
+			"closest_to_top_m": 13.8,
+			"ended_at": [
+				0.0,
+				4.0,
+				29.8
+			],
+			"navmesh_connects": true,
+			"path_top_y": 4.25,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 0.95,
+			"rise_m": 4.23,
+			"vehicle_climbs": true
+		},
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 12.0,
+			"climbed_m": 4.81,
+			"closest_to_top_m": 13.8,
+			"ended_at": [
+				0.0,
+				4.8,
+				29.8
+			],
+			"navmesh_connects": true,
+			"path_top_y": 5.0,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 0.95,
+			"rise_m": 5.1,
+			"vehicle_climbs": true
+		},
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 15.0,
+			"climbed_m": 5.86,
+			"closest_to_top_m": 13.8,
+			"ended_at": [
+				0.0,
+				5.9,
+				29.8
+			],
+			"navmesh_connects": true,
+			"path_top_y": 5.75,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 0.9,
+			"rise_m": 6.43,
+			"vehicle_climbs": true
+		},
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 20.0,
+			"climbed_m": 7.39,
+			"closest_to_top_m": 13.8,
+			"ended_at": [
+				2.2,
+				7.4,
+				32.7
+			],
+			"navmesh_connects": true,
+			"path_top_y": 7.25,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 0.85,
+			"rise_m": 8.74,
+			"vehicle_climbs": true
+		},
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 25.0,
+			"climbed_m": 8.59,
+			"closest_to_top_m": 13.8,
+			"ended_at": [
+				-0.1,
+				8.6,
+				29.8
+			],
+			"navmesh_connects": false,
+			"path_top_y": 1.82,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 0.75,
+			"rise_m": 11.19,
+			"vehicle_climbs": false
+		},
+		{
+			"agent_max_climb": 0.25,
+			"angle_deg": 30.0,
+			"climbed_m": 9.29,
+			"closest_to_top_m": 13.8,
+			"ended_at": [
+				0.0,
+				9.3,
+				29.8
+			],
+			"navmesh_connects": false,
+			"path_top_y": 1.25,
+			"ramp_foot_z": 52.0,
+			"ramp_surface_on_navmesh": 0.05,
+			"rise_m": 13.86,
+			"vehicle_climbs": false
+		}
+	],
+	"steepest_navmesh_connects": 20.0,
+	"steepest_vehicle_climbs": 20.0
+}

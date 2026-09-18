@@ -152,13 +152,30 @@ _Updated 2026-09-18 by the squad worker._
 
 | Item | State |
 |---|---|
-| **X1** one formation system (N2) | written; builder0 check queued (baseline `a975e262` green: 1010 passed, builder0) |
-| **X5** support by fire / screen / halts | written + pure posture tests + real-physics posture scenarios; verifying |
-| **X4** plain move keeps the squad (element side) | written (`"drills": false` task); control agreed the 2-line seam, applies after I confirm |
-| **X2** standable slots | written (`SlotGround` over the navmesh's closest point); verifying |
-| **X3** form-up ETA + pacing | ETA/pace written behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** — nav has no session yet |
-| **X6** `make squad-coherence` | probe + runner written; baseline not yet measured (waits for CP4, see below) |
-| X7 ambush/flank, X8 army layer | not started |
+| **X1** one formation system (N2, **CP3**) | **merged to main** at `df736a8e` (builder0 green, 1030 passed) |
+| **X5** support by fire / screen / halts | in CP3; control flipped `earned` on SBF and screen |
+| **X5** attack / hold postures (+ herringbone ↔ react-to-contact flip fix) | `16d23375` |
+| **X4** a plain move keeps the squad | **done**: `4d734b1e` (47/45 → 0/0 idle orders, five-squad repro); control's windowed five-squad A/B on the merged tree: **0 idle commands** with X4 on — re-landed as `2fa58c01` |
+| **X2** standable slots | in CP3 (`SlotGround` over the navmesh's closest point) |
+| **X3** form-up ETA + pacing | ETA is nav's `Movement.eta` since CP1 (`0f2d5840`, refreshed 1 Hz; pace = own ETA / slowest ETA); **PID station-keeping waits on nav's N6** |
+| **X6** `make squad-coherence` | probe + runner in CP3; attribution + two thrash fixes `824aa258`; **baseline waits for CP4 on main** |
+| **X7** covered flanks + ambush task | `a8048028` |
+| **CP4 pairing** (fire band, dither, cover timing, suppression threshold) | `1fc83daf`, `5521f741` |
+| **Player units hold until ordered** (lesson 47) | `fbf1650a`: a rule, tested as a mechanism |
+| Sim baseline | `9ba36681` (8ebbed52, stream/squad pre-CP4; combat's post-CP4 record supersedes it) |
+| X8 army layer (stretch) | not started: its measurement needs CP4 on main and N7 (movable objectives) |
+
+**Which instrument caught what (worth knowing before choosing between writing a test and building an instrument):**
+`make squad-coherence` (X6) found support by fire and near ambush taking an element from each other every update in a
+30-a-side fight — before any scenario did, and hours before combat's CP4 run of the SBF scenario hit the same thing
+from the other side (128 orders in 10 s). Scenario tests with four vehicles never put an enemy that close to a firing
+line. The posture scenarios (X5) found the herringbone ↔ react-to-contact flip-flop. control's five-squad playtest
+found the X4 idle re-issue; the headless five-squad repro now guards it in `make check`.
+
+**Measured (laptop, uncommitted tree on `a975e262`/`df736a8e`, seeded single runs in TacticsLab — posture, not balance):**
+support by fire forms a 30 m line 54-56 m off the point, all 4 facing it, 15 shots, no other drill; screen: a 42 m
+line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the click, worst member 4 m off its slot,
+0 orders in the last 10 s; ambush: 0 shots before the enemy entered the kill zone, sprung ~1 s after, 8 after.
 
 ### Decisions
 
@@ -187,7 +204,43 @@ _Updated 2026-09-18 by the squad worker._
   drill. attack-move stays a move task with drills. (X4; control maps right-click on a whole element to it.)
 - **Halts stand on the ordered spot and keep their heading** (round 5's "units end 20-90 m from the click" was the
   halt re-anchoring on the element's drifting centre every update).
+- **Flanks go the covered way** (X7): CoveredRoute weighs a meter in the enemy's sight as 4 m of extra driving and
+  compares the direct line, wide detours and the arena's annotated lanes; the route is chosen once and kept.
+- **Ambush is a task** (X7): a line at 0.6 × effective range from the kill zone, fire held until an enemy is in the
+  kill zone (30 m), one is on top of us, or we are hit; once sprung it stays sprung and no timeout ends it.
+- **The brain reasons with the band CP4 enforces** (`TankBrain.fire_band`) wherever it asks "can my gun reach that
+  far?" for a decision; threat assessment and cover fire keep full range (what can hurt me; a crew under fire may answer
+  at any range). Peeks hold until the gun fires and baits stay out until the round is inbound (acquisition takes up to
+  1.6 s). The target's `pinned` flag gets hysteresis, which was the real cause of the dither CP4 exposed.
+- **Knobs this stream owns carry its prefix** (`AI_*`, `TACTICS_*`, `PARITY_SECONDS`); old names work only from the
+  command line.
 - **Cohesion is judged in time** (the form-up estimate): allowed = cohesion distance / slowest member's speed.
+
+### Known issues
+
+- control's five-squad windowed run (merged tree, seed 3) shows two outliers 36-39 m from their current slots with X4
+  on (mean 6.7 m over 15 element units). Not chased yet: likely stuck or fighting units — nav's `Movement.state`
+  can now say which.
+
+- **Thrash with elements on (X6, indicative only):** one smoke match (laptop, `16d23375`, condemned v law, 5200,
+  control point, both sides `--*-elements`, seed 1, 60 s, pre-CP4) read ~105 orders per unit-minute and 49-60 drill
+  switches per element-minute; `824aa258` fixed the two biggest causes (SBF below near ambush flipping every update;
+  the commander re-tasking every second) → 55 / 32 orders and 11.5 / 8.1 switches. Still open: `near_ambush` ending
+  without `assault_through` (16 of 19 times) and ~1 order per unit-second of leg re-issues. The published baseline
+  waits for CP4 on main.
+- **A unit shot at by an enemy it cannot see stands still.** Found staging the attack scenario: a gun at 70 m, past
+  the tanks' sight, hit them; the element ran react-to-contact once and then halted in a herringbone. CP4 will mostly
+  prevent the situation (a gun may not fire past its crew's sight), but a spotted-by-a-friend gun still can.
+  Doctrine says react to contact means moving to cover or toward the fire; worth a scenario after CP4.
+
+- **The dither metric reported double the real rate** from the 30 Hz move until `1fc83daf`; historical dither numbers
+  are not comparable with post-fix ones. So did `scenario_evasion`'s duration (ran 60 s saying 30) and the discovery
+  bridge's clock (half the real time) and cadence (double) — see unit_ai.md's clock warning.
+- `scenario_dodge_rate` finds 0 dodge attempts on CP4 + my fix (raw CP4: 4 of 488 inbound ticks; pre-CP4: 22). A
+  4-event sample; combat's X6 (crossing targets harder to acquire) flips the same test. Dodging was already found in
+  round 5 to almost never pay. Not in `make check`.
+- `ai-scenarios` has 6 failures that pre-date this round (scenario_cp2 ×3, fire_discipline, matchups, squad focus);
+  the orchestrator is committing an expected-pass baseline for the suite (lesson 42).
 
 ### Questions for the lead
 
@@ -204,4 +257,34 @@ _None yet._
 
 ### Merge notes (shared / other streams' files)
 
-- `game/control/group_formation.gd` (control's): adapter over TacticsFormation, same API.
+- **Green, merge here: `0f2d5840`** — builder0 `make check exited 0`, 1081 passed, sim baseline 8ebbed52 intact
+  (includes merged main with CP1). On top: `d4a855c9` two scenario thresholds derived from the band (test-only, filtered
+  runs pass) and Status.
+- `game/control/group_formation.gd` (control's, a recorded exception): adapter over TacticsFormation, same API.
+- `game/ai/tank_brain.gd` conflicts with combat's proposal `5478fa61` in exactly two lines: **take squad's**
+  (`TankBrain.fire_band`, the same expression as `Engagement.effective_range`).
+- `tests/baselines/sim_state_hash.txt` → `8ebbed52` for squad's pre-CP4 branch; **combat's post-CP4 record supersedes it**.
+- `mk/ai.mk`, `mk/tactics.mk`: knobs renamed `AI_*` / `TACTICS_*` / `PARITY_SECONDS`; old names work from the command
+  line only.
+
+### What to playtest (exact commands)
+
+- `make skirmish`, select a squad, press **R** and click an enemy area: the squad drives to a line ~36 m off it (0.8 ×
+  its band), faces it and fires; it does not charge in when enemies come close. **E** + click: a wide screen line
+  across the point. **B** + click (once control lands the row): an ambush line that holds its fire until an enemy
+  reaches the clicked spot.
+- Right-click a whole squad somewhere (after control re-lands X4): it forms ONE formation on the click and goes quiet;
+  press 1-5 and right-click each in quick succession — nobody should keep re-ordering afterwards.
+- At the start of a skirmish, do nothing for 30 s: your units must not move, even with the enemy in sight.
+- `make squad-coherence EXTRA="--green-elements --rust-elements"` (after CP4 is on main) for the thrash numbers.
+
+### Next steps
+
+1. After nav's N1 merges: `FormUp.eta` → `Movement.eta` (one line; guard the `{}` a hull nothing drives returns;
+   0.85 × top speed is optimistic, don't assert on it), and `SlotGround.standable` onto a nav query if nav adds one.
+2. After N6: PID station-keeping in a slot (the lead's named use case).
+3. After CP4 on main: publish the X6 baseline (`make remote T="squad-coherence SEEDS=6"`, both brains-only and
+   `--*-elements`), and chase what remains (leg re-issues, ~1 order per unit-second with elements).
+4. A unit shot at by a gun it cannot see stands still (Known issues) — a react-to-contact scenario.
+5. X8 (stretch): the army layer; arena's measurement says weight support-by-fire by terrain (+0.127 posting value on
+   open foundry, +0.024 in dense yard). Needs N7 (movable objectives) for a fair test.

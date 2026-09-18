@@ -141,8 +141,13 @@ func test_holding_a_crew_down_lets_a_teammate_work_on_it() -> void:
 	# costs a crew 60% of its hits at 58 m (test_combat_suppression's MEASURE) costs it far less across the 20-40 m
 	# this scenario is fought at. What must hold here is that it is clearly worse; the damage the teammate gets done
 	# below is the effect this scenario is really about.
-	assert_true(pinned_rate < calm_rate * 0.9,
-			"a pinned crew shoots worse (%.0f%% of shells landed vs %.0f%%)" % [pinned_rate * 100.0, calm_rate * 100.0])
+	# NOT BETTER, and the size is measured elsewhere. This scenario holds the crew at ~0.7 suppression and fights at a range
+	# where, since CP4's tight bands, nothing misses either way (100% vs 100% landed): it cannot show the accuracy cost,
+	# and reading its null as evidence about the mechanic was a mistake made once already (round 6). combat's controlled
+	# test measures it: a fully pinned crew inside its band lands 7 of 13 (54%) against a calm crew's 13 of 13. What this
+	# scenario is about is the teammate's damage, asserted below.
+	assert_true(pinned_rate <= calm_rate,
+			"a pinned crew never shoots better (%.0f%% of shells landed vs %.0f%%)" % [pinned_rate * 100.0, calm_rate * 100.0])
 	assert_true(int(suppressed["damage"]) > int(quiet["damage"]),
 			"and the teammate working on it gets more done (%d vs %d damage)" % [suppressed["damage"], quiet["damage"]])
 

@@ -4,6 +4,15 @@ extends Control
 ## units: its number, a pictogram per unit, and an average hull bar; lit when the selection is exactly that group.
 ## Click a chip = press its number key (select; again quickly = center the camera). Sits just above the selection
 ## panel, bottom center. Behavior is control's; colors come from GameTheme.ui and CyberStyle (feel).
+##
+## Round 6 X6 (the lead thinks in squads): each chip also says what that squad is doing - IDLE (lit, so a squad with
+## nothing to do is the one the eye finds), MOVING, CONTACT, UNDER FIRE - from ElementAwareness, and "selected" means
+## the selection is that group's living members in any order (a dead member used to unlight the chip).
+
+## The chip's state tag, from ElementAwareness states: [word, colour key].
+const STATE_WORDS := {"idle": ["IDLE", "idle"], "moving": ["MOVING", "calm"], "contact": ["CONTACT", "warn"],
+		"under_fire": ["UNDER FIRE", "danger"]}
+const STATE_WIDTH := 64.0
 
 ## Chip height at 1080p (scaled with the screen).
 const CHIP_HEIGHT := 34.0
@@ -28,11 +37,15 @@ func _process(_delta: float) -> void:
 
 
 ## What the bar shows, as data (tests read it): [{"number", "roles": [role per living unit], "health": 0..1 average
-## hull, "selected": bool}], one per non-empty group in number order.
+## hull, "selected": bool, "state": ElementAwareness state}], one per non-empty group in number order.
 func summary() -> Array:
 	var result: Array = []
 	if controls == null:
 		return result
+	var states := {}
+	for element: Dictionary in controls.awareness.elements():
+		states[int(element["number"])] = String(element["state"])
+	var selected := controls.selected_group()
 	for number in controls.groups.numbers():
 		var members := controls.groups.members(number)
 		var roles: Array = []
@@ -46,7 +59,7 @@ func summary() -> Array:
 		if roles.is_empty():
 			continue
 		result.append({"number": number, "roles": roles, "health": health / roles.size(),
-				"selected": members == controls.selection.units})
+				"selected": selected == number, "state": String(states.get(number, "idle"))})
 	return result
 
 
@@ -60,7 +73,7 @@ func _scale() -> float:
 
 
 func _chip_width(roles: int, s: float) -> float:
-	return (26.0 + roles * (GLYPH + 3.0) + 8.0) * s
+	return (26.0 + roles * (GLYPH + 3.0) + 8.0 + STATE_WIDTH) * s
 
 
 func _layout() -> void:
@@ -106,6 +119,12 @@ func _draw() -> void:
 		for i in roles.size():
 			var at := rect.position + Vector2((26.0 + i * (GLYPH + 3.0) + GLYPH * 0.5) * s, rect.size.y * 0.42)
 			batch.icon(roles[i], at, GLYPH * s, friendly)
+		var word: Array = STATE_WORDS.get(group["state"], ["", "calm"])
+		if word[0] != "":
+			var tag_color: Color = {"idle": CyberStyle.YELLOW, "calm": Color(CyberStyle.TEXT, 0.7), "warn": CyberStyle.CYAN,
+					"danger": enemy}[word[1]]
+			batch.text(font, rect.position + Vector2(rect.size.x - (STATE_WIDTH + 2.0) * s, rect.size.y * 0.58), String(word[0]),
+					roundi(11.0 * s), tag_color, STATE_WIDTH * s)
 		var health := float(group["health"])
 		var bar := Rect2(rect.position + Vector2(24.0 * s, rect.size.y - 7.0 * s), Vector2(rect.size.x - 30.0 * s, 3.0 * s))
 		batch.fill(bar, Color(0, 0, 0, 0.6))

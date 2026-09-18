@@ -206,6 +206,62 @@ A fourth was cut rather than fixed: a `can_cross_unseen` boolean that came out *
 measure that never varies is not a measure. `tools/test_arena_report.py` now encodes the map rankings this file
 documents, so the instrument cannot silently invert itself again.
 
+## What slope the ground can have (X4, round 6; `make slope-probe`)
+
+Everything in the arena kit is a box on a flat floor. Before authoring sunken lanes, raised platforms and ramps, the
+brief says to find out what the engine survives. Measured, not guessed — laptop, commit `775b9ce2`, `make
+slope-probe` (a ramp spanning the arena, leading onto a platform, in a real arena with the real bake and real
+physics):
+
+| Slope | Ramp surface on the navmesh | Vehicle climbed (of the rise) |
+|---|---|---|
+| 5° | 1.00 | 102% |
+| 8–12° | 0.95 | 94–97% |
+| 15° | 0.90 | 91% |
+| **20°** | **0.85** | **85%** |
+| 25° | 0.75 | 77% |
+| **30°** | **0.05** | 67% |
+
+**The navmesh is the constraint, never the vehicles.** A tank climbed 85% or more of the rise at every angle the
+navmesh supports, and still managed 67–77% at angles it does not — vehicles will happily drive terrain that pathing
+refuses to route them over, which is the worst of both worlds: units grind at a slope the player can see is
+drivable.
+
+**The ceiling is `atan(agent_max_climb / cell_size)`, and it is a knob.** The baker rasterises a slope into steps of
+`cell_size × tan(angle)` and rejects a step taller than `agent_max_climb`. With today's `arena.tscn` (0.25 / 0.5)
+that predicts **26.6°**, and the measured cliff sits exactly between 25° and 30°. Confirmed by moving the knob:
+at `agent_max_climb = 0.5` the predicted ceiling is 45° and 30° coverage goes from **0.05 to 0.65**.
+
+### What to do with that
+
+- **Author terrain at 20° or less.** 0.85 coverage at 20° is already showing erosion; 15° and below is clean.
+- **Do not raise `agent_max_climb` casually.** It re-bakes every arena's navmesh, and the navmesh is baked as a half
+  plus its 180° mirror precisely to keep the two bases fair (trip-up 21). Any change to bake settings needs the
+  swap-bases fairness control re-run, and may move the sim baseline (invariant 2).
+- A ramp must lead **onto a flat shelf**, not to a cliff edge: the navmesh is eroded back from every drop by the 2 m
+  agent radius, so a ramp that ends at a precipice has no mesh at the top to arrive on.
+
+### How this number was wrong three times first
+
+The vehicle answer was stable from the start. The navmesh answer was not, and every wrong version looked like a
+clean engine limit:
+
+1. **The ramp was a bridge.** A 1 m slab pitched at 10° has its far end 4 m up with open ground beneath. The tank
+   drove *under* it and arrived at the goal's x/z at y = 0.3 — reported as "cannot climb above 5°".
+2. **The tank drove around it.** Made solid but only 24 m wide, the vehicle went round the embankment on the flat.
+   A vehicle that goes around is not a vehicle that cannot climb, and the two are identical in the output unless the
+   geometry forbids one. The ramp spans the arena now.
+3. **The goal sat in the erosion band.** Pathing to a point 1 m from the crest measured the agent-radius erosion
+   along the drop edge, not the slope — and because the tolerance scaled with the rise, it got worse with angle and
+   read as a slope limit. Three geometries gave three different "limits": 25°, 25°, then 5°.
+
+The fix was to stop pathing to a point and **measure coverage along the ramp's own centreline** — a quantity with no
+edges in it. The tell that something was wrong throughout: *a tank that cannot climb 10° is not believable*, since a
+real one manages 30°. The check that settled it was moving `agent_max_climb` and predicting where the cliff would
+land. **An instrument that cannot reproduce a known quantity is not measuring the thing it is named after** — and
+note that this same knob test, run against the broken measure, came back *negative* and nearly retired the correct
+hypothesis.
+
 ## The Maze: a test fixture, not a map (X1, round 6; contract N3, checkpoint CP2)
 
 `arenas/maze.json` is the quasi-maze the lead asked for by name — *"we might even want a map that's a quasi maze just
@@ -263,6 +319,11 @@ make nav-maze UNITS=60 NAV_TIME=240    # a fuller horde
 make nav-maze ARENA=yard OUT=nav-yard  # the same probe against a shipping arena, as a control
 make remote T=nav-maze                 # on builder0 (the laptop is ~2.75x slower)
 ```
+
+> **Ask for more units than the layout has spawn points and they land on top of each other.** A layout has 52
+> (`Arena.spawn_spot` wraps with `slot % spots.size()`), so `NAV_UNITS=60` put eight pairs of hulls in eight
+> positions, and those never moved at all — 8 phantom stragglers in every 60-unit run until nav fixed it on
+> 2026-09-18. Any probe that spawns by slot has this; check N against the layout before reading its tail.
 
 `tests/arena/maze_probe.gd` spawns N vehicles on the green side, orders each to the **180° mirror of its own spawn
 point** (one shared goal would measure a pile-up at the destination, not the crossing), holds fire so a firefight

@@ -19,6 +19,7 @@ Shape of a file: `{"phases": [...one entry per measured phase...], "summary": {.
 | `hz30-locked30-1080.json` | `FrameTarget.LOCKED_30` (the default) at 1080p, 30 Hz era | `9b07d107` | avg 41.35, p95 47.41, GPU 14.17 — **above the 33 ms cap: it did not hold at these counts** |
 | `hz30-perf60-720.json` | `FrameTarget.PERFORMANCE_60` (~720 lines), uncapped | `9b07d107` | avg 27.04, p95 34.05, GPU 8.91; locked 30 at 13 |
 | `locked30-capped-60hz-1080.json` | **before 30 Hz**: capped at 30 at 1080p on the 60 Hz simulation | `15e048d8` | avg 106.05, p99 94–144 at 36–64 vehicles — the 60 Hz spiral; the line the 30 Hz work had to clear |
+| `feel-r6-venue-1080.json` | **Round 6, the arena the player can now see**: control's low camera (default pitch, FOV 60) over 30 a side, with feel's round-6 venue (6,005 figures on four sides of stands), night sky and city skyline; layers `no_crowd,no_venue,no_sky` | `cf6b079a`, laptop shared with other agents' runs, one run of 2 cycles (plus a first run of `no_venue,no_sky`: venue 4.44, sky 0.63) | GPU 18.45; **venue 3.54 GPU (crowd 1.05, stands/gates/screens ~2.5), sky + skyline 0.45**; frame avg 50 ms but it tracks vehicle count (100 ms at 67, 25 ms at 23): CPU-bound. **Not comparable to the rows above**: the camera changed at control's merge |
 
 A caveat on reading **these seven**: they predate the summary carrying it, so the file itself does not say whether the
 run was capped — the table above is the record. Runs taken from `f6a0dd40` onwards carry `"capped"` and

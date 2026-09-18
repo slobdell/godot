@@ -131,3 +131,27 @@ func test_group_bar_shows_each_group_with_unit_icons_and_health() -> void:
 	assert_true(bar.summary()[1]["selected"], "the group whose units are selected is lit")
 	bar.chip_pressed(1)
 	assert_eq(f.controls.selection.units, ["Green_Alpha_1", "Green_Alpha_3"], "clicking a chip selects its group")
+
+
+## Round 6 X6: each chip says what its squad is doing, idle squads stand out, and the chip stays lit when the
+## selection is the group's living units in another order or with a member dead.
+func test_group_chips_say_what_each_squad_is_doing() -> void:
+	var f := await _setup()
+	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
+	f.controls.groups.save(2, ["Green_Bravo_1", "Green_Bravo_2"])
+	f.place("Rust_Alpha_1", Vector3(0, 0, -200))  # out of sight: contact would outrank every other state
+	var bar := GroupBar.new()
+	bar.controls = f.controls
+	f.controls.add_child(bar)
+	await f.select(["Green_Bravo_1", "Green_Bravo_2"])
+	assert_eq(f.controls.order_selection("move", {"to": [15.0, 70.0]}), "", "group 2 is sent somewhere")
+	await wait_physics_frames(3)
+	await tree.process_frame
+	var states := {}
+	for chip: Dictionary in bar.summary():
+		states[chip["number"]] = chip["state"]
+	assert_eq(states.get(2, ""), "moving", "the moving squad says so (%s)" % [states])
+	assert_eq(states.get(1, ""), "idle", "the squad with no orders reads idle (%s)" % [states])
+	assert_true(GroupBar.STATE_WORDS.has("idle"), "idle has a word on the chip")
+	await f.select(["Green_Alpha_3", "Green_Alpha_1", "Green_Alpha_2"])
+	assert_true(bar.summary()[0]["selected"], "group 1 is lit whatever order its units were picked in")

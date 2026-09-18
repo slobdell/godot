@@ -354,18 +354,22 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 	for unit_name: String in names:
 		AiScenario.make_durable(lab.tank_of(unit_name))
 	var point: Vector3 = {"support_by_fire": Vector3(LANE_X, 0.0, -60.0), "screen": Vector3(LANE_X, 0.0, 0.0),
-			"move": Vector3(LANE_X + 5.0, 0.0, -30.0)}[verb]
+			"move": Vector3(LANE_X + 5.0, 0.0, -30.0), "attack": Vector3(LANE_X, 0.0, -10.0),
+			"hold": Vector3(LANE_X, 0.0, 55.0)}[verb]
 	var enemy: Array = []
-	if verb == "support_by_fire":
+	if verb in ["support_by_fire", "attack"]:
 		var gun := lab.gun(Match.Team.RUST, "Rust_Gun_1", point, PI)
 		AiScenario.make_durable(gun)
 		enemy.append(String(gun.name))
 	var alpha := lab.element(names, "Alpha")
 	await lab.start()
 	var fired := {"count": 0}
+	var shot_by := {}
 	var on_fired := func(event: Dictionary) -> void:
-		if names.has(String(event.get("shooter", ""))):
+		var shooter := String(event.get("shooter", ""))
+		if names.has(shooter):
 			fired["count"] = int(fired["count"]) + 1
+			shot_by[shooter] = int(shot_by.get(shooter, 0)) + 1
 	lab.game_match.weapon_fired.connect(on_fired)
 	var issued := {"late": 0}
 	var total := int(seconds * SimClock.TICK_RATE)
@@ -375,6 +379,10 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 			issued["late"] = int(issued["late"]) + 1
 	(lab.orders as Orders).issued.connect(on_issued)
 	var task := {"verb": verb, "to": [point.x, point.z]}
+	if verb == "attack":
+		task = {"verb": "attack", "target": enemy[0]}
+	elif verb == "hold":
+		task = {"verb": "hold"}  # hold where you stand (the column's middle is at z 55)
 	if verb == "move":
 		task["drills"] = false  # the player's right-click (X4)
 	alpha.assign(task)
@@ -400,7 +408,10 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 		var slot: Variant = alpha.slots.get(unit_name)
 		if slot is Vector3:
 			off_slot = maxf(off_slot, at.distance_to(slot))
-	var result := {"verb": verb, "drills": Array(lab.drills_of(alpha)), "formation": alpha.formation,
+	var shooters := 0
+	for unit_name: String in names:
+		shooters += 1 if int(shot_by.get(unit_name, 0)) > 0 else 0
+	var result := {"verb": verb, "drills": Array(lab.drills_of(alpha)), "formation": alpha.formation, "shooters": shooters,
 			"closest_m": snappedf(closest, 0.1), "to_point_m": to_point, "frontage_m": snappedf(xs.max() - xs.min(), 0.1),
 			"depth_m": snappedf(zs.max() - zs.min(), 0.1), "facing_point": facing_point, "shots": int(fired["count"]),
 			"center_to_point_m": snappedf(lab.center_of(names).distance_to(point), 0.1),
@@ -408,5 +419,119 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 	# Lambdas must not outlive the scenario on signals of objects that do (a heap corruption at exit otherwise).
 	lab.game_match.weapon_fired.disconnect(on_fired)
 	(lab.orders as Orders).issued.disconnect(on_issued)
+	lab.dispose()
+	return result
+
+
+## Round 6 (squad X7): an ambush. Four tanks are tasked to ambush a kill zone on the western strip; an enemy tank sits
+## out of it for `wait_s`, then drives straight through it. Counts the element's shots before the enemy is in the
+## kill zone (an ambush that fires early has failed) and after, and when the element sprang it. Both sides durable.
+static func ambush(case: TestCase, wait_s := 10.0, seconds := 24.0) -> Dictionary:
+	var lab := TacticsLab.create(case, 19)
+	var names := _column(lab, 4, Vector3(LANE_X, 0.0, 40.0))
+	for unit_name: String in names:
+		AiScenario.make_durable(lab.tank_of(unit_name))
+	var zone := Vector3(LANE_X, 0.0, -40.0)
+	var walker := lab.gun(Match.Team.RUST, "Rust_Walker_1", Vector3(LANE_X, 0.0, -110.0), PI)
+	AiScenario.make_durable(walker)
+	var walker_orders := lab.game_match.brains.get_node("Orders_Rust_Walker_1") as OrderController
+	walker_orders.set_orders({"type": "stop"}, {"type": "hold_fire"})
+	var alpha := lab.element(names, "Alpha")
+	await lab.start()
+	var shots := {"before": 0, "after": 0}
+	var entered := {"tick": -1}
+	var on_fired := func(event: Dictionary) -> void:
+		if names.has(String(event.get("shooter", ""))):
+			shots["before" if int(entered["tick"]) < 0 else "after"] = int(shots["before" if int(entered["tick"]) < 0 else "after"]) + 1
+	lab.game_match.weapon_fired.connect(on_fired)
+	alpha.assign({"verb": "ambush", "to": [zone.x, zone.z]})
+	var sprung := -1
+	for tick in int(seconds * SimClock.TICK_RATE):
+		if tick == int(wait_s * SimClock.TICK_RATE):
+			walker_orders.set_orders({"type": "move_to", "x": zone.x, "z": 60.0}, {"type": "hold_fire"})
+		await lab.step()
+		if int(entered["tick"]) < 0 and Vector2(walker.global_position.x - zone.x, walker.global_position.z - zone.z).length() \
+				<= Drills.KILL_ZONE_M:
+			entered["tick"] = tick
+		if sprung < 0 and alpha.drill == "spring_ambush":
+			sprung = tick
+	lab.game_match.weapon_fired.disconnect(on_fired)
+	var result := {"drills": Array(lab.drills_of(alpha)), "shots_before": int(shots["before"]),
+			"shots_after": int(shots["after"]), "entered_tick": int(entered["tick"]), "sprung_tick": sprung,
+			"formation": alpha.formation}
+	lab.dispose()
+	return result
+
+
+## Round 6 (X4): the lead's own sequence — five squads, crowded together where they spawned, each given a plain move
+## (a right-click) half a second after the last, to five points across the arena. After `seconds`, nobody touching
+## anything, the last `idle_s` must be quiet: control's five-squad playtest measured 31-38 element orders in that window
+## before plain moves stood still. Returns the orders issued in the idle window, each unit's distance from the slot its
+## element holds for it now, and how far each element's anchor ended from where it was sent.
+## `players` = green is the PLAYER's army, as in the lead's sequence (its units hold where they are put, lesson 47);
+## false = a CPU army under the same orders, whose idle units fight from their slots and must not be re-ordered for it.
+static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s := 10.0) -> Dictionary:
+	var lab := TacticsLab.create(case, 23)
+	if players:
+		lab.game_match.set_meta("player_team", Match.Team.GREEN)
+	var groups: Array = []
+	for g in 5:
+		var names: Array = []
+		for i in 4:
+			var at := Vector3(-30.0 + g * 12.0, 0.0, 70.0 + i * 8.0)
+			var tank := lab.unit(Match.Team.GREEN, "Green_S%d_%d" % [g + 1, i + 1], at, 0.0)
+			AiScenario.make_durable(tank)
+			names.append(String(tank.name))
+		groups.append(names)
+	# The enemy is in sight across the arena (control's run was 30 a side): with a threat about, a leader's doctrine picks
+	# another formation and technique (bounding overwatch swaps halves), which is where re-slotting comes from. They hold
+	# their fire, so the measurement is of the leaders, not of a fight.
+	for e in 4:
+		var enemy := lab.gun(Match.Team.RUST, "Rust_Watch_%d" % (e + 1), Vector3(-60.0 + e * 40.0, 0.0, -45.0), PI)
+		AiScenario.make_durable(enemy)
+		(lab.game_match.brains.get_node("Orders_Rust_Watch_%d" % (e + 1)) as OrderController).set_orders(
+				{"type": "stop"}, {"type": "hold_fire"})
+	var elements: Array = []
+	for g in 5:
+		elements.append(lab.element(groups[g], "S%d" % (g + 1)))
+	await lab.start()
+	var goals := [Vector3(-80, 0, 20), Vector3(-40, 0, 0), Vector3(0, 0, 10), Vector3(40, 0, 0), Vector3(80, 0, 20)]
+	var total := int(seconds * SimClock.TICK_RATE)
+	var ticks := {"now": 0, "idle": 0}
+	var on_issued := func(_command: Dictionary) -> void:
+		if int(ticks["now"]) >= total - int(idle_s * SimClock.TICK_RATE):
+			ticks["idle"] = int(ticks["idle"]) + 1
+	(lab.orders as Orders).issued.connect(on_issued)
+	for tick in total:
+		ticks["now"] = tick
+		var g := tick / (SimClock.TICK_RATE / 2)
+		if tick % (SimClock.TICK_RATE / 2) == 0 and g < 5:
+			(elements[g] as Element).assign({"verb": "move", "to": [goals[g].x, goals[g].z], "drills": false})
+		await lab.step()
+	(lab.orders as Orders).issued.disconnect(on_issued)
+	var off_slot: Array = []
+	var anchor_off: Array = []
+	var far: Array = []
+	for g in 5:
+		var element: Element = elements[g]
+		anchor_off.append(snappedf((element.anchor as Vector3).distance_to(goals[g]) if element.anchor is Vector3 else -1.0, 0.1))
+		for unit_name: String in groups[g]:
+			var slot: Variant = element.slots.get(unit_name)
+			if slot is Vector3:
+				var off := lab.tank_of(unit_name).global_position.distance_to(slot)
+				off_slot.append(snappedf(off, 0.1))
+				if off > 8.0:
+					var order: Dictionary = (lab.orders as Orders).current(unit_name)
+					var goal: Variant = Orders.goal_of(order, lab.game_match)
+					var brain: TankBrain = lab.game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
+					far.append("%s off %.0f m: order %s goal-to-slot %s, brain %s (%s)" % [unit_name, off,
+							order.get("verb", "none"), "%.0f" % (goal as Vector3).distance_to(slot) if goal is Vector3 else "-",
+							TankBrain.label(brain.choice) if brain != null else "?", brain.why if brain != null else ""])
+	off_slot.sort()
+	var mean := 0.0
+	for value: float in off_slot:
+		mean += value
+	var result := {"idle_orders": int(ticks["idle"]), "anchor_off_m": anchor_off, "off_slot_m": off_slot,
+			"mean_off_slot_m": snappedf(mean / maxf(off_slot.size(), 1.0), 0.1), "far": far}
 	lab.dispose()
 	return result

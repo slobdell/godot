@@ -33,11 +33,16 @@ func test_support_by_fire_forms_a_firing_line_at_a_standoff_and_fires_from_it() 
 	assert_true(Array(result["drills"]).has("support_by_fire"), "the element runs the task (ran %s)" % [result["drills"]])
 	assert_true(not Array(result["drills"]).has("far_ambush") and not Array(result["drills"]).has("react_to_contact"),
 			"and contact never turns it into an advance or a flank (ran %s)" % [result["drills"]])
-	assert_true(float(result["closest_m"]) >= 35.0, "nobody advances onto the point (closest %.0f m)" % result["closest_m"])
+	# Derived, not written down: the line stands SBF_STANDOFF x the tanks' band off the point (56 m before CP4, ~36 m
+	# after), and a crew may stand FACE_LEAD nearer on its sector. A number typed in here went stale when the bands moved.
+	var standoff := ElementPlan.SBF_STANDOFF * TankBrain.fire_band(Weapons.profile(String(Units.stat("tank", "weapon"))))
+	var floor_m := maxf(standoff, ElementPlan.SBF_MIN_STANDOFF_M) - ElementPlan.FACE_LEAD - 3.0
+	assert_true(float(result["closest_m"]) >= floor_m, "nobody advances onto the point (closest %.0f m, line at %.0f m)"
+			% [result["closest_m"], standoff])
 	assert_true(float(result["frontage_m"]) >= 24.0, "abreast: a line %.0f m wide" % result["frontage_m"])
 	assert_true(float(result["depth_m"]) <= 16.0, "not a column (%.0f m deep)" % result["depth_m"])
 	for distance: float in result["to_point_m"]:
-		assert_true(distance <= 80.0, "every gun is within reach of the point (%.0f m)" % distance)
+		assert_true(distance <= standoff + 12.0, "every gun is within reach of the point (%.0f m)" % distance)
 	assert_true(int(result["facing_point"]) >= 3, "the line faces the point (%d of 4)" % result["facing_point"])
 	assert_true(int(result["shots"]) > 0, "and it fires from there")
 
@@ -60,3 +65,52 @@ func test_a_move_ends_formed_up_on_the_spot_and_stops_issuing() -> void:
 			% result["worst_off_slot_m"])
 	assert_true(int(result["orders_last_10s"]) <= 2, "and the leader has stopped re-issuing (%d orders in the last 10 s)"
 			% result["orders_last_10s"])
+
+
+func test_an_ambush_holds_its_fire_until_the_kill_zone_is_full() -> void:
+	# The lead: "We want to be able to set up ambushes, do flanking maneuvers."
+	var result: Dictionary = await TacticsScenarios.ambush(self)
+	print("MEASURE ambush %s" % result)
+	assert_true(int(result["entered_tick"]) > 0, "setup: the enemy drove into the kill zone")
+	assert_eq(int(result["shots_before"]), 0, "not one shot before it was in the kill zone")
+	assert_true(int(result["sprung_tick"]) >= int(result["entered_tick"]), "sprung when it arrived, not before")
+	assert_true(int(result["shots_after"]) > 0, "and then every gun fired")
+
+
+func test_an_attack_closes_into_its_band_and_every_gun_fights() -> void:
+	var result: Dictionary = await TacticsScenarios.task_posture(self, "attack", 30.0)
+	print("MEASURE task_posture %s" % result)
+	assert_true(float(result["closest_m"]) <= 45.0, "the element closes to where its guns count (closest %.0f m)"
+			% result["closest_m"])
+	assert_true(int(result["shooters"]) >= 3, "and the vehicles fight it, not one of them (%d of 4 fired)" % result["shooters"])
+
+
+func test_a_hold_stays_where_it_was_told_in_an_all_round_halt() -> void:
+	var result: Dictionary = await TacticsScenarios.task_posture(self, "hold", 20.0)
+	print("MEASURE task_posture %s" % result)
+	assert_true(["herringbone", "coil"].has(String(result["formation"])), "a halt formation (%s)" % result["formation"])
+	assert_true(float(result["center_to_point_m"]) <= 8.0, "on the spot it stood on when told (%.1f m off)"
+			% result["center_to_point_m"])
+	assert_true(int(result["orders_last_10s"]) <= 2, "and settled (%d orders in the last 10 s)" % result["orders_last_10s"])
+
+
+func test_five_squads_moved_in_quick_succession_go_quiet_on_their_spots() -> void:
+	# The lead's sequence (control's squad_orders_playtest, headless): press 1, right-click, press 2, right-click...
+	var result: Dictionary = await TacticsScenarios.five_squads(self, true)
+	print("MEASURE five_squads players %s" % result)
+	assert_true(int(result["idle_orders"]) <= 2, "nobody touching anything, the leaders stop ordering (%d orders in the last 10 s)"
+			% result["idle_orders"])
+	for off: float in result["anchor_off_m"]:
+		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)
+	assert_true(float(result["mean_off_slot_m"]) <= 8.0, "and its vehicles are in their slots (mean %.1f m)"
+			% result["mean_off_slot_m"])
+
+
+func test_a_cpu_army_under_the_same_orders_is_not_re_ordered_for_fighting_from_its_slots() -> void:
+	# Its idle units fight from within their slot's leash (round 4 X1); before round 6's fix the leaders re-sent every
+	# one that stopped short, over and over: 43 orders in the last 10 s of this scenario.
+	var result: Dictionary = await TacticsScenarios.five_squads(self, false)
+	print("MEASURE five_squads cpu %s" % result)
+	assert_true(int(result["idle_orders"]) <= 2, "the leaders leave them to it (%d orders in the last 10 s)" % result["idle_orders"])
+	for off: float in result["anchor_off_m"]:
+		assert_true(off < 0.5, "every formation stands on the spot it was sent to (anchor %.1f m off)" % off)

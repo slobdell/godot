@@ -6,6 +6,50 @@
 > reference; v3 still runs behind `--touch-map`. Design: [game_design.md](game_design.md) *Controlling units* and
 > *Round 4 direction*; brief: [streams/archive/round4/control.md](streams/archive/round4/control.md).
 
+## v6 (round 6, control): the card earns every button, the camera comes down
+
+| Round 6 | What it means at the keyboard |
+|---|---|
+| **No Move or Follow buttons** | The lead: *"buttons like move and follow are already accessible via mouse click, so we shouldn't have buttons for them."* Right-click does both; **M** and **F** still work. |
+| **Symbols, not words** | Every card button's primary read is its tactical task graphic (after APP-6 / MIL-STD-2525 / FM 1-02.2), with its doctrinal name under it and a one-sentence tooltip on hover. Support-by-fire is called **Support by Fire**, not "Base of fire". |
+| **Loading shows itself** | FIGHT puts a loading screen on the tree root (`LoadingScreen`): the matchup, the arena and what it is for, a card teaching one command-card task by its symbol, and a bar naming the stage (scene, venue + navmesh, armies, first frame). The arena build and navmesh bake stay synchronous (trip-up 57); the screen names the stage and stays drawn through it. Every load prints `LOAD_TIMING total_ms=… scene=… arena=… armies=… first_frame=…`. |
+| **Squad chips say what they're doing** | Each group chip over the panel reads IDLE (yellow: the one to find), MOVING, CONTACT or UNDER FIRE (ElementAwareness). |
+| **Orders you can see landing** | nav's N1 `Movement.state`: a vehicle that is YIELDING or BLOCKED says so over its hull, and its card says "Blocked by Tank" or "Arrives in 4 s" (`MovementReadout`; silent until nav's CP1 is on `main`). |
+| **Pitch is its own axis** | Zoom sets only the distance. **Page Up / Page Down** or **ctrl+wheel** tilt (8°-50°), **Home** resets it. Round 5 tilted from 25° to 82° as you zoomed out, so seeing your army cost you a top-down view. **O** is the deliberate top-down overview (77°) and back. **The default is the lead's pick, taken twice at the floor of what he was offered**: 25° of 25/35/45/60, then **12° · 50 m · FOV 60°** of 12/16/20/25. "Between StarCraft 2 and Twisted Metal" sits much nearer Twisted Metal than assumed; don't correct it upward for an easier tactical read. The floor is 8°, a little below his default, not at it: below 8° the frame is mostly horizon. |
+| **A soft floor only far out** | Past 70 m a very low tilt is lifted, up to 40° at full zoom-out (`RtsCamera.tilt_at`): at 12° and ~150 m the arena was a strip between sky and cut-away stands, units specks. Up to 70 m, including his 50 m, the tilt is exactly his. Not round 5's weld: it engages only far out and stops well short of top-down. |
+| **The wall cutaway** | At a low camera a squad near a wall (every spawn) is framed from a camera past the wall, among or behind the stands; the camera's near plane then sits just past the wall's top edge, so the stands and the wall between it and the arena aren't drawn (`RtsCamera.cutaway_near`). It cuts only when the stands would hide something: always when the camera is among the seats, and from beyond their back only when the sight line to a vehicle inside the wall passes through the stands' measured profile; otherwise the stands and crowd stay as foreground. Over the arena nothing changes. Chosen over raising the pitch near walls, which would bring back the top-down view exactly where every match starts. |
+| **Why did it do that** | Hover the doctrine line on the card: the selected element's last six decisions with the match time ("0:47  line, react to contact — contact ahead"; `ElementLog`). |
+
+## Open items (round 6)
+
+- **Touch needs its own framing (a debt).** The lead chose 12° / FOV 60° for desktop; phones inherit it, and at
+  1200×540 a start-view vehicle measures 23.7 px (desktop 1920×1080: 40.0 px; headless projection, one fixture). The
+  phone readability bar moved 24 → 22 px *provisionally*. The fix when touch gets its pass is a closer start distance or
+  a pitch of its own for touch — never lowering the bar again (`tests/test_command_readability.gd`).
+
+## Task palette (N4)
+
+The command card's vocabulary. The code is `game/control/task_palette.gd` (`TaskPalette.ROWS`); the symbols are
+`CommandIcons.draw_task`; `tests/test_control_panel.gd` fails if a row here goes missing. **A verb the mouse already
+expresses gets no button** (move, follow, attack). **A task gets a button only once squad has demonstrated its
+behaviour** (the *On the card* column); the others have their symbol drawn and waiting.
+
+| Verb | Symbol (tactical task graphic) | Key | Tooltip (what the player reads) | The behaviour the player is entitled to see | On the card |
+|---|---|---|---|---|---|
+| `stop` | a stop square | S | Drop every order and stand still. They still shoot back. | Every selected unit's order and queue cleared; a squad's leader stands down | yes |
+| `hold` | a line held from behind | H | Stay on this ground and fight from it. Nobody chases. | Units stop and fight from where they are; nobody leaves to chase | yes |
+| `attack_move` | an arrow ending in crosshairs | A | Click a spot: go there, fighting anything met on the way. | The group moves to the spot, engaging what it meets; a whole squad does it as a move task with react-to-contact | yes |
+| `screen` | the security line, arrows outward, broken by **S** | E | Click a spot: spread into a line across it, watch, and fight only what comes to you. | A line across the point, facing out, observing; fights only what comes to it (squad X5 proves it) | yes (earned: squad `df736a8e`) |
+| `support_by_fire` | a base line with two arrows converging on the target, feet at its ends | R | Click a target area: take firing positions facing it, suppress it, and don't advance. | Firing positions in a line at a standoff, interlocking sectors, facing the point, suppressing, not advancing (squad X5: *"the units definitely did not form up"*) | yes (earned: squad `df736a8e`) |
+| `ambush` | a curved line with three arrows into the kill zone | B | Click a kill zone: hide in a line facing it and hold fire until the enemy is in it, or they are found. | A line at 0.6 × effective range facing the kill zone; crews hold fire until an enemy is in it, one is on top of them, or they're hit (squad `a8048028`) | yes (earned: squad `9ba36681`) |
+| `attack_by_fire` | one arrow from a short base line with feet | - | Click a target: destroy it with fire from a distance, without closing. | Destroys the target from a standoff without closing | no: not a verb yet |
+| `guard` | the security line broken by **G** | - | Click a flank: protect the army there, fighting to stop anything getting through. | Holds a flank and fights to stop penetration | no: not a verb yet |
+| `cover` | the security line broken by **C** | - | Click a spot ahead: operate out in front of the army, buying it time and space. | Operates forward of the army, independently | no: not a verb yet |
+| `fix` | a zig-zag arrow and **F** | - | Click an enemy: pin it where it is so the rest of the army can hit it. | Suppresses an enemy so it cannot move | no: not a verb yet |
+| `block` | a T across the route and **B** | - | Click a route: deny the enemy passage along it. | Holds a route closed | no: not a verb yet |
+| `formation` | the formation's real shape | G | Choose the shape the next orders move in. Auto lets each squad pick. | The next orders move in that shape (an explicit one overrides doctrine) | yes |
+| `move`, `follow`, `attack` | - | M, F, - | - | right-click the ground, a friend, an enemy | never: the mouse's |
+
 ## v5: what changed from v4
 
 | Round 4 | What it means at the keyboard |
@@ -28,8 +72,8 @@
 | **Tasks** (round 4) | with a **whole element** selected (a control group, or a doctrine squad) the orders above become L1 **tasks** its leader carries out: right-click ground or **M** = move, right-click an enemy or **A** = attack (A also maps to a move task: an element on the move already reacts to contact), **H** = hold, **E** then click = screen that flank, **R** then click = support by fire. **S** takes the wheel back. The command card reads back the formation, technique and drill the leader chose. |
 | **Formation** | automatic (see below) · **G** cycles wedge, line, column, vee, back to auto for the next orders. An explicit formation is an override: that order goes out as geometry instead of a task. |
 | **Groups** | **ctrl+1–9** saves the selection · **shift+1–9** adds to a group · **1–9** selects (a quick second tap centers the camera) · **Tab** next group · doctrine squads start as groups 1–5 · the group bar (bottom center) shows each group; click a chip to select it |
-| **Camera** | screen edges, arrows, middle-drag pan · wheel zoom · `,` `.` rotate · **C** centers on the selection · radar: left-click or drag looks, right-click moves the selection there, A then a radar click attack-moves there |
-| **Panel** | portraits (hull and shield) for a group: click selects one, shift-click drops it, ctrl-click keeps its type · a card for one unit or an inspected enemy · the command card (Move M, Stop S, Hold H, Attack-move A, Follow F, Formation G) |
+| **Camera** | screen edges, arrows, middle-drag pan · wheel zoom · `,` `.` rotate · **Page Up/Down** or ctrl+wheel tilt, **Home** resets it, **O** overview (round 6) · **C** centers on the selection · radar: left-click or drag looks, right-click moves the selection there, A then a radar click attack-moves there |
+| **Panel** | portraits (hull and shield) for a group: click selects one, shift-click drops it, ctrl-click keeps its type · a card for one unit or an inspected enemy · the command card (round 6: the task palette above - Stop S, Hold H, Attack-move A, Screen E, Support by Fire R, Formation G; symbols with names under them, a tooltip on hover) |
 | **Awareness** (round 4) | elements you aren't watching sit on the screen edge: click a chip to select that element and go to it · **Q** jumps to the newest alert ("Bravo under fire", "Alpha contact north"), rate-limited to one per element per kind |
 | **Scale** (round 4) | **ctrl+A** selects the whole army · **F2** goes to the next element with nothing to do · above ten selected units the panel's portraits group by type with a count and one strength number |
 | **Quality of life** | right-click an enemy with a mixed selection: only units whose guns hurt it (≥ 25% through its side armor) attack, the rest escort the nearest attacker (a whole element gets an attack task instead, and its leader works that out) · **F1** selects idle units · rest the mouse on any unit for its stats (hull, shield, weapon, range, speed, strong and weak against) |
