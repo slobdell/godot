@@ -263,6 +263,29 @@ A banner at the top, not a footnote, says **nobody has played these**: everythin
 not measured play, and he is the only one who can supply the rest. That is also why "play it first" is offered as a
 real answer — he has never driven any of them, which is the actual reason this has been open since round 5.
 
+### After CP4: X2 re-derived, and it caught an error of mine
+
+Merged `main` at the CP4 checkpoint and re-derived X2's exposure against the settled bands. **45 m (idle) was
+right. My 60 m... was not what I had.** I had hand-set "posted" to **70 m** from "a cannon's full range", where the
+catalog's median of `min(full range, sight radius)` over all 14 units is **60 m** — several units cannot *see* as
+far as they can shoot, and I had not applied the sight cap that `covering_range()` applies to the idle figure. That
+inflated every posting figure by about half.
+
+| | before (70 m) | after (60 m) |
+|---|---|---|
+| boulevard posting gain | +0.107 | **+0.067 (2.0×)** |
+| foundry posting gain | +0.127 | **+0.077 (1.7×)** |
+| yard posting gain | +0.024 | **+0.017** |
+| centre sees | 0.64 / 0.56 / 0.20 | **unchanged** |
+
+**No ranking changed, and `centre_sees_share` cannot change** — it is pure geometry with no weapon in it. So both
+claims the lead's page leads with survive any band move. The page was rescaled and republished (version 2).
+
+**This was the fourth instance of one bug in my own output today:** a value derived from data, restated in a second
+place, going stale silently. The others were the plot's `direct_route_exposure`, the `UNITS` collision, and the
+110 m watcher reach. The fix is the same every time — **put it in one place and read it** — and `make arena-reach`
+is that fix here.
+
 ### The 60-unit baselines are superseded (nav, 2026-09-18)
 
 A layout has 52 spawn points and `Arena.spawn_spot` wraps with `slot % spots.size()`, so `NAV_UNITS=60` put **eight
@@ -314,8 +337,8 @@ geometry, same code, opposite conclusion — the finding lived entirely in one c
 
 - **combat:** read `Arena.objectives_of(Arena.active)` instead of `Match.CONTROL_CENTER` / `CONTROL_RADIUS`, and
   hold a per-objective owner instead of one scalar. Pure read-through; no existing arena changes. Blocks X3.
-- **combat:** ship `Engagement.covering_range()` with CP4 and tell me its value; `arena_report.py` currently mirrors
-  45 m / 70 m and takes `--reach` so re-deriving is a flag, not an edit.
+- ~~**combat:** ship `Engagement.covering_range()` with CP4~~ — **done.** `make arena-reach` now reads it from the
+  catalog into `build/arena-reach.json` and `arena_report` reads that file, so nothing here restates it.
 
 ### Next
 
