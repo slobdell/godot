@@ -127,6 +127,31 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### Read this first
+
+**This branch is red on purpose, and it must not be made green by weakening the tests that are telling the truth.**
+`make test` on the laptop: **1034 passed, 3 failed**. Two of the three failures are real behaviour findings that belong
+to squad, and one of them (`scenario_suppression::test_holding_a_crew_down…`) sits inside the `check` subset. So
+**combat cannot go green alone, by construction.** The right response is to land squad's precedence fixes, not to
+move a threshold.
+
+**CP4 is code-complete and must not merge alone.** N5 is a rule about *when a gun may speak*; `TankBrain` decides
+*where to stand* from a weapon's **maximum** range, and two independent guarantees were resting on that. Landing N5
+by itself trades the lead's last complaint for his first one. The orchestrator has recorded CP4 as merging **paired**
+with squad's fix.
+
+**The measurement has deliberately not been taken.** On a build where units halt at 61 m and stare, a series measures
+a game nobody plays (lesson 23). The runbook is below; the numbers go in [../balance.md](../balance.md), whose
+*Round 6 N5* section is marked **pending** so nobody quotes a design decision as a result.
+
+| Commit | What |
+|---|---|
+| `14a1a29b` | **N5, the engagement envelope** (CP4) — sight, acquisition, fire discipline |
+| `5478fa61` | The brain-range fix — **squad's file, squad's call**, committed only so CP4 is testable end to end |
+| `a493d4b5` `f1c1a903` | **X6** — a crossing contact is harder to lay on, plus a `--no-crossing` control |
+| `9f798368` `fd5ac1af` | **Infra** — the `VARIANTS`/`UNITS` makefile collisions; shots-per-unit-per-minute |
+| `7f996fcf` `0ec30c10` `2411cd5e` `e1fdc070` | This brief: findings, risks recorded before the fact, and the runbook |
+
 ### The plan (ordered)
 
 X1 first and alone, because it is CP4 and every other stream's measurements wait on it. Then X2 (closing must be
@@ -448,9 +473,40 @@ round by reading a "waiting for a slot" line as a queue when I had in fact been 
    target the weapon scan already picked, so when your X1 splits the file into movement and gunnery these four go
    with gunnery untouched. Nothing here reads a path, a waypoint or a throttle.
 
+### Known issues (open, and whose)
+
+| Test | Whose | Why it fails |
+|---|---|---|
+| `test_ai_player_holds::test_the_players_units_wait_for_orders…` | **squad** | Product constraint #4. A held unit picks ENGAGE and flanks; the rule was previously upheld by the outrange heuristic returning `stop` |
+| `scenario_suppression::test_holding_a_crew_down…` (**in `check`**) | **squad** | Pinned crew lands 10 of 11 vs a calm 11 of 11. Suppression's penalty is angular, so closer fights soften it — a threshold to re-derive, or evidence for raising `SUPPRESSION_SPREAD_FACTOR` (mine) once the series says |
+| `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. **Dither (15.6–17.7/min against a bar of 12) is the blocking one** |
+
+Five further `make ai-scenarios` failures are **pre-existing on `a975e262`** and nothing to do with this work —
+baseline that suite before attributing anything to a change (it is not in `check`, which is why no baseline existed).
+
+### Next steps, in order
+
+1. **squad lands the precedence fixes**; CP4 merges as a pair.
+2. Run the series (runbook above). Report median hit range, first shot, **shots per unit per minute**, duration,
+   flanking-route unit-time, with n, commit and machine.
+3. Settle the bands, **then** `make remote T=sim-baseline-record` twice and commit the hash with the reason.
+4. X4's `faction-matrix` re-measure — after everything above, never across it.
+5. **N7** (arena's objectives read-through in `match.gd`) — scheduled after CP4 so two contracts are never in flight
+   in that file at once.
+
 ### Merge notes (shared files)
 
-- `game/ai/order_controller.gd` (nav's): the four edits above, all inside `_apply_weapon` / `_shootable` / the var
-  block. No movement code touched.
-- `game/modes/match_runner_mode.gd` (mine): `--no-acquisition`, a measurement control.
-- **The sim baseline moves** (invariant 2 says combat may): ranges *are* the simulation.
+- `game/ai/order_controller.gd` (nav's): five call sites, all in the **direct-fire** path — the `seen` gate in
+  `_shootable`, one member, the trigger line and the lost-lay line in `_apply_weapon`, and `forget()` on death, plus a
+  `_seconds_step()` helper. **No movement code touched.** `_apply_indirect` (artillery) and `_apply_suppress` (L2 fire
+  at ground) are deliberately untouched — verified, not assumed. The orchestrator recorded this as a named exception
+  (`f662d304`) because nav had no session; the seam nav should build is in `_agents/streams/nav.md` verbatim.
+- `game/ai/tank_brain.gd` (squad's): `5478fa61` only, **a proposal to take, replace or revert.**
+- `tests/ai_scenarios/ai_scenario.gd` (squad's): `shooter()` defaults to `long_shot: true` — squad chose this option
+  and made the same change on its own branch, so expect a trivial identical conflict; take either.
+- `game/modes/match_runner_mode.gd` (mine): `--no-acquisition` and `--no-crossing`, measurement controls.
+- `mk/match.mk` (mine): `VARIANT_FILE` / `SEARCH_UNITS` renames. **`9f798368` and `fd5ac1af` have no dependency on the
+  envelope and can go to `main` on their own** (lesson 9).
+- **The sim baseline moves** (invariant 2 says combat may): ranges *are* the simulation. Not recorded yet — see *Next
+  steps*. The laptop is glibc 2.39 and has no line in `tests/baselines/sim_state_hash.txt`, so `sim-baseline` **skips
+  locally** and only the remote check ever tests it. Do not read a green local check as covering it.
