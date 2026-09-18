@@ -471,12 +471,22 @@ The kickoff prompt is one line; this section is the rest.
     cross a file boundary, and almost all are the root `Makefile` deliberately sharing `PYTHON`, `JOBS`, ports, `BOTS`
     and so on — that is fine. **The dangerous shape is a default in one *stream's* file consumed by a different
     stream's file**, and there are four:
-    | Knob | Defaulted in | Also used in | Status |
-    |---|---|---|---|
-    | `VARIANTS` | `ai.mk` (squad) | `match.mk` (combat) | fixed by combat → `VARIANT_FILE` |
-    | `UNITS` | `ai.mk` (squad) | `match.mk` (combat) | **open** — already caused one mislabelled run |
-    | `ARENAS` | `tactics.mk` (squad) | `arena.mk` (arena) | **open** |
-    | `SECONDS` | `net.mk` (paused) | `tactics.mk` (squad) | **open** |
+    | Knob | Defaulted in | Also used in | How it failed | Status |
+    |---|---|---|---|---|
+    | `VARIANTS` | `ai.mk` (squad) | `match.mk` (combat) | **loudly** — `FileNotFoundError: 'r1,a4,a6'` | fixed → `VARIANT_FILE` |
+    | `UNITS` | `ai.mk` (squad) | `match.mk` (combat) | **silently** — `$(if $(UNITS),--units $(UNITS))` always fired, so *every* `matchup-search` run passed `--units 60` whatever the caller asked, and said nothing | fixed → `SEARCH_UNITS` |
+    | `ARENAS` | `tactics.mk` (squad) | `arena.mk` (arena) | not yet established | **open** |
+    | `SECONDS` | `net.mk` (paused) | `tactics.mk` (squad) | not yet established | **open** |
+
+    **The loud/silent asymmetry is the whole reason to run the audit rather than wait for a crash.** `engagement`
+    crashed on a missing file; its sibling `matchup-search` took the same wrong value as a *required* argument and
+    produced plausible answers to the wrong question. **A collision that crashes is the lucky one** (cf. lesson 43's
+    two halves) — so do not reason "a crash would have told me" about the knobs you have not checked.
+    **The integrity consequence, recorded because it cannot be undone:** any conclusion drawn from `matchup-search`
+    that assumed a non-default unit count is unreliable, **and there is no way to tell from the saved output, because
+    the tool never recorded the value it used.** That is the same hole as the reproduce-line one above. The cheap
+    permanent fix is to **print every resolved knob into the output**, so a wrong value is visible in the artefact
+    rather than only in the behaviour.
     The rule to apply: **a knob two streams share deliberately belongs in the root `Makefile`; a knob one stream owns
     takes that stream's prefix** (`NAV_UNITS`, `VARIANT_FILE`). And print what a knob resolved to, so a wrong value is
     visible in the output rather than only in the behaviour.
