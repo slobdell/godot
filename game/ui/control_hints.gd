@@ -11,8 +11,9 @@ const HINTS := {
 	"order": ["RIGHT-CLICK", "move there / attack it"],
 	"pause": ["SPACE", "pause to plan"],
 	"attack_move": ["A + CLICK", "attack-move"],
-	"tasks": ["E / R", "screen / base of fire"],
+	"tasks": ["E / R", "screen / support by fire"],
 	"alert": ["Q", "jump to trouble"],
+	"tilt": ["PGUP / PGDN", "tilt the camera (O: map view)"],
 }
 const SHOWN_AT_ONCE := 3
 const FONT_1080 := 17.0
@@ -75,6 +76,8 @@ func _input(event: InputEvent) -> void:
 				learn("tasks")
 			KEY_Q:
 				learn("alert")
+			KEY_PAGEUP, KEY_PAGEDOWN, KEY_O:
+				learn("tilt")
 		return
 	var button := event as InputEventMouseButton
 	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_RIGHT:

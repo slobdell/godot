@@ -1,10 +1,17 @@
 class_name RtsCamera
 extends Node
 ## G4: the skirmish camera. A tilted, perspective RTS camera that drives an existing Camera3D:
-## pan, zoom from close behind a tank up to a high tactical angle, rotate, follow a squad.
+## pan, zoom in and out, tilt, rotate, follow a squad.
+##
+## Round 6 (control X3): **pitch is its own axis.** Zoom sets only the distance; the tilt stays where the player (or
+## the default) put it. Until then one slider did both - `lerp(25°, 82°)` over the same zoom that set the distance -
+## so a player zooming out to see thirty vehicles was tilted to a near top-down view he never asked for (the lead:
+## "the bird's eye view is what's problematic ... the lower camera angles look good because we actually get to see
+## the vehicles"). The top-down view is still there, on purpose: the overview (O on desktop).
 ##
 ##   Desktop   arrows (or the screen edge) pan · wheel zooms toward the cursor · , . rotate
-##             middle-drag pans · F follows the selected squad's commander · Tab overview / back
+##             Page Up / Page Down or ctrl+wheel tilt · Home resets the tilt
+##             middle-drag pans · F follows the selected squad's commander · O overview / back
 ##   Touch     one finger drags the ground (pan) · pinch zooms · two-finger twist rotates
 ##             (the tactical map owns one-finger taps and long-press drags: see tactical_map.gd)
 ##
@@ -13,8 +20,16 @@ extends Node
 
 const MIN_DISTANCE := 16.0
 const MAX_DISTANCE := 260.0
-const MIN_PITCH_DEG := 25.0
-const MAX_PITCH_DEG := 82.0
+## X3: the tilt the player can choose (degrees below the horizon), and where it starts. Provisional until the lead
+## picks a look from `make camera-looks` (the round's lead gate); the pick is a change to these three numbers.
+const MIN_PITCH_DEG := 22.0
+const MAX_PITCH_DEG := 50.0
+const DEFAULT_PITCH_DEG := 38.0
+## The deliberate top-down read of the map (toggle_overview): the one place the camera still looks nearly straight down.
+const OVERVIEW_PITCH_DEG := 77.0
+## Tilt speed: degrees per second for held keys, degrees per wheel notch.
+const TILT_SPEED_DEG := 40.0
+const WHEEL_TILT_DEG := 3.0
 const FOV_DEG := 55.0
 ## Keyboard pan speed in meters per second at zoom 1 (scales down as you zoom in).
 const PAN_SPEED := 160.0
@@ -73,6 +88,9 @@ var camera: Camera3D
 var focus := Vector3(0.0, 0.0, 40.0)
 var yaw := 0.0
 var zoom := 0.7
+## X3: the tilt in degrees below the horizon, independent of zoom (MIN_PITCH_DEG..MAX_PITCH_DEG; the overview goes
+## past it on purpose).
+var pitch := DEFAULT_PITCH_DEG
 var follow_target: Node3D
 ## Screen-edge panning: off in tests and when the window isn't focused.
 var edge_pan := true
@@ -92,6 +110,7 @@ var vision_inset := VISION_FRAME_INSET
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
 var _shown_zoom := 0.7
+var _shown_pitch := DEFAULT_PITCH_DEG
 var _before_overview: Variant = null
 ## Touch: finger index → screen position, for pinch/twist.
 var _fingers := {}
@@ -128,6 +147,7 @@ func snap() -> void:
 	_shown_focus = focus
 	_shown_yaw = yaw
 	_shown_zoom = zoom
+	_shown_pitch = pitch
 	_apply()
 
 
@@ -152,6 +172,9 @@ func _process(delta: float) -> void:
 	var zoom_keys := float(Input.is_key_pressed(KEY_MINUS)) - float(Input.is_key_pressed(KEY_EQUAL))
 	if zoom_keys != 0.0:
 		zoom_by(zoom_keys * KEY_ZOOM_SPEED * delta)
+	var tilt_keys := float(Input.is_key_pressed(KEY_PAGEUP)) - float(Input.is_key_pressed(KEY_PAGEDOWN))
+	if tilt_keys != 0.0:
+		tilt_by(tilt_keys * TILT_SPEED_DEG * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
 		focus = Shown.ground(follow_target)
 	_update_tracking()
@@ -166,23 +189,43 @@ func _process(delta: float) -> void:
 		_shown_focus = _shown_focus.lerp(focus, weight)
 		_shown_zoom = lerpf(_shown_zoom, zoom, weight)
 	_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
+	_shown_pitch = lerpf(_shown_pitch, pitch, weight)
 	_apply()
 
 
 func _apply() -> void:
 	if camera != null:
-		camera.global_transform = RtsCamera.pose_for(_shown_focus, _shown_yaw, _shown_zoom)
+		camera.global_transform = RtsCamera.pose_for(_shown_focus, _shown_yaw, _shown_zoom, _shown_pitch)
 
 
-## Camera transform looking at `at` from `yaw` (0 = camera south of the focus, looking north) and
-## `level` (0 = close and low behind, 1 = high tactical view).
-static func pose_for(at: Vector3, heading: float, level: float) -> Transform3D:
-	var t := clampf(level, 0.0, 1.0)
-	# Ease the distance so the middle of the range isn't all high-altitude.
-	var distance := lerpf(MIN_DISTANCE, MAX_DISTANCE, t * t)
-	var pitch := deg_to_rad(lerpf(MIN_PITCH_DEG, MAX_PITCH_DEG, t))
-	var back := Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, heading) * distance
+## Camera transform looking at `at` from `yaw` (0 = camera south of the focus, looking north), `level` (0 = close,
+## 1 = far) and `pitch_deg` below the horizon. X3: the two are independent - zoom never tilts the camera.
+static func pose_for(at: Vector3, heading: float, level: float, pitch_deg := DEFAULT_PITCH_DEG) -> Transform3D:
+	return RtsCamera.pose_at(at, heading, RtsCamera.distance_for(level), pitch_deg)
+
+
+## The camera `distance` metres from `at`, `pitch_deg` below the horizon. `make camera-looks` poses with this directly.
+static func pose_at(at: Vector3, heading: float, distance: float, pitch_deg: float) -> Transform3D:
+	var tilt := deg_to_rad(clampf(pitch_deg, 1.0, 89.0))
+	var back := Vector3(0.0, sin(tilt), cos(tilt)).rotated(Vector3.UP, heading) * distance
 	return Transform3D(Basis.IDENTITY, at + back).looking_at(at, Vector3.UP)
+
+
+## How far out a zoom level puts the camera. Eased, so the middle of the range isn't all long distance.
+static func distance_for(level: float) -> float:
+	var t := clampf(level, 0.0, 1.0)
+	return lerpf(MIN_DISTANCE, MAX_DISTANCE, t * t)
+
+
+## The zoom level that puts the camera `distance` metres out (the inverse of distance_for).
+static func level_for(distance: float) -> float:
+	return sqrt(clampf((distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0))
+
+
+## Round 5's welded pose, kept only so `make camera-looks` can show the lead what he played: the tilt followed zoom
+## from 25° to 82°. Nothing in the game uses it.
+static func welded_pitch(level: float) -> float:
+	return lerpf(25.0, 82.0, clampf(level, 0.0, 1.0))
 
 
 # ---- Commands (input handlers and other code call these) -------------------------------
@@ -228,6 +271,19 @@ func zoom_by(amount: float) -> void:
 	zoom = clampf(zoom + amount, 0.0, vision_zoom)
 
 
+## X3: tilt the camera by `degrees` (positive = steeper, toward top-down), within the player's range. The overview
+## hands the tilt back first, so tilting from it lands in range instead of jumping.
+func tilt_by(degrees: float) -> void:
+	if _before_overview != null:
+		toggle_overview(0)
+	pitch = clampf(pitch + degrees, MIN_PITCH_DEG, MAX_PITCH_DEG)
+
+
+func reset_tilt() -> void:
+	if _before_overview == null:
+		pitch = DEFAULT_PITCH_DEG
+
+
 ## Zoom toward (or away from) a screen point, keeping the ground under it roughly in place.
 func zoom_at(screen: Vector2, amount: float) -> void:
 	var before: Variant = ground_point(screen)
@@ -255,8 +311,9 @@ func follow(target: Node3D) -> void:
 func toggle_overview(team: int) -> void:
 	stop_tracking("replaced")
 	if _before_overview == null:
-		_before_overview = [focus, yaw, zoom, follow_target]
+		_before_overview = [focus, yaw, zoom, follow_target, pitch]
 		follow_target = null
+		pitch = OVERVIEW_PITCH_DEG
 		yaw = 0.0 if Match.team_frame(team)["forward"] == Vector3.FORWARD else PI
 		# L4: Tab shows everything the force can see, not the whole arena (the lead: no unearned god view).
 		if vision_region != null and not vision_region.is_empty():
@@ -270,6 +327,7 @@ func toggle_overview(team: int) -> void:
 		yaw = _before_overview[1]
 		zoom = _before_overview[2]
 		follow_target = _before_overview[3]
+		pitch = _before_overview[4]
 		_before_overview = null
 
 
@@ -291,7 +349,7 @@ func frame(points: Array, instant := false, floor_zoom := FRAME_MIN_ZOOM) -> voi
 	if points.is_empty():
 		return
 	follow_target = null
-	var goal := RtsCamera.frame_pose(points, yaw, _aspect(), floor_zoom)
+	var goal := RtsCamera.frame_pose(points, yaw, _aspect(), floor_zoom, FRAME_INSET, pitch)
 	focus = goal[0]
 	zoom = minf(float(goal[1]), vision_zoom)
 	if instant:
@@ -299,7 +357,8 @@ func frame(points: Array, instant := false, floor_zoom := FRAME_MIN_ZOOM) -> voi
 
 
 ## [focus, zoom] that frames `points` (Vector3 on the ground) from `heading`. Pure, for tests.
-static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM, inset := FRAME_INSET) -> Array:
+static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM, inset := FRAME_INSET,
+		pitch_deg := DEFAULT_PITCH_DEG) -> Array:
 	var bounds := AABB(Vector3(points[0].x, 0.0, points[0].z), Vector3.ZERO)
 	for p in points:
 		bounds = bounds.expand(Vector3(p.x, 0.0, p.z))
@@ -314,15 +373,16 @@ static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom 
 		for z in [grown.position.z, grown.end.z]:
 			corners.append(Vector3(x, 0.0, z))
 	var level := clampf(floor_zoom, 0.0, 1.0)
-	while level < 1.0 and not RtsCamera.shows_all(corners, center, heading, level, aspect, inset):
+	while level < 1.0 and not RtsCamera.shows_all(corners, center, heading, level, aspect, inset, pitch_deg):
 		level += 0.01
 	return [center, minf(level, 1.0)]
 
 
 ## Whether a camera at pose_for(at, heading, level) shows every point inside `inset` of the screen (the default
 ## keeps them clear of the HUD; the L4 horizon uses the whole screen).
-static func shows_all(points: Array, at: Vector3, heading: float, level: float, aspect: float, inset := FRAME_INSET) -> bool:
-	var view := RtsCamera.pose_for(at, heading, level).affine_inverse()
+static func shows_all(points: Array, at: Vector3, heading: float, level: float, aspect: float, inset := FRAME_INSET,
+		pitch_deg := DEFAULT_PITCH_DEG) -> bool:
+	var view := RtsCamera.pose_for(at, heading, level, pitch_deg).affine_inverse()
 	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0) * inset
 	for p in points:
 		var c: Vector3 = view * (p as Vector3)
@@ -336,10 +396,11 @@ static func shows_all(points: Array, at: Vector3, heading: float, level: float, 
 ## What fraction of the screen's ground a camera at this pose is looking at ground `region` can see, sampled on a
 ## VISION_SAMPLES × VISION_SAMPLES grid of screen points. A sample whose ray never reaches the ground counts as
 ## unseen: it is pointed at the horizon, which is further than anything the force can see. Pure, for tests.
-static func seen_fraction(region: VisionRegion, at: Vector3, heading: float, level: float, aspect: float) -> float:
+static func seen_fraction(region: VisionRegion, at: Vector3, heading: float, level: float, aspect: float,
+		pitch_deg := DEFAULT_PITCH_DEG) -> float:
 	if region == null or region.is_empty():
 		return 0.0
-	var pose := RtsCamera.pose_for(at, heading, level)
+	var pose := RtsCamera.pose_for(at, heading, level, pitch_deg)
 	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0)
 	var plane := Plane(Vector3.UP, 0.0)
 	var seen := 0
@@ -358,16 +419,17 @@ static func seen_fraction(region: VisionRegion, at: Vector3, heading: float, lev
 ## unearned god view the lead ruled out ("we want to actually make the users expend their sentries to be able to
 ## see"), so the wheel, the keyboard, framing and Tab all obey it. Never below VISION_CAP_FLOOR, so looking at the
 ## edge of your vision costs you reach without slamming the camera onto the ground. Pure, for tests.
-static func horizon_zoom(region: VisionRegion, at: Vector3, heading: float, aspect: float) -> float:
+static func horizon_zoom(region: VisionRegion, at: Vector3, heading: float, aspect: float,
+		pitch_deg := DEFAULT_PITCH_DEG) -> float:
 	if region == null or region.is_empty():
 		return 1.0
-	if RtsCamera.seen_fraction(region, at, heading, 1.0, aspect) >= VISION_SEEN_FRACTION:
+	if RtsCamera.seen_fraction(region, at, heading, 1.0, aspect, pitch_deg) >= VISION_SEEN_FRACTION:
 		return 1.0
 	var low := VISION_CAP_FLOOR
 	var high := 1.0
 	for i in 8:
 		var mid := (low + high) / 2.0
-		if RtsCamera.seen_fraction(region, at, heading, mid, aspect) >= VISION_SEEN_FRACTION:
+		if RtsCamera.seen_fraction(region, at, heading, mid, aspect, pitch_deg) >= VISION_SEEN_FRACTION:
 			low = mid
 		else:
 			high = mid
@@ -419,9 +481,10 @@ func _update_tracking() -> void:
 		return
 	var goal: Array
 	if _track == Track.ORDER and points.size() >= 2:
-		goal = RtsCamera.order_pose(points.slice(0, points.size() - 1), points.back(), yaw, _aspect(), _track_floor_zoom)
+		goal = RtsCamera.order_pose(points.slice(0, points.size() - 1), points.back(), yaw, _aspect(), _track_floor_zoom,
+				FRAME_INSET, pitch)
 	else:
-		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom)
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, FRAME_INSET, pitch)
 	focus = goal[0]
 	zoom = minf(float(goal[1]), vision_zoom)
 
@@ -430,12 +493,12 @@ func _update_tracking() -> void:
 ## (or the player's own zoom, if higher); otherwise the units stay framed at that zoom and the view leans as
 ## far toward the destination as it can while keeping them all on screen. Pure, for tests.
 static func order_pose(units: Array, destination: Vector3, heading: float, aspect: float, floor_zoom := FRAME_MIN_ZOOM,
-		inset := FRAME_INSET) -> Array:
-	var both := RtsCamera.frame_pose(units + [destination], heading, aspect, floor_zoom, inset)
+		inset := FRAME_INSET, pitch_deg := DEFAULT_PITCH_DEG) -> Array:
+	var both := RtsCamera.frame_pose(units + [destination], heading, aspect, floor_zoom, inset, pitch_deg)
 	var ceiling := maxf(TRACK_MAX_ZOOM, floor_zoom)
 	if float(both[1]) <= ceiling:
 		return both
-	var squad := RtsCamera.frame_pose(units, heading, aspect, floor_zoom, inset)
+	var squad := RtsCamera.frame_pose(units, heading, aspect, floor_zoom, inset, pitch_deg)
 	var level := maxf(float(squad[1]), ceiling)
 	var start: Vector3 = squad[0]
 	var toward := Vector3(destination.x - start.x, 0.0, destination.z - start.z)
@@ -452,7 +515,7 @@ static func order_pose(units: Array, destination: Vector3, heading: float, aspec
 	var high := 1.0
 	for i in 12:
 		var mid := (low + high) / 2.0
-		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect, inset):
+		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect, inset, pitch_deg):
 			low = mid
 		else:
 			high = mid
@@ -473,7 +536,7 @@ func _update_vision() -> void:
 	_cap_countdown -= 1
 	if _cap_countdown <= 0:
 		_cap_countdown = VISION_CAP_EVERY
-		vision_zoom = RtsCamera.horizon_zoom(region, look_clamp(focus), yaw, _aspect())
+		vision_zoom = RtsCamera.horizon_zoom(region, look_clamp(focus), yaw, _aspect(), pitch)
 	zoom = minf(zoom, vision_zoom)
 	if _track == Track.NONE and follow_target == null and _before_overview == null \
 			and _clock - _manual_at >= handback_seconds and not (_vision_state.get("frame", []) as Array).is_empty():
@@ -500,9 +563,9 @@ func _update_vision_tracking() -> void:
 	var destination: Variant = _vision_state.get("destination")
 	var goal: Array
 	if destination is Vector3:
-		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset)
+		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
 	else:
-		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset)
+		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
 	zoom = minf(float(goal[1]), vision_zoom)
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
 
@@ -510,7 +573,7 @@ func _update_vision_tracking() -> void:
 ## Shift a frame centre up the screen by `amount` of the screen's half-height, so the HUD's command card does not
 ## sit on top of the element. Pure: the ground moves away from the camera along its own heading.
 static func lift(center: Vector3, forward: Vector3, level: float, amount: float) -> Vector3:
-	var distance := lerpf(MIN_DISTANCE, MAX_DISTANCE, clampf(level, 0.0, 1.0) * clampf(level, 0.0, 1.0))
+	var distance := RtsCamera.distance_for(level)
 	return center + forward * distance * tan(deg_to_rad(FOV_DEG) / 2.0) * amount
 
 
@@ -547,11 +610,15 @@ func handle_mouse(event: InputEvent) -> bool:
 		var button := event as InputEventMouseButton
 		match button.button_index:
 			MOUSE_BUTTON_WHEEL_UP:
-				if button.pressed:
+				if button.pressed and button.ctrl_pressed:
+					tilt_by(-WHEEL_TILT_DEG * maxf(button.factor, 1.0))  # X3: ctrl+wheel up lowers toward the horizon
+				elif button.pressed:
 					zoom_at(button.position, -WHEEL_ZOOM_STEP * maxf(button.factor, 1.0))
 				return true
 			MOUSE_BUTTON_WHEEL_DOWN:
-				if button.pressed:
+				if button.pressed and button.ctrl_pressed:
+					tilt_by(WHEEL_TILT_DEG * maxf(button.factor, 1.0))
+				elif button.pressed:
 					zoom_at(button.position, WHEEL_ZOOM_STEP * maxf(button.factor, 1.0))
 				return true
 			MOUSE_BUTTON_MIDDLE:

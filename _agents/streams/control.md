@@ -143,4 +143,36 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 ## Status
 
-_The worker keeps this current._
+_Round 6, control stream. Started 2026-09-18 from `a975e262`._
+
+### Plan (order, with reasons)
+
+1. **X1** cut Move and Follow off the card — smallest, and the lead named it. **Done** (keys M/F kept).
+2. **X3** camera, pulled ahead of X2: it is the round's main lead gate, and the brief says to get the page in front of
+   him early. Pitch decoupled from zoom first, then `make camera-looks` (the page) — the page's "round 5" row is also
+   the check of the diagnosis the brief asked for before acting on it.
+3. **X2** task palette + symbology: the table (`TaskPalette`), the graphics, the card. Screen and Support by Fire stay
+   on the card pending squad's X5 proof; the other five doctrinal tasks have symbols drawn and wait off the card.
+4. **X4** loading screen: staged load behind a screen on the root, timings printed, then measure before/after.
+5. **X5** orders you can see landing — waits on nav's CP1 (`Movement.state`), not on `main` yet.
+6. **X6** squad selection grammar — coordinates with squad's X4 (a plain move keeps the element).
+7. **X7** stretch dials.
+
+### Decisions
+
+- **Default pitch 38°, player range 22°–50°**, Page Up/Down or ctrl+wheel to tilt, Home resets, **O** = the overview
+  (77°, the one deliberate top-down). Provisional until the lead picks from the camera page; the pick is three
+  constants in `rts_camera.gd`.
+- **Task symbols are drawn, not imported** (`CommandIcons.draw_task`, rasterised once by `IconRaster` into 96 px
+  textures): crisp, themeable, and one batched rect per button on the HUD's draw-call budget.
+- **Letters as strokes** (S, G, C, F, B) so the rasteriser needs no font.
+- **The loading screen lives on the tree root**, so it survives the scene switch; the arena's venue build and
+  navmesh bake stay synchronous (trip-up 57) — the screen names the stage and stays drawn through the stall.
+
+### Questions for the lead
+
+- (the camera look: the page, when it exists — see *Waiting on the lead*)
+
+### Requests to other streams
+
+- (none yet)

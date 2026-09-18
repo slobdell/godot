@@ -17,6 +17,7 @@ extends Control
 ##            elements you aren't watching sit on the screen edge (EdgeMarkers): click one to go to it
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
+##            Page Up / Page Down or ctrl+wheel tilt (Home resets it) · O the overview and back (round 6 X3)
 ##   TIME     Space pauses (orders still work while paused)
 ## The node is named "TacticalMap" in skirmish so the HUD skin lays its message columns out around it.
 
@@ -33,7 +34,7 @@ const BOX_MARGIN_PX := 4.0
 const MODES := {KEY_A: "attack_move", KEY_F: "follow", KEY_M: "move", KEY_E: "screen", KEY_R: "support_by_fire"}
 const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy", "follow": "FOLLOW: click a friendly unit",
 		"move": "MOVE: click the ground", "screen": "SCREEN: click the flank to cover",
-		"support_by_fire": "SUPPORT BY FIRE: click the position to fire from"}
+		"support_by_fire": "SUPPORT BY FIRE: click what to cover (the leader picks the firing line)"}
 ## X3: verbs the player gives an element as an L1 task (its leader picks the formation, technique and drills).
 ## attack-move maps onto a move task on purpose: an element on the move already runs react-to-contact, which is
 ## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
@@ -538,6 +539,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				recall_group(next, true)
 		KEY_C:
 			center_on(selection.units)
+		KEY_O:
+			# X3: the deliberate top-down read of the map (and back). Tab cycles groups on desktop, so it needed a key.
+			if rig != null:
+				rig.toggle_overview(team)
+		KEY_HOME:
+			if rig != null:
+				rig.reset_tilt()
 		KEY_G:
 			cycle_formation()
 		KEY_F1:

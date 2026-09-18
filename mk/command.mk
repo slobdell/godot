@@ -151,3 +151,24 @@ squad-orders-test: import ## Order every squad in turn, then table where each un
 		$(SQUAD_ORDERS_FLAGS) --squad-orders-test=$(CURDIR)/$(SQUAD_ORDERS_DIR) 2>&1 \
 		| tee $(SQUAD_ORDERS_DIR)/run.log | grep -E '^SQUAD_ORDERS|SCRIPT ERROR' || true
 	grep -q SQUAD_ORDERS_DONE $(SQUAD_ORDERS_DIR)/run.log
+
+## Control X3 (round 6's lead gate): one frozen moment of a 30-a-side fight from a grid of camera poses, as a page, plus
+## an arena tour (three frames per arena) so the page also asks which arena is fun. CAMERA_LOOKS_ARENAS= skips the tour.
+CAMERA_LOOKS_DIR := $(BUILD_DIR)/camera-looks
+CAMERA_LOOKS_ARENA ?= yard
+CAMERA_LOOKS_SEED ?= 3
+CAMERA_LOOKS_ARENAS ?= $(basename $(notdir $(wildcard arenas/*.json)))
+CAMERA_LOOKS_FLAGS = --skirmish --player-faction=condemned --enemy-faction=syndicate --seed=$(CAMERA_LOOKS_SEED) --mute
+
+camera-looks: import ## Photograph one frozen fight from a grid of pitch x distance x FOV, and every arena: build/camera-looks/index.html (needs a display)
+	rm -rf $(CAMERA_LOOKS_DIR) && mkdir -p $(CAMERA_LOOKS_DIR)/arenas && touch $(BUILD_DIR)/.gdignore
+	for arena in $(CAMERA_LOOKS_ARENAS); do \
+		timeout 240 $(GODOT) --path . --resolution 1920x1080 -- $(CAMERA_LOOKS_FLAGS) --arena=$$arena --camera-looks-grid=arena \
+			--camera-looks=$(CURDIR)/$(CAMERA_LOOKS_DIR)/arenas/$$arena > $(CAMERA_LOOKS_DIR)/arena-$$arena.log 2>&1; \
+		grep -E 'CAMERA_LOOKS_DONE|SCRIPT ERROR|^ERROR' $(CAMERA_LOOKS_DIR)/arena-$$arena.log || echo ">> $$arena: no frames"; \
+	done
+	timeout 420 $(GODOT) --path . --resolution 1920x1080 -- $(CAMERA_LOOKS_FLAGS) --arena=$(CAMERA_LOOKS_ARENA) \
+		--camera-looks=$(CURDIR)/$(CAMERA_LOOKS_DIR) 2>&1 \
+		| tee $(CAMERA_LOOKS_DIR)/run.log | grep -E 'CAMERA_LOOKS|SCRIPT ERROR|^ERROR' || true
+	grep -q 'CAMERA_LOOKS_DONE ok=true' $(CAMERA_LOOKS_DIR)/run.log
+	@echo "Now LOOK at $(CAMERA_LOOKS_DIR)/index.html"
