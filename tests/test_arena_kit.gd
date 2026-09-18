@@ -157,13 +157,10 @@ func test_the_arena_builds_kit_collision_that_behaves_like_the_object() -> void:
 
 func test_every_shipped_layout_connects_both_bases_and_the_centre() -> void:
 	for layout_name in Arena.layout_names():
-		var arena: Arena = ARENA.instantiate()
-		arena.layout_name = layout_name
-		add_to_tree(arena)
-		for frame in 60:
-			if Pathing.is_ready(arena):
-				break
-			await tree.physics_frame
+		# ArenaFixture, not a bare Pathing.is_ready() poll: the previous layout's regions outlive its node by a frame
+		# or two, so is_ready() returns true against the PREVIOUS arena's map and this test then proves that one is
+		# connected, once per layout. It never failed, which is exactly why it needed changing (round 6).
+		var arena := await ArenaFixture.build(self, layout_name)
 		var green: Vector3 = Arena.spawn_spot(true, 0)
 		var rust: Vector3 = Arena.spawn_spot(false, 0)
 		for goal: Array in [[rust, 4.0], [Vector3.ZERO, 12.0]]:
