@@ -175,13 +175,79 @@ default path never passes, but an *exception the default path always passes*. Th
 part worth keeping: **when you add an exception to a rule, grep for every caller that would take it before you write
 the test that proves the rule works.** I wrote the passing test first and it told me nothing.
 
-**Verification so far** (laptop, working tree on top of `a975e262`; no builder0 number yet):
+**CP4 IS NOT READY TO MERGE, and the reason matters more than the code.** The envelope is a rule about *when a gun
+may speak*; `TankBrain` is full of positioning logic written when "in range" and "worth firing" were the same number.
+Landing N5 alone trades the lead's *last* complaint for his *first* one — units standing still in a fight. See
+*The brain's range reasoning* below. The orchestrator has recorded that CP4 merges **paired** with squad's fix.
+
+**Verification so far** (laptop, working tree on top of `a975e262`; the pristine baseline `make remote T=check` was
+green on builder0: `1010 passed, 0 failed`, `>> remote: make check exited 0`):
 - `make test FILTER=envelope` — **20 passed, 0 failed** (`tests/test_combat_envelope.gd`).
 - Sixteen of those test the *rule*; four drive a real `OrderController` in a real match and test the **wire**.
   **Mutation-checked**: reverting both gates in `order_controller.gd` turned the wiring tests red and left every rule
   test green — which is exactly why the wiring tests exist (lesson 27: a failed edit and a wrong diagnosis look
   identical from the outside).
 - `Engagement.covering_range()` returns **45.0 m** live, for arena's `exposure()` (see *Requests to other streams*).
+
+### The brain's range reasoning (the thing that gates CP4)
+
+`TankBrain._combat_move()` asks "can my gun reach that far?" with `weapon["range"]` in two places — the **outranging**
+branch and the **short-halt-to-reload** branch. Under N5 a crew may not *fire* at maximum range, so both now halt a
+unit exactly where it cannot shoot. Instrumented evidence, not inference: in
+`scenario_orders::test_attack_move_fights_on_the_way` a tank with an attack-move order **stops 61 m from a scout and
+sits there for the full 45 s — 0 shots, 0 metres, never arrives**, and the brain names its own reason every tick:
+`opt=ENGAGE why="outranging it" move={"type":"stop"}`. Its cannon reaches 70 m so the old heuristic called the scout
+outranged; its band is 45 m so the trigger is held.
+
+That is orchestration.md lesson 17 (a behaviour starved by a rule above it) and the generalisation is worth keeping:
+**when you narrow a quantity, grep every consumer of the old one** — a rule and a heuristic reasoning about the same
+quantity in different units will deadlock.
+
+`5478fa61` on this branch is a **proposal in squad's file**, verified: with `Engagement.effective_range(weapon)` in
+both conditions the tank closes, kills with one shell and arrives in **14.9 s — faster than the 20.8 s the same
+scenario measured before N5**, because it no longer stops to snipe. `their_reach` deliberately stays the contact's
+full `range`: what can hurt me is their maximum reach. Squad's to take, replace or revert.
+
+**Four scenarios still regress with that fix in**, attributed against a **pristine baseline of `make ai-scenarios`**
+(40 passed, 6 failed on `a975e262`) rather than assumed — which turned "9 regressions" into *5 pre-existing, 1 fixed
+by N5 (`scenario_squad::test_a_squad_focuses_its_fire`), 4 mine*:
+
+| Scenario | What it says | Read |
+|---|---|---|
+| `scenario_motion::test_brains_dont_dither` | 17.7 / 15.6 option switches per minute against a bar of 12 | **The blocker.** Legibility is product constraint #1 |
+| `scenario_suppression::test_holding_a_crew_down…` | pinned crew 91% vs calm 100%, wants a wider gap | In the `check` subset, so it blocks a green check. Likely a threshold to re-derive from the band |
+| `scenario_cover::test_a_healthy_tank_near_a_wall…` | hidden 42% of the fight, 3 shots | The peek position is now outside the band |
+| `scenario_motion::test_a_scout_makes_attack_runs…` | 1 run, but 20 shots all into side/rear and **the tank took 0** | May be *better* behaviour (it commits). The test may be what is wrong |
+
+### X2, first finding: shortening the bands may have taken the bite out of suppression
+
+`Match.SUPPRESSION_SPREAD_FACTOR` (2.0) is **mine**, and its own comment states the assumption N5 just invalidated:
+*"A pinned tank's 0.8 deg becomes 2.4 deg: it still shoots, it just stops hitting anything far away."* Suppression's
+penalty is **angular**, so what it costs in hits depends entirely on how far away the fight is. Push fights inside
+45 m and the same 2.4° lands a much higher share of its shells — 2.4° is 2.9 m of scatter at 70 m but 1.7 m at 40 m,
+against a hull about 3.5 m wide. `scenario_suppression::test_holding_a_crew_down_lets_a_teammate_work_on_it` is
+already reading it: a pinned crew landed **10 of 11 shells against a calm crew's 11 of 11**.
+
+That matters because L2 exists to make *base-of-fire-and-maneuver* real, and X2 ("closing has to be survivable")
+depends on suppression buying an approach. If pinning no longer spoils aim, closing gets more expensive exactly when
+N5 requires more of it.
+
+**I have deliberately not tuned it.** One scenario assertion is not evidence for moving a core constant, and I have
+just recorded a negative result from acting on a mechanism that looked obvious. The honest sequence is: measure
+suppression's bite **inside the new bands** in the CP4 series (hit-rate delta pinned vs calm at the *new* typical
+engagement distance, not the old one), and tune `SUPPRESSION_SPREAD_FACTOR` with that number if it has really
+softened. Flagged here so nobody reads the passing/failing scenario as noise.
+
+### A negative result: do NOT discipline opportunistic suppression
+
+I exempted `suppress` orders from fire discipline, which made suppressive fire **strictly more available than
+engaging** beyond the band — and the dither instrumentation showed units flipping `ENGAGE → SUPPRESS → ENGAGE` in
+under a second at 47–50 m, right at the edge. Closing that hole (disciplined opportunistic suppression, `long_shot`
+suppression still reaching) looked obviously right. **It was not:** dither did not move *at all* (17.7 / 15.6,
+identical), and total scenario failures went **9 → 11**, adding `scenario_perf` CPU budget and
+`scenario_suppression::test_holding_the_aim_point_suppresses_far_better_than_tracking`. Reverted; it is in no commit.
+The ENGAGE↔SUPPRESS flip is a *symptom*, not the cause, and the real driver is upstream in option scoring.
+**A fix justified by a mechanism you can see in a log is still a hypothesis until it is measured (lesson 20).**
 
 **Known breakage from the new bands, and it is the interesting kind.**
 `tests/ai_scenarios/scenario_cover.gd::test_a_hurt_tank_under_fire_gets_out_of_sight` places two Rust guns at **46 and
