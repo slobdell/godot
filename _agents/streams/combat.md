@@ -219,6 +219,45 @@ by N5 (`scenario_squad::test_a_squad_focuses_its_fire`), 4 mine*:
 | `scenario_cover::test_a_healthy_tank_near_a_wall…` | hidden 42% of the fight, 3 shots | The peek position is now outside the band |
 | `scenario_motion::test_a_scout_makes_attack_runs…` | 1 run, but 20 shots all into side/rear and **the tank took 0** | May be *better* behaviour (it commits). The test may be what is wrong |
 
+### The player's units stop holding — product constraint #4, and N5 only exposed it
+
+`test_ai_player_holds::test_the_players_units_wait_for_orders_and_the_cpu_does_not` fails on my branch. **It is mine,
+it is not flakiness, and it is not the machine** — I assumed the laptop at first and I was wrong. Same file, same
+laptop, bisected:
+
+| Tree | Player's unit moved | |
+|---|---|---|
+| pristine `a975e262` | **2.0 m** | passes (bar is 5 m) |
+| + N5, no brain fix | **10.2 m** | fails |
+| + N5 + X6 + brain fix | **15.2 m** | fails |
+| + N5 + brain fix, `CROSSING_ACQUIRE_PENALTY = 0` | **15.2 m** | X6 contributes **nothing** |
+
+So N5 causes ~8 m of it and the brain-range fix the other ~5 m. Instrumenting the held unit's brain shows exactly what
+happens, and it is not what I expected:
+
+```
+PH t=15   d=0.0  HOLD   | move=stop          <- correct, holding as ordered
+PH t=645  d=0.3  ENGAGE | going for its side, weaving, front armor on it | move=move_to
+PH t=675  d=6.6  ENGAGE | weaving, front armor on it                     | move=move_to
+```
+
+The unit holds for 21.5 s and then **decides on its own to flank**. The lead's round-5 ruling is *"the player's units
+hold until ordered. An army that moves without being told is not an army"* (workstreams.md product constraint #4), and
+ENGAGE is overriding it.
+
+**The part worth keeping: that constraint was being upheld by accident.** Before N5, a held unit that entered ENGAGE
+hit the *outranging* branch — `distance <= weapon["range"]` was true at that range — and `_combat_move` returned
+`{"type": "stop"}`. The unit stayed put because an unrelated range heuristic happened to return "stand still", not
+because anything in the hold logic said so. Narrow the range and the accident stops happening. **This is lesson 17
+for the third time this round** (a behaviour starved — here *sustained* — by a rule above it), and the generalisation
+is nastier than the deadlock one: **a guarantee that no test isolates can be held up by a coincidence, and it will
+look fine until something unrelated moves.**
+
+**Squad's to fix** (`game/ai/tank_brain.gd`, option precedence): a unit whose orders come from the player and which
+has no move order must not *initiate* movement from a fight option. It may shoot, turn, and take cover under fire —
+it may not decide to flank. My branch cannot go green alone while this stands, which is a third independent reason
+CP4 merges paired rather than first.
+
 ### X2, second finding: breaking contact just got much cheaper, which is round 5's problem drill
 
 Geometry, flagged before the series so it is not discovered afterwards. A unit that wants to disengage used to have to
