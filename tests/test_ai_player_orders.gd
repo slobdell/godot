@@ -241,6 +241,21 @@ func test_a_doctrine_army_re_arranges_when_each_squad_is_ordered() -> void:
 			# allowed: beyond that it has left the ground the player gave it.
 			away += 1 if gap > TankBrain.PLAYER_POST_LEASH * TankBrain.ESCAPE_LEASH_FACTOR else 0
 		worst[squad_name] = snappedf(far, 0.1)
+	# How far from the ground the player gave them the living units actually sit, and what the fight cost: the leash
+	# trades control for room to fight, so both numbers have to be read together.
+	var gaps: Array = []
+	for squad_name: String in names:
+		var settled_now := _positions(names[squad_name])
+		for unit_name: String in names[squad_name]:
+			var tank := _match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if tank != null and tank.is_alive() and _given.get(unit_name) != null:
+				gaps.append((settled_now[unit_name] as Vector3).distance_to(_given[unit_name] as Vector3))
+	var mean := 0.0
+	for gap: float in gaps:
+		mean += gap / maxf(gaps.size(), 1)
+	print("MEASURE player_orders_leash %.1f m leash: %d living units a mean %.1f m from their slot; green %d alive, rust %d alive" % [
+			TankBrain.PLAYER_POST_LEASH, gaps.size(), mean, _match.alive_count(Match.Team.GREEN),
+			_match.alive_count(Match.Team.RUST)])
 	print("MEASURE player_orders_doctrine_army worst gap to its own slot per squad %s; %d units off their slot, %d destroyed" % [worst, away, dead])
 	assert_eq(away, 0, "a doctrine army's squads go where the player sent them and fight from there")
 

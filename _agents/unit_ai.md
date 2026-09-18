@@ -649,6 +649,15 @@ Three rules carry it, all measured in `tests/test_ai_player_orders.gd` and `test
    commands nobody at all (L1's sharp edge from round 4, now enforced rather than documented). Everything an element
    issues is tagged `source: "element"`, so the marker and the cue on screen belong to the player's own clicks.
 
+**The leash distance is a dial on how much control the player feels.** Control's harness (`make squad-orders-test`)
+reads 11 of 21 units sitting at 17-18 m after a fight starts — pressed against the boundary, because what they want is
+to close with what they can see. Tighter means a squad hugs the spot it was given; looser means it can reach the cover
+and angles around it. 18 m was chosen as "inside one formation spacing of your slot" and has not been measured against
+a tighter value at scale: two runs of the small doctrine-army test (3 living units) put the mean at 5.7 m against 8.5 m
+for a 12 m leash, which is noise, not evidence. If the lead says his squads still wander, this is the constant to
+measure — in the squad-orders harness at 30 a side, with survival read alongside the distance, because the trade is
+control against room to fight.
+
 **And an element re-issues only when the intention changed.** "Attack" and "attack-move" at the same target, and
 "move" and "hold" at the same place, are the same intention; a standing order already follows a moving target, so the
 same intention is not handed over again inside `RE_ISSUE_TICKS`. Round 5 measured the old behaviour at ~35 order
