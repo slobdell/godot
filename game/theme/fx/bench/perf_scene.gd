@@ -559,6 +559,10 @@ func _finish() -> void:
 		"gpu": RenderingServer.get_video_adapter_name(),
 		"window": str(DisplayServer.window_get_size()),
 		"tier": FxQuality.tier_name(),
+		# A saved baseline is unreadable a month later without these: a capped run's frame time is pinned at the cap, so
+		# its capacity numbers mean nothing (see references/perf/README.md).
+		"capped": _capped,
+		"frame_target": FrameTarget.label(),
 		"all_avg_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["avg_ms"]))), 0.01),
 		"all_p95_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["p95_ms"]))), 0.01),
 		"all_gpu_ms": snappedf(PerfScene.mean(PackedFloat32Array(all_phases.map(func(r: Dictionary) -> float: return r["gpu_ms"]))), 0.01),

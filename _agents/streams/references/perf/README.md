@@ -20,9 +20,9 @@ Shape of a file: `{"phases": [...one entry per measured phase...], "summary": {.
 | `hz30-perf60-720.json` | `FrameTarget.PERFORMANCE_60` (~720 lines), uncapped | `9b07d107` | avg 27.04, p95 34.05, GPU 8.91; locked 30 at 13 |
 | `locked30-capped-60hz-1080.json` | **before 30 Hz**: capped at 30 at 1080p on the 60 Hz simulation | `15e048d8` | avg 106.05, p99 94–144 at 36–64 vehicles — the 60 Hz spiral; the line the 30 Hz work had to clear |
 
-A caveat on reading these: **the JSON does not record whether a run was capped**, only its numbers (worth fixing the
-next time `perf_scene.gd` is touched — the summary should carry `capped` and the frame target). The two locked-30 files
-above are capped by their settings; the uncapped ones are the `hz30-720`/`hz30-1080`/`hz30-perf60` set.
+A caveat on reading **these seven**: they predate the summary carrying it, so the file itself does not say whether the
+run was capped — the table above is the record. Runs taken from `f6a0dd40` onwards carry `"capped"` and
+`"frame_target"` in their summary, so a new baseline says for itself.
 
 **The trap in the capped runs:** `holds_60fps_at_vehicles` / `holds_30fps_at_vehicles` are 0 in
 `hz30-locked30-1080.json` and `locked30-capped-60hz-1080.json`, and that does **not** mean the machine held nothing.
