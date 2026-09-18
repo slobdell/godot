@@ -259,6 +259,43 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Where it stands (updated as I go)
+
+| Item | State |
+|---|---|
+| **X1 / CP1** Movement seam | **Merged to main** (`30e3250d` → `f03a795c`). Gunnery split waits for CP4 on main (agreed). `ORDER_STALL_ARRIVE` deletion waits for squad's precedence fixes, as its own measured commit (orchestrator's ruling). |
+| **X2** measure the jam | `make nav-suite` (arena's probe × configs, parallel on builder0) + `make nav-where` (who didn't arrive, where, and what their Movement says). Baseline saved: `references/nav/nav_suite_30e3250d_baseline.json`. |
+| **X3** ORCA | Done: `game/ai/avoidance.gd`. |
+| **X4** right-of-way | Done: ask / give way in `movement.gd`, visible as `phase: yielding`. |
+| **X5** maze gate | **Met on one seed at 180 s except head-on maze** (see numbers); five seeds are identical by construction (below). Not wired into `make check`: a suite run is ~10 min. |
+| **X6** PID | Done for station-keeping (`pid.gd`, `control_gains.gd`): 0.35 m mean gap vs 4.58 m for the P law. Speed matching is the same loop; turret lay not attempted (combat's turret already has a rate limit, which is the dominant dynamics). |
+| **X7** path quality | Done: carrot along the route, cars look until they can drive onto the point, re-plan on change. |
+| X8, X9 | Not started. |
+
+### Numbers (builder0, `make nav-suite`, hold-fire, 180 s; arrived of N)
+
+| config | round 5 (`30e3250d`) | X3+X4+X6 (`e291a35a`) |
+|---|---|---|
+| maze-30 | 15 | **30** |
+| maze-60 | 35 | **60** (t90 129 s) |
+| maze-60 head-on | **0** | **60** (t90 145 s) |
+| yard-60 | 34 | **60** (t90 47 s) |
+| yard-60 head-on | 33 | **60** (t90 37 s) |
+| foundry-60 | 40 | **60** (t90 38 s) |
+
+Caveats: one seed (the probe has no randomness, so five seeds are five copies; defaulting to 1 is the honest
+setting), all `tank` units, hold-fire, no brains (the probe drives plain `OrderController`s).
+
+### Findings worth relaying
+
+- **60 units on 52 spawn points stacks 8 pairs exactly on top of each other, and in round 5 those pairs never moved.**
+  Part of arena's baseline was coincident hulls, not congestion. Coincident hulls now part by name (deterministic).
+- **Five seeds of the probe are one sample.** Check that the thing you vary actually varies before running a series.
+- **Blind unsticking rams friends.** The round-5 routine reversed whatever was behind; in a column that makes two stuck
+  units out of one. It now backs off only with room, and tracks pivot instead.
+- **Cars and short lookaheads don't mix.** Any steering point inside a car's turning circle is a three-point turn; the
+  carrot, the avoiding point and the give-way spot all have to be forward-reachable.
+
 ### Plan (in order)
 
 1. **X1 / CP1** — `game/ai/movement.gd`, the N1 API; path-following moved out of `order_controller.gd`; honest

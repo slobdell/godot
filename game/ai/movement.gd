@@ -93,6 +93,15 @@ const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 
 ## X3: ORCA local avoidance on (the kill switch is for measuring the difference, `--no-avoidance`).
 static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
+## Measuring only: `--nav-off=grace,minpace,pushidle,carrot` switches single mechanisms off for an A/B (nav-where).
+static var _off := _parse_off()
+
+
+static func _parse_off() -> PackedStringArray:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--nav-off="):
+			return arg.trim_prefix("--nav-off=").split(",")
+	return PackedStringArray()
 ## Look this far along an avoiding velocity when steering by it (metres, at most the distance to the waypoint).
 const AVOID_STEER_MIN := 3.0
 const AVOID_STEER_MAX := 8.0
@@ -105,7 +114,7 @@ const AVOID_GRACE_TICKS := SimClock.TICK_RATE / 3
 const AVOID_ASK_PACE := 0.5
 ## A goal that jumps further than this (flat metres) is a new destination for AVOID_GRACE_TICKS.
 const NEW_GOAL_JUMP := 3.0
-## ...and a way on that is crowded but not reversed is still driven at this share of the order's speed at least.
+## ...and during those ticks a way on that is crowded but not reversed is still driven at this share of its speed at least.
 const AVOID_MIN_PACE := 0.15
 
 ## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
@@ -167,6 +176,7 @@ var _path_goal := Vector3.INF
 var _repath_left := 0.0
 var _stuck_time := 0.0
 var _unstick_left := 0.0
+var _unstick_pivot := false
 var _progress_goal := Vector3.INF
 var _progress_best := INF
 var _goal := Vector3.INF
@@ -402,7 +412,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# Asking: after ASK_SECONDS without progress, whoever is in the way; and AT ONCE when avoidance is holding this
 	# unit back behind a friend that is going nowhere (StarCraft's "idle units get pushed aside": a parked unit should
 	# not cost a moving one a second of standing still before it asks).
-	var held_back := pace < AVOID_ASK_PACE and _order_ticks >= AVOID_GRACE_TICKS
+	var held_back := pace < AVOID_ASK_PACE and _order_ticks >= AVOID_GRACE_TICKS and not _off.has("pushidle")
 	if stalled_ticks >= int(ASK_SECONDS * SimClock.TICK_RATE) or held_back:
 		_ask_left -= ctl._step
 		if _ask_left <= 0:
@@ -819,9 +829,12 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
 	# away from where it was told to go before it has visibly gone), and it never sits at zero throttle while the way on
 	# is merely crowded rather than reversed — it creeps (soft nudging is fine: vehicles are vehicles), and right-of-way
 	# sorts out who goes first.
-	if chosen.dot(preferred) > 0.0:
+	var starting := _order_ticks < AVOID_GRACE_TICKS
+	# The creep is only for the start of an order (that is what K1 measures). Kept on afterwards it measured as
+	# pushing into crowds: head-on maze-60's last arrival 182 s with it, 163 s without (builder0, 639071f2+).
+	if starting and chosen.dot(preferred) > 0.0 and not _off.has("minpace"):
 		keep = maxf(keep, AVOID_MIN_PACE)
-	if _order_ticks < AVOID_GRACE_TICKS or speed < 0.3:
+	if (starting and not _off.has("grace")) or speed < 0.3:
 		return [waypoint, keep]
 	var direction := chosen / speed
 	var probe := Vector3(here.x + direction.x * AVOID_MESH_PROBE, 0.0, here.z + direction.y * AVOID_MESH_PROBE)
@@ -904,6 +917,8 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	# chasing a point beside itself.
 	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
 	var toward := Vector2(_path[_path_index].x - here.x, _path[_path_index].z - here.z)
+	if _off.has("carrot"):
+		return Vector3(_path[_path_index].x, 0.0, _path[_path_index].z)
 	if toward.length_squared() > 0.01 and forward.normalized().dot(toward.normalized()) < CARROT_ALIGNED_COS:
 		for i in range(_path_index, _path.size()):
 			if _flat_distance(_path[i], here) >= look and (wheel_radius() <= 0.0 or _ahead_of_wheels(_path[i])):
@@ -966,7 +981,10 @@ func _remaining_path_distance(goal: Vector3) -> float:
 func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if _unstick_left > 0.0:
 		_unstick_left -= delta
-		cmd.throttle = 1.0 if order.get("reverse", false) else -1.0  # back off the way you were NOT going
+		if _unstick_pivot:
+			cmd.throttle = 0.0  # no room behind: tracks swing the nose off whatever it is pressed against instead
+		else:
+			cmd.throttle = 1.0 if order.get("reverse", false) else -1.0  # back off the way you were NOT going
 		cmd.turn = 1.0
 		return
 	if absf(cmd.throttle) > 0.5 and ctl.tank.estimated_velocity.length() < STUCK_SPEED:
@@ -977,8 +995,10 @@ func unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			# (a column, a crowd) would just be rammed, and then two units are stuck instead of one — right-of-way
 			# sorts that case out instead.
 			var backing := 1.0 if order.get("reverse", false) else -1.0
-			if not _hull_within(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing, UNSTICK_CLEARANCE):
-				_unstick_left = UNSTICK_SECONDS
+			_unstick_pivot = _hull_within(Vector2(-ctl.tank.global_basis.z.x, -ctl.tank.global_basis.z.z) * backing,
+					UNSTICK_CLEARANCE)
+			if not _unstick_pivot or wheel_radius() <= 0.0:
+				_unstick_left = UNSTICK_SECONDS  # wheels can't pivot: with a friend behind they wait for right-of-way
 	else:
 		_stuck_time = 0.0
 
