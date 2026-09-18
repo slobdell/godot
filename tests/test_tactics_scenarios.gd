@@ -22,3 +22,41 @@ func test_a_halted_element_watches_both_flanks() -> void:
 	assert_true(int(result["left"]) > 0 and int(result["right"]) > 0,
 			"with vehicles facing out to both sides (bearings %s)" % [result["bearings"]])
 	assert_true(float(result["coverage"]) > 0.8, "so the element watches almost all of the circle")
+
+
+# ---- Round 6 (X5): each task produces the posture its name claims -----------------------------------------------
+
+func test_support_by_fire_forms_a_firing_line_at_a_standoff_and_fires_from_it() -> void:
+	# The lead pressed support by fire and "the units definitely did not form up".
+	var result: Dictionary = await TacticsScenarios.task_posture(self, "support_by_fire", 30.0)
+	print("MEASURE task_posture %s" % result)
+	assert_true(Array(result["drills"]).has("support_by_fire"), "the element runs the task (ran %s)" % [result["drills"]])
+	assert_true(not Array(result["drills"]).has("far_ambush") and not Array(result["drills"]).has("react_to_contact"),
+			"and contact never turns it into an advance or a flank (ran %s)" % [result["drills"]])
+	assert_true(float(result["closest_m"]) >= 35.0, "nobody advances onto the point (closest %.0f m)" % result["closest_m"])
+	assert_true(float(result["frontage_m"]) >= 24.0, "abreast: a line %.0f m wide" % result["frontage_m"])
+	assert_true(float(result["depth_m"]) <= 16.0, "not a column (%.0f m deep)" % result["depth_m"])
+	for distance: float in result["to_point_m"]:
+		assert_true(distance <= 80.0, "every gun is within reach of the point (%.0f m)" % distance)
+	assert_true(int(result["facing_point"]) >= 3, "the line faces the point (%d of 4)" % result["facing_point"])
+	assert_true(int(result["shots"]) > 0, "and it fires from there")
+
+
+func test_a_screen_stands_on_a_line_across_the_point() -> void:
+	var result: Dictionary = await TacticsScenarios.task_posture(self, "screen", 30.0)
+	print("MEASURE task_posture %s" % result)
+	assert_eq(result["formation"], "line", "a screen is a line")
+	assert_true(float(result["frontage_m"]) >= 36.0, "a wide one (%.0f m)" % result["frontage_m"])
+	assert_true(float(result["depth_m"]) <= 14.0, "across the point, not along it (%.0f m deep)" % result["depth_m"])
+	assert_true(float(result["center_to_point_m"]) <= 10.0, "centred on it (%.0f m off)" % result["center_to_point_m"])
+
+
+func test_a_move_ends_formed_up_on_the_spot_and_stops_issuing() -> void:
+	var result: Dictionary = await TacticsScenarios.task_posture(self, "move", 30.0)
+	print("MEASURE task_posture %s" % result)
+	assert_true(float(result["center_to_point_m"]) <= 8.0, "the element's middle is where it was sent (%.1f m off)"
+			% result["center_to_point_m"])
+	assert_true(float(result["worst_off_slot_m"]) <= 8.0, "every vehicle is in its slot (worst %.1f m)"
+			% result["worst_off_slot_m"])
+	assert_true(int(result["orders_last_10s"]) <= 2, "and the leader has stopped re-issuing (%d orders in the last 10 s)"
+			% result["orders_last_10s"])

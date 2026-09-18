@@ -6,15 +6,7 @@ const ARENA := preload("res://game/arena/arena.tscn")
 
 
 func _arena(layout_name: String) -> Arena:
-	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = layout_name
-	add_to_tree(arena)
-	for frame in SimClock.TICK_RATE:
-		if Pathing.is_ready(arena):
-			break
-		await tree.physics_frame
-	assert_true(Pathing.is_ready(arena), "setup: %s's navigation synced within 1 s" % layout_name)
-	return arena
+	return await ArenaFixture.build(self, layout_name)
 
 
 func _sample() -> Dictionary:

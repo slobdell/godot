@@ -345,6 +345,26 @@ stack first, then the layer that commands it, then how the player reads and issu
 - **Weapon ranges are still too long.** *"Units see each other and then everyone just starts firing."* This was round
   5's combat brief too, and the lead still sees it: the first contact should not be the whole fight.
 
+### The lead's camera pick (2026-09-18)
+
+He chose from control's page (https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL — one frozen 30-a-side fight shown at
+every pose): **pitch 25° · 50 m out · FOV 60°**, no note. Applied as `DEFAULT_PITCH_DEG 25`, `FOV_DEG 60` (was 55),
+start 50 m out; the player tilts freely 22°–50°, and `O` is the deliberate 77° top-down.
+
+**He picked the lowest angle on the page**, which is worth recording as a *direction* and not just a value: the grid
+offered 25/35/45/60° and he took the floor of it. The honest reading is that the range may not have gone low enough,
+and that "between StarCraft 2 and Twisted Metal" sits nearer the Twisted Metal end than this project had assumed.
+Before treating 25° as settled, offer him a second band below it (roughly 15–25°) and find out whether the floor was
+his choice or merely the lowest option available.
+
+Two things this pick changed on its own:
+
+- **The L4 vision cap counted sky as unseen ground.** At 25° about a fifth of the screen is sky, so the cap would have
+  fought his own pick and pulled the camera back up. Sky now leaves the count (control).
+- **`perf_scene.gd` reads `RtsCamera.FOV_DEG` and `pose_for`**, so the performance harness's camera becomes 25°/60°
+  at that merge: **M1 frame numbers move for a camera reason, not an art reason**, and a 25° camera sees all the way
+  to the far stands. Re-baseline after the merge; never publish a frame number measured across it.
+
 ## Units: fixed types that counter each other
 
 Each unit type is a fixed package: chassis, one weapon, armor, speed, sight, cost. **No loadouts.**

@@ -4,6 +4,7 @@
  "title": "The Pit",
  "note": "A control-point brawl behind walls: four gates into a ring of stacked containers, open killing ground outside. Hold a gate and you own the approach; go inside and it's knife range. Tanks and burners take the ring; artillery punishes whoever crowds it.",
  "half_size": 120.0,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {

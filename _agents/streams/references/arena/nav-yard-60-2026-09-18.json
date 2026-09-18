@@ -1,0 +1,50 @@
+{
+	"arena": "yard",
+	"arrived": 33,
+	"arrived_fraction": 0.55,
+	"crawl_share": 0.0,
+	"crawl_unit_seconds": 2.0,
+	"distance_m": 13354.6,
+	"off_navmesh": 0,
+	"progress_m": 12183.3,
+	"seconds": 180.0,
+	"stuck_events": 1300,
+	"stuck_units": 27,
+	"t100_s": -1.0,
+	"t50_s": 31.0,
+	"t90_s": -1.0,
+	"time_limit_s": 180.0,
+	"units": 60,
+	"worst": [
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 43.6,
+			"stuck_events": 47,
+			"unit": "Cross_51"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 41.9,
+			"stuck_events": 48,
+			"unit": "Cross_48"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 39.5,
+			"stuck_events": 48,
+			"unit": "Cross_50"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 37.5,
+			"stuck_events": 46,
+			"unit": "Cross_47"
+		},
+		{
+			"arrived_s": -1.0,
+			"remaining_m": 36.5,
+			"stuck_events": 47,
+			"unit": "Cross_49"
+		}
+	]
+}
