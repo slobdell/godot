@@ -2102,7 +2102,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# Outranging (a Lancer on a tank): standing where its gun can't reach and mine can, there's nothing to dodge. Hold still
 	# and shoot, moving only if something is on its way or it closes in.
 	var their_reach := float(Weapons.profile(String(contact.get("weapon", ""))).get("range", 0.0))
-	if style != "run" and distance > their_reach + OUTRANGE_MARGIN and distance <= float(weapon["range"]) \
+	if style != "run" and distance > their_reach + OUTRANGE_MARGIN and distance <= Engagement.effective_range(weapon) \
 			and (s.get("incoming", []) as Array).is_empty():
 		why = TankBrain._join(why, "outranging it")
 		return {"type": "stop"}
@@ -2114,7 +2114,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	else:
 		_loaded_tick = -1
 	var halt_reload := float(s.get("features", {}).get("short_halt_reload", SHORT_HALT_RELOAD))
-	if style != "run" and reload_seconds >= halt_reload and distance <= float(weapon["range"]):
+	if style != "run" and reload_seconds >= halt_reload and distance <= Engagement.effective_range(weapon):
 		var ready_in := (1.0 - float(me.get("reload", 1.0))) * reload_seconds
 		var braking := absf(tank.speed()) / maxf(tank.acceleration, 0.1)
 		var incoming: Array = s.get("incoming", [])
