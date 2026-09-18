@@ -100,14 +100,21 @@ same text for all six:
 3. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
    five tests passing on the laptop; its `make remote T=check` is queued behind the other worktrees and arena will
    send the hash.
-4. **An ElevenLabs request is coming from feel (X3, crowd beds), and it must not be approved until the mix is
+4. **TWO merges re-time other streams' measurements this round, not one.** CP4 is the known one. The second, found by
+   control: **`perf_scene.gd` calls `RtsCamera.pose_for(focus, 0, zoom)`**, so when control's pitch decoupling merges,
+   `make perf-scene`'s camera drops from the welded pose to **38°** — a lower camera that sees more of the far arena,
+   so feel's **M1** frame numbers move at that merge through no change of feel's own. Relayed to feel; the rule is the
+   same as CP4's: **re-baseline after the merge, and never publish a frame number measured across it.** This is the
+   generalisable shape — a shared harness that derives its own configuration from another stream's code silently
+   inherits that stream's changes.
+5. **An ElevenLabs request is coming from feel (X3, crowd beds), and it must not be approved until the mix is
    eliminated as the cause.** feel measured the existing crowd murmur as procedural filtered noise at **~43 dB below
    full scale on a Bed bus that is ducked under impacts** — inaudible in a firefight whatever the source material is.
    Recording a better bed and playing it 43 dB down buys an inaudible better bed. The order the orchestrator set:
    solo the crowd, record a real match, fix the mix (bed level, duck depth and release, a ceiling on how far impacts
    may duck the bed), re-listen — *then* ask for credits if it is still thin. Paid generation is irreversible in a way
    a gain change is not (lesson 18), and the standing gate is text → cheap pilot → listen → batch (lesson 19).
-5. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
+6. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
    so it starts with the target number rather than rediscovering it; squad has been told to take its two independent
    items first and explicitly *not* to build its own avoidance to fill the gap.
 
