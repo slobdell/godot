@@ -27,9 +27,15 @@ extends Node
 ##       anything is standing there. This is what makes suppression a decision instead of a side effect: a machine gun
 ##       holding a crossing stops an advance without killing anyone. Fire discipline still applies (never through a
 ##       friendly), and the point must be inside the weapon's range.
-##   {"type": "target", "name": String, "fallback": bool (optional)}
+##   {"type": "target", "name": String, "fallback": bool (optional), "long_shot": bool (optional)}
 ##       engage one specific tank when visible; with fallback, shoot the nearest visible
 ##       enemy meanwhile (brains use this: team intel can pick a target this tank can't see)
+##       long_shot (N5, round 6) lifts the engagement envelope's FIRE DISCIPLINE for this target: the crew may fire
+##       out to the weapon's full range instead of holding for its effective band. It is deliberately NOT implied by
+##       "target", because a brain in ENGAGE issues a target order every tick — if it were, no CPU unit would ever
+##       hold its fire and the contract would do nothing. It is for a commander who has decided a long shot is worth
+##       the round (a support-by-fire or attack-by-fire task). Sight and acquisition still apply: nobody may be
+##       ordered to shoot at something nobody can see.
 ## Reflexes (up to MAX_REFLEXES, checked every tick BEFORE orders execute). Each
 ## fires once, then re-arms when its condition clears. They let a slow commander
 ## pre-decide "if X happens, do Y" (playtest #1), and they're the smallest version
@@ -98,7 +104,12 @@ var reflexes: Array = []
 var watch_point: Variant = null
 ## Indirect weapons (ARC) may shoot at any enemy this returns true for. Brains set it to "my TEAM
 ## sees it" (spotting); by default it's the tank's own line of sight.
+## N5 (round 6): direct fire reads it too, as gate 1 of the engagement envelope.
 var spotter: Callable
+## N5 (round 6, CP4): this gun's lay on the contact it is engaging — the acquisition timer and the fire-discipline
+## hysteresis. Owned by combat (game/combat/engagement.gd); the controller only carries it and feeds it the target the
+## weapon scan already picked, so the envelope costs no extra raycast.
+var engagement_lay := Engagement.Lay.new()
 ## Recent notable happenings (reflexes firing), newest last. For observers like the bridge.
 var events: PackedStringArray = []
 
@@ -279,6 +290,7 @@ func compute_command(delta: float) -> TankCommand:
 	if not tank.is_alive():
 		engaged_target = ""
 		_held_aim = Vector3.ZERO
+		engagement_lay.forget()  # N5: a respawned crew starts its lay from scratch
 		return TankCommand.new(0.0, 0.0, tank.global_position + tank.turret_forward() * HELD_AIM_DISTANCE)
 	if _held_aim == Vector3.ZERO:
 		_held_aim = tank.turret_forward()
@@ -636,6 +648,12 @@ static func _flat_distance(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
 
 
+## Seconds of GAME time this run covers: one tick, or the whole stride when this unit executes at a lower rate.
+## Booked in seconds, never in ticks (orchestration.md lesson 30), and never from the wall clock (determinism.md).
+func _seconds_step() -> float:
+	return float(_step) / float(SimClock.TICK_RATE)
+
+
 func _apply_unstick(cmd: TankCommand, delta: float) -> void:
 	if _unstick_left > 0.0:
 		_unstick_left -= delta
@@ -679,6 +697,9 @@ func _apply_weapon(cmd: TankCommand) -> void:
 					target = _scanned_shootable()
 	lap = _lap("weapon.scan", lap)
 	if target == null:
+		# N5: nothing to lay on — the gunner's lay on the last contact bleeds off (it is not wiped, so a target that
+		# ducks behind a crate for a moment is re-acquired from where he left it).
+		engagement_lay.lose(_seconds_step())
 		if watch_point != null:
 			_cover((watch_point as Vector3), cmd)
 		return
@@ -707,7 +728,14 @@ func _apply_weapon(cmd: TankCommand) -> void:
 		in_range = false
 	var aimed: bool = Ballistics.aim_error(muzzle, tank.turret_forward(), aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"]))
 	lap = _lap("weapon.aim", lap)
-	cmd.fire = _clear_to_fire(in_range and aimed and tank.ready_to_fire(), aim)
+	# N5 (round 6, CP4): gates 2 and 3 — the crew must have HELD this contact long enough, and the range must be one
+	# where the round is worth firing, unless a commander named the target or this crew is already being shot at
+	# (game/combat/engagement.gd). Hull to hull, not muzzle to lead point: the envelope is about where the two vehicles
+	# stand, not where the gunner is aiming.
+	var envelope := engagement_lay.engage(tank, target.name,
+			tank.global_position.distance_to(target.global_position), _seconds_step(),
+			bool(weapon_order.get("long_shot", false)))
+	cmd.fire = _clear_to_fire(envelope and in_range and aimed and tank.ready_to_fire(), aim)
 	_lap("weapon.lanes", lap)
 
 
@@ -734,10 +762,12 @@ func _apply_suppress(cmd: TankCommand) -> void:
 func _shootable(enemy: Tank) -> bool:
 	if tank.global_position.distance_to(enemy.global_position) > float(tank.weapon["range"]):
 		return false
-	# Round-5 X1 found: a `seen` test (team spotting, else own sight radius) was computed here and never used, so this
-	# has only ever meant "in range with a clear line". The unused call is gone (it cost a dictionary walk per enemy per
-	# scan); whether a gun should hold fire on something nobody sees is a behaviour question for the ladder
-	# (_agents/streams/archive/round5/ai.md, known issues).
+	# N5 (round 6, CP4): gate 1 of the engagement envelope. Round 5 found this `seen` test computed here and thrown
+	# away, so "shootable" had only ever meant "in range with a clear line" — a gun reaching past the eyes that aim it,
+	# which is the mechanism behind the lead's "units see each other and then everyone just starts firing". It is back,
+	# deliberately, and it goes BEFORE the raycast: a dictionary lookup that rejects a contact saves the ray.
+	if not Engagement.is_seen(tank, enemy, spotter):
+		return false
 	# X2 measured, and rejected: answering this with the memoized 2D cover map instead of a physics ray made picking a
 	# target *slower* at 60 units (650 usec per tick against 573). The two agree (139 of 139 lines, test_ai_cover_map),
 	# but with a memo this big a hit costs about as much as the ray it saves.

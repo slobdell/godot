@@ -16,6 +16,8 @@ extends GameMode
 ## ms per tick = 1000 / (60 x speedup). `make scale-bench` runs the ladder.
 ## --sim-profile (round 5, CP1) prints SIM_PROFILE <json> before the result: ms per physics tick, whole and by section
 ## (SimProfile; `make sim-profile`).
+## --no-acquisition (round 6, N5) drops the engagement envelope's sight and acquisition gates: a measurement control,
+## never normal play (see game/combat/engagement.gd).
 ## --combat-log prints COMBAT_EVENT <json> lines: every K2 weapon_fired / projectile_impact, every destroyed unit, and
 ## every living unit's pose each COMBAT_LOG_POSE_TICKS (tools/combat_duel.py turns them into a readable timeline).
 
@@ -35,6 +37,12 @@ func start() -> void:
 	game_match.has_local_player = false
 	Pathing.enabled = not flags.has("no-navigation")
 	Match.swap_bases = flags.has("swap-bases")
+	# N5 (round 6, CP4) control: --no-acquisition switches off gates 1 and 2 of the engagement envelope (a target must
+	# be SEEN, and the crew must have HELD it) so a series can isolate what FIRE DISCIPLINE alone is worth. Gate 3 has
+	# its own control and needs no flag: `--tune=cannon.effective_range=70,...` puts a weapon's band back at its
+	# maximum range, which is exactly the world before this contract.
+	Engagement.acquisition_enabled = not flags.has("no-acquisition")
+	Engagement.reset_counters()
 	# Experiments: --tune=tank.max_shield=0,cannon.ammo=60 overrides catalog stats for this run.
 	var tune_error := Units.apply_tuning(flags.text("tune"))
 	if tune_error != "":

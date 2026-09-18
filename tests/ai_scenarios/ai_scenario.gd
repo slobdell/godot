@@ -43,8 +43,17 @@ func brain_tank(team: int, tank_name: String, position: Vector3, yaw: float, dir
 
 
 ## A tank on standing orders (OrderController): by default it stays put and shoots anything it sees.
+##
+## N5 (round 6): the default order carries `long_shot: true`, which lifts the engagement envelope's FIRE DISCIPLINE.
+## A scenario shooter is **a prop whose job is to deliver fire on the subject**, not a unit whose fire discipline is
+## under test — without this, a shooter placed a few metres outside its weapon's effective band correctly holds its
+## fire, and a scenario about cover or dodging or suppression fails because its subject was never shot at. (That is
+## exactly what happened to scenario_cover's two guns at 46 and 47 m against a 45 m cannon band.) Sight and
+## acquisition still apply, so the props still behave like crews.
+##
+## **A scenario whose subject IS fire discipline must pass its own weapon order without the flag.**
 func shooter(team: int, tank_name: String, position: Vector3, yaw: float, move := {"type": "stop"},
-		weapon_order := {"type": "fire_at_will"}, unit := "tank", weapon := "") -> Tank:
+		weapon_order := {"type": "fire_at_will", "long_shot": true}, unit := "tank", weapon := "") -> Tank:
 	var tank := game_match.spawn_tank(tank_name, 0, team, unit_for(unit, weapon))
 	_place(tank, position, yaw)
 	var controller := OrderController.new()

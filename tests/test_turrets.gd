@@ -101,7 +101,12 @@ func _retreat_under_pursuit(verb: String, destination: Vector2) -> Dictionary:
 	for i in greens.size():
 		greens[i].global_position = Vector3(LANE_X + i * 8.0, 0.0, 10.0)
 		greens[i].rotation.y = 0.0  # facing north, toward the pursuers
-	var pursuers := _pursuers(game_match, 2, -40.0)
+	# N5 (round 6): the pursuers start INSIDE the cannon's effective band, derived rather than hard-coded. This test is
+	# about the TURRET — "the hull turns to drive; the gun must not" — so the contact has to be one the crew would
+	# engage on its own judgement. At the old fixed -40 (50 m out) the tanks now correctly hold their fire under the
+	# engagement envelope, and the test would be measuring fire discipline instead of the turret.
+	var band := Engagement.effective_range(Weapons.profile("cannon"))
+	var pursuers := _pursuers(game_match, 2, 10.0 - band * 0.7)
 	await wait_physics_frames(3)
 	assert_eq(game_match.command_squad(Match.Team.GREEN, {"squad": squad.squad_name, "verb": verb, "to": [destination.x, destination.y]}), "",
 			"%s order accepted" % verb)

@@ -182,6 +182,91 @@ it does nothing). Past it, `Match.shot_spread` widens linearly to `(1 + Match.RA
 long shots become a gamble and closing pays. Try values with `--tune=cannon.effective_range=38,…`; a first set of
 variants is in `tools/matchup_variants/x1_range_falloff.json`.
 
+## Round 6 N5 (CP4): the engagement envelope — seeing is not shooting
+
+The lead, in both his round-5 and round-6 playtests: *"The long range of the weapons is also I think making the game
+unplayable (units see each other and then everyone just starts firing)."* Round 5's brief said the same thing and it
+did not land, because the lever round 5 built (`effective_range`) shipped **equal to `range` on every weapon**, so the
+spread falloff above never fired once in a real match.
+
+### What now stands between seeing an enemy and shooting at it
+
+Three gates, in `game/combat/engagement.gd`, all of them consulted from one place in the order controller:
+
+1. **Sight.** A target must be *seen* — through the team's shared intel (`Match.is_visible_to`, the existing
+   `spotter`) or the crew's own `sight_radius`. Round 5 found this test computed and thrown away; it is back on
+   purpose, and it sits **before** the line-of-sight raycast, so rejecting a contact now saves a ray rather than
+   costing a dictionary walk.
+2. **Acquisition.** A crew must hold a contact for `acquire_seconds` before its first round: **0.3 s** at arm's
+   length rising to **1.6 s** at the edge of its own vision, ×2 at full suppression, ×0.55 for a scout. **Switching
+   target restarts it.** Losing the contact bleeds the lay off at half rate instead of wiping it, so a target that
+   ducks behind a crate is not found from scratch.
+3. **Fire discipline.** A crew holds its fire until it is inside its weapon's **effective range**, with a 1.12×
+   release hysteresis so the gun does not stutter at the edge of the band. Two exceptions: a crew already being shot
+   at (`suppression ≥ 0.25`) may answer at any range it can reach, and an order carrying `"long_shot": true` lifts
+   discipline for that target.
+
+### The two decisions in it, and why
+
+**`effective_range` is now each weapon's own `preferred_max`, not a flat fraction of its reach.** A flat 55–65% of
+maximum (which is what the brief suggested, and which is measured below as a variant) deletes the two long-range
+archetypes: the Lancer's laser and the Syndicate's railgun exist precisely to out-reach a tank, and cutting them to
+59 m and 72 m leaves them with no job. `preferred_max` is the band each weapon was *designed* to work in, and using it
+means **one number per weapon serves the spread falloff, the brain's positioning and the trigger** — which is also
+why `TankBrain`'s ENGAGE state already closes to exactly the distance where its gun is allowed to speak.
+
+| weapon | reach | band (was) | weapon | reach | band (was) |
+|---|---|---|---|---|---|
+| `cannon` | 70 | **45** (70) | `assault_gun` | 80 | **62** (80) |
+| `autocannon` | 60 | **45** (60) | `railgun` | 110 | **104** (110) |
+| `laser` | 90 | **86** (90) | `pulse_cannon` | 70 | **55** (70) |
+| `machine_gun` | 45 | **35** (45) | `pulse_repeater` | 55 | **45** (55) |
+| `twin_mg` | 35 | **28** (35) | `scrap_cannon` | 50 | **36** (50) |
+| `spear_gun` | 30 | **24** (30) | | | |
+
+Cones (`flamethrower`, `fuel_spray`, `sonic_emitter`) and arcs (`mortar`, `catapult`, `gas_rockets`,
+`guided_missiles`) are deliberately untouched: a cone is disciplined by its own 14–32 m reach, and indirect fire
+already requires a spotter and a `[min_range, range]` window, so it is spotted fire by construction.
+
+**The `long_shot` override has to be asked for by name, and this is the trap worth remembering.** The first cut let
+any `{"type": "target"}` weapon order lift fire discipline — "unless ordered otherwise", which is what the brief says.
+But `TankBrain`'s ENGAGE state issues a `target` order **every tick**, so that exception would have exempted every CPU
+unit in the game and left this contract doing nothing at all, while every rule test went on passing. This is
+orchestration.md lesson 23 inverted: not a feature behind a flag the default path never passes, but an **exception the
+default path always passes**. The override is now `"long_shot": true`, which nothing sets by default; it is the hook
+for a doctrinal support-by-fire or attack-by-fire task (squad's to set) and for a player who deliberately designates a
+distant target (control's).
+
+### The number other streams need
+
+Any metric of the form *"can a defender at this position cover this approach"* must stop hard-coding a watcher range.
+`Engagement.covering_range()` returns the median of `min(effective_range, sight_radius)` over every unit in all four
+rosters — **45.0 m** today (n=14; min 24, max 104). The distribution matters more than the median:
+
+- 24–36 m: `gang_scout` 24, `gang_ifv` 28, `scout`/`law_scout` 35, `gang_tank` 36
+- **45 m: `tank`, `ifv`, `law_ifv`, `syn_scout`** — the mass of every roster
+- 55–62 m: `syn_ifv` 55, `law_tank` 62
+- 86–104 m: `lancer`/`syn_lancer` 86, `syn_tank` 104
+
+arena's `exposure()` used **110 m**, which was a weapon-range assumption wearing a sightline's clothes. Use 45 m for
+"covered by an ordinary defender" and a second pass at 86 m for "deniable by a long-range archetype". Carry the
+caveat: an ordered `long_shot` reaches the weapon's full range, so a 45 m-safe approach is safe from units using their
+own judgement, not safe absolutely — which is the intended design, since an ambush should be beatable by a commander
+who spends the order.
+
+### How to measure it (and how *not* to)
+
+The control for gates 1 and 2 is `--no-acquisition` on the match runner. The control for gate 3 needs no flag at all:
+`--tune=cannon.effective_range=70,…` puts every band back at its weapon's reach, which **is** the world before this
+contract. `tools/matchup_variants/engagement_bands.json` holds three alternatives as ready-made tune strings — *reach
+(the old world)*, *0.65 of reach*, *0.55 of reach* — to be run beside the shipped default with
+`make engagement VARIANTS=tools/matchup_variants/engagement_bands.json`.
+
+> **Measurements: pending.** The series has not been run yet. Nothing in this section below the design is a measured
+> claim, and **no number taken across CP4 may be published by any stream** (workstreams.md invariant 9). When the
+> series lands, its results go here with n, commit and machine, and the per-match file goes in
+> `streams/references/combat/`.
+
 ## Round 5 X2: is hard cover worth using? (the mechanics half, measured 2026-09-17)
 
 `tests/test_combat_cover.gd`, on the default arena's 18 x 1.5 m walls:
