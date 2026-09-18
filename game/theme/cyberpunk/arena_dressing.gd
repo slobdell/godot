@@ -28,6 +28,10 @@ const AD_SCREEN := preload("res://game/theme/arena_kit/prop_ad_screen.tscn")
 const CONTAINER_20 := preload("res://game/theme/arena_kit/prop_container_20.tscn")
 ## Screens either side of each gate, this far along the wall from its middle.
 const SCREEN_OFFSET := 46.0
+## Feel X4 (round 6): each screen turns this far toward the far half of the arena. Square to the centre line they were
+## seen edge-on from both bases at the lead's low camera; a screen in the north half now faces the south team, and
+## the other way round, so every player has two screens turned to them.
+const SCREEN_TOE := deg_to_rad(30.0)
 ## Seat rows per grandstand module (feel X2, round 6: at 5, bare metal showed between rows).
 const STANDS_ROWS := 9
 ## Side stands start this far from the gate (m along the short walls), clear of the barricades and ad screens.
@@ -141,7 +145,7 @@ func _build_venue() -> void:
 			var screen := AD_SCREEN.instantiate() as Node3D
 			screen.name = "AdScreen"
 			screen.set("channel_name", "arena" if along * side > 0.0 else "odds")
-			screen.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0),
+			screen.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0 - along * side * SCREEN_TOE),
 					Vector3(side * (half + WALL_THICK / 2.0 + 4.0), 0.0, along * minf(SCREEN_OFFSET, half * 0.45)))
 			structures.add_child(screen, true)
 

@@ -95,3 +95,19 @@ func test_the_dressing_fits_an_arena_layout() -> void:
 	dressing.call("setup", {"name": "no_point", "half_size": 80.0, "obstacles": []})
 	assert_near(float(ground.get_shader_parameter("ring_width")), 0.0, 0.001, "no control point, no ring")
 	dressing.call("setup", {"name": "default", "half_size": 120.0, "obstacles": [], "control_point": {"radius": 16.0}})
+
+
+func test_the_ad_screens_turn_toward_the_far_half() -> void:
+	## Feel X4 (round 6): square to the centre line, the screens were edge-on from both bases at a low camera.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	GameTheme.use(previous)
+	var structures: Node3D = dressing.get("structures")
+	var screens := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("AdScreen"))
+	assert_eq(screens.size(), 4, "two screens on each short wall")
+	for node in screens:
+		var screen := node as Node3D
+		var facing := -screen.global_transform.basis.z  # a screen shows its -Z face
+		assert_true(facing.dot(-Vector3(screen.position.x, 0.0, 0.0).normalized()) > 0.7, "still facing into the arena")
+		assert_true(signf(facing.z) == -signf(screen.position.z), "turned toward the far half (%s at %s)" % [facing, screen.position])

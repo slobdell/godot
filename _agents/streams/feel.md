@@ -183,15 +183,39 @@ crowd; the far stands at 22°/90 m (7 px figures) read as a bright mass instead 
 not for one pose: the lead picked 25°/50 m/FOV 60 and control may go to 12°; crowd-look now shoots FOV-60 poses at
 15–50°. Perf: not yet measured — X6 re-baselines after control's camera merge (perf-scene inherits its pose).
 
-### X3 — audible crowd (mix half done, levels provisional, `85a4ab70`)
-Crowd bus → World, dipped 2:1 by impacts (the Bed bus ducks 5:1); murmur −17…−6 dB (was −30…−14), roars −3/0.
-`--crowd-meter` prints the crowd's and World's levels each second with the match clock. First metered reading
-(builder0): crowd ≈ World in the lull, 6–10 dB under World in battle. **Caveat:** `audio-pass` on builder0 runs the
-game ~10× slower than wall time (round 5 saw it too): 8.2 s of match per 90 s recorded. **Muted it is just as slow**
-(3.1 s per 30 s), so audio is not the cause; testing vsync (`PASS_GODOT_FLAGS=--disable-vsync`). Until then any
-battle-level comparison is against a fight ~10× thinner than a real one.
+### X3 — audible crowd (mix done; source material waits on the lead's listen)
+Crowd bus → World, dipped 2:1 by impacts (Bed ducks 5:1). `--crowd-meter` prints crowd and World levels each second
+with the match clock. **Measured at real pace** (builder0 with vsync off, tree `1badf779`, yard, gangs v law, 90 s,
+full mix and crowd-solo of the same seed compared in 5 s windows): at +13 dB over round 5 the crowd sat ~4 dB under
+the whole mix (too loud: the loudest bed); at **+8 dB (murmur −22…−11, roars −6/−3) it sits a median 7.5 dB under
+(min 5.6)**, with impacts dipping it 2:1 on top in play. Mix −17.5 LUFS, true peak −3.6 dBFS, 0 clipped.
+Recordings for the lead: `build/crowd-listen/{full_mix,crowd_only}_real_pace.mp3` (the orchestrator has put them in
+front of him). **I can't hear:** whether the procedural murmur sounds like people is his call; the ElevenLabs text
+is drafted below under *Waiting on the lead* and is not to be sent until he has listened.
 
-### X4 — sky and skyline (in progress)
-`night_sky.gdshader` (static smog glow over the horizon, clouds lit from below; no TIME so it never re-renders) and
-`CitySkyline` (one open ring at 640 m: two layers of towers, lit windows that fade to their average under ~2 px so the
-far city doesn't shimmer, neon signs, aviation lamps; unshaded, own haze). perf-scene gained a `no_sky` layer.
+**builder0 recorded every `audio-pass` in slow motion until `3d38ab26`** (~1/10 speed: 8.2 s of match per 90 s; muted
+just as slow, so not the audio; `--disable-vsync` → 25.6 s per 30 s). Vsync is now off by default for audio-pass.
+Written up in `references/audio/README.md` (round 5's loudness/peak numbers stand; anything about battle density does
+not).
+
+### X4 — the arena as a place (sky, skyline, side stands: done; ad screens not yet checked)
+- `night_sky.gdshader`: static smog glow on the horizon, clouds lit from below; no TIME, so never re-rendered; nothing
+  samples it for light.
+- `CitySkyline`: one unshaded ring at 640 m, two layers of towers, lit windows that fade to their average under ~2 px
+  (no shimmer), neon signs, aviation lamps. One draw call.
+- **Side grandstands** (`50328778`): at the lead's 12° the horizon runs the full frame width and the short walls had
+  no stands, so the venue looked one-sided. Three modules per quarter beyond the ad screens; 6,005 seats; one draw.
+- Judged at the lead's pose (12°/50 m/FOV 60) and 25°: `build/crowd-look-report/x4_12deg_50m_fov60.png`. Sent to the
+  orchestrator. Flagged for control: in my cutaway approximation the player's own grandstand fascia fills the bottom
+  third at 12° over a spawn by the wall.
+- Not yet: the ad screens' legibility from the playing angle.
+
+### X5 — the loading screen's voice (done on my side, `1badf779`)
+`LoadingVoice`: murmur fades up at FIGHT, a roar as the lights come up, hands over to the match's crowd. **Request to
+control** (relayed by the orchestrator): `LoadingVoice.start(tree)` in `LoadingScreen.show_for`,
+`LoadingVoice.finish()` when the match is up. FIGHT → playable is ~1.4 s now, so this is a beat, not a bed.
+
+### X6 — keep the frame (waiting)
+Everything added this round (4,287 → 6,005 figures, sky, skyline, 12 more stand modules) is unmeasured. perf-scene
+inherits control's camera (`RtsCamera` constants), so it moves to 12°/FOV 60 at their merge: **re-baseline after that
+merge** with `PERF_LAYERS=no_venue,no_sky`, and report any increase as the cost of an arena the player can now see.
