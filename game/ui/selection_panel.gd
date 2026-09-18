@@ -303,7 +303,7 @@ func press_command(id: String) -> void:
 	if ELEMENT_ONLY.has(id) and not controls.can_task():
 		return
 	match id:
-		"attack_move", "screen", "support_by_fire":
+		"attack_move", "screen", "support_by_fire", "ambush":
 			controls.arm(id)
 		"stop", "hold":
 			controls.order_selection(id)

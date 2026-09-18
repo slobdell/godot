@@ -44,13 +44,18 @@ func test_a_whole_element_is_recognised_and_a_handful_of_units_is_not() -> void:
 	assert_true(f.controls.selected_element() == null, "units from two groups are not one element")
 
 
-func test_attack_move_and_attacks_give_the_leader_a_task_but_a_plain_move_does_not() -> void:
+func test_every_order_to_a_whole_squad_is_a_task_and_a_plain_move_runs_no_drills() -> void:
 	var f := await _setup()
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	await f.right_click(f.ground(Vector3(-20, 0, -20)))
-	assert_true(f.controls.elements.of("Green_Alpha_1") == null, "a plain move is the player's own order, not a task")
-	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
-		assert_eq(f.orders.current(unit_name).get("source", ""), "player", "%s carries out what the player asked" % unit_name)
+	# Round 6 X6 / squad X4 (the lead: "if I select an entire squad and I tell them to move somewhere, I would think
+	# that there's a higher level abstraction ... a target formation for the squad"): a plain move to a whole squad
+	# keeps it a squad. It is a move task with no contact drills, so the leader forms it up on the spot the player
+	# clicked instead of manoeuvring on its own (round 5's complaint was the drills overriding him).
+	var moving := f.controls.elements.of("Green_Alpha_1")
+	assert_true(moving != null, "a plain move to a whole squad keeps it an element")
+	assert_eq(moving.task.get("verb", ""), "move", "with a move task")
+	assert_eq(moving.task.get("drills", true), false, "that runs no contact drills: a plain move, not attack-move")
 	await f.key(KEY_A)
 	await f.click(f.ground(Vector3(-20, 0, -20)))
 	var element := f.controls.elements.of("Green_Alpha_1")
@@ -135,3 +140,16 @@ func test_the_player_can_override_the_formation_and_hand_it_back() -> void:
 	await f.key(KEY_A)
 	await f.click(f.ground(Vector3(-25, 0, -25)))
 	assert_eq(f.controls.elements.of("Green_Alpha_1").task.get("verb", ""), "move", "back to auto, back to doctrine")
+
+
+## Round 6: Ambush (squad's verb, earned 9ba36681) is B then a click on the kill zone, for a whole squad.
+func test_b_then_a_click_sets_an_ambush_on_the_kill_zone() -> void:
+	var f := await _setup()
+	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
+	await f.key(KEY_B)
+	assert_eq(f.controls.mode, "ambush", "B arms an ambush")
+	await f.click(f.ground(Vector3(10, 0, -30)))
+	var element := f.controls.elements.of("Green_Alpha_1")
+	assert_true(element != null and element.task.get("verb", "") == "ambush", "the squad takes an ambush task")
+	var to: Array = element.task.get("to", [])
+	assert_true(Vector2(to[0], to[1]).distance_to(Vector2(10, -30)) < 1.5, "on the clicked kill zone (%s)" % [to])
