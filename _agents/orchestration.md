@@ -649,3 +649,20 @@ The kickoff prompt is one line; this section is the rest.
     The general point for whoever holds this role: **the orchestrator runs more infrastructure commands than anyone
     else and reads the docs least often**, because it is busy relaying. The trip-up list is not just for workers, and
     "I am only doing this quickly" is the condition under which it applies.
+53. **A stream's approximation of another stream's system produces findings about the approximation.** Round 6, and it
+    reached the lead before it was caught. feel needed camera poses to judge the crowd, so it approximated control's
+    wall cutaway as *near plane = where the sight line to the focus crosses the wall, minus 1 m*. Its report frame at
+    the lead's 12° showed the grandstand fascia filling the bottom third below the vehicles, and feel flagged it
+    honestly as *"control's camera, not the crowd"* — the right instinct. But the real cutaway handles that case:
+    with the camera 6 m past the wall it is **among the seats**, where control's rule always cuts, and the plane sits
+    0.2 m past the wall's top edge so the fascia and the ground behind the wall go while the floor and a vehicle
+    against the wall stay. control had **played that exact moment** and had a mutation-checked regression test for the
+    earlier version that got it wrong. So the finding was real about feel's stand-in and false about the game — and
+    the orchestrator had already sent the frame to the lead.
+    Two instructions:
+    - **When you need another stream's behaviour to judge your own work, call their code, do not model it.** control's
+      `make camera-looks` applies the real cutaway per pose; using it would have cost nothing and produced frames that
+      match the game.
+    - **When relaying a frame or a number that depends on another stream's system, say which parts of it that stream
+      owns and get their read first** — especially before it goes to the lead, who cannot tell a stand-in from the
+      build. The cheap version of this is one message: *"does your implementation already handle this?"*
