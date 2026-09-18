@@ -68,6 +68,10 @@ func run() -> void:
 		await _seconds(0.4)
 		var selected := controls.selection.units.duplicate()
 		var at := rect.get_center() + Vector2(rect.size.x * (-0.3 + 0.15 * i), rect.size.y * (0.25 if i % 2 == 0 else -0.25))
+		# Round 6: at the lead's 12° the upper spots are sky (the fractions were set at a 45° camera), and a click on sky
+		# orders nothing. Walk the spot down the screen until it lands on ground at least GROUND_AHEAD_PX below the horizon.
+		while at.y < rect.end.y and (controls.screen_to_world(at) == null or controls.screen_to_world(at - Vector2(0, GROUND_AHEAD_PX)) == null):
+			at.y += 8.0
 		await _right_click(at)
 		await _seconds(0.3)
 		var goals := {}
@@ -162,6 +166,10 @@ func _element_slot_summary() -> Dictionary:
 
 
 ## Where every ordered unit is now, against where it was sent and where it started.
+## A click spot must be at least this far below the horizon (so it is ground, and not the last sliver before it).
+const GROUND_AHEAD_PX := 40.0
+
+
 func _readings(ordered: Dictionary) -> Dictionary:
 	var out := {}
 	for number: int in ordered:

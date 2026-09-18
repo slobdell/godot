@@ -721,8 +721,12 @@ def plot(layout, report, out_dir):
     ax.set_xlim(-HALF - 2, HALF + 2)
     ax.set_ylim(HALF + 2, -HALF - 2)  # north (-z) at the top: green attacks upward
     ax.set_aspect("equal")
-    ax.set_title("%s: sightline %.0f m, base-to-base %s m, exposure %s" % (
-        layout["name"], report["longest_sightline_m"], report["base_to_base_m"], report["direct_route_exposure"]), fontsize=10)
+    # The centre-visibility share, not `direct_route_exposure`: the old one is the legacy 110 m box test and would
+    # print a different "exposure" from the one the X2 table and the lead's review page quote. Two numbers with the
+    # same name on one page is how a reader learns to distrust both.
+    ax.set_title("%s: the middle sees %.0f%% of the field · longest sightline %.0f m · base to base %s m" % (
+        layout["name"], report["ambush"]["centre_sees_share"] * 100.0,
+        report["longest_sightline_m"], report["base_to_base_m"]), fontsize=10)
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, layout["name"] + ".png")
     fig.savefig(path, dpi=90, bbox_inches="tight")

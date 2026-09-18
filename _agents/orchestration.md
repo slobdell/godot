@@ -708,3 +708,87 @@ The kickoff prompt is one line; this section is the rest.
       call site disappears.** Rule tests cannot see an unwired rule.
     - **Before resolving a conflict by picking a side, say out loud what each side does.** If the answer is two
       different verbs, the resolution is *both*, and the fact that they occupy one line is a coincidence of layout.
+56. **Repetitions of a deterministic process are not samples — check that the thing you are varying actually varies.**
+    Round 6, nav: its movement suite ran five seeds and got **five identical results**, because a hold-fire drive
+    contains no randomness. It defaulted the suite to one seed rather than keeping a reassuring-looking five. This is
+    lesson 22 seen from the other side — that one says the fix for a *suspected bias* is a control that cancels the
+    cause, never more repetitions; this one says repetitions of a deterministic process are not evidence at all, they
+    are the same measurement written down five times. Before a series, **name the thing that differs between samples
+    and confirm it differs**; and be suspicious of a set of results that agree *too* well, because identical is not a
+    strong signal, it is usually the absence of one.
+57. **A measurement's outliers deserve as much suspicion as its headline, because they are where the bugs hide.**
+    Same run: **8 of every 60 units in the previous baseline were stragglers**, and the cause was not congestion at
+    all — **60 units on 52 spawn points places pairs exactly on top of each other, and coincident hulls never moved
+    at any point in round 5.** So part of a published arrival baseline was measuring two vehicles occupying one
+    position, not vehicles getting in each other's way. The stream found it because it looked at *which* units failed
+    rather than at how many. **When a measurement has a tail, identify the members of the tail before you accept the
+    number** — a stable minority failing the same way is a defect, not variance, and it will otherwise be absorbed
+    into the baseline everyone improves against.
+58. **A shared recorded artefact belongs to whoever is last, so it belongs to the orchestrator.** Round 6: three
+    streams each changed how the simulation evolves, and each was about to record `sim_state_hash.txt`. "Whoever
+    merges second re-records" works for two and is undefined for three — nobody can know at record time whether they
+    are last, and all three hashes would have been stale. The rule now: **no stream records it; the orchestrator
+    records once on `main` after the last simulation-changing merge**, and a stream whose change moves it says so in
+    its green report instead.
+    The generalisable test for any artefact like this: **is it a property of the tree rather than of the change?** A
+    recorded hash, a golden output, a committed baseline count, a perf baseline — all are properties of the whole
+    tree, so a per-stream copy is a snapshot of a world that stops existing at the next merge.
+    And the detail that made it dangerous rather than merely untidy: **nothing local could catch it.** The file is
+    keyed per glibc, the laptop's glibc has no line in it, so `sim-baseline` *silently skips* locally — every stream
+    could commit a stale hash and see a green local check. **A check that skips is not a check that passes**, and a
+    skip that is invisible is worse than a failure.
+59. **When a shared input changes, the instruments that read it are as stale as the code — and nobody owns an
+    instrument.** Round 6 changed the camera once, and **four** separately-owned constants turned out to have been
+    calibrated against the old one:
+    1. arena's `exposure()` watcher range (a weapon-range assumption wearing a sightline's clothes);
+    2. the dither metric's 60 Hz divisor, reporting double the true rate for four rounds;
+    3. control's phone readability bar, set at 25°/FOV 55;
+    4. **`squad-orders-test` clicking at screen fractions set for a 45° camera** — so at the lead's 12° one squad's
+       target point was **sky**, no order was issued at all, and 6-7 units per run silently went uncommanded.
+    The fourth is the instructive one because **it was inside the instrument that measured the round's most contested
+    change.** It appeared in *both* arms of the A/B, so the comparison survived and the conclusion held — but the
+    absolute numbers were wrong, and a reader would have had no way to know.
+    Two instructions:
+    - **After changing a shared input (a camera, a tick rate, a range band), grep the *test and tool* code for
+      constants that read it, not only the game code.** Instruments are written once and inherited; they have no
+      owner and no reason to be revisited.
+    - **A defect present in both arms of a comparison protects the comparison and corrupts the measurement.** When you
+      find one, say which of the two you are claiming — "the A/B still holds, the absolute numbers were wrong" is a
+      complete and honest sentence, and it is what control said.
+60. **A caveat travels with a number in a message and does not travel with the idea into a document.** Round 6, and the
+    orchestrator did this to itself. combat sent a result labelled *directional, n = 2, one mirror pairing, not for the
+    lead*. The orchestrator **held the number back from the lead correctly** — and then wrote the *conclusion drawn
+    from it* into `game_design.md` as established design understanding, where "n = 2" did not survive. At n = 15 the
+    finding **inverted**: the fire rate went down, not up, and the reframing built on it was unsupported.
+    This is lesson 26 committed against oneself, in the file that briefs every future stream. Three instructions:
+    - **Nothing enters a design document from a sample that could not support a claim to the lead.** The bar for
+      "written down as how the game works" is the same bar as "told to the human", because a doc outlives the
+      conversation that qualified it.
+    - **The more a result reframes something, the smaller the sample you should accept for it.** The stream's own
+      account: *"I argued it confidently because it was surprising and had a tidy mechanism behind it, which is exactly
+      when I should have trusted it least."* A surprising result with a satisfying mechanism is the most seductive
+      possible combination, and n = 2.
+    - **Retract in place, not by deletion.** The wrong claim is left in `game_design.md` marked RETRACTED with why it
+      got in, because a future agent who half-remembers the idea needs to find the retraction rather than the silence.
+    Also recorded from the same run: a **pilot's job is to validate the pipeline, not to answer the question**. This
+    one found two real defects in the harness (a `--variants` run that omits the shipped configuration; a metric
+    contaminated in theory) and was then asked to answer a question it was never large enough to answer — twice in one
+    afternoon, by a stream that knew better and said so afterwards.
+61. **A number that lands near the truth from the wrong comparison on an inadequate sample is a coincidence, not a
+    result — and saying so is worth more than the credit.** Round 6: a retracted figure said the fight was decided
+    **28%** closer; the final, properly controlled 75-match answer was **26%**. The stream that had retracted it
+    volunteered that the near-agreement was luck and insisted the retraction had still been right, because against
+    the control actually used at the time the honest figure was **7%** — the two matches had been compared with the
+    wrong baseline *and* were too few. **The lesson a reader would otherwise draw — "trust the small sample, it was
+    nearly right" — is precisely wrong and would cost someone a round.**
+    So: **when a retracted number turns out close to the truth, record why it was still wrong.** A result is a
+    measurement *plus its comparison*; a right-looking number from the wrong control is not a partial success, it is
+    two errors that happened to cancel.
+62. **A control that is not a real "before" hides which half of a change did the work.** Same run. The first series'
+    control disabled only the tuned *data* (the effective bands) while leaving the *code* gates (sight, acquisition,
+    the crossing penalty) on in both arms — so it measured fire discipline alone and silently attributed the whole
+    effect to it. With a genuine control (`--no-acquisition --no-crossing` as well), the decomposition inverted the
+    round's priorities: **the gates moved kill distance −11 m and off-axis kills +17 points; the bands moved them −3 m
+    and +2 points.** The bands had absorbed nearly all of the round's design argument and were the smaller half.
+    **Before running a comparison, ask what your control actually turns off** — and if a change spans data and code,
+    a data-only control is not a before, it is a different experiment.
