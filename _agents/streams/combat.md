@@ -219,6 +219,29 @@ by N5 (`scenario_squad::test_a_squad_focuses_its_fire`), 4 mine*:
 | `scenario_cover::test_a_healthy_tank_near_a_wall…` | hidden 42% of the fight, 3 shots | The peek position is now outside the band |
 | `scenario_motion::test_a_scout_makes_attack_runs…` | 1 run, but 20 shots all into side/rear and **the tank took 0** | May be *better* behaviour (it commits). The test may be what is wrong |
 
+### X2, second finding: breaking contact just got much cheaper, which is round 5's problem drill
+
+Geometry, flagged before the series so it is not discovered afterwards. A unit that wants to disengage used to have to
+open the range past its pursuer's **70 m reach**. It now has to clear the **45 m band plus the 1.12× release
+hysteresis — about 50 m.** Twenty metres of separation instead of twenty-five past a much shorter starting distance:
+**disengaging is roughly a third of the work it was.**
+
+The asymmetry that makes it worse is the return-fire exception. A crew being shot at may answer to full range — but a
+unit that successfully breaks contact *stops shooting*, so its pursuer is no longer suppressed, so **the pursuer is
+held to 45 m while the runner is not being fired on at all.** The exception protects the side that stays and fights,
+not the side that leaves.
+
+That matters because round 5 measured `break_contact` as the drill that was actively costing doctrine games: without
+it the army went **91-29 and won on every arena**, and that was the one per-drill finding that survived the "attribute
+a cost only by removing it" test (lesson 25). If N5 makes disengaging cheap, the drill may come back — either as a
+dominant strategy for the CPU, or as a fight the player can never finish because everything he engages simply leaves.
+
+**To measure, not to assume:** `net_advance`, `centroid_travel` and `held_line_share` in the CP4 series will show it
+(a fight nobody can close on reads as high travel, low held line, and a long duration), and the direct test is ai's —
+re-run the army with and without `break_contact` at the new bands. **`RELEASE_FACTOR` is the knob** if disengaging
+turns out to be too cheap: raising it keeps a gun on a target that is pulling away, which is what makes a pursuit
+possible at all.
+
 ### X2, first finding: shortening the bands may have taken the bite out of suppression
 
 `Match.SUPPRESSION_SPREAD_FACTOR` (2.0) is **mine**, and its own comment states the assumption N5 just invalidated:
