@@ -307,12 +307,25 @@ outside the near-ambush radius"*; it held for four rounds because 56 happened to
 independently in different files by different streams. **When two independently-owned numbers must stay ordered, the
 code has to say so — nothing will tell you the day they cross.**
 
-**Squad's call, and the two options encode different doctrine:** key the standoff on `range` (back to ~56 m,
-consistent with SBF carrying `long_shot`, but my measurement says 56 m lands ~50% of shells against ~100% at 36 m);
-or state the invariant, `max(reach * 0.8, near_ambush_m + margin, 25)`, which is robust to any future band change. I
-would take the invariant *regardless* of which the doctrine answer is, because it is the part that stops this
-recurring. The trade underneath it is real and worth choosing on purpose: **support-by-fire now has to choose between
-effective fire and not triggering an assault drill.**
+**The answer (orchestrator, 2026-09-18), and it is better than the two I proposed.** I offered a choice between
+keying the standoff on `range` and stating the distance invariant, and framed the residue as a doctrinal trade:
+*"support-by-fire now has to choose between effective fire and not triggering an assault drill."* **That framing was
+wrong and I withdraw it.** A rule fighting itself is not a trade, and it would be indefensible to explain to the lead.
+
+The real defect is one level up: **`near_ambush` should not pre-empt a support-by-fire task at all.** Near-ambush is a
+*reaction* drill — what a crew does when jumped at close range. An element deliberately posted in a firing line by its
+commander, at the standoff its own task chose, is not being ambushed. Squad's X5 already made an SBF task outrank
+`react_to_contact` and `far_ambush`; **`near_ambush` was simply missing from that list.** So it is an incomplete
+precedence rule, not a distance — which also explains why no distance tweak felt satisfying.
+
+Keying the standoff on `range` is rejected on my own measurement: 56 m lands **~50% of shells against ~100% at 36 m**,
+and **a base of fire that cannot hit is not a base of fire.** This is the exact button the lead pressed and watched do
+nothing, so it has to work well, not merely legally. The genuine costs of posting an element are already real and
+already quantified — arena's **+0.127 on open foundry against +0.024 in dense yard**, and my **~70%-of-hits** penalty
+for reaching past the band. Those are trades a player can reason about; self-interruption is not.
+
+**Still take the invariant** (`max(reach * 0.8, near_ambush_m + margin, 25)`) on top of the precedence fix: it is the
+part that stops two independently-owned numbers crossing again silently.
 
 ### X2, second finding: breaking contact just got much cheaper, which is round 5's problem drill
 
