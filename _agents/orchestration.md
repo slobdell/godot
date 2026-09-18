@@ -737,3 +737,21 @@ The kickoff prompt is one line; this section is the rest.
     keyed per glibc, the laptop's glibc has no line in it, so `sim-baseline` *silently skips* locally — every stream
     could commit a stale hash and see a green local check. **A check that skips is not a check that passes**, and a
     skip that is invisible is worse than a failure.
+59. **When a shared input changes, the instruments that read it are as stale as the code — and nobody owns an
+    instrument.** Round 6 changed the camera once, and **four** separately-owned constants turned out to have been
+    calibrated against the old one:
+    1. arena's `exposure()` watcher range (a weapon-range assumption wearing a sightline's clothes);
+    2. the dither metric's 60 Hz divisor, reporting double the true rate for four rounds;
+    3. control's phone readability bar, set at 25°/FOV 55;
+    4. **`squad-orders-test` clicking at screen fractions set for a 45° camera** — so at the lead's 12° one squad's
+       target point was **sky**, no order was issued at all, and 6-7 units per run silently went uncommanded.
+    The fourth is the instructive one because **it was inside the instrument that measured the round's most contested
+    change.** It appeared in *both* arms of the A/B, so the comparison survived and the conclusion held — but the
+    absolute numbers were wrong, and a reader would have had no way to know.
+    Two instructions:
+    - **After changing a shared input (a camera, a tick rate, a range band), grep the *test and tool* code for
+      constants that read it, not only the game code.** Instruments are written once and inherited; they have no
+      owner and no reason to be revisited.
+    - **A defect present in both arms of a comparison protects the comparison and corrupts the measurement.** When you
+      find one, say which of the two you are claiming — "the A/B still holds, the absolute numbers were wrong" is a
+      complete and honest sentence, and it is what control said.
