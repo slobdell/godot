@@ -314,7 +314,50 @@ the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on r
 
 **4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
 
-### THE DEFINITIVE SERIES (builder0, `c765275f`, **n = 15 per row**, 3 counterbalanced pairings, SEEDS=3)
+### N5 MEASURED AGAINST THE REAL OLD WORLD (builder0, `fa4e7077`, **n = 15 per arm**, 3 counterbalanced pairings)
+
+**This is the answer. Everything below it is superseded.** The control arm is a genuine round 5 — bands at reach
+**plus `--no-acquisition --no-crossing`**, so sight, acquisition and the crossing penalty are off, not merely the
+bands. The middle arm keeps those gates and only relaxes the bands, which is what isolates fire discipline.
+
+| arm | length | fire /unit/min | engaged | **kill** | **off-axis kills** | flank+rear (rear) | ended |
+|---|---|---|---|---|---|---|---|
+| **ROUND 5 (the real before)** | 91 s | 17.8 | 72 m | **54 m** | **26%** | 55% (11%) | 13 elim / 2 control |
+| discipline off, gates 1+2+X6 on | 101 s | 16.9 | 68 m | 43 m | 43% | 63% (20%) | 11 / 4 |
+| **SHIPPED (full N5)** | 99 s | 15.2 | **60 m** | **40 m** | **45%** | **69% (21%)** | 11 / 4 |
+| 0.65 of reach | 109 s | 13.5 | 63 m | 40 m | 47% | 67% (24%) | 10 / 5 |
+| 0.55 of reach | 110 s | 11.4 | 59 m | 34 m | 49% | 65% (22%) | 10 / 5 |
+
+**What N5 bought, in full: kill distance 54 → 40 m (−26%), engaged distance 72 → 60 m (−17%), off-axis kills
+26% → 45% (+19 points, a 73% relative rise), rear-armour kills 11% → 21%, fire rate 17.8 → 15.2 (−15%).**
+
+**The brief's own acceptance target is met:** *"a majority of direct-fire kills come from the flank or the rear"* —
+flank+rear is **69%**, up from 55%, and the off-axis share (the metric that actually means *flanking the army* rather
+than an oblique hit on a hull) nearly doubles.
+
+### The decomposition, which is the part I did not expect
+
+| | kill | engaged | off-axis |
+|---|---|---|---|
+| **sight + acquisition + X6 crossing** | **−11 m** | −4 m | **+17 pts** |
+| **fire discipline (the bands)** | −3 m | **−8 m** | +2 pts |
+
+**The gates do the heavy lifting; the bands mostly pull the armies closer.** Making a crew *find and hold* a target
+before it may shoot is what moves where the fight is decided and who dies from the flank. The effective bands — the
+part of N5 that got the most design argument, the whole `preferred_max` decision, the 0.65-versus-0.55 sweep — are the
+*smaller* contributor to both. Anyone tuning this later should tune acquisition first and the bands second.
+
+**A note on the 28% I retracted.** The true figure against the real old world is **26%** — almost exactly the number I
+withdrew. It was still right to withdraw it: it was measured against the wrong control (discipline-off, not round 5)
+on two matches of one mirror, and against *that* control the honest figure was 7%. **A number that lands near the
+truth from the wrong comparison on an inadequate sample is not a result, it is a coincidence**, and treating it as
+vindication would be the same mistake with a better outcome.
+
+**Still true and still retracted:** fire rate goes **down** (17.8 → 15.2), so the "his complaint was never about
+volume" reframing stays withdrawn. And **0.55 of reach remains the overshoot** — the lowest fire rate, the longest
+matches, and the fewest eliminations of any arm.
+
+### (superseded) The 60-match run whose control disabled fire discipline only
 
 **This supersedes both small runs below, and it contradicts them. Read this row set and no other.**
 
