@@ -50,6 +50,12 @@ id), `--green-elements[=<table>[-drill…][+commander]]` / `--rust-elements=…`
 5. **The 18 m leash** (`TankBrain.PLAYER_POST_LEASH`), if the lead still sees squads wander: named, unmeasured, and
    measurable in control's `make squad-orders-test` at 30 a side with survival read next to distance.
 
+**Where the round-5 record lives:** the numbers and the reasoning are in this file and [doctrine.md](doctrine.md); the
+stream's own report (what was tried, what was rejected and why) is `streams/archive/round5/ai.md` once the round is
+archived. The variants that carry each experiment are in `game/ai/brain_variants.gd` with a comment each: `x5p`
+(champion), `x5q` (the suppression proxy, lost), `x5b2`/`x5pb2` (half-rate controller, held for the 30 Hz world),
+`x6t75`/`x6t5`/`x6t4` (think rates, measured), `x4ns` (the no-suppression control), `x4t9` (round 4's champion).
+
 ## How this stream measures things (the rules that cost a day to learn)
 
 1. **One snapshot per comparison.** Everything in a comparison must come from the same commit. Jolt, the 30 Hz tick and
