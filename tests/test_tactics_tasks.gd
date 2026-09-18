@@ -203,3 +203,30 @@ func test_an_ambush_waits_with_its_guns_held_then_springs_all_at_once() -> void:
 	assert_true(not ElementFeed.holds_fire({"task": "ambush", "drill": "spring_ambush"}), "every gun may fire")
 	var later := ElementPlan.build(_situation(early), _carry(_state(task), sprung), table)
 	assert_eq(later["drill"], "spring_ambush", "a sprung ambush does not go back to waiting")
+
+
+func test_a_base_of_fire_is_not_ambushed_by_the_enemy_it_is_firing_at() -> void:
+	# A firing line is in contact by design: an enemy that appears close to it, shooting, is a target, not an ambush.
+	# Ranked below near ambush, the task and the drill took the element from each other every update (a 30-a-side
+	# fight in make squad-coherence; combat's CP4 run of the SBF scenario: 128 orders in 10 s).
+	var table := _table()
+	var task := {"verb": "support_by_fire", "to": [0, -60]}
+	var sudden := [{"name": "Rust_1", "position": Vector3(5, 0, -20), "age": 0}]
+	var situation := _situation(sudden)
+	situation["taking_fire"] = true
+	assert_true(Drills.is_near_ambush(situation, table), "setup: this is a near ambush by the drill's own test")
+	var plan := ElementPlan.build(situation, _state(task), table)
+	assert_eq(plan["drill"], "support_by_fire", "and the base of fire keeps its task")
+	var again := ElementPlan.build(situation, _carry(_state(task), plan), table)
+	assert_eq(again["drill"], "support_by_fire", "on the next update too: no flip-flop")
+	# Losing outright still breaks it.
+	var outgunned := _situation([{"name": "Rust_1", "position": Vector3(0, 0, -100)}, {"name": "Rust_2",
+			"position": Vector3(10, 0, -100)}, {"name": "Rust_3", "position": Vector3(-10, 0, -100)},
+			{"name": "Rust_4", "position": Vector3(20, 0, -100)}, {"name": "Rust_5", "position": Vector3(-20, 0, -100)}])
+	outgunned["strength"] = 200.0
+	outgunned["enemy_strength"] = 1000.0
+	# (The standard table no longer runs break contact — round 5 cut it — so this uses a table that does.)
+	var breaks := TacticsLab.table_of("line", "traveling", {"drills": {"enabled": ["support_by_fire", "break_contact",
+			"near_ambush"]}})
+	assert_eq(ElementPlan.build(outgunned, _state(task), breaks)["drill"], "break_contact",
+			"an element clearly beaten still breaks contact, if its doctrine does")
