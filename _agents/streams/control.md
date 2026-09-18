@@ -151,6 +151,17 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+**Report (2026-09-18, evening).** Green and sent to merge: **`aa7f3499`** (`make remote T=check` 1051 passed, 0 failed,
+builder0); `9ef6bbee` on top is docs and a comment only. Merged to `main` earlier: `758a45a8`.
+- **Done:** X1 (no Move/Follow buttons), X2 (the N4 palette with tactical task graphics; Support by Fire and Screen
+  earned from squad's evidence), X3 (pitch its own axis; **the lead picked 12° · 50 m · FOV 60** on two camera pages,
+  played and fixed: wall cutaway, far-range tilt floor), X4 (loading screen; FIGHT → playable 7.6 s → 1.4 s with
+  feel's fix), X6 chips, X7 "why did my element do that".
+- **Waiting on other streams:** X4-of-squad / X6 plain move keeps the squad a squad (held until squad's `4d734b1e` is on
+  `main`; acceptance = `make squad-orders-test` at 0 idle commands); Ambush (`earned` flips when squad says green);
+  X5 lights up when nav's N1 is on `main` (built against the shipped contract; check by play then).
+- **Debt recorded:** touch needs its own framing (phone bar 24 → 22 px provisionally).
+
 ### Plan (order, with reasons)
 
 1. **X1** cut Move and Follow off the card — smallest, and the lead named it. **Done** (keys M/F kept).
