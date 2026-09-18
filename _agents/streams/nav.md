@@ -106,8 +106,28 @@ blocked by other cars"*, reproduced headlessly without a shot fired. The maze sh
 
 **arena's caveats, which travel with the number:** single seed, laptop (~2.75× slower than builder0, though nothing
 here is frame-rate sensitive — it is `--fixed-fps 30`), one-way traffic, all tanks, hold-fire. **It is a floor to
-improve on, not a balance claim.** The head-on (`NAV_BOTH=1`) pair was running when this was written; ask arena or the
-orchestrator for it.
+improve on, not a balance claim.**
+
+**The head-on pair (`NAV_BOTH=1`), same conditions — this is the one your X4 has to answer:**
+
+| run | arrived | t50 | units that ever stalled 3 s | route travelled |
+|---|---|---|---|---|
+| maze, 60, head-on | 23/60 (38%) | **never** | 60 of 60 | 39% |
+| yard, 60, head-on (control) | 35/60 (58%) | 37 s | 30 of 60 | 93% |
+
+Against the one-way runs: head-on traffic **barely moves `yard`** (55% → 58%, inside noise on one seed) and
+**collapses the maze** (60% → 38%, and t50 stops being reached at all). arena's reading, which the orchestrator
+endorses: narrow corridors are where two streams meeting actually costs something. That is the case for the maze's two
+gates sharing one corridor rather than running as separate pipes, and it is precisely the situation your peer-to-peer
+right-of-way (X4) exists to resolve. A yard-only measurement would have told you avoidance barely matters; it does,
+but only where there is no room to be sloppy.
+
+**arena's caveat on the last column, which you must not misread:** *do not* read "39% vs 93% of route travelled" as
+maze-vs-yard difficulty. The maze route is ~409 m per unit against yard's ~223 m, so that column is about jamming, not
+speed. **The columns that compare cleanly are arrivals, whether t90 is ever reached, and how many units stall at all.**
+
+All five runs are saved with provenance in `_agents/streams/references/arena/` — the README carries one row per file
+with its conditions, and both of arena's wrong-number stories (lesson 34).
 
 This changes your X2: **arena has already built most of your instrument.** Do not build a second one. Read
 `make nav-maze`, add what it lacks (your own `make nav-jam` gap case if it is genuinely different), and spend the time

@@ -79,6 +79,21 @@ same text for all six:
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
+**Open orchestrator obligations (round 6):**
+
+1. **Ping arena the moment CP4 merges.** arena is holding X3 (objectives off the centre line) until then, because it
+   is a tactical claim that would straddle the range change. At the same ping it re-derives X2's exposure numbers at
+   the new effective range — one cheap Python re-run, not machine time. arena found that its static
+   exposure/sightline numbers are *mostly* CP4-proof (eye-level rays against box footprints, no weapons involved),
+   with one exception it flagged rather than buried: `exposure()` hard-codes a **110 m watcher range**, which is a
+   weapon-range assumption wearing a sightline's clothes.
+2. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
+   five tests passing on the laptop; its `make remote T=check` is queued behind the other worktrees and arena will
+   send the hash.
+3. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
+   so it starts with the target number rather than rediscovering it; squad has been told to take its two independent
+   items first and explicitly *not* to build its own avoidance to fill the gap.
+
 **Orchestrator duties this round:** merge CP1 (nav's Movement API) and CP2 (arena's maze) as soon as they're announced
 and tell everyone to `git merge main`; **CP4 (combat's engagement envelope) lands once and early, and every stream
 re-runs its measurements after it — nobody publishes a number that straddles it**; get control's camera page in front
