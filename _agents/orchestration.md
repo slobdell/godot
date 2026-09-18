@@ -358,3 +358,27 @@ The kickoff prompt is one line; this section is the rest.
     **The instruction, in the stream's own sharpening of it: when you add an exception to a rule, grep for every
     caller that would take it *before* you write the test that proves the rule works.** The passing test was written
     first and told them nothing — it exercised the rule while the callers decided the outcome.
+36. **A test that shares a global with its neighbours and passes may be testing its neighbour.** Round 6, arena: the
+    maze's navigation tests passed 5/5 run alone and failed run after `test_arena_layouts`, because `Pathing.is_ready()`
+    answers only *"does the world's navigation map have polygons"* — and the previous test's arena is freed a frame or
+    two before `NavigationServer3D` drops its regions. So it returned true immediately, against the **old** map, and
+    every path was a straight line through the new arena's walls. The fix is to wait for geometry only *this* layout
+    has (a point inside one of its own collision boxes must be off the navmesh); waiting for polygons is not waiting
+    for *this arena's* polygons.
+    **The part that is not about navmeshes:** the same flaw sat in `test_arena_kit`'s all-layouts connectivity test,
+    the one asserting that every shipped layout connects both bases and the centre. It had **never failed** — because
+    it had been proving the *previous* arena was connected, once per layout. It was only caught because a maze has a
+    **known wrong answer** (a straight line base to base, a dead end with no walls) where a normal arena's wrong answer
+    looks like a right one. So: when a test depends on a global the engine owns (a navigation map, a physics space, a
+    singleton, an import cache), **assert on something only this case can produce**, and treat a suite-order-dependent
+    pass as a failure. A test that has never failed in a suite that changes its inputs deserves suspicion, not trust —
+    design at least one case whose wrong answer is obviously wrong.
+37. **A constant nobody derived can own an entire finding.** Round 6, arena: its flanking analysis used a hard-coded
+    110 m "watcher range", and on that number a flank cost a **1.8–2.1× detour** on six of seven arenas — written up
+    as "cover is priced out of reach". combat then derived the real figure from the rosters
+    (`min(effective_range, sight_radius)`, median **45 m**), and the same geometry and the same code priced the same
+    flanks at **1.0–1.1×**. Same maps, opposite conclusion, and the whole result had lived in one number that had been
+    guessed once and never questioned. arena **rewrote the section rather than appending to it**, because the old
+    table would have been quoted. Two rules: **a magic number inside a metric is a finding waiting to be wrong** — ask
+    which stream owns the quantity and get it derived from the data — and when a correction inverts a published
+    conclusion, replace the text, never append to it.
