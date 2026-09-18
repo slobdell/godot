@@ -159,6 +159,16 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **Round-3 `matchup-search` numbers in `balance.md` may be unreliable and cannot be re-derived.** A make-namespace
+  collision (`UNITS ?= 60` in `mk/ai.mk` reaching `mk/match.mk`) meant **every `matchup-search` run silently passed
+  `--units 60` whatever the caller asked for**, and the tool never recorded the value it used
+  ([orchestration.md](_agents/orchestration.md) lesson 44). Fixed as `SEARCH_UNITS`. Any conclusion that assumed a
+  non-default unit count is suspect; combat flagged this rather than assuming the old numbers were fine. **The general
+  fix, worth doing everywhere: print every resolved knob into the output**, so a wrong value shows up in the artefact.
+  Related and also open: **nothing checks that a "reproduce with" line in a reference README still runs** — `make
+  engagement PAIRS=… SEEDS=3 TIME=240`, documented as the way to reproduce a saved baseline, had been broken since the
+  `VARIANTS` default landed. A smoke test that runs every documented reproduce line is a round-7 candidate.
+
 - **Backups are automatic** ([backups.md](_agents/backups.md)): a systemd user timer rsyncs the git-ignored generated
   assets to `builder0:~/tank_squad_backup/` every 30 minutes, never deleting. `make backup`, `make backup-status`.
   **A worktree's ignored payload is still only in one place until it's copied into the main checkout** — round 5's
