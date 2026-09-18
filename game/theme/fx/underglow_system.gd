@@ -18,8 +18,8 @@ var light_range := 7.0
 ## Off: vehicles don't take pooled lights (the tier's light floor drops these requests anyway).
 var lights_enabled := false
 ## The shadow ellipse against the glow's footprint, and how dark its middle is (0..1).
-var shadow_scale := Vector2(0.95, 0.95)
-var shadow_darkness := 0.7
+var shadow_scale := Vector2(0.88, 0.88)
+var shadow_darkness := 0.55
 
 var _sources: Dictionary = {}  # Node3D -> Color
 var _mesh := MultiMeshInstance3D.new()
@@ -40,10 +40,15 @@ func _init() -> void:
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = mesh
-	multimesh.instance_count = 32
+	FxMultiMesh.resize(multimesh, 32)
 	multimesh.visible_instance_count = 0
+	# Placed every rendered frame from FxWorld.visual_transform (`update` runs in _process), so the MultiMesh must not be
+	# interpolated as well: it would lag the vehicles by a tick and it logs "MultiMesh interpolation is being triggered
+	# from outside physics process" every few seconds at 30 Hz. The flag only exists on the server.
+	RenderingServer.multimesh_set_physics_interpolated(multimesh.get_rid(), false)
 	_mesh.name = "UnderglowMesh"
 	_mesh.multimesh = multimesh
+	FxMultiMesh.never_interpolated(_mesh)
 	_mesh.custom_aabb = WORLD_AABB
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_mesh)
@@ -56,12 +61,16 @@ func _init() -> void:
 	shadow_mesh.surface_set_material(0, shadow_material)
 	var shadow_multimesh := MultiMesh.new()
 	shadow_multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	shadow_multimesh.use_custom_data = true
+	# Darkness rides in the instance COLOR: a MultiMesh with custom data but no colors fed the shader garbage in the
+	# Compatibility renderer, which is what drew the blob as a flat dark rectangle (the lead saw it under every vehicle).
+	shadow_multimesh.use_colors = true
 	shadow_multimesh.mesh = shadow_mesh
-	shadow_multimesh.instance_count = 32
+	FxMultiMesh.resize(shadow_multimesh, 32)
 	shadow_multimesh.visible_instance_count = 0
+	RenderingServer.multimesh_set_physics_interpolated(shadow_multimesh.get_rid(), false)
 	_shadows.name = "BlobShadows"
 	_shadows.multimesh = shadow_multimesh
+	FxMultiMesh.never_interpolated(_shadows)
 	_shadows.custom_aabb = WORLD_AABB
 	_shadows.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_shadows)
@@ -87,8 +96,8 @@ func update(pool: LightPool) -> void:
 	var multimesh := _mesh.multimesh
 	var shadows := _shadows.multimesh
 	if _sources.size() > multimesh.instance_count:
-		multimesh.instance_count = (_sources.size() / 32 + 1) * 32
-		shadows.instance_count = multimesh.instance_count
+		FxMultiMesh.resize(multimesh, (_sources.size() / 32 + 1) * 32)
+		FxMultiMesh.resize(shadows, multimesh.instance_count)
 	var n := 0
 	for key in _sources:
 		if not is_instance_valid(key) or not (key as Node3D).is_visible_in_tree():
@@ -102,7 +111,7 @@ func update(pool: LightPool) -> void:
 		multimesh.set_instance_custom_data(n, Color(intensity, 0, 0, 0))
 		var shadow_basis := Basis(Vector3.UP, xform.basis.get_euler().y) * Basis.from_scale(Vector3(size.x * shadow_scale.x, 1.0, size.y * shadow_scale.y))
 		shadows.set_instance_transform(n, Transform3D(shadow_basis, Vector3(xform.origin.x, 0.03, xform.origin.z)))
-		shadows.set_instance_custom_data(n, Color(shadow_darkness, 0, 0, 0))
+		shadows.set_instance_color(n, Color(shadow_darkness, shadow_darkness, shadow_darkness, 1.0))
 		if lights_enabled:
 			pool.request(xform.origin + Vector3(0, 1.2, 0), color, light_energy, light_range, LightPool.PRIORITY_VEHICLE)
 		n += 1

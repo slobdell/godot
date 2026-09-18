@@ -25,10 +25,12 @@ func _init() -> void:
 	_material.shader = SHADER
 	_mesh.name = "BeamMesh"
 	_mesh.multimesh = _multimesh(QuadMesh.new(), _material)
+	FxMultiMesh.never_interpolated(_mesh)
 	var splat := ShaderMaterial.new()
 	splat.shader = TracerSystem.SPLAT_SHADER
 	_floor.name = "BeamFloorMesh"
 	_floor.multimesh = _multimesh(PlaneMesh.new(), splat)
+	FxMultiMesh.never_interpolated(_floor)
 	for instance in [_mesh, _floor]:
 		instance.custom_aabb = WORLD_AABB
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -52,8 +54,8 @@ func update(pool: LightPool, now: float) -> void:
 	var beams := _mesh.multimesh
 	var floors := _floor.multimesh
 	if _beams.size() > beams.instance_count:
-		beams.instance_count = (_beams.size() / 16 + 1) * 16
-		floors.instance_count = beams.instance_count
+		FxMultiMesh.resize(beams, (_beams.size() / 16 + 1) * 16)
+		FxMultiMesh.resize(floors, beams.instance_count)
 	var n := 0
 	for key in _beams:
 		if not is_instance_valid(key):
@@ -100,6 +102,6 @@ static func _multimesh(primitive: PrimitiveMesh, material: Material) -> MultiMes
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = mesh
-	multimesh.instance_count = 16
+	FxMultiMesh.resize(multimesh, 16)
 	multimesh.visible_instance_count = 0
 	return multimesh

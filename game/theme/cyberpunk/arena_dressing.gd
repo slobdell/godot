@@ -402,6 +402,7 @@ func _build_perimeter() -> void:
 			add_streak(foot, neon_color, 14.0, 5.0, 0.35)
 	glow_pools.name = "GlowPools"
 	glow_pools.multimesh = _glow_multimesh(pools, pool_colors)
+	FxMultiMesh.never_interpolated(glow_pools)
 	glow_pools.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	structures.add_child(glow_pools)
 
@@ -459,6 +460,7 @@ func _build_tower(base: Vector3) -> void:
 	pool.name = "BeamPool"
 	pool.multimesh = _glow_multimesh([Transform3D(Basis.from_scale(Vector3(22, 1, 22)), Vector3(target.x, 0.04, target.z))],
 			[Color(0.35, 0.5, 0.7) * 0.5])
+	FxMultiMesh.never_interpolated(pool)
 	pool.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	structures.add_child(pool)
 
@@ -477,7 +479,7 @@ static func _glow_multimesh(transforms: Array, colors: Array) -> MultiMesh:
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = mesh
-	multimesh.instance_count = transforms.size()
+	FxMultiMesh.resize(multimesh, transforms.size())
 	for i in transforms.size():
 		multimesh.set_instance_transform(i, transforms[i])
 		multimesh.set_instance_color(i, colors[i])

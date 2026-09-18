@@ -576,3 +576,90 @@ The lead's framework from round 4, built as groundwork. **Nothing runs in live p
 The first pass of this loop, by hand: `pin_and_flank` (one element supports by fire, the others swing wide on
 alternate sides) beat standard doctrine in its first discovery run, and became `ElementCommander._pin_and_flank`
 behind `traits.commander`, snapped onto arena's annotated lanes; the ladder decides whether it stays.
+
+
+## Round 5 reopened: the think rate, and dodging that never existed (ai, 2026-09-17, after the 30 Hz move)
+
+### Think rate is a real lever and an insufficient one
+
+`make ai-perf UNITS=60` now reports **cost per second of match time** as well as per tick, because a tick-rate change
+moves the per-tick figure without changing what the brains cost a player. Laptop, 30 Hz, fixed workload, interleaved
+runs (thread CPU per living unit per second of match):
+
+| A brain in contact thinks | Variant | usec per unit per second | Against the champion |
+|---|---|---|---|
+| 7.5 times a second | `x5p` (champion) | ~9 800 | |
+| 5 times a second | `x6t5` | ~8 300 | -15% |
+| 3.75 times a second | `x6t4` | ~7 000 | -29% |
+
+**Halving how often a brain thinks buys about 29% of the brains, which is about 25% of the tick, and that does not take
+the lead from 30 vehicles to 60.** Closing his gap needs structural work on what a brain does per think, not only on how
+often it thinks.
+
+### Dodging has never fired
+
+Round 3 added dodging and every measurement since has quoted "dodge rate" as the share of a leading cannon's shells
+that missed. `tests/ai_scenarios/scenario_dodge_rate.gd` counts what the unit actually *tried*: ticks with a round
+inbound, and ticks whose driving plan was chosen *because* of that round.
+
+| | ticks with a round inbound | of them dodging | shells that missed |
+|---|---|---|---|
+| 30 Hz (champion, 8 seeds) | 502 (tank) / 514 (IFV) | **0 / 8** | 6% / 9% |
+| 60 Hz, pre-30 Hz snapshot | 893 / 953 | **0 / 0** | 17% / 12% |
+
+Inside `CombatMotion`, **every candidate direction scores "would still be hit"** (254 of 254 candidate evaluations at
+30 Hz, 248 of 248 at 60), so no direction beats any other and nothing is marked as a dodge. The physics say the model is
+right: a shell crosses 50 m in **~0.7 s**, and a hull turning at 100°/s needs **~0.8 s** to swing onto a perpendicular
+heading. **The behaviour as designed is impossible.** What we have been calling a dodge rate is a unit weaving for other
+reasons while shells miss — and the differences between tick rates and variants are inside the noise of a 45-shell
+sample (one shell is about 2 points).
+
+### Proposal (round 6): dodging must begin before the shot, not after it
+
+A reaction cannot beat the flight time; being a hard target can. The behaviour to build is **anticipation**: while a
+loaded gun is pointed at me and I am inside its reach, keep lateral speed up and keep changing it — never present a
+constant velocity to a gunner who leads his shot. The inputs already exist: `reload_windows` knows when an enemy gun is
+loaded (`gun_ready_in`), `watching_me` knows it is pointed this way, and `CombatMotion` already scores headings.
+The measurement is the same scenario: shells that miss, with the attempt counter proving the behaviour is the cause.
+The cheap reactive half is worth keeping only where it can work — a slow arcing round, or a gun firing from far enough
+away that 0.7 s becomes 2 s.
+
+
+## Invariant: a player's order outranks autonomy (ruled 2026-09-17, the lead's playtest)
+
+> *"they do move, but it's as though their behavior is overridden by a higher priority to do whatever they're thinking.
+> For example, if they get sucked into combat I have no control whatsoever."*
+
+**A player-sourced order is never abandoned, deferred or overridden by an autonomous behaviour.** A unit may shoot
+while it drives, dodge, and step around a wall of bullets — none of that changes where it is going. It may not decide
+to stop and fight instead of arriving, and nothing but the player may re-aim it. If an order walks a unit into a bad
+fight, that is the player's mistake to make.
+
+Three rules carry it, all measured in `tests/test_ai_player_orders.gd` and `tests/test_tactics_reissue.gd`:
+
+1. **Under a player's order, only the options that carry it out are on the table** (K1's `ORDER_OPTIONS`). A unit
+   ordered across two guns firing at it spends every tick of the journey on MOVE and arrives (16.8 s, 519 ticks,
+   nothing else chosen).
+2. **Afterwards it fights from the ground it was given**, not from wherever the fight leads: anything it decides for
+   itself is leashed to `PLAYER_POST_LEASH` (18 m) of the post its last order left it at, with `ESCAPE_LEASH_FACTOR`
+   times that for a move that IS the escape (running to cover, breaking contact). Before this, a squad that arrived
+   would drift off to chase — which is what "no control" looks like from the outside.
+3. **Nothing else commands the player's army.** An `ElementCommander` never runs on the player's team; an element
+   never takes a unit off an order whose `source` is `"player"`; and on the player's team a leader with no task
+   commands nobody at all (L1's sharp edge from round 4, now enforced rather than documented). Everything an element
+   issues is tagged `source: "element"`, so the marker and the cue on screen belong to the player's own clicks.
+
+**The leash distance is a dial on how much control the player feels.** Control's harness (`make squad-orders-test`)
+reads 11 of 21 units sitting at 17-18 m after a fight starts — pressed against the boundary, because what they want is
+to close with what they can see. Tighter means a squad hugs the spot it was given; looser means it can reach the cover
+and angles around it. 18 m was chosen as "inside one formation spacing of your slot" and has not been measured against
+a tighter value at scale: two runs of the small doctrine-army test (3 living units) put the mean at 5.7 m against 8.5 m
+for a 12 m leash, which is noise, not evidence. If the lead says his squads still wander, this is the constant to
+measure — in the squad-orders harness at 30 a side, with survival read alongside the distance, because the trade is
+control against room to fight.
+
+**And an element re-issues only when the intention changed.** "Attack" and "attack-move" at the same target, and
+"move" and "hold" at the same place, are the same intention; a standing order already follows a moving target, so the
+same intention is not handed over again inside `RE_ISSUE_TICKS`. Round 5 measured the old behaviour at ~35 order
+changes a second across 21 units with nobody touching the controls, each one redrawing a marker and playing a cue:
+*"these blue dots ... they just keep repeating"*.

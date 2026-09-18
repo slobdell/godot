@@ -38,7 +38,13 @@ const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy",
 ## attack-move maps onto a move task on purpose: an element on the move already runs react-to-contact, which is
 ## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
 ## down so its leader stops re-issuing.
-const ELEMENT_TASKS := {"move": "move", "attack_move": "move", "attack": "attack", "hold": "hold",
+##
+## A plain `move` is NOT here (round 5, reopened): a right-click destination is the player saying where he wants them,
+## and handing it to a leader as a task meant the leader kept re-slotting and manoeuvring afterwards - measured at 20
+## order changes a second, with units ending 20-90 m from the spot he clicked (the lead: "the units do not re-arrange
+## as intended ... their behavior is overridden by a higher priority"). Drills stay on the verbs that ask for them:
+## attack-move (fight what you meet on the way), screen, base of fire, and attacks.
+const ELEMENT_TASKS := {"attack_move": "move", "attack": "attack", "hold": "hold",
 		"screen": "screen", "support_by_fire": "support_by_fire"}
 ## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
 const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]
@@ -631,8 +637,9 @@ func right_click_order(at: Vector2, queue := false) -> String:
 		if _is_task("attack", {"queue": queue}):
 			return order_selection("attack", {"target": String(tank.name), "queue": queue})
 		return smart_attack(tank, queue)
-	if tank != null and not selection.units.has(String(tank.name)):
-		return order_selection("follow", {"target": String(tank.name), "queue": queue})
+	# A right-click on your own vehicles is a move to that spot, not a follow (game_design.md: "right-click ground =
+	# move ... F + click a friendly = follow/escort"). The lead, round 5: with an army packed on the start line, half of
+	# "go there" landed on his own units and became "trail that one", so his squads never went where he clicked.
 	var world: Variant = screen_to_world(at)
 	if world == null:
 		return ""

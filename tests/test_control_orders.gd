@@ -136,6 +136,7 @@ func test_group_moves_give_each_unit_its_own_slot_around_the_destination() -> vo
 	var names := ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]
 	for i in names.size():
 		(game_match.tanks.get_node(names[i]) as Tank).global_position = Vector3(-10.0 + i * 10.0, 0.0, 80.0)
+		(game_match.tanks.get_node(names[i]) as Tank).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	assert_eq(orders.issue({"units": names, "verb": "move", "to": [0, 20]}), "", "group move accepted")
 	var goals: Array[Vector2] = []
 	for unit_name in names:
@@ -199,6 +200,7 @@ func test_an_order_can_say_which_way_to_face_on_arrival() -> void:
 	var names := ["Green_Alpha_1", "Green_Alpha_2"]
 	for i in names.size():
 		(game_match.tanks.get_node(names[i]) as Tank).global_position = Vector3(-5.0 + i * 10.0, 0.0, 80.0)
+		(game_match.tanks.get_node(names[i]) as Tank).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	assert_eq(orders.issue({"units": names, "verb": "move", "to": [0, 20], "facing": [3, 0]}), "", "accepted")
 	for unit_name in names:
 		var order := orders.current(unit_name)
@@ -210,3 +212,32 @@ func test_an_order_can_say_which_way_to_face_on_arrival() -> void:
 	orders.issue({"units": ["Green_Alpha_1"], "verb": "move", "to": [0, 0]})
 	orders.complete("Green_Alpha_1")
 	assert_true(orders.station("Green_Alpha_1")["heading"] != [1.0, 0.0], "without a facing, the direction of travel as before")
+
+
+## Round 5 reopened (the lead: "there appear to be these blue dots to annotate where a unit is trying to go ... they
+## just keep repeating or re-orienting ... and the frame rate noticeably drops"). Something was re-issuing the same
+## order dozens of times a second; every re-issue restarted the order and spawned a marker and a sound. K1 is the place
+## to make that harmless: an order identical to the one a unit is already carrying out leaves it alone.
+func test_re_issuing_the_same_order_does_not_restart_it() -> void:
+	var setup: Array = _setup()
+	var orders: Orders = setup[1]
+	var changed: Array = []
+	var accepted: Array = []
+	orders.order_changed.connect(func(unit_name: String) -> void: changed.append(unit_name))
+	orders.issued.connect(func(command: Dictionary) -> void: accepted.append(command))
+	assert_eq(orders.issue({"units": ["Green_Alpha_1"], "verb": "move", "to": [10, 20]}), "", "the first order lands")
+	var first := orders.current("Green_Alpha_1")
+	assert_eq(changed.size(), 1, "and tells the world once")
+	assert_eq(orders.issue({"units": ["Green_Alpha_1"], "verb": "move", "to": [10, 20]}), "", "the same order again is accepted")
+	assert_eq(orders.current("Green_Alpha_1")["id"], first["id"], "but it is the same order, not a new one")
+	assert_eq(orders.current("Green_Alpha_1")["started_tick"], first["started_tick"], "and it was never restarted")
+	assert_eq(changed.size(), 1, "so nothing redraws a marker or replays an acknowledgement")
+	assert_eq(accepted.size(), 2, "the instrument still counts both attempts (that is how the thrash was found)")
+	assert_eq(orders.issue({"units": ["Green_Alpha_1"], "verb": "move", "to": [40, 20]}), "", "a different destination")
+	assert_true(orders.current("Green_Alpha_1")["id"] != first["id"], "replaces the order")
+	assert_eq(changed.size(), 2, "and does tell the world")
+	assert_eq(orders.issue({"units": ["Green_Alpha_1"], "verb": "attack_move", "to": [40, 20]}), "", "same spot, other verb")
+	assert_eq(changed.size(), 3, "counts as a new order")
+	assert_eq(orders.issue({"units": ["Green_Alpha_1"], "verb": "attack_move", "to": [40, 20], "queue": true}), "",
+			"a queued copy is not the same thing")
+	assert_eq(orders.queue("Green_Alpha_1").size(), 1, "it waits its turn")

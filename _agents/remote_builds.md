@@ -76,6 +76,12 @@ local: remote runs don't forward API keys.
 ## Troubleshooting
 
 - **"cannot reach builder0":** check `ssh -o BatchMode=yes slobdell@builder0 true`. Fall back to local `make`.
+- **The link drops intermittently; retry before concluding anything.** On 2026-09-17 builder0 became unreachable twice
+  (about half an hour around 13:30, and again at 15:40), each time with the machine itself fine — `uptime` showed 72
+  days and load under 1 on either side of both outages. A run that dies with *"Timeout, server builder0 not
+  responding"* or *"No route to host"* has told you nothing about your code: probe again a few seconds later, and
+  re-run. Don't start a local full `make check` as a fallback unless the outage lasts: it takes 14–22 minutes, shares
+  the laptop with every other agent, and makes timing-sensitive tests *less* trustworthy, not more.
 - **Rendering targets fail with a display error:** nobody is logged into builder0's desktop (no
   `/run/user/1000/.mutter-Xwaylandauth.*`). Run that target locally, or ask the lead to log in.
 - **Killing `make remote` locally does not stop the build on builder0.** `remote.sh` drives make over ssh, so the remote

@@ -16,6 +16,16 @@
 > before and after anything that adds per-frame work. Builder0's Iris Xe is ~2.3× faster on the GPU: don't budget
 > from it.
 
+### Two facts every stream should quote numbers against (measured 2026-09-17)
+
+1. **The lead's laptop is ~2.75× slower than builder0** for an identical headless workload (`make sim-profile TIME=60`,
+   58 vehicles: **18.42 ms a tick on the laptop, 6.68 ms on builder0**). A number measured on builder0 is not a number
+   about the game he plays. In game on the laptop the same tick is ~32 ms, because the Compatibility renderer shares the
+   main thread.
+2. **Brains are 85% of a simulation tick** (`PROFILE_FLAGS=--no-brains`: 2.69 ms of 18.42) and think on a wall-clock
+   schedule, so their cost per second does not change with the tick rate. Halving the tick rate could only ever save the
+   other 15%: ~13% per second, which is what 30 Hz delivered.
+
 ### How it's measured: `make perf-scene`
 
 A **live skirmish**, not a staged bench: `--skirmish --player=cpu --enemy=cpu --seed=3 --budget=6500 --cinematic`
@@ -120,6 +130,7 @@ the budget is combat's and ai's, and nothing in rendering moves it.
 | `Impact` (the hit fireball) allocates a new `SphereMesh` + `StandardMaterial3D` per hit, alpha-blended, freed afterwards: the "instantiate per event" pattern that causes hitches at scale | `game/combat/impact.gd`, `Match.show_impact` **[verified]** |
 | `make web-smoke` renders with **SwiftShader** (software GL), so its frame times say nothing about real GPUs; it's only for "boots and looks right" | `tools/web_smoke/smoke.mjs` launch args **[verified]** |
 | Visuals must never touch the simulation (`make sim-baseline`), and slots must load on a headless server | workstreams.md **[verified]** |
+| A MultiMesh written from `_process` warns on every write once physics interpolation is on (30 Hz), and switching it off takes **two** calls: `physics_interpolation_mode = OFF` on the MultiMeshInstance3D (the node re-pushes its state to the server when it enters the tree, undoing a server flag set in `_init`) **and** the server flag re-asserted after every `instance_count` change (a resize rebuilds the buffers and clears it). Use `FxMultiMesh` | `game/theme/fx/fx_multimesh.gd` **[verified: 0 warnings in a playtest, was 1]** |
 
 **What actually costs frames on phones and WebGL** (in rough order): draw calls and state
 changes (each unique material/mesh), **overdraw** (layers of transparent/additive pixels covering

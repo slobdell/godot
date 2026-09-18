@@ -66,6 +66,9 @@ func layer(kind: String) -> MultiMeshInstance3D:
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.mesh = _dashed_mesh() if kind == "enemy" else (_thin_mesh() if kind == "friendly" else _thick_mesh())
 	instance.multimesh = multimesh
+	# The rings are placed every rendered frame at where the vehicles are drawn (Shown), so the renderer must not
+	# interpolate them on top of that (render's FxMultiMesh: the node switch and the server flag, both of which matter).
+	FxMultiMesh.never_interpolated(instance)
 	add_child(instance)
 	_layers[kind] = instance
 	return instance
@@ -120,7 +123,9 @@ func refresh() -> void:
 			continue
 		var multimesh := layer(kind).multimesh
 		if multimesh.instance_count < transforms.size():
-			multimesh.instance_count = transforms.size() + 8  # grow in steps: resizing reallocates the buffer
+			# Grow in steps: resizing reallocates the buffer (and clears the server's no-interpolation flag, which
+			# FxMultiMesh.resize re-asserts).
+			FxMultiMesh.resize(multimesh, transforms.size() + 8)
 		multimesh.visible_instance_count = transforms.size()
 		for i in transforms.size():
 			multimesh.set_instance_transform(i, transforms[i])

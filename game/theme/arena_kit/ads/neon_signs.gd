@@ -28,7 +28,7 @@ static func build(placements: Array) -> MultiMeshInstance3D:
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = quad
-	multimesh.instance_count = placements.size()
+	FxMultiMesh.resize(multimesh, placements.size())
 	var bounds := AABB()
 	for i in placements.size():
 		var xform: Transform3D = placements[i]["transform"] * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
@@ -40,6 +40,7 @@ static func build(placements: Array) -> MultiMeshInstance3D:
 	var instance := MultiMeshInstance3D.new()
 	instance.name = "NeonSigns"
 	instance.multimesh = multimesh
+	FxMultiMesh.never_interpolated(instance)
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	instance.custom_aabb = bounds
 	# Headless renderers don't keep MultiMesh instance data: tests and tools read the placements from here.

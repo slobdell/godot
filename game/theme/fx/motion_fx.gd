@@ -71,6 +71,7 @@ func _init(fx: FxWorld = null) -> void:
 	multimesh.use_custom_data = true
 	multimesh.mesh = mesh
 	_skids.multimesh = multimesh
+	FxMultiMesh.never_interpolated(_skids)
 	_skids.name = "Skids"
 	_skids.custom_aabb = WORLD_AABB
 	_skids.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -82,7 +83,7 @@ func _init(fx: FxWorld = null) -> void:
 func resize() -> void:
 	dust.resize(DUST_POOL[FxQuality.tier()])
 	var multimesh := _skids.multimesh
-	multimesh.instance_count = SKID_POOL[FxQuality.tier()]
+	FxMultiMesh.resize(multimesh, SKID_POOL[FxQuality.tier()])
 	for i in multimesh.instance_count:
 		multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * 0.001), Vector3.ZERO))
 		multimesh.set_instance_custom_data(i, Color(-1000.0, 0.001, 0.0, 0.0))
