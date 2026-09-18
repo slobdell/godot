@@ -152,14 +152,15 @@ _Updated 2026-09-18 by the squad worker._
 
 | Item | State |
 |---|---|
-| **X1** one formation system (N2) | `df736a8e`; its first builder0 check caught one outcome-encoding test (fixed); full check pending |
-| **X5** support by fire / screen / halts | `df736a8e`; pure posture tests + real-physics posture scenarios pass (laptop) |
-| **X4** plain move keeps the squad (element side) | `df736a8e` (`"drills": false` task); control agreed the 2-line seam, applies after I confirm green |
-| **X2** standable slots | `df736a8e` (`SlotGround` over the navmesh's closest point) |
-| **X3** form-up ETA + pacing | `df736a8e`, behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** |
-| **X6** `make squad-coherence` | `df736a8e` probe + runner; baseline waits for combat's CP4 (orchestrator: no numbers across it) |
-| **X7** covered flanks + ambush task | `a8048028`; route and ambush tests pass (laptop) |
-| X8 army layer (stretch) | not started: its measurement needs CP4 and N7 (objectives arena can move) |
+| **X1** one formation system (N2, **CP3**) | **merged to main** at `df736a8e` (builder0 green, 1030 passed) |
+| **X5** support by fire / screen / halts | in CP3; control told to flip `earned` on SBF and screen |
+| **X4** plain move keeps the squad | my side in CP3 (`"drills": false` task); control applies its 2 lines in `rts_controls.gd` |
+| **X2** standable slots | in CP3 (`SlotGround` over the navmesh's closest point) |
+| **X3** form-up ETA + pacing | in CP3, behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** (nav has no session yet) |
+| **X6** `make squad-coherence` | probe + runner in CP3; **baseline waits for CP4 on main** (no numbers across it) |
+| **X7** covered flanks + ambush task | `a8048028`; in the check running on `e6adf3bc` |
+| CP4 pairing: brain uses the fire band; dither | `1fc83daf` + `5521f741`; in the check running on `e6adf3bc` |
+| X8 army layer (stretch) | not started: its measurement needs CP4 on main and N7 (movable objectives) |
 
 **Measured (laptop, uncommitted tree on `a975e262`/`df736a8e`, seeded single runs in TacticsLab — posture, not balance):**
 support by fire forms a 30 m line 54-56 m off the point, all 4 facing it, 15 shots, no other drill; screen: a 42 m
@@ -197,7 +198,24 @@ line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the cl
   compares the direct line, wide detours and the arena's annotated lanes; the route is chosen once and kept.
 - **Ambush is a task** (X7): a line at 0.6 × effective range from the kill zone, fire held until an enemy is in the
   kill zone (30 m), one is on top of us, or we are hit; once sprung it stays sprung and no timeout ends it.
+- **The brain reasons with the band CP4 enforces** (`TankBrain.fire_band`) wherever it asks "can my gun reach that
+  far?" for a decision; threat assessment and cover fire keep full range (what can hurt me; a crew under fire may answer
+  at any range). Peeks hold until the gun fires and baits stay out until the round is inbound (acquisition takes up to
+  1.6 s). The target's `pinned` flag gets hysteresis, which was the real cause of the dither CP4 exposed.
+- **Knobs this stream owns carry its prefix** (`AI_*`, `TACTICS_*`, `PARITY_SECONDS`); old names work only from the
+  command line.
 - **Cohesion is judged in time** (the form-up estimate): allowed = cohesion distance / slowest member's speed.
+
+### Known issues
+
+- **The dither metric reported double the real rate** from the 30 Hz move until `1fc83daf`; historical dither numbers
+  are not comparable with post-fix ones. So did `scenario_evasion`'s duration (ran 60 s saying 30) and the discovery
+  bridge's clock (half the real time) and cadence (double) — see unit_ai.md's clock warning.
+- `scenario_dodge_rate` finds 0 dodge attempts on CP4 + my fix (raw CP4: 4 of 488 inbound ticks; pre-CP4: 22). A
+  4-event sample; combat's X6 (crossing targets harder to acquire) flips the same test. Dodging was already found in
+  round 5 to almost never pay. Not in `make check`.
+- `ai-scenarios` has 6 failures that pre-date this round (scenario_cp2 ×3, fire_discipline, matchups, squad focus);
+  the orchestrator is committing an expected-pass baseline for the suite (lesson 42).
 
 ### Questions for the lead
 
