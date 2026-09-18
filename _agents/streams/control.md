@@ -190,6 +190,30 @@ nobody touched the controls. Run it on a machine that draws frames, not builder0
 | **~200 commands accepted and ~35 order changes a second across 21 units** while nobody touched anything, verbs flapping between move / hold / attack_move, all `source: ""`. Render's OrderFeedback draws a marker and plays a cue per new order id: the "blue dots … repeating … beeping" and a real frame cost. | ai (the re-issue) | ai tags `source: "element"` and only re-issues a changed intention; control made K1 idempotent and limited feedback to player-sourced orders |
 | **4 of 21 units "arrived then left", 4 "never arrived"**, their order at that point being attack or attack_move. | ai | ai: no element order ever overrides a player-sourced one; after a player's order a unit is leashed to 18 m of where he left it |
 
+**The root cause, and why it hid behind a correct invariant.** ai's rule — *an element never takes a unit off an order
+whose source is `player`* — was true and enforced. It protected nothing, because with round 4's grammar **a right-click
+on a whole squad *was* an element task by construction**, so every one of the player's units was under `source:
+element` orders and there was no player-sourced order to defend. A correct invariant guarding the wrong set. The table
+said so in one column: every row read `element`.
+
+**So a plain move is a direct order again** (reversing round 4's X3 routing of moves to tasks, with the orchestrator's
+endorsement), on three grounds worth keeping so nobody quietly restores it:
+
+1. **game_design.md already said so:** *"right-click ground = move"*, *"orders are instant and always win"*. Round 4
+   drifted from a written rule.
+2. **The lead's words are the evidence:** he played it and could not command his army.
+3. **The table is the measurement**, before and after (below).
+
+The leader's judgement stays on the verbs that ask for it — attack-move (fight what you meet on the way), screen, base
+of fire, attacks. A plain move is the player saying *go there*; the rest is the player saying *handle this*.
+
+| `make squad-orders-test`, five squads ordered in turn | before | with ai's fixes | after |
+|---|---|---|---|
+| element orders in a 6 s window with no input | ~113–200 | 113 | **0** |
+| never arrived | 7 | 7 | **0** |
+| arrived then left (> 20 m) | 10 | 10 | **0** |
+| arrived and stayed, or held inside ai's 18 m leash | 4 | 4 | **19 of 21** |
+
 **Control's three changes.** `Orders.issue` is idempotent — an order identical to the one in progress (same verb and
 target, destination inside `ARRIVE_RADIUS`) no longer restarts it. `Orders.issued` is a new signal: the instrument that
 counted the thrash, deliberately counting *attempts*, so a future thrash is still visible. Order feedback confirms only

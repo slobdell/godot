@@ -118,7 +118,21 @@ func run() -> void:
 	for row: Dictionary in _rows:
 		verdicts[row["verdict"]] = int(verdicts.get(row["verdict"], 0)) + 1
 	watch["cues_from_the_players_clicks"] = cues_from_the_players_clicks
+	# For ai's leash dial (unit_ai.md): how far from the spot he sent them the units actually settle, and how many of
+	# them live. Run this before and after changing the leash and compare these three numbers.
+	var settled: Array = []
+	var alive := 0
+	for row: Dictionary in _rows:
+		if bool(row["alive"]) and int(row["later_from_goal_m"]) >= 0:
+			settled.append(float(row["later_from_goal_m"]))
+			alive += 1
+	settled.sort()
+	var mean := 0.0
+	for metres: float in settled:
+		mean += metres
 	var report := {"squads": ordered.size(), "units": _rows.size(), "verdicts": verdicts, "issues_while_idle": watch,
+			"from_the_given_slot_m": {"mean": snappedf(mean / maxf(settled.size(), 1), 0.1),
+					"worst": settled[-1] if not settled.is_empty() else -1.0, "alive": alive, "of": _rows.size()},
 			"cross_talk": _cross_talk, "settle_seconds": SETTLE, "later_seconds": LATER}
 	print("SQUAD_ORDERS_SUMMARY ", JSON.stringify(report))
 	for row: Dictionary in _rows:
