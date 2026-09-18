@@ -121,8 +121,16 @@ func test_rings_are_batched_one_multimesh_per_kind() -> void:
 	assert_eq(markers.layer("enemy").multimesh.visible_instance_count, 1, "one enemy")
 	# Not multimesh.get_instance_transform: the headless renderer keeps no instance buffer and reads back zeros.
 	var at: Vector3 = markers.state()["Green_Alpha_2"]["position"]
-	var tank := f.tank("Green_Alpha_2").global_position
-	assert_true(Vector2(at.x - tank.x, at.z - tank.z).length() < 0.01, "the ring sits under its vehicle (%s vs %s)" % [at, tank])
+	# Against the DRAWN position, not the simulation's. A ring must sit under the hull the player sees, so it is placed
+	# from `Shown` (the interpolated transform); at 30 Hz that is up to a tick of travel away from `global_position`,
+	# which is how this assertion first failed (17 mm of it, along the direction of travel). Comparing a drawn position
+	# with a tick position measures the interpolation, not the rings.
+	var drawn := Shown.ground(f.tank("Green_Alpha_2"))
+	assert_true(Vector2(at.x - drawn.x, at.z - drawn.z).length() < 0.01,
+			"the ring sits under the vehicle as drawn (%s vs %s)" % [at, drawn])
+	var ticked := f.tank("Green_Alpha_2").global_position
+	assert_true(Vector2(at.x - ticked.x, at.z - ticked.z).length() < 1.0,
+			"and within a tick's travel of where the simulation has it (%s vs %s)" % [at, ticked])
 
 
 ## Round 5 reopened (the lead: "I select squad 1, having them go somewhere ... the units do not re-arrange as intended").

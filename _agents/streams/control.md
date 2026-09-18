@@ -156,9 +156,10 @@ Fixed with `Fixture.place(unit, at)`, a reset after every teleport in control's 
 [verification.md](../verification.md) as the round's **third tick-rate trap**, after K1's `RESPONSE_TICKS` and ai's
 think cadence.
 
-**Four things the 30 Hz tick broke, all of them the same shape:** K1's `RESPONSE_TICKS` (a contract in ticks that meant
-50 ms and would have meant 100), ai's think cadence, this teleport read through interpolation, and the MultiMesh
-interpolation warnings from every FX mesh placed per frame. None of them was the tick loop itself. **Interpolation and
+**Five things the 30 Hz tick broke, all of them the same shape:** K1's `RESPONSE_TICKS` (a contract in ticks that meant
+50 ms and would have meant 100), ai's think cadence, this teleport read through interpolation, the MultiMesh
+interpolation warnings from every FX mesh placed per frame, and a ring test that compared a *drawn* position with a
+*simulation* position (17 mm apart along the direction of travel — one tick of it). None of them was the tick loop itself. **Interpolation and
 tick-relative constants are where a tick-rate change actually bites**, and audio, which had already converted everything
 to seconds, needed no changes at all.
 
