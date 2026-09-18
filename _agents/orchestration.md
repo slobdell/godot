@@ -812,3 +812,16 @@ The kickoff prompt is one line; this section is the rest.
       red branch saying what it is waiting for and who clears it.
     - **When a stream says a dependency of its own is still blocked, verify rather than reassure.** This was found only
       because a stream mentioned waiting on "CP4 *on main*" and the orchestrator checked instead of correcting it.
+
+    **And the stream's half, which is the sharper diagnosis of the two** (its own words): *"a stream's status is the
+    hash, not the narrative."* It had reported findings, retractions, measurements, cross-stream diagnoses and a
+    sentence for the lead — at length, repeatedly — and **never once sent "combat is green, merge here: `<sha>`"**,
+    which is rule 11 of the worker contract. Because it was narrating everything else in detail, *the silence about the
+    merge looked like there was nothing to say*. The mechanism was not carelessness: **the branch was legitimately red
+    for most of the round, and "red by construction, waiting on <stream>" is a status it reported clearly and often.
+    What neither side had was the transition.** Nothing fires when the last blocker clears — it went straight from
+    *waiting* to *running the series*, because the series was the interesting thing and the merge was never an item on
+    anything.
+    So, for workers: **a blocked branch needs an owner for the moment it stops being blocked, and that owner is the
+    stream.** A stream that reports only what it has *learned* looks finished when its findings stop; report what is
+    *mergeable* as a separate, explicit thing, every time it changes.
