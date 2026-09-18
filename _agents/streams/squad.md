@@ -157,9 +157,10 @@ _Updated 2026-09-18 by the squad worker._
 | **X4** plain move keeps the squad | my side in CP3 (`"drills": false` task); control applies its 2 lines in `rts_controls.gd` |
 | **X2** standable slots | in CP3 (`SlotGround` over the navmesh's closest point) |
 | **X3** form-up ETA + pacing | in CP3, behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** (nav has no session yet) |
-| **X6** `make squad-coherence` | probe + runner in CP3; **baseline waits for CP4 on main** (no numbers across it) |
+| **X6** `make squad-coherence` | probe + runner in CP3; attribution + two thrash fixes in `824aa258`; **baseline waits for CP4 on main** (no numbers across it) |
 | **X7** covered flanks + ambush task | `a8048028`; in the check running on `e6adf3bc` |
-| CP4 pairing: brain uses the fire band; dither | `1fc83daf` + `5521f741`; in the check running on `e6adf3bc` |
+| CP4 pairing: brain uses the fire band; dither | `1fc83daf` + `5521f741` |
+| X5 attack / hold postures (+ herringbone flip-flop fix) | `16d23375`; full check running on builder0 |
 | X8 army layer (stretch) | not started: its measurement needs CP4 on main and N7 (movable objectives) |
 
 **Measured (laptop, uncommitted tree on `a975e262`/`df736a8e`, seeded single runs in TacticsLab — posture, not balance):**
@@ -207,6 +208,17 @@ line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the cl
 - **Cohesion is judged in time** (the form-up estimate): allowed = cohesion distance / slowest member's speed.
 
 ### Known issues
+
+- **Thrash with elements on (X6, indicative only):** one smoke match (laptop, `16d23375`, condemned v law, 5200,
+  control point, both sides `--*-elements`, seed 1, 60 s, pre-CP4) read ~105 orders per unit-minute and 49-60 drill
+  switches per element-minute; `824aa258` fixed the two biggest causes (SBF below near ambush flipping every update;
+  the commander re-tasking every second) → 55 / 32 orders and 11.5 / 8.1 switches. Still open: `near_ambush` ending
+  without `assault_through` (16 of 19 times) and ~1 order per unit-second of leg re-issues. The published baseline
+  waits for CP4 on main.
+- **A unit shot at by an enemy it cannot see stands still.** Found staging the attack scenario: a gun at 70 m, past
+  the tanks' sight, hit them; the element ran react-to-contact once and then halted in a herringbone. CP4 will mostly
+  prevent the situation (a gun may not fire past its crew's sight), but a spotted-by-a-friend gun still can.
+  Doctrine says react to contact means moving to cover or toward the fire; worth a scenario after CP4.
 
 - **The dither metric reported double the real rate** from the 30 Hz move until `1fc83daf`; historical dither numbers
   are not comparable with post-fix ones. So did `scenario_evasion`'s duration (ran 60 s saying 30) and the discovery
