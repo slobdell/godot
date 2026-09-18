@@ -139,7 +139,7 @@ lets the attacker read the choice. An approach denied at 45 m by anyone standing
 overrides them without an edit — that is how these numbers get re-derived after CP4, and it is one `make
 arena-report`, not machine time. Nothing else in the analysis depends on weapon range.
 
-### What the shipping arenas measure (2026-09-18, commit `1e7b03ce`; static geometry, no match run)
+### What the shipping arenas measure (2026-09-18, commit `89af5ede`; static geometry, no match run)
 
 | Arena | centre sees | longest sightline | crossing exposure idle → posted | **posting buys** | covered route | best overwatch: unseen approach |
 |---|---|---|---|---|---|---|
