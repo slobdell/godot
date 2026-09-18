@@ -216,6 +216,28 @@ static func spawn_spot(south: bool, slot: int) -> Variant:
 	return Vector3(spot[0], 0.0, spot[1])
 
 
+## X1 (round 6): a TEST FIXTURE, not a shipping arena -- `arenas/maze.json` is one. It loads with `--arena=<name>`
+## like any layout, but nothing that presents the game to a player should offer it: it has no art pass, no balance,
+## and the announcer has no recording of its name.
+##
+## This is a flag rather than a note in prose because consumers need to *ask*. The maze broke the announcer's
+## "every arena the booth can name" test on the day it landed, and the fix is not to record a name for it -- the
+## booth should never say it -- but for that test to be able to tell a fixture from an arena.
+static func is_fixture(data: Dictionary) -> bool:
+	return bool(data.get("fixture", false))
+
+
+## Every layout a player can be shown, fixtures excluded. Anything that offers arenas to a human wants this, not
+## layout_names().
+static func shipping_layout_names() -> PackedStringArray:
+	var out := PackedStringArray()
+	for layout_name in layout_names():
+		var loaded := load_layout(layout_name)
+		if loaded.has("layout") and not is_fixture(loaded["layout"]):
+			out.append(layout_name)
+	return out
+
+
 ## X3 (round 6): the layout's objectives as [{name, position: Vector3, radius: float}].
 ##
 ## **`Match` does not read this yet** -- it hard-codes `CONTROL_CENTER = Vector3.ZERO` and `CONTROL_RADIUS = 16.0`,
@@ -448,6 +470,8 @@ static func _validate_v2(data: Dictionary) -> String:
 				if absf(float(spot[0]) - float(zone["center"][0])) > float(zone["size"][0]) / 2.0 + SYMMETRY_TOLERANCE \
 						or absf(float(spot[1]) - float(zone["center"][1])) > float(zone["size"][1]) / 2.0 + SYMMETRY_TOLERANCE:
 					return "spawns.%s point %s is outside its spawn zone" % [side, spot]
+	if data.has("fixture") and typeof(data["fixture"]) != TYPE_BOOL:
+		return "'fixture' must be true or false"
 	var objectives: Variant = data.get("objectives", [])
 	if typeof(objectives) != TYPE_ARRAY:
 		return "'objectives' must be a list"

@@ -158,8 +158,9 @@ def mirrored_regions(half):
     return out
 
 
-def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), control_radius=16.0, hazards=()):
-    layout = {"name": name, "schema": 2, "title": title, "note": fight, "half_size": 120.0,
+def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), control_radius=16.0, hazards=(),
+             fixture=False):
+    layout = {"name": name, "schema": 2, "title": title, "note": fight, "half_size": 120.0, "fixture": fixture,
               "obstacles": mirrored(list(obstacles)), "props": mirrored_props(list(props)),
               "spawns": spawns(), "spawn_zones": {"green": SPAWN_ZONE, "rust": {"center": [0.0, -102.0], "size": SPAWN_ZONE["size"]}},
               "lanes": mirrored_lanes([dict(l) for l in lanes]), "regions": mirrored_regions(list(regions)),
@@ -423,4 +424,4 @@ write_v2("maze", "The Maze (nav test fixture)",
                   region("tight gate", "chokepoint", 11.5, 74, 4),
                   region("west gate", "chokepoint", -56, 74, 6),
                   region("dead end", "cover_cluster", -99, 41, 12)],
-         control_radius=8.0)
+         control_radius=8.0, fixture=True)

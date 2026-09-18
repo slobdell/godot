@@ -28,6 +28,15 @@ func test_the_maze_is_a_fixture_and_never_ships() -> void:
 	assert_true(loaded.has("layout"), "maze validates: %s" % loaded.get("error", ""))
 	assert_true(not Arena.ROTATION.has("maze"), "--arena=random never picks the maze (%s)" % [Arena.ROTATION])
 	assert_true(String(loaded["layout"]["note"]).contains("NOT A SHIPPING MAP"), "and the file says so out loud")
+	# In a flag as well as in prose, because consumers need to ASK. The maze broke the announcer's "every arena the
+	# booth can name" test on the day it landed; the answer is not to record a name for a map nobody plays.
+	assert_true(Arena.is_fixture(loaded["layout"]), "and in a field a tool can read")
+	var shipping := Arena.shipping_layout_names()
+	assert_true(not shipping.has("maze"), "shipping_layout_names() leaves it out (%s)" % [shipping])
+	assert_true(shipping.has("yard") and shipping.has("foundry"), "but keeps the real arenas (%s)" % [shipping])
+	for layout_name in shipping:
+		assert_true(not Arena.is_fixture(Arena.load_layout(layout_name)["layout"]),
+				"%s is a real arena" % layout_name)
 
 
 func test_a_horde_can_get_from_one_base_to_the_other() -> void:

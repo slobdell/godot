@@ -213,6 +213,12 @@ for test purposes to ensure units can get through it."* It is **not a shipping m
 and both the layout's `note` and a test (`test_the_maze_is_a_fixture_and_never_ships`) say so. It is not in
 `Arena.ROTATION`, so `--arena=random` never picks it; you reach it only with `--arena=maze`.
 
+It carries `"fixture": true`, which is the field tools should ask rather than parsing the prose — `Arena.is_fixture()`
+and `Arena.shipping_layout_names()` read it. **That flag exists because the maze broke the announcer's "every arena
+the booth can name" test on the day it landed.** The fix was not to spend an ElevenLabs recording on a map nobody
+plays; it was to give the announcer's test a way to tell a fixture from an arena. Anything that offers arenas to a
+human wants `shipping_layout_names()`, not `layout_names()`.
+
 It has no cover design, no balance and no art pass, and it should not get any. Its job is to answer one question —
 **can a horde of 30+ vehicles get from its spawn zone to the far base through gaps it has to file through?** — and
 every property below exists to keep that question hard and well-posed.

@@ -4,6 +4,7 @@
  "title": "The Maze (nav test fixture)",
  "note": "NOT A SHIPPING MAP. Eight container bands with staggered gaps: the only route from one base to the other is a serpentine through gaps 7-12 m wide, past one dead end. It exists so nav can prove a horde gets through (`make nav-maze`); it has no cover design, no balance and no art pass.",
  "half_size": 120.0,
+ "fixture": true,
  "obstacles": [],
  "props": [
   {
