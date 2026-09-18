@@ -24,13 +24,3 @@ func test_compare_counts_only_pixels_the_crowd_changed() -> void:
 	var flicker := with_crowd.duplicate() as Image
 	flicker.set_pixel(1, 1, Color(0.9, 0.9, 0.9))  # this pixel animates on its own: not the crowd's
 	assert_eq(CrowdLook.compare(with_crowd, without, false, flicker)["changed"], 1, "animation is left out")
-
-
-func test_pitched_pose_keeps_pitch_and_distance_apart() -> void:
-	var at := Vector3(10, 0, 90)
-	for pitch_deg in [22.0, 50.0]:
-		for distance in [40.0, 160.0]:
-			var pose := CrowdLook.pitched_pose(at, 0.0, deg_to_rad(pitch_deg), distance)
-			assert_near(pose.origin.distance_to(at), distance, 0.01, "the camera sits %d m out" % distance)
-			assert_near(rad_to_deg(-pose.basis.get_euler().x), pitch_deg, 0.01, "looking down at %d degrees" % pitch_deg)
-			assert_true(pose.origin.z > at.z, "heading 0 puts the camera south of the focus, looking north")

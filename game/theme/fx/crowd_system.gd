@@ -10,7 +10,8 @@ const ATLAS := preload("res://game/theme/cyberpunk/crowd/crowd_atlas.png")
 ## People drawn per quality tier (FxQuality): phones show a thinner crowd.
 ## Feel X2 (round 6): doubled after `make crowd-look` found a stand of 5 sparse rows reading as empty seats. It is one
 ## draw call of alpha-scissored quads; a figure is 4 vertices, so even LOW's 1,800 is 7,200 vertices.
-const PER_TIER := {FxQuality.Tier.LOW: 1800, FxQuality.Tier.MEDIUM: 3600, FxQuality.Tier.HIGH: 6000}
+## X4 added stands on the short sides (4,287 -> ~7,700 seats): HIGH draws them all.
+const PER_TIER := {FxQuality.Tier.LOW: 1800, FxQuality.Tier.MEDIUM: 3600, FxQuality.Tier.HIGH: 8000}
 ## The crowd's resting mood and how fast a roar dies down (per second).
 const CALM := 0.12
 const SETTLE := 0.35

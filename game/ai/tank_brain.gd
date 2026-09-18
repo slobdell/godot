@@ -32,6 +32,10 @@ const LOD_RADIUS := 130.0
 const FIGHT_MARGIN := 15.0
 ## The current choice gets this multiplier, so near-equal options don't flip-flop...
 const COMMIT_BONUS := 1.15
+## A crew being suppressed stays worth suppressing down to this fraction of the pin threshold (hysteresis on `pinned`).
+const PIN_HOLD_FRACTION := 0.75
+## N5 (CP4): the longest a peek from cover is held waiting for the gunner's lay (Engagement.ACQUIRE_FAR_SECONDS is 1.6 s).
+const PEEK_COMMIT_TICKS := SimClock.TICK_RATE * 2
 ## ...and it's kept at least this long unless something is EMERGENCY_MARGIN× better.
 const MIN_COMMIT_TICKS := SimClock.TICK_RATE * 3 / 4
 const EMERGENCY_MARGIN := 1.6
@@ -142,6 +146,11 @@ const IDLE_LEASH := 30.0
 ## circle; only the player moves it out of it. A move that IS an escape (running to cover, breaking contact) is exempt,
 ## and so is everything the player orders — a player's order has no leash at all.
 const PLAYER_POST_LEASH := 18.0
+## Lesson 47: options that move a held player unit back where it belongs, options that may move it only under fire, and
+## how recently it must have been hit (or have a round inbound) to count as under fire.
+const HELD_RETURNS := ["REGROUP", "HOLD", "KEEP_SLOT"]
+const HELD_UNDER_FIRE_MOVES := ["TAKE_COVER", "COVER_FIRE", "RETREAT", "RECHARGE", "RESUPPLY"]
+const HELD_UNDER_FIRE_TICKS := SimClock.TICK_RATE * 3
 ## ...with this much more rope for a move that IS the escape (running to cover, breaking contact).
 const ESCAPE_LEASH_FACTOR := 2.0
 ## Follow: station this far behind the friend (meters).
@@ -200,8 +209,9 @@ const COVER_FIRE_MEMORY_TICKS := SimClock.TICK_RATE * 8
 ## A bait shows the unit for at most BAIT_OUT_TICKS (or until the target can see it), then ducks back for BAIT_BACK_TICKS
 ## (a shell's flight plus a margin), at most MAX_BAITS times before a real peek.
 const BAIT_OUT_TICKS := SimClock.TICK_RATE * 5 / 6
-## ...staying in view this long once it sees the target (long enough for a watching gun to take the shot).
-const BAIT_SEEN_TICKS := SimClock.TICK_RATE / 6
+## N5 (CP4): once seen, a bait waits for the watching gunner's lay and the shot, ducking when the round is inbound, and
+## never shows itself longer than this (Engagement.ACQUIRE_FAR_SECONDS is 1.6 s).
+const BAIT_SEEN_MAX_TICKS := SimClock.TICK_RATE * 2
 const BAIT_BACK_TICKS := SimClock.TICK_RATE
 const MAX_BAITS := 2
 ## Cooldown length (ticks) and what an option on cooldown scores (× its score).
@@ -315,6 +325,13 @@ var _lane_goal: Variant = null
 var _lane_goal_tick := 0
 ## The last COVER_FIRE query: {"tick", "target" (name), "target_position", "result" ({hide, peek, target} or {})}.
 var _cover_fire_cache := {}
+## N5: the tick the current real peek began (-1 = not peeking); a peek is held until the gun fires (PEEK_COMMIT_TICKS).
+var _peek_tick := -1
+## Lesson 47: the in-place alternative for a held player unit this think (face the nearest threat, or stop), whether it
+## counts as under fire, and how many move orders the hold rule has refused (tests assert the MECHANISM with this).
+var _held_face := {"type": "stop"}
+var _held_under_fire := false
+var held_moves_refused := 0
 ## X3: the ground SUPPRESS is hosing (null = none), which target it was laid for, and when.
 var _suppress_point: Variant = null
 var _suppress_for := ""
@@ -900,7 +917,12 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 				var flanker_fix: bool = features.get("pinned_exposed", false)
 				# ...and a crew that is ALREADY pinned is exploited, not re-pinned, by a gun that can kill it: keeping its
 				# head down is the base of fire's job (the guns whose rounds barely mark it), killing it is everyone else's.
-				var keep_pinned: bool = bool(c.get("pinned", false)) \
+				# Hysteresis (round 6): a crew I am already holding down stays worth holding while it is NEARLY pinned. On
+				# the bare threshold both of its attackers flipped ENGAGE -> SUPPRESS -> ENGAGE in 0.8 s as its
+				# suppression crossed and re-crossed the line (CP4's tighter fire pins more, so it crossed more often).
+				var holding_down: bool = current.get("option", "") == "SUPPRESS" and current.get("target", "") == c["name"] \
+						and float(c.get("suppression", 0.0)) >= Tank.PINNED_SUPPRESSION * PIN_HOLD_FRACTION
+				var keep_pinned: bool = (bool(c.get("pinned", false)) or holding_down) \
 						and (not flanker_fix or TankBrain.rounds_barely_mark(weapon, c) or poor_kill)
 				var worth_pinning: bool = poor_kill or keep_pinned \
 						or (own_flank and not flanker_fix) or c["name"] == tactics.get("focus", "")
@@ -1646,6 +1668,9 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 
 func _act(s: Dictionary) -> void:
 	why = TankBrain.tactics_tag(s, choice)
+	# Round 6 (lesson 47): what a held player unit may do instead of moving, and whether it is under fire.
+	_held_face = TankBrain._face_threat_or(s, {"type": "stop"})
+	_held_under_fire = tank.ticks_since_hit < HELD_UNDER_FIRE_TICKS or not (s.get("incoming", []) as Array).is_empty()
 	if choice["option"] != "CLEAR_LANE":
 		_lane_goal = null
 	var me: Dictionary = s["self"]
@@ -1815,8 +1840,13 @@ func _act(s: Dictionary) -> void:
 			var baiting := loaded_by_then and shield_ok and not window and _baits < MAX_BAITS
 			if bool(contact.get("visible", false)) and _bait_phase == "out" and _bait_seen < 0:
 				_bait_seen = game_match.tick
-			if _bait_phase == "out" and (game_match.tick - _bait_tick >= BAIT_OUT_TICKS
-					or (_bait_seen >= 0 and game_match.tick - _bait_seen >= BAIT_SEEN_TICKS)):
+			# N5 (CP4): a watching gun no longer fires the instant it sees the bait — its gunner lays first (up to ~1.6 s).
+			# Ducking a sixth of a second after being seen (round 5's rule) now ducks before the shot, so the gun never fires, never reloads,
+			# and the window the bait exists to open never opens (the tank "baited" for 10 s, then fought in the open).
+			# So a seen bait stays out until the round is actually on its way (then ducks), at most BAIT_SEEN_MAX_TICKS.
+			var shot_at := not (s.get("incoming", []) as Array).is_empty()
+			if _bait_phase == "out" and ((_bait_seen < 0 and game_match.tick - _bait_tick >= BAIT_OUT_TICKS)
+					or (_bait_seen >= 0 and (shot_at or game_match.tick - _bait_seen >= BAIT_SEEN_MAX_TICKS))):
 				_bait_phase = "back"
 				_bait_tick = game_match.tick
 				_baits += 1
@@ -1826,7 +1856,16 @@ func _act(s: Dictionary) -> void:
 				_bait_phase = "out"
 				_bait_tick = game_match.tick
 				_bait_seen = -1
-			if _bait_phase == "out":
+			# N5 (CP4): a gunner must hold the lay before the first round leaves (up to ~1.6 s at the edge of sight), and
+			# the reload window closes sooner than that. A peek that ducks back when the window shuts never fires — the
+			# tank sat in cover through 10 s of "peeks" with one shot. So once out on a real peek, stay until this gun has
+			# fired, or PEEK_COMMIT_TICKS have passed.
+			var committed := _peek_tick >= 0 and game_match.tick - _peek_tick < PEEK_COMMIT_TICKS \
+					and ticks_since_fire > game_match.tick - _peek_tick and _bait_phase == ""
+			if committed:
+				why = TankBrain._join(why, "peek, laying the gun")
+				_order_move(_move_to(peek, false, 1.0, SPOT_ARRIVE))
+			elif _bait_phase == "out":
 				why = TankBrain._join(why, "baiting its shot")
 				_order_move(_move_to(peek, false, 1.0, SPOT_ARRIVE))
 			elif _bait_phase == "back":
@@ -1835,9 +1874,12 @@ func _act(s: Dictionary) -> void:
 			elif loaded_by_then and shield_ok and window:
 				_hiding_since = -1
 				_baits = 0
+				if _peek_tick < 0 or game_match.tick - _peek_tick >= PEEK_COMMIT_TICKS:
+					_peek_tick = game_match.tick
 				_order_move(_move_to(peek, false, 1.0, SPOT_ARRIVE))
 				why = TankBrain._join(why, "peek")
 			else:
+				_peek_tick = -1
 				if _hiding_since < 0:
 					_hiding_since = game_match.tick
 				why = TankBrain._join(why, "reloading in cover" if not loaded_by_then else ("shield low, in cover" if not shield_ok
@@ -2063,6 +2105,16 @@ func _dodges() -> bool:
 	return bool(BrainVariants.for_team(tank.team).get("dodge", false))
 
 
+## N5 (CP4): the distance inside which a crew may fire on its own judgement — the weapon's EFFECTIVE band, not its
+## reach (Engagement.effective_range; the same expression, so this reads the same with or without combat's gate).
+## Every "can my gun reach that far?" a DECISION asks must ask this: a heuristic reasoning about full reach against a
+## rule reasoning about the band parks a unit where it may not shoot (combat measured a tank sitting 61 m from a scout
+## for 45 s, 0 shots). Threat assessment — what can reach ME — keeps using the enemy's full `range`: they may be
+## answering fire or spending a commander's long shot.
+static func fire_band(weapon: Dictionary) -> float:
+	return float(weapon.get("effective_range", weapon.get("range", 0.0)))
+
+
 ## X2 styles by chassis: a fixed gun aims with the hull, so it makes runs; a thick front wants to face the target, so
 ## heavy hulls angle; the rest circle-strafe.
 static func motion_style(unit_id: String) -> String:
@@ -2106,7 +2158,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	# Outranging (a Lancer on a tank): standing where its gun can't reach and mine can, there's nothing to dodge. Hold still
 	# and shoot, moving only if something is on its way or it closes in.
 	var their_reach := float(Weapons.profile(String(contact.get("weapon", ""))).get("range", 0.0))
-	if style != "run" and distance > their_reach + OUTRANGE_MARGIN and distance <= Engagement.effective_range(weapon) \
+	if style != "run" and distance > their_reach + OUTRANGE_MARGIN and distance <= TankBrain.fire_band(weapon) \
 			and (s.get("incoming", []) as Array).is_empty():
 		why = TankBrain._join(why, "outranging it")
 		return {"type": "stop"}
@@ -2118,7 +2170,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	else:
 		_loaded_tick = -1
 	var halt_reload := float(s.get("features", {}).get("short_halt_reload", SHORT_HALT_RELOAD))
-	if style != "run" and reload_seconds >= halt_reload and distance <= Engagement.effective_range(weapon):
+	if style != "run" and reload_seconds >= halt_reload and distance <= TankBrain.fire_band(weapon):
 		var ready_in := (1.0 - float(me.get("reload", 1.0))) * reload_seconds
 		var braking := absf(tank.speed()) / maxf(tank.acceleration, 0.1)
 		var incoming: Array = s.get("incoming", [])
@@ -2182,7 +2234,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			why = TankBrain._join(why, "circling")
 	# A fixed gun on a run eases off inside its range: longer on target per pass (a scout's stream fired ~2.5 s a pass).
 	var nose_on := (me["forward"] as Vector3).dot((Vector3(contact["position"].x, 0.0, contact["position"].z) - _flat(my_position)).normalized()) >= RUN_AIMED_COS
-	var speed := RUN_FIRING_SPEED if style == "run" and _run_phase == "run" and distance <= float(weapon["range"]) and nose_on else 1.0
+	var speed := RUN_FIRING_SPEED if style == "run" and _run_phase == "run" and distance <= TankBrain.fire_band(weapon) \
+			and nose_on else 1.0
 	_motion_cache = {"tick": tick, "key": motion_key, "why": why,
 			"order": _move_to(result["point"], result["reverse"], speed, 1.0, true)}
 	return _motion_cache["order"]
@@ -2282,6 +2335,15 @@ static func _move_to(point: Vector3, reverse := false, speed := 1.0, arrive := O
 	return order
 
 
+## Whether a unit holding a player's post may start moving for `option`: back to its post (REGROUP/HOLD), with its
+## element (KEEP_SLOT), or — under fire — into cover or away (TAKE_COVER, COVER_FIRE, RETREAT, RECHARGE, RESUPPLY, and any
+## escape the brain marks `to_safety`). Never for a fight of its own choosing.
+static func held_may_move(option: String, under_fire: bool, to_safety: bool) -> bool:
+	if HELD_RETURNS.has(option):
+		return true
+	return under_fire and (to_safety or HELD_UNDER_FIRE_MOVES.has(option))
+
+
 ## A point this unit may drive to on its own: inside PLAYER_POST_LEASH of where the player left it. Anything further is
 ## pulled back onto the edge of that circle, so a unit fights from the ground it was given instead of being drawn across
 ## the map by whatever it can see.
@@ -2298,6 +2360,16 @@ func _within_post(point: Vector3, lead := PLAYER_POST_LEASH) -> Vector3:
 
 ## Re-issuing an identical order would reset path following every think; skip near-duplicates.
 func _order_move(order: Dictionary) -> void:
+	# The player's units hold until ordered (round-5 ruling; product constraint #4). A unit holding the post the player
+	# left it at may shoot, turn and — under fire — take cover or escape, and it goes back to its post; it may NOT start
+	# moving on its own judgement (a flank, an advance, a circle). Until round 6 nothing enforced this: a held unit sat
+	# still only because a range heuristic in _combat_move happened to return "stop", and when CP4 changed the ranges it
+	# held 21 s and then flanked (lesson 47). This is the rule, stated where every move order passes.
+	if _player_post != null and String(order.get("type", "")) == "move_to" and not held_may_move(
+			String(choice.get("option", "")), _held_under_fire, bool(order.get("to_safety", false))):
+		held_moves_refused += 1
+		order = _held_face
+
 	# The player's post leashes everything this unit decides for itself. An escape (cover, breaking contact) gets a
 	# longer lead but not a free one: a unit that runs all the way home has left the ground the player gave it, which is
 	# what "I have no control" looks like from the outside.
@@ -2329,8 +2401,12 @@ func _order_weapon(order: Dictionary) -> void:
 	# element told to support by fire that holds its fire until the enemy is inside 45 m is supporting nothing. Combat's
 	# fire discipline (CP4) holds fire outside the band unless the order says `long_shot`; only the commander's task
 	# spends it, never a crew's own judgement.
-	if String(element.get("task", "")) == "support_by_fire" and ["fire_at_will", "target"].has(String(order.get("type", ""))):
+	if String(element.get("task", "")) == "support_by_fire" and ["fire_at_will", "target", "suppress"].has(String(order.get("type", ""))):
 		order = order.duplicate()
 		order["long_shot"] = true
+	# X7: an ambush that has not been sprung holds its fire, whatever its crews can see: one early shot and the kill zone
+	# is empty. The element springs it (Drills: an enemy in the kill zone, or the ambush found), and then every gun fires.
+	if ElementFeed.holds_fire(element) and ["fire_at_will", "target", "suppress"].has(String(order.get("type", ""))):
+		order = {"type": "hold_fire"}
 	if not order.recursive_equal(weapon_order, 2):
 		set_orders(null, order)

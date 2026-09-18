@@ -78,6 +78,15 @@ Two consequences, both learned the hard way on 2026-09-18:
 3. **A big measurement series deserves a cleared window**, not a share of two slots. Ask the orchestrator; it can tell
    the other streams to stay off builder0 for the duration.
 
+**Two `make remote` runs from one worktree clobber each other, and the copy-back is the sneakier half.** Trip-up 66
+covers the remote side: each run rsyncs `--delete` into the same `~/tank_squad/<folder>`, so a second run swaps files
+under the first and the one already executing tests a tree that no longer exists (the orchestrator did this with
+*three* at once on 2026-09-18 and had to stop all of them). The half that is easy to miss: **even with different
+`REMOTE_ROOT`s, both runs copy back into the one local `build/`** — feel hit this and found a *newer* render silently
+replaced by the other folder's *older* frames. It was caught only by checking the file's timestamp. So: **one remote
+run per worktree at a time**, and before you analyse or relay anything out of `build/`, check its timestamp
+(`ls -la --time-style=+%H:%M build/...`).
+
 ## builder0 runs vsync'd windows at a crawl: ~1/10 real time
 
 **Measured 2026-09-18** (feel), same muted 30-second `audio-pass`, only vsync changed:

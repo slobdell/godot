@@ -1024,6 +1024,16 @@ func _draw_waypoints() -> void:
 		if tank == null or route.is_empty():
 			continue
 		var from := Shown.ground(tank)
+		# X5: the way nav means to drive there (N1 `path_points`), faint under the order line, so "why is it going
+		# that way" has an answer on screen. Absent until nav's Movement is wired in.
+		var path := movement.route(unit_name)
+		if path.size() >= 1:
+			var at: Variant = _screen_point(from)
+			for point: Vector3 in path:
+				var next: Variant = _screen_point(point)
+				if at != null and next != null:
+					draw_line(at, next, Color(_order_color(String(route[0]["kind"])), 0.3), 1.0)
+				at = next
 		for stop: Dictionary in route:
 			var to: Vector3 = stop["position"]
 			var color := _order_color(stop["kind"])

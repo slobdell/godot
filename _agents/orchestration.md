@@ -666,3 +666,45 @@ The kickoff prompt is one line; this section is the rest.
     - **When relaying a frame or a number that depends on another stream's system, say which parts of it that stream
       owns and get their read first** — especially before it goes to the lead, who cannot tell a stand-in from the
       build. The cheap version of this is one message: *"does your implementation already handle this?"*
+54. **A good experiment run against a broken instrument produces a confident wrong answer, and it is indistinguishable
+    from a good experiment against a good one.** Round 6, arena establishing what slope the game supports. The answer
+    was wrong three times before it was right, and **each wrong version looked like a clean engine limit**:
+    1. The "ramp" was a 1 m slab — at 10° that is a *bridge*. The tank drove **underneath** and arrived at the goal's
+       x/z at y=0.3. Read as "cannot climb above 5°".
+    2. Made solid but 24 m wide, the tank drove **around** it. **A vehicle that goes around is indistinguishable in the
+       output from one that cannot climb**, unless the geometry forbids the detour.
+    3. Pathing to a point 1 m from the crest measured the navmesh's **agent-radius erosion along the drop edge**; the
+       tolerance scaled with the rise, so it worsened with angle and read as a slope limit.
+    Three geometries, three confident limits: 25°, 25°, 5°.
+    **The tell was not in the data.** It was that *a tank that cannot climb 10° is not believable* — a real one manages
+    30°. The fix was to stop pathing to a point and measure **coverage along the ramp's own centreline**, a quantity
+    with no edges in it.
+    **And the part that generalises furthest:** arena ran the decisive knob test (`agent_max_climb`) **against the
+    broken measure first, and it came back negative** — the ceiling did not move, which looked like clean falsification
+    and nearly retired the hypothesis that turned out to be correct. So:
+    - **Check the instrument against a known quantity *before* the experiment, not after it surprises you.** Pick a
+      case whose answer you already know independently (here: a tank climbs 30°, so a measured 5° ceiling is the
+      instrument failing, not the engine).
+    - **Implausibility is evidence.** When a result contradicts something you know about the world, suspect the
+      measurement before you believe the finding — and say which known quantity you are testing it against.
+    - This is the same failure as a filtered test run establishing correctness (lesson 45), and the same family as
+      lessons 34, 44, 46 and 49: **this round found more broken instruments than broken game code.**
+55. **Test the wire, not only the rule — and a conflict that looks like a duplicate may be two concerns on one line.**
+    Round 6, and the first time this round a precaution actually paid out. combat's engagement envelope is a *rule*
+    in `game/combat/engagement.gd` and a handful of *call sites* in nav's `order_controller.gd`. When it wrote the
+    tests it added four that drive a **real `OrderController` through a real match** and exist solely to go red if the
+    wiring is cut, justifying them as insurance against a bad merge or a failed edit (lesson 27). Then nav
+    restructured that very file around those call sites — moving `_apply_unstick` out into `Movement`, and landing
+    `movement.idle()` on the **same dead-code branch** as combat's `engagement_lay.forget()`. **The sixteen rule tests
+    would have passed either way**, because `engagement.gd` was never touched; only the four wiring tests could have
+    caught a dropped gate. That is the difference between shipping fire discipline and shipping a series that measures
+    a game with no fire discipline in it.
+    **And the conflict was the good kind: both sides were needed, not either/or.** `engagement_lay.forget()` resets the
+    gun's lay; `movement.idle()` stops the driving. Two different concerns that happened to collide on one line.
+    **Resolving it as "ours" or "theirs" would have silently broken one of them** — which is the standard move when a
+    conflict looks like a duplicate, and the standard move is wrong here.
+    Two instructions, the second aimed at whoever merges:
+    - **When your feature is a rule plus call sites in someone else's file, write at least one test that fails if the
+      call site disappears.** Rule tests cannot see an unwired rule.
+    - **Before resolving a conflict by picking a side, say out loud what each side does.** If the answer is two
+      different verbs, the resolution is *both*, and the fact that they occupy one line is a coincidence of layout.
