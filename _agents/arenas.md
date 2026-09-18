@@ -124,8 +124,8 @@ Every exposure number below is reported twice, and **the difference between them
 
 | Reach | Who | The question |
 |---|---|---|
-| **idle, 45 m** | a defender acting on its **own judgement** — combat's median of `min(effective_range, sight_radius)` over all four rosters (n = 14, mean 52, range 24–104) | **The ambush question.** Can an element cross unpunished if the enemy has not specifically set up to cover this approach? |
-| **posted, 70 m** | an element the commander has **spent a support-by-fire task on** — squad's `TankBrain._order_weapon` sets `long_shot: true` for an SBF task, lifting fire discipline to the weapon's full range | **The overwatch question.** Which positions are worth posting, and therefore which approaches a competent opponent can deny? |
+| **idle, 45 m** | a defender acting on its **own judgement** — `Engagement.covering_range()`, the median of `min(effective_range, sight_radius)` over all 14 units in four rosters | **The ambush question.** Can an element cross unpunished if the enemy has not specifically set up to cover this approach? |
+| **posted, 60 m** | an element the commander has **spent a support-by-fire task on** — squad's `TankBrain._order_weapon` sets `long_shot: true` for an SBF task, lifting fire discipline to the weapon's full range | **The overwatch question.** Which positions are worth posting, and therefore which approaches a competent opponent can deny? |
 
 A map where the two agree has **no positions worth posting**. A map where they diverge makes the defender choose and
 lets the attacker read the choice. An approach denied at 45 m by anyone standing nearby is just bad terrain.
@@ -134,22 +134,30 @@ lets the attacker read the choice. An approach denied at 45 m by anyone standing
 > commander who spends a support-by-fire task reaches further. That caveat travels with every "covered approach"
 > number here, or it reads as a guarantee.
 
-**Neither number is settled.** They mirror combat's `Engagement.covering_range()`, which derives the median from
-`Units.PROFILES` + `Weapons.PROFILES` and ships with **CP4**. Until this tool can call it, `--reach idle=45,posted=70`
-overrides them without an edit — that is how these numbers get re-derived after CP4, and it is one `make
-arena-report`, not machine time. Nothing else in the analysis depends on weapon range.
+**Both numbers come from the catalog, not from this file.** `make arena-reach` runs `Engagement.covering_range()`
+and writes `build/arena-reach.json`; `arena-report` reads it (`--reach idle=…,posted=…` still overrides). The
+constants in `arena_report.py` are only a fallback, and keeping them as the source of truth is exactly what went
+wrong once: **"posted" was hand-set to 70 m from "a cannon's full range", where the catalog's own median of
+`min(full range, sight radius)` is 60 m** — several units cannot *see* as far as they can shoot. That 10 m
+inflated every posting figure by about half. A number derived from data belongs in one place.
 
-### What the shipping arenas measure (2026-09-18, commit `89af5ede`; static geometry, no match run)
+### What the shipping arenas measure (re-derived 2026-09-18 after CP4, at the catalog's 45 m / 60 m; static geometry, no match run)
 
 | Arena | centre sees | longest sightline | crossing exposure idle → posted | **posting buys** | covered route | best overwatch: unseen approach |
 |---|---|---|---|---|---|---|
-| **boulevard** | **0.64** | 236 m | 0.070 → 0.177 | **+0.107** | 0.069 at 1.00× | **0.12** |
-| **foundry** / **furnace** | **0.56** | 236 m | 0.118 → 0.245 | **+0.127** | 0.070 at 1.07× | 0.21 |
-| boneyard | 0.40 | 216 m | 0.069 → 0.145 | +0.076 | 0.045 at 1.05× | 0.42 |
-| pit | 0.30 | 230 m | 0.092 → 0.153 | +0.061 | 0.073 at 1.02× | 0.43 |
-| scrapyard | 0.29 | 198 m | 0.081 → 0.159 | +0.078 | 0.060 at 1.06× | 0.33 |
-| **yard** | **0.20** | 184 m | 0.052 → 0.076 | **+0.024** | 0.019 at 1.10× | 0.40 |
-| *maze* (fixture) | *0.15* | *52 m* | *0.036 → 0.054* | *+0.018* | *0.021 at 1.02×* | *0.69* |
+| **boulevard** | **0.64** | 236 m | 0.070 → 0.137 | **+0.067 (2.0×)** | 0.069 at 1.00× | **0.12** |
+| **foundry** / **furnace** | **0.56** | 236 m | 0.118 → 0.195 | **+0.077 (1.7×)** | 0.070 at 1.07× | 0.25 |
+| boneyard | 0.40 | 216 m | 0.069 → 0.118 | +0.049 | 0.045 at 1.05× | 0.42 |
+| scrapyard | 0.29 | 198 m | 0.081 → 0.120 | +0.039 | 0.060 at 1.06× | 0.33 |
+| pit | 0.30 | 230 m | 0.092 → 0.127 | +0.035 | 0.073 at 1.02× | 0.50 |
+| **yard** | **0.20** | 184 m | 0.052 → 0.069 | **+0.017** | 0.019 at 1.10× | 0.40 |
+| *maze* (fixture) | *0.15* | *52 m* | *0.036 → 0.047* | *+0.011* | *0.021 at 1.02×* | *0.69* |
+
+> **What CP4 moved, and what it could not.** Re-deriving at the catalog's real 60 m (from my hand-set 70 m) cut
+> every posting figure by roughly a third and **changed no ranking**. `centre_sees_share` did not move at all and
+> cannot: it is pure geometry with no weapon in it. So the two claims the lead's review page leads with —
+> boulevard and foundry are the open maps, and boulevard's best position cannot be flanked back — survive any band
+> change. The figures that *do* depend on the catalog now read it rather than restate it.
 
 ### What it says
 
@@ -158,11 +166,11 @@ arena-report`, not machine time. Nothing else in the analysis depends on weapon 
    1.0–1.1× detour. **This reverses the picture at 110 m**, where flanking looked like it bought a lot and cost a
    1.8–2.1× detour (see *A number that changed when its assumption did*, below). The honest reading: at 45 m most of
    a 200 m crossing is simply out of anyone's reach, so terrain is not what decides whether you get across.
-2. **Posting an element is what actually covers ground, and open maps reward it most.** foundry +0.127 and boulevard
-   +0.107, against yard +0.024 and the maze +0.018. On foundry a support-by-fire task roughly **doubles** the
-   crossing's exposure; in the yard it buys almost nothing, because the containers stop the extra 25 m from
-   reaching anything. That is a concrete answer to "what should the support-by-fire button do for me" — it depends
-   on the map, and today only the open ones pay for it.
+2. **Posting an element is what actually covers ground, and open maps reward it most.** On boulevard a
+   support-by-fire task covers **2.0×** as much of the crossing as crews watching on their own, and on foundry
+   **1.7×**; in the yard it buys almost nothing (+0.017), because the containers stop the extra 15 m from reaching
+   anything. That is a concrete answer to "what should the support-by-fire button do for me" — it depends on the
+   map, and today only the open ones pay for it.
 3. **boulevard is the one to change.** The centre sees **64%** of the field, and its best overwatch position can be
    approached unseen from only **0.12** of directions — it dominates and cannot be flanked back. foundry is second
    on both counts. These are the two maps where the lead's *"one big open brawl"* is a property of the geometry.
