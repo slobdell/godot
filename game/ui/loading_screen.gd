@@ -132,6 +132,9 @@ func done() -> void:
 	print("LOAD_TIMING total_ms=%d %s%s" % [total, " ".join(parts), (" marks=" + ",".join(_marks)) if not _marks.is_empty() else ""])
 	_timings["total"] = total
 	_fading = 0.0
+	# The match is playable: the fading screen must not eat the player's first clicks (it did on builder0, where frames
+	# are slow enough that shell-playtest's faction clicks always landed on it).
+	_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	LoadingScreen._voice("finish", [])
 
 

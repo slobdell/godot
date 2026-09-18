@@ -34,7 +34,11 @@ func test_stages_are_timed_in_order_and_it_fades_out_when_done() -> void:
 	await tree.process_frame
 	screen.enter("armies")
 	screen.enter("first_frame")
+	var blocker := screen.get_child(0) as Control
+	assert_eq(blocker.mouse_filter, Control.MOUSE_FILTER_STOP, "while loading, nothing behind it takes a click")
 	screen.done()
+	assert_eq(blocker.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+			"once the match is playable, the fading screen lets clicks through (it ate shell-playtest's on builder0)")
 	var timings := screen.timings()
 	for entry: Array in LoadingScreen.STAGES:
 		assert_true(timings.has(entry[0]), "stage %s was timed" % entry[0])

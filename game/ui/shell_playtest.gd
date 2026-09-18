@@ -81,9 +81,11 @@ func _faction_stage() -> void:
 	var begin := Time.get_ticks_usec()
 	FactionPicker.options(picker.budget)
 	_step("faction_options_cost", {"ms": (Time.get_ticks_usec() - begin) / 1000.0})
+	# A player waits for the loading screen to go before clicking; so does this (it used to click through a fading one).
+	var screen_gone := await _wait_for(func() -> bool: return LoadingScreen.current == null)
 	var mine := _picker_point(picker, "gangs", false)
 	var hovered := await _hover(mine)
-	_step("faction_hover", {"at": [mine.x, mine.y], "hovered": _describe(hovered)})
+	_step("faction_hover", {"at": [mine.x, mine.y], "hovered": _describe(hovered), "loading_screen_gone": screen_gone})
 	_checks["faction_row_under_mouse"] = hovered == picker
 	await _click(mine)
 	await _click(_picker_point(picker, "law", true), MOUSE_BUTTON_RIGHT)
