@@ -324,6 +324,9 @@ func _log_event(text: String) -> void:
 # ---- Movement ------------------------------------------------------------------------
 
 func _apply_move(cmd: TankCommand, delta: float) -> void:
+	# X4: a unit giving way to a friend does that first, whatever its own order is; the order resumes afterwards.
+	if movement.right_of_way(cmd, delta):
+		return
 	if move_order["type"] != "move_to":
 		movement.idle()
 	match move_order["type"]:
