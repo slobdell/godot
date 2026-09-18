@@ -253,4 +253,34 @@ _None yet._
 
 ### Merge notes (shared / other streams' files)
 
-- `game/control/group_formation.gd` (control's): adapter over TacticsFormation, same API.
+- **Merge here: `9ba36681`** — every `make check` target passed on builder0 (1042 tests, 0 failed, through
+  `audio-check`); the local wrapper died on the copy-back, so there is no `exited 0` line. Commits on top are docs and
+  a test comment only (`bdf44fa3`, `8f9a3d16`, and this Status).
+- `game/control/group_formation.gd` (control's, a recorded exception): adapter over TacticsFormation, same API.
+- `game/ai/tank_brain.gd` conflicts with combat's proposal `5478fa61` in exactly two lines: **take squad's**
+  (`TankBrain.fire_band`, the same expression as `Engagement.effective_range`).
+- `tests/baselines/sim_state_hash.txt` → `8ebbed52` for squad's pre-CP4 branch; **combat's post-CP4 record supersedes it**.
+- `mk/ai.mk`, `mk/tactics.mk`: knobs renamed `AI_*` / `TACTICS_*` / `PARITY_SECONDS`; old names work from the command
+  line only.
+
+### What to playtest (exact commands)
+
+- `make skirmish`, select a squad, press **R** and click an enemy area: the squad drives to a line ~36 m off it (0.8 ×
+  its band), faces it and fires; it does not charge in when enemies come close. **E** + click: a wide screen line
+  across the point. **B** + click (once control lands the row): an ambush line that holds its fire until an enemy
+  reaches the clicked spot.
+- Right-click a whole squad somewhere (after control re-lands X4): it forms ONE formation on the click and goes quiet;
+  press 1-5 and right-click each in quick succession — nobody should keep re-ordering afterwards.
+- At the start of a skirmish, do nothing for 30 s: your units must not move, even with the enemy in sight.
+- `make squad-coherence EXTRA="--green-elements --rust-elements"` (after CP4 is on main) for the thrash numbers.
+
+### Next steps
+
+1. After nav's N1 merges: `FormUp.eta` → `Movement.eta` (one line; guard the `{}` a hull nothing drives returns;
+   0.85 × top speed is optimistic, don't assert on it), and `SlotGround.standable` onto a nav query if nav adds one.
+2. After N6: PID station-keeping in a slot (the lead's named use case).
+3. After CP4 on main: publish the X6 baseline (`make remote T="squad-coherence SEEDS=6"`, both brains-only and
+   `--*-elements`), and chase what remains (leg re-issues, ~1 order per unit-second with elements).
+4. A unit shot at by a gun it cannot see stands still (Known issues) — a react-to-contact scenario.
+5. X8 (stretch): the army layer; arena's measurement says weight support-by-fire by terrain (+0.127 posting value on
+   open foundry, +0.024 in dense yard). Needs N7 (movable objectives) for a fair test.

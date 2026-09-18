@@ -6,15 +6,16 @@ extends RefCounted
 ## when each will be in it, the element's form-up ETA (its slowest member's), and the pace each member drives at so
 ## they all arrive together.
 ##
-## ETA is navigation's question. Until nav's Movement API (N1) exists the estimate is straight-line distance over top
-## speed; `eta()` is the one seam, and becomes `Movement.eta(unit, to)` at CP1 — nothing else here changes.
+## ETA is navigation's question, and since CP1 navigation answers it: `Movement.eta` is the navmesh route's length at
+## a cruising share (0.85) of top speed plus the time to swing onto the route — so a unit behind a container stack is as
+## late as it really is, which a straight line cannot see. Optimistic but calibrated: nothing here asserts on it.
 
 
-## Seconds for `tank` to reach `to`.
+## Seconds for `tank` to reach `to` (nav's N1).
 static func eta(tank: Tank, to: Vector3) -> float:
-	if tank == null or tank.max_forward_speed <= 0.0:
+	if tank == null or not is_instance_valid(tank):
 		return 0.0
-	return Vector2(tank.global_position.x - to.x, tank.global_position.z - to.z).length() / tank.max_forward_speed
+	return Movement.eta(tank, to)
 
 
 ## {unit: seconds to its slot} for every unit with a slot in `slots` ({unit: Vector3}).
@@ -35,7 +36,9 @@ static func group_eta(member_etas: Dictionary) -> float:
 	return worst
 
 
-## {unit: speed fraction}: each member slows so it arrives with the slowest (TacticsFormation.pace).
+## {unit: speed fraction}: each member slows so it arrives with the slowest — its own ETA over the slowest ETA, so the
+## laggard drives flat out and nobody is paced below TacticsFormation.PACE_FLOOR. ETAs against ETAs: dividing a
+## straight-line distance by nav's route ETA (which cruises at 0.85) paced even the laggard down to 0.85.
 static func paces(tanks: Dictionary, slots: Dictionary, member_etas: Dictionary) -> Dictionary:
 	var result := {}
 	var slowest := group_eta(member_etas)
@@ -43,5 +46,8 @@ static func paces(tanks: Dictionary, slots: Dictionary, member_etas: Dictionary)
 		var tank := tanks.get(unit_name) as Tank
 		var to: Vector3 = slots[unit_name]
 		var remaining := Vector2(tank.global_position.x - to.x, tank.global_position.z - to.z).length()
-		result[unit_name] = TacticsFormation.pace(remaining, tank.max_forward_speed, slowest)
+		if remaining <= TacticsFormation.PACE_NEAR or slowest <= 0.0:
+			result[unit_name] = 1.0
+		else:
+			result[unit_name] = clampf(float(member_etas[unit_name]) / slowest, TacticsFormation.PACE_FLOOR, 1.0)
 	return result

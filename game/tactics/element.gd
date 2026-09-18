@@ -26,6 +26,8 @@ const REISSUE_M := 8.0
 ## The same intention is not handed to the same unit again inside this many ticks (2 s): a standing order already
 ## follows a moving target, and re-giving it only redraws the player's markers and costs frames.
 const RE_ISSUE_TICKS := SimClock.TICK_RATE * 2
+## Form-up ETAs (a navmesh route each) are refreshed at most this often.
+const ETA_REFRESH_TICKS := SimClock.TICK_RATE
 ## A unit already this close to the goal of an order it has finished is left standing.
 const SETTLED_M := 6.0
 const MAX_EVENTS := 12
@@ -53,6 +55,7 @@ var seats := {}
 ## together (FormUp). Refreshed every update.
 var etas := {}
 var paces := {}
+var _etas_tick := -1_000_000
 var events: PackedStringArray = []
 
 ## Plan state carried between updates.
@@ -163,7 +166,11 @@ func update(game_match: Match, orders: Object) -> bool:
 			and game_match.tanks.get_child_count() > 0 else null)
 	_take(plan, situation)
 	var by_name := AiTickCache.tanks_by_name(game_match)
-	etas = FormUp.etas(by_name, slots)
+	# An ETA is a navmesh route per member (nav's Movement.eta), so it is refreshed once a second, or at once when the
+	# slots change hands; the pace in between uses the latest one.
+	if game_match.tick - _etas_tick >= ETA_REFRESH_TICKS or etas.size() != slots.size():
+		etas = FormUp.etas(by_name, slots)
+		_etas_tick = game_match.tick
 	paces = FormUp.paces(by_name, slots, etas)
 	_issue(plan, orders, situation, game_match)
 	return _note_changes(before)
