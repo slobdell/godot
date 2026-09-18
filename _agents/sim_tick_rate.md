@@ -41,10 +41,16 @@ simulated seconds, `make sim-profile`:
 | tanks (driving, turret, gun) | 66 ms/s | 34 ms/s (halved) |
 | match rules (intel, suppression, control) | 20 ms/s | 20 ms/s (unchanged) |
 
-**Why it is 27% and not 50%:** only work that happens *per tick* halves. Anything on a wall-clock cadence — brains
+**The ceiling, and why it was always going to be one:** only work that happens *per tick* halves. Anything on a wall-clock cadence — brains
 thinking 10 times a second, intel 10/s, suppression 20/s — costs the same per second by construction, and it is most
 of the tick. The controllers band is both: executing every tick (halves) and thinking on a cadence (doesn't).
 An earlier note here said 47%; that compared two builder0 runs of different fights and was wrong.
+
+Put the other way round: **of a 60 Hz tick's cost, only the per-tick part could ever have been halved.** On the
+laptop that part was ~96 ms/s of the 513 (tanks 66, match rules are cadence-bound, the controllers' *executing* half
+the rest), so the tick change alone could never have bought much more than it did — and **no further tick-rate change
+can buy the brains' thinking, which is ~85% of a tick and runs on a wall clock.** If round 6 needs another step
+change in frame rate, it has to come from brains thinking less often, thinking more cheaply, or fewer vehicles.
 
 **In the game, on the lead's laptop, at 1080p** (`make perf-scene`, merged build: armies hold until ordered, guns at
 their real rate of fire). **The answer depends on what else is running on the machine, and that is worth more than

@@ -1,5 +1,69 @@
 # Balance: measurements, tuning values, and the army design
 
+## START HERE (combat, 2026-09-17): do not run a balance series yet, and how to run one when you do
+
+**Every win rate and matchup number in this file below was measured on a game that no longer exists.** Three things
+changed on 2026-09-17, each of which moves outcomes on its own:
+
+1. **Guns fired a tick late, at every tick rate** (*Round 5: two defects in how fire is delivered*). Controllers ask
+   `ready_to_fire()` before the tank counts its reload down, so every trigger pull waited an extra tick: a 0.1 s
+   machine gun fired **8.6 rounds a second instead of 10**, a 5 s cannon lost under 0.5%. The loss is a fixed tick per
+   shot, so it is **differential by archetype** — fast cheap guns lost ~14%, heavy guns nothing — and the swarm is
+   built out of fast cheap guns. **The gangs' 23%, `Armor beat Swarm 16-0`, and every "suppression doesn't bite"
+   reading were taken under this.** Do not tune the gangs against them.
+2. **Both armies charged from second one** in any match a player plays (ai, same day): the player's faction army was
+   built by the CPU generator and never held, so engagement ranges, hit ranges, `static_share` and centroid travel
+   were measured in collisions rather than battles with an approach.
+3. **A fixed seed range is one army draw repeated** (below): series that didn't counterbalance armies measured army
+   luck as much as anything.
+
+**So the first series of round 6 is a re-taken baseline, not a tuning run:** `make engagement` and
+`make faction-matrix` with army counterbalancing, then gangs-versus-law first, to see how much of the gap closes for
+free before changing a single stat.
+
+### How to run a fair series (this cost a day to work out; do not re-derive it)
+
+A seeded CPU army comes from `seed * 2 + team`, so **in a mirror match the two teams field different armies**, and
+over a fixed seed range one side can simply draw the stronger ones. Measured over 16 seeds: Green won 5, and with the
+same seeds and the armies swapped Green won 12 — **the winner followed the army in 15 of 16 seeds**.
+
+- `--swap-armies` hands each team the other's army. **Run every seed both ways and pair them**; that cancels army
+  strength the way `--swap-bases` cancels position.
+- `--same-army` gives both teams Green's army: a true mirror, for asking whether anything structural favours a side.
+- `make team-fairness` runs all five controls (normal, swapped armies, mirror, mirror + `--rust-first`, mirror +
+  `--swap-bases`); `FAIR_MODES`, `N`, `FIRST_SEED`, `FAIR_FACTION`.
+- **Team identity and base position are neutral** (checked on 48 fresh seeds: north base 24/48 and 25/48). The RNG has
+  no even/odd bias either (2,000 seeds). It really is the army draw.
+- Mirror outcomes are chaotic — flipping processing order alone changes the winner in 7 of 16 seeds — so **a single
+  series decides nothing**; always counterbalance and always state n.
+- `make faction-matrix` already plays every seed from both colours, so each faction draws both of a seed's armies;
+  its army-draw bias is small. Fixed-colour series (archetype, suppression, pace, arena fairness) have none of that
+  protection.
+
+### Three results a fresh agent should not have to rediscover
+
+- **Cover buys safety from damage, not from suppression** (*Round 5 X2*): a wall between two tanks 24 m apart takes
+  113 damage to **0** over 6 s, and a crew 3 m behind its own cover still reaches **0.27** suppression (pin is 0.60).
+  A drill that hides behind a wall to stop being pinned is making a mistake the mechanics will not forgive.
+- **Suppression's accuracy cost is an angle, so it depends on range**: ~60% of hits lost at 58 m, ~15-20% at 20-40 m.
+  Pinning at range ruins a crew's shooting; pinning up close buys tempo, not accuracy.
+- **The frame-rate lever is brain cost per second, not the tick rate** — brains are ~85% of a simulation tick and
+  think on a wall clock, so halving the tick rate cannot touch that half. The whole 30 Hz story, what it bought and
+  what it could never have bought, is in [sim_tick_rate.md](sim_tick_rate.md).
+
+### Open, with a recommendation but no evidence yet
+
+**The duplicated Lancer** (the role sits in both the Condemned and the Syndicate). Recommendation: **the Syndicate
+keeps it** — it is the lead's approved pick for their special and fits their energy identity — and **the Condemned's
+special becomes the Burner they already field**, which gives every faction exactly five roles. What is missing is a
+counterbalanced matrix run on a re-taken baseline showing the Condemned do not lose their answer to armour at range
+(their answer at range would then be the dozer's cannon and the artillery; the Burner is a close-range brawler). Either take that evidence or put the
+ruling to the lead.
+
+
+> **The table below is the SHAPE of the tuning surface, not its current values** — several rows still quote round-2
+> numbers. Read the files it points at for what a stat is today; trust this file for *what was measured and why*.
+
 > **Round 3 (2026-09-15, combat stream):** weapons, weak spots, driving, deploy, and the matchup search are in
 > *Round 3: weapons rebuilt and matrix #5* below; the round-2 sections stay as history.
 
@@ -27,7 +91,7 @@
 Try a number without editing code: `--tune=tank.turret_turn_rate_deg=70,ifv.armor.front=4,autocannon.penetration=5`
 (match runner, `tools/match_series.py --extra=`, `make matchups TUNE=`).
 
-## Round 5: read this before trusting any win rate in this file
+## Round 5: the fairness investigation (the evidence behind the rule at the top)
 
 **Counterbalance ARMIES, not only bases and colours.** A seeded CPU army is drawn from `seed * 2 + team`, so in a
 mirror match the two teams field *different* armies, and over a fixed seed range (every series here starts at seed 1)
@@ -35,9 +99,7 @@ one side can simply draw the stronger ones. Measured 2026-09-17 (`make team-fair
 Jolt): Green won 5 of 16; with the same seeds and the armies swapped between the teams, Green won 12 of 16. The winner
 followed the army in 15 of 16 seeds, and Rust's draw won 11 of those 15 (its seeds happened to buy Armor and Balanced
 where Green's bought Swarm and Recon Strike; Armor beat Swarm 16–0 in round 4). The RNG has no parity bias (2,000 seeds
-checked), so this is luck in a fixed seed range, not team identity. **Rule:** every win-rate series runs each seed
-twice, normal and `--swap-armies` (or uses `--same-army` for a true mirror), on top of the existing base and colour
-swaps. What that means for the numbers below: **mirror series and any series run from one colour only** (archetype
+checked), so this is luck in a fixed seed range, not team identity. (The rule this produced is at the top of this file.) What that means for the numbers below: **mirror series and any series run from one colour only** (archetype
 series, suppression series, pace, doctrine measurements, arena fairness runs) carry an unknown army-draw bias; re-run
 them with the rule before acting on them. The **faction matrix** (`make faction-matrix`, round 4 X6, the gangs' 23%)
 already plays every seed from both colours, so each faction draws from both of a seed's armies; its army-draw bias is
@@ -67,10 +129,52 @@ doesn't bite" reading were all measured with a bug that hit one side of each com
 and see how much of the gap the fix closes before changing a single stat: the faction may never have been as weak as
 it measured.
 
+**Pinning is worth exploiting now** (round 5 X5): suppression costs a crew up to **40% of its sight radius** and
+**50% of its hull turn rate**, on top of the accuracy and turret-tracking penalties it already had. A flanker gets
+closer unseen, and the pinned hull cannot bring its front armour round in time. `Tank.SUPPRESSION_SIGHT_PENALTY` /
+`SUPPRESSION_HULL_TURN_PENALTY`.
+
 **Suppression's accuracy cost is an angle, so it depends on range.** A pinned crew loses ~60% of its hits at 58 m
 (`test_combat_suppression` MEASURE) and only ~15-20% at the 20-40 m of ai's pin-and-flank scenario. Pinning at
 knife-fighting range buys a little accuracy and a lot of *tempo* (the teammate working on it dealt 7,410 damage
 against 977 in the control); pinning at range is what ruins a crew's shooting.
+
+## Round 5 X1: the shape of a fight, and how to measure it again
+
+The lead's complaint was *"it's just these 2 masses shooting at each other"*. `EngagementStats`
+(`game/match/engagement_stats.gd`) turns that into numbers in every `MATCH_RESULT` under `stats.engagement`, and
+`make engagement PAIRS=… SEEDS=…` averages them over counterbalanced faction battles (`VARIANTS=<json>` runs tuning
+variants side by side).
+
+What it records, and why each one: **contact second and separation at contact** (how far apart the armies are when
+the first round flies), **engaged distance** (median nearest-enemy distance over seconds with shots in them — where
+the fighting actually happens), **kill distance**, **static share** (combat seconds where both armies' mean hull speed
+is below 1.5 m/s), **held-line share** (combat seconds where neither army's centre of mass moved 5 m in 5 s — the
+army-level version, because units weave while trading fire and hull speed says nothing about whether the ARMIES are
+going anywhere), **net advance**, **kills by the face hit** (front/side/rear/indirect), **off-axis kills** (the killer
+more than 45° off the line between the two armies' centres, seen from the victim — a flank of the army rather than of
+a hull), and **cover use** (unit-seconds, shots, killers and victims within 5 m of an obstacle footprint).
+
+**The baseline it measured, 15 matches, 2026-09-17 — and every one of these numbers is now stale** (taken before the
+`ready_to_fire` fix and before armies stopped charging from second one; re-take it, don't tune against it):
+
+| | |
+|---|---|
+| Contact | 4 s in, at 108 m apart |
+| Fighting happens at | 71 m (median nearest enemy); kills at 52 m |
+| Held line | 13% of combat seconds; the pushing army gained 26 m |
+| Where kills came from | **73% straight across the line**, 4% from behind it; by hull face 61% side or rear |
+| Cover | 11% of unit-seconds near it, 12% of deaths near it — i.e. no effect |
+
+**The target to measure against** (the brief's, worth keeping): *a majority of direct-fire kills come from the flank
+or the rear, and the armies' centres of mass move during the fight.* Read `off_axis_kill_share` and
+`centroid_travel` / `net_advance` for it, not the hull-face split — an oblique shot across a wide front counts as a
+"side" hit without anyone having flanked anything.
+
+**The lever that is built but unused:** every direct-fire weapon carries `effective_range` (equal to `range` today, so
+it does nothing). Past it, `Match.shot_spread` widens linearly to `(1 + Match.RANGE_SPREAD_FACTOR)` at full range, so
+long shots become a gamble and closing pays. Try values with `--tune=cannon.effective_range=38,…`; a first set of
+variants is in `tools/matchup_variants/x1_range_falloff.json`.
 
 ## Round 5 X2: is hard cover worth using? (the mechanics half, measured 2026-09-17)
 
