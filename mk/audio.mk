@@ -1,6 +1,6 @@
 # The soundtrack and the game's sound: placeholder music, the loudness and loop contract, importing the lead's
 # Suno tracks, and the match-mood signal's tests.
-# Owner: audio (_agents/streams/audio.md). Included by the root Makefile.
+# Owner: feel (_agents/streams/feel.md); round 5 it was audio (_agents/streams/archive/round5/audio.md).
 
 .PHONY: audio-deps music-stems music-placeholders music-check music-import music-smoke audio-check audio-pytest sfx-generate sfx-layer audio-bench audio-pass
 

@@ -737,7 +737,7 @@ func _shootable(enemy: Tank) -> bool:
 	# Round-5 X1 found: a `seen` test (team spotting, else own sight radius) was computed here and never used, so this
 	# has only ever meant "in range with a clear line". The unused call is gone (it cost a dictionary walk per enemy per
 	# scan); whether a gun should hold fire on something nobody sees is a behaviour question for the ladder
-	# (_agents/streams/ai.md, known issues).
+	# (_agents/streams/archive/round5/ai.md, known issues).
 	# X2 measured, and rejected: answering this with the memoized 2D cover map instead of a physics ray made picking a
 	# target *slower* at 60 units (650 usec per tick against 573). The two agree (139 of 139 lines, test_ai_cover_map),
 	# but with a memo this big a hit costs about as much as the ray it saves.

@@ -1,9 +1,12 @@
 # Stream: ai (cost at scale, the gates that block behaviour, the tactics ladder)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 5 direction*, *Unit AI*, *What earns a place in doctrine*), [../workstreams.md](../workstreams.md),
-> [../unit_ai.md](../unit_ai.md) and [../doctrine.md](../doctrine.md), and your round-4 report
-> [archive/round4/ai.md](archive/round4/ai.md). **Doctrine had no stream this round, so you inherit it:** you own
+> **Archived 2026-09-18:** round 5 is merged into `main`. This brief and its Status are the record of what the
+> stream did; the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
+> (*Round 5 direction*, *Unit AI*, *What earns a place in doctrine*), [../workstreams.md](../../../workstreams.md),
+> [../unit_ai.md](../../../unit_ai.md) and [../doctrine.md](../../../doctrine.md), and your round-4 report
+> [archive/round4/ai.md](../round4/ai.md). **Doctrine had no stream this round, so you inherit it:** you own
 > `game/ai/`, `game/tactics/`, `doctrines/`, `game/agent/`, `tools/{agent,ai_ladder}.py`, `mk/{ai,tactics}.mk`,
 > `tests/ai_scenarios/`, and `_agents/{tank_brain,squad_ai_design,unit_ai,doctrine}.md`.
 

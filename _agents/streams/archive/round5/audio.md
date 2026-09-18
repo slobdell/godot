@@ -1,9 +1,12 @@
 # Stream: audio (guns that sound dangerous)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
+> **Archived 2026-09-18:** round 5 is merged into `main`. This brief and its Status are the record of what the
+> stream did; the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
 > (*Round 5 direction*, *The arena announcer* including the humor direction, and *Matches are between different
-> factions*), [../workstreams.md](../workstreams.md) (L5 is yours; lead gate 1 approves sound-effect generation) and
-> your round-4 report [archive/round4/audio.md](archive/round4/audio.md). You own `game/announcer/`, `game/audio/`,
+> factions*), [../workstreams.md](../../../workstreams.md) (L5 is yours; lead gate 1 approves sound-effect generation) and
+> your round-4 report [archive/round4/audio.md](../round4/audio.md). You own `game/announcer/`, `game/audio/`,
 > `assets/{announcer,audio,music}/`, `tools/{announcer,audio}/`, `mk/{announcer,audio}.mk`, `tests/announcer/`.
 
 ## The lead's direction (2026-09-17)

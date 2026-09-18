@@ -265,6 +265,86 @@ its `decisions/<id>` documents). Where the orchestrator recommended otherwise, t
 | **Frame-rate target** (asked later the same day, once render had modelled it) | **A locked 30 fps at 1080p with the full 30 a side, plus a 720p 60 fps performance option** | 60 fps at 1080p is unreachable this round whatever the tick rate does: the GPU alone is 14.8 ms there, and every available cut together still leaves ~9 ms of a 16.7 ms frame. A locked 30 fps holds 60 vehicles with the tick change alone. The army size the lead has asked for twice is preserved; a stable 30 reads as smooth where an unstable 60 reads as broken. Baseline for comparison: 60 fps used to hold at **13 vehicles** at 720p and **never** at 1080p |
 | Destructible cover | **Schedule it** (*overruled*: the recommendation was to park it) | Approved as designed — a stack collapses to a lower stack, never changing drivable space. Not landed in round 5: two cross-stream changes at once (with 30 Hz) would make failures unattributable |
 
+## Round 6 direction: the lead's playtest of round 5 (2026-09-18)
+
+> *"ok here's what I noticed in gameplay, I'd ideally like to delegate to workstream workers. 1. The main thing that
+> makes the game unplayable right now is that the vehicles aren't smart enough yet to really navigate around like they
+> should. If we have a hoarde of units, and I tell different squads to move in different directions a bunch of cars
+> just get stuck or blocked by other cars. I would assume this should be solved by both making the computer units
+> smarter but also like a real-world situation with units that presumably knew about each other or saw each other, I'd
+> imagine an in-game command could be sent peer to peer between units to move out of the way or whatever the case is.
+> Second to that, we have this concept of quasi military units that should operate with standard operating procedures
+> and so forth. The game is still far from coherent in terms of unit behavior. A good standard is Starcraft 2, where
+> the units definitely seem smart (but we want our stuff to be even smarter). For the controls on a squad level basis
+> (the UX), we should definitely iron these out; I don't know what some of these buttons are (i.e. screen), and buttons
+> like move and follow are already accessible via mouse click, so we shouldn't have buttons for them. I finally found
+> the "support by fire button" (there's a standard military symbol for support by fire, we should ideally use these),
+> and when I clicked it, the units definitely did not form up. In general I don't think we have any coherent formations
+> working either. At the start of the game there's a big lag between pressing "Fight" and the game loading, so we
+> should likely invest in some loading UX indicators and screens. The maps are still pretty basic, right now the game
+> is just this big open brawl with dumb units. We want to be able to set up ambushes, do flanking maneuvers. I don't
+> know if you're managing it like this, but if I select an entire squad and I tell them to move somewhere, I would
+> think that there's a higher level abstraction / higher level movement above individual units where there's a target
+> formation for the squad and therefore a target position for each individual unit (i.e. no matter where they might be
+> currently, there's a formula to "form up"). The more sophisticated we can make this the better. For example, it might
+> be easy enough computationally to estimate the position and time at which an individual unit would converge with its
+> formation, but we're dealing with a discrete control system, where there should probably be things like PID loops all
+> throughout the system somehow (we might even be able to differentiate units of different factions by PID values
+> somehow) and so my point is that intuitively a PID loop would conceptually be useful for a unit trying to get back in
+> his formation. I know video games using pathing algorithms like A* and stuff like that. Are we using that? We might
+> even want a map that's a quasi maze just for test purposes to ensure units can get through it. On the look and feel
+> side, I think the bird's eye view is what's problematic on the camera. I think it should be more of a 3d perspective,
+> possible just at an angle in general, and the lower camera angles look good because we actually get to see the
+> vehicles. And remember, previous guidance from me is that we're trying to get somewhere in the middle between
+> Starcraft 2 and Twisted Metal in terms of perspective (I know this is hard to figure out). On the look and feel side,
+> I notice that the background / ambient crowd in the stands is non-existent. The long range of the weapons is also I
+> think making the game unplayable (units see each other and then everyone just starts firing)."*
+
+**The round's goal: movement you can trust.** Everything above the wheels — doctrine, drills, formations, the element
+layer — has been built on a locomotion layer that cannot get a horde through a gap. Round 6 fixes the bottom of the
+stack first, then the layer that commands it, then how the player reads and issues it.
+
+### What this means, by area
+
+- **Navigation is the blocker, and it is three separate problems.** (a) *Path planning*: does a unit have a route
+  around an obstacle at all (A*/navmesh/flow field)? (b) *Local avoidance*: two units heading through the same gap
+  must resolve it — the lead's own instinct is the right one, units that see each other negotiate ("an in-game command
+  could be sent peer to peer between units to move out of the way"), which is what RVO/ORCA and SC2's unit pushing
+  formalise. (c) *Unsticking*: whatever the first two miss, nothing may remain stuck — detect no-progress and recover.
+  **Acceptance is a maze map**, which the lead asked for by name: a quasi-maze test arena a horde must get through.
+- **A squad move is a formation move, not N unit moves.** The lead described the architecture he expects and it is the
+  right one: an order to a squad computes a *target formation* anchored on the destination, assigns every unit a
+  *slot*, and each unit drives to its slot. "No matter where they might be currently, there's a formula to form up."
+  Slot assignment should minimise crossing (units keep their relative places), the group paces itself to its slowest
+  member, and form-up is continuous, not a one-shot teleport of intent.
+- **PID as the house control law.** The lead asked for it explicitly and it is a good fit for a discrete-time control
+  system running at a fixed tick: station-keeping in a formation is a classic regulator problem, and the derivative
+  term is exactly what stops the oscillation a proportional-only follower shows. Use it where there is a continuous
+  error to regulate (slot station-keeping, speed matching, turret lay), not where the problem is discrete choice.
+  **Per-faction gains are approved as a differentiator** ("we might even be able to differentiate units of different
+  factions by PID values") — the Syndicate crisp and twitchy, the gangs loose and overshooting — but only after the
+  default gains are stable, and tuned values must be data, not constants in code.
+- **"Even smarter than StarCraft 2" is the bar for unit behaviour.** The comparison the lead reaches for is SC2's
+  legibility: units look like they know what they are doing. Coherence beats cleverness — no unit standing still in a
+  fight, no unit driving through a firefight to reach a stale waypoint, no element flip-flopping between drills.
+- **The squad UX has to earn every button.** Cut what the mouse already does: *"buttons like move and follow are
+  already accessible via mouse click, so we shouldn't have buttons for them."* Keep the tasks a mouse cannot express,
+  name them so they can be recognised, and **use the real military symbology** — the lead asked for it by name
+  (APP-6/MIL-STD-2525 tactical task graphics: support by fire, attack by fire, screen, guard, cover, fix, block). A
+  button that claims a doctrinal task must produce the doctrinal behaviour: he pressed support-by-fire and *"the units
+  definitely did not form up."*
+- **Loading has to be visible.** The gap between FIGHT and the match is dead air. Progress UX, staged loading, and a
+  loading screen that carries the game's voice (faction art, doctrine cards, announcer stings).
+- **Maps must support ambush and flank, not a brawl.** Round 5 built the arena kit and four layouts; the lead still
+  reads the fight as *"one big open brawl"*. Terrain has to create approaches that are not covered from everywhere —
+  and the three streams' round-5 finding stands: a single central control point overrides every tactical choice.
+- **The camera moves toward Twisted Metal.** *"The bird's eye view is what's problematic"* — the default is too
+  top-down and too far. Lower the default pitch, get the vehicles in profile, keep the tactical read. The standing
+  guidance is unchanged: **somewhere between StarCraft 2 and Twisted Metal**.
+- **The stands are empty.** Ambient crowd — visible in the stands and audible — is missing entirely.
+- **Weapon ranges are still too long.** *"Units see each other and then everyone just starts firing."* This was round
+  5's combat brief too, and the lead still sees it: the first contact should not be the whole fight.
+
 ## Units: fixed types that counter each other
 
 Each unit type is a fixed package: chassis, one weapon, armor, speed, sight, cost. **No loadouts.**

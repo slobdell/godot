@@ -591,7 +591,7 @@ tactical queries ~1.1 ms. **The 1 ms target is not met.** Next steps, in order o
 per-team shared contact table built once per intel refresh (brains add only their per-tank fields), and
 typed arrays in place of dictionaries in `decide()`.
 
-## Round 5: cost at 60 units, the tactics ladder, offline discovery (2026-09-17, [streams/ai.md](streams/ai.md))
+## Round 5: cost at 60 units, the tactics ladder, offline discovery (2026-09-17, [streams/archive/round5/ai.md](streams/archive/round5/ai.md))
 
 ### Measuring cost honestly
 

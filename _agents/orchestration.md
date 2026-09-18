@@ -319,3 +319,21 @@ The kickoff prompt is one line; this section is the rest.
     the contemporaneous note, not from recollection** — that is the step that caught the errors: one stream was
     about to mislabel a baseline's conditions, another found a score it had reported was really its record in a
     different matchup. Better still, make the tool record its own conditions, so the next file cannot lose them.
+32. **"It's missing" usually means "it doesn't reach me": survey the code before briefing a build.** Round 6's
+    planning: the lead reported the ambient crowd in the stands as *"non-existent"*. It had shipped four days
+    earlier — a MultiMesh of up to 4,000 figures seated from the stands' rows, reacting to kills, with a murmur and
+    roar bed under it. A brief that said "build a crowd" would have built a second one. The brief says "find out what
+    hides it, with a screenshot, before changing anything". The same survey turned three other complaints into
+    one-line diagnoses: camera pitch welded to zoom (so framing anything *becomes* the bird's-eye view he disliked),
+    a unit declaring its order complete from 12 m away after 3 s of no progress (so a jammed horde looks like it
+    decided to stop), and firing with no acquisition step at all (so seeing is shooting). **Spend an hour reading the
+    code the lead is complaining about before you write the brief** — the difference between a symptom and a cause is
+    the difference between a round that lands and a round that adds.
+33. **The same abstraction built three times is worse than not building it.** Round 6's survey found formation slots
+    implemented in `group_formation.gd`, in `formations.gd` + `squad.gd`, and in `tactics_formation.gd` — three shape
+    tables, three assignment rules, three pacing rules, each reached by a different order verb, none owned. The lead's
+    verdict was *"I don't think we have any coherent formations working"*, and he was right for a reason nobody would
+    guess from the code: each one works. This is trip-up 60 (two streams, one concept) grown over four rounds. When a
+    round splits work by discipline, **name the concept each stream owns, not just the paths** — and when an item's
+    first step is "collapse these into one", say so in the brief, because a worker will otherwise extend whichever
+    copy it finds first.

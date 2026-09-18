@@ -1,554 +1,146 @@
-# Stream: control (the shell has to work)
+# Stream: control (the squad UX earns every button; the camera comes down; loading shows itself)
 
 > Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 5 direction*, *Controlling units*), [../workstreams.md](../workstreams.md) (M3 you share with render; you own
-> K1 and L4) and your round-4 report [archive/round4/control.md](archive/round4/control.md). You own `game/control/`,
-> `game/ui/` (including `hud.tscn`, the widgets and the title screen), `game/camera/`, `game/controllers/`,
-> `game/modes/{skirmish,offline,title}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md`.
+> (*Round 6 direction*, *Controlling units*), [../workstreams.md](../workstreams.md) (you own **K1**, **L4**, **C7**
+> and half of **N4**; you consume squad's **N2** and nav's **N1**), [../tactical_map.md](../tactical_map.md), and your
+> round-5 report in [archive/round5/control.md](archive/round5/control.md).
+>
+> **You own** `game/control/`, `game/ui/` (HUD, widgets, title screen, the new loading screen), `game/camera/`,
+> `game/controllers/`, `game/modes/{skirmish,offline,title}_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md`.
 
-## The lead's direction (2026-09-17)
+## The lead's direction (2026-09-18, verbatim)
 
-> *"Right now the game is also unplayable with the camera, it ends up focusing on the enemy instead of our own friendly
-> units. The startup screen seems stuck, I can't actually click any of the first buttons, and when I do manage to start
-> the game there's a bunch of red error messages in the console log."*
+> *"For the controls on a squad level basis (the UX), we should definitely iron these out; I don't know what some of
+> these buttons are (i.e. screen), and buttons like move and follow are already accessible via mouse click, so we
+> shouldn't have buttons for them. I finally found the "support by fire button" (there's a standard military symbol
+> for support by fire, we should ideally use these), and when I clicked it, the units definitely did not form up."*
 
-Round 4 built the vision-framed camera, element focus and tasks, and every test passed. The lead still couldn't play
-it. **Your first job is the gap between "the tests pass" and "a person can use it."**
+> *"At the start of the game there's a big lag between pressing "Fight" and the game loading, so we should likely
+> invest in some loading UX indicators and screens."*
 
-## Where things stand
+> *"On the look and feel side, I think the bird's eye view is what's problematic on the camera. I think it should be
+> more of a 3d perspective, possible just at an angle in general, and the lower camera angles look good because we
+> actually get to see the vehicles. And remember, previous guidance from me is that we're trying to get somewhere in
+> the middle between Starcraft 2 and Twisted Metal in terms of perspective (I know this is hard to figure out)."*
 
-- The camera frames the *commanded element*; with nothing commanded, or when an element dissolves, it evidently ends up
-  on the wrong thing. Reproduce it the way the lead hit it: `make skirmish`, don't give an order, watch what it frames.
-- The title screen is `game/ui/` and `game/modes/title_mode.gd`. A headless `--title` run prints `TITLE_START offline`
-  straight away, which suggests something starts or swallows input without a click.
-- Console noise at 30 a side is largely the renderer's per-instance uniform limit (render's X2), but **triage all of
-  it**: your job is a clean console for a player, and to hand anything that isn't yours to the stream that owns it.
-- Announcer subtitles go through `Hud.post_message` and crowd the four-line log (audio's evidence:
-  three of four visible lines were the announcer on desktop, and a kill message was buried on phone).
+## Where things stand (surveyed 2026-09-18, on `main` at `5c68a03e`)
+
+**The buttons.** `game/ui/selection_panel.gd:27-29` is the whole list, drawn as rectangles with a hotkey letter and a
+*text* label — **there are no icons on the command card at all**:
+
+| id | label drawn | key | mouse already does it? |
+|---|---|---|---|
+| `move` | "Move" | M | **yes** (right-click) |
+| `stop` | "Stop" | S | no |
+| `hold` | "Hold" | H | no |
+| `screen` | "Screen" | E | no — and the lead couldn't tell what it was |
+| `attack_move` | "Attack-move" | A | no |
+| `follow` | "Follow" | F | **yes** (right-click a friendly) |
+| `support_by_fire` | **"Base of fire"** | R | no |
+| `formation` | "Formation: <current>" | G | no |
+
+Note the label: **support-by-fire is on screen as "Base of fire"**, which is most of why he "finally found" it. The
+touch map (`--touch-map`) already draws *real generated icons* through `CommandIcons.draw_drill()` /
+`draw_formation()` — formation glyphs built from the actual `Formations.offsets` geometry — so the icon machinery
+exists (`game/ui/{command_icons,icon_button,icon_raster}.gd`); the desktop card never got it. The only NATO-ish thing
+in the game is a hostile diamond behind enemy icons (`tactical_map.gd:599`). No task graphics anywhere.
+
+**The camera.** `game/camera/rts_camera.gd:179-185`:
+
+```
+distance = lerp(16, 260, level²)
+pitch    = lerp(25°, 82°, level)
+```
+
+**Pitch is welded to zoom, and that is the lead's "bird's eye view".** `make skirmish` starts at zoom 0.36 → ~48 m out
+at ~45°, which is not bad. But a player commanding 30 vehicles across a 242 m arena *zooms out*, and there is no way
+to zoom out without tilting toward 82°: the two are the same slider. The L4 vision framing (`VISION_*` consts,
+`_update_vision()` `:466-481`) moves along the same slider when it frames a commanded element. So he never chose a
+bird's eye view — he chose to see his army, and the camera charged him a top-down for it. **Decoupling the two is the
+fix; verify that diagnosis with screenshots at a few zoom levels before you act on it**, because the exact pose he was
+looking at is an inference, not a measurement. (`toggle_overview()` at zoom 0.92 → 222 m, 77° is the deliberate
+bird's eye, and on desktop it isn't even bound: Tab cycles control groups.)
+
+**Loading.** Nothing is threaded — no `Thread`, no `WorkerThreadPool`, no `ResourceLoader.load_threaded_*` anywhere in
+`game/`. FIGHT (`faction_picker.gd` → `GameLauncher.start`, `game/ui/game_launcher.gd:17-33`) does a synchronous
+`load("res://game/main.tscn")`, then `Arena._ready()` builds obstacles, decor, hazards, the whole cyberpunk venue
+(stands, crowd, gates, towers, screens, flood and wear maps) **and bakes the navmesh synchronously** — usually the
+biggest single stall — then `SkirmishMode._start_match()` instantiates up to ~44 vehicles a side in one frame, then
+the controls, radar, panels and markers. There is **no loading screen, no progress bar, no spinner**; the only text is
+`hud.set_status("Pick a faction, then FIGHT")`. The one progress UI in the repo is Godot's stock web shell, which only
+covers the wasm download.
 
 ## Backlog (in order)
 
-**X1. Play it, then fix what stops you.** Before writing code: run `make skirmish`, play a full match, and write down
-in Status exactly where it stops being usable (with screenshots). Then fix, in whatever order the playthrough dictates:
-- **The camera frames your force.** With no element commanded, frame the player's units; never centre on the enemy
-  unless the player asked. An element dissolving hands focus back to your army, not to whatever was on screen.
-- **The title screen accepts clicks** and starts what the button says; nothing starts a match on its own.
-- **A clean console:** triage every error in a normal session, fix yours, and file the rest with evidence to the owning
-  stream (render for shader and material errors, combat for simulation, audio for the booth).
-Then play it again and say whether it's playable now.
+**X1 — cut the buttons the mouse already does.** `move` and `follow` come off the command card (the lead, explicitly).
+Keep their hotkeys if they cost nothing. The card is for what the mouse *cannot* express.
 
-**X2. Subtitles get their own line.** The booth speaks on its own band (a caption line or panel), so gameplay messages
-(kills, losses, orders, control point) keep the message log. Readable at the default zoom and at 1280×720.
+**X2 — the task palette and its military symbology (N4).** Build the table in `_agents/tactical_map.md`, one row per
+task: verb · **APP-6 / MIL-STD-2525 tactical task graphic** · hotkey · one line of player-facing text · the behaviour
+the player is entitled to see. Then draw the symbols on the card, the way the touch map already draws its icons —
+extend `CommandIcons` rather than importing images, so they stay crisp and themeable. The graphics you need:
+- **support by fire** — the two-pronged arrow with the base line;
+- **screen** — the line with the semicircle/S;
+- **attack by fire**, **guard**, **cover**, **fix**, **block** if squad can demonstrate them.
+Name each button by its doctrinal name (**"Support by Fire", not "Base of fire"**), with the symbol as the primary
+read and the words underneath, plus a hover/hold tooltip that says in one sentence what the units will do. The lead
+could not name `screen`; the symbol plus one sentence is the fix. **A verb only gets a row when squad can demonstrate
+its behaviour** — agree the final list with squad, and say in your Status which rows squad has earned.
 
-**X3. The lead's three dials** (from round 4, none blocking): how close the default frame sits, one alert line or
-three, and whether the faction menu opens by default. Pick sensible defaults, make each one a flag or setting, and say
-in Status what you chose and why.
+**X3 — the camera comes down (the lead gate).** Decouple pitch from zoom. The recommendation to try first: a much
+lower pitch range (roughly **22°–50°** instead of 25°–82°), pitch as its *own* axis the player can adjust, and a
+default that sits low enough to see vehicles in profile. Then **put it in front of the lead rather than guessing**:
+`make camera-looks` — the same moment of the same fight, captured at a grid of pitch × distance × FOV, as a page of
+screenshots he can pick from. "Between StarCraft 2 and Twisted Metal" is not a number; a picture he points at is.
+Send the orchestrator the page the day it exists (lesson 12). Keep the tactical read honest: he must still be able to
+command, and `toggle_overview()` stays as the deliberate top-down for reading the map (and bind it on desktop).
 
-**X4. Readability at 30 a side (M3, with render).** Selection marks, nameplates, health bars and order markers must
-stay legible when 60 vehicles are on screen and render has toned the vehicle glows down. Their accent and your
-selection colour must not be confusable. Screenshots at 30 a side, before and after.
+**X4 — loading that shows itself.** A real loading screen between FIGHT and the match:
+- **Stage it.** Split the work into named stages (arena layout → venue → navmesh bake → armies → units → controls)
+  with a progress signal, and yield a frame between stages so the screen can actually draw. `ResourceLoader`'s
+  threaded load for the scene, and `bake_navigation_mesh(true)` for the navmesh, are the two obvious wins — coordinate
+  the bake with arena and nav, since navigation determinism is pinned synchronous in `project.godot:53` for a reason
+  (trip-up 57: async iterations made the same seed simulate differently). **Do not change that setting to make a
+  progress bar look nicer.**
+- **Give it the game's voice**, not a grey bar: faction art, the matchup, the arena name, a doctrine card or a fact,
+  and let feel put an announcer sting or crowd bed under it. Coordinate with feel for the art slots.
+- Measure it: report FIGHT→playable wall-clock before and after, on this laptop, at 30 a side.
 
-**X5. Orders that survive a big army.** With 30+ units and several elements: selection, group switching and task
-issuing stay inside the latency budget you measured in round 4 (box-select 1.38 ms, 30 orders 1.87 ms), and the element
-bar stays readable. Add the optional `facing` to `UnitCommand` that doctrine asked for (their halt-formation hack goes
-away).
+**X5 — orders you can see landing.** The lead's round-5 note was that units feel unresponsive; nav now reports
+`Movement.state(unit)` with `blocked_by` and an ETA (N1). Surface it: a unit that is *yielding* or *blocked* should say
+so on the HUD rather than looking idle, order markers should show the formation slots squad computes (N2), and the
+100 ms K1 response guarantee stays asserted in milliseconds. A unit that acknowledges instantly feels responsive even
+when it takes a second to move.
 
-**X6. The first two minutes.** A new player opens the game and gets: a title screen that works, a match that starts,
-controls they can discover (a short on-screen hint set that doesn't nag), and a camera that never loses their army.
-Write what a first-time player sees, in order, in Status.
+**X6 — the selection grammar for squads.** The lead thinks in squads; make selecting one, keeping it, and ordering it
+frictionless: control groups that survive an order (coordinate with squad's X4 — a plain move to a whole element must
+no longer dissolve it), a clear read of which element is selected and what it is doing, and idle-element cues.
 
-- **Stretch:** the cinematic camera as a spectate mode from the title screen; a replay of the last match.
+**X7 (stretch) — the three round-4 dials** (frame distance, one alert line or three, faction menu open by default) and
+the "why did my element do that" view, if the camera and loading work lands early.
 
 ## How to verify
 
-`make remote T=check`; your control tests with real input events; **a played match**, with screenshots you looked at
-and a written verdict on playability; a clean console log attached to Status (`build/skirmish-console.log` or similar).
+- `make remote T=check` green on your last commit — name the hash when you report.
+- `make command-playtest`, `make command-playtest-shots`, `make control-playtest`,
+  `make remote T=control-playtest-shots` — and **look at the frames**.
+- `make camera-looks` (yours to build) for the lead gate.
+- **Play it** (`make skirmish`) and do what the lead did: press every button on the card and ask whether you could
+  name it without reading the code.
+- Windowed playtests open on the lead's desktop and a stray click becomes a real order (trip-up 32): prefer headless.
+- You **must not** move the sim baseline (invariant 2). If order execution changes a doctrine match, say so and
+  coordinate.
 
 ## Don't touch
 
-Vehicle art and effects (render), arena layouts (arena), weapons and rules (combat), brains (ai), the booth's content
-(audio: you own where its subtitles appear, not what it says).
+`game/tactics/**` and the deciding half of `game/ai/` (squad's), nav's movement files, `game/units/` `game/combat/`
+`game/match/` (combat's), `arenas/` `game/arena/` (arena's), `game/theme/**` (feel's).
+
+## Waiting on the lead
+
+1. **The camera look** — X3's page of screenshots. This is the round's main lead gate; get it in front of him early,
+   because everything about how the game reads depends on his pick.
 
 ## Status
 
-_Round 5, control stream. Written 2026-09-17; merged to main as **eb49ec5a**, then reopened for the lead's responsiveness complaint (see below)._
-
-### What this stream did, in short
-
-The lead could not start the game. The title screen's buttons quit and relaunched the executable; the faction menu had
-nothing on it you could click to begin; the camera framed the enemy army instead of his own; the console filled with
-red errors. All four are fixed, and the fixes are held in place by a scripted playthrough that fails if any of them
-comes back.
-
-| The lead's words | Now | Held by |
-|---|---|---|
-| "The startup screen seems stuck, I can't actually click any of the first buttons" | The title starts a match in the same window; the faction + arena menu has a **FIGHT** button | `make shell-playtest` clicks its way from the title to a running battle |
-| "It ends up focusing on the enemy instead of our own friendly units" | The camera keeps the element it frames **1–15 m from screen centre** through two minutes of battle (the old code: 44 m off, the enemy 17 m from centre) | a unit test that fails on the old framing, plus every playtest sample |
-| "A bunch of red error messages in the console log" | A whole played session logs **zero** errors and warnings | the playtest target fails on any `ERROR`, `SCRIPT ERROR` or `WARNING` line |
-| (the frame rate, and the maps) | A **QUALITY 30 / PERFORMANCE 60** button in the HUD and on the title; an **arena picker** with what each map is for; the HUD from **369 to 86 draw calls** | `make hud-cost`, `make shell-playtest` |
-
-**Try it:** `make title` (SKIRMISH, or SPECTATE to watch), or `make skirmish` to go straight to the menu.
-
-**Verified** on e81bdbe6 (this branch merged with main): `make remote T=check` **965 passed, 0 failed, exit 0**;
-`make shell-playtest` 15/15 checks with a silent console; `make hud-cost` 86 canvas draw calls.
-
-**Every backlog item (X1–X6) is done.** Stretch: spectate done, replay not started. The sections below are the detail:
-what each item was, what was wrong, what changed, and the numbers.
-
-### The instruments: what to run, how to read it, what good looks like
-
-Four targets measure whether this game is playable. **They are the stream's memory** — the sections below are the
-history, this is what you actually run. All of them drive the real game through real input events
-(`Viewport.push_input`), so a click a person cannot make fails here too.
-
-| Target | Answers | Good looks like | Where |
-|---|---|---|---|
-| `make squad-orders-test` | **Do the player's orders stick?** Plays the lead's sequence — press 1, right-click, press 2, right-click … for every squad — then tables each unit | `never_arrived` 0, `arrived_then_left` 0, nearly every unit `arrived_and_stayed` or `arrived_and_held_nearby`, and **0 commands in the idle window** | a real display (not builder0) |
-| `make response-test` | **Does the game answer his hand?** Times click → order → marker → the vehicle visibly moving, at 30 a side and at a small army | median "vehicle visibly starts" **under ~150 ms at 30 a side** (today 202 ms at 58 vehicles, 59 ms at ten) | **the lead's laptop**: builder0's remote desktop draws ~1 fps and makes every number meaningless |
-| `make shell-playtest` | **Can he start and play it?** Title → SKIRMISH → faction + arena menu → FIGHT → planning → two minutes of battle, 17 checks | `SHELL_PLAYTEST_DONE ok=true` and `clean console` | a display; builder0 is fine |
-| `make hud-cost` | **What does the HUD cost?** Per-widget canvas draw calls, measured during a tactical pause so the picture holds still | whole HUD **≤ 130** (CP1's budget; today 84–86) | a display; builder0 is fine |
-
-**Reading `squad-orders-test`.** Per unit: `sent_to` (the slot the player's click gave it), `at` and `from_goal_m` six
-seconds later, `later_at` / `later_from_goal_m` twenty seconds after that, its order verb and **`order_source`**, and a
-`verdict`:
-
-- `never_moved` — selection or the order path: **control's**.
-- `never_arrived` / `arrived_then_left` (> 20 m) — something is overriding the player: **ai's**, unless `order_source`
-  says `player`, in which case it is control's.
-- `arrived_and_held_nearby` — inside ai's 18 m post-order leash: fighting from cover around the spot, which is *correct*.
-- `arrived_and_stayed` — on the spot.
-
-`issues_while_idle` is the thrash detector: every command `Orders` accepted while nobody touched the controls, by source
-and verb, plus `order_changes` (what actually redraws a marker and plays a cue) and `acknowledgement_cues`.
-**A healthy idle window is 0 commands.** `from_the_given_slot_m` (mean, worst, alive) is the number ai wants when they
-measure their leash constant.
-
-### Rate-dependent bugs: the round's one real lesson
-
-Combat's 30 Hz tick broke **five** things, none of them the tick loop:
-
-1. K1's `RESPONSE_TICKS := 3` — a contract in ticks that silently meant 50 ms at 60 Hz and 100 ms at 30. Now
-   `Orders.RESPONSE_MS := 100`, with `Orders.response_ticks()` deriving the ticks.
-2. ai's think cadence, the same shape.
-3. A test that teleported a vehicle and read its position: with interpolation on, a body is *drawn* at its old place
-   until `reset_physics_interpolation()`. `Fixture.place()` exists for that.
-4. Every FX MultiMesh written from `_process` warned once interpolation arrived: `FxMultiMesh.never_interpolated()`
-   at the node and `FxMultiMesh.resize()` for every count change (a resize rebuilds the server buffers and clears the
-   flag; the node switch is the durable one).
-5. A test comparing a **drawn** position with a **simulation** position — 17 mm apart, which is one tick of travel.
-
-**The rule:** before changing a rate, grep for every constant and assertion written in ticks or frames and ask what each
-means in seconds at both rates. Anything in seconds needs no changes at all (audio had already converted and was
-untouched). **Interpolate once, at the source the player's eye uses** — turning a MultiMesh's interpolation off does not
-make it lag, because what control writes into it is already the interpolated position.
-
-**The trick that found (3) and (5): slow time down rather than running the test more often.**
-`Engine.physics_ticks_per_second = 4` makes the interpolation window long enough that the next process frame lands
-inside it, and a once-in-twenty-runs timing bug becomes deterministic.
-
-### The clean-console gate
-
-The lead's first complaint was *"a bunch of red error messages"*, so `make shell-playtest` **fails on any `ERROR`,
-`SCRIPT ERROR` or `WARNING` line** in a whole played session. Two exceptions, both deliberate and both still printed:
-
-- `RID allocations … leaked at exit` — headless engine shutdown noise; a real windowed session quitting cleanly logs
-  nothing (checked). See [verification.md](../verification.md).
-- `MultiMesh interpolation is being triggered from outside physics process` — counted and attributed to render rather
-  than failing, because their FX meshes are placed per frame by design. A gate that fails on things you cannot fix gets
-  disabled; one that reports them gets fixed.
-
-### Reopened 2026-09-17: "the units aren't very responsive to my input"
-
-**Measured before fixing** (`make response-test`, `game/control/response_playtest.gd`): six right-click orders to the
-whole selection in a running battle, each timed from the click to the vehicle *visibly* turning or moving on screen
-(the drawn transform, not the tick's), at two army sizes. Run on **the lead's own laptop** (the machine whose frame
-rate is in question; shared with five other agents, so the frame numbers are pessimistic). builder0 is useless for this:
-its remote desktop draws about 1 frame a second.
-
-| Stage | 30 a side (58 vehicles) | Small army (10 vehicles) | Owner |
-|---|---|---|---|
-| Click reaches the controls | **2.1 ms** | 1.2 ms | control |
-| K1 order issued (34 units in one click) | **2.0 ms** (contract: 100 ms) | 1.2 ms | control |
-| Order marker drawn (next frame) | **12.6 ms** measured, but a frame is ~147 ms apart at this rate | 10.4 ms | control + render |
-| Vehicle visibly starts, median | **202 ms** wall / **8 sim ticks** | 59 ms / 3 ticks | combat (locomotion) |
-| Vehicle visibly starts, slowest of the group | **820 ms** | 159 ms | combat |
-| Frame rate during the order | **6.8 fps**, 6.4 sim ticks a frame | 31.5 fps, 1.8 | combat + ai + render |
-
-**Which of the four it is: the frame rate.** Order latency is 2 ms against a 100 ms contract, and the simulation starts
-the vehicles in 8 ticks (133 ms of sim time) — but at 58 vehicles the game draws **6.8 frames a second** and runs 6.4
-ticks a frame, so the simulation is in slow motion *and* the player sees the result up to a frame (~150 ms) after it
-happens. Everything the player perceives is stretched by that: the same order on a small army answers in 59 ms.
-
-- **Not order latency** (2 ms) and not acknowledgement feedback — the marker is already on the first frame drawn after
-  the click. At 30+ fps that is 10–18 ms, which is instant. Nothing control can add makes a 147 ms frame feel quicker.
-- **Locomotion is a secondary effect:** 8 ticks to start moving at 30 a side vs 3 with ten vehicles. Worth combat
-  knowing, but it is measured in sim ticks, so it is mostly the tick starvation again.
-- **So: this is CP1's wall**, which combat's 30 Hz tick and render's frame targets exist to fix.
-
-**`make response-test` is a standing gate, not a one-off.** The target: **the median "vehicle visibly starts" under
-~150 ms at 30 a side** (today: 202 ms; 59 ms with ten vehicles). It is the only measurement of how the game *feels* to
-a hand on a mouse rather than how fast it computes, so run it whenever the tick rate, locomotion or the frame budget
-changes — and **run it on a machine that draws frames: builder0's remote desktop draws ~1 fps and makes every number
-here meaningless.** Re-run it immediately after combat's 30 Hz flip, beside render's frame numbers: one says the frame
-holds, the other says the game answers the player's hand.
-
-**Also fixed for the second half of the lead's sentence** ("they all also just rush forward right away at the start"):
-ai found that a brain which has never been ordered follows its doctrine's objective, so in a faction skirmish the
-*player's* army marched off before he could command it. `skirmish_mode` now sets `player_team` on the match (ai's
-`OrderFeed.player_team`), and a spectated match deliberately doesn't, so both sides still play themselves.
-
-### The camera failure on main: a teleport racing physics interpolation (2026-09-17)
-
-`test_clicking_an_edge_marker_takes_you_to_that_element` failed on builder0 on two different branches after combat's
-30 Hz merge. **Nothing a player sees was wrong: this was tests only**, because game code already resets interpolation on
-every teleport (`Tank._spawn`, respawn, shells).
-
-The failure text carried its own proof. The camera's reported aim — `(-84.07, -78.89)` on one run, `(-82.06, -76.48)` on
-another machine — is **79% of the way along the teleport** the test performs, from Bravo's start `(15, 40)` to
-`(-110, -110)`. A load-dependent race does not land twice at the same fraction of the same path; interpolation does.
-With `common/physics_interpolation` on, a body assigned a new `global_position` is still *drawn* at its old one until
-`reset_physics_interpolation()`, and `Shown` (the camera, rings, bars, picking) correctly reads the drawn transform.
-
-Reproduced deterministically rather than by re-running: `Engine.physics_ticks_per_second = 4` makes the interpolation
-window long enough that the next process frame lands inside it — without the reset the drawn position is the *old* spot
-while the simulation is 160 m away. **Making time slow beats running the test more often.**
-
-Fixed with `Fixture.place(unit, at)`, a reset after every teleport in control's and command's tests, and
-`test_a_teleported_vehicle_is_drawn_where_it_was_put` to pin the rule. Recorded in
-[verification.md](../verification.md) as the round's **third tick-rate trap**, after K1's `RESPONSE_TICKS` and ai's
-think cadence.
-
-**Five things the 30 Hz tick broke, all of them the same shape:** K1's `RESPONSE_TICKS` (a contract in ticks that meant
-50 ms and would have meant 100), ai's think cadence, this teleport read through interpolation, the MultiMesh
-interpolation warnings from every FX mesh placed per frame, and a ring test that compared a *drawn* position with a
-*simulation* position (17 mm apart along the direction of travel — one tick of it). None of them was the tick loop itself. **Interpolation and
-tick-relative constants are where a tick-rate change actually bites**, and audio, which had already converted everything
-to seconds, needed no changes at all.
-
-The non-obvious half of the rule: turning a MultiMesh's interpolation **off** does not make what it draws lag, because
-what control writes into it is already the interpolated position — it stops the renderer interpolating an
-already-interpolated value a second time. Interpolate once, at the source the player's eye uses.
-
-**Process note for round 6:** this was the second red `main` of the day caused by a test and its fix arriving
-separately (combat's booth clock was the first). Both were correct on their own branch. The rule that prevents it is
-the one we already have, seen from the other side: *a branch that adds a test must not be merged at a commit where that
-test fails.*
-
-### Reopened again 2026-09-17 (evening): "my orders don't stick"
-
-> *"I select squad 1, having them go somewhere, select squad 2, move them, and I do that for all squads. And in just
-> that simple action, the units do not re-arrange as intended."* … *"it's as though their behavior is overridden by a
-> higher priority … these blue dots … they just keep repeating or re-orienting … and the frame rate noticeably drops
-> because there's so many repeating blue dots beeping."*
-
-**The reproduction is a target:** `make squad-orders-test` (`game/control/squad_orders_playtest.gd`) plays that exact
-sequence through real input — press 1, right-click, press 2, right-click, … — then tables **per unit: where it was sent,
-where it is 6 s later, where it is 26 s later**, what its current order is, and everything `Orders` accepted while
-nobody touched the controls. Run it on a machine that draws frames, not builder0.
-
-| What the table showed | Owner | Fixed by |
-|---|---|---|
-| **Right-clicking his own vehicles ordered a FOLLOW**, not a move. With an army packed on the start line, a large share of "go there" became "chase that one" — which reads exactly like units ignoring him. game_design.md is explicit: right-click ground = move, F + click = follow. | control | the follow-on-right-click path is gone; `test_control_commands`, `test_control_selection` and a live `shell-playtest` check pin it |
-| **~200 commands accepted and ~35 order changes a second across 21 units** while nobody touched anything, verbs flapping between move / hold / attack_move, all `source: ""`. Render's OrderFeedback draws a marker and plays a cue per new order id: the "blue dots … repeating … beeping" and a real frame cost. | ai (the re-issue) | ai tags `source: "element"` and only re-issues a changed intention; control made K1 idempotent and limited feedback to player-sourced orders |
-| **4 of 21 units "arrived then left", 4 "never arrived"**, their order at that point being attack or attack_move. | ai | ai: no element order ever overrides a player-sourced one; after a player's order a unit is leashed to 18 m of where he left it |
-
-**The root cause, and why it hid behind a correct invariant.** ai's rule — *an element never takes a unit off an order
-whose source is `player`* — was true and enforced. It protected nothing, because with round 4's grammar **a right-click
-on a whole squad *was* an element task by construction**, so every one of the player's units was under `source:
-element` orders and there was no player-sourced order to defend. A correct invariant guarding the wrong set. The table
-said so in one column: every row read `element`.
-
-**So a plain move is a direct order again** (reversing round 4's X3 routing of moves to tasks, with the orchestrator's
-endorsement), on three grounds worth keeping so nobody quietly restores it:
-
-1. **game_design.md already said so:** *"right-click ground = move"*, *"orders are instant and always win"*. Round 4
-   drifted from a written rule.
-2. **The lead's words are the evidence:** he played it and could not command his army.
-3. **The table is the measurement**, before and after (below).
-
-The leader's judgement stays on the verbs that ask for it — attack-move (fight what you meet on the way), screen, base
-of fire, attacks. A plain move is the player saying *go there*; the rest is the player saying *handle this*.
-
-| `make squad-orders-test`, five squads ordered in turn | before | with ai's fixes | after |
-|---|---|---|---|
-| element orders in a 6 s window with no input | ~113–200 | 113 | **0** |
-| never arrived | 7 | 7 | **0** |
-| arrived then left (> 20 m) | 10 | 10 | **0** |
-| arrived and stayed, or held inside ai's 18 m leash | 4 | 4 | **19 of 21** |
-
-**Control's three changes.** `Orders.issue` is idempotent — an order identical to the one in progress (same verb and
-target, destination inside `ARRIVE_RADIUS`) no longer restarts it. `Orders.issued` is a new signal: the instrument that
-counted the thrash, deliberately counting *attempts*, so a future thrash is still visible. Order feedback confirms only
-`source: "player"` orders — a marker and a cue answer *his* click; an element re-slotting its members is not something
-he asked for. An element task still gets control's own acknowledgement ring and the HUD toast, so every click is
-confirmed exactly once. **Measured: idle confirmation cues 35/s → 0, with his own clicks still cueing.**
-
-**Re-run `make squad-orders-test` once ai's fixes are on main** and send them any rows that still say "arrived then
-left" or "never arrived".
-
-### Plan (backlog in order)
-
-1. **X1** play it through real input (`make shell-playtest`: title → SKIRMISH → faction menu → planning → two minutes
-   of battle), fix what stops a player, triage the console.
-2. **X2** booth subtitles on a caption line of their own (`Hud.post_caption`), the message log for gameplay.
-3. **X3** the three dials as flags with defaults.
-4. **X4** readability at 30 a side with render's toned-down glows; HUD ≤ 130 draw calls and ≤ 1 ms `_process` (CP1).
-5. **X5** orders at scale re-measured; optional `facing` in `UnitCommand`.
-6. **X6** the first two minutes, written down in order.
-
-### X1. Play it, then fix what stops you. Done.
-
-**How it was played.** No input injector exists on builder0, so `ShellPlaytest` (`game/ui/shell_playtest.gd`,
-`make shell-playtest`, needs a display) plays through `Viewport.push_input`: it moves the mouse over each button and
-records what Godot says is under it, clicks, and samples the camera through two minutes of battle. Frames were looked at.
-
-**Where it stopped being usable, and what changed:**
-
-| What the lead hit | What it was | Fix |
-|---|---|---|
-| "The startup screen seems stuck, I can't click the first buttons" | `make skirmish` opens the faction menu. Clicks *did* reach it (the playtest shows the row under the mouse and the picks change), but nothing on it was a button that started anything: the only way on was Enter, written as a line of text ("ENTER fight"). Clicking a row changes a highlight and nothing else, which reads as stuck. | A real **FIGHT** button (min 160×44 px; confirms on release), hint text that says click / right-click. |
-| (the title screen, `make title`) | Its buttons did work, but on desktop they **quit and relaunched the executable**, dropping every launch flag. From a terminal that is a window closing and another opening seconds later. | Switches to the game scene in-process with `Main.next_flags`; carries `--ui-touch`, `--announcer`, `--music` and the playtest flag. |
-| "It ends up focusing on the enemy instead of our own friendly units" | The vision frame included every enemy the commanded element could see. Once the armies met, 26 contacts outweighed 5 of yours: the frame's centre moved to the enemy, the zoom cap stopped it widening, and your element slid off the bottom. Unit test on the old code: **centre 44 m from your element, 17 m from the enemy**. | Contacts are framed together with their mirror image about the element: they widen the view, never move its centre. A wiped last group falls back to the whole army. After: the element stays **1–15 m from screen centre** at every sample through 120 s of battle, all its vehicles on screen. |
-| "A bunch of red error messages" | In a full session the **only** errors were render's: `Too many instances using shader instance variables … 4096` (217) and `instance_buffer_pos.has(p_instance)` (94) with 45 vs 26 vehicles. Nothing from control, combat or audio. | Render removed the instance uniforms later the same day, so a played session now logs nothing at all; `make shell-playtest` fails on any error or warning line, which is what keeps it that way. |
-
-The brief's clue (a headless `--title` printing `TITLE_START offline` at once) did not reproduce: locally the title sat
-for 40 s without printing it.
-
-**Playable now?** Yes, as far as the shell goes: a click on SKIRMISH opens the faction and arena menu, clicks pick both
-sides and the map, FIGHT starts the match, the planning pause says what to do, Space starts it, and the camera stays on
-your element through contact with the enemy visible beyond it. What is left is not the shell's: the frame rate at 30 a
-side, which is the simulation tick (combat and ai, CP1), and how the fight itself reads.
-
-### X2. Subtitles get their own line. Done.
-
-- `Hud.post_caption(speaker, text)` shows one caption at a time on a **caption line** (`CaptionLine`,
-  `game/ui/widgets/caption_line.gd`): top centre, 56% of the screen wide, the speaker in their colour (CALLER yellow,
-  VETERAN cyan, PA pink), white text on a dark strip, at most two lines, held for reading time (2.5 s + 55 ms a
-  character, up to 7 s) and faded. A new line replaces the last at once.
-- Until the booth calls `post_caption` itself, `Hud.post_message` recognises its `"CALLER: …"` format and routes it
-  there. The `HUD_MESSAGE [info] CALLER: …` console line is unchanged, so `announcer-shots` still finds it.
-- **Why the top:** the bottom fifth belongs to the command card, group chips and alert prompt; the message banners
-  run down the sides. The caption strip ends at 12% of the height at 1080p and never crosses a message column
-  (tested at 1920×1080 and 1280×720; text ≥ 18 px).
-- Played: in the shell playtest's two minutes, **4 booth lines on the caption line, 0 in the log, 12 gameplay
-  messages in the log**; frame `build/shell-playtest/4_caption.png` looked at (VETERAN's two-line caption over the
-  battle, readable, clear of the status block and the log).
-
-### X3. The lead's three dials. Done.
-
-| Dial | Flag | Default | Why |
-|---|---|---|---|
-| How close the default frame sits | `--camera-frame=close\|default\|wide` (`RtsCamera.vision_inset` 0.9 / 0.78 / 0.6) | `default` (round 4's frame) | With contacts now framed symmetrically the view already widens when a fight starts (zoom 0.31 on the march, ~0.8 in contact in the playtest). Closer would lose the enemy the moment it matters. |
-| One alert line or three | `--alert-lines=1..3` | 1 | The message log already narrates; the prompt is the one thing to act on (Q). Three lines stack upward and dim. |
-| Faction menu by default | `--pick-faction` / `--no-pick-faction` | on | It was the "stuck" screen only because it couldn't be clicked through; with FIGHT it is one click, and it is where the army size is explained. |
-
-To try them: `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --camera-frame=close --alert-lines=3`.
-
-### X4. Readability at 30 a side (M3, with render). Done.
-
-**The HUD's draw calls: 369 → 84** at 1920×1080 with 68 vehicles (86 on the final merge with main) (CP1 budget ≤ 130). `make hud-cost` measures each
-widget during a tactical pause (hidden vs shown, the picture holding still) and writes `build/hud-cost.json`; render
-can hold the line with it.
-
-| Widget | Before | After | What changed |
-|---|---|---|---|
-| Group bar | 120 | 8 | unit icons drawn once into textures (`IconRaster`, `CommandIcons.unit_texture`), and a `DrawBatch` that draws every fill, then outline, icon, text |
-| Selection panel | 71 | 33 | the same |
-| Radar | ~104 | 20 | blips are cached disc / diamond / ring textures drawn kind by kind; prop footprints are batched primitives |
-| HUD skin (status + banner frames) | 52 | 5 | `CyberFrame` draws each glow layer's brackets as one multiline, not four polylines |
-| Selection rings (3D) | 61 meshes | 3 draws | one MultiMesh per ring kind |
-| Everything else (messages, captions, hints, edge markers, status, score) | | ~18 | |
-| **Whole HUD** | **369** | **84–86** | |
-
-HUD `_process` with 30 selected of 60: **0.865 ms** (`test_control_scale`), inside CP1's 1 ms.
-
-**Legibility on render's darker scene** (frames `build/control-playtest/scale/*.png` and the shell playtest, looked at,
-after render's merge): the selected element's thick bright rings read at a glance against idle friendlies' thin
-ones and against render's cyan team rim, which is a faint tint on the hull, not a ring on the ground; hull bars sit
-over the selected and the hurt only; order markers and the dashed attack-move line stay visible over the asphalt.
-**Enemies' dashed rings were too faint to find in a crowd** at 0.45 alpha: raised to 0.7. Friend and foe still
-differ by shape (solid vs dashed rings, circles vs diamonds on the radar), not only colour.
-
-**Console:** a whole played session (title → menu → 2 minutes of battle, 64 vehicles) and the 30-a-side scale session
-now log **zero** `ERROR`, `SCRIPT ERROR` or `WARNING` lines, after render removed the instance uniforms.
-`make shell-playtest` now **fails on any red line**, so it stays that way.
-
-### X5. Orders that survive a big army. Done.
-
-**Latency at 30 a side** (`tests/test_control_scale.gd`, builder0, 2026-09-17, main with render/combat/arena merged):
-box-select the army **0.53 ms**, click → 30 orders **1.15 ms**, `order_selection` for 30 **1.83 ms** (round 4: 1.38 /
-1.87 / 1.65 on the laptop), control's per-frame work with 30 selected of 60 **0.865 ms** (awareness 0.32, horizon
-zoom 0.64 amortised, panel summary 0.29, vision state 0.13, edge markers 0.01) against CP1's 1 ms. The element bar is
-read in the X4 frames below.
-
-**`facing` in `UnitCommand`** (doctrine's request from round 4): `move`, `attack_move` and `hold` take an optional
-`facing: [x, z]` (zero or NaN rejected; other verbs rejected). The group still travels and forms up toward `to`; every
-unit's order carries the normalised `facing`, and once the order completes its station's `heading` is the facing. The
-round-4 executor honours it on hold. Nothing issues it yet, so the sim baseline is untouched. On main in K1
-(orchestrator, 0f838c8). **Turning a brain to it is ai's** (requested via the orchestrator, with the halt hack in
-`element_plan.gd` to remove).
-
-### X6. The first two minutes. Done.
-
-**What a first-time player sees, in order** (played with `make shell-playtest`, frames looked at):
-
-1. **The title** (`make title`): TANK SQUAD types itself in over the night arena, four buttons. The mouse is over the
-   button it looks like it's over; SKIRMISH switches to the game in the same window (no restart).
-2. **The faction menu:** four factions with what each fields at the budget (Road Gangs 44 vehicles … Syndicate 17),
-   click for yours, right-click for theirs; an **ARENA** row (Random by default, or The Container Yard, The Boulevard,
-   The Pit, The Boneyard, each with its one-line note: the fight it is built for); a yellow **FIGHT** button.
-3. **Planning:** the army on its start line, the first element selected and ringed, "PLANNING: select … Space starts"
-   across the top, and in the bottom-left corner three hints: `1-5 pick an element`, `RIGHT-CLICK move there / attack
-   it`, `SPACE pause to plan`. The radar shows the whole arena with the fog.
-4. **Space:** the match runs, the SPACE hint retires and `A + CLICK attack-move` moves up. The camera follows the
-   element it frames at zoom ~0.31 on the march.
-5. **Contact (~45 s):** the view widens to take in the enemy while staying centred on your element (~0.8); the caption
-   line carries the booth; kills and losses go to the message column on the right; one alert (`Hunters under fire
-   (+4) [Q]`) sits above the group chips.
-6. **Losing an element:** the camera goes back to your army, not to what killed it.
-
-Hints never take input, show at most three, and each goes for good once used (`user://control_hints.cfg`;
-`--hints=off`, `--hints=fresh`).
-
-**The arena picker** (the lead chose "players pick", Random stays the default): the ARENA row offers Random first,
-then Arena's proven rotation (The Container Yard, The Boulevard, The Pit, The Boneyard) with each one's note. It is
-reachable from the title (SKIRMISH opens the menu); SPECTATE skips the menu and rolls random. `Arena` builds from the
-command line only, so a match restarted with `Main.next_flags` silently kept the old layout: `GameLauncher`
-(`game/ui/game_launcher.gd`) instances `main.tscn` with the arena's `layout_name` set and switches to it, and both the
-title and the menu start matches through it. **Arena owns the random roll**: the launcher calls `Arena.resolve_name`
-with the match's `--seed`, adding the skirmish's clock seed when a launch has none, so the seed in the HUD replays the
-arena too. The HUD's status line names the arena that was built (`Arena.active`). The shell playtest checks the arena
-you clicked is the one built.
-
-### Ahead of combat's 30 Hz tick (the lead approved it mid-round)
-
-- **K1's response guarantee is now wall-clock: an order takes effect within 100 ms of the input** (`Orders.RESPONSE_MS`,
-  `Orders.response_ticks()` = 6 at 60 Hz, 3 at 30 Hz; the orchestrator's ruling). A player feels milliseconds, not
-  ticks: "3 ticks" meant 50 ms at 60 Hz and would silently have become 100 ms. At 30 Hz it holds with nothing to spare,
-  which also says a 20 Hz tick would break the feel. Measured today at 60 Hz: 1 tick (17 ms) from fighting, driving,
-  holding and hurt. **If 30 Hz measures above 100 ms, that's a finding about the tick rate, not a reason to move the
-  number.** control_playtest and test_control_response assert it; ai's `scenario_orders.gd` still says 3 ticks.
-- **Everything that follows a vehicle on screen reads where it is drawn** (`Shown`, `get_global_transform_interpolated`):
-  the RTS camera's follow and vision frame, selection rings, hull bars, unit picking and box select, center-on, route
-  lines. With interpolation on, `global_position` in `_process` is the last tick's, so a camera reading it would trail
-  what the player sees by a tick. Orders and sight checks keep the tick's position (the simulation must never see the
-  smoothed world). The rig's camera and the ring MultiMeshes are `PHYSICS_INTERPOLATION_MODE_OFF`: they're placed
-  every rendered frame, and interpolating them again would lag them. Identical behaviour at 60 Hz without interpolation.
-
-### Stretch
-
-- **Spectate from the title.** SPECTATE starts a CPU-vs-CPU skirmish under round 4's self-directing cinematic camera
-  on a random arena (`skirmish cinematic player=cpu enemy=cpu no-pick-faction arena=random`). A title entry can carry
-  several flags now.
-- **A replay of the last match:** not started. It needs the simulation to be replayable from recorded orders on the
-  current Jolt physics, which is combat's determinism work first.
-
-### The CPU's commander: a switch that is built, tested, and deliberately off
-
-Round 4 built elements, formations and battle drills, but the skirmish CPU never ran them: it fought on brains alone
-unless someone passed a flag. Round 5 built the switch to change that, and then measurement said not to throw it yet.
-
-`SkirmishMode.cpu_runs_elements(flags)`: `--element-cpu` / `--no-element-cpu`, default `ELEMENT_CPU_DEFAULT`. When on,
-each CPU squad becomes an element under `ElementCommander` (both sides under `--cinematic`), sharing the one
-`Elements` with the player's lazily formed elements. **It stays off:** ai's faction ladder in skirmish's real setup
-(faction armies at 5200, control point on) has brains-only beating doctrine 32–16; the earlier 52–28 was small mirrors
-without the control point. Cost when on (ai, Jolt, laptop): elements +1.7 ms a tick flat after ai's stagger, about +15%
-of the tick. Flip the constant when ai reports a variant that wins at scale.
-
-### Decisions (with reasons)
-
-- **Contacts frame symmetrically about the element** rather than being dropped: the lead wants to see the fight
-  coming, and the element must stay the centre. Mirroring keeps both.
-- **Captions at the top centre**, not the bottom: the bottom fifth is the command card, chips and alert; the sides are
-  the message columns.
-- **The faction menu stays on by default** and gained the arena: it was "stuck" only because nothing on it was clickable.
-- **Menus start matches in-process through `GameLauncher`**, never by relaunching the executable (lost flags, a
-  closing window) or by `reload_current_scene` (the arena ignored the new flags).
-- **HUD icons are rasterised once in GDScript** (`IconRaster`) rather than baked in a SubViewport: synchronous,
-  headless-safe, testable, and the vector `draw_unit` stays the single source of the shapes.
-- **The shell playtest fails on any console error or warning.** The lead's "red error messages" are a player-facing
-  bug, so the check is the player's console, not a filtered one.
-
-### Questions for the lead
-
-1. **Is the view in a fight wide enough?** On the march the camera sits close (zoom ~0.31); when the enemy is in sight
-   it widens to keep them in frame (~0.8). `--camera-frame=close|default|wide` changes how tightly the element fills the
-   screen if either feels wrong.
-2. **Arena choice:** the menu offers Random (default) plus each named arena with its note. If you'd rather the game
-   always rolls it, the row can go; if you want the choice, it's there.
-
-### Requests to other streams
-
-- **ai:** turn brains to `order["facing"]` on arrival and to the station heading when idle (K1 facing, on main); then
-  `element_plan.gd`'s halt can issue facing instead of driving crews along their sectors. Relayed by the orchestrator.
-- **ai:** tell control when a doctrine variant beats brains at skirmish scale; the default flips in one line.
-- **Done (ai's stream closed, so control took it):** `tests/ai_scenarios/scenario_orders.gd` asserts K1's 100 ms through
-  `Orders.response_ticks()` instead of a hard-coded 3 ticks, so combat's 30 Hz flip can't quietly turn a stricter check
-  into a wrong one.
-- **combat:** `element_awareness.gd`'s 90-tick and `squad_chip.gd`'s 180-tick constants convert to seconds in your 30 Hz
-  branch (agreed, to avoid a conflict); list them in merge notes.
-- **audio:** `Hud.post_caption(speaker, text)` is there to call instead of the `"CALLER: …"` format; audio switches once
-  it's on main (`post_message` routes that format meanwhile). *(The booth naming the wrong faction is fixed by audio's
-  2b28709, already on this branch: the latest shell playtest has no "Condemned" in a gangs-vs-Law match.)*
-- **Carried to round 6 (arena's stream closed, now control's):** `Arena._ready` reads `--arena`/`--seed` from the command
-  line only, so a match started from a menu (flags in `Main.next_flags`) can't reach them. `GameLauncher` works round it
-  (resolves with `Arena.resolve_name`, sets `layout_name`), so nothing is wrong for a player today; reading
-  `Main.next_flags` when set would remove the workaround.
-- **Done after render's `FrameTarget` reached main:** the frame-rate selector. A button beside the FX button
-  ("QUALITY 30" / "PERFORMANCE 60", `hud_skin.gd`) and a "FRAME RATE: …" row under the title menu, both switching live
-  through `FrameTarget.apply(other, "player", true)` and saving the choice; each picks up a change made by the other.
-  Looked at on the title and in the planning frame.
-
-### Known issues
-
-- Hints are desktop only (keys and right-click), like the rest of the round-4 grammar.
-- `make hud-cost` measures during a tactical pause, so messages and captions (0–4 draws each while they show) are not
-  in the 84–86.
-- The frame-rate and FX buttons are HUD chrome: on a phone-shaped window they sit in the same top-left corner as the
-  status block, which has not been re-checked at touch sizes (nothing here has a touch path yet).
-
-### What to playtest (exact commands)
-
-```bash
-make title                          # SKIRMISH → faction + arena menu → FIGHT → planning (Space) → battle; or SPECTATE
-make skirmish                       # straight to the faction + arena menu
-make skirmish-factions FACTION=gangs ENEMY_FACTION=law ARENA=pit
-make remote T=shell-playtest        # the whole first two minutes through real input; fails on any console error
-make remote T=hud-cost              # the HUD's draw calls, per widget
-make remote T=control-scale-shots   # 30 a side, frames in build/control-playtest/scale/
-make squad-orders-test              # LOCAL ONLY: do his orders stick? (the playability gate; read it above)
-make response-test                  # LOCAL ONLY: does the game answer his hand? (builder0 draws ~1 fps: useless there)
-```
-Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cpu` on the Godot command line.
-
-### Next steps (for whoever picks this stream up)
-
-Start by running `make squad-orders-test` and `make response-test` on a machine that draws frames, and compare against
-*The instruments* above. Those two say whether the game is still playable; everything else here is detail.
-
-1. Flip `ELEMENT_CPU_DEFAULT` when ai's variant wins at scale.
-2. Touch: the desktop grammar, hints and menus have no touch path yet.
-3. Re-run `make response-test` after combat's 30 Hz flip (the standing gate above) and report the six numbers.
-4. A replay of the last match, once the simulation replays from recorded orders.
-5. Carried from closed streams: `Arena._ready` reads `--arena` / `--seed` from the command line only, so a match started
-   from a menu cannot pass them; `GameLauncher` works around it (see *The arena picker*), so a player sees nothing wrong.
-   Reading `Main.next_flags` when it is set would remove the workaround.
-6. ai's post-order leash (18 m) is unmeasured: they asked for `from_the_given_slot_m` (mean, worst, alive) from
-   `make squad-orders-test` at 30 a side, for 18 m against something tighter, before they move the constant.
-7. `make squad-orders-test` and `make response-test` are not in `make check` (both need a display and take minutes).
-   Run them by hand when the tick rate, locomotion, the command grammar or the frame budget changes.
-
-### Merge notes (shared files)
-
-- **No shared files edited.** `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` untouched. Everything is in
-  control's paths: `game/control/`, `game/ui/` (including `widgets/` and `widgets/title/`), `game/camera/`,
-  `game/modes/skirmish_mode.gd`, `mk/command.mk`, `_agents/tactical_map.md`, control's tests.
-- **K1:** `UnitCommand` gains optional `facing` (already documented on main, 0f838c8). The response guarantee is
-  `Orders.RESPONSE_MS` = 100 ms (orchestrator to update workstreams.md).
-- **Hud:** new `post_caption(speaker, text)` and signal `caption_posted`; `post_message` routes the booth's
-  `"SPEAKER: …"` lines to it and still prints `HUD_MESSAGE`.
-- **Title screen:** starts modes in-process through `GameLauncher`; a menu entry may carry several flags.
-- **New flags** (skirmish): `--camera-frame`, `--alert-lines`, `--hints=off|fresh`, `--no-element-cpu`,
-  `--hud-cost=PATH`, `--shell-playtest=DIR`. **New make targets:** `shell-playtest`, `hud-cost`; `skirmish-factions`
-  takes `ARENA=`.
-- The sim baseline is untouched (nothing here runs in `--match`).
+_The worker keeps this current._

@@ -1,8 +1,11 @@
 # Stream: render (frame rate, and vehicles that look like vehicles)
 
-> Read [../orchestration.md](../orchestration.md) (the worker contract), [../game_design.md](../game_design.md)
-> (*Round 5 direction*), [../workstreams.md](../workstreams.md) (**M1 is yours and is CP1**; M3 you share with control),
-> [../art_direction.md](../art_direction.md) and [references/fx_tricks.md](references/fx_tricks.md) (the tricks and tier
+> **Archived 2026-09-18:** round 5 is merged into `main`. This brief and its Status are the record of what the
+> stream did; the current round is in [../../../workstreams.md](../../../workstreams.md).
+
+> Read [../orchestration.md](../../../orchestration.md) (the worker contract), [../game_design.md](../../../game_design.md)
+> (*Round 5 direction*), [../workstreams.md](../../../workstreams.md) (**M1 is yours and is CP1**; M3 you share with control),
+> [../art_direction.md](../../../art_direction.md) and [references/fx_tricks.md](references/fx_tricks.md) (the tricks and tier
 > budgets from round 1). You own `game/theme/**`, the art paths under `assets/`, `tools/assets/`, `mk/{fx,assets}.mk`,
 > the art filters in `export_presets.cfg`, `_agents/{art_direction,slot_contracts}.md` and `fx_tricks.md`.
 
