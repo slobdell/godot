@@ -587,6 +587,11 @@ func _finish() -> void:
 ## target, a LOCKED 30 (the lead's sign-off), on the 99th percentile, because a locked rate that drops isn't locked. Pure.
 ## A capped frame lands a hair over its target (a 30 fps cap measures 33.4 ms, not 33.33), so a count holds within this
 ## much of the frame time.
+##
+## **These numbers mean nothing in a `--perf-capped` run**: the cap pins every frame at the target, so 60 can never pass
+## and 30 sits on the line, and both read 0 however much headroom the machine has. Capacity comes from an uncapped run;
+## a capped run answers "does the locked rate hold?" instead. The summary records `capped` so a saved file says which
+## it was (see `_agents/streams/references/perf/README.md`).
 const FPS_TOLERANCE_MS := 1.0
 
 
