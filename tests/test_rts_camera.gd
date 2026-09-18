@@ -25,10 +25,19 @@ func test_zoom_sets_the_distance_and_never_the_tilt() -> void:
 	var far := RtsCamera.pose_for(Vector3.ZERO, 0.0, 1.0)
 	assert_near(near.origin.length(), RtsCamera.MIN_DISTANCE, 0.01, "zoomed in: close to the ground point")
 	assert_near(far.origin.length(), RtsCamera.MAX_DISTANCE, 0.01, "zoomed out: far from it")
-	# Round 6 X3: round 5 tilted from 25° to 82° as you zoomed out, so seeing your army cost you a top-down view.
-	for pose: Transform3D in [near, far, RtsCamera.pose_for(Vector3.ZERO, 0.0, 0.5)]:
+	# Round 6 X3: round 5 tilted from 25° to 82° as you zoomed out, so seeing your army cost you a top-down view. Now
+	# every zoom out to FAR_TILT_FROM_M looks down at exactly the player's tilt...
+	for level in [0.0, 0.2, RtsCamera.level_for(50.0), RtsCamera.level_for(RtsCamera.FAR_TILT_FROM_M)]:
+		var pose := RtsCamera.pose_for(Vector3.ZERO, 0.0, level)
 		assert_near(rad_to_deg(asin(pose.origin.y / pose.origin.length())), RtsCamera.DEFAULT_PITCH_DEG, 0.01,
-				"every zoom looks down at the same default tilt")
+				"zoom %.2f looks down at the player's tilt" % level)
+	# ...and only past it does a soft floor lift a very low camera, so a whole-army view is ground, not a strip of
+	# arena between sky and cut-away stands (the lead's 12°, shell-playtest at 50 s). Never near round 5's top-down.
+	var far_tilt := rad_to_deg(asin(far.origin.y / far.origin.length()))
+	assert_near(far_tilt, RtsCamera.FAR_TILT_MAX_DEG, 0.01, "fully zoomed out, the floor is FAR_TILT_MAX_DEG")
+	assert_true(far_tilt <= 45.0, "which is nowhere near a bird's eye view (%.0f°)" % far_tilt)
+	var steep_far := RtsCamera.pose_for(Vector3.ZERO, 0.0, 1.0, 48.0)
+	assert_near(rad_to_deg(asin(steep_far.origin.y / steep_far.origin.length())), 48.0, 0.01, "a steeper tilt is kept as it is")
 	assert_true(RtsCamera.DEFAULT_PITCH_DEG <= 50.0, "and the default sees vehicles from the side, not from above")
 	var steep := RtsCamera.pose_for(Vector3.ZERO, 0.0, 0.5, 70.0)
 	assert_true(steep.origin.y > steep.origin.z * 2.5, "a pitch asked for is the pitch you get")
@@ -247,5 +256,29 @@ func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
 	assert_true(depth.call(rail) < near and depth.call(seat) < near, "the rail and the seats are cut away (near %.1f; rail %.1f, seat %.1f)" %
 			[near, depth.call(rail), depth.call(seat)])
 	assert_true(depth.call(wall_foot) > near and depth.call(squad) > near, "the floor at the wall and a vehicle on it are drawn")
+	# At the lead's 12° the wall itself (3 m) must go too, or its top edge hides every vehicle parked against it (seen in
+	# shell-playtest at 12°); a vehicle hugging the wall stays.
+	for pitch: float in [12.0, 25.0, 50.0]:
+		var low_near := RtsCamera.cutaway_near(focus, 0.0, 50.0, pitch, half)
+		var low_view := RtsCamera.pose_at(focus, 0.0, 50.0, pitch).affine_inverse()
+		var wall_top := Vector3(0, RtsCamera.WALL_HEIGHT_M, half)
+		var hugging := Vector3(0, 2.0, half - 0.5)
+		if low_near > RtsCamera.NEAR_DEFAULT:  # (at 50° from here the stands hide nothing, so nothing is cut)
+			assert_true(-(low_view * wall_top).z < low_near, "at %d° the wall's top edge is cut away" % pitch)
+		assert_true(-(low_view * hugging).z > low_near, "at %d° a vehicle against the wall is drawn" % pitch)
+		assert_true(-(low_view * Vector3(0, 0, half)).z > low_near, "at %d° the floor at the wall is drawn" % pitch)
+	# A camera among the seats (close framing at 12°, shell-playtest at 3 s: a railing across the whole view) always cuts.
+	# (36 m inside the wall, 46 m out: the camera sits 9 m past the wall at 9.6 m, among the seats, where the sight line
+	# to the arena clears every sampled profile point: the first version of the rule left the railings standing.)
+	var close := Vector3(0, 0, half - 36.0)
+	var among := RtsCamera.pose_at(close, 0.0, 46.0, 12.0)
+	assert_true(among.origin.z > half + 2.0 and among.origin.z < half + 24.0, "setup: the camera is in the stands (%.1f)" % among.origin.z)
+	assert_true(RtsCamera.cutaway_near(close, 0.0, 46.0, 12.0, half) > RtsCamera.NEAR_DEFAULT, "a camera among the seats cuts them")
+	# From far out and high up the stands hide nothing: they stay (with their crowd) instead of a black void.
+	var mid := Vector3(0, 0, 60.0)
+	assert_eq(RtsCamera.cutaway_near(mid, 0.0, 150.0, 30.0, half), RtsCamera.NEAR_DEFAULT,
+			"a high camera beyond the stands keeps them as foreground")
+	assert_true(RtsCamera.cutaway_near(mid, 0.0, 150.0, 12.0, half) > RtsCamera.NEAR_DEFAULT,
+			"a low one looking through them cuts them")
 	# Looking the other way from the same spot (camera over the arena), nothing is cut.
 	assert_eq(RtsCamera.cutaway_near(focus, PI, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "a camera over the arena cuts nothing")

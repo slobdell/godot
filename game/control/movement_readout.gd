@@ -11,8 +11,13 @@ extends RefCounted
 ## `from_movement()` changes, if its call shape differs from the contract's.
 
 ## Phases the HUD calls out over a vehicle, with the word it shows. `driving`, `pathing` and `arrived` are what a
-## player expects of an order and need no words.
+## player expects of an order and need no words. (nav: `yielding` goes live with nav's X4, right-of-way.)
 const CALLOUTS := {"yielding": "YIELDING", "blocked": "BLOCKED"}
+## A driving unit that has made no progress this long (nav's `stalled_s`) is called out as STUCK: the honest version of
+## the number round 5 hid (a stalled unit used to declare its order complete from 12 m away).
+const STALLED_SHOWN_S := 2.0
+## What nav's `blocked_by` means when it is not a unit name.
+const BLOCKED_WORDS := {"no_path": "No way through", "terrain": "Stuck on terrain"}
 ## ETAs longer than this aren't shown ("arrives in 40 s" is noise; the waypoint line already says it's far).
 const ETA_SHOWN_MAX_S := 30.0
 
@@ -45,9 +50,24 @@ func state(unit_name: String) -> Dictionary:
 	return reading if reading is Dictionary else {}
 
 
-## The word to float over a vehicle ("" = nothing to say).
+## The word to float over a vehicle ("" = nothing to say). `{}` from nav means a hull nothing drives (a wreck, one not
+## spawned yet, a unit with no order): nothing to say, never "unknown".
 func callout(unit_name: String) -> String:
-	return String(CALLOUTS.get(String(state(unit_name).get("phase", "")), ""))
+	var reading := state(unit_name)
+	if reading.is_empty():
+		return ""
+	var phase := String(reading.get("phase", ""))
+	if phase in ["driving", "pathing"] and float(reading.get("stalled_s", 0.0)) >= STALLED_SHOWN_S:
+		return "STUCK"
+	return String(CALLOUTS.get(phase, ""))
+
+
+## The rest of the route a unit means to take (nav's `path_points`), for drawing: empty when nav has none.
+func route(unit_name: String) -> PackedVector3Array:
+	var points: Variant = state(unit_name).get("path_points", PackedVector3Array())
+	if points is PackedVector3Array:
+		return points
+	return PackedVector3Array(points) if points is Array else PackedVector3Array()
 
 
 ## One line for the unit card: "Blocked by Green_Alpha_2", "Giving way", "Arrives in 4 s", or "".
@@ -58,10 +78,15 @@ func card_line(unit_name: String, describe_unit: Callable = Callable()) -> Strin
 			var by := String(reading.get("blocked_by", ""))
 			if by == "":
 				return "Blocked"
+			if BLOCKED_WORDS.has(by):
+				return String(BLOCKED_WORDS[by])
 			return "Blocked by %s" % (describe_unit.call(by) if describe_unit.is_valid() else by)
 		"yielding":
 			return "Giving way to a friend"
 		"pathing", "driving":
+			var stalled := float(reading.get("stalled_s", 0.0))
+			if stalled >= STALLED_SHOWN_S:
+				return "Stuck for %d s" % roundi(stalled)
 			var eta := float(reading.get("eta_s", -1.0))
 			if eta >= 0.0 and eta <= ETA_SHOWN_MAX_S:
 				return "Arrives in %d s" % maxi(1, roundi(eta))

@@ -66,7 +66,19 @@ static func show_for(tree: SceneTree, flags: LaunchFlags) -> LoadingScreen:
 	screen.tip = String(tasks[absi(flags.integer("seed", 0)) % tasks.size()]["id"])
 	tree.root.add_child(screen)
 	current = screen
+	LoadingScreen._voice("start", [tree])
 	return screen
+
+
+## feel's LoadingVoice (the stands murmur from FIGHT and roar as the lights come up; silent headless and with --mute).
+## Called by class name, so this file compiles where feel's audio has not merged yet; a no-op until it has.
+static func _voice(method: String, args: Array) -> void:
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		if String(entry["class"]) == "LoadingVoice":
+			var script := load(String(entry["path"])) as Script
+			if script != null and script.has_method(method):
+				script.callv(method, args)
+			return
 
 
 ## "CONDEMNED  vs  SYNDICATE" from the launch flags ("" for a doctrine-file army with no faction).
@@ -120,6 +132,7 @@ func done() -> void:
 	print("LOAD_TIMING total_ms=%d %s%s" % [total, " ".join(parts), (" marks=" + ",".join(_marks)) if not _marks.is_empty() else ""])
 	_timings["total"] = total
 	_fading = 0.0
+	LoadingScreen._voice("finish", [])
 
 
 ## A timestamp inside the current stage (ms since the screen went up), printed with LOAD_TIMING, for finding where a
