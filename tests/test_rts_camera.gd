@@ -224,3 +224,28 @@ func test_tilt_is_its_own_axis() -> void:
 	rig.snap()
 	var shown := rig.camera.global_transform.origin - rig.focus
 	assert_near(rad_to_deg(asin(shown.y / shown.length())), rig.pitch, 0.1, "the camera is drawn at that tilt")
+
+
+## Round 6 X3: at the lead's low camera, a squad near the wall is framed from a camera that sits past the wall, inside
+## the grandstand, and the railing and crowd hide the squad (seen in `make shell-playtest` at 50 s). The camera cuts
+## away whatever stands between it and the wall: its near plane sits just short of where the wall meets the floor.
+func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
+	var half := 121.0
+	# In the middle of the arena, nothing to cut: the default near plane.
+	assert_eq(RtsCamera.cutaway_near(Vector3.ZERO, 0.0, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "mid-arena: no cutaway")
+	# Ten metres from the south wall, looking north: the camera is ~35 m past the wall, in the stands.
+	var focus := Vector3(0, 0, half - 10.0)
+	var near := RtsCamera.cutaway_near(focus, 0.0, 50.0, 25.0, half)
+	var pose := RtsCamera.pose_at(focus, 0.0, 50.0, 25.0)
+	assert_true(pose.origin.z > half + 10.0, "setup: the camera is outside the wall (%.1f)" % pose.origin.z)
+	var view := pose.affine_inverse()
+	var depth := func(p: Vector3) -> float: return -(view * p).z
+	var rail := Vector3(0, 5.0, half + 1.0)  # the stands' front rail, just outside the wall
+	var seat := Vector3(0, 12.0, half + 12.0)  # a crowd row between the camera and the arena
+	var wall_foot := Vector3(0, 0, half)
+	var squad := Vector3(0, 1.0, half - 4.0)  # a vehicle hugging the wall
+	assert_true(depth.call(rail) < near and depth.call(seat) < near, "the rail and the seats are cut away (near %.1f; rail %.1f, seat %.1f)" %
+			[near, depth.call(rail), depth.call(seat)])
+	assert_true(depth.call(wall_foot) > near and depth.call(squad) > near, "the floor at the wall and a vehicle on it are drawn")
+	# Looking the other way from the same spot (camera over the arena), nothing is cut.
+	assert_eq(RtsCamera.cutaway_near(focus, PI, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "a camera over the arena cuts nothing")

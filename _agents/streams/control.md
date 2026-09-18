@@ -143,6 +143,9 @@ the "why did my element do that" view, if the camera and loading work lands earl
    note. Applied: `RtsCamera.DEFAULT_PITCH_DEG = 25`, `FOV_DEG = 60`, `SkirmishMode.START_ZOOM = 0.373` (50 m). The
    player's tilt range stays 22°–50°.
 2. **Which arena is fun** — the same page has a Fun box per arena (all seven, three frames each). Unticked so far.
+3. **Lower than 25°?** He chose the floor of the range offered, so a follow-up page offers 12°/16°/20°/25° ×
+   35/50/70 m at FOV 60 (with the cutaway): https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7 (db `picks/lead`). If he
+   goes lower, `MIN_PITCH_DEG` moves with `DEFAULT_PITCH_DEG`.
 
 ## Status
 
@@ -169,17 +172,50 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | X3 pitch decoupled | done, **defaults wait on the lead** | `test_rts_camera::test_tilt_is_its_own_axis`, `test_zoom_sets_the_distance_and_never_the_tilt` |
 | X3 camera page | **live, sent to the orchestrator**: https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL | `make camera-looks`; laptop render, 1920×1080, frames in the scratchpad (not committed: 26 MB of JPEG) |
 | X2 palette + symbols | done; Screen / Support by Fire held off the card until squad's X5 | `TaskPalette`, `CommandIcons.draw_task`, table in `tactical_map.md` "Task palette (N4)", `test_control_panel` |
-| X4 loading screen | built; before/after measurement running | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen` |
+| X4 loading screen | done; the load's length is feel's (below) | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen`, shell-playtest `loading_screen_shows` + frame `2b_loading` |
 | X5 orders you see landing | **blocked on nav CP1** (`Movement.state` not on `main`) | — |
 | X6 squad chips | chips say IDLE / MOVING / CONTACT / UNDER FIRE; lit by living members in any order. Plain move keeping the element: agreed with squad, waits on their green | `test_control_groups::test_group_chips_say_what_each_squad_is_doing` |
 
 **The diagnosis the brief asked to verify, verified** (the page's first row): round 5's start pose (zoom 0.36 → 45°)
 was fine; zoom 0.75 → 68° is a top-down view where 30 vehicles are dots. The complaint was the weld, not the start.
 
+### X4: FIGHT → playable, measured
+
+Laptop (shared with five streams: pessimistic), `make shell-playtest` (gangs vs law, Boulevard, ~30 a side), one run per
+row. "Before" is `a975e262` with the same clock patched into a throwaway worktree (start of `GameLauncher.start` → two
+frames after `Main` is ready); "after" is the loading screen's own `LOAD_TIMING`.
+
+| | total | scene | arena build + navmesh | armies | first frame |
+|---|---|---|---|---|---|
+| before (`a975e262`) | 7,563 ms | – | – | – | – |
+| after (`32fd2abc` + tree), run A | 5,828 ms | 67 | 678 | 4,749 | 334 |
+| after, run B | 7,802 ms | 66 | 884 | 6,369 | 483 |
+
+**Where the time goes:** marks inside `_start_match` put 6.35 s of run B between `mode_start` and `armies_built`, i.e.
+`Match.load_doctrine` spawning vehicles. `make spawn-cost` (headless, laptop, 68 vehicles) measured ~65 ms per vehicle
+with the cyberpunk art against 1.1 ms with `--theme=default`, ~63 ms for every instance after the first of its type.
+**I attributed that to per-instance art work, and that was wrong** (feel, `90b3cfb9` on `stream/feel`): each
+new-faction hull slot first instances the default Condemned dozer and swaps it out, the dozer's `.glb` then had no
+reference, the engine unloaded it, and the next vehicle re-read it from disk. A cache evicted *between* instances looks
+exactly like per-instance cost in a per-call profile; the Condemned vehicles at 2 ms each (their live dozers kept the
+model loaded) were the control group in my own data. Fix: `GameTheme.scene()` keeps a reference (law_tank 106–128 ms
+→ 0.9 ms, laptop, headless). **The 5.8–7.8 s "after" rows above are stale once that lands: re-measure on top of it**
+and keep the 7,563 ms "before".
+**The old instrument was blind to it:** shell-playtest's `load_ms` started its clock after the FIGHT click's own
+awaits returned, by which time the whole stall had happened, so it read 0 ms before this round.
+
 ### Decisions
 
 - **Default pitch 25°, FOV 60°, start 50 m out — the lead's pick.** Player range 22°–50°, Page Up/Down or ctrl+wheel
   to tilt, Home resets, **O** = the overview (77°, the one deliberate top-down).
+- **The wall cutaway, not a pitch floor near walls** (do not "simplify" this away). Played at the lead's 25°, a squad
+  near the wall (every army's spawn) is framed from a camera that sits past the wall inside the grandstand: in
+  `make shell-playtest` at 50 s the stand railing hid our own vehicles and the crowd filled the bottom third. Raising the
+  pitch near walls would have brought the top-down view back exactly where every match begins, the one moment the lead
+  is guaranteed to be looking. Instead `RtsCamera.cutaway_near()` puts the camera's near plane just short of where its
+  line of sight crosses the wall at the floor, so the stands between the camera and the arena are not drawn. A camera
+  over the arena keeps `NEAR_DEFAULT`, so the cost is bounded. Side effect for feel: the stands *behind* the player's
+  base (and their crowd) are cut away whenever the camera is past that wall; the far stands stay in view at 25°.
 - **Sky is not unseen ground.** The L4 zoom-out cap sampled the screen and counted rays that miss the ground as ground
   the force can't see; at 25° a fifth of the screen is sky, so the cap would have punished the view the lead chose.
   Sky samples now leave the count.

@@ -172,3 +172,7 @@ camera-looks: import ## Photograph one frozen fight from a grid of pitch x dista
 		| tee $(CAMERA_LOOKS_DIR)/run.log | grep -E 'CAMERA_LOOKS|SCRIPT ERROR|^ERROR' || true
 	grep -q 'CAMERA_LOOKS_DONE ok=true' $(CAMERA_LOOKS_DIR)/run.log
 	@echo "Now LOOK at $(CAMERA_LOOKS_DIR)/index.html"
+
+## Control X4: what spawning a 30-a-side army costs per vehicle (FIGHT's stall). SPAWN_THEME=default compares the box art.
+spawn-cost: import ## Headless: ms per spawned vehicle, first of each type vs the rest, per faction army
+	$(GODOT) --headless --path . --script res://game/ui/spawn_cost_bench.gd -- $(if $(SPAWN_THEME),--theme=$(SPAWN_THEME)) 2>&1 | grep -E 'SPAWN_COST|SCRIPT ERROR|^ERROR'

@@ -33,6 +33,10 @@ const TILT_SPEED_DEG := 40.0
 const WHEEL_TILT_DEG := 3.0
 ## The lead's pick (see DEFAULT_PITCH_DEG); was 55°.
 const FOV_DEG := 60.0
+## X3 cutaway: the camera's near plane when there is nothing to cut (Camera3D's default), and how far short of the
+## wall's foot the plane stops when there is.
+const NEAR_DEFAULT := 0.05
+const CUTAWAY_MARGIN_M := 1.0
 ## Keyboard pan speed in meters per second at zoom 1 (scales down as you zoom in).
 const PAN_SPEED := 160.0
 const ROTATE_SPEED := deg_to_rad(100.0)
@@ -198,6 +202,34 @@ func _process(delta: float) -> void:
 func _apply() -> void:
 	if camera != null:
 		camera.global_transform = RtsCamera.pose_for(_shown_focus, _shown_yaw, _shown_zoom, _shown_pitch)
+		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, RtsCamera.distance_for(_shown_zoom), _shown_pitch,
+				RtsCamera.perimeter_half())
+
+
+## X3 cutaway. At the lead's low camera a squad near the wall is framed from a camera that sits past the wall, inside
+## the grandstand, and the railing and the crowd hide it (`make shell-playtest`, 50 s). Tilting up to stay inside the
+## arena would bring back the top-down view exactly where every army starts, so instead the camera does not draw what
+## stands between it and the wall: its near plane sits CUTAWAY_MARGIN_M short of where its line of sight crosses the
+## wall at the floor. A camera over the arena gets NEAR_DEFAULT. Pure, for tests.
+static func cutaway_near(at: Vector3, heading: float, distance: float, pitch_deg: float, half: float) -> float:
+	var back := Vector3(sin(heading), 0.0, cos(heading))  # from the focus toward the camera, on the ground
+	var reach := INF  # how far from the focus, along `back`, the perimeter square is
+	for axis in [0, 2]:
+		var along: float = back[axis]
+		if absf(along) > 0.0001:
+			reach = minf(reach, (half * signf(along) - at[axis]) / along)
+	var tilt := deg_to_rad(clampf(pitch_deg, 1.0, 89.0))
+	if reach < 0.0 or distance * cos(tilt) <= reach:
+		return NEAR_DEFAULT
+	var pose := RtsCamera.pose_at(at, heading, distance, pitch_deg)
+	var wall_foot := Vector3(at.x, 0.0, at.z) + back * reach
+	var depth := (wall_foot - pose.origin).dot(-pose.basis.z)
+	return maxf(NEAR_DEFAULT, depth - CUTAWAY_MARGIN_M)
+
+
+## The arena perimeter's half size: the walls stand one metre outside the layout's half size (ArenaDressing.setup).
+static func perimeter_half() -> float:
+	return float(Arena.active.get("half_size", Match.ARENA_HALF_SIZE)) + 1.0
 
 
 ## Camera transform looking at `at` from `yaw` (0 = camera south of the focus, looking north), `level` (0 = close,

@@ -31,6 +31,7 @@ extends GameMode
 ##   --camera-looks=DIR  round 6 X3: both sides CPU; freeze the first fight and photograph it from a grid of camera poses
 ##     (pitch x distance x FOV), then write DIR/index.html for the lead to pick from (CameraLooks)
 ##     --camera-looks-grid=arena  three frames only (round 5's start pose, the new default, the overview): the arena tour
+##     --camera-looks-pitches=15,20,25 / -distances=35,50 / -fovs=60  a follow-up grid around a pick (no round-5 row)
 ##   --touch-map  round 2's tap grammar (squad bar, drill and formation pickers) instead of the desktop controls
 ## Round 3 (control stream): the default is StarCraft-style desktop control (RtsControls, _agents/tactical_map.md "v4").
 ## A DOCTRINE is a name in res://doctrines/ or a full path (e.g. user://doctrines/mine.json from the garage).
@@ -169,6 +170,7 @@ func _start_match() -> void:
 	for team in lineups:
 		var faction := String(plan[team]["faction"])
 		var loaded := Army.load_army(lineups[team], seed_value, budget, faction)
+		LoadingScreen.mark("army_%d_rolled" % team)
 		var error: String = loaded.get("error", "")
 		if error == "" and team == Match.Team.GREEN and faction == "":
 			error = Army.check_budget(loaded["doctrine"], budget)
@@ -176,6 +178,7 @@ func _start_match() -> void:
 			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
 					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
 			error = game_match.load_doctrine(team, loaded["doctrine"])
+			LoadingScreen.mark("army_%d_spawned" % team)
 		if error != "":
 			push_error(error)
 			main.hud.set_status("Can't start skirmish: " + error)
@@ -394,6 +397,10 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		looks.out_dir = flags.text("camera-looks")
 		looks.seed_value = flags.integer("seed", -1)
 		looks.grid = flags.text("camera-looks-grid", "full")
+		for axis in ["pitches", "distances", "fovs"]:
+			if flags.has("camera-looks-" + axis):
+				looks.set(axis, Array(flags.text("camera-looks-" + axis).split(",")).map(func(v: String) -> float: return float(v)))
+				looks.show_today = false
 		main.add_child(looks)
 		looks.run()
 	elif flags.has("control-playtest"):

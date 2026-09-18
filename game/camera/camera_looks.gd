@@ -35,6 +35,12 @@ var seed_value := -1
 ## "full" = the whole grid; "arena" = three frames for the arena tour (round 5's start pose, the new default, the
 ## overview), which `make camera-looks` takes on every arena first and the full page then shows in one row per arena.
 var grid := "full"
+## The grid's axes (`--camera-looks-pitches=15,20,25` etc. override them, for a follow-up page around a pick).
+var pitches: Array = PITCHES.duplicate()
+var distances: Array = DISTANCES.duplicate()
+var fovs: Array = FOVS.duplicate()
+## Round 5's welded row: off for a follow-up page, where it has already been seen.
+var show_today := true
 
 var _first_shot_at := -1.0
 var _clock := 0.0
@@ -74,17 +80,17 @@ func run() -> void:
 		frames.append(await _shoot("overview", Vector3.ZERO, Match.team_frame(team)["forward"].angle_to(Vector3.FORWARD),
 				RtsCamera.distance_for(RtsCamera.OVERVIEW_ZOOM), RtsCamera.OVERVIEW_PITCH_DEG, RtsCamera.FOV_DEG,
 				{"row": "arena", "label": "overview (O)"}))
-	for level: float in (WELDED_LEVELS if grid == "full" else []):
+	for level: float in (WELDED_LEVELS if grid == "full" and show_today else []):
 		var distance := RtsCamera.distance_for(level)
 		var pitch := RtsCamera.welded_pitch(level)
 		frames.append(await _shoot("today_z%02d" % roundi(level * 100.0), focus, heading, distance, pitch, RtsCamera.FOV_DEG,
 				{"row": "today", "zoom": level}))
-	for fov: float in (FOVS if grid == "full" else []):
-		for pitch: float in PITCHES:
-			for distance: float in DISTANCES:
+	for fov: float in (fovs if grid == "full" else []):
+		for pitch: float in pitches:
+			for distance: float in distances:
 				frames.append(await _shoot("p%02d_d%03d_f%02d" % [roundi(pitch), roundi(distance), roundi(fov)], focus, heading,
 						distance, pitch, fov, {"row": "grid"}))
-	var meta := {"seed": seed_value, "arena": String(Arena.active.get("name", "")),
+	var meta := {"pitches": pitches, "distances": distances, "fovs": fovs, "seed": seed_value, "arena": String(Arena.active.get("name", "")),
 			"contact": contact, "seconds_in": snappedf(_clock, 0.1),
 			"first_shot_s": snappedf(_first_shot_at, 0.1), "focus": [snappedf(focus.x, 0.1), snappedf(focus.z, 0.1)],
 			"heading_deg": snappedf(rad_to_deg(heading), 0.1), "window": [get_viewport().get_visible_rect().size.x,
@@ -106,6 +112,8 @@ func _shoot(shot_name: String, focus: Vector3, heading: float, distance: float, 
 		extra: Dictionary) -> Dictionary:
 	camera.fov = fov
 	camera.global_transform = RtsCamera.pose_at(focus, heading, distance, pitch)
+	# The rig's wall cutaway (X3), so a low pose near the wall shows what the game would show.
+	camera.near = RtsCamera.cutaway_near(focus, heading, distance, pitch, RtsCamera.perimeter_half())
 	# Two drawn frames: the first can still carry the last pose's shadow cascades and the HUD's last layout.
 	for i in 2:
 		await get_tree().process_frame
@@ -210,12 +218,12 @@ static func page(meta: Dictionary) -> String:
 			html.append("<figure><img loading=\"lazy\" src=\"%s\" alt=\"\"><figcaption><b>zoom %.2f</b> · pitch %.0f° · %.0f m out · FOV %.0f°</figcaption></figure>"
 					% [frame["file"], float(frame["zoom"]), float(frame["pitch"]), float(frame["distance"]), float(frame["fov"])])
 	html.append("</div>")
-	for fov: float in FOVS:
+	for fov: float in meta.get("fovs", FOVS):
 		html.append("<h2>Field of view %.0f°</h2><p>Rows: pitch below the horizon. Columns: distance from the fight.</p><table><tr><th></th>" % fov)
-		for distance: float in DISTANCES:
+		for distance: float in meta.get("distances", DISTANCES):
 			html.append("<th>%.0f m out</th>" % distance)
 		html.append("</tr>")
-		for pitch: float in PITCHES:
+		for pitch: float in meta.get("pitches", PITCHES):
 			html.append("<tr><th>%.0f°</th>" % pitch)
 			for frame: Dictionary in frames:
 				if frame.get("row", "") == "grid" and float(frame["pitch"]) == pitch and float(frame["fov"]) == fov:
