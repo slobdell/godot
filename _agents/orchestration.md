@@ -301,7 +301,7 @@ The kickoff prompt is one line; this section is the rest.
     **Orchestrators: merge that hash**, and if the tip is ahead of it, either wait for its check or read every commit
     in between.
 30. **Changing the tick rate re-times everything counted in ticks, frames or interpolation — three instances in one
-    day.** Round 5's 30 Hz move: (a) K1's response contract said "within 3 ticks", which silently meant 50 ms and
+    day, and *six* by the time round 6 went looking.** Round 5's 30 Hz move: (a) K1's response contract said "within 3 ticks", which silently meant 50 ms and
     would have meant 100 ms — a guarantee about what a player's hand feels belongs in milliseconds; (b) a brain's
     think cadence was `TICK_RATE * 3 / 20`, which integer-divided to 12% *more* thinking at 30 Hz — rates must be
     booked in Hz with the leftover fraction carried, not in whole ticks; (c) physics interpolation arrived with the
@@ -310,6 +310,15 @@ The kickoff prompt is one line; this section is the rest.
     generalisation: **before changing a rate, grep for every constant and assertion expressed in ticks or frames, and
     ask what each one means in seconds at both rates.** Audio, which had already converted everything to seconds,
     needed no changes at all.
+    **Round 6 found three more, all surviving the round-5 sweep, and two of them were lying to a reader rather than
+    breaking a test:** (d) a test awaited `SECONDS * 60` frames, so a "12 s" assertion ran 24 s with a drift threshold
+    — a test sitting at twice its intended duration; (e) the *dither metric itself* divided by `unit_ticks / 3600.0`,
+    so every dither rate ever reported was **double** the real one, and the behaviour it was gating had never actually
+    breached its bar; (f) `game/agent/discovery_bridge.gd` reported `seconds` and `age_seconds` to the discovery agent
+    as `tick / 60`, so **every time the LLM saw was half the real elapsed time**. The lesson on top of the lesson:
+    a rate bug in an *instrument* or a *report* does not fail anything — it silently changes what everyone downstream
+    believes, and it outlives the sweep that was supposed to catch it. When you change a rate, grep the things that
+    **describe** the simulation as carefully as the things that run it.
 31. **Saved measurements need provenance, written from the note and not from memory.** Round 5's close: three
     streams had hours of match results and perf baselines living only inside a worktree's git-ignored `build/`,
     which the round's own cleanup would have deleted — leaving published conclusions with no evidence behind
@@ -475,8 +484,17 @@ The kickoff prompt is one line; this section is the rest.
     |---|---|---|---|---|
     | `VARIANTS` | `ai.mk` (squad) | `match.mk` (combat) | **loudly** — `FileNotFoundError: 'r1,a4,a6'` | fixed → `VARIANT_FILE` |
     | `UNITS` | `ai.mk` (squad) | `match.mk` (combat) | **silently** — `$(if $(UNITS),--units $(UNITS))` always fired, so *every* `matchup-search` run passed `--units 60` whatever the caller asked, and said nothing | fixed → `SEARCH_UNITS` |
-    | `ARENAS` | `tactics.mk` (squad) | `arena.mk` (arena) | not yet established | **open** |
-    | `SECONDS` | `net.mk` (paused) | `tactics.mk` (squad) | not yet established | **open** |
+    | `ARENAS` | `tactics.mk` (squad) | `arena.mk` (arena) | not established | fixed → `TACTICS_ARENAS` |
+    | `SECONDS` | `net.mk` (paused) | `tactics.mk` (squad) | not established | fixed → `PARITY_SECONDS` (squad's side; `net.mk` untouched) |
+    | `RUNS` | `ai.mk` | `tactics.mk` | **silently** — a ladder run that *said* 2 runs did 4 | fixed → `AI_RUNS` / `TACTICS_RUNS` |
+
+    The fifth (`RUNS`) was found by the owner while fixing the others, which is the argument for having one stream
+    sweep its whole namespace rather than patching the reported case.
+    **The fix pattern to copy** (squad, `3db1251f`): rename each knob to carry its owner's prefix, keep the old name
+    working **but only from the command line** — `$(if $(filter command line,$(origin VAR)),…)` — so another file's
+    *default* can never reach your targets while a human's explicit `VAR=` still does; and **echo what each target
+    resolved to**. That preserves every documented invocation, closes the namespace, and makes a wrong value visible
+    in the artefact. Verify with `make -n` on every form.
 
     **The loud/silent asymmetry is the whole reason to run the audit rather than wait for a crash.** `engagement`
     crashed on a missing file; its sibling `matchup-search` took the same wrong value as a *required* argument and
