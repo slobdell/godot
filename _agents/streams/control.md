@@ -151,8 +151,9 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
-**Report (2026-09-18, evening).** Green and sent to merge: **`aa7f3499`** (`make remote T=check` 1051 passed, 0 failed,
-builder0); `9ef6bbee` on top is docs and a comment only. Merged to `main` earlier: `758a45a8`.
+**Report (2026-09-18, night).** **Green, merge here: `2dbd985d`** (`make remote T=check` 1082 passed, 0 failed,
+builder0) — main `0f559857` merged in, X4 re-landed, Ambush, X5 on nav's real Movement. Merged to `main` earlier:
+`758a45a8`, `aa7f3499` + `9ef6bbee`. (This Status edit is docs-only, on top of it.)
 - **Done:** X1 (no Move/Follow buttons), X2 (the N4 palette with tactical task graphics; Support by Fire and Screen
   earned from squad's evidence), X3 (pitch its own axis; **the lead picked 12° · 50 m · FOV 60** on two camera pages,
   played and fixed: wall cutaway, far-range tilt floor), X4 (loading screen; FIGHT → playable 7.6 s → 1.4 s with
