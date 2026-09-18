@@ -310,3 +310,12 @@ The kickoff prompt is one line; this section is the rest.
     generalisation: **before changing a rate, grep for every constant and assertion expressed in ticks or frames, and
     ask what each one means in seconds at both rates.** Audio, which had already converted everything to seconds,
     needed no changes at all.
+31. **Saved measurements need provenance, written from the note and not from memory.** Round 5's close: three
+    streams had hours of match results and perf baselines living only inside a worktree's git-ignored `build/`,
+    which the round's own cleanup would have deleted — leaving published conclusions with no evidence behind
+    them. Rescue compact extracts into `_agents/streams/references/`, cite them from the document that quotes
+    the numbers, and give each directory a README with one row per file: what it is, what commit and machine it
+    was taken on, the headline number, and the caveat that makes it misleading if missed. **Write each row from
+    the contemporaneous note, not from recollection** — that is the step that caught the errors: one stream was
+    about to mislabel a baseline's conditions, another found a score it had reported was really its record in a
+    different matchup. Better still, make the tool record its own conditions, so the next file cannot lose them.
