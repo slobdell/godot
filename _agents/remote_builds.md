@@ -91,6 +91,12 @@ local: remote runs don't forward API keys.
 - **Two runs from the same worktree at once clobber each other:** the remote folder is per worktree, not per run, so a
   second `make remote` rsyncs over a running one (seen 2026-09-15: a parallel test run broke a check with an rsync
   error). Run one remote command per worktree at a time, or copy the worktree.
+- **Back-to-back checks in one worktree folder can collide on a smoke port.** Round 5's close: a run came back
+  `1010 passed, 0 failed` **and** `exited 2`, because `net-smoke` hit
+  `server: cannot listen on port 9221: Already in use` -- the previous run's server in the same remote folder was
+  still exiting. `make remote T=net-smoke` passed on its own immediately after, and the full check passed on the
+  re-run. Note what caught it: the pass/fail counts alone said green, and only the wrapper's exit line disagreed.
+  Leave a few seconds between runs in the same folder, and re-run before treating a port collision as a defect.
 - **Stale import cache weirdness:** `ssh slobdell@builder0 rm -rf ~/tank_squad/<folder>/.godot` and rerun.
 - **Disk:** each remote folder holds its own `.godot` cache and `build/`; clean old ones with
   `ssh slobdell@builder0 rm -rf ~/tank_squad/godot-<old stream>` when a round closes.
