@@ -257,9 +257,8 @@ _None yet._
 
 ### Merge notes (shared / other streams' files)
 
-- **Green, merge here: `0f2d5840`** — builder0 `make check exited 0`, 1081 passed, sim baseline 8ebbed52 intact
-  (includes merged main with CP1). On top: `d4a855c9` two scenario thresholds derived from the band (test-only, filtered
-  runs pass) and Status.
+- **Green, merge here: `14361035`** (the tip when checked) — builder0 `make check exited 0`, 1081 passed, 0 failed, sim
+  baseline 8ebbed52 intact. Includes merged main (CP1), X3 on nav's ETA, and the two band-derived scenario thresholds.
 - `game/control/group_formation.gd` (control's, a recorded exception): adapter over TacticsFormation, same API.
 - `game/ai/tank_brain.gd` conflicts with combat's proposal `5478fa61` in exactly two lines: **take squad's**
   (`TankBrain.fire_band`, the same expression as `Engagement.effective_range`).
