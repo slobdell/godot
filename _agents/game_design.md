@@ -342,6 +342,16 @@ stack first, then the layer that commands it, then how the player reads and issu
   top-down and too far. Lower the default pitch, get the vehicles in profile, keep the tactical read. The standing
   guidance is unchanged: **somewhere between StarCraft 2 and Twisted Metal**.
 - **The stands are empty.** Ambient crowd — visible in the stands and audible — is missing entirely.
+- **What the range complaint actually was** (established by measurement, 2026-09-18, and it corrects how two rounds of
+  briefs had read it). Everyone — including this document — had been treating *"units see each other and then everyone
+  just starts firing"* as **too much shooting**. It is not. When engagement discipline was added and measured, the fire
+  rate went **up**, not down: units close to where their fire actually counts instead of trading gambles at maximum
+  range, so more rounds are worth firing. **His complaint was never the volume of fire — it was fire from a distance
+  where nothing else was possible.** A denser, closer fight is the *fix*, not a side effect to be tolerated.
+  The corollary, which protects the design from the obvious over-correction: **there is a point where tightening goes
+  too far, and it is recognisable.** At 0.55 of weapon reach the fire rate fell *below* the old world, matches stretched
+  by 40%, and both test matches ended on the control point rather than by elimination — **neither side could finish**.
+  That is "a fight the player can never close", and nobody should tune toward it. The shipped bands are nowhere near it.
 - **Weapon ranges are still too long.** *"Units see each other and then everyone just starts firing."* This was round
   5's combat brief too, and the lead still sees it: the first contact should not be the whole fight.
 
