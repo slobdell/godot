@@ -45,8 +45,10 @@ duel: import ## Watch a small fight as a text timeline (shots, hits, poses): GRE
 	$(PYTHON) tools/combat_duel.py --godot $(GODOT) --green $(or $(GREEN_UNITS),tank) --rust $(or $(RUST_UNITS),tank) \
 		--seed $(SEED) --time-limit $(or $(DUEL_TIME),90) $(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE))
 
-matchup-search: import ## Score --tune variants of the matchup matrix against the designed counters: VARIANTS=tools/matchup_variants/<file>.json [UNITS= SEEDS=2 ESCORT=]
-	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANTS) --seeds $(or $(SEEDS),2) \
+# VARIANT_FILE, not VARIANTS: see the note on `engagement` below. This one took the collision silently — it would
+# search the three ai-ladder brain names instead of the file you meant.
+matchup-search: import ## Score --tune variants of the matchup matrix against the designed counters: VARIANT_FILE=tools/matchup_variants/<file>.json [UNITS= SEEDS=2 ESCORT=]
+	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANT_FILE) --seeds $(or $(SEEDS),2) \
 		$(if $(UNITS),--units $(UNITS)) $(if $(ESCORT),--escort $(ESCORT))
 
 # ---- X2 (round 4): does suppression change outcomes? ----------------------------
@@ -117,11 +119,16 @@ team-fairness: import ## Green's win rate under army/base/order controls (FAIR_F
 	done
 
 # ---- X1 (round 5): the shape of a full-scale fight ----------------------------------
-engagement: import ## X1: engagement ranges, standing exchanges, kill faces, cover use in faction battles (PAIRS=condemned:condemned SEEDS=4 TIME=240 ARENA= TUNE= VARIANTS=tools/matchup_variants/<file>.json) -> build/engagement[-variants].json
+# VARIANT_FILE, not VARIANTS: mk/ai.mk defaults `VARIANTS ?= r1,a4,a6` (brain-variant NAMES for the ai ladder), and
+# make has one global namespace, so `$(if $(VARIANTS),...)` here was always true and always wrong. `make engagement`
+# fed those three names to a flag that wants a JSON path and died on FileNotFoundError — including the exact command
+# streams/references/combat/README.md tells you to reproduce the round-5 baseline with. One variable name meaning two
+# things in two makefiles is the bug; the fix is a name of our own (round 6, N5).
+engagement: import ## X1: engagement ranges, standing exchanges, kill faces, cover use in faction battles (PAIRS=condemned:condemned SEEDS=4 TIME=240 ARENA= TUNE= VARIANT_FILE=tools/matchup_variants/<file>.json) -> build/engagement[-variants].json
 	$(PYTHON) tools/engagement_report.py --godot $(GODOT) --jobs $(JOBS) --pairs $(or $(PAIRS),condemned:condemned) \
 		--seeds $(or $(SEEDS),4) --budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),240) \
-		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) $(if $(VARIANTS),--variants $(VARIANTS)) \
-		--json $(BUILD_DIR)/engagement$(if $(VARIANTS),-variants).json
+		$(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE)) $(if $(VARIANT_FILE),--variants $(VARIANT_FILE)) \
+		--json $(BUILD_DIR)/engagement$(if $(VARIANT_FILE),-variants).json
 
 pace: import ## Match pace with seeded CPU armies like a skirmish (first shot, first kill, length): N=24 BUDGET=1000 CONTROL=1 -> build/pace[-control].json
 	$(PYTHON) tools/match_series.py --godot $(GODOT) --runs $(or $(N),24) --jobs $(JOBS) --time-limit 300 --score-limit 0 \
