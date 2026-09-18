@@ -514,6 +514,31 @@ any change, and **the real finding underneath is round 5's** — dodging has *ne
 254 candidate directions scored "would still be hit"). A behaviour that does not fire cannot regress. That is a live
 open issue with no owner, not a CP4 consequence.
 
+### N7 — why it compounds with N5 rather than merely following it
+
+**Taken on (2026-09-18), and the case for doing it in round 6 rather than deferring it comes out of the series.**
+arena's half is landed and tested: `Arena.objectives_of(Arena.active)`, mirrored pairs enforced, and every shipped
+layout still reporting exactly the single central zone `Match` hard-codes. My half is a pure read-through —
+`CONTROL_CENTER`/`CONTROL_RADIUS` become per-objective state.
+
+**The argument:** the decomposition says the **gates** matter more than the bands — making a crew find and hold a
+target is what moved where fights are decided (−11 m) and who dies from the flank (+17 points), while the bands mostly
+pulled the armies closer. **An objective that funnels every fight into the middle is the terrain-level version of the
+same problem: it collapses the space in which acquisition and flanking can matter at all.** The 45% off-axis kills
+measured above were achieved *despite* one central control point on every map. Moving objectives off the centre line
+should **compound** with N5, not sit beside it — which is why this is round 6 work and not round 7's.
+
+**The one design decision it needs, and the rule that settles it.** With N objectives, what scores? Independent
+scoring doubles the pace at N=2; a majority rule makes control wins rare and pushes every match to elimination.
+**Score proportional to the share held** — `ticks += INTEL_EVERY_TICKS * held_by_team / total_objectives` — because
+**at N=1 it reduces exactly to today's behaviour**, which is what makes the change a genuine read-through rather than
+a balance change wearing one's clothes. Holding both mirrored objectives scores at the old rate; holding one scores at
+half; splitting your force to take both is rewarded, which is the decision the contract exists to create.
+
+**Sequencing:** CP4's merge first, always. N7 must not delay it by a minute — squad's X6 baseline, arena's X3 and
+nav's `gunnery.gd` split are all waiting on CP4 being on `main`. And **N7 may move the sim baseline again**; per
+invariant 2 combat does not record it, and the N7 report must say whether it moves.
+
 ### X7 (stretch) — the event half is already done; what is left is one number
 
 Checked rather than assumed. `projectile_impact` already carries `weak_spot` (K2), feel's `game/theme/fx/k2_events.gd`
