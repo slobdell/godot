@@ -139,11 +139,28 @@ you saved on X3 and X4 instead.
 Create `game/ai/movement.gd` as the single entry point between "be here" and "drive there":
 `Movement.request(unit, to, opts)`, `Movement.state(unit)`, `Movement.eta(unit, to)`, `Movement.cancel(unit)`, with
 `state().phase` in `pathing | driving | yielding | blocked | arrived` and `blocked_by` naming the cause. **Split `order_controller.gd` while you are in there**, because today it is one file doing two crafts and two streams
-need it: path-following, avoidance and unsticking move into `movement.gd` (**yours**); the firing decision
-(`_apply_weapon`, `_shootable`, `_apply_suppress`, `_apply_indirect`, `_clear_to_fire`) moves into a new
-`game/ai/gunnery.gd` that becomes **combat's file** — they own the rule about when a gun may speak (N5), you own
-where the vehicle is. `order_controller.gd` stays yours as the thin composer that calls both. Agree the seam with
-combat in writing before either of you edits it, and land the split early so they are not blocked. Two rules that are
+need it: path-following, avoidance and unsticking move into `movement.gd` (**yours**); the firing decision moves into a
+new `game/ai/gunnery.gd` that becomes **combat's file** — they own the rule about when a gun may speak (N5), you own
+where the vehicle is. `order_controller.gd` stays yours as the thin composer that calls both.
+
+**Read this before you open the file: combat has already edited it, and has specified the seam for you.** nav had no
+session when CP4 became the round's early checkpoint and two other streams were holding for it, so the orchestrator
+accepted four surgical edits into `order_controller.gd` rather than park the round behind a stream that did not exist
+(recorded as an exception below). Every *rule* lives in `game/combat/engagement.gd` (combat's); the controller only
+carries state and calls it. The four edits: an `engagement_lay` member beside `spotter`; an `Engagement.is_seen(...)`
+early-out at the top of `_shootable()` *before* the line-of-sight raycast (a dict lookup, so a rejected contact now
+saves a ray); an `envelope` term in `_apply_weapon()`'s trigger line; and a `_seconds_step()` helper with
+`engagement_lay.lose(...)`/`.forget()` on the no-target and death branches. **None of them reads a path, a waypoint or
+a throttle**, so they move across the seam untouched.
+
+**The seam combat asked for, so you build it rather than guess it.** `gunnery.gd` takes `_apply_weapon`,
+`_apply_suppress`, `_apply_indirect`, `_shootable`, `_scanned_shootable`, `_nearest_shootable`, `_named_tank`,
+`_cover`, `_clear_to_fire`, `_enemies`, and the state `engaged_target`, `watch_point`, `spotter`, `engagement_lay`,
+`_scan_pick`, `_scan_left`, `_lane_hold_left`, `lane_blocked_ticks`, `ticks_since_fire`. The composer calls
+`gunnery.apply(cmd, seconds)` **after** the movement half. Gunnery needs exactly four things from your side: `tank`,
+`tanks_root`, `weapon_order`, and `move_order["type"]` (only so a fixed-mount hull can swing onto its target when
+halted). **Pass it seconds, not a tick count** — lesson 30: the acquisition timer is booked in seconds and must stay
+that way at any tick rate. Two rules that are
 the point of the item:
 - **A unit never silently stands still.** If it cannot make progress it reports `blocked` with a reason, and something
   above it can act.

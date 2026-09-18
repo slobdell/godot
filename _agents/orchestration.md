@@ -346,3 +346,12 @@ The kickoff prompt is one line; this section is the rest.
     where GNU make's own `WINDOW = 2` did the same thing. The general rules: **a new instrument gets checked against a
     case whose answer you already know before its first number leaves the stream**, and **never give a shared
     Makefile a bare, guessable variable name** — prefix it (`NAV_UNITS`, not `UNITS`) and print what it resolved to.
+35. **Lesson 23 inverted: an *exception* the default path always passes is as invisible as a feature behind a flag it
+    never passes.** Round 6, combat building CP4: fire discipline was written with an "unless explicitly ordered to
+    engage" escape, faithful to the brief. But `TankBrain`'s ENGAGE state issues a `target` weapon order *every tick*,
+    so that one exception exempted **every CPU unit in the game**, and the whole engagement envelope would have
+    shipped doing nothing — while every rule test passed, because the tests exercised the rule and not the caller.
+    The fix was to make the override an explicit `"long_shot": true` that nothing sets by default. **When you write an
+    exception, go and count who takes it in the default configuration**, exactly as you would go and check who passes
+    a new flag. The general form of lessons 23 and 35 together: a behaviour's reach is decided by the callers, not by
+    the code you are looking at, so read the callers before believing either a feature or an exemption is rare.
