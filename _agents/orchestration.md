@@ -571,3 +571,18 @@ The kickoff prompt is one line; this section is the rest.
       deadlock in a locking script stops six streams at once. combat proposed the fix, declined to commit it to a
       shared file, and was right to. The counterpart obligation is to *test it*: an isolated queue directory, a
       three-waiter ordering check, and a SIGKILLed waiter whose trap never runs, before it goes anywhere near `main`.
+49. **An aggregate that mixes two mechanisms measures the louder one, and its name will not warn you.** Round 6,
+    combat, before running its 60-match series: `contact_second` is the first second with **any** shots and
+    `engaged_distance_median` averages nearest-enemy distance over **seconds with shots in them** — and neither
+    separates direct fire from indirect. N5 governs direct fire only (artillery is deliberately outside it: ARC
+    already needs a spotter, and reach is its job). So in a Condemned mirror where 13% of kills were indirect, **a
+    battery lobbing at a spotted contact across the map set "contact" and then held "engaged distance" at the
+    separation of two armies that were not yet fighting.** `kill_distance` moved 45 → 35 m (the rule working) while
+    `engaged_distance` barely moved, 79 → 75 m, and `contact` did not move at all.
+    **The dangerous part is the conclusion that invites: "the bands are not binding, tighten them further"** — when
+    they were binding all along, and tightening would have pushed the game into the too-quiet failure the round was
+    already watching for. Same family as the metric whose value was fine but whose *printed label* hid what it was.
+    So: **before running a series, ask which mechanisms each aggregate is summing over, and split the ones that mix
+    a governed mechanism with an ungoverned one** — reporting the split *alongside* the old figure, never instead of
+    it, so the existing baseline stays comparable. Twenty minutes on the metric beats sixty matches through a
+    contaminated one.
