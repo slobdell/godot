@@ -34,3 +34,8 @@ ARMY ?= combined_arms
 tactics-ladder: import ## Round-5 X3: doctrine vs doctrine vs brains, mirror ARMY, every ARENAS, SIDES=label=brain[:table], FACTIONS=gangs,law for faction armies; ELO and a per-drill exchange report -> build/tactics-ladder.json (RUNS=2 TIME=240; heavy: make remote T=tactics-ladder)
 	$(PYTHON) tools/tactics_ladder.py --godot $(GODOT) --sides $(SIDES) --arenas $(ARENAS) --army $(ARMY) \
 		--runs $(or $(RUNS),2) --jobs $(JOBS) --time-limit $(or $(TIME),240) $(if $(FACTIONS),--factions $(FACTIONS)) $(if $(CONTROL),--control $(CONTROL)) --json $(BUILD_DIR)/tactics-ladder.json
+
+squad-coherence: import ## Round-6 X6: legibility as numbers (idle in contact, drill flip-flops, order thrash, off-slot, stale orders) over SEEDS faction matches in the shipped configuration (GREEN_FACTION= RUST_FACTION= TIME=180 EXTRA="--green-elements --rust-elements") -> build/squad-coherence.json
+	$(PYTHON) tools/tactics/coherence.py --godot $(GODOT) --seeds $(or $(SEEDS),4) --jobs $(JOBS) \
+		--green $(or $(GREEN_FACTION),condemned) --rust $(or $(RUST_FACTION),law) --time-limit $(or $(TIME),180) \
+		$(if $(EXTRA),--extra="$(EXTRA)") --json $(BUILD_DIR)/squad-coherence.json

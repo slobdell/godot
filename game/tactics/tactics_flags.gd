@@ -6,6 +6,7 @@ extends RefCounted
 ##   --green-elements[=<table>]   green's squads become elements under an ElementCommander; <table> picks
 ##   --rust-elements[=<table>]    doctrines/doctrine_<table>.json instead of each faction's own table
 ##   --tactics-ledger             print TACTICS_LEDGER <json> when the match finishes (TacticsLedger)
+##   --squad-coherence            print SQUAD_COHERENCE <json> when the match finishes (CoherenceProbe, round-6 X6)
 ##   --green-discovery[=seconds]  X5, offline only: that side's elements take tasks from stdin every `seconds`
 ##   --rust-discovery[=seconds]   (DiscoveryBridge; default 5), with --discovery-log=<path> for (state, decision,
 ##                                outcome) lines and --slow-motion=<factor> for a windowed run a person can follow
@@ -22,6 +23,7 @@ static var _done := false
 static var _parsed := false
 static var _tables: Array = [null, null]
 static var _ledger := false
+static var _coherence := false
 static var _discovery: Array = [null, null]
 static var _discovery_log := ""
 
@@ -39,6 +41,8 @@ static func _parse() -> void:
 				_tables[side] = arg.trim_prefix(key + "=")
 		if arg == "--tactics-ledger":
 			_ledger = true
+		if arg == "--squad-coherence":
+			_coherence = true
 		for side in 2:
 			var key := "--%s-discovery" % ["green", "rust"][side]
 			if arg == key:
@@ -54,7 +58,8 @@ static func _parse() -> void:
 ## Whether any flag asks for this at all (tests use it to skip the work).
 static func requested() -> bool:
 	_parse()
-	return _tables[0] != null or _tables[1] != null or _ledger or _discovery[0] != null or _discovery[1] != null
+	return _tables[0] != null or _tables[1] != null or _ledger or _coherence or _discovery[0] != null \
+			or _discovery[1] != null
 
 
 ## Install what the flags ask for into `game_match`, once per match, after SETTLE_TICKS.
@@ -71,6 +76,8 @@ static func ensure(game_match: Match) -> void:
 		return
 	_done = true
 	var installed := install(game_match, _tables, _ledger)
+	if _coherence:
+		CoherenceProbe.attach(game_match)
 	for side in 2:
 		if _discovery[side] == null:
 			continue
@@ -152,5 +159,6 @@ static func reset() -> void:
 	_parsed = false
 	_tables = [null, null]
 	_ledger = false
+	_coherence = false
 	_discovery = [null, null]
 	_discovery_log = ""

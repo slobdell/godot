@@ -342,3 +342,71 @@ static func gang_pack(case: TestCase, table_name := "gangs", seconds := 26.0, ch
 			"enemy_left": lab.alive(enemy)}
 	lab.dispose()
 	return result
+
+
+## Round 6 (squad X5, N4): does a task produce the posture its name claims, in the real arena with real brains?
+## `verb` is "support_by_fire", "screen" or "move"; four tanks start in a column at z 40..70 on the western strip and
+## are tasked at `point` (support by fire: at a durable enemy gun standing on it). Both sides are durable, so the
+## posture is measured without deaths reshaping the element. Returns what a player would see.
+static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dictionary:
+	var lab := TacticsLab.create(case, 17)
+	var names := _column(lab, 4, Vector3(LANE_X, 0.0, 40.0))
+	for unit_name: String in names:
+		AiScenario.make_durable(lab.tank_of(unit_name))
+	var point: Vector3 = {"support_by_fire": Vector3(LANE_X, 0.0, -60.0), "screen": Vector3(LANE_X, 0.0, 0.0),
+			"move": Vector3(LANE_X + 5.0, 0.0, -30.0)}[verb]
+	var enemy: Array = []
+	if verb == "support_by_fire":
+		var gun := lab.gun(Match.Team.RUST, "Rust_Gun_1", point, PI)
+		AiScenario.make_durable(gun)
+		enemy.append(String(gun.name))
+	var alpha := lab.element(names, "Alpha")
+	await lab.start()
+	var fired := {"count": 0}
+	var on_fired := func(event: Dictionary) -> void:
+		if names.has(String(event.get("shooter", ""))):
+			fired["count"] = int(fired["count"]) + 1
+	lab.game_match.weapon_fired.connect(on_fired)
+	var issued := {"late": 0}
+	var total := int(seconds * SimClock.TICK_RATE)
+	var ticks := {"now": 0}
+	var on_issued := func(_command: Dictionary) -> void:
+		if int(ticks["now"]) >= total - 10 * SimClock.TICK_RATE:
+			issued["late"] = int(issued["late"]) + 1
+	(lab.orders as Orders).issued.connect(on_issued)
+	var task := {"verb": verb, "to": [point.x, point.z]}
+	if verb == "move":
+		task["drills"] = false  # the player's right-click (X4)
+	alpha.assign(task)
+	var closest := INF
+	for tick in total:
+		ticks["now"] = tick
+		await lab.step()
+		for unit_name: String in names:
+			closest = minf(closest, lab.tank_of(unit_name).global_position.distance_to(point))
+	var xs: Array = []
+	var zs: Array = []
+	var facing_point := 0
+	var to_point: Array = []
+	var off_slot := 0.0
+	for unit_name: String in names:
+		var tank := lab.tank_of(unit_name)
+		var at := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+		xs.append(at.x)
+		zs.append(at.z)
+		to_point.append(snappedf(at.distance_to(point), 0.1))
+		if (-tank.global_basis.z).dot(TacticsFormation.flat(point - at)) > 0.7:
+			facing_point += 1
+		var slot: Variant = alpha.slots.get(unit_name)
+		if slot is Vector3:
+			off_slot = maxf(off_slot, at.distance_to(slot))
+	var result := {"verb": verb, "drills": Array(lab.drills_of(alpha)), "formation": alpha.formation,
+			"closest_m": snappedf(closest, 0.1), "to_point_m": to_point, "frontage_m": snappedf(xs.max() - xs.min(), 0.1),
+			"depth_m": snappedf(zs.max() - zs.min(), 0.1), "facing_point": facing_point, "shots": int(fired["count"]),
+			"center_to_point_m": snappedf(lab.center_of(names).distance_to(point), 0.1),
+			"worst_off_slot_m": snappedf(off_slot, 0.1), "orders_last_10s": int(issued["late"])}
+	# Lambdas must not outlive the scenario on signals of objects that do (a heap corruption at exit otherwise).
+	lab.game_match.weapon_fired.disconnect(on_fired)
+	(lab.orders as Orders).issued.disconnect(on_issued)
+	lab.dispose()
+	return result

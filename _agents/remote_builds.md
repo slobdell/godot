@@ -57,6 +57,51 @@ Chrome 150. Passwordless ssh from the laptop as `slobdell`. No sudo.
 | Run | Laptop | builder0 |
 |---|---|---|
 | `make check` (full, 2026-09-15) | 14–22 min (queued behind other agents' runs) | **6 min 40 s** (first run, including the first import) |
+| `make check` (full, 2026-09-18, **six live streams**) | — | **~50 min** for 1010 tests, orchestrator's run on `main` at `5c68a03e` |
+
+**The 6 min 40 s figure is a quiet-machine number, and a round with six streams is not a quiet machine.** builder0
+runs two slots (`tools/slot.sh`); with four `make remote T=check` runs live, two execute and two wait, and the two
+executing are also slower for sharing the box. Budget **30–50 minutes** for a full check during an active round, not
+seven.
+
+Two consequences, both learned the hard way on 2026-09-18:
+
+1. **Iterate with a local `make check`; spend a remote slot only on a merge candidate** — a commit you are about to
+   hand the orchestrator. Six streams each checking every green step is what makes the queue.
+2. **`>> waiting for a heavy-run slot (N in use)` is printed when you enqueue, and is not retracted.** Being granted a
+   slot is a *later* line in the same log. A stream read that first line, watched the log go quiet, and reported to
+   the orchestrator that it had been starved of a slot for 50 minutes — while it had in fact been running for 48 of
+   them. This is [orchestration.md](orchestration.md) lesson 28 in a new place: **read the line that reports the
+   state you are asking about, and re-read your own log before reporting a stall.** Check what is actually running
+   with `ssh slobdell@builder0 "ps -eo pid,etime,args | grep '[s]lot.sh'"` and match each pid to a worktree with
+   `readlink /proc/<pid>/cwd`.
+3. **A big measurement series deserves a cleared window**, not a share of two slots. Ask the orchestrator; it can tell
+   the other streams to stay off builder0 for the duration.
+
+## builder0 runs vsync'd windows at a crawl: ~1/10 real time
+
+**Measured 2026-09-18** (feel), same muted 30-second `audio-pass`, only vsync changed:
+
+| | match seconds recorded in 30 s wall |
+|---|---|
+| vsync on (Godot's default) | **3.1 s** |
+| `--disable-vsync` | **25.6 s** |
+
+A vsync'd window on builder0's idle desktop presents at a crawl, so **anything that runs the game in a window there
+and measures against the wall clock is recording slow motion.** `perf-scene` and `crowd-look` were never affected
+because they already disable vsync. `audio-pass` now defaults to `--disable-vsync` (`PASS_GODOT_FLAGS`); `FrameTarget`
+still paces the game.
+
+**What this invalidates, and what it does not.** Round 5's audio numbers were taken this way and its own report noted
+"game time runs ~10x slower than wall time" while leaving the cause open. Its **loudness, peak and clipping figures
+stand** — they describe exactly what was recorded. What does **not** stand is anything about *how dense the battle was*
+or how **ducking and layers behave over time**, including its "layer changes look rare" note: a compressor sidechain or
+a duck envelope behaves completely differently when impacts arrive every 3 s instead of every 0.3 s, and slow motion is
+the most flattering possible case for whatever is being ducked *under*.
+
+**The general rule: if a harness opens a window on builder0, disable vsync or measure on the laptop.** For any
+time-domain question (ducking, envelopes, rate limits, anything with a release or a cooldown), prefer the laptop — it
+runs real time and it is the machine the lead plays on.
 
 ## The sim baseline differs per machine
 

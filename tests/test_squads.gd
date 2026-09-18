@@ -10,11 +10,13 @@ const EAST := Vector3(1, 0, 0)
 # ---- Formation geometry -------------------------------------------------------------
 
 func test_wedge_is_a_point_forward() -> void:
+	# One shape table since round 6 (N2): the squad's wedge IS the element's (TacticsFormation.DIAGONAL_SIDE).
 	var offsets := Formations.offsets("wedge", 5, 10.0)
 	assert_eq(offsets[0], Vector2.ZERO, "the commander is the point")
-	assert_eq(offsets[1], Vector2(-10, 10), "first wingman back-left")
-	assert_eq(offsets[2], Vector2(10, 10), "second wingman back-right")
-	assert_eq(offsets[4], Vector2(20, 20), "the arms extend further back")
+	assert_true(offsets[1].is_equal_approx(Vector2(-9, 10)), "first wingman back-left (%s)" % offsets[1])
+	assert_true(offsets[2].is_equal_approx(Vector2(9, 10)), "second wingman back-right (%s)" % offsets[2])
+	assert_true(offsets[4].is_equal_approx(Vector2(18, 20)), "the arms extend further back (%s)" % offsets[4])
+	assert_eq(offsets, TacticsFormation.offsets("wedge", 5, 10.0), "and it is the same shape an element uses")
 
 
 func test_vee_opens_forward_and_line_is_abreast() -> void:
@@ -22,21 +24,23 @@ func test_vee_opens_forward_and_line_is_abreast() -> void:
 	for offset in Formations.offsets("line", 5, 10.0):
 		assert_eq(offset.y, 0.0, "every tank in a line is abreast of the commander")
 	assert_eq(Formations.offsets("column", 3, 10.0)[2], Vector2(0, 20), "a column is single file behind")
-	assert_eq(Formations.offsets("echelon_right", 3, 10.0)[2], Vector2(20, 20), "echelon right steps back to the right")
+	assert_true(Formations.offsets("echelon_right", 3, 10.0)[2].is_equal_approx(Vector2(18, 20)),
+			"echelon right steps back to the right")
 
 
 func test_formation_rotates_with_heading() -> void:
 	var wingman := Formations.offsets("wedge", 2, 10.0)[1]  # back-left
 	var facing_north := Formations.to_world(Vector3.ZERO, NORTH, wingman)
-	assert_true(facing_north.is_equal_approx(Vector3(-10, 0, 10)), "heading north: back-left is south-west (%s)" % facing_north)
+	assert_true(facing_north.is_equal_approx(Vector3(-9, 0, 10)), "heading north: back-left is south-west (%s)" % facing_north)
 	var facing_east := Formations.to_world(Vector3.ZERO, EAST, wingman)
-	assert_true(facing_east.is_equal_approx(Vector3(-10, 0, -10)), "heading east: back-left is north-west (%s)" % facing_east)
+	assert_true(facing_east.is_equal_approx(Vector3(-10, 0, -9)), "heading east: back-left is north-west (%s)" % facing_east)
 
 
 func test_coil_rings_the_destination_facing_out() -> void:
 	var offsets := Formations.offsets("coil", 4, 10.0)
 	for offset in offsets:
-		assert_near(offset.length(), 8.0, 0.01, "every coil slot is on the ring")
+		assert_near(offset.length(), offsets[0].length(), 0.01, "every coil slot is on the ring")
+	assert_true(offsets[0].length() > 5.0, "a ring with room inside it (%.1f m)" % offsets[0].length())
 	var outward := Formations.facing("coil", NORTH, offsets[1])
 	assert_true(outward.dot(Formations.to_world(Vector3.ZERO, NORTH, offsets[1]).normalized()) > 0.99,
 			"coil tanks face outward")

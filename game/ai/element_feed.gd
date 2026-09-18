@@ -107,6 +107,11 @@ static func normalize(element: Object, unit_name: String, order_verb := "") -> D
 	context["facing"] = _sector(state, element, unit_name, mine)
 	context["role"] = _role(mine, state, unit_name, technique, drill, task, order_verb)
 	context["members"] = members
+	# X3: the speed fraction this unit drives at so the element forms up together (not part of the key: it changes
+	# continuously and is simply read, like the slot).
+	var paces: Variant = state.get("pace")
+	context["pace"] = clampf(float((paces as Dictionary).get(unit_name, 1.0)), 0.0, 1.0) \
+			if typeof(paces) == TYPE_DICTIONARY else 1.0
 	context["key"] = "%s|%s|%s|%s|%s|%s" % [context["id"], context["technique"], context["drill"], context["task"],
 			context["role"], context["slot"]]
 	return context

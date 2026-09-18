@@ -59,6 +59,9 @@ var bound_goal: Variant = null
 ## Squad updates the bounding element has waited for the overwatch to set (-1 = not waiting).
 var bound_waited := -1
 var events: PackedStringArray = []
+## Who stands in which slot ({name: index}), from TacticsFormation.seat (N2: the one seating rule): the commander
+## keeps the point, the rest take the slots that keep their paths from crossing, and keep them between updates.
+var seats := {}
 ## Bumped by every accepted command. Brains compare it to re-think at once and drop their
 ## commitment, so a player order takes effect on the next tick (G3 responsiveness).
 var order_serial := 0
@@ -174,6 +177,7 @@ func update(tanks: Dictionary) -> void:
 				break
 	if not is_commanded() or destination == null:
 		return
+	_seat(tanks)
 	var lead: Tank = tanks[commander]
 	var to_goal: Vector3 = destination - lead.global_position
 	to_goal.y = 0.0
@@ -261,9 +265,11 @@ func _element_members(element: int, alive: PackedStringArray) -> PackedStringArr
 func context_for(tank_name: String, tanks: Dictionary) -> Dictionary:
 	var context := _raw_context(tank_name, tanks)
 	if context["slot"] != null:
-		# A formation hugging a wall would put slots inside it; keep every slot drivable.
+		# A formation hugging a wall would put slots inside it; keep every slot drivable: inside the arena...
 		var slot: Vector3 = context["slot"]
-		context["slot"] = Vector3(clampf(slot.x, -SLOT_LIMIT, SLOT_LIMIT), 0.0, clampf(slot.z, -SLOT_LIMIT, SLOT_LIMIT))
+		slot = Vector3(clampf(slot.x, -SLOT_LIMIT, SLOT_LIMIT), 0.0, clampf(slot.z, -SLOT_LIMIT, SLOT_LIMIT))
+		# X2: and never inside an obstacle (the navmesh's nearest standable point).
+		context["slot"] = SlotGround.standable(tanks.get(tank_name) as Node3D, slot)
 	return context
 
 
@@ -273,9 +279,9 @@ func _raw_context(tank_name: String, tanks: Dictionary) -> Dictionary:
 	if not is_commanded() or destination == null or not tanks.has(commander):
 		return context
 	var order := formation_order(tanks)
-	var index := order.find(tank_name)
-	if index < 0:
+	if order.find(tank_name) < 0:
 		return context
+	var index := _slot_index(tank_name, order)
 	var offsets := Formations.offsets(formation, order.size(), spacing)
 	var lead: Tank = tanks[commander]
 
@@ -283,7 +289,7 @@ func _raw_context(tank_name: String, tanks: Dictionary) -> Dictionary:
 		var moving_now := element_of(tank_name) == bounding_element and bound_waited < 0
 		context["waiting"] = element_of(tank_name) == bounding_element and bound_waited >= 0
 		if moving_now and bound_goal != null:
-			context["slot"] = Formations.to_world(bound_goal, heading, offsets[index] - offsets[order.find(_element_anchor(tanks))])
+			context["slot"] = Formations.to_world(bound_goal, heading, offsets[index] - offsets[_slot_index(_element_anchor(tanks), order)])
 			context["moving"] = true
 		else:
 			context["slot"] = (tanks[tank_name] as Tank).global_position  # overwatch: stay put and cover
@@ -294,7 +300,7 @@ func _raw_context(tank_name: String, tanks: Dictionary) -> Dictionary:
 		context["slot"] = Formations.to_world(destination, heading, offsets[index])
 		context["facing"] = Formations.facing(formation, heading, offsets[index])
 		context["moving"] = not arrived
-	elif index == 0:
+	elif tank_name == commander:
 		context["slot"] = destination
 		context["moving"] = true
 		context["pace"] = _commander_pace(tanks, order, offsets, lead)
@@ -303,6 +309,27 @@ func _raw_context(tank_name: String, tanks: Dictionary) -> Dictionary:
 		context["slot"] = Formations.to_world(lead_point, heading, offsets[index])
 		context["moving"] = true
 	return context
+
+
+## Seat the living members in the formation anchored on the destination (TacticsFormation.seat, "front" policy
+## with the commander pinned to the point), keeping the last seating unless a new one saves real driving.
+func _seat(tanks: Dictionary) -> void:
+	var order := formation_order(tanks)
+	var members: Array = []
+	for member in order:
+		var tank: Tank = tanks[member]
+		members.append({"name": member, "unit": tank.unit_id,
+				"position": Vector3(tank.global_position.x, 0.0, tank.global_position.z)})
+	var shape := Formations.offsets(formation, order.size(), spacing)
+	var previous := seats if seats.size() == order.size() else {}
+	seats = TacticsFormation.seat(members, shape, destination, heading,
+			{"leader": commander, "policy": "front", "previous": previous, "spacing": spacing})
+
+
+## A member's slot index: its seat, or its place in formation_order before the first seating.
+func _slot_index(tank_name: String, order: PackedStringArray) -> int:
+	var index := int(seats.get(tank_name, -1))
+	return index if index >= 0 and index < order.size() else order.find(tank_name)
 
 
 func _element_anchor(tanks: Dictionary) -> String:
@@ -318,7 +345,7 @@ func _element_anchor(tanks: Dictionary) -> String:
 func _commander_pace(tanks: Dictionary, order: PackedStringArray, offsets: Array[Vector2], lead: Tank) -> float:
 	var worst := 0.0
 	for i in range(1, order.size()):
-		var slot := Formations.to_world(lead.global_position, heading, offsets[i])
+		var slot := Formations.to_world(lead.global_position, heading, offsets[_slot_index(order[i], order)])
 		var behind := (slot - (tanks[order[i]] as Tank).global_position).dot(heading)
 		worst = maxf(worst, behind)
 	return clampf(1.0 - (worst - PACE_SLACK) / PACE_FALLOFF, MIN_PACE, 1.0)

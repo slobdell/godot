@@ -4,6 +4,7 @@
  "title": "The Boneyard",
  "note": "Irregular cover at odd angles: no two positions look alike, so fights are local and read differently every match. Small elements, patience and spotting win; a big formation breaks apart on the first wreck.",
  "half_size": 120.0,
+ "fixture": false,
  "obstacles": [
   {
    "type": "wall",

@@ -72,6 +72,11 @@ const WORLD_TRIM_DB := -6.0
 ## limiter and the announcer's ducking still see all of it.
 const IMPACT_BUS := "Impacts"
 const BED_BUS := "Bed"
+## Feel X3 (round 6): the crowd has its own bus. On Bed it was ducked 5:1 by every impact on top of sitting 20-25 dB
+## under the mix (a recorded match: -46.5 dBFS soloed before contact), so nobody ever heard it. The stands are a
+## different place from the fight: an impact dips them gently rather than silencing them, and the bus's own meter is
+## what `--crowd-meter` reads to prove the crowd is audible in a real match.
+const CROWD_BUS := "Crowd"
 const IMPACT_SOUNDS := ["tank_boom", "shell_hit_armor", "explosion_big", "explosion_small", "weak_spot_hit",
 		"dirt_impact", "shield_down"]
 const LIMIT_DB := -1.0
@@ -232,6 +237,18 @@ static func ensure_world_bus() -> int:
 		duck.attack_us = 1000.0  # in before the hit's peak
 		duck.release_ms = 420.0  # the fight comes back up as the boom falls away
 		AudioServer.add_bus_effect(bed, duck)
+	if AudioServer.get_bus_index(CROWD_BUS) < 0:
+		AudioServer.add_bus()
+		var crowd := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(crowd, CROWD_BUS)
+		AudioServer.set_bus_send(crowd, WORLD_BUS)
+		var dip := AudioEffectCompressor.new()
+		dip.sidechain = IMPACT_BUS
+		dip.threshold = -22.0
+		dip.ratio = 2.0
+		dip.attack_us = 5000.0
+		dip.release_ms = 700.0
+		AudioServer.add_bus_effect(crowd, dip)
 	return index
 
 

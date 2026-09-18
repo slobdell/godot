@@ -617,6 +617,10 @@ func _order_context() -> Variant:
 		context["goal"] = _flat(tank.global_position)
 	elif String(element.get("role", "")) == "bound":
 		context["speed"] = 1.0
+	elif not element.is_empty() and ["move", "attack_move"].has(String(context["verb"])):
+		# X3: my leader paces me so the element arrives together (FormUp: the lead's form-up formula). A unit the
+		# player has taken off its element has no slot there, so it reads a pace of 1.
+		context["speed"] = clampf(minf(float(context["speed"]), float(element.get("pace", 1.0))), 0.2, 1.0)
 	var other := AiTickCache.tanks_by_name(game_match).get(String(order["target"])) as Tank
 	if other != null and other.is_alive():
 		context["target_alive"] = true
@@ -2321,5 +2325,12 @@ func _order_weapon(order: Dictionary) -> void:
 		order = order.duplicate()
 		order["sector"] = element["facing"]
 		order["sector_cos"] = SECTOR_COS
+	# Round 6 (X5, N5): a base of fire is authorised to reach past its effective band. That is the point of one — an
+	# element told to support by fire that holds its fire until the enemy is inside 45 m is supporting nothing. Combat's
+	# fire discipline (CP4) holds fire outside the band unless the order says `long_shot`; only the commander's task
+	# spends it, never a crew's own judgement.
+	if String(element.get("task", "")) == "support_by_fire" and ["fire_at_will", "target"].has(String(order.get("type", ""))):
+		order = order.duplicate()
+		order["long_shot"] = true
 	if not order.recursive_equal(weapon_order, 2):
 		set_orders(null, order)

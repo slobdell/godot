@@ -4,6 +4,7 @@
  "title": "The Boulevard",
  "note": "Long fire lanes broken by screens, kiosks and wrecks: the side that spots first and crosses the avenues under cover wins. Artillery and long guns earn their cost; the walled service roads are the slow, hidden flank.",
  "half_size": 120.0,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {

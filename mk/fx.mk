@@ -72,3 +72,11 @@ perf-scene: import ## M1: frame cost of a live 30-a-side CPU skirmish, by layer 
 	@echo "instance-uniform errors: $$(grep -c 'Too many instances using shader instance variables' $(BUILD_DIR)/$(PERF_NAME).log || true)"
 	@echo "other engine errors:     $$(grep -E '^ERROR|SCRIPT ERROR' $(BUILD_DIR)/$(PERF_NAME).log | grep -vc 'Too many instances using shader instance variables' || true)"
 	@grep -q PERF_SCENE_DONE $(BUILD_DIR)/$(PERF_NAME).log
+
+CROWD_RES ?= 1920x1080
+crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot at every camera zoom, with/without the crowd and fog → build/crowd-look/*.png, CROWD_LOOK lines (needs a display; CROWD_FLAGS="--fx-quality=low", ARENA=)
+	rm -rf $(BUILD_DIR)/crowd-look && mkdir -p $(BUILD_DIR)/crowd-look
+	timeout 600 $(GODOT) --path . --resolution $(CROWD_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
+		$(if $(ARENA),--arena=$(ARENA)) --crowd-look=$(CURDIR)/$(BUILD_DIR)/crowd-look $(CROWD_FLAGS) \
+		2>&1 | tee $(BUILD_DIR)/crowd-look/log.txt | grep -E '^CROWD_LOOK|SCRIPT ERROR|^SKIRMISH_CAMERA' || true
+	@grep -q CROWD_LOOK_DONE $(BUILD_DIR)/crowd-look/log.txt
