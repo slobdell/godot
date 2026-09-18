@@ -439,6 +439,19 @@ would have searched three brain names instead of the file you meant. Both now ta
 untouched: the bug is two makefiles claiming one name, so the newcomer moves. **Name make knobs after the target that
 owns them.** No dependency on the envelope — cherry-pick to `main` on its own (lesson 9).
 
+### X7 (stretch) — the event half is already done; what is left is one number
+
+Checked rather than assumed. `projectile_impact` already carries `weak_spot` (K2), feel's `game/theme/fx/k2_events.gd`
+already reads it, and there is a dedicated `weak_spot_hit` sound layer with two variants. **So "feel draws the cue;
+you provide the event" is satisfied on both sides** — nothing to build.
+
+What is left of X7 is therefore a measurement, not a feature: *does flanking pay more now that fights happen closer?*
+That is `flank_rear_kill_share` and `off_axis_kill_share`, both already in the engagement summary, so **X7 resolves out
+of the CP4 series** exactly as X3 does. The round-5 baseline for a Condemned mirror was 47–78% flank+rear, and the
+brief's target is *"a majority of direct-fire kills come from the flank or the rear, and the armies' centres of mass
+move during the fight"* — read `off_axis_kill_share` and `centroid_travel` for it rather than the hull-face split,
+since an oblique shot across a wide front counts as a "side" hit without anyone having flanked anything.
+
 ### X5 — the duplicated Lancer (proposal, for the orchestrator to relay)
 
 **The Syndicate should lose `syn_lancer`; the Condemned keep `lancer`.** The reasoning is the engagement envelope
