@@ -152,7 +152,9 @@ boxes merged into one piece of cover (the change suggested to ai).
 
 Each seed is played twice, bases swapped. New arenas: seeds 1-18 (18 pairs, 36 matches); foundry: seeds 1-6.
 Ranges are muzzle to impact of rounds that hit a vehicle. Flank share and hidden share are unit-seconds inside the
-contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs: `build/arena-series-seeds*.json`.
+contested field spent at |x| > 60 m, and not visible to the enemy. Raw runs (240 matches, every field these numbers are computed from):
+[`streams/references/arena_series_round5.json`](streams/references/arena_series_round5.json); recompute with
+`tools/arena_series.py`'s `summarize` / `south_advantage` / `green_margin` over entries grouped by arena.
 
 | Arena | South advantage (surviving share, mean ± SE) | Winner flips on swap | Median length | Decided by | Median / p90 hit range | Flank share | Hidden share |
 |---|---|---|---|---|---|---|---|

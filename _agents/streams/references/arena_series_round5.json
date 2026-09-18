@@ -1,0 +1,5337 @@
+{
+ "note": "Arena X4 raw results, round 5 (2026-09-17). Every number in _agents/arenas.md is computed from these. One entry per match: the runner's MATCH_RESULT fields the measures use, plus tests/arena/arena_probe.gd's. Recompute with tools/arena_series.py's summarize()/south_advantage()/green_margin() over entries grouped by arena.",
+ "batches": [
+  {
+   "file": "arena-series-boneyard-jolt.json",
+   "config": {
+    "faction": "condemned",
+    "green_faction": "",
+    "rust_faction": "",
+    "budget": 5200,
+    "time_limit": 180,
+    "seeds": 18
+   },
+   "runs": [
+    {
+     "arena": "boneyard",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 8
+     },
+     "sim_seconds": 122.1,
+     "hits": 408,
+     "range_median_m": 38.6,
+     "range_p90_m": 75.8,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.071,
+     "hidden_share": 0.608
+    },
+    {
+     "arena": "boneyard",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 9
+     },
+     "sim_seconds": 114.7,
+     "hits": 410,
+     "range_median_m": 48.0,
+     "range_p90_m": 85.9,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.058,
+     "hidden_share": 0.513
+    },
+    {
+     "arena": "boneyard",
+     "seed": 2,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 31,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 4,
+      "rust": 42
+     },
+     "sim_seconds": 128.3,
+     "hits": 936,
+     "range_median_m": 39.3,
+     "range_p90_m": 57.8,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.103,
+     "hidden_share": 0.442
+    },
+    {
+     "arena": "boneyard",
+     "seed": 3,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 29,
+      "rust": 2
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 40
+     },
+     "sim_seconds": 108.0,
+     "hits": 849,
+     "range_median_m": 36.3,
+     "range_p90_m": 53.9,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.055,
+     "hidden_share": 0.487
+    },
+    {
+     "arena": "boneyard",
+     "seed": 2,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 33,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 41
+     },
+     "sim_seconds": 136.1,
+     "hits": 864,
+     "range_median_m": 37.4,
+     "range_p90_m": 57.5,
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.05,
+     "hidden_share": 0.492
+    },
+    {
+     "arena": "boneyard",
+     "seed": 3,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 29,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 42
+     },
+     "sim_seconds": 101.6,
+     "hits": 810,
+     "range_median_m": 36.6,
+     "range_p90_m": 54.5,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.05,
+     "hidden_share": 0.457
+    },
+    {
+     "arena": "boneyard",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 8
+     },
+     "sim_seconds": 53.1,
+     "hits": 354,
+     "range_median_m": 39.8,
+     "range_p90_m": 73.9,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.002,
+     "hidden_share": 0.403
+    },
+    {
+     "arena": "boneyard",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 24
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 3
+     },
+     "sim_seconds": 43.4,
+     "hits": 272,
+     "range_median_m": 47.6,
+     "range_p90_m": 71.8,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.003,
+     "hidden_share": 0.433
+    },
+    {
+     "arena": "boneyard",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 3
+     },
+     "sim_seconds": 89.6,
+     "hits": 572,
+     "range_median_m": 41.6,
+     "range_p90_m": 68.9,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.049,
+     "hidden_share": 0.444
+    },
+    {
+     "arena": "boneyard",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 34,
+      "rust": 8
+     },
+     "sim_seconds": 109.2,
+     "hits": 489,
+     "range_median_m": 38.8,
+     "range_p90_m": 69.6,
+     "first_hit_seconds": 6.5,
+     "flank_share": 0.043,
+     "hidden_share": 0.516
+    },
+    {
+     "arena": "boneyard",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 34
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 107.8,
+     "hits": 1035,
+     "range_median_m": 35.7,
+     "range_p90_m": 54.0,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.201,
+     "hidden_share": 0.485
+    },
+    {
+     "arena": "boneyard",
+     "seed": 7,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 13,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 1
+     },
+     "sim_seconds": 115.4,
+     "hits": 347,
+     "range_median_m": 47.6,
+     "range_p90_m": 76.7,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.059,
+     "hidden_share": 0.465
+    },
+    {
+     "arena": "boneyard",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 32
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 3
+     },
+     "sim_seconds": 129.0,
+     "hits": 751,
+     "range_median_m": 38.5,
+     "range_p90_m": 60.4,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.073,
+     "hidden_share": 0.455
+    },
+    {
+     "arena": "boneyard",
+     "seed": 7,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 6,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 1
+     },
+     "sim_seconds": 112.5,
+     "hits": 349,
+     "range_median_m": 38.1,
+     "range_p90_m": 62.0,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.026,
+     "hidden_share": 0.475
+    },
+    {
+     "arena": "boneyard",
+     "seed": 8,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 22
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 7
+     },
+     "sim_seconds": 108.4,
+     "hits": 485,
+     "range_median_m": 34.4,
+     "range_p90_m": 66.4,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.083,
+     "hidden_share": 0.651
+    },
+    {
+     "arena": "boneyard",
+     "seed": 8,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 8
+     },
+     "sim_seconds": 113.1,
+     "hits": 691,
+     "range_median_m": 35.9,
+     "range_p90_m": 64.9,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.046,
+     "hidden_share": 0.598
+    },
+    {
+     "arena": "boneyard",
+     "seed": 9,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 8
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 19
+     },
+     "sim_seconds": 72.1,
+     "hits": 488,
+     "range_median_m": 49.7,
+     "range_p90_m": 76.1,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.002,
+     "hidden_share": 0.418
+    },
+    {
+     "arena": "boneyard",
+     "seed": 9,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 15,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 12,
+      "rust": 27
+     },
+     "sim_seconds": 55.6,
+     "hits": 444,
+     "range_median_m": 42.7,
+     "range_p90_m": 77.9,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.01,
+     "hidden_share": 0.392
+    },
+    {
+     "arena": "boneyard",
+     "seed": 10,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 12
+     },
+     "sim_seconds": 121.2,
+     "hits": 572,
+     "range_median_m": 43.6,
+     "range_p90_m": 72.5,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.074,
+     "hidden_share": 0.574
+    },
+    {
+     "arena": "boneyard",
+     "seed": 10,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 9
+     },
+     "sim_seconds": 99.2,
+     "hits": 679,
+     "range_median_m": 44.2,
+     "range_p90_m": 71.0,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.07,
+     "hidden_share": 0.505
+    },
+    {
+     "arena": "boneyard",
+     "seed": 11,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 26,
+      "rust": 5
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 37
+     },
+     "sim_seconds": 118.5,
+     "hits": 521,
+     "range_median_m": 44.7,
+     "range_p90_m": 69.2,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.062,
+     "hidden_share": 0.502
+    },
+    {
+     "arena": "boneyard",
+     "seed": 11,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 74.2,
+     "hits": 515,
+     "range_median_m": 39.5,
+     "range_p90_m": 59.5,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.062,
+     "hidden_share": 0.44
+    },
+    {
+     "arena": "boneyard",
+     "seed": 12,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 80.8,
+     "hits": 543,
+     "range_median_m": 37.3,
+     "range_p90_m": 54.4,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.032,
+     "hidden_share": 0.404
+    },
+    {
+     "arena": "boneyard",
+     "seed": 13,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 10
+     },
+     "sim_seconds": 87.5,
+     "hits": 566,
+     "range_median_m": 40.9,
+     "range_p90_m": 65.9,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.021,
+     "hidden_share": 0.467
+    },
+    {
+     "arena": "boneyard",
+     "seed": 12,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 27,
+      "rust": 4
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 38
+     },
+     "sim_seconds": 113.3,
+     "hits": 477,
+     "range_median_m": 41.5,
+     "range_p90_m": 58.8,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.024,
+     "hidden_share": 0.52
+    },
+    {
+     "arena": "boneyard",
+     "seed": 13,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 9
+     },
+     "sim_seconds": 111.1,
+     "hits": 426,
+     "range_median_m": 47.5,
+     "range_p90_m": 76.4,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.105,
+     "hidden_share": 0.534
+    },
+    {
+     "arena": "boneyard",
+     "seed": 14,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "sim_seconds": 99.6,
+     "hits": 662,
+     "range_median_m": 40.4,
+     "range_p90_m": 62.2,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.058,
+     "hidden_share": 0.517
+    },
+    {
+     "arena": "boneyard",
+     "seed": 14,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 85.2,
+     "hits": 615,
+     "range_median_m": 40.7,
+     "range_p90_m": 56.6,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.03,
+     "hidden_share": 0.46
+    },
+    {
+     "arena": "boneyard",
+     "seed": 15,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 4
+     },
+     "sim_seconds": 118.2,
+     "hits": 845,
+     "range_median_m": 36.8,
+     "range_p90_m": 54.5,
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.084,
+     "hidden_share": 0.554
+    },
+    {
+     "arena": "boneyard",
+     "seed": 16,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 8,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 34,
+      "rust": 0
+     },
+     "sim_seconds": 108.3,
+     "hits": 322,
+     "range_median_m": 41.3,
+     "range_p90_m": 74.5,
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.099,
+     "hidden_share": 0.519
+    },
+    {
+     "arena": "boneyard",
+     "seed": 15,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 2
+     },
+     "sim_seconds": 106.8,
+     "hits": 802,
+     "range_median_m": 37.7,
+     "range_p90_m": 53.8,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.097,
+     "hidden_share": 0.413
+    },
+    {
+     "arena": "boneyard",
+     "seed": 16,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 11,
+      "rust": 25
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 2
+     },
+     "sim_seconds": 123.2,
+     "hits": 375,
+     "range_median_m": 39.4,
+     "range_p90_m": 65.6,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.073,
+     "hidden_share": 0.437
+    },
+    {
+     "arena": "boneyard",
+     "seed": 17,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 10,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 15,
+      "rust": 31
+     },
+     "sim_seconds": 96.8,
+     "hits": 414,
+     "range_median_m": 32.3,
+     "range_p90_m": 70.9,
+     "first_hit_seconds": 5.2,
+     "flank_share": 0.043,
+     "hidden_share": 0.467
+    },
+    {
+     "arena": "boneyard",
+     "seed": 17,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 23,
+      "rust": 19
+     },
+     "sim_seconds": 122.0,
+     "hits": 374,
+     "range_median_m": 49.8,
+     "range_p90_m": 85.1,
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.033,
+     "hidden_share": 0.467
+    },
+    {
+     "arena": "boneyard",
+     "seed": 18,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 10
+     },
+     "sim_seconds": 117.8,
+     "hits": 473,
+     "range_median_m": 43.2,
+     "range_p90_m": 70.8,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.026,
+     "hidden_share": 0.532
+    },
+    {
+     "arena": "boneyard",
+     "seed": 18,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 8
+     },
+     "sim_seconds": 90.3,
+     "hits": 409,
+     "range_median_m": 43.8,
+     "range_p90_m": 77.2,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.023,
+     "hidden_share": 0.495
+    }
+   ]
+  },
+  {
+   "file": "arena-series-gangs-syndicate.json",
+   "config": {
+    "faction": "condemned",
+    "green_faction": "gangs",
+    "rust_faction": "syndicate",
+    "budget": 5200,
+    "time_limit": 180,
+    "seeds": 6
+   },
+   "runs": [
+    {
+     "arena": "yard",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 0
+     },
+     "sim_seconds": 89.3,
+     "hits": 503,
+     "range_median_m": 27.2,
+     "range_p90_m": 65.1,
+     "first_hit_seconds": 5.1,
+     "flank_share": 0.06,
+     "hidden_share": 0.61
+    },
+    {
+     "arena": "yard",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 2
+     },
+     "sim_seconds": 88.2,
+     "hits": 481,
+     "range_median_m": 33.1,
+     "range_p90_m": 66.8,
+     "first_hit_seconds": 4.9,
+     "flank_share": 0.06,
+     "hidden_share": 0.583
+    },
+    {
+     "arena": "yard",
+     "seed": 2,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 4
+     },
+     "sim_seconds": 93.8,
+     "hits": 607,
+     "range_median_m": 38.9,
+     "range_p90_m": 83.9,
+     "first_hit_seconds": 4.5,
+     "flank_share": 0.092,
+     "hidden_share": 0.48
+    },
+    {
+     "arena": "yard",
+     "seed": 3,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 0
+     },
+     "sim_seconds": 99.7,
+     "hits": 398,
+     "range_median_m": 53.4,
+     "range_p90_m": 80.4,
+     "first_hit_seconds": 5.2,
+     "flank_share": 0.125,
+     "hidden_share": 0.44
+    },
+    {
+     "arena": "yard",
+     "seed": 2,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 5,
+      "rust": 6
+     },
+     "units_lost": {
+      "green": 39,
+      "rust": 11
+     },
+     "sim_seconds": 115.8,
+     "hits": 453,
+     "range_median_m": 45.2,
+     "range_p90_m": 105.6,
+     "first_hit_seconds": 4.8,
+     "flank_share": 0.05,
+     "hidden_share": 0.499
+    },
+    {
+     "arena": "yard",
+     "seed": 3,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 1
+     },
+     "sim_seconds": 103.7,
+     "hits": 551,
+     "range_median_m": 28.1,
+     "range_p90_m": 76.2,
+     "first_hit_seconds": 4.4,
+     "flank_share": 0.137,
+     "hidden_share": 0.486
+    },
+    {
+     "arena": "yard",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 2
+     },
+     "sim_seconds": 100.9,
+     "hits": 474,
+     "range_median_m": 30.6,
+     "range_p90_m": 70.7,
+     "first_hit_seconds": 4.0,
+     "flank_share": 0.049,
+     "hidden_share": 0.526
+    },
+    {
+     "arena": "yard",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 2
+     },
+     "sim_seconds": 85.7,
+     "hits": 464,
+     "range_median_m": 37.2,
+     "range_p90_m": 65.9,
+     "first_hit_seconds": 4.0,
+     "flank_share": 0.058,
+     "hidden_share": 0.549
+    },
+    {
+     "arena": "yard",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 1
+     },
+     "sim_seconds": 103.0,
+     "hits": 421,
+     "range_median_m": 40.3,
+     "range_p90_m": 70.6,
+     "first_hit_seconds": 5.7,
+     "flank_share": 0.056,
+     "hidden_share": 0.641
+    },
+    {
+     "arena": "yard",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 1
+     },
+     "sim_seconds": 99.7,
+     "hits": 510,
+     "range_median_m": 38.7,
+     "range_p90_m": 74.2,
+     "first_hit_seconds": 5.5,
+     "flank_share": 0.028,
+     "hidden_share": 0.54
+    },
+    {
+     "arena": "yard",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 5
+     },
+     "sim_seconds": 108.8,
+     "hits": 409,
+     "range_median_m": 33.3,
+     "range_p90_m": 74.7,
+     "first_hit_seconds": 4.3,
+     "flank_share": 0.037,
+     "hidden_share": 0.52
+    },
+    {
+     "arena": "yard",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 2
+     },
+     "sim_seconds": 124.6,
+     "hits": 465,
+     "range_median_m": 34.3,
+     "range_p90_m": 73.0,
+     "first_hit_seconds": 3.9,
+     "flank_share": 0.058,
+     "hidden_share": 0.618
+    },
+    {
+     "arena": "boulevard",
+     "seed": 1,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 10,
+      "rust": 7
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 10
+     },
+     "sim_seconds": 105.4,
+     "hits": 815,
+     "range_median_m": 22.8,
+     "range_p90_m": 46.7,
+     "first_hit_seconds": 3.9,
+     "flank_share": 0.073,
+     "hidden_share": 0.163
+    },
+    {
+     "arena": "boulevard",
+     "seed": 1,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 13,
+      "rust": 7
+     },
+     "units_lost": {
+      "green": 32,
+      "rust": 10
+     },
+     "sim_seconds": 105.2,
+     "hits": 572,
+     "range_median_m": 26.5,
+     "range_p90_m": 51.4,
+     "first_hit_seconds": 4.3,
+     "flank_share": 0.081,
+     "hidden_share": 0.155
+    },
+    {
+     "arena": "boulevard",
+     "seed": 2,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 8
+     },
+     "units_lost": {
+      "green": 43,
+      "rust": 9
+     },
+     "sim_seconds": 142.5,
+     "hits": 355,
+     "range_median_m": 57.3,
+     "range_p90_m": 112.9,
+     "first_hit_seconds": 4.5,
+     "flank_share": 0.216,
+     "hidden_share": 0.235
+    },
+    {
+     "arena": "boulevard",
+     "seed": 2,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 2
+     },
+     "sim_seconds": 85.7,
+     "hits": 469,
+     "range_median_m": 48.2,
+     "range_p90_m": 84.2,
+     "first_hit_seconds": 4.5,
+     "flank_share": 0.12,
+     "hidden_share": 0.255
+    },
+    {
+     "arena": "boulevard",
+     "seed": 3,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 5
+     },
+     "sim_seconds": 99.2,
+     "hits": 535,
+     "range_median_m": 29.7,
+     "range_p90_m": 62.6,
+     "first_hit_seconds": 4.7,
+     "flank_share": 0.017,
+     "hidden_share": 0.197
+    },
+    {
+     "arena": "boulevard",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 4
+     },
+     "sim_seconds": 71.3,
+     "hits": 561,
+     "range_median_m": 29.0,
+     "range_p90_m": 67.8,
+     "first_hit_seconds": 4.0,
+     "flank_share": 0.06,
+     "hidden_share": 0.247
+    },
+    {
+     "arena": "boulevard",
+     "seed": 3,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 31,
+      "rust": 6
+     },
+     "units_lost": {
+      "green": 14,
+      "rust": 11
+     },
+     "sim_seconds": 106.8,
+     "hits": 691,
+     "range_median_m": 21.9,
+     "range_p90_m": 43.2,
+     "first_hit_seconds": 4.6,
+     "flank_share": 0.108,
+     "hidden_share": 0.238
+    },
+    {
+     "arena": "boulevard",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 11
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 6
+     },
+     "sim_seconds": 103.8,
+     "hits": 464,
+     "range_median_m": 29.7,
+     "range_p90_m": 69.4,
+     "first_hit_seconds": 4.7,
+     "flank_share": 0.085,
+     "hidden_share": 0.348
+    },
+    {
+     "arena": "boulevard",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 1
+     },
+     "sim_seconds": 59.3,
+     "hits": 450,
+     "range_median_m": 40.2,
+     "range_p90_m": 66.9,
+     "first_hit_seconds": 3.8,
+     "flank_share": 0.164,
+     "hidden_share": 0.278
+    },
+    {
+     "arena": "boulevard",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 2
+     },
+     "sim_seconds": 70.4,
+     "hits": 417,
+     "range_median_m": 44.9,
+     "range_p90_m": 89.0,
+     "first_hit_seconds": 3.9,
+     "flank_share": 0.053,
+     "hidden_share": 0.326
+    },
+    {
+     "arena": "boulevard",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 4
+     },
+     "sim_seconds": 72.9,
+     "hits": 378,
+     "range_median_m": 36.5,
+     "range_p90_m": 76.6,
+     "first_hit_seconds": 3.9,
+     "flank_share": 0.083,
+     "hidden_share": 0.273
+    },
+    {
+     "arena": "boulevard",
+     "seed": 6,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 8
+     },
+     "sim_seconds": 108.0,
+     "hits": 347,
+     "range_median_m": 30.7,
+     "range_p90_m": 72.6,
+     "first_hit_seconds": 5.2,
+     "flank_share": 0.072,
+     "hidden_share": 0.333
+    },
+    {
+     "arena": "pit",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 8
+     },
+     "sim_seconds": 107.7,
+     "hits": 874,
+     "range_median_m": 22.0,
+     "range_p90_m": 42.3,
+     "first_hit_seconds": 6.2,
+     "flank_share": 0.132,
+     "hidden_share": 0.406
+    },
+    {
+     "arena": "pit",
+     "seed": 1,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 3,
+      "rust": 10
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 7
+     },
+     "sim_seconds": 104.8,
+     "hits": 802,
+     "range_median_m": 20.1,
+     "range_p90_m": 55.8,
+     "first_hit_seconds": 5.5,
+     "flank_share": 0.143,
+     "hidden_share": 0.279
+    },
+    {
+     "arena": "pit",
+     "seed": 2,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 43,
+      "rust": 5
+     },
+     "sim_seconds": 109.7,
+     "hits": 637,
+     "range_median_m": 38.9,
+     "range_p90_m": 82.0,
+     "first_hit_seconds": 4.3,
+     "flank_share": 0.195,
+     "hidden_share": 0.429
+    },
+    {
+     "arena": "pit",
+     "seed": 2,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 3
+     },
+     "sim_seconds": 119.1,
+     "hits": 436,
+     "range_median_m": 43.8,
+     "range_p90_m": 94.7,
+     "first_hit_seconds": 4.5,
+     "flank_share": 0.337,
+     "hidden_share": 0.31
+    },
+    {
+     "arena": "pit",
+     "seed": 3,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 3
+     },
+     "sim_seconds": 118.9,
+     "hits": 524,
+     "range_median_m": 32.5,
+     "range_p90_m": 78.5,
+     "first_hit_seconds": 4.7,
+     "flank_share": 0.36,
+     "hidden_share": 0.205
+    },
+    {
+     "arena": "pit",
+     "seed": 3,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 0
+     },
+     "sim_seconds": 112.0,
+     "hits": 464,
+     "range_median_m": 36.5,
+     "range_p90_m": 78.7,
+     "first_hit_seconds": 5.0,
+     "flank_share": 0.276,
+     "hidden_share": 0.262
+    },
+    {
+     "arena": "pit",
+     "seed": 4,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 10,
+      "rust": 10
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 7
+     },
+     "sim_seconds": 114.0,
+     "hits": 528,
+     "range_median_m": 26.4,
+     "range_p90_m": 60.5,
+     "first_hit_seconds": 6.5,
+     "flank_share": 0.103,
+     "hidden_share": 0.352
+    },
+    {
+     "arena": "pit",
+     "seed": 4,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 38,
+      "rust": 8
+     },
+     "sim_seconds": 132.6,
+     "hits": 515,
+     "range_median_m": 22.4,
+     "range_p90_m": 57.9,
+     "first_hit_seconds": 5.8,
+     "flank_share": 0.112,
+     "hidden_share": 0.43
+    },
+    {
+     "arena": "pit",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 4
+     },
+     "sim_seconds": 76.7,
+     "hits": 417,
+     "range_median_m": 46.0,
+     "range_p90_m": 79.7,
+     "first_hit_seconds": 5.8,
+     "flank_share": 0.159,
+     "hidden_share": 0.399
+    },
+    {
+     "arena": "pit",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 2
+     },
+     "sim_seconds": 72.6,
+     "hits": 531,
+     "range_median_m": 34.3,
+     "range_p90_m": 62.1,
+     "first_hit_seconds": 3.9,
+     "flank_share": 0.18,
+     "hidden_share": 0.382
+    },
+    {
+     "arena": "pit",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 3
+     },
+     "sim_seconds": 106.5,
+     "hits": 388,
+     "range_median_m": 42.5,
+     "range_p90_m": 74.1,
+     "first_hit_seconds": 6.0,
+     "flank_share": 0.105,
+     "hidden_share": 0.395
+    },
+    {
+     "arena": "pit",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 11
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 6
+     },
+     "sim_seconds": 147.5,
+     "hits": 497,
+     "range_median_m": 27.3,
+     "range_p90_m": 66.5,
+     "first_hit_seconds": 3.8,
+     "flank_share": 0.139,
+     "hidden_share": 0.363
+    },
+    {
+     "arena": "boneyard",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 2
+     },
+     "sim_seconds": 87.7,
+     "hits": 451,
+     "range_median_m": 28.3,
+     "range_p90_m": 73.4,
+     "first_hit_seconds": 4.0,
+     "flank_share": 0.105,
+     "hidden_share": 0.414
+    },
+    {
+     "arena": "boneyard",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 1
+     },
+     "sim_seconds": 71.3,
+     "hits": 494,
+     "range_median_m": 27.3,
+     "range_p90_m": 74.5,
+     "first_hit_seconds": 3.9,
+     "flank_share": 0.045,
+     "hidden_share": 0.423
+    },
+    {
+     "arena": "boneyard",
+     "seed": 2,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 3
+     },
+     "sim_seconds": 97.0,
+     "hits": 584,
+     "range_median_m": 40.6,
+     "range_p90_m": 79.7,
+     "first_hit_seconds": 5.0,
+     "flank_share": 0.102,
+     "hidden_share": 0.408
+    },
+    {
+     "arena": "boneyard",
+     "seed": 3,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 0
+     },
+     "sim_seconds": 90.9,
+     "hits": 510,
+     "range_median_m": 37.3,
+     "range_p90_m": 79.3,
+     "first_hit_seconds": 4.9,
+     "flank_share": 0.067,
+     "hidden_share": 0.359
+    },
+    {
+     "arena": "boneyard",
+     "seed": 2,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 4
+     },
+     "sim_seconds": 113.0,
+     "hits": 687,
+     "range_median_m": 38.3,
+     "range_p90_m": 92.1,
+     "first_hit_seconds": 4.4,
+     "flank_share": 0.033,
+     "hidden_share": 0.372
+    },
+    {
+     "arena": "boneyard",
+     "seed": 3,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 45,
+      "rust": 2
+     },
+     "sim_seconds": 105.0,
+     "hits": 478,
+     "range_median_m": 40.2,
+     "range_p90_m": 79.0,
+     "first_hit_seconds": 4.4,
+     "flank_share": 0.158,
+     "hidden_share": 0.404
+    },
+    {
+     "arena": "boneyard",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 4
+     },
+     "sim_seconds": 72.0,
+     "hits": 369,
+     "range_median_m": 36.8,
+     "range_p90_m": 70.2,
+     "first_hit_seconds": 3.9,
+     "flank_share": 0.06,
+     "hidden_share": 0.449
+    },
+    {
+     "arena": "boneyard",
+     "seed": 4,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 39,
+      "rust": 4
+     },
+     "sim_seconds": 107.5,
+     "hits": 588,
+     "range_median_m": 28.2,
+     "range_p90_m": 67.9,
+     "first_hit_seconds": 4.0,
+     "flank_share": 0.052,
+     "hidden_share": 0.483
+    },
+    {
+     "arena": "boneyard",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 0
+     },
+     "sim_seconds": 62.0,
+     "hits": 300,
+     "range_median_m": 44.5,
+     "range_p90_m": 83.3,
+     "first_hit_seconds": 3.8,
+     "flank_share": 0.096,
+     "hidden_share": 0.508
+    },
+    {
+     "arena": "boneyard",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 44,
+      "rust": 3
+     },
+     "sim_seconds": 78.8,
+     "hits": 477,
+     "range_median_m": 38.6,
+     "range_p90_m": 94.8,
+     "first_hit_seconds": 4.3,
+     "flank_share": 0.048,
+     "hidden_share": 0.525
+    },
+    {
+     "arena": "boneyard",
+     "seed": 6,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 3,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 38,
+      "rust": 8
+     },
+     "sim_seconds": 108.7,
+     "hits": 533,
+     "range_median_m": 23.1,
+     "range_p90_m": 63.1,
+     "first_hit_seconds": 4.2,
+     "flank_share": 0.047,
+     "hidden_share": 0.42
+    },
+    {
+     "arena": "boneyard",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 3
+     },
+     "sim_seconds": 107.1,
+     "hits": 484,
+     "range_median_m": 28.2,
+     "range_p90_m": 72.8,
+     "first_hit_seconds": 4.2,
+     "flank_share": 0.048,
+     "hidden_share": 0.507
+    }
+   ]
+  },
+  {
+   "file": "arena-series-seeds1-6.json",
+   "config": {
+    "faction": "condemned",
+    "green_faction": "",
+    "rust_faction": "",
+    "budget": 5200,
+    "time_limit": 180,
+    "seeds": 6
+   },
+   "runs": [
+    {
+     "arena": "yard",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 17,
+      "rust": 6
+     },
+     "units_lost": {
+      "green": 14,
+      "rust": 21
+     },
+     "sim_seconds": 113.3,
+     "hits": 182,
+     "range_median_m": 62.4,
+     "range_p90_m": 110.0,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.038,
+     "hidden_share": 0.653
+    },
+    {
+     "arena": "yard",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 8
+     },
+     "sim_seconds": 120.3,
+     "hits": 260,
+     "range_median_m": 44.1,
+     "range_p90_m": 84.2,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.041,
+     "hidden_share": 0.688
+    },
+    {
+     "arena": "yard",
+     "seed": 2,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 35,
+      "rust": 2
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 40
+     },
+     "sim_seconds": 117.4,
+     "hits": 1003,
+     "range_median_m": 32.6,
+     "range_p90_m": 51.2,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.096,
+     "hidden_share": 0.604
+    },
+    {
+     "arena": "yard",
+     "seed": 3,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 29,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 42
+     },
+     "sim_seconds": 112.3,
+     "hits": 892,
+     "range_median_m": 37.2,
+     "range_p90_m": 53.7,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.05,
+     "hidden_share": 0.5
+    },
+    {
+     "arena": "yard",
+     "seed": 2,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 35,
+      "rust": 11
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 31
+     },
+     "sim_seconds": 108.7,
+     "hits": 774,
+     "range_median_m": 38.9,
+     "range_p90_m": 54.4,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.04,
+     "hidden_share": 0.574
+    },
+    {
+     "arena": "yard",
+     "seed": 3,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 27,
+      "rust": 3
+     },
+     "units_lost": {
+      "green": 4,
+      "rust": 39
+     },
+     "sim_seconds": 130.3,
+     "hits": 924,
+     "range_median_m": 29.8,
+     "range_p90_m": 52.8,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.121,
+     "hidden_share": 0.587
+    },
+    {
+     "arena": "yard",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 8
+     },
+     "sim_seconds": 57.8,
+     "hits": 324,
+     "range_median_m": 44.2,
+     "range_p90_m": 73.1,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.002,
+     "hidden_share": 0.47
+    },
+    {
+     "arena": "yard",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 8
+     },
+     "sim_seconds": 59.3,
+     "hits": 354,
+     "range_median_m": 45.2,
+     "range_p90_m": 75.7,
+     "first_hit_seconds": 6.5,
+     "flank_share": 0.001,
+     "hidden_share": 0.462
+    },
+    {
+     "arena": "yard",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 10,
+      "rust": 22
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 7
+     },
+     "sim_seconds": 120.1,
+     "hits": 444,
+     "range_median_m": 38.2,
+     "range_p90_m": 73.4,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.039,
+     "hidden_share": 0.602
+    },
+    {
+     "arena": "yard",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 23
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 6
+     },
+     "sim_seconds": 126.8,
+     "hits": 792,
+     "range_median_m": 35.1,
+     "range_p90_m": 58.4,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.039,
+     "hidden_share": 0.579
+    },
+    {
+     "arena": "yard",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 34
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 1
+     },
+     "sim_seconds": 107.0,
+     "hits": 888,
+     "range_median_m": 34.5,
+     "range_p90_m": 52.9,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.057,
+     "hidden_share": 0.521
+    },
+    {
+     "arena": "yard",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 8,
+      "rust": 34
+     },
+     "units_lost": {
+      "green": 34,
+      "rust": 1
+     },
+     "sim_seconds": 108.9,
+     "hits": 747,
+     "range_median_m": 35.7,
+     "range_p90_m": 55.0,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.097,
+     "hidden_share": 0.556
+    },
+    {
+     "arena": "boulevard",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 22
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 5
+     },
+     "sim_seconds": 72.5,
+     "hits": 283,
+     "range_median_m": 49.6,
+     "range_p90_m": 80.4,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.059,
+     "hidden_share": 0.477
+    },
+    {
+     "arena": "boulevard",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 7
+     },
+     "sim_seconds": 99.0,
+     "hits": 266,
+     "range_median_m": 51.9,
+     "range_p90_m": 89.3,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.012,
+     "hidden_share": 0.48
+    },
+    {
+     "arena": "boulevard",
+     "seed": 2,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 33,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 42
+     },
+     "sim_seconds": 97.2,
+     "hits": 626,
+     "range_median_m": 44.9,
+     "range_p90_m": 73.4,
+     "first_hit_seconds": 6.3,
+     "flank_share": 0.086,
+     "hidden_share": 0.378
+    },
+    {
+     "arena": "boulevard",
+     "seed": 2,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 32,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 3,
+      "rust": 41
+     },
+     "sim_seconds": 119.1,
+     "hits": 771,
+     "range_median_m": 43.2,
+     "range_p90_m": 57.3,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.061,
+     "hidden_share": 0.424
+    },
+    {
+     "arena": "boulevard",
+     "seed": 3,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 30,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 91.0,
+     "hits": 774,
+     "range_median_m": 38.5,
+     "range_p90_m": 54.6,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.062,
+     "hidden_share": 0.365
+    },
+    {
+     "arena": "boulevard",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 10
+     },
+     "sim_seconds": 43.8,
+     "hits": 465,
+     "range_median_m": 49.0,
+     "range_p90_m": 77.8,
+     "first_hit_seconds": 6.4,
+     "flank_share": 0.001,
+     "hidden_share": 0.319
+    },
+    {
+     "arena": "boulevard",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 6
+     },
+     "sim_seconds": 39.3,
+     "hits": 342,
+     "range_median_m": 51.2,
+     "range_p90_m": 74.2,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.001,
+     "hidden_share": 0.336
+    },
+    {
+     "arena": "boulevard",
+     "seed": 3,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 29,
+      "rust": 5
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 37
+     },
+     "sim_seconds": 114.7,
+     "hits": 904,
+     "range_median_m": 34.4,
+     "range_p90_m": 53.6,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.075,
+     "hidden_share": 0.34
+    },
+    {
+     "arena": "boulevard",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 23
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 6
+     },
+     "sim_seconds": 84.5,
+     "hits": 602,
+     "range_median_m": 42.1,
+     "range_p90_m": 64.4,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.043,
+     "hidden_share": 0.386
+    },
+    {
+     "arena": "boulevard",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 10
+     },
+     "sim_seconds": 103.7,
+     "hits": 826,
+     "range_median_m": 41.0,
+     "range_p90_m": 71.9,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.03,
+     "hidden_share": 0.438
+    },
+    {
+     "arena": "boulevard",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 33
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "sim_seconds": 83.4,
+     "hits": 718,
+     "range_median_m": 42.6,
+     "range_p90_m": 67.1,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.078,
+     "hidden_share": 0.348
+    },
+    {
+     "arena": "boulevard",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 34
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 105.5,
+     "hits": 775,
+     "range_median_m": 38.0,
+     "range_p90_m": 56.9,
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.146,
+     "hidden_share": 0.413
+    },
+    {
+     "arena": "pit",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 9,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 22,
+      "rust": 6
+     },
+     "sim_seconds": 116.6,
+     "hits": 166,
+     "range_median_m": 48.5,
+     "range_p90_m": 92.6,
+     "first_hit_seconds": 8.7,
+     "flank_share": 0.135,
+     "hidden_share": 0.62
+    },
+    {
+     "arena": "pit",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 9,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 22,
+      "rust": 13
+     },
+     "sim_seconds": 122.8,
+     "hits": 359,
+     "range_median_m": 45.1,
+     "range_p90_m": 85.3,
+     "first_hit_seconds": 8.4,
+     "flank_share": 0.139,
+     "hidden_share": 0.623
+    },
+    {
+     "arena": "pit",
+     "seed": 2,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 33,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 41
+     },
+     "sim_seconds": 116.9,
+     "hits": 910,
+     "range_median_m": 34.8,
+     "range_p90_m": 54.4,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.349,
+     "hidden_share": 0.357
+    },
+    {
+     "arena": "pit",
+     "seed": 2,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 33,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 42
+     },
+     "sim_seconds": 111.5,
+     "hits": 720,
+     "range_median_m": 41.3,
+     "range_p90_m": 55.0,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.354,
+     "hidden_share": 0.362
+    },
+    {
+     "arena": "pit",
+     "seed": 3,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 29,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 33
+     },
+     "sim_seconds": 113.7,
+     "hits": 696,
+     "range_median_m": 39.2,
+     "range_p90_m": 55.1,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.356,
+     "hidden_share": 0.341
+    },
+    {
+     "arena": "pit",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 7
+     },
+     "sim_seconds": 66.5,
+     "hits": 294,
+     "range_median_m": 43.9,
+     "range_p90_m": 69.8,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.0,
+     "hidden_share": 0.643
+    },
+    {
+     "arena": "pit",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 24
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 3
+     },
+     "sim_seconds": 59.4,
+     "hits": 242,
+     "range_median_m": 46.2,
+     "range_p90_m": 72.3,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.0,
+     "hidden_share": 0.616
+    },
+    {
+     "arena": "pit",
+     "seed": 3,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 28,
+      "rust": 11
+     },
+     "units_lost": {
+      "green": 3,
+      "rust": 31
+     },
+     "sim_seconds": 108.2,
+     "hits": 724,
+     "range_median_m": 39.9,
+     "range_p90_m": 53.9,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.267,
+     "hidden_share": 0.339
+    },
+    {
+     "arena": "pit",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 8
+     },
+     "sim_seconds": 117.3,
+     "hits": 584,
+     "range_median_m": 42.8,
+     "range_p90_m": 79.1,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.333,
+     "hidden_share": 0.437
+    },
+    {
+     "arena": "pit",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 5,
+      "rust": 24
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 5
+     },
+     "sim_seconds": 114.5,
+     "hits": 647,
+     "range_median_m": 44.6,
+     "range_p90_m": 73.4,
+     "first_hit_seconds": 6.5,
+     "flank_share": 0.272,
+     "hidden_share": 0.47
+    },
+    {
+     "arena": "pit",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 8,
+      "rust": 33
+     },
+     "units_lost": {
+      "green": 34,
+      "rust": 2
+     },
+     "sim_seconds": 112.2,
+     "hits": 567,
+     "range_median_m": 31.2,
+     "range_p90_m": 52.9,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.33,
+     "hidden_share": 0.34
+    },
+    {
+     "arena": "pit",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 35
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 0
+     },
+     "sim_seconds": 113.1,
+     "hits": 710,
+     "range_median_m": 38.0,
+     "range_p90_m": 55.4,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.351,
+     "hidden_share": 0.297
+    },
+    {
+     "arena": "boneyard",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 9
+     },
+     "sim_seconds": 93.4,
+     "hits": 482,
+     "range_median_m": 43.9,
+     "range_p90_m": 83.4,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.08,
+     "hidden_share": 0.502
+    },
+    {
+     "arena": "boneyard",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 18,
+      "rust": 7
+     },
+     "units_lost": {
+      "green": 13,
+      "rust": 20
+     },
+     "sim_seconds": 108.4,
+     "hits": 241,
+     "range_median_m": 77.8,
+     "range_p90_m": 107.6,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.069,
+     "hidden_share": 0.526
+    },
+    {
+     "arena": "boneyard",
+     "seed": 2,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 32,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 3,
+      "rust": 42
+     },
+     "sim_seconds": 113.2,
+     "hits": 970,
+     "range_median_m": 37.9,
+     "range_p90_m": 53.7,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.141,
+     "hidden_share": 0.465
+    },
+    {
+     "arena": "boneyard",
+     "seed": 2,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 34,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 110.2,
+     "hits": 828,
+     "range_median_m": 38.8,
+     "range_p90_m": 54.9,
+     "first_hit_seconds": 6.4,
+     "flank_share": 0.116,
+     "hidden_share": 0.488
+    },
+    {
+     "arena": "boneyard",
+     "seed": 3,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 30,
+      "rust": 5
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 37
+     },
+     "sim_seconds": 108.0,
+     "hits": 711,
+     "range_median_m": 35.2,
+     "range_p90_m": 54.6,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.068,
+     "hidden_share": 0.544
+    },
+    {
+     "arena": "boneyard",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 8
+     },
+     "sim_seconds": 55.7,
+     "hits": 478,
+     "range_median_m": 41.8,
+     "range_p90_m": 72.7,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.004,
+     "hidden_share": 0.396
+    },
+    {
+     "arena": "boneyard",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 7
+     },
+     "sim_seconds": 50.3,
+     "hits": 287,
+     "range_median_m": 45.5,
+     "range_p90_m": 75.0,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.007,
+     "hidden_share": 0.448
+    },
+    {
+     "arena": "boneyard",
+     "seed": 3,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 30,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 104.4,
+     "hits": 887,
+     "range_median_m": 37.3,
+     "range_p90_m": 54.0,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.036,
+     "hidden_share": 0.546
+    },
+    {
+     "arena": "boneyard",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 22
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 7
+     },
+     "sim_seconds": 103.3,
+     "hits": 727,
+     "range_median_m": 40.4,
+     "range_p90_m": 66.0,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.043,
+     "hidden_share": 0.539
+    },
+    {
+     "arena": "boneyard",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 23
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 6
+     },
+     "sim_seconds": 93.1,
+     "hits": 709,
+     "range_median_m": 42.3,
+     "range_p90_m": 63.5,
+     "first_hit_seconds": 6.5,
+     "flank_share": 0.034,
+     "hidden_share": 0.49
+    },
+    {
+     "arena": "boneyard",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 35
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 0
+     },
+     "sim_seconds": 109.0,
+     "hits": 861,
+     "range_median_m": 32.7,
+     "range_p90_m": 54.3,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.051,
+     "hidden_share": 0.485
+    },
+    {
+     "arena": "boneyard",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 33
+     },
+     "units_lost": {
+      "green": 40,
+      "rust": 2
+     },
+     "sim_seconds": 132.2,
+     "hits": 956,
+     "range_median_m": 35.8,
+     "range_p90_m": 53.6,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.047,
+     "hidden_share": 0.51
+    },
+    {
+     "arena": "foundry",
+     "seed": 1,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 5,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 6
+     },
+     "sim_seconds": 107.3,
+     "hits": 229,
+     "range_median_m": 54.7,
+     "range_p90_m": 96.1,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.053,
+     "hidden_share": 0.426
+    },
+    {
+     "arena": "foundry",
+     "seed": 1,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 23
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 4
+     },
+     "sim_seconds": 114.9,
+     "hits": 391,
+     "range_median_m": 40.1,
+     "range_p90_m": 80.7,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.046,
+     "hidden_share": 0.52
+    },
+    {
+     "arena": "foundry",
+     "seed": 2,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 30,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 5,
+      "rust": 42
+     },
+     "sim_seconds": 105.8,
+     "hits": 823,
+     "range_median_m": 38.8,
+     "range_p90_m": 76.2,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.201,
+     "hidden_share": 0.286
+    },
+    {
+     "arena": "foundry",
+     "seed": 2,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 34,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 85.7,
+     "hits": 680,
+     "range_median_m": 37.1,
+     "range_p90_m": 58.2,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.19,
+     "hidden_share": 0.348
+    },
+    {
+     "arena": "foundry",
+     "seed": 3,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 28,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 3,
+      "rust": 42
+     },
+     "sim_seconds": 95.3,
+     "hits": 1064,
+     "range_median_m": 30.2,
+     "range_p90_m": 51.9,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.19,
+     "hidden_share": 0.284
+    },
+    {
+     "arena": "foundry",
+     "seed": 4,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 9
+     },
+     "sim_seconds": 43.5,
+     "hits": 343,
+     "range_median_m": 48.0,
+     "range_p90_m": 73.8,
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.002,
+     "hidden_share": 0.342
+    },
+    {
+     "arena": "foundry",
+     "seed": 4,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 11
+     },
+     "sim_seconds": 43.9,
+     "hits": 397,
+     "range_median_m": 39.5,
+     "range_p90_m": 73.5,
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.002,
+     "hidden_share": 0.292
+    },
+    {
+     "arena": "foundry",
+     "seed": 3,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 30,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 93.6,
+     "hits": 686,
+     "range_median_m": 34.5,
+     "range_p90_m": 53.6,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.121,
+     "hidden_share": 0.375
+    },
+    {
+     "arena": "foundry",
+     "seed": 5,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 14
+     },
+     "sim_seconds": 111.3,
+     "hits": 663,
+     "range_median_m": 42.4,
+     "range_p90_m": 76.9,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.171,
+     "hidden_share": 0.417
+    },
+    {
+     "arena": "foundry",
+     "seed": 5,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 36,
+      "rust": 11
+     },
+     "sim_seconds": 116.4,
+     "hits": 803,
+     "range_median_m": 45.0,
+     "range_p90_m": 75.0,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.152,
+     "hidden_share": 0.425
+    },
+    {
+     "arena": "foundry",
+     "seed": 6,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 34
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 84.7,
+     "hits": 833,
+     "range_median_m": 36.8,
+     "range_p90_m": 57.6,
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.246,
+     "hidden_share": 0.289
+    },
+    {
+     "arena": "foundry",
+     "seed": 6,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 35
+     },
+     "units_lost": {
+      "green": 38,
+      "rust": 0
+     },
+     "sim_seconds": 114.1,
+     "hits": 886,
+     "range_median_m": 38.4,
+     "range_p90_m": 58.8,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.105,
+     "hidden_share": 0.4
+    }
+   ]
+  },
+  {
+   "file": "arena-series-seeds7-18.json",
+   "config": {
+    "faction": "condemned",
+    "green_faction": "",
+    "rust_faction": "",
+    "budget": 5200,
+    "time_limit": 180,
+    "seeds": 12
+   },
+   "runs": [
+    {
+     "arena": "yard",
+     "seed": 7,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 24,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 18,
+      "rust": 0
+     },
+     "sim_seconds": 114.1,
+     "hits": 214,
+     "range_median_m": 41.3,
+     "range_p90_m": 61.1,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.09,
+     "hidden_share": 0.553
+    },
+    {
+     "arena": "yard",
+     "seed": 8,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 11
+     },
+     "sim_seconds": 124.6,
+     "hits": 508,
+     "range_median_m": 34.3,
+     "range_p90_m": 74.5,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.07,
+     "hidden_share": 0.688
+    },
+    {
+     "arena": "yard",
+     "seed": 7,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 5,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 37,
+      "rust": 0
+     },
+     "sim_seconds": 122.9,
+     "hits": 465,
+     "range_median_m": 37.3,
+     "range_p90_m": 55.5,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.071,
+     "hidden_share": 0.619
+    },
+    {
+     "arena": "yard",
+     "seed": 9,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 11
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 16
+     },
+     "sim_seconds": 84.1,
+     "hits": 561,
+     "range_median_m": 44.9,
+     "range_p90_m": 73.2,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.0,
+     "hidden_share": 0.556
+    },
+    {
+     "arena": "yard",
+     "seed": 9,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 13,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 14,
+      "rust": 27
+     },
+     "sim_seconds": 87.9,
+     "hits": 444,
+     "range_median_m": 43.6,
+     "range_p90_m": 73.4,
+     "first_hit_seconds": 8.0,
+     "flank_share": 0.0,
+     "hidden_share": 0.554
+    },
+    {
+     "arena": "yard",
+     "seed": 8,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 11,
+      "rust": 4
+     },
+     "units_lost": {
+      "green": 20,
+      "rust": 25
+     },
+     "sim_seconds": 140.7,
+     "hits": 448,
+     "range_median_m": 46.1,
+     "range_p90_m": 115.7,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.038,
+     "hidden_share": 0.595
+    },
+    {
+     "arena": "yard",
+     "seed": 10,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 6,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 12
+     },
+     "sim_seconds": 144.1,
+     "hits": 691,
+     "range_median_m": 45.5,
+     "range_p90_m": 75.4,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.038,
+     "hidden_share": 0.618
+    },
+    {
+     "arena": "yard",
+     "seed": 10,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 8
+     },
+     "sim_seconds": 120.1,
+     "hits": 687,
+     "range_median_m": 37.8,
+     "range_p90_m": 63.9,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.036,
+     "hidden_share": 0.593
+    },
+    {
+     "arena": "yard",
+     "seed": 11,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 84.5,
+     "hits": 401,
+     "range_median_m": 38.9,
+     "range_p90_m": 55.1,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.015,
+     "hidden_share": 0.545
+    },
+    {
+     "arena": "yard",
+     "seed": 11,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 27,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 42
+     },
+     "sim_seconds": 80.1,
+     "hits": 524,
+     "range_median_m": 39.2,
+     "range_p90_m": 53.6,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.062,
+     "hidden_share": 0.553
+    },
+    {
+     "arena": "yard",
+     "seed": 12,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 84.6,
+     "hits": 442,
+     "range_median_m": 41.3,
+     "range_p90_m": 55.2,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.068,
+     "hidden_share": 0.557
+    },
+    {
+     "arena": "yard",
+     "seed": 12,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 25,
+      "rust": 7
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 35
+     },
+     "sim_seconds": 126.4,
+     "hits": 476,
+     "range_median_m": 40.1,
+     "range_p90_m": 57.3,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.096,
+     "hidden_share": 0.569
+    },
+    {
+     "arena": "yard",
+     "seed": 13,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 7,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 23,
+      "rust": 10
+     },
+     "sim_seconds": 113.8,
+     "hits": 389,
+     "range_median_m": 45.6,
+     "range_p90_m": 78.7,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.04,
+     "hidden_share": 0.634
+    },
+    {
+     "arena": "yard",
+     "seed": 13,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 8
+     },
+     "sim_seconds": 125.7,
+     "hits": 403,
+     "range_median_m": 39.7,
+     "range_p90_m": 67.5,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.027,
+     "hidden_share": 0.633
+    },
+    {
+     "arena": "yard",
+     "seed": 14,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 1
+     },
+     "sim_seconds": 110.6,
+     "hits": 762,
+     "range_median_m": 34.8,
+     "range_p90_m": 53.1,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.034,
+     "hidden_share": 0.585
+    },
+    {
+     "arena": "yard",
+     "seed": 14,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 100.6,
+     "hits": 703,
+     "range_median_m": 38.4,
+     "range_p90_m": 54.4,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.028,
+     "hidden_share": 0.491
+    },
+    {
+     "arena": "yard",
+     "seed": 15,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 2
+     },
+     "sim_seconds": 131.5,
+     "hits": 988,
+     "range_median_m": 31.1,
+     "range_p90_m": 53.7,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.105,
+     "hidden_share": 0.597
+    },
+    {
+     "arena": "yard",
+     "seed": 16,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 12,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 1
+     },
+     "sim_seconds": 112.1,
+     "hits": 230,
+     "range_median_m": 41.7,
+     "range_p90_m": 63.1,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.056,
+     "hidden_share": 0.653
+    },
+    {
+     "arena": "yard",
+     "seed": 15,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "sim_seconds": 118.4,
+     "hits": 816,
+     "range_median_m": 32.1,
+     "range_p90_m": 51.2,
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.09,
+     "hidden_share": 0.569
+    },
+    {
+     "arena": "yard",
+     "seed": 16,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 9,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 33,
+      "rust": 0
+     },
+     "sim_seconds": 108.3,
+     "hits": 319,
+     "range_median_m": 43.6,
+     "range_p90_m": 67.3,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.047,
+     "hidden_share": 0.564
+    },
+    {
+     "arena": "yard",
+     "seed": 17,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 4
+     },
+     "sim_seconds": 56.3,
+     "hits": 386,
+     "range_median_m": 41.9,
+     "range_p90_m": 70.7,
+     "first_hit_seconds": 6.4,
+     "flank_share": 0.017,
+     "hidden_share": 0.494
+    },
+    {
+     "arena": "yard",
+     "seed": 17,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 21,
+      "rust": 11
+     },
+     "sim_seconds": 132.5,
+     "hits": 309,
+     "range_median_m": 41.4,
+     "range_p90_m": 108.5,
+     "first_hit_seconds": 6.6,
+     "flank_share": 0.036,
+     "hidden_share": 0.589
+    },
+    {
+     "arena": "yard",
+     "seed": 18,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 12
+     },
+     "sim_seconds": 136.3,
+     "hits": 550,
+     "range_median_m": 42.2,
+     "range_p90_m": 71.6,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.011,
+     "hidden_share": 0.551
+    },
+    {
+     "arena": "yard",
+     "seed": 18,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 3,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 9
+     },
+     "sim_seconds": 120.2,
+     "hits": 412,
+     "range_median_m": 41.9,
+     "range_p90_m": 74.5,
+     "first_hit_seconds": 7.9,
+     "flank_share": 0.001,
+     "hidden_share": 0.614
+    },
+    {
+     "arena": "boulevard",
+     "seed": 7,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 25
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "sim_seconds": 87.2,
+     "hits": 531,
+     "range_median_m": 40.4,
+     "range_p90_m": 62.6,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.052,
+     "hidden_share": 0.535
+    },
+    {
+     "arena": "boulevard",
+     "seed": 8,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 9
+     },
+     "sim_seconds": 105.4,
+     "hits": 576,
+     "range_median_m": 44.5,
+     "range_p90_m": 80.6,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.061,
+     "hidden_share": 0.494
+    },
+    {
+     "arena": "boulevard",
+     "seed": 7,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 3,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 39,
+      "rust": 0
+     },
+     "sim_seconds": 113.9,
+     "hits": 380,
+     "range_median_m": 47.3,
+     "range_p90_m": 73.3,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.045,
+     "hidden_share": 0.491
+    },
+    {
+     "arena": "boulevard",
+     "seed": 8,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 6,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 16
+     },
+     "sim_seconds": 109.6,
+     "hits": 725,
+     "range_median_m": 39.7,
+     "range_p90_m": 82.9,
+     "first_hit_seconds": 6.3,
+     "flank_share": 0.075,
+     "hidden_share": 0.445
+    },
+    {
+     "arena": "boulevard",
+     "seed": 9,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 14
+     },
+     "sim_seconds": 57.8,
+     "hits": 497,
+     "range_median_m": 47.5,
+     "range_p90_m": 77.0,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.004,
+     "hidden_share": 0.315
+    },
+    {
+     "arena": "boulevard",
+     "seed": 9,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 12
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 15
+     },
+     "sim_seconds": 56.6,
+     "hits": 501,
+     "range_median_m": 48.5,
+     "range_p90_m": 75.6,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.001,
+     "hidden_share": 0.331
+    },
+    {
+     "arena": "boulevard",
+     "seed": 10,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 9
+     },
+     "sim_seconds": 85.7,
+     "hits": 583,
+     "range_median_m": 41.3,
+     "range_p90_m": 66.8,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.045,
+     "hidden_share": 0.384
+    },
+    {
+     "arena": "boulevard",
+     "seed": 11,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 27,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 42
+     },
+     "sim_seconds": 80.0,
+     "hits": 449,
+     "range_median_m": 38.9,
+     "range_p90_m": 56.4,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.008,
+     "hidden_share": 0.477
+    },
+    {
+     "arena": "boulevard",
+     "seed": 10,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 10
+     },
+     "sim_seconds": 116.8,
+     "hits": 721,
+     "range_median_m": 42.5,
+     "range_p90_m": 74.5,
+     "first_hit_seconds": 6.3,
+     "flank_share": 0.102,
+     "hidden_share": 0.447
+    },
+    {
+     "arena": "boulevard",
+     "seed": 11,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 106.2,
+     "hits": 376,
+     "range_median_m": 47.0,
+     "range_p90_m": 81.1,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.047,
+     "hidden_share": 0.5
+    },
+    {
+     "arena": "boulevard",
+     "seed": 12,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 79.9,
+     "hits": 509,
+     "range_median_m": 45.4,
+     "range_p90_m": 60.6,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.044,
+     "hidden_share": 0.408
+    },
+    {
+     "arena": "boulevard",
+     "seed": 12,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 25,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 2,
+      "rust": 23
+     },
+     "sim_seconds": 108.1,
+     "hits": 353,
+     "range_median_m": 43.1,
+     "range_p90_m": 71.9,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.07,
+     "hidden_share": 0.279
+    },
+    {
+     "arena": "boulevard",
+     "seed": 13,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 10
+     },
+     "sim_seconds": 100.0,
+     "hits": 432,
+     "range_median_m": 46.2,
+     "range_p90_m": 73.7,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.021,
+     "hidden_share": 0.393
+    },
+    {
+     "arena": "boulevard",
+     "seed": 13,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 17
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 10
+     },
+     "sim_seconds": 97.4,
+     "hits": 540,
+     "range_median_m": 43.4,
+     "range_p90_m": 76.3,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.012,
+     "hidden_share": 0.515
+    },
+    {
+     "arena": "boulevard",
+     "seed": 14,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 72.1,
+     "hits": 841,
+     "range_median_m": 37.5,
+     "range_p90_m": 56.3,
+     "first_hit_seconds": 6.0,
+     "flank_share": 0.017,
+     "hidden_share": 0.354
+    },
+    {
+     "arena": "boulevard",
+     "seed": 14,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 80.4,
+     "hits": 596,
+     "range_median_m": 40.2,
+     "range_p90_m": 62.3,
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.051,
+     "hidden_share": 0.32
+    },
+    {
+     "arena": "boulevard",
+     "seed": 15,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 38,
+      "rust": 2
+     },
+     "sim_seconds": 113.6,
+     "hits": 715,
+     "range_median_m": 34.3,
+     "range_p90_m": 54.0,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.133,
+     "hidden_share": 0.377
+    },
+    {
+     "arena": "boulevard",
+     "seed": 15,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 3
+     },
+     "sim_seconds": 94.0,
+     "hits": 687,
+     "range_median_m": 39.3,
+     "range_p90_m": 53.8,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.097,
+     "hidden_share": 0.433
+    },
+    {
+     "arena": "boulevard",
+     "seed": 16,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 1
+     },
+     "sim_seconds": 112.8,
+     "hits": 490,
+     "range_median_m": 45.8,
+     "range_p90_m": 79.3,
+     "first_hit_seconds": 6.0,
+     "flank_share": 0.031,
+     "hidden_share": 0.524
+    },
+    {
+     "arena": "boulevard",
+     "seed": 16,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 0
+     },
+     "sim_seconds": 65.2,
+     "hits": 394,
+     "range_median_m": 46.8,
+     "range_p90_m": 62.7,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.031,
+     "hidden_share": 0.339
+    },
+    {
+     "arena": "boulevard",
+     "seed": 17,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 16,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 9,
+      "rust": 30
+     },
+     "sim_seconds": 116.7,
+     "hits": 364,
+     "range_median_m": 39.9,
+     "range_p90_m": 71.2,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.066,
+     "hidden_share": 0.507
+    },
+    {
+     "arena": "boulevard",
+     "seed": 18,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 7
+     },
+     "sim_seconds": 115.4,
+     "hits": 361,
+     "range_median_m": 50.6,
+     "range_p90_m": 80.9,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.016,
+     "hidden_share": 0.43
+    },
+    {
+     "arena": "boulevard",
+     "seed": 17,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 9,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 16,
+      "rust": 31
+     },
+     "sim_seconds": 123.5,
+     "hits": 570,
+     "range_median_m": 40.1,
+     "range_p90_m": 81.1,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.075,
+     "hidden_share": 0.404
+    },
+    {
+     "arena": "boulevard",
+     "seed": 18,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 13
+     },
+     "sim_seconds": 132.4,
+     "hits": 396,
+     "range_median_m": 52.4,
+     "range_p90_m": 85.2,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.041,
+     "hidden_share": 0.39
+    },
+    {
+     "arena": "pit",
+     "seed": 7,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 18,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 24,
+      "rust": 1
+     },
+     "sim_seconds": 107.4,
+     "hits": 355,
+     "range_median_m": 44.7,
+     "range_p90_m": 54.8,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.243,
+     "hidden_share": 0.617
+    },
+    {
+     "arena": "pit",
+     "seed": 7,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 15,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 0
+     },
+     "sim_seconds": 107.0,
+     "hits": 664,
+     "range_median_m": 36.6,
+     "range_p90_m": 53.3,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.184,
+     "hidden_share": 0.603
+    },
+    {
+     "arena": "pit",
+     "seed": 8,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 14
+     },
+     "sim_seconds": 139.3,
+     "hits": 649,
+     "range_median_m": 44.2,
+     "range_p90_m": 89.6,
+     "first_hit_seconds": 9.8,
+     "flank_share": 0.182,
+     "hidden_share": 0.579
+    },
+    {
+     "arena": "pit",
+     "seed": 9,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 17,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 10,
+      "rust": 27
+     },
+     "sim_seconds": 74.1,
+     "hits": 411,
+     "range_median_m": 45.3,
+     "range_p90_m": 72.1,
+     "first_hit_seconds": 8.1,
+     "flank_share": 0.002,
+     "hidden_share": 0.595
+    },
+    {
+     "arena": "pit",
+     "seed": 8,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 31,
+      "rust": 11
+     },
+     "sim_seconds": 103.9,
+     "hits": 502,
+     "range_median_m": 34.5,
+     "range_p90_m": 74.5,
+     "first_hit_seconds": 8.0,
+     "flank_share": 0.073,
+     "hidden_share": 0.599
+    },
+    {
+     "arena": "pit",
+     "seed": 9,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 14
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 13
+     },
+     "sim_seconds": 82.5,
+     "hits": 460,
+     "range_median_m": 44.1,
+     "range_p90_m": 72.5,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.002,
+     "hidden_share": 0.607
+    },
+    {
+     "arena": "pit",
+     "seed": 10,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 25
+     },
+     "units_lost": {
+      "green": 35,
+      "rust": 4
+     },
+     "sim_seconds": 102.9,
+     "hits": 623,
+     "range_median_m": 40.2,
+     "range_p90_m": 68.4,
+     "first_hit_seconds": 7.9,
+     "flank_share": 0.228,
+     "hidden_share": 0.447
+    },
+    {
+     "arena": "pit",
+     "seed": 10,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 9,
+      "rust": 23
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 6
+     },
+     "sim_seconds": 123.9,
+     "hits": 807,
+     "range_median_m": 41.8,
+     "range_p90_m": 69.6,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.288,
+     "hidden_share": 0.382
+    },
+    {
+     "arena": "pit",
+     "seed": 11,
+     "swap": false,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 27,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 26
+     },
+     "sim_seconds": 108.0,
+     "hits": 507,
+     "range_median_m": 38.5,
+     "range_p90_m": 55.4,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.199,
+     "hidden_share": 0.595
+    },
+    {
+     "arena": "pit",
+     "seed": 11,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 27,
+      "rust": 4
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 38
+     },
+     "sim_seconds": 111.9,
+     "hits": 464,
+     "range_median_m": 43.1,
+     "range_p90_m": 76.2,
+     "first_hit_seconds": 8.1,
+     "flank_share": 0.172,
+     "hidden_share": 0.544
+    },
+    {
+     "arena": "pit",
+     "seed": 12,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 105.4,
+     "hits": 575,
+     "range_median_m": 36.1,
+     "range_p90_m": 53.6,
+     "first_hit_seconds": 8.0,
+     "flank_share": 0.156,
+     "hidden_share": 0.585
+    },
+    {
+     "arena": "pit",
+     "seed": 12,
+     "swap": true,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 27,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 42
+     },
+     "sim_seconds": 111.3,
+     "hits": 605,
+     "range_median_m": 38.9,
+     "range_p90_m": 53.7,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.196,
+     "hidden_share": 0.554
+    },
+    {
+     "arena": "pit",
+     "seed": 13,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 5,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 18
+     },
+     "sim_seconds": 120.7,
+     "hits": 481,
+     "range_median_m": 47.5,
+     "range_p90_m": 79.9,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.167,
+     "hidden_share": 0.6
+    },
+    {
+     "arena": "pit",
+     "seed": 13,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 9
+     },
+     "sim_seconds": 89.8,
+     "hits": 520,
+     "range_median_m": 39.4,
+     "range_p90_m": 58.0,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.106,
+     "hidden_share": 0.6
+    },
+    {
+     "arena": "pit",
+     "seed": 14,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 28
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 102.9,
+     "hits": 519,
+     "range_median_m": 39.1,
+     "range_p90_m": 56.2,
+     "first_hit_seconds": 8.4,
+     "flank_share": 0.303,
+     "hidden_share": 0.399
+    },
+    {
+     "arena": "pit",
+     "seed": 14,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "sim_seconds": 106.8,
+     "hits": 763,
+     "range_median_m": 40.4,
+     "range_p90_m": 54.3,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.301,
+     "hidden_share": 0.409
+    },
+    {
+     "arena": "pit",
+     "seed": 15,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "sim_seconds": 108.0,
+     "hits": 679,
+     "range_median_m": 35.7,
+     "range_p90_m": 54.7,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.282,
+     "hidden_share": 0.435
+    },
+    {
+     "arena": "pit",
+     "seed": 15,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 30
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 120.4,
+     "hits": 638,
+     "range_median_m": 39.1,
+     "range_p90_m": 57.1,
+     "first_hit_seconds": 8.5,
+     "flank_share": 0.345,
+     "hidden_share": 0.459
+    },
+    {
+     "arena": "pit",
+     "seed": 16,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 10,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 32,
+      "rust": 1
+     },
+     "sim_seconds": 107.2,
+     "hits": 602,
+     "range_median_m": 45.0,
+     "range_p90_m": 56.8,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.182,
+     "hidden_share": 0.602
+    },
+    {
+     "arena": "pit",
+     "seed": 16,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 0
+     },
+     "sim_seconds": 92.9,
+     "hits": 590,
+     "range_median_m": 39.8,
+     "range_p90_m": 59.2,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.185,
+     "hidden_share": 0.541
+    },
+    {
+     "arena": "pit",
+     "seed": 17,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 30
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 1
+     },
+     "sim_seconds": 69.0,
+     "hits": 377,
+     "range_median_m": 44.9,
+     "range_p90_m": 78.4,
+     "first_hit_seconds": 7.9,
+     "flank_share": 0.035,
+     "hidden_share": 0.583
+    },
+    {
+     "arena": "pit",
+     "seed": 18,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 20
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 7
+     },
+     "sim_seconds": 88.0,
+     "hits": 393,
+     "range_median_m": 46.8,
+     "range_p90_m": 71.4,
+     "first_hit_seconds": 7.6,
+     "flank_share": 0.108,
+     "hidden_share": 0.551
+    },
+    {
+     "arena": "pit",
+     "seed": 17,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 10
+     },
+     "sim_seconds": 111.0,
+     "hits": 496,
+     "range_median_m": 38.3,
+     "range_p90_m": 67.9,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.136,
+     "hidden_share": 0.567
+    },
+    {
+     "arena": "pit",
+     "seed": 18,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 2,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 9
+     },
+     "sim_seconds": 116.0,
+     "hits": 396,
+     "range_median_m": 46.6,
+     "range_p90_m": 79.5,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.102,
+     "hidden_share": 0.631
+    },
+    {
+     "arena": "boneyard",
+     "seed": 7,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 25
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 2
+     },
+     "sim_seconds": 96.1,
+     "hits": 435,
+     "range_median_m": 43.6,
+     "range_p90_m": 56.2,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.038,
+     "hidden_share": 0.529
+    },
+    {
+     "arena": "boneyard",
+     "seed": 7,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 85.3,
+     "hits": 393,
+     "range_median_m": 47.1,
+     "range_p90_m": 58.4,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.026,
+     "hidden_share": 0.459
+    },
+    {
+     "arena": "boneyard",
+     "seed": 8,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 9,
+      "rust": 6
+     },
+     "units_lost": {
+      "green": 22,
+      "rust": 23
+     },
+     "sim_seconds": 150.6,
+     "hits": 620,
+     "range_median_m": 42.0,
+     "range_p90_m": 107.9,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.046,
+     "hidden_share": 0.484
+    },
+    {
+     "arena": "boneyard",
+     "seed": 9,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 9
+     },
+     "units_lost": {
+      "green": 27,
+      "rust": 18
+     },
+     "sim_seconds": 75.9,
+     "hits": 574,
+     "range_median_m": 43.4,
+     "range_p90_m": 78.7,
+     "first_hit_seconds": 7.4,
+     "flank_share": 0.001,
+     "hidden_share": 0.438
+    },
+    {
+     "arena": "boneyard",
+     "seed": 8,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 8,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 23,
+      "rust": 10
+     },
+     "sim_seconds": 119.1,
+     "hits": 849,
+     "range_median_m": 35.9,
+     "range_p90_m": 78.7,
+     "first_hit_seconds": 6.1,
+     "flank_share": 0.029,
+     "hidden_share": 0.624
+    },
+    {
+     "arena": "boneyard",
+     "seed": 9,
+     "swap": true,
+     "winner": "Green",
+     "reason": "time_limit",
+     "units_left": {
+      "green": 1,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 26
+     },
+     "sim_seconds": 180.0,
+     "hits": 587,
+     "range_median_m": 43.6,
+     "range_p90_m": 77.9,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.012,
+     "hidden_share": 0.468
+    },
+    {
+     "arena": "boneyard",
+     "seed": 10,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 7,
+      "rust": 15
+     },
+     "units_lost": {
+      "green": 28,
+      "rust": 14
+     },
+     "sim_seconds": 129.4,
+     "hits": 829,
+     "range_median_m": 40.7,
+     "range_p90_m": 74.5,
+     "first_hit_seconds": 6.8,
+     "flank_share": 0.07,
+     "hidden_share": 0.602
+    },
+    {
+     "arena": "boneyard",
+     "seed": 10,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 15,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 20,
+      "rust": 13
+     },
+     "sim_seconds": 107.8,
+     "hits": 660,
+     "range_median_m": 47.3,
+     "range_p90_m": 77.2,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.089,
+     "hidden_share": 0.525
+    },
+    {
+     "arena": "boneyard",
+     "seed": 11,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 27,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 0,
+      "rust": 42
+     },
+     "sim_seconds": 110.2,
+     "hits": 556,
+     "range_median_m": 39.7,
+     "range_p90_m": 76.0,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.077,
+     "hidden_share": 0.5
+    },
+    {
+     "arena": "boneyard",
+     "seed": 11,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 26,
+      "rust": 1
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 41
+     },
+     "sim_seconds": 115.7,
+     "hits": 535,
+     "range_median_m": 39.4,
+     "range_p90_m": 56.6,
+     "first_hit_seconds": 7.3,
+     "flank_share": 0.055,
+     "hidden_share": 0.544
+    },
+    {
+     "arena": "boneyard",
+     "seed": 12,
+     "swap": false,
+     "winner": "Green",
+     "reason": "elimination",
+     "units_left": {
+      "green": 26,
+      "rust": 0
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 42
+     },
+     "sim_seconds": 107.8,
+     "hits": 559,
+     "range_median_m": 42.1,
+     "range_p90_m": 61.4,
+     "first_hit_seconds": 7.1,
+     "flank_share": 0.045,
+     "hidden_share": 0.571
+    },
+    {
+     "arena": "boneyard",
+     "seed": 12,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 26,
+      "rust": 5
+     },
+     "units_lost": {
+      "green": 1,
+      "rust": 37
+     },
+     "sim_seconds": 108.6,
+     "hits": 499,
+     "range_median_m": 37.7,
+     "range_p90_m": 56.8,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.086,
+     "hidden_share": 0.51
+    },
+    {
+     "arena": "boneyard",
+     "seed": 13,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 30,
+      "rust": 8
+     },
+     "sim_seconds": 130.3,
+     "hits": 482,
+     "range_median_m": 50.3,
+     "range_p90_m": 73.8,
+     "first_hit_seconds": 7.7,
+     "flank_share": 0.025,
+     "hidden_share": 0.59
+    },
+    {
+     "arena": "boneyard",
+     "seed": 13,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 13
+     },
+     "units_lost": {
+      "green": 29,
+      "rust": 14
+     },
+     "sim_seconds": 133.8,
+     "hits": 559,
+     "range_median_m": 47.3,
+     "range_p90_m": 78.2,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.053,
+     "hidden_share": 0.491
+    },
+    {
+     "arena": "boneyard",
+     "seed": 14,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 29
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 0
+     },
+     "sim_seconds": 86.4,
+     "hits": 589,
+     "range_median_m": 39.8,
+     "range_p90_m": 55.9,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.033,
+     "hidden_share": 0.478
+    },
+    {
+     "arena": "boneyard",
+     "seed": 14,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 26
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 3
+     },
+     "sim_seconds": 112.9,
+     "hits": 738,
+     "range_median_m": 35.8,
+     "range_p90_m": 52.8,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.052,
+     "hidden_share": 0.455
+    },
+    {
+     "arena": "boneyard",
+     "seed": 15,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 30
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 106.7,
+     "hits": 604,
+     "range_median_m": 37.6,
+     "range_p90_m": 54.6,
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.069,
+     "hidden_share": 0.51
+    },
+    {
+     "arena": "boneyard",
+     "seed": 15,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 30
+     },
+     "units_lost": {
+      "green": 42,
+      "rust": 1
+     },
+     "sim_seconds": 87.4,
+     "hits": 640,
+     "range_median_m": 41.7,
+     "range_p90_m": 55.3,
+     "first_hit_seconds": 7.0,
+     "flank_share": 0.064,
+     "hidden_share": 0.482
+    },
+    {
+     "arena": "boneyard",
+     "seed": 16,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 41,
+      "rust": 0
+     },
+     "sim_seconds": 108.1,
+     "hits": 698,
+     "range_median_m": 37.2,
+     "range_p90_m": 55.3,
+     "first_hit_seconds": 6.7,
+     "flank_share": 0.112,
+     "hidden_share": 0.621
+    },
+    {
+     "arena": "boneyard",
+     "seed": 16,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 4,
+      "rust": 27
+     },
+     "units_lost": {
+      "green": 38,
+      "rust": 0
+     },
+     "sim_seconds": 116.5,
+     "hits": 419,
+     "range_median_m": 40.9,
+     "range_p90_m": 70.8,
+     "first_hit_seconds": 7.2,
+     "flank_share": 0.05,
+     "hidden_share": 0.596
+    },
+    {
+     "arena": "boneyard",
+     "seed": 17,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "elimination",
+     "units_left": {
+      "green": 0,
+      "rust": 18
+     },
+     "units_lost": {
+      "green": 25,
+      "rust": 13
+     },
+     "sim_seconds": 104.4,
+     "hits": 365,
+     "range_median_m": 39.7,
+     "range_p90_m": 98.0,
+     "first_hit_seconds": 6.9,
+     "flank_share": 0.034,
+     "hidden_share": 0.462
+    },
+    {
+     "arena": "boneyard",
+     "seed": 17,
+     "swap": true,
+     "winner": "Green",
+     "reason": "control",
+     "units_left": {
+      "green": 1,
+      "rust": 19
+     },
+     "units_lost": {
+      "green": 24,
+      "rust": 12
+     },
+     "sim_seconds": 115.1,
+     "hits": 324,
+     "range_median_m": 41.7,
+     "range_p90_m": 97.3,
+     "first_hit_seconds": 5.2,
+     "flank_share": 0.057,
+     "hidden_share": 0.488
+    },
+    {
+     "arena": "boneyard",
+     "seed": 18,
+     "swap": false,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 3,
+      "rust": 21
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 6
+     },
+     "sim_seconds": 113.6,
+     "hits": 385,
+     "range_median_m": 46.6,
+     "range_p90_m": 72.1,
+     "first_hit_seconds": 7.5,
+     "flank_share": 0.003,
+     "hidden_share": 0.611
+    },
+    {
+     "arena": "boneyard",
+     "seed": 18,
+     "swap": true,
+     "winner": "Rust",
+     "reason": "control",
+     "units_left": {
+      "green": 3,
+      "rust": 16
+     },
+     "units_lost": {
+      "green": 26,
+      "rust": 11
+     },
+     "sim_seconds": 107.4,
+     "hits": 356,
+     "range_median_m": 47.8,
+     "range_p90_m": 78.0,
+     "first_hit_seconds": 7.8,
+     "flank_share": 0.03,
+     "hidden_share": 0.443
+    }
+   ]
+  }
+ ]
+}
