@@ -281,8 +281,12 @@ _None yet._
 
 1. After nav's N1 merges: `FormUp.eta` → `Movement.eta` (one line; guard the `{}` a hull nothing drives returns;
    0.85 × top speed is optimistic, don't assert on it), and `SlotGround.standable` onto a nav query if nav adds one.
-2. After N6: PID station-keeping in a slot (the lead's named use case).
-3. After CP4 on main: publish the X6 baseline (`make remote T="squad-coherence SEEDS=6"`, both brains-only and
+2. After N6: PID station-keeping in a slot (the lead's named use case). nav measured its PID slot-follower at 0.35 m
+   mean gap vs 4.58 m for the old proportional law (slot moving at 5 m/s); N6 is held on a K1-latency trade the lead
+   must decide.
+3. CP4 is merged and measured (orchestrator, 2026-09-18: kill distance 54 → 40 m; the sight/acquisition gates did most
+   of it, the bands little). **Wait for the orchestrator's sim-baseline record on main (after nav's avoidance lands),
+   then** publish the X6 baseline (`make remote T="squad-coherence SEEDS=6"`, both brains-only and
    `--*-elements`), and chase what remains (leg re-issues, ~1 order per unit-second with elements).
 4. A unit shot at by a gun it cannot see stands still (Known issues) — a react-to-contact scenario.
 5. X8 (stretch): the army layer; arena's measurement says weight support-by-fire by terrain (+0.127 posting value on
