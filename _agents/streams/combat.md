@@ -318,6 +318,42 @@ line, and removing it there would flatten the faction into one band. Dropping `s
 only case of two units sharing a weapon (`laser`), which is what made the duplication visible in the first place.
 Not blocking: both still exist until the lead rules.
 
+### The CP4 series: exact commands, in order
+
+**Do not run any of this until the brain-range pair is green** — on a build where units halt at 61 m it measures a
+game nobody plays. Every command names the machine and the commit in its own output; record both.
+
+```bash
+# 1. The before/after, in the configuration players actually get (faction armies, 30 a side, control on).
+#    NOTE the knob is VARIANT_FILE, not VARIANTS (see mk/match.mk: VARIANTS is mk/ai.mk's, and it is global).
+make remote T="engagement PAIRS=condemned:condemned,gangs:law,condemned:syndicate SEEDS=3 TIME=240 JOBS=8 \
+    VARIANT_FILE=tools/matchup_variants/engagement_bands.json"
+#    4 configurations x (3 mirror + 12 counterbalanced) = 60 matches.
+#    The `reach (the old world)` variant IS the control: it puts every band back at its weapon's maximum,
+#    which is exactly the world before this contract. Without it the result is an assertion, not a comparison.
+
+# 2. Attribute the gates. Same pairing, three runs, one knob each.
+make remote T="engagement PAIRS=condemned:condemned SEEDS=3 TIME=240"                      # everything on
+make remote T="engagement PAIRS=condemned:condemned SEEDS=3 TIME=240 TUNE=<bands=reach>"   # discipline off
+#    ...and --no-acquisition / --no-crossing through the match runner for gates 1-2 and X6 separately.
+
+# 3. Only after the bands are settled: move the sim baseline (it WILL move; ranges are the simulation).
+make remote T=sim-baseline-record    # twice, confirm the two agree
+cp build/sim_state_hash.txt tests/baselines/sim_state_hash.txt   # builder0's glibc line is the canonical one
+#    The laptop is glibc 2.39 and has no line in that file, so `sim-baseline` SKIPS locally and only the
+#    remote check ever tests it. Do not be reassured by a green local check.
+
+# 4. X4's re-measure, which must come after all of the above and never across it.
+make remote T="faction-matrix SEEDS=5 TIME=150"
+
+# 5. Play it, which is the only check that counts for the lead's actual question.
+make skirmish     # does a fight start at a distance where anything but shooting is still possible?
+```
+
+**Read every result from the wrapper's own `>> remote: make <target> exited <N>` line and the runner's
+`N passed, M failed`** — never a shell exit code through a pipe (lesson 28; I made this mistake once already this
+round by reading a "waiting for a slot" line as a queue when I had in fact been granted one).
+
 ### Questions for the lead
 
 1. **The Lancer** (X5): which faction keeps it. Not blocking — a proposal will be here.

@@ -45,11 +45,12 @@ duel: import ## Watch a small fight as a text timeline (shots, hits, poses): GRE
 	$(PYTHON) tools/combat_duel.py --godot $(GODOT) --green $(or $(GREEN_UNITS),tank) --rust $(or $(RUST_UNITS),tank) \
 		--seed $(SEED) --time-limit $(or $(DUEL_TIME),90) $(if $(ARENA),--arena $(ARENA)) $(if $(TUNE),--tune $(TUNE))
 
-# VARIANT_FILE, not VARIANTS: see the note on `engagement` below. This one took the collision silently — it would
-# search the three ai-ladder brain names instead of the file you meant.
-matchup-search: import ## Score --tune variants of the matchup matrix against the designed counters: VARIANT_FILE=tools/matchup_variants/<file>.json [UNITS= SEEDS=2 ESCORT=]
+# VARIANT_FILE and SEARCH_UNITS, not VARIANTS and UNITS: see the note on `engagement` below. BOTH collided with
+# mk/ai.mk's defaults, and both took it silently — this target would search the three ai-ladder brain names instead of
+# the file you meant, and would always pass `--units 60` because `UNITS ?= 60` is live in every included makefile.
+matchup-search: import ## Score --tune variants of the matchup matrix against the designed counters: VARIANT_FILE=tools/matchup_variants/<file>.json [SEARCH_UNITS= SEEDS=2 ESCORT=]
 	$(PYTHON) tools/matchup_search.py --godot $(GODOT) --jobs $(JOBS) --variants $(VARIANT_FILE) --seeds $(or $(SEEDS),2) \
-		$(if $(UNITS),--units $(UNITS)) $(if $(ESCORT),--escort $(ESCORT))
+		$(if $(SEARCH_UNITS),--units $(SEARCH_UNITS)) $(if $(ESCORT),--escort $(ESCORT))
 
 # ---- X2 (round 4): does suppression change outcomes? ----------------------------
 # Every weapon's "suppression" set to 0 is the control: the threat field stays empty, nobody is ever pinned, and

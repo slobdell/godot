@@ -127,3 +127,27 @@ func test_a_kill_from_across_the_line_is_on_axis_and_one_from_the_side_is_not() 
 	var summary := stats.summary()
 	assert_near(float(summary["off_axis_kill_share"]), 2.0 / 3.0, 0.001, "the flank and the rear are off axis")
 	assert_near(float(summary["behind_line_kill_share"]), 1.0 / 3.0, 0.001, "only the rear one is behind the line")
+
+
+func test_the_fight_reports_how_hard_it_is_actually_shooting() -> void:
+	# N5 (round 6): fire discipline and X6's crossing penalty both DELAY fire, and nothing else in this readout would
+	# notice if they overshot into a quiet fight — which is the opposite of the lead's complaint and much easier to
+	# ship without seeing, because no gate measures "is anyone shooting". `contact_second` is already
+	# time-to-first-shot; this is the rate once it starts, per living unit so different army sizes compare.
+	var busy := EngagementStats.new([])
+	var quiet := EngagementStats.new([])
+	for second in 10:
+		var green := [{"position": Vector3(0, 0, 40), "speed": 0.0, "near_cover": false},
+				{"position": Vector3(5, 0, 40), "speed": 0.0, "near_cover": false}]
+		var rust := [{"position": Vector3(0, 0, -40), "speed": 0.0, "near_cover": false}]
+		busy.sample([green, rust], 6)   # 6 rounds a second over 3 units
+		quiet.sample([green, rust], 1)
+	for shot in 60:
+		busy.record_shot(false)
+	for shot in 10:
+		quiet.record_shot(false)
+	assert_near(float(busy.summary()["shots_per_unit_minute"]), 120.0, 0.5,
+			"60 shots over 30 unit-seconds is 120 per unit per minute")
+	assert_true(float(busy.summary()["shots_per_unit_minute"]) > float(quiet.summary()["shots_per_unit_minute"]) * 5.0,
+			"and a quiet fight reads as a quiet fight")
+	assert_eq(busy.summary()["shots"], 60, "the raw count is there too, for a sanity check against MATCH_RESULT")
