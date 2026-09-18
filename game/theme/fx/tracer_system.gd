@@ -62,8 +62,10 @@ func _init() -> void:
 	name = "Tracers"
 	_tracers.name = "TracerMesh"
 	_tracers.multimesh = _make_multimesh(_quad(), TRACER_SHADER)
+	FxMultiMesh.never_interpolated(_tracers)
 	_splats.name = "SplatMesh"
 	_splats.multimesh = _make_multimesh(_plane(), SPLAT_SHADER)
+	FxMultiMesh.never_interpolated(_splats)
 	for instance in [_tracers, _splats]:
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		instance.custom_aabb = WORLD_AABB
@@ -143,8 +145,8 @@ func update(pool: LightPool, now := 0.0) -> void:
 	var wanted := _sources.size() + _rounds_used
 	if wanted > tracers.instance_count:
 		var size := (wanted / GROW + 1) * GROW
-		tracers.instance_count = size
-		splats.instance_count = size
+		FxMultiMesh.resize(tracers, size)
+		FxMultiMesh.resize(splats, size)
 	var n := 0
 	for key in _sources:
 		if not is_instance_valid(key) or not (key as Node3D).is_visible_in_tree():
@@ -198,7 +200,7 @@ static func _make_multimesh(mesh: Mesh, shader: Shader) -> MultiMesh:
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = mesh
-	multimesh.instance_count = GROW
+	FxMultiMesh.resize(multimesh, GROW)
 	multimesh.visible_instance_count = 0
 	return multimesh
 

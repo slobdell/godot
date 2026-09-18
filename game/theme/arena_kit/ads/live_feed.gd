@@ -33,6 +33,9 @@ const CUT_SECONDS := 3.0
 const STALE_SECONDS := 2.0
 const ORBIT_RAD_PER_S := 0.06
 const FOV_DEG := 50.0
+## A frame this much over the frame target is already late (the simulation is catching up): the feed renders no slot in
+## it, because adding a scene render to a late frame is what a player sees as a hitch (render, round 5).
+const LATE_FRAME := 1.3
 
 ## Record-order bookkeeping for the ring of slots. Pure.
 class Ring:
@@ -92,6 +95,8 @@ var replaying := false
 var now := 0.0
 var focus := Vector3.ZERO
 var replays_started := 0
+## Frame number of the last slot rendered (perf-scene's hitch log asks whether a feed frame landed in a slow frame).
+var last_render_frame := -1
 
 var _replay: Replay
 var _replay_started := 0.0
@@ -172,11 +177,16 @@ func _process(delta: float) -> void:
 	_since_render += delta
 	if _since_render < 1.0 / FEED_HZ:
 		return
+	# Never add a scene render to a frame that is already late: when the simulation is catching up (several ticks in one
+	# frame) a feed frame turns a slow frame into a visible hitch. The feed waits for a frame with room in it.
+	if delta > LATE_FRAME * 1.0 / maxf(float(FrameTarget.value("fps")), 1.0):
+		return
 	_since_render = fmod(_since_render, 1.0 / FEED_HZ)
 	if not LiveFeed.worth_recording(_in_shot):
 		return  # empty ground: the screens hold the last good frame (or go back to ads once it's stale)
 	_last_recorded = now
 	var slot := ring.record()
+	last_render_frame = Engine.get_frames_drawn()
 	cameras[slot].global_transform = _shot()
 	slots[slot].render_target_update_mode = SubViewport.UPDATE_ONCE
 

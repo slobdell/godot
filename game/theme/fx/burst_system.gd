@@ -50,6 +50,7 @@ func _init(capacity := 64) -> void:
 	multimesh.mesh = mesh
 	_mesh.name = "BurstMesh"
 	_mesh.multimesh = multimesh
+	FxMultiMesh.never_interpolated(_mesh)
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_mesh.custom_aabb = WORLD_AABB
 	add_child(_mesh)
@@ -62,7 +63,7 @@ func capacity() -> int:
 
 func resize(new_capacity: int) -> void:
 	var multimesh := _mesh.multimesh
-	multimesh.instance_count = maxi(new_capacity, 1)
+	FxMultiMesh.resize(multimesh, maxi(new_capacity, 1))
 	_ends.resize(multimesh.instance_count)
 	_ends.fill(-1000.0)
 	_areas.resize(multimesh.instance_count)

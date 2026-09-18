@@ -67,10 +67,11 @@ func _init() -> void:
 		multimesh.use_colors = true
 		multimesh.use_custom_data = true
 		multimesh.mesh = mesh
-		multimesh.instance_count = pair[1]
+		FxMultiMesh.resize(multimesh, pair[1])
 		for i in multimesh.instance_count:
 			multimesh.set_instance_custom_data(i, Color(-1000.0, 0.001, 0.0, 0.0))
 		instance.multimesh = multimesh
+		FxMultiMesh.never_interpolated(instance)
 		instance.name = pair[2]
 		instance.custom_aabb = WORLD_AABB
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
