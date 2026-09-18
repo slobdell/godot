@@ -130,6 +130,7 @@ the budget is combat's and ai's, and nothing in rendering moves it.
 | `Impact` (the hit fireball) allocates a new `SphereMesh` + `StandardMaterial3D` per hit, alpha-blended, freed afterwards: the "instantiate per event" pattern that causes hitches at scale | `game/combat/impact.gd`, `Match.show_impact` **[verified]** |
 | `make web-smoke` renders with **SwiftShader** (software GL), so its frame times say nothing about real GPUs; it's only for "boots and looks right" | `tools/web_smoke/smoke.mjs` launch args **[verified]** |
 | Visuals must never touch the simulation (`make sim-baseline`), and slots must load on a headless server | workstreams.md **[verified]** |
+| A MultiMesh written from `_process` warns on every write once physics interpolation is on (30 Hz), and switching it off takes **two** calls: `physics_interpolation_mode = OFF` on the MultiMeshInstance3D (the node re-pushes its state to the server when it enters the tree, undoing a server flag set in `_init`) **and** the server flag re-asserted after every `instance_count` change (a resize rebuilds the buffers and clears it). Use `FxMultiMesh` | `game/theme/fx/fx_multimesh.gd` **[verified: 0 warnings in a playtest, was 1]** |
 
 **What actually costs frames on phones and WebGL** (in rough order): draw calls and state
 changes (each unique material/mesh), **overdraw** (layers of transparent/additive pixels covering

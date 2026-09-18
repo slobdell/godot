@@ -27,9 +27,10 @@ func _init() -> void:
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_custom_data = true
 	multimesh.mesh = mesh
-	multimesh.instance_count = MAX_QUADS
+	FxMultiMesh.resize(multimesh, MAX_QUADS)
 	multimesh.visible_instance_count = 0
 	_mesh.multimesh = multimesh
+	FxMultiMesh.never_interpolated(_mesh)
 	_mesh.name = "HazeMesh"
 	_mesh.custom_aabb = WORLD_AABB
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

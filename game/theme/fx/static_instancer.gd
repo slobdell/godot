@@ -29,10 +29,11 @@ static func instance_repeats(root: Node3D, min_count := 2) -> int:
 		var multimesh := MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.mesh = mesh
-		multimesh.instance_count = copies.size()
+		FxMultiMesh.resize(multimesh, copies.size())
 		var draw := MultiMeshInstance3D.new()
 		draw.name = "Instanced_%s" % (mesh.resource_name if mesh.resource_name != "" else str(removed))
 		draw.multimesh = multimesh
+		FxMultiMesh.never_interpolated(draw)
 		draw.cast_shadow = (copies[0] as MeshInstance3D).cast_shadow
 		var bounds := AABB()
 		var placed: Array[Transform3D] = []

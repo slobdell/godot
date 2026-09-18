@@ -40,7 +40,7 @@ func _init() -> void:
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = mesh
-	multimesh.instance_count = 32
+	FxMultiMesh.resize(multimesh, 32)
 	multimesh.visible_instance_count = 0
 	# Placed every rendered frame from FxWorld.visual_transform (`update` runs in _process), so the MultiMesh must not be
 	# interpolated as well: it would lag the vehicles by a tick and it logs "MultiMesh interpolation is being triggered
@@ -48,6 +48,7 @@ func _init() -> void:
 	RenderingServer.multimesh_set_physics_interpolated(multimesh.get_rid(), false)
 	_mesh.name = "UnderglowMesh"
 	_mesh.multimesh = multimesh
+	FxMultiMesh.never_interpolated(_mesh)
 	_mesh.custom_aabb = WORLD_AABB
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_mesh)
@@ -64,11 +65,12 @@ func _init() -> void:
 	# Compatibility renderer, which is what drew the blob as a flat dark rectangle (the lead saw it under every vehicle).
 	shadow_multimesh.use_colors = true
 	shadow_multimesh.mesh = shadow_mesh
-	shadow_multimesh.instance_count = 32
+	FxMultiMesh.resize(shadow_multimesh, 32)
 	shadow_multimesh.visible_instance_count = 0
 	RenderingServer.multimesh_set_physics_interpolated(shadow_multimesh.get_rid(), false)
 	_shadows.name = "BlobShadows"
 	_shadows.multimesh = shadow_multimesh
+	FxMultiMesh.never_interpolated(_shadows)
 	_shadows.custom_aabb = WORLD_AABB
 	_shadows.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_shadows)
@@ -94,12 +96,8 @@ func update(pool: LightPool) -> void:
 	var multimesh := _mesh.multimesh
 	var shadows := _shadows.multimesh
 	if _sources.size() > multimesh.instance_count:
-		multimesh.instance_count = (_sources.size() / 32 + 1) * 32
-		shadows.instance_count = multimesh.instance_count
-		# Growing a MultiMesh rebuilds its server buffers and turns interpolation back on, so re-assert it here as well
-		# as at build time: these are placed every rendered frame, not in _physics_process.
-		RenderingServer.multimesh_set_physics_interpolated(multimesh.get_rid(), false)
-		RenderingServer.multimesh_set_physics_interpolated(shadows.get_rid(), false)
+		FxMultiMesh.resize(multimesh, (_sources.size() / 32 + 1) * 32)
+		FxMultiMesh.resize(shadows, multimesh.instance_count)
 	var n := 0
 	for key in _sources:
 		if not is_instance_valid(key) or not (key as Node3D).is_visible_in_tree():
