@@ -6,9 +6,11 @@ extends Node
 ## between kills instead of dropping to a library hush, and a result gets its own roar. Not positional: the stands
 ## surround the camera. Silent with --mute and on headless peers (no FxWorld).
 
-const MURMUR_DB := Vector2(-30.0, -14.0)  # calm → on its feet
-const ROAR_DB := -9.0
-const RESULT_ROAR_DB := -5.0
+## Feel X3 (round 6): +13 dB. At -30 the murmur measured -46.5 dBFS soloed in a recorded match before contact, 20-25 dB
+## under the mix (build/audio pass, b80f3161, builder0), and the lead called the crowd non-existent.
+const MURMUR_DB := Vector2(-17.0, -6.0)  # calm → on its feet
+const ROAR_DB := -3.0
+const RESULT_ROAR_DB := 0.0
 const CALM := 0.12
 ## How fast the crowd settles after a kill (excitement per second), and how much of the match's intensity it holds.
 const SETTLE := 0.35
@@ -24,6 +26,10 @@ var roar := AudioStreamPlayer.new()
 var mood: MatchMood
 var _rng := RandomNumberGenerator.new()
 var _last_state := ""
+## `--crowd-meter` (feel X3): once a second, print what the crowd and the whole world bus actually measure in this match.
+var _meter := false
+var _meter_clock := 0.0
+var _meter_sums := Vector3.ZERO
 
 
 func _init() -> void:
@@ -31,8 +37,9 @@ func _init() -> void:
 	_rng.seed = 23
 	murmur.name = "Murmur"
 	roar.name = "Roar"
-	murmur.bus = SfxSystem.BED_BUS
-	roar.bus = SfxSystem.BED_BUS
+	SfxSystem.ensure_world_bus()
+	murmur.bus = SfxSystem.CROWD_BUS
+	roar.bus = SfxSystem.CROWD_BUS
 	add_child(murmur)
 	add_child(roar)
 
@@ -41,6 +48,7 @@ func _ready() -> void:
 	var fx := FxWorld.get_instance()
 	if fx == null:
 		return
+	_meter = LaunchFlags.from_environment().has("crowd-meter")
 	fx.spectacle.connect(react)
 	if not fx.sfx.muted and AudioSolo.allows("crowd"):
 		use_streams(fx.sfx.streams)
@@ -86,6 +94,28 @@ func _process(delta: float) -> void:
 			_roar(RESULT_ROAR_DB)  # the stands react to the result, whoever it's for
 	if murmur.playing:
 		murmur.volume_db = lerpf(MURMUR_DB.x, MURMUR_DB.y, clampf((excitement - CALM) / (1.0 - CALM), 0.0, 1.0))
+	if _meter:
+		_measure(delta, reading)
+
+
+## Mean peak level (dB) of the Crowd bus after its dip and of World after the booth's duck, over each second. The
+## crowd's reading adds World's trim so the two are on the same scale (a bus meter reads before the next bus's volume),
+## and `sim_s` is the match clock: a loaded machine can stall the game under a wall-clock recording.
+func _measure(delta: float, reading: MatchMood) -> void:
+	var crowd := AudioServer.get_bus_index(SfxSystem.CROWD_BUS)
+	var world := AudioServer.get_bus_index(SfxSystem.WORLD_BUS)
+	if crowd < 0 or world < 0:
+		return
+	_meter_sums += Vector3(maxf(AudioServer.get_bus_peak_volume_left_db(crowd, 0) + AudioServer.get_bus_volume_db(world), -80.0),
+			maxf(AudioServer.get_bus_peak_volume_left_db(world, 0), -80.0), 1.0)
+	_meter_clock += delta
+	if _meter_clock < 1.0:
+		return
+	print("CROWD_METER " + JSON.stringify({"sim_s": snappedf(float(Engine.get_physics_frames()) / Engine.physics_ticks_per_second, 0.1), "crowd_db": snappedf(_meter_sums.x / _meter_sums.z, 0.1),
+			"world_db": snappedf(_meter_sums.y / _meter_sums.z, 0.1), "excitement": snappedf(excitement, 0.01),
+			"state": reading.state if reading != null else ""}))
+	_meter_clock = 0.0
+	_meter_sums = Vector3.ZERO
 
 
 func _roar(volume_db: float) -> void:

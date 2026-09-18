@@ -132,6 +132,12 @@ static var slots: Dictionary = DEFAULT_SLOTS
 static var team_colors: Array = DEFAULT_TEAM_COLORS
 static var team_glows: Array = DEFAULT_TEAM_GLOWS
 static var ui: Dictionary = DEFAULT_UI
+## Every slot scene loaded so far, held for the life of the game. Feel (round 6): a new-faction vehicle's hull slot first
+## builds the Condemned dozer and then swaps in its own art; with no dozer left alive, nothing referenced the dozer's
+## model, the engine unloaded it, and the next vehicle read the glb from disk again (control's profile of the FIGHT
+## lag: ~65 ms a vehicle, ~4 s of a 30-a-side start on the laptop). A slot's scene is small next to what it
+## instantiates, and the set is bounded by the theme's slots.
+static var _loaded := {}
 
 
 static func _static_init() -> void:
@@ -183,7 +189,10 @@ static func scene(slot: String) -> PackedScene:
 	if not slots.has(slot):
 		push_error("theme has no scene for visual slot '%s'" % slot)
 		return null
-	return load(slots[slot]) as PackedScene
+	var path: String = slots[slot]
+	if not _loaded.has(path):
+		_loaded[path] = load(path) as PackedScene
+	return _loaded[path]
 
 
 static func team_color(team: int) -> Color:
