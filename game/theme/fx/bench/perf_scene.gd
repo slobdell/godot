@@ -31,7 +31,7 @@ extends Node
 ## glow_one (glow level 3 only), no_ground / no_structures (the dressing's floor, or its walls, venue and towers),
 ## ground_chunked (the floor's tiling flipped), team_paint (hulls in a dulled team color; not restored, run it last),
 ## no_live_feed (the arena screens' live match feed and replay ring), no_blob_shadow (the marks under vehicles),
-## no_sky (feel X4: the night-sky shader back to a flat colour, and the city skyline hidden), no_crowd (the crowd's
+## no_sky (feel X4: the night-sky dome and the city skyline hidden), no_crowd (the crowd's
 ## MultiMesh only, so no_venue minus no_crowd is the stands, gates and screens).
 const LAYERS := ["no_vehicles", "no_effects", "no_pool_lights", "no_underglow", "no_arena", "no_hud", "no_shadows", "no_glow"]
 ## Frames after a phase switch that still show the previous state (and pay for re-enabling it).
@@ -392,10 +392,8 @@ func _apply(phase: String) -> void:
 				if crowd is CrowdSystem:
 					_override((crowd as CrowdSystem).multimesh_instance, "visible", false)
 		"no_sky":
-			for world in get_tree().root.find_children("*", "WorldEnvironment", true, false):
-				var environment := (world as WorldEnvironment).environment
-				if environment != null:
-					_override(environment, "background_mode", Environment.BG_COLOR)
+			for dome in get_tree().root.find_children("*", "NightSky", true, false):
+				_override(dome, "visible", false)
 			for skyline in get_tree().root.find_children("*", "CitySkyline", true, false):
 				_override(skyline, "visible", false)
 		"no_glow":

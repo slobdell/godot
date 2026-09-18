@@ -23,11 +23,23 @@ func test_the_arena_environment_has_a_sky_and_a_city() -> void:
 	var node: Node = add_to_tree(GameTheme.scene("arena.environment").instantiate())
 	GameTheme.use(previous)
 	var environment: Environment = node.get("environment")
-	assert_eq(environment.background_mode, Environment.BG_SKY, "a sky, not a flat colour")
-	assert_true(environment.sky != null and environment.sky.sky_material is ShaderMaterial, "the night-sky shader")
-	assert_true(environment.ambient_light_source != Environment.AMBIENT_SOURCE_SKY
-			and environment.reflected_light_source != Environment.REFLECTION_SOURCE_SKY,
-			"drawn only: nothing samples it for light, so it never needs a radiance update")
+	assert_eq(environment.background_mode, Environment.BG_COLOR,
+			"no Sky resource: in Compatibility it leaked its radiance textures across a scene switch")
+	var domes := node.find_children("*", "NightSky", true, false)
+	assert_eq(domes.size(), 1, "the night sky is a dome")
+	assert_true((domes[0] as MeshInstance3D).material_override is ShaderMaterial, "drawn by the night-sky shader")
+	assert_true(NightSky.RADIUS > CitySkyline.RADIUS and NightSky.RADIUS < 1200.0, "behind the city, inside the camera's far plane")
 	var skylines := node.find_children("*", "CitySkyline", true, false)
 	assert_eq(skylines.size(), 1, "one city ring around the arena")
 	assert_eq((skylines[0] as MeshInstance3D).cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "and it casts nothing")
+
+
+func test_the_city_has_streets_out_to_the_skyline() -> void:
+	## Control's played session at 12 degrees: past the stands the floor ended in a void.
+	var skyline: CitySkyline = add_to_tree(CitySkyline.new())
+	var ground := skyline.get_node("CityGround") as MeshInstance3D
+	assert_true(ground != null, "a ground plane under the city")
+	assert_near(ground.global_position.y, CitySkyline.GROUND_DEPTH, 0.001, "just under the arena floor")
+	assert_true(ground.global_position.y < 0.0, "never above it (no z-fight with the floor)")
+	var size := (ground.mesh as PlaneMesh).size
+	assert_true(size.x >= CitySkyline.RADIUS * 2.0 - 0.1, "reaching the skyline ring (%s)" % size)
