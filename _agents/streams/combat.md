@@ -514,6 +514,38 @@ any change, and **the real finding underneath is round 5's** — dodging has *ne
 254 candidate directions scored "would still be hit"). A behaviour that does not fire cannot regress. That is a live
 open issue with no owner, not a CP4 consequence.
 
+### CP4 is green at `f0f89e52`, and the stale baseline accuses three innocent components
+
+**Verified on builder0:** lint, **1111 passed / 0 failed**, net/combat/broker/relay/lobby/match smokes, determinism,
+garage-smoke, army-loop-smoke, announcer-variance and transcripts. I ran every target `make check`'s first failure
+*skipped* by hand, because **make stops at the first error and a check that skips is not a check that passes** — four
+targets never ran on the first attempt and reporting that as green would have been a partial green with a confident
+label.
+
+**Three targets fail, all on one stale hash** — computed `91db23888123f642`, baseline `8ebbed52fbff0723` (squad's
+pre-CP4 record). Per invariant 2 combat does **not** record it; the orchestrator does, once, at the end.
+
+```
+sim-baseline            FAILED: expected 8ebbed52… got 91db2388…
+announcer-record-smoke  FAILED: the booth changed the simulation      (91db2388…, baseline 8ebbed52…)
+music-smoke             FAILED: the soundtrack changed the simulation (91db2388…, baseline 8ebbed52…)
+```
+
+**The booth did not change the simulation. The soundtrack did not change the simulation.** Both computed *exactly*
+the hash `sim-baseline` computed, which is the proof they changed nothing — and each still announces a specific,
+false accusation against its own subsystem. They are feel's targets, so a feel agent would go hunting in the audio
+code for a bug that does not exist.
+
+**The defect: a differential question implemented as an absolute comparison.** Both targets want to answer *"does
+this subsystem perturb the simulation?"* — a question about the difference between two runs — but they answer it by
+comparing one run to the **global baseline file**, so they fail whenever anything else legitimately moves it. Invariant
+2 now guarantees that happens once a round. **The fix (feel's, `mk/announcer.mk:118` and `mk/audio.mk:34`): run the
+match twice in one invocation, with and without, and compare the two hashes to each other.** That tests the claim, is
+immune to the baseline moving, and needs no coordination with invariant 2 at all.
+
+**And a gap in invariant 2 itself:** it says the orchestrator records the baseline once at the end. It does not say
+that **until then three targets are red and two of them lie about why.**
+
 ### N7 — why it compounds with N5 rather than merely following it
 
 **Taken on (2026-09-18), and the case for doing it in round 6 rather than deferring it comes out of the series.**
