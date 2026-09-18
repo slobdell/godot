@@ -839,3 +839,23 @@ The kickoff prompt is one line; this section is the rest.
     predict the same observation, **stop looking harder at the observation and find the cheap test that separates
     them** (cf. lesson 54 — a probe consistently measuring a bridge, broken open by implausibility rather than by
     repetition).
+65. **A differential question implemented as an absolute comparison produces a confident false accusation.** Round 6,
+    found by combat while verifying CP4: with the sim baseline legitimately stale, **three** targets failed on the same
+    pair of hashes — and only one of them said anything true.
+    ```
+    sim-baseline FAILED: expected 8ebbed52… got 91db2388…
+    announcer-record-smoke FAILED: the booth changed the simulation (91db2388…, baseline 8ebbed52…)
+    music-smoke FAILED: the soundtrack changed the simulation (91db2388…, baseline 8ebbed52…)
+    ```
+    **The booth changed nothing and the soundtrack changed nothing** — each computed *exactly* the hash `sim-baseline`
+    computed, which is the proof. Both targets want to answer *"does this subsystem perturb the simulation?"*, a
+    question about the **difference between two runs**, and both answer it by comparing one run against the **global
+    baseline file**. So they fail whenever anything else legitimately moves that baseline — which invariant 2 now
+    guarantees happens once per round — and each time they name an innocent subsystem in their own owner's code.
+    **The fix:** run the match twice in one invocation, with and without the subsystem, and compare **the two hashes to
+    each other**. That tests what the target claims, is immune to the baseline moving, and needs no coordination with
+    invariant 2 at all.
+    The general instruction: **when a target's message names a culprit, check that its comparison can actually
+    implicate that culprit.** A test that asks "did X change this?" by consulting a global constant is not asking about
+    X — it is asking "is the world as it was", and will blame X for everyone else's changes. And for anyone reading a
+    red check: **three failures reporting the same number are one failure**, not three.
