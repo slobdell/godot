@@ -792,3 +792,23 @@ The kickoff prompt is one line; this section is the rest.
     and +2 points.** The bands had absorbed nearly all of the round's design argument and were the smaller half.
     **Before running a comparison, ask what your control actually turns off** — and if a change spans data and code,
     a data-only control is not a before, it is a different experiment.
+63. **A result arriving is not the change arriving — and the orchestrator is the only one who can confuse them.**
+    Round 6, caught at close by accident: the orchestrator had told two streams that CP4 was landed and their work
+    unblocked, and written its conclusions into `game_design.md` as settled design understanding, **while
+    `game/combat/engagement.gd` did not exist on `main` and 33 commits sat unmerged on the branch.** The sequence that
+    produced it: two of the stream's infra commits were cherry-picked early; the branch then sat *deliberately* red
+    waiting on another stream; and when its measurement series came back and it reported *"my outstanding work is
+    done"*, that was read as the stream being finished and the search for a merge hash stopped. **The number produced
+    *by* a branch was taken as evidence that the branch was *in*.**
+    This is the mirror image of the rule the same orchestrator spent the day enforcing (never publish a number
+    measured across a merge), and only the orchestrator can make it, because only the orchestrator holds both the
+    merge state and the relay.
+    Three instructions:
+    - **Track checkpoints by merge state, not by conversation.** A checkpoint is landed when `git log main --merges`
+      says so. *"Its result is settled"*, *"the stream is done"* and *"it went green"* are all compatible with nothing
+      being merged.
+    - **A branch that is red on purpose is the dangerous kind**, because the usual prompt to merge — a green report —
+      never arrives, and the stream has a good reason not to send one. Put an explicit note against any deliberately
+      red branch saying what it is waiting for and who clears it.
+    - **When a stream says a dependency of its own is still blocked, verify rather than reassure.** This was found only
+      because a stream mentioned waiting on "CP4 *on main*" and the orchestrator checked instead of correcting it.
