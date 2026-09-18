@@ -26,6 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ## Arenas the lead can actually be given. Fixtures (the maze) are not offered: they are not maps.
 SHOT = "build/screenshots/arena-%s-%s.png"
+PLAN = "build/arenas/%s.png"
 ## Width the screenshots are served at. The originals are 1920x1080 PNGs of 4-5 MB each; eight of those is 35 MB
 ## and no use to anyone on a phone.
 IMAGE_WIDTH = 1280
@@ -141,7 +142,10 @@ h1 { font-size:1.6rem; margin:0 0 6px; letter-spacing:-.01em; }
         padding:14px 18px; margin:0 0 16px; }
 .warn b { color:var(--bad); }
 .card { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:0 0 28px; }
-.card img { width:100%; display:block; background:#000; }
+.card > img { width:100%; display:block; background:#000; }
+.plan { padding:16px 18px 0; }
+.plan img { width:100%; max-width:560px; display:block; margin:0 auto; border-radius:8px; background:#fff; }
+.plan p { color:var(--dim); font-size:.88rem; max-width:560px; margin:8px auto 0; }
 .body { padding:16px 18px 18px; }
 .name { font-size:1.25rem; font-weight:650; margin:0 0 2px; }
 .tag { display:inline-block; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
@@ -167,7 +171,7 @@ code { background:#0d0f15; padding:1px 5px; border-radius:4px; font-size:.9em; }
 ## The page commits to one dark look on purpose: it is a page of screenshots of a night-time arena game, and a light
 ## ground would fight every image on it. So no light/dark token swap -- but every colour is declared explicitly on
 ## :root and the body paints its own background, so the page holds whatever ground it is composited over.
-def render(report, order, shots, fragment=False):
+def render(report, order, shots, plans, fragment=False):
     cards = []
     for name in order:
         entry = read(report, name)
@@ -175,7 +179,13 @@ def render(report, order, shots, fragment=False):
             continue
         verdict, tone = VERDICTS.get(name, ("", "mixed"))
         image = shots.get(name)
-        picture = '<img src="%s" alt="%s">' % (image, html.escape(name)) if image else ""
+        plan = plans.get(name)
+        picture = '<img src="%s" alt="%s in play">' % (image, html.escape(name)) if image else ""
+        if plan:
+            picture += ('<div class="plan"><img src="%s" alt="%s from above">'
+                        '<p>Its plan from above. Orange is cover you cannot see or shoot through; the red line is '
+                        'the longest clear shot on the map; the dotted boxes top and bottom are where each side '
+                        'starts. Black is open ground.</p></div>' % (plan, html.escape(name)))
         bullets = "".join('<li class="%s">%s</li>' % (tone_, text) for tone_, text in plain_english(entry))
         cards.append(
             '<div class="card">%s<div class="body"><div class="name">%s<span class="tag %s">%s</span></div>'
@@ -216,7 +226,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", default="build/arenas/report.json")
     parser.add_argument("--out", default="build/arena-page/index.html")
-    parser.add_argument("--view", default="overview", choices=["overview", "skirmish"])
+    # The player's camera, not the match runner's. The match-runner overview prints every unit's name, health and
+    # current AI decision over the terrain -- a developer view that buries the very thing this page asks about.
+    parser.add_argument("--view", default="skirmish", choices=["overview", "skirmish"])
     parser.add_argument("--fragment", action="store_true",
                         help="omit the document wrapper (the Artifact platform supplies its own head/body)")
     args = parser.parse_args()
@@ -224,16 +236,19 @@ def main():
     # Worst first: the lead's time goes on the maps this stream is asking about, not on the ones that measure fine.
     # Worst first, and furnace folded into foundry's card (they are the same shape). Six judgements, not seven.
     order = [n for n in ("boulevard", "foundry", "boneyard", "pit", "scrapyard", "yard") if read(report, n)]
-    shots, missing = {}, []
+    shots, plans, missing = {}, {}, []
     for name in order:
         data = shrink(ROOT / (SHOT % (name, args.view)))
         if data:
             shots[name] = data
         else:
             missing.append(name)
+        plan = shrink(ROOT / (PLAN % name), 900)
+        if plan:
+            plans[name] = plan
     out = ROOT / args.out
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(render(report, order, shots, fragment=args.fragment))
+    out.write_text(render(report, order, shots, plans, fragment=args.fragment))
     size = out.stat().st_size
     if missing:
         print("ARENA_PAGE_MISSING_SHOTS %s (run: make remote T=arena-shots)" % ",".join(missing))
