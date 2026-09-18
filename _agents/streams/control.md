@@ -95,6 +95,68 @@ comes back.
 **Every backlog item (X1–X6) is done.** Stretch: spectate done, replay not started. The sections below are the detail:
 what each item was, what was wrong, what changed, and the numbers.
 
+### The instruments: what to run, how to read it, what good looks like
+
+Four targets measure whether this game is playable. **They are the stream's memory** — the sections below are the
+history, this is what you actually run. All of them drive the real game through real input events
+(`Viewport.push_input`), so a click a person cannot make fails here too.
+
+| Target | Answers | Good looks like | Where |
+|---|---|---|---|
+| `make squad-orders-test` | **Do the player's orders stick?** Plays the lead's sequence — press 1, right-click, press 2, right-click … for every squad — then tables each unit | `never_arrived` 0, `arrived_then_left` 0, nearly every unit `arrived_and_stayed` or `arrived_and_held_nearby`, and **0 commands in the idle window** | a real display (not builder0) |
+| `make response-test` | **Does the game answer his hand?** Times click → order → marker → the vehicle visibly moving, at 30 a side and at a small army | median "vehicle visibly starts" **under ~150 ms at 30 a side** (today 202 ms at 58 vehicles, 59 ms at ten) | **the lead's laptop**: builder0's remote desktop draws ~1 fps and makes every number meaningless |
+| `make shell-playtest` | **Can he start and play it?** Title → SKIRMISH → faction + arena menu → FIGHT → planning → two minutes of battle, 17 checks | `SHELL_PLAYTEST_DONE ok=true` and `clean console` | a display; builder0 is fine |
+| `make hud-cost` | **What does the HUD cost?** Per-widget canvas draw calls, measured during a tactical pause so the picture holds still | whole HUD **≤ 130** (CP1's budget; today 84–86) | a display; builder0 is fine |
+
+**Reading `squad-orders-test`.** Per unit: `sent_to` (the slot the player's click gave it), `at` and `from_goal_m` six
+seconds later, `later_at` / `later_from_goal_m` twenty seconds after that, its order verb and **`order_source`**, and a
+`verdict`:
+
+- `never_moved` — selection or the order path: **control's**.
+- `never_arrived` / `arrived_then_left` (> 20 m) — something is overriding the player: **ai's**, unless `order_source`
+  says `player`, in which case it is control's.
+- `arrived_and_held_nearby` — inside ai's 18 m post-order leash: fighting from cover around the spot, which is *correct*.
+- `arrived_and_stayed` — on the spot.
+
+`issues_while_idle` is the thrash detector: every command `Orders` accepted while nobody touched the controls, by source
+and verb, plus `order_changes` (what actually redraws a marker and plays a cue) and `acknowledgement_cues`.
+**A healthy idle window is 0 commands.** `from_the_given_slot_m` (mean, worst, alive) is the number ai wants when they
+measure their leash constant.
+
+### Rate-dependent bugs: the round's one real lesson
+
+Combat's 30 Hz tick broke **five** things, none of them the tick loop:
+
+1. K1's `RESPONSE_TICKS := 3` — a contract in ticks that silently meant 50 ms at 60 Hz and 100 ms at 30. Now
+   `Orders.RESPONSE_MS := 100`, with `Orders.response_ticks()` deriving the ticks.
+2. ai's think cadence, the same shape.
+3. A test that teleported a vehicle and read its position: with interpolation on, a body is *drawn* at its old place
+   until `reset_physics_interpolation()`. `Fixture.place()` exists for that.
+4. Every FX MultiMesh written from `_process` warned once interpolation arrived: `FxMultiMesh.never_interpolated()`
+   at the node and `FxMultiMesh.resize()` for every count change (a resize rebuilds the server buffers and clears the
+   flag; the node switch is the durable one).
+5. A test comparing a **drawn** position with a **simulation** position — 17 mm apart, which is one tick of travel.
+
+**The rule:** before changing a rate, grep for every constant and assertion written in ticks or frames and ask what each
+means in seconds at both rates. Anything in seconds needs no changes at all (audio had already converted and was
+untouched). **Interpolate once, at the source the player's eye uses** — turning a MultiMesh's interpolation off does not
+make it lag, because what control writes into it is already the interpolated position.
+
+**The trick that found (3) and (5): slow time down rather than running the test more often.**
+`Engine.physics_ticks_per_second = 4` makes the interpolation window long enough that the next process frame lands
+inside it, and a once-in-twenty-runs timing bug becomes deterministic.
+
+### The clean-console gate
+
+The lead's first complaint was *"a bunch of red error messages"*, so `make shell-playtest` **fails on any `ERROR`,
+`SCRIPT ERROR` or `WARNING` line** in a whole played session. Two exceptions, both deliberate and both still printed:
+
+- `RID allocations … leaked at exit` — headless engine shutdown noise; a real windowed session quitting cleanly logs
+  nothing (checked). See [verification.md](../verification.md).
+- `MultiMesh interpolation is being triggered from outside physics process` — counted and attributed to render rather
+  than failing, because their FX meshes are placed per frame by design. A gate that fails on things you cannot fix gets
+  disabled; one that reports them gets fixed.
+
 ### Reopened 2026-09-17: "the units aren't very responsive to my input"
 
 **Measured before fixing** (`make response-test`, `game/control/response_playtest.gd`): six right-click orders to the
@@ -454,10 +516,15 @@ make skirmish-factions FACTION=gangs ENEMY_FACTION=law ARENA=pit
 make remote T=shell-playtest        # the whole first two minutes through real input; fails on any console error
 make remote T=hud-cost              # the HUD's draw calls, per widget
 make remote T=control-scale-shots   # 30 a side, frames in build/control-playtest/scale/
+make squad-orders-test              # LOCAL ONLY: do his orders stick? (the playability gate; read it above)
+make response-test                  # LOCAL ONLY: does the game answer his hand? (builder0 draws ~1 fps: useless there)
 ```
 Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cpu` on the Godot command line.
 
-### Next steps
+### Next steps (for whoever picks this stream up)
+
+Start by running `make squad-orders-test` and `make response-test` on a machine that draws frames, and compare against
+*The instruments* above. Those two say whether the game is still playable; everything else here is detail.
 
 1. Flip `ELEMENT_CPU_DEFAULT` when ai's variant wins at scale.
 2. Touch: the desktop grammar, hints and menus have no touch path yet.
@@ -465,6 +532,11 @@ Try `--camera-frame=close|wide`, `--alert-lines=3`, `--hints=off`, `--element-cp
 4. A replay of the last match, once the simulation replays from recorded orders.
 5. Carried from closed streams: `Arena._ready` reads `--arena` / `--seed` from the command line only, so a match started
    from a menu cannot pass them; `GameLauncher` works around it (see *The arena picker*), so a player sees nothing wrong.
+   Reading `Main.next_flags` when it is set would remove the workaround.
+6. ai's post-order leash (18 m) is unmeasured: they asked for `from_the_given_slot_m` (mean, worst, alive) from
+   `make squad-orders-test` at 30 a side, for 18 m against something tighter, before they move the constant.
+7. `make squad-orders-test` and `make response-test` are not in `make check` (both need a display and take minutes).
+   Run them by hand when the tick rate, locomotion, the command grammar or the frame budget changes.
 
 ### Merge notes (shared files)
 
