@@ -40,13 +40,15 @@ const MODE_HINTS := {"attack_move": "ATTACK-MOVE: click the ground or an enemy",
 ## what attack-move means. `follow` stays a direct order - it is micro, not a task - and `stop` stands the element
 ## down so its leader stops re-issuing.
 ##
-## A plain `move` IS here again (round 6, with squad's X4). Round 5 took it out because a leader holding a move task kept
-## re-slotting and manoeuvring - 20 order changes a second, units ending 20-90 m from the click (the lead: "their
-## behavior is overridden by a higher priority"). Squad gave the task a plain form, `"drills": false` (formed up, no
-## contact drills, halting ON the clicked spot: measured 0.3 m from the click, worst member 4 m off its slot, 0 orders
-## in the last 10 s), so a move to a whole squad keeps it a squad - the lead: "if I select an entire squad and I tell
-## them to move somewhere ... there's a target formation for the squad". attack-move stays a move task WITH drills.
-const ELEMENT_TASKS := {"move": "move", "attack_move": "move", "attack": "attack", "hold": "hold",
+## A plain `move` is NOT here - and round 6 tried putting it back. Round 5 took it out because a leader holding a move
+## task kept re-slotting and manoeuvring (20 order changes a second, units ending 20-90 m from the click; the lead:
+## "their behavior is overridden by a higher priority"). Round 6 (squad X4) gave the task a plain form, `"drills":
+## false`, and control re-added `"move": "move"` here - then played the lead's own sequence (`make squad-orders-test`,
+## five squads ordered from the spawn; laptop, seed 3, one run each, same tree): with it, 31 element commands and 7.0
+## order changes/s while nobody touched the controls and 3 of 21 units never arrived; without it, 0, 1.0/s and 0.
+## Held until squad explains the re-issuing (the orchestrator, 2026-09-18). Re-adding it needs that A/B to come back
+## at 0 idle commands on five squads, not a single-squad lab. The `"drills": false` branch in assign_task stays ready.
+const ELEMENT_TASKS := {"attack_move": "move", "attack": "attack", "hold": "hold",
 		"screen": "screen", "support_by_fire": "support_by_fire"}
 ## G cycles the formation the next orders ask for (auto = by role and situation, GroupFormation.choose).
 const FORMATION_CYCLE := [UnitCommand.AUTO, "wedge", "line", "column", "vee"]

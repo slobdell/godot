@@ -44,18 +44,13 @@ func test_a_whole_element_is_recognised_and_a_handful_of_units_is_not() -> void:
 	assert_true(f.controls.selected_element() == null, "units from two groups are not one element")
 
 
-func test_every_order_to_a_whole_squad_is_a_task_and_a_plain_move_runs_no_drills() -> void:
+func test_attack_move_and_attacks_give_the_leader_a_task_but_a_plain_move_does_not() -> void:
 	var f := await _setup()
 	await f.select(["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	await f.right_click(f.ground(Vector3(-20, 0, -20)))
-	# Round 6 X6 / squad X4 (the lead: "if I select an entire squad and I tell them to move somewhere, I would think
-	# that there's a higher level abstraction ... a target formation for the squad"): a plain move to a whole squad
-	# keeps it a squad. It is a move task with no contact drills, so the leader forms it up on the spot the player
-	# clicked instead of manoeuvring on its own (round 5's complaint was the drills overriding him).
-	var moving := f.controls.elements.of("Green_Alpha_1")
-	assert_true(moving != null, "a plain move to a whole squad keeps it an element")
-	assert_eq(moving.task.get("verb", ""), "move", "with a move task")
-	assert_eq(moving.task.get("drills", true), false, "that runs no contact drills: a plain move, not attack-move")
+	assert_true(f.controls.elements.of("Green_Alpha_1") == null, "a plain move is the player's own order, not a task")
+	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
+		assert_eq(f.orders.current(unit_name).get("source", ""), "player", "%s carries out what the player asked" % unit_name)
 	await f.key(KEY_A)
 	await f.click(f.ground(Vector3(-20, 0, -20)))
 	var element := f.controls.elements.of("Green_Alpha_1")

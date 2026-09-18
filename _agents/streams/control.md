@@ -172,10 +172,11 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | X3 pitch decoupled | done; **the lead's pick applied** (25° · 50 m · FOV 60); wall cutaway | `test_rts_camera::test_tilt_is_its_own_axis`, `test_zoom_sets_the_distance_and_never_the_tilt`, `test_a_camera_past_the_wall_cuts_away_the_stands_between` |
 | X3 camera pages | answered: https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL; follow-up below 25°: https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7 | `make camera-looks`; laptop render, 1920×1080, frames in the scratchpad (not committed: 26 MB of JPEG) |
 | X2 palette + symbols | done; Screen / Support by Fire held off the card until squad's X5 | `TaskPalette`, `CommandIcons.draw_task`, table in `tactical_map.md` "Task palette (N4)", `test_control_panel` |
-| X4 loading screen | done; the load's length is feel's (below) | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen`, shell-playtest `loading_screen_shows` + frame `2b_loading` |
+| X4 loading screen | done; FIGHT → playable 7.6 s → 1.4 s with feel's fix (below) | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen`, shell-playtest `loading_screen_shows` + frame `2b_loading` |
 | X5 orders you see landing | built against N1 with a fake provider; **lights up when nav's CP1 is on `main`** (wire `MovementReadout.from_movement` to the real call shape then) | `test_control_movement_readout` |
 | X7 (stretch) "why did my element do that" | done: `ElementLog` keeps each element's last 6 decisions with match time; hover the card's doctrine line | `test_control_element_log` |
-| X6 a plain move keeps the squad a squad | done after CP3: `move` is an element task with `"drills": false` (squad's X4); a move to part of a squad releases those units | `test_control_tasks`, `test_control_commands` |
+| X6 a plain move keeps the squad a squad | **HELD** (landed in `8d9c59af`, reverted before merge: see the next row). What stays: a direct order to part of a squad releases only those units, and re-selecting the group re-forms it | `test_control_commands::test_a_direct_order_to_part_of_an_element_releases_only_those_units` |
+| X6 plain move, **played — why it is held** | Held by the orchestrator, 2026-09-18, until squad explains the re-issuing; do NOT re-add `"move"` to `ELEMENT_TASKS` without this A/B coming back at 0 idle commands on five squads (the lead's sequence, not a single-squad lab). Question to squad: in the lead's sequence (`make squad-orders-test`, 5 squads from the spawn) elements re-issue in the idle window. Laptop, seed 3, one run each, same tree: X4 on → 31 idle commands (all element moves), 7.0 changes/s, 3/21 never_arrived, slot error mean 14.5 / worst 28 m; X4 off → 0, 1.0/s, 0 never_arrived, 14.1 / 20 m. Station-keeping by design or thrash? If thrash, X4 is a one-line revert (`"move"` out of `ELEMENT_TASKS`) | `build/squad-orders/run.log` |
 | CP3 adapter review | `group_formation.gd` as squad's shim over `TacticsFormation`: pacing identical (`PACE_NEAR` 8, `PACE_FLOOR` 0.35, same formula), seating through `place(..., {"policy": "front"})`; all control formation tests pass on the merge | — |
 | X6 squad chips | chips say IDLE / MOVING / CONTACT / UNDER FIRE; lit by living members in any order. Plain move keeping the element: agreed with squad, waits on their green | `test_control_groups::test_group_chips_say_what_each_squad_is_doing` |
 
@@ -196,6 +197,14 @@ frames after `Main` is ready); "after" is the loading screen's own `LOAD_TIMING`
 | before (`a975e262`) | 7,563 ms | – | – | – | – |
 | after (`32fd2abc` + tree), run A | 5,828 ms | 67 | 678 | 4,749 | 334 |
 | after, run B | 7,802 ms | 66 | 884 | 6,369 | 483 |
+| **after feel's fix** (`8d9c59af` tree: main's `e817194a`), run 1 | **1,398 ms** | 67 | 679 | 387 | 265 |
+| after feel's fix, run 2 | **1,406 ms** | 67 | 690 | 415 | 234 |
+
+**FIGHT → playable: 7.6 s → 1.4 s** (laptop, the rows above). `make spawn-cost` on the same tree: 0.8 ms per vehicle
+after the first of each type (was ~63), 180–215 ms for the first of each type per army. What is left is the arena
+build + navmesh bake (~0.7 s, arena's and nav's; synchronous for determinism) and the first frame. At 1.4 s the
+loading screen is a beat, not a wait, and its stage weights no longer matter; it stays, because the web build and
+slower machines will sit on it longer.
 
 **Where the time goes:** marks inside `_start_match` put 6.35 s of run B between `mode_start` and `armies_built`, i.e.
 `Match.load_doctrine` spawning vehicles. `make spawn-cost` (headless, laptop, 68 vehicles) measured ~65 ms per vehicle
@@ -205,8 +214,7 @@ new-faction hull slot first instances the default Condemned dozer and swaps it o
 reference, the engine unloaded it, and the next vehicle re-read it from disk. A cache evicted *between* instances looks
 exactly like per-instance cost in a per-call profile; the Condemned vehicles at 2 ms each (their live dozers kept the
 model loaded) were the control group in my own data. Fix: `GameTheme.scene()` keeps a reference (law_tank 106–128 ms
-→ 0.9 ms, laptop, headless). **The 5.8–7.8 s "after" rows above are stale once that lands: re-measure on top of it**
-and keep the 7,563 ms "before".
+→ 0.9 ms, laptop, headless). Rows A and B are stale for that reason; the rows after them are on top of the fix.
 **The old instrument was blind to it:** shell-playtest's `load_ms` started its clock after the FIGHT click's own
 awaits returned, by which time the whole stall had happened, so it read 0 ms before this round.
 
