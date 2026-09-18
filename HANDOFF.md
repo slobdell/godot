@@ -84,6 +84,22 @@ same text for all six:
 
 > /goal You are a Tank Squad workstream agent in the orchestrator/worker pattern. Your stream is determined by your working directory: the folder is `godot-<stream>` and the git branch is `stream/<stream>`. Run `pwd` and `git branch --show-current` to confirm them, and stop if they disagree. The lead is mostly away: never wait for an answer except at lead gates; record questions in your brief's Status, message the orchestrator session when something needs another stream, and keep working. Read CLAUDE.md, HANDOFF.md, `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`, `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the Status holds your report.
 
+### Where round 6 actually stands (2026-09-18, end of the lead's first away window)
+
+**Merged and verified on `main`:** squad's **CP3** (`df736a8e` — one formation system, support-by-fire that forms a
+firing line, slots validated against geometry), arena's **CP2** (`5590c465` — the maze, `make nav-maze`, the objective
+schema, the stale-navmesh fixture), feel (`e817194a` — the 130× vehicle-spawn load fix and a crowd that reads), and
+combat's two make-namespace fixes cherry-picked (`9f798368`, `fd5ac1af`). Plus the `slot.sh` FIFO rewrite.
+
+**Green and waiting on one word:** control's `758a45a8` (the lead's camera, the wall cutaway, the task palette with
+Support by Fire and Screen *earned*, the loading screen, X7's "why did my element do that"). X4 is deliberately
+**reverted** out of it — see the bar below.
+
+**The round's one dependency chain, and squad is the bottleneck:**
+`squad's two precedence fixes` → `combat's CP4` → `nav's gunnery.gd split`. combat's branch is **red by construction**
+and has refused to chase greenness by weakening a test that is telling the truth. If squad stalls, the round stalls;
+re-cut priorities rather than letting nav or combat idle.
+
 **Open orchestrator obligations (round 6):**
 
 1. **Ping arena the moment CP4 merges.** arena is holding X3 (objectives off the centre line) until then, because it
@@ -107,12 +123,13 @@ same text for all six:
    measured before N5 existed**. squad owns the judgement and the remaining cases; **`scenario_motion::test_brains_dont_dither`
    at 17.7 and 15.6 option switches per minute against a bar of 12 is the blocking one**, because "no element
    flip-flopping" is the round's legibility bar.
-4. **Merge CP2 at the commit whose check went green** — arena's maze is on `stream/arena` at `38c15f77` with its own
-   five tests passing on the laptop; its `make remote T=check` is queued behind the other worktrees and arena will
-   send the hash.
+4. **DONE — CP2 merged** at arena's green `5590c465` (1018 passed, exited 0). Note for the record: arena first
+   reported `38c15f77` ready on a *filtered* run showing 5/5; the full check found 2 failures, and `38c15f77` and
+   `13add85d` are both **red**. Merging the commit whose own full check went green (lesson 29) is the only reason that
+   never reached `main` — and lesson 45 is the filtered-run half of it.
 5. **TWO merges re-time other streams' measurements this round, not one.** CP4 is the known one. The second, found by
    control: **`perf_scene.gd` calls `RtsCamera.pose_for(focus, 0, zoom)`**, so when control's pitch decoupling merges,
-   `make perf-scene`'s camera drops from the welded pose to **38°** — a lower camera that sees more of the far arena,
+   `make perf-scene`'s camera drops from the welded pose to the lead's **12°/FOV 60** — a far lower, wider camera that sees the whole venue to the far stands,
    so feel's **M1** frame numbers move at that merge through no change of feel's own. Relayed to feel; the rule is the
    same as CP4's: **re-baseline after the merge, and never publish a frame number measured across it.** This is the
    generalisable shape — a shared harness that derives its own configuration from another stream's code silently
@@ -134,7 +151,22 @@ same text for all six:
    solo the crowd, record a real match, fix the mix (bed level, duck depth and release, a ceiling on how far impacts
    may duck the bed), re-listen — *then* ask for credits if it is still thin. Paid generation is irreversible in a way
    a gain change is not (lesson 18), and the standing gate is text → cheap pilot → listen → batch (lesson 19).
-7. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
+7. **Tell nav the hour CP4 merges.** It is doing `movement.gd` first (combat's four edits are all in the gunnery half)
+   and the `gunnery.gd` split *after* CP4, so combat's edits move across once instead of conflicting. Its plan, endorsed.
+8. **nav must NOT delete `ORDER_STALL_ARRIVE` (the 12 m lie) yet, and knows it.** It is one line in squad's
+   `tank_brain.gd` — the file squad has two gating fixes in flight in — and removing it makes arrival numbers look
+   **worse** before avoidance makes them better. With three streams measuring, we would lose the attribution on all
+   three. It lands later as its own commit with a before/after from arena's harness attached. Its entire value is the
+   measurement that comes with it.
+9. **X4 is held, not lost, and the bar for re-adding it is written into `rts_controls.gd`:** *0 idle commands on five
+   squads in the lead's own sequence.* control measured 31 idle commands and `never_arrived` 0 → 3 of 21 with it on
+   (round 5's healthy value was 0) — and "units never arrive" is the lead's *headline* complaint, so it must not ship
+   on a hope. **squad owes the answer: designed station-keeping, or thrash?** When it re-lands, the A/B must be re-run
+   **on the merged tree** — CP3 changed the formation system underneath the exact path X4 exercises, so 31-against-0
+   was measured against a world that no longer exists.
+10. **Which arenas are fun is still unanswered** (`fun: []` on both pages, 2026-09-18). arena is spending the round on
+   map shape without it. Nothing is blocked; ask again on whatever page he sees next.
+11. **nav was not started with the other five streams** (2026-09-18). Its brief now carries arena's full CP2 baseline
    so it starts with the target number rather than rediscovering it; squad has been told to take its two independent
    items first and explicitly *not* to build its own avoidance to fill the gap.
 
