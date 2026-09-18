@@ -518,3 +518,14 @@ The kickoff prompt is one line; this section is the rest.
     singleton, an import cache), deliberately run it *after* its noisiest neighbours before believing it. Only
     lesson 29 (merge the commit whose own check went green) kept this to a 25-minute round trip instead of a red
     `main` for six streams.
+46. **A harness that runs the game slower than real time silently invalidates every *time-domain* conclusion drawn
+    from it — and only those.** Round 6: `audio-pass` on builder0 recorded **3.1 seconds of match per 30 seconds of
+    wall clock**, because a vsync'd window on an idle desktop presents at a crawl (`--disable-vsync` gives 25.6 s).
+    Round 5 had already *noticed* the 10× discrepancy and left the cause open, then published mix conclusions taken
+    through it. The discipline that makes this recoverable rather than a wholesale retraction is the one feel applied:
+    **sort the affected numbers into those that describe what was recorded and those that describe the game.** Loudness,
+    peak and clipping stand — they are properties of the file. Battle density, ducking behaviour and "layer changes
+    look rare" do not — they are properties of events per second, and slow motion is the most flattering possible case
+    for anything being ducked *under*. So: **when you find an instrument was running at the wrong rate, do not ask
+    "are the numbers wrong", ask "which of these numbers is about time"** — and re-take only those. See also lesson 30,
+    where three of six tick-rate bugs lied to a reader rather than breaking a test.

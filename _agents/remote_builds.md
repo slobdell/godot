@@ -78,6 +78,31 @@ Two consequences, both learned the hard way on 2026-09-18:
 3. **A big measurement series deserves a cleared window**, not a share of two slots. Ask the orchestrator; it can tell
    the other streams to stay off builder0 for the duration.
 
+## builder0 runs vsync'd windows at a crawl: ~1/10 real time
+
+**Measured 2026-09-18** (feel), same muted 30-second `audio-pass`, only vsync changed:
+
+| | match seconds recorded in 30 s wall |
+|---|---|
+| vsync on (Godot's default) | **3.1 s** |
+| `--disable-vsync` | **25.6 s** |
+
+A vsync'd window on builder0's idle desktop presents at a crawl, so **anything that runs the game in a window there
+and measures against the wall clock is recording slow motion.** `perf-scene` and `crowd-look` were never affected
+because they already disable vsync. `audio-pass` now defaults to `--disable-vsync` (`PASS_GODOT_FLAGS`); `FrameTarget`
+still paces the game.
+
+**What this invalidates, and what it does not.** Round 5's audio numbers were taken this way and its own report noted
+"game time runs ~10x slower than wall time" while leaving the cause open. Its **loudness, peak and clipping figures
+stand** — they describe exactly what was recorded. What does **not** stand is anything about *how dense the battle was*
+or how **ducking and layers behave over time**, including its "layer changes look rare" note: a compressor sidechain or
+a duck envelope behaves completely differently when impacts arrive every 3 s instead of every 0.3 s, and slow motion is
+the most flattering possible case for whatever is being ducked *under*.
+
+**The general rule: if a harness opens a window on builder0, disable vsync or measure on the laptop.** For any
+time-domain question (ducking, envelopes, rate limits, anything with a release or a cooldown), prefer the laptop — it
+runs real time and it is the machine the lead plays on.
+
 ## The sim baseline differs per machine
 
 builder0 (glibc 2.43) and the laptop (glibc 2.39) produce different `make sim-baseline` hashes from the same binary
