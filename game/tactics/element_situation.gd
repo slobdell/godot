@@ -99,7 +99,16 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 			"members": members, "contacts": contacts, "known": known, "terrain": terrain_at(center),
 			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
 			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
-			"arrived": bool(state.get("arrived", false))}
+			"arrived": bool(state.get("arrived", false)),
+			# X7: what route choice needs — sight lines against the arena, its annotated lanes (M2), how far we see.
+			"cover_map": CoverMap.of(game_match), "lanes": Arena.lanes_of(Arena.active), "sight": _sight_of(members)}
+
+
+static func _sight_of(members: Array) -> float:
+	var sight := 0.0
+	for member: Dictionary in members:
+		sight = maxf(sight, float(member.get("sight", 90.0)))
+	return sight if sight > 0.0 else 90.0
 
 
 ## 0..1. Combat's L2 `Tank.suppression` when this build has it (CP2); until then, how recently the unit was hit.

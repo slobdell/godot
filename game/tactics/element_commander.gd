@@ -17,6 +17,11 @@ const THINK_TICKS := SimClock.TICK_RATE
 ## A task is only re-assigned when the verb changes or its destination moves this far (meters): re-assigning
 ## resets the element's movement leg and any drill it was running.
 const REASSIGN_M := 25.0
+## Round 6 (X6): a task is kept at least this long before it changes (unless its target is gone), and a change of target
+## or point under the SAME verb re-aims the element (Element.retarget) instead of starting it over. `make squad-coherence`
+## caught the commander re-giving attack and support-by-fire every think in a brawl — "the nearest contact" changes
+## every second when thirty vehicles meet — and every re-assignment reset the element's drill and firing line.
+const KEEP_TASK_TICKS := SimClock.TICK_RATE * 6
 ## Elements are formed this big when a team has no squads to form them from.
 const ELEMENT_SIZE := 4
 ## How far ahead of the main body the recon element screens, and how far behind the support element trails.
@@ -38,6 +43,8 @@ var team := Match.Team.RUST
 var elements: Elements
 ## element id -> the task it was last given.
 var assigned := {}
+## element id -> the tick it was given it.
+var assigned_tick := {}
 var _last_tick := -1
 
 
@@ -213,17 +220,36 @@ static func _snap_to_lane(x: float, lanes: Array) -> float:
 ## Give an element a task, unless it is already doing that.
 func _give(element: Element, task: Dictionary) -> void:
 	var previous: Dictionary = assigned.get(element.id, {})
-	if not previous.is_empty() and String(previous.get("verb", "")) == String(task["verb"]):
-		if String(previous.get("target", "")) == String(task.get("target", "")):
-			var moved := true
-			if previous.has("to") and task.has("to"):
-				moved = Vector2(float(previous["to"][0]) - float(task["to"][0]),
-						float(previous["to"][1]) - float(task["to"][1])).length() > REASSIGN_M
-			if not moved:
-				return
+	var same_verb := not previous.is_empty() and String(previous.get("verb", "")) == String(task["verb"])
+	if same_verb:
+		var same_target := String(previous.get("target", "")) == String(task.get("target", ""))
+		var moved := false
+		if previous.has("to") and task.has("to"):
+			moved = Vector2(float(previous["to"][0]) - float(task["to"][0]),
+					float(previous["to"][1]) - float(task["to"][1])).length() > REASSIGN_M
+		if same_target and not moved:
+			return
+		# Held long enough, and is the old target still there to fight? Otherwise keep what we are doing.
+		var held: int = game_match.tick - int(assigned_tick.get(element.id, -KEEP_TASK_TICKS))
+		if held < KEEP_TASK_TICKS and _still_there(String(previous.get("target", ""))):
+			return
+		# Same verb, new aim: re-aim without starting the element over.
+		if element.retarget(task) == "":
+			assigned[element.id] = task
+			assigned_tick[element.id] = game_match.tick
+		return
 	var error := element.assign(task)
 	if error == "":
 		assigned[element.id] = task
+		assigned_tick[element.id] = game_match.tick
+
+
+## Whether a named enemy is alive and known to this team ("" = no target: nothing to lose).
+func _still_there(target: String) -> bool:
+	if target == "":
+		return true
+	var tank := _tank(target)
+	return tank != null and tank.is_alive() and game_match.intel[team].has(target)
 
 
 ## What this element is for: mostly scouts = recon, mostly artillery or Lancers = support, else the line.

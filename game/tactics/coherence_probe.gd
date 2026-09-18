@@ -47,7 +47,7 @@ func _ready() -> void:
 	process_physics_priority = Elements.PRIORITY + 1
 	for team in 2:
 		_sides.append({"unit_seconds": 0.0, "idle_in_contact_s": 0.0, "off_slot_s": 0.0, "stale_order_s": 0.0,
-				"orders": 0, "drill_switches": 0, "element_seconds": 0.0})
+				"orders": 0, "drill_switches": 0, "element_seconds": 0.0, "transitions": {}, "orders_by": {}})
 
 
 func _physics_process(_delta: float) -> void:
@@ -90,6 +90,8 @@ func _physics_process(_delta: float) -> void:
 			if element.drill != before:
 				if before != "" or element.drill != "":
 					side["drill_switches"] += 1
+					var key := "%s>%s" % [before if before != "" else "-", element.drill if element.drill != "" else "-"]
+					side["transitions"][key] = int(side["transitions"].get(key, 0)) + 1
 				_last_drill[element.id] = element.drill
 
 
@@ -117,6 +119,8 @@ func _on_issued(command: Dictionary) -> void:
 		var tank := tanks.get(String(unit)) as Tank
 		if tank != null:
 			_sides[tank.team]["orders"] += 1
+			var key := "%s/%s" % [String(command.get("verb", "")), String(command.get("source", ""))]
+			_sides[tank.team]["orders_by"][key] = int(_sides[tank.team]["orders_by"].get(key, 0)) + 1
 
 
 func report() -> Dictionary:
@@ -136,8 +140,18 @@ func report() -> Dictionary:
 			"orders_per_unit_min": snappedf(float(side["orders"]) / unit_minutes, 0.01),
 			"element_minutes": snappedf(element_minutes, 0.01),
 			"drill_switches_per_element_min": snappedf(float(side["drill_switches"]) / element_minutes, 0.01) \
-					if element_minutes > 0.0 else 0.0}
+					if element_minutes > 0.0 else 0.0,
+			# Attribution: which drill changes and which orders (verb/source) make up those rates.
+			"top_transitions": CoherenceProbe.top(side["transitions"], 8), "top_orders": CoherenceProbe.top(side["orders_by"], 8)}
 	return result
+
+
+## The `count` biggest entries of a {key: int} tally, as [[key, n], ...], biggest first (ties by key).
+static func top(tally: Dictionary, count: int) -> Array:
+	var keys: Array = tally.keys()
+	keys.sort_custom(func(a: String, b: String) -> bool:
+		return int(tally[a]) > int(tally[b]) or (int(tally[a]) == int(tally[b]) and a < b))
+	return keys.slice(0, count).map(func(key: String) -> Array: return [key, int(tally[key])])
 
 
 func _on_finished(_result: Dictionary) -> void:
