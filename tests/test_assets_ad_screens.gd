@@ -189,7 +189,8 @@ func test_neon_signs_crown_the_stands_in_one_draw() -> void:
 	for placement: Dictionary in placements:
 		cells[int(placement["cell"]) % NeonSigns.CELLS] = true
 		var at: Vector3 = (placement["transform"] as Transform3D).origin
-		assert_true(absf(at.z) > 121.0 and at.y > 8.0, "signs sit high on the stands, outside the walls (%s)" % at)
+		# Feel X4 (round 6): the short sides have stands (and signs) too, outside the east and west walls.
+		assert_true(maxf(absf(at.x), absf(at.z)) > 121.0 and at.y > 8.0, "signs sit high on the stands, outside the walls (%s)" % at)
 		var tint: Color = placement["color"]
 		for team: Color in GameTheme.CYBERPUNK_TEAM_COLORS:
 			assert_true(Vector3(tint.r - team.r, tint.g - team.g, tint.b - team.b).length() > 0.3, "sign neon never looks like a team color")

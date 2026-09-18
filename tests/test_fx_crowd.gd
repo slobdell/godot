@@ -65,8 +65,12 @@ func test_the_arena_dressing_builds_the_venue_from_the_kit() -> void:
 	var crowd: CrowdSystem = dressing.get("crowd")
 	assert_true(crowd != null and crowd.seats.size() > 1000, "the stands are full (%d seats)" % (crowd.seats.size() if crowd else 0))
 	for node in stands:
-		var z: float = (node as Node3D).position.z
-		assert_true(absf(z) > 121.0, "stands sit outside the arena walls (z %.1f)" % z)
+		var at: Vector3 = (node as Node3D).position
+		assert_true(absf(at.z) > 121.0 or absf(at.x) > 121.0, "stands sit outside the arena walls (%s)" % at)
+		# Feel X4 (round 6): side stands stay clear of the gate, its barricades and the ad screens (|z| < 50).
+		assert_true(absf(at.x) <= 121.0 or absf(at.z) > 50.0 + 11.5, "side stands clear the gate and screens (%s)" % at)
+	var sides := stands.filter(func(n: Node) -> bool: return absf((n as Node3D).position.x) > 121.0)
+	assert_true(sides.size() >= 8, "the short sides have stands too (%d modules): a low camera sees the whole horizon" % sides.size())
 	assert_eq(dressing.find_children("*", "CollisionObject3D", true, false).size(), 0, "the venue adds no collision")
 
 
@@ -82,11 +86,28 @@ func test_the_dressing_fits_an_arena_layout() -> void:
 	assert_eq(walls.size(), 4, "four perimeter walls after the rebuild (old ones freed)")
 	for node in structures.get_children():
 		if node.name.begins_with("Stands"):
-			var z: float = (node as Node3D).position.z
-			assert_true(absf(z) > 81.0 and absf(z) < 100.0, "stands move in with the 80 m arena's walls (z %.1f)" % z)
+			var at: Vector3 = (node as Node3D).position
+			var out := maxf(absf(at.x), absf(at.z))  # long-side stands sit out in z, the short sides' in x
+			assert_true(out > 81.0 and out < 100.0, "stands move in with the 80 m arena's walls (%s)" % at)
 	var ground := CyberMaterials.ground(false)
 	assert_near(float(ground.get_shader_parameter("band_inner")), 68.0, 0.001, "the hazard band follows the walls")
 	assert_near(float(ground.get_shader_parameter("ring_radius")), 12.0, 0.001, "the painted ring marks the control point")
 	dressing.call("setup", {"name": "no_point", "half_size": 80.0, "obstacles": []})
 	assert_near(float(ground.get_shader_parameter("ring_width")), 0.0, 0.001, "no control point, no ring")
 	dressing.call("setup", {"name": "default", "half_size": 120.0, "obstacles": [], "control_point": {"radius": 16.0}})
+
+
+func test_the_ad_screens_turn_toward_the_far_half() -> void:
+	## Feel X4 (round 6): square to the centre line, the screens were edge-on from both bases at a low camera.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var dressing: Node3D = add_to_tree((load(GameTheme.CYBERPUNK_SLOTS["arena.dressing"]) as PackedScene).instantiate())
+	GameTheme.use(previous)
+	var structures: Node3D = dressing.get("structures")
+	var screens := structures.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("AdScreen"))
+	assert_eq(screens.size(), 4, "two screens on each short wall")
+	for node in screens:
+		var screen := node as Node3D
+		var facing := -screen.global_transform.basis.z  # a screen shows its -Z face
+		assert_true(facing.dot(-Vector3(screen.position.x, 0.0, 0.0).normalized()) > 0.7, "still facing into the arena")
+		assert_true(signf(facing.z) == -signf(screen.position.z), "turned toward the far half (%s at %s)" % [facing, screen.position])
