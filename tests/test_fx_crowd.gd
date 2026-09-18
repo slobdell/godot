@@ -65,8 +65,12 @@ func test_the_arena_dressing_builds_the_venue_from_the_kit() -> void:
 	var crowd: CrowdSystem = dressing.get("crowd")
 	assert_true(crowd != null and crowd.seats.size() > 1000, "the stands are full (%d seats)" % (crowd.seats.size() if crowd else 0))
 	for node in stands:
-		var z: float = (node as Node3D).position.z
-		assert_true(absf(z) > 121.0, "stands sit outside the arena walls (z %.1f)" % z)
+		var at: Vector3 = (node as Node3D).position
+		assert_true(absf(at.z) > 121.0 or absf(at.x) > 121.0, "stands sit outside the arena walls (%s)" % at)
+		# Feel X4 (round 6): side stands stay clear of the gate, its barricades and the ad screens (|z| < 50).
+		assert_true(absf(at.x) <= 121.0 or absf(at.z) > 50.0 + 11.5, "side stands clear the gate and screens (%s)" % at)
+	var sides := stands.filter(func(n: Node) -> bool: return absf((n as Node3D).position.x) > 121.0)
+	assert_true(sides.size() >= 8, "the short sides have stands too (%d modules): a low camera sees the whole horizon" % sides.size())
 	assert_eq(dressing.find_children("*", "CollisionObject3D", true, false).size(), 0, "the venue adds no collision")
 
 
@@ -82,8 +86,9 @@ func test_the_dressing_fits_an_arena_layout() -> void:
 	assert_eq(walls.size(), 4, "four perimeter walls after the rebuild (old ones freed)")
 	for node in structures.get_children():
 		if node.name.begins_with("Stands"):
-			var z: float = (node as Node3D).position.z
-			assert_true(absf(z) > 81.0 and absf(z) < 100.0, "stands move in with the 80 m arena's walls (z %.1f)" % z)
+			var at: Vector3 = (node as Node3D).position
+			var out := maxf(absf(at.x), absf(at.z))  # long-side stands sit out in z, the short sides' in x
+			assert_true(out > 81.0 and out < 100.0, "stands move in with the 80 m arena's walls (%s)" % at)
 	var ground := CyberMaterials.ground(false)
 	assert_near(float(ground.get_shader_parameter("band_inner")), 68.0, 0.001, "the hazard band follows the walls")
 	assert_near(float(ground.get_shader_parameter("ring_radius")), 12.0, 0.001, "the painted ring marks the control point")
