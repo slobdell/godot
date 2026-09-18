@@ -23,6 +23,9 @@ const LATER := 20.0
 const ARRIVED_M := 14.0
 ## It counts as having moved at all once it is this far from where it started.
 const MOVED_M := 3.0
+## After a player's order finishes, ai leashes whatever the unit decides for itself to this far from the spot he sent it
+## to, so it fights from cover nearby instead of chasing. Staying inside that is holding the ground he gave it.
+const LEASH_M := 20.0
 
 var out_dir := ""
 var controls: RtsControls
@@ -115,7 +118,21 @@ func run() -> void:
 	for row: Dictionary in _rows:
 		verdicts[row["verdict"]] = int(verdicts.get(row["verdict"], 0)) + 1
 	watch["cues_from_the_players_clicks"] = cues_from_the_players_clicks
+	# For ai's leash dial (unit_ai.md): how far from the spot he sent them the units actually settle, and how many of
+	# them live. Run this before and after changing the leash and compare these three numbers.
+	var settled: Array = []
+	var alive := 0
+	for row: Dictionary in _rows:
+		if bool(row["alive"]) and int(row["later_from_goal_m"]) >= 0:
+			settled.append(float(row["later_from_goal_m"]))
+			alive += 1
+	settled.sort()
+	var mean := 0.0
+	for metres: float in settled:
+		mean += metres
 	var report := {"squads": ordered.size(), "units": _rows.size(), "verdicts": verdicts, "issues_while_idle": watch,
+			"from_the_given_slot_m": {"mean": snappedf(mean / maxf(settled.size(), 1), 0.1),
+					"worst": settled[-1] if not settled.is_empty() else -1.0, "alive": alive, "of": _rows.size()},
 			"cross_talk": _cross_talk, "settle_seconds": SETTLE, "later_seconds": LATER}
 	print("SQUAD_ORDERS_SUMMARY ", JSON.stringify(report))
 	for row: Dictionary in _rows:
@@ -160,7 +177,9 @@ static func _verdict(row: Dictionary) -> String:
 		return "never_moved"
 	if int(row["later_from_goal_m"]) <= ARRIVED_M:
 		return "arrived_and_stayed"
-	if int(row["from_goal_m"]) <= ARRIVED_M and int(row["later_from_goal_m"]) > ARRIVED_M:
+	if int(row["from_goal_m"]) <= ARRIVED_M and int(row["later_from_goal_m"]) <= LEASH_M:
+		return "arrived_and_held_nearby"  # inside ai's leash: fighting from cover around the spot, not wandering off
+	if int(row["from_goal_m"]) <= ARRIVED_M and int(row["later_from_goal_m"]) > LEASH_M:
 		return "arrived_then_left"
 	if int(row["later_from_goal_m"]) < int(row["from_goal_m"]):
 		return "still_travelling"
