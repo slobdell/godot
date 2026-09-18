@@ -57,6 +57,26 @@ Chrome 150. Passwordless ssh from the laptop as `slobdell`. No sudo.
 | Run | Laptop | builder0 |
 |---|---|---|
 | `make check` (full, 2026-09-15) | 14–22 min (queued behind other agents' runs) | **6 min 40 s** (first run, including the first import) |
+| `make check` (full, 2026-09-18, **six live streams**) | — | **~50 min** for 1010 tests, orchestrator's run on `main` at `5c68a03e` |
+
+**The 6 min 40 s figure is a quiet-machine number, and a round with six streams is not a quiet machine.** builder0
+runs two slots (`tools/slot.sh`); with four `make remote T=check` runs live, two execute and two wait, and the two
+executing are also slower for sharing the box. Budget **30–50 minutes** for a full check during an active round, not
+seven.
+
+Two consequences, both learned the hard way on 2026-09-18:
+
+1. **Iterate with a local `make check`; spend a remote slot only on a merge candidate** — a commit you are about to
+   hand the orchestrator. Six streams each checking every green step is what makes the queue.
+2. **`>> waiting for a heavy-run slot (N in use)` is printed when you enqueue, and is not retracted.** Being granted a
+   slot is a *later* line in the same log. A stream read that first line, watched the log go quiet, and reported to
+   the orchestrator that it had been starved of a slot for 50 minutes — while it had in fact been running for 48 of
+   them. This is [orchestration.md](orchestration.md) lesson 28 in a new place: **read the line that reports the
+   state you are asking about, and re-read your own log before reporting a stall.** Check what is actually running
+   with `ssh slobdell@builder0 "ps -eo pid,etime,args | grep '[s]lot.sh'"` and match each pid to a worktree with
+   `readlink /proc/<pid>/cwd`.
+3. **A big measurement series deserves a cleared window**, not a share of two slots. Ask the orchestrator; it can tell
+   the other streams to stay off builder0 for the duration.
 
 ## The sim baseline differs per machine
 

@@ -28,7 +28,8 @@ const AD_SCREEN := preload("res://game/theme/arena_kit/prop_ad_screen.tscn")
 const CONTAINER_20 := preload("res://game/theme/arena_kit/prop_container_20.tscn")
 ## Screens either side of each gate, this far along the wall from its middle.
 const SCREEN_OFFSET := 46.0
-const STANDS_ROWS := 5
+## Seat rows per grandstand module (feel X2, round 6: at 5, bare metal showed between rows).
+const STANDS_ROWS := 9
 
 var ground: ChunkedGround
 var crowd: CrowdSystem

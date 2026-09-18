@@ -301,7 +301,7 @@ The kickoff prompt is one line; this section is the rest.
     **Orchestrators: merge that hash**, and if the tip is ahead of it, either wait for its check or read every commit
     in between.
 30. **Changing the tick rate re-times everything counted in ticks, frames or interpolation — three instances in one
-    day.** Round 5's 30 Hz move: (a) K1's response contract said "within 3 ticks", which silently meant 50 ms and
+    day, and *six* by the time round 6 went looking.** Round 5's 30 Hz move: (a) K1's response contract said "within 3 ticks", which silently meant 50 ms and
     would have meant 100 ms — a guarantee about what a player's hand feels belongs in milliseconds; (b) a brain's
     think cadence was `TICK_RATE * 3 / 20`, which integer-divided to 12% *more* thinking at 30 Hz — rates must be
     booked in Hz with the leftover fraction carried, not in whole ticks; (c) physics interpolation arrived with the
@@ -310,6 +310,15 @@ The kickoff prompt is one line; this section is the rest.
     generalisation: **before changing a rate, grep for every constant and assertion expressed in ticks or frames, and
     ask what each one means in seconds at both rates.** Audio, which had already converted everything to seconds,
     needed no changes at all.
+    **Round 6 found three more, all surviving the round-5 sweep, and two of them were lying to a reader rather than
+    breaking a test:** (d) a test awaited `SECONDS * 60` frames, so a "12 s" assertion ran 24 s with a drift threshold
+    — a test sitting at twice its intended duration; (e) the *dither metric itself* divided by `unit_ticks / 3600.0`,
+    so every dither rate ever reported was **double** the real one, and the behaviour it was gating had never actually
+    breached its bar; (f) `game/agent/discovery_bridge.gd` reported `seconds` and `age_seconds` to the discovery agent
+    as `tick / 60`, so **every time the LLM saw was half the real elapsed time**. The lesson on top of the lesson:
+    a rate bug in an *instrument* or a *report* does not fail anything — it silently changes what everyone downstream
+    believes, and it outlives the sweep that was supposed to catch it. When you change a rate, grep the things that
+    **describe** the simulation as carefully as the things that run it.
 31. **Saved measurements need provenance, written from the note and not from memory.** Round 5's close: three
     streams had hours of match results and perf baselines living only inside a worktree's git-ignored `build/`,
     which the round's own cleanup would have deleted — leaving published conclusions with no evidence behind
@@ -337,3 +346,165 @@ The kickoff prompt is one line; this section is the rest.
     round splits work by discipline, **name the concept each stream owns, not just the paths** — and when an item's
     first step is "collapse these into one", say so in the brief, because a worker will otherwise extend whichever
     copy it finds first.
+34. **A measurement's own bugs reach the next stream as facts about the game.** Round 6, day one: arena built nav's
+    acceptance harness and caught two defects in it before relaying anything. (a) `off_navmesh` was computed as a 3D
+    distance, so a hull centre sitting 0.7 m *above* the mesh was charged to every unit — it reported **17 of 60 units
+    "off the map"** where the flat x/z distance reports **0**, and that was one relay away from being filed as a
+    navigation bug for another stream to hunt. (b) The target read a bare `UNITS`, and `mk/ai.mk` sets `UNITS ?= 60`
+    globally, so a run whose help text *and* output both said "30 units" was silently running 60 — cf. trip-up 67,
+    where GNU make's own `WINDOW = 2` did the same thing. The general rules: **a new instrument gets checked against a
+    case whose answer you already know before its first number leaves the stream**, and **never give a shared
+    Makefile a bare, guessable variable name** — prefix it (`NAV_UNITS`, not `UNITS`) and print what it resolved to.
+35. **Lesson 23 inverted: an *exception* the default path always passes is as invisible as a feature behind a flag it
+    never passes.** Round 6, combat building CP4: fire discipline was written with an "unless explicitly ordered to
+    engage" escape, faithful to the brief. But `TankBrain`'s ENGAGE state issues a `target` weapon order *every tick*,
+    so that one exception exempted **every CPU unit in the game**, and the whole engagement envelope would have
+    shipped doing nothing — while every rule test passed, because the tests exercised the rule and not the caller.
+    The fix was to make the override an explicit `"long_shot": true` that nothing sets by default. **When you write an
+    exception, go and count who takes it in the default configuration**, exactly as you would go and check who passes
+    a new flag. The general form of lessons 23 and 35 together: a behaviour's reach is decided by the callers, not by
+    the code you are looking at, so read the callers before believing either a feature or an exemption is rare.
+    **The instruction, in the stream's own sharpening of it: when you add an exception to a rule, grep for every
+    caller that would take it *before* you write the test that proves the rule works.** The passing test was written
+    first and told them nothing — it exercised the rule while the callers decided the outcome.
+36. **A test that shares a global with its neighbours and passes may be testing its neighbour.** Round 6, arena: the
+    maze's navigation tests passed 5/5 run alone and failed run after `test_arena_layouts`, because `Pathing.is_ready()`
+    answers only *"does the world's navigation map have polygons"* — and the previous test's arena is freed a frame or
+    two before `NavigationServer3D` drops its regions. So it returned true immediately, against the **old** map, and
+    every path was a straight line through the new arena's walls. The fix is to wait for geometry only *this* layout
+    has (a point inside one of its own collision boxes must be off the navmesh); waiting for polygons is not waiting
+    for *this arena's* polygons.
+    **The part that is not about navmeshes:** the same flaw sat in `test_arena_kit`'s all-layouts connectivity test,
+    the one asserting that every shipped layout connects both bases and the centre. It had **never failed** — because
+    it had been proving the *previous* arena was connected, once per layout. It was only caught because a maze has a
+    **known wrong answer** (a straight line base to base, a dead end with no walls) where a normal arena's wrong answer
+    looks like a right one. So: when a test depends on a global the engine owns (a navigation map, a physics space, a
+    singleton, an import cache), **assert on something only this case can produce**, and treat a suite-order-dependent
+    pass as a failure. A test that has never failed in a suite that changes its inputs deserves suspicion, not trust —
+    design at least one case whose wrong answer is obviously wrong.
+37. **A constant nobody derived can own an entire finding.** Round 6, arena: its flanking analysis used a hard-coded
+    110 m "watcher range", and on that number a flank cost a **1.8–2.1× detour** on six of seven arenas — written up
+    as "cover is priced out of reach". combat then derived the real figure from the rosters
+    (`min(effective_range, sight_radius)`, median **45 m**), and the same geometry and the same code priced the same
+    flanks at **1.0–1.1×**. Same maps, opposite conclusion, and the whole result had lived in one number that had been
+    guessed once and never questioned. arena **rewrote the section rather than appending to it**, because the old
+    table would have been quoted. Two rules: **a magic number inside a metric is a finding waiting to be wrong** — ask
+    which stream owns the quantity and get it derived from the data — and when a correction inverts a published
+    conclusion, replace the text, never append to it.
+38. **Baseline the suite before you attribute its failures to your change — especially a suite that is not in
+    `make check`.** Round 6, combat landing CP4: `make ai-scenarios` came back 37 passed, 9 failed. The tempting
+    reading is nine regressions. combat instead ran the same suite on a **pristine tree first** and found the honest
+    split: **5 failures pre-existed**, **1 was fixed** by its change, and **4 were genuinely new**. Without that
+    baseline it would have spent a day on five failures that were never its own, or — worse — reported nine
+    regressions to the orchestrator and had another stream spend the day. The reason the baseline was missing in the
+    first place is the part to fix: **`ai-scenarios` is not in `make check`**, so nobody had a known-good number for
+    it, and a suite nobody baselines drifts until the next person to touch it inherits the whole backlog. Either put
+    a behavioural suite in the gate, or record its expected pass count somewhere a stream will find it.
+39. **A rule and a heuristic that reason about the same quantity in different units will deadlock.** Round 6: N5 made
+    firing depend on *effective* range while `TankBrain._combat_move()` still decided where to stand from
+    `weapon["range"]` — full reach. The outranging branch therefore parked a tank **61 m** from a scout it could not
+    shoot at, for the whole 45 s: 0 shots, 0 metres, never arrived, with the brain printing the cause every tick
+    (`opt=ENGAGE why="outranging it" move={"type":"stop"}`). The fix was two tokens, and the result was *faster* than
+    before the rule existed (14.9 s against 20.8 s) because the unit stopped trying to snipe. The general form:
+    **when you narrow a quantity, grep for every consumer of the old one** — a rule about "may I fire" and a
+    heuristic about "where should I stand" have to share a definition or the unit freezes between them. Note this is
+    lesson 17 seen from the other side: the starved behaviour and the starving rule were written by different streams
+    a round apart, which is exactly when nobody notices.
+40. **A repeated *load* can masquerade as per-instance *work* when something evicts the cache between instances.**
+    Round 6, the lead's "big lag between pressing Fight and the game loading": control profiled it honestly and
+    concluded per-instance work — the first vehicle of a type cost ~95 ms and every later one ~63 ms, and "if it were
+    loading, later instances would be near-free" is exactly the right inference from that shape. It was still wrong.
+    feel traced the nodes and found a **70–90 ms gap immediately before the hull node** on every new-faction vehicle:
+    each one's hull `VisualSlot` first fills the *default* slot (the Condemned dozer), then swaps in its own art; the
+    dozer instance is freed, nothing else references its `.glb`, the engine unloads it, and the next vehicle re-reads
+    it from disk. Condemned vehicles stayed at 2 ms precisely because their own live dozers kept the model cached —
+    the control group was sitting in the data all along. One strong reference per slot scene in `GameTheme.scene()`
+    took **106–128 ms per vehicle to 0.9**. The instruction: **"later instances are not free" narrows the cause to
+    per-instance work *or* a cache being evicted between them** — and the way to tell them apart is a node/resource
+    trace showing *where the time sits*, not a per-call profile showing how much. Look for the cost in the gaps
+    between the functions you suspect, and look for the population that is unexpectedly cheap.
+41. **"The asymmetry is obviously wrong" is a hypothesis, not a result — and a negative result is worth relaying.**
+    Round 6, hunting the dither that CP4 exposed: combat found a real structural leak of its own making. It had
+    exempted `suppress` orders from fire discipline, which made suppressive fire **strictly more available than
+    engaging** beyond the band — a crew that could not legally shoot *at* a contact at 48 m could still put rounds on
+    the ground under it, and the utility scorer could see exactly that. It watched a unit flip
+    `ENGAGE → SUPPRESS → ENGAGE` in 1.4 s at 47–50 m, right at the band edge. The mechanism was visible in the log,
+    the reasoning was sound, and the write-up's line — *"an exemption only the optimiser can see is not a design, it
+    is a leak"* — is still true. **Closing it moved the dither not at all** (17.7 / 15.6 per minute, identical) **and
+    broke two more behaviours** (9 scenario failures to 11). Reverted.
+    Two instructions. **(a)** This is lesson 20 again from a new angle: measure an optimisation *or a correctness fix*
+    against behaviour, not against the mechanism you can see. A leak you can explain is not thereby the cause of the
+    symptom next to it. **(b) Tell the orchestrator your negative results, and the orchestrator must relay them.** The
+    stream that owned the dither would otherwise have spent an afternoon rediscovering the same dead end, and the
+    finding that the real driver is upstream in option scoring **and is not the suppress exemption** is worth nearly
+    as much as a fix would have been.
+42. **Do not fix an un-baselined suite by adding it to the gate.** Round 6: `ai-scenarios` had drifted because nothing
+    baselined it (lesson 38), and the obvious fix — put it in `make check` — would have turned the gate **red for six
+    streams** over its 6 pre-existing failures, which nobody had triaged and which belong to several owners. That is
+    how a suite gets excluded from a gate in the first place. The honest sequence: **record the expected pass count in
+    a committed baseline file** (the way `tests/baselines/sim_state_hash.txt` works), fail only on a *change* in that
+    count, and let each owner decide whether their failure is a bug or a stale expectation. Then tighten.
+43. **Adding a member to a shared list is not an additive change: grep every consumer of the list.** Round 6, arena,
+    twice in one day, and both failures were the same bug wearing different clothes.
+    **(a) The lucky kind, which failed loudly.** `arenas/` grew a *test fixture* (the maze), and the announcer's
+    `test_arena_names.py` asserts that every layout in `arenas/` has a spoken name **and a recorded clip**. Adding one
+    would have been wrong three ways — the booth should not name a map nobody plays, and the recording is paid
+    ElevenLabs time behind a lead gate. The right fix was to give the new member a *kind*: `"fixture": true`, with
+    `Arena.is_fixture()` and `Arena.shipping_layout_names()` for anything that offers arenas to a human.
+    **(b) The dangerous kind, which had been failing silently for an unknown length of time.** The same list grew an
+    arena whose *wrong* answer is visible — a maze where a straight-line path base-to-base is obviously bogus — and
+    that is what exposed `Pathing.is_ready()` answering for the *previous* arena (lesson 36). The connectivity test
+    that claims every layout connects had never failed because it had never been testing what it claimed.
+    So: when you add to a list other code iterates, **the question is not "does my member work" but "what does every
+    consumer assume about members"** — and if your member is of a genuinely new kind, say so in the data rather than
+    making it pass as the old kind.
+    **Corollary, learned on a 25-minute build queue:** *run the full check before claiming green, not the tests your
+    change touches.* The thing that broke was a different stream's check, and no amount of testing the changed file
+    would have found it.
+44. **A make variable set in any `mk/*.mk` is global: name a stream's knobs after the target that owns them.** Round 6,
+    combat: `mk/ai.mk` sets `VARIANTS ?= r1,a4,a6` — three *brain-variant names* — and `mk/match.mk` used `VARIANTS`
+    for a *path to a JSON file*. Make has one namespace, so `$(if $(VARIANTS),--variants $(VARIANTS))` was **always
+    true and always wrong**: `FileNotFoundError: 'r1,a4,a6'`. Two things make this worse than a crash:
+    - **It broke the exact command our own reference file tells you to run.** `streams/references/combat/README.md`
+      documents a baseline as reproducible with `make engagement PAIRS=… SEEDS=3 TIME=240`, and that command cannot
+      have worked since the `VARIANTS` default landed. **A "reproduce with" line nobody re-runs is a claim, not a
+      reproduction** — the soft spot in lesson 31: we made the tools record their conditions, and nothing checks that
+      the recipe still runs.
+    - **The sibling target took it silently.** `matchup-search` passes `--variants` as a *required* argument, so it
+      would have searched three brain names instead of the file you meant and produced a plausible result for the
+      wrong question. This is trip-up 60 (two streams, one concept) in a namespace nobody thinks of as a namespace,
+      and it had already bitten once before — `UNITS ?= 60` in `mk/ai.mk` silently made an arena run labelled
+      "30 units" run 60 (lesson 34).
+
+    **The audit, run on `main` 2026-09-18** (`^[A-Z_]*\s*\?=` defaults against `$(VAR)` uses across files): 28 knobs
+    cross a file boundary, and almost all are the root `Makefile` deliberately sharing `PYTHON`, `JOBS`, ports, `BOTS`
+    and so on — that is fine. **The dangerous shape is a default in one *stream's* file consumed by a different
+    stream's file**, and there are four:
+    | Knob | Defaulted in | Also used in | How it failed | Status |
+    |---|---|---|---|---|
+    | `VARIANTS` | `ai.mk` (squad) | `match.mk` (combat) | **loudly** — `FileNotFoundError: 'r1,a4,a6'` | fixed → `VARIANT_FILE` |
+    | `UNITS` | `ai.mk` (squad) | `match.mk` (combat) | **silently** — `$(if $(UNITS),--units $(UNITS))` always fired, so *every* `matchup-search` run passed `--units 60` whatever the caller asked, and said nothing | fixed → `SEARCH_UNITS` |
+    | `ARENAS` | `tactics.mk` (squad) | `arena.mk` (arena) | not established | fixed → `TACTICS_ARENAS` |
+    | `SECONDS` | `net.mk` (paused) | `tactics.mk` (squad) | not established | fixed → `PARITY_SECONDS` (squad's side; `net.mk` untouched) |
+    | `RUNS` | `ai.mk` | `tactics.mk` | **silently** — a ladder run that *said* 2 runs did 4 | fixed → `AI_RUNS` / `TACTICS_RUNS` |
+
+    The fifth (`RUNS`) was found by the owner while fixing the others, which is the argument for having one stream
+    sweep its whole namespace rather than patching the reported case.
+    **The fix pattern to copy** (squad, `3db1251f`): rename each knob to carry its owner's prefix, keep the old name
+    working **but only from the command line** — `$(if $(filter command line,$(origin VAR)),…)` — so another file's
+    *default* can never reach your targets while a human's explicit `VAR=` still does; and **echo what each target
+    resolved to**. That preserves every documented invocation, closes the namespace, and makes a wrong value visible
+    in the artefact. Verify with `make -n` on every form.
+
+    **The loud/silent asymmetry is the whole reason to run the audit rather than wait for a crash.** `engagement`
+    crashed on a missing file; its sibling `matchup-search` took the same wrong value as a *required* argument and
+    produced plausible answers to the wrong question. **A collision that crashes is the lucky one** (cf. lesson 43's
+    two halves) — so do not reason "a crash would have told me" about the knobs you have not checked.
+    **The integrity consequence, recorded because it cannot be undone:** any conclusion drawn from `matchup-search`
+    that assumed a non-default unit count is unreliable, **and there is no way to tell from the saved output, because
+    the tool never recorded the value it used.** That is the same hole as the reproduce-line one above. The cheap
+    permanent fix is to **print every resolved knob into the output**, so a wrong value is visible in the artefact
+    rather than only in the behaviour.
+    The rule to apply: **a knob two streams share deliberately belongs in the root `Makefile`; a knob one stream owns
+    takes that stream's prefix** (`NAV_UNITS`, `VARIANT_FILE`). And print what a knob resolved to, so a wrong value is
+    visible in the output rather than only in the behaviour.

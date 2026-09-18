@@ -46,6 +46,13 @@ var drill := ""
 var reason := ""
 var slots := {}
 var sectors := {}
+## Who stands in which slot of which shape ({unit: [formation, count, index]}): handed back to the next plan so
+## the seating is stable from one update to the next (N2).
+var seats := {}
+## X3: seconds each member needs to reach its slot, and the speed fraction it drives at so the element arrives
+## together (FormUp). Refreshed every update.
+var etas := {}
+var paces := {}
 var events: PackedStringArray = []
 
 ## Plan state carried between updates.
@@ -74,6 +81,8 @@ var _fresh_task := false
 var drill_distance := 0.0
 ## Living members when the last decision was taken.
 var strength := 0
+## The situation's member data at the last decision (formation_group()).
+var _last_members: Array = []
 
 
 func _init(p_id: int = 0, p_name: String = "", p_team: int = 0, p_roster: PackedStringArray = [],
@@ -123,9 +132,14 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
-			"arrived": arrived, "heading": heading}
+			"arrived": arrived, "heading": heading, "seats": seats}
 	var plan := ElementPlan.build(situation, state, _doctrine())
+	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null)
 	_take(plan, situation)
+	var by_name := AiTickCache.tanks_by_name(game_match)
+	etas = FormUp.etas(by_name, slots)
+	paces = FormUp.paces(by_name, slots, etas)
 	_issue(plan, orders, situation, game_match)
 	return _note_changes(before)
 
@@ -134,8 +148,27 @@ func update(game_match: Match, orders: Object) -> bool:
 func state() -> Dictionary:
 	return {"id": id, "name": element_name, "team": team, "leader": leader, "members": members(),
 			"task": task.duplicate(true), "formation": formation, "technique": technique, "drill": drill,
-			"reason": reason, "slots": slots.duplicate(), "sectors": sectors.duplicate(),
+			"reason": reason, "slots": slots.duplicate(), "sectors": sectors.duplicate(), "pace": paces.duplicate(),
+			"form_up_eta": form_up_eta(),
 			"detached": _detached.keys(), "events": events}
+
+
+## X3: seconds until the element is formed up — until its slowest member reaches its slot (the lead's estimate).
+func form_up_eta() -> float:
+	return FormUp.group_eta(etas)
+
+
+## N2 for TacticsFormation.slots(element, ...): this element as formation data (members where they were last update).
+func formation_group() -> Dictionary:
+	return {"formation": formation, "leader": leader, "policy": "exposure", "spacing": _doctrine().spacing("open"),
+			"members": _last_members.duplicate(), "previous": _seating_now()}
+
+
+func _seating_now() -> Dictionary:
+	var result := {}
+	for unit_name: String in seats:
+		result[unit_name] = int(seats[unit_name][2])
+	return result
 
 
 ## Living members, in succession order.
@@ -159,6 +192,9 @@ func remove(unit_name: String) -> void:
 	_detached.erase(unit_name)
 	slots.erase(unit_name)
 	sectors.erase(unit_name)
+	seats.erase(unit_name)
+	etas.erase(unit_name)
+	paces.erase(unit_name)
 	if leader == unit_name:
 		leader = roster[0] if not roster.is_empty() else ""
 		if leader != "":
@@ -224,6 +260,20 @@ func _commanded_members() -> PackedStringArray:
 	return result
 
 
+## X2: every slot and every order's destination moved onto ground a vehicle can stand on (SlotGround). The plan is
+## pure geometry; this is the step that meets the arena. `node` is any node in the match's world (null: unchanged).
+static func ground(plan: Dictionary, node: Node3D) -> void:
+	if node == null:
+		return
+	var slots_in: Dictionary = plan["slots"]
+	for unit_name: String in slots_in:
+		slots_in[unit_name] = SlotGround.standable(node, slots_in[unit_name])
+	for unit_name: String in plan["orders"]:
+		var order: Dictionary = plan["orders"][unit_name]
+		if order["to"] is Vector3:
+			order["to"] = SlotGround.standable(node, order["to"])
+
+
 ## Record what the leader decided.
 func _take(plan: Dictionary, situation: Dictionary) -> void:
 	formation = String(plan["formation"])
@@ -235,7 +285,9 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	arrived = bool(plan["arrived"])
 	slots = plan["slots"]
 	sectors = plan["sectors"]
+	seats = plan["seats"]
 	strength = (situation["members"] as Array).size()
+	_last_members = situation["members"]
 	var new_drill := String(plan["drill"])
 	if new_drill != drill:
 		drill = new_drill
@@ -315,6 +367,10 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		if again and tick - int(mine.get("tick", -RE_ISSUE_TICKS)) < RE_ISSUE_TICKS and _same_place(mine, desired, REISSUE_M):
 			return false
 		if desired["to"] is Vector3 and position.distance_to(desired["to"]) > SETTLED_M:
+			return true
+		# Arrived on a firing or screen line: the move is done, and the crew now HOLDS the spot (fires from it, and
+		# drives back onto it if pushed). Left idle instead, a brain wanders its idle leash and the line dissolves.
+		if String(desired["verb"]) == "hold" and desired["to"] is Vector3 and String(mine.get("verb", "")) != "hold":
 			return true
 		if String(desired["verb"]) in ["attack", "attack_move"] and String(desired.get("target", "")) != "":
 			return String(mine.get("target", "")) != String(desired["target"]) \
