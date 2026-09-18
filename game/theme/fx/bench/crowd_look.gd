@@ -5,7 +5,8 @@ extends Node
 ## `--crowd-look=<abs dir>`) and answers with pictures and numbers instead of guesses:
 ##
 ##   1. `player.png`: the frame the game's own camera shows after the warm-up (what the lead saw).
-##   2. A grid of poses over the player's army (RtsCamera.pose_for: every zoom level, facing the enemy and facing home),
+##   2. A grid of poses over the player's army (RtsCamera's own poses and cutaway: every zoom level at the default pitch,
+##      and pitch x distance at FOV 60; facing the enemy and facing home),
 ##      each shot with the crowd, without it, and without fog. The tree is paused while a pose is shot so the only
 ##      difference between the with/without frames is the crowd.
 ##
@@ -82,7 +83,8 @@ func _run() -> void:
 				continue
 			_camera.global_transform = RtsCamera.pose_for(focus, heading + turn, level)
 			_camera.fov = RtsCamera.FOV_DEG
-			_camera.near = 0.05
+			_camera.near = RtsCamera.cutaway_near(focus, heading + turn, RtsCamera.distance_for(level),
+					RtsCamera.DEFAULT_PITCH_DEG, RtsCamera.perimeter_half())
 			await _frames(PAUSE_FRAMES)
 			if crowd != null:
 				print("CROWD_LOOK " + JSON.stringify(await _measure(pose, _camera, crowd, environment)))
@@ -92,9 +94,11 @@ func _run() -> void:
 			var pose := "%s-p%02d-d%03d" % ["ahead" if turn == 0.0 else "behind", int(low[0]), int(low[1])]
 			if not _wanted(pose):
 				continue
-			_camera.global_transform = CrowdLook.pitched_pose(focus, heading + turn, deg_to_rad(low[0]), low[1])
+			# Control's own pose and cutaway (lesson 53: an approximation of another stream's system measures the
+			# approximation; round 6's first 12 degree frame showed a grandstand fascia the game never draws).
+			_camera.global_transform = RtsCamera.pose_at(focus, heading + turn, low[1], low[0])
 			_camera.fov = LOW_FOV_DEG
-			_camera.near = CrowdLook.cutaway_near(_camera.global_position, focus, Match.ARENA_HALF_SIZE + 1.0)
+			_camera.near = RtsCamera.cutaway_near(focus, heading + turn, low[1], low[0], RtsCamera.perimeter_half())
 			await _frames(PAUSE_FRAMES)
 			if crowd != null:
 				print("CROWD_LOOK " + JSON.stringify(await _measure(pose, _camera, crowd, environment)))
@@ -104,28 +108,6 @@ func _run() -> void:
 
 func _wanted(pose: String) -> bool:
 	return only.is_empty() or only.any(func(part: String) -> bool: return pose.contains(part))
-
-
-## Control's cutaway (round 6), approximated for poses shot before it merges: a camera outside the walls gets its near
-## plane just short of where its line of sight to the focus crosses the wall, so the stands behind it are not drawn.
-## Pure, for tests.
-static func cutaway_near(eye: Vector3, focus: Vector3, half: float) -> float:
-	if absf(eye.x) <= half and absf(eye.z) <= half:
-		return 0.05
-	var flat := Vector2(focus.x - eye.x, focus.z - eye.z)
-	var t_in := 0.0
-	for axis in 2:
-		var from: float = eye.x if axis == 0 else eye.z
-		var step: float = flat.x if axis == 0 else flat.y
-		if absf(from) > half and absf(step) > 0.0001:
-			t_in = maxf(t_in, (signf(from) * half - from) / step)
-	return maxf(0.05, eye.distance_to(focus) * clampf(t_in, 0.0, 1.0) - 1.0)
-
-
-## RtsCamera.pose_for with pitch and distance as separate axes (control X3's direction).
-static func pitched_pose(at: Vector3, heading: float, pitch: float, distance: float) -> Transform3D:
-	var back := Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, heading) * distance
-	return Transform3D(Basis.IDENTITY, at + back).looking_at(at, Vector3.UP)
 
 
 ## Shoot a pose with the crowd, again with it (noise floor), without it, and without fog.

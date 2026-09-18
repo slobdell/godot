@@ -24,21 +24,3 @@ func test_compare_counts_only_pixels_the_crowd_changed() -> void:
 	var flicker := with_crowd.duplicate() as Image
 	flicker.set_pixel(1, 1, Color(0.9, 0.9, 0.9))  # this pixel animates on its own: not the crowd's
 	assert_eq(CrowdLook.compare(with_crowd, without, false, flicker)["changed"], 1, "animation is left out")
-
-
-func test_pitched_pose_keeps_pitch_and_distance_apart() -> void:
-	var at := Vector3(10, 0, 90)
-	for pitch_deg in [22.0, 50.0]:
-		for distance in [40.0, 160.0]:
-			var pose := CrowdLook.pitched_pose(at, 0.0, deg_to_rad(pitch_deg), distance)
-			assert_near(pose.origin.distance_to(at), distance, 0.01, "the camera sits %d m out" % distance)
-			assert_near(rad_to_deg(-pose.basis.get_euler().x), pitch_deg, 0.01, "looking down at %d degrees" % pitch_deg)
-			assert_true(pose.origin.z > at.z, "heading 0 puts the camera south of the focus, looking north")
-
-
-func test_the_cutaway_clears_the_stands_behind_a_low_camera() -> void:
-	assert_near(CrowdLook.cutaway_near(Vector3(0, 10, 50), Vector3(0, 0, 0), 121.0), 0.05, 0.001, "inside the walls: no cutaway")
-	# 20 m outside the south wall, looking back at a focus 100 m inside it: the sight line crosses the wall 1/6 of the way.
-	var eye := Vector3(0, 12, 141)
-	var near := CrowdLook.cutaway_near(eye, Vector3(0, 0, 21), 121.0)
-	assert_near(near, eye.distance_to(Vector3(0, 0, 21)) / 6.0 - 1.0, 0.01, "the near plane sits just short of the wall")
