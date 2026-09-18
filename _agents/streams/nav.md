@@ -252,4 +252,43 @@ him.
 
 ## Status
 
-_The worker keeps this current._
+_nav worker, started 2026-09-18 (the last stream to start; branch fast-forwarded to `main` a0206d45 first)._
+
+**For the lead — "are we using A\*?"** Yes. Units plan routes with Godot's `NavigationServer3D`, which runs A* over the
+navigation mesh baked from the arena's walls and containers when the match starts (`Pathing.find_path`). What was
+missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
+and a stuck unit that reported success from 12 m away. That is what this stream builds.
+
+### Plan (in order)
+
+1. **X1 / CP1** — `game/ai/movement.gd`, the N1 API; path-following moved out of `order_controller.gd`; honest
+   `blocked` reporting. *Interface on the branch at `30e3250d`.* Gunnery split after CP4 is on main (orchestrator
+   agreed); `ORDER_STALL_ARRIVE` deleted in its own measured commit after squad's precedence fixes (orchestrator's call).
+2. **X2** — no second harness (arena built it): `make nav-suite` runs arena's maze probe over maze/yard/foundry × sizes ×
+   traffic × 5 seeds in parallel on builder0 and writes `build/nav/summary.md` with commit and machine.
+3. **X3** — ORCA over the 6 nearest hulls, friend and enemy, reciprocal (½ each; a parked unit takes none), on the
+   navmesh or not at all. `game/ai/avoidance.gd`. Always on (N1); `--no-avoidance` is the measuring switch.
+4. **X4** — right-of-way: stalled 1 s → ask the friend ahead to give way; still units always give way to movers, between
+   movers the shorter remaining route gives way, name breaks ties; a validated spot off the asker's line; never twice
+   in a row to the same asker. Visible as `phase: yielding`, `blocked_by: <asker>`.
+5. **X5** maze gate, **X6** PID, **X7** path quality, then stretch X8/X9.
+
+### Decisions
+
+- `Movement.state(unit)` takes the Tank node (control's `MovementReadout` already calls it that way). `blocked_by` is a
+  unit name, `"no_path"` or `"terrain"`; it also names the asker while `yielding`. Extra keys: `goal`, `stalled_s`,
+  `yield_to`.
+- A unit is `blocked` after 2 s without getting 0.5 m closer along its route (the probe's own stall clock is 3 s).
+- ORCA rather than a sampling RVO: the half-plane LP is the cheapest thing that is actually reciprocal, and GDScript
+  can't afford per-sample collision tests at 60 units.
+
+### Requests to other streams
+
+- **arena**: `tests/arena/maze_probe.gd` drives plain `OrderController`s, so round 5's brains-only `_around_friends`
+  never ran in your baseline. Not a problem now (N1 avoidance is on for every controller) — just a note for reading
+  the old numbers.
+
+### Merge notes
+
+- New files: `game/ai/{movement,avoidance}.gd`, `tests/test_{movement,avoidance}.gd`, `mk/nav.mk`,
+  `tools/nav_suite.py`, `_agents/navigation.md`.

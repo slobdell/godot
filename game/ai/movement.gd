@@ -88,6 +88,54 @@ const AVOID_LOOKAHEAD := 10.0
 const AVOID_WIDTH := 3.2
 const AVOID_CLEARANCE := 5.0
 
+## X3: ORCA local avoidance on (the kill switch is for measuring the difference, `--no-avoidance`).
+static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
+## Look this far along an avoiding velocity when steering by it (metres, at most the distance to the waypoint).
+const AVOID_STEER_MIN := 3.0
+const AVOID_STEER_MAX := 8.0
+## An avoiding velocity must keep the hull on the navmesh this far ahead (flat metres off the mesh allowed).
+const AVOID_MESH_PROBE := 3.0
+const AVOID_MESH_SLACK := 0.75
+
+## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
+## once every ASK_EVERY seconds.
+const ASK_SECONDS := 1.0
+const ASK_EVERY_SECONDS := 1.0
+## A remaining route this much shorter decides who gives way (metres); closer than that it's the unit name.
+const PRIORITY_MARGIN := 0.5
+## A unit gives way for at most this long, holds its spot at least YIELD_HOLD, and is at its spot within YIELD_REACHED.
+const YIELD_MAX_SECONDS := 6.0
+const YIELD_HOLD_SECONDS := 1.0
+const YIELD_REACHED := 1.5
+## ...and is done once the unit it gave way to is this far away (flat metres), or has passed it.
+const YIELD_CLEAR := 9.0
+## A spot to give way to must be this far (beyond both radii) from the asker's line of travel, and this far from every
+## other hull (flat metres).
+const YIELD_LINE_MARGIN := 0.75
+const YIELD_SPOT_CLEARANCE := 3.5
+## ...and on the navmesh within this (flat metres).
+const YIELD_MESH_SLACK := 0.5
+## Where to look for a spot, as [along the asker's travel, across it] (metres), nearest first. The across ones step
+## off its line; the along ones (last resort, in a corridor with no room beside) lead the way out ahead of it.
+const YIELD_SPOTS: Array[Vector2] = [Vector2(0, 5), Vector2(3, 6), Vector2(-3, 6), Vector2(0, 8), Vector2(5, 9),
+		Vector2(0, 11), Vector2(10, 0), Vector2(16, 0), Vector2(24, 0)]
+
+## Measurement only: give-ways begun, asks refused for lack of room, and units that gave way themselves.
+static var yields_started := 0
+static var asks_refused := 0
+
+## X6 (N6): station-keeping. A move_to whose goal is itself moving (a formation slot riding its anchor, a follow's
+## station) and is within STATION_RANGE is regulated by a PID on the along-track gap, on top of the goal's own speed
+## (feed-forward), instead of the drive-and-stop of a unit chasing a point. `--no-station-pid` is the measuring switch.
+static var station_on := not OS.get_cmdline_user_args().has("--no-station-pid")
+const STATION_RANGE := 14.0
+## The goal counts as moving above this speed (m/s), estimated from how far it moved between changes.
+const STATION_MIN_SPEED := 0.5
+## ...and stops counting as moving when it has not changed for this long.
+const STATION_STALE_SECONDS := 1.0
+## Steer at where the goal will be this far ahead (seconds), so the hull points along the formation's travel.
+const STATION_LEAD_SECONDS := 0.6
+
 const PHASES := ["pathing", "driving", "yielding", "blocked", "arrived"]
 
 ## Tank instance id -> the Movement driving it (the composer binds it every tick).
@@ -114,6 +162,21 @@ var _goal := Vector3.INF
 var _arrive := 0.0
 var _remaining := 0.0
 var _blocker_left := 0
+## X4: the unit this one is giving way to ("" = none), where it's giving way to, and the bookkeeping (in ticks).
+var yield_to := ""
+var _yield_point := Vector3.INF
+var _yield_dir := Vector2.ZERO
+var _yield_left := 0
+var _yield_held := 0
+var _last_yielded_to := ""
+var _ask_left := 0
+## X6: the goal's estimated velocity (flat), when it last changed (in this mover's ticks), and the regulator.
+var _goal_velocity := Vector2.ZERO
+var _goal_seen := Vector3.INF
+var _goal_changed_at := 0
+var _ticks := 0
+var _station: Pid = null
+var _station_faction := "?"
 ## _wheel_radius() per unit type (the catalog doesn't change mid-match).
 var _wheel_radius_unit := ""
 var _wheel_radius_value := 0.0
@@ -216,7 +279,8 @@ func reading() -> Dictionary:
 		if _path_index < _path.size():
 			points = _path.slice(_path_index)
 	return {"phase": phase, "eta_s": eta_s, "remaining_m": _remaining if phase != "arrived" else 0.0,
-			"path_points": points, "blocked_by": blocked_by if phase == "blocked" else "",
+			"path_points": points, "blocked_by": blocked_by if phase == "blocked" or phase == "yielding" else "",
+			"yield_to": yield_to,
 			"goal": _goal if _goal != Vector3.INF else null,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE)}
 
@@ -232,6 +296,12 @@ func reset() -> void:
 	_repath_left = 0.0
 	stalled_ticks = 0
 	_progress_goal = Vector3.INF
+	yield_to = ""  # a new order outranks giving way (K1 response guarantee)
+
+
+## Is this unit driving somewhere (anything but arrived)? Avoidance gives a still unit no share of the avoiding.
+func is_under_way() -> bool:
+	return phase != "arrived"
 
 
 ## Make this mover the one Movement.state(tank) reads (the composer calls it every tick: a dictionary lookup).
@@ -248,6 +318,7 @@ func new_order() -> void:
 
 ## The move order isn't a move_to (stop, face, drive, or a dead hull): nothing to report but "arrived".
 func idle() -> void:
+	yield_to = ""
 	stalled_ticks = 0
 	phase = "arrived"
 	blocked_by = ""
@@ -260,6 +331,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	var tank := ctl.tank
 	var goal := Vector3(order["x"], 0.0, order["z"])
 	_goal = goal
+	_track_goal(goal)
 	# `direct`: the brain already checked the straight line (CombatMotion's short hops), so skip the navmesh path.
 	var direct: bool = order.get("direct", false)
 	var lap := Time.get_ticks_usec() if OrderController.profile_detail else 0
@@ -267,13 +339,22 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	lap = OrderController._lap("move.path", lap)
 	var around_fire := _around_fire(routed, goal, order)
 	lap = OrderController._lap("move.fire", lap)
-	var waypoint := _around_friends(around_fire)
-	lap = OrderController._lap("move.friends", lap)
+	var waypoint := around_fire
+	var speed_factor := clampf(float(order.get("speed", 1.0)), 0.2, 1.0)
 	_arrive = clampf(float(order.get("arrive", OrderController.ARRIVE_RADIUS)), 0.5, 10.0)
-	var arrive := _arrive if waypoint == goal else 0.5
+	var arrive := _arrive if around_fire == goal else 0.5
 	var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
 	_remaining = remaining
 	lap = OrderController._lap("move.remaining", lap)
+	var pace := 1.0
+	if avoidance_on and not order.get("reverse", false) and ctl.tanks_root != null \
+			and _flat_distance(tank.global_position, around_fire) > arrive:
+		var avoided := _avoid(waypoint, speed_factor, delta)
+		if avoided[0] != waypoint:
+			arrive = 0.1  # steering at an avoiding point, not the goal: never "arrive" at it
+		waypoint = avoided[0]
+		pace = avoided[1]
+	lap = OrderController._lap("move.friends", lap)
 	var drive_vector: Vector2
 	var radius := wheel_radius()
 	if radius > 0.0:
@@ -287,11 +368,69 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		drive_vector = Steering.reverse_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
 	else:
 		drive_vector = Steering.drive_toward(tank.global_position, -tank.global_basis.z, waypoint, arrive, remaining)
-	cmd.throttle = drive_vector.x * clampf(float(order.get("speed", 1.0)), 0.2, 1.0)
+	cmd.throttle = drive_vector.x * speed_factor * pace
 	cmd.turn = drive_vector.y
+	if station_on and not direct and not order.get("reverse", false) and pace >= 0.99 and waypoint == goal \
+			and remaining <= STATION_RANGE and _goal_velocity.length() >= STATION_MIN_SPEED:
+		drive_vector = _keep_station(cmd, goal, delta)
+	elif _station != null:
+		_station.reset()
 	_track_progress(goal, drive_vector, remaining)
 	_update_phase(goal, drive_vector, direct)
+	if stalled_ticks >= int(ASK_SECONDS * SimClock.TICK_RATE):
+		_ask_left -= ctl._step
+		if _ask_left <= 0:
+			_ask_left = int(ASK_EVERY_SECONDS * SimClock.TICK_RATE)
+			_negotiate(goal, direct)
+	else:
+		_ask_left = 0
 	OrderController._lap("move.steer", lap)
+
+
+## X6: how fast the goal is moving, from how far it moved between changes (brains re-issue a slot a few times a
+## second, so per-tick deltas are mostly zero with a jump in between). A goal that jumps further than a slot could
+## travel is a new order, not motion.
+func _track_goal(goal: Vector3) -> void:
+	_ticks += ctl._step
+	if _goal_seen == Vector3.INF:
+		_goal_seen = goal
+		_goal_changed_at = _ticks
+		_goal_velocity = Vector2.ZERO
+		return
+	var moved := Vector2(goal.x - _goal_seen.x, goal.z - _goal_seen.z)
+	var seconds := float(_ticks - _goal_changed_at) / float(SimClock.TICK_RATE)
+	if moved.length_squared() > 0.0001:
+		var velocity := moved / maxf(seconds, 1.0 / float(SimClock.TICK_RATE))
+		_goal_velocity = Vector2.ZERO if velocity.length() > 2.0 * ctl.tank.max_forward_speed else velocity
+		_goal_seen = goal
+		_goal_changed_at = _ticks
+	elif seconds > STATION_STALE_SECONDS:
+		_goal_velocity = Vector2.ZERO
+
+
+## X6: keep station on a moving goal. Throttle = (the goal's speed along my heading + PID on the along-track gap) /
+## top speed; the derivative acts on the gap's own rate (my speed relative to the goal's), so a slot that jumps
+## doesn't kick. Steers at where the goal is heading. Returns the drive vector it used.
+func _keep_station(cmd: TankCommand, goal: Vector3, delta: float) -> Vector2:
+	var tank := ctl.tank
+	var faction := String(Units.stat(tank.unit_id, "faction", ""))
+	if _station == null or faction != _station_faction:
+		_station = Pid.new(ControlGains.for_loop("station", faction))
+		_station_faction = faction
+	var here := tank.global_position
+	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z).normalized()
+	var gap := Vector2(goal.x - here.x, goal.z - here.z)
+	var along := gap.dot(forward)
+	var feed_forward := _goal_velocity.dot(forward)
+	var my_speed := tank.speed()
+	var correction := _station.step_with_rate(along, my_speed - feed_forward, delta)
+	var wanted := feed_forward + correction
+	var ahead := Vector3(goal.x + _goal_velocity.x * STATION_LEAD_SECONDS, 0.0,
+			goal.z + _goal_velocity.y * STATION_LEAD_SECONDS)
+	var drive_vector := Steering.drive_toward(here, -tank.global_basis.z, ahead, 0.3)
+	cmd.turn = drive_vector.y
+	cmd.throttle = clampf(wanted / maxf(tank.max_forward_speed, 0.1), -0.5, 1.0)
+	return Vector2(cmd.throttle, cmd.turn)
 
 
 ## N1: what this tick amounts to. Arrived when steering has nothing left to do, blocked after BLOCKED_SECONDS without
@@ -314,6 +453,166 @@ func _update_phase(goal: Vector3, drive_vector: Vector2, direct: bool) -> void:
 		phase = "pathing"
 	else:
 		phase = "driving"
+
+
+# ---- X4: right-of-way (the lead's peer-to-peer "move out of the way") ---------------------------------------------
+
+## The composer calls this first every tick: true when this unit is giving way, and `cmd` has been filled for it.
+func right_of_way(cmd: TankCommand, delta: float) -> bool:
+	if yield_to == "":
+		return false
+	var tank := ctl.tank
+	var here := tank.global_position
+	_yield_left -= ctl._step
+	var asker := ctl.tanks_root.get_node_or_null(NodePath(yield_to)) as Tank if ctl.tanks_root != null else null
+	var there := _flat_distance(here, _yield_point) <= YIELD_REACHED
+	if there:
+		_yield_held += ctl._step
+	var passed := asker == null or not asker.is_alive() or _flat_distance(here, asker.global_position) > YIELD_CLEAR \
+			or Vector2(asker.global_position.x - here.x, asker.global_position.z - here.z).dot(_yield_dir) > 0.0
+	var asker_mover := Movement.of(asker) if asker != null else null
+	if asker_mover != null and not asker_mover.is_under_way():
+		passed = true
+	if _yield_left <= 0 or (passed and (there or _yield_held >= int(YIELD_HOLD_SECONDS * SimClock.TICK_RATE))):
+		_end_yield()
+		return false
+	phase = "yielding"
+	blocked_by = yield_to
+	if not there:
+		var drive_vector := Steering.drive_toward(here, -tank.global_basis.z, _yield_point, YIELD_REACHED * 0.5)
+		if wheel_radius() > 0.0:
+			drive_vector = Steering.drive_toward_wheels(here, -tank.global_basis.z, _yield_point, YIELD_REACHED * 0.5,
+					wheel_radius(), tank.speed())
+		cmd.throttle = drive_vector.x * 0.7
+		cmd.turn = drive_vector.y
+	return true
+
+
+## Another unit asks this one to give way: `asker` wants to go along `direction` from `from`. True when this unit
+## found a validated spot and is giving way; false when it can't (it is already giving way, it just gave way to the
+## same asker, or there is no room) — and then the asker gives way itself.
+func ask(asker: String, from: Vector3, direction: Vector2) -> bool:
+	if yield_to != "" or asker == _last_yielded_to:
+		return false
+	if _begin_yield(asker, from, direction):
+		return true
+	asks_refused += 1
+	return false
+
+
+func _end_yield() -> void:
+	_last_yielded_to = yield_to
+	yield_to = ""
+	_yield_point = Vector3.INF
+	blocked_by = ""
+	phase = "driving"
+	stalled_ticks = 0
+	_progress_goal = Vector3.INF
+	_repath_left = 0.0
+
+
+## Give way to `other`, travelling along `direction` from `from`: find the nearest validated spot off its line.
+func _begin_yield(other: String, from: Vector3, direction: Vector2) -> bool:
+	var tank := ctl.tank
+	var here := tank.global_position
+	var along := direction.normalized() if direction.length_squared() > 0.0001 else \
+			Vector2(here.x - from.x, here.z - from.z).normalized()
+	if along == Vector2.ZERO:
+		return false
+	var across := Vector2(-along.y, along.x)
+	# Step off to the side of its line I'm already on (ties: its left), so I never cut across its bow.
+	var side := 1.0 if across.dot(Vector2(here.x - from.x, here.z - from.z)) >= 0.0 else -1.0
+	var other_tank := ctl.tanks_root.get_node_or_null(NodePath(other)) as Tank if ctl.tanks_root != null else null
+	var other_radius := Avoidance.radius_of(other_tank.unit_id) if other_tank != null else 1.8
+	var line_clear := Avoidance.radius_of(tank.unit_id) + other_radius + YIELD_LINE_MARGIN
+	Avoidance.refresh(ctl.tanks_root)
+	for spot: Vector2 in YIELD_SPOTS:
+		for flip: float in ([side, -side] if spot.y != 0.0 else [side]):
+			var offset := along * spot.x + across * (spot.y * flip)
+			var point := Vector3(here.x + offset.x, 0.0, here.z + offset.y)
+			if spot.y != 0.0 and _distance_to_ray(point, from, along) < line_clear:
+				continue
+			if not _free_spot(point, String(tank.name), other):
+				continue
+			yield_to = other
+			_yield_point = point
+			_yield_dir = along
+			_yield_left = int(YIELD_MAX_SECONDS * SimClock.TICK_RATE)
+			_yield_held = 0
+			phase = "yielding"
+			blocked_by = other
+			yields_started += 1
+			return true
+	return false
+
+
+## A spot on the navmesh, with no hull but `me` and `other` within YIELD_SPOT_CLEARANCE.
+func _free_spot(point: Vector3, me: String, other: String) -> bool:
+	var tank := ctl.tank
+	if Pathing.enabled and Pathing.is_ready(tank):
+		var on_mesh := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, point)
+		if _flat_distance(on_mesh, point) > YIELD_MESH_SLACK:
+			return false
+	for row: Array in Avoidance.neighbours(me, point.x, point.z):
+		if String(row[1]) != other and sqrt(float(row[0])) < YIELD_SPOT_CLEARANCE:
+			return false
+	return true
+
+
+## Flat distance from `point` to the ray from `origin` along `direction` (unit), behind the origin = to the origin.
+static func _distance_to_ray(point: Vector3, origin: Vector3, direction: Vector2) -> float:
+	var offset := Vector2(point.x - origin.x, point.z - origin.z)
+	var t := maxf(offset.dot(direction), 0.0)
+	return (offset - direction * t).length()
+
+
+## Stalled: the friend in my way is asked to give way, or I give way to it. Who gives way is decided by a rule both
+## units compute the same way — a unit going nowhere always gives way to one going somewhere; between two movers, the
+## one with less of its route left gives way (it has less to lose), and the unit name breaks a tie — so the two never
+## both wait and never both go.
+func _negotiate(goal: Vector3, direct: bool) -> void:
+	var tank := ctl.tank
+	var name := _hull_ahead(goal, direct)
+	if name == "":
+		return
+	var other := ctl.tanks_root.get_node_or_null(NodePath(name)) as Tank
+	if other == null or other.team != tank.team:
+		return  # an enemy can't be asked
+	var mover := Movement.of(other)
+	if mover == null or mover.yield_to != "":
+		return  # the player's own hull, or it is already giving way to someone
+	var here := tank.global_position
+	var my_way := _travel_direction(goal, direct)
+	var i_give_way := false
+	if mover.is_under_way():
+		var difference := _remaining - mover._remaining
+		i_give_way = difference < -PRIORITY_MARGIN or (absf(difference) <= PRIORITY_MARGIN and String(tank.name) < name)
+	if mover._last_yielded_to == String(tank.name):
+		i_give_way = true  # it gave way to me last time: my turn
+	if not i_give_way and mover.ask(String(tank.name), here, my_way):
+		return
+	if _last_yielded_to == name:
+		return  # never twice in a row to the same unit: unstick and avoidance carry on
+	var its_way := mover._travel_direction(mover._goal, false) if mover.is_under_way() else Vector2.ZERO
+	if its_way == Vector2.ZERO:
+		its_way = Vector2(here.x - other.global_position.x, here.z - other.global_position.z)
+	_begin_yield(name, other.global_position, its_way)
+
+
+## The flat direction this unit is trying to go: toward its next waypoint (or the goal).
+func _travel_direction(goal: Vector3, direct: bool) -> Vector2:
+	var here := ctl.tank.global_position
+	var toward := _path[_path_index] if _path_index < _path.size() and not direct else goal
+	if toward == Vector3.INF:
+		return Vector2.ZERO
+	var flat := Vector2(toward.x - here.x, toward.z - here.z)
+	return flat.normalized() if flat.length_squared() > 0.0001 else Vector2.ZERO
+
+
+## The nearest hull ahead within BLOCKER_REACH, or "".
+func _hull_ahead(goal: Vector3, direct: bool) -> String:
+	var name := _blocker(goal, direct)
+	return "" if name in ["no_path", "terrain"] else name
 
 
 ## What this unit is up against: the nearest hull ahead of it within BLOCKER_REACH (friend or enemy), else "no_path"
@@ -441,6 +740,40 @@ func _around_fire(waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector
 	_fire_since = -1
 	_fire_detour_again = tick + FIRE_DETOUR_COOLDOWN
 	return waypoint
+
+
+## X3: ORCA. [the point to steer at, the share of the drive's speed to keep]. The preferred velocity is the route's
+## (toward `waypoint` at this order's speed, easing off for the end of the route); Avoidance returns the nearest
+## velocity that keeps clear of every neighbour, sharing the avoiding with movers. A velocity that would take the hull
+## off the navmesh is refused (static geometry wins): the unit keeps its route and slows to the avoiding speed instead.
+func _avoid(waypoint: Vector3, speed_factor: float, delta: float) -> Array:
+	var tank := ctl.tank
+	var here := tank.global_position
+	var to := Vector2(waypoint.x - here.x, waypoint.z - here.z)
+	var distance := to.length()
+	if distance < 0.5:
+		return [waypoint, 1.0]
+	Avoidance.refresh(ctl.tanks_root)
+	var slow := clampf(_remaining / Steering.SLOW_RADIUS, 0.35, 1.0)
+	var desired := tank.max_forward_speed * speed_factor * slow
+	var preferred := to / distance * desired
+	var chosen := Avoidance.solve(String(tank.name), Vector2(here.x, here.z),
+			Vector2(tank.estimated_velocity.x, tank.estimated_velocity.z), preferred, tank.max_forward_speed,
+			Avoidance.radius_of(tank.unit_id), delta)
+	if chosen.distance_squared_to(preferred) < 0.04:
+		return [waypoint, 1.0]
+	var speed := chosen.length()
+	var keep := clampf(speed / maxf(desired, 0.1), 0.0, 1.0)
+	if speed < 0.3:
+		return [waypoint, 0.0]
+	var direction := chosen / speed
+	var probe := Vector3(here.x + direction.x * AVOID_MESH_PROBE, 0.0, here.z + direction.y * AVOID_MESH_PROBE)
+	if Pathing.enabled and Pathing.is_ready(tank):
+		var on_mesh := NavigationServer3D.map_get_closest_point(tank.get_world_3d().navigation_map, probe)
+		if _flat_distance(on_mesh, probe) > AVOID_MESH_SLACK:
+			return [waypoint, keep]
+	var look := clampf(distance, AVOID_STEER_MIN, AVOID_STEER_MAX)
+	return [Vector3(here.x + direction.x * look, 0.0, here.z + direction.y * look), keep]
 
 
 ## Local avoidance: a friend parked in the way within AVOID_LOOKAHEAD meters (within AVOID_WIDTH of the line to the
