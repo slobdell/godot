@@ -61,6 +61,11 @@ def summarize(results):
         # N5 (round 6): the two figures that would catch the envelope overshooting into a QUIET fight. Reported in
         # every configuration including the old-world control, because "quieter than before" is only visible against it.
         "shots_per_unit_minute": mean([e.get("shots_per_unit_minute") for e in engagement]),
+        # N5: direct-fire only, alongside the all-shots figures rather than instead of them, so round 5's baseline
+        # stays comparable. The envelope governs direct fire; artillery is outside it and would otherwise set
+        # "contact" from 160 m and hold "engaged" at the separation of two armies that are not yet fighting.
+        "direct_contact_s": mean([e.get("direct_contact_second") for e in engagement]),
+        "engaged_distance_direct_m": mean([e.get("engaged_distance_direct_median") for e in engagement]),
         "static_share": mean([e["static_share"] for e in engagement]),
         "held_line_share": mean([e.get("held_line_share") for e in engagement]),
         "net_advance_m": mean([max(e.get("net_advance", [0, 0])) for e in engagement], signed=True),  # the side that pushed
@@ -82,7 +87,8 @@ def summarize(results):
 def print_row(label, s):
     print(f"{label:<24} n={s['matches']:<3} len {s['duration_s']:5.0f}s  1st shot {s['contact_s']:4.0f}s "
           f"fire {s['shots_per_unit_minute']:5.1f}/unit/min  "
-          f"@{s['separation_at_contact_m']:4.0f}m  engaged {s['engaged_distance_m']:4.0f}m  kill {s['kill_distance_m']:4.0f}m  "
+          f"@{s['separation_at_contact_m']:4.0f}m  engaged {s['engaged_distance_m']:4.0f}m "
+          f"(direct {s['engaged_distance_direct_m']:4.0f}m @{s['direct_contact_s']:3.0f}s)  kill {s['kill_distance_m']:4.0f}m  "
           f"static {s['static_share']:4.0%} held-line {s['held_line_share']:4.0%}  moved {s['centroid_travel_m']:4.0f}m "
           f"push {s['net_advance_m']:4.0f}m  off-axis kills {s['off_axis_kill_share']:4.0%} (behind line {s['behind_line_kill_share']:3.0%})  "
           f"flank+rear {s['flank_rear_kill_share']:4.0%} (rear {s['rear_kill_share']:3.0%})  indirect {s['indirect_kill_share']:3.0%}  "

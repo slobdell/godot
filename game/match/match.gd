@@ -198,6 +198,9 @@ var _next_brain_index := 0
 var _engagement: EngagementStats = null
 var _near_cover := {}
 var _shots_since_sample := 0
+## N5 (round 6): the DIRECT-fire subset of them. The envelope governs direct fire only — artillery is deliberately
+## outside it — so an all-shots engagement distance describes the battery as much as the fight (lesson 49).
+var _direct_shots_since_sample := 0
 
 var _rng := RandomNumberGenerator.new()
 ## Shot spread. Seeded with the match seed, so seeded matches stay deterministic.
@@ -350,8 +353,9 @@ func _sample_engagement() -> void:
 		var by_cover := stats_now.near_cover(tank.global_position)
 		_near_cover[tank.name] = by_cover
 		teams[tank.team].append({"position": tank.global_position, "speed": tank.speed(), "near_cover": by_cover})
-	stats_now.sample(teams, _shots_since_sample)
+	stats_now.sample(teams, _shots_since_sample, _direct_shots_since_sample)
 	_shots_since_sample = 0
+	_direct_shots_since_sample = 0
 
 
 # ---- Joining and leaving (simulating peer only) ---------------------------------------
@@ -913,7 +917,10 @@ func _on_tank_fired(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 func _fire(muzzle: Vector3, direction: Vector3, tank: Tank) -> void:
 	stats["shots"][tank.team] += 1
 	_shots_since_sample += 1
-	engagement().record_shot(bool(_near_cover.get(tank.name, false)))
+	var indirect: bool = tank.weapon["kind"] == Weapons.Kind.ARC
+	if not indirect:
+		_direct_shots_since_sample += 1
+	engagement().record_shot(bool(_near_cover.get(tank.name, false)), indirect)
 	if stats["first_shot_seconds"] < 0.0:
 		stats["first_shot_seconds"] = snappedf(sim_seconds, 0.1)
 	var moving := clampf(absf(tank.speed()) / tank.max_forward_speed, 0.0, 1.0)
