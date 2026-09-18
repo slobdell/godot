@@ -35,6 +35,21 @@ id), `--green-elements[=<table>[-drill…][+commander]]` / `--rust-elements=…`
 `--tactics-ledger`, `--green-discovery[=seconds]` / `--rust-discovery`, `--discovery-log=`, `--slow-motion=`,
 `--green-difficulty=` / `--rust-difficulty=`.
 
+**What round 6 opens on, in priority order:**
+1. **Anticipation dodging** (below, "dodging must begin before the shot"): the current behaviour is arithmetically
+   impossible and has never fired.
+2. **An army-level plan above the elements** ([doctrine.md](doctrine.md), "Proposal for round 6"): the element layer
+   does not pay at 30 a side and three independent drill trims reach parity and never superiority, so the value is
+   above the elements or nowhere.
+3. **Re-run the faction ladder** now that the player's army no longer charges from the first second and the tick rate
+   has settled. **The prediction, written before the run:** doctrine gains, and may pass brains-only with the control
+   point off, because the element layer decides where to go and what to point at and both need an approach phase. If it
+   still loses with one, the drills are exonerated and (2) is the remaining explanation.
+4. **Wire SUPPRESS to combat's `Lethality`** (their matchup-free "can I kill this quickly" query) and re-ladder: the
+   penetration proxy (`x5q`) lost with the swarm army and was never adopted.
+5. **The 18 m leash** (`TankBrain.PLAYER_POST_LEASH`), if the lead still sees squads wander: named, unmeasured, and
+   measurable in control's `make squad-orders-test` at 30 a side with survival read next to distance.
+
 ## How this stream measures things (the rules that cost a day to learn)
 
 1. **One snapshot per comparison.** Everything in a comparison must come from the same commit. Jolt, the 30 Hz tick and

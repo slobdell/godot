@@ -543,6 +543,12 @@ chokepoint, flank, overlook, cover_cluster):
   the Law keeps a large base of fire and bounds the main effort, the Syndicate trades main effort for overlooks and
   standoff.
 
+**Before building it, re-run the verdict.** Every ladder behind "doctrine loses at scale" was played by armies that
+charged from the first second (the player's army was built by the CPU generator, fixed 2026-09-17) and by x4t9 brains,
+not today's champion. **The prediction, recorded before the run:** doctrine gains, and may pass brains-only with the
+control point off. If it still loses with an approach phase, the drills are exonerated and this layer is the remaining
+explanation.
+
 **How it would be proven.** The same bar as everything else: a table trait (`traits.army`) the tactics ladder turns
 on, played in faction armies at the 5200 budget with the control point on, against brains-only and against the
 current commander, counterbalanced both ways, and adopted only if it wins. The discovery harness is the right tool
