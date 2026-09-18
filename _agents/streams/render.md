@@ -107,8 +107,10 @@ The only red in `make remote T=check` at my tip was **control's** `test_control_
 test_rings_are_batched_one_multimesh_per_kind` (fails on builder0, passes on the laptop): it compared the ring's DRAWN
 position against the tank's SIMULATION position with a 1 cm tolerance, and one 30 Hz tick of travel at ~0.6 m/s is
 2.1 cm, so it fails wherever a frame lands further into the tick. Reported to control, who had found the same cause;
-they now compare like with like plus a tick-of-travel bound so a genuine desync still fails. Not reproducible on my
-branch tip, which predates their fix.
+they now compare like with like plus a tick-of-travel bound so a genuine desync still fails (their `9dce12d0`). Not
+reproducible on my branch tip, which predates that fix: `make remote T=check` there ends **998 passed, 1 failed**, the
+one being that test, and `check` stops at `test`, so the smokes after it did not run on this tip — they were green at
+`265dbcfc` and nothing since touches them (theme FX and docs only). Main's own check is the orchestrator's gate.
 
 **Open for round 6, in order of what the lead is waiting on:**
 1. His own clean `perf-scene` run: nobody has measured his laptop in the state he plays in (ours: ~29 vehicles quiet,
