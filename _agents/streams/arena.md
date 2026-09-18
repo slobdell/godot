@@ -124,8 +124,9 @@ _Round 6, arena. Updated 2026-09-18._
 | X5 the arenas the lead will play | Not started; the arena page he is owed from round 5 is still owed |
 | X6 destructible cover (stretch) | Not started, correctly — X3 is not done and nav's avoidance has not landed |
 
-**Green commit: pending.** `make remote T=check` on `f8680e21` is running. **`38c15f77` and `13add85d` are RED — do
-not merge them** (see *The mistake worth reading* below).
+**Green commit: `5590c465`** — `make remote T=check`, runner `1018 passed, 0 failed`, wrapper
+`>> remote: make check exited 0`. Reported to the orchestrator. **`38c15f77` and `13add85d` are RED — do not merge
+either** (see *The mistake worth reading* below).
 
 ### X1 — the maze (N3/CP2): done
 
@@ -169,6 +170,18 @@ traffic barely moves yard (55% → 58%, inside noise) and collapses the maze (60
   head-on — the peer-to-peer right-of-way case. `NAV_BOTH=1` exercises it.
 - **The probe measures only positions over time**, so nav can rewrite everything under the order and the numbers
   keep meaning the same thing.
+
+**Looked at, not just measured** (`make remote T=arena-shots ARENAS=maze,boulevard`, builder0, 10:32–10:43, fresh
+timestamps checked against the stale-`build/` trap): the maze reads as intended from both the match-runner overview
+and a player's skirmish camera. Bands run wall to wall with staggered gaps, the dead-end wall at x = −86 stands,
+the fixture names itself in the HUD ("The Maze (nav test fixture)"), and a real fight happened in it — the command
+line read *"Alpha: line, near ambush — ambushed at 41 m: turn into it and assault through"*. Geometry confirmed
+against the file afterwards: all 152 props are `container_40` stacked 2 high (5.18 m, well over the 1.3 m eye
+line), and the tight gate measures 6.8 m edge to edge.
+
+Fair warning for whoever reads it next: **it looks like a set of parallel walls, not a labyrinth.** That is what a
+point-symmetric fixture with a 3 m gate comes out as, and the measured properties (2.08× serpentine, one dead end,
+two routes) are what nav is judged on — but nobody should expect a hedge maze.
 
 ### X2 — can a map host an ambush: done
 
