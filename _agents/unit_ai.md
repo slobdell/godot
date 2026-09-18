@@ -623,3 +623,34 @@ loaded (`gun_ready_in`), `watching_me` knows it is pointed this way, and `Combat
 The measurement is the same scenario: shells that miss, with the attempt counter proving the behaviour is the cause.
 The cheap reactive half is worth keeping only where it can work — a slow arcing round, or a gun firing from far enough
 away that 0.7 s becomes 2 s.
+
+
+## Invariant: a player's order outranks autonomy (ruled 2026-09-17, the lead's playtest)
+
+> *"they do move, but it's as though their behavior is overridden by a higher priority to do whatever they're thinking.
+> For example, if they get sucked into combat I have no control whatsoever."*
+
+**A player-sourced order is never abandoned, deferred or overridden by an autonomous behaviour.** A unit may shoot
+while it drives, dodge, and step around a wall of bullets — none of that changes where it is going. It may not decide
+to stop and fight instead of arriving, and nothing but the player may re-aim it. If an order walks a unit into a bad
+fight, that is the player's mistake to make.
+
+Three rules carry it, all measured in `tests/test_ai_player_orders.gd` and `tests/test_tactics_reissue.gd`:
+
+1. **Under a player's order, only the options that carry it out are on the table** (K1's `ORDER_OPTIONS`). A unit
+   ordered across two guns firing at it spends every tick of the journey on MOVE and arrives (16.8 s, 519 ticks,
+   nothing else chosen).
+2. **Afterwards it fights from the ground it was given**, not from wherever the fight leads: anything it decides for
+   itself is leashed to `PLAYER_POST_LEASH` (18 m) of the post its last order left it at, with `ESCAPE_LEASH_FACTOR`
+   times that for a move that IS the escape (running to cover, breaking contact). Before this, a squad that arrived
+   would drift off to chase — which is what "no control" looks like from the outside.
+3. **Nothing else commands the player's army.** An `ElementCommander` never runs on the player's team; an element
+   never takes a unit off an order whose `source` is `"player"`; and on the player's team a leader with no task
+   commands nobody at all (L1's sharp edge from round 4, now enforced rather than documented). Everything an element
+   issues is tagged `source: "element"`, so the marker and the cue on screen belong to the player's own clicks.
+
+**And an element re-issues only when the intention changed.** "Attack" and "attack-move" at the same target, and
+"move" and "hold" at the same place, are the same intention; a standing order already follows a moving target, so the
+same intention is not handed over again inside `RE_ISSUE_TICKS`. Round 5 measured the old behaviour at ~35 order
+changes a second across 21 units with nobody touching the controls, each one redrawing a marker and playing a cue:
+*"these blue dots ... they just keep repeating"*.
