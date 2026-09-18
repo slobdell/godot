@@ -1,18 +1,25 @@
 # Arenas: layouts, their static analysis, and proof that they're fair and do what they promise (arena stream, round 5).
 # Owner: arena (see _agents/workstreams.md). Design and measurements: _agents/arenas.md. Included by the root Makefile.
 
-.PHONY: arenas arena-test arena-report
+.PHONY: arenas arena-test arena-report arena-pytest
 
 ARENA_COMMA := ,
 
 arenas: ## Regenerate arenas/*.json from tools/make_arenas.py (every layout is authored as half + its 180° mirror)
 	$(PYTHON) tools/make_arenas.py arenas
 
-arena-test: import ## The arena tests: layout schema v2, validation, collision, symmetric navigation, connectivity
+arena-test: import arena-pytest ## The arena tests: layout schema v2, validation, collision, symmetric navigation, connectivity, and the report tool's own calibration
 	$(MAKE) --no-print-directory test FILTER=arena
 
+# Deliberately NOT in `make check`: it guards an instrument only this stream reads, and 14 s on every stream's check
+# to protect arena's own tool is a bad trade. `make arena-test` is the gate, and the brief already requires it on
+# every layout change.
+arena-pytest: ## The arena report tool's own tests: sight, the centre observer, and the map rankings it must reproduce
+	$(PYTHON) -m unittest discover -s tools -p 'test_arena*.py'
+
 arena-report: ## Static analysis of every layout (views, routes, exposure) + a top-down plot each -> build/arenas/
-	$(PYTHON) tools/arena_report.py --plot $(BUILD_DIR)/arenas --json $(BUILD_DIR)/arenas/report.json arenas/*.json | cut -c1-240
+	$(PYTHON) tools/arena_report.py --plot $(BUILD_DIR)/arenas --json $(BUILD_DIR)/arenas/report.json arenas/*.json \
+		| grep -E '^(AMBUSH|ARENA_REPORT)' | cut -c1-200
 
 .PHONY: arena-series
 arena-series: import ## X4: every arena's fairness (swap-bases mirror matches) and fight shape (ARENAS=yard,pit SEEDS=8 FIRST_SEED=1 ARENA_FACTION=condemned or ARENA_GREEN=gangs ARENA_RUST=syndicate, ARENA_TIME=180 OUT=arena-series) -> build/$(OUT).json

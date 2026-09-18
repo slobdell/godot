@@ -315,6 +315,263 @@ def cover_gap(boxes, path):
     return worst
 
 
+# ---- X2: can this map host an ambush? (round 6) ---------------------------------------------------------------
+# The lead wants ambush and flanking to be POSSIBLE. That is a property of sightlines, not of prop count, and it is
+# measurable before anyone plays the map: if the centre sees everything, nothing can be set up behind it.
+#
+# Everything below works on a SIGHT grid -- cells covered by something at or above eye level, with NO agent-radius
+# inflation, because sight is not driving -- and marches along it. That keeps the whole pass to a few seconds per
+# layout while staying consistent with `clear()`, which is the exact test used elsewhere in this file.
+
+SIGHT_GRID = 1.0
+## Where exposure is sampled: the contested field, every 4 m.
+EXPOSURE_STEP = 4.0
+## Defending positions are subsampled to this many, spread evenly, so the pass stays a few seconds. They are ordered
+## by position (not by the layout's authoring order) so the choice does not change when a prop is added elsewhere.
+WATCHER_SAMPLE = 24
+## An overwatch position is judged on how much of the crossing it sees, and whether it can itself be approached
+## unseen from this far out.
+OVERWATCH_APPROACH_M = 28.0
+## The exposure-vs-detour curve. A penalty big enough to saturate answers "is there ANY covered way across", which is
+## almost always yes and so tells you nothing; these are sized to keep the detour informative. Read them as a curve:
+## what a unit buys for a 15% longer drive is a more useful fact about a map than what it buys for a 100% longer one.
+ROUTE_PENALTIES = (("direct", 0.0), ("flanking", 2.0), ("covered", 8.0))
+
+
+def sight_grid(boxes):
+    """1 where something at or above eye level stands. No agent inflation: this is what blocks a look, not a hull."""
+    n = int(2 * HALF / SIGHT_GRID)
+    grid = bytearray(n * n)
+    for b in boxes:
+        if b.h < EYE_HEIGHT:
+            continue
+        reach = max(b.w, b.d) / 2 + 1
+        for gx in range(int((b.x - reach + HALF) / SIGHT_GRID), int((b.x + reach + HALF) / SIGHT_GRID) + 1):
+            for gz in range(int((b.z - reach + HALF) / SIGHT_GRID), int((b.z + reach + HALF) / SIGHT_GRID) + 1):
+                if 0 <= gx < n and 0 <= gz < n:
+                    px, pz = gx * SIGHT_GRID - HALF + SIGHT_GRID / 2, gz * SIGHT_GRID - HALF + SIGHT_GRID / 2
+                    if b.distance(px, pz) <= 0.0:
+                        grid[gz * n + gx] = 1
+    return grid, n
+
+
+def sees(grid, n, ax, az, bx, bz, step=1.0):
+    """March the sight grid from a to b. True if nothing at eye level stands in between."""
+    dist = math.hypot(bx - ax, bz - az)
+    if dist < 1e-6:
+        return True
+    steps = int(dist / step)
+    dx, dz = (bx - ax) / dist * step, (bz - az) / dist * step
+    for i in range(1, steps + 1):
+        gx, gz = int((ax + dx * i + HALF) / SIGHT_GRID), int((az + dz * i + HALF) / SIGHT_GRID)
+        if 0 <= gx < n and 0 <= gz < n and grid[gz * n + gx]:
+            return False
+    return True
+
+
+def field_points(blocked, n, step=EXPOSURE_STEP):
+    """Drivable sample points across the contested field."""
+    out = []
+    z = -FIELD_Z
+    while z <= FIELD_Z:
+        x = -DRIVABLE
+        while x <= DRIVABLE:
+            if not blocked[int((z + HALF) / GRID) * n + int((x + HALF) / GRID)]:
+                out.append((x, z))
+            x += step
+        z += step
+    return out
+
+
+def standing_point(blocked, n, want):
+    """The nearest DRIVABLE point to `want`. An observer placed inside a box sees nothing at all, and foundry has a
+    crate on the exact centre: the first version of centre_sees_share reported 0.000 for the most open arena in the
+    game. An eye has to be somewhere a vehicle could be."""
+    cell = snap(blocked, n, (int((want[0] + HALF) / GRID), int((want[1] + HALF) / GRID)))
+    if cell is None:
+        return want
+    return (cell[0] * GRID - HALF + GRID / 2, cell[1] * GRID - HALF + GRID / 2)
+
+
+def visible_share(grid, gn, origin, points):
+    """Share of `points` that `origin` can see at eye level, within the longest weapon range."""
+    if not points:
+        return None
+    seen = sum(1 for p in points
+               if math.dist(origin, p) <= VIEW_RANGE and sees(grid, gn, origin[0], origin[1], p[0], p[1]))
+    return seen / len(points)
+
+
+def defending_positions(boxes, layout):
+    """The enemy's covered firing positions: 4 m out from each piece of hard cover on the north half, plus its front
+    spawn row. Subsampled evenly to WATCHER_SAMPLE so the pass stays cheap and stable."""
+    spots = [(b.x, b.z - (b.d / 2 + 4.0)) for b in boxes if b.h >= EYE_HEIGHT and b.z < -10.0]
+    spots += [tuple(p) for p in layout["spawns"]["rust"][:13]]
+    spots.sort()
+    if len(spots) <= WATCHER_SAMPLE:
+        return spots
+    stride = len(spots) / WATCHER_SAMPLE
+    return [spots[int(i * stride)] for i in range(WATCHER_SAMPLE)]
+
+
+## How far a defending position is taken to MATTER, not just to see. This is a weapon-range assumption wearing a
+## sightline's clothes, and combat's CP4 (the engagement envelope, N5) is exactly what changes it: re-derive the
+## exposure numbers at the new effective range when CP4 lands. Nothing else in this file depends on weapon range.
+WATCHER_REACH_M = 110.0
+
+
+def exposure_cost_field(grid, gn, blocked, n, watchers):
+    """cell -> share of defending positions that can see it. The raw material for 'is there a covered way across?'."""
+    field = {}
+    for p in field_points(blocked, n):
+        seen = sum(1 for w in watchers
+                   if math.dist(p, w) <= WATCHER_REACH_M and sees(grid, gn, w[0], w[1], p[0], p[1]))
+        field[(int(p[0]), int(p[1]))] = seen / max(1, len(watchers))
+    return field
+
+
+def route_exposure(field, path):
+    """Mean over the route of the share of defending positions that see it -- THE SAME measure covered_route()
+    minimises, so a bigger penalty can never report a worse route. (An earlier version optimised the grid-marched
+    field and reported `exposure()`'s independent box test instead; the two disagree at the margins and the
+    "balanced" route came out MORE exposed than the direct one, which is arithmetically impossible for the thing
+    being optimised. If these two ever need to differ again, they need two names.)"""
+    if not path:
+        return None
+    return sum(_exposure_at(field, p[0], p[1]) for p in path) / len(path)
+
+
+def _exposure_at(field, x, z):
+    """Nearest sampled exposure cell (the field is on a 4 m lattice; paths are on a 1 m one)."""
+    step = int(EXPOSURE_STEP)
+    key = (int(round(x / step) * step), int(round(z / step) * step))
+    return field.get(key, 0.0)
+
+
+def covered_route(blocked, n, field, a, b, penalty):
+    """A* from a to b minimising distance * (1 + penalty * exposure). penalty 0 gives the shortest route; a large
+    penalty gives the most covered one the map allows. The gap between them IS the map's flanking headroom."""
+    def cell(p):
+        return int((p[0] + HALF) / GRID), int((p[1] + HALF) / GRID)
+    start, goal = snap(blocked, n, cell(a)), snap(blocked, n, cell(b))
+    if start is None or goal is None:
+        return None
+    frontier = [(0.0, 0.0, start)]
+    came, cost = {start: None}, {start: 0.0}
+    while frontier:
+        _, g, cur = heapq.heappop(frontier)
+        if cur == goal:
+            path = []
+            while cur is not None:
+                path.append((cur[0] * GRID - HALF + GRID / 2, cur[1] * GRID - HALF + GRID / 2))
+                cur = came[cur]
+            return path[::-1]
+        if g > cost[cur]:
+            continue
+        for dx in (-1, 0, 1):
+            for dz in (-1, 0, 1):
+                if not dx and not dz:
+                    continue
+                nx, nz = cur[0] + dx, cur[1] + dz
+                if not (0 <= nx < n and 0 <= nz < n) or blocked[nz * n + nx]:
+                    continue
+                if dx and dz and (blocked[cur[1] * n + nx] or blocked[nz * n + cur[0]]):
+                    continue
+                wx, wz = nx * GRID - HALF + GRID / 2, nz * GRID - HALF + GRID / 2
+                step_m = (1.4142 if dx and dz else 1.0) * GRID
+                ng = g + step_m * (1.0 + penalty * _exposure_at(field, wx, wz))
+                if ng < cost.get((nx, nz), 1e18):
+                    cost[(nx, nz)] = ng
+                    came[(nx, nz)] = cur
+                    # Admissible: the cheapest a remaining metre can ever be is 1.0 per metre.
+                    h = math.hypot(nx - goal[0], nz - goal[1]) * GRID
+                    heapq.heappush(frontier, (ng + h, ng, (nx, nz)))
+    return None
+
+
+def longest_hidden_run(grid, gn, path, origin):
+    """The longest stretch of `path` that `origin` cannot see. This is the sightline break an element crosses in."""
+    worst = run = 0.0
+    prev = None
+    for p in path or []:
+        if prev is not None:
+            leg = math.dist(prev, p)
+            if sees(grid, gn, origin[0], origin[1], p[0], p[1]):
+                run = 0.0
+            else:
+                run += leg
+                worst = max(worst, run)
+        prev = p
+    return worst
+
+
+def overwatch_positions(grid, gn, blocked, n, boxes, path, top=3):
+    """Positions that dominate the crossing but can themselves be approached unseen. A position that sees the route
+    AND every way up to it is a fortress, not an overwatch: the map has no answer to it."""
+    if not path:
+        return []
+    samples = path[::6]
+    ring = [(math.cos(a * math.pi / 8), math.sin(a * math.pi / 8)) for a in range(16)]
+    found = []
+    for spot in field_points(blocked, n, 8.0):
+        if not any(b.h >= EYE_HEIGHT and b.distance(spot[0], spot[1]) <= 6.0 for b in boxes):
+            continue  # an overwatch position is one with cover to shoot from
+        dominates = sum(1 for p in samples
+                        if math.dist(spot, p) <= 110.0 and sees(grid, gn, spot[0], spot[1], p[0], p[1])) / len(samples)
+        if dominates < 0.15:
+            continue
+        approaches = [(spot[0] + dx * OVERWATCH_APPROACH_M, spot[1] + dz * OVERWATCH_APPROACH_M) for dx, dz in ring]
+        approaches = [a for a in approaches if abs(a[0]) <= DRIVABLE and abs(a[1]) <= DRIVABLE
+                      and not blocked[int((a[1] + HALF) / GRID) * n + int((a[0] + HALF) / GRID)]]
+        hidden = sum(1 for a in approaches if not sees(grid, gn, spot[0], spot[1], a[0], a[1]))
+        found.append({"at": [round(spot[0], 1), round(spot[1], 1)], "dominates": round(dominates, 2),
+                      "hidden_approach": round(hidden / len(approaches), 2) if approaches else None})
+    found.sort(key=lambda o: -o["dominates"])
+    # One per neighbourhood: 40 positions on the same container wall are one overwatch, not forty.
+    kept = []
+    for o in found:
+        if all(math.dist(o["at"], k["at"]) > 24.0 for k in kept):
+            kept.append(o)
+        if len(kept) == top:
+            break
+    return kept
+
+
+def ambush_report(layout, boxes, blocked, n):
+    """X2: the numbers that say whether this map can host an ambush or a flank at all."""
+    grid, gn = sight_grid(boxes)
+    points = field_points(blocked, n, 6.0)
+    watchers = defending_positions(boxes, layout)
+    field = exposure_cost_field(grid, gn, blocked, n, watchers)
+    green_front = tuple(layout["spawns"]["green"][0])
+    rust_front = tuple(layout["spawns"]["rust"][0])
+    centre = standing_point(blocked, n, (0.0, 0.0))
+    out = {"centre_sees_share": round(visible_share(grid, gn, centre, points), 3),
+           "centre_eye_at": [round(v, 1) for v in centre], "defending_positions": len(watchers)}
+    routes = []
+    for label, penalty in ROUTE_PENALTIES:
+        path = covered_route(blocked, n, field, green_front, rust_front, penalty)
+        if path is None:
+            routes.append({"route": label, "reachable": False})
+            continue
+        routes.append({"route": label, "reachable": True, "length_m": round(length(path), 1),
+                       "exposure": round(route_exposure(field, path), 3),
+                       "seen_share": round(exposure(boxes, path, watchers), 3),
+                       "hidden_from_centre_m": round(longest_hidden_run(grid, gn, path[::2], centre), 1)})
+    out["approach_routes"] = routes
+    covered = next((r for r in routes if r["route"] == "covered" and r.get("reachable")), None)
+    direct = next((r for r in routes if r["route"] == "direct" and r.get("reachable")), None)
+    if covered and direct:
+        # How much exposure the terrain lets a unit buy off, and what the detour costs. There is deliberately NO
+        # can_cross_unseen boolean: the first version had one and it was True for all eight arenas, which is not a
+        # measurement, it is a constant. The share the centre sees is the number that actually separates these maps.
+        out["flank_gain"] = round(direct["exposure"] - covered["exposure"], 3)
+        out["flank_detour"] = round(covered["length_m"] / max(1.0, direct["length_m"]), 2)
+    direct_path = covered_route(blocked, n, field, green_front, rust_front, 0.0)
+    out["overwatch"] = overwatch_positions(grid, gn, blocked, n, boxes, direct_path)
+    return out
+
+
 def analyze(layout):
     boxes = boxes_of(layout)
     blocked, n = occupancy(boxes)
@@ -369,6 +626,7 @@ def analyze(layout):
                                             if terrain_class(boxes, gx * GRID - HALF, gz * GRID - HALF) == "open")
                                         / len(range(4, n, 8)) ** 2, 2)
     report["drivable_share"] = round(free / (n * n), 2)
+    report["ambush"] = ambush_report(layout, boxes, blocked, n)
     report["_paths"] = {"direct": direct, "lanes": {l["name"]: lane_route(blocked, n, l) for l in layout.get("lanes", [])}}
     report["_boxes"] = boxes
     return report
@@ -443,6 +701,13 @@ def main():
             report["plot"] = plot(layout, report, args.plot)
         clean = {k: v for k, v in report.items() if not k.startswith("_")}
         reports.append(clean)
+        a = clean["ambush"]
+        by = {r["route"]: r for r in a["approach_routes"]}
+        print("AMBUSH %-10s centre_sees=%.2f  longest_sightline=%3.0fm  exposure direct=%.3f covered=%.3f "
+              "(gain %.3f at %.2fx detour)  overwatch=%d"
+              % (clean["name"], a["centre_sees_share"], clean["longest_sightline_m"],
+                 by["direct"].get("exposure", -1), by["covered"].get("exposure", -1),
+                 a.get("flank_gain", -1), a.get("flank_detour", -1), len(a["overwatch"])))
         print("ARENA_REPORT " + json.dumps(clean))
     if args.json:
         os.makedirs(os.path.dirname(args.json) or ".", exist_ok=True)

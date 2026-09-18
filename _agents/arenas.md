@@ -112,6 +112,79 @@ much as the map. The same seeds on several arenas are the same army pairings rep
 | **Time hidden** | Share of unit-seconds not visible to any enemy | Higher in dense arenas |
 | **Match shape** | Duration, first contact time, share decided by the control point | Different per arena, and never a stalemate by default |
 
+## Can this map host an ambush? (X2, round 6; `make arena-report`)
+
+The lead wants ambush and flanking to be *possible*. That is a property of **sightlines, not of prop count**, and it
+is measurable before anyone plays the map. `make arena-report` now answers it per arena; `make arena-pytest` guards
+the instrument itself.
+
+| Measure | What it is | Why it matters |
+|---|---|---|
+| `centre_sees_share` | share of the contested field an eye at the centre can see | **A map where the centre sees everything cannot host an ambush.** This is the headline |
+| `approach_routes` | the crossing at three cover penalties: `direct` (shortest), `flanking`, `covered` — each with length, exposure, and its longest stretch unseen from the centre | The *curve* is the answer: what a unit buys for a longer drive |
+| `flank_gain` / `flank_detour` | exposure bought off by taking the covered route, and what it costs in distance | **The price of flanking.** Terrain that offers cover nobody can afford offers nothing |
+| `overwatch` | up to three positions that dominate the crossing, each with `hidden_approach` (share of directions it can be approached from unseen) | A position that sees the route *and* every way up to it is a fortress, not an overwatch |
+| `longest_sightline_m` | unchanged from round 5 | — |
+
+### What the shipping arenas measure (2026-09-18, commit `69a67f03`; static geometry, no match run)
+
+| Arena | centre sees | longest sightline | exposure direct → covered | price of the flank | best overwatch (sees / can be approached unseen) |
+|---|---|---|---|---|---|
+| **boulevard** | **0.64** | 236 m | 0.289 → 0.002 | **1.96×** | (4, −36) sees **90%** / only 0.12 unseen |
+| **foundry** / **furnace** | **0.56** | 236 m | 0.378 → 0.004 | **1.95×** | (4, −4) sees **100%** / 0.25 unseen |
+| boneyard | 0.40 | 216 m | 0.250 → 0.005 | 1.95× | (4, −20) sees 74% / 0.42 |
+| pit | 0.30 | 230 m | 0.188 → 0.000 | 2.10× | (4, −28) sees 90% / 0.50 |
+| scrapyard | 0.29 | 198 m | 0.266 → 0.007 | 1.81× | (28, −44) sees 77% / 0.15 |
+| **yard** | **0.20** | 184 m | 0.097 → 0.039 | **1.10×** | (12, 20) sees 87% / 0.40 |
+| *maze* (fixture) | *0.15* | *52 m* | *0.070 → 0.041* | *1.06×* | *(12, 4) sees 32% / 0.69* |
+
+### What it says
+
+**Three findings, and they all point the same way.**
+
+1. **The best position on every arena is the middle.** Every top overwatch position above sits within ~40 m of the
+   centre, and on foundry a single spot beside the centre crate — (4, −4) — **sees 100% of the crossing**. This is
+   the lead's *"one big open brawl"* as geometry rather than as a feeling.
+2. **Flanking is possible everywhere and affordable almost nowhere.** Exposure can be bought down to near zero on
+   every shipping arena, but on six of seven it costs a **1.8–2.1× longer drive**. Terrain that offers cover nobody
+   can afford to take offers nothing. Only **yard** prices a flank sanely (1.10×) — and only because its direct
+   route is already the least exposed in the game (0.097), i.e. yard is the one map that doesn't need a flank.
+3. **Together those are the mechanism behind the round-5 finding.** The control point is at the centre; the centre
+   is the dominant position; and the alternative to the centre costs double the drive. A unit that flanks arrives
+   late to the only thing worth holding. Terrain is not what's missing — **a reason to be anywhere else is**, which
+   is exactly what X3 (objectives off the centre line) tests.
+
+**boulevard and foundry are the two to change**: the centre sees over half the field, and the position that sees
+everything cannot itself be approached unseen (boulevard's best is 0.12).
+
+### Assumptions in these numbers
+
+- **`WATCHER_REACH_M = 110 m`** — how far a defending position is taken to *matter*, not just to see. This is a
+  weapon-range assumption wearing a sightline's clothes, and it is **the one thing here that combat's CP4 (the
+  engagement envelope, N5) changes**. Re-derive after CP4 lands: it is one `make arena-report`, not machine time.
+  Nothing else in the analysis depends on weapon range.
+- Defending positions are 4 m out from each piece of hard cover on the enemy half plus its front spawn row,
+  **subsampled to 24** evenly by position so the pass stays a few seconds and does not shift when a prop is added
+  elsewhere. Exposure is therefore optimistic in absolute terms; compare arenas with each other, not against 1.0.
+- `seen_share` in the JSON is a *second*, independent measure (the box test used for lanes). It is **not** what the
+  routes optimise and is **not** monotone in the penalty. Read `exposure`.
+
+### Two bugs this instrument had, and the discipline that caught them
+
+Both produced plausible-looking JSON and were caught only by checking the tool against maps whose character was
+already written down in this file:
+
+1. **`centre_sees_share` was 0.000 for foundry** — the most open arena in the game. Foundry has a crate on the exact
+   centre, and the observer was standing *inside* it, so every ray was blocked at the first step. An eye has to be
+   somewhere a vehicle could be (`standing_point`).
+2. **The route optimiser and the report measured different things.** A* minimised the grid-marched exposure field
+   while the report printed the independent box test, so the `flanking` route came out *more* exposed than the
+   direct one — arithmetically impossible for the quantity being optimised.
+
+A third was cut rather than fixed: a `can_cross_unseen` boolean that came out **True for all eight arenas**. A
+measure that never varies is not a measure. `tools/test_arena_report.py` now encodes the map rankings this file
+documents, so the instrument cannot silently invert itself again.
+
 ## The Maze: a test fixture, not a map (X1, round 6; contract N3, checkpoint CP2)
 
 `arenas/maze.json` is the quasi-maze the lead asked for by name — *"we might even want a map that's a quasi maze just
