@@ -130,7 +130,8 @@ _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 ### Read this first
 
 **This branch is red on purpose, and it must not be made green by weakening the tests that are telling the truth.**
-`make test` on the merged tree (`82128d85`): **1068 passed, 3 failed**. Two of the three failures are real behaviour findings that belong
+`make test` on the tree merged with all three checkpoints (`3c03299c`: nav CP1, squad CP3, arena CP2):
+**1087 passed, 2 failed** — down from 3, since the player-hold guarantee is now enforced as a rule on `main`. Two of the three failures are real behaviour findings that belong
 to squad, and one of them (`scenario_suppression::test_holding_a_crew_down…`) sits inside the `check` subset. So
 **combat cannot go green alone, by construction.** The right response is to land squad's precedence fixes, not to
 move a threshold.
@@ -557,7 +558,7 @@ round by reading a "waiting for a slot" line as a queue when I had in fact been 
 
 | Test | Whose | Why it fails |
 |---|---|---|
-| `test_ai_player_holds::test_the_players_units_wait_for_orders…` | **squad** | Product constraint #4. A held unit picks ENGAGE and flanks; the rule was previously upheld by the outrange heuristic returning `stop` |
+| ~~`test_ai_player_holds::test_the_players_units_wait_for_orders…`~~ | **FIXED on `main`** | Product constraint #4. A held unit picked ENGAGE and flanked; the rule had been upheld by the outrange heuristic returning `stop`. Now enforced as a rule — squad measured 15.2 m → 0.0 m in a CP4 worktree, and it passes here |
 | `scenario_suppression::test_holding_a_crew_down…` (**in `check`**) | **squad** | Pinned crew lands 10 of 11 vs a calm 11 of 11. Suppression's penalty is angular, so closer fights soften it — a threshold to re-derive, or evidence for raising `SUPPRESSION_SPREAD_FACTOR` (mine) once the series says |
 | `test_tactics_scenarios::test_support_by_fire_forms_a_firing_line…` (**in `check`**) | **squad** | CP3×CP4: the SBF standoff is keyed on `effective_range`, so narrowed bands put the firing line inside `near_ambush_m` and the two drills alternate every tick (see above) |
 | `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. **Dither (15.6–17.7/min against a bar of 12) is the blocking one** |
