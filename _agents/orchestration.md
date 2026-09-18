@@ -452,3 +452,31 @@ The kickoff prompt is one line; this section is the rest.
     **Corollary, learned on a 25-minute build queue:** *run the full check before claiming green, not the tests your
     change touches.* The thing that broke was a different stream's check, and no amount of testing the changed file
     would have found it.
+44. **A make variable set in any `mk/*.mk` is global: name a stream's knobs after the target that owns them.** Round 6,
+    combat: `mk/ai.mk` sets `VARIANTS ?= r1,a4,a6` — three *brain-variant names* — and `mk/match.mk` used `VARIANTS`
+    for a *path to a JSON file*. Make has one namespace, so `$(if $(VARIANTS),--variants $(VARIANTS))` was **always
+    true and always wrong**: `FileNotFoundError: 'r1,a4,a6'`. Two things make this worse than a crash:
+    - **It broke the exact command our own reference file tells you to run.** `streams/references/combat/README.md`
+      documents a baseline as reproducible with `make engagement PAIRS=… SEEDS=3 TIME=240`, and that command cannot
+      have worked since the `VARIANTS` default landed. **A "reproduce with" line nobody re-runs is a claim, not a
+      reproduction** — the soft spot in lesson 31: we made the tools record their conditions, and nothing checks that
+      the recipe still runs.
+    - **The sibling target took it silently.** `matchup-search` passes `--variants` as a *required* argument, so it
+      would have searched three brain names instead of the file you meant and produced a plausible result for the
+      wrong question. This is trip-up 60 (two streams, one concept) in a namespace nobody thinks of as a namespace,
+      and it had already bitten once before — `UNITS ?= 60` in `mk/ai.mk` silently made an arena run labelled
+      "30 units" run 60 (lesson 34).
+
+    **The audit, run on `main` 2026-09-18** (`^[A-Z_]*\s*\?=` defaults against `$(VAR)` uses across files): 28 knobs
+    cross a file boundary, and almost all are the root `Makefile` deliberately sharing `PYTHON`, `JOBS`, ports, `BOTS`
+    and so on — that is fine. **The dangerous shape is a default in one *stream's* file consumed by a different
+    stream's file**, and there are four:
+    | Knob | Defaulted in | Also used in | Status |
+    |---|---|---|---|
+    | `VARIANTS` | `ai.mk` (squad) | `match.mk` (combat) | fixed by combat → `VARIANT_FILE` |
+    | `UNITS` | `ai.mk` (squad) | `match.mk` (combat) | **open** — already caused one mislabelled run |
+    | `ARENAS` | `tactics.mk` (squad) | `arena.mk` (arena) | **open** |
+    | `SECONDS` | `net.mk` (paused) | `tactics.mk` (squad) | **open** |
+    The rule to apply: **a knob two streams share deliberately belongs in the root `Makefile`; a knob one stream owns
+    takes that stream's prefix** (`NAV_UNITS`, `VARIANT_FILE`). And print what a knob resolved to, so a wrong value is
+    visible in the output rather than only in the behaviour.
