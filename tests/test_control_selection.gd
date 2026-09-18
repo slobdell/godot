@@ -123,3 +123,25 @@ func test_rings_are_batched_one_multimesh_per_kind() -> void:
 	var at: Vector3 = markers.state()["Green_Alpha_2"]["position"]
 	var tank := f.tank("Green_Alpha_2").global_position
 	assert_true(Vector2(at.x - tank.x, at.z - tank.z).length() < 0.01, "the ring sits under its vehicle (%s vs %s)" % [at, tank])
+
+
+## Round 5 reopened (the lead: "I select squad 1, having them go somewhere ... the units do not re-arrange as intended").
+## Right-clicking your own vehicles used to order a FOLLOW, so with an army packed on the start line half of "go there"
+## became "trail that one". game_design.md is explicit: right-click ground = move, and follow is F + click a friendly.
+func test_right_clicking_your_own_units_moves_there_and_follow_needs_f() -> void:
+	var f := await _setup()
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	var friend := f.tank("Green_Bravo_1")
+	await f.right_click(f.screen("Green_Bravo_1"))
+	var order := f.orders.current("Green_Alpha_1")
+	assert_eq(String(order.get("verb", "")), "move", "right-clicking a friendly is a move to that spot, not a follow")
+	var goal: Variant = f.orders.goal_position("Green_Alpha_1")
+	assert_true(goal is Vector3 and Vector2(goal.x - friend.global_position.x, goal.z - friend.global_position.z).length() < 20.0,
+			"and the spot is where the click landed (%s vs %s)" % [goal, friend.global_position])
+	f.controls.arm("follow")
+	await f.right_click(f.screen("Green_Bravo_1"))
+	assert_eq(String(f.orders.current("Green_Alpha_1").get("verb", "")), "move", "a right-click cancels the armed mode, as before")
+	f.controls.arm("follow")
+	await f.click(f.screen("Green_Bravo_1"))
+	assert_eq(String(f.orders.current("Green_Alpha_1").get("verb", "")), "follow", "F then a left click still follows a friendly")
+	assert_eq(String(f.orders.current("Green_Alpha_1").get("target", "")), "Green_Bravo_1", "the one that was clicked")

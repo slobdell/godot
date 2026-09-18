@@ -28,6 +28,9 @@ extends RefCounted
 ## Deterministic: no clock, no randomness; units are processed in name order.
 
 signal order_changed(unit_name: String)
+## Every accepted command, as issued (round 5 reopened: the lead sees order markers "repeating or re-orienting", which
+## is a witness to something re-issuing. This is the instrument that counts it: who asked, for what, how often).
+signal issued(command: Dictionary)
 ## A unit's queue changed without its current order changing (a shift-queued waypoint): for waypoint markers.
 signal queue_changed(unit_name: String)
 
@@ -38,6 +41,11 @@ const RESPONSE_MS := 100.0
 
 ## A move counts as arrived within this distance of its goal (meters).
 const ARRIVE_RADIUS := 3.0
+## Two orders count as the same when their destinations are within this far of each other (meters). It is the arrive
+## radius: a unit already inside that distance of the new spot is, by K1's own definition, already there — and elements
+## recompute their members' slots against a moving anchor every update, so the difference is a metre or two of drift,
+## not a new intention.
+const SAME_ORDER_M := ARRIVE_RADIUS
 
 var game_match: Match
 var _current := {}
@@ -126,8 +134,11 @@ func issue(command: Variant, team: int = -1) -> String:
 			(_queues.get_or_add(unit_name, []) as Array).append(order)
 			queue_changed.emit(unit_name)
 			continue
+		if _same_order(_current.get(unit_name, {}), order):
+			continue  # already doing exactly this: restarting it would reset its path and fire a fresh marker and cue
 		_queues.erase(unit_name)
 		_start(unit_name, order)
+	issued.emit(command)
 	return ""
 
 
@@ -292,6 +303,25 @@ func _resolve_group(base: Dictionary, names: Array, queued: bool) -> Dictionary:
 			order["pace_mps"] = pace
 		result[unit_name] = order
 	return result
+
+
+## Whether a unit is already carrying out exactly this order (same verb, same place, same target). Round 5: elements
+## re-issued their members' orders every update, ~36 a second across an army; each re-issue restarted the order and the
+## feedback system drew a marker and played a cue for it ("blue dots ... repeating ... beeping", and the frame rate with
+## it). An order identical to the one in progress is a no-op, whoever sends it.
+static func _same_order(current: Dictionary, order: Dictionary) -> bool:
+	if current.is_empty() or String(current.get("verb", "")) != String(order.get("verb", "")):
+		return false
+	if String(current.get("target", "")) != String(order.get("target", "")):
+		return false
+	var a: Array = current.get("goal", current.get("to", []))
+	var b: Array = order.get("goal", order.get("to", []))
+	if a.size() != b.size():
+		return false
+	for i in a.size():
+		if absf(float(a[i]) - float(b[i])) > SAME_ORDER_M:
+			return false
+	return true
 
 
 ## The destination a unit's queue ends at (for chaining shift-queued waypoints), or null.

@@ -123,6 +123,11 @@ func _show_new_orders(now: float) -> void:
 func _note_order(order: Dictionary, unit_name: String, queued: bool, now: float, sounded: Dictionary) -> void:
 	if order.is_empty() or not _is_ours(unit_name):
 		return
+	# Only the player's own orders are confirmed (K1's `source`). A marker and a cue answer *his* click; an element's
+	# leader re-slotting its members dozens of times a second is not something he asked for, and drawing it cost the
+	# frame rate and beeped continuously (the lead, round 5: "these blue dots ... they just keep repeating ... beeping").
+	if String(order.get("source", "")) != "player":
+		return
 	var id := int(order.get("id", -1))
 	if _seen_ids.has(id):
 		return
