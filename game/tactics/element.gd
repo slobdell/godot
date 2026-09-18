@@ -118,6 +118,25 @@ func assign(new_task: Variant) -> String:
 	return ""
 
 
+## The same task with a new aim (target or point), without starting the element over: its drill, its route and its
+## seating stand; only a firing line or leg anchored on the old point is re-chosen when the point moved (X6, round 6).
+func retarget(new_task: Variant) -> String:
+	var error := ElementTask.validate(new_task)
+	if error != "":
+		return error
+	if String((new_task as Dictionary).get("verb", "")) != String(task.get("verb", "")):
+		return assign(new_task)
+	var old_point: Variant = ElementTask.destination(task)
+	task = (new_task as Dictionary).duplicate(true)
+	var new_point: Variant = ElementTask.destination(task)
+	if old_point is Vector3 and new_point is Vector3 and (old_point as Vector3).distance_to(new_point) > 1.0:
+		anchor = null
+		route = []
+		route_index = 0
+	_log("task: %s" % ElementTask.describe(task))
+	return ""
+
+
 ## Stop: the element holds where it stands.
 func stand_down() -> void:
 	assign({"verb": "hold"})
