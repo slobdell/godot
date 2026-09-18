@@ -6,11 +6,12 @@ extends Node
 ## between kills instead of dropping to a library hush, and a result gets its own roar. Not positional: the stands
 ## surround the camera. Silent with --mute and on headless peers (no FxWorld).
 
-## Feel X3 (round 6): +13 dB. At -30 the murmur measured -46.5 dBFS soloed in a recorded match before contact, 20-25 dB
-## under the mix (build/audio pass, b80f3161, builder0), and the lead called the crowd non-existent.
-const MURMUR_DB := Vector2(-17.0, -6.0)  # calm → on its feet
-const ROAR_DB := -3.0
-const RESULT_ROAR_DB := 0.0
+## Feel X3 (round 6): +8 dB on round 5. At -30 the murmur measured 20-25 dB under the mix, and the lead called the crowd
+## non-existent; but that pass ran in slow motion (references/audio). At real pace, +13 put the crowd soloed a median 4 dB
+## under the whole mix (builder0, 2ab241e1 tree, yard, 90 s): the loudest bed in the game. This aims for 8-10 dB under.
+const MURMUR_DB := Vector2(-22.0, -11.0)  # calm → on its feet
+const ROAR_DB := -6.0
+const RESULT_ROAR_DB := -3.0
 const CALM := 0.12
 ## How fast the crowd settles after a kill (excitement per second), and how much of the match's intensity it holds.
 const SETTLE := 0.35

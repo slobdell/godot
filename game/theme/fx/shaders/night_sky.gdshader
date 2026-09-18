@@ -7,10 +7,10 @@ shader_type sky;
 
 uniform vec3 zenith : source_color = vec3(0.006, 0.006, 0.02);
 uniform vec3 haze : source_color = vec3(0.16, 0.07, 0.13);
-uniform vec3 haze_warm : source_color = vec3(0.2, 0.11, 0.06);
+uniform vec3 haze_warm : source_color = vec3(0.2, 0.08, 0.1);
 uniform vec3 ground : source_color = vec3(0.012, 0.01, 0.022);
 uniform float haze_height = 0.22;
-uniform float clouds = 0.5;
+uniform float clouds = 0.35;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -33,8 +33,9 @@ void sky() {
 		float warm = 0.5 + 0.5 * EYEDIR.x;
 		vec3 color = mix(zenith, mix(haze, haze_warm, warm), glow);
 		// Low cloud: stretched noise on a plane over the city, lit from below by the glow.
-		vec2 plane = EYEDIR.xz / max(up, 0.04) * 1.6;
-		float cloud = noise(plane * vec2(1.0, 3.0)) * 0.65 + noise(plane * 3.1) * 0.35;
+		// (Stretched by the plane projection toward the horizon already: more anisotropy than that reads as scanlines.)
+		vec2 plane = EYEDIR.xz / (max(up, 0.04) + 0.15) * 1.2;
+		float cloud = noise(plane * 1.3) * 0.65 + noise(plane * 3.1 + 5.0) * 0.35;
 		cloud = smoothstep(0.45, 0.85, cloud) * smoothstep(0.02, 0.12, up) * (1.0 - smoothstep(0.35, 0.8, up));
 		color += mix(haze, haze_warm, warm) * cloud * clouds * (0.4 + glow);
 		COLOR = color;
