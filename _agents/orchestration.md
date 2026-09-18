@@ -529,3 +529,27 @@ The kickoff prompt is one line; this section is the rest.
     for anything being ducked *under*. So: **when you find an instrument was running at the wrong rate, do not ask
     "are the numbers wrong", ask "which of these numbers is about time"** — and re-take only those. See also lesson 30,
     where three of six tick-rate bugs lied to a reader rather than breaking a test.
+47. **A product guarantee that no test isolates can be held up by a coincidence — and it will look fine until
+    something unrelated moves.** Round 6, the sharpest finding of the round. Product constraint #4 is the lead's own
+    ruling: *"the player's units hold until ordered — an army that moves without being told is not an army."* CP4 broke
+    it, and the reason it had ever worked is worse than the bug: **before N5, a held unit that entered ENGAGE hit the
+    *outranging* branch** — `distance <= weapon["range"]` was true at that range — **and `_combat_move` returned
+    `{"type": "stop"}`.** The player's units held still because an unrelated range heuristic happened to return "stand
+    still", not because any hold logic said so. Narrow the range and the coincidence stops happening: the unit holds
+    for 21.5 s and then **decides on its own to flank**, weaving for the enemy's side with its front armour on.
+    The test had passed for rounds. **It asserted the outcome (the unit ended up near where it started) and never the
+    mechanism (a held unit issues no move order)**, so nothing could ever reveal that the mechanism was absent.
+    Three instructions, and the third is the one that is new:
+    - **For every guarantee you have promised a human, write the test that isolates the mechanism**, not the one that
+      observes the happy outcome. An outcome test cannot distinguish "enforced" from "lucky".
+    - **When a guarantee breaks under an unrelated change, do not restore the unrelated thing.** Restoring the old
+      range comparison here would put the guarantee back to being luck. Find out what was actually enforcing it —
+      often nothing.
+    - This is lesson 17 for the third time in one round, but in a worse form. Twice it was a rule **starving** a
+      behaviour (the announcer silenced by a priority; a tank frozen at 61 m). Here it is a rule **sustaining a
+      guarantee it knows nothing about**. Starvation shows up as something missing; a load-bearing coincidence shows
+      up as nothing at all, until the day it does.
+    Method worth copying: the stream **bisected and sent the table rather than the conclusion** — N5 ~8 m, the brain
+    fix ~5 m, X6 **nothing** — and said the X6 row was the one that would have been easy to assume the other way. It
+    also corrected its own earlier report that the failure was machine variance, having set out to prove it rather
+    than assume it.
