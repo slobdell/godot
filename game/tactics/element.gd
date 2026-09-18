@@ -57,6 +57,9 @@ var events: PackedStringArray = []
 
 ## Plan state carried between updates.
 var anchor: Variant = null
+## X7: the covered route the element is following (waypoints) and which one it is driving to.
+var route: Array = []
+var route_index := 0
 var heading := Vector3.FORWARD
 var bounding := 0
 var arrived := false
@@ -102,8 +105,10 @@ func assign(new_task: Variant) -> String:
 		return error
 	task = (new_task as Dictionary).duplicate(true)
 	_fresh_task = true
-	# A new task starts a new movement: forget the leg and any drill we were running.
+	# A new task starts a new movement: forget the leg, the route and any drill we were running.
 	anchor = null
+	route = []
+	route_index = 0
 	arrived = false
 	drill = ""
 	drill_point = null
@@ -132,7 +137,8 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
-			"arrived": arrived, "heading": heading, "seats": seats}
+			"arrived": arrived, "heading": heading, "seats": seats,
+			"route": route, "route_index": route_index}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null)
@@ -286,6 +292,8 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]
+	route = plan["route"]
+	route_index = int(plan["route_index"])
 	strength = (situation["members"] as Array).size()
 	_last_members = situation["members"]
 	var new_drill := String(plan["drill"])

@@ -2329,8 +2329,12 @@ func _order_weapon(order: Dictionary) -> void:
 	# element told to support by fire that holds its fire until the enemy is inside 45 m is supporting nothing. Combat's
 	# fire discipline (CP4) holds fire outside the band unless the order says `long_shot`; only the commander's task
 	# spends it, never a crew's own judgement.
-	if String(element.get("task", "")) == "support_by_fire" and ["fire_at_will", "target"].has(String(order.get("type", ""))):
+	if String(element.get("task", "")) == "support_by_fire" and ["fire_at_will", "target", "suppress"].has(String(order.get("type", ""))):
 		order = order.duplicate()
 		order["long_shot"] = true
+	# X7: an ambush that has not been sprung holds its fire, whatever its crews can see: one early shot and the kill zone
+	# is empty. The element springs it (Drills: an enemy in the kill zone, or the ambush found), and then every gun fires.
+	if ElementFeed.holds_fire(element) and ["fire_at_will", "target", "suppress"].has(String(order.get("type", ""))):
+		order = {"type": "hold_fire"}
 	if not order.recursive_equal(weapon_order, 2):
 		set_orders(null, order)

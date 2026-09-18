@@ -178,3 +178,28 @@ class FakeElement extends RefCounted:
 
 	func state() -> Dictionary:
 		return value
+
+
+func test_an_ambush_waits_with_its_guns_held_then_springs_all_at_once() -> void:
+	var table := _table()
+	var zone := Vector3(0, 0, -90)
+	var task := {"verb": "ambush", "to": [zone.x, zone.z]}
+	assert_eq(ElementTask.validate(task), "", "ambush is a task")
+	# An enemy in sight but well short of the kill zone: lie in wait.
+	var early := [{"name": "Rust_1", "position": Vector3(60, 0, -130)}]
+	var waiting := ElementPlan.build(_situation(early), _state(task), table)
+	assert_eq(waiting["drill"], "ambush", "seen but not in the kill zone: still waiting")
+	assert_eq(waiting["formation"], "line", "on a line facing the kill zone")
+	for unit: String in waiting["slots"]:
+		var range_to := (waiting["slots"][unit] as Vector3).distance_to(zone)
+		assert_true(range_to <= 55.0, "%s lies inside effective range of the kill zone (%.0f m)" % [unit, range_to])
+	var context := {"task": "ambush", "drill": "ambush"}
+	assert_true(ElementFeed.holds_fire(context), "and its crews hold their fire")
+	# The enemy walks into the kill zone: sprung, and it stays sprung.
+	var inside := [{"name": "Rust_1", "position": zone + Vector3(8, 0, 0)}]
+	var sprung := ElementPlan.build(_situation(inside), _carry(_state(task), waiting), table)
+	assert_eq(sprung["drill"], "spring_ambush", "an enemy in the kill zone springs it")
+	assert_true((sprung["anchor"] as Vector3).is_equal_approx(waiting["anchor"]), "from the same positions")
+	assert_true(not ElementFeed.holds_fire({"task": "ambush", "drill": "spring_ambush"}), "every gun may fire")
+	var later := ElementPlan.build(_situation(early), _carry(_state(task), sprung), table)
+	assert_eq(later["drill"], "spring_ambush", "a sprung ambush does not go back to waiting")

@@ -410,3 +410,43 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 	(lab.orders as Orders).issued.disconnect(on_issued)
 	lab.dispose()
 	return result
+
+
+## Round 6 (squad X7): an ambush. Four tanks are tasked to ambush a kill zone on the western strip; an enemy tank sits
+## out of it for `wait_s`, then drives straight through it. Counts the element's shots before the enemy is in the
+## kill zone (an ambush that fires early has failed) and after, and when the element sprang it. Both sides durable.
+static func ambush(case: TestCase, wait_s := 10.0, seconds := 24.0) -> Dictionary:
+	var lab := TacticsLab.create(case, 19)
+	var names := _column(lab, 4, Vector3(LANE_X, 0.0, 40.0))
+	for unit_name: String in names:
+		AiScenario.make_durable(lab.tank_of(unit_name))
+	var zone := Vector3(LANE_X, 0.0, -40.0)
+	var walker := lab.gun(Match.Team.RUST, "Rust_Walker_1", Vector3(LANE_X, 0.0, -110.0), PI)
+	AiScenario.make_durable(walker)
+	var walker_orders := lab.game_match.brains.get_node("Orders_Rust_Walker_1") as OrderController
+	walker_orders.set_orders({"type": "stop"}, {"type": "hold_fire"})
+	var alpha := lab.element(names, "Alpha")
+	await lab.start()
+	var shots := {"before": 0, "after": 0}
+	var entered := {"tick": -1}
+	var on_fired := func(event: Dictionary) -> void:
+		if names.has(String(event.get("shooter", ""))):
+			shots["before" if int(entered["tick"]) < 0 else "after"] = int(shots["before" if int(entered["tick"]) < 0 else "after"]) + 1
+	lab.game_match.weapon_fired.connect(on_fired)
+	alpha.assign({"verb": "ambush", "to": [zone.x, zone.z]})
+	var sprung := -1
+	for tick in int(seconds * SimClock.TICK_RATE):
+		if tick == int(wait_s * SimClock.TICK_RATE):
+			walker_orders.set_orders({"type": "move_to", "x": zone.x, "z": 60.0}, {"type": "hold_fire"})
+		await lab.step()
+		if int(entered["tick"]) < 0 and Vector2(walker.global_position.x - zone.x, walker.global_position.z - zone.z).length() \
+				<= Drills.KILL_ZONE_M:
+			entered["tick"] = tick
+		if sprung < 0 and alpha.drill == "spring_ambush":
+			sprung = tick
+	lab.game_match.weapon_fired.disconnect(on_fired)
+	var result := {"drills": Array(lab.drills_of(alpha)), "shots_before": int(shots["before"]),
+			"shots_after": int(shots["after"]), "entered_tick": int(entered["tick"]), "sprung_tick": sprung,
+			"formation": alpha.formation}
+	lab.dispose()
+	return result

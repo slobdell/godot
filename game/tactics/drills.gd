@@ -28,7 +28,7 @@ extends RefCounted
 ## vehicle draw fire to try and lead the opponents into an ambush."*
 
 const NAMES := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire",
-		"break_contact", "herringbone", "encircle", "bait"]
+		"break_contact", "herringbone", "encircle", "bait", "ambush", "spring_ambush"]
 ## Drills that mean "we are fighting this contact": react to contact does not restart while one of them runs.
 const CONTACT_DRILLS := ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "break_contact",
 		"encircle", "bait"]
@@ -42,6 +42,8 @@ const RECOVER_FACTOR := 1.25
 const HALTED_M := 12.0
 ## A screen counts as on its line when the element's centre is this close to the point it was sent to (meters).
 const SCREEN_REACHED_M := 30.0
+## An ambush is sprung by a visible enemy this close to the kill zone's point (meters)...
+const KILL_ZONE_M := 30.0
 
 
 ## The drill the element should be running now, and why (a string the player reads). "" = no drill:
@@ -49,6 +51,15 @@ const SCREEN_REACHED_M := 30.0
 static func select(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
 	var previous := String(state.get("drill", ""))
 	var current := previous
+	# 0. An ambush task (X7) is its own drill, ahead of everything: lying in wait ("ambush": hidden, guns on the kill
+	# zone, fire held) until it is sprung — an enemy in the kill zone, an enemy on top of us, or us taking fire — and
+	# then "spring_ambush" (every gun at once) for as long as the task stands. Nothing times it out: an ambush that
+	# gave up waiting and wandered off is not one.
+	var task: Dictionary = state.get("task", {})
+	if String(task.get("verb", "")) == "ambush":
+		if previous == "spring_ambush" or should_spring(situation, task, table):
+			return _drill("spring_ambush", "ambush sprung: every gun at once", nearest_contact(situation))
+		return _drill("ambush", "in ambush: hidden, guns on the kill zone, holding fire", {})
 	var elapsed: int = int(situation.get("tick", 0)) - int(state.get("drill_tick", 0))
 	var timed_out := current != "" and elapsed >= table.drill_ticks("timeout_ticks")
 	if timed_out or (current != "" and _finished(current, situation, state, table, elapsed)):
@@ -104,6 +115,22 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	if table.runs_drill("herringbone") and is_halted(situation, state) and String(situation.get("threat", "none")) != "none":
 		return _drill("herringbone", "halted: herringbone, watch the flanks", {})
 	return {"drill": "", "why": "", "point": null, "target": ""}
+
+
+## Whether an ambush is sprung: a visible enemy inside the kill zone, or so close to us that we are found (the near
+## ambush distance), or we are already taking fire.
+static func should_spring(situation: Dictionary, task: Dictionary, table: DoctrineTable) -> bool:
+	if bool(situation.get("taking_fire", false)):
+		return true
+	var zone: Variant = ElementTask.destination(task)
+	for contact: Dictionary in situation.get("contacts", []):
+		if not bool(contact.get("visible", false)):
+			continue
+		if zone != null and _flat(contact["position"]).distance_to(_flat(zone)) <= KILL_ZONE_M:
+			return true
+		if float(contact.get("distance", INF)) <= table.drill_number("near_ambush_m"):
+			return true
+	return false
 
 
 ## Whether a screening element has reached the line it was sent to hold (its centre within SCREEN_REACHED_M of the

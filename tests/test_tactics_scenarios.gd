@@ -60,3 +60,13 @@ func test_a_move_ends_formed_up_on_the_spot_and_stops_issuing() -> void:
 			% result["worst_off_slot_m"])
 	assert_true(int(result["orders_last_10s"]) <= 2, "and the leader has stopped re-issuing (%d orders in the last 10 s)"
 			% result["orders_last_10s"])
+
+
+func test_an_ambush_holds_its_fire_until_the_kill_zone_is_full() -> void:
+	# The lead: "We want to be able to set up ambushes, do flanking maneuvers."
+	var result: Dictionary = await TacticsScenarios.ambush(self)
+	print("MEASURE ambush %s" % result)
+	assert_true(int(result["entered_tick"]) > 0, "setup: the enemy drove into the kill zone")
+	assert_eq(int(result["shots_before"]), 0, "not one shot before it was in the kill zone")
+	assert_true(int(result["sprung_tick"]) >= int(result["entered_tick"]), "sprung when it arrived, not before")
+	assert_true(int(result["shots_after"]) > 0, "and then every gun fired")
