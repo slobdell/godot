@@ -401,3 +401,16 @@ The kickoff prompt is one line; this section is the rest.
     heuristic about "where should I stand" have to share a definition or the unit freezes between them. Note this is
     lesson 17 seen from the other side: the starved behaviour and the starving rule were written by different streams
     a round apart, which is exactly when nobody notices.
+40. **A repeated *load* can masquerade as per-instance *work* when something evicts the cache between instances.**
+    Round 6, the lead's "big lag between pressing Fight and the game loading": control profiled it honestly and
+    concluded per-instance work — the first vehicle of a type cost ~95 ms and every later one ~63 ms, and "if it were
+    loading, later instances would be near-free" is exactly the right inference from that shape. It was still wrong.
+    feel traced the nodes and found a **70–90 ms gap immediately before the hull node** on every new-faction vehicle:
+    each one's hull `VisualSlot` first fills the *default* slot (the Condemned dozer), then swaps in its own art; the
+    dozer instance is freed, nothing else references its `.glb`, the engine unloads it, and the next vehicle re-reads
+    it from disk. Condemned vehicles stayed at 2 ms precisely because their own live dozers kept the model cached —
+    the control group was sitting in the data all along. One strong reference per slot scene in `GameTheme.scene()`
+    took **106–128 ms per vehicle to 0.9**. The instruction: **"later instances are not free" narrows the cause to
+    per-instance work *or* a cache being evicted between them** — and the way to tell them apart is a node/resource
+    trace showing *where the time sits*, not a per-call profile showing how much. Look for the cost in the gaps
+    between the functions you suspect, and look for the population that is unexpectedly cheap.
