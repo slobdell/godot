@@ -755,3 +755,22 @@ The kickoff prompt is one line; this section is the rest.
     - **A defect present in both arms of a comparison protects the comparison and corrupts the measurement.** When you
       find one, say which of the two you are claiming — "the A/B still holds, the absolute numbers were wrong" is a
       complete and honest sentence, and it is what control said.
+60. **A caveat travels with a number in a message and does not travel with the idea into a document.** Round 6, and the
+    orchestrator did this to itself. combat sent a result labelled *directional, n = 2, one mirror pairing, not for the
+    lead*. The orchestrator **held the number back from the lead correctly** — and then wrote the *conclusion drawn
+    from it* into `game_design.md` as established design understanding, where "n = 2" did not survive. At n = 15 the
+    finding **inverted**: the fire rate went down, not up, and the reframing built on it was unsupported.
+    This is lesson 26 committed against oneself, in the file that briefs every future stream. Three instructions:
+    - **Nothing enters a design document from a sample that could not support a claim to the lead.** The bar for
+      "written down as how the game works" is the same bar as "told to the human", because a doc outlives the
+      conversation that qualified it.
+    - **The more a result reframes something, the smaller the sample you should accept for it.** The stream's own
+      account: *"I argued it confidently because it was surprising and had a tidy mechanism behind it, which is exactly
+      when I should have trusted it least."* A surprising result with a satisfying mechanism is the most seductive
+      possible combination, and n = 2.
+    - **Retract in place, not by deletion.** The wrong claim is left in `game_design.md` marked RETRACTED with why it
+      got in, because a future agent who half-remembers the idea needs to find the retraction rather than the silence.
+    Also recorded from the same run: a **pilot's job is to validate the pipeline, not to answer the question**. This
+    one found two real defects in the harness (a `--variants` run that omits the shipped configuration; a metric
+    contaminated in theory) and was then asked to answer a question it was never large enough to answer — twice in one
+    afternoon, by a stream that knew better and said so afterwards.
