@@ -314,7 +314,40 @@ the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on r
 
 **4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
 
-> **The before/after series is still pending.** The rows above are one match each. Nothing in this section below the design is a measured
+### The shipped bands measured against the old world (builder0, `e548375d`, **n = 2 per row**)
+
+Same command with the shipped bands added as a row (they were missing from the first run — `--variants` runs only
+what is in the file). **Condemned mirror only, two matches per row, pre-merge build. Directional, not final.**
+
+| bands | length | **fire /unit/min** | engaged (direct) | **kill** | flank+rear (rear) | off-axis | ended by |
+|---|---|---|---|---|---|---|---|
+| reach (the old world) | 88 s | 7.6 | 76 m (75) | **47 m** | 42% (1%) | 32% | 2 × elimination |
+| **shipped (`preferred_max`)** | 105 s | **9.7** | 77 m (77) | **34 m** | 45% (4%) | 40% | 1 elim, 1 control |
+| 0.65 of reach | 108 s | 8.8 | 77 m (78) | **36 m** | 55% (3%) | 37% | 1 elim, 1 control |
+| 0.55 of reach | 125 s | 6.5 | 72 m (72) | **30 m** | 61% (18%) | 55% | **2 × control** |
+
+**The shipped bands do what the lead asked, and the number to quote is kill distance: 47 m → 34 m, a 28% reduction.**
+Flanking rises with it (off-axis 32% → 40%, flank+rear 42% → 45%).
+
+**The quiet-fight worry does not materialise at the shipped bands — it reverses.** Fire rate goes *up*, 7.6 → **9.7**
+rounds per unit per minute. That is not a contradiction: units close to where their fire counts instead of trading
+gambles at maximum range, so more rounds are worth firing. The lead's complaint was never "too much shooting", it was
+shooting from a distance where nothing else was possible; a denser, closer fight is the fix, not a side effect.
+
+**0.55 of reach is the overshoot, and it fails in the way predicted.** Fire drops to 6.5 — *below* the old world —
+matches stretch to 125 s, and **both ended on the control point rather than elimination: neither side could finish.**
+That is the "a fight the player can never close" failure written down under X2 before the series ran. Do not go there.
+
+**Two metric findings from the first run are confirmed at n = 2**, and one of them is mine being wrong twice:
+- **`engaged_distance` still does not discriminate** — 72–77 m in *all four* configurations including the old world,
+  because it is dominated by the Lancer's 86 m band. `1st shot 6 s @ 96 m` is likewise identical in all four. Use
+  **kill distance**.
+- **Direct-only and all-shots agree to within 1 m on every row** (77/77, 76/75, 77/78, 72/72). My artillery-
+  contamination hypothesis is now disconfirmed twice. The columns stay — they are what disproved it — but nobody
+  should repeat the theory.
+
+> **Still to do before these are final:** re-take on the post-CP4 merge (squad's precedence fixes change behaviour),
+> across the three counterbalanced pairings rather than one mirror, at SEEDS=3. Then the sim baseline. Nothing in this section below the design is a measured
 > claim, and **no number taken across CP4 may be published by any stream** (workstreams.md invariant 9). When the
 > series lands, its results go here with n, commit and machine, and the per-match file goes in
 > `streams/references/combat/`.
