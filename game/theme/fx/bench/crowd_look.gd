@@ -21,7 +21,9 @@ extends Node
 const ZOOMS := [0.08, 0.2, 0.35, 0.5, 0.7, 0.9]
 ## Control X3 took pitch off the zoom slider. The lead picked 25 degrees, 50 m, FOV 60 (2026-09-18) and keeps a 22-50
 ## degree tilt; 15 is here because he picked the floor of the range he was offered. [pitch degrees, distance m].
-const LOW_POSES := [[15.0, 50.0], [25.0, 50.0], [25.0, 90.0], [35.0, 60.0], [35.0, 120.0], [50.0, 80.0], [50.0, 160.0]]
+## Then he settled on 12 degrees, 50 m (2026-09-18).
+const LOW_POSES := [[12.0, 50.0], [12.0, 70.0], [15.0, 50.0], [25.0, 50.0], [25.0, 90.0], [35.0, 60.0], [35.0, 120.0],
+		[50.0, 80.0], [50.0, 160.0]]
 ## The low poses' field of view (the lead's pick); the zoom-slider poses keep RtsCamera's own.
 const LOW_FOV_DEG := 60.0
 ## A pixel is the crowd's when its luminance moves by more than this with the crowd hidden.
@@ -80,6 +82,7 @@ func _run() -> void:
 				continue
 			_camera.global_transform = RtsCamera.pose_for(focus, heading + turn, level)
 			_camera.fov = RtsCamera.FOV_DEG
+			_camera.near = 0.05
 			await _frames(PAUSE_FRAMES)
 			if crowd != null:
 				print("CROWD_LOOK " + JSON.stringify(await _measure(pose, _camera, crowd, environment)))
@@ -91,6 +94,7 @@ func _run() -> void:
 				continue
 			_camera.global_transform = CrowdLook.pitched_pose(focus, heading + turn, deg_to_rad(low[0]), low[1])
 			_camera.fov = LOW_FOV_DEG
+			_camera.near = CrowdLook.cutaway_near(_camera.global_position, focus, Match.ARENA_HALF_SIZE + 1.0)
 			await _frames(PAUSE_FRAMES)
 			if crowd != null:
 				print("CROWD_LOOK " + JSON.stringify(await _measure(pose, _camera, crowd, environment)))
@@ -100,6 +104,22 @@ func _run() -> void:
 
 func _wanted(pose: String) -> bool:
 	return only.is_empty() or only.any(func(part: String) -> bool: return pose.contains(part))
+
+
+## Control's cutaway (round 6), approximated for poses shot before it merges: a camera outside the walls gets its near
+## plane just short of where its line of sight to the focus crosses the wall, so the stands behind it are not drawn.
+## Pure, for tests.
+static func cutaway_near(eye: Vector3, focus: Vector3, half: float) -> float:
+	if absf(eye.x) <= half and absf(eye.z) <= half:
+		return 0.05
+	var flat := Vector2(focus.x - eye.x, focus.z - eye.z)
+	var t_in := 0.0
+	for axis in 2:
+		var from: float = eye.x if axis == 0 else eye.z
+		var step: float = flat.x if axis == 0 else flat.y
+		if absf(from) > half and absf(step) > 0.0001:
+			t_in = maxf(t_in, (signf(from) * half - from) / step)
+	return maxf(0.05, eye.distance_to(focus) * clampf(t_in, 0.0, 1.0) - 1.0)
 
 
 ## RtsCamera.pose_for with pitch and distance as separate axes (control X3's direction).
