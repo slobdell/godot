@@ -689,3 +689,22 @@ The kickoff prompt is one line; this section is the rest.
       measurement before you believe the finding — and say which known quantity you are testing it against.
     - This is the same failure as a filtered test run establishing correctness (lesson 45), and the same family as
       lessons 34, 44, 46 and 49: **this round found more broken instruments than broken game code.**
+55. **Test the wire, not only the rule — and a conflict that looks like a duplicate may be two concerns on one line.**
+    Round 6, and the first time this round a precaution actually paid out. combat's engagement envelope is a *rule*
+    in `game/combat/engagement.gd` and a handful of *call sites* in nav's `order_controller.gd`. When it wrote the
+    tests it added four that drive a **real `OrderController` through a real match** and exist solely to go red if the
+    wiring is cut, justifying them as insurance against a bad merge or a failed edit (lesson 27). Then nav
+    restructured that very file around those call sites — moving `_apply_unstick` out into `Movement`, and landing
+    `movement.idle()` on the **same dead-code branch** as combat's `engagement_lay.forget()`. **The sixteen rule tests
+    would have passed either way**, because `engagement.gd` was never touched; only the four wiring tests could have
+    caught a dropped gate. That is the difference between shipping fire discipline and shipping a series that measures
+    a game with no fire discipline in it.
+    **And the conflict was the good kind: both sides were needed, not either/or.** `engagement_lay.forget()` resets the
+    gun's lay; `movement.idle()` stops the driving. Two different concerns that happened to collide on one line.
+    **Resolving it as "ours" or "theirs" would have silently broken one of them** — which is the standard move when a
+    conflict looks like a duplicate, and the standard move is wrong here.
+    Two instructions, the second aimed at whoever merges:
+    - **When your feature is a rule plus call sites in someone else's file, write at least one test that fails if the
+      call site disappears.** Rule tests cannot see an unwired rule.
+    - **Before resolving a conflict by picking a side, say out loud what each side does.** If the answer is two
+      different verbs, the resolution is *both*, and the fact that they occupy one line is a coincidence of layout.
