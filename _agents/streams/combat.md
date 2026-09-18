@@ -351,7 +351,35 @@ re-run the army with and without `break_contact` at the new bands. **`RELEASE_FA
 turns out to be too cheap: raising it keeps a gun on a target that is pulling away, which is what makes a pursuit
 possible at all.
 
-### X2, first finding: shortening the bands may have taken the bite out of suppression
+### X2, first finding — WITHDRAWN: suppression kept its bite, and my own test says so
+
+**Disconfirmed, and I am striking it rather than softening it.** I predicted below that narrowing the bands would
+soften suppression, because its penalty is angular and closer fights forgive angular error. My own controlled test
+measures the opposite at the ranges that now matter:
+
+```
+MEASURE pinned_accuracy inside the band (36 m of 45): calm 13/13 (100%), pinned 7/13 (54%)
+```
+
+**A fully pinned crew lands 54% where a calm one lands 100%** — suppression is worth about half a crew's fire inside
+the effective band. That is a strong effect, not a softened one, and `SUPPRESSION_SPREAD_FACTOR` **should not be
+touched.**
+
+What misled me was reading it off a *scenario* instead of a controlled measurement.
+`scenario_suppression::test_holding_a_crew_down…` reports 100% against 100% — but it holds the target at **0.73**
+suppression, not 1.0, and at a range short enough that nothing misses either way. **The scenario measures a
+configuration where the mechanic cannot show, and I read its null as evidence about the mechanic.** My own test fixes
+distance to the band and suppression to 1.0 and sees the effect immediately. The scenario needs its geometry derived
+from the band, the way I re-derived my own tests — a squad fix, not a balance change.
+
+This is the fourth hypothesis of mine this round that measurement has killed (after disciplining opportunistic
+suppression, artillery contamination, and X6 causing the dodge regression). The pattern in all four is the same and
+worth naming: **I keep generating plausible mechanisms and they keep being wrong, and the only reason none of them
+reached the lead is that each one was measured before it was believed.**
+
+<details><summary>The original prediction, kept for the record</summary>
+
+### (withdrawn) shortening the bands may have taken the bite out of suppression
 
 `Match.SUPPRESSION_SPREAD_FACTOR` (2.0) is **mine**, and its own comment states the assumption N5 just invalidated:
 *"A pinned tank's 0.8 deg becomes 2.4 deg: it still shoots, it just stops hitting anything far away."* Suppression's
@@ -369,6 +397,8 @@ just recorded a negative result from acting on a mechanism that looked obvious. 
 suppression's bite **inside the new bands** in the CP4 series (hit-rate delta pinned vs calm at the *new* typical
 engagement distance, not the old one), and tune `SUPPRESSION_SPREAD_FACTOR` with that number if it has really
 softened. Flagged here so nobody reads the passing/failing scenario as noise.
+
+</details>
 
 ### A negative result: do NOT discipline opportunistic suppression
 
