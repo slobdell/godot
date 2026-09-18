@@ -29,8 +29,24 @@ func _setup(screen: Vector2i) -> Array:
 	return [game_match, map, rig]
 
 
+## Round 6: the lead's camera (12°, FOV 60°) costs size on a phone: a low pitch foreshortens a vehicle's footprint and a
+## wider field of view shrinks everything ~9%, so a start-view vehicle on a 1200x540 phone measures ~23-24 px where the
+## bar was 24 (25° / FOV 55°). Desktop is the pillar (the lead, 2026-09-15) and touch adaptation is later, so the phone
+## bar is 22 px with the cost reported to him rather than absorbed, and the desktop view gets a bar of its own.
+const PHONE_MIN_PX := 22.0  # measured 23.7 px at 1200x540
+const DESKTOP_MIN_PX := 36.0  # measured 40.0 px at 1920x1080 (12°, FOV 60°, laptop, round 6)
+
+
+func test_the_starting_view_shows_the_army_at_a_readable_size_on_a_desktop() -> void:
+	await _readable_at(Vector2i(1920, 1080), DESKTOP_MIN_PX)
+
+
 func test_the_starting_view_shows_the_army_at_a_readable_size_on_a_phone() -> void:
-	var setup: Array = await _setup(Vector2i(1200, 540))
+	await _readable_at(Vector2i(1200, 540), PHONE_MIN_PX)
+
+
+func _readable_at(window: Vector2i, min_px: float) -> void:
+	var setup: Array = await _setup(window)
 	var game_match: Match = setup[0]
 	var map: TacticalMap = setup[1]
 	var rig: RtsCamera = setup[2]
@@ -46,7 +62,8 @@ func test_the_starting_view_shows_the_army_at_a_readable_size_on_a_phone() -> vo
 	var side := rig.camera.unproject_position(tank.global_position + Vector3(float(hull[0]) / 2.0, 0, 0))
 	var across := rig.camera.unproject_position(tank.global_position - Vector3(float(hull[0]) / 2.0, 0, 0))
 	var pixels := maxf(front.distance_to(back), side.distance_to(across))
-	assert_true(pixels >= 24.0, "a vehicle is at least 24 px on a 1200x540 phone screen (%.0f px)" % pixels)
+	print("MEASURE command_readability %s start vehicle %.1f px (pitch %.0f°, zoom %.2f)" % [window, pixels, rig.pitch, rig.zoom])
+	assert_true(pixels >= min_px, "a vehicle is at least %.0f px on a %s screen (%.1f px)" % [min_px, window, pixels])
 	assert_true(map.is_close_up(), "and the start is close enough to show models, not icons (zoom %.2f)" % rig.zoom)
 
 

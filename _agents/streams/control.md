@@ -251,9 +251,48 @@ awaits returned, by which time the whole stall had happened, so it read 0 ms bef
 - **The loading screen lives on the tree root**, so it survives the scene switch; the arena's venue build and
   navmesh bake stay synchronous (trip-up 57) — the screen names the stage and stays drawn through the stall.
 
+### What to playtest (exact commands)
+
+- `make skirmish` → pick factions and an arena → FIGHT: the loading screen names the matchup, the arena and one task
+  by its symbol (~1.4 s on the laptop). In play: the camera starts at his 12° · 50 m; **Page Up/Down** or
+  **ctrl+wheel** tilts (8°–50°), **Home** resets, **O** is the top-down map view. Zoom far out: past 70 m the tilt
+  lifts (to 40° by 160 m). Near the spawn wall the stands between camera and arena are cut away.
+- The command card: Stop, Hold, Attack-move, **Screen**, **Support by Fire** (symbols, names under them, hover for the
+  one-sentence tooltip; Screen and Support by Fire need a whole squad), Formation. No Move or Follow buttons (right-click).
+- The group chips over the card: IDLE (yellow) / MOVING / CONTACT / UNDER FIRE per squad.
+- Hover the yellow doctrine line on the card with a squad selected: its last six decisions with the match time.
+- Once nav's N1 is on `main`: YIELDING / BLOCKED / STUCK over vehicles, "Blocked by Tank" / "Stuck for 4 s" / "Arrives
+  in 4 s" on a unit's card, and a faint line for the route a selected unit means to take.
+- Instruments: `make camera-looks` (the page; `--camera-looks-pitches=…` for a follow-up grid), `make spawn-cost`,
+  `make shell-playtest` (prints `LOAD_TIMING`), `make squad-orders-test` (now with `element_slot_m`), `make hud-cost`.
+
+### Known issues
+
+- **The floor ends at the stands** (feel's): a camera outside the venue (far framing, the free camera after a defeat)
+  sees black void below the stands; the far-range tilt floor keeps it to the bottom strip in normal play.
+- **X4 (a plain move keeps the squad a squad) is held** until squad's `4d734b1e` is on `main` and the five-squad A/B
+  comes back at 0 idle commands (see the X6 rows).
+- `shell-playtest`'s `faction_row_under_mouse` failed once in seven windowed runs on the shared laptop desktop (a real
+  mouse can move the hover; trip-up 32); it passed on the immediate re-run.
+- **The lead's camera costs size on a phone.** At 12° / FOV 60° a start-view vehicle measures 23.7 px on a 1200×540
+  phone (the old bar was 24, set at 25° / FOV 55°) and 40.0 px at 1920×1080 (laptop, headless projection,
+  `test_command_readability`). Desktop first, so the phone bar is now 22 px and desktop has its own (36 px); reported
+  to the lead, not absorbed.
+- The loading screen's stage bar is weighted equally; at 1.4 s it barely shows, so it was left as is.
+- The camera pages' frames (26 MB of JPEG) live in the artifacts, not the repo; `make camera-looks` regenerates them.
+
+### Merge notes (shared files)
+
+None edited: `project.godot`, `game/main.gd`, `Makefile`, `mk/core.mk` and `tests/run_tests.gd` are untouched.
+Outside control's paths: `tests/test_ai_player_holds.gd` (one line, seconds instead of frames, agreed with the
+orchestrator). `perf_scene.gd` (feel's) reads `RtsCamera.pose_for` / `FOV_DEG`, so perf-scene's camera is now the lead's
+12° / FOV 60 with the far-range floor.
+
 ### Questions for the lead
 
-- (the camera look: the page, when it exists — see *Waiting on the lead*)
+- **The far-range tilt floor** (the one place the camera overrides his 12°): at army-wide zoom it lifts to ~30–40°,
+  because at 12° from that far the fight is a sliver. Keep it, or would he rather stay at 12° and zoom less?
+- **Which arena is fun** (still unticked on the first camera page).
 
 ### Requests to other streams
 
