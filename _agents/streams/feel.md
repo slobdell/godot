@@ -206,8 +206,9 @@ not).
 - **Side grandstands** (`50328778`): at the lead's 12° the horizon runs the full frame width and the short walls had
   no stands, so the venue looked one-sided. Three modules per quarter beyond the ad screens; 6,005 seats; one draw.
 - Judged at the lead's pose (12°/50 m/FOV 60) and 25°: `build/crowd-look-report/x4_12deg_50m_fov60.png`. Sent to the
-  orchestrator. Flagged for control: in my cutaway approximation the player's own grandstand fascia fills the bottom
-  third at 12° over a spawn by the wall.
+  orchestrator. (I flagged a grandstand fascia filling the bottom third at 12°: it was my approximation of control's
+  cutaway, not the game — control's real rule cuts it. crowd-look now calls `RtsCamera.pose_at`/`cutaway_near`
+  itself; lesson 53.)
 - Not yet: the ad screens' legibility from the playing angle.
 
 ### X5 — the loading screen's voice (done on my side, `1badf779`)
@@ -215,7 +216,10 @@ not).
 control** (relayed by the orchestrator): `LoadingVoice.start(tree)` in `LoadingScreen.show_for`,
 `LoadingVoice.finish()` when the match is up. FIGHT → playable is ~1.4 s now, so this is a beat, not a bed.
 
-### X6 — keep the frame (waiting)
-Everything added this round (4,287 → 6,005 figures, sky, skyline, 12 more stand modules) is unmeasured. perf-scene
-inherits control's camera (`RtsCamera` constants), so it moves to 12°/FOV 60 at their merge: **re-baseline after that
-merge** with `PERF_LAYERS=no_venue,no_sky`, and report any increase as the cost of an arena the player can now see.
+### X6 — keep the frame (measured at the new camera)
+Laptop (the lead's UHD 620), `cf6b079a` (control's low camera merged), 1854×1011, HIGH, 30 a side CPU v CPU, 2 cycles,
+laptop shared with other agents: **GPU 18.45 ms; venue 3.54 ms GPU (crowd 1.05, stands/gates/screens ~2.5); sky +
+skyline 0.45 ms.** Round 5 measured the venue at 1.35 ms from the old high camera: this is the cost of an arena the
+player can now see, not a regression. The frame average (50 ms) tracks vehicle count (100 ms at 67, 25 ms at 23):
+**CPU-bound**, so the GPU line (18.5 of a 33 ms locked-30 frame) has headroom. Saved as
+`references/perf/feel-r6-venue-1080.json`; priced cuts (unlit stands, venue off, sky off) in `fx_tricks.md`.

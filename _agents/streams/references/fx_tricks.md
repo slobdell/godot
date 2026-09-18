@@ -130,7 +130,9 @@ paper, which only starts to matter once the simulation tick stops being the wall
 |---|---|---|---|
 | 3D render scale 0.75 | −2.8 ms | softer image | available, not taken |
 | Glow off | −1.7 ms | the neon loses its bloom | **the lead chose to keep glow** |
-| Venue off (crowd, screens, signage) | −1.35 ms | the arena stops feeling inhabited | available, not taken |
+| Venue off (crowd, screens, signage) | −1.35 ms (round 5's high camera); **−3.5 ms at round 6's low camera** with stands on four sides: crowd 1.05, stands/gates/screens ~2.5 (`perf/feel-r6-venue-1080.json`, `cf6b079a`) | the arena stops feeling inhabited | available, not taken |
+| Stands unlit (a baked-light material instead of lit PBR with normal maps, like the floor's `unlit`) | est. most of the stands' ~2.5 ms: they are 5.4 k triangles a module, so it is fragment cost | flatter stands (they are backdrop at 60–250 m) | priced, not built: the frame is CPU-bound (GPU ~18.5 ms of a 33 ms locked-30 frame) |
+| Night sky + city skyline off | −0.45 ms | the horizon goes flat black at the lead's low camera | not taken |
 
 **Rules for every stream:**
 - **Arena (props):** static props go through `StaticBatcher`/MultiMesh (one draw per prop kind and material, not per
