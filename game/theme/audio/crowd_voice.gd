@@ -6,9 +6,16 @@ extends Node
 ## between kills instead of dropping to a library hush, and a result gets its own roar. Not positional: the stands
 ## surround the camera. Silent with --mute and on headless peers (no FxWorld).
 
-const MURMUR_DB := Vector2(-30.0, -14.0)  # calm → on its feet
-const ROAR_DB := -9.0
-const RESULT_ROAR_DB := -5.0
+## Feel X3 (round 6): +8 dB on round 5. At -30 the murmur measured 20-25 dB under the mix, and the lead called the crowd
+## non-existent; but that pass ran in slow motion (references/audio). At real pace, +13 put the crowd soloed a median 4 dB
+## under the whole mix (builder0, 2ab241e1 tree, yard, 90 s): the loudest bed in the game. This aims for 8-10 dB under.
+const MURMUR_DB := Vector2(-22.0, -11.0)  # calm → on its feet
+const ROAR_DB := -6.0
+const RESULT_ROAR_DB := -3.0
+## Feel X8 (round 6): a hit worth watching (a weak spot: FxWorld.spectacle weight 0.5, where a plain hit is 0.3) gets
+## a smaller cheer from the stands, so a flank that reaches the rear armour is rewarded by the room as well as the flare.
+const CHEER_WEIGHT := 0.45
+const CHEER_DB := -14.0
 const CALM := 0.12
 ## How fast the crowd settles after a kill (excitement per second), and how much of the match's intensity it holds.
 const SETTLE := 0.35
@@ -24,6 +31,10 @@ var roar := AudioStreamPlayer.new()
 var mood: MatchMood
 var _rng := RandomNumberGenerator.new()
 var _last_state := ""
+## `--crowd-meter` (feel X3): once a second, print what the crowd and the whole world bus actually measure in this match.
+var _meter := false
+var _meter_clock := 0.0
+var _meter_sums := Vector3.ZERO
 
 
 func _init() -> void:
@@ -31,8 +42,9 @@ func _init() -> void:
 	_rng.seed = 23
 	murmur.name = "Murmur"
 	roar.name = "Roar"
-	murmur.bus = SfxSystem.BED_BUS
-	roar.bus = SfxSystem.BED_BUS
+	SfxSystem.ensure_world_bus()
+	murmur.bus = SfxSystem.CROWD_BUS
+	roar.bus = SfxSystem.CROWD_BUS
 	add_child(murmur)
 	add_child(roar)
 
@@ -41,6 +53,7 @@ func _ready() -> void:
 	var fx := FxWorld.get_instance()
 	if fx == null:
 		return
+	_meter = LaunchFlags.from_environment().has("crowd-meter")
 	fx.spectacle.connect(react)
 	if not fx.sfx.muted and AudioSolo.allows("crowd"):
 		use_streams(fx.sfx.streams)
@@ -63,6 +76,8 @@ func use_streams(streams: Dictionary) -> void:
 func react(_position: Vector3, weight: float) -> void:
 	if weight >= 0.9:
 		_roar(ROAR_DB)
+	elif weight >= CHEER_WEIGHT:
+		_roar(CHEER_DB, 1.12)
 	excitement = clampf(maxf(excitement, CALM + weight * 0.75), 0.0, 1.0)
 
 
@@ -86,15 +101,39 @@ func _process(delta: float) -> void:
 			_roar(RESULT_ROAR_DB)  # the stands react to the result, whoever it's for
 	if murmur.playing:
 		murmur.volume_db = lerpf(MURMUR_DB.x, MURMUR_DB.y, clampf((excitement - CALM) / (1.0 - CALM), 0.0, 1.0))
+	if _meter:
+		_measure(delta, reading)
 
 
-func _roar(volume_db: float) -> void:
+## Mean peak level (dB) of the Crowd bus after its dip and of World after the booth's duck, over each second. The
+## crowd's reading adds World's trim so the two are on the same scale (a bus meter reads before the next bus's volume),
+## and `sim_s` is the match clock: a loaded machine can stall the game under a wall-clock recording.
+func _measure(delta: float, reading: MatchMood) -> void:
+	var crowd := AudioServer.get_bus_index(SfxSystem.CROWD_BUS)
+	var world := AudioServer.get_bus_index(SfxSystem.WORLD_BUS)
+	if crowd < 0 or world < 0:
+		return
+	_meter_sums += Vector3(maxf(AudioServer.get_bus_peak_volume_left_db(crowd, 0) + AudioServer.get_bus_volume_db(world), -80.0),
+			maxf(AudioServer.get_bus_peak_volume_left_db(world, 0), -80.0), 1.0)
+	_meter_clock += delta
+	if _meter_clock < 1.0:
+		return
+	print("CROWD_METER " + JSON.stringify({"sim_s": snappedf(float(Engine.get_physics_frames()) / Engine.physics_ticks_per_second, 0.1), "crowd_db": snappedf(_meter_sums.x / _meter_sums.z, 0.1),
+			"world_db": snappedf(_meter_sums.y / _meter_sums.z, 0.1), "excitement": snappedf(excitement, 0.01),
+			"state": reading.state if reading != null else ""}))
+	_meter_clock = 0.0
+	_meter_sums = Vector3.ZERO
+
+
+func _roar(volume_db: float, pitch := 1.0) -> void:
 	if roar.stream == null or not roar.is_inside_tree():
 		return
 	if roar.playing and roar.get_playback_position() < ROAR_GAP_S:
 		return
+	if roar.playing and volume_db < roar.volume_db:
+		return  # a cheer never cuts a louder roar short
 	roar.volume_db = volume_db
-	roar.pitch_scale = _rng.randf_range(0.92, 1.08)
+	roar.pitch_scale = pitch * _rng.randf_range(0.92, 1.08)
 	roar.play()
 
 

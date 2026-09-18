@@ -112,6 +112,7 @@ func run() -> void:
 		row["later_at"] = later[unit_name]["at"]
 		row["later_from_goal_m"] = later[unit_name]["from_goal_m"]
 		row["later_from_start_m"] = later[unit_name]["from_start_m"]
+		row["later_element_slot_m"] = later[unit_name]["element_slot_m"]
 		row["verdict"] = _verdict(row)
 		_rows.append(row)
 	var verdicts := {}
@@ -133,7 +134,8 @@ func run() -> void:
 	var report := {"squads": ordered.size(), "units": _rows.size(), "verdicts": verdicts, "issues_while_idle": watch,
 			"from_the_given_slot_m": {"mean": snappedf(mean / maxf(settled.size(), 1), 0.1),
 					"worst": settled[-1] if not settled.is_empty() else -1.0, "alive": alive, "of": _rows.size()},
-			"cross_talk": _cross_talk, "settle_seconds": SETTLE, "later_seconds": LATER}
+			"cross_talk": _cross_talk, "settle_seconds": SETTLE, "later_seconds": LATER,
+			"element_slot_m": _element_slot_summary()}
 	print("SQUAD_ORDERS_SUMMARY ", JSON.stringify(report))
 	for row: Dictionary in _rows:
 		print("SQUAD_ORDERS ", JSON.stringify(row))
@@ -142,6 +144,21 @@ func run() -> void:
 		file.store_string(JSON.stringify({"summary": report, "units": _rows}, "  "))
 	print("SQUAD_ORDERS_DONE dir=%s" % out_dir)
 	get_tree().quit(0)
+
+
+## Element units only: {"units", "mean", "worst"} of element_slot_m in the later reading.
+func _element_slot_summary() -> Dictionary:
+	var distances: Array = []
+	for row: Dictionary in _rows:
+		var metres := int(row.get("later_element_slot_m", row.get("element_slot_m", -1)))
+		if metres >= 0:
+			distances.append(metres)
+	distances.sort()
+	var total := 0.0
+	for metres: int in distances:
+		total += metres
+	return {"units": distances.size(), "mean": snappedf(total / maxf(distances.size(), 1), 0.1),
+			"worst": distances[-1] if not distances.is_empty() else -1}
 
 
 ## Where every ordered unit is now, against where it was sent and where it started.
@@ -163,8 +180,23 @@ func _readings(ordered: Dictionary) -> Dictionary:
 					"from_start_m": roundi(at.distance_to(start)) if at is Vector3 and start is Vector3 else -1,
 					"order": String(controls.orders.current(unit_name).get("verb", "")) if alive else "",
 					"order_source": String(controls.orders.current(unit_name).get("source", "")) if alive else "",
-					"station_m": _station_distance(unit_name, at)}
+					"station_m": _station_distance(unit_name, at),
+					"element_slot_m": _element_slot_distance(unit_name, at)}
 	return out
+
+
+## Round 6: for a unit an element commands, how far it is from the slot its element holds for it NOW (-1 otherwise).
+## An element re-slots as it travels, so `sent_to` (the first order) can be stale for its units; this is the reading
+## that judges them. It is how a plain move as an element task (X4, held) gets re-admitted: 0 idle commands on five
+## squads, and element units on their slots.
+func _element_slot_distance(unit_name: String, at: Variant) -> int:
+	if controls.elements == null or not (at is Vector3):
+		return -1
+	var element := controls.elements.of(unit_name)
+	if element == null or not element.slots.has(unit_name):
+		return -1
+	var slot: Vector3 = element.slots[unit_name]
+	return roundi(Vector2(slot.x, slot.z).distance_to(Vector2((at as Vector3).x, (at as Vector3).z)))
 
 
 ## What this unit did, in the three words that separate the three bugs.

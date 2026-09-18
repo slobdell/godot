@@ -342,6 +342,16 @@ stack first, then the layer that commands it, then how the player reads and issu
   top-down and too far. Lower the default pitch, get the vehicles in profile, keep the tactical read. The standing
   guidance is unchanged: **somewhere between StarCraft 2 and Twisted Metal**.
 - **The stands are empty.** Ambient crowd — visible in the stands and audible — is missing entirely.
+- **What the range complaint actually was** (established by measurement, 2026-09-18, and it corrects how two rounds of
+  briefs had read it). Everyone — including this document — had been treating *"units see each other and then everyone
+  just starts firing"* as **too much shooting**. It is not. When engagement discipline was added and measured, the fire
+  rate went **up**, not down: units close to where their fire actually counts instead of trading gambles at maximum
+  range, so more rounds are worth firing. **His complaint was never the volume of fire — it was fire from a distance
+  where nothing else was possible.** A denser, closer fight is the *fix*, not a side effect to be tolerated.
+  The corollary, which protects the design from the obvious over-correction: **there is a point where tightening goes
+  too far, and it is recognisable.** At 0.55 of weapon reach the fire rate fell *below* the old world, matches stretched
+  by 40%, and both test matches ended on the control point rather than by elimination — **neither side could finish**.
+  That is "a fight the player can never close", and nobody should tune toward it. The shipped bands are nowhere near it.
 - **Weapon ranges are still too long.** *"Units see each other and then everyone just starts firing."* This was round
   5's combat brief too, and the lead still sees it: the first contact should not be the whole fight.
 
@@ -350,6 +360,49 @@ stack first, then the layer that commands it, then how the player reads and issu
 He chose from control's page (https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL — one frozen 30-a-side fight shown at
 every pose): **pitch 25° · 50 m out · FOV 60°**, no note. Applied as `DEFAULT_PITCH_DEG 25`, `FOV_DEG 60` (was 55),
 start 50 m out; the player tilts freely 22°–50°, and `O` is the deliberate 77° top-down.
+
+**FINAL, 2026-09-18 18:01 UTC — he went lower again: `pitch 12° · 50 m · FOV 60°`.** Asked a second time on a page
+offering 12/16/20/25°, he took **the floor of that grid too** (`picks/lead` on
+https://claude.ai/artifact/GcEpxjxyaUcjCjrmdrH2q7, no note). Two pages, two floors: this settles the long-open
+question of where *"somewhere in the middle between StarCraft 2 and Twisted Metal"* actually sits, and the answer is
+**much nearer Twisted Metal than this project has ever assumed**. Treat 12° as the intended look, not an experiment —
+and do not let a later agent "correct" it upward toward a conventional RTS pitch because the tactical read is easier
+there. If a lower band is ever offered again, expect him to take it.
+
+**THE ONE PLACE THE CAMERA OVERRIDES HIS PICK, and he has been told:** past **70 m** the tilt lifts on a soft floor —
+about **30° by 130 m, 40° at 160 m and beyond**. Up to 70 m, *including his 50 m default*, the tilt is exactly his 12°.
+The reason, found by playing it: when the vision camera pulls back to frame a whole army (~150 m), 12° turns the arena
+into a thin strip between sky and a black void with units as specks. **It is two constants if he would rather have it
+otherwise** (`rts_camera.gd`). Nobody may widen this floor into the ≤70 m band without asking him — that band is his
+pick and the whole point of it.
+
+What 12° cost, and what was done (all played and tested, `rts_camera.gd`):
+- The cutaway had to clear the **3 m wall's top edge** as well; at 12° that edge survived the cut and hid every vehicle
+  parked against it.
+- The cutaway now cuts **only when the stands would actually hide something** — always when the camera is among the
+  seats, otherwise only if the sight line to a vehicle inside the wall runs through their measured profile. Far and
+  high, the stands and crowd stay as foreground. Mutation-checked: the first version left the railings standing across
+  the whole view.
+- **No popping.** The cut starts at the wall top's depth, which is ~zero as the camera crosses the wall, so it is
+  continuous.
+- **Close up it is excellent**, and commanding is no harder than at 25° — if anything picking out individual vehicles
+  is easier. Vehicles read in profile with the stands and crowd behind them, and feel's skyline shows above the far
+  stands.
+- **Open, and now seen every match: the ground plane ends at the stands.** Any camera outside the venue (far framing,
+  and the free camera after a defeat) looks down past the stands into black void — the bottom 15–40% of a far frame.
+  A dark plaza, car park or road out toward the new skyline would fill it. feel's to take.
+
+Consequences that follow from 12° and are now design facts rather than open questions:
+- **`MIN_PITCH_DEG` moves down with it**, so the player's whole tilt range shifts toward the ground.
+- **The wall cutaway stops being occasional and becomes constant.** A 12° camera crosses arena walls most of the time
+  on most maps, so the near-plane cutaway is load-bearing, not a nicety. It is cheap (one perimeter ray and a dot
+  product per frame, setting `Camera3D.near`), but everything that assumes a camera mostly clearing the walls needs
+  re-checking at this pitch.
+- **The crowd becomes about a third of the frame.** At 12°/70 m the far stands sit across the middle third of the
+  screen, so the venue is no longer background dressing — it is a third of the image, for the whole match.
+- **Off-screen edge markers fire less often**, because more of the army is genuinely in view. Correct, not a bug.
+
+His earlier pick, superseded: 25° · 50 m · FOV 60°.
 
 **He picked the lowest angle on the page**, which is worth recording as a *direction* and not just a value: the grid
 offered 25/35/45/60° and he took the floor of it. The honest reading is that the range may not have gone low enough,

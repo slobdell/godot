@@ -20,7 +20,9 @@ func _run(player_team: int) -> Dictionary:
 	theirs.global_position = Vector3(60, 0, -90)
 	var started_mine := mine.global_position
 	var started_theirs := theirs.global_position
-	await wait_physics_frames(SECONDS * 60)
+	# Seconds, not frames (lesson 30): `SECONDS * 60` ran 24 s at the 30 Hz tick, twice the intended window, against a
+	# drift bar measured over 12 (control, round 6).
+	await wait_physics_frames(SECONDS * Engine.physics_ticks_per_second)
 	return {"mine": started_mine.distance_to(mine.global_position),
 			"theirs": started_theirs.distance_to(theirs.global_position)}
 

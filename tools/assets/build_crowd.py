@@ -4,7 +4,8 @@
     game/theme/cyberpunk/crowd/crowd_atlas.png   512 × 128, 8 frames of 64 × 128, RGBA
         frames 0-3  spectators at rest (arms down, hands on the rail, one pointing, hands in pockets)
         frames 4-7  the same people cheering (both arms up, fist pump, waving, arms wide)
-    RGB = shading (a lit top edge for the floodlight rim, darker clothes below), A = coverage (alpha scissor).
+    R = B = shading (a lit top edge for the floodlight rim, darker clothes below), G = skin (1 on heads and hands,
+    so the shader can give faces a skin tone: feel X2, round 6), A = coverage (alpha scissor).
 
 Figures are head-and-torso silhouettes: the stands' rails hide the legs, and from the RTS camera a spectator is a
 few pixels, so shape and motion carry it. The shader tints each instance and swaps rest → cheer frames (+4).
@@ -25,6 +26,8 @@ def figure(pose: str, rng: random.Random) -> Image.Image:
     scale = 4  # draw big, then downsample for soft edges
     img = Image.new("LA", (W * scale, H * scale), (0, 0))
     d = ImageDraw.Draw(img)
+    skin = Image.new("L", (W * scale, H * scale), 0)
+    s = ImageDraw.Draw(skin)
     cx = W * scale // 2
     shoulder_y = int(H * scale * 0.42)
     width = int(W * scale * rng.uniform(0.34, 0.44))
@@ -34,11 +37,13 @@ def figure(pose: str, rng: random.Random) -> Image.Image:
     d.polygon([(cx - width // 2, shoulder_y), (cx + width // 2, shoulder_y),
                (cx + width // 2 - 10, H * scale), (cx - width // 2 + 10, H * scale)], fill=(body, 255))
     d.ellipse([cx - head_r, shoulder_y - head_r * 2 - 14, cx + head_r, shoulder_y - 14], fill=(205, 255))
+    s.ellipse([cx - head_r, shoulder_y - head_r * 2 - 14, cx + head_r, shoulder_y - 14], fill=255)
     arm = 32
 
     def limb(x0, y0, x1, y1):
         d.line([(x0, y0), (x1, y1)], fill=(170, 255), width=arm)
         d.ellipse([x1 - arm // 2 - 2, y1 - arm // 2 - 2, x1 + arm // 2 + 2, y1 + arm // 2 + 2], fill=(200, 255))
+        s.ellipse([x1 - arm // 2 - 2, y1 - arm // 2 - 2, x1 + arm // 2 + 2, y1 + arm // 2 + 2], fill=255)
 
     left, right = cx - width // 2 + 8, cx + width // 2 - 8
     top = shoulder_y + 10
@@ -68,6 +73,7 @@ def figure(pose: str, rng: random.Random) -> Image.Image:
         limb(left, top, left - 58, top - int(reach * 0.3))
         limb(right, top, right + 58, top - int(reach * 0.3))
     small = img.resize((W, H), Image.LANCZOS)
+    skin_small = skin.resize((W, H), Image.LANCZOS)
     lum, alpha = small.split()
     # Rim light from above: brighten the top 20% of the silhouette's pixels in each column.
     shade = Image.new("L", (W, H))
@@ -80,7 +86,7 @@ def figure(pose: str, rng: random.Random) -> Image.Image:
                 px_s[x, y] = min(255, px_l[x, y] + (60 if seen < 5 else 0))
             else:
                 px_s[x, y] = px_l[x, y]
-    return Image.merge("RGBA", (shade, shade, shade, alpha))
+    return Image.merge("RGBA", (shade, skin_small, shade, alpha))
 
 
 def main() -> int:

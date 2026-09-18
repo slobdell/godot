@@ -8,15 +8,25 @@ extends Node3D
 const SHADER := preload("res://game/theme/fx/shaders/crowd.gdshader")
 const ATLAS := preload("res://game/theme/cyberpunk/crowd/crowd_atlas.png")
 ## People drawn per quality tier (FxQuality): phones show a thinner crowd.
-const PER_TIER := {FxQuality.Tier.LOW: 900, FxQuality.Tier.MEDIUM: 1800, FxQuality.Tier.HIGH: 4000}
+## Feel X2 (round 6): doubled after `make crowd-look` found a stand of 5 sparse rows reading as empty seats. It is one
+## draw call of alpha-scissored quads; a figure is 4 vertices, so even LOW's 1,800 is 7,200 vertices.
+## X4 added stands on the short sides (4,287 -> ~7,700 seats): HIGH draws them all.
+const PER_TIER := {FxQuality.Tier.LOW: 1800, FxQuality.Tier.MEDIUM: 3600, FxQuality.Tier.HIGH: 8000}
 ## The crowd's resting mood and how fast a roar dies down (per second).
 const CALM := 0.12
 const SETTLE := 0.35
 const EVENT_RADIUS := 90.0
-## Clothes: grimy darks and worn denim/leather (never saturated: art_direction.md), with a few fans in team neon.
-const PALETTE := [Color(0.26, 0.25, 0.25), Color(0.19, 0.21, 0.26), Color(0.33, 0.28, 0.23), Color(0.23, 0.23, 0.21),
-		Color(0.4, 0.38, 0.35), Color(0.3, 0.2, 0.17), Color("#0898A4"), Color("#A80E62")]
-const NEON_FANS := 0.06
+## Clothes: worn and never saturated (art_direction.md), but spread across the whole range of value. Round 5's crowd
+## was all grimy darks, and `make crowd-look` (feel X1, round 6) found it the same value as the stands' metal: present
+## in every frame and invisible in all of them. A real crowd under floodlights reads as a speckle of light shirts, dark
+## jackets, denim and the odd colour, so the palette is a speckle. The last two are fans in team neon.
+const PALETTE := [Color(0.78, 0.77, 0.74), Color(0.62, 0.63, 0.66), Color(0.38, 0.46, 0.6), Color(0.64, 0.26, 0.2),
+		Color(0.72, 0.6, 0.32), Color(0.3, 0.38, 0.3), Color(0.16, 0.16, 0.17), Color(0.34, 0.25, 0.19),
+		Color("#0898A4"), Color("#A80E62")]
+const CLOTHES := 8
+const NEON_FANS := 0.12
+## How brightly the floodlights light the stands (the shader's `lamp`).
+const LAMP := 1.8
 
 var excitement := CALM
 var multimesh_instance := MultiMeshInstance3D.new()
@@ -33,6 +43,7 @@ func _init() -> void:
 	name = "Crowd"
 	material.shader = SHADER
 	material.set_shader_parameter("atlas", ATLAS)
+	material.set_shader_parameter("lamp", LAMP)
 	multimesh_instance.name = "CrowdMesh"
 	multimesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(multimesh_instance)
@@ -49,7 +60,7 @@ func _ready() -> void:
 
 ## Seats along rows: each row is [from: Vector3, to: Vector3] (world space, feet height). `spacing` meters between
 ## people, `occupancy` 0..1 of seats filled. Seeded, so the same arena always has the same crowd.
-func seat_rows(rows: Array, spacing := 0.85, occupancy := 0.85, seed := 1409) -> void:
+func seat_rows(rows: Array, spacing := 0.75, occupancy := 0.85, seed := 1409) -> void:
 	_rng.seed = seed
 	seats.clear()
 	for row in rows:
@@ -92,7 +103,7 @@ func _build() -> void:
 		var seat := seats[order[n]]
 		var height := _rng.randf_range(1.6, 1.95)  # the quad is 1 m tall and 2 m wide before scaling: a 64 × 128 figure
 		multimesh.set_instance_transform(n, Transform3D(Basis.from_scale(Vector3.ONE * height), seat))
-		var tint: Color = PALETTE[6 + _rng.randi() % 2] if _rng.randf() < NEON_FANS else PALETTE[_rng.randi() % 6]
+		var tint: Color = PALETTE[CLOTHES + _rng.randi() % 2] if _rng.randf() < NEON_FANS else PALETTE[_rng.randi() % CLOTHES]
 		multimesh.set_instance_color(n, tint * _rng.randf_range(0.8, 1.15))
 		multimesh.set_instance_custom_data(n, Color(_rng.randf(), _rng.randf(), (seat.x + 500.0) / 1000.0, (seat.z + 500.0) / 1000.0))
 		bounds = AABB(seat, Vector3.ONE) if n == 0 else bounds.expand(seat)

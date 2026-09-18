@@ -139,6 +139,8 @@ func _init() -> void:
 		add_child(PerfOverlay.new())
 	if LaunchFlags.from_environment().has("perf-scene"):
 		add_child(PerfScene.new())
+	if LaunchFlags.from_environment().has("crowd-look"):
+		add_child(CrowdLook.new())
 
 
 func _ready() -> void:

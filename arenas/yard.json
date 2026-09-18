@@ -4,6 +4,7 @@
  "title": "The Container Yard",
  "note": "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and whoever scouts the next lane first gets the ambush. Scouts, IFVs and burners shine; long guns can't see.",
  "half_size": 120.0,
+ "fixture": false,
  "obstacles": [],
  "props": [
   {

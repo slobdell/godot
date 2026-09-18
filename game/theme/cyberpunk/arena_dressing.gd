@@ -28,7 +28,14 @@ const AD_SCREEN := preload("res://game/theme/arena_kit/prop_ad_screen.tscn")
 const CONTAINER_20 := preload("res://game/theme/arena_kit/prop_container_20.tscn")
 ## Screens either side of each gate, this far along the wall from its middle.
 const SCREEN_OFFSET := 46.0
-const STANDS_ROWS := 5
+## Feel X4 (round 6): each screen turns this far toward the far half of the arena. Square to the centre line they were
+## seen edge-on from both bases at the lead's low camera; a screen in the north half now faces the south team, and
+## the other way round, so every player has two screens turned to them.
+const SCREEN_TOE := deg_to_rad(30.0)
+## Seat rows per grandstand module (feel X2, round 6: at 5, bare metal showed between rows).
+const STANDS_ROWS := 9
+## Side stands start this far from the gate (m along the short walls), clear of the barricades and ad screens.
+const SIDE_STANDS_FROM := 56.0
 
 var ground: ChunkedGround
 var crowd: CrowdSystem
@@ -97,24 +104,22 @@ func _build_venue() -> void:
 		var modules := int((2.0 * half) / size.x)
 		var rows := []
 		var signs := []
+		var back := WALL_THICK / 2.0 + size.z / 2.0 + 0.3
 		for side in [1.0, -1.0]:  # the model's seats face -Z: the south stands as they are, the north ones turned
 			for i in modules:
 				var x := -half + size.x * (i + 0.5) + (2.0 * half - size.x * modules) / 2.0
-				var z: float = side * (half + WALL_THICK / 2.0 + size.z / 2.0 + 0.3)
-				var xform := Transform3D(Basis(Vector3.UP, 0.0 if side > 0.0 else PI), Vector3(x, 0.0, z))
-				var stands := stands_scene.instantiate() as Node3D
-				stands.name = "Stands"
-				stands.transform = xform
-				structures.add_child(stands, true)
-				if i % 3 == 1:  # a neon sign on every third module's top rail, facing the arena
-					signs.append({"transform": xform * Transform3D(Basis(), Vector3(0.0, size.y * 0.92 + 1.0, -size.z / 2.0 + 1.5)),
-							"cell": signs.size(), "color": NeonSigns.COLORS[signs.size() % NeonSigns.COLORS.size()]})
-				# Seat rows climb from the front tier (~30% of the height) to the top (~80%), facing the arena.
-				for r in STANDS_ROWS:
-					var f := float(r) / (STANDS_ROWS - 1)
-					var local_z := -size.z / 2.0 + size.z * lerpf(0.16, 0.7, f)
-					var local_y := size.y * lerpf(0.32, 0.8, f)
-					rows.append([xform * Vector3(-size.x / 2.0 + 1.0, local_y, local_z), xform * Vector3(size.x / 2.0 - 1.0, local_y, local_z)])
+				var xform := Transform3D(Basis(Vector3.UP, 0.0 if side > 0.0 else PI), Vector3(x, 0.0, side * (half + back)))
+				_add_stands(stands_scene, xform, size, rows, signs, i % 3 == 1)  # a neon sign on every third module
+		# Feel X4 (round 6): stands on the short sides too, beyond the ad screens. At the lead's 12 degree camera the
+		# horizon runs the whole width of the frame, and with stands on the long sides only its left and right thirds
+		# were bare wall: the venue looked one-sided.
+		var side_count := int((half + 4.0 - SIDE_STANDS_FROM) / size.x)
+		for side in [1.0, -1.0]:  # east (+X) and west, turned so the seats face the centre
+			for along in [1.0, -1.0]:
+				for i in side_count:
+					var z: float = along * (SIDE_STANDS_FROM + size.x * (i + 0.5))
+					var xform := Transform3D(Basis(Vector3.UP, side * PI / 2.0), Vector3(side * (half + back), 0.0, z))
+					_add_stands(stands_scene, xform, size, rows, signs, i == 1)
 		if not signs.is_empty():
 			structures.add_child(NeonSigns.build(signs))
 		crowd = CrowdSystem.new()
@@ -140,9 +145,27 @@ func _build_venue() -> void:
 			var screen := AD_SCREEN.instantiate() as Node3D
 			screen.name = "AdScreen"
 			screen.set("channel_name", "arena" if along * side > 0.0 else "odds")
-			screen.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0),
+			screen.transform = Transform3D(Basis(Vector3.UP, side * PI / 2.0 - along * side * SCREEN_TOE),
 					Vector3(side * (half + WALL_THICK / 2.0 + 4.0), 0.0, along * minf(SCREEN_OFFSET, half * 0.45)))
 			structures.add_child(screen, true)
+
+
+## One grandstand module at `xform`: its crowd's seat rows go on `rows`, and (`with_sign`) a neon sign on its top rail,
+## facing the arena, on `signs`.
+func _add_stands(stands_scene: PackedScene, xform: Transform3D, size: Vector3, rows: Array, signs: Array, with_sign: bool) -> void:
+	var stands := stands_scene.instantiate() as Node3D
+	stands.name = "Stands"
+	stands.transform = xform
+	structures.add_child(stands, true)
+	if with_sign:
+		signs.append({"transform": xform * Transform3D(Basis(), Vector3(0.0, size.y * 0.92 + 1.0, -size.z / 2.0 + 1.5)),
+				"cell": signs.size(), "color": NeonSigns.COLORS[signs.size() % NeonSigns.COLORS.size()]})
+	# Seat rows climb from the front tier (~30% of the height) to the top (~80%), facing the arena.
+	for r in STANDS_ROWS:
+		var f := float(r) / (STANDS_ROWS - 1)
+		var local_z := -size.z / 2.0 + size.z * lerpf(0.16, 0.7, f)
+		var local_y := size.y * lerpf(0.32, 0.8, f)
+		rows.append([xform * Vector3(-size.x / 2.0 + 1.0, local_y, local_z), xform * Vector3(size.x / 2.0 - 1.0, local_y, local_z)])
 
 
 ## FX lab: hide the venue (stands, crowd, gates) to measure what it costs.

@@ -8,6 +8,8 @@ extends RefCounted
 var _fills: Array = []
 var _outlines: Array = []
 var _icons: Array = []
+## Round 6 X2: pre-drawn textures (task graphics) in the icon pass.
+var _textures: Array = []
 var _texts: Array = []
 
 
@@ -23,6 +25,10 @@ func icon(role: String, at: Vector2, size: float, color: Color) -> void:
 	_icons.append([role, at, size, color])
 
 
+func texture(image: Texture2D, rect: Rect2, color: Color) -> void:
+	_textures.append([image, rect, color])
+
+
 func text(font: Font, at: Vector2, words: String, font_size: int, color: Color, width := -1.0) -> void:
 	_texts.append([font, at, words, font_size, color, width])
 
@@ -34,9 +40,12 @@ func flush(canvas: CanvasItem) -> void:
 		canvas.draw_rect(piece[0], piece[1], false, piece[2])
 	for piece: Array in _icons:
 		CommandIcons.draw_unit_icon(canvas, piece[0], piece[1], piece[2], piece[3])
+	for piece: Array in _textures:
+		canvas.draw_texture_rect(piece[0], piece[1], false, piece[2])
 	for piece: Array in _texts:
 		canvas.draw_string(piece[0], piece[1], piece[2], HORIZONTAL_ALIGNMENT_LEFT, piece[5], piece[3], piece[4])
 	_fills.clear()
 	_outlines.clear()
 	_icons.clear()
+	_textures.clear()
 	_texts.clear()
