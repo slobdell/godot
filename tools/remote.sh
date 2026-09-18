@@ -66,7 +66,22 @@ ssh "${ssh_opts[@]}" "$host" "bash -s -- $(printf '%q ' "$@")" <<<"$script"
 status=$?
 
 mkdir -p "$repo_root/build"
-rsync -az -e "ssh ${ssh_opts[*]}" --exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
-	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>/dev/null || true
-echo ">> remote: make $* exited $status (build/ copied back)" >&2
+copy_log=$(rsync -az -e "ssh ${ssh_opts[*]}" --exclude='web/' --exclude='server/' --exclude='*.pck' --exclude='*.wasm' \
+	"$host:~/$remote_dir/build/" "$repo_root/build/" 2>&1)
+copy_status=$?
+if [ $copy_status -ne 0 ]; then
+	# Silently swallowed, this leaves stale local results wearing a fresh timestamp's name: a full local disk once
+	# left build/audio/pass.* three hours old while the run that wrote them had just passed (audio, 2026-09-17).
+	echo ">> remote: FAILED to copy build/ back (rsync exit $copy_status); local build/ is STALE, not this run's" >&2
+	echo "$copy_log" | tail -3 >&2
+	df -h "$repo_root" | tail -1 >&2
+fi
+echo ">> remote: make $* exited $status (build/ copied back$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
+# A failed copy-back fails the command. The run may well have passed on builder0, but everything local that would
+# prove it is from an earlier run, and a warning in a long log is exactly what nobody reads (the orchestrator called
+# main green off the wrong line of a log the same afternoon). A real make failure still wins: it is the bigger news.
+if [ "$status" -eq 0 ] && [ "$copy_status" -ne 0 ]; then
+	echo ">> remote: treating that as a failure: nothing local proves what the run did" >&2
+	exit 4
+fi
 exit "$status"

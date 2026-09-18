@@ -1,6 +1,7 @@
 """Round 5 X1: the sound-effect pipeline against the mock client (no API calls, no credits)."""
 
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -9,6 +10,7 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 import sfx_generate  # noqa: E402
 import sfx_layer  # noqa: E402
@@ -25,9 +27,15 @@ class RecipeTest(unittest.TestCase):
         data = sfx_generate.load_sources()
         self.assertTrue(any(s.get("pilot") for s in data["sources"]), "a pilot is marked")
         audio = sfx_layer.AUDIO
+        # A sound is either synthesised (the layer goes under that transient) or new with no synth original, in which
+        # case SfxSystem.ALIAS must name what it stands in for until its takes exist.
+        alias = (ROOT / "game" / "theme" / "audio" / "sfx_system.gd").read_text()
+        alias = alias[alias.index("const ALIAS := {"):]
+        alias = set(re.findall(r'"([a-z_]+)":', alias[: alias.index("}")]))
         for source in data["sources"]:
-            self.assertTrue((audio / ("%s.wav" % source["sound"])).exists(),
-                            "%s layers under %s, a sound that exists" % (source["id"], source["sound"]))
+            synth = (audio / ("%s.wav" % source["sound"])).exists()
+            self.assertTrue(synth or source["sound"] in alias,
+                            "%s layers under %s, which is neither synthesised nor aliased" % (source["id"], source["sound"]))
             unknown = set(source.get("layer", {})) - set(sfx_layer.DEFAULTS)
             self.assertFalse(unknown, "%s has no misspelt layer settings" % source["id"])
 

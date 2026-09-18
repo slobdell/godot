@@ -352,3 +352,15 @@ func test_muzzle_effects_follow_the_drawn_hull_not_the_tick() -> void:
 	body.position = Vector3(4, 0, 2)
 	assert_eq(WeaponFx.drawn_offset(body), Vector3.ZERO, "no interpolation: effects spawn exactly at the event's muzzle")
 	assert_eq(WeaponFx.drawn_offset(null), Vector3.ZERO, "an unknown shooter changes nothing")
+
+
+func test_the_blob_shadow_is_alpha_blended_never_multiplied() -> void:
+	# The lead saw "an ugly dark rectangle below every vehicle": with blend_mul the Compatibility renderer drew these
+	# MultiMesh quads solid black whatever the fragment returned. Alpha-blended black draws the oval.
+	var code := (UnderglowSystem.BLOB_SHADOW_SHADER as Shader).code
+	var modes := ""
+	for line in code.split("\n"):
+		if line.begins_with("render_mode"):
+			modes = line
+	assert_true(modes != "" and not modes.contains("blend_mul"), "the blob shadow must not be multiplied (%s)" % modes)
+	assert_true(code.contains("ALPHA = shade"), "it fades out through ALPHA")

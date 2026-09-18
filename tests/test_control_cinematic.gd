@@ -25,8 +25,11 @@ func test_a_place_where_both_sides_meet_outranks_a_quiet_one() -> void:
 	# Our five sit together in the west; one of ours and the enemy are alone together in the east.
 	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3", "Green_Bravo_1"]:
 		f.tank(unit_name).global_position = Vector3(-90, 0, 90)
+		f.tank(unit_name).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	f.tank("Green_Bravo_2").global_position = Vector3(90, 0, -90)
+	f.tank("Green_Bravo_2").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	f.tank("Rust_Alpha_1").global_position = Vector3(94, 0, -94)
+	f.tank("Rust_Alpha_1").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await _frames(2)
 	var director := _director(f)
 	var best := director.best_scene()
@@ -85,7 +88,9 @@ func test_it_frames_the_vehicles_in_shot() -> void:
 	await f.build(false)
 	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
 		f.tank(unit_name).global_position = Vector3(60, 0, -60)
+		f.tank(unit_name).reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	f.tank("Rust_Alpha_1").global_position = Vector3(64, 0, -64)
+	f.tank("Rust_Alpha_1").reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	await _frames(2)
 	var director := _director(f)
 	await _frames(3)

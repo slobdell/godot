@@ -22,6 +22,7 @@ func _match(units: Array) -> Array:
 	for i in units.size():
 		var tank := game_match.tanks.get_node("Green_Alpha_%d" % (i + 1)) as Tank
 		tank.global_position = Vector3(LANE_X + i * 6.0, 0.0, 50.0)
+		tank.reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 		tanks.append(tank)
 	var orders := Orders.new()
 	Orders.attach(game_match, orders)
@@ -122,6 +123,7 @@ func test_a_laggard_catches_up_while_the_leader_waits() -> void:
 	var orders: Orders = setup[1]
 	var tanks: Array[Tank] = setup[2]
 	tanks[1].global_position = Vector3(LANE_X + 6.0, 0.0, 90.0)  # 40 m behind
+	tanks[1].reset_physics_interpolation()  # teleport: interpolation must not draw it at its old spot
 	assert_eq(orders.issue(UnitCommand.make(_names(tanks), "move", {"to": [LANE_X + 3.0, -10.0]})), "", "move accepted")
 	var arrived := {}
 	var laggard_top := 0.0

@@ -64,6 +64,17 @@ func test_the_faction_menu_opens_by_default_and_a_flag_turns_it_off() -> void:
 	assert_true(SkirmishMode.wants_faction_menu(_flags({"skirmish": "", "pick-faction": ""})), "--pick-faction forces it")
 
 
+## Round 5 reopened: the wiring that tells ai's brains which side has a commander. Without it the player's army marches
+## off at the start (the behaviour itself is ai's, and ai tests it); this is the one line in control's file that turns
+## it on, and removing it would fail silently.
+func test_a_skirmish_says_which_team_the_player_commands_and_spectate_says_nobody() -> void:
+	assert_eq(SkirmishMode.commanded_team(_flags({"skirmish": ""})), Match.Team.GREEN, "the player commands green")
+	assert_eq(SkirmishMode.commanded_team(_flags({"skirmish": "", "player-faction": "gangs"})), Match.Team.GREEN,
+			"a faction skirmish too: this is where the armies used to march off")
+	assert_eq(SkirmishMode.commanded_team(_flags({"skirmish": "", "cinematic": ""})), -1,
+			"a spectated match has no commander, so both sides play themselves")
+
+
 ## Round 5 (orchestrator's ruling): the CPU runs doctrine by default once ai has costed it; a flag keeps brains-only.
 func test_which_commander_the_cpu_runs_is_a_flag() -> void:
 	assert_eq(SkirmishMode.cpu_runs_elements(_flags({})), SkirmishMode.ELEMENT_CPU_DEFAULT, "the default")

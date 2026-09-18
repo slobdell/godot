@@ -38,7 +38,9 @@ func build(with_executor := true) -> void:
 	var rust := {"name": "Test", "squads": [{"name": "Alpha", "units": [{"unit": "tank"}]}]}
 	test.assert_eq(game_match.load_doctrine(Match.Team.RUST, rust), "", "setup: rust doctrine")
 	for unit_name in SPOTS:
-		(game_match.tanks.get_node(unit_name) as Tank).global_position = SPOTS[unit_name]
+		var spot := game_match.tanks.get_node(unit_name) as Tank
+		spot.global_position = SPOTS[unit_name]
+		spot.reset_physics_interpolation()
 	camera = Camera3D.new()
 	test.add_to_tree(camera)
 	camera.make_current()
@@ -99,6 +101,7 @@ func build_scale(per_side: int) -> void:
 		var column := 0
 		for tank_node in game_match.sorted_team_tanks(team):
 			tank_node.global_position = Vector3(-36.0 + column * 6.0, 0.0, (30.0 if team == Match.Team.GREEN else -30.0) + row * 6.0)
+			tank_node.reset_physics_interpolation()
 			column += 1
 			if column >= 12:
 				column = 0
@@ -135,6 +138,17 @@ func build_scale(per_side: int) -> void:
 		controls.groups.label(number, String(squad.squad_name))
 		number += 1
 	await test.wait_physics_frames(3)
+
+
+## Teleport a vehicle. Assigning `global_position` alone leaves physics interpolation drawing it at its old spot for a
+## tick or two (project.godot: common/physics_interpolation), and anything that follows what the player *sees*
+## (`Shown`: the camera, rings, bars, picking) then reads the old place. Game code resets on every teleport
+## (`Tank._spawn`, respawn, shells); tests must too, or they race the interpolation.
+func place(unit_name: String, at: Vector3) -> Tank:
+	var t := tank(unit_name)
+	t.global_position = at
+	t.reset_physics_interpolation()
+	return t
 
 
 func tank(unit_name: String) -> Tank:

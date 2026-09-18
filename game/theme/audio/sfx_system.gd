@@ -37,6 +37,9 @@ const SOUNDS := {
 	"ui_ack_move": "res://assets/audio/ui_ack_move.wav",
 	"ui_ack_attack": "res://assets/audio/ui_ack_attack.wav",
 	"ui_select": "res://assets/audio/ui_select.wav",
+	# Audio (round 5, after the lead played the Syndicate): the energy weapons have their own sounds instead of
+	# borrowing a machine gun and a mortar (SfxWeapons). These exist only as layered ElevenLabs takes
+	# (assets/audio/layered), so they have no entry here until sfx_layer writes one; ALIAS covers the gap.
 	# Audio (round 5, X4): running gear under the engines (tools/audio/make_world_loops.py).
 	"tread_loop": "res://assets/audio/tread_loop.wav",
 	"tire_loop": "res://assets/audio/tire_loop.wav",
@@ -81,6 +84,9 @@ const DISTANCE_FILTER := {
 	"mg_round": [3000.0, -12.0], "mg_loop": [3000.0, -12.0], "shell_hit_armor": [2600.0, -12.0],
 	"dirt_impact": [1800.0, -16.0], "weak_spot_hit": [3000.0, -10.0], "flame_loop": [2600.0, -12.0],
 	"engine_diesel": [1800.0, -16.0], "engine_v8": [1800.0, -16.0], "engine_electric": [2600.0, -12.0],
+	"railgun_shot": [1500.0, -20.0], "energy_beam": [2600.0, -12.0], "plasma_loop": [2800.0, -12.0],
+	"pulse_shot": [2400.0, -14.0], "missile_launch": [2000.0, -14.0], "energy_hit": [2600.0, -12.0],
+	"sonic_loop": [2000.0, -14.0],
 }
 ## Per sound: base volume (dB) and random pitch spread, so repeated shots don't sound identical.
 const MIX := {
@@ -91,6 +97,9 @@ const MIX := {
 	"autocannon_shot": [-6.0, 0.06], "mg_round": [-13.0, 0.12], "mortar_launch": [-5.0, 0.05],
 	"ricochet": [-9.0, 0.15], "bullet_hit_metal": [-12.0, 0.12], "weak_spot_hit": [-2.0, 0.03],
 	"ui_ack_move": [-13.0, 0.03], "ui_ack_attack": [-12.0, 0.03], "ui_select": [-18.0, 0.05],
+	# The energy family: a railgun hits like a cannon, the rest sit with the weapons they replace.
+	"railgun_shot": [0.0, 0.05], "energy_beam": [-5.0, 0.07], "plasma_loop": [-10.0, 0.06],
+	"pulse_shot": [-6.0, 0.06], "missile_launch": [-5.0, 0.05], "energy_hit": [-2.0, 0.07], "sonic_loop": [-11.0, 0.05],
 }
 
 var muted := false
@@ -105,6 +114,12 @@ var played := 0
 var culled := 0
 ## Where loudness is judged from; null = the viewport's camera (tests set a point).
 var listener: Variant = null
+## What a sound falls back to while it has no file of its own: a new weapon sound that hasn't been generated yet
+## plays the family sound it replaces rather than nothing at all.
+const ALIAS := {
+	"railgun_shot": "tank_boom", "energy_beam": "laser_pulse", "plasma_loop": "mg_loop", "pulse_shot": "autocannon_shot",
+	"missile_launch": "mortar_launch", "energy_hit": "shell_hit_armor", "sonic_loop": "mg_loop",
+}
 ## Sounds --audio-solo keeps quiet.
 var silenced := {}
 ## key -> how many synthesised takes loaded (make_sfx.gd), whether or not layered ones replaced them.
@@ -173,8 +188,6 @@ func _init() -> void:
 ## `--sfx-synth` keeps the synthesised set, for A/B listening.
 func _use_layered_takes() -> void:
 	for key in SfxLayers.TAKES:
-		if not streams.has(key):
-			continue
 		var pool: Array[AudioStream] = []
 		for path in SfxLayers.TAKES[key]:
 			var stream := load(String(path)) as AudioStream
@@ -184,7 +197,8 @@ func _use_layered_takes() -> void:
 			continue
 		takes[key] = pool
 		layered[key] = pool.size()
-		if pool[0] is AudioStreamWAV:
+		# A sound that exists only as layered takes (the energy weapons) becomes a sound like any other.
+		if pool[0] is AudioStreamWAV or not streams.has(key):
 			streams[key] = pool[0]
 
 
@@ -254,7 +268,10 @@ static func _add_world_bus() -> int:
 ## A world sound at `position`, in one of its takes.
 func play_at(sound: String, position: Vector3, volume_offset_db := 0.0) -> void:
 	# Not in the tree yet (FxWorld is added deferred; the match announcer speaks at spawn): drop it.
-	if muted or not streams.has(sound) or not is_inside_tree() or silenced.has(sound):
+	if muted or not is_inside_tree() or silenced.has(sound):
+		return
+	sound = String(ALIAS.get(sound, sound)) if not streams.has(sound) else sound
+	if not streams.has(sound):
 		return
 	var mix: Array = MIX.get(sound, [0.0, 0.0])
 	var level := heard_level_db(float(mix[0]) + volume_offset_db, position)
