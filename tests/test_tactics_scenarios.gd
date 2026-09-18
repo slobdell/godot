@@ -33,11 +33,16 @@ func test_support_by_fire_forms_a_firing_line_at_a_standoff_and_fires_from_it() 
 	assert_true(Array(result["drills"]).has("support_by_fire"), "the element runs the task (ran %s)" % [result["drills"]])
 	assert_true(not Array(result["drills"]).has("far_ambush") and not Array(result["drills"]).has("react_to_contact"),
 			"and contact never turns it into an advance or a flank (ran %s)" % [result["drills"]])
-	assert_true(float(result["closest_m"]) >= 35.0, "nobody advances onto the point (closest %.0f m)" % result["closest_m"])
+	# Derived, not written down: the line stands SBF_STANDOFF x the tanks' band off the point (56 m before CP4, ~36 m
+	# after), and a crew may stand FACE_LEAD nearer on its sector. A number typed in here went stale when the bands moved.
+	var standoff := ElementPlan.SBF_STANDOFF * TankBrain.fire_band(Weapons.profile(String(Units.stat("tank", "weapon"))))
+	var floor_m := maxf(standoff, ElementPlan.SBF_MIN_STANDOFF_M) - ElementPlan.FACE_LEAD - 3.0
+	assert_true(float(result["closest_m"]) >= floor_m, "nobody advances onto the point (closest %.0f m, line at %.0f m)"
+			% [result["closest_m"], standoff])
 	assert_true(float(result["frontage_m"]) >= 24.0, "abreast: a line %.0f m wide" % result["frontage_m"])
 	assert_true(float(result["depth_m"]) <= 16.0, "not a column (%.0f m deep)" % result["depth_m"])
 	for distance: float in result["to_point_m"]:
-		assert_true(distance <= 80.0, "every gun is within reach of the point (%.0f m)" % distance)
+		assert_true(distance <= standoff + 12.0, "every gun is within reach of the point (%.0f m)" % distance)
 	assert_true(int(result["facing_point"]) >= 3, "the line faces the point (%d of 4)" % result["facing_point"])
 	assert_true(int(result["shots"]) > 0, "and it fires from there")
 

@@ -617,7 +617,8 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 ## Has the element closed up? Judged in TIME, the lead's form-up estimate (X3): every member reaches its slot within
 ## the time the slowest vehicle needs to cover the doctrine's cohesion distance. A fast scout 30 m out is as closed
 ## up as a tank 15 m out; measured in metres the tank held every leg up and the scout never did.
-## (Straight line over top speed, as FormUp.eta estimates it until nav's Movement.eta exists.)
+## (Straight line over top speed: the plan is pure and cannot ask the navmesh. The element's published form-up ETA —
+## Element.form_up_eta(), which paces the members — is nav's route-aware Movement.eta.)
 static func _cohesive(members: Array, anchor: Variant, formation: String, heading: Vector3, spacing: float,
 		table: DoctrineTable) -> bool:
 	if anchor == null or members.is_empty():

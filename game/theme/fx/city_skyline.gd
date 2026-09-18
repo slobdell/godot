@@ -10,6 +10,10 @@ const HEIGHT := 220.0
 const FOOT := -30.0
 const SEGMENTS := 128
 const SHADER := preload("res://game/theme/fx/shaders/skyline.gdshader")
+const GROUND_SHADER := preload("res://game/theme/fx/shaders/city_ground.gdshader")
+## The streets out to the ring, just under the arena floor (which covers them inside its 160 m): without them a low or
+## far camera saw a void past the stands (control's played session at 12 degrees).
+const GROUND_DEPTH := -0.15
 
 
 func _init() -> void:
@@ -24,6 +28,18 @@ func _init() -> void:
 	material_override = material
 	# Drawn whatever the camera's far distance culls around it (the ring is bigger than any sensible AABB test).
 	extra_cull_margin = 16384.0
+	var ground := MeshInstance3D.new()
+	ground.name = "CityGround"
+	var plane := PlaneMesh.new()
+	plane.size = Vector2.ONE * RADIUS * 2.0
+	ground.mesh = plane
+	var ground_material := ShaderMaterial.new()
+	ground_material.shader = GROUND_SHADER
+	ground.material_override = ground_material
+	ground.position.y = GROUND_DEPTH
+	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ground.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	add_child(ground)
 
 
 ## An open cylinder: UV.x once around, UV.y from the foot (0) to the top (1), normals facing the centre. Pure, for tests.
