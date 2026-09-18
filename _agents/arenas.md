@@ -112,6 +112,79 @@ much as the map. The same seeds on several arenas are the same army pairings rep
 | **Time hidden** | Share of unit-seconds not visible to any enemy | Higher in dense arenas |
 | **Match shape** | Duration, first contact time, share decided by the control point | Different per arena, and never a stalemate by default |
 
+## The Maze: a test fixture, not a map (X1, round 6; contract N3, checkpoint CP2)
+
+`arenas/maze.json` is the quasi-maze the lead asked for by name — *"we might even want a map that's a quasi maze just
+for test purposes to ensure units can get through it."* It is **not a shipping map**, it is **nav's acceptance test**,
+and both the layout's `note` and a test (`test_the_maze_is_a_fixture_and_never_ships`) say so. It is not in
+`Arena.ROTATION`, so `--arena=random` never picks it; you reach it only with `--arena=maze`.
+
+It has no cover design, no balance and no art pass, and it should not get any. Its job is to answer one question —
+**can a horde of 30+ vehicles get from its spawn zone to the far base through gaps it has to file through?** — and
+every property below exists to keep that question hard and well-posed.
+
+### The shape
+
+Four container bands run across the field at **z = 74, 52, 30, 10**, each two containers high, out to the drivable
+edge at x = ±116 so no band can be rounded. Point symmetry gives four more at z = −10, −30, −52, −74 with their gaps
+mirrored to −x. **A gap at +x therefore has its mirror at −x, so crossing the arena is a serpentine:** every band
+forces a lateral run to reach the next gap. The navmesh route base-to-base is **424 m against a 204 m crow flight
+(2.08×)**.
+
+| Band | Gaps (physical width) | Drivable corridor (physical − 2 × the 2 m agent radius) |
+|---|---|---|
+| z = 74 | x ≈ −56 (12 m), **x ≈ 11.5 (7 m)** | 7 m, **3 m** ← the tight gate |
+| z = 52 | x ≈ −98 (12 m, the dead end), x ≈ −15 (10 m), x ≈ 65 (10 m) | 8 m, 6 m, 6 m |
+| z = 30 | x ≈ −67 (10 m), x ≈ 29.5 (10 m) | 4 m, 5 m |
+| z = 10 | x ≈ −32.5 (10 m), x ≈ 90.5 (10 m) | 5 m, 5 m |
+
+**The tight gate is the point of the fixture.** 7 m of physical gap leaves a **3 m** drivable corridor — narrower
+than two hulls side by side (the widest hull is 3.0 m, the common one 2.6 m), so a horde has to file through it. And
+it is on the *shorter* of the two routes, so a horde will choose it. **Do not narrow it below ~6 m physical without
+re-running `make nav-maze`:** under that the bake starts losing the corridor to rasterisation (`cell_size` 0.5), and a
+disconnected navmesh reads as a nav bug for a day before anyone suspects the fixture.
+
+**The dead end** is the pocket behind the z = 52 band's westmost gap (x ≈ −98), closed by band z = 30 to the south,
+the arena edge to the west and a wall at x = −86 to the east. A unit that drives in has to come back out the way it
+came: leaving it means backtracking north of z = 52, which `test_the_dead_end_has_no_back_door` asserts.
+
+**The two routes are alternatives of different length**, and the honest way to measure that is the *whole* route —
+spawn to the gate, then gate to the far base. Measured only from the gate mouths they read 350 m against 359 m and
+look like one route with two mouths; measured whole they differ by ~40 m, because what a unit pays for choosing a
+gate is mostly the leg to it. **The shared corridor between the bands is deliberate:** two squads sent through
+different gates meet head-on in it, which is the peer-to-peer right-of-way case nav owes us. A maze of separate pipes
+would never exercise it.
+
+### Running it
+
+```bash
+make nav-maze                          # 30 units, 180 s -> build/nav-maze.json
+make nav-maze UNITS=60 NAV_TIME=240    # a fuller horde
+make nav-maze ARENA=yard OUT=nav-yard  # the same probe against a shipping arena, as a control
+make remote T=nav-maze                 # on builder0 (the laptop is ~2.75x slower)
+```
+
+`tests/arena/maze_probe.gd` spawns N vehicles on the green side, orders each to the **180° mirror of its own spawn
+point** (one shared goal would measure a pile-up at the destination, not the crossing), holds fire so a firefight
+can't end the run early, and reports:
+
+| Field | What it means |
+|---|---|
+| `arrived`, `arrived_fraction` | how many got within 8 m of their goal |
+| `t50_s`, `t90_s`, `t100_s` | seconds until 50 / 90 / 100% had arrived (−1 = never) |
+| `crawl_unit_seconds`, `crawl_share` | unit-seconds under 0.5 m/s **while still under way** |
+| `stuck_events`, `stuck_units` | times a unit made no progress toward its goal for 3 s, and how many did |
+| `off_navmesh` | units further than 3 m from the navmesh at the end (pushed off the drivable surface) |
+| `worst` | the five that got least far, with their final distance |
+| `progress_m`, `distance_m` | metres advanced vs metres of route they were given |
+
+Progress is measured against **the best a unit has ever done**, not against the last tick: a unit shuffling back and
+forth in a gap moves every tick and arrives never, and that is exactly the failure worth counting.
+
+The probe deliberately measures **only positions over time**. nav can rewrite everything under the order — path
+planning, avoidance, the control law — and the numbers keep meaning the same thing. It exits non-zero only when it
+could not run at all (no arena, no navmesh); a bad result is a finding for nav, not a broken tool.
+
 ## Shipped arenas
 
 Pick one with `--arena=<name>`; `--arena=random` picks a seeded arena from `Arena.ROTATION` (yard, boulevard, pit,

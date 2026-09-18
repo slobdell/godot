@@ -353,3 +353,74 @@ write_v2("boneyard", "The Boneyard",
                 lane("west", [(-66, 90), (-70, 0), (-66, -90)], 24)],
          regions=[region("the heap", "centre", 0, 0, 16), region("west pile", "cover_cluster", -56, 38, 20),
                   region("east scrap", "cover_cluster", 58, 40, 20), region("the flats", "open_ground", -100, -30, 14)])
+
+
+# ---- The Maze (arena X1, round 6, contract N3 / checkpoint CP2) ------------------------------------------------
+# A TEST FIXTURE, NOT A SHIPPING MAP: nav's acceptance test (_agents/arenas.md "The Maze"). It is deliberately
+# un-fun -- no cover-vs-sightline design, no balance, no art pass -- and it exists to answer one question: can a
+# horde of 30+ vehicles get from its spawn zone to the far base through gaps it has to file through?
+#
+# Geometry: four container walls run across the field (bands at z = 74, 52, 30, 10) with gaps at different x, and
+# their 180 deg mirrors give four more at z = -10, -30, -52, -74. A gap at +x has its mirror at -x, so crossing the
+# arena is a serpentine: every band forces a lateral run to reach the next gap. The navmesh agent radius is 2 m
+# (game/arena/arena.tscn), so a gap of physical width W leaves W - 4 m of drivable corridor -- MAZE_TIGHT_GAP = 7 m
+# is a 3 m corridor, narrower than two hulls (the widest is 3.0 m) and about one and a half of the common 2.6 m
+# ones. Below ~6 m the bake starts losing the corridor to rasterisation, which reads as a nav bug; do not narrow it
+# without re-running `make nav-maze`.
+
+MAZE_BAND_Z = [74.0, 52.0, 30.0, 10.0]
+MAZE_TIGHT_GAP = 7.0
+MAZE_EDGE = 116.0  # Match.DRIVABLE_LIMIT: the walls run out to the edge of drivable space, so no band can be rounded.
+
+
+def maze_wall(x0, z0, x1, z1, stack=2, kind="container_40"):
+    """Like run(), but sized with ceil so neighbouring containers always OVERLAP. run()'s round() can leave a
+    metre-wide slot between containers, which is not drivable but is a sightline and reads as sloppy in a fixture
+    whose whole job is 'this gap and no other'."""
+    length = {"container_20": 6.06, "container_40": 12.19}[kind]
+    dist = math.hypot(x1 - x0, z1 - z0)
+    count = max(1, math.ceil(dist / length - 1e-9))
+    rot = round(math.degrees(math.atan2(-(z1 - z0), x1 - x0)), 3)
+    out = []
+    for i in range(count):
+        t = (i + 0.5) / count
+        out.append(prop(kind, round(x0 + (x1 - x0) * t, 3), round(z0 + (z1 - z0) * t, 3), rot, stack))
+    return out
+
+
+def maze_band(z, spans):
+    out = []
+    for x0, x1 in spans:
+        out += maze_wall(x0, z, x1, z)
+    return out
+
+
+maze = []
+# Band 1 (z = 74), the way out of the spawn zone: one wide gate west, one TIGHT gate east.
+maze += maze_band(74.0, [(-MAZE_EDGE, -62.0), (-50.0, 8.0), (8.0 + MAZE_TIGHT_GAP, MAZE_EDGE)])
+# Band 2 (z = 52): three gaps, and the westmost one is a trap (see the pocket wall below).
+maze += maze_band(52.0, [(-MAZE_EDGE, -104.0), (-92.0, -20.0), (-10.0, 60.0), (70.0, MAZE_EDGE)])
+# Band 3 (z = 30).
+maze += maze_band(30.0, [(-MAZE_EDGE, -72.0), (-62.0, 24.0), (34.0, MAZE_EDGE)])
+# Band 4 (z = 10): the last band before the open centre corridor (z in [-9, 9]).
+maze += maze_band(10.0, [(-MAZE_EDGE, -38.0), (-28.0, 86.0), (96.0, MAZE_EDGE)])
+# The dead end: the z = 52 gap at x ~ -98 opens into a pocket closed by band 3 to the south, the arena edge to the
+# west and this wall to the east. A unit that takes it has to come back out the way it went in.
+maze += maze_wall(-86.0, 30.0, -86.0, 52.0)
+
+write_v2("maze", "The Maze (nav test fixture)",
+         "NOT A SHIPPING MAP. Eight container bands with staggered gaps: the only route from one base to the other "
+         "is a serpentine through gaps 7-12 m wide, past one dead end. It exists so nav can prove a horde gets "
+         "through (`make nav-maze`); it has no cover design, no balance and no art pass.",
+         maze,
+         lanes=[lane("west serpentine", [(-56, 90), (-56, 62), (-15, 62), (-15, 40), (-67, 40), (-67, 20),
+                                         (-33, 20), (-33, 0), (33, 0), (33, -20), (67, -20), (67, -40),
+                                         (15, -40), (15, -62), (56, -62), (56, -90)], 8),
+                lane("east serpentine", [(11, 90), (11, 62), (65, 62), (65, 40), (29, 40), (29, 20),
+                                         (91, 20), (91, 0), (-91, 0), (-91, -20), (-29, -20), (-29, -40),
+                                         (-65, -40), (-65, -62), (-11, -62), (-11, -90)], 8)],
+         regions=[region("the corridor", "centre", 0, 0, 9),
+                  region("tight gate", "chokepoint", 11.5, 74, 4),
+                  region("west gate", "chokepoint", -56, 74, 6),
+                  region("dead end", "cover_cluster", -99, 41, 12)],
+         control_radius=8.0)

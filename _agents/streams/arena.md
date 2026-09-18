@@ -102,4 +102,45 @@ coordinate with nav — anything that changes what blocks driving touches the na
 
 ## Status
 
-_The worker keeps this current._
+_Round 6, arena. Updated 2026-09-18._
+
+### Plan (backlog order, with the reasons where the brief left a choice)
+
+1. **X1 the maze (N3/CP2)** — day one, nav is blocked on it. **In progress, geometry and tooling done.**
+2. **X2 approaches that are not covered from everywhere** — extend `make arena-report`.
+3. **X3 objectives off the centre line** — the highest-leverage change; measured with a paired mirror control.
+4. **X4 terrain features** — only what the navmesh and vehicles survive.
+5. **X5 the arenas the lead will play** — plus the arena page he is still owed from round 5.
+6. **X6 destructible cover (stretch)** — not before X1–X3 and nav's avoidance.
+
+### X1 — the maze: done, on the branch, ready for nav
+
+`arenas/maze.json` (authored in `tools/make_arenas.py`), `make nav-maze`, `tests/arena/maze_probe.gd`,
+`tests/test_arena_maze.gd`, documented in [../arenas.md](../arenas.md) *The Maze*.
+
+Every requirement in the brief is asserted by a test against the **real baked navmesh**, not against
+`arena_report.py`'s grid model:
+
+| Brief's requirement | What it is | Test |
+|---|---|---|
+| built from the kit, point-symmetric | 152 container props, `validate()` passes | `test_every_shipped_layout_is_valid` |
+| start zone for 30+, far objective | the standard 52-slot spawn zones; goal is the far base | `test_a_horde_can_get_from_one_base_to_the_other` |
+| a gap ~1.5 vehicle-widths | 7 m physical → **3 m drivable** (hulls are 2.6–3.0 m wide) | `test_every_band_gap_is_open_and_the_tight_one_is_still_tight` |
+| at least one dead end | the pocket at x ≈ −98, z ≈ 41; leaving means backtracking north of z = 52 | `test_the_dead_end_has_no_back_door` |
+| two routes of different length | ~40 m apart measured whole (spawn → gate → far base) | `test_the_two_serpentines_are_different_lengths` |
+| **reachable** — verified before handover | 424 m navmesh route vs a 204 m crow flight (2.08×) | `test_a_horde_can_get_from_one_base_to_the_other` |
+
+**Decisions, with reasons:**
+
+- **The tight gate is 7 m physical, not the ~4 m that "1.5 vehicle widths" reads as literally.** The navmesh agent
+  radius is 2 m, so a gap of width W leaves W − 4 m of drivable corridor: a 4 m gap is *disconnected*, not tight.
+  7 m gives a 3 m corridor — genuinely single-file — and sits on the shorter of the two routes, so a horde chooses
+  it. Below ~6 m the bake starts losing the corridor to rasterisation, which would read as a nav bug for a day.
+- **The two gates share one corridor rather than running as separate pipes.** Two squads sent through different
+  gates meet head-on in it, which is exactly the peer-to-peer right-of-way case nav owes us; separate pipes would
+  never exercise it. The cost is that route lengths must be compared *whole* — see the test's comment.
+- **The probe measures only positions over time.** nav can rewrite path planning, avoidance and the control law and
+  the numbers keep meaning the same thing. It exits non-zero only when it could not run at all; a bad result is a
+  finding, not a broken tool.
+- **Progress is measured against the best a unit has ever done**, not against the last tick — a unit shuffling in a
+  gap moves every tick and arrives never, and that is the failure worth counting.

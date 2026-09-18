@@ -38,3 +38,12 @@ arena-shots: import ## Every arena in pictures: the match runner's whole-arena v
 arena-candidates: ## Stretch: propose generated layouts for a human to approve (CHARACTER=yard|boneyard|boulevard|open COUNT=3 STEPS=400) -> build/arena-candidates/index.html (never shipped automatically)
 	$(PYTHON) tools/arena_generator.py --character $(or $(CHARACTER),yard) --count $(or $(COUNT),3) --steps $(or $(STEPS),400) \
 		--out $(BUILD_DIR)/arena-candidates 2>&1 | grep ARENA_CANDIDATE
+
+.PHONY: nav-maze
+# NAV_UNITS, not UNITS: mk/ai.mk sets `UNITS ?= 60` globally, so a nav-maze that read UNITS silently ran 60 units
+# while its own help text and every report said 30. Heed this before adding a bare variable name to a shared Makefile.
+nav-maze: import ## N3/CP2: send NAV_UNITS vehicles across The Maze and report arrivals, timing, crawling and stuck events (NAV_UNITS=30 ARENA=maze NAV_TIME=180 SEED=1 NAV_BOTH=1 for head-on traffic) -> build/nav-maze.json
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/maze_probe.gd -- \
+		--units=$(or $(NAV_UNITS),30) --arena=$(or $(ARENA),maze) --time-limit=$(or $(NAV_TIME),180) \
+		--seed=$(or $(SEED),1) $(if $(NAV_BOTH),--both-ways) --json=$(CURDIR)/$(BUILD_DIR)/$(or $(OUT),nav-maze).json
+	@echo ">> nav-maze: build/$(or $(OUT),nav-maze).json"
