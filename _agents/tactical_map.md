@@ -12,6 +12,9 @@
 |---|---|
 | **No Move or Follow buttons** | The lead: *"buttons like move and follow are already accessible via mouse click, so we shouldn't have buttons for them."* Right-click does both; **M** and **F** still work. |
 | **Symbols, not words** | Every card button's primary read is its tactical task graphic (after APP-6 / MIL-STD-2525 / FM 1-02.2), with its doctrinal name under it and a one-sentence tooltip on hover. Support-by-fire is called **Support by Fire**, not "Base of fire". |
+| **Loading shows itself** | FIGHT puts a loading screen on the tree root (`LoadingScreen`): the matchup, the arena and what it is for, a card teaching one command-card task by its symbol, and a bar naming the stage (scene, venue + navmesh, armies, first frame). The arena build and navmesh bake stay synchronous (trip-up 57); the screen names the stage and stays drawn through it. Every load prints `LOAD_TIMING total_ms=… scene=… arena=… armies=… first_frame=…`. |
+| **Squad chips say what they're doing** | Each group chip over the panel reads IDLE (yellow: the one to find), MOVING, CONTACT or UNDER FIRE (ElementAwareness). |
+| **Orders you can see landing** | nav's N1 `Movement.state`: a vehicle that is YIELDING or BLOCKED says so over its hull, and its card says "Blocked by Tank" or "Arrives in 4 s" (`MovementReadout`; silent until nav's CP1 is on `main`). |
 | **Pitch is its own axis** | Zoom sets only the distance. **Page Up / Page Down** or **ctrl+wheel** tilt (22°-50°, default 38°), **Home** resets it. Round 5 tilted from 25° to 82° as you zoomed out, so seeing your army cost you a top-down view. **O** is the deliberate top-down overview (77°) and back. The final numbers are the lead's pick from `make camera-looks`. |
 
 ## Task palette (N4)

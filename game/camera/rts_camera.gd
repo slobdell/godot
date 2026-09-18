@@ -20,17 +20,19 @@ extends Node
 
 const MIN_DISTANCE := 16.0
 const MAX_DISTANCE := 260.0
-## X3: the tilt the player can choose (degrees below the horizon), and where it starts. Provisional until the lead
-## picks a look from `make camera-looks` (the round's lead gate); the pick is a change to these three numbers.
+## X3: the tilt the player can choose (degrees below the horizon), and where it starts. **The lead's pick** (round 6,
+## 2026-09-18, on the camera page from `make camera-looks`): "pitch 25° · 50 m · FOV 60°" - the lowest angle offered.
+## The player can still tilt from 22° (nearly Twisted Metal) to 50° (nearly StarCraft).
 const MIN_PITCH_DEG := 22.0
 const MAX_PITCH_DEG := 50.0
-const DEFAULT_PITCH_DEG := 38.0
+const DEFAULT_PITCH_DEG := 25.0
 ## The deliberate top-down read of the map (toggle_overview): the one place the camera still looks nearly straight down.
 const OVERVIEW_PITCH_DEG := 77.0
 ## Tilt speed: degrees per second for held keys, degrees per wheel notch.
 const TILT_SPEED_DEG := 40.0
 const WHEEL_TILT_DEG := 3.0
-const FOV_DEG := 55.0
+## The lead's pick (see DEFAULT_PITCH_DEG); was 55°.
+const FOV_DEG := 60.0
 ## Keyboard pan speed in meters per second at zoom 1 (scales down as you zoom in).
 const PAN_SPEED := 160.0
 const ROTATE_SPEED := deg_to_rad(100.0)
@@ -394,8 +396,9 @@ static func shows_all(points: Array, at: Vector3, heading: float, level: float, 
 
 
 ## What fraction of the screen's ground a camera at this pose is looking at ground `region` can see, sampled on a
-## VISION_SAMPLES × VISION_SAMPLES grid of screen points. A sample whose ray never reaches the ground counts as
-## unseen: it is pointed at the horizon, which is further than anything the force can see. Pure, for tests.
+## VISION_SAMPLES × VISION_SAMPLES grid of screen points. A sample whose ray never reaches the ground (sky) is left
+## out of the count entirely: it shows no ground, earned or unearned. Round 6: at the lead's 25° a fifth of the screen
+## is sky, and counting it as unseen ground would have capped exactly the view he picked. Pure, for tests.
 static func seen_fraction(region: VisionRegion, at: Vector3, heading: float, level: float, aspect: float,
 		pitch_deg := DEFAULT_PITCH_DEG) -> float:
 	if region == null or region.is_empty():
@@ -404,15 +407,19 @@ static func seen_fraction(region: VisionRegion, at: Vector3, heading: float, lev
 	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0)
 	var plane := Plane(Vector3.UP, 0.0)
 	var seen := 0
+	var ground := 0
 	for i in VISION_SAMPLES:
 		for j in VISION_SAMPLES:
 			var u := lerpf(-1.0, 1.0, float(i) / float(VISION_SAMPLES - 1))
 			var v := lerpf(-1.0, 1.0, float(j) / float(VISION_SAMPLES - 1))
 			var direction := (pose.basis * Vector3(u * tan_y * aspect, v * tan_y, -1.0)).normalized()
 			var hit: Variant = plane.intersects_ray(pose.origin, direction)
-			if hit != null and region.contains(hit as Vector3):
+			if hit == null:
+				continue
+			ground += 1
+			if region.contains(hit as Vector3):
 				seen += 1
-	return float(seen) / float(VISION_SAMPLES * VISION_SAMPLES)
+	return float(seen) / float(ground) if ground > 0 else 0.0
 
 
 ## L4: the furthest-out zoom whose screen is still mostly ground the force can see. Zooming past it is the

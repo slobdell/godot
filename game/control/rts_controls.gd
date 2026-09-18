@@ -86,6 +86,8 @@ var groups := ControlGroups.new()
 var awareness := ElementAwareness.new()
 ## X3 (L1): doctrine's elements, when the mode installed them. Null = every order goes out directly.
 var elements: Elements
+## Round 6 X5: what nav's Movement says each unit is doing (yielding, blocked, its ETA). Silent until N1 is wired in.
+var movement := MovementReadout.new()
 ## X2: the off-screen element chips and the alert strip (set by the mode).
 var markers: EdgeMarkers
 ## The armed order waiting for a click ("" = none): "attack_move", "follow", or "move".
@@ -915,6 +917,7 @@ func _draw() -> void:
 	_draw_waypoints()
 	_draw_acks()
 	_draw_health()
+	_draw_callouts()
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -932,6 +935,40 @@ func _draw() -> void:
 		var color: Color = GameTheme.ui["friendly"]
 		draw_rect(rect, Color(color, 0.12))
 		draw_rect(rect, Color(color, 0.9), false, 1.5)
+
+
+## X5: words over our vehicles that nav reports as yielding or blocked, so a unit waiting its turn reads as waiting,
+## not as ignoring the order: [{"unit", "at": Vector2 (screen), "word"}].
+func callouts() -> Array:
+	var result: Array = []
+	if game_match == null or camera == null or not movement.provider.is_valid():
+		return result
+	var screen := Rect2(Vector2.ZERO, size)
+	for tank in game_match.sorted_team_tanks(team):
+		if not tank.is_alive():
+			continue
+		var word := movement.callout(String(tank.name))
+		if word == "":
+			continue
+		var hull: Array = Units.stat(tank.unit_id, "hull_size")
+		var top := Shown.at(tank) + Vector3.UP * (float(hull[1]) + BAR_ABOVE_M * 2.2)
+		if camera.is_position_behind(top):
+			continue
+		var at := camera.unproject_position(top)
+		if at.is_finite() and screen.has_point(at):
+			result.append({"unit": String(tank.name), "at": at, "word": word})
+	return result
+
+
+func _draw_callouts() -> void:
+	var font := CyberStyle.font()
+	var px := roundi(12.0 * CyberStyle.ui_scale(size))
+	for callout: Dictionary in callouts():
+		var word := String(callout["word"])
+		var width := font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+		var at: Vector2 = callout["at"] - Vector2(width / 2.0, 0.0)
+		draw_string_outline(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, 3, Color.BLACK)
+		draw_string(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.YELLOW if word == "YIELDING" else GameTheme.ui["enemy"])
 
 
 ## X6: a thin hull bar (and a shield sliver above it) over vehicles that are hurt or selected.

@@ -138,8 +138,11 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 ## Waiting on the lead
 
-1. **The camera look** — X3's page of screenshots. This is the round's main lead gate; get it in front of him early,
-   because everything about how the game reads depends on his pick.
+1. ~~**The camera look**~~ — **answered 2026-09-18** on the camera page (https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL,
+   its database doc `picks/lead`, version 5, 15:53 UTC): **"pitch 25° · 50 m · FOV 60°"**, the lowest angle offered, no
+   note. Applied: `RtsCamera.DEFAULT_PITCH_DEG = 25`, `FOV_DEG = 60`, `SkirmishMode.START_ZOOM = 0.373` (50 m). The
+   player's tilt range stays 22°–50°.
+2. **Which arena is fun** — the same page has a Fun box per arena (all seven, three frames each). Unticked so far.
 
 ## Status
 
@@ -158,11 +161,31 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 6. **X6** squad selection grammar — coordinates with squad's X4 (a plain move keeps the element).
 7. **X7** stretch dials.
 
+### Progress (2026-09-18)
+
+| Item | State | Evidence |
+|---|---|---|
+| X1 no Move/Follow buttons | done | `test_control_panel` (card has neither; M and F still arm) |
+| X3 pitch decoupled | done, **defaults wait on the lead** | `test_rts_camera::test_tilt_is_its_own_axis`, `test_zoom_sets_the_distance_and_never_the_tilt` |
+| X3 camera page | **live, sent to the orchestrator**: https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL | `make camera-looks`; laptop render, 1920×1080, frames in the scratchpad (not committed: 26 MB of JPEG) |
+| X2 palette + symbols | done; Screen / Support by Fire held off the card until squad's X5 | `TaskPalette`, `CommandIcons.draw_task`, table in `tactical_map.md` "Task palette (N4)", `test_control_panel` |
+| X4 loading screen | built; before/after measurement running | `LoadingScreen`, `GameLauncher.start` staged, `test_loading_screen` |
+| X5 orders you see landing | **blocked on nav CP1** (`Movement.state` not on `main`) | — |
+| X6 squad chips | chips say IDLE / MOVING / CONTACT / UNDER FIRE; lit by living members in any order. Plain move keeping the element: agreed with squad, waits on their green | `test_control_groups::test_group_chips_say_what_each_squad_is_doing` |
+
+**The diagnosis the brief asked to verify, verified** (the page's first row): round 5's start pose (zoom 0.36 → 45°)
+was fine; zoom 0.75 → 68° is a top-down view where 30 vehicles are dots. The complaint was the weld, not the start.
+
 ### Decisions
 
-- **Default pitch 38°, player range 22°–50°**, Page Up/Down or ctrl+wheel to tilt, Home resets, **O** = the overview
-  (77°, the one deliberate top-down). Provisional until the lead picks from the camera page; the pick is three
-  constants in `rts_camera.gd`.
+- **Default pitch 25°, FOV 60°, start 50 m out — the lead's pick.** Player range 22°–50°, Page Up/Down or ctrl+wheel
+  to tilt, Home resets, **O** = the overview (77°, the one deliberate top-down).
+- **Sky is not unseen ground.** The L4 zoom-out cap sampled the screen and counted rays that miss the ground as ground
+  the force can't see; at 25° a fifth of the screen is sky, so the cap would have punished the view the lead chose.
+  Sky samples now leave the count.
+- **Tests that are about screen geometry pin their pose** (`control_fixture.gd`, `test_command_camera.gd`: pitch 42°,
+  round 5's tilt at their zoom 0.3) rather than inheriting the default look: at 25° / FOV 60° most of the arena is on
+  screen at once, which turned "is it off screen?" tests into tests of the default.
 - **Task symbols are drawn, not imported** (`CommandIcons.draw_task`, rasterised once by `IconRaster` into 96 px
   textures): crisp, themeable, and one batched rect per button on the HUD's draw-call budget.
 - **Letters as strokes** (S, G, C, F, B) so the rasteriser needs no font.
@@ -175,4 +198,10 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
 ### Requests to other streams
 
-- (none yet)
+- **squad:** tell control when Screen and Support by Fire are demonstrable (X5) — one boolean each in
+  `game/control/task_palette.gd`. X4 (a plain move keeps the element): the two `rts_controls.gd` lines are agreed and wait
+  for squad's green commit.
+- **feel:** `perf_scene.gd` calls `RtsCamera.pose_for(focus, 0, zoom)`, which now looks down at 38° instead of the
+  zoom-welded pitch: perf-scene's camera moves when this merges (lower, sees more of the far arena). The camera page's
+  frames are an instrument for the crowd diagnosis: the low poses are the first that put the stands in frame.
+- **nav:** X5 needs `Movement.state(unit)` (N1) on `main`.

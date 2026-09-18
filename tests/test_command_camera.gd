@@ -41,6 +41,10 @@ func _setup() -> Array:
 	var alpha := game_match.tanks.get_node("Green_Alpha_1") as Tank
 	rig.focus = Vector3(alpha.global_position.x, 0, alpha.global_position.z - 10.0)
 	rig.zoom = 0.3
+	# Round 6 X3: pitch is its own axis, and the lead's default (25°, FOV 60°) shows most of the arena at once. These
+	# tests are about which points are on screen and when the camera tracks, written against round 5's tilt at this
+	# zoom (42°), so they pin it instead of inheriting whatever the default look is.
+	rig.pitch = 42.0
 	rig.snap()
 	var map := TacticalMap.new()
 	map.game_match = game_match

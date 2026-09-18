@@ -266,6 +266,10 @@ func _order_words(unit_name: String, with_queue: bool) -> String:
 	var waiting := controls.orders.queue(unit_name).size()
 	if with_queue and waiting > 0:
 		words += " (+%d queued)" % waiting
+	# X5: what nav says about getting there - blocked, giving way, or when it arrives.
+	var landing := controls.movement.card_line(unit_name, controls._unit_label) if with_queue else ""
+	if landing != "":
+		words += " - " + landing
 	return words
 
 

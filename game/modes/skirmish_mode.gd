@@ -38,7 +38,8 @@ extends GameMode
 
 const SCRIPT_BREAK_CONTACT_SECONDS := 30.0
 ## The closest the RTS camera starts (0 = close behind a tank, 1 = high over the arena); it frames the army.
-const START_ZOOM := 0.36
+## Round 6: the lead's pick on the camera page was 50 m out; RtsCamera.level_for(50.0) = 0.373 (was 0.36, 48 m).
+const START_ZOOM := 0.373
 ## The camera starts looking this far ahead of the player's base (tanks sit in the lower third).
 const START_AHEAD := 25.0
 const SCRIPT_FOLLOW_ZOOM := 0.42
@@ -153,6 +154,7 @@ static func faction_flags(current: LaunchFlags, player_faction: String, enemy_fa
 
 
 func _start_match() -> void:
+	LoadingScreen.mark("mode_start")  # X4: where a FIGHT load's time goes (printed with LOAD_TIMING)
 	var game_match := main.game_match
 	game_match.has_local_player = false
 	# Directive set 2: armies are bought with a budget. The CPU army is seeded (--seed, else the clock,
@@ -178,6 +180,7 @@ func _start_match() -> void:
 			push_error(error)
 			main.hud.set_status("Can't start skirmish: " + error)
 			return
+	LoadingScreen.mark("armies_built")
 	# K1: the match's Orders (Match.orders once combat adds the field) and, until brains execute orders themselves
 	# (ai X1), the adapter that makes ordered units obey.
 	var orders := Orders.of(game_match)
@@ -200,6 +203,7 @@ func _start_match() -> void:
 				for squad in game_match.team_squads(cpu_team):
 					elements.form(Array(squad.roster), String(squad.squad_name))
 				ElementCommander.install(game_match, cpu_team, elements)
+	LoadingScreen.mark("elements")
 	var executor := OrderExecutor.new()
 	executor.name = "OrderExecutor"
 	executor.game_match = game_match
@@ -239,6 +243,7 @@ func _start_match() -> void:
 	fog.invoke("setup", [{"texture": field.texture, "origin": VisibilityField.ORIGIN,
 			"size": field.cells * VisibilityField.CELL_SIZE}])
 	field.refresh_all.call_deferred()
+	LoadingScreen.mark("fog")
 	# G4: an RTS camera over the player's base, looking toward the enemy.
 	var rig := RtsCamera.new()
 	rig.name = "RtsCamera"
@@ -280,10 +285,12 @@ func _start_match() -> void:
 			"\n%s" % arena_title if arena_title != "" else ""])
 	# Round 3: StarCraft-style desktop controls by default; round 2's tap grammar (squad bar, drill and formation
 	# pickers) stays behind --touch-map until the lead playtests the new controls (control X6).
+	LoadingScreen.mark("camera_hud")
 	if flags.has("touch-map") or flags.has("command-playtest"):
 		_start_touch_map(field, rig, messages)
 	else:
 		_start_desktop_controls(field, rig, messages, orders)
+	LoadingScreen.mark("controls")
 
 
 ## Round 3's desktop controls: RtsControls (named "TacticalMap" so the HUD skin lays out around it), selection rings,
@@ -299,6 +306,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.rig = rig
 	controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
 	controls.elements = Elements.of_match(game_match)
+	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
 	main.hud.add_child(controls)
 	var markers := SelectionMarkers.new()
 	markers.name = "SelectionMarkers"

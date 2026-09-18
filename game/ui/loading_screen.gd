@@ -22,7 +22,9 @@ const FADE_S := 0.35
 ## Stage ids in order, and what the screen says during each.
 const STAGES := [
 	["scene", "Loading the arena"],
-	["arena", "Building the venue and the drivable ground"],
+	# The arena and the armies are built inside one scene switch with no frame between them, so the frame on screen
+	# for both is the one drawn as "arena" begins: it names both, rather than claiming the venue for five seconds.
+	["arena", "Building the arena and rolling out the armies"],
 	["armies", "Rolling out the armies"],
 	["first_frame", "Lights up"],
 ]
@@ -41,6 +43,7 @@ var progress := 0.0
 var _started_ms := 0
 var _stage_started_ms := 0
 var _timings := {}
+var _marks: PackedStringArray = []
 var _canvas: Control
 var _fading := -1.0
 
@@ -114,9 +117,16 @@ func done() -> void:
 	var parts := PackedStringArray()
 	for entry: Array in STAGES:
 		parts.append("%s=%d" % [entry[0], int(_timings.get(entry[0], 0))])
-	print("LOAD_TIMING total_ms=%d %s" % [total, " ".join(parts)])
+	print("LOAD_TIMING total_ms=%d %s%s" % [total, " ".join(parts), (" marks=" + ",".join(_marks)) if not _marks.is_empty() else ""])
 	_timings["total"] = total
 	_fading = 0.0
+
+
+## A timestamp inside the current stage (ms since the screen went up), printed with LOAD_TIMING, for finding where a
+## stall goes. Static so code that doesn't know about loading can call it: `LoadingScreen.mark("armies_loaded")`.
+static func mark(label: String) -> void:
+	if current != null and is_instance_valid(current) and current.stage != "":
+		current._marks.append("%s@%d" % [label, Time.get_ticks_msec() - current._started_ms])
 
 
 func timings() -> Dictionary:
@@ -156,10 +166,13 @@ func _draw_screen() -> void:
 		_centered(font, arena_title.to_upper(), center_x, y, roundi(30.0 * s), CyberStyle.CYAN)
 		y += 40.0 * s
 	if arena_note != "":
-		_centered(font, arena_note, center_x, y, roundi(20.0 * s), Color(CyberStyle.TEXT, 0.8))
+		var note_px := roundi(19.0 * s)
+		for line in _wrap(font, arena_note, note_px, minf(size.x - 64.0 * s, 1100.0 * s)).slice(0, 3):
+			_centered(font, line, center_x, y, note_px, Color(CyberStyle.TEXT, 0.8))
+			y += note_px * 1.4
 	# The task card: a symbol from the command card and what it asks of a squad.
 	var row := TaskPalette.row(tip)
-	var card := Rect2(center_x - 360.0 * s, size.y * 0.47, 720.0 * s, 150.0 * s)
+	var card := Rect2(center_x - 400.0 * s, maxf(size.y * 0.47, y + 30.0 * s), 800.0 * s, 160.0 * s)
 	_canvas.draw_rect(card, Color(CyberStyle.CARD, 0.95))
 	_canvas.draw_rect(card, Color(CyberStyle.CYAN, 0.5), false, 1.5)
 	var glyph := Rect2(card.position + Vector2(20.0, 20.0) * s, Vector2.ONE * 110.0 * s)
@@ -168,10 +181,15 @@ func _draw_screen() -> void:
 	var title := "%s   [%s]" % [String(row.get("name", tip)).to_upper(), row.get("hotkey", "")]
 	_canvas.draw_string(font, Vector2(text_x, card.position.y + 50.0 * s), title, HORIZONTAL_ALIGNMENT_LEFT, -1,
 			roundi(26.0 * s), CyberStyle.YELLOW)
-	_canvas.draw_string(font, Vector2(text_x, card.position.y + 88.0 * s), String(row.get("line", "")),
-			HORIZONTAL_ALIGNMENT_LEFT, card.end.x - text_x - 20.0 * s, roundi(19.0 * s), CyberStyle.TEXT)
-	_canvas.draw_string(font, Vector2(text_x, card.position.y + 124.0 * s), "On the command card when a whole squad is selected.",
-			HORIZONTAL_ALIGNMENT_LEFT, card.end.x - text_x - 20.0 * s, roundi(15.0 * s), Color(CyberStyle.TEXT, 0.6))
+	var line_px := roundi(18.0 * s)
+	var line_y := card.position.y + 84.0 * s
+	for line in _wrap(font, String(row.get("line", "")), line_px, card.end.x - text_x - 20.0 * s).slice(0, 2):
+		_canvas.draw_string(font, Vector2(text_x, line_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, line_px, CyberStyle.TEXT)
+		line_y += line_px * 1.35
+	var where := "On the command card when a whole squad is selected." if String(row.get("kind", "")) == "task" \
+			else "On the command card whenever units are selected."
+	_canvas.draw_string(font, Vector2(text_x, card.end.y - 16.0 * s), where, HORIZONTAL_ALIGNMENT_LEFT,
+			card.end.x - text_x - 20.0 * s, roundi(15.0 * s), Color(CyberStyle.TEXT, 0.6))
 	# Progress: the bar and the stage it is in.
 	var bar := Rect2(center_x - 360.0 * s, size.y * 0.78, 720.0 * s, 10.0 * s)
 	_canvas.draw_rect(bar, Color(CyberStyle.CYAN, 0.15))
@@ -182,6 +200,21 @@ func _draw_screen() -> void:
 			words = String(entry[1])
 	if words != "":
 		_centered(font, words.to_upper() + " ...", center_x, bar.end.y + 36.0 * s, roundi(18.0 * s), Color(CyberStyle.TEXT, 0.85))
+
+
+func _wrap(font: Font, text: String, px: int, width: float) -> Array[String]:
+	var lines: Array[String] = []
+	var current_line := ""
+	for word in text.split(" "):
+		var trial := word if current_line == "" else current_line + " " + word
+		if current_line != "" and font.get_string_size(trial, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > width:
+			lines.append(current_line)
+			current_line = word
+		else:
+			current_line = trial
+	if current_line != "":
+		lines.append(current_line)
+	return lines
 
 
 func _centered(font: Font, text: String, x: float, y: float, px: int, color: Color) -> void:
