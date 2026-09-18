@@ -113,13 +113,28 @@ _Round 6, arena. Updated 2026-09-18._
 5. **X5 the arenas the lead will play** — plus the arena page he is still owed from round 5.
 6. **X6 destructible cover (stretch)** — not before X1–X3 and nav's avoidance.
 
-### X1 — the maze: done, on the branch, ready for nav
+### Where things are
+
+| Item | State |
+|---|---|
+| **X1 the maze (N3/CP2)** | **Done.** Layout, `make nav-maze`, baselines, docs. Shipped to nav via the orchestrator (nav had no session; the orchestrator wrote my baseline into `nav.md`) |
+| **X2 approaches not covered from everywhere** | **Done.** `make arena-report` answers it at two reaches; `make arena-pytest` guards the instrument |
+| **X3 objectives off the centre line** | **Blocked twice over** — see below. Schema and validation are done on my side |
+| X4 terrain features | Not started |
+| X5 the arenas the lead will play | Not started; the arena page he is owed from round 5 is still owed |
+| X6 destructible cover (stretch) | Not started, correctly — X3 is not done and nav's avoidance has not landed |
+
+**Green commit: pending.** `make remote T=check` on `f8680e21` is running. **`38c15f77` and `13add85d` are RED — do
+not merge them** (see *The mistake worth reading* below).
+
+### X1 — the maze (N3/CP2): done
 
 `arenas/maze.json` (authored in `tools/make_arenas.py`), `make nav-maze`, `tests/arena/maze_probe.gd`,
-`tests/test_arena_maze.gd`, documented in [../arenas.md](../arenas.md) *The Maze*.
+`tests/test_arena_maze.gd`, documented in [../arenas.md](../arenas.md) *The Maze*, five baselines with provenance in
+[references/arena/](references/arena/).
 
-Every requirement in the brief is asserted by a test against the **real baked navmesh**, not against
-`arena_report.py`'s grid model:
+Every requirement in the brief is asserted against the **real baked navmesh**, not against `arena_report.py`'s grid
+model:
 
 | Brief's requirement | What it is | Test |
 |---|---|---|
@@ -130,17 +145,98 @@ Every requirement in the brief is asserted by a test against the **real baked na
 | two routes of different length | ~40 m apart measured whole (spawn → gate → far base) | `test_the_two_serpentines_are_different_lengths` |
 | **reachable** — verified before handover | 424 m navmesh route vs a 204 m crow flight (2.08×) | `test_a_horde_can_get_from_one_base_to_the_other` |
 
+**The finding that matters is the control, not the maze.** Laptop, `38c15f77`, seed 1, 180 s, hold-fire, driving only:
+
+| run | arrived | t50 | t90 | units that ever stalled 3 s | route travelled |
+|---|---|---|---|---|---|
+| maze, 30 | 15/30 | 60 s | never | 30 of 30 | 47% |
+| maze, 60 | 36/60 | 56 s | never | 60 of 60 | 49% |
+| **yard, 60 (control)** | 33/60 | 31 s | never | 27 of 60 | 91% |
+| maze, 60, head-on | 23/60 | never | never | 60 of 60 | 39% |
+| yard, 60, head-on | 35/60 | 37 s | never | 30 of 60 | 93% |
+
+On **yard, a shipping arena**, with no enemy and nothing to do but drive, **45% of a 60-vehicle force never arrives
+in three minutes** and 27 of 60 stall outright. That is the lead's *"a bunch of cars just get stuck or blocked by
+other cars"* reproduced headlessly without a shot fired. The maze sharpens it; it does not invent it. Head-on
+traffic barely moves yard (55% → 58%, inside noise) and collapses the maze (60% → 38%).
+
 **Decisions, with reasons:**
 
-- **The tight gate is 7 m physical, not the ~4 m that "1.5 vehicle widths" reads as literally.** The navmesh agent
-  radius is 2 m, so a gap of width W leaves W − 4 m of drivable corridor: a 4 m gap is *disconnected*, not tight.
-  7 m gives a 3 m corridor — genuinely single-file — and sits on the shorter of the two routes, so a horde chooses
-  it. Below ~6 m the bake starts losing the corridor to rasterisation, which would read as a nav bug for a day.
-- **The two gates share one corridor rather than running as separate pipes.** Two squads sent through different
-  gates meet head-on in it, which is exactly the peer-to-peer right-of-way case nav owes us; separate pipes would
-  never exercise it. The cost is that route lengths must be compared *whole* — see the test's comment.
-- **The probe measures only positions over time.** nav can rewrite path planning, avoidance and the control law and
-  the numbers keep meaning the same thing. It exits non-zero only when it could not run at all; a bad result is a
-  finding, not a broken tool.
-- **Progress is measured against the best a unit has ever done**, not against the last tick — a unit shuffling in a
-  gap moves every tick and arrives never, and that is the failure worth counting.
+- **The tight gate is 7 m physical, not the ~4 m "1.5 vehicle widths" reads as literally.** The nav agent radius is
+  2 m, so a gap of width W leaves W − 4 m of drivable corridor: a 4 m gap is *disconnected*, not tight. 7 m gives a
+  3 m corridor and sits on the shorter route, so a horde chooses it.
+- **The two gates share one corridor rather than running as separate pipes**, so two squads sent different ways meet
+  head-on — the peer-to-peer right-of-way case. `NAV_BOTH=1` exercises it.
+- **The probe measures only positions over time**, so nav can rewrite everything under the order and the numbers
+  keep meaning the same thing.
+
+### X2 — can a map host an ambush: done
+
+`make arena-report` now reports `centre_sees_share`, approach routes at three cover penalties, `posting_gain`, and
+overwatch positions scored by what they cover *and* whether they can be approached unseen. Full table and the
+assumptions: [../arenas.md](../arenas.md) *Can this map host an ambush?*
+
+**Three findings:**
+
+1. **At realistic ranges, terrain is not what decides whether you get across.** Direct-route exposure is 0.05–0.12,
+   and the most covered route only reaches 0.02–0.07 for a 1.0–1.1× detour.
+2. **Posting an element is what covers ground, and open maps reward it most** — foundry +0.127, boulevard +0.107,
+   yard +0.024, maze +0.018. **What a support-by-fire task is worth is a property of the map.** (Useful to squad.)
+3. **boulevard is the arena to change:** its centre sees 64% of the field and its best overwatch can be approached
+   unseen from only 0.12 of directions — it dominates and cannot be flanked back. foundry is second on both.
+
+And the standing one: **every top overwatch position on every arena is within ~40 m of the centre**, where the
+control point also is. Terrain is not what is missing — a reason to be anywhere else is.
+
+### X3 — objectives off the centre line: blocked, and my half is done
+
+**Blocked twice.** (a) It is a tactical claim, so its series must not straddle **CP4** — the orchestrator is holding
+me. (b) **`Match` hard-codes `CONTROL_CENTER := Vector3.ZERO` and `CONTROL_RADIUS := 16.0`**, and a layout's
+`control_point` reaches only the *dressing*. **The arena cannot move its own objective today; the field is
+decorative.** `game/match/` is combat's.
+
+My half is done so combat's is as small as possible: `objectives: [{name, position, radius}]` in the layout schema,
+`Arena.objectives_of()`, and validation requiring **mirrored pairs** (a lone off-centre objective is owned by
+whichever base is nearer). A layout with no `objectives` list reports exactly the single central zone Match already
+hard-codes — asserted for every shipped layout — so combat's change is a read-through that cannot move any existing
+arena.
+
+### The mistake worth reading
+
+I told the orchestrator CP2 was ready at `38c15f77` on the strength of 5/5 laptop tests. The full check came back
+**1013 passed, 2 failed**. `Pathing.is_ready()` only answers *"does the world's navigation map have polygons"*, and
+the previous test's arena is freed a frame or two before the server drops its regions — so it returns true against
+the **old** map and every path is a straight line. Alone, my file passed. After `test_arena_layouts`, the maze
+reported a 1.00× detour and a dead end with no walls.
+
+**The general form is not about navmeshes.** The same flaw sat in `test_arena_kit`'s all-layouts connectivity test
+— the one claiming *"every shipped layout connects both bases and the centre"*. It has **never failed**, and that is
+the problem: it was proving the *previous* arena connected, once per layout. My maze tests only caught it because a
+maze has a **known wrong answer** (a straight line) where a normal arena's wrong answer looks like a right one.
+Fixed in `tests/support/arena_fixture.gd`; mutation-checked.
+
+Second of the same shape: at a **110 m** watcher reach I had written up "flanking costs a 1.8–2.1× detour, cover is
+priced out of reach". At the **45 m** a defender actually covers, the same maps price a flank at 1.0–1.1×. Same
+geometry, same code, opposite conclusion — the finding lived entirely in one constant nobody had derived.
+
+### Questions for the lead
+
+1. **Which arena is fun** — still owed from round 5, and I now have measured shape to put beside the screenshots.
+   The measurements say **boulevard and foundry are the two open ones**; his *"one big open brawl"* is most literally
+   true of those. I would like to know whether that matches what he felt before I change either.
+2. **Is the maze worth keeping visible?** It is a fixture and excluded from `--arena=random`, but it is a fast way
+   to *see* whether movement has improved between rounds.
+
+### Requests to other streams
+
+- **combat:** read `Arena.objectives_of(Arena.active)` instead of `Match.CONTROL_CENTER` / `CONTROL_RADIUS`, and
+  hold a per-objective owner instead of one scalar. Pure read-through; no existing arena changes. Blocks X3.
+- **combat:** ship `Engagement.covering_range()` with CP4 and tell me its value; `arena_report.py` currently mirrors
+  45 m / 70 m and takes `--reach` so re-deriving is a flag, not an edit.
+
+### Next
+
+1. Green hash for `f8680e21` to the orchestrator.
+2. `make remote T=arena-shots ARENAS=maze` and **look at them** — the maze has not been seen by a human yet.
+3. X4 terrain features, which is unblocked, while X3 waits on CP4.
+
