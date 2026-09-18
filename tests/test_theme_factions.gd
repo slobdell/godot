@@ -43,3 +43,21 @@ func test_special_roles_share_the_faction_special_art() -> void:
 	assert_eq(FactionArt.art_role("support"), "special", "the gangs' support truck")
 	assert_eq(FactionArt.art_role("lancer"), "special", "the Syndicate's lancer")
 	assert_eq(FactionArt.art_role("tank"), "tank", "core roles keep their own art")
+
+
+func test_a_slot_scene_stays_loaded_after_its_last_instance_is_freed() -> void:
+	## Feel (round 6, control's FIGHT-lag profile): a new-faction vehicle's hull slot first builds the Condemned dozer,
+	## then swaps in its own art. With no dozer left alive nothing held its model, the engine dropped it, and every
+	## such vehicle re-read the glb from disk: ~65-110 ms a spawn against 2 ms for a Condemned one.
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var first := GameTheme.scene("tank.hull")
+	var node := first.instantiate()
+	node.free()
+	first = null
+	var t0 := Time.get_ticks_usec()
+	var again := GameTheme.scene("tank.hull")
+	var elapsed_ms := (Time.get_ticks_usec() - t0) / 1000.0
+	GameTheme.use(previous)
+	assert_true(again != null and again.can_instantiate(), "the slot still resolves")
+	assert_true(elapsed_ms < 5.0, "asking again is a cache hit, not a reload from disk (%.1f ms)" % elapsed_ms)
