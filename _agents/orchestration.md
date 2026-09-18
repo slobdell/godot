@@ -508,3 +508,13 @@ The kickoff prompt is one line; this section is the rest.
     The rule to apply: **a knob two streams share deliberately belongs in the root `Makefile`; a knob one stream owns
     takes that stream's prefix** (`NAV_UNITS`, `VARIANT_FILE`). And print what a knob resolved to, so a wrong value is
     visible in the output rather than only in the behaviour.
+45. **A filtered test run cannot establish that a new test is correct — only that it is not obviously broken.**
+    Round 6, arena, and it is the half of lesson 43 that nearly got away. Before reporting CP2 ready it ran
+    `FILTER=arena_maze` and saw 5/5 green, and told the orchestrator so. **The filter was the whole problem:** it
+    excluded precisely the neighbouring tests whose leftover navmesh its own tests were reading, so the run that was
+    meant to build confidence had removed the only thing that could have failed. The interference you are most
+    exposed to is with the tests a filter takes away. So: **iterate with a filter, but never make a readiness claim
+    from one** — and when a new test depends on a global the engine owns (a navigation map, a physics space, a
+    singleton, an import cache), deliberately run it *after* its noisiest neighbours before believing it. Only
+    lesson 29 (merge the commit whose own check went green) kept this to a 25-minute round trip instead of a red
+    `main` for six streams.
