@@ -586,3 +586,23 @@ The kickoff prompt is one line; this section is the rest.
     a governed mechanism with an ungoverned one** — reporting the split *alongside* the old figure, never instead of
     it, so the existing baseline stays comparable. Twenty minutes on the metric beats sixty matches through a
     contaminated one.
+50. **When two independently-owned numbers must stay ordered, the code has to say so — nothing will tell you the day
+    they cross.** Round 6 found **three** load-bearing coincidences, each holding up something we believed was
+    engineered, and each discovered only because an unrelated change moved one number:
+    1. **The player's units held until ordered** because an outranging heuristic happened to return `{"type": "stop"}`
+       at that distance — no hold logic existed (lesson 47).
+    2. **A support-by-fire standoff stayed outside the near-ambush radius** because `standoff = min(effective_range) ×
+       0.8` came to ~56 m while `near_ambush_m` was 38–42 m. Two numbers chosen independently, in different files, by
+       different streams, for different reasons. Narrow the bands and the standoff lands at **28–36 m — inside the
+       trigger** — so the element drives to its firing line, `near_ambush` pre-empts `support_by_fire`, the plan
+       re-selects, and the two drills take the element off each other **every tick**: 128 orders in 10 s, the drill
+       list alternating without a single completion. That is round 4's trip-up 17 reached by a new road.
+    3. **`effective_range == range` for every weapon**, which is what made (2) hold and what several positioning
+       heuristics silently depended on (lesson 39).
+    The instruction: **an invariant that matters must be written as an invariant** —
+    `standoff = max(reach × 0.8, near_ambush_m + margin, floor)` — not left to two constants that happen to be
+    ordered today. And when you find one, ask which *other* pair the same change moved: all three of these came out of
+    one range narrowing, and the second and third were found days apart only because different streams tripped over
+    them.
+    **The corollary for reviewers:** a behaviour that has worked for four rounds is *not* evidence that anything
+    enforces it. Ask what would have to be true for it to break, and check whether the code says that anywhere.
