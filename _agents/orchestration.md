@@ -879,3 +879,17 @@ The kickoff prompt is one line; this section is the rest.
     - **When a re-derivation moves a number, find out whose error it was before relaying blame.** Here the
       orchestrator had warned that combat's proposal might shift arena's figures; the figure that actually shifted was
       arena's own hand-set constant, and combat's derivation was right all along.
+67. **A consistent failure on one machine and an intermittent one on another are usually one bug, differing only in
+    timing.** Round 6: `shell-playtest`'s faction-click checks failed **every** run on builder0 and **one in seven** on
+    the laptop. The laptop case had been filed as a stray-mouse artefact (trip-up 32) and the builder0 case as "a click
+    or resolution issue on builder0" — two environmental explanations for one defect. The cause was neither: the
+    **loading screen** is a full-screen, click-stopping `CanvasLayer` on the root, and it was **still fading out** when
+    the playtest clicked. builder0's ~1 fps desktop made the race certain; the laptop lost it occasionally.
+    Two instructions:
+    - **When the same check fails always here and sometimes there, do not reach for two environment stories.** Look for
+      a race whose window the slower machine widens. "Flaky on A, broken on B" is one of the strongest available hints
+      that a timing window exists.
+    - **A gate that always fails is as uninformative as one that always passes**, and it hides real signal: this one
+      had been red unconditionally on the machine we verify on, which is precisely why a texture leak in another
+      stream's code went unnoticed until a human looked by hand. After this fix `shell-playtest` exits 0 on builder0
+      for the first time — **an always-red check should be treated as an outage, not as a known quirk.**
