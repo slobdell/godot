@@ -473,6 +473,28 @@ more lines — volume doesn't get a line past the priority queue.
 | Break contact | Outgunned pair broke from 76 m to **106 m**, both alive |
 | Herringbone | Halted, all-round security, **1.0** of the circle watched |
 
+## Who may command the player's army (ruled 2026-09-17, enforced in code)
+
+The lead, after playing: *"if they get sucked into combat I have no control whatsoever."* Three rules, each with a test:
+
+1. **An `ElementCommander` never runs on the player's team.** It is the CPU's commander; the player's army takes its
+   orders from the player (`ElementCommander._physics_process`, `OrderFeed.player_team`).
+2. **An element never takes a unit off an order whose `source` is `"player"`,** and on the player's team a leader with
+   no task commands nobody at all. This is L1's round-4 sharp edge — *"an element with no task still runs its SOP, so
+   forming one before it has a task makes its leader fight the player for the wheel"* — which was written down for a
+   round and broken anyway. A rule that isn't enforced by code is a rule that will be broken.
+3. **A leader re-issues only when the intention changed.** "Attack" and "attack-move" at one target, and "move" and
+   "hold" at one place, are the same intention; a standing order already follows a moving target, so the same intention
+   is not handed over again inside `Element.RE_ISSUE_TICKS` (2 s). Everything an element issues carries
+   `source: "element"`. Before this, an army with nobody touching the controls produced ~35 order changes a second,
+   each one a marker redrawn and a cue played on the player's screen (*"these blue dots ... they just keep repeating"*)
+   — and the frames to draw them.
+
+Tests: `tests/test_tactics_reissue.gd` (nothing but the player orders the player's squad; no repeat of an intention a
+unit is already carrying), `tests/test_ai_player_orders.gd` (ordered across contact and arrives; squads land on their
+slots and stay). The other half of that bug was control's: a plain right-click on a squad was an element task by
+construction, so the invariant had nothing to protect until they made it a direct player order.
+
 ## Round 5: what the tactics ladder says doctrine is worth (ai, 2026-09-17)
 
 `make tactics-ladder` (unit_ai.md) plays doctrine variants, brains and arenas against each other and charges every
@@ -491,6 +513,13 @@ landed round to what the units were doing. Three results, in the order they chan
    **The only way to know what a behaviour costs is to remove it and measure the army with and without.**
 3. **break_contact is a net loss** in the mirror ladder: standard without it went 91-29, and beat standard on every
    arena (30-10 head to head). Cut pending the faction runs at scale, where it traded 1.27.
+
+**The rows behind all of this are kept**: `streams/references/round5_ai_ladders.json` has one line per match for the
+five ladders (the mirror doctrine run, the 240-match drill-variant run, and the fac1b / fac2 / fac3 faction runs, all
+three from one snapshot, `fc88c24`) — sides, arena, seed, swapped bases, factions and winner, with each run's ELO and
+head-to-head. The full logs and per-drill ledgers lived in a worktree's git-ignored `build/` and are gone; these are
+what a round-6 re-run compares against without spending the machine time again. Reading them caught one mis-stated
+number in the ai brief (fac3's trimmed table went 23-25 against brains, not 24-24).
 
 **The discovery loop produced a candidate, and the ladder rejected it.** The scripted `pin_and_flank` policy
 (tools/discovery.py) beat standard doctrine in its first exploratory run, was distilled into
@@ -520,6 +549,12 @@ chokepoint, flank, overlook, cover_cluster):
 - **Faction flavour lives here,** not in drills: gangs put most elements on the lanes (the pack gets around you),
   the Law keeps a large base of fire and bounds the main effort, the Syndicate trades main effort for overlooks and
   standoff.
+
+**Before building it, re-run the verdict.** Every ladder behind "doctrine loses at scale" was played by armies that
+charged from the first second (the player's army was built by the CPU generator, fixed 2026-09-17) and by x4t9 brains,
+not today's champion. **The prediction, recorded before the run:** doctrine gains, and may pass brains-only with the
+control point off. If it still loses with an approach phase, the drills are exonerated and this layer is the remaining
+explanation.
 
 **How it would be proven.** The same bar as everything else: a table trait (`traits.army`) the tactics ladder turns
 on, played in faction armies at the 5200 budget with the control point on, against brains-only and against the
