@@ -774,3 +774,21 @@ The kickoff prompt is one line; this section is the rest.
     one found two real defects in the harness (a `--variants` run that omits the shipped configuration; a metric
     contaminated in theory) and was then asked to answer a question it was never large enough to answer — twice in one
     afternoon, by a stream that knew better and said so afterwards.
+61. **A number that lands near the truth from the wrong comparison on an inadequate sample is a coincidence, not a
+    result — and saying so is worth more than the credit.** Round 6: a retracted figure said the fight was decided
+    **28%** closer; the final, properly controlled 75-match answer was **26%**. The stream that had retracted it
+    volunteered that the near-agreement was luck and insisted the retraction had still been right, because against
+    the control actually used at the time the honest figure was **7%** — the two matches had been compared with the
+    wrong baseline *and* were too few. **The lesson a reader would otherwise draw — "trust the small sample, it was
+    nearly right" — is precisely wrong and would cost someone a round.**
+    So: **when a retracted number turns out close to the truth, record why it was still wrong.** A result is a
+    measurement *plus its comparison*; a right-looking number from the wrong control is not a partial success, it is
+    two errors that happened to cancel.
+62. **A control that is not a real "before" hides which half of a change did the work.** Same run. The first series'
+    control disabled only the tuned *data* (the effective bands) while leaving the *code* gates (sight, acquisition,
+    the crossing penalty) on in both arms — so it measured fire discipline alone and silently attributed the whole
+    effect to it. With a genuine control (`--no-acquisition --no-crossing` as well), the decomposition inverted the
+    round's priorities: **the gates moved kill distance −11 m and off-axis kills +17 points; the bands moved them −3 m
+    and +2 points.** The bands had absorbed nearly all of the round's design argument and were the smaller half.
+    **Before running a comparison, ask what your control actually turns off** — and if a change spans data and code,
+    a data-only control is not a before, it is a different experiment.

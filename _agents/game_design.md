@@ -353,7 +353,29 @@ stack first, then the layer that commands it, then how the player reads and issu
   message does not travel with the idea into a doc.** Lesson 26 says a relayed number becomes a fact; this is the same
   failure committed against oneself, in writing, in the file that briefs every future stream. **Nothing goes into this
   document from a sample that could not support a claim to the lead.**
-- **What the measurement at n = 15 actually supports**, stated at the strength the evidence allows (builder0,
+- **SETTLED (75 matches, 15 per configuration across three counterbalanced faction pairings, builder0, `996a25fd`),
+  against a genuine round-5 control** — bands at reach **plus `--no-acquisition --no-crossing`**, so the gates are off
+  and not merely the bands:
+  **kill distance 54 → 40 m (−26%)**, engaged distance 72 → 60 m (−17%), **off-axis kills 26% → 45%**, rear-armour
+  kills 11% → 21%, fire rate 17.8 → 15.2 (−15%). The round-6 acceptance target — *a majority of direct-fire kills come
+  from the flank or the rear* — is **met at 69%**, up from 55%.
+- **THE DECOMPOSITION, and it is the most important thing round 6 learned about combat:**
+
+  | | kill distance | engaged distance | off-axis kills |
+  |---|---|---|---|
+  | **sight + acquisition + the crossing penalty** | **−11 m** | −4 m | **+17 pts** |
+  | **fire discipline (the effective bands)** | −3 m | **−8 m** | +2 pts |
+
+  **The gates do the heavy lifting; the bands mostly pull the armies closer.** Making a crew *find and hold* a target
+  before it may shoot is what moves where the fight is decided and who dies from the flank. The effective bands — the
+  part that took by far the most design argument this round, the whole `preferred_max` decision, the 0.65-vs-0.55
+  sweep, the standoff negotiation — are the **smaller** contributor to both headline metrics.
+  **If anyone tunes this later: acquisition first, bands second.** This was only visible once the control disabled the
+  gates rather than just the bands; a control that is not a real "before" hides which half of a change did the work.
+- **0.55 of reach is confirmed as the overshoot**: lowest fire rate, longest matches, fewest eliminations of any arm.
+  A fight the player cannot close. The shipped bands are nowhere near it.
+- **Superseded, kept for the method:** an earlier n = 15 pass
+, stated at the strength the evidence allows (builder0,
   `c765275f`, three counterbalanced pairings, SEEDS=3, **with acquisition and the crossing penalty on in both arms** —
   the control tunes `effective_range` back up, so it isolates *fire discipline alone*, not all of N5):
   fire discipline at the shipped bands moves the fight **modestly** closer — **engaged distance 68 → 60 m (12%)**,
