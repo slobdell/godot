@@ -262,7 +262,27 @@ contract. `tools/matchup_variants/engagement_bands.json` holds three alternative
 (the old world)*, *0.65 of reach*, *0.55 of reach* — to be run beside the shipped default with
 `make engagement VARIANTS=tools/matchup_variants/engagement_bands.json`.
 
-> **Measurements: pending.** The series has not been run yet. Nothing in this section below the design is a measured
+### What IS measured (laptop, `fd5ac1af`, `make test`; not a before/after — see the pending note below)
+
+These are properties of the new build measured in isolation, not comparisons across CP4, so they are safe to quote.
+Both come from tests that recompute their own bar rather than pinning today's output, so they survive the bands moving.
+
+- **An ordered long shot is a real trade, not free reach.** A stationary cannon against a stationary target, 13 shells
+  each: **100% hits inside the band (36 m) against 31% at full reach (70 m)**. Reaching past the band costs about
+  **70% of your hits**. This is the number squad asked for when it wired `long_shot: true` into support-by-fire tasks:
+  a posted element fights 56% further out, and pays roughly three shells for every one an unposted crew spends.
+  (`test_a_shot_beyond_the_effective_band_is_a_real_gamble`.) Next to arena's finding that posting buys **+0.127 on
+  open foundry and +0.024 in the dense yard**, "always task support-by-fire" does not look dominant.
+- **Effective fire got *better*, which was not the expected direction.** Interdicting a lane from inside the machine
+  gun's band rather than at its reach: one crew now lays **1.26 threat density** (was 0.56) and **0.34 suppression**
+  (was 0.27); three crews pin at **0.68** (was 0.56). Tighter spread inside the band is what makes concentrated fire
+  mean more — L2's contract finally paying off.
+- **`Engagement.covering_range()` = 45.0 m** over 14 units in four rosters (min 24, max 104), replacing arena's
+  hard-coded 110 m watcher range. At 110 m flanking priced out at a 1.8–2.1× detour on six of seven arenas; at the
+  derived 45 m the same geometry and the same code price it at **1.0–1.1×**. Same maps, opposite conclusion, the whole
+  finding resting on one number nobody had derived.
+
+> **Measurements: the before/after series is pending.** It has not been run yet. Nothing in this section below the design is a measured
 > claim, and **no number taken across CP4 may be published by any stream** (workstreams.md invariant 9). When the
 > series lands, its results go here with n, commit and machine, and the per-match file goes in
 > `streams/references/combat/`.
