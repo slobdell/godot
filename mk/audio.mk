@@ -85,6 +85,10 @@ PASS_SECONDS ?= 150
 ## Who fights in the pass. Faction matters to the ear: the Syndicate's weapons are the energy family (SfxWeapons).
 PASS_FACTION ?= gangs
 PASS_ENEMY ?= law
+## Vsync off (feel, round 6): on builder0 a vsync'd window on the idle desktop presents at a crawl, and the game ran ~10x
+## slower than the wall-clock recording (8 s of match in 90 s of audio, round 5 and 6; muted just the same, so not the
+## audio). With vsync off, FrameTarget's frame cap still paces it: 25.6 s of match in a 30 s pass.
+PASS_GODOT_FLAGS ?= --disable-vsync
 audio-pass: import audio-deps ## The whole mix of a 30-a-side match → build/audio/pass.{wav,mp3,png,json} (needs a display; PASS_SECONDS=150, ARENA=pit, PASS_FACTION=syndicate PASS_ENEMY=condemned, PASS_FLAGS=--audio-solo=music)
 	@mkdir -p $(BUILD_DIR)/audio
 	timeout $$(( $(PASS_SECONDS) + 300 )) $(GODOT) --path . --resolution 1280x720 $(PASS_GODOT_FLAGS) -- --skirmish --cinematic --player=cpu --enemy=cpu \
