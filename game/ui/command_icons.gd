@@ -255,7 +255,7 @@ static func draw_drill(canvas: CanvasItem, verb: String, rect: Rect2, color: Col
 			canvas.draw_circle(c, s * 0.3, color)
 
 
-static func _arrow(canvas: CanvasItem, from: Vector2, to: Vector2, color: Color, width: float, head: float) -> void:
+static func _arrow(canvas: Object, from: Vector2, to: Vector2, color: Color, width: float, head: float) -> void:
 	if not (from.is_finite() and to.is_finite()) or from.distance_to(to) < 0.01 or head < 0.5:
 		return  # a zero-length arrow has no direction: its head would be a degenerate triangle
 	var direction := (to - from).normalized()
@@ -263,3 +263,142 @@ static func _arrow(canvas: CanvasItem, from: Vector2, to: Vector2, color: Color,
 	var side := Vector2(-direction.y, direction.x)
 	_fill(canvas, PackedVector2Array([to, to - direction * head + side * head * 0.6,
 			to - direction * head - side * head * 0.6]), color)
+
+
+# ---- Round 6 X2 (N4): tactical task graphics ---------------------------------------------------------------------
+
+## The command card's symbols, after the APP-6 / MIL-STD-2525 / FM 1-02.2 tactical task graphics, simplified to read at
+## button size. Up the screen is toward the objective. Built only from lines, polygons and circles, so IconRaster can
+## draw each once into a texture (TASK_TEXTURE_PX) and the card shows it as one batched rect.
+##   support_by_fire  a base line (the firing position) with two arrows converging on the target, feet at its ends
+##   attack_by_fire   one arrow from a short base line with feet
+##   screen / guard / cover   the security line with outward arrows, broken by the task's letter (S, G, C)
+##   fix              a zig-zag arrow and F        block   a T across the route and B
+##   ambush           a curved line (the ambush position) with three arrows into the kill zone
+##   stop             a stop square                hold    a line held from behind
+##   attack_move      an arrow ending in crosshairs
+const TASK_TEXTURE_PX := 96
+const TASK_TEXTURE_GLYPH := 80.0
+static var _task_textures := {}
+
+## Letters as strokes in a box about 0.5 wide and 0.7 tall centred on the origin (y down), for the security tasks and
+## the ones FM 1-02.2 labels with a letter. Each letter is a list of polylines.
+const _LETTERS := {
+	"S": [[Vector2(0.24, -0.26), Vector2(0.12, -0.35), Vector2(-0.1, -0.35), Vector2(-0.24, -0.24), Vector2(-0.22, -0.08),
+		Vector2(0.0, 0.0), Vector2(0.22, 0.08), Vector2(0.24, 0.24), Vector2(0.1, 0.35), Vector2(-0.12, 0.35),
+		Vector2(-0.25, 0.26)]],
+	"G": [[Vector2(0.24, -0.24), Vector2(0.12, -0.35), Vector2(-0.12, -0.35), Vector2(-0.25, -0.2), Vector2(-0.25, 0.2),
+		Vector2(-0.12, 0.35), Vector2(0.12, 0.35), Vector2(0.25, 0.22), Vector2(0.25, 0.04), Vector2(0.04, 0.04)]],
+	"C": [[Vector2(0.24, -0.24), Vector2(0.12, -0.35), Vector2(-0.12, -0.35), Vector2(-0.25, -0.2), Vector2(-0.25, 0.2),
+		Vector2(-0.12, 0.35), Vector2(0.12, 0.35), Vector2(0.24, 0.24)]],
+	"F": [[Vector2(0.24, -0.35), Vector2(-0.2, -0.35), Vector2(-0.2, 0.35)], [Vector2(-0.2, 0.0), Vector2(0.14, 0.0)]],
+	"B": [[Vector2(-0.2, 0.35), Vector2(-0.2, -0.35), Vector2(0.1, -0.35), Vector2(0.22, -0.25), Vector2(0.22, -0.1),
+		Vector2(0.1, 0.0), Vector2(-0.2, 0.0)], [Vector2(0.1, 0.0), Vector2(0.25, 0.1), Vector2(0.25, 0.25),
+		Vector2(0.12, 0.35), Vector2(-0.2, 0.35)]],
+}
+
+
+static func task_texture(verb: String) -> Texture2D:
+	if not _task_textures.has(verb):
+		var raster := IconRaster.new(TASK_TEXTURE_PX)
+		draw_task(raster, verb, Vector2.ONE * TASK_TEXTURE_PX / 2.0, TASK_TEXTURE_GLYPH, Color.WHITE)
+		_task_textures[verb] = raster.texture()
+	return _task_textures[verb]
+
+
+## Whether draw_task has a graphic for `verb` (the palette's test asks this of every row).
+static func has_task_graphic(verb: String) -> bool:
+	return verb in ["support_by_fire", "attack_by_fire", "screen", "guard", "cover", "fix", "block", "stop", "hold",
+			"attack_move", "ambush"]
+
+
+## A task graphic centred at `at`, `size` px across. `canvas` is a CanvasItem or an IconRaster.
+static func draw_task(canvas: Object, verb: String, at: Vector2, size: float, color: Color) -> void:
+	if not (_drawable(at) and size >= 4.0):
+		return
+	var s := size / 2.0
+	var w := maxf(2.0, size / 14.0)
+	var p := func(x: float, y: float) -> Vector2: return at + Vector2(x, y) * s
+	match verb:
+		"support_by_fire":
+			canvas.draw_line(p.call(-0.78, 0.55), p.call(0.78, 0.55), color, w)
+			canvas.draw_line(p.call(-0.78, 0.55), p.call(-0.98, 0.85), color, w)
+			canvas.draw_line(p.call(0.78, 0.55), p.call(0.98, 0.85), color, w)
+			_arrow(canvas, p.call(-0.78, 0.55), p.call(-0.22, -0.82), color, w, s * 0.36)
+			_arrow(canvas, p.call(0.78, 0.55), p.call(0.22, -0.82), color, w, s * 0.36)
+		"attack_by_fire":
+			canvas.draw_line(p.call(-0.5, 0.6), p.call(0.5, 0.6), color, w)
+			canvas.draw_line(p.call(-0.5, 0.6), p.call(-0.7, 0.88), color, w)
+			canvas.draw_line(p.call(0.5, 0.6), p.call(0.7, 0.88), color, w)
+			_arrow(canvas, p.call(0.0, 0.6), p.call(0.0, -0.85), color, w, s * 0.4)
+		"screen", "guard", "cover":
+			var letter := {"screen": "S", "guard": "G", "cover": "C"}[verb] as String
+			_arrow(canvas, p.call(-0.38, 0.0), p.call(-0.98, 0.0), color, w, s * 0.34)
+			_arrow(canvas, p.call(0.38, 0.0), p.call(0.98, 0.0), color, w, s * 0.34)
+			_letter(canvas, letter, at, s * 1.1, color, w)
+		"fix":
+			var zig := PackedVector2Array([p.call(-0.75, 0.75), p.call(-0.35, 0.35), p.call(-0.6, 0.1), p.call(-0.2, -0.3),
+					p.call(-0.45, -0.5)])
+			canvas.draw_polyline(zig, color, w)
+			_arrow(canvas, p.call(-0.45, -0.5), p.call(0.0, -0.95), color, w, s * 0.34)
+			_letter(canvas, "F", at + Vector2(0.45, 0.2) * s, s * 1.0, color, w)
+		"block":
+			canvas.draw_line(p.call(-0.25, 0.85), p.call(-0.25, -0.55), color, w)
+			canvas.draw_line(p.call(-0.9, -0.55), p.call(0.4, -0.55), color, w * 1.3)
+			_letter(canvas, "B", at + Vector2(0.4, 0.25) * s, s * 1.0, color, w)
+		"ambush":
+			var arc := PackedVector2Array()
+			for i in 13:
+				var t := lerpf(-1.0, 1.0, i / 12.0)
+				arc.append(p.call(t * 0.9, 0.35 + 0.45 * (1.0 - t * t)))  # bows away from the kill zone (up)
+			canvas.draw_polyline(arc, color, w)
+			for x: float in [-0.6, 0.0, 0.6]:
+				var foot := 0.35 + 0.45 * (1.0 - x * x / 0.81)
+				_arrow(canvas, p.call(x, foot - 0.08), p.call(x * 0.75, -0.85), color, w * 0.85, s * 0.3)
+		"stop":
+			var box := PackedVector2Array([p.call(-0.55, -0.55), p.call(0.55, -0.55), p.call(0.55, 0.55), p.call(-0.55, 0.55)])
+			_fill(canvas, box, color)
+		"hold":
+			canvas.draw_line(p.call(-0.9, -0.45), p.call(0.9, -0.45), color, w * 1.4)
+			draw_unit(canvas, "scout", p.call(0.0, 0.35), s * 0.95, color)
+		"attack_move":
+			_arrow(canvas, p.call(-0.6, 0.8), p.call(0.1, -0.1), color, w, s * 0.34)
+			var aim: Vector2 = p.call(0.45, -0.5)
+			_ring(canvas, aim, s * 0.3, color, w)
+			canvas.draw_line(aim + Vector2(0, -s * 0.48), aim + Vector2(0, s * 0.48), color, w * 0.7)
+			canvas.draw_line(aim + Vector2(-s * 0.48, 0), aim + Vector2(s * 0.48, 0), color, w * 0.7)
+		_:
+			canvas.draw_circle(at, s * 0.3, color)
+
+
+static func _letter(canvas: Object, letter: String, at: Vector2, size: float, color: Color, width: float) -> void:
+	for stroke: Array in _LETTERS.get(letter, []):
+		var points := PackedVector2Array()
+		for point: Vector2 in stroke:
+			points.append(at + point * size)
+		canvas.draw_polyline(points, color, width)
+
+
+## A circle outline from line segments (IconRaster has no arc).
+static func _ring(canvas: Object, center: Vector2, radius: float, color: Color, width: float) -> void:
+	var points := PackedVector2Array()
+	for i in 25:
+		points.append(center + Vector2.from_angle(TAU * i / 24.0) * radius)
+	canvas.draw_polyline(points, color, width)
+
+
+static var _formation_textures := {}
+
+
+## X2: the Formation button's glyph - the formation's real shape (formation_points), drawn once into a texture. "auto"
+## shows a wedge, the shape a mixed group most often picks for itself.
+static func formation_texture(formation: String) -> Texture2D:
+	var shape := "wedge" if formation == UnitCommand.AUTO else formation
+	if not _formation_textures.has(formation):
+		var raster := IconRaster.new(TASK_TEXTURE_PX)
+		var box := Rect2(Vector2.ONE * TASK_TEXTURE_PX * 0.08, Vector2.ONE * TASK_TEXTURE_PX * 0.84)
+		var points := formation_points(shape, box, 4)
+		for i in points.size():
+			draw_unit(raster, "scout", points[i], TASK_TEXTURE_PX * 0.34, Color.WHITE if i == 0 else Color(1, 1, 1, 0.75))
+		_formation_textures[formation] = raster.texture()
+	return _formation_textures[formation]

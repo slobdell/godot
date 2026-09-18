@@ -105,6 +105,11 @@ func _faction_stage() -> void:
 	else:
 		await _key(KEY_ENTER)
 	var begin_load := Time.get_ticks_msec()
+	# Round 6 X4: the loading screen is up between FIGHT and the match (it lives on the root, so it survives the switch).
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_checks["loading_screen_shows"] = LoadingScreen.current != null
+	await _capture("2b_loading")
 	var loaded := await _wait_for(func() -> bool: return _controls() != null)
 	_step("faction_fight", {"match_loaded": loaded, "load_ms": Time.get_ticks_msec() - begin_load,
 			"arena_chosen": chosen_arena, "arena_built": String(Arena.active.get("name", ""))})

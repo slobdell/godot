@@ -1,7 +1,7 @@
 extends TestCase
 ## Control X6: the bottom selection panel. Portraits with hull and shield for a group, a detail card for one unit or an
-## inspected enemy, the selection's orders in words, and a command card (Move, Stop, Hold, Attack-move, Follow,
-## Formation) with hotkeys that does what the keys do.
+## inspected enemy, the selection's orders in words, and a command card (Stop, Hold, Attack-move, the element tasks,
+## Formation) with hotkeys that does what the keys do. Move and Follow are the mouse's (round 6 X1): no buttons.
 
 const Fixture := preload("res://tests/support/control_fixture.gd")
 
@@ -68,11 +68,23 @@ func test_command_card_buttons_do_what_the_keys_do() -> void:
 	var panel: SelectionPanel = setup[1]
 	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
 	var commands: Array = panel.summary()["commands"]
-	assert_eq(commands.map(func(c: Dictionary) -> String: return c["id"]),
-			["move", "stop", "hold", "screen", "attack_move", "follow", "support_by_fire", "formation"],
-			"the command card has the six orders, the two element tasks, and Formation")
-	assert_eq(commands.map(func(c: Dictionary) -> String: return c["hotkey"]), ["M", "S", "H", "E", "A", "F", "R", "G"],
-			"each shows its hotkey")
+	var ids: Array = commands.map(func(c: Dictionary) -> String: return c["id"])
+	# Round 6 X1 (the lead): "buttons like move and follow are already accessible via mouse click, so we shouldn't
+	# have buttons for them." The card holds only what the mouse cannot express.
+	assert_true(not (ids.has("move")), "no Move button: right-click moves")
+	assert_true(not (ids.has("follow")), "no Follow button: right-clicking a friend follows it")
+	for id in ["stop", "hold", "attack_move", "formation"]:
+		assert_true(ids.has(id), "the card has %s" % id)
+	assert_eq(ids, TaskPalette.card().map(func(row: Dictionary) -> String: return row["id"]), "and exactly the palette's card")
+	for command: Dictionary in commands:
+		assert_true(String(command["hotkey"]).length() == 1, "%s shows its hotkey" % command["id"])
+	# The keys stay: M and F still arm their orders, they just don't take room on the card.
+	await f.key(KEY_M)
+	assert_eq(f.controls.mode, "move", "M still arms a move")
+	await f.key(KEY_ESCAPE)
+	await f.key(KEY_F)
+	assert_eq(f.controls.mode, "follow", "F still arms a follow")
+	await f.key(KEY_ESCAPE)
 	# X3: screen and support by fire need a leader to carry them out, so a handful of units cannot ask for them.
 	for command: Dictionary in commands:
 		var expected := not SelectionPanel.ELEMENT_ONLY.has(command["id"])
@@ -130,3 +142,47 @@ func test_the_panel_stays_clear_of_the_radar_at_desktop_and_small_windows() -> v
 		assert_true(Rect2(Vector2.ZERO, Vector2(window)).encloses(panel.get_global_rect()), "at %s the panel is fully on screen" % window)
 		teardown()
 	tree.root.size = Vector2i(1280, 720)
+
+
+## Round 6 X2 (N4): every button reads by its tactical task graphic and its doctrinal name, and says in one sentence
+## what the units will do. The lead found support-by-fire labelled "Base of fire" and could not name "Screen".
+func test_every_button_has_a_symbol_a_doctrinal_name_and_one_sentence() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await tree.process_frame
+	var commands: Array = panel.summary()["commands"]
+	var labels: Array = commands.map(func(c: Dictionary) -> String: return c["label"])
+	assert_eq(TaskPalette.row("support_by_fire")["name"], "Support by Fire", "support by fire goes by its doctrinal name")
+	assert_true(not (labels.has("Base of fire")), "not the name the lead couldn't find")
+	for command: Dictionary in commands:
+		var id := String(command["id"])
+		if id != "formation":
+			assert_true(CommandIcons.has_task_graphic(id), "%s has a task graphic" % id)
+			assert_eq(CommandIcons.task_texture(id).get_width(), CommandIcons.TASK_TEXTURE_PX, "%s's graphic is drawn" % id)
+		assert_true(String(command["line"]).ends_with("."), "%s says in one sentence what happens (%s)" % [id, command["line"]])
+	# Hovering a button shows its name and sentence.
+	var hold := panel.get_global_rect().position + panel.command_rect("hold").get_center()
+	f.motion(hold, false, 0)
+	await tree.process_frame
+	var tip := panel.tooltip()
+	assert_eq(tip.get("id", ""), "hold", "hovering Hold shows its tooltip")
+	assert_true(String(tip.get("title", "")).contains("[H]"), "with its key (%s)" % tip.get("title", ""))
+	assert_eq(String(tip.get("line", "")), String(TaskPalette.row("hold")["line"]), "and says what holding does")
+
+
+## N4: a task gets a button only once squad has shown its behaviour, and the table in tactical_map.md is the same
+## table as the code.
+func test_the_palette_shows_only_earned_tasks_and_the_doc_lists_every_row() -> void:
+	var card_ids: Array = TaskPalette.card().map(func(row: Dictionary) -> String: return row["id"])
+	for row: Dictionary in TaskPalette.ROWS:
+		assert_eq(card_ids.has(row["id"]), bool(row["earned"]), "%s is on the card only if earned" % row["id"])
+		if String(row["id"]) != "formation":
+			assert_true(CommandIcons.has_task_graphic(String(row["id"])), "%s's symbol is ready" % row["id"])
+	for verb in TaskPalette.MOUSE_VERBS:
+		assert_true(not (card_ids.has(verb)), "%s is the mouse's, not a button" % verb)
+	var doc := FileAccess.get_file_as_string("res://_agents/tactical_map.md")
+	assert_true(doc.contains("## Task palette (N4)"), "tactical_map.md has the palette table")
+	for row: Dictionary in TaskPalette.ROWS:
+		assert_true(doc.contains("| `%s` |" % row["id"]), "the doc's table has a row for %s" % row["id"])

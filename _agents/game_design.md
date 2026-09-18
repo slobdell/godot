@@ -359,6 +359,29 @@ question of where *"somewhere in the middle between StarCraft 2 and Twisted Meta
 and do not let a later agent "correct" it upward toward a conventional RTS pitch because the tactical read is easier
 there. If a lower band is ever offered again, expect him to take it.
 
+**THE ONE PLACE THE CAMERA OVERRIDES HIS PICK, and he has been told:** past **70 m** the tilt lifts on a soft floor —
+about **30° by 130 m, 40° at 160 m and beyond**. Up to 70 m, *including his 50 m default*, the tilt is exactly his 12°.
+The reason, found by playing it: when the vision camera pulls back to frame a whole army (~150 m), 12° turns the arena
+into a thin strip between sky and a black void with units as specks. **It is two constants if he would rather have it
+otherwise** (`rts_camera.gd`). Nobody may widen this floor into the ≤70 m band without asking him — that band is his
+pick and the whole point of it.
+
+What 12° cost, and what was done (all played and tested, `rts_camera.gd`):
+- The cutaway had to clear the **3 m wall's top edge** as well; at 12° that edge survived the cut and hid every vehicle
+  parked against it.
+- The cutaway now cuts **only when the stands would actually hide something** — always when the camera is among the
+  seats, otherwise only if the sight line to a vehicle inside the wall runs through their measured profile. Far and
+  high, the stands and crowd stay as foreground. Mutation-checked: the first version left the railings standing across
+  the whole view.
+- **No popping.** The cut starts at the wall top's depth, which is ~zero as the camera crosses the wall, so it is
+  continuous.
+- **Close up it is excellent**, and commanding is no harder than at 25° — if anything picking out individual vehicles
+  is easier. Vehicles read in profile with the stands and crowd behind them, and feel's skyline shows above the far
+  stands.
+- **Open, and now seen every match: the ground plane ends at the stands.** Any camera outside the venue (far framing,
+  and the free camera after a defeat) looks down past the stands into black void — the bottom 15–40% of a far frame.
+  A dark plaza, car park or road out toward the new skyline would fill it. feel's to take.
+
 Consequences that follow from 12° and are now design facts rather than open questions:
 - **`MIN_PITCH_DEG` moves down with it**, so the player's whole tilt range shifts toward the ground.
 - **The wall cutaway stops being occasional and becomes constant.** A 12° camera crosses arena walls most of the time
