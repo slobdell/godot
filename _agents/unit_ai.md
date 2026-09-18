@@ -630,6 +630,9 @@ make remote T="tactics-ladder SIDES=brains=x5p,trim=x5p:-far_ambush-bait,flank=x
 make remote T="ai-ladder VARIANTS=x5p,x6t5 CHAMPION=x5p RUNS=6 LADDER_DOCTRINE=individuals"
 ```
 
+**Round 5's own results are kept as rows** in [streams/references/round5_ai_ladders.json](streams/references/round5_ai_ladders.json)
+(one line per match for five ladders, 696 matches) — compare a new run against those rather than re-running them.
+
 **Reading it.** The ELO column is a summary; the head-to-head counts are the evidence, and a challenger is adopted only
 if it beats the champion head to head **and** out-rates it (round-4 precedent: 53-43 over 96 matches, winning or tying
 every army). Per-arena rows tell you whether a result is one map's quirk. The per-drill table is evidence about where

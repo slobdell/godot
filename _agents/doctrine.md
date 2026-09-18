@@ -514,6 +514,13 @@ landed round to what the units were doing. Three results, in the order they chan
 3. **break_contact is a net loss** in the mirror ladder: standard without it went 91-29, and beat standard on every
    arena (30-10 head to head). Cut pending the faction runs at scale, where it traded 1.27.
 
+**The rows behind all of this are kept**: `streams/references/round5_ai_ladders.json` has one line per match for the
+five ladders (the mirror doctrine run, the 240-match drill-variant run, and the fac1b / fac2 / fac3 faction runs, all
+three from one snapshot, `fc88c24`) — sides, arena, seed, swapped bases, factions and winner, with each run's ELO and
+head-to-head. The full logs and per-drill ledgers lived in a worktree's git-ignored `build/` and are gone; these are
+what a round-6 re-run compares against without spending the machine time again. Reading them caught one mis-stated
+number in the ai brief (fac3's trimmed table went 23-25 against brains, not 24-24).
+
 **The discovery loop produced a candidate, and the ladder rejected it.** The scripted `pin_and_flank` policy
 (tools/discovery.py) beat standard doctrine in its first exploratory run, was distilled into
 `ElementCommander._pin_and_flank` (behind `traits.commander`), and then lost 43-77 across 240 matches. That is the loop

@@ -139,7 +139,9 @@ playing both factions, foundry / yard / boulevard:
 | fac2, control point off (48 matches) | 27-21 | | |
 
 fac3 (same snapshot, control point on, 144 matches): faction doctrine without far_ambush, assault_through and bait
-**drew brains 24-24** (gangs under it 24-24, the best any side did playing the gangs); the pin-and-flank commander lost
+**went 23-25 against brains** — parity within noise, not a win (gangs under it 24-24, the best any side did playing the
+gangs; an earlier reading of this run as 24-24 overall was wrong, corrected against the saved rows in
+`streams/references/round5_ai_ladders.json`); the pin-and-flank commander lost
 to brains 20-28 and to the trimmed table 20-28. Trimming drills buys parity, never superiority, whichever drills go.
 
 So the control point makes doctrine worse (it funnels every element to one circle) but is not the whole story: doctrine
