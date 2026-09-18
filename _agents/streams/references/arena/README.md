@@ -6,6 +6,23 @@ lands) can **compare a new result against the world before it, without re-runnin
 
 ## The maze crossings
 
+> ### ⚠ The three 60-unit runs are SUPERSEDED. The 30-unit run is not.
+>
+> nav found a real bug behind their tail (2026-09-18, after these were taken): **a layout has 52 spawn points, and
+> `Arena.spawn_spot` wraps with `slot % spots.size()`.** Ask for 60 units and slots 52–59 land exactly on top of
+> slots 0–7 — **eight pairs of coincident hulls that never moved at all**. So 8 of the stragglers in every 60-unit
+> run here are that bug, not congestion. It had been in the game since at least round 5.
+>
+> **`nav-maze-30` is unaffected** (30 < 52, no wrapping), and the *direction* of everything below survives: 33 of 60
+> arriving on `yard` with nobody shooting is still the lead's complaint reproduced. But **quote these as superseded
+> rather than adjusting them** — nav's before/after is measured on a tree where the spawn bug is fixed, so the two
+> are not comparable. On that tree `make nav-suite` now reports 100% arrival in every configuration, including the
+> head-on maze case that used to be **zero**.
+>
+> The lesson (57): **a measurement's outliers deserve as much suspicion as its headline, because that is where the
+> bugs hide.** nav found it by asking *which* units failed rather than how many. A stable minority failing the same
+> way is a defect, not variance — and left in a baseline it flatters every later fix by 8 units a run.
+
 **All five runs: the lead's laptop, commit `38c15f77`, seed 1, 180 s, all `tank`, hold-fire.** Hold-fire matters:
 these measure *driving only*, with no enemy and nothing to do but reach a destination. Nothing here is frame-rate
 sensitive — the probe runs under `--fixed-fps 30`, so the laptop being ~2.75× slower than builder0 changes how long
