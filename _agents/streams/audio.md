@@ -69,11 +69,13 @@ owns where subtitles appear).
 
 _Updated 2026-09-17 by the audio worker._
 
-### If you are picking audio up, read these four things
-1. **Never skip the whole-match pass** — why, and the `AudioStreamSynchronized` gotcha.
-2. **How to hear and measure each part** — the exact command for every layer, and what "clean" means.
-3. **The lead's spare music** — what exists beyond the nine tracks in, and what each might suit.
-4. **Next steps** — what is open, and what is one constant away.
+### If you are picking audio up, read these six things
+1. **The five rules this stream keeps** — the short version of everything below.
+2. **Never skip the whole-match pass** — why, and the `AudioStreamSynchronized` gotcha.
+3. **How to hear and measure each part** — the exact command for every layer, and what "clean" means.
+4. **The music import path, end to end** — a Suno download to a track the director plays.
+5. **The lead's spare music** — what exists beyond the nine tracks in, and what each might suit.
+6. **Waiting on the lead** — the five open questions, what each blocks, and what each costs.
 
 Everything else here is the record of round 5. `assets/music/PROMPTS.md` is the lead's own brief for generating more music, and
 `assets/audio/elevenlabs/sources.json` is every sound-effect recipe with the prompt that made it.
@@ -103,7 +105,8 @@ is unexplored. What is left is two questions with the lead and one track he may 
 | X1+X2 batch: every other gun and impact (35 takes) | 518 | 113,558 |
 | PA lines between matches (12 clips) | 1,523 | 112,035 |
 | Re-rolls of four failed sound generations | 61 | 111,974 |
-| **Total** | **12,989** | **111,974** |
+| Syndicate energy pilot: railgun, beam, plasma stream (7 takes) | 106 | 111,868 |
+| **Total** | **13,095** | **111,816 measured 2026-09-17 evening** |
 
 The balance reads unsettled for minutes after a run; `assets/{audio/elevenlabs,announcer}/ledger.md` note where it
 moved later.
@@ -145,21 +148,20 @@ lasers; he heard the Condemned's guns coming out of his own army.
   <https://claude.ai/artifact/RY6mYLNmNsrwPJoJmBUPSn>, asking whether they sound expensive and frightening, and
   whether to record the remaining four (pulse cannon, guided missiles, the energy hit, the sonic emitter; ~120 credits).
 
-### Waiting on the lead
-**Answered 2026-09-17:** "Run the batch", "All of them work" (the ad copy), "Record them" (the PA lines), and screens
-"live during, ads between". All three runs are done (below).
+### Waiting on the lead: five questions, nothing else blocks this stream
+Each says what it blocks and what it costs. Nothing here needs code first.
 
-0. **The whole-match listen**, now with his music: <https://claude.ai/artifact/1tgMvTnnNHpvxczSi9KDpm>. A real match on
-   the Boulevard recorded off the game (battle excerpt, opening, the full 90 s) plus the before/after firefight, and
-   three questions: do the guns sound dangerous; does the announcer sit above the battle (the spectrogram says his
-   line sits inside it, so that's flagged); does the music follow the fight and stay under it. Tuning is levels only.
-1. ~~**The gun pilot** (lead gate 1)~~: <https://claude.ai/artifact/E1hxqREgGsPMB74oUPkC4N>. A scripted ten-second firefight,
-   before and after, and each pilot sound raw and as it ships. Reply: run the batch / run it with changes / not yet.
-2. **Ad copy for the screens and the PA between matches** (draft, text only):
-   `assets/announcer/drafts/ad_copy.md`. Twelve screen ads in the existing brand world (AquaCorp, Syndicate Life,
-   Meridian, Harbor General, Vireo, Northgrid, ...) and twelve PA lines, each ordinary advertising with one detail
-   slightly off. Asked: which read as jokes, and whether screens carry ads or live match content. Recording the PA
-   lines is about 1,500 credits.
+| # | Question | Where | Blocks | Cost |
+|---|---|---|---|---|
+| 1 | Do the Syndicate's weapons sound expensive and frightening now? | <https://claude.ai/artifact/RY6mYLNmNsrwPJoJmBUPSn> | whether the energy family is right before the rest is recorded | none |
+| 2 | Record the remaining four energy sounds? (pulse cannon, guided missiles, the energy hit, the Law's sonic emitter) | same page | those four still play the sound they replace (`SfxSystem.ALIAS`) | ~120 credits, minutes |
+| 3 | Is his music at the right level under the battle? | <https://claude.ai/artifact/1tgMvTnnNHpvxczSi9KDpm> | `MusicDirector.TRIM_DB` (now -9 dB) | none: one constant, then one `audio-pass` to confirm |
+| 4 | Does the booth sit above the battle, or inside it? | same page | `AnnouncerVoice.TRIM_DB` (now -4 dB); my read of the spectrogram is that it sits *inside* | none, same |
+| 5 | A slow, hollow defeat track | `assets/music/PROMPTS.md`, *Acid Rain Wasteland* | defeat plays *Mechanical Dread*, which grinds rather than mourns | his time in Suno; import is one command |
+
+**Answered 2026-09-17:** the gun pilot ("run the batch"), the ad copy ("all of them work"), the PA lines ("record
+them"), screens ("live during, ads between"), and the guns after the batch ("the new sound effects sound awesome").
+All of those are shipped.
 
 ### Done so far
 - **X1 pilot (5281440, f696544).** `make sfx-generate` (dry run by default; `APPROVED=1 PILOT=1`) turns
@@ -317,6 +319,19 @@ lasers; he heard the Condemned's guns coming out of his own army.
 - **Watch it:** `make cinematic`.
 - **Numbers:** `make audio-bench` (per-frame cost), `make music-check`, `make sfx-generate` (dry run, the batch's cost).
 
+### The five rules this stream keeps
+Each was learned the expensive way this round; the reasoning is in the sections below and in the commits.
+1. **Never skip the whole-match pass.** Everything else was green both times it found a shipped bug.
+2. **A sound belongs to a weapon, not to a fire model.** Choosing by fire model gave the lead's Syndicate the
+   Condemned's guns (`SfxWeapons`); unlisted weapons still inherit their family, so improving one faction can't
+   disturb one he already approved.
+3. **A wrong sound beats a silent gun.** A sound with no takes yet falls back through `SfxSystem.ALIAS`, and a test
+   asserts every sound a weapon names can actually play. A wrong sound is a complaint; a silent gun is a broken game.
+4. **Prompt the physical event, never the sci-fi word.** "Laser" returns the 1950s ray gun (91% of its energy in
+   1–4 kHz). Capacitor discharge, arc flash, superheated air, rocket ignition — and never a pitch sweep.
+5. **Measure the artefact you ship.** Loop seams measured before encoding disagreed with `music-check` afterwards
+   (0.098 against 0.347): normalising, limiting and Vorbis all move the waveform.
+
 ### Never skip the whole-match pass
 **Everything else was green both times the whole-match recording found a shipped bug.** The booth's lines clipping at
 +0.1 dBFS, and the fight music stopping after 8 seconds in every match (so the whole mix had been balanced against
@@ -352,6 +367,25 @@ Every command runs from the repo root. `GODOT=.tools/godot-4.7.2-stable/Godot_v4
 change shape this round): the music director's layer thresholds are the stems' `from` values in
 `assets/music/manifest.json`, and `MatchMood`'s heat and hysteresis decide when the states move. Run `audio-pass` and
 read `MUSIC_LAYERS` against the booth's lines before retuning either.
+
+### The music import path, end to end
+`assets/music/PROMPTS.md` is the lead's own brief: his prompts and his "Tips for Best Results", verbatim, one per bed,
+with what each slot needs. The path from a Suno download to a track the director plays:
+
+1. **A whole bed** (garage, pre_match, lull, last_stand, victory, defeat):
+   `make music-import IN=~/Downloads/x.mp3 STATE=lull BPM=98 FROM=0:24 TO=2:08 RIGHTS="Suno <plan>, <date>"`.
+   `FROM`/`TO` are m:ss and cut out Suno's intro and outro, which do not loop.
+2. **The fight** (skirmish and battle are one track that tightens, never two that swap): split first —
+   `make music-stems IN=~/Downloads/x.mp3` runs **demucs on builder0** (PyTorch is ~2 GB and the laptop has no room;
+   **don't install it locally**). Multiple Suno takes cannot be layered instead: two generations never share an
+   arrangement bar for bar. Then
+   `make music-import IN=<stems folder> STATE=fight_<name> BPM=112 LAYERS="other=0 bass=0.35 drums=0.6" STATES=skirmish,battle`.
+   Several fight sets rotate, one per match.
+3. **Loop points are searched, not assumed:** whole-bar candidates scored for the quietest seam, **on the encoded
+   file** (rule 5 above). A real track imports at a seam under 0.02.
+4. **A real track retires the placeholder states it covers**, or a placeholder stem set would outrank a real bed.
+5. `make music-check` — loudness, true peak, loop points, seams, and for stems that they line up and that the
+   always-on layers are not silence. Then `make remote T="audio-pass ..."` and listen.
 
 ### The lead's spare music (14 of his 23 tracks, in `assets/incoming/music/`, git-ignored and backed up)
 Sorted by `tools/audio/survey_tracks.py`; "seam" is what a loop over the steadiest window would cost, so the low ones
