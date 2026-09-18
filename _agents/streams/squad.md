@@ -155,9 +155,9 @@ _Updated 2026-09-18 by the squad worker._
 | **X1** one formation system (N2, **CP3**) | **merged to main** at `df736a8e` (builder0 green, 1030 passed) |
 | **X5** support by fire / screen / halts | in CP3; control flipped `earned` on SBF and screen |
 | **X5** attack / hold postures (+ herringbone ↔ react-to-contact flip fix) | `16d23375` |
-| **X4** a plain move keeps the squad | `4d734b1e`: one formation fixed on the click, no idle re-issue (47/45 → 0/0 idle orders, five-squad repro); control re-lands its 2 lines on merge |
+| **X4** a plain move keeps the squad | **done**: `4d734b1e` (47/45 → 0/0 idle orders, five-squad repro); control's windowed five-squad A/B on the merged tree: **0 idle commands** with X4 on — re-landed as `2fa58c01` |
 | **X2** standable slots | in CP3 (`SlotGround` over the navmesh's closest point) |
-| **X3** form-up ETA + pacing | in CP3 behind `FormUp.eta`; nav's `Movement.eta` exists on stream/nav (`30e3250d`) — the seam becomes one line when it merges; **PID station-keeping waits on nav's N6** |
+| **X3** form-up ETA + pacing | ETA is nav's `Movement.eta` since CP1 (`0f2d5840`, refreshed 1 Hz; pace = own ETA / slowest ETA); **PID station-keeping waits on nav's N6** |
 | **X6** `make squad-coherence` | probe + runner in CP3; attribution + two thrash fixes `824aa258`; **baseline waits for CP4 on main** |
 | **X7** covered flanks + ambush task | `a8048028` |
 | **CP4 pairing** (fire band, dither, cover timing, suppression threshold) | `1fc83daf`, `5521f741` |
@@ -218,6 +218,10 @@ line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the cl
 
 ### Known issues
 
+- control's five-squad windowed run (merged tree, seed 3) shows two outliers 36-39 m from their current slots with X4
+  on (mean 6.7 m over 15 element units). Not chased yet: likely stuck or fighting units — nav's `Movement.state`
+  can now say which.
+
 - **Thrash with elements on (X6, indicative only):** one smoke match (laptop, `16d23375`, condemned v law, 5200,
   control point, both sides `--*-elements`, seed 1, 60 s, pre-CP4) read ~105 orders per unit-minute and 49-60 drill
   switches per element-minute; `824aa258` fixed the two biggest causes (SBF below near ambush flipping every update;
@@ -253,9 +257,9 @@ _None yet._
 
 ### Merge notes (shared / other streams' files)
 
-- **Merge here: `9ba36681`** — every `make check` target passed on builder0 (1042 tests, 0 failed, through
-  `audio-check`); the local wrapper died on the copy-back, so there is no `exited 0` line. Commits on top are docs and
-  a test comment only (`bdf44fa3`, `8f9a3d16`, and this Status).
+- **Green, merge here: `0f2d5840`** — builder0 `make check exited 0`, 1081 passed, sim baseline 8ebbed52 intact
+  (includes merged main with CP1). On top: `d4a855c9` two scenario thresholds derived from the band (test-only, filtered
+  runs pass) and Status.
 - `game/control/group_formation.gd` (control's, a recorded exception): adapter over TacticsFormation, same API.
 - `game/ai/tank_brain.gd` conflicts with combat's proposal `5478fa61` in exactly two lines: **take squad's**
   (`TankBrain.fire_band`, the same expression as `Engagement.effective_range`).
