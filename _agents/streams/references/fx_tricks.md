@@ -39,6 +39,24 @@ calls, primitives, pooled lights, real lights. Output: `build/perf-scene.json`, 
 counts of the instance-uniform errors. Knobs: `PERF_RES=1920x1080`, `PERF_FLAGS=--fx-quality=low`, `PERF_LAYERS=`,
 `PERF_CYCLES`, `PERF_NAME`. It opens a window for ~2 minutes.
 
+**Capacity — "how many vehicles does this machine hold?"** — comes out as `holds_60fps_at_vehicles` and
+`holds_30fps_at_vehicles` in the summary. The `all` phases are grouped by vehicle count, and a count is held while the
+**median** of its frames stays under `1000/fps + 1 ms` (`FPS_TOLERANCE_MS`); it walks counts upward and stops at the
+first that fails. **60 fps is judged on `avg_ms`; locked 30 on `p99_ms`**, because a locked rate is about the worst
+frames, not the average one — which is why the same run can hold 30 at more vehicles than it holds 60.
+
+**Uncapped by default**, which is the number you want when asking what a frame *costs*. `--perf-capped` keeps
+`FrameTarget`'s cap and vsync instead, and answers the other question: does the locked rate *hold* (`avg_ms` at the
+cap, p95 not much worse)? **Capacity numbers are meaningless in a capped run** — the cap pins the frame time, so
+`holds_*_at_vehicles` reads 0 however much headroom there is. Other flags: `--perf-census` (what is drawing, grouped
+by owner — for hunting draw calls), `--perf-shot-every-phase` (a screenshot per phase, for seeing what a layer
+actually removed), and `PERF_SCENE_HITCH` lines, which print the frames that ran long with `ticks_this_frame` beside
+them — that is how the hitches were traced to frames running 2–3 simulation ticks at once.
+
+**Labelled baselines live beside this file in `perf/`** (`_agents/streams/references/perf/`) with a README giving each one's provenance (what build, what
+resolution, capped or not, and which were taken while the laptop was loaded). Compare a new run against the file, not
+against a number in an old commit message.
+
 ### Before (2026-09-17, main at round 5 start, tier high)
 
 Laptop shared with five other agents (load ≈ 5), so CPU numbers are pessimistic; GPU numbers are the GPU's.
@@ -104,6 +122,15 @@ the budget is combat's and ai's, and nothing in rendering moves it.
 | **Real lights alive at once** | **≤ 6: the moon (no shadow) + ≤ 4 pooled omni lights** for the moments that matter (explosions, a tank shell, a kill); **no per-vehicle lights**; no omni shadows ever | 17 (moon with shadow + 16 pooled, most of them on vehicles as underglow) | render |
 | Dynamic shadows | **off on the default desktop tier** (fake with blob shadows); high tier only when the GPU line holds with them | moon shadows on | render |
 | Instance uniforms (`instance uniform` in a shader) | **none on anything that scales with unit count** (each instance reserves 16 of the 4,096 buffer slots: 256 instances total) | vehicles, weapons and shields used them | render |
+
+**The GPU cuts that are left, priced** (measured as layer costs at 1080p; the GPU lines above are still unmet on
+paper, which only starts to matter once the simulation tick stops being the wall):
+
+| Cut | Saves | Cost to the picture | Status |
+|---|---|---|---|
+| 3D render scale 0.75 | −2.8 ms | softer image | available, not taken |
+| Glow off | −1.7 ms | the neon loses its bloom | **the lead chose to keep glow** |
+| Venue off (crowd, screens, signage) | −1.35 ms | the arena stops feeling inhabited | available, not taken |
 
 **Rules for every stream:**
 - **Arena (props):** static props go through `StaticBatcher`/MultiMesh (one draw per prop kind and material, not per
