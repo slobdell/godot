@@ -115,4 +115,34 @@ place, you do not place).
 
 ## Status
 
-_The worker keeps this current._
+_Last updated 2026-09-18 by the feel worker._
+
+### Plan (backlog order; one line of reason where I chose)
+1. **X1** diagnose: build an instrument that measures the crowd's own pixels, not a second camera page (control owns
+   that); record a real match with the crowd soloed. — **done, below.**
+2. **X3 mix half before X2 art** — the audio fix is a gain/bus change, cheap and reversible; the source-material
+   question (ElevenLabs text) waits until the mix is proven right (orchestrator's order, agreed).
+3. **X2** legibility across the whole 22–50° band, not one pose — the lead has not picked a camera yet.
+4. X4 horizon/sky once control's camera lands; X5 with control's loading screen; X6 perf re-baselined **after**
+   control's camera merge and combat's CP4 (both move perf-scene's numbers); X7/X8 stretch.
+
+### X1 — why the lead saw no crowd (done)
+Instrument: `make crowd-look` (`game/theme/fx/bench/crowd_look.gd`, `b80f3161`): a real skirmish, the player's own
+frame plus today's zoom slider and control's 22–50° pitch × distance grid, each shot with/without the crowd and fog
+(tree paused), reporting seats in view, median figure height in px, and the crowd's changed pixels (noise-masked).
+Image for the lead: `build/crowd-look-report/x1_diagnosis.png` (sent to the orchestrator).
+
+**Two separate causes** (builder0, 1920×1080, HIGH tier, Foundry scripted skirmish seed 3, tree at `b80f3161`):
+1. **Framing.** The default skirmish pose (zoom 0.45, 52°, 56 m up) has **0 of 2,040** spectators in view. Facing the
+   enemy on today's slider nothing appears until zoom 0.70 (65°), where figures are 7 px tall. The home stands sit
+   behind the camera. control's pitch decoupling fixes most of this half.
+2. **Legibility.** Where the stands are in frame, the crowd *is* there — ~800 figures, 22 px tall, at 35°/60 m facing
+   home — but rendered as near-black figures the same value as the stands' metal, 5 sparse rows per module, so it reads
+   as structure. Facing the enemy at 22°/90 m it is ~1,400 figures only 7 px tall: they can only read as a mass.
+   Fog is not a meaningful cause (crowd pixels barely change with fog off at these distances).
+
+**Audio** (builder0, `b80f3161`, `make audio-pass PASS_SECONDS=90 ARENA=yard`, gangs v law, 30 a side; same match
+with `--audio-solo=crowd`): the crowd alone measured **−46.5 dBFS until contact, 20–25 dB under the full mix**, and
+−32 to −36 dBFS after contact (still 10–16 dB under) — *before* the 5:1 impact ducking on the Bed bus it also rode. The
+murmur is procedural filtered noise (`crowd_murmur.wav`, 4 s). Inaudible regardless of source: **the mix is the
+first cause**, fixed and measured before any source-material request.
