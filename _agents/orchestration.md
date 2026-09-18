@@ -825,3 +825,17 @@ The kickoff prompt is one line; this section is the rest.
     So, for workers: **a blocked branch needs an owner for the moment it stops being blocked, and that owner is the
     stream.** A stream that reports only what it has *learned* looks finished when its findings stop; report what is
     *mergeable* as a separate, explicit thing, every time it changes.
+64. **"Nothing drawn" and "drawn too dark" look identical: paint it red.** Round 6, the black band under the arena
+    wall that the lead's 12° camera showed every match. Everyone — including the orchestrator, in writing, twice —
+    described it as *the ground plane ends at the stands*, i.e. missing geometry, and handed it over as "a dark plaza
+    would fill it". **Geometry could never have fixed it:** the camera's near-plane cutaway clips every real surface
+    between a camera past the wall and the wall itself, so no mesh can occupy that band. What showed through was the
+    **sky dome's below-horizon colour**, which ACES tonemapping with white 6 crushes to exactly `(0, 0, 0)`.
+    The stream proved it by **painting the suspect surface red** — a two-minute test that distinguishes the two
+    hypotheses absolutely, where staring at a black region distinguishes nothing.
+    The general instruction: **under a tonemapper, an unlit surface much darker than its surroundings rounds to pure
+    black, so "absent" and "present but crushed" are visually identical.** Before concluding something is not being
+    drawn, give it an impossible colour. And the wider form, which this round hit repeatedly: when two hypotheses
+    predict the same observation, **stop looking harder at the observation and find the cheap test that separates
+    them** (cf. lesson 54 — a probe consistently measuring a bridge, broken open by implausibility rather than by
+    repetition).
