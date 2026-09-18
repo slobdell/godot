@@ -80,10 +80,29 @@ static func table_of(formation: String, technique: String, overrides: Dictionary
 
 
 func start() -> void:
-	for i in 12:
+	for i in 30:
 		await case.tree.physics_frame
-		if not game_match.tanks.get_children().is_empty() and Pathing.is_ready(game_match.tanks.get_child(0)):
+		if TacticsLab.navigation_is_this_arenas(arena):
 			break
+
+
+## Whether the world's navigation map holds THIS arena's navmesh and nothing else (lesson 36): Pathing.is_ready() only
+## says the map has polygons, and a previous test's arena keeps its regions for a frame or two after it is freed, so a
+## scenario could path, and snap its slots, against the arena before it.
+static func navigation_is_this_arenas(arena_node: Node3D) -> bool:
+	if arena_node == null or not arena_node.is_inside_tree() or not Pathing.is_ready(arena_node):
+		return false
+	var mine := {}
+	for child in arena_node.get_children():
+		if child is NavigationRegion3D:
+			mine[(child as NavigationRegion3D).get_rid()] = true
+	var regions := NavigationServer3D.map_get_regions(arena_node.get_world_3d().navigation_map)
+	if mine.is_empty() or regions.size() != mine.size():
+		return false
+	for region in regions:
+		if not mine.has(region):
+			return false
+	return true
 
 
 func step() -> void:

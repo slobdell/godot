@@ -9,7 +9,11 @@ extends RefCounted
 ##   ElementPlan.build(situation, state, table) ->
 ##     {"formation", "technique", "drill", "why", "anchor", "heading", "bounding", "arrived",
 ##      "orders": {unit: {"verb", "to": Vector3 | null, "target": String}},
-##      "slots": {unit: Vector3}, "sectors": {unit: degrees}}
+##      "slots": {unit: Vector3}, "sectors": {unit: degrees}, "seats": {unit: [formation, count, index]}}
+##
+## Every formation is laid out and seated by TacticsFormation (N2, the one formation system): the leader keeps the
+## shape's point, whatever can take a hit stands where the fire comes from, and the rest take the slots that keep
+## their paths from crossing — and keep them from one update to the next (the seating in `state.seats`).
 ##
 ## Orders use control's K1 verbs (move, attack_move, attack, hold), so the brains keep obeying exactly one
 ## thing and all their micro — cover, peeking, strafing, weak spots — still applies inside the order.
@@ -18,18 +22,6 @@ extends RefCounted
 ## is the doctrinal "close up before the next bound", and it keeps a brain's commitment from being reset
 ## every second (round-3 lesson: re-issuing an order throws away what the brain was doing).
 
-## Front to back: who leads an element. Armour in front, fragile and indirect-fire vehicles behind.
-const ROLE_RANK := {"tank": 0, "burner": 1, "ifv": 2, "scout": 3, "lancer": 4, "artillery": 5}
-## How much being at the FRONT of the shape counts toward a slot's exposure, next to being on its edge.
-## Both matter: the point of a wedge and the outside of a line are where the fire comes from.
-const FRONT_EXPOSURE := 1.5
-## Hull points are worth this much armour thickness when ranking what a vehicle can take.
-const HULL_PER_ARMOUR := 25.0
-## Indirect fire and lasers go in the middle whatever their armour says. Artillery is better protected than a
-## scout on paper, but it is the thing the element exists to protect, and a gun that is being shot at is not
-## shooting (game_design.md: "protecting fragile units (artillery, Lancers)").
-const PROTECTED_ROLES := ["artillery", "lancer"]
-const PROTECTED_PENALTY := 100.0
 ## The element counts as arrived within this far of its task destination (meters)...
 const ARRIVE_M := 12.0
 ## ...and as having reached its current leg's anchor within this far.
@@ -45,6 +37,15 @@ const FLANK_ARRIVE := 18.0
 ## of parking on a circle. Coarse on purpose — a new goal every tick would reset what every brain was doing.
 const ORBIT_STEP_DEG := 30.0
 const ORBIT_TICKS := SimClock.TICK_RATE * 4
+## Support by fire: the firing line stands this fraction of the element's shortest EFFECTIVE range off the point it
+## covers, so every gun in the line reaches it with fire that counts, and never closer than SBF_MIN_STANDOFF_M.
+const SBF_STANDOFF := 0.8
+const SBF_MIN_STANDOFF_M := 25.0
+## A screen is a thin line: its vehicles stand this many times the doctrine spacing apart, to watch a wide front.
+const SCREEN_SPREAD := 1.5
+## A unit within this far of its place on a firing or screen line holds it (fires from there, drives back if pushed);
+## further out it moves to it.
+const IN_POSITION_M := 8.0
 ## Attack orders are given to units within this multiple of their weapon range; the rest keep moving up.
 const ENGAGE_RANGE_FACTOR := 1.15
 
@@ -55,7 +56,8 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	var plan := {"formation": TacticsFormation.DEFAULT, "technique": "traveling", "drill": "", "why": "",
 			"anchor": state.get("anchor"), "heading": situation.get("heading", Vector3.FORWARD),
 			"bounding": int(state.get("bounding", 0)), "arrived": bool(state.get("arrived", false)),
-			"orders": {}, "slots": {}, "sectors": {}}
+			"orders": {}, "slots": {}, "sectors": {}, "seats": {},
+			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {})}
 	if members.is_empty():
 		return plan
 
@@ -81,19 +83,31 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 	var verb := String(task.get("verb", "hold"))
 	var center: Vector3 = situation["center"]
 	var destination: Variant = _task_point(task, situation)
-	if verb == "hold" or destination == null:
+	if verb == "screen" and Drills.on_screen_line(situation, state):
+		_plan_screen(plan, situation, state, table, destination)
+		return
+	if verb == "hold" and destination == null:
+		# Hold here: where the element stood when told, kept from update to update (the centre of a halted
+		# element wanders as its crews face their sectors, and a halt that follows it creeps).
 		plan["arrived"] = true
-		_halt(plan, situation, table)
+		_halt(plan, situation, state, table, _kept_halt(state, center))
+		return
+	if destination == null:
+		plan["arrived"] = true
+		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
 	var to_go := center.distance_to(destination)
 	plan["arrived"] = to_go <= ARRIVE_M
 	if plan["arrived"]:
-		_halt(plan, situation, table)
+		# Arrived: the halt formation stands ON the ordered spot, not wherever the element's centre happens to be.
+		_halt(plan, situation, state, table, destination)
 		return
 	var heading := TacticsFormation.flat(destination - center)
 	plan["heading"] = heading
 	var spacing := table.spacing(String(situation["terrain"]))
 	var order_verb := "attack_move" if verb in ["attack", "screen"] or String(situation["threat"]) in ["likely", "contact"] else "move"
+	if not ElementTask.runs_drills(task):
+		order_verb = "move"  # a plain move goes where it was sent; its crews still shoot what they pass
 	var ordered := slot_order(situation)
 
 	match String(plan["technique"]):
@@ -153,12 +167,17 @@ static func _plan_bounding(plan: Dictionary, situation: Dictionary, state: Dicti
 ## A halt: all-round security. An element that has arrived is no longer on its movement task, so the table is
 ## asked what a HALT looks like — normally the herringbone (in lanes or cover) or the coil (in the open) —
 ## and the crews face their sectors instead of the way they drove in.
-static func _halt(plan: Dictionary, situation: Dictionary, table: DoctrineTable) -> void:
+## `at` is where the halt stands; the heading is the one the element arrived with, kept while it stays halted (the
+## averaged hull facing turns as crews face their sectors, and a formation that turned with it would never settle).
+static func _halt(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable, at: Vector3) -> void:
 	var pick := table.select({"task": "hold", "threat": String(situation["threat"]),
 			"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})
 	plan["formation"] = pick["formation"]
 	plan["technique"] = pick["technique"]
 	plan["why"] = pick["why"]
+	plan["anchor"] = clamp_to_arena(at)
+	if bool(state.get("arrived", false)) and state.get("heading") is Vector3:
+		plan["heading"] = state["heading"]
 	_plan_halt(plan, situation, table)
 
 
@@ -167,7 +186,69 @@ static func _plan_halt(plan: Dictionary, situation: Dictionary, table: DoctrineT
 	var formation := String(plan["formation"])
 	var heading: Vector3 = plan["heading"]
 	var spacing := table.spacing(String(situation["terrain"]))
-	_group(plan, ordered, formation, situation["center"], heading, spacing, "move", "", true)
+	var at: Vector3 = plan["anchor"] if plan.get("anchor") is Vector3 else situation["center"]
+	_group(plan, ordered, formation, at, heading, spacing, "move", "", true)
+
+
+## Where a halt that is already standing keeps standing: last update's anchor while the element stays halted, else
+## `center` (a fresh halt).
+static func _kept_halt(state: Dictionary, center: Vector3) -> Vector3:
+	var anchor: Variant = state.get("anchor")
+	if bool(state.get("arrived", false)) and anchor is Vector3:
+		return anchor
+	return center
+
+
+## Screen (N4): a thin line ACROSS the point, facing the way the element came to it (away from its own side), each
+## crew on its sector; it observes and fights only what comes to it (Drills gives a screen on its line no drill).
+static func _plan_screen(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		point: Vector3) -> void:
+	plan["formation"] = "line"
+	plan["technique"] = "traveling"
+	plan["why"] = "screen: on the line, observe, fight what comes"
+	plan["arrived"] = true
+	var kept: Variant = state.get("anchor")
+	var heading: Vector3 = state["heading"] if kept is Vector3 and (kept as Vector3).distance_to(point) < 0.5 \
+			and state.get("heading") is Vector3 else TacticsFormation.flat(point - (situation["center"] as Vector3))
+	plan["anchor"] = point
+	plan["heading"] = heading
+	var spacing := table.spacing(String(situation["terrain"])) * SCREEN_SPREAD
+	_line_positions(plan, situation, slot_order(situation), point, heading, spacing)
+
+
+## Support by fire (N4, round 6): a firing line at a standoff from the point, every gun in effective range of it,
+## facing it with interlocking sectors — and nobody advances. The line is chosen once, on the element's side of the
+## point, and kept (Element.assign clears it); the element drives to it and holds.
+static func _plan_support_by_fire(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		ordered: Array, focus: Vector3, spacing: float) -> void:
+	plan["formation"] = "line"
+	plan["technique"] = "traveling"
+	var anchor: Variant = state.get("anchor")
+	if not (String(state.get("drill", "")) == "support_by_fire" and anchor is Vector3):
+		var reach := INF
+		for member: Dictionary in ordered:
+			reach = minf(reach, float(member.get("effective_range", member.get("range", 60.0))))
+		var standoff := maxf(reach * SBF_STANDOFF, SBF_MIN_STANDOFF_M) if is_finite(reach) else SBF_MIN_STANDOFF_M
+		var center: Vector3 = situation["center"]
+		var away := TacticsFormation.flat(center - focus) if center.distance_to(focus) > 1.0 \
+				else -TacticsFormation.flat(plan["heading"])
+		anchor = clamp_to_arena(focus + away * standoff)
+	plan["anchor"] = anchor
+	var heading := TacticsFormation.flat(focus - (anchor as Vector3))
+	plan["heading"] = heading
+	_line_positions(plan, situation, ordered, anchor, heading, spacing)
+
+
+## Put `members` on a line at `anchor` facing `heading`, each on its sector: far from its place it moves there, on it
+## it holds (a holding crew fires at will and drives back onto the spot if pushed off it).
+static func _line_positions(plan: Dictionary, situation: Dictionary, members: Array, anchor: Vector3,
+		heading: Vector3, spacing: float) -> void:
+	_group(plan, members, "line", anchor, heading, spacing, "move", "", true)
+	for member: Dictionary in members:
+		var name := String(member["name"])
+		var spot: Vector3 = plan["slots"][name]
+		if (member["position"] as Vector3).distance_to(spot) <= IN_POSITION_M:
+			_order(plan, name, "hold", spot, "")
 
 
 # ---- Battle drills -------------------------------------------------------------------------------------
@@ -211,7 +292,9 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 		"herringbone":
 			plan["formation"] = "herringbone"
 			plan["technique"] = "traveling"
-			_group(plan, ordered, "herringbone", center, plan["heading"], spacing, "move", "", true)
+			var at := _kept_halt(state, center)
+			plan["anchor"] = at
+			_group(plan, ordered, "herringbone", at, plan["heading"], spacing, "move", "", true)
 		"encircle":
 			_plan_encircle(plan, situation, table, ordered, focus, toward, spacing, contact)
 		"bait":
@@ -284,8 +367,14 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 	var base: Array = halves[0]
 	var maneuver: Array = halves[1]
 	var task_verb := String((state.get("task", {}) as Dictionary).get("verb", ""))
-	if task_verb == "support_by_fire" or maneuver.is_empty():
-		# The task itself is the base of fire: everyone suppresses, nobody advances.
+	if task_verb == "support_by_fire":
+		# The task itself is the base of fire: take the firing line and hold it. (Before round 6 this called
+		# _engage() alone: with nobody in sight every crew was told to hold where it stood, so the element never
+		# moved and never formed — exactly what the lead saw when he pressed the button.)
+		var point: Variant = ElementTask.destination(state.get("task", {}))
+		_plan_support_by_fire(plan, situation, state, table, ordered, point if point is Vector3 else focus, spacing)
+		return
+	if maneuver.is_empty():
 		plan["formation"] = "line"
 		_engage(plan, ordered, situation, toward, contact)
 		return
@@ -373,25 +462,39 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 		plan["slots"][name] = position
 
 
-## Place `members` in `formation` around `anchor` and send each to its slot.
+## Place `members` in `formation` around `anchor` and send each to its slot (TacticsFormation.place: the
+## leader keeps the point, armour goes where the fire comes from, nobody's path crosses another's, and last
+## update's seating stands unless a new one saves real driving).
 ## `halt` puts every crew on its sector of fire instead of the direction of travel.
 static func _group(plan: Dictionary, members: Array, formation: String, anchor: Vector3, heading: Vector3,
 		spacing: float, verb: String, target := "", halt := false) -> void:
-	var count := members.size()
-	if count == 0:
+	if members.is_empty():
 		return
-	var slots := TacticsFormation.centered(TacticsFormation.offsets(formation, count, spacing))
-	var sectors := TacticsFormation.sectors(formation, count)
-	var seats := by_exposure(members, slots)
-	for i in count:
-		var name := String(members[seats[i]]["name"])
-		var spot := TacticsFormation.to_world(anchor, heading, slots[i])
+	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing,
+			{"leader": String(plan.get("leader", "")), "policy": "exposure",
+			"previous": _previous_seating(plan, members, formation)})
+	for entry in placed:
+		var name := String(entry["unit"])
+		var spot: Vector3 = entry["to"]
 		if halt:
-			spot += TacticsFormation.rotate(heading, deg_to_rad(sectors[i])) * FACE_LEAD
+			spot += TacticsFormation.rotate(heading, deg_to_rad(float(entry["sector"]))) * FACE_LEAD
 		spot = clamp_to_arena(spot)
 		plan["slots"][name] = spot
-		plan["sectors"][name] = sectors[i]
+		plan["sectors"][name] = entry["sector"]
+		plan["seats"][name] = [formation, members.size(), int(entry["index"])]
 		_order(plan, name, verb, spot, target)
+
+
+## Last update's seating for these members in this shape, if they all had one ({} otherwise).
+static func _previous_seating(plan: Dictionary, members: Array, formation: String) -> Dictionary:
+	var before: Dictionary = plan.get("previous_seats", {})
+	var result := {}
+	for member: Dictionary in members:
+		var seat: Variant = before.get(String(member["name"]))
+		if not (seat is Array) or String(seat[0]) != formation or int(seat[1]) != members.size():
+			return {}
+		result[String(member["name"])] = int(seat[2])
+	return result
 
 
 static func _order(plan: Dictionary, unit_name: String, verb: String, to: Variant, target: String) -> void:
@@ -419,71 +522,27 @@ static func _advance(plan: Dictionary, situation: Dictionary, state: Dictionary,
 	return anchor
 
 
-## Has the element closed up? Every member within the doctrine's cohesion distance of its slot.
+## Has the element closed up? Judged in TIME, the lead's form-up estimate (X3): every member reaches its slot within
+## the time the slowest vehicle needs to cover the doctrine's cohesion distance. A fast scout 30 m out is as closed
+## up as a tank 15 m out; measured in metres the tank held every leg up and the scout never did.
+## (Straight line over top speed, as FormUp.eta estimates it until nav's Movement.eta exists.)
 static func _cohesive(members: Array, anchor: Variant, formation: String, heading: Vector3, spacing: float,
 		table: DoctrineTable) -> bool:
 	if anchor == null or members.is_empty():
 		return true
-	var slots := TacticsFormation.centered(TacticsFormation.offsets(formation, members.size(), spacing))
-	var allowed := table.leg("cohesion_m") * COHESION_SLACK
-	for i in members.size():
-		var spot := TacticsFormation.to_world(anchor, heading, slots[i])
-		if (members[i]["position"] as Vector3).distance_to(spot) > allowed:
+	var slowest := INF
+	for member: Dictionary in members:
+		slowest = minf(slowest, maxf(float(member.get("speed", 9.0)), 0.5))
+	var allowed_s := table.leg("cohesion_m") * COHESION_SLACK / slowest
+	var by_name := {}
+	for member: Dictionary in members:
+		by_name[String(member["name"])] = member
+	for entry in TacticsFormation.place(members, formation, anchor, heading, spacing, {"policy": "exposure"}):
+		var member: Dictionary = by_name[String(entry["unit"])]
+		var seconds := (member["position"] as Vector3).distance_to(entry["to"]) / maxf(float(member.get("speed", 9.0)), 0.5)
+		if seconds > allowed_s:
 			return false
 	return true
-
-
-## Which member takes each slot: `result[slot index]` is an index into `members`.
-##
-## The shape says where the exposed places are — the outside of a line, the point of a wedge, the ends of a
-## column — and the vehicle that can take a hit goes there, with the fragile ones inboard. The lead
-## (2026-09-16): *"I don't know if your doctrines are accounting for how to manage formations with multiple
-## vehicles (i.e. heavy armor on the outside of a column, light armor on the inside)."*
-##
-## The leader keeps slot 0, which is its place in the formation's own geometry (the point of the wedge, the
-## head of the column): a leader that cannot see its element cannot lead it.
-static func by_exposure(members: Array, slots: Array) -> Array:
-	var count := members.size()
-	var seats: Array = []
-	seats.resize(count)
-	if count == 0:
-		return seats
-	seats[0] = 0
-	if count == 1:
-		return seats
-	# Slots, most exposed first (ties by index, so the same shape always fills the same way).
-	var order: Array = range(1, count)
-	order.sort_custom(func(a: int, b: int) -> bool:
-		var exposure_a := exposure_of(slots[a])
-		var exposure_b := exposure_of(slots[b])
-		return exposure_a > exposure_b + 0.01 or (absf(exposure_a - exposure_b) <= 0.01 and a < b))
-	# Members, toughest first (ties by name).
-	var toughest: Array = range(1, count)
-	toughest.sort_custom(func(a: int, b: int) -> bool:
-		var hard_a := toughness_of(members[a])
-		var hard_b := toughness_of(members[b])
-		return hard_a > hard_b + 0.01 or (absf(hard_a - hard_b) <= 0.01
-				and String(members[a]["name"]) < String(members[b]["name"])))
-	for i in order.size():
-		seats[order[i]] = toughest[i]
-	return seats
-
-
-## How exposed a slot is: how far out of the middle of the shape it sits, and how far toward the front.
-static func exposure_of(slot: Vector2) -> float:
-	return slot.length() + FRONT_EXPOSURE * maxf(-slot.y, 0.0)
-
-
-## What a vehicle can take, and whether it should have to: front and side armour plus hull, minus a heavy
-## penalty for the roles an element is built to keep alive.
-static func toughness_of(member: Dictionary) -> float:
-	var role := String(member.get("role", "scout"))
-	var protected_penalty := PROTECTED_PENALTY if PROTECTED_ROLES.has(role) else 0.0
-	var unit := String(member.get("unit", ""))
-	if not Units.exists(unit):
-		return -float(ROLE_RANK.get(role, 3)) - protected_penalty
-	return Units.armor(unit, "front") + Units.armor(unit, "side") \
-			+ float(Units.stat(unit, "max_health")) / HULL_PER_ARMOUR - protected_penalty
 
 
 ## Who stands where: the leader first, then armour, then the fragile and indirect-fire vehicles, by name.
@@ -495,8 +554,8 @@ static func slot_order(situation: Dictionary) -> Array:
 		var b_lead := String(b["name"]) == leader
 		if a_lead != b_lead:
 			return a_lead
-		var rank_a: int = ROLE_RANK.get(String(a["role"]), 3)
-		var rank_b: int = ROLE_RANK.get(String(b["role"]), 3)
+		var rank_a: int = TacticsFormation.ROLE_RANK.get(String(a["role"]), 3)
+		var rank_b: int = TacticsFormation.ROLE_RANK.get(String(b["role"]), 3)
 		return rank_a < rank_b if rank_a != rank_b else String(a["name"]) < String(b["name"]))
 	return members
 
