@@ -553,3 +553,21 @@ The kickoff prompt is one line; this section is the rest.
     fix ~5 m, X6 **nothing** — and said the X6 row was the one that would have been easy to assume the other way. It
     also corrected its own earlier report that the failure was machine variance, having set out to prove it rather
     than assume it.
+48. **A wait with no heartbeat is indistinguishable from a hang — and a queue without ageing is a race that starves.**
+    Round 6, found by combat after its pilot run sat **41 minutes without ever starting a single process**, while
+    builder0's load average was **1.35 on 8 cores** and two of the three slots were held by *rendering* jobs that
+    barely touch the CPU. `tools/slot.sh` had no queue at all: every waiter woke each 5 s and raced for whichever lock
+    happened to be free, so a job queuing for 41 minutes had exactly the same chance as one that arrived 5 seconds ago.
+    **That is starvation, not contention, and it gets worse the more streams are live** — precisely when fairness
+    matters most. It also printed its "waiting" banner **once** and then went silent forever, so a starved job and a
+    running job looked identical in a log; that is most of why an hour went into diagnosing "builder0 is slow", and
+    why the orchestrator had to `ssh` in to tell a stream whether its own build was running.
+    Three instructions:
+    - **Any wait longer than a minute must report itself periodically**, with its age and its position. A one-shot
+      "waiting…" line is worse than nothing, because it looks like progress information and is not.
+    - **A shared resource needs a queue, not a lock.** Ageing or ticketing turns "random" into "first come, first
+      served"; without it, adding contenders does not slow everyone down evenly, it starves someone completely.
+    - **When the fix is to a primitive every agent depends on, the orchestrator writes it, not the finder** — a
+      deadlock in a locking script stops six streams at once. combat proposed the fix, declined to commit it to a
+      shared file, and was right to. The counterpart obligation is to *test it*: an isolated queue directory, a
+      three-waiter ordering check, and a SIGKILLed waiter whose trap never runs, before it goes anywhere near `main`.
