@@ -354,18 +354,22 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 	for unit_name: String in names:
 		AiScenario.make_durable(lab.tank_of(unit_name))
 	var point: Vector3 = {"support_by_fire": Vector3(LANE_X, 0.0, -60.0), "screen": Vector3(LANE_X, 0.0, 0.0),
-			"move": Vector3(LANE_X + 5.0, 0.0, -30.0)}[verb]
+			"move": Vector3(LANE_X + 5.0, 0.0, -30.0), "attack": Vector3(LANE_X, 0.0, -10.0),
+			"hold": Vector3(LANE_X, 0.0, 55.0)}[verb]
 	var enemy: Array = []
-	if verb == "support_by_fire":
+	if verb in ["support_by_fire", "attack"]:
 		var gun := lab.gun(Match.Team.RUST, "Rust_Gun_1", point, PI)
 		AiScenario.make_durable(gun)
 		enemy.append(String(gun.name))
 	var alpha := lab.element(names, "Alpha")
 	await lab.start()
 	var fired := {"count": 0}
+	var shot_by := {}
 	var on_fired := func(event: Dictionary) -> void:
-		if names.has(String(event.get("shooter", ""))):
+		var shooter := String(event.get("shooter", ""))
+		if names.has(shooter):
 			fired["count"] = int(fired["count"]) + 1
+			shot_by[shooter] = int(shot_by.get(shooter, 0)) + 1
 	lab.game_match.weapon_fired.connect(on_fired)
 	var issued := {"late": 0}
 	var total := int(seconds * SimClock.TICK_RATE)
@@ -375,6 +379,10 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 			issued["late"] = int(issued["late"]) + 1
 	(lab.orders as Orders).issued.connect(on_issued)
 	var task := {"verb": verb, "to": [point.x, point.z]}
+	if verb == "attack":
+		task = {"verb": "attack", "target": enemy[0]}
+	elif verb == "hold":
+		task = {"verb": "hold"}  # hold where you stand (the column's middle is at z 55)
 	if verb == "move":
 		task["drills"] = false  # the player's right-click (X4)
 	alpha.assign(task)
@@ -400,7 +408,10 @@ static func task_posture(case: TestCase, verb: String, seconds := 30.0) -> Dicti
 		var slot: Variant = alpha.slots.get(unit_name)
 		if slot is Vector3:
 			off_slot = maxf(off_slot, at.distance_to(slot))
-	var result := {"verb": verb, "drills": Array(lab.drills_of(alpha)), "formation": alpha.formation,
+	var shooters := 0
+	for unit_name: String in names:
+		shooters += 1 if int(shot_by.get(unit_name, 0)) > 0 else 0
+	var result := {"verb": verb, "drills": Array(lab.drills_of(alpha)), "formation": alpha.formation, "shooters": shooters,
 			"closest_m": snappedf(closest, 0.1), "to_point_m": to_point, "frontage_m": snappedf(xs.max() - xs.min(), 0.1),
 			"depth_m": snappedf(zs.max() - zs.min(), 0.1), "facing_point": facing_point, "shots": int(fired["count"]),
 			"center_to_point_m": snappedf(lab.center_of(names).distance_to(point), 0.1),

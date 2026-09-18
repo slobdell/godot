@@ -101,6 +101,19 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
 	var to_go := center.distance_to(destination)
+	if verb == "attack":
+		# X5: an attack closes until its guns count, then fights; it does not "arrive" and halt on the enemy's spot.
+		var band := INF
+		for member: Dictionary in members_of(situation):
+			band = minf(band, float(member.get("effective_range", member.get("range", 60.0))))
+		if to_go <= band:
+			plan["formation"] = "line"
+			plan["arrived"] = false
+			var toward := TacticsFormation.flat(destination - center)
+			plan["heading"] = toward
+			var target := _target_contact(task, situation)
+			_engage(plan, slot_order(situation), situation, toward, target)
+			return
 	plan["arrived"] = to_go <= ARRIVE_M
 	if plan["arrived"]:
 		# Arrived: the halt formation stands ON the ordered spot, not wherever the element's centre happens to be.
@@ -623,6 +636,18 @@ static func _center_of(members: Array) -> Vector3:
 	for member: Dictionary in members:
 		sum += member["position"] as Vector3
 	return sum / float(members.size())
+
+
+static func members_of(situation: Dictionary) -> Array:
+	return situation.get("members", [])
+
+
+## The contact an attack task is on: the named target when known, else the nearest.
+static func _target_contact(task: Dictionary, situation: Dictionary) -> Dictionary:
+	for contact: Dictionary in situation.get("contacts", []):
+		if String(contact["name"]) == String(task.get("target", "")):
+			return contact
+	return Drills.nearest_contact(situation)
 
 
 static func _task_point(task: Dictionary, situation: Dictionary) -> Variant:

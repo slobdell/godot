@@ -42,6 +42,8 @@ const RECOVER_FACTOR := 1.25
 const HALTED_M := 12.0
 ## A screen counts as on its line when the element's centre is this close to the point it was sent to (meters).
 const SCREEN_REACHED_M := 30.0
+## Tasks whose element moves, and so may run a drill that moves it (a flank, a ring, a bait run).
+const MANOEUVRE_TASKS := ["move", "attack"]
 ## An ambush is sprung by a visible enemy this close to the kill zone's point (meters)...
 const KILL_ZONE_M := 30.0
 
@@ -93,12 +95,15 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 	# are alternatives to each other, and an element that keeps swapping between them does neither.)
 	if current != "":
 		return _drill(current, String(state.get("drill_why", "")), _remembered(state, situation))
+	# Drills that take the element (or half of it) somewhere belong to tasks that move. A holding element that sends
+	# half its vehicles round a flank is not holding (round 6, X5: every task does what its name says).
+	var manoeuvres := MANOEUVRE_TASKS.has(task_verb)
 	# 4b. A pack doesn't line up and trade: it gets around them and keeps moving (gangs).
-	if table.runs_drill("encircle") and should_encircle(situation, table):
+	if manoeuvres and table.runs_drill("encircle") and should_encircle(situation, table):
 		return _drill("encircle", "get around them and keep circling: spread the damage",
 				nearest_visible(situation))
 	# 4c. Or sends one vehicle to pull them onto the rest (gangs).
-	if table.runs_drill("bait") and should_bait(situation, table):
+	if manoeuvres and table.runs_drill("bait") and should_bait(situation, table):
 		return _drill("bait", "one runs at them and leads them back onto the pack", nearest_visible(situation))
 	# 5. First contact: deploy, return fire and report, then the leader picks a course of action. Actions on
 	# contact happen ONCE per contact: while the element is already fighting this one, it does not go back to
@@ -108,11 +113,14 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 		return _drill("react_to_contact", "contact: return fire, take cover, report", nearest_contact(situation))
 	# 6. Contact has been evaluated: a far ambush is fought by fire and maneuver (only while engaged; a
 	# contact watched from 100 m is not an ambush).
-	if table.runs_drill("far_ambush") and _has_visible(situation) \
+	if manoeuvres and table.runs_drill("far_ambush") and _has_visible(situation) \
 			and String(situation.get("threat", "none")) == "contact":
 		return _drill("far_ambush", "far ambush: pin them by fire, flank with the rest", nearest_contact(situation))
-	# 8. Halted with something out there: herringbone, all-round security.
-	if table.runs_drill("herringbone") and is_halted(situation, state) and String(situation.get("threat", "none")) != "none":
+	# 8. Halted with something out there but not yet in contact: herringbone, all-round security. Its entry must not
+	# include contact, which is its own exit: under contact it and react-to-contact took turns every ~1.2 s, the
+	# element flip-flopping on the spot (round 6, found by the attack and hold posture scenarios).
+	if table.runs_drill("herringbone") and is_halted(situation, state) \
+			and ["possible", "likely"].has(String(situation.get("threat", "none"))):
 		return _drill("herringbone", "halted: herringbone, watch the flanks", {})
 	return {"drill": "", "why": "", "point": null, "target": ""}
 
@@ -227,6 +235,8 @@ static func is_halted(situation: Dictionary, state: Dictionary) -> bool:
 	var task: Dictionary = state.get("task", {})
 	if task.is_empty() or String(task.get("verb", "")) == "hold":
 		return true
+	if String(task.get("verb", "")) == "attack":
+		return false  # an attack's point is the enemy: it is never "there" until the enemy is gone
 	if not bool(state.get("arrived", false)):
 		return false
 	var destination: Variant = ElementTask.destination(task)

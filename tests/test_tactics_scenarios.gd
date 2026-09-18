@@ -70,3 +70,20 @@ func test_an_ambush_holds_its_fire_until_the_kill_zone_is_full() -> void:
 	assert_eq(int(result["shots_before"]), 0, "not one shot before it was in the kill zone")
 	assert_true(int(result["sprung_tick"]) >= int(result["entered_tick"]), "sprung when it arrived, not before")
 	assert_true(int(result["shots_after"]) > 0, "and then every gun fired")
+
+
+func test_an_attack_closes_into_its_band_and_every_gun_fights() -> void:
+	var result: Dictionary = await TacticsScenarios.task_posture(self, "attack", 30.0)
+	print("MEASURE task_posture %s" % result)
+	assert_true(float(result["closest_m"]) <= 45.0, "the element closes to where its guns count (closest %.0f m)"
+			% result["closest_m"])
+	assert_true(int(result["shooters"]) >= 3, "and the vehicles fight it, not one of them (%d of 4 fired)" % result["shooters"])
+
+
+func test_a_hold_stays_where_it_was_told_in_an_all_round_halt() -> void:
+	var result: Dictionary = await TacticsScenarios.task_posture(self, "hold", 20.0)
+	print("MEASURE task_posture %s" % result)
+	assert_true(["herringbone", "coil"].has(String(result["formation"])), "a halt formation (%s)" % result["formation"])
+	assert_true(float(result["center_to_point_m"]) <= 8.0, "on the spot it stood on when told (%.1f m off)"
+			% result["center_to_point_m"])
+	assert_true(int(result["orders_last_10s"]) <= 2, "and settled (%d orders in the last 10 s)" % result["orders_last_10s"])
