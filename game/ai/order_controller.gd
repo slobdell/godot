@@ -732,7 +732,7 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	# where the round is worth firing, unless a commander named the target or this crew is already being shot at
 	# (game/combat/engagement.gd). Hull to hull, not muzzle to lead point: the envelope is about where the two vehicles
 	# stand, not where the gunner is aiming.
-	var envelope := engagement_lay.engage(tank, target.name,
+	var envelope := engagement_lay.engage(tank, target,
 			tank.global_position.distance_to(target.global_position), _seconds_step(),
 			bool(weapon_order.get("long_shot", false)))
 	cmd.fire = _clear_to_fire(envelope and in_range and aimed and tank.ready_to_fire(), aim)

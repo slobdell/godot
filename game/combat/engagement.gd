@@ -42,6 +42,23 @@ const SUPPRESSION_ACQUIRE_PENALTY := 1.0
 ## Scouts are spotters first (the lead, round 4): finding things is their job, so they resolve a contact in this
 ## fraction of the time anyone else needs. This is also one of the two mechanics behind `scout > lancer` (X6).
 const SCOUT_ACQUIRE_SCALE := 0.55
+## X6: a contact CROSSING the gunner's field is harder to lay on than one coming straight at him. At
+## CROSSING_REFERENCE_RATE of angular movement acquisition takes (1 + CROSSING_ACQUIRE_PENALTY) times as long, scaling
+## linearly and capped at CROSSING_ACQUIRE_MAX so a contact hugging the hull is not unlayable.
+##
+## This is the mechanic `scout > lancer` never had. The roster has claimed `lancer.weak_vs = ["scout"]` since round 2
+## with nothing behind it: a Lancer's laser reaches 90 m, a scout's machine gun 45, so on paper the scout dies on the
+## way in. Angular rate is what actually decides that duel, and it is pure geometry — a 14 m/s scout at 86 m crosses
+## at 9.3 deg/s and takes a Lancer about 2.25 s to acquire instead of 1.54 s, which is 31 m of closing bought by
+## moving across rather than at him.
+##
+## The part that makes it a good rule rather than a patch: it pays for the RIGHT behaviour. A scout that charges
+## straight down the sight line has almost no crossing rate and gets no protection at all; a scout that circles is
+## hard to hit. That is the attack run the unit is supposed to make, rewarded by the mechanic instead of by a number
+## in a table. It applies to every gun equally — a tank crossing an IFV's front is just as hard to lay on.
+const CROSSING_ACQUIRE_PENALTY := 1.0
+const CROSSING_REFERENCE_RATE := 0.349  # rad/s (20 deg/s)
+const CROSSING_ACQUIRE_MAX := 2.0
 ## When the contact is lost, the lay bleeds off at this fraction of the rate it built up, so ducking behind cover for
 ## a moment does not send the gunner back to the start.
 const LOST_LAY_DECAY := 0.5
@@ -78,12 +95,32 @@ static func is_seen(tank: Tank, enemy: Tank, spotter: Callable) -> bool:
 	return tank.global_position.distance_to(enemy.global_position) <= tank.sight_radius
 
 
+## X6: how fast `target` crosses `tank`'s field, in radians per second — the component of its velocity perpendicular
+## to the line of sight, over the range. Pure geometry: the same speed is a hard track up close and a slow drift far
+## away. The shooter's own motion is deliberately ignored; the target's crossing is the dominant term and a rule a
+## player has to predict should be simple.
+static func crossing_rate(tank: Tank, target: Tank, distance: float) -> float:
+	if distance <= 0.5:
+		return 0.0
+	var sight_line := target.global_position - tank.global_position
+	sight_line.y = 0.0
+	if sight_line.length_squared() <= 0.0:
+		return 0.0
+	sight_line = sight_line.normalized()
+	var velocity := target.estimated_velocity
+	velocity.y = 0.0
+	return (velocity - sight_line * velocity.dot(sight_line)).length() / distance
+
+
 ## Gate 2's cost: how long this crew must hold THIS contact at THIS range before it may shoot at it.
-static func acquire_seconds(tank: Tank, distance: float) -> float:
+static func acquire_seconds(tank: Tank, target: Tank, distance: float) -> float:
 	var sight := maxf(tank.sight_radius, 1.0)
 	var reach := clampf(distance / sight, 0.0, 1.0)
 	var seconds := lerpf(ACQUIRE_NEAR_SECONDS, ACQUIRE_FAR_SECONDS, reach)
 	seconds *= 1.0 + SUPPRESSION_ACQUIRE_PENALTY * clampf(tank.suppression, 0.0, 1.0)
+	if target != null:
+		var crossing := crossing_rate(tank, target, distance) / CROSSING_REFERENCE_RATE
+		seconds *= 1.0 + CROSSING_ACQUIRE_PENALTY * clampf(crossing, 0.0, CROSSING_ACQUIRE_MAX)
 	if Units.role_of(tank.unit_id) == "scout":
 		seconds *= SCOUT_ACQUIRE_SCALE
 	return seconds
@@ -151,7 +188,8 @@ class Lay extends RefCounted:
 	## Gates 2 and 3, on the target the weapon scan picked (which has already passed gate 1 and the line of sight).
 	## `ordered` = a commander named this target, which overrides the crew's judgement about range.
 	## Returns whether the trigger may be pulled this tick.
-	func engage(tank: Tank, target_name: String, distance: float, seconds: float, ordered: bool) -> bool:
+	func engage(tank: Tank, contact: Tank, distance: float, seconds: float, ordered: bool) -> bool:
+		var target_name := String(contact.name) if contact != null else ""
 		if target_name != target:
 			target = target_name
 			progress = 0.0
@@ -159,7 +197,7 @@ class Lay extends RefCounted:
 		if not Engagement.acquisition_enabled:
 			progress = INF
 		else:
-			var needed := Engagement.acquire_seconds(tank, distance)
+			var needed := Engagement.acquire_seconds(tank, contact, distance)
 			progress = minf(progress + seconds, needed)
 			if progress < needed:
 				firing = false

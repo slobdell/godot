@@ -46,60 +46,66 @@ func test_every_direct_fire_weapon_has_a_band_shorter_than_its_reach() -> void:
 
 
 func test_a_crew_holds_its_fire_until_it_is_inside_the_band() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var band := Engagement.effective_range(tank.weapon)
 	var lay := Engagement.Lay.new()
 	# Long enough for any acquisition: the only thing under test here is range.
-	assert_true(not lay.engage(tank, "enemy", band + 10.0, 10.0, false),
+	assert_true(not lay.engage(tank, contact, band + 10.0, 10.0, false),
 			"a shot from outside the band is held even with the contact long since acquired")
-	assert_true(lay.engage(tank, "enemy", band - 1.0, 10.0, false), "inside the band the gun speaks")
+	assert_true(lay.engage(tank, contact, band - 1.0, 10.0, false), "inside the band the gun speaks")
 
 
 func test_an_ordered_long_shot_overrides_the_crews_judgement_about_range() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var reach := float(tank.weapon["range"])
 	var lay := Engagement.Lay.new()
-	assert_true(not lay.engage(tank, "enemy", reach - 1.0, 10.0, false), "unordered, that range is held")
-	assert_true(Engagement.Lay.new().engage(tank, "enemy", reach - 1.0, 10.0, true),
+	assert_true(not lay.engage(tank, contact, reach - 1.0, 10.0, false), "unordered, that range is held")
+	assert_true(Engagement.Lay.new().engage(tank, contact, reach - 1.0, 10.0, true),
 			"a commander who has decided a long shot is worth the round has taken the decision")
 
 
 func test_a_crew_being_shot_at_may_answer_at_any_range_it_can_reach() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var reach := float(tank.weapon["range"])
 	var lay := Engagement.Lay.new()
-	assert_true(not lay.engage(tank, "enemy", reach - 1.0, 10.0, false), "calm, it holds")
+	assert_true(not lay.engage(tank, contact, reach - 1.0, 10.0, false), "calm, it holds")
 	tank.suppression = Engagement.RETURN_FIRE_SUPPRESSION
-	assert_true(Engagement.Lay.new().engage(tank, "enemy", reach - 1.0, 10.0, false),
+	assert_true(Engagement.Lay.new().engage(tank, contact, reach - 1.0, 10.0, false),
 			"under fire, a crew is not required to sit and take it")
 
 
 func test_the_gun_does_not_stutter_at_the_edge_of_the_band() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var band := Engagement.effective_range(tank.weapon)
 	var lay := Engagement.Lay.new()
-	assert_true(lay.engage(tank, "enemy", band - 0.5, 10.0, false), "opens fire inside the band")
-	assert_true(lay.engage(tank, "enemy", band + 1.0, 0.1, false),
+	assert_true(lay.engage(tank, contact, band - 0.5, 10.0, false), "opens fire inside the band")
+	assert_true(lay.engage(tank, contact, band + 1.0, 0.1, false),
 			"a target drifting a metre out does not switch the gun off")
-	assert_true(not lay.engage(tank, "enemy", band * Engagement.RELEASE_FACTOR + 1.0, 0.1, false),
+	assert_true(not lay.engage(tank, contact, band * Engagement.RELEASE_FACTOR + 1.0, 0.1, false),
 			"far enough out, the engagement is broken off")
 
 
 # ---- Gate 2: acquisition ---------------------------------------------------------------
 
 func test_a_contact_must_be_held_before_the_first_round() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var lay := Engagement.Lay.new()
 	var close := 10.0
-	var needed := Engagement.acquire_seconds(tank, close)
+	var needed := Engagement.acquire_seconds(tank, null, close)
 	assert_true(needed > 0.0, "acquisition costs time")
-	assert_true(not lay.engage(tank, "enemy", close, needed * 0.5, false), "half the lay is not enough")
-	assert_true(lay.engage(tank, "enemy", close, needed * 0.6, false), "the rest of it is")
+	assert_true(not lay.engage(tank, contact, close, needed * 0.5, false), "half the lay is not enough")
+	assert_true(lay.engage(tank, contact, close, needed * 0.6, false), "the rest of it is")
 
 
 func test_a_far_contact_takes_longer_to_resolve_than_a_near_one() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
-	assert_true(Engagement.acquire_seconds(tank, tank.sight_radius) > Engagement.acquire_seconds(tank, 5.0),
+	assert_true(Engagement.acquire_seconds(tank, null, tank.sight_radius) > Engagement.acquire_seconds(tank, null, 5.0),
 			"a contact at the limit of vision is not a target as fast as one at arm's length")
 
 
@@ -107,7 +113,7 @@ func test_a_suppressed_crew_is_slower_onto_a_target() -> void:
 	var calm := _tank()
 	var pinned := _tank()
 	pinned.suppression = 1.0
-	assert_true(Engagement.acquire_seconds(pinned, 30.0) > Engagement.acquire_seconds(calm, 30.0),
+	assert_true(Engagement.acquire_seconds(pinned, null, 30.0) > Engagement.acquire_seconds(calm, null, 30.0),
 			"heads down, nobody is calling the range")
 
 
@@ -116,30 +122,34 @@ func test_a_scout_resolves_a_contact_faster_than_the_line_units() -> void:
 	var scout := _tank("scout")
 	var tank := _tank("tank")
 	assert_eq(Units.role_of("scout"), "scout", "this test rests on the scout's role")
-	assert_true(Engagement.acquire_seconds(scout, 30.0) < Engagement.acquire_seconds(tank, 30.0),
+	assert_true(Engagement.acquire_seconds(scout, null, 30.0) < Engagement.acquire_seconds(tank, null, 30.0),
 			"finding things is the scout's job")
 
 
 func test_swinging_onto_a_new_contact_costs_the_lay() -> void:
+	var first := _tank("tank", 1)
+	var second := _tank("tank", 1)
 	var tank := _tank()
 	var lay := Engagement.Lay.new()
-	assert_true(lay.engage(tank, "first", 10.0, 10.0, false), "acquired and engaging the first contact")
-	assert_true(not lay.engage(tank, "second", 10.0, 0.01, false), "a new contact is not a target yet")
+	assert_true(lay.engage(tank, first, 10.0, 10.0, false), "acquired and engaging the first contact")
+	assert_true(not lay.engage(tank, second, 10.0, 0.01, false), "a new contact is not a target yet")
 
 
 func test_a_contact_that_ducks_behind_cover_is_not_found_from_scratch() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var lay := Engagement.Lay.new()
-	var needed := Engagement.acquire_seconds(tank, 10.0)
-	lay.engage(tank, "enemy", 10.0, needed, false)
+	var needed := Engagement.acquire_seconds(tank, null, 10.0)
+	lay.engage(tank, contact, 10.0, needed, false)
 	lay.lose(needed * 0.5)  # out of sight for half the time it took to find him
 	assert_true(lay.progress > 0.0, "the lay bleeds off, it is not wiped")
-	assert_true(lay.engage(tank, "enemy", 10.0, needed * 0.5, false), "he reappears and the gunner is back on him")
+	assert_true(lay.engage(tank, contact, 10.0, needed * 0.5, false), "he reappears and the gunner is back on him")
 
 
 # ---- Gate 1: sight ---------------------------------------------------------------------
 
 func test_a_gun_may_not_reach_past_the_eyes_that_aim_it() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	var tank := _tank()
 	var enemy := _tank("tank", 1)
 	tank.global_position = Vector3.ZERO
@@ -165,15 +175,16 @@ func test_a_spotter_hands_over_a_contact_the_crew_cannot_see_itself() -> void:
 # ---- The control the measurements use --------------------------------------------------
 
 func test_no_acquisition_restores_the_old_world_for_a_control_run() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	Engagement.acquisition_enabled = false
 	var tank := _tank()
 	var enemy := _tank("tank", 1)
 	enemy.global_position = Vector3(0.0, 0.0, 1000.0)
 	assert_true(Engagement.is_seen(tank, enemy, Callable()), "gate 1 is off")
 	var band := Engagement.effective_range(tank.weapon)
-	assert_true(Engagement.Lay.new().engage(tank, "enemy", band - 1.0, 0.0, false),
+	assert_true(Engagement.Lay.new().engage(tank, contact, band - 1.0, 0.0, false),
 			"gate 2 is off: no lay needed at all")
-	assert_true(not Engagement.Lay.new().engage(tank, "enemy", band + 10.0, 0.0, false),
+	assert_true(not Engagement.Lay.new().engage(tank, contact, band + 10.0, 0.0, false),
 			"gate 3 is NOT off — discipline has its own control (tuning effective_range up to range)")
 
 
@@ -259,6 +270,7 @@ func test_a_designated_target_beyond_the_crews_sight_is_still_not_shot_at() -> v
 
 
 func test_a_brains_own_target_order_does_not_buy_it_a_long_shot() -> void:
+	var contact := _tank("tank", 1)  # stationary: no crossing penalty, so this tests range and time alone
 	# The trap this contract nearly fell into. TankBrain's ENGAGE state issues {"type": "target", "fallback": true}
 	# EVERY TICK, so reading "target" as "a commander ordered this" would have exempted every CPU unit in the game and
 	# left N5 doing nothing at all — while all fifteen rule tests above went on passing. The override has to be asked
@@ -304,3 +316,63 @@ func test_the_covering_range_follows_the_bands_when_they_move() -> void:
 			"", "tuning the line units' bands")
 	assert_true(Engagement.covering_range() < before,
 			"a metric derived from the data tracks the data (%.0f then %.0f)" % [before, Engagement.covering_range()])
+
+
+# ---- X6: the mechanic behind `scout > lancer` ------------------------------------------
+# The roster has claimed `lancer.weak_vs = ["scout"]` since round 2 with nothing behind it. A contact CROSSING the
+# gunner's field is harder to lay on than one driving straight at him, which is pure geometry and pays for exactly the
+# behaviour the scout is supposed to show.
+
+func _moving(unit_id: String, at: Vector3, velocity: Vector3) -> Tank:
+	var tank := _tank(unit_id, 1)
+	tank.global_position = at
+	tank.estimated_velocity = velocity
+	return tank
+
+
+func test_a_contact_crossing_the_sight_line_is_harder_to_lay_on_than_one_closing() -> void:
+	var gunner := _tank("lancer")
+	gunner.global_position = Vector3.ZERO
+	var at := Vector3(0.0, 0.0, 60.0)
+	var speed := float(Units.stat("scout", "max_forward_speed"))
+	var closing := _moving("scout", at, Vector3(0.0, 0.0, -speed))  # straight down the sight line
+	var crossing := _moving("scout", at, Vector3(speed, 0.0, 0.0))  # square across it
+	assert_near(Engagement.crossing_rate(gunner, closing, 60.0), 0.0, 0.0001,
+			"driving straight at the gun crosses nothing")
+	assert_near(Engagement.crossing_rate(gunner, crossing, 60.0), speed / 60.0, 0.0001,
+			"driving across it crosses at speed over range")
+	assert_true(Engagement.acquire_seconds(gunner, crossing, 60.0) > Engagement.acquire_seconds(gunner, closing, 60.0) * 1.2,
+			"so the crossing contact costs the gunner meaningfully more time")
+
+
+func test_the_same_speed_crosses_faster_up_close_than_far_away() -> void:
+	var gunner := _tank("lancer")
+	gunner.global_position = Vector3.ZERO
+	var speed := 10.0
+	var near := _moving("scout", Vector3(0.0, 0.0, 20.0), Vector3(speed, 0.0, 0.0))
+	var far := _moving("scout", Vector3(0.0, 0.0, 80.0), Vector3(speed, 0.0, 0.0))
+	assert_true(Engagement.crossing_rate(gunner, near, 20.0) > Engagement.crossing_rate(gunner, far, 80.0),
+			"angular rate is speed over range, so the same scout is a harder track up close")
+
+
+func test_charging_straight_down_the_sight_line_buys_a_scout_nothing() -> void:
+	# The rule has to pay for the RIGHT behaviour, or it is just a buff. A scout that drives at the gun gets no
+	# protection at all; only the attack run does.
+	var lancer := _tank("lancer")
+	lancer.global_position = Vector3.ZERO
+	var speed := float(Units.stat("scout", "max_forward_speed"))
+	var charging := _moving("scout", Vector3(0.0, 0.0, 70.0), Vector3(0.0, 0.0, -speed))
+	var still := _moving("scout", Vector3(0.0, 0.0, 70.0), Vector3.ZERO)
+	assert_near(Engagement.acquire_seconds(lancer, charging, 70.0), Engagement.acquire_seconds(lancer, still, 70.0),
+			0.0001, "a head-on charge is no harder to lay on than a parked hull")
+
+
+func test_the_crossing_penalty_is_capped_so_a_contact_is_never_unlayable() -> void:
+	var gunner := _tank("tank")
+	gunner.global_position = Vector3.ZERO
+	var blurring := _moving("scout", Vector3(0.0, 0.0, 6.0), Vector3(400.0, 0.0, 0.0))  # absurd angular rate
+	var still := _moving("scout", Vector3(0.0, 0.0, 6.0), Vector3.ZERO)
+	var worst := 1.0 + Engagement.CROSSING_ACQUIRE_PENALTY * Engagement.CROSSING_ACQUIRE_MAX
+	assert_near(Engagement.acquire_seconds(gunner, blurring, 6.0),
+			Engagement.acquire_seconds(gunner, still, 6.0) * worst, 0.0001,
+			"the penalty saturates rather than running away")
