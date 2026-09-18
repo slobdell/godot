@@ -152,13 +152,19 @@ _Updated 2026-09-18 by the squad worker._
 
 | Item | State |
 |---|---|
-| **X1** one formation system (N2) | written; builder0 check queued (baseline `a975e262` green: 1010 passed, builder0) |
-| **X5** support by fire / screen / halts | written + pure posture tests + real-physics posture scenarios; verifying |
-| **X4** plain move keeps the squad (element side) | written (`"drills": false` task); control agreed the 2-line seam, applies after I confirm |
-| **X2** standable slots | written (`SlotGround` over the navmesh's closest point); verifying |
-| **X3** form-up ETA + pacing | ETA/pace written behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** — nav has no session yet |
-| **X6** `make squad-coherence` | probe + runner written; baseline not yet measured (waits for CP4, see below) |
-| X7 ambush/flank, X8 army layer | not started |
+| **X1** one formation system (N2) | `df736a8e`; its first builder0 check caught one outcome-encoding test (fixed); full check pending |
+| **X5** support by fire / screen / halts | `df736a8e`; pure posture tests + real-physics posture scenarios pass (laptop) |
+| **X4** plain move keeps the squad (element side) | `df736a8e` (`"drills": false` task); control agreed the 2-line seam, applies after I confirm green |
+| **X2** standable slots | `df736a8e` (`SlotGround` over the navmesh's closest point) |
+| **X3** form-up ETA + pacing | `df736a8e`, behind the `FormUp.eta` seam (straight line / top speed until N1); **PID station-keeping waits on nav's N6** |
+| **X6** `make squad-coherence` | `df736a8e` probe + runner; baseline waits for combat's CP4 (orchestrator: no numbers across it) |
+| **X7** covered flanks + ambush task | `a8048028`; route and ambush tests pass (laptop) |
+| X8 army layer (stretch) | not started: its measurement needs CP4 and N7 (objectives arena can move) |
+
+**Measured (laptop, uncommitted tree on `a975e262`/`df736a8e`, seeded single runs in TacticsLab — posture, not balance):**
+support by fire forms a 30 m line 54-56 m off the point, all 4 facing it, 15 shots, no other drill; screen: a 42 m
+line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the click, worst member 4 m off its slot,
+0 orders in the last 10 s; ambush: 0 shots before the enemy entered the kill zone, sprung ~1 s after, 8 after.
 
 ### Decisions
 
@@ -187,6 +193,10 @@ _Updated 2026-09-18 by the squad worker._
   drill. attack-move stays a move task with drills. (X4; control maps right-click on a whole element to it.)
 - **Halts stand on the ordered spot and keep their heading** (round 5's "units end 20-90 m from the click" was the
   halt re-anchoring on the element's drifting centre every update).
+- **Flanks go the covered way** (X7): CoveredRoute weighs a meter in the enemy's sight as 4 m of extra driving and
+  compares the direct line, wide detours and the arena's annotated lanes; the route is chosen once and kept.
+- **Ambush is a task** (X7): a line at 0.6 × effective range from the kill zone, fire held until an enemy is in the
+  kill zone (30 m), one is on top of us, or we are hit; once sprung it stays sprung and no timeout ends it.
 - **Cohesion is judged in time** (the form-up estimate): allowed = cohesion distance / slowest member's speed.
 
 ### Questions for the lead
