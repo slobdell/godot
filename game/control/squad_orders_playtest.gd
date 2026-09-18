@@ -23,6 +23,9 @@ const LATER := 20.0
 const ARRIVED_M := 14.0
 ## It counts as having moved at all once it is this far from where it started.
 const MOVED_M := 3.0
+## After a player's order finishes, ai leashes whatever the unit decides for itself to this far from the spot he sent it
+## to, so it fights from cover nearby instead of chasing. Staying inside that is holding the ground he gave it.
+const LEASH_M := 20.0
 
 var out_dir := ""
 var controls: RtsControls
@@ -160,7 +163,9 @@ static func _verdict(row: Dictionary) -> String:
 		return "never_moved"
 	if int(row["later_from_goal_m"]) <= ARRIVED_M:
 		return "arrived_and_stayed"
-	if int(row["from_goal_m"]) <= ARRIVED_M and int(row["later_from_goal_m"]) > ARRIVED_M:
+	if int(row["from_goal_m"]) <= ARRIVED_M and int(row["later_from_goal_m"]) <= LEASH_M:
+		return "arrived_and_held_nearby"  # inside ai's leash: fighting from cover around the spot, not wandering off
+	if int(row["from_goal_m"]) <= ARRIVED_M and int(row["later_from_goal_m"]) > LEASH_M:
 		return "arrived_then_left"
 	if int(row["later_from_goal_m"]) < int(row["from_goal_m"]):
 		return "still_travelling"
