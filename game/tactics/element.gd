@@ -57,6 +57,9 @@ var events: PackedStringArray = []
 
 ## Plan state carried between updates.
 var anchor: Variant = null
+## X7: the covered route the element is following (waypoints) and which one it is driving to.
+var route: Array = []
+var route_index := 0
 var heading := Vector3.FORWARD
 var bounding := 0
 var arrived := false
@@ -102,14 +105,35 @@ func assign(new_task: Variant) -> String:
 		return error
 	task = (new_task as Dictionary).duplicate(true)
 	_fresh_task = true
-	# A new task starts a new movement: forget the leg and any drill we were running.
+	# A new task starts a new movement: forget the leg, the route and any drill we were running.
 	anchor = null
+	route = []
+	route_index = 0
 	arrived = false
 	drill = ""
 	drill_point = null
 	drill_target = ""
 	_log("task: %s" % ElementTask.describe(task))
 	revision += 1
+	return ""
+
+
+## The same task with a new aim (target or point), without starting the element over: its drill, its route and its
+## seating stand; only a firing line or leg anchored on the old point is re-chosen when the point moved (X6, round 6).
+func retarget(new_task: Variant) -> String:
+	var error := ElementTask.validate(new_task)
+	if error != "":
+		return error
+	if String((new_task as Dictionary).get("verb", "")) != String(task.get("verb", "")):
+		return assign(new_task)
+	var old_point: Variant = ElementTask.destination(task)
+	task = (new_task as Dictionary).duplicate(true)
+	var new_point: Variant = ElementTask.destination(task)
+	if old_point is Vector3 and new_point is Vector3 and (old_point as Vector3).distance_to(new_point) > 1.0:
+		anchor = null
+		route = []
+		route_index = 0
+	_log("task: %s" % ElementTask.describe(task))
 	return ""
 
 
@@ -132,7 +156,8 @@ func update(game_match: Match, orders: Object) -> bool:
 	_known = situation["known"]
 	var state := {"task": task, "drill": drill, "drill_tick": drill_tick, "drill_point": drill_point,
 			"drill_target": drill_target, "drill_why": reason, "anchor": anchor, "bounding": bounding,
-			"arrived": arrived, "heading": heading, "seats": seats}
+			"arrived": arrived, "heading": heading, "seats": seats, "formation": formation,
+			"route": route, "route_index": route_index}
 	var plan := ElementPlan.build(situation, state, _doctrine())
 	Element.ground(plan, game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
 			and game_match.tanks.get_child_count() > 0 else null)
@@ -286,6 +311,8 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	slots = plan["slots"]
 	sectors = plan["sectors"]
 	seats = plan["seats"]
+	route = plan["route"]
+	route_index = int(plan["route_index"])
 	strength = (situation["members"] as Array).size()
 	_last_members = situation["members"]
 	var new_drill := String(plan["drill"])
@@ -365,6 +392,12 @@ func _should_issue(unit_name: String, desired: Dictionary, current: Dictionary, 
 		var again: bool = not mine.is_empty() and String(mine.get("verb", "")) == String(desired["verb"]) \
 				and String(mine.get("target", "")) == String(desired.get("target", ""))
 		if again and tick - int(mine.get("tick", -RE_ISSUE_TICKS)) < RE_ISSUE_TICKS and _same_place(mine, desired, REISSUE_M):
+			return false
+		# It finished our order to THIS place and stopped short (a brain completes a stalled move up to 12 m out): it got
+		# as close as it could. Sending it again every RE_ISSUE_TICKS is the idle-window thrash control measured (31-38
+		# orders with nobody touching the controls, five squads crowded at the spawn). Getting it the rest of the way is
+		# navigation's job (N1: arrive or report blocked), not a re-order's.
+		if again and String(desired["verb"]) in ["move", "hold"] and _same_place(mine, desired, REISSUE_M):
 			return false
 		if desired["to"] is Vector3 and position.distance_to(desired["to"]) > SETTLED_M:
 			return true

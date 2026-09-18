@@ -41,6 +41,9 @@ const ORBIT_TICKS := SimClock.TICK_RATE * 4
 ## covers, so every gun in the line reaches it with fire that counts, and never closer than SBF_MIN_STANDOFF_M.
 const SBF_STANDOFF := 0.8
 const SBF_MIN_STANDOFF_M := 25.0
+## An ambush lies closer than a base of fire: this fraction of the shortest effective range from the kill zone, so
+## the first volley is inside every gun's band.
+const AMBUSH_STANDOFF := 0.6
 ## A screen is a thin line: its vehicles stand this many times the doctrine spacing apart, to watch a wide front.
 const SCREEN_SPREAD := 1.5
 ## A unit within this far of its place on a firing or screen line holds it (fires from there, drives back if pushed);
@@ -57,7 +60,8 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 			"anchor": state.get("anchor"), "heading": situation.get("heading", Vector3.FORWARD),
 			"bounding": int(state.get("bounding", 0)), "arrived": bool(state.get("arrived", false)),
 			"orders": {}, "slots": {}, "sectors": {}, "seats": {},
-			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {})}
+			"leader": String(situation.get("leader", "")), "previous_seats": state.get("seats", {}),
+			"route": [], "route_index": 0}
 	if members.is_empty():
 		return plan
 
@@ -97,11 +101,31 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 		_halt(plan, situation, state, table, _kept_halt(state, center))
 		return
 	var to_go := center.distance_to(destination)
+	if not ElementTask.runs_drills(task):
+		_plan_form_up(plan, situation, state, table, destination)
+		return
+	if verb == "attack":
+		# X5: an attack closes until its guns count, then fights; it does not "arrive" and halt on the enemy's spot.
+		var band := INF
+		for member: Dictionary in members_of(situation):
+			band = minf(band, float(member.get("effective_range", member.get("range", 60.0))))
+		if to_go <= band:
+			plan["formation"] = "line"
+			plan["arrived"] = false
+			var toward := TacticsFormation.flat(destination - center)
+			plan["heading"] = toward
+			var target := _target_contact(task, situation)
+			_engage(plan, slot_order(situation), situation, toward, target)
+			return
 	plan["arrived"] = to_go <= ARRIVE_M
 	if plan["arrived"]:
 		# Arrived: the halt formation stands ON the ordered spot, not wherever the element's centre happens to be.
 		_halt(plan, situation, state, table, destination)
 		return
+	# X7: under a known threat an element that runs drills takes the least-exposed route (CoveredRoute), leg by leg;
+	# a plain move (the player's right-click) goes where it was sent by the direct line.
+	if ElementTask.runs_drills(task) and not _threat_points(situation).is_empty():
+		destination = _route_step(plan, situation, state, center, destination)
 	var heading := TacticsFormation.flat(destination - center)
 	plan["heading"] = heading
 	var spacing := table.spacing(String(situation["terrain"]))
@@ -126,6 +150,32 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 			var anchor := _advance(plan, situation, state, table, center, destination, heading, ordered, spacing)
 			_group(plan, ordered, String(plan["formation"]), anchor, heading, spacing, order_verb)
 
+
+
+## A plain move (X4: the player's right-click to a whole element) is the lead's form-up formula taken literally: ONE
+## target formation anchored on the clicked spot, its heading and shape fixed when the order is given, and every vehicle
+## sent once, straight to its own slot from wherever it is — paced by FormUp so they arrive together. No legs (a leg
+## re-anchors and re-orders everyone), no halt re-shape on arrival (the shape the player saw going in is the shape that
+## stands), no heading that turns with the element's moving centre. Round 5 took plain moves away from elements because a
+## leader re-slotting after a move is what the lead saw as "overridden by a higher priority"; control's five-squad
+## playtest measured this path at 31-38 orders in the idle window before it was made to stand still (round 6).
+static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
+		destination: Vector3) -> void:
+	var kept: Variant = state.get("anchor")
+	var holding: bool = kept is Vector3 and (kept as Vector3).distance_to(destination) < 0.5
+	var center: Vector3 = situation["center"]
+	if holding and state.get("heading") is Vector3 and String(state.get("formation", "")) != "":
+		plan["heading"] = state["heading"]
+		plan["formation"] = String(state["formation"])
+	else:
+		plan["heading"] = TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
+				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
+	plan["anchor"] = destination
+	plan["technique"] = "traveling"
+	plan["arrived"] = center.distance_to(destination) <= ARRIVE_M
+	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
+	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
+			table.spacing(String(situation["terrain"])), "move")
 
 
 ## Bounding overwatch: one half moves, the other covers it by fire, then they swap. A bound never goes
@@ -220,15 +270,16 @@ static func _plan_screen(plan: Dictionary, situation: Dictionary, state: Diction
 ## facing it with interlocking sectors — and nobody advances. The line is chosen once, on the element's side of the
 ## point, and kept (Element.assign clears it); the element drives to it and holds.
 static func _plan_support_by_fire(plan: Dictionary, situation: Dictionary, state: Dictionary, table: DoctrineTable,
-		ordered: Array, focus: Vector3, spacing: float) -> void:
+		ordered: Array, focus: Vector3, spacing: float, fraction := SBF_STANDOFF,
+		keeping: Array = ["support_by_fire"]) -> void:
 	plan["formation"] = "line"
 	plan["technique"] = "traveling"
 	var anchor: Variant = state.get("anchor")
-	if not (String(state.get("drill", "")) == "support_by_fire" and anchor is Vector3):
+	if not (keeping.has(String(state.get("drill", ""))) and anchor is Vector3):
 		var reach := INF
 		for member: Dictionary in ordered:
 			reach = minf(reach, float(member.get("effective_range", member.get("range", 60.0))))
-		var standoff := maxf(reach * SBF_STANDOFF, SBF_MIN_STANDOFF_M) if is_finite(reach) else SBF_MIN_STANDOFF_M
+		var standoff := maxf(reach * fraction, SBF_MIN_STANDOFF_M) if is_finite(reach) else SBF_MIN_STANDOFF_M
 		var center: Vector3 = situation["center"]
 		var away := TacticsFormation.flat(center - focus) if center.distance_to(focus) > 1.0 \
 				else -TacticsFormation.flat(plan["heading"])
@@ -289,6 +340,13 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 			_plan_fire_and_maneuver(plan, situation, state, table, ordered, focus, toward, spacing, contact)
 		"break_contact":
 			_plan_break_contact(plan, situation, state, table, ordered, focus, toward, spacing)
+		"ambush", "spring_ambush":
+			# X7: the same firing line as a base of fire, closer, facing the kill zone. The drill decides whether the
+			# crews may shoot (ElementFeed.holds_fire); the positions do not change when it is sprung.
+			var zone: Variant = ElementTask.destination(state.get("task", {}))
+			_plan_support_by_fire(plan, situation, state, table, ordered, zone if zone is Vector3 else focus, spacing,
+					AMBUSH_STANDOFF, ["ambush", "spring_ambush"])
+			plan["why"] = drill["why"]
 		"herringbone":
 			plan["formation"] = "herringbone"
 			plan["technique"] = "traveling"
@@ -393,8 +451,10 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 		# On the flank: turn in and roll them up.
 		_group(plan, maneuver, "wedge", focus, TacticsFormation.flat(focus - maneuver_center), spacing, "attack_move")
 	else:
-		# On the way there, under the base of fire's protection: move, don't stop to trade shots frontally.
-		_group(plan, maneuver, "wedge", flank, TacticsFormation.flat(flank - maneuver_center), spacing, "move")
+		# On the way there, under the base of fire's protection: move, don't stop to trade shots frontally — and go
+		# round the way they can see least of (X7), not straight across their front.
+		var step := _route_step(plan, situation, state, maneuver_center, flank)
+		_group(plan, maneuver, "wedge", step, TacticsFormation.flat(step - maneuver_center), spacing, "move")
 
 
 ## Break contact: bound back, one half moving while the other keeps the enemy's heads down.
@@ -428,6 +488,38 @@ static func _plan_break_contact(plan: Dictionary, situation: Dictionary, state: 
 	plan["anchor"] = anchor
 	_group(plan, movers, "column", anchor, away, spacing, "move")
 	_hold(plan, cover, situation, toward, "covering the withdrawal")
+
+
+# ---- Routes (X7) ---------------------------------------------------------------------------------------
+
+## A waypoint counts as reached within this far (meters), and the route is re-chosen when its end moves this far.
+const WAYPOINT_M := 15.0
+const ROUTE_KEEP_M := 12.0
+
+
+## The point to drive toward now on the way from `from` to `to`: the current waypoint of a covered route chosen
+## once (CoveredRoute) and kept while its end stays put. Records the route in the plan.
+static func _route_step(plan: Dictionary, situation: Dictionary, state: Dictionary, from: Vector3, to: Vector3) -> Vector3:
+	var route: Array = state.get("route", [])
+	var index := int(state.get("route_index", 0))
+	if route.is_empty() or (route[route.size() - 1] as Vector3).distance_to(to) > ROUTE_KEEP_M:
+		var chosen := CoveredRoute.choose(situation.get("cover_map"), from, to, _threat_points(situation),
+				float(situation.get("sight", 90.0)), situation.get("lanes", []))
+		route = chosen.get("waypoints", [to])
+		index = 0
+	while index < route.size() - 1 and from.distance_to(route[index]) <= WAYPOINT_M:
+		index += 1
+	plan["route"] = route
+	plan["route_index"] = index
+	return route[index]
+
+
+## Where the enemies we know of are (seen or remembered).
+static func _threat_points(situation: Dictionary) -> Array:
+	var points: Array = []
+	for contact: Dictionary in situation.get("contacts", []):
+		points.append(contact["position"])
+	return points
 
 
 # ---- Order helpers -------------------------------------------------------------------------------------
@@ -573,6 +665,18 @@ static func _center_of(members: Array) -> Vector3:
 	for member: Dictionary in members:
 		sum += member["position"] as Vector3
 	return sum / float(members.size())
+
+
+static func members_of(situation: Dictionary) -> Array:
+	return situation.get("members", [])
+
+
+## The contact an attack task is on: the named target when known, else the nearest.
+static func _target_contact(task: Dictionary, situation: Dictionary) -> Dictionary:
+	for contact: Dictionary in situation.get("contacts", []):
+		if String(contact["name"]) == String(task.get("target", "")):
+			return contact
+	return Drills.nearest_contact(situation)
 
 
 static func _task_point(task: Dictionary, situation: Dictionary) -> Variant:

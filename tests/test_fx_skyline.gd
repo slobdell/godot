@@ -1,0 +1,33 @@
+extends TestCase
+## Feel X4 (round 6): the lead's low camera puts the horizon in every frame, so the arena sits under a smog-lit sky
+## inside a city instead of flat black.
+
+
+func test_the_skyline_ring_wraps_the_arena_facing_in() -> void:
+	var mesh := CitySkyline.ring(100.0, 50.0, -5.0, 16)
+	var arrays := mesh.surface_get_arrays(0)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	assert_eq(vertices.size(), 34, "two vertices per edge of 16 segments, closing the loop")
+	for i in vertices.size():
+		assert_near(Vector2(vertices[i].x, vertices[i].z).length(), 100.0, 0.01, "every vertex on the ring")
+		assert_true(normals[i].dot(-Vector3(vertices[i].x, 0.0, vertices[i].z).normalized()) > 0.99, "facing the centre")
+		assert_near(vertices[i].y, -5.0 + 50.0 * uvs[i].y, 0.01, "UV.y runs foot to top")
+	assert_near(uvs[vertices.size() - 1].x, 1.0, 0.001, "UV.x runs once around")
+
+
+func test_the_arena_environment_has_a_sky_and_a_city() -> void:
+	var previous := GameTheme.theme_name
+	GameTheme.use("cyberpunk")
+	var node: Node = add_to_tree(GameTheme.scene("arena.environment").instantiate())
+	GameTheme.use(previous)
+	var environment: Environment = node.get("environment")
+	assert_eq(environment.background_mode, Environment.BG_SKY, "a sky, not a flat colour")
+	assert_true(environment.sky != null and environment.sky.sky_material is ShaderMaterial, "the night-sky shader")
+	assert_true(environment.ambient_light_source != Environment.AMBIENT_SOURCE_SKY
+			and environment.reflected_light_source != Environment.REFLECTION_SOURCE_SKY,
+			"drawn only: nothing samples it for light, so it never needs a radiance update")
+	var skylines := node.find_children("*", "CitySkyline", true, false)
+	assert_eq(skylines.size(), 1, "one city ring around the arena")
+	assert_eq((skylines[0] as MeshInstance3D).cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "and it casts nothing")

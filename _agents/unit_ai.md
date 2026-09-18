@@ -672,6 +672,12 @@ The lead's framework from round 4, built as groundwork. **Nothing runs in live p
    factions. It ships only if it wins head to head (the same bar as a brain variant), and its scenario joins
    `make ai-scenarios` so a later change can't quietly remove it.
 
+**Clock warning (round 6, squad, 2026-09-18):** from the 30 Hz move (`ae58286c`, 2026-09-17 13:10) until `1fc83daf`,
+the bridge divided ticks by 60: every `seconds` and `age_seconds` a decider saw was **half** the real time, the
+`age_seconds < 20` freshness filter in `tools/discovery.py` admitted contacts up to 40 s old, and `--every=5` stepped
+every **10** s. The one recorded discovery finding below ran at 06:42-06:47 that morning, before the move, so it is
+unaffected; any discovery log produced in between is not comparable with one produced after the fix.
+
 The first pass of this loop, by hand: `pin_and_flank` (one element supports by fire, the others swing wide on
 alternate sides) beat standard doctrine in its first discovery run, and became `ElementCommander._pin_and_flank`
 behind `traits.commander`, snapped onto arena's annotated lanes; the ladder decides whether it stays.

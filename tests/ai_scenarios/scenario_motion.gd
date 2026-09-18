@@ -146,7 +146,10 @@ func _switches_per_minute(variant: String) -> float:
 			last[brain.name] = option
 	s.dispose()
 	BrainVariants.reset()
-	return switches / maxf(unit_ticks / 3600.0, 0.01)
+	# Per unit-MINUTE: unit_ticks / (ticks per second x 60). Until round 6 this divided by a hard-coded 3600 — one minute at
+	# 60 Hz, two at 30 — so every dither number since the 30 Hz move was DOUBLE the real rate (lesson 30). Numbers
+	# recorded before this fix are not comparable with numbers after it.
+	return switches / maxf(unit_ticks / (SimClock.TICK_RATE * 60.0), 0.01)
 
 
 func test_brains_dont_dither() -> void:
