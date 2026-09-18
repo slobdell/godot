@@ -54,3 +54,8 @@ nav-maze: import ## N3/CP2: send NAV_UNITS vehicles across The Maze and report a
 		--units=$(or $(NAV_UNITS),30) --arena=$(or $(ARENA),maze) --time-limit=$(or $(NAV_TIME),180) \
 		--seed=$(or $(SEED),1) $(if $(NAV_BOTH),--both-ways) --json=$(CURDIR)/$(BUILD_DIR)/$(or $(OUT),nav-maze).json
 	@echo ">> nav-maze: build/$(or $(OUT),nav-maze).json"
+
+.PHONY: slope-probe
+slope-probe: import ## X4: what slope the navmesh bakes over and a vehicle can climb (a measurement, nothing ships) -> build/slopes.json
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/slope_probe.gd -- \
+		--json=$(CURDIR)/$(BUILD_DIR)/slopes.json

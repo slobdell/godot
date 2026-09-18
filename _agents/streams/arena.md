@@ -120,12 +120,13 @@ _Round 6, arena. Updated 2026-09-18._
 | **X1 the maze (N3/CP2)** | **Done.** Layout, `make nav-maze`, baselines, docs. Shipped to nav via the orchestrator (nav had no session; the orchestrator wrote my baseline into `nav.md`) |
 | **X2 approaches not covered from everywhere** | **Done.** `make arena-report` answers it at two reaches; `make arena-pytest` guards the instrument |
 | **X3 objectives off the centre line** | **Blocked twice over** — see below. Schema and validation are done on my side |
-| X4 terrain features | Not started |
+| X4 terrain features | **First step done** — what slope the engine survives is now measured, not guessed. Authoring terrain not started |
 | X5 the arenas the lead will play | Not started; the arena page he is owed from round 5 is still owed |
 | X6 destructible cover (stretch) | Not started, correctly — X3 is not done and nav's avoidance has not landed |
 
-**Green commit: pending.** `make remote T=check` on `f8680e21` is running. **`38c15f77` and `13add85d` are RED — do
-not merge them** (see *The mistake worth reading* below).
+**Green commit: `5590c465`** — `make remote T=check`, runner `1018 passed, 0 failed`, wrapper
+`>> remote: make check exited 0`. Reported to the orchestrator. **`38c15f77` and `13add85d` are RED — do not merge
+either** (see *The mistake worth reading* below).
 
 ### X1 — the maze (N3/CP2): done
 
@@ -170,6 +171,18 @@ traffic barely moves yard (55% → 58%, inside noise) and collapses the maze (60
 - **The probe measures only positions over time**, so nav can rewrite everything under the order and the numbers
   keep meaning the same thing.
 
+**Looked at, not just measured** (`make remote T=arena-shots ARENAS=maze,boulevard`, builder0, 10:32–10:43, fresh
+timestamps checked against the stale-`build/` trap): the maze reads as intended from both the match-runner overview
+and a player's skirmish camera. Bands run wall to wall with staggered gaps, the dead-end wall at x = −86 stands,
+the fixture names itself in the HUD ("The Maze (nav test fixture)"), and a real fight happened in it — the command
+line read *"Alpha: line, near ambush — ambushed at 41 m: turn into it and assault through"*. Geometry confirmed
+against the file afterwards: all 152 props are `container_40` stacked 2 high (5.18 m, well over the 1.3 m eye
+line), and the tight gate measures 6.8 m edge to edge.
+
+Fair warning for whoever reads it next: **it looks like a set of parallel walls, not a labyrinth.** That is what a
+point-symmetric fixture with a 3 m gate comes out as, and the measured properties (2.08× serpentine, one dead end,
+two routes) are what nav is judged on — but nobody should expect a hedge maze.
+
 ### X2 — can a map host an ambush: done
 
 `make arena-report` now reports `centre_sees_share`, approach routes at three cover penalties, `posting_gain`, and
@@ -201,6 +214,28 @@ whichever base is nearer). A layout with no `objectives` list reports exactly th
 hard-codes — asserted for every shipped layout — so combat's change is a read-through that cannot move any existing
 arena.
 
+### X4 — what slope the ground can have: measured
+
+`make slope-probe` (laptop, `775b9ce2`), saved at [references/arena/slopes-2026-09-18.json](references/arena/slopes-2026-09-18.json),
+written up in [../arenas.md](../arenas.md) *What slope the ground can have*.
+
+| slope | 5° | 8–12° | 15° | 20° | 25° | 30° |
+|---|---|---|---|---|---|---|
+| ramp surface on navmesh | 1.00 | 0.95 | 0.90 | 0.85 | 0.75 | **0.05** |
+| vehicle climbed, of the rise | 102% | 94–97% | 91% | 85% | 77% | 67% |
+
+- **The vehicles are never the constraint.** A tank climbed 85%+ of the rise at every angle the navmesh supports and
+  67–77% past it — the worst case for a player, since units grind at slopes they can see are drivable.
+- **The ceiling is `atan(agent_max_climb / cell_size)`** = 26.6° today. Confirmed by moving the knob: at
+  `agent_max_climb = 0.5` (predicting 45°), 30° coverage goes 0.05 → 0.65. **Not changing it** — it re-bakes every
+  arena's navmesh, which is baked half-plus-mirror precisely to keep the bases fair, and would need the swap-bases
+  control re-run and possibly move the sim baseline.
+- **Author terrain at ≤ 20°**, and make every ramp lead onto a flat shelf, never a cliff: the navmesh is eroded back
+  from a drop by the 2 m agent radius, so a ramp ending at a precipice has no mesh at the top to arrive on.
+
+That is X4's gating question answered. Authoring the terrain itself is not started, and should follow X3 — there is
+no point adding sunken lanes to a map whose only objective is at the centre.
+
 ### The mistake worth reading
 
 I told the orchestrator CP2 was ready at `38c15f77` on the strength of 5/5 laptop tests. The full check came back
@@ -214,6 +249,15 @@ reported a 1.00× detour and a dead end with no walls.
 the problem: it was proving the *previous* arena connected, once per layout. My maze tests only caught it because a
 maze has a **known wrong answer** (a straight line) where a normal arena's wrong answer looks like a right one.
 Fixed in `tests/support/arena_fixture.gd`; mutation-checked.
+
+Third: the slope probe's navmesh answer was **wrong three times**, and each wrong version looked like a clean engine
+limit — a ramp that was really a bridge (the tank drove under it), a ramp the tank drove around, and a goal point
+inside the agent-radius erosion at the crest. Three geometries, three confident limits: 25°, 25°, 5°. The tell was
+that *a tank unable to climb 10° is not believable* — a real one manages 30 — and the fix was to stop pathing to a
+point and measure coverage along the ramp's own centreline, a quantity with no edges in it. Worth remembering that
+the `agent_max_climb` knob test, run against the broken measure, came back **negative** and nearly retired the
+hypothesis that turned out to be correct: **a good experiment against a broken instrument produces a confident wrong
+answer.**
 
 Second of the same shape: at a **110 m** watcher reach I had written up "flanking costs a 1.8–2.1× detour, cover is
 priced out of reach". At the **45 m** a defender actually covers, the same maps price a flank at 1.0–1.1×. Same
@@ -238,5 +282,6 @@ geometry, same code, opposite conclusion — the finding lived entirely in one c
 
 1. Green hash for `f8680e21` to the orchestrator.
 2. `make remote T=arena-shots ARENAS=maze` and **look at them** — the maze has not been seen by a human yet.
-3. X4 terrain features, which is unblocked, while X3 waits on CP4.
+3. Authoring terrain (X4's second half) — but it should follow X3, since sunken lanes do not help a map whose only
+   objective is at the centre. X5 (the arena page the lead is owed) is the better unblocked next job.
 
