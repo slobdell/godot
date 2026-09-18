@@ -121,6 +121,16 @@ reproducible on my branch tip, which predates that fix: `make remote T=check` th
 one being that test, and `check` stops at `test`, so the smokes after it did not run on this tip — they were green at
 `265dbcfc` and nothing since touches them (theme FX and docs only). Main's own check is the orchestrator's gate.
 
+**Handover pass, 2026-09-17 (tip `a6008586`, `make remote T=check` 1010 passed, 0 failed).** Test: what would a fresh
+agent with only the repo have to rediscover? Three of five items were already in files (the machine factor, the two
+interpolation switches, the round-6 list) and were only verified. Two were not, and are now: how to read `perf-scene`'s
+capacity numbers (in `fx_tricks.md`), and what each saved baseline was taken on (`references/perf/README.md`). Writing
+the second caught a trap worth knowing — **capacity reads 0 in a `--perf-capped` run however much headroom the machine
+has, because the cap pins every frame** — and one error: I would have labelled `locked30-capped-60hz-1080.json` as a
+run taken under agent load, when this brief's own write-up at the time says it is the pre-30 Hz capped run, the 60 Hz
+spiral. Corrected from the contemporaneous note. `perf_scene.gd` now records `capped` and `frame_target` in the
+summary, so a future baseline cannot have that problem.
+
 **Open for round 6, in order of what the lead is waiting on:**
 1. His own clean `perf-scene` run: nobody has measured his laptop in the state he plays in (ours: ~29 vehicles quiet,
    12–15 under load, locked 30 at 1080p).
