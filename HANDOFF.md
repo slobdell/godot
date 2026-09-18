@@ -127,9 +127,17 @@ feel.
 
 ## Waiting on the lead
 
-1. **The camera look** (round 6's main gate): control produces `make camera-looks`, a page of the same fight at a grid
-   of pitch × distance × FOV. "Between StarCraft 2 and Twisted Metal" needs a picture he points at.
-2. **Which arena is fun** — unanswered since round 5; he has still never played them.
+1. **The camera look AND which arena is fun — both are on one page, live since 2026-09-18:**
+   **https://claude.ai/artifact/6LEzbnaQc1T6oyVo2jmxaL** (private to the lead's account). One frozen 30-a-side fight
+   (Condemned vs Syndicate, Container Yard, seed 3, ~6 s after the first shot): row 1 is round 5's four welded poses
+   (zoom 0.20/0.36/0.55/0.75 = 34°/45°/56°/68°, the last being the "bird's eye" he disliked); then a grid of
+   pitch 25/35/45/60° × distance 28/50/90 m × FOV 45/60°; then an arena tour, all seven arenas at three poses each
+   with a **Fun** checkbox. He taps a frame to pick it (optional note) and ticks the fun arenas.
+   **His answers are saved in the page's own database at `picks/lead`** — read them back with the Artifact tool's
+   `read_db` on that URL, then tell control, which sets the defaults from his pick.
+   Provenance: rendered on the **laptop** at 1920×1080 from `stream/control`'s working tree at `a975e262`
+   (uncommitted at the time). Frames are camera poses only, so machine and commit do not change what they show.
+   **The diagnosis is confirmed by row 1:** the start pose was fine; zooming out is what tilted him to top-down.
 3. **The Lancer sits in two factions** (Condemned `lancer`, Syndicate `syn_lancer`): the role is shared, the vehicle
    isn't. One of them may want to lose it.
 4. **Meshy credits: 88 left.** Any new 3D art needs a top-up. ElevenLabs has ~123k.
