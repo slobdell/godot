@@ -10,7 +10,9 @@ const PENDING := ["test_a_light_unit_dodges_most_tank_shells"]
 
 
 ## [shells fired at the brain unit, shells that hit it] over `seconds`.
-func _duel(variant: String, unit: String, seed_value: int, seconds := 30) -> Array:
+## (60 s: this loop counted `60 * seconds` ticks until round 6, which at the 30 Hz tick meant 60 s while saying 30 — the
+## units are fixed and the default doubled, so the sample is the same length it always was. Lesson 30.)
+func _duel(variant: String, unit: String, seed_value: int, seconds := 60) -> Array:
 	BrainVariants.use(Match.Team.GREEN, variant)
 	var s := AiScenario.create(self, seed_value)
 	var gun := s.shooter(Match.Team.RUST, "Rust_Gun_1", Vector3(-100, 0, -15), 0.0)
@@ -20,7 +22,7 @@ func _duel(variant: String, unit: String, seed_value: int, seconds := 30) -> Arr
 	var hits := 0
 	var last := me.health + me.shield
 	await s.start()
-	for tick in 60 * seconds:
+	for tick in SimClock.TICK_RATE * seconds:
 		await s.step()
 		var now := me.health + me.shield
 		if now < last - 5.0:

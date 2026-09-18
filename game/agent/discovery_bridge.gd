@@ -113,7 +113,7 @@ func observe() -> Dictionary:
 		contacts.append({"name": contact_name, "unit": String(known.get("unit", "")),
 				"role": Units.role_of(String(known.get("unit", ""))) if Units.exists(String(known.get("unit", ""))) else "",
 				"at": _xz(known["position"]), "visible": bool(known["visible"]),
-				"age_seconds": snappedf((game_match.tick - int(known["seen_tick"])) / 60.0, 0.1)})
+				"age_seconds": snappedf((game_match.tick - int(known["seen_tick"])) / float(SimClock.TICK_RATE), 0.1)})
 	var lanes: Array = []
 	for lane: Dictionary in Arena.lanes_of(Arena.active):
 		var points: Array = []
@@ -123,7 +123,7 @@ func observe() -> Dictionary:
 	var regions: Array = []
 	for region: Dictionary in Arena.regions_of(Arena.active):
 		regions.append({"name": region["name"], "kind": region["kind"], "at": _xz(region["position"])})
-	return {"step": _step, "tick": game_match.tick, "seconds": snappedf(game_match.tick / 60.0, 0.1), "team": team,
+	return {"step": _step, "tick": game_match.tick, "seconds": snappedf(game_match.tick / float(SimClock.TICK_RATE), 0.1), "team": team,
 			"score": [game_match.score_green, game_match.score_rust],
 			"control": {"at": _xz(Match.CONTROL_CENTER), "owner": game_match.control_owner} if game_match.control_point else null,
 			"elements": own, "contacts": contacts, "lanes": lanes, "regions": regions,
@@ -204,7 +204,7 @@ func _close_step() -> void:
 	var element_loss := {}
 	for key: String in before["elements"]:
 		element_loss[key] = snappedf(float(before["elements"][key]) - float(after["elements"].get(key, 0.0)), 0.1)
-	var outcome := {"seconds": snappedf((after["tick"] - before["tick"]) / 60.0, 0.1),
+	var outcome := {"seconds": snappedf((after["tick"] - before["tick"]) / float(SimClock.TICK_RATE), 0.1),
 			"our_loss": snappedf(before["sides"][us]["hp"] - after["sides"][us]["hp"], 0.1),
 			"their_loss": snappedf(before["sides"][them]["hp"] - after["sides"][them]["hp"], 0.1),
 			"our_units_lost": before["sides"][us]["units"] - after["sides"][us]["units"],
