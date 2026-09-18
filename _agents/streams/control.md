@@ -274,10 +274,17 @@ awaits returned, by which time the whole stall had happened, so it read 0 ms bef
   comes back at 0 idle commands (see the X6 rows).
 - `shell-playtest`'s `faction_row_under_mouse` failed once in seven windowed runs on the shared laptop desktop (a real
   mouse can move the hover; trip-up 32); it passed on the immediate re-run.
-- **The lead's camera costs size on a phone.** At 12° / FOV 60° a start-view vehicle measures 23.7 px on a 1200×540
-  phone (the old bar was 24, set at 25° / FOV 55°) and 40.0 px at 1920×1080 (laptop, headless projection,
-  `test_command_readability`). Desktop first, so the phone bar is now 22 px and desktop has its own (36 px); reported
-  to the lead, not absorbed.
+- **Touch needs its own framing — a debt, not a resolution.** At the lead's 12° / FOV 60° a start-view vehicle is
+  23.7 px on a 1200×540 phone, 40.0 px at 1920×1080 (headless projection, one fixture, laptop). He chose that camera for
+  desktop; the phone inherits it. The phone bar moved 24 → 22 px provisionally (desktop got its own, 36 px); when touch
+  gets its pass, give it a closer start or its own pitch rather than moving the bar again. Reported to the lead.
+- **Constants fitted at the old camera (25-45° / FOV 55), checked after the 12° / FOV 60 change.** Zoom- or
+  distance-based, unaffected: `ICON_ZOOM`, `TRACK_MAX_ZOOM`, `FOLLOW_ZOOM`, `OVERVIEW_ZOOM`, the cinematic `MIN_ZOOM`.
+  Pixel/projection-based, fine: edge-marker sizes, pick radii, hull bars (sized from the projected hull).
+  Pitch-dependent: **`VISION_FRAME_LIFT`** moves the focus a fixed ground distance, and at 12° the foreshortened ground
+  turns that into ~0.3x the intended up-screen nudge (it should scale by ~1/sin(pitch)); in played 12° frames the
+  element still sits clear of the card, so it is recorded, not changed late. `VISION_SEEN_FRACTION` (the zoom-out cap)
+  is pitch-sensitive too; sky is now excluded from it. The phone readability bar was the third (above).
 - The loading screen's stage bar is weighted equally; at 1.4 s it barely shows, so it was left as is.
 - The camera pages' frames (26 MB of JPEG) live in the artifacts, not the repo; `make camera-looks` regenerates them.
 

@@ -20,6 +20,13 @@
 | **The wall cutaway** | At a low camera a squad near a wall (every spawn) is framed from a camera past the wall, among or behind the stands; the camera's near plane then sits just past the wall's top edge, so the stands and the wall between it and the arena aren't drawn (`RtsCamera.cutaway_near`). It cuts only when the stands would hide something: always when the camera is among the seats, and from beyond their back only when the sight line to a vehicle inside the wall passes through the stands' measured profile; otherwise the stands and crowd stay as foreground. Over the arena nothing changes. Chosen over raising the pitch near walls, which would bring back the top-down view exactly where every match starts. |
 | **Why did it do that** | Hover the doctrine line on the card: the selected element's last six decisions with the match time ("0:47  line, react to contact — contact ahead"; `ElementLog`). |
 
+## Open items (round 6)
+
+- **Touch needs its own framing (a debt).** The lead chose 12° / FOV 60° for desktop; phones inherit it, and at
+  1200×540 a start-view vehicle measures 23.7 px (desktop 1920×1080: 40.0 px; headless projection, one fixture). The
+  phone readability bar moved 24 → 22 px *provisionally*. The fix when touch gets its pass is a closer start distance or
+  a pitch of its own for touch — never lowering the bar again (`tests/test_command_readability.gd`).
+
 ## Task palette (N4)
 
 The command card's vocabulary. The code is `game/control/task_palette.gd` (`TaskPalette.ROWS`); the symbols are
