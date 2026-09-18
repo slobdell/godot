@@ -279,7 +279,10 @@ awaits returned, by which time the whole stall had happened, so it read 0 ms bef
 
 ### Known issues
 
-- **GL textures leak at exit after merging main** (two "Texture with GL ID … leaked 5460 bytes" lines in
+- ~~**GL textures leak at exit after merging main**~~ feel's (the night sky's radiance maps), fixed on main and merged.
+  Also fixed by feel: the "void below the near wall" was never missing geometry — the cutaway clips every real surface
+  in that band and the sky dome's below-horizon colour showed through; the dome now draws the city's ground.
+- (history) **GL textures leak at exit after merging main** (two "Texture with GL ID … leaked 5460 bytes" lines in
   `make shell-playtest`, which fails its clean-console gate). Absent in every pre-merge run; nothing control added
   creates a texture of that size; the merge brought feel's sky and skyline shaders. Reported to the orchestrator.
 
@@ -287,8 +290,12 @@ awaits returned, by which time the whole stall had happened, so it read 0 ms bef
   sees black void below the stands; the far-range tilt floor keeps it to the bottom strip in normal play.
 - **X4 (a plain move keeps the squad a squad) is held** until squad's `4d734b1e` is on `main` and the five-squad A/B
   comes back at 0 idle commands (see the X6 rows).
-- `shell-playtest`'s `faction_row_under_mouse` failed once in seven windowed runs on the shared laptop desktop (a real
-  mouse can move the hover; trip-up 32); it passed on the immediate re-run.
+- ~~`shell-playtest`'s `faction_row_under_mouse` failed once in seven windowed runs (blamed on the desktop's mouse)~~
+  **Not a flake, and mine** (`31a4aa11`): on builder0 the faction checks failed every run, and the control under the
+  mouse was the loading screen — a full-rect, click-stopping layer on the root, still fading when the playtest clicked.
+  One consistent failure plus one intermittent one of the same check was one cause. The screen now lets clicks through
+  the moment the load is done (tested, mutation-checked) and the playtest waits for it to go. After merging feel's leak
+  fix, `make remote T=shell-playtest` exits 0 on builder0 for the first time: 18/18 checks, clean console.
 - **Touch needs its own framing — a debt, not a resolution.** At the lead's 12° / FOV 60° a start-view vehicle is
   23.7 px on a 1200×540 phone, 40.0 px at 1920×1080 (headless projection, one fixture, laptop). He chose that camera for
   desktop; the phone inherits it. The phone bar moved 24 → 22 px provisionally (desktop got its own, 36 px); when touch
