@@ -631,8 +631,9 @@ func right_click_order(at: Vector2, queue := false) -> String:
 		if _is_task("attack", {"queue": queue}):
 			return order_selection("attack", {"target": String(tank.name), "queue": queue})
 		return smart_attack(tank, queue)
-	if tank != null and not selection.units.has(String(tank.name)):
-		return order_selection("follow", {"target": String(tank.name), "queue": queue})
+	# A right-click on your own vehicles is a move to that spot, not a follow (game_design.md: "right-click ground =
+	# move ... F + click a friendly = follow/escort"). The lead, round 5: with an army packed on the start line, half of
+	# "go there" landed on his own units and became "trail that one", so his squads never went where he clicked.
 	var world: Variant = screen_to_world(at)
 	if world == null:
 		return ""

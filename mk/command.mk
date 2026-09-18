@@ -139,3 +139,15 @@ response-test: import ## Click → order → acknowledgement → first visible m
 			| tee $(RESPONSE_DIR)/$$name/run.log | grep -E '^RESPONSE_TEST|SCRIPT ERROR' || true; \
 		grep -q RESPONSE_TEST_DONE $(RESPONSE_DIR)/$$name/run.log || exit 1; \
 	done
+
+## Round 5 reopened (the lead: "I select squad 1, move them, select squad 2, move them ... the units do not re-arrange
+## as intended"). His exact sequence through real input, then where every unit actually is, twice.
+SQUAD_ORDERS_DIR := $(BUILD_DIR)/squad-orders
+SQUAD_ORDERS_FLAGS ?= --player-faction=condemned --enemy-faction=law
+
+squad-orders-test: import ## Order every squad in turn, then table where each unit was sent vs where it is (needs a real display, NOT builder0)
+	rm -rf $(SQUAD_ORDERS_DIR) && mkdir -p $(SQUAD_ORDERS_DIR)
+	timeout 300 $(GODOT) --path . --resolution 1920x1080 -- --skirmish --seed=3 --no-pick-faction --mute \
+		$(SQUAD_ORDERS_FLAGS) --squad-orders-test=$(CURDIR)/$(SQUAD_ORDERS_DIR) 2>&1 \
+		| tee $(SQUAD_ORDERS_DIR)/run.log | grep -E '^SQUAD_ORDERS|SCRIPT ERROR' || true
+	grep -q SQUAD_ORDERS_DONE $(SQUAD_ORDERS_DIR)/run.log

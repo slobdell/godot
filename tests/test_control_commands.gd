@@ -30,7 +30,10 @@ func test_right_click_ground_moves_the_selection() -> void:
 	assert_true((ack["position"] as Vector3).distance_to(Vector3(-15, 0, 15)) < 1.0, "at the clicked spot")
 
 
-func test_right_click_an_enemy_attacks_it_and_a_friend_follows_it() -> void:
+## Round 5 reopened: right-clicking a friend is a MOVE to that spot, not a follow (game_design.md: "right-click ground
+## = move ... F + click a friendly = follow/escort"). With an army packed together, follow-on-right-click meant half the
+## player's "go there" clicks made a squad chase one of its own.
+func test_right_click_an_enemy_attacks_it_and_a_friend_is_just_ground() -> void:
 	var f := await _setup()
 	await f.select(["Green_Alpha_1"])
 	await f.right_click(f.screen("Rust_Alpha_1"))
@@ -40,7 +43,12 @@ func test_right_click_an_enemy_attacks_it_and_a_friend_follows_it() -> void:
 	assert_eq(f.controls.last_ack().get("kind", ""), "attack", "an attack marker acknowledges it")
 	await f.right_click(f.screen("Green_Bravo_2"))
 	order = f.orders.current("Green_Alpha_1")
-	assert_eq(order.get("verb", ""), "follow", "right-clicking a friend follows it")
+	assert_eq(order.get("verb", ""), "move", "right-clicking a friend moves to that spot")
+	assert_eq(order.get("target", ""), "", "and takes nobody as a target")
+	await f.key(KEY_F)
+	await f.click(f.screen("Green_Bravo_2"))
+	order = f.orders.current("Green_Alpha_1")
+	assert_eq(order.get("verb", ""), "follow", "F then a click is how you follow a friend")
 	assert_eq(order.get("target", ""), "Green_Bravo_2", "that friend")
 
 

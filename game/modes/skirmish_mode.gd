@@ -23,6 +23,7 @@ extends GameMode
 ##   --camera-frame=close|default|wide  how much of the screen the commanded element fills (X3 dial)
 ##   --alert-lines=1..3  unseen alerts shown at once above the group chips (X3 dial; default 1)
 ##   --hints=off|fresh  no control hints (X6; they retire themselves as each control is used), or all of them, remembering nothing
+##   --squad-orders-test=DIR  the lead's sequence: order every squad in turn, then where each unit actually ends up
 ##   --response-test=DIR  click → order → ack → first visible movement, in ms, at this army size (ResponsePlaytest)
 ##   --hud-cost=PATH  X4: what each HUD widget costs in draw calls and _process at ~30 a side (HudCostProbe)
 ##   --shell-playtest=DIR  the first minutes through real input: faction menu, planning, the camera in battle (ShellPlaytest)
@@ -348,6 +349,13 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	controls.command_issued.connect(func(command: Dictionary, error: String) -> void:
 		messages.order(controls.describe(command), error))
+	if flags.has("squad-orders-test"):
+		var squads := SquadOrdersPlaytest.new()
+		squads.name = "SquadOrdersPlaytest"
+		squads.controls = controls
+		squads.out_dir = flags.text("squad-orders-test")
+		main.add_child(squads)
+		squads.run()
 	if flags.has("response-test"):
 		var response := ResponsePlaytest.new()
 		response.name = "ResponsePlaytest"
