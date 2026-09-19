@@ -818,6 +818,27 @@ wants cannot be produced by geometry alone.** It needs something worth taking th
   non-zero *and* combat's falsification test shows unit-time actually spent on the expensive route. Either alone is
   decoration.
 
+**FIRST MAPS ABOVE ZERO (arena, 2026-09-19).** A mirrored objective pair authored on both maps the lead kept:
+
+| arena | decision spread | `centre_sees_share` |
+|---|---|---|
+| **yard** | **0.00 → 0.35** | 0.20 (unchanged) |
+| **pit** | **0.00 → 0.26** | 0.30 (unchanged) |
+
+**Each pair gives a side one objective it holds cheaply and one it must contest** — which is the lead's *"compelling
+reason to cross the bridge"* expressed as geometry plus reward rather than geometry alone.
+
+**And `centre_sees_share` did not move on either map, which is what should happen:** objectives change what is *worth
+reaching*, not what can be *seen*. **Two axes behaving independently is the first evidence that splitting them was the
+right model** — openness and reason are separate design knobs, and a map can now be tuned on one without disturbing the
+other.
+
+**⚠ HELD BACK, NOT SHIPPED.** A real match on the paired yard fired squad's `Objectives` guard **35,336 times**: *"the
+arena declares an objective other than the single central zone; squad's deciders still read `Match.CONTROL_CENTER`."*
+**The match completed and produced a winner while the deciders competed for the wrong ground throughout** — degraded,
+not fatal, which is the worse of the two. **The pairs land when squad migrates `game/tactics/objectives.gd` onto N7's
+instance API**; the coordinates and measured effect sit in `make_arenas.py` as a one-line re-enable.
+
 **The metric needed no build slot and no other stream**, which is worth noting for its own sake: the most important
 design finding of the day came from writing down a number nobody had asked for.
 

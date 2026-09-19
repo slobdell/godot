@@ -1827,3 +1827,19 @@ The kickoff prompt is one line; this section is the rest.
        four above collapsed the first time anyone ran it.
      - **Date every entry and name what would retire it.** *"Fails since <hash>; retire when X passes"* — an entry that
        cannot be retired by evidence will not be.
+122. **"Degraded, not fatal" is the worse of the two, and a guard that names its own fix turns a day into a minute.**
+     arena pointed a real match at the first arena ever to carry off-centre objectives, and squad's `Objectives` guard
+     fired **35,336 times** — *"the arena declares an objective other than the single central zone; squad's deciders still
+     read `Match.CONTROL_CENTER`. Move `game/tactics/objectives.gd` onto N7's instance API."*
+     **The match completed and produced a winner** while every decider competed for the wrong ground for its entire
+     duration. **Without the guard, arena would have shipped a layout that plays, looks fine, is wrong — and whose results
+     would have gone into a series.** That is lesson 77 (*a CPU competing for the wrong ground looks completely
+     functional*) compiled into the code instead of remembered.
+     - **A failure that stops the run announces itself. A failure that degrades the run does not**, and it contaminates
+       every number taken downstream of it. **Prefer a loud guard to a graceful fallback wherever "wrong" and "working"
+       are indistinguishable from outside.**
+     - **The error string names the FILE and the FIX, so a stream that owns neither diagnosed it in one run without
+       reading the other's code.** arena's words: *"that guard is the best thing anyone built this round."* **An error
+       message is an interface between streams — write it for the person who will read it, who is not you.**
+     - **And it fired on the first layout anyone pointed it at**, which is the strongest possible validation: it was
+       written for a hazard that had not yet occurred, and the hazard occurred exactly as described.
