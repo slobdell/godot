@@ -22,10 +22,15 @@ const STYLES := {
 	# The tank shell: a white-hot slug you can follow, dragging a pool of light along the floor.
 	"shell": {"tail": 7.0, "width": 0.55, "intensity": 1.5, "splat_width": 3.5, "splat_length": 9.0, "splat_intensity": 0.5,
 			"light_energy": 6.0, "light_range": 15.0, "priority": LightPool.PRIORITY_SHELL},
-	"burst": {"tail": 4.0, "width": 0.22, "intensity": 1.1, "splat_width": 1.6, "splat_length": 4.5, "splat_intensity": 0.28,
+	# Round 6: up with the stream below (a 25 mm round stays the fatter, heavier tracer of the two).
+	"burst": {"tail": 5.5, "width": 0.42, "intensity": 2.0, "splat_width": 2.0, "splat_length": 5.5, "splat_intensity": 0.32,
 			"light_energy": 1.8, "light_range": 6.0, "priority": LightPool.PRIORITY_TRACER},
-	"stream": {"tail": 4.0, "width": 0.18, "intensity": 1.2, "splat_width": 1.2, "splat_length": 4.0, "splat_intensity": 0.22,
-			"light_energy": 1.2, "light_range": 4.5, "priority": LightPool.PRIORITY_TRACER - 0.3},
+	# Round 6 (the lead: "I'm not seeing any cool machine gun fire from the scouts"): at round 5's halved style and
+	# HITSCAN_SPEED a scout's 10 rounds/s at 26 m left about one thin 4 m dash on screen at a time, a speck from the RTS
+	# camera. A stream now flies slower (its own `speed`) so 3-4 rounds are in the air at once, with a longer, hotter
+	# tail: a hose of fire you can follow from gun to target.
+	"stream": {"tail": 8.0, "width": 0.32, "intensity": 2.4, "splat_width": 1.6, "splat_length": 6.0, "splat_intensity": 0.3,
+			"light_energy": 1.2, "light_range": 4.5, "priority": LightPool.PRIORITY_TRACER - 0.3, "speed": 90.0},
 	"arc": {"tail": 5.0, "width": 0.45, "intensity": 1.2, "splat_width": 2.8, "splat_length": 6.0, "splat_intensity": 0.4,
 			"light_energy": 3.0, "light_range": 10.0, "priority": LightPool.PRIORITY_TRACER + 0.5},
 	# A round glancing off armor: a short hot streak, no light of its own.
@@ -100,10 +105,11 @@ func shoot(from: Vector3, to: Vector3, color: Color, style: String, now: float, 
 	_round_from[index] = from
 	_round_direction[index] = offset.normalized()
 	_round_length[index] = offset.length()
-	_round_speed[index] = speed if speed > 0.0 else HITSCAN_SPEED
+	var drawn: Dictionary = STYLES.get(style, STYLES["default"])
+	_round_speed[index] = speed if speed > 0.0 else float(drawn.get("speed", HITSCAN_SPEED))
 	_round_start[index] = now
 	_round_color[index] = color
-	_round_style[index] = STYLES.get(style, STYLES["default"])
+	_round_style[index] = drawn
 	_next_round = (_next_round + 1) % MAX_ROUNDS
 	_rounds_used = mini(_rounds_used + 1, MAX_ROUNDS)
 	return index
