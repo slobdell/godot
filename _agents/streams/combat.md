@@ -1030,26 +1030,45 @@ baseline that suite before attributing anything to a change (it is not in `check
 
 ### Next steps, in order
 
-_Rewritten 2026-09-19. Items 1–5 of the round-6 list are **done**: CP4 merged as a pair, the series ran, the bands
-settled, and N7 landed at `5d0ca30f`. The baseline was left to the orchestrator (invariant 2) and still must be._
+_Rewritten 2026-09-19 (second pass). Round 6's list is done; of the list written this morning, **1, 4 and the
+instrument work are done** and the two measurements remain._
 
-1. **The gate run** — every `check` target **except `sim-baseline`**, because invariant 2 forbids this stream from
-   recording it and `make check` **aborts at the first failing target**, so a stale baseline silently skips the six
-   targets after it. Running on builder0 at `9821cac7`; report the hash **with the target list**, never as "check
-   passed".
-2. **Re-run the faction matrices on the true build, `ARENA=boulevard` (open, 0.64) and `ARENA=yard` (closed, 0.20)**,
-   and report **per map and per faction — never as one aggregate.** Both maps must be quoted together or neither: a
-   single map's number is a property of that map (see *Every faction number … is a FOUNDRY number*).
-3. **The `gangs/scout` ablation.** The 23% → 53% gang swing is **unattributed**: the directive fix and CP4 landed in
-   the same commit and no matrix ran between them. Remove the `gangs/scout` entry, re-run, and let the difference say
-   which one paid. Until then CP4 gets **no** credit for the gangs.
-4. **Merge `main`** (baseline `b70608d6`, arena's `half_size` relaxation `877dc34a`), then `ARENA_HALF_SIZE`
-   120 → 140 **as a bound**, `DRIVABLE_LIMIT` → **117, not 136**, migrating the six square-clamp call sites to
-   `Arena.contains()` / `clamp_into()`.
-5. **X7 (stretch)** — the event half is done; one number is left.
+1. **The matrices, both maps, both arms — the only backlog item left with a number attached.** `ARENA=boulevard`
+   (open, 0.64) and `ARENA=yard` (closed, 0.20), each with and without `ABLATE=1`, then subtracted with
+   **`make compare-arms`** rather than by eye. Report **per map and per faction, never pooled**; quote both maps or
+   neither. The `gangs/scout` question is the same four runs: if the gangs collapse in the ablated arm, the
+   directive earned the 23% → 53% swing and CP4 earned none of it.
+2. **X7 (stretch)** — the event half is done; one number is left.
 
-**Round-7 debt, unowned:** the eight-place `role` taxonomy still has no registry (see *The designator*). The
-`SQUADS` guardrail is a down-payment on one of the eight, not a fix.
+**Round-7 debt, unowned:**
+
+- The eight-place `role` taxonomy still has no registry (see *The designator*). The `SQUADS` guardrail is a
+  down-payment on one of the eight, not a fix.
+- **`match_runner_mode.gd`'s bench spread is still a square clamp** on `DRIVABLE_LIMIT` (M4). Harmless while every
+  layout is a square and wrong the day one is not; listed unmigrated rather than quietly left.
+- **A killed `make remote` leaves its `make` running on builder0.** `remote.sh` dying locally does not stop the
+  remote job, so the orphan holds a heavy-run slot and the next `rsync --delete` overwrites the tree underneath it.
+  The orchestrator has this for round 8 (a trapping wrapper, with a test, when nothing is mid-flight) — until then:
+  identify by `readlink /proc/<pid>/cwd`, **never by pattern**, and kill the remote side before the local wrapper.
+  **"I cannot account for this process" is a reason to leave it alone, not a reason to include it** — I killed my
+  own running gate by assuming anything older than my launch was stale, and checks legitimately run 30–50 minutes,
+  so that assumption describes most healthy runs on the machine.
+
+### The instruments, and what each one can and cannot prove
+
+Three guards were built this round, and they answer three different questions. Reaching for the wrong one is how
+each of them got skipped in the first place:
+
+| Guard | Asks | Cannot tell you |
+|---|---|---|
+| `run_conditions` (`run:` header) | **which build** produced this | whether the run did what you asked |
+| `faction_matrix`'s positive control | **did the treatment engage** in this run — designators fielded vs paints landed | whether the OTHER arm was different |
+| `compare_arms` | **are these two runs subtractable** — same build, same question, genuinely different arms | whether a flag that was recorded actually did anything in the sim |
+
+The last cell is the honest edge of all three. A flag accepted, recorded and silently inert still looks fine to
+every one of them; only `faction_matrix`'s per-run adherence check reads what the RUN emitted (`MATCH_RESULT`'s
+`controls`) rather than what the caller passed, and only for the designator. **Per comparison, against emitted
+state, is the version still unbuilt.**
 
 ### Merge notes (shared files)
 
