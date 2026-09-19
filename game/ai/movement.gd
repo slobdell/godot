@@ -154,6 +154,9 @@ const STATION_RANGE := 14.0
 const STATION_MIN_SPEED := 0.5
 ## ...and stops counting as moving when it has not changed for this long.
 const STATION_STALE_SECONDS := 1.0
+## ...or at once when it is re-issued unchanged after this long (a stopped slot; brains re-issue several times a second,
+## and an anchor that only updates now and then must not read as stopping between updates).
+const STATION_STOPPED_SECONDS := 0.35
 ## Steer at where the goal will be this far ahead (seconds), so the hull points along the formation's travel.
 const STATION_LEAD_SECONDS := 0.6
 
@@ -196,6 +199,8 @@ var _ask_left := 0
 var _goal_velocity := Vector2.ZERO
 var _goal_seen := Vector3.INF
 var _goal_changed_at := 0
+## The order was (re)issued since the last tick: an unchanged goal re-issued means the goal has stopped.
+var _reissued := false
 var _ticks := 0
 ## Ticks since the current order (or interruption) began.
 var _order_ticks := 0
@@ -342,6 +347,7 @@ func bind() -> void:
 ## Forget the route (a new move order): the next drive() repaths at once.
 func new_order() -> void:
 	_repath_left = 0.0
+	_reissued = true
 
 
 ## The move order isn't a move_to (stop, face, drive, or a dead hull): nothing to report but "arrived".
@@ -431,6 +437,8 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 ## travel is a new order, not motion.
 func _track_goal(goal: Vector3) -> void:
 	_ticks += ctl._step
+	var reissued := _reissued
+	_reissued = false
 	if _goal_seen == Vector3.INF:
 		_goal_seen = goal
 		_goal_changed_at = _ticks
@@ -443,7 +451,9 @@ func _track_goal(goal: Vector3) -> void:
 		_goal_velocity = Vector2.ZERO if velocity.length() > 2.0 * ctl.tank.max_forward_speed else velocity
 		_goal_seen = goal
 		_goal_changed_at = _ticks
-	elif seconds > STATION_STALE_SECONDS:
+	elif seconds > STATION_STALE_SECONDS or (reissued and seconds > STATION_STOPPED_SECONDS):
+		# Re-issued where it already was: the slot has stopped. Feed-forward must stop with it at once, or a crew runs
+		# ~3 m past a halting formation on a stale speed (measured, X8: 3.2 m for every gain set before this).
 		_goal_velocity = Vector2.ZERO
 
 
