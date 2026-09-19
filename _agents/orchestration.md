@@ -893,3 +893,17 @@ The kickoff prompt is one line; this section is the rest.
       had been red unconditionally on the machine we verify on, which is precisely why a texture leak in another
       stream's code went unnoticed until a human looked by hand. After this fix `shell-playtest` exits 0 on builder0
       for the first time — **an always-red check should be treated as an outage, not as a known quirk.**
+68. **A checkpoint merge has a shelf life, and the tell is a third number.** Round 6, arena: it merged `main` at the
+    announced point, did an hour's work, and its check failed `sim-baseline` — expected `8ebbed52…` (its tree's
+    committed line), **produced `91db2388…`**, while the baseline the orchestrator had just recorded on `main` was
+    `ae7466f3…`. **Three different numbers.** The explanation was not a defect: `main` had taken nav's and control's
+    merges in the meantime, so `91db2388…` was the correct hash of a real third state — CP4 without nav or control.
+    **The produced hash matching *neither* candidate is what made it legible**, and that is the part to remember:
+    - had it matched the orchestrator's `ae7466f3…`, the obvious reading is *"my baseline file is just stale"*;
+    - had it matched its own `8ebbed52…`, the obvious reading is *"CP4 did not move the simulation"*;
+    - both readings would have been wrong, and each is the first thing a reasonable agent would conclude.
+    So: **when a hash comparison fails, enumerate every hash you can name and check which ones the produced value
+    matches.** A value matching none of them means your tree is a state nobody has a record of — usually because
+    "`main`" meant something different an hour ago. And **say so when you hand over a branch merged at a stale
+    checkpoint**: arena warned that its next hash would carry nav's and control's work as well as its own, which is
+    exactly what an orchestrator expecting an arena-only diff needs to hear.
