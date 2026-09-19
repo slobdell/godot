@@ -100,6 +100,10 @@ coordinate with nav — anything that changes what blocks driving touches the na
 ## Waiting on the lead
 
 1. **Which arena is fun** — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+   (**version 3**: the first two had no controls at all — the four answers were printed as a *sentence* that looks
+   like a control and is not one. He said so: *"doesn't have buttons I can click to give feedback"*. Now radio
+   buttons, a summary he copies, and a notes box; no database, because the pick is the whole payload. **Verify an
+   interaction by performing it — reading the HTML you wrote cannot tell you the words do nothing.**)
    (`make arena-page` rebuilds it; republish that URL to update it). Six cards, worst first, each asking
    *keep it · fix it · cut it · I'd rather just play it first*. A link rather than a path under `build/` on purpose:
    lesson 12's failure was review pages nobody could open.
@@ -305,6 +309,22 @@ adjusted, because nav's before/after is on a fixed tree.
 **What I should have done:** I treated the tail as more of the headline. A stable minority failing the same way is a
 defect, not variance, and nav found it by asking *which* units failed rather than how many. Left in a baseline it
 would have flattered every later fix by 8 units a run.
+
+### X2's limitation, found by the lead (2026-09-18)
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground."*
+
+**Terrain creates risk, objectives create reason, neither works alone, and the prize goes where the risk is.** That
+reframes my own headline. I measured *"covered routes cost a 1.0–1.1× detour on every map and nobody takes them"*
+and read it as "flanking is cheap and unused". His framing says the cheapness is the symptom: **a route that is
+cheap and leads nowhere worth going is not a tactical option, it is scenery.**
+
+So **X2's analysis measures only half the thing.** It scores a route by what it *costs* — exposure, detour — and
+never by what it *reaches*. That is why it reports that every arena already offers an affordable flank while the
+game plays as a brawl: both statements are true and the metric cannot see the contradiction. Any round-7 version
+needs a term for the value at the end of the route, and **X3 and the bridge/water work are one job** — measuring
+either alone will under-read it.
 
 ### X9 / dynamic obstacles: keep the navmesh a startup snapshot (arena's ruling, 2026-09-18)
 
