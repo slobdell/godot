@@ -6,7 +6,9 @@ extends Node
 ## with his own frame, not a gallery: it rides a real skirmish (FxWorld adds it on `--size-look=<abs dir>`), parks a
 ## lineup on the player's side of the arena and shoots it with his camera (pitch 21, 49 m, FOV 35).
 ##
-## The lineup, left to right: the Condemned scout, the gang scout, the War Rig, the Condemned tank. The War Rig is
+## First `army.png`: his pose over the player's own army as it deployed (run it with --player-faction=gangs: does the
+## rig dominate its squad, or does everything else look small?). Then the lineup, left to right: the Condemned scout, the
+## gang scout, the Resupply Tanker, the War Rig, the Condemned tank. The War Rig is
 ## shot once per candidate length (`--size-look-lengths=5.6,10,12`): the catalog's box when the length is the
 ## catalog's, else a box with the model's own proportions at that length (Units.tuning, this process only), so the box
 ## always matches what is drawn. Per shot it prints `SIZE_LOOK {json}` with each unit's on-screen extent in pixels
@@ -19,7 +21,7 @@ const PITCH_DEG := 21.0
 const DISTANCE_M := 49.0
 const FOV_DEG := 35.0
 const RIG := "gang_tank"
-const LINEUP := ["scout", "gang_scout", RIG, "tank"]
+const LINEUP := ["scout", "gang_scout", "gang_support", RIG, "tank"]
 const GAP_M := 4.0
 
 var out_dir := ""
@@ -81,6 +83,24 @@ func _run() -> void:
 	if rig != null:
 		rig.process_mode = Node.PROCESS_MODE_DISABLED
 	_camera.current = true
+	var army := _army(scene)
+	if not army.is_empty():
+		var centre := Vector3.ZERO
+		for tank: Node3D in army:
+			centre += tank.global_position
+		centre /= army.size()
+		_camera.global_transform = RtsCamera.pose_at(centre, heading, DISTANCE_M, PITCH_DEG)
+		get_tree().paused = true
+		for i in 4:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(out_dir.path_join("army.png"))
+		var units := {}
+		for tank: Node3D in army:
+			var id := String(tank.get("unit_id"))
+			units[id] = int(units.get(id, 0)) + 1
+		print("SIZE_LOOK_ARMY " + JSON.stringify({"units": units, "centre": [snappedf(centre.x, 0.1), snappedf(centre.z, 0.1)]}))
+		get_tree().paused = false
 	var catalog: Array = Units.stat(RIG, "hull_size")
 	for length: float in lengths:
 		if is_equal_approx(length, float(catalog[2])):
@@ -106,6 +126,14 @@ func _run() -> void:
 	Units.tuning.erase(RIG + ".hull_size")
 	print("SIZE_LOOK_DONE")
 	get_tree().quit()
+
+
+## The player's (team 0) tanks the match deployed.
+func _army(scene: Node) -> Array:
+	if scene == null:
+		return []
+	return scene.find_children("*", "Tank", true, false).filter(
+			func(t: Node) -> bool: return int(t.get("team")) == 0 and t.is_inside_tree())
 
 
 ## The lineup side by side across the camera's view, noses toward the camera's right, centred on `focus`.

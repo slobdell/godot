@@ -82,10 +82,10 @@ crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot 
 	@grep -q CROWD_LOOK_DONE $(BUILD_DIR)/crowd-look/log.txt
 
 SIZE_RES ?= 1920x1080
-size-look: import ## Round 8: the War Rig beside a scout and a tank at the lead's camera (21 deg, 49 m, FOV 35), once per candidate length → build/size-look/rig_<m>.png, SIZE_LOOK lines (needs a display; LENGTHS=5.6,10,12, ARENA=)
+size-look: import ## Round 8: the War Rig beside a scout and a tank at the lead's camera (21 deg, 49 m, FOV 35), once per candidate length → build/size-look/rig_<m>.png, SIZE_LOOK lines (needs a display; LENGTHS=5.6,10,12, ARENA=, SIZE_FLAGS="--player-faction=gangs --budget=6500")
 	rm -rf $(BUILD_DIR)/size-look && mkdir -p $(BUILD_DIR)/size-look
 	timeout 300 $(GODOT) --path . --resolution $(SIZE_RES) -- --skirmish --scripted --seed=3 --no-pick-faction --mute \
-		$(if $(ARENA),--arena=$(ARENA)) --size-look=$(CURDIR)/$(BUILD_DIR)/size-look $(if $(LENGTHS),--size-look-lengths=$(LENGTHS)) \
+		$(if $(ARENA),--arena=$(ARENA)) --size-look=$(CURDIR)/$(BUILD_DIR)/size-look $(if $(LENGTHS),--size-look-lengths=$(LENGTHS)) $(SIZE_FLAGS) \
 		2>&1 | tee $(BUILD_DIR)/size-look/log.txt | grep -E '^SIZE_LOOK|SCRIPT ERROR' || true
 	@grep -q SIZE_LOOK_DONE $(BUILD_DIR)/size-look/log.txt
 
