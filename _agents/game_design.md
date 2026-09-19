@@ -759,6 +759,35 @@ the one with the octagon of shipping containers. All the maps need to be higher 
 **Meanwhile, treat the four as "do not invest" rather than deleted:** no new work on them, and any round-7 map effort
 goes to Pit, Yard and new maps built to the risk-and-reason principle below.
 
+#### MEASURED: every shipping arena scores `spread 0.00` — there is nothing to cross the bridge *for* (arena, 2026-09-19)
+
+**arena built the cost-and-reward metric and the first result is a flat zero on every map in the game.** The reason is
+not subtle: **every shipping arena has exactly one objective**, so **every route is the same route** — there is no
+expensive path and no cheap path, because there is only one thing to go to and it sits in the middle.
+
+**This is the lead's own principle, measured, and it says the principle is currently unimplementable:**
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. **There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground.**"*
+
+**A bridge cannot be compelling on a map with one central objective**, no matter how the terrain is arranged. Risk
+without reward is just cost, and units correctly decline it — which means **the flanking, ambushing and manoeuvre he
+wants cannot be produced by geometry alone.** It needs something worth taking that is *not* in the middle.
+
+**What this reframes:**
+- **N7 (objectives are the arena's, not a constant) stops being infrastructure and becomes the gate on the whole map
+  programme.** Until an arena can place its own objectives off-centre, `spread` cannot move off zero and no amount of
+  chamfering, hexagons, water or bridges will produce a reason to manoeuvre.
+- **It explains "one big open brawl" better than openness does.** We had been reading his complaint as *the maps are too
+  open* and answering it with `centre_sees_share`. Both are true, but **a single central objective is a stronger cause**:
+  it actively instructs both armies to converge on one point.
+- **It gives the bridge work an acceptance test rather than a look.** A bridge is doing its job when `spread` is
+  non-zero *and* combat's falsification test shows unit-time actually spent on the expensive route. Either alone is
+  decoration.
+
+**The metric needed no build slot and no other stream**, which is worth noting for its own sake: the most important
+design finding of the day came from writing down a number nobody had asked for.
+
 ### The principle behind all of it: terrain makes risk, objectives make reason (lead, 2026-09-18)
 
 > *"On the bridge note, what I'm thinking though is that clearly crossing a bridge is risky, so you don't want a simple
