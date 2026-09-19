@@ -159,6 +159,7 @@ func _process(delta: float) -> void:
 	if selection.prune(game_match) and selection.units.is_empty():
 		disarm()
 	groups.prune(game_match)
+	_update_compliance(delta)
 	awareness.game_match = game_match
 	awareness.groups = groups
 	awareness.orders = orders
@@ -200,6 +201,13 @@ func commanded_units() -> Array[String]:
 	var last := _living(groups.members(_last_group))
 	if not last.is_empty():
 		return last
+	# Round 8: nothing selected and no group used yet - group 1, as the first frame is (round 6). The whole army at the
+	# lead's 35° does not fit the 100 m auto-frame cap, so framing it cut both ends off, group 1 included (squad found it
+	# once consolidation put group 1 at the end of the line).
+	for number in groups.numbers():
+		var first := _living(groups.members(number))
+		if not first.is_empty():
+			return first
 	var all_units: Array[String] = []
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
@@ -481,7 +489,7 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		# player's own orders for the wheel. The first task forms it; a direct order (below) dissolves it again.
 		var number := selected_group()
 		if number == 0 or elements == null:
-			return "select a whole element to give it a task"
+			return _refuse("select a whole element to give it a task")
 		element = elements.form(selection.units.duplicate(), groups.label(number))
 	var task := {"verb": String(ELEMENT_TASKS[verb])}
 	if extra.has("to"):
@@ -489,7 +497,7 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 	if extra.has("target"):
 		task["target"] = String(extra["target"])
 	if task["verb"] == "move" and not task.has("to"):
-		return "a move task needs somewhere to go"
+		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
 		task["drills"] = false  # a plain move: formed up to the spot, no contact drills (squad X4)
 	var error := element.assign(task)
@@ -702,6 +710,13 @@ func center_on(names: Array) -> void:
 # ---- Orders -----------------------------------------------------------------------------------------------
 
 ## Issue a K1 command for our team, acknowledge it, and tell listeners. Returns "" or the error.
+## Round 8: a refusal the player never hears is an order that silently didn't happen. Everything refused before it
+## reaches Orders goes out on command_issued like an Orders error does (the HUD posts it as "Can't: ...").
+func _refuse(error: String) -> String:
+	command_issued.emit({"verb": "", "units": selection.units.duplicate()}, error)
+	return error
+
+
 func issue(command: Dictionary) -> String:
 	var error := orders.issue(command, team) if orders != null else "no orders"
 	command_issued.emit(command, error)
@@ -776,7 +791,7 @@ func armed_world_order(world: Vector3, queue := false) -> String:
 	if not queue:
 		disarm()
 	if armed in ["screen", "support_by_fire", "ambush"] and not can_task():
-		return "select a whole element to give it a task"
+		return _refuse("select a whole element to give it a task")
 	if armed in ["attack_move", "move", "screen", "support_by_fire", "ambush"]:
 		return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
@@ -901,13 +916,13 @@ func armed_click_order(at: Vector2, queue := false) -> String:
 		"follow":
 			if tank != null and tank.team == team and not selection.units.has(String(tank.name)):
 				return order_selection("follow", {"target": String(tank.name), "queue": queue})
-			return "click a friendly unit to follow"
+			return _refuse("click a friendly unit to follow")
 		"move":
 			if world != null:
 				return order_selection("move", {"to": [world.x, world.z], "queue": queue})
 		"screen", "support_by_fire", "ambush":
 			if not can_task():
-				return "select a whole element to give it a task"
+				return _refuse("select a whole element to give it a task")
 			if world != null:
 				return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
@@ -1048,13 +1063,19 @@ func _draw() -> void:
 ## not as ignoring the order: [{"unit", "at": Vector2 (screen), "word"}].
 func callouts() -> Array:
 	var result: Array = []
-	if game_match == null or camera == null or not movement.provider.is_valid():
+	if game_match == null or camera == null:
 		return result
+	var refused := {}
+	for refusal: Dictionary in order_refusals():
+		refused[refusal["unit"]] = refusal["why"]
 	var screen := Rect2(Vector2.ZERO, size)
 	for tank in game_match.sorted_team_tanks(team):
 		if not tank.is_alive():
 			continue
-		var word := movement.callout(String(tank.name))
+		# Round 8: an order not carried out outranks how the unit is moving.
+		var word := String(refused.get(String(tank.name), ""))
+		if word == "" and movement.provider.is_valid():
+			word = movement.callout(String(tank.name))
 		if word == "":
 			continue
 		var hull: Array = Units.stat(tank.unit_id, "hull_size")
@@ -1069,13 +1090,16 @@ func callouts() -> Array:
 
 func _draw_callouts() -> void:
 	var font := CyberStyle.font()
-	var px := roundi(12.0 * CyberStyle.ui_scale(size))
+	# On a dark plate, like the order pin's label: bare 12 px red on the arena floor was unreadable at the lead's 21°.
+	var px := roundi(14.0 * CyberStyle.ui_scale(size))
 	for callout: Dictionary in callouts():
 		var word := String(callout["word"])
-		var width := font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
-		var at: Vector2 = callout["at"] - Vector2(width / 2.0, 0.0)
-		draw_string_outline(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, 3, Color.BLACK)
-		draw_string(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.YELLOW if word == "YIELDING" else GameTheme.ui["enemy"])
+		var text_size := font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, px)
+		var plate := Rect2(callout["at"] - Vector2(text_size.x / 2.0 + 5.0, text_size.y + 3.0), text_size + Vector2(10.0, 6.0))
+		var color: Color = CyberStyle.YELLOW if word == "YIELDING" else GameTheme.ui["enemy"]
+		draw_rect(plate, Color(0, 0, 0, 0.65))
+		draw_rect(plate, Color(color, 0.8), false, 1.0)
+		draw_string(font, plate.position + Vector2(5.0, 3.0 + font.get_ascent(px)), word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, color)
 
 
 ## Round 7: orders you can see surviving the weave. nav and squad measured most of a unit's churn under an order as the
@@ -1084,9 +1108,99 @@ func _draw_callouts() -> void:
 ## the task's own symbol above it (the card's and the preview's), a lead line from the group, and "2/3 there".
 ## A squad on a task shows the TASK the player gave (Screen), not its leader's moves.
 const ORDER_ARRIVED_M := 8.0
+## Round 8: an order that isn't being carried out says so. The lead: "they don't obey and instead they shoot at whatever
+## they were already shooting at" - learned by watching turrets. A gun gets this long to come round onto an ordered
+## target before the unit is called out, with why: FIRING ON <what it is really shooting>, CAN'T SEE TARGET, NOT FIRING.
+const COMPLY_GRACE_S := 2.0
+## What a unit's gun is actually on (OrderExecutor.engaged_target_of, set by the mode). Unset: read the unit's brain.
+var engaged_of: Callable
+## unit name -> seconds its current attack order has gone unmet, and why.
+var _unmet := {}
 const ORDER_MARK_PX := 34.0
 const ORDER_VERB_NAMES := {"move": "MOVE", "attack_move": "ATTACK-MOVE", "attack": "ATTACK", "follow": "FOLLOW",
 		"hold": "HOLD", "screen": "SCREEN", "support_by_fire": "SUPPORT BY FIRE", "ambush": "AMBUSH"}
+
+
+## What `unit_name`'s gun is on, whoever drives it.
+func engaged_target(unit_name: String) -> String:
+	if engaged_of.is_valid():
+		return String(engaged_of.call(unit_name))
+	var brain := game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
+	return brain.engaged_target if brain != null else ""
+
+
+## Why `unit_name` is not carrying out its attack order right now, or "" when it is (or is still closing to range).
+func attack_shortfall(unit_name: String, order: Dictionary) -> String:
+	var target := game_match.tanks.get_node_or_null(NodePath(String(order.get("target", "")))) as Tank
+	var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+	if target == null or not target.is_alive() or tank == null:
+		return ""
+	var engaged := engaged_target(unit_name)
+	if engaged == String(target.name):
+		return ""
+	if engaged != "":
+		var other := game_match.tanks.get_node_or_null(NodePath(engaged)) as Tank
+		var what := String(Units.stat(other.unit_id, "display_name", other.unit_id)).to_upper() if other != null else engaged
+		return "FIRING ON %s" % what
+	if _moving_round(unit_name, String(target.name)):
+		return ""  # its order names the target and it is on its way round to it: carrying the order out
+	if not game_match.is_visible_to(team, target):
+		return "CAN'T SEE TARGET"
+	var out_of_range := tank.global_position.distance_to(target.global_position) > float(tank.weapon.get("range", 0.0))
+	if out_of_range and tank.estimated_velocity.length() > 0.5:
+		return ""  # closing in: that is the order being carried out
+	return "NOT FIRING"
+
+
+## The target the PLAYER told `unit_name` to attack, or "": its own attack order, else its squad's attack task (a
+## whole squad selected + right-click on an enemy is a task, and its leader decides who shoots - the lead's gesture).
+func attack_intent(unit_name: String) -> String:
+	var order := orders.current(unit_name)
+	if String(order.get("verb", "")) == "attack":
+		return String(order.get("target", ""))
+	var element := elements.of(unit_name) if elements != null else null
+	if element != null and String(element.task.get("verb", "")) == "attack":
+		return String(element.task.get("target", ""))
+	return ""
+
+
+## squad's cb02c0ef: every member of an attack task carries an order naming the target (attack, attack-move, or a move
+## swinging round the flank with its gun laid on it). A member on such a move with its gun on nothing else is carrying
+## the order out ("moving round"), not refusing it.
+func _moving_round(unit_name: String, target_name: String) -> bool:
+	var order := orders.current(unit_name)
+	return String(order.get("target", "")) == target_name and String(order.get("verb", "")) in ["move", "attack_move"] \
+			and engaged_target(unit_name) == ""
+
+
+func _update_compliance(delta: float) -> void:
+	if orders == null:
+		return
+	for tank in game_match.sorted_team_tanks(team):
+		var unit_name := String(tank.name)
+		var target := attack_intent(unit_name) if tank.is_alive() else ""
+		var why := attack_shortfall(unit_name, {"target": target}) if target != "" else ""
+		if why == "":
+			_unmet.erase(unit_name)
+		else:
+			_unmet[unit_name] = {"s": float((_unmet.get(unit_name, {}) as Dictionary).get("s", 0.0)) + delta, "why": why,
+					"target": target}
+
+
+## [{"unit", "why", "target"}]: units whose attack order has gone unmet past COMPLY_GRACE_S. The reason is read fresh,
+## so a gun that has just come round is not called out for a frame after.
+func order_refusals() -> Array:
+	var result: Array = []
+	var names := _unmet.keys()
+	names.sort()
+	for unit_name: String in names:
+		var entry: Dictionary = _unmet[unit_name]
+		if float(entry["s"]) < COMPLY_GRACE_S:
+			continue
+		var why := attack_shortfall(unit_name, {"target": attack_intent(unit_name)})
+		if why != "":
+			result.append({"unit": unit_name, "why": why, "target": entry["target"]})
+	return result
 
 
 ## [{"verb", "point": Vector3, "units": int, "arrived": int, "from": Vector3 (the group's middle), "task": bool}] for
@@ -1096,12 +1210,21 @@ func order_marks() -> Array:
 	if game_match == null or orders == null or selection.units.is_empty():
 		return result
 	var element := selected_element()
+	var task_target := game_match.tanks.get_node_or_null(NodePath(String(element.task.get("target", "")))) as Tank \
+			if element != null and String(element.task.get("verb", "")) == "attack" else null
+	if task_target != null and task_target.is_alive():
+		var aimed := {"verb": "attack", "task": true, "target": String(task_target.name),
+				"point": Vector3(task_target.global_position.x, 0.0, task_target.global_position.z)}
+		for unit_name in element.members():
+			_count_into(aimed, String(unit_name), orders.current(String(unit_name)))
+		result.append(_finish_mark(aimed))
+		return result
 	if element != null and not element.task.is_empty() and element.task.has("to"):
 		var to: Array = element.task["to"]
 		var verb := String(element.task.get("verb", ""))
 		if verb == "move" and bool(element.task.get("drills", true)):
 			verb = "attack_move"  # a move task with drills is what the player asked for as attack-move
-		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}
+		var mark := {"verb": verb, "point": Vector3(float(to[0]), 0.0, float(to[1])), "task": true}  # a task with a place
 		for unit_name in element.members():
 			_count_into(mark, String(unit_name), orders.current(String(unit_name)))
 		result.append(_finish_mark(mark))
@@ -1110,13 +1233,18 @@ func order_marks() -> Array:
 	var ids: Array = []
 	for unit_name in selection.units:
 		var order := orders.current(unit_name)
-		if not order.has("to"):
+		var aimed := String(order.get("verb", "")) == "attack"
+		var target := game_match.tanks.get_node_or_null(NodePath(String(order.get("target", "")))) as Tank if aimed else null
+		if not order.has("to") and target == null:
 			continue
 		var id := int(order.get("id", -1))
 		if not by_order.has(id):
 			ids.append(id)
-			by_order[id] = {"verb": String(order["verb"]), "point": Vector3(float(order["to"][0]), 0.0, float(order["to"][1])),
-					"task": false}
+			var point := Vector3(target.global_position.x, 0.0, target.global_position.z) if target != null \
+					else Vector3(float(order["to"][0]), 0.0, float(order["to"][1]))
+			by_order[id] = {"verb": String(order["verb"]), "point": point, "task": false}
+			if target != null:
+				by_order[id]["target"] = String(target.name)
 		_count_into(by_order[id], unit_name, order)
 	ids.sort()
 	for id in ids:
@@ -1131,6 +1259,15 @@ func _count_into(mark: Dictionary, unit_name: String, order: Dictionary) -> void
 	var at := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
 	mark["units"] = int(mark.get("units", 0)) + 1
 	mark["from"] = (mark.get("from", Vector3.ZERO) as Vector3) + at
+	if mark.has("target"):
+		# An attack pin counts the guns that are really on its target (round 8), not who has arrived anywhere.
+		if engaged_target(unit_name) == String(mark["target"]):
+			mark["arrived"] = int(mark.get("arrived", 0)) + 1
+		elif _moving_round(unit_name, String(mark["target"])):
+			mark["moving"] = int(mark.get("moving", 0)) + 1
+		elif _unmet.has(unit_name) and float(_unmet[unit_name]["s"]) >= COMPLY_GRACE_S:
+			mark["refusing"] = int(mark.get("refusing", 0)) + 1
+		return
 	var goal: Variant = Orders.goal_of(order, game_match) if not order.is_empty() else null
 	var target: Vector3 = goal if goal is Vector3 else mark["point"]
 	if order.is_empty() or at.distance_to(target) <= ORDER_ARRIVED_M:
@@ -1147,6 +1284,12 @@ func _finish_mark(mark: Dictionary) -> Dictionary:
 ## "SCREEN · 2/3 there · 40 m" - what the marker says under its symbol.
 func order_mark_label(mark: Dictionary) -> String:
 	var words := String(ORDER_VERB_NAMES.get(mark["verb"], String(mark["verb"]).to_upper()))
+	if mark.has("target"):
+		# squad's wording: how many are on it, how many are on their way round, how many are not doing it.
+		var line := "%s · %d/%d on target" % [words, mark["arrived"], mark["units"]]
+		if int(mark.get("moving", 0)) > 0:
+			line += " · %d moving round" % int(mark["moving"])
+		return line + (" · %d NOT COMPLYING" % int(mark["refusing"]) if int(mark.get("refusing", 0)) > 0 else "")
 	var left := (mark["from"] as Vector3).distance_to(mark["point"])
 	if int(mark["arrived"]) >= int(mark["units"]):
 		return "%s · there" % words
@@ -1160,6 +1303,8 @@ func _draw_order_marks() -> void:
 	var glyph_px := ORDER_MARK_PX * scale
 	for mark: Dictionary in order_marks():
 		var color := _order_color(String(mark["verb"]))
+		if int(mark.get("refusing", 0)) > 0:
+			color = GameTheme.ui["enemy"]  # an order not being carried out turns its pin red
 		var at: Variant = _screen_point(mark["point"])
 		if at == null:
 			continue

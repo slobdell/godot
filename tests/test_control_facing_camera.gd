@@ -128,4 +128,7 @@ func test_leaning_toward_the_reach_keeps_the_squad_on_screen() -> void:
 		var at := f.camera.unproject_position(f.tank(unit_name).global_position)
 		assert_true(not f.camera.is_position_behind(f.tank(unit_name).global_position) and screen.has_point(at),
 				"%s stays on screen while the view leans toward the reach (%s)" % [unit_name, at])
+		# Round 8 (squad's scale playtest): "on screen" was not enough - the lean put the squad under the command card.
+		var card_top := screen.size.y * (0.5 + 0.5 * RtsCamera.VISION_FRAME_BOTTOM)
+		assert_true(at.y < card_top, "%s stays above the command card (y %.0f, card from %.0f)" % [unit_name, at.y, card_top])
 	RtsCamera.fov = 55.0

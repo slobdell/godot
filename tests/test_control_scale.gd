@@ -142,6 +142,7 @@ func test_the_ui_stays_cheap_with_a_full_army_selected() -> void:
 	var work := {
 		"vision_state": func() -> void: f.controls.vision_state(),
 		"order_marks": func() -> void: f.controls.order_marks(),
+		"compliance": func() -> void: f.controls._update_compliance(0.016),  # round 8: every unit's order vs its gun
 		"awareness": func() -> void: f.controls.awareness.update(0.016),
 		"edge_markers": func() -> void: f.markers.markers(),
 		"panel_summary": func() -> void: panel.summary(),
