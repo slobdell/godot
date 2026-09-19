@@ -129,8 +129,9 @@ static func contains(kind: String, bound: float, point: Vector2, margin := 0.0) 
 
 
 ## The nearest point on or inside the shape. **Nearest point on the boundary, not "along the ray to the centre"** —
-## for an order clamp that is what a player means: clicking past the wall should put the unit against the wall
-## nearest the click, not drag it toward the middle. Say so here because the next caller will assume the other one.
+## chosen with control, whose reason is the one to remember: *"a centre-ray point near a corner lands somewhere he
+## didn't point at."* Clicking past the wall should put the unit against the wall nearest the click. Said here
+## because the next caller will assume the other one, and both are defensible in the abstract.
 static func clamp_into(kind: String, bound: float, point: Vector2, margin := 0.0) -> Vector2:
 	if contains(kind, bound, point, margin):
 		return point

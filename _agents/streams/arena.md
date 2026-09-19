@@ -97,6 +97,21 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## A local `make check` does NOT check the simulation baseline (round 7)
+
+**`sim-baseline` SKIPS on this laptop and always will.** The baseline file is keyed by glibc version, builder0 is
+`glibc-2.43` and the laptop is `glibc-2.39`, so the target prints *"sim-baseline SKIPPED: no baseline for
+glibc-2.39"* and **exits 0** whatever the simulation does. It fails only on builder0 — the machine that gates
+merges.
+
+So a local run is silent on exactly the thing most likely to be broken by someone else's merge, which is why a
+green local suite is never a substitute for `make remote T=check`. My `FILTER=arena` runs and `--check-only` passes
+mean what they say; they simply cannot see this.
+
+**It also means `sim-baseline FAILED` alone, on a branch that merged `main`, is usually not yours** — the orchestrator
+records the baseline once per round after the last sim-changing merge, so `main` runs red in between. Anything else
+failing is real.
+
 ## Resume here (written at the round-6 quota stop, 2026-09-18)
 
 **Branch merged, tree clean, nothing in flight.** The durable knowledge is in
