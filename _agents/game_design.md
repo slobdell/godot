@@ -17,6 +17,35 @@ against, and avoids shooting its friends, because **friendly fire is real**. You
 cover each other's weaknesses, like StarCraft's rock-paper-scissors, and by commanding squads better than your
 opponent. Winning earns **credits** that unlock more unit types and bigger budgets.
 
+## Standard of work (lead, 2026-09-19) — read before choosing an approach
+
+> *"We should absolutely adopt and use these classical techniques, and I should have been more clear about this. We want
+> to build this game to high standards. This isn't me just throwing something together. We want to make the highest
+> quality software possible, and that means taking full advantage of the academic knowledge on each of these topics. For
+> gaming I assume it's pretty established what the 'Best' algorithms are. We want to use the best algorithms, no matter
+> how difficult they might be to implement (but I don't think any of them are difficult per se because it's all well
+> established industry knowledge)."*
+
+**This settles a question no stream had been told the answer to: when a good-enough approach and a known-best approach
+differ, take the known-best one.** Difficulty is not a reason to decline. Nor is "the simple version passes the test" —
+several round-6 fixes were the cheapest thing that satisfied a measurement, and the lead has now said plainly that is not
+the bar.
+
+**What it does not license:** inventing a technique where a standard one exists, or reaching for novelty (see *machine
+learning*, below). *"Take full advantage of the academic knowledge"* means **find the established answer and implement it
+properly**, not build something clever. The failure mode to avoid is a bespoke solution to a solved problem.
+
+**And it does not suspend determinism** ([determinism.md](determinism.md)): replays, networked play and the sim baseline
+all require the same inputs to produce identical output, and `sin`/`cos` already differ across builds. **A "best
+algorithm" that cannot be made deterministic is not available to us** — which rules out learned policies and any
+floating-point method whose evaluation order we do not control. It does not rule out any of the classical techniques
+below.
+
+**On machine learning, asked and answered (2026-09-19):** it exists for navigation and it is the wrong tool here. The
+determinism requirement is the hard blocker; beyond that, the problems being hit are missing *numbers* and missing
+*standard techniques*, not missing models — RL would learn a standoff distance we can simply write down. Where ML earns
+its place in games is army-level strategy (AlphaStar-style) and animation, neither of which is the current problem.
+
 ## Pillars (use these to settle design arguments)
 
 1. **For die-hard players.** Depth over dopamine. No pay-to-win, no premium currency, no shortcuts for sale,
