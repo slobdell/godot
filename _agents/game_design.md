@@ -592,6 +592,36 @@ wrong way about.
     rock-paper-scissors design depends on. This is the same class as every other round-6 finding: the information is
     there and does not reach the screen.
 
+### Map building blocks: the lead's two additions (2026-09-18)
+
+12. **A kit of sci-fi buildings drawn from primitives, not from Meshy.** *"To build more complex maps we'll need more
+    building blocks to work with. I realize that all these meshy artifacts take up a lot of space. Therefore, would we
+    be able to formulate some of cool-looking sci-fi 'buildings' or blocks or something like that that's completely
+    rendered using primitive types in our system - you should have better ideas than me but I'd envision that has the
+    cyberpunk neon borders. This way, these can become building blocks for creating more complex maps (where we can
+    allow teams to set up kill zones or whatever other strategy)."*
+    **Why this is better than it sounds, and cheap:** procedural blocks cost no disk, no Meshy credits and no concept
+    review cycle; they are **parameterisable**, so a map author asks for *"a 40 m block with two entrances"* rather than
+    placing meshes by hand; and they suit the renderer, which does not batch 3D draws (trip-up 45) but does batch static
+    art per material via `StaticBatcher`. They also sidestep round 6's terrain limits: **the navmesh caps slopes near
+    26.6° and every ramp needs a flat shelf at the top** (arena's X4), and blocks with explicit footprints are far
+    easier to keep navigable than sculpted geometry. The existing arena kit (containers, ad screens, barricades, signs)
+    is the precedent; this extends it with buildings.
+13. **Water or pits: impassable but shootable over.** *"We need water or pits - these would be elements that units could
+    not cross but they could still fire over. Useful for setting up kill zones. i.e. we could have a map that required
+    crossing some bridges to get to the other side."*
+    **This is the single cheapest tactical primitive available to us, because of how the two systems are already
+    separated:** navigation is baked from collision shapes in the `navigation_source` group, while line of sight is a
+    physics ray at 1.3 m eye height (`game/ai/perception.gd`). **So a hole in the navmesh that carries no tall collider
+    is impassable and transparent to fire, for free** — no new mechanic, only geometry. It needs: a `water`/`pit`
+    footprint type that carves the mesh, a **bridge** that restores a walkable strip across it, and fairness care —
+    holes and bridges must be point-symmetric like everything else, because the mesh is baked as one half plus its 180°
+    mirror (trip-up 21).
+    **And it is the terrain answer to the round-6 finding three streams reached independently:** covered flanking routes
+    already cost only a 1.0–1.1× detour and nobody takes them, because the only thing worth holding is in the middle.
+    A map where crossing is funnelled onto bridges makes *position* matter without needing the objective to move —
+    it is arena's X3 argument achieved with geometry instead of rules, and the two should compound.
+
 ### Two defects to fix, not design
 
 8. **Some vehicles point backwards at start-up** (seen with the gangs).
