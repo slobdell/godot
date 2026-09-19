@@ -60,6 +60,16 @@ decision weighing algorithms necessary to make these units look and feel smart."
    different questions** and water makes both reachable: a goal in a pit is not on the mesh, a goal across a destroyed
    bridge is on the mesh and unreachable.
 
+5. **The arena becomes a hexagon at `ARENA_HALF_SIZE` 140, not 120.** A square keeps its full width to the wall; a
+   hexagon narrows, **and the spawn block sits exactly where it narrows.** At today's 120 m bound only **48 of 104 spawn
+   points** are inside the arena; **139.7 m is the smallest clean-tiling hexagon that holds them**, which is the number
+   feel's 23.07 m wall module already implied. So `ARENA_HALF_SIZE` 120 → 140, `DRIVABLE_LIMIT` 116 → ~136, plus radar,
+   fog and the sim baseline — **scoped with combat, which owns the constant, and to be built only after its designator
+   check is green**, so one check does not cover two unrelated changes. **The area cost is 12%, not the 35% first
+   reported, and the approach does not shorten at all**: the spawn rows sit at z = ±90…114 in either shape, so base-to-base
+   is unchanged by construction. That removes the worry that a smaller arena would compound with the lead's *"ranges are
+   too long"* complaint.
+
 ### Two things I got wrong this round, both now corrected in place
 
 - **The funnel algorithm was never missing.** `algorithms.md` listed `PATH_POSTPROCESSING_CORRIDORFUNNEL` as unused and

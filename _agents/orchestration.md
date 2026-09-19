@@ -1212,3 +1212,26 @@ The kickoff prompt is one line; this section is the rest.
     - the arena bound is a **square extent, not a radius** — today's square already has corners 164 m from the centre, so
       "fit inside a 120 m circle" would have shrunk the existing arena for no reason. **Check whether a limit is an
       extent or a radius before building geometry against it.**
+88. **A constraint that lives in the contents does not show up when you look at the container — and a well-phrased
+    argument is the hardest kind to check.** Round 7, the hexagon sizing, and it went wrong twice in an hour.
+    feel's wall module implied a hexagon **139.7 m** across. arena "corrected" it to **120.0 m** on a convention
+    argument — a regular polygon's vertices sit further out than its flat sides, so building to the apothem would push
+    the arena past a radar and fog sized for |x| ≤ 120. Clean reasoning, and I approved it in one step. **Then arena went
+    to build it and the armies did not fit: a square keeps its full width to the wall, a hexagon narrows, and the spawn
+    block sits exactly where it narrows.** Foundry's rows at z = 98, 106 and 114 fall outside a flat side at 103.9 m —
+    **48 of 104 spawn points inside the arena.** 139.7 m turned out to be the *smallest* clean-tiling hexagon that holds
+    the spawn block. feel's number had been satisfying a constraint nobody had written down, and the correction removed it.
+    Everything downstream of the wrong size was also wrong: the area reduction was reported as **35%** and is **12%**;
+    the approach-length worry that reduction raised **does not arise at all**, because the spawn rows do not move in
+    either shape, so base-to-base is unchanged by construction.
+    - **Before accepting a change to a container's dimensions, enumerate what has to fit inside it.** Spawn points,
+      formations at their widest, the largest hull, patrol routes. Geometry arguments are about boundaries; games are
+      about contents.
+    - **arena's own pattern-match is the valuable half:** the same stream had just asserted the navmesh stops at the
+      perimeter wall (it never has — the mesh extends 35 m past it), which is *also* a claim about a boundary made
+      without checking what happens at it. **Two confident geometry errors in one day, both container-shaped.**
+    - **And the phrasing is part of the failure.** arena's case rested on *"five things move so one number can stay
+      round"*, which is persuasive, memorable, and does the work of an argument without being one. arena's note:
+      *"That phrasing was mine and it was persuasive, which is part of why I should have checked it harder."* **When a
+      recommendation arrives with a good line in it, that is the moment to ask for the measurement** — the line is
+      evidence about the writer's fluency, not about the world. I relayed it to feel inside a minute.
