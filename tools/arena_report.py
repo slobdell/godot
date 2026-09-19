@@ -14,6 +14,17 @@ Usage:
 """
 import argparse, heapq, json, math, os, sys
 
+## The half-extent `centre_sees_share` is ALWAYS measured over, whatever size the layout declares.
+##
+## The target (<0.30) carries the lead's own verdict — he cut the four most open maps and kept two of the three
+## least open — and that verdict was given on 240 x 240 arenas. Measured over a layout's OWN extent the number is
+## not comparable across sizes: yard scored 0.199 at half_size 120 and **0.153 at 140, same props, same map**, a
+## 23% improvement bought by declaring the arena bigger. A map could pass the target by inflating its bound.
+##
+## So the window is fixed at the size the target was calibrated on, and `centre_sees_share_full` reports the
+## layout's own extent beside it for the information that is genuinely there.
+CALIBRATION_HALF = 120.0
+
 EYE_HEIGHT = 1.3
 AGENT_RADIUS = 2.0
 HALF = 120.0
@@ -369,13 +380,18 @@ def sees(grid, n, ax, az, bx, bz, step=1.0):
     return True
 
 
-def field_points(blocked, n, step=EXPOSURE_STEP):
-    """Drivable sample points across the contested field."""
+def field_points(blocked, n, step=EXPOSURE_STEP, half=None):
+    """Drivable sample points across the contested field. `half` caps the window, so a measure can be taken over a
+    fixed extent rather than whatever the layout declares."""
     out = []
-    z = -FIELD_Z
-    while z <= FIELD_Z:
-        x = -DRIVABLE
-        while x <= DRIVABLE:
+    # A fixed window ignores DRIVABLE/FIELD_Z entirely: deriving it from them would make it vary with the very
+    # thing it exists to be independent of. 4 m in from the edge and 70% deep are the shipped proportions.
+    reach = (half - 4.0) if half else DRIVABLE
+    depth = (half * 0.7) if half else FIELD_Z
+    z = -depth
+    while z <= depth:
+        x = -reach
+        while x <= reach:
             if not blocked[int((z + HALF) / GRID) * n + int((x + HALF) / GRID)]:
                 out.append((x, z))
             x += step
@@ -701,7 +717,10 @@ def ambush_report(layout, boxes, blocked, n):
     green_front = tuple(layout["spawns"]["green"][0])
     rust_front = tuple(layout["spawns"]["rust"][0])
     centre = standing_point(blocked, n, (0.0, 0.0))
-    out = {"centre_sees_share": round(visible_share(grid, gn, centre, points), 3),
+    # Fixed window: comparable across arena sizes, and the one the <0.30 target is calibrated against.
+    calibrated = field_points(blocked, n, 6.0, CALIBRATION_HALF)
+    out = {"centre_sees_share": round(visible_share(grid, gn, centre, calibrated), 3),
+           "centre_sees_share_full": round(visible_share(grid, gn, centre, points), 3),
            "centre_eye_at": [round(v, 1) for v in centre], "defending_positions": len(watchers)}
     routes = []
     for label, penalty in ROUTE_PENALTIES:
