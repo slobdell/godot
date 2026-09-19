@@ -41,7 +41,7 @@ nav-facing: import ## nav (round 7): do units achieve an ordered facing? 5 playe
 nav-fight: import ## nav (round 7): why ordered units aren't making progress IN A FIGHT — two ~30-unit CPU-rostered armies, GREEN ordered by Orders like a player; every ordered unit-tick bucketed (progressing, yielding, blocked_*, halted_shooting, retasked:<option>, slow) (ARENA=yard FIGHT_SEED=3 NAV_TIME=120 FIGHT_BUDGET=6500; not SEED/BUDGET: other mk files default those globally, lesson 44)
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/fight_probe.gd -- \
 		--arena=$(or $(ARENA),yard) --seed=$(or $(FIGHT_SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) \
-		$(NAV_FLAGS) 2>&1 | grep -E "NAV_FIGHT|SCRIPT ERROR|ERROR" || true
+		$(if $(FIGHT_BUSY),--busy=$(FIGHT_BUSY)) $(NAV_FLAGS) 2>&1 | grep -E "NAV_FIGHT|SCRIPT ERROR|ERROR" || true
 
 .PHONY: nav-fight-ab
 nav-fight-ab: import ## nav: nav-fight over FIGHT_SEEDS (default 1 3 5 7 9) with and without --nav-off=$(AB_OFF), NAV_JOBS at a time -> build/nav-ab/*.log + a one-line summary per run (NAV_ORDERS lines grep-able)
@@ -65,3 +65,26 @@ nav-rotation: import ## nav (round 7): how hulls ROTATE from the lead's camera (
 	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
 		--out=$(CURDIR)/$(BUILD_DIR)/nav-rotation > $(BUILD_DIR)/nav-rotation/run.log 2>&1 || true
 	grep -E "NAV_ROTATION|SCRIPT ERROR|ERROR" $(BUILD_DIR)/nav-rotation/run.log || true
+
+# ROT_CASES, not $(or $(ROT_CASES),a,b,c): make's `or` splits on commas, so that default was silently just "pivot".
+ROT_CASES ?= pivot,car,wheel,truck
+
+.PHONY: nav-rotation-numbers
+nav-rotation-numbers: import ## nav: nav-rotation's measurements only, headless (seconds): NAV_ROTATION + NAV_ROTATION_INPLACE lines (ROT_CASES=pivot,car,wheel,truck)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/rotation_capture.gd -- --no-frames \
+		--cases=$(ROT_CASES) $(NAV_FLAGS) 2>&1 | grep -E "NAV_ROTATION|SCRIPT ERROR|ERROR" || true
+
+# FIGHT_MAPS/FIGHT_BUSY_LEVELS, not ARENA/…: plain names collide with other mk files' globals (lesson 44).
+FIGHT_MAPS ?= yard boulevard pit boneyard
+FIGHT_BUSY_LEVELS ?= 0 4
+
+.PHONY: nav-fight-maps
+nav-fight-maps: import ## nav (round 8): nav-fight on every map --arena=random can pick (FIGHT_MAPS) x scripted/busy player (FIGHT_BUSY_LEVELS seconds between re-orders; 0 = scripted), with arena's pre-registered stall counters -> build/nav-maps/*.log, one line per run naming the arena
+	@rm -rf $(BUILD_DIR)/nav-maps && mkdir -p $(BUILD_DIR)/nav-maps
+	@for map in $(FIGHT_MAPS); do for busy in $(FIGHT_BUSY_LEVELS); do echo "$$map:$$busy"; done; done | \
+		xargs -P $(NAV_JOBS) -I{} sh -c 'map=$${1%%:*}; busy=$${1##*:}; \
+			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/fight_probe.gd -- \
+				--arena=$$map --seed=$(or $(FIGHT_SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) --busy=$$busy $(if $(STALL_VERB),--stall-verb=$(STALL_VERB)) \
+				$(if $(FIGHT_GREEN_FACTION),--green-faction=$(FIGHT_GREEN_FACTION)) $(if $(FIGHT_RUST_FACTION),--rust-faction=$(FIGHT_RUST_FACTION)) \
+				> $(BUILD_DIR)/nav-maps/$$map-busy$$busy.log 2>&1; echo ">> nav-fight-maps: $$map busy=$$busy done"' _ {}
+	@for f in $(BUILD_DIR)/nav-maps/*.log; do echo "$$(basename $$f .log) $$(grep -E '^NAV_FIGHT ' $$f | head -1 | cut -c1-40)"; done

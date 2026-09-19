@@ -43,6 +43,22 @@ var order_count := 0
 var issued_tick := 0
 var time_limit := 120.0
 var phase_two_done := false
+## --busy=N: like a player, a new move order to one squad every N seconds (seeded, so reproducible). 0 = off.
+var busy_every := 0.0
+var busy_rng := RandomNumberGenerator.new()
+var busy_next := 0.0
+var busy_orders := 0
+var stall_verb := ""
+## Round 8, pre-registered before its first run (the lead: "the semi trucks are yawing in place (should be impossible,
+## they're not a tracker vehicle)"): an IN-PLACE YAW is a WHEELED hull, alive, whose heading changes by >= 30 degrees over
+## a 2 s window while its centre moves < 1.5 m over the same window. Counted per unit type, whatever its orders (the
+## lead watched the whole battlefield, not only ordered units). NAV_FIGHT reports inplace_yaw_events by unit type.
+const INPLACE_WINDOW_S := 2.0
+const INPLACE_DEG := 30.0
+const INPLACE_M := 1.5
+var inplace_trail := {}   # name -> Array of [x, z, heading_deg]
+var inplace_events := {}  # unit_id -> count
+var inplace_cooldown := {} # name -> ticks left (one event per window, not one per tick)
 
 
 func _initialize() -> void:
@@ -58,7 +74,10 @@ func _flag(name: String, fallback: String) -> String:
 
 func _run() -> void:
 	time_limit = float(_flag("time-limit", "120"))
+	busy_every = float(_flag("busy", "0"))
+	stall_verb = _flag("stall-verb", "")
 	var seed_value := int(_flag("seed", "3"))
+	busy_rng.seed = seed_value * 7919 + 17
 	var budget := int(_flag("budget", "6500"))
 	var arena: Arena = ARENA.instantiate()
 	arena.layout_name = _flag("arena", "yard")
@@ -73,7 +92,8 @@ func _run() -> void:
 			break
 		await physics_frame
 	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
-		var loaded := Army.load_army("cpu", seed_value + team, budget)
+		var faction := _flag("green-faction" if team == Match.Team.GREEN else "rust-faction", "")
+		var loaded := Army.load_army("cpu", seed_value + team, budget, faction)
 		var error: String = loaded.get("error", "")
 		if error == "":
 			error = game_match.load_doctrine(team, loaded["doctrine"])
@@ -145,11 +165,64 @@ func _order_squads(depth: float) -> void:
 			order_count += (squads[keys[i]] as Array).size()
 
 
+## A player's habit: pick one living squad and send it somewhere else on the field (a plain move — a right-click).
+func _busy_order() -> void:
+	var squads := {}
+	for tank in green:
+		if tank.is_alive():
+			var parts := String(tank.name).split("_")
+			var squad := parts[1] if parts.size() >= 3 else "?"
+			if not squads.has(squad):
+				squads[squad] = []
+			(squads[squad] as Array).append(String(tank.name))
+	if squads.is_empty():
+		return
+	var keys := squads.keys()
+	keys.sort()
+	var pick: String = keys[busy_rng.randi_range(0, keys.size() - 1)]
+	var half := float(Arena.active.get("half_size", 120.0)) * 0.7
+	var to := [busy_rng.randf_range(-half, half), busy_rng.randf_range(-half, half)]
+	if orders.issue(UnitCommand.make(squads[pick], "move", {"to": to})) == "":
+		busy_orders += 1
+
+
+func _sample_inplace() -> void:
+	var span := int(INPLACE_WINDOW_S * SimClock.TICK_RATE)
+	for tank: Tank in game_match.tanks.get_children():
+		if not tank.is_alive() or String(Units.stat(tank.unit_id, "locomotion", "tracks")) != "wheels":
+			inplace_trail.erase(String(tank.name))
+			continue
+		var key := String(tank.name)
+		var forward := -tank.global_basis.z
+		var trail: Array = inplace_trail.get(key, [])
+		trail.append([tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(-forward.x, -forward.z))])
+		if trail.size() > span:
+			trail.remove_at(0)
+		inplace_trail[key] = trail
+		var cool := int(inplace_cooldown.get(key, 0))
+		if cool > 0:
+			inplace_cooldown[key] = cool - 1
+			continue
+		if trail.size() < span:
+			continue
+		var turned := 0.0
+		for i in range(1, trail.size()):
+			turned += absf(wrapf(float(trail[i][2]) - float(trail[i - 1][2]), -180.0, 180.0))
+		var net := Vector2(float(trail[-1][0]) - float(trail[0][0]), float(trail[-1][1]) - float(trail[0][1])).length()
+		if turned >= INPLACE_DEG and net < INPLACE_M:
+			inplace_events[tank.unit_id] = int(inplace_events.get(tank.unit_id, 0)) + 1
+			inplace_cooldown[key] = span
+
+
 func _sample() -> void:
+	_sample_inplace()
 	var elapsed := float(game_match.tick - issued_tick) / float(SimClock.TICK_RATE)
 	if not phase_two_done and elapsed >= time_limit * 0.4:
 		phase_two_done = true
 		_order_squads(0.85)  # then attack-move onward: the fight
+	if busy_every > 0.0 and elapsed >= busy_next:
+		busy_next = elapsed + busy_every
+		_busy_order()
 	var dt := 1.0 / float(SimClock.TICK_RATE)
 	var dump := OS.get_cmdline_user_args().has("--where") and (game_match.tick - issued_tick) % (SimClock.TICK_RATE * 6) == 0 \
 			and not phase_two_done
@@ -186,6 +259,10 @@ func _sample() -> void:
 			unreachable_ticks += 1
 		var closing := (float(last_distance.get(key, distance)) - distance) / dt
 		last_distance[key] = distance
+		# --stall-verb=<verb>: arena's counters sample only units under that verb (round 8: does an ATTACK-MOVING unit
+		# go back and forth? The counters' goal is the ORDER's goal, so this is the trajectory against what was asked).
+		if distance > AT_GOAL_M and (stall_verb == "" or String(orders.current(key).get("verb", "")) == stall_verb):
+			_sample_stall(tank, key, goal)
 		var reason := ""
 		if distance <= AT_GOAL_M:
 			reason = "at_goal"
@@ -267,6 +344,115 @@ func _report(elapsed: float) -> void:
 			"unit_seconds": seconds, "share": share, "retasked_by_option_unit_seconds": retasked_as,
 			"retask_events": retask_events, "retask_cause": retask_cause, "halted_by_option_unit_seconds": halted_opt, "by_verb": verbs,
 			"retask_events_per_unit_minute": snappedf(retask_events / maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0), 0.01),
-			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1)}
+			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1),
+			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
+			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")], "busy_every_s": busy_every, "busy_orders": busy_orders}
 	print("NAV_FIGHT %s" % JSON.stringify(out))
 	quit(0)
+
+# ---- arena's three pre-registered stall counters, pasted VERBATIM from
+# _agents/streams/references/arena/stall_counters_for_fight_probe.gd.txt (arena c0aa421f); definitions frozen in
+# _agents/streams/references/arena/stuck_preregistration.md. Identical here so both probes report the same quantity.
+# Note on re-orders: _note_goal() resets the windows when the goal jumps (> 3 m), so a re-order is never scored as
+# no-progress; if under_way_seconds collapses, the orders are coming faster than the measure can see.
+## Window over which "is it getting anywhere" is asked. Long enough to contain a full back-and-forth, short enough
+## that a unit rounding a corner does not look like one.
+const WINDOW_S := 4.0
+## `oscillating`: over the window, this much path travelled...
+const OSCILLATE_PATH_M := 8.0
+## ...while net displacement is under this share of it. A ratio, not a distance: a unit crossing the map slowly
+## still has net ≈ path; a unit shuffling has net ≈ 0 with path large. Scale-free, so no retuning per unit type.
+const OSCILLATE_RATIO := 0.25
+## `no_progress`: distance to the goal improved by less than this over the window.
+## The gap-coverer. `crawl` catches a unit too SLOW to be going anywhere (< 0.5 m/s); `oscillating` catches one
+## travelling far enough to be obviously shuffling (>= 8 m). A unit creeping back and forth at 1–2 m/s is NEITHER
+## — too fast to crawl, too little path to oscillate — and that is what being pinned at a barrier end looks like.
+const PROGRESS_M := 2.0
+## A goal that jumps further than this is a different goal: reset the window rather than score across it.
+const GOAL_MOVED_M := 3.0
+
+var trail := {}            # key -> Array[Vector3], the position window
+var goal_trail := {}       # key -> Array[float], distance-to-goal over the window
+var last_goal := {}        # key -> Vector3, to detect a re-order
+var oscillating_ticks := {}
+var no_progress_ticks := {}
+var crawl_ticks := 0
+var under_way_ticks := 0   # denominator: ticks where a unit HOLDS AN ORDER and has not arrived
+
+
+## Call once per unit per tick, only while the unit is under orders and has not arrived.
+## `goal` is the unit's CURRENT goal this tick.
+func _sample_stall(unit: Node3D, key: String, goal: Vector3) -> void:
+	under_way_ticks += 1
+	if unit.speed() < 0.5:   # CRAWL_SPEED
+		crawl_ticks += 1
+	_note_goal(key, goal)
+	var span := int(WINDOW_S * SimClock.TICK_RATE)
+
+	# no_progress: distance to the goal over the window, reset on a re-order.
+	var goals: Array = goal_trail.get(key, [])
+	goals.append(_flat(unit.global_position, goal))
+	if goals.size() > span:
+		goals.remove_at(0)
+	goal_trail[key] = goals
+	if goals.size() == span and float(goals[0]) - float(goals[goals.size() - 1]) < PROGRESS_M:
+		no_progress_ticks[key] = int(no_progress_ticks.get(key, 0)) + 1
+
+	# oscillating: path length vs net displacement over the same window.
+	var history: Array = trail.get(key, [])
+	history.append(unit.global_position)
+	if history.size() > span:
+		history.remove_at(0)
+	trail[key] = history
+	if history.size() < span:
+		return
+	var path := 0.0
+	for i in range(1, history.size()):
+		path += _flat(history[i - 1], history[i])
+	if path < OSCILLATE_PATH_M:
+		return  # not moving enough to be "moving back and forth"; that is the blocked case, counted separately
+	if _flat(history[0], history[history.size() - 1]) / path < OSCILLATE_RATIO:
+		oscillating_ticks[key] = int(oscillating_ticks.get(key, 0)) + 1
+
+
+## A re-order invalidates both windows: the unit is now chasing something else, and neither "did it get closer"
+## nor "did it go anywhere" is answerable across the change.
+func _note_goal(key: String, goal: Vector3) -> void:
+	var previous: Variant = last_goal.get(key)
+	if previous != null and _flat(previous, goal) > GOAL_MOVED_M:
+		goal_trail.erase(key)
+		trail.erase(key)
+	last_goal[key] = goal
+
+
+## Flat distance. x/z only — measuring in 3D made a ramp read as travel and cost me a published number once.
+func _flat(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Shares are of UNDER-WAY ticks, never of wall-clock or of all ticks: a parked unit standing still is not stuck,
+## and including it silently divides the interesting number down.
+func _stall_report() -> Dictionary:
+	return {
+		"crawl_share": snappedf(float(crawl_ticks) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"oscillating_share": snappedf(float(_total(oscillating_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"oscillating_units": _with_any(oscillating_ticks),
+		"no_progress_share": snappedf(float(_total(no_progress_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"no_progress_units": _with_any(no_progress_ticks),
+		"under_way_seconds": snappedf(float(under_way_ticks) / float(SimClock.TICK_RATE), 0.1),
+	}
+
+
+func _total(ticks: Dictionary) -> int:
+	var sum := 0
+	for value in ticks.values():
+		sum += int(value)
+	return sum
+
+
+func _with_any(ticks: Dictionary) -> int:
+	var count := 0
+	for value in ticks.values():
+		if int(value) > 0:
+			count += 1
+	return count

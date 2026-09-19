@@ -5,6 +5,10 @@ extends SceneTree
 ##   pivot   a tracked tank told to face 120 degrees to its right (a `face` order: turn in place)
 ##   car     a wheeled scout sent to a point behind it and to the left (inside its turning circle: a K-turn)
 ##   wheel   a squad of four ordered to a spot 25 m ahead, facing 90 degrees to the right (arrive, then swing)
+##   truck   (round 8) the gangs' semi (gang_tank, wheels, 12 m turning circle) told to face 90 degrees to its right
+## Pre-registered for round 8, before its first run — "yawing in place" (the lead: "the semi trucks are yawing in place
+## (should be impossible, they're not a tracker vehicle)"): a WHEELED hull that rotates >= 30 degrees while its centre
+## stays within 1.5 m of where it started. Printed as NAV_ROTATION_INPLACE.
 ## Pre-registered (before the first run) — "robotic" means any of:
 ##   (a) instant start or stop: angular rate going 0 -> >= 90% of its peak, or >= 90% -> 0, within ONE tick
 ##   (b) a snap at the end: overshooting the final heading, or the last tick's turn being > 30% of the peak
@@ -21,6 +25,9 @@ const FOV := 35.0
 const FRAME_EVERY := 10  # ticks between captured frames (1/3 s at 30 Hz)
 
 var out := "/tmp/nav-rotation"
+## --no-frames: numbers only (headless, seconds instead of minutes); --cases=pivot,car,wheel,truck picks cases.
+var frames_on := true
+var cases := PackedStringArray(["pivot", "car", "wheel", "truck"])
 var game_match: Match
 var camera: Camera3D
 
@@ -33,6 +40,10 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
+		elif arg == "--no-frames":
+			frames_on = false
+		elif arg.begins_with("--cases="):
+			cases = arg.trim_prefix("--cases=").split(",")
 	DirAccess.make_dir_recursive_absolute(out)
 	GameTheme.use("cyberpunk")
 	root.size = SIZE
@@ -53,9 +64,14 @@ func _run() -> void:
 		if Pathing.is_ready(arena):
 			break
 		await physics_frame
-	await _pivot()
-	await _car()
-	await _wheel()
+	if cases.has("pivot"):
+		await _pivot()
+	if cases.has("car"):
+		await _car()
+	if cases.has("wheel"):
+		await _wheel()
+	if cases.has("truck"):
+		await _truck()
 	print("NAV_ROTATION_DONE %s" % out)
 	quit()
 
@@ -87,6 +103,33 @@ func _car() -> void:
 	var orders := _controller(tank)
 	orders.set_orders({"type": "move_to", "x": 2.0, "z": 108.0}, {"type": "hold_fire"})
 	await _film("car", [tank], tank.global_position, SimClock.TICK_RATE * 7)
+	tank.queue_free()
+	orders.queue_free()
+
+
+func _truck() -> void:
+	var tank := game_match.spawn_tank("Truck", 6, Match.Team.GREEN, "gang_tank")
+	tank.global_position = Vector3(-10, 0, 60)
+	tank.rotation.y = 0.0
+	var start := tank.global_position
+	var orders := _controller(tank)
+	var look := tank.global_position + Vector3(1, 0, 0) * 20.0
+	orders.set_orders({"type": "face", "x": look.x, "z": look.z}, {"type": "hold_fire"})
+	var heading0 := _heading(tank)
+	var in_place_turn := 0.0
+	var farthest := 0.0
+	var series := {String(tank.name): PackedFloat32Array()}
+	for tick in SimClock.TICK_RATE * 12:
+		_log_heading(series, tank)
+		var moved := Vector2(tank.global_position.x - start.x, tank.global_position.z - start.z).length()
+		farthest = maxf(farthest, moved)
+		if moved <= 1.5:
+			in_place_turn = maxf(in_place_turn, absf(wrapf(_heading(tank) - heading0, -180.0, 180.0)))
+		await _frame("truck", tick, start)
+	_report("truck", series)
+	print("NAV_ROTATION_INPLACE truck gang_tank (wheels, r=%.0f m): turned %.0f deg while within 1.5 m of its start, farthest %.1f m -> %s" % [
+			float(Units.stat("gang_tank", "min_turn_radius_m")), in_place_turn, farthest,
+			"YAWING IN PLACE" if in_place_turn >= 30.0 else "ok"])
 	tank.queue_free()
 	orders.queue_free()
 
@@ -149,7 +192,7 @@ func _frame(case: String, tick: int, centre: Vector3) -> void:
 	# From the arena side (the spawn aprons back onto the stands; a camera behind them looks through the railing).
 	camera.global_transform = RtsCamera.pose_at(centre, deg_to_rad(150.0), DISTANCE, PITCH)
 	await physics_frame
-	if tick % FRAME_EVERY == 0:
+	if frames_on and tick % FRAME_EVERY == 0:
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png(out.path_join("%s_%03d.png" % [case, tick]))
 

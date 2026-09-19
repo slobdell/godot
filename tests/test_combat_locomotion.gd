@@ -65,7 +65,10 @@ func test_tracks_pivot_in_place_and_turn_right_for_positive_turn() -> void:
 	var last: Dictionary = poses[-1]
 	assert_true((last["position"] as Vector3).is_equal_approx(Vector3(10.0, 0.0, 5.0)), "a pivot stays put")
 	var turned := rad_to_deg(Vector3.FORWARD.signed_angle_to(last["forward"], Vector3.UP))
-	assert_near(turned, -float(unit["hull_turn_rate_deg"]) * 0.5, 0.5, "half a second at the full rate, clockwise (right)")
+	# Round 8 (nav): the yaw rate ramps up over TankMotion.YAW_RAMP_SECONDS instead of starting at full rate (the lead's
+	# camera showed the instant start as robotic), so half a second of full turn yields the ramp's triangle plus the rest.
+	var expected := float(unit["hull_turn_rate_deg"]) * (0.5 - TankMotion.YAW_RAMP_SECONDS / 2.0)
+	assert_near(turned, -expected, 1.0, "half a second of full turn after the ramp, clockwise (right)")
 	assert_near((last["forward"] as Vector3).length(), 1.0, 0.0001, "forward stays a unit vector")
 
 
