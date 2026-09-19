@@ -1345,3 +1345,24 @@ The kickoff prompt is one line; this section is the rest.
       mutation-checked invariants do.
     - **Corollary for reporting: a result in the expected direction deserves the same confound hunt as a surprising one**,
       and it will not get it unless the hunt is a checklist rather than an instinct.
+95. **`make check` stops at the first failing target, so one known failure silently hides every target after it — and
+    `N passed, 0 failed` still reads as comprehensive.** Round 7, found by control while reading its own check #17 rather
+    than reporting it. With `sim-baseline` red on `main`, the four targets that follow it — **`garage-smoke`,
+    `army-loop-smoke`, `announcer-check`, `audio-check`** — **never ran.** From outside, *"`sim-baseline` was the only
+    failure"* and *"`sim-baseline` was the last target that got a chance to fail"* are **indistinguishable**.
+    **The orchestrator's error, and it was broadcast:** I told five streams *"if `sim-baseline` is the only failure, treat
+    the tree as green."* That instruction **converts an incomplete result into a complete one by assertion.** Worse, the
+    hidden targets were in each case **the ones most relevant to the stream's own diff** — `army-loop-smoke` exercises the
+    relaunch path control's loading screen sits on and the match setup squad's army layout runs in; `announcer-check` and
+    `audio-check` are feel's; `garage-smoke` and `army-loop-smoke` are where combat's designator changes *when units fire*
+    across a loop of matches. **A truncated run is least informative precisely where it matters most.**
+    - **Never read a partial run as a pass.** The operational form: **run every target *except* the known-bad one**
+      (control's `#18`), which is conclusive, rather than running all of them and excusing one, which is not.
+    - **A summary line must count what it did not run.** `N passed, M failed` with four targets unattempted is a true
+      sentence that misleads. `N passed, M failed, K not run` would have made this self-evident.
+    - **Fix the shared breakage instead of teaching everyone to read around it.** Five *"here is how to interpret the
+      failure"* messages were the wrong response to *"the baseline needs re-recording"*, and they cost more than the fix.
+    - **The generalised orchestrator failure, third instance in one day:** relaying the lancer deletion as settled before
+      it was implemented; relaying a container argument without checking its contents; relaying a truncated check as
+      green. **One mechanism — promoting something provisional to something established at the moment of relaying it.**
+      That is a relay failure, not a judgement failure, and it needs watching for by name.
