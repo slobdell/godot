@@ -16,6 +16,6 @@ func _report(elapsed: float) -> void:
 		print("NAV_WHERE %s at (%.1f, %.1f) goal (%.1f, %.1f) off_mesh %.1f phase %s by %s stalled %.0fs" % [key, p.x, p.z,
 				goals[key].x, goals[key].z, Vector2(p.x - on_mesh.x, p.z - on_mesh.z).length(), reading.get("phase", "?"),
 				reading.get("blocked_by", ""), float(reading.get("stalled_s", 0.0))])
-	print("NAV_COUNTERS yields %d refused %d solved %d deflected %d" % [Movement.yields_started, Movement.asks_refused,
+	print("NAV_COUNTERS yields %d refused %d rescues %d solved %d deflected %d" % [Movement.yields_started, Movement.asks_refused, Movement.guard_rescues,
 			Avoidance.solved, Avoidance.deflected])
 	super(elapsed)

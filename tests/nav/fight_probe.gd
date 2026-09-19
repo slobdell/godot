@@ -28,6 +28,11 @@ var orders: Orders
 var green: Array[Tank] = []
 var buckets := {}        # reason -> ticks
 var options := {}        # brain option while retasked -> ticks
+var halted_as := {}      # brain option while halted -> ticks
+var by_verb := {}        # order verb -> {reason -> ticks, "_ticks": ordered ticks under that verb}
+var retask_by_verb := {} # order verb -> re-task events
+var retask_cause := {}   # "OPTION[ hop][ (switched from X)]" -> re-task events
+var last_option := {}    # name -> brain option last tick
 var retask_events := 0
 var unreachable_ticks := 0
 var last_target := {}    # name -> Vector3 (its controller's move_to target last tick)
@@ -120,6 +125,8 @@ func _sample() -> void:
 		phase_two_done = true
 		_order_squads(0.85)  # then attack-move onward: the fight
 	var dt := 1.0 / float(SimClock.TICK_RATE)
+	var dump := OS.get_cmdline_user_args().has("--where") and (game_match.tick - issued_tick) % (SimClock.TICK_RATE * 6) == 0 \
+			and not phase_two_done
 	for tank in green:
 		if not tank.is_alive():
 			continue
@@ -139,7 +146,15 @@ func _sample() -> void:
 		if String(move.get("type", "")) == "move_to":
 			if last_target.has(key) and (last_target[key] as Vector3).distance_to(target) > RETASK_M:
 				retask_events += 1
+				var v := String(orders.current(key).get("verb", "?"))
+				retask_by_verb[v] = int(retask_by_verb.get(v, 0)) + 1
+				# Who moved the target: the same option re-aiming (a CombatMotion hop is `direct`), or a change of mind.
+				var option_now := String(brain.choice.get("option", "?"))
+				var cause := "%s%s%s" % [option_now, " hop" if bool(move.get("direct", false)) else "",
+						"" if option_now == String(last_option.get(key, option_now)) else " (switched from %s)" % last_option[key]]
+				retask_cause[cause] = int(retask_cause.get(cause, 0)) + 1
 			last_target[key] = target
+		last_option[key] = String(brain.choice.get("option", "?")) if not last_option.has(key) else last_option[key]
 		var reading := Movement.state(tank)
 		if reading.get("reachable") == false and String(move.get("type", "")) == "move_to":
 			unreachable_ticks += 1
@@ -158,6 +173,8 @@ func _sample() -> void:
 			reason = "blocked_" + (("friend" if other.team == tank.team else "enemy") if other != null else by)
 		elif ["stop", "face"].has(String(move.get("type", ""))):
 			reason = "halted_shooting" if brain.engaged_target != "" else "halted"
+			var why := String(brain.choice.get("option", "?"))
+			halted_as[why] = int(halted_as.get(why, 0)) + 1
 		elif String(move.get("type", "")) == "move_to" and target.distance_to(Vector3(goal.x, 0.0, goal.z)) > RETASK_M:
 			var option := String(brain.choice.get("option", "?"))
 			reason = "retasked"
@@ -165,6 +182,17 @@ func _sample() -> void:
 		else:
 			reason = "slow"
 		buckets[reason] = int(buckets.get(reason, 0)) + 1
+		if dump and not ["progressing", "at_goal"].has(reason):
+			print("NAV_FIGHT_WHERE t=%.0f %s at (%.1f, %.1f) goal (%.1f, %.1f) %s by=%s option=%s speed=%.1f stalled=%.1fs reachable=%s steer=%s" % [
+					elapsed, key, tank.global_position.x, tank.global_position.z, goal.x, goal.z, reason,
+					reading.get("blocked_by", ""), brain.choice.get("option", "?"), tank.speed(), float(reading.get("stalled_s", 0.0)),
+					reading.get("reachable"), reading.get("steer_to")])
+		last_option[key] = String(brain.choice.get("option", "?"))
+		var verb := String(orders.current(key).get("verb", "?"))
+		var per_verb: Dictionary = by_verb.get(verb, {})
+		per_verb[reason] = int(per_verb.get(reason, 0)) + 1
+		per_verb["_ticks"] = int(per_verb.get("_ticks", 0)) + 1
+		by_verb[verb] = per_verb
 	if elapsed >= time_limit:
 		_report(elapsed)
 
@@ -179,12 +207,25 @@ func _report(elapsed: float) -> void:
 	var retasked_as := {}
 	for option: String in options:
 		retasked_as[option] = snappedf(float(options[option]) / SimClock.TICK_RATE, 0.1)
+	var halted_opt := {}
+	for option: String in halted_as:
+		halted_opt[option] = snappedf(float(halted_as[option]) / SimClock.TICK_RATE, 0.1)
+	var verbs := {}
+	for verb: String in by_verb:
+		var d: Dictionary = by_verb[verb]
+		var total := float(d["_ticks"])
+		var row := {"unit_seconds": snappedf(total / SimClock.TICK_RATE, 0.1),
+				"retask_events_per_unit_minute": snappedf(int(retask_by_verb.get(verb, 0)) / maxf(0.01, total / SimClock.TICK_RATE / 60.0), 0.01)}
+		for reason: String in d:
+			if reason != "_ticks":
+				row[reason] = snappedf(float(d[reason]) / total, 0.001)
+		verbs[verb] = row
 	var alive := green.filter(func(t: Tank) -> bool: return t.is_alive()).size()
 	var out := {"arena": String(Arena.active.get("name", "?")), "seed": int(_flag("seed", "3")), "green": green.size(),
 			"green_alive_end": alive, "seconds": snappedf(elapsed, 0.1),
 			"ordered_unit_seconds": snappedf(float(ordered_ticks) / SimClock.TICK_RATE, 0.1),
 			"unit_seconds": seconds, "share": share, "retasked_by_option_unit_seconds": retasked_as,
-			"retask_events": retask_events,
+			"retask_events": retask_events, "retask_cause": retask_cause, "halted_by_option_unit_seconds": halted_opt, "by_verb": verbs,
 			"retask_events_per_unit_minute": snappedf(retask_events / maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0), 0.01),
 			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1)}
 	print("NAV_FIGHT %s" % JSON.stringify(out))
