@@ -262,6 +262,46 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
+
+**Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by
+sibling tests in its own file, fixed on `main` by the orchestrator and not yet merged into this branch; every other
+`check` target run as one remote make exited 0; sim hash `253ecfdeed84bc4d` = `main`'s line, so these merges do not
+move the baseline). Merged to `main` before it: `1dd28265` (standoff + unsticking), `36627372` (commitment,
+reachability).
+
+The lead: *"a lot of them just keep getting stuck in places"*, *"scouts are just running directly into their targets"*,
+*"I couldn't tell what direction they were facing"*. What nav did about each, measured (all builder0):
+
+| complaint | cause found | fix | before → after |
+|---|---|---|---|
+| stuck in a fight | round 6 only ever measured driving with no enemy. `make nav-fight` attributes every stalled ordered unit-tick: pinned on the END of a barricade/container (a carrot or car look-ahead whose chord clipped it), cars nose to nose with no legal move | chords checked on the navmesh with a per-hull slack from the bake's 2 m erosion; a final guard falls back to the next corner; cars give way by reversing | plain move in a fight, seed 7: progressing 74% → 83%, blocked by friend 6.7% → 0.6%, by terrain 5.9% → 0 |
+| scouts ram | CombatMotion's round-3 "run" style: close to 9 m whatever the band, drive away gun-backwards to 22 m | "standoff" (shoot-and-scoot) — squad's 2 hooks land it | closest 3.0 → 27.7 m, nose on target 17% → 79%, shots 29 → 211 |
+| facing | the ORDER carried facing; the BRAIN never executed it | squad's intended_facing (their file); nav's settle radius for the hold tail | within 15° at +10 s: move 2/30 → 27/30; hold 1/29 → 21/30 → 27/30 with the settle patch |
+| attack-move "disobeys" | ~70% of target jumps are CombatMotion re-planning inside one decision (squad's split) | commitment (hysteresis) + timer jinks only against projectile weapons; pre-registered A/B: ships | motion churn 21.4 → 15.6/unit-min, losses no worse; cost: attack-move progress −2.9 pts (paired, 5/5 seeds), time moved to fighting from a halt |
+
+**Also:** reachability is `Pathing.query` (route ends at the goal's nearest mesh point; `goal_on_mesh`; gaps reported,
+not compared) and Movement says `blocked`/`no_path` at the end of an unreachable route. The gangs' backwards IFV is
+art-only (the sim reads only the hull body's basis). The maze regression my own fixes caused (60 → 27/60) was found by
+nav-suite, isolated by switches, fixed at the cause; maze is 60/60 again.
+
+**Handed to squad, waiting on their file:** `references/nav/round7_scout_standoff_brain.patch` (landed on their side),
+`round7_commitment_brain.patch`, `round7_hold_settle_brain.patch` (needs `d963d9ad` on main first).
+
+**Process findings (in `verification.md` and the orchestrator's lessons):** a switch initialised in a static var from
+another class's static silently did nothing (the first A/B's arms were byte-identical) — switches are read at call
+time and `nav-fight-ab` refuses identical arms; seeded A/Bs are PAIRED (the progress cost was invisible unpaired);
+pre-register a guard metric, not only a success metric.
+
+**Looked at like a player** (`make remote T=control-scale-shots`, builder0, `b6a5b7ca`, 34 a side, foundry, the lead's
+camera: pitch 21°, FOV 35°, 61-62 m): an attack-moving squad rounds a barricade as a spaced column with nobody pressed
+on its end (the round-6 carrot pinned hulls exactly there); a moving squad threads out of the parked army without
+shoving it. **Limit:** stills can't show how a hull ROTATES (pivots, three-point turns), which is what the telephoto
+makes visible; judging that needs motion (a short capture), not done.
+
+**Not done / owed:** motion capture of hull rotation at the lead's pose; flow fields (the root fix for crowding; an architecture change, explicitly not this round);
+Reeds-Shepp paths for cars; faction-gain screenshots at the lead's 21° pose; the idle ADVANCE+stop facing miss (squad).
+
 ### Round 7 A/B, pre-registered (written 2026-09-19 BEFORE the run)
 
 **Commitment in CombatMotion** (a bonus for last plan's direction; timer jinks only against projectile weapons) vs

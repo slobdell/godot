@@ -91,12 +91,12 @@ func test_a_full_army_of_wrecks_still_draws_one_bar_each() -> void:
 			on_screen += 1
 	assert_true(bars.size() <= on_screen, "no bar for a vehicle that isn't on screen (%d bars, %d visible)" % [bars.size(), on_screen])
 	assert_true(bars.size() > 10, "but the ones you can see all have one (%d)" % bars.size())
-	var started := Time.get_ticks_usec()
-	for i in 30:
-		f.controls.health_bars()
-	var each := (Time.get_ticks_usec() - started) / 1000.0 / 30.0
-	print("MEASURE control_bars_ms=%.3f bars=%d" % [each, bars.size()])
-	assert_true(each < 0.6, "working them out costs %.3f ms a frame" % each)
+	# Against the reference workload (Fixture.fastest_ms), not the wall clock: builder0 is shared.
+	var timed := Fixture.fastest_ms(func() -> void: f.controls.health_bars(), 30)
+	var ratio := timed[0] / timed[1]
+	print("MEASURE control_bars_ms=%.3f reference_ms=%.3f ratio=%.2f bars=%d" % [timed[0], timed[1], ratio, bars.size()])
+	# The old 0.6 ms in reference workloads (0.077 ms idle, laptop): 7.8. Measured 1.73-1.84.
+	Fixture.judge_timing(self, ratio < 7.8, "working them out costs %.2f reference workloads a frame (%.3f ms)" % [ratio, timed[0]])
 
 
 ## X4 (CP1): HUD unit icons are drawn once into textures and shown as batched rects.

@@ -1843,3 +1843,57 @@ The kickoff prompt is one line; this section is the rest.
        message is an interface between streams — write it for the person who will read it, who is not you.**
      - **And it fired on the first layout anyone pointed it at**, which is the strongest possible validation: it was
        written for a hazard that had not yet occurred, and the hazard occurred exactly as described.
+123. **A clamp and its containment test are one contract, and ours disagreed with itself.** control migrated its four
+     square clamps onto M4 and found **`ArenaShape.clamp_into`'s margin put corner points on the NEIGHBOURING edge with
+     no clearance** — `(130,130) → (116,120)`. arena fixed it at `f295ff30` **and found a second bug behind it:
+     `clamp_into` returned points its own `contains` rejected.**
+     **A function that places a point inside a shape and a function that tests whether a point is inside it are two
+     halves of one claim.** When they disagree, every caller is in an unwinnable position: **clamp then check fails, and
+     check then clamp loops.** Neither bug is visible from either function alone — only from using them together, which
+     is what a consumer does and an author usually does not.
+     - **The property worth asserting is the round trip: `contains(clamp_into(p))` for every `p`**, including far outside,
+       on corners, and on the diagonal. That is one test and it catches both bugs.
+     - **The bugs surfaced because a consumer migrated onto the contract**, not because arena re-read its own code.
+       **M4 was reviewed by combat, written by arena, and specified by the orchestrator; none of that found it.** Contract
+       bugs are found by the first real caller — **so land a contract with a consumer, not before one.**
+     - control measured the old behaviour it replaced: **the square box admitted points 164 m out on the diagonal**, and
+       the new clamp keeps all 24 test bearings inside the wall while reproducing **exactly the old ±116 on a square,
+       corners included.** *Reproducing the old behaviour exactly where it was right* is what makes a replacement
+       trustworthy.
+124. **A metric built to detect an absence will happily reward its opposite extreme.** arena built the decision-spread
+     metric because **every shipping arena read 0.00** — one objective in the middle, so every route the same route. Then,
+     tuning pit's objective pair for the new hexagon, it swept placements:
+     ```
+     z = -30 -> 0.13     z = -50 -> 0.42     z = -60 -> 0.63     z = -70 -> 0.96
+     ```
+     **0.96 is not a better map.** One objective is nearly free and the other nearly impossible — **a formality rather
+     than a choice** — and at z = −70 it sits in the base's approach funnel, **which is the boulevard failure this stream
+     had already written a placement rule against.** arena reproduced a known failure *while optimising its own number*.
+     **The metric had no upper guard because its author had only ever seen zeros.** Both shipping pairs now sit near 0.4,
+     and the reasoning lives in `objective_pair`'s docstring so the next author does not read the number as a score to
+     beat.
+     - **Every metric introduced to fix "there is none of this" needs a stated band, not a floor** — and the band has to
+       be written where the value is produced, not in a report.
+     - **`centre_sees_share` has the same shape and the same exposure**: it was set as a target (<0.30) because the lead
+       cut the four most open maps, and nothing says what *too closed* looks like.
+     - **The tell was that the number moved while the map got worse.** A metric whose extreme is obviously bad is a
+       metric you can still trust; one whose extreme *looks like success* is the dangerous kind.
+125. **Fix it at the plant, not at the caller that noticed.** nav's rotation capture found a tank pivoting on a `face`
+     order reaches **90% of its peak turn rate in one tick** — because **`TankMotion`'s plant has no angular acceleration
+     at all**: yaw rate = turn × max rate, applied instantly. **The obvious fix is to ease the rate inside `face`, which is
+     where the symptom was seen. The right fix is an angular-acceleration limit in `TankMotion.step_in_place`**, because
+     **every caller of the plant has the same defect and only one of them happened to be looked at.**
+     **A symptom is observed at a caller; a defect usually lives at the thing every caller shares.** Masking it where it
+     was noticed leaves the same bug in every other path and guarantees it is found again, separately, later.
+     - **And the capture is the model for answering a feel question.** *"Do the vehicles look robotic?"* is unanswerable
+       after the fact — you see whatever you expected. nav wrote three operational definitions into the script header
+       **before its first run**: (a) angular rate 0 → ≥90% of peak, or ≥90% → 0, **within one tick**; (b) overshoot, or a
+       last tick > 30% of peak; (c) rotating about a point it is not driving around.
+     - **Two of three shapes failed and one passed, each for a nameable reason** — a tank pivot robotic by (a); a scout's
+       K-turn robotic by (b), **overshooting its final heading by 20.7°, arriving still turning**; a four-unit squad wheel
+       **smooth by all three**. A definition that only ever fires is not a definition.
+     - **The passing case is as valuable as the failures:** it says the squad-level motion the lead asked about is already
+       right, so nobody spends a round on it.
+     - **nav's capture lied on its first run** — *"never turned" for every hull* — the packed-array value trap in its own
+       logging, caught by a debug line showing the hulls had in fact turned. **Sixth instrument defect this round, and the
+       sixth caught by someone looking at the output rather than by a failure.**

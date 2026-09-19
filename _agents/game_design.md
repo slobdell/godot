@@ -833,6 +833,29 @@ reaching*, not what can be *seen*. **Two axes behaving independently is the firs
 right model** — openness and reason are separate design knobs, and a map can now be tuned on one without disturbing the
 other.
 
+**SHIPPED AND VERIFIED (arena, 2026-09-19). Both maps the lead kept are now HEXAGONS at the 140 m bound, and both pose
+a question:**
+
+| | shape | `centre_sees_share` | decision spread |
+|---|---|---|---|
+| **yard** | hexagon @ 140 | 0.20 | **0.43** |
+| **pit** | hexagon @ 140 | 0.30 | **0.42** |
+
+**A real 120 s match on each: zero `Objectives` errors (was 35,336), zero `ERROR` lines of any kind, winner declared.**
+
+**⚠ AND DECISION SPREAD IS NOT A QUANTITY TO MAXIMISE.** pit needed re-tuning rather than re-enabling: coordinates chosen
+for the 240 m square gave **0.13** in the hexagon, because the arena grew and the distances that made one objective
+contested stopped being asymmetric. A placement sweep:
+
+```
+z = -30 -> 0.13      z = -50 -> 0.42      z = -60 -> 0.63      z = -70 -> 0.96
+```
+
+**0.96 is not a better map.** It means one objective is nearly free and the other nearly impossible — **a formality
+rather than a choice** — and at z = −70 it sits in the base's approach funnel, **which is the boulevard failure this
+project already wrote a placement rule against.** Both shipping pairs sit near **0.4**, and the reasoning is in
+`objective_pair`'s docstring so the next author does not read the number as a score to beat.
+
 **⚠ HELD BACK, NOT SHIPPED.** A real match on the paired yard fired squad's `Objectives` guard **35,336 times**: *"the
 arena declares an objective other than the single central zone; squad's deciders still read `Match.CONTROL_CENTER`."*
 **The match completed and produced a winner while the deciders competed for the wrong ground throughout** — degraded,

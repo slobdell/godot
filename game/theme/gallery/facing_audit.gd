@@ -49,6 +49,9 @@ func _run() -> void:
 		var hold_turret := flags.has("facing-turret")
 		var turret_deg := float(flags.text("facing-turret", "0"))
 		if hold_turret:
+			# A tank that isn't simulating is a replica: every rendered frame it eases its turret toward the synced yaw
+			# (tank.gd), which swung a held 70 degrees back to 2 on the build machine's slow frames. Pose it there.
+			tank.set("sync_turret_yaw", deg_to_rad(turret_deg))
 			(tank.get_node("Turret") as Node3D).rotation.y = deg_to_rad(turret_deg)
 		for label in tank.find_children("*", "Label3D", true, false):
 			(label as Node3D).visible = false  # the nameplate covers the vehicle side-on
@@ -79,7 +82,10 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		var path := out.path_join("%s.png" % unit_id)
 		root.get_texture().get_image().save_png(path)
-		print("FACING_AUDIT %s -> %s (forward: the red arrow, to the right)" % [unit_id, path])
+		var pivots := tank.find_children("GunPivot", "Node3D", true, false)
+		print("FACING_AUDIT %s -> %s (forward: the red arrow, to the right) turret=%.1f gun_pivots=%s" % [unit_id, path,
+				rad_to_deg((tank.get_node("Turret") as Node3D).rotation.y),
+				str(pivots.map(func(p: Node) -> float: return snappedf(rad_to_deg((p as Node3D).rotation.y), 0.1)))])
 		tank.queue_free()
 		arrow.queue_free()
 		await process_frame

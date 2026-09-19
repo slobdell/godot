@@ -9,13 +9,14 @@ const Fixture := preload("res://tests/support/control_fixture.gd")
 const PER_SIDE := 30
 ## Control's own per-frame work at this scale, in milliseconds. ai budgets 4 ms a tick for sixty brains; the UI
 ## reading the same world must cost a fraction of that.
-const FRAME_BUDGET_MS := 2.0
-## FRAME_BUDGET_MS as a multiple of `_reference_work`, which a loaded machine slows as much as the control work, so the
-## check means the same on a shared builder0 as on an idle laptop. Measured at 53a2af87 + order pins (laptop, loads 3-8):
-## 5.7-7.2 (1.67-3.09 ms); 8.0 catches a ~40% regression. The old absolute 2.0 ms had 11% headroom and flaked on builder0.
-const FRAME_BUDGET_REFERENCES := 8.0
-## A player's order must reach Orders in well under a frame.
-const ORDER_BUDGET_MS := 8.0
+## The old 2.0 ms frame budget in reference workloads (Fixture.reference_work, 0.077 ms on the idle laptop): 26. A loaded machine slows
+## both, so this means the same on a shared builder0 (P- and E-cores) as on an idle laptop. Measured 18.8-20.2 (laptop).
+## LIMIT: a CPU fully oversubscribed (every thread busy) still inflates the work far more than the reference - the order
+## path starves on engine worker threads - so the ratio answers core type and throughput, not starvation.
+const FRAME_BUDGET_REFERENCES := 26.0
+## A player's order must reach Orders in well under a frame: the old 8 ms, in reference workloads (Fixture.reference_work
+## is 0.077 ms on the idle laptop): 104. Measured 36-42 at 53a2af87+ (laptop, idle and loaded).
+const ORDER_BUDGET_REFERENCES := 104.0
 
 
 func _frames(count := 2) -> void:
@@ -33,14 +34,17 @@ func test_a_whole_army_can_be_selected_and_ordered_in_one_go() -> void:
 	var f := await _setup()
 	await f.key(KEY_A, false, true)
 	assert_eq(f.controls.selection.units.size(), PER_SIDE, "ctrl+A selects the whole army")
-	var started := Time.get_ticks_usec()
 	var error := f.controls.order_selection("move", {"to": [0.0, -60.0]})
-	var elapsed := (Time.get_ticks_usec() - started) / 1000.0
 	assert_eq(error, "", "and one order covers all of them")
 	for unit_name in f.controls.selection.units:
 		assert_eq(f.orders.current(unit_name).get("verb", ""), "move", "%s has the order" % unit_name)
-	print("MEASURE control_scale order_ms=%.2f units=%d" % [elapsed, PER_SIDE])
-	assert_true(elapsed < ORDER_BUDGET_MS, "ordering %d units takes %.2f ms (budget %.1f)" % [PER_SIDE, elapsed, ORDER_BUDGET_MS])
+	# Re-issuing is the same work; the fastest of ten (a 3 ms piece of work is longer than a scheduler slice, so on a
+	# crowded machine most samples are preempted) against the reference (Fixture.fastest_ms).
+	var timed := Fixture.fastest_ms(func() -> void: f.controls.order_selection("move", {"to": [0.0, -60.0]}), 10)
+	var ratio := timed[0] / timed[1]
+	print("MEASURE control_scale order_ms=%.2f reference_ms=%.3f ratio=%.1f units=%d" % [timed[0], timed[1], ratio, PER_SIDE])
+	Fixture.judge_timing(self, ratio < ORDER_BUDGET_REFERENCES, "ordering %d units takes %.1f reference workloads (budget %.0f; %.2f ms)"
+			% [PER_SIDE, ratio, ORDER_BUDGET_REFERENCES, timed[0]])
 
 
 func test_input_to_order_latency_with_a_box_around_the_army() -> void:
@@ -59,20 +63,21 @@ func test_input_to_order_latency_with_a_box_around_the_army() -> void:
 	await tree.process_frame
 	assert_eq(f.controls.selection.units.size(), PER_SIDE, "the box takes our whole army and none of theirs")
 	var at := f.ground(Vector3(0, 0, -50))
-	# The fastest of three clicks (each re-issues the order): one sample on a shared machine measured 24 ms where the
-	# work is ~4 ms (laptop, load 7.8).
-	var order_ms := INF
-	for attempt in 3:
-		started = Time.get_ticks_usec()
+	# The fastest of ten clicks (each re-issues the order; see above on preemption) against the reference: one bare sample on a shared machine
+	# read 24 ms where the work is ~4 ms (laptop, load 7.8).
+	var timed := Fixture.fastest_ms(func() -> void:
 		f.button(at, true, MOUSE_BUTTON_RIGHT)
-		f.button(at, false, MOUSE_BUTTON_RIGHT)
-		order_ms = minf(order_ms, (Time.get_ticks_usec() - started) / 1000.0)
+		f.button(at, false, MOUSE_BUTTON_RIGHT), 10)
+	var order_ms: float = timed[0]
+	var click_ratio := order_ms / timed[1]
 	await tree.process_frame
 	var ordered := f.controls.selection.units.filter(func(n: String) -> bool:
 		return not f.orders.current(n).is_empty())
 	assert_eq(ordered.size(), PER_SIDE, "every selected unit has an order on the same frame as the click")
-	print("MEASURE control_scale box_ms=%.2f click_to_order_ms=%.2f units=%d" % [box_ms, order_ms, PER_SIDE])
-	assert_true(order_ms < ORDER_BUDGET_MS, "a right click on %d units takes %.2f ms (budget %.1f)" % [PER_SIDE, order_ms, ORDER_BUDGET_MS])
+	print("MEASURE control_scale box_ms=%.2f click_to_order_ms=%.2f reference_ms=%.3f ratio=%.1f units=%d" % [box_ms, order_ms,
+			timed[1], click_ratio, PER_SIDE])
+	Fixture.judge_timing(self, click_ratio < ORDER_BUDGET_REFERENCES, "a right click on %d units takes %.1f reference workloads (budget %.0f; %.2f ms)"
+			% [PER_SIDE, click_ratio, ORDER_BUDGET_REFERENCES, order_ms])
 
 
 func test_the_panel_groups_portraits_by_type_instead_of_showing_thirty() -> void:
@@ -154,7 +159,7 @@ func test_the_ui_stays_cheap_with_a_full_army_selected() -> void:
 		costs[key] = INF
 	for i in rounds:
 		var started := Time.get_ticks_usec()
-		_reference_work(f)
+		Fixture.reference_work()
 		reference = minf(reference, (Time.get_ticks_usec() - started) / 1000.0)
 		for key: String in keys:
 			started = Time.get_ticks_usec()
@@ -170,16 +175,7 @@ func test_the_ui_stays_cheap_with_a_full_army_selected() -> void:
 	var ratio := per_frame / reference
 	print("MEASURE control_scale_frame units=%d selected=%d %s per_frame_ms=%.3f reference_ms=%.3f ratio=%.2f" % [
 			PER_SIDE * 2, f.controls.selection.units.size(), " ".join(parts), per_frame, reference, ratio])
-	assert_true(ratio < FRAME_BUDGET_REFERENCES, "control costs %.2f reference workloads a frame with %d units (budget %.1f; %.3f ms): %s"
+	Fixture.judge_timing(self, ratio < FRAME_BUDGET_REFERENCES, "control costs %.2f reference workloads a frame with %d units (budget %.1f; %.3f ms): %s"
 			% [ratio, PER_SIDE * 2, FRAME_BUDGET_REFERENCES, per_frame, " ".join(parts)])
 	panel.queue_free()
 
-
-## A fixed workload of the same kind as the UI's (walk the tank nodes, read positions, fill a dictionary): the yardstick
-## the frame budget is measured against.
-func _reference_work(f: Fixture) -> void:
-	var seen := {}
-	for repeat in 10:
-		for node in f.game_match.tanks.get_children():
-			var tank := node as Node3D
-			seen[tank.name] = tank.global_position.length() + float(repeat)
