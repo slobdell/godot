@@ -751,6 +751,29 @@ implement is a good sign, because when it does eventually work it will look and 
 authorising research and real algorithms rather than patches. Formations that *look* sophisticated are the goal; a unit
 that cannot hold a slot while fighting cannot ever deliver that.
 
+### ANSWERED: why he could not tell which way his units were facing (2026-09-19)
+
+*"I couldn't tell what direction they were facing."* **Facing was broken at every layer, and two streams found the halves
+independently without either seeing the whole:**
+
+- **squad found the value being dropped.** K1 has carried an optional `facing` since round 5, and **`OrderFeed` never
+  passed it to the brain** — so *a unit told to face east faced north*. Element tasks **rejected `facing` outright** as an
+  unknown key. Both fixed.
+- **nav found that even when it arrives, brains never execute it.** Measured (`make nav-facing`, builder0, yard, 30 units
+  ordered to face 90° off their travel): after move+facing **the median unit is 85° off and still is 10 s later — 2 of 30
+  within 15°**; for hold+facing, **1 of 29**. The cause is in `tank_brain` (squad's file), and nav has a **measured
+  prototype patch** — move **29/30** within 15° at +10 s, hold 22/29 — left at
+  `_agents/streams/references/nav/round7_brain_facing.patch` rather than applied to someone else's file.
+
+**So there was usually no facing to see.** The contract carried it, the feed dropped it, the tasks rejected it, and the
+brain ignored it. **Three independent failures of one feature, none of which any test noticed**, because nothing asserted
+the *outcome* — that a unit told to face a direction ends up facing it. That is lesson 47's shape again: a guarantee no
+test isolates.
+
+**Why this matters beyond the complaint:** round 6 made facing *mechanically* real in four places — armour facing, the
+crossing-acquisition penalty, support-by-fire arcs, `UnitCommand.facing`. **All four were operating on a quantity the
+player could not control and the units did not honour.** Emplacing an ambush, the use case he named, was not achievable.
+
 ### The arena's shape and finish (lead, 2026-09-19)
 
 14. **The announcers cut each other off.** *"The announcers cut each others' audio off, so that destroys the feel of the
