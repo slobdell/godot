@@ -94,6 +94,34 @@ func next_point(from: Vector3) -> Vector3:
 	return _centre_of(best)
 
 
+## The route the gradient gives from `from`: cell centres down the gradient, ending at the goal itself. Empty when the
+## field says nothing here (off the grid, walled in, or the goal unreachable) — the caller then falls back to A*.
+## `limit` bounds the walk; a 140 m arena at 2 m cells is at most ~200 steps corner to corner.
+func walk(from: Vector3, limit := 300) -> PackedVector3Array:
+	var points := PackedVector3Array()
+	if not reachable(from):
+		return points
+	points.append(from)
+	var here := from
+	for step in limit:
+		var next := next_point(here)
+		if next.distance_to(here) < 0.01:
+			break
+		points.append(next)
+		here = next
+		if here.distance_to(goal) <= CELL_M:
+			break
+	if points.size() < 2 or points[points.size() - 1].distance_to(goal) > 0.01:
+		points.append(goal)
+	return points
+
+
+## Flat metres from `goal` to the navmesh (the one Pathing.query number a field cannot answer from its own grid).
+static func goal_gap_m(node: Node3D, goal: Vector3) -> float:
+	var nearest := NavigationServer3D.map_get_closest_point(node.get_world_3d().navigation_map, goal)
+	return Vector2(nearest.x - goal.x, nearest.z - goal.z).length()
+
+
 ## Dijkstra out from the goal's cell over the passable grid (a bucket-free binary heap would be faster; a 140 m arena
 ## at 2 m is 14k cells and the sweep runs once per goal, so the simple queue is not worth optimising yet).
 func _sweep(start: int) -> void:

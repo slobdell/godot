@@ -58,3 +58,59 @@ func test_two_units_sharing_a_goal_share_one_field() -> void:
 	var other := FlowField.for_goal(arena, Vector3(-40, 0, 40))
 	assert_true(first == again, "goals within a cell share the field (that is the point of a flow field)")
 	assert_true(first != other, "a different goal gets its own")
+
+
+## The same two guarantees test_movement makes of the A* route, with the field driving instead: a unit gets there, and
+## an unreachable goal still says so (it falls back to A*, because a goal off the mesh has no cell to sweep from).
+func _flow_on() -> PackedStringArray:
+	var saved := Movement._off
+	Movement._off = PackedStringArray(["flow"])
+	FlowField.clear()
+	return saved
+
+
+func test_a_unit_drives_to_its_goal_on_the_field() -> void:
+	var saved := _flow_on()
+	await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
+	var game_match: Match = preload("res://game/match/match.tscn").instantiate()
+	add_to_tree(game_match)
+	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
+	tank.global_position = Vector3(-100, 0, 20)
+	var orders := OrderController.new()
+	orders.tank = tank
+	orders.tanks_root = game_match.tanks
+	add_to_tree(orders)
+	orders.set_orders({"type": "move_to", "x": -100.0, "z": -10.0}, {"type": "hold_fire"})
+	for frame in SimClock.TICK_RATE * 12:
+		await tree.physics_frame
+		if Movement.state(tank)["phase"] == "arrived":
+			break
+	assert_eq(Movement.state(tank)["phase"], "arrived", "30 m of open lane, driven on the gradient")
+	Movement._off = saved
+	FlowField.clear()
+
+
+func test_an_unreachable_goal_still_says_so_on_the_field() -> void:
+	var saved := _flow_on()
+	var arena := await ArenaFixture.build(self, "yard")
+	var game_match: Match = preload("res://game/match/match.tscn").instantiate()
+	add_to_tree(game_match)
+	var inside: Variant = ArenaFixture.inside_cover(arena.layout)
+	var target: Vector3 = inside
+	var tank := game_match.spawn_tank("Mover", 0, Match.Team.GREEN)
+	var start := NavigationServer3D.map_get_closest_point(arena.get_world_3d().navigation_map, target + Vector3(0, 0, 25))
+	tank.global_position = Vector3(start.x, 0.0, start.z)
+	var orders := OrderController.new()
+	orders.tank = tank
+	orders.tanks_root = game_match.tanks
+	add_to_tree(orders)
+	orders.set_orders({"type": "move_to", "x": target.x, "z": target.z}, {"type": "hold_fire"})
+	var reading := {}
+	for frame in SimClock.TICK_RATE * 12:
+		await tree.physics_frame
+		reading = Movement.state(tank)
+		if reading["phase"] == "blocked":
+			break
+	assert_eq(reading.get("phase"), "blocked", "a goal inside cover reads blocked, not arrived (got %s)" % reading)
+	Movement._off = saved
+	FlowField.clear()
