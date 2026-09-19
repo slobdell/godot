@@ -706,6 +706,30 @@ braces costs nothing and a second opinion on "did it get there" is the one place
 it.* The metric is **unit-time on the route**, not completion — a map whose interesting route is where the fights
 happen is the map working, not failing. Only *never entering* is declining it.
 
+### The designator: two runs measured a different game, and neither was caught by a check
+
+**Run 1 (void).** Re-roling the Lance Platform to `role: "designator"` **silently dropped it from every army** —
+`Army.squads_for()` iterates `SQUADS`, not the units, so a role with no entry is omitted with no error. The Syndicate
+fought 60 matches with four unit types and the result read *"the designator makes them slightly worse"* (43% → 40%).
+
+**Run 2 (lower bound only).** With the `SQUADS` entry added the unit was fielded — but `role: "designator"` is absent
+from `FRAGILE_ROLES` and `PROTECTED_ROLES`, and `CpuCommander` classifies unknown roles as **line**, so a spotter was
+pushed to the front. Boulevard, superseded build: condemned 53%, gangs 53%, law 47%, syndicate 47%. **Understates the
+mechanic; not quotable.**
+
+**Both were found by a result looking *slightly wrong*, not by any check** — which only works when the confound
+happens to push the implausible way. So the fix is not vigilance:
+
+- **`designates: true` is a capability, not a role** (`f1fb19ad`). `role` is a taxonomy **eight places key off across
+  four streams** — `Units.ROLES`, `Army.SQUADS`, `SquadTactics.FRAGILE_ROLES`, `TacticsFormation.PROTECTED_ROLES`,
+  `CpuCommander`'s line/support split, `ElementSituation`, `ArmyCatalog.ROLE_LABELS`, `command_icons` — and **none
+  reference a single registry.** A value eight places key off is not a value, it is an interface; this one has no
+  owner. Round-7 debt. The mutation-checked `SQUADS` guardrail is the down-payment.
+- **A positive control** (`e0f6ce40`): `Match` reports designators **fielded** and paints **landed** per team, and
+  `faction_matrix` **refuses** — not annotates — a result where a side fielded one and painted zero. *A treatment arm
+  with no treatment is a failed run, not a null result.* The `run:` header proves **which build**; this proves
+  **which behaviour**.
+
 ### Every faction number this project has quoted is a FOUNDRY number — and foundry is near-open
 
 `faction_matrix.py` passed no `--arena` until `c2b27516`, so every matrix run used the default layout and **said so
