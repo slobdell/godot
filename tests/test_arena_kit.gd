@@ -185,6 +185,28 @@ func test_random_picks_a_proven_arena_the_same_way_for_the_same_seed() -> void:
 	assert_eq(Arena.resolve_name("yard", 3), "yard", "a named arena is itself")
 
 
+## The lead's verdict, as a test rather than as prose. `_agents/game_design.md` *The lead's arena verdict*
+## (2026-09-19): Pit KEEP, Yard KEEP, Boulevard CUT, Foundry CUT, Boneyard CUT, Scrapyard CUT — recorded from the
+## review page's store and confirmed in words.
+##
+## **This test exists because that verdict sat in a document for a full round while `--arena=random` kept dealing
+## him boulevard and boneyard.** `make skirmish` passes `--arena=random`; random reads `Arena.ROTATION`; the
+## rotation read the old list. Half of every skirmish he played was a map he had already cut, and nothing failed,
+## because nothing was asking. A decision that lives only in prose is a decision the game does not have.
+##
+## If a map is added to the rotation, it is because he asked for it — and then this list changes with the same
+## commit, which is the point.
+func test_random_deals_only_the_maps_the_lead_kept() -> void:
+	for cut in ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]:
+		assert_true(not Arena.ROTATION.has(cut),
+				"%s was CUT (game_design.md, the lead's arena verdict) and --arena=random must never deal it" % cut)
+	for kept in ["yard", "pit"]:
+		assert_true(Arena.ROTATION.has(kept), "%s was KEPT and --arena=random must be able to deal it" % kept)
+	# A fixture is not a map he plays: barriers and maze are instruments, reachable only by name.
+	for fixture in ["maze", "barriers"]:
+		assert_true(not Arena.ROTATION.has(fixture), "%s is a fixture, not a map in the rotation" % fixture)
+
+
 func test_a_random_arena_records_the_arena_it_built_and_unknown_names_stay_loud() -> void:
 	var arena: Arena = ARENA.instantiate()
 	arena.layout_name = "random"
