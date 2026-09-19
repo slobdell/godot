@@ -104,15 +104,42 @@ cut, and the moment to change the shape is while the maps are being rebuilt anyw
    and a hexagon both contain a 180° rotation, so the construction survives**; `filter_baking_aabb` and
    `SEAM_BORDER` are currently written for a rectangle and the **seam is the part needing care**.
 
-**Proposed contract:** the layout gains `"shape": {"kind": "square"|"octagon"|"hexagon", "half_size": 120}`, and
-`Arena` exposes **`Arena.perimeter_distance(point, heading) -> float`** plus `Arena.contains(point) -> bool` as the
-single source of truth for "how far to the wall". Control's cutaway, the radar outline and the fog all call it
-instead of assuming a square. Default `square`, so **every existing layout and every current caller is unchanged
-until it opts in.**
+**The contract, as control counter-proposed and the orchestrator endorsed** (better than my first version, which
+offered a per-frame `perimeter_distance(point, heading)` call):
 
-**What I need before building it:** control's agreement that `perimeter_distance()` is the right seam for the
-cutaway, and feel's for the perimeter art. **Do not let me start D before both have said yes** — the whole point of
-sending this early is that they build against it rather than after it.
+```gdscript
+Arena.perimeter() -> PackedVector2Array   # the wall's INNER FACE, world x/z, counter-clockwise, convex
+Arena.perimeter_edges() -> Array          # per edge: {from: Vector2, to: Vector2,
+                                          #            wall_height_m: float, behind: "stands"|"gate"|"none"}
+```
+
+Read **once at load**, not per frame. control does the ray-vs-polygon crossing itself; its argument is that a
+6–8-edge convex test costs the same order as today's square, so its per-frame budget does not change — and
+**arena then owes it no per-frame performance guarantee.** That is the cleaner ownership line: **the shape is mine,
+the maths is theirs**, and it survives the next camera change.
+
+Two fields I would not have thought to provide, and both are real:
+- **`wall_height_m` per edge** — the cutaway must clear the wall's *top* edge, and **that stops being one constant
+  the moment the perimeter is chamfered or angled.**
+- **`behind`** — the occlusion test judges sight lines against the *stands' profile*, and **a gate edge has no
+  stands behind it.** A cut that assumes stands everywhere hides nothing at the gates and over-cuts elsewhere.
+
+The layout still gains `"shape": {"kind": "square"|"octagon"|"hexagon", "half_size": 120}`; `square` stays the
+default and **control keeps `perimeter_half()` as its fallback when a layout offers no polygon**, so nothing breaks
+in the interval and the shape can land whenever it is ready rather than in lockstep. **I am no longer blocked on
+this.**
+
+### It is a three-way seam, not two
+
+**My polygon, feel's stands, control's maths.** The stands' profile (heights by distance out from the wall) is
+**feel's venue** — control measures it today from `kit_stands` into `RtsCamera.STANDS_PROFILE`, and a hexagonal
+arena needs hexagonally-arranged stands, so feel must hand that profile over as data beside the kit rather than
+control inferring it.
+
+**This constrains the edge count before any art exists.** feel's stand module is ~23 m, so an edge whose length is
+not near a multiple of ~23 m leaves a part-module gap at every corner — multiplied by six or eight corners. **I
+will compute candidate edge lengths for hexagon and octagon at our `half_size` and send them to feel before
+choosing**, rather than picking a shape and asking them to make it fit.
 
 ---
 
@@ -124,7 +151,8 @@ sending this early is that they build against it rather than after it.
    its place. *"All the maps need to be higher quality regardless."*
 2. **A** as the primitive, with the probe promoted to a real test.
 3. **C**, because B cannot be measured without it.
-4. **D** only once control and feel have agreed the seam.
+4. **D** — unblocked by control's fallback, but **send feel the candidate edge lengths before choosing a shape**,
+   since their ~23 m stand module decides whether a hexagon or an octagon tiles without part-module corners.
 
 **One question for the lead when he is next about, which I will not guess at:** *"the octagon of shipping
 containers"* does not map unmistakably onto Pit or Yard in the data — Pit is a ring of containers around the
