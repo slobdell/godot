@@ -2127,7 +2127,7 @@ static func fire_band(weapon: Dictionary) -> float:
 static func motion_style(unit_id: String) -> String:
 	var profile := Units.profile(unit_id)
 	if String(profile.get("mount", "turret")) == "fixed":
-		return "run"
+		return CombatMotion.fixed_style  # round 7 (nav): "standoff" (shoot-and-scoot); "run" = round 3's attack runs
 	if float((profile.get("armor", {}) as Dictionary).get("front", 0.0)) >= ANGLE_FRONT_ARMOR:
 		return "angle"
 	return "strafe"
@@ -2226,6 +2226,13 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
 	if result.is_empty():
 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
+	if result.get("hold", false):
+		# Round 7 (nav): a fixed gun inside its band stops and lays its hull on the target (Gunnery swings a stopped fixed
+		# mount onto what it engages) instead of driving at it — the lead's "scouts are just running directly into their
+		# targets and then they have to turn around to get a fix again".
+		why = TankBrain._join(why, "holding at standoff")
+		_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": {"type": "stop"}}
+		return _motion_cache["order"]
 	if result.get("dodging", false):
 		why = TankBrain._join(why, "dodging")
 	if result.get("beaten", false):
@@ -2235,6 +2242,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	match style:
 		"run":
 			why = TankBrain._join(why, "attack run" if _run_phase == "run" else "breaking away")
+		"standoff":
+			why = TankBrain._join(why, "moving to a firing position")
 		"angle":
 			why = TankBrain._join(why, "weaving, front armor on it")
 		_:
