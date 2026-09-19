@@ -436,6 +436,28 @@ commitment ended up being measured twice for nothing.
 - **Arena's spare finding, taken:** one-way at 60 units is the only maze configuration whose `oscillating` (0.012) is
   above noise (0.001–0.002). Crowding one direction is where the lead's complaint lives.
 
+**Flow fields, the verdict: REVERTED, a null (builder0, tree `654b1c5d`, terminus, 45 a side, 120 s, three seeds,
+arms read live from `NAV_FIGHT_ARM`).**
+
+| seed | stuck_share off → on | oscillating off → on | no_progress off → on | field answered / fell back |
+|---|---|---|---|---|
+| 3 | 0.415 → 0.373 (−10%) | 0.060 → 0.045 | 0.451 → 0.470 | 2948 / 919 |
+| 5 | 0.365 → 0.362 (−1%) | 0.037 → 0.037 | 0.403 → 0.374 | 4019 / 1149 |
+| 7 | 0.372 → 0.405 (**+9%**) | 0.040 → 0.039 | 0.428 → 0.447 | 3228 / 1417 |
+
+Mean stuck_share ≈ −1%, and no_progress is flat to slightly worse. Pre-registered condition 1 — "revert if terminus
+`no_progress` improves by less than 10% relative, or `stuck_share` by less than 10%" — fires. The one seed that looked
+good (seed 3, −10%) is the seed I ran first, which is exactly why the rule was written for three.
+
+Also worth keeping: the field answered about 70-75% of route plans and fell back to A* for the rest, so this is not a
+mechanism that failed to run — it ran, and it did not help. A grid of 2 m cells over a street map gives routes A* was
+already giving; what a flow field buys is CPU when an army shares one goal, and a fight's goals are per-unit.
+
+Deleted with the code, per the pre-registration: `game/ai/flow_field.gd`, `Movement._plan`'s flow branch, the `flow`
+entry in `OFF_NAMES`, `tests/test_flow_field.gd`, the `flow` block in the fight probe, and `make nav-flow-look`.
+**Kept:** the `--nav-off` unknown-name refusal (`Movement.OFF_NAMES`), which this work produced and which is worth more
+than the field was.
+
 ### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
 
 **Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by
