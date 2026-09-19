@@ -28,10 +28,16 @@ SIM_HZ = os.environ.get("SIM_HZ", "60")
 FACTIONS = ["gangs", "condemned", "law", "syndicate"]
 
 
-def run_match(godot, green, rust, seed, budget, time_limit):
+def run_match(godot, green, rust, seed, budget, time_limit, arena=""):
+    # X5 (round 6): --arena, because this tool ran EVERY match on the default layout (foundry) and said so nowhere.
+    # That is fine for a like-for-like A/B and wrong for anything conditional on terrain: the Syndicate's designator
+    # pays off where sightlines are long and pays nothing in a close map, so a single-map number would be reported as
+    # a property of the faction when it is a property of foundry. Every row this tool prints is one map's answer.
     command = [godot, "--headless", "--fixed-fps", SIM_HZ, "--path", ".", "--", "--match", "--elimination", "--control",
                f"--green-faction={green}", f"--rust-faction={rust}", f"--budget={budget}",
                f"--time-limit={time_limit}", "--score-limit=0", f"--seed={seed}"]
+    if arena:
+        command.append(f"--arena={arena}")
     done = subprocess.run(command, capture_output=True, text=True, timeout=time_limit + 300)
     for line in done.stdout.splitlines():
         if line.startswith("MATCH_RESULT "):
@@ -79,6 +85,7 @@ def main():
     parser.add_argument("--jobs", type=int, default=2)
     parser.add_argument("--time-limit", type=int, default=180)
     parser.add_argument("--factions", default=",".join(FACTIONS))
+    parser.add_argument("--arena", default="", help="layout name; default runs the built-in default (foundry)")
     parser.add_argument("--json")
     args = parser.parse_args()
 
@@ -91,7 +98,7 @@ def main():
     started = time.time()
     outcomes, failures = {}, []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {pool.submit(run_match, args.godot, green, rust, seed, args.budget, args.time_limit):
+        futures = {pool.submit(run_match, args.godot, green, rust, seed, args.budget, args.time_limit, args.arena):
                    (green, rust, seed, first_is_green) for green, rust, seed, first_is_green in jobs}
         for future in concurrent.futures.as_completed(futures):
             green, rust, seed, first_is_green = futures[future]
@@ -104,7 +111,10 @@ def main():
             outcomes.setdefault((faction, other), []).append((result, first_is_green))
 
     rows = [summarize(faction, other, results) for (faction, other), results in sorted(outcomes.items())]
-    print(f"{len(jobs) - len(failures)} matches at {args.budget} points, {time.time() - started:.0f}s wall, "
+    # Name the map in the output: every row is ONE map's answer, and a reader who does not know which will read a
+    # property of foundry as a property of the faction.
+    print(f"{len(jobs) - len(failures)} matches on {args.arena or 'foundry (default)'} at {args.budget} points, "
+          f"{time.time() - started:.0f}s wall, "
           f"{args.jobs} jobs (each pairing counterbalanced: same seeds from both colours)")
     print(f"{'pairing':28} {'win%':>6} {'matches':>8} {'vehicles':>9} {'lost':>6} {'length':>8} {'suppr':>7}")
     for row in sorted(rows, key=lambda r: -r["win_rate"]):

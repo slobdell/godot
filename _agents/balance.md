@@ -314,7 +314,7 @@ the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on r
 
 **4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
 
-### The height spread does not move the balance (builder0, `6e82e57b`, 60 matches, same seeds)
+### The height spread does not move the balance (builder0, `6e82e57b`, 60 matches, same seeds, **on foundry**)
 
 The lead: *"the gang tank is still tiny… that truck should be at least 3 or 4 times the height of the scout."* Every
 vehicle was 1.40–1.80 m — a **1.29×** spread from the smallest buggy to a semi tractor — while lengths varied 2.8–5.6
@@ -344,7 +344,7 @@ and are the only faction that moved down — is **one match** and should not be 
 Per-match results:
 [streams/references/combat/faction-matrix-heights-2026-09-18.json](streams/references/combat/faction-matrix-heights-2026-09-18.json).
 
-### X4 — THE GANGS' 23% IS GONE (builder0, `1333cc73`, 60 matches, 5 seeds per pairing, counterbalanced)
+### X4 — THE GANGS' 23% IS GONE (builder0, `1333cc73`, 60 matches, 5 seeds per pairing, counterbalanced, **on foundry**)
 
 Open since round 4 and deferred twice, because the stream would not tune against numbers taken while drills and
 suppression were still landing. Both have landed, CP4 is in, and **every number predating it is history — this is the
@@ -377,7 +377,10 @@ heavy lifting; a 43-vehicle army closing under acquisition delay is the shape th
 
 Per-match results:
 [streams/references/combat/faction-matrix-post-cp4-2026-09-18.json](streams/references/combat/faction-matrix-post-cp4-2026-09-18.json).
-**Retire the 23/70/63/47 line wherever it appears** — it describes a game that no longer exists.
+**Every faction-matrix number in this file is a FOUNDRY number.** `faction_matrix.py` passed no `--arena` until
+`ARENA=` was added, so all of it ran on the default layout and said so nowhere. That is sound for a like-for-like
+A/B — every arm ran on the same ground — and unsound for anything conditional on terrain. **Retire the 23/70/63/47
+line wherever it appears** — it describes a game that no longer exists.
 
 ### N5 MEASURED AGAINST THE REAL OLD WORLD (builder0, `fa4e7077`, **n = 15 per arm**, 3 counterbalanced pairings)
 
