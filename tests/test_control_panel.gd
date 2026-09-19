@@ -222,9 +222,13 @@ func test_a_task_button_previews_the_posture_it_leaves_the_squad_in() -> void:
 	assert_eq(TaskPreview.posture("attack_move")["advances"], true, "attack-move does")
 	assert_eq(TaskPreview.posture("ambush")["fires"], "on_contact", "an ambush holds fire until contact")
 	var sbf := TaskPreview.posture("support_by_fire")
+	assert_eq(sbf.get("source", ""), "planner", "the preview is squad's real planner (ElementPlan.preview), not a drawing")
 	for i in (sbf["slots"] as Array).size():
-		var to_point: Vector2 = (Vector2(0.5, 0.2) - (sbf["slots"][i] as Vector2)).normalized()
-		assert_true((sbf["facing"][i] as Vector2).dot(to_point) > 0.99, "a support-by-fire gun faces the point")
+		var slot: Vector2 = sbf["slots"][i]
+		var to_point: Vector2 = (Vector2(0.5, 0.2) - slot).normalized()
+		# Each gun covers its own sector of the point (interlocking arcs), so "faces it" means within ~53°, not exactly.
+		assert_true((sbf["facing"][i] as Vector2).dot(to_point) > 0.6, "a support-by-fire gun faces toward the point")
+		assert_true(slot.y > 0.3, "and stays at a standoff, short of it")
 	var setup: Array = await _setup()
 	var f: Fixture = setup[0]
 	var panel: SelectionPanel = setup[1]
