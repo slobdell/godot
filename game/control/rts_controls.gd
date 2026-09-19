@@ -933,7 +933,7 @@ func screen_to_world(screen: Vector2) -> Variant:
 	if hit == null:
 		return null
 	var point: Vector3 = hit
-	return Vector3(clampf(point.x, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), 0.0, clampf(point.z, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
+	return Orders.clamp_to_arena(Vector3(point.x, 0.0, point.z))  # M4: the arena's shape, not a square
 
 
 # ---- X6: readability at close zoom --------------------------------------------------------------------------
@@ -999,8 +999,7 @@ func _acknowledge(command: Dictionary) -> void:
 	var at: Variant = null
 	var kind: String = command["verb"]
 	if command.has("to"):
-		at = Vector3(clampf(float(command["to"][0]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), 0.0,
-				clampf(float(command["to"][1]), -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
+		at = Orders.clamp_to_arena(Vector3(float(command["to"][0]), 0.0, float(command["to"][1])))
 	elif command.has("target"):
 		var target := game_match.tanks.get_node_or_null(NodePath(String(command["target"]))) as Tank
 		if target != null:

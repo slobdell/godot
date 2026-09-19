@@ -174,7 +174,11 @@ fallback; the kit's front is 9.64 m from 4.2 m out, not the measured 7 m at 2.3 
 smokes never ran. **Candidate now `c7f9cd4e`** (main through `5cc17ee6` merged at `af9e4f1e`, plus the same leak guarded
 in `test_rts_camera`, positive-controlled). **MERGE HERE: `c7f9cd4e` — #22 GREEN (builder0): `make check exited 0`,
 1193 passed / 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`, every target through `audio-check passed`.** **Open:** look at the cutaway at the lead's pose once `StandsProfile` is on main (it cuts the front of the stands
-slightly more often near the wall); round 8: timing tests to measurements (verification.md policy).
+slightly more often near the wall) — **looked at, fine:** at 21° (49 m and 100 m) both profiles cut, vehicles by the
+wall are clear and the far stands keep their crowd; the profile only decides at steep far poses. **M4 done:**
+`Orders.clamp_to_arena` (shape inset by a 4 m hull clearance = exactly ±116 on the square, then `Arena.clamp_into`)
+replaces the four square clamps; when arena's `f295ff30` (exact `margin` in `ArenaShape.clamp_into`, fixing the corner
+bug control reported) is on main, pass the margin through instead of scaling the bound here. Round 8: timing tests to measurements (verification.md policy).
 Was: **MERGE HERE: `baf04ead` — #20 GREEN (builder0): `make check exited 0`, 1162 passed / 0 failed, `sim-baseline passed:
 e38fd65b6b6ead3f`, every target through `audio-check passed`** (main `b70608d6` merged in). After it, unchecked:
 `35c72304` (order/click/bars as ratios) and docs. **Decided before the result (orchestrator, lesson 106):** `baf04ead`
