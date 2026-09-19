@@ -306,6 +306,17 @@ stack first, then the layer that commands it, then how the player reads and issu
 
 ### What this means, by area
 
+- **CLOSED, and the cause was worse than the symptom.** The lead opened round 6 with *"a bunch of cars just get stuck
+  or blocked by other cars"*. The survey found `TankBrain.ORDER_STALL_ARRIVE = 12.0`: after 3 s of no progress, a unit
+  **within twelve metres of its goal declared its order complete** — which explained why a jammed horde looked like it
+  had *decided* to stop. It was described in this round's briefs as *dishonest reporting*. **It was worse than that: it
+  created the jam.** nav's measurement on the maze, before deleting it: 29/30 arrived, one "completed" **8.1 m short**,
+  and one **never arrived at all, blocked 90 m out**. The unit that falsely completed had **parked in a corridor**, and
+  the unit that never arrived was the one stuck behind it. A rule that let a vehicle stop early turned that vehicle into
+  an obstacle for everyone behind it. After deletion: **30/30, t100 73.2 s, 0 finishing short.**
+  The generalisable form: **a lenient completion rule does not merely mis-report, it leaves a live obstacle in the
+  world.** Anything that lets an actor declare success while still occupying contested space converts one soft failure
+  into a hard one for whoever comes next.
 - **Navigation is the blocker, and it is three separate problems.** (a) *Path planning*: does a unit have a route
   around an obstacle at all (A*/navmesh/flow field)? (b) *Local avoidance*: two units heading through the same gap
   must resolve it — the lead's own instinct is the right one, units that see each other negotiate ("an in-game command
