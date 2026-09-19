@@ -943,6 +943,32 @@ What follows for map authoring, and these are testable claims rather than taste:
 **"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
 still cannot command his units. **Improvements he can see did not change the verdict.**
 
+### Two decisions from the lead (2026-09-19, answering queued gates)
+
+> *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart
+> is better, so flanking and maneuvering is fine**."*
+
+**1. ELEMENT FLOW STAYS ON.** While a leader is more than 15 m from its slot, members follow it at their slot offsets.
+Measured: transit gap **9.0 m against 11.4**, worst unit off-slot at arrival **2.9 m against 6.5**, arrival **17.4 s
+against 13.1**. **He has bought the 4 seconds.** `ElementPlan.FLOW_ENABLED` stays true and the trade is settled, not
+provisional.
+
+**2. "APPEAR SMART" BEATS "APPEAR OBEDIENT" — *within* an order, never instead of one.** This resolves a tension that
+had been implicit all round, and it must be read precisely:
+
+- **A flanker swinging wide with the player's target in its order is OBEYING**, and the pin counts it as complying:
+  `ATTACK · 2/4 on target · 1 moving round · 1 NOT COMPLYING`. **Do not exclude it and do not flag it.**
+- **A crew shooting something the player did not name is the DEFECT** — that was squad's drill bug (task path
+  **765/155 → 164/759** unit-ticks on the wrong/right target), and it stays a defect.
+- **So "attack" does NOT mean *everyone stands and fires now*.** The `drills: false` task flag is not wanted.
+
+**⚠ And the boundary that keeps this from licensing disobedience: manoeuvring is smart, CHURN IS NOT.** nav measured
+**5.3–6.6% of attack-moving units' travel time oscillating** on all four of his maps — **which is the same complaint he
+opened with**. A unit that flanks looks intelligent; a unit that re-aims every 1.3 s looks broken. **The test is whether
+the motion resolves into fire**: combat's floor — *a crew that cannot acquire a new contact in under `acquire_seconds`
+has no business re-aiming faster than it can shoot* — is the principled expression of that, and it makes the cadence a
+consequence of the engagement envelope rather than a new tuning knob.
+
 ### The eight items, with what is already known about each
 
 1. **THE SEMI IS STILL TINY, AND SIZE IS NOT A BALANCE QUESTION.** *"the intent for the semi trucks is that they're huge
