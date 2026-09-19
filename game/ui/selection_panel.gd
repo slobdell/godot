@@ -45,6 +45,10 @@ var controls: RtsControls
 var _command_rects := {}  # id -> Rect2 (local)
 ## X2: the button under the mouse ("" = none), for its tooltip.
 var _hovered := ""
+## Round 7 (C2): the preview loop's clock (UI time, runs while paused) and where the last tooltip put its preview.
+var _preview_clock := 0.0
+var _preview_rect := Rect2()
+const PREVIEW_HEIGHT := 170.0
 var _portrait_rects := {}  # portrait key -> Rect2 (local)
 ## X4: unit name -> Tank for this pass. One node lookup per unit instead of one per question, which at 30+
 ## selected was the panel's whole cost (a sort comparator asking for a role does two lookups per comparison).
@@ -56,7 +60,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_preview_clock += delta
 	_layout()
 	visible = controls != null and not controls.selection.is_empty()
 	queue_redraw()
@@ -476,9 +481,13 @@ func _draw() -> void:
 			batch.texture(CommandIcons.task_texture(command["id"]), glyph, tint)
 		_label(batch, font, button, label, 14.0 * s, ink)
 	var tip := tooltip()
+	_preview_rect = Rect2()
 	if not tip.is_empty():
 		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)
 	batch.flush(self)
+	# Round 7 (C2): the posture this button leaves the squad in, animated, on top of the tooltip box.
+	if _preview_rect.has_area():
+		TaskPreview.draw(self, _preview_rect, String(tip["id"]), _preview_clock, GameTheme.ui["friendly"], GameTheme.ui["enemy"])
 
 
 ## X2: the name under a button's symbol - one line if it fits, else two ("Support / by Fire"), shrinking only if a
@@ -511,10 +520,13 @@ func _tooltip(batch: DrawBatch, font: Font, button: Rect2, tip: Dictionary, s: f
 		lines.append(extra)
 	if tip.has("lines"):
 		width = 520.0 * s
-	var height := (title_px + 8.0 * s) + lines.size() * line_px * 1.3 + 10.0 * s
+	var preview := 0.0 if TaskPreview.posture(String(tip["id"])).is_empty() else PREVIEW_HEIGHT * s
+	var height := (title_px + 8.0 * s) + lines.size() * line_px * 1.3 + 10.0 * s + preview
 	var box := Rect2(Vector2(clampf(button.get_center().x - width / 2.0, -position.x + 4.0, size.x - width), -height - 6.0 * s),
 			Vector2(width, height))
 	batch.fill(box, Color(CyberStyle.HUD_BACKGROUND, 0.97))
+	if preview > 0.0:
+		_preview_rect = Rect2(box.position.x + 8.0 * s, box.end.y - preview - 2.0 * s, box.size.x - 16.0 * s, preview - 6.0 * s)
 	batch.outline(box, Color(CyberStyle.YELLOW, 0.8), 1.5)
 	batch.text(font, box.position + Vector2(8.0 * s, 6.0 * s + title_px), String(tip["title"]), title_px, CyberStyle.YELLOW)
 	for i in lines.size():

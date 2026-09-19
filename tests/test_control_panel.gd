@@ -210,3 +210,27 @@ func test_buttons_that_need_a_click_say_so() -> void:
 	f.motion(panel.get_global_rect().position + panel.command_rect("stop").get_center(), false, 0)
 	await tree.process_frame
 	assert_true(String(panel.tooltip().get("title", "")).contains("at once"), "and when it does not (%s)" % panel.tooltip().get("title", ""))
+
+
+## Round 7 (C2): hovering a task shows what it does as a loop - where the squad goes, which way it faces, whether it fires
+## and whether it keeps advancing - not only words.
+func test_a_task_button_previews_the_posture_it_leaves_the_squad_in() -> void:
+	for id in ["support_by_fire", "screen", "ambush", "attack_move", "hold", "stop"]:
+		var shape := TaskPreview.posture(id)
+		assert_true(not shape.is_empty() and (shape["slots"] as Array).size() == TaskPreview.UNITS, "%s has a posture" % id)
+	assert_eq(TaskPreview.posture("support_by_fire")["advances"], false, "support by fire does not advance")
+	assert_eq(TaskPreview.posture("attack_move")["advances"], true, "attack-move does")
+	assert_eq(TaskPreview.posture("ambush")["fires"], "on_contact", "an ambush holds fire until contact")
+	var sbf := TaskPreview.posture("support_by_fire")
+	for i in (sbf["slots"] as Array).size():
+		var to_point: Vector2 = (Vector2(0.5, 0.2) - (sbf["slots"][i] as Vector2)).normalized()
+		assert_true((sbf["facing"][i] as Vector2).dot(to_point) > 0.99, "a support-by-fire gun faces the point")
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await tree.process_frame
+	f.motion(panel.get_global_rect().position + panel.command_rect("attack_move").get_center(), false, 0)
+	await tree.process_frame
+	await tree.process_frame
+	assert_true(panel._preview_rect.has_area(), "the hovered button's tooltip carries a preview")
