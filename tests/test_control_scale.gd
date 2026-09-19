@@ -10,6 +10,10 @@ const PER_SIDE := 30
 ## Control's own per-frame work at this scale, in milliseconds. ai budgets 4 ms a tick for sixty brains; the UI
 ## reading the same world must cost a fraction of that.
 const FRAME_BUDGET_MS := 2.0
+## FRAME_BUDGET_MS as a multiple of `_reference_work`, which a loaded machine slows as much as the control work, so the
+## check means the same on a shared builder0 as on an idle laptop. Measured at 53a2af87 + order pins (laptop, loads 3-8):
+## 5.7-7.2 (1.67-3.09 ms); 8.0 catches a ~40% regression. The old absolute 2.0 ms had 11% headroom and flaked on builder0.
+const FRAME_BUDGET_REFERENCES := 8.0
 ## A player's order must reach Orders in well under a frame.
 const ORDER_BUDGET_MS := 8.0
 
@@ -55,10 +59,14 @@ func test_input_to_order_latency_with_a_box_around_the_army() -> void:
 	await tree.process_frame
 	assert_eq(f.controls.selection.units.size(), PER_SIDE, "the box takes our whole army and none of theirs")
 	var at := f.ground(Vector3(0, 0, -50))
-	started = Time.get_ticks_usec()
-	f.button(at, true, MOUSE_BUTTON_RIGHT)
-	f.button(at, false, MOUSE_BUTTON_RIGHT)
-	var order_ms := (Time.get_ticks_usec() - started) / 1000.0
+	# The fastest of three clicks (each re-issues the order): one sample on a shared machine measured 24 ms where the
+	# work is ~4 ms (laptop, load 7.8).
+	var order_ms := INF
+	for attempt in 3:
+		started = Time.get_ticks_usec()
+		f.button(at, true, MOUSE_BUTTON_RIGHT)
+		f.button(at, false, MOUSE_BUTTON_RIGHT)
+		order_ms = minf(order_ms, (Time.get_ticks_usec() - started) / 1000.0)
 	await tree.process_frame
 	var ordered := f.controls.selection.units.filter(func(n: String) -> bool:
 		return not f.orders.current(n).is_empty())
@@ -138,23 +146,40 @@ func test_the_ui_stays_cheap_with_a_full_army_selected() -> void:
 	var keys := work.keys()
 	keys.sort()
 	var total := 0.0
-	# The FASTEST of the rounds, not their mean: on a shared builder0 other checks' load only ever adds time (#19 on
-	# 9c889025 measured a 2.33 ms mean, slower than the laptop's 1.80), while a real regression slows every round.
+	# The fastest of the rounds, interleaved with a fixed reference workload timed the same way. A shared machine slows
+	# both (#19 on 9c889025, builder0: a 2.33 ms frame where idle builder0 is ~0.65 ms), so the budget is their RATIO;
+	# a real regression slows only the control work.
+	var reference := INF
 	for key: String in keys:
-		var each := INF
-		for i in rounds:
-			var started := Time.get_ticks_usec()
+		costs[key] = INF
+	for i in rounds:
+		var started := Time.get_ticks_usec()
+		_reference_work(f)
+		reference = minf(reference, (Time.get_ticks_usec() - started) / 1000.0)
+		for key: String in keys:
+			started = Time.get_ticks_usec()
 			(work[key] as Callable).call()
-			each = minf(each, (Time.get_ticks_usec() - started) / 1000.0)
-		costs[key] = each
-		total += each
+			costs[key] = minf(costs[key], (Time.get_ticks_usec() - started) / 1000.0)
+	for key: String in keys:
+		total += costs[key]
 	# horizon_zoom runs once every RtsCamera.VISION_CAP_EVERY frames, so only its share counts against a frame.
 	var per_frame: float = total - float(costs["horizon_zoom"]) * (1.0 - 1.0 / float(RtsCamera.VISION_CAP_EVERY))
 	var parts: Array[String] = []
 	for key: String in keys:
 		parts.append("%s=%.3f" % [key, costs[key]])
-	print("MEASURE control_scale_frame units=%d selected=%d %s per_frame_ms=%.3f" % [PER_SIDE * 2,
-			f.controls.selection.units.size(), " ".join(parts), per_frame])
-	assert_true(per_frame < FRAME_BUDGET_MS, "control costs %.3f ms a frame with %d units (budget %.1f): %s"
-			% [per_frame, PER_SIDE * 2, FRAME_BUDGET_MS, " ".join(parts)])
+	var ratio := per_frame / reference
+	print("MEASURE control_scale_frame units=%d selected=%d %s per_frame_ms=%.3f reference_ms=%.3f ratio=%.2f" % [
+			PER_SIDE * 2, f.controls.selection.units.size(), " ".join(parts), per_frame, reference, ratio])
+	assert_true(ratio < FRAME_BUDGET_REFERENCES, "control costs %.2f reference workloads a frame with %d units (budget %.1f; %.3f ms): %s"
+			% [ratio, PER_SIDE * 2, FRAME_BUDGET_REFERENCES, per_frame, " ".join(parts)])
 	panel.queue_free()
+
+
+## A fixed workload of the same kind as the UI's (walk the tank nodes, read positions, fill a dictionary): the yardstick
+## the frame budget is measured against.
+func _reference_work(f: Fixture) -> void:
+	var seen := {}
+	for repeat in 10:
+		for node in f.game_match.tanks.get_children():
+			var tank := node as Node3D
+			seen[tank.name] = tank.global_position.length() + float(repeat)

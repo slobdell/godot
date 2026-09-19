@@ -122,8 +122,8 @@ func _layout() -> void:
 
 ## X4: one entry per portrait: every unit below GROUP_ABOVE, one per type above it.
 ## [{"key", "role", "health", "shield", "count", "label"}] - `key` is what _portrait_rects and clicks use.
-func portrait_entries() -> Array:
-	var units := _sorted_units()
+func portrait_entries(sorted: Array[String] = []) -> Array:
+	var units := sorted if not sorted.is_empty() else _sorted_units()
 	if units.size() <= GROUP_ABOVE:
 		var singles: Array = []
 		for unit_name in units:
@@ -229,7 +229,7 @@ func summary() -> Dictionary:
 		result["orders"] = result["card"]["orders"]
 		return result
 	result["mode"] = "group"
-	result["portraits"] = portrait_entries()
+	result["portraits"] = portrait_entries(units)  # sorted once (it was sorted twice a frame)
 	for portrait: Dictionary in result["portraits"]:
 		portrait["unit"] = String(portrait["key"]) if int(portrait["count"]) == 1 else ""
 	result["count"] = units.size()
