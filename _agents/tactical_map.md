@@ -15,17 +15,30 @@
 | **Loading shows itself** | FIGHT puts a loading screen on the tree root (`LoadingScreen`): the matchup, the arena and what it is for, a card teaching one command-card task by its symbol, and a bar naming the stage (scene, venue + navmesh, armies, first frame). The arena build and navmesh bake stay synchronous (trip-up 57); the screen names the stage and stays drawn through it. Every load prints `LOAD_TIMING total_ms=… scene=… arena=… armies=… first_frame=…`. |
 | **Squad chips say what they're doing** | Each group chip over the panel reads IDLE (yellow: the one to find), MOVING, CONTACT or UNDER FIRE (ElementAwareness). |
 | **Orders you can see landing** | nav's N1 `Movement.state`: a vehicle that is YIELDING or BLOCKED says so over its hull, and its card says "Blocked by Tank" or "Arrives in 4 s" (`MovementReadout`; silent until nav's CP1 is on `main`). |
-| **Pitch is its own axis** | Zoom sets only the distance. **Page Up / Page Down** or **ctrl+wheel** tilt (8°-50°), **Home** resets it. Round 5 tilted from 25° to 82° as you zoomed out, so seeing your army cost you a top-down view. **O** is the deliberate top-down overview (77°) and back. **The default is the lead's pick, taken twice at the floor of what he was offered**: 25° of 25/35/45/60, then **12° · 50 m · FOV 60°** of 12/16/20/25. "Between StarCraft 2 and Twisted Metal" sits much nearer Twisted Metal than assumed; don't correct it upward for an easier tactical read. The floor is 8°, a little below his default, not at it: below 8° the frame is mostly horizon. |
-| **A soft floor only far out** | Past 70 m a very low tilt is lifted, up to 40° at full zoom-out (`RtsCamera.tilt_at`): at 12° and ~150 m the arena was a strip between sky and cut-away stands, units specks. Up to 70 m, including his 50 m, the tilt is exactly his. Not round 5's weld: it engages only far out and stops well short of top-down. |
+| **The camera (settled from play)** | **21° below the horizon, 49 m out, FOV 35° (a telephoto), auto-framing on** — the pose the lead found himself with the live controls and sent back (`CAMERA_POSE pitch=21 distance_m=49 fov=35 yaw=-0 zoom=0.365 auto_frame=on`). Zoom sets only the distance; PgUp/PgDn or ctrl+wheel tilt (8°–70°), Home resets, **O** is the top-down overview (77°). The first frame is squad 1, not the whole army. |
+| **Why a telephoto (read before touching `FOV_DEG`)** | Round 6 got this wrong three times. Two pages of still frames produced 25° then 12° (both at the floor offered); 12° was "unplayable" in play; 45° was still "unplayable because of the field of view"; two agents then argued a *wider* lens "shows more of the fight" — sound and irrelevant. The answer was the opposite: at a low pitch a wide lens is a vista of horizon with tiny vehicles; a telephoto crops to the action and makes the machines read large (64 px at 1080p at the start, vs 40–52 before). **The pitch was never the problem — the lens was**, and a still rendered at a fixed FOV cannot show that: it holds constant the one variable that mattered. Don't widen the lens toward 55–60° without the lead, and choose camera numbers from play, never from frames. |
+| **Find the camera in play** | A readout (top left) shows pitch, distance, FOV, yaw and auto-framing live. **[ ]** field of view, **PgUp/PgDn** tilt (8°–70°), wheel distance, **, .** yaw, **V** auto-framing off/on, **P** copies the pose (`CAMERA_POSE …`) to the clipboard and the console. The defaults are made from the pose the lead sends back. `--camera-readout=off` hides it. |
+| **A soft floor only far out** | Past 70 m a very low tilt (a player who tilts down) is lifted, up to 40° at full zoom-out (`RtsCamera.tilt_at`): at 12° and ~150 m the arena was a strip between sky and cut-away stands, units specks. Up to 70 m the tilt is exactly the player's. Not round 5's weld: it engages only far out and stops well short of top-down. |
 | **The wall cutaway** | At a low camera a squad near a wall (every spawn) is framed from a camera past the wall, among or behind the stands; the camera's near plane then sits just past the wall's top edge, so the stands and the wall between it and the arena aren't drawn (`RtsCamera.cutaway_near`). It cuts only when the stands would hide something: always when the camera is among the seats, and from beyond their back only when the sight line to a vehicle inside the wall passes through the stands' measured profile; otherwise the stands and crowd stay as foreground. Over the arena nothing changes. Chosen over raising the pitch near walls, which would bring back the top-down view exactly where every match starts. |
 | **Why did it do that** | Hover the doctrine line on the card: the selected element's last six decisions with the match time ("0:47  line, react to contact — contact ahead"; `ElementLog`). |
 
 ## Open items (round 6)
 
-- **Touch needs its own framing (a debt).** The lead chose 12° / FOV 60° for desktop; phones inherit it, and at
-  1200×540 a start-view vehicle measures 23.7 px (desktop 1920×1080: 40.0 px; headless projection, one fixture). The
-  phone readability bar moved 24 → 22 px *provisionally*. The fix when touch gets its pass is a closer start distance or
-  a pitch of its own for touch — never lowering the bar again (`tests/test_command_readability.gd`).
+- **Touch has no framing of its own.** At the 45° / FOV 60° default a start-view vehicle is 30.3 px on a 1200×540 phone
+  (52.5 px at 1920×1080). During the short-lived 12° default it fell to 23.7 px and the bar was lowered to 22
+  provisionally; it is back at 24. If a camera change pushes phones under the bar, give touch its own framing (a
+  closer start or its own pitch) — never lower the bar (`tests/test_command_readability.gd`).
+
+- **The camera assumes a SQUARE arena (read before changing the arena's shape).** `RtsCamera.cutaway_near` finds where
+  the camera's sight line crosses the wall by intersecting it with the perimeter *square* (`perimeter_half()`: the
+  layout's `half_size` + 1 m), and judges occlusion against `STANDS_PROFILE`, measured from feel's straight
+  `kit_stands` (15.7 m high, 19.9 m deep, 0.3 m past a 2 m wall; `WALL_HEIGHT_M` 3 m). An octagonal or hexagonal arena
+  (the lead has asked for one) needs the crossing computed against that polygon and the profile re-measured, or the
+  cutaway will cut the wrong things near the new walls. `camera_looks.gd` applies the same function.
+- **Auto-framing at the telephoto pulls out for a spread squad.** At FOV 35 the vision camera needs ~1.8x the distance
+  of FOV 60 to fit the same spread: a squad strung along the spawn line framed at ~166 m / 40° (the far-range floor) in
+  `make shell-playtest`, returning toward 49 m once it forms up. The lead left auto-framing on; if he dislikes the
+  pull-out, cap the auto-frame distance (one constant) — ask him first.
 
 ## Task palette (N4)
 

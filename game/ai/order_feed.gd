@@ -14,7 +14,8 @@ extends RefCounted
 ##    "goal": Vector3 | null   this unit's own destination in world meters: control's per-unit `goal` [x, z] (the group's
 ##                             `to` plus this unit's formation slot), else `goal_position(unit)`, else `to`,
 ##    "target": String         attack: the enemy; follow: the friend ("" otherwise),
-##    "issued_tick": int, "speed": float (0.2..1, `pace_factor(unit)` when the source has it)}
+##    "issued_tick": int, "speed": float (0.2..1, `pace_factor(unit)` when the source has it),
+##    "facing": Vector3 | null  round 7: the ordered facing on arrival (flat, unit length), from the command's `facing`}
 ## or {} when the unit has no order. Control's `slot` is [right, back] in the group's frame: not a position.
 
 const VERBS := ["move", "attack", "attack_move", "follow", "hold", "stop"]
@@ -72,6 +73,25 @@ static func station(orders: Object, unit_name: String) -> Variant:
 	return point(found["position"])
 
 
+## Round 7 (nav): which way an idle unit's station faces — the ordered `facing`, else the group's direction of travel
+## (control's `station(unit).heading`) — as a flat unit Vector3, or null when the source keeps no stations.
+static func station_heading(orders: Object, unit_name: String) -> Variant:
+	if orders == null or not orders.has_method("station"):
+		return null
+	var found: Variant = orders.call("station", unit_name)
+	if typeof(found) != TYPE_DICTIONARY:
+		return null
+	return heading((found as Dictionary).get("heading"))
+
+
+## [x, z] (or anything point() reads) → a flat unit Vector3, or null for nothing / a zero direction.
+static func heading(value: Variant) -> Variant:
+	var direction: Variant = point(value)
+	if direction == null or (direction as Vector3).length_squared() < 0.000001:
+		return null
+	return (direction as Vector3).normalized()
+
+
 static func complete(orders: Object, unit_name: String) -> void:
 	if orders != null and orders.has_method("complete"):
 		orders.call("complete", unit_name)
@@ -95,7 +115,8 @@ static func normalize(raw: Variant) -> Dictionary:
 			order.get("started_tick", ""), order.get("target", ""), order.get("goal", ""), order.get("to", "")]
 	return {"verb": verb, "goal": goal, "target": String(order.get("target", "")),
 			"issued_tick": int(order.get("issued_tick", -1)),
-			"speed": clampf(float(order.get("speed", 1.0)), 0.2, 1.0), "identity": identity}
+			"speed": clampf(float(order.get("speed", 1.0)), 0.2, 1.0), "identity": identity,
+			"facing": heading(order.get("facing"))}
 
 
 ## Identity of an order, to notice a new one even without the signal: its id, verb, ticks, target, and destination as

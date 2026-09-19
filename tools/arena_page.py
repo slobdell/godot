@@ -18,6 +18,7 @@ review pages sat unseen for a day because nobody could open them. This one is on
 
 import argparse
 import base64
+import sys
 import html
 import io
 import json
@@ -132,6 +133,130 @@ VERDICTS = {
              "round costs almost nothing — but so broken up that posting a squad to watch a lane buys little.", "good"),
 }
 
+## Plain DOM, no library. A pick is STORED the moment it is made, and the page says so.
+##
+## The stateless version of this page lost the lead's answers: he pressed every button and left without copying,
+## because pressing the last radio *felt like finishing*. A Copy button after that reads as optional. The rule
+## (orchestration lesson 75): **stateless is right when the human's goal ends in taking the value away; persist
+## when their goal ends in having answered.** People stop when their task feels done, not when ours does. The test
+## for any collection page is the abandonment path -- **what reaches us if they close the tab right now?**
+##
+## So `db` holds the answers and the Copy button is now a convenience rather than the mechanism. Everything still
+## works without it: `claude.use("db")` resolving null is an ordinary outcome, and then the page says plainly that
+## nothing is being saved and to copy instead. The status line is not decoration -- it is the only way he can tell
+## whether a press survived, which is exactly what he could not tell last time.
+SCRIPT = """
+(function () {
+  var LABELS = %s;
+  var ANSWERS = {keep: "KEEP", fix: "FIX", cut: "CUT", play: "PLAY IT FIRST"};
+  var summary = document.getElementById("summary");
+  var note = document.getElementById("note");
+  var statusEl = document.getElementById("status");
+  var state = {votes: {}, note: ""};
+  var ref = null, saving = false, again = false;
+
+  function build() {
+    var lines = ["Tank Squad arenas \u2014 my answers", ""];
+    Object.keys(LABELS).forEach(function (name) {
+      lines.push("- " + LABELS[name] + ": " + (ANSWERS[state.votes[name]] || "\u2014"));
+    });
+    if (state.note) { lines.push("", "Notes: " + state.note); }
+    summary.value = lines.join("\\n");
+  }
+
+  function say(kind, text) { statusEl.textContent = text; statusEl.className = "status " + kind; }
+
+  function paint() {
+    Object.keys(LABELS).forEach(function (name) {
+      var pick = state.votes[name];
+      if (!pick) { return; }
+      var el = document.getElementById("v-" + name + "-" + pick);
+      if (el) { el.checked = true; }
+    });
+    if (state.note && note && !note.value) { note.value = state.note; }
+    build();
+  }
+
+  function save() {
+    if (!ref) { return; }
+    if (saving) { again = true; return; }
+    saving = true;
+    say("saving", "Saving\u2026");
+    ref.set({votes: state.votes, note: state.note, updatedAt: new Date().toISOString()}).then(function () {
+      saving = false;
+      say("ok", "Saved. You can close this page \u2014 we have your answers.");
+      if (again) { again = false; save(); }
+    }, function (e) {
+      saving = false; again = false;
+      say("warn", "Not saved (" + (e && e.code ? e.code : "error") + "). Please copy your answers and send them back.");
+    });
+  }
+
+  var noteTimer = null;
+  document.addEventListener("change", function (e) {
+    if (!e.target || e.target.type !== "radio") { return; }
+    var name = e.target.name.replace(/^vote-/, "");
+    state.votes[name] = e.target.value;
+    build();
+    save();
+  });
+  if (note) {
+    note.addEventListener("input", function () {
+      state.note = note.value.trim();
+      build();
+      clearTimeout(noteTimer);
+      noteTimer = setTimeout(save, 900);
+    });
+  }
+
+  var copy = document.getElementById("copy");
+  var said = document.getElementById("copied");
+  copy.addEventListener("click", function () {
+    summary.select();
+    summary.setSelectionRange(0, summary.value.length);
+    var done = function () { said.hidden = false; setTimeout(function () { said.hidden = true; }, 2500); };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(summary.value).then(done, function () {
+          said.textContent = "Selected \u2014 press Ctrl/Cmd+C."; done();
+        });
+        return;
+      }
+      document.execCommand("copy");
+      done();
+    } catch (err) { said.textContent = "Selected \u2014 press Ctrl/Cmd+C."; done(); }
+  });
+
+  build();
+  say("checking", "Checking whether your answers can be saved\u2026");
+  var claude = window.claude;
+  if (!claude || !claude.use) {
+    say("warn", "Your answers are NOT being saved here \u2014 please copy them and send them back.");
+    return;
+  }
+  claude.use("db").then(function (db) {
+    if (!db) {
+      say("warn", "Your answers are NOT being saved here \u2014 please copy them and send them back.");
+      return;
+    }
+    ref = db.doc("answers/arenas");
+    ref.get().then(function (snap) {
+      var body = snap && snap.exists ? snap.data() : null;
+      if (body) {
+        state.votes = body.votes && typeof body.votes === "object" ? body.votes : {};
+        state.note = typeof body.note === "string" ? body.note : "";
+        paint();
+        say("ok", "Your earlier answers are here. Change anything and it saves itself.");
+      } else {
+        say("ready", "Your answers save themselves as you pick.");
+      }
+    }, function () { say("ready", "Your answers save themselves as you pick."); });
+  }, function () {
+    say("warn", "Your answers are NOT being saved here \u2014 please copy them and send them back.");
+  });
+})();
+"""
+
 CSS = """
 :root { color-scheme: dark; --bg:#11131a; --card:#1a1d27; --line:#2b3040; --ink:#e8eaf2; --dim:#9aa1b8;
         --good:#4ec9a0; --mixed:#d8b45a; --bad:#e2685f; }
@@ -166,6 +291,32 @@ li.good::before { color:var(--good); } li.mixed::before { color:var(--mixed); }
 li.bad::before { color:var(--bad); } li.plain::before { color:var(--dim); }
 li.plain { color:var(--dim); }
 .q { margin:14px 0 0; padding-top:12px; border-top:1px solid var(--line); font-weight:600; }
+fieldset.vote { border:1px solid var(--line); border-radius:10px; margin:14px 0 0; padding:12px 14px 14px;
+                display:flex; flex-wrap:wrap; gap:8px; }
+fieldset.vote legend { color:var(--dim); font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; padding:0 6px; }
+.opt { display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:999px;
+       padding:9px 15px; cursor:pointer; background:#141720; font-size:.95rem; min-height:44px; }
+.opt:hover { border-color:var(--dim); }
+.opt input { accent-color:var(--good); width:17px; height:17px; margin:0; }
+.opt:has(input:checked) { border-color:var(--good); background:rgba(78,201,160,.12); }
+.opt:has(input:focus-visible) { outline:2px solid var(--good); outline-offset:2px; }
+.answers { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin:0 0 24px; }
+.answers h2 { margin:0 0 4px; font-size:1.15rem; }
+.answers .sub { margin:0 0 12px; }
+textarea { width:100%; background:#0d0f15; color:var(--ink); border:1px solid var(--line); border-radius:8px;
+           padding:12px; font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; resize:vertical; }
+.row { display:flex; align-items:center; gap:12px; margin:12px 0 4px; }
+button { background:var(--good); color:#0b1a15; border:0; border-radius:8px; padding:12px 18px; font-size:1rem;
+         font-weight:650; cursor:pointer; min-height:44px; }
+button:hover { filter:brightness(1.08); }
+button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+#copied { color:var(--good); font-size:.9rem; }
+.status { font-size:.95rem; margin:0 0 10px; padding:9px 12px; border-radius:8px; border:1px solid var(--line); }
+.status.ok { color:var(--good); border-color:rgba(78,201,160,.45); background:rgba(78,201,160,.10); }
+.status.ready { color:var(--good); border-color:rgba(78,201,160,.35); }
+.status.saving, .status.checking { color:var(--dim); }
+.status.warn { color:var(--bad); border-color:rgba(226,104,95,.45); background:rgba(226,104,95,.10); }
+.notes { display:block; color:var(--dim); font-size:.88rem; margin:16px 0 6px; }
 footer { color:var(--dim); font-size:.9rem; border-top:1px solid var(--line); padding-top:18px; margin-top:8px; }
 code { background:#0d0f15; padding:1px 5px; border-radius:4px; font-size:.9em; }
 @media (max-width:600px){ .wrap{padding-block:16px 48px; padding-inline:16px;} h1{font-size:1.35rem;} }
@@ -176,6 +327,25 @@ code { background:#0d0f15; padding:1px 5px; border-radius:4px; font-size:.9em; }
 ## The page commits to one dark look on purpose: it is a page of screenshots of a night-time arena game, and a light
 ## ground would fight every image on it. So no light/dark token swap -- but every colour is declared explicitly on
 ## :root and the body paints its own background, so the page holds whatever ground it is composited over.
+## The four answers, as real radio buttons. The first version of this page printed them as a SENTENCE -- "Keep it ·
+## Fix it · Cut it · I'd rather just play it first" -- which looks exactly like a control and is not one. The lead
+## opened it and said "doesn't have buttons I can click to give feedback". A page built to collect an answer and
+## unable to collect one is the same failure as a review page nobody can open, one step further in.
+##
+## Deliberately no database and no stored state: the answers go into a textarea he copies and pastes back. That
+## needs nothing to be provisioned, works with site data blocked, and cannot half-work. The pick is the whole
+## payload; a storage layer would be more to get wrong than the thing it stores.
+ANSWERS = [("keep", "Keep it"), ("fix", "Fix it"), ("cut", "Cut it"), ("play", "Let me play it first")]
+
+
+def choices(name):
+    buttons = "".join(
+        '<label class="opt" for="v-%s-%s"><input type="radio" id="v-%s-%s" name="vote-%s" value="%s">'
+        '<span>%s</span></label>' % (name, key, name, key, name, key, label)
+        for key, label in ANSWERS)
+    return '<fieldset class="vote"><legend>Your call</legend>%s</fieldset>' % buttons
+
+
 def render(report, order, shots, plans, fragment=False):
     cards = []
     for name in order:
@@ -194,13 +364,18 @@ def render(report, order, shots, plans, fragment=False):
         bullets = "".join('<li class="%s">%s</li>' % (tone_, text) for tone_, text in plain_english(entry))
         cards.append(
             '<div class="card">%s<div class="body"><div class="name">%s<span class="tag %s">%s</span></div>'
-            '<p class="verdict">%s</p><ul>%s</ul><p class="q">Keep it &nbsp;·&nbsp; Fix it &nbsp;·&nbsp; Cut it &nbsp;·&nbsp; I\'d rather just play it first</p></div></div>'
+            '<p class="verdict">%s</p><ul>%s</ul>%s</div></div>'
             % (picture, html.escape(entry.get("title", name.title())), tone,
                {"good": "worth keeping", "mixed": "middling", "bad": "too open"}[tone],
-               html.escape(verdict), bullets))
+               html.escape(verdict), bullets, choices(name)))
     head = "" if fragment else ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
                                 '<meta name="viewport" content="width=device-width,initial-scale=1">')
     tail = "" if fragment else "</body></html>"
+    # Foundry's card covers the Furnace too, so its line in the pasted answer has to say so -- otherwise he
+    # answers for one map and we apply it to two without him having agreed to that.
+    labels = {name: read(report, name).get("title", name.title()) for name in order if read(report, name)}
+    if "foundry" in labels:
+        labels["foundry"] = "Foundry (and the Furnace)"
     return """%s<title>Tank Squad Arenas</title><style>%s</style>%s<div class="wrap">
 <h1>The seven arenas</h1>
 <p class="sub">Each one as the match runner sees it, and what it measures. Round 6, arena stream.</p>
@@ -218,13 +393,57 @@ The ones marked <b style="color:var(--bad)">too open</b> are the measured versio
 big open brawl&rdquo;: their middles see most of the battlefield, so there is nowhere to set up an ambush and
 nothing a flank can take. <b>Boulevard is the worst, and it is first.</b></div>
 %s
+<section class="answers" id="answers">
+<h2>Your answers</h2>
+<p class="status checking" id="status">Checking whether your answers can be saved…</p>
+<p class="sub">This fills in as you choose. Copying it is optional — it is here in case you want to send it on.</p>
+<textarea id="summary" rows="10" readonly aria-label="Your answers, ready to copy"></textarea>
+<div class="row"><button id="copy" type="button">Copy my answers</button><span id="copied" hidden>Copied.</span></div>
+<label class="notes" for="note">Anything else worth saying (optional)</label>
+<textarea id="note" rows="3" placeholder="e.g. cut the boulevard, it looks like a car park"></textarea>
+</section>
 <footer>Pictures: <code>make arena-shots</code>, the match runner's own camera, 30 a side.
 Measurements: <code>make arena-report</code> — static geometry, no match played.
 &ldquo;Seen&rdquo; assumes a defender covers 45 m, which is what an ordinary crew manages on its own judgement;
 a squad you <i>order</i> to watch a lane reaches further, so &ldquo;covered&rdquo; is never a guarantee.
 The Furnace shares the Foundry's card — same shape, different hazards. The Maze is not here: it is a nav test
 fixture, not a map.
-</footer></div>%s""" % (head, CSS, "" if fragment else "</head><body>", "".join(cards), tail)
+</footer></div><script>%s</script>%s""" % (head, CSS, "" if fragment else "</head><body>",
+                                           "".join(cards), SCRIPT % json.dumps(labels), tail)
+
+
+## POSITIVE CONTROL for the page the lead actually answers on (_agents/verification.md).
+##
+## This page carries the highest-stakes numbers this stream produces — the lead cut four maps on them — and it is
+## assembled from a JSON file on disk that nothing guarantees is current. `make arena-page` will happily render a
+## report generated before the layouts it describes, and the result looks exactly like a fresh one: the same
+## arenas, plausible figures, no warning anywhere.
+##
+## So: assert the conditions, name them when they hold, and refuse to build rather than publish a stale page.
+## States what was checked and what is therefore not produced — not a diagnosis of what the stale numbers would
+## mean, which this script cannot know.
+def _positive_control(report_path, report):
+    problems = []
+    if not report_path.exists():
+        problems.append("no report at %s" % report_path)
+    else:
+        report_age = report_path.stat().st_mtime
+        for layout in sorted((ROOT / "arenas").glob("*.json")):
+            if layout.stat().st_mtime > report_age:
+                problems.append("%s is newer than the report (run: make arena-report)" % layout.name)
+    named = {entry.get("name") for entry in report}
+    for entry in report:
+        if "ambush" not in entry or "centre_sees_share" not in entry.get("ambush", {}):
+            problems.append("%s has no centre_sees_share — the report predates the measure the page quotes"
+                            % entry.get("name"))
+    missing = [n for n in ("yard", "pit", "boulevard", "foundry") if n not in named]
+    if missing:
+        problems.append("the report does not cover %s" % ", ".join(missing))
+    if problems:
+        for problem in problems:
+            print("ARENA_PAGE_CONTROL FAILED: %s" % problem, file=sys.stderr)
+        sys.exit(1)
+    print("ARENA_PAGE_CONTROL ok: report covers %d arenas and is newer than every layout" % len(report))
 
 
 def main():
@@ -237,7 +456,9 @@ def main():
     parser.add_argument("--fragment", action="store_true",
                         help="omit the document wrapper (the Artifact platform supplies its own head/body)")
     args = parser.parse_args()
-    report = json.loads((ROOT / args.report).read_text())
+    report_path = ROOT / args.report
+    report = json.loads(report_path.read_text())
+    _positive_control(report_path, report)
     # Worst first: the lead's time goes on the maps this stream is asking about, not on the ones that measure fine.
     # Worst first, and furnace folded into foundry's card (they are the same shape). Six judgements, not seven.
     order = [n for n in ("boulevard", "foundry", "boneyard", "pit", "scrapyard", "yard") if read(report, n)]

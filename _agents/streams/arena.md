@@ -97,9 +97,135 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## "N passed, 0 failed" can be a TRUNCATED run (round 7)
+
+**`make check` stops at the first failing target.** Its targets run in order — `lint test net-smoke combat-smoke
+broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke
+announcer-check audio-check` — so a failure at `sim-baseline` means the **four after it never run**, and the
+runner still prints `N passed, 0 failed` for the ones that did.
+
+So *"sim-baseline was the only failure"* is indistinguishable from *"sim-baseline was the last target that got a
+chance to fail"*. **`0 failed` is a property of the targets that ran, and it passes for the wrong object.** Same
+shape as the readiness bug in `ArenaFixture`: a claim built on a property rather than an identity.
+
+**This bites arena specifically.** `announcer-check` and `audio-check` are the last two targets, and the perimeter
+work touches the stands and gates feel dresses — and `tools/announcer/test_arena_names.py` is a file this stream
+edits by recorded exception, precisely the sort of thing a new arena shape could disturb. **A truncated run cannot
+tell you whether your own change broke them.**
+
+**What to do instead of waiting:** the expensive parts need builder0, but the test components run locally in
+minutes and cover most of the risk —
+
+```bash
+python3 -m unittest discover -s tools/announcer -p 'test_*.py'   # 58 tests, ~2 min
+make audio-pytest                                                # 16 tests, ~30 s
+```
+
+Both green on the round-7 perimeter and terrain work (2026-09-19), so the hexagon's edge spans do not disturb the
+announcer's arena-name handling.
+
+## Round 7 state (2026-09-19, branch merged with main at `4977e991`)
+
+**Built, tested, and needing nobody:**
+
+| Item | What exists |
+|---|---|
+| **A** water / pits / bridges | `layout.terrain`, carved floor + 0.9 m rim cut at the decks. Measured before built (`make water-probe`) |
+| **C** cost-and-reward metric | `make arena-report` emits a `DECISION` line. **Every shipping arena reads `spread 0.00`** |
+| **D** perimeter polygon + spans | `Arena.perimeter()` / `perimeter_edges()`, consumed by control (`7dd14aca`) and feel. Hexagon builds and bakes; mirrored trips match to 0.05 m |
+| **M4** `contains` / `clamp_into` | Nearest-boundary, allocation-free, answers for the square too, knows about water |
+
+Local: arena 64/64, announcer 58/58, audio 16/16, tactics 10/10, objectives 3/3.
+
+**Blocked on other streams, and both blocks are real rather than cautious:**
+
+1. **The hexagon cannot validate until `Match.ARENA_HALF_SIZE` goes 120 → 140** (combat's). A hexagon at 120 holds
+   only 48 of 104 spawn points, and `Arena.validate()` now refuses it — so a map authored at 120 would have to be
+   authored again. **This is why Pit and Yard are untouched.**
+2. **Off-centre objectives cannot ship until combat's N7 read-through reaches `main`.** `Arena.objectives_of()`
+   exists but **nothing in `game/` consumes it**: `Match.in_control_zone` is still static and central, and squad's
+   `Objectives` shim deliberately **errors** for a non-central layout rather than answering plausibly. That guard
+   is the right design — a CPU competing for the wrong ground looks completely functional — but it means authoring
+   a pair now produces a layout that refuses to run.
+
+**So the next map work is gated, and the gate is not mine.** When both land: author Pit and Yard on the hexagon
+with a mirrored objective pair, and the `DECISION` spread is how to tell whether it worked.
+
+## A local `make check` does NOT check the simulation baseline (round 7)
+
+**`sim-baseline` SKIPS on this laptop and always will.** The baseline file is keyed by glibc version, builder0 is
+`glibc-2.43` and the laptop is `glibc-2.39`, so the target prints *"sim-baseline SKIPPED: no baseline for
+glibc-2.39"* and **exits 0** whatever the simulation does. It fails only on builder0 — the machine that gates
+merges.
+
+So a local run is silent on exactly the thing most likely to be broken by someone else's merge, which is why a
+green local suite is never a substitute for `make remote T=check`. My `FILTER=arena` runs and `--check-only` passes
+mean what they say; they simply cannot see this.
+
+**It also means `sim-baseline FAILED` alone, on a branch that merged `main`, is usually not yours** — the orchestrator
+records the baseline once per round after the last sim-changing merge, so `main` runs red in between. Anything else
+failing is real.
+
+## Resume here (written at the round-6 quota stop, 2026-09-18)
+
+**Branch merged, tree clean, nothing in flight.** The durable knowledge is in
+[../arenas.md](../arenas.md) — *Designing a new map: start here* and *Why the navmesh is baked as one half plus a
+mirror* — deliberately there rather than only here, because a map author reads that file and not a stream's Status.
+
+**The three things that would hurt most to lose:**
+1. **`centre_sees_share` predicted the lead's verdict and is therefore a design target, not a description.** Aim
+   below ~0.30; above ~0.50 he has rejected it twice. Pure geometry, cannot go stale, one `make arena-report` to
+   check before anyone models a prop.
+2. **X2 scores what a route costs and never what it reaches**, so it reports cheap flanks on maps that play as a
+   brawl. A cheap route to nowhere is scenery. The objective work and the terrain work are one job.
+3. **The 60-unit nav-maze baselines are superseded** (nav's spawn-coincidence fix — 52 spawn points, `slot %
+   size` wrapped 8 pairs onto each other); **the 30-unit row is not** (30 < 52). See
+   [references/arena/README.md](references/arena/README.md).
+
+**Two knobs, both deliberate:** `WATCHER_REACH_M` is read from the catalog (`make arena-reach` → `Engagement.
+covering_range()`), `--reach` overrides; `agent_max_climb` is **untouched on purpose** — raising it lifts the ~20°
+terrain ceiling but re-bakes every arena's mirrored-half mesh and needs the swap-bases control re-run.
+
+**Not started, on instruction:** the octagon/hexagon shape change, bridges/water, and X3.
+
+## The lead's answer (2026-09-18, from the review page's own store)
+
+**Asked keep / fix / cut / play-it-first per map, he cut four and kept two.** Read back from `answers/arenas` on
+https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4 :
+
+| Arena | centre sees | His call |
+|---|---|---|
+| **Boulevard** | 0.64 | **CUT** |
+| **Foundry** (its card covered the **Furnace**) | 0.56 | **CUT** |
+| **Boneyard** | 0.40 | **CUT** |
+| **Scrapyard** | 0.29 | **CUT** |
+| Pit | 0.30 | **KEEP** |
+| Yard | 0.20 | **KEEP** |
+
+No notes given. **The four most open maps are exactly the four he cut** — centre-visibility predicted his answer
+better than anything else measured, though scrapyard (0.29) and pit (0.30) are nearly tied and he split them, so it
+is not a pure function of the metric.
+
+**Confirmed in words as well as buttons:** *"the only two maps worth keeping were the last one and the one with the
+octagon of shipping containers. All the maps need to be higher quality regardless."* **Nothing is being deleted** —
+the four are *do-not-invest*, and Foundry stays `DEFAULT_LAYOUT` until he rules on that infrastructure change.
+The original caveats, which he has now answered:
+1. Taken literally it removes **five of seven** shipping arenas. The page invited "cut" as a real answer but never
+   said "you are about to remove most of the game's maps"; he may have meant that, or may have meant "not worth
+   fixing, prioritise accordingly".
+2. **Foundry is `Arena.DEFAULT_LAYOUT`** — every headless run, the sim baseline and most tests use it. Cutting it
+   is an infrastructure change that moves the baseline, not a content change.
+
+If he confirms, X5's remaining scope collapses: *"make every shipping arena worth landing on"* becomes *"make two
+good ones"*, and X3's objective work only has to serve pit and yard.
+
 ## Waiting on the lead
 
-1. **Which arena is fun** — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+1. ~~**Which arena is fun**~~ — **answered above.** The page itself is still live — **the page is live and with him: https://claude.ai/artifact/9RrjvWxhXZbu7ngnao5qn4**
+   (**version 3**: the first two had no controls at all — the four answers were printed as a *sentence* that looks
+   like a control and is not one. He said so: *"doesn't have buttons I can click to give feedback"*. Now radio
+   buttons, a summary he copies, and a notes box; no database, because the pick is the whole payload. **Verify an
+   interaction by performing it — reading the HTML you wrote cannot tell you the words do nothing.**)
    (`make arena-page` rebuilds it; republish that URL to update it). Six cards, worst first, each asking
    *keep it · fix it · cut it · I'd rather just play it first*. A link rather than a path under `build/` on purpose:
    lesson 12's failure was review pages nobody could open.
@@ -305,6 +431,22 @@ adjusted, because nav's before/after is on a fixed tree.
 **What I should have done:** I treated the tail as more of the headline. A stable minority failing the same way is a
 defect, not variance, and nav found it by asking *which* units failed rather than how many. Left in a baseline it
 would have flattered every later fix by 8 units a run.
+
+### X2's limitation, found by the lead (2026-09-18)
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground."*
+
+**Terrain creates risk, objectives create reason, neither works alone, and the prize goes where the risk is.** That
+reframes my own headline. I measured *"covered routes cost a 1.0–1.1× detour on every map and nobody takes them"*
+and read it as "flanking is cheap and unused". His framing says the cheapness is the symptom: **a route that is
+cheap and leads nowhere worth going is not a tactical option, it is scenery.**
+
+So **X2's analysis measures only half the thing.** It scores a route by what it *costs* — exposure, detour — and
+never by what it *reaches*. That is why it reports that every arena already offers an affordable flank while the
+game plays as a brawl: both statements are true and the metric cannot see the contradiction. Any round-7 version
+needs a term for the value at the end of the route, and **X3 and the bridge/water work are one job** — measuring
+either alone will under-read it.
 
 ### X9 / dynamic obstacles: keep the navmesh a startup snapshot (arena's ruling, 2026-09-18)
 

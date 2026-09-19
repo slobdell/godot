@@ -12,6 +12,7 @@ func _rig() -> RtsCamera:
 	add_to_tree(camera)
 	camera.make_current()
 	var rig := RtsCamera.new()
+	RtsCamera.fov = RtsCamera.FOV_DEG  # the default lens (a static: another test may have changed it)
 	rig.camera = camera
 	rig.edge_pan = false
 	rig.focus = Vector3(0, 0, 40)
@@ -34,8 +35,13 @@ func test_zoom_sets_the_distance_and_never_the_tilt() -> void:
 	# ...and only past it does a soft floor lift a very low camera, so a whole-army view is ground, not a strip of
 	# arena between sky and cut-away stands (the lead's 12°, shell-playtest at 50 s). Never near round 5's top-down.
 	var far_tilt := rad_to_deg(asin(far.origin.y / far.origin.length()))
-	assert_near(far_tilt, RtsCamera.FAR_TILT_MAX_DEG, 0.01, "fully zoomed out, the floor is FAR_TILT_MAX_DEG")
-	assert_true(far_tilt <= 45.0, "which is nowhere near a bird's eye view (%.0f°)" % far_tilt)
+	assert_near(far_tilt, maxf(RtsCamera.DEFAULT_PITCH_DEG, RtsCamera.FAR_TILT_MAX_DEG), 0.01,
+			"fully zoomed out: the player's tilt or the far floor, whichever is higher")
+	var low_far := RtsCamera.pose_for(Vector3.ZERO, 0.0, 1.0, 12.0)
+	assert_near(rad_to_deg(asin(low_far.origin.y / low_far.origin.length())), RtsCamera.FAR_TILT_MAX_DEG, 0.01,
+			"a player who tilts to 12° still gets the far floor when fully zoomed out")
+	assert_true(RtsCamera.tilt_at(RtsCamera.MIN_PITCH_DEG, RtsCamera.MAX_DISTANCE) <= RtsCamera.FAR_TILT_MAX_DEG,
+			"the far floor itself never goes past FAR_TILT_MAX_DEG, nowhere near a bird's eye view")
 	var steep_far := RtsCamera.pose_for(Vector3.ZERO, 0.0, 1.0, 48.0)
 	assert_near(rad_to_deg(asin(steep_far.origin.y / steep_far.origin.length())), 48.0, 0.01, "a steeper tilt is kept as it is")
 	assert_true(RtsCamera.DEFAULT_PITCH_DEG <= 50.0, "and the default sees vehicles from the side, not from above")
@@ -282,3 +288,27 @@ func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
 			"a low one looking through them cuts them")
 	# Looking the other way from the same spot (camera over the arena), nothing is cut.
 	assert_eq(RtsCamera.cutaway_near(focus, PI, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "a camera over the arena cuts nothing")
+
+
+## Round 6: the lead finds the camera himself, in play. Every value is live, the readout shows it, P copies it, and V stops
+## the auto camera taking the view back while he hunts.
+func test_the_camera_can_be_found_by_hand_and_copied() -> void:
+	var rig := _rig()
+	await wait_physics_frames(2)
+	var fov_before := RtsCamera.fov
+	rig.fov_by(RtsCamera.FOV_STEP_DEG)
+	assert_near(RtsCamera.fov, fov_before + RtsCamera.FOV_STEP_DEG, 0.01, "] widens the field of view")
+	rig.snap()
+	assert_near(rig.camera.fov, RtsCamera.fov, 0.01, "and the camera draws with it")
+	rig.fov_by(-1000.0)
+	assert_eq(RtsCamera.fov, RtsCamera.MIN_FOV_DEG, "within limits")
+	rig.set_auto_frame(false)
+	var pose := rig.pose_text()
+	assert_true(pose.begins_with("CAMERA_POSE pitch=") and pose.contains("fov=%d" % roundi(RtsCamera.MIN_FOV_DEG)) and pose.contains("auto_frame=off"),
+			"the pose names every value (%s)" % pose)
+	var readout := CameraReadout.new()
+	readout.rig = rig
+	add_to_tree(readout)
+	assert_true(readout.lines()[0].contains("FOV %d°" % roundi(RtsCamera.MIN_FOV_DEG)), "the readout shows the live values (%s)" % readout.lines()[0])
+	assert_true(readout.lines()[1].contains("P copy pose"), "and the keys")
+	RtsCamera.fov = RtsCamera.FOV_DEG  # a static: leave it as the other tests expect

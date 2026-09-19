@@ -22,7 +22,7 @@ extends Control
 const GROUP_ABOVE := 10
 
 ## Height at 1080p (scaled with the window).
-const HEIGHT := 160.0
+const HEIGHT := 200.0  # round 6: 160 -> 200, the lead: "the buttons are too small to make out"
 ## Widest at 1080p.
 const MAX_WIDTH := 980.0
 const PAD := 8.0
@@ -464,7 +464,7 @@ func _draw() -> void:
 			batch.texture(CommandIcons.formation_texture(String(controls.formation)), glyph, tint)
 		else:
 			batch.texture(CommandIcons.task_texture(command["id"]), glyph, tint)
-		_label(batch, font, button, label, 12.0 * s, ink)
+		_label(batch, font, button, label, 14.0 * s, ink)
 	var tip := tooltip()
 	if not tip.is_empty():
 		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)

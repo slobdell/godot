@@ -10,6 +10,13 @@ extends Node3D
 ##   spawn_zones: {green: {center [x, z], size [width, depth]}, rust: ...}  every spawn inside, clear of cover.
 ##   lanes: [{name, points [[x, z], ...] (green's end first), width}]    routes between the bases, for the AI.
 ##   regions: [{name, kind (ArenaKit.REGION_KINDS), position [x, z], radius}]  centre, open ground, cover clusters...
+##   shape: {kind (ArenaShape.KINDS: square, hexagon, octagon), wall_height_m?, edges?: [{spans: [{kind, to_m}]}]}
+##     (round 7) the perimeter. Read by control (camera cutaway) and feel (walls, stands, gates) through
+##     Arena.perimeter() / perimeter_edges(), once at load. Absent = a square, which is every layout today.
+##   terrain: [{kind (ArenaTerrain.KINDS: water, pit, bridge), name, rect [centre_x, centre_z, width, depth]}]
+##     (round 7) ground a unit cannot cross but can fire over. The floor is rebuilt as the arena MINUS every
+##     water/pit and PLUS every bridge deck, so the hole in the navmesh is the impassability; a 0.9 m rim stops
+##     hulls without blocking sight. Axis-aligned only. Point-symmetric like everything else.
 ##   objectives: [{name, position [x, z], radius}]  (X3, round 6) what the match is fought over. Off-centre ones must
 ##     come in mirrored PAIRS. Absent = the single central control point, which is what Match hard-codes today.
 ## load_layout() returns the NORMALIZED layout: colliding props are appended to `obstacles` (with `size` resolved and
@@ -40,6 +47,12 @@ const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
 ## Extra bake margin past the seam so the half-mesh isn't shrunk by the agent
 ## radius where it meets its mirror (NavigationMesh.border_size, for chunked bakes).
 const SEAM_BORDER := 2.5
+## The stock Ground slab's thickness, and how far past the arena edge a carved floor still reaches.
+const GROUND_THICKNESS := 1.0
+const GROUND_MARGIN := 40.0
+## The perimeter wall's thickness, as authored in arena.tscn (the boxes are 2 m through), which is why the inner
+## face of a wall centred at 121 lands on 120 — the apothem ArenaShape works in.
+const PERIMETER_THICKNESS := 2.0
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
@@ -51,6 +64,10 @@ static var active: Dictionary = {}
 
 ## Set before the arena enters the tree to pick a layout in code (tests); else `--arena=`, else DEFAULT_LAYOUT.
 @export var layout_name := ""
+## Set before the arena enters the tree to supply a layout DIRECTLY, beating `layout_name` (tests that build a
+## layout the repo does not ship). Deliberately not a temp file under arenas/: that would show up in
+## `layout_names()` and make every all-layouts test depend on which test ran first.
+@export var layout_override: Dictionary = {}
 var layout: Dictionary = {}
 
 @onready var navigation: NavigationRegion3D = $Navigation
@@ -61,14 +78,21 @@ var decor_root: Node3D
 
 func _ready() -> void:
 	var flags := LaunchFlags.from_environment()
-	var wanted := layout_name if layout_name != "" else flags.text("arena", DEFAULT_LAYOUT)
-	wanted = resolve_name(wanted, flags.integer("seed", -1) if flags.has("seed") else -1)
-	var loaded := load_layout(wanted)
+	var loaded := {}
+	if not layout_override.is_empty():
+		var problem := validate(layout_override)
+		loaded = {"error": problem} if problem != "" else {"layout": normalize(layout_override)}
+	else:
+		var wanted := layout_name if layout_name != "" else flags.text("arena", DEFAULT_LAYOUT)
+		wanted = resolve_name(wanted, flags.integer("seed", -1) if flags.has("seed") else -1)
+		loaded = load_layout(wanted)
 	if loaded.has("error"):
 		push_error("arena: %s; using %s" % [loaded["error"], DEFAULT_LAYOUT])
 		loaded = load_layout(DEFAULT_LAYOUT)
 	layout = loaded["layout"]
 	active = layout
+	_build_perimeter()
+	_build_terrain()
 	_build_obstacles()
 	_build_decor()
 	_build_hazards()
@@ -96,6 +120,96 @@ func _bake() -> void:
 	mirror.transform = Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	add_child(mirror)
 	navigation_ready.emit()
+
+
+## Round 7, contract D: the perimeter wall, built from the shape's polygon.
+##
+## A square layout keeps the four colliders authored in arena.tscn, so nothing about today's arenas changes. Any
+## other shape disables them and builds one wall per polygon edge, each long enough to overlap its neighbours at
+## the corner so there is no gap to squeeze through.
+##
+## The walls stay in `navigation_source`, which is what makes this cheap: the bake already carves the navmesh to
+## whatever the walls enclose, so a hexagonal wall ring gives a hexagonal navmesh with no change to the bake at
+## all. The half-plus-180°-mirror construction also survives untouched — `filter_baking_aabb` spans the full width
+## at every z, so the southern half of a hexagon (a trapezoid) is inside it exactly as a square's half was.
+func _build_perimeter() -> void:
+	var shape: Dictionary = layout.get("shape", {})
+	var kind := String(shape.get("kind", ArenaShape.DEFAULT_KIND))
+	if kind == ArenaShape.DEFAULT_KIND:
+		return
+	var wall := get_node_or_null("Perimeter") as StaticBody3D
+	if wall == null:
+		return
+	for child in wall.get_children():
+		(child as CollisionShape3D).disabled = true
+	var points := ArenaShape.vertices(kind, float(layout["half_size"]))
+	var height := float(shape.get("wall_height_m", ArenaShape.DEFAULT_WALL_HEIGHT))
+	for i in points.size():
+		var a: Vector2 = points[i]
+		var b: Vector2 = points[(i + 1) % points.size()]
+		var mid := (a + b) / 2.0
+		var out := mid.normalized()  # the polygon is regular, so the outward normal is the midpoint's direction
+		var centre := mid + out * (PERIMETER_THICKNESS / 2.0)
+		var shape_node := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		# Overlap into both corners so two walls cannot leave a slot between them.
+		box.size = Vector3(a.distance_to(b) + PERIMETER_THICKNESS * 2.0, height, PERIMETER_THICKNESS)
+		shape_node.shape = box
+		shape_node.position = Vector3(centre.x, height / 2.0, centre.y)
+		shape_node.rotation.y = atan2(-(b.y - a.y), b.x - a.x)
+		wall.add_child(shape_node)
+
+
+## Round 7: water, pits and the bridges over them. The FLOOR is rebuilt as the arena minus every carving footprint
+## plus every deck, because the hole in the navmesh is what makes the water impassable; the rim and the pan are
+## deliberately NOT navigation sources, so they stop hulls without ever reaching the bake.
+func _build_terrain() -> void:
+	var terrain: Array = layout.get("terrain", [])
+	if terrain.is_empty():
+		return
+	var half := float(layout["half_size"]) + GROUND_MARGIN
+	# The stock Ground is one slab covering everything; a carved layout replaces it wholesale.
+	var ground := get_node_or_null("Ground") as StaticBody3D
+	if ground != null:
+		var stock := ground.get_node_or_null("Collision") as CollisionShape3D
+		if stock != null:
+			stock.disabled = true
+		for slab: Array in ArenaTerrain.slabs(half, terrain):
+			ground.add_child(_slab(Vector3(slab[0], -GROUND_THICKNESS / 2.0, slab[1]),
+					Vector3(slab[2], GROUND_THICKNESS, slab[3])))
+	var rims := StaticBody3D.new()
+	rims.name = "TerrainRims"
+	var pans := StaticBody3D.new()
+	pans.name = "TerrainPans"
+	for entry: Dictionary in terrain:
+		if not ArenaTerrain.carves(String(entry["kind"])):
+			continue
+		for slab: Array in ArenaTerrain.rim_slabs(entry, terrain):
+			rims.add_child(_slab(Vector3(slab[0], ArenaTerrain.RIM_HEIGHT / 2.0, slab[1]),
+					Vector3(slab[2], ArenaTerrain.RIM_HEIGHT, slab[3])))
+		var depth := float(ArenaTerrain.KINDS[entry["kind"]]["pan_depth"])
+		var rect: Array = entry["rect"]
+		pans.add_child(_slab(Vector3(rect[0], -depth - GROUND_THICKNESS / 2.0, rect[1]),
+				Vector3(rect[2], GROUND_THICKNESS, rect[3])))
+	add_child(rims)
+	add_child(pans)
+	# Only if feel has the slot: VisualSlot pushes an engine error for a slot the theme lacks, and an arena that
+	# errors because its water has no art yet is worse than water with no art. Same guard the kit props use.
+	if GameTheme.slots.has("arena.terrain"):
+		var dressing := VisualSlot.new()
+		dressing.name = "TerrainVisual"
+		dressing.slot = "arena.terrain"
+		add_child(dressing)
+		dressing.invoke("setup", [terrain])
+
+
+func _slab(at: Vector3, size: Vector3) -> CollisionShape3D:
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	shape.position = at
+	return shape
 
 
 func _build_obstacles() -> void:
@@ -214,6 +328,105 @@ static func spawn_spot(south: bool, slot: int) -> Variant:
 		return null
 	var spot: Array = spots[slot % spots.size()]
 	return Vector3(spot[0], 0.0, spot[1])
+
+
+## Round 7 (contract M4): **is this point somewhere a unit can be?** The one predicate every clamp should ask.
+##
+## Pure and static, `Vector3` in and out, allocation-free on the common path — control calls it on every mouse move
+## for the cursor's ground point. The perimeter polygon is cached per shape in `ArenaShape`, and a layout with no
+## terrain never touches an array.
+##
+## Today six call sites each carry a copy of the assumption *"the arena is a square"* — `DRIVABLE_LIMIT` used as
+## `absf(x) > limit or absf(z) > limit`, and three `clampf` pairs. That is fine while the arena IS a square and
+## silently wrong the moment it is not: **a hexagon of circumradius 139.7 reaches 139.7 m toward a vertex but only
+## 121.0 m toward a flat edge, so a square clamp at ±136 admits points 192 m out on the diagonal.** The container
+## question ("how big is the arena") still has a scalar answer; the contents question ("is this point inside it")
+## does not, and has not since the shape stopped being a square.
+##
+## It answers for the SQUARE too, deliberately: a predicate that only applies to the new shape leaves the old
+## assumption live in the code. And it knows about water and pits, because a point inside a pit is not a point a
+## unit can be ordered into either — that was a different check in a different place until now.
+static func contains(point: Vector3, data: Dictionary = active) -> bool:
+	if data.is_empty():
+		return true
+	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
+	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	var flat := Vector2(point.x, point.z)
+	if not ArenaShape.contains(kind, bound, flat):
+		return false
+	if not data.has("terrain"):
+		return true  # the common case, and `data.get("terrain", [])` would allocate an empty array to iterate
+	for entry: Dictionary in data["terrain"]:
+		if not ArenaTerrain.carves(String(entry["kind"])):
+			continue
+		if _in_footprint(entry, flat) and not _on_a_deck(data, flat):
+			return false
+	return true
+
+
+## The nearest point a unit could be, for clamping an order. Nearest point on the boundary rather than along the
+## ray to the centre: clicking past the wall should put the unit against the wall nearest the click.
+static func clamp_into(point: Vector3, data: Dictionary = active) -> Vector3:
+	if data.is_empty() or contains(point, data):
+		return point
+	var bound := float(data.get("half_size", Match.ARENA_HALF_SIZE))
+	var kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	var flat := ArenaShape.clamp_into(kind, bound, Vector2(point.x, point.z))
+	if not data.has("terrain"):
+		return Vector3(flat.x, point.y, flat.y)
+	for entry: Dictionary in data["terrain"]:
+		if not ArenaTerrain.carves(String(entry["kind"])) or not _in_footprint(entry, flat):
+			continue
+		if _on_a_deck(data, flat):
+			continue
+		var box := ArenaTerrain.bounds(entry)
+		# Out of the water by its nearest side.
+		var options := [Vector2(box[0] - 1.0, flat.y), Vector2(box[2] + 1.0, flat.y),
+				Vector2(flat.x, box[1] - 1.0), Vector2(flat.x, box[3] + 1.0)]
+		var best := flat
+		var best_distance := INF
+		for option: Vector2 in options:
+			var distance := flat.distance_to(option)
+			if distance < best_distance and ArenaShape.contains(kind, bound, option):
+				best_distance = distance
+				best = option
+		flat = best
+	return Vector3(flat.x, point.y, flat.y)
+
+
+static func _in_footprint(entry: Dictionary, flat: Vector2) -> bool:
+	var box := ArenaTerrain.bounds(entry)
+	return flat.x > box[0] and flat.x < box[2] and flat.y > box[1] and flat.y < box[3]
+
+
+static func _on_a_deck(data: Dictionary, flat: Vector2) -> bool:
+	if not data.has("terrain"):
+		return false
+	for entry: Dictionary in data["terrain"]:
+		if ArenaTerrain.is_deck(String(entry["kind"])) and _in_footprint(entry, flat):
+			return true
+	return false
+
+
+## Round 7, contract D: the wall's INNER FACE as a convex polygon, world x/z, counter-clockwise. Handed to control
+## and feel ONCE AT LOAD — control does its own ray-vs-polygon maths for the camera cutaway, feel builds walls,
+## stands and gates from it instead of assuming a square. A per-frame call across a stream boundary would be a
+## standing performance obligation and would make the arena's shape answerable to control's frame budget.
+static func perimeter(data: Dictionary = active) -> PackedVector2Array:
+	if data.is_empty():
+		return PackedVector2Array()
+	var shape: Dictionary = data.get("shape", {})
+	return ArenaShape.vertices(String(shape.get("kind", ArenaShape.DEFAULT_KIND)), float(data["half_size"]))
+
+
+## Every perimeter edge as {from, to, length_m, wall_height_m, spans: [{kind, from_m, to_m}]}. The spans say what
+## is behind each STRETCH of wall, because control's occlusion test asks a positional question — a base side is
+## stands, then the gate its army enters through, then stands again, and one value per edge cannot say that.
+## Always contiguous, always covering the whole edge, so a consumer never handles a gap.
+static func perimeter_edges(data: Dictionary = active) -> Array:
+	if data.is_empty():
+		return []
+	return ArenaShape.edges(data.get("shape", {}), float(data["half_size"]))
 
 
 ## X1 (round 6): a TEST FIXTURE, not a shipping arena -- `arenas/maze.json` is one. It loads with `--arena=<name>`
@@ -348,8 +561,23 @@ static func load_layout(name: String) -> Dictionary:
 static func validate(data: Variant) -> String:
 	if typeof(data) != TYPE_DICTIONARY or typeof(data.get("name")) != TYPE_STRING:
 		return "a layout is an object with a string 'name'"
-	if not _is_number(data.get("half_size")) or not is_equal_approx(float(data["half_size"]), Match.ARENA_HALF_SIZE):
-		return "half_size must be %.0f (the perimeter, radar, and fog are sized for it)" % Match.ARENA_HALF_SIZE
+	# `ARENA_HALF_SIZE` is a MAXIMUM BOUND, not a required size (round 7). It was forced equal, which meant raising
+	# it to make room for a hexagon would have grown every existing square map from 240 x 240 to 280 x 280 — a 36%
+	# area increase to Pit and Yard, the two maps the lead kept, as a side effect of a shape change nobody asked to
+	# apply to them.
+	#
+	# The constant was doing two jobs: "how big is the play area" (per layout) and "how big is the world the HUD
+	# must cover" (global). A hexagon is what makes them different numbers. Radar span, fog, camera limits and the
+	# bake extent size to the bound; a layout declares its own size under it.
+	#
+	# Anything that draws or declares the PLAY AREA must read `Arena.active.half_size`, not the constant — the
+	# pattern already in `rts_camera.gd`'s `perimeter_half()`. combat's grep found two readers still on the wrong
+	# side: the radar's arena outline and the agent bridge's declared `bounds`.
+	if not _is_number(data.get("half_size")) or float(data["half_size"]) <= 0.0:
+		return "half_size must be a positive number of metres"
+	if float(data["half_size"]) > Match.ARENA_HALF_SIZE + SYMMETRY_TOLERANCE:
+		return "half_size %.0f is over the arena bound of %.0f (the radar, fog and camera are sized for it)" \
+				% [float(data["half_size"]), Match.ARENA_HALF_SIZE]
 	var obstacles: Variant = data.get("obstacles")
 	if typeof(obstacles) != TYPE_ARRAY:
 		return "'obstacles' must be a list"
@@ -470,6 +698,60 @@ static func _validate_v2(data: Dictionary) -> String:
 				if absf(float(spot[0]) - float(zone["center"][0])) > float(zone["size"][0]) / 2.0 + SYMMETRY_TOLERANCE \
 						or absf(float(spot[1]) - float(zone["center"][1])) > float(zone["size"][1]) / 2.0 + SYMMETRY_TOLERANCE:
 					return "spawns.%s point %s is outside its spawn zone" % [side, spot]
+	var shape_error := ArenaShape.validate(data.get("shape", {}), float(data["half_size"]))
+	if shape_error != "":
+		return shape_error
+	# EVERYTHING THE LAYOUT PLACES MUST FIT INSIDE THE SHAPE. A square keeps its full width all the way to the
+	# wall; a hexagon narrows, and the spawn block lives exactly where it narrows — a hexagon inscribed in the old
+	# 120 m bound held only 48 of foundry's 104 spawn points, and nothing would have said so until units appeared
+	# inside a wall. A constraint that lives in the contents does not show up when you look at the container, so it
+	# is checked here rather than remembered.
+	var shape_kind := String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+	if shape_kind != ArenaShape.DEFAULT_KIND:
+		var bound := float(data["half_size"])
+		for side in ["green", "rust"]:
+			for spot: Array in data["spawns"][side]:
+				if not ArenaShape.contains(shape_kind, bound, Vector2(spot[0], spot[1]), SPAWN_CLEARANCE):
+					return "spawns.%s point %s is outside the %s (its flat side is %.1f m out; the arena needs a bigger half_size or the spawns need moving)" \
+							% [side, spot, shape_kind, bound * cos(PI / float(ArenaShape.sides(shape_kind)))]
+		for obstacle: Dictionary in data["obstacles"]:
+			if not ArenaShape.contains(shape_kind, bound, Vector2(obstacle["position"][0], obstacle["position"][1])):
+				return "obstacle %s at %s is outside the %s" % [obstacle["type"], obstacle["position"], shape_kind]
+	var terrain: Variant = data.get("terrain", [])
+	if typeof(terrain) != TYPE_ARRAY:
+		return "'terrain' must be a list"
+	for entry in terrain:
+		if typeof(entry) != TYPE_DICTIONARY or typeof(entry.get("kind")) != TYPE_STRING or typeof(entry.get("name")) != TYPE_STRING:
+			return "every terrain entry needs a string 'kind' and 'name'"
+		if not ArenaTerrain.is_kind(entry["kind"]):
+			return "unknown terrain kind '%s' (have %s)" % [entry["kind"], ", ".join(PackedStringArray(ArenaTerrain.KINDS.keys()))]
+		var rect: Variant = entry.get("rect")
+		if typeof(rect) != TYPE_ARRAY or rect.size() != 4 or not rect.all(func(v: Variant) -> bool: return _is_number(v)):
+			return "terrain %s needs 'rect' [centre_x, centre_z, width, depth]" % entry["name"]
+		if float(rect[2]) <= 0.0 or float(rect[3]) <= 0.0:
+			return "terrain %s needs a positive width and depth" % entry["name"]
+	for entry: Dictionary in terrain:
+		# Point-symmetric like everything else: a river on one side and not the other decides the match.
+		var twin: bool = terrain.any(func(other: Dictionary) -> bool:
+			return other["kind"] == entry["kind"] \
+					and absf(float(other["rect"][0]) + float(entry["rect"][0])) <= SYMMETRY_TOLERANCE \
+					and absf(float(other["rect"][1]) + float(entry["rect"][1])) <= SYMMETRY_TOLERANCE \
+					and is_equal_approx(float(other["rect"][2]), float(entry["rect"][2])) \
+					and is_equal_approx(float(other["rect"][3]), float(entry["rect"][3])))
+		if not twin:
+			return "not point-symmetric: terrain %s at %s has no 180° mirror" % [entry["name"], [entry["rect"][0], entry["rect"][1]]]
+		if not ArenaTerrain.is_deck(String(entry["kind"])):
+			continue
+		# A deck must actually bridge something, and be wide enough to leave navmesh after the agent radius.
+		var narrow: float = minf(float(entry["rect"][2]), float(entry["rect"][3]))
+		if narrow < ArenaTerrain.MIN_DECK_M:
+			return "bridge %s is %.1f m across: under %.1f m the %0.1f m agent radius leaves no navmesh on it" \
+					% [entry["name"], narrow, ArenaTerrain.MIN_DECK_M, 2.0]
+		var crosses: bool = terrain.any(func(other: Dictionary) -> bool:
+			return ArenaTerrain.carves(String(other["kind"])) \
+					and ArenaTerrain.overlaps(ArenaTerrain.bounds(entry), ArenaTerrain.bounds(other)))
+		if not crosses:
+			return "bridge %s crosses no water or pit (a bridge over nothing is just floor)" % entry["name"]
 	if data.has("fixture") and typeof(data["fixture"]) != TYPE_BOOL:
 		return "'fixture' must be true or false"
 	var objectives: Variant = data.get("objectives", [])

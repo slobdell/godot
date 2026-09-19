@@ -39,6 +39,11 @@ const ORBIT_STEP_DEG := 30.0
 const ORBIT_TICKS := SimClock.TICK_RATE * 4
 ## Support by fire: the firing line stands this fraction of the element's shortest EFFECTIVE range off the point it
 ## covers, so every gun in the line reaches it with fire that counts, and never closer than SBF_MIN_STANDOFF_M.
+##
+## Do NOT add a floor like max(..., Drills near_ambush_m + margin) to keep the line out of near-ambush range (proposed and
+## refused in round 6): with a 45 m band it puts the line at ~47 m, OUTSIDE the band, where a gun lands ~31-50% of shells
+## instead of ~100%. A base of fire that cannot hit is not one. The invariant is precedence instead: a support-by-fire
+## task outranks near ambush in Drills.select (only break contact outranks it), tested in test_tactics_tasks.gd.
 const SBF_STANDOFF := 0.8
 const SBF_MIN_STANDOFF_M := 25.0
 ## An ambush lies closer than a base of fire: this fraction of the shortest effective range from the kill zone, so
@@ -164,9 +169,12 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	var kept: Variant = state.get("anchor")
 	var holding: bool = kept is Vector3 and (kept as Vector3).distance_to(destination) < 0.5
 	var center: Vector3 = situation["center"]
+	var told: Variant = ElementTask.facing(state.get("task", {}))
 	if holding and state.get("heading") is Vector3 and String(state.get("formation", "")) != "":
 		plan["heading"] = state["heading"]
 		plan["formation"] = String(state["formation"])
+	elif told is Vector3:
+		plan["heading"] = told  # the player said which way: lay the formation facing it
 	else:
 		plan["heading"] = TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
 				else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
@@ -176,6 +184,10 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	plan["why"] = "moving as ordered: form up on the spot, %s" % String(plan["formation"]).replace("_", " ")
 	_group(plan, slot_order(situation), String(plan["formation"]), destination, plan["heading"],
 			table.spacing(String(situation["terrain"])), "move")
+	if told is Vector3:
+		# A facing the player chose is everyone's facing, not the formation's all-round sectors.
+		for unit_name: String in plan["sectors"]:
+			plan["sectors"][unit_name] = 0.0
 
 
 ## Bounding overwatch: one half moves, the other covers it by fire, then they swap. A bound never goes
@@ -696,3 +708,48 @@ static func _task_point(task: Dictionary, situation: Dictionary) -> Variant:
 static func clamp_to_arena(point: Vector3) -> Vector3:
 	return Vector3(clampf(point.x, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT), 0.0,
 			clampf(point.z, -Match.DRIVABLE_LIMIT, Match.DRIVABLE_LIMIT))
+
+
+# ---- Preview (control's animated button help) ----------------------------------------------------------
+
+## The posture the leader would take for task `verb` ("support_by_fire", "screen", "ambush", "hold", "attack_move",
+## "move") if `count` tanks stood at `from` and the player clicked `point` — computed by the SAME planner (build()) on a
+## synthetic element under the standard doctrine, so the tooltip shows what the button does, not an illustration of it.
+## Pure: no match, no element. Returns {"slots": [Vector3], "facing": [Vector3], "fires": "no" | "always" |
+## "on_contact", "advances": bool}. A screen is shown on its line (as it stands once it gets there).
+static func preview(verb: String, count: int, point: Vector3, from: Vector3) -> Dictionary:
+	var table := DoctrineTable.for_faction("")
+	var at := point if verb == "screen" else from
+	var members: Array = []
+	var toward := TacticsFormation.flat(point - from)
+	var across := Vector3(-toward.z, 0.0, toward.x)
+	for i in maxi(count, 1):
+		members.append({"name": "P%d" % i, "position": at + across * (float(i) - (count - 1) * 0.5) * 8.0,
+				"forward": toward, "role": "tank", "unit": "tank", "speed": 9.0,
+				"range": float(Weapons.profile(String(Units.stat("tank", "weapon"))).get("range", 60.0)),
+				"effective_range": TankBrain.fire_band(Weapons.profile(String(Units.stat("tank", "weapon")))),
+				"sight": 90.0, "health": 1.0, "suppression": 0.0, "taking_fire": false})
+	var situation := {"tick": 0, "team": 0, "center": at, "heading": toward, "leader": "P0", "members": members,
+			"contacts": [], "terrain": "open", "threat": "none", "composition": "heavy", "strength": 800.0,
+			"enemy_strength": 0.0, "taking_fire": false, "arrived": false}
+	var task := {"verb": {"attack_move": "move"}.get(verb, verb)}
+	if verb != "hold":
+		task["to"] = [point.x, point.z]
+	if verb == "move":
+		task["drills"] = false
+	var state := {"task": task, "drill": "", "drill_tick": 0, "drill_point": null, "drill_target": "", "drill_why": "",
+			"anchor": null, "bounding": 0, "arrived": false, "heading": toward, "seats": {}}
+	var plan := build(situation, state, table)
+	var heading: Vector3 = plan["heading"]
+	var halted: bool = verb in ["support_by_fire", "screen", "ambush", "hold"]
+	var slots: Array = []
+	var facing: Array = []
+	for member: Dictionary in members:
+		var unit := String(member["name"])
+		if not (plan["slots"] as Dictionary).has(unit):
+			continue
+		slots.append(plan["slots"][unit])
+		facing.append(TacticsFormation.rotate(heading, deg_to_rad(float(plan["sectors"].get(unit, 0.0)))) if halted else heading)
+	return {"slots": slots, "facing": facing,
+			"fires": {"support_by_fire": "always", "move": "on_contact"}.get(verb, "on_contact"),
+			"advances": verb in ["attack_move", "move"]}

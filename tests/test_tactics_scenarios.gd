@@ -80,6 +80,8 @@ func test_an_ambush_holds_its_fire_until_the_kill_zone_is_full() -> void:
 	assert_eq(int(result["shots_before"]), 0, "not one shot before it was in the kill zone")
 	assert_true(int(result["sprung_tick"]) >= int(result["entered_tick"]), "sprung when it arrived, not before")
 	assert_true(int(result["shots_after"]) > 0, "and then every gun fired")
+	# The lead: facing matters "for trying to emplace units in an ambush".
+	assert_true(int(result["facing_zone"]) >= 3, "the ambush points at its kill zone (%d of 4 facing it)" % result["facing_zone"])
 
 
 func test_an_attack_closes_into_its_band_and_every_gun_fights() -> void:

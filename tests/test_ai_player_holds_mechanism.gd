@@ -4,6 +4,8 @@ extends TestCase
 ## only because a range heuristic happened to return "stop", and when CP4 changed ranges it held 21 s and then flanked.
 ## Here the brain is watched every tick: while it holds a player's post and nobody is shooting at it, it issues no move
 ## order at all — it may turn and shoot. The CPU control (same fight, no player) must move, or this test proves nothing.
+## Do not "simplify" this back to a distance check: a unit that could not move at all would also end 0 m away, and do not
+## "fix" a failure by restoring a range comparison in _combat_move — that restores the luck, not the rule (lesson 47).
 
 
 func _run(player_holds: bool) -> Dictionary:

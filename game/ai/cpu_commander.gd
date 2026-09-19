@@ -178,7 +178,8 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 		# An even fight. v1 held here and lost 30 of 32 series matches to plain brains: with recharging
 		# shields, standing still while the other side presses is how you lose. Hold only on the
 		# objective; otherwise take the fight to them.
-		if game_match.control_point and game_match.control_owner == team and Match.in_control_zone(lead.global_position):
+		if Objectives.active(game_match) and Objectives.owner(game_match) == team \
+				and Objectives.contains(game_match, lead.global_position):
 			return {"squad": squad.squad_name, "verb": "hold", "to": _clamp_xz(lead.global_position),
 					"facing": [facing.x, facing.z], "formation": "line"}
 		return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(threat), "formation": "line"}
@@ -187,8 +188,8 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 			and not (game_match.control_point and game_match.control_owner != team):
 		return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(freshest), "formation": "line"}
 	var goal: Vector3
-	if game_match.control_point and game_match.control_owner != team:
-		goal = Match.CONTROL_CENTER
+	if Objectives.active(game_match) and Objectives.owner(game_match) != team:
+		goal = Objectives.center(game_match)
 	elif freshest != null:
 		goal = freshest
 	else:
@@ -319,7 +320,8 @@ func plan_team(by_name: Dictionary) -> Dictionary:
 		if _resting.has(squad.squad_name):
 			plans[squad.squad_name] = _command(squad, "break_contact", rally, "column")
 
-	var objective: Vector3 = Match.CONTROL_CENTER if game_match.control_point and game_match.control_owner != team \
+	var objective: Vector3 = Objectives.center(game_match) if Objectives.active(game_match) \
+			and Objectives.owner(game_match) != team \
 			else Match.spawn_position(1 - team, 0)
 	match phase:
 		"muster":

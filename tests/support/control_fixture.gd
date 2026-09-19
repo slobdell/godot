@@ -45,6 +45,7 @@ func build(with_executor := true) -> void:
 	test.add_to_tree(camera)
 	camera.make_current()
 	rig = RtsCamera.new()
+	RtsCamera.fov = 55.0  # round 5's lens: these tests are about screen geometry, written for it (the default is the lead's 35° telephoto)
 	rig.camera = camera
 	rig.edge_pan = false
 	rig.focus = Vector3(0, 0, 35)
@@ -114,6 +115,7 @@ func build_scale(per_side: int) -> void:
 	test.add_to_tree(camera)
 	camera.make_current()
 	rig = RtsCamera.new()
+	RtsCamera.fov = 55.0  # round 5's lens: these tests are about screen geometry, written for it (the default is the lead's 35° telephoto)
 	rig.camera = camera
 	rig.edge_pan = false
 	rig.focus = Vector3.ZERO

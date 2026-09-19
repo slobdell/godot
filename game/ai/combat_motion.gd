@@ -12,7 +12,13 @@ extends RefCounted
 ## Styles (STYLES):
 ##   strafe  turret units: circle the target inside the weapon's band, tangential, jinking sides now and then
 ##   angle   heavy tracked units: the same, but keep the thick front toward the target (oblique arcs, reversing)
-##   run     fixed guns (the scout's machine gun): attack runs at the target's side and rear, then break away
+##   standoff fixed guns (round 7, the default): a gun truck's shoot-and-scoot — drive (with arrival) to a firing
+##           position inside the effective band, stop, lay the hull on the target and fire; slide along the band when
+##           rounds are incoming; never close to ramming range. The result carries "hold": true when it should stop
+##           and shoot. The lead, round 7: *"Scouts are just running directly into their targets and then they have
+##           to turn around to get a fix again"* — which is exactly what `run` did.
+##   run     fixed guns (round 3, kept for A/B: `--nav-off=standoff`): attack runs at the target's side and rear,
+##           closing to RUN_BREAK (9 m, whatever the band), then driving AWAY to RUN_RETURN and turning back
 ##
 ## request: {"position", "forward" (flat unit), "speed" (m/s top), "reverse_speed", "style",
 ##           "target": {"position", "forward", "velocity"?}, "band": [min, max] (preferred range),
@@ -29,7 +35,11 @@ extends RefCounted
 ## result:  {"point": Vector3 (steer at it), "reverse": bool, "index": int, "score": float} or {} when every
 ##          direction is blocked.
 
-const STYLES := ["strafe", "angle", "run"]
+const STYLES := ["strafe", "angle", "run", "standoff"]
+## Round 7: the style a fixed gun fights with. `--nav-off=standoff` restores round 3's attack runs (for A/B).
+static var fixed_style := "run" if Movement._off.has("standoff") else "standoff"
+## Standoff: hold and shoot anywhere from this share of the band's outer edge out to the edge (a scout: 17.5-35 m).
+const STANDOFF_HOLD_SHARE := 0.5
 ## 16 directions around the compass (x, z), every 22.5°, as constants.
 const RING: Array[Vector2] = [Vector2(0, -1), Vector2(0.38268343, -0.9238795), Vector2(0.70710678, -0.70710678),
 		Vector2(0.9238795, -0.38268343), Vector2(1, 0), Vector2(0.9238795, 0.38268343), Vector2(0.70710678, 0.70710678),
@@ -60,6 +70,7 @@ const WHEELS_STEER_RADII := 3.0
 const WEIGHTS := {
 	"strafe": {"range": 1.0, "tangent": 0.8, "side": 0.35, "flank": 0.35, "armor": 0.15, "continuity": 0.1, "reverse": 0.25, "turn": 0.25},
 	"angle": {"range": 1.0, "tangent": 0.35, "side": 0.35, "flank": 0.1, "armor": 1.0, "continuity": 0.2, "reverse": 0.1, "turn": 0.25},
+	"standoff": {"range": 1.2, "tangent": 0.5, "side": 0.2, "flank": 0.3, "armor": 0.3, "continuity": 0.3, "reverse": 0.1, "turn": 0.1},
 	"run": {"range": 0.0, "tangent": 0.3, "side": 0.2, "flank": 0.6, "armor": 0.0, "continuity": 1.0, "reverse": -1.0, "turn": 0.0},
 }
 ## Dangers are subtracted (scores can go below zero once turning costs are in): heading side-on in the angle style,
@@ -95,8 +106,19 @@ const RUN_RETURN := 22.0
 const RUN_VEER := 10.0
 
 
+## Standoff: should a fixed gun stop and shoot from where it is? Inside its hold band, with nothing incoming.
+static func standoff_holds(request: Dictionary) -> bool:
+	var band: Array = request.get("band", [15.0, 40.0])
+	var outer := float(band[1])
+	var distance := _flat(request["position"]).distance_to(_flat((request["target"] as Dictionary)["position"]))
+	return distance >= maxf(float(band[0]), outer * STANDOFF_HOLD_SHARE) and distance <= outer \
+			and (request.get("incoming", []) as Array).is_empty()
+
+
 static func choose(request: Dictionary) -> Dictionary:
 	var style: String = request.get("style", "strafe")
+	if style == "standoff" and standoff_holds(request):
+		return {"hold": true, "point": _flat(request["position"]), "reverse": false, "index": -1, "score": 0.0}
 	var weights: Dictionary = WEIGHTS.get(style, WEIGHTS["strafe"])
 	var here := _flat(request["position"])
 	var forward := _flat(request["forward"]).normalized()
