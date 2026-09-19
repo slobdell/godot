@@ -87,6 +87,28 @@ func _run() -> void:
 	for tank: Tank in game_match.tanks.get_children():
 		if tank.team == Match.Team.GREEN:
 			green.append(tank)
+	# The run's own conditions, checked before any number is produced (arena's positive control, round 7): a number from
+	# a run whose conditions weren't met looks exactly like a real one.
+	if String(Arena.active.get("name", "")) != _flag("arena", "yard"):
+		push_error("nav-fight control FAILED: asked for arena %s, got %s" % [_flag("arena", "yard"), Arena.active.get("name", "?")])
+		quit(1)
+		return
+	var rust := 0
+	for tank: Tank in game_match.tanks.get_children():
+		rust += 1 if tank.team == Match.Team.RUST else 0
+	if green.is_empty() or rust == 0:
+		push_error("nav-fight control FAILED: armies of %d and %d units" % [green.size(), rust])
+		quit(1)
+		return
+	var stacked := 0
+	var all: Array = game_match.tanks.get_children()
+	for i in all.size():
+		for j in range(i + 1, all.size()):
+			if (all[i] as Tank).global_position.distance_to((all[j] as Tank).global_position) < 1.0:
+				stacked += 1
+	# Stacked starts separate (Avoidance parts coincident hulls by name), so this is reported, not fatal.
+	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
+			Arena.active.get("name", "?"), green.size(), rust, stacked])
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
 	_order_squads(0.45)  # to the middle of the arena, squads fanned out across it
