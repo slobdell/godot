@@ -83,11 +83,16 @@ completes and how far from its goal the unit really was. `--nav-off=…` switche
 
 ### The measuring switches, and what each one proves
 
+**An unknown name is refused** (`Movement.OFF_NAMES`, round 8): a switch nothing reads switches nothing off, and the
+A/B then comes back a clean null with a correct-looking arm header. arena hit that with `flow` on a tree that did not
+have it. Add the name to `OFF_NAMES` in the commit that adds the switch.
+
 `--nav-off=a,b` on any run (`make nav-where NAV_FLAGS=--nav-off=…`; in a test, set `Movement._off`,
 `Movement.avoidance_on`, `Movement.station_on` directly and restore them). Each isolates one decision:
 
 | switch | turns off | what an A/B with it answers |
 |---|---|---|
+| `flow` | **turns ON** round 8's flow fields (FlowField; off by default until its checkpoint clears) | shared cost-to-goal routing vs per-unit A* |
 | `--no-avoidance` | ORCA (X3) | how much arrival and flow come from avoidance at all |
 | `--no-station-pid` | PID station-keeping (X6) | P-law chase vs regulated slot (0.35 vs 4.58 m, `test_station_keeping`) |
 | `grace` | the 10-tick K1 start window | whether K1's 3-tick response depends on it (it does: control's response test) |

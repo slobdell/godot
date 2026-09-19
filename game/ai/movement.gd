@@ -127,10 +127,22 @@ static func switched_off(name: String) -> bool:
 static var _off_parsed := false
 
 
+## Every mechanism name anything asks about. A name that is not here is a typo or a mechanism that no longer exists,
+## and `switched_off()` would answer false for it forever: the A/B would run one treatment in both arms and come back a
+## clean null (arena hit exactly that with `flow` on a tree that did not have it yet). So an unknown name is refused
+## loudly instead. Add the name here in the same commit that adds the switch.
+const OFF_NAMES: Array[String] = ["backup", "carrot", "chord", "commit", "flow", "grace", "guard", "holdband",
+		"minpace", "pushidle", "r5sidestep", "repath", "standoff", "unstick", "yield"]
+
+
 static func _parse_off() -> PackedStringArray:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--nav-off="):
-			return arg.trim_prefix("--nav-off=").split(",")
+			var names := arg.trim_prefix("--nav-off=").split(",")
+			for name: String in names:
+				if not OFF_NAMES.has(name):
+					push_error("--nav-off=%s: no such mechanism (have %s). A name nothing reads switches nothing off, and the A/B would look like a null." % [name, ", ".join(OFF_NAMES)])
+			return names
 	return PackedStringArray()
 ## Look this far along an avoiding velocity when steering by it (metres, at most the distance to the waypoint).
 const AVOID_STEER_MIN := 3.0
