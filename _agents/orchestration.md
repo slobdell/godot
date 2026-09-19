@@ -1420,3 +1420,32 @@ The kickoff prompt is one line; this section is the rest.
       that, because X"* exposes a mismatched X; *"yes"* does not.
     - This is the social form of lesson 47 (*a guarantee no test isolates*): **a shared conclusion with unshared reasoning
       is a guarantee nobody is checking.**
+99. **The fix for "the wrong answer and the right answer are indistinguishable at the point you look" is never a better
+    property — it is finding something that can only be true of the right object.** arena's generalisation, drawn from
+    **four separate defects found in a single day**:
+    - `ArenaFixture`'s readiness probe — *"a point inside this layout's cover is off the mesh"* — was equally true of the
+      **previous** arena's navmesh, so a test varying only `terrain` or `shape` measured the arena before it (lesson 87).
+    - the perimeter span symmetry rule agreed with itself for a **centred** gate, so it could not detect an asymmetric one.
+    - `sim-baseline` locally **skips and exits 0** on a glibc with no recorded line, so it passes identically to a real
+      pass (lesson 91).
+    - a truncated `check` and a complete one are **byte-identical in their summary line** — there is no `N of M targets`
+      anywhere, so the only way to tell them apart is to know the target order and find where the output stops, *"which is
+      exactly the kind of thing nobody does when the last line says what they hoped"* (lesson 95).
+    **Every one was fixed by tightening a property, repeatedly, and every one came back.** The pattern that ends it is
+    **identity**: wait for the map's regions to be *exactly this arena's*; assert the preview came *from the planner*;
+    verify `git show HEAD:<path>` rather than the file on disk; print `run: <machine> at <commit>`. **Ask of any check:
+    what else in the world satisfies this? If the answer is "the previous version of the thing I am testing", it is not a
+    check.**
+    **Applies to test design too, not just instruments.** Round 3's `runs >= 3` was a property the *buggy* scout satisfied;
+    *"never inside the ram gap, most of the time in band and nose on"* is one **only the correct behaviour** can satisfy.
+100. **Credit the mechanism, not the instinct — including when a stream declines the credit you offered.** I praised arena
+    for holding out for a conclusive run (*"nothing of mine should merge until I send the wrapper line"*) and treated it
+    as foresight about the truncation problem. arena corrected me:
+    > *"My 'nothing merges until I send the wrapper line' was about **my** uncertainty, not foresight about yours — I had
+    > no idea `check` stopped at the first failure until you told me. **The instinct was right for the wrong reason**,
+    > which is worth recording accurately if it goes in the lessons."*
+    **A lesson file that credits instincts teaches people to have hunches; one that credits mechanisms teaches people to
+    build guards.** And the accurate history matters here: what actually caught the truncation was **control reading its
+    own check output carefully**, not anyone's caution. **Recording the wrong cause of a success is the same error as
+    recording the wrong cause of a failure** — see the gangs' 23%, where an unexcluded candidate was reported as a
+    demonstrated cause in this very document.
