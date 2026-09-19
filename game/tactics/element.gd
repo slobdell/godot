@@ -172,6 +172,7 @@ func update(game_match: Match, orders: Object) -> bool:
 		etas = FormUp.etas(by_name, slots)
 		_etas_tick = game_match.tick
 	paces = FormUp.paces(by_name, slots, etas)
+	_pace_leader_for_flow(plan, by_name)
 	_issue(plan, orders, situation, game_match)
 	return _note_changes(before)
 
@@ -186,6 +187,33 @@ func state() -> Dictionary:
 			# indicator and preview draw, rather than an illustration of it.
 			"heading": [heading.x, heading.z], "anchor": [anchor.x, anchor.z] if anchor is Vector3 else null,
 			"detached": _detached.keys(), "events": events}
+
+
+## Round 7 flow: while members follow the leader at their offsets, the leader eases off by how far the worst of them
+## trails its place (the old Squad's commander pacing), so the shape can form on the way instead of stringing out.
+const FLOW_LAG_SLACK_M := 6.0
+const FLOW_LAG_FALLOFF_M := 20.0
+const FLOW_MIN_PACE := 0.75
+
+
+func _pace_leader_for_flow(plan: Dictionary, by_name: Dictionary) -> void:
+	var lead := by_name.get(leader) as Tank
+	if lead == null:
+		return
+	var forward := TacticsFormation.flat(-lead.global_basis.z)
+	var worst := 0.0
+	for unit_name: String in plan["orders"]:
+		var order: Dictionary = plan["orders"][unit_name]
+		if String(order.get("verb", "")) != "follow" or not order.has("slot"):
+			continue
+		var tank := by_name.get(unit_name) as Tank
+		if tank == null:
+			continue
+		var place := TacticsFormation.to_world(lead.global_position, forward, Vector2(order["slot"][0], order["slot"][1]))
+		worst = maxf(worst, Vector2(tank.global_position.x - place.x, tank.global_position.z - place.z).length())
+	if worst > 0.0:
+		paces[leader] = minf(float(paces.get(leader, 1.0)),
+				clampf(1.0 - (worst - FLOW_LAG_SLACK_M) / FLOW_LAG_FALLOFF_M, FLOW_MIN_PACE, 1.0))
 
 
 ## X3: seconds until the element is formed up — until its slowest member reaches its slot (the lead's estimate).
@@ -380,6 +408,8 @@ func _issue(plan: Dictionary, orders: Object, situation: Dictionary, game_match:
 			command["to"] = [point.x, point.z]
 		if String(desired.get("target", "")) != "":
 			command["target"] = desired["target"]
+		if desired.has("slot"):
+			command["slot"] = desired["slot"]  # K1 follow-with-slot: this member's place relative to its leader
 		if command["verb"] == "attack" and not command.has("target"):
 			command["verb"] = "hold"
 			command.erase("to")

@@ -596,3 +596,65 @@ static func attack_move_decisions(case: TestCase, seconds := 60.0) -> Dictionary
 			"unit_minutes": snappedf(minutes, 0.01)}
 	lab.dispose()
 	return result
+
+
+## Round 7: does an element FLOW in formation on the way (the lead's "formula to form up"), not only snap into it at the
+## end? Four tanks in a loose clump get a plain move 110 m down the strip. While the leader is still travelling, each other
+## member's distance from its formation place — the leader's position plus its slot offset turned to the leader's facing —
+## is averaged; then the arrival time and the orders in the last 10 s. `flow` switches ElementPlan.FLOW_ENABLED (A/B).
+static func element_transit(case: TestCase, flow: bool, seconds := 40.0) -> Dictionary:
+	var was := ElementPlan.FLOW_ENABLED
+	ElementPlan.FLOW_ENABLED = flow
+	var lab := TacticsLab.create(case, 37)
+	var names: Array = []
+	for i in 4:
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1),
+				Vector3(LANE_X - 6.0 + (i % 2) * 12.0, 0.0, 60.0 + (i / 2) * 9.0), 0.0).name))
+	var alpha := lab.element(names, "Alpha")
+	await lab.start()
+	var issued := {"late": 0}
+	var total := int(seconds * SimClock.TICK_RATE)
+	var ticks := {"now": 0}
+	var on_issued := func(_command: Dictionary) -> void:
+		if int(ticks["now"]) >= total - 10 * SimClock.TICK_RATE:
+			issued["late"] = int(issued["late"]) + 1
+	(lab.orders as Orders).issued.connect(on_issued)
+	var goal := Vector3(LANE_X, 0.0, -50.0)
+	alpha.assign({"verb": "move", "to": [goal.x, goal.z], "drills": false})
+	var gap_sum := 0.0
+	var gap_n := 0
+	var arrived := -1
+	for tick in total:
+		ticks["now"] = tick
+		await lab.step()
+		var leader := lab.tank_of(alpha.leader)
+		if leader == null or not (alpha.slots as Dictionary).has(alpha.leader):
+			continue
+		var lead_slot: Vector3 = alpha.slots[alpha.leader]
+		if leader.global_position.distance_to(lead_slot) > ElementPlan.FLOW_JOIN_M:
+			var forward := TacticsFormation.flat(-leader.global_basis.z)
+			var heading: Vector3 = alpha.heading
+			var right := Vector3(-heading.z, 0.0, heading.x)
+			for unit_name: String in names:
+				if unit_name == alpha.leader or not (alpha.slots as Dictionary).has(unit_name):
+					continue
+				var offset: Vector3 = (alpha.slots[unit_name] as Vector3) - lead_slot
+				var place := TacticsFormation.to_world(leader.global_position, forward,
+						Vector2(offset.dot(right), -offset.dot(heading)))
+				gap_sum += Vector2(lab.tank_of(unit_name).global_position.x - place.x,
+						lab.tank_of(unit_name).global_position.z - place.z).length()
+				gap_n += 1
+		if arrived < 0 and lab.center_of(names).distance_to(goal) <= 8.0:
+			arrived = tick
+	(lab.orders as Orders).issued.disconnect(on_issued)
+	var off := 0.0
+	for unit_name: String in names:
+		var slot: Variant = alpha.slots.get(unit_name)
+		if slot is Vector3:
+			off = maxf(off, lab.tank_of(unit_name).global_position.distance_to(slot))
+	var result := {"flow": flow, "transit_gap_m": snappedf(gap_sum / maxf(gap_n, 1), 0.1), "samples": gap_n,
+			"arrived_s": snappedf(arrived / float(SimClock.TICK_RATE), 0.1) if arrived >= 0 else -1.0,
+			"worst_off_slot_m": snappedf(off, 0.1), "orders_last_10s": int(issued["late"])}
+	lab.dispose()
+	ElementPlan.FLOW_ENABLED = was
+	return result

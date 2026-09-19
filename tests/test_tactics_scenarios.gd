@@ -128,3 +128,16 @@ func test_attack_move_decisions_measured() -> void:
 	var result: Dictionary = await TacticsScenarios.attack_move_decisions(self)
 	print("MEASURE attack_move_decisions %s" % result)
 	assert_true(float(result["unit_minutes"]) > 3.0, "setup: six units fought for most of a minute")
+
+
+func test_an_element_flows_in_formation_on_the_way() -> void:
+	# The lead: "a formula to form up" — the visible half is holding the shape while travelling, not only at the end.
+	var flowing: Dictionary = await TacticsScenarios.element_transit(self, true)
+	var snapping: Dictionary = await TacticsScenarios.element_transit(self, false)
+	print("MEASURE element_transit flow %s; without %s" % [flowing, snapping])
+	assert_true(float(flowing["transit_gap_m"]) < float(snapping["transit_gap_m"]),
+			"on the way, members hold their places around the leader better (%.1f m vs %.1f m)"
+			% [flowing["transit_gap_m"], snapping["transit_gap_m"]])
+	assert_true(float(flowing["arrived_s"]) > 0.0, "and it still gets there (%.1f s)" % flowing["arrived_s"])
+	assert_true(float(flowing["worst_off_slot_m"]) <= 8.0, "formed up on the spot (worst %.1f m)" % flowing["worst_off_slot_m"])
+	assert_true(int(flowing["orders_last_10s"]) <= 2, "and quiet after (%d orders in the last 10 s)" % flowing["orders_last_10s"])
