@@ -26,3 +26,8 @@ nav-where: import ## nav: one maze-probe run (ARENA=foundry NAV_UNITS=60 NAV_BOT
 		--seed=1 $(if $(NAV_BOTH),--both-ways) $(NAV_FLAGS) > $(BUILD_DIR)/nav-where.log 2>&1 || true
 	grep -E "NAV_WHERE|NAV_COUNTERS|SCRIPT ERROR" $(BUILD_DIR)/nav-where.log || true
 	grep -oE '"(arrived|off_navmesh|t100_s)":[-0-9.]*' $(BUILD_DIR)/nav-where.log || true
+
+.PHONY: nav-orders
+nav-orders: import ## nav: the lead's test with brains — 5 player squads ordered across each other at once (ARENA=yard NAV_TIME=90); prints NAV_ORDERS (completed, completed_far = done > 7 m from the goal, never_completed, t50/t90/t100)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/order_probe.gd -- \
+		--arena=$(or $(ARENA),yard) --time-limit=$(or $(NAV_TIME),90) $(NAV_FLAGS) 2>&1 | grep -E "NAV_ORDERS|SCRIPT ERROR|ERROR" || true
