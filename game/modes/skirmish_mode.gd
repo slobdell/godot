@@ -244,7 +244,7 @@ func _start_match() -> void:
 	fog.name = "FogOfWar"
 	fog.slot = "fx.fog_of_war"
 	main.add_child(fog)
-	fog.invoke("setup", [{"texture": field.texture, "origin": VisibilityField.ORIGIN,
+	fog.invoke("setup", [{"texture": field.texture, "origin": field.origin,
 			"size": field.cells * VisibilityField.CELL_SIZE}])
 	field.refresh_all.call_deferred()
 	LoadingScreen.mark("fog")

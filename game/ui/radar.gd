@@ -291,14 +291,22 @@ func _draw() -> void:
 		draw_rect(rect, Color(0.02, 0.03, 0.05, 0.82))
 	# The visibility field: a texture that already encodes never / seen / visible.
 	if visibility != null and visibility.texture != null:
-		var corner_a := world_to_radar(Vector3(VisibilityField.ORIGIN.x, 0, VisibilityField.ORIGIN.y))
+		# X3 (combat, round 7): `origin` is per-instance now, because the field sizes to the ACTIVE layout rather
+		# than to Match.ARENA_HALF_SIZE, which became a bound and stopped being a size.
+		var corner_a := world_to_radar(Vector3(visibility.origin.x, 0, visibility.origin.y))
 		var extent := visibility.cells * VisibilityField.CELL_SIZE
-		var corner_b := world_to_radar(Vector3(VisibilityField.ORIGIN.x + extent, 0, VisibilityField.ORIGIN.y + extent))
+		var corner_b := world_to_radar(Vector3(visibility.origin.x + extent, 0, visibility.origin.y + extent))
 		var field_rect := Rect2(corner_a, corner_b - corner_a).abs()
 		# Flipped teams see the texture rotated 180 degrees: draw it with a negative size.
 		if _flip():
 			field_rect = Rect2(corner_a, corner_b - corner_a)
 		draw_texture_rect(visibility.texture, field_rect, false, Color(0.55, 0.85, 0.7, 0.55))
+	# X3 (combat, round 7) + 4f7371ef (control): the wall's real polygon, not a square off the constant. Two bugs in
+	# one line before: the constant is now the BOUND (140), so this drew an outline 20 m outside the wall of every
+	# shipped map, and it assumed four corners, so a hexagon would have been drawn as the square it is not.
+	# Resolved to control's outline_points() rather than combat's inline Arena.perimeter() loop: the two agree on the
+	# polygon case, and outline_points() ALSO falls back to the active layout's own bound when a layout has no
+	# perimeter, where the inline version draws nothing at all. It is also the seam test_radar calls directly.
 	draw_polyline(outline_points(), Color(0.6, 0.8, 0.9, 0.9), 1.5)
 	var prop_color := Color(0.75, 0.8, 0.85, 0.85)
 	var prop_colors := PackedColorArray([prop_color, prop_color, prop_color, prop_color])

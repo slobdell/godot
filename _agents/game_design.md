@@ -424,6 +424,19 @@ stack first, then the layer that commands it, then how the player reads and issu
   middle. arena's sentence, which is the round's sharpest statement of the risk:
   > *"If N7 lands and objectives stay central, the gates will have made flanking pay in a game that still gives no
   > reason to flank."*
+  **⚠ TWO CORRECTIONS to how this gets summarised (combat, X7, 2026-09-19, from
+  `references/combat/n5-engagement-envelope-2026-09-18.json`, builder0 at `fa4e7077`, n=15 per arm against the TRUE
+  round-5 control):**
+  1. **Quote the STRICT measure, 25.7% → 45.5%, which is what "off-axis kills" above already is.** A looser hull-face
+     measure reads **68.6%**, and it flatters us: **an oblique shot across a wide front registers as a "side" hit without
+     anyone having flanked anything.** So the honest claim is *"flank and rear kills rose from a quarter to just short of
+     half"*, **not "a majority of kills are now flanking"**. Rear kills alone 11.2% → 20.8%.
+  2. **N5 did NOT make the battle more mobile, and the natural summary saying so is FALSE.** Centroid travel moved
+     236.8 → 248.1 m, about **5%, inside the noise of a 15-match arm** — **the armies moved this much before the
+     engagement envelope existed.** So the flanking gain is **a change in how kills happen within an engagement at the
+     same amount of movement**, not more manoeuvre. combat flagged this unprompted because *"it is the kind of thing that
+     gets repeated once written."*
+
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
 - **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
@@ -447,9 +460,29 @@ stack first, then the layer that commands it, then how the player reads and issu
   ordered, 30 Hz, Jolt and all of CP4 — so **the directive bug is an unexcluded candidate, not a demonstrated cause, and
   neither is the mechanics story below.** combat has retracted its own attribution in `balance.md` at `0c1fb760`, in
   place, keeping the measurement and striking the cause. **Read the explanation below as one of two candidates.**
-  **What settles it is an ablation, not an argument** (lesson 25 — attribute a cost by *removing* the behaviour):
-  **delete the `gangs/scout` entry on the current build and re-run the matrix.** Collapse toward 23% means the directive
-  did the work; holding near 53% means the mechanics explanation survives. Scheduled after the per-map designator runs.
+  **⚠ ABLATION RUN, AND IT CANNOT ANSWER THE QUESTION — so both numbers are RETIRED rather than explained** (combat,
+  builder0 at `f745f48a`, n=30 per faction per arm, per map, never pooled; positive control fired in all four arms —
+  21 sides fielded a designator, 535/559/758/656 paints; `compare_arms` accepted both subtractions):
+
+  | faction | boulevard (0.64) | yard (0.20) | treated? |
+  |---|---|---|---|
+  | **gangs** | **+7 pts** | **+7 pts** | **yes — the only one** |
+  | law | −7 pts | −10 pts | no |
+  | condemned | +3 pts | +0 pts | no |
+  | syndicate | −3 pts | +3 pts | no |
+
+  **`gangs/scout` is the only faction-keyed entry in `Army.SQUADS`, so every other row measures what an UNTREATED faction
+  does between two arms — and law moved −10 points without being touched, larger than the gangs' +7.** The noise floor is
+  not an argument; it is in the table, measured by factions that received no treatment. SE of a difference of win rates at
+  n=30 is **12.9 points**.
+  **The direction is consistent** (the gangs are worse without their directive on both an open and a closed map) **and it
+  is an order of magnitude short of explaining 23% → 53%.** So **neither CP4 nor the `gangs/scout` fix is established as
+  the cause, and combat claims none of it.**
+  **Most likely the original comparison was never a comparison** — different builds and, on this project's own foundry
+  finding, plausibly different maps. **That is exactly the subtraction `compare_arms` now refuses and could not refuse
+  then.** Resolving ±7 points would need ~n=400 per faction per arm — about SEEDS=70 and four hours of builder0 — for an
+  effect smaller than any balance difference the lead would notice. **Decision: do not chase it. The two numbers are
+  retired.**
   **And the 23% itself was not a false number** — combat's correction, which is the sharper point: *a build in which 15
   assault vehicles sit at standoff spotting while the swarm dies really does win 23%.* **The error was treating a
   measurement of a configuration as a fact about a faction** — the same error as reading a foundry number as a property
@@ -785,6 +818,27 @@ wants cannot be produced by geometry alone.** It needs something worth taking th
   non-zero *and* combat's falsification test shows unit-time actually spent on the expensive route. Either alone is
   decoration.
 
+**FIRST MAPS ABOVE ZERO (arena, 2026-09-19).** A mirrored objective pair authored on both maps the lead kept:
+
+| arena | decision spread | `centre_sees_share` |
+|---|---|---|
+| **yard** | **0.00 → 0.35** | 0.20 (unchanged) |
+| **pit** | **0.00 → 0.26** | 0.30 (unchanged) |
+
+**Each pair gives a side one objective it holds cheaply and one it must contest** — which is the lead's *"compelling
+reason to cross the bridge"* expressed as geometry plus reward rather than geometry alone.
+
+**And `centre_sees_share` did not move on either map, which is what should happen:** objectives change what is *worth
+reaching*, not what can be *seen*. **Two axes behaving independently is the first evidence that splitting them was the
+right model** — openness and reason are separate design knobs, and a map can now be tuned on one without disturbing the
+other.
+
+**⚠ HELD BACK, NOT SHIPPED.** A real match on the paired yard fired squad's `Objectives` guard **35,336 times**: *"the
+arena declares an objective other than the single central zone; squad's deciders still read `Match.CONTROL_CENTER`."*
+**The match completed and produced a winner while the deciders competed for the wrong ground throughout** — degraded,
+not fatal, which is the worse of the two. **The pairs land when squad migrates `game/tactics/objectives.gd` onto N7's
+instance API**; the coordinates and measured effect sit in `make_arenas.py` as a one-line re-enable.
+
 **The metric needed no build slot and no other stream**, which is worth noting for its own sake: the most important
 design finding of the day came from writing down a number nobody had asked for.
 
@@ -966,6 +1020,21 @@ independently without either seeing the whole:**
 brain ignored it. **Three independent failures of one feature, none of which any test noticed**, because nothing asserted
 the *outcome* — that a unit told to face a direction ends up facing it. That is lesson 47's shape again: a guarantee no
 test isolates.
+
+**MEASURED AFTER THE FIX (nav, on squad's `bfcc2607`, builder0, yard, 30 player units in 5 squads each ordered to face
+90° off their direction of travel — same probe and same configuration as the "before"):**
+
+| units within 15° of the ordered facing | before | after |
+|---|---|---|
+| **MOVE + facing**, at +10 s | **2/30** | **27/30** (median **1.6°**; 20/30 already at +2 s, 24/30 at +5 s) |
+| **HOLD + facing**, at +10 s | **1/29** | **21/30** (median **5.5°**; 15/30 at +2 s, 18/30 at +5 s) |
+
+**For the lead, in one line: an ordered facing now actually happens, within seconds, for about 9 in 10 units on a move.**
+
+**The remaining tail is named rather than hidden:** move leaves 3 units off after 10 s (worst **136°**), hold leaves 9 off
+(worst **73°**). **Hold settles slower and less completely than move**, and nav's hypothesis is that **wheeled units cannot
+pivot** — a car rolls round at `WHEELS_MIN_THROTTLE` instead of turning on the spot — or that units are still settling onto
+their position. nav owns the execution of *face* and will diagnose the tail after the commitment A/B.
 
 **Why this matters beyond the complaint:** round 6 made facing *mechanically* real in four places — armour facing, the
 crossing-acquisition penalty, support-by-fire arcs, `UnitCommand.facing`. **All four were operating on a quantity the

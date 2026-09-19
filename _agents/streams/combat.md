@@ -127,9 +127,21 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
-### IF YOU ARE A FRESH AGENT, READ THESE SIX THINGS
+### IF YOU ARE A FRESH AGENT, START HERE (round 7, 2026-09-19)
 
-_Written 2026-09-18 against an imminent context loss. CP4 is **merged and green at `f0f89e52`**; nothing is in flight._
+**Round 7 in one paragraph.** X4 (the gangs' unattributed 23% → 53% swing) and X3 (the arena bound) are **built**;
+N7 and CP4 shipped in round 6. The round's real output turned out to be **instruments rather than features** —
+`compare_arms`, the positive control, the arm-adherence refusal — because three separate measurements this stream
+quoted were measuring something other than what they claimed. **The one backlog item still carrying a number is the
+four matrix runs** (`make faction-matrix-arms ARENAS="boulevard yard"`); everything else is done, blocked or stretch.
+See *Next steps* and *The instruments, and what each one can and cannot prove* — read the second one before you
+quote any number, because reaching for the wrong guard is how each of these got past a check.
+
+**`main` is merged in at `c6a5c550`** (baseline `253ecfdeed84bc4d`), including arena's `877dc34a`. `DRIVABLE_LIMIT`
+is **116 and that is deliberate** — do not "finish the job" by moving it to 117; the reasoning is under *X3*.
+
+_The six items below were written 2026-09-18 against an imminent context loss. They are all still true and item 4
+is the one most likely to have gone stale — check the current baseline before believing it._
 
 **1. The decomposition inverts what this round spent its effort on.** N5 has three gates (sight, acquisition, fire
 discipline) plus X6's crossing penalty. Measured over 75 matches against a true round-5 control:
@@ -164,7 +176,14 @@ the caller asked, **and the tool never recorded the value it used.** Round-3 `ma
 [../balance.md](../balance.md) that assumed a non-default unit count are unreliable and **cannot be re-derived**.
 Fixed to `SEARCH_UNITS`. General rule: **print every resolved knob into the output.**
 
-**4. Three targets fail on a stale sim baseline and two of them blame the wrong component** —
+**4. CORRECTED 2026-09-19 — these targets are a latent trap, not a live failure.** On a CURRENT baseline they
+**pass**: the 13-target gate at `2cf61f57` (builder0, 1181 passed / 0 failed) has `announcer-record-smoke passed`
+and `music-smoke passed`. So the components were never the problem and the brief has been overstating this for two
+rounds — it read as "three targets are broken" when the truth is "three targets misfire whenever the baseline
+moves", which is once a round, by design. **feel's fix is still worth doing and blocks nothing.** The original
+note, which remains the correct diagnosis of the mechanism:
+
+**Three targets fail on a stale sim baseline and two of them blame the wrong component** —
 `announcer-record-smoke` says *"the booth changed the simulation"* and `music-smoke` says *"the soundtrack changed
 the simulation"*, **while computing exactly the hash `sim-baseline` computed**, which is the proof they changed
 nothing. **These are feel's targets and the fix is unbuilt:** run the match twice in one invocation, with and without
@@ -182,7 +201,21 @@ that reduces exactly to today's behaviour.
 **6. The evidence is committed, not in `build/`.**
 [references/combat/n5-engagement-envelope-2026-09-18.json](references/combat/n5-engagement-envelope-2026-09-18.json)
 is the 75-match series with its conditions in the README row. **The sim baseline is NOT combat's to record**
-(invariant 2) — N5 moves it to `91db23888123f642` on glibc-2.43 and the orchestrator records it once at the end.
+(invariant 2) — N5 moves it and the orchestrator records it once at the end.
+
+**And now the reason, which round 7 supplied and which the rule needs** (2026-09-19): *inertness does not compose.*
+"A is inert" and "B is inert" does **not** give "A+B is inert", because A can be inert only in the absence of B —
+arena's new `_build_perimeter()` builds the wall from the shape's polygon instead of the authored boxes, which is
+geometrically identical and creates different physics bodies in a different order, and that is enough for Jolt.
+So **three green `sim-baseline` runs on three branches predict nothing about `main` after merge**, and a hash that
+disagrees with them is not an anomaly — it is the expected result of composing changes each measured alone. The
+only baseline that means anything is the one measured on `main` after the last merge, which is exactly what
+invariant 2 says; the rule without this reasoning invites the shortcut of trusting a branch's green.
+
+Corollary that cost this stream an hour today: **a commit's position in the log does not tell you what a queued
+job measured.** `253ecfdeed84bc4d` was recorded from a tree captured before arena merged, though arena's merge sits
+earlier in the log — so a baseline commit should state the hash of the **tree it measured**, not the commit it was
+launched after.
 
 ---
 
@@ -539,6 +572,57 @@ for doing N7 promptly after CP4.
 That is exactly what `separation_at_contact_m` and `engaged_distance_m` measure, so X3 resolves itself out of the CP4
 series rather than needing its own run.
 
+**X3 — DONE (2026-09-19), once the orchestrator authorised merging arena's commit directly.** `ARENA_HALF_SIZE`
+is **140 and a bound**: a layout declares its own `half_size` under it, so Pit and Yard stay 120 x 120 and nothing
+about the maps the lead has played changes. `stream/combat` contains arena's `877dc34a` (a real merge, `0da3f015`),
+which is what makes the bump legal — before it, `validate` demanded equality.
+
+**`DRIVABLE_LIMIT` stays at 116, and that is a deliberate deviation from the instruction to set 117.** The warning
+behind the instruction is right and I kept it: scaling it with the bound to 136 would make a *square* clamp admit
+points 192 m from centre on a hexagon whose wall is 121 m away on the flats — about three times too permissive, and
+`Arena.validate` would approve every one of them. But 117 is the hexagon's inscribed bound (121.0 − 4.0) and **116
+is already inside it**, so 116 is safe for the hexagon *and* for today's squares, while moving to 117 would take a
+metre of clearance off every shipped map in exchange for nothing. It is a fallback square bound; `Arena.contains()`
+is the real answer, and each surviving `clampf(..., DRIVABLE_LIMIT)` is a site still to migrate.
+
+**What the bump broke, and why it was fixed here rather than requested.** `ARENA_HALF_SIZE` was doing two jobs —
+*how big is the play area* and *how big is the world the HUD must cover* — and a non-square arena is what makes them
+different numbers. Three readers were on the wrong side of that split and would have shipped visibly wrong the
+moment the constant moved, so they moved with it (**owners: rewrite freely, this is your call, not mine**):
+
+| File | Owner | Was | Now |
+|---|---|---|---|
+| `game/ui/radar.gd` | control/feel | a **square** outline at `±ARENA_HALF_SIZE` | `Arena.perimeter()` — the real inner face. Two bugs in one line: it would have drawn 20 m outside every wall, **and** drawn a hexagon as a square |
+| `game/agent/agent_bridge.gd` | agent | declared `bounds` = the constant | the active layout's size — it was about to tell an agent the world is 140 m wide when the map is 120 |
+| `game/match/visibility_field.gd` | **combat** | `const ORIGIN` off the constant | `var origin`, sized to the active layout. Presentation only, but a 120 m map would have carried a 280 x 280 field: 36% more cells to fill and upload, all of it outside the walls |
+
+`VisibilityField.ORIGIN` is therefore `field.origin` now — per-instance, because the answer depends on which layout
+is loaded. `radar.gd` and `skirmish_mode.gd` were the two static readers and both are updated.
+
+**And one of arena's tests was measuring the map size, not the shape.** `test_a_hexagon_is_the_shape_that_varies_most`
+probed the pinch ratio at a hard-coded **z = 60 m**. The ratio is scale-invariant — hexagon 0.711, octagon 0.914 at
+*any* bound — but 60 m is a different fraction of a 140 m arena than of a 120 m one, so at the new bound it read
+**0.753 against a 0.75 bar and failed**, having detected nothing except that the map got bigger. The probe now sits
+at `bound * 0.5` and reproduces the original numbers at every size. **A constant in a test is a scale assumption
+whenever the thing under test has a size.**
+
+_Superseded, kept for the record — the blocked writeup:_ **X3 was BLOCKED (2026-09-19), on another stream.** Raising `ARENA_HALF_SIZE` to 140
+as a *bound* needs `Arena.validate()` to stop demanding equality, which is arena's `877dc34a` ("half_size is a bound,
+not a requirement (unblocks combat's ARENA_HALF_SIZE)"). **That commit is on `stream/arena` and is NOT on `main`** —
+I checked with `git merge-base --is-ancestor 877dc34a main` after merging main, precisely because my own notes had
+recorded it as landed. Until it merges, every layout must still have `half_size == 120` and the change cannot be
+made on this branch at all.
+
+Two things for whoever picks it up:
+
+- **It is a contract change, not a combat edit.** The clamps live in six places across five streams —
+  `ui/radar.gd`, `ui/tactical_map.gd`, `control/rts_controls.gd`, `tactics/army_layout.gd`, `ai/combat_motion.gd`,
+  `ai/cover_map.gd` (plus `arena/arena.gd` and `match/visibility_field.gd`) — so it goes through
+  [../workstreams.md](../workstreams.md) before a line moves.
+- **`DRIVABLE_LIMIT` goes to 117, not 136.** It is `ARENA_HALF_SIZE − 4` today (120 → 116); keeping that *relative*
+  relationship at 140 would push the drivable edge out by 20 m and silently re-scale every spawn row, cover map and
+  fog grid that derives from it. The bound is meant to make room for a non-square layout, **not** to grow the maps.
+
 ### Infra: `make engagement` was broken, and `make matchup-search` silently wrong (`9f798368`)
 
 `mk/ai.mk` sets `VARIANTS ?= r1,a4,a6` (brain-variant *names*). **A make variable set in any `mk/*.mk` is global**, and
@@ -605,7 +689,39 @@ immune to the baseline moving, and needs no coordination with invariant 2 at all
 **And a gap in invariant 2 itself:** it says the orchestrator records the baseline once at the end. It does not say
 that **until then three targets are red and two of them lie about why.**
 
-### N7 — why it compounds with N5 rather than merely following it
+### N7 — DONE (`5d0ca30f`). 1134 passed / 1 failed, and the one failure is not combat's
+
+`Match` reads `Arena.objectives_of(Arena.active)` and keeps per-objective owner and progress. **No shipped arena
+changes**: a layout with no `objectives` list reports exactly the single central zone this file used to hard-code.
+
+**Three decisions, each with a reason worth reusing:**
+- **Score by the SHARE of objectives held** (`ticks += INTEL_EVERY_TICKS × held/total`), because **at N=1 it reduces
+  to the old accumulation exactly.** A generalisation that does not reduce to the current case is not a read-through,
+  it is a balance change wearing one's clothes. Holding both of a mirrored pair scores at the old rate; holding one
+  scores at half, so splitting to take both is the decision the contract exists to create.
+- **`control_owner` / `control_progress` are a write-through VIEW of `objectives[0]`, not a copy.** A copy is exactly
+  what broke `test_control_point` when this landed: it poked `control_owner` between frames, the tick overwrote it,
+  and the match silently never ended. Five streams both **read and write** this state, so a view is what keeps them
+  all working.
+- **`--control` is a match flag, not a layout property**: a layout declaring no `control_point` still gets the
+  central zone, or `--control` would silently do nothing on it.
+
+`control_changed` still fires for the primary objective; `objective_changed(index, owner)` is the N7-aware signal.
+The static `Match.in_control_zone` is kept (five streams call it) but **can only know the default central zone** —
+`in_any_objective` / `objective_presence` are the replacements, and `cpu_commander.gd:181` is the one call site that
+will go quietly stale rather than loudly break when arena ships an off-centre layout. **Squad has been told.**
+
+**The sim baseline moves** (objective handling is simulation). Per invariant 2 combat does **not** record it.
+
+**The one failing test is `test_audio_music_director::test_it_follows_a_mood_signal`, and it is feel's** —
+order-dependent, arrived with a `main` merge, reported with its bounds. **Do not attribute it to N7**, and note how
+nearly I did: I first compared a *filtered* pre-N7 run against a *full* post-N7 run, saw pass-then-fail, and concluded
+it was mine despite the test having zero references to `control`. **That comparison is invalid** — a filtered run and
+a full run answer different questions (lesson 45). The filtered run on the N7 tree passes 17/0, which is what
+excludes N7. *I had flagged that exact distinction to the orchestrator the same morning and still made the mistake
+when it was my own change under suspicion.*
+
+### (the case for N7, written before it was built) why it compounds with N5
 
 **Taken on (2026-09-18), and the case for doing it in round 6 rather than deferring it comes out of the series.**
 arena's half is landed and tested: `Arena.objectives_of(Arena.active)`, mirrored pairs enforced, and every shipped
@@ -643,7 +759,182 @@ brief's target is *"a majority of direct-fire kills come from the flank or the r
 move during the fight"* — read `off_axis_kill_share` and `centroid_travel` for it rather than the hull-face split,
 since an oblique shot across a wide front counts as a "side" hit without anyone having flanked anything.
 
-### X5 — the duplicated Lancer (proposal, for the orchestrator to relay)
+### The pair-measurement with arena: design agreed, not yet buildable
+
+arena has a route model (cost × reward → scenery / dominant / trap / **interesting**) and designed the test that
+could kill it before building five maps on it: **do units actually take the routes the map calls interesting?**
+combat measures the unit-time; arena hands over the classification as data (polyline, cost, reward, quadrant) so
+there are not two implementations of the same geometry drifting apart.
+
+**A null result is ambiguous three ways, and each needs its own control.** *"Units did not take the interesting
+route"* can mean:
+
+| | cause | how to tell |
+|---|---|---|
+| **a** | the route is genuinely unattractive — **arena's model is wrong**, the finding the test exists to produce | free arm: units never enter it |
+| **b** | units **cannot execute it** (mis-path, blocked, no route) | **commanded arm** |
+| **c** | units were **dragged off it by a fight** | nav's `retasked:<option>` bucket |
+
+**(c) is nav's finding and I had not thought of it:** under `attack_move`, units re-task their drive target **46
+times per unit-minute** (builder0, yard, seed 7), **54% of that from ENGAGE re-aiming its combat hops**. So a free-arm
+unit that "does not take the route" may simply have been pulled into a fight. **Order the commanded arm with a plain
+`move`** — 0 re-tasks measured — or it measures the fight rather than the route.
+
+**The arrival check is nav's, not mine** (`Movement.state(tank)` per tick). Since `ab93d85b`, `phase == "arrived"`
+means within the order's arrive radius of the **goal**, never the route's end; a route stopping more than 3 m short
+(NavigationServer's "nearest reachable point" answer) reports `reachable: false` and `blocked` / `no_path`. So the
+caveat I raised is already handled — and I will still check flat distance to the scripted waypoint, because belt and
+braces costs nothing and a second opinion on "did it get there" is the one place I want redundancy rather than reuse.
+
+**A refinement arena should have before it reads any result:** *entering a route and then fighting on it **is** taking
+it.* The metric is **unit-time on the route**, not completion — a map whose interesting route is where the fights
+happen is the map working, not failing. Only *never entering* is declining it.
+
+### The designator: two runs measured a different game, and neither was caught by a check
+
+**Run 1 (void).** Re-roling the Lance Platform to `role: "designator"` **silently dropped it from every army** —
+`Army.squads_for()` iterates `SQUADS`, not the units, so a role with no entry is omitted with no error. The Syndicate
+fought 60 matches with four unit types and the result read *"the designator makes them slightly worse"* (43% → 40%).
+
+**Run 2 (lower bound only).** With the `SQUADS` entry added the unit was fielded — but `role: "designator"` is absent
+from `FRAGILE_ROLES` and `PROTECTED_ROLES`, and `CpuCommander` classifies unknown roles as **line**, so a spotter was
+pushed to the front. Boulevard, superseded build: condemned 53%, gangs 53%, law 47%, syndicate 47%. **Understates the
+mechanic; not quotable.**
+
+**Both were found by a result looking *slightly wrong*, not by any check** — which only works when the confound
+happens to push the implausible way. So the fix is not vigilance:
+
+- **`designates: true` is a capability, not a role** (`f1fb19ad`). `role` is a taxonomy **eight places key off across
+  four streams** — `Units.ROLES`, `Army.SQUADS`, `SquadTactics.FRAGILE_ROLES`, `TacticsFormation.PROTECTED_ROLES`,
+  `CpuCommander`'s line/support split, `ElementSituation`, `ArmyCatalog.ROLE_LABELS`, `command_icons` — and **none
+  reference a single registry.** A value eight places key off is not a value, it is an interface; this one has no
+  owner. Round-7 debt. The mutation-checked `SQUADS` guardrail is the down-payment.
+- **A positive control** (`e0f6ce40`): `Match` reports designators **fielded** and paints **landed** per team, and
+  `faction_matrix` **refuses** — not annotates — a result where a side fielded one and painted zero. *A treatment arm
+  with no treatment is a failed run, not a null result.* The `run:` header proves **which build**; this proves
+  **which behaviour**.
+
+**The control then broke the instrument it was guarding, which is the part worth reading** (`9821cac7`). Shipped
+`e0f6ce40` with unit tests over `Match`'s two counters and **never ran `faction_matrix` once end to end**. The block
+read `outcomes`' values as result dicts; they are `(result, first_is_green)` **pairs**. Every matrix run after it
+died on `AttributeError` before printing a row — a guard against bad numbers that produced **no** numbers, and it
+would have mis-attributed the faction anyway, because team 0 is Green and which faction that *is* depends on the
+flag. Two lessons, and the second is the general one:
+
+1. **"The counters are tested" is not "the instrument works".** The unit tests were real and passed; nothing
+   exercised the thirteen new lines that consume them. A guard is code on the hot path of every future run, so it
+   earns *more* end-to-end scrutiny than the thing it guards, not less.
+2. **A guard that is silent when it ran and silent when it never ran is indistinguishable from no guard** — which is
+   precisely how the designator got measured twice without engaging. So the run now *always* states what the control
+   saw: `positive control: 6 side(s) fielded a designator, 97 paints -- treatment engaged`, or **`NOT EXERCISED`**.
+   Zero fielding sides is often legitimate — a faction army draws **one** archetype and `syndicate_escort` carries no
+   Lancer, so a small matrix can field none at all — but legitimate is not the same as *passed*, and a control that
+   cannot be seen firing will eventually be believed without having fired. **Make an assertion report its own
+   coverage.**
+
+Verified end to end on the laptop at `9821cac7` (8 matches, foundry, 45 s limit — a plumbing run, **its win rates are
+not a balance result and must not be quoted**): tool exits 0, json written, both branches of the evidence line seen.
+
+### Every faction number this project has quoted is a FOUNDRY number — and foundry is near-open
+
+`faction_matrix.py` passed no `--arena` until `c2b27516`, so every matrix run used the default layout and **said so
+nowhere.** The numbers are sound as *differences* (both arms ran on the same ground) and unsound as *properties*.
+Fixed: `ARENA=`, the map named in the header, a per-arena json, and `balance.md`'s rows relabelled.
+
+**The part that reframes the baseline** (arena, measured, `make arena-report`): foundry is **`centre_sees_share`
+0.56 — the second-most-open map in the game.**
+
+| arena | centre sees | |
+|---|---|---|
+| **boulevard** | **0.64** | the open extreme |
+| foundry / furnace | 0.56 | ← **every number we have quoted** |
+| boneyard | 0.40 | |
+| pit / scrapyard | 0.30 / 0.29 | (the lead kept pit, cut scrapyard — the ranking predicts him at the extremes, not the middle) |
+| **yard** | **0.20** | the closed extreme |
+
+So the gangs' 23% → 53%, the 47-to-10-point collapse and the heights null were all measured on **near-open ground**,
+which sits close to the favourable end for anything that pays off with sightlines. **Prop counts are not a proxy for
+openness** and would have inverted the ranking: `scrapyard` has 36 obstacles and measures 0.29, `boulevard` has none
+in `obstacles` and 100+ in `props` and measures 0.64 — the split is schema history (v1 vs v2), not a difference in
+what blocks.
+
+**Why the designator must be reported per map and per faction, never as an aggregate.** Its payoff is *conditional*
+on sightlines, so one number over a mixed pool is either noise or one map doing all the work. And a pairing table
+cannot distinguish the two results that matter: **one faction moving between maps** (an asymmetry — the map pays one
+army more) from **every faction's spread widening on the open map** (a property of the map). `faction_matrix.py` now
+prints a per-faction block for exactly that (`1314bfd9`).
+
+**The open question this decides, and it is arena's target:** `centre_sees_share < 0.30` was set when every unit saw
+alike. N5 put time between seeing and shooting, sight radii vary 62–135 m, and the designator converts one faction's
+eyes into its whole side's tempo — so exposure is now a property of **the map and who is standing on it**. arena's
+position, which I accept: keep the target, because it is evidence about *whether a map is worth building*, while the
+designator is evidence about *whether one faction gets more out of a given map*, and both can be true. It changes only
+if the Syndicate's advantage on the open map is large enough to be a balance problem rather than a flavour
+difference. **The boulevard/yard pair decides it.**
+
+### X5 — the Lancer: **the recommendation was incomplete. HOLD the removal.**
+
+**The lead approved dropping `syn_lancer`; then I implemented it and it broke the Syndicate.** Removing it leaves
+them with only the four core roles and **no special at all**:
+
+| faction | roles | special(s) |
+|---|---|---|
+| condemned | 6 | **lancer + burner** |
+| gangs | 5 | support |
+| law | 5 | suppressor |
+| syndicate | 5 → **4** | lancer *(their only one)* |
+
+`test_combat_factions::test_every_playable_faction_fills_the_core_roles` catches it, and it catches it because it
+asserts a **design pillar** — *"counters stay learnable across factions"* — rather than an implementation detail.
+**That asymmetry strengthens the half of the recommendation that was right** (the Condemned can afford to lose the
+Lancer because they also have the Burner) **and invalidates the half I never checked** (the Syndicate cannot, because
+it is their only one). *I made a recommendation about one unit without looking at the roster it would leave behind.*
+
+**Three ways forward; the choice is the lead's:**
+1. **Keep it and re-role it** so it is not a second sniper. The Syndicate fields **15 vehicles at 5200 points**
+   against the gangs' 39 — an elite-few faction has room for a special that is not about range.
+2. **Design a replacement special first.** `syn_scout` has the game's best eyes (135 m sight), which under N5's gate 1
+   is worth more than it was; a designator or spotter would fit the faction and not duplicate the railgun's 104 m.
+3. **Accept a four-role Syndicate** — argued against here: it makes them the only faction with no identity beyond
+   the core four.
+
+**Reverted on this branch**, so nothing is half-landed. feel's work on that model is only wasted under (3).
+
+### (the analysis that still stands) why the Condemned keep theirs
+
+Measured from the rosters, not argued from memory. Direct-fire **bands** by faction and slot:
+
+| slot | Condemned | gangs | Law | Syndicate |
+|---|---|---|---|---|
+| scout | 35 | 24 | 35 | **45** |
+| ifv | 45 | 28 | 45 | **55** |
+| tank | 45 | 36 | 62 | **104** |
+| **lancer** | **86** | — | — | **86** |
+
+**The Syndicate's Lancer is outranged by the Syndicate's own tank.** `syn_tank` covers **104 m**; `syn_lancer` covers
+86. It is a cheaper (340 against 470) but *shorter-ranged* duplicate of the role that faction already dominates — and
+the Syndicate holds the longest band in **every** slot, so nothing about a long-reach specialist is distinctive there.
+It competes with their tank instead of complementing it.
+
+**For the Condemned it is the opposite: the Lancer is the only thing that stretches their line.** Their next-longest
+direct-fire band is **45 m**, so the Lancer's 86 nearly doubles it, and it is their only answer to a Syndicate tank
+shooting effectively from 104 m. Remove it and the faction flattens into a single band.
+
+**The framing that makes this more than a roster tidy-up** (the orchestrator's, and it is the right one): the Lancer's
+86 m band is *why* `engaged_distance` sat at ~70 m in **every** configuration of the CP4 series, including the old
+world — an army-level average is set by its longest-reach unit. So "which faction keeps the Lancer" is really **which
+faction gets to distort its own engagement profile.**
+
+That argues the same way. In the Syndicate it would be the *second* distorter on top of a 104 m tank — the faction's
+profile is already stretched and the Lancer merely piles on. In the Condemned it is a **single** exception to an
+otherwise 45 m line, which is a *contrast inside the roster* rather than more of the same, and contrast is what makes
+a faction legible to a player. **A long-reach unit is only interesting in a faction whose other units are short.**
+
+**What the Syndicate loses, and why it is affordable:** a cheaper long-range option. They keep `syn_tank` (104 m
+band), `syn_artillery` (170 m reach) and `syn_scout` (45 m band, 135 m sight — already the best spotter in the game).
+The gap is a price point, not a capability.
+
+### (superseded) X5 — the duplicated Lancer
 
 **The Syndicate should lose `syn_lancer`; the Condemned keep `lancer`.** The reasoning is the engagement envelope
 itself. Post-CP4 the Syndicate already fields the longest reach in the game — `syn_tank`'s railgun covers **104 m**,
@@ -652,6 +943,85 @@ better than anyone. The Condemned have no other unit past 45 m, so the Lancer is
 line, and removing it there would flatten the faction into one band. Dropping `syn_lancer` also removes the roster's
 only case of two units sharing a weapon (`laser`), which is what made the duplication visible in the first place.
 Not blocking: both still exist until the lead rules.
+
+### X4 — RESULT (2026-09-19, builder0 at `f745f48a`, n=30 per faction per arm)
+
+**The ablation ran, the treatment engaged in all four arms, and it CANNOT settle the question. That is the
+finding, and the untreated factions are what prove it.**
+
+Faction directives ON minus OFF, per map, never pooled:
+
+| faction | boulevard (open, 0.64) | yard (closed, 0.20) | treated? |
+|---|---|---|---|
+| **gangs** | **+7 pts** (50% → 43%) | **+7 pts** (53% → 47%) | **yes — the only one** |
+| law | −7 pts | **−10 pts** | no |
+| condemned | +3 pts | +0 pts | no |
+| syndicate | −3 pts | +3 pts | no |
+
+**`gangs/scout` is the only faction-keyed entry in `Army.SQUADS`, so the gangs are the only faction the ablation
+treats.** Every other row is therefore a measurement of what an *untreated* faction does between two arms — and
+**law moved −10 points without being treated at all, which is larger than the gangs' +7.** At n=30 the standard
+error of a difference of win rates is **12.9 points** (a 95% band of ±25), so a 7-point effect is well inside the
+noise, and the untreated rows demonstrate that empirically rather than by arithmetic.
+
+**What this licenses and what it does not.**
+
+- The direction is consistent: the gangs are worse without their own directive on **both** an open and a closed
+  map, +7 on each. That is what you would expect if the directive helps. It is not evidence that it does.
+- **It is an order of magnitude short of explaining 23% → 53%.** Whatever produced a 30-point swing, an effect
+  this size is not it — so **neither CP4 nor the `gangs/scout` fix is established as its cause, and combat still
+  claims none of it.**
+- **The likeliest explanation is that the original comparison was never a comparison.** The 23% and the 53% were
+  taken on different builds and, on the evidence of this stream's own foundry finding, plausibly different maps.
+  `compare_arms` exists precisely to refuse that subtraction; it did not exist when those numbers were made, and
+  they cannot be reconstructed now.
+
+**To resolve ±7 points you need about n=400 per faction per arm** (SE_diff ≈ 3.5), i.e. roughly `SEEDS=70` — about
+seven times this run, or ~4 hours of builder0 for the four arms. **That is the price of the question, and it should
+be paid deliberately or not at all.** My recommendation is *not at all* for now: a 7-point faction effect is
+smaller than the balance differences the lead would notice, and the same builder0 hours buy more elsewhere.
+
+**Incidental, and the more useful number: the factions are close to the design target on both maps.** Normal play,
+`f745f48a`, n=30 each: boulevard condemned 53 / gangs 50 / law 50 / syndicate 47; yard condemned 53 / gangs 53 /
+law 53 / syndicate 40. game_design.md asks that "any faction pair is near 50/50 when both sides build good armies"
+and every faction is within 3 points of even except the **Syndicate on the closed map (40%)** — which is the
+direction its design predicts (fewest vehicles, longest guns, a designator that turns sight into tempo) and the one
+number here worth a second look, though it too is inside the noise band at this n.
+
+### X4's ablation: how to settle who earned the gangs' 23% → 53% (`f7c0d712`)
+
+**Nothing may credit CP4 with that swing until this runs.** The directive fix and the engagement envelope landed in
+the same commit and no matrix ran between them, so the 30 points are shared between two changes by an accident of
+sequencing. The ablation separates them:
+
+```bash
+# Both arms, both maps. ARENA is not optional: a faction number without a map is a foundry number (see below).
+make remote T="faction-matrix SEEDS=5 TIME=150 JOBS=8 ARENA=boulevard"            # normal play
+make remote T="faction-matrix SEEDS=5 TIME=150 JOBS=8 ARENA=boulevard ABLATE=1"  # the control arm
+# ...and the same pair on `yard`, because boulevard is open (0.64) and yard is closed (0.20).
+```
+
+Read it as: **gangs' win rate, arm A minus arm B, per map.** If the gangs collapse without their own directive, the
+directive earned the swing and combat earned none of it. If they hold, CP4 has a claim — *and still only on the maps
+it was measured on.*
+
+Three properties of the arm, each there because of a specific way this stream has been wrong before:
+
+- **`Army.faction_directives` is a flag, not an edit of `SQUADS`.** A hand-edit leaves the tree modified, so the arm
+  is invisible in the output, `run_conditions` marks the run dirty, and the number surfaces weeks later with no way
+  to tell which arm made it.
+- **`MATCH_RESULT` carries `controls`** — `{acquisition, crossing, faction_directives}`. Print every resolved knob;
+  `matchup-search` spent its entire history at `--units 60` and recorded it nowhere.
+- **`ABLATE=1` sets the flag *and* the output filename** (`build/faction-matrix-<arena>-plainroles.json`) from one
+  make variable. Two arms writing one filename is how a control silently overwrites its treatment and leaves a
+  single file that reads as both runs.
+- **`faction_matrix` refuses a run whose `controls` are not what was asked for.** The positive control asks whether
+  the *treatment* engaged; this asks whether the *arm* was the one requested. A dropped flag gives two files that
+  differ only in their names and a "no effect" that is really *I ran the same thing twice* — round 6's data-only
+  control, in the one form a tool can catch.
+
+**The static is reset on every run, not only when the flag is present.** A control that leaks into the next run in
+the same process makes both arms read as the ablated one, which is the silent version of this whole problem.
 
 ### The CP4 series: exact commands, in order
 
@@ -730,21 +1100,52 @@ round by reading a "waiting for a slot" line as a queue when I had in fact been 
 | ~~`test_ai_player_holds::test_the_players_units_wait_for_orders…`~~ | **FIXED on `main`** | Product constraint #4. A held unit picked ENGAGE and flanked; the rule had been upheld by the outrange heuristic returning `stop`. Now enforced as a rule — squad measured 15.2 m → 0.0 m in a CP4 worktree, and it passes here |
 | `scenario_suppression::test_holding_a_crew_down…` (**in `check`**) | **squad** | Pinned crew lands 10 of 11 vs a calm 11 of 11. Suppression's penalty is angular, so closer fights soften it — a threshold to re-derive, or evidence for raising `SUPPRESSION_SPREAD_FACTOR` (mine) once the series says |
 | `test_tactics_scenarios::test_support_by_fire_forms_a_firing_line…` (**in `check`**) | **squad** | CP3×CP4: the SBF standoff is keyed on `effective_range`, so narrowed bands put the firing line inside `near_ambush_m` and the two drills alternate every tick (see above) |
-| `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. **Dither (15.6–17.7/min against a bar of 12) is the blocking one** |
+| `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. ~~**Dither (15.6–17.7/min against a bar of 12) is the blocking one**~~ — **RETRACTED: the counter double-counted.** Real 7.8 → 6.2, i.e. dither is *below* the bar and was never the blocker. See line 323 |
 
 Five further `make ai-scenarios` failures are **pre-existing on `a975e262`** and nothing to do with this work —
 baseline that suite before attributing anything to a change (it is not in `check`, which is why no baseline existed).
 
 ### Next steps, in order
 
-1. **squad lands the precedence fixes**; CP4 merges as a pair.
-2. Run the series (runbook above). Report median hit range, first shot, **shots per unit per minute**, duration,
-   flanking-route unit-time, with n, commit and machine.
-3. Settle the bands. **Do not record the sim baseline** — say in the green report that N5 moves it and leave the
-   record to the orchestrator (invariant 2).
-4. X4's `faction-matrix` re-measure — after everything above, never across it.
-5. **N7** (arena's objectives read-through in `match.gd`) — scheduled after CP4 so two contracts are never in flight
-   in that file at once.
+_Rewritten 2026-09-19 (second pass). Round 6's list is done; of the list written this morning, **1, 4 and the
+instrument work are done** and the two measurements remain._
+
+1. **The matrices, both maps, both arms — the only backlog item left with a number attached.** `ARENA=boulevard`
+   (open, 0.64) and `ARENA=yard` (closed, 0.20), each with and without `ABLATE=1`, then subtracted with
+   **`make compare-arms`** rather than by eye. Report **per map and per faction, never pooled**; quote both maps or
+   neither. The `gangs/scout` question is the same four runs: if the gangs collapse in the ablated arm, the
+   directive earned the 23% → 53% swing and CP4 earned none of it.
+2. **X7 (stretch)** — the event half is done; one number is left.
+
+**Round-7 debt, unowned:**
+
+- The eight-place `role` taxonomy still has no registry (see *The designator*). The `SQUADS` guardrail is a
+  down-payment on one of the eight, not a fix.
+- **`match_runner_mode.gd`'s bench spread is still a square clamp** on `DRIVABLE_LIMIT` (M4). Harmless while every
+  layout is a square and wrong the day one is not; listed unmigrated rather than quietly left.
+- **A killed `make remote` leaves its `make` running on builder0.** `remote.sh` dying locally does not stop the
+  remote job, so the orphan holds a heavy-run slot and the next `rsync --delete` overwrites the tree underneath it.
+  The orchestrator has this for round 8 (a trapping wrapper, with a test, when nothing is mid-flight) — until then:
+  identify by `readlink /proc/<pid>/cwd`, **never by pattern**, and kill the remote side before the local wrapper.
+  **"I cannot account for this process" is a reason to leave it alone, not a reason to include it** — I killed my
+  own running gate by assuming anything older than my launch was stale, and checks legitimately run 30–50 minutes,
+  so that assumption describes most healthy runs on the machine.
+
+### The instruments, and what each one can and cannot prove
+
+Three guards were built this round, and they answer three different questions. Reaching for the wrong one is how
+each of them got skipped in the first place:
+
+| Guard | Asks | Cannot tell you |
+|---|---|---|
+| `run_conditions` (`run:` header) | **which build** produced this | whether the run did what you asked |
+| `faction_matrix`'s positive control | **did the treatment engage** in this run — designators fielded vs paints landed | whether the OTHER arm was different |
+| `compare_arms` | **are these two runs subtractable** — same build, same question, genuinely different arms | whether a flag that was recorded actually did anything in the sim |
+
+The last cell is the honest edge of all three. A flag accepted, recorded and silently inert still looks fine to
+every one of them; only `faction_matrix`'s per-run adherence check reads what the RUN emitted (`MATCH_RESULT`'s
+`controls`) rather than what the caller passed, and only for the designator. **Per comparison, against emitted
+state, is the version still unbuilt.**
 
 ### Merge notes (shared files)
 

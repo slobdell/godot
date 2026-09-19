@@ -11,7 +11,7 @@ extends Node
 ##   state_at(world: Vector3) -> State
 ##   image / texture   one pixel per cell, L8: 0 never, SEEN_VALUE seen, 255 visible now
 ##   fans              one PackedVector2Array per viewer: [viewer xz, ray end xz, ...] (a triangle fan)
-##   cell_to_world / world_to_cell, CELL_SIZE, cells (per side), ORIGIN (world xz of cell 0,0's corner)
+##   cell_to_world / world_to_cell, CELL_SIZE, cells (per side), origin (world xz of cell 0,0's corner)
 ##   signal updated    after each refresh
 
 signal updated
@@ -19,7 +19,12 @@ signal updated
 enum State { NEVER, SEEN, VISIBLE }
 
 const CELL_SIZE := 2.0
-const ORIGIN := Vector2(-Match.ARENA_HALF_SIZE, -Match.ARENA_HALF_SIZE)
+## X3 (round 7): the world xz of cell (0,0)'s corner, sized to the ACTIVE arena rather than to the bound. It was a
+## const off Match.ARENA_HALF_SIZE, which stopped being a size when that became a ceiling: a 120 m map would have
+## carried a 280 x 280 field, 36% more cells to fill and upload every refresh, all of it outside the walls. A var,
+## because the answer now depends on which layout is loaded. Readers that took it statically (`VisibilityField.ORIGIN`)
+## must take it from the instance.
+var origin := Vector2(-Match.ARENA_HALF_SIZE, -Match.ARENA_HALF_SIZE)
 ## A full refresh this often (ticks); viewers are spread across the interval to keep frames smooth.
 const REFRESH_TICKS := SimClock.TICK_RATE / 2
 const SEEN_VALUE := 90
@@ -40,7 +45,9 @@ var _tick := 0
 
 
 func _ready() -> void:
-	cells = ceili(Match.ARENA_HALF_SIZE * 2.0 / CELL_SIZE)
+	var half := float(Arena.active.get("half_size", Match.ARENA_HALF_SIZE))
+	origin = Vector2(-half, -half)
+	cells = ceili(half * 2.0 / CELL_SIZE)
 	_seen_epoch.resize(cells * cells)
 	_seen_epoch.fill(0)
 	image = Image.create(cells, cells, false, Image.FORMAT_L8)
@@ -82,11 +89,11 @@ func state_at(world: Vector3) -> State:
 
 
 func world_to_cell(world: Vector3) -> Vector2i:
-	return Vector2i(floori((world.x - ORIGIN.x) / CELL_SIZE), floori((world.z - ORIGIN.y) / CELL_SIZE))
+	return Vector2i(floori((world.x - origin.x) / CELL_SIZE), floori((world.z - origin.y) / CELL_SIZE))
 
 
 func cell_to_world(cell: Vector2i) -> Vector3:
-	return Vector3(ORIGIN.x + (cell.x + 0.5) * CELL_SIZE, 0.0, ORIGIN.y + (cell.y + 0.5) * CELL_SIZE)
+	return Vector3(origin.x + (cell.x + 0.5) * CELL_SIZE, 0.0, origin.y + (cell.y + 0.5) * CELL_SIZE)
 
 
 ## One viewer's view: a fan of rays out to its sight radius, then every cell inside the fan is marked.
@@ -132,10 +139,10 @@ func _mark(center: Vector2, radius: float, reach: PackedFloat32Array) -> void:
 	# cell past an obstacle's face stay dark; the obstacle's own face cell is lit.
 	var slack := CELL_SIZE * 0.75
 	for y in range(y0, y1 + 1):
-		var dz := ORIGIN.y + (y + 0.5) * CELL_SIZE - center.y
+		var dz := origin.y + (y + 0.5) * CELL_SIZE - center.y
 		var row := y * cells
 		for x in range(x0, x1 + 1):
-			var dx := ORIGIN.x + (x + 0.5) * CELL_SIZE - center.x
+			var dx := origin.x + (x + 0.5) * CELL_SIZE - center.x
 			var distance := sqrt(dx * dx + dz * dz)
 			if distance > radius:
 				continue

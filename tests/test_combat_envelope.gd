@@ -392,3 +392,91 @@ func test_the_crossing_penalty_has_its_own_control() -> void:
 	assert_true(with_it > without, "the control actually removes the penalty (%.2f s vs %.2f s)" % [with_it, without])
 	assert_near(without, Engagement.acquire_seconds(gunner, null, 60.0), 0.0001,
 			"and leaves the rest of acquisition exactly as it was")
+
+
+# ---- X5: the Syndicate's designator turns eyes into tempo ---------------------------------
+# The Lance Platform was a second Lancer outranged by its own faction's tank. Deleting it would have left the
+# Syndicate with only the four core roles and no special, so the chassis is re-roled. Its job acts on N5's
+# ACQUISITION gate rather than on damage, which is what makes it a tempo advantage instead of a stat multiplier --
+# and it is only possible because the gate exists: before N5, "your side acquires faster" described nothing.
+
+func test_a_designated_target_is_acquired_far_faster() -> void:
+	var gunner := _tank("syn_tank")
+	var contact := _tank("tank", 1)
+	var plain := Engagement.acquire_seconds(gunner, contact, 60.0)
+	contact.designated_seconds = 1.0
+	var painted := Engagement.acquire_seconds(gunner, contact, 60.0)
+	assert_near(painted, plain * Engagement.DESIGNATED_ACQUIRE_SCALE, 0.0001,
+			"a painted contact is most of the way onto the reticle already (%.2f s against %.2f s)" % [painted, plain])
+	assert_true(painted < plain * 0.5, "and the difference is worth a unit slot, not a rounding error")
+
+
+func test_the_paint_helps_EVERY_gun_not_just_the_designator() -> void:
+	# The point of the role: it turns one unit's eyes into the whole side's tempo. If only the spotter benefited it
+	# would be a scout with extra steps.
+	var contact := _tank("tank", 1)
+	contact.designated_seconds = 1.0
+	for shooter_id in ["syn_tank", "syn_ifv", "syn_scout"]:
+		var shooter := _tank(shooter_id)
+		var painted := Engagement.acquire_seconds(shooter, contact, 50.0)
+		contact.designated_seconds = 0.0
+		var plain := Engagement.acquire_seconds(shooter, contact, 50.0)
+		contact.designated_seconds = 1.0
+		assert_true(painted < plain, "%s lays on a painted contact faster (%.2f against %.2f)" % [shooter_id, painted, plain])
+
+
+func test_the_paint_changes_TEMPO_and_not_damage_or_accuracy() -> void:
+	# The failure mode the design is avoiding: a special that quietly grants +x% damage is a stat multiplier wearing
+	# a costume. Designation must touch acquisition and nothing else.
+	var contact := _tank("tank", 1)
+	var weapon := Weapons.profile("railgun")
+	var spread_plain := Match.shot_spread(weapon, 0.0, 0.0, 50.0)
+	var armor_plain := Match.armor_multiplier(weapon, contact.unit_id, "front")
+	contact.designated_seconds = 1.0
+	assert_near(Match.shot_spread(weapon, 0.0, 0.0, 50.0), spread_plain, 0.00001, "designation does not tighten spread")
+	assert_near(Match.armor_multiplier(weapon, contact.unit_id, "front"), armor_plain, 0.00001,
+			"and does not help a round through armour")
+
+
+func test_designation_is_a_capability_not_a_role() -> void:
+	# The distinction that cost a night. `role` is a TAXONOMY at least eight places key off, across four streams,
+	# none of them referencing a single registry -- so inventing a "designator" role silently dropped the unit from
+	# every army (Army.squads_for iterates the table, not the units) and then failed the catalog's known-role check.
+	# A capability is read only by the systems that care about it.
+	assert_true(Units.ROLES.has(Units.role_of("syn_lancer")), "its role is one the rest of the game knows")
+	assert_true(bool(Units.stat("syn_lancer", "designates", false)), "and designation rides on a capability flag")
+	assert_true(not bool(Units.stat("tank", "designates", false)), "which ordinary units do not carry")
+	var roles := {}
+	for unit_id in Units.roster("syndicate"):
+		roles[Units.role_of(unit_id)] = true
+	for role in ["scout", "tank", "ifv", "artillery"]:
+		assert_true(roles.has(role), "the syndicate still fields a %s" % role)
+	assert_true(roles.size() >= 5, "and still has a special beyond the core four (%s)" % [roles.keys()])
+
+
+func test_the_match_counts_designators_fielded_and_paints_landed() -> void:
+	# The positive control. Two designator measurements this project produced were of a different game -- once the
+	# unit was silently dropped from every army, once it was fielded but front-lined -- and NEITHER was caught by a
+	# check. Both would have shown here: fielded with zero paints. A treatment arm with no treatment is a failed run,
+	# not a null result, and faction_matrix refuses to report one.
+	var game_match := _match()
+	var spotter := game_match.spawn_tank("Spotter", 0, Match.Team.GREEN, "syn_lancer")
+	var prey := game_match.spawn_tank("Prey", 0, Match.Team.RUST)
+	spotter.global_position = Vector3(LANE_X, 0.0, 20.0)
+	prey.global_position = Vector3(LANE_X, 0.0, -10.0)  # 30 m: inside the spotter's sight
+	await wait_physics_frames(Match.INTEL_EVERY_TICKS * 3)
+	assert_eq(game_match.stats["designators_fielded"][Match.Team.GREEN], 1, "the census sees the designator")
+	assert_true(game_match.stats["designations"][Match.Team.GREEN] > 0,
+			"and a paint landed (%d)" % game_match.stats["designations"][Match.Team.GREEN])
+	assert_true(prey.designated_seconds > 0.0, "the contact carries the paint")
+	assert_eq(game_match.stats["designators_fielded"][Match.Team.RUST], 0, "the other side fielded none")
+
+
+func test_an_army_with_no_designator_reports_none_fielded() -> void:
+	# The other half: "fielded 0, painted 0" must read as "no treatment in this arm", not as a failed run. Only
+	# fielded-with-zero-paints is the failure the refusal is looking for.
+	var game_match := _match()
+	game_match.spawn_tank("Plain", 0, Match.Team.GREEN, "tank")
+	await wait_physics_frames(Match.INTEL_EVERY_TICKS * 2)
+	assert_eq(game_match.stats["designators_fielded"][Match.Team.GREEN], 0, "no designator fielded")
+	assert_eq(game_match.stats["designations"][Match.Team.GREEN], 0, "and so none painted")

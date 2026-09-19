@@ -114,7 +114,7 @@ const PROFILES := {
 		"blurb": "The armored prison-bus dozer. Heavy cannon on a slow turret; thick front armor.",
 		"cost": 200,
 		"unlock_tier": 0,
-		"hull_size": [2.4, 1.6, 3.6],
+		"hull_size": [2.4, 2.4, 3.6],
 		"max_health": 300,
 		"max_shield": 150,
 		"shield_recharge_delay": 4.0,
@@ -149,7 +149,7 @@ const PROFILES := {
 		"blurb": "Armored troop bus with a 30 mm autocannon on a fast turret. Shreds scouts; can't crack tank fronts.",
 		"cost": 150,
 		"unlock_tier": 0,
-		"hull_size": [2.4, 1.6, 3.8],
+		"hull_size": [2.4, 3.0, 3.8],
 		"max_health": 220,
 		"max_shield": 100,
 		"shield_recharge_delay": 3.5,
@@ -182,7 +182,7 @@ const PROFILES := {
 		"blurb": "Crane carrier with a mortar battery. Shells what teammates spot; helpless up close.",
 		"cost": 220,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 1.6, 4.0],
+		"hull_size": [2.6, 2.8, 4.0],
 		"max_health": 200,
 		"max_shield": 80,
 		"shield_recharge_delay": 4.0,
@@ -217,7 +217,7 @@ const PROFILES := {
 		"blurb": "Converted power-utility truck with a long laser. Strips shields at range; overheats.",
 		"cost": 200,
 		"unlock_tier": 1,
-		"hull_size": [2.4, 1.6, 3.8],
+		"hull_size": [2.4, 2.2, 3.8],
 		"max_health": 200,
 		"max_shield": 120,
 		"shield_recharge_delay": 4.0,
@@ -258,7 +258,7 @@ const PROFILES := {
 		# 100% of every matchup; at these values it beats IFVs 67% and artillery 83%, loses to tanks and Lancers.
 		"cost": 220,
 		"unlock_tier": 2,
-		"hull_size": [2.4, 1.6, 3.8],
+		"hull_size": [2.4, 2.4, 3.8],
 		"max_health": 220,
 		"max_shield": 100,
 		"shield_recharge_delay": 3.5,
@@ -336,7 +336,7 @@ const PROFILES := {
 		"blurb": "1950s pickup with twin salvaged machine guns. Buries a position in fire; folds if anything answers.",
 		"cost": 110,
 		"unlock_tier": 0,
-		"hull_size": [2.2, 1.5, 3.6],
+		"hull_size": [2.2, 2.2, 3.6],
 		"max_health": 170,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -366,7 +366,7 @@ const PROFILES := {
 		"cost": 175,
 		"unlock_tier": 0,
 		# The biggest hull in the game: it screens half a squad (X3) and it is impossible to miss.
-		"hull_size": [3.0, 1.8, 5.6],
+		"hull_size": [3.0, 4.4, 5.6],
 		"max_health": 420,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -396,7 +396,7 @@ const PROFILES := {
 		"blurb": "Tow truck slinging flaming barrels. Half a mortar's reach, twice its splash, and it lands anywhere.",
 		"cost": 170,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 1.7, 4.2],
+		"hull_size": [2.6, 3.2, 4.2],
 		"max_health": 190,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -428,7 +428,7 @@ const PROFILES := {
 		"blurb": "Crews hanging off a fuel bowser, mending whatever is next to them. Carries a hose, and it is not for you.",
 		"cost": 130,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 1.8, 5.0],
+		"hull_size": [2.6, 3.6, 5.0],
 		"max_health": 260,
 		"max_shield": 0.0,
 		"shield_recharge_delay": 0.0,
@@ -495,7 +495,7 @@ const PROFILES := {
 		"blurb": "A 6x6 MRAP that outlived its war, with a remote 25 mm. Slow, and very hard to open.",
 		"cost": 195,
 		"unlock_tier": 0,
-		"hull_size": [2.6, 1.7, 4.2],
+		"hull_size": [2.6, 2.6, 4.2],
 		"max_health": 280,
 		"max_shield": 120.0,
 		"shield_recharge_delay": 3.5,
@@ -527,7 +527,7 @@ const PROFILES := {
 		"blurb": "An 8x8 with a real gun: reaches farther and works faster than a dozer, and cannot trade with one.",
 		"cost": 260,
 		"unlock_tier": 0,
-		"hull_size": [2.6, 1.7, 4.6],
+		"hull_size": [2.6, 2.6, 4.6],
 		"max_health": 330,
 		"max_shield": 140.0,
 		"shield_recharge_delay": 4.0,
@@ -556,7 +556,7 @@ const PROFILES := {
 		"blurb": "Tear gas and smoke by the salvo. It does not kill a position, it shuts it down.",
 		"cost": 250,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 1.7, 4.4],
+		"hull_size": [2.6, 3.2, 4.4],
 		"max_health": 220,
 		"max_shield": 90.0,
 		"shield_recharge_delay": 4.0,
@@ -588,7 +588,7 @@ const PROFILES := {
 		"blurb": "Riot truck with a wall of sound. Barely scratches paint; nothing in front of it can aim.",
 		"cost": 230,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 1.8, 4.4],
+		"hull_size": [2.6, 3.0, 4.4],
 		"max_health": 260,
 		"max_shield": 120.0,
 		"shield_recharge_delay": 3.5,
@@ -652,7 +652,7 @@ const PROFILES := {
 		"blurb": "Black glass and a pulse cannon. Corporate hospitality at 13 m/s.",
 		"cost": 300,
 		"unlock_tier": 0,
-		"hull_size": [2.4, 1.6, 4.6],
+		"hull_size": [2.4, 1.9, 4.6],
 		"max_health": 240,
 		"max_shield": 200.0,
 		"shield_recharge_delay": 3.0,
@@ -683,7 +683,7 @@ const PROFILES := {
 		"blurb": "A supercar the size of a tank with a charge-up railgun. Two shots, then it has to cool down.",
 		"cost": 470,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 1.7, 5.0],
+		"hull_size": [2.6, 2.8, 5.0],
 		"max_health": 320,
 		"max_shield": 260.0,
 		"shield_recharge_delay": 4.0,
@@ -715,7 +715,7 @@ const PROFILES := {
 		"blurb": "A wing of missiles that only fires at what somebody is looking at. Blind, it wastes the salvo.",
 		"cost": 380,
 		"unlock_tier": 1,
-		"hull_size": [2.6, 1.7, 4.4],
+		"hull_size": [2.6, 3.0, 4.4],
 		"max_health": 220,
 		"max_shield": 160.0,
 		"shield_recharge_delay": 4.0,
@@ -740,16 +740,28 @@ const PROFILES := {
 		"weak_vs": ["scout"],
 	},
 	"syn_lancer": {
-		"display_name": "Lance Platform",
+		"display_name": "Spotter Platform",
+		# The ROLE stays `lancer` -- it is the faction's long-reach slot, and game_design.md is explicit that "the
+		# role is shared across factions, the vehicle is not". What differs is a CAPABILITY, below.
 		"role": "lancer",
 		"faction": "syndicate",
-		# The lead's pick for the Syndicate's special (2026-09-15). The Condemned keep their own Lancer: the ROLE is
-		# shared across factions, the vehicle is not (game_design.md *Factions*, "same roles, wildly different
-		# trade-offs"). Flagged for the lead in the combat brief's Status.
-		"blurb": "The laser, on a hull that can afford it: energy shields, hover, and standoff range.",
+		# X5 (2026-09-18): this WAS the Syndicate's second Lancer, and it was outranged by its own faction's tank --
+		# an 86 m band against the railgun's 104, a cheaper but shorter duplicate of a role the Syndicate already
+		# dominated in every slot. Deleting it outright would have left the Syndicate with only the four core roles
+		# and no special at all, which test_combat_factions correctly refuses. So the chassis is re-roled rather than
+		# retired: same hull, same art, a different job.
+		#
+		# The job acts on N5's ACQUISITION gate, not on damage. It paints the nearest enemy its team can see, and
+		# every Syndicate crew then lays on that contact in a quarter of the usual time. That turns the faction's
+		# sight advantage -- syn_scout has the best eyes in the game at 135 m -- into a TEMPO advantage: the Syndicate
+		# shoots sooner, not harder. A +x% damage special would have been a stat multiplier wearing a costume.
+		#
+		# It is worth noting WHY this unit can exist now: before the engagement envelope, acquisition cost nothing, so
+		# "your side acquires faster" described a mechanic that was not there. The gate bought the design space.
+		"blurb": "Eyes for the syndicate: it paints a target and every gun on your side is already on it.",
 		"cost": 340,
 		"unlock_tier": 1,
-		"hull_size": [2.4, 1.6, 4.4],
+		"hull_size": [2.4, 2.2, 4.4],
 		"max_health": 220,
 		"max_shield": 200.0,
 		"shield_recharge_delay": 3.5,
@@ -772,6 +784,16 @@ const PROFILES := {
 		"armor": {"front": 3.0, "side": 3.0, "rear": 2.0},
 		"good_vs": ["tank"],
 		"weak_vs": ["scout", "ifv"],
+		# X5 (round 6): this unit DESIGNATES. It paints the nearest enemy its team can see and every crew on its side
+		# then acquires that contact in a quarter of the usual time (Engagement.DESIGNATED_ACQUIRE_SCALE).
+		#
+		# A capability flag rather than a new role, and that distinction cost a night to learn. `role` is a TAXONOMY
+		# that at least eight places key off -- Units.ROLES, Army.SQUADS, SquadTactics.FRAGILE_ROLES,
+		# TacticsFormation.PROTECTED_ROLES, CpuCommander's line/support split, ElementSituation, ArmyCatalog.ROLE_LABELS
+		# and the command icons -- across four streams, and none of them reference a single registry. Inventing a role
+		# silently dropped this unit from every army (Army.squads_for iterates the TABLE, not the units) and then
+		# failed the catalog's known-role check. A capability is read by exactly the systems that care about it.
+		"designates": true,
 	},
 }
 

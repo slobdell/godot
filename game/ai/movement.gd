@@ -112,6 +112,18 @@ static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
 static var _off := _parse_off()
 
 
+## Is mechanism `name` switched off (--nav-off=…)? Parses the command line on first use, so it is right whenever it is
+## asked — including from another class's code before Movement's own statics have been touched.
+static func switched_off(name: String) -> bool:
+	if _off.is_empty() and not _off_parsed:
+		_off = _parse_off()
+	_off_parsed = true
+	return _off.has(name)
+
+
+static var _off_parsed := false
+
+
 static func _parse_off() -> PackedStringArray:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--nav-off="):
@@ -204,6 +216,8 @@ var _progress_best := INF
 var _goal := Vector3.INF
 ## Round 7: does the current route end at the goal? (False = the navmesh can only get this unit near it.)
 var _reachable := true
+## The last Pathing.query for this route (its gaps go into Movement.state for anyone who needs the numbers).
+var _route_reading := {}
 var _arrive := 0.0
 var _remaining := 0.0
 var _blocker_left := 0
@@ -332,7 +346,8 @@ func reading() -> Dictionary:
 			points = _path.slice(_path_index)
 	return {"phase": phase, "eta_s": eta_s, "remaining_m": _remaining if phase != "arrived" else 0.0,
 			"path_points": points, "blocked_by": blocked_by if phase == "blocked" or phase == "yielding" else "",
-			"yield_to": yield_to, "reachable": _reachable, "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
+			"yield_to": yield_to, "reachable": _reachable, "route_end_gap_m": float(_route_reading.get("end_gap_m", 0.0)),
+			"goal_gap_m": float(_route_reading.get("goal_gap_m", 0.0)), "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE)}
 
@@ -1021,10 +1036,15 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 	if _repath_left <= 0.0 or _flat_distance(goal, _path_goal) > 1.0 or off_path or stalled:
 		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
-		_path = Pathing.find_path(tank, here, goal)
 		# Round 7: reachability is "the route ENDS at the goal", never "a route came back" (lesson 76). NavigationServer
-		# answers an unreachable goal with a route to the nearest reachable point, which reads as success.
-		_reachable = _path.size() < 2 or _flat_distance(_path[_path.size() - 1], goal) <= NO_PATH_MARGIN
+		# answers an unreachable goal with a route to the nearest reachable point, which reads as success; Pathing.query
+		# says which it is. For a MOVE the question is also whether the unit can get within its arrive radius of the goal:
+		# a goal inside cover is on its island but NO_PATH_MARGIN+ off the mesh, so it is "no_path" for driving purposes.
+		var route := Pathing.query(tank, here, goal)
+		_path = route["points"]
+		_reachable = not bool(route["ready"]) or _path.size() < 2 \
+				or (bool(route["reachable"]) and float(route["goal_gap_m"]) <= NO_PATH_MARGIN)
+		_route_reading = route
 		_path_index = 1 if _path.size() >= 2 else _path.size()
 	if _path.size() < 2:
 		_path_index = _path.size()
