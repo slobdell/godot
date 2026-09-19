@@ -1709,3 +1709,28 @@ The kickoff prompt is one line; this section is the rest.
      - **Orchestrator's error underneath it: I put a load-bearing fact — that the recorder rsynced before arena merged —
        in the last paragraph of a commit message**, and combat reasoned from the merge order in the log instead. **A fact
        that changes someone's conclusion goes first, not last.**
+117. **The arm-distinguishability guard caught, on its first run, the exact failure it was built for — and it would have
+     shipped a feature on a treatment that never happened.** nav's first commitment A/B came back with **both arms
+     byte-identical on all five seeds**: same churn (15.71/min), same losses, same shot counts. `--nav-off=commit` had
+     never applied. **Under nav's pre-registered rule — "if commitment cuts churn and survivability doesn't get worse, it
+     ships" — that reads as *no worse, ship*.** Nothing was reported from the run.
+     **Cause: a static-initialisation-order bug.** `CombatMotion.commit_on` was a `static var` initialised from
+     `Movement._off`; `Movement`, `TankBrain` and `CombatMotion` reference one another, **so the initialiser can run before
+     `Movement`'s statics are populated and see an empty switch list.** Fix: resolve switches at **read** time
+     (`Movement.switched_off()` parses on first use), keeping the existing API shape so squad's call sites are unchanged.
+     - **⚠ The same bug is already on `main` in `CombatMotion.fixed_style` (`2cae3bda`)**, where it is harmless only
+       because the default is the wanted one and every test pins it by assignment — **but `--nav-off=standoff` from the
+       command line silently does nothing.** `algorithms.md` and `game_design.md` both claimed that switch was available
+       for A/B; **both are now struck through.** The standoff *measurements* stand: they were taken by assigning the style
+       directly.
+     - **This is lesson 25's trap, which `verification.md` already warned about in nav's own words** — *"a switch that
+       silently does nothing makes 'no difference' meaningless — prove each switch moves some number first."* **The warning
+       existed, was written by the stream that then hit it, and was not enough**, because it asked for a one-time proof
+       when the failure is per-run. **Per-comparison, every run, or it does not count.**
+     - **nav's guard is the right shape: the probe prints the treatment read LIVE FROM THE CODE** (`commit=…,
+       fixed_style=…`) and the A/B target exits 1 if any seed's two arms print the same treatment line, or if every seed's
+       results are identical. **Read the treatment from the running system, never from the flag you passed** — combat's
+       formulation: *"a flag is what you asked for; `controls` in `MATCH_RESULT` is what happened."*
+     - **Two streams independently built the same guard within hours, and it paid for itself immediately in one of them.**
+       The generalisable claim is no longer theoretical: **of the first three comparisons this guard was applied to, one
+       was already broken.**
