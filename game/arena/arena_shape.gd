@@ -131,15 +131,43 @@ static func edges(shape: Dictionary, apothem: float) -> Array:
 	return out
 
 
-## Is `point` inside the shape? Convex, so a point is inside when it is on the inner side of every edge.
+## The bound of the same shape inset by `margin` all round. **A regular polygon inset by a margin is that polygon
+## scaled**, so one number expresses the inset exactly and both `contains` and `clamp_into` can share it — which is
+## what stops them disagreeing.
+##
+## They did disagree. `clamp_into` used to add `inward * margin` per edge, and when a point's nearest projection
+## landed on a VERTEX it got the inset of one edge only: on a square at bound 120, margin 4, `(130, 130)` came back
+## as `(116, 120)` — a point its own `contains(margin 4)` rejected, and clamping again returned it unchanged,
+## because the second call projects onto the same vertex and pushes along the same normal. control found it in
+## `Orders.clamp_to_arena` and its fix is this one. (Nothing shipped was broken: arena's own callers pass no
+## margin, and `contains`'s per-edge test was correct.)
+static func inset_bound(kind: String, bound: float, margin: float) -> float:
+	if margin <= 0.0:
+		return bound
+	var apothem := circumradius(kind, bound) * cos(PI / float(sides(kind)))
+	return bound * maxf(0.0, 1.0 - margin / maxf(apothem, 0.0001))
+
+
+## How far outside an edge still counts as inside: a tenth of a millimetre, for float noise only.
+##
+## It is not cosmetic. `clamp_into` returns a point ON the inset boundary by construction, so a strict `> 0` test
+## rejects the very points the clamp produces — and only sometimes, depending on which way the rounding fell. The
+## square case landed just inside and passed; the hexagon landed on the line and failed. **Sharing one mechanism
+## between `contains` and `clamp_into` is what exposed this**: while they used different maths, the disagreement
+## had nowhere to show itself.
+const ON_THE_LINE := 0.0001
+
+
+## Is `point` inside the shape? Convex, so a point is inside when it is on the inner side of every edge. A point
+## exactly on the wall counts as inside — a hull touching the wall is in the arena.
 static func contains(kind: String, bound: float, point: Vector2, margin := 0.0) -> bool:
-	var v := vertices(kind, bound)
+	var v := vertices(kind, inset_bound(kind, bound, margin))
 	for i in v.size():
 		var a: Vector2 = v[i]
 		var b: Vector2 = v[(i + 1) % v.size()]
 		var edge := b - a
 		# vertices() is counter-clockwise in x/z, so the interior is to the RIGHT of each edge in this basis.
-		if edge.x * (point.y - a.y) - edge.y * (point.x - a.x) > -margin * edge.length():
+		if edge.x * (point.y - a.y) - edge.y * (point.x - a.x) > edge.length() * ON_THE_LINE:
 			return false
 	return true
 
@@ -151,7 +179,9 @@ static func contains(kind: String, bound: float, point: Vector2, margin := 0.0) 
 static func clamp_into(kind: String, bound: float, point: Vector2, margin := 0.0) -> Vector2:
 	if contains(kind, bound, point, margin):
 		return point
-	var v := vertices(kind, bound)
+	# Clamp to the INSET polygon with no per-edge nudge: the inset is already in the shape, so a vertex projection
+	# lands with clearance on both of its edges rather than one.
+	var v := vertices(kind, inset_bound(kind, bound, margin))
 	var best := point
 	var best_distance := INF
 	for i in v.size():
@@ -159,9 +189,7 @@ static func clamp_into(kind: String, bound: float, point: Vector2, margin := 0.0
 		var b: Vector2 = v[(i + 1) % v.size()]
 		var edge := b - a
 		var t := clampf((point - a).dot(edge) / maxf(edge.length_squared(), 0.0001), 0.0, 1.0)
-		# Pull in by `margin` along the inward normal so a clamped point is inside, not exactly on the line.
-		var inward := Vector2(edge.y, -edge.x).normalized()
-		var on_edge := a + edge * t + inward * margin
+		var on_edge := a + edge * t
 		var distance := point.distance_to(on_edge)
 		if distance < best_distance:
 			best_distance = distance

@@ -31,19 +31,31 @@ def load(name):
 
 
 class Prepared:
-    """One layout's grids, built once: each is a second or two of work."""
+    """One layout's grids, built once: each is a second or two of work.
+
+    `ar.use_extent()` sets MODULE globals (HALF, DRIVABLE, FIELD_Z), because every geometry helper reads them —
+    so a cached grid is only valid while its own extent is the active one. Getting a `Prepared` re-activates its
+    extent, which is what makes the cache safe to share between tests that use differently-sized arenas. Without
+    that, a test touching a 140 m layout silently corrupted every later test on a 120 m one.
+    """
 
     _cache = {}
 
-    def __new__(cls, name):
-        if name not in cls._cache:
+    def __new__(cls, name, half=None):
+        key = (name, half)
+        if key not in cls._cache:
             self = object.__new__(cls)
             self.layout = load(name)
+            if half is not None:
+                self.layout["half_size"] = half
+            ar.use_extent(self.layout)
             self.boxes = ar.boxes_of(self.layout)
             self.blocked, self.n = ar.occupancy(self.boxes)
             self.grid, self.gn = ar.sight_grid(self.boxes)
-            cls._cache[name] = self
-        return cls._cache[name]
+            cls._cache[key] = self
+        cached = cls._cache[key]
+        ar.use_extent(cached.layout)  # re-arm the globals this instance's grids were built under
+        return cached
 
 
 class TestSightAgreesWithTheRestOfTheFile(unittest.TestCase):
@@ -215,3 +227,32 @@ class TestTheFixtureIsNotTreatedAsAMap(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTheExposureLatticeIsAnchored(unittest.TestCase):
+    """The bug this guards produced a perfectly plausible wrong answer on every hexagonal map.
+
+    `_exposure_at` looks a route point up by rounding to a multiple of EXPOSURE_STEP, so the field's own keys have
+    to be multiples of it. Once the measurement window followed the layout, a half_size of 140 gave a depth of 98
+    and z ran -98, -94, -90 ... so every lookup missed and returned the default 0.0. Exposure read **0.000 across
+    both hexagonal maps** -- a believable figure for an arena full of shipping containers, and completely wrong.
+    A square's depth of 84 is a multiple of 4, which is why it never showed until an arena changed size.
+    """
+
+    def test_field_keys_land_on_the_lattice_exposure_is_looked_up_on(self):
+        for name, half in (("yard", 140.0), ("foundry", 120.0)):
+            p = Prepared(name, half)
+            for x, z in ar.field_points(p.blocked, p.n)[:200]:
+                self.assertEqual(int(x) % int(ar.EXPOSURE_STEP), 0, "%s: x=%s is off the lattice" % (name, x))
+                self.assertEqual(int(z) % int(ar.EXPOSURE_STEP), 0, "%s: z=%s is off the lattice" % (name, z))
+
+    def test_a_map_full_of_containers_is_not_reported_as_perfectly_covered(self):
+        """The symptom, asserted directly: yard has real exposure, and a zero here means the lookup missed."""
+        p = Prepared("yard")
+        watchers = ar.defending_positions(p.boxes, p.layout)
+        fields = ar.exposure_cost_field(p.grid, p.gn, p.blocked, p.n, watchers, ar.WATCHER_REACH_M)
+        green = tuple(p.layout["spawns"]["green"][0])
+        rust = tuple(p.layout["spawns"]["rust"][0])
+        path = ar.covered_route(p.blocked, p.n, fields["idle"], green, rust, 0.0)
+        self.assertGreater(ar.route_exposure(fields["idle"], path), 0.0,
+                           "the direct crossing of a shipping arena is exposed to something")

@@ -1,0 +1,121 @@
+# The three pre-registered stall counters, extracted from tests/arena/maze_probe.gd for nav to paste into
+# tests/nav/fight_probe.gd. **Not a .gd file on purpose** — it is not meant to run here, it is meant to be
+# identical there, so our two instruments report the same quantity rather than a similar one.
+#
+# Definitions are frozen in _agents/streams/references/arena/stuck_preregistration.md and have NOT moved since
+# 01c80365. If you change a threshold, change it there too and publish both numbers — that file is the record.
+#
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# READ THIS BEFORE THE BUSY-PLAYER MODE, or the mode will manufacture the result it is looking for.
+#
+# `no_progress` asks "did the distance to the goal improve over the last 4 s". A re-order gives the unit a NEW
+# goal, and the distance to a new goal is usually LARGER — so the window that straddles a re-order reads as no
+# progress no matter how well the unit is driving. Re-order every N seconds and you get a no_progress share that
+# rises with N and has nothing to do with movement.
+#
+# `_note_goal()` below resets the window whenever the goal moves more than GOAL_MOVED_M. Ticks are then counted
+# only over windows where the unit was chasing ONE goal the whole time. That is the difference between measuring
+# the game and measuring your own order stream, and it is why this is 30 lines rather than 25.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+## Window over which "is it getting anywhere" is asked. Long enough to contain a full back-and-forth, short enough
+## that a unit rounding a corner does not look like one.
+const WINDOW_S := 4.0
+## `oscillating`: over the window, this much path travelled...
+const OSCILLATE_PATH_M := 8.0
+## ...while net displacement is under this share of it. A ratio, not a distance: a unit crossing the map slowly
+## still has net ≈ path; a unit shuffling has net ≈ 0 with path large. Scale-free, so no retuning per unit type.
+const OSCILLATE_RATIO := 0.25
+## `no_progress`: distance to the goal improved by less than this over the window.
+## The gap-coverer. `crawl` catches a unit too SLOW to be going anywhere (< 0.5 m/s); `oscillating` catches one
+## travelling far enough to be obviously shuffling (>= 8 m). A unit creeping back and forth at 1–2 m/s is NEITHER
+## — too fast to crawl, too little path to oscillate — and that is what being pinned at a barrier end looks like.
+const PROGRESS_M := 2.0
+## A goal that jumps further than this is a different goal: reset the window rather than score across it.
+const GOAL_MOVED_M := 3.0
+
+var trail := {}            # key -> Array[Vector3], the position window
+var goal_trail := {}       # key -> Array[float], distance-to-goal over the window
+var last_goal := {}        # key -> Vector3, to detect a re-order
+var oscillating_ticks := {}
+var no_progress_ticks := {}
+var crawl_ticks := 0
+var under_way_ticks := 0   # denominator: ticks where a unit HOLDS AN ORDER and has not arrived
+
+
+## Call once per unit per tick, only while the unit is under orders and has not arrived.
+## `goal` is the unit's CURRENT goal this tick.
+func _sample_stall(unit: Node3D, key: String, goal: Vector3) -> void:
+	under_way_ticks += 1
+	if unit.speed() < 0.5:   # CRAWL_SPEED
+		crawl_ticks += 1
+	_note_goal(key, goal)
+	var span := int(WINDOW_S * SimClock.TICK_RATE)
+
+	# no_progress: distance to the goal over the window, reset on a re-order.
+	var goals: Array = goal_trail.get(key, [])
+	goals.append(_flat(unit.global_position, goal))
+	if goals.size() > span:
+		goals.remove_at(0)
+	goal_trail[key] = goals
+	if goals.size() == span and float(goals[0]) - float(goals[goals.size() - 1]) < PROGRESS_M:
+		no_progress_ticks[key] = int(no_progress_ticks.get(key, 0)) + 1
+
+	# oscillating: path length vs net displacement over the same window.
+	var history: Array = trail.get(key, [])
+	history.append(unit.global_position)
+	if history.size() > span:
+		history.remove_at(0)
+	trail[key] = history
+	if history.size() < span:
+		return
+	var path := 0.0
+	for i in range(1, history.size()):
+		path += _flat(history[i - 1], history[i])
+	if path < OSCILLATE_PATH_M:
+		return  # not moving enough to be "moving back and forth"; that is the blocked case, counted separately
+	if _flat(history[0], history[history.size() - 1]) / path < OSCILLATE_RATIO:
+		oscillating_ticks[key] = int(oscillating_ticks.get(key, 0)) + 1
+
+
+## A re-order invalidates both windows: the unit is now chasing something else, and neither "did it get closer"
+## nor "did it go anywhere" is answerable across the change.
+func _note_goal(key: String, goal: Vector3) -> void:
+	var previous: Variant = last_goal.get(key)
+	if previous != null and _flat(previous, goal) > GOAL_MOVED_M:
+		goal_trail.erase(key)
+		trail.erase(key)
+	last_goal[key] = goal
+
+
+## Flat distance. x/z only — measuring in 3D made a ramp read as travel and cost me a published number once.
+func _flat(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Shares are of UNDER-WAY ticks, never of wall-clock or of all ticks: a parked unit standing still is not stuck,
+## and including it silently divides the interesting number down.
+func _stall_report() -> Dictionary:
+	return {
+		"crawl_share": snappedf(float(crawl_ticks) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"oscillating_share": snappedf(float(_total(oscillating_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"oscillating_units": _with_any(oscillating_ticks),
+		"no_progress_share": snappedf(float(_total(no_progress_ticks)) / maxf(1.0, float(under_way_ticks)), 0.001),
+		"no_progress_units": _with_any(no_progress_ticks),
+		"under_way_seconds": snappedf(float(under_way_ticks) / float(SimClock.TICK_RATE), 0.1),
+	}
+
+
+func _total(ticks: Dictionary) -> int:
+	var sum := 0
+	for value in ticks.values():
+		sum += int(value)
+	return sum
+
+
+func _with_any(ticks: Dictionary) -> int:
+	var count := 0
+	for value in ticks.values():
+		if int(value) > 0:
+			count += 1
+	return count

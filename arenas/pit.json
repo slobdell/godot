@@ -3,7 +3,7 @@
  "schema": 2,
  "title": "The Pit",
  "note": "A control-point brawl behind walls: four gates into a ring of stacked containers, open killing ground outside. Hold a gate and you own the approach; go inside and it's knife range. Tanks and burners take the ring; artillery punishes whoever crowds it.",
- "half_size": 120.0,
+ "half_size": 140.0,
  "fixture": false,
  "obstacles": [],
  "props": [
@@ -468,32 +468,32 @@
   {
    "type": "floodlight",
    "position": [
-    -104.0,
-    96.0
+    -128.0,
+    0.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "floodlight",
    "position": [
-    104.0,
-    -96.0
+    128.0,
+    0.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "floodlight",
    "position": [
-    104.0,
-    96.0
+    -94.0,
+    60.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "floodlight",
    "position": [
-    -104.0,
-    -96.0
+    94.0,
+    -60.0
    ],
    "rotation_deg": 180.0
   },
@@ -1161,5 +1161,26 @@
  ],
  "control_point": {
   "radius": 16.0
+ },
+ "objectives": [
+  {
+   "name": "the west yard",
+   "position": [
+    -74.0,
+    -50.0
+   ],
+   "radius": 15.0
+  },
+  {
+   "name": "the west yard (far)",
+   "position": [
+    74.0,
+    50.0
+   ],
+   "radius": 15.0
+  }
+ ],
+ "shape": {
+  "kind": "hexagon"
  }
 }
