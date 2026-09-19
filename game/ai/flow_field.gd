@@ -23,6 +23,13 @@ const MAX_FIELDS := 64
 const SAME_GOAL_M := CELL_M
 
 
+## Measuring only: how many route plans the field answered, and how many fell back to A* (and why). Read by nav-fight;
+## a field that quietly answers nothing would otherwise look exactly like one that works.
+static var answered := 0
+static var fell_back := 0
+static var fell_back_unswept := 0
+
+
 static func on() -> bool:
 	return Movement.switched_off("flow")
 

@@ -1048,11 +1048,15 @@ func _plan(here: Vector3, goal: Vector3) -> Dictionary:
 		var field := FlowField.for_goal(tank, goal)
 		var points := field.walk(here)
 		if points.size() >= 2:
+			FlowField.answered += 1
 			var goal_gap := FlowField.goal_gap_m(tank, goal)
 			# A walk only exists when this hull's cell has a finite cost to the goal's, which IS reachability; a goal
 			# off the mesh has no cell of its own, the sweep never starts, and the fallback below answers instead.
 			return {"points": points, "ready": true, "reachable": true,
 					"goal_on_mesh": goal_gap <= Pathing.MESH_EPSILON, "end_gap_m": 0.0, "goal_gap_m": goal_gap}
+		else:
+			FlowField.fell_back += 1
+			FlowField.fell_back_unswept += 1 if not field.ready else 0
 	return Pathing.query(tank, here, goal)
 
 
