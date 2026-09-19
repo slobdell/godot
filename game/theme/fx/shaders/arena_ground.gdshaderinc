@@ -29,6 +29,10 @@ uniform vec3 hazard_yellow : source_color = vec3(0.78, 0.56, 0.06);
 // The painted perimeter band starts here (just inside the walls at ±121) and is `band_width` wide.
 uniform float band_inner = 108.0;
 uniform float band_width = 3.0;
+// Round 7 (arena's contract D): the perimeter is a regular polygon with a flat side to each base (ArenaShape). The
+// band follows it: "distance to the edge" is the largest projection on the edge normals, which for 4 sides is
+// exactly max(|x|, |z|), the square the band always was.
+uniform int band_sides = 4;
 uniform float ring_radius = 16.0;
 uniform float ring_width = 1.4;
 
@@ -75,7 +79,11 @@ void fragment() {
 #endif
 
 	// Worn hazard paint: a striped band inside the walls and a striped ring around the center.
-	float edge = max(abs(p.x), abs(p.y));
+	float edge = 0.0;
+	for (int k = 0; k < band_sides; k++) {
+		float a = 6.2831853 * float(k) / float(band_sides);
+		edge = max(edge, dot(p, vec2(sin(a), cos(a))));
+	}
 	float band = step(band_inner, edge) * step(edge, band_inner + band_width);
 	float band_stripes = step(0.5, fract((p.x + p.y) / 2.8));
 	float ring = 1.0 - smoothstep(ring_width * 0.5 - 0.05, ring_width * 0.5 + 0.05, abs(length(p) - ring_radius));

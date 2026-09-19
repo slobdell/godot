@@ -69,9 +69,14 @@ func setup(layout: Dictionary) -> void:
 	_flood_maps.clear()
 	var wanted := float(layout.get("half_size", HALF - 1.0)) + 1.0
 	var ring := float((layout["control_point"] as Dictionary).get("radius", 16.0)) if layout.get("control_point") is Dictionary else 0.0
+	var shape_kind := String((layout.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND)) if layout.get("shape") is Dictionary else ArenaShape.DEFAULT_KIND
+	var sides := ArenaShape.sides(shape_kind)
+	# The wall's centre line along a flat side (for a square, `wanted`; for a polygon, its apothem plus the 1 m).
+	var apothem := wanted if sides == 4 else ArenaShape.circumradius(shape_kind, wanted - 1.0) * cos(PI / float(sides)) + 1.0
 	for variant in [[false, false], [true, false], [false, true]]:
 		var material := CyberMaterials.ground(variant[0], variant[1])
-		material.set_shader_parameter("band_inner", wanted - 13.0)
+		material.set_shader_parameter("band_inner", apothem - 13.0)
+		material.set_shader_parameter("band_sides", sides)
 		material.set_shader_parameter("ring_radius", ring)
 		material.set_shader_parameter("ring_width", 1.4 if ring > 0.0 else 0.0)
 	var wanted_shape: Dictionary = layout.get("shape", {}) if layout.get("shape") is Dictionary else {}

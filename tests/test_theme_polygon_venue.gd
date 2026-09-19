@@ -71,3 +71,14 @@ func test_the_stands_profile_is_published_from_the_model_the_dressing_places() -
 	assert_near(points[points.size() - 1].y, 15.7, 0.3, "15.7 m tall")
 	var front := points[1]
 	assert_true(front.x < 6.0 and front.y > 9.0, "the front rows are already over 9 m high within 6 m of the wall (%s)" % front)
+
+
+func test_the_floor_band_follows_the_polygon() -> void:
+	var dressing := _dressing({"kind": "hexagon"})
+	var ground := CyberMaterials.ground(false)
+	assert_eq(int(ground.get_shader_parameter("band_sides")), 6, "the hazard band has six sides")
+	var apothem := ArenaShape.circumradius("hexagon", 120.0) * cos(PI / 6.0)
+	assert_near(float(ground.get_shader_parameter("band_inner")), apothem + 1.0 - 13.0, 0.01, "just inside the flat sides")
+	dressing.call("setup", {"name": "sq", "half_size": 120.0, "obstacles": []})
+	assert_eq(int(ground.get_shader_parameter("band_sides")), 4, "a square layout gets its square band back")
+	assert_near(float(ground.get_shader_parameter("band_inner")), 108.0, 0.01, "at 108 m as before")
