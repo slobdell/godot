@@ -82,11 +82,16 @@ def plain_english(entry):
         lines.append(("good" if detour <= 1.15 else "mixed",
                       "Taking the covered way round instead of straight across %s." % cost))
     gain = direct.get("posting_gain")
+    idle_exposure = direct.get("exposure_idle") or 0.0
     if gain is not None:
-        if gain >= 0.09:
-            lines.append(("good", "Posting a squad to watch a lane really pays here — it roughly doubles how much "
-                                  "of the crossing the defender covers."))
-        elif gain <= 0.03:
+        # Thresholds are on the scale the CATALOG produces (idle 45 m, posted 60 m), not the 70 m I first guessed
+        # for "posted" -- that inflated every gain by about half and would have had five of six cards claiming the
+        # same thing. The multiplier is computed rather than asserted for the same reason.
+        if gain >= 0.06:
+            times = (idle_exposure + gain) / idle_exposure if idle_exposure > 0 else 0
+            lines.append(("good", "Posting a squad to watch a lane really pays here — it covers <b>%.1f×</b> as "
+                                  "much of the crossing as crews watching on their own." % times))
+        elif gain <= 0.025:
             lines.append(("mixed", "Posting a squad to watch a lane buys very little: the cover is so broken that "
                                    "the extra reach does not see anything."))
         else:

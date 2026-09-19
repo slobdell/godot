@@ -432,10 +432,26 @@ def defending_positions(boxes, layout):
 ## An approach that is safe at 45 m is therefore NOT absolutely safe -- it is safe from crews using their own
 ## judgement. That caveat must travel with any "covered approach" number, or it reads as a guarantee.
 ##
-## **Do not treat these as settled.** They mirror combat's `Engagement.covering_range()`, which computes the median
-## from Units.PROFILES + Weapons.PROFILES and ships with CP4; until this tool can call it, `--reach` overrides them
-## without an edit. Nothing else in this file depends on weapon range.
-WATCHER_REACH_M = {"idle": 45.0, "posted": 70.0}
+## **These are a FALLBACK, not the source of truth.** The real answer is derived from the catalog by combat's
+## `Engagement.covering_range()`; `make arena-reach` writes it to build/arena-reach.json and this tool reads that
+## file when it exists (`--reach` still overrides both). Carrying a copy here is what went wrong the first time --
+## the hand-picked "posted" value was 70 m, from "a cannon's full range", where the catalog's own median of
+## min(full range, sight radius) over all 14 units is 60 m: several units cannot SEE as far as they can shoot.
+## A number derived from data belongs in one place, and this is not it.
+WATCHER_REACH_M = {"idle": 45.0, "posted": 60.0}
+REACH_FILE = "build/arena-reach.json"
+
+
+def load_reach(path=None):
+    """The covering ranges from the catalog (make arena-reach), falling back to the constants above."""
+    file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), path or REACH_FILE)
+    try:
+        with open(file) as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        print("ARENA_REACH_FALLBACK using built-in %s (run: make arena-reach)" % WATCHER_REACH_M, file=sys.stderr)
+        return dict(WATCHER_REACH_M)
+    return {key: float(data[key]) for key in ("idle", "posted") if key in data} or dict(WATCHER_REACH_M)
 
 
 def exposure_cost_field(grid, gn, blocked, n, watchers, reach):
@@ -742,6 +758,7 @@ def main():
     parser.add_argument("--reach", help="override the watcher reaches, e.g. idle=45,posted=70 (see WATCHER_REACH_M); "
                                         "this is how the exposure numbers get re-derived after combat's CP4")
     args = parser.parse_args()
+    WATCHER_REACH_M.update(load_reach())
     if args.reach:
         WATCHER_REACH_M.clear()
         for part in args.reach.split(","):
