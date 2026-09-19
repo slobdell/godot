@@ -562,6 +562,21 @@ current commander, counterbalanced both ways, and adopted only if it wins. The d
 to explore allocations first (`tools/discovery.py` commands whole elements; the pin-and-flank result is a reminder
 that its candidates must be ladder-proven, not trusted).
 
+### Round 7 result: the verdict re-run, and the army layer measured (X8)
+
+Both on builder0, trees at squad `1d011765`, faction armies gangs v law at 5200, control point on, yard/boulevard/pit/
+boneyard, 2 seeds × 4 ways per pairing, x5p brains, armies starting as an army (ArmyLayout, the approach phase):
+- **The verdict:** brains-only 51-13 over the faction doctrine (64 matches). The prediction above (doctrine gains with an
+  approach phase) is **refuted**. The ledger named the direct commander: support by fire held 72% of doctrine's time at
+  exchange 0.58.
+- **The army layer** (`ArmyPlan`, `traits.commander = "army"`, the ladder's `+army`: main effort, base of fire, shaping on
+  the lanes with a pin-then-go rule, reserve): 192 matches, brains 108-20, faction direct 51-77, **army 33-95**, army v
+  faction 26-38. It fixed the allocation (SBF 72% → 25%) and lost more: far ambush took over (54% of time, exchange 0.92),
+  and **every drill traded below the brains' 1.24** (SBF 0.97, bait 0.72, react to contact 0.50, assault through 0.38).
+- **So:** at 30 a side the element layer's drills cost more than any allocation above them buys. The next question is
+  per-drill, not per-army: which drill, removed (lesson 25), stops costing exchange — far ambush first, by time.
+  `+army` stays off; the code is the measured candidate, not a default.
+
 ## Open questions and requests
 
 _See the stream's Status in `_agents/streams/archive/round4/doctrine.md`._

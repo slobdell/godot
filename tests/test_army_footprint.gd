@@ -15,8 +15,18 @@ const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
 
 
-func _army_of(archetype: String, faction: String) -> Match:
-	add_to_tree(ARENA.instantiate())
+func _army_of(archetype: String, faction: String, arena_name := "") -> Match:
+	var arena_node := ARENA.instantiate() as Node3D
+	if arena_name != "":
+		arena_node.set("layout_name", arena_name)
+	var arena: Node3D = add_to_tree(arena_node)
+	# Round 8 (squad): deploy with the navigation mesh baked, as the game does, so SlotGround really pushes slots off
+	# obstacles — that push is where two hulls were landing on the same spot.
+	for frame in 600:
+		if Pathing.is_ready(arena):
+			break
+		await wait_physics_frames(1)
+	assert_true(Pathing.is_ready(arena), "setup: the arena's navigation is baked before the army deploys")
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var loaded := Army.load_army("cpu:%s" % archetype, 1, 5200, faction)
@@ -30,49 +40,54 @@ func _closest(game_match: Match) -> Dictionary:
 	var tanks := game_match.sorted_team_tanks(Match.Team.GREEN)
 	var worst := INF
 	var worst_pair := ""
-	var closest_pair := ""
-	var closest := INF
 	var gaps: Array[float] = []
 	for a in tanks:
 		var nearest := INF
-		var nearest_other: Tank = null
 		for b in tanks:
 			if a == b:
 				continue
-			var d := a.global_position.distance_to(b.global_position)
-			if d < nearest:
-				nearest = d
-				nearest_other = b
+			nearest = minf(nearest, a.global_position.distance_to(b.global_position))
 		if nearest < INF:
 			gaps.append(nearest)
-			# Name the CLOSEST pair, not only the worst-clearance one. When a size change breaks a layout the two
-			# are different vehicles, and "which two are touching" is the question whoever owns the spacing asks.
-			if nearest < closest:
-				closest = nearest
-				closest_pair = "%s (%s, %.1f m) and %s (%s, %.1f m) are %.1f m apart" % [
-						a.name, a.unit_id, float(Units.stat(a.unit_id, "hull_size")[2]),
-						nearest_other.name, nearest_other.unit_id,
-						float(Units.stat(nearest_other.unit_id, "hull_size")[2]), nearest]
 			var size: Array = Units.stat(a.unit_id, "hull_size")
+			# Conservative: two hulls of this length, nose to tail, need this much centre-to-centre.
 			var needed := float(size[2])
 			if nearest - needed < worst:
 				worst = nearest - needed
-				worst_pair = "%s (%.1f m long) had %.1f m to its nearest neighbour" % [a.unit_id, size[2], nearest]
+				var other := ""
+				for b in tanks:
+					if a != b and absf(a.global_position.distance_to(b.global_position) - nearest) < 0.001:
+						other = "%s/%s at %s" % [b.name, game_match.squad_of(b), b.global_position.snapped(Vector3.ONE * 0.1)]
+				worst_pair = "%s (%.1f m long) had %.1f m to its nearest neighbour [%s/%s at %s vs %s]" % [a.unit_id, size[2],
+						nearest, a.name, game_match.squad_of(a), a.global_position.snapped(Vector3.ONE * 0.1), other]
+	# The defect itself: two hull boxes (everyone faces the same way at the start) that overlap.
+	var overlaps := 0
+	for i in tanks.size():
+		for j in range(i + 1, tanks.size()):
+			var sa: Array = Units.stat(tanks[i].unit_id, "hull_size")
+			var sb: Array = Units.stat(tanks[j].unit_id, "hull_size")
+			var d := tanks[i].global_position - tanks[j].global_position
+			var local := Vector2(d.dot(tanks[i].global_basis.x), d.dot(tanks[i].global_basis.z))
+			if absf(local.x) < (float(sa[0]) + float(sb[0])) * 0.5 and absf(local.y) < (float(sa[2]) + float(sb[2])) * 0.5:
+				overlaps += 1
 	gaps.sort()
-	return {"count": tanks.size(), "min": gaps[0] if gaps.size() > 0 else 0.0,
+	return {"count": tanks.size(), "overlaps": overlaps, "min": gaps[0] if gaps.size() > 0 else 0.0,
 			"median": gaps[gaps.size() / 2] if gaps.size() > 0 else 0.0,
-			"worst_clearance": worst, "worst_pair": worst_pair, "closest_pair": closest_pair}
+			"worst_clearance": worst, "worst_pair": worst_pair}
 
 
-func _report(archetype: String, faction: String) -> Dictionary:
-	var game_match := _army_of(archetype, faction)
+func _report(archetype: String, faction: String, arena_name := "") -> Dictionary:
+	var game_match: Match = await _army_of(archetype, faction, arena_name)
 	await wait_physics_frames(2)
 	var m := _closest(game_match)
-	print("MEASURE army_footprint %s: %d vehicles, nearest neighbour min %.1f m, median %.1f m; closest: %s"
-			% [archetype, m["count"], m["min"], m["median"], m["closest_pair"]])
+	print("MEASURE army_footprint %s%s: %d vehicles, %d overlapping hull pairs, nearest neighbour min %.1f m, median %.1f m; tightest: %s"
+			% [archetype, " on " + arena_name if arena_name != "" else "", m["count"], m["overlaps"], m["min"], m["median"], m["worst_pair"]])
 	return m
 
 
+## Round 8: this file is combat's measurement (stream/combat 286f8b1c), landed on squad's tree with the bars. Its first
+## finding (gang_ram min 0.2 m) was measured on a tree before squad's f1c3afcb (hull-length spacing) and is stale; on
+## squad 90bd2212+ (laptop, navmesh baked) every large army deploys with 0 overlapping hulls, min 3.7-4.6 m.
 func test_a_large_army_is_measured_even_though_the_bar_is_not_mine_to_set() -> void:
 	# THE FINDING, round 8, and it has nothing to do with the semi: a gang_ram army of 41 vehicles stands with its
 	# hulls INSIDE each other. Measured here: nearest neighbour 0.2 m, and a 5.0 m Resupply Tanker with 0.9 m of
@@ -97,3 +112,26 @@ func test_a_smaller_army_has_room() -> void:
 	assert_true(m["min"] >= 1.4,
 			"a small army stands clear -- no two vehicles closer than half the shortest hull in the game (min %.1f m)"
 			% m["min"])
+
+
+func _assert_clear(archetype: String, faction: String) -> void:
+	var m := await _report(archetype, faction)
+	assert_true(m["count"] > 20, "setup: a large army (%d vehicles)" % m["count"])
+	assert_eq(int(m["overlaps"]), 0, "%s: no two hulls stand inside each other at the start" % archetype)
+	assert_true(m["min"] >= 1.4,
+			"%s: no two vehicles may be closer than half the shortest hull in the game (min %.1f m): %s"
+			% [archetype, m["min"], m["worst_pair"]])
+
+
+## combat's bar (round 8), landed with the fix: it fails on OVERLAP and asserts no spacing policy.
+func test_a_gang_ram_army_stands_clear() -> void:
+	await _assert_clear("gang_ram", "gangs")
+
+
+func test_a_gang_pack_army_stands_clear() -> void:
+	await _assert_clear("gang_pack", "gangs")
+
+
+func test_a_law_line_army_stands_clear() -> void:
+	await _assert_clear("law_line", "law")
+

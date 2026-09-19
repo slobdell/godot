@@ -943,6 +943,32 @@ What follows for map authoring, and these are testable claims rather than taste:
 **"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
 still cannot command his units. **Improvements he can see did not change the verdict.**
 
+### Two decisions from the lead (2026-09-19, answering queued gates)
+
+> *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart
+> is better, so flanking and maneuvering is fine**."*
+
+**1. ELEMENT FLOW STAYS ON.** While a leader is more than 15 m from its slot, members follow it at their slot offsets.
+Measured: transit gap **9.0 m against 11.4**, worst unit off-slot at arrival **2.9 m against 6.5**, arrival **17.4 s
+against 13.1**. **He has bought the 4 seconds.** `ElementPlan.FLOW_ENABLED` stays true and the trade is settled, not
+provisional.
+
+**2. "APPEAR SMART" BEATS "APPEAR OBEDIENT" — *within* an order, never instead of one.** This resolves a tension that
+had been implicit all round, and it must be read precisely:
+
+- **A flanker swinging wide with the player's target in its order is OBEYING**, and the pin counts it as complying:
+  `ATTACK · 2/4 on target · 1 moving round · 1 NOT COMPLYING`. **Do not exclude it and do not flag it.**
+- **A crew shooting something the player did not name is the DEFECT** — that was squad's drill bug (task path
+  **765/155 → 164/759** unit-ticks on the wrong/right target), and it stays a defect.
+- **So "attack" does NOT mean *everyone stands and fires now*.** The `drills: false` task flag is not wanted.
+
+**⚠ And the boundary that keeps this from licensing disobedience: manoeuvring is smart, CHURN IS NOT.** nav measured
+**5.3–6.6% of attack-moving units' travel time oscillating** on all four of his maps — **which is the same complaint he
+opened with**. A unit that flanks looks intelligent; a unit that re-aims every 1.3 s looks broken. **The test is whether
+the motion resolves into fire**: combat's floor — *a crew that cannot acquire a new contact in under `acquire_seconds`
+has no business re-aiming faster than it can shoot* — is the principled expression of that, and it makes the cadence a
+consequence of the engagement envelope rather than a new tuning knob.
+
 ### The eight items, with what is already known about each
 
 1. **THE SEMI IS STILL TINY, AND SIZE IS NOT A BALANCE QUESTION.** *"the intent for the semi trucks is that they're huge
@@ -1248,6 +1274,39 @@ spotters more than fighters, but there will be cases where its machine gun is us
 **Keep from round 1:** Halo-style recharging shields over hull health (the lead chose them), finite ammo with
 base resupply (rules stream may simplify if it doesn't add decisions), heat only where a unit's weapon uses
 it (the Lancer). **Drop:** components, heat sinks, ammo racks, per-hardpoint weapons.
+
+### MEASURED: the maps disagree more than the factions do (combat, 2026-09-19)
+
+**First balance picture ever taken on the maps the lead actually plays** — `yard` and `pit`, both hexagons at the 140 m
+bound with off-centre mirrored objectives. builder0, **n=30 per faction per map**, SEEDS=5, positive control engaged in
+both runs (844 and 668 paints), the 14 m rig deliberately reverted for the runs.
+
+| faction | yard | pit | swing |
+|---|---|---|---|
+| **gangs** | **63%** | **30%** | **+33 pts — the only significant difference in the table** |
+| condemned | 50% | 70% | −20 (1.6 SE) |
+| law | 43% | 43% | 0 |
+| syndicate | 43% | 57% | −13 (1.0 SE) |
+
+**The gangs are the strongest army on one of the two maps he plays and the weakest on the other, by the largest margin
+anyone here has measured.**
+
+**What this licenses: nothing about faction strength as a property.** *"The gangs are strong"* and *"the gangs are weak"*
+are **both supportable from this table by choosing a map.** That is exactly the error that cost two rounds and retired
+the 23% → 53% pair — **and the only reason it is visible now is that the tool takes `ARENA=` and prints it.**
+
+**What it does NOT license, stated before anyone reads it harder than it can bear:** at n=30 a gap needs **25 points** to
+clear 95%, and **gangs 63% on yard carries a CI of 45–81%.** **No within-map difference here is significant**, and combat
+claims neither that the gangs are overpowered on yard nor broken on pit. Resolving a 20-point within-map gap needs
+**n≈48 (SEEDS=8)**, about 60% more builder0 time per map — **not proposed, because the lead has deferred balance.**
+
+**And the comparison nobody may make: these are NOT comparable to the old yard numbers.** That yard was a 120 m square
+with one central objective; this one is a hexagon at 140 with two off-centre ones. **Same name, different map** —
+subtracting them is the subtraction `compare_arms` refuses.
+
+**The design consequence, which is the lead's to weigh and nobody else's:** if map choice swings a faction by 33 points
+while nothing else in the table moves at all, then **"is this faction balanced" is not a question with an answer** until
+the map pool is settled. **Balance follows map design here, not the other way round.**
 
 ## Factions (lead, 2026-09-15)
 
