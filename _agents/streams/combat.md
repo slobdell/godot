@@ -765,7 +765,34 @@ half; splitting your force to take both is rewarded, which is the decision the c
 nav's `gunnery.gd` split are all waiting on CP4 being on `main`. And **N7 may move the sim baseline again**; per
 invariant 2 combat does not record it, and the N7 report must say whether it moves.
 
-### X7 (stretch) — the event half is already done; what is left is one number
+### X7 — ANSWERED (2026-09-19) from evidence already committed, no new run
+
+Read out of [references/combat/n5-engagement-envelope-2026-09-18.json](references/combat/n5-engagement-envelope-2026-09-18.json)
+(builder0 at `fa4e7077`, n=15 per arm). **The brief's target was two claims and they have different answers:**
+
+| | round 5 (true control) | **shipped** | |
+|---|---|---|---|
+| flank + rear kill share | 55.4% | **68.6%** | **a majority — target met** |
+| off-axis kill share (the strict measure) | 25.7% | **45.5%** | **not a majority — but nearly doubled** |
+| rear kill share | 11.2% | **20.8%** | nearly doubled |
+| **centroid travel** | 236.8 m | **248.1 m** | **+5% — essentially unchanged** |
+
+**1. "A majority of direct-fire kills come from the flank or the rear": YES by the hull-face measure (68.6%), NO by
+the stricter one (45.5%).** Quote the strict one. An oblique shot across a wide front registers as a "side" hit
+without anyone having flanked anything, which is why `off_axis_kill_share` exists — and by it the game is just
+short of half, having risen from a quarter.
+
+**2. "The armies' centres of mass move during the fight": YES, and N5 did not cause it.** Centroid travel is
+236.8 → 248.1 m, about 5%, which is inside the noise of a 15-match arm. **The armies moved this much before the
+engagement envelope existed.** So the flanking gain is *not* the armies manoeuvring more — it is a change in **how
+kills happen within an engagement**, at the same amount of movement. That is worth knowing before anyone credits
+N5 with making the battle more mobile: it did not. It made the shooting more directional.
+
+**Caveat, stated because this stream has been bitten by exactly this:** these are round-6 arms at `fa4e7077`, not
+the current tip, and the control is the true round-5 arm (`--no-acquisition --no-crossing` *plus* bands at reach),
+not the discipline-off-only arm. Read the fourth row of that file, not the third.
+
+### (superseded) X7 (stretch) — the event half is already done; what is left is one number
 
 Checked rather than assumed. `projectile_impact` already carries `weak_spot` (K2), feel's `game/theme/fx/k2_events.gd`
 already reads it, and there is a dedicated `weak_spot_hit` sound layer with two variants. **So "feel draws the cue;
