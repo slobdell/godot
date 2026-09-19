@@ -622,6 +622,36 @@ wrong way about.
     A map where crossing is funnelled onto bridges makes *position* matter without needing the objective to move —
     it is arena's X3 argument achieved with geometry instead of rules, and the two should compound.
 
+### The lead's arena verdict (2026-09-19, read back from the review page's store)
+
+| Arena | His call | Centre sees |
+|---|---|---|
+| **Boulevard** | **CUT** | 0.64 |
+| **Foundry** (and the Furnace) | **CUT** | 0.56 |
+| **Boneyard** | **CUT** | 0.40 |
+| **Scrapyard** | **CUT** | 0.29 |
+| **Pit** | **KEEP** | 0.30 |
+| **Yard** | **KEEP** | 0.20 |
+
+No notes. **He kept two and cut the rest** — five of seven shipping arenas, counting the Furnace on Foundry's card.
+
+**The finding that matters more than the verdict: centre-visibility predicted it.** Rank the six by the share of the
+field their centre can see and **the four most open maps are exactly the four he cut.** He had those numbers on the page
+but no way to sort by them, so this is not him reading the metric back to us. Scrapyard (0.29) and Pit (0.30) are nearly
+tied and he split them, so it is not a pure function of the measure — but **nothing else we have predicts his taste this
+well.** That turns `centre_sees_share` from a description into a **design target**: a map whose middle can see most of
+the field is a map he will not want, and we can now know that before he plays it.
+
+**NOT ACTED ON — awaiting one line from him, and the reason is size, not doubt** (arena raised both, correctly):
+1. **The page did not prepare him for a cut this large.** It said cut was a real answer we would act on and led with
+   boulevard; it did not say *"you are about to remove five of the seven maps in the game"*. He may mean exactly that, or
+   he may mean *"these four are not worth fixing — prioritise accordingly"*. One line settles it.
+2. **Foundry is `Arena.DEFAULT_LAYOUT`.** Every headless run, the sim baseline and most tests use it. **Cutting it is an
+   infrastructure change, not a content change**, and it would move the baseline. That must be deliberate rather than a
+   consequence.
+**Meanwhile, treat the four as "do not invest" rather than deleted:** no new work on them, and any round-7 map effort
+goes to Pit, Yard and new maps built to the risk-and-reason principle below.
+
 ### The principle behind all of it: terrain makes risk, objectives make reason (lead, 2026-09-18)
 
 > *"On the bridge note, what I'm thinking though is that clearly crossing a bridge is risky, so you don't want a simple
