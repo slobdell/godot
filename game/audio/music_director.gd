@@ -204,8 +204,11 @@ func set_state(next: String) -> void:
 		pending = ""
 		return
 	pending = wanted
-	if not is_inside_tree() or not _playing():
-		_crossfade_now()  # nothing is playing: start straight away
+	# Nothing started yet: start straight away. Asked of the director, not the audio server: a bed started this frame
+	# may not be reported as playing until the mixing thread gets to it, and on a busy machine that cut the next bed
+	# in early (control's check, round 8). A bed that really stopped is replaced on the next frame (_crossed_bar_line).
+	if not is_inside_tree() or track_id == "":
+		_crossfade_now()
 
 
 ## The best track for a state: the one whose `states` list it in, a stem set first, then the highest intensity;

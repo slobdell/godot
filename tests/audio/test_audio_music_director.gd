@@ -121,6 +121,21 @@ func test_a_new_state_waits_for_a_bar_line() -> void:
 	assert_eq(music.current_track(), music.track_for("lull"), "the fight keeps playing until the bar ends")
 
 
+## Round 8 (control's check on builder0): the test above failed on a loaded machine. `set_state` cut in whenever the audio
+## server didn't yet report the bed it had just started as playing, which is up to the mixing thread, not the director.
+## Here the player reports stopped right after the lull starts (what a busy audio thread looks like): still queued.
+func test_a_bed_the_audio_server_has_not_reported_yet_still_waits_for_the_bar() -> void:
+	var music := _director()
+	add_to_tree(music)
+	await wait_physics_frames(1)
+	music.set_state("lull")
+	for player in music.find_children("*", "AudioStreamPlayer", true, false):
+		(player as AudioStreamPlayer).stop()
+	music.set_state("victory")
+	assert_eq(music.pending, music.track_for("victory"), "the victory bed is queued, not cut in")
+	assert_eq(music.current_track(), music.track_for("lull"), "the lull is still the bed until the bar line")
+
+
 func test_it_follows_a_mood_signal() -> void:
 	var music := _director()
 	add_to_tree(music)
