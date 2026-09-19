@@ -6,6 +6,60 @@
 
 _Last updated: 2026-09-18. **Round 5 is closed and merged; round 6 is planned and launching.**_
 
+## ⚠ READ THIS FIRST: the round stopped on a quota limit, 2026-09-18
+
+**The weekly quota ran out. It resets ~2026-09-22. Every stream session's context is gone; nothing on disk is lost.**
+All six stream branches are merged into `main`, every worktree is clean, and each brief's **Status is written for a
+stranger** — that was the last thing every stream did before stopping. Read your stream's Status before anything else;
+it holds what the session knew that the code does not say.
+
+### The five-minute version of where this stands
+
+**Round 6 is complete and merged.** `main` was last green at **1130 passed, 0 failed** on builder0; the sim baseline is
+`glibc-2.43 b0df248dc0140639`, recorded once at the end by the orchestrator (invariant 2). Two merges landed after that
+green run (`control`'s camera work and trailing docs), so **re-run `make remote T=check` before trusting `main`** — budget
+30–50 minutes.
+
+**What round 6 did:** movement you can trust (100% arrival on every configuration, up from 33/60 on a shipping map),
+one formation system instead of three, the player's units holding until ordered *by a rule rather than a coincidence*, a
+plain move keeping a squad a squad, loading 7.6 s → 1.4 s, 3,011 spectators visible where 0 of 2,040 had been, a city
+skyline, engagement ranges that decide fights at 40 m instead of 54 with flanking up from 26% to 45%, and the maze the
+movement work is measured against.
+
+**THE GAME IS STILL NOT PLAYABLE, and the lead said so after the round closed.** Two reasons, in his words: the camera,
+and *"getting adequate command of our units (I couldn't tell what direction they were facing)"*. **Round 7's whole
+subject is legibility, not capability** — see *Round 7 direction* in [game_design.md](_agents/game_design.md), which holds
+his feedback verbatim and is the most important document to read after this banner.
+
+### What was in flight when it stopped, and where to pick it up
+
+| Item | State | Owner |
+|---|---|---|
+| **The lead's settled camera pose** — `pitch=21 distance_m=49 fov=35`, auto-frame on | committed by control; **`fov=35` is the floor of the range and two agents argued the wrong way about it** | control |
+| **Announcer voices cut each other off** | diagnosed only; his rule is *interrupt is fine, the incumbent yields **after** being interrupted, never truncated* | feel |
+| **Machine gun: no tracer, and missing sounds** | not started; **ElevenLabs approved broadly** — plenty of credits, a monthly budget that is wasted unspent | feel |
+| **Unit scale not honouring `hull_size`** (a gang tank renders smaller than a scout) | not started | feel |
+| **The gangs' IFV drives backwards** | not started; **check whether the SIM is reversed too, not just the visual** — if so it has been taking front-armour hits on its rear | feel |
+| **Arena verdict: KEEP Pit + Yard, CUT the other four** | recorded, **nothing deleted** — the four are *do-not-invest*; Foundry is `DEFAULT_LAYOUT`, so cutting it is an infrastructure change | orchestrator |
+
+### The three things a fresh orchestrator should not have to rediscover
+
+1. **No agent on this project can play the game** (lesson 72). Everything we call playtesting is scripted input plus
+   screenshots. Feel-questions — camera, order legibility, audio presence — can only be answered by the lead. **The
+   pattern that finally worked was giving him live in-game controls and one key that prints a pasteable line** (the
+   camera took four attempts from still images and one from live controls). Build the instrument, hand it over, let the
+   design come out of him using it.
+2. **This round found more broken instruments than broken game code.** Lessons 32–75 in
+   [orchestration.md](_agents/orchestration.md) are all round 6, and most are measurement failures: three load-bearing
+   coincidences, four constants calibrated against a camera that had changed, six tick-rate leftovers of which three
+   lied to a *reader* rather than failing a test, a build queue that starved rather than being slow, an audio harness
+   recording at 1/10 speed, and a series whose control was not a real "before".
+3. **`centre_sees_share` predicts the lead's map taste.** He cut the four most open arenas and kept the two least open,
+   with the numbers in front of him but no way to sort by them. That makes it a **design target for new maps**, and it
+   is the most transferable thing the arena work produced.
+
+---
+
 ## Current state (main)
 
 - **Round 5 is fully merged** (render, arena, control, combat, ai, audio). Briefs and their reports are archived in
