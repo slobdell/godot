@@ -2111,3 +2111,29 @@ The kickoff prompt is one line; this section is the rest.
        game.**
      - **And the general form, which this project keeps meeting: a guarantee is only as broad as the configuration it is
        measured in** (lesson 23's family). **The name of a check is not its scope.**
+138. **A veto stores the change up; only changing the SCORE changes the decision.** squad built combat's principled floor
+     — *a crew may not swap to a different target faster than `Engagement.acquire_seconds` for the new contact* — measured
+     it, and **reverted it, because it lost its own A/B.**
+
+     | per unit-minute (yard, seeds 1/3/7) | floor ON | floor OFF |
+     |---|---|---|
+     | option switches | 19.5 | **18.1** |
+     | **reversals** | **0.67** | **0.30** |
+
+     **Worse on switches and more than double the reversals, on every seed.** squad's reading, which is the lesson:
+
+     > *"Holding a crew on a target after its score has decayed doesn't prevent the swap, it **delays** it — and the longer
+     > the delay the bigger the gap when it finally breaks, so it comes back as a **reversal**. A floor that forbids the
+     > change without changing what's being compared just **stores the change up**."*
+
+     **A veto is not a preference.** It suppresses the *expression* of a decision the scoring still wants, and the
+     pressure accumulates — so the behaviour it produces is worse than the one it was suppressing, in exactly the metric
+     that matters. **If you want a unit to stay, make staying worth more; do not forbid leaving.**
+     - **That is what `COMMIT_BONUS` already is**, and squad's proposed next experiment is the honest one: tune the
+       existing score term with the same probe, rather than add a second mechanism beside it.
+     - **combat's principle may still be right; this shape of it is wrong.** Worth separating, because *"the acquisition
+       time is the natural floor for re-aiming"* survives the result that *"vetoing swaps below that floor makes things
+       worse"*.
+     - **Second revert of the round after measurement, and both were cheap because they were measured before shipping**
+       — nav's gear-change cost (aimed at the wrong third of the flips) and this. **The expensive version is the one we
+       did earlier: ship, measure twice, then discover the mechanism was never reached.**
