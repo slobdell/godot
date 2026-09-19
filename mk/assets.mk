@@ -167,10 +167,10 @@ assets-ads: ## Rebuild the placeholder ads for the giant screens (tools/assets/b
 	$(PYTHON) tools/assets/build_ads.py
 	$(GODOT) --headless --path . --import >/dev/null 2>&1
 
-arena-kit-gallery: import ## Screenshot the container yard (and ad screens) at night: close, yard, doors, 200 m overview → build/screenshots/arena-kit-*.png [VIEWS=a,b SCREEN=]
+arena-kit-gallery: import ## Screenshot the container yard (and ad screens) at night: close, yard, doors, 200 m overview → build/screenshots/arena-kit-*.png [VIEWS=a,b SCREEN= SHAPE=hexagon]
 	mkdir -p $(BUILD_DIR)/screenshots && touch $(BUILD_DIR)/.gdignore
 	timeout 120 $(GODOT) --path . --resolution $(SCREEN) res://game/theme/gallery/arena_kit_gallery.tscn -- \
-		--shots-dir=$(CURDIR)/$(BUILD_DIR)/screenshots $(if $(VIEWS),--views=$(VIEWS))
+		--shots-dir=$(CURDIR)/$(BUILD_DIR)/screenshots $(if $(VIEWS),--views=$(VIEWS)) $(if $(SHAPE),--gallery-shape=$(SHAPE))
 
 # ---- Round 3 (assets X5): artillery outriggers as parts, posed by the hull slot's set_deployed(ratio) ---------------
 .PHONY: artillery-deploy-shot

@@ -176,3 +176,10 @@ camera-looks: import ## Photograph one frozen fight from a grid of pitch x dista
 ## Control X4: what spawning a 30-a-side army costs per vehicle (FIGHT's stall). SPAWN_THEME=default compares the box art.
 spawn-cost: import ## Headless: ms per spawned vehicle, first of each type vs the rest, per faction army
 	$(GODOT) --headless --path . --script res://game/ui/spawn_cost_bench.gd -- $(if $(SPAWN_THEME),--theme=$(SPAWN_THEME)) 2>&1 | grep -E 'SPAWN_COST|SCRIPT ERROR|^ERROR'
+
+## Round 8 policy (_agents/verification.md "Timing in tests"): make check only MEASURES control's timing budgets; this
+## JUDGES them. Run it on purpose on an uncontended machine (`make remote T=control-timing` when builder0 is idle):
+## under full oversubscription the order path measured 14x slower against a 2x reference, so no ratio survives that.
+control-timing: import ## Judge control's timing budgets (frame, order, click, health bars) - run on an idle machine
+	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=test_control_scale
+	TANK_SQUAD_JUDGE_TIMING=1 $(GODOT) --headless --path . --script res://tests/run_tests.gd -- --filter=test_control_readability

@@ -72,7 +72,7 @@ sfx-layer: audio-deps ## Masters -> the shipped takes in assets/audio/layered + 
 	$(GODOT) --headless --path . --import >/dev/null 2>&1 || true
 	@# A new loop's .import only exists after that first import, with Godot's compressed default: set it to PCM and
 	@# import again, or the loop plays a fifth of itself (orientation trip-up 74).
-	$(AUDIO_PYTHON) -c "import sys; sys.path.insert(0, 'tools/audio'); import sfx_layer; [print('loop import set to PCM:', p.name) for p in sfx_layer.keep_loops_uncompressed(sfx_layer.LAYERED)]"
+	$(AUDIO_PYTHON) -c "import sys; sys.path.insert(0, 'tools/audio'); import sfx_layer; [print('loop import set to PCM:', p.name) for p in sfx_layer.keep_loops_uncompressed(sfx_layer.LAYERED, sfx_layer.loop_sounds(sfx_layer.sfx_generate.load_sources()))]"
 	$(GODOT) --headless --path . --import >/dev/null 2>&1 || true
 
 ## M1 (fx_tricks.md): booth, music and crowd <= 0.3 ms of script per frame. perf-scene runs --mute, so it cannot see

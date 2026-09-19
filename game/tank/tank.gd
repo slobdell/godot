@@ -115,6 +115,10 @@ var alive := true
 ## tracks worse, and a pinned crew can't get a battery's outriggers down. Everything else (breaking contact,
 ## going to cover, choosing not to cross a lane) is a DECISION, so it belongs to the brains and the drills.
 var suppression := 0.0
+## X5 (round 6): seconds remaining for which an enemy DESIGNATOR is painting this vehicle. While it is above zero,
+## every crew on the designator's side acquires this target far faster (Engagement.DESIGNATED_ACQUIRE_SCALE).
+## Counts down in seconds so it is tick-rate independent (lesson 30); the designator refreshes it every intel pass.
+var designated_seconds := 0.0
 ## Shield points (0..max_shield). Simulating peer.
 var shield := 0.0
 ## Physics ticks since the last damage landed (shield recharge and base repair wait on it).
@@ -276,7 +280,10 @@ func _tick(delta: float) -> void:
 		_previous_sync_position = sync_position
 		estimated_velocity = estimated_velocity.lerp(snapshot_velocity, 0.2)
 		return
+	# X5: the designator's paint fades unless it is refreshed. A dead vehicle is not painted.
+	designated_seconds = maxf(0.0, designated_seconds - delta)
 	if not alive:
+		designated_seconds = 0.0
 		velocity = Vector3.ZERO
 		estimated_velocity = Vector3.ZERO
 		_publish_state()

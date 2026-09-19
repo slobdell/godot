@@ -1,61 +1,72 @@
 class_name Objectives
 extends RefCounted
-## Where the fight's objective is, for squad's deciders: ONE seam over the match's control point. Today Match knows a
-## single central zone (Match.CONTROL_CENTER, a static in_control_zone); combat's N7 makes objectives arena data, read
-## per match (in_any_objective / objective_presence). Until N7 is on main, every decider in squad's paths asks here and
-## this answers from the central zone — and REFUSES, loudly, when the arena declares an objective that is not that zone
-## (a position off the centre, or more than one): a CPU competing for the wrong ground looks completely functional, so a
-## silent wrong answer is the failure to prevent (lesson 77: prefer a loud break when you deprecate).
-## When N7 lands: re-implement center()/contains()/owner() on the instance API; the call sites do not change.
+## Where the fight's objectives are, for squad's deciders: ONE seam over the match's objectives (combat's N7:
+## `Match.objectives`, read per match from the layout, `[{name, position, radius, owner, progress}]`). A layout may
+## declare several (off-centre ones come in mirrored pairs), so a decider never asks "where is THE objective": it asks
+## which one to go for from where it stands (`goal`), whether a point is on one (`contains`, `held_at`), and whether its
+## team holds them all (`all_held`).
+##
+## Round 7: this file answered from the single central zone (the Match constant) until N7 reached main, behind a guard
+## that push_errored on any other layout. arena's first above-zero maps (yard, pit) tripped it 35,336 times in one match
+## that still COMPLETED with a winner — the deciders competed for the wrong ground the whole time (lesson 122: degraded
+## is worse than fatal). Nothing here reads the central-zone constant any more.
 ##
 ## Callers: CpuCommander (muster objective, holding the zone), ElementCommander._objective, TankBrain's situation
 ## ("control"), DiscoveryBridge's state.
 
 
-## Whether this match has an objective at all.
+## Whether this match has objectives at all (the --control match flag; N7 then always has at least one).
 static func active(game_match: Match) -> bool:
-	return game_match != null and game_match.control_point
+	return game_match != null and game_match.control_point and not game_match.objectives.is_empty()
 
 
-## The objective's centre.
-static func center(game_match: Match) -> Vector3:
-	_guard()
-	return Match.CONTROL_CENTER
+## Every objective, live (Match's own dictionaries: read them, never write them).
+static func all(game_match: Match) -> Array:
+	return game_match.objectives if active(game_match) else []
 
 
-static func radius(game_match: Match) -> float:
-	_guard()
-	return float(Arena.active.get("control_point", {}).get("radius", Match.CONTROL_RADIUS)) \
-			if Arena.active.get("control_point") is Dictionary else Match.CONTROL_RADIUS
+## The objective `team` should go for from `from`: the nearest one it does not hold; if it holds them all, the nearest
+## (to stay on). Ties go to the earlier-listed one, so the answer is deterministic. {} when there are none.
+static func goal(game_match: Match, team: int, from: Vector3) -> Dictionary:
+	var best := {}
+	var best_d := INF
+	var best_held := true
+	for objective: Dictionary in all(game_match):
+		var held := int(objective["owner"]) == team
+		var d := _flat_distance(from, objective["position"])
+		if (best_held and not held) or (held == best_held and d < best_d - 0.001):
+			best = objective
+			best_d = d
+			best_held = held
+	return best
 
 
+## Whether `point` is inside any objective.
 static func contains(game_match: Match, point: Vector3) -> bool:
-	_guard()
-	return Match.in_control_zone(point)
+	return not _containing(game_match, point).is_empty()
 
 
-## Which team holds it (Match.control_owner).
-static func owner(game_match: Match) -> int:
-	return game_match.control_owner
+## Whether `point` is inside an objective `team` holds (a place worth holding rather than leaving).
+static func held_at(game_match: Match, team: int, point: Vector3) -> bool:
+	var objective := _containing(game_match, point)
+	return not objective.is_empty() and int(objective["owner"]) == team
 
 
-## The guard: this seam only knows the single central zone. A layout that places its objective anywhere else, or has
-## several, gets an error instead of a plausible wrong answer.
-static func _guard() -> void:
-	if not describes_central_zone(Arena.active):
-		push_error("Objectives: the arena declares an objective other than the single central zone; squad's deciders " \
-				+ "still read Match.CONTROL_CENTER. Move game/tactics/objectives.gd onto N7's instance API.")
+## Whether `team` holds every objective (nothing left to take).
+static func all_held(game_match: Match, team: int) -> bool:
+	for objective: Dictionary in all(game_match):
+		if int(objective["owner"]) != team:
+			return false
+	return active(game_match)
 
 
-## Whether a layout's objective is (at most) one zone at the arena's centre.
-static func describes_central_zone(layout: Dictionary) -> bool:
-	if layout.has("objectives") and (layout["objectives"] as Array).size() > 1:
-		return false
-	var declared: Variant = layout.get("objectives", [layout.get("control_point")])[0] if layout.has("objectives") \
-			else layout.get("control_point")
-	if not declared is Dictionary:
-		return true
-	var at: Variant = (declared as Dictionary).get("position")
-	if at == null:
-		return true
-	return Vector2(float(at[0]) - Match.CONTROL_CENTER.x, float(at[1]) - Match.CONTROL_CENTER.z).length() < 0.5
+## The (first) objective whose zone holds `point`, or {}.
+static func _containing(game_match: Match, point: Vector3) -> Dictionary:
+	for objective: Dictionary in all(game_match):
+		if _flat_distance(point, objective["position"]) <= float(objective["radius"]):
+			return objective
+	return {}
+
+
+static func _flat_distance(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()

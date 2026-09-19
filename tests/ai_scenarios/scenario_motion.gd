@@ -86,7 +86,12 @@ func test_two_tanks_on_one_work_round_to_its_side() -> void:
 	BrainVariants.reset()
 
 
-func test_a_scout_makes_attack_runs_on_a_tank() -> void:
+## One scout (a fixed forward machine gun) ordered onto a durable tank for 25 s, fighting in fixed-gun `style`:
+## how close it ever gets, the share of time in its band and with its nose on the target (a fixed gun only hits what it
+## points at), and its shots.
+func _scout_fight(style: String) -> Dictionary:
+	var was := CombatMotion.fixed_style
+	CombatMotion.fixed_style = style
 	BrainVariants.use(Match.Team.GREEN, "x2")
 	var s := AiScenario.create(self)
 	var tank := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-100, 0, -10), 0.0)
@@ -96,27 +101,48 @@ func test_a_scout_makes_attack_runs_on_a_tank() -> void:
 	var orders := s.orders()
 	await s.start()
 	orders.call("issue", {"units": [String(scout.name)], "verb": "attack", "target": String(tank.name), "queue": false})
-	var brain := s.brain_of(scout)
-	var runs := 0
-	var last_phase := "run"
-	var behind_shots := 0
-	var last_shots := 0
-	for tick in SimClock.TICK_RATE * 25:
+	var weapon := Weapons.profile(scout.weapon_id)
+	var closest := INF
+	var in_band := 0
+	var nose_on := 0
+	var ticks := SimClock.TICK_RATE * 25
+	for tick in ticks:
 		await s.step()
-		if brain._run_phase != last_phase:
-			if brain._run_phase == "extend":
-				runs += 1
-			last_phase = brain._run_phase
-		if s.shots_by(scout) > last_shots:
-			last_shots = s.shots_by(scout)
-			var from_tank := Vector3(scout.global_position.x - tank.global_position.x, 0.0, scout.global_position.z - tank.global_position.z).normalized()
-			if (-tank.global_basis.z).dot(from_tank) < 0.707:
-				behind_shots += 1
-	print("MEASURE ai_scout_runs %d runs in 25 s, %d shots, %d from the tank's side or rear, tank took %d" % [runs,
-			s.shots_by(scout), behind_shots, 1_000_000 - tank.health + int(tank.max_shield - tank.shield)])
-	assert_true(runs >= 3, "repeated attack runs (%d)" % runs)
-	assert_true(behind_shots >= 10, "firing into its side and rear (%d shots)" % behind_shots)
+		var to := Vector3(tank.global_position.x - scout.global_position.x, 0.0, tank.global_position.z - scout.global_position.z)
+		closest = minf(closest, to.length())
+		if to.length() >= float(weapon["preferred_min"]) and to.length() <= float(weapon["preferred_max"]):
+			in_band += 1
+		if (-scout.global_basis.z).dot(to.normalized()) >= NOSE_ON_COS:
+			nose_on += 1
+	var result := {"style": style, "closest_m": snappedf(closest, 0.1), "in_band": snappedf(float(in_band) / ticks, 0.01),
+			"nose_on": snappedf(float(nose_on) / ticks, 0.01), "shots": s.shots_by(scout)}
+	s.dispose()
 	BrainVariants.reset()
+	CombatMotion.fixed_style = was
+	return result
+
+
+## cos 8°: a fixed gun's nose counts as on its target inside this.
+const NOSE_ON_COS := 0.990
+## Closer than this is ramming, not fighting.
+const RAM_M := 10.0
+
+
+## Round 7 (the lead): *"Scouts are just running directly into their targets and then they have to turn around to get a
+## fix again."* Round 3 asserted the opposite — this test used to require >= 3 attack runs, which pinned exactly the
+## behaviour he complained about (a fixed gun driven straight at its target, breaking off at 9 m and driving away gun
+## backwards). A fixed gun is a positioning problem, not an aiming one: nav's "standoff" arrives in the band, stops,
+## lays its hull on the target and fires. Inverted, not deleted, and the old style kept as the A/B — removing a behaviour
+## is the only honest way to attribute its effect.
+func test_a_scout_holds_a_firing_position_instead_of_ramming() -> void:
+	var standoff := await _scout_fight("standoff")
+	var runs := await _scout_fight("run")
+	print("MEASURE ai_scout standoff %s; round-3 attack runs %s" % [standoff, runs])
+	assert_true(float(standoff["closest_m"]) >= RAM_M, "it never closes to ramming range (%s)" % standoff)
+	assert_true(float(standoff["in_band"]) >= 0.5, "it spends most of the fight in its band (%s)" % standoff)
+	assert_true(float(standoff["nose_on"]) >= 0.5, "with its gun on the target most of the time (%s)" % standoff)
+	assert_true(int(standoff["shots"]) > int(runs["shots"]) * 2, "and fires far more than attack runs did (%s vs %s)"
+			% [standoff["shots"], runs["shots"]])
 
 
 ## Round-3 X4: no dithering. A 3 v 3 mixed brawl; how often each brain changes what it's doing (option switches per unit

@@ -314,6 +314,90 @@ the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on r
 
 **4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
 
+### The height spread does not move the balance (builder0, `6e82e57b`, 60 matches, same seeds, **on foundry**)
+
+The lead: *"the gang tank is still tiny… that truck should be at least 3 or 4 times the height of the scout."* Every
+vehicle was 1.40–1.80 m — a **1.29×** spread from the smallest buggy to a semi tractor — while lengths varied 2.8–5.6
+m. At his 21° telephoto, **height is the dimension that reads.** Now **1.4–4.4 m, a 3.14× spread**, referenced to the
+real vehicle: War Rig 4.4 (a semi tractor is ~4.0), IFV 3.0 (Bradley), Tank 2.4 (Abrams hull), scouts unchanged.
+**Nothing got shorter** — trip-up 15 is what happens when a hull box drops below the barrel line, so shrinking is the
+direction that hides shots.
+
+`hull_size` is the collision box, so taller units are **easier to hit**. Re-run of the same matrix, same seeds:
+
+| faction | before | after | change |
+|---|---|---|---|
+| condemned | 53% | 57% | +3 pts |
+| gangs | 53% | 50% | −3 pts |
+| law | 50% | 50% | 0 |
+| syndicate | 43% | 43% | 0 |
+
+**No detectable balance consequence.** Three of six pairings did not move at all; the other three moved by **exactly
+one match in ten**, which is the smallest non-zero change measurable and far inside the ±30-point interval of an
+n=10 pairing. **The lead gets his silhouettes for free.**
+
+**What may NOT be concluded: that height has no effect.** An effect smaller than roughly ±30 points per pairing is
+invisible at this sample size, and this is a *paired* re-run of the same seeds rather than an independent sample.
+The one directionally interesting scrap — the gangs grew most (War Rig 1.8→4.4, tanker 1.8→3.6, gun truck 1.5→2.2)
+and are the only faction that moved down — is **one match** and should not be told as a story.
+
+Per-match results:
+[streams/references/combat/faction-matrix-heights-2026-09-18.json](streams/references/combat/faction-matrix-heights-2026-09-18.json).
+
+### X4 — THE GANGS' 23% IS GONE (builder0, `1333cc73`, 60 matches, 5 seeds per pairing, counterbalanced, **on foundry**)
+
+Open since round 4 and deferred twice, because the stream would not tune against numbers taken while drills and
+suppression were still landing. Both have landed, CP4 is in, and **every number predating it is history — this is the
+first honest measurement.**
+
+| faction | record | win% | was (pre-CP4) |
+|---|---|---|---|
+| condemned | 16/30 | **53%** | 70% |
+| **gangs** | 16/30 | **53%** | **23%** |
+| law | 15/30 | **50%** | 63% |
+| syndicate | 13/30 | **43%** | 47% |
+
+> **ATTRIBUTION RETRACTED (2026-09-19).** I reported this as the engagement envelope's doing. **It is not supported.**
+> The 23% was measured in `f1b0ee9e` (2026-09-16) — **the same commit that added the `gangs/scout` directive entry**,
+> because that run is what found the bug. Round 5's X3 and X6 were both *"Not started"*, so **no faction matrix ran
+> between that fix and mine.** The 23% is a *pre-fix* number and the 53% is a *post-fix* one, with two rounds of
+> other changes in between (the `ready_to_fire` tick, armies holding until ordered, 30 Hz, Jolt, CP4).
+>
+> The directive bug is at least as good an explanation, and the table's own comment says so: without its own entry
+> the gangs' rat rods took the Condemned scout's *"spotters first"* directive, so **15 assault vehicles sat at
+> standoff spotting while the swarm died, and the faction won 10–30% of everything.** That is the 23%, described in
+> the codebase, a day before it was measured.
+>
+> **The difference is real; the cause is not established.** The ablation that would settle it is cheap and is the
+> one this project already knows to run (lesson 25 — attribute a cost to a behaviour by *removing* it): delete the
+> `gangs/scout` entry on the current build and re-run the matrix. If the gangs collapse, the directive was the cause
+> and CP4 gets no credit.
+
+**The road gangs went from 23% to 53%** — joint best — **and nobody tuned them.** The spread across all four factions
+collapsed from **47 points (23–70) to 10 points (43–53)**. Two defects were fixed in round 4 and neither moved it;
+what moved it was the engagement envelope, the brain's range reasoning and suppression all landing together.
+
+**Why it is believable rather than lucky:** the gangs are the cheap-swarm faction — they field **43 vehicles** to the
+Syndicate's 25 — and a swarm is exactly the army that suffers most when everything can be shot from maximum range the
+moment it is seen, and gains most when fire is only effective up close. N5's decomposition said the *gates* do the
+heavy lifting; a 43-vehicle army closing under acquisition delay is the shape that benefits.
+
+**What must NOT be read into this.** Each pairing is 10 matches, so **a 60% is 6/10 and its 95% interval is roughly
+±30 points.** Every pairing here is statistically indistinguishable from 50%. So:
+
+- **The finding that survives: the 47-point spread is gone.** That was visible at any sample size; a 10-point spread
+  is not.
+- **The Syndicate's 43% is NOT a finding.** It is the lowest number in the table and it is inside the noise. Anyone
+  wanting to act on it needs many more seeds first — and the previous holder of "the outlier we must fix" cost this
+  project two rounds of deferred tuning precisely because it was acted on as a fact.
+
+Per-match results:
+[streams/references/combat/faction-matrix-post-cp4-2026-09-18.json](streams/references/combat/faction-matrix-post-cp4-2026-09-18.json).
+**Every faction-matrix number in this file is a FOUNDRY number.** `faction_matrix.py` passed no `--arena` until
+`ARENA=` was added, so all of it ran on the default layout and said so nowhere. That is sound for a like-for-like
+A/B — every arm ran on the same ground — and unsound for anything conditional on terrain. **Retire the 23/70/63/47
+line wherever it appears** — it describes a game that no longer exists.
+
 ### N5 MEASURED AGAINST THE REAL OLD WORLD (builder0, `fa4e7077`, **n = 15 per arm**, 3 counterbalanced pairings)
 
 **This is the answer. Everything below it is superseded.** The control arm is a genuine round 5 — bands at reach

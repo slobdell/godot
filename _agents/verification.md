@@ -72,6 +72,54 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
 - `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
+## Timing in tests: measure in `make check`, judge elsewhere (policy, 2026-09-19)
+
+**`make check` does not gate on how long something takes.** It is the thing six to nine agents run at once on builder0
+(an i5-1345U: 2 hyperthreaded P-cores + 8 E-cores, 12 threads) and on the shared laptop, so a wall-clock assertion there
+is a claim about *other streams' activity*, and when it fails it looks like a code defect. Found by control, ruled by
+the orchestrator:
+
+- **The evidence.** `test_control_scale`'s frame budget (absolute 2.0 ms, 11% headroom over the idle laptop's 1.80) went
+  red in #19 on builder0 at **2.33 ms, where idle builder0 is ~0.65 ms** (`9c889025`), and on the laptop at load 4–8
+  (2.2–3.1 ms). One bare click-to-order sample read **24 ms for ~4 ms of work** (laptop, load 7.8).
+- **A ratio fixes a busy machine, not a full one.** Timing the work interleaved with a fixed reference workload
+  (`control_fixture.gd`: `reference_work`, `fastest_ms`) and budgeting their ratio cancels core type (P vs E) and
+  throughput: the control frame held at 18.8–20.2 reference workloads across loads (laptop, `35c72304`), and +1 ms of work
+  still fails it (30.2 against 26). **But with 7 CPU burners on the laptop's 8 threads the order path went from 3 ms to
+  42 ms (~14×) as the fastest of 10 samples, while the reference only doubled**: a slice of engine work also waits on
+  engine worker threads, and a single-threaded GDScript yardstick can't see those starve.
+
+**The rule:**
+1. **In `make check`, timing is a printed measurement (`MEASURE ...`), never an assertion.** Prefer a ratio to a
+   reference over raw milliseconds even as a measurement: it compares across machines.
+2. **Timing verdicts belong to a separate target run on purpose on an uncontended builder0**, with `sim-profile`
+   (`mk/match.mk`) as the precedent.
+3. **A timing check that must stay a gate asserts its own precondition and REFUSES** (*"not judged: reference workload
+   2.1× nominal, machine too loaded"*), and the summary counts it as not judged, **never as a pass**. A silent skip is
+   lesson 91.
+4. **Liveness timeouts are not budgets.** A timeout catches a hang, and a hang doesn't care whether it's 120 s or 600 s:
+   make them generous (`garage-smoke`/`army-loop-smoke`: 60/120 → 600 s at `d8f26176`; they ran 10 s and 18 s on the
+   laptop, only ~6× headroom against a measured 14× starvation, and a timeout failure reads as a deadlock).
+5. **A bound with 30× headroom is a smoke check, not a budget; label it as one.** `match-smoke`'s `speedup > 2`
+   (58–84× on builder0) and `test_visibility`'s 200 ms refresh (3.2–5.9 ms on builder0) can't flake and can't catch a
+   regression. Either give them a real budget in the timing target, or say in the message that they are sanity bounds.
+6. **One sample is the most exposed shape.** Take the fastest of N, and use the test's own natural reference where it has
+   one (a cache hit against the same test's cold load).
+
+**When a grep for timing turns up a hit, say why it isn't one.** From the 2026-09-19 survey: tick counts
+(`test_control_response`, `test_responsiveness`) are sim time; `test_combat`'s respawn waits on the same `SceneTree` timer
+the game uses (`match.gd`), so both sides move together; a camera test that waits wall-clock for a rotation driven by the
+same process delta is consistent. Those are not exposed.
+
+**Status:** **control complies** — its four timing budgets (frame, order, click, health bars) print `TIMING NOT JUDGED
+(make control-timing judges): …` in `make check`, tagged `[OVER BUDGET]` when they would have failed, and assert only under
+`make control-timing` (`TANK_SQUAD_JUDGE_TIMING=1`, `mk/command.mk`); the pattern is `Fixture.judge_timing` in
+`tests/support/control_fixture.gd`. Positive control: +1 ms in the panel's `summary()` fails `control-timing` and leaves
+`make check` green with the tag. Other streams' timing assertions are still gates (the survey above). `test_theme_factions.gd:63` (cache hit < 5 ms,
+one sample) is routed to feel.
+
+||||||| baf04ead
+
 ## Attributing a behaviour's cost: switch it off (nav, round 7)
 
 The only honest way to say what one mechanism contributes is to **remove it and measure again**, never a
@@ -131,6 +179,42 @@ units so it is. A warning is the invisible-skip failure in another costume.
 
 Idea from combat, after two of its designator runs measured a different game than it thought and no check caught
 either.
+
+### And the layer above it: a comparison must prove its arms differ (combat, round 7)
+
+A positive control asks *did the treatment engage in this run*. It passes happily on **two arms that are secretly
+the same arm** — and that is not a hypothetical, because arena hit the identical gap the same day in its
+`--swap-bases` fairness tool: it had asserted *which arena*, while the thing that could silently fail was *whether
+the swap applied*. **An assertion about the stage is not an assertion about the experiment.**
+
+**This is what a broken comparison looks like.** It is `tools/compare_arms.py` with its arm-distinguishability
+check removed — the mutation test for that guard:
+
+```
+faction             treatment      control     delta
+gangs                   70% n=20         35% n=20       +0 pts
+law                     35% n=20         35% n=20       +0 pts
+syndicate               45% n=20         45% n=20       +0 pts
+```
+
+Clean, symmetric, well-powered, and completely empty: **the answer you were hoping for, reached by the treatment
+never having happened.** Nobody reading that suspects anything, which is why the guard has to be mechanical.
+`make compare-arms` refuses four things — the same file twice; a different commit, machine, or a dirty tree; a
+different arena, budget, seeds, time limit or faction list; and identical arms.
+
+Two rules fell out of building it:
+
+- **A guard that fires on the good case teaches its user to ignore it.** The output path is *supposed* to differ
+  between two arms, so requiring it to match would refuse every correct comparison.
+- **Assert against what the RUN emitted, not what the caller passed.** A flag is what you asked for;
+  `MATCH_RESULT`'s `controls` is what happened. `compare_arms` compares recorded `args`, so a flag that was
+  accepted, recorded and then silently inert still looks fine to it. **Per comparison, against emitted state, is
+  the version still unbuilt** — the honest edge of all three guards.
+
+**And guards get mutation-checked like anything else — more, not less.** A guard sits on the hot path of every
+future run, and this round shipped one that crashed every run it was added to protect and another whose refusal
+`return 2` was discarded by a bare `main()` call, so it **exited 0 and reported success to make**. Watch the guard
+fail before you trust it.
 
 ## Known flakes
 

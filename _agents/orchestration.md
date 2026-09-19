@@ -1556,6 +1556,17 @@ The kickoff prompt is one line; this section is the rest.
      - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
        criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
        which is the criterion an author hoping for a churn win would quietly omit.
+     - **Pre-register a GUARD metric as well as a success metric — name what must NOT get worse.** nav's rule covered
+       churn and survivability; the thing that actually moved was a third, **attack-move "progressing" 44% → 41%**, and
+       the rule was silent on it. **A pre-registered rule protects only the metrics you thought of**, and the one that
+       moved was the one closest to the lead's own complaint. nav reported it unprompted, against its own result, which
+       is the only reason it is not lost — **but the practice should not depend on that.**
+     - **When the arms share seeds, the PAIRED read is the right one — and the unpaired read hides real effects.** nav's
+       attack-move progressing: unpaired, ON mean .409 (sd .026) against OFF .439 (sd .038), so the 3-point drop sits
+       **inside the arms' spread and looks like noise**. Paired per seed it is **−.046 −.012 −.032 −.005 −.052 — lower on
+       5/5, mean −2.9 points, sd 1.8.** **Real, and small.** Seeded A/Bs in this project always share seeds, so the
+       unpaired read is simply the wrong test; it converts a consistent small effect into "within noise", which is the
+       phrase lesson 106 warns absorbs inconvenient results.
      - **Say the noise threshold in advance too** ("beyond seed noise"), because *"within noise"* is the phrase that
        absorbs an inconvenient result after the fact.
      - **This is the practice for every A/B in this project from here.** It pairs with the positive control (lesson 101):
@@ -1734,3 +1745,136 @@ The kickoff prompt is one line; this section is the rest.
      - **Two streams independently built the same guard within hours, and it paid for itself immediately in one of them.**
        The generalisable claim is no longer theoretical: **of the first three comparisons this guard was applied to, one
        was already broken.**
+118. **The untreated arms ARE the noise floor — measure it inside the run rather than arguing it from a formula.**
+     combat's `gangs/scout` ablation: **that entry is the only faction-keyed one in `Army.SQUADS`, so only the gangs were
+     treated and every other faction in the table is an untreated arm of the same experiment.**
+
+     | faction | boulevard | yard | treated? |
+     |---|---|---|---|
+     | **gangs** | **+7** | **+7** | **yes** |
+     | law | −7 | −10 | no |
+     | condemned | +3 | +0 | no |
+     | syndicate | −3 | +3 | no |
+
+     **Law moved −10 points without being touched — larger than the treated faction's +7.** combat's framing: *"the noise
+     floor is not an argument I am making; it is in the table, measured by factions that received no treatment."*
+     **That is worth more than the SE (12.9 points at n=30), because it is measured in the same run, on the same machine,
+     with the same workload** — it cannot be waved away as a modelling assumption, and it is legible to anyone reading the
+     table. **Whenever an experiment has untreated subjects, report them; they are a free control.**
+     - **And the conclusion was "cannot resolve", offered with a price:** ~n=400 per faction per arm, about SEEDS=70 and
+       **four hours of builder0**, for an effect smaller than any balance difference the lead would notice. **A costed
+       "cannot resolve" is a better deliverable than a fifth run with the same error bars**, and combat recommended
+       against spending on its own stream's most-cited result.
+     - **RETIRE a number that cannot be reconstructed rather than explaining it.** The gangs' 23% → 53% was this project's
+       most-cited result and the evidence for *"a balance problem dissolved by mechanics"*. The original comparison was
+       most likely **never a comparison** — different builds, and plausibly different maps. **That is precisely the
+       subtraction `compare_arms` now refuses and could not refuse then.** The principle it supported survives on the
+       sharper argument: *do not tune against numbers whose cause you have not established.*
+119. **A test that claims "exact" and isn't is lesson 66's quieter sibling.** feel published `StandsProfile.points()` to
+     replace control's hand-measured `RtsCamera.STANDS_PROFILE`, **with a test asserting it reproduces the hand
+     measurement.** control swapped it in and found it does **not**: the back matches (22.2 m out, 15.7 m tall) and the
+     **front is about 2 m apart** — the kit stands **9.64 m tall from 4.2 m out** against a hand-measured 7 m at 2.3 m.
+     **The test must have a loose tolerance or check only the ends.**
+     **A hand-copied value at least looks like a copy. A test that asserts fidelity without enforcing it makes the copy
+     look verified**, which is worse — an unguarded claim invites checking and a guarded-looking one does not.
+     - **The published value was the correct one, and the consumer's test was wrong in a direction that let a case pass.**
+       control had a camera case at 30°, 150 m out, that was supposed to keep the stands in frame; with the real kit they
+       **rise 0.4 m into the sight line.** It moved the case to 40° with a comment saying why. **Publishing a derived value
+       found a defect in a consumer's test** — the strongest argument for lesson 66 anyone has produced.
+     - **Orchestrator's share: I relayed feel's claim to control as an assurance** — *"there is a test asserting that, so
+       the swap is verified faithful rather than asked for on trust"* — **without checking it.** Third instance today of
+       promoting something provisional to something established at the moment of relaying it (lessons 96, 113).
+     - **And it produces a visible change from a correctness fix:** the wall cutaway will now cut the front of the stands
+       slightly more often near the wall, because it was **under-cutting** before. **Say that in advance**, or it arrives
+       looking like a regression.
+120. **A leak probe is itself an experiment, and it needs a positive control: prove the leak could have been SEEN.**
+     control, fixing the same `RtsCamera.perimeter_poly` leak in its camera tests, reported that **its first two probes
+     "proved" nothing**:
+     - **one leaked a hexagon whose flats sit at exactly ±121** — the value the victim expected — **so the leak was
+       benign and the test passed for the wrong reason**;
+     - **one leaked in an earlier FILE, and the intervening tests' rigs reload `perimeter_poly` in `_ready`**, so the
+       leak was overwritten before it could do harm.
+     **Both produced a clean pass that would have been read as "no leak here."** The working probe leaks an **80 m
+     square immediately before the victim**: without the guard, 3 failures (*"rail 37.9 m beyond a 0.1 m near plane"*);
+     with it, 0.
+     **The rule: a leak probe must sit immediately before its victim, and its leaked value must differ in a way the
+     victim can see.** This is combat's positive control (lesson 101) applied to isolation testing — **assert that the
+     treatment engaged, where the treatment is the pollution.** Without it, a probe measures nothing and says "clean".
+     - **Same family as nav's "fails alone at file granularity"** (lesson recorded at `5cc17ee6`): **the granularity of
+       an isolation claim is part of the claim.** "Alone" and "clean" both need their scope stated.
+     - **Three streams have now hand-fixed instances of one shared-static leak** — control's camera tests, control's
+       radar test (fixed by the orchestrator), and nav's `test_navigation` navmesh readiness. **That is the argument for
+       moving the runner-level guard up from round 8:** assert the world is clean after each `teardown()` and **fail
+       naming the test that leaked**, so the next one is caught at source rather than diagnosed three times.
+     - **And control's hexagon cutaway test now RESTORES the previous perimeter rather than blanking it** — blanking is
+       itself a leak, just a quieter one.
+121. **A known-problems list decays faster than code, and nothing re-verifies it.** combat's summary of round 7, and it is
+     the finding I would hand the next round ahead of any result: **three separate "known broken" items turned out to be
+     measurement artefacts.**
+     - **`announcer-record-smoke` / `music-smoke`** — carried in feel's brief as broken for **two rounds**. They pass on a
+       current baseline. They ask a *differential* question and implement it as an *absolute* comparison against a shared
+       file, so they misfire once a round by design. **Nothing was ever wrong with the booth or the soundtrack.**
+     - **The gangs' 23%** — treated as a faction balance problem across two rounds, then as a mechanics triumph when it
+       "dissolved" to 53%. The ablation says neither is established, and **both numbers are retired.**
+     - **combat's own dither alarm** — same shape, found in its own stream.
+     **Each was recorded in a document with enough confidence to be believed, and each cost someone real time before
+     anyone checked it.** Add the funnel algorithm we had listed as OWED and had been running since round 1 (lesson 85),
+     and it is four.
+     **The lesson is not "measure more".** Code has tests; a claim in a doc has nothing. **A brief's "known problems"
+     section is the least-verified, most-quoted text in this project** — it is written once, read every round, and
+     re-checked never. Two practices follow:
+     - **Re-verify a known-problem before acting on it, not after.** The check is usually one command, and three of the
+       four above collapsed the first time anyone ran it.
+     - **Date every entry and name what would retire it.** *"Fails since <hash>; retire when X passes"* — an entry that
+       cannot be retired by evidence will not be.
+122. **"Degraded, not fatal" is the worse of the two, and a guard that names its own fix turns a day into a minute.**
+     arena pointed a real match at the first arena ever to carry off-centre objectives, and squad's `Objectives` guard
+     fired **35,336 times** — *"the arena declares an objective other than the single central zone; squad's deciders still
+     read `Match.CONTROL_CENTER`. Move `game/tactics/objectives.gd` onto N7's instance API."*
+     **The match completed and produced a winner** while every decider competed for the wrong ground for its entire
+     duration. **Without the guard, arena would have shipped a layout that plays, looks fine, is wrong — and whose results
+     would have gone into a series.** That is lesson 77 (*a CPU competing for the wrong ground looks completely
+     functional*) compiled into the code instead of remembered.
+     - **A failure that stops the run announces itself. A failure that degrades the run does not**, and it contaminates
+       every number taken downstream of it. **Prefer a loud guard to a graceful fallback wherever "wrong" and "working"
+       are indistinguishable from outside.**
+     - **The error string names the FILE and the FIX, so a stream that owns neither diagnosed it in one run without
+       reading the other's code.** arena's words: *"that guard is the best thing anyone built this round."* **An error
+       message is an interface between streams — write it for the person who will read it, who is not you.**
+     - **And it fired on the first layout anyone pointed it at**, which is the strongest possible validation: it was
+       written for a hazard that had not yet occurred, and the hazard occurred exactly as described.
+123. **A clamp and its containment test are one contract, and ours disagreed with itself.** control migrated its four
+     square clamps onto M4 and found **`ArenaShape.clamp_into`'s margin put corner points on the NEIGHBOURING edge with
+     no clearance** — `(130,130) → (116,120)`. arena fixed it at `f295ff30` **and found a second bug behind it:
+     `clamp_into` returned points its own `contains` rejected.**
+     **A function that places a point inside a shape and a function that tests whether a point is inside it are two
+     halves of one claim.** When they disagree, every caller is in an unwinnable position: **clamp then check fails, and
+     check then clamp loops.** Neither bug is visible from either function alone — only from using them together, which
+     is what a consumer does and an author usually does not.
+     - **The property worth asserting is the round trip: `contains(clamp_into(p))` for every `p`**, including far outside,
+       on corners, and on the diagonal. That is one test and it catches both bugs.
+     - **The bugs surfaced because a consumer migrated onto the contract**, not because arena re-read its own code.
+       **M4 was reviewed by combat, written by arena, and specified by the orchestrator; none of that found it.** Contract
+       bugs are found by the first real caller — **so land a contract with a consumer, not before one.**
+     - control measured the old behaviour it replaced: **the square box admitted points 164 m out on the diagonal**, and
+       the new clamp keeps all 24 test bearings inside the wall while reproducing **exactly the old ±116 on a square,
+       corners included.** *Reproducing the old behaviour exactly where it was right* is what makes a replacement
+       trustworthy.
+124. **A metric built to detect an absence will happily reward its opposite extreme.** arena built the decision-spread
+     metric because **every shipping arena read 0.00** — one objective in the middle, so every route the same route. Then,
+     tuning pit's objective pair for the new hexagon, it swept placements:
+     ```
+     z = -30 -> 0.13     z = -50 -> 0.42     z = -60 -> 0.63     z = -70 -> 0.96
+     ```
+     **0.96 is not a better map.** One objective is nearly free and the other nearly impossible — **a formality rather
+     than a choice** — and at z = −70 it sits in the base's approach funnel, **which is the boulevard failure this stream
+     had already written a placement rule against.** arena reproduced a known failure *while optimising its own number*.
+     **The metric had no upper guard because its author had only ever seen zeros.** Both shipping pairs now sit near 0.4,
+     and the reasoning lives in `objective_pair`'s docstring so the next author does not read the number as a score to
+     beat.
+     - **Every metric introduced to fix "there is none of this" needs a stated band, not a floor** — and the band has to
+       be written where the value is produced, not in a report.
+     - **`centre_sees_share` has the same shape and the same exposure**: it was set as a target (<0.30) because the lead
+       cut the four most open maps, and nothing says what *too closed* looks like.
+     - **The tell was that the number moved while the map got worse.** A metric whose extreme is obviously bad is a
+       metric you can still trust; one whose extreme *looks like success* is the dangerous kind.
