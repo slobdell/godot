@@ -453,6 +453,13 @@ Also worth keeping: the field answered about 70-75% of route plans and fell back
 mechanism that failed to run — it ran, and it did not help. A grid of 2 m cells over a street map gives routes A* was
 already giving; what a flow field buys is CPU when an army shares one goal, and a fight's goals are per-unit.
 
+**Condition 7 (the look) could NOT be evaluated, and that is an instrument defect of mine, not a pass.** `nav-flow-look`
+filmed both arms on terminus at the lead's pose (pitch 21, 122 m) and the frames are unusable: at that pitch a city map
+of 40 m blocks hides almost every vehicle behind a building, and the unit nameplates cover what is left. Whoever films a
+march on terminus next needs a steeper pitch (45-55 degrees), the nameplates off, and the camera framed on the army
+rather than parked at a distance. The decision above rests on condition 1 alone, which is enough on its own; if the
+numbers had been a pass I would have had to re-shoot before shipping.
+
 Deleted with the code, per the pre-registration: `game/ai/flow_field.gd`, `Movement._plan`'s flow branch, the `flow`
 entry in `OFF_NAMES`, `tests/test_flow_field.gd`, the `flow` block in the fight probe, and `make nav-flow-look`.
 **Kept:** the `--nav-off` unknown-name refusal (`Movement.OFF_NAMES`), which this work produced and which is worth more
