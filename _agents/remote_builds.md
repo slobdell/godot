@@ -206,3 +206,24 @@ log, which is exactly the kind of source one trusts without checking. **Believin
   chain (combat's observation, having checked its own waiters and found them correct **by habit rather than by reasoning**).
 - **Don't pipe at all when backgrounding.** Redirect to a file (`> log 2>&1`) and grep it afterwards, so the wrapper's
   status is also the shell's status and the two cannot disagree.
+
+## ⚠ Killing a remote run locally does NOT stop it on builder0 (found 2026-09-19)
+
+**`tools/remote.sh` dying — whether you kill it, or the harness SIGTERMs it at its 10-minute cap — leaves the `make` it
+started still running on builder0.** The orphan **keeps holding a heavy-run slot**, and the next `rsync --delete` from the
+same worktree **overwrites the tree underneath it**, so it continues testing a tree that no longer exists.
+
+**This is a footgun for every stream, not a mistake anyone made.** combat lost a gate run to the second-order version: it
+went to clean up orphans it had created this way, and killed its own live gate among them.
+
+**Until the wrapper traps its own exit and stops the remote job — round-8 work, because `remote.sh` is the one tool all
+six streams depend on and it should not be rewritten mid-round — the discipline is:**
+
+1. **Identify by `readlink /proc/<pid>/cwd`, never by pattern.** `pkill -f "remote.sh"` has killed an orchestrator's own
+   shell (trip-up 79), and a stale `until ! pgrep -f "remote.sh sim-baseline-record"` waiter from a **deleted** worktree
+   was still matching that pattern **1 day 21 hours** later.
+2. **Kill the remote side FIRST, then the local wrapper.** The other order re-creates the orphan you are removing.
+3. **"I cannot account for this process" is a reason to LEAVE IT ALONE, not a reason to include it** (combat's rule,
+   after assuming anything older than its launch was stale and killing its own live chain — exit 143).
+4. **Kill only a PID you can tie to a specific launch by its start time.** Age alone is not evidence: checks legitimately
+   run 30–50 minutes.

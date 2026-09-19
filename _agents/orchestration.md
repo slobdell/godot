@@ -1664,3 +1664,29 @@ The kickoff prompt is one line; this section is the rest.
        — **20 m outside the wall on every map ever shipped**, invisible because a square drawn slightly too large around a
        square arena still looks like a square arena. **The hexagon would have made a long-standing bug look like a new
        one.**
+114. **"I cannot account for this process" is a reason to leave it alone, not a reason to include it.** combat, having
+     positively identified which PID belonged to its live gate run, **killed its neighbours anyway on the assumption that
+     anything older than the launch was stale — and one of them was the live chain.** Exit 143, gate lost, an hour gone.
+     **Age is not evidence of staleness here**: checks legitimately run 30–50 minutes, so "older than my launch" describes
+     most healthy runs on the machine.
+     **The underlying footgun is real and is nobody's mistake:** `remote.sh` dying locally does **not** stop the `make` it
+     started on builder0, so every killed or SIGTERMed run leaves a slot holder and a tree that the next `rsync --delete`
+     overwrites underneath it. **A wrapper that trapped its own exit and stopped the remote job would remove the entire
+     class** — round-8 work, deliberately not attempted mid-round, because `remote.sh` is the one tool all six streams
+     depend on. **Do not rewrite the shared build tool while six streams are mid-check**; that is the same error as
+     approving a change by evaluating the change and not its surroundings.
+115. **Guard the treatment, not just the setup — and the general form is per-COMPARISON, not per-run.** arena, applying
+     combat's positive control to its own `arena_series`: the assertion *"the match ran on the arena I asked for"* had
+     existed since round 5, because `Arena` falls back to `foundry` on a layout it cannot load. **What was missing is that
+     a fairness result is a *paired difference*, and a `--swap-bases` that silently failed to apply would leave two
+     identical arms and a perfectly plausible "no south advantage."**
+     **That is the answer we hope for, reached by the treatment never happening.**
+     - **An assertion about the stage is not an assertion about the experiment.** Which map, which build, which commit —
+       all necessary, none sufficient.
+     - combat's own guard *"asks whether the treatment engaged in ONE run, and it would pass happily on two arms that were
+       secretly the same arm."* **Neither tool checks that two arms actually differ, and that is the version worth
+       building**: a comparison must assert that its arms are distinguishable before it reports a difference between them.
+     - **Three distinct defects caught by this one idea in a single day, across three streams' instruments:** a treatment
+       arm with no treatment, a control arm with immobilised units, and a paired comparison whose pairing might not have
+       happened. **The third is the one nobody would find by inspection, because two identical arms produce a beautifully
+       clean null.**
