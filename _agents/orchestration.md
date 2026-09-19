@@ -1191,3 +1191,24 @@ The kickoff prompt is one line; this section is the rest.
     - **When a fix and an unrelated regression-repair are in the same working tree, make them separate commits**, so the
       orchestrator can merge the one that unblocks another stream without waiting on the one that is still validating.
     - Corollary for me: **when a stream reports a result, ask where the code is in the same breath as asking the hash.**
+87. **A readiness check built on a *property* rather than an *identity* passes for the wrong object — and making the
+    property more specific never ends.** arena's words, and they are the best-stated instrument lesson this project has
+    produced:
+    > *"`ArenaFixture` could not tell two arenas apart when both came from the same base layout. Its readiness probe was
+    > 'a point inside this layout's cover is off the mesh' — equally true of the **previous** arena's navmesh. So a test
+    > that varies only `terrain` or `shape` silently measured the arena before it. That is the fourth time this stream has
+    > met the stale-navmesh bug, and the fix is finally general: wait until the map's regions are exactly this arena's,
+    > which is identity rather than a proxy. Every previous fix of mine made the property more specific; only identity
+    > ends it."*
+    **The escalating-specificity path has no end, because every property is shared with something.** Four rounds of
+    tightening a proxy, and the bug returned each time under a narrower disguise. Wherever a test waits for a thing to be
+    ready, **wait on the thing's identity** — this map's region RIDs, this build's hash, this commit — not on a symptom
+    that the right object and the previous object both exhibit.
+    Two companions from the same message, both mistakes about **what the system already does** rather than what it should:
+    - arena asserted the navmesh stops at the perimeter wall. **It never has** — on foundry the mesh is still 0.5 m away
+      at x = 155, 35 m outside the wall; units simply cannot reach it because the walls enclose them. **A test asserting a
+      behaviour the game has never had is worse than no test**: it passes the day it is written and fails the first time
+      somebody fixes something unrelated.
+    - the arena bound is a **square extent, not a radius** — today's square already has corners 164 m from the centre, so
+      "fit inside a 120 m circle" would have shrunk the existing arena for no reason. **Check whether a limit is an
+      extent or a radius before building geometry against it.**
