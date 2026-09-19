@@ -859,3 +859,37 @@ The kickoff prompt is one line; this section is the rest.
     implicate that culprit.** A test that asks "did X change this?" by consulting a global constant is not asking about
     X — it is asking "is the world as it was", and will blame X for everyone else's changes. And for anyone reading a
     red check: **three failures reporting the same number are one failure**, not three.
+66. **A derived value copied into a second place is a stale value waiting for its moment — and one stream hit this
+    four times in a single day.** Round 6, arena, each instance the same bug in a different costume:
+    1. `exposure()` hard-coding a **110 m** watcher range — a weapon-range assumption wearing a sightline's clothes,
+       which had inverted a *published* flanking conclusion (1.8–2.1× detour became 1.0–1.1× once derived).
+    2. `UNITS`/`ARENAS`/`RUNS` as bare make knobs another file's default could reach (with combat's `VARIANTS`).
+    3. A plot titled `direct_route_exposure` — the legacy measure — printed beside a card quoting the derived one:
+       **two different numbers with the same name on one page**, which is how a reader learns to distrust both.
+    4. A **"posted" reach hand-set to 70 m** from "a cannon's full range", where the catalog's own median of
+       `min(full range, sight radius)` is **60 m** — several units cannot *see* as far as they can shoot, and the
+       sight cap that the *idle* figure applied had not been applied to the posted one. **It inflated every posting
+       figure by about half.**
+    The fix was the same every time and the stream said so: **put it in one place and read it.** `make arena-reach`
+    now runs `Engagement.covering_range()` and writes a file the report reads, with the constants demoted to a
+    labelled fallback and a flag to override.
+    Two instructions:
+    - **A number you did not compute in the place you use it is a copy, whatever it looks like.** A named constant, a
+      make default, a plot title, a figure in prose — all copies. Derive it, or read it from where it is derived.
+    - **When a re-derivation moves a number, find out whose error it was before relaying blame.** Here the
+      orchestrator had warned that combat's proposal might shift arena's figures; the figure that actually shifted was
+      arena's own hand-set constant, and combat's derivation was right all along.
+67. **A consistent failure on one machine and an intermittent one on another are usually one bug, differing only in
+    timing.** Round 6: `shell-playtest`'s faction-click checks failed **every** run on builder0 and **one in seven** on
+    the laptop. The laptop case had been filed as a stray-mouse artefact (trip-up 32) and the builder0 case as "a click
+    or resolution issue on builder0" — two environmental explanations for one defect. The cause was neither: the
+    **loading screen** is a full-screen, click-stopping `CanvasLayer` on the root, and it was **still fading out** when
+    the playtest clicked. builder0's ~1 fps desktop made the race certain; the laptop lost it occasionally.
+    Two instructions:
+    - **When the same check fails always here and sometimes there, do not reach for two environment stories.** Look for
+      a race whose window the slower machine widens. "Flaky on A, broken on B" is one of the strongest available hints
+      that a timing window exists.
+    - **A gate that always fails is as uninformative as one that always passes**, and it hides real signal: this one
+      had been red unconditionally on the machine we verify on, which is precisely why a texture leak in another
+      stream's code went unnoticed until a human looked by hand. After this fix `shell-playtest` exits 0 on builder0
+      for the first time — **an always-red check should be treated as an outage, not as a known quirk.**
