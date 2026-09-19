@@ -225,6 +225,39 @@ concentrates the defender's job — **but only while objectives are off the base
 near a base, that pinch turns into a funnel with no way round, which is the boulevard failure in a new shape. Worth
 re-checking when B lands.
 
+### The hexagon must be BIGGER than today's bound, and feel's original number was right
+
+**I argued against growing the arena. I was wrong, and the reason is the spawn block.**
+
+A hexagon inscribed in today's ±120 bound **cannot hold the armies**: measured against foundry's real spawn lists,
+**only 48 of 104 spawn points fit** — the rows at z = 98, 106 and 114 fall outside a flat side that sits at
+z = 103.9. A square keeps its full width all the way to the wall; a hexagon does not, and the spawn block lives
+exactly where the hexagon narrows.
+
+| circumradius | side | modules @ 23.07 m | area vs square | spawn points inside |
+|---|---|---|---|---|
+| 120.0 (today's bound) | 120.0 | 5.20 | 65% | **48 / 104** |
+| 131.9 (minimum that fits) | 131.9 | 5.72 | 78% | 104 / 104 |
+| **139.7 (feel's 6 modules)** | **139.7** | **exactly 6** | **88%** | **104 / 104** |
+
+**So feel's 139.7 m was right all along, and for a reason neither of us had: it is the smallest clean-tiling hexagon
+that can hold the spawn block.** I had "corrected" it to 120 on a convention argument without checking whether the
+armies fit.
+
+**Two worries this dissolves:**
+
+1. **The area reduction is 12%, not 35%.** My earlier 37,412 m² was for a hexagon too small to play on. At 139.7 it
+   is 50,704 m² against the square's 57,600.
+2. **The approach does not shorten at all.** The spawn rows do not move — they are at z = ±90…114 either way — so
+   base-to-base is unchanged, and the concern that a smaller arena would compound with *"units see each other and
+   then everyone just starts firing"* **does not arise by construction.** The contact-time measurement is still
+   worth taking, but its prediction is now "no change", and a surprise would mean something other than scale.
+
+**The cost is real and is option 3's cost:** `Match.ARENA_HALF_SIZE` 120 → 140 and `DRIVABLE_LIMIT` 116 → ~136,
+which are combat's, plus the radar, the fog and the sim baseline. **But it now has three independent reasons
+instead of one aesthetic one** — the armies fit, the art tiles, and the arena keeps its scale — and that is a
+different proposition from "five things move so one number can stay round".
+
 ### It is a three-way seam, not two
 
 **My polygon, feel's stands, control's maths.** The stands' profile (heights by distance out from the wall) is
