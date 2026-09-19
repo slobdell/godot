@@ -6,6 +6,9 @@ extends RefCounted
 ## Until round 7 control measured feel's `kit_stands` by hand into `RtsCamera.STANDS_PROFILE`; the moment the venue
 ## changes shape or module that copy goes stale without a sound (lesson 66). This is computed from the model the
 ## dressing actually places and from the dressing's own placement constants, so it moves when the art moves.
+## It agrees with the old hand measurement at the back (22.2 m out, 15.7 m) and NOT at the front: the kit stands
+## 9.6 m tall from 4.2 m out where the hand values had 7 m at 2.3 m, rising in a straight line. The kit is right;
+## control's switch to this caught a camera case that only passed on the too-low front.
 
 ## The dressing places each module this far behind the wall's inner face: the wall's thickness plus a 0.3 m gap
 ## (ArenaDressing: `half + WALL_THICK / 2 + size.z / 2 + 0.3`, where `half` is the wall's centre line, 1 m out).

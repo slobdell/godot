@@ -57,11 +57,17 @@ func test_a_gate_span_gets_its_gate_and_no_stands() -> void:
 
 
 func test_the_stands_profile_is_published_from_the_model_the_dressing_places() -> void:
+	## What this checks: the profile's shape (the wall's top first, going out and never lower) and its two ends against
+	## the placed kit (back 22.2 m out, 15.7 m tall). It does NOT reproduce control's old hand measurement across the
+	## front, and must not: that had 7 m at 2.3 m out, while the kit stands 9.6 m tall from 4.2 m out, and control's
+	## own camera test caught the difference when it switched (round 7). An earlier version of this test was described
+	## as "reproducing" the hand values while checking only the ends.
 	var points := StandsProfile.points()
 	assert_true(points.size() >= 4, "several points out from the wall")
 	assert_eq(points[0], Vector2(2.0, 3.0), "starting with the wall's own top")
 	for i in range(1, points.size()):
 		assert_true(points[i].x > points[i - 1].x and points[i].y >= points[i - 1].y, "going out, never lower")
-	assert_near(points[1].x, 2.0 + StandsProfile.GAP + 2.0, 0.6, "the first slice just past the gap behind the wall")
-	assert_near(points[points.size() - 1].x, 22.2, 1.5, "the back as control measured it by hand (22.2 m)")
-	assert_near(points[points.size() - 1].y, 15.7, 0.3, "and 15.7 m tall")
+	assert_near(points[points.size() - 1].x, 22.2, 1.5, "the back of the stands, 22.2 m out")
+	assert_near(points[points.size() - 1].y, 15.7, 0.3, "15.7 m tall")
+	var front := points[1]
+	assert_true(front.x < 6.0 and front.y > 9.0, "the front rows are already over 9 m high within 6 m of the wall (%s)" % front)
