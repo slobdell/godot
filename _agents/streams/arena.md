@@ -124,6 +124,33 @@ make audio-pytest                                                # 16 tests, ~30
 Both green on the round-7 perimeter and terrain work (2026-09-19), so the hexagon's edge spans do not disturb the
 announcer's arena-name handling.
 
+## Round 7 state (2026-09-19, branch merged with main at `4977e991`)
+
+**Built, tested, and needing nobody:**
+
+| Item | What exists |
+|---|---|
+| **A** water / pits / bridges | `layout.terrain`, carved floor + 0.9 m rim cut at the decks. Measured before built (`make water-probe`) |
+| **C** cost-and-reward metric | `make arena-report` emits a `DECISION` line. **Every shipping arena reads `spread 0.00`** |
+| **D** perimeter polygon + spans | `Arena.perimeter()` / `perimeter_edges()`, consumed by control (`7dd14aca`) and feel. Hexagon builds and bakes; mirrored trips match to 0.05 m |
+| **M4** `contains` / `clamp_into` | Nearest-boundary, allocation-free, answers for the square too, knows about water |
+
+Local: arena 64/64, announcer 58/58, audio 16/16, tactics 10/10, objectives 3/3.
+
+**Blocked on other streams, and both blocks are real rather than cautious:**
+
+1. **The hexagon cannot validate until `Match.ARENA_HALF_SIZE` goes 120 → 140** (combat's). A hexagon at 120 holds
+   only 48 of 104 spawn points, and `Arena.validate()` now refuses it — so a map authored at 120 would have to be
+   authored again. **This is why Pit and Yard are untouched.**
+2. **Off-centre objectives cannot ship until combat's N7 read-through reaches `main`.** `Arena.objectives_of()`
+   exists but **nothing in `game/` consumes it**: `Match.in_control_zone` is still static and central, and squad's
+   `Objectives` shim deliberately **errors** for a non-central layout rather than answering plausibly. That guard
+   is the right design — a CPU competing for the wrong ground looks completely functional — but it means authoring
+   a pair now produces a layout that refuses to run.
+
+**So the next map work is gated, and the gate is not mine.** When both land: author Pit and Yard on the hexagon
+with a mirrored objective pair, and the `DECISION` spread is how to tell whether it worked.
+
 ## A local `make check` does NOT check the simulation baseline (round 7)
 
 **`sim-baseline` SKIPS on this laptop and always will.** The baseline file is keyed by glibc version, builder0 is
