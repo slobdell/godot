@@ -163,6 +163,9 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | K1 `follow` + `slot` | done (squad's ask). One unit, the leader's frame, a sliding goal (≤ 0.52 m/tick at 90°/s) | `test_control_follow_slot` |
 | Perimeter cutaway | done against arena's `perimeter()`/`perimeter_edges()` (by name; square fallback) with positional spans | `test_rts_camera` hexagon test |
 | Portrait + railing fixes | nameplate hidden, hull fills the cell; railing (7 m) counts for the cut | builder0 frame |
+| Card help shows itself once | Screen's animated tooltip opens by itself in the first planning pause; any press dismisses it (`9c889025`) | `test_control_panel` |
+| Radar draws the arena's outline | the perimeter polygon, else the active layout's bound (`4f7371ef`) | `test_radar` |
+| **Order progress on screen** (orchestrator, from nav/squad churn: weaving must read as *en route*) | done (`53a2af87`). For the selection, each order — or the squad's task, not its leader's moves — keeps a **pin**: ground ring at the ordered point, a stalk to the task's own symbol (card/preview glyph) on a dark disc, and a plate reading `ATTACK-MOVE · 2/3 there · 37 m`. A squad task adds a lead line from its middle (direct orders already have each unit's dashed line). Looked at the lead's 21°/49 m/FOV 35 pose, 1280×720 (laptop): readable over the arena floor; the first draft (12 px text, 20 px glyph, no plate) was not. 0.17 ms/frame at 30 units under orders (laptop); the whole control frame 1.84–1.96 ms of 2.0 (laptop, ~2.75× faster on builder0). **Wants the lead's eye on a touchpad.** | `test_control_order_marks`, `test_control_scale` |
 
 **Merge here when #17 is green:** `a1d92ad6` (main `bd7ebae6` merged in). Not done: nothing from the brief; open: the
 preview's start row crosses on the way (cosmetic), feel's stands profile as data (control still measures kit_stands).
