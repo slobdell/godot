@@ -240,6 +240,13 @@ func _sample_inplace() -> void:
 			var net_turn := absf(wrapf(float(trail[-1][2]) - float(trail[0][2]), -180.0, 180.0))
 			detail["turned" if net_turn >= INPLACE_DEG else "wobble"] += 1
 			detail["crept"] += 1 if travelled >= INPLACE_M else 0
+			# Where the event happened: the mover's phase ("none" = no Movement order, e.g. a brain steering it directly)
+			# and whether the plant was in its wheeled creep (K-turn legs) at that tick.
+			var phase := "phase:" + String(Movement.state(tank).get("phase", "none"))
+			detail[phase] = int(detail.get(phase, 0)) + 1
+			var motion: Variant = tank.get("_motion")
+			var creeping := motion is Dictionary and int((motion as Dictionary).get("creep_dir", 0)) != 0
+			detail["creeping"] = int(detail.get("creeping", 0)) + (1 if creeping else 0)
 			inplace_detail[tank.unit_id] = detail
 
 
