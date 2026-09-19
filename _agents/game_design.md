@@ -692,12 +692,32 @@ Both are the same defect: **the map offers no reason to be somewhere risky.** So
 > other — the prize goes where the risk is.**
 
 What follows for map authoring, and these are testable claims rather than taste:
-0. **The measurement we have scores only half of this, and arena flagged it.** Its X2 exposure analysis scores a route
+0. **THE METRIC: cost and reward as two axes, not one score** (arena, 2026-09-19, `b2f54bd1`). Cost is what the
+   existing analysis measures — exposure, detour. **Reward is newly computable now that objectives are data:** *what does
+   arriving here let me hold or deny?*
+
+   | | low reward | high reward |
+   |---|---|---|
+   | **low cost** | **scenery** — *and every arena we ship is full of these, which the old metric has been calling flanks* | **dominant** — free and decisive; a design bug |
+   | **high cost** | **trap** | **the one we want** — the lead's own words about the bridge |
+
+   **A map's quality is how much of its route space sits bottom-right.** That replaces the bare exposure figure in
+   `arena-report`.
+   **And the share-of-objectives scoring sharpens it:** reward is not a property of a position, it is a property of a
+   position *given what the other side is doing*. Holding both of a mirrored pair at full rate and one at half is what
+   makes *"advantageous ground"* a quantity rather than a mood.
+   **The model comes with its own falsification test, chosen before five maps were built on it:** measure **unit-time on
+   routes classified high-cost/high-reward.** If units do not take the route the map says is interesting, **the model is
+   wrong** — and that is the thing to learn before the maps exist, not after.
+   **Placement rules, recorded so a hexagon cannot quietly acquire the boulevard failure:** no objective inside a base's
+   approach funnel, and the test is **at least two approach corridors that do not share their final leg and differ
+   materially in exposure** — one corridor is a funnel, and identical exposure is a false choice.
+1. **The measurement we had scored only half of this, and arena flagged it.** Its X2 exposure analysis scores a route
    by **what it costs** (exposure, detour) and never by **what it reaches**. So it reports that every map already offers
    cheap covered flanks — 1.0–1.1× detour everywhere — when the lead's framing says the cheapness is the *symptom*:
    **a route that is cheap and leads nowhere worth going is not a tactical option, it is scenery.** Any round-7 metric
    for this needs a term for *what is at the end of the route*, or it will keep reporting that the maps are already fine.
-1. **An objective must sit on ground you have to cross something to reach**, or the crossing is decoration. arena's
+2. **An objective must sit on ground you have to cross something to reach**, or the crossing is decoration. arena's
    measurement — covered flanking routes already cost only a **1.0–1.1× detour** on every map and nobody takes them —
    is exactly this: the routes are cheap and lead nowhere worth going.
 2. **Contested ground must be *better* than your own safe ground**, or a rational player never leaves. Symmetric safe
