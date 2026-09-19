@@ -854,6 +854,40 @@ implement is a good sign, because when it does eventually work it will look and 
 authorising research and real algorithms rather than patches. Formations that *look* sophisticated are the goal; a unit
 that cannot hold a slot while fighting cannot ever deliver that.
 
+#### RESOLVED: the scouts that ram their targets (2026-09-19)
+
+> *"Scouts are just running directly into their targets and then they have to turn around to get a fix again."*
+
+**It was neither a pathing bug nor a range bug. It was a movement *style* we designed in round 3 and it did exactly what
+the lead describes.** `CombatMotion`'s `run` style, for a fixed gun: drive straight at the target, veer past its flank
+only in the last 19 m, break off at **9 m absolute — whatever the weapon's band** — then drive **away to 22 m with the gun
+pointing backwards** and turn round. His sentence is a description of the algorithm.
+
+**The fix is the standard gun-truck pattern, shoot-and-scoot, as a new `CombatMotion` style `standoff`:** arrive at a
+firing position inside the effective band, **stop** (Gunnery already lays a stopped fixed mount's hull onto its target),
+fire, slide *along* the band when rounds come in, and never enter the 6 m ram gap.
+
+**Measured on builder0 — one scout ordered onto a durable tank, 25 s:**
+
+| | round-3 `run` | `standoff` |
+|---|---|---|
+| closest approach | 3.0 m | **27.7 m** |
+| nose on target | 17% | **79%** |
+| shots fired | 29 | **211** |
+| time inside the effective band | — | **91%** |
+
+**Seven times the shots.** The unit was previously spending most of its life driving rather than fighting, which is why it
+read as *dumb* rather than as *badly positioned*. `--nav-off=standoff` restores the old behaviour for A/B.
+
+**The design lesson, and it generalises past scouts:** *the unit whose weapon cannot turn must place its whole vehicle
+where the weapon needs to be, and then stop.* A fixed gun is a positioning problem, not an aiming one. Round 3's `run`
+style treated it as a strafing problem, which is a design for a vehicle that can shoot sideways.
+
+**And a test was asserting the bug.** `test_a_scout_makes_attack_runs_on_a_tank` asserted `runs >= 3`; the fixed scout
+makes **zero**. A scenario test written from a design intention pins that intention in place, and the intention was
+wrong — so the assertion becomes *"does not close inside the ram gap, and spends the majority of its time in band"*, which
+is the property the lead actually complained about and the one that can regress.
+
 ### ANSWERED: why he could not tell which way his units were facing (2026-09-19)
 
 *"I couldn't tell what direction they were facing."* **Facing was broken at every layer, and two streams found the halves

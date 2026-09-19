@@ -1175,3 +1175,19 @@ The kickoff prompt is one line; this section is the rest.
       until each row is confirmed by the stream that owns the code. Mark unconfirmed rows as unconfirmed.
     - **Keep the corrected row, struck through, rather than deleting it.** Same treatment as the retracted range finding
       in `game_design.md`: a deleted wrong answer gets re-derived, a visible wrong answer does not.
+86. **A hand-over is only as available as its least-committed part, and the reference-patch mechanism hid that.** Round 7:
+    nav diagnosed, fixed and *measured* the lead's loudest bug — scouts ramming their targets — then left a patch at
+    `_agents/streams/references/nav/<name>.patch` for squad, because the hook lands in squad's file. squad accepted the
+    design, agreed the test inversion, and stopped: **the patch references `CombatMotion.fixed_style`, which existed only
+    in nav's working tree.** Not on `stream/nav`, not on `main`. squad could not compile, so it could not start.
+    The mechanism was mine and so is the gap: I introduced reference patches so no stream would edit another's file, and
+    **I never said the patch's dependencies must be committed first.**
+    Worse, the *number* had already travelled. The measurement was written into `algorithms.md` and `game_design.md`
+    while the code sat uncommitted — **a documented result nobody can reproduce**, which is the worst way to lose work.
+    Rules:
+    - **A reference patch must name the commit that provides every symbol it calls.** No commit, no hand-over.
+    - **Commit before you measure, or at the latest before you report.** A commit is not a claim that the work is
+      finished; it is the difference between a result and an anecdote.
+    - **When a fix and an unrelated regression-repair are in the same working tree, make them separate commits**, so the
+      orchestrator can merge the one that unblocks another stream without waiting on the one that is still validating.
+    - Corollary for me: **when a stream reports a result, ask where the code is in the same breath as asking the hash.**
