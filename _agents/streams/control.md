@@ -170,7 +170,9 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 **MERGED: `baf04ead` as main `fa859dce`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
 of the ratio timing tests; the cutaway reads feel's `StandsProfile` by path when the build has it, hand measurement as
 fallback; the kit's front is 9.64 m from 4.2 m out, not the measured 7 m at 2.3 m, so one test case moved 30° → 40°).
-#21 queued. **Open:** look at the cutaway at the lead's pose once `StandsProfile` is on main (it cuts the front of the stands
+#21 on it: RED on `test_radar`'s outline test only (1191/1, builder0), the static-leak main fixed at `5cc17ee6`;
+smokes never ran. **Candidate now `c7f9cd4e`** (main through `5cc17ee6` merged at `af9e4f1e`, plus the same leak guarded
+in `test_rts_camera`, positive-controlled): #22 running. **Open:** look at the cutaway at the lead's pose once `StandsProfile` is on main (it cuts the front of the stands
 slightly more often near the wall); round 8: timing tests to measurements (verification.md policy).
 Was: **MERGE HERE: `baf04ead` — #20 GREEN (builder0): `make check exited 0`, 1162 passed / 0 failed, `sim-baseline passed:
 e38fd65b6b6ead3f`, every target through `audio-check passed`** (main `b70608d6` merged in). After it, unchecked:
