@@ -6,6 +6,13 @@ extends TestCase
 const Fixture := preload("res://tests/support/control_fixture.gd")
 
 
+## The units' own brains really fight in this fixture, and a target killed during the grace takes the order with it
+## (seen: target health 0, the verdict ""). These tests are about the HUD's verdict, not the fight.
+func _keep_alive(f: Fixture, unit_name: String) -> void:
+	f.tank(unit_name).max_health = 1_000_000
+	f.tank(unit_name).health = 1_000_000
+
+
 func _wait_s(seconds: float) -> void:
 	var until := Time.get_ticks_msec() + int(seconds * 1000.0)
 	while Time.get_ticks_msec() < until:
@@ -14,7 +21,8 @@ func _wait_s(seconds: float) -> void:
 
 func test_a_unit_shooting_something_else_says_so() -> void:
 	var f := Fixture.new(self)
-	await f.build(true)
+	await f.build(false)  # guns are stubbed
+	_keep_alive(f, "Rust_Alpha_1")
 	var shooting := {"Green_Alpha_1": "Rust_Other_9"}  # what each gun is actually on (stubbed: the lead's case)
 	f.controls.engaged_of = func(unit_name: String) -> String: return String(shooting.get(unit_name, ""))
 	await f.select(["Green_Alpha_1"])
@@ -78,7 +86,8 @@ func test_an_obeyed_attack_counts_its_gun_on_target() -> void:
 ## member to the target the player chose.
 func test_a_squad_told_to_attack_is_held_to_it() -> void:
 	var f := Fixture.new(self)
-	await f.build(true)
+	await f.build(false)  # guns are stubbed
+	_keep_alive(f, "Rust_Alpha_1")
 	f.controls.elements = Elements.install(f.game_match, f.orders)
 	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"])
 	var shooting := {"Green_Alpha_1": "Rust_Alpha_1", "Green_Alpha_2": "Rust_Other_9", "Green_Alpha_3": "Rust_Other_9"}
@@ -107,3 +116,24 @@ func test_a_task_refused_on_the_spot_is_announced() -> void:
 	var error := f.controls.order_selection("screen", {"to": [0.0, -30.0]})
 	assert_true(error != "", "the task is refused (%s)" % error)
 	assert_eq(heard, [error], "and the refusal is announced, not just returned")
+
+
+## squad's cb02c0ef: a flanker's order names the target while it swings round. That is carrying the order out.
+func test_a_member_moving_round_to_the_target_is_not_refusing() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)  # guns are stubbed
+	_keep_alive(f, "Rust_Alpha_1")
+	var shooting := {"Green_Alpha_1": "Rust_Alpha_1", "Green_Alpha_2": ""}
+	f.controls.engaged_of = func(unit_name: String) -> String: return String(shooting.get(unit_name, ""))
+	await f.select(["Green_Alpha_1"])
+	f.controls.order_selection("attack", {"target": "Rust_Alpha_1"})
+	# Green_Alpha_2 is a flanker on its way round: a move whose order names the target (as squad's plans now issue).
+	f.orders.issue({"units": ["Green_Alpha_2"], "verb": "move", "to": [40.0, 10.0], "target": "Rust_Alpha_1",
+			"source": "element"}, Match.Team.GREEN)
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await _wait_s(RtsControls.COMPLY_GRACE_S + 0.3)
+	assert_true(f.controls.attack_shortfall("Green_Alpha_2", {"target": "Rust_Alpha_1"}) == "",
+			"a unit moving round to the target is carrying the order out")
+	shooting["Green_Alpha_2"] = "Rust_Other_9"
+	assert_true(String(f.controls.attack_shortfall("Green_Alpha_2", {"target": "Rust_Alpha_1"})).begins_with("FIRING ON"),
+			"but one whose gun is on something else is not (squad: 'a real NOT COMPLYING'; target health %d)" % f.tank("Rust_Alpha_1").health)

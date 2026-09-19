@@ -1135,6 +1135,8 @@ func attack_shortfall(unit_name: String, order: Dictionary) -> String:
 		var other := game_match.tanks.get_node_or_null(NodePath(engaged)) as Tank
 		var what := String(Units.stat(other.unit_id, "display_name", other.unit_id)).to_upper() if other != null else engaged
 		return "FIRING ON %s" % what
+	if _moving_round(unit_name, String(target.name)):
+		return ""  # its order names the target and it is on its way round to it: carrying the order out
 	if not game_match.is_visible_to(team, target):
 		return "CAN'T SEE TARGET"
 	var out_of_range := tank.global_position.distance_to(target.global_position) > float(tank.weapon.get("range", 0.0))
@@ -1153,6 +1155,15 @@ func attack_intent(unit_name: String) -> String:
 	if element != null and String(element.task.get("verb", "")) == "attack":
 		return String(element.task.get("target", ""))
 	return ""
+
+
+## squad's cb02c0ef: every member of an attack task carries an order naming the target (attack, attack-move, or a move
+## swinging round the flank with its gun laid on it). A member on such a move with its gun on nothing else is carrying
+## the order out ("moving round"), not refusing it.
+func _moving_round(unit_name: String, target_name: String) -> bool:
+	var order := orders.current(unit_name)
+	return String(order.get("target", "")) == target_name and String(order.get("verb", "")) in ["move", "attack_move"] \
+			and engaged_target(unit_name) == ""
 
 
 func _update_compliance(delta: float) -> void:
@@ -1245,6 +1256,8 @@ func _count_into(mark: Dictionary, unit_name: String, order: Dictionary) -> void
 		# An attack pin counts the guns that are really on its target (round 8), not who has arrived anywhere.
 		if engaged_target(unit_name) == String(mark["target"]):
 			mark["arrived"] = int(mark.get("arrived", 0)) + 1
+		elif _moving_round(unit_name, String(mark["target"])):
+			mark["moving"] = int(mark.get("moving", 0)) + 1
 		elif _unmet.has(unit_name) and float(_unmet[unit_name]["s"]) >= COMPLY_GRACE_S:
 			mark["refusing"] = int(mark.get("refusing", 0)) + 1
 		return
@@ -1265,7 +1278,10 @@ func _finish_mark(mark: Dictionary) -> Dictionary:
 func order_mark_label(mark: Dictionary) -> String:
 	var words := String(ORDER_VERB_NAMES.get(mark["verb"], String(mark["verb"]).to_upper()))
 	if mark.has("target"):
+		# squad's wording: how many are on it, how many are on their way round, how many are not doing it.
 		var line := "%s · %d/%d on target" % [words, mark["arrived"], mark["units"]]
+		if int(mark.get("moving", 0)) > 0:
+			line += " · %d moving round" % int(mark["moving"])
 		return line + (" · %d NOT COMPLYING" % int(mark["refusing"]) if int(mark.get("refusing", 0)) > 0 else "")
 	var left := (mark["from"] as Vector3).distance_to(mark["point"])
 	if int(mark["arrived"]) >= int(mark["units"]):
