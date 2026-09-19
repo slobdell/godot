@@ -1182,7 +1182,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 ## K1: keep only the options the order's verb allows (ORDER_OPTIONS) and add the ones that carry it out. A move,
 ## hold, or follow is absolute; an attack fights only its target (any way the brain likes) and chases it when it's
-## out of sight; an attack-move drives on unless a fight on the way outscores ATTACK_MOVE_WEIGHT; an idle unit fights
+## out of sight; an attack-move drives on unless a fight on the way outscores ATTACK_MOVE_WEIGHT (only its named target,
+## when it has one); an idle unit fights
 ## around its post (the situation's objective) and never roams off to scout, contest, or resupply.
 static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: bool, out_of_ammo: bool) -> Array:
 	var verb: String = o["verb"]
@@ -1216,6 +1217,11 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 					if not critical:
 						continue
 					candidate["score"] = 0.99
+				elif target != "" and candidate["target"] != "" and candidate["target"] != target:
+					# Round 8: an attack-move that names a target (an element maneuvering onto the one its task names)
+					# fights that one and drives past the rest: the lead's "they shoot whatever they were already
+					# shooting at" was the maneuver half of a drill picking fights on the way.
+					continue
 				elif candidate["target"] in in_reach:
 					candidate["score"] = ATTACK_MOVE_FIGHT + float(candidate["score"])  # met on the way: fight it
 			"idle":
@@ -1741,7 +1747,12 @@ func _act(s: Dictionary) -> void:
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
 				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
-			_order_weapon({"type": "fire_at_will"})
+			# Round 8: a move that names a target (a crew its leader swings round onto the ordered target) lays its gun on
+			# that one while it drives, not on whatever is nearest; fire at will when it can't bear.
+			if String(o.get("target", "")) != "":
+				_order_weapon({"type": "target", "name": String(o["target"]), "fallback": true})
+			else:
+				_order_weapon({"type": "fire_at_will"})
 		"PURSUE":
 			var o: Dictionary = s["order"]
 			why = TankBrain._join(why, "ordered, closing in")
