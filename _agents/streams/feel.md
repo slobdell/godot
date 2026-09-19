@@ -253,6 +253,15 @@ not).
   concourse, streets, sodium lamps), shared through `city_ground.gdshaderinc` with a new `CityGround` plane out to the
   skyline for cameras that see past the stands.
 
+### "The audio is defaulted to off" (the lead's playtest; fixed, `b00b8ff9`)
+The music director and the booth read a missing `--music`/`--announcer` as OFF, and only `make skirmish`/`audio-pass`
+passed them: the title's SKIRMISH, the garage's FIGHT and a bare launch came up with no booth (so no match mood for
+the crowd), no announcer and no music. `AudioDefaults`: a windowed launch sounds unless told otherwise; headless,
+`--mute` and the title's backdrop fight stay silent. `make audio-launch-smoke` (needs a display) drives title →
+SKIRMISH → faction menu → FIGHT with no audio flags: fails on the old code, passes on the fix (builder0).
+**Unexplained:** silence through `make skirmish` itself does not reproduce (its flags survive FIGHT). Asked how he
+launched.
+
 ### X5 — the loading screen's voice (done on my side, `1badf779`)
 `LoadingVoice`: murmur fades up at FIGHT, a roar as the lights come up, hands over to the match's crowd. **Request to
 control** (relayed by the orchestrator): `LoadingVoice.start(tree)` in `LoadingScreen.show_for`,
