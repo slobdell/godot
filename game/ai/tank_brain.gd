@@ -38,6 +38,11 @@ const PIN_HOLD_FRACTION := 0.75
 const PEEK_COMMIT_TICKS := SimClock.TICK_RATE * 2
 ## ...and it's kept at least this long unless something is EMERGENCY_MARGIN× better.
 const MIN_COMMIT_TICKS := SimClock.TICK_RATE * 3 / 4
+## Round 7 (make squad-decisions): the thrash shape is A -> B -> A — going straight back to what it just left (mostly a
+## target flip inside ENGAGE, and ENGAGE <-> SUPPRESS / CLEAR_LANE). For REVISIT_S after leaving an option+target,
+## returning to it scores REVISIT_FACTOR: it has to be clearly better, not a hair better. Seconds off the fixed tick.
+const REVISIT_S := 3.0
+const REVISIT_FACTOR := 0.85
 const EMERGENCY_MARGIN := 1.6
 ## Contacts older than this are investigated rather than engaged.
 const CONTACT_FRESH_TICKS := SimClock.TICK_RATE * 2
@@ -333,6 +338,8 @@ var _peek_tick := -1
 var _held_face := {"type": "stop"}
 var _held_under_fire := false
 var held_moves_refused := 0
+## Round 7: the option+target this brain last LEFT, and when ({} = none): decide() makes flipping straight back harder.
+var _left := {}
 ## X3: the ground SUPPRESS is hosing (null = none), which target it was laid for, and when.
 var _suppress_point: Variant = null
 var _suppress_for := ""
@@ -457,6 +464,9 @@ func think(_delta: float) -> void:
 	if think_tick:
 		_schedule_think()
 	var situation := build_situation()
+	if fresh_order:
+		_left = {}  # a new order is a new question: nothing to flip back to
+	situation["left"] = _left
 	if OrderController.profiling:
 		profile_parts["situation"] = int(profile_parts.get("situation", 0)) + Time.get_ticks_usec() - clock
 		clock = Time.get_ticks_usec()
@@ -468,6 +478,8 @@ func think(_delta: float) -> void:
 	ranked = decision["ranked"]
 	var best: Dictionary = decision["choice"]
 	var same: bool = best["option"] == choice.get("option") and best["target"] == choice.get("target")
+	if not same and not choice.is_empty():
+		_left = {"option": choice["option"], "target": choice["target"], "tick": game_match.tick}
 	best["since"] = choice["since"] if same else game_match.tick
 	choice = best
 	_act(situation)
@@ -1114,6 +1126,15 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 		candidates = TankBrain._obey(candidates, order_context, s, critical, out_of_ammo)
 		keep_slot = 0.0
 
+	# No flip-backs: what it left under REVISIT_S ago has to be clearly better to be chosen again.
+	var left: Dictionary = s.get("left", {})
+	if not left.is_empty() and int(s["tick"]) - int(left["tick"]) < roundi(REVISIT_S * SimClock.TICK_RATE):
+		for candidate in candidates:
+			# Only between fights of the brain's own choosing: going back to the ORDER (MOVE, PURSUE...), to an escape or
+			# to its post is obeying or surviving, and must never be made harder.
+			if FIGHT_OPTIONS.has(candidate["option"]) and candidate["option"] == left["option"] \
+					and candidate["target"] == left["target"]:
+				candidate["score"] *= REVISIT_FACTOR
 	# Commitment: favor the current choice; keep it through MIN_COMMIT_TICKS unless beaten decisively.
 	var committed: Dictionary = {}
 	# An order the tank isn't carrying out yet outranks commitment to anything but itself or survival.
@@ -1295,6 +1316,15 @@ static func _top(candidates: Array, count: int) -> Array:
 
 # ---- Sensing (the only impure part) -----------------------------------------------
 
+## The situation's "control": the objective this tank would contest from where it stands (the nearest its team does not
+## hold, else the nearest it does; Objectives.goal), or null when the match has none.
+static func _control_of(game_match: Match, my_team: int, at: Vector3) -> Variant:
+	var objective := Objectives.goal(game_match, my_team, at)
+	if objective.is_empty():
+		return null
+	return {"center": objective["position"], "radius": float(objective["radius"]), "owner": int(objective["owner"])}
+
+
 func build_situation() -> Dictionary:
 	var lap := Time.get_ticks_usec() if OrderController.profiling else 0
 	var team := tank.team
@@ -1424,8 +1454,7 @@ func build_situation() -> Dictionary:
 		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
-		"control": {"center": Objectives.center(game_match), "radius": Objectives.radius(game_match),
-				"owner": Objectives.owner(game_match)} if Objectives.active(game_match) else null,
+		"control": _control_of(game_match, team, my_position),
 		"order": order_context,
 		"element": element if not element.is_empty() else null,
 		"cooldowns": cooldowns,
@@ -2127,7 +2156,7 @@ static func fire_band(weapon: Dictionary) -> float:
 static func motion_style(unit_id: String) -> String:
 	var profile := Units.profile(unit_id)
 	if String(profile.get("mount", "turret")) == "fixed":
-		return "run"
+		return CombatMotion.fixed_style  # round 7 (nav): "standoff" (shoot-and-scoot); "run" = round 3's attack runs
 	if float((profile.get("armor", {}) as Dictionary).get("front", 0.0)) >= ANGLE_FRONT_ARMOR:
 		return "angle"
 	return "strafe"
@@ -2226,6 +2255,13 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
 	if result.is_empty():
 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
+	if result.get("hold", false):
+		# Round 7 (nav): a fixed gun inside its band stops and lays its hull on the target (Gunnery swings a stopped fixed
+		# mount onto what it engages) instead of driving at it — the lead's "scouts are just running directly into their
+		# targets and then they have to turn around to get a fix again".
+		why = TankBrain._join(why, "holding at standoff")
+		_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": {"type": "stop"}}
+		return _motion_cache["order"]
 	if result.get("dodging", false):
 		why = TankBrain._join(why, "dodging")
 	if result.get("beaten", false):
@@ -2235,6 +2271,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	match style:
 		"run":
 			why = TankBrain._join(why, "attack run" if _run_phase == "run" else "breaking away")
+		"standoff":
+			why = TankBrain._join(why, "moving to a firing position")
 		"angle":
 			why = TankBrain._join(why, "weaving, front armor on it")
 		_:

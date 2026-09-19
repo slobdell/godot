@@ -16,7 +16,7 @@ extends RefCounted
 ## Room left between neighbouring squads, in the squads' own (packed) spacings: at least this, so the gap between two
 ## squads always reads as wider than the gaps inside one. And the tightest a squad is packed to fit the zone (hulls are
 ## 2.6 x 4 m).
-const GAP_SPACINGS := 2.0
+const GAP_SPACINGS := 2.5
 const MIN_SPACING_M := 5.0
 ## The front rank stands this far inside the zone's front edge, and the last rank this far inside its back edge (and
 ## nothing past the drivable limit: a layout's zone may reach beyond it).
@@ -24,11 +24,19 @@ const FRONT_MARGIN_M := 4.0
 const BACK_MARGIN_M := 4.0
 ## An army waiting for orders stands in an ASSEMBLY area, tighter than it moves: a squad starts at most this far between
 ## vehicles (hulls are ~4 m long), and opens out to its own spacing when it is ordered to move. The start view frames it.
-const ASSEMBLY_SPACING_M := 8.0
+const ASSEMBLY_SPACING_M := 6.5
+## ...but never less than the squad's longest hull plus this much clear ground (vehicle sizes vary 3x between factions:
+## a gang War Rig is far longer than a scout), and the same for the packing floor.
+const HULL_CLEAR_M := 2.0
+## A widened rank keeps this far off the drivable floor's side edges.
+const SIDE_MARGIN_M := 6.0
 ## Clear ground between one rank of squads and the next (a hull is ~4 m long).
 const RANK_GAP_M := 6.0
-## A squad with no formation of its own starts in this one.
+## A squad with no formation of its own starts in this one; a squad bigger than BLOCK_OVER waits in a compact block
+## (TacticsFormation "block", ~3 x 2 for six), so a full faction army stands in one rank of clearly separate clusters
+## (seen at 34 a side: five wedges of seven needed two ranks, and the second rank merged into the first's gaps).
 const DEFAULT_FORMATION := "wedge"
+const BLOCK_OVER := 4
 ## Only at the very start of a match: never re-lays an army that is already moving.
 const DEPLOY_BY_TICK := 2
 
@@ -51,11 +59,22 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 	# As few ranks of squads as fit: each squad takes the width its own formation needs plus a gap, the rank is centred
 	# (a small army stands together, not strung across the whole zone), spacing is compressed only if a rank will not
 	# fit, and when even the tightest spacing will not, the squads stand in more ranks, the first nearest the enemy.
+	# The zone is where the old spawn grid lived; when an army of big hulls will not fit it, a rank may widen out toward
+	# the drivable floor's edges (the base is open there) rather than stack vehicles against a clamp.
+	var widest := 2.0 * (Match.DRIVABLE_LIMIT - SIDE_MARGIN_M) - 2.0 * absf(center.dot(right))
 	var ranks := 1
 	while ranks < 4 and not _fits(shapes, ranks, Vector2(size.x, _usable_depth(size))):
 		ranks += 1
+	if not _fits(shapes, ranks, Vector2(size.x, _usable_depth(size))):
+		ranks = 1
+		while ranks < 4 and not _fits(shapes, ranks, Vector2(widest, _usable_depth(size))):
+			ranks += 1
+		size = Vector2(widest, size.y)
 	var per_rank := ceili(float(count) / ranks)
 	var rank_depth := _usable_depth(size) / float(ranks)
+	# Each rank stands behind the ACTUAL back of the one in front (a rank packed to the spacing floor can be deeper than
+	# its share of the zone), with RANK_GAP_M between.
+	var line := center + forward * (size.y * 0.5 - FRONT_MARGIN_M)
 	for r in ranks:
 		var row: Array = shapes.slice(r * per_rank, mini((r + 1) * per_rank, count))
 		if row.is_empty():
@@ -64,19 +83,21 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 		var widths: Array = []
 		var total := 0.0
 		for shape: Dictionary in row:
-			var spacing := maxf(float(shape["spacing"]) * scale, MIN_SPACING_M)
+			var spacing := maxf(float(shape["spacing"]) * scale, float(shape["floor"]))
 			var width: float = (float(shape["across"]) + GAP_SPACINGS) * spacing
 			widths.append([spacing, width])
 			total += width
 		# Every squad's front on the rank's line: rank 0 on the zone's front edge (nearest the enemy, where the old spawn
-		# grid filled first), each rank behind the one before. A formation's anchor is its middle, so step back half its depth.
-		var line := center + forward * (size.y * 0.5 - FRONT_MARGIN_M - r * rank_depth)
+		# grid filled first). A formation's anchor is its middle, so step back half its depth.
 		var left := -total * 0.5
+		var rank_back := 0.0
 		for i in row.size():
 			var shape: Dictionary = row[i]
 			var spacing: float = widths[i][0]
-			var anchor: Vector3 = line - forward * float(shape["deep"]) * spacing * 0.5 \
+			# place() centres a shape on its centroid: step back from the line by how far its front slot is ahead of that.
+			var anchor: Vector3 = line - forward * float(shape["front"]) * spacing \
 					+ right * (left + float(widths[i][1]) * 0.5)
+			rank_back = maxf(rank_back, float(shape["deep"]) * spacing)
 			left += float(widths[i][1])
 			for entry in TacticsFormation.place(shape["members"], shape["formation"], anchor, forward, spacing,
 					{"policy": "front", "leader": shape["leader"]}):
@@ -85,6 +106,7 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 				at = Vector3(clampf(at.x, -limit, limit), 0.0, clampf(at.z, -limit, limit))
 				result[String(entry["unit"])] = {"position": at, "facing": forward, "squad": shape["name"],
 						"anchor": anchor, "formation": shape["formation"]}
+		line -= forward * (rank_back + RANK_GAP_M)
 	return result
 
 
@@ -98,26 +120,42 @@ static func _shape_of(squad: Dictionary) -> Dictionary:
 	var shape := String(squad.get("formation", ""))
 	if not TacticsFormation.NAMES.has(shape):
 		shape = DEFAULT_FORMATION
-	shape = TacticsFormation.auto(members.size(), "move", shape)
-	var raw := TacticsFormation.group_offsets(shape, maxi(members.size(), 1), 1.0)
-	return {"name": String(squad["name"]), "members": members, "formation": shape,
+	shape = "block" if members.size() > BLOCK_OVER else TacticsFormation.auto(members.size(), "move", shape)
+	var raw := TacticsFormation.centered(TacticsFormation.group_offsets(shape, maxi(members.size(), 1), 1.0))
+	var ahead := 0.0
+	for slot in raw:
+		ahead = maxf(ahead, -slot.y)
+	var longest := 0.0
+	for member: Dictionary in members:
+		var unit := String(member.get("unit", ""))
+		if Units.exists(unit):
+			var hull: Array = Units.stat(unit, "hull_size", [2.6, 1.8, 4.0])
+			longest = maxf(longest, maxf(float(hull[0]), float(hull[2])))
+	var floor_m := maxf(MIN_SPACING_M, longest + HULL_CLEAR_M)
+	return {"front": ahead, "floor": floor_m, "name": String(squad["name"]), "members": members, "formation": shape,
 			"leader": String(squad.get("leader", "")),
-			"spacing": minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M),
+			"spacing": maxf(minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M), floor_m),
 			"across": _extent(raw, true), "deep": _extent(raw, false)}
 
 
-## Whether `shapes` fit the zone in `ranks` ranks at the tightest spacing.
+## Whether `shapes` fit in `ranks` ranks at their tightest spacing: every rank no wider than size.x, and the ranks'
+## real depths plus the gaps between them no deeper than size.y (the placement stacks them the same way).
 static func _fits(shapes: Array, ranks: int, size: Vector2) -> bool:
 	var per_rank := ceili(float(shapes.size()) / ranks)
+	var depth := 0.0
 	for r in ranks:
+		var row: Array = shapes.slice(r * per_rank, mini((r + 1) * per_rank, shapes.size()))
+		if row.is_empty():
+			continue
 		var width := 0.0
-		for shape: Dictionary in shapes.slice(r * per_rank, mini((r + 1) * per_rank, shapes.size())):
-			width += (float(shape["across"]) + GAP_SPACINGS) * MIN_SPACING_M
-			if float(shape["deep"]) * MIN_SPACING_M > size.y / ranks - RANK_GAP_M:
-				return false
+		var deepest := 0.0
+		for shape: Dictionary in row:
+			width += (float(shape["across"]) + GAP_SPACINGS) * float(shape["floor"])
+			deepest = maxf(deepest, float(shape["deep"]) * float(shape["floor"]))
 		if width > size.x:
 			return false
-	return true
+		depth += deepest + (RANK_GAP_M if r > 0 else 0.0)
+	return depth <= size.y
 
 
 ## How much a rank's squads must be packed (<= 1) to fit its width and depth.

@@ -148,6 +148,20 @@ Nothing blocking. The task palette (N4) goes to him through control's page, not 
 
 _Updated 2026-09-18 by the squad worker._
 
+### Round 7 (after the quota lift, 2026-09-19): the lead's defects
+
+| Item | State |
+|---|---|
+| **The army starts as an army** (the lead: "each squad separated") | `ArmyLayout` (game/tactics), one line at the end of `Match.load_doctrine` (combat approved): squads side by side on the spawn zone's front edge, each in its formation (compact blocks over 4), assembly spacing max(6.5 m, longest hull + 2 m), 2.5 spacings between squads, ranks stacked by real depth, widening toward the drivable edges rather than clamping; no elements formed; facing the enemy. Looked at: `control-scale-shots` at 34 a side shows five separate clusters (radar too). |
+| **Facing honoured end to end** | K1 `facing` reached nothing in the brain; `TankBrain.intended_facing()` (order's facing, else the post's heading), MOVE on arrival and HOLD face it; element tasks take `facing`; ambush 4/4 hulls at its kill zone; `Element.state()` publishes heading + anchor. nav re-measures `make nav-facing` on the green tip (before: 2/30 move, 1/29 hold within 15°). |
+| **Objectives seam** | all six central-control-point call sites ask `Objectives`, which push_errors on an off-centre or second objective; moves to N7's instance API in one file when N7 is on main |
+| **Scout standoff** | nav's `2cae3bda` merged here (orchestrator-authorised); the brain's two hooks; my round-3 `runs >= 3` test inverted (standoff 27.6 m / 83% nose on / 212 shots vs runs 7.2 m / 19% / 35, laptop) |
+| **Attack-move "re-tasks"** | `make squad-decisions`: ~70% are CombatMotion motion inside one decision (nav's), reversals 1.1-1.7/unit-min; a narrow no-flip-back rule for fight options → reversals 0.4-0.5, switches ~same, progress unchanged (3 seeds, laptop) |
+| Agent bridge bounds | reverted here (`68a9d0f4`): combat's `36e116c8` does the same fix; review theirs once on main |
+| `ElementPlan.preview` | for control's animated button help |
+| **Element flow** (the lead: formation on the way) | `ElementPlan._flow`: while the leader is > 15 m from its slot, the others FOLLOW it at their slot offset (K1 follow-with-slot); leader paced to its laggards. Joins the final slots once per task (`flow_joined`; toggling re-ordered a CPU army 6x). A/B (laptop, 1 seed, `element_transit`): transit gap 9.0 vs 11.4 m, worst off-slot at arrival 2.9 vs 6.5 m, but arrival 17.4 vs 13.1 s. **Lead gate:** is ~4 s slower worth a tidier march? `ElementPlan.FLOW_ENABLED` turns it off. |
+| X6 baseline | the sim baseline is recorded on main (`b70608d6`); my branch moves it again (brain changes) — not recorded here (invariant 2) |
+
 ### Resume here (written 2026-09-18 before a 4-day pause; read first)
 
 **State:** everything is merged to main; the last green hash is `e683d0d3` (builder0, 1126 passed). The tree is clean.
