@@ -1360,9 +1360,36 @@ The kickoff prompt is one line; this section is the rest.
       (control's `#18`), which is conclusive, rather than running all of them and excusing one, which is not.
     - **A summary line must count what it did not run.** `N passed, M failed` with four targets unattempted is a true
       sentence that misleads. `N passed, M failed, K not run` would have made this self-evident.
+    - **⚠ AMENDED, combat: it is not "the four after `sim-baseline`" — it is "everything after whatever fails first".**
+      `check` is `lint test net-smoke … determinism sim-baseline garage-smoke …` and **`test` is second.** combat's
+      `d21a3d86` failed inside `test`, so **`sim-baseline` and the four after it never ran either** — that run established
+      *lint passed, `test` has one failure, and nothing whatsoever about the other eleven targets.* **A stream reading
+      `>> exited 2` cannot tell how far it got without counting targets in the log**, so the abort position is itself
+      invisible. Any instruction of the form *"if X is the only failure…"* is therefore unsound on this Makefile,
+      whatever X is.
     - **Fix the shared breakage instead of teaching everyone to read around it.** Five *"here is how to interpret the
       failure"* messages were the wrong response to *"the baseline needs re-recording"*, and they cost more than the fix.
     - **The generalised orchestrator failure, third instance in one day:** relaying the lancer deletion as settled before
       it was implemented; relaying a container argument without checking its contents; relaying a truncated check as
       green. **One mechanism — promoting something provisional to something established at the moment of relaying it.**
       That is a relay failure, not a judgement failure, and it needs watching for by name.
+96. **Summarising and asserting are the same word in the output, which is why a relay failure is invisible to the
+    relayer.** combat, on my three relay failures in one day: *"Promoting something provisional to something established
+    at the moment of relaying it is invisible **because the compression is the job.** You cannot relay six streams'
+    states without discarding detail, and 'treat a single known failure as green' is a perfectly good summary right up
+    until the discarded detail is the load-bearing part. The failure mode is not carelessness — it is that summarising and
+    asserting look identical in the output. A summary that says 'green' and a judgement that says 'green' are the same
+    word."*
+    **The conclusion is the important part, and it arrived from two directions at once:** *"make the artefact carry its own
+    conditions… **you cannot fix a relay by trying harder at the relay**."* Every fix that worked today was of that shape
+    and none of them were about diligence: `ARENA=` printing the map in the header; an instrument printing its
+    configuration; a merge commit declaring that it moves the sim baseline; `git show HEAD:<path>` instead of trusting the
+    working tree; a reference patch naming the commit that provides its symbols. **Each removes something the relayer
+    would otherwise have to remember to say.**
+    **And the cost structure is what made this one expensive.** Five streams each received the unsafe rule **separately
+    and privately, with no way to compare notes.** combat had independently hit the same problem that morning — it ran the
+    skipped targets by hand after a `sim-baseline` failure, on the principle *"a check that skips is not a check that
+    passes"* — and **did not flag my rule as unsafe, because when I gave it, it matched what combat had already done.**
+    Two agents each held half of it. **A worker who has solved a process problem should assume the orchestrator has not**,
+    and say so; and the orchestrator should ask *"has anyone already hit this?"* before issuing a reading rule, because in
+    a star topology only the centre can connect two halves — and the centre is the one who was wrong.
