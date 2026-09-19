@@ -55,8 +55,8 @@ void fragment() {
 		base = shopfront;
 		float bay = floor(along / 6.0);
 		float lit = step(0.55, city_hash(vec2(bay, seed)));
-		float glass = step(0.8, world.y) * step(world.y, 3.2) * step(0.12, fract(along / 6.0)) * step(fract(along / 6.0), 0.88);
-		glow = vec3(1.0, 0.7, 0.42) * lit * glass * 0.35;
+		float window_glass = step(0.8, world.y) * step(world.y, 3.2) * step(0.12, fract(along / 6.0)) * step(fract(along / 6.0), 0.88);
+		glow = vec3(1.0, 0.7, 0.42) * lit * window_glass * 0.35;
 		ROUGHNESS = 0.35;
 	} else {
 		// Roofs, and the bevel where each tier's edge rolls in: the bevel catches a pale edge (the chamfer detail).
