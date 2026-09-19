@@ -3,13 +3,133 @@
  "schema": 2,
  "title": "The Container Yard",
  "note": "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and whoever scouts the next lane first gets the ambush. Scouts, IFVs and burners shine; long guns can't see.",
- "half_size": 120.0,
+ "half_size": 140.0,
  "fixture": false,
  "obstacles": [],
  "props": [
   {
    "type": "container_40",
    "position": [
+    -115.0,
+    1.333
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    115.0,
+    -1.333
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -115.0,
+    12.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    115.0,
+    -12.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -115.0,
+    22.667
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    115.0,
+    -22.667
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -115.0,
+    47.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    115.0,
+    -47.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -115.0,
+    53.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    115.0,
+    -53.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -115.0,
+    59.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    115.0,
+    -59.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
     -84.0,
     13.0
    ],
@@ -570,6 +690,126 @@
    ],
    "rotation_deg": 90.0,
    "faction": "mixed"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    115.0,
+    1.333
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -115.0,
+    -1.333
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    115.0,
+    12.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -115.0,
+    -12.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    115.0,
+    22.667
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_40",
+   "position": [
+    -115.0,
+    -22.667
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    115.0,
+    47.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -115.0,
+    -47.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    115.0,
+    53.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -115.0,
+    -53.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    115.0,
+    59.0
+   ],
+   "rotation_deg": -90.0,
+   "stack": 2,
+   "faction": "law"
+  },
+  {
+   "type": "container_20",
+   "position": [
+    -115.0,
+    -59.0
+   ],
+   "rotation_deg": 90.0,
+   "stack": 2,
+   "faction": "law"
   },
   {
    "type": "container_20",
@@ -870,35 +1110,35 @@
   {
    "type": "floodlight",
    "position": [
-    -100.0,
-    80.0
+    -128.0,
+    0.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "floodlight",
    "position": [
-    100.0,
-    -80.0
+    128.0,
+    0.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "sign",
    "position": [
-    106.0,
-    74.0
+    -64.0,
+    108.0
    ],
-   "rotation_deg": 0.0,
+   "rotation_deg": 180.0,
    "sign": "yard"
   },
   {
    "type": "sign",
    "position": [
-    -106.0,
-    -74.0
+    64.0,
+    -108.0
    ],
-   "rotation_deg": 180.0,
+   "rotation_deg": 0.0,
    "sign": "yard"
   }
  ],
@@ -1559,5 +1799,8 @@
  ],
  "control_point": {
   "radius": 16.0
+ },
+ "shape": {
+  "kind": "hexagon"
  }
 }

@@ -117,15 +117,28 @@ func test_a_bad_terrain_entry_is_refused() -> void:
 ## load. The spans exist because control's occlusion question is POSITIONAL -- feel's base side is stands, then the
 ## gate its army enters through, then stands again, and one value per edge could not describe the very first
 ## layout anyone tried to write with it.
-func test_every_layout_today_is_a_square_and_nothing_had_to_change() -> void:
+## A layout is a square unless it says otherwise, and its perimeter follows what it declares. This test used to
+## assert every shipped layout WAS a square, which was true when it was written and stopped being true the moment
+## the two maps the lead kept became hexagons — the classic test that encodes today's content. It now asserts the
+## rule rather than the roster.
+func test_a_layouts_perimeter_follows_what_it_declares() -> void:
+	var shapes := {}
 	for layout_name in Arena.layout_names():
 		var layout: Dictionary = Arena.load_layout(layout_name)["layout"]
-		var points := Arena.perimeter(layout)
-		assert_eq(points.size(), 4, "%s is a square until it says otherwise" % layout_name)
+		var kind := String((layout.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+		shapes[kind] = int(shapes.get(kind, 0)) + 1
+		var sides := ArenaShape.sides(kind)
+		assert_eq(Arena.perimeter(layout).size(), sides, "%s is a %s, so %d vertices" % [layout_name, kind, sides])
 		var edges := Arena.perimeter_edges(layout)
-		assert_eq(edges.size(), 4, "%s has four edges" % layout_name)
-		assert_eq(edges[0]["spans"].size(), 1, "%s: one span per edge by default" % layout_name)
-		assert_eq(String(edges[0]["spans"][0]["kind"]), "stands", "%s: stands behind all of it" % layout_name)
+		assert_eq(edges.size(), sides, "%s has %d edges" % [layout_name, sides])
+		for edge: Dictionary in edges:
+			var cursor := 0.0
+			for span: Dictionary in edge["spans"]:
+				assert_near(float(span["from_m"]), cursor, 0.01, "%s: spans are contiguous" % layout_name)
+				cursor = float(span["to_m"])
+			assert_near(cursor, float(edge["length_m"]), 0.05, "%s: and cover the edge" % layout_name)
+	assert_true(int(shapes.get("square", 0)) > 0, "the do-not-invest maps are still squares (%s)" % [shapes])
+	assert_true(int(shapes.get("hexagon", 0)) >= 2, "and the two the lead kept are hexagons (%s)" % [shapes])
 
 
 func test_a_hexagon_is_the_shape_that_varies_most() -> void:
@@ -208,6 +221,10 @@ func test_an_asymmetric_perimeter_is_refused() -> void:
 func _hexagon(extra: Dictionary = {}) -> Dictionary:
 	var layout: Dictionary = Arena.load_layout("foundry")["layout"].duplicate(true)
 	layout["shape"] = {"kind": "hexagon"} if extra.is_empty() else extra
+	# At the arena bound rather than foundry's own 120: a hexagon narrows where the spawn block sits, so one
+	# inscribed in 120 holds fewer than half of foundry's spawn points. That is the constraint these tests exist
+	# to respect, not one to work around.
+	layout["half_size"] = Match.ARENA_HALF_SIZE
 	return layout
 
 

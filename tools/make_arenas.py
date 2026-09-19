@@ -235,8 +235,15 @@ write("furnace",
 # stagger and no line threads the whole yard.
 YARD_A = [(7, 31), (45, 69)]
 YARD_B = [(-6, 6), (20, 44), (58, 70)]
-YARD_COLUMNS = [(-84, YARD_A, 2, "condemned"), (-50, YARD_B, 1, "mixed"), (-17, YARD_A, 2, "law"),
-                (17, YARD_B, 1, "gangs"), (50, YARD_A, 2, "syndicate"), (84, YARD_B, 1, "mixed")]
+## Two more columns further out than the old square allowed, because the hexagon is 280 m across at midfield where
+## the square was 240. Without them the extra ground is empty and the longest clear shot goes from 184 m to 216 m
+## -- the arena gets roomier and the sightlines get LONGER, which trades one of the lead's complaints for another.
+## Their segments are shorter because the hexagon narrows toward the bases and a container out there would be
+## through the wall.
+YARD_OUTER = [(-4, 28), (44, 62)]
+YARD_COLUMNS = [(-115, YARD_OUTER, 2, "mixed"), (-84, YARD_A, 2, "condemned"), (-50, YARD_B, 1, "mixed"),
+                (-17, YARD_A, 2, "law"), (17, YARD_B, 1, "gangs"), (50, YARD_A, 2, "syndicate"),
+                (84, YARD_B, 1, "mixed"), (115, YARD_OUTER, 2, "law")]
 yard = []
 for x, segments, stack, faction in YARD_COLUMNS:
     for z0, z1 in segments:
@@ -250,7 +257,9 @@ yard += [
     # A cover line in front of the base: somewhere to form up out of the first volley.
     c20(-40, 78, 0, 1), c20(0, 80, 0, 1, faction="condemned", doors="open"), c20(40, 78, 0, 1),
     barricade(-20, 78, 0), barricade(20, 78, 0),
-    screen(-34, 74, 180, "arena"), floodlight(-100, 80), sign(106, 74, 0, "yard"),
+    # Floodlights on the hexagon's east/west VERTICES and signs on its base-side corners: the square's corners do
+    # not exist any more, and these four were the only props of yard's that fell outside the new wall.
+    screen(-34, 74, 180, "arena"), floodlight(-128, 0), sign(-64, 108, 180, "yard"),
 ]
 write_v2("yard", "The Container Yard",
          "Dense lanes and short sightlines: fights happen at corners and alley mouths, a flank is one wall away, and "
@@ -260,6 +269,7 @@ write_v2("yard", "The Container Yard",
                 lane("inner west", [(-34, 90), (-34, 0), (-34, -90)], 28),
                 lane("outer west", [(-67, 90), (-67, 0), (-67, -90)], 28),
                 lane("far west", [(-100, 90), (-100, 0), (-100, -90)], 26)],
+         shape={"kind": "hexagon"}, half_size=140.0,
          # OBJECTIVE PAIR, MEASURED AND HELD BACK: objective_pair("the west depot", -62.0, -34.0) takes yard's
          # decision spread from 0.00 to 0.35 -- one objective each side holds cheaply and one it must contest.
          # It cannot ship until squad moves game/tactics/objectives.gd onto N7's instance API: its guard refuses a
@@ -332,13 +342,17 @@ pit += [
     wreck(-30, 66, 80), wreck(64, 56, 30), c20(-76, 44, 90, 1), c20(92, 10, 90, 2, faction="law"),
     barricade(-50, 34, 45), barricade(28, 70, 0), c20(0, 80, 0, 1), c20(-50, 80, 0, 1), c20(50, 80, 0, 1),
     # Screens on the ring's outside, over the gates.
-    screen(0, 52, 180, "arena"), floodlight(-104, 96), floodlight(104, 96), sign(-60, 100, 180, "pit"),
+    # Four of the hexagon's six vertices, which is a better ring than the square's corners were.
+    # The east vertex and a point on the north-east edge; their mirrors give four. NOT the base-side vertices:
+    # those sit inside the spawn block, and check_spawn_clearance refused them at 3.8 m from a spawn point.
+    screen(0, 52, 180, "arena"), floodlight(-128, 0), floodlight(-94, 60), sign(-60, 100, 180, "pit"),
 ]
 write_v2("pit", "The Pit",
          "A control-point brawl behind walls: four gates into a ring of stacked containers, open killing ground "
          "outside. Hold a gate and you own the approach; go inside and it's knife range. Tanks and burners take the "
          "ring; artillery punishes whoever crowds it.",
          pit,
+         shape={"kind": "hexagon"}, half_size=140.0,
          # As yard: objective_pair("the west yard", -74.0, -30.0, 15.0) takes pit from 0.00 to 0.26. Held back on
          # squad's Objectives migration.
          lanes=[lane("south gate", [(0, 90), (0, 42), (0, 0), (0, -42), (0, -90)], 12) | {"self_mirror": True},

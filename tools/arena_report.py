@@ -27,6 +27,13 @@ CALIBRATION_HALF = 120.0
 
 EYE_HEIGHT = 1.3
 AGENT_RADIUS = 2.0
+## The arena's extent, in metres from the centre. **Set per layout by `analyze()`** — these are the defaults for a
+## layout that declares nothing, not a constant. They were constants until layouts could differ in size, at which
+## point the whole report measured a 240 x 240 window whatever the layout said: a hexagon at half_size 140 had its
+## outer 20 m simply not looked at, and `centre_sees_share_full` came back identical to the fixed-window figure
+## because both were reading the same hardcoded box.
+##
+## `CALIBRATION_HALF` above stays fixed on purpose. The grid follows the layout; the target metric does not.
 HALF = 120.0
 DRIVABLE = 116.0
 TERRAIN_RADIUS = 45.0
@@ -752,7 +759,18 @@ def ambush_report(layout, boxes, blocked, n):
     return out
 
 
+def use_extent(layout):
+    """Point the report's grid at THIS layout's arena. Module-level because every geometry helper below reads them;
+    `analyze()` is the only caller and it sets them before touching anything else."""
+    global HALF, DRIVABLE, FIELD_Z
+    half = float(layout.get("half_size", 120.0))
+    HALF = half + 40.0        # the bake margin, so the grid covers everything a navmesh could
+    DRIVABLE = half - 4.0     # a hull's clearance inside the wall
+    FIELD_Z = half * 0.7      # the contested field, as it has always been proportioned (84 of 120)
+
+
 def analyze(layout):
+    use_extent(layout)
     boxes = boxes_of(layout)
     blocked, n = occupancy(boxes)
     green_front = tuple(layout["spawns"]["green"][0])

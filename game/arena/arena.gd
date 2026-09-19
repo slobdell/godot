@@ -53,6 +53,18 @@ const GROUND_MARGIN := 40.0
 ## The perimeter wall's thickness, as authored in arena.tscn (the boxes are 2 m through), which is why the inner
 ## face of a wall centred at 121 lands on 120 — the apothem ArenaShape works in.
 const PERIMETER_THICKNESS := 2.0
+## How far inside the wall anything a layout places must sit. 4 m against a square at half_size 120 reproduces
+## exactly the old `|x| and |z| <= DRIVABLE_LIMIT (116)` rule — which is what that check was, a SQUARE clamp
+## standing in for "inside the arena". It stopped being the same thing when the arena stopped being a square: a
+## hexagon at bound 140 reaches 140 m on x, so the square rule refused props that are comfortably inside the wall.
+const PLACEMENT_CLEARANCE := 4.0
+
+
+## Is a layout-placed point inside this layout's own shape, with clearance? The one question the three position
+## checks below should ask, instead of each carrying its own copy of "the arena is a square".
+static func _placeable(data: Dictionary, x: float, z: float) -> bool:
+	return ArenaShape.contains(String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND)),
+			float(data.get("half_size", Match.ARENA_HALF_SIZE)), Vector2(x, z), PLACEMENT_CLEARANCE)
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
@@ -586,7 +598,7 @@ static func validate(data: Variant) -> String:
 			return "every obstacle needs a string 'type'"
 		if not _is_point(obstacle.get("position")):
 			return "obstacle %s needs 'position' [x, z]" % obstacle["type"]
-		if absf(float(obstacle["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(obstacle["position"][1])) > Match.DRIVABLE_LIMIT:
+		if not _placeable(data, float(obstacle["position"][0]), float(obstacle["position"][1])):
 			return "obstacle at %s is outside the arena" % [obstacle["position"]]
 		if obstacle.has("rotation_deg") and not _is_number(obstacle["rotation_deg"]):
 			return "rotation_deg must be a number"
@@ -657,7 +669,7 @@ static func _validate_v2(data: Dictionary) -> String:
 			return "unknown prop type '%s' (the kit has %s)" % [prop["type"], ", ".join(PackedStringArray(ArenaKit.PROPS.keys()))]
 		if not _is_point(prop.get("position")):
 			return "prop %s needs 'position' [x, z]" % prop["type"]
-		if absf(float(prop["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(prop["position"][1])) > Match.DRIVABLE_LIMIT:
+		if not _placeable(data, float(prop["position"][0]), float(prop["position"][1])):
 			return "prop %s at %s is outside the arena" % [prop["type"], prop["position"]]
 		if prop.has("rotation_deg") and not _is_number(prop["rotation_deg"]):
 			return "rotation_deg must be a number"
@@ -760,7 +772,7 @@ static func _validate_v2(data: Dictionary) -> String:
 	for objective in objectives:
 		if typeof(objective) != TYPE_DICTIONARY or typeof(objective.get("name")) != TYPE_STRING or not _is_point(objective.get("position")):
 			return "every objective needs a string 'name' and a 'position' [x, z]"
-		if absf(float(objective["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(objective["position"][1])) > Match.DRIVABLE_LIMIT:
+		if not _placeable(data, float(objective["position"][0]), float(objective["position"][1])):
 			return "objective %s at %s is outside the arena" % [objective["name"], objective["position"]]
 		if not _is_number(objective.get("radius")) or float(objective["radius"]) <= 0.0:
 			return "objective %s needs a positive 'radius'" % objective["name"]
