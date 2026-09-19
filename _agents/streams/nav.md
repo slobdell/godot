@@ -404,6 +404,14 @@ arrivals unchanged at 30/30, AND `make check` green — plus the barriers fixtur
 5. planning cost per tick on builder0 rises more than 25% against the same commit with `--nav-off=flow`;
 6. `make determinism` or the nav-suite arrivals move at all.
 
+7. **The look.** A five-squad move on terminus, captured at the lead's pose (pitch 21, 49 m, FOV 35) with the switch
+   on and off, and LOOKED at. Revert if the group reads as a crowd rather than as squads. Flow fields make units share
+   a congestion gradient, which is the point and is also how a formation turns into a herd; the lead has just paid 4
+   seconds of arrival time for a tidier march, so `stuck_share` would score that trade as a win while undoing what he
+   bought. No threshold is pre-registered for this, only that a human looks and writes down what they see. (Every
+   instrument defect this round was found by somebody looking at output, not by a test going red; conditions 1–6 are
+   all numbers.)
+
 Reverting means the switch is deleted along with the code, not left in: a mechanism nobody reaches is how round 7's
 commitment ended up being measured twice for nothing.
 
