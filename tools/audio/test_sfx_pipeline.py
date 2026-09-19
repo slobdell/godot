@@ -192,6 +192,17 @@ class GenerateAndLayerTest(unittest.TestCase):
         self.assertLess(spread(ridden, 1.0), 2.0, "the slow swell is gone")
         self.assertGreater(spread(ridden, 0.05), 3.0, "the fast shouts are still there")
 
+    def test_a_loud_loop_never_peaks_over_the_ceiling(self):
+        # Round 7: the crowd bed at +5 dB peaked at +1.5 dBFS: the seam's crossfade ran after the limiter and summed
+        # two limited stretches back over it. The limiter has the last word.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            rng = np.random.default_rng(7)
+            path, source = self._loop_master(tmp, np.clip(rng.standard_normal(sfx_layer.RATE * 4) * 0.3, -1, 1))
+            source = dict(source, layer={"seam_s": 1.0, "gain_db": 12.0, "harmonics_db": None})
+            _, report = sfx_layer.build_take(path, source, 1)
+            self.assertLessEqual(report["peak_db"], sfx_layer.CEILING_DB + 0.05)
+
     def test_a_bed_takes_a_long_seam(self):
         # A crowd bed's texture changes over seconds: a 30 ms splice is audible as a jump in the room, so a source may
         # ask for a longer crossfade (layer.seam_s). The loop is shorter by exactly the overlap.

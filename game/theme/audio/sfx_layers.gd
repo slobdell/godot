@@ -13,7 +13,7 @@ const TAKES := {
 	"energy_hit": ["res://assets/audio/layered/energy_hit_1.wav", "res://assets/audio/layered/energy_hit_2.wav", "res://assets/audio/layered/energy_hit_3.wav"],
 	"explosion_big": ["res://assets/audio/layered/explosion_big_1.wav", "res://assets/audio/layered/explosion_big_2.wav", "res://assets/audio/layered/explosion_big_3.wav"],
 	"explosion_small": ["res://assets/audio/layered/explosion_small_1.wav", "res://assets/audio/layered/explosion_small_2.wav", "res://assets/audio/layered/explosion_small_3.wav"],
-	"flame_loop": ["res://assets/audio/layered/flame_loop_1.wav"],
+	"flame_loop": ["res://assets/audio/layered/flame_loop_1.wav", "res://assets/audio/layered/flame_loop_2.wav"],
 	"laser_pulse": ["res://assets/audio/layered/laser_pulse_1.wav", "res://assets/audio/layered/laser_pulse_2.wav", "res://assets/audio/layered/laser_pulse_3.wav"],
 	"mg_loop": ["res://assets/audio/layered/mg_loop_1.wav", "res://assets/audio/layered/mg_loop_2.wav", "res://assets/audio/layered/mg_loop_3.wav", "res://assets/audio/layered/mg_loop_4.wav"],
 	"mg_round": ["res://assets/audio/layered/mg_round_1.wav", "res://assets/audio/layered/mg_round_2.wav"],

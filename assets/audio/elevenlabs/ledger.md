@@ -15,3 +15,4 @@ Every paid sound-effect run, appended by tools/audio/sfx_generate.py. Lead gate 
 | 2026-09-18 | ElevenLabs | eleven_text_to_sound_v2 | 3 | 12.0 | 120 | 111536 → 111416 | 120 |  |
 | 2026-09-19 | ElevenLabs | eleven_text_to_sound_v2 | 2 | 25.0 | 250 | 111416 → 111166 | 250 |  |
 | 2026-09-19 | ElevenLabs | eleven_text_to_sound_v2 | 10 | 16.6 | 166 | 111166 → 111000 | 166 |  |
+| 2026-09-19 | ElevenLabs | eleven_text_to_sound_v2 | 2 | 8.0 | 80 | 111000 → 110920 | 80 |  |

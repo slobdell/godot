@@ -295,6 +295,9 @@ def build_take(master: Path, source: dict, take: int) -> tuple[np.ndarray, dict]
     if not loop:
         mixed = lift_tail(mixed, float(settings["tail_lift_db"]))
         mixed = fade_tail(mixed, float(settings["fade_s"]))
+    if loop:
+        # Folded before levelling: a crossfade after the limiter summed two limited stretches back over the ceiling.
+        mixed = loop_seam(mixed, float(settings["seam_s"]))
     target = (loudness_db(reference) if reference is not None else -14.0) + float(settings["gain_db"])
     # The limiter takes loudness away from the peaky ones, so gain up and limit again until the take lands (a few
     # passes; each one converges most of the remaining gap, and 6 dB of extra drive is the most it may add).
@@ -306,8 +309,6 @@ def build_take(master: Path, source: dict, take: int) -> tuple[np.ndarray, dict]
         if short < 0.3 or drive >= 6.0:
             break
         drive = min(6.0, drive + short)
-    if loop:
-        mixed = loop_seam(mixed, float(settings["seam_s"]))
     report = {"sound": source["sound"], "take": take, "master": master.name, "seconds": round(len(mixed) / RATE, 3),
               "loudness_db": round(loudness_db(mixed), 1), "target_db": round(target, 1),
               "peak_db": round(20 * np.log10(max(np.abs(mixed).max(), 1e-9)), 2),
