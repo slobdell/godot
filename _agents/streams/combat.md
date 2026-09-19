@@ -127,6 +127,65 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### IF YOU ARE A FRESH AGENT, READ THESE SIX THINGS
+
+_Written 2026-09-18 against an imminent context loss. CP4 is **merged and green at `f0f89e52`**; nothing is in flight._
+
+**1. The decomposition inverts what this round spent its effort on.** N5 has three gates (sight, acquisition, fire
+discipline) plus X6's crossing penalty. Measured over 75 matches against a true round-5 control:
+
+| | kill distance | engaged | off-axis kills |
+|---|---|---|---|
+| **sight + acquisition + crossing** | **−11 m** | −4 m | **+17 pts** |
+| fire discipline (the bands) | −3 m | −8 m | +2 pts |
+
+**Tune acquisition first, bands second.** The *bands* absorbed nearly all of the round's design argument — the
+`preferred_max` decision, the 0.65-versus-0.55 sweep, a long exchange with squad about standoffs — and they are the
+smaller contributor to both headline numbers.
+
+**Why it stayed invisible for most of the round, which is the reusable part:** my first control tuned
+`effective_range` back to `range` and called it "the old world". It was not. Sight, acquisition and crossing are
+**code**, and `--variants` only tunes **data**, so they were present in *both* arms and the comparison measured fire
+discipline alone. **A data-only control is not a "before" when the change spans data and code.** I built the control
+out of the knobs that happened to be reachable rather than out of what the question needed; it looked like a control
+for hours. Sample size would not have caught it.
+
+**2. The retraction, and why it was right even though the number was nearly correct.** I reported *"the fight is
+decided 28% closer"* from **two matches on one mirror**. I retracted it. The true figure against a proper control is
+**26%** — almost exactly what I withdrew. **Retracting was still correct:** against the control actually in use at the
+time, the honest figure was **7%**. *A number that lands near the truth from the wrong comparison on an inadequate
+sample is a coincidence, not a result.* The lesson a reader might otherwise draw — "trust the small sample, it was
+nearly right" — is wrong and would cost someone a round. Also retracted and **still** retracted: *"fire goes up, so his
+complaint was never about volume"*. Fire goes **down**, 17.8 → 15.2.
+
+**3. `matchup-search` silently ran at `--units 60` for its whole history.** `mk/ai.mk` defaults `UNITS ?= 60`, make
+variables are one global namespace, and `mk/match.mk` used the bare name — so every run passed `--units 60` whatever
+the caller asked, **and the tool never recorded the value it used.** Round-3 `matchup-search` conclusions in
+[../balance.md](../balance.md) that assumed a non-default unit count are unreliable and **cannot be re-derived**.
+Fixed to `SEARCH_UNITS`. General rule: **print every resolved knob into the output.**
+
+**4. Three targets fail on a stale sim baseline and two of them blame the wrong component** —
+`announcer-record-smoke` says *"the booth changed the simulation"* and `music-smoke` says *"the soundtrack changed
+the simulation"*, **while computing exactly the hash `sim-baseline` computed**, which is the proof they changed
+nothing. **These are feel's targets and the fix is unbuilt:** run the match twice in one invocation, with and without
+the subsystem, and compare the two hashes *to each other*. A differential question must not be implemented as an
+absolute comparison against a shared file. Invariant 2 guarantees the baseline moves once a round, so this misfires
+every round until fixed.
+
+**5. N7 is the strongest candidate for the next round's first item** — see *N7* below for the full argument. In one
+line: the gates matter more than the bands, and **a central objective is the terrain-level version of the same
+problem** — it collapses the space in which acquisition and flanking can matter at all, and the **45% off-axis kills
+were achieved *despite* one central control point on every map.** arena's half is landed and tested; combat's half is
+a pure read-through of `Arena.objectives_of`. Score **proportional to the share of objectives held**, because at N=1
+that reduces exactly to today's behaviour.
+
+**6. The evidence is committed, not in `build/`.**
+[references/combat/n5-engagement-envelope-2026-09-18.json](references/combat/n5-engagement-envelope-2026-09-18.json)
+is the 75-match series with its conditions in the README row. **The sim baseline is NOT combat's to record**
+(invariant 2) — N5 moves it to `91db23888123f642` on glibc-2.43 and the orchestrator records it once at the end.
+
+---
+
 ### Read this first
 
 **CP4 is done, measured, and merged with all three checkpoints.** On `c765275f` (nav CP1 + squad CP3 + arena CP2 +
