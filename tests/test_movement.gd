@@ -157,3 +157,28 @@ func test_an_unreachable_goal_says_so_instead_of_arriving() -> void:
 	assert_eq(reading.get("reachable"), false, "the route is known not to reach the goal (%s)" % reading)
 	assert_eq(reading.get("phase"), "blocked", "and at the end of it the unit says blocked, not arrived (%s)" % reading)
 	assert_eq(reading.get("blocked_by"), "no_path", "because there is no path there (%s)" % reading)
+
+
+func test_two_hulls_spawned_on_one_spot_separate_and_both_drive_off() -> void:
+	# An overfull spawn line or a respawn can put two hulls exactly on top of each other. In round 5 such pairs never
+	# moved at all (8 of them in every 60-unit maze run). Avoidance parts them by name, in opposite directions.
+	var setup: Array = await _setup()
+	var game_match: Match = setup[0]
+	var first: Tank = setup[1]
+	var first_orders: OrderController = setup[2]
+	var second := game_match.spawn_tank("Stacked", 1, Match.Team.GREEN)
+	second.global_position = first.global_position
+	second.rotation.y = first.rotation.y
+	var second_orders := OrderController.new()
+	second_orders.tank = second
+	second_orders.tanks_root = game_match.tanks
+	add_to_tree(second_orders)
+	var goal := LANE + Vector3(0, 0, -30)
+	first_orders.set_orders({"type": "move_to", "x": goal.x, "z": goal.z}, {"type": "hold_fire"})
+	second_orders.set_orders({"type": "move_to", "x": goal.x, "z": goal.z}, {"type": "hold_fire"})
+	await wait_physics_frames(SimClock.TICK_RATE * 4)
+	assert_true(first.global_position.distance_to(second.global_position) > 3.0,
+			"they came apart (%.1f m)" % first.global_position.distance_to(second.global_position))
+	for tank: Tank in [first, second]:
+		assert_true(tank.global_position.distance_to(LANE) > 6.0, "%s drove off (%.1f m from the start)" % [tank.name,
+				tank.global_position.distance_to(LANE)])

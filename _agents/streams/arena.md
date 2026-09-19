@@ -97,6 +97,75 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## "N passed, 0 failed" can be a TRUNCATED run (round 7)
+
+**`make check` stops at the first failing target.** Its targets run in order — `lint test net-smoke combat-smoke
+broker-test relay-smoke lobby-smoke match-smoke determinism sim-baseline garage-smoke army-loop-smoke
+announcer-check audio-check` — so a failure at `sim-baseline` means the **four after it never run**, and the
+runner still prints `N passed, 0 failed` for the ones that did.
+
+So *"sim-baseline was the only failure"* is indistinguishable from *"sim-baseline was the last target that got a
+chance to fail"*. **`0 failed` is a property of the targets that ran, and it passes for the wrong object.** Same
+shape as the readiness bug in `ArenaFixture`: a claim built on a property rather than an identity.
+
+**This bites arena specifically.** `announcer-check` and `audio-check` are the last two targets, and the perimeter
+work touches the stands and gates feel dresses — and `tools/announcer/test_arena_names.py` is a file this stream
+edits by recorded exception, precisely the sort of thing a new arena shape could disturb. **A truncated run cannot
+tell you whether your own change broke them.**
+
+**What to do instead of waiting:** the expensive parts need builder0, but the test components run locally in
+minutes and cover most of the risk —
+
+```bash
+python3 -m unittest discover -s tools/announcer -p 'test_*.py'   # 58 tests, ~2 min
+make audio-pytest                                                # 16 tests, ~30 s
+```
+
+Both green on the round-7 perimeter and terrain work (2026-09-19), so the hexagon's edge spans do not disturb the
+announcer's arena-name handling.
+
+## Round 7 state (2026-09-19, branch merged with main at `4977e991`)
+
+**Built, tested, and needing nobody:**
+
+| Item | What exists |
+|---|---|
+| **A** water / pits / bridges | `layout.terrain`, carved floor + 0.9 m rim cut at the decks. Measured before built (`make water-probe`) |
+| **C** cost-and-reward metric | `make arena-report` emits a `DECISION` line. **Every shipping arena reads `spread 0.00`** |
+| **D** perimeter polygon + spans | `Arena.perimeter()` / `perimeter_edges()`, consumed by control (`7dd14aca`) and feel. Hexagon builds and bakes; mirrored trips match to 0.05 m |
+| **M4** `contains` / `clamp_into` | Nearest-boundary, allocation-free, answers for the square too, knows about water |
+
+Local: arena 64/64, announcer 58/58, audio 16/16, tactics 10/10, objectives 3/3.
+
+**Blocked on other streams, and both blocks are real rather than cautious:**
+
+1. **The hexagon cannot validate until `Match.ARENA_HALF_SIZE` goes 120 → 140** (combat's). A hexagon at 120 holds
+   only 48 of 104 spawn points, and `Arena.validate()` now refuses it — so a map authored at 120 would have to be
+   authored again. **This is why Pit and Yard are untouched.**
+2. **Off-centre objectives cannot ship until combat's N7 read-through reaches `main`.** `Arena.objectives_of()`
+   exists but **nothing in `game/` consumes it**: `Match.in_control_zone` is still static and central, and squad's
+   `Objectives` shim deliberately **errors** for a non-central layout rather than answering plausibly. That guard
+   is the right design — a CPU competing for the wrong ground looks completely functional — but it means authoring
+   a pair now produces a layout that refuses to run.
+
+**So the next map work is gated, and the gate is not mine.** When both land: author Pit and Yard on the hexagon
+with a mirrored objective pair, and the `DECISION` spread is how to tell whether it worked.
+
+## A local `make check` does NOT check the simulation baseline (round 7)
+
+**`sim-baseline` SKIPS on this laptop and always will.** The baseline file is keyed by glibc version, builder0 is
+`glibc-2.43` and the laptop is `glibc-2.39`, so the target prints *"sim-baseline SKIPPED: no baseline for
+glibc-2.39"* and **exits 0** whatever the simulation does. It fails only on builder0 — the machine that gates
+merges.
+
+So a local run is silent on exactly the thing most likely to be broken by someone else's merge, which is why a
+green local suite is never a substitute for `make remote T=check`. My `FILTER=arena` runs and `--check-only` passes
+mean what they say; they simply cannot see this.
+
+**It also means `sim-baseline FAILED` alone, on a branch that merged `main`, is usually not yours** — the orchestrator
+records the baseline once per round after the last sim-changing merge, so `main` runs red in between. Anything else
+failing is real.
+
 ## Resume here (written at the round-6 quota stop, 2026-09-18)
 
 **Branch merged, tree clean, nothing in flight.** The durable knowledge is in

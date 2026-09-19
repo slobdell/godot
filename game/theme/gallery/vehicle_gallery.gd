@@ -14,15 +14,17 @@ extends Node3D
 ##        the hull slot's set_deployed); `make artillery-deploy-shot`
 
 const ORBIT_SPEED := 0.25
-## Catalog v2 numbers the gallery needs to place per-unit art like Tank does (rules' Units.PROFILES; mirrored in
-## assets/pipeline/asset_contracts.gd, which isn't exported).
-const ROSTER := {
-	"tank": {"hull_size": Vector3(2.4, 1.6, 3.6), "muzzle_height": 1.27},
-	"scout": {"hull_size": Vector3(2.0, 1.4, 3.0), "muzzle_height": 1.12},
-	"ifv": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
-	"artillery": {"hull_size": Vector3(2.6, 1.6, 4.0), "muzzle_height": 1.27},
-	"lancer": {"hull_size": Vector3(2.4, 1.6, 3.8), "muzzle_height": 1.27},
-}
+## The catalog numbers the gallery needs to place per-unit art like Tank does, read from Units (the single source):
+## until round 7 this was a copied table, and when combat gave the catalog real heights (a 2.4 m tank, a 3.0 m IFV) the
+## gallery went on drawing 1.6 m ones (combat's report).
+## The Condemned units the --gallery-units row shows, in order.
+const CONDEMNED_UNITS := ["tank", "scout", "ifv", "artillery", "lancer"]
+
+
+static func roster(unit: String) -> Dictionary:
+	var size: Array = Units.stat(unit, "hull_size")
+	return {"hull_size": Vector3(size[0], size[1], size[2]), "muzzle_height": float(Units.stat(unit, "muzzle_height", 1.27))}
+
 
 var camera := Camera3D.new()
 var time := 0.0
@@ -48,7 +50,7 @@ func _ready() -> void:
 	camera.current = true
 	if _flags.has("gallery-units"):
 		var i := 0
-		for unit in ROSTER:
+		for unit in CONDEMNED_UNITS:
 			for team in 2:
 				var tank := _unit_tank(unit, team)
 				tank.position = Vector3(-18.0 + i * 4.2, 0, -4.0 * team)
@@ -177,7 +179,7 @@ func _tank(team: int, weapon_slot: String) -> Node3D:
 
 ## A unit with its own slots (falling back to the tank's), placed like Tank._apply_hull_size.
 func _unit_tank(unit: String, team: int) -> Node3D:
-	var info: Dictionary = ROSTER[unit]
+	var info: Dictionary = roster(unit)
 	var size: Vector3 = info["hull_size"]
 	var tank := Node3D.new()
 	tank.name = "Tank%d" % tanks.size()
@@ -207,7 +209,7 @@ func _unit_tank(unit: String, team: int) -> Node3D:
 
 ## One faction vehicle assembled like _unit_tank, from FactionArt parts; a floating label where no model exists yet.
 func _faction_vehicle(faction: String, role: String) -> Node3D:
-	var info: Dictionary = ROSTER[FactionArt.CONDEMNED[role]]
+	var info: Dictionary = roster(FactionArt.CONDEMNED[role])
 	var size: Vector3 = info["hull_size"]
 	var vehicle := Node3D.new()
 	vehicle.name = "Tank%d" % tanks.size()
@@ -218,7 +220,7 @@ func _faction_vehicle(faction: String, role: String) -> Node3D:
 	var turret := Node3D.new()
 	turret.name = "Turret"
 	turret.position = Vector3(0, float(info["muzzle_height"]) - 0.05, 0.2)
-	if not size.is_equal_approx(ROSTER["tank"]["hull_size"]):
+	if not size.is_equal_approx(roster("tank")["hull_size"]):
 		turret.scale = Vector3.ONE * minf(size.x / 2.4, size.z / 3.6)
 	vehicle.add_child(turret)
 	# _process drives these the way it drives slots: wrap each part in a VisualSlot-like holder.

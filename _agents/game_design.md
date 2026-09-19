@@ -935,7 +935,9 @@ fire, slide *along* the band when rounds come in, and never enter the 6 m ram ga
 | time inside the effective band | — | **91%** |
 
 **Seven times the shots.** The unit was previously spending most of its life driving rather than fighting, which is why it
-read as *dumb* rather than as *badly positioned*. `--nav-off=standoff` restores the old behaviour for A/B.
+read as *dumb* rather than as *badly positioned*. **⚠ `--nav-off=standoff` silently does nothing on `main`** (nav,
+2026-09-19) — a static-initialisation-order bug, fixed by resolving switches at read time. The measurements above were
+taken by assigning the style directly and are unaffected; only the command-line A/B was broken.
 
 **The design lesson, and it generalises past scouts:** *the unit whose weapon cannot turn must place its whole vehicle
 where the weapon needs to be, and then stop.* A fixed gun is a positioning problem, not an aiming one. Round 3's `run`

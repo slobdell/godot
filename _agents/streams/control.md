@@ -151,9 +151,28 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+## Round 7 (2026-09-18/19, after the quota lift) — the orchestrator's brief: A, B, C1–C3, plus K1 and the perimeter
+
+| Item | State | Evidence |
+|---|---|---|
+| **A** yaw follows the selection's facing | done. Source: tasked element heading → order facing/heading → hull forward, averaged; mixed/none keeps yaw. 70°/s past a 12° deadband; manual yaw pauses it; **Y** toggles. Selected vehicles show a forward chevron (+ fire-arc edges for a fixed gun). Reads squad's now-honoured facing since `4cad7ef7` | `test_control_facing_camera` |
+| **B** frame out to the selection's weapon range | done. The selection's reach (largest `min(effective range, sight)`, via Engagement) ahead along its facing is the view's **lean** (`order_pose`), not a point to fit — fitting it dropped the squad off screen with the enemy in view (caught in shell-playtest, mutation-checked). `;` `'` factor. Auto camera capped at 100 m (`auto_frame_max_m`) | same |
+| **C1** vehicle renders as portraits | done. `UnitPortraits`: one real tank per type, dressed as in play, photographed offscreen, cached; role icons until ready/headless | builder0 shell-playtest frame |
+| **C2** animated task help | done. Hovering a task plays its posture loop in the tooltip: move, face, fire (always / on contact), ADVANCES / HOLDS HERE. **Geometry is squad's real planner** (`ElementPlan.preview`, on main) — a coil for Hold, interlocking sectors for Support by Fire. Stand-in only for Stop | `test_control_panel` |
+| **C3** two grammars told apart | done. Rows carry `then: click|now`; click buttons wear a pointer badge + inset border; tooltip says which | `test_control_panel` |
+| K1 `follow` + `slot` | done (squad's ask). One unit, the leader's frame, a sliding goal (≤ 0.52 m/tick at 90°/s) | `test_control_follow_slot` |
+| Perimeter cutaway | done against arena's `perimeter()`/`perimeter_edges()` (by name; square fallback) with positional spans | `test_rts_camera` hexagon test |
+| Portrait + railing fixes | nameplate hidden, hull fills the cell; railing (7 m) counts for the cut | builder0 frame |
+| Card help shows itself once | Screen's animated tooltip opens by itself in the first planning pause; any press dismisses it (`9c889025`) | `test_control_panel` |
+| Radar draws the arena's outline | the perimeter polygon, else the active layout's bound (`4f7371ef`) | `test_radar` |
+| **Order progress on screen** (orchestrator, from nav/squad churn: weaving must read as *en route*) | done (`53a2af87`). For the selection, each order — or the squad's task, not its leader's moves — keeps a **pin**: ground ring at the ordered point, a stalk to the task's own symbol (card/preview glyph) on a dark disc, and a plate reading `ATTACK-MOVE · 2/3 there · 37 m`. A squad task adds a lead line from its middle (direct orders already have each unit's dashed line). Looked at the lead's 21°/49 m/FOV 35 pose, 1280×720 (laptop): readable over the arena floor; the first draft (12 px text, 20 px glyph, no plate) was not. 0.17 ms/frame at 30 units under orders (laptop); the whole control frame 1.84–1.96 ms of 2.0 (laptop, ~2.75× faster on builder0). **Wants the lead's eye on a touchpad.** | `test_control_order_marks`, `test_control_scale` |
+
+**Merge here when #17 is green:** `a1d92ad6` (main `bd7ebae6` merged in). Not done: nothing from the brief; open: the
+preview's start row crosses on the way (cosmetic), feel's stands profile as data (control still measures kit_stands).
+
 **STATE AT PAUSE (2026-09-18, quota stop; resuming ~4 days later): everything is committed.** Last commit with code:
 `017fda42` (the lead's camera: 21°, FOV 35, 49 m, auto-framing on; the `-` `=` hints; squad-1 first frame; tests
-pin their lens). **Its `make remote T=check` (#14) was still running at the stop — result unknown: re-verify it.**
+pin their lens). **Its `make remote T=check` (#14) came back GREEN: 1085 passed, 0 failed (builder0). Merge here: `017fda42`.**
 It passed locally (camera 42, control 145, command 50, radar 7, touch 9, all 0 failed; laptop) and `make remote
 T=shell-playtest` exited 0 on it (builder0). **Last verified green: `2dbd985d`** (1082/0) and `ff28563d` (1084/0);
 `42d42fd2` and `eb2d7b74` were never fully checked (superseded). Nothing is mid-way: no feature started after

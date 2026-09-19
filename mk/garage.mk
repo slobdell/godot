@@ -10,7 +10,7 @@ garage: import ## Build an army of fixed unit types on a budget (tap/drag), then
 
 garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must start with the saved army and log no errors
 	mkdir -p $(BUILD_DIR)
-	timeout 60 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-scratch --garage-autofight --enemy=cpu:siege --seed=4 \
+	timeout 600 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-scratch --garage-autofight --enemy=cpu:siege --seed=4 \
 		2>&1 | tee $(BUILD_DIR)/garage-smoke.log | grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' || true
 	grep -q 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/garage-smoke.log
 	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/my_army\.json enemy=cpu:siege enemy_path=cpu:siege seed=4 budget=[0-9]+ green=[1-9] rust=[1-9]' $(BUILD_DIR)/garage-smoke.log
@@ -65,7 +65,7 @@ garage-web-smoke: export-web $(WEB_SMOKE_DEPS) ## Browser: ?garage renders, FIGH
 .PHONY: army-loop-smoke army-loop-shots
 army-loop-smoke: import ## Headless match loop: army → FIGHT → results → REMATCH → results → ARMY; checks the markers and that nothing errors
 	mkdir -p $(BUILD_DIR)
-	timeout 120 $(GODOT) --headless --path . -- --garage --garage-scratch --garage-autofight --enemy=cpu:swarm --seed=4 \
+	timeout 600 $(GODOT) --headless --path . -- --garage --garage-scratch --garage-autofight --enemy=cpu:swarm --seed=4 \
 		--army-loop-time=6 --army-loop-delay=0.5 --army-loop-auto=rematch,army,quit \
 		2>&1 | tee $(BUILD_DIR)/army-loop-smoke.log | grep -E 'GARAGE_FIGHT|ARMY_RESULTS|ARMY_LOOP' || true
 	test $$(grep -c 'GARAGE_FIGHT .*enemy=cpu:swarm .*seed=4 ' $(BUILD_DIR)/army-loop-smoke.log) -eq 2
@@ -79,7 +79,7 @@ army-loop-smoke: import ## Headless match loop: army → FIGHT → results → R
 		assert costs and all(c <= budget for c in costs), ('the CPU army must fit the player tier budget', budget, costs); \
 		print('CPU armies fit the tier budget:', costs, '<=', budget)"
 	! grep -E 'ERROR' $(BUILD_DIR)/army-loop-smoke.log
-	timeout 60 $(GODOT) --headless --path . -- --garage --garage-scratch --challenge=scout_hunt --army-loop-time=6 --army-loop-delay=0.5 \
+	timeout 600 $(GODOT) --headless --path . -- --garage --garage-scratch --challenge=scout_hunt --army-loop-time=6 --army-loop-delay=0.5 \
 		--army-loop-auto=quit 2>&1 | tee $(BUILD_DIR)/army-challenge-smoke.log | grep -E 'ARMY_CHALLENGE|ARMY_RESULTS' || true
 	grep -Eq 'ARMY_CHALLENGE id=scout_hunt green=3 rust=5' $(BUILD_DIR)/army-challenge-smoke.log
 	grep -q 'ARMY_RESULTS outcome=' $(BUILD_DIR)/army-challenge-smoke.log

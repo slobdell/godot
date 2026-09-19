@@ -38,7 +38,7 @@ nav-facing: import ## nav (round 7): do units achieve an ordered facing? 5 playe
 		--arena=$(or $(ARENA),yard) --time-limit=$(or $(NAV_TIME),90) --verb=$(or $(VERB),move) $(NAV_FLAGS) 2>&1 | grep -E "NAV_FACING|SCRIPT ERROR|ERROR" || true
 
 .PHONY: nav-fight
-nav-fight: import ## nav (round 7): why ordered units aren't making progress IN A FIGHT — two ~30-unit CPU-rostered armies, GREEN ordered by Orders like a player; every ordered unit-tick bucketed (progressing, yielding, blocked_*, halted_shooting, retasked:<option>, slow) (ARENA=yard SEED=3 NAV_TIME=120 BUDGET=6500)
+nav-fight: import ## nav (round 7): why ordered units aren't making progress IN A FIGHT — two ~30-unit CPU-rostered armies, GREEN ordered by Orders like a player; every ordered unit-tick bucketed (progressing, yielding, blocked_*, halted_shooting, retasked:<option>, slow) (ARENA=yard FIGHT_SEED=3 NAV_TIME=120 FIGHT_BUDGET=6500; not SEED/BUDGET: other mk files default those globally, lesson 44)
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/nav/fight_probe.gd -- \
-		--arena=$(or $(ARENA),yard) --seed=$(or $(SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(BUDGET),6500) \
+		--arena=$(or $(ARENA),yard) --seed=$(or $(FIGHT_SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(FIGHT_BUDGET),6500) \
 		$(NAV_FLAGS) 2>&1 | grep -E "NAV_FIGHT|SCRIPT ERROR|ERROR" || true

@@ -312,3 +312,49 @@ func test_the_camera_can_be_found_by_hand_and_copied() -> void:
 	assert_true(readout.lines()[0].contains("FOV %d°" % roundi(RtsCamera.MIN_FOV_DEG)), "the readout shows the live values (%s)" % readout.lines()[0])
 	assert_true(readout.lines()[1].contains("P copy pose"), "and the keys")
 	RtsCamera.fov = RtsCamera.FOV_DEG  # a static: leave it as the other tests expect
+
+
+## Round 7: with the arena's own perimeter (arena's Arena.perimeter / perimeter_edges), the cutaway crosses that polygon,
+## and the span of wall it crosses says what stands behind it.
+func _hexagon(apothem: float) -> PackedVector2Array:
+	# Flat sides north and south (vertices at k*60°: the edge from 60° to 120° is flat across +z).
+	var radius := apothem / cos(PI / 6.0)
+	var poly := PackedVector2Array()
+	for k in 6:
+		var angle := deg_to_rad(60.0 * k)
+		poly.append(Vector2(cos(angle), sin(angle)) * radius)
+	return poly
+
+
+func test_the_cutaway_follows_the_arenas_own_perimeter() -> void:
+	var poly := _hexagon(121.0)
+	var edges: Array = []
+	for i in poly.size():
+		var length := poly[i].distance_to(poly[(i + 1) % poly.size()])
+		edges.append({"wall_height_m": 3.0, "spans": [{"kind": "stands", "from_m": 0.0, "to_m": length}]})
+	# The south side (the edge crossing +z at its middle) has a stretch with nothing behind it in the middle.
+	var south := -1
+	for i in poly.size():
+		var mid := (poly[i] + poly[(i + 1) % poly.size()]) / 2.0
+		if mid.y > 100.0:
+			south = i
+	var length := poly[south].distance_to(poly[(south + 1) % poly.size()])
+	edges[south]["spans"] = [{"kind": "stands", "from_m": 0.0, "to_m": length / 2.0 - 10.0},
+			{"kind": "none", "from_m": length / 2.0 - 10.0, "to_m": length / 2.0 + 10.0},
+			{"kind": "stands", "from_m": length / 2.0 + 10.0, "to_m": length}]
+	RtsCamera.perimeter_poly = poly
+	RtsCamera.perimeter_edge_data = edges
+	var hit := RtsCamera.perimeter_crossing(Vector2(0, 60), Vector2(0, 1))
+	assert_near(float(hit["reach"]), 61.0, 0.01, "looking south from z=60, the wall is 61 m away (apothem 121)")
+	assert_eq(String(hit["kind"]), "none", "through the middle of the south side, nothing stands behind it")
+	var aside := RtsCamera.perimeter_crossing(Vector2(-40, 60), Vector2(0, 1))
+	assert_eq(String(aside["kind"]), "stands", "40 m to the side, the stands do")
+	# A low camera near the south wall: cut where the stands are; where only the wall is, the plane still clears it.
+	var focus_stands := Vector3(-40, 0, 111)
+	var near_stands := RtsCamera.cutaway_near(focus_stands, 0.0, 50.0, 21.0, 999.0)
+	assert_true(near_stands > RtsCamera.NEAR_DEFAULT, "behind the stands the camera cuts them (near %.1f)" % near_stands)
+	# A diagonal side: the polygon, not a square, decides where the wall is.
+	var diagonal := RtsCamera.perimeter_crossing(Vector2.ZERO, Vector2(1, 1).normalized())
+	assert_true(float(diagonal["reach"]) < 121.0 * sqrt(2.0) - 1.0, "a diagonal wall is nearer than the square's corner (%.0f m)" % diagonal["reach"])
+	RtsCamera.perimeter_poly = PackedVector2Array()
+	RtsCamera.perimeter_edge_data = []

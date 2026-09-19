@@ -73,7 +73,9 @@ const WALL_HEIGHT_M := 3.0
 ## The grandstand's profile outside the wall, as (metres out from the wall's inner face, height): the wall's top, the
 ## stands' front rail, their middle and their back. Measured from feel's kit_stands (15.7 m high, 19.9 m deep, set
 ## 0.3 m past the 2 m wall); if the venue changes shape, these follow it.
-const STANDS_PROFILE := [Vector2(2.0, 3.0), Vector2(2.3, 5.0), Vector2(12.3, 10.3), Vector2(22.2, 15.7)]
+## The front point includes the railing above the first seats (7 m): at 5 m the railing still crossed the back row of a
+## squad parked by the wall (shell-playtest at 78 m, round 7).
+const STANDS_PROFILE := [Vector2(2.0, 3.0), Vector2(2.3, 7.0), Vector2(12.3, 11.0), Vector2(22.2, 15.7)]
 ## Whether the stands hide the arena is judged for a vehicle this far inside the wall, this high.
 const OCCLUSION_PROBE := Vector2(4.0, 1.0)
 ## A camera less than this far behind the stands' back still counts as among them (their back rail and lights).
@@ -106,6 +108,10 @@ const TRACK_ZOOM_SPEED := 0.35
 ## still scroll in from there, which costs them awareness and is their call).
 ## Round 6: in play at 45° the auto camera closed to ~29 m on a three-vehicle squad (shell-playtest), too close to see
 ## what the squad is shooting at. It no longer comes closer than VISION_FLOOR_M on its own; the wheel still can.
+## Round 7: nor further than this. At the lead's 35° telephoto, fitting a squad strung along the spawn line pulled the
+## auto camera to ~220 m (shell-playtest), nothing like his 49 m; past the cap the rest of the squad goes to the edge
+## markers. `auto_frame_max_m` is the live value (the wheel still goes anywhere; this only limits the auto camera).
+const AUTO_FRAME_MAX_M := 100.0
 const VISION_FLOOR_M := 45.0  # confirmed by the lead's pose (auto-framing left on at 49 m)
 const VISION_MIN_ZOOM := 0.345  # RtsCamera.level_for(VISION_FLOOR_M)
 ## After the player last moved the camera, this many seconds of stillness give the element back to it.
@@ -160,6 +166,18 @@ var handback_seconds := HANDBACK_SECONDS
 var vision_inset := VISION_FRAME_INSET
 ## Off: the vision camera never takes the view back (V in play).
 var auto_frame := true
+var auto_frame_max_m := AUTO_FRAME_MAX_M
+## Round 7 (A), the lead: "the camera's yaw orientation should match the intended facing position of the squad or
+## selected unit - this is what I think can differentiate us from a normal RTS game." `facing` returns the selection's
+## facing (a ground Vector3) or null; the yaw turns toward it at YAW_FOLLOW_DEG_PER_S once it is YAW_DEADBAND_DEG off,
+## until within YAW_SETTLE_DEG (so a hull's wiggle never shakes the view). Manual yaw pauses it for the hand-back time;
+## Y turns it off. Null (nothing selected, or a mixed selection) keeps the current yaw: no snap.
+var yaw_follow := true
+var facing: Callable = Callable()
+const YAW_FOLLOW_DEG_PER_S := 70.0
+const YAW_DEADBAND_DEG := 12.0
+const YAW_SETTLE_DEG := 2.0
+var _yaw_turning := false
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -193,6 +211,7 @@ func _ready() -> void:
 	# The rig moves the camera every rendered frame from where vehicles are drawn (Shown): physics interpolation
 	# (combat's 30 Hz tick) must not also smooth it, or it trails a tick behind its own targets.
 	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	RtsCamera.load_perimeter()  # round 7: the arena's own wall shape, when it has one
 	snap()
 
 
@@ -231,6 +250,7 @@ func _process(delta: float) -> void:
 		tilt_by(tilt_keys * TILT_SPEED_DEG * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
 		focus = Shown.ground(follow_target)
+	_update_yaw_follow(delta)
 	_update_tracking()
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	if _track != Track.NONE:
@@ -264,11 +284,87 @@ func _apply() -> void:
 ## NEAR_DEFAULT. Pure, for tests.
 static func cutaway_near(at: Vector3, heading: float, distance: float, pitch_deg: float, half: float) -> float:
 	var back := Vector3(sin(heading), 0.0, cos(heading))  # from the focus toward the camera, on the ground
-	var reach := INF  # how far from the focus, along `back`, the perimeter square is
-	for axis in [0, 2]:
-		var along: float = back[axis]
-		if absf(along) > 0.0001:
-			reach = minf(reach, (half * signf(along) - at[axis]) / along)
+	var reach := INF  # how far from the focus, along `back`, the wall's inner face is
+	var wall_height := WALL_HEIGHT_M
+	var profile: Array = STANDS_PROFILE
+	if perimeter_poly.size() >= 3:
+		# Round 7: the arena's own perimeter (arena's Arena.perimeter / perimeter_edges), any convex polygon. The span
+		# of wall the sight line crosses says what stands behind it: stands and gates use the stands profile, "none"
+		# only the wall.
+		var hit := RtsCamera.perimeter_crossing(Vector2(at.x, at.z), Vector2(back.x, back.z))
+		if hit.is_empty():
+			return NEAR_DEFAULT
+		reach = float(hit["reach"])
+		wall_height = float(hit.get("wall_height_m", WALL_HEIGHT_M))
+		if String(hit.get("kind", "stands")) == "none":
+			profile = [Vector2(2.0, wall_height)]
+	else:
+		for axis in [0, 2]:
+			var along: float = back[axis]
+			if absf(along) > 0.0001:
+				reach = minf(reach, (half * signf(along) - at[axis]) / along)
+	return RtsCamera._cut(at, heading, distance, pitch_deg, reach, back, wall_height, profile)
+
+
+## The perimeter the cutaway crosses (round 7): arena's wall inner face, CCW, and its edges with their spans. Empty = the
+## square fallback (perimeter_half). Loaded from the arena by `load_perimeter`, or set directly in tests.
+static var perimeter_poly := PackedVector2Array()
+static var perimeter_edge_data: Array = []
+
+
+## Read arena's perimeter when this build has it (looked up by name: arena's shapes may not have merged yet).
+static func load_perimeter() -> void:
+	perimeter_poly = PackedVector2Array()
+	perimeter_edge_data = []
+	var script := load("res://game/arena/arena.gd") as Script
+	if script == null:
+		return
+	var names := script.get_script_method_list().map(func(m: Dictionary) -> String: return String(m["name"]))
+	if not names.has("perimeter") or not names.has("perimeter_edges"):
+		return
+	var poly: Variant = script.call("perimeter")
+	var edges: Variant = script.call("perimeter_edges")
+	if poly is PackedVector2Array and (poly as PackedVector2Array).size() >= 3 and edges is Array:
+		perimeter_poly = poly
+		perimeter_edge_data = edges
+
+
+## Where a ray from `from` (inside the perimeter) along `direction` leaves it: {"reach": metres, "edge": index,
+## "along_m": metres along that edge from its `from` vertex, "kind": the span's kind there, "wall_height_m"}; {} if none.
+static func perimeter_crossing(from: Vector2, direction: Vector2) -> Dictionary:
+	var best := {}
+	var nearest := INF
+	var n := perimeter_poly.size()
+	for i in n:
+		var a := perimeter_poly[i]
+		var b := perimeter_poly[(i + 1) % n]
+		var edge := b - a
+		var denom := direction.cross(edge)
+		if absf(denom) < 1e-6:
+			continue
+		var t := (a - from).cross(edge) / denom
+		var u := (a - from).cross(direction) / denom
+		if t > 0.0 and u >= 0.0 and u <= 1.0 and t < nearest:
+			nearest = t
+			best = {"reach": t, "edge": i, "along_m": u * edge.length()}
+	if best.is_empty():
+		return best
+	var kind := "stands"
+	var height := WALL_HEIGHT_M
+	if int(best["edge"]) < perimeter_edge_data.size():
+		var data: Dictionary = perimeter_edge_data[int(best["edge"])]
+		height = float(data.get("wall_height_m", WALL_HEIGHT_M))
+		for span: Dictionary in data.get("spans", []):
+			if float(best["along_m"]) >= float(span["from_m"]) and float(best["along_m"]) <= float(span["to_m"]):
+				kind = String(span["kind"])
+				break
+	best["kind"] = kind
+	best["wall_height_m"] = height
+	return best
+
+
+static func _cut(at: Vector3, heading: float, distance: float, pitch_deg: float, reach: float, back: Vector3,
+		wall_height: float, profile: Array) -> float:
 	var tilt := deg_to_rad(clampf(pitch_deg, 1.0, 89.0))
 	if reach < 0.0 or distance * cos(tilt) <= reach:
 		return NEAR_DEFAULT
@@ -278,8 +374,8 @@ static func cutaway_near(at: Vector3, heading: float, distance: float, pitch_deg
 	var height := distance * sin(tilt)
 	var span := outside + OCCLUSION_PROBE.x  # camera to the probe vehicle, horizontally
 	# Inside the stands' footprint (or just behind it) the camera is among the seats and railings: always cut.
-	var hidden := outside <= (STANDS_PROFILE.back() as Vector2).x + STANDS_CLEARANCE_M
-	for point: Vector2 in STANDS_PROFILE:
+	var hidden := profile.size() > 1 and outside <= (profile.back() as Vector2).x + STANDS_CLEARANCE_M
+	for point: Vector2 in profile:
 		if point.x >= outside:
 			continue  # this part of the stands is behind the camera
 		var sight := OCCLUSION_PROBE.y + (height - OCCLUSION_PROBE.y) * (point.x + OCCLUSION_PROBE.x) / span
@@ -288,10 +384,10 @@ static func cutaway_near(at: Vector3, heading: float, distance: float, pitch_deg
 	if not hidden:
 		return NEAR_DEFAULT
 	var pose := RtsCamera.pose_at(at, heading, distance, pitch_deg)
-	var wall_foot := Vector3(at.x, 0.0, at.z) + back * reach
 	var forward := -pose.basis.z
-	# The wall's top edge is nearer the camera than its foot by WALL_HEIGHT_M * sin(pitch): cut just past it.
-	var wall_top := wall_foot + Vector3.UP * WALL_HEIGHT_M
+	var wall_foot := Vector3(at.x, 0.0, at.z) + back * reach
+	# The wall's top edge is nearer the camera than its foot by its height * sin(pitch): cut just past it.
+	var wall_top := wall_foot + Vector3.UP * wall_height
 	return maxf(NEAR_DEFAULT, (wall_top - pose.origin).dot(forward) + CUTAWAY_PAST_WALL_M)
 
 
@@ -402,12 +498,34 @@ func set_auto_frame(on: bool) -> void:
 		stop_tracking("manual")
 
 
+## Round 7 (A): turn the yaw toward the selection's facing (see `yaw_follow`).
+func _update_yaw_follow(delta: float) -> void:
+	if not yaw_follow or not facing.is_valid() or _before_overview != null or _clock - _manual_at < handback_seconds:
+		_yaw_turning = false
+		return
+	var wanted: Variant = facing.call()
+	if not wanted is Vector3:
+		_yaw_turning = false
+		return
+	var gap := angle_difference(yaw, RtsCamera.yaw_facing(wanted as Vector3))
+	if not _yaw_turning and absf(gap) < deg_to_rad(YAW_DEADBAND_DEG):
+		return
+	_yaw_turning = absf(gap) > deg_to_rad(YAW_SETTLE_DEG)
+	var step := deg_to_rad(YAW_FOLLOW_DEG_PER_S) * delta
+	yaw = wrapf(yaw + clampf(gap, -step, step), -PI, PI)
+
+
+## The yaw that looks along `direction` on the ground (0 looks north, -Z; positive turns left: trip-up 2).
+static func yaw_facing(direction: Vector3) -> float:
+	return atan2(-direction.x, -direction.z)
+
+
 ## The current pose, in the words the lead pastes back: the values the defaults are made from.
 func pose_text() -> String:
 	var distance := RtsCamera.distance_for(_shown_zoom)
-	return "CAMERA_POSE pitch=%.0f distance_m=%.0f fov=%.0f yaw=%.0f zoom=%.3f auto_frame=%s" % [
+	return "CAMERA_POSE pitch=%.0f distance_m=%.0f fov=%.0f yaw=%.0f zoom=%.3f auto_frame=%s yaw_follow=%s" % [
 			RtsCamera.tilt_at(_shown_pitch, distance), distance, fov, rad_to_deg(_shown_yaw), _shown_zoom,
-			"on" if auto_frame else "off"]
+			"on" if auto_frame else "off", "on" if yaw_follow else "off"] + " auto_frame_max_m=%.0f" % auto_frame_max_m
 
 
 func reset_tilt() -> void:
@@ -702,7 +820,7 @@ func _update_vision_tracking() -> void:
 		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
 	else:
 		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
-	zoom = minf(float(goal[1]), vision_zoom)
+	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
 
 
