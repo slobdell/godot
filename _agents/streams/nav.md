@@ -262,6 +262,17 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Round 7 A/B, pre-registered (written 2026-09-19 BEFORE the run)
+
+**Commitment in CombatMotion** (a bonus for last plan's direction; timer jinks only against projectile weapons) vs
+without (`--nav-off=commit`). `make nav-fight-ab AB_OFF=commit`: yard, CPU armies at 6500, seeds 1 3 5 7 9, 120 s,
+both arms from the same tree. **Churn** = motion jumps per unit-minute (drive target > 8 m, same option). **Survivability**
+= green units lost AND rust units lost (both sides: the exchange, not only our losses).
+**Rule:** if commitment cuts motion churn and green losses do not rise by more than the seed-to-seed spread of the
+"off" arm, and the exchange (rust lost / green lost) is not worse by more than that spread, it ships: the churn was not
+the price of not dying. If green losses rise beyond the spread, evasion is load-bearing, commitment does not ship, and
+the answer is legibility (control's), reported with the numbers.
+
 ### Resuming this stream (written 2026-09-18 before a 4-day pause; read this first)
 
 **State:** backlog complete (X1–X8 done, X9 closed). Everything is merged or mergeable: code green at `34293b3b`
