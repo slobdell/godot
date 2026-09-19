@@ -274,7 +274,12 @@ wherever it fits.
   `hull_turn_accel_deg_s2` when a unit's catalog entry has one (`TankMotion._ramped_yaw`).
   - `make nav-rotation-numbers` on builder0: the tank pivot now reaches 90% of its peak rate in 7 ticks (it was 1), so it
     is smooth.
-  - The scout's K-turn still overshoots by 20.7°: robotic(b), left for Reeds–Shepp.
+  - ~~The scout's K-turn still overshoots by 20.7°~~ **Retracted: that was a bug in the instrument.** The car turns
+    201° in one smooth arc and its heading never reverses; `_report` wrapped 201° to −159° and called the difference an
+    overshoot. Fixed with an unwrapped heading sum. Laptop, `nav-rotation-numbers` after the fix: pivot, car and wheel
+    are all smooth with 0.0° overshoot. The truck turns 62° of its 90° face in 12 s and is still turning when the case
+    ends (the "last tick 37%" is the cut-off, not a snap). **With no overshoot there is no measured defect for
+    Reeds–Shepp to fix, so (2) is parked.**
 - **Semi in isolation (`truck` case).** Told to face 90°, `gang_tank` turned 7° while it was within 1.5 m of its start,
   and travelled 5.5 m. It does not yaw in place.
 - **Stall repro, `nav-fight-maps`, attack_move, arena's counters.** Oscillation was 5.3–6.6% on yard, boulevard, pit
@@ -392,7 +397,7 @@ about a point it isn't driving around (frames).
 | shape | (a) start / stop | (b) overshoot, last tick | (c) frames | verdict |
 |---|---|---|---|---|
 | tank pivot on `face` (118°) | **instant start** (90% of peak in 1 tick); stop decays over 31 ticks | 0.0°, 4% | pivots about its own centre (right for tracks) | **robotic (a)** |
-| scout K-turn to a point behind it (159°) | 21 ticks up, 25 down | **overshoots 20.7°**, 7% | drives a real arc | **robotic (b)** |
+| scout K-turn to a point behind it (159°) | 21 ticks up, 25 down | ~~overshoots 20.7°~~ 0.0° (round 8: the 20.7° was the measurement wrapping 201° to −159°) | drives a real arc | smooth |
 | squad of 4 wheeling onto a facing (89°) | 4 ticks up, 28 down | 0.0°, 4% | in place, together | smooth |
 
 What each would take, NOT started (orchestrator: the capture decides, the lead's next playtest decides whether):

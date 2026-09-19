@@ -241,10 +241,14 @@ func _report(case: String, series: Dictionary) -> void:
 			if rates[i] >= 0.9 * peak:
 				stop_ticks = last - i + 1
 				break
-		var total := wrapf(headings[headings.size() - 1] - headings[0], -180.0, 180.0)
+		# Unwrapped: the heading summed tick by tick. Round 8 found round 7's "20.7 degree overshoot" on the car was this
+		# measurement wrapping a 201-degree turn to -159 (the car's heading never reversed).
+		var turned_by := PackedFloat32Array([0.0])
+		for i in range(1, headings.size()):
+			turned_by.append(turned_by[i - 1] + wrapf(headings[i] - headings[i - 1], -180.0, 180.0))
+		var total := turned_by[turned_by.size() - 1]
 		var furthest := 0.0
-		for h in headings:
-			var turned := wrapf(h - headings[0], -180.0, 180.0)
+		for turned in turned_by:
 			if absf(turned) > absf(furthest) and signf(turned) == signf(total):
 				furthest = turned
 		var overshoot := absf(furthest) - absf(total)
