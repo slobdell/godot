@@ -314,6 +314,12 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.camera = main.camera
 	controls.rig = rig
 	controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
+	var loose := controls.groups.ungrouped(game_match, Match.Team.GREEN)
+	var sizes: Array[String] = []
+	for squad in game_match.team_squads(Match.Team.GREEN):
+		sizes.append("%s:%d" % [squad.squad_name, squad.roster.size()])
+	print("CONTROL_GROUPS squads=%d (%s) groups=%d ungrouped=%d %s" % [game_match.team_squads(Match.Team.GREEN).size(), " ".join(sizes),
+			controls.groups.numbers().size(), loose.size(), loose])
 	controls.elements = Elements.of_match(game_match)
 	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
 	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"
