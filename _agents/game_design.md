@@ -497,6 +497,70 @@ Two things this pick changed on its own:
   at that merge: **M1 frame numbers move for a camera reason, not an art reason**, and a 25° camera sees all the way
   to the far stands. Re-baseline after the merge; never publish a frame number measured across it.
 
+## Round 7 direction: the lead's playtest of round 6 (2026-09-18, same evening)
+
+> *"ok with make skirmish it's still not playable because of the camera. Here's what I need: we need some 3d
+> perspective view so it's not a lame. And then I think the camera is another dimension that can really make or break
+> this game. Basically I think the camera's yaw orientation should match the intended facing position of the squad or
+> selected unit - this is what I think can differentiate us from a normal RTS game. This makes it so the user can always
+> see the action, is somewhat constrained based on the perspective of the vehicle, squad, or selection, and has a good
+> understanding of the orientation of the vehicle, which should be an important thing (i.e. trying to emplace units in
+> an ambush). I also just did another quick play. The bird's eye view was better but then it also made it so tanks were
+> shooting at enemies I couldn't even see. So I think it makes sense here to somehow make the field of view match the
+> range of the vehicle or the max range of the selection. For the UX indicators on the bottom, there's some obvious
+> improvements to make: 1. instead of tank icons or scout icons, we should be able to actually re-use the meshy
+> renderings we have per vehicle. The control buttons (i.e. screen, etc) are too small and difficult to make out. It's
+> also really overwhelming to know what each of those buttons does - we should add some popover help type thing on a
+> sleek HUD that shows an animation of the movement would do for the squad (i.e. I don't know what it means to tell a
+> unit to screen. I don't know what way they'll point or if they'll hold position or what. So it would be really cool to
+> have a sleek video game HUD that takes advantage of our theme and does some entertaining but visually purposeful UX to
+> communicate what each action does). Also, some of the vehicles pointed backwards at start-up when I played with the
+> gang. ALso it seems like squad are not scoped together at the start; the units should start out like an army where
+> there actually is a starting formation where each squad is separated. The other thing that's really confusing about
+> the buttons is that some of them seem to be actions that require a follow on click, and other seem to be buttons that
+> are applied passively (if I click the attack button will they do something or do I need to direct them?). My last run
+> of make skirmish was also worse camera behavior than whatever was iterated, it's unplayable because of the field of
+> view right now"*
+
+**The camera is a hotfix, not a round-7 item: he cannot play at all.** Everything else below is round 7.
+
+### The camera design he is asking for, which is a real differentiator and not just a fix
+
+1. **Yaw follows the selection's intended facing.** *"The camera's yaw orientation should match the intended facing
+   position of the squad or selected unit — this is what I think can differentiate us from a normal RTS game."* Three
+   things he wants from it: the player **always sees the action**; the view is **constrained to the unit's own
+   perspective** rather than being a free god view; and the player **understands which way his vehicles are pointing**,
+   *"which should be an important thing (i.e. trying to emplace units in an ambush)"*. Note how this compounds with
+   round 6: armour facing, the crossing-acquisition penalty and support-by-fire arcs all make *facing* mechanically
+   real, and the camera currently hides it.
+2. **Field of view tied to the selection's weapon range.** From a real observation: at a high angle *"tanks were
+   shooting at enemies I couldn't even see."* So the frame should show what the selection can **fight**, not an
+   arbitrary distance — the view and the engagement envelope become the same number. This is the camera version of
+   round 4's *no unearned god view*, and it also means round 6's shortened ranges should pull the camera **in**.
+3. **A 3D perspective, "not lame."** Both extremes are rejected now: 12° is unplayable, and bird's-eye hides the fight.
+   The answer is somewhere between, and **nobody has found it from stills** (lesson 72 — no agent here can play).
+
+### The HUD he is asking for
+
+4. **Vehicle renderings, not role icons.** *"Instead of tank icons or scout icons, we should be able to actually re-use
+   the meshy renderings we have per vehicle."* The art exists (`game/theme/factions/`).
+5. **The control buttons are too small and difficult to make out.**
+6. **Popover help that ANIMATES what an action does.** *"I don't know what it means to tell a unit to screen. I don't
+   know what way they'll point or if they'll hold position or what."* He wants *"a sleek video game HUD that takes
+   advantage of our theme and does some entertaining but visually purposeful UX to communicate what each action does"* —
+   an animated preview of the resulting posture, not a tooltip. **This is the answer to round 6's N4 the round did not
+   find:** the military symbol made the button nameable; it did not make the behaviour knowable.
+7. **Which buttons need a follow-on click, and which apply immediately, is not legible.** *"If I click the attack button
+   will they do something or do I need to direct them?"* Two different grammars share one row of buttons with no visual
+   distinction.
+
+### Two defects to fix, not design
+
+8. **Some vehicles point backwards at start-up** (seen with the gangs).
+9. **Squads do not start as an army.** *"It seems like squads are not scoped together at the start; the units should
+   start out like an army where there actually is a starting formation where each squad is separated."* Round 6 built
+   formations and form-up, and then the match still opens with an undifferentiated mass.
+
 ## Units: fixed types that counter each other
 
 Each unit type is a fixed package: chassis, one weapon, armor, speed, sight, cost. **No loadouts.**
