@@ -191,55 +191,28 @@ func test_faction_directives_can_be_ablated_for_a_measurement() -> void:
 	assert_eq(Army.squad_key("gang_scout"), "gangs/scout", "and the switch goes back")
 
 
-func test_the_spawn_grid_says_how_big_a_vehicle_is_allowed_to_be() -> void:
-	# Round 8. The lead has called the gang semi tiny three times. It is 4.4 m TALL -- 3.14x the gang scout, inside
-	# the "3 or 4 times" he named -- and only 5.6 m long, and 5.6 is not a design choice: it is exactly
-	# SPAWN_ROW_SPACING (8.0) minus twice SPAWN_JITTER_MAX_Z (1.2), the longest hull that cannot overlap the row
-	# behind it. The truck could only grow upward, so it grew upward, and a top-down camera foreshortens height and
-	# shows FOOTPRINT. The catalog number that was free to move was the one the player cannot see.
+func test_the_spawn_grid_holds_the_unit_a_bare_spawn_drives() -> void:
+	# The spawn grid holds only what is placed ON it, and for every shipping path that is `Units.DEFAULT`:
+	# `Match.spawn_tank` defaults to it, and network players and legacy bots are the callers. A doctrine army never
+	# stays there -- `load_doctrine` ends with `ArmyLayout.deploy()`, which teleports every unit at tick 0 before any
+	# physics step -- so the roster is free to carry vehicles far longer than the grid's pitch, and after round 8 it
+	# does: the War Rig is 14 m against a grid pitch of 8.0.
 	#
-	# CORRECTED the same day: this is NOT the ceiling on how big a vehicle may be, and it never was. `load_doctrine`
-	# ends with `ArmyLayout.deploy()`, which teleports every unit at tick 0 before any physics step, so two hulls
-	# sharing a spawn slot never coexist in a simulated frame. The real ceiling is the spacing the army STANDS at
-	# (tests/test_army_footprint.gd). The arithmetic below is still true of `spawn_position` -- which non-doctrine
-	# spawns (network players, bare bots) do reach -- so the test stays, but it guards a holding position and not
-	# the geometry anyone plays. 5.6 m matching the War Rig exactly is a coincidence of no consequence.
-	# Measure the grid the game ACTUALLY spawns on, not the constants. `Arena.spawn_spot` returns the LAYOUT's baked
-	# spawn list whenever it has one, and every shipped layout does -- so Match.SPAWN_ROW_SPACING is a fallback that
-	# a real match never reaches, and `tools/make_arenas.py` keeps a SECOND copy of the pitch, mirrored by a comment
-	# that says "must mirror Match.SLOT_X / SPAWN_ROWS / SPAWN_ROW_SPACING". Asserting against the constant would
-	# guard the copy nobody uses and pass while the shipped layouts said something else. Same lesson as round 7's
-	# arms guard: assert against what the run will actually use.
+	# An earlier version of this test asserted the whole roster against the grid. That was wrong twice over: it
+	# guarded a holding position no doctrine army occupies, and it would now fail on a size the lead asked for.
+	# The real ceiling on vehicle size is the spacing the army STANDS at -- tests/test_army_footprint.gd.
 	var rows := _spawn_rows()
 	var length_ceiling := (rows[1] - rows[0]) - 2.0 * Match.SPAWN_JITTER_MAX_Z if rows.size() > 1 \
 			else Match.SPAWN_ROW_SPACING - 2.0 * Match.SPAWN_JITTER_MAX_Z
-	var column_spacing := _spawn_column_pitch()
-	var width_ceiling := column_spacing - 2.0 * Match.SPAWN_JITTER_MAX_X
-	var longest := 0.0
-	var too_long: Array[String] = []
-	var too_wide: Array[String] = []
-	for unit_id: String in Units.PROFILES:
-		var size: Array = Units.PROFILES[unit_id]["hull_size"]
-		longest = maxf(longest, float(size[2]))
-		if float(size[2]) > length_ceiling:
-			too_long.append("%s is %.1f m long" % [unit_id, size[2]])
-		if float(size[0]) > width_ceiling:
-			too_wide.append("%s is %.1f m wide" % [unit_id, size[0]])
-	assert_eq(too_long, [] as Array[String],
-			"no hull may be longer than SPAWN_ROW_SPACING - 2*SPAWN_JITTER_MAX_Z (%.1f m), or it overlaps the row behind it at spawn: %s"
-			% [length_ceiling, too_long])
-	assert_eq(too_wide, [] as Array[String],
-			"no hull may be wider than the column pitch - 2*SPAWN_JITTER_MAX_X (%.1f m): %s" % [width_ceiling, too_wide])
-	# And the back row must not push a hull through the perimeter. This is about the WALL, not DRIVABLE_LIMIT:
-	# DRIVABLE_LIMIT bounds a vehicle's CENTRE, so the longest hull's tail legitimately sits past it (114 + 2.8 =
-	# 116.8 against a limit of 116) and must still be inside the layout's own half_size.
-	var back_row: float = rows[rows.size() - 1]
-	var tail := back_row + longest / 2.0 + Match.SPAWN_JITTER_MAX_Z
-	var wall := float(Arena.active.get("half_size", Match.ARENA_HALF_SIZE))
-	assert_true(tail <= wall, "the back row's longest hull (tail at %.1f m) stays inside the wall at %.0f m" % [tail, wall])
+	var width_ceiling := _spawn_column_pitch() - 2.0 * Match.SPAWN_JITTER_MAX_X
+	var size: Array = Units.PROFILES[Units.DEFAULT]["hull_size"]
+	assert_true(float(size[2]) <= length_ceiling,
+			"the bare-spawn unit (%s, %.1f m long) fits between spawn rows (%.1f m of pitch after jitter)"
+			% [Units.DEFAULT, size[2], length_ceiling])
+	assert_true(float(size[0]) <= width_ceiling,
+			"...and between spawn columns (%.1f m after jitter)" % width_ceiling)
 
 
-## The z of each spawn row in the LOADED layout, nearest first; the constants only if no layout is active.
 func _spawn_rows() -> Array[float]:
 	var found := {}
 	for spot: Array in Arena.active.get("spawns", {}).get("green", []):

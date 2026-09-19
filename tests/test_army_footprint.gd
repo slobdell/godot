@@ -30,17 +30,30 @@ func _closest(game_match: Match) -> Dictionary:
 	var tanks := game_match.sorted_team_tanks(Match.Team.GREEN)
 	var worst := INF
 	var worst_pair := ""
+	var closest_pair := ""
+	var closest := INF
 	var gaps: Array[float] = []
 	for a in tanks:
 		var nearest := INF
+		var nearest_other: Tank = null
 		for b in tanks:
 			if a == b:
 				continue
-			nearest = minf(nearest, a.global_position.distance_to(b.global_position))
+			var d := a.global_position.distance_to(b.global_position)
+			if d < nearest:
+				nearest = d
+				nearest_other = b
 		if nearest < INF:
 			gaps.append(nearest)
+			# Name the CLOSEST pair, not only the worst-clearance one. When a size change breaks a layout the two
+			# are different vehicles, and "which two are touching" is the question whoever owns the spacing asks.
+			if nearest < closest:
+				closest = nearest
+				closest_pair = "%s (%s, %.1f m) and %s (%s, %.1f m) are %.1f m apart" % [
+						a.name, a.unit_id, float(Units.stat(a.unit_id, "hull_size")[2]),
+						nearest_other.name, nearest_other.unit_id,
+						float(Units.stat(nearest_other.unit_id, "hull_size")[2]), nearest]
 			var size: Array = Units.stat(a.unit_id, "hull_size")
-			# Conservative: two hulls of this length, nose to tail, need this much centre-to-centre.
 			var needed := float(size[2])
 			if nearest - needed < worst:
 				worst = nearest - needed
@@ -48,15 +61,15 @@ func _closest(game_match: Match) -> Dictionary:
 	gaps.sort()
 	return {"count": tanks.size(), "min": gaps[0] if gaps.size() > 0 else 0.0,
 			"median": gaps[gaps.size() / 2] if gaps.size() > 0 else 0.0,
-			"worst_clearance": worst, "worst_pair": worst_pair}
+			"worst_clearance": worst, "worst_pair": worst_pair, "closest_pair": closest_pair}
 
 
 func _report(archetype: String, faction: String) -> Dictionary:
 	var game_match := _army_of(archetype, faction)
 	await wait_physics_frames(2)
 	var m := _closest(game_match)
-	print("MEASURE army_footprint %s: %d vehicles, nearest neighbour min %.1f m, median %.1f m; tightest: %s"
-			% [archetype, m["count"], m["min"], m["median"], m["worst_pair"]])
+	print("MEASURE army_footprint %s: %d vehicles, nearest neighbour min %.1f m, median %.1f m; closest: %s"
+			% [archetype, m["count"], m["min"], m["median"], m["closest_pair"]])
 	return m
 
 
