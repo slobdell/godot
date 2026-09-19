@@ -72,6 +72,37 @@ Coming with M4: **match runner** results (JSON) for AI experiments.
 - Markers printed by `main.gd`: `TANK_SQUAD_READY` (wired), `TANK_SQUAD_LISTENING` (server), `TANK_SQUAD_CONNECTED` / `TANK_SQUAD_SPAWNED` (client). `smoke.mjs` takes the marker to wait for as its 4th argument. **If you rename one, grep the Makefile and `tools/`.**
 - `tests/net/bot_client_check.gd` is a `SceneTree` script that waits for the server's TCP port, instantiates the *real* `main.tscn` (which reads the same `--connect`/`--demo` flags), and watches `Tanks/Tank_<my peer id>.sync_position`. It isn't named `test_*`, so `make test` doesn't pick it up. **The `NET_SMOKE_EXPECT` override exists to prove the check can fail:** `make net-smoke NET_SMOKE_EXPECT=3` must exit non-zero.
 
+## Positive controls: assert the run is the run you think it is, from inside it
+
+**Every measurement script asserts its own conditions before it reports a number, and exits non-zero if they are
+not met.** Not around the run — *inside* it, where the setup actually is.
+
+**The reason, and it is the whole argument:** the arena stream produced six wrong numbers in one day, and **three
+assertions would have caught every one of them** —
+
+1. **the map is the one named** (every faction-matrix number this project has quoted was a *foundry* number, and
+   the tool said so nowhere);
+2. **the objectives are where the layout says** (a CPU competing for the wrong ground looks completely functional);
+3. **the armies are the size requested** (`NAV_UNITS=60` on a layout with 52 spawn points put **eight pairs of
+   hulls in eight positions**; those hulls cannot move, and their failures were published as congestion).
+
+A stream that can say *"three assertions would have caught every wrong number I produced today"* has an unusually
+strong case for spending an hour on assertions rather than features.
+
+**Why this is not the same as a careful measurement window.** Arena's `centre_sees_share` is measured over a fixed
+extent so the number cannot be **gamed** by a layout declaring itself bigger. That is worth doing and it is not
+enough: **it still does not assert that the thing you think you are measuring is present in the run.** A fixed
+window survives a hostile layout; only an assertion inside the run survives someone changing the setup — including
+a future agent who has never read any of this.
+
+**The shape to copy** (`tests/arena/maze_probe.gd`, `_positive_control`): check what the run depends on, print one
+`*_CONTROL ok: …` line naming the conditions when they hold, and on failure `push_error` each problem and
+**exit 1 before writing any output**. A number from a run whose conditions were not met is worse than no number,
+because **it looks exactly like a real one**.
+
+Idea from combat, after two of its designator runs measured a different game than it thought and no check caught
+either.
+
 ## Known flakes
 
 - **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on

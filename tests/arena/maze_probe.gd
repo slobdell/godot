@@ -118,6 +118,56 @@ func _deploy(wanted: int) -> void:
 		route_m[key] = _path_length(Pathing.find_path(arena, tank.global_position, goal))
 	print("NAV_MAZE_DEPLOYED %d units on %s%s" % [units.size(), Arena.active.get("name", "?"),
 			" (both ways)" if both_ways else " (one way)"])
+	_positive_control(wanted, both_ways)
+
+
+## POSITIVE CONTROL: assert the run is the run we think it is, from INSIDE it.
+##
+## Every wrong number this stream published would have been caught by one of three assertions — the map is the one
+## named, the objectives are where the layout says, the armies are the size requested. A fixed measurement window
+## stops a metric being *gamed*; only an assertion inside the run catches the setup silently not being what you
+## asked for. (combat's idea, after two of its runs measured a different game than it thought and no check caught
+## either.)
+##
+## The case that proves it here is real and cost a published baseline: a layout has 52 spawn points and
+## `Arena.spawn_spot` wraps with `slot % size`, so `NAV_UNITS=60` put **eight pairs of hulls in eight positions**
+## and those never moved. Eight phantom stragglers in every 60-unit run, attributed to congestion, until nav found
+## it by asking WHICH units failed. `no two units start on top of each other` would have caught it on the first run.
+##
+## A failed control exits 1: a number from a run whose conditions were not met is worse than no number, because it
+## looks exactly like a real one.
+func _positive_control(wanted: int, both_ways: bool) -> void:
+	var problems: Array = []
+	var arena_name := String(Arena.active.get("name", ""))
+	var asked := _flag("arena", "maze")
+	if arena_name != asked:
+		problems.append("asked for arena '%s' and got '%s'" % [asked, arena_name])
+	if units.size() != wanted:
+		problems.append("asked for %d units and deployed %d (the layout may have fewer spawn slots)"
+				% [wanted, units.size()])
+	var coincident := 0
+	for i in units.size():
+		for j in range(i + 1, units.size()):
+			if units[i].global_position.distance_to(units[j].global_position) < 1.0:
+				coincident += 1
+	if coincident > 0:
+		problems.append("%d pairs of units started on top of each other — spawn slots wrapped, and those hulls "
+				% coincident + "cannot move, so every arrival number below would be wrong")
+	var teams := {}
+	for tank in units:
+		teams[tank.team] = true
+	if both_ways and teams.size() < 2:
+		problems.append("--both-ways asked for head-on traffic and every unit is on one side")
+	if not both_ways and teams.size() > 1:
+		problems.append("one-way run has units on both sides")
+	if problems.is_empty():
+		print("NAV_MAZE_CONTROL ok: %s, %d units, %d side(s), no coincident spawns"
+				% [arena_name, units.size(), teams.size()])
+		return
+	for problem: String in problems:
+		push_error("nav-maze control FAILED: %s" % problem)
+	print("NAV_MAZE_CONTROL FAILED %s" % JSON.stringify(problems))
+	quit(1)
 
 
 func _sample() -> void:
