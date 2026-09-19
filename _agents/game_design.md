@@ -712,6 +712,45 @@ What follows for map authoring, and these are testable claims rather than taste:
    alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
    the bands (lesson 62).
 
+### THE ROUND'S HEADLINE: the units are still not smart enough (lead, 2026-09-19)
+
+> *"Another thing that's making the game unplayable on closer inspection is that the vehicles are still just too dumb. A
+> lot of them just keep getting stuck in places, and that's I think why I'm feeling like the units aren't obeying me. Dumb
+> vehicles that can't get into formation will also never provide the feel I was hoping for to create formations. And in
+> fact, the fact that this is challenging to implement is a good sign, because when it does eventually work it will look
+> and feel sophisticated. I want you to research and implement whatever pathing algorithms or decision weighing
+> algorithms necessary to make these units look and feel smart."*
+
+**This contradicts round 6's headline number, and the contradiction is the finding.** nav measured **60/60 arrival on
+every configuration** and **30/30 order completion with five squads ordered across one another**. Both are real. **Both
+were measured with no enemy.** `tests/nav/order_probe.gd` says so in its own header: *"Nobody fights (no enemy): this
+measures driving and order completion only."* And `mk/nav.mk` notes the maze probe has no randomness *"in a hold-fire
+drive"*.
+
+**So the round proved that a horde can drive. It never measured whether a horde can drive while fighting** — which is the
+only configuration the lead ever plays. This is lesson 23 for the fifth time in this project: *a number taken in a
+configuration the player does not get measures a game nobody plays.*
+
+**The suspect is therefore not pathfinding, and the lead's own phrasing points at it:** *"pathing algorithms **or decision
+weighing algorithms**"*. In a real fight the decision layer re-tasks the movement layer constantly — brains re-decide
+(ENGAGE, SUPPRESS, cover-seeking, `CombatMotion`'s 16-direction context steering), drills re-issue element orders,
+targets change, units halt to shoot and back away under fire. **A unit re-tasked before it can complete any movement
+looks stuck and is stuck, with no pathing bug anywhere.** Round 6 has direct evidence that this class of failure is real
+and common: round 4's drills stole the element from each other *every tick* so neither completed once; the
+support-by-fire line alternated with `near_ambush` **every tick**, 128 orders in 10 s; and squad's own X4 found 47 idle
+re-issues per window before fixing it. **Every one of those was thrash between a decider and an executor, and every one
+was invisible until something measured it.**
+
+**What the round must therefore build first is an instrument, not an algorithm:** the arrival, stall and re-task
+measurements **in a real fight**, per unit, with the *reason* a unit is not making progress attributed — re-tasked,
+blocked, yielding, halted to shoot, no path. Until that exists, any algorithm is a guess, and this project has spent a
+round learning what guesses cost.
+
+**And his framing is worth keeping, because it licenses the expensive version:** *"the fact that this is challenging to
+implement is a good sign, because when it does eventually work it will look and feel sophisticated."* He is explicitly
+authorising research and real algorithms rather than patches. Formations that *look* sophisticated are the goal; a unit
+that cannot hold a slot while fighting cannot ever deliver that.
+
 ### The arena's shape and finish (lead, 2026-09-19)
 
 14. **The announcers cut each other off.** *"The announcers cut each others' audio off, so that destroys the feel of the
