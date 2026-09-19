@@ -201,6 +201,13 @@ func commanded_units() -> Array[String]:
 	var last := _living(groups.members(_last_group))
 	if not last.is_empty():
 		return last
+	# Round 8: nothing selected and no group used yet - group 1, as the first frame is (round 6). The whole army at the
+	# lead's 35° does not fit the 100 m auto-frame cap, so framing it cut both ends off, group 1 included (squad found it
+	# once consolidation put group 1 at the end of the line).
+	for number in groups.numbers():
+		var first := _living(groups.members(number))
+		if not first.is_empty():
+			return first
 	var all_units: Array[String] = []
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():

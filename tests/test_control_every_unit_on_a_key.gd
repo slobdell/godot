@@ -50,3 +50,17 @@ func test_the_family_of_a_numbered_squad() -> void:
 	assert_eq(ControlGroups.family("Hunters"), "Hunters", "an unnumbered one is its own family")
 	assert_eq(ControlGroups.family("Eyes II"), "Eyes II", "squad's split squads keep their own name")
 
+
+
+## squad, round 8: after consolidation group 1 sat at the far left of a 34-vehicle line, and with nothing selected the
+## vision camera framed the WHOLE army - capped at 100 m, which at the lead's 35° cannot hold it - so group 1 was off
+## the screen and a drag box could not take it. With nothing selected the camera keeps to group 1, like the first frame.
+func test_with_nothing_selected_the_camera_frames_group_1_not_the_whole_army() -> void:
+	var f := preload("res://tests/support/control_fixture.gd").new(self)
+	await f.build(false)
+	f.controls.groups.save(1, ["Green_Alpha_1", "Green_Alpha_2"])
+	f.controls.groups.save(2, ["Green_Bravo_1", "Green_Bravo_2"])
+	f.controls.selection.set_units([])
+	assert_eq(f.controls.commanded_units(), f.controls.groups.members(1), "nothing selected: the camera's element is group 1")
+	f.controls.groups.save(1, [])
+	assert_eq(f.controls.commanded_units(), f.controls.groups.members(2), "the first group that has anyone, if 1 is empty")
