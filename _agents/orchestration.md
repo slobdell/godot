@@ -1916,3 +1916,31 @@ The kickoff prompt is one line; this section is the rest.
        intent", which reads as a judgement call made badly.** combat corrected it — *"I did not miss the intent by
        choosing badly; the axis that carried it was locked"* — and the correction matters, because the first framing
        would have had someone re-pick a number when the fix is a spawn grid.
+127. **Carrying the commit makes a measurement ATTRIBUTABLE; it does not make it CURRENT.** combat's retraction, and the
+     sharpest sentence of round 8. We adopted `run: <machine> at <commit>` in round 7 so that every number could be
+     attributed — **and I treated attribution as sufficient all day.**
+     combat measured gang armies deploying with **0.2 m between hull centres** and escalated it; I relayed it to squad as
+     top priority. **squad had already fixed it, in `f1c3afcb`, which was on `main`** — combat's merge base was forty
+     commits behind, where `ArmyLayout` still used a flat `MIN_SPACING_M := 5.0`. **A defect measured on a branch is a
+     statement about that branch, and we both stated it about the game.**
+     - **Before escalating a defect, check whether the file you are accusing has moved on `main`.**
+       `git log main -- <file>` costs ten seconds and neither of us spent it.
+     - **It is the mirror of invariant 2** — *a branch's green `sim-baseline` predicts nothing about `main`* — **which
+       combat wrote four hours earlier.** Lesson 98's shape again: **knowing a rule in one direction does not carry it
+       into the other.**
+     - **And the verification was invalid too, in the more instructive way.** combat copied `main`'s `army_layout.gd`
+       into its own tree and got **min 0.0 m, median 0.0 m** — every unit in one place. **A single file lifted from a tree
+       forty commits ahead is a Frankenstein build**: exactly the mismatched comparison `compare_arms` refuses, **assembled
+       by hand, because a tool only guards what it is pointed at.** combat discarded both numbers rather than reporting
+       the better one.
+128. **Finding the authoritative copy of a value is not the same as checking that the value still matters.** combat, on
+     its own spawn-grid analysis. It asked *which of two copies of the spawn geometry wins* — `make_arenas.py`'s baked
+     list or `Match`'s constants — **a good question, correctly answered.** It never asked **whether spawn positions
+     survive the frame.**
+     They do not: **`Match.load_doctrine()` ends with `ArmyLayout.deploy()`, which teleports every unit at tick 0** with
+     no physics step in between. **So "5.6 m is the ceiling, and it is exactly `SPAWN_ROW_SPACING − 2×SPAWN_JITTER_MAX_Z`"
+     is correct arithmetic about a value that constrains nothing anyone ever sees** — and a whole plan of non-uniform
+     rows, a wedge deployment and regenerated arena lists was built on it. **arena was told to hold; no work was lost.**
+     **This is a distinct failure from the copied-value one (lesson 66) and we did not have it.** A duplicated value asks
+     *which copy is true*; a **dead** value asks *whether either copy is read*. **Trace a constant to its consumer, not
+     just to its definitions** — and when the consumer is overwritten a line later, the constant is decoration.
