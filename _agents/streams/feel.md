@@ -163,7 +163,7 @@ place, you do not place).
   VIEWS=venue SHAPE=hexagon` on builder0 — band inside the walls on all six sides.
 - **Facade v3** (`831268ea`): window grid everywhere, grime streaks, per-block bay width, pale chamfer/bevel edges.
   Frames for the lead via the orchestrator (`build/city-review/`). **Lead gate:** street-level detail waits on that.
-- **Check on `7776d70e`** (covers all of the above plus `9e44977f`) running on builder0.
+- **Green: `7776d70e`** (builder0 `make remote T=check`: `make check exited 0`, 1179 passed, 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`) — all of the above plus `9e44977f`. Sent to the orchestrator. Check on `39215ff6` (crowd pilot, X7's four) running.
 - **Crowd source material — pilot made, not heard** (`9f74b824`, 250 credits): `crowd_bed` → `crowd_murmur` (19 s loop)
   and `crowd_roar` → `crowd_cheer`, prompts as drafted under *Waiting on the lead*. The bed swelled 8 dB over its length
   (asked for constant); CrowdVoice sets the murmur's level from the match, so the new `layer.level_s` gain rider holds
@@ -331,6 +331,8 @@ weak-spot hit and roar a kill. Listen: `build/crowd-listen/*.mp3`. Look: `make r
    frightening now, not cartoonish?
 
 ### Green commits (merge here)
+- **`7776d70e`** — builder0: **1179 passed, 0 failed, `make check exited 0`**, baseline `253ecfdeed84bc4d`. Polygon venue,
+  StandsProfile, hazard band, facade v3, facing-audit turret hold.
 - **`3040ccd9`** — `make remote T=check` on builder0: **1081 passed, 0 failed, `make check exited 0`**; shell-playtest on
   builder0: 0 leak lines, 0 ERROR lines. The sky leak fix and the ground under the near wall.
 - **`dae54f8f`** — `make remote T=check` on builder0: **1066 passed, 0 failed, `make check exited 0`**. Everything since
