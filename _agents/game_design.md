@@ -774,7 +774,34 @@ that cannot hold a slot while fighting cannot ever deliver that.
     validation**, and **the navmesh's half-plus-180°-mirror construction** (which survives 6- and 8-fold symmetry, but
     the bake region and the seam do not obviously). Octagon and hexagon both contain a 180° rotation, so fairness is
     preservable — but it is a contract change across three streams, not a layout edit.
-    **Cheapest honest first step:** chamfer the *corners* of the existing square — which is literally an octagon with
+    **DECIDED: a hexagon, flat side facing each base** (arena, 2026-09-19, `40029d59`). Measured at our 121 m apothem,
+    not argued:
+
+    | shape | side | midfield width | width at z = ±60 | centre-to-wall variation | corner |
+    |---|---|---|---|---|---|
+    | square | 242 m | 242 m | 242 m | **41.4%** | 90° |
+    | **hexagon** | 139.7 m | **279 m** | **210 m** | 15.5% | 120° |
+    | octagon | 100.2 m | 242 m | 222 m | **8.2%** | 135° |
+
+    Base-to-base is 2 × apothem = 242 m in all three, so the crossing itself does not change.
+    **The hexagon is the shape that varies most, and variation is what the complaint is about.** Wide in the middle
+    (**279 m — 15% more lateral room to flank** than either alternative) and pinched to 210 m at the approaches: an open
+    midfield for manoeuvre and two natural funnels in front of the bases, **produced by the boundary alone, before a
+    single prop is placed.**
+    **The octagon is the most uniform arena available** — 8.2% variation, width barely changing, 135° corners that
+    shelter almost nothing. **The closest thing to a featureless disc, and *"the game is just this big open brawl"* is
+    the complaint we are answering, so its uniformity is the failure mode rather than a neutral property.** The stands'
+    tiling (a hexagon takes exactly 6 × 23.07 m modules; an octagon leaves 3.9 m gaps at all eight corners) agrees and
+    was **confirmatory, not decisive** — arena states it would have chosen a hexagon with no stands at all.
+    **Orientation is a real choice and it is flat-side-to-base**, which preserves how bases sit on a wall today. The
+    alternative — a *vertex* facing each base — inverts everything: spawns in a corner, pinched midfield, wide
+    approaches. One constant, and worth an argument rather than an assumption if anyone prefers it.
+    **The caveat, with a trigger date:** the pinch leaves **less room for a wide flank near a base** (210 m against the
+    square's 242 m). That is fine, arguably good, **only while objectives stay off the base line** — an objective near a
+    base turns that funnel into a corridor with no way round, which is the boulevard failure in a new shape.
+    **Re-check when off-centre objectives land**, which is also when the reward-term metric exists to check it with.
+
+    **Cheapest first step if the shape ever needs deferring:** chamfer the *corners* of the existing square — which is literally an octagon with
     four short sides, gets the visual win he is asking for, and can be done with a per-arena corner-cut parameter rather
     than by making `half_size` a polygon.
 
