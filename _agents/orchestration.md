@@ -2017,3 +2017,21 @@ The kickoff prompt is one line; this section is the rest.
        test going red**, and the count is now the strongest argument in the file for rendering what you assert about.
      - **The honest cost, stated by control rather than hidden:** the lean is shorter where the card bites, 16.2 → 8.4 m
        in the fixture, so `test_command_camera`'s threshold moved 10 → 5 m **with the reason written in place.**
+134. **The fourth item was hiding inside the third: the first person to place a city block would have found it did not
+     work.** I listed three failures of *built but not encountered* — the hexagon unmerged, the lead's map verdict never
+     reaching code, the blocks placed in no map. arena placed eight and found **the navmesh baker silently ignores any
+     box from ~8 m of footprint upward.**
+     **Measured, one variable:** same arena, same obstacle type, same 3 m height; distance from box centre to nearest
+     navmesh after baking — **4 m → 4.0 m (a correct hole); 8, 12, 18, 26, 40 m → 0.5 m, the ground surface.** No hole,
+     no rooftop. The collision body is correct every time.
+     **Never seen because every obstacle this project owns is thin on at least one axis** — `wall` 18 × 1.5,
+     `container_40` 12.19 × 2.44, `crate` 4.5 × 4.5 — **and stacks only grow upward.** The city block is the first object
+     with a genuinely large footprint.
+     - **"Built, merged, unused" can hide "and it does not work."** A capability nobody has exercised is not a capability
+       in reserve; **it is an untested claim.** Shipping it unused was not neutral — it was a defect with a delayed fuse.
+     - **And the defect it would have produced is the lead's own complaint, manufactured at building scale:** physics and
+       navigation read the same body, so **a solid block the navmesh says is drivable is a unit stuck behind an invisible
+       barrier, shuffling** — on the very map built to answer *"stuck behind basic barriers, moving back and forth."*
+     - **arena's first fix was wrong and it says so: a hollow shell of four walls leaves the interior walkable — an
+       enclosed, unreachable navmesh island inside every building.** The right answer is tiling the footprint with
+       adjacent 4 m slabs. **Recorded because the wrong version is the one that looks obviously correct.**
