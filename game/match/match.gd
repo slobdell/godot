@@ -10,9 +10,6 @@ signal local_tank_spawned(tank: Tank)
 ## Emitted once when a score or time limit is reached (see start_limits).
 signal finished(result: Dictionary)
 ## Simulating peer: the control point changed hands (-1 = neutral).
-## N7: an objective changed hands. `index` is its position in `objectives`; `owner` is -1, Team.GREEN or Team.RUST.
-## `control_changed` still fires for the primary objective, so pre-N7 listeners need no change.
-signal objective_changed(index: int, owner: int)
 signal control_changed(owner: int)
 ## Simulating peer: a tank was destroyed (by `killer`, a tank name).
 signal tank_destroyed(victim: Tank, killer: String)
@@ -88,43 +85,13 @@ const CONTROL_CENTER := Vector3.ZERO
 const CONTROL_RADIUS := 16.0
 const CONTROL_CAPTURE_SECONDS := 8.0
 const CONTROL_POINTS_TO_WIN := 90
-## N7 (round 6): the objectives this match is fought over, read from the layout rather than hard-coded.
-## Each entry is {name, position: Vector3, radius: float, owner: int (-1 neutral), progress: float (-1..1)}.
-## `Arena.objectives_of` reports **exactly the single central zone this file used to hard-code** for any layout
-## without an `objectives` list, so every shipped arena behaves identically. Off-centre objectives come in mirrored
-## pairs (arena's validator enforces it), which is what keeps the fairness invariant.
-##
-## Why it matters, from the CP4 series: the gates (sight, acquisition) moved kill distance -11 m and off-axis kills
-## +17 points where the bands moved them -3 m and +2 -- and a SINGLE CENTRAL objective is the terrain-level version
-## of the same problem, because it collapses the space in which acquisition and flanking can matter at all. The 45%
-## off-axis kills were measured *despite* one central control point on every map.
-var objectives: Array = []
-## -1 = neutral, else the team that holds it. **The PRIMARY objective's** (index 0), so every pre-N7 consumer --
-## the radar, the tactical map, the announcer, the CPU commander, the agent bridge -- keeps reading what it always
-## read. With one objective, which is every shipped layout today, it is the whole story.
-## N7 makes the objective the single source of truth and these a view onto it, rather than a copy the tick has to
-## remember to write back. A copy is what broke test_control_point when N7 landed: it poked `control_owner` between
-## frames, the tick overwrote it from the objective, and the match silently never ended. Writing through means every
-## pre-N7 reader AND every pre-N7 writer keeps working unchanged.
-var control_owner: int:
-	get:
-		return int(objectives[0]["owner"]) if not objectives.is_empty() else -1
-	set(value):
-		if not objectives.is_empty():
-			objectives[0]["owner"] = value
-## -1 (Rust has it) .. 0 (neutral) .. 1 (Green has it). The primary objective's, as above.
-var control_progress: float:
-	get:
-		return float(objectives[0]["progress"]) if not objectives.is_empty() else 0.0
-	set(value):
-		if not objectives.is_empty():
-			objectives[0]["progress"] = value
-## Whole points (seconds held) per team, summed over every objective.
+## -1 = neutral, else the team that holds it.
+var control_owner := -1
+## -1 (Rust has it) .. 0 (neutral) .. 1 (Green has it).
+var control_progress := 0.0
+## Whole points (seconds held) per team.
 var control_score := [0, 0]
-## Fractional ticks: with N objectives a team banks INTEL_EVERY_TICKS x (held / N), so holding them all scores at
-## exactly the old rate and holding half scores at half. **At N=1 this reduces to the old integer accumulation**,
-## which is what makes N7 a read-through rather than a balance change wearing one's clothes.
-var _control_ticks := [0.0, 0.0]
+var _control_ticks := [0, 0]
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
@@ -261,9 +228,6 @@ func _ready() -> void:
 	# Must be assigned on every peer before the server's first spawn message arrives.
 	tank_spawner.spawn_function = _build_tank
 	shell_spawner.spawn_function = _build_shell
-	# N7: read the layout's objectives. Arena.active is set by the arena scene, which enters the tree first; a layout
-	# with no `objectives` list yields exactly the single central zone this file used to hard-code.
-	load_objectives()
 
 
 func _physics_process(delta: float) -> void:
@@ -660,100 +624,38 @@ func _apply_hazards() -> void:
 				_announce_destroyed(tank, "hazard:" + String(hazard["type"]))
 
 
-## N7: read the layout's objectives. Called at setup; safe to call again (it keeps owners where names match).
-func load_objectives() -> void:
-	var previous := {}
-	for objective: Dictionary in objectives:
-		previous[objective["name"]] = objective
-	objectives = []
-	for spec: Dictionary in Arena.objectives_of(Arena.active):
-		var was: Dictionary = previous.get(spec["name"], {})
-		objectives.append({"name": spec["name"], "position": spec["position"], "radius": spec["radius"],
-				"owner": int(was.get("owner", -1)), "progress": float(was.get("progress", 0.0))})
-	if objectives.is_empty():
-		# `control_point` is a MATCH flag (--control), not a layout property: before N7 it meant "a zone at the arena
-		# centre, radius CONTROL_RADIUS" whatever the layout said. A layout that declares no control_point must still
-		# get that zone, or --control would silently do nothing on it.
-		objectives.append({"name": "control point", "position": CONTROL_CENTER, "radius": CONTROL_RADIUS,
-				"owner": int(previous.get("control point", {}).get("owner", -1)),
-				"progress": float(previous.get("control point", {}).get("progress", 0.0))})
-
-
-## Tanks of each team alive inside `objective`'s zone (the primary one by default, which is what
-## `control_presence()` meant before N7).
-func objective_presence(objective: Dictionary) -> Array:
+## Tanks of each team alive inside the control zone.
+func control_presence() -> Array:
 	var present := [0, 0]
-	var centre: Vector3 = objective["position"]
-	var radius := float(objective["radius"])
 	for tank in _sorted_tanks():
-		if not tank.is_alive():
-			continue
-		if Vector2(tank.global_position.x - centre.x, tank.global_position.z - centre.z).length() <= radius:
+		if tank.is_alive() and in_control_zone(tank.global_position):
 			present[tank.team] += 1
 	return present
 
 
-## Tanks of each team alive inside the primary objective's zone. Unchanged for every pre-N7 caller.
-func control_presence() -> Array:
-	return objective_presence(objectives[0]) if not objectives.is_empty() else [0, 0]
-
-
-## True if `point` is inside ANY objective. Prefer this over the static `in_control_zone` once a layout ships
-## off-centre objectives: the static one can only know about the default central zone.
-func in_any_objective(point: Vector3) -> bool:
-	for objective: Dictionary in objectives:
-		var centre: Vector3 = objective["position"]
-		if Vector2(point.x - centre.x, point.z - centre.z).length() <= float(objective["radius"]):
-			return true
-	return false
-
-
-## The DEFAULT central zone, kept because it is static and five streams call it. It cannot see a layout's
-## objectives, so it is correct only while every shipped layout uses the central point -- which is true today.
-## N7 consumers should use `in_any_objective` / `objective_presence` instead.
 static func in_control_zone(point: Vector3) -> bool:
 	return Vector2(point.x - CONTROL_CENTER.x, point.z - CONTROL_CENTER.z).length() <= CONTROL_RADIUS
 
 
 func _update_control() -> void:
-	if objectives.is_empty():
-		return
+	var present := control_presence()
 	var step := float(INTEL_EVERY_TICKS) / SimClock.TICK_RATE / CONTROL_CAPTURE_SECONDS
-	var held := [0, 0]
-	for index in objectives.size():
-		var objective: Dictionary = objectives[index]
-		var present := objective_presence(objective)
-		var progress := float(objective["progress"])
-		# A zone is taken by whichever side is alone in it: a flat rate, so a bigger army does not capture faster
-		# and a losing side can still steal one back.
-		if present[Team.GREEN] > 0 and present[Team.RUST] == 0:
-			progress = minf(1.0, progress + step)
-		elif present[Team.RUST] > 0 and present[Team.GREEN] == 0:
-			progress = maxf(-1.0, progress - step)
-		var previous := int(objective["owner"])
-		var owner := previous
-		if progress >= 1.0:
-			owner = Team.GREEN
-		elif progress <= -1.0:
-			owner = Team.RUST
-		elif (previous == Team.GREEN and progress <= 0.0) or (previous == Team.RUST and progress >= 0.0):
-			owner = -1  # pushed back past neutral
-		objective["progress"] = progress
-		objective["owner"] = owner
-		if owner >= 0:
-			held[owner] += 1
-		if owner != previous:
-			objective_changed.emit(index, owner)
-			# The primary objective is what `control_changed` has always meant, and five streams listen to it.
-			if index == 0:
-				control_changed.emit(owner)
-	# Score by the SHARE of objectives held, so holding them all scores at exactly the pre-N7 rate and holding half
-	# scores at half. At N = 1 this is the old accumulation exactly.
-	var total := float(objectives.size())
-	for team in 2:
-		if held[team] > 0:
-			_control_ticks[team] += float(INTEL_EVERY_TICKS) * float(held[team]) / total
-			control_score[team] = int(_control_ticks[team] / SimClock.TICK_RATE)
+	if present[Team.GREEN] > 0 and present[Team.RUST] == 0:
+		control_progress = minf(1.0, control_progress + step)
+	elif present[Team.RUST] > 0 and present[Team.GREEN] == 0:
+		control_progress = maxf(-1.0, control_progress - step)
+	var previous := control_owner
+	if control_progress >= 1.0:
+		control_owner = Team.GREEN
+	elif control_progress <= -1.0:
+		control_owner = Team.RUST
+	elif (control_owner == Team.GREEN and control_progress <= 0.0) or (control_owner == Team.RUST and control_progress >= 0.0):
+		control_owner = -1  # pushed back past neutral
+	if control_owner != previous:
+		control_changed.emit(control_owner)
+	if control_owner >= 0:
+		_control_ticks[control_owner] += INTEL_EVERY_TICKS
+		control_score[control_owner] = _control_ticks[control_owner] / SimClock.TICK_RATE
 
 
 func _sample_brain_options() -> void:

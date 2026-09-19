@@ -605,7 +605,39 @@ immune to the baseline moving, and needs no coordination with invariant 2 at all
 **And a gap in invariant 2 itself:** it says the orchestrator records the baseline once at the end. It does not say
 that **until then three targets are red and two of them lie about why.**
 
-### N7 — why it compounds with N5 rather than merely following it
+### N7 — DONE (`5d0ca30f`). 1134 passed / 1 failed, and the one failure is not combat's
+
+`Match` reads `Arena.objectives_of(Arena.active)` and keeps per-objective owner and progress. **No shipped arena
+changes**: a layout with no `objectives` list reports exactly the single central zone this file used to hard-code.
+
+**Three decisions, each with a reason worth reusing:**
+- **Score by the SHARE of objectives held** (`ticks += INTEL_EVERY_TICKS × held/total`), because **at N=1 it reduces
+  to the old accumulation exactly.** A generalisation that does not reduce to the current case is not a read-through,
+  it is a balance change wearing one's clothes. Holding both of a mirrored pair scores at the old rate; holding one
+  scores at half, so splitting to take both is the decision the contract exists to create.
+- **`control_owner` / `control_progress` are a write-through VIEW of `objectives[0]`, not a copy.** A copy is exactly
+  what broke `test_control_point` when this landed: it poked `control_owner` between frames, the tick overwrote it,
+  and the match silently never ended. Five streams both **read and write** this state, so a view is what keeps them
+  all working.
+- **`--control` is a match flag, not a layout property**: a layout declaring no `control_point` still gets the
+  central zone, or `--control` would silently do nothing on it.
+
+`control_changed` still fires for the primary objective; `objective_changed(index, owner)` is the N7-aware signal.
+The static `Match.in_control_zone` is kept (five streams call it) but **can only know the default central zone** —
+`in_any_objective` / `objective_presence` are the replacements, and `cpu_commander.gd:181` is the one call site that
+will go quietly stale rather than loudly break when arena ships an off-centre layout. **Squad has been told.**
+
+**The sim baseline moves** (objective handling is simulation). Per invariant 2 combat does **not** record it.
+
+**The one failing test is `test_audio_music_director::test_it_follows_a_mood_signal`, and it is feel's** —
+order-dependent, arrived with a `main` merge, reported with its bounds. **Do not attribute it to N7**, and note how
+nearly I did: I first compared a *filtered* pre-N7 run against a *full* post-N7 run, saw pass-then-fail, and concluded
+it was mine despite the test having zero references to `control`. **That comparison is invalid** — a filtered run and
+a full run answer different questions (lesson 45). The filtered run on the N7 tree passes 17/0, which is what
+excludes N7. *I had flagged that exact distinction to the orchestrator the same morning and still made the mistake
+when it was my own change under suspicion.*
+
+### (the case for N7, written before it was built) why it compounds with N5
 
 **Taken on (2026-09-18), and the case for doing it in round 6 rather than deferring it comes out of the series.**
 arena's half is landed and tested: `Arena.objectives_of(Arena.active)`, mirrored pairs enforced, and every shipped
