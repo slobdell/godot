@@ -5,9 +5,18 @@ extends TestCase
 
 
 func test_every_shipping_layout_is_one_central_zone_today() -> void:
+	var checked := 0
 	for name in Arena.layout_names():
-		var layout := Arena.load_layout(name)
+		var loaded := Arena.load_layout(name)
+		assert_true(loaded.has("layout"), "setup: %s loads (%s)" % [name, loaded.get("error", "")])
+		if not loaded.has("layout"):
+			continue
+		var layout: Dictionary = loaded["layout"]
+		# Not vacuous: a layout with no objective at all would say nothing either way.
+		assert_true(layout.has("control_point") or layout.has("objectives"), "setup: %s declares its objective" % name)
 		assert_true(Objectives.describes_central_zone(layout), "%s: one objective, at the centre" % name)
+		checked += 1
+	assert_true(checked >= 5, "every shipping layout was checked (%d)" % checked)
 
 
 func test_an_off_centre_or_second_objective_is_refused() -> void:
