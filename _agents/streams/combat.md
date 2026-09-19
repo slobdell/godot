@@ -176,7 +176,14 @@ the caller asked, **and the tool never recorded the value it used.** Round-3 `ma
 [../balance.md](../balance.md) that assumed a non-default unit count are unreliable and **cannot be re-derived**.
 Fixed to `SEARCH_UNITS`. General rule: **print every resolved knob into the output.**
 
-**4. Three targets fail on a stale sim baseline and two of them blame the wrong component** —
+**4. CORRECTED 2026-09-19 — these targets are a latent trap, not a live failure.** On a CURRENT baseline they
+**pass**: the 13-target gate at `2cf61f57` (builder0, 1181 passed / 0 failed) has `announcer-record-smoke passed`
+and `music-smoke passed`. So the components were never the problem and the brief has been overstating this for two
+rounds — it read as "three targets are broken" when the truth is "three targets misfire whenever the baseline
+moves", which is once a round, by design. **feel's fix is still worth doing and blocks nothing.** The original
+note, which remains the correct diagnosis of the mechanism:
+
+**Three targets fail on a stale sim baseline and two of them blame the wrong component** —
 `announcer-record-smoke` says *"the booth changed the simulation"* and `music-smoke` says *"the soundtrack changed
 the simulation"*, **while computing exactly the hash `sim-baseline` computed**, which is the proof they changed
 nothing. **These are feel's targets and the fix is unbuilt:** run the match twice in one invocation, with and without
