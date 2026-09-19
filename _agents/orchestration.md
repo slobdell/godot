@@ -1052,3 +1052,31 @@ The kickoff prompt is one line; this section is the rest.
     - **A documented convenience is a trap when it is convenient.** "Returns the closest point instead of failing" is a
       kindness to a caller that wants to make progress and a lie to a caller that wants to know. When an API offers
       graceful degradation, find out which of those you are.
+77. **A generalisation that does not reduce to the current case is not a read-through — it is a balance change wearing
+    one's clothes.** Round 7, combat generalising a single central control point into a list of objectives. The test it
+    applied to its own change: score by the **share** of objectives held (`ticks += INTEL_EVERY_TICKS × held/total`)
+    **because at N=1 it reduces to the old accumulation exactly.** Holding both of a mirrored pair then scores at the old
+    rate and holding one scores at half — so splitting your force becomes the decision the contract exists to create,
+    without any shipped arena changing. **Apply that reduction test to every "just a read-through"**: if the old case
+    does not come out identical, you are shipping a balance change under a refactor's name, and nobody will review it as
+    one.
+    Two more findings from the same change, both about *shared mutable* state:
+    - **Make the compatibility shim a VIEW, not a copy.** Its first cut made the legacy `control_owner` a copy the tick
+      wrote back — and a test that pokes that field between frames had its poke overwritten, so **the match silently
+      never ended.** Five streams both read *and write* that state; only a write-through view keeps every pre-existing
+      reader and writer working untouched.
+    - **A static accessor that can only know the default is a quiet staleness bomb.** `Match.in_control_zone` is kept
+      because five streams call it, but it cannot see an off-centre objective — so the day such a layout ships,
+      `cpu_commander.gd`'s call goes **quietly stale rather than loudly breaking.** Flagged with its instance
+      replacements. *Prefer a loud break to a silent wrong answer when you deprecate.*
+78. **The standard is easier to apply outward: expect to fail your own rule the moment your own work is the suspect.**
+    Round 7, combat, in its own words: *"every time I have been wrong today, I was wrong about my own work while holding
+    other people's to a standard I had just failed."* The instance: a test failed after its change, it compared a
+    **filtered** pre-change run against a **full** post-change run, saw pass-then-fail, and concluded *"it IS mine,
+    despite having zero references to control"* — **having given the orchestrator that exact distinction as a refinement
+    to lesson 45 earlier the same day.** A filtered run and a full run answer different questions. The filtered run on
+    the new tree (17/0) is what actually exonerated the change.
+    So: **when your own work is the suspect, apply your own checklist deliberately rather than by instinct** — instinct
+    is what defers to the suspicion. And the practical form, which is also what saved it: **re-run rather than reason.**
+    The same shape appeared in three streams this round (arena's filtered 5/5, nav's `main`-is-not-a-control, this), so
+    it is not a personal failing; it is what suspicion does to a standard.
