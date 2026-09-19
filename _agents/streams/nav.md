@@ -67,6 +67,9 @@ The honest summary: **the path planner is fine and everything around it is thin.
   stop — units are reporting success from twelve metres away.
 - **No dynamic obstacles.** No `NavigationObstacle3D` anywhere; the bake never updates. Wrecks were deliberately moved
   to layer 4 so they never block driving, precisely to dodge this.
+  **Correction (arena, verified by nav 2026-09-18): the layer-4 claim is false.** Only `tank.tscn` sets a collision
+  layer; the `wreck` kit prop is a plain layer-1 `StaticBody3D`, baked into the navmesh and blocking like a container,
+  and a destroyed vehicle leaves no body at all (`game/theme/fx/fire_sites.gd`: visual only).
 - `game/control/squad_orders_playtest.gd:13` already names *"moved, but piled up"* as an expected failure mode. It was
   known; nobody owned it.
 
@@ -271,7 +274,7 @@ and a stuck unit that reported success from 12 m away. That is what this stream 
 | **X6** PID | Done for station-keeping (`pid.gd`, `control_gains.gd`): 0.35 m mean gap vs 4.58 m for the P law. Speed matching is the same loop; turret lay not attempted (combat's turret already has a rate limit, which is the dominant dynamics). |
 | **X7** path quality | Done: carrot along the route, cars look until they can drive onto the point, re-plan on change. |
 | **X8** factions by gains | Done as data (`ControlGains.FACTIONS`), measured on movement; win rates not measured (below). Found and fixed a stopped-slot overshoot first. |
-| X9 dynamic obstacles | **Blocked on arena's decision** (asked 2026-09-18): wrecks are on layer 4 on purpose, and nothing in the arenas stops blocking mid-match yet, so there is nothing to make dynamic until arena says what should be. |
+| X9 dynamic obstacles | **Closed: no consumer, and arena would refuse one.** Wreck props are static, baked and blocking; destroyed vehicles leave no body; the approved destructible cover collapses to a lower stack without changing drivable space. A mid-match re-bake would also have to reproduce the south-half-plus-mirror construction or reintroduce the 64% base bias (trip-up 21). `NavigationObstacle3D` would duplicate ORCA. |
 
 ### Numbers (builder0, `make nav-suite`, hold-fire, 180 s; arrived of N)
 
@@ -362,8 +365,9 @@ scenario, headless and with brains, is `make nav-orders` (numbers above).
 
 ### Next steps
 
-- **X9 dynamic obstacles** (not started): wrecks are on physics layer 4 so nothing drives into them; making them
-  navigation obstacles needs arena's agreement first (their layer choice is deliberate).
+- **If round 7 revisits the startup-only navmesh, revisit `agent_max_climb` with it** (arena): both follow from "a
+  snapshot baked in two mirrored halves"; that constant caps authored slopes at ~20° (`make slope-probe`), and raising
+  it needs the same swap-bases fairness control a dynamic mesh would.
 - A column-level right-of-way (a whole queue yields as one) for single-lane head-on traffic.
 - Wire `nav-suite`'s maze-60 head-on into a nightly target rather than `make check` (~10 min on builder0).
 
@@ -392,8 +396,7 @@ scenario, headless and with brains, is `make nav-orders` (numbers above).
 
 ### Requests to other streams
 
-- **arena** (X9): would wrecks/destructible cover become navigation obstacles, and is anything planned that stops
-  blocking mid-match? Asked by message; nothing waits on it this round.
+- **arena** (X9): answered. Nothing stops blocking mid-match, now or planned; X9 is closed (see the table).
 - **arena**: `tests/arena/maze_probe.gd` drives plain `OrderController`s, so round 5's brains-only `_around_friends`
   never ran in your baseline. Not a problem now (N1 avoidance is on for every controller) — just a note for reading
   the old numbers.
