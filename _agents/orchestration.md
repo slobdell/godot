@@ -1985,3 +1985,18 @@ The kickoff prompt is one line; this section is the rest.
        forth" — and we have TIME ALLOCATION.** Different quantities, and nothing connects them. arena's words:
        *"I have where the time goes, not what the trajectory does… this is round 8's third chance to report a number past
        what it measures, and I would rather flag it than take it."*
+132. **⚠ `origin/main` IS STALE BY HUNDREDS OF COMMITS, AND `git merge origin/main` SAYS "Already up to date".** Found by
+     combat, 2026-09-19: local `main` at `474abf53`, **`origin/main` at `b5cd8052` — 585 commits behind.**
+     **The lead pushes; the orchestrator never does.** So the remote tracking branch has not moved since well before
+     round 6, and **every merge from it is a silent no-op that looks exactly like success.** combat's first
+     `git merge origin/main` merged nothing and reported cleanly; it caught this only because its yard was still a 120 m
+     square with no objectives — i.e. **because it happened to be looking at the content.**
+     - **Merge the LOCAL branch: `git merge main`.** All worktrees share one repository, so the local ref is the truth.
+     - **Never reason about "what is on `main`" from `origin/main`** — that includes `git log origin/main`,
+       `git merge-base --is-ancestor <x> origin/main`, and anything a tool resolves as `main` by default.
+     - **This compounds every other staleness lesson today** (127: *attributable is not current*; 116: *inertness does not
+       compose*). A stream that merged `origin/main`, saw "Already up to date", and then measured a defect would be
+       reporting on a tree from three rounds ago **with perfect provenance headers attached.**
+     - **The general form: a no-op that reports success is indistinguishable from the work being done**, which is the
+       round's recurring shape — a skipped check, a truncated run, a switch that never applied, an arm compared with
+       itself.
