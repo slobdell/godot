@@ -68,21 +68,15 @@ static func _ready_arena(test: TestCase, label: String, override: Dictionary, se
 	return arena
 
 
-## THE ONE PLACE arena decides whether a route arrived. **Replace this with `Pathing.query(from, to).reachable`
-## when nav ships it** (it is doing the scout standoff first, correctly) — one function, not a tolerance scattered
-## through every check.
+## THE ONE PLACE arena decides whether a route arrived — now `Pathing.query().reachable`, which is exact.
 ##
 ## Why a helper at all: `map_get_path` to an unreachable goal returns a path to the CLOSEST REACHABLE POINT, which
-## is non-empty and reads as success. This stream has met that three times — the maze fixture, the slope probe and
-## the water probe — and each time the wrong reading looked like a working one.
-##
-## The 4 m is a heuristic and is the thing nav's version removes. It is loose enough to allow the navmesh's own
-## edge quantisation and tight enough to reject a route that stopped at a bank.
-const ARRIVED_M := 4.0
-
-
-static func route_arrives(path: PackedVector3Array, goal: Vector3) -> bool:
-	return path.size() >= 2 and path[path.size() - 1].distance_to(goal) < ARRIVED_M
+## is non-empty and reads as success. This stream met that three times — the maze fixture, the slope probe and the
+## water probe — and each time the wrong reading looked like a working one. It was a 4 m tolerance here until nav
+## shipped `query`, kept behind one call site with a comment naming its replacement; **this is that replacement,
+## and it was a one-line change because the tolerance was never allowed to spread.**
+static func route_arrives(arena: Node3D, from: Vector3, goal: Vector3) -> bool:
+	return bool(Pathing.query(arena, from, goal).get("reachable", false))
 
 
 ## This arena's own navigation regions: the baked half and its 180° mirror.

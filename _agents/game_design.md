@@ -943,6 +943,32 @@ What follows for map authoring, and these are testable claims rather than taste:
 **"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
 still cannot command his units. **Improvements he can see did not change the verdict.**
 
+### Two decisions from the lead (2026-09-19, answering queued gates)
+
+> *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart
+> is better, so flanking and maneuvering is fine**."*
+
+**1. ELEMENT FLOW STAYS ON.** While a leader is more than 15 m from its slot, members follow it at their slot offsets.
+Measured: transit gap **9.0 m against 11.4**, worst unit off-slot at arrival **2.9 m against 6.5**, arrival **17.4 s
+against 13.1**. **He has bought the 4 seconds.** `ElementPlan.FLOW_ENABLED` stays true and the trade is settled, not
+provisional.
+
+**2. "APPEAR SMART" BEATS "APPEAR OBEDIENT" — *within* an order, never instead of one.** This resolves a tension that
+had been implicit all round, and it must be read precisely:
+
+- **A flanker swinging wide with the player's target in its order is OBEYING**, and the pin counts it as complying:
+  `ATTACK · 2/4 on target · 1 moving round · 1 NOT COMPLYING`. **Do not exclude it and do not flag it.**
+- **A crew shooting something the player did not name is the DEFECT** — that was squad's drill bug (task path
+  **765/155 → 164/759** unit-ticks on the wrong/right target), and it stays a defect.
+- **So "attack" does NOT mean *everyone stands and fires now*.** The `drills: false` task flag is not wanted.
+
+**⚠ And the boundary that keeps this from licensing disobedience: manoeuvring is smart, CHURN IS NOT.** nav measured
+**5.3–6.6% of attack-moving units' travel time oscillating** on all four of his maps — **which is the same complaint he
+opened with**. A unit that flanks looks intelligent; a unit that re-aims every 1.3 s looks broken. **The test is whether
+the motion resolves into fire**: combat's floor — *a crew that cannot acquire a new contact in under `acquire_seconds`
+has no business re-aiming faster than it can shoot* — is the principled expression of that, and it makes the cadence a
+consequence of the engagement envelope rather than a new tuning knob.
+
 ### The eight items, with what is already known about each
 
 1. **THE SEMI IS STILL TINY, AND SIZE IS NOT A BALANCE QUESTION.** *"the intent for the semi trucks is that they're huge
@@ -957,9 +983,18 @@ still cannot command his units. **Improvements he can see did not change the ver
    and the game is right** — this is lesson 23's shape: a number taken in a configuration the player does not get.
 4. **The semi is not articulated** — tractor and trailer move as one body. He explicitly offers to shelve it: *"I don't
    know how easy this is to do or if we should shelve it for later."*
-5. **⚠ THE SEMI YAWS IN PLACE, "should be impossible, they're not a tracker vehicle."** This is a *class* bug and nav has
-   already measured its neighbour: `TankMotion.step_in_place` pivots a hull about its own centre, **which nav called
-   "right for tracks"** — and it is applied to wheeled hulls too. **A wheeled vehicle must not rotate without translating.**
+5. **⚠ THE SEMI YAWS IN PLACE, "should be impossible, they're not a tracker vehicle."** **The symptom is real; the
+   orchestrator's first mechanism was wrong and nav corrected it from the code.** `step_in_place` does **not** pivot
+   wheeled hulls like tracks — the wheels branch sets `yaw = |speed| × turn / turning_radius`, **so a car at 0 m/s cannot
+   yaw at all**, and speed is re-read after `move_and_slide` from what the hull actually did.
+   **nav's hypothesis: the wheels' multi-point-turn CREEP.** When a car is told to *face* something — which brains do
+   constantly while holding or fighting — the plant drives **alternating forward/reverse legs of 0.5 s at low throttle**.
+   **Each leg is kinematically legal; ±1 m shuffles at full lock add up to a truck rotating on the spot.** Same symptom,
+   different mechanism, and a different fix: **legs long enough to be real (distance-based, a share of the turning
+   radius), plus probably brains not asking cars to face in place at all** — which is squad's half.
+   **Pre-registered test, written before the run:** a wheeled hull that turns **≥ 30° while its centre stays within
+   1.5 m of its start** is *yawing in place*. Running on `gang_tank` (12 m turning circle).
+   **For tracks and hover the angular-acceleration limit in the plant still stands**, and it is a separate fix.
 6. **ORPHANED UNITS: not every unit belongs to a squad**, so cycling 1–4 never selects them. **A player cannot command
    what he cannot select**, which makes this a direct cause of item 2.
 7. **A GROUP ORDERED TO ATTACK ONE UNIT KEEPS SHOOTING WHAT IT WAS ALREADY SHOOTING.** An explicit target order is the
