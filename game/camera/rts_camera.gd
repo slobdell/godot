@@ -160,6 +160,17 @@ var handback_seconds := HANDBACK_SECONDS
 var vision_inset := VISION_FRAME_INSET
 ## Off: the vision camera never takes the view back (V in play).
 var auto_frame := true
+## Round 7 (A), the lead: "the camera's yaw orientation should match the intended facing position of the squad or
+## selected unit - this is what I think can differentiate us from a normal RTS game." `facing` returns the selection's
+## facing (a ground Vector3) or null; the yaw turns toward it at YAW_FOLLOW_DEG_PER_S once it is YAW_DEADBAND_DEG off,
+## until within YAW_SETTLE_DEG (so a hull's wiggle never shakes the view). Manual yaw pauses it for the hand-back time;
+## Y turns it off. Null (nothing selected, or a mixed selection) keeps the current yaw: no snap.
+var yaw_follow := true
+var facing: Callable = Callable()
+const YAW_FOLLOW_DEG_PER_S := 70.0
+const YAW_DEADBAND_DEG := 12.0
+const YAW_SETTLE_DEG := 2.0
+var _yaw_turning := false
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -231,6 +242,7 @@ func _process(delta: float) -> void:
 		tilt_by(tilt_keys * TILT_SPEED_DEG * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
 		focus = Shown.ground(follow_target)
+	_update_yaw_follow(delta)
 	_update_tracking()
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	if _track != Track.NONE:
@@ -402,12 +414,34 @@ func set_auto_frame(on: bool) -> void:
 		stop_tracking("manual")
 
 
+## Round 7 (A): turn the yaw toward the selection's facing (see `yaw_follow`).
+func _update_yaw_follow(delta: float) -> void:
+	if not yaw_follow or not facing.is_valid() or _before_overview != null or _clock - _manual_at < handback_seconds:
+		_yaw_turning = false
+		return
+	var wanted: Variant = facing.call()
+	if not wanted is Vector3:
+		_yaw_turning = false
+		return
+	var gap := angle_difference(yaw, RtsCamera.yaw_facing(wanted as Vector3))
+	if not _yaw_turning and absf(gap) < deg_to_rad(YAW_DEADBAND_DEG):
+		return
+	_yaw_turning = absf(gap) > deg_to_rad(YAW_SETTLE_DEG)
+	var step := deg_to_rad(YAW_FOLLOW_DEG_PER_S) * delta
+	yaw = wrapf(yaw + clampf(gap, -step, step), -PI, PI)
+
+
+## The yaw that looks along `direction` on the ground (0 looks north, -Z; positive turns left: trip-up 2).
+static func yaw_facing(direction: Vector3) -> float:
+	return atan2(-direction.x, -direction.z)
+
+
 ## The current pose, in the words the lead pastes back: the values the defaults are made from.
 func pose_text() -> String:
 	var distance := RtsCamera.distance_for(_shown_zoom)
-	return "CAMERA_POSE pitch=%.0f distance_m=%.0f fov=%.0f yaw=%.0f zoom=%.3f auto_frame=%s" % [
+	return "CAMERA_POSE pitch=%.0f distance_m=%.0f fov=%.0f yaw=%.0f zoom=%.3f auto_frame=%s yaw_follow=%s" % [
 			RtsCamera.tilt_at(_shown_pitch, distance), distance, fov, rad_to_deg(_shown_yaw), _shown_zoom,
-			"on" if auto_frame else "off"]
+			"on" if auto_frame else "off", "on" if yaw_follow else "off"]
 
 
 func reset_tilt() -> void:

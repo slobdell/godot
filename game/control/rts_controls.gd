@@ -96,6 +96,13 @@ var awareness := ElementAwareness.new()
 var elements: Elements
 ## Round 6 X5: what nav's Movement says each unit is doing (yielding, blocked, its ETA). Silent until N1 is wired in.
 var movement := MovementReadout.new()
+## Round 7 (B): how much of the selection's reach the vision frame shows ahead of it: 0 = off, 1 = out to the selection's
+## covering range (`;` / `'` in play). The frame varies DISTANCE, not the lens: the lead's 35° telephoto is the look.
+var range_frame := 1.0
+const RANGE_FRAME_STEP := 0.25
+const RANGE_FRAME_MAX := 2.0
+## Round 7 (A): headings this far apart (mean resultant length below this) are a "mixed" selection with no facing.
+const FACING_AGREEMENT := 0.6
 ## Round 6 X7: each element's recent decisions, for "why did my element do that" (the card's doctrine line tooltip).
 var element_log := ElementLog.new()
 ## X2: the off-screen element chips and the alert strip (set by the mode).
@@ -240,12 +247,66 @@ func vision_state() -> Dictionary:
 				frame.append(at)
 				frame.append(middle * 2.0 - at)
 				break
+	# Round 7 (B), the lead: "tanks were shooting at enemies I couldn't even see ... make the field of view match the
+	# range of the vehicle or the max range of the selection". The frame reaches out to what the selection can fight,
+	# in the direction it faces.
+	if range_frame > 0.0 and not eyes.is_empty():
+		var ahead: Variant = selection_facing()
+		if ahead == null:
+			ahead = Match.team_frame(team)["forward"]
+		frame.append(middle + (ahead as Vector3) * selection_reach() * range_frame)
 	var friendly: Array = []
 	for tank in game_match.sorted_team_tanks(team):
 		if tank.is_alive():
 			friendly.append(tank)
 	return {"frame": frame, "destination": _element_destination(element, frame),
 			"region": VisionRegion.of(friendly)}
+
+
+## Round 7 (B): the furthest the commanded units can see AND matter at - per unit, the smaller of its weapon's effective
+## range and its sight (Engagement.covering_range's rule, per selection instead of per roster). 0 with no units.
+func selection_reach() -> float:
+	var reach := 0.0
+	for unit_name in commanded_units():
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		reach = maxf(reach, minf(Engagement.effective_range(Weapons.profile(tank.weapon_id)), tank.sight_radius))
+	return reach
+
+
+## Round 7 (A): which way the commanded units mean to face, on the ground (unit Vector3), or null when there is nothing
+## to follow. In order: a squad's formation heading while it has a task; else each unit's ordered facing or travel
+## heading; else the hulls' own forward. Averaged as directions; a selection whose headings disagree (mean resultant
+## below FACING_AGREEMENT) is "mixed" and returns null, and the camera then keeps its yaw rather than snap somewhere.
+func selection_facing() -> Variant:
+	var units := commanded_units()
+	if units.is_empty() or game_match == null:
+		return null
+	var element := selected_element()
+	if element != null and not element.task.is_empty() and element.heading.length() > 0.1:
+		return Vector3(element.heading.x, 0.0, element.heading.z).normalized()
+	var sum := Vector3.ZERO
+	var count := 0
+	for unit_name in units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var order: Dictionary = orders.current(unit_name) if orders != null else {}
+		var way: Variant = order.get("facing", order.get("heading"))
+		var direction: Vector3
+		if way is Array and (way as Array).size() == 2:
+			direction = Vector3(float(way[0]), 0.0, float(way[1]))
+		else:
+			direction = -tank.global_basis.z  # forward is -Z (trip-up 2)
+		direction.y = 0.0
+		if direction.length() < 0.001:
+			continue
+		sum += direction.normalized()
+		count += 1
+	if count == 0 or sum.length() / float(count) < FACING_AGREEMENT:
+		return null
+	return sum.normalized()
 
 
 ## Where the element is headed (the nearest unit's current order goal), or null when it is going nowhere or the
@@ -567,10 +628,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_V:
 			if rig != null:
 				rig.set_auto_frame(not rig.auto_frame)
+		KEY_Y:
+			# Round 7 (A): the camera's yaw follows the selection's facing; Y turns that off and on.
+			if rig != null:
+				rig.yaw_follow = not rig.yaw_follow
+		KEY_SEMICOLON, KEY_APOSTROPHE:
+			# Round 7 (B): how far out the frame reaches toward the selection's weapon range (0 = off).
+			range_frame = clampf(range_frame + RANGE_FRAME_STEP * (1.0 if key.keycode == KEY_APOSTROPHE else -1.0), 0.0, RANGE_FRAME_MAX)
 		KEY_P:
 			# Print the pose and put it on the clipboard, so the lead can paste the camera he found back to us.
 			if rig != null:
-				var pose := rig.pose_text()
+				var pose := rig.pose_text() + " range_frame=%.2f" % range_frame
 				print(pose)
 				DisplayServer.clipboard_set(pose)
 				pose_copied.emit(pose)
@@ -953,6 +1021,7 @@ func _draw() -> void:
 	_draw_acks()
 	_draw_health()
 	_draw_callouts()
+	_draw_facing()
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
 		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
@@ -1004,6 +1073,55 @@ func _draw_callouts() -> void:
 		var at: Vector2 = callout["at"] - Vector2(width / 2.0, 0.0)
 		draw_string_outline(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, 3, Color.BLACK)
 		draw_string(font, at, word, HORIZONTAL_ALIGNMENT_LEFT, -1, px, CyberStyle.YELLOW if word == "YIELDING" else GameTheme.ui["enemy"])
+
+
+## Round 7 (A): which way each selected vehicle points - a chevron on the ground ahead of its hull - and, for a gun that
+## cannot traverse all round, the edges of its fire arc. The lead: "has a good understanding of the orientation of the
+## vehicle, which should be an important thing (i.e. trying to emplace units in an ambush)".
+const FACING_ARROW_M := 7.0
+const ARC_SHOWN_M := 16.0
+
+
+func facing_marks() -> Array:
+	var result: Array = []
+	if game_match == null or camera == null:
+		return result
+	for unit_name in selection.units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var at := Shown.ground(tank)
+		var forward := -tank.global_basis.z
+		forward.y = 0.0
+		if forward.length() < 0.001:
+			continue
+		forward = forward.normalized()
+		var mark := {"unit": unit_name, "from": at, "to": at + forward * FACING_ARROW_M, "arc": []}
+		if tank.fire_arc_deg < 300.0:
+			var half := deg_to_rad(tank.fire_arc_deg / 2.0)
+			mark["arc"] = [at + forward.rotated(Vector3.UP, half) * ARC_SHOWN_M, at + forward.rotated(Vector3.UP, -half) * ARC_SHOWN_M]
+		result.append(mark)
+	return result
+
+
+func _draw_facing() -> void:
+	var color: Color = GameTheme.ui["friendly"]
+	for mark: Dictionary in facing_marks():
+		var a: Variant = _screen_point(mark["from"])
+		var b: Variant = _screen_point(mark["to"])
+		if a == null or b == null:
+			continue
+		var tip: Vector2 = b
+		var direction := (tip - (a as Vector2)).normalized()
+		if direction.length() < 0.5:
+			continue
+		var side := Vector2(-direction.y, direction.x)
+		draw_line(a, tip, Color(color, 0.85), 2.0)
+		draw_colored_polygon(PackedVector2Array([tip + direction * 7.0, tip + side * 5.0, tip - side * 5.0]), Color(color, 0.95))
+		for edge: Vector3 in mark["arc"]:
+			var e: Variant = _screen_point(edge)
+			if e != null:
+				draw_dashed_line(a, e, Color(color, 0.45), 1.5, 5.0)
 
 
 ## X6: a thin hull bar (and a shield sliver above it) over vehicles that are hurt or selected.
