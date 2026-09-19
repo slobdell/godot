@@ -1116,3 +1116,45 @@ The kickoff prompt is one line; this section is the rest.
     - **Assert the source, not the output.** "This preview came from the planner" is a test that survives the planner
       changing; "this preview looks like *this*" is a test that pins today's posture and will be updated to match
       whatever the drawing becomes.
+81. **A removal recommendation is not complete until it states what the set looks like afterwards.** Round 7: combat
+    recommended dropping `syn_lancer` on a clean comparison — the Syndicate's own tank reaches 104 m against the lancer's
+    86, so it was a shorter-ranged duplicate of a role that faction already dominates. Correct about the unit, and wrong
+    about the roster: **the lancer was the Syndicate's only special**, so removing it would have left them the one faction
+    with no identity beyond the core four. The Condemned survive losing theirs only because they also field the Burner.
+    combat found this **while implementing its own accepted recommendation**, because
+    `test_every_playable_faction_fills_the_core_roles` failed.
+    Two things to take from it:
+    - **The guardrail worked because it asserts a design pillar, not an implementation detail.** "Counters stay learnable
+      across factions" is a sentence from `vision.md`; the test is that sentence in executable form. **Tests that encode
+      pillars catch design mistakes that no amount of unit-level correctness will.** Write more of them, and name the
+      pillar in the assertion message so the failure explains itself.
+    - The reviewable question for any *delete this* proposal is **"what is the count afterwards, per faction, per role?"**
+      A comparison between two units cannot answer it, because the comparison is local and the damage is structural.
+82. **"The lead did not object" is not a decision, and relaying it to a second stream as one is the orchestrator's error.**
+    Same episode. combat proposed the drop, the lead said nothing against it, and I told **feel** to stop work on that
+    unit — before the change had been implemented, let alone tested. feel had just fixed that model's backwards
+    orientation, so I described real work as wasted, and it was not.
+    This is lesson 63 (*a result arriving is not the change arriving*) in the design register rather than the code one:
+    **a stream's status is the hash; a design decision's status is the test that passes with it in place.** Silence from
+    the lead is permission to *try*, never confirmation that it *works* — and the cost of relaying it early lands on a
+    stream that has no way to check.
+    Practical rule: **do not tell stream B about stream A's decision until A has landed it green.** The exception is
+    exactly the reverse case — when B is about to duplicate or contradict A's *in-flight* work, say so immediately, and
+    label it as in-flight.
+83. **The suite tests a directory; we hand each other commits; nothing in the process compares the two.** combat caught
+    on itself that `git checkout HEAD~1 -- <file>` **writes the index** — it had restored the working tree from copies
+    afterwards, so the old version stayed *staged* and the next commit carried it. **Every test passed, because tests run
+    from the working tree.** A "docs-only" commit silently reverted N7, and the green hash it would have reported did not
+    contain the feature it was reporting on.
+    This is the same hole as lesson 71 (*the index is not empty just because your last command failed*) from the other
+    side, and it is the more dangerous side: **a staged-but-unintended change is invisible to every check we run.**
+    The rule both halves point at: **verify `git show HEAD:<path>` before naming a hash**, not the file on disk. And after
+    any `git checkout <ref> -- <path>`, `git restore --staged` or a conflict resolution, **read `git diff --cached` before
+    committing.**
+84. **A proposal written in future tense becomes a fact the moment it is quoted into a brief.** arena's framing of
+    lesson 70, and it is the mechanism, not the symptom: `balance.md` said wrecks *would* be moved to physics layer 4;
+    I repeated it into two briefs and the HANDOFF survey as though they *were*; nothing in the restatement carried the
+    tense. **A proposal and a fact are indistinguishable once separated from their source.**
+    So: **briefs cite where a claim comes from rather than restating it** — `game/x.gd:120` or `balance.md` *(proposed,
+    unbuilt)* — and design docs mark unbuilt proposals as proposals in the same line as the proposal, because that line
+    is what gets copied.
