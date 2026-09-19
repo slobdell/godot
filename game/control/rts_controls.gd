@@ -482,7 +482,7 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		# player's own orders for the wheel. The first task forms it; a direct order (below) dissolves it again.
 		var number := selected_group()
 		if number == 0 or elements == null:
-			return "select a whole element to give it a task"
+			return _refuse("select a whole element to give it a task")
 		element = elements.form(selection.units.duplicate(), groups.label(number))
 	var task := {"verb": String(ELEMENT_TASKS[verb])}
 	if extra.has("to"):
@@ -490,7 +490,7 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 	if extra.has("target"):
 		task["target"] = String(extra["target"])
 	if task["verb"] == "move" and not task.has("to"):
-		return "a move task needs somewhere to go"
+		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
 		task["drills"] = false  # a plain move: formed up to the spot, no contact drills (squad X4)
 	var error := element.assign(task)
@@ -703,6 +703,13 @@ func center_on(names: Array) -> void:
 # ---- Orders -----------------------------------------------------------------------------------------------
 
 ## Issue a K1 command for our team, acknowledge it, and tell listeners. Returns "" or the error.
+## Round 8: a refusal the player never hears is an order that silently didn't happen. Everything refused before it
+## reaches Orders goes out on command_issued like an Orders error does (the HUD posts it as "Can't: ...").
+func _refuse(error: String) -> String:
+	command_issued.emit({"verb": "", "units": selection.units.duplicate()}, error)
+	return error
+
+
 func issue(command: Dictionary) -> String:
 	var error := orders.issue(command, team) if orders != null else "no orders"
 	command_issued.emit(command, error)
@@ -777,7 +784,7 @@ func armed_world_order(world: Vector3, queue := false) -> String:
 	if not queue:
 		disarm()
 	if armed in ["screen", "support_by_fire", "ambush"] and not can_task():
-		return "select a whole element to give it a task"
+		return _refuse("select a whole element to give it a task")
 	if armed in ["attack_move", "move", "screen", "support_by_fire", "ambush"]:
 		return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""
@@ -902,13 +909,13 @@ func armed_click_order(at: Vector2, queue := false) -> String:
 		"follow":
 			if tank != null and tank.team == team and not selection.units.has(String(tank.name)):
 				return order_selection("follow", {"target": String(tank.name), "queue": queue})
-			return "click a friendly unit to follow"
+			return _refuse("click a friendly unit to follow")
 		"move":
 			if world != null:
 				return order_selection("move", {"to": [world.x, world.z], "queue": queue})
 		"screen", "support_by_fire", "ambush":
 			if not can_task():
-				return "select a whole element to give it a task"
+				return _refuse("select a whole element to give it a task")
 			if world != null:
 				return order_selection(armed, {"to": [world.x, world.z], "queue": queue})
 	return ""

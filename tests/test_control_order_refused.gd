@@ -93,3 +93,17 @@ func test_a_squad_told_to_attack_is_held_to_it() -> void:
 	var label := String(f.controls.order_mark_label(f.controls.order_marks()[0]))
 	assert_true(label.begins_with("ATTACK · 1/3 on target"), "the squad's pin counts one gun on target (%s)" % label)
 	assert_true(label.contains("2 NOT COMPLYING"), "and says two are not (%s)" % label)
+
+
+## Refused at the moment it is given: every refusal reaches the player (the HUD shows command_issued errors as "Can't:
+## ..."). Five refusals used to return their reason to nobody - the order simply didn't happen.
+func test_a_task_refused_on_the_spot_is_announced() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	f.controls.elements = Elements.install(f.game_match, f.orders)
+	var heard: Array = []
+	f.controls.command_issued.connect(func(_command: Dictionary, error: String) -> void: heard.append(error))
+	f.controls.selection.set_units(["Green_Alpha_1", "Green_Bravo_2"])  # not a whole element: no task can be given
+	var error := f.controls.order_selection("screen", {"to": [0.0, -30.0]})
+	assert_true(error != "", "the task is refused (%s)" % error)
+	assert_eq(heard, [error], "and the refusal is announced, not just returned")
