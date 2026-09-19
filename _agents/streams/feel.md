@@ -131,6 +131,20 @@ place, you do not place).
 
 ### Round 8 (2026-09-19) — "the gang tanks are still tiny" (the lead, third time)
 
+- **Green and sent: `ea95bdb8`** (builder0: 1252 passed, 0 failed, `make check exited 0`, `sim-baseline passed:
+  668b7d490607439b`, main `c7583df6` merged). Carries the fit fix + `make size-look`, the music-director flake fix
+  (control's report), **the shield fix** (`b6b23501`) and **the Terminus** (`f8f27593` name + `9b6a52d1` 18
+  lead-approved clips, 1,630 credits; announcer-pytest 58/58 — main's only red target).
+- **Shield fix:** every gang vehicle has `max_shield` 0, so the hull's first `set_shield(0)` read against the shell's
+  default full ratio as the shield being knocked out: a crackle and a `shield_down` sound per vehicle, ~40 a
+  deployment, since the gangs shipped. combat spotted it in my 14 m frames (lesson: a big object magnifies what was
+  already slightly wrong). The shell's first update is now its start, not an event.
+- **Terminus clips, and a master I lost:** the announcer masters are git-ignored, so a worktree dry run priced all 144
+  requests (~17,018 credits, 8x). Copy them in first and read the REQUEST COUNT. I then deleted the copy afterwards
+  **with the 18 new masters in it**: the clips ship and are verified, but those 18 can't be re-cut if the cutting
+  changes (~1,630 credits to re-record; the orchestrator ruled: don't pre-pay, a re-record buys different takes
+  anyway). Recipe in `references/audio/README.md`: copy in → generate → copy new masters back → delete.
+
 - **Why it was still tiny (two causes, both measured):** (1) the art is fitted uniformly by LENGTH and the War Rig
   model is slim (natural 0.85 × 1.35 × 3.6), so combat's 4.4 m box height never reached the screen: it drew
   1.33 × 2.09 × 5.6. (2) My round-7 gun cut made the fit measure the hull after its baked gun was turned to rest, so the
