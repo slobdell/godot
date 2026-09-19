@@ -422,8 +422,8 @@ func _draw() -> void:
 				# Round 7 (C1): the vehicle itself when its render is ready, the role icon until then.
 				var render := UnitPortraits.texture(String(portrait.get("unit_id", "")), get_tree())
 				if render != null:
-					var side := minf(cell.size.x, cell.size.y) * 0.92
-					batch.texture(render, Rect2(cell.get_center() - Vector2(side, side * 1.1) / 2.0, Vector2(side, side)), Color.WHITE)
+					var side := minf(cell.size.x, cell.size.y) * 1.0
+					batch.texture(render, Rect2(cell.get_center() - Vector2(side, side * 1.08) / 2.0, Vector2(side, side)), Color.WHITE)
 				else:
 					batch.icon(portrait["role"], cell.get_center() - Vector2(0, cell.size.y * 0.1), cell.size.y * 0.5, friendly)
 				var bar_height := clampf(cell.size.y * 0.1, 5.0 * s, 12.0 * s)

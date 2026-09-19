@@ -64,6 +64,7 @@ func _render(unit_id: String) -> void:
 	tank.name = "Portrait_" + unit_id
 	viewport.add_child(tank)
 	tank.process_mode = Node.PROCESS_MODE_DISABLED
+	tank.nameplate.visible = false  # its health label rendered into the portrait ("100" over every vehicle)
 	var hull: Array = Units.stat(unit_id, "hull_size")
 	var reach := maxf(float(hull[0]), maxf(float(hull[1]), float(hull[2])))
 	var camera := Camera3D.new()
@@ -71,7 +72,8 @@ func _render(unit_id: String) -> void:
 	viewport.add_child(camera)
 	var look_at_point := Vector3(0.0, float(hull[1]) * 0.45, 0.0)
 	var back := Vector3(0.0, sin(deg_to_rad(VIEW_PITCH_DEG)), -cos(deg_to_rad(VIEW_PITCH_DEG))).rotated(Vector3.UP, deg_to_rad(VIEW_YAW_DEG))
-	camera.global_transform = Transform3D(Basis.IDENTITY, look_at_point + back * reach * 2.6).looking_at(look_at_point, Vector3.UP)
+	# Close enough that the hull fills the frame (at 2.6x reach it was a small vehicle in an empty square).
+	camera.global_transform = Transform3D(Basis.IDENTITY, look_at_point + back * reach * 1.7).looking_at(look_at_point, Vector3.UP)
 	camera.current = true
 	for i in 3:
 		await get_tree().process_frame

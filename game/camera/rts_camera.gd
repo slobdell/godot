@@ -73,7 +73,9 @@ const WALL_HEIGHT_M := 3.0
 ## The grandstand's profile outside the wall, as (metres out from the wall's inner face, height): the wall's top, the
 ## stands' front rail, their middle and their back. Measured from feel's kit_stands (15.7 m high, 19.9 m deep, set
 ## 0.3 m past the 2 m wall); if the venue changes shape, these follow it.
-const STANDS_PROFILE := [Vector2(2.0, 3.0), Vector2(2.3, 5.0), Vector2(12.3, 10.3), Vector2(22.2, 15.7)]
+## The front point includes the railing above the first seats (7 m): at 5 m the railing still crossed the back row of a
+## squad parked by the wall (shell-playtest at 78 m, round 7).
+const STANDS_PROFILE := [Vector2(2.0, 3.0), Vector2(2.3, 7.0), Vector2(12.3, 11.0), Vector2(22.2, 15.7)]
 ## Whether the stands hide the arena is judged for a vehicle this far inside the wall, this high.
 const OCCLUSION_PROBE := Vector2(4.0, 1.0)
 ## A camera less than this far behind the stands' back still counts as among them (their back rail and lights).
