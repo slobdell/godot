@@ -138,11 +138,14 @@ func test_the_ui_stays_cheap_with_a_full_army_selected() -> void:
 	var keys := work.keys()
 	keys.sort()
 	var total := 0.0
+	# The FASTEST of the rounds, not their mean: on a shared builder0 other checks' load only ever adds time (#19 on
+	# 9c889025 measured a 2.33 ms mean, slower than the laptop's 1.80), while a real regression slows every round.
 	for key: String in keys:
-		var started := Time.get_ticks_usec()
+		var each := INF
 		for i in rounds:
+			var started := Time.get_ticks_usec()
 			(work[key] as Callable).call()
-		var each := (Time.get_ticks_usec() - started) / 1000.0 / float(rounds)
+			each = minf(each, (Time.get_ticks_usec() - started) / 1000.0)
 		costs[key] = each
 		total += each
 	# horizon_zoom runs once every RtsCamera.VISION_CAP_EVERY frames, so only its share counts against a frame.
