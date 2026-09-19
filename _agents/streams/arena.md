@@ -26,8 +26,10 @@
   routes took 4–5% of unit-time on dense layouts against 14% on foundry, and three streams independently landed on
   the same explanation — **a single central control point overrides every tactical choice**, so terrain has nothing to
   decide. combat separately measured median hit range at 39–43 m on *every* map. More props will not fix that.
-- Wrecks are on physics layer 4 **on purpose**, so they never block driving and the startup-only navmesh never goes
-  stale. nav may want to change that (its X9); it is a conversation, not a unilateral change.
+- ~~Wrecks are on physics layer 4 **on purpose**, so they never block driving~~ — **this is false**, and it was
+  false when the brief was written. See *X9 / dynamic obstacles* in the Status: the `wreck` kit prop is a layer-1
+  StaticBody3D under the `navigation_source` group, so it blocks driving and is baked into the navmesh like any
+  container; a destroyed vehicle leaves no body at all.
 
 ## Backlog (in order)
 
@@ -303,6 +305,52 @@ adjusted, because nav's before/after is on a fixed tree.
 **What I should have done:** I treated the tail as more of the headline. A stable minority failing the same way is a
 defect, not variance, and nav found it by asking *which* units failed rather than how many. Left in a baseline it
 would have flattered every later fix by 8 units a run.
+
+### X9 / dynamic obstacles: keep the navmesh a startup snapshot (arena's ruling, 2026-09-18)
+
+nav asked whether wrecks should become soft nav obstacles and whether anything will stop blocking mid-match.
+**Answering it turned up a false premise that is written in both our briefs, including this one.**
+
+**"Wrecks are on physics layer 4 on purpose, so they never block driving" is wrong.** Checked in the code, not
+recalled:
+
+- **Nothing in `game/` sets a collision layer** except `tank.tscn` (`collision_layer = 2`). `Arena._build_obstacles()`
+  makes a plain `StaticBody3D` per obstacle, which defaults to **layer 1**.
+- The `Obstacles` node carries the `navigation_source` group (`arena.tscn:64`), and the bake parses layer-1 shapes
+  in that group. So **the `wreck` kit prop is baked into the navmesh and does block driving**, exactly like a
+  container.
+- Independent confirmation already in the suite: `ArenaFixture.inside_cover()` picks the widest collidable prop,
+  which on **boneyard and yard is a wreck** (min dimension 3.2 m), and asserts a point at its centre is off the
+  navmesh. `test_every_shipped_layout_connects_both_bases_and_the_centre` runs that for every layout and passes.
+- **A destroyed vehicle leaves no body at all.** `game/theme/fx/fire_sites.gd:7`: *"Visual only: a site is just
+  where a kill explosion happened. (Keeping a wreck MODEL there needs rules to leave the…)"*
+
+Two different things share the name: the **kit prop** (static scenery, permanent cover, in the mesh) and a
+**destroyed vehicle's husk** (does not exist). The layer-4 claim looks like a design that was discussed and never
+built, and it has been repeated for at least two rounds.
+
+**So both of nav's questions dissolve.** There is nothing to make "soft" — the props are already hard and already
+baked — and the dynamic thing is not there to be avoided.
+
+**The ruling, with the reason, so it is chosen rather than inherited: nothing should block drivable space
+mid-match, and the navmesh stays a startup snapshot.**
+
+1. Wrecks as permanent props already buy the tactical value (hard cover at 2.0 m, above the 1.3 m eye line) at zero
+   dynamic cost.
+2. The lead's approved destructible-cover design (X6) **deliberately never changes drivable space** — a stack
+   collapses to a lower stack, the footprint stays. So X6 will not create a consumer for X9 either.
+3. nav reached 100% arrival on a static mesh.
+4. **The real blocker is fairness, not performance, and nobody had written it down.** The navmesh is baked from the
+   southern half plus its 180° rotation *as a second region* precisely because a normal bake is not point-symmetric
+   — an asymmetric bake gave the south base a 64% win rate (trip-up 21). **Any mid-match re-bake would have to
+   reproduce that construction, or it silently reintroduces the bias**, and it would have to do so while units are
+   standing on the mesh. That is the argument against dynamic obstacles, and it is much stronger than the cost of
+   the bake.
+5. `NavigationObstacle3D` (soft avoidance, no re-bake) sidesteps 4 — but it overlaps with nav's ORCA, which already
+   steers around every living hull as of `7cce78af`.
+
+**If round 7 revisits this, revisit it with `agent_max_climb`**: both are consequences of "the navmesh is a startup
+snapshot baked in two mirrored halves", and both are cheap to change and expensive to get wrong.
 
 ### The mistake worth reading
 
