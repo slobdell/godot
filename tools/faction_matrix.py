@@ -17,6 +17,10 @@ import argparse
 import concurrent.futures
 import itertools
 import json
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import run_conditions
 import subprocess
 import sys
 import time
@@ -113,6 +117,7 @@ def main():
     rows = [summarize(faction, other, results) for (faction, other), results in sorted(outcomes.items())]
     # Name the map in the output: every row is ONE map's answer, and a reader who does not know which will read a
     # property of foundry as a property of the faction.
+    print(f"run: {run_conditions.header()}")
     print(f"{len(jobs) - len(failures)} matches on {args.arena or 'foundry (default)'} at {args.budget} points, "
           f"{time.time() - started:.0f}s wall, "
           f"{args.jobs} jobs (each pairing counterbalanced: same seeds from both colours)")
@@ -138,7 +143,7 @@ def main():
         print("  FAILED: " + failure)
     if args.json:
         with open(args.json, "w") as handle:
-            json.dump({"args": vars(args), "rows": rows, "failures": failures}, handle, indent=2)
+            json.dump({"run": run_conditions.describe(), "args": vars(args), "rows": rows, "failures": failures}, handle, indent=2)
     sys.exit(1 if failures else 0)
 
 
