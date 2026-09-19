@@ -706,7 +706,35 @@ braces costs nothing and a second opinion on "did it get there" is the one place
 it.* The metric is **unit-time on the route**, not completion — a map whose interesting route is where the fights
 happen is the map working, not failing. Only *never entering* is declining it.
 
-### X5 — the Lancer: **the Syndicate drops `syn_lancer`** (proposal, 2026-09-18)
+### X5 — the Lancer: **the recommendation was incomplete. HOLD the removal.**
+
+**The lead approved dropping `syn_lancer`; then I implemented it and it broke the Syndicate.** Removing it leaves
+them with only the four core roles and **no special at all**:
+
+| faction | roles | special(s) |
+|---|---|---|
+| condemned | 6 | **lancer + burner** |
+| gangs | 5 | support |
+| law | 5 | suppressor |
+| syndicate | 5 → **4** | lancer *(their only one)* |
+
+`test_combat_factions::test_every_playable_faction_fills_the_core_roles` catches it, and it catches it because it
+asserts a **design pillar** — *"counters stay learnable across factions"* — rather than an implementation detail.
+**That asymmetry strengthens the half of the recommendation that was right** (the Condemned can afford to lose the
+Lancer because they also have the Burner) **and invalidates the half I never checked** (the Syndicate cannot, because
+it is their only one). *I made a recommendation about one unit without looking at the roster it would leave behind.*
+
+**Three ways forward; the choice is the lead's:**
+1. **Keep it and re-role it** so it is not a second sniper. The Syndicate fields **15 vehicles at 5200 points**
+   against the gangs' 39 — an elite-few faction has room for a special that is not about range.
+2. **Design a replacement special first.** `syn_scout` has the game's best eyes (135 m sight), which under N5's gate 1
+   is worth more than it was; a designator or spotter would fit the faction and not duplicate the railgun's 104 m.
+3. **Accept a four-role Syndicate** — argued against here: it makes them the only faction with no identity beyond
+   the core four.
+
+**Reverted on this branch**, so nothing is half-landed. feel's work on that model is only wasted under (3).
+
+### (the analysis that still stands) why the Condemned keep theirs
 
 Measured from the rosters, not argued from memory. Direct-fire **bands** by faction and slot:
 
