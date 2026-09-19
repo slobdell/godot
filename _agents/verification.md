@@ -100,6 +100,21 @@ a future agent who has never read any of this.
 **exit 1 before writing any output**. A number from a run whose conditions were not met is worse than no number,
 because **it looks exactly like a real one**.
 
+**A control states the condition it checked and what it therefore refuses to report. It does not explain why the
+condition matters.** The first version of arena's said *"…spawn slots wrapped, and those hulls cannot move, so
+every arrival number below would be wrong"* — a **diagnosis the control cannot verify**, and one that had gone
+stale a round earlier: coincident hulls have parted by name since round 6. It was true when written and false when
+read, and **a stale diagnosis in a failure message is worse than one in a document, because it arrives at the
+moment someone is deciding what to do** — that sentence nearly had nav's 60/60 arrival result held out of a merge
+as void. The replacement says only what is permanently true:
+
+> `8 pairs of units started on top of each other: spawn slots wrapped, so this run is not the experiment named
+> (60 distinct start points). No number written.`
+
+**And when a control fires on your own setup, fix the cause rather than downgrading the assertion to a warning.**
+`NAV_UNITS=60` on a 52-slot layout genuinely was not the experiment it named; the probe now offsets the surplus
+units so it is. A warning is the invisible-skip failure in another costume.
+
 Idea from combat, after two of its designator runs measured a different game than it thought and no check caught
 either.
 
