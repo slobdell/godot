@@ -47,3 +47,9 @@ squad-coherence: import ## Round-6 X6: legibility as numbers (idle in contact, d
 	$(PYTHON) tools/tactics/coherence.py --godot $(GODOT) --seeds $(or $(SEEDS),4) --jobs $(JOBS) \
 		--green $(or $(GREEN_FACTION),condemned) --rust $(or $(RUST_FACTION),law) --time-limit $(or $(TIME),180) \
 		$(if $(EXTRA),--extra="$(EXTRA)") --json $(BUILD_DIR)/squad-coherence.json
+
+squad-decisions: import ## Round 7: split attack-move's "re-task events" (drive target jumping > 8 m, nav-fight's measure) into decisions (option/target changed) vs motion inside one decision, and count A->B->A reversals, in nav-fight's own fight (ARENA=yard SEED=3 NAV_TIME=120 BUDGET=6500)
+	@echo ">> squad-decisions: ARENA=$(or $(ARENA),yard) SEED=$(or $(SEED),3) NAV_TIME=$(or $(NAV_TIME),120)"
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/decision_probe.gd -- \
+		--arena=$(or $(ARENA),yard) --seed=$(or $(SEED),3) --time-limit=$(or $(NAV_TIME),120) --budget=$(or $(BUDGET),6500) \
+		2>&1 | grep -E "DECISION_PROBE|SCRIPT ERROR|ERROR" || true

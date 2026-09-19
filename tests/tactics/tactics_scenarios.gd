@@ -504,9 +504,12 @@ static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s
 	var goals := [Vector3(-80, 0, 20), Vector3(-40, 0, 0), Vector3(0, 0, 10), Vector3(40, 0, 0), Vector3(80, 0, 20)]
 	var total := int(seconds * SimClock.TICK_RATE)
 	var ticks := {"now": 0, "idle": 0}
-	var on_issued := func(_command: Dictionary) -> void:
+	var idle_commands: Array = []
+	var joined_s := {}  # element -> seconds after its move until it joined its final slots (round 7 flow)
+	var on_issued := func(command: Dictionary) -> void:
 		if int(ticks["now"]) >= total - int(idle_s * SimClock.TICK_RATE):
 			ticks["idle"] = int(ticks["idle"]) + 1
+			idle_commands.append("t%.1f %s %s" % [float(ticks["now"]) / SimClock.TICK_RATE, command.get("units"), command.get("verb")])
 	(lab.orders as Orders).issued.connect(on_issued)
 	for tick in total:
 		ticks["now"] = tick
@@ -514,6 +517,9 @@ static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s
 		if tick % (SimClock.TICK_RATE / 2) == 0 and g < 5:
 			(elements[g] as Element).assign({"verb": "move", "to": [goals[g].x, goals[g].z], "drills": false})
 		await lab.step()
+		for e in 5:
+			if not joined_s.has(e) and tick > e * (SimClock.TICK_RATE / 2) and (elements[e] as Element).flow_joined:
+				joined_s[e] = snappedf(float(tick) / SimClock.TICK_RATE - e * 0.5, 0.1)
 	(lab.orders as Orders).issued.disconnect(on_issued)
 	var off_slot: Array = []
 	var anchor_off: Array = []
@@ -538,6 +544,123 @@ static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s
 	for value: float in off_slot:
 		mean += value
 	var result := {"idle_orders": int(ticks["idle"]), "anchor_off_m": anchor_off, "off_slot_m": off_slot,
-			"mean_off_slot_m": snappedf(mean / maxf(off_slot.size(), 1.0), 0.1), "far": far}
+			"mean_off_slot_m": snappedf(mean / maxf(off_slot.size(), 1.0), 0.1), "far": far, "idle_commands": idle_commands, "joined_s": joined_s}
 	lab.dispose()
+	return result
+
+
+## Round 7: does the DECIDER thrash under attack-move? nav moved the movement layer a long way and attack-move's
+## re-task rate did not move (~45 per unit-minute): the brain is choosing. Six player tanks attack-move across the strip
+## through six CPU tanks (both durable, so the fight lasts). Every tick, each green brain's option label: `switches` (any
+## change) and `reversals` — leaving an option and coming BACK to it within REVERSAL_S — the shape that can only be
+## thrash, never the evasion or target change attack-move legitimately includes. Per unit-minute, with the top pairs.
+const REVERSAL_S := 3.0
+
+
+static func attack_move_decisions(case: TestCase, seconds := 60.0) -> Dictionary:
+	var lab := TacticsLab.create(case, 29)
+	lab.game_match.set_meta("player_team", Match.Team.GREEN)
+	var names: Array = []
+	for i in 6:
+		var tank := lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), Vector3(LANE_X - 10.0 + (i % 3) * 10.0, 0.0, 60.0 + (i / 3) * 10.0), 0.0)
+		AiScenario.make_durable(tank)
+		names.append(String(tank.name))
+	for i in 6:
+		var enemy := lab.unit(Match.Team.RUST, "Rust_B_%d" % (i + 1), Vector3(LANE_X - 10.0 + (i % 3) * 10.0, 0.0, -30.0 - (i / 3) * 10.0), PI)
+		AiScenario.make_durable(enemy)
+	await lab.start()
+	(lab.orders as Orders).issue(UnitCommand.make(names, "attack_move", {"to": [LANE_X, -90.0], "source": "player"}))
+	var history := {}  # name -> [[label, since_tick], ...] (last three)
+	var switches := 0
+	var reversals := 0
+	var pairs := {}
+	var unit_ticks := 0
+	var window := int(REVERSAL_S * SimClock.TICK_RATE)
+	for tick in int(seconds * SimClock.TICK_RATE):
+		await lab.step()
+		for unit_name: String in names:
+			var brain := lab.game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
+			if brain == null or brain.choice.is_empty():
+				continue
+			unit_ticks += 1
+			var label := "%s %s" % [brain.choice.get("option", ""), brain.choice.get("target", "")]
+			var seen: Array = history.get_or_add(unit_name, [])
+			if seen.is_empty() or String(seen[-1][0]) != label:
+				if not seen.is_empty():
+					switches += 1
+					# A -> B -> A with B held under REVERSAL_S: back where it was, having gone nowhere.
+					if seen.size() >= 2 and String(seen[-2][0]) == label and tick - int(seen[-1][1]) <= window:
+						reversals += 1
+						var key := "%s<->%s" % [label, seen[-1][0]]
+						pairs[key] = int(pairs.get(key, 0)) + 1
+				seen.append([label, tick])
+				if seen.size() > 3:
+					seen.pop_front()
+	var minutes := maxf(unit_ticks / (SimClock.TICK_RATE * 60.0), 0.01)
+	var result := {"switches_per_unit_min": snappedf(switches / minutes, 0.1),
+			"reversals_per_unit_min": snappedf(reversals / minutes, 0.1), "top_reversals": CoherenceProbe.top(pairs, 6),
+			"unit_minutes": snappedf(minutes, 0.01)}
+	lab.dispose()
+	return result
+
+
+## Round 7: does an element FLOW in formation on the way (the lead's "formula to form up"), not only snap into it at the
+## end? Four tanks in a loose clump get a plain move 110 m down the strip. While the leader is still travelling, each other
+## member's distance from its formation place — the leader's position plus its slot offset turned to the leader's facing —
+## is averaged; then the arrival time and the orders in the last 10 s. `flow` switches ElementPlan.FLOW_ENABLED (A/B).
+static func element_transit(case: TestCase, flow: bool, seconds := 40.0) -> Dictionary:
+	var was := ElementPlan.FLOW_ENABLED
+	ElementPlan.FLOW_ENABLED = flow
+	var lab := TacticsLab.create(case, 37)
+	var names: Array = []
+	for i in 4:
+		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1),
+				Vector3(LANE_X - 6.0 + (i % 2) * 12.0, 0.0, 60.0 + (i / 2) * 9.0), 0.0).name))
+	var alpha := lab.element(names, "Alpha")
+	await lab.start()
+	var issued := {"late": 0}
+	var total := int(seconds * SimClock.TICK_RATE)
+	var ticks := {"now": 0}
+	var on_issued := func(_command: Dictionary) -> void:
+		if int(ticks["now"]) >= total - 10 * SimClock.TICK_RATE:
+			issued["late"] = int(issued["late"]) + 1
+	(lab.orders as Orders).issued.connect(on_issued)
+	var goal := Vector3(LANE_X, 0.0, -50.0)
+	alpha.assign({"verb": "move", "to": [goal.x, goal.z], "drills": false})
+	var gap_sum := 0.0
+	var gap_n := 0
+	var arrived := -1
+	for tick in total:
+		ticks["now"] = tick
+		await lab.step()
+		var leader := lab.tank_of(alpha.leader)
+		if leader == null or not (alpha.slots as Dictionary).has(alpha.leader):
+			continue
+		var lead_slot: Vector3 = alpha.slots[alpha.leader]
+		if leader.global_position.distance_to(lead_slot) > ElementPlan.FLOW_JOIN_M:
+			var forward := TacticsFormation.flat(-leader.global_basis.z)
+			var heading: Vector3 = alpha.heading
+			var right := Vector3(-heading.z, 0.0, heading.x)
+			for unit_name: String in names:
+				if unit_name == alpha.leader or not (alpha.slots as Dictionary).has(unit_name):
+					continue
+				var offset: Vector3 = (alpha.slots[unit_name] as Vector3) - lead_slot
+				var place := TacticsFormation.to_world(leader.global_position, forward,
+						Vector2(offset.dot(right), -offset.dot(heading)))
+				gap_sum += Vector2(lab.tank_of(unit_name).global_position.x - place.x,
+						lab.tank_of(unit_name).global_position.z - place.z).length()
+				gap_n += 1
+		if arrived < 0 and lab.center_of(names).distance_to(goal) <= 8.0:
+			arrived = tick
+	(lab.orders as Orders).issued.disconnect(on_issued)
+	var off := 0.0
+	for unit_name: String in names:
+		var slot: Variant = alpha.slots.get(unit_name)
+		if slot is Vector3:
+			off = maxf(off, lab.tank_of(unit_name).global_position.distance_to(slot))
+	var result := {"flow": flow, "transit_gap_m": snappedf(gap_sum / maxf(gap_n, 1), 0.1), "samples": gap_n,
+			"arrived_s": snappedf(arrived / float(SimClock.TICK_RATE), 0.1) if arrived >= 0 else -1.0,
+			"worst_off_slot_m": snappedf(off, 0.1), "orders_last_10s": int(issued["late"])}
+	lab.dispose()
+	ElementPlan.FLOW_ENABLED = was
 	return result

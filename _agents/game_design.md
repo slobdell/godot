@@ -833,6 +833,29 @@ reaching*, not what can be *seen*. **Two axes behaving independently is the firs
 right model** — openness and reason are separate design knobs, and a map can now be tuned on one without disturbing the
 other.
 
+**SHIPPED AND VERIFIED (arena, 2026-09-19). Both maps the lead kept are now HEXAGONS at the 140 m bound, and both pose
+a question:**
+
+| | shape | `centre_sees_share` | decision spread |
+|---|---|---|---|
+| **yard** | hexagon @ 140 | 0.20 | **0.43** |
+| **pit** | hexagon @ 140 | 0.30 | **0.42** |
+
+**A real 120 s match on each: zero `Objectives` errors (was 35,336), zero `ERROR` lines of any kind, winner declared.**
+
+**⚠ AND DECISION SPREAD IS NOT A QUANTITY TO MAXIMISE.** pit needed re-tuning rather than re-enabling: coordinates chosen
+for the 240 m square gave **0.13** in the hexagon, because the arena grew and the distances that made one objective
+contested stopped being asymmetric. A placement sweep:
+
+```
+z = -30 -> 0.13      z = -50 -> 0.42      z = -60 -> 0.63      z = -70 -> 0.96
+```
+
+**0.96 is not a better map.** It means one objective is nearly free and the other nearly impossible — **a formality
+rather than a choice** — and at z = −70 it sits in the base's approach funnel, **which is the boulevard failure this
+project already wrote a placement rule against.** Both shipping pairs sit near **0.4**, and the reasoning is in
+`objective_pair`'s docstring so the next author does not read the number as a score to beat.
+
 **⚠ HELD BACK, NOT SHIPPED.** A real match on the paired yard fired squad's `Objectives` guard **35,336 times**: *"the
 arena declares an objective other than the single central zone; squad's deciders still read `Match.CONTROL_CENTER`."*
 **The match completed and produced a winner while the deciders competed for the wrong ground throughout** — degraded,
@@ -902,6 +925,48 @@ What follows for map authoring, and these are testable claims rather than taste:
    funnelling crossings onto bridges are the reason-half and the risk-half of the same change, and measuring either
    alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
    the bands (lesson 62).
+
+## Round 8 direction: the lead's playtest of round 7 (2026-09-19, late)
+
+> *"ok I just did a quick game and I can see there are improvements but it still sucks. First, the gang tanks are still
+> tiny (the intent for the semi trucks is that they're huge - we'll worry about evening up factions later). And on the
+> navigation from, they still generally don't do what I command them. On the navigation from, units are still just
+> getting stuck behind basic barriers where they seem to just move back and forth indefinitely trying to get unstuck. I
+> also don't know how easy this is to do or if we should shelve it for later but the gang semi trucks don't actually
+> behave like a semi truck with a truck and a trailer - both components just move together. I can also see that the semi
+> trucks are yawing in place (should be impossible, they're not a tracker vehicle). ANother obvious problem right now in
+> make skirmish is that not all units belong to a squad. There seem to be orphaned units that don't get selected at all
+> when I cycle through the numbers on my keyboard (1, 2, 3, 4...). I'm also testin just telling a group of units to
+> attack a single unit, but they don't obey and instead they shoot at whatever they were already shooting at. Also, of
+> the algorithms we identified earlier, which ones are actually implemented now?"*
+
+**"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
+still cannot command his units. **Improvements he can see did not change the verdict.**
+
+### The eight items, with what is already known about each
+
+1. **THE SEMI IS STILL TINY, AND SIZE IS NOT A BALANCE QUESTION.** *"the intent for the semi trucks is that they're huge
+   — we'll worry about evening up factions later."* combat measured 4.4 m against the scout's 1.4 m — **3.14×, inside the
+   3–4× band he named in round 6** — and he says it is still wrong. **So the measurement satisfied the number he gave and
+   not the intent behind it.** He has now explicitly removed balance as a constraint on this. **Do not defend 3.14× with
+   the round-6 quote; make it huge.**
+2. **"They still generally don't do what I command them."** The round's central claim, unmoved by facing (2/30 → 27/30),
+   the standoff, the order pins and commitment.
+3. **UNITS STUCK BEHIND BASIC BARRIERS, "moving back and forth indefinitely trying to get unstuck."** nav measured
+   blocked-by-terrain to **zero** in `nav-fight`; he sees it in `make skirmish`. **The instrument and the game disagree,
+   and the game is right** — this is lesson 23's shape: a number taken in a configuration the player does not get.
+4. **The semi is not articulated** — tractor and trailer move as one body. He explicitly offers to shelve it: *"I don't
+   know how easy this is to do or if we should shelve it for later."*
+5. **⚠ THE SEMI YAWS IN PLACE, "should be impossible, they're not a tracker vehicle."** This is a *class* bug and nav has
+   already measured its neighbour: `TankMotion.step_in_place` pivots a hull about its own centre, **which nav called
+   "right for tracks"** — and it is applied to wheeled hulls too. **A wheeled vehicle must not rotate without translating.**
+6. **ORPHANED UNITS: not every unit belongs to a squad**, so cycling 1–4 never selects them. **A player cannot command
+   what he cannot select**, which makes this a direct cause of item 2.
+7. **A GROUP ORDERED TO ATTACK ONE UNIT KEEPS SHOOTING WHAT IT WAS ALREADY SHOOTING.** An explicit target order is the
+   most direct command in the game and it is being ignored. **Round 6's `test_a_move_order_beats_every_brain_state` has a
+   sibling that does not exist for attack.**
+8. **"Of the algorithms we identified earlier, which ones are actually implemented now?"** — answered from
+   [algorithms.md](algorithms.md), which is the file that exists to answer exactly this.
 
 ### THE ROUND'S HEADLINE: the units are still not smart enough (lead, 2026-09-19)
 

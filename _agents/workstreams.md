@@ -101,6 +101,36 @@ presentation job is the arena as a place).
 | **N7 Objectives are the arena's, not a constant** (added 2026-09-18, arena proposing, combat scheduling). `Match` hard-codes `CONTROL_CENTER := Vector3.ZERO` and `CONTROL_RADIUS := 16.0`, and a layout's `control_point` reaches only the *dressing* — **an arena cannot move its own objective today; the field is decorative.** arena has landed its half: `arenas/` gains `objectives: [{name, position, radius}]` with `Arena.objectives_of()`, validated so off-centre objectives come in **mirrored pairs** (a lone one is owned by whichever base is nearer, preserving the fairness invariant), and a layout with no `objectives` list reports exactly the single central zone `Match` already hard-codes — asserted for every shipped layout. **combat's half is a pure read-through with no behaviour change on any existing arena:** read `Arena.objectives_of(Arena.active)` instead of the two constants, and hold a per-objective owner instead of one scalar. It is combat's to schedule; arena's X3 (objectives off the centre line) is blocked on it *and* on CP4. | arena: `arenas/`, `game/arena/` → combat: `game/match/` | squad (what to take), feel (dressing) |
 | **N6 PID as the house control law.** `Pid` (a small, deterministic, tick-based regulator: gains, integral clamp, derivative on measurement, reset) used where there is a continuous error to regulate — slot station-keeping, speed matching, turret lay — and **not** where the problem is discrete choice. Gains live in **data**, per faction, so the lead's idea that factions differ by their gains is reachable: the Syndicate crisp, the gangs loose. Default gains ship stable first; per-faction gains are a stretch. | nav: `game/ai/{pid,control_gains}.gd` | squad (station-keeping), control (camera smoothing), feel (none) |
 
+## Round 8 goal (2026-09-19): the owed algorithms, and the eight things he listed
+
+**The lead: *"it still sucks"*, and *"my expectation was that you would have gotten all this working while I was away."***
+**Round 7 merged seventeen branches and did not change his verdict.** Round 8 is the algorithm roster plus his eight
+items, and **nothing else**. No instrument work that is not in service of one of them.
+
+**Why the roster slipped, stated plainly so it is not repeated:** round 7 spent its capacity on *merging* and on
+*instruments* — six measuring tools were found broken — and the owed algorithms were deferred as too large to land
+alongside that. **That was defensible once. It is not defensible twice**, and the four missing algorithms map directly
+onto his complaints:
+
+| his complaint | the owed algorithm |
+|---|---|
+| *"the semi trucks are yawing in place"* | **angular acceleration limit** on the plant |
+| trucks turn like tracked vehicles | **Reeds–Shepp** |
+| *"stuck behind basic barriers… back and forth indefinitely"* | **flow fields** |
+| long routes, repathing every second | **HPA\*** |
+
+| Stream | Round 8 |
+|---|---|
+| **nav** | **The three motion algorithms, in this order: (1) angular-acceleration limit in `TankMotion.step_in_place` — and a wheeled hull must NOT rotate without translating, which is a class bug, not a semi bug; (2) Reeds–Shepp for car-like hulls; (3) FLOW FIELDS as its own checkpoint.** Flow fields are no longer deferrable — they are the named answer to his loudest complaint |
+| **arena** | **A REPRO MAP for the barrier stall, in the configuration he plays.** nav measured blocked-by-terrain to zero in `nav-fight` while he watches it happen in `make skirmish` — **the instrument and the game disagree and the game is right.** Build the barrier that stalls units and make it a probe nav can run |
+| **squad** | **Orphaned units: every unit belongs to a squad, and 1–4 selects all of them.** Then **an explicit attack order must override an existing target** — `test_a_move_order_beats_every_brain_state` has no attack sibling and needs one |
+| **control** | **The selection side of the orphans**, and whatever makes an ignored order visible: if a unit cannot obey, the HUD must say so rather than leaving him to infer it |
+| **feel** | **MAKE THE SEMI HUGE.** 3.14× satisfied the number he gave in round 6 and not the intent, and **he has removed balance as a constraint**. Then the articulated tractor/trailer, which he offered to shelve — **treat it as a stretch** |
+| **combat** | **`hull_size` for the semi** (the catalog is combat's, and it is the collision box), and **the balance consequences of a huge semi, which he has explicitly deferred** — measure, do not tune |
+
+**The standing rule for this round: every item is something he named. If a stream wants to do something he did not name,
+it asks first.**
+
 ## New contracts (round 7)
 
 | Contract | Owner, where | Consumers |

@@ -84,6 +84,15 @@ func _report_facing(elapsed: float) -> void:
 		summary["+%ds" % int(at)] = {"units": values.size(), "within_%d_deg" % int(WITHIN_DEG): within,
 				"median_deg": values[values.size() / 2] if not values.is_empty() else -1.0,
 				"worst_deg": values[-1] if not values.is_empty() else -1.0}
+	# Who is still off at +10 s, what it is, and what it is doing (diagnosis).
+	for tank in units:
+		var key := String(tank.name)
+		var marks: Dictionary = errors.get(key, {})
+		if float(marks.get(10.0, 0.0)) > WITHIN_DEG:
+			var brain := game_match.brains.get_node_or_null(NodePath("Brain_" + key)) as TankBrain
+			print("NAV_FACING_OFF %s %s %s err %.0f deg at +10s, move %s option %s speed %.1f dist-to-goal %.1f" % [key, tank.unit_id,
+					Units.stat(tank.unit_id, "locomotion", "?"), float(marks[10.0]), brain.move_order if brain else "?",
+					brain.choice.get("option", "?") if brain else "?", tank.speed(), _flat(tank.global_position, goal[key])])
 	var out := {"arena": String(Arena.active.get("name", "?")), "verb": verb, "units": units.size(),
 			"arrived": completed_at.size(), "seconds": snappedf(elapsed, 0.1), "error_after_arrival": summary}
 	print("NAV_FACING %s" % JSON.stringify(out))

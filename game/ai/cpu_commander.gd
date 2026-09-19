@@ -178,18 +178,18 @@ func plan_for(squad: Squad, by_name: Dictionary) -> Dictionary:
 		# An even fight. v1 held here and lost 30 of 32 series matches to plain brains: with recharging
 		# shields, standing still while the other side presses is how you lose. Hold only on the
 		# objective; otherwise take the fight to them.
-		if Objectives.active(game_match) and Objectives.owner(game_match) == team \
-				and Objectives.contains(game_match, lead.global_position):
+		if Objectives.held_at(game_match, team, lead.global_position):
 			return {"squad": squad.squad_name, "verb": "hold", "to": _clamp_xz(lead.global_position),
 					"facing": [facing.x, facing.z], "formation": "line"}
 		return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(threat), "formation": "line"}
 
 	if freshest != null and game_match.tick - freshest_tick <= FRESH_TICKS \
-			and not (game_match.control_point and game_match.control_owner != team):
+			and not (Objectives.active(game_match) and not Objectives.all_held(game_match, team)):
 		return {"squad": squad.squad_name, "verb": "assault", "to": _clamp_xz(freshest), "formation": "line"}
 	var goal: Vector3
-	if Objectives.active(game_match) and Objectives.owner(game_match) != team:
-		goal = Objectives.center(game_match)
+	var objective := Objectives.goal(game_match, team, lead.global_position)
+	if not objective.is_empty() and int(objective["owner"]) != team:
+		goal = objective["position"]
 	elif freshest != null:
 		goal = freshest
 	else:
@@ -320,8 +320,9 @@ func plan_team(by_name: Dictionary) -> Dictionary:
 		if _resting.has(squad.squad_name):
 			plans[squad.squad_name] = _command(squad, "break_contact", rally, "column")
 
-	var objective: Vector3 = Objectives.center(game_match) if Objectives.active(game_match) \
-			and Objectives.owner(game_match) != team \
+	# The team's objective is judged from its own base, not the moving main body: a stable choice between a mirrored pair.
+	var wanted := Objectives.goal(game_match, team, Match.spawn_position(team, 0))
+	var objective: Vector3 = wanted["position"] if not wanted.is_empty() and int(wanted["owner"]) != team \
 			else Match.spawn_position(1 - team, 0)
 	match phase:
 		"muster":

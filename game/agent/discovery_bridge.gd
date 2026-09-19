@@ -11,7 +11,7 @@ extends Node
 ## seed with the same decisions replays the same match. Everything below the task — formations, drills, the brains —
 ## is the shared library, exactly as for a player.
 ##
-##   stdout:  DISCOVERY_STATE {"step", "tick", "seconds", "team", "score", "control", "elements": [...], "contacts": [...],
+##   stdout:  DISCOVERY_STATE {"step", "tick", "seconds", "team", "score", "control", "objectives", "elements": [...], "contacts": [...],
 ##                             "lanes": [...], "regions": [...]}
 ##   stdin:   {"tasks": [{"element": <id>, "verb": ..., "to": [x, z], "target": name}, ...]}   (one line; {} = no change)
 ##   stdout:  DISCOVERY_ERROR <reason>   for a task that doesn't validate (the rest still apply)
@@ -125,8 +125,7 @@ func observe() -> Dictionary:
 		regions.append({"name": region["name"], "kind": region["kind"], "at": _xz(region["position"])})
 	return {"step": _step, "tick": game_match.tick, "seconds": snappedf(game_match.tick / float(SimClock.TICK_RATE), 0.1), "team": team,
 			"score": [game_match.score_green, game_match.score_rust],
-			"control": {"at": _xz(Objectives.center(game_match)), "owner": Objectives.owner(game_match)}
-					if Objectives.active(game_match) else null,
+			"control": _control(), "objectives": _objectives(),
 			"elements": own, "contacts": contacts, "lanes": lanes, "regions": regions,
 			"half_size": float(Arena.active.get("half_size", 120.0))}
 
@@ -190,7 +189,7 @@ func _tally() -> Dictionary:
 			if tank != null and tank.is_alive():
 				hp += tank.health + tank.shield
 		by_element[str(element.id)] = hp
-	return {"sides": sides, "elements": by_element, "control": game_match.control_owner if game_match.control_point else -1,
+	return {"sides": sides, "elements": by_element, "control": _held(),
 			"tick": game_match.tick}
 
 
@@ -234,6 +233,31 @@ func _roles(names: PackedStringArray) -> Array:
 		if tank != null and tank.is_alive():
 			roles.append(Units.role_of(tank.unit_id))
 	return roles
+
+
+## The objective this side would go for from its base ({at, owner}; Objectives.goal), or null with no objectives.
+func _control() -> Variant:
+	var objective := Objectives.goal(game_match, team, Match.spawn_position(team, 0))
+	return {"at": _xz(objective["position"]), "owner": int(objective["owner"])} if not objective.is_empty() else null
+
+
+## Every objective ({name, at, owner}): a layout may declare several (N7).
+func _objectives() -> Array:
+	var result: Array = []
+	for objective: Dictionary in Objectives.all(game_match):
+		result.append({"name": String(objective["name"]), "at": _xz(objective["position"]), "owner": int(objective["owner"])})
+	return result
+
+
+## How many objectives this side holds, or -1 with none (an outcome's before/after; was the one zone's owner).
+func _held() -> int:
+	if not Objectives.active(game_match):
+		return -1
+	var held := 0
+	for objective: Dictionary in Objectives.all(game_match):
+		if int(objective["owner"]) == team:
+			held += 1
+	return held
 
 
 static func _xz(point: Vector3) -> Array:

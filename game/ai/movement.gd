@@ -28,6 +28,9 @@ const OFF_PATH_REPATH := 5.0
 ## X7: steer at a point this far along the route beyond the hull (metres); wheels at least this many turning radii.
 const PATH_LOOKAHEAD := 5.0
 const WHEELS_LOOKAHEAD_RADII := 1.2
+## settle_radius(): a car settles within this share of its turning radius, at most this far (metres).
+const WHEELS_SETTLE_RADII := 0.6
+const WHEELS_SETTLE_MAX := 6.0
 ## ...but only once the hull points within ~60° of its route; until then it steers at the next corner (see there).
 const CARROT_ALIGNED_COS := 0.5
 ## A car looks at most this many turning radii further along the route for a point it can drive forward onto.
@@ -367,6 +370,17 @@ func reset() -> void:
 	_order_ticks = 0
 
 
+## How close a hull of `unit_id` can settle on a point: 0 for tracks and hover (they pivot), and for wheels
+## WHEELS_SETTLE_RADII of the minimum turning radius, at most WHEELS_SETTLE_MAX. The one place this is decided: an order
+## that asks for tighter is widened to it, and a decider asking "is it there?" should ask this (TankBrain's
+## _order_arrive states the same numbers today).
+static func settle_radius(unit_id: String) -> float:
+	if String(Units.stat(unit_id, "locomotion", "tracks")) != "wheels":
+		return 0.0
+	var radius := maxf(float(Units.stat(unit_id, "min_turn_radius_m", 0.0)), 0.5)
+	return minf(radius * WHEELS_SETTLE_RADII, WHEELS_SETTLE_MAX)
+
+
 ## Is this unit driving somewhere (anything but arrived)? Avoidance gives a still unit no share of the avoiding.
 func is_under_way() -> bool:
 	return phase != "arrived"
@@ -415,7 +429,10 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	if _off.has("r5sidestep"):
 		waypoint = _around_friends(around_fire)
 	var speed_factor := clampf(float(order.get("speed", 1.0)), 0.2, 1.0)
-	_arrive = clampf(float(order.get("arrive", OrderController.ARRIVE_RADIUS)), 0.5, 10.0)
+	# A car can't settle on a point much closer than a share of its turning circle without circling it (round 7: IFVs
+	# told to re-seat within 1.5 m hunted back and forth round their spot for 10 s and never turned to their facing).
+	_arrive = maxf(clampf(float(order.get("arrive", OrderController.ARRIVE_RADIUS)), 0.5, 10.0),
+			settle_radius(tank.unit_id) if wheel_radius() > 0.0 else 0.0)
 	var arrive := _arrive if around_fire == goal else 0.5
 	var remaining := _flat_distance(tank.global_position, goal) if direct else _remaining_path_distance(goal)
 	_remaining = remaining
