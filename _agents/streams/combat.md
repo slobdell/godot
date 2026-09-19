@@ -944,6 +944,50 @@ line, and removing it there would flatten the faction into one band. Dropping `s
 only case of two units sharing a weapon (`laser`), which is what made the duplication visible in the first place.
 Not blocking: both still exist until the lead rules.
 
+### X4 — RESULT (2026-09-19, builder0 at `f745f48a`, n=30 per faction per arm)
+
+**The ablation ran, the treatment engaged in all four arms, and it CANNOT settle the question. That is the
+finding, and the untreated factions are what prove it.**
+
+Faction directives ON minus OFF, per map, never pooled:
+
+| faction | boulevard (open, 0.64) | yard (closed, 0.20) | treated? |
+|---|---|---|---|
+| **gangs** | **+7 pts** (50% → 43%) | **+7 pts** (53% → 47%) | **yes — the only one** |
+| law | −7 pts | **−10 pts** | no |
+| condemned | +3 pts | +0 pts | no |
+| syndicate | −3 pts | +3 pts | no |
+
+**`gangs/scout` is the only faction-keyed entry in `Army.SQUADS`, so the gangs are the only faction the ablation
+treats.** Every other row is therefore a measurement of what an *untreated* faction does between two arms — and
+**law moved −10 points without being treated at all, which is larger than the gangs' +7.** At n=30 the standard
+error of a difference of win rates is **12.9 points** (a 95% band of ±25), so a 7-point effect is well inside the
+noise, and the untreated rows demonstrate that empirically rather than by arithmetic.
+
+**What this licenses and what it does not.**
+
+- The direction is consistent: the gangs are worse without their own directive on **both** an open and a closed
+  map, +7 on each. That is what you would expect if the directive helps. It is not evidence that it does.
+- **It is an order of magnitude short of explaining 23% → 53%.** Whatever produced a 30-point swing, an effect
+  this size is not it — so **neither CP4 nor the `gangs/scout` fix is established as its cause, and combat still
+  claims none of it.**
+- **The likeliest explanation is that the original comparison was never a comparison.** The 23% and the 53% were
+  taken on different builds and, on the evidence of this stream's own foundry finding, plausibly different maps.
+  `compare_arms` exists precisely to refuse that subtraction; it did not exist when those numbers were made, and
+  they cannot be reconstructed now.
+
+**To resolve ±7 points you need about n=400 per faction per arm** (SE_diff ≈ 3.5), i.e. roughly `SEEDS=70` — about
+seven times this run, or ~4 hours of builder0 for the four arms. **That is the price of the question, and it should
+be paid deliberately or not at all.** My recommendation is *not at all* for now: a 7-point faction effect is
+smaller than the balance differences the lead would notice, and the same builder0 hours buy more elsewhere.
+
+**Incidental, and the more useful number: the factions are close to the design target on both maps.** Normal play,
+`f745f48a`, n=30 each: boulevard condemned 53 / gangs 50 / law 50 / syndicate 47; yard condemned 53 / gangs 53 /
+law 53 / syndicate 40. game_design.md asks that "any faction pair is near 50/50 when both sides build good armies"
+and every faction is within 3 points of even except the **Syndicate on the closed map (40%)** — which is the
+direction its design predicts (fewest vehicles, longest guns, a designator that turns sight into tempo) and the one
+number here worth a second look, though it too is inside the noise band at this n.
+
 ### X4's ablation: how to settle who earned the gangs' 23% → 53% (`f7c0d712`)
 
 **Nothing may credit CP4 with that swing until this runs.** The directive fix and the engagement envelope landed in
