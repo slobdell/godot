@@ -1486,3 +1486,43 @@ The kickoff prompt is one line; this section is the rest.
      - **Orchestrator's share: I approved "re-role it" while thinking about art budget, and never asked what `role` was
        load-bearing for.** Fourth instance in one day of approving a change by evaluating the change and not its
        surroundings.
+103. **A control must state the condition it checked and what it refuses to report — never *why* the condition matters.**
+     arena's new `nav-maze` control fired correctly on its first run and printed: *"8 pairs of units started on top of
+     each other — spawn slots wrapped, **and those hulls cannot move, so every arrival number below would be wrong**."*
+     The assertion was right. **The explanation was a round-6 fact in the present tense**: coincident hulls have parted by
+     name since `e291a35a` (`avoidance.gd:204`), on `main` since `7cce78af`. In round 5 they genuinely never moved — 8 of
+     the 20 non-arrivals in arena's own baseline — and the sentence outlived its cause.
+     nav settled it with arithmetic rather than a claim about whose tree was whose: **the probe counts all 60 units and the
+     8 wrapped pairs are 16 of them, so if those hulls could not move, at most 52 of 60 could arrive. 60/60 means all 16
+     moved.**
+     **A stale diagnosis in a failure message is worse than one in a document, because it arrives at the moment someone is
+     deciding what to do.** I read it, immediately suspected nav's validation, told nav its numbers might be void, and
+     offered to hold a commit out of the merge queue. **The control was right and still nearly cost a merge and a
+     retraction — because I believed the explanation, not just the assertion.**
+     - **Write:** *"8 pairs started on top of each other: spawn slots wrapped, so this run is not the experiment named (60
+       distinct start points). No number written."* Permanently true, and it invites no conclusion about movement.
+     - **And fix the cause rather than downgrading the check.** nav offered "make it a warning"; the condition genuinely is
+       violated, so **refusing is right and the fix is to give the probe 60 distinct start points.** A warning is the
+       invisible-skip failure of lesson 91 wearing a different hat.
+104. **Refuse to *persist*, not merely to *print*. A printed refusal can be scrolled past; an absent file cannot be
+     cited.** combat's positive control refused to print a result; arena's refuses to write the JSON at all. combat adopted
+     arena's version on seeing the difference: *"a refused run cannot end up in `references/` by someone copying the last
+     file they see."*
+     **And the two controls caught different classes, which is the argument for having both:** combat's caught a
+     **treatment that never engaged** — a missing effect. arena's caught a **control arm that was silently broken**, which
+     is worse, *"because a broken control does not look like nothing, it looks like a result."*
+105. **Being protected by an unexamined habit is not the same as being safe, and it feels identical.** combat checked its
+     own exposure to the notification trap and found its waiters read the wrapper's line correctly — then reported *why*:
+     > *"not because I had reasoned about the notification. I built those waiters that way because the wrapper's line was
+     > what `CLAUDE.md` told me to read on my first hour, and I never revisited it. **I was protected by a habit I had not
+     > examined** — exactly the position you were in with the rule that matched what I already did. I would have been
+     > vulnerable the first time I wrote a waiter that polled a notification instead of a log, and nothing in my process
+     > would have stopped me."*
+     **This is lesson 98 from the inside.** Agreement from unshared premises is invisible; so is compliance from an
+     unexamined premise. **When you find you are already doing the right thing, ask what would have to change for you to
+     stop** — if the answer is "nothing in particular", the protection is luck with a good track record.
+     **Four instances today of one shape and one defence.** A faction number with no map, a truncated check, a container
+     argued without its contents, and an `exit code 0` from the wrong process: *the wrong answer and the right answer are
+     indistinguishable at the point you look*. **Every defence that worked made the channel carry what it is about** — the
+     wrapper line names the target, `run: <machine> at <commit>` names the build, the positive control names the behaviour.
+     **None of them are vigilance.**

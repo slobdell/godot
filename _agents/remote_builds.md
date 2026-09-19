@@ -188,3 +188,21 @@ wrapper, and `readlink /proc/<pid>/cwd` to confirm whose it is.
 
 **If you find an orphaned remote run** (local wrapper dead, builder0 side alive), kill the remote side by cwd before
 relaunching, or two runs will `rsync --delete` into the same builder0 folder — lesson 52.
+
+## ⚠ The harness's own task-completion notification reports the wrong process (found 2026-09-19)
+
+A backgrounded `make remote T=check ... | tail -30` on `main` finished and the harness announced
+**`completed (exit code 0)`**. The wrapper's own line in the log said **`>> remote: make check exited 2`**, and
+`sim-baseline` had failed. **The notification was reporting `tail`'s exit status, not `make`'s.**
+
+**So the rule *never read a build result through a pipe* has a second face: the completion notification is downstream of
+your pipeline too.** It is more dangerous than a piped `echo $?`, because it arrives from the *tooling* rather than from a
+log, which is exactly the kind of source one trusts without checking. **Believing it here would have meant announcing
+`main` green on the strength of a system notification.**
+
+**Two consequences:**
+- **Read the wrapper's `>> remote: make <target> exited <N>` line. Always. It is not advice about pipes** — it is the only
+  channel in this system that reports the thing you actually asked about. Everything else reports the last process in a
+  chain (combat's observation, having checked its own waiters and found them correct **by habit rather than by reasoning**).
+- **Don't pipe at all when backgrounding.** Redirect to a file (`> log 2>&1`) and grep it afterwards, so the wrapper's
+  status is also the shell's status and the two cannot disagree.
