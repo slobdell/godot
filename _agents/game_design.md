@@ -594,7 +594,17 @@ wrong way about.
 
 ### Map building blocks: the lead's two additions (2026-09-18)
 
-12. **A kit of sci-fi buildings drawn from primitives, not from Meshy.** *"To build more complex maps we'll need more
+12. **A kit of sci-fi buildings drawn from primitives, not from Meshy — and the reason is a cityscape map.** He
+    clarified the purpose (2026-09-19): *"on the shaped primitives, the reason I was thinking about this is because a
+    cityscape type map would be good, but I would just need to get it to match the theme and consistency of our gladiator
+    environment."* **So the deliverable is not a generic block kit, it is a city that reads as part of this venue.** That
+    is a harder and better brief: the constraint is *theme consistency with the gladiator arena*, which already has a
+    settled look — blast-barrier walls with neon light bars, grandstands, floodlight towers, ad screens, gang-tagged
+    container barricades, a lit city skyline on the horizon (feel's X4). A cityscape map should read as **the city that
+    skyline belongs to**, seen from inside it, rather than as a different game's level.
+    Note the pleasing consequence: feel built a distant skyline this round for the camera to find at low angles. **A
+    cityscape arena is that skyline made playable** — same palette, same neon vocabulary, the buildings the horizon was
+    promising. *"To build more complex maps we'll need more
     building blocks to work with. I realize that all these meshy artifacts take up a lot of space. Therefore, would we
     be able to formulate some of cool-looking sci-fi 'buildings' or blocks or something like that that's completely
     rendered using primitive types in our system - you should have better ideas than me but I'd envision that has the
@@ -641,6 +651,15 @@ but no way to sort by them, so this is not him reading the metric back to us. Sc
 tied and he split them, so it is not a pure function of the measure — but **nothing else we have predicts his taste this
 well.** That turns `centre_sees_share` from a description into a **design target**: a map whose middle can see most of
 the field is a map he will not want, and we can now know that before he plays it.
+
+**CONFIRMED by him in words as well as buttons (2026-09-19):** *"the only two maps worth keeping were the last one and
+the one with the octagon of shipping containers. All the maps need to be higher quality regardless."*
+- **One ambiguity, deliberately not resolved by guessing:** neither Pit nor Yard is a clean ring in the data (container
+  radii spread wide on both), so *"the octagon of shipping containers"* does not map onto one of them unmistakably. **His
+  button answers are the record** — Pit and Yard — and nothing is being deleted, so a mismatch is cheap to correct. Ask
+  once when convenient rather than inferring.
+- **"All the maps need to be higher quality regardless"** — so the two survivors are not finished either. Keeping a map
+  means investing in it, not shipping it as-is.
 
 **NOT ACTED ON — awaiting one line from him, and the reason is size, not doubt** (arena raised both, correctly):
 1. **The page did not prepare him for a cut this large.** It said cut was a real answer we would act on and led with
