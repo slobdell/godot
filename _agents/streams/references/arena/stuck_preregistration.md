@@ -142,3 +142,56 @@ arena, on ground he plays — which nav can act on without adopting anything of 
 
 **Still not tested, and now the whole of the remaining gap: his hands.** A human issuing orders mid-fight
 re-tasks units in ways no scripted order sequence does.
+
+---
+
+# The fight, on the same four maps (`nav-fight`, unmodified, seed 3, 120 s, 34 v 44, laptop, `c0aa421f`)
+
+**nav's instrument, nav's buckets, run not edited.** The point was to see whether its `blocked_*` buckets stay at
+zero on ground the lead plays while units still fail to arrive. They do, and the time turns out to be somewhere
+neither of us was pointing.
+
+| arena | `blocked_terrain` | `progressing` | **`retasked`** | `halted_shooting` | ENGAGE-hop events |
+|---|---|---|---|---|---|
+| yard | 0.003 | 0.583 | **0.302** | 0.037 | 830 of 1034 |
+| boulevard | 0.010 | 0.578 | **0.325** | 0.034 | 781 of 1078 |
+| pit | 0.000 | 0.604 | **0.298** | 0.053 | 772 of 1035 |
+| boneyard | 0.000 | 0.548 | **0.364** | 0.044 | 836 of 1173 |
+
+## The verb is the variable, and it explains why every hold-fire run came out clean
+
+`nav-fight` splits by order verb, and the split is not subtle:
+
+| verb | `progressing` | `retasked` | re-tasks per unit-minute |
+|---|---|---|---|
+| **move** | **0.876 – 0.941** | 0.0 | 0.0 |
+| **attack_move** | **0.408 – 0.474** | 0.42 – 0.494 | 43.9 – 47.9 |
+
+**A unit under `move` gets where it is sent about 90% of the time. The same unit under `attack_move` manages
+about 44%.** My crossing probe issues a plain move with hold-fire — which is exactly the `move` row — so its clean
+results were never in tension with the lead's experience. **They were measuring the verb he does not use in a
+fight.** That, and not the map, is what hypothesis 1 should have been about.
+
+## Where the missing half goes: not blocked, re-tasked
+
+`retasked` is nav's own definition — *"it is driving, but to somewhere else than its order (its brain chose OPTION;
+> RETASK_M away)"*. So the unit is **moving, under a valid path, toward a destination the player did not choose**,
+and `blocked_terrain` is honestly ~0.000 because nothing is in its way. About **three quarters of every re-task is
+`ENGAGE hop`** — the same option re-aiming, with `direct` motion — at **44–48 events per unit-minute, a destination
+change every ~1.3 s**, and `motion_jumps_per_unit_minute` 24–28 on top.
+
+**This is a candidate for the lead's complaint that is not a navigation defect at all**: a unit re-aiming its
+destination every 1.3 seconds while driving direct is a unit that visibly does not commit, and the instrument that
+asks "is it blocked" will keep answering no, forever, correctly.
+
+## What I have NOT shown, and will not imply
+
+**I have not shown that a re-task looks like "back and forth".** I have shown where the time goes, not what the
+trajectory looks like. A unit re-aimed every 1.3 s could equally be drifting in one direction. Establishing the
+lead's actual words needs either the oscillation counter inside the fight probe (the block is extracted at
+`c0aa421f` for nav) or a human watching one match. **Saying "this is his bug" on this evidence would be round 8's
+third version of the same mistake** — a number that points the right way, reported past what it measures.
+
+Nor does this clear flow fields or condemn them: it says a large share of the missing time is a **decision**
+problem rather than a **path** problem, and a path improvement cannot recover time that is spent driving somewhere
+else on purpose.
