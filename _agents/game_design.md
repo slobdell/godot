@@ -439,9 +439,21 @@ stack first, then the layer that commands it, then how the player reads and issu
   `SQUADS` table rather than the units, so **a unit whose role is not a key is silently dropped from every army** — and
   that same table's comment records the gangs' rat rods being given the Condemned scout's *spotters-first* directive,
   *"and the faction won 10-30% of everything."* **That is this table's 23%.** So there is a competing explanation for the
-  recovery — *somebody fixed the directive bug* — and it is simpler than the one written below. **Open question with
-  combat: was the rat-rod directive fixed before or after the 60-match run that produced 53%?** Until that is answered,
-  **read the mechanics explanation below as one of two candidates, not as established.** This matters beyond the history:
+  recovery — *somebody fixed the directive bug* — and it is simpler than the one written below.
+  **TIMELINE ANSWERED (combat, `git log -S'"gangs/scout"'`): the fix came FIRST.** `f1b0ee9e` (2026-09-16) **reports the
+  23% and adds the `gangs/scout` entry in the same diff** — the run found the bug, and the fix was written in response to
+  it. No faction matrix ran again until `1333cc73` (2026-09-18), which measured 53%. **So the 23% is a pre-fix number and
+  the 53% is a post-fix one.** But the gap between them also contains the `ready_to_fire` tick, armies holding until
+  ordered, 30 Hz, Jolt and all of CP4 — so **the directive bug is an unexcluded candidate, not a demonstrated cause, and
+  neither is the mechanics story below.** combat has retracted its own attribution in `balance.md` at `0c1fb760`, in
+  place, keeping the measurement and striking the cause. **Read the explanation below as one of two candidates.**
+  **What settles it is an ablation, not an argument** (lesson 25 — attribute a cost by *removing* the behaviour):
+  **delete the `gangs/scout` entry on the current build and re-run the matrix.** Collapse toward 23% means the directive
+  did the work; holding near 53% means the mechanics explanation survives. Scheduled after the per-map designator runs.
+  **And the 23% itself was not a false number** — combat's correction, which is the sharper point: *a build in which 15
+  assault vehicles sit at standoff spotting while the swarm dies really does win 23%.* **The error was treating a
+  measurement of a configuration as a fact about a faction** — the same error as reading a foundry number as a property
+  of the game. This matters beyond the history:
   the 23% → 53% collapse is the evidence for *"a balance problem dissolved by mechanics"*, which is the principle the
   stream twice used to refuse tuning against mid-flight numbers. If the evidence is a bug fix, **the principle needs
   different evidence rather than a quiet retirement**:

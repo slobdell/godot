@@ -1304,9 +1304,25 @@ The kickoff prompt is one line; this section is the rest.
     Syndicate**, which then fought 60 matches with four unit types instead of five.
     **The same table caused the gangs' 23%.** Its own comment records it: the gangs' rat rods were given the Condemned
     scout's *spotters-first* directive, so 15 assault vehicles sat at standoff range while the swarm died. We treated that
-    as a faction balance problem across two rounds and later watched it "dissolve" to 53%. **It never dissolved. It was
-    never real.** One table, two silent failures, two multi-round false findings — a *wrong* value the first time and *no*
-    value the second.
+    as a faction balance problem across two rounds and later watched it "dissolve" to 53%. One table, two silent
+    failures, two multi-round false findings — a *wrong* value the first time and *no* value the second.
+    **I first wrote here that the 23% "was never real". combat corrected me and the correction is the better lesson:**
+    > *"The 23% **was** a real measurement of a real build. What it was never is a **property of the faction**. A build
+    > in which 15 assault vehicles sit at standoff spotting while the swarm dies really does win 23%; that is a true
+    > number about a broken army, not a false number. The error was treating a measurement of a configuration as a fact
+    > about a faction — the same error as reading a foundry number as a property of the game. 'Never real' invites the
+    > reading that measurements lie, and this one did not."*
+    **That is the unifying form of lessons 90, 93 and 94: every number here is a measurement of a configuration, and
+    almost every mistake in this project has been promoting one to a property.** The defence is that an instrument prints
+    the configuration it ran in, so the promotion has to be done deliberately rather than by omission.
+    **Timeline established (combat, `git log -S`), and it is worth keeping because the shape recurs:** `f1b0ee9e`
+    **reports the 23% and adds the `gangs/scout` entry in the same diff** — the run found the bug and the fix was written
+    in response. No faction matrix ran again until `1333cc73` two days later, which measured 53%. So the fix precedes the
+    recovery — **but the gap also contains the `ready_to_fire` tick, armies holding until ordered, 30 Hz, Jolt and all of
+    CP4.** The directive bug is an **unexcluded candidate, not a demonstrated cause**, and neither is the mechanics story.
+    **The settling move is the ablation this project already knows to run (lesson 25): delete the `gangs/scout` entry on
+    the current build and re-run the matrix.** A direct test beats an inference from a timeline, and it costs one
+    60-match run.
     - **Any lookup keyed by a value from elsewhere needs a test that every possible key resolves.** combat's
       `test_every_roster_role_can_be_put_in_a_squad` walks every roster unit and asserts its role has a `SQUADS` entry —
       and it is **mutation-checked**: combat removed the entry and watched it fail, naming the unit. **A test you have not
