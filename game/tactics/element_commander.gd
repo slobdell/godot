@@ -46,6 +46,8 @@ var assigned := {}
 ## element id -> the tick it was given it.
 var assigned_tick := {}
 var _last_tick := -1
+## X8: the army plan's state between thinks (roles, when the main effort's fight began).
+var _army_state := {}
 
 
 static func install(p_match: Match, p_team: int, p_elements: Elements = null) -> ElementCommander:
@@ -121,6 +123,10 @@ func think() -> void:
 				support.append(element)
 			_:
 				line.append(element)
+	# X8: a table can ask for the army layer (traits.commander = "army", the ladder's "+army").
+	if String(mine[0].table.traits.get("commander", "direct")) == "army" if mine[0].table != null else false:
+		_army(mine, objective, contacts)
+		return
 	var axis := _axis(mine, objective)
 	var focus: Dictionary = contacts[0] if not contacts.is_empty() else {}
 	# Round-5 X3/X5: a table can ask for the pin-and-flank plan the offline discovery harness found (traits.commander).
@@ -146,6 +152,36 @@ func think() -> void:
 			_give(element, {"verb": "move", "to": _xz(objective - axis * SUPPORT_BEHIND_M)})
 		else:
 			_give(element, {"verb": "support_by_fire", "to": _xz(focus["position"])})
+
+
+## X8: every element's role and task from ArmyPlan (main effort, base of fire, shaping, reserve).
+func _army(mine: Array, objective: Vector3, contacts: Array) -> void:
+	var described: Array = []
+	for element: Element in mine:
+		var hp := 0.0
+		var full := 0.0
+		var alive := 0
+		for unit_name in element.members():
+			var tank := _tank(unit_name)
+			if tank != null:
+				full += tank.max_health
+				if tank.is_alive():
+					hp += tank.health
+					alive += 1
+		described.append({"id": element.id, "class": _class_of(element), "center": _center(element),
+				"strength": hp / maxf(full, 1.0), "size": alive})
+	var known: Array = []
+	for contact: Dictionary in contacts:
+		var intel: Dictionary = game_match.intel[team].get(String(contact["name"]), {})
+		known.append({"name": contact["name"], "position": contact["position"],
+				"pinned": float(intel.get("suppression", 0.0)) >= Tank.PINNED_SUPPRESSION})
+	var context := {"objective": objective, "hold_ground": Objectives.active(game_match),
+			"home": Match.spawn_position(team, 0), "lanes": _lane_offsets(), "tick": game_match.tick}
+	_army_state = ArmyPlan.plan(described, known, context, _army_state)
+	for element: Element in mine:
+		var task: Variant = (_army_state["tasks"] as Dictionary).get(element.id)
+		if task is Dictionary:
+			_give(element, task)
 
 
 ## Pin and flank (round 5, first distilled from tools/discovery.py's `pin_and_flank` policy, which beat standard

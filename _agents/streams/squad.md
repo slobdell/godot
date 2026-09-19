@@ -171,8 +171,8 @@ _Updated 2026-09-18 by the squad worker._
 
 **State (2026-09-19):** last green hash `d4f339f7` (builder0, full list minus sim-baseline, 1211 passed, 0 failed), sent to the
 orchestrator; it moves the sim baseline (flow, seating, commitment, objectives) and is not recorded here (invariant 2).
-**Do not start** X6's baseline, X8, or anything on PID: all three are parked on others (X6 on CP4-on-main plus the
-orchestrator's sim-baseline record; X8 on N7; PID is done by nav's N6, see the X3 row).
+**Do not start** X6's baseline or anything on PID: both are parked on others (X6 on CP4-on-main plus the
+orchestrator's sim-baseline record; PID is done by nav's N6, see the X3 row). X8 is unblocked (N7 on main, round 7).
 
 What is hardest to rediscover, and where it now lives:
 1. **The dither metric reported DOUBLE the real rate** from the 30 Hz move until `1fc83daf` (it divided by a hard-coded
