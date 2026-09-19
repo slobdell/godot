@@ -1032,3 +1032,23 @@ The kickoff prompt is one line; this section is the rest.
       the page looks finished and has sent nothing.
     - **And test the abandonment path, not the happy path.** The question to ask of any collection artefact is *what
       reaches me if they close the tab right now?*
+76. **Reachability is "the path ends at the goal", never "a path came back".** Round 7, arena, and it is the **third**
+    time this exact shape bit the same stream (the maze fixture, the slope probe, now the water probe). Its first water
+    run reported `reachable: true` with an **8 m route for a 46 m trip across a channel spanning the whole arena**.
+    The cause is documented behaviour, not a bug: `Pathing.find_path()`'s own docstring says *"an unreachable `to` yields
+    a path to the closest reachable point"* — so a non-empty return means *"I got as close as I could"*, and every caller
+    that treats it as success is wrong.
+    **This is not only a probe problem, which is why it matters more than the three instances suggest.** `Movement` (N1)
+    is built on `find_path`, so a unit ordered somewhere it cannot reach drives to the nearest point it can. If it then
+    reports `arrived`, an order completes at the wrong place and the player sees **disobedience**; if it sits there, the
+    player sees a **stuck vehicle**. Both are exactly what the lead reported after round 6 measured 100% arrival — and
+    neither requires a pathing defect. **The pathfinder behaves as documented and the layer above believes it.**
+    And the transient case is the dangerous one: a goal inside a crowd of parked friends, behind a wreck, or on a slot
+    one's own formation is standing on is *temporarily* unreachable — so the unit paths to "nearest reachable", arrives,
+    and the decider re-issues. **A thrash loop from a cause nobody would suspect.**
+    Two instructions:
+    - **Assert the endpoint, not the emptiness.** Any caller of a pathfinder must compare the path's last point to the
+      requested goal within a tolerance it chooses deliberately, and report *"closest reachable"* as its own state.
+    - **A documented convenience is a trap when it is convenient.** "Returns the closest point instead of failing" is a
+      kindness to a caller that wants to make progress and a lie to a caller that wants to know. When an API offers
+      graceful degradation, find out which of those you are.
