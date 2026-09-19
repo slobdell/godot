@@ -46,6 +46,8 @@ const BLOCKER_REACH := 8.0
 const BLOCKER_AHEAD_COS := 0.5
 ## A route that ends further than this from the goal did not reach it: the goal is inside something or cut off.
 const NO_PATH_MARGIN := 3.0
+## ...and a unit within this of the end of such a route has gone as far as it can: `blocked`, `no_path`, at once.
+const UNREACHABLE_AT_END := 4.0
 ## eta(): the share of top speed a route is driven at on average (corners, the slow-down at the end).
 const ETA_CRUISE_SHARE := 0.85
 
@@ -188,6 +190,8 @@ var _unstick_pivot := false
 var _progress_goal := Vector3.INF
 var _progress_best := INF
 var _goal := Vector3.INF
+## Round 7: does the current route end at the goal? (False = the navmesh can only get this unit near it.)
+var _reachable := true
 var _arrive := 0.0
 var _remaining := 0.0
 var _blocker_left := 0
@@ -316,7 +320,7 @@ func reading() -> Dictionary:
 			points = _path.slice(_path_index)
 	return {"phase": phase, "eta_s": eta_s, "remaining_m": _remaining if phase != "arrived" else 0.0,
 			"path_points": points, "blocked_by": blocked_by if phase == "blocked" or phase == "yielding" else "",
-			"yield_to": yield_to, "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
+			"yield_to": yield_to, "reachable": _reachable, "steer_to": steer_to if steer_to != Vector3.INF else null, "pace": pace_now,
 			"goal": _goal if _goal != Vector3.INF else null,
 			"stalled_s": float(stalled_ticks) / float(SimClock.TICK_RATE)}
 
@@ -492,6 +496,12 @@ func _update_phase(goal: Vector3, drive_vector: Vector2, direct: bool) -> void:
 	if drive_vector == Vector2.ZERO and _flat_distance(ctl.tank.global_position, goal) <= _arrive + 0.5:
 		phase = "arrived"
 		blocked_by = ""
+		return
+	if not _reachable and not direct and not _path.is_empty() \
+			and _flat_distance(ctl.tank.global_position, _path[_path.size() - 1]) <= UNREACHABLE_AT_END:
+		# As near as the navmesh goes: say so now rather than after BLOCKED_SECONDS of grinding.
+		phase = "blocked"
+		blocked_by = "no_path"
 		return
 	if stalled_ticks >= int(BLOCKED_SECONDS * SimClock.TICK_RATE):
 		# The cause is re-read twice a second, not every tick (it walks the neighbours).
@@ -967,6 +977,9 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		_repath_left = 1.0 if _off.has("repath") else REPATH_SECONDS
 		_path_goal = goal
 		_path = Pathing.find_path(tank, here, goal)
+		# Round 7: reachability is "the route ENDS at the goal", never "a route came back" (lesson 76). NavigationServer
+		# answers an unreachable goal with a route to the nearest reachable point, which reads as success.
+		_reachable = _path.size() < 2 or _flat_distance(_path[_path.size() - 1], goal) <= NO_PATH_MARGIN
 		_path_index = 1 if _path.size() >= 2 else _path.size()
 	if _path.size() < 2:
 		_path_index = _path.size()
@@ -995,7 +1008,7 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		for i in range(_path_index, _path.size()):
 			if _flat_distance(_path[i], here) >= look and (wheel_radius() <= 0.0 or _ahead_of_wheels(_path[i])):
 				return Vector3(_path[i].x, 0.0, _path[i].z)
-		return goal
+		return _route_end(goal)
 	# Walk the lookahead along the route from there. A car's point must be one it can drive forward onto (outside
 	# both turning circles): a point inside one is a three-point turn, so look further along the route until it isn't.
 	var point := _along_route(best_point, look)
@@ -1004,7 +1017,16 @@ func _next_waypoint(goal: Vector3, delta: float) -> Vector3:
 		while point != Vector3.INF and not _ahead_of_wheels(point) and further < look + WHEELS_LOOKAHEAD_MAX_RADII * wheel_radius():
 			further += wheel_radius()
 			point = _along_route(best_point, further)
-	return point if point != Vector3.INF else goal
+	return point if point != Vector3.INF else _route_end(goal)
+
+
+## Where the route runs out: the goal itself, or — when the goal is unreachable — the last point the route reaches
+## (steering on toward the goal from there only presses the hull into whatever cuts it off).
+func _route_end(goal: Vector3) -> Vector3:
+	if _reachable or _path.is_empty():
+		return goal
+	var end := _path[_path.size() - 1]
+	return Vector3(end.x, 0.0, end.z)
 
 
 ## The point `distance` metres along the route from `from` (on segment _path_index - 1), or INF past its end.
