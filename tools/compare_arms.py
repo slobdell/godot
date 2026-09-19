@@ -92,6 +92,24 @@ def refusals(treatment, control, paths, build_is_the_arm=""):
     return out
 
 
+def matchup_rows(treatment, control):
+    """Every matchup that appears in both arms, largest movement first, ONE row per pair.
+
+    "gangs vs law" and "law vs gangs" are the same ten matches seen from opposite ends, so a per-direction table
+    prints each result twice and halves its own useful length. Canonical orientation is alphabetical, so the same
+    matchup reads the same way in every report.
+    """
+    pairs = {}
+    for data, key in ((treatment, "t"), (control, "c")):
+        for row in data["rows"]:
+            side, other = sorted((row["faction"], row["versus"]))
+            rate = row["win_rate"] if side == row["faction"] else 1.0 - row["win_rate"]
+            pairs.setdefault((side, other), {})[key] = (rate, row["matches"])
+    moved = [(abs(v["t"][0] - v["c"][0]), k, v) for k, v in pairs.items() if "t" in v and "c" in v]
+    moved.sort(reverse=True)
+    return moved
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--treatment", required=True, help="the run WITH the thing being measured")
@@ -135,6 +153,19 @@ def main():
         rate_c = won_c / max(played_c, 1)
         print(f"{side:16} {rate_t:10.0%} n={played_t:<3d} {rate_c:10.0%} n={played_c:<3d} "
               f"{(rate_t - rate_c) * 100.0:+8.0f} pts")
+    # PER MATCHUP AS WELL AS PER FACTION. Round 8: the 14 m rig took `gangs vs law` from 9/20 to 0/20 across two
+    # maps, and on pit the per-FACTION number was a flat 30% in both arms -- losing one matchup outright was offset
+    # by gaining another. A pooled row said "no effect" about a matchup that had become unwinnable. Pooling is not
+    # neutral: it is an average over exactly the dimension an asymmetry lives in.
+    # One row per PAIR, not per direction: "gangs vs law" and "law vs gangs" are the same ten matches seen from
+    # opposite ends, and printing both halves the table's useful length for no information. Canonical orientation
+    # is alphabetical, so the same matchup reads the same way in every report.
+    moved = matchup_rows(treatment, control)
+    print(f"\n{'matchup':28} {'treatment':>10} {'control':>9} {'delta':>9}   (per matchup: an asymmetry lives here)")
+    for _size, (side, other), v in moved[:8]:
+        print(f"{side + ' vs ' + other:28} {v['t'][0]:9.0%}{v['t'][1]:>4} {v['c'][0]:8.0%}{v['c'][1]:>4} "
+              f"{(v['t'][0] - v['c'][0]) * 100:+8.0f} pts")
+
     print("\nThis is ONE map's answer. A faction that moves here and nowhere else is an asymmetry; every faction\n"
           "moving is a property of the map. Those look identical in a single table, so quote both maps or neither.")
     return 0

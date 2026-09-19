@@ -125,6 +125,27 @@ class BuildIsTheArm(unittest.TestCase):
         self.assertTrue(any("DIRTY" in p for p in problems), problems)
 
 
+class PerMatchup(unittest.TestCase):
+    """Round 8: the per-FACTION number on pit was a flat 30% in both arms while `gangs vs law` went 9/20 to 0/20 --
+    losing one matchup outright was offset by gaining another. Pooling is an average over exactly the dimension an
+    asymmetry lives in."""
+
+    def test_each_pair_is_reported_once_not_once_per_direction(self):
+        rows = compare_arms.matchup_rows(arm(), arm())
+        pairs = [key for _size, key, _v in rows]
+        self.assertEqual(len(pairs), len(set(pairs)), "no duplicates: %s" % pairs)
+        self.assertEqual(len(pairs), 3, "three pairings in the fixture, one row each: %s" % pairs)
+        for side, other in pairs:
+            self.assertLess(side, other, "canonical (alphabetical) orientation so it reads the same every time")
+
+    def test_the_biggest_mover_comes_first(self):
+        # A table nobody reads past line three must put the asymmetry on line one.
+        treatment = copy.deepcopy(BASE)
+        treatment["rows"][2]["win_rate"] = 0.0     # law vs syndicate: 0.5 -> 0.0, a 50-point move
+        rows = compare_arms.matchup_rows(treatment, BASE)
+        self.assertEqual(rows[0][1], ("law", "syndicate"))
+
+
 class ExitStatus(unittest.TestCase):
     def test_a_refusal_exits_nonzero(self):
         # faction_matrix.py shipped with `main()` called bare, so its refusals returned 2 and the process exited
