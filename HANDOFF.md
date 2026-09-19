@@ -42,6 +42,23 @@ his feedback verbatim and is the most important document to read after this bann
 | **The gangs' IFV drives backwards** | not started; **check whether the SIM is reversed too, not just the visual** — if so it has been taking front-armour hits on its rear | feel |
 | **Arena verdict: KEEP Pit + Yard, CUT the other four** | recorded, **nothing deleted** — the four are *do-not-invest*; Foundry is `DEFAULT_LAYOUT`, so cutting it is an infrastructure change | orchestrator |
 
+### UNMERGED WORK, deliberately left on its branch — this is the first thing to do when quota returns
+
+**Nothing is lost. These commits are real work that was never check-verified, and merging unverified code before a
+4-day silence would risk leaving `main` red with nobody able to fix it.** `main` is the safe state; the branches hold
+the value. **Run `make remote T=check` on each, then merge at the commit that goes green.**
+
+| Branch | Commit | What it is | Last fully green |
+|---|---|---|---|
+| `stream/control` | **`017fda42`** | **The lead's camera default** — pitch 21°, FOV 35, 49 m, auto-frame on, with the "do not widen `FOV_DEG` toward 55–60 without him" note beside the constant. **Highest-value item in the project right now**: it took four attempts and a played session to find. Check #14 was still running at the stop. Passed locally (camera, control, command, radar, touch) and `shell-playtest` exits 0 on builder0. | `ff28563d` (1084/0) |
+| `stream/feel` | `2586c7a6` | Unit scale from `hull_size` | `b00b8ff9` |
+| `stream/feel` | `d2076221` | Machine-gun tracers | |
+| `stream/feel` | `0999d755`, `53b3a84a` | Machine-gun sound — **while firing, the MGs went from 15 dB to 4.7 dB under the mix** | |
+| `stream/feel` | **`82f99c6e`** | **The announcer fix.** The trace shows no overruns: every clip was a deliberate interruption faded in 0.08 s, and an interrupted voice now trails off over 0.8 s under the new one — his rule exactly. **Nobody has heard it.** A check was started on builder0 and its result was never read. | |
+
+**Also on `stream/feel` but not started: the gangs' IFV driving backwards.** feel checked the code and reports **the
+simulation never reads the model, so it is art only** — no balance consequence, which is the good answer.
+
 ### The three things a fresh orchestrator should not have to rediscover
 
 1. **No agent on this project can play the game** (lesson 72). Everything we call playtesting is scripted input plus
