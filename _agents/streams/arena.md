@@ -97,6 +97,28 @@ coordinate with nav — anything that changes what blocks driving touches the na
 `game/ai/**` (nav's and squad's), `game/control/` `game/ui/` `game/camera/` (control's), `game/units/` `game/combat/`
 `game/match/` (combat's), `game/theme/**` (feel's — including how your props are *dressed*; you place, feel dresses).
 
+## Resume here (written at the round-6 quota stop, 2026-09-18)
+
+**Branch merged, tree clean, nothing in flight.** The durable knowledge is in
+[../arenas.md](../arenas.md) — *Designing a new map: start here* and *Why the navmesh is baked as one half plus a
+mirror* — deliberately there rather than only here, because a map author reads that file and not a stream's Status.
+
+**The three things that would hurt most to lose:**
+1. **`centre_sees_share` predicted the lead's verdict and is therefore a design target, not a description.** Aim
+   below ~0.30; above ~0.50 he has rejected it twice. Pure geometry, cannot go stale, one `make arena-report` to
+   check before anyone models a prop.
+2. **X2 scores what a route costs and never what it reaches**, so it reports cheap flanks on maps that play as a
+   brawl. A cheap route to nowhere is scenery. The objective work and the terrain work are one job.
+3. **The 60-unit nav-maze baselines are superseded** (nav's spawn-coincidence fix — 52 spawn points, `slot %
+   size` wrapped 8 pairs onto each other); **the 30-unit row is not** (30 < 52). See
+   [references/arena/README.md](references/arena/README.md).
+
+**Two knobs, both deliberate:** `WATCHER_REACH_M` is read from the catalog (`make arena-reach` → `Engagement.
+covering_range()`), `--reach` overrides; `agent_max_climb` is **untouched on purpose** — raising it lifts the ~20°
+terrain ceiling but re-bakes every arena's mirrored-half mesh and needs the swap-bases control re-run.
+
+**Not started, on instruction:** the octagon/hexagon shape change, bridges/water, and X3.
+
 ## The lead's answer (2026-09-18, from the review page's own store)
 
 **Asked keep / fix / cut / play-it-first per map, he cut four and kept two.** Read back from `answers/arenas` on
@@ -115,7 +137,10 @@ No notes given. **The four most open maps are exactly the four he cut** — cent
 better than anything else measured, though scrapyard (0.29) and pit (0.30) are nearly tied and he split them, so it
 is not a pure function of the metric.
 
-**Do not delete anything on this alone.** Two reasons, both for the orchestrator to put to him:
+**Confirmed in words as well as buttons:** *"the only two maps worth keeping were the last one and the one with the
+octagon of shipping containers. All the maps need to be higher quality regardless."* **Nothing is being deleted** —
+the four are *do-not-invest*, and Foundry stays `DEFAULT_LAYOUT` until he rules on that infrastructure change.
+The original caveats, which he has now answered:
 1. Taken literally it removes **five of seven** shipping arenas. The page invited "cut" as a real answer but never
    said "you are about to remove most of the game's maps"; he may have meant that, or may have meant "not worth
    fixing, prioritise accordingly".
