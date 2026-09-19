@@ -135,3 +135,21 @@ func test_a_scout_keeps_an_enemy_tank_in_sight_but_out_of_its_range() -> void:
 				seen_ticks += 1
 	assert_true(closest > 70.0, "after backing off, the scout stays outside cannon range (closest %.0f m)" % closest)
 	assert_true(seen_ticks > SimClock.TICK_RATE * 5 * 0.9, "while keeping the enemy spotted for the team (%d of %d ticks)" % [seen_ticks, SimClock.TICK_RATE * 6])
+
+
+func test_every_roster_role_can_be_put_in_a_squad() -> void:
+	# Army.squads_for() iterates SQUADS, not the units -- so a unit whose role is not a key in that table is
+	# SILENTLY DROPPED from every generated army. No error, the army still builds, one unit type just never appears.
+	#
+	# This is not hypothetical twice over. The table's own comment records the gangs' rat rods getting the Condemned
+	# scout's directive and the faction winning 10-30% of everything. And when X5 re-roled the Lance Platform from
+	# "lancer" to "designator" this test did not exist, so the Syndicate fought 60 matches without its new special
+	# and the result read as "the designator makes them slightly worse".
+	var missing: Array[String] = []
+	for faction in ["condemned", "gangs", "law", "syndicate"]:
+		for unit_id: String in Units.roster(faction):
+			var role := Units.role_of(unit_id)
+			if not Army.SQUADS.has(role) and not Army.SQUADS.has("%s/%s" % [faction, role]):
+				missing.append("%s (%s, role '%s')" % [unit_id, faction, role])
+	assert_eq(missing, [] as Array[String],
+			"every roster unit's role has a SQUADS entry, or it never reaches a battlefield: %s" % [missing])
