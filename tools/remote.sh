@@ -29,6 +29,10 @@ ssh_opts=(-o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=30)
 [ $# -gt 0 ] || { echo "usage: tools/remote.sh <make target> [VAR=value ...]" >&2; exit 2; }
 
 echo ">> remote: syncing $name to $host:~/$remote_dir" >&2
+# Identify the code before it leaves this machine (see the exports in the remote script below).
+commit=$(git -C "$repo_root" rev-parse --short HEAD 2>/dev/null || echo unknown)
+dirty=$([ -n "$(git -C "$repo_root" status --porcelain 2>/dev/null)" ] && echo 1 || echo 0)
+
 ssh "${ssh_opts[@]}" "$host" "mkdir -p ~/$remote_dir ~/$root/.tools" || { echo ">> remote: cannot reach $host" >&2; exit 3; }
 # Protect (P) what builder0 generates for itself from --delete; skip what it doesn't need.
 rsync -az --delete -e "ssh ${ssh_opts[*]}" \
@@ -49,6 +53,12 @@ if [ ! -x ~/$root/.tools/node/bin/node ]; then
 fi
 export PATH=~/$root/.tools/node/bin:\$PATH
 export TANK_SQUAD_SLOTS=$slots
+# What ran, carried over by hand, because the rsync above excludes .git/ — so builder0 has no repository to ask, and
+# builder0 is where nearly every measurement this project quotes is taken. Without this a measurement's own header
+# would say "commit: unknown" on exactly the machine whose numbers we cite. tools/run_conditions.py prefers these and
+# falls back to git locally. DIRTY=1 means the commit does NOT identify what ran: uncommitted changes were rsynced.
+export TANK_SQUAD_COMMIT=$commit
+export TANK_SQUAD_DIRTY=$dirty
 # The auth file the running Xwayland uses (older sessions leave stale ones: with a stale cookie Godot falls back to Wayland,
 # which stops redrawing a hidden window, so screenshots after the first silently repeat old frames).
 auth=\$(ps -C Xwayland -o args= 2>/dev/null | sed -n 's/.* -auth \\([^ ]*\\).*/\\1/p' | head -1)
