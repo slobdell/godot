@@ -161,6 +161,43 @@ per range — a scout re-aims quickly because it acquires quickly — instead of
 **It touches squad** (the brain chooses) **and combat** (the envelope says what a choice costs), so it is a contract
 conversation before it is code.
 
+### THE BALANCE PICTURE ON THE MAPS HE ACTUALLY PLAYS (2026-09-19)
+
+**Every faction number this project has ever quoted was measured on `foundry`** — a square, one central objective,
+`centre_sees_share` 0.56, **and a map the lead cut.** `Arena.ROTATION` became `["yard", "pit"]` at `474abf53`, and
+both are now **hexagons at the 140 m bound with off-centre mirrored objective pairs** (decision spread 0.43 and
+0.42, where every map read 0.00 two days ago). So these are the first faction numbers taken on the ground the
+player stands on. builder0, n=30 per faction per map, SEEDS=5, the positive control engaged in both runs.
+
+| faction | yard | pit | swing | significant? |
+|---|---|---|---|---|
+| **gangs** | **63%** | **30%** | **+33 pts (2.6 SE)** | **YES** |
+| condemned | 50% | 70% | −20 (1.6 SE) | no |
+| law | 43% | 43% | 0 | no |
+| syndicate | 43% | 57% | −13 (1.0 SE) | no |
+
+**THE FINDING IS THAT THE MAPS DISAGREE MORE THAN THE FACTIONS DO.** The gangs' 33-point swing between the two
+maps he plays is **the only difference in the whole table that clears the noise** — at n=30 a gap needs 25 points,
+and every within-map spread is under it. The gangs are the strongest army on one of his two maps and the weakest
+on the other, by the largest margin anyone has measured.
+
+**What this licenses:** nothing about faction strength as a property. *"The gangs are strong"* and *"the gangs are
+weak"* are both supportable from this table by choosing a map, which is exactly the error that cost two rounds and
+retired the 23% → 53% numbers. **A faction win rate without a map is not a number.**
+
+**What it does NOT license, and I am saying so before anyone reads it harder than it can bear:** no within-map
+difference here is significant. Gangs 63% on yard has a 95% CI of **45–81%**; condemned 70% on pit is **52–88%**.
+Resolving a 20-point within-map gap needs **n≈48 (SEEDS=8)**, about 60% more builder0 time per map.
+
+**Do not tune any of this.** The lead has deferred balance explicitly (*"we'll worry about evening up factions
+later"*). This is the baseline the 14 m rig gets measured against once squad's deployment fix lands, and the reason
+it was taken **with the rig reverted** (`44d87a28`, restored immediately after): an army deploying with 0.4 m gaps
+is not a balance baseline.
+
+**Both runs are comparable:** `git diff --name-only 44d87a28 d24f2ea1` is one markdown file. Checked rather than
+assumed, because the two `run:` headers name different commits and that is exactly what a mismatched comparison
+looks like from the outside.
+
 ### ROUND 8 (2026-09-19) — the semi, and the bug found on the way to it
 
 **The lead, third time of asking:** *"the gang tanks are still tiny (the intent for the semi trucks is that they're
