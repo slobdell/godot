@@ -59,6 +59,14 @@ const INPLACE_M := 1.5
 var inplace_trail := {}   # name -> Array of [x, z, heading_deg]
 var inplace_events := {}  # unit_id -> count
 var inplace_cooldown := {} # name -> ticks left (one event per window, not one per tick)
+## Diagnostics beside the pre-registered count (added after its first run; they don't change what counts as an event):
+## per unit type, the wheeled unit-seconds alive (so events become a rate), and each event split by its NET heading change
+## over the window — "turned" (net >= 30 degrees: a real rotation near one spot, e.g. a K-turn) or "wobble" (the summed
+## |change| reached 30 but the hull ended within 30 degrees of where it started: steering jitter) — and by path length
+## ("crept" when the centre travelled >= 1.5 m along its trail while ending < 1.5 m away: shuffling back and forth).
+var inplace_alive_ticks := {}  # unit_id -> ticks alive
+var fielded := {}  # unit_id -> count at the start, both sides
+var inplace_detail := {}  # unit_id -> {turned, wobble, crept}
 
 
 func _initialize() -> void:
@@ -93,7 +101,10 @@ func _run() -> void:
 		await physics_frame
 	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
 		var faction := _flag("green-faction" if team == Match.Team.GREEN else "rust-faction", "")
-		var loaded := Army.load_army("cpu", seed_value + team, budget, faction)
+		# --green-army=cpu:<archetype> pins the archetype (the seed picks one otherwise: seed 3 fielded gang_hail on both
+		# sides, so round 8's first gang run never had a semi on the field).
+		var army := _flag("green-army" if team == Match.Team.GREEN else "rust-army", "cpu")
+		var loaded := Army.load_army(army, seed_value + team, budget, faction)
 		var error: String = loaded.get("error", "")
 		if error == "":
 			error = game_match.load_doctrine(team, loaded["doctrine"])
@@ -107,6 +118,7 @@ func _run() -> void:
 	for tank: Tank in game_match.tanks.get_children():
 		if tank.team == Match.Team.GREEN:
 			green.append(tank)
+		fielded[tank.unit_id] = int(fielded.get(tank.unit_id, 0)) + 1
 	# The run's own conditions, checked before any number is produced (arena's positive control, round 7): a number from
 	# a run whose conditions weren't met looks exactly like a real one.
 	if String(Arena.active.get("name", "")) != _flag("arena", "yard"):
@@ -193,6 +205,7 @@ func _sample_inplace() -> void:
 			inplace_trail.erase(String(tank.name))
 			continue
 		var key := String(tank.name)
+		inplace_alive_ticks[tank.unit_id] = int(inplace_alive_ticks.get(tank.unit_id, 0)) + 1
 		var forward := -tank.global_basis.z
 		var trail: Array = inplace_trail.get(key, [])
 		trail.append([tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(-forward.x, -forward.z))])
@@ -212,6 +225,23 @@ func _sample_inplace() -> void:
 		if turned >= INPLACE_DEG and net < INPLACE_M:
 			inplace_events[tank.unit_id] = int(inplace_events.get(tank.unit_id, 0)) + 1
 			inplace_cooldown[key] = span
+			var travelled := 0.0
+			for i in range(1, trail.size()):
+				travelled += Vector2(float(trail[i][0]) - float(trail[i - 1][0]), float(trail[i][1]) - float(trail[i - 1][1])).length()
+			var detail: Dictionary = inplace_detail.get(tank.unit_id, {"turned": 0, "wobble": 0, "crept": 0})
+			var net_turn := absf(wrapf(float(trail[-1][2]) - float(trail[0][2]), -180.0, 180.0))
+			detail["turned" if net_turn >= INPLACE_DEG else "wobble"] += 1
+			detail["crept"] += 1 if travelled >= INPLACE_M else 0
+			inplace_detail[tank.unit_id] = detail
+
+
+func _inplace_rates() -> Dictionary:
+	var rates := {}
+	for unit_id: String in inplace_alive_ticks:
+		var minutes := float(inplace_alive_ticks[unit_id]) / SimClock.TICK_RATE / 60.0
+		rates[unit_id] = {"events_per_unit_minute": snappedf(int(inplace_events.get(unit_id, 0)) / maxf(minutes, 0.01), 0.01),
+				"alive_unit_minutes": snappedf(minutes, 0.1)}
+	return rates
 
 
 func _sample() -> void:
@@ -346,7 +376,9 @@ func _report(elapsed: float) -> void:
 			"retask_events_per_unit_minute": snappedf(retask_events / maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0), 0.01),
 			"unreachable_route_unit_seconds": snappedf(float(unreachable_ticks) / SimClock.TICK_RATE, 0.1),
 			"stall": _stall_report(), "stall_verb": stall_verb, "inplace_yaw_events": inplace_events,
-			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")], "busy_every_s": busy_every, "busy_orders": busy_orders}
+			"inplace_detail": inplace_detail, "inplace_per_unit_minute": _inplace_rates(),
+			"factions": [_flag("green-faction", "condemned"), _flag("rust-faction", "condemned")],
+			"armies": [_flag("green-army", "cpu"), _flag("rust-army", "cpu")], "fielded": fielded, "busy_every_s": busy_every, "busy_orders": busy_orders}
 	print("NAV_FIGHT %s" % JSON.stringify(out))
 	quit(0)
 
