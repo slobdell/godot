@@ -67,3 +67,8 @@ arena-page: ## X5: the lead's arena review page -- every shipping arena as a pic
 .PHONY: arena-reach
 arena-reach: import ## X2: write the catalog's covering ranges (Engagement.covering_range) to build/arena-reach.json, which arena-report reads
 	$(GODOT) --headless --path . --script res://tests/arena/reach_probe.gd -- --json=$(CURDIR)/$(BUILD_DIR)/arena-reach.json
+
+.PHONY: water-probe
+water-probe: import ## Round 7: does a carved navmesh hole give us water (impassable, fire-transparent)? BRIDGE=1 restores a strip -> build/water.json
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/arena/water_probe.gd -- \
+		$(if $(BRIDGE),--bridge) --json=$(CURDIR)/$(BUILD_DIR)/water$(if $(BRIDGE),-bridge).json

@@ -22,8 +22,20 @@ const ARENA := preload("res://game/arena/arena.tscn")
 ## An arena of `layout_name`, in the tree, with its own navigation synced. Fails the test and returns the arena
 ## anyway if it never syncs, so the caller's assertions report the real problem rather than a cascade of nulls.
 static func build(test: TestCase, layout_name: String, seconds := 2.0) -> Arena:
+	return await _ready_arena(test, layout_name, {}, seconds)
+
+
+## The same wait, for a layout built in the test rather than shipped in arenas/.
+static func build_layout(test: TestCase, layout: Dictionary, seconds := 2.0) -> Arena:
+	return await _ready_arena(test, String(layout.get("name", "layout")), layout, seconds)
+
+
+static func _ready_arena(test: TestCase, label: String, override: Dictionary, seconds: float) -> Arena:
 	var arena: Arena = ARENA.instantiate()
-	arena.layout_name = layout_name
+	if override.is_empty():
+		arena.layout_name = label
+	else:
+		arena.layout_override = override
 	test.add_to_tree(arena)
 	var found: Variant = inside_cover(arena.layout)
 	var probe: Vector3 = found if found != null else Vector3.ZERO
@@ -31,6 +43,17 @@ static func build(test: TestCase, layout_name: String, seconds := 2.0) -> Arena:
 	var map := arena.get_world_3d().navigation_map
 	var ready := func() -> bool:
 		if not Pathing.is_ready(arena):
+			return false
+		# THE regions on the map must be exactly this arena's. The cover probe below cannot tell two arenas apart
+		# when both are built from the same base layout — which is precisely what a test that varies only `terrain`
+		# or `shape` does — so it would happily hand back the PREVIOUS arena's navmesh. Region identity can.
+		var mine := _region_rids(arena)
+		if mine.is_empty():
+			return false
+		for rid: RID in NavigationServer3D.map_get_regions(map):
+			if not mine.has(rid):
+				return false
+		if NavigationServer3D.map_get_regions(map).size() < mine.size():
 			return false
 		if not have_probe:
 			return true
@@ -41,8 +64,37 @@ static func build(test: TestCase, layout_name: String, seconds := 2.0) -> Arena:
 		await test.tree.physics_frame
 	test.assert_true(ready.call(),
 			"setup: %s's OWN navigation synced within %.0f s (a point inside its cover is off the mesh)"
-			% [layout_name, seconds])
+			% [label, seconds])
 	return arena
+
+
+## THE ONE PLACE arena decides whether a route arrived. **Replace this with `Pathing.query(from, to).reachable`
+## when nav ships it** (it is doing the scout standoff first, correctly) — one function, not a tolerance scattered
+## through every check.
+##
+## Why a helper at all: `map_get_path` to an unreachable goal returns a path to the CLOSEST REACHABLE POINT, which
+## is non-empty and reads as success. This stream has met that three times — the maze fixture, the slope probe and
+## the water probe — and each time the wrong reading looked like a working one.
+##
+## The 4 m is a heuristic and is the thing nav's version removes. It is loose enough to allow the navmesh's own
+## edge quantisation and tight enough to reject a route that stopped at a bank.
+const ARRIVED_M := 4.0
+
+
+static func route_arrives(path: PackedVector3Array, goal: Vector3) -> bool:
+	return path.size() >= 2 and path[path.size() - 1].distance_to(goal) < ARRIVED_M
+
+
+## This arena's own navigation regions: the baked half and its 180° mirror.
+static func _region_rids(arena: Arena) -> Array:
+	var out: Array = []
+	var main := arena.get_node_or_null("Navigation") as NavigationRegion3D
+	if main != null:
+		out.append(main.get_region_rid())
+	var mirror := arena.get_node_or_null("NavigationMirror") as NavigationRegion3D
+	if mirror != null:
+		out.append(mirror.get_region_rid())
+	return out
 
 
 ## A point buried inside one of the layout's own collision boxes, or null if it has none big enough to be sure of.
