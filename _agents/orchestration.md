@@ -1808,3 +1808,22 @@ The kickoff prompt is one line; this section is the rest.
        naming the test that leaked**, so the next one is caught at source rather than diagnosed three times.
      - **And control's hexagon cutaway test now RESTORES the previous perimeter rather than blanking it** — blanking is
        itself a leak, just a quieter one.
+121. **A known-problems list decays faster than code, and nothing re-verifies it.** combat's summary of round 7, and it is
+     the finding I would hand the next round ahead of any result: **three separate "known broken" items turned out to be
+     measurement artefacts.**
+     - **`announcer-record-smoke` / `music-smoke`** — carried in feel's brief as broken for **two rounds**. They pass on a
+       current baseline. They ask a *differential* question and implement it as an *absolute* comparison against a shared
+       file, so they misfire once a round by design. **Nothing was ever wrong with the booth or the soundtrack.**
+     - **The gangs' 23%** — treated as a faction balance problem across two rounds, then as a mechanics triumph when it
+       "dissolved" to 53%. The ablation says neither is established, and **both numbers are retired.**
+     - **combat's own dither alarm** — same shape, found in its own stream.
+     **Each was recorded in a document with enough confidence to be believed, and each cost someone real time before
+     anyone checked it.** Add the funnel algorithm we had listed as OWED and had been running since round 1 (lesson 85),
+     and it is four.
+     **The lesson is not "measure more".** Code has tests; a claim in a doc has nothing. **A brief's "known problems"
+     section is the least-verified, most-quoted text in this project** — it is written once, read every round, and
+     re-checked never. Two practices follow:
+     - **Re-verify a known-problem before acting on it, not after.** The check is usually one command, and three of the
+       four above collapsed the first time anyone ran it.
+     - **Date every entry and name what would retire it.** *"Fails since <hash>; retire when X passes"* — an entry that
+       cannot be retired by evidence will not be.

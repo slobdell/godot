@@ -424,6 +424,19 @@ stack first, then the layer that commands it, then how the player reads and issu
   middle. arena's sentence, which is the round's sharpest statement of the risk:
   > *"If N7 lands and objectives stay central, the gates will have made flanking pay in a game that still gives no
   > reason to flank."*
+  **⚠ TWO CORRECTIONS to how this gets summarised (combat, X7, 2026-09-19, from
+  `references/combat/n5-engagement-envelope-2026-09-18.json`, builder0 at `fa4e7077`, n=15 per arm against the TRUE
+  round-5 control):**
+  1. **Quote the STRICT measure, 25.7% → 45.5%, which is what "off-axis kills" above already is.** A looser hull-face
+     measure reads **68.6%**, and it flatters us: **an oblique shot across a wide front registers as a "side" hit without
+     anyone having flanked anything.** So the honest claim is *"flank and rear kills rose from a quarter to just short of
+     half"*, **not "a majority of kills are now flanking"**. Rear kills alone 11.2% → 20.8%.
+  2. **N5 did NOT make the battle more mobile, and the natural summary saying so is FALSE.** Centroid travel moved
+     236.8 → 248.1 m, about **5%, inside the noise of a 15-match arm** — **the armies moved this much before the
+     engagement envelope existed.** So the flanking gain is **a change in how kills happen within an engagement at the
+     same amount of movement**, not more manoeuvre. combat flagged this unprompted because *"it is the kind of thing that
+     gets repeated once written."*
+
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
 - **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
