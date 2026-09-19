@@ -385,6 +385,9 @@ var _bait_seen := -1
 var _motion_cache := {}
 var _jink_tick := 0
 var _run_phase := "run"
+## Round 7 (nav): the direction CombatMotion chose last plan, handed back so it can commit to it.
+var _motion_prev_index := -1
+var _motion_prev_reverse := false
 
 
 func think(_delta: float) -> void:
@@ -1699,7 +1702,9 @@ static func threat_list(contacts: Array, my_position: Vector3) -> Array:
 func _act(s: Dictionary) -> void:
 	why = TankBrain.tactics_tag(s, choice)
 	# Round 6 (lesson 47): what a held player unit may do instead of moving, and whether it is under fire.
-	_held_face = TankBrain._face_threat_or(s, {"type": "stop"})
+	# With nothing to face, the facing it was told (nav's round-7 probe: two idle player units chose ADVANCE after their
+	# move finished, the refused move became a bare stop, and nothing turned them to the ordered facing).
+	_held_face = TankBrain._face_threat_or(s, _face_intended_or({"type": "stop"}))
 	_held_under_fire = tank.ticks_since_hit < HELD_UNDER_FIRE_TICKS or not (s.get("incoming", []) as Array).is_empty()
 	if choice["option"] != "CLEAR_LANE":
 		_lane_goal = null
@@ -2182,6 +2187,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 		"strafe":
 			# Close in, jinks spoil a gunner's lead; at a long standoff they just look like rocking (a Lancer at 80 m).
 			jink_due = distance <= JINK_RANGE and tick >= _jink_tick + (think_offset * 37) % JINK_SPREAD_TICKS
+	# Round 7 (nav): a jink only buys anything against a gun with a flight time to lead (CombatMotion.jink_worth).
+	jink_due = jink_due and CombatMotion.jink_worth(String(contact.get("weapon", "")))
 	if jink_due:
 		_strafe_side = -_strafe_side
 		_jink_tick = tick + JINK_MIN_TICKS
@@ -2250,7 +2257,11 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 			return SuppressionFeed.beaten(fields, team, from, to)
 	_incoming_count = (s.get("incoming", []) as Array).size()
 	var clock := Time.get_ticks_usec() if OrderController.profiling else 0
+	request["previous_index"] = _motion_prev_index  # round 7 (nav): commitment to last plan's direction
+	request["previous_reverse"] = _motion_prev_reverse
 	var result := CombatMotion.choose(request)
+	_motion_prev_index = int(result.get("index", -1))
+	_motion_prev_reverse = bool(result.get("reverse", false))
 	if OrderController.profiling:
 		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
 	if result.is_empty():
