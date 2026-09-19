@@ -12,6 +12,10 @@ Usage: engagement_report.py --godot PATH [--pairs condemned:condemned,gangs:law]
 import argparse
 import concurrent.futures
 import json
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import run_conditions
 import statistics
 import subprocess
 import sys
@@ -134,6 +138,7 @@ def main():
             except Exception as err:
                 failures.append(str(err))
 
+    print(f"run: {run_conditions.header()}")
     print(f"ENGAGEMENT budget {args.budget}, arena {args.arena or 'default'}, tune '{args.tune}', "
           f"{len(results)} matches in {time.time() - started:.0f}s")
     by_pair = {}
@@ -149,7 +154,7 @@ def main():
         print("FAILED", failure, file=sys.stderr)
     if args.json:
         with open(args.json, "w") as handle:
-            json.dump({"args": vars(args), "overall": overall,
+            json.dump({"run": run_conditions.describe(), "args": vars(args), "overall": overall,
                        "pairs": {k: summarize(v) for k, v in by_pair.items()}, "results": results}, handle, indent=1)
     return 1 if failures else 0
 
@@ -190,7 +195,7 @@ def run_variants(args):
         print("FAILED", failure, file=sys.stderr)
     if args.json:
         with open(args.json, "w") as handle:
-            json.dump({"args": vars(args), "variants": variants, "summaries": summaries}, handle, indent=1)
+            json.dump({"run": run_conditions.describe(), "args": vars(args), "variants": variants, "summaries": summaries}, handle, indent=1)
     return 1 if failures else 0
 
 

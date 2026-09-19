@@ -16,8 +16,10 @@ extends GameMode
 ## ms per tick = 1000 / (60 x speedup). `make scale-bench` runs the ladder.
 ## --sim-profile (round 5, CP1) prints SIM_PROFILE <json> before the result: ms per physics tick, whole and by section
 ## (SimProfile; `make sim-profile`).
-## --no-acquisition (round 6, N5) drops the engagement envelope's sight and acquisition gates, and --no-crossing drops
-## X6's crossing penalty alone: measurement controls, never normal play (see game/combat/engagement.gd).
+## --no-acquisition (round 6, N5) drops the engagement envelope's sight and acquisition gates, --no-crossing drops
+## X6's crossing penalty alone, and --no-faction-directives (round 7, X4) makes every unit take its plain-role
+## directive instead of its faction's: measurement controls, never normal play (game/combat/engagement.gd,
+## Army.faction_directives). MATCH_RESULT carries `controls` so every run says which arm it was.
 ## --combat-log prints COMBAT_EVENT <json> lines: every K2 weapon_fired / projectile_impact, every destroyed unit, and
 ## every living unit's pose each COMBAT_LOG_POSE_TICKS (tools/combat_duel.py turns them into a readable timeline).
 
@@ -43,6 +45,11 @@ func start() -> void:
 	# maximum range, which is exactly the world before this contract.
 	Engagement.acquisition_enabled = not flags.has("no-acquisition")
 	Engagement.crossing_enabled = not flags.has("no-crossing")
+	# X4 (round 7) control: --no-faction-directives makes every unit take its plain-role directive, isolating what a
+	# faction's own tactics are worth from what its VEHICLES are worth. A static, so it must be set on every run and
+	# not only when the flag is present -- a control that leaks into the next run in the same process is worse than
+	# no control, because both arms then read as the ablated one.
+	Army.faction_directives = not flags.has("no-faction-directives")
 	Engagement.reset_counters()
 	# Experiments: --tune=tank.max_shield=0,cannon.ammo=60 overrides catalog stats for this run.
 	var tune_error := Units.apply_tuning(flags.text("tune"))
@@ -100,6 +107,11 @@ func start() -> void:
 		result["seed"] = seed_value
 		result["real_seconds"] = snappedf(real_seconds, 0.01)
 		result["speedup"] = snappedf(result["sim_seconds"] / maxf(real_seconds, 0.001), 0.1)
+		# Every control the run was under, in the run's own output. "Print every resolved knob" is this stream's
+		# most expensive lesson (matchup-search spent its whole history at --units 60 and recorded it nowhere), and
+		# a measurement ARM is the knob that matters most: without it, two arms are two identical-looking files.
+		result["controls"] = {"acquisition": Engagement.acquisition_enabled, "crossing": Engagement.crossing_enabled,
+				"faction_directives": Army.faction_directives}
 		if SimProfile.enabled:
 			print("SIM_PROFILE " + JSON.stringify(SimProfile.report()))
 		print("MATCH_RESULT " + JSON.stringify(result))

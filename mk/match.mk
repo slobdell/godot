@@ -79,9 +79,45 @@ scale-bench: import ## X5: sim cost per tick at SCALE_SIZES vehicles a side, wit
 	@printf '%-8s %-8s %-10s %-10s %s\n' "a side" "brains" "speedup" "ms/tick" "budget at 60 fps = 16.7 ms"
 	@for size in $(SCALE_SIZES); do 		for brains in off on; do 			$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --bench-units=$$size 				--bench-faction=$(or $(BENCH_FACTION),condemned) --time-limit=$(or $(TIME),60) --score-limit=0 --seed=5 				$$([ $$brains = off ] && echo --no-brains) 2>/dev/null | grep MATCH_RESULT 				| $(PYTHON) -c "import json,sys; r=json.loads(sys.stdin.read().split('MATCH_RESULT ')[1]); 					print('%-8s %-8s %-10.1f %-10.3f' % ('$$size', '$$brains', r['speedup'], 1000.0/($(SIM_HZ).0*r['speedup'])))"; 		done; 	done
 
-faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180) -> build/faction-matrix.json
+# ARENA= names the layout. WITHOUT it every match runs on foundry, which is fine for a like-for-like A/B and wrong
+# for anything conditional on terrain -- the Syndicate's designator pays off where sightlines are long and pays
+# nothing in a close map, so a single-map number would be read as a property of the faction.
+# X4 (round 7): ABLATE=1 is the control arm -- every unit on its plain-role directive instead of its faction's.
+# The flag and the OUTPUT NAME are set from one variable on purpose: two arms writing one filename is how a control
+# silently overwrites its treatment and leaves a single file that looks like both runs.
+# The comparison step is where this stream's measurements have gone wrong, not the running step: a filtered arm
+# against a full one, a laptop arm against a builder0 one, and a control that differed from its treatment only in
+# the name of its file. `compare_arms` refuses those, and refuses the one nobody finds by reading output -- two
+# arms that are secretly the same arm, whose difference is a clean and entirely plausible null.
+match-pytest: ## The match tools' own tests: what compare_arms refuses to subtract, and why
+	$(PYTHON) -m unittest discover -s tools -p 'test_compare_arms.py'
+
+# Both arms on every map in ARENAS, in ONE remote invocation. Four separate `make remote` calls would rsync the
+# worktree four times into the same folder on builder0 while earlier runs were still reading it, and would queue for
+# a heavy-run slot four times; this syncs once and holds one slot. It also runs the comparison itself, so the arms
+# are subtracted by the tool that refuses bad subtractions rather than by eye afterwards.
+faction-matrix-arms: import ## Both arms (normal + ABLATE) on each map in ARENAS= and the per-faction deltas
+	@for map in $(or $(ARENAS),boulevard yard); do \
+		$(MAKE) --no-print-directory faction-matrix ARENA=$$map SEEDS=$(SEEDS) TIME=$(TIME) JOBS=$(JOBS) BUDGET=$(BUDGET) || exit 1; \
+		$(MAKE) --no-print-directory faction-matrix ARENA=$$map ABLATE=1 SEEDS=$(SEEDS) TIME=$(TIME) JOBS=$(JOBS) BUDGET=$(BUDGET) || exit 1; \
+		echo ""; echo "=== $$map: faction directives ON minus OFF ==="; \
+		$(MAKE) --no-print-directory compare-arms TREATMENT=$(BUILD_DIR)/faction-matrix-$$map.json \
+			CONTROL=$(BUILD_DIR)/faction-matrix-$$map-plainroles.json || exit 1; \
+	done
+
+# COMPARE_FACTION, not FACTION: `mk/command.mk` defines `FACTION ?= gangs` and make variables are ONE GLOBAL
+# NAMESPACE, so the bare name silently filtered every comparison to the gangs -- the same collision that ran
+# `matchup-search` at `--units 60` for its entire history. Caught by reading a `make -n` expansion that contained
+# a flag nobody passed.
+compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.json CONTROL=b.json [COMPARE_FACTION=gangs])
+	$(PYTHON) tools/compare_arms.py --treatment $(TREATMENT) --control $(CONTROL) \
+		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION))
+
+faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE=) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \
-		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) --json $(BUILD_DIR)/faction-matrix.json
+		--budget $(or $(BUDGET),5200) --time-limit $(or $(TIME),180) $(if $(ARENA),--arena $(ARENA)) \
+		$(if $(ABLATE),--no-faction-directives) \
+		--json $(BUILD_DIR)/faction-matrix$(if $(ARENA),-$(ARENA))$(if $(ABLATE),-plainroles).json
 
 faction-shots: import ## L3/X5: screenshots of a full-scale faction battle from above (GREEN_FACTION= RUST_FACTION= DELAY=45) -> build/screenshots/faction-*.png (needs a display)
 	mkdir -p $(BUILD_DIR)/screenshots

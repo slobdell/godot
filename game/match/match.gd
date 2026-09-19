@@ -10,6 +10,9 @@ signal local_tank_spawned(tank: Tank)
 ## Emitted once when a score or time limit is reached (see start_limits).
 signal finished(result: Dictionary)
 ## Simulating peer: the control point changed hands (-1 = neutral).
+## N7: an objective changed hands. `index` is its position in `objectives`; `owner` is -1, Team.GREEN or Team.RUST.
+## `control_changed` still fires for the primary objective, so pre-N7 listeners need no change.
+signal objective_changed(index: int, owner: int)
 signal control_changed(owner: int)
 ## Simulating peer: a tank was destroyed (by `killer`, a tank name).
 signal tank_destroyed(victim: Tank, killer: String)
@@ -38,8 +41,29 @@ const BASE_DAMAGE := 34.0
 ## Arena geometry. Obstacles and spawns come from the arena layout (arenas/*.json, Arena); the size is fixed here.
 ## 2026-09-13: doubled from 60 → 120 after the lead's first skirmish; contact was
 ## immediate on the small map and formations had no room.
-const ARENA_HALF_SIZE := 120.0
+##
+## X3 (round 7, 2026-09-19): 120 → 140, and it is now a **BOUND, not a size**. A layout declares its own
+## `half_size` under it (Arena.validate), so Pit and Yard stay 120 x 120 and nothing about them changes; what moved
+## is the ceiling, which is what a hexagon of circumradius 139.7 needs in order to exist at all. Depends on arena's
+## `877dc34a`, merged into this branch: before it, validate demanded half_size == this constant, so raising it would
+## have grown every shipped map 36% as a side effect of a shape change nobody asked to apply to them.
+##
+## The constant was doing two jobs -- "how big is the play area" and "how big is the world the HUD must cover" -- and
+## a non-square arena is what makes them different numbers. **Anything that draws or declares the PLAY AREA must read
+## `Arena.active.half_size`** (the pattern in `RtsCamera.perimeter_half()`), never this.
+const ARENA_HALF_SIZE := 140.0
 ## How close to the perimeter tanks and slots may be sent (walls' inner face minus clearance).
+##
+## X3: this did NOT scale with the bound, and the reason is the whole point of M4. It is a **square** clamp, so on a
+## hexagon of circumradius 139.7 -- inradius 121.0 -- a limit of 136 would admit points 192 m from centre on the
+## diagonal, well outside the wall, and `Arena.validate` would approve every one of them. It is about three times too
+## permissive, not slightly. The conservative inscribed bound is 121.0 - 4.0 = **117**.
+##
+## Left at **116**, one metre inside that, deliberately: 116 is already within 117, so it is safe for the hexagon as
+## well as for today's squares, while moving it to 117 would take a metre of clearance off every shipped map -- a
+## change to maps the lead has played, bought in exchange for nothing. It is a FALLBACK square bound that is
+## conservative for every shape; the real answer to "is this point inside the arena" is `Arena.contains()`, and each
+## remaining `clampf(..., DRIVABLE_LIMIT)` is a site still to migrate (M4 in _agents/workstreams.md).
 const DRIVABLE_LIMIT := 116.0
 const BASE_Z := 90.0
 ## Spawn grid. Slot 0 is the middle of the front row, then out to the flanks, then the rows behind it,
@@ -83,15 +107,48 @@ const CONTACT_MEMORY_TICKS := SimClock.TICK_RATE * 12
 @export var control_point := false
 const CONTROL_CENTER := Vector3.ZERO
 const CONTROL_RADIUS := 16.0
+## X5: how long a designator's paint lasts before it must be refreshed (one intel pass is 0.1 s, so this is a
+## generous hold that still fades when the designator dies or looks away).
+const DESIGNATE_SECONDS := 1.5
 const CONTROL_CAPTURE_SECONDS := 8.0
 const CONTROL_POINTS_TO_WIN := 90
-## -1 = neutral, else the team that holds it.
-var control_owner := -1
-## -1 (Rust has it) .. 0 (neutral) .. 1 (Green has it).
-var control_progress := 0.0
-## Whole points (seconds held) per team.
+## N7 (round 6): the objectives this match is fought over, read from the layout rather than hard-coded.
+## Each entry is {name, position: Vector3, radius: float, owner: int (-1 neutral), progress: float (-1..1)}.
+## `Arena.objectives_of` reports **exactly the single central zone this file used to hard-code** for any layout
+## without an `objectives` list, so every shipped arena behaves identically. Off-centre objectives come in mirrored
+## pairs (arena's validator enforces it), which is what keeps the fairness invariant.
+##
+## Why it matters, from the CP4 series: the gates (sight, acquisition) moved kill distance -11 m and off-axis kills
+## +17 points where the bands moved them -3 m and +2 -- and a SINGLE CENTRAL objective is the terrain-level version
+## of the same problem, because it collapses the space in which acquisition and flanking can matter at all. The 45%
+## off-axis kills were measured *despite* one central control point on every map.
+var objectives: Array = []
+## -1 = neutral, else the team that holds it. **The PRIMARY objective's** (index 0), so every pre-N7 consumer --
+## the radar, the tactical map, the announcer, the CPU commander, the agent bridge -- keeps reading what it always
+## read. With one objective, which is every shipped layout today, it is the whole story.
+## N7 makes the objective the single source of truth and these a view onto it, rather than a copy the tick has to
+## remember to write back. A copy is what broke test_control_point when N7 landed: it poked `control_owner` between
+## frames, the tick overwrote it from the objective, and the match silently never ended. Writing through means every
+## pre-N7 reader AND every pre-N7 writer keeps working unchanged.
+var control_owner: int:
+	get:
+		return int(objectives[0]["owner"]) if not objectives.is_empty() else -1
+	set(value):
+		if not objectives.is_empty():
+			objectives[0]["owner"] = value
+## -1 (Rust has it) .. 0 (neutral) .. 1 (Green has it). The primary objective's, as above.
+var control_progress: float:
+	get:
+		return float(objectives[0]["progress"]) if not objectives.is_empty() else 0.0
+	set(value):
+		if not objectives.is_empty():
+			objectives[0]["progress"] = value
+## Whole points (seconds held) per team, summed over every objective.
 var control_score := [0, 0]
-var _control_ticks := [0, 0]
+## Fractional ticks: with N objectives a team banks INTEL_EVERY_TICKS x (held / N), so holding them all scores at
+## exactly the old rate and holding half scores at half. **At N=1 this reduces to the old integer accumulation**,
+## which is what makes N7 a read-through rather than a balance change wearing one's clothes.
+var _control_ticks := [0.0, 0.0]
 
 ## Firing while moving at full speed multiplies shot spread by (1 + this).
 const MOVING_SPREAD_FACTOR := 1.5
@@ -157,6 +214,12 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# X3: enemy hits on the engine deck (Armor.is_weak_spot), by the shooter's team.
 		"weak_spot_hits": [0, 0],
+		# X5 POSITIVE CONTROL, per team: how many units with the `designates` capability were fielded, and how many
+		# times one of them actually painted a contact. A treatment arm with no treatment is not a null result, it is
+		# a failed run -- and this project has now produced two designator numbers that measured a different game
+		# (the unit silently dropped from every army; then fielded but front-lined). Neither was caught by a check.
+		# `designators_fielded > 0 and designations == 0` is the assertion a reader can make without knowing a roster.
+		"designators_fielded": [0, 0], "designations": [0, 0],
 		# L2 (round 4), by the SUPPRESSED team, sampled every SUPPRESSION_SAMPLE_TICKS over living units: how many
 		# samples were taken, their suppression summed, and how many were pinned. Without these, nobody can tell
 		# whether a match had any suppressive fire in it at all (X2: the answer was "almost none", because brains
@@ -201,6 +264,8 @@ var _shots_since_sample := 0
 ## N5 (round 6): the DIRECT-fire subset of them. The envelope governs direct fire only — artillery is deliberately
 ## outside it — so an all-shots engagement distance describes the battery as much as the fight (lesson 49).
 var _direct_shots_since_sample := 0
+## X5: the fielded-designator census is taken once, on the first paint pass after spawning.
+var _counted_designators := false
 
 var _rng := RandomNumberGenerator.new()
 ## Shot spread. Seeded with the match seed, so seeded matches stay deterministic.
@@ -228,6 +293,9 @@ func _ready() -> void:
 	# Must be assigned on every peer before the server's first spawn message arrives.
 	tank_spawner.spawn_function = _build_tank
 	shell_spawner.spawn_function = _build_shell
+	# N7: read the layout's objectives. Arena.active is set by the arena scene, which enters the tree first; a layout
+	# with no `objectives` list yields exactly the single central zone this file used to hard-code.
+	load_objectives()
 
 
 func _physics_process(delta: float) -> void:
@@ -250,6 +318,7 @@ func _physics_process(delta: float) -> void:
 		t = _profile_start()
 		_resupply()
 		_apply_hazards()
+		_paint_designated()
 		_sample_brain_options()
 		if control_point and not _finished:
 			_update_control()
@@ -626,38 +695,136 @@ func _apply_hazards() -> void:
 				_announce_destroyed(tank, "hazard:" + String(hazard["type"]))
 
 
-## Tanks of each team alive inside the control zone.
-func control_presence() -> Array:
+## N7: read the layout's objectives. Called at setup; safe to call again (it keeps owners where names match).
+func load_objectives() -> void:
+	var previous := {}
+	for objective: Dictionary in objectives:
+		previous[objective["name"]] = objective
+	objectives = []
+	for spec: Dictionary in Arena.objectives_of(Arena.active):
+		var was: Dictionary = previous.get(spec["name"], {})
+		objectives.append({"name": spec["name"], "position": spec["position"], "radius": spec["radius"],
+				"owner": int(was.get("owner", -1)), "progress": float(was.get("progress", 0.0))})
+	if objectives.is_empty():
+		# `control_point` is a MATCH flag (--control), not a layout property: before N7 it meant "a zone at the arena
+		# centre, radius CONTROL_RADIUS" whatever the layout said. A layout that declares no control_point must still
+		# get that zone, or --control would silently do nothing on it.
+		objectives.append({"name": "control point", "position": CONTROL_CENTER, "radius": CONTROL_RADIUS,
+				"owner": int(previous.get("control point", {}).get("owner", -1)),
+				"progress": float(previous.get("control point", {}).get("progress", 0.0))})
+
+
+## Tanks of each team alive inside `objective`'s zone (the primary one by default, which is what
+## `control_presence()` meant before N7).
+func objective_presence(objective: Dictionary) -> Array:
 	var present := [0, 0]
+	var centre: Vector3 = objective["position"]
+	var radius := float(objective["radius"])
 	for tank in _sorted_tanks():
-		if tank.is_alive() and in_control_zone(tank.global_position):
+		if not tank.is_alive():
+			continue
+		if Vector2(tank.global_position.x - centre.x, tank.global_position.z - centre.z).length() <= radius:
 			present[tank.team] += 1
 	return present
 
 
+## Tanks of each team alive inside the primary objective's zone. Unchanged for every pre-N7 caller.
+func control_presence() -> Array:
+	return objective_presence(objectives[0]) if not objectives.is_empty() else [0, 0]
+
+
+## True if `point` is inside ANY objective. Prefer this over the static `in_control_zone` once a layout ships
+## off-centre objectives: the static one can only know about the default central zone.
+func in_any_objective(point: Vector3) -> bool:
+	for objective: Dictionary in objectives:
+		var centre: Vector3 = objective["position"]
+		if Vector2(point.x - centre.x, point.z - centre.z).length() <= float(objective["radius"]):
+			return true
+	return false
+
+
+## The DEFAULT central zone, kept because it is static and five streams call it. It cannot see a layout's
+## objectives, so it is correct only while every shipped layout uses the central point -- which is true today.
+## N7 consumers should use `in_any_objective` / `objective_presence` instead.
 static func in_control_zone(point: Vector3) -> bool:
 	return Vector2(point.x - CONTROL_CENTER.x, point.z - CONTROL_CENTER.z).length() <= CONTROL_RADIUS
 
 
 func _update_control() -> void:
-	var present := control_presence()
+	if objectives.is_empty():
+		return
 	var step := float(INTEL_EVERY_TICKS) / SimClock.TICK_RATE / CONTROL_CAPTURE_SECONDS
-	if present[Team.GREEN] > 0 and present[Team.RUST] == 0:
-		control_progress = minf(1.0, control_progress + step)
-	elif present[Team.RUST] > 0 and present[Team.GREEN] == 0:
-		control_progress = maxf(-1.0, control_progress - step)
-	var previous := control_owner
-	if control_progress >= 1.0:
-		control_owner = Team.GREEN
-	elif control_progress <= -1.0:
-		control_owner = Team.RUST
-	elif (control_owner == Team.GREEN and control_progress <= 0.0) or (control_owner == Team.RUST and control_progress >= 0.0):
-		control_owner = -1  # pushed back past neutral
-	if control_owner != previous:
-		control_changed.emit(control_owner)
-	if control_owner >= 0:
-		_control_ticks[control_owner] += INTEL_EVERY_TICKS
-		control_score[control_owner] = _control_ticks[control_owner] / SimClock.TICK_RATE
+	var held := [0, 0]
+	for index in objectives.size():
+		var objective: Dictionary = objectives[index]
+		var present := objective_presence(objective)
+		var progress := float(objective["progress"])
+		# A zone is taken by whichever side is alone in it: a flat rate, so a bigger army does not capture faster
+		# and a losing side can still steal one back.
+		if present[Team.GREEN] > 0 and present[Team.RUST] == 0:
+			progress = minf(1.0, progress + step)
+		elif present[Team.RUST] > 0 and present[Team.GREEN] == 0:
+			progress = maxf(-1.0, progress - step)
+		var previous := int(objective["owner"])
+		var owner := previous
+		if progress >= 1.0:
+			owner = Team.GREEN
+		elif progress <= -1.0:
+			owner = Team.RUST
+		elif (previous == Team.GREEN and progress <= 0.0) or (previous == Team.RUST and progress >= 0.0):
+			owner = -1  # pushed back past neutral
+		objective["progress"] = progress
+		objective["owner"] = owner
+		if owner >= 0:
+			held[owner] += 1
+		if owner != previous:
+			objective_changed.emit(index, owner)
+			# The primary objective is what `control_changed` has always meant, and five streams listen to it.
+			if index == 0:
+				control_changed.emit(owner)
+	# Score by the SHARE of objectives held, so holding them all scores at exactly the pre-N7 rate and holding half
+	# scores at half. At N = 1 this is the old accumulation exactly.
+	var total := float(objectives.size())
+	for team in 2:
+		if held[team] > 0:
+			_control_ticks[team] += float(INTEL_EVERY_TICKS) * float(held[team]) / total
+			control_score[team] = int(_control_ticks[team] / SimClock.TICK_RATE)
+
+
+## X5 (round 6): DESIGNATORS paint. Every intel pass, each living designator marks the nearest enemy its own team can
+## see inside its sight radius; while the paint lasts, that contact is acquired in a quarter of the usual time by
+## everyone on the designator's side (Engagement.DESIGNATED_ACQUIRE_SCALE).
+##
+## It paints what its team can see rather than what it personally has a line to, because the unit's job is to turn
+## the Syndicate's eyes into everyone's tempo — and because making it require its own line of sight would just make it
+## a second scout. It runs on the intel cadence, not per tick, and refreshes a countdown rather than setting a flag,
+## so a designator that dies stops helping within DESIGNATE_SECONDS instead of instantly or forever.
+func _paint_designated() -> void:
+	# Count the fielded designators once, on the first pass after spawning.
+	var counting := not _counted_designators
+	for tank in _sorted_tanks():
+		if not bool(Units.stat(tank.unit_id, "designates", false)):
+			continue
+		if counting:
+			stats["designators_fielded"][tank.team] += 1
+		if not tank.is_alive():
+			continue
+		var best: Tank = null
+		var best_distance := tank.sight_radius
+		for enemy in sorted_team_tanks(1 - tank.team):
+			if not enemy.is_alive() or not is_visible_to(tank.team, enemy):
+				continue
+			var distance := tank.global_position.distance_to(enemy.global_position)
+			if distance <= best_distance:
+				best = enemy
+				best_distance = distance
+		if best != null:
+			# Count a paint only when it lands on a contact that was not already painted, so the number is "how often
+			# designation did something" rather than "how many ticks a designator was alive".
+			if best.designated_seconds <= 0.0:
+				stats["designations"][tank.team] += 1
+			best.designated_seconds = DESIGNATE_SECONDS
+	_counted_designators = true
 
 
 func _sample_brain_options() -> void:

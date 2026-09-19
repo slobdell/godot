@@ -1787,3 +1787,59 @@ The kickoff prompt is one line; this section is the rest.
      - **And it produces a visible change from a correctness fix:** the wall cutaway will now cut the front of the stands
        slightly more often near the wall, because it was **under-cutting** before. **Say that in advance**, or it arrives
        looking like a regression.
+120. **A leak probe is itself an experiment, and it needs a positive control: prove the leak could have been SEEN.**
+     control, fixing the same `RtsCamera.perimeter_poly` leak in its camera tests, reported that **its first two probes
+     "proved" nothing**:
+     - **one leaked a hexagon whose flats sit at exactly ±121** — the value the victim expected — **so the leak was
+       benign and the test passed for the wrong reason**;
+     - **one leaked in an earlier FILE, and the intervening tests' rigs reload `perimeter_poly` in `_ready`**, so the
+       leak was overwritten before it could do harm.
+     **Both produced a clean pass that would have been read as "no leak here."** The working probe leaks an **80 m
+     square immediately before the victim**: without the guard, 3 failures (*"rail 37.9 m beyond a 0.1 m near plane"*);
+     with it, 0.
+     **The rule: a leak probe must sit immediately before its victim, and its leaked value must differ in a way the
+     victim can see.** This is combat's positive control (lesson 101) applied to isolation testing — **assert that the
+     treatment engaged, where the treatment is the pollution.** Without it, a probe measures nothing and says "clean".
+     - **Same family as nav's "fails alone at file granularity"** (lesson recorded at `5cc17ee6`): **the granularity of
+       an isolation claim is part of the claim.** "Alone" and "clean" both need their scope stated.
+     - **Three streams have now hand-fixed instances of one shared-static leak** — control's camera tests, control's
+       radar test (fixed by the orchestrator), and nav's `test_navigation` navmesh readiness. **That is the argument for
+       moving the runner-level guard up from round 8:** assert the world is clean after each `teardown()` and **fail
+       naming the test that leaked**, so the next one is caught at source rather than diagnosed three times.
+     - **And control's hexagon cutaway test now RESTORES the previous perimeter rather than blanking it** — blanking is
+       itself a leak, just a quieter one.
+121. **A known-problems list decays faster than code, and nothing re-verifies it.** combat's summary of round 7, and it is
+     the finding I would hand the next round ahead of any result: **three separate "known broken" items turned out to be
+     measurement artefacts.**
+     - **`announcer-record-smoke` / `music-smoke`** — carried in feel's brief as broken for **two rounds**. They pass on a
+       current baseline. They ask a *differential* question and implement it as an *absolute* comparison against a shared
+       file, so they misfire once a round by design. **Nothing was ever wrong with the booth or the soundtrack.**
+     - **The gangs' 23%** — treated as a faction balance problem across two rounds, then as a mechanics triumph when it
+       "dissolved" to 53%. The ablation says neither is established, and **both numbers are retired.**
+     - **combat's own dither alarm** — same shape, found in its own stream.
+     **Each was recorded in a document with enough confidence to be believed, and each cost someone real time before
+     anyone checked it.** Add the funnel algorithm we had listed as OWED and had been running since round 1 (lesson 85),
+     and it is four.
+     **The lesson is not "measure more".** Code has tests; a claim in a doc has nothing. **A brief's "known problems"
+     section is the least-verified, most-quoted text in this project** — it is written once, read every round, and
+     re-checked never. Two practices follow:
+     - **Re-verify a known-problem before acting on it, not after.** The check is usually one command, and three of the
+       four above collapsed the first time anyone ran it.
+     - **Date every entry and name what would retire it.** *"Fails since <hash>; retire when X passes"* — an entry that
+       cannot be retired by evidence will not be.
+122. **"Degraded, not fatal" is the worse of the two, and a guard that names its own fix turns a day into a minute.**
+     arena pointed a real match at the first arena ever to carry off-centre objectives, and squad's `Objectives` guard
+     fired **35,336 times** — *"the arena declares an objective other than the single central zone; squad's deciders still
+     read `Match.CONTROL_CENTER`. Move `game/tactics/objectives.gd` onto N7's instance API."*
+     **The match completed and produced a winner** while every decider competed for the wrong ground for its entire
+     duration. **Without the guard, arena would have shipped a layout that plays, looks fine, is wrong — and whose results
+     would have gone into a series.** That is lesson 77 (*a CPU competing for the wrong ground looks completely
+     functional*) compiled into the code instead of remembered.
+     - **A failure that stops the run announces itself. A failure that degrades the run does not**, and it contaminates
+       every number taken downstream of it. **Prefer a loud guard to a graceful fallback wherever "wrong" and "working"
+       are indistinguishable from outside.**
+     - **The error string names the FILE and the FIX, so a stream that owns neither diagnosed it in one run without
+       reading the other's code.** arena's words: *"that guard is the best thing anyone built this round."* **An error
+       message is an interface between streams — write it for the person who will read it, who is not you.**
+     - **And it fired on the first layout anyone pointed it at**, which is the strongest possible validation: it was
+       written for a hazard that had not yet occurred, and the hazard occurred exactly as described.

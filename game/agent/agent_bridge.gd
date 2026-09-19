@@ -157,6 +157,15 @@ func _describe(tank: Tank, viewer: Tank) -> Dictionary:
 	return info
 
 
+
+## X3 (round 7): the playable bounds of the LOADED layout. A square x/z range is still the right shape of answer for
+## an agent, so a non-square arena reports its bounding box -- an over-estimate a caller can then test with
+## Arena.contains(), rather than the old under-specified "the constant".
+func _declared_bounds() -> Dictionary:
+	var half := float(Arena.active.get("half_size", Match.ARENA_HALF_SIZE))
+	return {"x": [-half, half], "z": [-half, half]}
+
+
 func describe_map() -> Dictionary:
 	var obstacles := []
 	if arena != null:
@@ -176,7 +185,9 @@ func describe_map() -> Dictionary:
 						"height": snappedf(box.size.y, 0.1)})
 	return {
 		"coordinates": "meters; x grows east, z grows south; compass 0=north(-z) 90=east(+x)",
-		"bounds": {"x": [-Match.ARENA_HALF_SIZE, Match.ARENA_HALF_SIZE], "z": [-Match.ARENA_HALF_SIZE, Match.ARENA_HALF_SIZE]},
+		# X3 (combat, round 7): the ACTIVE layout's size. Match.ARENA_HALF_SIZE is now the bound an arena may not
+		# exceed, so declaring it here would have told an agent the playable world is 140 m when the map is 120.
+		"bounds": _declared_bounds(),
 		"bases": {"Green": [0, Match.BASE_Z], "Rust": [0, -Match.BASE_Z]},
 		"shell_speed": Shell.SPEED, "shell_range": Shell.MAX_RANGE,
 		"armor_multipliers": {"front": 0.5, "side": 1.0, "rear": 1.5},

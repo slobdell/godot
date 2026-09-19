@@ -39,6 +39,16 @@ const ACQUIRE_FAR_SECONDS := 1.6
 ## A suppressed crew acquires more slowly: at full suppression it takes this much longer. Heads down, nobody is
 ## calling the range. (L2 already costs them accuracy and sight; this is the third bite.)
 const SUPPRESSION_ACQUIRE_PENALTY := 1.0
+## X5 (round 6): a DESIGNATED target is acquired in this fraction of the usual time. The Syndicate's Lance Platform
+## paints a contact and every crew on its side lays on that contact far faster.
+##
+## It deliberately acts on the ACQUISITION gate rather than on damage or accuracy, and that is the whole design. A
+## special that grants +x% damage is a stat multiplier wearing a costume; one that removes the time cost of finding a
+## target converts the Syndicate's sight advantage (its scout sees 135 m, the best eyes in the game) into a **tempo**
+## advantage — it shoots sooner, not harder. That is only a distinct identity in a world where acquisition costs
+## something, which is to say: **N5's gate is what made this special possible.** Before it, "you acquire faster" would
+## have described a mechanic that did not exist.
+const DESIGNATED_ACQUIRE_SCALE := 0.25
 ## Scouts are spotters first (the lead, round 4): finding things is their job, so they resolve a contact in this
 ## fraction of the time anyone else needs. This is also one of the two mechanics behind `scout > lancer` (X6).
 const SCOUT_ACQUIRE_SCALE := 0.55
@@ -130,6 +140,9 @@ static func acquire_seconds(tank: Tank, target: Tank, distance: float) -> float:
 		seconds *= 1.0 + CROSSING_ACQUIRE_PENALTY * clampf(crossing, 0.0, CROSSING_ACQUIRE_MAX)
 	if Units.role_of(tank.unit_id) == "scout":
 		seconds *= SCOUT_ACQUIRE_SCALE
+	# X5: a painted target is most of the way onto the reticle before the gunner looks up.
+	if target != null and target.designated_seconds > 0.0:
+		seconds *= DESIGNATED_ACQUIRE_SCALE
 	return seconds
 
 

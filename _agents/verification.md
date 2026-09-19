@@ -177,6 +177,42 @@ units so it is. A warning is the invisible-skip failure in another costume.
 Idea from combat, after two of its designator runs measured a different game than it thought and no check caught
 either.
 
+### And the layer above it: a comparison must prove its arms differ (combat, round 7)
+
+A positive control asks *did the treatment engage in this run*. It passes happily on **two arms that are secretly
+the same arm** — and that is not a hypothetical, because arena hit the identical gap the same day in its
+`--swap-bases` fairness tool: it had asserted *which arena*, while the thing that could silently fail was *whether
+the swap applied*. **An assertion about the stage is not an assertion about the experiment.**
+
+**This is what a broken comparison looks like.** It is `tools/compare_arms.py` with its arm-distinguishability
+check removed — the mutation test for that guard:
+
+```
+faction             treatment      control     delta
+gangs                   70% n=20         35% n=20       +0 pts
+law                     35% n=20         35% n=20       +0 pts
+syndicate               45% n=20         45% n=20       +0 pts
+```
+
+Clean, symmetric, well-powered, and completely empty: **the answer you were hoping for, reached by the treatment
+never having happened.** Nobody reading that suspects anything, which is why the guard has to be mechanical.
+`make compare-arms` refuses four things — the same file twice; a different commit, machine, or a dirty tree; a
+different arena, budget, seeds, time limit or faction list; and identical arms.
+
+Two rules fell out of building it:
+
+- **A guard that fires on the good case teaches its user to ignore it.** The output path is *supposed* to differ
+  between two arms, so requiring it to match would refuse every correct comparison.
+- **Assert against what the RUN emitted, not what the caller passed.** A flag is what you asked for;
+  `MATCH_RESULT`'s `controls` is what happened. `compare_arms` compares recorded `args`, so a flag that was
+  accepted, recorded and then silently inert still looks fine to it. **Per comparison, against emitted state, is
+  the version still unbuilt** — the honest edge of all three guards.
+
+**And guards get mutation-checked like anything else — more, not less.** A guard sits on the hot path of every
+future run, and this round shipped one that crashed every run it was added to protect and another whose refusal
+`return 2` was discarded by a bare `main()` call, so it **exited 0 and reported success to make**. Watch the guard
+fail before you trust it.
+
 ## Known flakes
 
 - **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on
