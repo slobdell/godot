@@ -1316,6 +1316,15 @@ static func _top(candidates: Array, count: int) -> Array:
 
 # ---- Sensing (the only impure part) -----------------------------------------------
 
+## The situation's "control": the objective this tank would contest from where it stands (the nearest its team does not
+## hold, else the nearest it does; Objectives.goal), or null when the match has none.
+static func _control_of(game_match: Match, my_team: int, at: Vector3) -> Variant:
+	var objective := Objectives.goal(game_match, my_team, at)
+	if objective.is_empty():
+		return null
+	return {"center": objective["position"], "radius": float(objective["radius"]), "owner": int(objective["owner"])}
+
+
 func build_situation() -> Dictionary:
 	var lap := Time.get_ticks_usec() if OrderController.profiling else 0
 	var team := tank.team
@@ -1445,8 +1454,7 @@ func build_situation() -> Dictionary:
 		"resupply": Match.resupply_center(team),
 		"enemy_base": Match.spawn_position(1 - team, 0),
 		"memory_ticks": Match.CONTACT_MEMORY_TICKS,
-		"control": {"center": Objectives.center(game_match), "radius": Objectives.radius(game_match),
-				"owner": Objectives.owner(game_match)} if Objectives.active(game_match) else null,
+		"control": _control_of(game_match, team, my_position),
 		"order": order_context,
 		"element": element if not element.is_empty() else null,
 		"cooldowns": cooldowns,
