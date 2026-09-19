@@ -2000,3 +2000,20 @@ The kickoff prompt is one line; this section is the rest.
      - **The general form: a no-op that reports success is indistinguishable from the work being done**, which is the
        round's recurring shape — a skipped check, a truncated run, a switch that never applied, an arm compared with
        itself.
+133. **A symmetric bound in an asymmetric frame: the camera parked the player's own squad behind the HUD.** control,
+     round 8, and the lead would have hit it **on every order**.
+     The camera's lean toward a selection's reach was bounded **symmetrically** — 0.78 of the half-height above and
+     below centre. **The command card starts at 0.44** (1920×1080). So the lean pushed the selected squad *down*, into
+     the HUD: **three of six selected tanks hidden behind the command card.** Now bounded at **0.40**
+     (`RtsCamera.VISION_FRAME_BOTTOM`), with a pure test that fails on the old camera (squad at 0.49) and passes on the new.
+     - **The screen is not symmetric and a viewport-relative bound assumes it is.** Any framing rule expressed as a
+       fraction of the *viewport* must be expressed against the **visible** area — the part no panel covers.
+     - **⚠ And it is a candidate contributor to the lead's central complaint.** *"They don't do what I command"* requires
+       seeing whether they did. **A player who cannot see half his selection cannot evaluate obedience** — which puts
+       this in the same family as the orphaned units (uncommandable) and the silent refusals (unknowable).
+     - **Found only by LOOKING at the frame after fixing a different bug.** The first bug was that an empty selection
+       framed the whole army, which at 35° cannot fit the 100 m auto-frame cap, so both ends were cut. Fixing that
+       revealed the second. **That is the seventh defect this round found by a human looking at output rather than by a
+       test going red**, and the count is now the strongest argument in the file for rendering what you assert about.
+     - **The honest cost, stated by control rather than hidden:** the lean is shorter where the card bites, 16.2 → 8.4 m
+       in the fixture, so `test_command_camera`'s threshold moved 10 → 5 m **with the reason written in place.**
