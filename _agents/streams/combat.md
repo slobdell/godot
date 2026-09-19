@@ -149,6 +149,35 @@ unit's collider disagrees with its mesh**, worst `gang_tank` (+1.67 w, +2.31 h �
 hit it) and `law_suppressor` **inverted** (drawn 0.96 m taller than its box — visible hits pass through). That is a
 hit-registration bug, not a look bug, and `hull_size` IS the collider (C1). The orchestrator has ruled it in scope.
 
+**WHERE IT STANDS (2026-09-19, branch at `2141904b`, `main` merged at the `85c774d0` checkpoint).**
+
+**The sizes are landed and the branch is NOT mergeable on that commit.** `gang_tank` `[3.32, 5.24, 14.0]` and
+`gang_support` `[3.39, 3.59, 7.0]` are in; the army could not stand in them; squad has fixed the cause on
+`stream/squad` at **`9a736f15`**. Sequence from here: squad lands on `main` → orchestrator announces → **merge, then
+re-run `make test FILTER=army_footprint` with the rig as landed**, and only if it is clean, ping feel to re-shoot at
+the lead's camera and report the per-map effect **without tuning it** (balance is deferred by the lead, deployment
+is not).
+
+| gang_ram, laptop seed 1 @5200 | vehicles | min | median |
+|---|---|---|---|
+| merged tree, before the size change | 41 | 3.7 m | 6.8 m |
+| **with the 14 m rig** | 41 | **0.4 m** | 2.7 m |
+| squad's fix + these sizes (squad's tree) | 41 | **4.3 m, 0 overlaps** | — |
+
+**My diagnosis of that regression was WRONG and squad's is right — worth keeping because of the shape.** I reported
+*"inter-squad placement does not keep up"* and reasoned about `GAP_SPACINGS`. The real causes: **ranks stacked by
+slot-centre depth while a 14 m hull overhangs 7 m each way**, and **ranks clamped at the drivable back edge stacking
+onto each other** (that was the 0.4 m cross-squad pair at z≈114). Neither is about gaps between squads. **The named
+pair was data and it was useful; the mechanism was a guess wearing its confidence**, and it would have sent squad to
+the wrong function. What I should have sent was the pair, the z, and *"I do not know why yet"*.
+
+**And the guard lesson, which cost nothing only because squad was more demanding than me:** I left the gang_ram
+assertion out of my own probe and printed it as a `MEASURE` line, for the good reason that the bar was not mine to
+set. The effect was that **the regression I introduced passed my own test** and I caught it by reading a number.
+squad asserted on gang_ram, gang_pack and law_line when it landed the file, and its version would have failed
+immediately. **The stream that owns the thing being guarded should own the assertion, because it is the one that
+will set the bar high enough to fail.**
+
 **⚠ THE SPAWN GRID DOES NOT CONSTRAIN VEHICLE SIZE, AND I SPENT an hour believing it did.** `SPAWN_ROW_SPACING`
 (8.0) − 2×`SPAWN_JITTER_MAX_Z` (1.2) = **exactly 5.6**, the War Rig's length, which looks like the smoking gun.
 It is not: `load_doctrine` ends with `ArmyLayout.deploy()`, which **teleports every unit at tick 0 before any
