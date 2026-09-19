@@ -2035,3 +2035,39 @@ The kickoff prompt is one line; this section is the rest.
      - **arena's first fix was wrong and it says so: a hollow shell of four walls leaves the interior walkable — an
        enclosed, unreachable navmesh island inside every building.** The right answer is tiling the footprint with
        adjacent 4 m slabs. **Recorded because the wrong version is the one that looks obviously correct.**
+135. **The grain of aggregation decides whether you see the effect at all — and ours was one level too coarse.**
+     combat, correcting its own headline two hours after giving it to me:
+
+     ```
+     map    arm        vs condemned   vs law   vs syndicate   gangs overall
+     yard   baseline           60%      60%           70%            63%
+     yard   rig 14 m           40%       0%           40%            27%
+     pit    baseline           20%      30%           40%            30%
+     pit    rig 14 m           50%       0%           40%            30%
+     ```
+
+     **`gangs vs law` went 9/20 → 0/20 across both maps. Twenty counterbalanced matches, zero wins, p ≈ 2×10⁻⁶.**
+     **And on pit the per-faction number is 30% in BOTH arms — a flat zero** — because losing the law matchup outright
+     was offset by *gaining* the condemned one. **A per-faction table says "no effect on pit". The per-matchup table says
+     a matchup became unwinnable.**
+     - **The pooled number did not merely dilute the effect; it invented a different one.** *"−37 points to the gangs on
+       yard"* — which I relayed to the lead — **understates what happened to one matchup and asserts a magnitude that does
+       not generalise to the other map.**
+     - **combat's rule: read matchups, not factions.** And its own note: *"I built the tool to report per faction and it
+       was the wrong grain; that is on me and the tool should probably print both."*
+     - **This is lesson 118's sibling.** There, the untreated arms were the noise floor and reporting them was free. Here,
+       **the finer grain was already in the data and the report threw it away.** Whenever a number aggregates over
+       something, **ask what the aggregation could be cancelling** — a −30 and a +30 pool to zero and read as "no effect".
+     - **The honest sentence changed with it**, and combat wrote the replacement: not *"the truck costs the gangs a third
+       of their win rate"* but ***"the truck makes one matchup unwinnable on both maps, and we do not yet know whether
+       that is the size or a movement bug it exposes."*** **More alarming and more honest, and it does not prejudge the
+       fix.**
+136. **A big object magnifies whatever was already slightly wrong.** feel, chasing the 15 m shield bubble the orchestrator
+     noticed in a screenshot of combat's 14 m rig: **`ShieldEffect` started at ratio 1.0, so the first legitimate
+     `set_shield(0.0)` on a zero-shield unit read as "the shield just got knocked out"** — hit shimmer, crackle and a
+     `shield_down` sound **on every gang vehicle, every deployment, since the gangs shipped.** Roughly forty at once.
+     **The 14 m hull did not cause it. It made the shell a 15 m egg nobody could miss.**
+     - **That is an argument for shipping a large vehicle that has nothing to do with balance:** scale is a magnifying
+       glass over every effect keyed to hull size, and a defect that survived rounds of play became obvious in one frame.
+     - **And it was found because a human looked at a screenshot sent for a different purpose.** Eighth defect this round
+       caught by looking rather than by a test.
