@@ -162,8 +162,25 @@ presentation job is the arena as a place).
      2.39 line, so `sim-baseline` **silently skips locally** — every stream can commit a stale hash and watch a green
      local check.
    A stream whose change moves the simulation says so in its green report — *"the sim baseline moves and is
-   deliberately NOT recorded here"* — and the orchestrator records it at the end with `make remote
-   T=sim-baseline-record` (twice, confirming it repeats) in a commit that names every change it covers.
+   deliberately NOT recorded here"* — and the orchestrator records it with `make remote T=sim-baseline-record`
+   (twice, confirming it repeats) in a commit that names every change it covers.
+   **AMENDED 2026-09-19, after the orchestrator read "after the last simulation-changing merge" as licence to defer
+   to round close.** It does not mean that. It means *do not record repeatedly mid-round*, and it silently assumed
+   merges arrive **batched at the end of a round**. In round 7 they trickled in across a long round, and the result was
+   that **`main` sat red on `sim-baseline` for hours** — so every stream that merged `main` afterwards inherited a
+   failure that had nothing to do with its work, could not tell whose it was, and had to ask.
+   - **The orchestrator records the baseline in the same working session as any sim-changing merge to `main`** — not at
+     round close. One record per *session of merging*, not one per round.
+   - **A merge commit that moves the simulation says so in its subject or body.** Then a stream hitting a red
+     `sim-baseline` runs `git log main --grep` and answers the question **without a round trip to the orchestrator**.
+     Invariant 2 already asks streams to declare it in their green report; the merge commit needs the same declaration.
+   - **The rule looked cheap because of a cost asymmetry** (combat's framing): *"the orchestrator who defers pays
+     nothing, and the cost lands on every stream that merges `main` afterwards."* **A rule whose cost falls entirely on
+     people who did not make the decision will always look cheaper than it is.**
+   - **And a stream's red `sim-baseline` may be over-determined, so it is evidence of nothing.** combat's `d21a3d86`
+     carried three of its own hash-moving changes (N7's per-objective owner, the designator's effect on *when* units
+     fire, and `hull_size` as the collision box), so it would have failed *whether `main` were green or red*. **Only a
+     check on `main` itself can establish `main`'s state.** Do not let a stream's failure stand in for that.
    **While the baseline is stale, THREE targets fail and two of them lie about why** (found by combat, 2026-09-18):
    `sim-baseline` says what is actually wrong, but `announcer-record-smoke` announces *"the booth changed the
    simulation"* and `music-smoke` announces *"the soundtrack changed the simulation"* — **both computing exactly the

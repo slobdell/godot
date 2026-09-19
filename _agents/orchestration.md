@@ -1266,3 +1266,34 @@ The kickoff prompt is one line; this section is the rest.
     - **The deeper point is combat's:** *"that is the per-map breakdown you asked for, and I could not have produced it an
       hour ago because the tool could not express the question."* **When a question cannot be asked, its answer defaults
       to whatever the tool happens to do** — and nobody notices, because there is no error, only an unmarked default.
+91. **A check that skips is not a check that passes — and this one is silent on the machine where a human would notice.**
+    `sim-baseline` keys the recorded hash per glibc version. **builder0 is `glibc-2.43`; our laptops are `glibc-2.39`, and
+    there is no 2.39 line** — so locally the target prints `sim-baseline SKIPPED: no baseline for glibc-2.39 (got
+    695f9709a11197e4)` **as information, and exits 0.** It passes on a laptop no matter what changed, and fails only on
+    builder0.
+    combat's sharpening is the memorable form: **the one machine where a human is most likely to notice is the one
+    machine where the check says nothing.** Everyone develops on the laptop; only the merge gate can fail. **A skip that
+    is invisible is worse than a failure**, because a failure is investigated and a skip is read as a pass by everyone who
+    is not looking for it.
+    - **Any check that can skip must be able to say so loudly.** A skipped guarantee should be reported in the summary
+      line — `N passed, M failed, K skipped` — not left in the scroll-back.
+    - **Prefer a check that cannot skip.** A per-machine baseline is a design that guarantees this failure mode; a
+      machine-independent invariant (fixed-point, or a hash of decisions rather than of floats) would not have it. That is
+      already in `determinism.md`'s future work and this is another argument for it.
+92. **Deferring a shared fix costs nothing to whoever defers, so it always looks cheap.** I read invariant 2's *"the sim
+    baseline is recorded once, after the last simulation-changing merge"* as permission to defer to round close, merged
+    two sim-changing branches to `main`, and left **`main` red on `sim-baseline` for hours.** Every stream that merged
+    `main` afterwards inherited a failure that was not theirs, could not attribute it, and had to ask me.
+    I had also been attributing the total absence of green hashes that day **entirely to builder0's queue**, which is the
+    second-order damage: **a known-bad shared state becomes the explanation for everything, so nothing else gets
+    diagnosed.**
+    combat's framing is the transferable one: *"a rule whose cost falls entirely on people who did not make the decision
+    will always look cheaper than it is."*
+    - **When a rule defers work, ask who pays during the interval.** If the answer is "everyone but me", the rule needs a
+      deadline, not a milestone.
+    - **Two cheap fixes, both now in invariant 2:** record in the same *session* as the merge, not at round close; and
+      **say "this moves the sim baseline" in the merge commit**, so a stream can answer the question with
+      `git log main --grep` instead of a round trip.
+    - **And beware an over-determined failure standing in for evidence.** combat's branch carried three of its own
+      hash-moving changes, so its `sim-baseline` failure was *"consistent with both stories and evidence for neither"* —
+      combat said so rather than letting me quote it as confirmation. **Only a check on `main` establishes `main`.**
