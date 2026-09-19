@@ -1543,3 +1543,26 @@ The kickoff prompt is one line; this section is the rest.
      indistinguishable at the point you look*. **Every defence that worked made the channel carry what it is about** — the
      wrapper line names the target, `run: <machine> at <commit>` names the build, the positive control names the behaviour.
      **None of them are vigilance.**
+106. **Pre-register the decision rule before running the experiment. It costs one sentence and it is the only defence
+     against interpreting a result after it arrives.** nav, before building a commitment term in `CombatMotion`:
+     > *"The decision rule, stated now so I can't move it later: if commitment cuts churn and survivability doesn't get
+     > worse beyond seed noise, it ships and the churn was not the price of not dying. If survivability drops, evasion is
+     > load-bearing, and I tell you the fix is legibility (control) with the numbers."*
+     **Every measurement failure this round was a result interpreted after the fact**, and each had a plausible story ready:
+     the designator's 43% → 40% was one paragraph away from *"an acquisition buff can backfire"* (it was a missing unit);
+     the gangs' 23% → 53% became *"a balance problem dissolved by mechanics"* (it may be a bug fix, and the ablation is
+     still pending); my own n=2 range finding became design understanding and inverted at n=15. **None of those were
+     dishonest. A result arrives with its explanation already forming, and the explanation is free.**
+     - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
+       criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
+       which is the criterion an author hoping for a churn win would quietly omit.
+     - **Say the noise threshold in advance too** ("beyond seed noise"), because *"within noise"* is the phrase that
+       absorbs an inconvenient result after the fact.
+     - **This is the practice for every A/B in this project from here.** It pairs with the positive control (lesson 101):
+       one asserts the treatment engaged, the other fixes what the answer means before you know it.
+     **And nav's decomposition is the model for what precedes a fix.** Evasion split into **(a)** dodging a round actually
+     in flight (`would_be_hit` against `IncomingFire`, reactive, load-bearing, never cut) and **(b)** timer-driven replans
+     and strafe-side flips *with nothing incoming* — whose justification, spoiling a gunner's lead, **is real for tank
+     shells at 60–70 m and weak against hitscan.** So a behaviour that pays for itself against one weapon class is being
+     applied against all of them. **That is a falsifiable claim about where a cost is unjustified**, which is a far better
+     starting point than "reduce the churn".
