@@ -104,7 +104,9 @@ func test_a_far_order_keeps_the_squad_readable_and_leans_toward_the_goal() -> vo
 	assert_true(map.all_on_screen(squad), "the squad stays on screen")
 	assert_true(rig.zoom <= RtsCamera.TRACK_MAX_ZOOM + 0.001, "at a zoom where vehicles still read (%.2f), not the whole arena" % rig.zoom)
 	var center: Vector3 = (squad[0] + squad[1] + squad[2]) / 3.0
-	assert_true(Vector2(rig.focus.x - goal.x, rig.focus.z - goal.z).length() < Vector2(center.x - goal.x, center.z - goal.z).length() - 10.0,
+	# 5 m, not 10: since round 8 the lean stops with the squad above the command card (RtsCamera.VISION_FRAME_BOTTOM),
+	# which halved it here (16.2 -> 8.4 m at this fixture's 42 deg / FOV 55) - the lean had been parking squads under the HUD.
+	assert_true(Vector2(rig.focus.x - goal.x, rig.focus.z - goal.z).length() < Vector2(center.x - goal.x, center.z - goal.z).length() - 5.0,
 			"the view leans ahead of the squad toward where it's going (%s)" % rig.focus)
 	rig.pan_screen(Vector2(640, 360), Vector2(640, 380))
 	var shown := rig._shown_zoom

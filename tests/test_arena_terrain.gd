@@ -86,14 +86,13 @@ func test_water_is_off_the_navmesh_and_a_bridge_is_on_it() -> void:
 			"the channel is off the navmesh")
 	var south := Vector3(0.0, 0.0, 60.0)
 	var north := Vector3(0.0, 0.0, 20.0)
-	var blocked := Pathing.find_path(arena, south, north)
-	assert_true(not ArenaFixture.route_arrives(blocked, north), "and a channel across the arena cannot be crossed")
+	assert_true(not ArenaFixture.route_arrives(arena, south, north),
+			"and a channel across the arena cannot be crossed")
 	arena.free()
 	await tree.physics_frame
 
 	var bridged := await ArenaFixture.build_layout(self, _layout([CHANNEL, CHANNEL_MIRROR, DECK, DECK_MIRROR]))
-	var over := Pathing.find_path(bridged, south, north)
-	assert_true(ArenaFixture.route_arrives(over, north), "a bridge makes the same crossing reachable")
+	assert_true(ArenaFixture.route_arrives(bridged, south, north), "a bridge makes the same crossing reachable")
 	var beside := Vector3(40.0, 0.0, 40.0)
 	assert_true(NavigationServer3D.map_get_closest_point(bridged.get_world_3d().navigation_map, beside).distance_to(beside) > 2.0,
 			"and the water beside the deck is still water")
@@ -118,15 +117,28 @@ func test_a_bad_terrain_entry_is_refused() -> void:
 ## load. The spans exist because control's occlusion question is POSITIONAL -- feel's base side is stands, then the
 ## gate its army enters through, then stands again, and one value per edge could not describe the very first
 ## layout anyone tried to write with it.
-func test_every_layout_today_is_a_square_and_nothing_had_to_change() -> void:
+## A layout is a square unless it says otherwise, and its perimeter follows what it declares. This test used to
+## assert every shipped layout WAS a square, which was true when it was written and stopped being true the moment
+## the two maps the lead kept became hexagons — the classic test that encodes today's content. It now asserts the
+## rule rather than the roster.
+func test_a_layouts_perimeter_follows_what_it_declares() -> void:
+	var shapes := {}
 	for layout_name in Arena.layout_names():
 		var layout: Dictionary = Arena.load_layout(layout_name)["layout"]
-		var points := Arena.perimeter(layout)
-		assert_eq(points.size(), 4, "%s is a square until it says otherwise" % layout_name)
+		var kind := String((layout.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND))
+		shapes[kind] = int(shapes.get(kind, 0)) + 1
+		var sides := ArenaShape.sides(kind)
+		assert_eq(Arena.perimeter(layout).size(), sides, "%s is a %s, so %d vertices" % [layout_name, kind, sides])
 		var edges := Arena.perimeter_edges(layout)
-		assert_eq(edges.size(), 4, "%s has four edges" % layout_name)
-		assert_eq(edges[0]["spans"].size(), 1, "%s: one span per edge by default" % layout_name)
-		assert_eq(String(edges[0]["spans"][0]["kind"]), "stands", "%s: stands behind all of it" % layout_name)
+		assert_eq(edges.size(), sides, "%s has %d edges" % [layout_name, sides])
+		for edge: Dictionary in edges:
+			var cursor := 0.0
+			for span: Dictionary in edge["spans"]:
+				assert_near(float(span["from_m"]), cursor, 0.01, "%s: spans are contiguous" % layout_name)
+				cursor = float(span["to_m"])
+			assert_near(cursor, float(edge["length_m"]), 0.05, "%s: and cover the edge" % layout_name)
+	assert_true(int(shapes.get("square", 0)) > 0, "the do-not-invest maps are still squares (%s)" % [shapes])
+	assert_true(int(shapes.get("hexagon", 0)) >= 2, "and the two the lead kept are hexagons (%s)" % [shapes])
 
 
 func test_a_hexagon_is_the_shape_that_varies_most() -> void:
@@ -209,6 +221,10 @@ func test_an_asymmetric_perimeter_is_refused() -> void:
 func _hexagon(extra: Dictionary = {}) -> Dictionary:
 	var layout: Dictionary = Arena.load_layout("foundry")["layout"].duplicate(true)
 	layout["shape"] = {"kind": "hexagon"} if extra.is_empty() else extra
+	# At the arena bound rather than foundry's own 120: a hexagon narrows where the spawn block sits, so one
+	# inscribed in 120 holds fewer than half of foundry's spawn points. That is the constraint these tests exist
+	# to respect, not one to work around.
+	layout["half_size"] = Match.ARENA_HALF_SIZE
 	return layout
 
 
@@ -297,8 +313,7 @@ func test_a_hexagon_bakes_a_navmesh_that_reaches_its_walls_and_connects_its_base
 	# would have been testing something the game has never done.
 	var green: Vector3 = Arena.spawn_spot(true, 0)
 	var rust: Vector3 = Arena.spawn_spot(false, 0)
-	assert_true(ArenaFixture.route_arrives(Pathing.find_path(arena, green, rust), rust),
-			"the bases are connected across a hexagon")
+	assert_true(ArenaFixture.route_arrives(arena, green, rust), "the bases are connected across a hexagon")
 
 
 func test_a_hexagons_bake_is_still_symmetric() -> void:
@@ -342,15 +357,19 @@ func test_the_two_impossible_orders_water_creates() -> void:
 	var in_water := Vector3(0.0, 0.0, 40.0)
 	assert_true(NavigationServer3D.map_get_closest_point(map, in_water).distance_to(in_water) > 2.0,
 			"a point in the channel is not on the mesh (goal_on_mesh: false)")
-	assert_true(not ArenaFixture.route_arrives(Pathing.find_path(arena, bank, in_water), in_water),
-			"so an order into the water cannot arrive")
+	assert_true(not ArenaFixture.route_arrives(arena, bank, in_water), "so an order into the water cannot arrive")
+	assert_true(not Pathing.query(arena, bank, in_water).get("goal_on_mesh", true),
+			"and nav's query says so exactly: goal_on_mesh is false")
 
 	# 2. A goal on the FAR BANK: on the mesh, but on the other island.
 	var far_bank := Vector3(0.0, 0.0, 20.0)
 	assert_true(NavigationServer3D.map_get_closest_point(map, far_bank).distance_to(far_bank) < 2.0,
 			"the far bank IS on the mesh (goal_on_mesh: true)")
-	assert_true(not ArenaFixture.route_arrives(Pathing.find_path(arena, bank, far_bank), far_bank),
-			"but with no bridge there is no way round (reachable: false)")
+	assert_true(not ArenaFixture.route_arrives(arena, bank, far_bank),
+			"but with no bridge there is no way round")
+	var far := Pathing.query(arena, bank, far_bank)
+	assert_true(bool(far.get("goal_on_mesh", false)) and not bool(far.get("reachable", true)),
+			"which nav's query distinguishes exactly: on the mesh, not reachable (%s)" % far)
 
 
 ## Arena.contains / clamp_into: the one predicate every clamp should ask. Six call sites in the game each carry a
@@ -422,3 +441,33 @@ func test_a_smaller_layout_still_has_to_hold_its_own_armies() -> void:
 	layout["half_size"] = 60.0
 	layout["shape"] = {"kind": "hexagon"}
 	assert_true(Arena.validate(layout) != "", "a layout too small for its spawn block is still refused")
+
+
+## The invariant that makes clamp/contains a pair rather than two functions: **a clamp must return a point its own
+## predicate accepts, for every shape, every margin, and every direction — corners included.**
+##
+## It did not. `clamp_into` added `inward * margin` per edge, so a point whose nearest projection was a VERTEX got
+## the inset of one edge only: square, bound 120, margin 4, `(130, 130)` -> `(116, 120)`, which `contains(margin 4)`
+## rejected, and a second clamp returned it unchanged. control found it in `Orders.clamp_to_arena` before any
+## caller shipped with a margin.
+func test_a_clamp_always_lands_somewhere_its_own_predicate_accepts() -> void:
+	for kind: String in ["square", "hexagon", "octagon"]:
+		for margin: float in [0.0, 4.0, 12.0]:
+			for angle in 24:
+				var a := TAU * float(angle) / 24.0
+				# Well outside, from every direction, so corners and edges are both covered.
+				var outside := Vector2(cos(a), sin(a)) * 400.0
+				var landed := ArenaShape.clamp_into(kind, 140.0, outside, margin)
+				assert_true(ArenaShape.contains(kind, 140.0, landed, margin),
+						"%s margin %.0f from %.0f deg: clamped to %s, which contains() rejects"
+						% [kind, margin, rad_to_deg(a), landed])
+				# And it must be stable: clamping an already-clamped point cannot move it.
+				var again := ArenaShape.clamp_into(kind, 140.0, landed, margin)
+				assert_true(landed.distance_to(again) < 0.01,
+						"%s margin %.0f: clamping twice moved the point %s -> %s" % [kind, margin, landed, again])
+
+
+func test_the_corner_case_control_found() -> void:
+	var landed := ArenaShape.clamp_into("square", 120.0, Vector2(130.0, 130.0), 4.0)
+	assert_near(landed.x, 116.0, 0.05, "a square inset by 4 puts the corner at 116 on x")
+	assert_near(landed.y, 116.0, 0.05, "and 116 on z — not 120, which is the bug")

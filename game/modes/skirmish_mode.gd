@@ -178,7 +178,10 @@ func _start_match() -> void:
 		if error == "":
 			print("SKIRMISH_ARMY %s %s%s: %s" % [Match.TEAM_NAMES[team], lineups[team],
 					" (%s)" % faction if faction != "" else "", Army.describe(loaded["doctrine"])])
-			error = game_match.load_doctrine(team, loaded["doctrine"])
+			# Round 8 (squad, control approved): the player's army in at most five squads, so every vehicle is on a number key.
+			var doctrine: Dictionary = SquadConsolidation.for_player(loaded["doctrine"]) if team == Match.Team.GREEN \
+					else loaded["doctrine"]
+			error = game_match.load_doctrine(team, doctrine)
 			LoadingScreen.mark("army_%d_spawned" % team)
 		if error != "":
 			push_error(error)
@@ -314,6 +317,15 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.camera = main.camera
 	controls.rig = rig
 	controls.groups = ControlGroups.from_squads(game_match, Match.Team.GREEN)
+	var executor := main.get_node_or_null("OrderExecutor") as OrderExecutor
+	if executor != null:
+		controls.engaged_of = executor.engaged_target_of  # round 8: what each gun is really on, against its order
+	var loose := controls.groups.ungrouped(game_match, Match.Team.GREEN)
+	var sizes: Array[String] = []
+	for squad in game_match.team_squads(Match.Team.GREEN):
+		sizes.append("%s:%d" % [squad.squad_name, squad.roster.size()])
+	print("CONTROL_GROUPS squads=%d (%s) groups=%d ungrouped=%d %s engaged_of=%s" % [game_match.team_squads(Match.Team.GREEN).size(), " ".join(sizes),
+			controls.groups.numbers().size(), loose.size(), loose, "wired" if controls.engaged_of.is_valid() else "MISSING"])
 	controls.elements = Elements.of_match(game_match)
 	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
 	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"

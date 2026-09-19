@@ -27,6 +27,13 @@ CALIBRATION_HALF = 120.0
 
 EYE_HEIGHT = 1.3
 AGENT_RADIUS = 2.0
+## The arena's extent, in metres from the centre. **Set per layout by `analyze()`** — these are the defaults for a
+## layout that declares nothing, not a constant. They were constants until layouts could differ in size, at which
+## point the whole report measured a 240 x 240 window whatever the layout said: a hexagon at half_size 140 had its
+## outer 20 m simply not looked at, and `centre_sees_share_full` came back identical to the fixed-window figure
+## because both were reading the same hardcoded box.
+##
+## `CALIBRATION_HALF` above stays fixed on purpose. The grid follows the layout; the target metric does not.
 HALF = 120.0
 DRIVABLE = 116.0
 TERRAIN_RADIUS = 45.0
@@ -42,7 +49,14 @@ KIT = {  # ArenaKit.PROPS (game/arena/arena_kit.gd): one level [x, height, z], c
     "wreck": ([3.2, 2.0, 6.4], "hard", True),
     "floodlight": ([2.4, 3.0, 2.4], "hard", True),
     "sign": ([0.4, 6.0, 0.4], "none", False),
+    "block": ([40.0, 24.0, 40.0], "hard", True),
 }
+# ⚠ THIS TABLE IS A SECOND COPY OF `ArenaKit.PROPS` AND NOTHING CHECKS THAT IT AGREES. A comment where a
+# dependency should be -- the same trap combat found in this file's spawn pitch the same day, and it bit here
+# immediately: `block` shipped in `arena_kit.gd` in round 7 and was missing from this table until the cityscape
+# tried to use it, which failed loudly only because a KeyError is loud. A prop whose SIZE drifted instead of going
+# missing would have failed silently, and every measurement taken with it would have been wrong and believable.
+# `test_the_kit_table_still_matches_the_game` (tools/test_arena_report.py) now asserts the two agree, entry by entry.
 LEGACY = {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
 
 
@@ -388,6 +402,14 @@ def field_points(blocked, n, step=EXPOSURE_STEP, half=None):
     # thing it exists to be independent of. 4 m in from the edge and 70% deep are the shipped proportions.
     reach = (half - 4.0) if half else DRIVABLE
     depth = (half * 0.7) if half else FIELD_Z
+    # ANCHOR THE LATTICE AT THE ORIGIN. `_exposure_at` looks a route's point up by rounding to a multiple of
+    # EXPOSURE_STEP, so the field's own keys must be multiples of it too. They were not once the window followed
+    # the layout: at half_size 140 the depth is 98, so z ran -98, -94, -90 … and EVERY lookup missed, returning
+    # the default 0.0. Exposure read 0.000 across both hexagonal maps -- a perfectly plausible number for a map
+    # full of containers, and completely wrong. A square's 84 happens to be a multiple of 4, which is why this
+    # never showed until an arena changed size.
+    reach = math.floor(reach / step) * step
+    depth = math.floor(depth / step) * step
     z = -depth
     while z <= depth:
         x = -reach
@@ -752,7 +774,18 @@ def ambush_report(layout, boxes, blocked, n):
     return out
 
 
+def use_extent(layout):
+    """Point the report's grid at THIS layout's arena. Module-level because every geometry helper below reads them;
+    `analyze()` is the only caller and it sets them before touching anything else."""
+    global HALF, DRIVABLE, FIELD_Z
+    half = float(layout.get("half_size", 120.0))
+    HALF = half + 40.0        # the bake margin, so the grid covers everything a navmesh could
+    DRIVABLE = half - 4.0     # a hull's clearance inside the wall
+    FIELD_Z = half * 0.7      # the contested field, as it has always been proportioned (84 of 120)
+
+
 def analyze(layout):
+    use_extent(layout)
     boxes = boxes_of(layout)
     blocked, n = occupancy(boxes)
     green_front = tuple(layout["spawns"]["green"][0])

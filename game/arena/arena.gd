@@ -38,9 +38,29 @@ extends Node3D
 signal navigation_ready
 
 const DEFAULT_LAYOUT := "foundry"
-## X6: the arenas `--arena=random` chooses from: only layouts that passed the swap-bases fairness control
-## (_agents/arenas.md). A choice is seeded, so every peer given the same --seed builds the same arena.
-const ROTATION := ["yard", "boulevard", "pit", "boneyard"]
+## X6: the arenas `--arena=random` chooses from: layouts that passed the swap-bases fairness control
+## (_agents/arenas.md) **and that the lead kept**. A choice is seeded, so every peer given the same --seed builds
+## the same arena.
+##
+## Narrowed to the two he kept (round 8, 2026-09-19). His verdict is recorded in `_agents/game_design.md`
+## *The lead's arena verdict*: **Pit KEEP, Yard KEEP, Boulevard CUT, Boneyard CUT**, confirmed in words as well as
+## buttons. Boulevard and boneyard stayed in this list for a full round after he cut them, so **half of every
+## `make skirmish` he played was a map he had already rejected** — `make skirmish` passes `--arena=random`, and
+## random read this line, not his verdict.
+##
+## **That is the whole reason this comment is long: the decision existed only in prose.** It sat in `game_design.md`
+## where every stream could read it and no code could, which is the failure this project keeps writing lessons
+## about. A verdict that never reaches a constant is a verdict the game does not have.
+##
+## The cut layouts are NOT deleted — they still load by name for tests, probes and comparisons, and boulevard is
+## still the ground several measurements were taken on. `DEFAULT_LAYOUT` stays `foundry` on purpose: **what the
+## suite runs on and what he plays do not have to be the same map**, and conflating them is how his verdict went
+## missing in the first place.
+## **terminus is here on the orchestrator's instruction after the round-8 render was looked at, and it is the one
+## entry the lead has NOT judged.** yard and pit are his verdict; the cityscape is the map he asked for twice and
+## has never seen. It goes in so that he meets it — a map nobody plays is the failure this whole round was about —
+## and it comes straight back out if he says no, which is one line and a test expectation.
+const ROTATION := ["yard", "pit", "terminus"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}
@@ -53,6 +73,18 @@ const GROUND_MARGIN := 40.0
 ## The perimeter wall's thickness, as authored in arena.tscn (the boxes are 2 m through), which is why the inner
 ## face of a wall centred at 121 lands on 120 — the apothem ArenaShape works in.
 const PERIMETER_THICKNESS := 2.0
+## How far inside the wall anything a layout places must sit. 4 m against a square at half_size 120 reproduces
+## exactly the old `|x| and |z| <= DRIVABLE_LIMIT (116)` rule — which is what that check was, a SQUARE clamp
+## standing in for "inside the arena". It stopped being the same thing when the arena stopped being a square: a
+## hexagon at bound 140 reaches 140 m on x, so the square rule refused props that are comfortably inside the wall.
+const PLACEMENT_CLEARANCE := 4.0
+
+
+## Is a layout-placed point inside this layout's own shape, with clearance? The one question the three position
+## checks below should ask, instead of each carrying its own copy of "the arena is a square".
+static func _placeable(data: Dictionary, x: float, z: float) -> bool:
+	return ArenaShape.contains(String((data.get("shape", {}) as Dictionary).get("kind", ArenaShape.DEFAULT_KIND)),
+			float(data.get("half_size", Match.ARENA_HALF_SIZE)), Vector2(x, z), PLACEMENT_CLEARANCE)
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
@@ -223,16 +255,73 @@ func _build_obstacles() -> void:
 		index += 1
 		body.position = Vector3(obstacle["position"][0], 0.0, obstacle["position"][1])
 		body.rotation.y = deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))
-		var collision := CollisionShape3D.new()
-		collision.name = "Collision"
-		var box := BoxShape3D.new()
-		box.size = size
-		collision.shape = box
-		collision.position.y = size.y / 2.0
-		body.add_child(collision)
+		for shape: CollisionShape3D in _obstacle_shapes(size):
+			body.add_child(shape)
 		body.add_child(_prop_visual(obstacle, size))
 		obstacles_root.add_child(body)
 		(body.get_node("Visual") as VisualSlot).invoke("setup", [obstacle])
+
+
+## A box wider than this on BOTH horizontal axes is built as a hollow perimeter instead of one solid box.
+const SOLID_FOOTPRINT_M := 6.0
+## How thick each wall of that perimeter is. Comfortably under the threshold, and thicker than the 1.5 m of the
+## `wall` obstacle that has carved correctly since round 1.
+const SHELL_THICKNESS := 4.0
+
+## The collision shapes for one obstacle: ONE box, unless its footprint is large on both axes, in which case four
+## slabs forming a closed rectangular shell of the same outside dimensions.
+##
+## **This exists because the navmesh baker silently ignores large boxes, and that was measured, not guessed.**
+## Same arena, same obstacle type, same 3 m height, footprint the only variable (square, metres, distance from the
+## box centre to the nearest navmesh after baking):
+##
+##     4 m -> 4.0 m (a hole, correct)    8 m -> 0.5 m    12 m -> 0.5 m    18 m -> 0.5 m    26 m -> 0.5 m
+##     40 m -> 0.5 m
+##
+## 0.5 m is the ground surface, so from 8 m upward the bake produces **no hole and no rooftop** — the box
+## contributes nothing at all. The collision body is built correctly in every case (verified: right size, layer 1,
+## enabled, parented under a `navigation_source` node), and neither `border_size` nor `filter_baking_aabb` changes
+## it. Every obstacle this project had before round 8 is thin on at least one axis — `wall` is 18 x 1.5,
+## `container_40` is 12.19 x 2.44, `crate` is 4.5 x 4.5 — **so nothing had ever crossed the threshold, and the
+## failure had no way to be noticed** until the cityscape tried to place a 40 x 40 city block.
+##
+## **Why this could not be shipped around.** Physics uses the same body, so a solid block would stop hulls that
+## the navmesh believes they can drive straight through: units pinned against an obstacle their path insists is
+## not there. That is the lead's loudest complaint — *"stuck behind basic barriers... moving back and forth"* —
+## manufactured deliberately, at the size of a building.
+##
+## A hollow shell is not a workaround for the cover model: a building is solid to anything that matters here
+## because nothing can enter it. Cover, radar and the reports still read the layout's single box; only the
+## collision is built as four pieces.
+func _obstacle_shapes(size: Vector3) -> Array:
+	var out: Array = []
+	if size.x <= SOLID_FOOTPRINT_M or size.z <= SOLID_FOOTPRINT_M:
+		var box := BoxShape3D.new()
+		box.size = size
+		out.append(_shape("Collision", box, Vector3(0.0, size.y / 2.0, 0.0)))
+		return out
+	# Tiled, not hollow. A shell of four walls was tried first and leaves the interior WALKABLE — an enclosed
+	# navmesh island inside every building, unreachable but real, which the AI's position queries would still see.
+	# Adjacent slabs with no gaps between them remove the whole footprint, and each slab is thin on one axis, which
+	# is the only property the baker needs.
+	var slabs := int(ceil(size.z / SHELL_THICKNESS))
+	var depth := size.z / float(slabs)
+	var y := size.y / 2.0
+	for i in slabs:
+		var slab := BoxShape3D.new()
+		slab.size = Vector3(size.x, size.y, depth)
+		var at := Vector3(0.0, y, -size.z / 2.0 + depth * (float(i) + 0.5))
+		out.append(_shape("Collision" if i == 0 else "Collision%d" % i, slab, at))
+	return out
+
+
+## The first shape is always named "Collision": tests and tools reach for it by name.
+func _shape(shape_name: String, box: BoxShape3D, at: Vector3) -> CollisionShape3D:
+	var collision := CollisionShape3D.new()
+	collision.name = shape_name
+	collision.shape = box
+	collision.position = at
+	return collision
 
 
 ## A `prop.<type>` slot for an obstacle or prop. Legacy sized obstacles scale their standard art; a kit prop the theme
@@ -586,7 +675,7 @@ static func validate(data: Variant) -> String:
 			return "every obstacle needs a string 'type'"
 		if not _is_point(obstacle.get("position")):
 			return "obstacle %s needs 'position' [x, z]" % obstacle["type"]
-		if absf(float(obstacle["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(obstacle["position"][1])) > Match.DRIVABLE_LIMIT:
+		if not _placeable(data, float(obstacle["position"][0]), float(obstacle["position"][1])):
 			return "obstacle at %s is outside the arena" % [obstacle["position"]]
 		if obstacle.has("rotation_deg") and not _is_number(obstacle["rotation_deg"]):
 			return "rotation_deg must be a number"
@@ -657,7 +746,7 @@ static func _validate_v2(data: Dictionary) -> String:
 			return "unknown prop type '%s' (the kit has %s)" % [prop["type"], ", ".join(PackedStringArray(ArenaKit.PROPS.keys()))]
 		if not _is_point(prop.get("position")):
 			return "prop %s needs 'position' [x, z]" % prop["type"]
-		if absf(float(prop["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(prop["position"][1])) > Match.DRIVABLE_LIMIT:
+		if not _placeable(data, float(prop["position"][0]), float(prop["position"][1])):
 			return "prop %s at %s is outside the arena" % [prop["type"], prop["position"]]
 		if prop.has("rotation_deg") and not _is_number(prop["rotation_deg"]):
 			return "rotation_deg must be a number"
@@ -760,7 +849,7 @@ static func _validate_v2(data: Dictionary) -> String:
 	for objective in objectives:
 		if typeof(objective) != TYPE_DICTIONARY or typeof(objective.get("name")) != TYPE_STRING or not _is_point(objective.get("position")):
 			return "every objective needs a string 'name' and a 'position' [x, z]"
-		if absf(float(objective["position"][0])) > Match.DRIVABLE_LIMIT or absf(float(objective["position"][1])) > Match.DRIVABLE_LIMIT:
+		if not _placeable(data, float(objective["position"][0]), float(objective["position"][1])):
 			return "objective %s at %s is outside the arena" % [objective["name"], objective["position"]]
 		if not _is_number(objective.get("radius")) or float(objective["radius"]) <= 0.0:
 			return "objective %s needs a positive 'radius'" % objective["name"]

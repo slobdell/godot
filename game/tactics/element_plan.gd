@@ -362,7 +362,12 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 	var center: Vector3 = situation["center"]
 	var spacing := table.spacing(String(situation["terrain"]))
 	var point: Variant = drill.get("point")
-	var contact := Drills.nearest_visible(situation)
+	# Round 8 (the lead: "telling a group to attack a single unit ... they shoot at whatever they were already shooting
+	# at"): a task that names a target aims every drill at it while it is in sight. Drills picked the nearest visible
+	# enemy, so an element in a fight (always in a drill) never turned its guns to the one it was told.
+	var contact := _ordered_target(state.get("task", {}), situation)
+	if contact.is_empty():
+		contact = Drills.nearest_visible(situation)
 	var focus: Vector3 = point if point is Vector3 else (contact["position"] if not contact.is_empty() else center)
 	var toward: Vector3 = TacticsFormation.flat(focus - center) if focus.distance_to(center) > 1.0 else plan["heading"]
 
@@ -411,6 +416,14 @@ static func _plan_drill(plan: Dictionary, situation: Dictionary, state: Dictiona
 			_plan_bait(plan, situation, table, ordered, focus, toward, spacing, contact)
 		_:
 			_engage(plan, ordered, situation, toward, contact)
+	# Round 8: the maneuver half's moves and attack-moves carry the ordered target too, so crews driving round keep their
+	# guns on it (TankBrain: a named move lays its gun on the target; a named attack-move fights only it).
+	var ordered_target := _ordered_target(state.get("task", {}), situation)
+	if not ordered_target.is_empty():
+		for unit_name: String in plan["orders"]:
+			var order: Dictionary = plan["orders"][unit_name]
+			if String(order["verb"]) in ["attack_move", "move"] and String(order.get("target", "")) == "":
+				order["target"] = String(ordered_target["name"])
 
 
 ## Encircle (gangs): fan out around them and keep going round, so their fire has to keep re-aiming and the
@@ -731,6 +744,17 @@ static func _target_contact(task: Dictionary, situation: Dictionary) -> Dictiona
 		if String(contact["name"]) == String(task.get("target", "")):
 			return contact
 	return Drills.nearest_contact(situation)
+
+
+## The contact the task names ("target"), if it is in sight now; {} otherwise.
+static func _ordered_target(task: Dictionary, situation: Dictionary) -> Dictionary:
+	var target := String(task.get("target", ""))
+	if target == "":
+		return {}
+	for contact: Dictionary in situation.get("contacts", []):
+		if String(contact["name"]) == target and bool(contact.get("visible", false)):
+			return contact
+	return {}
 
 
 static func _task_point(task: Dictionary, situation: Dictionary) -> Variant:
