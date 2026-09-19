@@ -425,7 +425,9 @@ def maze_wall(x0, z0, x1, z1, stack=2, kind="container_40"):
     """Like run(), but sized with ceil so neighbouring containers always OVERLAP. run()'s round() can leave a
     metre-wide slot between containers, which is not drivable but is a sightline and reads as sloppy in a fixture
     whose whole job is 'this gap and no other'."""
-    length = {"container_20": 6.06, "container_40": 12.19}[kind]
+    # Lengths from ArenaKit.PROPS (the long axis, before rotation). Kept as a table rather than a lookup into the
+    # GDScript so this tool stays standalone -- and a piece missing here fails loudly rather than silently.
+    length = {"container_20": 6.06, "container_40": 12.19, "barricade": 6.0, "wreck": 3.2}[kind]
     dist = math.hypot(x1 - x0, z1 - z0)
     count = max(1, math.ceil(dist / length - 1e-9))
     rot = round(math.degrees(math.atan2(-(z1 - z0), x1 - x0)), 3)
@@ -472,3 +474,51 @@ write_v2("maze", "The Maze (nav test fixture)",
                   region("west gate", "chokepoint", -56, 74, 6),
                   region("dead end", "cover_cluster", -99, 41, 12)],
          control_radius=8.0, fixture=True)
+
+
+# ---- The Barrier Line (arena, round 8): a fixture for the lead's stall -------------------------------------------
+#
+# He played round 7 and said: *"units are still just getting stuck behind basic barriers where they seem to just
+# move back and forth indefinitely trying to get unstuck."* nav's nav-fight reports blocked-by-terrain at ~0 on
+# yard, so the instrument and the game disagree; this is the ground the game's version can be measured on.
+#
+# **Built around ENDS, not walls.** nav's round-7 finding is that the units it pinned were all at the END of a
+# barricade or a container, so a fixture made of one long wall would test the wrong thing. This is three rows of
+# short, separate barriers, each row a different kit piece, with gaps of three widths -- so a horde ordered across
+# must file past many ends, and we learn which piece and which width it happens at rather than only that it does.
+#
+# Gap widths are chosen against the 2 m navmesh agent radius, which eats 2 m from each side:
+#   4 m  -> no drivable corridor at all: units must route around, and this is where they should bunch
+#   7 m  -> 3 m of corridor, single file (the maze's tight gate, which a horde does choose)
+#   11 m -> 7 m, two abreast
+#
+# A FIXTURE, not a shipping map: no art pass, no balance, and `--arena=random` never picks it.
+
+BARRIER_ROWS = [
+    # (z, kit piece, stack, the x centres of each gap)
+    (62.0, "barricade", 1, [-70.0, -18.0, 40.0]),
+    (38.0, "container_20", 2, [-44.0, 14.0, 72.0]),
+    (14.0, "container_40", 2, [-72.0, -14.0, 44.0]),
+]
+BARRIER_GAPS = [4.0, 7.0, 11.0]
+BARRIER_EDGE = 116.0
+
+barriers = []
+for row_z, piece, row_stack, gaps in BARRIER_ROWS:
+    edges = [-BARRIER_EDGE]
+    for centre, width in zip(gaps, BARRIER_GAPS):
+        edges += [centre - width / 2.0, centre + width / 2.0]
+    edges.append(BARRIER_EDGE)
+    for i in range(0, len(edges), 2):
+        x0, x1 = edges[i], edges[i + 1]
+        if x1 - x0 < 1.0:
+            continue
+        barriers += maze_wall(x0, row_z, x1, row_z, row_stack, piece)
+
+write_v2("barriers", "The Barrier Line (stall test fixture)",
+         "NOT A SHIPPING MAP. Three rows of short barriers -- barricades, 20 ft containers, 40 ft containers -- each "
+         "row with a 4 m, a 7 m and an 11 m gap, staggered so no line threads them. It exists so the stall the lead "
+         "describes can be measured at a known piece and a known width, and it is built around barrier ENDS because "
+         "that is where nav's round-7 pins happened.",
+         barriers, fixture=True, control_radius=10.0,
+         regions=[region("the gauntlet", "chokepoint", 0.0, 38.0, 12.0)])
