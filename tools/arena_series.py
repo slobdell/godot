@@ -34,6 +34,13 @@ def run(args, arena, seed, swap):
         raise RuntimeError(f"{arena} seed {seed} swap={swap}: no result (exit {completed.returncode}) {errors}")
     if out["probe"]["arena"] != arena:
         raise RuntimeError(f"{arena} seed {seed}: the match ran on '{out['probe']['arena']}' (layout refused?)")
+    # POSITIVE CONTROL: the treatment has to have engaged (_agents/verification.md). The whole fairness result is
+    # the PAIRED difference between a normal run and a swapped one, so a --swap-bases that silently did not apply
+    # would leave two identical arms and a perfectly plausible "no south advantage" — the answer we hope for,
+    # arrived at by the run not happening. Asserting the requested arena was already here; this is its other half.
+    if bool(out["probe"].get("swap_bases", False)) != bool(swap):
+        raise RuntimeError(f"{arena} seed {seed}: asked for swap={swap} and the match reports "
+                           f"swap_bases={out['probe'].get('swap_bases')}, so the pair is not a pair")
     return out
 
 

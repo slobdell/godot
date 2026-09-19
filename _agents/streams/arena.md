@@ -232,6 +232,49 @@ good ones"*, and X3's objective work only has to serve pit and yard.
 
 ## Status
 
+_Round 8, arena. Updated 2026-09-19. Rounds 6–7 below, kept for their reasoning._
+
+### Round 8: making the lead's "stuck" measurable
+
+He played round 7: *"it still sucks… units are still just getting stuck behind basic barriers where they seem to
+just move back and forth indefinitely trying to get unstuck."* `nav-fight` reported blocked-by-terrain at **zero**.
+My assignment was to make the game's version of stuck measurable **before** nav builds flow fields, so the change
+is not shipped against a null.
+
+Definitions were **pre-registered and committed at `01c80365`, before any probe existed**:
+[references/arena/stuck_preregistration.md](references/arena/stuck_preregistration.md). They have not moved.
+
+| Commit | What |
+|---|---|
+| `01c80365` | The definitions, written before measuring |
+| `d2d1bc04` | `arenas/barriers.json` — a fixture built around barrier **ends**, where nav's round-7 pins happened |
+| `9c22f5e4` | `oscillating` and `no_progress` counters in `maze_probe.gd`, plus the barriers/yard measurement |
+| `95b1febd` | The four `--arena=random` maps measured. **Hypothesis 1 refuted** |
+
+**The finding, and it is a gap rather than a number.** On the barrier fixture `crawl` 0.112 + `oscillating` 0.015
+do not add up to `no_progress` **0.192**: ~6.5 points of under-way time is units making no progress while neither
+slow enough to count as blocked nor travelling far enough to count as shuffling. **`nav-fight` asks "is this unit
+blocked" and honestly answers no; the player asks "is this unit arriving" and the answer is no for a fifth of the
+time.** A unit fails the second test while passing the first, and that is the whole disagreement between the
+instrument and the lead.
+
+**What round 8 cost me, stated plainly.** My hypothesis — that "back and forth" meant oscillation — was right in
+direction and wrong in size: oscillation discriminates 15× but is 1.5%, not "indefinitely". And **the four maps he
+actually plays are all clean** (`no_progress` ≤ 0.050, 30/30 arriving). So the barriers fixture reproduces a stall
+on **ground he never drives**. It is a *sensitivity fixture* — known-stalling ground for detecting whether a
+movement change helps — and it is **not** a reproduction of his complaint. The lesson is combat's, from the same
+day: *finding the authoritative copy of a value is not the same as checking the value still matters.*
+
+**Open, and it is the whole remaining gap:** his configuration has an enemy, his own orders, and units interacting.
+Nothing measured so far has any of those. `nav-fight` is the closest instrument and it is nav's file, so I run it
+rather than edit it.
+
+**Questions for the lead** (not blocking; recorded per the worker contract): the hexagon maps (yard, pit) shipped
+and are measured, and he has not commented on them. He named eight round-8 items and no new map is among them, so
+I am not building one.
+
+---
+
 _Round 6, arena. Updated 2026-09-18._
 
 ### Plan (backlog order, with the reasons where the brief left a choice)
