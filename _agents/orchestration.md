@@ -1860,3 +1860,21 @@ The kickoff prompt is one line; this section is the rest.
        the new clamp keeps all 24 test bearings inside the wall while reproducing **exactly the old ±116 on a square,
        corners included.** *Reproducing the old behaviour exactly where it was right* is what makes a replacement
        trustworthy.
+124. **A metric built to detect an absence will happily reward its opposite extreme.** arena built the decision-spread
+     metric because **every shipping arena read 0.00** — one objective in the middle, so every route the same route. Then,
+     tuning pit's objective pair for the new hexagon, it swept placements:
+     ```
+     z = -30 -> 0.13     z = -50 -> 0.42     z = -60 -> 0.63     z = -70 -> 0.96
+     ```
+     **0.96 is not a better map.** One objective is nearly free and the other nearly impossible — **a formality rather
+     than a choice** — and at z = −70 it sits in the base's approach funnel, **which is the boulevard failure this stream
+     had already written a placement rule against.** arena reproduced a known failure *while optimising its own number*.
+     **The metric had no upper guard because its author had only ever seen zeros.** Both shipping pairs now sit near 0.4,
+     and the reasoning lives in `objective_pair`'s docstring so the next author does not read the number as a score to
+     beat.
+     - **Every metric introduced to fix "there is none of this" needs a stated band, not a floor** — and the band has to
+       be written where the value is produced, not in a report.
+     - **`centre_sees_share` has the same shape and the same exposure**: it was set as a target (<0.30) because the lead
+       cut the four most open maps, and nothing says what *too closed* looks like.
+     - **The tell was that the number moved while the map got worse.** A metric whose extreme is obviously bad is a
+       metric you can still trust; one whose extreme *looks like success* is the dangerous kind.
