@@ -561,8 +561,23 @@ static func load_layout(name: String) -> Dictionary:
 static func validate(data: Variant) -> String:
 	if typeof(data) != TYPE_DICTIONARY or typeof(data.get("name")) != TYPE_STRING:
 		return "a layout is an object with a string 'name'"
-	if not _is_number(data.get("half_size")) or not is_equal_approx(float(data["half_size"]), Match.ARENA_HALF_SIZE):
-		return "half_size must be %.0f (the perimeter, radar, and fog are sized for it)" % Match.ARENA_HALF_SIZE
+	# `ARENA_HALF_SIZE` is a MAXIMUM BOUND, not a required size (round 7). It was forced equal, which meant raising
+	# it to make room for a hexagon would have grown every existing square map from 240 x 240 to 280 x 280 — a 36%
+	# area increase to Pit and Yard, the two maps the lead kept, as a side effect of a shape change nobody asked to
+	# apply to them.
+	#
+	# The constant was doing two jobs: "how big is the play area" (per layout) and "how big is the world the HUD
+	# must cover" (global). A hexagon is what makes them different numbers. Radar span, fog, camera limits and the
+	# bake extent size to the bound; a layout declares its own size under it.
+	#
+	# Anything that draws or declares the PLAY AREA must read `Arena.active.half_size`, not the constant — the
+	# pattern already in `rts_camera.gd`'s `perimeter_half()`. combat's grep found two readers still on the wrong
+	# side: the radar's arena outline and the agent bridge's declared `bounds`.
+	if not _is_number(data.get("half_size")) or float(data["half_size"]) <= 0.0:
+		return "half_size must be a positive number of metres"
+	if float(data["half_size"]) > Match.ARENA_HALF_SIZE + SYMMETRY_TOLERANCE:
+		return "half_size %.0f is over the arena bound of %.0f (the radar, fog and camera are sized for it)" \
+				% [float(data["half_size"]), Match.ARENA_HALF_SIZE]
 	var obstacles: Variant = data.get("obstacles")
 	if typeof(obstacles) != TYPE_ARRAY:
 		return "'obstacles' must be a list"

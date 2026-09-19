@@ -395,3 +395,26 @@ func test_the_perimeter_cache_is_keyed_on_shape_and_size() -> void:
 	assert_near(absf(square[0].x), 120.0, 0.05, "without disturbing the entry already cached")
 	# Same arguments must give the same answer, cached or not.
 	assert_eq(ArenaShape.vertices("square", 120.0), square, "a repeat call returns the same polygon")
+
+
+## Round 7: ARENA_HALF_SIZE is a maximum BOUND, not a required size. Forced equal, raising it to make room for a
+## hexagon would have grown every existing square map by 36% — including the two the lead kept — as a side effect
+## of a change nobody asked to apply to them.
+func test_half_size_is_a_bound_not_a_requirement() -> void:
+	var layout: Dictionary = Arena.load_layout("foundry")["layout"].duplicate(true)
+	assert_eq(Arena.validate(layout), "", "a layout at the bound validates")
+	layout["half_size"] = Match.ARENA_HALF_SIZE - 20.0
+	assert_eq(Arena.validate(layout), "", "and so does a SMALLER one — that is the whole point")
+	layout["half_size"] = Match.ARENA_HALF_SIZE + 20.0
+	assert_true(String(Arena.validate(layout)).contains("over the arena bound"),
+			"but not one past the bound the radar and fog are sized for: %s" % Arena.validate(layout))
+	layout["half_size"] = 0.0
+	assert_true(String(Arena.validate(layout)).contains("positive"), "nor a nonsensical one")
+
+
+func test_a_smaller_layout_still_has_to_hold_its_own_armies() -> void:
+	# Relaxing the size check must not relax the one that matters: the contents still have to fit.
+	var layout: Dictionary = Arena.load_layout("foundry")["layout"].duplicate(true)
+	layout["half_size"] = 60.0
+	layout["shape"] = {"kind": "hexagon"}
+	assert_true(Arena.validate(layout) != "", "a layout too small for its spawn block is still refused")
