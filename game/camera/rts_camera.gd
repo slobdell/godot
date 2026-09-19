@@ -106,6 +106,10 @@ const TRACK_ZOOM_SPEED := 0.35
 ## still scroll in from there, which costs them awareness and is their call).
 ## Round 6: in play at 45° the auto camera closed to ~29 m on a three-vehicle squad (shell-playtest), too close to see
 ## what the squad is shooting at. It no longer comes closer than VISION_FLOOR_M on its own; the wheel still can.
+## Round 7: nor further than this. At the lead's 35° telephoto, fitting a squad strung along the spawn line pulled the
+## auto camera to ~220 m (shell-playtest), nothing like his 49 m; past the cap the rest of the squad goes to the edge
+## markers. `auto_frame_max_m` is the live value (the wheel still goes anywhere; this only limits the auto camera).
+const AUTO_FRAME_MAX_M := 100.0
 const VISION_FLOOR_M := 45.0  # confirmed by the lead's pose (auto-framing left on at 49 m)
 const VISION_MIN_ZOOM := 0.345  # RtsCamera.level_for(VISION_FLOOR_M)
 ## After the player last moved the camera, this many seconds of stillness give the element back to it.
@@ -160,6 +164,7 @@ var handback_seconds := HANDBACK_SECONDS
 var vision_inset := VISION_FRAME_INSET
 ## Off: the vision camera never takes the view back (V in play).
 var auto_frame := true
+var auto_frame_max_m := AUTO_FRAME_MAX_M
 ## Round 7 (A), the lead: "the camera's yaw orientation should match the intended facing position of the squad or
 ## selected unit - this is what I think can differentiate us from a normal RTS game." `facing` returns the selection's
 ## facing (a ground Vector3) or null; the yaw turns toward it at YAW_FOLLOW_DEG_PER_S once it is YAW_DEADBAND_DEG off,
@@ -441,7 +446,7 @@ func pose_text() -> String:
 	var distance := RtsCamera.distance_for(_shown_zoom)
 	return "CAMERA_POSE pitch=%.0f distance_m=%.0f fov=%.0f yaw=%.0f zoom=%.3f auto_frame=%s yaw_follow=%s" % [
 			RtsCamera.tilt_at(_shown_pitch, distance), distance, fov, rad_to_deg(_shown_yaw), _shown_zoom,
-			"on" if auto_frame else "off", "on" if yaw_follow else "off"]
+			"on" if auto_frame else "off", "on" if yaw_follow else "off"] + " auto_frame_max_m=%.0f" % auto_frame_max_m
 
 
 func reset_tilt() -> void:
@@ -736,7 +741,7 @@ func _update_vision_tracking() -> void:
 		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
 	else:
 		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch)
-	zoom = minf(float(goal[1]), vision_zoom)
+	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
 
 

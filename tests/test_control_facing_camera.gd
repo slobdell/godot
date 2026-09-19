@@ -88,3 +88,21 @@ func test_the_frame_reaches_out_to_what_the_selection_can_fight() -> void:
 		middle += p
 	var reach_point: Vector3 = with_range.back()
 	assert_true(reach_point.distance_to(middle / 2.0) > expected * 0.8, "out where the selection can fight (%.0f m)" % reach_point.distance_to(middle / 2.0))
+
+
+## Round 7: the auto camera never pulls further out than auto_frame_max_m, however spread the squad (at the lead's 35°
+## a squad strung along the spawn line pulled it to ~220 m).
+func test_the_auto_camera_stays_near_the_leads_distance() -> void:
+	var f := Fixture.new(self)
+	await f.build(false)
+	RtsCamera.fov = RtsCamera.FOV_DEG
+	f.rig.vision = f.controls.vision_state
+	f.place("Green_Alpha_1", Vector3(-110, 0, 40))
+	f.place("Green_Alpha_2", Vector3(110, 0, 40))
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	f.rig.take_vision()
+	for i in 30:
+		await tree.process_frame
+	assert_true(RtsCamera.distance_for(f.rig.zoom) <= f.rig.auto_frame_max_m + 0.5,
+			"a 220 m-wide selection is framed from no further than %.0f m (%.0f m)" % [f.rig.auto_frame_max_m, RtsCamera.distance_for(f.rig.zoom)])
+	RtsCamera.fov = 55.0

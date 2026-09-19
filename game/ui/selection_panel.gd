@@ -198,6 +198,7 @@ func summary() -> Dictionary:
 		if command[0] == "formation":
 			label = "Formation: %s" % String(controls.formation).capitalize()
 		result["commands"].append({"id": command[0], "label": label, "hotkey": command[2],
+				"then": String(TaskPalette.row(command[0]).get("then", "now")),
 				"line": String(TaskPalette.row(command[0]).get("line", "")),
 				"enabled": commandable and (is_element or not ELEMENT_ONLY.has(command[0]))})
 	if controls.selection.inspected != "":
@@ -328,6 +329,8 @@ func tooltip() -> Dictionary:
 	var title := String(row.get("name", _hovered))
 	if String(row.get("hotkey", "")) != "":
 		title += "  [%s]" % row["hotkey"]
+	# Round 7 (C3): which grammar this button is.
+	title += "  -  then click where" if String(row.get("then", "now")) == "click" else "  -  happens at once"
 	var line := String(row.get("line", ""))
 	if ELEMENT_ONLY.has(_hovered) and controls != null and not controls.can_task():
 		line += " Select a whole squad (1-5) first."
@@ -452,6 +455,13 @@ func _draw() -> void:
 		var armed: bool = controls.mode == command["id"]
 		batch.fill(button, Color(CyberStyle.CARD, 0.95 if enabled else 0.5))
 		batch.outline(button, Color(CyberStyle.YELLOW if armed else CyberStyle.CYAN, 0.9 if enabled else 0.2), 2.0 if armed else 1.0)
+		# Round 7 (C3): a button that waits for a click wears a pointer in its corner (and a second, inset border); one
+		# that acts at once does not. The lead: "if I click the attack button will they do something or do I need to
+		# direct them?"
+		if String(command["then"]) == "click":
+			batch.outline(button.grow(-3.0 * s), Color(CyberStyle.CYAN, 0.35 if enabled else 0.1), 1.0)
+			var corner := Rect2(Vector2(button.end.x - button.size.y * 0.3, button.position.y + 3.0 * s), Vector2.ONE * button.size.y * 0.26)
+			batch.texture(CommandIcons.pointer_texture(), corner, Color(CyberStyle.YELLOW, 0.95 if enabled else 0.3))
 		var ink := Color(CyberStyle.TEXT, 1.0 if enabled else 0.3)
 		_text(batch, font, button.position + Vector2(4.0 * s, 15.0 * s), command["hotkey"], 13.0 * s, Color(CyberStyle.YELLOW, 0.9 if enabled else 0.3))
 		# X2: the symbol is the primary read; the doctrinal name sits under it.

@@ -186,3 +186,27 @@ func test_the_palette_shows_only_earned_tasks_and_the_doc_lists_every_row() -> v
 	assert_true(doc.contains("## Task palette (N4)"), "tactical_map.md has the palette table")
 	for row: Dictionary in TaskPalette.ROWS:
 		assert_true(doc.contains("| `%s` |" % row["id"]), "the doc's table has a row for %s" % row["id"])
+
+
+## Round 7 (C3), the lead: "some of them seem to be actions that require a follow on click, and other seem to be buttons
+## that are applied passively (if I click the attack button will they do something or do I need to direct them?)".
+## Every row says which, the card draws the two differently, and the tooltip says it in words.
+func test_buttons_that_need_a_click_say_so() -> void:
+	var setup: Array = await _setup()
+	var f: Fixture = setup[0]
+	var panel: SelectionPanel = setup[1]
+	for row: Dictionary in TaskPalette.ROWS:
+		assert_true(row.has("then"), "%s says whether it needs a click" % row["id"])
+	assert_eq(TaskPalette.row("attack_move")["then"], "click", "Attack-move waits for a click")
+	assert_eq(TaskPalette.row("stop")["then"], "now", "Stop happens at once")
+	await f.select(["Green_Alpha_1", "Green_Alpha_2"])
+	await tree.process_frame
+	var commands: Array = panel.summary()["commands"]
+	for command: Dictionary in commands:
+		assert_eq(command["then"], TaskPalette.row(command["id"])["then"], "%s's button carries it" % command["id"])
+	f.motion(panel.get_global_rect().position + panel.command_rect("attack_move").get_center(), false, 0)
+	await tree.process_frame
+	assert_true(String(panel.tooltip().get("title", "")).contains("then click"), "the tooltip says a click follows (%s)" % panel.tooltip().get("title", ""))
+	f.motion(panel.get_global_rect().position + panel.command_rect("stop").get_center(), false, 0)
+	await tree.process_frame
+	assert_true(String(panel.tooltip().get("title", "")).contains("at once"), "and when it does not (%s)" % panel.tooltip().get("title", ""))
