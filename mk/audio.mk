@@ -109,3 +109,16 @@ audio-pytest: audio-deps ## The audio tools' Python tests (music contract, the s
 
 audio-check: audio-pytest music-check music-smoke ## Everything the audio stream verifies headless beyond the announcer's own checks
 	@echo "audio-check passed"
+
+## Feel (round 6): the lead found "the audio is defaulted to off". The player's own way in (title -> SKIRMISH -> faction
+## menu -> FIGHT, through real clicks: control's shell-playtest driver) with NO audio flags must come up with the booth
+## speaking and the music on. Needs a display (make remote T=audio-launch-smoke); not in check, which is headless.
+AUDIO_LAUNCH_DIR := $(BUILD_DIR)/audio-launch
+audio-launch-smoke: import ## A player's launch with no audio flags gets the announcer's voice and the music (needs a display)
+	rm -rf $(AUDIO_LAUNCH_DIR) && mkdir -p $(AUDIO_LAUNCH_DIR)
+	timeout 360 $(GODOT) --path . --resolution 1920x1080 -- --title --hints=fresh --shell-playtest=$(CURDIR)/$(AUDIO_LAUNCH_DIR) 2>&1 \
+		| tee $(AUDIO_LAUNCH_DIR)/run.log | grep -E 'ANNOUNCER_BOOTH|^MUSIC on|SHELL_PLAYTEST_DONE' || true
+	@grep -q 'ANNOUNCER_BOOTH mode=voice' $(AUDIO_LAUNCH_DIR)/run.log || { echo "audio-launch-smoke FAILED: no speaking booth in a flagless launch"; exit 1; }
+	@grep -q '^MUSIC on' $(AUDIO_LAUNCH_DIR)/run.log || { echo "audio-launch-smoke FAILED: no music in a flagless launch"; exit 1; }
+	@! awk '/TITLE_START/{exit} /ANNOUNCER_BOOTH/{found=1} END{exit !found}' $(AUDIO_LAUNCH_DIR)/run.log 		|| { echo "audio-launch-smoke FAILED: the title's backdrop fight got a booth"; exit 1; }
+	@echo "audio-launch-smoke passed: a flagless player launch has the announcer's voice and the music"
