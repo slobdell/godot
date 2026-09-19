@@ -504,9 +504,12 @@ static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s
 	var goals := [Vector3(-80, 0, 20), Vector3(-40, 0, 0), Vector3(0, 0, 10), Vector3(40, 0, 0), Vector3(80, 0, 20)]
 	var total := int(seconds * SimClock.TICK_RATE)
 	var ticks := {"now": 0, "idle": 0}
-	var on_issued := func(_command: Dictionary) -> void:
+	var idle_commands: Array = []
+	var joined_s := {}  # element -> seconds after its move until it joined its final slots (round 7 flow)
+	var on_issued := func(command: Dictionary) -> void:
 		if int(ticks["now"]) >= total - int(idle_s * SimClock.TICK_RATE):
 			ticks["idle"] = int(ticks["idle"]) + 1
+			idle_commands.append("t%.1f %s %s" % [float(ticks["now"]) / SimClock.TICK_RATE, command.get("units"), command.get("verb")])
 	(lab.orders as Orders).issued.connect(on_issued)
 	for tick in total:
 		ticks["now"] = tick
@@ -514,6 +517,9 @@ static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s
 		if tick % (SimClock.TICK_RATE / 2) == 0 and g < 5:
 			(elements[g] as Element).assign({"verb": "move", "to": [goals[g].x, goals[g].z], "drills": false})
 		await lab.step()
+		for e in 5:
+			if not joined_s.has(e) and tick > e * (SimClock.TICK_RATE / 2) and (elements[e] as Element).flow_joined:
+				joined_s[e] = snappedf(float(tick) / SimClock.TICK_RATE - e * 0.5, 0.1)
 	(lab.orders as Orders).issued.disconnect(on_issued)
 	var off_slot: Array = []
 	var anchor_off: Array = []
@@ -538,7 +544,7 @@ static func five_squads(case: TestCase, players := true, seconds := 45.0, idle_s
 	for value: float in off_slot:
 		mean += value
 	var result := {"idle_orders": int(ticks["idle"]), "anchor_off_m": anchor_off, "off_slot_m": off_slot,
-			"mean_off_slot_m": snappedf(mean / maxf(off_slot.size(), 1.0), 0.1), "far": far}
+			"mean_off_slot_m": snappedf(mean / maxf(off_slot.size(), 1.0), 0.1), "far": far, "idle_commands": idle_commands, "joined_s": joined_s}
 	lab.dispose()
 	return result
 

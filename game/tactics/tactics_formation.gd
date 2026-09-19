@@ -342,6 +342,7 @@ const _PINNED := 1.0e9
 ##      left takes a slot on the left.
 ##   4. `previous` ({name: index}, the last seating) is kept unless the new one saves STABLE_MARGIN × spacing of
 ##      driving: no slot swapping from one tick to the next.
+##      With `"fixed": true` the previous seating is kept whatever it costs (a formation standing on its final spot).
 static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO, heading := Vector3.FORWARD,
 		opts := {}) -> Dictionary:
 	var count := members.size()
@@ -401,7 +402,7 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 		var previous_cost := 0.0
 		for i in count:
 			previous_cost += (cost[i] as PackedFloat64Array)[int(previous[String(members[i]["name"])])]
-		if previous_cost <= best_cost + STABLE_MARGIN * spacing:
+		if bool(opts.get("fixed", false)) or previous_cost <= best_cost + STABLE_MARGIN * spacing:
 			for i in count:
 				result[String(members[i]["name"])] = int(previous[String(members[i]["name"])])
 			return result
