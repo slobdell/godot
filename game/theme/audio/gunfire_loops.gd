@@ -9,7 +9,9 @@ const VOICES := 4
 ## A gunner counts as still firing this long after its last round (longer than the gap between rounds).
 const HOLD_SECONDS := 0.16
 const SOUND := "mg_loop"
-const VOLUME_DB := -6.0  # round 6: +3 dB, with the lighter duck
+## Round 6: -9 -> +2 dB. Metered in a real-pace match (builder0, 0999d755, yard, gangs v law), while a gun sounds the
+## loops sat a median 15 dB under the whole mix even after leaving the Bed duck: the lead's "missing machine guns".
+const VOLUME_DB := 2.0
 
 ## FxWorld copies SfxSystem's --mute onto this; --audio-solo for another layer keeps it silent regardless.
 var muted := false:
