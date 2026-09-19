@@ -92,8 +92,26 @@ scale-bench: import ## X5: sim cost per tick at SCALE_SIZES vehicles a side, wit
 match-pytest: ## The match tools' own tests: what compare_arms refuses to subtract, and why
 	$(PYTHON) -m unittest discover -s tools -p 'test_compare_arms.py'
 
-compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.json CONTROL=b.json [FACTION=gangs])
-	$(PYTHON) tools/compare_arms.py --treatment $(TREATMENT) --control $(CONTROL) $(if $(FACTION),--faction $(FACTION))
+# Both arms on every map in ARENAS, in ONE remote invocation. Four separate `make remote` calls would rsync the
+# worktree four times into the same folder on builder0 while earlier runs were still reading it, and would queue for
+# a heavy-run slot four times; this syncs once and holds one slot. It also runs the comparison itself, so the arms
+# are subtracted by the tool that refuses bad subtractions rather than by eye afterwards.
+faction-matrix-arms: import ## Both arms (normal + ABLATE) on each map in ARENAS= and the per-faction deltas
+	@for map in $(or $(ARENAS),boulevard yard); do \
+		$(MAKE) --no-print-directory faction-matrix ARENA=$$map SEEDS=$(SEEDS) TIME=$(TIME) JOBS=$(JOBS) BUDGET=$(BUDGET) || exit 1; \
+		$(MAKE) --no-print-directory faction-matrix ARENA=$$map ABLATE=1 SEEDS=$(SEEDS) TIME=$(TIME) JOBS=$(JOBS) BUDGET=$(BUDGET) || exit 1; \
+		echo ""; echo "=== $$map: faction directives ON minus OFF ==="; \
+		$(MAKE) --no-print-directory compare-arms TREATMENT=$(BUILD_DIR)/faction-matrix-$$map.json \
+			CONTROL=$(BUILD_DIR)/faction-matrix-$$map-plainroles.json || exit 1; \
+	done
+
+# COMPARE_FACTION, not FACTION: `mk/command.mk` defines `FACTION ?= gangs` and make variables are ONE GLOBAL
+# NAMESPACE, so the bare name silently filtered every comparison to the gangs -- the same collision that ran
+# `matchup-search` at `--units 60` for its entire history. Caught by reading a `make -n` expansion that contained
+# a flag nobody passed.
+compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.json CONTROL=b.json [COMPARE_FACTION=gangs])
+	$(PYTHON) tools/compare_arms.py --treatment $(TREATMENT) --control $(CONTROL) \
+		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION))
 
 faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE=) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \

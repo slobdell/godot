@@ -97,6 +97,11 @@ def main():
           f"map {where}")
     print(f"treatment: {args.treatment}\ncontrol:   {args.control}")
     print(f"the arm differs in: {', '.join(f for f in CONTROLS if treatment['args'].get(f) != control['args'].get(f))}")
+    # Print the resolved filter. A comparison showing one faction looks exactly like a comparison where only one
+    # faction moved, and this stream has already lost a round's conclusions to a make variable nobody passed
+    # (`UNITS ?= 60`). Say which rows are missing rather than leaving the reader to infer it from their absence.
+    print("factions: %s" % (f"ONLY {args.faction} -- the other rows are FILTERED OUT, not unchanged"
+                            if args.faction else "all"))
     first, second = win_rates(treatment), win_rates(control)
     print(f"\n{'faction':16} {'treatment':>12} {'control':>12} {'delta':>9}   (one map; per faction, never pooled)")
     for side in sorted(set(first) | set(second)):
