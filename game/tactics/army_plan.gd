@@ -106,7 +106,8 @@ static func plan(elements: Array, contacts: Array, context: Dictionary, state: D
 					tasks[id] = _attack(fight) if not fight.is_empty() and (fight["position"] as Vector3).distance_to(center) <= ENGAGE_M * 1.5 \
 							else {"verb": "move", "to": _xz(point)}
 				else:
-					tasks[id] = {"verb": "move", "to": _xz(ElementPlan.clamp_to_arena(main_center - axis * RESERVE_BEHIND_M))}
+					tasks[id] = {"verb": "move", "to": _xz(ElementPlan.clamp_to_arena(main_center - axis * RESERVE_BEHIND_M)),
+							"drills": false}
 	return {"roles": roles, "tasks": tasks, "engaged_since": engaged_since}
 
 
@@ -176,7 +177,9 @@ static func _shape(center: Vector3, index: int, point: Vector3, axis: Vector3, l
 		wide = point + across * FLANK_M * side
 	wide = ElementPlan.clamp_to_arena(wide)
 	if center.distance_to(wide) > LANE_REACHED_M:
-		return {"verb": "move", "to": _xz(wide)}
+		# On its way round: crews shoot what they pass, the leader does not turn the element into the first fight it
+		# meets (a far ambush there is the whole army converging again).
+		return {"verb": "move", "to": _xz(wide), "drills": false}
 	var target := _nearest(contacts, center)
 	if go and not target.is_empty():
 		return _attack(target)
