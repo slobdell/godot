@@ -1690,3 +1690,22 @@ The kickoff prompt is one line; this section is the rest.
        arm with no treatment, a control arm with immobilised units, and a paired comparison whose pairing might not have
        happened. **The third is the one nobody would find by inspection, because two identical arms produce a beautifully
        clean null.**
+116. **Inertness does not compose.** combat, and it is the most useful sentence of the round: *"'A is inert' and 'B is
+     inert' does not give 'A+B is inert', because A can be inert only in the absence of B."*
+     Three streams each reported a green `sim-baseline` on their own branch. **`main`, after merging them, produced a hash
+     none of the branches implied.** I wrote that up as an anomaly and messaged a stream suggesting its "clean control"
+     claim might be wrong. **It was a correct claim about the tree it was measured on.** Each branch was measured against
+     a *different* baseline, on a *different* tree, *alone* — and none of those measurements is a prediction about the
+     composition.
+     - **A branch's green `sim-baseline` predicts nothing about `main` after merge.** That is *why* invariant 2 puts the
+       recording on `main` after the last merge; I had been following the rule without understanding it, which is why I
+       was willing to treat its consequence as a contradiction.
+     - **Same error as promoting a measurement to a property** (lessons 90, 93), in a new place: *"inert"* is a relation
+       between a change and a tree, not an attribute of the change.
+     - **And a change can be genuinely inert in BEHAVIOUR while not inert in the HASH** — arena's `_build_perimeter()`
+       generates the wall from a polygon instead of authored boxes: identical geometry, **different collision bodies in a
+       different creation order, which is enough for Jolt.** Expect it from any change to how the physics world is
+       *built*, not just how it behaves.
+     - **Orchestrator's error underneath it: I put a load-bearing fact — that the recorder rsynced before arena merged —
+       in the last paragraph of a commit message**, and combat reasoned from the merge order in the log instead. **A fact
+       that changes someone's conclusion goes first, not last.**

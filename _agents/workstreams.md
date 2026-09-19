@@ -158,6 +158,16 @@ presentation job is the arena as a place).
      whether they are last.
    - **It fails safe.** A stale committed hash turns `sim-baseline` red on `main`, and *"the simulation broke"* and
      *"the hash is old"* look identical from the outside. That ambiguity cost round 5 a day.
+   - **INERTNESS DOES NOT COMPOSE, and this is the deep reason the rule exists** (combat, 2026-09-19). *"'A is inert'
+     and 'B is inert' does not give 'A+B is inert', because A can be inert only in the absence of B."* Three streams
+     each measuring a green `sim-baseline` on their own branch **predicts nothing about `main` after merge** — each was
+     measured against a different baseline, on a different tree, alone. **A hash that differs from what the branches
+     implied is not evidence of a defect; it is the expected result of composing changes measured separately.** The
+     orchestrator treated one such gap as an anomaly and sent a stream a message implying its correct claim was wrong.
+   - **A change can be genuinely inert in BEHAVIOUR and not inert in the HASH.** arena's `_build_perimeter()` generates
+     the arena wall from the shape polygon instead of using boxes authored in the scene: geometrically identical walls,
+     **different collision bodies created in a different order, which is enough for Jolt.** Expect this from any change
+     to how the physics world is *built*, even one that changes nothing about how it behaves.
    - **Nothing local can catch the mistake.** The file is keyed per glibc; the laptop is **2.39** and there is no
      2.39 line, so `sim-baseline` **silently skips locally** — every stream can commit a stale hash and watch a green
      local check.
