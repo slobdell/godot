@@ -99,3 +99,46 @@ first, and that is the whole gap.**
 - **It is not his configuration yet.** This is hold-fire, no enemy, ordered to a far point. He plays `make
   skirmish` with an enemy, his own orders, and **`--arena=random`** across four maps. Hypothesis 1 is still
   untested and remains the likeliest source of any remaining difference.
+
+---
+
+# Hypothesis 1, tested (2026-09-19, `9c22f5e4`, laptop, 30 units, 60 s, hold-fire, one way, seed 1)
+
+**`--arena=random` is `Arena.ROTATION` — yard, boulevard, pit, boneyard.** Three of the four had never been run
+under these counters, and the pre-registration named them as the likeliest source of the difference. They are not.
+
+| arena | `crawl` | `oscillating` | **`no_progress`** | osc. units | no-prog. units | arrived |
+|---|---|---|---|---|---|---|
+| yard | 0.028 | 0.001 | 0.050 | 2 | 8 | 30/30 |
+| boulevard | 0.011 | 0.001 | 0.007 | 1 | 3 | 30/30 |
+| pit | 0.017 | 0.002 | 0.028 | 1 | 5 | 30/30 |
+| boneyard | 0.007 | 0.001 | 0.005 | 1 | 1 | 30/30 |
+| *barriers (the fixture, for scale)* | *0.112* | *0.015* | *0.192* | *11* | *26* | *23/30* |
+
+**Every map he plays is clean, and yard — already the most-tested map — is the WORST of the four.** The two maps
+nobody had measured (boulevard, boneyard) are the best in the rotation. So the untested-maps worry was the wrong
+worry: **hypothesis 1 is refuted in the form it was written.** Terrain alone, on the ground he actually plays, does
+not stall a crossing.
+
+## What that leaves, and why it is a sharper question than the one it replaces
+
+The barrier fixture reaches 0.192 with **no enemy and hold-fire** — so ground *can* produce the lead's complaint,
+and none of his four maps has that ground. What his configuration has and every run above lacks is **an enemy, his
+own orders, and units interacting with each other**. The remaining difference is not *where* the units are; it is
+*what else is happening around them*.
+
+**This inverts what the fixture is for.** `barriers` was built to reproduce his stall and it reproduces *a* stall —
+but on ground he never drives. It is now a sensitivity fixture (ground that is known to stall, for detecting whether
+a movement change helps), not a reproduction of his complaint. **Saying otherwise would be the same error combat
+caught in itself an hour ago: finding the authoritative copy of a value is not the same as checking the value still
+matters.** I found ground that stalls; I had not checked it was ground he stands on.
+
+## Next, and the honest limit of it
+
+`nav-fight` is the instrument closest to his configuration (two CPU armies, GREEN ordered like a player) and it is
+nav's file, so the measurement is run rather than edited: the same four maps, its own buckets. If `progressing`
+stays low on a map where `blocked_*` reads zero, that is the round-7 gap reproduced in nav's own instrument, per
+arena, on ground he plays — which nav can act on without adopting anything of mine.
+
+**Still not tested, and now the whole of the remaining gap: his hands.** A human issuing orders mid-fight
+re-tasks units in ways no scripted order sequence does.
