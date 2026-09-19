@@ -1099,3 +1099,20 @@ The kickoff prompt is one line; this section is the rest.
     hand them over in.** A stream that has just weighed two options naturally reports the two options — and relaying that
     shape is the failure. **Converting a stream's trade-off into a recommendation is part of the relay, not an optional
     courtesy.**
+80. **UI that explains behaviour must be *derived from* the behaviour, or it becomes a confident lie.** Round 7: the lead
+    asked for help that shows *"what each action does"* because he could not tell what `screen` meant. control built the
+    animated preview against a **stand-in** of each posture — reasonable, since squad's planner was not yet on `main`.
+    When it merged and the previews switched to **squad's real planner**, they changed: **support-by-fire guns sit at a
+    standoff each covering its own sector**, not all pointing exactly at the point as the stand-in drew; **Hold previews as
+    the all-round coil the planner actually forms.** The stand-in was plausible, legible, and wrong — **and it would have
+    taught the lead a posture the game does not produce.**
+    The fix control made is the reusable part: **the test now asserts that the planner is the source**, not that the
+    drawing matches a picture. So the preview cannot drift from the behaviour without failing.
+    Two instructions:
+    - **Explanatory UI is a second consumer of the real system, never a second implementation of it.** Tooltips,
+      previews, tutorials, help diagrams and debug overlays all have this property. This is lesson 66 (a derived value
+      copied is a stale value waiting) applied where the copy is a *drawing* — and it is worse there, because a wrong
+      number looks wrong to someone eventually while a wrong diagram looks authoritative forever.
+    - **Assert the source, not the output.** "This preview came from the planner" is a test that survives the planner
+      changing; "this preview looks like *this*" is a test that pins today's posture and will be updated to match
+      whatever the drawing becomes.
