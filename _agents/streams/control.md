@@ -186,7 +186,9 @@ frames. **Behind the walls, diagonals included: looked at, clean** — `make cam
 of half the perimeter (180° symmetric) at the lead's 21°/49 m/FOV 35, focus 20 m inside the edge, camera out beyond
 it; on the yard hexagon all three (two diagonals) cut the wall and stands and keep the floor to the bottom of the frame.
 
-**Round 8 candidate: `1b3da573`** (main `0ae1b223` merged, baseline `668b7d49`; contains `3c1c224e`) — #27 running.
+**ROUND 8 MERGE HERE: `1b3da573` — #27 GREEN (builder0): `make check exited 0`, 1233 passed / 0 failed, `sim-baseline
+passed: 668b7d490607439b`, every target through `audio-check passed`** (main `0ae1b223` merged; contains every round-8
+item above). After it, unchecked: `39a61b86` (camera-looks wall frames) and docs. **Round 8 is done for control.**
 Before it, `3c1c224e` (waited for main's new sim line). #26 on `4ebe47a7`: 1228/0 tests,
 then `sim-baseline FAILED` (expected `53d4e0ac`, got `668b7d49`) — **main's line is stale, not this branch:** the same
 command on the laptop gives one hash (`34507d95`, glibc 2.39) for main `28eb403f`, this branch, and this branch with the
