@@ -14,6 +14,8 @@ was known before the code ran, and two of them are bugs the instrument actually 
 Both looked like plausible map facts in a JSON blob. Neither survives a map whose character you already know.
 """
 import json
+import pathlib
+import re
 import math
 import os
 import sys
@@ -256,3 +258,31 @@ class TestTheExposureLatticeIsAnchored(unittest.TestCase):
         path = ar.covered_route(p.blocked, p.n, fields["idle"], green, rust, 0.0)
         self.assertGreater(ar.route_exposure(fields["idle"], path), 0.0,
                            "the direct crossing of a shipping arena is exposed to something")
+
+
+def test_the_kit_table_still_matches_the_game():
+    """arena_report.KIT is a hand copy of ArenaKit.PROPS and nothing used to check it.
+
+    Round 8, and it is not hypothetical: `block` (40 x 24 x 40) shipped in `game/arena/arena_kit.gd` in round 7
+    and was missing here until a map tried to place one. That failure was loud -- a KeyError -- so it cost
+    minutes. **A prop whose SIZE drifted would not be loud.** Every distance, exposure and clearance this tool
+    reports is computed from these boxes, so a stale size produces numbers that are wrong, plausible and
+    published. This test is the cheap version of the dependency the comment asks for.
+    """
+    source = (pathlib.Path(__file__).resolve().parent.parent / "game/arena/arena_kit.gd").read_text()
+    body = source.split("const PROPS := {", 1)[1].split("\n}", 1)[0]
+    game = {}
+    for name, fields in re.findall(r'"(\w+)":\s*\{([^}]*)\}', body):
+        size = re.search(r'"size":\s*\[([^\]]*)\]', fields)
+        cover = re.search(r'"cover":\s*"(\w+)"', fields)
+        if not size or not cover:
+            continue
+        game[name] = ([float(v) for v in size.group(1).split(",")], cover.group(1),
+                      "\"collides\": false" not in fields)
+    assert game, "could not parse ArenaKit.PROPS -- the test is broken, not the tables"
+    assert set(game) == set(ar.KIT), (
+        "arena_report.KIT and ArenaKit.PROPS list different props: only in the game %s, only here %s"
+        % (sorted(set(game) - set(ar.KIT)), sorted(set(ar.KIT) - set(game))))
+    for name, (size, cover, collides) in game.items():
+        assert ar.KIT[name] == (size, cover, collides), (
+            "%s disagrees: the game says %s, arena_report.KIT says %s" % (name, (size, cover, collides), ar.KIT[name]))

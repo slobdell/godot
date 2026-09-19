@@ -251,16 +251,73 @@ func _build_obstacles() -> void:
 		index += 1
 		body.position = Vector3(obstacle["position"][0], 0.0, obstacle["position"][1])
 		body.rotation.y = deg_to_rad(float(obstacle.get("rotation_deg", 0.0)))
-		var collision := CollisionShape3D.new()
-		collision.name = "Collision"
-		var box := BoxShape3D.new()
-		box.size = size
-		collision.shape = box
-		collision.position.y = size.y / 2.0
-		body.add_child(collision)
+		for shape: CollisionShape3D in _obstacle_shapes(size):
+			body.add_child(shape)
 		body.add_child(_prop_visual(obstacle, size))
 		obstacles_root.add_child(body)
 		(body.get_node("Visual") as VisualSlot).invoke("setup", [obstacle])
+
+
+## A box wider than this on BOTH horizontal axes is built as a hollow perimeter instead of one solid box.
+const SOLID_FOOTPRINT_M := 6.0
+## How thick each wall of that perimeter is. Comfortably under the threshold, and thicker than the 1.5 m of the
+## `wall` obstacle that has carved correctly since round 1.
+const SHELL_THICKNESS := 4.0
+
+## The collision shapes for one obstacle: ONE box, unless its footprint is large on both axes, in which case four
+## slabs forming a closed rectangular shell of the same outside dimensions.
+##
+## **This exists because the navmesh baker silently ignores large boxes, and that was measured, not guessed.**
+## Same arena, same obstacle type, same 3 m height, footprint the only variable (square, metres, distance from the
+## box centre to the nearest navmesh after baking):
+##
+##     4 m -> 4.0 m (a hole, correct)    8 m -> 0.5 m    12 m -> 0.5 m    18 m -> 0.5 m    26 m -> 0.5 m
+##     40 m -> 0.5 m
+##
+## 0.5 m is the ground surface, so from 8 m upward the bake produces **no hole and no rooftop** — the box
+## contributes nothing at all. The collision body is built correctly in every case (verified: right size, layer 1,
+## enabled, parented under a `navigation_source` node), and neither `border_size` nor `filter_baking_aabb` changes
+## it. Every obstacle this project had before round 8 is thin on at least one axis — `wall` is 18 x 1.5,
+## `container_40` is 12.19 x 2.44, `crate` is 4.5 x 4.5 — **so nothing had ever crossed the threshold, and the
+## failure had no way to be noticed** until the cityscape tried to place a 40 x 40 city block.
+##
+## **Why this could not be shipped around.** Physics uses the same body, so a solid block would stop hulls that
+## the navmesh believes they can drive straight through: units pinned against an obstacle their path insists is
+## not there. That is the lead's loudest complaint — *"stuck behind basic barriers... moving back and forth"* —
+## manufactured deliberately, at the size of a building.
+##
+## A hollow shell is not a workaround for the cover model: a building is solid to anything that matters here
+## because nothing can enter it. Cover, radar and the reports still read the layout's single box; only the
+## collision is built as four pieces.
+func _obstacle_shapes(size: Vector3) -> Array:
+	var out: Array = []
+	if size.x <= SOLID_FOOTPRINT_M or size.z <= SOLID_FOOTPRINT_M:
+		var box := BoxShape3D.new()
+		box.size = size
+		out.append(_shape("Collision", box, Vector3(0.0, size.y / 2.0, 0.0)))
+		return out
+	# Tiled, not hollow. A shell of four walls was tried first and leaves the interior WALKABLE — an enclosed
+	# navmesh island inside every building, unreachable but real, which the AI's position queries would still see.
+	# Adjacent slabs with no gaps between them remove the whole footprint, and each slab is thin on one axis, which
+	# is the only property the baker needs.
+	var slabs := int(ceil(size.z / SHELL_THICKNESS))
+	var depth := size.z / float(slabs)
+	var y := size.y / 2.0
+	for i in slabs:
+		var slab := BoxShape3D.new()
+		slab.size = Vector3(size.x, size.y, depth)
+		var at := Vector3(0.0, y, -size.z / 2.0 + depth * (float(i) + 0.5))
+		out.append(_shape("Collision" if i == 0 else "Collision%d" % i, slab, at))
+	return out
+
+
+## The first shape is always named "Collision": tests and tools reach for it by name.
+func _shape(shape_name: String, box: BoxShape3D, at: Vector3) -> CollisionShape3D:
+	var collision := CollisionShape3D.new()
+	collision.name = shape_name
+	collision.shape = box
+	collision.position = at
+	return collision
 
 
 ## A `prop.<type>` slot for an obstacle or prop. Legacy sized obstacles scale their standard art; a kit prop the theme
