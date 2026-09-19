@@ -40,8 +40,8 @@ extends GameMode
 
 const SCRIPT_BREAK_CONTACT_SECONDS := 30.0
 ## The closest the RTS camera starts (0 = close behind a tank, 1 = high over the arena); it frames the army.
-## Round 6: the lead's pick on the camera page was 50 m out; RtsCamera.level_for(50.0) = 0.373 (was 0.36, 48 m).
-const START_ZOOM := 0.373
+## Round 6: the lead's pose from play is 49 m out (zoom 0.365; round 5 was 0.36, 48 m).
+const START_ZOOM := 0.365
 ## The camera starts looking this far ahead of the player's base (tanks sit in the lower third).
 const START_AHEAD := 25.0
 const SCRIPT_FOLLOW_ZOOM := 0.42
@@ -257,9 +257,14 @@ func _start_match() -> void:
 	rig.yaw = 0.0 if frame["forward"] == Vector3.FORWARD else PI
 	# C5: start where the vehicles read as vehicles: frame the whole army and the ground just ahead of it,
 	# never higher than needed (--zoom=0..1 overrides, for screenshots and tuning).
+	# Round 6: the first frame is the one the lead plays - squad 1 (the group the planning pause selects), not the whole
+	# army. At his 35° telephoto, fitting thirty vehicles climbed to ~110 m and the vision camera then swooped in.
 	var army: Array = []
 	var middle := Vector3.ZERO
+	var first: Array = Array(game_match.team_squads(Match.Team.GREEN)[0].roster) if not game_match.team_squads(Match.Team.GREEN).is_empty() else []
 	for tank in game_match.sorted_team_tanks(Match.Team.GREEN):
+		if not first.is_empty() and not first.has(String(tank.name)):
+			continue
 		army.append(tank.global_position)
 		middle += tank.global_position
 	army.append(middle / maxf(army.size(), 1.0) + (frame["forward"] as Vector3) * START_AHEAD)

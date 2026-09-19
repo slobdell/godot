@@ -17,6 +17,7 @@ func _setup(screen: Vector2i) -> Array:
 	add_to_tree(camera)
 	camera.make_current()
 	var rig := RtsCamera.new()
+	RtsCamera.fov = RtsCamera.FOV_DEG  # the default lens (a static: another test may have changed it)
 	rig.camera = camera
 	rig.edge_pan = false
 	add_to_tree(rig)
@@ -29,11 +30,10 @@ func _setup(screen: Vector2i) -> Array:
 	return [game_match, map, rig]
 
 
-## Round 6. At the default camera (45°, FOV 60°) a start-view vehicle measures 30.3 px on a 1200x540 phone and 52.5 px at
-## 1920x1080 (headless projection, one fixture, laptop). History: at the lead's short-lived 12° default it was 23.7 px on
-## the phone, and the phone bar was lowered to 22 "provisionally"; 12° was rejected in play and the bar is back at 24.
-## Touch still has no framing of its own: if a future camera change pushes phones under 24 px, the answer is to give
-## touch its own framing, NOT to move this bar.
+## Round 6. At the lead's camera (21°, FOV 35° telephoto, found in play) the start view frames squad 1 and a vehicle
+## measures the values printed by MEASURE below (headless projection, one fixture, laptop). History: at a 12° / FOV 60°
+## default it was 23.7 px on the phone and the bar was lowered to 22 "provisionally"; it is 24. Touch still has no
+## framing of its own: if a camera change pushes phones under 24 px, give touch its own framing, NOT a lower bar.
 const PHONE_MIN_PX := 24.0
 ## Desktop had no bar before round 6.
 const DESKTOP_MIN_PX := 45.0
@@ -52,11 +52,11 @@ func _readable_at(window: Vector2i, min_px: float) -> void:
 	var game_match: Match = setup[0]
 	var map: TacticalMap = setup[1]
 	var rig: RtsCamera = setup[2]
-	# What SkirmishMode does: frame the army and the ground ahead, no higher than needed.
-	var army: Array = map.squad_points("Alpha") + map.squad_points("Bravo")
+	# What SkirmishMode does (round 6): frame squad 1 - the group the planning pause selects - and the ground ahead.
+	var army: Array = map.squad_points("Alpha")
 	rig.frame(army + [Vector3(0, 0, army[0].z - SkirmishMode.START_AHEAD)], true, SkirmishMode.START_ZOOM)
 	await tree.process_frame
-	assert_true(map.all_on_screen(army), "every vehicle is on screen at the start")
+	assert_true(map.all_on_screen(army), "every vehicle of the squad is on screen at the start")
 	var tank := game_match.tanks.get_node("Green_Alpha_1") as Tank
 	var hull: Array = Units.stat(tank.unit_id, "hull_size")
 	var front := rig.camera.unproject_position(tank.global_position + Vector3(0, 0, -float(hull[2]) / 2.0))

@@ -12,6 +12,7 @@ func _rig() -> RtsCamera:
 	add_to_tree(camera)
 	camera.make_current()
 	var rig := RtsCamera.new()
+	RtsCamera.fov = RtsCamera.FOV_DEG  # the default lens (a static: another test may have changed it)
 	rig.camera = camera
 	rig.edge_pan = false
 	rig.focus = Vector3(0, 0, 40)
