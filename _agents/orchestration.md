@@ -1014,3 +1014,21 @@ The kickoff prompt is one line; this section is the rest.
       be more to get wrong than the thing it stores. It degrades to "describe your picks" if the script fails, rather
       than to nothing. That is the same pattern that finally settled the camera (live controls, one key to print a
       pasteable line), and it worked for the same reason.
+75. **A stateless form loses the answer of anyone who does not perform the final step — and "press the buttons" feels
+    complete.** Round 6: the orchestrator recommended the arena review page store nothing, on the reasoning that the pick
+    *is* the whole payload and a storage layer is more to get wrong than the thing it stores (lesson 74). arena built it
+    that way, correctly. **The lead then pressed every button and left**, and the answers existed only on his clipboard.
+    They are lost.
+    The camera pattern it was copied from worked for a reason that did not transfer: **there, printing the pose was the
+    natural end of the interaction** — he was hunting a value, and `P` was how he captured what he had found. **Here,
+    choosing was the whole task, so pressing the last radio button felt like finishing.** A Copy button after that reads
+    as optional.
+    So the rule is narrower than "prefer stateless":
+    - **Stateless is right when the human's own goal ends in taking the value away** (hunting a setting, capturing a
+      measurement). **Persist when the human's goal ends in having answered** (a form, a review, a vote) — because they
+      will stop at the point their task feels done, not at the point yours does.
+    - **If it must be stateless, make the final step the only step**: no separate Copy button after the last choice —
+      auto-select the summary, or make each choice update something visibly outward-bound, so there is no state in which
+      the page looks finished and has sent nothing.
+    - **And test the abandonment path, not the happy path.** The question to ask of any collection artefact is *what
+      reaches me if they close the tab right now?*
