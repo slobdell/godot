@@ -281,8 +281,10 @@ func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
 	assert_true(among.origin.z > half + 2.0 and among.origin.z < half + 24.0, "setup: the camera is in the stands (%.1f)" % among.origin.z)
 	assert_true(RtsCamera.cutaway_near(close, 0.0, 46.0, 12.0, half) > RtsCamera.NEAR_DEFAULT, "a camera among the seats cuts them")
 	# From far out and high up the stands hide nothing: they stay (with their crowd) instead of a black void.
+	# 40°, not 30°: at 30° feel's StandsProfile (the kit itself: 9.64 m from 4.2 m out) rises 0.4 m into the sight line
+	# to a vehicle 4 m inside the wall. The hand measurement (7 m at 2.3 m) had put the front of the stands too low.
 	var mid := Vector3(0, 0, 60.0)
-	assert_eq(RtsCamera.cutaway_near(mid, 0.0, 150.0, 30.0, half), RtsCamera.NEAR_DEFAULT,
+	assert_eq(RtsCamera.cutaway_near(mid, 0.0, 150.0, 40.0, half), RtsCamera.NEAR_DEFAULT,
 			"a high camera beyond the stands keeps them as foreground")
 	assert_true(RtsCamera.cutaway_near(mid, 0.0, 150.0, 12.0, half) > RtsCamera.NEAR_DEFAULT,
 			"a low one looking through them cuts them")
@@ -358,3 +360,20 @@ func test_the_cutaway_follows_the_arenas_own_perimeter() -> void:
 	assert_true(float(diagonal["reach"]) < 121.0 * sqrt(2.0) - 1.0, "a diagonal wall is nearer than the square's corner (%.0f m)" % diagonal["reach"])
 	RtsCamera.perimeter_poly = PackedVector2Array()
 	RtsCamera.perimeter_edge_data = []
+
+
+## Round 7: the cutaway reads the stands from feel's StandsProfile (computed from the kit the dressing places) when the
+## build has it, and falls back to the hand measurement only when it does not (lesson 66: a derived value copied).
+func test_the_cutaway_reads_the_stands_from_the_venue_itself() -> void:
+	RtsCamera._stands = []
+	var profile := RtsCamera.stands_profile()
+	if ResourceLoader.exists(RtsCamera.STANDS_PROFILE_SCRIPT):
+		var derived: PackedVector2Array = (load(RtsCamera.STANDS_PROFILE_SCRIPT) as Script).call("points")
+		assert_eq(profile, Array(derived), "the camera uses the profile derived from the kit")
+	else:
+		assert_eq(profile, RtsCamera.STANDS_PROFILE, "without StandsProfile, the hand measurement")
+	assert_eq(profile[0], Vector2(2.0, 3.0), "either way it starts at the wall's top")
+	var tallest := 0.0
+	for point: Vector2 in profile:
+		tallest = maxf(tallest, point.y)
+	assert_near(tallest, 15.7, 0.3, "and reaches the grandstand's 15.7 m")
