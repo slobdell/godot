@@ -148,25 +148,41 @@ Nothing blocking. The task palette (N4) goes to him through control's page, not 
 
 _Updated 2026-09-18 by the squad worker._
 
+### Round 8 (2026-09-19): the lead played round 7 — "they still generally don't do what I command them"
+
+| Item | State |
+|---|---|
+| **Orphaned units** (keys 1-4 miss vehicles) | fixed `90bd2212`: the generator splits types into squads of ≤5 (gangs 10-11 squads, condemned 7-9, law 6) and keys reached 1-5, so 4-17 vehicles had no key. `SquadConsolidation.for_player` (families fold, smallest same-role merge, >8 split) → 2-5 squads, 0 keyless, every faction × 3 seeds; one line in control's `skirmish_mode._start_match` (approved). Player only. control's `ee9a434c` seeds up to 9 keys as the belt |
+| **Ignored attack order** | fixed `cb02c0ef`: his gesture is an element TASK; drills aimed at `Drills.nearest_visible`, never the task target. Now drills aim at it, the drill's moves/attack-moves carry it, a named move lays its gun on it, a named attack-move fights only it. `test_attack_order_obeyed` (laptop): task path old/new target 765/155 → 164/759; direct 0/960 before and after (commitment cleared) |
+| Hull overlap at deploy | stale (measured on a tree before `f1c3afcb`); combat's footprint test landed green `3fdfec1b`: 0 overlaps, min 3.7-4.6 m on this tree |
+| Wheeled "face" shuffle | waiting on nav's pre-registered test; design view owed (turret does the work vs acceptance angle) |
+| Parked | X8 (measured: lost), X6 baseline, the flow gate |
+
 ### Round 7 (after the quota lift, 2026-09-19): the lead's defects
 
 | Item | State |
 |---|---|
 | **The army starts as an army** (the lead: "each squad separated") | `ArmyLayout` (game/tactics), one line at the end of `Match.load_doctrine` (combat approved): squads side by side on the spawn zone's front edge, each in its formation (compact blocks over 4), assembly spacing max(6.5 m, longest hull + 2 m), 2.5 spacings between squads, ranks stacked by real depth, widening toward the drivable edges rather than clamping; no elements formed; facing the enemy. Looked at: `control-scale-shots` at 34 a side shows five separate clusters (radar too). |
 | **Facing honoured end to end** | K1 `facing` reached nothing in the brain; `TankBrain.intended_facing()` (order's facing, else the post's heading), MOVE on arrival and HOLD face it; element tasks take `facing`; ambush 4/4 hulls at its kill zone; `Element.state()` publishes heading + anchor. nav re-measures `make nav-facing` on the green tip (before: 2/30 move, 1/29 hold within 15°). |
-| **Objectives seam** | all six central-control-point call sites ask `Objectives`, which push_errors on an off-centre or second objective; moves to N7's instance API in one file when N7 is on main |
+| **Objectives on N7** (done, `d4f339f7`) | `Objectives` reads `Match.objectives`: `goal(match, team, from)` = nearest not held (else nearest held), `contains`, `held_at`, `all_held`, `all`. Brain contests its own goal; commanders judge from their base (stable across a mirrored pair). The guard is gone: it caught arena's yard/pit (35,336 errors in a match that still produced a winner, lesson 122). `test_objectives` enforces no decider reads `CONTROL_CENTER` / `in_control_zone(` / `control_owner`. DISCOVERY_STATE adds `objectives`; outcome `control_before/after` = objectives held. |
 | **Scout standoff** | nav's `2cae3bda` merged here (orchestrator-authorised); the brain's two hooks; my round-3 `runs >= 3` test inverted (standoff 27.6 m / 83% nose on / 212 shots vs runs 7.2 m / 19% / 35, laptop) |
 | **Attack-move "re-tasks"** | `make squad-decisions`: ~70% are CombatMotion motion inside one decision (nav's), reversals 1.1-1.7/unit-min; a narrow no-flip-back rule for fight options → reversals 0.4-0.5, switches ~same, progress unchanged (3 seeds, laptop) |
 | Agent bridge bounds | reverted here (`68a9d0f4`): combat's `36e116c8` does the same fix; review theirs once on main |
 | `ElementPlan.preview` | for control's animated button help |
 | **Element flow** (the lead: formation on the way) | `ElementPlan._flow`: while the leader is > 15 m from its slot, the others FOLLOW it at their slot offset (K1 follow-with-slot); leader paced to its laggards. Joins the final slots once per task (`flow_joined`; toggling re-ordered a CPU army 6x). A/B (laptop, 1 seed, `element_transit`): transit gap 9.0 vs 11.4 m, worst off-slot at arrival 2.9 vs 6.5 m, but arrival 17.4 vs 13.1 s. **Lead gate:** is ~4 s slower worth a tidier march? `ElementPlan.FLOW_ENABLED` turns it off. |
+| **Seats fixed on the spot** (`3a0590e1`) | a plain move that has joined its final slots keeps its seating whatever drift costs (`TacticsFormation.seat` `fixed`): CPU five-squad idle orders 4-6 → 0 (laptop) |
+| nav's commitment hooks (`bf51acf0`) | previous direction into `CombatMotion.choose`, `jink_worth`; a held idle unit's refused move faces its told facing (nav's move+facing misses) — no test reproduces that case here; nav's `nav-facing` probe is the check |
+| **Attack-move progress dip** (orchestrator's question) | not commitment: `nav-fight-ab AB_OFF=commit` (builder0, `c06e53e0`, yard, seeds 1/3/5/7/9) attack_move progressing on/off .453/.461, .461/.431, .451/.442, .359/.351, .433/.407 — mean .431 vs .418, better on 4 of 5; motion jumps −30-40%. My "orbit at right angles" hypothesis is not supported; the 44→41 dip came from something else between the two measurements |
+| **ai-scenarios 5 → 0 failures** (`2879d17e`) | see Known issues |
+| nav's hold-settle patch | waits on `d963d9ad` (`Movement.settle_radius`) reaching main (lesson 86) |
 | X6 baseline | the sim baseline is recorded on main (`b70608d6`); my branch moves it again (brain changes) — not recorded here (invariant 2) |
 
 ### Resume here (written 2026-09-18 before a 4-day pause; read first)
 
-**State:** everything is merged to main; the last green hash is `e683d0d3` (builder0, 1126 passed). The tree is clean.
-**Do not start** X6's baseline, X8, or anything on PID: all three are parked on others (X6 on CP4-on-main plus the
-orchestrator's sim-baseline record; X8 on N7; PID is done by nav's N6, see the X3 row).
+**State (2026-09-19):** last green hash `d4f339f7` (builder0, full list minus sim-baseline, 1211 passed, 0 failed), sent to the
+orchestrator; it moves the sim baseline (flow, seating, commitment, objectives) and is not recorded here (invariant 2).
+**Do not start** X6's baseline or anything on PID: both are parked on others (X6 on CP4-on-main plus the
+orchestrator's sim-baseline record; PID is done by nav's N6, see the X3 row). X8 is unblocked (N7 on main, round 7).
 
 What is hardest to rediscover, and where it now lives:
 1. **The dither metric reported DOUBLE the real rate** from the 30 Hz move until `1fc83daf` (it divided by a hard-coded
@@ -205,7 +221,7 @@ What is hardest to rediscover, and where it now lives:
 | **CP4 pairing** (fire band, dither, cover timing, suppression threshold) | `1fc83daf`, `5521f741` |
 | **Player units hold until ordered** (lesson 47) | `fbf1650a`: a rule, tested as a mechanism |
 | Sim baseline | `9ba36681` (8ebbed52, stream/squad pre-CP4; combat's post-CP4 record supersedes it) |
-| X8 army layer (stretch) | not started: its measurement needs CP4 on main and N7 (movable objectives) |
+| X8 army layer (stretch) | **Verdict re-run first** (as doctrine.md asked): brains x5p 51-13 over the faction doctrine (builder0, tree at `1d011765`, 64 matches, gangs v law 5200, control on, yard/boulevard/pit/boneyard, 2 seeds × 4 ways): the approach phase did NOT rescue doctrine. Its ledger names the direct commander: `support_by_fire` is 72% of doctrine's time at exchange 0.58 (brains 1.25). `ArmyPlan` (`25da833b`, `1d011765`) replaces that decision. **Result: the bet lost.** builder0, `1d011765`, 192 matches same config: brains 108-20 (ELO 1211), faction direct 51-77 (905), **army 33-95 (885)**; army vs faction 26-38. Army's ledger: far_ambush 54% of time at exchange 0.92, SBF 0.97, bait 0.72 — every drill under the brains' 1.24. So allocation above the elements does not rescue doctrine at 30 a side; the drills themselves trade worse than a brain left alone. `+army` stays off (default); code kept as the measured candidate. Written up in doctrine.md. |
 
 **Which instrument caught what (worth knowing before choosing between writing a test and building an instrument):**
 `make squad-coherence` (X6) found support by fire and near ambush taking an element from each other every update in a
@@ -286,8 +302,9 @@ line 0.5 m deep centred 2.8 m off its point; a plain move ends 0.3 m from the cl
 - `scenario_dodge_rate` finds 0 dodge attempts on CP4 + my fix (raw CP4: 4 of 488 inbound ticks; pre-CP4: 22). A
   4-event sample; combat's X6 (crossing targets harder to acquire) flips the same test. Dodging was already found in
   round 5 to almost never pay. Not in `make check`.
-- `ai-scenarios` has 6 failures that pre-date this round (scenario_cp2 ×3, fire_discipline, matchups, squad focus);
-  the orchestrator is committing an expected-pass baseline for the suite (lesson 42).
+- `ai-scenarios`: triaged to 0 failures in round 7 (`2879d17e`; laptop 45 passed, 2 pending). Three were brain bugs
+  (orbit dropped on a momentary loss of sight; SUPPRESS over a winnable ENGAGE; dug-in artillery turning its hull),
+  one a 60 Hz tick bar, one a withdrawn claim (scout vs Lancer, now PENDING). Still not in `make check` (lesson 42).
 
 ### Questions for the lead
 

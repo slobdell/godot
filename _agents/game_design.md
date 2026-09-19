@@ -833,6 +833,29 @@ reaching*, not what can be *seen*. **Two axes behaving independently is the firs
 right model** — openness and reason are separate design knobs, and a map can now be tuned on one without disturbing the
 other.
 
+**SHIPPED AND VERIFIED (arena, 2026-09-19). Both maps the lead kept are now HEXAGONS at the 140 m bound, and both pose
+a question:**
+
+| | shape | `centre_sees_share` | decision spread |
+|---|---|---|---|
+| **yard** | hexagon @ 140 | 0.20 | **0.43** |
+| **pit** | hexagon @ 140 | 0.30 | **0.42** |
+
+**A real 120 s match on each: zero `Objectives` errors (was 35,336), zero `ERROR` lines of any kind, winner declared.**
+
+**⚠ AND DECISION SPREAD IS NOT A QUANTITY TO MAXIMISE.** pit needed re-tuning rather than re-enabling: coordinates chosen
+for the 240 m square gave **0.13** in the hexagon, because the arena grew and the distances that made one objective
+contested stopped being asymmetric. A placement sweep:
+
+```
+z = -30 -> 0.13      z = -50 -> 0.42      z = -60 -> 0.63      z = -70 -> 0.96
+```
+
+**0.96 is not a better map.** It means one objective is nearly free and the other nearly impossible — **a formality
+rather than a choice** — and at z = −70 it sits in the base's approach funnel, **which is the boulevard failure this
+project already wrote a placement rule against.** Both shipping pairs sit near **0.4**, and the reasoning is in
+`objective_pair`'s docstring so the next author does not read the number as a score to beat.
+
 **⚠ HELD BACK, NOT SHIPPED.** A real match on the paired yard fired squad's `Objectives` guard **35,336 times**: *"the
 arena declares an objective other than the single central zone; squad's deciders still read `Match.CONTROL_CENTER`."*
 **The match completed and produced a winner while the deciders competed for the wrong ground throughout** — degraded,
@@ -902,6 +925,115 @@ What follows for map authoring, and these are testable claims rather than taste:
    funnelling crossings onto bridges are the reason-half and the risk-half of the same change, and measuring either
    alone will under-read it — exactly as combat's series under-read N5 until its control disabled the gates as well as
    the bands (lesson 62).
+
+## Round 8 direction: the lead's playtest of round 7 (2026-09-19, late)
+
+> *"ok I just did a quick game and I can see there are improvements but it still sucks. First, the gang tanks are still
+> tiny (the intent for the semi trucks is that they're huge - we'll worry about evening up factions later). And on the
+> navigation from, they still generally don't do what I command them. On the navigation from, units are still just
+> getting stuck behind basic barriers where they seem to just move back and forth indefinitely trying to get unstuck. I
+> also don't know how easy this is to do or if we should shelve it for later but the gang semi trucks don't actually
+> behave like a semi truck with a truck and a trailer - both components just move together. I can also see that the semi
+> trucks are yawing in place (should be impossible, they're not a tracker vehicle). ANother obvious problem right now in
+> make skirmish is that not all units belong to a squad. There seem to be orphaned units that don't get selected at all
+> when I cycle through the numbers on my keyboard (1, 2, 3, 4...). I'm also testin just telling a group of units to
+> attack a single unit, but they don't obey and instead they shoot at whatever they were already shooting at. Also, of
+> the algorithms we identified earlier, which ones are actually implemented now?"*
+
+**"It still sucks" is the headline and everything below is subordinate to it.** Round 7 merged seventeen branches and he
+still cannot command his units. **Improvements he can see did not change the verdict.**
+
+### MEASURED ON MAIN: the back-and-forth is real, it is churn, and it is gear-shuffling (nav, 2026-09-19)
+
+**His complaint:** *"units are still just getting stuck behind basic barriers where they seem to just move back and forth
+indefinitely trying to get unstuck."*
+
+**Pre-registered before the run** (oscillating = **≥ 8 m of travel in 4 s with net displacement under a quarter of it**,
+relative to the ORDER's goal, not the brain's target; **≥ 5% on any map means real churn**). Tree `aa984edd` with `main`
+merged and no nav changes on top; builder0; `STALL_VERB=attack_move`; seed 3; 120 s; Condemned vs Condemned. **Arm read
+live from the code on every run: `commit=true, fixed_style=standoff, off=[]`.**
+
+| map | oscillating | no_progress | attack-move progressing |
+|---|---|---|---|
+| yard | **7.2%** | 0.426 | 0.44 |
+| boneyard | **6.6%** | 0.477 | 0.43 |
+| pit | **5.8%** | 0.425 | 0.468 |
+| boulevard | **5.3%** | 0.470 | 0.419 |
+
+**All four ≥ 5%, so by the rule fixed in advance the answer is YES.** The sentence for him, nav's:
+> *"About 6% of the time an attack-moving unit is driving back and forth: ≥ 8 m of travel in 4 s for less than a quarter
+> of it in net progress. On every map, on the game you play."*
+
+**⚠ AND IT IS NOT TERRAIN.** `blocked_terrain` is **0.000–0.010** on every one of these maps. **The fix was never
+pathing** — the orchestrator assigned flow fields to this complaint and would have spent a round on the wrong layer.
+
+**THE MECHANISM, and it makes the semi complaint and this one ONE BUG:** of 11 scout in-place-yaw events, **all were in
+phase `driving`, none creeping, and 7 of 11 had forward AND reverse above 0.5 m/s in the same 2-second window.**
+**The units are gear-shuffling** — `CombatMotion`'s context steering picking a forward direction, then a reverse one.
+
+**So *"the semi trucks are yawing in place"* and *"moving back and forth indefinitely"* are the same churn seen from two
+angles: heading and position.** A vehicle alternating forward and reverse rotates without translating *and* travels
+without progressing. **One fix should move both**, and the `--nav-off=commit` A/B is pre-registered to test exactly that.
+
+### Two decisions from the lead (2026-09-19, answering queued gates)
+
+> *"a 4s slower march for a tidier traversal is better, yes. For the attack mechanics - **making the units appear smart
+> is better, so flanking and maneuvering is fine**."*
+
+**1. ELEMENT FLOW STAYS ON.** While a leader is more than 15 m from its slot, members follow it at their slot offsets.
+Measured: transit gap **9.0 m against 11.4**, worst unit off-slot at arrival **2.9 m against 6.5**, arrival **17.4 s
+against 13.1**. **He has bought the 4 seconds.** `ElementPlan.FLOW_ENABLED` stays true and the trade is settled, not
+provisional.
+
+**2. "APPEAR SMART" BEATS "APPEAR OBEDIENT" — *within* an order, never instead of one.** This resolves a tension that
+had been implicit all round, and it must be read precisely:
+
+- **A flanker swinging wide with the player's target in its order is OBEYING**, and the pin counts it as complying:
+  `ATTACK · 2/4 on target · 1 moving round · 1 NOT COMPLYING`. **Do not exclude it and do not flag it.**
+- **A crew shooting something the player did not name is the DEFECT** — that was squad's drill bug (task path
+  **765/155 → 164/759** unit-ticks on the wrong/right target), and it stays a defect.
+- **So "attack" does NOT mean *everyone stands and fires now*.** The `drills: false` task flag is not wanted.
+
+**⚠ And the boundary that keeps this from licensing disobedience: manoeuvring is smart, CHURN IS NOT.** nav measured
+**5.3–6.6% of attack-moving units' travel time oscillating** on all four of his maps — **which is the same complaint he
+opened with**. A unit that flanks looks intelligent; a unit that re-aims every 1.3 s looks broken. **The test is whether
+the motion resolves into fire**: combat's floor — *a crew that cannot acquire a new contact in under `acquire_seconds`
+has no business re-aiming faster than it can shoot* — is the principled expression of that, and it makes the cadence a
+consequence of the engagement envelope rather than a new tuning knob.
+
+### The eight items, with what is already known about each
+
+1. **THE SEMI IS STILL TINY, AND SIZE IS NOT A BALANCE QUESTION.** *"the intent for the semi trucks is that they're huge
+   — we'll worry about evening up factions later."* combat measured 4.4 m against the scout's 1.4 m — **3.14×, inside the
+   3–4× band he named in round 6** — and he says it is still wrong. **So the measurement satisfied the number he gave and
+   not the intent behind it.** He has now explicitly removed balance as a constraint on this. **Do not defend 3.14× with
+   the round-6 quote; make it huge.**
+2. **"They still generally don't do what I command them."** The round's central claim, unmoved by facing (2/30 → 27/30),
+   the standoff, the order pins and commitment.
+3. **UNITS STUCK BEHIND BASIC BARRIERS, "moving back and forth indefinitely trying to get unstuck."** nav measured
+   blocked-by-terrain to **zero** in `nav-fight`; he sees it in `make skirmish`. **The instrument and the game disagree,
+   and the game is right** — this is lesson 23's shape: a number taken in a configuration the player does not get.
+4. **The semi is not articulated** — tractor and trailer move as one body. He explicitly offers to shelve it: *"I don't
+   know how easy this is to do or if we should shelve it for later."*
+5. **⚠ THE SEMI YAWS IN PLACE, "should be impossible, they're not a tracker vehicle."** **The symptom is real; the
+   orchestrator's first mechanism was wrong and nav corrected it from the code.** `step_in_place` does **not** pivot
+   wheeled hulls like tracks — the wheels branch sets `yaw = |speed| × turn / turning_radius`, **so a car at 0 m/s cannot
+   yaw at all**, and speed is re-read after `move_and_slide` from what the hull actually did.
+   **nav's hypothesis: the wheels' multi-point-turn CREEP.** When a car is told to *face* something — which brains do
+   constantly while holding or fighting — the plant drives **alternating forward/reverse legs of 0.5 s at low throttle**.
+   **Each leg is kinematically legal; ±1 m shuffles at full lock add up to a truck rotating on the spot.** Same symptom,
+   different mechanism, and a different fix: **legs long enough to be real (distance-based, a share of the turning
+   radius), plus probably brains not asking cars to face in place at all** — which is squad's half.
+   **Pre-registered test, written before the run:** a wheeled hull that turns **≥ 30° while its centre stays within
+   1.5 m of its start** is *yawing in place*. Running on `gang_tank` (12 m turning circle).
+   **For tracks and hover the angular-acceleration limit in the plant still stands**, and it is a separate fix.
+6. **ORPHANED UNITS: not every unit belongs to a squad**, so cycling 1–4 never selects them. **A player cannot command
+   what he cannot select**, which makes this a direct cause of item 2.
+7. **A GROUP ORDERED TO ATTACK ONE UNIT KEEPS SHOOTING WHAT IT WAS ALREADY SHOOTING.** An explicit target order is the
+   most direct command in the game and it is being ignored. **Round 6's `test_a_move_order_beats_every_brain_state` has a
+   sibling that does not exist for attack.**
+8. **"Of the algorithms we identified earlier, which ones are actually implemented now?"** — answered from
+   [algorithms.md](algorithms.md), which is the file that exists to answer exactly this.
 
 ### THE ROUND'S HEADLINE: the units are still not smart enough (lead, 2026-09-19)
 
@@ -1174,6 +1306,39 @@ spotters more than fighters, but there will be cases where its machine gun is us
 **Keep from round 1:** Halo-style recharging shields over hull health (the lead chose them), finite ammo with
 base resupply (rules stream may simplify if it doesn't add decisions), heat only where a unit's weapon uses
 it (the Lancer). **Drop:** components, heat sinks, ammo racks, per-hardpoint weapons.
+
+### MEASURED: the maps disagree more than the factions do (combat, 2026-09-19)
+
+**First balance picture ever taken on the maps the lead actually plays** — `yard` and `pit`, both hexagons at the 140 m
+bound with off-centre mirrored objectives. builder0, **n=30 per faction per map**, SEEDS=5, positive control engaged in
+both runs (844 and 668 paints), the 14 m rig deliberately reverted for the runs.
+
+| faction | yard | pit | swing |
+|---|---|---|---|
+| **gangs** | **63%** | **30%** | **+33 pts — the only significant difference in the table** |
+| condemned | 50% | 70% | −20 (1.6 SE) |
+| law | 43% | 43% | 0 |
+| syndicate | 43% | 57% | −13 (1.0 SE) |
+
+**The gangs are the strongest army on one of the two maps he plays and the weakest on the other, by the largest margin
+anyone here has measured.**
+
+**What this licenses: nothing about faction strength as a property.** *"The gangs are strong"* and *"the gangs are weak"*
+are **both supportable from this table by choosing a map.** That is exactly the error that cost two rounds and retired
+the 23% → 53% pair — **and the only reason it is visible now is that the tool takes `ARENA=` and prints it.**
+
+**What it does NOT license, stated before anyone reads it harder than it can bear:** at n=30 a gap needs **25 points** to
+clear 95%, and **gangs 63% on yard carries a CI of 45–81%.** **No within-map difference here is significant**, and combat
+claims neither that the gangs are overpowered on yard nor broken on pit. Resolving a 20-point within-map gap needs
+**n≈48 (SEEDS=8)**, about 60% more builder0 time per map — **not proposed, because the lead has deferred balance.**
+
+**And the comparison nobody may make: these are NOT comparable to the old yard numbers.** That yard was a 120 m square
+with one central objective; this one is a hexagon at 140 with two off-centre ones. **Same name, different map** —
+subtracting them is the subtraction `compare_arms` refuses.
+
+**The design consequence, which is the lead's to weigh and nobody else's:** if map choice swings a faction by 33 points
+while nothing else in the table moves at all, then **"is this faction balanced" is not a question with an answer** until
+the map pool is settled. **Balance follows map design here, not the other way round.**
 
 ## Factions (lead, 2026-09-15)
 

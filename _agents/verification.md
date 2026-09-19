@@ -111,8 +111,11 @@ the orchestrator:
 the game uses (`match.gd`), so both sides move together; a camera test that waits wall-clock for a rotation driven by the
 same process delta is consistent. Those are not exposed.
 
-**Status (round 7):** control's timing tests are ratios but still assert (converting them to measurements plus the timing
-target is round-8 work: it touches `mk/core.mk` and other streams' tests). `test_theme_factions.gd:63` (cache hit < 5 ms,
+**Status:** **control complies** — its four timing budgets (frame, order, click, health bars) print `TIMING NOT JUDGED
+(make control-timing judges): …` in `make check`, tagged `[OVER BUDGET]` when they would have failed, and assert only under
+`make control-timing` (`TANK_SQUAD_JUDGE_TIMING=1`, `mk/command.mk`); the pattern is `Fixture.judge_timing` in
+`tests/support/control_fixture.gd`. Positive control: +1 ms in the panel's `summary()` fails `control-timing` and leaves
+`make check` green with the tag. Other streams' timing assertions are still gates (the survey above). `test_theme_factions.gd:63` (cache hit < 5 ms,
 one sample) is routed to feel.
 
 ||||||| baf04ead

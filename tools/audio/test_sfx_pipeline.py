@@ -158,6 +158,63 @@ class GenerateAndLayerTest(unittest.TestCase):
             self.assertIn("compress/mode=0", (tmp / "mg_loop_1.wav.import").read_text())
             self.assertIn("compress/mode=2", (tmp / "tank_boom_1.wav.import").read_text(), "one-shots stay QOA")
 
+    def test_a_loop_named_after_its_sound_still_imports_uncompressed(self):
+        # Round 7: the crowd's bed is a loop called crowd_murmur, not *loop*: the recipe says which sounds loop.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            for name in ("crowd_murmur_1.wav", "crowd_cheer_1.wav"):
+                (tmp / name).write_bytes(b"")
+                (tmp / (name + ".import")).write_text("[params]\ncompress/mode=2\n")
+            self.assertEqual(len(sfx_layer.keep_loops_uncompressed(tmp, {"crowd_murmur"})), 1)
+            self.assertIn("compress/mode=0", (tmp / "crowd_murmur_1.wav.import").read_text())
+            self.assertIn("compress/mode=2", (tmp / "crowd_cheer_1.wav.import").read_text())
+            self.assertEqual(sfx_layer.loop_sounds({"sources": [{"sound": "crowd_murmur", "loop": True},
+                                                                 {"sound": "crowd_cheer"}]}), {"crowd_murmur"})
+
+    def test_a_bed_can_be_ridden_to_a_steady_level(self):
+        # Round 7: the generated crowd bed swelled 8 dB over 19 s though the prompt asked for a constant level, and
+        # CrowdVoice already sets the murmur's level from the match: a bed's own swell fights it. layer.level_s rides
+        # the gain over that window (the slow drift goes, anything faster stays).
+        rng = np.random.default_rng(6)
+        rate = sfx_layer.RATE
+        t = np.arange(rate * 16) / rate
+        swell = 10 ** ((-4 + 4 * np.sin(2 * np.pi * t / 16)) / 20)
+        chatter = 1 + 0.5 * (np.sin(2 * np.pi * 3 * t) > 0.9)  # a fast shout every third of a second
+        x = rng.standard_normal(len(t)) * 0.1 * swell * chatter
+
+        def spread(y, window_s):
+            n = int(rate * window_s)
+            levels = [20 * np.log10(np.sqrt((y[i:i + n] ** 2).mean())) for i in range(0, len(y) - n + 1, n)]
+            return max(levels) - min(levels)
+
+        ridden = sfx_layer.ride_level(x, 2.0)
+        self.assertGreater(spread(x, 1.0), 7.0)
+        self.assertLess(spread(ridden, 1.0), 2.0, "the slow swell is gone")
+        self.assertGreater(spread(ridden, 0.05), 3.0, "the fast shouts are still there")
+
+    def test_a_loud_loop_never_peaks_over_the_ceiling(self):
+        # Round 7: the crowd bed at +5 dB peaked at +1.5 dBFS: the seam's crossfade ran after the limiter and summed
+        # two limited stretches back over it. The limiter has the last word.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            rng = np.random.default_rng(7)
+            path, source = self._loop_master(tmp, np.clip(rng.standard_normal(sfx_layer.RATE * 4) * 0.3, -1, 1))
+            source = dict(source, layer={"seam_s": 1.0, "gain_db": 12.0, "harmonics_db": None})
+            _, report = sfx_layer.build_take(path, source, 1)
+            self.assertLessEqual(report["peak_db"], sfx_layer.CEILING_DB + 0.05)
+
+    def test_a_bed_takes_a_long_seam(self):
+        # A crowd bed's texture changes over seconds: a 30 ms splice is audible as a jump in the room, so a source may
+        # ask for a longer crossfade (layer.seam_s). The loop is shorter by exactly the overlap.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            rng = np.random.default_rng(5)
+            path, source = self._loop_master(tmp, rng.standard_normal(sfx_layer.RATE * 4) * 0.3)
+            short, _ = sfx_layer.build_take(path, source, 1)
+            source = dict(source, layer={"seam_s": 0.5})
+            long, _ = sfx_layer.build_take(path, source, 1)
+            self.assertEqual(len(short) - len(long), int(0.5 * sfx_layer.RATE) - int(0.03 * sfx_layer.RATE))
+
     def test_the_tail_lift_raises_the_decay_and_not_the_hit(self):
         rate = sfx_layer.RATE
         t = np.arange(rate * 2) / rate
