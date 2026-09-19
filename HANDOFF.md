@@ -213,6 +213,36 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **The unifying shape of round 7's best candidates, named by arena:** *the correct behaviour depends on what the
+  element is currently trying to do.* Round 6 made each layer correct **in general** — avoidance that keeps a column a
+  column, an objective at the centre, a formation that holds its geometry — and the residue in every case is that the
+  *right* answer changes with the element's current intent. Three items below are the same statement at different
+  scales: not overtaking is right for a column and wrong for a charge; a central objective is right for a brawl and
+  wrong for a game about flanking; a fixed slot is right for holding and wrong for forming up. **A round that made
+  behaviour context-dependent would be the natural successor to one that made it correct.**
+- **Should a battle drill override formation discipline?** Round 6's ORCA deliberately does **not** treat a friend
+  moving the same way as a collision, so a column stays a column — which is right for formations and is why round 5's
+  overtaking sidestep was removed (it also steered into walls unchecked). Attributed cost, measured by bisect: an
+  assault-through an ambush now takes **18.5 s against 17.7 s**, because the quick units no longer pass the slow ones.
+  **0.8 s is not worth re-adding overtaking for** — it would risk nav's 33/60 → 60/60 arrival result. But *a charge is
+  the one case where you might want the fast units through rather than the column preserved*, and the lead would notice
+  it as *"my fast units got stuck behind the slow ones during a charge"*. Round-7 question: do drills get to suspend
+  formation discipline, and which ones?
+- **The lead's PID request is half-delivered, and the missing half is the visible half.** nav's N6 regulates any
+  `move_to` whose goal *slides* — a squad follower's leader-anchored slot is such a goal, so **squad station-keeping is
+  PID-controlled and measured (0.35 m mean gap against 4.58 m for the old proportional law)**. squad deliberately added
+  **no second regulator**, which is right. But **element slots are fixed per leg or per click**, so the PID never
+  engages for elements: an element still *snaps* to its formation geometry rather than **flowing** into it. The lead's
+  own words were *"no matter where they might be currently, there's a formula to form up"* and *"a PID loop would
+  conceptually be useful for a unit trying to get back in his formation"* — the second is delivered for squads and not
+  for elements. **Making elements flow into formation is the next build on top of N6**, and it is the piece most likely
+  to make the formations *look* as good as they now measure. A round-7 candidate, and cheap now that the regulator
+  exists.
+- **Per-faction PID gains** (nav's X8, not started): the lead asked for it by name — *"we might even be able to
+  differentiate units of different factions by PID values"* — the Syndicate crisp, the gangs loose. `control_gains.gd`
+  exists and the defaults are stable, so this is now a data exercise. It must be **measured** rather than shipped as
+  flavour: if identical armies with different gains win equally often and look the same on screen, say so.
+
 - **A texture leak on `main` that `make check` cannot see** (found by control on the merged tree at `2fa58c01`,
   laptop, windowed): `make shell-playtest` fails its clean-console gate with two `ERROR: Texture with GL ID of
   142/143: leaked 5460 bytes` lines, absent in all seven pre-merge runs. Likely feel's `night_sky`/skyline shaders or

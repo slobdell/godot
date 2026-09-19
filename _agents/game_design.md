@@ -372,6 +372,16 @@ stack first, then the layer that commands it, then how the player reads and issu
   sweep, the standoff negotiation — are the **smaller** contributor to both headline metrics.
   **If anyone tunes this later: acquisition first, bands second.** This was only visible once the control disabled the
   gates rather than just the bands; a control that is not a real "before" hides which half of a change did the work.
+- **Why the objective must come off the centre line, stated by two streams arriving from opposite ends** (arena from
+  terrain, combat from the engagement decomposition, 2026-09-18). They are **the same claim at two scales:**
+  the acquisition gates reward approaches that **break line of sight**, and an objective off the centre line is what
+  makes taking such an approach **worth the drive**. arena's measurements say the terrain *already* offers covered
+  routes at a **1.0–1.1× detour on every map** — nobody takes them because the only thing worth holding is in the
+  middle. arena's sentence, which is the round's sharpest statement of the risk:
+  > *"If N7 lands and objectives stay central, the gates will have made flanking pay in a game that still gives no
+  > reason to flank."*
+  The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
+  changes should compound rather than merely coexist.
 - **0.55 of reach is confirmed as the overshoot**: lowest fire rate, longest matches, fewest eliminations of any arm.
   A fight the player cannot close. The shipped bands are nowhere near it.
 - **Superseded, kept for the method:** an earlier n = 15 pass

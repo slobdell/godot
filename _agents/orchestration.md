@@ -859,3 +859,67 @@ The kickoff prompt is one line; this section is the rest.
     implicate that culprit.** A test that asks "did X change this?" by consulting a global constant is not asking about
     X — it is asking "is the world as it was", and will blame X for everyone else's changes. And for anyone reading a
     red check: **three failures reporting the same number are one failure**, not three.
+66. **A derived value copied into a second place is a stale value waiting for its moment — and one stream hit this
+    four times in a single day.** Round 6, arena, each instance the same bug in a different costume:
+    1. `exposure()` hard-coding a **110 m** watcher range — a weapon-range assumption wearing a sightline's clothes,
+       which had inverted a *published* flanking conclusion (1.8–2.1× detour became 1.0–1.1× once derived).
+    2. `UNITS`/`ARENAS`/`RUNS` as bare make knobs another file's default could reach (with combat's `VARIANTS`).
+    3. A plot titled `direct_route_exposure` — the legacy measure — printed beside a card quoting the derived one:
+       **two different numbers with the same name on one page**, which is how a reader learns to distrust both.
+    4. A **"posted" reach hand-set to 70 m** from "a cannon's full range", where the catalog's own median of
+       `min(full range, sight radius)` is **60 m** — several units cannot *see* as far as they can shoot, and the
+       sight cap that the *idle* figure applied had not been applied to the posted one. **It inflated every posting
+       figure by about half.**
+    The fix was the same every time and the stream said so: **put it in one place and read it.** `make arena-reach`
+    now runs `Engagement.covering_range()` and writes a file the report reads, with the constants demoted to a
+    labelled fallback and a flag to override.
+    Two instructions:
+    - **A number you did not compute in the place you use it is a copy, whatever it looks like.** A named constant, a
+      make default, a plot title, a figure in prose — all copies. Derive it, or read it from where it is derived.
+    - **When a re-derivation moves a number, find out whose error it was before relaying blame.** Here the
+      orchestrator had warned that combat's proposal might shift arena's figures; the figure that actually shifted was
+      arena's own hand-set constant, and combat's derivation was right all along.
+67. **A consistent failure on one machine and an intermittent one on another are usually one bug, differing only in
+    timing.** Round 6: `shell-playtest`'s faction-click checks failed **every** run on builder0 and **one in seven** on
+    the laptop. The laptop case had been filed as a stray-mouse artefact (trip-up 32) and the builder0 case as "a click
+    or resolution issue on builder0" — two environmental explanations for one defect. The cause was neither: the
+    **loading screen** is a full-screen, click-stopping `CanvasLayer` on the root, and it was **still fading out** when
+    the playtest clicked. builder0's ~1 fps desktop made the race certain; the laptop lost it occasionally.
+    Two instructions:
+    - **When the same check fails always here and sometimes there, do not reach for two environment stories.** Look for
+      a race whose window the slower machine widens. "Flaky on A, broken on B" is one of the strongest available hints
+      that a timing window exists.
+    - **A gate that always fails is as uninformative as one that always passes**, and it hides real signal: this one
+      had been red unconditionally on the machine we verify on, which is precisely why a texture leak in another
+      stream's code went unnoticed until a human looked by hand. After this fix `shell-playtest` exits 0 on builder0
+      for the first time — **an always-red check should be treated as an outage, not as a known quirk.**
+68. **A checkpoint merge has a shelf life, and the tell is a third number.** Round 6, arena: it merged `main` at the
+    announced point, did an hour's work, and its check failed `sim-baseline` — expected `8ebbed52…` (its tree's
+    committed line), **produced `91db2388…`**, while the baseline the orchestrator had just recorded on `main` was
+    `ae7466f3…`. **Three different numbers.** The explanation was not a defect: `main` had taken nav's and control's
+    merges in the meantime, so `91db2388…` was the correct hash of a real third state — CP4 without nav or control.
+    **The produced hash matching *neither* candidate is what made it legible**, and that is the part to remember:
+    - had it matched the orchestrator's `ae7466f3…`, the obvious reading is *"my baseline file is just stale"*;
+    - had it matched its own `8ebbed52…`, the obvious reading is *"CP4 did not move the simulation"*;
+    - both readings would have been wrong, and each is the first thing a reasonable agent would conclude.
+    So: **when a hash comparison fails, enumerate every hash you can name and check which ones the produced value
+    matches.** A value matching none of them means your tree is a state nobody has a record of — usually because
+    "`main`" meant something different an hour ago. And **say so when you hand over a branch merged at a stale
+    checkpoint**: arena warned that its next hash would carry nav's and control's work as well as its own, which is
+    exactly what an orchestrator expecting an arena-only diff needs to hear.
+69. **"It fails on `main` too" clears a stream only if `main` does not contain that stream's work — and that stops
+    being true the moment it first merges.** Round 6, the round's most careful isolation and it was still unsafe. nav
+    reported a failing scenario, ruled its own work out by switching **five** mechanisms off individually and all
+    together on its branch, and observed the same failure on `main` — a properly constructed control. The orchestrator
+    relayed it to another stream as "not nav's". **But `main` already contained nav's earlier merge**, including the one
+    mechanism whose experiment switch was broken and which therefore had *not* been in the A/B. nav caught it and
+    retracted before the other stream had spent an hour.
+    Two instructions:
+    - **In a round where streams merge repeatedly, `main` is a clean baseline for a stream only until that stream's
+      first merge.** After that, "reproduces on `main`" means "reproduces with my own work present". Use
+      `git archive` of a commit *before* your first merge, or an explicit revert, if you need a real control.
+    - **A feature whose kill switch does not work is invisible to your own A/B, and you will not notice** — the switch
+      reads as coverage. When you build an experiment switch, test that it actually changes behaviour (mutation-check
+      it) before you rely on it to exonerate anything.
+    And the orchestrator's half: **when a stream hands you an exoneration, check that the control is still a control
+    before relaying it.** The relay is where a plausible inference becomes another stream's afternoon.
