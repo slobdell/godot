@@ -151,6 +151,23 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+**THEN (2026-09-18, later): still unplayable at 45°** — *"it's unplayable because of the field of view right now"*.
+Stop choosing the number: **the lead finds the camera himself.** In `make skirmish`: a live **camera readout** (top
+left: pitch, distance, FOV, yaw, auto-frame), **[ ]** field of view (35°–90°), PgUp/PgDn tilt (8°–70°), wheel
+distance, `,` `.` yaw, **V** auto-framing off (so the vision camera stops taking the view back), **P** prints the pose
+and copies it to the clipboard (`CAMERA_POSE pitch=… distance_m=… fov=… yaw=…`) — the default becomes whatever he
+sends. Provisional start nearer the readable end: 50°, FOV 60, auto-framing no closer than 45 m (at 45° it closed to
+~29 m in play). FOV frames for him to confirm the lens: https://claude.ai/artifact/Akfsk6xq1L4pQDCFyTNvva (50/55/60; at
+the same pose 60 shows more of the fight). Command card 160 → 200 px tall ("the buttons are too small to make out").
+Round 7 (not started, needs a brief): yaw follows the selection's facing; FOV tied to the selection's weapon range.
+
+**REVERSED (2026-09-18, late): the lead played 12° and rejected it** — *"I was totally wrong about the camera, the
+game is unplayable now with low field of view."* Default pitch back to **45°** (round 5's start pose); FOV 60 kept (my
+judgement from scripted sessions: "low" reads as the pitch, and 60 shows more ground than 55, not less — one constant if
+he disagrees); pitch/zoom decoupling, the 8°–50° range, the cutaway and the far floor all stay. Phone bar back at 24 px
+(30.3 px measured). The reason is next to `DEFAULT_PITCH_DEG`: **a playability number, chosen from play, not a frame.**
+Everything below about 12° is history.
+
 **Report (2026-09-18, night).** **Green, merge here: `2dbd985d`** (`make remote T=check` 1082 passed, 0 failed,
 builder0) — main `0f559857` merged in, X4 re-landed, Ambush, X5 on nav's real Movement. Merged to `main` earlier:
 `758a45a8`, `aa7f3499` + `9ef6bbee`. (This Status edit is docs-only, on top of it.)

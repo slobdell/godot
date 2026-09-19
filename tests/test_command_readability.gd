@@ -29,17 +29,14 @@ func _setup(screen: Vector2i) -> Array:
 	return [game_match, map, rig]
 
 
-## Round 6. MEASURED (headless projection, one fixture, laptop): a start-view vehicle is 23.7 px on a 1200x540 phone and
-## 40.0 px at 1920x1080, at the lead's 12° / FOV 60°. The phone bar was 24 px, calibrated at 25° / FOV 55°.
-## WHY IT MOVED: the lead chose 12° / FOV 60° for DESKTOP (his pillar: desktop first); the phone frame inherits a
-## camera nobody chose for it, and the start distance is set by the army's width, so a phone player gets a worse frame.
-## THIS IS A DEBT, NOT A RESOLUTION: touch needs its own framing (a closer start distance, or a pitch of its own), and
-## 22 px is provisional until that pass happens. If phone vehicles measure 21 px after the next camera change, the
-## answer is "give touch its own framing", NOT "move the bar again" - otherwise it ratchets down once per camera change.
-## (Open item in _agents/tactical_map.md "Open items".)
-const PHONE_MIN_PX := 22.0
-## Desktop had no bar before round 6; 40.0 px measured.
-const DESKTOP_MIN_PX := 36.0
+## Round 6. At the default camera (45°, FOV 60°) a start-view vehicle measures 30.3 px on a 1200x540 phone and 52.5 px at
+## 1920x1080 (headless projection, one fixture, laptop). History: at the lead's short-lived 12° default it was 23.7 px on
+## the phone, and the phone bar was lowered to 22 "provisionally"; 12° was rejected in play and the bar is back at 24.
+## Touch still has no framing of its own: if a future camera change pushes phones under 24 px, the answer is to give
+## touch its own framing, NOT to move this bar.
+const PHONE_MIN_PX := 24.0
+## Desktop had no bar before round 6.
+const DESKTOP_MIN_PX := 45.0
 
 
 func test_the_starting_view_shows_the_army_at_a_readable_size_on_a_desktop() -> void:

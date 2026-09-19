@@ -18,10 +18,13 @@ extends Control
 ##   GROUPS   ctrl+1–9 saves · shift+1–9 adds · 1–9 selects (twice quickly: center the camera) · Tab cycles groups
 ##   CAMERA   screen edges, arrows, middle-drag pan · wheel zoom · , . rotate · C centers on the selection
 ##            Page Up / Page Down or ctrl+wheel tilt (Home resets it) · O the overview and back (round 6 X3)
+##            [ ] field of view · V auto-framing on/off · P copies the camera pose (CameraReadout shows it all)
 ##   TIME     Space pauses (orders still work while paused)
 ## The node is named "TacticalMap" in skirmish so the HUD skin lays its message columns out around it.
 
 signal command_issued(command: Dictionary, error: String)
+## Round 6: P copied the camera pose (the HUD says so).
+signal pose_copied(pose: String)
 
 ## A left press that moves farther than this (pixels) draws a box instead of clicking.
 const DRAG_THRESHOLD_PX := 6.0
@@ -557,6 +560,20 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_HOME:
 			if rig != null:
 				rig.reset_tilt()
+		KEY_BRACKETLEFT, KEY_BRACKETRIGHT:
+			# Round 6: the lead finds the camera himself - [ narrows the field of view, ] widens it.
+			if rig != null:
+				rig.fov_by(RtsCamera.FOV_STEP_DEG * (1.0 if key.keycode == KEY_BRACKETRIGHT else -1.0))
+		KEY_V:
+			if rig != null:
+				rig.set_auto_frame(not rig.auto_frame)
+		KEY_P:
+			# Print the pose and put it on the clipboard, so the lead can paste the camera he found back to us.
+			if rig != null:
+				var pose := rig.pose_text()
+				print(pose)
+				DisplayServer.clipboard_set(pose)
+				pose_copied.emit(pose)
 		KEY_G:
 			cycle_formation()
 		KEY_F1:

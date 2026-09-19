@@ -20,15 +20,22 @@ extends Node
 
 const MIN_DISTANCE := 16.0
 const MAX_DISTANCE := 260.0
-## X3: the tilt the player can choose (degrees below the horizon), and where it starts. **The lead's pick, twice at the
-## floor of what he was offered** (round 6, 2026-09-18, the camera pages from `make camera-looks`): first "25° · 50 m ·
-## FOV 60°" (of 25/35/45/60), then "12° · 50 m · FOV 60°" (of 12/16/20/25). "Between StarCraft 2 and Twisted Metal"
-## sits much nearer Twisted Metal than anyone assumed; do NOT correct it upward because the tactical read is easier
-## from a conventional RTS pitch (game_design.md). The player can go a little lower (8°) and up to 50° (the StarCraft
-## end); O is the top-down map view.
+## X3: the tilt the player can choose (degrees below the horizon), and where it starts.
+## **The default is a PLAYABILITY number and must be chosen from a played session, not from a frame.** Round 6: the lead
+## picked 25°, then 12°, from camera pages of STILL frames of a frozen fight (the floor of the range both times), then
+## played `make skirmish` at 12° and rejected it: "I was totally wrong about the camera, the game is unplayable now with
+## low field of view." A still shows composition (and at 12° it is striking); it cannot show how much ground you can
+## read while commanding. So the default is back to ~45° - round 5's start pose, which he never complained about. His
+## real complaint was that zooming out became a bird's-eye view; decoupling pitch from zoom fixed that and stands. The
+## player can still tilt 8°-50° (Page Up/Down, ctrl+wheel). Do not lower the default again from a picture.
 const MIN_PITCH_DEG := 8.0
-const MAX_PITCH_DEG := 50.0
-const DEFAULT_PITCH_DEG := 12.0
+## Round 6, later still: after the 45° revert the lead ran `make skirmish` again and it was "unplayable because of the
+## field of view", adding "the bird's eye view was better but then it also made it so tanks were shooting at enemies I
+## couldn't even see". So the defaults now start nearer the readable end (50°, auto-framing no closer than
+## VISION_FLOOR_M) and he finds the real pose himself with the live controls and the readout (P copies it). The
+## default is whatever he sends back - not a number any agent chose.
+const MAX_PITCH_DEG := 70.0
+const DEFAULT_PITCH_DEG := 50.0
 ## Round 6, after playing the lead's 12°: a very low camera pulled back to frame a whole army (~150 m) showed the arena
 ## as a thin strip between sky and cut-away stands, with units as specks (shell-playtest, 50 s). So past FAR_TILT_FROM_M
 ## a soft floor lifts the tilt, from MIN_PITCH_DEG there to FAR_TILT_MAX_DEG at FAR_TILT_FULL_M. Up to that distance -
@@ -44,8 +51,14 @@ const OVERVIEW_PITCH_DEG := 77.0
 ## Tilt speed: degrees per second for held keys, degrees per wheel notch.
 const TILT_SPEED_DEG := 40.0
 const WHEEL_TILT_DEG := 3.0
-## The lead's pick, both times (see DEFAULT_PITCH_DEG); was 55°.
+## The default field of view (was 55° before round 6). The live value is `fov`: `[` / `]` change it in play.
 const FOV_DEG := 60.0
+const MIN_FOV_DEG := 35.0
+const MAX_FOV_DEG := 90.0
+const FOV_STEP_DEG := 5.0
+## Round 6, after two wrong answers from still frames: the lead finds the camera himself, in play. `fov` is live (one
+## camera, so a static the pure pose math reads), and `auto_frame` off stops the vision camera taking the view back.
+static var fov := FOV_DEG
 ## X3 cutaway: the camera's near plane when there is nothing to cut (Camera3D's default), and how far short of the
 ## wall's foot the plane stops when there is.
 const NEAR_DEFAULT := 0.05
@@ -86,7 +99,10 @@ const TRACK_SPEED := 120.0
 const TRACK_ZOOM_SPEED := 0.35
 ## L4 (control X1): the vision frame may go this close, and no closer (the auto frame's floor; the player may
 ## still scroll in from there, which costs them awareness and is their call).
-const VISION_MIN_ZOOM := 0.10
+## Round 6: in play at 45° the auto camera closed to ~29 m on a three-vehicle squad (shell-playtest), too close to see
+## what the squad is shooting at. It no longer comes closer than VISION_FLOOR_M on its own; the wheel still can.
+const VISION_FLOOR_M := 45.0
+const VISION_MIN_ZOOM := 0.345  # RtsCamera.level_for(VISION_FLOOR_M)
 ## After the player last moved the camera, this many seconds of stillness give the element back to it.
 const HANDBACK_SECONDS := 2.5
 ## L4: the vision frame fills more of the screen than a C4 frame does (the lead: "always zoom in as close as
@@ -137,6 +153,8 @@ var vision_region: VisionRegion = null
 var handback_seconds := HANDBACK_SECONDS
 ## Control X3 (the lead's dial): how much of the screen the commanded element fills (`--camera-frame`).
 var vision_inset := VISION_FRAME_INSET
+## Off: the vision camera never takes the view back (V in play).
+var auto_frame := true
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -165,7 +183,7 @@ func _ready() -> void:
 	if camera is FollowCamera:
 		(camera as FollowCamera).target = null
 	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
-	camera.fov = FOV_DEG
+	camera.fov = fov
 	camera.far = 1200.0
 	# The rig moves the camera every rendered frame from where vehicles are drawn (Shown): physics interpolation
 	# (combat's 30 Hz tick) must not also smooth it, or it trails a tick behind its own targets.
@@ -226,6 +244,7 @@ func _process(delta: float) -> void:
 
 func _apply() -> void:
 	if camera != null:
+		camera.fov = fov
 		camera.global_transform = RtsCamera.pose_for(_shown_focus, _shown_yaw, _shown_zoom, _shown_pitch)
 		var distance := RtsCamera.distance_for(_shown_zoom)
 		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, distance, RtsCamera.tilt_at(_shown_pitch, distance),
@@ -365,6 +384,27 @@ func tilt_by(degrees: float) -> void:
 	pitch = clampf(pitch + degrees, MIN_PITCH_DEG, MAX_PITCH_DEG)
 
 
+## Widen (positive) or narrow the field of view by `degrees`, within MIN/MAX_FOV_DEG.
+func fov_by(degrees: float) -> void:
+	fov = clampf(fov + degrees, MIN_FOV_DEG, MAX_FOV_DEG)
+
+
+## The vision camera frames the commanded element and takes the view back after the player moves it. Off, the camera
+## stays wherever the player leaves it (for finding a pose by hand).
+func set_auto_frame(on: bool) -> void:
+	auto_frame = on
+	if not on and _track == Track.VISION:
+		stop_tracking("manual")
+
+
+## The current pose, in the words the lead pastes back: the values the defaults are made from.
+func pose_text() -> String:
+	var distance := RtsCamera.distance_for(_shown_zoom)
+	return "CAMERA_POSE pitch=%.0f distance_m=%.0f fov=%.0f yaw=%.0f zoom=%.3f auto_frame=%s" % [
+			RtsCamera.tilt_at(_shown_pitch, distance), distance, fov, rad_to_deg(_shown_yaw), _shown_zoom,
+			"on" if auto_frame else "off"]
+
+
 func reset_tilt() -> void:
 	if _before_overview == null:
 		pitch = DEFAULT_PITCH_DEG
@@ -469,7 +509,7 @@ static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom 
 static func shows_all(points: Array, at: Vector3, heading: float, level: float, aspect: float, inset := FRAME_INSET,
 		pitch_deg := DEFAULT_PITCH_DEG) -> bool:
 	var view := RtsCamera.pose_for(at, heading, level, pitch_deg).affine_inverse()
-	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0) * inset
+	var tan_y := tan(deg_to_rad(fov) / 2.0) * inset
 	for p in points:
 		var c: Vector3 = view * (p as Vector3)
 		if c.z >= -0.1:
@@ -488,7 +528,7 @@ static func seen_fraction(region: VisionRegion, at: Vector3, heading: float, lev
 	if region == null or region.is_empty():
 		return 0.0
 	var pose := RtsCamera.pose_for(at, heading, level, pitch_deg)
-	var tan_y := tan(deg_to_rad(FOV_DEG) / 2.0)
+	var tan_y := tan(deg_to_rad(fov) / 2.0)
 	var plane := Plane(Vector3.UP, 0.0)
 	var seen := 0
 	var ground := 0
@@ -629,14 +669,14 @@ func _update_vision() -> void:
 		_cap_countdown = VISION_CAP_EVERY
 		vision_zoom = RtsCamera.horizon_zoom(region, look_clamp(focus), yaw, _aspect(), pitch)
 	zoom = minf(zoom, vision_zoom)
-	if _track == Track.NONE and follow_target == null and _before_overview == null \
+	if auto_frame and _track == Track.NONE and follow_target == null and _before_overview == null \
 			and _clock - _manual_at >= handback_seconds and not (_vision_state.get("frame", []) as Array).is_empty():
 		track(Callable(), Track.VISION)
 
 
 ## Give the camera back to the commanded element right now (switching elements, not waiting out the hand-back).
 func take_vision() -> void:
-	if not vision.is_valid():
+	if not vision.is_valid() or not auto_frame:
 		return
 	_manual_at = -1e9
 	_before_overview = null
@@ -665,7 +705,7 @@ func _update_vision_tracking() -> void:
 ## sit on top of the element. Pure: the ground moves away from the camera along its own heading.
 static func lift(center: Vector3, forward: Vector3, level: float, amount: float) -> Vector3:
 	var distance := RtsCamera.distance_for(level)
-	return center + forward * distance * tan(deg_to_rad(FOV_DEG) / 2.0) * amount
+	return center + forward * distance * tan(deg_to_rad(fov) / 2.0) * amount
 
 
 ## The ground direction the camera faces at this yaw (away from the camera, on the screen's up axis).
