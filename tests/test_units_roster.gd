@@ -35,8 +35,20 @@ func test_the_catalog_is_where_stats_come_from() -> void:
 		assert_eq(unit.unit_id, unit_id, "spawned as a %s" % unit_id)
 		assert_eq(unit.weapon_id, Units.PROFILES[unit_id]["weapon"], "a %s fires its fixed weapon" % unit_id)
 		assert_eq(unit.mount, Units.PROFILES[unit_id]["mount"], "and has the catalog's mount (C4)")
-		assert_near(unit.turret.global_position.y + Tank.MUZZLE_ABOVE_PIVOT, float(Units.PROFILES[unit_id]["muzzle_height"]), 0.01,
-				"its muzzle sits at the catalog's height")
+		# LOCAL, not global. This asserted `turret.global_position.y`, which is the muzzle's height IN THE WORLD --
+		# so it passed only while the hull happened to be resting exactly on y = 0, one physics frame after spawn.
+		# It failed on builder0 at 0.26 against 1.12, i.e. the scout sitting 0.86 m LOW, and passed alone on the same
+		# tree: an order-dependent failure, and the suspicion fell on `Units.tuning` leaking between tests. It is not
+		# that -- the tuning keys in play are max_shield, damage and armor, none of which is a muzzle height.
+		#
+		# The defect is that ONE assertion was making TWO claims: "the catalog sets the muzzle above the hull"
+		# (deterministic, and the only thing a test named *the catalog is where stats come from* should check) and
+		# "the hull has settled on the ground" (physics, timing, and whatever the previous test left the world in).
+		# When a conflated assertion fails you cannot tell which claim broke, so it gets blamed on whatever changed
+		# most recently. Whether hulls settle is worth testing; it belongs in a spawn test, with enough frames to
+		# actually settle, and not here.
+		assert_near(unit.turret.position.y + Tank.MUZZLE_ABOVE_PIVOT, float(Units.PROFILES[unit_id]["muzzle_height"]), 0.01,
+				"its muzzle sits at the catalog's height above its own hull")
 		assert_near(unit.heat_capacity, float(Units.PROFILES[unit_id].get("heat_capacity", 0.0)), 0.01, "heat only if its weapon heats")
 
 
