@@ -138,9 +138,7 @@ const ORDER_ARRIVE := 3.5
 ## (Round 6, nav: there is no "close enough after a stall" any more. Round 5 completed a stalled move from up to 12 m away,
 ## which is what made a jammed horde look like it had decided to stop. An order completes when the unit arrives; a unit
 ## that cannot says so through Movement.state() — phase "blocked", and what blocks it — and keeps trying.)
-## ...and for wheeled units within this share of their turning radius (see _order_arrive), at most WHEELS_ARRIVE_MAX.
-const WHEELS_ARRIVE_RADII := 0.6
-const WHEELS_ARRIVE_MAX := 6.0
+## ...and for wheeled units within Movement.settle_radius (see _order_arrive).
 ## A stop order is done once the unit is slower than this (m/s).
 const STOPPED_SPEED := 0.5
 ## ...no sooner than this many ticks after it was issued.
@@ -714,11 +712,11 @@ static func _flat(point: Vector3) -> Vector3:
 	return Vector3(point.x, 0.0, point.z)
 
 
-## How close counts as arrived for a move order: ORDER_ARRIVE, or for wheels WHEELS_ARRIVE_RADII of the turning radius (a
-## car can't settle on a point much closer than that without circling it), at most WHEELS_ARRIVE_MAX.
+## How close counts as arrived for a move order: ORDER_ARRIVE, or for wheels Movement.settle_radius (a car can't settle on
+## a point much closer than that without circling it).
 func _order_arrive() -> float:
-	var radius := _wheel_radius()
-	return ORDER_ARRIVE if radius <= 0.0 else clampf(radius * WHEELS_ARRIVE_RADII, ORDER_ARRIVE, WHEELS_ARRIVE_MAX)
+	# The wheeled number lives in one place (nav's Movement.settle_radius, round 7): 0 for tracks and hover.
+	return maxf(ORDER_ARRIVE, Movement.settle_radius(tank.unit_id))
 
 
 ## How often this brain should think right now (think LOD): the fight rate when either gun can reach the nearest
@@ -1184,7 +1182,8 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 
 ## K1: keep only the options the order's verb allows (ORDER_OPTIONS) and add the ones that carry it out. A move,
 ## hold, or follow is absolute; an attack fights only its target (any way the brain likes) and chases it when it's
-## out of sight; an attack-move drives on unless a fight on the way outscores ATTACK_MOVE_WEIGHT; an idle unit fights
+## out of sight; an attack-move drives on unless a fight on the way outscores ATTACK_MOVE_WEIGHT (only its named target,
+## when it has one); an idle unit fights
 ## around its post (the situation's objective) and never roams off to scout, contest, or resupply.
 static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: bool, out_of_ammo: bool) -> Array:
 	var verb: String = o["verb"]
@@ -1218,6 +1217,11 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 					if not critical:
 						continue
 					candidate["score"] = 0.99
+				elif target != "" and candidate["target"] != "" and candidate["target"] != target:
+					# Round 8: an attack-move that names a target (an element maneuvering onto the one its task names)
+					# fights that one and drives past the rest: the lead's "they shoot whatever they were already
+					# shooting at" was the maneuver half of a drill picking fights on the way.
+					continue
 				elif candidate["target"] in in_reach:
 					candidate["score"] = ATTACK_MOVE_FIGHT + float(candidate["score"])  # met on the way: fight it
 			"idle":
@@ -1743,7 +1747,12 @@ func _act(s: Dictionary) -> void:
 				_order_move(_face_intended_or({"type": "stop"}))
 			else:
 				_order_move(_move_to(goal, false, float(o["speed"]), _order_arrive()))
-			_order_weapon({"type": "fire_at_will"})
+			# Round 8: a move that names a target (a crew its leader swings round onto the ordered target) lays its gun on
+			# that one while it drives, not on whatever is nearest; fire at will when it can't bear.
+			if String(o.get("target", "")) != "":
+				_order_weapon({"type": "target", "name": String(o["target"]), "fallback": true})
+			else:
+				_order_weapon({"type": "fire_at_will"})
 		"PURSUE":
 			var o: Dictionary = s["order"]
 			why = TankBrain._join(why, "ordered, closing in")
@@ -2075,11 +2084,11 @@ func _act(s: Dictionary) -> void:
 			_order_move(_move_to(squad["slot"], squad["reverse"], squad["pace"]))
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD" when s.get("order") != null and s["order"]["verb"] == "hold" \
-				and _flat(my_position).distance_to(s["order"]["goal"]) > HOLD_TOLERANCE:
+				and _flat(my_position).distance_to(s["order"]["goal"]) > maxf(HOLD_TOLERANCE, Movement.settle_radius(tank.unit_id) + 1.0):
 			# Pushed off the spot (or ordered to hold somewhere else): back onto it, front toward trouble.
 			var spot: Vector3 = s["order"]["goal"]
 			why = TankBrain._join(why, "holding")
-			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, 1.5))
+			_order_move(_move_to(spot, (spot - my_position).dot(me["forward"]) < 0.0, 1.0, maxf(1.5, Movement.settle_radius(tank.unit_id))))
 			_order_weapon({"type": "fire_at_will"})
 		"HOLD":
 			var nearest_visible: Variant = null
