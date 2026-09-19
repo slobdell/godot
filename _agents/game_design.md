@@ -522,7 +522,31 @@ Two things this pick changed on its own:
 > of make skirmish was also worse camera behavior than whatever was iterated, it's unplayable because of the field of
 > view right now"*
 
-**The camera is a hotfix, not a round-7 item: he cannot play at all.** Everything else below is round 7.
+**THE CAMERA IS SETTLED, from a played session with live controls, 2026-09-18:**
+
+```
+CAMERA_POSE pitch=21 distance_m=49 fov=35 yaw=-0 zoom=0.365 auto_frame=on
+```
+
+**`fov=35` is the floor of the offered range, and it is the answer nobody guessed.** A *low* angle with a
+**telephoto** lens. Every still page and both agents reasoned the other way — control measured that FOV 60 shows more
+of the fight than 55 and concluded *"on his 'enemies I couldn't see', wider is the right direction"*, and the
+orchestrator relayed that. It was backwards. At a low pitch a wide lens produces a sweeping vista of mostly horizon
+with tiny vehicles; the same pitch at 35° crops to the action and makes the machines large. **"Low field of view" meant
+what it said, and he wanted it lower still.**
+Three things this settles that months of argument did not:
+- **Pitch 21° is close to the 12° he rejected** — so pitch was never the problem. *The lens was.* His two "wrong"
+  picks from stills were right about the angle and could not express the lens, because a still at a fixed FOV cannot
+  show you that you want a different one.
+- **He left `auto_frame=on`.** The L4 vision framing is wanted; it just needed a distance floor (control set 45 m after
+  finding it closed to ~29 m).
+- **A telephoto at 49 m is the Twisted-Metal-to-StarCraft answer** the project has been hunting since round 4: the
+  compression makes vehicles read as heavy machines rather than units on a map, without a close camera's loss of
+  tactical read.
+**Nobody may widen `FOV_DEG` toward 55–60 again without him.** It is the constant two agents independently argued the
+wrong way about.
+
+**The rest of the camera work below is round 7.** Everything else in this section is round 7.
 
 ### The camera design he is asking for, which is a real differentiator and not just a fix
 
@@ -553,6 +577,20 @@ Two things this pick changed on its own:
 7. **Which buttons need a follow-on click, and which apply immediately, is not legible.** *"If I click the attack button
    will they do something or do I need to direct them?"* Two different grammars share one row of buttons with no visual
    distinction.
+
+### Two more defects from the same session (2026-09-18)
+
+10. **No machine-gun fire from the scouts.** *"I'm not seeing any cool machine gun fire from the scouts."* The weapon
+    exists (`machine_gun`, 45 m, 3.5 damage hitscan at 10/s) and round 5's audio work covered it; what is missing is the
+    **visible** fire. A hitscan weapon with no tracer is invisible, and the scouts are the units whose whole job is to
+    be seen working.
+11. **Unit sizes are not to scale, and the discrepancy is backwards.** *"There's a huge size discrepancy for the units.
+    Our semi truck for the gang that was supposed to be a huge tank is tiny compared to the other vehicles. Our unit
+    sizes should be reflected here. Scouts are small, the IFVs are bigger, the tanks bigger than that (everything drawn
+    to scale basically)."* The catalog already carries `hull_size` per unit (C1), so **the data exists and the visuals
+    are not honouring it** — a gang *tank* rendering smaller than a scout inverts the read the whole
+    rock-paper-scissors design depends on. This is the same class as every other round-6 finding: the information is
+    there and does not reach the screen.
 
 ### Two defects to fix, not design
 
