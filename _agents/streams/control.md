@@ -167,8 +167,9 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | Radar draws the arena's outline | the perimeter polygon, else the active layout's bound (`4f7371ef`) | `test_radar` |
 | **Order progress on screen** (orchestrator, from nav/squad churn: weaving must read as *en route*) | done (`53a2af87`). For the selection, each order — or the squad's task, not its leader's moves — keeps a **pin**: ground ring at the ordered point, a stalk to the task's own symbol (card/preview glyph) on a dark disc, and a plate reading `ATTACK-MOVE · 2/3 there · 37 m`. A squad task adds a lead line from its middle (direct orders already have each unit's dashed line). Looked at the lead's 21°/49 m/FOV 35 pose, 1280×720 (laptop): readable over the arena floor; the first draft (12 px text, 20 px glyph, no plate) was not. 0.17 ms/frame at 30 units under orders (laptop); the whole control frame 1.84–1.96 ms of 2.0 (laptop, ~2.75× faster on builder0). **Wants the lead's eye on a touchpad.** | `test_control_order_marks`, `test_control_scale` |
 
-**Merge candidate: `baf04ead`** (main `b70608d6` merged in, the new sim baseline) — full `make remote T=check` #20
-running; this line changes when it lands. **Decided before the result (orchestrator, lesson 106):** `baf04ead`
+**MERGE HERE: `baf04ead` — #20 GREEN (builder0): `make check exited 0`, 1162 passed / 0 failed, `sim-baseline passed:
+e38fd65b6b6ead3f`, every target through `audio-check passed`** (main `b70608d6` merged in). After it, unchecked:
+`35c72304` (order/click/bars as ratios) and docs. **Decided before the result (orchestrator, lesson 106):** `baf04ead`
 predates main's `d8f26176` (garage/army-loop timeouts 60/120 → 600 s), so a *timeout* in `garage-smoke` or
 `army-loop-smoke` in #20 is not a finding about this branch; merge anyway and re-run on main.
 **After #20 merges (agreed with the orchestrator):** merge `main` first (nav's `c7da4dd8` moved the sim baseline;
