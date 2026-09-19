@@ -1297,3 +1297,35 @@ The kickoff prompt is one line; this section is the rest.
     - **And beware an over-determined failure standing in for evidence.** combat's branch carried three of its own
       hash-moving changes, so its `sim-baseline` failure was *"consistent with both stories and evidence for neither"* —
       combat said so rather than letting me quote it as confirmation. **Only a check on `main` establishes `main`.**
+93. **A silent lookup in a keyed table produced this project's longest-running false finding — twice.** combat, round 7:
+    `Army.squads_for()` loops **`for role in SQUADS`** — it iterates the *table*, not the units. **A unit whose role is
+    not a key in that table is silently dropped from every generated army.** No error; the army still builds; one unit
+    type simply never appears. So re-roling the Lance Platform from `"lancer"` to `"designator"` **deleted it from the
+    Syndicate**, which then fought 60 matches with four unit types instead of five.
+    **The same table caused the gangs' 23%.** Its own comment records it: the gangs' rat rods were given the Condemned
+    scout's *spotters-first* directive, so 15 assault vehicles sat at standoff range while the swarm died. We treated that
+    as a faction balance problem across two rounds and later watched it "dissolve" to 53%. **It never dissolved. It was
+    never real.** One table, two silent failures, two multi-round false findings — a *wrong* value the first time and *no*
+    value the second.
+    - **Any lookup keyed by a value from elsewhere needs a test that every possible key resolves.** combat's
+      `test_every_roster_role_can_be_put_in_a_squad` walks every roster unit and asserts its role has a `SQUADS` entry —
+      and it is **mutation-checked**: combat removed the entry and watched it fail, naming the unit. **A test you have not
+      seen fail is a test you are hoping about.**
+    - **Iterating the table instead of the contents is the code smell.** It makes absence unrepresentable and therefore
+      unreportable.
+    - **Orchestrator's share, and it is the real one: I made the re-role decision and never asked what else was keyed by
+      role.** Same failure as the hexagon (*what has to fit inside it?*) and the baseline (*who pays during the
+      interval?*), three times in one day: **approving a change by evaluating the change and not its surroundings.**
+94. **A confound is only investigated when it pushes the wrong way, so the dangerous confounds are the plausible ones.**
+    combat looked for the bug above **because the designator — a pure buff — measured as making its faction slightly
+    worse** (43% → 40%). Its own words: *"I could have written a tidy paragraph about how an acquisition buff might
+    backfire."*
+    **Invert it and nothing happens.** Had the missing unit made the Syndicate look *better*, or had it been dropped from
+    an opponent, the identical bug would have produced a believable number with a good explanation attached, and it would
+    have travelled: stream → orchestrator → lead → design decision. **Our whole error-detection process is "does this
+    surprise me", which is exactly blind to confounds that produce expected results.**
+    - **The defence is not more scepticism about surprising results — it is guardrails that fire without anyone being
+      suspicious.** A test, a printed configuration, an assertion that every key resolves. Suspicion does not scale;
+      mutation-checked invariants do.
+    - **Corollary for reporting: a result in the expected direction deserves the same confound hunt as a surprising one**,
+      and it will not get it unless the hunt is a checklist rather than an instinct.
