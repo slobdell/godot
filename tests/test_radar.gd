@@ -116,6 +116,11 @@ func test_the_radar_outline_is_the_arenas_own_shape() -> void:
 	var radar := Radar.new()
 	radar.size = Vector2(200, 200)
 	var saved := Arena.active
+	# Isolation: RtsCamera.perimeter_poly is a STATIC, and since arena's round-7 merge any earlier test that sets up an
+	# arena leaves it populated (rts_camera.gd adopts the layout's perimeter). Without this clear, outline_points() takes
+	# the polygon branch and this test measures the PREVIOUS test's arena - which is how it went red on main.
+	var saved_poly := RtsCamera.perimeter_poly
+	RtsCamera.perimeter_poly = PackedVector2Array()
 	Arena.active = {"half_size": 100.0}
 	var box := radar.outline_points()
 	assert_eq(box.size(), 5, "a square layout draws a closed box")
@@ -126,6 +131,6 @@ func test_the_radar_outline_is_the_arenas_own_shape() -> void:
 		hexagon.append(Vector2.from_angle(deg_to_rad(60.0 * k)) * 139.7)
 	RtsCamera.perimeter_poly = hexagon
 	assert_eq(radar.outline_points().size(), 7, "a perimeter polygon draws as that polygon, closed")
-	RtsCamera.perimeter_poly = PackedVector2Array()
+	RtsCamera.perimeter_poly = saved_poly
 	Arena.active = saved
 	radar.free()

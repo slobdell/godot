@@ -107,6 +107,10 @@ func _run() -> void:
 			if (all[i] as Tank).global_position.distance_to((all[j] as Tank).global_position) < 1.0:
 				stacked += 1
 	# Stacked starts separate (Avoidance parts coincident hulls by name), so this is reported, not fatal.
+	# The treatment, read live from the code under test (not from the flag passed): an A/B arm is only an arm if this
+	# differs between them.
+	print("NAV_FIGHT_ARM commit=%s fixed_style=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
+			CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
 	for frame in SimClock.TICK_RATE:
@@ -243,8 +247,22 @@ func _report(elapsed: float) -> void:
 				row[reason] = snappedf(float(d[reason]) / total, 0.001)
 		verbs[verb] = row
 	var alive := green.filter(func(t: Tank) -> bool: return t.is_alive()).size()
+	var rust_units: Array = game_match.tanks.get_children().filter(func(t: Tank) -> bool: return t.team == Match.Team.RUST)
+	var rust_alive := rust_units.filter(func(t: Tank) -> bool: return t.is_alive()).size()
+	var hops := 0
+	var switches := 0
+	for cause: String in retask_cause:
+		if cause.contains("(switched"):
+			switches += int(retask_cause[cause])
+		else:
+			hops += int(retask_cause[cause])
+	var minutes := maxf(0.01, float(ordered_ticks) / SimClock.TICK_RATE / 60.0)
 	var out := {"arena": String(Arena.active.get("name", "?")), "seed": int(_flag("seed", "3")), "green": green.size(),
-			"green_alive_end": alive, "seconds": snappedf(elapsed, 0.1),
+			"green_alive_end": alive, "rust": rust_units.size(), "rust_alive_end": rust_alive,
+			"green_lost": green.size() - alive, "rust_lost": rust_units.size() - rust_alive,
+			"shots": game_match.stats.get("shots", []),
+			"motion_jumps_per_unit_minute": snappedf(hops / minutes, 0.01),
+			"decision_jumps_per_unit_minute": snappedf(switches / minutes, 0.01), "seconds": snappedf(elapsed, 0.1),
 			"ordered_unit_seconds": snappedf(float(ordered_ticks) / SimClock.TICK_RATE, 0.1),
 			"unit_seconds": seconds, "share": share, "retasked_by_option_unit_seconds": retasked_as,
 			"retask_events": retask_events, "retask_cause": retask_cause, "halted_by_option_unit_seconds": halted_opt, "by_verb": verbs,

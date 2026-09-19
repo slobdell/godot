@@ -1770,3 +1770,20 @@ The kickoff prompt is one line; this section is the rest.
        most likely **never a comparison** — different builds, and plausibly different maps. **That is precisely the
        subtraction `compare_arms` now refuses and could not refuse then.** The principle it supported survives on the
        sharper argument: *do not tune against numbers whose cause you have not established.*
+119. **A test that claims "exact" and isn't is lesson 66's quieter sibling.** feel published `StandsProfile.points()` to
+     replace control's hand-measured `RtsCamera.STANDS_PROFILE`, **with a test asserting it reproduces the hand
+     measurement.** control swapped it in and found it does **not**: the back matches (22.2 m out, 15.7 m tall) and the
+     **front is about 2 m apart** — the kit stands **9.64 m tall from 4.2 m out** against a hand-measured 7 m at 2.3 m.
+     **The test must have a loose tolerance or check only the ends.**
+     **A hand-copied value at least looks like a copy. A test that asserts fidelity without enforcing it makes the copy
+     look verified**, which is worse — an unguarded claim invites checking and a guarded-looking one does not.
+     - **The published value was the correct one, and the consumer's test was wrong in a direction that let a case pass.**
+       control had a camera case at 30°, 150 m out, that was supposed to keep the stands in frame; with the real kit they
+       **rise 0.4 m into the sight line.** It moved the case to 40° with a comment saying why. **Publishing a derived value
+       found a defect in a consumer's test** — the strongest argument for lesson 66 anyone has produced.
+     - **Orchestrator's share: I relayed feel's claim to control as an assurance** — *"there is a test asserting that, so
+       the swap is verified faithful rather than asked for on trust"* — **without checking it.** Third instance today of
+       promoting something provisional to something established at the moment of relaying it (lessons 96, 113).
+     - **And it produces a visible change from a correctness fix:** the wall cutaway will now cut the front of the stands
+       slightly more often near the wall, because it was **under-cutting** before. **Say that in advance**, or it arrives
+       looking like a regression.

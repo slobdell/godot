@@ -8,16 +8,12 @@ const MATCH := preload("res://game/match/match.tscn")
 
 
 func _setup() -> Array:
-	var arena: Node3D = ARENA.instantiate()
-	add_to_tree(arena)
+	# Wait for THIS arena's navmesh, not any navmesh (lesson 87): Pathing.is_ready() is true for the previous test's
+	# regions for a frame or two, and a path planned on them runs straight through this arena's walls. squad caught it
+	# (round 7): this file failed after test_movement and passed alone.
+	var arena := await ArenaFixture.build(self, Arena.DEFAULT_LAYOUT)
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
-	# The navigation map syncs a few physics frames after baking; the count varies.
-	for frame in SimClock.TICK_RATE:
-		if Pathing.is_ready(arena):
-			break
-		await tree.physics_frame
-	assert_true(Pathing.is_ready(arena), "setup: navigation map synced within 1 s")
 	return [arena, game_match]
 
 
