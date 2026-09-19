@@ -129,6 +129,29 @@ place, you do not place).
 
 ## Status
 
+### Resumed after the quota stop — current state (read this, then the handover below for detail)
+
+- **Green: `42a6bc5f`** (builder0 `make check`: 1138 passed, 0 failed) — unit scale, MG tracers (shell tracer
+  rebalanced to 0.7 so it stays over twice any bullet: the first check at 82f99c6e failed `test_fx_tank_shell` on that),
+  MG sound, announcer trail-off. Sent to the orchestrator.
+- `f7878bdd` (unchecked, small): music-smoke and announcer-record-smoke compare against a same-match control run
+  instead of the shared baseline (combat's report: they failed and blamed the music/booth whenever the baseline moved).
+- **Announcer overlap: CLOSED — the lead listened: "the announcer clips sound good enough now, no complaints."**
+  Fix `82f99c6e` (interrupted voice trails off over 0.8 s under the interrupter). **Known, left as is:** when the
+  match result arrives the director can replace the caller's own kill line ~0.5 s early, so the caller trails off
+  under himself (clip 5; the lead did not comment, which is "not bothersome", not "approved"). It is a scheduling
+  choice in `AnnouncerDirector` (the result line is not an `_interrupt` — it replaces the current cue when it is
+  queued; see the `ANNOUNCER_CLIPPED ... cut_in=false` trace line); the fix, if wanted, is to let a same-speaker line
+  finish before the result starts.
+- **combat's `test_it_follows_a_mood_signal` full-suite failure does not reproduce on this tree** (passes in the green
+  full check; the 13-file prefix passes 82/0 on the laptop). Replied with a file-list bisect recipe.
+- **Arena shape settled: hexagon, flat side to each base** (arena's reasoning; the stands tile it: 6 modules of
+  23.07 m on a 139.7 m side). Owed when the stands are reshaped: **the stands' height profile as data beside the kit**
+  (control's cutaway reads it; stop them measuring `kit_stands`), and a **gate placement** (below).
+- Round 7 (next): a **cityscape arena kit** — the X4 skyline made playable: parameterised blocks, collision and visual
+  from one recipe; solid buildings in `navigation_source` on layer 1, low walls barricade-style, everything above eye
+  height scenery only; chamfered edges as the finish, decided together with arena's perimeter; budget per StaticBatcher.
+
 ### HANDOVER — read this first (2026-09-18, ~21:05, weekly quota about to stop this session for ~4 days)
 
 **Tree:** `stream/feel` is clean at `82f99c6e` (plus this Status commit). **Last green: `b00b8ff9`** (builder0 check,

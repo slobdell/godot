@@ -27,6 +27,9 @@ const PROPS := {
 	"floodlight": {"size": [2.4, 3.0, 2.4], "cover": "hard", "fallback": "prop.crate"},
 	# A neon sign on a post: spectacle only.
 	"sign": {"size": [0.4, 6.0, 0.4], "cover": "none", "collides": false},
+	# Round 7 (feel, agreed with arena): a city block, theme prop.block (CityBlock). One box of `size`; the art fills its
+	# footprint at ground level and steps in only above the shopfronts, so this box is what you see where it matters.
+	"block": {"size": [40.0, 24.0, 40.0], "cover": "hard"},
 }
 ## **Adding a type here is not an additive change.** `test_every_kit_prop_type_has_a_visual_slot` requires a
 ## `prop.<type>` slot in the theme for every entry, with no stand-in — so a new kind must land in the SAME COMMIT
@@ -35,7 +38,8 @@ const PROPS := {
 ## and breaking render's check for every stream.
 ##
 ## Keys a prop may carry for its look (read by the visual's setup(prop)); they never affect gameplay or symmetry.
-const LOOK_KEYS := ["faction", "paint", "stencil", "rust", "doors", "channel", "sign", "color", "variant"]
+const LOOK_KEYS := ["faction", "paint", "stencil", "rust", "doors", "channel", "sign", "color", "variant",
+		"tiers", "setback", "neon", "seed"]  # the last four: a city block's look (CityBlock), never its footprint
 ## Region kinds the AI and the measurements understand (_agents/arenas.md defines each).
 const REGION_KINDS := ["centre", "open_ground", "cover_cluster", "chokepoint", "flank", "overlook"]
 

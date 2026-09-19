@@ -29,10 +29,15 @@ music-import: audio-deps ## Import a Suno track: IN=~/Downloads/battle.mp3 STATE
 
 # The sim-baseline match again (mk/core.mk), with the soundtrack following it: the music must change with the match
 # and must not change the match. Same shape as announcer-record-smoke, and the same guarantee.
+## Round 6 (combat's report): the "did the music change the simulation" question is differential, so it is answered
+## against a control run of the same match without the music, not against the shared baseline file, which moves on
+## purpose whenever the simulation changes and then accused the soundtrack of breaking it.
 music-smoke: import ## A real headless match with the music on: the beds change, and the simulation hash does not
 	@mkdir -p $(BUILD_DIR)/audio
-	@key="glibc-$$(getconf GNU_LIBC_VERSION | cut -d' ' -f2)"; \
-	expected=$$(awk -v k="$$key" '$$1 == k {print $$2}' tests/baselines/sim_state_hash.txt); \
+	@key="control"; \
+	expected=$$($(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
+		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
+		--time-limit=40 --seed=3 2>/dev/null | grep MATCH_RESULT | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
 	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination \
 		--green-doctrine=res://doctrines/anvil_hammer.json --rust-doctrine=res://doctrines/individuals.json \
 		--time-limit=40 --seed=3 --music=on 2>/dev/null > $(BUILD_DIR)/audio/music-smoke.log; \
@@ -45,8 +50,8 @@ music-smoke: import ## A real headless match with the music on: the beds change,
 		|| { echo "music-smoke FAILED: the soundtrack never changed ($$beds cues, $$distinct beds, $$layers layer changes)"; \
 		     grep '^MUSIC' $(BUILD_DIR)/audio/music-smoke.log; exit 1; }; \
 	actual=$$(grep MATCH_RESULT $(BUILD_DIR)/audio/music-smoke.log | $(PYTHON) -c "import json,sys; print(json.loads(sys.stdin.read().split('MATCH_RESULT ')[1])['state_hash'])"); \
-	if [ -n "$$expected" ] && [ "$$actual" != "$$expected" ]; then echo "music-smoke FAILED: the soundtrack changed the simulation ($$actual, baseline $$expected)"; exit 1; fi; \
-	echo "music-smoke passed: $$beds bed changes across $$distinct beds, $$layers layer changes, hash $$actual$${expected:+ (matches the $$key baseline)}"; \
+	if [ -z "$$expected" ] || [ "$$actual" != "$$expected" ]; then echo "music-smoke FAILED: the soundtrack changed the simulation ($$actual, without it $$expected)"; exit 1; fi; \
+	echo "music-smoke passed: $$beds bed changes across $$distinct beds, $$layers layer changes, hash $$actual$${expected:+ (matches the same match without the music)}"; \
 	grep -E '^MUSIC_(TRACK|LAYERS)' $(BUILD_DIR)/audio/music-smoke.log | sed 's/^/  /'
 
 ## Round 5 X1-X2: sound effects from ElevenLabs, layered under the synthesised transients.

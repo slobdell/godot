@@ -1586,3 +1586,107 @@ The kickoff prompt is one line; this section is the rest.
      - **Prefer a ratio, a count, or a comparison against a reference measured in the same run.** *"Every number carries
        its machine"* (CLAUDE.md) is the reporting rule; this is its testing counterpart — **a number that must not depend
        on the machine should not be measured in units the machine controls.**
+108. **A guard runs on the hot path of every future run, so it earns MORE end-to-end exercise than the thing it guards, not
+     less.** combat, reporting its own: **the positive control it added to `faction_matrix` crashed every run it had been
+     written to protect** (fixed at `9821cac7`), **and its refusal path called `main()` bare, so `return 2` exited 0 — a
+     refusal that reported success to `make`.**
+     **A guard that reports success when it refuses is the exact inversion of its purpose**, and it is the third instance
+     in one day of **an exit status belonging to the wrong thing**: `tail`'s status reaching the harness's task
+     notification; `make check` aborting at target two while printing `1135 passed, 1 failed`; and now a refusal returning
+     0. **`exit code 0` keeps arriving from somewhere other than the thing we asked about.**
+     - **Mutation-check every guard: make it fail on purpose and watch it fail.** Every guard that worked today was
+       mutation-checked — arena watched its `nav-maze` control fail, control watched its frame ratio fail at +1 ms, combat
+       watched `test_every_roster_role_can_be_put_in_a_squad` name the offending unit. **The ones that bit us are the ones
+       nobody watched fail.**
+     - **Exercise the refusal path, not only the pass path.** A guard has two outputs and the interesting one is the one
+       that stops a run. In Python, `sys.exit(main())` — never a bare `main()`.
+     - **We have been treating guards as if writing them were the work.** A guard is infrastructure: it is in front of
+       every measurement forever, so a defect in it is a defect in everything downstream.
+     - combat also scanned the other `tools/*.py` for the same shape and explained why `ai_ladder.py` and
+       `tactics_ladder.py` are false positives (numeric returns are scoring helpers, not error paths). **Saying why a grep
+       hit is not a hit is what turns a grep into a check.**
+109. **A rule whose trigger word is optional is a rule nobody can follow reliably.** The worker contract says *merge `main`
+     only at announced checkpoints*. I told all six streams *"merge `main` into your branch for the baseline"* — which
+     **was** the announcement — and combat then reported itself for a contract violation and offered to reset its branch.
+     **It had done exactly what I asked, in response to my own instruction, and could not tell that the instruction was an
+     authorisation** because I had not used the word.
+     **Third time in one day a stream was more careful than the orchestrator.** The fix is mine and it is mechanical: **say
+     "this is an announced checkpoint" in those words, and name the commit.** `b70608d6` is one.
+110. **A rule taught without its purpose gets applied where it does not fit — state what every proxy is a proxy FOR.**
+     feel's `check10` ran every target to completion: `1142 passed, 0 failed`, `sim-baseline passed`, every smoke through to
+     **`audio-check passed`** — and `audio-check` is the **last** target in `check`. Its wrapper then died before printing
+     `>> remote: make check exited N`, and feel concluded *"by the rule, that's no verdict"* and discarded a forty-minute
+     run on a saturated build machine.
+     **feel was right about the rule and the rule was wrong here.** *"Read the wrapper's own exit line"* is a **proxy** for
+     *did every target run, and did every target pass*. It exists because a piped exit code answers a different question.
+     **A complete target list ending in the final target's pass is stronger evidence than the exit line, not weaker** — the
+     exit line gives you a number, the target list tells you what happened.
+     - **This is lesson 99 turned on our own process: prefer identity to property.** The exit line is a property that
+       usually accompanies success; *"the last target passed"* is nearer the identity of green.
+     - **The orchestrator's error: I taught the proxy for months without teaching what it stood for.** A rule stated
+       without its purpose either lets something through or throws away good evidence, and there is no way for the person
+       following it to tell which case they are in. **Every rule in this file that is a proxy should name its target.**
+     - **It cost nothing here only because the run was on the wrong commit anyway** (`39dd5b2f` predates `cb171a98`, so it
+       did not cover the second backwards vehicle). **That is luck, not process.**
+111. **`make facing-audit` found four backwards-authored parts; the lead reported one.** The gang IFV (which he saw), the
+     **Syndicate lancer**, the **gang tank's barrel** and the **Law rocket pod** — all authored pointing backwards, three of
+     them never reported by anybody. **The argument for the audit was never "the lead complained"**; it was that **nobody
+     on this project can inspect 21 units by eye** (lesson 72), so the only alternative to an audit is waiting for him to
+     notice one at a time.
+     **And the audit itself lied on its first run**, which feel caught from the renders: *"the tank drives its own turret
+     back to rest, so the audit wasn't really showing 70°."* **An instrument that is asked for 70°, renders 0°, and labels
+     the picture 70° does not error — it produces a plausible artefact.** Fixed by holding the turret at the angle asked
+     for. **Fourth instrument defect found in one day**, and the fourth to be caught by someone looking at the output
+     rather than by a failure.
+112. **A constant in a test is a scale assumption, whenever the thing under test has a size.** combat, fixing arena's
+     `test_a_hexagon_is_the_shape_that_varies_most`: it probed the pinch ratio at a **hard-coded z = 60 m**. The ratio is
+     scale-invariant — hexagon 0.711, octagon 0.914 **at any bound** — but **60 m is a different fraction of a 140 m arena
+     than of a 120 m one**, so at the new bound it read 0.753 against a 0.75 bar and failed. **It detected nothing except
+     that the map had got bigger.** Fixed by probing at `bound * 0.5`, which reproduces the original numbers at every size.
+     **The test was measuring the right quantity and sampling it in the wrong units** — and it would have been read as
+     "the hexagon stopped being the shape that varies most", which is a design conclusion, from a change that was purely
+     dimensional. **Express every test coordinate as a fraction of the thing's own size**, not in metres, unless the metre
+     is the point.
+113. **A change that invalidates another stream's file should land atomically with it, not as N requests plus a known-broken
+     interval.** combat's `ARENA_HALF_SIZE` work made three readers wrong the moment the constant moved — `radar.gd`
+     (control's), `agent_bridge.gd` (squad's) and its own `visibility_field.gd`. **It moved them with the constant rather
+     than filing requests**, and said so unprompted, comment-tagged each *"owner, rewrite freely"*, and offered to revert
+     them into requests if preferred.
+     **That was the right call and the orchestrator's routing was the error.** I had already routed two of those same
+     lines to their owners, so squad and control were each about to write a conflicting version of a one-line fix.
+     **Nobody was wrong; I failed to tell combat that I had routed them.**
+     - **The rule: if your change makes someone else's file wrong, fix it in the same commit, flag it in your report, and
+       tag it for the owner.** The alternative is a window in which `main` is knowingly broken, which is worse than a
+       boundary crossing.
+     - **The orchestrator's rule: when routing a fix, say who else is touching that area.** In a star topology only the
+       centre knows, and the centre is the one that has to say it.
+     - **And the cross-cutting fix found a bug neither owner had:** `radar.gd` drew a square outline at ±`ARENA_HALF_SIZE`
+       — **20 m outside the wall on every map ever shipped**, invisible because a square drawn slightly too large around a
+       square arena still looks like a square arena. **The hexagon would have made a long-standing bug look like a new
+       one.**
+114. **"I cannot account for this process" is a reason to leave it alone, not a reason to include it.** combat, having
+     positively identified which PID belonged to its live gate run, **killed its neighbours anyway on the assumption that
+     anything older than the launch was stale — and one of them was the live chain.** Exit 143, gate lost, an hour gone.
+     **Age is not evidence of staleness here**: checks legitimately run 30–50 minutes, so "older than my launch" describes
+     most healthy runs on the machine.
+     **The underlying footgun is real and is nobody's mistake:** `remote.sh` dying locally does **not** stop the `make` it
+     started on builder0, so every killed or SIGTERMed run leaves a slot holder and a tree that the next `rsync --delete`
+     overwrites underneath it. **A wrapper that trapped its own exit and stopped the remote job would remove the entire
+     class** — round-8 work, deliberately not attempted mid-round, because `remote.sh` is the one tool all six streams
+     depend on. **Do not rewrite the shared build tool while six streams are mid-check**; that is the same error as
+     approving a change by evaluating the change and not its surroundings.
+115. **Guard the treatment, not just the setup — and the general form is per-COMPARISON, not per-run.** arena, applying
+     combat's positive control to its own `arena_series`: the assertion *"the match ran on the arena I asked for"* had
+     existed since round 5, because `Arena` falls back to `foundry` on a layout it cannot load. **What was missing is that
+     a fairness result is a *paired difference*, and a `--swap-bases` that silently failed to apply would leave two
+     identical arms and a perfectly plausible "no south advantage."**
+     **That is the answer we hope for, reached by the treatment never happening.**
+     - **An assertion about the stage is not an assertion about the experiment.** Which map, which build, which commit —
+       all necessary, none sufficient.
+     - combat's own guard *"asks whether the treatment engaged in ONE run, and it would pass happily on two arms that were
+       secretly the same arm."* **Neither tool checks that two arms actually differ, and that is the version worth
+       building**: a comparison must assert that its arms are distinguishable before it reports a difference between them.
+     - **Three distinct defects caught by this one idea in a single day, across three streams' instruments:** a treatment
+       arm with no treatment, a control arm with immobilised units, and a paired comparison whose pairing might not have
+       happened. **The third is the one nobody would find by inspection, because two identical arms produce a beautifully
+       clean null.**

@@ -1,0 +1,94 @@
+diff --git a/game/ai/tank_brain.gd b/game/ai/tank_brain.gd
+index 26832452..c65615b4 100644
+--- a/game/ai/tank_brain.gd
++++ b/game/ai/tank_brain.gd
+@@ -2121,7 +2121,7 @@ static func fire_band(weapon: Dictionary) -> float:
+ static func motion_style(unit_id: String) -> String:
+ 	var profile := Units.profile(unit_id)
+ 	if String(profile.get("mount", "turret")) == "fixed":
+-		return "run"
++		return CombatMotion.fixed_style  # round 7: "standoff" (shoot-and-scoot); "run" = round 3's attack runs
+ 	if float((profile.get("armor", {}) as Dictionary).get("front", 0.0)) >= ANGLE_FRONT_ARMOR:
+ 		return "angle"
+ 	return "strafe"
+@@ -2220,6 +2220,12 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
+ 		profile_parts["motion"] = int(profile_parts.get("motion", 0)) + Time.get_ticks_usec() - clock
+ 	if result.is_empty():
+ 		return {"type": "face", "x": contact["position"].x, "z": contact["position"].z}
++	if result.get("hold", false):
++		# Round 7 (nav): a fixed gun inside its band stops and lays its hull on the target (Gunnery swings a stopped
++		# fixed mount onto what it engages) instead of driving at it.
++		why = TankBrain._join(why, "holding at standoff")
++		_motion_cache = {"tick": tick, "key": motion_key, "why": why, "order": {"type": "stop"}}
++		return _motion_cache["order"]
+ 	if result.get("dodging", false):
+ 		why = TankBrain._join(why, "dodging")
+ 	if result.get("beaten", false):
+@@ -2229,6 +2235,8 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
+ 	match style:
+ 		"run":
+ 			why = TankBrain._join(why, "attack run" if _run_phase == "run" else "breaking away")
++		"standoff":
++			why = TankBrain._join(why, "moving to a firing position")
+ 		"angle":
+ 			why = TankBrain._join(why, "weaving, front armor on it")
+ 		_:
+diff --git a/tests/test_nav_scout.gd b/tests/test_nav_scout.gd
+new file mode 100644
+index 00000000..228ce617
+--- /dev/null
++++ b/tests/test_nav_scout.gd
+@@ -0,0 +1,53 @@
++extends TestCase
++## Round 7 (nav): the lead — *"Scouts are just running directly into their targets and then they have to turn around to
++## get a fix again."* A scout (fixed forward machine gun, 12-35 m band) is ordered to attack a durable, non-shooting
++## tank. Measured: how close it ever gets (ramming), the share of time it is inside its band, the share of time its
++## nose is on the target (it can only shoot what it points at), and its shots. Printed for the fixed-gun style in use;
++## `CombatMotion.fixed_style` switches between round 7's standoff and round 3's attack runs for the A/B.
++
++const AiScenario := preload("res://tests/ai_scenarios/ai_scenario.gd")
++
++
++func _engage(style: String) -> Dictionary:
++	var was := CombatMotion.fixed_style
++	CombatMotion.fixed_style = style
++	var s := AiScenario.create(self)
++	var tank := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-100, 0, -10), 0.0)
++	AiScenario.make_durable(tank)
++	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-100, 0, 45), 0.0, {}, "scout")
++	AiScenario.make_durable(scout)
++	var orders := s.orders()
++	await s.start()
++	orders.call("issue", {"units": [String(scout.name)], "verb": "attack", "target": String(tank.name), "queue": false})
++	var band := float(Weapons.profile("machine_gun")["preferred_max"])
++	var closest := INF
++	var in_band := 0
++	var nose_on := 0
++	var ticks := SimClock.TICK_RATE * 25
++	for tick in ticks:
++		await s.step()
++		var to := Vector3(tank.global_position.x - scout.global_position.x, 0.0, tank.global_position.z - scout.global_position.z)
++		var distance := to.length()
++		closest = minf(closest, distance)
++		if distance <= band and distance >= float(Weapons.profile("machine_gun")["preferred_min"]):
++			in_band += 1
++		if (-scout.global_basis.z).dot(to.normalized()) >= cos(deg_to_rad(8.0)):
++			nose_on += 1
++	CombatMotion.fixed_style = was
++	return {"style": style, "closest_m": snappedf(closest, 0.1), "in_band": snappedf(float(in_band) / ticks, 0.01),
++			"nose_on": snappedf(float(nose_on) / ticks, 0.01), "shots": s.shots_by(scout)}
++
++
++func test_a_scout_holds_a_firing_position_instead_of_ramming() -> void:
++	var standoff: Dictionary = await _engage("standoff")
++	print("MEASURE nav_scout standoff %s" % [standoff])
++	# Round-3 attack runs, same setup (builder0, round 7): closest 3.0 m, nose on the target 17% of the time, 29 shots.
++	assert_true(float(standoff["closest_m"]) >= 10.0, "the scout never closes to ramming range (%s)" % standoff)
++	assert_true(float(standoff["nose_on"]) >= 0.5, "its gun is on the target most of the time (%s)" % standoff)
++	assert_true(int(standoff["shots"]) > 100, "and it keeps shooting (%s)" % standoff)
++
++
++## The control: round 3's attack runs, printed only (a separate test, because two scenarios in one test double-connect
++## a signal the runner counts as an error).
++func test_round_three_attack_runs_for_comparison() -> void:
++	print("MEASURE nav_scout run %s" % [await _engage("run")])

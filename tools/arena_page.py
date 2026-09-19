@@ -18,6 +18,7 @@ review pages sat unseen for a day because nobody could open them. This one is on
 
 import argparse
 import base64
+import sys
 import html
 import io
 import json
@@ -411,6 +412,40 @@ fixture, not a map.
                                            "".join(cards), SCRIPT % json.dumps(labels), tail)
 
 
+## POSITIVE CONTROL for the page the lead actually answers on (_agents/verification.md).
+##
+## This page carries the highest-stakes numbers this stream produces — the lead cut four maps on them — and it is
+## assembled from a JSON file on disk that nothing guarantees is current. `make arena-page` will happily render a
+## report generated before the layouts it describes, and the result looks exactly like a fresh one: the same
+## arenas, plausible figures, no warning anywhere.
+##
+## So: assert the conditions, name them when they hold, and refuse to build rather than publish a stale page.
+## States what was checked and what is therefore not produced — not a diagnosis of what the stale numbers would
+## mean, which this script cannot know.
+def _positive_control(report_path, report):
+    problems = []
+    if not report_path.exists():
+        problems.append("no report at %s" % report_path)
+    else:
+        report_age = report_path.stat().st_mtime
+        for layout in sorted((ROOT / "arenas").glob("*.json")):
+            if layout.stat().st_mtime > report_age:
+                problems.append("%s is newer than the report (run: make arena-report)" % layout.name)
+    named = {entry.get("name") for entry in report}
+    for entry in report:
+        if "ambush" not in entry or "centre_sees_share" not in entry.get("ambush", {}):
+            problems.append("%s has no centre_sees_share — the report predates the measure the page quotes"
+                            % entry.get("name"))
+    missing = [n for n in ("yard", "pit", "boulevard", "foundry") if n not in named]
+    if missing:
+        problems.append("the report does not cover %s" % ", ".join(missing))
+    if problems:
+        for problem in problems:
+            print("ARENA_PAGE_CONTROL FAILED: %s" % problem, file=sys.stderr)
+        sys.exit(1)
+    print("ARENA_PAGE_CONTROL ok: report covers %d arenas and is newer than every layout" % len(report))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", default="build/arenas/report.json")
@@ -421,7 +456,9 @@ def main():
     parser.add_argument("--fragment", action="store_true",
                         help="omit the document wrapper (the Artifact platform supplies its own head/body)")
     args = parser.parse_args()
-    report = json.loads((ROOT / args.report).read_text())
+    report_path = ROOT / args.report
+    report = json.loads(report_path.read_text())
+    _positive_control(report_path, report)
     # Worst first: the lead's time goes on the maps this stream is asking about, not on the ones that measure fine.
     # Worst first, and furnace folded into foundry's card (they are the same shape). Six judgements, not seven.
     order = [n for n in ("boulevard", "foundry", "boneyard", "pit", "scrapyard", "yard") if read(report, n)]
