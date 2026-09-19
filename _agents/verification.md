@@ -86,6 +86,52 @@ Two traps, both hit: **a switch that silently does nothing** makes "no differenc
 moves some number first; and **once a branch is merged, `main` is no longer the before-picture** — bisect on named
 commits. And a regression can come from something **removed**, which no switch of added behaviour will find.
 
+## Positive controls: assert the run is the run you think it is, from inside it
+
+**Every measurement script asserts its own conditions before it reports a number, and exits non-zero if they are
+not met.** Not around the run — *inside* it, where the setup actually is.
+
+**The reason, and it is the whole argument:** the arena stream produced six wrong numbers in one day, and **three
+assertions would have caught every one of them** —
+
+1. **the map is the one named** (every faction-matrix number this project has quoted was a *foundry* number, and
+   the tool said so nowhere);
+2. **the objectives are where the layout says** (a CPU competing for the wrong ground looks completely functional);
+3. **the armies are the size requested** (`NAV_UNITS=60` on a layout with 52 spawn points put **eight pairs of
+   hulls in eight positions**; those hulls cannot move, and their failures were published as congestion).
+
+A stream that can say *"three assertions would have caught every wrong number I produced today"* has an unusually
+strong case for spending an hour on assertions rather than features.
+
+**Why this is not the same as a careful measurement window.** Arena's `centre_sees_share` is measured over a fixed
+extent so the number cannot be **gamed** by a layout declaring itself bigger. That is worth doing and it is not
+enough: **it still does not assert that the thing you think you are measuring is present in the run.** A fixed
+window survives a hostile layout; only an assertion inside the run survives someone changing the setup — including
+a future agent who has never read any of this.
+
+**The shape to copy** (`tests/arena/maze_probe.gd`, `_positive_control`): check what the run depends on, print one
+`*_CONTROL ok: …` line naming the conditions when they hold, and on failure `push_error` each problem and
+**exit 1 before writing any output**. A number from a run whose conditions were not met is worse than no number,
+because **it looks exactly like a real one**.
+
+**A control states the condition it checked and what it therefore refuses to report. It does not explain why the
+condition matters.** The first version of arena's said *"…spawn slots wrapped, and those hulls cannot move, so
+every arrival number below would be wrong"* — a **diagnosis the control cannot verify**, and one that had gone
+stale a round earlier: coincident hulls have parted by name since round 6. It was true when written and false when
+read, and **a stale diagnosis in a failure message is worse than one in a document, because it arrives at the
+moment someone is deciding what to do** — that sentence nearly had nav's 60/60 arrival result held out of a merge
+as void. The replacement says only what is permanently true:
+
+> `8 pairs of units started on top of each other: spawn slots wrapped, so this run is not the experiment named
+> (60 distinct start points). No number written.`
+
+**And when a control fires on your own setup, fix the cause rather than downgrading the assertion to a warning.**
+`NAV_UNITS=60` on a 52-slot layout genuinely was not the experiment it named; the probe now offsets the surplus
+units so it is. A warning is the invisible-skip failure in another costume.
+
+Idea from combat, after two of its designator runs measured a different game than it thought and no check caught
+either.
+
 ## Known flakes
 
 - **net-smoke: `ERROR: Condition "ready_state != STATE_OPEN" is true. Returning: FAILED` in the server log.** Seen on

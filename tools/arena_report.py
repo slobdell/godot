@@ -14,6 +14,17 @@ Usage:
 """
 import argparse, heapq, json, math, os, sys
 
+## The half-extent `centre_sees_share` is ALWAYS measured over, whatever size the layout declares.
+##
+## The target (<0.30) carries the lead's own verdict — he cut the four most open maps and kept two of the three
+## least open — and that verdict was given on 240 x 240 arenas. Measured over a layout's OWN extent the number is
+## not comparable across sizes: yard scored 0.199 at half_size 120 and **0.153 at 140, same props, same map**, a
+## 23% improvement bought by declaring the arena bigger. A map could pass the target by inflating its bound.
+##
+## So the window is fixed at the size the target was calibrated on, and `centre_sees_share_full` reports the
+## layout's own extent beside it for the information that is genuinely there.
+CALIBRATION_HALF = 120.0
+
 EYE_HEIGHT = 1.3
 AGENT_RADIUS = 2.0
 HALF = 120.0
@@ -369,13 +380,18 @@ def sees(grid, n, ax, az, bx, bz, step=1.0):
     return True
 
 
-def field_points(blocked, n, step=EXPOSURE_STEP):
-    """Drivable sample points across the contested field."""
+def field_points(blocked, n, step=EXPOSURE_STEP, half=None):
+    """Drivable sample points across the contested field. `half` caps the window, so a measure can be taken over a
+    fixed extent rather than whatever the layout declares."""
     out = []
-    z = -FIELD_Z
-    while z <= FIELD_Z:
-        x = -DRIVABLE
-        while x <= DRIVABLE:
+    # A fixed window ignores DRIVABLE/FIELD_Z entirely: deriving it from them would make it vary with the very
+    # thing it exists to be independent of. 4 m in from the edge and 70% deep are the shipped proportions.
+    reach = (half - 4.0) if half else DRIVABLE
+    depth = (half * 0.7) if half else FIELD_Z
+    z = -depth
+    while z <= depth:
+        x = -reach
+        while x <= reach:
             if not blocked[int((z + HALF) / GRID) * n + int((x + HALF) / GRID)]:
                 out.append((x, z))
             x += step
@@ -588,6 +604,106 @@ def overwatch_positions(grid, gn, blocked, n, boxes, path, top=3):
     return kept
 
 
+# ---- Round 7: cost AND reward. What a route costs, and what it reaches. --------------------------------------
+#
+# X2 scored a route by what it COSTS and never by what it REACHES, so it kept reporting that every arena offers a
+# cheap flank while the game plays as one brawl. The lead named the missing half: *"there generally has to be some
+# compelling reason to cross the bridge to take some advantageous ground."* A route that is cheap and leads nowhere
+# worth going is not a tactical option, it is scenery.
+#
+# Reward is computable now that objectives are data. For each objective, the least-exposed route to it from green's
+# base gives one (cost, reward) point; **a map's decision space is the SPREAD of those points.** One central
+# objective produces exactly one point and therefore zero spread — which is not a failure of the metric, it is the
+# diagnosis: with one thing worth holding, every route is the same route, and no terrain can change that.
+
+## How much of an objective a position must see before it counts as denying it.
+DENY_SHARE = 0.25
+## Cost/reward thresholds for the quadrant labels. Deliberately round: this classifies, it does not rank.
+COSTLY = 0.25
+VALUABLE = 0.5
+
+
+def objectives_of(layout):
+    """Mirrors Arena.objectives_of: the layout's own list, else the single central control point."""
+    listed = layout.get("objectives", [])
+    if listed:
+        return [{"name": o["name"], "at": (float(o["position"][0]), float(o["position"][1])),
+                 "radius": float(o["radius"])} for o in listed]
+    control = layout.get("control_point")
+    if isinstance(control, dict):
+        return [{"name": "control point", "at": (0.0, 0.0), "radius": float(control.get("radius", 16.0))}]
+    return []
+
+
+def covers_objective(grid, gn, spot, objective, reach):
+    """Share of a ring of sample points around the objective that `spot` can see and reach."""
+    seen = 0
+    for k in range(12):
+        a = 2 * math.pi * k / 12
+        p = (objective["at"][0] + math.cos(a) * objective["radius"] * 0.7,
+             objective["at"][1] + math.sin(a) * objective["radius"] * 0.7)
+        if math.dist(spot, p) <= reach and sees(grid, gn, spot[0], spot[1], p[0], p[1]):
+            seen += 1
+    return seen / 12.0
+
+
+def decision_report(layout, boxes, blocked, n, grid, gn, field, watchers):
+    """One (cost, reward) point per objective, from GREEN's side.
+
+    The cost axis is **contest**, not raw distance, and that took a wrong version to find. Measuring cost as
+    exposure plus detour-over-straight-line gave a mirrored pair two nearly identical points (spread 0.04) and
+    called them both free — because a pair IS symmetric by construction, so neither route is intrinsically harder.
+
+    What actually differs is **whose objective it is**. A mirrored pair puts one near green and its twin near rust,
+    so each side has a home objective it can hold cheaply and an away one it must contest. That is precisely the
+    dilemma combat's share-of-objectives scoring creates: hold your own and score at half rate, or go and take
+    theirs and score at full. So cost = how much further it is for me than for the enemy, plus what the trip is
+    exposed to — and a map whose objectives are all equidistant offers no contest and therefore no decision,
+    however far apart they are.
+    """
+    objectives = objectives_of(layout)
+    if not objectives:
+        return {"objectives": 0, "routes": [], "decision_spread": 0.0}
+    green = tuple(layout["spawns"]["green"][0])
+    rust = tuple(layout["spawns"]["rust"][0])
+    routes = []
+    for objective in objectives:
+        mine = covered_route(blocked, n, field, green, objective["at"], 6.0)
+        theirs = covered_route(blocked, n, field, rust, objective["at"], 6.0)
+        if mine is None:
+            routes.append({"objective": objective["name"], "reachable": False})
+            continue
+        my_len = length(mine)
+        their_len = length(theirs) if theirs else my_len
+        # 0.5 = equidistant; above that the enemy is closer and taking it is contested.
+        contest = my_len / max(1.0, my_len + their_len)
+        exposure_cost = route_exposure(field, mine)
+        cost = min(1.0, exposure_cost * 3.0 + max(0.0, contest - 0.5) * 4.0)
+        hold = 1.0 / len(objectives)
+        deny = 0.0
+        for other in objectives:
+            if other["name"] == objective["name"]:
+                continue
+            if covers_objective(grid, gn, objective["at"], other, WATCHER_REACH_M["posted"]) >= DENY_SHARE:
+                deny += 0.5 / len(objectives)
+        reward = min(1.0, hold + deny)
+        costly = cost >= COSTLY
+        valuable = reward >= VALUABLE
+        routes.append({"objective": objective["name"], "reachable": True,
+                       "length_m": round(my_len, 1), "enemy_length_m": round(their_len, 1),
+                       "contest": round(contest, 3), "exposure": round(exposure_cost, 3),
+                       "cost": round(cost, 3), "reward": round(reward, 3),
+                       "quadrant": ("the one we want" if costly and valuable else
+                                    "dominant" if valuable else "trap" if costly else "scenery")})
+    live = [r for r in routes if r.get("reachable")]
+    spread = 0.0
+    for i in range(len(live)):
+        for j in range(i + 1, len(live)):
+            spread = max(spread, math.dist((live[i]["cost"], live[i]["reward"]),
+                                           (live[j]["cost"], live[j]["reward"])))
+    return {"objectives": len(objectives), "routes": routes, "decision_spread": round(spread, 3)}
+
+
 def ambush_report(layout, boxes, blocked, n):
     """X2: the numbers that say whether this map can host an ambush or a flank at all."""
     grid, gn = sight_grid(boxes)
@@ -601,7 +717,10 @@ def ambush_report(layout, boxes, blocked, n):
     green_front = tuple(layout["spawns"]["green"][0])
     rust_front = tuple(layout["spawns"]["rust"][0])
     centre = standing_point(blocked, n, (0.0, 0.0))
-    out = {"centre_sees_share": round(visible_share(grid, gn, centre, points), 3),
+    # Fixed window: comparable across arena sizes, and the one the <0.30 target is calibrated against.
+    calibrated = field_points(blocked, n, 6.0, CALIBRATION_HALF)
+    out = {"centre_sees_share": round(visible_share(grid, gn, centre, calibrated), 3),
+           "centre_sees_share_full": round(visible_share(grid, gn, centre, points), 3),
            "centre_eye_at": [round(v, 1) for v in centre], "defending_positions": len(watchers)}
     routes = []
     for label, penalty in ROUTE_PENALTIES:
@@ -629,6 +748,7 @@ def ambush_report(layout, boxes, blocked, n):
         out["flank_detour"] = round(covered["length_m"] / max(1.0, direct["length_m"]), 2)
     direct_path = covered_route(blocked, n, field, green_front, rust_front, 0.0)
     out["overwatch"] = overwatch_positions(grid, gn, blocked, n, boxes, direct_path)
+    out["decision"] = decision_report(layout, boxes, blocked, n, grid, gn, field, watchers)
     return out
 
 
@@ -782,6 +902,11 @@ def main():
                  by["direct"].get("exposure_idle", -1), by["direct"].get("exposure_posted", -1),
                  by["direct"].get("posting_gain", -1), by["covered"].get("exposure", -1), a.get("flank_detour", -1),
                  best.get("commands_idle", -1), best.get("commands_posted", -1), best.get("hidden_approach", -1)))
+        d = a.get("decision", {})
+        print("DECISION %-10s objectives=%d  spread=%.2f  %s"
+              % (clean["name"], d.get("objectives", 0), d.get("decision_spread", 0.0),
+                 ", ".join("%s: %s" % (r["objective"], r.get("quadrant", "unreachable"))
+                           for r in d.get("routes", [])) or "-"))
         print("ARENA_REPORT " + json.dumps(clean))
     if args.json:
         os.makedirs(os.path.dirname(args.json) or ".", exist_ok=True)
