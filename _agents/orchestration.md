@@ -2083,3 +2083,31 @@ The kickoff prompt is one line; this section is the rest.
        glass over every effect keyed to hull size, and a defect that survived rounds of play became obvious in one frame.
      - **And it was found because a human looked at a screenshot sent for a different purpose.** Eighth defect this round
        caught by looking rather than by a test.
+137. **⚠ THE SIM BASELINE ONLY FIELDS TANKS. "sim-baseline passed" means "a tank-vs-tank match on foundry is unchanged",
+     and we have been reading it as "gameplay is unchanged".**
+     Three predictions that it would move failed in one day, and I chased the third:
+     ```
+     sim-baseline: --match --elimination
+       --green-doctrine=anvil_hammer --rust-doctrine=individuals
+       --time-limit=40 --seed=3       (foundry, DEFAULT_LAYOUT)
+
+     anvil_hammer   ['tank']
+     individuals    ['tank']
+     ```
+     **Both doctrines are all-tank.** So the canary has **no gang vehicles, no wheeled hulls, no scouts, IFVs, artillery
+     or support**, one map, 40 seconds.
+     - **combat's 14 m rig did not move it** — `gang_tank` and `gang_support` are not in the match.
+     - **squad's wheeled-turret face→stop did not move it** — there are no wheeled hulls in the match.
+     - **combat's `ARENA_HALF_SIZE` 120 → 140 did not move it** — foundry declares its own `half_size`.
+     Each time the predicting stream was reasoning correctly about its own change and **wrongly about what the instrument
+     covers** — and so was I, three times.
+     **The consequence is bigger than three wrong predictions.** `sim-baseline`'s stated purpose is *"art must never
+     change gameplay"*. **feel has twice proved its art inert by passing it. That proof holds for TANKS** and says nothing
+     about the nineteen other units feel has been re-cutting, re-orienting and re-sizing.
+     - **A green `sim-baseline` is a much weaker guarantee than its name suggests.** Treat it as a determinism canary on
+       one narrow configuration, not as coverage.
+     - **Round-9 candidate: widen the baseline match** to field at least one hull of every `locomotion` and `mount`
+       combination, on more than one map. **It is cheap — it is one match — and it is currently blind to most of the
+       game.**
+     - **And the general form, which this project keeps meeting: a guarantee is only as broad as the configuration it is
+       measured in** (lesson 23's family). **The name of a check is not its scope.**
