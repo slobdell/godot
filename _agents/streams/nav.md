@@ -262,6 +262,48 @@ navigation mesh baked from the arena's walls and containers when the match start
 missing was everything about *other units*: no avoidance beyond sidestepping the single nearest friend, no negotiation,
 and a stuck unit that reported success from 12 m away. That is what this stream builds.
 
+### Resuming this stream (written 2026-09-18 before a 4-day pause; read this first)
+
+**State:** backlog complete (X1–X8 done, X9 closed). Everything is merged or mergeable: code green at `34293b3b`
+(builder0, 1127/0), tip `4bbb957c`+ docs only. Worktree clean. Nothing is in flight. **Do not** restart anything below
+without re-measuring first — every number here is tied to a commit.
+
+**Where the knowledge lives:** architecture and every constant's reason in `_agents/navigation.md` (read its
+*Measuring* section: the switches table and the two traps). Saved measurements in `_agents/streams/references/nav/`
+(`nav_suite_30e3250d_baseline.json` = round-5 movement; `nav_suite_1923059c.json` = after X3/X4/X7 + K1 fix).
+
+**The K1 start window — three decisions, each measured** (`movement.gd` `_avoid`):
+1. For `AVOID_GRACE_TICKS` = 10 ticks after a *new destination* (goal jump > 3 m; a sliding slot doesn't count) the
+   hull steers along its route and avoidance only sets throttle. Why: with avoidance steering from tick 0, control's
+   `test_units_respond_within_three_ticks…` took 4 ticks (133 ms) against K1's 100 ms = 3 ticks.
+2. Inside that window, a crowded-but-not-reversed way is driven at ≥ 15% (`AVOID_MIN_PACE`), so an order always
+   *visibly* starts (the test also accepts "driving at it", which needs throttle > 0).
+3. The 15% floor applies **only** in the window: left on permanently it cost 20 s at the tail of head-on maze-60
+   (`nav-where`, 300 s: 182.5 → 162.8 s last arrival; builder0, tree of `1923059c`'s parent).
+And for wheels, any steering point must be forward-reachable (outside both turning circles): found by control's
+right-click test (an IFV three-point-turned for a second on a 40° bend with a 1.2-radius carrot).
+
+**Every headline number, with provenance (all builder0):**
+- Arrivals, `make nav-suite` (hold-fire, 180 s, 1 seed, all `tank`): round 5 at `30e3250d` 15/30, 35, 0 (head-on),
+  34, 33, 40 of 60 → X3+X4+X6 at `e291a35a` and again at `1923059c`: 30/30 and 60/60 on every config.
+- PID: `test_station_keeping`, slot at 5 m/s re-issued every 4 ticks: mean gap 0.35 m PID vs 4.58 m P-law at
+  `e291a35a` (0.13 m after later fixes); X8 faction table at the commit "nav X8" (`test_station_keeping` MEASURE lines).
+- 12 m lie: `make nav-orders` before `c3e4102e` / after `c8c7a79d` (table below).
+- Cost: `make ai-perf` 60 brains, `move` part 1119 µs (`30e3250d`) → 1688 µs (`1923059c`).
+- Near-ambush attribution: `near_ambush(30 s)` through_tick 531 at `00c99bf4`, 555 at `7cce78af`; 531 again on nav's
+  tree with `--nav-off=r5sidestep`.
+
+**Suspected, not proved** (don't treat as findings):
+- Head-on single-lane traffic resolves one unit at a time; a *column-level* yield (the whole queue backs as one) would
+  probably cut head-on maze t90 (~144 s) toward one-way (~120 s). Untested.
+- The K1 window likely costs a little flow in open ground (yard one-way t90 47 s at `e291a35a` → 55 s at `1923059c`),
+  but that pair also differs by X7 changes; not isolated.
+- ORCA's 2 s horizon and hull radius (mean half-extent + 0.25 m) were never tuned; they were the first reasonable
+  values and the suite went 100% on them. Tuning could buy flow; it could also break head-on.
+- Wheeled units in crowds were only checked through control's tests and the IFV debug trace; nav-suite uses tanks
+  (tracks) only. A wheels-only suite run has never been done.
+- X8 almost certainly does not change win rates; never measured.
+
 ### Where it stands (updated as I go)
 
 | Item | State |
