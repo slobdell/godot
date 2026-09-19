@@ -1503,7 +1503,24 @@ The kickoff prompt is one line; this section is the rest.
        distinct start points). No number written."* Permanently true, and it invites no conclusion about movement.
      - **And fix the cause rather than downgrading the check.** nav offered "make it a warning"; the condition genuinely is
        violated, so **refusing is right and the fix is to give the probe 60 distinct start points.** A warning is the
-       invisible-skip failure of lesson 91 wearing a different hat.
+       invisible-skip failure of lesson 91 wearing a different hat. **Fixed at `c2ed5b3c`**: surplus units are offset half
+       a column sideways, so 60 means 60 distinct start points, and the control passes at 30 and 60, one-way and head-on.
+       arena then **added a condition for the fix itself** — *every unit must start on the navmesh* — because shifting a
+       hull sideways could put it inside cover on a layout with a tighter spawn zone. **A fix to a setup deserves its own
+       assertion, since it is exactly the change that breaks something quietly.**
+     - **⚠ The detail that stings, in arena's words: *"I copied a finding from the very stream that had since fixed it."***
+       The sentence came from nav's round-5 report, and nav fixed the cause in round 6. **Copying a peer's finding copies
+       its timestamp, and nothing in the copy carries it.**
+     - **arena produced four distinct forms of lesson 84 in a single day**, which is worth listing because they look
+       unrelated until they are side by side: a **proposal read as a description** (`balance.md`'s physics layer 4); a
+       **legacy constant surviving inside something that looked updated** (the plot's `direct_route_exposure`); a **metric
+       name promoted from configuration to property** (`centre_sees_share`); and a **fact copied forward past its fix**
+       (this one). **All four are a claim that outlived its conditions**, which is the same disease as promoting a
+       measurement to a property (lesson 93) — and it is the single most common failure in this project's history.
+     - **And the unforeseeable payoff, which arena rightly says nobody would have argued for in advance: the positive
+       control generated a test in another stream's paths.** arena built probe hygiene; nav saw that **wrapped spawns also
+       happen in real matches — respawns, big armies — so "coincident starts separate within N s" is a behaviour test for
+       the thing that actually matters.** An assertion about an experiment became an assertion about the game.
 104. **Refuse to *persist*, not merely to *print*. A printed refusal can be scrolled past; an absent file cannot be
      cited.** combat's positive control refused to print a result; arena's refuses to write the JSON at all. combat adopted
      arena's version on seeing the difference: *"a refused run cannot end up in `references/` by someone copying the last
