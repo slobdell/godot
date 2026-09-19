@@ -36,6 +36,26 @@ decision weighing algorithms necessary to make these units look and feel smart."
 | **combat** | `d6e28e27` | Height spread (**War Rig 3.14× the scout**); N7 acquisition; **the Syndicate designator** | Check to be run on the final tip. Faction matrix re-running as a paired comparison against 53/53/50/43 |
 | **feel** | `ec10d9f5` | `make facing-audit`; the gang IFV fixed **in the part generator's data**; a second backwards vehicle nobody had reported (Syndicate lancer, `cb171a98`) | Cutting the baked guns out of three hulls — **gang tank, Syndicate IFV, Law artillery** |
 
+### THE MERGE QUEUE, in order, with the reason for each position
+
+**Every position below is "at the commit whose check went green", never a branch tip.** Run `make remote T=check` on
+`main` after each sim-changing merge, and read the wrapper's own `>> remote: make check exited <N>` line.
+
+| # | Branch, commit | Why here | Risk |
+|---|---|---|---|
+| **1** | **control `a1d92ad6`** | **The lead asked for this work by name** and believes it may be lost. It is HUD, camera and preview only — **no simulation change, so it cannot move the sim baseline.** Verified with `git show a1d92ad6:<path>` across eleven patterns | lowest |
+| **2** | **feel**, at its green hash | **The gang IFV driving backwards has been reported by the lead three times.** Art only — *the simulation never reads the model* — so it is nearly free to land, and it is the complaint with the worst report-to-fix ratio in the project | lowest |
+| **3** | **control's self-revealing help** (the commit after `a1d92ad6`) | Deliberately not held for #1: builder0's queue is the bottleneck, so it rides the next check rather than delaying the popover work | lowest |
+| **4** | **nav `2cae3bda` (standoff) and/or squad**, whichever is green first | **squad has merged `2cae3bda` into its own branch**, so squad's check covers the standoff *and* the two brain hooks together — stronger than either alone. Whichever green hash arrives first brings the standoff to `main` | sim-changing |
+| **5** | **nav `8ad2c606`** — in-fight unsticking, per-hull chord slack | Separate commit on purpose: if its maze validation is bad, the standoff is unaffected and lands without it | sim-changing |
+| **6** | **combat**, designator + heights + N7 | Sim-changing and self-contained. **Must land before #7**, because arena's hexagon needs combat's extent change, which combat is holding until this is merged | sim-changing |
+| **7** | **combat's extent change** — `ARENA_HALF_SIZE` 120 → 140, `DRIVABLE_LIMIT` → **117** (not 136) | Its own check, deliberately: one check must not cover both the designator and the extent, or a failure cannot be attributed | sim-changing |
+| **8** | **arena** — hexagon at 139.7 m, contract **M4** `Arena.contains`/`clamp_into`, water/pits/bridges | Last because it depends on #7's constants, and because the M4 predicate is what makes the hexagon *safe* — merging the shape without the predicate ships a square clamp on a hexagonal arena | highest |
+| **9** | **The sim baseline** — recorded by the orchestrator, on `main`, once | **Invariant 2.** Only after #8. Three separate merges above change the simulation | — |
+
+**If a check comes back red, the branch does not move and the queue does not stall behind it** — skip to the next
+position. Nothing in 1–3 depends on anything else.
+
 ### Decisions I made this round, so nobody re-derives them
 
 1. **The Syndicate lancer stays, re-roled as a designator.** combat proposed deleting it on a clean comparison (the
