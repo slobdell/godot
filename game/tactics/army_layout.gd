@@ -70,43 +70,69 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 		while ranks < 4 and not _fits(shapes, ranks, Vector2(widest, _usable_depth(size))):
 			ranks += 1
 		size = Vector2(widest, size.y)
+		if not _fits(shapes, ranks, Vector2(widest, _usable_depth(size))):
+			# Nothing fits the zone's depth (round 8: a gang army with 14 m rigs): use the width, the fewest ranks whose
+			# squads fit the drivable floor's breadth, and let pass 1's forward step find the depth.
+			ranks = 1
+			while ranks < count and not _fits(shapes, ranks, Vector2(widest, INF)):
+				ranks += 1
 	var per_rank := ceili(float(count) / ranks)
 	var rank_depth := _usable_depth(size) / float(ranks)
-	# Each rank stands behind the ACTUAL back of the one in front (a rank packed to the spacing floor can be deeper than
-	# its share of the zone), with RANK_GAP_M between.
-	var line := center + forward * (size.y * 0.5 - FRONT_MARGIN_M)
+	# Pass 1: each rank's squads, their pitches, and the rank's REAL depth. Slots are hull centres, so a rank overhangs
+	# its slots by half its longest hull front and back (round 8: combat's 14 m War Rig stood its rank inside the next).
+	# Across, vehicles stand side by side and need their WIDTH clear; front to back, their LENGTH: a squad of rigs pitches
+	# 6.5 m across and 16 m deep, not 16 m both ways.
+	var rows: Array = []
+	var total_depth := 0.0
 	for r in ranks:
 		var row: Array = shapes.slice(r * per_rank, mini((r + 1) * per_rank, count))
 		if row.is_empty():
 			continue
 		var scale := _scale_for(row, size.x, rank_depth)
-		var widths: Array = []
-		var total := 0.0
+		var placed: Array = []
+		var width_sum := 0.0
+		var slots_deep := 0.0
+		var overhang := 0.0
 		for shape: Dictionary in row:
 			var spacing := maxf(float(shape["spacing"]) * scale, float(shape["floor"]))
+			var deep_pitch := maxf(spacing, float(shape["deep_floor"]))
 			var width: float = (float(shape["across"]) + GAP_SPACINGS) * spacing
-			widths.append([spacing, width])
-			total += width
-		# Every squad's front on the rank's line: rank 0 on the zone's front edge (nearest the enemy, where the old spawn
-		# grid filled first). A formation's anchor is its middle, so step back half its depth.
-		var left := -total * 0.5
-		var rank_back := 0.0
-		for i in row.size():
-			var shape: Dictionary = row[i]
-			var spacing: float = widths[i][0]
+			placed.append({"shape": shape, "spacing": spacing, "deep_pitch": deep_pitch, "width": width})
+			width_sum += width
+			slots_deep = maxf(slots_deep, float(shape["deep"]) * deep_pitch)
+			overhang = maxf(overhang, float(shape["hull"]) * 0.5)
+		rows.append({"placed": placed, "width": width_sum, "slots_deep": slots_deep, "overhang": overhang})
+		total_depth += slots_deep + (overhang * 2.0 + RANK_GAP_M if rows.size() > 1 else 0.0)
+	# Rank 0's slot fronts on the zone's front edge; if the ranks' real depth would run the last one past the drivable
+	# floor's back edge, the whole army steps forward instead (a clamp there stacked vehicles on top of each other).
+	var line := center + forward * (size.y * 0.5 - FRONT_MARGIN_M)
+	var back_limit := -(Match.DRIVABLE_LIMIT - BACK_MARGIN_M)
+	var last_back := line.dot(forward) - total_depth - float(rows[-1]["overhang"])
+	if last_back < back_limit:
+		line += forward * (back_limit - last_back)
+	# Pass 2: place.
+	for r in rows.size():
+		var row: Dictionary = rows[r]
+		if r > 0:
+			line -= forward * float(row["overhang"])
+		var left := -float(row["width"]) * 0.5
+		for item: Dictionary in row["placed"]:
+			var shape: Dictionary = item["shape"]
+			var spacing: float = item["spacing"]
+			var stretch: float = float(item["deep_pitch"]) / spacing
 			# place() centres a shape on its centroid: step back from the line by how far its front slot is ahead of that.
-			var anchor: Vector3 = line - forward * float(shape["front"]) * spacing \
-					+ right * (left + float(widths[i][1]) * 0.5)
-			rank_back = maxf(rank_back, float(shape["deep"]) * spacing)
-			left += float(widths[i][1])
+			var anchor: Vector3 = line - forward * float(shape["front"]) * float(item["deep_pitch"]) \
+					+ right * (left + float(item["width"]) * 0.5)
+			left += float(item["width"])
 			for entry in TacticsFormation.place(shape["members"], shape["formation"], anchor, forward, spacing,
 					{"policy": "front", "leader": shape["leader"]}):
-				var at: Vector3 = entry["to"]
+				var local: Vector3 = (entry["to"] as Vector3) - anchor
+				var at: Vector3 = anchor + right * local.dot(right) + forward * local.dot(forward) * stretch
 				var limit := Match.DRIVABLE_LIMIT - 2.0
 				at = Vector3(clampf(at.x, -limit, limit), 0.0, clampf(at.z, -limit, limit))
 				result[String(entry["unit"])] = {"position": at, "facing": forward, "squad": shape["name"],
 						"anchor": anchor, "formation": shape["formation"]}
-		line -= forward * (rank_back + RANK_GAP_M)
+		line -= forward * (float(row["slots_deep"]) + float(row["overhang"]) + RANK_GAP_M)
 	return result
 
 
@@ -126,13 +152,17 @@ static func _shape_of(squad: Dictionary) -> Dictionary:
 	for slot in raw:
 		ahead = maxf(ahead, -slot.y)
 	var longest := 0.0
+	var widest := 0.0
 	for member: Dictionary in members:
 		var unit := String(member.get("unit", ""))
 		if Units.exists(unit):
 			var hull: Array = Units.stat(unit, "hull_size", [2.6, 1.8, 4.0])
 			longest = maxf(longest, maxf(float(hull[0]), float(hull[2])))
-	var floor_m := maxf(MIN_SPACING_M, longest + HULL_CLEAR_M)
-	return {"front": ahead, "floor": floor_m, "name": String(squad["name"]), "members": members, "formation": shape,
+			widest = maxf(widest, minf(float(hull[0]), float(hull[2])))
+	# Side by side a vehicle needs its width clear, nose to tail its length (everyone faces the enemy at the start).
+	var floor_m := maxf(MIN_SPACING_M, widest + HULL_CLEAR_M)
+	return {"front": ahead, "floor": floor_m, "deep_floor": longest + HULL_CLEAR_M, "hull": longest,
+			"name": String(squad["name"]), "members": members, "formation": shape,
 			"leader": String(squad.get("leader", "")),
 			"spacing": maxf(minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M), floor_m),
 			"across": _extent(raw, true), "deep": _extent(raw, false)}
@@ -149,12 +179,15 @@ static func _fits(shapes: Array, ranks: int, size: Vector2) -> bool:
 			continue
 		var width := 0.0
 		var deepest := 0.0
+		var hull := 0.0
 		for shape: Dictionary in row:
 			width += (float(shape["across"]) + GAP_SPACINGS) * float(shape["floor"])
-			deepest = maxf(deepest, float(shape["deep"]) * float(shape["floor"]))
+			deepest = maxf(deepest, float(shape["deep"]) * maxf(float(shape["floor"]), float(shape["deep_floor"])))
+			hull = maxf(hull, float(shape.get("hull", 0.0)))
 		if width > size.x:
 			return false
-		depth += deepest + (RANK_GAP_M if r > 0 else 0.0)
+		# Interior rank boundaries carry both hulls' overhangs (the placement stacks them the same way).
+		depth += deepest + (RANK_GAP_M + hull if r > 0 else 0.0)
 	return depth <= size.y
 
 
@@ -193,9 +226,18 @@ static func deploy(game_match: Match, team: int) -> void:
 	var frame := Match.team_frame(team)
 	var laid := plan(squads, zone_of(south), frame)
 	var yaw := Match.spawn_yaw(team)
-	for unit_name: String in laid:
+	var taken: Array = []  # [position, hull width, hull length] of every vehicle placed so far (and the other team's)
+	var forward: Vector3 = TacticsFormation.flat(frame["forward"])
+	for other in game_match.sorted_team_tanks(1 - team):
+		if other.is_alive():
+			taken.append([other.global_position, _hull(other.unit_id).x, _hull(other.unit_id).y])
+	var names: Array = laid.keys()
+	names.sort()
+	for unit_name: String in names:
 		var tank := by_name.get(unit_name) as Tank
-		var spot: Vector3 = SlotGround.standable(tank, laid[unit_name]["position"])
+		var hull := _hull(tank.unit_id)
+		var spot := _clear_spot(tank, laid[unit_name]["position"], hull, forward, taken)
+		taken.append([spot, hull.x, hull.y])
 		tank.global_position = Vector3(spot.x, tank.global_position.y, spot.z)
 		tank.rotation.y = yaw
 		tank.reset_physics_interpolation()
@@ -205,6 +247,53 @@ static func deploy(game_match: Match, team: int) -> void:
 			squad.destination = laid[squad.commander]["anchor"]
 			squad.heading = TacticsFormation.flat(frame["forward"])
 			squad.facing_on_arrival = squad.heading
+
+
+## Round 8: a slot is pushed off an obstacle to the nearest standable ground (SlotGround), which can push it toward a
+## neighbour (measured: a law tank moved 2 m, leaving two 2.6 m hulls 3.0 m apart; two slots on one crate could land on
+## the same edge, and physics would shove them apart: shuffling "trying to get unstuck" from tick 0). So a vehicle
+## takes the nearest standable spot whose hull box (everyone faces `forward` at the start) keeps STAND_CLEAR_M from every
+## vehicle already placed — across by the widths, or along by the lengths — searching outward in rings from its slot.
+const STAND_CLEAR_M := 1.0
+const SEARCH_STEP_M := 2.0
+const SEARCH_RINGS := 12
+
+
+static func _clear_spot(tank: Tank, wanted: Vector3, hull: Vector2, forward: Vector3, taken: Array) -> Vector3:
+	var first: Vector3 = SlotGround.standable(tank, wanted)
+	if _is_clear(first, hull, forward, taken):
+		return first
+	for ring in range(1, SEARCH_RINGS + 1):
+		var radius := ring * SEARCH_STEP_M
+		var steps := 8 + ring * 4
+		for k in steps:
+			var angle := TAU * float(k) / float(steps)
+			var probe := wanted + Vector3(cos(angle), 0.0, sin(angle)) * radius
+			var limit := Match.DRIVABLE_LIMIT - 2.0
+			probe = Vector3(clampf(probe.x, -limit, limit), 0.0, clampf(probe.z, -limit, limit))
+			var spot: Vector3 = SlotGround.standable(tank, probe)
+			if _is_clear(spot, hull, forward, taken):
+				return spot
+	return first  # nowhere clear within reach: the slot as planned (a loud MEASURE in the footprint test, not a silent fix)
+
+
+static func _is_clear(spot: Vector3, hull: Vector2, forward: Vector3, taken: Array) -> bool:
+	var right := Vector3(-forward.z, 0.0, forward.x)
+	for entry: Array in taken:
+		var d: Vector3 = spot - (entry[0] as Vector3)
+		var across := absf(d.dot(right)) - (hull.x + float(entry[1])) * 0.5
+		var along := absf(d.dot(forward)) - (hull.y + float(entry[2])) * 0.5
+		if maxf(across, along) < STAND_CLEAR_M:
+			return false
+	return true
+
+
+## (width, length) of a unit's hull box.
+static func _hull(unit_id: String) -> Vector2:
+	if not Units.exists(unit_id):
+		return Vector2(2.6, 4.0)
+	var hull: Array = Units.stat(unit_id, "hull_size", [2.6, 1.8, 4.0])
+	return Vector2(minf(float(hull[0]), float(hull[2])), maxf(float(hull[0]), float(hull[2])))
 
 
 ## The team's spawn zone: the layout's (M2 v2), else the box round its spawn spots, else round the default slots.
