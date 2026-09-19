@@ -427,7 +427,36 @@ stack first, then the layer that commands it, then how the player reads and issu
   The 45% off-axis kills CP4 measured were achieved **despite** one central control point on every map, so the two
   changes should compound rather than merely coexist.
 - **THE GANGS' 23% IS GONE — 53%, joint best, and nobody tuned them** (60 matches, 5 seeds per pairing,
-  counterbalanced, builder0 `1333cc73`):
+  counterbalanced, builder0 `1333cc73`).
+  **⚠ SCOPE, added 2026-09-19: every number in this table is a *foundry* number.** `faction_matrix.py` passed no
+  `--arena` and nothing in its output said which map it ran on, so the whole faction history of this project was measured
+  on one layout. Fixed at `c2b27516` — the tool now takes `ARENA=`, names the map in its header, and writes a per-arena
+  file. **The comparisons remain sound, because every arm ran on the same ground**; what is *not* established is that any
+  of these win rates is a property of a faction rather than of a faction on foundry. **Re-read every row below as "on
+  foundry".** And foundry is **not a neutral default**: arena measured it at `centre_sees_share` **0.56, the second-most
+  open map in the game**, so every number here sits on ground that *favours anything paying off with sightlines*. Lesson 90.
+  **⚠ AND THE EXPLANATION BELOW IS UNDER CHALLENGE, added 2026-09-19.** combat found that `Army.squads_for()` iterates the
+  `SQUADS` table rather than the units, so **a unit whose role is not a key is silently dropped from every army** — and
+  that same table's comment records the gangs' rat rods being given the Condemned scout's *spotters-first* directive,
+  *"and the faction won 10-30% of everything."* **That is this table's 23%.** So there is a competing explanation for the
+  recovery — *somebody fixed the directive bug* — and it is simpler than the one written below.
+  **TIMELINE ANSWERED (combat, `git log -S'"gangs/scout"'`): the fix came FIRST.** `f1b0ee9e` (2026-09-16) **reports the
+  23% and adds the `gangs/scout` entry in the same diff** — the run found the bug, and the fix was written in response to
+  it. No faction matrix ran again until `1333cc73` (2026-09-18), which measured 53%. **So the 23% is a pre-fix number and
+  the 53% is a post-fix one.** But the gap between them also contains the `ready_to_fire` tick, armies holding until
+  ordered, 30 Hz, Jolt and all of CP4 — so **the directive bug is an unexcluded candidate, not a demonstrated cause, and
+  neither is the mechanics story below.** combat has retracted its own attribution in `balance.md` at `0c1fb760`, in
+  place, keeping the measurement and striking the cause. **Read the explanation below as one of two candidates.**
+  **What settles it is an ablation, not an argument** (lesson 25 — attribute a cost by *removing* the behaviour):
+  **delete the `gangs/scout` entry on the current build and re-run the matrix.** Collapse toward 23% means the directive
+  did the work; holding near 53% means the mechanics explanation survives. Scheduled after the per-map designator runs.
+  **And the 23% itself was not a false number** — combat's correction, which is the sharper point: *a build in which 15
+  assault vehicles sit at standoff spotting while the swarm dies really does win 23%.* **The error was treating a
+  measurement of a configuration as a fact about a faction** — the same error as reading a foundry number as a property
+  of the game. This matters beyond the history:
+  the 23% → 53% collapse is the evidence for *"a balance problem dissolved by mechanics"*, which is the principle the
+  stream twice used to refuse tuning against mid-flight numbers. If the evidence is a bug fix, **the principle needs
+  different evidence rather than a quiet retirement**:
 
   | faction | win% | was (pre-CP4) |
   |---|---|---|
@@ -730,6 +759,35 @@ the one with the octagon of shipping containers. All the maps need to be higher 
 **Meanwhile, treat the four as "do not invest" rather than deleted:** no new work on them, and any round-7 map effort
 goes to Pit, Yard and new maps built to the risk-and-reason principle below.
 
+#### MEASURED: every shipping arena scores `spread 0.00` — there is nothing to cross the bridge *for* (arena, 2026-09-19)
+
+**arena built the cost-and-reward metric and the first result is a flat zero on every map in the game.** The reason is
+not subtle: **every shipping arena has exactly one objective**, so **every route is the same route** — there is no
+expensive path and no cheap path, because there is only one thing to go to and it sits in the middle.
+
+**This is the lead's own principle, measured, and it says the principle is currently unimplementable:**
+
+> *"Clearly crossing a bridge is risky, so you don't want a simple map with 2 sides connecting two bridges. **There
+> generally has to be some compelling reason to cross the bridge to take some advantageous ground.**"*
+
+**A bridge cannot be compelling on a map with one central objective**, no matter how the terrain is arranged. Risk
+without reward is just cost, and units correctly decline it — which means **the flanking, ambushing and manoeuvre he
+wants cannot be produced by geometry alone.** It needs something worth taking that is *not* in the middle.
+
+**What this reframes:**
+- **N7 (objectives are the arena's, not a constant) stops being infrastructure and becomes the gate on the whole map
+  programme.** Until an arena can place its own objectives off-centre, `spread` cannot move off zero and no amount of
+  chamfering, hexagons, water or bridges will produce a reason to manoeuvre.
+- **It explains "one big open brawl" better than openness does.** We had been reading his complaint as *the maps are too
+  open* and answering it with `centre_sees_share`. Both are true, but **a single central objective is a stronger cause**:
+  it actively instructs both armies to converge on one point.
+- **It gives the bridge work an acceptance test rather than a look.** A bridge is doing its job when `spread` is
+  non-zero *and* combat's falsification test shows unit-time actually spent on the expensive route. Either alone is
+  decoration.
+
+**The metric needed no build slot and no other stream**, which is worth noting for its own sake: the most important
+design finding of the day came from writing down a number nobody had asked for.
+
 ### The principle behind all of it: terrain makes risk, objectives make reason (lead, 2026-09-18)
 
 > *"On the bridge note, what I'm thinking though is that clearly crossing a bridge is risky, so you don't want a simple
@@ -853,6 +911,40 @@ round learning what guesses cost.
 implement is a good sign, because when it does eventually work it will look and feel sophisticated."* He is explicitly
 authorising research and real algorithms rather than patches. Formations that *look* sophisticated are the goal; a unit
 that cannot hold a slot while fighting cannot ever deliver that.
+
+#### RESOLVED: the scouts that ram their targets (2026-09-19)
+
+> *"Scouts are just running directly into their targets and then they have to turn around to get a fix again."*
+
+**It was neither a pathing bug nor a range bug. It was a movement *style* we designed in round 3 and it did exactly what
+the lead describes.** `CombatMotion`'s `run` style, for a fixed gun: drive straight at the target, veer past its flank
+only in the last 19 m, break off at **9 m absolute — whatever the weapon's band** — then drive **away to 22 m with the gun
+pointing backwards** and turn round. His sentence is a description of the algorithm.
+
+**The fix is the standard gun-truck pattern, shoot-and-scoot, as a new `CombatMotion` style `standoff`:** arrive at a
+firing position inside the effective band, **stop** (Gunnery already lays a stopped fixed mount's hull onto its target),
+fire, slide *along* the band when rounds come in, and never enter the 6 m ram gap.
+
+**Measured on builder0 — one scout ordered onto a durable tank, 25 s:**
+
+| | round-3 `run` | `standoff` |
+|---|---|---|
+| closest approach | 3.0 m | **27.7 m** |
+| nose on target | 17% | **79%** |
+| shots fired | 29 | **211** |
+| time inside the effective band | — | **91%** |
+
+**Seven times the shots.** The unit was previously spending most of its life driving rather than fighting, which is why it
+read as *dumb* rather than as *badly positioned*. `--nav-off=standoff` restores the old behaviour for A/B.
+
+**The design lesson, and it generalises past scouts:** *the unit whose weapon cannot turn must place its whole vehicle
+where the weapon needs to be, and then stop.* A fixed gun is a positioning problem, not an aiming one. Round 3's `run`
+style treated it as a strafing problem, which is a design for a vehicle that can shoot sideways.
+
+**And a test was asserting the bug.** `test_a_scout_makes_attack_runs_on_a_tank` asserted `runs >= 3`; the fixed scout
+makes **zero**. A scenario test written from a design intention pins that intention in place, and the intention was
+wrong — so the assertion becomes *"does not close inside the ram gap, and spends the majority of its time in band"*, which
+is the property the lead actually complained about and the one that can regress.
 
 ### ANSWERED: why he could not tell which way his units were facing (2026-09-19)
 

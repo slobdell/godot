@@ -161,3 +161,48 @@ local: remote runs don't forward API keys.
   cookie); `tools/remote.sh` now reads the running Xwayland's `-auth` file (feel, 2026-09-15).
 - Secrets: remote runs don't forward API keys. Paid-generation targets (Meshy, ElevenLabs) run locally, where the
   lead's environment has the keys.
+
+## ⚠ A foreground `make remote` is killed by the harness, not by another agent (found 2026-09-19)
+
+**Symptom:** the wrapper ends with `make: *** [mk/core.mk:111: remote] Terminated` — or `Terminated sleep 5` inside
+`tools/slot.sh`'s wait loop — **while the run was still queued on builder0 and no target had executed.** The remote side
+is often still alive and queued, orphaned from its dead local wrapper.
+
+**Cause: the agent harness SIGTERMs long-running foreground shell commands.** Its timeout **defaults to 2 minutes and
+caps at 10**, and `make remote T=check` takes **30–50 minutes** during an active round, most of it waiting for a slot. So
+a foreground check **cannot survive to completion by construction**, whatever timeout you pass.
+
+**This is not another agent killing your run.** control suspected a pattern-matching cleanup, reasonably — trip-up 79 is
+real and a broad `pkill -f "remote.sh"` once killed an orchestrator's own shell. But the orchestrator checked every live
+wrapper by cwd at the time and found **six concurrent runs from five worktrees, all healthy**, including its own
+**backgrounded** `check` alive at 43 minutes. **The backgrounded one survived; the foreground ones died.**
+
+**The rule: never run `make remote` in the foreground. Always background it**, so the harness stops holding a timeout
+over it, and read the result from the output file when it completes.
+
+**How the streams lost time to this:** a wrapper killed at ~10 minutes has usually not started any target, so it produces
+**no output at all** — not a failure, not a partial run, nothing. It reads as *"the queue is slow"*, which is also true,
+and that coincidence hid it. **Several rounds of "still waiting for a slot, nothing came back" were this.** Check whether
+a missing result is a killed wrapper before concluding builder0 is merely busy: `ps -o pid,etime,args -p <pid>` on the
+wrapper, and `readlink /proc/<pid>/cwd` to confirm whose it is.
+
+**If you find an orphaned remote run** (local wrapper dead, builder0 side alive), kill the remote side by cwd before
+relaunching, or two runs will `rsync --delete` into the same builder0 folder — lesson 52.
+
+## ⚠ The harness's own task-completion notification reports the wrong process (found 2026-09-19)
+
+A backgrounded `make remote T=check ... | tail -30` on `main` finished and the harness announced
+**`completed (exit code 0)`**. The wrapper's own line in the log said **`>> remote: make check exited 2`**, and
+`sim-baseline` had failed. **The notification was reporting `tail`'s exit status, not `make`'s.**
+
+**So the rule *never read a build result through a pipe* has a second face: the completion notification is downstream of
+your pipeline too.** It is more dangerous than a piped `echo $?`, because it arrives from the *tooling* rather than from a
+log, which is exactly the kind of source one trusts without checking. **Believing it here would have meant announcing
+`main` green on the strength of a system notification.**
+
+**Two consequences:**
+- **Read the wrapper's `>> remote: make <target> exited <N>` line. Always. It is not advice about pipes** — it is the only
+  channel in this system that reports the thing you actually asked about. Everything else reports the last process in a
+  chain (combat's observation, having checked its own waiters and found them correct **by habit rather than by reasoning**).
+- **Don't pipe at all when backgrounding.** Redirect to a file (`> log 2>&1`) and grep it afterwards, so the wrapper's
+  status is also the shell's status and the two cannot disagree.
