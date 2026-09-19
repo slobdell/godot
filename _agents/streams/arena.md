@@ -265,13 +265,51 @@ on **ground he never drives**. It is a *sensitivity fixture* — known-stalling 
 movement change helps — and it is **not** a reproduction of his complaint. The lesson is combat's, from the same
 day: *finding the authoritative copy of a value is not the same as checking the value still matters.*
 
-**Open, and it is the whole remaining gap:** his configuration has an enemy, his own orders, and units interacting.
-Nothing measured so far has any of those. `nav-fight` is the closest instrument and it is nav's file, so I run it
-rather than edit it.
+**That gap is now closed, and the answer was the verb.** `nav-fight` run unmodified on the same four maps:
+`blocked_terrain` is 0.000–0.010 everywhere, and the time that is not progressing is **`retasked` 0.298–0.364** —
+nav's own definition, *driving under a valid path toward a destination the brain chose, not the player's* — of
+which about three quarters are `ENGAGE hop`, a destination change every ~1.3 s. The by-verb split is the finding:
 
-**Questions for the lead** (not blocking; recorded per the worker contract): the hexagon maps (yard, pit) shipped
-and are measured, and he has not commented on them. He named eight round-8 items and no new map is among them, so
-I am not building one.
+| verb | `progressing` | `retasked` | re-tasks per unit-minute |
+|---|---|---|---|
+| **move** | **0.876 – 0.941** | 0.0 | 0.0 |
+| **attack_move** | **0.408 – 0.474** | 0.42 – 0.494 | 43.9 – 47.9 |
+
+**My crossing probe issues a plain move, which is literally the top row** — so every clean number I published this
+round was clean for a reason that had nothing to do with the maps. **The untested variable was never the terrain;
+it was the verb, and behind the verb, the brain.** `ENGAGE hop` is combat/AI ground and I have not gone near it.
+
+**What I refused to claim:** that a re-task *looks like* "back and forth". I have where the time goes, not what the
+trajectory does. That needs the oscillation counter inside the fight probe (extracted for nav at `c0aa421f`) or a
+human watching one match.
+
+### Round 8, second half: the things he could see
+
+| Commit | What |
+|---|---|
+| `de61d04e` | `--arena=random` deals only the maps he kept. His verdict had been in `game_design.md` for a round and had never reached a line of code, so half of every skirmish was a map he had cut |
+| `8fda01a8` | **The Terminus** — the cityscape, and the reason no map could place a city block |
+| `94ca59bc` | Into the rotation, after the render was looked at |
+
+**The navmesh baker silently ignores boxes larger than about 8 m on both horizontal axes** — no hole, no rooftop,
+nothing, while the collision body is built correctly and physics still stops hulls. Every obstacle this project
+owned is thin on at least one axis, so nothing had ever crossed the threshold; **feel's city block was the first,
+and the first person to place one would have found it did not work.** `Arena._obstacle_shapes()` tiles a large
+footprint with thin slabs. A hollow shell of four walls is the version that looks obviously right and is wrong: it
+leaves an unreachable navmesh island inside every building. Full measurement table in [../arenas.md](../arenas.md).
+
+**The map, measured and then looked at:** centre_sees 0.13 (yard 0.20, pit 0.30), decision spread 0.41 after
+sweeping ten placements, longest sightline 196 m — the shortest of the three. 30/30 cross it. **And it is the first
+shipping map that moves the stall measure: `no_progress` 0.091 against yard's 0.050**, which makes it the test bed
+flow fields have never had, on ground he plays.
+
+**Questions for the lead** (not blocking; recorded per the worker contract):
+
+1. **The Terminus is in the rotation and he has not ruled on it.** It is the one entry in `Arena.ROTATION` that is
+   not his verdict. Two things a human should judge: **it is dark** (near-black towers lit by their windows; the
+   street reads dimmer than yard's), and **street level is plain** — flat window grids where a tank drives, which
+   is feel's own open question, unanswered. Removing it is one line and one test expectation, both commented.
+2. **Is a hexagon what he wanted?** yard and pit shipped as hexagons and he has not commented either way.
 
 ---
 
