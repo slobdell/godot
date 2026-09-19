@@ -39,8 +39,13 @@ func _setup() -> Array:
 	rig.camera = camera
 	rig.edge_pan = false
 	add_to_tree(rig)
-	var alpha := game_match.tanks.get_node("Green_Alpha_1") as Tank
-	rig.focus = Vector3(alpha.global_position.x, 0, alpha.global_position.z - 10.0)
+	# Aimed at squad Alpha's middle (round 6: the army now starts in formation, a wedge that stands 8 m deep behind its
+	# leader; aimed 10 m ahead of the leader, the wedge's rear pair sat on the bottom edge of the screen).
+	var middle := Vector3.ZERO
+	for unit_name in ["Green_Alpha_1", "Green_Alpha_2", "Green_Alpha_3"]:
+		middle += (game_match.tanks.get_node(unit_name) as Tank).global_position
+	middle /= 3.0
+	rig.focus = Vector3(middle.x, 0, middle.z - 4.0)
 	rig.zoom = 0.3
 	# Round 6 X3: pitch is its own axis, and the lead's default (25°, FOV 60°) shows most of the arena at once. These
 	# tests are about which points are on screen and when the camera tracks, written against round 5's tilt at this

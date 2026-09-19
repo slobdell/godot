@@ -18,6 +18,15 @@ extends RefCounted
 ## 2.6 x 4 m).
 const GAP_SPACINGS := 2.0
 const MIN_SPACING_M := 5.0
+## The front rank stands this far inside the zone's front edge, and the last rank this far inside its back edge (and
+## nothing past the drivable limit: a layout's zone may reach beyond it).
+const FRONT_MARGIN_M := 4.0
+const BACK_MARGIN_M := 4.0
+## An army waiting for orders stands in an ASSEMBLY area, tighter than it moves: a squad starts at most this far between
+## vehicles (hulls are ~4 m long), and opens out to its own spacing when it is ordered to move. The start view frames it.
+const ASSEMBLY_SPACING_M := 8.0
+## Clear ground between one rank of squads and the next (a hull is ~4 m long).
+const RANK_GAP_M := 6.0
 ## A squad with no formation of its own starts in this one.
 const DEFAULT_FORMATION := "wedge"
 ## Only at the very start of a match: never re-lays an army that is already moving.
@@ -29,42 +38,99 @@ const DEPLOY_BY_TICK := 2
 ## {"right": Vector3, "forward": Vector3} (Match.team_frame: forward points at the enemy).
 static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictionary:
 	var result := {}
-	var count := squads.size()
+	var shapes: Array = []
+	for squad: Dictionary in squads:
+		shapes.append(_shape_of(squad))
+	var count := shapes.size()
 	if count == 0:
 		return result
 	var center: Vector3 = zone["center"]
 	var size: Vector2 = zone["size"]
 	var right: Vector3 = frame["right"]
 	var forward: Vector3 = TacticsFormation.flat(frame["forward"])
-	var lane := size.x / float(count)
-	for i in count:
-		var squad: Dictionary = squads[i]
-		var members: Array = squad["members"]
-		if members.is_empty():
+	# As few ranks of squads as fit: each squad takes the width its own formation needs plus a gap, the rank is centred
+	# (a small army stands together, not strung across the whole zone), spacing is compressed only if a rank will not
+	# fit, and when even the tightest spacing will not, the squads stand in more ranks, the first nearest the enemy.
+	var ranks := 1
+	while ranks < 4 and not _fits(shapes, ranks, Vector2(size.x, _usable_depth(size))):
+		ranks += 1
+	var per_rank := ceili(float(count) / ranks)
+	var rank_depth := _usable_depth(size) / float(ranks)
+	for r in ranks:
+		var row: Array = shapes.slice(r * per_rank, mini((r + 1) * per_rank, count))
+		if row.is_empty():
 			continue
-		var shape := String(squad.get("formation", ""))
-		if not TacticsFormation.NAMES.has(shape):
-			shape = DEFAULT_FORMATION
-		shape = TacticsFormation.auto(members.size(), "move", shape)
-		# Pack the squad into its lane of the zone: as its own spacing allows, tighter if it must, never below the floor.
-		var spacing := float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING))
-		var frontage := TacticsFormation.frontage(shape, members.size(), spacing) if shape != "rows" \
-				else _extent(TacticsFormation.rows(members.size(), 0, spacing), true)
-		var depth := TacticsFormation.depth(shape, members.size(), spacing) if shape != "rows" \
-				else _extent(TacticsFormation.rows(members.size(), 0, spacing), false)
-		# Fit frontage + the gap to the next squad (both in spacings) into the lane, and the depth into the zone.
-		var fit := spacing
-		if frontage > 0.0:
-			fit = minf(fit, lane / (frontage / spacing + GAP_SPACINGS))
-		if depth > 0.0:
-			fit = minf(fit, size.y * 0.9 / (depth / spacing))
-		spacing = maxf(fit, MIN_SPACING_M)
-		var anchor := center + right * (float(i) - (count - 1) * 0.5) * lane
-		for entry in TacticsFormation.place(members, shape, anchor, forward, spacing,
-				{"policy": "front", "leader": String(squad.get("leader", ""))}):
-			result[String(entry["unit"])] = {"position": entry["to"], "facing": forward, "squad": String(squad["name"]),
-					"anchor": anchor, "formation": shape}
+		var scale := _scale_for(row, size.x, rank_depth)
+		var widths: Array = []
+		var total := 0.0
+		for shape: Dictionary in row:
+			var spacing := maxf(float(shape["spacing"]) * scale, MIN_SPACING_M)
+			var width: float = (float(shape["across"]) + GAP_SPACINGS) * spacing
+			widths.append([spacing, width])
+			total += width
+		# Every squad's front on the rank's line: rank 0 on the zone's front edge (nearest the enemy, where the old spawn
+		# grid filled first), each rank behind the one before. A formation's anchor is its middle, so step back half its depth.
+		var line := center + forward * (size.y * 0.5 - FRONT_MARGIN_M - r * rank_depth)
+		var left := -total * 0.5
+		for i in row.size():
+			var shape: Dictionary = row[i]
+			var spacing: float = widths[i][0]
+			var anchor: Vector3 = line - forward * float(shape["deep"]) * spacing * 0.5 \
+					+ right * (left + float(widths[i][1]) * 0.5)
+			left += float(widths[i][1])
+			for entry in TacticsFormation.place(shape["members"], shape["formation"], anchor, forward, spacing,
+					{"policy": "front", "leader": shape["leader"]}):
+				var at: Vector3 = entry["to"]
+				var limit := Match.DRIVABLE_LIMIT - 2.0
+				at = Vector3(clampf(at.x, -limit, limit), 0.0, clampf(at.z, -limit, limit))
+				result[String(entry["unit"])] = {"position": at, "facing": forward, "squad": shape["name"],
+						"anchor": anchor, "formation": shape["formation"]}
 	return result
+
+
+static func _usable_depth(size: Vector2) -> float:
+	return maxf(size.y - FRONT_MARGIN_M - BACK_MARGIN_M, 8.0)
+
+
+## A squad's formation and its width and depth per metre of spacing (formations scale linearly with spacing).
+static func _shape_of(squad: Dictionary) -> Dictionary:
+	var members: Array = squad["members"]
+	var shape := String(squad.get("formation", ""))
+	if not TacticsFormation.NAMES.has(shape):
+		shape = DEFAULT_FORMATION
+	shape = TacticsFormation.auto(members.size(), "move", shape)
+	var raw := TacticsFormation.group_offsets(shape, maxi(members.size(), 1), 1.0)
+	return {"name": String(squad["name"]), "members": members, "formation": shape,
+			"leader": String(squad.get("leader", "")),
+			"spacing": minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M),
+			"across": _extent(raw, true), "deep": _extent(raw, false)}
+
+
+## Whether `shapes` fit the zone in `ranks` ranks at the tightest spacing.
+static func _fits(shapes: Array, ranks: int, size: Vector2) -> bool:
+	var per_rank := ceili(float(shapes.size()) / ranks)
+	for r in ranks:
+		var width := 0.0
+		for shape: Dictionary in shapes.slice(r * per_rank, mini((r + 1) * per_rank, shapes.size())):
+			width += (float(shape["across"]) + GAP_SPACINGS) * MIN_SPACING_M
+			if float(shape["deep"]) * MIN_SPACING_M > size.y / ranks - RANK_GAP_M:
+				return false
+		if width > size.x:
+			return false
+	return true
+
+
+## How much a rank's squads must be packed (<= 1) to fit its width and depth.
+static func _scale_for(row: Array, width: float, depth: float) -> float:
+	var natural := 0.0
+	var scale := 1.0
+	for shape: Dictionary in row:
+		natural += (float(shape["across"]) + GAP_SPACINGS) * float(shape["spacing"])
+		if float(shape["deep"]) > 0.0:
+			scale = minf(scale, maxf(depth - RANK_GAP_M, 1.0) / (float(shape["deep"]) * float(shape["spacing"])))
+	if natural > 0.0:
+		scale = minf(scale, width / natural)
+	return scale
 
 
 ## Lay out `team`'s squads, at the start of the match only (a doctrine loaded later, mid-match, is left where it spawns).
