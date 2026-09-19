@@ -1158,3 +1158,20 @@ The kickoff prompt is one line; this section is the rest.
     So: **briefs cite where a claim comes from rather than restating it** — `game/x.gd:120` or `balance.md` *(proposed,
     unbuilt)* — and design docs mark unbuilt proposals as proposals in the same line as the proposal, because that line
     is what gets copied.
+85. **Probing that an engine feature *exists* is not probing whether we already *use* it — and I published a roster built
+    on the first.** `algorithms.md` listed `PATH_POSTPROCESSING_CORRIDORFUNNEL` as **unused** and the funnel algorithm as
+    **OWED**, on the strength of a `ClassDB` probe that showed the constant existed and a reading of our call site that
+    showed we called the older `map_get_path(..., optimize=true)`. nav established the actual fact: **`optimize=true`
+    *is* the corridor funnel.** We have had funnel smoothing since round 1. I had congratulated the file for being
+    *"probed rather than read from docs"* — and the probe answered a different question than the one the row claimed.
+    Worse, the row carried a **diagnosis** with it: *"waypoints are raw navmesh corners, so vehicles saw off turns."* The
+    premise was false, so the diagnosis was too — the sawing was **steering at the corners**, fixed by round 6's carrot.
+    **A wrong entry in a roster is more expensive than a missing one**, because it is quoted into briefs as a task
+    (lesson 84) and it retires a real symptom under a wrong cause. I relayed it to two streams before nav corrected it.
+    Three rules:
+    - **For every "we don't use X" claim, name the call site that would use it and quote what that call site does.** Not
+      the class, the call.
+    - **The owner of the file is the authority on the file.** A roster written by the orchestrator is a *hypothesis list*
+      until each row is confirmed by the stream that owns the code. Mark unconfirmed rows as unconfirmed.
+    - **Keep the corrected row, struck through, rather than deleting it.** Same treatment as the retracted range finding
+      in `game_design.md`: a deleted wrong answer gets re-derived, a visible wrong answer does not.
