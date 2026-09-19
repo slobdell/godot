@@ -60,6 +60,8 @@ DEFAULTS = {
     "tail_lift_db": 0.0,       # raise the decay by up to this much: the rolling tail the lead asked for
     "sub_db": None,            # a synthesised low body under the take, at this level (None = none)
     "sub_hz": 55.0,            # where that body sits
+    "seam_s": 0.03,            # a loop's crossfade at its seam (a crowd bed's texture wants seconds, not ms)
+    "level_s": None,           # ride a bed's gain steady over this window (None = leave its swells)
 }
 
 
@@ -218,6 +220,14 @@ def fade_tail(x: np.ndarray, fade_s: float, rate: int = RATE) -> np.ndarray:
     return x
 
 
+def ride_level(x: np.ndarray, window_s: float, max_db: float = 9.0, rate: int = RATE) -> np.ndarray:
+    """A slow gain rider: the level over `window_s` is held at the take's median, by at most `max_db` either way.
+    Anything faster than the window (a shout, a clap) keeps its shape; the drift a bed was asked not to have goes."""
+    level = np.sqrt(np.maximum(moving_mean(x * x, max(1, int(window_s * rate)), same=True), 1e-12))
+    gain = np.clip(np.median(level) / level, 10 ** (-max_db / 20), 10 ** (max_db / 20))
+    return x * gain
+
+
 def loop_seam(x: np.ndarray, crossfade_s: float = 0.03, rate: int = RATE) -> np.ndarray:
     """Folds the last few ms over the first so the loop point never clicks (equal-power)."""
     n = min(len(x) // 4, int(crossfade_s * rate))
@@ -267,6 +277,8 @@ def build_take(master: Path, source: dict, take: int) -> tuple[np.ndarray, dict]
     if settings["max_s"]:
         body = body[: int(float(settings["max_s"]) * RATE)]
     body = highpass(body, float(settings["highpass_hz"]))
+    if settings["level_s"]:
+        body = ride_level(body, float(settings["level_s"]))
     mixed = body.copy()
     if settings["harmonics_db"] is not None:
         mixed += harmonics(body) * np.abs(body).max() * 10 ** (float(settings["harmonics_db"]) / 20)
@@ -295,7 +307,7 @@ def build_take(master: Path, source: dict, take: int) -> tuple[np.ndarray, dict]
             break
         drive = min(6.0, drive + short)
     if loop:
-        mixed = loop_seam(mixed)
+        mixed = loop_seam(mixed, float(settings["seam_s"]))
     report = {"sound": source["sound"], "take": take, "master": master.name, "seconds": round(len(mixed) / RATE, 3),
               "loudness_db": round(loudness_db(mixed), 1), "target_db": round(target, 1),
               "peak_db": round(20 * np.log10(max(np.abs(mixed).max(), 1e-9)), 2),
@@ -329,13 +341,20 @@ def write_take(x: np.ndarray, sound: str, take: int, loop: bool, out: Path) -> P
     return path
 
 
-def keep_loops_uncompressed(folder: Path) -> list[Path]:
+def loop_sounds(data: dict) -> set:
+    """The SfxSystem sounds the recipe builds as loops (the crowd's bed is one without "loop" in its name)."""
+    return {source["sound"] for source in data.get("sources", []) if source.get("loop", False)}
+
+
+def keep_loops_uncompressed(folder: Path, sounds: set = frozenset()) -> list[Path]:
     """Loops must import as plain 16-bit PCM. The engine, crowd, flame and gunfire code set `loop_end` to
     `data.size() / 2`, which counts frames only for PCM: on a QOA-compressed import (Godot's default, compress/mode=2)
     it lands a fifth of the way in, and every loop in the game was repeating its first 0.2 s (found round 5).
     Returns the .import files it changed; Godot reimports them on the next `make import`."""
     changed = []
-    for wav in sorted(folder.glob("*loop*.wav")):
+    for wav in sorted(folder.glob("*.wav")):
+        if "loop" not in wav.name and wav.stem.rsplit("_", 1)[0] not in sounds:
+            continue
         settings = wav.with_name(wav.name + ".import")
         if not settings.exists():
             continue
@@ -407,7 +426,7 @@ def main(argv: list[str]) -> int:
             report["sound"], take, report["seconds"], report["loudness_db"], report["target_db"], report["peak_db"],
             written.name, ("  seam %.2f" % report["seam_jump"]) if "seam_jump" in report else ""))
     write_manifest(existing_pools(args.out), args.manifest)
-    for settings in keep_loops_uncompressed(args.out):
+    for settings in keep_loops_uncompressed(args.out, loop_sounds(data)):
         print("loop import set to PCM: %s (run make import)" % settings.name)
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)

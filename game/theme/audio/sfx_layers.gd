@@ -6,6 +6,8 @@ class_name SfxLayers
 const TAKES := {
 	"autocannon_shot": ["res://assets/audio/layered/autocannon_shot_1.wav", "res://assets/audio/layered/autocannon_shot_2.wav", "res://assets/audio/layered/autocannon_shot_3.wav"],
 	"bullet_hit_metal": ["res://assets/audio/layered/bullet_hit_metal_1.wav", "res://assets/audio/layered/bullet_hit_metal_2.wav", "res://assets/audio/layered/bullet_hit_metal_3.wav", "res://assets/audio/layered/bullet_hit_metal_4.wav"],
+	"crowd_cheer": ["res://assets/audio/layered/crowd_cheer_1.wav"],
+	"crowd_murmur": ["res://assets/audio/layered/crowd_murmur_1.wav"],
 	"dirt_impact": ["res://assets/audio/layered/dirt_impact_1.wav", "res://assets/audio/layered/dirt_impact_2.wav", "res://assets/audio/layered/dirt_impact_3.wav"],
 	"energy_beam": ["res://assets/audio/layered/energy_beam_1.wav", "res://assets/audio/layered/energy_beam_2.wav", "res://assets/audio/layered/energy_beam_3.wav"],
 	"explosion_big": ["res://assets/audio/layered/explosion_big_1.wav", "res://assets/audio/layered/explosion_big_2.wav", "res://assets/audio/layered/explosion_big_3.wav"],
