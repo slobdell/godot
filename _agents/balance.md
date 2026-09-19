@@ -314,6 +314,41 @@ the shipped bands (`preferred_max`) sit between the 0.65 and old-world rows on r
 
 **4. Tighter bands buy flanking**, which is the design goal: flank+rear 28% → 57% → 53%, off-axis 27% → 26% → 55%.
 
+### X4 — THE GANGS' 23% IS GONE (builder0, `1333cc73`, 60 matches, 5 seeds per pairing, counterbalanced)
+
+Open since round 4 and deferred twice, because the stream would not tune against numbers taken while drills and
+suppression were still landing. Both have landed, CP4 is in, and **every number predating it is history — this is the
+first honest measurement.**
+
+| faction | record | win% | was (pre-CP4) |
+|---|---|---|---|
+| condemned | 16/30 | **53%** | 70% |
+| **gangs** | 16/30 | **53%** | **23%** |
+| law | 15/30 | **50%** | 63% |
+| syndicate | 13/30 | **43%** | 47% |
+
+**The road gangs went from 23% to 53% — joint best — and nobody tuned them.** The spread across all four factions
+collapsed from **47 points (23–70) to 10 points (43–53)**. Two defects were fixed in round 4 and neither moved it;
+what moved it was the engagement envelope, the brain's range reasoning and suppression all landing together.
+
+**Why it is believable rather than lucky:** the gangs are the cheap-swarm faction — they field **43 vehicles** to the
+Syndicate's 25 — and a swarm is exactly the army that suffers most when everything can be shot from maximum range the
+moment it is seen, and gains most when fire is only effective up close. N5's decomposition said the *gates* do the
+heavy lifting; a 43-vehicle army closing under acquisition delay is the shape that benefits.
+
+**What must NOT be read into this.** Each pairing is 10 matches, so **a 60% is 6/10 and its 95% interval is roughly
+±30 points.** Every pairing here is statistically indistinguishable from 50%. So:
+
+- **The finding that survives: the 47-point spread is gone.** That was visible at any sample size; a 10-point spread
+  is not.
+- **The Syndicate's 43% is NOT a finding.** It is the lowest number in the table and it is inside the noise. Anyone
+  wanting to act on it needs many more seeds first — and the previous holder of "the outlier we must fix" cost this
+  project two rounds of deferred tuning precisely because it was acted on as a fact.
+
+Per-match results:
+[streams/references/combat/faction-matrix-post-cp4-2026-09-18.json](streams/references/combat/faction-matrix-post-cp4-2026-09-18.json).
+**Retire the 23/70/63/47 line wherever it appears** — it describes a game that no longer exists.
+
 ### N5 MEASURED AGAINST THE REAL OLD WORLD (builder0, `fa4e7077`, **n = 15 per arm**, 3 counterbalanced pairings)
 
 **This is the answer. Everything below it is superseded.** The control arm is a genuine round 5 — bands at reach
