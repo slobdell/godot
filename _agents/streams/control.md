@@ -180,7 +180,11 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
 | Scale playtest regression (squad, after its consolidation) | done (`3c1c224e`): with nothing selected the vision camera framed the whole army (can't fit 100 m at 35°) → now group 1; and the lean toward the reach parked the selected squad UNDER the command card (symmetric 0.78 bound vs the card at 0.44 of the half-height) → `VISION_FRAME_BOTTOM` 0.40. Playtest with squad's 90bd2212: ok=true, group 1 at y 586–653 vs card ~778 | `test_rts_camera::test_a_long_lean_keeps_the_squad_above_the_command_card` (fails on the old camera: 0.49) |
 
-**Round 8 candidate: `3c1c224e`** (next check). Before it, **`4ebe47a7`** (main 28eb403f merged) — #26 running. #25 on `9dc17901` was not a verdict: feel's
+**Round 8 candidate: `3c1c224e`** (next check, after main records a new sim line). #26 on `4ebe47a7`: 1228/0 tests,
+then `sim-baseline FAILED` (expected `53d4e0ac`, got `668b7d49`) — **main's line is stale, not this branch:** the same
+command on the laptop gives one hash (`34507d95`, glibc 2.39) for main `28eb403f`, this branch, and this branch with the
+pre-M4 `orders.gd`; and clean main `28eb403f` on builder0 gives `668b7d49` too (control's scratch run). The orchestrator
+records the line. Before it, **`4ebe47a7`** (main 28eb403f merged) — #26 running. #25 on `9dc17901` was not a verdict: feel's
 `test_a_new_state_waits_for_a_bar_line` failed on builder0 (audio-driver timing; reported to feel), so make stopped at
 `test`. **Round 8 is otherwise done for control.**
 
