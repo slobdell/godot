@@ -730,6 +730,27 @@ happens to push the implausible way. So the fix is not vigilance:
   with no treatment is a failed run, not a null result.* The `run:` header proves **which build**; this proves
   **which behaviour**.
 
+**The control then broke the instrument it was guarding, which is the part worth reading** (`9821cac7`). Shipped
+`e0f6ce40` with unit tests over `Match`'s two counters and **never ran `faction_matrix` once end to end**. The block
+read `outcomes`' values as result dicts; they are `(result, first_is_green)` **pairs**. Every matrix run after it
+died on `AttributeError` before printing a row — a guard against bad numbers that produced **no** numbers, and it
+would have mis-attributed the faction anyway, because team 0 is Green and which faction that *is* depends on the
+flag. Two lessons, and the second is the general one:
+
+1. **"The counters are tested" is not "the instrument works".** The unit tests were real and passed; nothing
+   exercised the thirteen new lines that consume them. A guard is code on the hot path of every future run, so it
+   earns *more* end-to-end scrutiny than the thing it guards, not less.
+2. **A guard that is silent when it ran and silent when it never ran is indistinguishable from no guard** — which is
+   precisely how the designator got measured twice without engaging. So the run now *always* states what the control
+   saw: `positive control: 6 side(s) fielded a designator, 97 paints -- treatment engaged`, or **`NOT EXERCISED`**.
+   Zero fielding sides is often legitimate — a faction army draws **one** archetype and `syndicate_escort` carries no
+   Lancer, so a small matrix can field none at all — but legitimate is not the same as *passed*, and a control that
+   cannot be seen firing will eventually be believed without having fired. **Make an assertion report its own
+   coverage.**
+
+Verified end to end on the laptop at `9821cac7` (8 matches, foundry, 45 s limit — a plumbing run, **its win rates are
+not a balance result and must not be quoted**): tool exits 0, json written, both branches of the evidence line seen.
+
 ### Every faction number this project has quoted is a FOUNDRY number — and foundry is near-open
 
 `faction_matrix.py` passed no `--arena` until `c2b27516`, so every matrix run used the default layout and **said so
@@ -916,21 +937,33 @@ round by reading a "waiting for a slot" line as a queue when I had in fact been 
 | ~~`test_ai_player_holds::test_the_players_units_wait_for_orders…`~~ | **FIXED on `main`** | Product constraint #4. A held unit picked ENGAGE and flanked; the rule had been upheld by the outrange heuristic returning `stop`. Now enforced as a rule — squad measured 15.2 m → 0.0 m in a CP4 worktree, and it passes here |
 | `scenario_suppression::test_holding_a_crew_down…` (**in `check`**) | **squad** | Pinned crew lands 10 of 11 vs a calm 11 of 11. Suppression's penalty is angular, so closer fights soften it — a threshold to re-derive, or evidence for raising `SUPPRESSION_SPREAD_FACTOR` (mine) once the series says |
 | `test_tactics_scenarios::test_support_by_fire_forms_a_firing_line…` (**in `check`**) | **squad** | CP3×CP4: the SBF standoff is keyed on `effective_range`, so narrowed bands put the firing line inside `near_ambush_m` and the two drills alternate every tick (see above) |
-| `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. **Dither (15.6–17.7/min against a bar of 12) is the blocking one** |
+| `scenario_cover::…fights_from_cover`, `scenario_motion::…attack_runs`, `scenario_motion::brains_dont_dither`, `scenario_dodge_rate::…`, `scenario_motion::…duel_on_the_move` | **squad** | Outside `check`. All downstream of the same thing: positioning logic written when "in range" and "worth firing" were one number. ~~**Dither (15.6–17.7/min against a bar of 12) is the blocking one**~~ — **RETRACTED: the counter double-counted.** Real 7.8 → 6.2, i.e. dither is *below* the bar and was never the blocker. See line 323 |
 
 Five further `make ai-scenarios` failures are **pre-existing on `a975e262`** and nothing to do with this work —
 baseline that suite before attributing anything to a change (it is not in `check`, which is why no baseline existed).
 
 ### Next steps, in order
 
-1. **squad lands the precedence fixes**; CP4 merges as a pair.
-2. Run the series (runbook above). Report median hit range, first shot, **shots per unit per minute**, duration,
-   flanking-route unit-time, with n, commit and machine.
-3. Settle the bands. **Do not record the sim baseline** — say in the green report that N5 moves it and leave the
-   record to the orchestrator (invariant 2).
-4. X4's `faction-matrix` re-measure — after everything above, never across it.
-5. **N7** (arena's objectives read-through in `match.gd`) — scheduled after CP4 so two contracts are never in flight
-   in that file at once.
+_Rewritten 2026-09-19. Items 1–5 of the round-6 list are **done**: CP4 merged as a pair, the series ran, the bands
+settled, and N7 landed at `5d0ca30f`. The baseline was left to the orchestrator (invariant 2) and still must be._
+
+1. **The gate run** — every `check` target **except `sim-baseline`**, because invariant 2 forbids this stream from
+   recording it and `make check` **aborts at the first failing target**, so a stale baseline silently skips the six
+   targets after it. Running on builder0 at `9821cac7`; report the hash **with the target list**, never as "check
+   passed".
+2. **Re-run the faction matrices on the true build, `ARENA=boulevard` (open, 0.64) and `ARENA=yard` (closed, 0.20)**,
+   and report **per map and per faction — never as one aggregate.** Both maps must be quoted together or neither: a
+   single map's number is a property of that map (see *Every faction number … is a FOUNDRY number*).
+3. **The `gangs/scout` ablation.** The 23% → 53% gang swing is **unattributed**: the directive fix and CP4 landed in
+   the same commit and no matrix ran between them. Remove the `gangs/scout` entry, re-run, and let the difference say
+   which one paid. Until then CP4 gets **no** credit for the gangs.
+4. **Merge `main`** (baseline `b70608d6`, arena's `half_size` relaxation `877dc34a`), then `ARENA_HALF_SIZE`
+   120 → 140 **as a bound**, `DRIVABLE_LIMIT` → **117, not 136**, migrating the six square-clamp call sites to
+   `Arena.contains()` / `clamp_into()`.
+5. **X7 (stretch)** — the event half is done; one number is left.
+
+**Round-7 debt, unowned:** the eight-place `role` taxonomy still has no registry (see *The designator*). The
+`SQUADS` guardrail is a down-payment on one of the eight, not a fix.
 
 ### Merge notes (shared files)
 
