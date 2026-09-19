@@ -103,6 +103,47 @@ class Box:
         return True
 
 
+## `centre_sees_share` has a target at the OPEN end (< 0.30, carrying the lead's verdict) and NOTHING at the closed
+## end. Round 8 made that gap real: the cityscape scores 0.13, the lowest of any map, and "the middle can see very
+## little" is a compliment right up to the point where it means "there is nowhere to see from".
+##
+## **These are not targets and the thresholds are not mine to invent.** The lead has ruled on six maps and every one
+## of them was at the open end of the range; nobody has ever told us a map was too closed, so there is no verdict to
+## encode and inventing a number would be exactly the post-hoc threshold this stream keeps writing lessons against.
+## What this does instead is say when a layout is an OUTLIER against the maps he has actually played, and name the
+## comparison, so a human is asked rather than a constant.
+##
+## The reference is **the maps the lead has actually ruled on** — and terminus is deliberately NOT among them, which
+## is the whole point. My first version of this took the range from every shipping map including terminus, so
+## terminus defined the low end and could never flag itself: a guard calibrated on the thing it is meant to watch.
+## Measured by this tool over the seven he has judged:
+##
+##   drivable_share  0.48 (boneyard) .. 0.55 (pit)        mean_view_m  54.3 (yard) .. 81.8 (pit)
+##
+## terminus sits at **0.44 and 50.2 m — outside both**, and so it trips its own flag, which is the honest outcome:
+## it IS the outlier, nobody has ruled on it, and the tool says so every time anyone runs it rather than relying on
+## someone remembering the caveat in a document.
+SHIPPED_DRIVABLE_LOW = 0.48
+SHIPPED_MEAN_VIEW_LOW = 54.3
+
+
+def openness_notes(report):
+    """Human-facing flags, never failures: where does this layout sit against the maps the lead has played?"""
+    out = []
+    drivable = report.get("drivable_share", 0.0)
+    view = report.get("mean_view_m", 0.0)
+    if drivable < SHIPPED_DRIVABLE_LOW:
+        out.append("drivable_share %.2f is below every map the lead has ruled on (lowest is %.2f): more of the floor is "
+                   "building than any map he has played. Not a failure — a question for a human." % (drivable, SHIPPED_DRIVABLE_LOW))
+    if view < SHIPPED_MEAN_VIEW_LOW:
+        out.append("mean_view %.1f m is below every map the lead has ruled on (lowest is %.1f m): sightlines may be "
+                   "shorter than a gunline needs. Not a failure — a question for a human." % (view, SHIPPED_MEAN_VIEW_LOW))
+    if report["ambush"]["centre_sees_share"] < 0.10:
+        out.append("centre_sees %.3f is very low: check the middle is a place you can fight FROM, not just a place "
+                   "nothing reaches." % report["ambush"]["centre_sees_share"])
+    return out
+
+
 def boxes_of(layout):
     boxes = []
     for o in layout.get("obstacles", []):
@@ -935,6 +976,8 @@ def main():
                  by["direct"].get("exposure_idle", -1), by["direct"].get("exposure_posted", -1),
                  by["direct"].get("posting_gain", -1), by["covered"].get("exposure", -1), a.get("flank_detour", -1),
                  best.get("commands_idle", -1), best.get("commands_posted", -1), best.get("hidden_approach", -1)))
+        for note in openness_notes(clean):
+            print("WATCH %-10s %s" % (clean["name"], note))
         d = a.get("decision", {})
         print("DECISION %-10s objectives=%d  spread=%.2f  %s"
               % (clean["name"], d.get("objectives", 0), d.get("decision_spread", 0.0),

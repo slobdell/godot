@@ -185,13 +185,26 @@ class TestTheDecisionMetricSeesADilemmaAndItsAbsence(unittest.TestCase):
         return ar.decision_report(layout, p.boxes, p.blocked, p.n, p.grid, p.gn, fields["idle"], watchers)
 
     def test_one_central_objective_offers_no_decision_at_all(self):
-        """Not a failure of the metric — the diagnosis. With one thing worth holding every route is the same
-        route, and no amount of terrain can change that. Every arena we ship is in this state."""
-        for name in ("yard", "foundry", "boulevard"):
+        """Not a failure of the metric — the diagnosis. With one thing worth holding every route is the same route,
+        and no amount of terrain can change that.
+
+        **This test said "every arena we ship is in this state" and named yard, which stopped being true the moment
+        objective pairs shipped (`0f18710a`).** It had been red ever since and nobody saw it, because `make check`
+        stops at its first failing target and two earlier ones — a stale sim baseline, then an unnamed arena — were
+        failing ahead of it. Three reds deep, each hiding the next.
+
+        The fix is to state the property instead of a roster: a layout with ONE objective has no decision to offer.
+        `foundry` is chosen because it is `Arena.DEFAULT_LAYOUT` and the sim baseline runs on it, so if it ever
+        gains a pair, a lot more than this test wants to know."""
+        for name in ("foundry", "scrapyard"):
             d = self.decision(name)
             self.assertEqual(d["objectives"], 1, "%s has one objective today" % name)
             self.assertEqual(d["decision_spread"], 0.0,
                              "%s: one objective can only produce one (cost, reward) point" % name)
+        # And the other half of the property, on a map that DOES have a pair: two objectives, a real spread.
+        paired = self.decision("yard")
+        self.assertEqual(paired["objectives"], 2, "yard ships a mirrored pair (0f18710a)")
+        self.assertGreater(paired["decision_spread"], 0.0, "two objectives can differ in cost")
 
     def test_a_mirrored_pair_gives_each_side_a_home_and_a_contest(self):
         """The case whose answer is known before running it: a mirrored pair puts one objective near green and its
@@ -286,3 +299,18 @@ def test_the_kit_table_still_matches_the_game():
     for name, (size, cover, collides) in game.items():
         assert ar.KIT[name] == (size, cover, collides), (
             "%s disagrees: the game says %s, arena_report.KIT says %s" % (name, (size, cover, collides), ar.KIT[name]))
+
+
+def test_the_closed_end_watch_flags_the_map_nobody_has_ruled_on():
+    """`centre_sees_share` has a target at the open end and nothing at the closed end, so a map can be too closed
+    and pass everything.
+
+    The property that matters here is not the thresholds — it is that the reference excludes terminus. My first
+    version calibrated the range over every shipping map, terminus included, so the newest and most closed map
+    defined the low end and could never trip its own flag: a guard calibrated on the thing it watches. This test
+    fails if anyone recalibrates it that way again.
+    """
+    terminus = ar.analyze(json.loads((pathlib.Path(__file__).resolve().parent.parent / "arenas" / "terminus.json").read_text()))
+    yard = ar.analyze(json.loads((pathlib.Path(__file__).resolve().parent.parent / "arenas" / "yard.json").read_text()))
+    assert ar.openness_notes(terminus), "terminus is outside the judged range on both measures and must be flagged"
+    assert not ar.openness_notes(yard), "yard is a map the lead KEPT and must not be flagged"
