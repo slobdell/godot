@@ -450,6 +450,8 @@ func load_doctrine(team: int, doctrine: Dictionary) -> String:
 			var error := runtime.apply_command(command, tanks_by_name(), spawn_position(team, 0))
 			if error != "":
 				return "squad %s: %s" % [runtime.squad_name, error]
+	# The army starts as an army (round 6, the lead; squad's ArmyLayout): squads side by side in formation, facing the enemy.
+	ArmyLayout.deploy(self, team)
 	return ""
 
 
