@@ -299,7 +299,25 @@ on its end (the round-6 carrot pinned hulls exactly there); a moving squad threa
 shoving it. **Limit:** stills can't show how a hull ROTATES (pivots, three-point turns), which is what the telephoto
 makes visible; judging that needs motion (a short capture), not done.
 
-**Not done / owed:** motion capture of hull rotation at the lead's pose; flow fields (the root fix for crowding; an architecture change, explicitly not this round);
+**Rotation at the lead's pose** (`make remote T=nav-rotation`, builder0, tree of `d12dd70a` + the capture tool; pitch
+21, 49 m, FOV 35). "Robotic" was pre-registered in `tests/nav/rotation_capture.gd`'s header before the first run:
+(a) 0 → ≥90% of peak angular rate, or back, within one tick; (b) overshoot, or a last tick > 30% of peak; (c) rotating
+about a point it isn't driving around (frames).
+
+| shape | (a) start / stop | (b) overshoot, last tick | (c) frames | verdict |
+|---|---|---|---|---|
+| tank pivot on `face` (118°) | **instant start** (90% of peak in 1 tick); stop decays over 31 ticks | 0.0°, 4% | pivots about its own centre (right for tracks) | **robotic (a)** |
+| scout K-turn to a point behind it (159°) | 21 ticks up, 25 down | **overshoots 20.7°**, 7% | drives a real arc | **robotic (b)** |
+| squad of 4 wheeling onto a facing (89°) | 4 ticks up, 28 down | 0.0°, 4% | in place, together | smooth |
+
+What each would take, NOT started (orchestrator: the capture decides, the lead's next playtest decides whether):
+(a) is the plant — `TankMotion.step_in_place` sets yaw rate = turn × max rate with no angular acceleration, so every
+pivot starts at full rate; the textbook fix is an angular-acceleration limit in the plant (a rate PID on heading in
+`face` would only mask it from one caller). (b) is the car's arrival — it reaches its point still turning at speed;
+Reeds-Shepp (plan the K-turn to end on the heading) or an arrival that brakes the yaw. Raw series and verdict lines:
+`references/nav/round7_rotation_capture.txt`.
+
+**Not done / owed:** flow fields (the root fix for crowding; an architecture change, explicitly not this round);
 Reeds-Shepp paths for cars; faction-gain screenshots at the lead's 21° pose; the idle ADVANCE+stop facing miss (squad).
 
 ### Round 7 A/B, pre-registered (written 2026-09-19 BEFORE the run)

@@ -58,3 +58,10 @@ nav-fight-ab: import ## nav: nav-fight over FIGHT_SEEDS (default 1 3 5 7 9) with
 	@for seed in $(or $(FIGHT_SEEDS),1 3 5 7 9); do 		a=$$(grep -E '^NAV_FIGHT_ARM ' $(BUILD_DIR)/nav-ab/s$$seed-on.log); b=$$(grep -E '^NAV_FIGHT_ARM ' $(BUILD_DIR)/nav-ab/s$$seed-off.log); 		if [ "$$a" = "$$b" ]; then echo "nav-fight-ab control FAILED: seed $$seed ran the same treatment in both arms ($$a)"; exit 1; fi; done
 	@same=1; for seed in $(or $(FIGHT_SEEDS),1 3 5 7 9); do 		a=$$(grep -E '^NAV_FIGHT ' $(BUILD_DIR)/nav-ab/s$$seed-on.log); b=$$(grep -E '^NAV_FIGHT ' $(BUILD_DIR)/nav-ab/s$$seed-off.log); 		[ "$$a" = "$$b" ] || same=0; done; 		if [ $$same = 1 ]; then echo "nav-fight-ab control FAILED: every seed gave identical results in both arms: the switch changed nothing"; exit 1; fi
 	@echo ">> nav-fight-ab: arms differ in treatment and in outcome; results are comparisons"
+
+.PHONY: nav-rotation
+nav-rotation: import ## nav (round 7): how hulls ROTATE from the lead's camera (pitch 21, 49 m, FOV 35): a tank's pivot, a car's K-turn, a squad wheeling -> build/nav-rotation/*.png + NAV_ROTATION lines (pre-registered "robotic" tests) (needs a display)
+	rm -rf $(BUILD_DIR)/nav-rotation && mkdir -p $(BUILD_DIR)/nav-rotation
+	timeout 900 $(GODOT) --path . --resolution 960x540 --fixed-fps $(SIM_HZ) --script res://tests/nav/rotation_capture.gd -- \
+		--out=$(CURDIR)/$(BUILD_DIR)/nav-rotation > $(BUILD_DIR)/nav-rotation/run.log 2>&1 || true
+	grep -E "NAV_ROTATION|SCRIPT ERROR|ERROR" $(BUILD_DIR)/nav-rotation/run.log || true

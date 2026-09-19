@@ -1,0 +1,6 @@
+NAV_ROTATION pivot Pivot turned -118 deg, peak 160 deg/s, reaches 90% of peak in 1 ticks, falls from it in 31, overshoot 0.0 deg, last tick 4% of peak -> ROBOTIC(a)
+NAV_ROTATION car Car turned -159 deg, peak 240 deg/s, reaches 90% of peak in 21 ticks, falls from it in 25, overshoot 20.7 deg, last tick 7% of peak -> ROBOTIC(b)
+NAV_ROTATION wheel Wheel_0 turned -89 deg, peak 160 deg/s, reaches 90% of peak in 4 ticks, falls from it in 28, overshoot 0.0 deg, last tick 4% of peak -> smooth
+NAV_ROTATION wheel Wheel_1 turned -89 deg, peak 160 deg/s, reaches 90% of peak in 4 ticks, falls from it in 28, overshoot 0.0 deg, last tick 4% of peak -> smooth
+NAV_ROTATION wheel Wheel_2 turned -89 deg, peak 160 deg/s, reaches 90% of peak in 4 ticks, falls from it in 28, overshoot 0.0 deg, last tick 4% of peak -> smooth
+NAV_ROTATION wheel Wheel_3 turned -89 deg, peak 160 deg/s, reaches 90% of peak in 4 ticks, falls from it in 28, overshoot 0.0 deg, last tick 4% of peak -> smooth
