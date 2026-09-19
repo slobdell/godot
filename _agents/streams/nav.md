@@ -318,6 +318,35 @@ the same churn as the attack-move oscillation.
 - Semi verdict from the commit-on arm (the game as shipped): ≥ 1 pre-registered event per semi alive-minute on any map
   means the lead's report reproduces; 0 on all maps means it does not reproduce in fights either.
 
+**Results of the commit/wobble A/B (builder0, `3018e993`).** The FIGHT_REQUIRE control passed: 23 semis and 26 scouts
+fielded on every map.
+- **Semi: does NOT reproduce.** 0.11–0.74 in-place events per semi-minute (yard 0.74, 15 of its 30 events in phase
+  `blocked`). That is 5–30× below scouts (3.4–3.7), IFVs (2.8–3.6) and supports (1.3–2.1).
+- **Scout wobble, commit on vs off:** boneyard +19%, boulevard −14%, pit −4%, yard −6%. By the pre-registered rule
+  that is **inconclusive**.
+- Reading the code explains it. A standoff HOLD returns index −1, so the hold **never consults commitment**
+  ("commitment did not help" and "commitment was not consulted" look identical from outside). `standoff_holds` had no
+  hysteresis, and about 40% of scout events happen while holding (`arrived`).
+- squad reports that player semis spend 85% of ticks under a face order. That counts the ORDER; this counts the
+  ROTATION. Semis are told to pivot and mostly can't.
+
+**Hold hysteresis (round 8), pre-registered BEFORE its run.**
+- `CombatMotion.standoff_holds`: a gun already holding keeps holding up to `HOLD_SLACK_M` = 3 m past either edge of its
+  band, and only a round that would hit it breaks the hold. `--nav-off=holdband` switches it off. Tests are in
+  `test_ai_combat_motion`.
+- Runs: builder0, one tree, seed 3, 120 s, busy 0, the 4 maps, holdband on vs `--nav-off=holdband`, each arm verified
+  from `NAV_FIGHT_ARM holdband=`:
+  - (G) gang_ram vs gang_pack with FIGHT_REQUIRE=gang_tank;
+  - (C) Condemned, STALL_VERB=attack_move.
+- Primary: scout in-place events per scout alive-minute (the pre-registered count), from (G), paired by map.
+- Secondary: attack_move `oscillating_share`, from (C).
+- **Win:** scout events ≥ 20% lower with holdband on, on ≥ 3 of 4 maps, AND (C) oscillation not higher with it on, on
+  ≥ 3 of 4 maps.
+- **Kills guard** (a unit that holds when it should move dies; churn down with kills down is not a win): units lost,
+  both sides, per run. The guard FAILS if the holdband arm is > 20% lower than off in ≥ 2 of the 8 paired runs, or
+  > 20% higher in ≥ 2 of them. Either way the fight changed character and needs a look before shipping.
+- Anything else is inconclusive. It then ships only with the lead's say-so.
+
 ### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
 
 **Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by

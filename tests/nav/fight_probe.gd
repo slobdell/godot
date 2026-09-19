@@ -149,8 +149,8 @@ func _run() -> void:
 	# Stacked starts separate (Avoidance parts coincident hulls by name), so this is reported, not fatal.
 	# The treatment, read live from the code under test (not from the flag passed): an A/B arm is only an arm if this
 	# differs between them.
-	print("NAV_FIGHT_ARM commit=%s fixed_style=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
-			CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
+	print("NAV_FIGHT_ARM commit=%s holdband=%s fixed_style=%s avoidance=%s station=%s off=%s" % [CombatMotion.commit_on(),
+			CombatMotion.hold_band_on(), CombatMotion.fixed_style, Movement.avoidance_on, Movement.station_on, Movement._off])
 	print("NAV_FIGHT_CONTROL arena %s, green %d, rust %d, %d pairs start on top of each other" % [
 			Arena.active.get("name", "?"), green.size(), rust, stacked])
 	for frame in SimClock.TICK_RATE:

@@ -106,7 +106,7 @@ const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 
 ## X3: ORCA local avoidance on (the kill switch is for measuring the difference, `--no-avoidance`).
 static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
-## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath,chord,guard,backup` switches single mechanisms off for an A/B
+## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath,chord,guard,backup,standoff,commit,holdband` switches single mechanisms off for an A/B
 ## (nav-where), and `r5sidestep` switches round 5's single-friend sidestep back ON (it overtakes a friend ahead in the lane).
 ## TWO TRAPS, both hit in round 6 (_agents/navigation.md "Measuring"): (1) a switch that silently does nothing makes
 ## your A/B a comparison of a thing with itself — the first `carrot` switch was broken exactly so; prove each switch

@@ -133,13 +133,34 @@ const RUN_RETURN := 22.0
 const RUN_VEER := 10.0
 
 
+## Round 8 (nav): a hold has hysteresis. A gun already holding ("previous_index" -1: the last plan was a hold, or there
+## was none) keeps holding HOLD_SLACK_M past either edge of its hold band, and only a round that WOULD hit it (would_be_hit,
+## standing still) breaks the hold; a gun on the move stops only inside the band with nothing incoming. Measured before:
+## gang cars flipped hold <-> move at the band edge and on every incoming round, and each flip made a wheeled hull re-lay
+## itself with a K-turn — about 40% of their in-place-yaw events, and the hold never saw the commitment bonus.
+## `--nav-off=holdband` restores round 7's memoryless hold (A/B).
+const HOLD_SLACK_M := 3.0
+
+
+static func hold_band_on() -> bool:
+	return not Movement.switched_off("holdband")
+
+
 ## Standoff: should a fixed gun stop and shoot from where it is? Inside its hold band, with nothing incoming.
 static func standoff_holds(request: Dictionary) -> bool:
 	var band: Array = request.get("band", [15.0, 40.0])
 	var outer := float(band[1])
-	var distance := _flat(request["position"]).distance_to(_flat((request["target"] as Dictionary)["position"]))
-	return distance >= maxf(float(band[0]), outer * STANDOFF_HOLD_SHARE) and distance <= outer \
-			and (request.get("incoming", []) as Array).is_empty()
+	var here := _flat(request["position"])
+	var distance := here.distance_to(_flat((request["target"] as Dictionary)["position"]))
+	var incoming: Array = request.get("incoming", [])
+	var holding := hold_band_on() and int(request.get("previous_index", -1)) == -1
+	var slack := HOLD_SLACK_M if holding else 0.0
+	var inside := distance >= maxf(float(band[0]), outer * STANDOFF_HOLD_SHARE) - slack and distance <= outer + slack
+	if not inside:
+		return false
+	if incoming.is_empty():
+		return true
+	return holding and not would_be_hit(here, Vector3.ZERO, Vector3.ZERO, incoming)
 
 
 static func choose(request: Dictionary) -> Dictionary:
