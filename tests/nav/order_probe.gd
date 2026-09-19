@@ -72,6 +72,14 @@ func _run() -> void:
 	# Let the brains settle on their posts, then order every squad at once.
 	for frame in SimClock.TICK_RATE:
 		await physics_frame
+	_issue_orders()
+	issued_tick = game_match.tick
+	print("NAV_ORDERS_ISSUED %d units in %d squads on %s" % [units.size(), TARGETS.size(), Arena.active.get("name", "?")])
+	physics_frame.connect(_sample)
+
+
+## Every squad ordered across the others at once (facing_probe.gd overrides this to add a facing).
+func _issue_orders() -> void:
 	for s in TARGETS.size():
 		var names: Array = []
 		for tank in units:
@@ -80,9 +88,6 @@ func _run() -> void:
 		var result := orders.issue(UnitCommand.make(names, "move", {"to": TARGETS[s]}))
 		if result != "":
 			push_error("nav-orders: " + result)
-	issued_tick = game_match.tick
-	print("NAV_ORDERS_ISSUED %d units in %d squads on %s" % [units.size(), TARGETS.size(), Arena.active.get("name", "?")])
-	physics_frame.connect(_sample)
 
 
 func _sample() -> void:
