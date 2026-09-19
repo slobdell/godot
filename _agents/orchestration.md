@@ -1556,6 +1556,11 @@ The kickoff prompt is one line; this section is the rest.
      - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
        criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
        which is the criterion an author hoping for a churn win would quietly omit.
+     - **Pre-register a GUARD metric as well as a success metric — name what must NOT get worse.** nav's rule covered
+       churn and survivability; the thing that actually moved was a third, **attack-move "progressing" 44% → 41%**, and
+       the rule was silent on it. **A pre-registered rule protects only the metrics you thought of**, and the one that
+       moved was the one closest to the lead's own complaint. nav reported it unprompted, against its own result, which
+       is the only reason it is not lost — **but the practice should not depend on that.**
      - **Say the noise threshold in advance too** ("beyond seed noise"), because *"within noise"* is the phrase that
        absorbs an inconvenient result after the fact.
      - **This is the practice for every A/B in this project from here.** It pairs with the positive control (lesson 101):
