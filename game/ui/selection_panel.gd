@@ -120,7 +120,7 @@ func portrait_entries() -> Array:
 			var tank := _tank(unit_name)
 			if tank == null:
 				continue
-			singles.append({"key": unit_name, "role": CommandIcons.role_of(tank), "count": 1, "label": "",
+			singles.append({"key": unit_name, "role": CommandIcons.role_of(tank), "count": 1, "label": "", "unit_id": tank.unit_id,
 					"health": float(tank.health) / maxf(tank.max_health, 1.0),
 					"shield": tank.shield / tank.max_shield if tank.max_shield > 0.0 else 0.0})
 		return singles
@@ -132,7 +132,7 @@ func portrait_entries() -> Array:
 			continue
 		var id := tank.unit_id
 		if not by_type.has(id):
-			by_type[id] = {"key": "type:%s" % id, "role": CommandIcons.role_of(tank), "count": 0, "health": 0.0,
+			by_type[id] = {"key": "type:%s" % id, "role": CommandIcons.role_of(tank), "count": 0, "health": 0.0, "unit_id": id,
 					"shield": 0.0, "label": String(Units.stat(id, "display_name", id))}
 			order.append(id)
 		var entry: Dictionary = by_type[id]
@@ -256,6 +256,7 @@ func _card(unit_name: String) -> Dictionary:
 		return {}
 	var weapon := Weapons.profile(tank.weapon_id)
 	return {"name": String(Units.stat(tank.unit_id, "display_name", tank.unit_id)), "role": CommandIcons.role_of(tank),
+			"unit_id": tank.unit_id,
 			"hull": "Hull %d / %d" % [tank.health, tank.max_health],
 			"shield": "Shield %d / %d" % [roundi(tank.shield), roundi(tank.max_shield)],
 			"health": float(tank.health) / maxf(tank.max_health, 1.0),
@@ -418,7 +419,13 @@ func _draw() -> void:
 					continue
 				batch.fill(cell, Color(CyberStyle.CARD, 0.95))
 				batch.outline(cell, Color(friendly, 0.35), 1.0)
-				batch.icon(portrait["role"], cell.get_center() - Vector2(0, cell.size.y * 0.1), cell.size.y * 0.5, friendly)
+				# Round 7 (C1): the vehicle itself when its render is ready, the role icon until then.
+				var render := UnitPortraits.texture(String(portrait.get("unit_id", "")), get_tree())
+				if render != null:
+					var side := minf(cell.size.x, cell.size.y) * 0.92
+					batch.texture(render, Rect2(cell.get_center() - Vector2(side, side * 1.1) / 2.0, Vector2(side, side)), Color.WHITE)
+				else:
+					batch.icon(portrait["role"], cell.get_center() - Vector2(0, cell.size.y * 0.1), cell.size.y * 0.5, friendly)
 				var bar_height := clampf(cell.size.y * 0.1, 5.0 * s, 12.0 * s)
 				_bars(batch, Rect2(cell.position + Vector2(4, cell.size.y - bar_height - 4.0), Vector2(cell.size.x - 8, bar_height)),
 						float(portrait["health"]), float(portrait["shield"]), friendly, enemy)
@@ -438,7 +445,11 @@ func _draw() -> void:
 			var icon := size.y - PAD * s * 2.0 - FOOTER * s
 			var icon_rect := Rect2(PAD * s, PAD * s, icon, icon)
 			batch.fill(icon_rect, Color(CyberStyle.CARD, 0.95))
-			batch.icon(card["role"], icon_rect.get_center(), icon * 0.6, color)
+			var card_render := UnitPortraits.texture(String(card.get("unit_id", "")), get_tree())
+			if card_render != null:
+				batch.texture(card_render, icon_rect, Color.WHITE)
+			else:
+				batch.icon(card["role"], icon_rect.get_center(), icon * 0.6, color)
 			var x := icon_rect.end.x + PAD * s * 2.0
 			var line := 24.0 * s
 			_text(batch, font, Vector2(x, PAD * s + line * 0.9), ("ENEMY " if card["enemy"] else "") + String(card["name"]).to_upper(), 22.0 * s, color)

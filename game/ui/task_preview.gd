@@ -7,10 +7,9 @@ extends RefCounted
 ## whether it fires and whether it keeps advancing. The military symbol made the button nameable; this makes the
 ## behaviour knowable.
 ##
-## The geometry is `posture()`. Today it is a stand-in built from TacticsFormation's real shapes and the numbers squad
-## reported for each task (support by fire: a line at a standoff, facing the point; screen: a wide line across it;
-## ambush: a line short of the kill zone, holding fire until an enemy is in it). When squad publishes a pure preview
-## of its task postures, `posture()` becomes a call to it and the drawing does not change.
+## The geometry is `posture()`: squad's ElementPlan.preview (the real planner run on a synthetic element, so the preview
+## is TRUE, not illustrative) when this build has it; otherwise - and for Stop, which the planner has no posture for - a
+## stand-in built from TacticsFormation's shapes and squad's reported task geometry.
 
 const LOOP_S := 3.6
 ## Phases of the loop, as fractions of LOOP_S: moving, then facing, then the task's own business (firing, holding).
@@ -23,6 +22,51 @@ const UNITS := 4
 ## the squad starts along the bottom): {"slots": [Vector2], "facing": [Vector2 unit], "fires": "no" | "always" |
 ## "on_contact", "advances": bool, "marker": "point" | "zone" | "line" | "none", "words": String}.
 static func posture(verb: String, count := UNITS) -> Dictionary:
+	var real := _from_planner(verb, count)
+	if not real.is_empty():
+		return real
+	return _stand_in(verb, count)
+
+
+## squad's ElementPlan.preview (the real planner on a synthetic element) when this build has it, mapped into the unit
+## square: the point at (0.5, 0.2), the squad's start at (0.5, 0.88), travel pointing up the square. {} otherwise.
+## Looked up by name so this file compiles where squad's preview has not merged yet.
+const PREVIEW_POINT := Vector3(0.0, 0.0, -60.0)
+const PREVIEW_FROM := Vector3(0.0, 0.0, 0.0)
+static var _planner: Variant = null
+
+
+static func _from_planner(verb: String, count: int) -> Dictionary:
+	if _planner == null:
+		_planner = false
+		var script := load("res://game/tactics/element_plan.gd") as Script
+		if script != null:
+			for method: Dictionary in script.get_script_method_list():
+				if String(method["name"]) == "preview":
+					_planner = script
+	if not _planner is Script:
+		return {}
+	var result: Variant = (_planner as Script).call("preview", verb, count, PREVIEW_POINT, PREVIEW_FROM)
+	if not result is Dictionary or (result as Dictionary).get("slots", []).is_empty():
+		return {}
+	# World -> square: +x right, -z (toward the point) up; scale so the start-to-point span is 0.68 of the square.
+	var scale := 0.68 / PREVIEW_FROM.distance_to(PREVIEW_POINT)
+	var to_square := func(world: Vector3) -> Vector2:
+		return Vector2(0.5 + world.x * scale, 0.88 + (world.z - PREVIEW_FROM.z) * scale)
+	var slots: Array[Vector2] = []
+	var facing: Array[Vector2] = []
+	for i in (result["slots"] as Array).size():
+		slots.append((to_square.call(result["slots"][i]) as Vector2).clamp(Vector2(0.04, 0.04), Vector2(0.96, 0.96)))
+		var way: Vector3 = result["facing"][i]
+		facing.append(Vector2(way.x, way.z).normalized())
+	var stand_in := _stand_in(verb, count)
+	return {"slots": slots, "facing": facing, "fires": String(result.get("fires", "no")),
+			"advances": bool(result.get("advances", false)), "marker": stand_in.get("marker", "point"),
+			"words": stand_in.get("words", ""), "source": "planner"}
+
+
+## The stand-in, built from TacticsFormation's shapes and squad's reported task geometry.
+static func _stand_in(verb: String, count := UNITS) -> Dictionary:
 	var point := Vector2(0.5, 0.2)
 	var slots: Array[Vector2] = []
 	var facing: Array[Vector2] = []
