@@ -202,6 +202,10 @@ func test_random_deals_only_the_maps_the_lead_kept() -> void:
 				"%s was CUT (game_design.md, the lead's arena verdict) and --arena=random must never deal it" % cut)
 	for kept in ["yard", "pit"]:
 		assert_true(Arena.ROTATION.has(kept), "%s was KEPT and --arena=random must be able to deal it" % kept)
+	# terminus is the one map in the rotation the lead has not ruled on: the cityscape he asked for twice, added
+	# after the render was reviewed (round 8). Listed explicitly rather than left implicit so that when he does
+	# give a verdict, whoever acts on it can see exactly which line to change.
+	assert_true(Arena.ROTATION.has("terminus"), "terminus is in the rotation, pending the lead's verdict")
 	# A fixture is not a map he plays: barriers and maze are instruments, reachable only by name.
 	for fixture in ["maze", "barriers"]:
 		assert_true(not Arena.ROTATION.has(fixture), "%s is a fixture, not a map in the rotation" % fixture)

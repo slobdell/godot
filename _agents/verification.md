@@ -106,6 +106,13 @@ the orchestrator:
 6. **One sample is the most exposed shape.** Take the fastest of N, and use the test's own natural reference where it has
    one (a cache hit against the same test's cold load).
 
+**A verdict over time in a live fixture is a race by construction.** control's "an order not carried out is called out
+after 2 s" tests stubbed what each gun was on, but the fixture's own brains kept fighting, killed the target inside the
+grace, and the order died with it: 1 run in 4 went red, confirmed by printing the target's health (0) in the failure
+message. Freeze what the verdict depends on (a durable target, `_keep_alive` in `test_control_order_refused.gd`), or
+build without the brains — and when a timed test flakes, print the world's state in its failure message before
+theorising.
+
 **When a grep for timing turns up a hit, say why it isn't one.** From the 2026-09-19 survey: tick counts
 (`test_control_response`, `test_responsiveness`) are sim time; `test_combat`'s respawn waits on the same `SceneTree` timer
 the game uses (`match.gd`), so both sides move together; a camera test that waits wall-clock for a rotation driven by the

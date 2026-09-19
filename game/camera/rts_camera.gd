@@ -140,6 +140,11 @@ const HANDBACK_SECONDS := 2.5
 ## VISION_FRAME_LIFT of the half-height, which buys the closeness without putting units under the card.
 const VISION_FRAME_INSET := 0.78
 const VISION_FRAME_LIFT := 0.16
+## Round 8: how far BELOW the screen's centre, as a fraction of the half-height, a lean may put the squad. The command
+## card and group chips cover the bottom of the screen - at 1920x1080 their top is at y 778, 0.44 of the half-height
+## below centre (squad's control-scale-shots frame) - and a symmetric bound (VISION_FRAME_INSET, 0.78) let the lean
+## toward the reach park the selected squad underneath them. 0.40 leaves room for the hulls above the card.
+const VISION_FRAME_BOTTOM := 0.40
 ## L4 zoom-out cap: at least this much of the screen's ground must be ground the force can see…
 const VISION_SEEN_FRACTION := 0.7
 ## …sampled on this grid of screen points, …
@@ -649,14 +654,17 @@ static func frame_pose(points: Array, heading: float, aspect: float, floor_zoom 
 ## Whether a camera at pose_for(at, heading, level) shows every point inside `inset` of the screen (the default
 ## keeps them clear of the HUD; the L4 horizon uses the whole screen).
 static func shows_all(points: Array, at: Vector3, heading: float, level: float, aspect: float, inset := FRAME_INSET,
-		pitch_deg := DEFAULT_PITCH_DEG) -> bool:
+		pitch_deg := DEFAULT_PITCH_DEG, bottom := -1.0) -> bool:
 	var view := RtsCamera.pose_for(at, heading, level, pitch_deg).affine_inverse()
-	var tan_y := tan(deg_to_rad(fov) / 2.0) * inset
+	var half := tan(deg_to_rad(fov) / 2.0)
+	var tan_y := half * inset
+	var tan_down := half * (bottom if bottom >= 0.0 else inset)  # below the centre: the HUD's side (round 8)
 	for p in points:
 		var c: Vector3 = view * (p as Vector3)
 		if c.z >= -0.1:
 			return false
-		if absf(c.x / -c.z) > tan_y * aspect or absf(c.y / -c.z) > tan_y:
+		var up := c.y / -c.z
+		if absf(c.x / -c.z) > tan_y * aspect or up > tan_y or -up > tan_down:
 			return false
 	return true
 
@@ -788,7 +796,8 @@ static func order_pose(units: Array, destination: Vector3, heading: float, aspec
 	var high := 1.0
 	for i in 12:
 		var mid := (low + high) / 2.0
-		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect, inset, pitch_deg):
+		if RtsCamera.shows_all(corners, start + toward * mid, heading, level, aspect, inset, pitch_deg,
+				minf(inset, VISION_FRAME_BOTTOM)):
 			low = mid
 		else:
 			high = mid
