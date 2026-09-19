@@ -52,8 +52,41 @@ func test_a_plasma_repeater_streams_plasma_not_a_machine_gun() -> void:
 	gunfire.trigger("syn_scout", Vector3.ZERO, 1.0, plasma)
 	gunfire.update(Vector3.ZERO, 1.0)
 	var voice := gunfire._voices[gunfire._assigned.find("syn_scout")] as AudioStreamPlayer3D
-	var wanted: AudioStream = gunfire._loops.get(plasma)
-	if wanted != null:
-		assert_eq(voice.stream, wanted, "the repeater's own loop")
+	var wanted: Array = gunfire._loops.get(plasma, [])
+	if not wanted.is_empty():
+		assert_true(voice.stream in wanted, "one of the repeater's own loops")
 	else:
 		assert_true(voice.stream != null, "until that loop exists it still streams something")
+
+
+func test_machine_guns_spread_across_their_takes_and_twin_guns_have_their_own() -> void:
+	## Round 6 (the lead: "I believe we're missing machine guns"): four machine-gun loops and a twin-gun loop.
+	var sfx := SfxSystem.new()
+	add_to_tree(sfx)
+	var gunfire := GunfireLoops.new()
+	add_to_tree(gunfire)
+	gunfire.use_streams(sfx.streams, sfx.takes)
+	assert_eq(gunfire.loop_count("mg_loop"), (sfx.takes.get("mg_loop", []) as Array).size(), "every machine-gun take loops")
+	assert_true(gunfire.loop_count("mg_loop") >= 3, "several takes, so a firing line isn't one recording (%d)" % gunfire.loop_count("mg_loop"))
+	assert_eq(SfxWeapons.sound_for("twin_mg", "loop", "mg_loop"), "twin_mg_loop", "two guns firing together have their own loop")
+	assert_true(gunfire.loop_count("twin_mg_loop") >= 1, "and it is loaded")
+	var heard := {}
+	for i in GunfireLoops.VOICES:
+		gunfire.trigger("gunner_%d" % i, Vector3(i, 0, 0), 1.0)
+	gunfire.update(Vector3.ZERO, 1.0)
+	for voice in gunfire._voices:
+		heard[voice.stream] = true
+	assert_true(heard.size() >= 2, "four gunners don't all stream the same take (%d distinct)" % heard.size())
+
+
+func test_machine_guns_have_their_own_bus_that_cannon_impacts_only_dip() -> void:
+	## Round 6: on the Bed bus every cannon impact ducked the machine guns 5:1, so they vanished in a busy fight.
+	var gunfire := GunfireLoops.new()
+	add_to_tree(gunfire)
+	for voice in gunfire._voices:
+		assert_eq(voice.bus, SfxSystem.GUNFIRE_BUS, "machine-gun loops play on the gunfire bus")
+	var guns := AudioServer.get_bus_index(SfxSystem.GUNFIRE_BUS)
+	assert_true(guns >= 0, "the bus exists")
+	var dip := AudioServer.get_bus_effect(guns, 0) as AudioEffectCompressor
+	var bed := AudioServer.get_bus_effect(AudioServer.get_bus_index(SfxSystem.BED_BUS), 0) as AudioEffectCompressor
+	assert_true(dip.sidechain == StringName(SfxSystem.IMPACT_BUS) and dip.ratio < bed.ratio, "a lighter dip than the bed's")

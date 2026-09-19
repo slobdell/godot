@@ -75,3 +75,45 @@ static func instantiate(faction: String, role: String, part: String) -> Node3D:
 	wrapper.set("model_scene", load(path))
 	wrapper.set("part", "cannon" if part == "weapon" else part)
 	return wrapper
+
+
+## Feel (round 6): the natural length (m, along -Z) of a unit's hull model, before any fitting: turret and weapon parts
+## scale by the same factor as their hull (dozer_part.gd `_fit_to_hull`). 0 when the unit has no hull art of its own.
+static var _hull_lengths := {}
+
+
+static func hull_length(unit_id: String) -> float:
+	if _hull_lengths.has(unit_id):
+		return _hull_lengths[unit_id]
+	var result := 0.0
+	var slot := "unit.%s.hull" % unit_id
+	if GameTheme.slots.has(slot):
+		var part := GameTheme.scene(slot).instantiate()
+		var packed: PackedScene = part.get("model_scene")
+		if packed != null:
+			var model := packed.instantiate() as Node3D
+			result = FactionArt.natural_bounds(model).size.z
+			model.free()
+		part.free()
+	_hull_lengths[unit_id] = result
+	return result
+
+
+## Union of a detached model's mesh AABBs in its own space.
+static func natural_bounds(model: Node3D) -> AABB:
+	var result := AABB()
+	var first := true
+	for child in model.find_children("*", "MeshInstance3D", true, false):
+		var instance := child as MeshInstance3D
+		if instance.mesh == null:
+			continue
+		var xform := Transform3D.IDENTITY
+		var node: Node = instance
+		while node != null and node != model:
+			if node is Node3D:
+				xform = (node as Node3D).transform * xform
+			node = node.get_parent()
+		var box := xform * instance.mesh.get_aabb()
+		result = box if first else result.merge(box)
+		first = false
+	return result

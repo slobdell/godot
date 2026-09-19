@@ -18,6 +18,8 @@ const BY_WEAPON := {
 	"pulse_repeater": {"loop": "plasma_loop", "hit": "energy_hit"},
 	"pulse_cannon": {"fire": "pulse_shot", "hit": "energy_hit"},
 	"guided_missiles": {"fire": "missile_launch"},
+	# Round 6: two guns firing together (14 rounds/s) had borrowed the single machine gun's loop.
+	"twin_mg": {"loop": "twin_mg_loop"},
 	# The Law's sonic emitter is a stream, but nothing about it is a machine gun.
 	"sonic_emitter": {"loop": "sonic_loop", "hit": ""},
 }

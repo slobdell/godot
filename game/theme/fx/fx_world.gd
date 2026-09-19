@@ -115,7 +115,7 @@ func _init() -> void:
 	add_child(sfx)
 	gunfire = GunfireLoops.new()
 	gunfire.muted = sfx.muted
-	gunfire.use_streams(sfx.streams)
+	gunfire.use_streams(sfx.streams, sfx.takes)
 	add_child(gunfire)
 	engines = EngineSystem.new()
 	engines.muted = sfx.muted

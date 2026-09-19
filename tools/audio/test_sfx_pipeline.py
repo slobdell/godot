@@ -106,6 +106,48 @@ class GenerateAndLayerTest(unittest.TestCase):
             self.assertLess(report["seam_jump"], 2.0, "no click at the loop point")
             self.assertEqual(sfx_layer.write_take(mixed, "mg_loop", 1, True, tmp).suffix, ".wav")
 
+    def _loop_master(self, tmp, signal):
+        data = recipe(id="loop", sound="mg_loop", takes=1, loop=True, duration_s=4.0)
+        source = data["sources"][0]
+        path = sfx_generate.master_path(tmp, source, 1)
+        wav = tmp / "loop.wav"
+        sfx_layer.write_wav(wav, signal)
+        import subprocess
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(wav), str(path)], check=True)
+        return path, source
+
+    def test_a_loop_starts_on_its_sound_not_on_the_generators_lead_in(self):
+        # Round 6: loops were never onset-trimmed, so a take's quiet lead-in became a silence on every repeat.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            rng = np.random.default_rng(2)
+            burst = rng.standard_normal(sfx_layer.RATE * 3) * 0.3
+            signal = np.concatenate([np.zeros(sfx_layer.RATE // 2), burst])
+            path, source = self._loop_master(tmp, signal)
+            mixed, _ = sfx_layer.build_take(path, source, 1)
+            self.assertLess(sfx_layer.longest_dip(mixed), 0.05, "the half-second lead-in is gone")
+
+    def test_a_loop_never_ships_a_hole(self):
+        # Round 6: the Syndicate's plasma loop shipped with a 750 ms silence every 2.2 s: the gun stutters. A take with
+        # a hole loops its longest unbroken stretch, and is refused when none is long enough.
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            rng = np.random.default_rng(3)
+            long_run = rng.standard_normal(int(sfx_layer.RATE * 2.0)) * 0.3
+            short_run = rng.standard_normal(int(sfx_layer.RATE * 0.8)) * 0.3
+            gap = np.zeros(int(sfx_layer.RATE * 0.6))
+            path, source = self._loop_master(tmp, np.concatenate([short_run, gap, long_run]))
+            mixed, _ = sfx_layer.build_take(path, source, 1)
+            self.assertLess(sfx_layer.longest_dip(mixed), sfx_layer.MAX_LOOP_DIP_S, "no hole in what ships")
+            self.assertGreater(len(mixed) / sfx_layer.RATE, 1.8, "the long unbroken stretch is the loop")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            rng = np.random.default_rng(4)
+            bits = [rng.standard_normal(int(sfx_layer.RATE * 0.5)) * 0.3, np.zeros(int(sfx_layer.RATE * 0.6))] * 4
+            path, source = self._loop_master(tmp, np.concatenate(bits))
+            with self.assertRaises(ValueError):
+                sfx_layer.build_take(path, source, 1)
+
     def test_loops_are_forced_to_import_uncompressed(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
