@@ -167,7 +167,9 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | Radar draws the arena's outline | the perimeter polygon, else the active layout's bound (`4f7371ef`) | `test_radar` |
 | **Order progress on screen** (orchestrator, from nav/squad churn: weaving must read as *en route*) | done (`53a2af87`). For the selection, each order — or the squad's task, not its leader's moves — keeps a **pin**: ground ring at the ordered point, a stalk to the task's own symbol (card/preview glyph) on a dark disc, and a plate reading `ATTACK-MOVE · 2/3 there · 37 m`. A squad task adds a lead line from its middle (direct orders already have each unit's dashed line). Looked at the lead's 21°/49 m/FOV 35 pose, 1280×720 (laptop): readable over the arena floor; the first draft (12 px text, 20 px glyph, no plate) was not. 0.17 ms/frame at 30 units under orders (laptop); the whole control frame 1.84–1.96 ms of 2.0 (laptop, ~2.75× faster on builder0). **Wants the lead's eye on a touchpad.** | `test_control_order_marks`, `test_control_scale` |
 
-**MERGED: `baf04ead` as main `fa859dce`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
+**MERGE HERE: `9cb4a86d` — #24 GREEN (builder0): `make check exited 0`, 1213 passed / 0 failed, `sim-baseline passed:
+253ecfdeed84bc4d`, every target through `audio-check passed`** (M4 clamps + the timing policy on top of merged `c7f9cd4e`).
+**MERGED: `baf04ead` as main `fa859dce`; `c7f9cd4e` as `b500a2db`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
 of the ratio timing tests; the cutaway reads feel's `StandsProfile` by path when the build has it, hand measurement as
 fallback; the kit's front is 9.64 m from 4.2 m out, not the measured 7 m at 2.3 m, so one test case moved 30° → 40°).
 #21 on it: RED on `test_radar`'s outline test only (1191/1, builder0), the static-leak main fixed at `5cc17ee6`;
