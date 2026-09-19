@@ -372,6 +372,41 @@ Arms read live, holdband=true vs false. Figures are on vs off.
 - Also noticed: (C) Condemned oscillation came out identical to the third decimal on 3 of 4 maps between arms.
   Condemned fights rarely hit a standoff hold. The churn in the headline is not in the hold path.
 
+### Flow fields (round 8, item 3) — PRE-REGISTERED before a line of it is written
+
+**What it is.** One cost-to-goal field per shared goal, built by a Dijkstra sweep over the navmesh polygons and read as
+a gradient, instead of every unit owning an A* route to the same place. Per-unit A* stays for singletons and for every
+reachability answer. `--nav-off=flow` switches it off, and it stays **OFF by default until it clears the bar below**.
+
+**Instruments, never pooled** (arena's ruling, and its ceiling argument):
+- `terminus` (arena `8fda01a8`, quoted with that commit: the lead has not ruled on the map): the realistic one.
+  `no_progress` 0.091, 30/30 arriving, a 51.5 s crossing against a 120 s limit, so there is headroom to move.
+- The barriers fixture (`make nav-maze`): the sensitivity detector, built ground, `no_progress` 0.192.
+
+**Metrics, both under a PLAIN MOVE, never attack-move progress** (it cannot move more than about 3 points from better
+pathing, so it would read a working change as a failure):
+- Primary: `stuck_share` = the share of ordered unit-seconds in `blocked_*` + `slow` + `yielding`, from
+  `nav-fight`'s `by_verb["move"]` buckets.
+- Secondary: arena's `no_progress_share`, and arrivals (`arrived` of N) which must not fall.
+- Power: both are unit-second shares over ~1400 under-way seconds a run, not 2–5 deaths. The kills guard is not used
+  here; its A/B last time tripped on noise.
+
+**Ship it only if, on terminus:** `stuck_share` ≥ 20% lower (relative), AND `no_progress_share` ≥ 20% lower, AND
+arrivals unchanged at 30/30, AND `make check` green — plus the barriers fixture moving the same way (≥ 20% lower
+`no_progress`). Both instruments are reported separately, with commit and machine.
+
+**REVERT it (and record the round as a null) if ANY of these:**
+1. terminus `no_progress_share` improves by less than 10% relative, or `stuck_share` by less than 10%;
+2. arrivals fall anywhere (terminus, barriers, `nav-suite`, the head-on maze);
+3. the two instruments disagree in SIGN (one better, one worse): that means the change is map-shaped, not a fix;
+4. any Movement contract answer changes: `reachable` for an unreachable goal, `blocked_by` attribution, or
+   `route_end_gap_m`/`goal_gap_m` (the N1 tests own this and must stay green);
+5. planning cost per tick on builder0 rises more than 25% against the same commit with `--nav-off=flow`;
+6. `make determinism` or the nav-suite arrivals move at all.
+
+Reverting means the switch is deleted along with the code, not left in: a mechanism nobody reaches is how round 7's
+commitment ended up being measured twice for nothing.
+
 ### Round 7 report (nav, 2026-09-19) — read this first when resuming round 7
 
 **Green, merge here: `d963d9ad`** (builder0: `test` 1191/1 — the 1 is control's `test_radar`, a static leaked by
