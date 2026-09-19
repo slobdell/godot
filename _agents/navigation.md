@@ -81,6 +81,33 @@ WITH BRAINS (5 player squads ordered across one another through control's Orders
 completes and how far from its goal the unit really was. `--nav-off=…` switches single mechanisms off for an A/B
 (grace, minpace, pushidle, carrot, yield, unstick, repath; `r5sidestep` turns round 5's sidestep back on).
 
+### The measuring switches, and what each one proves
+
+`--nav-off=a,b` on any run (`make nav-where NAV_FLAGS=--nav-off=…`; in a test, set `Movement._off`,
+`Movement.avoidance_on`, `Movement.station_on` directly and restore them). Each isolates one decision:
+
+| switch | turns off | what an A/B with it answers |
+|---|---|---|
+| `--no-avoidance` | ORCA (X3) | how much arrival and flow come from avoidance at all |
+| `--no-station-pid` | PID station-keeping (X6) | P-law chase vs regulated slot (0.35 vs 4.58 m, `test_station_keeping`) |
+| `grace` | the 10-tick K1 start window | whether K1's 3-tick response depends on it (it does: control's response test) |
+| `minpace` | the 15% creep floor in that window | tail cost of creeping (on outside the window: head-on maze t100 182 → 163 s) |
+| `pushidle` | asking a parked friend at once | whether pushing idle units helps (180 vs 182 s: marginal) |
+| `yield` | right-of-way (X4) entirely | how much of a jam resolves by negotiation |
+| `unstick` | the "room behind" check (old blind reverse) | whether ramming friends in columns matters |
+| `repath` | X7's re-plan policy (back to every 1 s) | cost/benefit of re-planning |
+| `carrot` | X7's pure-pursuit carrot (round 5's exact corner-following) | path smoothing's effect |
+| `r5sidestep` | **turns ON** round 5's single-friend sidestep | the one thing X3 REMOVED; it alone restored squad's near-ambush timing (555 → 531 ticks) |
+
+**Two traps, both hit this round — read before trusting an A/B:**
+1. **A switch that silently does nothing gives you "no difference" for free.** The first `carrot` switch returned the
+   wrong point (0/60 arrived — broken), and an equal result from a switch you haven't seen change *anything* proves
+   nothing. Check each switch moves some number before reading an equal result as "not this mechanism".
+2. **The moment a nav commit is merged, `main` stops being your control.** I told the orchestrator a failure "happens
+   on main too, so it isn't nav" — main already contained my merge. Bisect on named commits (`00c99bf4` before nav,
+   `7cce78af` nav's merge), never on "main vs my branch". And the cause turned out to be something *removed*, which no
+   switch of added mechanisms can find — hence `r5sidestep`.
+
 `make nav-maze` (arena's, `tests/arena/maze_probe.gd`) is the acceptance instrument: it only watches positions, so it
 keeps meaning the same thing whatever nav rewrites. Note it drives plain `OrderController`s, not brains — round 5's
 `_around_friends` never ran in it.

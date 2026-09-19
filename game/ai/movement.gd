@@ -95,6 +95,10 @@ const FIRE_LEG_MIN_TICKS := maxi(1, SimClock.TICK_RATE / 4)
 static var avoidance_on := not OS.get_cmdline_user_args().has("--no-avoidance")
 ## Measuring only: `--nav-off=grace,minpace,pushidle,carrot,yield,unstick,repath` switches single mechanisms off for an A/B
 ## (nav-where), and `r5sidestep` switches round 5's single-friend sidestep back ON (it overtakes a friend ahead in the lane).
+## TWO TRAPS, both hit in round 6 (_agents/navigation.md "Measuring"): (1) a switch that silently does nothing makes
+## your A/B a comparison of a thing with itself — the first `carrot` switch was broken exactly so; prove each switch
+## changes SOMETHING before trusting an equal result. (2) Once a nav commit is merged, `main` is no longer the
+## before-picture: bisect on named commits, not on "main vs my branch".
 static var _off := _parse_off()
 
 
