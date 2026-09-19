@@ -206,6 +206,25 @@ func _busy_order() -> void:
 		busy_orders += 1
 
 
+## Round 8: gear flips. A wheeled hull changing between forward and reverse above GEAR_SPEED must brake through zero
+## first, which is what the "shuffle" in an in-place-yaw event looks like. Counted per unit type per alive-minute, for
+## every wheeled unit whatever its orders. Diagnostic: nothing is pre-registered on it yet.
+const GEAR_SPEED := 0.5
+var gear_sign := {}   # name -> -1 / 0 / 1
+var gear_flips := {}  # unit_id -> count
+
+
+func _sample_gear(tank: Tank) -> void:
+	var speed := tank.speed()
+	if absf(speed) < GEAR_SPEED:
+		return
+	var sign_now := signi(int(signf(speed)))
+	var was := int(gear_sign.get(String(tank.name), 0))
+	if was != 0 and sign_now != was:
+		gear_flips[tank.unit_id] = int(gear_flips.get(tank.unit_id, 0)) + 1
+	gear_sign[String(tank.name)] = sign_now
+
+
 func _sample_inplace() -> void:
 	var span := int(INPLACE_WINDOW_S * SimClock.TICK_RATE)
 	for tank: Tank in game_match.tanks.get_children():
@@ -214,6 +233,7 @@ func _sample_inplace() -> void:
 			continue
 		var key := String(tank.name)
 		inplace_alive_ticks[tank.unit_id] = int(inplace_alive_ticks.get(tank.unit_id, 0)) + 1
+		_sample_gear(tank)
 		var forward := -tank.global_basis.z
 		var trail: Array = inplace_trail.get(key, [])
 		trail.append([tank.global_position.x, tank.global_position.z, rad_to_deg(atan2(-forward.x, -forward.z)), tank.speed()])
@@ -262,6 +282,7 @@ func _inplace_rates() -> Dictionary:
 	for unit_id: String in inplace_alive_ticks:
 		var minutes := float(inplace_alive_ticks[unit_id]) / SimClock.TICK_RATE / 60.0
 		rates[unit_id] = {"events_per_unit_minute": snappedf(int(inplace_events.get(unit_id, 0)) / maxf(minutes, 0.01), 0.01),
+				"gear_flips_per_unit_minute": snappedf(int(gear_flips.get(unit_id, 0)) / maxf(minutes, 0.01), 0.01),
 				"alive_unit_minutes": snappedf(minutes, 0.1)}
 	return rates
 
