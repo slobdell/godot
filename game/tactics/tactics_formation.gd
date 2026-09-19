@@ -35,7 +35,7 @@ const NAMES := ["column", "wedge", "vee", "line", "echelon_left", "echelon_right
 		"swarm", "ring"]
 ## Shapes that are not doctrine formations but still lay out a group: `rows` (a block, front row first, for groups
 ## bigger than a platoon) and `single` (one vehicle: its slot is the destination).
-const GROUP_SHAPES := ["rows", "single"]
+const GROUP_SHAPES := ["rows", "single", "block"]
 const DEFAULT := "wedge"
 ## Meters between neighbors when the doctrine table doesn't say.
 const DEFAULT_SPACING := 12.0
@@ -296,6 +296,9 @@ static func group_offsets(formation: String, count: int, spacing: float) -> Arra
 		return [Vector2.ZERO] as Array[Vector2]
 	if formation == "line" and count > LINE_WIDTH:
 		return rows(count, LINE_WIDTH, spacing)
+	if formation == "block":
+		# A compact assembly block: about as wide as it is deep (3 x 2 for six), so a squad reads as one cluster.
+		return rows(count, ceili(sqrt(float(count))), spacing)
 	return offsets(formation, count, spacing)
 
 

@@ -16,7 +16,7 @@ extends RefCounted
 ## Room left between neighbouring squads, in the squads' own (packed) spacings: at least this, so the gap between two
 ## squads always reads as wider than the gaps inside one. And the tightest a squad is packed to fit the zone (hulls are
 ## 2.6 x 4 m).
-const GAP_SPACINGS := 2.0
+const GAP_SPACINGS := 2.5
 const MIN_SPACING_M := 5.0
 ## The front rank stands this far inside the zone's front edge, and the last rank this far inside its back edge (and
 ## nothing past the drivable limit: a layout's zone may reach beyond it).
@@ -24,11 +24,14 @@ const FRONT_MARGIN_M := 4.0
 const BACK_MARGIN_M := 4.0
 ## An army waiting for orders stands in an ASSEMBLY area, tighter than it moves: a squad starts at most this far between
 ## vehicles (hulls are ~4 m long), and opens out to its own spacing when it is ordered to move. The start view frames it.
-const ASSEMBLY_SPACING_M := 8.0
+const ASSEMBLY_SPACING_M := 6.5
 ## Clear ground between one rank of squads and the next (a hull is ~4 m long).
 const RANK_GAP_M := 6.0
-## A squad with no formation of its own starts in this one.
+## A squad with no formation of its own starts in this one; a squad bigger than BLOCK_OVER waits in a compact block
+## (TacticsFormation "block", ~3 x 2 for six), so a full faction army stands in one rank of clearly separate clusters
+## (seen at 34 a side: five wedges of seven needed two ranks, and the second rank merged into the first's gaps).
 const DEFAULT_FORMATION := "wedge"
+const BLOCK_OVER := 4
 ## Only at the very start of a match: never re-lays an army that is already moving.
 const DEPLOY_BY_TICK := 2
 
@@ -56,6 +59,9 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 		ranks += 1
 	var per_rank := ceili(float(count) / ranks)
 	var rank_depth := _usable_depth(size) / float(ranks)
+	# Each rank stands behind the ACTUAL back of the one in front (a rank packed to the spacing floor can be deeper than
+	# its share of the zone), with RANK_GAP_M between.
+	var line := center + forward * (size.y * 0.5 - FRONT_MARGIN_M)
 	for r in ranks:
 		var row: Array = shapes.slice(r * per_rank, mini((r + 1) * per_rank, count))
 		if row.is_empty():
@@ -69,14 +75,16 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 			widths.append([spacing, width])
 			total += width
 		# Every squad's front on the rank's line: rank 0 on the zone's front edge (nearest the enemy, where the old spawn
-		# grid filled first), each rank behind the one before. A formation's anchor is its middle, so step back half its depth.
-		var line := center + forward * (size.y * 0.5 - FRONT_MARGIN_M - r * rank_depth)
+		# grid filled first). A formation's anchor is its middle, so step back half its depth.
 		var left := -total * 0.5
+		var rank_back := 0.0
 		for i in row.size():
 			var shape: Dictionary = row[i]
 			var spacing: float = widths[i][0]
-			var anchor: Vector3 = line - forward * float(shape["deep"]) * spacing * 0.5 \
+			# place() centres a shape on its centroid: step back from the line by how far its front slot is ahead of that.
+			var anchor: Vector3 = line - forward * float(shape["front"]) * spacing \
 					+ right * (left + float(widths[i][1]) * 0.5)
+			rank_back = maxf(rank_back, float(shape["deep"]) * spacing)
 			left += float(widths[i][1])
 			for entry in TacticsFormation.place(shape["members"], shape["formation"], anchor, forward, spacing,
 					{"policy": "front", "leader": shape["leader"]}):
@@ -85,6 +93,7 @@ static func plan(squads: Array, zone: Dictionary, frame: Dictionary) -> Dictiona
 				at = Vector3(clampf(at.x, -limit, limit), 0.0, clampf(at.z, -limit, limit))
 				result[String(entry["unit"])] = {"position": at, "facing": forward, "squad": shape["name"],
 						"anchor": anchor, "formation": shape["formation"]}
+		line -= forward * (rank_back + RANK_GAP_M)
 	return result
 
 
@@ -98,9 +107,12 @@ static func _shape_of(squad: Dictionary) -> Dictionary:
 	var shape := String(squad.get("formation", ""))
 	if not TacticsFormation.NAMES.has(shape):
 		shape = DEFAULT_FORMATION
-	shape = TacticsFormation.auto(members.size(), "move", shape)
-	var raw := TacticsFormation.group_offsets(shape, maxi(members.size(), 1), 1.0)
-	return {"name": String(squad["name"]), "members": members, "formation": shape,
+	shape = "block" if members.size() > BLOCK_OVER else TacticsFormation.auto(members.size(), "move", shape)
+	var raw := TacticsFormation.centered(TacticsFormation.group_offsets(shape, maxi(members.size(), 1), 1.0))
+	var ahead := 0.0
+	for slot in raw:
+		ahead = maxf(ahead, -slot.y)
+	return {"front": ahead,"name": String(squad["name"]), "members": members, "formation": shape,
 			"leader": String(squad.get("leader", "")),
 			"spacing": minf(float(squad.get("spacing", TacticsFormation.DEFAULT_SPACING)), ASSEMBLY_SPACING_M),
 			"across": _extent(raw, true), "deep": _extent(raw, false)}
