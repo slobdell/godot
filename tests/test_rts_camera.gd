@@ -245,6 +245,19 @@ func test_tilt_is_its_own_axis() -> void:
 ## the grandstand, and the railing and crowd hide the squad (seen in `make shell-playtest` at 50 s). The camera cuts
 ## away whatever stands between it and the wall: its near plane sits just short of where the wall meets the floor.
 func test_a_camera_past_the_wall_cuts_away_the_stands_between() -> void:
+	# The SQUARE fallback (`half`): clear the perimeter statics, which any rig set up on an arena that publishes a
+	# perimeter (arena, round 7) leaves filled for the rest of the run - test_radar's outline test went red on exactly
+	# this (main 5cc17ee6).
+	var saved_poly := RtsCamera.perimeter_poly
+	var saved_edges := RtsCamera.perimeter_edge_data
+	RtsCamera.perimeter_poly = PackedVector2Array()
+	RtsCamera.perimeter_edge_data = []
+	_the_square_cutaway()
+	RtsCamera.perimeter_poly = saved_poly
+	RtsCamera.perimeter_edge_data = saved_edges
+
+
+func _the_square_cutaway() -> void:
 	var half := 121.0
 	# In the middle of the arena, nothing to cut: the default near plane.
 	assert_eq(RtsCamera.cutaway_near(Vector3.ZERO, 0.0, 50.0, 25.0, half), RtsCamera.NEAR_DEFAULT, "mid-arena: no cutaway")
@@ -344,6 +357,8 @@ func test_the_cutaway_follows_the_arenas_own_perimeter() -> void:
 	edges[south]["spans"] = [{"kind": "stands", "from_m": 0.0, "to_m": length / 2.0 - 10.0},
 			{"kind": "none", "from_m": length / 2.0 - 10.0, "to_m": length / 2.0 + 10.0},
 			{"kind": "stands", "from_m": length / 2.0 + 10.0, "to_m": length}]
+	var saved_poly := RtsCamera.perimeter_poly
+	var saved_edges := RtsCamera.perimeter_edge_data
 	RtsCamera.perimeter_poly = poly
 	RtsCamera.perimeter_edge_data = edges
 	var hit := RtsCamera.perimeter_crossing(Vector2(0, 60), Vector2(0, 1))
@@ -358,8 +373,8 @@ func test_the_cutaway_follows_the_arenas_own_perimeter() -> void:
 	# A diagonal side: the polygon, not a square, decides where the wall is.
 	var diagonal := RtsCamera.perimeter_crossing(Vector2.ZERO, Vector2(1, 1).normalized())
 	assert_true(float(diagonal["reach"]) < 121.0 * sqrt(2.0) - 1.0, "a diagonal wall is nearer than the square's corner (%.0f m)" % diagonal["reach"])
-	RtsCamera.perimeter_poly = PackedVector2Array()
-	RtsCamera.perimeter_edge_data = []
+	RtsCamera.perimeter_poly = saved_poly  # restore, not blank: whatever the run had is the next test's business
+	RtsCamera.perimeter_edge_data = saved_edges
 
 
 ## Round 7: the cutaway reads the stands from feel's StandsProfile (computed from the kit the dressing places) when the
