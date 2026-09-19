@@ -62,12 +62,15 @@ func test_a_turret_scales_with_its_hull() -> void:
 		assert_near(total, fit, 0.01, "the turret part takes the hull's scale (%.2f)" % total)
 
 
-func test_the_gang_ifv_faces_forward() -> void:
-	## Round 7 (the lead, three times: "the gang's IFV drives backwards"): its model was generated facing +Z.
+func test_the_gang_ifv_and_the_syndicate_lancer_face_forward() -> void:
+	## Round 7 (the lead, three times: "the gang's IFV drives backwards"); make facing-audit then found the Syndicate
+	## lancer the same way round (its approved concept has the nose and the emitter's lens leading).
 	var previous := GameTheme.theme_name
 	GameTheme.use("cyberpunk")
-	var tank := _spawn("gang_ifv")
-	await wait_physics_frames(1)
+	for unit_id in ["gang_ifv", "syn_lancer"]:
+		var tank := _spawn(unit_id)
+		await wait_physics_frames(1)
+		var model := tank.get_node("HullVisual").find_children("Model", "Node3D", true, false)[0] as Node3D
+		assert_near(absf(wrapf(model.rotation.y, -PI, PI)), PI, 0.01, "%s's hull model is turned round to face -Z" % unit_id)
+		tank.queue_free()
 	GameTheme.use(previous)
-	var model := tank.get_node("HullVisual").find_children("Model", "Node3D", true, false)[0] as Node3D
-	assert_near(absf(wrapf(model.rotation.y, -PI, PI)), PI, 0.01, "its hull model is turned round to face -Z")

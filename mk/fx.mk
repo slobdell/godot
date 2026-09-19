@@ -83,6 +83,6 @@ crowd-look: import ## Feel X1: can a player see the crowd? A real skirmish shot 
 
 facing-audit: import ## Every faction unit side-on with a red arrow along its engine forward (-Z): catches models that drive backwards → build/facing/<unit>.png (needs a display; UNITS=a,b)
 	rm -rf $(BUILD_DIR)/facing && mkdir -p $(BUILD_DIR)/facing
-	timeout 300 $(GODOT) --path . --resolution 640x360 --script res://game/theme/gallery/facing_audit.gd -- \
+	timeout 300 $(GODOT) --path . --resolution 960x540 --script res://game/theme/gallery/facing_audit.gd -- \
 		--facing-dir=$(CURDIR)/$(BUILD_DIR)/facing $(if $(UNITS),--facing-units=$(UNITS)) 2>&1 | grep -E 'FACING_AUDIT|SCRIPT ERROR|SHADER ERROR' || true
 	@grep -q . $(BUILD_DIR)/facing/*.png 2>/dev/null || { echo "facing-audit FAILED: no images"; exit 1; }

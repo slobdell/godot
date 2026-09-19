@@ -5,7 +5,7 @@ extends SceneTree
 ## a 90 degree one more so. Saves <dir>/<unit>.png and a contact sheet order in FACING_AUDIT lines, then quits.
 ## Visual only. Flags: --facing-dir=<abs dir> [--facing-units=a,b]
 
-const SIZE := Vector2i(640, 360)
+const SIZE := Vector2i(960, 540)
 
 
 func _init() -> void:
@@ -45,6 +45,8 @@ func _run() -> void:
 		tank.set("unit_id", unit_id)
 		tank.set("simulate", false)
 		world.add_child(tank)
+		for label in tank.find_children("*", "Label3D", true, false):
+			(label as Node3D).visible = false  # the nameplate covers the vehicle side-on
 		var length := float(Units.stat(unit_id, "hull_size")[2])
 		# Forward (-Z) points to the right of the picture: the camera looks along -X from the unit's right side.
 		var arrow := MeshInstance3D.new()
@@ -57,8 +59,11 @@ func _run() -> void:
 		arrow.material_override = red
 		arrow.position = Vector3(0, 0.15, -length / 2.0 - 2.0)
 		world.add_child(arrow)
-		var distance := maxf(length, 3.0) * 2.2
-		camera.global_transform = Transform3D(Basis(), Vector3(distance, 2.0, -1.0)).looking_at(Vector3(0, 1.0, -1.0), Vector3.UP)
+		var height := float(Units.stat(unit_id, "hull_size")[1])
+		var distance := maxf(length + 4.0, 6.0) * 1.15
+		camera.fov = 40.0
+		camera.global_transform = Transform3D(Basis(), Vector3(distance, height * 0.6 + 0.8, -1.0)).looking_at(
+				Vector3(0, height * 0.5, -1.0), Vector3.UP)
 		for i in 8:
 			await process_frame
 		await RenderingServer.frame_post_draw
