@@ -706,6 +706,43 @@ braces costs nothing and a second opinion on "did it get there" is the one place
 it.* The metric is **unit-time on the route**, not completion — a map whose interesting route is where the fights
 happen is the map working, not failing. Only *never entering* is declining it.
 
+### Every faction number this project has quoted is a FOUNDRY number — and foundry is near-open
+
+`faction_matrix.py` passed no `--arena` until `c2b27516`, so every matrix run used the default layout and **said so
+nowhere.** The numbers are sound as *differences* (both arms ran on the same ground) and unsound as *properties*.
+Fixed: `ARENA=`, the map named in the header, a per-arena json, and `balance.md`'s rows relabelled.
+
+**The part that reframes the baseline** (arena, measured, `make arena-report`): foundry is **`centre_sees_share`
+0.56 — the second-most-open map in the game.**
+
+| arena | centre sees | |
+|---|---|---|
+| **boulevard** | **0.64** | the open extreme |
+| foundry / furnace | 0.56 | ← **every number we have quoted** |
+| boneyard | 0.40 | |
+| pit / scrapyard | 0.30 / 0.29 | (the lead kept pit, cut scrapyard — the ranking predicts him at the extremes, not the middle) |
+| **yard** | **0.20** | the closed extreme |
+
+So the gangs' 23% → 53%, the 47-to-10-point collapse and the heights null were all measured on **near-open ground**,
+which sits close to the favourable end for anything that pays off with sightlines. **Prop counts are not a proxy for
+openness** and would have inverted the ranking: `scrapyard` has 36 obstacles and measures 0.29, `boulevard` has none
+in `obstacles` and 100+ in `props` and measures 0.64 — the split is schema history (v1 vs v2), not a difference in
+what blocks.
+
+**Why the designator must be reported per map and per faction, never as an aggregate.** Its payoff is *conditional*
+on sightlines, so one number over a mixed pool is either noise or one map doing all the work. And a pairing table
+cannot distinguish the two results that matter: **one faction moving between maps** (an asymmetry — the map pays one
+army more) from **every faction's spread widening on the open map** (a property of the map). `faction_matrix.py` now
+prints a per-faction block for exactly that (`1314bfd9`).
+
+**The open question this decides, and it is arena's target:** `centre_sees_share < 0.30` was set when every unit saw
+alike. N5 put time between seeing and shooting, sight radii vary 62–135 m, and the designator converts one faction's
+eyes into its whole side's tempo — so exposure is now a property of **the map and who is standing on it**. arena's
+position, which I accept: keep the target, because it is evidence about *whether a map is worth building*, while the
+designator is evidence about *whether one faction gets more out of a given map*, and both can be true. It changes only
+if the Syndicate's advantage on the open map is large enough to be a balance problem rather than a flavour
+difference. **The boulevard/yard pair decides it.**
+
 ### X5 — the Lancer: **the recommendation was incomplete. HOLD the removal.**
 
 **The lead approved dropping `syn_lancer`; then I implemented it and it broke the Syndicate.** Removing it leaves
