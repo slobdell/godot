@@ -39,6 +39,11 @@ const ORBIT_STEP_DEG := 30.0
 const ORBIT_TICKS := SimClock.TICK_RATE * 4
 ## Support by fire: the firing line stands this fraction of the element's shortest EFFECTIVE range off the point it
 ## covers, so every gun in the line reaches it with fire that counts, and never closer than SBF_MIN_STANDOFF_M.
+##
+## Do NOT add a floor like max(..., Drills near_ambush_m + margin) to keep the line out of near-ambush range (proposed and
+## refused in round 6): with a 45 m band it puts the line at ~47 m, OUTSIDE the band, where a gun lands ~31-50% of shells
+## instead of ~100%. A base of fire that cannot hit is not one. The invariant is precedence instead: a support-by-fire
+## task outranks near ambush in Drills.select (only break contact outranks it), tested in test_tactics_tasks.gd.
 const SBF_STANDOFF := 0.8
 const SBF_MIN_STANDOFF_M := 25.0
 ## An ambush lies closer than a base of fire: this fraction of the shortest effective range from the kill zone, so
