@@ -151,6 +151,15 @@ the "why did my element do that" view, if the camera and loading work lands earl
 
 _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 
+**STATE AT PAUSE (2026-09-18, quota stop; resuming ~4 days later): everything is committed.** Last commit with code:
+`017fda42` (the lead's camera: 21°, FOV 35, 49 m, auto-framing on; the `-` `=` hints; squad-1 first frame; tests
+pin their lens). **Its `make remote T=check` (#14) was still running at the stop — result unknown: re-verify it.**
+It passed locally (camera 42, control 145, command 50, radar 7, touch 9, all 0 failed; laptop) and `make remote
+T=shell-playtest` exited 0 on it (builder0). **Last verified green: `2dbd985d`** (1082/0) and `ff28563d` (1084/0);
+`42d42fd2` and `eb2d7b74` were never fully checked (superseded). Nothing is mid-way: no feature started after
+`017fda42`. Not started (round 7, needs a brief): order-preview HUD, two grammars on one card, yaw follows facing, FOV
+from weapon range. Camera shape coupling (square perimeter) and the telephoto pull-out: tactical_map.md "Open items".
+
 **SETTLED (2026-09-18, night): the lead found the camera in play** with the live controls — `CAMERA_POSE pitch=21
 distance_m=49 fov=35 yaw=-0 zoom=0.365 auto_frame=on`. Now the default: 21°, FOV 35° (telephoto), 49 m, auto-framing
 on, first frame on squad 1. **The lens, not the pitch, was the problem** (tactical_map.md "Why a telephoto"): my FOV

@@ -29,6 +29,17 @@
   provisionally; it is back at 24. If a camera change pushes phones under the bar, give touch its own framing (a
   closer start or its own pitch) — never lower the bar (`tests/test_command_readability.gd`).
 
+- **The camera assumes a SQUARE arena (read before changing the arena's shape).** `RtsCamera.cutaway_near` finds where
+  the camera's sight line crosses the wall by intersecting it with the perimeter *square* (`perimeter_half()`: the
+  layout's `half_size` + 1 m), and judges occlusion against `STANDS_PROFILE`, measured from feel's straight
+  `kit_stands` (15.7 m high, 19.9 m deep, 0.3 m past a 2 m wall; `WALL_HEIGHT_M` 3 m). An octagonal or hexagonal arena
+  (the lead has asked for one) needs the crossing computed against that polygon and the profile re-measured, or the
+  cutaway will cut the wrong things near the new walls. `camera_looks.gd` applies the same function.
+- **Auto-framing at the telephoto pulls out for a spread squad.** At FOV 35 the vision camera needs ~1.8x the distance
+  of FOV 60 to fit the same spread: a squad strung along the spawn line framed at ~166 m / 40° (the far-range floor) in
+  `make shell-playtest`, returning toward 49 m once it forms up. The lead left auto-framing on; if he dislikes the
+  pull-out, cap the auto-frame distance (one constant) — ask him first.
+
 ## Task palette (N4)
 
 The command card's vocabulary. The code is `game/control/task_palette.gd` (`TaskPalette.ROWS`); the symbols are
