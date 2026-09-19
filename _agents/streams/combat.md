@@ -127,6 +127,40 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### `ENGAGE hop` — the cadence question, and a falsifiable prediction (thinking only, 2026-09-19)
+
+arena measured **30–36% of `attack_move` time spent driving somewhere other than the order**, `blocked_terrain`
+0.000–0.010, and **about three quarters of the re-tasking is `ENGAGE hop`** — the same option re-aiming, a
+destination change **every ~1.3 s**. nav is measuring whether that produces visible oscillation (pre-registered:
+≥5% of under-way time on any of his maps = real, <1% on all four = not). **Nothing is built until that lands.**
+
+**The design question is genuinely combat's, and N5 already answers most of it.** `attack_move` means *fight your
+way there*, so re-aiming is obedience, not disobedience — the defect, if there is one, is **cadence**. And the
+engagement envelope already defines the only principled floor: **a crew that switches target restarts acquisition**
+(`Lay.engage` zeroes `progress` on a new target), and acquisition costs **0.3 s at arm's length to 1.6 s at the
+edge of vision**, ×0.55 for a scout, ×2 under suppression. So:
+
+> **Re-targeting faster than `acquire_seconds` cannot produce fire. It can only produce motion.**
+
+At ~1.3 s between hops, a crew at anything past close range never finishes a lay. **The brain is issuing orders the
+gunner cannot cash.**
+
+**THE PREDICTION, which makes this falsifiable before anyone writes code.** If `ENGAGE hop` is real churn rather
+than obedience, then under `attack_move` the re-task rate and the *fire* rate must move in opposite directions:
+**`shots_per_unit_minute` should be depressed while re-tasking is high**, and units should show a high ratio of
+*time held on a contact* to *shots taken*. If instead fire rate is healthy at 45 re-aims a unit-minute, the hops are
+tracking a genuinely changing picture and the right answer is to leave it alone. **Both metrics already exist**
+(`make engagement`, `shots_per_unit_minute` from round 6) so this costs a run, not a feature.
+
+**If it is real, the fix I would propose** — and it is a consequence of the envelope rather than a new tuning knob:
+a brain under a player's order **holds a chosen target for at least the time it would take to acquire and fire it**,
+breaking early only when the target dies, leaves line of sight, or is displaced by a contact better by some margin
+(the same hysteresis shape as `RELEASE_FACTOR`). That makes the cadence fall out of `acquire_seconds` per unit and
+per range — a scout re-aims quickly because it acquires quickly — instead of adding a constant nobody can defend.
+
+**It touches squad** (the brain chooses) **and combat** (the envelope says what a choice costs), so it is a contract
+conversation before it is code.
+
 ### ROUND 8 (2026-09-19) — the semi, and the bug found on the way to it
 
 **The lead, third time of asking:** *"the gang tanks are still tiny (the intent for the semi trucks is that they're
