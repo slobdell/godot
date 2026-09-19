@@ -127,6 +127,56 @@ writing first. Also: `game/control/` `game/ui/` `game/camera/` (control's), `are
 
 _Round 6, opened 2026-09-18. Branch `stream/combat`, from `a975e262`._
 
+### ROUND 8 (2026-09-19) — the semi, and the bug found on the way to it
+
+**The lead, third time of asking:** *"the gang tanks are still tiny (the intent for the semi trucks is that they're
+huge - we'll worry about evening up factions later)"*. **Balance is explicitly deferred on this: measure what the
+size does and report it, do not tune against it.**
+
+**Why 3.14× the scout still read as tiny — two causes, neither of them the number I picked.**
+
+1. **We grew it on the axis the camera hides.** War Rig `[3.0 w, 4.4 h, 5.6 l]`: height 3.14× the gang scout
+   (inside the "3 or 4 times" he named in round 6) but footprint only 1.95× a tank's, and a top-down camera
+   foreshortens height and shows footprint.
+2. **Worse: the height was never drawn.** feel fits art by LENGTH so the approved model is never distorted, so a
+   4.4 m box drew a **2.09 m** truck. At the lead's pose the rig renders **114 px tall against a Condemned tank's
+   95** — the "huge" semi is barely taller on screen than a regular tank. **The catalog number I was free to
+   choose was height, and I chose it well; the axis that carried the intent was not mine and was not drawn.**
+
+**feel's number, measured at the lead's camera: `gang_tank` `[3.32, 5.24, 14.0]`** (281 px, ~3× a tank) and
+**`gang_support` `[3.39, 3.59, 7.0]`**. Its full box-vs-mesh table is in the round-8 messages; **every art-bearing
+unit's collider disagrees with its mesh**, worst `gang_tank` (+1.67 w, +2.31 h — shells that visibly clear the roof
+hit it) and `law_suppressor` **inverted** (drawn 0.96 m taller than its box — visible hits pass through). That is a
+hit-registration bug, not a look bug, and `hull_size` IS the collider (C1). The orchestrator has ruled it in scope.
+
+**⚠ THE SPAWN GRID DOES NOT CONSTRAIN VEHICLE SIZE, AND I SPENT an hour believing it did.** `SPAWN_ROW_SPACING`
+(8.0) − 2×`SPAWN_JITTER_MAX_Z` (1.2) = **exactly 5.6**, the War Rig's length, which looks like the smoking gun.
+It is not: `load_doctrine` ends with `ArmyLayout.deploy()`, which **teleports every unit at tick 0 before any
+physics step**, so a spawn slot is overwritten before two hulls can coexist in a simulated frame. I asked *which of
+two copies of the spawn geometry wins* — a good question, correctly answered — and never asked *whether spawn
+positions survive the frame*. **Finding the authoritative copy of a value is not the same as checking that the value
+still matters.**
+
+**THE REAL CEILING, AND A LIVE BUG (tests/test_army_footprint.gd, laptop at `787d8632`).** Nearest-neighbour
+centre-to-centre after deploy:
+
+| army | vehicles | min | median |
+|---|---|---|---|
+| **gang_ram** | 41 | **0.2 m** | 4.6 m (a 5.0 m tanker with **0.9 m** of room) |
+| gang_pack | 45 | 0.8 m | 4.6 m |
+| law_line | 24 | 2.3 m | 3.7 m |
+| **syndicate_standoff** (control) | 18 | **7.4 m** | 8.3 m |
+
+**A gang army stands with its hulls inside each other today, at current sizes** — about four metres of
+interpenetration. The 18-vehicle control gets 7.4 m from the same code, so the defect is `ArmyLayout` **compressing
+a rank to fit the zone** (`MIN_SPACING_M` 5.0) with no reference to hull length, under comments reading "hulls are
+~4 m long". **This, not the spawn grid, is what blocks a 14 m rig.**
+
+**Three owners, which is why it is not fixed here:** spacing is **squad**'s, `spawn_zones` (150 × 32) is **arena**'s,
+and how many vehicles 5200 points buys is **mine**. squad has the numbers, the control, and a ready-made assertion.
+**The assertion is deliberately NOT landed** — it would fail `check` for five streams over a defect I cannot fix in
+my own files, and downgrading it to a warning is the invisible-skip failure in another costume.
+
 ### GREEN AND READY TO MERGE: `80bcd085`
 
 `>> remote: make ... exited 0` on builder0, **1187 passed, 0 failed**, plus `match-pytest` **Ran 11 tests — OK**.
