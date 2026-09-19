@@ -144,9 +144,13 @@ func test_a_hexagon_is_the_shape_that_varies_most() -> void:
 	# The PINCH RATIO is the discriminator, not raw width: how much narrower the arena gets between its middle and
 	# its approaches. That is the shape doing tactical work — an open midfield and two funnels — and it is why the
 	# hexagon was chosen over the octagon. Kept as a gate so nobody "simplifies" the shape without seeing the cost.
+	# The probe sits HALF WAY OUT, not at a fixed 60 m. The pinch ratio is a property of the SHAPE and is
+	# scale-invariant -- hexagon 0.711, octagon 0.914 at any bound -- but a hard-coded 60 m is a fraction of the
+	# arena that changes when the arena does: at the round-7 bound of 140 it reads 0.753 against a 0.75 bar and
+	# fails, having measured nothing about the hexagon except that the map got bigger. (combat, X3, 2026-09-19.)
 	var pinch := func(kind: String) -> float:
 		var mid: float = width_at.call(kind, 0.0)
-		return float(width_at.call(kind, 60.0)) / mid if mid > 0.0 else 1.0
+		return float(width_at.call(kind, bound * 0.5)) / mid if mid > 0.0 else 1.0
 	var hexagon: float = pinch.call("hexagon")
 	var octagon: float = pinch.call("octagon")
 	assert_true(hexagon < 0.75, "a hexagon narrows to %.0f%% of its midfield width at the approaches" % [hexagon * 100.0])
