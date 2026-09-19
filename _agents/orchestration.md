@@ -976,3 +976,22 @@ The kickoff prompt is one line; this section is the rest.
     - **Expect the gates to be silent about exactly the things he notices first.** Audio presence and camera feel are
       both first-thirty-seconds properties and both invisible to `make check`. Twice now he has reported an audio fault
       no automated check saw. **That is not a gap in the audio tests; it is the boundary of what a test can be.**
+73. **A default that has to be passed is not a default — and it will work on exactly the path its author tested.**
+    Round 6's last defect, reported by the lead as *"the audio is defaulted to off"*. The music director and the
+    announcer booth both read `flags.text("music", "off")`: **a missing flag means OFF.** Only `make skirmish` and
+    `make audio-pass` pass `--announcer=voice --music=on`. So **every other way into the game launched with no booth and
+    no music** — the title screen's SKIRMISH, the garage's FIGHT, a plain launch — for as long as those defaults have
+    existed. The sound *effects* were never muted, which is why it read as "some audio" rather than "no audio" and why
+    nobody chased it.
+    This is lesson 23's shape (*a behaviour behind a flag the default path never passes has not shipped*) with the
+    polarity reversed: **the flag was the on-switch, and only two of five entry points knew to throw it.** The fix is a
+    real default — a launch with a window gets voice and music unless a flag says otherwise — with the exclusions stated
+    (headless, `--mute`, and the title screen's backdrop fight, which otherwise had the booth calling a match behind the
+    menu).
+    Two instructions:
+    - **When you add a capability behind a flag, enumerate every entry point and check each one.** "The make target
+      passes it" is a statement about one path. This project has five ways into a match and the feature worked on two.
+    - **The verification has to traverse the path, not the unit.** feel's fix came with `make audio-launch-smoke`,
+      which drives the real title → SKIRMISH → faction menu → FIGHT sequence with no audio flags, mutation-checked
+      against the old code (FAIL: "no speaking booth") — the only kind of test that can see a defect that lives in
+      *how the game is entered*.
