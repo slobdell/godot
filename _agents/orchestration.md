@@ -1080,3 +1080,22 @@ The kickoff prompt is one line; this section is the rest.
     is what defers to the suspicion. And the practical form, which is also what saved it: **re-run rather than reason.**
     The same shape appeared in three streams this round (arena's filtered 5/5, nav's `main`-is-not-a-control, this), so
     it is not a personal failing; it is what suspicion does to a standard.
+79. **Ask the lead to object, not to adjudicate.** Round 7, third time in one evening: the orchestrator asked him whether
+    the crowd murmur *"sounds like people or like hiss"*, whether to *"keep or drop the per-faction driving feel"*, and
+    which faction should keep a duplicated unit. He did not answer the first two and replied to the third with **"I don't
+    understand the question."** None of the three was a bad *decision* to want from him; all three were **badly shaped
+    asks**.
+    **What he answers well, on the evidence:** a concrete choice with the consequence stated — the camera page (he picked,
+    twice), the arena verdict (keep / fix / cut / play it first, six maps, answered in one sitting), *"which arena is
+    fun"* once it became *"this map funnels every fight into the middle — keep, fix, or cut?"*. **What he does not
+    answer:** a trade-off between options whose consequences he has no way to evaluate, and anything requiring him to
+    hold internal design context he has never been given.
+    **So the default shape is: state what we are doing and why, in one or two sentences of his vocabulary, and ask
+    whether he objects.** *"We are dropping the Syndicate's Lancer because their tank already shoots further than it
+    does — object?"* is answerable in three seconds. *"Which faction should keep the Lancer?"* requires him to know four
+    rosters. **A recommendation with a visible reason costs him a yes/no; a question costs him a design session he did not
+    ask for.**
+    Corollary, and it is the reason this keeps happening: **the orchestrator asks questions in the shape the streams
+    hand them over in.** A stream that has just weighed two options naturally reports the two options — and relaying that
+    shape is the failure. **Converting a stream's trade-off into a recommendation is part of the relay, not an optional
+    courtesy.**
