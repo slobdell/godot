@@ -1556,6 +1556,16 @@ The kickoff prompt is one line; this section is the rest.
      - **A pre-registered rule makes a null result reportable and a bad result unspinnable.** It also forces the *acceptance
        criteria* to be chosen while they can still be chosen fairly — nav's include *survivability must not get worse*,
        which is the criterion an author hoping for a churn win would quietly omit.
+     - **A rule you honour when it costs you is the only kind that works.** nav's hold-hysteresis A/B came back **down on
+       all four maps** — scout in-place events −22%, −19.5%, −8%, −6% — **which is a real effect and it misses the
+       pre-registered bar of ≥20% on ≥3 maps.** nav shipped it **opt-in** rather than arguing the direction was
+       consistent. **And the kills guard tripped** (>20% fewer losses on 4 of 8 runs), with nav noting the guard has
+       almost no power — **2–5 deaths out of 90 units in 120 s** — and adding: *"it was fixed in advance, and I'm not
+       arguing with it after the fact."* **That sentence is the whole value of pre-registering.**
+     - **⚠ But a guard with no power is the 34×-headroom problem again** (lesson 107): **a threshold that cannot
+       meaningfully fail is not protecting anything**, and one that trips on 2-vs-5 deaths is noise wearing a rule's
+       clothes. **nav named the fix itself — more deaths per run, via a longer `NAV_TIME`.** **Check a guard's power when
+       you pre-register it, not after it fires.**
      - **Pre-register a GUARD metric as well as a success metric — name what must NOT get worse.** nav's rule covered
        churn and survivability; the thing that actually moved was a third, **attack-move "progressing" 44% → 41%**, and
        the rule was silent on it. **A pre-registered rule protects only the metrics you thought of**, and the one that
