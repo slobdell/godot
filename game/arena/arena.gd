@@ -50,6 +50,9 @@ const SEAM_BORDER := 2.5
 ## The stock Ground slab's thickness, and how far past the arena edge a carved floor still reaches.
 const GROUND_THICKNESS := 1.0
 const GROUND_MARGIN := 40.0
+## The perimeter wall's thickness, as authored in arena.tscn (the boxes are 2 m through), which is why the inner
+## face of a wall centred at 121 lands on 120 — the apothem ArenaShape works in.
+const PERIMETER_THICKNESS := 2.0
 const HALF_EXTENT := Match.ARENA_HALF_SIZE + 40.0
 ## Mirror pairs must match to this many meters (and degrees).
 const SYMMETRY_TOLERANCE := 0.01
@@ -88,6 +91,7 @@ func _ready() -> void:
 		loaded = load_layout(DEFAULT_LAYOUT)
 	layout = loaded["layout"]
 	active = layout
+	_build_perimeter()
 	_build_terrain()
 	_build_obstacles()
 	_build_decor()
@@ -116,6 +120,44 @@ func _bake() -> void:
 	mirror.transform = Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	add_child(mirror)
 	navigation_ready.emit()
+
+
+## Round 7, contract D: the perimeter wall, built from the shape's polygon.
+##
+## A square layout keeps the four colliders authored in arena.tscn, so nothing about today's arenas changes. Any
+## other shape disables them and builds one wall per polygon edge, each long enough to overlap its neighbours at
+## the corner so there is no gap to squeeze through.
+##
+## The walls stay in `navigation_source`, which is what makes this cheap: the bake already carves the navmesh to
+## whatever the walls enclose, so a hexagonal wall ring gives a hexagonal navmesh with no change to the bake at
+## all. The half-plus-180°-mirror construction also survives untouched — `filter_baking_aabb` spans the full width
+## at every z, so the southern half of a hexagon (a trapezoid) is inside it exactly as a square's half was.
+func _build_perimeter() -> void:
+	var shape: Dictionary = layout.get("shape", {})
+	var kind := String(shape.get("kind", ArenaShape.DEFAULT_KIND))
+	if kind == ArenaShape.DEFAULT_KIND:
+		return
+	var wall := get_node_or_null("Perimeter") as StaticBody3D
+	if wall == null:
+		return
+	for child in wall.get_children():
+		(child as CollisionShape3D).disabled = true
+	var points := ArenaShape.vertices(kind, float(layout["half_size"]))
+	var height := float(shape.get("wall_height_m", ArenaShape.DEFAULT_WALL_HEIGHT))
+	for i in points.size():
+		var a: Vector2 = points[i]
+		var b: Vector2 = points[(i + 1) % points.size()]
+		var mid := (a + b) / 2.0
+		var out := mid.normalized()  # the polygon is regular, so the outward normal is the midpoint's direction
+		var centre := mid + out * (PERIMETER_THICKNESS / 2.0)
+		var shape_node := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		# Overlap into both corners so two walls cannot leave a slot between them.
+		box.size = Vector3(a.distance_to(b) + PERIMETER_THICKNESS * 2.0, height, PERIMETER_THICKNESS)
+		shape_node.shape = box
+		shape_node.position = Vector3(centre.x, height / 2.0, centre.y)
+		shape_node.rotation.y = atan2(-(b.y - a.y), b.x - a.x)
+		wall.add_child(shape_node)
 
 
 ## Round 7: water, pits and the bridges over them. The FLOOR is rebuilt as the arena minus every carving footprint

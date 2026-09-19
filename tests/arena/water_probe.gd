@@ -82,7 +82,7 @@ func _run() -> void:
 	# An unreachable goal yields a path to the CLOSEST REACHABLE POINT, which is a non-empty path that looks like
 	# success: the first run of this probe reported `reachable: true` with an 8 m route for a 46 m trip across a
 	# channel that spans the whole arena. Reachability is "the path ENDS at the goal", never "a path came back".
-	var arrives := route.size() >= 2 and route[route.size() - 1].distance_to(north) < 4.0
+	var arrives := ArenaFixture.route_arrives(route, north)
 
 	# 2. SIGHT: an eye-level ray straight across the channel.
 	var space := arena.get_world_3d().direct_space_state

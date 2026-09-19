@@ -55,9 +55,13 @@ static func sides(kind: String) -> int:
 ##
 ## Oriented with a FLAT SIDE facing each base, so the bases stay on a wall as they always have. A vertex-to-base
 ## hexagon would invert the shape's character — pinched middle, wide approaches — and put each spawn in a corner.
+## `apothem` here is the arena's BOUND (half_size), and the polygon is built to fit INSIDE it: the circumradius is
+## the bound and the flat sides come in to `bound * cos(PI/n)`. Built the other way round — apothem = half_size —
+## a hexagon's corners reach 1.155 x half_size, which is 138.6 m against a radar and a fog sized for 120 m, so a
+## unit in a corner would be off the map's own instruments. Fitting inside is what keeps every other system true.
 static func vertices(kind: String, apothem: float) -> PackedVector2Array:
 	var n := sides(kind)
-	var radius := apothem / cos(PI / float(n))
+	var radius := apothem
 	var out := PackedVector2Array()
 	for k in n:
 		var a := TAU * float(k) / float(n) + PI / float(n)
@@ -65,8 +69,9 @@ static func vertices(kind: String, apothem: float) -> PackedVector2Array:
 	return out
 
 
+## The side length of the polygon `vertices()` builds: the chord of a circle of radius `apothem` (the bound).
 static func edge_length(kind: String, apothem: float) -> float:
-	return 2.0 * apothem * tan(PI / float(sides(kind)))
+	return 2.0 * apothem * sin(PI / float(sides(kind)))
 
 
 ## Every edge as {from, to, length_m, wall_height_m, spans: [{kind, from_m, to_m}]}, spans running along the edge
