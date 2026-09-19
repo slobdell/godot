@@ -1586,3 +1586,29 @@ The kickoff prompt is one line; this section is the rest.
      - **Prefer a ratio, a count, or a comparison against a reference measured in the same run.** *"Every number carries
        its machine"* (CLAUDE.md) is the reporting rule; this is its testing counterpart — **a number that must not depend
        on the machine should not be measured in units the machine controls.**
+108. **A guard runs on the hot path of every future run, so it earns MORE end-to-end exercise than the thing it guards, not
+     less.** combat, reporting its own: **the positive control it added to `faction_matrix` crashed every run it had been
+     written to protect** (fixed at `9821cac7`), **and its refusal path called `main()` bare, so `return 2` exited 0 — a
+     refusal that reported success to `make`.**
+     **A guard that reports success when it refuses is the exact inversion of its purpose**, and it is the third instance
+     in one day of **an exit status belonging to the wrong thing**: `tail`'s status reaching the harness's task
+     notification; `make check` aborting at target two while printing `1135 passed, 1 failed`; and now a refusal returning
+     0. **`exit code 0` keeps arriving from somewhere other than the thing we asked about.**
+     - **Mutation-check every guard: make it fail on purpose and watch it fail.** Every guard that worked today was
+       mutation-checked — arena watched its `nav-maze` control fail, control watched its frame ratio fail at +1 ms, combat
+       watched `test_every_roster_role_can_be_put_in_a_squad` name the offending unit. **The ones that bit us are the ones
+       nobody watched fail.**
+     - **Exercise the refusal path, not only the pass path.** A guard has two outputs and the interesting one is the one
+       that stops a run. In Python, `sys.exit(main())` — never a bare `main()`.
+     - **We have been treating guards as if writing them were the work.** A guard is infrastructure: it is in front of
+       every measurement forever, so a defect in it is a defect in everything downstream.
+     - combat also scanned the other `tools/*.py` for the same shape and explained why `ai_ladder.py` and
+       `tactics_ladder.py` are false positives (numeric returns are scoring helpers, not error paths). **Saying why a grep
+       hit is not a hit is what turns a grep into a check.**
+109. **A rule whose trigger word is optional is a rule nobody can follow reliably.** The worker contract says *merge `main`
+     only at announced checkpoints*. I told all six streams *"merge `main` into your branch for the baseline"* — which
+     **was** the announcement — and combat then reported itself for a contract violation and offered to reset its branch.
+     **It had done exactly what I asked, in response to my own instruction, and could not tell that the instruction was an
+     authorisation** because I had not used the word.
+     **Third time in one day a stream was more careful than the orchestrator.** The fix is mine and it is mechanical: **say
+     "this is an announced checkpoint" in those words, and name the commit.** `b70608d6` is one.
