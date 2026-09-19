@@ -452,3 +452,31 @@ func test_designation_is_a_capability_not_a_role() -> void:
 	for role in ["scout", "tank", "ifv", "artillery"]:
 		assert_true(roles.has(role), "the syndicate still fields a %s" % role)
 	assert_true(roles.size() >= 5, "and still has a special beyond the core four (%s)" % [roles.keys()])
+
+
+func test_the_match_counts_designators_fielded_and_paints_landed() -> void:
+	# The positive control. Two designator measurements this project produced were of a different game -- once the
+	# unit was silently dropped from every army, once it was fielded but front-lined -- and NEITHER was caught by a
+	# check. Both would have shown here: fielded with zero paints. A treatment arm with no treatment is a failed run,
+	# not a null result, and faction_matrix refuses to report one.
+	var game_match := _match()
+	var spotter := game_match.spawn_tank("Spotter", 0, Match.Team.GREEN, "syn_lancer")
+	var prey := game_match.spawn_tank("Prey", 0, Match.Team.RUST)
+	spotter.global_position = Vector3(LANE_X, 0.0, 20.0)
+	prey.global_position = Vector3(LANE_X, 0.0, -10.0)  # 30 m: inside the spotter's sight
+	await wait_physics_frames(Match.INTEL_EVERY_TICKS * 3)
+	assert_eq(game_match.stats["designators_fielded"][Match.Team.GREEN], 1, "the census sees the designator")
+	assert_true(game_match.stats["designations"][Match.Team.GREEN] > 0,
+			"and a paint landed (%d)" % game_match.stats["designations"][Match.Team.GREEN])
+	assert_true(prey.designated_seconds > 0.0, "the contact carries the paint")
+	assert_eq(game_match.stats["designators_fielded"][Match.Team.RUST], 0, "the other side fielded none")
+
+
+func test_an_army_with_no_designator_reports_none_fielded() -> void:
+	# The other half: "fielded 0, painted 0" must read as "no treatment in this arm", not as a failed run. Only
+	# fielded-with-zero-paints is the failure the refusal is looking for.
+	var game_match := _match()
+	game_match.spawn_tank("Plain", 0, Match.Team.GREEN, "tank")
+	await wait_physics_frames(Match.INTEL_EVERY_TICKS * 2)
+	assert_eq(game_match.stats["designators_fielded"][Match.Team.GREEN], 0, "no designator fielded")
+	assert_eq(game_match.stats["designations"][Match.Team.GREEN], 0, "and so none painted")

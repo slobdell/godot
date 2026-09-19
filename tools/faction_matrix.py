@@ -117,6 +117,30 @@ def main():
     rows = [summarize(faction, other, results) for (faction, other), results in sorted(outcomes.items())]
     # Name the map in the output: every row is ONE map's answer, and a reader who does not know which will read a
     # property of foundry as a property of the faction.
+    # POSITIVE CONTROL (adherence). A treatment arm with no treatment is a FAILED RUN, not a null result -- you do
+    # not report a drug trial without checking the patients took the drug. This project has produced two designator
+    # numbers that measured a different game: once the unit was silently dropped from every army, once it was fielded
+    # but classified as a line unit and pushed to the front. Neither was caught by any check; both were caught by a
+    # result looking slightly wrong, which only works when the confound happens to push the implausible way.
+    #
+    # The assertion needs no knowledge of any roster: the match reports how many designators each side FIELDED and
+    # how many times one PAINTED. Fielded with zero paints means the mechanism did not engage, so the number is not
+    # about the mechanism and must not be quoted as though it were.
+    unengaged = []
+    for (faction, other), results in sorted(outcomes.items()):
+        for result in results:
+            st = result.get("stats", {})
+            for team, side in enumerate((result.get("green", faction), result.get("rust", other))):
+                fielded = (st.get("designators_fielded") or [0, 0])[team]
+                painted = (st.get("designations") or [0, 0])[team]
+                if fielded and not painted:
+                    unengaged.append(f"{side}: {fielded} designator(s) fielded, 0 paints")
+    if unengaged:
+        print("REFUSED: the treatment never engaged in %d match(es) -- this is a failed run, not a result:"
+              % len(unengaged))
+        for line in sorted(set(unengaged))[:5]:
+            print("  " + line)
+        return 2
     print(f"run: {run_conditions.header()}")
     print(f"{len(jobs) - len(failures)} matches on {args.arena or 'foundry (default)'} at {args.budget} points, "
           f"{time.time() - started:.0f}s wall, "

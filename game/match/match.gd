@@ -193,6 +193,12 @@ var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage":
 		"hits_by_face": {"front": 0, "side": 0, "rear": 0},
 		# X3: enemy hits on the engine deck (Armor.is_weak_spot), by the shooter's team.
 		"weak_spot_hits": [0, 0],
+		# X5 POSITIVE CONTROL, per team: how many units with the `designates` capability were fielded, and how many
+		# times one of them actually painted a contact. A treatment arm with no treatment is not a null result, it is
+		# a failed run -- and this project has now produced two designator numbers that measured a different game
+		# (the unit silently dropped from every army; then fielded but front-lined). Neither was caught by a check.
+		# `designators_fielded > 0 and designations == 0` is the assertion a reader can make without knowing a roster.
+		"designators_fielded": [0, 0], "designations": [0, 0],
 		# L2 (round 4), by the SUPPRESSED team, sampled every SUPPRESSION_SAMPLE_TICKS over living units: how many
 		# samples were taken, their suppression summed, and how many were pinned. Without these, nobody can tell
 		# whether a match had any suppressive fire in it at all (X2: the answer was "almost none", because brains
@@ -237,6 +243,8 @@ var _shots_since_sample := 0
 ## N5 (round 6): the DIRECT-fire subset of them. The envelope governs direct fire only — artillery is deliberately
 ## outside it — so an all-shots engagement distance describes the battery as much as the fight (lesson 49).
 var _direct_shots_since_sample := 0
+## X5: the fielded-designator census is taken once, on the first paint pass after spawning.
+var _counted_designators := false
 
 var _rng := RandomNumberGenerator.new()
 ## Shot spread. Seeded with the match seed, so seeded matches stay deterministic.
@@ -771,8 +779,14 @@ func _update_control() -> void:
 ## a second scout. It runs on the intel cadence, not per tick, and refreshes a countdown rather than setting a flag,
 ## so a designator that dies stops helping within DESIGNATE_SECONDS instead of instantly or forever.
 func _paint_designated() -> void:
+	# Count the fielded designators once, on the first pass after spawning.
+	var counting := not _counted_designators
 	for tank in _sorted_tanks():
-		if not tank.is_alive() or not bool(Units.stat(tank.unit_id, "designates", false)):
+		if not bool(Units.stat(tank.unit_id, "designates", false)):
+			continue
+		if counting:
+			stats["designators_fielded"][tank.team] += 1
+		if not tank.is_alive():
 			continue
 		var best: Tank = null
 		var best_distance := tank.sight_radius
@@ -784,7 +798,12 @@ func _paint_designated() -> void:
 				best = enemy
 				best_distance = distance
 		if best != null:
+			# Count a paint only when it lands on a contact that was not already painted, so the number is "how often
+			# designation did something" rather than "how many ticks a designator was alive".
+			if best.designated_seconds <= 0.0:
+				stats["designations"][tank.team] += 1
 			best.designated_seconds = DESIGNATE_SECONDS
+	_counted_designators = true
 
 
 func _sample_brain_options() -> void:
