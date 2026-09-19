@@ -1897,3 +1897,22 @@ The kickoff prompt is one line; this section is the rest.
      - **nav's capture lied on its first run** — *"never turned" for every hull* — the packed-array value trap in its own
        logging, caught by a debug line showing the hulls had in fact turned. **Sixth instrument defect this round, and the
        sixth caught by someone looking at the output rather than by a failure.**
+126. **A constraint you cannot see will quietly redirect your effort onto the axis that is free — and the result satisfies
+     the brief while missing the point.** combat's words, and the best diagnosis of the round.
+     The lead asked for a semi *"at least 3 or 4 times the height of the scout"*. combat built **4.4 m against 1.4 m —
+     3.14×, inside the band** — and he still calls it tiny. **Because a top-down RTS camera foreshortens height and shows
+     FOOTPRINT**, and the rig's footprint is **16.8 m² against a tank's 8.6 — 1.95×.** A real tractor-trailer is
+     proportionally much *longer* (≈4.2× a car) than it is *taller* (≈2.7×); **ours is the inverse, so it reads as a cube
+     on wheels.**
+     **And 5.6 m of length was never a design choice. It is a ceiling nobody could see:** `SPAWN_ROW_SPACING` is 8.0 and
+     lengthways jitter is ±1.2, so **the longest hull that cannot overlap the row behind is exactly 8.0 − 2.4 = 5.6.**
+     Verified across foundry, yard and boulevard: 4 rows at z = 90/98/106/114, 13 columns, 52 slots — **26 m of depth for
+     three gaps.** So the truck could only grow upward, **and it did.**
+     - **The lesson is not "measure the right thing".** combat measured the thing it was asked for and got it right. **The
+       axis that carried the intent was locked by a constant in someone else's file that nobody was looking at.**
+     - **When a brief names one dimension, check whether the others are free before reporting success on it.** A number
+       satisfied on the only available axis is evidence about the constraint, not about the design.
+     - **Orchestrator's share: I framed this to feel and combat as "the measurement satisfied the number and missed the
+       intent", which reads as a judgement call made badly.** combat corrected it — *"I did not miss the intent by
+       choosing badly; the axis that carried it was locked"* — and the correction matters, because the first framing
+       would have had someone re-pick a number when the fix is a spawn grid.
