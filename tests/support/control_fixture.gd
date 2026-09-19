@@ -24,6 +24,30 @@ func _init(p_test: TestCase) -> void:
 	test = p_test
 
 
+## The yardstick for timing budgets (round 7): a fixed piece of GDScript work of the UI's kind (dictionary writes, vector
+## maths), timed next to the work under test. A loaded machine - builder0 runs six to nine checks at once in a round -
+## slows both, so a budget stated as a multiple of it means the same on any machine at any load; a real regression
+## slows only the work. Time each with `fastest_ms`, interleaved.
+static func reference_work() -> void:
+	var seen := {}
+	for i in 600:
+		seen[i % 64] = Vector3(float(i), 0.0, -float(i)).length() + float(i)
+
+
+## The fastest of `rounds` calls of `work` and of the reference, interleaved: [work_ms, reference_ms].
+static func fastest_ms(work: Callable, rounds: int) -> Array[float]:
+	var best := INF
+	var reference := INF
+	for i in rounds:
+		var started := Time.get_ticks_usec()
+		reference_work()
+		reference = minf(reference, (Time.get_ticks_usec() - started) / 1000.0)
+		started = Time.get_ticks_usec()
+		work.call()
+		best = minf(best, (Time.get_ticks_usec() - started) / 1000.0)
+	return [best, reference]
+
+
 ## Build everything; `executor` = false leaves units to their brains (pure input tests).
 func build(with_executor := true) -> void:
 	var tree := test.tree

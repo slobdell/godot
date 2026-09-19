@@ -167,7 +167,25 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | Radar draws the arena's outline | the perimeter polygon, else the active layout's bound (`4f7371ef`) | `test_radar` |
 | **Order progress on screen** (orchestrator, from nav/squad churn: weaving must read as *en route*) | done (`53a2af87`). For the selection, each order — or the squad's task, not its leader's moves — keeps a **pin**: ground ring at the ordered point, a stalk to the task's own symbol (card/preview glyph) on a dark disc, and a plate reading `ATTACK-MOVE · 2/3 there · 37 m`. A squad task adds a lead line from its middle (direct orders already have each unit's dashed line). Looked at the lead's 21°/49 m/FOV 35 pose, 1280×720 (laptop): readable over the arena floor; the first draft (12 px text, 20 px glyph, no plate) was not. 0.17 ms/frame at 30 units under orders (laptop); the whole control frame 1.84–1.96 ms of 2.0 (laptop, ~2.75× faster on builder0). **Wants the lead's eye on a touchpad.** | `test_control_order_marks`, `test_control_scale` |
 
-**Merge here when #17 is green:** `a1d92ad6` (main `bd7ebae6` merged in). Not done: nothing from the brief; open: the
+**MERGED: `baf04ead` as main `fa859dce`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
+of the ratio timing tests; the cutaway reads feel's `StandsProfile` by path when the build has it, hand measurement as
+fallback; the kit's front is 9.64 m from 4.2 m out, not the measured 7 m at 2.3 m, so one test case moved 30° → 40°).
+#21 queued. **Open:** look at the cutaway at the lead's pose once `StandsProfile` is on main (it cuts the front of the stands
+slightly more often near the wall); round 8: timing tests to measurements (verification.md policy).
+Was: **MERGE HERE: `baf04ead` — #20 GREEN (builder0): `make check exited 0`, 1162 passed / 0 failed, `sim-baseline passed:
+e38fd65b6b6ead3f`, every target through `audio-check passed`** (main `b70608d6` merged in). After it, unchecked:
+`35c72304` (order/click/bars as ratios) and docs. **Decided before the result (orchestrator, lesson 106):** `baf04ead`
+predates main's `d8f26176` (garage/army-loop timeouts 60/120 → 600 s), so a *timeout* in `garage-smoke` or
+`army-loop-smoke` in #20 is not a finding about this branch; merge anyway and re-run on main.
+**After #20 merges (agreed with the orchestrator):** merge `main` first (nav's `c7da4dd8` moved the sim baseline;
+feel's `551cb2a4`), then resolve combat's `36e116c8` in `game/ui/radar.gd` if it has merged: take combat's inline
+`Arena.perimeter()` block in `_draw()`, keep `test_the_radar_outline_is_the_arenas_own_shape` pointed at it, delete
+`outline_points()`; read `visibility.origin` (combat's per-instance field origin) wherever control reads the field.
+`git merge-tree` showed `radar.gd` as the only conflict. Then re-check. #19 on `9c889025` was RED on `test_control_scale` (2.33 ms frame vs 2.0, builder0:
+load from concurrent checks — idle builder0 is ~0.65 ms) and was killed, since make stops at the failing target. Fix in
+`baf04ead`: the frame budget is a **ratio to a reference workload** timed interleaved with it (5.5–7.2 on the laptop at
+loads 3–8, budget 8.0, mutation-checked), click latency is the fastest of three, and the panel sorts once a frame.
+Superseded: `a1d92ad6` (#17: 1157/0 tests, sim-baseline failed on main's then-unrecorded hash). Not done: nothing from the brief; open: the
 preview's start row crosses on the way (cosmetic), feel's stands profile as data (control still measures kit_stands).
 
 **STATE AT PAUSE (2026-09-18, quota stop; resuming ~4 days later): everything is committed.** Last commit with code:
