@@ -153,3 +153,27 @@ func test_every_roster_role_can_be_put_in_a_squad() -> void:
 				missing.append("%s (%s, role '%s')" % [unit_id, faction, role])
 	assert_eq(missing, [] as Array[String],
 			"every roster unit's role has a SQUADS entry, or it never reaches a battlefield: %s" % [missing])
+
+
+func test_faction_directives_can_be_ablated_for_a_measurement() -> void:
+	# The gangs went from 23% to 53% across a single commit that carried BOTH CP4 (the engagement envelope) and the
+	# `gangs/scout` directive fix, and no matrix ran between them -- so the swing is unattributed and CP4 must be
+	# given no credit for it until something separates the two.
+	#
+	# The separation is an ABLATION, and the reason it is a flag rather than a hand-edit of SQUADS is that a
+	# hand-edit leaves a modified tree: the arm is invisible in the output, `run_conditions` reports the run DIRTY,
+	# and the number arrives six weeks later with no way to tell which arm produced it. A flag can be printed.
+	assert_true(Army.faction_directives, "faction-specific directives are ON by default: the ablation is the exception")
+	assert_eq(Army.squad_key("gang_scout"), "gangs/scout", "a gang scout normally takes its faction's own entry")
+	assert_eq(String(Army.SQUADS["gangs/scout"]["directive"]["role"]), "assault", "which sends the spear buggies IN")
+
+	Army.faction_directives = false
+	assert_eq(Army.squad_key("gang_scout"), "scout", "ablated, it falls back to the plain role...")
+	assert_eq(String(Army.SQUADS["scout"]["directive"]["role"]), "scout", "...which is the standoff-spotter directive")
+	# The ablation must touch ONLY faction-keyed entries. If it also changed plain-role units the arm would measure
+	# "directives off" rather than "the gangs' scout directive off", and the difference would be unattributable in
+	# exactly the way this test exists to prevent.
+	assert_eq(Army.squad_key("syn_lancer"), "lancer", "a unit with no faction entry is unaffected")
+	assert_eq(Army.squad_key("law_tank"), "tank", "and so is every plain-role unit")
+	Army.faction_directives = true
+	assert_eq(Army.squad_key("gang_scout"), "gangs/scout", "and the switch goes back")
