@@ -8,10 +8,15 @@ extends RefCounted
 ## across a stream boundary would be a standing performance obligation, and would make the shape answerable to
 ## control's frame budget. **The shape is ours, the maths is theirs.**
 ##
-## HEXAGON is the shipping choice (see round7_contract.md): at our 121 m apothem it is the shape that VARIES most —
-## 279 m of lateral room at midfield against 210 m at the approaches — so it gives an open middle and two natural
-## funnels before a single prop is placed. An octagon is the most uniform arena available (8.2% variation in reach,
-## 135° corners that shelter almost nothing), and uniformity is the failure mode we are answering.
+## HEXAGON is the shipping choice (see round7_contract.md): at the 120 m inner face it is the shape that VARIES
+## most — **277 m of lateral room at midfield against 208 m at the approaches** — so it gives an open middle and two
+## natural funnels before a single prop is placed. An octagon is the most uniform arena available (240 m at
+## midfield, 8.2% variation in reach, 135° corners that shelter almost nothing), and uniformity is the failure mode
+## we are answering.
+##
+## (feel's tiling figures are quoted at a 121 m apothem — the wall's CENTRE LINE — and so read 139.7 m a side where
+## this file says 138.6 m. Both are right for what they measure: feel builds the wall, we bound the play. The 1.1 m
+## costs feel about 5 cm per grandstand module, which its 0.65 m of slack absorbs.)
 ##
 ## SPANS, not one value per edge. control needs to know what is behind a *bit* of wall, because its occlusion test
 ## judges sight lines against the stands' profile and a gate has no stands behind it. A single `behind` per edge
@@ -30,17 +35,26 @@ const KINDS := {"square": 4, "hexagon": 6, "octagon": 8}
 ## army enters through and has nothing behind it; `none` is bare wall.
 const SPAN_KINDS := ["stands", "gate", "none"]
 const DEFAULT_KIND := "square"
-const DEFAULT_WALL_HEIGHT := 8.0
+## The perimeter wall's height, and the value control's cutaway must clear. **3 m, not a round number I picked:**
+## the perimeter colliders in arena.tscn are 3 m tall and feel's `ArenaDressing.WALL_HEIGHT` is 3.0 to match. An
+## earlier draft of this file said 8.0, which would have had control cutting five metres above the wall it is
+## trying to see over. If the visual wall ever diverges from the collider, the layout's `wall_height_m` is the
+## contract value and both sides read it from here.
+const DEFAULT_WALL_HEIGHT := 3.0
 
 
 static func sides(kind: String) -> int:
 	return int(KINDS.get(kind, 4))
 
 
-## The wall's inner face, counter-clockwise in world x/z, for a regular `kind` whose apothem (centre to the middle
-## of a wall) is `apothem`. Oriented with a FLAT SIDE facing each base, so the bases stay on a wall as they always
-## have; a vertex-to-base hexagon would invert the shape's character (pinched middle, wide approaches) and put each
-## spawn in a corner.
+## The wall's INNER FACE, counter-clockwise in world x/z, for a regular `kind` whose apothem is `apothem`.
+##
+## The apothem is the layout's `half_size` (120 m) and that is deliberate, not an off-by-one: the perimeter
+## colliders are 2 m thick centred at ±121, so their inner face lands exactly on ±120. Do not "fix" this to 121 —
+## that is the wall's centre line, and control is cutting against the face a vehicle can touch.
+##
+## Oriented with a FLAT SIDE facing each base, so the bases stay on a wall as they always have. A vertex-to-base
+## hexagon would invert the shape's character — pinched middle, wide approaches — and put each spawn in a corner.
 static func vertices(kind: String, apothem: float) -> PackedVector2Array:
 	var n := sides(kind)
 	var radius := apothem / cos(PI / float(n))

@@ -195,9 +195,13 @@ side facing each base so the bases stay on a wall as they do today:
 
 | shape | side | area | width at midfield | width at z = ±60 | centre-to-wall variation | corner |
 |---|---|---|---|---|---|---|
-| square | 242 m | 58,564 m² | 242 m | 242 m | **41.4%** | 90° |
-| **hexagon** | 139.7 m | 50,718 m² | **279 m** | **210 m** | 15.5% | 120° |
-| octagon | 100.2 m | 48,516 m² | 242 m | 222 m | **8.2%** | 135° |
+| square | 240 m | 57,600 m² | 240 m | 240 m | **41.4%** | 90° |
+| **hexagon** | 138.6 m | 49,884 m² | **277 m** | **208 m** | 15.5% | 120° |
+| octagon | 99.4 m | 47,715 m² | 240 m | 220 m | **8.2%** | 135° |
+
+*(At the 120 m **inner wall face**, which is what bounds play. feel's tiling figures are at the 121 m wall centre
+line and read 139.7 m a side; both are right for what they measure, and the 1.1 m costs feel ~5 cm per module,
+inside its 0.65 m of slack. The ratios — and therefore the decision — are identical either way.)*
 
 Base-to-base is 2 × apothem = 242 m in all three, so nothing about the crossing changes.
 
