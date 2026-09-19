@@ -153,8 +153,33 @@ place, you do not place).
 - **Arena shape:** hexagon, circumradius 139.7 m, `ARENA_HALF_SIZE` 140, module **23.07 m, six per side**; my gates
   in the middle of each base side (18.5 m gate + screens + 2 modules each flank); edge schema `spans`. Owed: reshape
   the stands to `Arena.perimeter()` and publish their height profile as data for control.
-- **Pending / next:** the check on `dcdbcfa9` (merged main: baseline `253ecfdeed84bc4d`); the stands reshape; the
-  hull fit weighing height (combat's taller catalog: the semi is 4.4 m); the block facade look.
+- **Green and merged: `dcdbcfa9`** (builder0: 1175 passed; merged main, baseline `253ecfdeed84bc4d`; has the gun cuts).
+- **Venue follows the perimeter polygon** (`c97520a9`, arena's contract D): walls, stands on each edge span, gates and
+  screens, towers at the vertices and the crowd all come from `ArenaShape.edges()`. **`StandsProfile.points()`**
+  publishes the stands' height profile as data (from the placed kit model and the dressing's own constants) for
+  control's cutaway; it agrees with control's old hand values at the back, not the front (the kit is right,
+  `dd9537de`). The floor's **hazard band** follows the polygon too (`7776d70e`: `band_sides` in
+  `arena_ground.gdshaderinc`; it drew a square outside the hexagon's walls). Looked at: `make arena-kit-gallery
+  VIEWS=venue SHAPE=hexagon` on builder0 — band inside the walls on all six sides.
+- **Facade v3** (`831268ea`): window grid everywhere, grime streaks, per-block bay width, pale chamfer/bevel edges.
+  Frames for the lead via the orchestrator (`build/city-review/`). **Lead gate:** street-level detail waits on that.
+- **Green: `7776d70e`** (builder0 `make remote T=check`: `make check exited 0`, 1179 passed, 0 failed, `sim-baseline passed: 253ecfdeed84bc4d`) — all of the above plus `9e44977f`. Sent to the orchestrator. Check on `39215ff6` (crowd pilot, X7's four) running.
+- **Crowd source material — pilot made, not heard** (`9f74b824`, 250 credits): `crowd_bed` → `crowd_murmur` (19 s loop)
+  and `crowd_roar` → `crowd_cheer`, prompts as drafted under *Waiting on the lead*. The bed swelled 8 dB over its length
+  (asked for constant); CrowdVoice sets the murmur's level from the match, so the new `layer.level_s` gain rider holds
+  it steady (0.5 dB std over 0.5 s windows) and a 1 s `seam_s` hides the splice. Both takes are dark (−27 dB at 4 kHz
+  against the mids: a crowd across a bowl), the opposite of the synthesised murmur's hiss. Loudness matched to the
+  synthesised takes, so the tuned mix levels stand; in-game crowd-meter pass queued on builder0. Pipeline fix on the
+  way: a loop named after its sound (`crowd_murmur`) imported QOA; the recipe now says which sounds loop.
+- **X7's remaining four generated** (`55addee2`, 166 credits): pulse cannon, guided missiles, energy hit, sonic
+  emitter, from round 5's physical-event recipes. Measured: no tonal content above ~390 Hz in any take (a hum, not a
+  ray-gun zap). Balance 111,000 credits.
+- **Listening files for the lead** (laptop, `build/`): `crowd-listen/crowd_old_then_new.mp3` (old murmur 12 s + old
+  cheer, then the new bed 24 s — twice round its loop, so the seam is in it — + the new roar) and
+  `x7-listen/energy_four_new.mp3` (3 pulse, 3 missile, 3 energy-hit takes, then 6 s of the sonic loop).
+- **Pending / next:** the hull fit weighing height once combat's taller `hull_size` catalog is on main (today's fit is
+  uniform by length, so heights won't follow); block entrances need arena's `CityBlock.solids()` seam; optional
+  ElevenLabs crowd beds and the four remaining Syndicate energy sounds (credits approved: pilot, listen, ship).
 
 ### Resumed after the quota stop — current state (read this, then the handover below for detail)
 
@@ -300,11 +325,14 @@ weak-spot hit and roar a kill. Listen: `build/crowd-listen/*.mp3`. Look: `make r
 - Control's two `LoadingVoice` calls.
 
 ### Questions for the lead
-1. **The crowd recordings** (with him via the orchestrator): is the crowd audible, and does it sound like people or
-   hiss? Hiss → the ElevenLabs pilot drafted under *Waiting on the lead* (~250 credits); people → nothing to spend.
-2. **Round 5's Syndicate pilot** (X7): do the three energy weapons sound right, and record the other four (~120)?
+1. **The new crowd** (`build/crowd-listen/crowd_old_then_new.mp3`): people, not hiss? If yes, the rest of the drafted
+   set (second bed take, tense bed, ooh, stomp; ~650 credits) follows; if no, what's wrong with it.
+2. **X7** (`build/x7-listen/energy_four_new.mp3` plus round 5's three): does the energy family sound expensive and
+   frightening now, not cartoonish?
 
 ### Green commits (merge here)
+- **`7776d70e`** — builder0: **1179 passed, 0 failed, `make check exited 0`**, baseline `253ecfdeed84bc4d`. Polygon venue,
+  StandsProfile, hazard band, facade v3, facing-audit turret hold.
 - **`3040ccd9`** — `make remote T=check` on builder0: **1081 passed, 0 failed, `make check exited 0`**; shell-playtest on
   builder0: 0 leak lines, 0 ERROR lines. The sky leak fix and the ground under the near wall.
 - **`dae54f8f`** — `make remote T=check` on builder0: **1066 passed, 0 failed, `make check exited 0`**. Everything since
