@@ -86,14 +86,13 @@ func test_water_is_off_the_navmesh_and_a_bridge_is_on_it() -> void:
 			"the channel is off the navmesh")
 	var south := Vector3(0.0, 0.0, 60.0)
 	var north := Vector3(0.0, 0.0, 20.0)
-	var blocked := Pathing.find_path(arena, south, north)
-	assert_true(not ArenaFixture.route_arrives(blocked, north), "and a channel across the arena cannot be crossed")
+	assert_true(not ArenaFixture.route_arrives(arena, south, north),
+			"and a channel across the arena cannot be crossed")
 	arena.free()
 	await tree.physics_frame
 
 	var bridged := await ArenaFixture.build_layout(self, _layout([CHANNEL, CHANNEL_MIRROR, DECK, DECK_MIRROR]))
-	var over := Pathing.find_path(bridged, south, north)
-	assert_true(ArenaFixture.route_arrives(over, north), "a bridge makes the same crossing reachable")
+	assert_true(ArenaFixture.route_arrives(bridged, south, north), "a bridge makes the same crossing reachable")
 	var beside := Vector3(40.0, 0.0, 40.0)
 	assert_true(NavigationServer3D.map_get_closest_point(bridged.get_world_3d().navigation_map, beside).distance_to(beside) > 2.0,
 			"and the water beside the deck is still water")
@@ -297,8 +296,7 @@ func test_a_hexagon_bakes_a_navmesh_that_reaches_its_walls_and_connects_its_base
 	# would have been testing something the game has never done.
 	var green: Vector3 = Arena.spawn_spot(true, 0)
 	var rust: Vector3 = Arena.spawn_spot(false, 0)
-	assert_true(ArenaFixture.route_arrives(Pathing.find_path(arena, green, rust), rust),
-			"the bases are connected across a hexagon")
+	assert_true(ArenaFixture.route_arrives(arena, green, rust), "the bases are connected across a hexagon")
 
 
 func test_a_hexagons_bake_is_still_symmetric() -> void:
@@ -342,15 +340,19 @@ func test_the_two_impossible_orders_water_creates() -> void:
 	var in_water := Vector3(0.0, 0.0, 40.0)
 	assert_true(NavigationServer3D.map_get_closest_point(map, in_water).distance_to(in_water) > 2.0,
 			"a point in the channel is not on the mesh (goal_on_mesh: false)")
-	assert_true(not ArenaFixture.route_arrives(Pathing.find_path(arena, bank, in_water), in_water),
-			"so an order into the water cannot arrive")
+	assert_true(not ArenaFixture.route_arrives(arena, bank, in_water), "so an order into the water cannot arrive")
+	assert_true(not Pathing.query(arena, bank, in_water).get("goal_on_mesh", true),
+			"and nav's query says so exactly: goal_on_mesh is false")
 
 	# 2. A goal on the FAR BANK: on the mesh, but on the other island.
 	var far_bank := Vector3(0.0, 0.0, 20.0)
 	assert_true(NavigationServer3D.map_get_closest_point(map, far_bank).distance_to(far_bank) < 2.0,
 			"the far bank IS on the mesh (goal_on_mesh: true)")
-	assert_true(not ArenaFixture.route_arrives(Pathing.find_path(arena, bank, far_bank), far_bank),
-			"but with no bridge there is no way round (reachable: false)")
+	assert_true(not ArenaFixture.route_arrives(arena, bank, far_bank),
+			"but with no bridge there is no way round")
+	var far := Pathing.query(arena, bank, far_bank)
+	assert_true(bool(far.get("goal_on_mesh", false)) and not bool(far.get("reachable", true)),
+			"which nav's query distinguishes exactly: on the mesh, not reachable (%s)" % far)
 
 
 ## Arena.contains / clamp_into: the one predicate every clamp should ask. Six call sites in the game each carry a

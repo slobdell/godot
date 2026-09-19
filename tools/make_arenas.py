@@ -158,15 +158,31 @@ def mirrored_regions(half):
     return out
 
 
+def objective(name, x, z, radius=14.0):
+    """One objective. Off-centre ones come in MIRRORED PAIRS — a lone one is owned by whichever base is nearer,
+    which is the fairness invariant this whole file exists to protect (Arena.validate enforces it)."""
+    return {"name": name, "position": [float(x), float(z)], "radius": float(radius)}
+
+
+def objective_pair(name, x, z, radius=14.0):
+    """An objective and its 180 degree twin. Each side gets one it holds cheaply and one it must contest, which is
+    the dilemma combat's share-of-objectives scoring creates: hold your own at half rate, or take theirs at full."""
+    return [objective(name, x, z, radius), objective(name + " (far)", -x, -z, radius)]
+
+
 def write_v2(name, title, fight, props, lanes=(), regions=(), obstacles=(), control_radius=16.0, hazards=(),
-             fixture=False):
-    layout = {"name": name, "schema": 2, "title": title, "note": fight, "half_size": 120.0, "fixture": fixture,
+             fixture=False, objectives=(), shape=None, half_size=120.0):
+    layout = {"name": name, "schema": 2, "title": title, "note": fight, "half_size": half_size, "fixture": fixture,
               "obstacles": mirrored(list(obstacles)), "props": mirrored_props(list(props)),
               "spawns": spawns(), "spawn_zones": {"green": SPAWN_ZONE, "rust": {"center": [0.0, -102.0], "size": SPAWN_ZONE["size"]}},
               "lanes": mirrored_lanes([dict(l) for l in lanes]), "regions": mirrored_regions(list(regions)),
               "control_point": {"radius": control_radius}}
     if hazards:
         layout["hazards"] = mirrored(list(hazards))
+    if objectives:
+        layout["objectives"] = list(objectives)
+    if shape:
+        layout["shape"] = shape
     check_spawn_clearance(layout)
     with open(os.path.join(OUT, name + ".json"), "w") as f:
         f.write(json.dumps(layout, indent=1) + "\n")
@@ -244,6 +260,11 @@ write_v2("yard", "The Container Yard",
                 lane("inner west", [(-34, 90), (-34, 0), (-34, -90)], 28),
                 lane("outer west", [(-67, 90), (-67, 0), (-67, -90)], 28),
                 lane("far west", [(-100, 90), (-100, 0), (-100, -90)], 26)],
+         # OBJECTIVE PAIR, MEASURED AND HELD BACK: objective_pair("the west depot", -62.0, -34.0) takes yard's
+         # decision spread from 0.00 to 0.35 -- one objective each side holds cheaply and one it must contest.
+         # It cannot ship until squad moves game/tactics/objectives.gd onto N7's instance API: its guard refuses a
+         # non-central layout, and a real match on this yard threw 35,336 errors while still producing a winner.
+         # Re-enable by uncommenting; nothing else needs to change.
          regions=[region("the plaza", "centre", 0, 0, 16),
                   region("yard gate", "chokepoint", -34, 38, 8), region("east alley", "chokepoint", 67, 38, 8),
                   region("west stacks", "cover_cluster", -67, 40, 22), region("base apron", "cover_cluster", 0, 78, 30)])
@@ -318,6 +339,8 @@ write_v2("pit", "The Pit",
          "outside. Hold a gate and you own the approach; go inside and it's knife range. Tanks and burners take the "
          "ring; artillery punishes whoever crowds it.",
          pit,
+         # As yard: objective_pair("the west yard", -74.0, -30.0, 15.0) takes pit from 0.00 to 0.26. Held back on
+         # squad's Objectives migration.
          lanes=[lane("south gate", [(0, 90), (0, 42), (0, 0), (0, -42), (0, -90)], 12) | {"self_mirror": True},
                 lane("west gate", [(-40, 90), (-70, 40), (-42, 0), (0, 0), (42, 0), (70, -40), (40, -90)], 12) | {"self_mirror": True},
                 lane("west flank", [(-66, 90), (-100, 0), (-66, -90)], 30)],
