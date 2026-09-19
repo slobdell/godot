@@ -141,6 +141,8 @@ func _init() -> void:
 		add_child(PerfScene.new())
 	if LaunchFlags.from_environment().has("crowd-look"):
 		add_child(CrowdLook.new())
+	if LaunchFlags.from_environment().has("size-look"):
+		add_child(SizeLook.new())
 
 
 func _ready() -> void:

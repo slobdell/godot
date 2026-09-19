@@ -189,3 +189,56 @@ func test_faction_directives_can_be_ablated_for_a_measurement() -> void:
 	assert_eq(Army.squad_key("law_tank"), "tank", "and so is every plain-role unit")
 	Army.faction_directives = true
 	assert_eq(Army.squad_key("gang_scout"), "gangs/scout", "and the switch goes back")
+
+
+func test_the_spawn_grid_holds_the_unit_a_bare_spawn_drives() -> void:
+	# The spawn grid holds only what is placed ON it, and for every shipping path that is `Units.DEFAULT`:
+	# `Match.spawn_tank` defaults to it, and network players and legacy bots are the callers. A doctrine army never
+	# stays there -- `load_doctrine` ends with `ArmyLayout.deploy()`, which teleports every unit at tick 0 before any
+	# physics step -- so the roster is free to carry vehicles far longer than the grid's pitch, and after round 8 it
+	# does: the War Rig is 14 m against a grid pitch of 8.0.
+	#
+	# An earlier version of this test asserted the whole roster against the grid. That was wrong twice over: it
+	# guarded a holding position no doctrine army occupies, and it would now fail on a size the lead asked for.
+	# The real ceiling on vehicle size is the spacing the army STANDS at -- tests/test_army_footprint.gd.
+	var rows := _spawn_rows()
+	var length_ceiling := (rows[1] - rows[0]) - 2.0 * Match.SPAWN_JITTER_MAX_Z if rows.size() > 1 \
+			else Match.SPAWN_ROW_SPACING - 2.0 * Match.SPAWN_JITTER_MAX_Z
+	var width_ceiling := _spawn_column_pitch() - 2.0 * Match.SPAWN_JITTER_MAX_X
+	var size: Array = Units.PROFILES[Units.DEFAULT]["hull_size"]
+	assert_true(float(size[2]) <= length_ceiling,
+			"the bare-spawn unit (%s, %.1f m long) fits between spawn rows (%.1f m of pitch after jitter)"
+			% [Units.DEFAULT, size[2], length_ceiling])
+	assert_true(float(size[0]) <= width_ceiling,
+			"...and between spawn columns (%.1f m after jitter)" % width_ceiling)
+
+
+func _spawn_rows() -> Array[float]:
+	var found := {}
+	for spot: Array in Arena.active.get("spawns", {}).get("green", []):
+		found[snappedf(float(spot[1]), 0.01)] = true
+	var rows: Array[float] = []
+	for z: float in found:
+		rows.append(z)
+	if rows.is_empty():
+		for row in Match.SPAWN_ROWS:
+			rows.append(Match.BASE_Z + Match.SPAWN_ROW_SPACING * float(row))
+	rows.sort()
+	return rows
+
+
+## The smallest gap between adjacent spawn columns in the loaded layout (the tightest packing a hull must fit).
+func _spawn_column_pitch() -> float:
+	var found := {}
+	for spot: Array in Arena.active.get("spawns", {}).get("green", []):
+		found[snappedf(float(spot[0]), 0.01)] = true
+	var xs: Array[float] = []
+	for x: float in found:
+		xs.append(x)
+	if xs.size() < 2:
+		return absf(float(Match.SLOT_X[1]) - float(Match.SLOT_X[0]))
+	xs.sort()
+	var pitch := INF
+	for i in range(1, xs.size()):
+		pitch = minf(pitch, xs[i] - xs[i - 1])
+	return pitch

@@ -109,9 +109,10 @@ faction-matrix-arms: import ## Both arms (normal + ABLATE) on each map in ARENAS
 # NAMESPACE, so the bare name silently filtered every comparison to the gangs -- the same collision that ran
 # `matchup-search` at `--units 60` for its entire history. Caught by reading a `make -n` expansion that contained
 # a flag nobody passed.
-compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.json CONTROL=b.json [COMPARE_FACTION=gangs])
+compare-arms: ## Two faction-matrix runs, subtracted per faction (TREATMENT=a.json CONTROL=b.json [COMPARE_FACTION=gangs] [BUILD_ARM="what changed"])
 	$(PYTHON) tools/compare_arms.py --treatment $(TREATMENT) --control $(CONTROL) \
-		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION))
+		$(if $(COMPARE_FACTION),--faction $(COMPARE_FACTION)) \
+		$(if $(BUILD_ARM),--build-is-the-arm $(BUILD_ARM))
 
 faction-matrix: import ## X6: every faction pair at the baseline budget, counterbalanced (SEEDS=6 BUDGET=5200 TIME=180 ARENA= ABLATE=) -> build/faction-matrix.json
 	$(PYTHON) tools/faction_matrix.py --godot $(GODOT) --jobs $(JOBS) --seeds $(or $(SEEDS),6) \

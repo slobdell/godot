@@ -56,22 +56,37 @@ def win_rates(data):
     return totals
 
 
-def refusals(treatment, control, paths):
+def refusals(treatment, control, paths, build_is_the_arm=""):
+    """`build_is_the_arm`: a description of what the two BUILDS differ by, when the treatment is a code or data
+    change rather than a runner flag. Sizing a vehicle is one -- you cannot put a hull_size behind a flag -- and
+    without this the tool refuses the one comparison it was built to make. It is not an escape hatch: declaring it
+    swaps which guard applies rather than removing one. The commits must then DIFFER (identical commits mean the
+    build is not the arm and the run is one arm twice), and machine, dirtiness and workload are still enforced."""
     out = []
     if paths[0] == paths[1]:
         out.append("the same file twice -- an arm compared with itself is a zero, and a zero reads as 'no effect'")
         return out
-    for field in ("commit", "machine", "dirty"):
+    for field in ("machine", "dirty"):
         first, second = treatment.get("run", {}).get(field), control.get("run", {}).get(field)
         if first != second:
-            out.append(f"run.{field} differs: {first!r} vs {second!r} -- two builds or two machines, not two arms")
+            out.append(f"run.{field} differs: {first!r} vs {second!r} -- two machines, not two arms")
+    first_commit = treatment.get("run", {}).get("commit")
+    second_commit = control.get("run", {}).get("commit")
+    if build_is_the_arm:
+        if first_commit == second_commit:
+            out.append(f"the build was declared to be the arm ({build_is_the_arm!r}) but both runs are at "
+                       f"{first_commit!r} -- that is one arm run twice, not a before and an after")
+    elif first_commit != second_commit:
+        out.append(f"run.commit differs: {first_commit!r} vs {second_commit!r} -- two builds, not two arms. If the "
+                   f"BUILD is the treatment (a size, a constant, anything you cannot put behind a flag), say so "
+                   f"with --build-is-the-arm '<what changed>'")
     if treatment.get("run", {}).get("dirty") or control.get("run", {}).get("dirty"):
         out.append("one of the runs was made from a DIRTY tree: its commit does not identify what ran")
     for field in WORKLOAD:
         first, second = treatment["args"].get(field), control["args"].get(field)
         if first != second:
             out.append(f"args.{field} differs: {first!r} vs {second!r} -- the two runs were asked different questions")
-    if all(treatment["args"].get(field) == control["args"].get(field) for field in CONTROLS):
+    if not build_is_the_arm and all(treatment["args"].get(field) == control["args"].get(field) for field in CONTROLS):
         arm = {field: treatment["args"].get(field) for field in CONTROLS}
         out.append(f"IDENTICAL ARMS {arm} -- this is one arm run twice, and its difference will be a clean null")
     return out
@@ -82,10 +97,13 @@ def main():
     parser.add_argument("--treatment", required=True, help="the run WITH the thing being measured")
     parser.add_argument("--control", required=True, help="the arm it is measured against")
     parser.add_argument("--faction", default="", help="report only this faction")
+    parser.add_argument("--build-is-the-arm", default="", metavar="WHAT_CHANGED",
+                        help="the treatment is a code/data change, not a flag (e.g. 'gang_tank 5.6 m -> 14 m'). "
+                             "Permits the commits to differ, and then REQUIRES it.")
     args = parser.parse_args()
 
     treatment, control = load(args.treatment), load(args.control)
-    problems = refusals(treatment, control, (args.treatment, args.control))
+    problems = refusals(treatment, control, (args.treatment, args.control), args.build_is_the_arm)
     if problems:
         print("REFUSED: these two runs cannot be subtracted from each other:")
         for line in problems:
@@ -96,7 +114,11 @@ def main():
     print(f"run: {treatment.get('run', {}).get('commit', '?')} on {treatment.get('run', {}).get('machine', '?')}, "
           f"map {where}")
     print(f"treatment: {args.treatment}\ncontrol:   {args.control}")
-    print(f"the arm differs in: {', '.join(f for f in CONTROLS if treatment['args'].get(f) != control['args'].get(f))}")
+    if args.build_is_the_arm:
+        print("the arm IS THE BUILD: %s  (%s -> %s)" % (args.build_is_the_arm,
+              control.get("run", {}).get("commit"), treatment.get("run", {}).get("commit")))
+    else:
+        print(f"the arm differs in: {', '.join(f for f in CONTROLS if treatment['args'].get(f) != control['args'].get(f))}")
     # Print the resolved filter. A comparison showing one faction looks exactly like a comparison where only one
     # faction moved, and this stream has already lost a round's conclusions to a make variable nobody passed
     # (`UNITS ?= 60`). Say which rows are missing rather than leaving the reader to infer it from their absence.
