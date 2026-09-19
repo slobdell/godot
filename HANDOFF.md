@@ -213,6 +213,14 @@ feel.
 
 ## Open questions and follow-ups (not scheduled)
 
+- **Should a battle drill override formation discipline?** Round 6's ORCA deliberately does **not** treat a friend
+  moving the same way as a collision, so a column stays a column — which is right for formations and is why round 5's
+  overtaking sidestep was removed (it also steered into walls unchecked). Attributed cost, measured by bisect: an
+  assault-through an ambush now takes **18.5 s against 17.7 s**, because the quick units no longer pass the slow ones.
+  **0.8 s is not worth re-adding overtaking for** — it would risk nav's 33/60 → 60/60 arrival result. But *a charge is
+  the one case where you might want the fast units through rather than the column preserved*, and the lead would notice
+  it as *"my fast units got stuck behind the slow ones during a charge"*. Round-7 question: do drills get to suspend
+  formation discipline, and which ones?
 - **The lead's PID request is half-delivered, and the missing half is the visible half.** nav's N6 regulates any
   `move_to` whose goal *slides* — a squad follower's leader-anchored slot is such a goal, so **squad station-keeping is
   PID-controlled and measured (0.35 m mean gap against 4.58 m for the old proportional law)**. squad deliberately added
