@@ -175,7 +175,14 @@ _Round 6, control stream. Started 2026-09-18 from `a975e262`._
 | **An ignored order is visible** (*"they don't obey and instead they shoot at whatever they were already shooting at"*) | done (next commit). What each gun is really on (`OrderExecutor.engaged_target_of`: its controller, else its brain) is held against the player's intent (a unit's attack order, else its squad's attack TASK: number key + right-click, the lead's gesture). Attack pins count `ATTACK · 1/3 on target · 2 NOT COMPLYING` and turn red; after 2 s a unit carries a plated callout: `FIRING ON IFV`, `CAN'T SEE TARGET` or `NOT FIRING` (closing to range is compliance). Looked at at 21°/49 m/FOV 35, 1280×720 (laptop): readable after a plate; the text is small at that size (lead's eye). 0.117 ms/frame; control frame 20.7–21.4 of 26 references | `test_control_order_refused` (4, one through the real executor; mutation: without the task path the squad case shows nothing) |
 | **Refused on the spot** | done (`9a91d14e`). Five refusals (task without a whole element, move task with nowhere to go, follow without a friendly) returned their reason to nobody; now `_refuse` emits `command_issued` and the HUD posts "Can't: …". **Overridden later: not built, on evidence** — no code path replaces a player-sourced order (`element.gd` skips units whose current order is the player's; nothing else issues to the player's units), and if one appeared, the gun-vs-intent callouts would show its effect | `test_control_order_refused` (5) |
 
-**MERGE HERE: `9cb4a86d` — #24 GREEN (builder0): `make check exited 0`, 1213 passed / 0 failed, `sim-baseline passed:
+| Attack pin wording (squad's, adopted by the orchestrator) | done (`648563f8`): `ATTACK · 2/4 on target · 1 moving round · 1 NOT COMPLYING` — "moving round" = the member's order names the target and its gun is on nothing else | `test_control_order_refused` (6, 5/5 runs) |
+| Drift heuristic for move/attack-move tasks | **declined by the orchestrator, on evidence**: under attack-move units spend 30–36% of their time off their order by design (arena's measurement), so a "not obeying" light would fire a third of the time and teach him to ignore the HUD. A predicate needs a measurement of normal first | — |
+
+**Round 8 candidate: `4ebe47a7`** (main 28eb403f merged) — #26 running. #25 on `9dc17901` was not a verdict: feel's
+`test_a_new_state_waits_for_a_bar_line` failed on builder0 (audio-driver timing; reported to feel), so make stopped at
+`test`. **Round 8 is otherwise done for control.**
+
+**Previous: `9cb4a86d` — #24 GREEN (builder0): `make check exited 0`, 1213 passed / 0 failed, `sim-baseline passed:
 253ecfdeed84bc4d`, every target through `audio-check passed`** (M4 clamps + the timing policy on top of merged `c7f9cd4e`).
 **MERGED: `baf04ead` as main `fa859dce`; `c7f9cd4e` as `b500a2db`.** Next candidate: `86a8744c` (main `fa859dce` merged in at `7105478c`; the rest
 of the ratio timing tests; the cutaway reads feel's `StandsProfile` by path when the build has it, hand measurement as
