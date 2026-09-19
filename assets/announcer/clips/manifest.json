@@ -8121,7 +8121,7 @@
    "request_key": "6651deee57f46cb949cabe2e4e72d8c78f20d6bf",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "Ladies and gentlemen, welcome to The Foundry. It is fight night",
+   "stt_text": "Ladies and gentlemen, welcome to the Foundry. It is fight night",
    "text": "Ladies and gentlemen, welcome to the Foundry! It is fight night!",
    "voice": "JR1"
   },
@@ -8159,6 +8159,18 @@
    "stt_ok": true,
    "stt_text": "Ladies and gentlemen, welcome to the scrapyard. It is fight night",
    "text": "Ladies and gentlemen, welcome to the Scrapyard! It is fight night!",
+   "voice": "JR1"
+  },
+  "caller.intro.01@terminus": {
+   "duration_s": 3.366,
+   "file": "caller/caller.intro.01@terminus.ogg",
+   "kind": "line",
+   "request": "caller.intro.01@terminus",
+   "request_key": "50bcfa6059b78c955107a92161889277ee85b616",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Ladies and gentlemen, welcome to the Terminus. It is fight night",
+   "text": "Ladies and gentlemen, welcome to the Terminus! It is fight night!",
    "voice": "JR1"
   },
   "caller.intro.01@yard": {
@@ -8217,7 +8229,7 @@
    "request_key": "c62fd778db9bb4f19db71e7781918d5587f25cc2",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "We are live from the Furnace, and this place is packed to the rafters",
+   "stt_text": "We are live from The Furnace, and this place is packed to the rafters",
    "text": "We are live from the Furnace, and this place is packed to the rafters!",
    "voice": "JR1"
   },
@@ -8243,6 +8255,18 @@
    "stt_ok": true,
    "stt_text": "We are live from the scrapyard, and this place is packed to the rafters",
    "text": "We are live from the Scrapyard, and this place is packed to the rafters!",
+   "voice": "JR1"
+  },
+  "caller.intro.02@terminus": {
+   "duration_s": 4.015,
+   "file": "caller/caller.intro.02@terminus.ogg",
+   "kind": "line",
+   "request": "caller.intro.02@terminus",
+   "request_key": "9e40328ec025fd9be5a6efac6080dee575acca2f",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "We are live from the Terminus, and this place is packed to the rafters",
+   "text": "We are live from the Terminus, and this place is packed to the rafters!",
    "voice": "JR1"
   },
   "caller.intro.02@yard": {
@@ -8409,7 +8433,7 @@
    "request_key": "809b72f8b0d9022f599fa14cfc8143d5f593a2b1",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "It's a full house here at the Boulevard, and they came to see a fight",
+   "stt_text": "It's a full house here at The Boulevard, and they came to see a fight",
    "text": "It's a full house here at the Boulevard, and they came to see a fight!",
    "voice": "JR1"
   },
@@ -8445,7 +8469,7 @@
    "request_key": "b9a27c8e6f5b7e8b20083a214c7cb9746dd2c502",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "It's a full house here at The Pit, and they came to see a fight",
+   "stt_text": "It's a full house here at the pit, and they came to see a fight",
    "text": "It's a full house here at the Pit, and they came to see a fight!",
    "voice": "JR1"
   },
@@ -8459,6 +8483,18 @@
    "stt_ok": true,
    "stt_text": "It's a full house here at the scrapyard, and they came to see a fight",
    "text": "It's a full house here at the Scrapyard, and they came to see a fight!",
+   "voice": "JR1"
+  },
+  "caller.intro.09@terminus": {
+   "duration_s": 3.589,
+   "file": "caller/caller.intro.09@terminus.ogg",
+   "kind": "line",
+   "request": "caller.intro.09@terminus",
+   "request_key": "43f9220b03bb68ef8ba7b9e83414e3246debfa99",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "It's a full house here at the Terminus, and they came to see a fight",
+   "text": "It's a full house here at the Terminus, and they came to see a fight!",
    "voice": "JR1"
   },
   "caller.intro.09@yard": {
@@ -8637,7 +8673,7 @@
    "request_key": "fbb78b7e6c7203cf06b19c782d92aaad0e1decf4",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "You are looking live at The Boulevard, and I promise you nobody here is sitting down tonight",
+   "stt_text": "You are looking live at The Boulevard, and I promise you, nobody here is sitting down tonight",
    "text": "You are looking live at the Boulevard, and I promise you nobody here is sitting down tonight!",
    "voice": "JR1"
   },
@@ -8649,7 +8685,7 @@
    "request_key": "003ee999a3c51deacb11494724ae8f9df6f40aec",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "You are looking live at The Foundry, and I promise you nobody here is sitting down tonight",
+   "stt_text": "You are looking live at The Foundry, and I promise you, nobody here is sitting down tonight",
    "text": "You are looking live at the Foundry, and I promise you nobody here is sitting down tonight!",
    "voice": "JR1"
   },
@@ -8685,8 +8721,20 @@
    "request_key": "699b540bcc3e33cf08e9b667ae735192da26a7a3",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "You are looking live at the scrapyard, and I promise you nobody here is sitting down tonight",
+   "stt_text": "You are looking live at the scrap yard, and I promise you nobody here is sitting down tonight",
    "text": "You are looking live at the Scrapyard, and I promise you nobody here is sitting down tonight!",
+   "voice": "JR1"
+  },
+  "caller.intro.22@terminus": {
+   "duration_s": 5.759,
+   "file": "caller/caller.intro.22@terminus.ogg",
+   "kind": "line",
+   "request": "caller.intro.22@terminus",
+   "request_key": "05449754cca9ccddf71fed1864c02e38b10f442a",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "You are looking live at The Terminus, and I promise you, nobody here is sitting down tonight",
+   "text": "You are looking live at the Terminus, and I promise you nobody here is sitting down tonight!",
    "voice": "JR1"
   },
   "caller.intro.22@yard": {
@@ -8697,7 +8745,7 @@
    "request_key": "ef0e4f9c7ac27237414a528c664126f6cd3d09f5",
    "speaker": "caller",
    "stt_ok": true,
-   "stt_text": "You are looking live at the container yard, and I promise you nobody here is sitting down tonight",
+   "stt_text": "You are looking live at the Container Yard, and I promise you nobody here is sitting down tonight",
    "text": "You are looking live at the Container Yard, and I promise you nobody here is sitting down tonight!",
    "voice": "JR1"
   },
@@ -25417,6 +25465,18 @@
    "text": "My last match was in the Scrapyard. Same lights. I didn't look up once.",
    "voice": "veteran"
   },
+  "color.lore.11@terminus": {
+   "duration_s": 4.644,
+   "file": "color/color.lore.11@terminus.ogg",
+   "kind": "line",
+   "request": "color.lore.11@terminus",
+   "request_key": "444fd88235578fe1443fb4f11ad97ebbadeae834",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "My last match was in the Terminus. Same lights. I didn't look up once",
+   "text": "My last match was in the Terminus. Same lights. I didn't look up once.",
+   "voice": "veteran"
+  },
   "color.lore.11@yard": {
    "duration_s": 4.999,
    "file": "color/color.lore.11@yard.ogg",
@@ -28365,7 +28425,7 @@
    "request_key": "767245895f522d189b03a65fcea675fce8a0b34f",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Tonight's arena lighting is provided by NorthGrid power, keeping the lights on in the Boneyard and in selected residential areas",
+   "stt_text": "Tonight's arena lighting is provided by NorthGrid power, keeping the lights on in the Boneyard and in selected residential areas.",
    "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in the Boneyard and in selected residential areas.",
    "voice": "corporate2"
   },
@@ -28389,7 +28449,7 @@
    "request_key": "121c3edf5f2a7e1c85eab9be34430fc2300fa9eb",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Tonight's arena lighting is provided by NorthGrid power, keeping the lights on in the foundry and in selected residential areas",
+   "stt_text": "Tonight's arena lighting is provided by NorthGrid Power, keeping the lights on in the foundry and in selected residential areas",
    "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in the Foundry and in selected residential areas.",
    "voice": "corporate2"
   },
@@ -28401,7 +28461,7 @@
    "request_key": "043bf530a0512c8e44459908f0e56448199ba5d2",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Tonight's arena lighting is provided by NorthGrid Power, keeping the lights on in the furnace and in selected residential areas.",
+   "stt_text": "Tonight's arena lighting is provided by NorthGrid power, keeping the lights on in the furnace and in selected residential areas.",
    "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in the Furnace and in selected residential areas.",
    "voice": "corporate2"
   },
@@ -28425,8 +28485,20 @@
    "request_key": "7d35141c10e659e39f088012cef97e38d18fcec8",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Tonight's arena lighting is provided by NorthGrid Power, keeping the lights on in the scrapyard and in selected residential areas",
+   "stt_text": "Tonight's arena lighting is provided by NorthGrid Power, keeping the lights on in the scrapyard and in selected residential areas.",
    "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in the Scrapyard and in selected residential areas.",
+   "voice": "corporate2"
+  },
+  "pa.sponsor.10@terminus": {
+   "duration_s": 7.453,
+   "file": "pa/pa.sponsor.10@terminus.ogg",
+   "kind": "line",
+   "request": "pa.sponsor.10@terminus",
+   "request_key": "116e837cfa050a44dccbccd17bb44d3231b3b195",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight's arena lighting is provided by North Grid Power, keeping the lights on in the terminus and in selected residential areas.",
+   "text": "Tonight's arena lighting is provided by Northgrid Power, keeping the lights on in the Terminus and in selected residential areas.",
    "voice": "corporate2"
   },
   "pa.sponsor.10@yard": {
@@ -28557,7 +28629,7 @@
    "request_key": "e51f1fc2d5906b4246f5c5a923bc9fd6d69b04e4",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Good evening and welcome to the Boulevard. Tonight's match is being broadcast in forty-one districts and is required viewing in six of them",
+   "stt_text": "Good evening and welcome to the Boulevard. Tonight's match is being broadcast in 41 districts and is required viewing in six of them",
    "text": "Good evening, and welcome to the Boulevard. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
    "voice": "corporate2"
   },
@@ -28569,7 +28641,7 @@
    "request_key": "49bf832beaaa07a103139ade16e194229c10ca44",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Good evening, and welcome to the Foundry. Tonight's match is being broadcast in forty-one districts and is required viewing in six of them",
+   "stt_text": "Good evening, and welcome to the Foundry. Tonight's match is being broadcast in 41 districts and is required viewing in six of them",
    "text": "Good evening, and welcome to the Foundry. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
    "voice": "corporate2"
   },
@@ -28581,7 +28653,7 @@
    "request_key": "89d1839817351555f2591ce7a4dc2d2e219e2793",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Good evening and welcome to the Furnace. [speaking foreign language] Tonight's match is being broadcast in forty-one districts and is required viewing in six of them",
+   "stt_text": "Good evening and welcome to the Furnace. Tonight's match is being broadcast in forty-one districts and is required viewing in six of them",
    "text": "Good evening, and welcome to the Furnace. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
    "voice": "corporate2"
   },
@@ -28593,7 +28665,7 @@
    "request_key": "5891b487eba93c93831389c98b0557d1e4e825f7",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Good evening, and welcome to The Pit. Tonight's match is being broadcast in 41 districts and is required viewing in six of them",
+   "stt_text": "Good evening, and welcome to the pit. Tonight's match is being broadcast in forty-one districts and is required viewing in six of them",
    "text": "Good evening, and welcome to the Pit. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
    "voice": "corporate2"
   },
@@ -28605,8 +28677,20 @@
    "request_key": "9e0b5b3f3ad01244530b42efdf44e25a5e54273a",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Good evening and welcome to the scrapyard. Tonight's match is being broadcast in 41 districts and is required viewing in six of them",
+   "stt_text": "Good evening, and welcome to the scrapyard. Tonight's match is being broadcast in 41 districts and is required viewing in six of them",
    "text": "Good evening, and welcome to the Scrapyard. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.01@terminus": {
+   "duration_s": 8.376,
+   "file": "pa/pa.welcome.01@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.01@terminus",
+   "request_key": "5a18f9285cbcf6fccab225a5c716bbb2732acbff",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Good evening and welcome to the Terminus. Tonight's match is being broadcast in forty-one districts and is required viewing in six of them",
+   "text": "Good evening, and welcome to the Terminus. Tonight's match is being broadcast in forty-one districts, and is required viewing in six of them.",
    "voice": "corporate2"
   },
   "pa.welcome.01@yard": {
@@ -28691,6 +28775,18 @@
    "stt_ok": true,
    "stt_text": "Good evening. On behalf of the Syndicate, welcome to the scrapyard. Please take a moment to locate the exit nearest your seat. Exits will open after the match",
    "text": "Good evening. On behalf of the Syndicate, welcome to the Scrapyard. Please take a moment to locate the exit nearest your seat. Exits will open after the match.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.02@terminus": {
+   "duration_s": 9.613,
+   "file": "pa/pa.welcome.02@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.02@terminus",
+   "request_key": "3c72619558ec8c6d3fcbeb8acc2b743b411006e5",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Good evening. On behalf of the Syndicate, welcome to the Terminus. Please take a moment to locate the exit nearest your seat. Exits will open after the match",
+   "text": "Good evening. On behalf of the Syndicate, welcome to the Terminus. Please take a moment to locate the exit nearest your seat. Exits will open after the match.",
    "voice": "corporate2"
   },
   "pa.welcome.02@yard": {
@@ -28785,7 +28881,7 @@
    "request_key": "dab50b9a5f068d3a382a9451f9073bdd4e7476a2",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Welcome to The Pit. Tonight's event is suitable for the whole family, and attendance is optional for children under 12",
+   "stt_text": "Welcome to the pit. Tonight's event is suitable for the whole family, and attendance is optional for children under 12",
    "text": "Welcome to the Pit. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve.",
    "voice": "corporate2"
   },
@@ -28799,6 +28895,18 @@
    "stt_ok": true,
    "stt_text": "Welcome to the scrapyard. Tonight's event is suitable for the whole family, and attendance is optional for children under 12",
    "text": "Welcome to the Scrapyard. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.05@terminus": {
+   "duration_s": 7.596,
+   "file": "pa/pa.welcome.05@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.05@terminus",
+   "request_key": "0544a97f254703cfa669bd14bb87f206e495ed12",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome to the Terminus. Tonight's event is suitable for the whole family, and attendance is optional for children under 12",
+   "text": "Welcome to the Terminus. Tonight's event is suitable for the whole family, and attendance is optional for children under twelve.",
    "voice": "corporate2"
   },
   "pa.welcome.05@yard": {
@@ -28833,7 +28941,7 @@
    "request_key": "d2546e0b8eeac2305591c2498a748272244e520a",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Welcome everyone to the Boneyard. Concessions are open on the upper concourse and water is available to ticket holders in the first ten rows",
+   "stt_text": "Welcome everyone to the Boneyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows",
    "text": "Welcome, everyone, to the Boneyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.",
    "voice": "corporate2"
   },
@@ -28857,7 +28965,7 @@
    "request_key": "1013a14562e02814321b9d02524e8c2a2416872b",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Welcome everyone to the Foundry. Concessions are open on the upper concourse and water is available to ticket holders in the first ten rows",
+   "stt_text": "Welcome everyone to the Foundry. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows",
    "text": "Welcome, everyone, to the Foundry. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.",
    "voice": "corporate2"
   },
@@ -28893,8 +29001,20 @@
    "request_key": "002988b4da2c7998275c33d2a394a1bd19f87b23",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "So welcome everyone to the scrap yard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows",
+   "stt_text": "So welcome everyone to the scrap yard. Concessions are open on the upper concourse and water is available to ticket holders in the first ten rows",
    "text": "Welcome, everyone, to the Scrapyard. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.07@terminus": {
+   "duration_s": 8.632,
+   "file": "pa/pa.welcome.07@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.07@terminus",
+   "request_key": "b8bea88c98bbca7334e7e4ccb8a96c684c0abe8e",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome everyone to the Terminus. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows",
+   "text": "Welcome, everyone, to the Terminus. Concessions are open on the upper concourse, and water is available to ticket holders in the first ten rows.",
    "voice": "corporate2"
   },
   "pa.welcome.07@yard": {
@@ -28981,6 +29101,18 @@
    "text": "A warm welcome to the Scrapyard, to everyone watching at home, and to our viewers in the detention blocks.",
    "voice": "corporate2"
   },
+  "pa.welcome.08@terminus": {
+   "duration_s": 5.995,
+   "file": "pa/pa.welcome.08@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.08@terminus",
+   "request_key": "716dc0ba406ee98cb2ed3dfff1c5d078aaee7ef0",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "A warm welcome to the Terminus, to everyone watching at home, and to our viewers in the detention blocks",
+   "text": "A warm welcome to the Terminus, to everyone watching at home, and to our viewers in the detention blocks.",
+   "voice": "corporate2"
+  },
   "pa.welcome.08@yard": {
    "duration_s": 6.47,
    "file": "pa/pa.welcome.08@yard.ogg",
@@ -29025,7 +29157,7 @@
    "request_key": "77cf338dd14a247d345b3da53c61c8176240c398",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Yes, welcome to the Boulevard. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
+   "stt_text": "Welcome to the Boulevard. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
    "text": "Welcome to the Boulevard. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.",
    "voice": "corporate2"
   },
@@ -29049,7 +29181,7 @@
    "request_key": "604c6220af66bef01d0f452d3889dd33a71a0f3f",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Welcome to the furnace. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
+   "stt_text": "Welcome to the Furnace. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
    "text": "Welcome to the Furnace. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.",
    "voice": "corporate2"
   },
@@ -29077,6 +29209,18 @@
    "text": "Welcome to the Scrapyard. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.",
    "voice": "corporate2"
   },
+  "pa.welcome.10@terminus": {
+   "duration_s": 8.444,
+   "file": "pa/pa.welcome.10@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.10@terminus",
+   "request_key": "8ca755662c744082ff859248dc19a3992e0d93f0",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome to the Terminus. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
+   "text": "Welcome to the Terminus. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.",
+   "voice": "corporate2"
+  },
   "pa.welcome.10@yard": {
    "duration_s": 8.0,
    "file": "pa/pa.welcome.10@yard.ogg",
@@ -29085,7 +29229,7 @@
    "request_key": "14f4d243d47d8afd90c3c16c76ecb700d1228ed6",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Welcome to the container yard. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
+   "stt_text": "Welcome to the Container Yard. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location",
    "text": "Welcome to the Container Yard. Tonight's match includes a control point at the center of the floor. Participants have been informed of its location.",
    "voice": "corporate2"
   },
@@ -29133,7 +29277,7 @@
    "request_key": "152a6e94f93122008eb0ac31cea502bd897e026a",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Thank you for joining us this evening at the Furnace. Tonight's broadcast runs until a winner is declared, however long that takes",
+   "stt_text": "Thank you for joining us this evening at the furnace. Tonight's broadcast runs until a winner is declared, however long that takes",
    "text": "Thank you for joining us this evening at the Furnace. Tonight's broadcast runs until a winner is declared, however long that takes.",
    "voice": "corporate2"
   },
@@ -29159,6 +29303,18 @@
    "stt_ok": true,
    "stt_text": "Thank you for joining us this evening at the scrapyard. Tonight's broadcast runs until a winner is declared, however long that takes",
    "text": "Thank you for joining us this evening at the Scrapyard. Tonight's broadcast runs until a winner is declared, however long that takes.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.11@terminus": {
+   "duration_s": 8.006,
+   "file": "pa/pa.welcome.11@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.11@terminus",
+   "request_key": "e823bd44f9540270800463011724ace923b0fbf0",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Thank you for joining us this evening at the Terminus. Tonight's broadcast runs until a winner is declared, however long that takes",
+   "text": "Thank you for joining us this evening at the Terminus. Tonight's broadcast runs until a winner is declared, however long that takes.",
    "voice": "corporate2"
   },
   "pa.welcome.11@yard": {
@@ -29257,6 +29413,18 @@
    "text": "Hello, and welcome to tonight's coverage from the Scrapyard. We have a full card, a full house, and a full medical wing on standby.",
    "voice": "corporate2"
   },
+  "pa.welcome.13@terminus": {
+   "duration_s": 7.694,
+   "file": "pa/pa.welcome.13@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.13@terminus",
+   "request_key": "81b123707a73757726f598b57efb7cd21f9e219a",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Hello and welcome to tonight's coverage from the Terminus. We have a full card, a full house, and a full medical wing on standby",
+   "text": "Hello, and welcome to tonight's coverage from the Terminus. We have a full card, a full house, and a full medical wing on standby.",
+   "voice": "corporate2"
+  },
   "pa.welcome.13@yard": {
    "duration_s": 8.13,
    "file": "pa/pa.welcome.13@yard.ogg",
@@ -29339,6 +29507,18 @@
    "stt_ok": true,
    "stt_text": "It is a beautiful night here at the scrapyard. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out",
    "text": "It is a beautiful night here at the Scrapyard. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.14@terminus": {
+   "duration_s": 8.314,
+   "file": "pa/pa.welcome.14@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.14@terminus",
+   "request_key": "c657ecd158c16bed71d8513f43c4fba3726cdd46",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "It is a beautiful night here at the Terminus. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out",
+   "text": "It is a beautiful night here at the Terminus. The roof is open, the air is clear, and the outer districts can hear us from about nine miles out.",
    "voice": "corporate2"
   },
   "pa.welcome.14@yard": {
@@ -29457,7 +29637,7 @@
    "request_key": "bcb5d7ae5ecd54f9d13f0cb503a2e48f61b2216a",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Here we are again at the foundry. The stands filled early tonight, which usually means the district offices closed early too.",
+   "stt_text": "Here we are again at the Foundry. The stands filled early tonight, which usually means the district offices closed early too.",
    "text": "Here we are again at the Foundry. The stands filled early tonight, which usually means the district offices closed early too.",
    "voice": "corporate2"
   },
@@ -29495,6 +29675,18 @@
    "stt_ok": true,
    "stt_text": "Here we are again at the scrapyard. The stands filled early tonight, which usually means the district offices closed early too",
    "text": "Here we are again at the Scrapyard. The stands filled early tonight, which usually means the district offices closed early too.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.21@terminus": {
+   "duration_s": 7.647,
+   "file": "pa/pa.welcome.21@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.21@terminus",
+   "request_key": "73226785239fc1fe637ff587fb7a2a7295fc4e59",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Here we are again at the terminus. The stands filled early tonight, which usually means the district offices closed early too",
+   "text": "Here we are again at the Terminus. The stands filled early tonight, which usually means the district offices closed early too.",
    "voice": "corporate2"
   },
   "pa.welcome.21@yard": {
@@ -29565,7 +29757,7 @@
    "request_key": "cd6c1a6a595daeccf71cbb5e5b37f00162f7ff15",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Tonight from the furnace, a full program of arena combat. Our thanks to the maintenance teams who resurfaced the floor twice this week",
+   "stt_text": "Tonight from the Furnace, a full program of arena combat. Our thanks to the maintenance teams who resurfaced the floor twice this week",
    "text": "Tonight from the Furnace, a full programme of arena combat. Our thanks to the maintenance teams, who resurfaced the floor twice this week.",
    "voice": "corporate2"
   },
@@ -29593,6 +29785,18 @@
    "text": "Tonight from the Scrapyard, a full programme of arena combat. Our thanks to the maintenance teams, who resurfaced the floor twice this week.",
    "voice": "corporate2"
   },
+  "pa.welcome.23@terminus": {
+   "duration_s": 7.587,
+   "file": "pa/pa.welcome.23@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.23@terminus",
+   "request_key": "efc61f972dc319028f0c2761f7b012edb5a2c460",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Tonight from the Terminus, a full program of arena combat. Our thanks to the maintenance teams who resurfaced the floor twice this week",
+   "text": "Tonight from the Terminus, a full programme of arena combat. Our thanks to the maintenance teams, who resurfaced the floor twice this week.",
+   "voice": "corporate2"
+  },
   "pa.welcome.23@yard": {
    "duration_s": 8.271,
    "file": "pa/pa.welcome.23@yard.ogg",
@@ -29601,7 +29805,7 @@
    "request_key": "3f9082db2cc47e840817ae2d6f35c348c60fde0f",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Tonight from the container yard, a full program of arena combat. Our thanks to the maintenance teams who resurfaced the floor twice this week",
+   "stt_text": "Tonight from the Container Yard, a full program of arena combat. Our thanks to the maintenance teams who resurfaced the floor twice this week",
    "text": "Tonight from the Container Yard, a full programme of arena combat. Our thanks to the maintenance teams, who resurfaced the floor twice this week.",
    "voice": "corporate2"
   },
@@ -29649,7 +29853,7 @@
    "request_key": "93b92512fb13f9820deee06e10b25f45663734f6",
    "speaker": "pa",
    "stt_ok": true,
-   "stt_text": "Welcome to the Foundry. The center of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on",
+   "stt_text": "Welcome to the foundry. The center of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on",
    "text": "Welcome to the Foundry. The centre of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on.",
    "voice": "corporate2"
   },
@@ -29687,6 +29891,18 @@
    "stt_ok": true,
    "stt_text": "Welcome to the scrapyard. The center of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on",
    "text": "Welcome to the Scrapyard. The centre of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on.",
+   "voice": "corporate2"
+  },
+  "pa.welcome.25@terminus": {
+   "duration_s": 8.334,
+   "file": "pa/pa.welcome.25@terminus.ogg",
+   "kind": "line",
+   "request": "pa.welcome.25@terminus",
+   "request_key": "94ed5e03d6dc93179617a77cf14ff14b734b5e2e",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Welcome to the terminus. The center of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on",
+   "text": "Welcome to the Terminus. The centre of the floor is live tonight. Crews holding it will score, and crews standing near it will be scored on.",
    "voice": "corporate2"
   },
   "pa.welcome.25@yard": {
@@ -29762,7 +29978,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-09-17",
+ "generated": "2026-09-19",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -31208,6 +31424,7 @@
     "furnace": "caller.intro.01@furnace",
     "pit": "caller.intro.01@pit",
     "scrapyard": "caller.intro.01@scrapyard",
+    "terminus": "caller.intro.01@terminus",
     "yard": "caller.intro.01@yard"
    }
   },
@@ -31223,6 +31440,7 @@
     "furnace": "caller.intro.02@furnace",
     "pit": "caller.intro.02@pit",
     "scrapyard": "caller.intro.02@scrapyard",
+    "terminus": "caller.intro.02@terminus",
     "yard": "caller.intro.02@yard"
    }
   },
@@ -31287,6 +31505,7 @@
     "furnace": "caller.intro.09@furnace",
     "pit": "caller.intro.09@pit",
     "scrapyard": "caller.intro.09@scrapyard",
+    "terminus": "caller.intro.09@terminus",
     "yard": "caller.intro.09@yard"
    }
   },
@@ -31386,6 +31605,7 @@
     "furnace": "caller.intro.22@furnace",
     "pit": "caller.intro.22@pit",
     "scrapyard": "caller.intro.22@scrapyard",
+    "terminus": "caller.intro.22@terminus",
     "yard": "caller.intro.22@yard"
    }
   },
@@ -34783,6 +35003,7 @@
     "furnace": "color.lore.11@furnace",
     "pit": "color.lore.11@pit",
     "scrapyard": "color.lore.11@scrapyard",
+    "terminus": "color.lore.11@terminus",
     "yard": "color.lore.11@yard"
    }
   },
@@ -35996,6 +36217,7 @@
     "furnace": "pa.sponsor.10@furnace",
     "pit": "pa.sponsor.10@pit",
     "scrapyard": "pa.sponsor.10@scrapyard",
+    "terminus": "pa.sponsor.10@terminus",
     "yard": "pa.sponsor.10@yard"
    }
   },
@@ -36067,6 +36289,7 @@
     "furnace": "pa.welcome.01@furnace",
     "pit": "pa.welcome.01@pit",
     "scrapyard": "pa.welcome.01@scrapyard",
+    "terminus": "pa.welcome.01@terminus",
     "yard": "pa.welcome.01@yard"
    }
   },
@@ -36082,6 +36305,7 @@
     "furnace": "pa.welcome.02@furnace",
     "pit": "pa.welcome.02@pit",
     "scrapyard": "pa.welcome.02@scrapyard",
+    "terminus": "pa.welcome.02@terminus",
     "yard": "pa.welcome.02@yard"
    }
   },
@@ -36111,6 +36335,7 @@
     "furnace": "pa.welcome.05@furnace",
     "pit": "pa.welcome.05@pit",
     "scrapyard": "pa.welcome.05@scrapyard",
+    "terminus": "pa.welcome.05@terminus",
     "yard": "pa.welcome.05@yard"
    }
   },
@@ -36133,6 +36358,7 @@
     "furnace": "pa.welcome.07@furnace",
     "pit": "pa.welcome.07@pit",
     "scrapyard": "pa.welcome.07@scrapyard",
+    "terminus": "pa.welcome.07@terminus",
     "yard": "pa.welcome.07@yard"
    }
   },
@@ -36148,6 +36374,7 @@
     "furnace": "pa.welcome.08@furnace",
     "pit": "pa.welcome.08@pit",
     "scrapyard": "pa.welcome.08@scrapyard",
+    "terminus": "pa.welcome.08@terminus",
     "yard": "pa.welcome.08@yard"
    }
   },
@@ -36170,6 +36397,7 @@
     "furnace": "pa.welcome.10@furnace",
     "pit": "pa.welcome.10@pit",
     "scrapyard": "pa.welcome.10@scrapyard",
+    "terminus": "pa.welcome.10@terminus",
     "yard": "pa.welcome.10@yard"
    }
   },
@@ -36185,6 +36413,7 @@
     "furnace": "pa.welcome.11@furnace",
     "pit": "pa.welcome.11@pit",
     "scrapyard": "pa.welcome.11@scrapyard",
+    "terminus": "pa.welcome.11@terminus",
     "yard": "pa.welcome.11@yard"
    }
   },
@@ -36207,6 +36436,7 @@
     "furnace": "pa.welcome.13@furnace",
     "pit": "pa.welcome.13@pit",
     "scrapyard": "pa.welcome.13@scrapyard",
+    "terminus": "pa.welcome.13@terminus",
     "yard": "pa.welcome.13@yard"
    }
   },
@@ -36222,6 +36452,7 @@
     "furnace": "pa.welcome.14@furnace",
     "pit": "pa.welcome.14@pit",
     "scrapyard": "pa.welcome.14@scrapyard",
+    "terminus": "pa.welcome.14@terminus",
     "yard": "pa.welcome.14@yard"
    }
   },
@@ -36279,6 +36510,7 @@
     "furnace": "pa.welcome.21@furnace",
     "pit": "pa.welcome.21@pit",
     "scrapyard": "pa.welcome.21@scrapyard",
+    "terminus": "pa.welcome.21@terminus",
     "yard": "pa.welcome.21@yard"
    }
   },
@@ -36301,6 +36533,7 @@
     "furnace": "pa.welcome.23@furnace",
     "pit": "pa.welcome.23@pit",
     "scrapyard": "pa.welcome.23@scrapyard",
+    "terminus": "pa.welcome.23@terminus",
     "yard": "pa.welcome.23@yard"
    }
   },
@@ -36323,6 +36556,7 @@
     "furnace": "pa.welcome.25@furnace",
     "pit": "pa.welcome.25@pit",
     "scrapyard": "pa.welcome.25@scrapyard",
+    "terminus": "pa.welcome.25@terminus",
     "yard": "pa.welcome.25@yard"
    }
   },
